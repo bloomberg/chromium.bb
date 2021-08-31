@@ -25,7 +25,6 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
@@ -136,25 +135,14 @@ class MetricsService : public base::HistogramFlattener {
   // Called when the application is coming out of background mode.
   void OnAppEnterForeground(bool force_open_new_log = false);
 #else
-  // Set the dirty flag, which will require a later call to LogCleanShutdown().
+  // Signals that the session has not yet exited cleanly. Calling this later
+  // requires a call to LogCleanShutdown().
   void LogNeedForCleanShutdown();
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
-  // Saves in the preferences if the crash report registration was successful.
-  // This count is eventually send via UMA logs.
-  void RecordBreakpadRegistration(bool success);
-
-  // Saves in the preferences if the browser is running under a debugger.
-  // This count is eventually send via UMA logs.
-  void RecordBreakpadHasDebugger(bool has_debugger);
 
   bool recording_active() const;
   bool reporting_active() const;
   bool has_unsent_logs() const;
-
-  // Redundant test to ensure that we are notified of a clean exit.
-  // This value should be true when process has completed shutdown.
-  static bool UmaMetricsProperlyShutdown();
 
   // Register the specified |provider| to provide additional metrics into the
   // UMA log. Should be called during MetricsService initialization only.
@@ -203,21 +191,19 @@ class MetricsService : public base::HistogramFlattener {
       PrefService* local_state,
       DelegatingProvider* delegating_provider);
 
- private:
   // The MetricsService has a lifecycle that is stored as a state.
   // See metrics_service.cc for description of this lifecycle.
   enum State {
-    INITIALIZED,          // Constructor was called.
+    CONSTRUCTED,          // Constructor was called.
+    INITIALIZED,          // InitializeMetricsRecordingState() was called.
     INIT_TASK_SCHEDULED,  // Waiting for deferred init tasks to finish.
     INIT_TASK_DONE,       // Waiting for timer to send initial log.
     SENDING_LOGS,         // Sending logs an creating new ones when we run out.
   };
 
-  enum ShutdownCleanliness {
-    CLEANLY_SHUTDOWN = 0xdeadbeef,
-    NEED_TO_SHUTDOWN = ~CLEANLY_SHUTDOWN
-  };
+  State state() const { return state_; }
 
+ private:
   // The current state of recording for the MetricsService. The state is UNSET
   // until set to something else, at which point it remains INACTIVE or ACTIVE
   // for the lifetime of the object.
@@ -407,10 +393,6 @@ class MetricsService : public base::HistogramFlattener {
   // (false) was called.
   bool is_in_foreground_ = false;
 #endif
-
-  // Redundant marker to check that we completed our shutdown, and set the
-  // exited-cleanly bit in the prefs.
-  static ShutdownCleanliness clean_shutdown_status_;
 
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ActiveFieldTrialsReported);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);

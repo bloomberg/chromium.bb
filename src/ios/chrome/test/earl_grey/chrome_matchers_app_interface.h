@@ -80,6 +80,9 @@
 // Returns matcher for a close button.
 + (id<GREYMatcher>)closeButton;
 
+// Returns matcher for close tab context menu button.
++ (id<GREYMatcher>)closeTabMenuButton;
+
 // Matcher for the navigate forward button.
 + (id<GREYMatcher>)forwardButton;
 
@@ -126,6 +129,12 @@
 
 // Matcher for show tabs button.
 + (id<GREYMatcher>)showTabsButton;
+
+// Matcher for Add to reading list button.
++ (id<GREYMatcher>)addToReadingListButton;
+
+// Matcher for Add to bookmarks button.
++ (id<GREYMatcher>)addToBookmarksButton;
 
 // Matcher for SettingsSwitchCell.
 + (id<GREYMatcher>)settingsSwitchCell:(NSString*)accessibilityIdentifier
@@ -190,6 +199,9 @@
 // settings' navigation bar.
 + (id<GREYMatcher>)syncSettingsConfirmButton;
 
+// Returns matcher for the Autofill Credit Card "Payment Methods" edit view.
++ (id<GREYMatcher>)autofillCreditCardEditTableView;
+
 // Returns matcher for the Autofill Credit Card "Payment Methods" view in the
 // settings menu.
 + (id<GREYMatcher>)autofillCreditCardTableView;
@@ -217,9 +229,6 @@
 // Returns matcher for the "Cancel" button in the Payment Methods add credit
 // card view.
 + (id<GREYMatcher>)addCreditCardCancelButton;
-
-// Returns matcher for the "Credit Card Scanner" view.
-+ (id<GREYMatcher>)creditCardScannerView;
 
 // Returns matcher for the tools menu table view.
 + (id<GREYMatcher>)toolsMenuView;
@@ -272,6 +281,10 @@
 // Returns matcher for the back button on a settings menu.
 + (id<GREYMatcher>)settingsMenuBackButton;
 
+// Returns matcher for the back button on a settings menu in given window
+// number.
++ (id<GREYMatcher>)settingsMenuBackButtonInWindowWithNumber:(int)windowNumber;
+
 // Returns matcher for the Privacy cell on the main Settings screen.
 + (id<GREYMatcher>)settingsMenuPrivacyButton;
 
@@ -314,6 +327,9 @@
 // Returns matcher for the collection view of content suggestion.
 + (id<GREYMatcher>)contentSuggestionCollectionView;
 
+// Returns matcher for the collection view of the NTP.
++ (id<GREYMatcher>)ntpCollectionView;
+
 // Returns matcher for the warning message while filling in payment requests.
 + (id<GREYMatcher>)warningMessageView;
 
@@ -338,8 +354,15 @@
 // Returns matcher for the system selection callout.
 + (id<GREYMatcher>)systemSelectionCallout;
 
+// Returns a matcher for the Link to text button in the edit menu.
++ (id<GREYMatcher>)systemSelectionCalloutLinkToTextButton;
+
 // Returns matcher for the copy button on the system selection callout.
 + (id<GREYMatcher>)systemSelectionCalloutCopyButton;
+
+// Matcher for a Copy button, such as the one in the Activity View. This matcher
+// is very broad and will look for any button with a matching string.
++ (id<GREYMatcher>)copyActivityButton API_AVAILABLE(ios(13));
 
 // Matcher for the Copy Link option in the updated context menus when long
 // pressing on a link. |useNewString| determines which string to use.
@@ -369,6 +392,12 @@
 
 // Returns matcher for a fake omnibox on a new tab page.
 + (id<GREYMatcher>)fakeOmnibox;
+
+// Returns matcher for a label of a Discover feed header.
++ (id<GREYMatcher>)discoverHeaderLabel;
+
+// Returns matcher for a logo on a new tab page.
++ (id<GREYMatcher>)ntpLogo;
 
 // Returns a matcher for the current WebView.
 + (id<GREYMatcher>)webViewMatcher;
@@ -421,6 +450,15 @@
 // Returns the GREYMatcher for the button to go to the other devices panel in
 // the tab grid.
 + (id<GREYMatcher>)tabGridOtherDevicesPanelButton;
+
+// Returns the GREYMatcher for the background of the tab grid.
++ (id<GREYMatcher>)tabGridBackground;
+
+// Returns the GREYMatcher for the regular tab grid.
++ (id<GREYMatcher>)regularTabGrid;
+
+// Returns the GREYMatcher for the incognito tab grid.
++ (id<GREYMatcher>)incognitoTabGrid;
 
 // Returns the GREYMatcher for the button to close the cell at |index| in the
 // tab grid.
@@ -524,7 +562,15 @@
 + (id<GREYMatcher>)manualFallbackCreditCardTableViewWindowMatcher;
 
 // Returns the matcher for the Activity View header.
-+ (id<GREYMatcher>)activityViewHeaderWithTitle:(NSString*)pageTitle;
++ (id<GREYMatcher>)activityViewHeaderWithURLHost:(NSString*)host
+                                           title:(NSString*)pageTitle;
+
+// Returns a matcher for the button to trigger password generation on manual
+// fallback.
++ (id<GREYMatcher>)manualFallbackSuggestPasswordMatcher;
+
+// Returns a matcher for the button to accept the generated password.
++ (id<GREYMatcher>)useSuggestedPasswordMatcher;
 
 @end
 

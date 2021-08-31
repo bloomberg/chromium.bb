@@ -5,16 +5,17 @@
 #ifndef CHROME_BROWSER_TASK_MANAGER_PROVIDERS_WEB_CONTENTS_PRERENDER_TAG_H_
 #define CHROME_BROWSER_TASK_MANAGER_PROVIDERS_WEB_CONTENTS_PRERENDER_TAG_H_
 
-#include "base/macros.h"
 #include "chrome/browser/task_manager/providers/web_contents/prerender_task.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tag.h"
 
 namespace task_manager {
 
 // Defines a concrete UserData type for WebContents owned by the
-// PrerenderManager.
+// NoStatePrefetchManager.
 class PrerenderTag : public WebContentsTag {
  public:
+  PrerenderTag(const PrerenderTag&) = delete;
+  PrerenderTag& operator=(const PrerenderTag&) = delete;
   ~PrerenderTag() override;
 
   // task_manager::WebContentsTag:
@@ -25,8 +26,6 @@ class PrerenderTag : public WebContentsTag {
   friend class WebContentsTags;
 
   explicit PrerenderTag(content::WebContents* web_contents);
-
-  DISALLOW_COPY_AND_ASSIGN(PrerenderTag);
 };
 
 }  // namespace task_manager

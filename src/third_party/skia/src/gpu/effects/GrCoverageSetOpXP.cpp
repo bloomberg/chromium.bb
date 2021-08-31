@@ -9,7 +9,7 @@
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrPipeline.h"
 #include "src/gpu/GrProcessor.h"
-#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/effects/GrCoverageSetOpXP.h"
 #include "src/gpu/glsl/GrGLSLBlend.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -199,17 +199,8 @@ const GrXPFactory* GrCoverageSetOpXPFactory::Get(SkRegion::Op regionOp, bool inv
 sk_sp<const GrXferProcessor> GrCoverageSetOpXPFactory::makeXferProcessor(
         const GrProcessorAnalysisColor&,
         GrProcessorAnalysisCoverage,
-        bool hasMixedSamples,
         const GrCaps& caps,
         GrClampType) const {
-    // We don't support inverting coverage with mixed samples. We don't expect to ever want this in
-    // the future, however we could at some point make this work using an inverted coverage
-    // modulation table. Note that an inverted table still won't work if there are coverage procs.
-    if (fInvertCoverage && hasMixedSamples) {
-        SkASSERT(false);
-        return nullptr;
-    }
-
     return sk_sp<GrXferProcessor>(new CoverageSetOpXP(fRegionOp, fInvertCoverage));
 }
 

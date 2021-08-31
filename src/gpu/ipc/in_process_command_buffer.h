@@ -20,7 +20,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
@@ -47,6 +46,7 @@
 #include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/display_context.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_surface.h"
@@ -281,6 +281,8 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   void Destroy();
   bool DestroyOnGpuThread();
 
+  void ReportTaskReady(base::TimeTicks task_ready);
+
   // Flush up to put_offset. If execution is deferred either by yielding, or due
   // to a sync token wait, HasUnprocessedCommandsOnGpuThread() returns true.
   void FlushOnGpuThread(int32_t put_offset,
@@ -293,7 +295,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
 
   bool MakeCurrent();
 
-  base::Optional<gles2::ProgramCache::ScopedCacheUse> CreateCacheUse();
+  absl::optional<gles2::ProgramCache::ScopedCacheUse> CreateCacheUse();
 
   // Client callbacks are posted back to |origin_task_runner_|, or run
   // synchronously if there's no task runner or message loop.
@@ -301,9 +303,13 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   base::OnceClosure WrapClientCallback(base::OnceClosure callback);
 
   void RunTaskOnGpuThread(base::OnceClosure task);
+
+  using ReportingCallback =
+      base::OnceCallback<void(base::TimeTicks task_ready)>;
   void ScheduleGpuTask(
       base::OnceClosure task,
-      std::vector<SyncToken> sync_token_fences = std::vector<SyncToken>());
+      std::vector<SyncToken> sync_token_fences = std::vector<SyncToken>(),
+      ReportingCallback report_callback = ReportingCallback());
   void ContinueGpuTask(base::OnceClosure task);
 
   void SignalSyncTokenOnGpuThread(const SyncToken& sync_token,
@@ -368,7 +374,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
   std::unique_ptr<CommandBufferService> command_buffer_;
   std::unique_ptr<DecoderContext> decoder_;
-  base::Optional<raster::GrCacheController> gr_cache_controller_;
+  absl::optional<raster::GrCacheController> gr_cache_controller_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<SyncPointClientState> sync_point_client_state_;
@@ -425,12 +431,14 @@ class GL_IN_PROCESS_CONTEXT_EXPORT InProcessCommandBuffer
     uint32_t flags;
     base::TimeTicks viz_scheduled_draw;
     base::TimeTicks gpu_started_draw;
+    base::TimeTicks gpu_task_ready;
   };
   base::circular_deque<SwapBufferParams> pending_presented_params_;
   base::circular_deque<SwapBufferParams> pending_swap_completed_params_;
   bool should_measure_next_flush_ = false;
   base::TimeTicks viz_scheduled_draw_;
   base::TimeTicks gpu_started_draw_;
+  base::TimeTicks gpu_task_ready_;
 
   scoped_refptr<SharedContextState> context_state_;
 

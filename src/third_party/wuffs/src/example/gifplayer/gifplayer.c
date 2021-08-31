@@ -72,8 +72,8 @@ micros_since_start(struct timespec* now) {
 #define WUFFS_IMPLEMENTATION
 
 // Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
-// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
-// the entire Wuffs standard library, implementing a variety of codecs and file
+// release/c/etc.c choose which parts of Wuffs to build. That file contains the
+// entire Wuffs standard library, implementing a variety of codecs and file
 // formats. Without this macro definition, an optimizing compiler or linker may
 // very well discard Wuffs code for unused codecs, but listing the Wuffs
 // modules we use makes that process explicit. Preprocessing means that such
@@ -210,7 +210,7 @@ restore_background(wuffs_base__pixel_buffer* pb,
     size_t x;
     uint8_t* d = g_curr_dst_buffer + (y * width4) + (bounds.min_incl_x * 4);
     for (x = bounds.min_incl_x; x < bounds.max_excl_x; x++) {
-      wuffs_base__store_u32le__no_bounds_check(d, background_color);
+      wuffs_base__poke_u32le__no_bounds_check(d, background_color);
       d += sizeof(wuffs_base__color_u32_argb_premul);
     }
   }
@@ -229,7 +229,7 @@ print_ascii_art(wuffs_base__pixel_buffer* pb) {
     uint32_t x;
     for (x = 0; x < width; x++) {
       wuffs_base__color_u32_argb_premul c =
-          wuffs_base__load_u32le__no_bounds_check(d);
+          wuffs_base__peek_u32le__no_bounds_check(d);
       d += sizeof(wuffs_base__color_u32_argb_premul);
       // Convert to grayscale via the formula
       //  Y = (0.299 * R) + (0.587 * G) + (0.114 * B)
@@ -260,7 +260,7 @@ print_color_art(wuffs_base__pixel_buffer* pb) {
     uint32_t x;
     for (x = 0; x < width; x++) {
       wuffs_base__color_u32_argb_premul c =
-          wuffs_base__load_u32le__no_bounds_check(d);
+          wuffs_base__peek_u32le__no_bounds_check(d);
       d += sizeof(wuffs_base__color_u32_argb_premul);
       int b = 0xFF & (c >> 0);
       int g = 0xFF & (c >> 8);
@@ -410,7 +410,7 @@ play() {
       size_t n = g_dst_len / sizeof(wuffs_base__color_u32_argb_premul);
       uint8_t* p = g_curr_dst_buffer;
       for (i = 0; i < n; i++) {
-        wuffs_base__store_u32le__no_bounds_check(p, background_color);
+        wuffs_base__poke_u32le__no_bounds_check(p, background_color);
         p += sizeof(wuffs_base__color_u32_argb_premul);
       }
     }

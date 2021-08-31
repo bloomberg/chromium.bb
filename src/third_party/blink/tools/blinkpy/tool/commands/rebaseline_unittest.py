@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
 import optparse
 import unittest
 
@@ -11,10 +10,12 @@ from blinkpy.common.net.web_test_results import WebTestResults
 from blinkpy.common.path_finder import RELATIVE_WEB_TESTS
 from blinkpy.common.system.executive_mock import MockExecutive
 from blinkpy.tool.commands.rebaseline import (
-    AbstractParallelRebaselineCommand, Rebaseline, TestBaselineSet)
+    AbstractRebaseliningCommand, AbstractParallelRebaselineCommand, Rebaseline,
+    TestBaselineSet)
 from blinkpy.tool.mock_tool import MockBlinkTool
 from blinkpy.web_tests.builder_list import BuilderList
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
+from blinkpy.web_tests.port.test import add_manifest_to_mock_filesystem
 
 
 class BaseTestCase(unittest.TestCase):
@@ -75,6 +76,14 @@ class BaseTestCase(unittest.TestCase):
             'MOCK Win7': {
                 'port_name': 'test-win-win7',
                 'specifiers': ['Win7', 'Release']
+            },
+            'MOCK wpt(1)': {
+                'port_name': 'test-linux-trusty',
+                'specifiers': ['Trusty', 'Release']
+            },
+            'MOCK wpt(2)': {
+                'port_name': 'test-linux-trusty',
+                'specifiers': ['Trusty', 'Release']
             },
         })
         self.mac_port = self.tool.port_factory.get_from_builder_name(
@@ -161,6 +170,25 @@ class BaseTestCase(unittest.TestCase):
                 }))
 
 
+class TestAbstractRebaselineCommand(BaseTestCase):
+    """Tests for the base class of a rebaseline command.
+
+    This class only contains test cases for utility methods.
+    """
+
+    command_constructor = AbstractRebaseliningCommand
+
+    def test_file_name_for_expected_result(self):
+        # pylint: disable=protected-access
+        add_manifest_to_mock_filesystem(self.tool.port_factory.get())
+        self.assertEqual(
+            self.command._file_name_for_expected_result(
+                'external/wpt/console/console-is-a-namespace.any.worker.html',
+                'txt',
+                is_wpt=True),
+            'external/wpt/console/console-is-a-namespace.any.js.ini')
+
+
 class TestAbstractParallelRebaselineCommand(BaseTestCase):
     """Tests for the base class of multiple rebaseline commands.
 
@@ -177,6 +205,11 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
             'MOCK Win7'
         ])
         self.assertEqual(builders_to_fetch, {'MOCK Win7', 'MOCK Win10'})
+
+        builders_to_fetch = self.command._builders_to_fetch_from([
+            'MOCK Trusty', 'MOCK wpt(1)', 'MOCK wpt(2)'
+        ])
+        self.assertEqual(builders_to_fetch, {'MOCK Trusty', 'MOCK wpt(1)', 'MOCK wpt(2)'})
 
     def test_generic_baseline_paths(self):
         test_baseline_set = TestBaselineSet(self.tool)
@@ -206,6 +239,45 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
             '/mock-checkout/' + RELATIVE_WEB_TESTS + 'x/foo-expected.txt',
         ])
 
+    def test_suffixes_for_actual_failures_for_wpt(self):
+        self.tool.results_fetcher.set_results(
+            Build('some-wpt-bot'),
+            WebTestResults({
+                'tests': {
+                    'wpt.html': {
+                        'expected': 'PASS',
+                        'actual': 'FAIL',
+                    }
+                }
+            }))
+        self.assertEqual(
+            # pylint: disable=protected-access
+            self.command._suffixes_for_actual_failures('wpt.html',
+                                                       Build('some-wpt-bot')),
+            {'txt'},
+        )
+
+    def test_suffixes_for_actual_failures_for_non_wpt(self):
+        # pylint: disable=protected-access
+        build = Build('MOCK Win7')
+        self.tool.results_fetcher.set_results(
+            build,
+            WebTestResults({
+                'tests': {
+                    'pixel.html': {
+                        'expected': 'PASS',
+                        'actual': 'FAIL',
+                        'artifacts': {
+                            'actual_image': ['pixel-actual.png'],
+                        },
+                    }
+                }
+            }))
+        self.assertEqual(
+            self.command._suffixes_for_actual_failures('pixel.html', build),
+            {'png'},
+        )
+
 
 class TestRebaseline(BaseTestCase):
     """Tests for the blink_tool.py rebaseline command.
@@ -226,11 +298,13 @@ class TestRebaseline(BaseTestCase):
     @staticmethod
     def options(**kwargs):
         return optparse.Values(
-            dict({
-                'optimize': True,
-                'verbose': True,
-                'results_directory': None
-            }, **kwargs))
+            dict(
+                {
+                    'optimize': True,
+                    'verbose': True,
+                    'results_directory': None,
+                    'flag_specific': None
+                }, **kwargs))
 
     def test_rebaseline_test_passes_on_all_builders(self):
         self.tool.results_fetcher.set_results(
@@ -491,7 +565,8 @@ class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
         return optparse.Values({
             'optimize': False,
             'verbose': True,
-            'results_directory': None
+            'results_directory': None,
+            'flag_specific': None
         })
 
     # In the following test cases, we use a mock rebaseline-test-internal to
@@ -847,7 +922,8 @@ class TestRebaselineExecute(BaseTestCase):
             'optimize': False,
             'builders': None,
             'suffixes': 'txt,png',
-            'verbose': True
+            'verbose': True,
+            'flag_specific': None
         })
 
     def test_rebaseline(self):
@@ -975,6 +1051,10 @@ class TestBaselineSetTest(unittest.TestCase):
                 'port_name': 'test-win-win10',
                 'specifiers': ['Win10', 'Release']
             },
+            'some-wpt-bot': {
+                'port_name': 'linux-trusty',
+                'specifiers': ['Trusty', 'Release']
+            },
         })
         self.host = host
 
@@ -1004,12 +1084,11 @@ class TestBaselineSetTest(unittest.TestCase):
         test_baseline_set = TestBaselineSet(host=self.host)
         test_baseline_set.add('a/x.html', Build('MOCK Mac10.12'))
         test_baseline_set.add('a/x.html', Build('MOCK Win10'))
-        self.assertEqual(
-            str(test_baseline_set),
-            ('<TestBaselineSet with:\n'
-             '  a/x.html: Build(builder_name=\'MOCK Mac10.12\', build_number=None), test-mac-mac10.12\n'
-             '  a/x.html: Build(builder_name=\'MOCK Win10\', build_number=None), test-win-win10>'
-             ))
+        self.assertEqual(str(test_baseline_set), (
+            '<TestBaselineSet with:\n'
+            '  a/x.html: Build(builder_name=\'MOCK Mac10.12\', build_number=None, build_id=None), test-mac-mac10.12\n'
+            '  a/x.html: Build(builder_name=\'MOCK Win10\', build_number=None, build_id=None), test-win-win10>'
+        ))
 
     def test_getters(self):
         test_baseline_set = TestBaselineSet(host=self.host)
@@ -1020,3 +1099,17 @@ class TestBaselineSetTest(unittest.TestCase):
             test_baseline_set.build_port_pairs('a/x.html'),
             [(Build(builder_name='MOCK Mac10.12'), 'test-mac-mac10.12'),
              (Build(builder_name='MOCK Win10'), 'test-win-win10')])
+
+    def test_non_prefix_mode(self):
+        test_baseline_set = TestBaselineSet(host=self.host, prefix_mode=False)
+        # This test does not exist in setUp.
+        test_baseline_set.add('wpt/foo.html', Build('some-wpt-bot'))
+        # But it should still appear in various getters since no test lookup is
+        # done when prefix_mode=False.
+        self.assertEqual(
+            list(test_baseline_set),
+            [('wpt/foo.html', Build('some-wpt-bot'), 'linux-trusty')])
+        self.assertEqual(test_baseline_set.all_tests(), ['wpt/foo.html'])
+        self.assertEqual(test_baseline_set.test_prefixes(), ['wpt/foo.html'])
+        self.assertEqual(test_baseline_set.build_port_pairs('wpt/foo.html'),
+                         [(Build('some-wpt-bot'), 'linux-trusty')])

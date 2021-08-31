@@ -13,7 +13,6 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/common/chrome_features.h"
-#include "content/public/common/content_features.h"
 
 namespace web_app {
 
@@ -49,7 +48,7 @@ void AppRegistrar::NotifyWebAppInstalled(const AppId& app_id) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppInstalled(app_id);
   // TODO(alancutter): Call RecordWebAppInstallation here when we get access to
-  // the WebappInstallSource in this event.
+  // the webapps::WebappInstallSource in this event.
 }
 
 void AppRegistrar::NotifyWebAppManifestUpdated(const AppId& app_id,
@@ -67,6 +66,11 @@ void AppRegistrar::NotifyWebAppsWillBeUpdatedFromSync(
 void AppRegistrar::NotifyWebAppUninstalled(const AppId& app_id) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppUninstalled(app_id);
+}
+
+void AppRegistrar::NotifyWebAppWillBeUninstalled(const AppId& app_id) {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppWillBeUninstalled(app_id);
   RecordWebAppUninstallation(profile()->GetPrefs(), app_id);
 }
 
@@ -81,6 +85,11 @@ void AppRegistrar::NotifyWebAppDisabledStateChanged(const AppId& app_id,
                                                     bool is_disabled) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppDisabledStateChanged(app_id, is_disabled);
+}
+
+void AppRegistrar::NotifyWebAppsDisabledModeChanged() {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppsDisabledModeChanged();
 }
 
 void AppRegistrar::NotifyWebAppLastLaunchTimeChanged(const AppId& app_id,
@@ -122,7 +131,7 @@ std::map<AppId, GURL> AppRegistrar::GetExternallyInstalledApps(
   return installed_apps;
 }
 
-base::Optional<AppId> AppRegistrar::LookupExternalAppId(
+absl::optional<AppId> AppRegistrar::LookupExternalAppId(
     const GURL& install_url) const {
   return ExternallyInstalledWebAppPrefs(profile()->GetPrefs())
       .LookupAppId(install_url);
@@ -167,7 +176,7 @@ extensions::BookmarkAppRegistrar* AppRegistrar::AsBookmarkAppRegistrar() {
 }
 
 GURL AppRegistrar::GetAppScope(const AppId& app_id) const {
-  base::Optional<GURL> scope = GetAppScopeInternal(app_id);
+  absl::optional<GURL> scope = GetAppScopeInternal(app_id);
   if (scope)
     return *scope;
   if (base::FeatureList::IsEnabled(
@@ -178,11 +187,11 @@ GURL AppRegistrar::GetAppScope(const AppId& app_id) const {
   return GetAppStartUrl(app_id).GetWithoutFilename();
 }
 
-base::Optional<AppId> AppRegistrar::FindAppWithUrlInScope(
+absl::optional<AppId> AppRegistrar::FindAppWithUrlInScope(
     const GURL& url) const {
   const std::string url_path = url.spec();
 
-  base::Optional<AppId> best_app_id;
+  absl::optional<AppId> best_app_id;
   size_t best_app_path_length = 0U;
   bool best_app_is_shortcut = true;
 
@@ -243,12 +252,12 @@ std::vector<AppId> AppRegistrar::FindAppsInScope(const GURL& scope) const {
   return in_scope;
 }
 
-base::Optional<AppId> AppRegistrar::FindInstalledAppWithUrlInScope(
+absl::optional<AppId> AppRegistrar::FindInstalledAppWithUrlInScope(
     const GURL& url,
     bool window_only) const {
   const std::string url_path = url.spec();
 
-  base::Optional<AppId> best_app_id;
+  absl::optional<AppId> best_app_id;
   size_t best_app_path_length = 0U;
   bool best_app_is_shortcut = true;
 
@@ -298,23 +307,19 @@ DisplayMode AppRegistrar::GetAppEffectiveDisplayMode(
     return DisplayMode::kUndefined;
   }
 
-  std::vector<DisplayMode> display_mode_overrides;
-  if (base::FeatureList::IsEnabled(features::kWebAppManifestDisplayOverride))
-    display_mode_overrides = GetAppDisplayModeOverride(app_id);
-
+  std::vector<DisplayMode> display_mode_overrides =
+      GetAppDisplayModeOverride(app_id);
   return ResolveEffectiveDisplayMode(app_display_mode, display_mode_overrides,
                                      user_display_mode);
 }
 
 DisplayMode AppRegistrar::GetEffectiveDisplayModeFromManifest(
     const AppId& app_id) const {
-  if (base::FeatureList::IsEnabled(features::kWebAppManifestDisplayOverride)) {
-    std::vector<DisplayMode> display_mode_overrides =
-        GetAppDisplayModeOverride(app_id);
+  std::vector<DisplayMode> display_mode_overrides =
+      GetAppDisplayModeOverride(app_id);
 
-    if (!display_mode_overrides.empty())
-      return display_mode_overrides[0];
-  }
+  if (!display_mode_overrides.empty())
+    return display_mode_overrides[0];
 
   return GetAppDisplayMode(app_id);
 }

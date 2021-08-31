@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "ash/app_list/app_list_export.h"
+#include "ash/ash_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/views/controls/button/button.h"
@@ -17,19 +17,14 @@ namespace gfx {
 class SlideAnimation;
 }  // namespace gfx
 
-namespace views {
-class InkDrop;
-class InkDropRipple;
-}  // namespace views
-
 namespace ash {
 
 class AppListView;
 class ContentsView;
 
 // A tile item for the expand arrow on the start page.
-class APP_LIST_EXPORT ExpandArrowView : public views::Button,
-                                        public views::ViewTargeterDelegate {
+class ASH_EXPORT ExpandArrowView : public views::Button,
+                                   public views::ViewTargeterDelegate {
  public:
   ExpandArrowView(ContentsView* contents_view, AppListView* app_list_view);
   ~ExpandArrowView() override;
@@ -43,10 +38,6 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   void OnFocus() override;
   void OnBlur() override;
   const char* GetClassName() const override;
-
-  // views::InkDropHostView:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
   // Calculates vertical offset between expand arrow circle's positions with app
   // list view drag progress |progress| and the current app list progress

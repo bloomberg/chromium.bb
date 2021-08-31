@@ -33,6 +33,8 @@ class WaylandOutput {
 
   void Initialize(Delegate* delegate);
 
+  float GetUIScaleFactor() const;
+
   uint32_t output_id() const { return output_id_; }
   bool has_output(wl_output* output) const { return output_.get() == output; }
   int32_t scale_factor() const { return scale_factor_; }
@@ -83,4 +85,4 @@ class WaylandOutput {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_SCREEN_H_
+#endif  // UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_OUTPUT_H_

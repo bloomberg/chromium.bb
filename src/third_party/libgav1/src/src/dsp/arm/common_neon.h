@@ -28,8 +28,7 @@
 
 #if 0
 #include <cstdio>
-
-#include "absl/strings/str_cat.h"
+#include <string>
 
 constexpr bool kEnablePrintRegs = true;
 
@@ -87,10 +86,10 @@ inline void PrintVectQ(const DebugRegisterQ r, const char* const name,
 inline void PrintReg(const int32x4x2_t val, const std::string& name) {
   DebugRegisterQ r;
   vst1q_u32(r.u32, val.val[0]);
-  const std::string name0 = absl::StrCat(name, ".val[0]").c_str();
+  const std::string name0 = name + std::string(".val[0]");
   PrintVectQ(r, name0.c_str(), 32);
   vst1q_u32(r.u32, val.val[1]);
-  const std::string name1 = absl::StrCat(name, ".val[1]").c_str();
+  const std::string name1 = name + std::string(".val[1]");
   PrintVectQ(r, name1.c_str(), 32);
 }
 
@@ -169,14 +168,14 @@ inline void PrintReg(const int8x8_t val, const char* name) {
 // Print an individual (non-vector) value in decimal format.
 inline void PrintReg(const int x, const char* name) {
   if (kEnablePrintRegs) {
-    printf("%s: %d\n", name, x);
+    fprintf(stderr, "%s: %d\n", name, x);
   }
 }
 
 // Print an individual (non-vector) value in hexadecimal format.
 inline void PrintHex(const int x, const char* name) {
   if (kEnablePrintRegs) {
-    printf("%s: %x\n", name, x);
+    fprintf(stderr, "%s: %x\n", name, x);
   }
 }
 
@@ -282,17 +281,17 @@ inline void Store2(uint16_t* const buf, const uint16x4_t val) {
 
 // vshXX_n_XX() requires an immediate.
 template <int shift>
-inline uint8x8_t LeftShift(const uint8x8_t vector) {
+inline uint8x8_t LeftShiftVector(const uint8x8_t vector) {
   return vreinterpret_u8_u64(vshl_n_u64(vreinterpret_u64_u8(vector), shift));
 }
 
 template <int shift>
-inline uint8x8_t RightShift(const uint8x8_t vector) {
+inline uint8x8_t RightShiftVector(const uint8x8_t vector) {
   return vreinterpret_u8_u64(vshr_n_u64(vreinterpret_u64_u8(vector), shift));
 }
 
 template <int shift>
-inline int8x8_t RightShift(const int8x8_t vector) {
+inline int8x8_t RightShiftVector(const int8x8_t vector) {
   return vreinterpret_s8_u64(vshr_n_u64(vreinterpret_u64_s8(vector), shift));
 }
 
@@ -384,6 +383,15 @@ inline uint16_t SumVector(const uint8x8_t a) {
   const uint32x2_t d = vpaddl_u16(c);
   const uint64x1_t e = vpaddl_u32(d);
   return static_cast<uint16_t>(vget_lane_u64(e, 0));
+#endif  // defined(__aarch64__)
+}
+
+inline uint32_t SumVector(const uint32x2_t a) {
+#if defined(__aarch64__)
+  return vaddv_u32(a);
+#else
+  const uint64x1_t b = vpaddl_u32(a);
+  return vget_lane_u32(vreinterpret_u32_u64(b), 0);
 #endif  // defined(__aarch64__)
 }
 

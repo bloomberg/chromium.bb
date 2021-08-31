@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace extensions {
 namespace api {
@@ -26,7 +27,7 @@ namespace {
 // TODO(plundblad): Find a way to detect the controlling terminal of the
 // X server.
 static const int kDefaultTtyLinux = 7;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // The GUI is always running on vt1 in Chrome OS.
 static const int kDefaultTtyChromeOS = 1;
 #endif
@@ -40,7 +41,7 @@ class BrlapiConnectionImpl : public BrlapiConnection {
   BrlapiConnectionImpl& operator=(const BrlapiConnectionImpl&) = delete;
   ~BrlapiConnectionImpl() override { Disconnect(); }
 
-  ConnectResult Connect(const OnDataReadyCallback& on_data_ready) override;
+  ConnectResult Connect(OnDataReadyCallback on_data_ready) override;
   void Disconnect() override;
   bool Connected() override { return handle_ != nullptr; }
   brlapi_error_t* BrlapiError() override;
@@ -66,7 +67,7 @@ std::unique_ptr<BrlapiConnection> BrlapiConnection::Create(
 }
 
 BrlapiConnection::ConnectResult BrlapiConnectionImpl::Connect(
-    const OnDataReadyCallback& on_data_ready) {
+    OnDataReadyCallback on_data_ready) {
   DCHECK(!handle_);
   handle_.reset(reinterpret_cast<brlapi_handle_t*>(
       malloc(libbrlapi_loader_->brlapi_getHandleSize())));
@@ -79,7 +80,7 @@ BrlapiConnection::ConnectResult BrlapiConnectionImpl::Connect(
   }
   int path[2] = {0, 0};
   int pathElements = 0;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (base::SysInfo::IsRunningOnChromeOS())
     path[pathElements++] = kDefaultTtyChromeOS;
 #endif
@@ -124,7 +125,7 @@ BrlapiConnection::ConnectResult BrlapiConnectionImpl::Connect(
   }
 
   fd_controller_ =
-      base::FileDescriptorWatcher::WatchReadable(fd, on_data_ready);
+      base::FileDescriptorWatcher::WatchReadable(fd, std::move(on_data_ready));
 
   return CONNECT_SUCCESS;
 }

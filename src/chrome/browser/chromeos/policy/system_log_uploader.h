@@ -18,8 +18,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/policy/upload_job.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -180,9 +180,8 @@ class SystemLogUploader : public UploadJob::Delegate {
   // use the last-known trusted values.
   bool upload_enabled_;
 
-  // Observer to changes in system log upload settings.
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      upload_enabled_observer_;
+  // Subscription for callback on changes in system log upload settings.
+  base::CallbackListSubscription upload_enabled_subscription_;
 
   base::ThreadChecker thread_checker_;
 

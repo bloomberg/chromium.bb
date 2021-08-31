@@ -10,7 +10,8 @@
 
 #include "include/core/SkTypes.h"
 #include "include/gpu/GrContextOptions.h"
-#include "src/sksl/SkSLString.h"
+#include "include/private/SkSLProgramKind.h"
+#include "include/private/SkSLString.h"
 
 namespace GrShaderUtils {
 
@@ -26,7 +27,12 @@ inline void PrintLineByLine(const SkSL::String& text) {
     });
 }
 
+// Combines raw shader and error text into an easier-to-read error message with line numbers.
+SkSL::String BuildShaderErrorMessage(const char* shader, const char* errors);
+
 GrContextOptions::ShaderErrorHandler* DefaultShaderErrorHandler();
+
+void PrintShaderBanner(SkSL::ProgramKind programKind);
 
 }  // namespace GrShaderUtils
 

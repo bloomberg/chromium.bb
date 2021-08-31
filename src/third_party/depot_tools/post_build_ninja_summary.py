@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env python3
 # Copyright (c) 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -17,7 +17,7 @@ $ NINJA_SUMMARIZE_BUILD=1 autoninja -C out/Default/ chrome
 You can also call this script directly using ninja's syntax to specify the
 output directory of interest:
 
-> python post_build_ninja_summary.py -C out/Default
+> python3 post_build_ninja_summary.py -C out/Default
 
 Typical output looks like this:
 
@@ -50,8 +50,6 @@ of how "important" a slow step was. A link that is entirely or mostly serialized
 will have a weighted time that is the same or similar to its elapsed time. A
 compile that runs in parallel with 999 other compiles will have a weighted time
 that is tiny."""
-
-from __future__ import print_function
 
 import argparse
 import errno

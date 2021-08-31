@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 
 namespace blink {
+class HTMLAreaElement;
 
 // Returns true if items builder is used for other than offset mapping.
 template <typename OffsetMappingBuilder>
@@ -281,7 +282,7 @@ bool NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendTextReusing(
     const NGInlineNodeData& original_data,
     LayoutText* layout_text) {
   DCHECK(layout_text);
-  const base::span<NGInlineItem>& items = layout_text->InlineItems();
+  const auto& items = layout_text->InlineItems();
   const NGInlineItem& old_item0 = items.front();
   if (!old_item0.Length())
     return false;
@@ -480,7 +481,20 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendText(
     AppendEmptyTextItem(layout_object);
     return;
   }
-  text_.ReserveCapacity(string.length());
+
+  const wtf_size_t estimated_length = text_.length() + string.length();
+  if (estimated_length > text_.Capacity()) {
+    // The reallocations may occur very frequently for large text such as log
+    // files. We use a more aggressive expansion strategy, the same as
+    // |Vector::ExpandCapacity| does for |Vector|s with inline storage.
+    // |ReserveCapacity| reserves only the requested size.
+    const wtf_size_t new_capacity =
+        std::max(estimated_length, text_.Capacity() * 2);
+    if (string.Is8Bit())
+      text_.ReserveCapacity(new_capacity);
+    else
+      text_.Reserve16BitCapacity(new_capacity);
+  }
 
   typename OffsetMappingBuilder::SourceNodeScope scope(&mapping_builder_,
                                                        layout_object);
@@ -1095,8 +1109,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::EnterBlock(
                      kPopDirectionalFormattingCharacter);
   }
 
-  if (style->Display() == EDisplay::kListItem &&
-      style->ListStyleType() != EListStyleType::kNone) {
+  if (style->Display() == EDisplay::kListItem && style->GetListStyleType()) {
     is_empty_inline_ = false;
     is_block_level_ = false;
   }

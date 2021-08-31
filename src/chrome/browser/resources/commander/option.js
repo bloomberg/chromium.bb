@@ -42,13 +42,15 @@ export class CommanderOptionElement extends PolymerElement {
   computeIcon_() {
     switch (this.model.entity) {
       case Entity.COMMAND:
-      // TODO(lgrey): Need a vector of this. Using generic for now.
-      case Entity.BOOKMARK:
         return 'commander-icons:chrome';
+      case Entity.BOOKMARK:
+        return 'commander-icons:bookmark';
       case Entity.TAB:
         return 'commander-icons:tab';
       case Entity.WINDOW:
         return 'commander-icons:window';
+      case Entity.GROUP:
+        return 'commander-icons:group';
     }
     assertNotReached();
     return '';

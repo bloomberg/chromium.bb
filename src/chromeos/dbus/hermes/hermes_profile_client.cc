@@ -6,12 +6,80 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/dbus/hermes/constants.h"
 #include "chromeos/dbus/hermes/fake_hermes_profile_client.h"
 #include "chromeos/dbus/hermes/hermes_response_status.h"
+#include "components/device_event_log/device_event_log.h"
 #include "dbus/bus.h"
 #include "dbus/object_manager.h"
 #include "dbus/property.h"
 #include "third_party/cros_system_api/dbus/hermes/dbus-constants.h"
+
+namespace dbus {
+
+// dbus::Property specialization to read and write
+// hermes::profile::State enum.
+template <>
+Property<hermes::profile::State>::Property()
+    : value_(hermes::profile::State::kInactive) {}
+
+template <>
+bool Property<hermes::profile::State>::PopValueFromReader(
+    MessageReader* reader) {
+  int32_t int_value;
+  if (!reader->PopVariantOfInt32(&int_value)) {
+    NET_LOG(ERROR) << "Unable to pop value for eSIM profile state.";
+    return false;
+  }
+  switch (int_value) {
+    case hermes::profile::State::kActive:
+    case hermes::profile::State::kInactive:
+    case hermes::profile::State::kPending:
+      value_ = static_cast<hermes::profile::State>(int_value);
+      return true;
+  }
+  NOTREACHED() << "Received invalid hermes profile state " << int_value;
+  return false;
+}
+
+template <>
+void Property<hermes::profile::State>::AppendSetValueToWriter(
+    MessageWriter* writer) {
+  writer->AppendVariantOfInt32(set_value_);
+}
+
+// dbus::Property specialization to read and write
+// hermes::profile::ProfileClass enum.
+template <>
+Property<hermes::profile::ProfileClass>::Property()
+    : value_(hermes::profile::ProfileClass::kOperational) {}
+
+template <>
+bool Property<hermes::profile::ProfileClass>::PopValueFromReader(
+    MessageReader* reader) {
+  int32_t int_value;
+  if (!reader->PopVariantOfInt32(&int_value)) {
+    NET_LOG(ERROR) << "Unable to pop value for eSIM profile class";
+    return false;
+  }
+  switch (int_value) {
+    case hermes::profile::ProfileClass::kTesting:
+    case hermes::profile::ProfileClass::kProvisioning:
+    case hermes::profile::ProfileClass::kOperational:
+      value_ = static_cast<hermes::profile::ProfileClass>(int_value);
+      return true;
+  }
+  NOTREACHED() << "Received invalid hermes profile class " << int_value;
+  return false;
+}
+
+template <>
+void Property<hermes::profile::ProfileClass>::AppendSetValueToWriter(
+    MessageWriter* writer) {
+  writer->AppendVariantOfInt32(set_value_);
+}
+
+}  // namespace dbus
 
 namespace chromeos {
 
@@ -55,7 +123,7 @@ class HermesProfileClientImpl : public HermesProfileClient {
                                  hermes::profile::kEnable);
     dbus::ObjectProxy* object_proxy = GetObject(carrier_profile_path).first;
     object_proxy->CallMethodWithErrorResponse(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, hermes_constants::kHermesNetworkOperationTimeoutMs,
         base::BindOnce(&HermesProfileClientImpl::OnHermesStatusResponse,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -66,7 +134,7 @@ class HermesProfileClientImpl : public HermesProfileClient {
                                  hermes::profile::kDisable);
     dbus::ObjectProxy* object_proxy = GetObject(carrier_profile_path).first;
     object_proxy->CallMethodWithErrorResponse(
-        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        &method_call, hermes_constants::kHermesNetworkOperationTimeoutMs,
         base::BindOnce(&HermesProfileClientImpl::OnHermesStatusResponse,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -110,6 +178,8 @@ class HermesProfileClientImpl : public HermesProfileClient {
                               dbus::Response* response,
                               dbus::ErrorResponse* error_response) {
     if (error_response) {
+      NET_LOG(ERROR) << "Hermes Profile operation failed with error: "
+                     << error_response->GetErrorName();
       std::move(callback).Run(
           HermesResponseStatusFromErrorName(error_response->GetErrorName()));
       return;

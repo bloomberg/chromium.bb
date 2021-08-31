@@ -12,7 +12,7 @@ namespace content {
 SyntheticPointerAction::SyntheticPointerAction(
     const SyntheticPointerActionListParams& params)
     : params_(params),
-      gesture_source_type_(SyntheticGestureParams::DEFAULT_INPUT),
+      gesture_source_type_(content::mojom::GestureSourceType::kDefaultInput),
       state_(GestureState::UNINITIALIZED),
       num_actions_dispatched_(0U) {}
 
@@ -23,7 +23,8 @@ SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
     SyntheticGestureTarget* target) {
   if (state_ == GestureState::UNINITIALIZED) {
     gesture_source_type_ = params_.gesture_source_type;
-    if (gesture_source_type_ == SyntheticGestureParams::DEFAULT_INPUT)
+    if (gesture_source_type_ ==
+        content::mojom::GestureSourceType::kDefaultInput)
       gesture_source_type_ = target->GetDefaultSyntheticGestureSourceType();
 
     if (!synthetic_pointer_driver_) {
@@ -35,8 +36,9 @@ SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
     state_ = GestureState::RUNNING;
   }
 
-  DCHECK_NE(gesture_source_type_, SyntheticGestureParams::DEFAULT_INPUT);
-  if (gesture_source_type_ == SyntheticGestureParams::DEFAULT_INPUT)
+  DCHECK_NE(gesture_source_type_,
+            content::mojom::GestureSourceType::kDefaultInput);
+  if (gesture_source_type_ == content::mojom::GestureSourceType::kDefaultInput)
     return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
 
   state_ = ForwardTouchOrMouseInputEvents(timestamp, target);
@@ -79,13 +81,16 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
         synthetic_pointer_driver_->Press(
             param.position().x(), param.position().y(), param.pointer_id(),
             param.button(), param.key_modifiers(), param.width(),
-            param.height(), param.rotation_angle(), param.force(), timestamp);
+            param.height(), param.rotation_angle(), param.force(),
+            param.tangential_pressure(), param.tilt_x(), param.tilt_y(),
+            timestamp);
         break;
       case SyntheticPointerActionParams::PointerActionType::MOVE:
         synthetic_pointer_driver_->Move(
             param.position().x(), param.position().y(), param.pointer_id(),
             param.key_modifiers(), param.width(), param.height(),
-            param.rotation_angle(), param.force());
+            param.rotation_angle(), param.force(), param.tangential_pressure(),
+            param.tilt_x(), param.tilt_y());
         break;
       case SyntheticPointerActionParams::PointerActionType::RELEASE:
         synthetic_pointer_driver_->Release(param.pointer_id(), param.button(),

@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "chrome/services/cups_proxy/fake_cups_proxy_service_delegate.h"
 #include "chrome/services/cups_proxy/public/cpp/cups_util.h"
 #include "chrome/services/cups_proxy/public/cpp/ipp_messages.h"
@@ -41,9 +42,9 @@ class FakeServiceDelegate : public FakeCupsProxyServiceDelegate {
     known_printers_.insert(printer_id);
   }
 
-  base::Optional<Printer> GetPrinter(const std::string& id) override {
+  absl::optional<Printer> GetPrinter(const std::string& id) override {
     if (!base::Contains(known_printers_, id)) {
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     return Printer(id);
@@ -62,7 +63,7 @@ class IppValidatorTest : public testing::Test {
 
   ~IppValidatorTest() override = default;
 
-  base::Optional<IppRequest> RunValidateIppRequest(
+  absl::optional<IppRequest> RunValidateIppRequest(
       const IppRequestPtr& request) {
     return ipp_validator_->ValidateIppRequest(request.Clone());
   }

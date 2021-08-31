@@ -12,9 +12,9 @@
 #include <iostream>
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/batch_writer/quic_batch_writer_base.h"
-#include "net/third_party/quiche/src/quic/core/quic_udp_socket.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
+#include "quic/core/batch_writer/quic_batch_writer_base.h"
+#include "quic/core/quic_udp_socket.h"
+#include "quic/platform/api/quic_test.h"
 
 namespace quic {
 namespace test {
@@ -45,7 +45,7 @@ static bool CreateSocket(int family, QuicSocketAddress* address, int* fd) {
   if (family == AF_INET) {
     *address = QuicSocketAddress(QuicIpAddress::Loopback4(), 0);
   } else {
-    DCHECK_EQ(family, AF_INET6);
+    QUICHE_DCHECK_EQ(family, AF_INET6);
     *address = QuicSocketAddress(QuicIpAddress::Loopback6(), 0);
   }
 

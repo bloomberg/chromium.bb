@@ -5,7 +5,6 @@
 #include <string>
 
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -19,10 +18,10 @@ IN_PROC_BROWSER_TEST_F(LanguageDetectionServiceTest,
                        DetermineLanguageReliable) {
   mojo::Remote<language_detection::mojom::LanguageDetectionService> service =
       language_detection::LaunchLanguageDetectionService();
-  base::string16 text = base::UTF8ToUTF16(
-      "El niño atrapó un dorado muy grande con cebo vivo. Fileteó el "
-      "pescado y lo asó a la parrilla. Sabía excelente. Espera pescar otro "
-      "buen pescado mañana.");
+  std::u16string text =
+      u"El niño atrapó un dorado muy grande con cebo vivo. Fileteó el "
+      u"pescado y lo asó a la parrilla. Sabía excelente. Espera pescar otro "
+      u"buen pescado mañana.";
 
   base::RunLoop run_loop;
   service->DetermineLanguage(
@@ -39,7 +38,7 @@ IN_PROC_BROWSER_TEST_F(LanguageDetectionServiceTest,
                        DetermineLanguageUndeterminedUnreliable) {
   mojo::Remote<language_detection::mojom::LanguageDetectionService> service =
       language_detection::LaunchLanguageDetectionService();
-  base::string16 text = base::UTF8ToUTF16("Not enough text for detection");
+  std::u16string text = u"Not enough text for detection";
 
   base::RunLoop run_loop;
   service->DetermineLanguage(

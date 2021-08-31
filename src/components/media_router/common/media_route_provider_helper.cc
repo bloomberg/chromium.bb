@@ -11,6 +11,8 @@ constexpr const char kExtension[] = "EXTENSION";
 constexpr const char kWiredDisplay[] = "WIRED_DISPLAY";
 constexpr const char kDial[] = "DIAL";
 constexpr const char kCast[] = "CAST";
+constexpr const char kAndroidCaf[] = "ANDROID_CAF";
+constexpr const char kTest[] = "TEST";
 constexpr const char kUnknown[] = "UNKNOWN";
 
 namespace media_router {
@@ -25,6 +27,10 @@ const char* ProviderIdToString(MediaRouteProviderId provider_id) {
       return kCast;
     case DIAL:
       return kDial;
+    case ANDROID_CAF:
+      return kAndroidCaf;
+    case TEST:
+      return kTest;
     case UNKNOWN:
       return kUnknown;
   }
@@ -42,6 +48,10 @@ MediaRouteProviderId ProviderIdFromString(base::StringPiece provider_id) {
     return MediaRouteProviderId::CAST;
   } else if (provider_id == kDial) {
     return MediaRouteProviderId::DIAL;
+  } else if (provider_id == kAndroidCaf) {
+    return MediaRouteProviderId::ANDROID_CAF;
+  } else if (provider_id == kTest) {
+    return MediaRouteProviderId::TEST;
   } else {
     return MediaRouteProviderId::UNKNOWN;
   }

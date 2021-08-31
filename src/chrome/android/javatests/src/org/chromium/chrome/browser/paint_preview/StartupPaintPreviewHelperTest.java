@@ -95,7 +95,7 @@ public class StartupPaintPreviewHelperTest {
     @Test
     @MediumTest
     @Restriction(StartupPaintPreviewHelperTestRunner.RESTRICTION_TYPE_KEEP_ACTIVITIES)
-    @DisabledTest(message = "https://crbug.com/1145783")
+    @DisabledTest(message = "https://crbug.com/1208305 & https://crbug.com/1208542")
     public void testDisplayOnStartup() throws ExecutionException {
         mActivityTestRule.startMainActivityWithURL(
                 mActivityTestRule.getTestServer().getURL(TEST_URL));
@@ -110,7 +110,10 @@ public class StartupPaintPreviewHelperTest {
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
         TabbedPaintPreview tabbedPaintPreview =
                 TestThreadUtils.runOnUiThreadBlocking(() -> TabbedPaintPreview.get(tab));
-        TabbedPaintPreviewTest.assertAttachedAndShown(tabbedPaintPreview, true, true);
+
+        // Paint Preview might be showed and get removed before we can assert it's showing. Hence,
+        // we assert that is was *ever* shown for this tab, instead.
+        TabbedPaintPreviewTest.assertWasEverShown(tabbedPaintPreview, true);
 
         // Closing the tab should delete its captured paint preview.
         TestThreadUtils.runOnUiThreadBlocking(()

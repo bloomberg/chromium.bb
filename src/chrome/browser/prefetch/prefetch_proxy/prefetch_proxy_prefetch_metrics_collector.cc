@@ -96,7 +96,7 @@ void PrefetchProxyPrefetchMetricsCollector::MapMainframeToSubresource(
   }
 }
 
-base::Optional<PrefetchProxyPrefetchStatus>
+absl::optional<PrefetchProxyPrefetchStatus>
 PrefetchProxyPrefetchMetricsCollector::GetStatusOfMainframe(
     const GURL& url) const {
   auto mainframe_entry = resources_by_url_.find(url);
@@ -104,10 +104,10 @@ PrefetchProxyPrefetchMetricsCollector::GetStatusOfMainframe(
     return mainframe_entry->second.status;
   }
   NOTREACHED() << "Unknown mainframe url";
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<size_t>
+absl::optional<size_t>
 PrefetchProxyPrefetchMetricsCollector::GetLinkPositionOfMainframe(
     const GURL& url) const {
   auto mainframe_entry = resources_by_url_.find(url);
@@ -115,7 +115,7 @@ PrefetchProxyPrefetchMetricsCollector::GetLinkPositionOfMainframe(
     return mainframe_entry->second.link_position;
   }
   NOTREACHED() << "Unknown mainframe url";
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void PrefetchProxyPrefetchMetricsCollector::OnMainframeResourceNotEligible(
@@ -164,6 +164,28 @@ void PrefetchProxyPrefetchMetricsCollector::OnMainframeResourcePrefetched(
         status.completion_time - head->load_timing.request_start;
   }
 
+  resources_by_url_.emplace(url, metric);
+}
+
+void PrefetchProxyPrefetchMetricsCollector::OnDecoyPrefetchComplete(
+    const GURL& url,
+    size_t prediction_position,
+    network::mojom::URLResponseHeadPtr head,
+    const network::URLLoaderCompletionStatus& status) {
+  PrefetchMetric metric;
+  metric.status = PrefetchProxyPrefetchStatus::kPrefetchIsPrivacyDecoy;
+  metric.is_mainframe = true;
+  metric.link_position = prediction_position;
+  metric.data_length = status.encoded_data_length;
+  metric.was_clicked = false;
+  if (head) {
+    metric.navigation_start_to_fetch_start =
+        head->load_timing.request_start - navigation_start_time_;
+    metric.fetch_duration =
+        status.completion_time - head->load_timing.request_start;
+  }
+
+  resources_by_url_.erase(url);
   resources_by_url_.emplace(url, metric);
 }
 
@@ -266,7 +288,7 @@ void PrefetchProxyPrefetchMetricsCollector::OnCachedSubresourceUsed(
     return;
   }
 
-  base::Optional<PrefetchProxyPrefetchStatus> status =
+  absl::optional<PrefetchProxyPrefetchStatus> status =
       GetStatusOfMainframe(mainframe_url);
   if (status) {
     entry_iter->second.status = *status;

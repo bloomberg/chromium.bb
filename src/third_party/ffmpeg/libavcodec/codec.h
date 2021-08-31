@@ -236,7 +236,9 @@ typedef struct AVCodec {
      *****************************************************************
      */
     int priv_data_size;
+#if FF_API_NEXT
     struct AVCodec *next;
+#endif
     /**
      * @name Frame-level threading support functions
      * @{
@@ -257,7 +259,7 @@ typedef struct AVCodec {
     const AVCodecDefault *defaults;
 
     /**
-     * Initialize codec static data, called from avcodec_register().
+     * Initialize codec static data, called from av_codec_iterate().
      *
      * This is not intended for time consuming operations as it is
      * run for every codec regardless of that codec being used.
@@ -271,7 +273,7 @@ typedef struct AVCodec {
      * Encode data to an AVPacket.
      *
      * @param      avctx          codec context
-     * @param      avpkt          output AVPacket (may contain a user-provided buffer)
+     * @param      avpkt          output AVPacket
      * @param[in]  frame          AVFrame containing the raw data to be encoded
      * @param[out] got_packet_ptr encoder sets to 0 or 1 to indicate that a
      *                            non-empty packet was returned in avpkt.
@@ -279,7 +281,20 @@ typedef struct AVCodec {
      */
     int (*encode2)(struct AVCodecContext *avctx, struct AVPacket *avpkt,
                    const struct AVFrame *frame, int *got_packet_ptr);
-    int (*decode)(struct AVCodecContext *, void *outdata, int *outdata_size, struct AVPacket *avpkt);
+    /**
+     * Decode picture or subtitle data.
+     *
+     * @param      avctx          codec context
+     * @param      outdata        codec type dependent output struct
+     * @param[out] got_frame_ptr  decoder sets to 0 or 1 to indicate that a
+     *                            non-empty frame or subtitle was returned in
+     *                            outdata.
+     * @param[in]  avpkt          AVPacket containing the data to be decoded
+     * @return amount of bytes read from the packet on success, negative error
+     *         code on failure
+     */
+    int (*decode)(struct AVCodecContext *avctx, void *outdata,
+                  int *got_frame_ptr, struct AVPacket *avpkt);
     int (*close)(struct AVCodecContext *);
     /**
      * Encode API with decoupled frame/packet dataflow. This function is called
@@ -318,7 +333,7 @@ typedef struct AVCodec {
      *
      * The user can only access this field via avcodec_get_hw_config().
      */
-    const struct AVCodecHWConfigInternal **hw_configs;
+    const struct AVCodecHWConfigInternal *const *hw_configs;
 
     /**
      * List of supported codec_tags, terminated by FF_CODEC_TAGS_END.

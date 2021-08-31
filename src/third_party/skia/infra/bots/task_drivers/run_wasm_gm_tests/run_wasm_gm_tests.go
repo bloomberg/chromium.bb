@@ -140,7 +140,7 @@ func setupGoldctl(ctx context.Context, local bool, gitCommit, gerritCLID, tryjob
 
 	args = []string{
 		goldctlPath, "imgtest", "init", "--work-dir", workPath, "--instance", "skia", "--corpus", "gm",
-		"--commit", gitCommit,
+		"--commit", gitCommit, "--url", "https://gold.skia.org", "--bucket", "skia-infra-gm",
 	}
 	if gerritCLID != "" {
 		ps := strconv.Itoa(psOrder)
@@ -202,7 +202,7 @@ func runTests(ctx context.Context, builtPath, nodeBinPath, resourcePath, testHar
 			"--use_gpu", // TODO(kjlubick) use webglVersion and account for CPU
 			"--output", workPath,
 			"--resources", resourcePath,
-			"--timeout", "180", // 180 seconds per batch of 50 tests.
+			"--timeout", "180", // seconds per batch of 50 tests.
 		}
 
 		_, err := exec.RunCwd(ctx, testHarnessPath, args...)

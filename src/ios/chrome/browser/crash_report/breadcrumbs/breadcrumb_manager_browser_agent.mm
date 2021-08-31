@@ -8,8 +8,8 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -37,14 +37,14 @@ const char kBreadcrumbOverlayJsPrompt[] = "#js-prompt";
 BROWSER_USER_DATA_KEY_IMPL(BreadcrumbManagerBrowserAgent)
 
 BreadcrumbManagerBrowserAgent::BreadcrumbManagerBrowserAgent(Browser* browser)
-    : browser_(browser), overlay_observer_(this) {
+    : browser_(browser) {
   static int next_unique_id = 1;
   unique_id_ = next_unique_id++;
 
   browser_->AddObserver(this);
   browser_->GetWebStateList()->AddObserver(this);
 
-  overlay_observer_.Add(
+  overlay_observation_.Observe(
       OverlayPresenter::FromBrowser(browser, OverlayModality::kWebContentArea));
 }
 
@@ -68,7 +68,7 @@ void BreadcrumbManagerBrowserAgent::LogEvent(const std::string& event) {
     return;
   }
 
-  BreadcrumbManagerKeyedService* breadcrumb_manager =
+  breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_manager =
       BreadcrumbManagerKeyedServiceFactory::GetInstance()->GetForBrowserState(
           browser_->GetBrowserState());
   breadcrumb_manager->AddEvent(
@@ -208,5 +208,6 @@ void BreadcrumbManagerBrowserAgent::WillShowOverlay(OverlayPresenter* presenter,
 
 void BreadcrumbManagerBrowserAgent::OverlayPresenterDestroyed(
     OverlayPresenter* presenter) {
-  overlay_observer_.Remove(presenter);
+  DCHECK(overlay_observation_.IsObservingSource(presenter));
+  overlay_observation_.Reset();
 }

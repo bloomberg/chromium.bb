@@ -19,7 +19,7 @@ namespace chrome_manifest_urls {
 const GURL& GetDevToolsPage(const Extension* extension);
 }
 
-// Stores Chrome URL overrides specified in extensions manifests.
+// Stores Chrome URL overrides specified in extensions' manifests.
 struct URLOverrides : public Extension::ManifestData {
   typedef std::map<const std::string, GURL> URLOverrideMap;
 
@@ -30,7 +30,7 @@ struct URLOverrides : public Extension::ManifestData {
       const Extension* extension);
 
   // A map of chrome:// hostnames (newtab, downloads, etc.) to Extension URLs
-  // which override the handling of those URLs. (see ExtensionOverrideUI).
+  // which override the handling of those URLs.
   URLOverrideMap chrome_url_overrides_;
 };
 
@@ -40,7 +40,7 @@ class DevToolsPageHandler : public ManifestHandler {
   DevToolsPageHandler();
   ~DevToolsPageHandler() override;
 
-  bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, std::u16string* error) override;
 
  private:
   base::span<const char* const> Keys() const override;
@@ -54,7 +54,7 @@ class URLOverridesHandler : public ManifestHandler {
   URLOverridesHandler();
   ~URLOverridesHandler() override;
 
-  bool Parse(Extension* extension, base::string16* error) override;
+  bool Parse(Extension* extension, std::u16string* error) override;
   bool Validate(const Extension* extension,
                 std::string* error,
                 std::vector<InstallWarning>* warnings) const override;

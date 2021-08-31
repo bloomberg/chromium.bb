@@ -5,6 +5,7 @@
 #include "chrome/browser/android/contextualsearch/contextual_search_delegate.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -12,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -63,7 +65,7 @@ const char kContextualSearchCategory[] = "category";
 const char kContextualSearchCardTag[] = "card_tag";
 const char kContextualSearchSearchUrlFull[] = "search_url_full";
 const char kContextualSearchSearchUrlPreload[] = "search_url_preload";
-const char kRelatedSearchesQueryList[] = "searches";
+const char kRelatedSearchesSuggestions[] = "suggestions";
 
 const char kActionCategoryAddress[] = "ADDRESS";
 const char kActionCategoryEmail[] = "EMAIL";
@@ -78,7 +80,7 @@ const int kRelatedSearchesVersion = 4;
 
 const int kContextualSearchMaxSelection = 1000;
 const char kXssiEscape[] = ")]}'\n";
-const char kDiscourseContextHeaderPrefix[] = "X-Additional-Discourse-Context: ";
+const char kDiscourseContextHeaderName[] = "X-Additional-Discourse-Context";
 const char kDoPreventPreloadValue[] = "1";
 
 const int kResponseCodeUninitialized = -1;
@@ -93,10 +95,9 @@ ContextualSearchDelegate::ContextualSearchDelegate(
     ContextualSearchDelegate::SurroundingTextCallback surrounding_text_callback)
     : url_loader_factory_(std::move(url_loader_factory)),
       template_url_service_(template_url_service),
+      field_trial_(std::make_unique<ContextualSearchFieldTrial>()),
       search_term_callback_(std::move(search_term_callback)),
-      surrounding_text_callback_(std::move(surrounding_text_callback)) {
-  field_trial_.reset(new ContextualSearchFieldTrial());
-}
+      surrounding_text_callback_(std::move(surrounding_text_callback)) {}
 
 ContextualSearchDelegate::~ContextualSearchDelegate() {
 }
@@ -122,13 +123,8 @@ void ContextualSearchDelegate::GatherAndSaveSurroundingText(
     focused_frame->RequestTextSurroundingSelection(std::move(callback),
                                                    surroundingTextSize);
   } else {
-    std::move(callback).Run(base::string16(), 0, 0);
+    std::move(callback).Run(std::u16string(), 0, 0);
   }
-}
-
-void ContextualSearchDelegate::SetActiveContext(
-    base::WeakPtr<ContextualSearchContext> contextual_search_context) {
-  context_ = contextual_search_context;
 }
 
 void ContextualSearchDelegate::StartSearchTermResolutionRequest(
@@ -163,8 +159,7 @@ void ContextualSearchDelegate::ResolveSearchTermFromContext() {
 
   // Populates the discourse context and adds it to the HTTP header of the
   // search term resolution request.
-  resource_request->headers.AddHeadersFromString(
-      GetDiscourseContext(*context_));
+  resource_request->headers.CopyFrom(GetDiscourseContext(*context_));
 
   // Disable cookies for this request.
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
@@ -256,12 +251,14 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
   std::string search_url_full;
   std::string search_url_preload;
   int coca_card_tag = 0;
+  std::string related_searches_json;
 
   DecodeSearchTermFromJsonResponse(
       json_string, &search_term, &display_text, &alternate_term, &mid,
       &prevent_preload, &mention_start, &mention_end, &context_language,
       &thumbnail_url, &caption, &quick_action_uri, &quick_action_category,
-      &logged_event_id, &search_url_full, &search_url_preload, &coca_card_tag);
+      &logged_event_id, &search_url_full, &search_url_preload, &coca_card_tag,
+      &related_searches_json);
   if (mention_start != 0 || mention_end != 0) {
     // Sanity check that our selection is non-zero and it is less than
     // 100 characters as that would make contextual search bar hide.
@@ -279,12 +276,12 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
     }
   }
   bool is_invalid = response_code == kResponseCodeUninitialized;
-  return std::unique_ptr<ResolvedSearchTerm>(new ResolvedSearchTerm(
+  return std::make_unique<ResolvedSearchTerm>(
       is_invalid, response_code, search_term, display_text, alternate_term, mid,
       prevent_preload == kDoPreventPreloadValue, start_adjust, end_adjust,
       context_language, thumbnail_url, caption, quick_action_uri,
       quick_action_category, logged_event_id, search_url_full,
-      search_url_preload, coca_card_tag));
+      search_url_preload, coca_card_tag, related_searches_json);
 }
 
 std::string ContextualSearchDelegate::BuildRequestUrl(
@@ -298,17 +295,12 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
       template_url_service_->GetDefaultSearchProvider();
 
   TemplateURLRef::SearchTermsArgs search_terms_args =
-      TemplateURLRef::SearchTermsArgs(base::string16());
+      TemplateURLRef::SearchTermsArgs(std::u16string());
 
   // Set the Coca-integration version.
   // This is based on our current active feature.
   int contextual_cards_version =
-      contextual_search::kContextualCardsUrlActionsIntegration;
-  if (base::FeatureList::IsEnabled(
-                 chrome::android::kContextualSearchDefinitions)) {
-    contextual_cards_version =
         contextual_search::kContextualCardsDefinitionsIntegration;
-  }
   if (base::FeatureList::IsEnabled(
           chrome::android::kContextualSearchTranslations)) {
     contextual_cards_version =
@@ -360,7 +352,7 @@ std::string ContextualSearchDelegate::BuildRequestUrl(
 }
 
 void ContextualSearchDelegate::OnTextSurroundingSelectionAvailable(
-    const base::string16& surrounding_text,
+    const std::u16string& surrounding_text,
     uint32_t start_offset,
     uint32_t end_offset) {
   if (context_ == nullptr)
@@ -369,7 +361,7 @@ void ContextualSearchDelegate::OnTextSurroundingSelectionAvailable(
   // Sometimes the surroundings are 0, 0, '', so run the callback with empty
   // data in that case. See https://crbug.com/393100.
   if (start_offset == 0 && end_offset == 0 && surrounding_text.length() == 0) {
-    surrounding_text_callback_.Run(std::string(), base::string16(), 0, 0);
+    surrounding_text_callback_.Run(std::string(), std::u16string(), 0, 0);
     return;
   }
 
@@ -389,7 +381,7 @@ void ContextualSearchDelegate::OnTextSurroundingSelectionAvailable(
   size_t selection_start = start_offset;
   size_t selection_end = end_offset;
   int sample_padding_each_side = sample_surrounding_size / 2;
-  base::string16 sample_surrounding_text =
+  std::u16string sample_surrounding_text =
       SampleSurroundingText(surrounding_text, sample_padding_each_side,
                             &selection_start, &selection_end);
   DCHECK(selection_start <= selection_end);
@@ -398,7 +390,7 @@ void ContextualSearchDelegate::OnTextSurroundingSelectionAvailable(
                                  selection_end);
 }
 
-std::string ContextualSearchDelegate::GetDiscourseContext(
+const net::HttpRequestHeaders ContextualSearchDelegate::GetDiscourseContext(
     const ContextualSearchContext& context) {
   discourse_context::ClientDiscourseContext proto;
   discourse_context::Display* display = proto.add_display();
@@ -421,7 +413,10 @@ std::string ContextualSearchDelegate::GetDiscourseContext(
   // The server memoizer expects a web-safe encoding.
   std::replace(encoded_context.begin(), encoded_context.end(), '+', '-');
   std::replace(encoded_context.begin(), encoded_context.end(), '/', '_');
-  return kDiscourseContextHeaderPrefix + encoded_context;
+
+  net::HttpRequestHeaders headers;
+  headers.SetHeader(kDiscourseContextHeaderName, encoded_context);
+  return headers;
 }
 
 // Decodes the given response from the search term resolution request and sets
@@ -443,7 +438,8 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     int64_t* logged_event_id,
     std::string* search_url_full,
     std::string* search_url_preload,
-    int* coca_card_tag) {
+    int* coca_card_tag,
+    std::string* related_searches_json) {
   bool contains_xssi_escape =
       base::StartsWith(response, kXssiEscape, base::CompareCase::SENSITIVE);
   const std::string& proper_json =
@@ -545,21 +541,14 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
     *logged_event_id = std::stoll(logged_event_id_string, nullptr);
   }
 
-  // Do minimal decoding of Related Searches.
-  // This should not be needed because the server shouldn't return any
-  // Related Searches to this client because it should know that it's
-  // too old to display them properly. As a fallback we just display
-  // the first one.
-  base::ListValue* search_query_list = nullptr;
-  dict->GetList(kRelatedSearchesQueryList, &search_query_list);
-  if (search_query_list && search_query_list->GetSize() >= 1) {
-    // For now, just use the first search from the list as the text to
-    // display and the query to search for.
-    // TODO(donnd): Decode the searches and associated metadata once the
-    // server sends all of that. Also use the non-deprecated ListValue
-    // accessors.
-    search_query_list->GetString(0, display_text);
-    search_query_list->GetString(0, search_term);
+  // Extract an arbitrary Related Searches payload as JSON and return to Java
+  // for decoding.
+  // TODO(donnd): remove soon (once the server is updated);
+  if (dict->HasKey(kRelatedSearchesSuggestions)) {
+    base::Value* rsearches_json_value = nullptr;
+    dict->Get(kRelatedSearchesSuggestions, &rsearches_json_value);
+    DCHECK(rsearches_json_value);
+    base::JSONWriter::Write(*rsearches_json_value, related_searches_json);
   }
 }
 
@@ -576,12 +565,12 @@ void ContextualSearchDelegate::ExtractMentionsStartEnd(
     *endResult = std::max(0, int_value);
 }
 
-base::string16 ContextualSearchDelegate::SampleSurroundingText(
-    const base::string16& surrounding_text,
+std::u16string ContextualSearchDelegate::SampleSurroundingText(
+    const std::u16string& surrounding_text,
     int padding_each_side,
     size_t* start,
     size_t* end) {
-  base::string16 result_text = surrounding_text;
+  std::u16string result_text = surrounding_text;
   size_t start_offset = *start;
   size_t end_offset = *end;
   size_t padding_each_side_pinned =

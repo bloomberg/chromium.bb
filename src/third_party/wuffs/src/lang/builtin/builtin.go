@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:generate go run gen.go
+
 // Package builtin lists Wuffs' built-in concepts such as status codes.
 package builtin
 
@@ -26,10 +28,54 @@ import (
 )
 
 var FourCCs = [...][2]string{
+	{"BMP ", "Bitmap"},
+	{"BRTL", "Brotli"},
+	{"BZ2 ", "Bzip2"},
+	{"CBOR", "Concise Binary Object Representation"},
+	{"CSS ", "Cascading Style Sheets"},
+	{"EPS ", "Encapsulated PostScript"},
+	{"FLAC", "Free Lossless Audio Codec"},
+	{"GIF ", "Graphics Interchange Format"},
+	{"GZ  ", "GNU Zip"},
+	{"HEIF", "High Efficiency Image File"},
+	{"HTML", "Hypertext Markup Language"},
 	{"ICCP", "International Color Consortium Profile"},
+	{"ICO ", "Icon"},
+	{"ICVG", "Icon Vector Graphics"},
+	{"INI ", "Initialization"},
 	{"JPEG", "Joint Photographic Experts Group"},
+	{"JS  ", "JavaScript"},
+	{"JSON", "JavaScript Object Notation"},
+	{"JWCC", "JSON With Commas and Comments"},
+	{"LZ4 ", "Lempel–Ziv 4"},
+	{"MD  ", "Markdown"},
+	{"MP3 ", "MPEG-1 Audio Layer III"},
+	{"NIE ", "Naive Image"},
+	{"OTF ", "Open Type Format"},
+	{"PDF ", "Portable Document Format"},
 	{"PNG ", "Portable Network Graphics"},
+	{"PNM ", "Portable Anymap"},
+	{"PS  ", "PostScript"},
+	{"RAC ", "Random Access Compression"},
+	{"RAW ", "Raw"},
+	{"RIFF", "Resource Interchange File Format"},
+	{"RIGL", "Riegeli Records"},
+	{"SNPY", "Snappy"},
+	{"SVG ", "Scalable Vector Graphics"},
+	{"TAR ", "Tape Archive"},
+	{"TIFF", "Tagged Image File Format"},
+	{"TOML", "Tom's Obvious Minimal Language"},
+	{"WAVE", "Waveform"},
+	{"WBMP", "Wireless Bitmap"},
+	{"WOFF", "Web Open Font Format"},
+	{"WP8 ", "Web Picture (VP8)"},
+	{"WP8L", "Web Picture (VP8 Lossless)"},
+	{"XML ", "Extensible Markup Language"},
 	{"XMP ", "Extensible Metadata Platform"},
+	{"XZ  ", "Xz"},
+	{"ZIP ", "Zip"},
+	{"ZLIB", "Zlib"},
+	{"ZSTD", "Zstandard"},
 }
 
 var Consts = [...]struct {
@@ -42,6 +88,8 @@ var Consts = [...]struct {
 	{t.IDU32, "0x02000008", "PIXEL_FORMAT__A"},
 
 	{t.IDU32, "0x20000008", "PIXEL_FORMAT__Y"},
+	{t.IDU32, "0x2000000B", "PIXEL_FORMAT__Y_16LE"},
+	{t.IDU32, "0x2010000B", "PIXEL_FORMAT__Y_16BE"},
 	{t.IDU32, "0x21000008", "PIXEL_FORMAT__YA_NONPREMUL"},
 	{t.IDU32, "0x22000008", "PIXEL_FORMAT__YA_PREMUL"},
 
@@ -60,18 +108,26 @@ var Consts = [...]struct {
 	{t.IDU32, "0x80000565", "PIXEL_FORMAT__BGR_565"},
 	{t.IDU32, "0x80000888", "PIXEL_FORMAT__BGR"},
 	{t.IDU32, "0x81008888", "PIXEL_FORMAT__BGRA_NONPREMUL"},
+	{t.IDU32, "0x8100BBBB", "PIXEL_FORMAT__BGRA_NONPREMUL_4X16LE"},
 	{t.IDU32, "0x82008888", "PIXEL_FORMAT__BGRA_PREMUL"},
+	{t.IDU32, "0x8200BBBB", "PIXEL_FORMAT__BGRA_PREMUL_4X16LE"},
 	{t.IDU32, "0x83008888", "PIXEL_FORMAT__BGRA_BINARY"},
 	{t.IDU32, "0x90008888", "PIXEL_FORMAT__BGRX"},
 
 	{t.IDU32, "0xA0000888", "PIXEL_FORMAT__RGB"},
 	{t.IDU32, "0xA1008888", "PIXEL_FORMAT__RGBA_NONPREMUL"},
+	{t.IDU32, "0xA100BBBB", "PIXEL_FORMAT__RGBA_NONPREMUL_4X16LE"},
 	{t.IDU32, "0xA2008888", "PIXEL_FORMAT__RGBA_PREMUL"},
+	{t.IDU32, "0xA200BBBB", "PIXEL_FORMAT__RGBA_PREMUL_4X16LE"},
 	{t.IDU32, "0xA3008888", "PIXEL_FORMAT__RGBA_BINARY"},
 	{t.IDU32, "0xB0008888", "PIXEL_FORMAT__RGBX"},
 
 	{t.IDU32, "0xC0020888", "PIXEL_FORMAT__CMY"},
 	{t.IDU32, "0xD0038888", "PIXEL_FORMAT__CMYK"},
+
+	// ----
+
+	{t.IDU32, "1", "QUIRK_IGNORE_CHECKSUM"},
 
 	// ----
 
@@ -232,31 +288,55 @@ var Types = []string{
 	"pixel_swizzler",
 
 	"decode_frame_options",
+
+	// ----
+
+	"arm_crc32_utility",
+	"arm_crc32_u32",
+
+	"arm_neon_utility",
+	"arm_neon_u8x8",
+	"arm_neon_u16x4",
+	"arm_neon_u32x2",
+	"arm_neon_u64x1",
+	"arm_neon_u8x16",
+	"arm_neon_u16x8",
+	"arm_neon_u32x4",
+	"arm_neon_u64x2",
+
+	"x86_sse42_utility",
+	"x86_m128i",
 }
 
-var Funcs = []string{
-	"u8.high_bits(n: u32[..= 8]) u8",
-	"u8.low_bits(n: u32[..= 8]) u8",
+var Funcs = [][]string{
+	funcsOther[:],   // Manually authored methods.
+	funcsARMNeon[:], // Automatically generated methods (intrinsics).
+}
+
+var funcsOther = [...]string{
+	"u8.high_bits(n: u32[..= 7]) u8",
+	"u8.low_bits(n: u32[..= 7]) u8",
 	"u8.max(a: u8) u8",
 	"u8.min(a: u8) u8",
 
-	"u16.high_bits(n: u32[..= 16]) u16",
-	"u16.low_bits(n: u32[..= 16]) u16",
+	"u16.high_bits(n: u32[..= 15]) u16",
+	"u16.low_bits(n: u32[..= 15]) u16",
 	"u16.max(a: u16) u16",
 	"u16.min(a: u16) u16",
 
-	"u32.high_bits(n: u32[..= 32]) u32",
-	"u32.low_bits(n: u32[..= 32]) u32",
+	"u32.high_bits(n: u32[..= 31]) u32",
+	"u32.low_bits(n: u32[..= 31]) u32",
 	"u32.max(a: u32) u32",
 	"u32.min(a: u32) u32",
 
-	"u64.high_bits(n: u32[..= 64]) u64",
-	"u64.low_bits(n: u32[..= 64]) u64",
+	"u64.high_bits(n: u32[..= 63]) u64",
+	"u64.low_bits(n: u32[..= 63]) u64",
 	"u64.max(a: u64) u64",
 	"u64.min(a: u64) u64",
 
 	// ---- utility
 
+	"utility.cpu_arch_is_32_bit() bool",
 	"utility.empty_io_reader() io_reader",
 	"utility.empty_io_writer() io_writer",
 	"utility.empty_range_ii_u32() range_ii_u32",
@@ -278,25 +358,21 @@ var Funcs = []string{
 
 	// ---- ranges
 
-	"range_ie_u32.reset!()",
 	"range_ie_u32.get_min_incl() u32",
 	"range_ie_u32.get_max_excl() u32",
 	"range_ie_u32.intersect(r: range_ie_u32) range_ie_u32",
 	"range_ie_u32.unite(r: range_ie_u32) range_ie_u32",
 
-	"range_ii_u32.reset!()",
 	"range_ii_u32.get_min_incl() u32",
 	"range_ii_u32.get_max_incl() u32",
 	"range_ii_u32.intersect(r: range_ii_u32) range_ii_u32",
 	"range_ii_u32.unite(r: range_ii_u32) range_ii_u32",
 
-	"range_ie_u64.reset!()",
 	"range_ie_u64.get_min_incl() u64",
 	"range_ie_u64.get_max_excl() u64",
 	"range_ie_u64.intersect(r: range_ie_u64) range_ie_u64",
 	"range_ie_u64.unite(r: range_ie_u64) range_ie_u64",
 
-	"range_ii_u64.reset!()",
 	"range_ii_u64.get_min_incl() u64",
 	"range_ii_u64.get_max_incl() u64",
 	"range_ii_u64.intersect(r: range_ii_u64) range_ii_u64",
@@ -461,10 +537,17 @@ var Funcs = []string{
 
 	// TODO: this should have explicit pre-conditions:
 	//  - up_to <= this.length()
-	//  - distance > 0
-	//  - distance <= this.since_mark().length()
+	//  - distance >= 1
+	//  - distance <= this.history_length()
 	// For now, that's all implicitly checked (i.e. hard coded).
 	"io_writer.limited_copy_u32_from_history_fast!(up_to: u32, distance: u32) u32",
+
+	// TODO: this should have explicit pre-conditions:
+	//  - (up_to + 8) <= this.length()
+	//  - distance >= 8
+	//  - distance <= this.history_length()
+	// For now, that's all implicitly checked (i.e. hard coded).
+	"io_writer.limited_copy_u32_from_history_8_byte_chunks_fast!(up_to: u32, distance: u32) u32",
 
 	// ---- token_writer
 
@@ -497,6 +580,7 @@ var Funcs = []string{
 	// ---- pixel_buffer
 
 	"pixel_buffer.palette() slice u8",
+	"pixel_buffer.palette_or_else(fallback: slice u8) slice u8",
 	"pixel_buffer.pixel_format() pixel_format",
 	"pixel_buffer.plane(p: u32[..= 3]) table u8",
 
@@ -509,10 +593,179 @@ var Funcs = []string{
 	"pixel_swizzler.prepare!(" +
 		"dst_pixfmt: pixel_format, dst_palette: slice u8," +
 		"src_pixfmt: pixel_format, src_palette: slice u8, blend: pixel_blend) status",
+
+	"pixel_swizzler.limited_swizzle_u32_interleaved_from_reader!(" +
+		"up_to_num_pixels: u32, dst: slice u8, dst_palette: slice u8, src: io_reader) u64",
 	"pixel_swizzler.swizzle_interleaved_from_reader!(" +
 		"dst: slice u8, dst_palette: slice u8, src: io_reader) u64",
 	"pixel_swizzler.swizzle_interleaved_from_slice!(" +
 		"dst: slice u8, dst_palette: slice u8, src: slice u8) u64",
+	"pixel_swizzler.swizzle_interleaved_transparent_black!(" +
+		"dst: slice u8, dst_palette: slice u8, num_pixels: u64) u64",
+
+	// ---- arm_crc32_utility
+
+	"arm_crc32_utility.make_u32(a: u32) arm_crc32_u32",
+
+	// ---- arm_crc32_u32
+
+	"arm_crc32_u32.crc32b(b: u8) arm_crc32_u32",
+	"arm_crc32_u32.crc32h(b: u16) arm_crc32_u32",
+	"arm_crc32_u32.crc32w(b: u32) arm_crc32_u32",
+	"arm_crc32_u32.crc32d(b: u64) arm_crc32_u32",
+	"arm_crc32_u32.value() u32",
+
+	// ---- arm_neon_utility
+
+	"arm_neon_utility.make_u8x8_multiple(" +
+		"a00: u8, a01: u8, a02: u8, a03: u8," +
+		"a04: u8, a05: u8, a06: u8, a07: u8) arm_neon_u8x8",
+	"arm_neon_utility.make_u16x4_multiple(" +
+		"a00: u16, a01: u16, a02: u16, a03: u16) arm_neon_u16x4",
+	"arm_neon_utility.make_u32x2_multiple(" +
+		"a00: u32, a01: u32) arm_neon_u32x2",
+	"arm_neon_utility.make_u64x1_multiple(" +
+		"a00: u64) arm_neon_u64x1",
+
+	"arm_neon_utility.make_u8x16_multiple(" +
+		"a00: u8, a01: u8, a02: u8, a03: u8," +
+		"a04: u8, a05: u8, a06: u8, a07: u8," +
+		"a08: u8, a09: u8, a10: u8, a11: u8," +
+		"a12: u8, a13: u8, a14: u8, a15: u8) arm_neon_u8x16",
+	"arm_neon_utility.make_u16x8_multiple(" +
+		"a00: u16, a01: u16, a02: u16, a03: u16," +
+		"a04: u16, a05: u16, a06: u16, a07: u16) arm_neon_u16x8",
+	"arm_neon_utility.make_u32x4_multiple(" +
+		"a00: u32, a01: u32, a02: u32, a03: u32) arm_neon_u32x4",
+	"arm_neon_utility.make_u64x2_multiple(" +
+		"a00: u64, a01: u64) arm_neon_u64x2",
+
+	"arm_neon_utility.make_u8x8_repeat(a: u8) arm_neon_u8x8",
+	"arm_neon_utility.make_u16x4_repeat(a: u16) arm_neon_u16x4",
+	"arm_neon_utility.make_u32x2_repeat(a: u32) arm_neon_u32x2",
+	"arm_neon_utility.make_u64x1_repeat(a: u64) arm_neon_u64x1",
+
+	"arm_neon_utility.make_u8x16_repeat(a: u8) arm_neon_u8x16",
+	"arm_neon_utility.make_u16x8_repeat(a: u16) arm_neon_u16x8",
+	"arm_neon_utility.make_u32x4_repeat(a: u32) arm_neon_u32x4",
+	"arm_neon_utility.make_u64x2_repeat(a: u64) arm_neon_u64x2",
+
+	"arm_neon_utility.make_u8x8_slice64(a: slice base.u8) arm_neon_u8x8",
+	"arm_neon_utility.make_u8x16_slice128(a: slice base.u8) arm_neon_u8x16",
+
+	// ---- arm_neon_uAxB.as_uCxD
+
+	"arm_neon_u8x8.as_u16x4() arm_neon_u16x4",
+	"arm_neon_u8x8.as_u32x2() arm_neon_u32x2",
+	"arm_neon_u8x8.as_u64x1() arm_neon_u64x1",
+
+	"arm_neon_u16x4.as_u8x8() arm_neon_u8x8",
+	"arm_neon_u32x2.as_u8x8() arm_neon_u8x8",
+	"arm_neon_u64x1.as_u8x8() arm_neon_u8x8",
+
+	"arm_neon_u16x8.as_u16x8() arm_neon_u16x8",
+	"arm_neon_u16x8.as_u32x4() arm_neon_u32x4",
+	"arm_neon_u16x8.as_u64x2() arm_neon_u64x2",
+
+	"arm_neon_u16x8.as_u8x16() arm_neon_u8x16",
+	"arm_neon_u32x4.as_u8x16() arm_neon_u8x16",
+	"arm_neon_u64x2.as_u8x16() arm_neon_u8x16",
+
+	// ---- x86_sse42_utility
+
+	"x86_sse42_utility.make_m128i_multiple_u8(" +
+		"a00: u8, a01: u8, a02: u8, a03: u8," +
+		"a04: u8, a05: u8, a06: u8, a07: u8," +
+		"a08: u8, a09: u8, a10: u8, a11: u8," +
+		"a12: u8, a13: u8, a14: u8, a15: u8) x86_m128i",
+	"x86_sse42_utility.make_m128i_multiple_u16(" +
+		"a00: u16, a01: u16, a02: u16, a03: u16," +
+		"a04: u16, a05: u16, a06: u16, a07: u16) x86_m128i",
+	"x86_sse42_utility.make_m128i_multiple_u32(" +
+		"a00: u32, a01: u32, a02: u32, a03: u32) x86_m128i",
+	"x86_sse42_utility.make_m128i_multiple_u64(" +
+		"a00: u64, a01: u64) x86_m128i",
+
+	"x86_sse42_utility.make_m128i_repeat_u8(a: u8) x86_m128i",
+	"x86_sse42_utility.make_m128i_repeat_u16(a: u16) x86_m128i",
+	"x86_sse42_utility.make_m128i_repeat_u32(a: u32) x86_m128i",
+	"x86_sse42_utility.make_m128i_repeat_u64(a: u64) x86_m128i",
+
+	"x86_sse42_utility.make_m128i_single_u32(a: u32) x86_m128i",
+	"x86_sse42_utility.make_m128i_single_u64(a: u64) x86_m128i",
+
+	"x86_sse42_utility.make_m128i_slice128(a: slice base.u8) x86_m128i",
+
+	"x86_sse42_utility.make_m128i_zeroes() x86_m128i",
+
+	// ---- x86_m128i
+
+	"x86_m128i.store_slice64!(a: slice base.u8)",
+	"x86_m128i.store_slice128!(a: slice base.u8)",
+
+	"x86_m128i.truncate_u32() u32",
+	"x86_m128i.truncate_u64() u64",
+
+	// TODO: generate these methods automatically?
+
+	"x86_m128i._mm_abs_epi16() x86_m128i",
+	"x86_m128i._mm_add_epi16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_add_epi32(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_add_epi64(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_add_epi8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_and_si128(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_avg_epu16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_avg_epu8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_blend_epi16(b: x86_m128i, imm8: u32) x86_m128i",
+	"x86_m128i._mm_blendv_epi8(b: x86_m128i, mask: x86_m128i) x86_m128i",
+	"x86_m128i._mm_clmulepi64_si128(b: x86_m128i, imm8: u32) x86_m128i",
+	"x86_m128i._mm_cmpeq_epi16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_cmpeq_epi32(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_cmpeq_epi64(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_cmpeq_epi8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_extract_epi16(imm8: u32) u16",
+	"x86_m128i._mm_extract_epi32(imm8: u32) u32",
+	"x86_m128i._mm_extract_epi64(imm8: u32) u64",
+	"x86_m128i._mm_extract_epi8(imm8: u32) u8",
+	"x86_m128i._mm_madd_epi16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_maddubs_epi16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_max_epi16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_max_epi32(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_max_epi8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_max_epu16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_max_epu32(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_max_epu8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_min_epi16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_min_epi32(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_min_epi8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_min_epu16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_min_epu32(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_min_epu8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_packus_epi16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_sad_epu8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_shuffle_epi32(imm8: u32) x86_m128i",
+	"x86_m128i._mm_shuffle_epi8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_slli_epi16(imm8: u32) x86_m128i",
+	"x86_m128i._mm_slli_epi32(imm8: u32) x86_m128i",
+	"x86_m128i._mm_slli_epi64(imm8: u32) x86_m128i",
+	"x86_m128i._mm_slli_si128(imm8: u32) x86_m128i",
+	"x86_m128i._mm_srli_epi16(imm8: u32) x86_m128i",
+	"x86_m128i._mm_srli_epi32(imm8: u32) x86_m128i",
+	"x86_m128i._mm_srli_epi64(imm8: u32) x86_m128i",
+	"x86_m128i._mm_srli_si128(imm8: u32) x86_m128i",
+	"x86_m128i._mm_sub_epi16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_sub_epi32(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_sub_epi64(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_sub_epi8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_unpackhi_epi16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_unpackhi_epi32(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_unpackhi_epi64(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_unpackhi_epi8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_unpacklo_epi16(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_unpacklo_epi32(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_unpacklo_epi64(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_unpacklo_epi8(b: x86_m128i) x86_m128i",
+	"x86_m128i._mm_xor_si128(b: x86_m128i) x86_m128i",
 }
 
 var Interfaces = []string{
@@ -581,7 +834,42 @@ var SliceFuncs = []string{
 	"GENERIC T1.copy_from_slice!(s: T1) u64",
 	"GENERIC T1.length() u64",
 	"GENERIC T1.prefix(up_to: u64) T1",
+	"GENERIC T1.uintptr_low_12_bits() u32[..= 4095]",
 	"GENERIC T1.suffix(up_to: u64) T1",
+}
+
+var SliceU8Funcs = []string{
+	"GENERIC T1.peek_u8() u8",
+	"GENERIC T1.peek_u16be() u16",
+	"GENERIC T1.peek_u16le() u16",
+	"GENERIC T1.peek_u24be_as_u32() u32",
+	"GENERIC T1.peek_u24le_as_u32() u32",
+	"GENERIC T1.peek_u32be() u32",
+	"GENERIC T1.peek_u32le() u32",
+	"GENERIC T1.peek_u40be_as_u64() u64",
+	"GENERIC T1.peek_u40le_as_u64() u64",
+	"GENERIC T1.peek_u48be_as_u64() u64",
+	"GENERIC T1.peek_u48le_as_u64() u64",
+	"GENERIC T1.peek_u56be_as_u64() u64",
+	"GENERIC T1.peek_u56le_as_u64() u64",
+	"GENERIC T1.peek_u64be() u64",
+	"GENERIC T1.peek_u64le() u64",
+
+	"GENERIC T1.poke_u8!(a: u8)",
+	"GENERIC T1.poke_u16be!(a: u16)",
+	"GENERIC T1.poke_u16le!(a: u16)",
+	"GENERIC T1.poke_u24be!(a: u32)",
+	"GENERIC T1.poke_u24le!(a: u32)",
+	"GENERIC T1.poke_u32be!(a: u32)",
+	"GENERIC T1.poke_u32le!(a: u32)",
+	"GENERIC T1.poke_u40be!(a: u64)",
+	"GENERIC T1.poke_u40le!(a: u64)",
+	"GENERIC T1.poke_u48be!(a: u64)",
+	"GENERIC T1.poke_u48le!(a: u64)",
+	"GENERIC T1.poke_u56be!(a: u64)",
+	"GENERIC T1.poke_u56le!(a: u64)",
+	"GENERIC T1.poke_u64be!(a: u64)",
+	"GENERIC T1.poke_u64le!(a: u64)",
 }
 
 var TableFuncs = []string{
@@ -593,47 +881,51 @@ var TableFuncs = []string{
 }
 
 func ParseFuncs(tm *t.Map, ss []string, callback func(*a.Func) error) error {
+	if len(ss) == 0 {
+		return nil
+	}
 	const GENERIC = "GENERIC "
+	generic := strings.HasPrefix(ss[0], GENERIC)
+
 	buf := []byte(nil)
 	for _, s := range ss {
-		generic := strings.HasPrefix(s, GENERIC)
-		if generic {
+		if generic && (len(s) >= len(GENERIC)) {
 			s = s[len(GENERIC):]
 		}
-
-		buf = buf[:0]
 		buf = append(buf, "pub func "...)
 		buf = append(buf, s...)
 		buf = append(buf, "{}\n"...)
+	}
 
-		const filename = "builtin.wuffs"
-		tokens, _, err := t.Tokenize(tm, filename, buf)
-		if err != nil {
-			return fmt.Errorf("parsing %q: could not tokenize built-in funcs: %v", s, err)
-		}
-		if generic {
-			for i := range tokens {
-				if id := tokens[i].ID; id == genericOldName1 {
-					tokens[i].ID = genericNewName1
-				} else if id == genericOldName2 {
-					tokens[i].ID = genericNewName2
-				}
+	const filename = "builtin.wuffs"
+	tokens, _, err := t.Tokenize(tm, filename, buf)
+	if err != nil {
+		return fmt.Errorf("could not tokenize built-in funcs: %v", err)
+	}
+
+	if generic {
+		for i := range tokens {
+			if id := tokens[i].ID; id == genericOldName1 {
+				tokens[i].ID = genericNewName1
+			} else if id == genericOldName2 {
+				tokens[i].ID = genericNewName2
 			}
 		}
-		file, err := parse.Parse(tm, filename, tokens, &parse.Options{
-			AllowBuiltInNames: true,
-		})
-		if err != nil {
-			return fmt.Errorf("parsing %q: could not parse built-in funcs: %v", s, err)
-		}
+	}
 
-		tlds := file.TopLevelDecls()
-		if len(tlds) != 1 || tlds[0].Kind() != a.KFunc {
-			return fmt.Errorf("parsing %q: got %d top level decls, want %d", s, len(tlds), 1)
+	file, err := parse.Parse(tm, filename, tokens, &parse.Options{
+		AllowBuiltInNames: true,
+	})
+	if err != nil {
+		return fmt.Errorf("could not parse built-in funcs: %v", err)
+	}
+
+	for _, tld := range file.TopLevelDecls() {
+		if tld.Kind() != a.KFunc {
+			continue
 		}
-		f := tlds[0].AsFunc()
+		f := tld.AsFunc()
 		f.AsNode().AsRaw().SetPackage(tm, t.IDBase)
-
 		if callback != nil {
 			if err := callback(f); err != nil {
 				return err

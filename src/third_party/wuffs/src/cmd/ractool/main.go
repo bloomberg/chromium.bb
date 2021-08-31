@@ -29,7 +29,7 @@ phrase: "the data format defined by this specification does not attempt to
 allow random access to compressed data".
 
 See the RAC specification for more details:
-https://github.com/google/wuffs/blob/master/doc/spec/rac-spec.md
+https://github.com/google/wuffs/blob/main/doc/spec/rac-spec.md
 
 Usage:
 
@@ -461,8 +461,8 @@ func decode(inFile *os.File) error {
 
 	if !*singlethreadedFlag {
 		n := runtime.NumCPU()
-		// After 16 workers, we seem to hit diminishing speed returns, but
-		// still face increasing memory costs.
+		// After 16 workers, we see diminishing speed returns, but still face
+		// increasing memory costs.
 		if n > 16 {
 			n = 16
 		}

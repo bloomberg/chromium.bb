@@ -66,9 +66,9 @@ base::RefCountedStaticMemory* CastResourceDelegate::LoadDataResourceBytes(
   return NULL;
 }
 
-base::Optional<std::string> CastResourceDelegate::LoadDataResourceString(
+absl::optional<std::string> CastResourceDelegate::LoadDataResourceString(
     int resource_id) {
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool CastResourceDelegate::GetRawDataResource(int resource_id,
@@ -78,7 +78,7 @@ bool CastResourceDelegate::GetRawDataResource(int resource_id,
 }
 
 bool CastResourceDelegate::GetLocalizedString(int message_id,
-                                              base::string16* value) const {
+                                              std::u16string* value) const {
   ExtraLocaledStringMap::const_iterator it =
       extra_localized_strings_.find(message_id);
   if (it != extra_localized_strings_.end()) {
@@ -90,7 +90,7 @@ bool CastResourceDelegate::GetLocalizedString(int message_id,
 
 void CastResourceDelegate::AddExtraLocalizedString(
     int resource_id,
-    const base::string16& localized) {
+    const std::u16string& localized) {
   RemoveExtraLocalizedString(resource_id);
   extra_localized_strings_.insert(std::make_pair(resource_id, localized));
 }

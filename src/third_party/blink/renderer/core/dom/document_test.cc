@@ -32,15 +32,14 @@
 
 #include <memory>
 
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
-#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
 #include "third_party/blink/public/web/web_print_page_description.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
@@ -57,13 +56,16 @@
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
+#include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
 #include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -79,6 +81,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -103,6 +106,16 @@ class DocumentTest : public PageTestBase {
   }
 
   void SetHtmlInnerHTML(const char*);
+
+  void NavigateWithSandbox(const KURL& url) {
+    auto params = WebNavigationParams::CreateWithHTMLStringForTesting(
+        /*html=*/"", url);
+    params->sandbox_flags = network::mojom::blink::WebSandboxFlags::kAll;
+    GetFrame().Loader().CommitNavigation(std::move(params),
+                                         /*extra_data=*/nullptr);
+    test::RunPendingTasks();
+    ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
+  }
 };
 
 void DocumentTest::SetHtmlInnerHTML(const char* html_content) {
@@ -770,8 +783,7 @@ TEST_F(DocumentTest, ValidationMessageCleanup) {
 }
 
 TEST_F(DocumentTest, SandboxDisablesAppCache) {
-  NavigateTo(KURL("https://test.com/foobar/document"),
-             {{http_names::kContentSecurityPolicy, "sandbox"}});
+  NavigateWithSandbox(KURL("https://test.com/foobar/document"));
 
   GetDocument().Loader()->SetApplicationCacheHostForTesting(
       MakeGarbageCollected<MockApplicationCacheHost>(GetDocument().Loader()));
@@ -816,7 +828,7 @@ TEST_F(DocumentTest,
   // clean compositing inputs as well.
   GetDocument().EnsurePaintLocationDataValidForNode(
       GetDocument().getElementById("sticky"), DocumentUpdateReason::kTest);
-  EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
+  EXPECT_EQ(DocumentLifecycle::kLayoutClean,
             GetDocument().Lifecycle().GetState());
 
   // Dirty layout.
@@ -826,7 +838,7 @@ TEST_F(DocumentTest,
 
   GetDocument().EnsurePaintLocationDataValidForNode(
       GetDocument().getElementById("stickyChild"), DocumentUpdateReason::kTest);
-  EXPECT_EQ(DocumentLifecycle::kCompositingInputsClean,
+  EXPECT_EQ(DocumentLifecycle::kLayoutClean,
             GetDocument().Lifecycle().GetState());
 }
 
@@ -852,8 +864,7 @@ TEST_F(DocumentTest, ViewportPropagationNoRecalc) {
 }
 
 TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
-  NavigateTo(KURL("https://www.example.com/"),
-             {{http_names::kContentSecurityPolicy, "sandbox"}});
+  NavigateWithSandbox(KURL("https://www.example.com/"));
 
   LocalFrame* frame = GetDocument().GetFrame();
   frame->GetSettings()->SetScriptEnabled(true);
@@ -1016,6 +1027,71 @@ TEST_F(DocumentTest, FindInPageUkm) {
                                                   "DidHaveRenderSubtreeMatch"),
             1);
   EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(entries[1], "DidSearch"));
+}
+
+TEST_F(DocumentTest, FindInPageUkmInFrame) {
+  std::string base_url = "http://internal.test/";
+
+  url_test_helpers::RegisterMockedURLLoadFromBase(
+      WebString::FromUTF8(base_url), test::CoreTestDataPath(),
+      WebString::FromUTF8("visible_iframe.html"));
+  url_test_helpers::RegisterMockedURLLoadFromBase(
+      WebString::FromUTF8(base_url), test::CoreTestDataPath(),
+      WebString::FromUTF8("single_iframe.html"));
+
+  frame_test_helpers::WebViewHelper web_view_helper;
+  WebViewImpl* web_view_impl =
+      web_view_helper.InitializeAndLoad(base_url + "single_iframe.html");
+
+  web_view_impl->MainFrameWidget()->UpdateAllLifecyclePhases(
+      DocumentUpdateReason::kTest);
+
+  Document* top_doc = web_view_impl->MainFrameImpl()->GetFrame()->GetDocument();
+  auto* iframe = To<HTMLIFrameElement>(top_doc->QuerySelector("iframe"));
+  Document* document = iframe->contentDocument();
+  ASSERT_TRUE(document);
+  ASSERT_FALSE(document->IsInMainFrame());
+
+  // Save the old recorder and replace it with a test one.
+  auto old_recorder = std::move(document->ukm_recorder_);
+  document->ukm_recorder_ = std::make_unique<ukm::TestUkmRecorder>();
+
+  auto* recorder = static_cast<ukm::TestUkmRecorder*>(document->UkmRecorder());
+
+  EXPECT_EQ(recorder->entries_count(), 0u);
+  document->MarkHasFindInPageRequest();
+  EXPECT_EQ(recorder->entries_count(), 1u);
+  document->MarkHasFindInPageRequest();
+  EXPECT_EQ(recorder->entries_count(), 1u);
+
+  auto entries = recorder->GetEntriesByName("Blink.FindInPage");
+  EXPECT_EQ(entries.size(), 1u);
+  EXPECT_TRUE(ukm::TestUkmRecorder::EntryHasMetric(entries[0], "DidSearch"));
+  EXPECT_EQ(*ukm::TestUkmRecorder::GetEntryMetric(entries[0], "DidSearch"), 1);
+  EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(
+      entries[0], "DidHaveRenderSubtreeMatch"));
+
+  document->MarkHasFindInPageContentVisibilityActiveMatch();
+  EXPECT_EQ(recorder->entries_count(), 2u);
+  document->MarkHasFindInPageContentVisibilityActiveMatch();
+  EXPECT_EQ(recorder->entries_count(), 2u);
+  entries = recorder->GetEntriesByName("Blink.FindInPage");
+  EXPECT_EQ(entries.size(), 2u);
+
+  EXPECT_TRUE(ukm::TestUkmRecorder::EntryHasMetric(entries[0], "DidSearch"));
+  EXPECT_EQ(*ukm::TestUkmRecorder::GetEntryMetric(entries[0], "DidSearch"), 1);
+  EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(
+      entries[0], "DidHaveRenderSubtreeMatch"));
+
+  EXPECT_TRUE(ukm::TestUkmRecorder::EntryHasMetric(
+      entries[1], "DidHaveRenderSubtreeMatch"));
+  EXPECT_EQ(*ukm::TestUkmRecorder::GetEntryMetric(entries[1],
+                                                  "DidHaveRenderSubtreeMatch"),
+            1);
+  EXPECT_FALSE(ukm::TestUkmRecorder::EntryHasMetric(entries[1], "DidSearch"));
+
+  // Restore the old recorder, since some ukm metrics are recorded at shutdown.
+  document->ukm_recorder_ = std::move(old_recorder);
 }
 
 TEST_F(DocumentTest, AtPageMarginWithDeviceScaleFactor) {
@@ -1293,8 +1369,7 @@ INSTANTIATE_TEST_SUITE_P(
 
 class BatterySavingsChromeClient : public EmptyChromeClient {
  public:
-  MOCK_METHOD2(BatterySavingsChanged,
-               void(LocalFrame&, WebBatterySavingsFlags));
+  MOCK_METHOD2(BatterySavingsChanged, void(LocalFrame&, BatterySavingsFlags));
 };
 
 class DocumentBatterySavingsTest : public PageTestBase,
@@ -1304,10 +1379,7 @@ class DocumentBatterySavingsTest : public PageTestBase,
 
   void SetUp() override {
     chrome_client_ = MakeGarbageCollected<BatterySavingsChromeClient>();
-    Page::PageClients page_clients;
-    FillWithEmptyClients(page_clients);
-    page_clients.chrome_client = chrome_client_;
-    SetupPageWithClients(&page_clients);
+    SetupPageWithClients(chrome_client_);
   }
 
   Persistent<BatterySavingsChromeClient> chrome_client_;
@@ -1322,18 +1394,16 @@ TEST_F(DocumentBatterySavingsTest, ChromeClientCalls) {
               BatterySavingsChanged(testing::_, kAllowReducedFrameRate))
       .Times(2);
 
-  EXPECT_FALSE(
-      GetDocument().Loader()->GetUseCounterHelper().HasRecordedMeasurement(
-          WebFeature::kBatterySavingsMeta));
+  EXPECT_FALSE(GetDocument().Loader()->GetUseCounter().IsCounted(
+      WebFeature::kBatterySavingsMeta));
 
   SetHtmlInnerHTML(R"HTML(
     <meta id="first" name="battery-savings" content="allow-reduced-framerate">
     <meta id="second" name="battery-savings" content="allow-reduced-script-speed">
   )HTML");
 
-  EXPECT_TRUE(
-      GetDocument().Loader()->GetUseCounterHelper().HasRecordedMeasurement(
-          WebFeature::kBatterySavingsMeta));
+  EXPECT_TRUE(GetDocument().Loader()->GetUseCounter().IsCounted(
+      WebFeature::kBatterySavingsMeta));
 
   // Remove the first meta causing the second to apply.
   EXPECT_CALL(*chrome_client_,

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_RASTER_INVALIDATOR_H_
 
 #include "base/callback.h"
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/chunk_to_layer_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/float_clip_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
@@ -43,6 +44,13 @@ class PLATFORM_EXPORT RasterInvalidator {
                 const gfx::Rect& layer_bounds,
                 const PropertyTreeState& layer_state,
                 const DisplayItemClient* layer_client = nullptr);
+
+  // Called when we repainted PaintArtifact but a ContentLayerClientImpl doesn't
+  // have anything changed. We just need to let |old_paint_artifact_| point to
+  // the real old one. TODO(wangxianzhu): When we remove pre-CAP code, we can
+  // avoid this function by storing the old paint artifact in
+  // PaintArtifactCompositor and pass it in Generate().
+  void SetOldPaintArtifact(scoped_refptr<const PaintArtifact>);
 
   const gfx::Rect& LayerBounds() const { return layer_bounds_; }
 

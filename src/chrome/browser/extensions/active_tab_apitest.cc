@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -30,7 +31,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/extensions/extension_tab_util_delegate_chromeos.h"
 #include "chromeos/login/login_state/scoped_test_public_session_login_state.h"
 #endif
@@ -96,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActiveTabTest, ActiveTab) {
     EXPECT_TRUE(catcher.GetNextResult()) << message_;
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // For the third pass grant the activeTab permission and do it in a public
   // session. URL should be scrubbed down to origin.
   {
@@ -162,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActiveTabTest, ActiveTabCors) {
         browser(),
         embedded_test_server()->GetURL(
             "google.com", "/extensions/api_test/active_tab_cors/page.html"));
-    base::string16 title = base::ASCIIToUTF16("page");
+    std::u16string title = u"page";
     content::TitleWatcher watcher(
         browser()->tab_strip_model()->GetActiveWebContents(), title);
     ASSERT_EQ(title, watcher.WaitAndGetTitle());
@@ -187,7 +188,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FileURLs) {
   ExtensionTestMessageListener background_page_ready("ready",
                                                      false /*will_reply*/);
   scoped_refptr<const Extension> extension =
-      LoadExtension(test_data_dir_.AppendASCII("active_tab_file_urls"));
+      LoadExtension(test_data_dir_.AppendASCII("active_tab_file_urls"),
+                    {.allow_file_access = true});
   ASSERT_TRUE(extension);
   const std::string extension_id = extension->id();
 

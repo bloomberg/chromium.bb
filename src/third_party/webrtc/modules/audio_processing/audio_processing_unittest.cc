@@ -913,6 +913,131 @@ TEST_F(ApmTest, PreAmplifier) {
   EXPECT_EQ(config.pre_amplifier.fixed_gain_factor, 1.5f);
 }
 
+// This test a simple test that ensures that the emulated analog mic gain
+// functionality runs without crashing.
+TEST_F(ApmTest, AnalogMicGainEmulation) {
+  // Fill the audio frame with a sawtooth pattern.
+  rtc::ArrayView<int16_t> frame_data = GetMutableFrameData(&frame_);
+  const size_t samples_per_channel = frame_.samples_per_channel;
+  for (size_t i = 0; i < samples_per_channel; i++) {
+    for (size_t ch = 0; ch < frame_.num_channels; ++ch) {
+      frame_data[i + ch * samples_per_channel] = 100 * ((i % 3) - 1);
+    }
+  }
+  // Cache the frame in tmp_frame.
+  Int16FrameData tmp_frame;
+  tmp_frame.CopyFrom(frame_);
+
+  // Enable the analog gain emulation.
+  AudioProcessing::Config config = apm_->GetConfig();
+  config.capture_level_adjustment.enabled = true;
+  config.capture_level_adjustment.analog_mic_gain_emulation.enabled = true;
+  config.capture_level_adjustment.analog_mic_gain_emulation.initial_level = 21;
+  config.gain_controller1.enabled = true;
+  config.gain_controller1.mode =
+      AudioProcessing::Config::GainController1::Mode::kAdaptiveAnalog;
+  config.gain_controller1.analog_gain_controller.enabled = true;
+  apm_->ApplyConfig(config);
+
+  // Process a number of frames to ensure that the code runs without crashes.
+  for (int i = 0; i < 20; ++i) {
+    frame_.CopyFrom(tmp_frame);
+    EXPECT_EQ(apm_->kNoError, ProcessStreamChooser(kIntFormat));
+  }
+}
+
+// This test repeatedly reconfigures the capture level adjustment functionality
+// in APM, processes a number of frames, and checks that output signal has the
+// right level.
+TEST_F(ApmTest, CaptureLevelAdjustment) {
+  // Fill the audio frame with a sawtooth pattern.
+  rtc::ArrayView<int16_t> frame_data = GetMutableFrameData(&frame_);
+  const size_t samples_per_channel = frame_.samples_per_channel;
+  for (size_t i = 0; i < samples_per_channel; i++) {
+    for (size_t ch = 0; ch < frame_.num_channels; ++ch) {
+      frame_data[i + ch * samples_per_channel] = 100 * ((i % 3) - 1);
+    }
+  }
+  // Cache the frame in tmp_frame.
+  Int16FrameData tmp_frame;
+  tmp_frame.CopyFrom(frame_);
+
+  auto compute_power = [](const Int16FrameData& frame) {
+    rtc::ArrayView<const int16_t> data = GetFrameData(frame);
+    return std::accumulate(data.begin(), data.end(), 0.0f,
+                           [](float a, float b) { return a + b * b; }) /
+           data.size() / 32768 / 32768;
+  };
+
+  const float input_power = compute_power(tmp_frame);
+  // Double-check that the input data is large compared to the error kEpsilon.
+  constexpr float kEpsilon = 1e-20f;
+  RTC_DCHECK_GE(input_power, 10 * kEpsilon);
+
+  // 1. Enable pre-amp with 0 dB gain.
+  AudioProcessing::Config config = apm_->GetConfig();
+  config.capture_level_adjustment.enabled = true;
+  config.capture_level_adjustment.pre_gain_factor = 0.5f;
+  config.capture_level_adjustment.post_gain_factor = 4.f;
+  const float expected_output_power1 =
+      config.capture_level_adjustment.pre_gain_factor *
+      config.capture_level_adjustment.pre_gain_factor *
+      config.capture_level_adjustment.post_gain_factor *
+      config.capture_level_adjustment.post_gain_factor * input_power;
+  apm_->ApplyConfig(config);
+
+  for (int i = 0; i < 20; ++i) {
+    frame_.CopyFrom(tmp_frame);
+    EXPECT_EQ(apm_->kNoError, ProcessStreamChooser(kIntFormat));
+  }
+  float output_power = compute_power(frame_);
+  EXPECT_NEAR(output_power, expected_output_power1, kEpsilon);
+  config = apm_->GetConfig();
+  EXPECT_EQ(config.capture_level_adjustment.pre_gain_factor, 0.5f);
+  EXPECT_EQ(config.capture_level_adjustment.post_gain_factor, 4.f);
+
+  // 2. Change pre-amp gain via ApplyConfig.
+  config.capture_level_adjustment.pre_gain_factor = 1.0f;
+  config.capture_level_adjustment.post_gain_factor = 2.f;
+  const float expected_output_power2 =
+      config.capture_level_adjustment.pre_gain_factor *
+      config.capture_level_adjustment.pre_gain_factor *
+      config.capture_level_adjustment.post_gain_factor *
+      config.capture_level_adjustment.post_gain_factor * input_power;
+  apm_->ApplyConfig(config);
+
+  for (int i = 0; i < 20; ++i) {
+    frame_.CopyFrom(tmp_frame);
+    EXPECT_EQ(apm_->kNoError, ProcessStreamChooser(kIntFormat));
+  }
+  output_power = compute_power(frame_);
+  EXPECT_NEAR(output_power, expected_output_power2, kEpsilon);
+  config = apm_->GetConfig();
+  EXPECT_EQ(config.capture_level_adjustment.pre_gain_factor, 1.0f);
+  EXPECT_EQ(config.capture_level_adjustment.post_gain_factor, 2.f);
+
+  // 3. Change pre-amp gain via a RuntimeSetting.
+  constexpr float kPreGain3 = 0.5f;
+  constexpr float kPostGain3 = 3.f;
+  const float expected_output_power3 =
+      kPreGain3 * kPreGain3 * kPostGain3 * kPostGain3 * input_power;
+
+  apm_->SetRuntimeSetting(
+      AudioProcessing::RuntimeSetting::CreateCapturePreGain(kPreGain3));
+  apm_->SetRuntimeSetting(
+      AudioProcessing::RuntimeSetting::CreateCapturePostGain(kPostGain3));
+
+  for (int i = 0; i < 20; ++i) {
+    frame_.CopyFrom(tmp_frame);
+    EXPECT_EQ(apm_->kNoError, ProcessStreamChooser(kIntFormat));
+  }
+  output_power = compute_power(frame_);
+  EXPECT_NEAR(output_power, expected_output_power3, kEpsilon);
+  config = apm_->GetConfig();
+  EXPECT_EQ(config.capture_level_adjustment.pre_gain_factor, 0.5f);
+  EXPECT_EQ(config.capture_level_adjustment.post_gain_factor, 3.f);
+}
+
 TEST_F(ApmTest, GainControl) {
   AudioProcessing::Config config = apm_->GetConfig();
   config.gain_controller1.enabled = false;
@@ -2216,7 +2341,7 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_tuple(32000, 44100, 16000, 44100, 19, 15),
                       std::make_tuple(32000, 32000, 48000, 32000, 40, 35),
                       std::make_tuple(32000, 32000, 32000, 32000, 0, 0),
-                      std::make_tuple(32000, 32000, 16000, 32000, 40, 20),
+                      std::make_tuple(32000, 32000, 16000, 32000, 39, 20),
                       std::make_tuple(32000, 16000, 48000, 16000, 25, 20),
                       std::make_tuple(32000, 16000, 32000, 16000, 25, 20),
                       std::make_tuple(32000, 16000, 16000, 16000, 25, 0),
@@ -2231,7 +2356,7 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_tuple(16000, 32000, 32000, 32000, 25, 0),
                       std::make_tuple(16000, 32000, 16000, 32000, 25, 20),
                       std::make_tuple(16000, 16000, 48000, 16000, 39, 20),
-                      std::make_tuple(16000, 16000, 32000, 16000, 40, 20),
+                      std::make_tuple(16000, 16000, 32000, 16000, 39, 20),
                       std::make_tuple(16000, 16000, 16000, 16000, 0, 0)));
 
 #elif defined(WEBRTC_AUDIOPROC_FIXED_PROFILE)
@@ -2426,36 +2551,6 @@ constexpr void Toggle(bool& b) {
 TEST(RuntimeSettingTest, TestDefaultCtor) {
   auto s = AudioProcessing::RuntimeSetting();
   EXPECT_EQ(AudioProcessing::RuntimeSetting::Type::kNotSpecified, s.type());
-}
-
-TEST(RuntimeSettingDeathTest, TestCapturePreGain) {
-  using Type = AudioProcessing::RuntimeSetting::Type;
-  {
-    auto s = AudioProcessing::RuntimeSetting::CreateCapturePreGain(1.25f);
-    EXPECT_EQ(Type::kCapturePreGain, s.type());
-    float v;
-    s.GetFloat(&v);
-    EXPECT_EQ(1.25f, v);
-  }
-
-#if RTC_DCHECK_IS_ON && GTEST_HAS_DEATH_TEST && !defined(WEBRTC_ANDROID)
-  EXPECT_DEATH(AudioProcessing::RuntimeSetting::CreateCapturePreGain(0.1f), "");
-#endif
-}
-
-TEST(RuntimeSettingDeathTest, TestCaptureFixedPostGain) {
-  using Type = AudioProcessing::RuntimeSetting::Type;
-  {
-    auto s = AudioProcessing::RuntimeSetting::CreateCaptureFixedPostGain(1.25f);
-    EXPECT_EQ(Type::kCaptureFixedPostGain, s.type());
-    float v;
-    s.GetFloat(&v);
-    EXPECT_EQ(1.25f, v);
-  }
-
-#if RTC_DCHECK_IS_ON && GTEST_HAS_DEATH_TEST && !defined(WEBRTC_ANDROID)
-  EXPECT_DEATH(AudioProcessing::RuntimeSetting::CreateCapturePreGain(0.1f), "");
-#endif
 }
 
 TEST(RuntimeSettingTest, TestUsageWithSwapQueue) {
@@ -2931,10 +3026,6 @@ TEST(AudioProcessing, GainController1ConfigEqual) {
   b_analog.clipped_level_min = a_analog.clipped_level_min;
   EXPECT_EQ(a, b);
 
-  Toggle(a_analog.enable_agc2_level_estimator);
-  b_analog.enable_agc2_level_estimator = a_analog.enable_agc2_level_estimator;
-  EXPECT_EQ(a, b);
-
   Toggle(a_analog.enable_digital_adaptive);
   b_analog.enable_digital_adaptive = a_analog.enable_digital_adaptive;
   EXPECT_EQ(a, b);
@@ -2948,54 +3039,50 @@ TEST(AudioProcessing, GainController1ConfigNotEqual) {
 
   Toggle(a.enabled);
   EXPECT_NE(a, b);
-  a.enabled = b.enabled;
+  a = b;
 
   a.mode = AudioProcessing::Config::GainController1::Mode::kAdaptiveDigital;
   EXPECT_NE(a, b);
-  a.mode = b.mode;
+  a = b;
 
   a.target_level_dbfs++;
   EXPECT_NE(a, b);
-  a.target_level_dbfs = b.target_level_dbfs;
+  a = b;
 
   a.compression_gain_db++;
   EXPECT_NE(a, b);
-  a.compression_gain_db = b.compression_gain_db;
+  a = b;
 
   Toggle(a.enable_limiter);
   EXPECT_NE(a, b);
-  a.enable_limiter = b.enable_limiter;
+  a = b;
 
   a.analog_level_minimum++;
   EXPECT_NE(a, b);
-  a.analog_level_minimum = b.analog_level_minimum;
+  a = b;
 
   a.analog_level_maximum--;
   EXPECT_NE(a, b);
-  a.analog_level_maximum = b.analog_level_maximum;
+  a = b;
 
   auto& a_analog = a.analog_gain_controller;
   const auto& b_analog = b.analog_gain_controller;
 
   Toggle(a_analog.enabled);
   EXPECT_NE(a, b);
-  a_analog.enabled = b_analog.enabled;
+  a_analog = b_analog;
 
   a_analog.startup_min_volume++;
   EXPECT_NE(a, b);
-  a_analog.startup_min_volume = b_analog.startup_min_volume;
+  a_analog = b_analog;
 
   a_analog.clipped_level_min++;
   EXPECT_NE(a, b);
-  a_analog.clipped_level_min = b_analog.clipped_level_min;
-
-  Toggle(a_analog.enable_agc2_level_estimator);
-  EXPECT_NE(a, b);
-  a_analog.enable_agc2_level_estimator = b_analog.enable_agc2_level_estimator;
+  a_analog = b_analog;
 
   Toggle(a_analog.enable_digital_adaptive);
   EXPECT_NE(a, b);
-  a_analog.enable_digital_adaptive = b_analog.enable_digital_adaptive;
+  a_analog = b_analog;
 }
 
 TEST(AudioProcessing, GainController2ConfigEqual) {
@@ -3007,7 +3094,7 @@ TEST(AudioProcessing, GainController2ConfigEqual) {
   b.enabled = a.enabled;
   EXPECT_EQ(a, b);
 
-  a.fixed_digital.gain_db += 1.f;
+  a.fixed_digital.gain_db += 1.0f;
   b.fixed_digital.gain_db = a.fixed_digital.gain_db;
   EXPECT_EQ(a, b);
 
@@ -3018,46 +3105,44 @@ TEST(AudioProcessing, GainController2ConfigEqual) {
   b_adaptive.enabled = a_adaptive.enabled;
   EXPECT_EQ(a, b);
 
-  a_adaptive.vad_probability_attack += 1.f;
-  b_adaptive.vad_probability_attack = a_adaptive.vad_probability_attack;
+  Toggle(a_adaptive.dry_run);
+  b_adaptive.dry_run = a_adaptive.dry_run;
   EXPECT_EQ(a, b);
 
-  a_adaptive.level_estimator =
-      AudioProcessing::Config::GainController2::LevelEstimator::kPeak;
-  b_adaptive.level_estimator = a_adaptive.level_estimator;
+  a_adaptive.noise_estimator = AudioProcessing::Config::GainController2::
+      NoiseEstimator::kStationaryNoise;
+  b_adaptive.noise_estimator = a_adaptive.noise_estimator;
   EXPECT_EQ(a, b);
 
-  a_adaptive.level_estimator_adjacent_speech_frames_threshold++;
-  b_adaptive.level_estimator_adjacent_speech_frames_threshold =
-      a_adaptive.level_estimator_adjacent_speech_frames_threshold;
+  a_adaptive.vad_reset_period_ms++;
+  b_adaptive.vad_reset_period_ms = a_adaptive.vad_reset_period_ms;
   EXPECT_EQ(a, b);
 
-  Toggle(a_adaptive.use_saturation_protector);
-  b_adaptive.use_saturation_protector = a_adaptive.use_saturation_protector;
+  a_adaptive.adjacent_speech_frames_threshold++;
+  b_adaptive.adjacent_speech_frames_threshold =
+      a_adaptive.adjacent_speech_frames_threshold;
   EXPECT_EQ(a, b);
 
-  a_adaptive.initial_saturation_margin_db += 1.f;
-  b_adaptive.initial_saturation_margin_db =
-      a_adaptive.initial_saturation_margin_db;
-  EXPECT_EQ(a, b);
-
-  a_adaptive.extra_saturation_margin_db += 1.f;
-  b_adaptive.extra_saturation_margin_db = a_adaptive.extra_saturation_margin_db;
-  EXPECT_EQ(a, b);
-
-  a_adaptive.gain_applier_adjacent_speech_frames_threshold++;
-  b_adaptive.gain_applier_adjacent_speech_frames_threshold =
-      a_adaptive.gain_applier_adjacent_speech_frames_threshold;
-  EXPECT_EQ(a, b);
-
-  a_adaptive.max_gain_change_db_per_second += 1.f;
+  a_adaptive.max_gain_change_db_per_second += 1.0f;
   b_adaptive.max_gain_change_db_per_second =
       a_adaptive.max_gain_change_db_per_second;
   EXPECT_EQ(a, b);
 
-  a_adaptive.max_output_noise_level_dbfs -= 1.f;
+  a_adaptive.max_output_noise_level_dbfs += 1.0f;
   b_adaptive.max_output_noise_level_dbfs =
       a_adaptive.max_output_noise_level_dbfs;
+  EXPECT_EQ(a, b);
+
+  Toggle(a_adaptive.sse2_allowed);
+  b_adaptive.sse2_allowed = a_adaptive.sse2_allowed;
+  EXPECT_EQ(a, b);
+
+  Toggle(a_adaptive.avx2_allowed);
+  b_adaptive.avx2_allowed = a_adaptive.avx2_allowed;
+  EXPECT_EQ(a, b);
+
+  Toggle(a_adaptive.neon_allowed);
+  b_adaptive.neon_allowed = a_adaptive.neon_allowed;
   EXPECT_EQ(a, b);
 }
 
@@ -3069,60 +3154,55 @@ TEST(AudioProcessing, GainController2ConfigNotEqual) {
 
   Toggle(a.enabled);
   EXPECT_NE(a, b);
-  a.enabled = b.enabled;
+  a = b;
 
-  a.fixed_digital.gain_db += 1.f;
+  a.fixed_digital.gain_db += 1.0f;
   EXPECT_NE(a, b);
-  a.fixed_digital.gain_db = b.fixed_digital.gain_db;
+  a.fixed_digital = b.fixed_digital;
 
   auto& a_adaptive = a.adaptive_digital;
   const auto& b_adaptive = b.adaptive_digital;
 
   Toggle(a_adaptive.enabled);
   EXPECT_NE(a, b);
-  a_adaptive.enabled = b_adaptive.enabled;
+  a_adaptive = b_adaptive;
 
-  a_adaptive.vad_probability_attack += 1.f;
+  Toggle(a_adaptive.dry_run);
   EXPECT_NE(a, b);
-  a_adaptive.vad_probability_attack = b_adaptive.vad_probability_attack;
+  a_adaptive = b_adaptive;
 
-  a_adaptive.level_estimator =
-      AudioProcessing::Config::GainController2::LevelEstimator::kPeak;
+  a_adaptive.noise_estimator = AudioProcessing::Config::GainController2::
+      NoiseEstimator::kStationaryNoise;
   EXPECT_NE(a, b);
-  a_adaptive.level_estimator = b_adaptive.level_estimator;
+  a_adaptive = b_adaptive;
 
-  a_adaptive.level_estimator_adjacent_speech_frames_threshold++;
+  a_adaptive.vad_reset_period_ms++;
   EXPECT_NE(a, b);
-  a_adaptive.level_estimator_adjacent_speech_frames_threshold =
-      b_adaptive.level_estimator_adjacent_speech_frames_threshold;
+  a_adaptive = b_adaptive;
 
-  Toggle(a_adaptive.use_saturation_protector);
+  a_adaptive.adjacent_speech_frames_threshold++;
   EXPECT_NE(a, b);
-  a_adaptive.use_saturation_protector = b_adaptive.use_saturation_protector;
+  a_adaptive = b_adaptive;
 
-  a_adaptive.initial_saturation_margin_db += 1.f;
+  a_adaptive.max_gain_change_db_per_second += 1.0f;
   EXPECT_NE(a, b);
-  a_adaptive.initial_saturation_margin_db =
-      b_adaptive.initial_saturation_margin_db;
+  a_adaptive = b_adaptive;
 
-  a_adaptive.extra_saturation_margin_db += 1.f;
+  a_adaptive.max_output_noise_level_dbfs += 1.0f;
   EXPECT_NE(a, b);
-  a_adaptive.extra_saturation_margin_db = b_adaptive.extra_saturation_margin_db;
+  a_adaptive = b_adaptive;
 
-  a_adaptive.gain_applier_adjacent_speech_frames_threshold++;
+  Toggle(a_adaptive.sse2_allowed);
   EXPECT_NE(a, b);
-  a_adaptive.gain_applier_adjacent_speech_frames_threshold =
-      b_adaptive.gain_applier_adjacent_speech_frames_threshold;
+  a_adaptive = b_adaptive;
 
-  a_adaptive.max_gain_change_db_per_second += 1.f;
+  Toggle(a_adaptive.avx2_allowed);
   EXPECT_NE(a, b);
-  a_adaptive.max_gain_change_db_per_second =
-      b_adaptive.max_gain_change_db_per_second;
+  a_adaptive = b_adaptive;
 
-  a_adaptive.max_output_noise_level_dbfs -= 1.f;
+  Toggle(a_adaptive.neon_allowed);
   EXPECT_NE(a, b);
-  a_adaptive.max_output_noise_level_dbfs =
-      b_adaptive.max_output_noise_level_dbfs;
+  a_adaptive = b_adaptive;
 }
 
 }  // namespace webrtc

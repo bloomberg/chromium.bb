@@ -99,11 +99,13 @@ int PrivacyInfoView::GetHeightForWidth(int width) const {
 
 void PrivacyInfoView::OnPaintBackground(gfx::Canvas* canvas) {
   if (selected_action_ == Action::kCloseButton) {
+    const AppListColorProvider* color_provider = AppListColorProvider::Get();
+    const SkColor bg_color = color_provider->GetSearchBoxBackgroundColor();
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(SkColorSetA(
-        AppListColorProvider::Get()->GetSearchResultViewHighlightColor(),
-        0x14));
+        color_provider->GetRippleAttributesBaseColor(bg_color),
+        color_provider->GetRippleAttributesHighlightOpacity(bg_color) * 255));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas->DrawCircle(close_button_->bounds().CenterPoint(),
                        close_button_->width() / 2, flags);
@@ -218,7 +220,7 @@ void PrivacyInfoView::InitLayout() {
   SetBorder(views::CreateRoundedRectBorder(
       /*thickness=*/1,
       views::LayoutProvider::Get()->GetCornerRadiusMetric(
-          views::EMPHASIS_MEDIUM),
+          views::Emphasis::kMedium),
       gfx::Insets(kRowMarginDip, kRowMarginDip), gfx::kGoogleGrey300));
 
   // Info icon.
@@ -243,9 +245,9 @@ void PrivacyInfoView::InitInfoIcon() {
 }
 
 void PrivacyInfoView::InitText() {
-  const base::string16 link = l10n_util::GetStringUTF16(link_string_id_);
+  const std::u16string link = l10n_util::GetStringUTF16(link_string_id_);
   size_t offset;
-  const base::string16 text =
+  const std::u16string text =
       l10n_util::GetStringFUTF16(info_string_id_, link, &offset);
   text_view_ = AddChildView(std::make_unique<PrivacyTextView>(this));
   text_view_->SetText(text);
@@ -284,7 +286,7 @@ void PrivacyInfoView::InitCloseButton() {
                                                gfx::kGoogleGrey700));
   close_button->SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   close_button->SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
-  base::string16 close_button_label(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
+  std::u16string close_button_label(l10n_util::GetStringUTF16(IDS_APP_CLOSE));
   close_button->SetAccessibleName(close_button_label);
   close_button->SetTooltipText(close_button_label);
   close_button->SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -295,13 +297,13 @@ void PrivacyInfoView::InitCloseButton() {
   close_button->SizeToPreferredSize();
 
   // Ink ripple.
-  close_button->SetInkDropMode(views::InkDropHostView::InkDropMode::ON);
+  close_button->ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
   constexpr SkColor kInkDropBaseColor = gfx::kGoogleGrey900;
   constexpr float kInkDropVisibleOpacity = 0.06f;
   constexpr float kInkDropHighlightOpacity = 0.08f;
-  close_button->SetInkDropVisibleOpacity(kInkDropVisibleOpacity);
-  close_button->SetInkDropHighlightOpacity(kInkDropHighlightOpacity);
-  close_button->SetInkDropBaseColor(kInkDropBaseColor);
+  close_button->ink_drop()->SetVisibleOpacity(kInkDropVisibleOpacity);
+  close_button->ink_drop()->SetHighlightOpacity(kInkDropHighlightOpacity);
+  close_button->ink_drop()->SetBaseColor(kInkDropBaseColor);
   close_button->SetHasInkDropActionOnClick(true);
   views::InstallCircleHighlightPathGenerator(close_button.get());
   close_button_ = AddChildView(std::move(close_button));

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_epoll_alarm_factory.h"
+#include "quic/core/quic_epoll_alarm_factory.h"
 
 #include <type_traits>
 
-#include "net/third_party/quiche/src/quic/core/quic_arena_scoped_ptr.h"
+#include "quic/core/quic_arena_scoped_ptr.h"
 
 namespace quic {
 namespace {
@@ -21,18 +21,18 @@ class QuicEpollAlarm : public QuicAlarm {
 
  protected:
   void SetImpl() override {
-    DCHECK(deadline().IsInitialized());
+    QUICHE_DCHECK(deadline().IsInitialized());
     epoll_server_->RegisterAlarm(
         (deadline() - QuicTime::Zero()).ToMicroseconds(), &epoll_alarm_impl_);
   }
 
   void CancelImpl() override {
-    DCHECK(!deadline().IsInitialized());
+    QUICHE_DCHECK(!deadline().IsInitialized());
     epoll_alarm_impl_.UnregisterIfRegistered();
   }
 
   void UpdateImpl() override {
-    DCHECK(deadline().IsInitialized());
+    QUICHE_DCHECK(deadline().IsInitialized());
     int64_t epoll_deadline = (deadline() - QuicTime::Zero()).ToMicroseconds();
     if (epoll_alarm_impl_.registered()) {
       epoll_alarm_impl_.ReregisterAlarm(epoll_deadline);

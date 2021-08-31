@@ -4,15 +4,14 @@
 
 #include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
 
-#include "ash/public/cpp/file_icon_util.h"
-#include "ash/public/cpp/holding_space/holding_space_color_provider.h"
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "base/barrier_closure.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/ui/ash/holding_space/holding_space_thumbnail_loader.h"
+#include "chrome/browser/ui/ash/thumbnail_loader.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -23,35 +22,7 @@ namespace holding_space_util {
 
 namespace {
 
-base::Optional<base::Time> now_for_testing;
-
-// Helpers ---------------------------------------------------------------------
-
-gfx::ImageSkia GetPlaceholderImage(HoldingSpaceItem::Type type,
-                                   const base::FilePath& file_path) {
-  gfx::Size size;
-  switch (type) {
-    case HoldingSpaceItem::Type::kDownload:
-    case HoldingSpaceItem::Type::kNearbyShare:
-    case HoldingSpaceItem::Type::kPinnedFile:
-      size = gfx::Size(kHoldingSpaceChipIconSize, kHoldingSpaceChipIconSize);
-      break;
-    case HoldingSpaceItem::Type::kScreenRecording:
-    case HoldingSpaceItem::Type::kScreenshot:
-      size = kHoldingSpaceScreenCaptureSize;
-      break;
-  }
-
-  const SkColor color = HoldingSpaceColorProvider::Get()->GetFileIconColor();
-
-  // NOTE: We superimpose the file type icon for `file_path` over a transparent
-  // bitmap in order to center it within the placeholder image at a fixed size.
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(size.width(), size.height());
-  return gfx::ImageSkiaOperations::CreateSuperimposedImage(
-      gfx::ImageSkia::CreateFrom1xBitmap(bitmap),
-      GetIconForPath(file_path, color));
-}
+absl::optional<base::Time> now_for_testing;
 
 }  // namespace
 
@@ -65,8 +36,7 @@ void FilePathValid(Profile* profile,
                    FilePathWithValidityRequirement file_path_with_requirement,
                    FilePathValidCallback callback) {
   file_manager::util::GetMetadataForPath(
-      file_manager::util::GetFileSystemContextForExtensionId(
-          profile, file_manager::kFileManagerAppId),
+      file_manager::util::GetFileManagerFileSystemContext(profile),
       file_path_with_requirement.first,
       storage::FileSystemOperation::GET_METADATA_FIELD_NONE,
       base::BindOnce(
@@ -174,7 +144,7 @@ void PartitionFilePathsByValidity(
 GURL ResolveFileSystemUrl(Profile* profile, const base::FilePath& file_path) {
   GURL file_system_url;
   if (!file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
-          profile, file_path, file_manager::kFileManagerAppId,
+          profile, file_path, file_manager::util::GetFileManagerURL(),
           &file_system_url)) {
     VLOG(2) << "Unable to convert file path to File System URL.";
   }
@@ -182,22 +152,22 @@ GURL ResolveFileSystemUrl(Profile* profile, const base::FilePath& file_path) {
 }
 
 std::unique_ptr<HoldingSpaceImage> ResolveImage(
-    HoldingSpaceThumbnailLoader* thumbnail_loader,
+    ThumbnailLoader* thumbnail_loader,
     HoldingSpaceItem::Type type,
     const base::FilePath& file_path) {
   return std::make_unique<HoldingSpaceImage>(
-      GetPlaceholderImage(type, file_path),
+      HoldingSpaceImage::GetMaxSizeForType(type), file_path,
       base::BindRepeating(
-          [](const base::WeakPtr<HoldingSpaceThumbnailLoader>& thumbnail_loader,
+          [](const base::WeakPtr<ThumbnailLoader>& thumbnail_loader,
              const base::FilePath& file_path, const gfx::Size& size,
              HoldingSpaceImage::BitmapCallback callback) {
             if (thumbnail_loader)
               thumbnail_loader->Load({file_path, size}, std::move(callback));
           },
-          thumbnail_loader->GetWeakPtr(), file_path));
+          thumbnail_loader->GetWeakPtr()));
 }
 
-void SetNowForTesting(base::Optional<base::Time> now) {
+void SetNowForTesting(absl::optional<base::Time> now) {
   now_for_testing = now;
 }
 

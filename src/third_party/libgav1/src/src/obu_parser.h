@@ -276,6 +276,9 @@ class ObuParser : public Allocable {
   const ObuFrameHeader& frame_header() const { return frame_header_; }
   const Vector<TileBuffer>& tile_buffers() const { return tile_buffers_; }
   const ObuMetadata& metadata() const { return metadata_; }
+  // Returns true if the last call to ParseOneFrame() encountered a sequence
+  // header change.
+  bool sequence_header_changed() const { return sequence_header_changed_; }
 
   // Setters.
   void set_sequence_header(const ObuSequenceHeader& sequence_header) {
@@ -384,6 +387,9 @@ class ObuParser : public Allocable {
   int next_tile_group_start_ = 0;
   // If true, the sequence_header_ field is valid.
   bool has_sequence_header_ = false;
+  // If true, it means that the last call to ParseOneFrame() encountered a
+  // sequence header change.
+  bool sequence_header_changed_ = false;
   // If true, the obu_extension_flag syntax element in the OBU header must be
   // 0. Set to true when parsing a sequence header if OperatingPointIdc is 0.
   bool extension_disallowed_ = false;

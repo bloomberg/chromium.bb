@@ -10,6 +10,7 @@ include_rules = [
   "+content/grit",
   "+content/public/common",
   "+content/public/test",
+  "+content/services/auction_worklet/public",
   "+content/test",
   "+blink/public/resources/grit",
   "+cc",
@@ -24,6 +25,7 @@ include_rules = [
   # as autofill or extensions, and chrome implementation details such as
   # settings, packaging details, installation or crash reporting.
 
+  "+components/power_scheduler",
   "+components/services/filesystem",
   "+components/services/font/public",
   "+components/variations",

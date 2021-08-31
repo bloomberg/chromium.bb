@@ -10,12 +10,14 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -39,7 +41,7 @@ int GetSmartBubbleDismissalThreshold() {
 
 bool IsSmartLockUser(const syncer::SyncService* sync_service) {
   return password_manager_util::GetPasswordSyncState(sync_service) !=
-         password_manager::NOT_SYNCING;
+         password_manager::SyncState::kNotSyncing;
 }
 
 bool ShouldShowAutoSignInPromptFirstRunExperience(PrefService* prefs) {
@@ -60,9 +62,7 @@ void TurnOffAutoSignin(PrefService* prefs) {
 bool ShouldShowChromeSignInPasswordPromo(
     PrefService* prefs,
     const syncer::SyncService* sync_service) {
-#if defined(OS_CHROMEOS)
-  return false;
-#else
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // If the account-scoped storage for passwords is enabled, then the user
   // doesn't need to enable the full Sync feature to get their account
   // passwords, so suppress the promo in this case.
@@ -96,7 +96,9 @@ bool ShouldShowChromeSignInPasswordPromo(
          prefs->GetInteger(
              password_manager::prefs::kNumberSignInPasswordPromoShown) <
              kThreshold;
-#endif  // defined(OS_CHROMEOS)
+#else
+  return false;
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 }
 
 }  // namespace password_bubble_experiment

@@ -11,12 +11,12 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/sharing/sharing_ui_controller.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -31,7 +31,7 @@ class ClickToCallUiController
   static ClickToCallUiController* GetOrCreateFromWebContents(
       content::WebContents* web_contents);
   static void ShowDialog(content::WebContents* web_contents,
-                         const base::Optional<url::Origin>& initiating_origin,
+                         const absl::optional<url::Origin>& initiating_origin,
                          const GURL& url,
                          bool hide_default_handler);
 
@@ -42,15 +42,16 @@ class ClickToCallUiController
                         SharingClickToCallEntryPoint entry_point);
 
   // Overridden from SharingUiController:
-  base::string16 GetTitle(SharingDialogType dialog_type) override;
+  std::u16string GetTitle(SharingDialogType dialog_type) override;
   PageActionIconType GetIconType() override;
-  sync_pb::SharingSpecificFields::EnabledFeatures GetRequiredFeature() override;
+  sync_pb::SharingSpecificFields::EnabledFeatures GetRequiredFeature()
+      const override;
   void OnDeviceChosen(const syncer::DeviceInfo& device) override;
   void OnAppChosen(const SharingApp& app) override;
   void OnDialogClosed(SharingDialog* dialog) override;
-  base::string16 GetContentType() const override;
+  std::u16string GetContentType() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
-  base::string16 GetTextForTooltipAndAccessibleName() const override;
+  std::u16string GetTextForTooltipAndAccessibleName() const override;
   SharingFeatureName GetFeatureMetricsPrefix() const override;
   void OnDialogShown(bool has_devices, bool has_apps) override;
 

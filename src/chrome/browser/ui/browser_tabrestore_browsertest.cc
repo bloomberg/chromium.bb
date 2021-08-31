@@ -134,8 +134,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest,
 
   content::WebContents* web_contents = chrome::AddRestoredTab(
       browser(), navigations, /* tab_index=*/1, /* selected_navigation=*/0,
-      /* extension_app_id=*/std::string(), /* raw_group_id=*/base::nullopt,
-      /* select=*/true, /* pin=*/false, /* from_last_session=*/true,
+      /* extension_app_id=*/std::string(), /* raw_group_id=*/absl::nullopt,
+      /* select=*/true, /* pin=*/false,
       /* last_active_time=*/base::TimeTicks::Now(),
       /* storage_namespace=*/nullptr,
       /* user_agent_override=*/sessions::SerializedUserAgentOverride(),
@@ -156,8 +156,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTabRestoreTest,
 
   content::WebContents* web_contents = chrome::AddRestoredTab(
       browser(), navigations, /* tab_index=*/1, /* selected_navigation=*/0,
-      /* extension_app_id=*/std::string(), /* raw_group_id=*/base::nullopt,
-      /* select=*/false, /* pin=*/false, /* from_last_session=*/true,
+      /* extension_app_id=*/std::string(), /* raw_group_id=*/absl::nullopt,
+      /* select=*/false, /* pin=*/false,
       /* last_active_time=*/base::TimeTicks::Now(),
       /* storage_namespace=*/nullptr,
       /* user_agent_override=*/sessions::SerializedUserAgentOverride(),

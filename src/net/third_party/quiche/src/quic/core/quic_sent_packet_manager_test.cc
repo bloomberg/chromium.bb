@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_sent_packet_manager.h"
+#include "quic/core/quic_sent_packet_manager.h"
 
 #include <memory>
 #include <utility>
 
 #include "absl/base/macros.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/frames/quic_ack_frequency_frame.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_sent_packet_manager_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "quic/core/frames/quic_ack_frequency_frame.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_config_peer.h"
+#include "quic/test_tools/quic_sent_packet_manager_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -337,10 +337,7 @@ class QuicSentPacketManagerTest : public QuicTest {
   }
 
   int GetPtoRttvarMultiplier() {
-    if (GetQuicReloadableFlag(quic_default_on_pto)) {
-      return 2;
-    }
-    if (GetQuicReloadableFlag(quic_default_to_2_rttvar) &&
+    if (GetQuicReloadableFlag(quic_default_on_pto) ||
         manager_.handshake_mode_disabled()) {
       return 2;
     }
@@ -2238,14 +2235,21 @@ TEST_F(QuicSentPacketManagerTest, ConnectionMigrationUnspecifiedChange) {
   EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
 
   EXPECT_CALL(*send_algorithm_, OnConnectionMigration());
-  manager_.OnConnectionMigration(IPV4_TO_IPV4_CHANGE);
+  EXPECT_EQ(nullptr,
+            manager_.OnConnectionMigration(/*reset_send_algorithm=*/false));
 
   EXPECT_EQ(default_init_rtt, rtt_stats->initial_rtt());
   EXPECT_EQ(0u, manager_.GetConsecutiveRtoCount());
   EXPECT_EQ(0u, manager_.GetConsecutiveTlpCount());
 }
 
-TEST_F(QuicSentPacketManagerTest, ConnectionMigrationIPSubnetChange) {
+// Tests that ResetCongestionControlUponPeerAddressChange() resets send
+// algorithm and RTT. And unACK'ed packets are handled correctly.
+TEST_F(QuicSentPacketManagerTest,
+       ConnectionMigrationUnspecifiedChangeResetSendAlgorithm) {
+  auto loss_algorithm = std::make_unique<MockLossAlgorithm>();
+  QuicSentPacketManagerPeer::SetLossAlgorithm(&manager_, loss_algorithm.get());
+
   RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
   QuicTime::Delta default_init_rtt = rtt_stats->initial_rtt();
   rtt_stats->set_initial_rtt(default_init_rtt * 2);
@@ -2256,29 +2260,201 @@ TEST_F(QuicSentPacketManagerTest, ConnectionMigrationIPSubnetChange) {
   QuicSentPacketManagerPeer::SetConsecutiveTlpCount(&manager_, 2);
   EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
 
-  manager_.OnConnectionMigration(IPV4_SUBNET_CHANGE);
+  SendDataPacket(1, ENCRYPTION_FORWARD_SECURE);
 
-  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt());
-  EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
-  EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
-}
+  RttStats old_rtt_stats;
+  old_rtt_stats.CloneFrom(*manager_.GetRttStats());
 
-TEST_F(QuicSentPacketManagerTest, ConnectionMigrationPortChange) {
-  RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
-  QuicTime::Delta default_init_rtt = rtt_stats->initial_rtt();
-  rtt_stats->set_initial_rtt(default_init_rtt * 2);
-  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt());
+  // Packet1 will be mark for retransmission upon migration.
+  EXPECT_CALL(notifier_, OnFrameLost(_));
+  std::unique_ptr<SendAlgorithmInterface> old_send_algorithm =
+      manager_.OnConnectionMigration(/*reset_send_algorithm=*/true);
 
-  QuicSentPacketManagerPeer::SetConsecutiveRtoCount(&manager_, 1);
-  EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
-  QuicSentPacketManagerPeer::SetConsecutiveTlpCount(&manager_, 2);
-  EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
+  EXPECT_NE(old_send_algorithm.get(), manager_.GetSendAlgorithm());
+  EXPECT_EQ(old_send_algorithm->GetCongestionControlType(),
+            manager_.GetSendAlgorithm()->GetCongestionControlType());
+  EXPECT_EQ(default_init_rtt, rtt_stats->initial_rtt());
+  EXPECT_EQ(0u, manager_.GetConsecutiveRtoCount());
+  EXPECT_EQ(0u, manager_.GetConsecutiveTlpCount());
+  // Packets sent earlier shouldn't be regarded as in flight.
+  EXPECT_EQ(0u, BytesInFlight());
 
-  manager_.OnConnectionMigration(PORT_CHANGE);
+  // Replace the new send algorithm with the mock object.
+  manager_.SetSendAlgorithm(old_send_algorithm.release());
 
-  EXPECT_EQ(2 * default_init_rtt, rtt_stats->initial_rtt());
-  EXPECT_EQ(1u, manager_.GetConsecutiveRtoCount());
-  EXPECT_EQ(2u, manager_.GetConsecutiveTlpCount());
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
+  // Application retransmit the data as LOSS_RETRANSMISSION.
+  RetransmitDataPacket(2, LOSS_RETRANSMISSION, ENCRYPTION_FORWARD_SECURE);
+  EXPECT_EQ(kDefaultLength, BytesInFlight());
+
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
+  // Receiving an ACK for packet1 20s later shouldn't update the RTT, and
+  // shouldn't be treated as spurious retransmission.
+  EXPECT_CALL(*send_algorithm_,
+              OnCongestionEvent(/*rtt_updated=*/false, kDefaultLength, _, _, _))
+      .WillOnce(testing::WithArg<3>(
+          Invoke([](const AckedPacketVector& acked_packets) {
+            EXPECT_EQ(1u, acked_packets.size());
+            EXPECT_EQ(QuicPacketNumber(1), acked_packets[0].packet_number);
+            // The bytes in packet1 shouldn't contribute to congestion control.
+            EXPECT_EQ(0u, acked_packets[0].bytes_acked);
+          })));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  manager_.OnAckFrameStart(QuicPacketNumber(1), QuicTime::Delta::Infinite(),
+                           clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(1), QuicPacketNumber(2));
+  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _));
+  EXPECT_CALL(*loss_algorithm, SpuriousLossDetected(_, _, _, _, _)).Times(0u);
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(1),
+                                   ENCRYPTION_FORWARD_SECURE));
+  EXPECT_TRUE(manager_.GetRttStats()->latest_rtt().IsZero());
+
+  // Receiving an ACK for packet2 should update RTT and congestion control.
+  manager_.OnAckFrameStart(QuicPacketNumber(2), QuicTime::Delta::Infinite(),
+                           clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(2), QuicPacketNumber(3));
+  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _));
+  EXPECT_CALL(*send_algorithm_,
+              OnCongestionEvent(/*rtt_updated=*/true, kDefaultLength, _, _, _))
+      .WillOnce(testing::WithArg<3>(
+          Invoke([](const AckedPacketVector& acked_packets) {
+            EXPECT_EQ(1u, acked_packets.size());
+            EXPECT_EQ(QuicPacketNumber(2), acked_packets[0].packet_number);
+            // The bytes in packet2 should contribute to congestion control.
+            EXPECT_EQ(kDefaultLength, acked_packets[0].bytes_acked);
+          })));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(2),
+                                   ENCRYPTION_FORWARD_SECURE));
+  EXPECT_EQ(0u, BytesInFlight());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(10),
+            manager_.GetRttStats()->latest_rtt());
+
+  SendDataPacket(3, ENCRYPTION_FORWARD_SECURE);
+  // Trigger loss timeout and mark packet3 for retransmission.
+  EXPECT_CALL(*loss_algorithm, GetLossTimeout())
+      .WillOnce(Return(clock_.Now() + QuicTime::Delta::FromMilliseconds(10)));
+  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _))
+      .WillOnce(WithArgs<5>(Invoke([](LostPacketVector* packet_lost) {
+        packet_lost->emplace_back(QuicPacketNumber(3u), kDefaultLength);
+        return LossDetectionInterface::DetectionStats();
+      })));
+  EXPECT_CALL(notifier_, OnFrameLost(_));
+  EXPECT_CALL(*send_algorithm_,
+              OnCongestionEvent(false, kDefaultLength, _, _, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  manager_.OnRetransmissionTimeout();
+  EXPECT_EQ(0u, BytesInFlight());
+
+  // Migrate again with unACK'ed but not in-flight packet.
+  // Packet3 shouldn't be marked for retransmission again as it is not in
+  // flight.
+  old_send_algorithm =
+      manager_.OnConnectionMigration(/*reset_send_algorithm=*/true);
+
+  EXPECT_NE(old_send_algorithm.get(), manager_.GetSendAlgorithm());
+  EXPECT_EQ(old_send_algorithm->GetCongestionControlType(),
+            manager_.GetSendAlgorithm()->GetCongestionControlType());
+  EXPECT_EQ(default_init_rtt, rtt_stats->initial_rtt());
+  EXPECT_EQ(0u, manager_.GetConsecutiveRtoCount());
+  EXPECT_EQ(0u, manager_.GetConsecutiveTlpCount());
+  EXPECT_EQ(0u, BytesInFlight());
+  EXPECT_TRUE(manager_.GetRttStats()->latest_rtt().IsZero());
+
+  manager_.SetSendAlgorithm(old_send_algorithm.release());
+
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(30));
+  // Receiving an ACK for packet3 shouldn't update RTT. Though packet 3 was
+  // marked lost, this spurious retransmission shouldn't be reported to the loss
+  // algorithm.
+  manager_.OnAckFrameStart(QuicPacketNumber(3), QuicTime::Delta::Infinite(),
+                           clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(3), QuicPacketNumber(4));
+  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _));
+  EXPECT_CALL(*loss_algorithm, SpuriousLossDetected(_, _, _, _, _)).Times(0u);
+  EXPECT_CALL(*send_algorithm_,
+              OnCongestionEvent(/*rtt_updated=*/false, 0, _, _, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(3),
+                                   ENCRYPTION_FORWARD_SECURE));
+  EXPECT_EQ(0u, BytesInFlight());
+  EXPECT_TRUE(manager_.GetRttStats()->latest_rtt().IsZero());
+
+  SendDataPacket(4, ENCRYPTION_FORWARD_SECURE);
+  // Trigger loss timeout and mark packet4 for retransmission.
+  EXPECT_CALL(*loss_algorithm, GetLossTimeout())
+      .WillOnce(Return(clock_.Now() + QuicTime::Delta::FromMilliseconds(10)));
+  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _))
+      .WillOnce(WithArgs<5>(Invoke([](LostPacketVector* packet_lost) {
+        packet_lost->emplace_back(QuicPacketNumber(4u), kDefaultLength);
+        return LossDetectionInterface::DetectionStats();
+      })));
+  EXPECT_CALL(notifier_, OnFrameLost(_));
+  EXPECT_CALL(*send_algorithm_,
+              OnCongestionEvent(false, kDefaultLength, _, _, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  manager_.OnRetransmissionTimeout();
+  EXPECT_EQ(0u, BytesInFlight());
+
+  // Application retransmit the data as LOSS_RETRANSMISSION.
+  RetransmitDataPacket(5, LOSS_RETRANSMISSION, ENCRYPTION_FORWARD_SECURE);
+  EXPECT_EQ(kDefaultLength, BytesInFlight());
+
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(30));
+  // Receiving an ACK for packet4 should update RTT, but not bytes in flight.
+  // This spurious retransmission should be reported to the loss algorithm.
+  manager_.OnAckFrameStart(QuicPacketNumber(4), QuicTime::Delta::Infinite(),
+                           clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(4), QuicPacketNumber(5));
+  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _));
+  EXPECT_CALL(*loss_algorithm, SpuriousLossDetected(_, _, _, _, _));
+  EXPECT_CALL(*send_algorithm_,
+              OnCongestionEvent(/*rtt_updated=*/true, kDefaultLength, _, _, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(notifier_, OnFrameAcked(_, _, _));
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(3),
+                                   ENCRYPTION_FORWARD_SECURE));
+  EXPECT_EQ(kDefaultLength, BytesInFlight());
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(30),
+            manager_.GetRttStats()->latest_rtt());
+
+  // Migrate again with in-flight packet5 whose retransmittable frames are all
+  // ACKed. Packet5 should be marked for retransmission but nothing to
+  // retransmit.
+  EXPECT_CALL(notifier_, IsFrameOutstanding(_)).WillOnce(Return(false));
+  EXPECT_CALL(notifier_, OnFrameLost(_)).Times(0u);
+  old_send_algorithm =
+      manager_.OnConnectionMigration(/*reset_send_algorithm=*/true);
+  EXPECT_EQ(default_init_rtt, rtt_stats->initial_rtt());
+  EXPECT_EQ(0u, manager_.GetConsecutiveRtoCount());
+  EXPECT_EQ(0u, manager_.GetConsecutiveTlpCount());
+  EXPECT_EQ(0u, BytesInFlight());
+  EXPECT_TRUE(manager_.GetRttStats()->latest_rtt().IsZero());
+
+  manager_.SetSendAlgorithm(old_send_algorithm.release());
+
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
+  // Receiving an ACK for packet5 shouldn't update RTT. Though packet 5 was
+  // marked for retransmission, this spurious retransmission shouldn't be
+  // reported to the loss algorithm.
+  manager_.OnAckFrameStart(QuicPacketNumber(5), QuicTime::Delta::Infinite(),
+                           clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(5), QuicPacketNumber(6));
+  EXPECT_CALL(*loss_algorithm, DetectLosses(_, _, _, _, _, _));
+  EXPECT_CALL(*loss_algorithm, SpuriousLossDetected(_, _, _, _, _)).Times(0u);
+  EXPECT_CALL(*send_algorithm_,
+              OnCongestionEvent(/*rtt_updated=*/false, 0, _, _, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  EXPECT_CALL(notifier_, OnFrameAcked(_, _, _));
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(3),
+                                   ENCRYPTION_FORWARD_SECURE));
+  EXPECT_EQ(0u, BytesInFlight());
+  EXPECT_TRUE(manager_.GetRttStats()->latest_rtt().IsZero());
 }
 
 TEST_F(QuicSentPacketManagerTest, PathMtuIncreased) {
@@ -3321,7 +3497,6 @@ TEST_F(QuicSentPacketManagerTest, ClientMultiplePacketNumberSpacePtoTimeout) {
   // Send packet 6 in 1-RTT.
   clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
   SendDataPacket(6, ENCRYPTION_FORWARD_SECURE);
-  const QuicTime packet6_sent_time = clock_.Now();
   // Verify PTO timeout is now based on packet 5.
   EXPECT_EQ(packet5_sent_time + expected_pto_delay * 2,
             manager_.GetRetransmissionTime());
@@ -3331,21 +3506,11 @@ TEST_F(QuicSentPacketManagerTest, ClientMultiplePacketNumberSpacePtoTimeout) {
   const QuicTime packet7_sent_time = clock_.Now();
   SendDataPacket(7, ENCRYPTION_HANDSHAKE);
 
-  if (GetQuicReloadableFlag(quic_fix_arm_pto_for_application_data)) {
-    expected_pto_delay =
-        srtt + GetPtoRttvarMultiplier() * rtt_stats->mean_deviation();
-    // Verify PTO timeout is now based on packet 7.
-    EXPECT_EQ(packet7_sent_time + expected_pto_delay * 2,
-              manager_.GetRetransmissionTime());
-
-  } else {
-    expected_pto_delay =
-        srtt + GetPtoRttvarMultiplier() * rtt_stats->mean_deviation() +
-        QuicTime::Delta::FromMilliseconds(kDefaultDelayedAckTimeMs);
-    // Verify PTO timeout is now based on packet 6.
-    EXPECT_EQ(packet6_sent_time + expected_pto_delay * 2,
-              manager_.GetRetransmissionTime());
-  }
+  expected_pto_delay =
+      srtt + GetPtoRttvarMultiplier() * rtt_stats->mean_deviation();
+  // Verify PTO timeout is now based on packet 7.
+  EXPECT_EQ(packet7_sent_time + expected_pto_delay * 2,
+            manager_.GetRetransmissionTime());
 
   // Neuter handshake key.
   manager_.SetHandshakeConfirmed();
@@ -3806,6 +3971,14 @@ TEST_F(QuicSentPacketManagerTest, NeuterUnencryptedPackets) {
   manager_.NeuterUnencryptedPackets();
 }
 
+TEST_F(QuicSentPacketManagerTest, MarkInitialPacketsForRetransmission) {
+  SendCryptoPacket(1);
+  SendPingPacket(2, ENCRYPTION_HANDSHAKE);
+  // Only the INITIAL packet will be retransmitted.
+  EXPECT_CALL(notifier_, OnFrameLost(_)).Times(1);
+  manager_.MarkInitialPacketsForRetransmission();
+}
+
 TEST_F(QuicSentPacketManagerTest, NoPacketThresholdDetectionForRuntPackets) {
   EXPECT_TRUE(
       QuicSentPacketManagerPeer::UsePacketThresholdForRuntPackets(&manager_));
@@ -3863,6 +4036,72 @@ TEST_F(QuicSentPacketManagerTest, GetPathDegradingDelay) {
         QuicSentPacketManagerPeer::GetRetransmissionDelay(&manager_);
   }
   EXPECT_EQ(expected_delay, manager_.GetPathDegradingDelay());
+}
+
+TEST_F(QuicSentPacketManagerTest, GetPathDegradingDelayUsingPTO) {
+  QuicConfig client_config;
+  QuicTagVector options;
+  options.push_back(k1PTO);
+  QuicTagVector client_options;
+  client_options.push_back(kPDP2);
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
+  client_config.SetConnectionOptionsToSend(options);
+  client_config.SetClientConnectionOptions(client_options);
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  manager_.SetFromConfig(client_config);
+  EXPECT_TRUE(manager_.pto_enabled());
+  QuicTime::Delta expected_delay = 2 * manager_.GetPtoDelay();
+  EXPECT_EQ(expected_delay, manager_.GetPathDegradingDelay());
+}
+
+TEST_F(QuicSentPacketManagerTest, ClientsIgnorePings) {
+  QuicSentPacketManagerPeer::SetPerspective(&manager_, Perspective::IS_CLIENT);
+  QuicConfig client_config;
+  QuicTagVector options;
+  QuicTagVector client_options;
+  client_options.push_back(kIGNP);
+  client_config.SetConnectionOptionsToSend(options);
+  client_config.SetClientConnectionOptions(client_options);
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  EXPECT_CALL(*network_change_visitor_, OnCongestionChange());
+  manager_.SetFromConfig(client_config);
+
+  EXPECT_CALL(*send_algorithm_, PacingRate(_))
+      .WillRepeatedly(Return(QuicBandwidth::Zero()));
+  EXPECT_CALL(*send_algorithm_, GetCongestionWindow())
+      .WillRepeatedly(Return(10 * kDefaultTCPMSS));
+  EXPECT_CALL(*send_algorithm_, CanSend(_)).WillRepeatedly(Return(true));
+
+  SendPingPacket(1, ENCRYPTION_INITIAL);
+  // Verify PING only packet is not considered in flight.
+  EXPECT_EQ(QuicTime::Zero(), manager_.GetRetransmissionTime());
+  SendDataPacket(2, ENCRYPTION_INITIAL);
+  EXPECT_NE(QuicTime::Zero(), manager_.GetRetransmissionTime());
+
+  uint64_t acked[] = {1};
+  ExpectAcksAndLosses(/*rtt_updated=*/false, acked, ABSL_ARRAYSIZE(acked),
+                      nullptr, 0);
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(90));
+  manager_.OnAckFrameStart(QuicPacketNumber(1), QuicTime::Delta::Infinite(),
+                           clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(1), QuicPacketNumber(2));
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(1),
+                                   ENCRYPTION_INITIAL));
+  RttStats* rtt_stats = const_cast<RttStats*>(manager_.GetRttStats());
+  // Verify no RTT samples for PING only packet.
+  EXPECT_TRUE(rtt_stats->smoothed_rtt().IsZero());
+
+  ExpectAck(2);
+  clock_.AdvanceTime(QuicTime::Delta::FromMilliseconds(10));
+  manager_.OnAckFrameStart(QuicPacketNumber(2), QuicTime::Delta::Infinite(),
+                           clock_.Now());
+  manager_.OnAckRange(QuicPacketNumber(1), QuicPacketNumber(3));
+  EXPECT_EQ(PACKETS_NEWLY_ACKED,
+            manager_.OnAckFrameEnd(clock_.Now(), QuicPacketNumber(2),
+                                   ENCRYPTION_INITIAL));
+  EXPECT_EQ(QuicTime::Delta::FromMilliseconds(100), rtt_stats->smoothed_rtt());
 }
 
 // Regression test for b/154050235.
@@ -4393,8 +4632,6 @@ TEST_F(QuicSentPacketManagerTest,
 }
 
 TEST_F(QuicSentPacketManagerTest, ClearDataInMessageFrameAfterPacketSent) {
-  SetQuicReloadableFlag(quic_deallocate_message_right_after_sent, true);
-
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, _, _, _, _)).Times(1);
 
   QuicMessageFrame* message_frame = nullptr;

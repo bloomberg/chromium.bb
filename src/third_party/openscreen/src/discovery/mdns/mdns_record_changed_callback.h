@@ -5,6 +5,8 @@
 #ifndef DISCOVERY_MDNS_MDNS_RECORD_CHANGED_CALLBACK_H_
 #define DISCOVERY_MDNS_MDNS_RECORD_CHANGED_CALLBACK_H_
 
+#include <vector>
+
 #include "discovery/mdns/mdns_records.h"
 #include "util/osp_logging.h"
 
@@ -51,9 +53,7 @@ inline std::ostream& operator<<(std::ostream& output,
     case RecordChangedEvent::kExpired:
       return output << "Expiry";
   }
-
   OSP_NOTREACHED();
-  return output;
 }
 
 }  // namespace discovery

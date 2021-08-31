@@ -4,14 +4,6 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_issue.h"
 
-#include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
-#include "third_party/blink/renderer/core/workers/worker_thread.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
-
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
-
 namespace blink {
 
 InspectorIssue::InspectorIssue(mojom::blink::InspectorIssueCode code,

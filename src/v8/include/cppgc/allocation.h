@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <atomic>
+#include <type_traits>
 
 #include "cppgc/custom-space.h"
 #include "cppgc/garbage-collected.h"
@@ -39,11 +40,32 @@ class V8_EXPORT MakeGarbageCollectedTraitInternal {
             const_cast<uint16_t*>(reinterpret_cast<const uint16_t*>(
                 reinterpret_cast<const uint8_t*>(payload) -
                 api_constants::kFullyConstructedBitFieldOffsetFromPayload)));
-    uint16_t value = atomic_mutable_bitfield->load(std::memory_order_relaxed);
-    value = value | api_constants::kFullyConstructedBitMask;
-    atomic_mutable_bitfield->store(value, std::memory_order_release);
+    atomic_mutable_bitfield->fetch_or(api_constants::kFullyConstructedBitMask,
+                                      std::memory_order_release);
   }
 
+  template <typename U, typename CustomSpace>
+  struct SpacePolicy {
+    static void* Allocate(AllocationHandle& handle, size_t size) {
+      // Custom space.
+      static_assert(std::is_base_of<CustomSpaceBase, CustomSpace>::value,
+                    "Custom space must inherit from CustomSpaceBase.");
+      return MakeGarbageCollectedTraitInternal::Allocate(
+          handle, size, internal::GCInfoTrait<U>::Index(),
+          CustomSpace::kSpaceIndex);
+    }
+  };
+
+  template <typename U>
+  struct SpacePolicy<U, void> {
+    static void* Allocate(AllocationHandle& handle, size_t size) {
+      // Default space.
+      return MakeGarbageCollectedTraitInternal::Allocate(
+          handle, size, internal::GCInfoTrait<U>::Index());
+    }
+  };
+
+ private:
   static void* Allocate(cppgc::AllocationHandle& handle, size_t size,
                         GCInfoIndex index);
   static void* Allocate(cppgc::AllocationHandle& handle, size_t size,
@@ -65,26 +87,12 @@ template <typename T>
 class MakeGarbageCollectedTraitBase
     : private internal::MakeGarbageCollectedTraitInternal {
  private:
-  template <typename U, typename CustomSpace>
-  struct SpacePolicy {
-    static void* Allocate(AllocationHandle& handle, size_t size) {
-      // Custom space.
-      static_assert(std::is_base_of<CustomSpaceBase, CustomSpace>::value,
-                    "Custom space must inherit from CustomSpaceBase.");
-      return internal::MakeGarbageCollectedTraitInternal::Allocate(
-          handle, size, internal::GCInfoTrait<T>::Index(),
-          CustomSpace::kSpaceIndex);
-    }
-  };
-
-  template <typename U>
-  struct SpacePolicy<U, void> {
-    static void* Allocate(AllocationHandle& handle, size_t size) {
-      // Default space.
-      return internal::MakeGarbageCollectedTraitInternal::Allocate(
-          handle, size, internal::GCInfoTrait<T>::Index());
-    }
-  };
+  static_assert(internal::IsGarbageCollectedType<T>::value,
+                "T needs to be a garbage collected object");
+  static_assert(!IsGarbageCollectedWithMixinTypeV<T> ||
+                    sizeof(T) <=
+                        internal::api_constants::kLargeObjectSizeThreshold,
+                "GarbageCollectedMixin may not be a large object");
 
  protected:
   /**
@@ -95,9 +103,15 @@ class MakeGarbageCollectedTraitBase
    * \param size The size that should be reserved for the object.
    * \returns the memory to construct an object of type T on.
    */
-  static void* Allocate(AllocationHandle& handle, size_t size) {
-    return SpacePolicy<T, typename SpaceTrait<T>::Space>::Allocate(handle,
-                                                                   size);
+  V8_INLINE static void* Allocate(AllocationHandle& handle, size_t size) {
+    static_assert(
+        std::is_base_of<typename T::ParentMostGarbageCollectedType, T>::value,
+        "U of GarbageCollected<U> must be a base of T. Check "
+        "GarbageCollected<T> base class inheritance.");
+    return SpacePolicy<
+        typename internal::GCInfoFolding<
+            T, typename T::ParentMostGarbageCollectedType>::ResultType,
+        typename SpaceTrait<T>::Space>::Allocate(handle, size);
   }
 
   /**
@@ -106,18 +120,36 @@ class MakeGarbageCollectedTraitBase
    *
    * \param payload The base pointer the object is allocated at.
    */
-  static void MarkObjectAsFullyConstructed(const void* payload) {
+  V8_INLINE static void MarkObjectAsFullyConstructed(const void* payload) {
     internal::MakeGarbageCollectedTraitInternal::MarkObjectAsFullyConstructed(
         payload);
   }
 };
 
 /**
- * struct used specify to MakeGarbageCollected how many bytes should be
- * appended to the allocated object.
+ * Passed to MakeGarbageCollected to specify how many bytes should be appended
+ * to the allocated object.
+ *
+ * Example:
+ * \code
+ * class InlinedArray final : public GarbageCollected<InlinedArray> {
+ *  public:
+ *   explicit InlinedArray(size_t bytes) : size(bytes), byte_array(this + 1) {}
+ *   void Trace(Visitor*) const {}
+
+ *   size_t size;
+ *   char* byte_array;
+ * };
+ *
+ * auto* inlined_array = MakeGarbageCollected<InlinedArray(
+ *    GetAllocationHandle(), AdditionalBytes(4), 4);
+ * for (size_t i = 0; i < 4; i++) {
+ *   Process(inlined_array->byte_array[i]);
+ * }
+ * \endcode
  */
 struct AdditionalBytes {
-  explicit AdditionalBytes(size_t bytes) : value(bytes) {}
+  constexpr explicit AdditionalBytes(size_t bytes) : value(bytes) {}
   const size_t value;
 };
 
@@ -136,12 +168,6 @@ class MakeGarbageCollectedTrait : public MakeGarbageCollectedTraitBase<T> {
  public:
   template <typename... Args>
   static T* Call(AllocationHandle& handle, Args&&... args) {
-    static_assert(internal::IsGarbageCollectedType<T>::value,
-                  "T needs to be a garbage collected object");
-    static_assert(
-        !internal::IsGarbageCollectedMixinType<T>::value ||
-            sizeof(T) <= internal::api_constants::kLargeObjectSizeThreshold,
-        "GarbageCollectedMixin may not be a large object");
     void* memory =
         MakeGarbageCollectedTraitBase<T>::Allocate(handle, sizeof(T));
     T* object = ::new (memory) T(std::forward<Args>(args)...);
@@ -152,12 +178,6 @@ class MakeGarbageCollectedTrait : public MakeGarbageCollectedTraitBase<T> {
   template <typename... Args>
   static T* Call(AllocationHandle& handle, AdditionalBytes additional_bytes,
                  Args&&... args) {
-    static_assert(internal::IsGarbageCollectedType<T>::value,
-                  "T needs to be a garbage collected object");
-    static_assert(
-        !internal::IsGarbageCollectedMixinType<T>::value ||
-            sizeof(T) <= internal::api_constants::kLargeObjectSizeThreshold,
-        "GarbageCollectedMixin may not be a large object");
     void* memory = MakeGarbageCollectedTraitBase<T>::Allocate(
         handle, sizeof(T) + additional_bytes.value);
     T* object = ::new (memory) T(std::forward<Args>(args)...);

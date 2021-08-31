@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/qbone_session_base.h"
+#include "quic/qbone/qbone_session_base.h"
 
 #include <netinet/icmp6.h>
 #include <netinet/ip6.h>
@@ -10,15 +10,16 @@
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_buffer_allocator.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_exported_stats.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/qbone/platform/icmp_packet.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
+#include "quic/core/quic_buffer_allocator.h"
+#include "quic/core/quic_data_reader.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_exported_stats.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_testvalue.h"
+#include "quic/qbone/platform/icmp_packet.h"
+#include "quic/qbone/qbone_constants.h"
 
-ABSL_FLAG(
+DEFINE_QUIC_COMMAND_LINE_FLAG(
     bool,
     qbone_close_ephemeral_frames,
     true,
@@ -50,12 +51,7 @@ QboneSessionBase::QboneSessionBase(
   }
 }
 
-QboneSessionBase::~QboneSessionBase() {
-  // Clear out the streams before leaving this destructor to avoid calling
-  // QuicSession::UnregisterStreamPriority
-  stream_map().clear();
-  closed_streams()->clear();
-}
+QboneSessionBase::~QboneSessionBase() {}
 
 void QboneSessionBase::Initialize() {
   crypto_stream_ = CreateCryptoStream();
@@ -138,7 +134,8 @@ QuicStream* QboneSessionBase::ActivateDataStream(
 
 void QboneSessionBase::SendPacketToPeer(absl::string_view packet) {
   if (crypto_stream_ == nullptr) {
-    QUIC_BUG << "Attempting to send packet before encryption established";
+    QUIC_BUG(quic_bug_10987_1)
+        << "Attempting to send packet before encryption established";
     return;
   }
 
@@ -152,7 +149,8 @@ void QboneSessionBase::SendPacketToPeer(absl::string_view packet) {
         break;
       case MESSAGE_STATUS_TOO_LARGE: {
         if (packet.size() < sizeof(ip6_hdr)) {
-          QUIC_BUG << "Dropped malformed packet: IPv6 header too short";
+          QUIC_BUG(quic_bug_10987_2)
+              << "Dropped malformed packet: IPv6 header too short";
           break;
         }
         auto* header = reinterpret_cast<const ip6_hdr*>(packet.begin());
@@ -169,16 +167,17 @@ void QboneSessionBase::SendPacketToPeer(absl::string_view packet) {
         break;
       }
       case MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED:
-        QUIC_BUG << "MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED";
+        QUIC_BUG(quic_bug_10987_3)
+            << "MESSAGE_STATUS_ENCRYPTION_NOT_ESTABLISHED";
         break;
       case MESSAGE_STATUS_UNSUPPORTED:
-        QUIC_BUG << "MESSAGE_STATUS_UNSUPPORTED";
+        QUIC_BUG(quic_bug_10987_4) << "MESSAGE_STATUS_UNSUPPORTED";
         break;
       case MESSAGE_STATUS_BLOCKED:
-        QUIC_BUG << "MESSAGE_STATUS_BLOCKED";
+        QUIC_BUG(quic_bug_10987_5) << "MESSAGE_STATUS_BLOCKED";
         break;
       case MESSAGE_STATUS_INTERNAL_ERROR:
-        QUIC_BUG << "MESSAGE_STATUS_INTERNAL_ERROR";
+        QUIC_BUG(quic_bug_10987_6) << "MESSAGE_STATUS_INTERNAL_ERROR";
         break;
     }
     return;
@@ -187,7 +186,7 @@ void QboneSessionBase::SendPacketToPeer(absl::string_view packet) {
   // QBONE streams are ephemeral.
   QuicStream* stream = CreateOutgoingStream();
   if (!stream) {
-    QUIC_BUG << "Failed to create an outgoing QBONE stream.";
+    QUIC_BUG(quic_bug_10987_7) << "Failed to create an outgoing QBONE stream.";
     return;
   }
 
@@ -214,7 +213,7 @@ uint64_t QboneSessionBase::GetNumFallbackToStream() const {
 
 void QboneSessionBase::set_writer(QbonePacketWriter* writer) {
   writer_ = writer;
-  testing::testvalue::Adjust("quic_QbonePacketWriter", &writer_);
+  quic::AdjustTestValue("quic_QbonePacketWriter", &writer_);
 }
 
 }  // namespace quic

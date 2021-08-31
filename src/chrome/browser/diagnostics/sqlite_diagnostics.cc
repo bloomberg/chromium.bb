@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/history/core/browser/history_constants.h"
@@ -30,9 +31,9 @@
 #include "storage/browser/database/database_tracker.h"
 #include "third_party/sqlite/sqlite3.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_constants.h"
-#endif  // defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_constants.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace diagnostics {
 
@@ -102,8 +103,8 @@ class SqliteIntegrityTest : public DiagnosticsTest {
 
     int errors = 0;
     {  // Scope the statement and database so they close properly.
-      sql::Database database;
-      database.set_exclusive_locking();
+      sql::Database database(
+          {.exclusive_locking = true, .page_size = 4096, .cache_size = 500});
       scoped_refptr<ErrorRecorder> recorder(new ErrorRecorder);
 
       // Set the error callback so that we can get useful results in a debug
@@ -229,14 +230,14 @@ std::unique_ptr<DiagnosticsTest> MakeSqliteHistoryDbTest() {
       base::FilePath(history::kHistoryFilename));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 std::unique_ptr<DiagnosticsTest> MakeSqliteNssCertDbTest() {
   base::FilePath home_dir;
   base::PathService::Get(base::DIR_HOME, &home_dir);
   return std::make_unique<SqliteIntegrityTest>(
       SqliteIntegrityTest::REMOVE_IF_CORRUPT,
       DIAGNOSTICS_SQLITE_INTEGRITY_NSS_CERT_TEST,
-      home_dir.Append(chromeos::kNssCertDbPath));
+      home_dir.Append(ash::kNssCertDbPath));
 }
 
 std::unique_ptr<DiagnosticsTest> MakeSqliteNssKeyDbTest() {
@@ -245,9 +246,9 @@ std::unique_ptr<DiagnosticsTest> MakeSqliteNssKeyDbTest() {
   return std::make_unique<SqliteIntegrityTest>(
       SqliteIntegrityTest::REMOVE_IF_CORRUPT,
       DIAGNOSTICS_SQLITE_INTEGRITY_NSS_KEY_TEST,
-      home_dir.Append(chromeos::kNssKeyDbPath));
+      home_dir.Append(ash::kNssKeyDbPath));
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 std::unique_ptr<DiagnosticsTest> MakeSqliteFaviconsDbTest() {
   return std::make_unique<SqliteIntegrityTest>(

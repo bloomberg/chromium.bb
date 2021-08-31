@@ -9,7 +9,6 @@
 #include "base/feature_list.h"
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
-#include "content/browser/service_worker/service_worker_main_resource_handle_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 #include "content/browser/worker_host/worker_script_loader.h"
@@ -48,7 +47,6 @@ WorkerScriptLoaderFactory::~WorkerScriptLoaderFactory() {
 
 void WorkerScriptLoaderFactory::CreateLoaderAndStart(
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-    int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& resource_request,
@@ -64,10 +62,10 @@ void WorkerScriptLoaderFactory::CreateLoaderAndStart(
 
   // Create a WorkerScriptLoader to load the script.
   auto script_loader = std::make_unique<WorkerScriptLoader>(
-      process_id_, worker_token_, routing_id, request_id, options,
-      resource_request, std::move(client), service_worker_handle_,
-      appcache_host_, browser_context_getter_, loader_factory_,
-      traffic_annotation, worker_source_id_);
+      process_id_, worker_token_, request_id, options, resource_request,
+      std::move(client), service_worker_handle_, appcache_host_,
+      browser_context_getter_, loader_factory_, traffic_annotation,
+      worker_source_id_);
   script_loader_ = script_loader->GetWeakPtr();
   mojo::MakeSelfOwnedReceiver(std::move(script_loader), std::move(receiver));
 }

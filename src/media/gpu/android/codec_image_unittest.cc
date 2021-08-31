@@ -49,7 +49,7 @@ class CodecImageTest : public testing::Test {
         .WillByDefault(Return(MEDIA_CODEC_OK));
 
     gl::init::InitializeStaticGLBindingsImplementation(
-        gl::kGLImplementationEGLGLES2, false);
+        gl::GLImplementationParts(gl::kGLImplementationEGLGLES2), false);
     gl::init::InitializeGLOneOffPlatformImplementation(false, false, false);
 
     surface_ = new gl::PbufferGLSurfaceEGL(gfx::Size(320, 240));
@@ -203,20 +203,6 @@ TEST_F(CodecImageTest, CopyTexImageTriggersFrontBufferRendering) {
   EXPECT_CALL(*codec_buffer_wait_coordinator_, WaitForFrameAvailable());
   EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
               UpdateTexImage());
-  i->CopyTexImage(GL_TEXTURE_EXTERNAL_OES);
-  ASSERT_TRUE(i->was_rendered_to_front_buffer());
-}
-
-TEST_F(CodecImageTestExplicitBind, CopyTexImageTriggersFrontBufferRendering) {
-  auto i = NewImage(kTextureOwner);
-  // Verify that the release comes before the wait.
-  InSequence s;
-  EXPECT_CALL(*codec_, ReleaseOutputBuffer(_, true));
-  EXPECT_CALL(*codec_buffer_wait_coordinator_, WaitForFrameAvailable());
-  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
-              UpdateTexImage());
-  EXPECT_CALL(*codec_buffer_wait_coordinator_->texture_owner(),
-              EnsureTexImageBound());
   i->CopyTexImage(GL_TEXTURE_EXTERNAL_OES);
   ASSERT_TRUE(i->was_rendered_to_front_buffer());
 }
@@ -380,7 +366,8 @@ TEST_F(CodecImageTest, RenderAfterUnusedDoesntCrash) {
   i->NotifyUnused();
   EXPECT_FALSE(i->RenderToTextureOwnerBackBuffer());
   EXPECT_FALSE(i->RenderToTextureOwnerFrontBuffer(
-      CodecImage::BindingsMode::kEnsureTexImageBound));
+      CodecImage::BindingsMode::kEnsureTexImageBound,
+      codec_buffer_wait_coordinator_->texture_owner()->GetTextureId()));
 }
 
 TEST_F(CodecImageTest, CodedSizeVsVisibleSize) {

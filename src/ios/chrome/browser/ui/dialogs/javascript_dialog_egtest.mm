@@ -205,7 +205,7 @@ void WaitForJavaScriptDialog(const GURL& url,
 
   // Check the title.  Non-modal main-frame dialogs do not have a title label.
   if (!is_main_frame) {
-    base::string16 url_string = url_formatter::FormatUrlForSecurityDisplay(
+    std::u16string url_string = url_formatter::FormatUrlForSecurityDisplay(
         url, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
     NSString* expected_title =
         l10n_util::GetNSStringF(IDS_JAVASCRIPT_MESSAGEBOX_TITLE, url_string);
@@ -452,7 +452,13 @@ void TapSuppressDialogsButton() {
 // Tests to ensure crbug.com/658260 does not regress.
 // Tests that if an alert should be called when settings are displays, the alert
 // waits for the dismiss of the settings.
-- (void)testShowJavaScriptBehindSettings {
+- (void)MAYBE_testShowJavaScriptBehindSettings {
+// TODO(crbug.com/1209340): test failing on ipad device
+#if !TARGET_IPHONE_SIMULATOR
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(@"This test doesn't pass on iPad device.");
+  }
+#endif
   // Load the alert test page.
   const GURL kURL = self.testServer->GetURL(kAlertURLPath);
   [ChromeEarlGrey loadURL:kURL];

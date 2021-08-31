@@ -4,7 +4,6 @@
 
 package org.chromium.content.browser.accessibility;
 
-import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.assist.AssistStructure.ViewNode;
@@ -42,9 +41,9 @@ import org.chromium.base.UserData;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.content.browser.RenderCoordinatesImpl;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.WindowEventObserverManager;
+import org.chromium.content.browser.accessibility.AccessibilityDelegate.AccessibilityCoordinates;
 import org.chromium.content.browser.accessibility.captioning.CaptioningController;
 import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -73,7 +72,7 @@ import java.util.Set;
 @JNINamespace("content")
 public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         implements AccessibilityStateChangeListener, WebContentsAccessibility, WindowEventObserver,
-                   UserData {
+                   UserData, BrowserAccessibilityState.Listener {
     // The following constants have been hard coded so we can support actions newer than our
     // minimum SDK without having to break methods into a series of subclasses.
     // Constants defined by AccessibilityNodeInfo per SDK
@@ -89,35 +88,35 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             "ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE";
 
     // Constants defined in the M SDK. (API Level 23, Android 6)
-    private static final int ACTION_CONTEXT_CLICK = 0x0102003c;
-    private static final int ACTION_SHOW_ON_SCREEN = 0x01020036;
-    private static final int ACTION_SCROLL_UP = 0x01020038;
-    private static final int ACTION_SCROLL_DOWN = 0x0102003a;
-    private static final int ACTION_SCROLL_LEFT = 0x01020039;
-    private static final int ACTION_SCROLL_RIGHT = 0x0102003b;
-    private static final int ACTION_SCROLL_TO_POSITION = 0x01020037;
+    public static final int ACTION_CONTEXT_CLICK = 0x0102003c;
+    public static final int ACTION_SHOW_ON_SCREEN = 0x01020036;
+    public static final int ACTION_SCROLL_UP = 0x01020038;
+    public static final int ACTION_SCROLL_DOWN = 0x0102003a;
+    public static final int ACTION_SCROLL_LEFT = 0x01020039;
+    public static final int ACTION_SCROLL_RIGHT = 0x0102003b;
+    public static final int ACTION_SCROLL_TO_POSITION = 0x01020037;
 
     // Constants defined in the N SDK. (API Level 24+25, Android 7)
-    private static final int ACTION_SET_PROGRESS = 0x0102003d;
+    public static final int ACTION_SET_PROGRESS = 0x0102003d;
     private static final String ACTION_ARGUMENT_PROGRESS_VALUE =
             "android.view.accessibility.action.ARGUMENT_PROGRESS_VALUE";
 
     // Constants defined in the O SDK. (API Level 26+27, Android 8)
-    private static final int ACTION_MOVE_WINDOW = 0x01020042;
+    public static final int ACTION_MOVE_WINDOW = 0x01020042;
 
     // Constants defined in the P SDK. (API Level 28, Android 9)
-    private static final int ACTION_SHOW_TOOLTIP = 0x01020044;
-    private static final int ACTION_HIDE_TOOLTIP = 0x01020045;
+    public static final int ACTION_SHOW_TOOLTIP = 0x01020044;
+    public static final int ACTION_HIDE_TOOLTIP = 0x01020045;
 
     // Constants defined in the Q SDK. (API Level 29, Android 10)
-    private static final int ACTION_PAGE_UP = 0x01020046;
-    private static final int ACTION_PAGE_DOWN = 0x01020047;
-    private static final int ACTION_PAGE_LEFT = 0x01020048;
-    private static final int ACTION_PAGE_RIGHT = 0x01020049;
+    public static final int ACTION_PAGE_UP = 0x01020046;
+    public static final int ACTION_PAGE_DOWN = 0x01020047;
+    public static final int ACTION_PAGE_LEFT = 0x01020048;
+    public static final int ACTION_PAGE_RIGHT = 0x01020049;
 
     // Constants defined in the R SDK. (API Level 30, Android 11)
-    private static final int ACTION_IME_ENTER = 0x01020054;
-    private static final int ACTION_PRESS_AND_HOLD = 0x0102004a;
+    public static final int ACTION_IME_ENTER = 0x01020054;
+    public static final int ACTION_PRESS_AND_HOLD = 0x0102004a;
 
     // Constant for no granularity selected.
     private static final int NO_GRANULARITY_SELECTED = 0;
@@ -128,12 +127,12 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     // Throttle time for content invalid utterances. Content invalid will only be announced at most
     // once per this time interval in milliseconds for a given focused node.
-    private static final int CONTENT_INVALID_THROTTLE_DELAY = 3000;
+    private static final int CONTENT_INVALID_THROTTLE_DELAY = 4500;
 
     private static SparseArray<AccessibilityAction> sAccessibilityActionMap =
             new SparseArray<AccessibilityAction>();
 
-    private final WebContentsImpl mWebContents;
+    private final AccessibilityDelegate mDelegate;
     protected AccessibilityManager mAccessibilityManager;
     protected final Context mContext;
     private String mProductVersion;
@@ -156,6 +155,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private int mSelectionStart;
     private int mCursorIndex;
     private String mSupportedHtmlElementTypes;
+
+    // Tracker for all actions performed and events sent by this instance, used for testing.
+    private AccessibilityActionAndEventTracker mTracker;
 
     // Whether or not the next selection event should be fired. We only want to sent one traverse
     // and one selection event per granularity move, this ensures no double events while still
@@ -199,14 +201,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private static class Factory implements UserDataFactory<WebContentsAccessibilityImpl> {
         @Override
         public WebContentsAccessibilityImpl create(WebContents webContents) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                return new RWebContentsAccessibility(webContents);
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                return new PieWebContentsAccessibility(webContents);
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                return new OWebContentsAccessibility(webContents);
-            }
-            return new WebContentsAccessibilityImpl(webContents);
+            return createForDelegate(new WebContentsAccessibilityDelegate(webContents));
         }
     }
 
@@ -220,15 +215,40 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                         WebContentsAccessibilityImpl.class, UserDataFactoryLazyHolder.INSTANCE);
     }
 
-    protected WebContentsAccessibilityImpl(WebContents webContents) {
-        mWebContents = (WebContentsImpl) webContents;
-        mView = mWebContents.getViewAndroidDelegate().getContainerView();
+    public static WebContentsAccessibilityImpl fromDelegate(AccessibilityDelegate delegate) {
+        // If WebContents exists, {@link #fromWebContents} should be used.
+        assert delegate.getWebContents() == null;
+        return createForDelegate(delegate);
+    }
+
+    private static WebContentsAccessibilityImpl createForDelegate(AccessibilityDelegate delegate) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            return new RWebContentsAccessibility(delegate);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            return new PieWebContentsAccessibility(delegate);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return new OWebContentsAccessibility(delegate);
+        }
+        return new WebContentsAccessibilityImpl(delegate);
+    }
+
+    protected WebContentsAccessibilityImpl(AccessibilityDelegate delegate) {
+        mDelegate = delegate;
+        mView = mDelegate.getContainerView();
         mContext = mView.getContext();
-        mProductVersion = mWebContents.getProductVersion();
+        mProductVersion = mDelegate.getProductVersion();
         mAccessibilityManager =
                 (AccessibilityManager) mContext.getSystemService(Context.ACCESSIBILITY_SERVICE);
-        mCaptioningController = new CaptioningController(mWebContents);
-        WindowEventObserverManager.from(mWebContents).addObserver(this);
+        if (mDelegate.getWebContents() != null) {
+            mCaptioningController = new CaptioningController(mDelegate.getWebContents());
+            WindowEventObserverManager.from(mDelegate.getWebContents()).addObserver(this);
+        } else {
+            refreshState();
+        }
+        mDelegate.setOnScrollPositionChangedCallback(
+                () -> handleScrollPositionChanged(mAccessibilityFocusId));
+
+        BrowserAccessibilityState.addListener(this);
 
         // Define our delays on a per event type basis.
         Map<Integer, Integer> eventThrottleDelays = new HashMap<Integer, Integer>();
@@ -283,7 +303,11 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                     }
                 }, eventThrottleDelays, viewIndependentEvents);
 
-        // Native is initialized lazily, when node provider is actually requested.
+        if (mDelegate.getNativeAXTree() != 0) {
+            initializeNativeWithAXTreeUpdate(mDelegate.getNativeAXTree());
+        }
+        // If the AXTree is not provided, native is initialized lazily, when node provider is
+        // actually requested.
     }
 
     /**
@@ -338,6 +362,37 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 WebContentsAccessibilityImpl.this, virtualViewId, startOffset, endOffset);
     }
 
+    @VisibleForTesting
+    public void setMaxContentChangedEventsToFireForTesting(int maxEvents) {
+        WebContentsAccessibilityImplJni.get().setMaxContentChangedEventsToFireForTesting(
+                mNativeObj, WebContentsAccessibilityImpl.this, maxEvents);
+    }
+
+    @VisibleForTesting
+    public int getMaxContentChangedEventsToFireForTesting() {
+        return WebContentsAccessibilityImplJni.get().getMaxContentChangedEventsToFireForTesting(
+                mNativeObj);
+    }
+
+    @VisibleForTesting
+    public void setAccessibilityTrackerForTesting(AccessibilityActionAndEventTracker tracker) {
+        mTracker = tracker;
+    }
+
+    @VisibleForTesting
+    public void signalEndOfTestForTesting() {
+        WebContentsAccessibilityImplJni.get().signalEndOfTestForTesting(mNativeObj);
+    }
+
+    @CalledByNative
+    public void handleEndOfTestSignal() {
+        // We have received a signal that we have reached the end of a unit test. If we have a
+        // tracker listening, set the test is complete.
+        if (mTracker != null) {
+            mTracker.signalEndOfTest();
+        }
+    }
+
     // WindowEventObserver
 
     @Override
@@ -371,8 +426,21 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     @Override
     public void onWindowAndroidChanged(WindowAndroid windowAndroid) {
         // Delete this object when switching between WindowAndroids/Activities.
-        WindowEventObserverManager.from(mWebContents).removeObserver(this);
-        mWebContents.removeUserData(WebContentsAccessibilityImpl.class);
+        if (mDelegate.getWebContents() != null) {
+            WindowEventObserverManager.from(mDelegate.getWebContents()).removeObserver(this);
+            ((WebContentsImpl) mDelegate.getWebContents())
+                    .removeUserData(WebContentsAccessibilityImpl.class);
+        }
+
+        deleteEarly();
+    }
+
+    @Override
+    public void destroy() {
+        if (mDelegate.getWebContents() == null) deleteEarly();
+    }
+
+    protected void deleteEarly() {
         if (mNativeObj != 0) {
             WebContentsAccessibilityImplJni.get().deleteEarly(mNativeObj);
             assert mNativeObj == 0;
@@ -394,16 +462,29 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         if (!isNativeInitialized()) {
             if (!mNativeAccessibilityAllowed) return null;
-            mNativeObj = WebContentsAccessibilityImplJni.get().init(
-                    WebContentsAccessibilityImpl.this, mWebContents);
+            if (mDelegate.getWebContents() != null) {
+                mNativeObj = WebContentsAccessibilityImplJni.get().init(
+                        WebContentsAccessibilityImpl.this, mDelegate.getWebContents());
+            } else {
+                return null;
+            }
             onNativeInit();
         }
         if (!isEnabled()) {
+            boolean screenReaderMode = BrowserAccessibilityState.screenReaderMode();
             WebContentsAccessibilityImplJni.get().enable(
-                    mNativeObj, WebContentsAccessibilityImpl.this);
+                    mNativeObj, WebContentsAccessibilityImpl.this, screenReaderMode);
             return null;
         }
         return this;
+    }
+
+    protected void initializeNativeWithAXTreeUpdate(long nativeAxTree) {
+        assert !isNativeInitialized();
+
+        mNativeObj = WebContentsAccessibilityImplJni.get().initWithAXTree(
+                WebContentsAccessibilityImpl.this, nativeAxTree);
+        onNativeInit();
     }
 
     @CalledByNative
@@ -488,10 +569,23 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     // AccessibilityStateChangeListener
+    // TODO(dmazzoni): have BrowserAccessibilityState monitor this and merge
+    // into BrowserAccessibilityStateListener.
 
     @Override
     public void onAccessibilityStateChanged(boolean enabled) {
         setState(enabled);
+    }
+
+    // BrowserAccessibilityStateListener
+
+    @Override
+    public void onBrowserAccessibilityStateChanged() {
+        if (!isAccessibilityEnabled()) return;
+
+        boolean screenReaderMode = BrowserAccessibilityState.screenReaderMode();
+        WebContentsAccessibilityImplJni.get().setAXMode(
+                mNativeObj, WebContentsAccessibilityImpl.this, screenReaderMode);
     }
 
     // WebContentsAccessibility
@@ -542,17 +636,24 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     public void onProvideVirtualStructure(
             final ViewStructure structure, final boolean ignoreScrollOffset) {
         // Do not collect accessibility tree in incognito mode
-        if (mWebContents.isIncognito()) {
+        if (mDelegate.isIncognito()) {
             structure.setChildCount(0);
             return;
         }
         structure.setChildCount(1);
         final ViewStructure viewRoot = structure.asyncNewChild(0);
-        mWebContents.requestAccessibilitySnapshot(new AccessibilitySnapshotCallback() {
+        mDelegate.requestAccessibilitySnapshot(new AccessibilitySnapshotCallback() {
             @Override
             public void onAccessibilitySnapshot(AccessibilitySnapshotNode root) {
                 viewRoot.setClassName("");
                 viewRoot.setHint(mProductVersion);
+
+                WebContents webContents = mDelegate.getWebContents();
+                if (webContents != null && !webContents.isDestroyed()) {
+                    Bundle extras = viewRoot.getExtras();
+                    extras.putCharSequence("url", webContents.getVisibleUrl().getSpec());
+                }
+
                 if (root == null) {
                     viewRoot.asyncCommit();
                     return;
@@ -564,7 +665,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     // When creating the View structure, the left and top are relative to the parent node.
     @TargetApi(Build.VERSION_CODES.M)
-    private void createVirtualStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
+    protected void createVirtualStructure(ViewStructure viewNode, AccessibilitySnapshotNode node,
             final boolean ignoreScrollOffset) {
         viewNode.setClassName(node.className);
         if (node.hasSelection) {
@@ -572,19 +673,19 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         } else {
             viewNode.setText(node.text);
         }
-        RenderCoordinatesImpl renderCoordinates = mWebContents.getRenderCoordinates();
-        int left = (int) renderCoordinates.fromLocalCssToPix(node.x);
-        int top = (int) renderCoordinates.fromLocalCssToPix(node.y);
-        int width = (int) renderCoordinates.fromLocalCssToPix(node.width);
-        int height = (int) renderCoordinates.fromLocalCssToPix(node.height);
+        AccessibilityCoordinates coordinates = mDelegate.getAccessibilityCoordinates();
+        int left = (int) coordinates.fromLocalCssToPix(node.x);
+        int top = (int) coordinates.fromLocalCssToPix(node.y);
+        int width = (int) coordinates.fromLocalCssToPix(node.width);
+        int height = (int) coordinates.fromLocalCssToPix(node.height);
 
         Rect boundsInParent = new Rect(left, top, left + width, top + height);
         if (node.isRootNode) {
             // Offset of the web content relative to the View.
-            boundsInParent.offset(0, (int) renderCoordinates.getContentOffsetYPix());
+            boundsInParent.offset(0, (int) coordinates.getContentOffsetYPix());
             if (!ignoreScrollOffset) {
-                boundsInParent.offset(-(int) renderCoordinates.getScrollXPix(),
-                        -(int) renderCoordinates.getScrollYPix());
+                boundsInParent.offset(
+                        -(int) coordinates.getScrollXPix(), -(int) coordinates.getScrollYPix());
             }
         }
 
@@ -592,7 +693,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         viewNode.setChildCount(node.children.size());
         if (node.hasStyle) {
             // The text size should be in physical pixels, not CSS pixels.
-            float textSize = renderCoordinates.fromLocalCssToPix(node.textSize);
+            float textSize = coordinates.fromLocalCssToPix(node.textSize);
 
             int style = (node.bold ? ViewNode.TEXT_STYLE_BOLD : 0)
                     | (node.italic ? ViewNode.TEXT_STYLE_ITALIC : 0)
@@ -600,6 +701,14 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                     | (node.lineThrough ? ViewNode.TEXT_STYLE_STRIKE_THRU : 0);
             viewNode.setTextStyle(textSize, node.color, node.bgcolor, style);
         }
+
+        // Note: OWebContentsAccessibility.createVirtualStructure also stores this in
+        // HtmlInfo, but putting it in the extras bundle is useful for earlier API
+        // versions, and for scenarios where HtmlInfo is stripped.
+        Bundle extras = viewNode.getExtras();
+        extras.putCharSequence("htmlTag", node.htmlTag);
+        for (String[] attr : node.htmlAttributes) extras.putCharSequence(attr[0], attr[1]);
+
         for (int i = 0; i < node.children.size(); i++) {
             createVirtualStructure(viewNode.asyncNewChild(i), node.children.get(i), true);
         }
@@ -616,12 +725,13 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             return false;
         }
 
+        if (mTracker != null) mTracker.addAction(action, arguments);
+
         switch (action) {
             case AccessibilityNodeInfo.ACTION_ACCESSIBILITY_FOCUS:
                 if (!moveAccessibilityFocusToId(virtualViewId)) return true;
                 if (!mIsHovering) {
-                    WebContentsAccessibilityImplJni.get().scrollToMakeNodeVisible(
-                            mNativeObj, WebContentsAccessibilityImpl.this, mAccessibilityFocusId);
+                    scrollToMakeNodeVisible(mAccessibilityFocusId);
                 } else {
                     mPendingScrollToMakeNodeVisible = true;
                 }
@@ -644,8 +754,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 return true;
             case AccessibilityNodeInfo.ACTION_CLICK:
                 if (!mView.hasFocus()) mView.requestFocus();
-                WebContentsAccessibilityImplJni.get().click(
-                        mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId);
+                performClick(virtualViewId);
                 return true;
             case AccessibilityNodeInfo.ACTION_FOCUS:
                 if (!mView.hasFocus()) mView.requestFocus();
@@ -662,7 +771,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                         AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
                 if (elementType == null) return false;
                 elementType = elementType.toUpperCase(Locale.US);
-                return jumpToElementType(virtualViewId, elementType, true);
+                return jumpToElementType(
+                        virtualViewId, elementType, /*forwards*/ true, /*canWrap*/ false);
             }
             case AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT: {
                 if (arguments == null) return false;
@@ -670,7 +780,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                         AccessibilityNodeInfo.ACTION_ARGUMENT_HTML_ELEMENT_STRING);
                 if (elementType == null) return false;
                 elementType = elementType.toUpperCase(Locale.US);
-                return jumpToElementType(virtualViewId, elementType, false);
+                return jumpToElementType(virtualViewId, elementType, /*forwards*/ false,
+                        /*canWrap*/ virtualViewId == mCurrentRootId);
             }
             case ACTION_SET_TEXT: {
                 if (!WebContentsAccessibilityImplJni.get().isEditableText(
@@ -733,32 +844,30 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             case AccessibilityNodeInfo.ACTION_SCROLL_BACKWARD:
                 return scrollBackward(virtualViewId);
             case AccessibilityNodeInfo.ACTION_CUT:
-                if (mWebContents != null) {
-                    mWebContents.cut();
+                if (mDelegate.getWebContents() != null) {
+                    ((WebContentsImpl) mDelegate.getWebContents()).cut();
                     return true;
                 }
                 return false;
             case AccessibilityNodeInfo.ACTION_COPY:
-                if (mWebContents != null) {
-                    mWebContents.copy();
+                if (mDelegate.getWebContents() != null) {
+                    ((WebContentsImpl) mDelegate.getWebContents()).copy();
                     return true;
                 }
                 return false;
             case AccessibilityNodeInfo.ACTION_PASTE:
-                if (mWebContents != null) {
-                    mWebContents.paste();
+                if (mDelegate.getWebContents() != null) {
+                    ((WebContentsImpl) mDelegate.getWebContents()).paste();
                     return true;
                 }
                 return false;
             case AccessibilityNodeInfo.ACTION_COLLAPSE:
             case AccessibilityNodeInfo.ACTION_EXPAND:
                 // If something is collapsible or expandable, just activate it to toggle.
-                WebContentsAccessibilityImplJni.get().click(
-                        mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId);
+                performClick(virtualViewId);
                 return true;
             case ACTION_SHOW_ON_SCREEN:
-                WebContentsAccessibilityImplJni.get().scrollToMakeNodeVisible(
-                        mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId);
+                scrollToMakeNodeVisible(virtualViewId);
                 return true;
             case ACTION_CONTEXT_CLICK:
             case AccessibilityNodeInfo.ACTION_LONG_CLICK:
@@ -792,10 +901,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 return WebContentsAccessibilityImplJni.get().setRangeValue(
                         mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId, value);
             case ACTION_IME_ENTER:
-                if (mWebContents != null) {
-                    if (ImeAdapterImpl.fromWebContents(mWebContents) != null) {
+                if (mDelegate.getWebContents() != null) {
+                    if (ImeAdapterImpl.fromWebContents(mDelegate.getWebContents()) != null) {
                         // We send an unspecified action to ensure Enter key is hit
-                        return ImeAdapterImpl.fromWebContents(mWebContents)
+                        return ImeAdapterImpl.fromWebContents(mDelegate.getWebContents())
                                 .performEditorAction(EditorInfo.IME_ACTION_UNSPECIFIED);
                     }
                 }
@@ -833,8 +942,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             if (id == 0) return;
 
             moveAccessibilityFocusToId(id);
-            WebContentsAccessibilityImplJni.get().scrollToMakeNodeVisible(
-                    mNativeObj, WebContentsAccessibilityImpl.this, mAccessibilityFocusId);
+            scrollToMakeNodeVisible(mAccessibilityFocusId);
         }
     }
 
@@ -847,13 +955,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
         if (action == MotionEvent.ACTION_HOVER_EXIT) {
             mIsHovering = false;
-            mLastHoverId = View.NO_ID;
-
-            if (mPendingScrollToMakeNodeVisible) {
-                WebContentsAccessibilityImplJni.get().scrollToMakeNodeVisible(
-                        mNativeObj, WebContentsAccessibilityImpl.this, mAccessibilityFocusId);
-            }
-            mPendingScrollToMakeNodeVisible = false;
             return true;
         }
 
@@ -862,9 +963,18 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         return true;
     }
 
+    @Override
+    public boolean onHoverEventNoRenderer(MotionEvent event) {
+        if (!onHoverEvent(event.getAction())) return false;
+
+        float x = event.getX() + mDelegate.getAccessibilityCoordinates().getScrollX();
+        float y = event.getY() + mDelegate.getAccessibilityCoordinates().getScrollY();
+        return WebContentsAccessibilityImplJni.get().onHoverEventNoRenderer(mNativeObj, this, x, y);
+    }
+
     /**
      * Notify us when the frame info is initialized,
-     * the first time, since until that point, we can't use RenderCoordinates to transform
+     * the first time, since until that point, we can't use AccessibilityCoordinates to transform
      * web coordinates to screen coordinates.
      */
     @CalledByNative
@@ -885,14 +995,14 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         }
     }
 
-    private boolean jumpToElementType(int virtualViewId, String elementType, boolean forwards) {
+    private boolean jumpToElementType(
+            int virtualViewId, String elementType, boolean forwards, boolean canWrap) {
         int id = WebContentsAccessibilityImplJni.get().findElementType(mNativeObj,
-                WebContentsAccessibilityImpl.this, virtualViewId, elementType, forwards);
+                WebContentsAccessibilityImpl.this, virtualViewId, elementType, forwards, canWrap);
         if (id == 0) return false;
 
         moveAccessibilityFocusToId(id);
-        WebContentsAccessibilityImplJni.get().scrollToMakeNodeVisible(
-                mNativeObj, WebContentsAccessibilityImpl.this, mAccessibilityFocusId);
+        scrollToMakeNodeVisible(mAccessibilityFocusId);
         return true;
     }
 
@@ -1062,6 +1172,20 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mSuppressNextSelectionEvent = true;
     }
 
+    private void scrollToMakeNodeVisible(int virtualViewId) {
+        if (mDelegate.scrollToMakeNodeVisible(getAbsolutePositionForNode(virtualViewId))) return;
+
+        WebContentsAccessibilityImplJni.get().scrollToMakeNodeVisible(
+                mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId);
+    }
+
+    private void performClick(int virtualViewId) {
+        if (mDelegate.performClick(getAbsolutePositionForNode(virtualViewId))) return;
+
+        WebContentsAccessibilityImplJni.get().click(
+                mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId);
+    }
+
     private void setSelection(AccessibilityEvent selectionEvent) {
         if (WebContentsAccessibilityImplJni.get().isEditableText(
                     mNativeObj, WebContentsAccessibilityImpl.this, mSelectionNodeId)
@@ -1151,6 +1275,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         // The container view is indicated by a virtualViewId of NO_ID; post these events directly
         // since there's no web-specific information to attach.
         if (virtualViewId == View.NO_ID) {
+            if (mTracker != null) mTracker.addEvent(AccessibilityEvent.obtain(eventType));
             mView.sendAccessibilityEvent(eventType);
             return;
         }
@@ -1184,6 +1309,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         final AccessibilityEvent event = AccessibilityEvent.obtain(eventType);
         event.setPackageName(mContext.getPackageName());
         event.setSource(mView, virtualViewId);
+        if (eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED) {
+            event.setContentChangeTypes(AccessibilityEvent.CONTENT_CHANGE_TYPE_SUBTREE);
+        }
         if (!WebContentsAccessibilityImplJni.get().populateAccessibilityEvent(mNativeObj,
                     WebContentsAccessibilityImpl.this, event, virtualViewId, eventType)) {
             event.recycle();
@@ -1246,21 +1374,28 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
      * convert web coordinates to screen coordinates. When this is first initialized,
      * notifyFrameInfoInitialized is called - but we shouldn't check whether or not
      * that method was called as a way to determine if frame info is valid because
-     * notifyFrameInfoInitialized might not be called at all if RenderCoordinates
+     * notifyFrameInfoInitialized might not be called at all if AccessibilityCoordinates
      * gets initialized first.
      */
     private boolean isFrameInfoInitialized() {
-        if (mWebContents == null) {
+        if (mDelegate.getWebContents() == null && mNativeObj == 0) {
             // We already got frame info since WebContents finished its lifecycle.
             return true;
         }
-        RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
-        return rc.getContentWidthCss() != 0.0 || rc.getContentHeightCss() != 0.0;
+
+        AccessibilityCoordinates ac = mDelegate.getAccessibilityCoordinates();
+        return ac.getContentWidthCss() != 0.0 || ac.getContentHeightCss() != 0.0;
     }
 
     @CalledByNative
     private void handlePageLoaded(int id) {
-        if (!mShouldFocusOnPageLoad) return;
+        // If |mShouldFocusOnPageLoad| is false, that means this is a WebView and we should disable
+        // the image descriptions alt-text hints.
+        if (!mShouldFocusOnPageLoad) {
+            WebContentsAccessibilityImplJni.get().setIsRunningAsWebView(
+                    mNativeObj, WebContentsAccessibilityImpl.this, true);
+            return;
+        }
         if (mUserHasTouchExplored) return;
         moveAccessibilityFocusToIdAndRefocusIfNeeded(id);
     }
@@ -1336,7 +1471,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     @CalledByNative
-    private void handleScrollPositionChanged(int id) {
+    protected void handleScrollPositionChanged(int id) {
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_SCROLLED);
     }
 
@@ -1355,7 +1490,15 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     @CalledByNative
     private void announceLiveRegionText(String text) {
-        mView.announceForAccessibility(text);
+        if (isAccessibilityEnabled()) {
+            AccessibilityEvent event =
+                    AccessibilityEvent.obtain(AccessibilityEvent.TYPE_ANNOUNCEMENT);
+            if (event == null) return;
+
+            event.getText().add(text);
+            event.setContentDescription(null);
+            requestSendAccessibilityEvent(event);
+        }
     }
 
     @CalledByNative
@@ -1364,8 +1507,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     @CalledByNative
-    private void addAccessibilityNodeInfoChild(AccessibilityNodeInfo node, int childId) {
-        node.addChild(mView, childId);
+    private void addAccessibilityNodeInfoChildren(AccessibilityNodeInfo node, int[] childIds) {
+        for (int childId : childIds) {
+            node.addChild(mView, childId);
+        }
     }
 
     @CalledByNative
@@ -1448,7 +1593,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         addAction(node, AccessibilityNodeInfo.ACTION_PREVIOUS_HTML_ELEMENT);
         addAction(node, ACTION_SHOW_ON_SCREEN);
         addAction(node, ACTION_CONTEXT_CLICK);
-        addAction(node, AccessibilityNodeInfo.ACTION_LONG_CLICK);
+
+        // We choose to not add ACTION_LONG_CLICK to nodes to prevent verbose utterances.
+        // addAction(node, AccessibilityNodeInfo.ACTION_LONG_CLICK);
 
         if (hasNonEmptyInnerText) {
             addAction(node, AccessibilityNodeInfo.ACTION_NEXT_AT_MOVEMENT_GRANULARITY);
@@ -1530,7 +1677,9 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     @CalledByNative
     private void setAccessibilityNodeInfoBaseAttributes(AccessibilityNodeInfo node, boolean isRoot,
-            String className, String role, String roleDescription, String hint, String targetUrl) {
+            String className, String role, String roleDescription, String hint, String targetUrl,
+            boolean canOpenPopup, boolean dismissable, boolean multiLine, int inputType,
+            int liveRegion, String errorMessage) {
         node.setClassName(className);
 
         Bundle bundle = node.getExtras();
@@ -1544,6 +1693,22 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             bundle.putCharSequence(
                     "ACTION_ARGUMENT_HTML_ELEMENT_STRING_VALUES", mSupportedHtmlElementTypes);
         }
+
+        node.setCanOpenPopup(canOpenPopup);
+        node.setDismissable(dismissable);
+        node.setMultiLine(multiLine);
+        node.setInputType(inputType);
+
+        // Deliberately don't call setLiveRegion because TalkBack speaks
+        // the entire region anytime it changes. Instead Chrome will
+        // call announceLiveRegionText() only on the nodes that change.
+        // node.setLiveRegion(liveRegion);
+
+        // We only apply the |errorMessage| if {@link setAccessibilityNodeInfoBooleanAttributes}
+        // set |contentInvalid| to true based on throttle delay.
+        if (node.isContentInvalid()) {
+            node.setError(errorMessage);
+        }
     }
 
     @SuppressLint("NewApi")
@@ -1552,7 +1717,13 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             boolean annotateAsLink, boolean isEditableText, String language, int[] suggestionStarts,
             int[] suggestionEnds, String[] suggestions, String stateDescription) {
         CharSequence computedText = computeText(
-                text, isEditableText, language, suggestionStarts, suggestionEnds, suggestions);
+                text, annotateAsLink, language, suggestionStarts, suggestionEnds, suggestions);
+
+        // For pre-Android R, we add stateDescription to text for backwards compatibility.
+        if (stateDescription != null && !stateDescription.isEmpty()) {
+            computedText = computedText + ", " + stateDescription;
+        }
+
         // We expose the nested structure of links, which results in the roles of all nested nodes
         // being read. Use content description in the case of links to prevent verbose TalkBack
         if (annotateAsLink) {
@@ -1560,11 +1731,23 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         } else {
             node.setText(computedText);
         }
+    }
 
-        // For pre-Android R, we add stateDescription to text for backwards compatibility.
-        if (stateDescription != null && !stateDescription.isEmpty()) {
-            node.setText(computedText + ", " + stateDescription);
-        }
+    protected boolean areInlineTextBoxesLoaded(int virtualViewId) {
+        return WebContentsAccessibilityImplJni.get().areInlineTextBoxesLoaded(
+                mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId);
+    }
+
+    protected void loadInlineTextBoxes(int virtualViewId) {
+        WebContentsAccessibilityImplJni.get().loadInlineTextBoxes(
+                mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId);
+    }
+
+    protected int[] getCharacterBoundingBoxes(
+            int virtualViewId, int positionInfoStartIndex, int positionInfoLength) {
+        return WebContentsAccessibilityImplJni.get().getCharacterBoundingBoxes(mNativeObj,
+                WebContentsAccessibilityImpl.this, virtualViewId, positionInfoStartIndex,
+                positionInfoLength);
     }
 
     protected CharSequence computeText(String text, boolean annotateAsLink, String language,
@@ -1625,17 +1808,17 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
 
     protected void convertWebRectToAndroidCoordinates(Rect rect) {
         // Offset by the scroll position.
-        RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
-        rect.offset(-(int) rc.getScrollX(), -(int) rc.getScrollY());
+        AccessibilityCoordinates ac = mDelegate.getAccessibilityCoordinates();
+        rect.offset(-(int) ac.getScrollX(), -(int) ac.getScrollY());
 
         // Convert CSS (web) pixels to Android View pixels
-        rect.left = (int) rc.fromLocalCssToPix(rect.left);
-        rect.top = (int) rc.fromLocalCssToPix(rect.top);
-        rect.bottom = (int) rc.fromLocalCssToPix(rect.bottom);
-        rect.right = (int) rc.fromLocalCssToPix(rect.right);
+        rect.left = (int) ac.fromLocalCssToPix(rect.left);
+        rect.top = (int) ac.fromLocalCssToPix(rect.top);
+        rect.bottom = (int) ac.fromLocalCssToPix(rect.bottom);
+        rect.right = (int) ac.fromLocalCssToPix(rect.right);
 
         // Offset by the location of the web content within the view.
-        rect.offset(0, (int) rc.getContentOffsetYPix());
+        rect.offset(0, (int) ac.getContentOffsetYPix());
 
         // Finally offset by the location of the view within the screen.
         final int[] viewLocation = new int[2];
@@ -1643,22 +1826,38 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         rect.offset(viewLocation[0], viewLocation[1]);
 
         // Clip to the viewport bounds.
-        int viewportRectTop = viewLocation[1] + (int) rc.getContentOffsetYPix();
-        int viewportRectBottom = viewportRectTop + rc.getLastFrameViewportHeightPixInt();
+        int viewportRectTop = viewLocation[1] + (int) ac.getContentOffsetYPix();
+        int viewportRectBottom = viewportRectTop + ac.getLastFrameViewportHeightPixInt();
         if (rect.top < viewportRectTop) rect.top = viewportRectTop;
         if (rect.bottom > viewportRectBottom) rect.bottom = viewportRectBottom;
     }
 
     private void requestSendAccessibilityEvent(AccessibilityEvent event) {
         // If there is no parent, then the event can be ignored. In general the parent is only
-        // transiently null (such as during teardown, switching tabs...).
-        if (mView.getParent() != null) {
-            mView.getParent().requestSendAccessibilityEvent(mView, event);
+        // transiently null (such as during teardown, switching tabs...). Also ensure that
+        // accessibility is still enabled, throttling may result in events sent late.
+        if (mView.getParent() != null && isAccessibilityEnabled()) {
+            if (mTracker != null) mTracker.addEvent(event);
+            try {
+                mView.getParent().requestSendAccessibilityEvent(mView, event);
+            } catch (IllegalStateException ignored) {
+                // During boot-up of some content shell tests, events will erroneously be sent even
+                // though the AccessibilityManager is not enabled, resulting in a crash.
+                // TODO(mschillaci): Address flakiness to remove this try/catch, crbug.com/1186376.
+            }
         }
     }
 
+    private Rect getAbsolutePositionForNode(int virtualViewId) {
+        int[] coords = WebContentsAccessibilityImplJni.get().getAbsolutePositionForNode(
+                mNativeObj, WebContentsAccessibilityImpl.this, virtualViewId);
+        if (coords == null) return null;
+
+        return new Rect(coords[0], coords[1], coords[2], coords[3]);
+    }
+
     @CalledByNative
-    private void setAccessibilityNodeInfoLocation(AccessibilityNodeInfo node,
+    protected void setAccessibilityNodeInfoLocation(AccessibilityNodeInfo node,
             final int virtualViewId, int absoluteLeft, int absoluteTop, int parentRelativeLeft,
             int parentRelativeTop, int width, int height, boolean isRootNode) {
         // First set the bounds in parent.
@@ -1666,8 +1865,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 parentRelativeLeft + width, parentRelativeTop + height);
         if (isRootNode) {
             // Offset of the web content relative to the View.
-            RenderCoordinatesImpl rc = mWebContents.getRenderCoordinates();
-            boundsInParent.offset(0, (int) rc.getContentOffsetYPix());
+            AccessibilityCoordinates ac = mDelegate.getAccessibilityCoordinates();
+            boundsInParent.offset(0, (int) ac.getContentOffsetYPix());
         }
         node.setBoundsInParent(boundsInParent);
 
@@ -1688,27 +1887,6 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 mAccessibilityFocusRect = rect;
                 moveAccessibilityFocusToIdAndRefocusIfNeeded(virtualViewId);
             }
-        }
-    }
-
-    @CalledByNative
-    protected void setAccessibilityNodeInfoAttributes(AccessibilityNodeInfo node,
-            boolean canOpenPopup, boolean dismissable, boolean multiLine, int inputType,
-            int liveRegion, String errorMessage) {
-        node.setCanOpenPopup(canOpenPopup);
-        node.setDismissable(dismissable);
-        node.setMultiLine(multiLine);
-        node.setInputType(inputType);
-
-        // Deliberately don't call setLiveRegion because TalkBack speaks
-        // the entire region anytime it changes. Instead Chrome will
-        // call announceLiveRegionText() only on the nodes that change.
-        // node.setLiveRegion(liveRegion);
-
-        // We only apply the |errorMessage| if {@link setAccessibilityNodeInfoBooleanAttributes}
-        // set |contentInvalid| to true based on throttle delay.
-        if (node.isContentInvalid()) {
-            node.setError(errorMessage);
         }
     }
 
@@ -1757,33 +1935,21 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     }
 
     @CalledByNative
-    private void setAccessibilityEventBooleanAttributes(AccessibilityEvent event, boolean checked,
-            boolean enabled, boolean password, boolean scrollable) {
+    private void setAccessibilityEventBaseAttributes(AccessibilityEvent event, boolean checked,
+            boolean enabled, boolean password, boolean scrollable, int currentItemIndex,
+            int itemCount, int scrollX, int scrollY, int maxScrollX, int maxScrollY,
+            String className) {
         event.setChecked(checked);
         event.setEnabled(enabled);
         event.setPassword(password);
         event.setScrollable(scrollable);
-    }
-
-    @CalledByNative
-    private void setAccessibilityEventClassName(AccessibilityEvent event, String className) {
-        event.setClassName(className);
-    }
-
-    @CalledByNative
-    private void setAccessibilityEventListAttributes(
-            AccessibilityEvent event, int currentItemIndex, int itemCount) {
         event.setCurrentItemIndex(currentItemIndex);
         event.setItemCount(itemCount);
-    }
-
-    @CalledByNative
-    private void setAccessibilityEventScrollAttributes(
-            AccessibilityEvent event, int scrollX, int scrollY, int maxScrollX, int maxScrollY) {
         event.setScrollX(scrollX);
         event.setScrollY(scrollY);
         event.setMaxScrollX(maxScrollX);
         event.setMaxScrollY(maxScrollY);
+        event.setClassName(className);
     }
 
     @CalledByNative
@@ -1805,10 +1971,37 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         event.getText().add(text);
     }
 
+    boolean isCompatAutofillOnlyPossibleAccessibilityConsumer() {
+        // Compatibility Autofill is only available on Android P+.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            return false;
+        }
+        // The Android Autofill CompatibilityBridge, which is responsible for translating
+        // Accessibility information to Autofill events, directly hooks into the
+        // AccessibilityManager via an AccessibilityPolicy rather than by running an
+        // AccessibilityService. We can thus check whether it is the only consumer of Accessibility
+        // information by reading the names of active accessibility services from settings.
+        //
+        // Note that the CompatibilityBridge makes getEnabledAccessibilityServicesList return a mock
+        // service to indicate its presence. It is thus easier to read the setting directly than
+        // to filter out this service from the returned list. Furthermore, since Accessibility is
+        // only initialized if there is at least one actual service or if Autofill is enabled,
+        // there is no need to check that Autofill is enabled here.
+        //
+        // https://cs.android.com/android/platform/superproject/+/HEAD:frameworks/base/core/java/android/view/autofill/AutofillManager.java;l=2817;drc=dd7d52f9632a0dbb8b14b69520c5ea31e0b3b4a2
+        String activeServices = Settings.Secure.getString(
+                mContext.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+        if (activeServices != null && !activeServices.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
     /**
-     * On Android O and higher, we should respect whatever is displayed
-     * in a password box and report that via accessibility APIs, whether
-     * that's the unobscured password, or all dots.
+     * On Android O and higher, we should respect whatever is displayed in a password box and
+     * report that via accessibility APIs, whether that's the unobscured password, or all dots.
+     * However, we deviate from this rule if the only consumer of accessibility information is
+     * Autofill in order to allow third-party Autofill services to save the real, unmasked password.
      *
      * Previous to O, shouldExposePasswordText() returns a system setting
      * that determines whether we should return the unobscured password or all
@@ -1816,14 +2009,24 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
      */
     @CalledByNative
     boolean shouldRespectDisplayedPasswordText() {
+        if (isCompatAutofillOnlyPossibleAccessibilityConsumer()) {
+            return false;
+        }
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
     /**
-     * Only relevant prior to Android O, see shouldRespectDisplayedPasswordText.
+     * Only relevant prior to Android O, see shouldRespectDisplayedPasswordText, unless the only
+     * Accessibility consumer is compatibility Autofill.
      */
     @CalledByNative
     boolean shouldExposePasswordText() {
+        // Should always expose the actual password text to Autofill so that third-party Autofill
+        // services can save it rather than obtain only the masking characters.
+        if (isCompatAutofillOnlyPossibleAccessibilityConsumer()) {
+            return true;
+        }
+
         ContentResolver contentResolver = mContext.getContentResolver();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -1836,73 +2039,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 == 1);
     }
 
-    /**
-     * Iterate over all enabled accessibility services and return a bitmask containing the union
-     * of all event types that they listen to.
-     * @return
-     */
-    @CalledByNative
-    private int getAccessibilityServiceEventTypeMask() {
-        int eventTypeMask = 0;
-        for (AccessibilityServiceInfo service :
-                mAccessibilityManager.getEnabledAccessibilityServiceList(
-                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
-            eventTypeMask |= service.eventTypes;
-        }
-        return eventTypeMask;
-    }
-
-    /**
-     * Iterate over all enabled accessibility services and return a bitmask containing the union
-     * of all feedback types that they provide.
-     * @return
-     */
-    @CalledByNative
-    private int getAccessibilityServiceFeedbackTypeMask() {
-        int feedbackTypeMask = 0;
-        for (AccessibilityServiceInfo service :
-                mAccessibilityManager.getEnabledAccessibilityServiceList(
-                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
-            feedbackTypeMask |= service.feedbackType;
-        }
-        return feedbackTypeMask;
-    }
-
-    /**
-     * Iterate over all enabled accessibility services and return a bitmask containing the union
-     * of all accessibility service flags from any of them.
-     * @return
-     */
-    @CalledByNative
-    private int getAccessibilityServiceFlagsMask() {
-        int flagsMask = 0;
-        for (AccessibilityServiceInfo service :
-                mAccessibilityManager.getEnabledAccessibilityServiceList(
-                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
-            flagsMask |= service.flags;
-        }
-        return flagsMask;
-    }
-
-    /**
-     * Iterate over all enabled accessibility services and return a bitmask containing the union
-     * of all service capabilities.
-     * @return
-     */
-    @CalledByNative
-    protected int getAccessibilityServiceCapabilitiesMask() {
-        int capabilitiesMask = 0;
-        for (AccessibilityServiceInfo service :
-                mAccessibilityManager.getEnabledAccessibilityServiceList(
-                        AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
-            capabilitiesMask |= service.getCapabilities();
-        }
-        return capabilitiesMask;
-    }
-
     @NativeMethods
     interface Natives {
         long init(WebContentsAccessibilityImpl caller, WebContents webContents);
+        long initWithAXTree(WebContentsAccessibilityImpl caller, long axTreePtr);
         void deleteEarly(long nativeWebContentsAccessibilityAndroid);
         void onAutofillPopupDisplayed(
                 long nativeWebContentsAccessibilityAndroid, WebContentsAccessibilityImpl caller);
@@ -1924,6 +2064,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 WebContentsAccessibilityImpl caller, int id);
         int getEditableTextSelectionEnd(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, int id);
+        int[] getAbsolutePositionForNode(long nativeWebContentsAccessibilityAndroid,
+                WebContentsAccessibilityImpl caller, int id);
         boolean updateCachedAccessibilityNodeInfo(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, AccessibilityNodeInfo info, int id);
         boolean populateAccessibilityNodeInfo(long nativeWebContentsAccessibilityAndroid,
@@ -1940,7 +2082,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 WebContentsAccessibilityImpl caller, int id);
         int findElementType(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, int startId, String elementType,
-                boolean forwards);
+                boolean forwards, boolean canWrapToLastElement);
         void setTextFieldValue(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, int id, String newValue);
         void setSelection(long nativeWebContentsAccessibilityAndroid,
@@ -1967,8 +2109,10 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 WebContentsAccessibilityImpl caller, int id);
         boolean isEnabled(
                 long nativeWebContentsAccessibilityAndroid, WebContentsAccessibilityImpl caller);
-        void enable(
-                long nativeWebContentsAccessibilityAndroid, WebContentsAccessibilityImpl caller);
+        void enable(long nativeWebContentsAccessibilityAndroid, WebContentsAccessibilityImpl caller,
+                boolean screenReaderMode);
+        void setAXMode(long nativeWebContentsAccessibilityAndroid,
+                WebContentsAccessibilityImpl caller, boolean screenReaderMode);
         boolean areInlineTextBoxesLoaded(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, int id);
         void loadInlineTextBoxes(long nativeWebContentsAccessibilityAndroid,
@@ -1979,5 +2123,13 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 WebContentsAccessibilityImpl caller, int id);
         void addSpellingErrorForTesting(long nativeWebContentsAccessibilityAndroid,
                 WebContentsAccessibilityImpl caller, int id, int startOffset, int endOffset);
+        void setMaxContentChangedEventsToFireForTesting(long nativeWebContentsAccessibilityAndroid,
+                WebContentsAccessibilityImpl caller, int maxEvents);
+        int getMaxContentChangedEventsToFireForTesting(long nativeWebContentsAccessibilityAndroid);
+        void signalEndOfTestForTesting(long nativeWebContentsAccessibilityAndroid);
+        void setIsRunningAsWebView(long nativeWebContentsAccessibilityAndroid,
+                WebContentsAccessibilityImpl caller, boolean isWebView);
+        boolean onHoverEventNoRenderer(long nativeWebContentsAccessibilityAndroid,
+                WebContentsAccessibilityImpl caller, float x, float y);
     }
 }

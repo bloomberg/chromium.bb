@@ -60,12 +60,12 @@ protected:
                                                kTopLeft_GrSurfaceOrigin, kRGB_888x_SkColorType,
                                                kPremul_SkAlphaType, nullptr,
                                                release_ycbcrhelper, ycbcrHelper.get());
+        ycbcrHelper.release();
         if (!fYCbCrImage) {
             *errorMsg = "Failed to create I420 image.";
             return DrawResult::kFail;
         }
 
-        ycbcrHelper.release();
         return DrawResult::kOk;
     }
 
@@ -91,14 +91,11 @@ protected:
         fYCbCrImage = nullptr;
     }
 
-    DrawResult onDraw(GrRecordingContext*, GrRenderTargetContext*,
+    DrawResult onDraw(GrRecordingContext*, GrSurfaceDrawContext*,
                       SkCanvas* canvas, SkString*) override {
         SkASSERT(fYCbCrImage);
 
-        SkPaint paint;
-        paint.setFilterQuality(kLow_SkFilterQuality);
-
-        canvas->drawImage(fYCbCrImage, kPad, kPad, &paint);
+        canvas->drawImage(fYCbCrImage, kPad, kPad, SkSamplingOptions(SkFilterMode::kLinear));
         return DrawResult::kOk;
     }
 

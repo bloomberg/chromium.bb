@@ -66,7 +66,7 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
   void SetPlatformWindow(std::unique_ptr<ui::PlatformWindow> window);
 
   // ui::PlatformWindowDelegate:
-  void OnBoundsChanged(const gfx::Rect& new_bounds) override;
+  void OnBoundsChanged(const BoundsChange& change) override;
   void OnDamageRect(const gfx::Rect& damaged_region) override;
   void DispatchEvent(ui::Event* event) override;
   void OnCloseRequest() override;
@@ -81,7 +81,7 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
 
   // Overridden from aura::WindowTreeHost:
   bool CaptureSystemKeyEventsImpl(
-      base::Optional<base::flat_set<ui::DomCode>> dom_codes) override;
+      absl::optional<base::flat_set<ui::DomCode>> dom_codes) override;
   void ReleaseSystemKeyEventCapture() override;
   bool IsKeyLocked(ui::DomCode dom_code) override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;

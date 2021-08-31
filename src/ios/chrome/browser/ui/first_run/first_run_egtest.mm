@@ -12,6 +12,7 @@
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
@@ -23,6 +24,8 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::SyncSettingsConfirmButton;
+using chrome_test_util::MatchInWindowWithNumber;
+using chrome_test_util::FakeOmnibox;
 
 namespace {
 
@@ -64,7 +67,7 @@ id<GREYMatcher> SkipSigninButton() {
 
 // Navigates to the terms of service and back.
 - (void)testTermsAndConditions {
-  [FirstRunAppInterface showFirstRunUI];
+  [FirstRunAppInterface showLegacyFirstRunUI];
 
   id<GREYMatcher> termsOfServiceLink =
       grey_accessibilityLabel(@"Terms of Service");
@@ -97,7 +100,7 @@ id<GREYMatcher> SkipSigninButton() {
 
 // Toggle the UMA checkbox.
 - (void)testToggleMetricsOn {
-  [FirstRunAppInterface showFirstRunUI];
+  [FirstRunAppInterface showLegacyFirstRunUI];
 
   id<GREYMatcher> metrics =
       grey_accessibilityID(first_run::kUMAMetricsButtonAccessibilityIdentifier);
@@ -118,7 +121,7 @@ id<GREYMatcher> SkipSigninButton() {
 
 // Dismisses the first run screens.
 - (void)testDismissFirstRun {
-  [FirstRunAppInterface showFirstRunUI];
+  [FirstRunAppInterface showLegacyFirstRunUI];
 
   [[EarlGrey selectElementWithMatcher:FirstRunOptInAcceptButton()]
       performAction:grey_tap()];
@@ -130,7 +133,7 @@ id<GREYMatcher> SkipSigninButton() {
   [[EarlGrey selectElementWithMatcher:SkipSigninButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::FakeOmnibox()]
+  [[EarlGrey selectElementWithMatcher:FakeOmnibox()]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -140,7 +143,7 @@ id<GREYMatcher> SkipSigninButton() {
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
   // Launch First Run and accept tems of services.
-  [FirstRunAppInterface showFirstRunUI];
+  [FirstRunAppInterface showLegacyFirstRunUI];
   [[EarlGrey selectElementWithMatcher:FirstRunOptInAcceptButton()]
       performAction:grey_tap()];
 
@@ -159,6 +162,52 @@ id<GREYMatcher> SkipSigninButton() {
 
   GREYAssertTrue([FirstRunAppInterface isSyncFirstSetupComplete],
                  @"Sync should have finished its original setup");
+}
+
+// Checks FRE shows in only one window.
+- (void)testFirstRunInMultiWindow {
+  if (![ChromeEarlGrey areMultipleWindowsSupported])
+    EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
+
+  [FirstRunAppInterface showLegacyFirstRunUI];
+
+  [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitForForegroundWindowCount:2];
+
+  [[EarlGrey selectElementWithMatcher:MatchInWindowWithNumber(
+                                          0, grey_accessibilityLabel(
+                                                 @"Terms of Service"))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Check UI Blocked in second window and that message is a button.
+  [[EarlGrey
+      selectElementWithMatcher:
+          MatchInWindowWithNumber(
+              1,
+              grey_text(l10n_util::GetNSString(
+                  IDS_IOS_UI_BLOCKED_USE_OTHER_WINDOW_SWITCH_WINDOW_ACTION)))]
+      assertWithMatcher:grey_allOf(
+                            grey_sufficientlyVisible(),
+                            grey_ancestor(grey_kindOfClassName(@"UIButton")),
+                            nil)];
+
+  // Finish FRE.
+  [[EarlGrey selectElementWithMatcher:MatchInWindowWithNumber(
+                                          0, FirstRunOptInAcceptButton())]
+      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:MatchInWindowWithNumber(0, SkipSigninButton())]
+      performAction:grey_tap()];
+
+  // Check for both fake omniboxes visibility.
+  [[EarlGrey selectElementWithMatcher:MatchInWindowWithNumber(0, FakeOmnibox())]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // TODO(crbug.com/1169687) enable following test once EG2 bug for multiwindow
+  //    grey_sufficientlyVisible is fixed.
+  // [[EarlGrey selectElementWithMatcher:MatchInWindowWithNumber(1,
+  // FakeOmnibox())]
+  //  assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 @end

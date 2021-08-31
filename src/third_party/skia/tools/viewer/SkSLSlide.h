@@ -8,9 +8,9 @@
 #ifndef SkSLSlide_DEFINED
 #define SkSLSlide_DEFINED
 
-#include "tools/viewer/Slide.h"
-
+#include "include/core/SkM44.h"
 #include "include/effects/SkRuntimeEffect.h"
+#include "tools/viewer/Slide.h"
 
 class SkSLSlide : public Slide {
 public:
@@ -20,9 +20,16 @@ public:
     SkISize getDimensions() const override { return SkISize::MakeEmpty(); }
 
     void draw(SkCanvas* canvas) override;
+    bool animate(double nanos) override;
 
+    void resize(SkScalar winWidth, SkScalar winHeight) override {
+        fResolution = { winWidth, winHeight, 1.0f };
+    }
     void load(SkScalar winWidth, SkScalar winHeight) override;
     void unload() override;
+
+    bool onMouse(SkScalar x, SkScalar y, skui::InputState state,
+                 skui::ModifierKey modifiers) override { return true; }
 
 private:
     bool rebuild();
@@ -32,6 +39,18 @@ private:
     sk_sp<SkRuntimeEffect> fEffect;
     SkAutoTMalloc<char> fInputs;
     SkTArray<sk_sp<SkShader>> fChildren;
+    float fSeconds = 0.0f;
+
+    enum Geometry {
+        kFill,
+        kCircle,
+        kRoundRect,
+        kCapsule,
+        kText,
+    };
+    int fGeometry = kFill;
+    SkV3 fResolution = { 1, 1, 1 };
+    SkV4 fMousePos;
 
     // Named shaders that can be selected as inputs
     SkTArray<std::pair<const char*, sk_sp<SkShader>>> fShaders;

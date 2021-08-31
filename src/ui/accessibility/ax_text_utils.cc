@@ -10,9 +10,9 @@
 #include "base/i18n/break_iterator.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
 namespace ui {
@@ -47,7 +47,7 @@ base::i18n::BreakIterator::BreakType ICUBreakTypeForBoundaryType(
 // line_breaks is a Misnomer. Blink provides the start offsets of each line
 // not the line breaks.
 // TODO(nektar): Rename line_breaks a11y attribute and variable references.
-size_t FindAccessibleTextBoundary(const base::string16& text,
+size_t FindAccessibleTextBoundary(const std::u16string& text,
                                   const std::vector<int>& line_breaks,
                                   ax::mojom::TextBoundary boundary,
                                   size_t start_offset,
@@ -182,7 +182,7 @@ size_t FindAccessibleTextBoundary(const base::string16& text,
   }
 }
 
-std::vector<int> GetWordStartOffsets(const base::string16& text) {
+std::vector<int> GetWordStartOffsets(const std::u16string& text) {
   std::vector<int> word_starts;
   base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);
   if (!iter.Init())
@@ -197,7 +197,7 @@ std::vector<int> GetWordStartOffsets(const base::string16& text) {
   return word_starts;
 }
 
-std::vector<int> GetWordEndOffsets(const base::string16& text) {
+std::vector<int> GetWordEndOffsets(const std::u16string& text) {
   std::vector<int> word_ends;
   base::i18n::BreakIterator iter(text, base::i18n::BreakIterator::BREAK_WORD);
   if (!iter.Init())
@@ -211,4 +211,31 @@ std::vector<int> GetWordEndOffsets(const base::string16& text) {
   return word_ends;
 }
 
+std::vector<int> GetSentenceStartOffsets(const std::u16string& text) {
+  std::vector<int> sentence_starts;
+  base::i18n::BreakIterator iter(text,
+                                 base::i18n::BreakIterator::BREAK_SENTENCE);
+  if (!iter.Init())
+    return sentence_starts;
+  // iter.Advance() returns false if we've run past end of the text.
+  while (iter.Advance()) {
+    sentence_starts.push_back(
+        base::checked_cast<int>(iter.prev()) /* start index */);
+  }
+  return sentence_starts;
+}
+
+std::vector<int> GetSentenceEndOffsets(const std::u16string& text) {
+  std::vector<int> sentence_ends;
+  base::i18n::BreakIterator iter(text,
+                                 base::i18n::BreakIterator::BREAK_SENTENCE);
+  if (!iter.Init())
+    return sentence_ends;
+  // iter.Advance() returns false if we've run past end of the text.
+  while (iter.Advance()) {
+    sentence_ends.push_back(
+        base::checked_cast<int>(iter.pos()) /* end index */);
+  }
+  return sentence_ends;
+}
 }  // namespace ui

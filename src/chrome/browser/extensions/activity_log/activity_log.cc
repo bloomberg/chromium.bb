@@ -27,14 +27,14 @@
 #include "chrome/browser/extensions/activity_log/fullstream_ui_policy.h"
 #include "chrome/browser/extensions/api/activity_log_private/activity_log_private_api.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
-#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
+#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "components/no_state_prefetch/browser/prerender_manager.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -484,7 +484,7 @@ ActivityLog::ActivityLog(content::BrowserContext* context)
 
   observers_ = base::MakeRefCounted<base::ObserverListThreadSafe<Observer>>();
 
-  extension_registry_observer_.Add(ExtensionRegistry::Get(profile_));
+  extension_registry_observation_.Observe(ExtensionRegistry::Get(profile_));
   CheckActive(true);  // use cached
   extension_system_->ready().Post(
       FROM_HERE, base::BindOnce(&ActivityLog::OnExtensionSystemReady,
@@ -672,19 +672,19 @@ void ActivityLog::OnScriptsExecuted(content::WebContents* web_contents,
     // of content scripts will be empty.  We don't want to log it because
     // the call to tabs.executeScript will have already been logged anyway.
     if (!it->second.empty()) {
-      scoped_refptr<Action> action;
-      action = base::MakeRefCounted<Action>(extension->id(), base::Time::Now(),
-                                            Action::ACTION_CONTENT_SCRIPT,
-                                            "");  // no API call here
+      auto action = base::MakeRefCounted<Action>(
+          extension->id(), base::Time::Now(), Action::ACTION_CONTENT_SCRIPT,
+          "");  // no API call here
       action->set_page_url(on_url);
       action->set_page_title(base::UTF16ToUTF8(web_contents->GetTitle()));
       action->set_page_incognito(
           web_contents->GetBrowserContext()->IsOffTheRecord());
 
-      const prerender::PrerenderManager* prerender_manager =
-          prerender::PrerenderManagerFactory::GetForBrowserContext(profile_);
-      if (prerender_manager &&
-          prerender_manager->IsWebContentsPrerendering(web_contents))
+      const prerender::NoStatePrefetchManager* no_state_prefetch_manager =
+          prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
+              profile_);
+      if (no_state_prefetch_manager &&
+          no_state_prefetch_manager->IsWebContentsPrerendering(web_contents))
         action->mutable_other()->SetBoolean(constants::kActionPrerender, true);
       for (auto it2 = it->second.begin(); it2 != it->second.end(); ++it2) {
         action->mutable_args()->AppendString(*it2);
@@ -794,7 +794,8 @@ void ActivityLog::CheckActive(bool use_cached) {
           RendererStartupHelperFactory::GetForBrowserContext(
               host->GetBrowserContext())
               ->GetRenderer(host);
-      renderer->SetActivityLoggingEnabled(is_active_);
+      if (renderer)
+        renderer->SetActivityLoggingEnabled(is_active_);
     }
   }
 }

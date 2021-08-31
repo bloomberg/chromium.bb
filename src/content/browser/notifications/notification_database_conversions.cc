@@ -10,13 +10,13 @@
 
 #include "base/check.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "content/browser/notifications/notification_database_data.pb.h"
 #include "content/browser/notifications/notification_database_resources.pb.h"
 #include "content/public/browser/notification_database_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/notifications/notification_resources.h"
 #include "third_party/blink/public/mojom/notifications/notification.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -69,19 +69,19 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
     output->time_until_close_millis =
         base::TimeDelta::FromMilliseconds(message.time_until_close_millis());
   } else {
-    output->time_until_close_millis = base::nullopt;
+    output->time_until_close_millis = absl::nullopt;
   }
   if (message.has_time_until_first_click_millis()) {
     output->time_until_first_click_millis = base::TimeDelta::FromMilliseconds(
         message.time_until_first_click_millis());
   } else {
-    output->time_until_first_click_millis = base::nullopt;
+    output->time_until_first_click_millis = absl::nullopt;
   }
   if (message.has_time_until_last_click_millis()) {
     output->time_until_last_click_millis = base::TimeDelta::FromMilliseconds(
         message.time_until_last_click_millis());
   } else {
-    output->time_until_last_click_millis = base::nullopt;
+    output->time_until_last_click_millis = absl::nullopt;
   }
 
   switch (message.closed_reason()) {
@@ -148,26 +148,26 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
   notification_data->actions.clear();
 
   for (const auto& payload_action : payload.actions()) {
-    blink::PlatformNotificationAction action;
+    auto action = blink::mojom::NotificationAction::New();
 
     switch (payload_action.type()) {
       case NotificationDatabaseDataProto::NotificationAction::BUTTON:
-        action.type = blink::mojom::NotificationActionType::BUTTON;
+        action->type = blink::mojom::NotificationActionType::BUTTON;
         break;
       case NotificationDatabaseDataProto::NotificationAction::TEXT:
-        action.type = blink::mojom::NotificationActionType::TEXT;
+        action->type = blink::mojom::NotificationActionType::TEXT;
         break;
       default:
         NOTREACHED();
     }
 
-    action.action = payload_action.action();
-    action.title = base::UTF8ToUTF16(payload_action.title());
-    action.icon = GURL(payload_action.icon());
+    action->action = payload_action.action();
+    action->title = base::UTF8ToUTF16(payload_action.title());
+    action->icon = GURL(payload_action.icon());
     if (payload_action.has_placeholder()) {
-      action.placeholder = base::UTF8ToUTF16(payload_action.placeholder());
+      action->placeholder = base::UTF8ToUTF16(payload_action.placeholder());
     }
-    notification_data->actions.push_back(action);
+    notification_data->actions.push_back(std::move(action));
   }
 
   if (payload.has_show_trigger_timestamp()) {
@@ -176,12 +176,12 @@ bool DeserializeNotificationDatabaseData(const std::string& input,
             base::TimeDelta::FromMicroseconds(
                 payload.show_trigger_timestamp()));
   } else {
-    notification_data->show_trigger_timestamp = base::nullopt;
+    notification_data->show_trigger_timestamp = absl::nullopt;
   }
 
   output->has_triggered = message.has_triggered();
 
-  output->notification_resources = base::nullopt;
+  output->notification_resources = absl::nullopt;
 
   return true;
 }
@@ -234,12 +234,11 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
                       notification_data.data.size());
   }
 
-  for (const blink::PlatformNotificationAction& action :
-       notification_data.actions) {
+  for (const auto& action : notification_data.actions) {
     NotificationDatabaseDataProto::NotificationAction* payload_action =
         payload->add_actions();
 
-    switch (action.type) {
+    switch (action->type) {
       case blink::mojom::NotificationActionType::BUTTON:
         payload_action->set_type(
             NotificationDatabaseDataProto::NotificationAction::BUTTON);
@@ -249,15 +248,15 @@ bool SerializeNotificationDatabaseData(const NotificationDatabaseData& input,
             NotificationDatabaseDataProto::NotificationAction::TEXT);
         break;
       default:
-        NOTREACHED() << "Unknown action type: " << action.type;
+        NOTREACHED() << "Unknown action type: " << action->type;
     }
 
-    payload_action->set_action(action.action);
-    payload_action->set_title(base::UTF16ToUTF8(action.title));
-    payload_action->set_icon(action.icon.spec());
+    payload_action->set_action(action->action);
+    payload_action->set_title(base::UTF16ToUTF8(action->title));
+    payload_action->set_icon(action->icon.spec());
 
-    if (action.placeholder) {
-      payload_action->set_placeholder(base::UTF16ToUTF8(*action.placeholder));
+    if (action->placeholder) {
+      payload_action->set_placeholder(base::UTF16ToUTF8(*action->placeholder));
     }
   }
 

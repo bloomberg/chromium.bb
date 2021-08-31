@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
 #include "base/hash/hash.h"
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -26,11 +25,11 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_config.pb.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace app_list {
 namespace {
 
-using base::Optional;
 using base::Time;
 using base::TimeDelta;
 
@@ -44,8 +43,6 @@ void SaveProtoToDisk(const base::FilePath& filepath,
                      const RecurrenceRankerProto& proto) {
   std::string proto_str;
   if (!proto.SerializeToString(&proto_str)) {
-    LogSerializationStatus(model_identifier,
-                           SerializationStatus::kToProtoError);
     return;
   }
 
@@ -57,12 +54,8 @@ void SaveProtoToDisk(const base::FilePath& filepath,
         filepath, proto_str, "RecurrenceRanker");
   }
   if (!write_result) {
-    LogSerializationStatus(model_identifier,
-                           SerializationStatus::kModelWriteError);
     return;
   }
-
-  LogSerializationStatus(model_identifier, SerializationStatus::kSaveOk);
 }
 
 // Try to load a |RecurrenceRankerProto| from the given filepath. If it fails,
@@ -74,24 +67,18 @@ std::unique_ptr<RecurrenceRankerProto> LoadProtoFromDisk(
                                                 base::BlockingType::MAY_BLOCK);
   std::string proto_str;
   if (!base::ReadFileToString(filepath, &proto_str)) {
-    LogSerializationStatus(model_identifier,
-                           SerializationStatus::kModelReadError);
     return nullptr;
   }
 
   auto proto = std::make_unique<RecurrenceRankerProto>();
   if (!proto->ParseFromString(proto_str)) {
-    LogSerializationStatus(model_identifier,
-                           SerializationStatus::kFromProtoError);
     return nullptr;
   }
 
-  LogSerializationStatus(model_identifier, SerializationStatus::kLoadOk);
   return proto;
 }
 
-std::vector<std::pair<std::string, float>> SortAndTruncateRanks(
-    int n,
+std::vector<std::pair<std::string, float>> SortRanks(
     const std::map<std::string, float>& ranks) {
   std::vector<std::pair<std::string, float>> sorted_ranks(ranks.begin(),
                                                           ranks.end());
@@ -100,12 +87,13 @@ std::vector<std::pair<std::string, float>> SortAndTruncateRanks(
                const std::pair<std::string, float>& b) {
               return a.second > b.second;
             });
-
-  // vector::resize simply truncates the array if there are more than n
-  // elements. Note this is still O(N).
-  if (sorted_ranks.size() > static_cast<size_t>(n))
-    sorted_ranks.resize(n);
   return sorted_ranks;
+}
+
+void TruncateRanks(std::vector<std::pair<std::string, float>>& ranks,
+                   const int n) {
+  if (ranks.size() > static_cast<size_t>(n))
+    ranks.resize(n);
 }
 
 // Given a FrecencyStore's map from target names to IDs, and a
@@ -179,8 +167,6 @@ RecurrenceRanker::RecurrenceRanker(const std::string& model_identifier,
     // Ephemeral users have no persistent storage, so we don't try and load the
     // proto from disk. Instead, we fall back on using a default (frecency)
     // predictor, which is still useful with only data from the current session.
-    LogInitializationStatus(model_identifier_,
-                            InitializationStatus::kEphemeralUser);
     predictor_ = std::make_unique<DefaultPredictor>(
         RecurrencePredictorConfigProto::DefaultPredictorConfig(),
         model_identifier_);
@@ -203,8 +189,6 @@ void RecurrenceRanker::OnLoadProtoFromDiskComplete(
     std::unique_ptr<RecurrenceRankerProto> proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   load_from_disk_completed_ = true;
-  LogInitializationStatus(model_identifier_,
-                          InitializationStatus::kInitialized);
 
   // If OnLoadFromDisk returned nullptr, no saved ranker proto was available on
   // disk, and there is nothing to load. Save a blank ranker to prevent metrics
@@ -221,28 +205,17 @@ void RecurrenceRanker::OnLoadProtoFromDiskComplete(
     // clean slate. This is not always an error: it is expected if, for example,
     // a RecurrenceRanker instance is rolled out in one release, and then
     // reconfigured in the next.
-    LogInitializationStatus(model_identifier_,
-                            InitializationStatus::kHashMismatch);
     return;
   }
 
   if (proto->has_predictor())
     predictor_->FromProto(proto->predictor());
-  else
-    LogSerializationStatus(model_identifier_,
-                           SerializationStatus::kPredictorMissingError);
 
   if (proto->has_targets())
     targets_->FromProto(proto->targets());
-  else
-    LogSerializationStatus(model_identifier_,
-                           SerializationStatus::kTargetsMissingError);
 
   if (proto->has_conditions())
     conditions_->FromProto(proto->conditions());
-  else
-    LogSerializationStatus(model_identifier_,
-                           SerializationStatus::kConditionsMissingError);
 }
 
 void RecurrenceRanker::Record(const std::string& target,
@@ -250,7 +223,6 @@ void RecurrenceRanker::Record(const std::string& target,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return;
-  LogUsage(model_identifier_, Usage::kRecord);
 
   predictor_->Train(targets_->Update(target), conditions_->Update(condition));
   MaybeSave();
@@ -261,7 +233,6 @@ void RecurrenceRanker::RenameTarget(const std::string& target,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return;
-  LogUsage(model_identifier_, Usage::kRenameTarget);
 
   targets_->Rename(target, new_target);
   MaybeSave();
@@ -273,7 +244,6 @@ void RecurrenceRanker::RemoveTarget(const std::string& target) {
   // loading is complete, resulting in the remove getting dropped.
   if (!load_from_disk_completed_)
     return;
-  LogUsage(model_identifier_, Usage::kRemoveTarget);
 
   targets_->Remove(target);
   MaybeSave();
@@ -284,7 +254,6 @@ void RecurrenceRanker::RenameCondition(const std::string& condition,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return;
-  LogUsage(model_identifier_, Usage::kRenameCondition);
 
   conditions_->Rename(condition, new_condition);
   MaybeSave();
@@ -294,7 +263,6 @@ void RecurrenceRanker::RemoveCondition(const std::string& condition) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return;
-  LogUsage(model_identifier_, Usage::kRemoveCondition);
 
   conditions_->Remove(condition);
   MaybeSave();
@@ -305,14 +273,14 @@ std::map<std::string, float> RecurrenceRanker::Rank(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return {};
-  LogUsage(model_identifier_, Usage::kRank);
+
   // Special case the default predictor, and return the scores from the target
   // frecency store.
   if (predictor_->GetPredictorName() == DefaultPredictor::kPredictorName)
     return GetScoresFromFrecencyStore(targets_->GetAll());
 
-  base::Optional<unsigned int> condition_id = conditions_->GetId(condition);
-  if (condition_id == base::nullopt)
+  absl::optional<unsigned int> condition_id = conditions_->GetId(condition);
+  if (condition_id == absl::nullopt)
     return {};
 
   const auto& targets = targets_->GetAll();
@@ -335,13 +303,24 @@ void RecurrenceRanker::MaybeCleanup(float proportion_valid,
 }
 
 std::vector<std::pair<std::string, float>> RecurrenceRanker::RankTopN(
-    int n,
+    const int n,
     const std::string& condition) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!load_from_disk_completed_)
     return {};
 
-  return SortAndTruncateRanks(n, Rank(condition));
+  auto ranks = SortRanks(Rank(condition));
+  TruncateRanks(ranks, n);
+  return ranks;
+}
+
+std::vector<std::pair<std::string, float>> RecurrenceRanker::RankSorted(
+    const std::string& condition) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!load_from_disk_completed_)
+    return {};
+
+  return SortRanks(Rank(condition));
 }
 
 std::map<std::string, FrecencyStore::ValueData>*

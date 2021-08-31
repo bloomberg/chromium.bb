@@ -8,12 +8,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/cancelable_callback.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/history/core/browser/history_service.h"
@@ -31,6 +32,7 @@
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -146,16 +148,6 @@ class TestRepeatableQueriesService : public RepeatableQueriesService {
     return &search_provider_observer_;
   }
 
-  GURL GetQueryDestinationURL(const base::string16& query) {
-    return RepeatableQueriesService::GetQueryDestinationURL(query);
-  }
-
-  GURL GetQueryDeletionURL(const std::string& deletion_url) {
-    return RepeatableQueriesService::GetQueryDeletionURL(deletion_url);
-  }
-
-  GURL GetRequestURL() { return RepeatableQueriesService::GetRequestURL(); }
-
   void SearchProviderChanged() {
     RepeatableQueriesService::SearchProviderChanged();
   }
@@ -163,6 +155,22 @@ class TestRepeatableQueriesService : public RepeatableQueriesService {
   void SigninStatusChanged() {
     RepeatableQueriesService::SigninStatusChanged();
   }
+
+  void FlushForTesting(base::OnceClosure flushed) {
+    RepeatableQueriesService::FlushForTesting(std::move(flushed));
+  }
+
+  GURL GetQueryDestinationURL(const std::u16string& query,
+                              const TemplateURL* search_provider) {
+    return RepeatableQueriesService::GetQueryDestinationURL(query,
+                                                            search_provider);
+  }
+
+  GURL GetQueryDeletionURL(const std::string& deletion_url) {
+    return RepeatableQueriesService::GetQueryDeletionURL(deletion_url);
+  }
+
+  GURL GetRequestURL() { return RepeatableQueriesService::GetRequestURL(); }
 
   testing::NiceMock<MockSearchProviderObserver> search_provider_observer_;
 };
@@ -220,8 +228,10 @@ class RepeatableQueriesServiceTest : public ::testing::Test,
     // InMemoryURLIndex must be explicitly shut down or it will DCHECK() in
     // its destructor.
     in_memory_url_index_->Shutdown();
-    // Needed to prevent leaks due to posted history index rebuild task.
-    task_environment_.RunUntilIdle();
+
+    WaitForRepeatableQueriesService();
+    WaitForHistoryService();
+    WaitForInMemoryURLIndex();
   }
 
   const TemplateURL* default_search_provider() {
@@ -245,7 +255,8 @@ class RepeatableQueriesServiceTest : public ::testing::Test,
   void SignOut() { identity_env_->SetCookieAccounts({}); }
 
   GURL GetQueryDestinationURL(const std::string& query) {
-    return service_->GetQueryDestinationURL(base::ASCIIToUTF16(query));
+    return service_->GetQueryDestinationURL(base::ASCIIToUTF16(query),
+                                            default_search_provider());
   }
 
   void RefreshAndMaybeWaitForService() {
@@ -284,12 +295,20 @@ class RepeatableQueriesServiceTest : public ::testing::Test,
     }
   }
 
+  // Waits for RepeatableQueriesService's async operations.
+  void WaitForRepeatableQueriesService() {
+    base::RunLoop run_loop;
+    service_->FlushForTesting(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
   // Waits for history::HistoryService's async operations.
   void WaitForHistoryService() {
     history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
+  }
 
-    // MemoryURLIndex schedules tasks to rebuild its index on the history
-    // thread. Block here to make sure they are complete.
+  // Waits for InMemoryURLIndex's async operations.
+  void WaitForInMemoryURLIndex() {
     BlockUntilInMemoryURLIndexIsRefreshed(in_memory_url_index_.get());
   }
 
@@ -323,7 +342,9 @@ void RepeatableQueriesServiceTest::OnRepeatableQueriesServiceShuttingDown() {
   service_->RemoveObserver(this);
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn) {
+// TODO(crbug.com/1151909) Test fails on iOS
+// TODO(crbug.com/1177139) Re-enable test
+TEST_F(RepeatableQueriesServiceTest, DISABLED_SignedIn) {
   SignIn();
   test_url_loader_factory()->AddResponse(service()->GetRequestURL().spec(),
                                          GoodServerResponse());
@@ -335,14 +356,16 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn) {
   RefreshAndMaybeWaitForService();
   // The first two server suggestions are kept as repeatable queries.
   std::vector<RepeatableQuery> expected_server_queries{
-      {base::ASCIIToUTF16("server query 1"),
-       GetQueryDestinationURL("server query 1"), "/delete?server+query+1"},
-      {base::ASCIIToUTF16("server query 2"),
-       GetQueryDestinationURL("server query 2"), "/delete?server+query+2"}};
+      {u"server query 1", GetQueryDestinationURL("server query 1"),
+       "/delete?server+query+1"},
+      {u"server query 2", GetQueryDestinationURL("server query 2"),
+       "/delete?server+query+2"}};
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn_BadResponse) {
+// TODO(crbug.com/1151909) Test fails on iOS
+// TODO(crbug.com/1170500) Test fails also on other platforms
+TEST_F(RepeatableQueriesServiceTest, DISABLED_SignedIn_BadResponse) {
   SignIn();
   test_url_loader_factory()->AddResponse(service()->GetRequestURL().spec(),
                                          GoodServerResponse());
@@ -353,10 +376,10 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_BadResponse) {
   // Request a refresh.
   RefreshAndMaybeWaitForService();
   std::vector<RepeatableQuery> expected_server_queries{
-      {base::ASCIIToUTF16("server query 1"),
-       GetQueryDestinationURL("server query 1"), "/delete?server+query+1"},
-      {base::ASCIIToUTF16("server query 2"),
-       GetQueryDestinationURL("server query 2"), "/delete?server+query+2"}};
+      {u"server query 1", GetQueryDestinationURL("server query 1"),
+       "/delete?server+query+1"},
+      {u"server query 2", GetQueryDestinationURL("server query 2"),
+       "/delete?server+query+2"}};
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 
   test_url_loader_factory()->AddResponse(service()->GetRequestURL().spec(),
@@ -376,7 +399,9 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_BadResponse) {
   EXPECT_TRUE(service()->repeatable_queries().empty());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn_ErrorResponse) {
+// TODO(crbug.com/1151909) Test fails on iOS
+// TODO(crbug.com/1170500) Test fails also on other platforms
+TEST_F(RepeatableQueriesServiceTest, DISABLED_SignedIn_ErrorResponse) {
   SignIn();
   test_url_loader_factory()->AddResponse(service()->GetRequestURL().spec(),
                                          GoodServerResponse());
@@ -387,10 +412,10 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_ErrorResponse) {
   // Request a refresh.
   RefreshAndMaybeWaitForService();
   std::vector<RepeatableQuery> expected_server_queries{
-      {base::ASCIIToUTF16("server query 1"),
-       GetQueryDestinationURL("server query 1"), "/delete?server+query+1"},
-      {base::ASCIIToUTF16("server query 2"),
-       GetQueryDestinationURL("server query 2"), "/delete?server+query+2"}};
+      {u"server query 1", GetQueryDestinationURL("server query 1"),
+       "/delete?server+query+1"},
+      {u"server query 2", GetQueryDestinationURL("server query 2"),
+       "/delete?server+query+2"}};
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 
   test_url_loader_factory()->AddResponse(
@@ -403,7 +428,11 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_ErrorResponse) {
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn_DefaultSearchProviderChanged) {
+// TODO(crbug.com/1151909) Test fails on iOS
+// TODO(crbug.com/1158533): This test is disabled because it has been failing
+// intermittently on all platforms.
+TEST_F(RepeatableQueriesServiceTest,
+       DISABLED_SignedIn_DefaultSearchProviderChanged) {
   SignIn();
   test_url_loader_factory()->AddResponse(service()->GetRequestURL().spec(),
                                          GoodServerResponse());
@@ -415,10 +444,10 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_DefaultSearchProviderChanged) {
   // Request a refresh.
   RefreshAndMaybeWaitForService();
   std::vector<RepeatableQuery> expected_server_queries{
-      {base::ASCIIToUTF16("server query 1"),
-       GetQueryDestinationURL("server query 1"), "/delete?server+query+1"},
-      {base::ASCIIToUTF16("server query 2"),
-       GetQueryDestinationURL("server query 2"), "/delete?server+query+2"}};
+      {u"server query 1", GetQueryDestinationURL("server query 1"),
+       "/delete?server+query+1"},
+      {u"server query 2", GetQueryDestinationURL("server query 2"),
+       "/delete?server+query+2"}};
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 
   set_service_is_done(false);
@@ -429,7 +458,9 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_DefaultSearchProviderChanged) {
   EXPECT_TRUE(service()->repeatable_queries().empty());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn_SigninStatusChanged) {
+// TODO(crbug.com/1151909) Test fails on iOS
+// TODO(crbug.com/1170500) Test fails also on other platforms
+TEST_F(RepeatableQueriesServiceTest, DISABLED_SignedIn_SigninStatusChanged) {
   base::HistogramTester histogram_tester;
 
   SignIn();
@@ -442,10 +473,10 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_SigninStatusChanged) {
   // Request a refresh.
   RefreshAndMaybeWaitForService();
   std::vector<RepeatableQuery> expected_server_queries{
-      {base::ASCIIToUTF16("server query 1"),
-       GetQueryDestinationURL("server query 1"), "/delete?server+query+1"},
-      {base::ASCIIToUTF16("server query 2"),
-       GetQueryDestinationURL("server query 2"), "/delete?server+query+2"}};
+      {u"server query 1", GetQueryDestinationURL("server query 1"),
+       "/delete?server+query+1"},
+      {u"server query 2", GetQueryDestinationURL("server query 2"),
+       "/delete?server+query+2"}};
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 
   int original_query_age =
@@ -468,9 +499,9 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_SigninStatusChanged) {
   MaybeWaitForService();
   // Cached data is updated to local results.
   std::vector<RepeatableQuery> expected_local_queries{
-      {base::ASCIIToUTF16("more recent local query"),
+      {u"more recent local query",
        GetQueryDestinationURL("more recent local query"), ""},
-      {base::ASCIIToUTF16("less recent local query"),
+      {u"less recent local query",
        GetQueryDestinationURL("less recent local query"), ""}};
   EXPECT_EQ(expected_local_queries, service()->repeatable_queries());
 
@@ -482,7 +513,9 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_SigninStatusChanged) {
       RepeatableQueriesService::kExtractedCountHistogram, 2, 1);
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedIn_Deletion) {
+// TODO(crbug.com/1151909) Test fails on iOS
+// TODO(crbug.com/1170500) Test fails also on other platforms
+TEST_F(RepeatableQueriesServiceTest, DISABLED_SignedIn_Deletion) {
   SignIn();
   test_url_loader_factory()->AddResponse(service()->GetRequestURL().spec(),
                                          GoodServerResponse());
@@ -493,10 +526,10 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_Deletion) {
   // Request a refresh.
   RefreshAndMaybeWaitForService();
   std::vector<RepeatableQuery> expected_server_queries{
-      {base::ASCIIToUTF16("server query 1"),
-       GetQueryDestinationURL("server query 1"), "/delete?server+query+1"},
-      {base::ASCIIToUTF16("server query 2"),
-       GetQueryDestinationURL("server query 2"), "/delete?server+query+2"}};
+      {u"server query 1", GetQueryDestinationURL("server query 1"),
+       "/delete?server+query+1"},
+      {u"server query 2", GetQueryDestinationURL("server query 2"),
+       "/delete?server+query+2"}};
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 
   // Try to delete a query suggestion not provided by the service.
@@ -517,24 +550,27 @@ TEST_F(RepeatableQueriesServiceTest, SignedIn_Deletion) {
   EXPECT_EQ(test_url_loader_factory()->GetPendingRequest(0)->request.url,
             service()->GetQueryDeletionURL("/delete?server+query+1"));
   MaybeWaitForService();
-  expected_server_queries = {{base::ASCIIToUTF16("server query 2"),
+  expected_server_queries = {{u"server query 2",
                               GetQueryDestinationURL("server query 2"),
                               "/delete?server+query+2"}};
   // The deleted suggestion is not offered anymore.
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 
   expected_server_queries = {
-      {base::ASCIIToUTF16("server query 2"),
-       GetQueryDestinationURL("server query 2"), "/delete?server+query+2"},
-      {base::ASCIIToUTF16("server query 3"),
-       GetQueryDestinationURL("server query 3"), "/delete?server+query+3"}};
+      {u"server query 2", GetQueryDestinationURL("server query 2"),
+       "/delete?server+query+2"},
+      {u"server query 3", GetQueryDestinationURL("server query 3"),
+       "/delete?server+query+3"}};
   // Request a refresh.
   RefreshAndMaybeWaitForService();
   // The deleted suggestion will not be offered again.
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedOut_DefaultSearchProviderChanged) {
+// TODO(crbug.com/1151909) Test fails on iOS simulators
+// TODO(crbug.com/1170500) Test fails also on other platforms
+TEST_F(RepeatableQueriesServiceTest,
+       DISABLED_SignedOut_DefaultSearchProviderChanged) {
   int original_query_age =
       history::kAutocompleteDuplicateVisitIntervalThreshold.InSeconds() + 3;
   FillURLDatabase({
@@ -557,9 +593,9 @@ TEST_F(RepeatableQueriesServiceTest, SignedOut_DefaultSearchProviderChanged) {
   // Request a refresh.
   RefreshAndMaybeWaitForService();
   std::vector<RepeatableQuery> expected_local_queries{
-      {base::ASCIIToUTF16("more recent local query"),
+      {u"more recent local query",
        GetQueryDestinationURL("more recent local query"), ""},
-      {base::ASCIIToUTF16("less recent local query"),
+      {u"less recent local query",
        GetQueryDestinationURL("less recent local query"), ""}};
   EXPECT_EQ(expected_local_queries, service()->repeatable_queries());
 
@@ -571,7 +607,9 @@ TEST_F(RepeatableQueriesServiceTest, SignedOut_DefaultSearchProviderChanged) {
   EXPECT_TRUE(service()->repeatable_queries().empty());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedOut_SigninStatusChanged) {
+// TODO(crbug.com/1151909) Test fails on iOS
+// TODO(crbug.com/1170500) Test fails also on other platforms
+TEST_F(RepeatableQueriesServiceTest, DISABLED_SignedOut_SigninStatusChanged) {
   int original_query_age =
       history::kAutocompleteDuplicateVisitIntervalThreshold.InSeconds() + 3;
   FillURLDatabase({
@@ -593,9 +631,9 @@ TEST_F(RepeatableQueriesServiceTest, SignedOut_SigninStatusChanged) {
   // Request a refresh.
   RefreshAndMaybeWaitForService();
   std::vector<RepeatableQuery> expected_local_queries{
-      {base::ASCIIToUTF16("more recent local query"),
+      {u"more recent local query",
        GetQueryDestinationURL("more recent local query"), ""},
-      {base::ASCIIToUTF16("less recent local query"),
+      {u"less recent local query",
        GetQueryDestinationURL("less recent local query"), ""}};
   EXPECT_EQ(expected_local_queries, service()->repeatable_queries());
 
@@ -607,14 +645,16 @@ TEST_F(RepeatableQueriesServiceTest, SignedOut_SigninStatusChanged) {
   MaybeWaitForService();
   // Cached data is updated to server results.
   std::vector<RepeatableQuery> expected_server_queries{
-      {base::ASCIIToUTF16("server query 1"),
-       GetQueryDestinationURL("server query 1"), "/delete?server+query+1"},
-      {base::ASCIIToUTF16("server query 2"),
-       GetQueryDestinationURL("server query 2"), "/delete?server+query+2"}};
+      {u"server query 1", GetQueryDestinationURL("server query 1"),
+       "/delete?server+query+1"},
+      {u"server query 2", GetQueryDestinationURL("server query 2"),
+       "/delete?server+query+2"}};
   EXPECT_EQ(expected_server_queries, service()->repeatable_queries());
 }
 
-TEST_F(RepeatableQueriesServiceTest, SignedOut_Deletion) {
+// TODO(crbug.com/1151909) Test fails on iOS
+// TODO(crbug.com/1170500) Test fails also on other platforms
+TEST_F(RepeatableQueriesServiceTest, DISABLED_SignedOut_Deletion) {
   FillURLDatabase({{default_search_provider(), "local query 1",
                     /*age_in_seconds=*/1},
                    {default_search_provider(), "local query 2",
@@ -628,10 +668,8 @@ TEST_F(RepeatableQueriesServiceTest, SignedOut_Deletion) {
   // Request a refresh.
   RefreshAndMaybeWaitForService();
   std::vector<RepeatableQuery> expected_local_queries{
-      {base::ASCIIToUTF16("local query 1"),
-       GetQueryDestinationURL("local query 1"), ""},
-      {base::ASCIIToUTF16("local query 2"),
-       GetQueryDestinationURL("local query 2"), ""}};
+      {u"local query 1", GetQueryDestinationURL("local query 1"), ""},
+      {u"local query 2", GetQueryDestinationURL("local query 2"), ""}};
   EXPECT_EQ(expected_local_queries, service()->repeatable_queries());
 
   // Try to delete a query suggestion not provided by the service.
@@ -646,17 +684,19 @@ TEST_F(RepeatableQueriesServiceTest, SignedOut_Deletion) {
   service()->DeleteQueryWithDestinationURL(
       GetQueryDestinationURL("local query 1"));
   MaybeWaitForService();
-  expected_local_queries = {{base::ASCIIToUTF16("local query 2"),
-                             GetQueryDestinationURL("local query 2"), ""}};
+  expected_local_queries = {
+      {u"local query 2", GetQueryDestinationURL("local query 2"), ""}};
   // The deleted suggestion is not offered anymore.
   EXPECT_EQ(expected_local_queries, service()->repeatable_queries());
 
+  // Make sure there is no pending deletion task.
+  WaitForRepeatableQueriesService();
+
   // Request a refresh.
   RefreshAndMaybeWaitForService();
-  expected_local_queries = {{base::ASCIIToUTF16("local query 2"),
-                             GetQueryDestinationURL("local query 2"), ""},
-                            {base::ASCIIToUTF16("local query 3"),
-                             GetQueryDestinationURL("local query 3"), ""}};
+  expected_local_queries = {
+      {u"local query 2", GetQueryDestinationURL("local query 2"), ""},
+      {u"local query 3", GetQueryDestinationURL("local query 3"), ""}};
   // The deleted suggestion will not be offered again.
   EXPECT_EQ(expected_local_queries, service()->repeatable_queries());
 }

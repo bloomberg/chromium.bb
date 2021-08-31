@@ -479,7 +479,8 @@ PrintSystem::PrintSystemResult PrintSystemCUPS::Init() {
 void PrintSystemCUPS::UpdatePrinters() {
   printer_enum_succeeded_ = true;
   for (auto& print_server : print_servers_) {
-    if (!print_server.backend->EnumeratePrinters(&print_server.printers))
+    if (print_server.backend->EnumeratePrinters(&print_server.printers) !=
+        printing::mojom::ResultCode::kSuccess)
       printer_enum_succeeded_ = false;
     print_server.caps_cache.clear();
     for (auto& printer : print_server.printers) {
@@ -531,7 +532,7 @@ bool PrintSystemCUPS::ValidatePrintTicket(
     const std::string& print_ticket_data,
     const std::string& print_ticket_mime_type) {
   DCHECK(initialized_);
-  base::Optional<base::Value> ticket =
+  absl::optional<base::Value> ticket =
       base::JSONReader::Read(print_ticket_data);
   return ticket.has_value() && ticket.value().is_dict();
 }
@@ -541,7 +542,7 @@ bool PrintSystemCUPS::ParsePrintTicket(
     const std::string& print_ticket,
     std::map<std::string, std::string>* options) {
   DCHECK(options);
-  base::Optional<base::Value> ticket = base::JSONReader::Read(print_ticket);
+  absl::optional<base::Value> ticket = base::JSONReader::Read(print_ticket);
   if (!ticket.has_value() || !ticket.value().is_dict())
     return false;
 
@@ -573,8 +574,9 @@ bool PrintSystemCUPS::GetPrinterCapsAndDefaults(
   // TODO(gene): Retry multiple times in case of error.
   crash_keys::ScopedPrinterInfo crash_key(
       server_info->backend->GetPrinterDriverInfo(short_printer_name));
-  if (!server_info->backend->GetPrinterCapsAndDefaults(short_printer_name,
-                                                       printer_info) ) {
+  if (server_info->backend->GetPrinterCapsAndDefaults(short_printer_name,
+                                                      printer_info) !=
+      printing::mojom::ResultCode::kSuccess) {
     return false;
   }
 

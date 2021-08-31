@@ -11,7 +11,7 @@
 #include "src/gpu/GrPaint.h"
 #include "src/gpu/GrPathRenderer.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrUserStencilSettings.h"
 #include "src/gpu/geometry/GrStyledShape.h"
 
@@ -51,8 +51,8 @@ bool GrPathRenderer::drawPath(const DrawPathArgs& args) {
     canArgs.fViewMatrix = args.fViewMatrix;
     canArgs.fShape = args.fShape;
     canArgs.fPaint = &args.fPaint;
+    canArgs.fSurfaceProps = &args.fRenderTargetContext->surfaceProps();
     canArgs.fAAType = args.fAAType;
-    canArgs.fTargetIsWrappedVkSecondaryCB = args.fRenderTargetContext->wrapsVkSecondaryCB();
     canArgs.validate();
 
     canArgs.fHasUserStencilSettings = !args.fUserStencilSettings->isUnused();

@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -47,7 +48,7 @@ namespace content {
 
 namespace {
 
-const auto kIgnoreLogMessageCB = base::BindRepeating([](const std::string&) {});
+const auto kIgnoreLogMessageCB = base::DoNothing();
 
 // Wraps FakeVideoCaptureDeviceFactory to allow mocking of the
 // VideoCaptureDevice MaybeSuspend() and Resume() methods. This is used to check
@@ -183,10 +184,9 @@ class MockFrameObserver : public VideoCaptureControllerEventHandler {
                    int buffer_id) override {}
   void OnBufferDestroyed(const VideoCaptureControllerID& id,
                          int buffer_id) override {}
-  void OnBufferReady(
-      const VideoCaptureControllerID& id,
-      int buffer_id,
-      const media::mojom::VideoFrameInfoPtr& frame_info) override {}
+  void OnBufferReady(const VideoCaptureControllerID& id,
+                     const ReadyBuffer& buffer,
+                     const std::vector<ReadyBuffer>& scaled_buffers) override {}
   void OnEnded(const VideoCaptureControllerID& id) override {}
 
   void OnGotControllerCallback(const VideoCaptureControllerID&) {}
@@ -248,7 +248,7 @@ class VideoCaptureManagerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    listener_.reset(new MockMediaStreamProviderListener());
+    listener_ = std::make_unique<MockMediaStreamProviderListener>();
     auto video_capture_device_factory =
         std::make_unique<WrappedDeviceFactory>();
     video_capture_device_factory_ = video_capture_device_factory.get();
@@ -262,15 +262,13 @@ class VideoCaptureManagerTest : public testing::Test {
     screenlock_monitor_ = std::make_unique<ScreenlockMonitor>(
         std::unique_ptr<ScreenlockMonitorSource>(screenlock_monitor_source_));
 
-    vcm_ =
-        new VideoCaptureManager(std::move(video_capture_provider),
-                                base::BindRepeating([](const std::string&) {}),
-                                ScreenlockMonitor::Get());
+    vcm_ = new VideoCaptureManager(std::move(video_capture_provider),
+                                   base::DoNothing(), ScreenlockMonitor::Get());
     const int32_t kNumberOfFakeDevices = 2;
     video_capture_device_factory_->SetToDefaultDevicesConfig(
         kNumberOfFakeDevices);
     vcm_->RegisterListener(listener_.get());
-    frame_observer_.reset(new MockFrameObserver());
+    frame_observer_ = std::make_unique<MockFrameObserver>();
 
     base::RunLoop run_loop;
     vcm_->EnumerateDevices(
@@ -693,7 +691,7 @@ TEST_F(VideoCaptureManagerTest,
 
   // Right after opening the device, we should see no format in use.
   EXPECT_EQ(
-      base::nullopt,
+      absl::nullopt,
       vcm_->GetDeviceFormatInUse(
           blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, device_id));
 
@@ -701,7 +699,7 @@ TEST_F(VideoCaptureManagerTest,
   VideoCaptureControllerID client_id = StartClient(video_session_id, true);
   base::RunLoop().RunUntilIdle();
   // After StartClient(), device's format in use should be valid.
-  base::Optional<media::VideoCaptureFormat> format_in_use =
+  absl::optional<media::VideoCaptureFormat> format_in_use =
       vcm_->GetDeviceFormatInUse(
           blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, device_id);
   EXPECT_TRUE(format_in_use.has_value());
@@ -716,7 +714,7 @@ TEST_F(VideoCaptureManagerTest,
   base::RunLoop().RunUntilIdle();
   // After StopClient(), the device's format in use should be empty again.
   EXPECT_EQ(
-      base::nullopt,
+      absl::nullopt,
       vcm_->GetDeviceFormatInUse(
           blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE, device_id));
 

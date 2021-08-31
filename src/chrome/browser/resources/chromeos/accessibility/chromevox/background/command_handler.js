@@ -22,10 +22,9 @@ goog.require('ChromeVoxBackground');
 goog.require('ChromeVoxKbHandler');
 goog.require('ChromeVoxPrefs');
 goog.require('CommandStore');
-goog.require('UserAnnotationHandler');
-goog.require('NodeIdentifier');
 
 goog.scope(function() {
+const ActionType = chrome.automation.ActionType;
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
@@ -169,9 +168,9 @@ CommandHandler.onCommand = function(command) {
       ChromeVoxState.isReadingContinuously = false;
       return false;
     case 'toggleEarcons': {
-      AbstractEarcons.enabled = !AbstractEarcons.enabled;
-      const announce = AbstractEarcons.enabled ? Msgs.getMsg('earcons_on') :
-                                                 Msgs.getMsg('earcons_off');
+      ChromeVox.earcons.enabled = !ChromeVox.earcons.enabled;
+      const announce = ChromeVox.earcons.enabled ? Msgs.getMsg('earcons_on') :
+                                                   Msgs.getMsg('earcons_off');
       ChromeVox.tts.speak(
           announce, QueueMode.FLUSH, AbstractTts.PERSONALITY_ANNOTATION);
     }
@@ -209,7 +208,7 @@ CommandHandler.onCommand = function(command) {
           'description=';
 
       const description = {};
-      description['Version'] = chrome.app.getDetails().version;
+      description['Version'] = chrome.runtime.getManifest().version;
       description['Reproduction Steps'] = '%0a1.%0a2.%0a3.';
       for (const key in description) {
         url += key + ':%20' + description[key] + '%0a';
@@ -245,18 +244,28 @@ CommandHandler.onCommand = function(command) {
     case 'help':
       (new PanelCommand(PanelCommandType.TUTORIAL)).send();
       return false;
-    case 'showNextUpdatePage':
-      (new PanelCommand(PanelCommandType.UPDATE_NOTES)).send();
-      localStorage['notifications_update_notification_shown'] = true;
-      return false;
-    case 'toggleDarkScreen':
+    case 'toggleScreen':
       const oldState = sessionStorage.getItem('darkScreen');
       const newState = (oldState === 'true') ? false : true;
-      sessionStorage.setItem('darkScreen', (newState) ? 'true' : 'false');
-      chrome.accessibilityPrivate.darkenScreen(newState);
-      new Output()
-          .format((newState) ? '@darken_screen' : '@undarken_screen')
-          .go();
+      if (newState && localStorage['acceptToggleScreen'] !== 'true') {
+        // If this is the first time, show a confirmation dialog.
+        chrome.accessibilityPrivate.showConfirmationDialog(
+            Msgs.getMsg('toggle_screen_title'),
+            Msgs.getMsg('toggle_screen_description'), (confirmed) => {
+              if (confirmed) {
+                sessionStorage.setItem('darkScreen', 'true');
+                localStorage['acceptToggleScreen'] = true;
+                chrome.accessibilityPrivate.darkenScreen(true);
+                new Output().format('@toggle_screen_off').go();
+              }
+            });
+      } else {
+        sessionStorage.setItem('darkScreen', (newState) ? 'true' : 'false');
+        chrome.accessibilityPrivate.darkenScreen(newState);
+        new Output()
+            .format((newState) ? '@toggle_screen_off' : '@toggle_screen_on')
+            .go();
+      }
       return false;
     case 'toggleSpeechOnOrOff':
       const state = ChromeVox.tts.toggleSpeechOnOrOff();
@@ -327,6 +336,13 @@ CommandHandler.onCommand = function(command) {
       break;
     case 'resetTextToSpeechSettings':
       ChromeVox.tts.resetTextToSpeechSettings();
+      return false;
+    case 'copy':
+      EventGenerator.sendKeyPress(KeyCode.C, {ctrl: true});
+
+      // The above command doesn't trigger document clipboard events, so we need
+      // to set this manually.
+      ChromeVoxState.instance.readNextClipboardDataChange();
       return false;
   }
 
@@ -705,7 +721,7 @@ CommandHandler.onCommand = function(command) {
                       .withoutHints()
                       .withRichSpeechAndBraille(
                           ChromeVoxState.instance.currentRange, prevRange,
-                          Output.EventType.NAVIGATE)
+                          OutputEventType.NAVIGATE)
                       .onSpeechEnd(continueReading);
 
         if (!o.hasSpeech) {
@@ -723,7 +739,7 @@ CommandHandler.onCommand = function(command) {
             new Output()
                 .withoutHints()
                 .withRichSpeechAndBraille(
-                    collapsedRange, collapsedRange, Output.EventType.NAVIGATE)
+                    collapsedRange, collapsedRange, OutputEventType.NAVIGATE)
                 .onSpeechEnd(continueReading);
 
         if (o.hasSpeech) {
@@ -756,6 +772,10 @@ CommandHandler.onCommand = function(command) {
       return false;
     case 'showLinksList':
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'role_link')).send();
+      return false;
+    case 'showActionsMenu':
+      (new PanelCommand(PanelCommandType.OPEN_MENUS, 'panel_menu_actions'))
+          .send();
       return false;
     case 'showTablesList':
       (new PanelCommand(PanelCommandType.OPEN_MENUS, 'table_strategy')).send();
@@ -814,7 +834,7 @@ CommandHandler.onCommand = function(command) {
           const o =
               new Output()
                   .format('@end_selection')
-                  .withSpeechAndBraille(sel, sel, Output.EventType.NAVIGATE)
+                  .withSpeechAndBraille(sel, sel, OutputEventType.NAVIGATE)
                   .go();
           DesktopAutomationHandler.instance.ignoreDocumentSelectionFromAction(
               false);
@@ -826,7 +846,7 @@ CommandHandler.onCommand = function(command) {
     case 'fullyDescribe':
       const o = new Output();
       o.withContextFirst()
-          .withRichSpeechAndBraille(current, null, Output.EventType.NAVIGATE)
+          .withRichSpeechAndBraille(current, null, OutputEventType.NAVIGATE)
           .go();
       return false;
     case 'viewGraphicAsBraille':
@@ -1031,24 +1051,13 @@ CommandHandler.onCommand = function(command) {
         }
       }
 
-      // Get unicode-aware array of characters.
-      const characterArray = [...word];
       const language = chrome.i18n.getUILanguage();
-      for (let i = 0; i < characterArray.length; ++i) {
-        const character = characterArray[i];
-        const phoneticText = PhoneticData.forCharacter(character, language);
-        // Speak the character followed by its phonetic disambiguation, if it
-        // was found.
+      const phoneticText = PhoneticData.forText(word, language);
+      if (phoneticText) {
         new Output()
-            .withString(character)
-            .withQueueMode(i === 0 ? QueueMode.CATEGORY_FLUSH : QueueMode.QUEUE)
+            .withString(phoneticText)
+            .withQueueMode(QueueMode.CATEGORY_FLUSH)
             .go();
-        if (phoneticText) {
-          new Output()
-              .withString(phoneticText)
-              .withQueueMode(QueueMode.QUEUE)
-              .go();
-        }
       }
     }
       return false;
@@ -1068,17 +1077,6 @@ CommandHandler.onCommand = function(command) {
                     Msgs.getMsg('no_url_found'))
           .withQueueMode(QueueMode.CATEGORY_FLUSH)
           .go();
-    }
-      return false;
-    case 'toggleAnnotationsWidget': {
-      if (!UserAnnotationHandler.instance.enabled) {
-        return false;
-      }
-      const node = ChromeVoxState.instance.currentRange.start.node;
-      const identifier = NodeIdentifier.constructFromNode(node);
-      (new PanelCommand(
-           PanelCommandType.OPEN_ANNOTATIONS_UI, JSON.stringify(identifier)))
-          .send();
     }
       return false;
     case 'logLanguageInformationForCurrentNode': {
@@ -1346,7 +1344,7 @@ CommandHandler.viewGraphicAsBraille_ = function(current) {
   CommandHandler.imageNode_ = imageNode;
   if (imageNode.imageDataUrl) {
     const event = new CustomAutomationEvent(
-        EventType.IMAGE_FRAME_UPDATED, imageNode, 'page', []);
+        EventType.IMAGE_FRAME_UPDATED, imageNode, {eventFrom: 'page'});
     CommandHandler.onImageFrameUpdated_(event);
   } else {
     imageNode.getImageData(0, 0);
@@ -1471,8 +1469,7 @@ CommandHandler.init = function() {
 
     if (request.openTutorial) {
       let launchTutorial = function(desktop, evt) {
-        desktop.removeEventListener(
-            chrome.automation.EventType.FOCUS, launchTutorial, true);
+        desktop.removeEventListener(EventType.FOCUS, launchTutorial, true);
         CommandHandler.onCommand('help');
       };
 
@@ -1481,8 +1478,7 @@ CommandHandler.init = function() {
       // show our tutorial.
       chrome.automation.getDesktop(function(desktop) {
         launchTutorial = launchTutorial.bind(this, desktop);
-        desktop.addEventListener(
-            chrome.automation.EventType.FOCUS, launchTutorial, true);
+        desktop.addEventListener(EventType.FOCUS, launchTutorial, true);
       });
     }
   });
@@ -1507,5 +1503,4 @@ CommandHandler.init = function() {
         result['sessionType'] === chrome.chromeosInfoPrivate.SessionType.KIOSK;
   });
 };
-
 });  // goog.scope

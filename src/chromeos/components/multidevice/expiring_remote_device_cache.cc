@@ -4,7 +4,7 @@
 
 #include "chromeos/components/multidevice/expiring_remote_device_cache.h"
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "chromeos/components/multidevice/remote_device_cache.h"
 
 namespace chromeos {
@@ -50,9 +50,9 @@ void ExpiringRemoteDeviceCache::UpdateRemoteDevice(
   RememberIdsFromLastSetCall(remote_device);
 }
 
-base::Optional<RemoteDeviceRef> ExpiringRemoteDeviceCache::GetRemoteDevice(
-    const base::Optional<std::string>& instance_id,
-    const base::Optional<std::string>& legacy_device_id) const {
+absl::optional<RemoteDeviceRef> ExpiringRemoteDeviceCache::GetRemoteDevice(
+    const absl::optional<std::string>& instance_id,
+    const absl::optional<std::string>& legacy_device_id) const {
   return remote_device_cache_->GetRemoteDevice(instance_id, legacy_device_id);
 }
 

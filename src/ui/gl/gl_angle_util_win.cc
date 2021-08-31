@@ -9,6 +9,7 @@
 #include "base/trace_event/trace_event.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface_egl.h"
 
 namespace gl {
@@ -23,7 +24,7 @@ void* QueryDeviceObjectFromANGLE(int object_type) {
     egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
   }
 
-  if (!gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_device_query"))
+  if (!gl::GLSurfaceEGL::HasEGLClientExtension("EGL_EXT_device_query"))
     return nullptr;
 
   PFNEGLQUERYDISPLAYATTRIBEXTPROC QueryDisplayAttribEXT = nullptr;

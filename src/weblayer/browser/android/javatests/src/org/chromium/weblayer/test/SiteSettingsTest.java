@@ -17,6 +17,7 @@ import static org.hamcrest.core.StringContains.containsString;
 import android.app.Activity;
 import android.app.Instrumentation.ActivityResult;
 import android.content.Intent;
+import android.os.RemoteException;
 import android.provider.Settings;
 
 import androidx.test.espresso.intent.Intents;
@@ -28,7 +29,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.weblayer.SettingsTestUtils;
+import org.chromium.weblayer.SiteSettingsActivity;
+import org.chromium.weblayer.TestWebLayer;
 
 /**
  * Tests the behavior of the Site Settings UI.
@@ -41,22 +46,24 @@ public class SiteSettingsTest {
     private static final String PROFILE_NAME = "DefaultProfile";
 
     @Rule
-    public SiteSettingsActivityTestRule mSiteSettingsTestRule = new SiteSettingsActivityTestRule();
+    public SettingsActivityTestRule mSettingsTestRule = new SettingsActivityTestRule();
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(84)
     public void testSiteSettingsLaunches() throws InterruptedException {
-        mSiteSettingsTestRule.launchCategoryListWithProfile(PROFILE_NAME);
+        mSettingsTestRule.launchActivity(
+                SiteSettingsActivity.createIntentForSiteSettingsCategoryList(
+                        mSettingsTestRule.getContext(), PROFILE_NAME, /*isIncognito=*/false));
 
         onView(withText("All sites")).check(matches(isDisplayed()));
     }
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(84)
     public void testAllSitesLaunches() throws InterruptedException {
-        mSiteSettingsTestRule.launchCategoryListWithProfile(PROFILE_NAME);
+        mSettingsTestRule.launchActivity(
+                SiteSettingsActivity.createIntentForSiteSettingsCategoryList(
+                        mSettingsTestRule.getContext(), PROFILE_NAME, /*isIncognito=*/false));
 
         onView(withText("All sites")).perform(click());
 
@@ -66,9 +73,10 @@ public class SiteSettingsTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(84)
     public void testJavascriptExceptionPopupLaunches() throws InterruptedException {
-        mSiteSettingsTestRule.launchCategoryListWithProfile(PROFILE_NAME);
+        mSettingsTestRule.launchActivity(
+                SiteSettingsActivity.createIntentForSiteSettingsCategoryList(
+                        mSettingsTestRule.getContext(), PROFILE_NAME, /*isIncognito=*/false));
 
         onView(withText("JavaScript")).perform(click());
         onView(withText("Add site exception")).perform(click());
@@ -76,11 +84,33 @@ public class SiteSettingsTest {
         onView(withText("Block JavaScript for a specific site.")).check(matches(isDisplayed()));
     }
 
+    @DisabledTest(message = "https://crbug.com/1174618")
     @Test
     @SmallTest
-    @MinWebLayerVersion(84)
+    public void testAdBlockingSiteSettingPageLaunches() throws InterruptedException {
+        // The setting for ad blocking is below the fold on the main site settings page, and it's
+        // challenging to scroll to it. Launch directly to the category instead. See the discussion
+        // on https://chromium-review.googlesource.com/c/chromium/src/+/2673520 for further details.
+        // Note that this means that this test unfortunately doesn't verify that the Ads setting is
+        // actually present on the main site settings page.
+        mSettingsTestRule.launchActivity(
+                SettingsTestUtils.createIntentForSiteSettingsSingleCategory(
+                        mSettingsTestRule.getContext(), PROFILE_NAME, /*isIncognito=*/false, "ads",
+                        "Ads"));
+
+        onView(withText("Block ads on sites that show intrusive or misleading ads"))
+                .perform(click());
+
+        onView(withText("Allowed")).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
+    @CommandLineFlags.Add("disable-features=ActionableContentSettings")
     public void testSingleSiteSoundPopupLaunches() throws InterruptedException {
-        mSiteSettingsTestRule.launchSingleSiteSettingsWithProfile(PROFILE_NAME, GOOGLE_URL);
+        // TODO(crbug.com/1165765): Remove test when ActionableContentSettings is enabled.
+        mSettingsTestRule.launchActivity(SettingsTestUtils.createIntentForSiteSettingsSingleWebsite(
+                mSettingsTestRule.getContext(), PROFILE_NAME, /*isIncognito=*/false, GOOGLE_URL));
 
         onView(withText("Sound")).perform(click());
 
@@ -89,9 +119,23 @@ public class SiteSettingsTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(84)
+    @CommandLineFlags.Add("enable-features=ActionableContentSettings")
+    public void testSingleSiteSoundToggle() throws InterruptedException {
+        mSettingsTestRule.launchActivity(SettingsTestUtils.createIntentForSiteSettingsSingleWebsite(
+                mSettingsTestRule.getContext(), PROFILE_NAME, /*isIncognito=*/false, GOOGLE_URL));
+
+        onView(withText("Allowed")).check(matches(isDisplayed()));
+
+        onView(withText("Sound")).perform(click());
+
+        onView(withText("Blocked")).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @SmallTest
     public void testSingleSiteClearPopupLaunches() throws InterruptedException {
-        mSiteSettingsTestRule.launchSingleSiteSettingsWithProfile(PROFILE_NAME, GOOGLE_URL);
+        mSettingsTestRule.launchActivity(SettingsTestUtils.createIntentForSiteSettingsSingleWebsite(
+                mSettingsTestRule.getContext(), PROFILE_NAME, /*isIncognito=*/false, GOOGLE_URL));
 
         onView(withText("Clear & reset")).perform(click());
 
@@ -101,19 +145,23 @@ public class SiteSettingsTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(84)
-    @DisabledTest(message = "TODO(crbug.com/1128184): Fix flakiness.")
-    public void testSingleSiteLocationAccess() throws InterruptedException {
+    public void testSingleSiteLocationAccess() throws InterruptedException, RemoteException {
         try {
             Intents.init();
-            mSiteSettingsTestRule.launchSingleSiteSettingsWithProfile(PROFILE_NAME, GOOGLE_URL);
-
-            onView(withText("Location access")).perform(click());
+            TestWebLayer testWebLayer =
+                    TestWebLayer.getTestWebLayer(mSettingsTestRule.getContext());
+            testWebLayer.setSystemLocationSettingEnabled(true);
+            mSettingsTestRule.launchActivity(
+                    SettingsTestUtils.createIntentForSiteSettingsSingleWebsite(
+                            mSettingsTestRule.getContext(), PROFILE_NAME, /*isIncognito=*/false,
+                            GOOGLE_URL));
 
             Matcher<Intent> settingsMatcher =
                     IntentMatchers.hasAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
             intending(settingsMatcher)
                     .respondWith(new ActivityResult(Activity.RESULT_OK, new Intent()));
+
+            onView(withText("Location")).perform(click());
 
             intended(settingsMatcher);
         } finally {

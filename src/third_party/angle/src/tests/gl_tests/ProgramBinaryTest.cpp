@@ -758,7 +758,7 @@ TEST_P(ProgramBinaryTest, SRGBDecodeWithSamplerAndTexelFetchTest)
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && IsWindows());
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsAMD() && IsWindows());
     ANGLE_SKIP_TEST_IF(IsOpenGL() && (IsNVIDIA() || IsARM64()) && IsOSX());
-    ANGLE_SKIP_TEST_IF(IsOpenGLES() && (IsNexus5X() || IsNexus6P()));
+    ANGLE_SKIP_TEST_IF(IsOpenGLES() && IsNexus5X());
 
     constexpr char kVS[] =
         "#version 300 es\n"
@@ -821,6 +821,7 @@ TEST_P(ProgramBinaryTest, SRGBDecodeWithSamplerAndTexelFetchTest)
     glDeleteProgram(reloadedProgram);
 }
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ProgramBinaryES3Test);
 ANGLE_INSTANTIATE_TEST_ES3(ProgramBinaryES3Test);
 
 class ProgramBinaryES31Test : public ANGLETest
@@ -890,8 +891,6 @@ TEST_P(ProgramBinaryES31Test, ProgramBinaryWithComputeShader)
 // Tests that saving and loading a program attached with computer shader.
 TEST_P(ProgramBinaryES31Test, ProgramBinaryWithAtomicCounterComputeShader)
 {
-    // http://anglebug.com/4092
-    ANGLE_SKIP_TEST_IF(IsAndroid() && IsVulkan());
     // We can't run the test if no program binary formats are supported.
     GLint binaryFormatCount = 0;
     glGetIntegerv(GL_NUM_PROGRAM_BINARY_FORMATS, &binaryFormatCount);
@@ -1012,6 +1011,7 @@ TEST_P(ProgramBinaryES31Test, ImageTextureBinding)
     ASSERT_GL_NO_ERROR();
 }
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ProgramBinaryES31Test);
 ANGLE_INSTANTIATE_TEST_ES31(ProgramBinaryES31Test);
 
 class ProgramBinaryTransformFeedbackTest : public ANGLETest
@@ -1123,8 +1123,7 @@ TEST_P(ProgramBinaryTransformFeedbackTest, GetTransformFeedbackVarying)
     EXPECT_GL_NO_ERROR();
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these
-// tests should be run against.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ProgramBinaryTransformFeedbackTest);
 ANGLE_INSTANTIATE_TEST_ES3(ProgramBinaryTransformFeedbackTest);
 
 // For the ProgramBinariesAcrossPlatforms tests, we need two sets of params:
@@ -1355,6 +1354,7 @@ TEST_P(ProgramBinariesAcrossPlatforms, CreateAndReloadBinary)
 }
 
 // clang-format off
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(ProgramBinariesAcrossPlatforms);
 ANGLE_INSTANTIATE_TEST(ProgramBinariesAcrossPlatforms,
                        //                     | Save the program   | Load the program      | Expected
                        //                     | using these params | using these params    | link result
@@ -1363,5 +1363,6 @@ ANGLE_INSTANTIATE_TEST(ProgramBinariesAcrossPlatforms,
                        PlatformsWithLinkResult(ES2_D3D11(),         ES2_D3D9(),             false        ), // Switching from D3D11 to D3D9 shouldn't work
                        PlatformsWithLinkResult(ES2_D3D9(),          ES2_D3D11(),            false        ), // Switching from D3D9 to D3D11 shouldn't work
                        PlatformsWithLinkResult(ES2_D3D11(),         ES3_D3D11(),            false        ), // Switching to newer client version shouldn't work
+                       PlatformsWithLinkResult(ES3_VULKAN(),        ES31_VULKAN(),          false        ), // Switching to newer client version shouldn't work with Vulkan
                        );
 // clang-format on

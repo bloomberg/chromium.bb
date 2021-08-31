@@ -7,13 +7,13 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/metrics/user_metrics.h"
-#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -54,7 +54,7 @@ LocaleChangeGuard::~LocaleChangeGuard() {
 }
 
 void LocaleChangeGuard::OnLogin() {
-  session_observer_.Add(session_manager::SessionManager::Get());
+  session_observation_.Observe(session_manager::SessionManager::Get());
   registrar_.Add(this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
                  content::NotificationService::AllBrowserContextsAndSources());
 }
@@ -89,7 +89,7 @@ void LocaleChangeGuard::Observe(int type,
 }
 
 void LocaleChangeGuard::OnUserSessionStarted(bool is_primary_user) {
-  session_observer_.RemoveAll();
+  session_observation_.Reset();
   if (main_frame_loaded_)
     Check();
 }

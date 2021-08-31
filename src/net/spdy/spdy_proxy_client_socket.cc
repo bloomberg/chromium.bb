@@ -430,8 +430,7 @@ int SpdyProxyClientSocket::DoReadReplyComplete(int result) {
 
     case 407:  // Proxy Authentication Required
       next_state_ = STATE_OPEN;
-      if (!SanitizeProxyAuth(&response_))
-        return ERR_TUNNEL_CONNECTION_FAILED;
+      SanitizeProxyAuth(response_);
       return HandleProxyAuthChallenge(auth_.get(), &response_, net_log_);
 
     default:
@@ -449,6 +448,9 @@ void SpdyProxyClientSocket::OnHeadersSent() {
 
   OnIOComplete(OK);
 }
+
+void SpdyProxyClientSocket::OnEarlyHintsReceived(
+    const spdy::Http2HeaderBlock& headers) {}
 
 void SpdyProxyClientSocket::OnHeadersReceived(
     const spdy::Http2HeaderBlock& response_headers,

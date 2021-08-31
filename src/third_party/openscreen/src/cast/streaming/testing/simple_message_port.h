@@ -19,7 +19,10 @@ namespace cast {
 
 class SimpleMessagePort : public MessagePort {
  public:
-  ~SimpleMessagePort() override {}
+  explicit SimpleMessagePort(const std::string& destination_id)
+      : destination_id_(destination_id) {}
+
+  ~SimpleMessagePort() override = default;
   void SetClient(MessagePort::Client* client,
                  std::string client_sender_id) override {
     client_ = client;
@@ -32,9 +35,15 @@ class SimpleMessagePort : public MessagePort {
   }
 
   void ReceiveMessage(const std::string& namespace_,
-                      const std::string message) {
+                      const std::string& message) {
+    ReceiveMessage(destination_id_, namespace_, message);
+  }
+
+  void ReceiveMessage(const std::string& sender_id,
+                      const std::string& namespace_,
+                      const std::string& message) {
     ASSERT_NE(client_, nullptr);
-    client_->OnMessage("sender-1234", namespace_, message);
+    client_->OnMessage(sender_id, namespace_, message);
   }
 
   void ReceiveError(Error error) {
@@ -48,13 +57,13 @@ class SimpleMessagePort : public MessagePort {
     posted_messages_.emplace_back(message);
   }
 
-  MessagePort::Client* client() const { return client_; }
   const std::vector<std::string> posted_messages() const {
     return posted_messages_;
   }
 
  private:
   MessagePort::Client* client_ = nullptr;
+  std::string destination_id_;
   std::vector<std::string> posted_messages_;
 };
 

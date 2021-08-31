@@ -18,6 +18,7 @@ import {
   base64Encode,
 } from '../base/string_utils';
 import {Actions} from '../common/actions';
+import {TRACE_SUFFIX} from '../common/constants';
 import {
   AndroidLogConfig,
   AndroidLogId,
@@ -42,7 +43,6 @@ import {
   isAndroidP,
   isChromeTarget,
   isCrOSTarget,
-  MAX_TIME,
   RecordConfig,
   RecordingTarget
 } from '../common/state';
@@ -76,12 +76,6 @@ export function genConfig(
   const protoCfg = new TraceConfig();
   protoCfg.durationMs = uiCfg.durationMs;
 
-  let time = protoCfg.durationMs / 1000;
-
-  if (time > MAX_TIME) {
-    time = MAX_TIME;
-  }
-
   // Auxiliary buffer for slow-rate events.
   // Set to 1/8th of the main buffer size, with reasonable limits.
   let slowBufSizeKb = uiCfg.bufferSizeMb * (1024 / 8);
@@ -108,6 +102,11 @@ export function genConfig(
       protoCfg.fileWritePeriodMs = uiCfg.fileWritePeriodMs;
       protoCfg.maxFileSizeBytes = uiCfg.maxFileSizeMb * 1e6;
     }
+
+    // Clear incremental state every 5 seconds when tracing into a ring buffer.
+    const incStateConfig = new TraceConfig.IncrementalStateConfig();
+    incStateConfig.clearPeriodMs = 5000;
+    protoCfg.incrementalStateConfig = incStateConfig;
   }
 
   const ftraceEvents = new Set<string>(uiCfg.ftrace ? uiCfg.ftraceEvents : []);
@@ -207,6 +206,7 @@ export function genConfig(
     ftraceEvents.add('mm_event/mm_event_record');
     ftraceEvents.add('kmem/rss_stat');
     ftraceEvents.add('ion/ion_stat');
+    ftraceEvents.add('dmabuf_heap/dma_heap_stat');
     ftraceEvents.add('kmem/ion_heap_grow');
     ftraceEvents.add('kmem/ion_heap_shrink');
   }
@@ -246,7 +246,7 @@ export function genConfig(
 
   let heapprofd: HeapprofdConfig|undefined = undefined;
   if (uiCfg.heapProfiling) {
-    // TODO(taylori): Check or inform user if buffer size are too small.
+    // TODO(hjd): Check or inform user if buffer size are too small.
     const cfg = new HeapprofdConfig();
     cfg.samplingIntervalBytes = uiCfg.hpSamplingIntervalBytes;
     if (uiCfg.hpSharedMemoryBuffer >= 8192 &&
@@ -269,8 +269,10 @@ export function genConfig(
         cdc.dumpPhaseMs = uiCfg.hpContinuousDumpsPhase;
       }
     }
-    // TODO(fmayer): Add a toggle for this to the UI?
-    cfg.blockClient = true;
+    cfg.blockClient = uiCfg.hpBlockClient;
+    if (uiCfg.hpAllHeaps) {
+      cfg.allHeaps = true;
+    }
     heapprofd = cfg;
   }
 
@@ -323,6 +325,15 @@ export function genConfig(
       return AndroidLogId[name as any as number] as any as number;
     });
 
+    if (!isChromeTarget(target) || isCrOSTarget(target)) {
+      protoCfg.dataSources.push(ds);
+    }
+  }
+
+  if (uiCfg.androidFrameTimeline) {
+    const ds = new TraceConfig.DataSource();
+    ds.config = new DataSourceConfig();
+    ds.config.name = 'android.surfaceflinger.frametimeline';
     if (!isChromeTarget(target) || isCrOSTarget(target)) {
       protoCfg.dataSources.push(ds);
     }
@@ -395,7 +406,12 @@ export function genConfig(
     };
     if (chromeCategories.has('disabled-by-default-memory-infra')) {
       configStruct.memory_dump_config = {
-        triggers: [{mode: 'detailed', periodic_interval_ms: 10000}]
+        allowed_dump_modes: ['background', 'light', 'detailed'],
+        triggers: [{
+          min_time_between_dumps_ms: 10000,
+          mode: 'detailed',
+          type: 'periodic_interval',
+        }],
       };
     }
     const traceConfigJson = JSON.stringify(configStruct);
@@ -574,6 +590,7 @@ export class RecordController extends Controller<'main'> implements Consumer {
   private traceBuffer: Uint8Array[] = [];
   private bufferUpdateInterval: ReturnType<typeof setTimeout>|undefined;
   private adb = new AdbOverWebUsb();
+  private recordedTraceSuffix = TRACE_SUFFIX;
 
   // We have a different controller for each targetOS. The correct one will be
   // created when needed, and stored here. When the key is a string, it is the
@@ -693,8 +710,11 @@ export class RecordController extends Controller<'main'> implements Consumer {
       return;
     }
     const trace = this.generateTrace();
-    globals.dispatch(Actions.openTraceFromBuffer(
-        {title: 'Recorded trace', buffer: trace.buffer}));
+    globals.dispatch(Actions.openTraceFromBuffer({
+      title: 'Recorded trace',
+      buffer: trace.buffer,
+      fileName: `recorded_trace${this.recordedTraceSuffix}`,
+    }));
     this.traceBuffer = [];
   }
 
@@ -795,8 +815,12 @@ export class RecordController extends Controller<'main'> implements Consumer {
       _callback: RPCImplCallback) {
     try {
       const state = this.app.state;
-      (await this.getTargetController(state.recordingTarget))
-          .handleCommand(method.name, requestData);
+      // TODO(hjd): This is a bit weird. We implicity send each RPC message to
+      // whichever target is currently selected (creating that target if needed)
+      // it would be nicer if the setup/teardown was more explicit.
+      const target = await this.getTargetController(state.recordingTarget);
+      this.recordedTraceSuffix = target.getRecordedTraceSuffix();
+      target.handleCommand(method.name, requestData);
     } catch (e) {
       console.error(`error invoking ${method}: ${e.message}`);
     }

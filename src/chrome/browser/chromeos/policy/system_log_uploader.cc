@@ -333,10 +333,10 @@ SystemLogUploader::SystemLogUploader(
   SYSLOG(INFO) << "Creating system log uploader.";
 
   // Watch for policy changes.
-  upload_enabled_observer_ = chromeos::CrosSettings::Get()->AddSettingsObserver(
+  upload_enabled_subscription_ = ash::CrosSettings::Get()->AddSettingsObserver(
       chromeos::kSystemLogUploadEnabled,
-      base::Bind(&SystemLogUploader::RefreshUploadSettings,
-                 base::Unretained(this)));
+      base::BindRepeating(&SystemLogUploader::RefreshUploadSettings,
+                          base::Unretained(this)));
 
   // Fetch the current value of the policy.
   RefreshUploadSettings();
@@ -409,7 +409,7 @@ void SystemLogUploader::RefreshUploadSettings() {
   // Attempt to fetch the current value of the reporting settings.
   // If trusted values are not available, register this function to be called
   // back when they are available.
-  chromeos::CrosSettings* settings = chromeos::CrosSettings::Get();
+  ash::CrosSettings* settings = ash::CrosSettings::Get();
   auto trust_status = settings->PrepareTrustedValues(base::BindOnce(
       &SystemLogUploader::RefreshUploadSettings, weak_factory_.GetWeakPtr()));
   if (trust_status != chromeos::CrosSettingsProvider::TRUSTED)
@@ -529,7 +529,7 @@ base::Time SystemLogUploader::UpdateLocalStateForLogs() {
 
   std::vector<base::Time> updated_log_uploads;
 
-  for (const base::Value& item : *prev_log_uploads) {
+  for (const base::Value& item : prev_log_uploads->GetList()) {
     // ListValue stores Value type and Value does not support base::Time,
     // so we store double and convert to base::Time here.
     const base::Time current_item_time =

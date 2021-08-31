@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/scoped_mock_clock_override.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
@@ -16,7 +15,9 @@
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/daily_metrics_helper.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_test.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -52,10 +53,10 @@ class WebAppMetricsBrowserTest : public WebAppControllerBrowserTest {
   AppId InstallWebApp() {
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->start_url = GetInstallableAppURL();
-    web_app_info->title = base::ASCIIToUTF16("A Web App");
+    web_app_info->title = u"A Web App";
     web_app_info->display_mode = DisplayMode::kStandalone;
     web_app_info->open_as_window = true;
-    return web_app::InstallWebApp(profile(), std::move(web_app_info));
+    return web_app::test::InstallWebApp(profile(), std::move(web_app_info));
   }
 
   GURL GetNonWebAppUrl() {
@@ -109,10 +110,10 @@ IN_PROC_BROWSER_TEST_F(WebAppMetricsBrowserTest,
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->start_url = GetInstallableAppURL();
-  web_app_info->title = base::ASCIIToUTF16("A Web App");
+  web_app_info->title = u"A Web App";
   web_app_info->display_mode = DisplayMode::kStandalone;
   web_app_info->open_as_window = true;
-  web_app::InstallWebApp(profile(), std::move(web_app_info));
+  web_app::test::InstallWebApp(profile(), std::move(web_app_info));
 
   AddBlankTabAndShow(browser());
   NavigateAndAwaitInstallabilityCheck(browser(), GetInstallableAppURL());
@@ -130,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(WebAppMetricsBrowserTest,
   // |InstallWebApp| always sets |OMNIBOX_INSTALL_ICON| as the install source.
   ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
       entry, UkmEntry::kInstallSourceName,
-      static_cast<int>(WebappInstallSource::OMNIBOX_INSTALL_ICON));
+      static_cast<int>(webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON));
   ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
       entry, UkmEntry::kDisplayModeName,
       static_cast<int>(DisplayMode::kStandalone));
@@ -152,10 +153,11 @@ IN_PROC_BROWSER_TEST_F(
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();
   web_app_info->start_url = GetInstallableAppURL();
-  web_app_info->title = base::ASCIIToUTF16("A Web App");
+  web_app_info->title = u"A Web App";
   web_app_info->display_mode = DisplayMode::kStandalone;
   web_app_info->open_as_window = true;
-  AppId app_id = web_app::InstallWebApp(profile(), std::move(web_app_info));
+  AppId app_id =
+      web_app::test::InstallWebApp(profile(), std::move(web_app_info));
 
   LaunchWebAppBrowserAndAwaitInstallabilityCheck(app_id);
 
@@ -172,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(
   // |InstallWebApp| always sets |OMNIBOX_INSTALL_ICON| as the install source.
   ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
       entry, UkmEntry::kInstallSourceName,
-      static_cast<int>(WebappInstallSource::OMNIBOX_INSTALL_ICON));
+      static_cast<int>(webapps::WebappInstallSource::OMNIBOX_INSTALL_ICON));
   ukm::TestAutoSetUkmRecorder::ExpectEntryMetric(
       entry, UkmEntry::kDisplayModeName,
       static_cast<int>(DisplayMode::kStandalone));
@@ -188,7 +190,9 @@ IN_PROC_BROWSER_TEST_F(
                                                  UkmEntry::kNumSessionsName, 1);
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppMetricsBrowserTest, NonWebApp_RecordsNothing) {
+// Flaky test: crbug.com/1170786
+IN_PROC_BROWSER_TEST_F(WebAppMetricsBrowserTest,
+                       DISABLED_NonWebApp_RecordsNothing) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   NavigateAndAwaitInstallabilityCheck(browser(), GetNonWebAppUrl());

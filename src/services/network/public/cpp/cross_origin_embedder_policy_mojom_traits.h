@@ -8,22 +8,22 @@
 #include <string>
 
 #include "base/component_export.h"
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace mojo {
 
 template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+struct COMPONENT_EXPORT(NETWORK_CPP_CROSS_ORIGIN)
     StructTraits<network::mojom::CrossOriginEmbedderPolicyDataView,
                  network::CrossOriginEmbedderPolicy> {
   static network::mojom::CrossOriginEmbedderPolicyValue value(
       const network::CrossOriginEmbedderPolicy& coep) {
     return coep.value;
   }
-  static const base::Optional<std::string>& reporting_endpoint(
+  static const absl::optional<std::string>& reporting_endpoint(
       const network::CrossOriginEmbedderPolicy& coep) {
     return coep.reporting_endpoint;
   }
@@ -31,7 +31,7 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::CrossOriginEmbedderPolicy& coep) {
     return coep.report_only_value;
   }
-  static const base::Optional<std::string>& report_only_reporting_endpoint(
+  static const absl::optional<std::string>& report_only_reporting_endpoint(
       const network::CrossOriginEmbedderPolicy& coep) {
     return coep.report_only_reporting_endpoint;
   }

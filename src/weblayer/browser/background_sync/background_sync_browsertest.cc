@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/background_sync/background_sync_controller_impl.h"
@@ -21,6 +22,43 @@
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
+
+#if !defined(OS_ANDROID)
+#include "components/keep_alive_registry/keep_alive_registry.h"
+#include "components/keep_alive_registry/keep_alive_state_observer.h"
+
+namespace {
+class TestKeepAliveStateObserver : public KeepAliveStateObserver {
+ public:
+  TestKeepAliveStateObserver() {
+    KeepAliveRegistry::GetInstance()->AddObserver(this);
+  }
+
+  ~TestKeepAliveStateObserver() override {
+    KeepAliveRegistry::GetInstance()->RemoveObserver(this);
+  }
+
+  void OnKeepAliveStateChanged(bool is_keeping_alive) override {
+    if (is_keeping_alive_loop_ && !is_keeping_alive)
+      is_keeping_alive_loop_->Quit();
+  }
+
+  void OnKeepAliveRestartStateChanged(bool can_restart) override {}
+
+  void WaitUntilNoKeepAlives() {
+    if (!KeepAliveRegistry::GetInstance()->IsKeepingAlive())
+      return;
+    is_keeping_alive_loop_ = std::make_unique<base::RunLoop>();
+    is_keeping_alive_loop_->Run();
+    is_keeping_alive_loop_ = nullptr;
+    CHECK(!KeepAliveRegistry::GetInstance()->IsKeepingAlive());
+  }
+
+ private:
+  std::unique_ptr<base::RunLoop> is_keeping_alive_loop_;
+};
+}  // namespace
+#endif  // !defined(OS_ANDROID)
 
 namespace {
 const char kExampleUrl[] = "https://www.example.com/";
@@ -60,6 +98,13 @@ class BackgroundSyncBrowserTest : public WebLayerBrowserTest {
     return nullptr;
   }
 
+#if !defined(OS_ANDROID)
+  void PostRunTestOnMainThread() override {
+    keep_alive_observer_.WaitUntilNoKeepAlives();
+    WebLayerBrowserTest::PostRunTestOnMainThread();
+  }
+#endif  // !defined(OS_ANDROID)
+
  protected:
   content::WebContents* web_contents() {
     return static_cast<TabImpl*>(shell()->tab())->web_contents();
@@ -67,6 +112,9 @@ class BackgroundSyncBrowserTest : public WebLayerBrowserTest {
 
   std::unique_ptr<base::RunLoop> sync_event_received_;
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
+#if !defined(OS_ANDROID)
+  TestKeepAliveStateObserver keep_alive_observer_;
+#endif  // !defined(OS_ANDROID)
 };
 
 IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, GetBackgroundSyncController) {
@@ -103,7 +151,9 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, ZeroSiteEngagementPenalty) {
 }
 
 #if defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, BackgroundSyncNotDisabled) {
+// TODO(crbug.com/1154332): Fix flaky test.
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
+                       DISABLED_BackgroundSyncNotDisabled) {
   auto* controller = BackgroundSyncControllerFactory::GetForBrowserContext(
       GetBrowserContext());
   ASSERT_TRUE(controller);
@@ -161,14 +211,10 @@ class IncognitoBackgroundSyncBrowserTest : public BackgroundSyncBrowserTest {
   IncognitoBackgroundSyncBrowserTest() { SetShellStartsInIncognitoMode(); }
 };
 
-#if defined(OS_ANDROID)
-// https://crbug.com/1147754
-#define MAYBE_OffTheRecordProfile DISABLED_OffTheRecordProfile
-#else
-#define MAYBE_OffTheRecordProfile OffTheRecordProfile
-#endif
 IN_PROC_BROWSER_TEST_F(IncognitoBackgroundSyncBrowserTest,
-                       MAYBE_OffTheRecordProfile) {
+                       OffTheRecordProfile) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
   // TODO(crbug.com/1087486, 1091211): Make this use
   // BackgroundSyncController::ScheduleBrowserWakeup() once we support waking
   // the browser up.

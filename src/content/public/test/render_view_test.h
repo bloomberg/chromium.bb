@@ -11,12 +11,12 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "base/strings/string16.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "build/build_config.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/test/mock_policy_container_host.h"
 #include "content/public/test/mock_render_thread.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
@@ -46,7 +46,6 @@ class AgentSchedulingGroup;
 class ContentBrowserClient;
 class ContentClient;
 class ContentRendererClient;
-class CompositorDependencies;
 class FakeRenderWidgetHost;
 class RendererMainPlatformDelegate;
 class RendererBlinkPlatformImpl;
@@ -95,14 +94,14 @@ class RenderViewTest : public testing::Test {
   // |result|.
   // Returns true if the JavaScript was evaluated correctly to an int value,
   // false otherwise.
-  bool ExecuteJavaScriptAndReturnIntValue(const base::string16& script,
+  bool ExecuteJavaScriptAndReturnIntValue(const std::u16string& script,
                                           int* result);
 
   // Executes the given JavaScript and sets the number value it evaluates to in
   // |result|.
   // Returns true if the JavaScript was evaluated correctly to an number value,
   // false otherwise.
-  bool ExecuteJavaScriptAndReturnNumberValue(const base::string16& script,
+  bool ExecuteJavaScriptAndReturnNumberValue(const std::u16string& script,
                                              double* result);
 
   // Loads |html| into the main frame as a data: URL and blocks until the
@@ -201,10 +200,6 @@ class RenderViewTest : public testing::Test {
   // Allows a subclass to customize the initial size of the RenderView.
   virtual blink::VisualProperties InitialVisualProperties();
 
-  // Override this to change the CompositorDependencies for the test.
-  virtual std::unique_ptr<CompositorDependencies>
-  CreateCompositorDependencies();
-
   // testing::Test
   void SetUp() override;
 
@@ -215,7 +210,6 @@ class RenderViewTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_;
 
-  std::unique_ptr<CompositorDependencies> compositor_deps_;
   std::unique_ptr<RenderProcess> process_;
   // We use a naked pointer because we don't want to expose RenderViewImpl in
   // the embedder's namespace.
@@ -227,6 +221,9 @@ class RenderViewTest : public testing::Test {
   std::unique_ptr<MockRenderThread> render_thread_;
   std::unique_ptr<AgentSchedulingGroup> agent_scheduling_group_;
   std::unique_ptr<FakeRenderWidgetHost> render_widget_host_;
+
+  // The PolicyContainerHost for the main RenderFrameHost.
+  std::unique_ptr<MockPolicyContainerHost> policy_container_host_;
 
   // Used to setup the process so renderers can run.
   std::unique_ptr<RendererMainPlatformDelegate> platform_;

@@ -133,7 +133,7 @@ bool SiteIsolationPolicy::ArePreloadedIsolatedOriginsEnabled() {
 }
 
 // static
-bool SiteIsolationPolicy::IsOptInOriginIsolationEnabled() {
+bool SiteIsolationPolicy::IsProcessIsolationForOriginAgentClusterEnabled() {
   // If strict site isolation is in use (either by default on desktop or via a
   // user opt-in on Android), unconditionally enable opt-in origin isolation.
   if (UseDedicatedProcessesForAllSites())
@@ -144,7 +144,49 @@ bool SiteIsolationPolicy::IsOptInOriginIsolationEnabled() {
   if (IsSiteIsolationDisabled())
     return false;
 
-  return true;
+  return IsOriginAgentClusterEnabled();
+}
+
+// static
+bool SiteIsolationPolicy::IsOriginAgentClusterEnabled() {
+  return base::FeatureList::IsEnabled(features::kOriginIsolationHeader);
+}
+
+// static
+bool SiteIsolationPolicy::IsSiteIsolationForCOOPEnabled() {
+  // If the user has explicitly enabled site isolation for COOP sites from the
+  // command line, honor this regardless of policies that may disable site
+  // isolation.
+  if (base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+          features::kSiteIsolationForCrossOriginOpenerPolicy.name,
+          base::FeatureList::OVERRIDE_ENABLE_FEATURE)) {
+    return true;
+  }
+
+  // Don't apply COOP isolation if site isolation has been disabled (e.g., due
+  // to memory thresholds).
+  if (!SiteIsolationPolicy::AreDynamicIsolatedOriginsEnabled())
+    return false;
+
+  // COOP isolation is only needed on platforms where strict site isolation is
+  // not used.
+  if (UseDedicatedProcessesForAllSites())
+    return false;
+
+  // The feature needs to be checked last, because checking the feature
+  // activates the field trial and assigns the client either to a control or an
+  // experiment group - such assignment should be final.
+  return base::FeatureList::IsEnabled(
+      features::kSiteIsolationForCrossOriginOpenerPolicy);
+}
+
+// static
+bool SiteIsolationPolicy::ShouldPersistIsolatedCOOPSites() {
+  if (!IsSiteIsolationForCOOPEnabled())
+    return false;
+
+  return features::kSiteIsolationForCrossOriginOpenerPolicyShouldPersistParam
+      .Get();
 }
 
 // static
@@ -181,18 +223,18 @@ void SiteIsolationPolicy::ApplyGlobalIsolatedOrigins() {
       ChildProcessSecurityPolicy::GetInstance();
 
   std::string from_cmdline = GetIsolatedOriginsFromCommandLine();
-  policy->AddIsolatedOrigins(
+  policy->AddFutureIsolatedOrigins(
       from_cmdline,
       ChildProcessSecurityPolicy::IsolatedOriginSource::COMMAND_LINE);
 
   std::string from_trial = GetIsolatedOriginsFromFieldTrial();
-  policy->AddIsolatedOrigins(
+  policy->AddFutureIsolatedOrigins(
       from_trial,
       ChildProcessSecurityPolicy::IsolatedOriginSource::FIELD_TRIAL);
 
   std::vector<url::Origin> from_embedder =
       GetContentClient()->browser()->GetOriginsRequiringDedicatedProcess();
-  policy->AddIsolatedOrigins(
+  policy->AddFutureIsolatedOrigins(
       from_embedder,
       ChildProcessSecurityPolicy::IsolatedOriginSource::BUILT_IN);
 }

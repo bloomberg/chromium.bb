@@ -113,7 +113,7 @@ class CONTENT_EXPORT SpeechRecognizerImpl
   void ProcessAudioPipeline(const AudioChunk& raw_audio);
 
   // Callback from AudioSystem.
-  void OnDeviceInfo(const base::Optional<media::AudioParameters>& params);
+  void OnDeviceInfo(const absl::optional<media::AudioParameters>& params);
 
   // The methods below handle transitions of the recognizer FSM.
   FSMState PrepareRecognition(const FSMEventArgs&);
@@ -146,7 +146,8 @@ class CONTENT_EXPORT SpeechRecognizerImpl
                base::TimeTicks audio_capture_time,
                double volume,
                bool key_pressed) final;
-  void OnCaptureError(const std::string& message) final;
+  void OnCaptureError(media::AudioCapturerSource::ErrorCode code,
+                      const std::string& message) final;
   void OnCaptureMuted(bool is_muted) final {}
 
   // SpeechRecognitionEngineDelegate methods.

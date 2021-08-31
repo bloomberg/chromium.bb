@@ -111,11 +111,11 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/windows_keyboard_codes.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-blink.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-blink.h"
 
 namespace blink {
 
@@ -245,11 +245,15 @@ EventHandler::EventHandler(LocalFrame& frame)
                                                *selection_controller_)),
       active_interval_timer_(frame.GetTaskRunner(TaskType::kUserInteraction),
                              this,
-                             &EventHandler::ActiveIntervalTimerFired) {}
+                             &EventHandler::ActiveIntervalTimerFired) {
+  pointer_event_manager_->SetGestureManager(gesture_manager_.Get());
+}
 
 void EventHandler::Trace(Visitor* visitor) const {
   visitor->Trace(frame_);
   visitor->Trace(selection_controller_);
+  visitor->Trace(hover_timer_);
+  visitor->Trace(cursor_update_timer_);
   visitor->Trace(capturing_mouse_events_element_);
   visitor->Trace(capturing_subframe_element_);
   visitor->Trace(last_mouse_move_event_subframe_);
@@ -263,6 +267,7 @@ void EventHandler::Trace(Visitor* visitor) const {
   visitor->Trace(keyboard_event_manager_);
   visitor->Trace(pointer_event_manager_);
   visitor->Trace(gesture_manager_);
+  visitor->Trace(active_interval_timer_);
   visitor->Trace(last_deferred_tap_element_);
 }
 
@@ -299,8 +304,10 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
   AutoscrollController* controller = scroll_manager_->GetAutoscrollController();
   if (!controller)
     return;
+
   LayoutBox* scrollable = LayoutBox::FindAutoscrollable(
       layout_object, /*is_middle_click_autoscroll*/ true);
+
   controller->StartMiddleClickAutoscroll(
       layout_object->GetFrame(), scrollable,
       LastKnownMousePositionInRootFrame(),
@@ -421,17 +428,16 @@ IntPoint EventHandler::DragDataTransferLocationForTesting() {
   return IntPoint();
 }
 
-static bool IsSubmitImage(Node* node) {
+static bool IsSubmitImage(const Node* node) {
   auto* html_input_element = DynamicTo<HTMLInputElement>(node);
   return html_input_element &&
          html_input_element->type() == input_type_names::kImage;
 }
 
-bool EventHandler::UseHandCursor(Node* node, bool is_over_link) {
+bool EventHandler::UsesHandCursor(const Node* node) {
   if (!node)
     return false;
-
-  return ((is_over_link || IsSubmitImage(node)) && !HasEditableStyle(*node));
+  return ((node->IsLink() || IsSubmitImage(node)) && !HasEditableStyle(*node));
 }
 
 void EventHandler::CursorUpdateTimerFired(TimerBase*) {
@@ -466,7 +472,7 @@ void EventHandler::UpdateCursor() {
   layout_view->HitTest(location, result);
 
   if (LocalFrame* frame = result.InnerNodeFrame()) {
-    base::Optional<ui::Cursor> optional_cursor =
+    absl::optional<ui::Cursor> optional_cursor =
         frame->GetEventHandler().SelectCursor(location, result);
     if (optional_cursor.has_value()) {
       view->SetCursor(optional_cursor.value());
@@ -513,17 +519,17 @@ bool EventHandler::ShouldShowIBeamForNode(const Node* node,
   return HasEditableStyle(*node);
 }
 
-base::Optional<ui::Cursor> EventHandler::SelectCursor(
+absl::optional<ui::Cursor> EventHandler::SelectCursor(
     const HitTestLocation& location,
     const HitTestResult& result) {
   if (scroll_manager_->InResizeMode())
-    return base::nullopt;
+    return absl::nullopt;
 
   Page* page = frame_->GetPage();
   if (!page)
-    return base::nullopt;
+    return absl::nullopt;
   if (scroll_manager_->MiddleClickAutoscrollInProgress())
-    return base::nullopt;
+    return absl::nullopt;
 
   if (result.GetScrollbar() && !result.GetScrollbar()->IsCustomScrollbar())
     return PointerCursor();
@@ -563,7 +569,7 @@ base::Optional<ui::Cursor> EventHandler::SelectCursor(
       case kSetCursor:
         return override_cursor;
       case kDoNotSetCursor:
-        return base::nullopt;
+        return absl::nullopt;
     }
   }
 
@@ -741,7 +747,7 @@ base::Optional<ui::Cursor> EventHandler::SelectCursor(
   return PointerCursor();
 }
 
-base::Optional<ui::Cursor> EventHandler::SelectAutoCursor(
+absl::optional<ui::Cursor> EventHandler::SelectAutoCursor(
     const HitTestResult& result,
     Node* node,
     const ui::Cursor& i_beam) {
@@ -1110,7 +1116,7 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
     }
     LocalFrameView* view = frame_->View();
     if ((!is_remote_frame || is_portal) && view) {
-      base::Optional<ui::Cursor> optional_cursor =
+      absl::optional<ui::Cursor> optional_cursor =
           SelectCursor(mev.GetHitTestLocation(), mev.GetHitTestResult());
       if (optional_cursor.has_value()) {
         view->SetCursor(optional_cursor.value());
@@ -1424,15 +1430,17 @@ LocalFrame* EventHandler::DetermineActivePointerTrackerFrame(
   return nullptr;
 }
 
-void EventHandler::SetPointerCapture(PointerId pointer_id, Element* target) {
+void EventHandler::SetPointerCapture(PointerId pointer_id,
+                                     Element* target,
+                                     bool explicit_capture) {
   // TODO(crbug.com/591387): This functionality should be per page not per
   // frame.
   LocalFrame* tracking_frame = DetermineActivePointerTrackerFrame(pointer_id);
 
   bool captured =
-      tracking_frame &&
-      tracking_frame->GetEventHandler()
-          .pointer_event_manager_->SetPointerCapture(pointer_id, target);
+      tracking_frame && tracking_frame->GetEventHandler()
+                            .pointer_event_manager_->SetPointerCapture(
+                                pointer_id, target, explicit_capture);
 
   if (captured && pointer_id == PointerEventFactory::kMouseId) {
     CaptureMouseEventsToWidget(true);
@@ -2135,6 +2143,15 @@ WebInputEventResult EventHandler::ShowNonLocatedContextMenu(
     int right = std::max(start_point.X(), end_point.X());
     int bottom = std::max(start_point.Y(), end_point.Y());
 
+    // If selection is a caret and is inside an anchor element, then set that
+    // as the "focused" element so we can show "open link" option in context
+    // menu.
+    if (visible_selection.IsCaret()) {
+      Element* anchor_element =
+          EnclosingAnchorElement(visible_selection.ComputeStartPosition());
+      if (anchor_element)
+        focused_element = anchor_element;
+    }
     // Intersect the selection rect and the visible bounds of focused_element.
     if (focused_element) {
       IntRect clipped_rect = view->ViewportToFrame(
@@ -2304,8 +2321,9 @@ void EventHandler::DefaultKeyboardEventHandler(KeyboardEvent* event) {
       event, mouse_event_manager_->MousePressNode());
 }
 
-void EventHandler::DragSourceEndedAt(const WebMouseEvent& event,
-                                     DragOperation operation) {
+void EventHandler::DragSourceEndedAt(
+    const WebMouseEvent& event,
+    ui::mojom::blink::DragOperation operation) {
   // Asides from routing the event to the correct frame, the hit test is also an
   // opportunity for Layer to update the :hover and :active pseudoclasses.
   HitTestRequest request(HitTestRequest::kRelease |

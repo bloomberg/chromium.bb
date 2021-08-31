@@ -180,7 +180,7 @@ void BluetoothPowerController::AdapterPresentChanged(
 }
 
 void BluetoothPowerController::ApplyBluetoothPrimaryUserPref() {
-  base::Optional<user_manager::UserType> user_type =
+  absl::optional<user_manager::UserType> user_type =
       Shell::Get()->session_controller()->GetUserType();
   if (!user_type || !ShouldApplyUserBluetoothSetting(*user_type)) {
     // Do not apply bluetooth setting if user is not of the allowed types.
@@ -294,7 +294,7 @@ bool BluetoothPowerController::ShouldApplyUserBluetoothSetting(
     user_manager::UserType user_type) const {
   return user_type == user_manager::USER_TYPE_REGULAR ||
          user_type == user_manager::USER_TYPE_CHILD ||
-         user_type == user_manager::USER_TYPE_SUPERVISED ||
+         user_type == user_manager::USER_TYPE_SUPERVISED_DEPRECATED ||
          user_type == user_manager::USER_TYPE_ACTIVE_DIRECTORY;
 }
 

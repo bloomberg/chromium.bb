@@ -23,6 +23,8 @@
 #include <memory>
 #include <string>
 
+#include "perfetto/base/build_config.h"
+#include "perfetto/base/export.h"
 #include "perfetto/base/logging.h"
 #include "perfetto/ext/base/scoped_file.h"
 #include "perfetto/ext/base/utils.h"
@@ -33,6 +35,26 @@ struct msghdr;
 namespace perfetto {
 namespace base {
 
+// Define the SocketHandle and ScopedSocketHandle types.
+// On POSIX OSes, a SocketHandle is really just an int (a file descriptor).
+// On Windows, sockets are have their own type (SOCKET) which is neither a
+// HANDLE nor an int. However Windows SOCKET(s) can have a event HANDLE attached
+// to them (which in Perfetto is a PlatformHandle), and that can be used in
+// WaitForMultipleObjects, hence in base::TaskRunner.AddFileDescriptorWatch().
+
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+// uintptr_t really reads as SOCKET here (Windows headers typedef to that).
+// As usual we don't just use SOCKET here to avoid leaking Windows.h includes
+// in our headers.
+using SocketHandle = uintptr_t;  // SOCKET
+int CloseSocket(SocketHandle);   // A wrapper around ::closesocket().
+using ScopedSocketHandle =
+    ScopedResource<SocketHandle, CloseSocket, static_cast<SocketHandle>(-1)>;
+#else
+using SocketHandle = int;
+using ScopedSocketHandle = ScopedFile;
+#endif
+
 class TaskRunner;
 
 // Use arbitrarily high values to avoid that some code accidentally ends up
@@ -41,25 +63,45 @@ class TaskRunner;
 enum class SockType { kStream = 100, kDgram, kSeqPacket };
 enum class SockFamily { kUnix = 200, kInet, kInet6 };
 
-// UnixSocketRaw is a basic wrapper around UNIX sockets. It exposes wrapper
+// Controls the getsockopt(SO_PEERCRED) behavior, which allows to obtain the
+// peer credentials.
+enum class SockPeerCredMode {
+  // Obtain the peer credentials immediatley after connection and cache them.
+  kReadOnConnect = 0,
+
+  // Don't read peer credentials at all. Calls to peer_uid()/peer_pid() will
+  // hit a DCHECK and return kInvalidUid/Pid in release builds.
+  kIgnore = 1,
+
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+  kDefault = kIgnore,
+#else
+  kDefault = kReadOnConnect,
+#endif
+};
+
+// UnixSocketRaw is a basic wrapper around sockets. It exposes wrapper
 // methods that take care of most common pitfalls (e.g., marking fd as
 // O_CLOEXEC, avoiding SIGPIPE, properly handling partial writes). It is used as
-// a building block for the more sophisticated UnixSocket class.
+// a building block for the more sophisticated UnixSocket class which depends
+// on base::TaskRunner.
 class UnixSocketRaw {
  public:
   // Creates a new unconnected unix socket.
   static UnixSocketRaw CreateMayFail(SockFamily family, SockType type);
 
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
   // Crates a pair of connected sockets.
-  static std::pair<UnixSocketRaw, UnixSocketRaw> CreatePair(SockFamily,
-                                                            SockType);
+  static std::pair<UnixSocketRaw, UnixSocketRaw> CreatePairPosix(SockFamily,
+                                                                 SockType);
+#endif
 
   // Creates an uninitialized unix socket.
   UnixSocketRaw();
 
   // Creates a unix socket adopting an existing file descriptor. This is
   // typically used to inherit fds from init via environment variables.
-  UnixSocketRaw(ScopedFile, SockFamily, SockType);
+  UnixSocketRaw(ScopedSocketHandle, SockFamily, SockType);
 
   ~UnixSocketRaw() = default;
   UnixSocketRaw(UnixSocketRaw&&) noexcept = default;
@@ -72,33 +114,50 @@ class UnixSocketRaw {
   bool SetRxTimeout(uint32_t timeout_ms);
   void Shutdown();
   void SetBlocking(bool);
-  bool IsBlocking() const;
+  void DcheckIsBlocking(bool expected) const;  // No-op on release and Win.
   void RetainOnExec();
   SockType type() const { return type_; }
   SockFamily family() const { return family_; }
-  int fd() const { return *fd_; }
+  SocketHandle fd() const { return *fd_; }
   explicit operator bool() const { return !!fd_; }
 
-  ScopedFile ReleaseFd() { return std::move(fd_); }
+  // This is the handle that passed to TaskRunner.AddFileDescriptorWatch().
+  // On UNIX this is just the socket FD. On Windows, we need to create a
+  // dedicated event object.
+  PlatformHandle watch_handle() const {
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+    return *event_handle_;
+#else
+    return *fd_;
+#endif
+  }
 
+  ScopedSocketHandle ReleaseFd() { return std::move(fd_); }
+
+  // |send_fds| and |num_fds| are ignored on Windows.
   ssize_t Send(const void* msg,
                size_t len,
                const int* send_fds = nullptr,
                size_t num_fds = 0);
 
-  // Re-enter sendmsg until all the data has been sent or an error occurs.
-  // TODO(fmayer): Figure out how to do timeouts here for heapprofd.
-  ssize_t SendMsgAll(struct msghdr* msg);
-
+  // |fd_vec| and |max_files| are ignored on Windows.
   ssize_t Receive(void* msg,
                   size_t len,
                   ScopedFile* fd_vec = nullptr,
                   size_t max_files = 0);
 
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+  // UNIX-specific helpers to deal with SCM_RIGHTS.
+
+  // Re-enter sendmsg until all the data has been sent or an error occurs.
+  // TODO(fmayer): Figure out how to do timeouts here for heapprofd.
+  ssize_t SendMsgAllPosix(struct msghdr* msg);
+
   // Exposed for testing only.
   // Update msghdr so subsequent sendmsg will send data that remains after n
   // bytes have already been sent.
-  static void ShiftMsgHdr(size_t n, struct msghdr* msg);
+  static void ShiftMsgHdrPosix(size_t n, struct msghdr* msg);
+#endif
 
  private:
   UnixSocketRaw(SockFamily, SockType);
@@ -106,7 +165,10 @@ class UnixSocketRaw {
   UnixSocketRaw(const UnixSocketRaw&) = delete;
   UnixSocketRaw& operator=(const UnixSocketRaw&) = delete;
 
-  ScopedFile fd_;
+  ScopedSocketHandle fd_;
+#if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+  ScopedPlatformHandle event_handle_;
+#endif
   SockFamily family_ = SockFamily::kUnix;
   SockType type_ = SockType::kStream;
 };
@@ -150,7 +212,7 @@ class UnixSocketRaw {
 //                             | (failure or Shutdown())
 //                             V
 //                       OnDisconnect()
-class UnixSocket {
+class PERFETTO_EXPORT UnixSocket {
  public:
   class EventListener {
    public:
@@ -188,8 +250,7 @@ class UnixSocket {
   // If SockFamily::kInet6, |socket_name| is [host]:port (e.g., "[::1]:8000").
   // Returns nullptr if the socket creation or bind fails. If listening fails,
   // (e.g. if another socket with the same name is already listening) the
-  // returned socket will have is_listening() == false and last_error() will
-  // contain the failure reason.
+  // returned socket will have is_listening() == false.
   static std::unique_ptr<UnixSocket> Listen(const std::string& socket_name,
                                             EventListener*,
                                             TaskRunner*,
@@ -198,7 +259,7 @@ class UnixSocket {
 
   // Attaches to a pre-existing socket. The socket must have been created in
   // SOCK_STREAM mode and the caller must have called bind() on it.
-  static std::unique_ptr<UnixSocket> Listen(ScopedFile,
+  static std::unique_ptr<UnixSocket> Listen(ScopedSocketHandle,
                                             EventListener*,
                                             TaskRunner*,
                                             SockFamily,
@@ -207,18 +268,22 @@ class UnixSocket {
   // Creates a Unix domain socket and connects to the listening endpoint.
   // Returns always an instance. EventListener::OnConnect(bool success) will
   // be called always, whether the connection succeeded or not.
-  static std::unique_ptr<UnixSocket> Connect(const std::string& socket_name,
-                                             EventListener*,
-                                             TaskRunner*,
-                                             SockFamily,
-                                             SockType);
+  static std::unique_ptr<UnixSocket> Connect(
+      const std::string& socket_name,
+      EventListener*,
+      TaskRunner*,
+      SockFamily,
+      SockType,
+      SockPeerCredMode = SockPeerCredMode::kDefault);
 
   // Constructs a UnixSocket using the given connected socket.
-  static std::unique_ptr<UnixSocket> AdoptConnected(ScopedFile,
-                                                    EventListener*,
-                                                    TaskRunner*,
-                                                    SockFamily,
-                                                    SockType);
+  static std::unique_ptr<UnixSocket> AdoptConnected(
+      ScopedSocketHandle,
+      EventListener*,
+      TaskRunner*,
+      SockFamily,
+      SockType,
+      SockPeerCredMode = SockPeerCredMode::kDefault);
 
   UnixSocket(const UnixSocket&) = delete;
   UnixSocket& operator=(const UnixSocket&) = delete;
@@ -236,6 +301,12 @@ class UnixSocket {
   // be reused with Listen() or Connect().
   void Shutdown(bool notify);
 
+  void SetTxTimeout(uint32_t timeout_ms) {
+    PERFETTO_CHECK(sock_raw_.SetTxTimeout(timeout_ms));
+  }
+  void SetRxTimeout(uint32_t timeout_ms) {
+    PERFETTO_CHECK(sock_raw_.SetRxTimeout(timeout_ms));
+  }
   // Returns true is the message was queued, false if there was no space in the
   // output buffer, in which case the client should retry or give up.
   // If any other error happens the socket will be shutdown and
@@ -274,17 +345,19 @@ class UnixSocket {
 
   bool is_connected() const { return state_ == State::kConnected; }
   bool is_listening() const { return state_ == State::kListening; }
-  int fd() const { return sock_raw_.fd(); }
-  int last_error() const { return last_error_; }
+  SocketHandle fd() const { return sock_raw_.fd(); }
 
   // User ID of the peer, as returned by the kernel. If the client disconnects
   // and the socket goes into the kDisconnected state, it retains the uid of
   // the last peer.
-  uid_t peer_uid() const {
-    PERFETTO_DCHECK(!is_listening() && peer_uid_ != kInvalidUid);
-    ignore_result(kInvalidPid);  // Silence warnings in amalgamated builds.
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+  uid_t peer_uid_posix(bool skip_check_for_testing = false) const {
+    PERFETTO_DCHECK((!is_listening() && peer_uid_ != kInvalidUid) ||
+                    skip_check_for_testing);
+
     return peer_uid_;
   }
+#endif
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) || \
     PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
@@ -293,8 +366,9 @@ class UnixSocket {
   // retains the pid of the last peer.
   //
   // This is only available on Linux / Android.
-  pid_t peer_pid() const {
-    PERFETTO_DCHECK(!is_listening() && peer_pid_ != kInvalidPid);
+  pid_t peer_pid_linux(bool skip_check_for_testing = false) const {
+    PERFETTO_DCHECK((!is_listening() && peer_pid_ != kInvalidPid) ||
+                    skip_check_for_testing);
     return peer_pid_;
   }
 #endif
@@ -303,25 +377,36 @@ class UnixSocket {
   UnixSocketRaw ReleaseSocket();
 
  private:
-  UnixSocket(EventListener*, TaskRunner*, SockFamily, SockType);
   UnixSocket(EventListener*,
              TaskRunner*,
-             ScopedFile,
+             SockFamily,
+             SockType,
+             SockPeerCredMode);
+  UnixSocket(EventListener*,
+             TaskRunner*,
+             ScopedSocketHandle,
              State,
              SockFamily,
-             SockType);
+             SockType,
+             SockPeerCredMode);
 
   // Called once by the corresponding public static factory methods.
   void DoConnect(const std::string& socket_name);
-  void ReadPeerCredentials();
+
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
+  void ReadPeerCredentialsPosix();
+#endif
 
   void OnEvent();
   void NotifyConnectionState(bool success);
 
   UnixSocketRaw sock_raw_;
   State state_ = State::kDisconnected;
-  int last_error_ = 0;
+  SockPeerCredMode peer_cred_mode_ = SockPeerCredMode::kDefault;
+
+#if !PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
   uid_t peer_uid_ = kInvalidUid;
+#endif
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) || \
     PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
   pid_t peer_pid_ = kInvalidPid;

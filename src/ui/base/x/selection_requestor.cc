@@ -10,10 +10,9 @@
 #include "ui/base/x/selection_owner.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/events/platform/platform_event_source.h"
-#include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
+#include "ui/gfx/x/xproto_util.h"
 
 namespace ui {
 
@@ -21,15 +20,8 @@ namespace {
 
 const char kChromeSelection[] = "CHROME_SELECTION";
 
-// The period of |abort_timer_|. Arbitrary but must be <= than
-// kRequestTimeoutMs.
-const int KSelectionRequestorTimerPeriodMs = 100;
-
 // The amount of time to wait for a request to complete before aborting it.
 const int kRequestTimeoutMs = 1000;
-
-static_assert(KSelectionRequestorTimerPeriodMs <= kRequestTimeoutMs,
-              "timer period must be <= request timeout");
 
 // Combines |data| into a single std::vector<uint8_t>.
 std::vector<uint8_t> CombineData(
@@ -48,14 +40,8 @@ std::vector<uint8_t> CombineData(
 
 }  // namespace
 
-SelectionRequestor::SelectionRequestor(x11::Window x_window,
-                                       XEventDispatcher* dispatcher)
-    : x_window_(x_window),
-      x_property_(x11::Atom::None),
-      dispatcher_(dispatcher),
-      current_request_index_(0u) {
-  x_property_ = gfx::GetAtom(kChromeSelection);
-}
+SelectionRequestor::SelectionRequestor(x11::Window x_window)
+    : x_window_(x_window), x_property_(x11::GetAtom(kChromeSelection)) {}
 
 SelectionRequestor::~SelectionRequestor() = default;
 
@@ -81,9 +67,6 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
   }
   requests_.erase(request_it);
 
-  if (requests_.empty())
-    abort_timer_.Stop();
-
   if (request.success) {
     if (out_data)
       *out_data = CombineData(request.out_data);
@@ -97,7 +80,8 @@ void SelectionRequestor::PerformBlockingConvertSelectionWithParameter(
     x11::Atom selection,
     x11::Atom target,
     const std::vector<x11::Atom>& parameter) {
-  SetAtomArrayProperty(x_window_, kChromeSelection, "ATOM", parameter);
+  SetArrayProperty(x_window_, x11::GetAtom(kChromeSelection), x11::Atom::ATOM,
+                   parameter);
   PerformBlockingConvertSelection(selection, target, nullptr, nullptr);
 }
 
@@ -125,7 +109,7 @@ void SelectionRequestor::OnSelectionNotify(
       request->target != selection.target) {
     // ICCCM requires us to delete the property passed into SelectionNotify.
     if (event_property != x11::Atom::None)
-      ui::DeleteProperty(x_window_, event_property);
+      x11::DeleteProperty(x_window_, event_property);
     return;
   }
 
@@ -140,9 +124,9 @@ void SelectionRequestor::OnSelectionNotify(
     }
   }
   if (event_property != x11::Atom::None)
-    ui::DeleteProperty(x_window_, event_property);
+    x11::DeleteProperty(x_window_, event_property);
 
-  if (request->out_type == gfx::GetAtom(kIncr)) {
+  if (request->out_type == x11::GetAtom(kIncr)) {
     request->data_sent_incrementally = true;
     request->out_data.clear();
     request->out_type = x11::Atom::None;
@@ -153,13 +137,14 @@ void SelectionRequestor::OnSelectionNotify(
   }
 }
 
-bool SelectionRequestor::CanDispatchPropertyEvent(const x11::Event& event) {
-  const auto* prop = event.As<x11::PropertyNotifyEvent>();
-  return prop->window == x_window_ && prop->atom == x_property_ &&
-         prop->state == x11::Property::NewValue;
+bool SelectionRequestor::CanDispatchPropertyEvent(
+    const x11::PropertyNotifyEvent& prop) {
+  return prop.window == x_window_ && prop.atom == x_property_ &&
+         prop.state == x11::Property::NewValue;
 }
 
-void SelectionRequestor::OnPropertyEvent(const x11::Event& event) {
+void SelectionRequestor::OnPropertyEvent(
+    const x11::PropertyNotifyEvent& event) {
   Request* request = GetCurrentRequest();
   if (!request || !request->data_sent_incrementally)
     return;
@@ -182,7 +167,7 @@ void SelectionRequestor::OnPropertyEvent(const x11::Event& event) {
   request->out_type = out_type;
 
   // Delete the property to tell the selection owner to send the next chunk.
-  ui::DeleteProperty(x_window_, x_property_);
+  x11::DeleteProperty(x_window_, x_property_);
 
   request->timeout = base::TimeTicks::Now() +
                      base::TimeDelta::FromMilliseconds(kRequestTimeoutMs);
@@ -214,9 +199,6 @@ void SelectionRequestor::CompleteRequest(size_t index, bool success) {
       ++current_request_index_;
     ConvertSelectionForCurrentRequest();
   }
-
-  if (request->quit_closure)
-    std::move(request->quit_closure).Run();
 }
 
 void SelectionRequestor::ConvertSelectionForCurrentRequest() {
@@ -248,8 +230,8 @@ void SelectionRequestor::BlockTillSelectionNotifyForRequest(Request* request) {
           event = x11::Event();
         }
       } else if (auto* prop = event.As<x11::PropertyNotifyEvent>()) {
-        if (CanDispatchPropertyEvent(event)) {
-          OnPropertyEvent(event);
+        if (CanDispatchPropertyEvent(*prop)) {
+          OnPropertyEvent(*prop);
           event = x11::Event();
         }
       }

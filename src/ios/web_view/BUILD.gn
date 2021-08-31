@@ -44,12 +44,12 @@ ios_web_view_public_headers = [
   "public/cwv_autofill_suggestion.h",
   "public/cwv_back_forward_list.h",
   "public/cwv_back_forward_list_item.h",
+  "public/cwv_cert_status.h",
   "public/cwv_credit_card.h",
-  "public/cwv_credit_card_expiration_fixer.h",
-  "public/cwv_credit_card_name_fixer.h",
   "public/cwv_credit_card_saver.h",
   "public/cwv_credit_card_verifier.h",
   "public/cwv_download_task.h",
+  "public/cwv_defines.h",
   "public/cwv_export.h",
   "public/cwv_favicon.h",
   "public/cwv_flags.h",
@@ -63,8 +63,7 @@ ios_web_view_public_headers = [
   "public/cwv_preferences.h",
   "public/cwv_preview_element_info.h",
   "public/cwv_script_command.h",
-  "public/cwv_scroll_view.h",
-  "public/cwv_scroll_view_delegate.h",
+  "public/cwv_ssl_error_handler.h",
   "public/cwv_ssl_status.h",
   "public/cwv_sync_controller.h",
   "public/cwv_sync_controller_data_source.h",
@@ -100,11 +99,7 @@ source_set("web_view_sources") {
     "internal/autofill/cwv_autofill_suggestion.mm",
     "internal/autofill/cwv_autofill_suggestion_internal.h",
     "internal/autofill/cwv_credit_card.mm",
-    "internal/autofill/cwv_credit_card_expiration_fixer.mm",
-    "internal/autofill/cwv_credit_card_expiration_fixer_internal.h",
     "internal/autofill/cwv_credit_card_internal.h",
-    "internal/autofill/cwv_credit_card_name_fixer.mm",
-    "internal/autofill/cwv_credit_card_name_fixer_internal.h",
     "internal/autofill/cwv_credit_card_saver.mm",
     "internal/autofill/cwv_credit_card_saver_internal.h",
     "internal/autofill/cwv_credit_card_verifier.mm",
@@ -133,7 +128,6 @@ source_set("web_view_sources") {
     "internal/cwv_html_element_internal.h",
     "internal/cwv_navigation_action.mm",
     "internal/cwv_navigation_action_internal.h",
-    "internal/cwv_navigation_delegate.mm",
     "internal/cwv_navigation_type.mm",
     "internal/cwv_navigation_type_internal.h",
     "internal/cwv_preferences.mm",
@@ -142,10 +136,12 @@ source_set("web_view_sources") {
     "internal/cwv_preview_element_info_internal.h",
     "internal/cwv_script_command.mm",
     "internal/cwv_script_command_internal.h",
-    "internal/cwv_scroll_view.mm",
-    "internal/cwv_scroll_view_internal.h",
+    "internal/cwv_ssl_error_handler.mm",
+    "internal/cwv_ssl_error_handler_internal.h",
     "internal/cwv_ssl_status.mm",
     "internal/cwv_ssl_status_internal.h",
+    "internal/cwv_ssl_util.h",
+    "internal/cwv_ssl_util.mm",
     "internal/cwv_user_content_controller.mm",
     "internal/cwv_user_content_controller_internal.h",
     "internal/cwv_user_script.mm",
@@ -251,14 +247,15 @@ source_set("web_view_sources") {
   ]
 
   public_deps = [
-    ":web_view_all_frames",
     ":web_view_main_frame",
     ":web_view_resources",
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
+    "//components/autofill/ios/browser:util",
     "//components/autofill/ios/form_util",
+    "//components/autofill/ios/form_util:form_handler_feature",
     "//components/browser_sync",
     "//components/flags_ui",
     "//components/flags_ui:switches",
@@ -279,8 +276,10 @@ source_set("web_view_sources") {
     "//components/password_manager/core/browser:affiliation",
     "//components/password_manager/core/common",
     "//components/password_manager/ios",
+    "//components/password_manager/ios:password_manager_feature",
     "//components/pref_registry",
     "//components/prefs",
+    "//components/profile_metrics",
     "//components/proxy_config",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/security_state/ios",
@@ -296,6 +295,7 @@ source_set("web_view_sources") {
     "//components/translate/core/browser",
     "//components/translate/core/common",
     "//components/translate/ios/browser",
+    "//components/unified_consent",
     "//components/url_formatter",
     "//components/variations/net",
     "//components/version_info",
@@ -317,6 +317,7 @@ source_set("web_view_sources") {
     "//ios/web/public/init",
     "//ios/web/public/js_messaging",
     "//ios/web/public/security",
+    "//ios/web/public/session:session",
     "//ios/web/public/web_view_only",
     "//ios/web/public/webui",
     "//net",
@@ -333,35 +334,10 @@ source_set("web_view_sources") {
   ]
 }
 
-# Two umbrella headers may be generated:
-# - One that matches ios_web_view_output_name, e.g. CronetChromeWebView.h
-# - Another that is hardcoded as ChromeWebView.h
-#
-# This is needed to fix the issue where the generated .modulemap points to a
-# non-existent umbrella header.
-#
-# TODO(crbug.com/1084855): Remove :web_view_umbrella_header_old after all
-# clients migrate off of it.
-if (ios_web_view_generate_extra_umbrella_header) {
-  action("web_view_umbrella_header") {
-    script = "//build/config/ios/generate_umbrella_header.py"
-
-    full_header_path = target_gen_dir + "/" + ios_web_view_output_name + ".h"
-    outputs = [ full_header_path ]
-
-    args = [
-      "--output-path",
-      rebase_path(full_header_path, root_build_dir),
-    ]
-
-    args += rebase_path(ios_web_view_public_headers, root_build_dir)
-  }
-}
-
-action("web_view_umbrella_header_old") {
+action("web_view_umbrella_header") {
   script = "//build/config/ios/generate_umbrella_header.py"
 
-  full_header_path = target_gen_dir + "/ChromeWebView.h"
+  full_header_path = target_gen_dir + "/" + ios_web_view_output_name + ".h"
   outputs = [ full_header_path ]
 
   args = [
@@ -380,10 +356,7 @@ ios_framework_bundle("web_view") {
   output_name = ios_web_view_output_name
   info_plist_target = ":info_plist"
 
-  public_headers = get_target_outputs(":web_view_umbrella_header_old")
-  if (ios_web_view_generate_extra_umbrella_header) {
-    public_headers += get_target_outputs(":web_view_umbrella_header")
-  }
+  public_headers = get_target_outputs(":web_view_umbrella_header")
   public_headers += ios_web_view_public_headers
   if (ios_web_view_include_cronet) {
     public_headers += [ "//components/cronet/ios/Cronet.h" ]
@@ -403,10 +376,7 @@ ios_framework_bundle("web_view") {
     "//ios/web/public/init",
     "//testing/gtest:ios_coverage_utils",
   ]
-  deps += [ ":web_view_umbrella_header_old" ]
-  if (ios_web_view_generate_extra_umbrella_header) {
-    deps += [ ":web_view_umbrella_header" ]
-  }
+  deps += [ ":web_view_umbrella_header" ]
   if (ios_web_view_include_cronet) {
     deps += [ "//components/cronet/ios:cronet_sources" ]
   }
@@ -439,8 +409,6 @@ test("ios_web_view_unittests") {
     "internal/autofill/cwv_autofill_form_unittest.mm",
     "internal/autofill/cwv_autofill_profile_unittest.mm",
     "internal/autofill/cwv_autofill_suggestion_unittest.mm",
-    "internal/autofill/cwv_credit_card_expiration_fixer_unittest.mm",
-    "internal/autofill/cwv_credit_card_name_fixer_unittest.mm",
     "internal/autofill/cwv_credit_card_saver_unittest.mm",
     "internal/autofill/cwv_credit_card_unittest.mm",
     "internal/autofill/cwv_credit_card_verifier_unittest.mm",
@@ -450,9 +418,10 @@ test("ios_web_view_unittests") {
     "internal/cwv_html_element_unittest.mm",
     "internal/cwv_preferences_unittest.mm",
     "internal/cwv_preview_element_info_unittest.mm",
-    "internal/cwv_scroll_view_unittest.mm",
+    "internal/cwv_ssl_error_handler_unittest.mm",
     "internal/cwv_ssl_status_unittest.mm",
     "internal/cwv_web_view_configuration_unittest.mm",
+    "internal/cwv_web_view_unittest.mm",
     "internal/metrics/cwv_metrics_provider_unittest.mm",
     "internal/passwords/cwv_password_unittest.mm",
     "internal/passwords/web_view_password_manager_client_unittest.mm",
@@ -510,22 +479,10 @@ test("ios_web_view_inttests") {
   assert_no_deps = ios_assert_no_deps
 }
 
-js_compile_bundle("web_view_all_frames") {
-  closure_entry_point = "__crWeb.webViewAllFrames"
-  sources = [
-    "//components/autofill/ios/browser/resources/autofill_controller.js",
-    "//components/autofill/ios/browser/resources/suggestion_controller.js",
-    "//components/autofill/ios/form_util/resources/fill.js",
-    "//components/autofill/ios/form_util/resources/form.js",
-    "//components/autofill/ios/form_util/resources/form_handlers.js",
-    "resources/web_view_all_frames.js",
-  ]
-}
-
 js_compile_bundle("web_view_main_frame") {
   closure_entry_point = "__crWeb.webViewMainFrame"
   sources = [
-    "//components/password_manager/ios/resources/password_controller.js",
+    "//components/translate/ios/browser/resources/language_detection.js",
     "resources/web_view_main_frame.js",
   ]
 }
@@ -554,13 +511,13 @@ repack("repack_resources") {
   visibility = [ ":web_view_resources" ]
   deps = [
     "//components/resources:components_resources",
-    "//components/sync/driver:resources",
+    "//components/sync/driver/resources",
     "//ios/web:resources",
     "//ui/resources",
   ]
   sources = [
     "$root_gen_dir/components/components_resources.pak",
-    "$root_gen_dir/components/sync_driver_resources.pak",
+    "$root_gen_dir/components/sync_driver_sync_internals_resources.pak",
     "$root_gen_dir/ios/web/ios_web_resources.pak",
     "$root_gen_dir/ui/resources/webui_generated_resources.pak",
     "$root_gen_dir/ui/resources/webui_resources.pak",

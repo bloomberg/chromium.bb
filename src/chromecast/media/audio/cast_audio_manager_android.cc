@@ -10,6 +10,7 @@
 #include "chromecast/media/audio/audio_buildflags.h"
 #include "chromecast/media/audio/cast_audio_input_stream.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
+#include "chromecast/media/audio/cast_audio_output_utils.h"
 #include "media/audio/android/audio_track_output_stream.h"
 #include "media/audio/audio_device_name.h"
 #include "media/base/audio_parameters.h"
@@ -27,8 +28,10 @@ const int kCommunicationsSampleRate = 16000;
 const int kCommunicationsInputBufferSize = 160;  // 10 ms.
 #endif  // BUILDFLAG(ENABLE_AUDIO_CAPTURE_SERVICE)
 
-bool ShouldUseCastAudioOutputStream(const ::media::AudioParameters& params) {
-  return params.effects() & ::media::AudioParameters::AUDIO_PREFETCH;
+bool ShouldUseCastAudioOutputStream(bool is_audio_app,
+                                    const ::media::AudioParameters& params) {
+  return is_audio_app ||
+         (params.effects() & ::media::AudioParameters::AUDIO_PREFETCH);
 }
 
 }  // namespace
@@ -36,14 +39,14 @@ bool ShouldUseCastAudioOutputStream(const ::media::AudioParameters& params) {
 CastAudioManagerAndroid::CastAudioManagerAndroid(
     std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
+    CastAudioManagerHelper::Delegate* delegate,
     base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
-    CastAudioManagerHelper::GetSessionIdCallback get_session_id_callback,
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     mojo::PendingRemote<chromecast::mojom::ServiceConnector> connector)
     : ::media::AudioManagerAndroid(std::move(audio_thread), audio_log_factory),
       helper_(this,
+              delegate,
               std::move(backend_factory_getter),
-              std::move(get_session_id_callback),
               std::move(media_task_runner),
               std::move(connector)) {}
 
@@ -126,8 +129,11 @@ void CastAudioManagerAndroid::GetAudioOutputDeviceNames(
     const ::media::AudioParameters& params,
     const ::media::AudioManager::LogCallback& log_callback) {
   DCHECK_EQ(::media::AudioParameters::AUDIO_PCM_LINEAR, params.format());
-
-  if (ShouldUseCastAudioOutputStream(params)) {
+  // MakeLinearOutputStream is only used on Windows. In this case, we cannot get
+  // a valid session id based on kDefaultDeviceId. Therefore we cannot know
+  // whether it is an audio only session.
+  if (ShouldUseCastAudioOutputStream(false /* is_audio_app */, params)) {
+    LOG(WARNING) << __func__ << ": Cannot get valid session_id.";
     return new CastAudioOutputStream(
         &helper_, params, ::media::AudioDeviceDescription::kDefaultDeviceId,
         false /* use_mixer_service */);
@@ -142,8 +148,9 @@ void CastAudioManagerAndroid::GetAudioOutputDeviceNames(
     const std::string& device_id_or_group_id,
     const ::media::AudioManager::LogCallback& log_callback) {
   DCHECK_EQ(::media::AudioParameters::AUDIO_PCM_LOW_LATENCY, params.format());
-
-  if (ShouldUseCastAudioOutputStream(params)) {
+  bool is_audio_app = helper_.IsAudioOnlySession(
+      helper_.GetSessionId(GetGroupId(device_id_or_group_id)));
+  if (ShouldUseCastAudioOutputStream(is_audio_app, params)) {
     return new CastAudioOutputStream(
         &helper_, params,
         device_id_or_group_id.empty()
@@ -167,7 +174,9 @@ void CastAudioManagerAndroid::GetAudioOutputDeviceNames(
 ::media::AudioOutputStream* CastAudioManagerAndroid::MakeAudioOutputStreamProxy(
     const ::media::AudioParameters& params,
     const std::string& device_id) {
-  if (ShouldUseCastAudioOutputStream(params)) {
+  bool is_audio_app =
+      helper_.IsAudioOnlySession(helper_.GetSessionId(GetGroupId(device_id)));
+  if (ShouldUseCastAudioOutputStream(is_audio_app, params)) {
     // Override to use MakeAudioOutputStream to prevent the audio output stream
     // from closing during pause/stop.
     return MakeAudioOutputStream(params, device_id,

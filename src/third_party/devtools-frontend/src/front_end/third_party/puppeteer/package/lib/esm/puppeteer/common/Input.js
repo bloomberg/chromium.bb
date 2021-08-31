@@ -354,16 +354,15 @@ export class Mouse {
     async click(x, y, options = {}) {
         const { delay = null } = options;
         if (delay !== null) {
-            await Promise.all([this.move(x, y), this.down(options)]);
+            await this.move(x, y);
+            await this.down(options);
             await new Promise((f) => setTimeout(f, delay));
             await this.up(options);
         }
         else {
-            await Promise.all([
-                this.move(x, y),
-                this.down(options),
-                this.up(options),
-            ]);
+            await this.move(x, y);
+            await this.down(options);
+            await this.up(options);
         }
     }
     /**
@@ -448,13 +447,6 @@ export class Touchscreen {
      * @param y - Vertical position of the tap.
      */
     async tap(x, y) {
-        // Touches appear to be lost during the first frame after navigation.
-        // This waits a frame before sending the tap.
-        // @see https://crbug.com/613219
-        await this._client.send('Runtime.evaluate', {
-            expression: 'new Promise(x => requestAnimationFrame(() => requestAnimationFrame(x)))',
-            awaitPromise: true,
-        });
         const touchPoints = [{ x: Math.round(x), y: Math.round(y) }];
         await this._client.send('Input.dispatchTouchEvent', {
             type: 'touchStart',
@@ -468,3 +460,4 @@ export class Touchscreen {
         });
     }
 }
+//# sourceMappingURL=Input.js.map

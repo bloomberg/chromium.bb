@@ -862,7 +862,7 @@ TEST_P(RtpSenderVideoTest, VideoLayersAllocationWithResolutionSentOnKeyFrames) {
 }
 
 TEST_P(RtpSenderVideoTest,
-       VideoLayersAllocationWithoutResolutionSentOnDeltaFrames) {
+       VideoLayersAllocationWithoutResolutionSentOnDeltaWhenUpdated) {
   const size_t kFrameSize = 100;
   uint8_t kFrame[kFrameSize];
   rtp_module_->RegisterRtpHeaderExtension(
@@ -876,14 +876,28 @@ TEST_P(RtpSenderVideoTest,
   allocation.resolution_and_frame_rate_is_valid = true;
   layer.target_bitrate_per_temporal_layer.push_back(
       DataRate::KilobitsPerSec(50));
-
   allocation.active_spatial_layers.push_back(layer);
   rtp_sender_video_->SetVideoLayersAllocation(allocation);
 
   RTPVideoHeader hdr;
+  hdr.frame_type = VideoFrameType::kVideoFrameKey;
+  rtp_sender_video_->SendVideo(kPayload, kType, kTimestamp, 0, kFrame, hdr,
+                               kDefaultExpectedRetransmissionTimeMs);
+  EXPECT_TRUE(transport_.last_sent_packet()
+                  .HasExtension<RtpVideoLayersAllocationExtension>());
+
+  // No allocation sent on delta frame unless it has been updated.
   hdr.frame_type = VideoFrameType::kVideoFrameDelta;
   rtp_sender_video_->SendVideo(kPayload, kType, kTimestamp, 0, kFrame, hdr,
                                kDefaultExpectedRetransmissionTimeMs);
+  EXPECT_FALSE(transport_.last_sent_packet()
+                   .HasExtension<RtpVideoLayersAllocationExtension>());
+
+  // Update the allocation.
+  rtp_sender_video_->SetVideoLayersAllocation(allocation);
+  rtp_sender_video_->SendVideo(kPayload, kType, kTimestamp, 0, kFrame, hdr,
+                               kDefaultExpectedRetransmissionTimeMs);
+
   VideoLayersAllocation sent_allocation;
   EXPECT_TRUE(
       transport_.last_sent_packet()
@@ -895,6 +909,52 @@ TEST_P(RtpSenderVideoTest,
               SizeIs(1));
 }
 
+TEST_P(RtpSenderVideoTest,
+       VideoLayersAllocationWithResolutionSentOnDeltaWhenSpatialLayerAdded) {
+  const size_t kFrameSize = 100;
+  uint8_t kFrame[kFrameSize];
+  rtp_module_->RegisterRtpHeaderExtension(
+      RtpVideoLayersAllocationExtension::kUri,
+      kVideoLayersAllocationExtensionId);
+
+  VideoLayersAllocation allocation;
+  allocation.resolution_and_frame_rate_is_valid = true;
+  VideoLayersAllocation::SpatialLayer layer;
+  layer.width = 360;
+  layer.height = 180;
+  layer.spatial_id = 0;
+  layer.target_bitrate_per_temporal_layer.push_back(
+      DataRate::KilobitsPerSec(50));
+  allocation.active_spatial_layers.push_back(layer);
+  rtp_sender_video_->SetVideoLayersAllocation(allocation);
+
+  RTPVideoHeader hdr;
+  hdr.frame_type = VideoFrameType::kVideoFrameKey;
+  rtp_sender_video_->SendVideo(kPayload, kType, kTimestamp, 0, kFrame, hdr,
+                               kDefaultExpectedRetransmissionTimeMs);
+  ASSERT_TRUE(transport_.last_sent_packet()
+                  .HasExtension<RtpVideoLayersAllocationExtension>());
+
+  // Update the allocation.
+  layer.width = 640;
+  layer.height = 320;
+  layer.spatial_id = 1;
+  layer.target_bitrate_per_temporal_layer.push_back(
+      DataRate::KilobitsPerSec(100));
+  allocation.active_spatial_layers.push_back(layer);
+  rtp_sender_video_->SetVideoLayersAllocation(allocation);
+  hdr.frame_type = VideoFrameType::kVideoFrameDelta;
+  rtp_sender_video_->SendVideo(kPayload, kType, kTimestamp, 0, kFrame, hdr,
+                               kDefaultExpectedRetransmissionTimeMs);
+
+  VideoLayersAllocation sent_allocation;
+  EXPECT_TRUE(
+      transport_.last_sent_packet()
+          .GetExtension<RtpVideoLayersAllocationExtension>(&sent_allocation));
+  EXPECT_THAT(sent_allocation.active_spatial_layers, SizeIs(2));
+  EXPECT_TRUE(sent_allocation.resolution_and_frame_rate_is_valid);
+}
+
 TEST_P(RtpSenderVideoTest, VideoLayersAllocationSentOnDeltaFramesOnlyOnUpdate) {
   const size_t kFrameSize = 100;
   uint8_t kFrame[kFrameSize];
@@ -904,6 +964,8 @@ TEST_P(RtpSenderVideoTest, VideoLayersAllocationSentOnDeltaFramesOnlyOnUpdate) {
 
   VideoLayersAllocation allocation;
   VideoLayersAllocation::SpatialLayer layer;
+  layer.width = 360;
+  layer.height = 180;
   layer.target_bitrate_per_temporal_layer.push_back(
       DataRate::KilobitsPerSec(50));
   allocation.active_spatial_layers.push_back(layer);
@@ -943,7 +1005,10 @@ TEST_P(RtpSenderVideoTest, VideoLayersAllocationNotSentOnHigherTemporalLayers) {
       kVideoLayersAllocationExtensionId);
 
   VideoLayersAllocation allocation;
+  allocation.resolution_and_frame_rate_is_valid = true;
   VideoLayersAllocation::SpatialLayer layer;
+  layer.width = 360;
+  layer.height = 180;
   layer.target_bitrate_per_temporal_layer.push_back(
       DataRate::KilobitsPerSec(50));
   allocation.active_spatial_layers.push_back(layer);
@@ -957,18 +1022,15 @@ TEST_P(RtpSenderVideoTest, VideoLayersAllocationNotSentOnHigherTemporalLayers) {
 
   rtp_sender_video_->SendVideo(kPayload, kType, kTimestamp, 0, kFrame, hdr,
                                kDefaultExpectedRetransmissionTimeMs);
-  VideoLayersAllocation sent_allocation;
-  EXPECT_FALSE(
-      transport_.last_sent_packet()
-          .GetExtension<RtpVideoLayersAllocationExtension>(&sent_allocation));
+  EXPECT_FALSE(transport_.last_sent_packet()
+                   .HasExtension<RtpVideoLayersAllocationExtension>());
 
   // Send a delta frame on tl0.
   vp8_header.temporalIdx = 0;
   rtp_sender_video_->SendVideo(kPayload, kType, kTimestamp, 0, kFrame, hdr,
                                kDefaultExpectedRetransmissionTimeMs);
-  EXPECT_TRUE(
-      transport_.last_sent_packet()
-          .GetExtension<RtpVideoLayersAllocationExtension>(&sent_allocation));
+  EXPECT_TRUE(transport_.last_sent_packet()
+                  .HasExtension<RtpVideoLayersAllocationExtension>());
 }
 
 TEST_P(RtpSenderVideoTest, AbsoluteCaptureTime) {
@@ -1094,6 +1156,55 @@ TEST_P(RtpSenderVideoTest, PopulatesPlayoutDelay) {
   ASSERT_TRUE(transport_.last_sent_packet().GetExtension<PlayoutDelayLimits>(
       &received_delay));
   EXPECT_EQ(received_delay, kExpectedDelay);
+}
+
+TEST_P(RtpSenderVideoTest, SendGenericVideo) {
+  const uint8_t kPayloadType = 127;
+  const VideoCodecType kCodecType = VideoCodecType::kVideoCodecGeneric;
+  const uint8_t kPayload[] = {47, 11, 32, 93, 89};
+
+  // Send keyframe.
+  RTPVideoHeader video_header;
+  video_header.frame_type = VideoFrameType::kVideoFrameKey;
+  ASSERT_TRUE(rtp_sender_video_->SendVideo(kPayloadType, kCodecType, 1234, 4321,
+                                           kPayload, video_header,
+                                           absl::nullopt));
+
+  rtc::ArrayView<const uint8_t> sent_payload =
+      transport_.last_sent_packet().payload();
+  uint8_t generic_header = sent_payload[0];
+  EXPECT_TRUE(generic_header & RtpFormatVideoGeneric::kKeyFrameBit);
+  EXPECT_TRUE(generic_header & RtpFormatVideoGeneric::kFirstPacketBit);
+  EXPECT_THAT(sent_payload.subview(1), ElementsAreArray(kPayload));
+
+  // Send delta frame.
+  const uint8_t kDeltaPayload[] = {13, 42, 32, 93, 13};
+  video_header.frame_type = VideoFrameType::kVideoFrameDelta;
+  ASSERT_TRUE(rtp_sender_video_->SendVideo(kPayloadType, kCodecType, 1234, 4321,
+                                           kDeltaPayload, video_header,
+                                           absl::nullopt));
+
+  sent_payload = sent_payload = transport_.last_sent_packet().payload();
+  generic_header = sent_payload[0];
+  EXPECT_FALSE(generic_header & RtpFormatVideoGeneric::kKeyFrameBit);
+  EXPECT_TRUE(generic_header & RtpFormatVideoGeneric::kFirstPacketBit);
+  EXPECT_THAT(sent_payload.subview(1), ElementsAreArray(kDeltaPayload));
+}
+
+TEST_P(RtpSenderVideoTest, SendRawVideo) {
+  const uint8_t kPayloadType = 111;
+  const uint8_t kPayload[] = {11, 22, 33, 44, 55};
+
+  // Send a frame.
+  RTPVideoHeader video_header;
+  video_header.frame_type = VideoFrameType::kVideoFrameKey;
+  ASSERT_TRUE(rtp_sender_video_->SendVideo(kPayloadType, absl::nullopt, 1234,
+                                           4321, kPayload, video_header,
+                                           absl::nullopt));
+
+  rtc::ArrayView<const uint8_t> sent_payload =
+      transport_.last_sent_packet().payload();
+  EXPECT_THAT(sent_payload, ElementsAreArray(kPayload));
 }
 
 INSTANTIATE_TEST_SUITE_P(WithAndWithoutOverhead,

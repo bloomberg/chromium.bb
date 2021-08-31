@@ -20,7 +20,6 @@ import java.util.Set;
  */
 public class FakeProfileSyncService extends ProfileSyncService {
     private boolean mEngineInitialized;
-    private int mNumberOfSyncedDevices;
     private boolean mPassphraseRequiredForPreferredDataTypes;
     private boolean mTrustedVaultKeyRequired;
     private boolean mTrustedVaultKeyRequiredForPreferredDataTypes;
@@ -64,17 +63,8 @@ public class FakeProfileSyncService extends ProfileSyncService {
     }
 
     @Override
-    public boolean isUsingSecondaryPassphrase() {
+    public boolean isUsingExplicitPassphrase() {
         return true;
-    }
-
-    @Override
-    public int getNumberOfSyncedDevices() {
-        return mNumberOfSyncedDevices;
-    }
-
-    public void setNumberOfSyncedDevices(int numDevices) {
-        mNumberOfSyncedDevices = numDevices;
     }
 
     @Override
@@ -138,11 +128,16 @@ public class FakeProfileSyncService extends ProfileSyncService {
 
     @Override
     public boolean requiresClientUpgrade() {
+        ThreadUtils.assertOnUiThread();
         return mRequiresClientUpgrade;
     }
 
+    @AnyThread
     public void setRequiresClientUpgrade(boolean requiresClientUpgrade) {
-        mRequiresClientUpgrade = requiresClientUpgrade;
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mRequiresClientUpgrade = requiresClientUpgrade;
+            syncStateChanged();
+        });
     }
 
     public void setEncryptEverythingEnabled(boolean encryptEverythingEnabled) {

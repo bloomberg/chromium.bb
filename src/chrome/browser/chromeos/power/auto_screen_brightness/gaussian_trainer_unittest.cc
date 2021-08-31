@@ -4,13 +4,13 @@
 
 #include "chrome/browser/chromeos/power/auto_screen_brightness/gaussian_trainer.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/monotone_cubic_spline.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -574,7 +574,7 @@ TEST_F(GaussianTrainerTest, TrainedCurveValue) {
 
   const MonotoneCubicSpline trained_curve =
       *(gaussian_trainer_->Train({data}).new_curve);
-  const base::Optional<MonotoneCubicSpline> expected_curve =
+  const absl::optional<MonotoneCubicSpline> expected_curve =
       MonotoneCubicSpline::CreateMonotoneCubicSpline(
           log_lux_, {3.0,   8.0,   12.48, 18.72, 24.96, 31.2, 37.44,
                      43.68, 49.92, 56.16, 62.4,  62.4,  62.4, 66.0,

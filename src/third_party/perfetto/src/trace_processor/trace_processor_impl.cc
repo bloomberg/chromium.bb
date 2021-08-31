@@ -23,10 +23,11 @@
 #include "perfetto/base/time.h"
 #include "perfetto/ext/base/string_splitter.h"
 #include "perfetto/ext/base/string_utils.h"
-#include "src/trace_processor/dynamic/ancestor_slice_generator.h"
+#include "src/trace_processor/dynamic/ancestor_generator.h"
 #include "src/trace_processor/dynamic/connected_flow_generator.h"
 #include "src/trace_processor/dynamic/descendant_slice_generator.h"
 #include "src/trace_processor/dynamic/describe_slice_generator.h"
+#include "src/trace_processor/dynamic/experimental_annotated_stack_generator.h"
 #include "src/trace_processor/dynamic/experimental_counter_dur_generator.h"
 #include "src/trace_processor/dynamic/experimental_flamegraph_generator.h"
 #include "src/trace_processor/dynamic/experimental_sched_upid_generator.h"
@@ -541,6 +542,12 @@ void ExtractArg(sqlite3_context* ctx, int argc, sqlite3_value** argv) {
     sqlite3_result_error(ctx, "EXTRACT_ARG: 2 args required", -1);
     return;
   }
+
+  // If the arg set id is null, just return null as the result.
+  if (sqlite3_value_type(argv[0]) == SQLITE_NULL) {
+    sqlite3_result_null(ctx);
+    return;
+  }
   if (sqlite3_value_type(argv[0]) != SQLITE_INTEGER) {
     sqlite3_result_error(ctx, "EXTRACT_ARG: 1st argument should be arg set id",
                          -1);
@@ -740,24 +747,28 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
       new ExperimentalSliceLayoutGenerator(
           context_.storage.get()->mutable_string_pool(),
           &storage->slice_table())));
-  RegisterDynamicTable(std::unique_ptr<AncestorSliceGenerator>(
-      new AncestorSliceGenerator(&context_)));
+  RegisterDynamicTable(std::unique_ptr<AncestorGenerator>(
+      new AncestorGenerator(AncestorGenerator::Ancestor::kSlice, &context_)));
+  RegisterDynamicTable(std::unique_ptr<AncestorGenerator>(new AncestorGenerator(
+      AncestorGenerator::Ancestor::kStackProfileCallsite, &context_)));
   RegisterDynamicTable(std::unique_ptr<DescendantSliceGenerator>(
       new DescendantSliceGenerator(&context_)));
   RegisterDynamicTable(
       std::unique_ptr<ConnectedFlowGenerator>(new ConnectedFlowGenerator(
-          ConnectedFlowGenerator::Direction::BOTH, &context_)));
+          ConnectedFlowGenerator::Mode::kDirectlyConnectedFlow, &context_)));
   RegisterDynamicTable(
       std::unique_ptr<ConnectedFlowGenerator>(new ConnectedFlowGenerator(
-          ConnectedFlowGenerator::Direction::FOLLOWING, &context_)));
+          ConnectedFlowGenerator::Mode::kPrecedingFlow, &context_)));
   RegisterDynamicTable(
       std::unique_ptr<ConnectedFlowGenerator>(new ConnectedFlowGenerator(
-          ConnectedFlowGenerator::Direction::PRECEDING, &context_)));
+          ConnectedFlowGenerator::Mode::kFollowingFlow, &context_)));
   RegisterDynamicTable(std::unique_ptr<ExperimentalSchedUpidGenerator>(
       new ExperimentalSchedUpidGenerator(storage->sched_slice_table(),
                                          storage->thread_table())));
   RegisterDynamicTable(std::unique_ptr<ThreadStateGenerator>(
       new ThreadStateGenerator(&context_)));
+  RegisterDynamicTable(std::unique_ptr<ExperimentalAnnotatedStackGenerator>(
+      new ExperimentalAnnotatedStackGenerator(&context_)));
 
   // New style db-backed tables.
   RegisterDbTable(storage->arg_table());
@@ -766,6 +777,7 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
 
   RegisterDbTable(storage->slice_table());
   RegisterDbTable(storage->flow_table());
+  RegisterDbTable(storage->thread_slice_table());
   RegisterDbTable(storage->sched_slice_table());
   RegisterDbTable(storage->instant_table());
   RegisterDbTable(storage->gpu_slice_table());
@@ -785,6 +797,7 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
   RegisterDbTable(storage->softirq_counter_track_table());
   RegisterDbTable(storage->gpu_counter_track_table());
   RegisterDbTable(storage->gpu_counter_group_table());
+  RegisterDbTable(storage->perf_counter_track_table());
 
   RegisterDbTable(storage->heap_graph_object_table());
   RegisterDbTable(storage->heap_graph_reference_table());
@@ -806,9 +819,13 @@ TraceProcessorImpl::TraceProcessorImpl(const Config& cfg)
 
   RegisterDbTable(storage->graphics_frame_slice_table());
 
+  RegisterDbTable(storage->expected_frame_timeline_slice_table());
+  RegisterDbTable(storage->actual_frame_timeline_slice_table());
+
   RegisterDbTable(storage->metadata_table());
   RegisterDbTable(storage->cpu_table());
   RegisterDbTable(storage->cpu_freq_table());
+  RegisterDbTable(storage->clock_snapshot_table());
 
   RegisterDbTable(storage->memory_snapshot_table());
   RegisterDbTable(storage->process_memory_snapshot_table());
@@ -860,6 +877,7 @@ void TraceProcessorImpl::NotifyEndOfFile() {
 }
 
 size_t TraceProcessorImpl::RestoreInitialTables() {
+  // Step 1: figure out what tables/views/indices we need to delete.
   std::vector<std::pair<std::string, std::string>> deletion_list;
   std::string msg = "Resetting DB to initial state, deleting table/views:";
   for (auto it = ExecuteQuery(kAllTablesQuery); it.Next();) {
@@ -873,6 +891,8 @@ size_t TraceProcessorImpl::RestoreInitialTables() {
   }
 
   PERFETTO_LOG("%s", msg.c_str());
+
+  // Step 2: actually delete those tables/views/indices.
   for (const auto& tn : deletion_list) {
     std::string query = "DROP " + tn.first + " " + tn.second;
     auto it = ExecuteQuery(query);
@@ -928,9 +948,8 @@ bool TraceProcessorImpl::IsRootMetricField(const std::string& metric_name) {
       pool_.FindDescriptorIdx(".perfetto.protos.TraceMetrics");
   if (!desc_idx.has_value())
     return false;
-  base::Optional<uint32_t> field_idx =
-      pool_.descriptors()[*desc_idx].FindFieldIdxByName(metric_name);
-  return field_idx.has_value();
+  auto field_idx = pool_.descriptors()[*desc_idx].FindFieldByName(metric_name);
+  return field_idx != nullptr;
 }
 
 util::Status TraceProcessorImpl::RegisterMetric(const std::string& path,
@@ -953,7 +972,7 @@ util::Status TraceProcessorImpl::RegisterMetric(const std::string& path,
     return util::OkStatus();
   }
 
-  auto sep_idx = path.rfind("/");
+  auto sep_idx = path.rfind('/');
   std::string basename =
       sep_idx == std::string::npos ? path : path.substr(sep_idx + 1);
 

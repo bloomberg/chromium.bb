@@ -8,7 +8,7 @@
 
 #import "ios/net/protocol_handler_util.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -30,13 +30,15 @@ class InvalidUrlTabHelperTest : public PlatformTest {
       ui::PageTransition transition) {
     NSURL* url = [NSURL URLWithString:spec];
     NSURLRequest* request = [[NSURLRequest alloc] initWithURL:url];
-    web::WebStatePolicyDecider::RequestInfo info(transition,
-                                                 /*target_frame_is_main=*/true,
-                                                 /*has_user_gesture=*/false);
+    web::WebStatePolicyDecider::RequestInfo info(
+        transition,
+        /*target_frame_is_main=*/true,
+        /*target_frame_is_cross_origin=*/false,
+        /*has_user_gesture=*/false);
     return web_state_.ShouldAllowRequest(request, info);
   }
 
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
 };
 
 // Tests that navigation is allowed for https url link.

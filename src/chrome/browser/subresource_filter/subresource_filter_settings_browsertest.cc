@@ -10,7 +10,6 @@
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -183,7 +182,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
 
   // Allowlist via a reload.
   content::TestNavigationObserver navigation_observer(web_contents(), 1);
-  ChromeSubresourceFilterClient::FromWebContents(web_contents())
+  subresource_filter::ContentSubresourceFilterThrottleManager::FromWebContents(
+      web_contents())
       ->OnReloadRequested();
   navigation_observer.Wait();
 
@@ -202,7 +202,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
 
   // Allowlist via a reload.
   content::TestNavigationObserver navigation_observer(web_contents(), 1);
-  ChromeSubresourceFilterClient::FromWebContents(web_contents())
+  subresource_filter::ContentSubresourceFilterThrottleManager::FromWebContents(
+      web_contents())
       ->OnReloadRequested();
   navigation_observer.Wait();
 
@@ -238,8 +239,6 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   // TODO(csharrison): Add support for more than one URL.
   ConfigureAsPhishingURL(a_url);
 
-  ChromeSubresourceFilterClient* client =
-      ChromeSubresourceFilterClient::FromWebContents(web_contents());
   auto test_clock = std::make_unique<base::SimpleTestClock>();
   base::SimpleTestClock* raw_clock = test_clock.get();
   settings_manager()->set_clock_for_testing(std::move(test_clock));
@@ -249,8 +248,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   // First load should trigger the UI.
   ui_test_utils::NavigateToURL(browser(), a_url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-  EXPECT_TRUE(client->did_show_ui_for_navigation());
 
+  histogram_tester.ExpectBucketCount(
+      kSubresourceFilterActionsHistogram,
+      subresource_filter::SubresourceFilterAction::kUIShown, 1);
   histogram_tester.ExpectBucketCount(
       kSubresourceFilterActionsHistogram,
       subresource_filter::SubresourceFilterAction::kUISuppressed, 0);
@@ -259,8 +260,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   ui_test_utils::NavigateToURL(browser(), a_url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
-  EXPECT_EQ(client->did_show_ui_for_navigation(), false);
-
+  histogram_tester.ExpectBucketCount(
+      kSubresourceFilterActionsHistogram,
+      subresource_filter::SubresourceFilterAction::kUIShown, 1);
   histogram_tester.ExpectBucketCount(
       kSubresourceFilterActionsHistogram,
       subresource_filter::SubresourceFilterAction::kUISuppressed, 1);
@@ -270,7 +272,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
   // Load to another domain should trigger the UI.
   ui_test_utils::NavigateToURL(browser(), b_url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-  EXPECT_TRUE(client->did_show_ui_for_navigation());
+
+  histogram_tester.ExpectBucketCount(
+      kSubresourceFilterActionsHistogram,
+      subresource_filter::SubresourceFilterAction::kUIShown, 2);
 
   ConfigureAsPhishingURL(a_url);
 
@@ -280,8 +285,10 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterSettingsBrowserTest,
           kDelayBeforeShowingInfobarAgain);
   ui_test_utils::NavigateToURL(browser(), a_url);
   EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-  EXPECT_TRUE(client->did_show_ui_for_navigation());
 
+  histogram_tester.ExpectBucketCount(
+      kSubresourceFilterActionsHistogram,
+      subresource_filter::SubresourceFilterAction::kUIShown, 3);
   histogram_tester.ExpectBucketCount(
       kSubresourceFilterActionsHistogram,
       subresource_filter::SubresourceFilterAction::kUISuppressed, 1);

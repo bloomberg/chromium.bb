@@ -86,7 +86,7 @@ bool HasExpiredOrIncompleteResult(
 bool HasValidResult(
     const std::vector<favicon_base::FaviconRawBitmapResult>& bitmap_results) {
   return std::find_if(bitmap_results.begin(), bitmap_results.end(), IsValid) !=
-      bitmap_results.end();
+         bitmap_results.end();
 }
 
 std::vector<int> GetDesiredPixelSizes(
@@ -171,8 +171,7 @@ FaviconHandler::FaviconHandler(
   DCHECK(delegate_);
 }
 
-FaviconHandler::~FaviconHandler() {
-}
+FaviconHandler::~FaviconHandler() = default;
 
 // static
 favicon_base::IconTypeSet FaviconHandler::GetIconTypesFromHandlerType(
@@ -297,8 +296,7 @@ void FaviconHandler::NotifyFaviconUpdated(
   DCHECK(!favicon_bitmap_results.empty());
 
   gfx::Image resized_image = favicon_base::SelectFaviconFramesFromPNGs(
-      favicon_bitmap_results,
-      favicon_base::GetFaviconScales(),
+      favicon_bitmap_results, favicon_base::GetFaviconScales(),
       preferred_icon_size());
   // The history service sends back results for a single icon URL and icon
   // type, so it does not matter which result we get |icon_url| and |icon_type|
@@ -507,6 +505,8 @@ void FaviconHandler::OnDidDownloadFavicon(
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_bitmap_sizes) {
+  DCHECK_EQ(bitmaps.size(), original_bitmap_sizes.size());
+
   // Mark download as finished.
   image_download_request_.Cancel();
 
@@ -530,10 +530,8 @@ void FaviconHandler::OnDidDownloadFavicon(
       image_skia =
           gfx::ImageSkia::CreateFrom1xBitmap(bitmaps[best_indices.front()]);
     } else {
-      image_skia = CreateFaviconImageSkia(bitmaps,
-                                          original_bitmap_sizes,
-                                          preferred_icon_size(),
-                                          &score);
+      image_skia = CreateFaviconImageSkia(bitmaps, original_bitmap_sizes,
+                                          preferred_icon_size(), &score);
     }
 
     if (!image_skia.isNull() && score > best_favicon_.candidate.score) {
@@ -589,8 +587,11 @@ void FaviconHandler::OnFaviconDataForInitialURLFromFaviconService(
         favicon_bitmap_results) {
   got_favicon_from_history_ = true;
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
+  // For off-the-record profiles pretend that favicons from FaviconService are
+  // expired so websites don't know if a site was previously visited in regular
+  // mode.
   initial_history_result_expired_or_incomplete_ =
-      !has_valid_result ||
+      !has_valid_result || delegate_->IsOffTheRecord() ||
       HasExpiredOrIncompleteResult(preferred_icon_size(),
                                    favicon_bitmap_results);
   redownload_icons_ = initial_history_result_expired_or_incomplete_ &&
@@ -670,12 +671,17 @@ void FaviconHandler::GetFaviconAndUpdateMappingsUnlessIncognito(
   }
 }
 
-void FaviconHandler::OnFaviconData(const std::vector<
-    favicon_base::FaviconRawBitmapResult>& favicon_bitmap_results) {
+void FaviconHandler::OnFaviconData(
+    const std::vector<favicon_base::FaviconRawBitmapResult>&
+        favicon_bitmap_results) {
   bool has_valid_result = HasValidResult(favicon_bitmap_results);
+  // For off-the-record profiles pretend that favicons from FaviconService are
+  // expired so websites don't know if a site was previously visited in regular
+  // mode.
   bool has_expired_or_incomplete_result =
-      !has_valid_result || HasExpiredOrIncompleteResult(preferred_icon_size(),
-                                                        favicon_bitmap_results);
+      !has_valid_result || delegate_->IsOffTheRecord() ||
+      HasExpiredOrIncompleteResult(preferred_icon_size(),
+                                   favicon_bitmap_results);
 
   if (has_valid_result) {
     // There is a valid favicon. Notify any observers. It is useful to notify
@@ -694,7 +700,7 @@ void FaviconHandler::OnFaviconData(const std::vector<
 void FaviconHandler::ScheduleImageDownload(const GURL& image_url,
                                            favicon_base::IconType icon_type) {
   DCHECK(image_url.is_valid());
-  // Note that CancelableCallback starts cancelled.
+  // Note that CancelableOnceCallback starts cancelled.
   DCHECK(image_download_request_.IsCancelled())
       << "More than one ongoing download";
   if (service_ && service_->WasUnableToDownloadFavicon(image_url)) {

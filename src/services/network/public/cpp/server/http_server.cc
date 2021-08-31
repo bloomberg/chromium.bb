@@ -187,7 +187,7 @@ void HttpServer::DoAcceptLoop() {
 
 void HttpServer::OnAcceptCompleted(
     int rv,
-    const base::Optional<net::IPEndPoint>& remote_addr,
+    const absl::optional<net::IPEndPoint>& remote_addr,
     mojo::PendingRemote<mojom::TCPConnectedSocket> connected_socket,
     mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
     mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
@@ -299,7 +299,8 @@ void HttpServer::HandleReadResult(HttpConnection* connection, MojoResult rv) {
     // Sets peer address.
     request.peer = connection->GetPeerAddress();
 
-    if (request.HasHeaderValue("connection", "upgrade")) {
+    if (request.HasHeaderValue("connection", "upgrade") &&
+        request.HasHeaderValue("upgrade", "websocket")) {
       connection->SetWebSocket(std::make_unique<WebSocket>(this, connection));
       connection->read_buf().erase(0, pos);
       delegate_->OnWebSocketRequest(connection->id(), request);

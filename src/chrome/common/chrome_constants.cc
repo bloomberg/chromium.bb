@@ -6,12 +6,12 @@
 
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/chrome_version.h"
 
 #define FPL FILE_PATH_LITERAL
 
 #if defined(OS_MAC)
-#define CHROMIUM_PRODUCT_STRING "Chromium"
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #define PRODUCT_STRING "Google Chrome"
 #elif BUILDFLAG(CHROMIUM_BRANDING)
@@ -43,74 +43,42 @@ const char kChromeVersion[] = CHROME_VERSION_STRING;
 // do so.
 
 #if defined(OS_WIN)
-const base::FilePath::CharType kBrowserProcessExecutableNameChromium[] =
-    FPL("chrome.exe");
 const base::FilePath::CharType kBrowserProcessExecutableName[] =
-    FPL("chrome.exe");
-const base::FilePath::CharType kHelperProcessExecutableNameChromium[] =
     FPL("chrome.exe");
 const base::FilePath::CharType kHelperProcessExecutableName[] =
     FPL("chrome.exe");
 #elif defined(OS_MAC)
-const base::FilePath::CharType kBrowserProcessExecutableNameChromium[] =
-    FPL(CHROMIUM_PRODUCT_STRING);
 const base::FilePath::CharType kBrowserProcessExecutableName[] =
     FPL(PRODUCT_STRING);
-const base::FilePath::CharType kHelperProcessExecutableNameChromium[] =
-    FPL(CHROMIUM_PRODUCT_STRING " Helper");
 const base::FilePath::CharType kHelperProcessExecutableName[] =
     FPL(PRODUCT_STRING " Helper");
 #elif defined(OS_ANDROID)
 // NOTE: Keep it synced with the process names defined in AndroidManifest.xml.
 const base::FilePath::CharType kBrowserProcessExecutableName[] = FPL("chrome");
-const base::FilePath::CharType kBrowserProcessExecutableNameChromium[] =
-    FPL("");
 const base::FilePath::CharType kHelperProcessExecutableName[] =
     FPL("sandboxed_process");
-const base::FilePath::CharType kHelperProcessExecutableNameChromium[] = FPL("");
 #elif defined(OS_POSIX)
-const base::FilePath::CharType kBrowserProcessExecutableNameChromium[] =
-    FPL("chrome");
 const base::FilePath::CharType kBrowserProcessExecutableName[] = FPL("chrome");
 // Helper processes end up with a name of "exe" due to execing via
 // /proc/self/exe.  See bug 22703.
-const base::FilePath::CharType kHelperProcessExecutableNameChromium[] =
-    FPL("exe");
 const base::FilePath::CharType kHelperProcessExecutableName[] = FPL("exe");
 #endif  // OS_*
 
 #if defined(OS_WIN)
-const base::FilePath::CharType kBrowserProcessExecutablePathChromium[] =
-    FPL("chrome.exe");
 const base::FilePath::CharType kBrowserProcessExecutablePath[] =
-    FPL("chrome.exe");
-const base::FilePath::CharType kHelperProcessExecutablePathChromium[] =
     FPL("chrome.exe");
 const base::FilePath::CharType kHelperProcessExecutablePath[] =
     FPL("chrome.exe");
 #elif defined(OS_MAC)
-const base::FilePath::CharType kBrowserProcessExecutablePathChromium[] =
-    FPL(CHROMIUM_PRODUCT_STRING ".app/Contents/MacOS/" CHROMIUM_PRODUCT_STRING);
 const base::FilePath::CharType kBrowserProcessExecutablePath[] =
     FPL(PRODUCT_STRING ".app/Contents/MacOS/" PRODUCT_STRING);
-const base::FilePath::CharType kHelperProcessExecutablePathChromium[] =
-    FPL(CHROMIUM_PRODUCT_STRING
-        " Helper.app/Contents/MacOS/" CHROMIUM_PRODUCT_STRING " Helper");
 const base::FilePath::CharType kHelperProcessExecutablePath[] =
     FPL(PRODUCT_STRING " Helper.app/Contents/MacOS/" PRODUCT_STRING " Helper");
 #elif defined(OS_ANDROID)
 const base::FilePath::CharType kBrowserProcessExecutablePath[] = FPL("chrome");
 const base::FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome");
-const base::FilePath::CharType kBrowserProcessExecutablePathChromium[] =
-    FPL("chrome");
-const base::FilePath::CharType kHelperProcessExecutablePathChromium[] =
-    FPL("chrome");
 #elif defined(OS_POSIX)
-const base::FilePath::CharType kBrowserProcessExecutablePathChromium[] =
-    FPL("chrome");
 const base::FilePath::CharType kBrowserProcessExecutablePath[] = FPL("chrome");
-const base::FilePath::CharType kHelperProcessExecutablePathChromium[] =
-    FPL("chrome");
 const base::FilePath::CharType kHelperProcessExecutablePath[] = FPL("chrome");
 #endif  // OS_*
 
@@ -151,8 +119,6 @@ const base::FilePath::CharType kFeatureEngagementTrackerStorageDirname[] =
     FPL("Feature Engagement Tracker");
 const base::FilePath::CharType kFirstRunSentinel[] = FPL("First Run");
 const base::FilePath::CharType kGCMStoreDirname[] = FPL("GCM Store");
-const base::FilePath::CharType kHeavyAdInterventionOptOutDBFilename[] =
-    FPL("heavy_ad_intervention_opt_out.db");
 const base::FilePath::CharType kLocalStateFilename[] = FPL("Local State");
 const base::FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
 const base::FilePath::CharType kNetworkPersistentStateFilename[] =
@@ -171,12 +137,12 @@ const base::FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
 const base::FilePath::CharType kPreviewsOptOutDBFilename[] =
     FPL("previews_opt_out.db");
 const base::FilePath::CharType kQueryTileStorageDirname[] = FPL("Query Tiles");
-const base::FilePath::CharType kVideoTutorialsStorageDirname[] =
-    FPL("Video Tutorials");
 const base::FilePath::CharType kReadmeFilename[] = FPL("README");
 const base::FilePath::CharType kSecurePreferencesFilename[] =
     FPL("Secure Preferences");
 const base::FilePath::CharType kServiceStateFileName[] = FPL("Service State");
+const base::FilePath::CharType kSegmentationPlatformStorageDirName[] =
+    FPL("Segmentation Platform");
 const base::FilePath::CharType kSingletonCookieFilename[] =
     FPL("SingletonCookie");
 const base::FilePath::CharType kSingletonLockFilename[] = FPL("SingletonLock");
@@ -186,6 +152,8 @@ const base::FilePath::CharType kSupervisedUserSettingsFilename[] =
     FPL("Managed Mode Settings");
 const base::FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
 const base::FilePath::CharType kTrustTokenFilename[] = FPL("Trust Tokens");
+const base::FilePath::CharType kVideoTutorialsStorageDirname[] =
+    FPL("Video Tutorials");
 const base::FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
 // Only use if the ENABLE_REPORTING build flag is true
 const base::FilePath::CharType kReportingAndNelStoreFilename[] =
@@ -202,11 +170,12 @@ const wchar_t kUserDataDirname[] = L"User Data";
 
 const float kMaxShareOfExtensionProcesses = 0.30f;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char kProfileDirPrefix[] = "u-";
 const char kLegacyProfileDir[] = "user";
 const char kTestUserProfileDir[] = "test-user";
 const char kLockScreenAppProfile[] = "LockScreenAppsProfile";
+const char kLockScreenProfile[] = "LockScreenProfile";
 #endif
 
 // This GUID is associated with any 'don't ask me again' settings that the
@@ -214,8 +183,6 @@ const char kLockScreenAppProfile[] = "LockScreenAppsProfile";
 // {2676A9A2-D919-4FEE-9187-152100393AB2}
 const char kApplicationClientIDStringForAVScanning[] =
     "2676A9A2-D919-4FEE-9187-152100393AB2";
-
-const size_t kMaxMetaTagAttributeLength = 2000;
 
 }  // namespace chrome
 

@@ -6,23 +6,24 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_INSTALL_BOUNCE_METRIC_H_
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
 class PrefRegistrySimple;
 
 namespace web_app {
 
-void SetInstallBounceMetricTimeForTesting(base::Optional<base::Time> time);
+void SetInstallBounceMetricTimeForTesting(absl::optional<base::Time> time);
 
 void RegisterInstallBounceMetricProfilePrefs(PrefRegistrySimple* registry);
 
-void RecordWebAppInstallationTimestamp(PrefService* pref_service,
-                                       const AppId& app_id,
-                                       WebappInstallSource install_source);
+void RecordWebAppInstallationTimestamp(
+    PrefService* pref_service,
+    const AppId& app_id,
+    webapps::WebappInstallSource install_source);
 
 void RecordWebAppUninstallation(PrefService* pref_service, const AppId& app_id);
 

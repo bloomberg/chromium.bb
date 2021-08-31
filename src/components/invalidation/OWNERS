@@ -1,4 +1,3 @@
-melandory@chromium.org
 treib@chromium.org
 
 # Fallback owners, in case the above are unavailable:
@@ -7,6 +6,3 @@ nyquist@chromium.org
 
 # Previous owner, can be added for historical context:
 # pavely@chromium.org
-
-# COMPONENT: Services>Invalidation
-# TEAM: chromium-reviews@chromium.org

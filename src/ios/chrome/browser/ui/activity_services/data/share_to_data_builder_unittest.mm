@@ -15,8 +15,8 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -34,7 +34,7 @@ using ui::test::uiimage_utils::UIImageWithSizeAndSolidColor;
 
 namespace {
 const char kExpectedUrl[] = "http://www.testurl.net/";
-const char kExpectedTitle[] = "title";
+const char16_t kExpectedTitle[] = u"title";
 }  // namespace
 
 class ShareToDataBuilderTest : public PlatformTest {
@@ -42,14 +42,13 @@ class ShareToDataBuilderTest : public PlatformTest {
   ShareToDataBuilderTest() {
     chrome_browser_state_ = TestChromeBrowserState::Builder().Build();
 
-    auto navigation_manager = std::make_unique<web::TestNavigationManager>();
+    auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
     navigation_manager->AddItem(GURL(kExpectedUrl), ui::PAGE_TRANSITION_TYPED);
     navigation_manager->SetLastCommittedItem(navigation_manager->GetItemAtIndex(
         navigation_manager->GetLastCommittedItemIndex()));
-    navigation_manager->GetLastCommittedItem()->SetTitle(
-        base::UTF8ToUTF16(kExpectedTitle));
+    navigation_manager->GetLastCommittedItem()->SetTitle(kExpectedTitle);
 
-    web_state_ = std::make_unique<web::TestWebState>();
+    web_state_ = std::make_unique<web::FakeWebState>();
     web_state_->SetNavigationManager(std::move(navigation_manager));
     web_state_->SetBrowserState(chrome_browser_state_.get());
     web_state_->SetVisibleURL(GURL(kExpectedUrl));
@@ -62,9 +61,9 @@ class ShareToDataBuilderTest : public PlatformTest {
     // Needed by the ShareToDataForWebState to get the tab title.
     DownloadManagerTabHelper::CreateForWebState(web_state_.get(),
                                                 /*delegate=*/nullptr);
-    web_state_->SetTitle(base::UTF8ToUTF16(kExpectedTitle));
+    web_state_->SetTitle(kExpectedTitle);
 
-    // Add a fake view to the TestWebState. This will be used to capture the
+    // Add a fake view to the FakeWebState. This will be used to capture the
     // snapshot. By default the WebState is not ready for taking snapshot.
     CGRect frame = {CGPointZero, CGSizeMake(300, 400)};
     delegate_.view = [[UIView alloc] initWithFrame:frame];
@@ -77,7 +76,7 @@ class ShareToDataBuilderTest : public PlatformTest {
   FakeSnapshotGeneratorDelegate* delegate_ = nil;
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<ChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<web::TestWebState> web_state_;
+  std::unique_ptr<web::FakeWebState> web_state_;
 
   DISALLOW_COPY_AND_ASSIGN(ShareToDataBuilderTest);
 };
@@ -92,7 +91,7 @@ TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandlingNpShareUrl) {
   ASSERT_TRUE(actual_data);
   EXPECT_EQ(kExpectedShareUrl, actual_data.shareURL);
   EXPECT_EQ(kExpectedUrl, actual_data.visibleURL);
-  EXPECT_NSEQ(base::SysUTF8ToNSString(kExpectedTitle), actual_data.title);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(kExpectedTitle), actual_data.title);
   EXPECT_TRUE(actual_data.isOriginalTitle);
   EXPECT_FALSE(actual_data.isPagePrintable);
 
@@ -111,7 +110,7 @@ TEST_F(ShareToDataBuilderTest, TestSharePageCommandHandlingNoShareUrl) {
   ASSERT_TRUE(actual_data);
   EXPECT_EQ(kExpectedUrl, actual_data.shareURL);
   EXPECT_EQ(kExpectedUrl, actual_data.visibleURL);
-  EXPECT_NSEQ(base::SysUTF8ToNSString(kExpectedTitle), actual_data.title);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(kExpectedTitle), actual_data.title);
   EXPECT_TRUE(actual_data.isOriginalTitle);
   EXPECT_FALSE(actual_data.isPagePrintable);
 

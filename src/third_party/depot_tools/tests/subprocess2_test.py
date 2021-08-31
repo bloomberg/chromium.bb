@@ -42,7 +42,7 @@ class DefaultsTest(unittest.TestCase):
     self.assertEqual(
         'stdout', subprocess2.capture(['foo'], a=True))
     mockCommunicate.assert_called_with(
-        ['foo'], a=True, stdin=subprocess2.VOID_INPUT, stdout=subprocess2.PIPE)
+        ['foo'], a=True, stdin=subprocess2.DEVNULL, stdout=subprocess2.PIPE)
 
   @mock.patch('subprocess2.Popen')
   def test_communicate_defaults(self, mockPopen):
@@ -80,7 +80,7 @@ class DefaultsTest(unittest.TestCase):
     mockCommunicate.return_value = (('stdout', 'stderr'), 0)
     self.assertEqual('stdout', subprocess2.check_output(['foo'], a=True))
     mockCommunicate.assert_called_with(
-        ['foo'], a=True, stdin=subprocess2.VOID_INPUT, stdout=subprocess2.PIPE)
+        ['foo'], a=True, stdin=subprocess2.DEVNULL, stdout=subprocess2.PIPE)
 
   @mock.patch('subprocess.Popen.__init__')
   def test_env_type(self, mockPopen):
@@ -241,15 +241,15 @@ class SmokeTests(unittest.TestCase):
   def test_stdin_void(self):
     res = subprocess2.communicate(
         TEST_COMMAND + ['--read'],
-        stdin=subprocess2.VOID_INPUT)
+        stdin=subprocess2.DEVNULL)
     self._check_res(res, None, None, 0)
 
   @_run_test(with_subprocess=False)
   def test_stdin_void_stdout(self, c, cmd, un, subp):
-    # Make sure a mix ofsubprocess2.VOID andsubprocess2.PIPE works.
+    # Make sure a mix ofsubprocess2.DEVNULL andsubprocess2.PIPE works.
     res = subprocess2.communicate(
         cmd + ['--stdout', '--read'],
-        stdin=subprocess2.VOID_INPUT,
+        stdin=subprocess2.DEVNULL,
         stdout=subprocess2.PIPE,
         universal_newlines=un,
         shell=False)
@@ -259,7 +259,7 @@ class SmokeTests(unittest.TestCase):
   def test_stdout_void(self, c, cmd, un, subp):
     res = subprocess2.communicate(
         cmd + ['--stdout', '--stderr'],
-        stdout=subprocess2.VOID,
+        stdout=subprocess2.DEVNULL,
         stderr=subprocess2.PIPE,
         universal_newlines=un)
     self._check_res(res, None, c('a\nbb\nccc\n'), 0)
@@ -269,7 +269,7 @@ class SmokeTests(unittest.TestCase):
     res = subprocess2.communicate(
         cmd + ['--stdout', '--stderr'],
         stdout=subprocess2.PIPE,
-        stderr=subprocess2.VOID,
+        stderr=subprocess2.DEVNULL,
         universal_newlines=un)
     self._check_res(res, c('A\nBB\nCCC\n'), None, 0)
 
@@ -277,7 +277,7 @@ class SmokeTests(unittest.TestCase):
   def test_stdout_void_stderr_redirect(self, c, cmd, un, subp):
     res = subprocess2.communicate(
         cmd + ['--stdout', '--stderr'],
-        stdout=subprocess2.VOID,
+        stdout=subprocess2.DEVNULL,
         stderr=subprocess2.STDOUT,
         universal_newlines=un)
     self._check_res(res, None, None, 0)

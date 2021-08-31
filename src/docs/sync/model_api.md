@@ -10,7 +10,7 @@ API] (aka Directory), which as of mid-2019 is still used by several legacy model
 types, but "wrapped into" USS (see [SyncableServiceBasedBridge]).
 
 [SyncableService API]: https://www.chromium.org/developers/design-documents/sync/syncable-service-api
-[SyncableServiceBasedBridge]: https://cs.chromium.org/chromium/src/components/sync/model_impl/syncable_service_based_bridge.h
+[SyncableServiceBasedBridge]: https://cs.chromium.org/chromium/src/components/sync/model/syncable_service_based_bridge.h
 
 [TOC]
 
@@ -81,7 +81,7 @@ to add one (e.g. a GUID, though be wary as they have the potential to conflict).
 While the hash gets written to disk as part of the metadata, the tag itself is
 never persisted locally.
 
-[EntityData]: https://cs.chromium.org/chromium/src/components/sync/model/entity_data.h
+[EntityData]: https://cs.chromium.org/chromium/src/components/sync/engine/entity_data.h
 
 ## Storage
 
@@ -265,7 +265,6 @@ the next client restart.
     [`ChromeSyncClient::CreateDataTypeControllers`][CreateDataTypeControllers].
 *   Add your KeyedService dependency to
     [`ProfileSyncServiceFactory`][ProfileSyncServiceFactory].
-*   Add to the [start order list][kStartOrder].
 *   Add an field for encrypted data to [`NigoriSpecifics`][NigoriSpecifics].
 *   If your type should have its own toggle in sync settings, add an entry to
     the [`UserSelectableType`][UserSelectableType] enum, add a
@@ -285,7 +284,6 @@ the next client restart.
 [CreateCommonDataTypeControllers]: https://cs.chromium.org/search/?q="ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers"
 [CreateDataTypeControllers]: https://cs.chromium.org/search/?q="ChromeSyncClient::CreateDataTypeControllers"
 [ProfileSyncServiceFactory]: https://cs.chromium.org/search/?q=:ProfileSyncServiceFactory%5C(%5C)
-[kStartOrder]: https://cs.chromium.org/search/?q="kStartOrder[]"
 [NigoriSpecifics]: https://cs.chromium.org/chromium/src/components/sync/protocol/nigori_specifics.proto
 [UserSelectableType]: https://cs.chromium.org/chromium/src/components/sync/base/user_selectable_type.h?type=cs&q="enum+class+UserSelectableType"
 [pref_names]: https://cs.chromium.org/chromium/src/components/sync/base/pref_names.h

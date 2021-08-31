@@ -34,7 +34,9 @@ public:
                                      sk_sp<GrColorSpaceXform> csxf,
                                      GrSamplerState::Filter filter,
                                      bool wideColor) {
-        return arena->make<LatticeGP>(view, std::move(csxf), filter, wideColor);
+        return arena->make([&](void* ptr) {
+            return new (ptr) LatticeGP(view, std::move(csxf), filter, wideColor);
+        });
     }
 
     const char* name() const override { return "LatticeGP"; }
@@ -43,24 +45,25 @@ public:
         b->add32(GrColorSpaceXform::XformKey(fColorSpaceXform.get()));
     }
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps& caps) const override {
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps& caps) const override {
         class GLSLProcessor : public GrGLSLGeometryProcessor {
         public:
             void setData(const GrGLSLProgramDataManager& pdman,
-                         const GrPrimitiveProcessor& proc) override {
-                const auto& latticeGP = proc.cast<LatticeGP>();
+                         const GrShaderCaps&,
+                         const GrGeometryProcessor& geomProc) override {
+                const auto& latticeGP = geomProc.cast<LatticeGP>();
                 fColorSpaceXformHelper.setData(pdman, latticeGP.fColorSpaceXform.get());
             }
 
         private:
             void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
                 using Interpolation = GrGLSLVaryingHandler::Interpolation;
-                const auto& latticeGP = args.fGP.cast<LatticeGP>();
+                const auto& latticeGP = args.fGeomProc.cast<LatticeGP>();
                 fColorSpaceXformHelper.emitCode(args.fUniformHandler,
                                                 latticeGP.fColorSpaceXform.get());
 
                 args.fVaryingHandler->emitAttributes(latticeGP);
-                this->writeOutputPosition(args.fVertBuilder, gpArgs, latticeGP.fInPosition.name());
+                WriteOutputPosition(args.fVertBuilder, gpArgs, latticeGP.fInPosition.name());
                 gpArgs->fLocalCoordVar = latticeGP.fInTextureCoords.asShaderVar();
 
                 args.fFragBuilder->codeAppend("float2 textureCoords;");
@@ -69,6 +72,7 @@ public:
                 args.fFragBuilder->codeAppend("float4 textureDomain;");
                 args.fVaryingHandler->addPassThroughAttribute(
                         latticeGP.fInTextureDomain, "textureDomain", Interpolation::kCanBeFlat);
+                args.fFragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
                 args.fVaryingHandler->addPassThroughAttribute(latticeGP.fInColor,
                                                               args.fOutputColor,
                                                               Interpolation::kCanBeFlat);
@@ -80,7 +84,7 @@ public:
                         "clamp(textureCoords, textureDomain.xy, textureDomain.zw)",
                         &fColorSpaceXformHelper);
                 args.fFragBuilder->codeAppend(";");
-                args.fFragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+                args.fFragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
             }
             GrGLSLColorSpaceXformHelper fColorSpaceXformHelper;
         };
@@ -88,8 +92,6 @@ public:
     }
 
 private:
-    friend class ::SkArenaAlloc; // for access to ctor
-
     LatticeGP(const GrSurfaceProxyView& view, sk_sp<GrColorSpaceXform> csxf,
               GrSamplerState::Filter filter, bool wideColor)
             : INHERITED(kLatticeGP_ClassID)
@@ -175,16 +177,15 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(
-            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-            GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                      GrClampType clampType) override {
         auto opaque = fPatches[0].fColor.isOpaque() && fAlphaType == kOpaque_SkAlphaType
                               ? GrProcessorAnalysisColor::Opaque::kYes
                               : GrProcessorAnalysisColor::Opaque::kNo;
         auto analysisColor = GrProcessorAnalysisColor(opaque);
-        auto result = fHelper.finalizeProcessors(
-                caps, clip, hasMixedSampledCoverage, clampType, GrProcessorAnalysisCoverage::kNone,
-                &analysisColor);
+        auto result = fHelper.finalizeProcessors(caps, clip, clampType,
+                                                 GrProcessorAnalysisCoverage::kNone,
+                                                 &analysisColor);
         analysisColor.isConstant(&fPatches[0].fColor);
         fWideColor = !fPatches[0].fColor.fitsInBytes();
         return result;
@@ -195,10 +196,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
 
         auto gp = LatticeGP::Make(arena, fView, fColorSpaceXform, fFilter, fWideColor);
         if (!gp) {
@@ -211,6 +213,7 @@ private:
                                                                    fHelper.detachProcessorSet(),
                                                                    GrPrimitiveType::kTriangles,
                                                                    renderPassXferBarriers,
+                                                                   colorLoadOp,
                                                                    fHelper.pipelineFlags(),
                                                                    &GrUserStencilSettings::kUnused);
     }
@@ -233,7 +236,7 @@ private:
             return;
         }
 
-        const size_t kVertexStride = fProgramInfo->primProc().vertexStride();
+        const size_t kVertexStride = fProgramInfo->geomProc().vertexStride();
 
         QuadHelper helper(target, kVertexStride, numRects);
 
@@ -257,7 +260,6 @@ private:
 
             SkIRect srcR;
             SkRect dstR;
-            SkPoint* patchPositions = reinterpret_cast<SkPoint*>(vertices.fPtr);
             Sk4f scales(1.f / fView.proxy()->width(), 1.f / fView.proxy()->height(),
                         1.f / fView.proxy()->width(), 1.f / fView.proxy()->height());
             static const Sk4f kDomainOffsets(0.5f, 0.5f, -0.5f, -0.5f);
@@ -278,17 +280,36 @@ private:
                 domain.store(&texDomain);
                 coords.store(&texCoords);
 
-                vertices.writeQuad(GrVertexWriter::TriStripFromRect(dstR),
-                                   GrVertexWriter::TriStripFromRect(texCoords),
+                if (isScaleTranslate) {
+                    vertices.writeQuad(GrVertexWriter::TriStripFromRect(dstR),
+                                       GrVertexWriter::TriStripFromRect(texCoords),
+                                       texDomain,
+                                       patchColor);
+                } else {
+                    SkPoint mappedPts[4];
+                    patch.fViewMatrix.mapRectToQuad(mappedPts, dstR);
+                    // In the above if statement, writeQuad writes the corners as:
+                    // left-top, left-bottom, right-top, right-bottom.
+                    // However, mapRectToQuad returns them in the order:
+                    // left-top, right-top, right-bottom, left-bottom
+                    // Thus we write out the vertices to match the writeQuad path.
+                    vertices.write(mappedPts[0],
+                                   SkPoint::Make(texCoords.fLeft, texCoords.fTop),
                                    texDomain,
                                    patchColor);
-            }
-
-            // If we didn't handle it above, apply the matrix here.
-            if (!isScaleTranslate) {
-                SkMatrixPriv::MapPointsWithStride(
-                    patch.fViewMatrix, patchPositions, kVertexStride,
-                    GrResourceProvider::NumVertsPerNonAAQuad() * patch.fIter->numRectsToDraw());
+                    vertices.write(mappedPts[3],
+                                   SkPoint::Make(texCoords.fLeft, texCoords.fBottom),
+                                   texDomain,
+                                   patchColor);
+                    vertices.write(mappedPts[1],
+                                   SkPoint::Make(texCoords.fRight, texCoords.fTop),
+                                   texDomain,
+                                   patchColor);
+                    vertices.write(mappedPts[2],
+                                   SkPoint::Make(texCoords.fRight, texCoords.fBottom),
+                                   texDomain,
+                                   patchColor);
+                }
             }
         }
 
@@ -301,7 +322,8 @@ private:
         }
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-        flushState->bindTextures(fProgramInfo->primProc(), *fView.proxy(),
+        flushState->bindTextures(fProgramInfo->geomProc(),
+                                 *fView.proxy(),
                                  fProgramInfo->pipeline());
         flushState->drawMesh(*fMesh);
     }

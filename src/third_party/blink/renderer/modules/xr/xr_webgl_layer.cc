@@ -6,6 +6,7 @@
 
 #include "base/numerics/ranges.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -40,7 +41,11 @@ const char kCleanFrameWarning[] =
 }  // namespace
 
 XRWebGLLayer* XRWebGLLayer::Create(XRSession* session,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                   const V8XRWebGLRenderingContext* context,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                                    const XRWebGLRenderingContext& context,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                                    const XRWebGLLayerInit* initializer,
                                    ExceptionState& exception_state) {
   if (session->ended()) {
@@ -217,11 +222,11 @@ XRViewport* XRWebGLLayer::getViewport(XRView* view) {
   return GetViewportForEye(view->EyeValue());
 }
 
-XRViewport* XRWebGLLayer::GetViewportForEye(XRView::XREye eye) {
+XRViewport* XRWebGLLayer::GetViewportForEye(device::mojom::blink::XREye eye) {
   if (viewports_dirty_)
     UpdateViewports();
 
-  if (eye == XRView::kEyeRight)
+  if (eye == device::mojom::blink::XREye::kRight)
     return right_viewport_;
 
   // This code path also handles an eye of "none".
@@ -294,14 +299,14 @@ uint32_t XRWebGLLayer::CameraImageTextureId() const {
   return camera_image_texture_id_;
 }
 
-base::Optional<gpu::MailboxHolder> XRWebGLLayer::CameraImageMailboxHolder()
+absl::optional<gpu::MailboxHolder> XRWebGLLayer::CameraImageMailboxHolder()
     const {
   return camera_image_mailbox_holder_;
 }
 
 void XRWebGLLayer::OnFrameStart(
-    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder,
-    const base::Optional<gpu::MailboxHolder>& camera_image_mailbox_holder) {
+    const absl::optional<gpu::MailboxHolder>& buffer_mailbox_holder,
+    const absl::optional<gpu::MailboxHolder>& camera_image_mailbox_holder) {
   if (framebuffer_) {
     framebuffer_->MarkOpaqueBufferComplete(true);
     framebuffer_->SetContentsChanged(false);
@@ -326,7 +331,7 @@ void XRWebGLLayer::OnFrameStart(
 }
 
 uint32_t XRWebGLLayer::GetBufferTextureId(
-    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
+    const absl::optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
   gl->WaitSyncTokenCHROMIUM(buffer_mailbox_holder->sync_token.GetConstData());
   DVLOG(3) << __func__ << ": buffer_mailbox_holder->sync_token="
@@ -337,7 +342,7 @@ uint32_t XRWebGLLayer::GetBufferTextureId(
 }
 
 void XRWebGLLayer::BindBufferTexture(
-    const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
+    const absl::optional<gpu::MailboxHolder>& buffer_mailbox_holder) {
   gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
 
   if (buffer_mailbox_holder) {
@@ -390,7 +395,7 @@ void XRWebGLLayer::OnFrameEnd() {
         gl->EndSharedImageAccessDirectCHROMIUM(camera_image_texture_id_);
         gl->DeleteTextures(1, &camera_image_texture_id_);
         camera_image_texture_id_ = 0;
-        camera_image_mailbox_holder_ = base::nullopt;
+        camera_image_mailbox_holder_ = absl::nullopt;
       }
     }
   }

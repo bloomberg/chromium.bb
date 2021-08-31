@@ -18,6 +18,8 @@ set(ROOT_PROJECT_COMPILE_OPTIONS
 )
 
 set(WSI_SRC_FILES
+    HeadlessSurfaceKHR.cpp
+    HeadlessSurfaceKHR.hpp
     VkSurfaceKHR.cpp
     VkSurfaceKHR.hpp
     VkSwapchainKHR.cpp
@@ -57,6 +59,13 @@ elseif(LINUX)
         list(APPEND WSI_SRC_FILES
             DirectFBSurfaceEXT.cpp
             DirectFBSurfaceEXT.hpp
+        )
+    endif()
+
+    if(D2D)
+        list(APPEND WSI_SRC_FILES
+            DisplaySurfaceKHR.cpp
+            DisplaySurfaceKHR.hpp
         )
     endif()
 elseif(APPLE)

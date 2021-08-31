@@ -5,10 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_INPUT_SOURCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_INPUT_SOURCE_H_
 
-#include "base/optional.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/modules/gamepad/gamepad.h"
-#include "third_party/blink/renderer/modules/xr/xr_native_origin_information.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -23,6 +22,7 @@ namespace blink {
 
 class Element;
 class XRGripSpace;
+class XRHand;
 class XRInputSourceEvent;
 class XRSession;
 class XRSpace;
@@ -49,12 +49,17 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
 
   XRSession* session() const { return session_; }
 
+  device::mojom::XRHandedness xr_handedness() const {
+    return state_.handedness;
+  }
+
   const String handedness() const;
   const String targetRayMode() const;
   bool emulatedPosition() const { return state_.emulated_position; }
   XRSpace* targetRaySpace() const;
   XRSpace* gripSpace() const;
   Gamepad* gamepad() const { return gamepad_; }
+  XRHand* hand() const { return hand_; }
   Vector<String> profiles() const { return state_.profiles; }
 
   uint32_t source_id() const { return state_.source_id; }
@@ -75,12 +80,11 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
     return state_.target_ray_mode;
   }
 
-  base::Optional<TransformationMatrix> MojoFromInput() const;
+  absl::optional<TransformationMatrix> MojoFromInput() const;
 
-  base::Optional<TransformationMatrix> InputFromPointer() const;
+  absl::optional<TransformationMatrix> InputFromPointer() const;
 
-  base::Optional<device::mojom::blink::XRNativeOriginInformation> nativeOrigin()
-      const;
+  device::mojom::blink::XRNativeOriginInformationPtr nativeOrigin() const;
 
   void OnSelectStart();
   void OnSelectEnd();
@@ -149,7 +153,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
 
   // Note that UpdateGamepad should only be called after a check/recreation
   // from InvalidatesSameObject
-  void UpdateGamepad(const base::Optional<device::Gamepad>& gamepad);
+  void UpdateGamepad(const absl::optional<device::Gamepad>& gamepad);
 
   XRInputSourceEvent* CreateInputSourceEvent(const AtomicString& type);
 
@@ -161,6 +165,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   Member<XRTargetRaySpace> target_ray_space_;
   Member<XRGripSpace> grip_space_;
   Member<Gamepad> gamepad_;
+  Member<XRHand> hand_;
 
   // Input device pose in mojo space. This is the grip pose for
   // tracked controllers, and the viewer pose for screen input.

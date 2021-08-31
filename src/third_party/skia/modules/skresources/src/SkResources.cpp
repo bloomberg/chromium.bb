@@ -8,6 +8,7 @@
 #include "modules/skresources/include/SkResources.h"
 
 #include "include/codec/SkCodec.h"
+#include "include/core/SkBitmap.h"
 #include "include/core/SkData.h"
 #include "include/core/SkImage.h"
 #include "include/private/SkTPin.h"
@@ -88,6 +89,19 @@ private:
 
 } // namespace
 
+sk_sp<SkImage> ImageAsset::getFrame(float t) {
+    return nullptr;
+}
+
+ImageAsset::FrameData ImageAsset::getFrameData(float t) {
+    // legacy behavior
+    return {
+        this->getFrame(t),
+        SkSamplingOptions(SkFilterMode::kLinear, SkMipmapMode::kNearest),
+        SkMatrix::I(),
+    };
+}
+
 sk_sp<MultiFrameImageAsset> MultiFrameImageAsset::Make(sk_sp<SkData> data, bool predecode) {
     if (auto codec = SkCodec::MakeFromData(std::move(data))) {
         return sk_sp<MultiFrameImageAsset>(
@@ -124,9 +138,10 @@ sk_sp<SkImage> MultiFrameImageAsset::generateFrame(float t) {
             SkBitmap bm;
             if (bm.tryAllocPixels(info, info.minRowBytes()) &&
                     image->scalePixels(bm.pixmap(),
-                                       SkFilterQuality::kMedium_SkFilterQuality,
+                                       SkSamplingOptions(SkFilterMode::kLinear,
+                                                         SkMipmapMode::kNearest),
                                        SkImage::kDisallow_CachingHint)) {
-                image = SkImage::MakeFromBitmap(bm);
+                image = bm.asImage();
             }
         } else {
             // When the image size is OK, just force-decode.
@@ -220,6 +235,13 @@ sk_sp<SkData> ResourceProviderProxyBase::loadFont(const char name[], const char 
                   : nullptr;
 }
 
+sk_sp<ExternalTrackAsset> ResourceProviderProxyBase::loadAudioAsset(const char path[],
+                                                                    const char name[],
+                                                                    const char id[]) {
+    return fProxy ? fProxy->loadAudioAsset(path, name, id)
+                  : nullptr;
+}
+
 CachingResourceProvider::CachingResourceProvider(sk_sp<ResourceProvider> rp)
     : INHERITED(std::move(rp)) {}
 
@@ -250,28 +272,35 @@ DataURIResourceProviderProxy::DataURIResourceProviderProxy(sk_sp<ResourceProvide
     : INHERITED(std::move(rp))
     , fPredecode(predecode) {}
 
-static sk_sp<SkData> decode_datauri(const char prefix[], const char data[]) {
+static sk_sp<SkData> decode_datauri(const char prefix[], const char uri[]) {
     // We only handle B64 encoded image dataURIs: data:image/<type>;base64,<data>
     // (https://en.wikipedia.org/wiki/Data_URI_scheme)
     static constexpr char kDataURIEncodingStr[] = ";base64,";
 
-    const auto prefix_len = strlen(prefix);
-    if (!strncmp(data, prefix, prefix_len)) {
-        if (const auto* encoding_start = strstr(data + prefix_len, kDataURIEncodingStr)) {
-            const char* data_start = encoding_start + SK_ARRAY_COUNT(kDataURIEncodingStr) - 1;
-
-            // TODO: SkBase64::decode ergonomics are... interesting.
-            SkBase64 b64;
-            if (SkBase64::kNoError == b64.decode(data_start, strlen(data_start))) {
-                return SkData::MakeWithProc(b64.getData(), b64.getDataSize(),
-                                            [](const void* ptr, void*) {
-                                                delete[] static_cast<const char*>(ptr);
-                                            }, /*ctx=*/nullptr);
-            }
-        }
+    const size_t prefixLen = strlen(prefix);
+    if (strncmp(uri, prefix, prefixLen) != 0) {
+        return nullptr;
     }
 
-    return nullptr;
+    const char* encoding = strstr(uri + prefixLen, kDataURIEncodingStr);
+    if (!encoding) {
+        return nullptr;
+    }
+
+    const char* b64Data = encoding + SK_ARRAY_COUNT(kDataURIEncodingStr) - 1;
+    size_t b64DataLen = strlen(b64Data);
+    size_t dataLen;
+    if (SkBase64::Decode(b64Data, b64DataLen, nullptr, &dataLen) != SkBase64::kNoError) {
+        return nullptr;
+    }
+
+    sk_sp<SkData> data = SkData::MakeUninitialized(dataLen);
+    void* rawData = data->writable_data();
+    if (SkBase64::Decode(b64Data, b64DataLen, rawData, &dataLen) != SkBase64::kNoError) {
+        return nullptr;
+    }
+
+    return data;
 }
 
 sk_sp<ImageAsset> DataURIResourceProviderProxy::loadImageAsset(const char rpath[],

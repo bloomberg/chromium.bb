@@ -25,39 +25,33 @@ namespace dawn_native { namespace d3d12 {
     namespace {
 
         ResultOrError<ComPtr<IDXGIFactory4>> CreateFactory(const PlatformFunctions* functions,
-                                                           bool enableBackendValidation,
-                                                           bool beginCaptureOnStartup,
-                                                           bool enableGPUBasedBackendValidation) {
+                                                           BackendValidationLevel validationLevel,
+                                                           bool beginCaptureOnStartup) {
             ComPtr<IDXGIFactory4> factory;
 
             uint32_t dxgiFactoryFlags = 0;
 
             // Enable the debug layer (requires the Graphics Tools "optional feature").
             {
-                if (enableBackendValidation) {
-                    ComPtr<ID3D12Debug1> debugController;
+                if (validationLevel != BackendValidationLevel::Disabled) {
+                    ComPtr<ID3D12Debug3> debugController;
                     if (SUCCEEDED(
                             functions->d3d12GetDebugInterface(IID_PPV_ARGS(&debugController)))) {
                         ASSERT(debugController != nullptr);
                         debugController->EnableDebugLayer();
-                        debugController->SetEnableGPUBasedValidation(
-                            enableGPUBasedBackendValidation);
+                        if (validationLevel == BackendValidationLevel::Full) {
+                            debugController->SetEnableGPUBasedValidation(true);
+                        }
 
                         // Enable additional debug layers.
                         dxgiFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
-                    }
-
-                    ComPtr<IDXGIDebug1> dxgiDebug;
-                    if (SUCCEEDED(functions->dxgiGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebug)))) {
-                        ASSERT(dxgiDebug != nullptr);
-                        dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL,
-                                                     DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_ALL));
                     }
                 }
 
                 if (beginCaptureOnStartup) {
                     ComPtr<IDXGraphicsAnalysis> graphicsAnalysis;
-                    if (SUCCEEDED(functions->dxgiGetDebugInterface1(
+                    if (functions->dxgiGetDebugInterface1 != nullptr &&
+                        SUCCEEDED(functions->dxgiGetDebugInterface1(
                             0, IID_PPV_ARGS(&graphicsAnalysis)))) {
                         graphicsAnalysis->BeginCapture();
                     }
@@ -97,9 +91,8 @@ namespace dawn_native { namespace d3d12 {
         const auto instance = GetInstance();
 
         DAWN_TRY_ASSIGN(mFactory,
-                        CreateFactory(mFunctions.get(), instance->IsBackendValidationEnabled(),
-                                      instance->IsBeginCaptureOnStartupEnabled(),
-                                      instance->IsGPUBasedBackendValidationEnabled()));
+                        CreateFactory(mFunctions.get(), instance->GetBackendValidationLevel(),
+                                      instance->IsBeginCaptureOnStartupEnabled()));
 
         return {};
     }
@@ -108,24 +101,49 @@ namespace dawn_native { namespace d3d12 {
         return mFactory;
     }
 
-    ResultOrError<IDxcLibrary*> Backend::GetOrCreateDxcLibrary() {
+    MaybeError Backend::EnsureDxcLibrary() {
         if (mDxcLibrary == nullptr) {
             DAWN_TRY(CheckHRESULT(
                 mFunctions->dxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&mDxcLibrary)),
                 "DXC create library"));
             ASSERT(mDxcLibrary != nullptr);
         }
-        return mDxcLibrary.Get();
+        return {};
     }
 
-    ResultOrError<IDxcCompiler*> Backend::GetOrCreateDxcCompiler() {
+    MaybeError Backend::EnsureDxcCompiler() {
         if (mDxcCompiler == nullptr) {
             DAWN_TRY(CheckHRESULT(
                 mFunctions->dxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&mDxcCompiler)),
                 "DXC create compiler"));
             ASSERT(mDxcCompiler != nullptr);
         }
-        return mDxcCompiler.Get();
+        return {};
+    }
+
+    MaybeError Backend::EnsureDxcValidator() {
+        if (mDxcValidator == nullptr) {
+            DAWN_TRY(CheckHRESULT(
+                mFunctions->dxcCreateInstance(CLSID_DxcValidator, IID_PPV_ARGS(&mDxcValidator)),
+                "DXC create validator"));
+            ASSERT(mDxcValidator != nullptr);
+        }
+        return {};
+    }
+
+    ComPtr<IDxcLibrary> Backend::GetDxcLibrary() const {
+        ASSERT(mDxcLibrary != nullptr);
+        return mDxcLibrary;
+    }
+
+    ComPtr<IDxcCompiler> Backend::GetDxcCompiler() const {
+        ASSERT(mDxcCompiler != nullptr);
+        return mDxcCompiler;
+    }
+
+    ComPtr<IDxcValidator> Backend::GetDxcValidator() const {
+        ASSERT(mDxcValidator != nullptr);
+        return mDxcValidator;
     }
 
     const PlatformFunctions* Backend::GetFunctions() const {

@@ -7,16 +7,20 @@
 
 #import <Foundation/Foundation.h>
 
-class ChromeBrowserState;
+class AuthenticationService;
 @class DiscoverFeedMetricsRecorder;
+class PrefService;
 
 // Configuration object used by the DiscoverFeedProvider.
 @interface DiscoverFeedConfiguration : NSObject
 
-// BrowserState used by DiscoverFeedProvider;
-@property(nonatomic, assign) ChromeBrowserState* browserState;
+// AuthenticationService used by DiscoverFeedProvider.
+@property(nonatomic, assign) AuthenticationService* authService;
 
-// DiscoverFeed metrics recorder used by DiscoverFeedProvider;
+// PrefService used by DiscoverFeedProvider.
+@property(nonatomic, assign) PrefService* prefService;
+
+// DiscoverFeed metrics recorder used by DiscoverFeedProvider.
 @property(nonatomic, strong) DiscoverFeedMetricsRecorder* metricsRecorder;
 
 @end

@@ -69,7 +69,9 @@ bool ShouldReportForAnimation(FrameSequenceTrackerType sequence_type,
   if (sequence_type == FrameSequenceTrackerType::kCompositorAnimation)
     return thread_type == FrameSequenceMetrics::ThreadType::kCompositor;
 
-  if (sequence_type == FrameSequenceTrackerType::kMainThreadAnimation ||
+  if (sequence_type == FrameSequenceTrackerType::kCanvasAnimation ||
+      sequence_type == FrameSequenceTrackerType::kJSAnimation ||
+      sequence_type == FrameSequenceTrackerType::kMainThreadAnimation ||
       sequence_type == FrameSequenceTrackerType::kRAF)
     return thread_type == FrameSequenceMetrics::ThreadType::kMain;
 
@@ -119,7 +121,7 @@ FrameSequenceMetrics::FrameSequenceMetrics(FrameSequenceTrackerType type,
 FrameSequenceMetrics::~FrameSequenceMetrics() = default;
 
 void FrameSequenceMetrics::ReportLeftoverData() {
-  if (HasDataLeftForReporting())
+  if (HasDataLeftForReporting() || type_ == FrameSequenceTrackerType::kCustom)
     ReportMetrics();
 }
 
@@ -228,6 +230,7 @@ void FrameSequenceMetrics::ReportMetrics() {
 
     main_throughput_ = {};
     impl_throughput_ = {};
+    jank_reporter_->Reset();
     frames_checkerboarded_ = 0;
     return;
   }
@@ -237,10 +240,10 @@ void FrameSequenceMetrics::ReportMetrics() {
   const bool compositor_report = ThroughputData::CanReportHistogram(
       this, ThreadType::kCompositor, impl_throughput_);
 
-  base::Optional<int> impl_throughput_percent_dropped;
-  base::Optional<int> impl_throughput_percent_missed;
-  base::Optional<int> main_throughput_percent_dropped;
-  base::Optional<int> main_throughput_percent_missed;
+  absl::optional<int> impl_throughput_percent_dropped;
+  absl::optional<int> impl_throughput_percent_missed;
+  absl::optional<int> main_throughput_percent_dropped;
+  absl::optional<int> main_throughput_percent_missed;
 
   // Report the throughput metrics.
   if (compositor_report) {
@@ -273,8 +276,8 @@ void FrameSequenceMetrics::ReportMetrics() {
 
   // Report for the 'scrolling thread' for the scrolling interactions.
   if (scrolling_thread_ != ThreadType::kUnknown) {
-    base::Optional<int> scrolling_thread_throughput_dropped;
-    base::Optional<int> scrolling_thread_throughput_missed;
+    absl::optional<int> scrolling_thread_throughput_dropped;
+    absl::optional<int> scrolling_thread_throughput_missed;
     switch (scrolling_thread_) {
       case ThreadType::kCompositor:
         scrolling_thread_throughput_dropped = impl_throughput_percent_dropped;

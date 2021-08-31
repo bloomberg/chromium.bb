@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "ui/events/devices/stylus_state.h"
 
 namespace ui {
 
@@ -50,6 +51,9 @@ class StubInputController : public InputController {
   void SuspendMouseAcceleration() override {}
   void EndMouseAccelerationSuspension() override {}
   void SetMouseScrollAcceleration(bool enabled) override {}
+  void SetPointingStickSensitivity(int value) override {}
+  void SetPointingStickPrimaryButtonRight(bool right) override {}
+  void SetPointingStickAcceleration(bool enabled) override {}
   void SetTouchpadAcceleration(bool enabled) override {}
   void SetTouchpadScrollAcceleration(bool enabled) override {}
   void SetTapToClickPaused(bool state) override {}
@@ -63,6 +67,9 @@ class StubInputController : public InputController {
   void SetInternalTouchpadEnabled(bool enabled) override {}
   bool IsInternalTouchpadEnabled() const override { return false; }
   void SetTouchscreensEnabled(bool enabled) override {}
+  void GetStylusSwitchState(GetStylusSwitchStateReply reply) override {
+    std::move(reply).Run(ui::StylusState::REMOVED);
+  }
   void SetInternalKeyboardFilter(bool enable_filter,
                                  std::vector<DomCode> allowed_keys) override {}
   void GetGesturePropertiesService(

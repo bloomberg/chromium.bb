@@ -10,22 +10,27 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/window_test_api.h"
 #include "ui/aura/window.h"
+#include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/base_event_utils.h"
@@ -36,12 +41,16 @@
 #endif
 
 namespace content {
-
 namespace {
+
+using ::ui::mojom::DragOperation;
+
 constexpr gfx::Rect kBounds = gfx::Rect(0, 0, 20, 20);
 constexpr gfx::PointF kClientPt = {5, 10};
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_WIN)
 constexpr gfx::PointF kScreenPt = {17, 3};
 #endif
 
@@ -62,6 +71,32 @@ class RunCallbackOnActivation : public WebContentsDelegate {
   base::OnceClosure closure_;
 
   DISALLOW_COPY_AND_ASSIGN(RunCallbackOnActivation);
+};
+
+class TestDragDropClient : public aura::client::DragDropClient {
+ public:
+  // aura::client::DragDropClient:
+  DragOperation StartDragAndDrop(std::unique_ptr<ui::OSExchangeData> data,
+                                 aura::Window* root_window,
+                                 aura::Window* source_window,
+                                 const gfx::Point& screen_location,
+                                 int allowed_operations,
+                                 ui::mojom::DragEventSource source) override {
+    drag_in_progress_ = true;
+    drag_drop_data_ = std::move(data);
+    return DragOperation::kCopy;
+  }
+  void DragCancel() override { drag_in_progress_ = false; }
+  bool IsDragDropInProgress() override { return drag_in_progress_; }
+  void AddObserver(aura::client::DragDropClientObserver* observer) override {}
+  void RemoveObserver(aura::client::DragDropClientObserver* observer) override {
+  }
+
+  ui::OSExchangeData* GetDragDropData() { return drag_drop_data_.get(); }
+
+ private:
+  bool drag_in_progress_ = false;
+  std::unique_ptr<ui::OSExchangeData> drag_drop_data_;
 };
 
 }  // namespace
@@ -190,9 +225,6 @@ TEST_F(WebContentsViewAuraTest, WebContentsDestroyedDuringClick) {
 }
 
 TEST_F(WebContentsViewAuraTest, OccludeView) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kWebContentsOcclusion);
-
   EXPECT_EQ(web_contents()->GetVisibility(), Visibility::VISIBLE);
   occluding_window_->Show();
   EXPECT_EQ(web_contents()->GetVisibility(), Visibility::OCCLUDED);
@@ -200,12 +232,14 @@ TEST_F(WebContentsViewAuraTest, OccludeView) {
   EXPECT_EQ(web_contents()->GetVisibility(), Visibility::VISIBLE);
 }
 
-#if defined(OS_LINUX) || defined(OS_WIN)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || defined(OS_WIN)
 TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   WebContentsViewAura* view = GetView();
   auto data = std::make_unique<ui::OSExchangeData>();
 
-  const base::string16 string_data = base::ASCIIToUTF16("Some string data");
+  const std::u16string string_data = u"Some string data";
   data->SetString(string_data);
 
 #if defined(OS_WIN)
@@ -236,7 +270,9 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
   view->OnDragEntered(event);
   ASSERT_NE(nullptr, view->current_drop_data_);
 
-#if defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // By design, Linux implementations return an empty string if file data
   // is also present.
   EXPECT_TRUE(!view->current_drop_data_->text ||
@@ -267,7 +303,9 @@ TEST_F(WebContentsViewAuraTest, DragDropFiles) {
 
   CheckDropData(view);
 
-#if defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // By design, Linux implementations returns an empty string if file data
   // is also present.
   EXPECT_TRUE(!drop_complete_data_->drop_data.text ||
@@ -289,7 +327,7 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
   WebContentsViewAura* view = GetView();
   auto data = std::make_unique<ui::OSExchangeData>();
 
-  const base::string16 string_data = base::ASCIIToUTF16("Some string data");
+  const std::u16string string_data = u"Some string data";
   data->SetString(string_data);
 
 #if defined(OS_WIN)
@@ -324,7 +362,9 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
   view->OnDragEntered(event);
   ASSERT_NE(nullptr, view->current_drop_data_);
 
-#if defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // By design, Linux implementations return an empty string if file data
   // is also present.
   EXPECT_TRUE(!view->current_drop_data_->text ||
@@ -348,7 +388,9 @@ TEST_F(WebContentsViewAuraTest, DragDropFilesOriginateFromRenderer) {
 
   CheckDropData(view);
 
-#if defined(OS_LINUX)
+// TODO(crbug.com/1052397): Revisit once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // By design, Linux implementations returns an empty string if file data is
   // also present.
   EXPECT_TRUE(!drop_complete_data_->drop_data.text ||
@@ -367,7 +409,7 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFiles) {
   WebContentsViewAura* view = GetView();
   auto data = std::make_unique<ui::OSExchangeData>();
 
-  const base::string16 string_data = base::ASCIIToUTF16("Some string data");
+  const std::u16string string_data = u"Some string data";
   data->SetString(string_data);
 
   const std::vector<std::pair<base::FilePath, std::string>>
@@ -446,7 +488,7 @@ TEST_F(WebContentsViewAuraTest, DragDropVirtualFilesOriginateFromRenderer) {
   WebContentsViewAura* view = GetView();
   auto data = std::make_unique<ui::OSExchangeData>();
 
-  const base::string16 string_data = base::ASCIIToUTF16("Some string data");
+  const std::u16string string_data = u"Some string data";
   data->SetString(string_data);
 
   const std::vector<std::pair<base::FilePath, std::string>>
@@ -503,14 +545,14 @@ TEST_F(WebContentsViewAuraTest, DragDropUrlData) {
 
   const std::string url_spec = "https://www.wikipedia.org/";
   const GURL url(url_spec);
-  const base::string16 url_title = base::ASCIIToUTF16("Wikipedia");
+  const std::u16string url_title = u"Wikipedia";
   data->SetURL(url, url_title);
 
   // SetUrl should also add a virtual .url (internet shortcut) file.
   std::vector<ui::FileInfo> file_infos;
   EXPECT_TRUE(data->GetVirtualFilenames(&file_infos));
   ASSERT_EQ(1ULL, file_infos.size());
-  EXPECT_EQ(base::FilePath(url_title + base::ASCIIToUTF16(".url")),
+  EXPECT_EQ(base::FilePath(base::UTF16ToWide(url_title) + L".url"),
             file_infos[0].display_name);
 
   ui::DropTargetEvent event(*data.get(), kClientPt, kScreenPt,
@@ -548,5 +590,38 @@ TEST_F(WebContentsViewAuraTest, DragDropUrlData) {
   ASSERT_TRUE(drop_complete_data_->drop_data.filenames.empty());
 }
 #endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+
+TEST_F(WebContentsViewAuraTest, StartDragging) {
+  const char kGmailUrl[] = "http://mail.google.com/";
+  NavigateAndCommit(GURL(kGmailUrl));
+  FocusWebContentsOnMainFrame();
+
+  TestDragDropClient drag_drop_client;
+  aura::client::SetDragDropClient(root_window(), &drag_drop_client);
+
+  WebContentsViewAura* view = GetView();
+  // This condition is needed to avoid calling WebContentsViewAura::EndDrag
+  // which will result NOTREACHED being called in
+  // `RenderWidgetHostViewBase::TransformPointToCoordSpaceForView`.
+  view->drag_in_progress_ = true;
+
+  DropData drop_data;
+  drop_data.text.emplace(u"Hello World!");
+  view->StartDragging(drop_data, blink::DragOperationsMask::kDragOperationNone,
+                      gfx::ImageSkia(), gfx::Vector2d(),
+                      blink::mojom::DragEventSourceInfo(),
+                      RenderWidgetHostImpl::From(rvh()->GetWidget()));
+
+  ui::OSExchangeData* exchange_data = drag_drop_client.GetDragDropData();
+  EXPECT_TRUE(exchange_data);
+  EXPECT_TRUE(exchange_data->GetSource());
+  EXPECT_TRUE(exchange_data->GetSource()->IsUrlType());
+  EXPECT_TRUE(exchange_data->GetSource()->origin()->IsSameOriginWith(
+      url::Origin::Create(GURL(kGmailUrl))));
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace content

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/media_router/cast_toolbar_button.h"
 
+#include "base/bind.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -15,6 +16,7 @@
 #include "components/media_router/browser/media_router_metrics.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/theme_provider.h"
@@ -91,11 +93,11 @@ void CastToolbarButton::HideIcon() {
 }
 
 void CastToolbarButton::ActivateIcon() {
-  AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
+  ink_drop()->AnimateToState(views::InkDropState::ACTIVATED, nullptr);
 }
 
 void CastToolbarButton::DeactivateIcon() {
-  AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
+  ink_drop()->AnimateToState(views::InkDropState::DEACTIVATED, nullptr);
 }
 
 void CastToolbarButton::OnIssue(const media_router::Issue& issue) {
@@ -232,5 +234,8 @@ void CastToolbarButton::LogIconChange(const gfx::VectorIcon* icon) {
     NOTREACHED();
   }
 }
+
+BEGIN_METADATA(CastToolbarButton, ToolbarButton)
+END_METADATA
 
 }  // namespace media_router

@@ -1,0 +1,27 @@
+{
+  "dependencies": [
+    "ui/legacy/components/source_frame",
+    "ui/legacy/components/cookie_table",
+    "ui/legacy/components/inline_editor",
+    "ui/legacy/components/data_grid",
+    "ui/legacy/components/utils",
+    "ui/legacy/components/object_ui",
+    "ui/legacy/components/perf_ui",
+    "panels/mobile_throttling",
+    "panels/network",
+    "panels/sources"
+  ],
+    "resources": [
+    "appManifestView.css",
+    "backgroundServiceView.css",
+    "storageView.css",
+    "indexedDBViews.css",
+    "resourcesPanel.css",
+    "resourcesSidebar.css",
+    "serviceWorkerCacheViews.css",
+    "serviceWorkersView.css",
+    "serviceWorkerUpdateCycleView.css",
+    "cookieItemsView.css",
+    "frameDetailsReportView.css"
+  ]
+}

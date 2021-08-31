@@ -4,6 +4,7 @@
 
 #include "content/web_test/browser/fake_bluetooth_delegate.h"
 
+#include "base/containers/contains.h"
 #include "content/public/browser/web_contents.h"
 #include "content/web_test/browser/web_test_control_host.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -124,6 +125,12 @@ bool FakeBluetoothDelegate::IsAllowedToAccessManufacturerData(
 
   return base::Contains(id_to_manufacturer_data_it->second, manufacturer_code);
 }
+
+void FakeBluetoothDelegate::AddFramePermissionObserver(
+    FramePermissionObserver* observer) {}
+
+void FakeBluetoothDelegate::RemoveFramePermissionObserver(
+    FramePermissionObserver* observer) {}
 
 std::vector<blink::mojom::WebBluetoothDevicePtr>
 FakeBluetoothDelegate::GetPermittedDevices(RenderFrameHost* frame) {

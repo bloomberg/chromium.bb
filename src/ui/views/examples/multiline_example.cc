@@ -8,12 +8,13 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 
-#include "base/macros.h"
-#include "base/strings/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
+#include "ui/gfx/range/range.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -61,6 +62,8 @@ class MultilineExample::RenderTextView : public View {
   RenderTextView() : render_text_(gfx::RenderText::CreateRenderText()) {
     render_text_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
     render_text_->SetColor(SK_ColorBLACK);
+    render_text_->set_selection_color(SK_ColorBLACK);
+    render_text_->set_selection_background_focused_color(SK_ColorGRAY);
     render_text_->SetMultiline(true);
     SetBorder(CreateSolidBorder(2, SK_ColorGRAY));
   }
@@ -94,7 +97,7 @@ class MultilineExample::RenderTextView : public View {
     return height;
   }
 
-  void SetText(const base::string16& new_contents) {
+  void SetText(const std::u16string& new_contents) {
     // Color and style the text inside |test_range| to test colors and styles.
     const size_t range_max = new_contents.length();
     gfx::Range color_range = ClampRange(gfx::Range(1, 21), range_max);
@@ -132,10 +135,10 @@ MultilineExample::MultilineExample()
 MultilineExample::~MultilineExample() = default;
 
 void MultilineExample::CreateExampleView(View* container) {
-  const base::string16 kTestString = base::WideToUTF16(
-      L"qwerty"
-      L"\x627\x644\x631\x626\x64A\x633\x64A\x629"
-      L"asdfgh");
+  const std::u16string kTestString =
+      u"qwerty"
+      u"\x627\x644\x631\x626\x64A\x633\x64A\x629"
+      u"asdfgh";
 
   auto render_text_view = std::make_unique<RenderTextView>();
   render_text_view->SetText(kTestString);
@@ -151,7 +154,7 @@ void MultilineExample::CreateExampleView(View* container) {
           [](MultilineExample* example) {
             example->label_->SetText(example->label_checkbox_->GetChecked()
                                          ? example->textfield_->GetText()
-                                         : base::string16());
+                                         : std::u16string());
           },
           base::Unretained(this)));
   label_checkbox->SetChecked(true);
@@ -200,7 +203,7 @@ void MultilineExample::CreateExampleView(View* container) {
 }
 
 void MultilineExample::ContentsChanged(Textfield* sender,
-                                       const base::string16& new_contents) {
+                                       const std::u16string& new_contents) {
   render_text_view_->SetText(new_contents);
   if (label_checkbox_->GetChecked())
     label_->SetText(new_contents);

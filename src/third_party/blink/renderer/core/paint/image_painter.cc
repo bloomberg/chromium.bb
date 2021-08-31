@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/core/paint/image_painter.h"
 
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
-#include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/policy_value.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
@@ -41,7 +41,7 @@ namespace {
 bool CheckForOversizedImagesPolicy(const LayoutImage& layout_image,
                                    scoped_refptr<Image> image) {
   DCHECK(image);
-  if (!RuntimeEnabledFeatures::UnoptimizedImagePoliciesEnabled(
+  if (!RuntimeEnabledFeatures::ExperimentalPoliciesEnabled(
           layout_image.GetDocument().GetExecutionContext()))
     return false;
 
@@ -86,7 +86,7 @@ void ImagePainter::Paint(const PaintInfo& paint_info) {
 void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
   Document& document = layout_image_.GetDocument();
 
-  if (paint_info.IsPrinting() ||
+  if (document.Printing() ||
       !document.GetFrame()->Selection().FrameIsFocusedAndActive())
     return;
 
@@ -157,7 +157,7 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
 
   // Disable cache in under-invalidation checking mode for animated image
   // because it may change before it's actually invalidated.
-  base::Optional<DisplayItemCacheSkipper> cache_skipper;
+  absl::optional<DisplayItemCacheSkipper> cache_skipper;
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       layout_image_.ImageResource() &&
       layout_image_.ImageResource()->MaybeAnimated())
@@ -205,10 +205,13 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
   if (!image || image->IsNull())
     return;
 
-  // Do not respect the image orientation when computing the source rect. It is
-  // in the un-orientated dimensions.
-  FloatRect src_rect(FloatPoint(),
-                     image->SizeAsFloat(kDoNotRespectImageOrientation));
+  // Get the oriented source rect in order to correctly clip. We check the
+  // default orientation first to avoid expensive transform operations.
+  auto respect_orientation = image->HasDefaultOrientation()
+                                 ? kDoNotRespectImageOrientation
+                                 : image_resource.ImageOrientation();
+  FloatRect src_rect(FloatPoint(), image->SizeAsFloat(respect_orientation));
+
   // If the content rect requires clipping, adjust |srcRect| and
   // |pixelSnappedDestRect| over using a clip.
   if (!content_rect.Contains(dest_rect)) {
@@ -221,10 +224,17 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
     pixel_snapped_dest_rect = pixel_snapped_content_rect;
   }
 
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
-               "data",
-               inspector_paint_image_event::Data(layout_image_, src_rect,
-                                                 FloatRect(dest_rect)));
+  // Undo the image orientation in the source rect because subsequent code
+  // expects the source rect in unoriented image space.
+  if (respect_orientation == kRespectImageOrientation) {
+    src_rect = image->CorrectSrcRectForImageOrientation(
+        image->SizeAsFloat(respect_orientation), src_rect);
+  }
+
+  DEVTOOLS_TIMELINE_TRACE_EVENT_WITH_CATEGORIES(
+      TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
+      inspector_paint_image_event::Data, layout_image_, src_rect,
+      FloatRect(dest_rect));
 
   ScopedInterpolationQuality interpolation_quality_scope(
       context, layout_image_.StyleRef().GetInterpolationQuality());
@@ -251,26 +261,26 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
     }
   }
 
-  context.DrawImage(
-      image.get(), decode_mode, FloatRect(pixel_snapped_dest_rect), &src_rect,
-      layout_image_.StyleRef().HasFilterInducingProperty(),
-      SkBlendMode::kSrcOver,
-      LayoutObject::ShouldRespectImageOrientation(&layout_image_));
+  context.DrawImage(image.get(), decode_mode,
+                    FloatRect(pixel_snapped_dest_rect), &src_rect,
+                    layout_image_.StyleRef().HasFilterInducingProperty(),
+                    SkBlendMode::kSrcOver, respect_orientation);
 
-  ImageResourceContent* image_content = image_resource.CachedImage();
-  if ((IsA<HTMLImageElement>(node) || IsA<HTMLVideoElement>(node)) &&
-      image_content && image_content->IsLoaded()) {
-    LocalDOMWindow* window = layout_image_.GetDocument().domWindow();
-    DCHECK(window);
-    ImageElementTiming::From(*window).NotifyImagePainted(
-        &layout_image_, image_content,
+  if (ImageResourceContent* image_content = image_resource.CachedImage()) {
+    if ((IsA<HTMLImageElement>(node) || IsA<HTMLVideoElement>(node)) &&
+        image_content->IsLoaded()) {
+      LocalDOMWindow* window = layout_image_.GetDocument().domWindow();
+      DCHECK(window);
+      ImageElementTiming::From(*window).NotifyImagePainted(
+          layout_image_, *image_content,
+          context.GetPaintController().CurrentPaintChunkProperties(),
+          pixel_snapped_dest_rect);
+    }
+    PaintTimingDetector::NotifyImagePaint(
+        layout_image_, image->Size(), *image_content,
         context.GetPaintController().CurrentPaintChunkProperties(),
         pixel_snapped_dest_rect);
   }
-  PaintTimingDetector::NotifyImagePaint(
-      layout_image_, image->Size(), image_content,
-      context.GetPaintController().CurrentPaintChunkProperties(),
-      pixel_snapped_dest_rect);
 }
 
 }  // namespace blink

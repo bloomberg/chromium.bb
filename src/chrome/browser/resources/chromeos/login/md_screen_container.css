@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-#outer-container {
+ html:not([new-layout]) #outer-container {
   align-items: center;
   box-sizing: border-box;
   height: 100%;
@@ -14,6 +14,11 @@
   padding-inline-start: var(--oobe-dialog-side-margin);
   position: absolute;
   width: 100%;
+  z-index: 1;
+}
+
+html[new-layout] #outer-container {
+  height: 100%;
   z-index: 1;
 }
 
@@ -47,6 +52,11 @@
   position: relative;
 }
 
+html[new-layout] #inner-container {
+  display: grid;
+  place-items: center;
+}
+
 #inner-container.animation {
   overflow: hidden;
 }
@@ -70,7 +80,7 @@
   transform: translateY(50px) rotateX(-2.5deg);
 }
 
-#oobe {
+html:not([new-layout]) #oobe {
   flex: 1 0 auto; /* grow shrink basis */
   height: var(--oobe-dialog-min-height);
   max-height: 768px;
@@ -78,19 +88,16 @@
   width: 100%;
 }
 
-#oobe.account-picker {
-  max-height: unset;
-  max-width: unset;
-  padding-bottom: unset;
-  padding-inline-end: unset;
-  padding-inline-start: unset;
-  padding-top: unset;
+html[new-layout] #oobe {
+  display: grid;
+  flex: 1 0 auto; /* grow shrink basis */
+  min-height: var(--oobe-dialog-min-height);
+  place-items: center;
+  width: 100%;
 }
 
-#outer-container.fullscreen,
-#outer-container.fullscreen #oobe,
-#inner-container,
-#inner-container > .step {
+html:not([new-layout]) #inner-container,
+html:not([new-layout]) #inner-container > .step {
   height: 100%;
   width: 100%;
 }

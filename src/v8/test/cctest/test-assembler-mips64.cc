@@ -25,9 +25,7 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <iostream>  // NOLINT(readability/streams)
-
-#include "src/init/v8.h"
+#include <iostream>
 
 #include "src/base/utils/random-number-generator.h"
 #include "src/codegen/assembler-inl.h"
@@ -35,7 +33,7 @@
 #include "src/diagnostics/disassembler.h"
 #include "src/execution/simulator.h"
 #include "src/heap/factory.h"
-
+#include "src/init/v8.h"
 #include "test/cctest/cctest.h"
 
 namespace v8 {
@@ -7665,82 +7663,82 @@ TEST(MSA_maxi_mini) {
     run_msa_i5(
         &tc[i], true,
         [](MacroAssembler& assm, int32_t i5) { __ maxi_s_b(w2, w0, i5); },
-        MAXI_MINI_S_DF(kMSALanesByte, UINT8_MAX, Max));
+        MAXI_MINI_S_DF(kMSALanesByte, UINT8_MAX, std::max));
 
     run_msa_i5(
         &tc[i], true,
         [](MacroAssembler& assm, int32_t i5) { __ maxi_s_h(w2, w0, i5); },
-        MAXI_MINI_S_DF(kMSALanesHalf, UINT16_MAX, Max));
+        MAXI_MINI_S_DF(kMSALanesHalf, UINT16_MAX, std::max));
 
     run_msa_i5(
         &tc[i], true,
         [](MacroAssembler& assm, int32_t i5) { __ maxi_s_w(w2, w0, i5); },
-        MAXI_MINI_S_DF(kMSALanesWord, UINT32_MAX, Max));
+        MAXI_MINI_S_DF(kMSALanesWord, UINT32_MAX, std::max));
 
     run_msa_i5(
         &tc[i], true,
         [](MacroAssembler& assm, int32_t i5) { __ maxi_s_d(w2, w0, i5); },
-        MAXI_MINI_S_DF(kMSALanesDword, UINT64_MAX, Max));
+        MAXI_MINI_S_DF(kMSALanesDword, UINT64_MAX, std::max));
 
     run_msa_i5(
         &tc[i], true,
         [](MacroAssembler& assm, int32_t i5) { __ mini_s_b(w2, w0, i5); },
-        MAXI_MINI_S_DF(kMSALanesByte, UINT8_MAX, Min));
+        MAXI_MINI_S_DF(kMSALanesByte, UINT8_MAX, std::min));
 
     run_msa_i5(
         &tc[i], true,
         [](MacroAssembler& assm, int32_t i5) { __ mini_s_h(w2, w0, i5); },
-        MAXI_MINI_S_DF(kMSALanesHalf, UINT16_MAX, Min));
+        MAXI_MINI_S_DF(kMSALanesHalf, UINT16_MAX, std::min));
 
     run_msa_i5(
         &tc[i], true,
         [](MacroAssembler& assm, int32_t i5) { __ mini_s_w(w2, w0, i5); },
-        MAXI_MINI_S_DF(kMSALanesWord, UINT32_MAX, Min));
+        MAXI_MINI_S_DF(kMSALanesWord, UINT32_MAX, std::min));
 
     run_msa_i5(
         &tc[i], true,
         [](MacroAssembler& assm, int32_t i5) { __ mini_s_d(w2, w0, i5); },
-        MAXI_MINI_S_DF(kMSALanesDword, UINT64_MAX, Min));
+        MAXI_MINI_S_DF(kMSALanesDword, UINT64_MAX, std::min));
 
     run_msa_i5(
         &tc[i], false,
         [](MacroAssembler& assm, int32_t i5) { __ maxi_u_b(w2, w0, i5); },
-        MAXI_MINI_U_DF(kMSALanesByte, UINT8_MAX, Max));
+        MAXI_MINI_U_DF(kMSALanesByte, UINT8_MAX, std::max));
 
     run_msa_i5(
         &tc[i], false,
         [](MacroAssembler& assm, int32_t i5) { __ maxi_u_h(w2, w0, i5); },
-        MAXI_MINI_U_DF(kMSALanesHalf, UINT16_MAX, Max));
+        MAXI_MINI_U_DF(kMSALanesHalf, UINT16_MAX, std::max));
 
     run_msa_i5(
         &tc[i], false,
         [](MacroAssembler& assm, int32_t i5) { __ maxi_u_w(w2, w0, i5); },
-        MAXI_MINI_U_DF(kMSALanesWord, UINT32_MAX, Max));
+        MAXI_MINI_U_DF(kMSALanesWord, UINT32_MAX, std::max));
 
     run_msa_i5(
         &tc[i], false,
         [](MacroAssembler& assm, int32_t i5) { __ maxi_u_d(w2, w0, i5); },
-        MAXI_MINI_U_DF(kMSALanesDword, UINT64_MAX, Max));
+        MAXI_MINI_U_DF(kMSALanesDword, UINT64_MAX, std::max));
 
     run_msa_i5(
         &tc[i], false,
         [](MacroAssembler& assm, int32_t i5) { __ mini_u_b(w2, w0, i5); },
-        MAXI_MINI_U_DF(kMSALanesByte, UINT8_MAX, Min));
+        MAXI_MINI_U_DF(kMSALanesByte, UINT8_MAX, std::min));
 
     run_msa_i5(
         &tc[i], false,
         [](MacroAssembler& assm, int32_t i5) { __ mini_u_h(w2, w0, i5); },
-        MAXI_MINI_U_DF(kMSALanesHalf, UINT16_MAX, Min));
+        MAXI_MINI_U_DF(kMSALanesHalf, UINT16_MAX, std::min));
 
     run_msa_i5(
         &tc[i], false,
         [](MacroAssembler& assm, int32_t i5) { __ mini_u_w(w2, w0, i5); },
-        MAXI_MINI_U_DF(kMSALanesWord, UINT32_MAX, Min));
+        MAXI_MINI_U_DF(kMSALanesWord, UINT32_MAX, std::min));
 
     run_msa_i5(
         &tc[i], false,
         [](MacroAssembler& assm, int32_t i5) { __ mini_u_d(w2, w0, i5); },
-        MAXI_MINI_U_DF(kMSALanesDword, UINT64_MAX, Min));
+        MAXI_MINI_U_DF(kMSALanesDword, UINT64_MAX, std::min));
   }
 #undef MAXI_MINI_S_DF
 #undef MAXI_MINI_U_DF
@@ -9915,30 +9913,32 @@ TEST(MSA_3R_instructions) {
     wd[i] = res;                                                     \
   }
 
-#define MAX_DF(T, lanes, mask)                                              \
-  int size_in_bits = kMSARegSize / lanes;                                   \
-  for (int i = 0; i < 2; i++) {                                             \
-    uint64_t res = 0;                                                       \
-    for (int j = 0; j < lanes / 2; ++j) {                                   \
-      uint64_t shift = size_in_bits * j;                                    \
-      T ws_op = static_cast<T>((ws[i] >> shift) & mask);                    \
-      T wt_op = static_cast<T>((wt[i] >> shift) & mask);                    \
-      res |= (static_cast<uint64_t>(Max<T>(ws_op, wt_op)) & mask) << shift; \
-    }                                                                       \
-    wd[i] = res;                                                            \
+#define MAX_DF(T, lanes, mask)                                         \
+  int size_in_bits = kMSARegSize / lanes;                              \
+  for (int i = 0; i < 2; i++) {                                        \
+    uint64_t res = 0;                                                  \
+    for (int j = 0; j < lanes / 2; ++j) {                              \
+      uint64_t shift = size_in_bits * j;                               \
+      T ws_op = static_cast<T>((ws[i] >> shift) & mask);               \
+      T wt_op = static_cast<T>((wt[i] >> shift) & mask);               \
+      res |= (static_cast<uint64_t>(std::max<T>(ws_op, wt_op)) & mask) \
+             << shift;                                                 \
+    }                                                                  \
+    wd[i] = res;                                                       \
   }
 
-#define MIN_DF(T, lanes, mask)                                              \
-  int size_in_bits = kMSARegSize / lanes;                                   \
-  for (int i = 0; i < 2; i++) {                                             \
-    uint64_t res = 0;                                                       \
-    for (int j = 0; j < lanes / 2; ++j) {                                   \
-      uint64_t shift = size_in_bits * j;                                    \
-      T ws_op = static_cast<T>((ws[i] >> shift) & mask);                    \
-      T wt_op = static_cast<T>((wt[i] >> shift) & mask);                    \
-      res |= (static_cast<uint64_t>(Min<T>(ws_op, wt_op)) & mask) << shift; \
-    }                                                                       \
-    wd[i] = res;                                                            \
+#define MIN_DF(T, lanes, mask)                                         \
+  int size_in_bits = kMSARegSize / lanes;                              \
+  for (int i = 0; i < 2; i++) {                                        \
+    uint64_t res = 0;                                                  \
+    for (int j = 0; j < lanes / 2; ++j) {                              \
+      uint64_t shift = size_in_bits * j;                               \
+      T ws_op = static_cast<T>((ws[i] >> shift) & mask);               \
+      T wt_op = static_cast<T>((wt[i] >> shift) & mask);               \
+      res |= (static_cast<uint64_t>(std::min<T>(ws_op, wt_op)) & mask) \
+             << shift;                                                 \
+    }                                                                  \
+    wd[i] = res;                                                       \
   }
 
 #define MAXA_DF(T, lanes, mask)                                               \

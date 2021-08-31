@@ -4,6 +4,15 @@
 
 // https://github.com/WICG/WebID
 
-dictionary WebIDRequestOptions {
+enum Mode {
+  "mediated",
+  "permission"
+};
+
+dictionary WebIdRequestOptions {
+  // URL for the Identity Provider.
   USVString provider;
+  // Serialized request parameters.
+  USVString request;
+  Mode mode = "permission";
 };

@@ -61,6 +61,11 @@ void FakeHermesProfileClient::ClearProfile(
   properties_map_.erase(carrier_profile_path);
 }
 
+void FakeHermesProfileClient::SetEnableProfileBehavior(
+    EnableProfileBehavior enable_profile_behavior) {
+  enable_profile_behavior_ = enable_profile_behavior;
+}
+
 void FakeHermesProfileClient::EnableCarrierProfile(
     const dbus::ObjectPath& object_path,
     HermesResponseCallback callback) {
@@ -87,10 +92,12 @@ void FakeHermesProfileClient::EnableCarrierProfile(
 
   // Update cellular device properties to match this profile.
   UpdateCellularDevice(properties);
-  // Set all cellular services state to idle. The service associated with the
-  // carrier profile that was just enabled should be connected to with a
-  // subsequent Connect call for that service.
-  SetCellularServicesState(shill::kStateIdle);
+  // Update all cellular services to set their connection state and connectable
+  // properties. The newly enabled profile will have connectable set to true
+  // if |enable_profile_behavior_| indicates that it should be.
+  bool connectable =
+      enable_profile_behavior_ != EnableProfileBehavior::kNotConnectable;
+  UpdateCellularServices(properties->iccid().value(), connectable);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -116,7 +123,8 @@ void FakeHermesProfileClient::DisableCarrierProfile(
   }
   properties->state().ReplaceValue(hermes::profile::State::kInactive);
 
-  SetCellularServicesState(shill::kStateIdle);
+  // The newly disabled profile should have connectable set to false.
+  UpdateCellularServices(properties->iccid().value(), /*connectable=*/false);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -154,12 +162,6 @@ void FakeHermesProfileClient::UpdateCellularDevice(
 
   // Update the cellular device properties so that they match the carrier
   // profile that was just enabled.
-  device_test->SetDeviceProperty(
-      kCellularDevicePath, shill::kCarrierProperty,
-      base::Value(properties->service_provider().value()), true);
-  device_test->SetDeviceProperty(
-      kCellularDevicePath, shill::kCarrierProperty,
-      base::Value(properties->service_provider().value()), true);
   base::DictionaryValue home_provider;
   home_provider.SetKey(shill::kNameProperty,
                        base::Value(properties->service_provider().value()));
@@ -170,8 +172,8 @@ void FakeHermesProfileClient::UpdateCellularDevice(
       kCellularDevicePath, shill::kHomeProviderProperty, home_provider, true);
 }
 
-void FakeHermesProfileClient::SetCellularServicesState(
-    const std::string& state) {
+void FakeHermesProfileClient::UpdateCellularServices(const std::string& iccid,
+                                                     bool connectable) {
   ShillManagerClient::TestInterface* manager_test =
       ShillManagerClient::Get()->GetTestInterface();
   ShillServiceClient::TestInterface* service_test =
@@ -181,11 +183,28 @@ void FakeHermesProfileClient::SetCellularServicesState(
   for (const base::Value& service_path : service_list.GetList()) {
     const base::Value* properties =
         service_test->GetServiceProperties(service_path.GetString());
-    const base::Value* type = properties->FindDictKey(shill::kTypeProperty);
-    if (!type || type->GetString() != shill::kTypeCellular)
+    const std::string* type = properties->FindStringKey(shill::kTypeProperty);
+    const std::string* service_iccid =
+        properties->FindStringKey(shill::kIccidProperty);
+    if (!service_iccid || !type || *type != shill::kTypeCellular)
       continue;
+
+    bool is_current_service = iccid == *service_iccid;
+    // All services except one with given |iccid| will have connectable set to
+    // false.
+    bool service_connectable = is_current_service ? connectable : false;
     service_test->SetServiceProperty(service_path.GetString(),
-                                     shill::kStateProperty, base::Value(state));
+                                     shill::kConnectableProperty,
+                                     base::Value(service_connectable));
+    const char* service_state =
+        is_current_service &&
+                enable_profile_behavior_ ==
+                    EnableProfileBehavior::kConnectableAndConnected
+            ? shill::kStateOnline
+            : shill::kStateIdle;
+    service_test->SetServiceProperty(service_path.GetString(),
+                                     shill::kStateProperty,
+                                     base::Value(service_state));
   }
 }
 

@@ -5,8 +5,10 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
+#include "ash/constants/ash_paths.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -21,15 +23,13 @@
 #include "base/test/scoped_path_override.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/fake_affiliated_invalidation_service_provider.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -80,12 +80,12 @@ class MockDeviceLocalAccountPolicyServiceObserver
 };
 
 class DeviceLocalAccountPolicyServiceTestBase
-    : public chromeos::DeviceSettingsTestBase {
+    : public ash::DeviceSettingsTestBase {
  public:
   DeviceLocalAccountPolicyServiceTestBase();
   ~DeviceLocalAccountPolicyServiceTestBase() override;
 
-  // chromeos::DeviceSettingsTestBase:
+  // ash::DeviceSettingsTestBase:
   void SetUp() override;
   void TearDown() override;
 
@@ -100,7 +100,7 @@ class DeviceLocalAccountPolicyServiceTestBase
 
   PolicyMap expected_policy_map_;
   UserPolicyBuilder device_local_account_policy_;
-  std::unique_ptr<chromeos::CrosSettings> cros_settings_;
+  std::unique_ptr<ash::CrosSettings> cros_settings_;
   scoped_refptr<base::TestSimpleTaskRunner> extension_cache_task_runner_;
   MockDeviceManagementService mock_device_management_service_;
   FakeAffiliatedInvalidationServiceProvider
@@ -145,9 +145,9 @@ DeviceLocalAccountPolicyServiceTestBase::
     ~DeviceLocalAccountPolicyServiceTestBase() = default;
 
 void DeviceLocalAccountPolicyServiceTestBase::SetUp() {
-  chromeos::DeviceSettingsTestBase::SetUp();
+  ash::DeviceSettingsTestBase::SetUp();
 
-  cros_settings_ = std::make_unique<chromeos::CrosSettings>(
+  cros_settings_ = std::make_unique<ash::CrosSettings>(
       device_settings_service_.get(),
       TestingBrowserProcess::GetGlobal()->local_state());
   extension_cache_task_runner_ = new base::TestSimpleTaskRunner;
@@ -170,16 +170,16 @@ void DeviceLocalAccountPolicyServiceTestBase::TearDown() {
   service_.reset();
   extension_cache_task_runner_->RunUntilIdle();
   cros_settings_.reset();
-  chromeos::DeviceSettingsTestBase::TearDown();
+  ash::DeviceSettingsTestBase::TearDown();
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::CreatePolicyService() {
-  service_.reset(new DeviceLocalAccountPolicyService(
+  service_ = std::make_unique<DeviceLocalAccountPolicyService>(
       &session_manager_client_, device_settings_service_.get(),
       cros_settings_.get(), &affiliated_invalidation_service_provider_,
       base::ThreadTaskRunnerHandle::Get(), extension_cache_task_runner_,
       base::ThreadTaskRunnerHandle::Get(),
-      /*url_loader_factory=*/nullptr));
+      /*url_loader_factory=*/nullptr);
 }
 
 void DeviceLocalAccountPolicyServiceTestBase::
@@ -544,9 +544,8 @@ DeviceLocalAccountPolicyExtensionCacheTest::
 void DeviceLocalAccountPolicyExtensionCacheTest::SetUp() {
   DeviceLocalAccountPolicyServiceTestBase::SetUp();
   ASSERT_TRUE(cache_root_dir_.CreateUniqueTempDir());
-  cache_root_dir_override_.reset(new base::ScopedPathOverride(
-      chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS,
-      cache_root_dir_.GetPath()));
+  cache_root_dir_override_ = std::make_unique<base::ScopedPathOverride>(
+      chromeos::DIR_DEVICE_LOCAL_ACCOUNT_EXTENSIONS, cache_root_dir_.GetPath());
 
   cache_dir_1_ = GetCacheDirectoryForAccountID(kAccount1);
   cache_dir_2_ = GetCacheDirectoryForAccountID(kAccount2);
@@ -880,18 +879,17 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
 
   PolicyBundle expected_policy_bundle;
   expected_policy_bundle.Get(PolicyNamespace(
-      POLICY_DOMAIN_CHROME, std::string())).CopyFrom(expected_policy_map_);
+      POLICY_DOMAIN_CHROME, std::string())) = expected_policy_map_.Clone();
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_->policies()));
 
   // Make sure the Dinosaur game is disabled by default. This ensures the
   // default policies have been set in Public Sessions.
-  bool allow_dinosaur_game = true;
   auto* policy_value =
       provider_->policies()
           .Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
           .GetValue(key::kAllowDinosaurEasterEgg);
-  EXPECT_TRUE(policy_value && policy_value->GetAsBoolean(&allow_dinosaur_game));
-  EXPECT_FALSE(allow_dinosaur_game);
+  ASSERT_TRUE(policy_value);
+  EXPECT_FALSE(policy_value->GetBool());
 
   // Policy change should be reported.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(provider_.get()))

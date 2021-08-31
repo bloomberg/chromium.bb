@@ -11,6 +11,8 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -82,6 +84,29 @@ class FrameReference {
  private:
   blink::WebView* view_;
   blink::WebLocalFrame* frame_;
+};
+
+// Helper to ensure that quit closures for Mojo response are called.
+class ClosuresForMojoResponse
+    : public base::RefCounted<ClosuresForMojoResponse> {
+ public:
+  ClosuresForMojoResponse();
+  ClosuresForMojoResponse(const ClosuresForMojoResponse&) = delete;
+  ClosuresForMojoResponse& operator=(const ClosuresForMojoResponse&) = delete;
+
+  void SetScriptedPrintPreviewQuitClosure(base::OnceClosure quit_print_preview);
+  bool HasScriptedPrintPreviewQuitClosure() const;
+  void RunScriptedPrintPreviewQuitClosure();
+  void SetPrintSettingFromUserQuitClosure(base::OnceClosure quit_print_setting);
+  void RunPrintSettingFromUserQuitClosure();
+
+ private:
+  friend class base::RefCounted<ClosuresForMojoResponse>;
+  ~ClosuresForMojoResponse();
+
+  // Stores quit closures for the runloops that are waiting for Mojo replies.
+  base::OnceClosure scripted_print_preview_quit_closure_;
+  base::OnceClosure get_print_settings_from_user_quit_closure_;
 };
 
 // PrintRenderFrameHelper handles most of the printing grunt work for
@@ -222,7 +247,7 @@ class PrintRenderFrameHelper
   void OnDestruct() override;
   void DidStartNavigation(
       const GURL& url,
-      base::Optional<blink::WebNavigationType> navigation_type) override;
+      absl::optional<blink::WebNavigationType> navigation_type) override;
   void DidFailProvisionalLoad() override;
   void DidFinishLoad() override;
   void ScriptedPrint(bool user_initiated) override;
@@ -232,8 +257,8 @@ class PrintRenderFrameHelper
 
   // printing::mojom::PrintRenderFrame:
   void PrintRequestedPages() override;
-  void PrintForSystemDialog() override;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+  void PrintForSystemDialog() override;
   void SetPrintPreviewUI(
       mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> preview) override;
   void InitiatePrintPreview(
@@ -326,13 +351,13 @@ class PrintRenderFrameHelper
                            const base::DictionaryValue& passed_job_settings);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-  // Get final print settings from the user.
+  // Returns final print settings from the user.
   // WARNING: |this| may be gone after this method returns.
-  void GetPrintSettingsFromUser(blink::WebLocalFrame* frame,
-                                const blink::WebNode& node,
-                                uint32_t expected_pages_count,
-                                PrintRequestType print_request_type,
-                                mojom::PrintPagesParams* print_settings);
+  mojom::PrintPagesParamsPtr GetPrintSettingsFromUser(
+      blink::WebLocalFrame* frame,
+      const blink::WebNode& node,
+      uint32_t expected_pages_count,
+      PrintRequestType print_request_type);
 
   // Page Printing / Rendering ------------------------------------------------
 
@@ -376,13 +401,12 @@ class PrintRenderFrameHelper
   void IPCProcessed();
 
   // Helper method to get page layout in points and fit to page if needed.
-  static void ComputePageLayoutInPointsForCss(
+  static mojom::PageSizeMarginsPtr ComputePageLayoutInPointsForCss(
       blink::WebLocalFrame* frame,
       uint32_t page_index,
       const mojom::PrintParams& default_params,
       bool ignore_css_margins,
-      double* scale_factor,
-      mojom::PageSizeMargins* page_layout_in_points);
+      double* scale_factor);
 
   // Return an array of pages to print given the print |params| and an expected
   // |page_count|. Page numbers are zero-based.
@@ -434,6 +458,15 @@ class PrintRenderFrameHelper
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   void SetPrintPagesParams(const mojom::PrintPagesParams& settings);
+
+  // Quits all runloops waiting for Mojo replies. It's called when
+  // |print_manager_host_| is disconnected before the replies.
+  void QuitActiveRunLoops();
+
+  // Quits a runloop waiting for a Mojo reply. These are called when a Mojo
+  // message gets a reply.
+  void QuitScriptedPrintPreviewRunLoop();
+  void QuitGetPrintSettingsFromUserRunLoop();
 
   // WebView used only to print the selection.
   std::unique_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
@@ -636,6 +669,7 @@ class PrintRenderFrameHelper
   PrintPreviewContext print_preview_context_;
   bool is_loading_ = false;
   bool is_scripted_preview_delayed_ = false;
+  bool in_scripted_print_ = false;
   int ipc_nesting_level_ = 0;
   bool render_frame_gone_ = false;
   bool delete_pending_ = false;
@@ -652,6 +686,11 @@ class PrintRenderFrameHelper
   // called. This is a store for the RequestPrintPreview() call and its
   // parameters so that it can be invoked after DidStopLoading.
   base::OnceClosure on_stop_loading_closure_;
+
+  // Stores the quit closures of Mojo responses.
+  scoped_refptr<ClosuresForMojoResponse> closures_for_mojo_responses_;
+
+  bool do_deferred_print_for_system_dialog_ = false;
 
   mojo::AssociatedRemote<mojom::PrintManagerHost> print_manager_host_;
 

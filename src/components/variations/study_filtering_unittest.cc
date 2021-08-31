@@ -17,6 +17,7 @@
 #include "base/strings/string_split.h"
 #include "components/variations/client_filterable_state.h"
 #include "components/variations/processed_study.h"
+#include "components/variations/variations_layers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace variations {
@@ -87,9 +88,9 @@ TEST(VariationsStudyFilteringTest, CheckStudyChannel) {
 }
 
 TEST(VariationsStudyFilteringTest, CheckStudyFormFactor) {
-  const Study::FormFactor form_factors[] = {
-      Study::DESKTOP, Study::PHONE, Study::TABLET, Study::KIOSK,
-  };
+  const Study::FormFactor form_factors[] = {Study::DESKTOP, Study::PHONE,
+                                            Study::TABLET, Study::KIOSK,
+                                            Study::MEET_DEVICE};
 
   ASSERT_EQ(Study::FormFactor_ARRAYSIZE,
             static_cast<int>(base::size(form_factors)));
@@ -217,12 +218,14 @@ TEST(VariationsStudyFilteringTest, CheckStudyPlatform) {
                                        Study::PLATFORM_MAC,
                                        Study::PLATFORM_LINUX,
                                        Study::PLATFORM_CHROMEOS,
+                                       Study::PLATFORM_CHROMEOS_LACROS,
                                        Study::PLATFORM_ANDROID,
                                        Study::PLATFORM_IOS,
                                        Study::PLATFORM_ANDROID_WEBLAYER,
                                        Study::PLATFORM_FUCHSIA,
                                        Study::PLATFORM_ANDROID_WEBVIEW};
-  ASSERT_EQ(Study::Platform_ARRAYSIZE, static_cast<int>(base::size(platforms)));
+  static_assert(base::size(platforms) == Study::Platform_ARRAYSIZE,
+                "|platforms| must include all platforms.");
   bool platform_added[base::size(platforms)] = {false};
 
   Study::Filter filter;
@@ -698,7 +701,8 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudies) {
   client_state.platform = Study::PLATFORM_ANDROID;
 
   std::vector<ProcessedStudy> processed_studies;
-  FilterAndValidateStudies(seed, client_state, &processed_studies);
+  FilterAndValidateStudies(seed, client_state, VariationsLayers(),
+                           &processed_studies);
 
   // Check that only the first kTrial1Name study was kept.
   ASSERT_EQ(2U, processed_studies.size());
@@ -759,7 +763,8 @@ TEST(VariationsStudyFilteringTest, FilterAndValidateStudiesWithCountry) {
     client_state.permanent_consistency_country = kPermanentCountry;
 
     std::vector<ProcessedStudy> processed_studies;
-    FilterAndValidateStudies(seed, client_state, &processed_studies);
+    FilterAndValidateStudies(seed, client_state, VariationsLayers(),
+                             &processed_studies);
 
     EXPECT_EQ(test.expect_study_kept, !processed_studies.empty());
   }

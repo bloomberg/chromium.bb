@@ -11,8 +11,8 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 import {BrowserApi, ZoomBehavior} from './browser_api.js';
 import {FittingType, Point} from './constants.js';
 import {ContentController, MessageData, PluginController, PluginControllerEventType} from './controller.js';
-import {PDFMetrics, UserAction} from './metrics.js';
-import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
+import {record, recordFitTo, UserAction} from './metrics.js';
+import {OpenPdfParams, OpenPdfParamsParser} from './open_pdf_params_parser.js';
 import {LoadState} from './pdf_scripting_api.js';
 import {DocumentDimensionsMessageData, MessageObject} from './pdf_viewer_utils.js';
 import {Viewport} from './viewport.js';
@@ -44,6 +44,12 @@ export class PDFViewerBaseElement extends PolymerElement {
 
   static get properties() {
     return {
+      /** @protected */
+      showErrorDialog: {
+        type: Boolean,
+        value: false,
+      },
+
       /** @protected {Object|undefined} */
       strings: Object,
     };
@@ -110,16 +116,6 @@ export class PDFViewerBaseElement extends PolymerElement {
     this.zoomManager_ = null;
   }
 
-  /** @return {number} The height of the top toolbar */
-  getToolbarHeight() {
-    return 0;
-  }
-
-  /** @return {boolean} Whether the top toolbar is fixed (does not auto-hide) */
-  hasFixedToolbar() {
-    return false;
-  }
-
   /**
    * @return {!HTMLDivElement}
    * @protected
@@ -131,12 +127,6 @@ export class PDFViewerBaseElement extends PolymerElement {
    * @protected
    */
   getSizer() {}
-
-  /**
-   * @return {!ViewerErrorScreenElement}
-   * @protected
-   */
-  getErrorScreen() {}
 
   /**
    * @param {!FittingType} view
@@ -159,17 +149,17 @@ export class PDFViewerBaseElement extends PolymerElement {
     return this.shadowRoot.querySelector(query);
   }
 
-  /** @return {string} */
+  /** @return {number} */
   getBackgroundColor() {
-    return '';
+    return -1;
   }
 
   /**
-   * @param {boolean} pdfViewerUpdateEnabled is the feature is enabled.
+   * @param {boolean} isPrintPreview Is the plugin for Print Preview.
    * @return {!HTMLEmbedElement} The plugin
    * @private
    */
-  createPlugin_(pdfViewerUpdateEnabled) {
+  createPlugin_(isPrintPreview) {
     // Create the plugin object dynamically so we can set its src. The plugin
     // element is sized to fill the entire window and is set to be fixed
     // positioning, acting as a viewport. The plugin renders into this viewport
@@ -195,7 +185,6 @@ export class PDFViewerBaseElement extends PolymerElement {
     plugin.setAttribute('headers', headers);
 
     plugin.setAttribute('background-color', this.getBackgroundColor());
-    plugin.setAttribute('top-toolbar-height', this.getToolbarHeight());
 
     const javascript = this.browserApi.getStreamInfo().javascript || 'block';
     plugin.setAttribute('javascript', javascript);
@@ -207,7 +196,7 @@ export class PDFViewerBaseElement extends PolymerElement {
       plugin.toggleAttribute('full-frame', true);
     }
 
-    if (pdfViewerUpdateEnabled) {
+    if (!isPrintPreview) {
       plugin.toggleAttribute('pdf-viewer-update-enabled', true);
     }
 
@@ -219,26 +208,19 @@ export class PDFViewerBaseElement extends PolymerElement {
     this.browserApi = browserApi;
     this.originalUrl = this.browserApi.getStreamInfo().originalUrl;
 
-    PDFMetrics.record(UserAction.DOCUMENT_OPENED);
+    record(UserAction.DOCUMENT_OPENED);
 
     // Parse open pdf parameters.
     this.paramsParser = new OpenPdfParamsParser(destination => {
       return PluginController.getInstance().getNamedDestination(destination);
     });
 
-    // Can only reload if we are in a normal tab.
-    if (chrome.tabs && this.browserApi.getStreamInfo().tabId !== -1) {
-      this.getErrorScreen().reloadFn = () => {
-        chrome.tabs.reload(this.browserApi.getStreamInfo().tabId);
-      };
-    }
-
     // Determine the scrolling container.
-    const pdfViewerUpdateEnabled =
-        document.documentElement.hasAttribute('pdf-viewer-update-enabled');
-    const scrollContainer = pdfViewerUpdateEnabled ?
-        /** @type {!HTMLElement} */ (this.getSizer().offsetParent) :
-        document.documentElement;
+    const isPrintPreview =
+        document.documentElement.hasAttribute('is-print-preview');
+    const scrollContainer = isPrintPreview ?
+        document.documentElement :
+        /** @type {!HTMLElement} */ (this.getSizer().offsetParent);
 
     // Create the viewport.
     const defaultZoom =
@@ -248,8 +230,7 @@ export class PDFViewerBaseElement extends PolymerElement {
 
     this.viewport_ = new Viewport(
         scrollContainer, this.getSizer(), this.getContent(),
-        getScrollbarWidth(), defaultZoom, this.getToolbarHeight(),
-        this.hasFixedToolbar());
+        getScrollbarWidth(), defaultZoom);
     this.viewport_.setViewportChangedCallback(() => this.viewportChanged_());
     this.viewport_.setBeforeZoomCallback(
         () => this.currentController.beforeZoom());
@@ -269,7 +250,7 @@ export class PDFViewerBaseElement extends PolymerElement {
     }, false);
 
     // Create the plugin.
-    this.plugin_ = this.createPlugin_(pdfViewerUpdateEnabled);
+    this.plugin_ = this.createPlugin_(isPrintPreview);
     this.getContent().appendChild(this.plugin_);
 
     const pluginController = PluginController.getInstance();
@@ -315,7 +296,7 @@ export class PDFViewerBaseElement extends PolymerElement {
   updateProgress(progress) {
     if (progress === -1) {
       // Document load failed.
-      this.getErrorScreen().show();
+      this.showErrorDialog = true;
       this.getSizer().style.display = 'none';
       this.setLoadState(LoadState.FAILED);
       this.sendDocumentLoadedMessage();
@@ -324,8 +305,8 @@ export class PDFViewerBaseElement extends PolymerElement {
       if (this.lastViewportPosition) {
         this.viewport_.position = this.lastViewportPosition;
       }
-      this.paramsParser.getViewportFromUrlParams(
-          this.originalUrl, params => this.handleURLParams_(params));
+      this.paramsParser.getViewportFromUrlParams(this.originalUrl)
+          .then(this.handleURLParams_.bind(this));
       this.setLoadState(LoadState.SUCCESS);
       this.sendDocumentLoadedMessage();
       while (this.delayedScriptingMessages_.length > 0) {
@@ -503,7 +484,7 @@ export class PDFViewerBaseElement extends PolymerElement {
    * Handle open pdf parameters. This function updates the viewport as per
    * the parameters mentioned in the url while opening pdf. The order is
    * important as later actions can override the effects of previous actions.
-   * @param {Object} params The open params passed in the URL.
+   * @param {!OpenPdfParams} params The open params passed in the URL.
    * @private
    */
   handleURLParams_(params) {
@@ -562,11 +543,13 @@ export class PDFViewerBaseElement extends PolymerElement {
       let targetOrigin;
       // Only send data back to the embedder if it is from the same origin,
       // unless we're sending it to ourselves (which could happen in the case
-      // of tests). We also allow documentLoaded messages through as this won't
-      // leak important information.
+      // of tests). We also allow 'documentLoaded' and 'passwordPrompted'
+      // messages through as they do not leak sensitive information.
       if (this.parentOrigin_ === window.location.origin) {
         targetOrigin = this.parentOrigin_;
-      } else if (message.type === 'documentLoaded') {
+      } else if (
+          message.type === 'documentLoaded' ||
+          message.type === 'passwordPrompted') {
         targetOrigin = '*';
       } else {
         targetOrigin = this.originalUrl;
@@ -601,13 +584,13 @@ export class PDFViewerBaseElement extends PolymerElement {
    */
   onFitToChanged(e) {
     this.updateViewportFit(e.detail);
-    PDFMetrics.recordFitTo(e.detail);
+    recordFitTo(e.detail);
   }
 
   /** @protected */
   onZoomIn() {
     this.viewport_.zoomIn();
-    PDFMetrics.recordZoomAction(/*isZoomIn=*/ true);
+    record(UserAction.ZOOM_IN);
   }
 
   /**
@@ -616,13 +599,13 @@ export class PDFViewerBaseElement extends PolymerElement {
    */
   onZoomChanged(e) {
     this.viewport_.setZoom(e.detail / 100);
-    PDFMetrics.record(UserAction.ZOOM_CUSTOM);
+    record(UserAction.ZOOM_CUSTOM);
   }
 
   /** @protected */
   onZoomOut() {
     this.viewport_.zoomOut();
-    PDFMetrics.recordZoomAction(/*isZoomIn=*/ false);
+    record(UserAction.ZOOM_OUT);
   }
 
   /**
@@ -645,15 +628,13 @@ export class PDFViewerBaseElement extends PolymerElement {
 
   /** @protected */
   rotateClockwise() {
-    PDFMetrics.record(UserAction.ROTATE);
-    this.viewport_.rotateClockwise();
+    record(UserAction.ROTATE);
     this.currentController.rotateClockwise();
   }
 
   /** @protected */
   rotateCounterclockwise() {
-    PDFMetrics.record(UserAction.ROTATE);
-    this.viewport_.rotateCounterclockwise();
+    record(UserAction.ROTATE);
     this.currentController.rotateCounterclockwise();
   }
 

@@ -44,7 +44,7 @@ void PaintChunker::UpdateCurrentPaintChunkProperties(
     if (chunk_id)
       next_chunk_id_.emplace(*chunk_id);
     else
-      next_chunk_id_ = base::nullopt;
+      next_chunk_id_ = absl::nullopt;
   }
   current_properties_ = properties;
 }
@@ -74,7 +74,7 @@ bool PaintChunker::EnsureCurrentChunk(const PaintChunk::Id& id) {
     FinalizeLastChunkProperties();
     wtf_size_t begin = chunks_->IsEmpty() ? 0 : chunks_->back().end_index;
     chunks_->emplace_back(begin, begin, *next_chunk_id_, current_properties_);
-    next_chunk_id_ = base::nullopt;
+    next_chunk_id_ = absl::nullopt;
     will_force_new_chunk_ = false;
     return true;
   }
@@ -99,16 +99,27 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   // set the candidate to be this item.
   if (item.IsDrawing() && item.DrawsContent()) {
     float item_area;
-    Color item_color =
-        static_cast<const DrawingDisplayItem&>(item).BackgroundColor(item_area);
+    Color item_color = To<DrawingDisplayItem>(item).BackgroundColor(item_area);
     ProcessBackgroundColorCandidate(chunk.id, item_color, item_area);
   }
 
   constexpr wtf_size_t kMaxRegionComplexity = 10;
-  if (item.IsDrawing() &&
-      static_cast<const DrawingDisplayItem&>(item).KnownToBeOpaque() &&
-      last_chunk_known_to_be_opaque_region_.Complexity() < kMaxRegionComplexity)
-    last_chunk_known_to_be_opaque_region_.Unite(item.VisualRect());
+  if (should_compute_contents_opaque_ && item.IsDrawing()) {
+    const DrawingDisplayItem& drawing = To<DrawingDisplayItem>(item);
+    if (drawing.KnownToBeOpaque() &&
+        last_chunk_known_to_be_opaque_region_.Complexity() <
+            kMaxRegionComplexity) {
+      last_chunk_known_to_be_opaque_region_.Unite(item.VisualRect());
+    }
+    if (last_chunk_text_known_to_be_on_opaque_background_) {
+      if (const auto* paint_record = drawing.GetPaintRecord().get()) {
+        if (paint_record->has_draw_text_ops()) {
+          last_chunk_text_known_to_be_on_opaque_background_ =
+              last_chunk_known_to_be_opaque_region_.Contains(item.VisualRect());
+        }
+      }
+    }
+  }
 
   chunk.raster_effect_outset =
       std::max(chunk.raster_effect_outset, item.GetRasterEffectOutset());
@@ -152,6 +163,39 @@ bool PaintChunker::AddHitTestDataToCurrentChunk(const PaintChunk::Id& id,
     chunk.EnsureHitTestData().wheel_event_rects.push_back(rect);
   }
   return created_new_chunk;
+}
+
+void PaintChunker::AddSelectionToCurrentChunk(
+    absl::optional<PaintedSelectionBound> start,
+    absl::optional<PaintedSelectionBound> end) {
+  // We should have painted the selection when calling this method.
+  DCHECK(chunks_);
+  DCHECK(!chunks_->IsEmpty());
+
+  auto& chunk = chunks_->back();
+
+#if DCHECK_IS_ON()
+  if (start) {
+    IntRect edge_rect(start->edge_start, start->edge_end - start->edge_start);
+    DCHECK(chunk.bounds.Contains(edge_rect));
+  }
+
+  if (end) {
+    IntRect edge_rect(end->edge_start, end->edge_end - end->edge_start);
+    DCHECK(chunk.bounds.Contains(edge_rect));
+  }
+#endif
+
+  LayerSelectionData& selection_data = chunk.EnsureLayerSelectionData();
+  if (start) {
+    DCHECK(!selection_data.start);
+    selection_data.start = start;
+  }
+
+  if (end) {
+    DCHECK(!selection_data.end);
+    selection_data.end = end;
+  }
 }
 
 void PaintChunker::CreateScrollHitTestChunk(
@@ -213,9 +257,14 @@ void PaintChunker::FinalizeLastChunkProperties() {
     return;
 
   auto& chunk = chunks_->back();
-  chunk.known_to_be_opaque =
-      last_chunk_known_to_be_opaque_region_.Contains(chunk.bounds);
-  last_chunk_known_to_be_opaque_region_ = Region();
+  if (should_compute_contents_opaque_) {
+    chunk.known_to_be_opaque =
+        last_chunk_known_to_be_opaque_region_.Contains(chunk.bounds);
+    chunk.text_known_to_be_on_opaque_background =
+        last_chunk_text_known_to_be_on_opaque_background_;
+    last_chunk_known_to_be_opaque_region_ = Region();
+    last_chunk_text_known_to_be_on_opaque_background_ = true;
+  }
 
   if (candidate_background_color_ != Color::kTransparent) {
     chunk.background_color = candidate_background_color_;

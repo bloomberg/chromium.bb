@@ -10,17 +10,17 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/i18n/rtl.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
-#include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -29,9 +29,9 @@
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/ash/customization/customization_document.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/customization/customization_document.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,6 +46,11 @@ namespace chromeos {
 const char kMostRelevantLanguagesDivider[] = "MOST_RELEVANT_LANGUAGES_DIVIDER";
 
 namespace {
+
+// The code below needs a UTF16 version of kMostRelevantLanguagesDivider.
+// Provide it here as a constant.
+constexpr char16_t kMostRelevantLanguagesDivider16[] =
+    u"MOST_RELEVANT_LANGUAGES_DIVIDER";
 
 std::unique_ptr<base::DictionaryValue> CreateInputMethodsEntry(
     const input_method::InputMethodDescriptor& method,
@@ -79,9 +84,9 @@ void AddOptgroupOtherLayouts(base::ListValue* input_methods_list) {
 
 std::unique_ptr<base::DictionaryValue> CreateLanguageEntry(
     const std::string& language_code,
-    const base::string16& language_display_name,
-    const base::string16& language_native_display_name) {
-  base::string16 display_name = language_display_name;
+    const std::u16string& language_display_name,
+    const std::u16string& language_native_display_name) {
+  std::u16string display_name = language_display_name;
   const bool markup_removal =
       base::i18n::UnadjustStringForLocaleDirection(&display_name);
   DCHECK(markup_removal);
@@ -128,15 +133,15 @@ std::unique_ptr<base::ListValue> GetLanguageList(
   // In theory, we should be able to create a map that is sorted by
   // display names using ICU comparator, but doing it is hard, thus we'll
   // use an auxiliary vector to achieve the same result.
-  typedef std::pair<std::string, base::string16> LanguagePair;
-  typedef std::map<base::string16, LanguagePair> LanguageMap;
+  typedef std::pair<std::string, std::u16string> LanguagePair;
+  typedef std::map<std::u16string, LanguagePair> LanguageMap;
   LanguageMap language_map;
 
   // The auxiliary vector mentioned above (except the most relevant locales).
-  std::vector<base::string16> display_names;
+  std::vector<std::u16string> display_names;
 
   // Separate vector of the most relevant locales.
-  std::vector<base::string16> most_relevant_locales_display_names(
+  std::vector<std::u16string> most_relevant_locales_display_names(
       most_relevant_language_codes.size());
 
   size_t most_relevant_locales_count = 0;
@@ -170,11 +175,10 @@ std::unique_ptr<base::ListValue> GetLanguageList(
       continue;
     }
 
-    const base::string16 display_name =
+    const std::u16string display_name =
         l10n_util::GetDisplayNameForLocale(language_id, app_locale, true);
-    const base::string16 native_display_name =
-        l10n_util::GetDisplayNameForLocale(
-            language_id, language_id, true);
+    const std::u16string native_display_name =
+        l10n_util::GetDisplayNameForLocale(language_id, language_id, true);
 
     language_map[display_name] =
         std::make_pair(language_id, native_display_name);
@@ -191,9 +195,9 @@ std::unique_ptr<base::ListValue> GetLanguageList(
      if (!base::Contains(base_language_codes, *it))
        continue;
 
-     const base::string16 display_name =
+     const std::u16string display_name =
          l10n_util::GetDisplayNameForLocale(*it, app_locale, true);
-     const base::string16 native_display_name =
+     const std::u16string native_display_name =
          l10n_util::GetDisplayNameForLocale(*it, *it, true);
 
      language_map[display_name] = std::make_pair(*it, native_display_name);
@@ -201,7 +205,7 @@ std::unique_ptr<base::ListValue> GetLanguageList(
      const std::map<std::string, int>::const_iterator index_pos =
          language_index.find(*it);
      if (index_pos != language_index.end()) {
-       base::string16& stored_display_name =
+       std::u16string& stored_display_name =
            most_relevant_locales_display_names[index_pos->second];
        if (stored_display_name.empty()) {
          stored_display_name = display_name;
@@ -220,12 +224,10 @@ std::unique_ptr<base::ListValue> GetLanguageList(
     if (language_codes.find(base_language_codes[i]) != language_codes.end())
       continue;
 
-    base::string16 display_name =
-        l10n_util::GetDisplayNameForLocale(
-            base_language_codes[i], app_locale, false);
-    base::string16 native_display_name =
-        l10n_util::GetDisplayNameForLocale(
-            base_language_codes[i], base_language_codes[i], false);
+    std::u16string display_name = l10n_util::GetDisplayNameForLocale(
+        base_language_codes[i], app_locale, false);
+    std::u16string native_display_name = l10n_util::GetDisplayNameForLocale(
+        base_language_codes[i], base_language_codes[i], false);
     language_map[display_name] =
         std::make_pair(base_language_codes[i], native_display_name);
 
@@ -243,18 +245,18 @@ std::unique_ptr<base::ListValue> GetLanguageList(
   l10n_util::SortStrings16(app_locale, &display_names);
   // Concatenate most_relevant_locales_display_names and display_names.
   // Insert special divider in between.
-  std::vector<base::string16> out_display_names;
+  std::vector<std::u16string> out_display_names;
   for (size_t i = 0; i < most_relevant_locales_display_names.size(); ++i) {
     if (most_relevant_locales_display_names[i].size() == 0)
       continue;
     out_display_names.push_back(most_relevant_locales_display_names[i]);
   }
 
-  base::string16 divider16;
+  std::u16string divider16;
   if (insert_divider && !out_display_names.empty()) {
     // Insert a divider if requested, but only if
     // `most_relevant_locales_display_names` is not empty.
-    divider16 = base::ASCIIToUTF16(kMostRelevantLanguagesDivider);
+    divider16 = kMostRelevantLanguagesDivider16;
     out_display_names.push_back(divider16);
   }
 
@@ -266,7 +268,7 @@ std::unique_ptr<base::ListValue> GetLanguageList(
   std::unique_ptr<base::ListValue> language_list(new base::ListValue());
   for (size_t i = 0; i < out_display_names.size(); ++i) {
     // Sets the directionality of the display language name.
-    base::string16 display_name(out_display_names[i]);
+    std::u16string display_name(out_display_names[i]);
     if (insert_divider && display_name == divider16) {
       // Insert divider.
       auto dictionary = std::make_unique<base::DictionaryValue>();
@@ -303,7 +305,7 @@ void GetAndMergeKeyboardLayoutsForLocale(input_method::InputMethodUtil* util,
 // `resolved_locale`.
 void GetKeyboardLayoutsForResolvedLocale(
     const std::string& requested_locale,
-    const GetKeyboardLayoutsForLocaleCallback& callback,
+    GetKeyboardLayoutsForLocaleCallback callback,
     const std::string& resolved_locale) {
   input_method::InputMethodUtil* util =
       input_method::InputMethodManager::Get()->GetInputMethodUtil();
@@ -327,7 +329,7 @@ void GetKeyboardLayoutsForResolvedLocale(
     input_methods_list->Append(CreateInputMethodsEntry(*ime, selected));
   }
 
-  callback.Run(std::move(input_methods_list));
+  std::move(callback).Run(std::move(input_methods_list));
 }
 
 // For "UI Language" drop-down menu at OOBE screen we need to decide which
@@ -351,7 +353,7 @@ void ResolveLanguageListInThreadPool(
     std::unique_ptr<chromeos::locale_util::LanguageSwitchResult>
         language_switch_result,
     const scoped_refptr<base::TaskRunner> task_runner,
-    const UILanguageListResolvedCallback& resolved_callback) {
+    UILanguageListResolvedCallback resolved_callback) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
@@ -384,8 +386,9 @@ void ResolveLanguageListInThreadPool(
       chromeos::GetUILanguageList(nullptr, selected_code));
 
   task_runner->PostTask(
-      FROM_HERE, base::BindOnce(resolved_callback, std::move(language_list),
-                                list_locale, selected_language));
+      FROM_HERE,
+      base::BindOnce(std::move(resolved_callback), std::move(language_list),
+                     list_locale, selected_language));
 }
 
 void AdjustUILanguageList(const std::string& selected,
@@ -426,7 +429,7 @@ void AdjustUILanguageList(const std::string& selected,
 void ResolveUILanguageList(
     std::unique_ptr<chromeos::locale_util::LanguageSwitchResult>
         language_switch_result,
-    const UILanguageListResolvedCallback& callback) {
+    UILanguageListResolvedCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   base::ThreadPool::PostTask(
@@ -434,15 +437,16 @@ void ResolveUILanguageList(
       base::BindOnce(&ResolveLanguageListInThreadPool,
                      g_browser_process->GetApplicationLocale(),
                      std::move(language_switch_result),
-                     base::SequencedTaskRunnerHandle::Get(), callback));
+                     base::SequencedTaskRunnerHandle::Get(),
+                     std::move(callback)));
 }
 
 std::unique_ptr<base::ListValue> GetMinimalUILanguageList() {
   const std::string application_locale =
       g_browser_process->GetApplicationLocale();
-  base::string16 language_native_display_name =
-      l10n_util::GetDisplayNameForLocale(
-          application_locale, application_locale, true);
+  std::u16string language_native_display_name =
+      l10n_util::GetDisplayNameForLocale(application_locale, application_locale,
+                                         true);
 
   std::unique_ptr<base::ListValue> language_list(new base::ListValue());
   language_list->Append(CreateLanguageEntry(application_locale,
@@ -461,7 +465,7 @@ std::unique_ptr<base::ListValue> GetUILanguageList(
   input_method::InputMethodDescriptors descriptors =
       manager->GetXkbIMEAsInputMethodDescriptor();
   std::unique_ptr<base::ListValue> languages_list(GetLanguageList(
-      descriptors, l10n_util::GetAvailableLocales(),
+      descriptors, l10n_util::GetLocalesWithStrings(),
       most_relevant_language_codes
           ? *most_relevant_language_codes
           : StartupCustomizationDocument::GetInstance()->configured_locales(),
@@ -474,22 +478,19 @@ std::string FindMostRelevantLocale(
     const std::vector<std::string>& most_relevant_language_codes,
     const base::ListValue& available_locales,
     const std::string& fallback_locale) {
-  for (std::vector<std::string>::const_iterator most_relevant_it =
-          most_relevant_language_codes.begin();
-       most_relevant_it != most_relevant_language_codes.end();
-       ++most_relevant_it) {
-    for (base::ListValue::const_iterator available_it =
-             available_locales.begin();
-         available_it != available_locales.end(); ++available_it) {
-      const base::DictionaryValue* dict;
-      std::string available_locale;
-      if (!available_it->GetAsDictionary(&dict) ||
-          !dict->GetString("value", &available_locale)) {
+  for (const auto& most_relevant : most_relevant_language_codes) {
+    for (const auto& entry : available_locales.GetList()) {
+      const std::string* available_locale = nullptr;
+      if (entry.is_dict())
+        available_locale = entry.FindStringKey("value");
+
+      if (!available_locale) {
         NOTREACHED();
         continue;
       }
-      if (available_locale == *most_relevant_it)
-        return *most_relevant_it;
+
+      if (*available_locale == most_relevant)
+        return most_relevant;
     }
   }
 
@@ -566,9 +567,8 @@ std::unique_ptr<base::ListValue> GetAndActivateLoginKeyboardLayouts(
   return input_methods_list;
 }
 
-void GetKeyboardLayoutsForLocale(
-    const GetKeyboardLayoutsForLocaleCallback& callback,
-    const std::string& locale) {
+void GetKeyboardLayoutsForLocale(GetKeyboardLayoutsForLocaleCallback callback,
+                                 const std::string& locale) {
   // Resolve `locale` on a background thread, then continue on the current
   // thread.
   std::string (*get_application_locale)(const std::string&, bool) =
@@ -578,7 +578,8 @@ void GetKeyboardLayoutsForLocale(
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(get_application_locale, locale,
                      false /* set_icu_locale */),
-      base::BindOnce(&GetKeyboardLayoutsForResolvedLocale, locale, callback));
+      base::BindOnce(&GetKeyboardLayoutsForResolvedLocale, locale,
+                     std::move(callback)));
 }
 
 }  // namespace chromeos

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 #
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -118,10 +118,13 @@ def record_global_constructors(idl_filename):
 
 def generate_global_constructors_list(interface_name, extended_attributes):
     extended_attributes_list = [
-        name + (('=' + extended_attributes[name])
-                if extended_attributes[name] else '')
-        for name in ['RuntimeEnabled', 'ContextEnabled', 'SecureContext']
-        if name in extended_attributes
+        name +
+        (('=' +
+          extended_attributes[name]) if extended_attributes[name] else '')
+        for name in [
+            'RuntimeEnabled', 'ContextEnabled', 'CrossOriginIsolated',
+            'DirectSocketEnabled', 'SecureContext'
+        ] if name in extended_attributes
     ]
 
     # Getters for these Constructors are auto-generated and considered

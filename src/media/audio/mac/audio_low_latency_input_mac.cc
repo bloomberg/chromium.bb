@@ -8,6 +8,7 @@
 #include <dlfcn.h>
 #include <mach-o/loader.h>
 #include <mach/mach.h>
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -285,7 +286,7 @@ AUAudioInputStream::~AUAudioInputStream() {
 }
 
 // Obtain and open the AUHAL AudioOutputUnit for recording.
-bool AUAudioInputStream::Open() {
+AudioInputStream::OpenOutcome AUAudioInputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Open";
   DCHECK(!audio_unit_);
@@ -295,7 +296,7 @@ bool AUAudioInputStream::Open() {
   if (input_device_id_ == kAudioObjectUnknown) {
     NOTREACHED() << "Device ID is unknown";
     HandleError(kAudioUnitErr_InvalidElement);
-    return false;
+    return OpenOutcome::kFailed;
   }
 
   // The requested sample-rate must match the hardware sample-rate.
@@ -310,7 +311,7 @@ bool AUAudioInputStream::Open() {
       use_voice_processing_ ? OpenVoiceProcessingAU() : OpenAUHAL();
 
   if (!success)
-    return false;
+    return OpenOutcome::kFailed;
 
   // The hardware latency is fixed and will not change during the call.
   hardware_latency_ = AudioManagerMac::GetHardwareLatency(
@@ -321,7 +322,7 @@ bool AUAudioInputStream::Open() {
   // And the master channel is not counted in |number_of_channels_in_frame_|.
   number_of_channels_in_frame_ = GetNumberOfChannelsFromStream();
 
-  return true;
+  return OpenOutcome::kSuccess;
 }
 
 bool AUAudioInputStream::OpenAUHAL() {
@@ -716,7 +717,7 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   // callbacks starts indicating if input audio recording starts as intended.
   // CheckInputStartupSuccess() will check if |input_callback_is_active_| is
   // true when the timer expires.
-  input_callback_timer_.reset(new base::OneShotTimer());
+  input_callback_timer_ = std::make_unique<base::OneShotTimer>();
   input_callback_timer_->Start(
       FROM_HERE,
       base::TimeDelta::FromSeconds(kInputCallbackStartTimeoutInSeconds), this,

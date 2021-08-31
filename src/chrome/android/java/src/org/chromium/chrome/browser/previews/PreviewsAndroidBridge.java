@@ -8,9 +8,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.url.URI;
-
-import java.net.URISyntaxException;
 
 /**
  * Java bridge class to C++ Previews code.
@@ -32,39 +29,6 @@ public final class PreviewsAndroidBridge {
                 PreviewsAndroidBridgeJni.get().init(PreviewsAndroidBridge.this);
     }
 
-    public boolean shouldShowPreviewUI(WebContents webContents) {
-        return PreviewsAndroidBridgeJni.get().shouldShowPreviewUI(
-                mNativePreviewsAndroidBridge, PreviewsAndroidBridge.this, webContents);
-    }
-
-    /**
-     * Returns the original host name for visibleURL. This should only be used on preview pages.
-     */
-    public String getOriginalHost(String visibleURL) {
-        try {
-            return new URI(visibleURL).getHost();
-        } catch (URISyntaxException e) {
-        }
-        return "";
-    }
-
-    /**
-     * Requests that the original page be loaded.
-     */
-    public void loadOriginal(WebContents webContents) {
-        assert shouldShowPreviewUI(webContents) : "loadOriginal called on a non-preview page";
-        PreviewsAndroidBridgeJni.get().loadOriginal(
-                mNativePreviewsAndroidBridge, PreviewsAndroidBridge.this, webContents);
-    }
-
-    /**
-     * Returns the committed preview type as a String.
-     */
-    public String getPreviewsType(WebContents webContents) {
-        return PreviewsAndroidBridgeJni.get().getPreviewsType(
-                mNativePreviewsAndroidBridge, PreviewsAndroidBridge.this, webContents);
-    }
-
     /**
      * Returns whether LiteMode https image compression is applied.
      */
@@ -81,12 +45,6 @@ public final class PreviewsAndroidBridge {
     @NativeMethods
     interface Natives {
         long init(PreviewsAndroidBridge caller);
-        boolean shouldShowPreviewUI(long nativePreviewsAndroidBridge, PreviewsAndroidBridge caller,
-                WebContents webContents);
-        void loadOriginal(long nativePreviewsAndroidBridge, PreviewsAndroidBridge caller,
-                WebContents webContents);
-        String getPreviewsType(long nativePreviewsAndroidBridge, PreviewsAndroidBridge caller,
-                WebContents webContents);
         boolean isHttpsImageCompressionApplied(long nativePreviewsAndroidBridge,
                 PreviewsAndroidBridge caller, WebContents webContents);
     }

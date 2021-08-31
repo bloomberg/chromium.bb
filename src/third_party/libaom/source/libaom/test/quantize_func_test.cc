@@ -589,4 +589,5 @@ INSTANTIATE_TEST_SUITE_P(
                    static_cast<TX_SIZE>(TX_32X32), TYPE_B, AOM_BITS_8)));
 
 #endif  // HAVE_AVX
+
 }  // namespace

@@ -17,9 +17,10 @@ class Layer;
 
 namespace blink {
 
+class HTMLCanvasElementOrOffscreenCanvas;
 class ImageBitmap;
 class ImageLayerBridge;
-class HTMLCanvasElementOrOffscreenCanvas;
+class V8UnionHTMLCanvasElementOrOffscreenCanvas;
 
 class MODULES_EXPORT ImageBitmapRenderingContextBase
     : public CanvasRenderingContext {
@@ -38,17 +39,20 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   }
 
   bool CanCreateCanvas2dResourceProvider() const;
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8UnionHTMLCanvasElementOrOffscreenCanvas* getHTMLOrOffscreenCanvas() const;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void getHTMLOrOffscreenCanvas(HTMLCanvasElementOrOffscreenCanvas&) const;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   void SetIsInHiddenPage(bool) override {}
   void SetIsBeingDisplayed(bool) override {}
   bool isContextLost() const override { return false; }
+  // If SetImage receives a null imagebitmap, it will Reset the internal bitmap
+  // to a black and transparent bitmap.
   void SetImage(ImageBitmap*);
   scoped_refptr<StaticBitmapImage> GetImage() final;
-  // This function resets the internal image resource to a image of the same
-  // size than the original, with the same properties, but completely black.
-  // This is used to follow the standard regarding transferToBitmap
-  scoped_refptr<StaticBitmapImage> GetImageAndResetInternal();
+
   void SetUV(const FloatPoint& left_top, const FloatPoint& right_bottom);
   bool IsComposited() const final { return true; }
   bool IsAccelerated() const final;
@@ -66,8 +70,16 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
 
  protected:
   Member<ImageLayerBridge> image_layer_bridge_;
+
+  // This function resets the internal image resource to a image of the same
+  // size than the original, with the same properties, but completely black.
+  // This is used to follow the standard regarding transferToBitmap
+  scoped_refptr<StaticBitmapImage> GetImageAndResetInternal();
+
+ private:
+  void ResetInternalBitmapToBlackTransparent(int width, int height);
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_IMAGEBITMAP_IMAGE_BITMAP_RENDERING_CONTEXT_BASE_H_

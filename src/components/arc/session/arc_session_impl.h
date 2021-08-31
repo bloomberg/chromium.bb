@@ -11,18 +11,21 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "chromeos/system/scheduler_configuration_manager_base.h"
 #include "components/arc/session/arc_client_adapter.h"
 #include "components/arc/session/arc_session.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 class DefaultScaleFactorRetriever;
+}
+
+namespace base {
+struct SystemMemoryInfoKB;
 }
 
 namespace cryptohome {
@@ -178,6 +181,9 @@ class ArcSessionImpl
     virtual std::unique_ptr<ArcClientAdapter> CreateClient() = 0;
   };
 
+  using SystemMemoryInfoCallback =
+      base::RepeatingCallback<bool(base::SystemMemoryInfoKB*)>;
+
   ArcSessionImpl(std::unique_ptr<Delegate> delegate,
                  chromeos::SchedulerConfigurationManagerBase*
                      scheduler_configuration_manager,
@@ -194,6 +200,8 @@ class ArcSessionImpl
   State GetStateForTesting() { return state_; }
   ArcClientAdapter* GetClientForTesting() { return client_.get(); }
 
+  void SetSystemMemoryInfoCallbackForTesting(SystemMemoryInfoCallback callback);
+
   // ArcSession overrides:
   void StartMiniInstance() override;
   void RequestUpgrade(UpgradeParams params) override;
@@ -203,6 +211,9 @@ class ArcSessionImpl
   void SetUserInfo(const cryptohome::Identification& cryptohome_id,
                    const std::string& hash,
                    const std::string& serial_number) override;
+  void SetDemoModeDelegate(
+      ArcClientAdapter::DemoModeDelegate* delegate) override;
+  void TrimVmMemory(TrimVmMemoryCallback callback) override;
 
   // chromeos::SchedulerConfigurationManagerBase::Observer overrides:
   void OnConfigurationSet(bool success, size_t num_cores_disabled) override;
@@ -216,6 +227,15 @@ class ArcSessionImpl
 
   // Called when arcbridge socket is created.
   void OnSocketCreated(base::ScopedFD fd);
+
+  // Loads ARC data/ snapshot if necessary.
+  // |callback| is called once the load process is finished.
+  void StartLoadingDataSnapshot(base::OnceClosure callback);
+
+  // Called when ARC data/ snapshot step is done: either snapshot is loaded or
+  // skipped.
+  // |socket_fd| should be a socket to be passed to OnUpgraded.
+  void OnDataSnapshotLoaded(base::ScopedFD scoped_fd);
 
   // D-Bus callback for UpgradeArcContainer(). |socket_fd| should be a socket
   // which should be accept(2)ed to connect ArcBridgeService Mojo channel.
@@ -235,7 +255,7 @@ class ArcSessionImpl
   void StopArcInstance(bool on_shutdown, bool should_backup_log);
 
   // ArcClientAdapter::Observer:
-  void ArcInstanceStopped() override;
+  void ArcInstanceStopped(bool is_system_shutdown) override;
 
   // Completes the termination procedure. Note that calling this may end up with
   // deleting |this| because the function calls observers' OnSessionStopped().
@@ -292,6 +312,9 @@ class ArcSessionImpl
   // Owned by ArcSessionManager.
   AdbSideloadingAvailabilityDelegate* const
       adb_sideloading_availability_delegate_;
+
+  // Callback to read system memory info.
+  SystemMemoryInfoCallback system_memory_info_callback_;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionImpl> weak_factory_{this};

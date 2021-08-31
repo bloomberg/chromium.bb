@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/ash_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -22,19 +24,17 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
+#include "chrome/browser/ash/backdrop_wallpaper_handlers/backdrop_wallpaper.pb.h"
+#include "chrome/browser/ash/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/backdrop_wallpaper_handlers/backdrop_wallpaper.pb.h"
-#include "chrome/browser/chromeos/backdrop_wallpaper_handlers/backdrop_wallpaper_handlers.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/base/pref_names.h"
@@ -89,17 +89,6 @@ constexpr char kJpegFilePattern[] = "*.[jJ][pP][eE][gG]";
 bool IsOEMDefaultWallpaper() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kDefaultWallpaperIsOem);
-}
-
-// Returns a suffix to be appended to the base url of Backdrop wallpapers.
-std::string GetBackdropWallpaperSuffix() {
-  // FIFE url is used for Backdrop wallpapers and the desired image size should
-  // be specified. Currently we are using two times the display size. This is
-  // determined by trial and error and is subject to change.
-  gfx::Size display_size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().size();
-  return "=w" + std::to_string(
-                    2 * std::max(display_size.width(), display_size.height()));
 }
 
 // Saves |data| as |file_name| to directory with |key|. Return false if the
@@ -260,9 +249,11 @@ ExtensionFunction::ResponseAction WallpaperPrivateGetStringsFunction::Run() {
   dict->SetBoolean("isOEMDefaultWallpaper", IsOEMDefaultWallpaper());
   dict->SetString("canceledWallpaper",
                   wallpaper_api_util::kCancelWallpaperMessage);
-  dict->SetString("highResolutionSuffix", GetBackdropWallpaperSuffix());
+  dict->SetString("highResolutionSuffix",
+                  WallpaperControllerClientImpl::GetBackdropWallpaperSuffix());
 
-  auto info = WallpaperControllerClient::Get()->GetActiveUserWallpaperInfo();
+  auto info =
+      WallpaperControllerClientImpl::Get()->GetActiveUserWallpaperInfo();
   dict->SetString("currentWallpaper", info.location);
   dict->SetString("currentWallpaperLayout",
                   wallpaper_api_util::GetLayoutString(info.layout));
@@ -358,7 +349,7 @@ WallpaperPrivateSetWallpaperIfExistsFunction::Run() {
       params = set_wallpaper_if_exists::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  WallpaperControllerClient::Get()->SetOnlineWallpaperIfExists(
+  WallpaperControllerClientImpl::Get()->SetOnlineWallpaperIfExists(
       GetUserFromBrowserContext(browser_context())->GetAccountId(), params->url,
       wallpaper_api_util::GetLayoutEnum(
           wallpaper_base::ToString(params->layout)),
@@ -394,7 +385,7 @@ ExtensionFunction::ResponseAction WallpaperPrivateSetWallpaperFunction::Run() {
       params = set_wallpaper::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  WallpaperControllerClient::Get()->SetOnlineWallpaperFromData(
+  WallpaperControllerClientImpl::Get()->SetOnlineWallpaperFromData(
       GetUserFromBrowserContext(browser_context())->GetAccountId(),
       std::string(params->wallpaper.begin(), params->wallpaper.end()),
       params->url,
@@ -427,7 +418,7 @@ WallpaperPrivateResetWallpaperFunction::Run() {
   const AccountId& account_id =
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId();
 
-  WallpaperControllerClient::Get()->SetDefaultWallpaper(
+  WallpaperControllerClientImpl::Get()->SetDefaultWallpaper(
       account_id, true /* show_wallpaper */);
   return RespondNow(NoArguments());
 }
@@ -447,7 +438,7 @@ WallpaperPrivateSetCustomWallpaperFunction::Run() {
   const user_manager::User* user = GetUserFromBrowserContext(browser_context());
   account_id_ = user->GetAccountId();
   wallpaper_files_id_ =
-      WallpaperControllerClient::Get()->GetFilesId(account_id_);
+      WallpaperControllerClientImpl::Get()->GetFilesId(account_id_);
 
   StartDecode(params->wallpaper);
 
@@ -462,7 +453,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
 
   const std::string file_name =
       base::FilePath(params->file_name).BaseName().value();
-  WallpaperControllerClient::Get()->SetCustomWallpaper(
+  WallpaperControllerClientImpl::Get()->SetCustomWallpaper(
       account_id_, wallpaper_files_id_, file_name, layout, image,
       params->preview_mode);
   unsafe_wallpaper_decoder_ = nullptr;
@@ -492,7 +483,7 @@ WallpaperPrivateSetCustomWallpaperLayoutFunction::Run() {
   ash::WallpaperLayout new_layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
   wallpaper_api_util::RecordCustomWallpaperLayout(new_layout);
-  WallpaperControllerClient::Get()->UpdateCustomWallpaperLayout(
+  WallpaperControllerClientImpl::Get()->UpdateCustomWallpaperLayout(
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
       new_layout);
   return RespondNow(NoArguments());
@@ -508,7 +499,7 @@ WallpaperPrivateMinimizeInactiveWindowsFunction::
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateMinimizeInactiveWindowsFunction::Run() {
-  WallpaperControllerClient::Get()->MinimizeInactiveWindows(
+  WallpaperControllerClientImpl::Get()->MinimizeInactiveWindows(
       user_manager::UserManager::Get()->GetActiveUser()->username_hash());
   return RespondNow(NoArguments());
 }
@@ -523,7 +514,7 @@ WallpaperPrivateRestoreMinimizedWindowsFunction::
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateRestoreMinimizedWindowsFunction::Run() {
-  WallpaperControllerClient::Get()->RestoreMinimizedWindows(
+  WallpaperControllerClientImpl::Get()->RestoreMinimizedWindows(
       user_manager::UserManager::Get()->GetActiveUser()->username_hash());
   return RespondNow(NoArguments());
 }
@@ -661,7 +652,7 @@ WallpaperPrivateGetOfflineWallpaperListFunction::
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateGetOfflineWallpaperListFunction::Run() {
-  WallpaperControllerClient::Get()->GetOfflineWallpaperList(
+  WallpaperControllerClientImpl::Get()->GetOfflineWallpaperList(
       base::BindOnce(&WallpaperPrivateGetOfflineWallpaperListFunction::
                          OnOfflineWallpaperListReturned,
                      this));
@@ -670,9 +661,11 @@ WallpaperPrivateGetOfflineWallpaperListFunction::Run() {
 
 void WallpaperPrivateGetOfflineWallpaperListFunction::
     OnOfflineWallpaperListReturned(const std::vector<std::string>& url_list) {
-  auto results = std::make_unique<base::ListValue>();
-  results->AppendStrings(url_list);
-  Respond(OneArgument(base::Value::FromUniquePtrValue(std::move(results))));
+  base::Value results(base::Value::Type::LIST);
+  for (const std::string& url : url_list) {
+    results.Append(url);
+  }
+  Respond(OneArgument(std::move(results)));
 }
 
 ExtensionFunction::ResponseAction
@@ -829,7 +822,7 @@ WallpaperPrivateConfirmPreviewWallpaperFunction::
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateConfirmPreviewWallpaperFunction::Run() {
-  WallpaperControllerClient::Get()->ConfirmPreviewWallpaper();
+  WallpaperControllerClientImpl::Get()->ConfirmPreviewWallpaper();
   return RespondNow(NoArguments());
 }
 
@@ -841,7 +834,7 @@ WallpaperPrivateCancelPreviewWallpaperFunction::
 
 ExtensionFunction::ResponseAction
 WallpaperPrivateCancelPreviewWallpaperFunction::Run() {
-  WallpaperControllerClient::Get()->CancelPreviewWallpaper();
+  WallpaperControllerClientImpl::Get()->CancelPreviewWallpaper();
   return RespondNow(NoArguments());
 }
 
@@ -857,7 +850,7 @@ WallpaperPrivateGetCurrentWallpaperThumbnailFunction::Run() {
       get_current_wallpaper_thumbnail::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  auto image = WallpaperControllerClient::Get()->GetWallpaperImage();
+  auto image = WallpaperControllerClientImpl::Get()->GetWallpaperImage();
   gfx::Size thumbnail_size(params->thumbnail_width, params->thumbnail_height);
   image.EnsureRepsForSupportedScales();
   std::vector<uint8_t> thumbnail_data =

@@ -157,8 +157,8 @@ class PrivetNotificationDelegate : public message_center::NotificationDelegate {
   explicit PrivetNotificationDelegate(Profile* profile);
 
   // NotificationDelegate implementation.
-  void Click(const base::Optional<int>& button_index,
-             const base::Optional<base::string16>& reply) override;
+  void Click(const absl::optional<int>& button_index,
+             const absl::optional<std::u16string>& reply) override;
 
  protected:
   // Refcounted.

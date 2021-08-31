@@ -4,9 +4,10 @@
 
 #include "chromeos/components/quick_answers/utils/language_detector.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/callback.h"
 #include "base/metrics/field_trial_params.h"
-#include "chromeos/constants/chromeos_features.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace quick_answers {
@@ -14,22 +15,22 @@ namespace {
 
 constexpr base::FeatureParam<double> kSelectedTextConfidenceThreshold{
     &features::kQuickAnswersTranslation, "selected_text_confidence_threshold",
-    /*default_value=*/0.7};
+    /*default_value=*/0.8};
 
 constexpr base::FeatureParam<double> kSurroundingTextConfidenceThreshold{
     &features::kQuickAnswersTranslation,
     "surrounding_text_confidence_threshold", /*default_value=*/0.9};
 
-base::Optional<std::string> GetLanguageWithConfidence(
+absl::optional<std::string> GetLanguageWithConfidence(
     const std::vector<machine_learning::mojom::TextLanguagePtr>& languages,
     double confidence_threshold) {
   // The languages are sorted according to the confidence score, from the
   // highest to the lowest (according to the mojom method documentation).
   if (!languages.empty() &&
       languages.front()->confidence > confidence_threshold) {
-    return languages.front()->locale;
+    return l10n_util::GetLanguage(languages.front()->locale);
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace

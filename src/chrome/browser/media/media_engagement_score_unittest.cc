@@ -13,11 +13,11 @@
 #include "base/test/simple_test_clock.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "media/base/media_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -510,17 +510,18 @@ TEST_F(MediaEngagementScoreTest, DoNotStoreDeprecatedFields) {
       base::DictionaryValue::From(settings_map->GetWebsiteSetting(
           origin.GetURL(), GURL(), ContentSettingsType::MEDIA_ENGAGEMENT,
           nullptr));
-  EXPECT_FALSE(values->HasKey(kVisitsWithMediaTag));
-  EXPECT_FALSE(values->HasKey(kAudiblePlaybacks));
-  EXPECT_FALSE(values->HasKey(kSignificantPlaybacks));
-  EXPECT_FALSE(values->HasKey(kHighScoreChanges));
-  EXPECT_FALSE(values->HasKey(kMediaElementPlaybacks));
-  EXPECT_FALSE(values->HasKey(kAudioContextPlaybacks));
+  EXPECT_EQ(values->FindKey(kVisitsWithMediaTag), nullptr);
+  EXPECT_EQ(values->FindKey(kAudiblePlaybacks), nullptr);
+  EXPECT_EQ(values->FindKey(kSignificantPlaybacks), nullptr);
+  EXPECT_EQ(values->FindKey(kHighScoreChanges), nullptr);
+  EXPECT_EQ(values->FindKey(kMediaElementPlaybacks), nullptr);
+  EXPECT_EQ(values->FindKey(kAudioContextPlaybacks), nullptr);
 
   // Check the non-deprecated fields are still present.
-  EXPECT_TRUE(values->HasKey(MediaEngagementScore::kVisitsKey));
-  EXPECT_TRUE(values->HasKey(MediaEngagementScore::kMediaPlaybacksKey));
-  EXPECT_TRUE(values->HasKey(MediaEngagementScore::kLastMediaPlaybackTimeKey));
-  EXPECT_TRUE(values->HasKey(MediaEngagementScore::kHasHighScoreKey));
-  EXPECT_TRUE(values->HasKey(kNotDeprectedUnknown));
+  EXPECT_NE(values->FindKey(MediaEngagementScore::kVisitsKey), nullptr);
+  EXPECT_NE(values->FindKey(MediaEngagementScore::kMediaPlaybacksKey), nullptr);
+  EXPECT_NE(values->FindKey(MediaEngagementScore::kLastMediaPlaybackTimeKey),
+            nullptr);
+  EXPECT_NE(values->FindKey(MediaEngagementScore::kHasHighScoreKey), nullptr);
+  EXPECT_NE(values->FindKey(kNotDeprectedUnknown), nullptr);
 }

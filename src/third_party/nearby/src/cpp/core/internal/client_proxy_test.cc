@@ -20,9 +20,13 @@
 #include "core/options.h"
 #include "core/strategy.h"
 #include "platform/base/byte_array.h"
+#include "platform/base/feature_flags.h"
+#include "platform/base/medium_environment.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "absl/container/flat_hash_set.h"
+#include "absl/time/clock.h"
+#include "absl/time/time.h"
 #include "absl/types/span.h"
 
 namespace location {
@@ -30,10 +34,20 @@ namespace nearby {
 namespace connections {
 namespace {
 
+using FeatureFlags = FeatureFlags::Flags;
 using ::testing::MockFunction;
 using ::testing::StrictMock;
 
-class ClientProxyTest : public testing::Test {
+constexpr FeatureFlags kTestCases[] = {
+    FeatureFlags{
+        .enable_cancellation_flag = true,
+    },
+    FeatureFlags{
+        .enable_cancellation_flag = false,
+    },
+};
+
+class ClientProxyTest : public ::testing::TestWithParam<FeatureFlags> {
  protected:
   struct MockDiscoveryListener {
     StrictMock<MockFunction<void(const std::string& endpoint_id,
@@ -71,15 +85,26 @@ class ClientProxyTest : public testing::Test {
     std::string id;
   };
 
-  Endpoint StartAdvertising(ClientProxy* client, ConnectionListener listener) {
+  bool ShouldEnterHighVisibilityMode(const ConnectionOptions& options) {
+    return !options.low_power && options.allowed.bluetooth;
+  }
+
+  Endpoint StartAdvertising(
+      ClientProxy* client, ConnectionListener listener,
+      ConnectionOptions advertising_options = ConnectionOptions{}) {
+    if (ShouldEnterHighVisibilityMode(advertising_options)) {
+      client->EnterHighVisibilityMode();
+    }
     Endpoint endpoint{
         .info = ByteArray{"advertising endpoint name"},
         .id = client->GetLocalEndpointId(),
     };
     client->StartedAdvertising(service_id_, strategy_, listener,
-                               absl::MakeSpan(mediums_));
+                               absl::MakeSpan(mediums_), advertising_options);
     return endpoint;
   }
+
+  void StopAdvertising(ClientProxy* client) { client->StoppedAdvertising(); }
 
   Endpoint StartDiscovery(ClientProxy* client, DiscoveryListener listener) {
     Endpoint endpoint{
@@ -93,8 +118,7 @@ class ClientProxyTest : public testing::Test {
 
   void OnDiscoveryEndpointFound(ClientProxy* client, const Endpoint& endpoint) {
     EXPECT_CALL(mock_discovery_.endpoint_found_cb, Call).Times(1);
-    client->OnEndpointFound(service_id_, endpoint.id, endpoint.info,
-                            medium_);
+    client->OnEndpointFound(service_id_, endpoint.id, endpoint.info, medium_);
   }
 
   void OnDiscoveryEndpointLost(ClientProxy* client, const Endpoint& endpoint) {
@@ -228,6 +252,106 @@ class ClientProxyTest : public testing::Test {
   ConnectionOptions connection_options_;
 };
 
+TEST_P(ClientProxyTest, CanCancelEndpoint) {
+  FeatureFlags feature_flags = GetParam();
+  MediumEnvironment::Instance().SetFeatureFlags(feature_flags);
+
+  Endpoint advertising_endpoint =
+      StartAdvertising(&client1_, advertising_connection_listener_);
+  StartDiscovery(&client2_, discovery_listener_);
+  OnDiscoveryEndpointFound(&client2_, advertising_endpoint);
+  OnDiscoveryConnectionInitiated(&client2_, advertising_endpoint);
+
+  EXPECT_FALSE(
+      client2_.GetCancellationFlag(advertising_endpoint.id)->Cancelled());
+
+  client2_.CancelEndpoint(advertising_endpoint.id);
+
+  // If FeatureFlag is disabled, Cancelled is false as no-op.
+  if (!feature_flags.enable_cancellation_flag) {
+    EXPECT_FALSE(
+        client2_.GetCancellationFlag(advertising_endpoint.id)->Cancelled());
+  } else {
+    // The Cancelled is always true as the default flag being returned.
+    EXPECT_TRUE(
+        client2_.GetCancellationFlag(advertising_endpoint.id)->Cancelled());
+  }
+}
+
+TEST_P(ClientProxyTest, CanCancelAllEndpoints) {
+  FeatureFlags feature_flags = GetParam();
+  MediumEnvironment::Instance().SetFeatureFlags(feature_flags);
+
+  Endpoint advertising_endpoint =
+      StartAdvertising(&client1_, advertising_connection_listener_);
+  StartDiscovery(&client2_, discovery_listener_);
+  OnDiscoveryEndpointFound(&client2_, advertising_endpoint);
+  OnDiscoveryConnectionInitiated(&client2_, advertising_endpoint);
+
+  EXPECT_FALSE(
+      client2_.GetCancellationFlag(advertising_endpoint.id)->Cancelled());
+
+  client2_.CancelAllEndpoints();
+
+  // If FeatureFlag is disabled, Cancelled is false as no-op.
+  if (!feature_flags.enable_cancellation_flag) {
+    EXPECT_FALSE(
+        client2_.GetCancellationFlag(advertising_endpoint.id)->Cancelled());
+  } else {
+    // The Cancelled is always true as the default flag being returned.
+    EXPECT_TRUE(
+        client2_.GetCancellationFlag(advertising_endpoint.id)->Cancelled());
+  }
+}
+
+TEST_P(ClientProxyTest, CanCancelAllEndpointsWithDifferentEndpoint) {
+  FeatureFlags feature_flags = GetParam();
+  MediumEnvironment::Instance().SetFeatureFlags(feature_flags);
+
+  ConnectionListener advertising_connection_listener_2;
+  ConnectionListener advertising_connection_listener_3;
+  ClientProxy client3;
+
+  StartDiscovery(&client1_, discovery_listener_);
+  Endpoint advertising_endpoint_2 =
+      StartAdvertising(&client2_, advertising_connection_listener_2);
+  Endpoint advertising_endpoint_3 =
+      StartAdvertising(&client3, advertising_connection_listener_3);
+  OnDiscoveryEndpointFound(&client1_, advertising_endpoint_2);
+  OnDiscoveryConnectionInitiated(&client1_, advertising_endpoint_2);
+  OnDiscoveryEndpointFound(&client1_, advertising_endpoint_3);
+  OnDiscoveryConnectionInitiated(&client1_, advertising_endpoint_3);
+
+  // The CancellationFlag of endpoint_2 and endpoint_3 have been added. Default
+  // Cancelled is false.
+  EXPECT_FALSE(
+      client1_.GetCancellationFlag(advertising_endpoint_2.id)->Cancelled());
+  EXPECT_FALSE(
+      client1_.GetCancellationFlag(advertising_endpoint_3.id)->Cancelled());
+
+  client1_.CancelAllEndpoints();
+
+  if (!feature_flags.enable_cancellation_flag) {
+    // The CancellationFlag of endpoint_2 and endpoint_3 will not be removed
+    // since it is not added. The default flag returned as Cancelled being true,
+    // but Cancelled requested is false since the FeatureFlag is off.
+    EXPECT_FALSE(
+        client1_.GetCancellationFlag(advertising_endpoint_2.id)->Cancelled());
+    EXPECT_FALSE(
+        client1_.GetCancellationFlag(advertising_endpoint_3.id)->Cancelled());
+  } else {
+    // Expect the CancellationFlag of endpoint_2 and endpoint_3 has been
+    // removed. The Cancelled is always true as the default flag being returned.
+    EXPECT_TRUE(
+        client1_.GetCancellationFlag(advertising_endpoint_2.id)->Cancelled());
+    EXPECT_TRUE(
+        client1_.GetCancellationFlag(advertising_endpoint_3.id)->Cancelled());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(ParametrisedClientProxyTest, ClientProxyTest,
+                         ::testing::ValuesIn(kTestCases));
+
 TEST_F(ClientProxyTest, ConstructorDestructorWorks) { SUCCEED(); }
 
 TEST_F(ClientProxyTest, ClientIdIsUnique) {
@@ -235,8 +359,7 @@ TEST_F(ClientProxyTest, ClientIdIsUnique) {
 }
 
 TEST_F(ClientProxyTest, GeneratedEndpointIdIsUnique) {
-  EXPECT_NE(client1_.GetLocalEndpointId(),
-            client2_.GetLocalEndpointId());
+  EXPECT_NE(client1_.GetLocalEndpointId(), client2_.GetLocalEndpointId());
 }
 
 TEST_F(ClientProxyTest, ResetClearsState) {
@@ -367,6 +490,129 @@ TEST_F(ClientProxyTest, OnPayloadProgressChangesState) {
   OnDiscoveryConnectionRemoteAccepted(&client2_, advertising_endpoint);
   OnDiscoveryConnectionAccepted(&client2_, advertising_endpoint);
   OnPayloadProgress(&client2_, advertising_endpoint);
+}
+
+TEST_F(ClientProxyTest,
+       EndpointIdCacheWhenHighVizAdvertisementAgainImmediately) {
+  ConnectionOptions advertising_options{.strategy = strategy_,
+                                        .allowed =
+                                            {
+                                                .bluetooth = true,
+                                            },
+                                        .low_power = false};
+
+  Endpoint advertising_endpoint_1 = StartAdvertising(
+      &client1_, advertising_connection_listener_, advertising_options);
+
+  StopAdvertising(&client1_);
+
+  // Advertise immediately.
+  Endpoint advertising_endpoint_2 = StartAdvertising(
+      &client1_, advertising_connection_listener_, advertising_options);
+
+  EXPECT_EQ(advertising_endpoint_1.id, advertising_endpoint_2.id);
+}
+
+TEST_F(ClientProxyTest,
+       EndpointIdRotateWhenHighVizAdvertisementAgainForAWhile) {
+  ConnectionOptions advertising_options{.strategy = strategy_,
+                                        .allowed =
+                                            {
+                                                .bluetooth = true,
+                                            },
+                                        .low_power = false};
+
+  Endpoint advertising_endpoint_1 = StartAdvertising(
+      &client1_, advertising_connection_listener_, advertising_options);
+
+  StopAdvertising(&client1_);
+
+  // Wait to expire and then advertise.
+  absl::SleepFor(ClientProxy::kHighPowerAdvertisementEndpointIdCacheTimeout +
+                 absl::Milliseconds(10));
+  Endpoint advertising_endpoint_2 = StartAdvertising(
+      &client1_, advertising_connection_listener_, advertising_options);
+
+  EXPECT_NE(advertising_endpoint_1.id, advertising_endpoint_2.id);
+}
+
+TEST_F(ClientProxyTest,
+       EndpointIdRotateWhenLowVizAdvertisementAfterHighVizAdvertisement) {
+  ConnectionOptions high_viz_advertising_options{.strategy = strategy_,
+                                                 .allowed =
+                                                     {
+                                                         .bluetooth = true,
+                                                     },
+                                                 .low_power = false};
+  Endpoint advertising_endpoint_1 =
+      StartAdvertising(&client1_, advertising_connection_listener_,
+                       high_viz_advertising_options);
+
+  StopAdvertising(&client1_);
+
+  ConnectionOptions low_viz_advertising_options{.strategy = strategy_,
+                                                .low_power = true};
+
+  Endpoint advertising_endpoint_2 = StartAdvertising(
+      &client1_, advertising_connection_listener_, low_viz_advertising_options);
+
+  EXPECT_NE(advertising_endpoint_1.id, advertising_endpoint_2.id);
+}
+
+// Tests endpoint_id rotates when discover.
+TEST_F(ClientProxyTest, EndpointIdRotateWhenStartDiscovery) {
+  ConnectionOptions advertising_options{.strategy = strategy_,
+                                        .allowed =
+                                            {
+                                                .bluetooth = true,
+                                            },
+                                        .low_power = false};
+
+  Endpoint advertising_endpoint_1 = StartAdvertising(
+      &client1_, advertising_connection_listener_, advertising_options);
+
+  StopAdvertising(&client1_);
+  StartDiscovery(&client1_, discovery_listener_);
+
+  Endpoint advertising_endpoint_2 = StartAdvertising(
+      &client1_, advertising_connection_listener_, advertising_options);
+
+  EXPECT_NE(advertising_endpoint_1.id, advertising_endpoint_2.id);
+}
+
+// Tests the low visibility mode with bluetooth disabled advertisment.
+TEST_F(ClientProxyTest,
+       EndpointIdRotateWhenLowVizAdvertisementWithBluetoothDisabled) {
+  ConnectionOptions advertising_options{.strategy = strategy_,
+                                        .allowed = {
+                                            .bluetooth = false,
+                                        }};
+
+  Endpoint advertising_endpoint_1 = StartAdvertising(
+      &client1_, advertising_connection_listener_, advertising_options);
+
+  StopAdvertising(&client1_);
+
+  Endpoint advertising_endpoint_2 = StartAdvertising(
+      &client1_, advertising_connection_listener_, advertising_options);
+
+  EXPECT_NE(advertising_endpoint_1.id, advertising_endpoint_2.id);
+}
+
+// Tests the low visibility mode with low power advertisment.
+TEST_F(ClientProxyTest, EndpointIdRotateWhenLowVizAdvertisementWithLowPower) {
+  ConnectionOptions advertising_options{.strategy = strategy_,
+                                        .low_power = true};
+
+  Endpoint advertising_endpoint_1 = StartAdvertising(
+      &client1_, advertising_connection_listener_, advertising_options);
+
+  StopAdvertising(&client1_);
+
+  Endpoint advertising_endpoint_2 = StartAdvertising(
+      &client1_, advertising_connection_listener_, advertising_options);
+
+  EXPECT_NE(advertising_endpoint_1.id, advertising_endpoint_2.id);
 }
 
 }  // namespace

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -87,12 +88,12 @@ DefaultSearchManager::DefaultSearchManager(
     pref_change_registrar_.Init(pref_service_);
     pref_change_registrar_.Add(
         kDefaultSearchProviderDataPrefName,
-        base::Bind(&DefaultSearchManager::OnDefaultSearchPrefChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&DefaultSearchManager::OnDefaultSearchPrefChanged,
+                            base::Unretained(this)));
     pref_change_registrar_.Add(
         prefs::kSearchProviderOverrides,
-        base::Bind(&DefaultSearchManager::OnOverridesPrefChanged,
-                   base::Unretained(this)));
+        base::BindRepeating(&DefaultSearchManager::OnOverridesPrefChanged,
+                            base::Unretained(this)));
   }
   LoadPrepopulatedDefaultSearch();
   LoadDefaultSearchEngineFromPrefs();
@@ -191,7 +192,7 @@ const TemplateURLData* DefaultSearchManager::GetFallbackSearchEngine() const {
 void DefaultSearchManager::SetUserSelectedDefaultSearchEngine(
     const TemplateURLData& data) {
   if (!pref_service_) {
-    prefs_default_search_.reset(new TemplateURLData(data));
+    prefs_default_search_ = std::make_unique<TemplateURLData>(data);
     MergePrefsDataWithPrepopulated();
     NotifyObserver();
     return;
@@ -288,7 +289,7 @@ void DefaultSearchManager::LoadDefaultSearchEngineFromPrefs() {
 
   const base::DictionaryValue* url_dict =
       pref_service_->GetDictionary(kDefaultSearchProviderDataPrefName);
-  if (url_dict->empty())
+  if (url_dict->DictEmpty())
     return;
 
   if (default_search_controlled_by_policy_) {

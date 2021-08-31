@@ -13,10 +13,10 @@
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -202,7 +202,8 @@ base::TimeDelta GetWindowVisibilityAnimationDuration(
     const aura::Window& window) {
   base::TimeDelta duration =
       window.GetProperty(kWindowVisibilityAnimationDurationKey);
-  if (duration.is_zero() && window.type() == aura::client::WINDOW_TYPE_MENU) {
+  if (duration.is_zero() &&
+      window.GetType() == aura::client::WINDOW_TYPE_MENU) {
     return base::TimeDelta::FromMilliseconds(
         kDefaultAnimationDurationForMenuMS);
   }
@@ -214,8 +215,8 @@ base::TimeDelta GetWindowVisibilityAnimationDuration(
 int GetWindowVisibilityAnimationType(aura::Window* window) {
   int type = window->GetProperty(kWindowVisibilityAnimationTypeKey);
   if (type == WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT) {
-    return (window->type() == aura::client::WINDOW_TYPE_MENU ||
-            window->type() == aura::client::WINDOW_TYPE_TOOLTIP)
+    return (window->GetType() == aura::client::WINDOW_TYPE_MENU ||
+            window->GetType() == aura::client::WINDOW_TYPE_TOOLTIP)
                ? WINDOW_VISIBILITY_ANIMATION_TYPE_FADE
                : WINDOW_VISIBILITY_ANIMATION_TYPE_DROP;
   }
@@ -443,10 +444,7 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
   base::TimeDelta duration = base::TimeDelta::FromMilliseconds(
       kWindowAnimation_Rotate_DurationMS);
 
-  RotateHidingWindowAnimationObserver* observer = nullptr;
-
   if (!show) {
-    observer = new RotateHidingWindowAnimationObserver(window);
     window->layer()->GetAnimator()->SchedulePauseForProperties(
         duration * (100 - kWindowAnimation_Rotate_OpacityDurationPercent) / 100,
         ui::LayerAnimationElement::OPACITY);
@@ -494,10 +492,17 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
           std::move(rotation), duration);
   ui::LayerAnimationSequence* last_sequence =
       new ui::LayerAnimationSequence(std::move(transition));
+  auto weak_last_sequence = last_sequence->AsWeakPtr();
   window->layer()->GetAnimator()->ScheduleAnimation(last_sequence);
+  // If the animation is immediate, then |last_sequence| will have been
+  // deleted.
+  last_sequence = nullptr;
 
-  if (observer) {
-    observer->SetLastSequence(last_sequence);
+  if (!show && weak_last_sequence) {
+    // RotateHidingWindowAnimationObserver deletes itself when no longer
+    // needed.
+    auto* observer = new RotateHidingWindowAnimationObserver(window);
+    observer->SetLastSequence(weak_last_sequence.get());
     observer->DetachAndRecreateLayers();
   }
 
@@ -663,6 +668,15 @@ bool AnimateWindow(aura::Window* window, WindowAnimationType type) {
 }
 
 bool WindowAnimationsDisabled(aura::Window* window) {
+  // WARNING: this function is called from VisibilityController to determine
+  // if an animation should happen when the Window's visibility changes.
+  // Returning false results in VisibilityController applying default
+  // handling of the transition. This can result in dramatically different
+  // results than if an animation occurs. For example, VisibilityController
+  // doesn't change the opacity, yet many of the animations do. Similarly,
+  // ash's animations may change the bounds, which VisibilityController won't
+  // do. Take care when adding a new path that returns false.
+
   // Individual windows can choose to skip animations.
   if (window && window->GetProperty(aura::client::kAnimationsDisabledKey))
     return true;

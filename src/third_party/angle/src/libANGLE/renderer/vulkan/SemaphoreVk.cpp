@@ -115,13 +115,15 @@ angle::Result SemaphoreVk::wait(gl::Context *context,
         for (gl::Buffer *buffer : bufferBarriers)
         {
             BufferVk *bufferVk             = vk::GetImpl(buffer);
-            vk::BufferHelper &bufferHelper = bufferVk->getBuffer();
+            VkDeviceSize bufferOffset      = 0;
+            vk::BufferHelper &bufferHelper = bufferVk->getBufferAndOffset(&bufferOffset);
 
-            vk::CommandBuffer &commandBuffer = contextVk->getOutsideRenderPassCommandBuffer();
+            vk::CommandBuffer *commandBuffer;
+            ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer({}, &commandBuffer));
 
             // Queue ownership transfer.
             bufferHelper.acquireFromExternal(contextVk, VK_QUEUE_FAMILY_EXTERNAL,
-                                             rendererQueueFamilyIndex, &commandBuffer);
+                                             rendererQueueFamilyIndex, commandBuffer);
         }
     }
 
@@ -136,7 +138,8 @@ angle::Result SemaphoreVk::wait(gl::Context *context,
             vk::ImageHelper &image = textureVk->getImage();
             vk::ImageLayout layout = GetVulkanImageLayout(textureAndLayout.layout);
 
-            vk::CommandBuffer &commandBuffer = contextVk->getOutsideRenderPassCommandBuffer();
+            vk::CommandBuffer *commandBuffer;
+            ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer({}, &commandBuffer));
 
             // Image should not be accessed while unowned. Emulated formats may have staged updates
             // to clear the image after initialization.
@@ -145,7 +148,7 @@ angle::Result SemaphoreVk::wait(gl::Context *context,
 
             // Queue ownership transfer and layout transition.
             image.acquireFromExternal(contextVk, VK_QUEUE_FAMILY_EXTERNAL, rendererQueueFamilyIndex,
-                                      layout, &commandBuffer);
+                                      layout, commandBuffer);
         }
     }
 
@@ -167,14 +170,16 @@ angle::Result SemaphoreVk::signal(gl::Context *context,
         for (gl::Buffer *buffer : bufferBarriers)
         {
             BufferVk *bufferVk             = vk::GetImpl(buffer);
-            vk::BufferHelper &bufferHelper = bufferVk->getBuffer();
+            VkDeviceSize bufferOffset      = 0;
+            vk::BufferHelper &bufferHelper = bufferVk->getBufferAndOffset(&bufferOffset);
 
             ANGLE_TRY(contextVk->onBufferReleaseToExternal(bufferHelper));
-            vk::CommandBuffer &commandBuffer = contextVk->getOutsideRenderPassCommandBuffer();
+            vk::CommandBuffer *commandBuffer;
+            ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer({}, &commandBuffer));
 
             // Queue ownership transfer.
             bufferHelper.releaseToExternal(contextVk, rendererQueueFamilyIndex,
-                                           VK_QUEUE_FAMILY_EXTERNAL, &commandBuffer);
+                                           VK_QUEUE_FAMILY_EXTERNAL, commandBuffer);
         }
     }
 
@@ -199,11 +204,12 @@ angle::Result SemaphoreVk::signal(gl::Context *context,
             ANGLE_TRY(textureVk->ensureImageInitialized(contextVk, ImageMipLevels::EnabledLevels));
 
             ANGLE_TRY(contextVk->onImageReleaseToExternal(image));
-            vk::CommandBuffer &commandBuffer = contextVk->getOutsideRenderPassCommandBuffer();
+            vk::CommandBuffer *commandBuffer;
+            ANGLE_TRY(contextVk->getOutsideRenderPassCommandBuffer({}, &commandBuffer));
 
             // Queue ownership transfer and layout transition.
             image.releaseToExternal(contextVk, rendererQueueFamilyIndex, VK_QUEUE_FAMILY_EXTERNAL,
-                                    layout, &commandBuffer);
+                                    layout, commandBuffer);
         }
     }
 
@@ -257,7 +263,7 @@ angle::Result SemaphoreVk::importZirconEvent(ContextVk *contextVk, GLuint handle
     importSemaphoreZirconHandleInfo.flags     = 0;
     importSemaphoreZirconHandleInfo.handleType =
         VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_TEMP_ZIRCON_EVENT_BIT_FUCHSIA;
-    importSemaphoreZirconHandleInfo.handle = handle;
+    importSemaphoreZirconHandleInfo.zirconHandle = handle;
 
     // TODO(spang): Add vkImportSemaphoreZirconHandleFUCHSIA to volk.
     static PFN_vkImportSemaphoreZirconHandleFUCHSIA vkImportSemaphoreZirconHandleFUCHSIA =

@@ -80,7 +80,7 @@ class WTF_EXPORT Partitions {
   static void* BufferMalloc(size_t n, const char* type_name);
   static void* BufferTryRealloc(void* p, size_t n, const char* type_name);
   static void BufferFree(void* p);
-  static size_t BufferActualSize(size_t n);
+  static size_t BufferPotentialCapacity(size_t n);
 
   static void* FastMalloc(size_t n, const char* type_name);
   static void* FastZeroedMalloc(size_t n, const char* type_name);
@@ -89,16 +89,20 @@ class WTF_EXPORT Partitions {
   static void HandleOutOfMemory(size_t size);
 
  private:
+#if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   ALWAYS_INLINE static base::ThreadSafePartitionRoot* FastMallocPartition() {
     DCHECK(initialized_);
     return fast_malloc_root_;
   }
+#endif  // !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
   static bool InitializeOnce();
 
   static bool initialized_;
   // See Allocator.md for a description of these partitions.
+#if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   static base::ThreadSafePartitionRoot* fast_malloc_root_;
+#endif
   static base::ThreadSafePartitionRoot* array_buffer_root_;
   static base::ThreadSafePartitionRoot* buffer_root_;
   static base::ThreadUnsafePartitionRoot* layout_root_;

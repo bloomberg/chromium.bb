@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
@@ -87,7 +88,7 @@ RequestResponsePair MakeQueryRequestResponsePair(
 
 // Returns a query request URL. If |query| is not empty, the corresponding
 // query is encoded into the URL.
-bool MakeQueryRequestURL(const base::Optional<AutofillPageQueryRequest>& query,
+bool MakeQueryRequestURL(const absl::optional<AutofillPageQueryRequest>& query,
                          std::string* request_url) {
   if (!query.has_value()) {
     *request_url = CreateQueryUrl("");
@@ -117,12 +118,19 @@ bool MakeSerializedRequest(const AutofillPageQueryRequest& query,
                            std::string* request_url) {
   // Make body and query content for URL depending on the |type|.
   std::string body;
-  base::Optional<AutofillPageQueryRequest> query_for_url;
+  absl::optional<AutofillPageQueryRequest> query_for_url;
   if (type == RequestType::kQueryProtoGET) {
     query_for_url = std::move(query);
   } else {
-    query.SerializeToString(&body);
-    query_for_url = base::nullopt;
+    std::string serialized_query;
+    std::string encoded_query;
+    query.SerializeToString(&serialized_query);
+    base::Base64Encode(serialized_query, &encoded_query);
+    // Wrap query payload in a request proto to interface with API Query method.
+    AutofillPageResourceQueryRequest request;
+    request.set_serialized_request(encoded_query);
+    request.SerializeToString(&body);
+    query_for_url = absl::nullopt;
   }
 
   // Make header according to query content for URL.

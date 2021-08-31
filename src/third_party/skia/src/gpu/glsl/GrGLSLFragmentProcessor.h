@@ -8,12 +8,11 @@
 #ifndef GrGLSLFragmentProcessor_DEFINED
 #define GrGLSLFragmentProcessor_DEFINED
 
+#include "include/private/SkSLString.h"
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrShaderVar.h"
-#include "src/gpu/glsl/GrGLSLPrimitiveProcessor.h"
 #include "src/gpu/glsl/GrGLSLProgramDataManager.h"
 #include "src/gpu/glsl/GrGLSLUniformHandler.h"
-#include "src/sksl/SkSLString.h"
 
 class GrProcessor;
 class GrProcessorKeyBuilder;
@@ -22,13 +21,9 @@ class GrGLSLFPFragmentBuilder;
 
 class GrGLSLFragmentProcessor {
 public:
-    GrGLSLFragmentProcessor() {}
+    GrGLSLFragmentProcessor() = default;
 
-    virtual ~GrGLSLFragmentProcessor() {
-        for (int i = 0; i < fChildProcessors.count(); ++i) {
-            delete fChildProcessors[i];
-        }
-    }
+    virtual ~GrGLSLFragmentProcessor() = default;
 
     using UniformHandle      = GrGLSLUniformHandler::UniformHandle;
     using SamplerHandle      = GrGLSLUniformHandler::SamplerHandle;
@@ -101,29 +96,23 @@ public:
                  GrGLSLUniformHandler* uniformHandler,
                  const GrShaderCaps* caps,
                  const GrFragmentProcessor& fp,
-                 const char* outputColor,
                  const char* inputColor,
                  const char* sampleCoord,
-                 const TransformedCoordVars& transformedCoordVars,
-                 bool forceInline)
+                 const TransformedCoordVars& transformedCoordVars)
                 : fFragBuilder(fragBuilder)
                 , fUniformHandler(uniformHandler)
                 , fShaderCaps(caps)
                 , fFp(fp)
-                , fOutputColor(outputColor)
                 , fInputColor(inputColor ? inputColor : "half4(1.0)")
                 , fSampleCoord(sampleCoord)
-                , fTransformedCoords(transformedCoordVars)
-                , fForceInline(forceInline) {}
+                , fTransformedCoords(transformedCoordVars) {}
         GrGLSLFPFragmentBuilder* fFragBuilder;
         GrGLSLUniformHandler* fUniformHandler;
         const GrShaderCaps* fShaderCaps;
         const GrFragmentProcessor& fFp;
-        const char* fOutputColor;
         const char* fInputColor;
         const char* fSampleCoord;
         const TransformedCoordVars& fTransformedCoords;
-        bool fForceInline;
     };
 
     virtual void emitCode(EmitArgs&) = 0;
@@ -134,7 +123,9 @@ public:
 
     int numChildProcessors() const { return fChildProcessors.count(); }
 
-    GrGLSLFragmentProcessor* childProcessor(int index) const { return fChildProcessors[index]; }
+    GrGLSLFragmentProcessor* childProcessor(int index) const {
+        return fChildProcessors[index].get();
+    }
 
     void emitChildFunction(int childIndex, EmitArgs& parentArgs);
 
@@ -144,9 +135,8 @@ public:
         return this->invokeChild(childIndex, nullptr, parentArgs, skslCoords);
     }
 
-    inline SkString invokeChildWithMatrix(int childIndex, EmitArgs& parentArgs,
-                                          SkSL::String skslMatrix = "") {
-        return this->invokeChildWithMatrix(childIndex, nullptr, parentArgs, skslMatrix);
+    inline SkString invokeChildWithMatrix(int childIndex, EmitArgs& parentArgs) {
+        return this->invokeChildWithMatrix(childIndex, nullptr, parentArgs);
     }
 
     /** Invokes a child proc in its own scope. Pass in the parent's EmitArgs and invokeChild will
@@ -165,17 +155,11 @@ public:
                          SkSL::String skslCoords = "");
 
     /**
-     * As invokeChild, but transforms the coordinates according to the provided matrix. This variant
-     * corresponds to a call of "sample(child, color, matrix)" in SkSL, where skslMatrix is an SkSL
-     * expression that evaluates to a float3x3 and is passed in as the 3rd argument.
-     *
-     * If skslMatrix is the empty string, then it is automatically replaced with the expression
-     * attached to the child's SampleUsage object. This is only valid if the child is sampled with
-     * a const-uniform matrix. If the sample matrix is const-or-uniform, the expression will be
-     * automatically resolved to the mangled uniform name.
+     * As invokeChild, but transforms the coordinates according to the matrix expression attached
+     * to the child's SampleUsage object. This is only valid if the child is sampled with a
+     * const-uniform matrix.
      */
-    SkString invokeChildWithMatrix(int childIndex, const char* inputColor, EmitArgs& parentArgs,
-                                   SkSL::String skslMatrix = "");
+    SkString invokeChildWithMatrix(int childIndex, const char* inputColor, EmitArgs& parentArgs);
 
     /**
      * Pre-order traversal of a GLSLFP hierarchy, or of multiple trees with roots in an array of
@@ -250,7 +234,7 @@ private:
     // one per child; either not present or empty string if not yet emitted
     SkTArray<SkString> fFunctionNames;
 
-    SkTArray<GrGLSLFragmentProcessor*, true> fChildProcessors;
+    SkTArray<std::unique_ptr<GrGLSLFragmentProcessor>, true> fChildProcessors;
 
     friend class GrFragmentProcessor;
 };

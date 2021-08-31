@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ozone.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
@@ -11,6 +12,9 @@ mojom("mojom") {
     "buffer_types.mojom",
     "ca_layer_params.mojom",
     "color_space.mojom",
+    "delegated_ink_metadata.mojom",
+    "delegated_ink_point.mojom",
+    "delegated_ink_point_renderer.mojom",
     "display_color_spaces.mojom",
     "font_render_params.mojom",
     "gpu_extra_info.mojom",
@@ -29,11 +33,12 @@ mojom("mojom") {
   public_deps = [
     ":native_handle_types",
     "//mojo/public/mojom/base",
+    "//skia/public/mojom",
     "//ui/gfx/geometry/mojom",
   ]
 
   enabled_features = []
-  if (use_x11 || use_ozone) {
+  if (use_x11 || ozone_platform_x11) {
     enabled_features += [ "enable_x11_params" ]
   }
 
@@ -51,6 +56,10 @@ mojom("mojom") {
         {
           mojom = "gfx.mojom.BufferUsageAndFormat"
           cpp = "::gfx::BufferUsageAndFormat"
+        },
+        {
+          mojom = "gfx.mojom.BufferPlane"
+          cpp = "::gfx::BufferPlane"
         },
         {
           mojom = "gfx.mojom.GpuMemoryBufferHandle"
@@ -80,7 +89,17 @@ mojom("mojom") {
         },
       ]
       traits_headers = [ "color_space_mojom_traits.h" ]
-      traits_public_deps = [ ":color_space_mojom_support" ]
+      traits_public_deps = [ ":shared_mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.DisplayColorSpaces"
+          cpp = "::gfx::DisplayColorSpaces"
+        },
+      ]
+      traits_headers = [ "display_color_spaces_mojom_traits.h" ]
+      traits_public_deps = [ ":shared_mojom_traits" ]
     },
     {
       types = [
@@ -176,12 +195,25 @@ mojom("mojom") {
     {
       types = [
         {
-          mojom = "gfx.mojom.DisplayColorSpaces"
-          cpp = "::gfx::DisplayColorSpaces"
+          mojom = "gfx.mojom.DelegatedInkMetadata"
+          cpp = "::std::unique_ptr<::gfx::DelegatedInkMetadata>"
+          move_only = true
+          nullable_is_same_type = true
         },
       ]
-      traits_sources = [ "display_color_spaces_mojom_traits.cc" ]
-      traits_headers = [ "display_color_spaces_mojom_traits.h" ]
+      traits_sources = [ "delegated_ink_metadata_mojom_traits.cc" ]
+      traits_headers = [ "delegated_ink_metadata_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/gfx" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.DelegatedInkPoint"
+          cpp = "::gfx::DelegatedInkPoint"
+        },
+      ]
+      traits_sources = [ "delegated_ink_point_mojom_traits.cc" ]
+      traits_headers = [ "delegated_ink_point_mojom_traits.h" ]
       traits_public_deps = [ "//ui/gfx" ]
     },
     {
@@ -258,6 +290,20 @@ mojom("mojom") {
 
   cpp_typemaps += shared_cpp_typemaps
   blink_cpp_typemaps = shared_cpp_typemaps
+  blink_cpp_typemaps += [
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.DelegatedInkMetadata"
+          cpp = "::std::unique_ptr<::gfx::DelegatedInkMetadata>"
+          move_only = true
+          nullable_is_same_type = true
+        },
+      ]
+      traits_headers = [ "delegated_ink_metadata_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/gfx" ]
+    },
+  ]
 }
 
 mojom("native_handle_types") {
@@ -294,18 +340,6 @@ mojom("test_interfaces") {
   public_deps = [ ":mojom" ]
 }
 
-component("color_space_mojom_support") {
-  sources = [
-    "color_space_mojom_traits.cc",
-    "color_space_mojom_traits.h",
-  ]
-  public_deps = [
-    ":mojom_shared_cpp_sources",
-    "//ui/gfx",
-  ]
-  defines = [ "IS_UI_GFX_MOJOM_TRAITS_IMPL" ]
-}
-
 component("native_handle_types_mojom_traits") {
   output_name = "gfx_native_types_shared_mojom_traits"
   defines = [ "IS_GFX_NATIVE_HANDLE_TYPES_SHARED_MOJOM_TRAITS_IMPL" ]
@@ -328,6 +362,10 @@ component("shared_mojom_traits") {
   sources = [
     "buffer_types_mojom_traits.cc",
     "buffer_types_mojom_traits.h",
+    "color_space_mojom_traits.cc",
+    "color_space_mojom_traits.h",
+    "display_color_spaces_mojom_traits.cc",
+    "display_color_spaces_mojom_traits.h",
     "gpu_extra_info_mojom_traits.cc",
     "gpu_extra_info_mojom_traits.h",
     "gpu_fence_handle_mojom_traits.cc",
@@ -338,6 +376,9 @@ component("shared_mojom_traits") {
     ":native_handle_types",
     "//ui/gfx",
   ]
+  if (use_ozone) {
+    public_deps += [ "//ui/ozone:buildflags" ]
+  }
   frameworks = [
     "CoreFoundation.framework",
     "IOSurface.framework",

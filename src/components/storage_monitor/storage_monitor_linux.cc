@@ -19,12 +19,12 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -147,11 +147,11 @@ std::unique_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
   if (!device.get())
     return storage_info;
 
-  base::string16 volume_label = base::UTF8ToUTF16(
+  std::u16string volume_label = base::UTF8ToUTF16(
       device::UdevDeviceGetPropertyValue(device.get(), kLabel));
-  base::string16 vendor_name = base::UTF8ToUTF16(
+  std::u16string vendor_name = base::UTF8ToUTF16(
       device::UdevDeviceGetPropertyValue(device.get(), kVendor));
-  base::string16 model_name = base::UTF8ToUTF16(
+  std::u16string model_name = base::UTF8ToUTF16(
       device::UdevDeviceGetPropertyValue(device.get(), kModel));
 
   std::string unique_id = MakeDeviceUniqueId(device.get());

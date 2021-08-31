@@ -8,13 +8,14 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_frame_request_blocker.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "ui/base/page_transition_types.h"
+#include "url/origin.h"
 
 namespace network {
 struct ResourceRequest;
@@ -29,14 +30,19 @@ class BLINK_PLATFORM_EXPORT WebURLRequestExtraData
   WebURLRequestExtraData(const WebURLRequestExtraData&) = delete;
   WebURLRequestExtraData& operator=(const WebURLRequestExtraData&) = delete;
 
-  void set_render_frame_id(int render_frame_id) {
-    render_frame_id_ = render_frame_id;
-  }
   void set_is_main_frame(bool is_main_frame) { is_main_frame_ = is_main_frame; }
   ui::PageTransition transition_type() const { return transition_type_; }
   void set_transition_type(ui::PageTransition transition_type) {
     transition_type_ = transition_type;
   }
+
+  // Set the top origin. Only applicable for frames.
+  void set_top_frame_origin(const url::Origin& origin) {
+    top_frame_origin_ = origin;
+  }
+
+  // The origin of the topmost frame. Only applicable for frames.
+  const url::Origin& top_frame_origin() { return top_frame_origin_; }
 
   // The request is for a prefetch-only client (i.e. running NoStatePrefetch)
   // and should use LOAD_PREFETCH network flags.
@@ -49,15 +55,6 @@ class BLINK_PLATFORM_EXPORT WebURLRequestExtraData
   // a fetch() in the service worker script.
   void set_originated_from_service_worker(bool originated_from_service_worker) {
     originated_from_service_worker_ = originated_from_service_worker;
-  }
-
-  // Determines whether SameSite cookies will be attached to the request
-  // even when the request looks cross-site.
-  bool force_ignore_site_for_cookies() const {
-    return force_ignore_site_for_cookies_;
-  }
-  void set_force_ignore_site_for_cookies(bool attach) {
-    force_ignore_site_for_cookies_ = attach;
   }
 
   // |custom_user_agent| is used to communicate an overriding custom user agent
@@ -97,16 +94,17 @@ class BLINK_PLATFORM_EXPORT WebURLRequestExtraData
   virtual ~WebURLRequestExtraData();
 
  private:
-  base::Optional<int> render_frame_id_;
   bool is_main_frame_ = false;
   ui::PageTransition transition_type_ = ui::PAGE_TRANSITION_LINK;
   bool is_for_no_state_prefetch_ = false;
   bool originated_from_service_worker_ = false;
-  bool force_ignore_site_for_cookies_ = false;
   WebString custom_user_agent_;
   WebVector<std::unique_ptr<URLLoaderThrottle>> url_loader_throttles_;
   scoped_refptr<WebFrameRequestBlocker> frame_request_blocker_;
   bool allow_cross_origin_auth_prompt_ = false;
+
+  // The origin of the top most frame. Only applicable for frames.
+  url::Origin top_frame_origin_;
 };
 
 }  // namespace blink

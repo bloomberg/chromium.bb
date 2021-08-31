@@ -80,7 +80,7 @@ class DefaultServiceProcessHost : public ServiceProcessHost {
   mojo::PendingRemote<mojom::Service> Launch(
       const Identity& identity,
       sandbox::policy::SandboxType sandbox_type,
-      const base::string16& display_name,
+      const std::u16string& display_name,
       LaunchCallback callback) override {
 #if defined(OS_IOS)
     return mojo::NullRemote();
@@ -188,11 +188,6 @@ ServiceManager::~ServiceManager() {
   }
   service_manager_instance_->Stop();
   instances_.clear();
-}
-
-void ServiceManager::SetInstanceQuitCallback(
-    base::OnceCallback<void(const Identity&)> callback) {
-  instance_quit_callback_ = std::move(callback);
 }
 
 ServiceInstance* ServiceManager::FindOrCreateMatchingTargetInstance(
@@ -404,9 +399,6 @@ void ServiceManager::OnInstanceStopped(const Identity& identity) {
   for (auto& listener : listeners_) {
     listener->OnServiceStopped(identity);
   }
-
-  if (!instance_quit_callback_.is_null())
-    std::move(instance_quit_callback_).Run(identity);
 }
 
 ServiceInstance* ServiceManager::GetExistingInstance(

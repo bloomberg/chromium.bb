@@ -13,21 +13,22 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "build/build_config.h"
-#include "components/viz/common/delegated_ink_metadata.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/service/display/aggregated_frame.h"
-#include "components/viz/service/display/delegated_ink_point_renderer_base.h"
+#include "components/viz/service/display/delegated_ink_point_renderer_skia.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/overlay_candidate.h"
 #include "components/viz/service/display/overlay_processor_interface.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/texture_in_use_response.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/gfx/delegated_ink_metadata.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/latency/latency_info.h"
 
 namespace cc {
@@ -74,7 +75,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
                  float device_scale_factor,
                  const gfx::Size& device_viewport_size,
                  const gfx::DisplayColorSpaces& display_color_spaces,
-                 SurfaceDamageRectList* surface_damage_rect_list);
+                 SurfaceDamageRectList surface_damage_rect_list);
 
   // The renderer might expand the damage (e.g: HW overlays were used,
   // invalidation rects on previous buffers). This function returns a
@@ -97,7 +98,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   };
   virtual void SwapBuffers(SwapFrameData swap_frame_data) = 0;
   virtual void SwapBuffersSkipped() {}
-  virtual void SwapBuffersComplete() {}
+  virtual void SwapBuffersComplete(gfx::GpuFenceHandle release_fence) {}
+  virtual void BuffersPresented() {}
   virtual void DidReceiveTextureInUseResponses(
       const gpu::TextureInUseResponses& responses) {}
   virtual void DidReceiveReleasedOverlays(
@@ -124,7 +126,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     // When we have a buffer queue, the output surface could be treated as an
     // overlay plane, and the struct to store that information is in
     // |output_surface_plane|.
-    base::Optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
+    absl::optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>
         output_surface_plane;
   };
 
@@ -141,8 +143,10 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
     return last_root_render_pass_scissor_rect_;
   }
 
-  virtual DelegatedInkPointRendererBase* GetDelegatedInkPointRenderer();
-  void SetDelegatedInkMetadata(std::unique_ptr<DelegatedInkMetadata> metadata);
+  virtual DelegatedInkPointRendererBase* GetDelegatedInkPointRenderer(
+      bool create_if_necessary);
+  virtual void SetDelegatedInkMetadata(
+      std::unique_ptr<gfx::DelegatedInkMetadata> metadata) {}
 
   // Returns true if composite time tracing is enabled. This measures a detailed
   // trace log for draw time spent per quad.
@@ -158,6 +162,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   friend class BspWalkActionDrawPolygon;
   friend class SkiaDelegatedInkRendererTest;
   friend class DelegatedInkPointPixelTestHelper;
+  friend class DelegatedInkDisplayTest;
 
   enum SurfaceInitializationMode {
     SURFACE_INITIALIZATION_MODE_PRESERVE,
@@ -193,6 +198,8 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
 
   gfx::Size CalculateTextureSizeForRenderPass(
       const AggregatedRenderPass* render_pass);
+  gfx::Size CalculateSizeForOutputSurface(
+      const gfx::Size& device_viewport_size);
 
   void FlushPolygons(
       base::circular_deque<std::unique_ptr<DrawPolygon>>* poly_list,
@@ -216,7 +223,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
       AggregatedRenderPassId render_pass_id) const;
   const cc::FilterOperations* BackdropFiltersForPass(
       AggregatedRenderPassId render_pass_id) const;
-  const base::Optional<gfx::RRectF> BackdropFilterBoundsForPass(
+  const absl::optional<gfx::RRectF> BackdropFilterBoundsForPass(
       AggregatedRenderPassId render_pass_id) const;
 
   // Private interface implemented by subclasses for use by DirectRenderer.
@@ -301,7 +308,7 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
       render_pass_filters_;
   base::flat_map<AggregatedRenderPassId, cc::FilterOperations*>
       render_pass_backdrop_filters_;
-  base::flat_map<AggregatedRenderPassId, base::Optional<gfx::RRectF>>
+  base::flat_map<AggregatedRenderPassId, absl::optional<gfx::RRectF>>
       render_pass_backdrop_filter_bounds_;
   base::flat_map<AggregatedRenderPassId, gfx::Rect>
       backdrop_filter_output_rects_;
@@ -333,10 +340,10 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   }
   gfx::ColorSpace reshape_color_space() const { return reshape_color_space_; }
 
-  // Return a bool to inform the caller if the delegated ink renderer was
-  // actually created or not. If the renderer doesn't support drawing delegated
-  // ink trails, then the delegated ink renderer won't be created.
-  virtual bool CreateDelegatedInkPointRenderer();
+  // Sets a DelegatedInkPointRendererSkiaForTest to be used for testing only, in
+  // order to save delegated ink metadata values that would otherwise be reset.
+  virtual void SetDelegatedInkPointRendererSkiaForTest(
+      std::unique_ptr<DelegatedInkPointRendererSkia> renderer) {}
 
  private:
   virtual void DrawDelegatedInkTrail();
@@ -356,12 +363,18 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   DrawingFrame current_frame_;
   bool current_frame_valid_ = false;
 
+  // Time of most recent reshape that ended up with |device_viewport_size_| !=
+  // |reshape_surface_size_|.
+  base::TimeTicks last_viewport_resize_time_;
+
   // Cached values given to Reshape(). The |reshape_buffer_format_| is optional
-  // to prevent use of uninitialized values.
+  // to prevent use of uninitialized values. This may be larger than the
+  // |device_viewport_size_| that users see.
   gfx::Size reshape_surface_size_;
+  gfx::Size device_viewport_size_;
   float reshape_device_scale_factor_ = 0.f;
   gfx::ColorSpace reshape_color_space_;
-  base::Optional<gfx::BufferFormat> reshape_buffer_format_;
+  absl::optional<gfx::BufferFormat> reshape_buffer_format_;
   bool reshape_use_stencil_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DirectRenderer);

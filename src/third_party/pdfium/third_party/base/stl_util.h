@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <iterator>
 #include <memory>
-#include <set>
 #include <type_traits>
 #include <vector>
 
@@ -133,22 +132,6 @@ template <typename IndexType, typename Collection>
 bool IndexInBounds(const Collection& collection, IndexType index) {
   return index >= 0 && index < CollectionSize<IndexType>(collection);
 }
-
-// Track the addition of an object to a set, removing it automatically when
-// the ScopedSetInsertion goes out of scope.
-template <typename T>
-class ScopedSetInsertion {
- public:
-  ScopedSetInsertion(std::set<T>* org_set, T elem)
-      : m_Set(org_set), m_Entry(elem) {
-    m_Set->insert(m_Entry);
-  }
-  ~ScopedSetInsertion() { m_Set->erase(m_Entry); }
-
- private:
-  std::set<T>* const m_Set;
-  const T m_Entry;
-};
 
 // std::clamp(), some day.
 template <class T>

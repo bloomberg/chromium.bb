@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "media/base/media_switches.h"
-#include "media/capture/video/mac/video_capture_device_avfoundation_legacy_mac.h"
 #include "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
 #include "media/capture/video/mac/video_capture_device_factory_mac.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
@@ -154,7 +153,7 @@ base::scoped_nsobject<NSDictionary> GetDeviceNames() {
           [[[DeviceNameAndTransportType alloc]
                initWithName:[device localizedName]
               transportType:[device transportType]] autorelease];
-      [deviceNames setObject:nameAndTransportType forKey:[device uniqueID]];
+      deviceNames[[device uniqueID]] = nameAndTransportType;
     }
   }
   MaybeWriteUma([deviceNames count], number_of_suspended_devices);
@@ -191,46 +190,21 @@ base::scoped_nsobject<NSDictionary> GetVideoCaptureDeviceNames() {
                                              base::scoped_policy::RETAIN);
 }
 
-media::VideoCaptureFormats GetDeviceSupportedFormats(
-    Class implementation,
-    const media::VideoCaptureDeviceDescriptor& descriptor) {
-  media::VideoCaptureFormats formats;
-  NSArray* devices = [AVCaptureDevice devices];
-  AVCaptureDevice* device = nil;
-  for (device in devices) {
-    if (base::SysNSStringToUTF8([device uniqueID]) == descriptor.device_id)
-      break;
-  }
-  if (device == nil)
-    return media::VideoCaptureFormats();
-  for (AVCaptureDeviceFormat* format in device.formats) {
-    // MediaSubType is a CMPixelFormatType but can be used as CVPixelFormatType
-    // as well according to CMFormatDescription.h
-    const media::VideoPixelFormat pixelFormat = [implementation
-        FourCCToChromiumPixelFormat:CMFormatDescriptionGetMediaSubType(
-                                        [format formatDescription])];
-
-    CMVideoDimensions dimensions =
-        CMVideoFormatDescriptionGetDimensions([format formatDescription]);
-
-    for (AVFrameRateRange* frameRate in
-         [format videoSupportedFrameRateRanges]) {
-      media::VideoCaptureFormat format(
-          gfx::Size(dimensions.width, dimensions.height),
-          frameRate.maxFrameRate, pixelFormat);
-      DVLOG(2) << descriptor.display_name() << " "
-               << media::VideoCaptureFormat::ToString(format);
-      formats.push_back(std::move(format));
-    }
-  }
-  return formats;
+gfx::Size GetPixelBufferSize(CVPixelBufferRef pixel_buffer) {
+  return gfx::Size(CVPixelBufferGetWidth(pixel_buffer),
+                   CVPixelBufferGetHeight(pixel_buffer));
 }
 
-Class GetVideoCaptureDeviceAVFoundationImplementationClass() {
-  if (base::FeatureList::IsEnabled(media::kAVFoundationCaptureV2)) {
-    return [VideoCaptureDeviceAVFoundation class];
+gfx::Size GetSampleBufferSize(CMSampleBufferRef sample_buffer) {
+  if (CVPixelBufferRef pixel_buffer =
+          CMSampleBufferGetImageBuffer(sample_buffer)) {
+    return GetPixelBufferSize(pixel_buffer);
   }
-  return [VideoCaptureDeviceAVFoundationLegacy class];
+  CMFormatDescriptionRef format_description =
+      CMSampleBufferGetFormatDescription(sample_buffer);
+  CMVideoDimensions dimensions =
+      CMVideoFormatDescriptionGetDimensions(format_description);
+  return gfx::Size(dimensions.width, dimensions.height);
 }
 
 }  // namespace media

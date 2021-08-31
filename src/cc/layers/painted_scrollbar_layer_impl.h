@@ -5,6 +5,8 @@
 #ifndef CC_LAYERS_PAINTED_SCROLLBAR_LAYER_IMPL_H_
 #define CC_LAYERS_PAINTED_SCROLLBAR_LAYER_IMPL_H_
 
+#include <memory>
+
 #include "cc/cc_export.h"
 #include "cc/input/scrollbar.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
@@ -36,7 +38,7 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
                 viz::ClientResourceProvider* resource_provider) override;
   void AppendQuads(viz::CompositorRenderPass* render_pass,
                    AppendQuadsData* append_quads_data) override;
-  gfx::Rect GetEnclosingRectInTargetSpace() const override;
+  gfx::Rect GetEnclosingVisibleRectInTargetSpace() const override;
 
   void SetJumpOnTrackClick(bool jump_on_track_click);
   void SetSupportsDragSnapBack(bool supports_drag_snap_back);
@@ -45,16 +47,13 @@ class CC_EXPORT PaintedScrollbarLayerImpl : public ScrollbarLayerImplBase {
   void SetThumbThickness(int thumb_thickness);
   void SetThumbLength(int thumb_length);
   void SetTrackRect(gfx::Rect track_rect);
+  void SetScrollbarPaintedOpacity(float opacity);
 
   void set_track_ui_resource_id(UIResourceId uid) {
     track_ui_resource_id_ = uid;
   }
   void set_thumb_ui_resource_id(UIResourceId uid) {
     thumb_ui_resource_id_ = uid;
-  }
-
-  void set_scrollbar_painted_opacity(float opacity) {
-    painted_opacity_ = opacity;
   }
   float OverlayScrollbarOpacity() const override;
 

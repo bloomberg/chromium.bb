@@ -5,15 +5,24 @@
 package org.chromium.components.browser_ui.site_settings;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.FeatureList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.device.DeviceFeatureList;
@@ -35,17 +44,19 @@ public class ContentSettingsResources {
      */
     private static class ResourceItem {
         private final int mIcon;
+        private final int mSmallIcon;
         private final int mTitle;
         private final @ContentSettingValues @Nullable Integer mDefaultEnabledValue;
         private final @ContentSettingValues @Nullable Integer mDefaultDisabledValue;
         private final int mEnabledSummary;
         private final int mDisabledSummary;
 
-        ResourceItem(int icon, int title,
+        ResourceItem(int icon, int smallIcon, int title,
                 @ContentSettingValues @Nullable Integer defaultEnabledValue,
                 @ContentSettingValues @Nullable Integer defaultDisabledValue, int enabledSummary,
                 int disabledSummary) {
             mIcon = icon;
+            mSmallIcon = smallIcon;
             mTitle = title;
             mDefaultEnabledValue = defaultEnabledValue;
             mDefaultDisabledValue = defaultDisabledValue;
@@ -55,6 +66,10 @@ public class ContentSettingsResources {
 
         private int getIcon() {
             return mIcon;
+        }
+
+        private int getSmallIcon() {
+            return mSmallIcon;
         }
 
         private int getTitle() {
@@ -92,93 +107,101 @@ public class ContentSettingsResources {
         if (sResourceInfo == null) {
             Map<Integer, ResourceItem> localMap = new HashMap<Integer, ResourceItem>();
             localMap.put(ContentSettingsType.ADS,
-                    new ResourceItem(R.drawable.web_asset, R.string.ads_permission_title,
+                    new ResourceItem(R.drawable.web_asset, 0, R.string.ads_permission_title,
                             ContentSettingValues.ALLOW, ContentSettingValues.BLOCK, 0,
                             R.string.website_settings_category_ads_blocked));
             localMap.put(ContentSettingsType.AR,
-                    new ResourceItem(R.drawable.vr_headset, R.string.ar_permission_title,
+                    new ResourceItem(R.drawable.gm_filled_cardboard_24,
+                            R.drawable.gm_filled_cardboard_20, R.string.ar_permission_title,
                             ContentSettingValues.ASK, ContentSettingValues.BLOCK,
                             R.string.website_settings_category_ar_ask,
                             R.string.website_settings_category_ar_blocked));
             localMap.put(ContentSettingsType.AUTOMATIC_DOWNLOADS,
-                    new ResourceItem(R.drawable.infobar_downloading,
+                    new ResourceItem(R.drawable.infobar_downloading, 0,
                             R.string.automatic_downloads_permission_title, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK, R.string.website_settings_category_ask, 0));
             localMap.put(ContentSettingsType.BACKGROUND_SYNC,
-                    new ResourceItem(R.drawable.permission_background_sync,
+                    new ResourceItem(R.drawable.permission_background_sync, 0,
                             R.string.background_sync_permission_title, ContentSettingValues.ALLOW,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_allowed_recommended, 0));
             localMap.put(ContentSettingsType.BLUETOOTH_CHOOSER_DATA,
-                    new ResourceItem(R.drawable.settings_bluetooth, 0, ContentSettingValues.ASK,
+                    new ResourceItem(R.drawable.settings_bluetooth, 0, 0, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK, 0, 0));
             localMap.put(ContentSettingsType.BLUETOOTH_GUARD,
-                    new ResourceItem(R.drawable.settings_bluetooth,
+                    new ResourceItem(R.drawable.settings_bluetooth, 0,
                             R.string.website_settings_bluetooth, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_bluetooth_ask,
                             R.string.website_settings_category_bluetooth_blocked));
             localMap.put(ContentSettingsType.BLUETOOTH_SCANNING,
-                    new ResourceItem(R.drawable.ic_bluetooth_searching_black_24dp,
+                    new ResourceItem(R.drawable.gm_filled_bluetooth_searching_24,
+                            R.drawable.gm_filled_bluetooth_searching_20,
                             R.string.website_settings_bluetooth_scanning, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_bluetooth_scanning_ask, 0));
             localMap.put(ContentSettingsType.CLIPBOARD_READ_WRITE,
-                    new ResourceItem(R.drawable.ic_content_paste_grey600_24dp,
+                    new ResourceItem(R.drawable.gm_filled_content_paste_24,
+                            R.drawable.gm_filled_content_paste_20,
                             R.string.clipboard_permission_title, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_clipboard_ask,
                             R.string.website_settings_category_clipboard_blocked));
             localMap.put(ContentSettingsType.COOKIES,
-                    new ResourceItem(R.drawable.permission_cookie, R.string.cookies_title,
+                    new ResourceItem(R.drawable.permission_cookie, 0, R.string.cookies_title,
                             ContentSettingValues.ALLOW, ContentSettingValues.BLOCK,
                             R.string.website_settings_category_cookie_allowed, 0));
             localMap.put(ContentSettingsType.GEOLOCATION,
-                    new ResourceItem(R.drawable.ic_permission_location_filled,
+                    new ResourceItem(R.drawable.gm_filled_location_on_24,
+                            R.drawable.gm_filled_location_on_20,
                             R.string.website_settings_device_location, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_location_ask, 0));
             localMap.put(ContentSettingsType.IDLE_DETECTION,
-                    new ResourceItem(R.drawable.permission_idle_detection,
+                    new ResourceItem(R.drawable.gm_filled_devices_24,
+                            R.drawable.gm_filled_devices_20,
                             R.string.website_settings_idle_detection, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_idle_detection_ask,
                             R.string.website_settings_category_idle_detection_blocked));
             localMap.put(ContentSettingsType.JAVASCRIPT,
-                    new ResourceItem(R.drawable.permission_javascript,
+                    new ResourceItem(R.drawable.permission_javascript, 0,
                             R.string.javascript_permission_title, ContentSettingValues.ALLOW,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_javascript_allowed, 0));
             localMap.put(ContentSettingsType.MEDIASTREAM_CAMERA,
-                    new ResourceItem(R.drawable.ic_videocam_white_24dp,
-                            R.string.website_settings_use_camera, ContentSettingValues.ASK,
-                            ContentSettingValues.BLOCK,
+                    new ResourceItem(R.drawable.gm_filled_videocam_24,
+                            R.drawable.gm_filled_videocam_20, R.string.website_settings_use_camera,
+                            ContentSettingValues.ASK, ContentSettingValues.BLOCK,
                             R.string.website_settings_category_camera_ask, 0));
             localMap.put(ContentSettingsType.MEDIASTREAM_MIC,
-                    new ResourceItem(R.drawable.permission_mic, R.string.website_settings_use_mic,
-                            ContentSettingValues.ASK, ContentSettingValues.BLOCK,
-                            R.string.website_settings_category_mic_ask, 0));
+                    new ResourceItem(R.drawable.gm_filled_mic_24, R.drawable.gm_filled_mic_20,
+                            R.string.website_settings_use_mic, ContentSettingValues.ASK,
+                            ContentSettingValues.BLOCK, R.string.website_settings_category_mic_ask,
+                            0));
             localMap.put(ContentSettingsType.MIDI_SYSEX,
-                    new ResourceItem(R.drawable.permission_midi,
+                    new ResourceItem(R.drawable.gm_filled_piano_24, R.drawable.gm_filled_piano_20,
                             R.string.midi_sysex_permission_title, null, null, 0, 0));
             localMap.put(ContentSettingsType.NFC,
-                    new ResourceItem(R.drawable.settings_nfc, R.string.nfc_permission_title,
-                            ContentSettingValues.ASK, ContentSettingValues.BLOCK,
-                            R.string.website_settings_category_nfc_ask,
+                    new ResourceItem(R.drawable.gm_filled_nfc_24, R.drawable.gm_filled_nfc_20,
+                            R.string.nfc_permission_title, ContentSettingValues.ASK,
+                            ContentSettingValues.BLOCK, R.string.website_settings_category_nfc_ask,
                             R.string.website_settings_category_nfc_blocked));
             localMap.put(ContentSettingsType.NOTIFICATIONS,
-                    new ResourceItem(R.drawable.permission_push_notification,
+                    new ResourceItem(R.drawable.gm_filled_notifications_24,
+                            R.drawable.gm_filled_notifications_20,
                             R.string.push_notifications_permission_title, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_notifications_ask, 0));
             localMap.put(ContentSettingsType.POPUPS,
-                    new ResourceItem(R.drawable.permission_popups, R.string.popup_permission_title,
-                            ContentSettingValues.ALLOW, ContentSettingValues.BLOCK, 0,
+                    new ResourceItem(R.drawable.permission_popups, 0,
+                            R.string.popup_permission_title, ContentSettingValues.ALLOW,
+                            ContentSettingValues.BLOCK, 0,
                             R.string.website_settings_category_popups_redirects_blocked));
             // PROTECTED_MEDIA_IDENTIFIER uses 3-state preference so some values are not used.
             // If 3-state becomes more common we should update localMaps to support it better.
             localMap.put(ContentSettingsType.PROTECTED_MEDIA_IDENTIFIER,
-                    new ResourceItem(R.drawable.permission_protected_media,
+                    new ResourceItem(R.drawable.permission_protected_media, 0,
                             R.string.protected_content, ContentSettingValues.ASK,
                             ContentSettingValues.BLOCK, 0, 0));
             int sensorsPermissionTitle = R.string.motion_sensors_permission_title;
@@ -187,7 +210,9 @@ public class ContentSettingsResources {
             int sensorsBlockedDescription =
                     R.string.website_settings_category_motion_sensors_blocked;
             try {
-                if (DeviceFeatureList.isEnabled(DeviceFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
+                if (FeatureList.isNativeInitialized()
+                        && DeviceFeatureList.isEnabled(
+                                DeviceFeatureList.GENERIC_SENSOR_EXTRA_CLASSES)) {
                     sensorsPermissionTitle = R.string.sensors_permission_title;
                     sensorsAllowedDescription = R.string.website_settings_category_sensors_allowed;
                     sensorsBlockedDescription = R.string.website_settings_category_sensors_blocked;
@@ -198,25 +223,26 @@ public class ContentSettingsResources {
                 // DeviceFeatureList.GENERIC_SENSOR_EXTRA_CLASSES.
             }
             localMap.put(ContentSettingsType.SENSORS,
-                    new ResourceItem(R.drawable.settings_sensors, sensorsPermissionTitle,
+                    new ResourceItem(R.drawable.settings_sensors, 0, sensorsPermissionTitle,
                             ContentSettingValues.ALLOW, ContentSettingValues.BLOCK,
                             sensorsAllowedDescription, sensorsBlockedDescription));
             localMap.put(ContentSettingsType.SOUND,
-                    new ResourceItem(R.drawable.ic_volume_up_grey600_24dp,
+                    new ResourceItem(R.drawable.ic_volume_up_grey600_24dp, 0,
                             R.string.sound_permission_title, ContentSettingValues.ALLOW,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_sound_allowed,
                             R.string.website_settings_category_sound_blocked));
             localMap.put(ContentSettingsType.USB_CHOOSER_DATA,
-                    new ResourceItem(R.drawable.settings_usb, 0, ContentSettingValues.ASK,
-                            ContentSettingValues.BLOCK, 0, 0));
+                    new ResourceItem(R.drawable.gm_filled_usb_24, R.drawable.gm_filled_usb_20, 0,
+                            ContentSettingValues.ASK, ContentSettingValues.BLOCK, 0, 0));
             localMap.put(ContentSettingsType.USB_GUARD,
-                    new ResourceItem(R.drawable.settings_usb, R.string.website_settings_usb,
-                            ContentSettingValues.ASK, ContentSettingValues.BLOCK,
-                            R.string.website_settings_category_usb_ask,
+                    new ResourceItem(R.drawable.gm_filled_usb_24, R.drawable.gm_filled_usb_20,
+                            R.string.website_settings_usb, ContentSettingValues.ASK,
+                            ContentSettingValues.BLOCK, R.string.website_settings_category_usb_ask,
                             R.string.website_settings_category_usb_blocked));
             localMap.put(ContentSettingsType.VR,
-                    new ResourceItem(R.drawable.vr_headset, R.string.vr_permission_title,
+                    new ResourceItem(R.drawable.gm_filled_cardboard_24,
+                            R.drawable.gm_filled_cardboard_20, R.string.vr_permission_title,
                             ContentSettingValues.ASK, ContentSettingValues.BLOCK,
                             R.string.website_settings_category_vr_ask,
                             R.string.website_settings_category_vr_blocked));
@@ -233,22 +259,119 @@ public class ContentSettingsResources {
     }
 
     /**
-     * Returns the resource id of the icon for a content type.
+     * Returns the resource id of the 24dp icon for a content type.
      */
     public static int getIcon(int contentType) {
         return getResourceItem(contentType).getIcon();
     }
 
     /**
-     * Returns the Drawable object of the icon for a content type with a disabled tint.
+     * Returns the resource id of the 20dp icon for a content type.
+     * Might fall back to a 24dp icon if 20dp is not available.
      */
-    public static Drawable getDisabledIcon(int contentType, Resources resources) {
-        Drawable icon = ApiCompatibilityUtils.getDrawable(resources, getIcon(contentType));
-        icon.mutate();
-        int disabledColor = ApiCompatibilityUtils.getColor(
-                resources, R.color.primary_text_disabled_material_light);
-        icon.setColorFilter(disabledColor, PorterDuff.Mode.SRC_IN);
+    public static int getSmallIcon(int contentType) {
+        int icon = getResourceItem(contentType).getSmallIcon();
+        if (icon == 0) {
+            icon = getResourceItem(contentType).getIcon();
+        }
         return icon;
+    }
+
+    /**
+     * Returns a grey 24dp permission icon.
+     *
+     * @param context The Context for this drawable.
+     * @param contentSettingsType The ContentSettingsType for this drawable. Returns null if the
+     *         resource for this type cannot be found.
+     * @param value The ContentSettingValues for this drawable. If ContentSettingValues.BLOCK, the
+     *         returned icon will have a strike through it.
+     * @return A grey 24dp {@link Drawable} for this content setting.
+     */
+    public static Drawable getContentSettingsIcon(Context context,
+            @ContentSettingsType int contentSettingsType,
+            @ContentSettingValues @Nullable Integer value) {
+        Drawable icon = SettingsUtils.getTintedIcon(context, getIcon(contentSettingsType));
+        if (value != null && value == ContentSettingValues.BLOCK) {
+            return getBlockedSquareIcon(context.getResources(), icon);
+        }
+        return icon;
+    }
+
+    /**
+     * Returns a blue 20dp permission icon.
+     *
+     * @param context The Context for this drawable.
+     * @param contentSettingsType The ContentSettingsType for this drawable. Returns null if the
+     *         resource for this type cannot be found.
+     * @param value The ContentSettingValues for this drawable. If ContentSettingValues.BLOCK, the
+     *         returned icon will have a strike through it.
+     * @param isIncognito Whether this icon should use the incognito color scheme.
+     * @return A blue 20dp {@link Drawable} for this content setting.
+     */
+    public static Drawable getIconForOmnibox(Context context,
+            @ContentSettingsType int contentSettingsType,
+            @ContentSettingValues @Nullable Integer value, boolean isIncognito) {
+        int color = isIncognito ? R.color.default_icon_color_blue_light
+                                : R.color.default_icon_color_blue;
+        Drawable icon =
+                SettingsUtils.getTintedIcon(context, getSmallIcon(contentSettingsType), color);
+        if (value != null && value == ContentSettingValues.BLOCK) {
+            return getBlockedSquareIcon(context.getResources(), icon);
+        }
+        return icon;
+    }
+
+    /**
+     * @return A {@link Drawable} that is the blocked version of the square icon passed in.
+     *         Achieved by adding a diagonal strike through the icon.
+     */
+    private static Drawable getBlockedSquareIcon(Resources resources, Drawable icon) {
+        if (icon == null) return null;
+        // Save color filter in order to re-apply later
+        ColorFilter filter = icon.getColorFilter();
+
+        // Create bitmap from drawable
+        Bitmap iconBitmap = Bitmap.createBitmap(
+                icon.getIntrinsicWidth(), icon.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(iconBitmap);
+        int side = canvas.getWidth();
+        assert side == canvas.getHeight();
+        icon.setBounds(0, 0, side, side);
+        icon.draw(canvas);
+
+        // Thickness of the strikethrough line in pixels, relative to the icon size.
+        float thickness = 0.08f * side;
+        // Determines the axis bounds for where the line should start and finish.
+        float padding = side * 0.15f;
+        // The scaling ratio to get the axis bias. sin(45 degrees).
+        float ratio = 0.7071f;
+        // Calculated axis shift for the line in order to only be on one side of the transparent
+        // line.
+        float bias = (thickness / 2) * ratio;
+
+        // Draw diagonal transparent line
+        Paint paint = new Paint();
+        paint.setAntiAlias(true);
+        paint.setColor(Color.TRANSPARENT);
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_OUT));
+        // Scale by 1.5 then shift up by half of bias in order to ensure no weird gap between lines
+        // due to rounding.
+        float halfBias = 0.5f * bias;
+        paint.setStrokeWidth(1.5f * thickness);
+        canvas.drawLine(padding + halfBias, padding - halfBias, side - padding + halfBias,
+                side - padding - halfBias, paint);
+
+        // Draw a strikethrough directly below.
+        paint.setColor(Color.BLACK);
+        paint.setXfermode(null);
+        paint.setStrokeWidth(thickness);
+        canvas.drawLine(padding - bias, padding + bias, side - padding - bias,
+                side - padding + bias, paint);
+
+        Drawable blocked = new BitmapDrawable(resources, iconBitmap);
+        // Re-apply color filter
+        blocked.setColorFilter(filter);
+        return blocked;
     }
 
     /**

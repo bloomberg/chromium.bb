@@ -2,26 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "quic/core/quic_utils.h"
 
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <limits>
 #include <string>
 
 #include "absl/base/macros.h"
 #include "absl/base/optimization.h"
+#include "absl/numeric/int128.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_prefetch.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "common/platform/api/quiche_logging.h"
+#include "common/platform/api/quiche_prefetch.h"
+#include "common/quiche_endian.h"
 
 namespace quic {
 namespace {
@@ -36,42 +38,43 @@ namespace {
 #endif
 
 #ifdef QUIC_UTIL_HAS_UINT128
-QuicUint128 IncrementalHashFast(QuicUint128 uhash, absl::string_view data) {
+absl::uint128 IncrementalHashFast(absl::uint128 uhash, absl::string_view data) {
   // This code ends up faster than the naive implementation for 2 reasons:
-  // 1. QuicUint128 is sufficiently complicated that the compiler
+  // 1. absl::uint128 is sufficiently complicated that the compiler
   //    cannot transform the multiplication by kPrime into a shift-multiply-add;
   //    it has go through all of the instructions for a 128-bit multiply.
   // 2. Because there are so fewer instructions (around 13), the hot loop fits
   //    nicely in the instruction queue of many Intel CPUs.
   // kPrime = 309485009821345068724781371
-  static const QuicUint128 kPrime =
-      (static_cast<QuicUint128>(16777216) << 64) + 315;
-  auto hi = QuicUint128High64(uhash);
-  auto lo = QuicUint128Low64(uhash);
-  QuicUint128 xhash = (static_cast<QuicUint128>(hi) << 64) + lo;
+  static const absl::uint128 kPrime =
+      (static_cast<absl::uint128>(16777216) << 64) + 315;
+  auto hi = absl::Uint128High64(uhash);
+  auto lo = absl::Uint128Low64(uhash);
+  absl::uint128 xhash = (static_cast<absl::uint128>(hi) << 64) + lo;
   const uint8_t* octets = reinterpret_cast<const uint8_t*>(data.data());
   for (size_t i = 0; i < data.length(); ++i) {
     xhash = (xhash ^ static_cast<uint32_t>(octets[i])) * kPrime;
   }
-  return MakeQuicUint128(QuicUint128High64(xhash), QuicUint128Low64(xhash));
+  return absl::MakeUint128(absl::Uint128High64(xhash),
+                           absl::Uint128Low64(xhash));
 }
 #endif
 
 #ifndef QUIC_UTIL_HAS_UINT128
 // Slow implementation of IncrementalHash. In practice, only used by Chromium.
-QuicUint128 IncrementalHashSlow(QuicUint128 hash, absl::string_view data) {
+absl::uint128 IncrementalHashSlow(absl::uint128 hash, absl::string_view data) {
   // kPrime = 309485009821345068724781371
-  static const QuicUint128 kPrime = MakeQuicUint128(16777216, 315);
+  static const absl::uint128 kPrime = absl::MakeUint128(16777216, 315);
   const uint8_t* octets = reinterpret_cast<const uint8_t*>(data.data());
   for (size_t i = 0; i < data.length(); ++i) {
-    hash = hash ^ MakeQuicUint128(0, octets[i]);
+    hash = hash ^ absl::MakeUint128(0, octets[i]);
     hash = hash * kPrime;
   }
   return hash;
 }
 #endif
 
-QuicUint128 IncrementalHash(QuicUint128 hash, absl::string_view data) {
+absl::uint128 IncrementalHash(absl::uint128 hash, absl::string_view data) {
 #ifdef QUIC_UTIL_HAS_UINT128
   return IncrementalHashFast(hash, data);
 #else
@@ -99,27 +102,27 @@ uint64_t QuicUtils::FNV1a_64_Hash(absl::string_view data) {
 }
 
 // static
-QuicUint128 QuicUtils::FNV1a_128_Hash(absl::string_view data) {
+absl::uint128 QuicUtils::FNV1a_128_Hash(absl::string_view data) {
   return FNV1a_128_Hash_Three(data, absl::string_view(), absl::string_view());
 }
 
 // static
-QuicUint128 QuicUtils::FNV1a_128_Hash_Two(absl::string_view data1,
-                                          absl::string_view data2) {
+absl::uint128 QuicUtils::FNV1a_128_Hash_Two(absl::string_view data1,
+                                            absl::string_view data2) {
   return FNV1a_128_Hash_Three(data1, data2, absl::string_view());
 }
 
 // static
-QuicUint128 QuicUtils::FNV1a_128_Hash_Three(absl::string_view data1,
-                                            absl::string_view data2,
-                                            absl::string_view data3) {
+absl::uint128 QuicUtils::FNV1a_128_Hash_Three(absl::string_view data1,
+                                              absl::string_view data2,
+                                              absl::string_view data3) {
   // The two constants are defined as part of the hash algorithm.
   // see http://www.isthe.com/chongo/tech/comp/fnv/
   // kOffset = 144066263297769815596495629667062367629
-  const QuicUint128 kOffset = MakeQuicUint128(UINT64_C(7809847782465536322),
-                                              UINT64_C(7113472399480571277));
+  const absl::uint128 kOffset = absl::MakeUint128(
+      UINT64_C(7809847782465536322), UINT64_C(7113472399480571277));
 
-  QuicUint128 hash = IncrementalHash(kOffset, data1);
+  absl::uint128 hash = IncrementalHash(kOffset, data1);
   if (data2.empty()) {
     return hash;
   }
@@ -132,9 +135,9 @@ QuicUint128 QuicUtils::FNV1a_128_Hash_Three(absl::string_view data1,
 }
 
 // static
-void QuicUtils::SerializeUint128Short(QuicUint128 v, uint8_t* out) {
-  const uint64_t lo = QuicUint128Low64(v);
-  const uint64_t hi = QuicUint128High64(v);
+void QuicUtils::SerializeUint128Short(absl::uint128 v, uint8_t* out) {
+  const uint64_t lo = absl::Uint128Low64(v);
+  const uint64_t hi = absl::Uint128High64(v);
   // This assumes that the system is little-endian.
   memcpy(out, &lo, sizeof(lo));
   memcpy(out + sizeof(lo), &hi, sizeof(hi) / 2);
@@ -170,7 +173,7 @@ const char* QuicUtils::SentPacketStateToString(SentPacketState state) {
     RETURN_STRING_LITERAL(RTO_RETRANSMITTED);
     RETURN_STRING_LITERAL(PTO_RETRANSMITTED);
     RETURN_STRING_LITERAL(PROBE_RETRANSMITTED);
-    RETURN_STRING_LITERAL(NOT_CONTRIBUTING_RTT)
+    RETURN_STRING_LITERAL(NOT_CONTRIBUTING_RTT);
   }
   return "INVALID_SENT_PACKET_STATE";
 }
@@ -244,8 +247,8 @@ void QuicUtils::CopyToBuffer(const struct iovec* iov,
     iov_offset -= iov[iovnum].iov_len;
     ++iovnum;
   }
-  DCHECK_LE(iovnum, iov_count);
-  DCHECK_LE(iov_offset, iov[iovnum].iov_len);
+  QUICHE_DCHECK_LE(iovnum, iov_count);
+  QUICHE_DCHECK_LE(iov_offset, iov[iovnum].iov_len);
   if (iovnum >= iov_count || buffer_length == 0) {
     return;
   }
@@ -263,9 +266,9 @@ void QuicUtils::CopyToBuffer(const struct iovec* iov,
     char* next_base = static_cast<char*>(iov[iovnum + 1].iov_base);
     // Prefetch 2 cachelines worth of data to get the prefetcher started; leave
     // it to the hardware prefetcher after that.
-    QuicPrefetchT0(next_base);
+    quiche::QuichePrefetchT0(next_base);
     if (iov[iovnum + 1].iov_len >= 64) {
-      QuicPrefetchT0(next_base + ABSL_CACHELINE_SIZE);
+      quiche::QuichePrefetchT0(next_base + ABSL_CACHELINE_SIZE);
     }
   }
 
@@ -280,7 +283,8 @@ void QuicUtils::CopyToBuffer(const struct iovec* iov,
     src = static_cast<char*>(iov[iovnum].iov_base);
     copy_len = std::min(buffer_length, iov[iovnum].iov_len);
   }
-  QUIC_BUG_IF(buffer_length > 0) << "Failed to copy entire length to buffer.";
+  QUIC_BUG_IF(quic_bug_10839_1, buffer_length > 0)
+      << "Failed to copy entire length to buffer.";
 }
 
 // static
@@ -304,7 +308,6 @@ bool QuicUtils::IsRetransmittableFrame(QuicFrameType type) {
     case MTU_DISCOVERY_FRAME:
     case PATH_CHALLENGE_FRAME:
     case PATH_RESPONSE_FRAME:
-    case NEW_CONNECTION_ID_FRAME:
       return false;
     default:
       return true;
@@ -351,8 +354,13 @@ SentPacketState QuicUtils::RetransmissionTypeToPacketState(
       return PTO_RETRANSMITTED;
     case PROBING_RETRANSMISSION:
       return PROBE_RETRANSMITTED;
+    case PATH_RETRANSMISSION:
+      return NOT_CONTRIBUTING_RTT;
+    case ALL_INITIAL_RETRANSMISSION:
+      return UNACKABLE;
     default:
-      QUIC_BUG << retransmission_type << " is not a retransmission_type";
+      QUIC_BUG(quic_bug_10839_2)
+          << retransmission_type << " is not a retransmission_type";
       return UNACKABLE;
   }
 }
@@ -377,7 +385,7 @@ QuicStreamId QuicUtils::GetInvalidStreamId(QuicTransportVersion version) {
 
 // static
 QuicStreamId QuicUtils::GetCryptoStreamId(QuicTransportVersion version) {
-  QUIC_BUG_IF(QuicVersionUsesCryptoFrames(version))
+  QUIC_BUG_IF(quic_bug_12982_1, QuicVersionUsesCryptoFrames(version))
       << "CRYPTO data aren't in stream frames; they have no stream ID.";
   return QuicVersionUsesCryptoFrames(version) ? GetInvalidStreamId(version) : 1;
 }
@@ -393,7 +401,7 @@ bool QuicUtils::IsCryptoStreamId(QuicTransportVersion version,
 
 // static
 QuicStreamId QuicUtils::GetHeadersStreamId(QuicTransportVersion version) {
-  DCHECK(!VersionUsesHttp3(version));
+  QUICHE_DCHECK(!VersionUsesHttp3(version));
   return GetFirstBidirectionalStreamId(version, Perspective::IS_CLIENT);
 }
 
@@ -431,7 +439,7 @@ bool QuicUtils::IsOutgoingStreamId(ParsedQuicVersion version,
 // static
 bool QuicUtils::IsBidirectionalStreamId(QuicStreamId id,
                                         ParsedQuicVersion version) {
-  DCHECK(version.HasIetfQuicFrames());
+  QUICHE_DCHECK(version.HasIetfQuicFrames());
   return id % 4 < 2;
 }
 
@@ -440,26 +448,26 @@ StreamType QuicUtils::GetStreamType(QuicStreamId id,
                                     Perspective perspective,
                                     bool peer_initiated,
                                     ParsedQuicVersion version) {
-  DCHECK(version.HasIetfQuicFrames());
+  QUICHE_DCHECK(version.HasIetfQuicFrames());
   if (IsBidirectionalStreamId(id, version)) {
     return BIDIRECTIONAL;
   }
 
   if (peer_initiated) {
     if (perspective == Perspective::IS_SERVER) {
-      DCHECK_EQ(2u, id % 4);
+      QUICHE_DCHECK_EQ(2u, id % 4);
     } else {
-      DCHECK_EQ(Perspective::IS_CLIENT, perspective);
-      DCHECK_EQ(3u, id % 4);
+      QUICHE_DCHECK_EQ(Perspective::IS_CLIENT, perspective);
+      QUICHE_DCHECK_EQ(3u, id % 4);
     }
     return READ_UNIDIRECTIONAL;
   }
 
   if (perspective == Perspective::IS_SERVER) {
-    DCHECK_EQ(3u, id % 4);
+    QUICHE_DCHECK_EQ(3u, id % 4);
   } else {
-    DCHECK_EQ(Perspective::IS_CLIENT, perspective);
-    DCHECK_EQ(2u, id % 4);
+    QUICHE_DCHECK_EQ(Perspective::IS_CLIENT, perspective);
+    QUICHE_DCHECK_EQ(2u, id % 4);
   }
   return WRITE_UNIDIRECTIONAL;
 }
@@ -527,7 +535,7 @@ QuicConnectionId QuicUtils::CreateReplacementConnectionId(
         expected_connection_id_length);
   }
   char new_connection_id_data[255] = {};
-  const QuicUint128 connection_id_hash128 = FNV1a_128_Hash(
+  const absl::uint128 connection_id_hash128 = FNV1a_128_Hash(
       absl::string_view(connection_id.data(), connection_id.length()));
   static_assert(sizeof(connection_id_hash64) + sizeof(connection_id_hash128) <=
                     sizeof(new_connection_id_data),
@@ -621,10 +629,15 @@ bool QuicUtils::IsConnectionIdValidForVersion(
                                              transport_version);
 }
 
-QuicUint128 QuicUtils::GenerateStatelessResetToken(
+StatelessResetToken QuicUtils::GenerateStatelessResetToken(
     QuicConnectionId connection_id) {
-  return FNV1a_128_Hash(
+  static_assert(sizeof(absl::uint128) == sizeof(StatelessResetToken),
+                "bad size");
+  static_assert(alignof(absl::uint128) >= alignof(StatelessResetToken),
+                "bad alignment");
+  absl::uint128 hash = FNV1a_128_Hash(
       absl::string_view(connection_id.data(), connection_id.length()));
+  return *reinterpret_cast<StatelessResetToken*>(&hash);
 }
 
 // static
@@ -644,8 +657,9 @@ PacketNumberSpace QuicUtils::GetPacketNumberSpace(
     case ENCRYPTION_FORWARD_SECURE:
       return APPLICATION_DATA;
     default:
-      QUIC_BUG << "Try to get packet number space of encryption level: "
-               << encryption_level;
+      QUIC_BUG(quic_bug_10839_3)
+          << "Try to get packet number space of encryption level: "
+          << encryption_level;
       return NUM_PACKET_NUMBER_SPACES;
   }
 }
@@ -661,7 +675,7 @@ EncryptionLevel QuicUtils::GetEncryptionLevel(
     case APPLICATION_DATA:
       return ENCRYPTION_FORWARD_SECURE;
     default:
-      DCHECK(false);
+      QUICHE_DCHECK(false);
       return NUM_ENCRYPTION_LEVELS;
   }
 }
@@ -677,6 +691,14 @@ bool QuicUtils::IsProbingFrame(QuicFrameType type) {
     default:
       return false;
   }
+}
+
+bool IsValidWebTransportSessionId(WebTransportSessionId id,
+                                  ParsedQuicVersion version) {
+  QUICHE_DCHECK(version.UsesHttp3());
+  return (id <= std::numeric_limits<QuicStreamId>::max()) &&
+         QuicUtils::IsBidirectionalStreamId(id, version) &&
+         QuicUtils::IsClientInitiatedStreamId(version.transport_version, id);
 }
 
 #undef RETURN_STRING_LITERAL  // undef for jumbo builds

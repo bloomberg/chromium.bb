@@ -17,6 +17,7 @@
 #include "remoting/protocol/host_video_stats_dispatcher.h"
 #include "remoting/protocol/webrtc_frame_scheduler_simple.h"
 #include "remoting/protocol/webrtc_transport.h"
+#include "remoting/protocol/webrtc_video_track_source.h"
 #include "third_party/webrtc/api/media_stream_interface.h"
 #include "third_party/webrtc/api/notifier.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
@@ -49,27 +50,6 @@ std::string EncodeResultToString(WebrtcVideoEncoder::EncodeResult result) {
   return "";
 }
 
-class DummyVideoTrackSource
-    : public webrtc::Notifier<webrtc::VideoTrackSourceInterface> {
- public:
-  SourceState state() const override { return kLive; }
-  bool remote() const override { return false; }
-  bool is_screencast() const override { return true; }
-  absl::optional<bool> needs_denoising() const override {
-    return absl::nullopt;
-  }
-  bool GetStats(Stats* stats) override { return false; }
-  void AddOrUpdateSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink,
-                       const rtc::VideoSinkWants& wants) override {}
-  void RemoveSink(rtc::VideoSinkInterface<webrtc::VideoFrame>* sink) override {}
-  bool SupportsEncodedOutput() const override { return false; }
-  void GenerateKeyFrame() override {}
-  void AddEncodedSink(
-      rtc::VideoSinkInterface<webrtc::RecordableEncodedFrame>* sink) override {}
-  void RemoveEncodedSink(
-      rtc::VideoSinkInterface<webrtc::RecordableEncodedFrame>* sink) override {}
-};
-
 }  // namespace
 
 struct WebrtcVideoStream::FrameStats {
@@ -84,7 +64,6 @@ struct WebrtcVideoStream::FrameStats {
   base::TimeTicks encode_ended_time;
 
   uint32_t capturer_id = 0;
-  int frame_quality = -1;
 };
 
 WebrtcVideoStream::WebrtcVideoStream(const SessionOptions& session_options)
@@ -144,7 +123,8 @@ void WebrtcVideoStream::Start(
   capturer_->Start(this);
 
   rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> src =
-      new rtc::RefCountedObject<DummyVideoTrackSource>();
+      new rtc::RefCountedObject<WebrtcVideoTrackSource>(base::BindRepeating(
+          &WebrtcVideoStream::OnEncoderReady, weak_factory_.GetWeakPtr()));
   rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track =
       peer_connection_factory->CreateVideoTrack(kVideoLabel, src);
 
@@ -158,9 +138,10 @@ void WebrtcVideoStream::Start(
 
   webrtc_transport_->OnVideoTransceiverCreated(transceiver);
 
-  scheduler_.reset(new WebrtcFrameSchedulerSimple(session_options_));
-  scheduler_->Start(webrtc_transport_->video_encoder_factory(),
-                    base::BindRepeating(&WebrtcVideoStream::CaptureNextFrame,
+  webrtc_transport_->video_encoder_factory()->SetVideoChannelStateObserver(
+      weak_factory_.GetWeakPtr());
+  scheduler_ = std::make_unique<WebrtcFrameSchedulerSimple>(session_options_);
+  scheduler_->Start(base::BindRepeating(&WebrtcVideoStream::CaptureNextFrame,
                                         base::Unretained(this)));
 
   video_stats_dispatcher_.Init(webrtc_transport_->CreateOutgoingChannel(
@@ -199,6 +180,31 @@ void WebrtcVideoStream::SetObserver(Observer* observer) {
   observer_ = observer;
 }
 
+void WebrtcVideoStream::OnEncoderReady() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  scheduler_->OnEncoderReady();
+}
+
+void WebrtcVideoStream::OnKeyFrameRequested() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  scheduler_->OnKeyFrameRequested();
+}
+
+void WebrtcVideoStream::OnTargetBitrateChanged(int bitrate_kbps) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  scheduler_->OnTargetBitrateChanged(bitrate_kbps);
+}
+
+void WebrtcVideoStream::OnRttUpdate(base::TimeDelta rtt) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  scheduler_->OnRttUpdate(rtt);
+}
+
+void WebrtcVideoStream::OnTopOffActive(bool active) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  scheduler_->OnTopOffActive(active);
+}
+
 void WebrtcVideoStream::OnCaptureResult(
     webrtc::DesktopCapturer::Result result,
     std::unique_ptr<webrtc::DesktopFrame> frame) {
@@ -227,6 +233,11 @@ void WebrtcVideoStream::OnCaptureResult(
 
   current_frame_stats_->capturer_id = frame->capturer_id();
 
+  if (recreate_encoder_) {
+    recreate_encoder_ = false;
+    encoder_.reset();
+  }
+
   if (!encoder_) {
     encoder_selector_.SetDesktopFrame(*frame);
     encoder_ = encoder_selector_.CreateEncoder();
@@ -244,8 +255,8 @@ void WebrtcVideoStream::OnCaptureResult(
   if (encoder_) {
     current_frame_stats_->encode_started_time = base::TimeTicks::Now();
     encoder_->Encode(std::move(frame), frame_params,
-                     base::BindOnce(&WebrtcVideoStream::OnFrameEncoded,
-                                    base::Unretained(this)));
+                     base::BindOnce(&WebrtcVideoStream::EncodeCallback,
+                                    weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -262,7 +273,7 @@ void WebrtcVideoStream::OnChannelClosed(
 void WebrtcVideoStream::CaptureNextFrame() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  current_frame_stats_.reset(new FrameStats());
+  current_frame_stats_ = std::make_unique<FrameStats>();
   current_frame_stats_->capture_started_time = base::TimeTicks::Now();
   current_frame_stats_->input_event_timestamps =
       event_timestamps_source_->TakeLastEventTimestamps();
@@ -272,23 +283,12 @@ void WebrtcVideoStream::CaptureNextFrame() {
 
 void WebrtcVideoStream::OnFrameEncoded(
     WebrtcVideoEncoder::EncodeResult encode_result,
-    std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame) {
+    WebrtcVideoEncoder::EncodedFrame* frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   current_frame_stats_->encode_ended_time = base::TimeTicks::Now();
 
-  // Convert the frame quantizer to a measure of frame quality between 0 and
-  // 100, for a simple visualization of quality over time. The quantizer from
-  // VP8/VP9 encoder lies within 0-63, with 0 representing a lossless
-  // frame.
-  // TODO(crbug.com/891571): Remove |quantizer| from the WebrtcVideoEncoder
-  // interface, and move this logic to the encoders.
-  if (frame) {
-    current_frame_stats_->frame_quality = (63 - frame->quantizer) * 100 / 63;
-  }
-
-  HostFrameStats stats;
-  scheduler_->OnFrameEncoded(frame.get(), &stats);
+  scheduler_->OnFrameEncoded(encode_result, frame);
 
   if (encode_result != WebrtcVideoEncoder::EncodeResult::SUCCEEDED) {
     LOG(ERROR) << "Video encoder returns error "
@@ -302,11 +302,27 @@ void WebrtcVideoStream::OnFrameEncoded(
     return;
   }
 
+  if (recreate_encoder_) {
+    // Don't send the encoded frame if the new SDP-negotiated encoder might be
+    // different from the current one. This would trigger a crash in WebRTC.
+    return;
+  }
+
+  frame->capture_time = current_frame_stats_->capture_started_time;
+  frame->encode_start = current_frame_stats_->encode_started_time;
+  frame->encode_finish = current_frame_stats_->encode_ended_time;
   webrtc::EncodedImageCallback::Result result =
-      webrtc_transport_->video_encoder_factory()->SendEncodedFrame(
-          *frame, current_frame_stats_->capture_started_time,
-          current_frame_stats_->encode_started_time,
-          current_frame_stats_->encode_ended_time);
+      webrtc_transport_->video_encoder_factory()->SendEncodedFrame(*frame);
+
+  // Directly call the handler to send the FrameStats message.
+  // TODO(crbug.com/1192865): Remove this when standard encoding pipeline is
+  // implemented - the encoder will be responsible for sending the frame.
+  OnEncodedFrameSent(result, *frame);
+}
+
+void WebrtcVideoStream::OnEncodedFrameSent(
+    webrtc::EncodedImageCallback::Result result,
+    const WebrtcVideoEncoder::EncodedFrame& frame) {
   if (result.error != webrtc::EncodedImageCallback::Result::OK) {
     // TODO(sergeyu): Stop the stream.
     LOG(ERROR) << "Failed to send video frame.";
@@ -315,7 +331,12 @@ void WebrtcVideoStream::OnFrameEncoded(
 
   // Send FrameStats message.
   if (video_stats_dispatcher_.is_connected()) {
-    stats.frame_size = frame ? frame->data.size() : 0;
+    HostFrameStats stats;
+
+    // Get bandwidth, RTT and send_pending_delay into |stats|.
+    scheduler_->GetSchedulerStats(stats);
+
+    stats.frame_size = frame.data.size();
 
     if (!current_frame_stats_->input_event_timestamps.is_null()) {
       stats.capture_pending_delay =
@@ -341,10 +362,22 @@ void WebrtcVideoStream::OnFrameEncoded(
 
     stats.capturer_id = current_frame_stats_->capturer_id;
 
-    stats.frame_quality = current_frame_stats_->frame_quality;
+    // Convert the frame quantizer to a measure of frame quality between 0 and
+    // 100, for a simple visualization of quality over time. The quantizer from
+    // VP8/VP9 encoder lies within 0-63, with 0 representing a lossless
+    // frame.
+    // TODO(crbug.com/891571): Remove |quantizer| from the WebrtcVideoEncoder
+    // interface, and move this logic to the encoders.
+    stats.frame_quality = (63 - frame.quantizer) * 100 / 63;
 
     video_stats_dispatcher_.OnVideoFrameStats(result.frame_id, stats);
   }
+}
+
+void WebrtcVideoStream::EncodeCallback(
+    WebrtcVideoEncoder::EncodeResult encode_result,
+    std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame) {
+  OnFrameEncoded(encode_result, frame.get());
 }
 
 void WebrtcVideoStream::OnEncoderCreated(
@@ -352,14 +385,19 @@ void WebrtcVideoStream::OnEncoderCreated(
     const webrtc::SdpVideoFormat::Parameters& parameters) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Reset the encoder in case a previous one was being used and SDP
-  // re-negotiation selected a different one. The proper codec will be
+  // This method is called when SDP has been negotiated and WebRTC has
+  // created a preferred encoder via the WebrtcDummyVideoEncoderFactory
+  // implementation.
+  // Trigger recreating the encoder in case a previous one was being used and
+  // SDP renegotiation selected a different one. The proper encoder will be
   // created after the next frame is captured.
-  // An optimization would be to reset only if the new encoder is different
+  // Note that this flag controls the encoder created by this class, and not
+  // the encoder that was just "created" by WebRTC.
+  // An optimization would be to do this only if the new encoder is different
   // from the current one. However, SDP renegotiation is expected to occur
   // infrequently (only when the user changes a setting), and should typically
   // not cause the same codec to be repeatedly selected.
-  encoder_.reset();
+  recreate_encoder_ = true;
 
   // The preferred codec id depends on the order of
   // |encoder_selector_|.RegisterEncoder().

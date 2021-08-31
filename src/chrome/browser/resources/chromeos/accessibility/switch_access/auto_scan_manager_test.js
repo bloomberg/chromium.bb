@@ -10,39 +10,51 @@ UNDEFINED_INTERVAL_DELAY = -1;
 SwitchAccessAutoScanManagerTest = class extends SwitchAccessE2ETest {
   /** @override */
   setUp() {
-    AutoScanManager.instance.primaryScanTime_ = 1000;
-    // Use intervalCount and intervalDelay to check how many intervals are
-    // currently running (should be no more than 1) and the current delay.
-    window.intervalCount = 0;
-    window.intervalDelay = UNDEFINED_INTERVAL_DELAY;
-    window.defaultSetInterval = window.setInterval;
-    window.defaultClearInterval = window.clearInterval;
-    NavigationManager.defaultMoveForward = NavigationManager.moveForward;
-    NavigationManager.moveForwardCount = 0;
+    var runTest = this.deferRunTest(WhenTestDone.EXPECT);
+    (async () => {
+      await importModule(
+          'BackButtonNode', '/switch_access/nodes/back_button_node.js');
+      await importModule(
+          ['BasicNode', 'BasicRootNode'], '/switch_access/nodes/basic_node.js');
+      await importModule(
+          'AutoScanManager', '/switch_access/auto_scan_manager.js');
+      await importModule('Navigator', '/switch_access/navigator.js');
+      AutoScanManager.instance.primaryScanTime_ = 1000;
+      // Use intervalCount and intervalDelay to check how many intervals are
+      // currently running (should be no more than 1) and the current delay.
+      window.intervalCount = 0;
+      window.intervalDelay = UNDEFINED_INTERVAL_DELAY;
+      window.defaultSetInterval = window.setInterval;
+      window.defaultClearInterval = window.clearInterval;
+      this.defaultMoveForward =
+          Navigator.byItem.moveForward.bind(Navigator.byItem);
+      this.moveForwardCount = 0;
 
+      window.setInterval = function(func, delay) {
+        window.intervalCount++;
+        window.intervalDelay = delay;
 
-    window.setInterval = function(func, delay) {
-      window.intervalCount++;
-      window.intervalDelay = delay;
+        // Override the delay for testing.
+        return window.defaultSetInterval(func, 0);
+      };
 
-      // Override the delay for testing.
-      return window.defaultSetInterval(func, 0);
-    };
+      window.clearInterval = function(intervalId) {
+        if (intervalId) {
+          window.intervalCount--;
+        }
+        window.defaultClearInterval(intervalId);
+      };
 
-    window.clearInterval = function(intervalId) {
-      if (intervalId) {
-        window.intervalCount--;
-      }
-      window.defaultClearInterval(intervalId);
-    };
+      Navigator.byItem.moveForward = () => {
+        this.moveForwardCount++;
+        this.onMoveForward_ && this.onMoveForward_();
+        this.defaultMoveForward();
+      };
 
-    NavigationManager.moveForward = () => {
-      NavigationManager.moveForwardCount++;
-      this.onMoveForward_ && this.onMoveForward_();
-      NavigationManager.defaultMoveForward();
-    };
+      this.onMoveForward_ = null;
 
-    this.onMoveForward_ = null;
+      runTest();
+    })();
   }
 };
 
@@ -52,7 +64,7 @@ TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabled', function() {
         AutoScanManager.instance.isRunning_(),
         'Auto scan manager is running prematurely');
     assertEquals(
-        0, NavigationManager.moveForwardCount,
+        0, this.moveForwardCount,
         'Incorrect initialization of moveForwardCount');
     assertEquals(0, intervalCount, 'Incorrect initialization of intervalCount');
 
@@ -60,9 +72,7 @@ TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabled', function() {
       assertTrue(
           AutoScanManager.instance.isRunning_(),
           'Auto scan manager has stopped running');
-      assertGT(
-          NavigationManager.moveForwardCount, 0,
-          'Switch Access has not moved forward');
+      assertGT(this.moveForwardCount, 0, 'Switch Access has not moved forward');
       assertEquals(
           1, intervalCount, 'The number of intervals is no longer exactly 1');
     });
@@ -121,7 +131,7 @@ TEST_F(
             AutoScanManager.instance.isRunning_(),
             'Auto scan manager is running prematurely');
         assertEquals(
-            0, NavigationManager.moveForwardCount,
+            0, this.moveForwardCount,
             'Incorrect initialization of moveForwardCount');
         assertEquals(
             0, intervalCount, 'Incorrect initialization of intervalCount');

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/device_cloud_external_data_policy_observer.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -20,6 +21,7 @@
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -129,7 +131,7 @@ class DeviceCloudExternalDataPolicyObserverTest
 
   void WaitUntilPolicyChanged() {
     policy_change_waiting_run_loop_->Run();
-    policy_change_waiting_run_loop_.reset(new base::RunLoop());
+    policy_change_waiting_run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   std::unique_ptr<DeviceCloudExternalDataPolicyObserver> observer_;
@@ -144,6 +146,7 @@ IN_PROC_BROWSER_TEST_F(DeviceCloudExternalDataPolicyObserverTest,
 
   SetDeviceNativePrintersExternalData(test::ConstructExternalDataPolicy(
       *embedded_test_server(), kExternalDataPath));
+  content::RunAllTasksUntilIdle();
   ClearDeviceNativePrintersExternalData();
 }
 

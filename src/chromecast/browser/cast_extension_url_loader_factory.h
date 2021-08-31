@@ -5,17 +5,15 @@
 #ifndef CHROMECAST_BROWSER_CAST_EXTENSION_URL_LOADER_FACTORY_H_
 #define CHROMECAST_BROWSER_CAST_EXTENSION_URL_LOADER_FACTORY_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
-#include "content/public/browser/non_network_url_loader_factory_base.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/cpp/self_deleting_url_loader_factory.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -35,7 +33,7 @@ namespace shell {
 // URLLoader implementation because Cast sometimes loads extension resources
 // from the web.
 class CastExtensionURLLoaderFactory
-    : public content::NonNetworkURLLoaderFactoryBase {
+    : public network::SelfDeletingURLLoaderFactory {
  public:
   // Returns mojo::PendingRemote to a newly constructed
   // CastExtensionURLLoaderFactory.  The factory is self-owned - it will delete
@@ -64,7 +62,6 @@ class CastExtensionURLLoaderFactory
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
@@ -94,8 +91,7 @@ class CastExtensionURLLoaderFactory
   mojo::Remote<network::mojom::URLLoaderFactory> extension_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> network_factory_;
 
-  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
-      browser_context_shutdown_subscription_;
+  base::CallbackListSubscription browser_context_shutdown_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(CastExtensionURLLoaderFactory);
 };

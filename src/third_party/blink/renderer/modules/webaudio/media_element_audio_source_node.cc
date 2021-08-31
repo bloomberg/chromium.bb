@@ -25,6 +25,8 @@
 
 #include "third_party/blink/renderer/modules/webaudio/media_element_audio_source_node.h"
 
+#include <memory>
+
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_element_audio_source_options.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
@@ -139,12 +141,12 @@ void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
 
     if (source_sample_rate != Context()->sampleRate()) {
       double scale_factor = source_sample_rate / Context()->sampleRate();
-      multi_channel_resampler_.reset(new MediaMultiChannelResampler(
+      multi_channel_resampler_ = std::make_unique<MediaMultiChannelResampler>(
           number_of_channels, scale_factor,
-          audio_utilities::kRenderQuantumFrames,
+          GetDeferredTaskHandler().RenderQuantumFrames(),
           CrossThreadBindRepeating(
               &MediaElementAudioSourceHandler::ProvideResamplerInput,
-              CrossThreadUnretained(this))));
+              CrossThreadUnretained(this)));
     } else {
       // Bypass resampling.
       multi_channel_resampler_.reset();
@@ -238,7 +240,7 @@ void MediaElementAudioSourceHandler::unlock() {
   process_lock_.unlock();
 }
 
-// ----------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 MediaElementAudioSourceNode::MediaElementAudioSourceNode(
     AudioContext& context,
@@ -286,12 +288,6 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
   return Create(*context, *options->mediaElement(), exception_state);
 }
 
-void MediaElementAudioSourceNode::Trace(Visitor* visitor) const {
-  visitor->Trace(media_element_);
-  AudioSourceProviderClient::Trace(visitor);
-  AudioNode::Trace(visitor);
-}
-
 MediaElementAudioSourceHandler&
 MediaElementAudioSourceNode::GetMediaElementAudioSourceHandler() const {
   return static_cast<MediaElementAudioSourceHandler&>(Handler());
@@ -321,6 +317,17 @@ void MediaElementAudioSourceNode::ReportDidCreate() {
 
 void MediaElementAudioSourceNode::ReportWillBeDestroyed() {
   GraphTracer().WillDestroyAudioNode(this);
+}
+
+bool MediaElementAudioSourceNode::HasPendingActivity() const {
+  // The node stays alive as long as the context is running.
+  return context()->ContextState() == BaseAudioContext::kRunning;
+}
+
+void MediaElementAudioSourceNode::Trace(Visitor* visitor) const {
+  visitor->Trace(media_element_);
+  AudioSourceProviderClient::Trace(visitor);
+  AudioNode::Trace(visitor);
 }
 
 }  // namespace blink

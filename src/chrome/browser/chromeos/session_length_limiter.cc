@@ -81,13 +81,14 @@ SessionLengthLimiter::SessionLengthLimiter(Delegate* delegate,
 
   PrefService* local_state = g_browser_process->local_state();
   pref_change_registrar_.Init(local_state);
-  pref_change_registrar_.Add(prefs::kSessionLengthLimit,
-                             base::Bind(&SessionLengthLimiter::UpdateLimit,
-                                        base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kSessionLengthLimit,
+      base::BindRepeating(&SessionLengthLimiter::UpdateLimit,
+                          base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kSessionWaitForInitialUserActivity,
-      base::Bind(&SessionLengthLimiter::UpdateSessionStartTime,
-                 base::Unretained(this)));
+      base::BindRepeating(&SessionLengthLimiter::UpdateSessionStartTime,
+                          base::Unretained(this)));
 
   // If this is a browser restart after a crash, try to restore the session
   // start time and the boolean indicating user activity from local state. If
@@ -188,19 +189,20 @@ void SessionLengthLimiter::UpdateLimit() {
     return;
 
   // If no session length limit is set, do not start a timer.
-  int limit;
   const PrefService::Preference* session_length_limit_pref =
       pref_change_registrar_.prefs()->
           FindPreference(prefs::kSessionLengthLimit);
   if (session_length_limit_pref->IsDefaultValue() ||
-      !session_length_limit_pref->GetValue()->GetAsInteger(&limit)) {
+      !session_length_limit_pref->GetValue()->is_int()) {
     return;
   }
 
   // Clamp the session length limit to the valid range.
   const base::TimeDelta session_length_limit =
-      base::TimeDelta::FromMilliseconds(std::min(std::max(
-          limit, kSessionLengthLimitMinMs), kSessionLengthLimitMaxMs));
+      base::TimeDelta::FromMilliseconds(
+          std::min(std::max(session_length_limit_pref->GetValue()->GetInt(),
+                            kSessionLengthLimitMinMs),
+                   kSessionLengthLimitMaxMs));
 
   // Calculate the session stop time.
   const base::Time session_stop_time =

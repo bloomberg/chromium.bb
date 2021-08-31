@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/bottombar/overlay_panel_content.h"
 
+#include <memory>
 #include <set>
 
 #include "base/android/jni_string.h"
@@ -11,6 +12,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "cc/input/browser_controls_state.h"
 #include "chrome/android/chrome_jni_headers/OverlayPanelContent_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -22,7 +24,6 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/browser_controls_state.h"
 #include "ui/android/view_android.h"
 
 using base::android::JavaParamRef;
@@ -114,9 +115,9 @@ void OverlayPanelContent::SetWebContents(
   // TODO(pedrosimonetti): confirm if we need this after promoting it
   // to a real tab.
   TabAndroid::AttachTabHelpers(web_contents_.get());
-  web_contents_delegate_.reset(
-      new web_contents_delegate_android::WebContentsDelegateAndroid(
-          env, jweb_contents_delegate));
+  web_contents_delegate_ = std::make_unique<
+      web_contents_delegate_android::WebContentsDelegateAndroid>(
+      env, jweb_contents_delegate);
   web_contents_->SetDelegate(web_contents_delegate_.get());
 }
 
@@ -150,12 +151,12 @@ void OverlayPanelContent::UpdateBrowserControlsState(
   if (!web_contents_)
     return;
 
-  content::BrowserControlsState state = content::BROWSER_CONTROLS_STATE_SHOWN;
+  cc::BrowserControlsState state = cc::BrowserControlsState::kShown;
   if (are_controls_hidden)
-    state = content::BROWSER_CONTROLS_STATE_HIDDEN;
+    state = cc::BrowserControlsState::kHidden;
 
   web_contents_->GetMainFrame()->UpdateBrowserControlsState(
-      state, content::BROWSER_CONTROLS_STATE_BOTH, false);
+      state, cc::BrowserControlsState::kBoth, false);
 }
 
 jlong JNI_OverlayPanelContent_Init(JNIEnv* env,

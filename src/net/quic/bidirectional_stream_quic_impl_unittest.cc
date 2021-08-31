@@ -4,6 +4,7 @@
 
 #include "net/quic/bidirectional_stream_quic_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -19,6 +20,7 @@
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
 #include "net/base/net_errors.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/bidirectional_stream_request_info.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_event_type.h"
@@ -42,8 +44,7 @@
 #include "net/socket/socket_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_string_piece.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "net/third_party/quiche/src/common/quiche_text_utils.h"
 #include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quiche/src/quic/core/crypto/null_decrypter.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
@@ -134,7 +135,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
         is_ready_(false),
         trailers_expected_(false),
         trailers_received_(false) {
-    loop_.reset(new base::RunLoop);
+    loop_ = std::make_unique<base::RunLoop>();
   }
 
   ~TestDelegateBase() override {}
@@ -239,7 +240,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
     int on_data_sent_count = on_data_sent_count_;
 
     loop_->Run();
-    loop_.reset(new base::RunLoop);
+    loop_ = std::make_unique<base::RunLoop>();
 
     EXPECT_EQ(method == kOnFailed, on_failed_called_);
     EXPECT_EQ(is_ready || (method == kOnStreamReady), is_ready_);
@@ -508,7 +509,7 @@ class BidirectionalStreamQuicImplTest
   void Initialize() {
     crypto_client_stream_factory_.set_handshake_mode(
         MockCryptoClientStream::ZERO_RTT);
-    mock_writes_.reset(new MockWrite[writes_.size()]);
+    mock_writes_ = std::make_unique<MockWrite[]>(writes_.size());
     for (size_t i = 0; i < writes_.size(); i++) {
       if (writes_[i].packet == nullptr) {
         mock_writes_[i] = MockWrite(writes_[i].mode, writes_[i].rv, i);
@@ -518,18 +519,19 @@ class BidirectionalStreamQuicImplTest
       }
     }
 
-    socket_data_.reset(new StaticSocketDataProvider(
+    socket_data_ = std::make_unique<StaticSocketDataProvider>(
         base::span<MockRead>(),
-        base::make_span(mock_writes_.get(), writes_.size())));
+        base::make_span(mock_writes_.get(), writes_.size()));
     socket_data_->set_printer(&printer_);
 
     std::unique_ptr<MockUDPClientSocket> socket(new MockUDPClientSocket(
         socket_data_.get(), net_log().bound().net_log()));
     socket->Connect(peer_addr_);
     runner_ = new TestTaskRunner(&clock_);
-    helper_.reset(
-        new QuicChromiumConnectionHelper(&clock_, &random_generator_));
-    alarm_factory_.reset(new QuicChromiumAlarmFactory(runner_.get(), &clock_));
+    helper_ = std::make_unique<QuicChromiumConnectionHelper>(
+        &clock_, &random_generator_);
+    alarm_factory_ =
+        std::make_unique<QuicChromiumAlarmFactory>(runner_.get(), &clock_);
     connection_ = new quic::QuicConnection(
         connection_id_, quic::QuicSocketAddress(),
         ToQuicSocketAddress(peer_addr_), helper_.get(), alarm_factory_.get(),
@@ -544,16 +546,15 @@ class BidirectionalStreamQuicImplTest
     base::TimeTicks dns_end = base::TimeTicks::Now();
     base::TimeTicks dns_start = dns_end - base::TimeDelta::FromMilliseconds(1);
 
-    session_.reset(new QuicChromiumClientSession(
+    session_ = std::make_unique<QuicChromiumClientSession>(
         connection_, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
         &transport_security_state_, /*ssl_config_service=*/nullptr,
         base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)),
         QuicSessionKey(kDefaultServerHostName, kDefaultServerPort,
                        PRIVACY_MODE_DISABLED, SocketTag(),
-                       NetworkIsolationKey(), false /* disable_secure_dns */),
+                       NetworkIsolationKey(), SecureDnsPolicy::kAllow),
         /*require_confirmation=*/false,
-        /*max_allowed_push_id=*/0,
         /*migrate_session_early_v2=*/false,
         /*migrate_session_on_network_change_v2=*/false,
         /*default_network=*/NetworkChangeNotifier::kInvalidNetworkHandle,
@@ -574,7 +575,7 @@ class BidirectionalStreamQuicImplTest
         std::make_unique<quic::QuicClientPushPromiseIndex>(), nullptr,
         base::DefaultTickClock::GetInstance(),
         base::ThreadTaskRunnerHandle::Get().get(),
-        /*socket_performance_watcher=*/nullptr, net_log().bound().net_log()));
+        /*socket_performance_watcher=*/nullptr, net_log().bound().net_log());
     session_->Initialize();
 
     // Blackhole QPACK decoder stream instead of constructing mock writes.
@@ -1838,8 +1839,12 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterHeaders) {
   delegate->WaitUntilNextCallback(kOnStreamReady);
   ConfirmHandshake();
 
-  // Server sends a Rst.
-  ProcessPacket(ConstructServerRstStreamPacket(1));
+  // Server sends a Rst. Since the stream has sent fin, the rst is one way in
+  // IETF QUIC.
+  ProcessPacket(server_maker_.MakeRstPacket(
+      1, !kIncludeVersion, GetNthClientInitiatedBidirectionalStreamId(0),
+      quic::QUIC_STREAM_CANCELLED,
+      /*include_stop_sending_if_v99=*/false));
 
   delegate->WaitUntilNextCallback(kOnFailed);
 
@@ -1905,8 +1910,12 @@ TEST_P(BidirectionalStreamQuicImplTest, ServerSendsRstAfterReadData) {
   int rv = delegate->ReadData(cb.callback());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  // Server sends a Rst.
-  ProcessPacket(ConstructServerRstStreamPacket(3));
+  // Server sends a Rst. Since the stream has sent fin, the rst is one way in
+  // IETF QUIC.
+  ProcessPacket(server_maker_.MakeRstPacket(
+      3, !kIncludeVersion, GetNthClientInitiatedBidirectionalStreamId(0),
+      quic::QUIC_STREAM_CANCELLED,
+      /*include_stop_sending_if_v99=*/false));
 
   delegate->WaitUntilNextCallback(kOnFailed);
 

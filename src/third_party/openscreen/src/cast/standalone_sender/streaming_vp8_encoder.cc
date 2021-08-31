@@ -138,7 +138,7 @@ void StreamingVp8Encoder::EncodeAndSend(
     std::function<void(Stats)> stats_callback) {
   WorkUnit work_unit;
 
-  // TODO(miu): The |VideoFrame| struct should provide the media timestamp,
+  // TODO(jophba): The |VideoFrame| struct should provide the media timestamp,
   // instead of this code inferring it from the reference timestamps, since: 1)
   // the video capturer's clock may tick at a different rate than the system
   // clock; and 2) to reduce jitter.
@@ -226,6 +226,7 @@ void StreamingVp8Encoder::ProcessWorkUnitsUntilTimeToQuit() {
       static_cast<WorkUnit&>(work_unit) = std::move(encode_queue_.front());
       encode_queue_.pop();
       force_key_frame = needs_key_frame_;
+      needs_key_frame_ = false;
       target_bitrate = target_bitrate_;
     }
 

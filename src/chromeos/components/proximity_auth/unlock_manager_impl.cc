@@ -319,7 +319,7 @@ void UnlockManagerImpl::OnUnlockEventSent(bool success) {
         SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
             kUnlockEventSentButNotAttemptingAuth);
   } else if (success) {
-    FinalizeAuthAttempt(base::nullopt /* failure_reason */);
+    FinalizeAuthAttempt(absl::nullopt /* failure_reason */);
   } else {
     FinalizeAuthAttempt(
         SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
@@ -337,8 +337,8 @@ void UnlockManagerImpl::OnRemoteStatusUpdate(
   metrics::RecordRemoteSecuritySettingsState(
       GetRemoteSecuritySettingsState(status_update));
 
-  remote_screenlock_state_.reset(new RemoteScreenlockState(
-      GetScreenlockStateFromRemoteUpdate(status_update)));
+  remote_screenlock_state_ = std::make_unique<RemoteScreenlockState>(
+      GetScreenlockStateFromRemoteUpdate(status_update));
 
   // Only record these metrics within the initial period of opening the laptop
   // displaying the lock screen.
@@ -364,7 +364,7 @@ void UnlockManagerImpl::OnDecryptResponse(const std::string& decrypted_bytes) {
         SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
             kFailedToDecryptSignInChallenge);
   } else {
-    sign_in_secret_.reset(new std::string(decrypted_bytes));
+    sign_in_secret_ = std::make_unique<std::string>(decrypted_bytes);
     if (GetMessenger())
       GetMessenger()->DispatchUnlockEvent();
   }
@@ -441,7 +441,7 @@ void UnlockManagerImpl::SuspendImminent(
   bluetooth_suspension_recovery_timer_->Stop();
 }
 
-void UnlockManagerImpl::SuspendDone(const base::TimeDelta& sleep_duration) {
+void UnlockManagerImpl::SuspendDone(base::TimeDelta sleep_duration) {
   bluetooth_suspension_recovery_timer_->Start(
       FROM_HERE, kBluetoothAdapterResumeMaxDuration,
       base::BindOnce(
@@ -612,8 +612,8 @@ void UnlockManagerImpl::OnGetConnectionMetadata(
   proximity_auth_client_->GetChallengeForUserAndDevice(
       remote_device.user_email(), remote_device.public_key(),
       connection_metadata_ptr->channel_binding_data,
-      base::Bind(&UnlockManagerImpl::OnGotSignInChallenge,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&UnlockManagerImpl::OnGotSignInChallenge,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void UnlockManagerImpl::OnGotSignInChallenge(const std::string& challenge) {
@@ -753,7 +753,7 @@ void UnlockManagerImpl::OnInitialScanTimeout() {
 }
 
 void UnlockManagerImpl::FinalizeAuthAttempt(
-    const base::Optional<
+    const absl::optional<
         SmartLockMetricsRecorder::SmartLockAuthResultFailureReason>& error) {
   if (error) {
     RecordAuthResultFailure(screenlock_type_, *error);

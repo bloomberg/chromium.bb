@@ -26,18 +26,21 @@
 #include "core/listeners.h"
 #include "core/payload.h"
 #include "core/status.h"
-#include "proto/connections/offline_wire_formats.pb.h"
 #include "platform/base/byte_array.h"
 #include "platform/public/atomic_boolean.h"
 #include "platform/public/atomic_reference.h"
 #include "platform/public/count_down_latch.h"
 #include "platform/public/mutex.h"
-#include "proto/connections_enums.pb.h"
 #include "absl/container/flat_hash_map.h"
 
 namespace location {
 namespace nearby {
 namespace connections {
+
+// Annotations for methods that need to run on PayloadStatusUpdateThread.
+// Use only in PayloadManager
+#define RUN_ON_PAYLOAD_STATUS_UPDATE_THREAD() \
+  ABSL_EXCLUSIVE_LOCKS_REQUIRED(payload_status_update_executor_)
 
 class PayloadManager : public EndpointManager::FrameProcessor {
  public:
@@ -265,14 +268,15 @@ class PayloadManager : public EndpointManager::FrameProcessor {
                             const std::string& from_endpoint_id,
                             PayloadTransferFrame& payload_transfer_frame);
 
-  // @PayloadStatusUpdateThread
   void NotifyClientOfIncomingPayloadProgressInfo(
       ClientProxy* client, const std::string& endpoint_id,
-      const PayloadProgressInfo& payload_transfer_update);
+      const PayloadProgressInfo& payload_transfer_update)
+      RUN_ON_PAYLOAD_STATUS_UPDATE_THREAD();
 
   SingleThreadExecutor* GetOutgoingPayloadExecutor(Payload::Type payload_type);
 
-  void RunOnStatusUpdateThread(std::function<void()> runnable);
+  void RunOnStatusUpdateThread(const std::string& name,
+                               std::function<void()> runnable);
   bool NotifyShutdown() ABSL_LOCKS_EXCLUDED(mutex_);
   void DestroyPendingPayload(Payload::Id payload_id)
       ABSL_LOCKS_EXCLUDED(mutex_);
@@ -281,7 +285,6 @@ class PayloadManager : public EndpointManager::FrameProcessor {
   void CancelAllPayloads() ABSL_LOCKS_EXCLUDED(mutex_);
 
   mutable Mutex mutex_;
-  EndpointManager::FrameProcessor::Handle handle_;
   AtomicBoolean shutdown_{false};
   std::unique_ptr<CountDownLatch> shutdown_barrier_;
   int send_payload_count_ = 0;

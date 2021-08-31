@@ -7,17 +7,17 @@
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/csp_info.h"
+#include "extensions/common/mojom/host_id.mojom.h"
 #include "extensions/renderer/renderer_extension_registry.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace extensions {
 
-ExtensionInjectionHost::ExtensionInjectionHost(
-    const Extension* extension)
-    : InjectionHost(HostID(HostID::EXTENSIONS, extension->id())),
-      extension_(extension) {
-}
+ExtensionInjectionHost::ExtensionInjectionHost(const Extension* extension)
+    : InjectionHost(
+          mojom::HostID(mojom::HostID::HostType::kExtensions, extension->id())),
+      extension_(extension) {}
 
 ExtensionInjectionHost::~ExtensionInjectionHost() {
 }
@@ -28,7 +28,7 @@ std::unique_ptr<const InjectionHost> ExtensionInjectionHost::Create(
   const Extension* extension =
       RendererExtensionRegistry::Get()->GetByID(extension_id);
   if (!extension)
-    return std::unique_ptr<const ExtensionInjectionHost>();
+    return nullptr;
   return std::unique_ptr<const ExtensionInjectionHost>(
       new ExtensionInjectionHost(extension));
 }

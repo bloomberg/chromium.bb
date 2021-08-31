@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/system_token_cert_db_initializer.h"
 
 #include <pk11pub.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -13,11 +15,18 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequence_checker.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "build/branding_buildflags.h"
 #include "build/buildflag.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/ash/login/startup_utils.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager_client.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/network/network_cert_loader.h"
+#include "chromeos/network/system_token_cert_db_storage.h"
+#include "chromeos/tpm/buildflags.h"
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,6 +37,16 @@
 namespace chromeos {
 
 namespace {
+
+constexpr base::TimeDelta kInitialRequestDelay =
+    base::TimeDelta::FromMilliseconds(100);
+constexpr base::TimeDelta kMaxRequestDelay = base::TimeDelta::FromMinutes(5);
+
+#if BUILDFLAG(SYSTEM_SLOT_SOFTWARE_FALLBACK)
+constexpr bool kIsSystemSlotSoftwareFallbackAllowed = true;
+#else
+constexpr bool kIsSystemSlotSoftwareFallbackAllowed = false;
+#endif
 
 // Called on UI Thread when the system slot has been retrieved.
 void GotSystemSlotOnUIThread(
@@ -74,88 +93,52 @@ bool ShallAttemptTpmOwnership() {
 #endif
 }
 
-// ChromeBrowserMainPartsChromeos owns this.
-SystemTokenCertDBInitializer* g_system_token_cert_db_initializer = nullptr;
+// Calculates the delay before running next attempt to get the TPM state
+// (enabled/disabled), if |last_delay| was the last or initial delay.
+base::TimeDelta GetNextRequestDelay(base::TimeDelta last_delay) {
+  // This implements an exponential backoff, as we don't know in which order of
+  // magnitude the TPM token changes it's state. The delay is capped to prevent
+  // overflow. This threshold is arbitrarily chosen.
+  return std::min(last_delay * 2, kMaxRequestDelay);
+}
 
 }  // namespace
 
-SystemTokenCertDBInitializer::SystemTokenCertDBInitializer() {
+constexpr base::TimeDelta
+    SystemTokenCertDBInitializer::kMaxCertDbRetrievalDelay;
+
+SystemTokenCertDBInitializer::SystemTokenCertDBInitializer()
+    : tpm_request_delay_(kInitialRequestDelay),
+      is_system_slot_software_fallback_allowed_(
+          kIsSystemSlotSoftwareFallbackAllowed) {
   // Only start loading the system token once cryptohome is available and only
   // if the TPM is ready (available && owned && not being owned).
-  CryptohomeClient::Get()->WaitForServiceToBeAvailable(
+  UserDataAuthClient::Get()->WaitForServiceToBeAvailable(
       base::BindOnce(&SystemTokenCertDBInitializer::OnCryptohomeAvailable,
                      weak_ptr_factory_.GetWeakPtr()));
-
-  DCHECK_EQ(g_system_token_cert_db_initializer, nullptr);
-  g_system_token_cert_db_initializer = this;
 }
 
 SystemTokenCertDBInitializer::~SystemTokenCertDBInitializer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK_EQ(g_system_token_cert_db_initializer, this);
-  g_system_token_cert_db_initializer = nullptr;
-}
-
-// static
-SystemTokenCertDBInitializer* SystemTokenCertDBInitializer::Get() {
-  return g_system_token_cert_db_initializer;
-}
-
-void SystemTokenCertDBInitializer::ShutDown() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   // Note that the observer could potentially not be added yet, but
-  // RemoveObserver() is a no-op in that case.
-  CryptohomeClient::Get()->RemoveObserver(this);
+  // the operation is a no-op in that case.
+  TpmManagerClient::Get()->RemoveObserver(this);
 
-  // Cancel any in-progress initialization sequence.
-  weak_ptr_factory_.InvalidateWeakPtrs();
+  // Notify consumers of SystemTokenCertDbStorage that the database is not
+  // usable anymore.
+  SystemTokenCertDbStorage::Get()->ResetDatabase();
 
-  // Notify observers that the SystemTokenCertDBInitializer and the
-  // NSSCertDatabase it provides can not be used anymore.
-  for (auto& observer : observers_)
-    observer.OnSystemTokenCertDBDestroyed();
-
-  // Now it's safe to destroy the NSSCertDatabase.
-  system_token_cert_database_.reset();
+  // Destroy the NSSCertDatabase on the IO thread because consumers could be
+  // accessing it there.
+  content::GetIOThreadTaskRunner({})->DeleteSoon(
+      FROM_HERE, std::move(system_token_cert_database_));
 }
 
-void SystemTokenCertDBInitializer::TpmInitStatusUpdated(
-    bool ready,
-    bool owned,
-    bool was_owned_this_boot) {
+void SystemTokenCertDBInitializer::OnOwnershipTaken() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (ready) {
-    // The TPM "ready" means that it's available && owned && not being owned.
-    MaybeStartInitializingDatabase();
-  }
-}
-
-void SystemTokenCertDBInitializer::GetSystemTokenCertDb(
-    GetSystemTokenCertDbCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  DCHECK(callback);
-
-  if (system_token_cert_database_) {
-    std::move(callback).Run(system_token_cert_database_.get());
-  } else {
-    get_system_token_cert_db_callback_list_.AddUnsafe(std::move(callback));
-  }
-}
-
-void SystemTokenCertDBInitializer::AddObserver(
-    SystemTokenCertDBObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observers_.AddObserver(observer);
-}
-
-void SystemTokenCertDBInitializer::RemoveObserver(
-    SystemTokenCertDBObserver* observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  observers_.RemoveObserver(observer);
+  MaybeStartInitializingDatabase();
 }
 
 void SystemTokenCertDBInitializer::OnCryptohomeAvailable(bool available) {
@@ -168,31 +151,66 @@ void SystemTokenCertDBInitializer::OnCryptohomeAvailable(bool available) {
   }
 
   VLOG(1) << "SystemTokenCertDBInitializer: Cryptohome available.";
-  CryptohomeClient::Get()->AddObserver(this);
-  CryptohomeClient::Get()->TpmIsReady(
-      base::BindOnce(&SystemTokenCertDBInitializer::OnGotTpmIsReady,
+  TpmManagerClient::Get()->AddObserver(this);
+
+  CheckTpm();
+}
+
+void SystemTokenCertDBInitializer::CheckTpm() {
+  TpmManagerClient::Get()->GetTpmNonsensitiveStatus(
+      ::tpm_manager::GetTpmNonsensitiveStatusRequest(),
+      base::BindOnce(&SystemTokenCertDBInitializer::OnGetTpmNonsensitiveStatus,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SystemTokenCertDBInitializer::OnGotTpmIsReady(
-    base::Optional<bool> tpm_is_ready) {
+void SystemTokenCertDBInitializer::RetryCheckTpmLater() {
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&SystemTokenCertDBInitializer::CheckTpm,
+                     weak_ptr_factory_.GetWeakPtr()),
+      tpm_request_delay_);
+  tpm_request_delay_ = GetNextRequestDelay(tpm_request_delay_);
+}
+
+void SystemTokenCertDBInitializer::OnGetTpmNonsensitiveStatus(
+    const ::tpm_manager::GetTpmNonsensitiveStatusReply& reply) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!tpm_is_ready.has_value() || !tpm_is_ready.value()) {
+  if (reply.status() != ::tpm_manager::STATUS_SUCCESS) {
+    LOG(WARNING) << "Failed to get tpm status; status: " << reply.status();
+    RetryCheckTpmLater();
+    return;
+  }
+
+  // There are 2 cases we start initializing the database at this point: 1. TPM
+  // is ready, i.e., owned, or 2. TPM is disabled but software fallback is
+  // allowed. Note that we don't fall back to software solution as long as TPM
+  // is enabled.
+  if (reply.is_owned() ||
+      (!reply.is_enabled() && is_system_slot_software_fallback_allowed_)) {
+    VLOG_IF(1, !reply.is_owned())
+        << "Initializing database when TPM is not owned.";
+    MaybeStartInitializingDatabase();
+    return;
+  }
+
+  // If the TPM is enabled but not owned yet, request taking TPM initialization;
+  // when it's done, the ownership taken signal triggers database
+  // initialization.
+  if (reply.is_enabled() && !reply.is_owned()) {
     VLOG(1) << "SystemTokenCertDBInitializer: TPM is not ready - not loading "
                "system token.";
     if (ShallAttemptTpmOwnership()) {
-      // Signal to cryptohome that it can attempt TPM ownership, if it
-      // haven't done that yet. The previous signal from EULA dialogue could
-      // have been lost if initialization was interrupted.
-      // We don't care about the result, and don't block waiting for it.
-      LOG(WARNING) << "Request attempting TPM ownership.";
-      CryptohomeClient::Get()->TpmCanAttemptOwnership(base::DoNothing());
+      // Requests tpm manager to initialize TPM, if it haven't done that yet.
+      // The previous request from EULA dialogue could have been lost if
+      // initialization was interrupted. We don't care about the result, and
+      // don't block waiting for it.
+      LOG(WARNING) << "Request taking TPM ownership.";
+      TpmManagerClient::Get()->TakeOwnership(
+          ::tpm_manager::TakeOwnershipRequest(), base::DoNothing());
     }
-
     return;
   }
-  MaybeStartInitializingDatabase();
 }
 
 void SystemTokenCertDBInitializer::MaybeStartInitializingDatabase() {
@@ -203,6 +221,7 @@ void SystemTokenCertDBInitializer::MaybeStartInitializingDatabase() {
   started_initializing_ = true;
   VLOG(1)
       << "SystemTokenCertDBInitializer: TPM is ready, loading system token.";
+  NetworkCertLoader::Get()->MarkSystemNSSDBWillBeInitialized();
   TPMTokenLoader::Get()->EnsureStarted();
   base::RepeatingCallback<void(crypto::ScopedPK11Slot)> callback =
       base::BindRepeating(&SystemTokenCertDBInitializer::InitializeDatabase,
@@ -226,14 +245,11 @@ void SystemTokenCertDBInitializer::InitializeDatabase(
       /*public_slot=*/std::move(system_slot),
       /*private_slot=*/crypto::ScopedPK11Slot());
   database->SetSystemSlot(std::move(system_slot_copy));
-
   system_token_cert_database_ = std::move(database);
-  get_system_token_cert_db_callback_list_.Notify(
-      system_token_cert_database_.get());
 
-  VLOG(1) << "SystemTokenCertDBInitializer: Passing system token NSS "
-             "database to NetworkCertLoader.";
-  NetworkCertLoader::Get()->SetSystemNSSDB(system_token_cert_database_.get());
+  auto* system_token_cert_db_storage = SystemTokenCertDbStorage::Get();
+  DCHECK(system_token_cert_db_storage);
+  system_token_cert_db_storage->SetDatabase(system_token_cert_database_.get());
 }
 
 }  // namespace chromeos

@@ -5,7 +5,7 @@ Polymer({
   is: 'app-management-app-item',
 
   behaviors: [
-    app_management.StoreClient,
+    app_management.AppManagementStoreClient,
   ],
 
   properties: {
@@ -48,6 +48,7 @@ Polymer({
       case AppType.kArc:
         return AppManagementEntryPoint.MainViewArc;
       case AppType.kExtension:
+      case AppType.kStandaloneBrowser:
         return AppManagementEntryPoint.MainViewChromeApp;
       case AppType.kWeb:
         return AppManagementEntryPoint.MainViewWebApp;

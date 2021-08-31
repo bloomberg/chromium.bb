@@ -13,11 +13,12 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
@@ -43,12 +44,12 @@ class MockEnvironment : public base::Environment {
   MockEnvironment() {}
 
   void Set(base::StringPiece name, const std::string& value) {
-    variables_[name.as_string()] = value;
+    variables_[std::string(name)] = value;
   }
 
   bool GetVar(base::StringPiece variable_name, std::string* result) override {
-    if (base::Contains(variables_, variable_name.as_string())) {
-      *result = variables_[variable_name.as_string()];
+    if (base::Contains(variables_, std::string(variable_name))) {
+      *result = variables_[std::string(variable_name)];
       return true;
     }
 
@@ -429,7 +430,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
        "Type=Application\n"
        "Name=Paint\n"
        "MimeType=image/png;image/jpg\n"
-       "Exec=/opt/google/chrome/google-chrome --app=https://paint.app/ %F\n"
+       "Exec=/opt/google/chrome/google-chrome --app=https://paint.app/ %U\n"
        "Icon=chrome-https__paint.app\n"
        "Categories=Image\n"
        "StartupWMClass=paint.app\n"},
@@ -459,7 +460,7 @@ TEST(ShellIntegrationTest, GetDesktopFileContents) {
             GURL(test_cases[i].url), std::string(),
             base::ASCIIToUTF16(test_cases[i].title), test_cases[i].icon_name,
             base::FilePath(), test_cases[i].categories, test_cases[i].mime_type,
-            test_cases[i].nodisplay));
+            test_cases[i].nodisplay, ""));
   }
 }
 

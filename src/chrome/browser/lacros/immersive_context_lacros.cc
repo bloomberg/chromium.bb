@@ -5,8 +5,11 @@
 #include "chrome/browser/lacros/immersive_context_lacros.h"
 
 #include "chromeos/ui/frame/immersive/immersive_fullscreen_controller.h"
+#include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/platform_window/extensions/wayland_extension.h"
+#include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 #include "ui/views/widget/widget.h"
 
 ImmersiveContextLacros::ImmersiveContextLacros() = default;
@@ -16,7 +19,13 @@ ImmersiveContextLacros::~ImmersiveContextLacros() = default;
 void ImmersiveContextLacros::OnEnteringOrExitingImmersive(
     chromeos::ImmersiveFullscreenController* controller,
     bool entering) {
-  NOTIMPLEMENTED_LOG_ONCE();
+  aura::Window* window = controller->widget()->GetNativeWindow();
+
+  // Lacros is based on Ozone/Wayland, which uses ui::PlatformWindow and
+  // views::DesktopWindowTreeHostLinux.
+  auto* dwth_linux = views::DesktopWindowTreeHostLinux::From(window->GetHost());
+  auto* wayland_extension = dwth_linux->GetWaylandExtension();
+  wayland_extension->SetImmersiveFullscreenStatus(entering);
 }
 
 gfx::Rect ImmersiveContextLacros::GetDisplayBoundsInScreen(

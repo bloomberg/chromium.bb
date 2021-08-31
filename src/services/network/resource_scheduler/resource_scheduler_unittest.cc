@@ -201,7 +201,7 @@ class ResourceSchedulerTest : public testing::Test {
     for (int i = 0; i != net::EFFECTIVE_CONNECTION_TYPE_LAST; ++i) {
       auto type = static_cast<net::EffectiveConnectionType>(i);
       c[type] = ResourceSchedulerParamsManager::ParamsForNetworkQuality(
-          max_delayable_requests, 0.0, false, base::nullopt);
+          max_delayable_requests, 0.0, false, absl::nullopt);
     }
     return ResourceSchedulerParamsManager(std::move(c));
   }
@@ -403,9 +403,9 @@ class ResourceSchedulerTest : public testing::Test {
              ResourceSchedulerParamsManager::ParamsForNetworkQuality>
         params_for_network_quality_container;
     ResourceSchedulerParamsManager::ParamsForNetworkQuality params_slow_2g(
-        8, 3.0, true, base::nullopt);
+        8, 3.0, true, absl::nullopt);
     ResourceSchedulerParamsManager::ParamsForNetworkQuality params_2g(
-        8, 3.0, true, base::nullopt);
+        8, 3.0, true, absl::nullopt);
 
     params_for_network_quality_container
         [net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G] = params_slow_2g;
@@ -422,9 +422,9 @@ class ResourceSchedulerTest : public testing::Test {
              ResourceSchedulerParamsManager::ParamsForNetworkQuality>
         params_for_network_quality_container;
     ResourceSchedulerParamsManager::ParamsForNetworkQuality params_slow_2g(
-        8, 3.0, false, base::nullopt);
+        8, 3.0, false, absl::nullopt);
     ResourceSchedulerParamsManager::ParamsForNetworkQuality params_3g(
-        10, 0.0, false, base::nullopt);
+        10, 0.0, false, absl::nullopt);
 
     if (lower_delayable_count_enabled) {
       params_slow_2g.max_delayable_requests = 2;
@@ -453,7 +453,7 @@ class ResourceSchedulerTest : public testing::Test {
         params_for_network_quality_container;
 
     ResourceSchedulerParamsManager::ParamsForNetworkQuality params_slow_2g(
-        8, 3.0, true, base::nullopt);
+        8, 3.0, true, absl::nullopt);
     params_slow_2g.max_queuing_time = max_queuing_time;
     params_for_network_quality_container
         [net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G] = params_slow_2g;
@@ -1574,7 +1574,7 @@ TEST_F(ResourceSchedulerTest, NumActiveResourceSchedulerClientsUMA) {
       "ResourceScheduler.ActiveSchedulerClientsCount", 1, 1);
   scheduler_->OnClientDeleted(kChildId3, kRouteId3);
   scheduler_->OnClientDeleted(kChildId2, kRouteId2);
-  histogram_tester.reset(new base::HistogramTester);
+  histogram_tester = std::make_unique<base::HistogramTester>();
 
   // Test that UMA counts are recorded correctly when multiple scheduler clients
   // are created in sequence. There are at most 20 active clients.
@@ -1590,7 +1590,7 @@ TEST_F(ResourceSchedulerTest, NumActiveResourceSchedulerClientsUMA) {
     histogram_tester->ExpectBucketCount(
         "ResourceScheduler.ActiveSchedulerClientsCount", 1 + i, 1);
   }
-  histogram_tester.reset(new base::HistogramTester);
+  histogram_tester = std::make_unique<base::HistogramTester>();
 
   // Test that UMA counts are recorded correctly when a sequence of resource
   // scheduler clients are deleted in sequence. Note: Create a new client
@@ -1632,7 +1632,7 @@ TEST_F(ResourceSchedulerTest, NumDelayableAtStartOfNonDelayableUMA) {
   histogram_tester->ExpectUniqueSample(
       "ResourceScheduler.NumDelayableRequestsInFlightAtStart.NonDelayable", 0,
       1);
-  histogram_tester.reset(new base::HistogramTester);
+  histogram_tester = std::make_unique<base::HistogramTester>();
   // Check that nothing is recorded when delayable request is started in the
   // presence of a non-delayable request.
   std::unique_ptr<TestRequest> low1(

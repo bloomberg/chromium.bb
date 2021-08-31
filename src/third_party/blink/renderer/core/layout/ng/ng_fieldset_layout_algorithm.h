@@ -21,11 +21,12 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGFieldsetLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
+  explicit NGFieldsetLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
-  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
+  MinMaxSizesResult ComputeMinMaxSizes(
+      const MinMaxSizesFloatInput&) const override;
 
   static LayoutUnit ComputeLegendInlineOffset(
       const ComputedStyle& legend_style,

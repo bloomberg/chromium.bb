@@ -30,6 +30,7 @@ extern const char kManagedDefaultMediaStreamSetting[];
 extern const char kManagedDefaultSensorsSetting[];
 extern const char kManagedDefaultWebBluetoothGuardSetting[];
 extern const char kManagedDefaultWebUsbGuardSetting[];
+extern const char kManagedDefaultFileHandlingGuardSetting[];
 extern const char kManagedDefaultFileSystemReadGuardSetting[];
 extern const char kManagedDefaultFileSystemWriteGuardSetting[];
 extern const char kManagedDefaultLegacyCookieAccessSetting[];
@@ -55,6 +56,8 @@ extern const char kManagedAutoSelectCertificateForUrls[];
 extern const char kManagedWebUsbAllowDevicesForUrls[];
 extern const char kManagedWebUsbAskForUrls[];
 extern const char kManagedWebUsbBlockedForUrls[];
+extern const char kManagedFileHandlingAllowedForUrls[];
+extern const char kManagedFileHandlingBlockedForUrls[];
 extern const char kManagedFileSystemReadAskForUrls[];
 extern const char kManagedFileSystemReadBlockedForUrls[];
 extern const char kManagedFileSystemWriteAskForUrls[];
@@ -66,6 +69,7 @@ extern const char kManagedInsecurePrivateNetworkAllowedForUrls[];
 
 extern const char kEnableQuietNotificationPermissionUi[];
 extern const char kQuietNotificationPermissionUiEnablingMethod[];
+extern const char kQuietNotificationPermissionUiDisabledTime[];
 
 #if defined(OS_ANDROID)
 extern const char kNotificationsVibrateEnabled[];

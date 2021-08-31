@@ -8,12 +8,13 @@
 
 #include "chromeos/services/device_sync/public/cpp/device_sync_client_impl.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/base64url.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "chromeos/components/multidevice/expiring_remote_device_cache.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 
 namespace chromeos {
@@ -119,11 +120,29 @@ multidevice::RemoteDeviceRefList DeviceSyncClientImpl::GetSyncedDevices() {
   return expiring_device_cache_->GetNonExpiredRemoteDevices();
 }
 
-base::Optional<multidevice::RemoteDeviceRef>
+absl::optional<multidevice::RemoteDeviceRef>
 DeviceSyncClientImpl::GetLocalDeviceMetadata() {
   DCHECK(is_ready());
-  return expiring_device_cache_->GetRemoteDevice(local_instance_id_,
-                                                 local_legacy_device_id_);
+  base::UmaHistogramBoolean("CryptAuth.GetLocalDeviceMetadata.IsReady",
+                            is_ready());
+
+  // Because we expect the the client to be ready when this function is called,
+  // we also expect the local device to be non-null.
+  absl::optional<multidevice::RemoteDeviceRef> local_device =
+      expiring_device_cache_->GetRemoteDevice(local_instance_id_,
+                                              local_legacy_device_id_);
+  base::UmaHistogramBoolean("CryptAuth.GetLocalDeviceMetadata.Result",
+                            local_device.has_value());
+  if (!local_device) {
+    PA_LOG(ERROR)
+        << "DeviceSyncClientImpl::" << __func__
+        << ": Could not retrieve local device metadata. local_instance_id="
+        << local_instance_id_.value_or("[null]") << ", local_legacy_device_id="
+        << local_legacy_device_id_.value_or("[null]")
+        << ", is_ready=" << (is_ready() ? "yes" : "no");
+  }
+
+  return local_device;
 }
 
 void DeviceSyncClientImpl::SetSoftwareFeatureState(
@@ -216,7 +235,7 @@ void DeviceSyncClientImpl::LoadLocalDeviceMetadata() {
 }
 
 void DeviceSyncClientImpl::OnGetSyncedDevicesCompleted(
-    const base::Optional<std::vector<multidevice::RemoteDevice>>&
+    const absl::optional<std::vector<multidevice::RemoteDevice>>&
         remote_devices) {
   if (!remote_devices) {
     PA_LOG(VERBOSE) << "Tried to fetch synced devices before service was fully "
@@ -244,7 +263,7 @@ void DeviceSyncClientImpl::OnGetSyncedDevicesCompleted(
 }
 
 void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
-    const base::Optional<multidevice::RemoteDevice>& local_device_metadata) {
+    const absl::optional<multidevice::RemoteDevice>& local_device_metadata) {
   if (!local_device_metadata) {
     PA_LOG(VERBOSE) << "Tried to get local device metadata before service was "
                        "fully initialized; waiting for enrollment to complete "
@@ -254,16 +273,26 @@ void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
 
   if (features::ShouldUseV1DeviceSync()) {
     local_instance_id_ = local_device_metadata->instance_id.empty()
-                             ? base::nullopt
-                             : base::make_optional<std::string>(
+                             ? absl::nullopt
+                             : absl::make_optional<std::string>(
                                    local_device_metadata->instance_id);
     local_legacy_device_id_ = local_device_metadata->GetDeviceId().empty()
-                                  ? base::nullopt
-                                  : base::make_optional<std::string>(
+                                  ? absl::nullopt
+                                  : absl::make_optional<std::string>(
                                         local_device_metadata->GetDeviceId());
   } else {
-    DCHECK(!local_device_metadata->instance_id.empty());
-    local_instance_id_ = local_device_metadata->instance_id;
+    local_instance_id_ = local_device_metadata->instance_id.empty()
+                             ? absl::nullopt
+                             : absl::make_optional<std::string>(
+                                   local_device_metadata->instance_id);
+  }
+
+  bool has_id = local_instance_id_ || local_legacy_device_id_;
+  base::UmaHistogramBoolean("CryptAuth.GetLocalDeviceMetadata.HasId", has_id);
+  if (!has_id) {
+    PA_LOG(ERROR) << "DeviceSyncClientImpl::" << __func__
+                  << ": Local device identifiers are unexpectedly empty.";
+    return;
   }
 
   expiring_device_cache_->UpdateRemoteDevice(*local_device_metadata);

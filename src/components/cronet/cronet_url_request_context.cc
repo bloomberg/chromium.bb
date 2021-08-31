@@ -10,6 +10,7 @@
 
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -85,7 +86,8 @@ class NetLogWithNetworkChangeEvents {
     DCHECK(cronet::OnInitThread());
     if (net_change_logger_)
       return;
-    net_change_logger_.reset(new net::LoggingNetworkChangeObserver(net_log_));
+    net_change_logger_ =
+        std::make_unique<net::LoggingNetworkChangeObserver>(net_log_);
   }
 
  private:
@@ -144,7 +146,7 @@ CronetURLRequestContext::CronetURLRequestContext(
     network_thread_ = std::make_unique<base::Thread>("network");
     base::Thread::Options options;
     options.message_pump_type = base::MessagePumpType::IO;
-    network_thread_->StartWithOptions(options);
+    network_thread_->StartWithOptions(std::move(options));
     network_task_runner_ = network_thread_->task_runner();
   }
 }
@@ -419,7 +421,7 @@ void CronetURLRequestContext::NetworkTasks::Initialize(
 #if BUILDFLAG(ENABLE_REPORTING)
   if (context_->reporting_service()) {
     for (const auto& preloaded_header : config->preloaded_report_to_headers) {
-      context_->reporting_service()->ProcessHeader(
+      context_->reporting_service()->ProcessReportToHeader(
           preloaded_header.origin.GetURL(), net::NetworkIsolationKey(),
           preloaded_header.value);
     }
@@ -562,7 +564,7 @@ int CronetURLRequestContext::default_load_flags() const {
 base::Thread* CronetURLRequestContext::GetFileThread() {
   DCHECK(OnInitThread());
   if (!file_thread_) {
-    file_thread_.reset(new base::Thread("Network File Thread"));
+    file_thread_ = std::make_unique<base::Thread>("Network File Thread");
     file_thread_->Start();
   }
   return file_thread_.get();

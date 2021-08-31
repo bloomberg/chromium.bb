@@ -14,8 +14,6 @@
 #include "common/debug.h"
 #include "common/string_utils.h"
 
-#include "GPUTestConfig.h"
-
 namespace angle
 {
 
@@ -53,6 +51,7 @@ enum Token
     kConfigMacHighSierra,
     kConfigMacMojave,
     kConfigMac,
+    kConfigIOS,
     kConfigLinux,
     kConfigChromeOS,
     kConfigAndroid,
@@ -153,6 +152,7 @@ constexpr TokenInfo kTokenData[kNumberOfTokens] = {
     {"highsierra", GPUTestConfig::kConditionMacHighSierra},
     {"mojave", GPUTestConfig::kConditionMacMojave},
     {"mac", GPUTestConfig::kConditionMac},
+    {"ios", GPUTestConfig::kConditionIOS},
     {"linux", GPUTestConfig::kConditionLinux},
     {"chromeos", GPUTestConfig::kConditionNone},  // https://anglebug.com/3363 CrOS not supported
     {"android", GPUTestConfig::kConditionAndroid},
@@ -236,47 +236,6 @@ inline Token ParseToken(const std::string &word)
     }
     return kTokenWord;
 }
-
-// reference name can have *.
-inline bool NamesMatching(const char *ref, const char *testName)
-{
-    // Find the first * in ref.
-    const char *firstWildcard = strchr(ref, '*');
-
-    // If there are no wildcards, match the strings precisely.
-    if (firstWildcard == nullptr)
-    {
-        return strcmp(ref, testName) == 0;
-    }
-
-    // Otherwise, match up to the wildcard first.
-    size_t preWildcardLen = firstWildcard - ref;
-    if (strncmp(ref, testName, preWildcardLen) != 0)
-    {
-        return false;
-    }
-
-    const char *postWildcardRef = ref + preWildcardLen + 1;
-
-    // As a small optimization, if the wildcard is the last character in ref, accept the match
-    // already.
-    if (postWildcardRef[0] == '\0')
-    {
-        return true;
-    }
-
-    // Try to match the wildcard with a number of characters.
-    for (size_t matchSize = 0; testName[matchSize] != '\0'; ++matchSize)
-    {
-        if (NamesMatching(postWildcardRef, testName + matchSize))
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 }  // anonymous namespace
 
 const char *GetConditionName(uint32_t condition)
@@ -311,8 +270,8 @@ GPUTestExpectationsParser::GPUTestExpectationsParser()
 
 GPUTestExpectationsParser::~GPUTestExpectationsParser() = default;
 
-bool GPUTestExpectationsParser::loadTestExpectations(const GPUTestConfig &config,
-                                                     const std::string &data)
+bool GPUTestExpectationsParser::loadTestExpectationsImpl(const GPUTestConfig *config,
+                                                         const std::string &data)
 {
     mEntries.clear();
     mErrorMessages.clear();
@@ -333,8 +292,19 @@ bool GPUTestExpectationsParser::loadTestExpectations(const GPUTestConfig &config
     return rt;
 }
 
-bool GPUTestExpectationsParser::loadTestExpectationsFromFile(const GPUTestConfig &config,
-                                                             const std::string &path)
+bool GPUTestExpectationsParser::loadTestExpectations(const GPUTestConfig &config,
+                                                     const std::string &data)
+{
+    return loadTestExpectationsImpl(&config, data);
+}
+
+bool GPUTestExpectationsParser::loadAllTestExpectations(const std::string &data)
+{
+    return loadTestExpectationsImpl(nullptr, data);
+}
+
+bool GPUTestExpectationsParser::loadTestExpectationsFromFileImpl(const GPUTestConfig *config,
+                                                                 const std::string &path)
 {
     mEntries.clear();
     mErrorMessages.clear();
@@ -345,23 +315,50 @@ bool GPUTestExpectationsParser::loadTestExpectationsFromFile(const GPUTestConfig
         mErrorMessages.push_back(kErrorMessage[kErrorFileIO]);
         return false;
     }
-    return loadTestExpectations(config, data);
+    return loadTestExpectationsImpl(config, data);
 }
 
-int32_t GPUTestExpectationsParser::getTestExpectation(const std::string &testName)
+bool GPUTestExpectationsParser::loadTestExpectationsFromFile(const GPUTestConfig &config,
+                                                             const std::string &path)
+{
+    return loadTestExpectationsFromFileImpl(&config, path);
+}
+
+bool GPUTestExpectationsParser::loadAllTestExpectationsFromFile(const std::string &path)
+{
+    return loadTestExpectationsFromFileImpl(nullptr, path);
+}
+
+int32_t GPUTestExpectationsParser::getTestExpectationImpl(const GPUTestConfig *config,
+                                                          const std::string &testName)
 {
     size_t maxExpectationLen            = 0;
     GPUTestExpectationEntry *foundEntry = nullptr;
-    for (size_t i = 0; i < mEntries.size(); ++i)
+    for (GPUTestExpectationEntry &entry : mEntries)
     {
-        if (NamesMatching(mEntries[i].testName.c_str(), testName.c_str()))
+        if (NamesMatchWithWildcard(entry.testName.c_str(), testName.c_str()))
         {
-            size_t expectationLen = mEntries[i].testName.length();
+            size_t expectationLen = entry.testName.length();
+
+            // Filter by condition first.
+            bool satisfiesConditions = true;
+            if (config)
+            {
+                for (size_t condition : entry.conditions)
+                {
+                    if (!config->getConditions()[condition])
+                    {
+                        satisfiesConditions = false;
+                        break;
+                    }
+                }
+            }
+
             // The longest/most specific matching expectation overrides any others.
-            if (expectationLen > maxExpectationLen)
+            if (satisfiesConditions && expectationLen > maxExpectationLen)
             {
                 maxExpectationLen = expectationLen;
-                foundEntry        = &mEntries[i];
+                foundEntry        = &entry;
             }
         }
     }
@@ -371,6 +368,17 @@ int32_t GPUTestExpectationsParser::getTestExpectation(const std::string &testNam
         return foundEntry->testExpectation;
     }
     return kGpuTestPass;
+}
+
+int32_t GPUTestExpectationsParser::getTestExpectation(const std::string &testName)
+{
+    return getTestExpectationImpl(nullptr, testName);
+}
+
+int32_t GPUTestExpectationsParser::getTestExpectationWithConfig(const GPUTestConfig &config,
+                                                                const std::string &testName)
+{
+    return getTestExpectationImpl(&config, testName);
 }
 
 const std::vector<std::string> &GPUTestExpectationsParser::getErrorMessages() const
@@ -392,7 +400,7 @@ std::vector<std::string> GPUTestExpectationsParser::getUnusedExpectationsMessage
     return messages;
 }
 
-bool GPUTestExpectationsParser::parseLine(const GPUTestConfig &config,
+bool GPUTestExpectationsParser::parseLine(const GPUTestConfig *config,
                                           const std::string &lineData,
                                           size_t lineNumber)
 {
@@ -428,6 +436,7 @@ bool GPUTestExpectationsParser::parseLine(const GPUTestConfig &config,
             case kConfigMacHighSierra:
             case kConfigMacMojave:
             case kConfigMac:
+            case kConfigIOS:
             case kConfigLinux:
             case kConfigChromeOS:
             case kConfigAndroid:
@@ -459,9 +468,17 @@ bool GPUTestExpectationsParser::parseLine(const GPUTestConfig &config,
                 }
                 {
                     bool err = false;
-                    if (!checkTokenCondition(config, err, token, lineNumber))
+                    if (config)
                     {
-                        skipLine = true;  // Move to the next line without adding this one.
+                        if (!checkTokenCondition(*config, err, token, lineNumber))
+                        {
+                            skipLine = true;  // Move to the next line without adding this one.
+                        }
+                    }
+                    else
+                    {
+                        // Store the conditions for later comparison if we don't have a config.
+                        entry.conditions[kTokenData[token].condition] = true;
                     }
                     if (err)
                     {

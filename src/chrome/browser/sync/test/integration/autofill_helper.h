@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/sync/test/integration/multi_client_status_change_checker.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_component.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
@@ -81,7 +80,7 @@ void UpdateProfile(
     int profile,
     const std::string& guid,
     const autofill::AutofillType& type,
-    const base::string16& value,
+    const std::u16string& value,
     autofill::structured_address::VerificationStatus status =
         autofill::structured_address::VerificationStatus::kObserved);
 
@@ -128,7 +127,7 @@ class AutofillProfileChecker : public StatusChangeChecker,
  public:
   AutofillProfileChecker(int profile_a,
                          int profile_b,
-                         base::Optional<unsigned int> expected_count);
+                         absl::optional<unsigned int> expected_count);
   ~AutofillProfileChecker() override;
 
   // StatusChangeChecker implementation.
@@ -141,7 +140,7 @@ class AutofillProfileChecker : public StatusChangeChecker,
  private:
   const int profile_a_;
   const int profile_b_;
-  const base::Optional<unsigned int> expected_count_;
+  const absl::optional<unsigned int> expected_count_;
 };
 
 class PersonalDataLoadedObserverMock

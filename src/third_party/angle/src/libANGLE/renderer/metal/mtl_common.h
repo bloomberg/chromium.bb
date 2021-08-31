@@ -97,6 +97,7 @@ class DisplayMtl;
 class ContextMtl;
 class FramebufferMtl;
 class BufferMtl;
+class ImageMtl;
 class VertexArrayMtl;
 class TextureMtl;
 class ProgramMtl;
@@ -172,7 +173,7 @@ constexpr size_t kOcclusionQueryResultSize = sizeof(uint64_t);
 constexpr gl::Version kMaxSupportedGLVersion = gl::Version(3, 0);
 
 // Work-around the enum is not available on macOS
-#if TARGET_OS_OSX || TARGET_OS_MACCATALYST
+#if (TARGET_OS_OSX && (__MAC_OS_X_VERSION_MAX_ALLOWED < 101600)) || TARGET_OS_MACCATALYST
 constexpr MTLBlitOption kBlitOptionRowLinearPVRTC = MTLBlitOptionNone;
 #else
 constexpr MTLBlitOption kBlitOptionRowLinearPVRTC          = MTLBlitOptionRowLinearPVRTC;
@@ -218,6 +219,12 @@ template <>
 struct ImplTypeHelper<egl::Display>
 {
     using ImplType = DisplayMtl;
+};
+
+template <>
+struct ImplTypeHelper<egl::Image>
+{
+    using ImplType = ImageMtl;
 };
 
 template <typename T>

@@ -17,6 +17,8 @@
 
 #include "dawn_native/QuerySet.h"
 
+#include "common/NSRef.h"
+
 #import <Metal/Metal.h>
 
 namespace dawn_native { namespace metal {
@@ -25,8 +27,8 @@ namespace dawn_native { namespace metal {
 
     class QuerySet final : public QuerySetBase {
       public:
-        static ResultOrError<QuerySet*> Create(Device* device,
-                                               const QuerySetDescriptor* descriptor);
+        static ResultOrError<Ref<QuerySet>> Create(Device* device,
+                                                   const QuerySetDescriptor* descriptor);
 
         id<MTLBuffer> GetVisibilityBuffer() const;
         id<MTLCounterSampleBuffer> GetCounterSampleBuffer() const
@@ -40,9 +42,11 @@ namespace dawn_native { namespace metal {
         // Dawn API
         void DestroyImpl() override;
 
-        id<MTLBuffer> mVisibilityBuffer = nil;
+        NSPRef<id<MTLBuffer>> mVisibilityBuffer;
+        // Note that mCounterSampleBuffer cannot be an NSRef because the API_AVAILABLE macros don't
+        // propagate nicely through templates.
         id<MTLCounterSampleBuffer> mCounterSampleBuffer API_AVAILABLE(macos(10.15),
-                                                                      ios(14.0)) = nil;
+                                                                      ios(14.0)) = nullptr;
     };
 
 }}  // namespace dawn_native::metal

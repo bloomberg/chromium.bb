@@ -4,6 +4,8 @@
 
 #include "headless/test/test_network_interceptor.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -41,7 +43,7 @@ class RedirectLoader : public network::mojom::URLLoader {
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      const base::Optional<GURL>& new_url) override;
+      const absl::optional<GURL>& new_url) override;
 
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
@@ -129,7 +131,7 @@ void RedirectLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers /* unused */,
     const net::HttpRequestHeaders& modified_headers /* unused */,
     const net::HttpRequestHeaders& modified_cors_exempt_headers /* unused */,
-    const base::Optional<GURL>& new_url) {
+    const absl::optional<GURL>& new_url) {
   response_ = interceptor_impl_->FindResponse(method_, url_.spec());
   CHECK(response_) << "No content for " << url_.spec();
   std::string location;
@@ -166,7 +168,7 @@ TestNetworkInterceptor::Response::Response(Response&& r) = default;
 TestNetworkInterceptor::Response::~Response() {}
 
 TestNetworkInterceptor::TestNetworkInterceptor() {
-  impl_.reset(new Impl(weak_factory_.GetWeakPtr()));
+  impl_ = std::make_unique<Impl>(weak_factory_.GetWeakPtr());
   interceptor_ = std::make_unique<content::URLLoaderInterceptor>(
       base::BindRepeating(&TestNetworkInterceptor::Impl::RequestHandler,
                           base::Unretained(impl_.get())));

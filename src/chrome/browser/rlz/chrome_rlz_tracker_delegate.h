@@ -41,8 +41,8 @@ class ChromeRLZTrackerDelegate : public rlz::RLZTrackerDelegate,
   bool IsBrandOrganic(const std::string& brand) override;
   bool GetReactivationBrand(std::string* brand) override;
   bool ShouldEnableZeroDelayForTesting() override;
-  bool GetLanguage(base::string16* language) override;
-  bool GetReferral(base::string16* referral) override;
+  bool GetLanguage(std::u16string* language) override;
+  bool GetReferral(std::u16string* referral) override;
   bool ClearReferral() override;
   void SetOmniboxSearchCallback(base::OnceClosure callback) override;
   void SetHomepageSearchCallback(base::OnceClosure callback) override;
@@ -62,8 +62,7 @@ class ChromeRLZTrackerDelegate : public rlz::RLZTrackerDelegate,
 
   // Subscription for receiving callbacks that a URL was opened from the
   // omnibox.
-  std::unique_ptr<base::CallbackList<void(OmniboxLog*)>::Subscription>
-      omnibox_url_opened_subscription_;
+  base::CallbackListSubscription omnibox_url_opened_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeRLZTrackerDelegate);
 };

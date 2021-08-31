@@ -7,6 +7,8 @@
 
 #import <WebKit/WebKit.h>
 
+#include <memory>
+
 #include "ios/web/public/navigation/referrer.h"
 #import "ios/web/web_state/ui/crw_web_view_handler.h"
 #import "ios/web/web_state/ui/crw_web_view_handler_delegate.h"
@@ -29,11 +31,6 @@ class NavigationContextImpl;
 // The delegate is called when a page has actually started loading.
 - (void)webRequestControllerDidStartLoading:
     (CRWWebRequestController*)requestController;
-
-// The delegate is called when a page is loaded.
-- (void)webRequestController:(CRWWebRequestController*)requestController
-    didCompleteLoadWithSuccess:(BOOL)loadSuccess
-                    forContext:(web::NavigationContextImpl*)context;
 
 // Asks proxy to disable back forward navigation gestures until the current (in
 // this case restore) navigation is complete.  This is necessary as restore

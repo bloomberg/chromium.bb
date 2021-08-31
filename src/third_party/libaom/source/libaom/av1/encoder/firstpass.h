@@ -30,10 +30,6 @@ extern "C" {
 
 #define VLOW_MOTION_THRESHOLD 950
 
-// size of firstpass macroblocks in terms of MIs.
-#define FP_MIB_SIZE 4
-#define FP_MIB_SIZE_LOG2 2
-
 /*!
  * \brief The stucture of acummulated frame stats in the first pass.
  */
@@ -156,6 +152,18 @@ typedef struct {
    * standard deviation for (0, 0) motion prediction error
    */
   double raw_error_stdev;
+  /*!
+   * Whether the frame contains a flash
+   */
+  int64_t is_flash;
+  /*!
+   * Estimated noise variance
+   */
+  double noise_var;
+  /*!
+   * Correlation coefficient with the previous frame
+   */
+  double cor_coeff;
 } FIRSTPASS_STATS;
 
 /*!\cond */
@@ -174,8 +182,6 @@ enum {
  */
 typedef struct {
   /*!\cond */
-  // The frame processing order within a GOP
-  unsigned char index;
   // Frame update type, e.g. ARF/GF/LF/Overlay
   FRAME_UPDATE_TYPE update_type[MAX_STATIC_GF_GROUP_LENGTH];
   unsigned char arf_src_offset[MAX_STATIC_GF_GROUP_LENGTH];
@@ -195,6 +201,17 @@ typedef struct {
   REFBUF_STATE refbuf_state[MAX_STATIC_GF_GROUP_LENGTH];
   int arf_index;  // the index in the gf group of ARF, if no arf, then -1
   int size;       // The total length of a GOP
+#if CONFIG_FRAME_PARALLEL_ENCODE
+  // Indicates the level of parallelism in frame parallel encodes.
+  // 0 : frame is independently encoded (not part of parallel encodes).
+  // 1 : frame is the first in encode order in a given parallel encode set.
+  // 2 : frame occurs later in encode order in a given parallel encode set.
+  int frame_parallel_level[MAX_STATIC_GF_GROUP_LENGTH];
+  // Indicates whether a frame should act as non-reference frame.
+  // 0 : frame is a reference frame.
+  // 1 : frame is a non-reference frame.
+  int is_frame_non_ref[MAX_STATIC_GF_GROUP_LENGTH];
+#endif  // CONFIG_FRAME_PARALLEL_ENCODE
   /*!\endcond */
 } GF_GROUP;
 /*!\cond */
@@ -331,12 +348,13 @@ struct EncodeFrameParams;
 struct AV1EncoderConfig;
 struct TileDataEnc;
 
-int av1_get_mb_rows_in_tile(TileInfo tile);
-int av1_get_mb_cols_in_tile(TileInfo tile);
+int av1_get_unit_rows_in_tile(TileInfo tile, const BLOCK_SIZE fp_block_size);
+int av1_get_unit_cols_in_tile(TileInfo tile, const BLOCK_SIZE fp_block_size);
 
 void av1_rc_get_first_pass_params(struct AV1_COMP *cpi);
 void av1_first_pass_row(struct AV1_COMP *cpi, struct ThreadData *td,
-                        struct TileDataEnc *tile_data, int mb_row);
+                        struct TileDataEnc *tile_data, const int mb_row,
+                        const BLOCK_SIZE fp_block_size);
 void av1_end_first_pass(struct AV1_COMP *cpi);
 
 void av1_twopass_zero_stats(FIRSTPASS_STATS *section);

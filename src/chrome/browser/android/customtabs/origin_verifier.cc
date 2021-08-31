@@ -9,11 +9,11 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
-#include "chrome/android/chrome_jni_headers/OriginVerifier_jni.h"
+#include "chrome/browser/android/browserservices/verification/jni_headers/OriginVerifier_jni.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/installable/digital_asset_links/digital_asset_links_handler.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "components/digital_asset_links/digital_asset_links_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -36,9 +36,8 @@ OriginVerifier::OriginVerifier(JNIEnv* env,
   jobject_.Reset(obj);
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
-  url_loader_factory_ =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess();
+  url_loader_factory_ = profile->GetDefaultStoragePartition()
+                            ->GetURLLoaderFactoryForBrowserProcess();
   web_contents_ = content::WebContents::FromJavaWebContents(jweb_contents);
 }
 

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/skia/image_pixel_locker.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -155,7 +155,7 @@ class PLATFORM_EXPORT WebGLImageConversion final {
     void ExtractImage(bool premultiply_alpha, bool ignore_color_space);
 
     Image* image_;
-    base::Optional<ImagePixelLocker> image_pixel_locker_;
+    absl::optional<ImagePixelLocker> image_pixel_locker_;
     ImageHtmlDomSource image_html_dom_source_;
     unsigned image_width_;
     unsigned image_height_;
@@ -232,7 +232,7 @@ class PLATFORM_EXPORT WebGLImageConversion final {
   // packing the pixel data according to the given format and type,
   // and obeying the flipY and premultiplyAlpha flags. Returns true
   // upon success.
-  static bool ExtractImageData(const uint8_t* image_data,
+  static bool ExtractImageData(const void* image_data,
                                DataFormat source_data_format,
                                const IntSize& image_data_size,
                                const IntRect& source_image_sub_rectangle,
@@ -269,7 +269,7 @@ class PLATFORM_EXPORT WebGLImageConversion final {
   // data is tightly packed. Non-zero values may take a slow path. Destination
   // data will have no gaps between rows. Implemented in
   // GraphicsContext3DImagePacking.cpp.
-  static bool PackPixels(const uint8_t* source_data,
+  static bool PackPixels(const void* source_data,
                          DataFormat source_data_format,
                          unsigned source_data_width,
                          unsigned source_data_height,

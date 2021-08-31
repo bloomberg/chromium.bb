@@ -25,16 +25,32 @@ namespace dawn_wire {
         mImpl.reset();
     }
 
-    WGPUDevice WireClient::GetDevice() const {
-        return mImpl->GetDevice();
-    }
-
     const volatile char* WireClient::HandleCommands(const volatile char* commands, size_t size) {
         return mImpl->HandleCommands(commands, size);
     }
 
     ReservedTexture WireClient::ReserveTexture(WGPUDevice device) {
         return mImpl->ReserveTexture(device);
+    }
+
+    ReservedSwapChain WireClient::ReserveSwapChain(WGPUDevice device) {
+        return mImpl->ReserveSwapChain(device);
+    }
+
+    ReservedDevice WireClient::ReserveDevice() {
+        return mImpl->ReserveDevice();
+    }
+
+    void WireClient::ReclaimTextureReservation(const ReservedTexture& reservation) {
+        mImpl->ReclaimTextureReservation(reservation);
+    }
+
+    void WireClient::ReclaimSwapChainReservation(const ReservedSwapChain& reservation) {
+        mImpl->ReclaimSwapChainReservation(reservation);
+    }
+
+    void WireClient::ReclaimDeviceReservation(const ReservedDevice& reservation) {
+        mImpl->ReclaimDeviceReservation(reservation);
     }
 
     void WireClient::Disconnect() {

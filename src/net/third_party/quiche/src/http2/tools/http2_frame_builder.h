@@ -11,7 +11,7 @@
 // For now, this is only intended for use in tests, and thus has EXPECT* in the
 // code. If desired to use it in an encoder, it will need optimization work,
 // especially w.r.t memory mgmt, and the EXPECT* will need to be removed or
-// replaced with DCHECKs.
+// replaced with QUICHE_DCHECKs.
 
 #include <stddef.h>  // for size_t
 
@@ -19,8 +19,8 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/http2/http2_constants.h"
-#include "net/third_party/quiche/src/http2/http2_structures.h"
+#include "http2/http2_constants.h"
+#include "http2/http2_structures.h"
 
 namespace http2 {
 namespace test {
@@ -76,6 +76,7 @@ class Http2FrameBuilder {
   void Append(const Http2GoAwayFields& v);
   void Append(const Http2WindowUpdateFields& v);
   void Append(const Http2AltSvcFields& v);
+  void Append(const Http2PriorityUpdateFields& v);
 
   // Methods for changing existing buffer contents (mostly focused on updating
   // the payload length).

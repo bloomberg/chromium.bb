@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import logging
 import re
 import sys
@@ -22,9 +24,13 @@ ResultType = json_results.ResultType
 _SUPPORTED_WIN_VERSIONS = ['win7', 'win10']
 _SUPPORTED_WIN_VERSIONS_WITH_DIRECT_COMPOSITION = ['win10']
 _SUPPORTED_WIN_GPU_VENDORS = [0x8086, 0x10de, 0x1002]
+_SUPPORTED_WIN_AMD_GPUS = [0x6613, 0x699f, 0x7340]
+_SUPPORTED_WIN_AMD_GPUS_WITH_NV12_OVERLAYS = [0x7340]
 _SUPPORTED_WIN_INTEL_GPUS = [0x5912, 0x3e92]
 _SUPPORTED_WIN_INTEL_GPUS_WITH_YUY2_OVERLAYS = [0x5912, 0x3e92]
 _SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS = [0x5912, 0x3e92]
+# Hardware overlays are disabled in 26.20.100.8141 per crbug.com/1079393#c105
+_UNSUPPORTED_WIN_INTEL_GPU_DRIVERS_WITH_NV12_OVERLAYS = ['5912-26.20.100.8141']
 
 
 class GpuIntegrationTest(
@@ -125,6 +131,13 @@ class GpuIntegrationTest(
       os_name = cls.browser.platform.GetOSName()
       if os_name == 'android' or os_name == 'chromeos':
         browser_args.remove(cba.DISABLE_GPU)
+
+    # Reduce number of video buffers when running tests on Fuchsia to
+    # workaround crbug.com/1203580
+    # TODO(https://crbug.com/1203580): Remove this once the bug is resolved.
+    if cls._finder_options.browser_type == 'web-engine-shell':
+      browser_args.append('--double-buffer-compositing')
+
     return browser_args
 
   @classmethod
@@ -191,12 +204,14 @@ class GpuIntegrationTest(
     # to push the fetch of the first tab into the lower retry loop
     # without breaking Telemetry's unit tests, and that hook is used
     # to implement the gpu_integration_test_unittests.
+    last_exception = Exception()
     for x in range(1, _START_BROWSER_RETRIES + 1):  # Index from 1 instead of 0.
       try:
         super(GpuIntegrationTest, cls).StartBrowser()
         cls.tab = cls.browser.tabs[0]
         return
-      except Exception:  # pylint: disable=broad-except
+      except Exception as e:  # pylint: disable=broad-except
+        last_exception = e
         logging.exception('Browser start failed (attempt %d of %d). Backtrace:',
                           x, _START_BROWSER_RETRIES)
         # If we are on the last try and there is an exception take a screenshot
@@ -215,7 +230,7 @@ class GpuIntegrationTest(
           cls.StopBrowser()
     # Re-raise the last exception thrown. Only happens if all the retries
     # fail.
-    raise
+    raise last_exception
 
   @classmethod
   def _RestartBrowser(cls, reason):
@@ -456,11 +471,18 @@ class GpuIntegrationTest(
       config['supports_overlays'] = True
       config['yuy2_overlay_support'] = 'SOFTWARE'
       config['nv12_overlay_support'] = 'SOFTWARE'
-      if gpu_vendor_id == 0x8086:
+      if gpu_vendor_id == 0x1002:
+        assert gpu_device_id in _SUPPORTED_WIN_AMD_GPUS
+        if gpu_device_id in _SUPPORTED_WIN_AMD_GPUS_WITH_NV12_OVERLAYS:
+          config['nv12_overlay_support'] = 'SCALING'
+      elif gpu_vendor_id == 0x8086:
         assert gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS
+        gpu_device_and_driver = ('%x-' + gpu.driver_version) % gpu_device_id
         if gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_YUY2_OVERLAYS:
           config['yuy2_overlay_support'] = 'SCALING'
-        if gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS:
+        if (gpu_device_id in _SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS
+            and gpu_device_and_driver not in
+            _UNSUPPORTED_WIN_INTEL_GPU_DRIVERS_WITH_NV12_OVERLAYS):
           config['nv12_overlay_support'] = 'SCALING'
     return config
 
@@ -519,7 +541,7 @@ class GpuIntegrationTest(
       gpu_tags.append(gpu_helper.GetSwiftShaderGLRenderer(gpu_info))
       gpu_tags.append(gpu_helper.GetCommandDecoder(gpu_info))
       if gpu_info and gpu_info.devices:
-        for ii in xrange(0, len(gpu_info.devices)):
+        for ii in range(0, len(gpu_info.devices)):
           gpu_vendor = gpu_helper.GetGpuVendorString(gpu_info, ii)
           gpu_device_id = gpu_helper.GetGpuDeviceId(gpu_info, ii)
           # The gpu device id tag will contain both the vendor and device id
@@ -542,6 +564,9 @@ class GpuIntegrationTest(
       skia_renderer = gpu_helper.GetSkiaRenderer(gpu_info.feature_status,
                                                  startup_args)
       tags.append(skia_renderer)
+    display_server = gpu_helper.GetDisplayServer(browser.browser_type)
+    if display_server:
+      tags.append(display_server)
     return tags
 
   @classmethod
@@ -589,14 +614,16 @@ class GpuIntegrationTest(
         'qualcomm-adreno-(tm)-330',  # android-nexus-5
         'qualcomm-adreno-(tm)-418',  # android-nexus-5x
         'qualcomm-adreno-(tm)-420',  # android-nexus-6
-        'qualcomm-adreno-(tm)-430',  # android-nexus-6p
         'qualcomm-adreno-(tm)-540',  # android-pixel-2
+        'qualcomm-adreno-(tm)-640',  # android-pixel-4
         'nvidia-nvidia-tegra',  # android-nexus-9 and android-shield-android-tv
-        'vmware',  # VMs
+        'vmware,',  # VMs
         'vmware,-0x1050',  # ChromeOS VMs
         # Fuchsia VMs
         ('google-angle-(vulkan-1.1.0(swiftshader-device-('
          'llvm-7.0.1)-(0x0000c0de)))'),
+        ('google-angle-(vulkan-1.1.0(swiftshader-device-('
+         'llvm-10.0.0)-(0x0000c0de)))'),
         # These browsers are analogous to a particular OS, and specifying the
         # OS name is clearer.
         'cros-chrome',  # ChromeOS
@@ -612,6 +639,9 @@ class GpuIntegrationTest(
         # make a difference to these tests anyways.
         'chromeos-local',
         'chromeos-remote',
+        # "exact" is a valid browser type in Telemetry, but should never be used
+        # on the bots.
+        'exact',
     ]
 
 

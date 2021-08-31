@@ -14,15 +14,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ReducedModeNativeTestRule;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -34,7 +35,7 @@ import org.chromium.net.test.EmbeddedTestServerRule;
 import java.util.List;
 
 /**
- * Tests interrupted download can be resumed with Service Manager only mode.
+ * Tests interrupted download can be resumed with minimal browser mode.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public final class ServicificationDownloadTest {
@@ -53,7 +54,7 @@ public final class ServicificationDownloadTest {
 
         @Override
         public int notifyDownloadSuccessful(ContentId id, String filePath, String fileName,
-                long systemDownloadId, boolean isOffTheRecord, boolean isSupportedMimeType,
+                long systemDownloadId, OTRProfileID otrProfileID, boolean isSupportedMimeType,
                 boolean isOpenable, Bitmap icon, String originalUrl, boolean shouldPromoteOrigin,
                 String referrer, long totalBytes) {
             mDownloadCompleted = true;
@@ -100,11 +101,11 @@ public final class ServicificationDownloadTest {
 
     @Test
     @LargeTest
-    @DisabledTest(message = "Noop since UseDownloadOfflineContentProvider is enabled in debug.")
     @Feature({"Download"})
+    @DisableFeatures(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)
     public void testResumeInterruptedDownload() {
         if (useDownloadOfflineContentProvider()) return;
-        mNativeTestRule.assertOnlyServiceManagerStarted();
+        mNativeTestRule.assertMinimalBrowserStarted();
 
         String tempFile = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()
@@ -115,7 +116,7 @@ public final class ServicificationDownloadTest {
         DownloadItem item = new DownloadItem(false,
                 new DownloadInfo.Builder()
                         .setDownloadGuid(DOWNLOAD_GUID)
-                        .setIsOffTheRecord(false)
+                        .setOTRProfileId(null)
                         .build());
         final String url = mEmbeddedTestServerRule.getServer().getURL(TEST_DOWNLOAD_FILE);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -134,10 +135,10 @@ public final class ServicificationDownloadTest {
     @Test
     @LargeTest
     @Feature({"Download"})
-    @CommandLineFlags.Add({"enable-features=UseDownloadOfflineContentProvider"})
+    @EnableFeatures(ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)
     public void testResumeInterruptedDownloadUsingDownloadOfflineContentProvider() {
         if (!useDownloadOfflineContentProvider()) return;
-        mNativeTestRule.assertOnlyServiceManagerStarted();
+        mNativeTestRule.assertMinimalBrowserStarted();
 
         String tempFile = InstrumentationRegistry.getInstrumentation()
                                   .getTargetContext()

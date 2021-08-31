@@ -100,9 +100,9 @@ class SubtractImplicitBypassesRule : public SchemeHostPortMatcherRule {
 };
 
 std::unique_ptr<SchemeHostPortMatcherRule> ParseRule(
-    const std::string& raw_untrimmed) {
-  std::string raw;
-  base::TrimWhitespaceASCII(raw_untrimmed, base::TRIM_ALL, &raw);
+    base::StringPiece raw_untrimmed) {
+  base::StringPiece raw =
+      base::TrimWhitespaceASCII(raw_untrimmed, base::TRIM_ALL);
 
   // <local> and <-loopback> are special syntax used by WinInet's bypass list
   // -- we allow it on all platforms and interpret it the same way.
@@ -181,7 +181,7 @@ void ProxyBypassRules::ParseFromString(const std::string& raw) {
   base::StringTokenizer entries(
       raw, SchemeHostPortMatcher::kParseRuleListDelimiterList);
   while (entries.GetNext()) {
-    AddRuleFromString(entries.token());
+    AddRuleFromString(entries.token_piece());
   }
 }
 
@@ -189,7 +189,7 @@ void ProxyBypassRules::PrependRuleToBypassSimpleHostnames() {
   matcher_.AddAsFirstRule(std::make_unique<BypassSimpleHostnamesRule>());
 }
 
-bool ProxyBypassRules::AddRuleFromString(const std::string& raw_untrimmed) {
+bool ProxyBypassRules::AddRuleFromString(base::StringPiece raw_untrimmed) {
   auto rule = ParseRule(raw_untrimmed);
 
   if (rule) {
@@ -240,8 +240,6 @@ bool ProxyBypassRules::MatchesImplicitRules(const GURL& url) {
   //     localhost
   //     localhost.
   //     *.localhost
-  //     localhost6
-  //     localhost6.localdomain6
   //     loopback  [Windows only]
   //     loopback. [Windows only]
   //     [::1]

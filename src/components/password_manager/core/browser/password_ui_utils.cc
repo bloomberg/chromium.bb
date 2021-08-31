@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -70,13 +71,13 @@ std::string GetShownOrigin(const url::Origin& origin) {
     }
   }
 
-  return result.find('.') != base::StringPiece::npos ? result.as_string()
+  return result.find('.') != base::StringPiece::npos ? std::string(result)
                                                      : original;
 }
 
 void UpdatePasswordFormUsernameAndPassword(
-    const base::string16& username,
-    const base::string16& password,
+    const std::u16string& username,
+    const std::u16string& password,
     PasswordFormManagerForUI* form_manager) {
   const auto& pending_credentials = form_manager->GetPendingCredentials();
   bool username_edited = pending_credentials.username_value != username;

@@ -115,6 +115,7 @@ class Typer::Visitor : public Reducer {
       DECLARE_IMPOSSIBLE_CASE(Deoptimize)
       DECLARE_IMPOSSIBLE_CASE(DeoptimizeIf)
       DECLARE_IMPOSSIBLE_CASE(DeoptimizeUnless)
+      DECLARE_IMPOSSIBLE_CASE(DynamicCheckMapsWithDeoptUnless)
       DECLARE_IMPOSSIBLE_CASE(TrapIf)
       DECLARE_IMPOSSIBLE_CASE(TrapUnless)
       DECLARE_IMPOSSIBLE_CASE(Return)
@@ -679,10 +680,7 @@ Type Typer::Visitor::TypeIfException(Node* node) { return Type::NonInternal(); }
 // Common operators.
 
 Type Typer::Visitor::TypeParameter(Node* node) {
-  Node* const start = node->InputAt(0);
-  DCHECK_EQ(IrOpcode::kStart, start->opcode());
-  int const parameter_count = start->op()->ValueOutputCount() - 4;
-  DCHECK_LE(1, parameter_count);
+  StartNode start{node->InputAt(0)};
   int const index = ParameterIndexOf(node->op());
   if (index == Linkage::kJSCallClosureParamIndex) {
     return Type::Function();
@@ -693,15 +691,15 @@ Type Typer::Visitor::TypeParameter(Node* node) {
       // Parameter[this] can be the_hole for derived class constructors.
       return Type::Union(Type::Hole(), Type::NonInternal(), typer_->zone());
     }
-  } else if (index == Linkage::GetJSCallNewTargetParamIndex(parameter_count)) {
+  } else if (index == start.NewTargetParameterIndex()) {
     if (typer_->flags() & Typer::kNewTargetIsReceiver) {
       return Type::Receiver();
     } else {
       return Type::Union(Type::Receiver(), Type::Undefined(), typer_->zone());
     }
-  } else if (index == Linkage::GetJSCallArgCountParamIndex(parameter_count)) {
+  } else if (index == start.ArgCountParameterIndex()) {
     return Type::Range(0.0, FixedArray::kMaxLength, typer_->zone());
-  } else if (index == Linkage::GetJSCallContextParamIndex(parameter_count)) {
+  } else if (index == start.ContextParameterIndex()) {
     return Type::OtherInternal();
   }
   return Type::NonInternal();
@@ -990,6 +988,17 @@ Type Typer::Visitor::TypeTypedObjectState(Node* node) {
 Type Typer::Visitor::TypeCall(Node* node) { return Type::Any(); }
 
 Type Typer::Visitor::TypeFastApiCall(Node* node) { return Type::Any(); }
+
+#if V8_ENABLE_WEBASSEMBLY
+Type Typer::Visitor::TypeJSWasmCall(Node* node) {
+  const JSWasmCallParameters& op_params = JSWasmCallParametersOf(node->op());
+  const wasm::FunctionSig* wasm_signature = op_params.signature();
+  if (wasm_signature->return_count() > 0) {
+    return JSWasmCallNode::TypeForWasmReturnType(wasm_signature->GetReturn());
+  }
+  return Type::Any();
+}
+#endif  // V8_ENABLE_WEBASSEMBLY
 
 Type Typer::Visitor::TypeProjection(Node* node) {
   Type const type = Operand(node, 0);
@@ -1830,8 +1839,6 @@ Type Typer::Visitor::TypeJSCallRuntime(Node* node) {
       return TypeUnaryOp(node, ToNumber);
     case Runtime::kInlineToObject:
       return TypeUnaryOp(node, ToObject);
-    case Runtime::kInlineToString:
-      return TypeUnaryOp(node, ToString);
     case Runtime::kHasInPrototypeChain:
       return Type::Boolean();
     default:
@@ -2322,10 +2329,6 @@ Type Typer::Visitor::TypeRestLength(Node* node) {
   return TypeCache::Get()->kArgumentsLengthType;
 }
 
-Type Typer::Visitor::TypeArgumentsFrame(Node* node) {
-  return Type::ExternalPointer();
-}
-
 Type Typer::Visitor::TypeNewDoubleElements(Node* node) {
   return Type::OtherInternal();
 }
@@ -2355,6 +2358,10 @@ Type Typer::Visitor::TypeFindOrderedHashMapEntryForInt32Key(Node* node) {
 Type Typer::Visitor::TypeRuntimeAbort(Node* node) { UNREACHABLE(); }
 
 Type Typer::Visitor::TypeAssertType(Node* node) { UNREACHABLE(); }
+
+Type Typer::Visitor::TypeVerifyType(Node* node) {
+  return TypeOrNone(node->InputAt(0));
+}
 
 // Heap constants.
 

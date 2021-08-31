@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/hid/hid_chooser.h"
 #include "chrome/browser/ui/hid/hid_chooser_controller.h"
-#include "chrome/browser/usb/usb_blocklist.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -36,10 +35,10 @@ std::unique_ptr<content::HidChooser> ChromeHidDelegate::RunChooser(
     std::vector<blink::mojom::HidDeviceFilterPtr> filters,
     content::HidChooser::Callback callback) {
   auto* chooser_context = GetChooserContext(frame);
-  if (!device_observer_.IsObservingSources())
-    device_observer_.Add(chooser_context);
-  if (!permission_observer_.IsObservingSources())
-    permission_observer_.Add(chooser_context);
+  if (!device_observation_.IsObserving())
+    device_observation_.Observe(chooser_context);
+  if (!permission_observation_.IsObserving())
+    permission_observation_.Observe(chooser_context);
 
   return std::make_unique<HidChooser>(chrome::ShowDeviceChooserDialog(
       frame, std::make_unique<HidChooserController>(frame, std::move(filters),
@@ -47,28 +46,22 @@ std::unique_ptr<content::HidChooser> ChromeHidDelegate::RunChooser(
 }
 
 bool ChromeHidDelegate::CanRequestDevicePermission(
-    content::WebContents* web_contents,
-    const url::Origin& requesting_origin) {
+    content::WebContents* web_contents) {
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   auto* chooser_context = HidChooserContextFactory::GetForProfile(profile);
-  const auto& embedding_origin =
-      web_contents->GetMainFrame()->GetLastCommittedOrigin();
-  return chooser_context->CanRequestObjectPermission(requesting_origin,
-                                                     embedding_origin);
+  const auto& origin = web_contents->GetMainFrame()->GetLastCommittedOrigin();
+  return chooser_context->CanRequestObjectPermission(origin);
 }
 
 bool ChromeHidDelegate::HasDevicePermission(
     content::WebContents* web_contents,
-    const url::Origin& requesting_origin,
     const device::mojom::HidDeviceInfo& device) {
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   auto* chooser_context = HidChooserContextFactory::GetForProfile(profile);
-  const auto& embedding_origin =
-      web_contents->GetMainFrame()->GetLastCommittedOrigin();
-  return chooser_context->HasDevicePermission(requesting_origin,
-                                              embedding_origin, device);
+  const auto& origin = web_contents->GetMainFrame()->GetLastCommittedOrigin();
+  return chooser_context->HasDevicePermission(origin, device);
 }
 
 device::mojom::HidManager* ChromeHidDelegate::GetHidManager(
@@ -83,10 +76,10 @@ void ChromeHidDelegate::AddObserver(content::RenderFrameHost* frame,
                                     Observer* observer) {
   observer_list_.AddObserver(observer);
   auto* chooser_context = GetChooserContext(frame);
-  if (!device_observer_.IsObservingSources())
-    device_observer_.Add(chooser_context);
-  if (!permission_observer_.IsObservingSources())
-    permission_observer_.Add(chooser_context);
+  if (!device_observation_.IsObserving())
+    device_observation_.Observe(chooser_context);
+  if (!permission_observation_.IsObserving())
+    permission_observation_.Observe(chooser_context);
 }
 
 void ChromeHidDelegate::RemoveObserver(
@@ -104,11 +97,9 @@ const device::mojom::HidDeviceInfo* ChromeHidDelegate::GetDeviceInfo(
   return chooser_context->GetDeviceInfo(guid);
 }
 
-void ChromeHidDelegate::OnPermissionRevoked(
-    const url::Origin& requesting_origin,
-    const url::Origin& embedding_origin) {
+void ChromeHidDelegate::OnPermissionRevoked(const url::Origin& origin) {
   for (auto& observer : observer_list_)
-    observer.OnPermissionRevoked(requesting_origin, embedding_origin);
+    observer.OnPermissionRevoked(origin);
 }
 
 void ChromeHidDelegate::OnDeviceAdded(
@@ -123,15 +114,21 @@ void ChromeHidDelegate::OnDeviceRemoved(
     observer.OnDeviceRemoved(device_info);
 }
 
+void ChromeHidDelegate::OnDeviceChanged(
+    const device::mojom::HidDeviceInfo& device_info) {
+  for (auto& observer : observer_list_)
+    observer.OnDeviceChanged(device_info);
+}
+
 void ChromeHidDelegate::OnHidManagerConnectionError() {
-  device_observer_.RemoveAll();
-  permission_observer_.RemoveAll();
+  device_observation_.Reset();
+  permission_observation_.Reset();
 
   for (auto& observer : observer_list_)
     observer.OnHidManagerConnectionError();
 }
 
 void ChromeHidDelegate::OnHidChooserContextShutdown() {
-  device_observer_.RemoveAll();
-  permission_observer_.RemoveAll();
+  device_observation_.Reset();
+  permission_observation_.Reset();
 }

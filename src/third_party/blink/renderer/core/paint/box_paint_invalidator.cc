@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
@@ -130,13 +131,14 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
       box_.PreviousPhysicalContentBoxRect() != box_.PhysicalContentBoxRect())
     return PaintInvalidationReason::kGeometry;
 
+#if DCHECK_IS_ON()
+  // TODO(crbug.com/1205708): Audit this.
+  NGInkOverflow::ReadUnsetAsNoneScope read_unset_as_none;
+#endif
   if (box_.PreviousSize() == box_.Size() &&
       box_.PreviousPhysicalSelfVisualOverflowRect() ==
-          box_.PhysicalSelfVisualOverflowRect()) {
-    return box_.HasPartialInvalidationRect()
-               ? PaintInvalidationReason::kRectangle
-               : PaintInvalidationReason::kNone;
-  }
+          box_.PhysicalSelfVisualOverflowRect())
+    return PaintInvalidationReason::kNone;
 
   // Incremental invalidation is not applicable if there is visual overflow.
   if (box_.PreviousPhysicalSelfVisualOverflowRect().size !=
@@ -160,7 +162,8 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
     return PaintInvalidationReason::kGeometry;
 
   if (style.HasVisualOverflowingEffect() || style.HasEffectiveAppearance() ||
-      style.HasFilterInducingProperty() || style.HasMask() || style.ClipPath())
+      style.HasFilterInducingProperty() || style.HasMask() ||
+      style.HasClipPath())
     return PaintInvalidationReason::kGeometry;
 
   if (style.HasBorderRadius() || style.CanRenderBorderImage())
@@ -419,6 +422,10 @@ void BoxPaintInvalidator::SavePreviousBoxGeometriesIfNeeded() {
   auto mutable_box = box_.GetMutableForPainting();
   mutable_box.SavePreviousSize();
 
+#if DCHECK_IS_ON()
+  // TODO(crbug.com/1205708): Audit this.
+  NGInkOverflow::ReadUnsetAsNoneScope read_unset_as_none;
+#endif
   if (NeedsToSavePreviousOverflowData())
     mutable_box.SavePreviousOverflowData();
   else

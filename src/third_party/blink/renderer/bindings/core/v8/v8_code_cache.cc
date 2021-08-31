@@ -4,8 +4,8 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_code_cache.h"
 
-#include "base/optional.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
@@ -18,7 +18,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
 
 namespace blink {
@@ -243,14 +242,17 @@ static void ProduceCacheInternal(
 
       TRACE_EVENT_END1(
           kTraceEventCategoryGroup, trace_name, "data",
-          inspector_compile_script_event::Data(
-              source_url.GetString(), source_start_position,
-              inspector_compile_script_event::V8CacheResult(
-                  inspector_compile_script_event::V8CacheResult::ProduceResult(
-                      cached_data ? cached_data->length : 0),
-                  base::Optional<inspector_compile_script_event::V8CacheResult::
-                                     ConsumeResult>()),
-              is_streamed, not_streaming_reason));
+          [&](perfetto::TracedValue context) {
+            inspector_compile_script_event::Data(
+                std::move(context), source_url.GetString(),
+                source_start_position,
+                inspector_compile_script_event::V8CacheResult(
+                    inspector_compile_script_event::V8CacheResult::
+                        ProduceResult(cached_data ? cached_data->length : 0),
+                    absl::optional<inspector_compile_script_event::
+                                       V8CacheResult::ConsumeResult>()),
+                is_streamed, not_streaming_reason);
+          });
       break;
     }
     case V8CodeCache::ProduceCacheOptions::kNoProduceCache:
@@ -320,18 +322,15 @@ scoped_refptr<CachedMetadata> V8CodeCache::GenerateFullCodeCache(
   v8::TryCatch block(isolate);
   ReferrerScriptInfo referrer_info;
   v8::ScriptOrigin origin(
-      V8String(isolate, file_name),
-      v8::Integer::New(isolate, 0),  // line_offset
-      v8::Integer::New(isolate, 0),  // column_offset
-      v8::Boolean::New(
-          isolate,
-          opaque_mode == OpaqueMode::kNotOpaque),  // is_shared_cross_origin
-      v8::Local<v8::Integer>(),                    // script_id
-      V8String(isolate, String("")),               // source_map_url
-      v8::Boolean::New(isolate,
-                       opaque_mode == OpaqueMode::kOpaque),  // is_opaque
-      v8::False(isolate),                                    // is_wasm
-      v8::False(isolate),                                    // is_module
+      isolate, V8String(isolate, file_name),
+      0,                                      // line_offset
+      0,                                      // column_offset
+      opaque_mode == OpaqueMode::kNotOpaque,  // is_shared_cross_origin
+      -1,                                     // script_id
+      V8String(isolate, String("")),          // source_map_url
+      opaque_mode == OpaqueMode::kOpaque,     // is_opaque
+      false,                                  // is_wasm
+      false,                                  // is_module
       referrer_info.ToV8HostDefinedOptions(isolate));
   v8::Local<v8::String> code(V8String(isolate, script_string));
   v8::ScriptCompiler::Source source(code, origin);
@@ -354,14 +353,16 @@ scoped_refptr<CachedMetadata> V8CodeCache::GenerateFullCodeCache(
 
   TRACE_EVENT_END1(
       kTraceEventCategoryGroup, "v8.compile", "data",
-      inspector_compile_script_event::Data(
-          file_name, TextPosition(),
-          inspector_compile_script_event::V8CacheResult(
-              inspector_compile_script_event::V8CacheResult::ProduceResult(
-                  cached_data ? cached_data->length : 0),
-              base::Optional<inspector_compile_script_event::V8CacheResult::
-                                 ConsumeResult>()),
-          false, ScriptStreamer::NotStreamingReason::kHasCodeCache));
+      [&](perfetto::TracedValue context) {
+        inspector_compile_script_event::Data(
+            std::move(context), file_name, TextPosition::MinimumPosition(),
+            inspector_compile_script_event::V8CacheResult(
+                inspector_compile_script_event::V8CacheResult::ProduceResult(
+                    cached_data ? cached_data->length : 0),
+                absl::optional<inspector_compile_script_event::V8CacheResult::
+                                   ConsumeResult>()),
+            false, ScriptStreamer::NotStreamingReason::kHasCodeCache);
+      });
 
   return cached_metadata;
 }

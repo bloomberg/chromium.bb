@@ -6,10 +6,10 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_METRICS_HELPER_H_
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/scheduling_metrics/task_duration_metric_reporter.h"
 #include "components/scheduling_metrics/total_duration_metric_reporter.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/common/metrics_helper.h"
@@ -82,42 +82,11 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
   // useless tasks to be posted.
   bool renderer_shutting_down_;
 
-  base::Optional<base::TimeTicks> last_reported_task_;
+  absl::optional<base::TimeTicks> last_reported_task_;
 
   ThreadLoadTracker main_thread_load_tracker_;
   ThreadLoadTracker background_main_thread_load_tracker_;
   ThreadLoadTracker foreground_main_thread_load_tracker_;
-
-  struct PerQueueTypeDurationReporters {
-    PerQueueTypeDurationReporters();
-
-    TaskDurationPerQueueTypeMetricReporter overall;
-    TaskDurationPerQueueTypeMetricReporter foreground;
-    TaskDurationPerQueueTypeMetricReporter foreground_first_minute;
-    TaskDurationPerQueueTypeMetricReporter foreground_second_minute;
-    TaskDurationPerQueueTypeMetricReporter foreground_third_minute;
-    TaskDurationPerQueueTypeMetricReporter foreground_after_third_minute;
-    TaskDurationPerQueueTypeMetricReporter background;
-    TaskDurationPerQueueTypeMetricReporter background_first_minute;
-    TaskDurationPerQueueTypeMetricReporter background_second_minute;
-    TaskDurationPerQueueTypeMetricReporter background_third_minute;
-    TaskDurationPerQueueTypeMetricReporter background_fourth_minute;
-    TaskDurationPerQueueTypeMetricReporter background_fifth_minute;
-    TaskDurationPerQueueTypeMetricReporter background_after_fifth_minute;
-    TaskDurationPerQueueTypeMetricReporter background_after_tenth_minute;
-    TaskDurationPerQueueTypeMetricReporter
-        background_keep_active_after_fifth_minute;
-    TaskDurationPerQueueTypeMetricReporter
-        background_keep_active_after_tenth_minute;
-    TaskDurationPerQueueTypeMetricReporter hidden;
-    TaskDurationPerQueueTypeMetricReporter visible;
-    TaskDurationPerQueueTypeMetricReporter hidden_music;
-  };
-
-  PerQueueTypeDurationReporters per_queue_type_reporters_;
-
-  scheduling_metrics::TaskDurationMetricReporter<FrameStatus>
-      per_frame_status_duration_reporter_;
 
   using TaskDurationPerTaskTypeMetricReporter =
       scheduling_metrics::TaskDurationMetricReporter<TaskType>;
@@ -143,9 +112,6 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
       background_after_fifth_minute_per_task_type_duration_reporter_;
   TaskDurationPerTaskTypeMetricReporter
       background_after_tenth_minute_per_task_type_duration_reporter_;
-
-  scheduling_metrics::TaskDurationMetricReporter<UseCase>
-      per_task_use_case_duration_reporter_;
 
   scheduling_metrics::TotalDurationMetricReporter total_task_time_reporter_;
 

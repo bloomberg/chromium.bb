@@ -233,7 +233,9 @@ void SVGSVGElement::CollectStyleForPresentationAttribute(
   }
 }
 
-void SVGSVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+void SVGSVGElement::SvgAttributeChanged(
+    const SvgAttributeChangedParams& params) {
+  const QualifiedName& attr_name = params.name;
   bool update_relative_lengths_or_view_box = false;
   bool width_or_height_changed =
       attr_name == svg_names::kWidthAttr || attr_name == svg_names::kHeightAttr;
@@ -285,7 +287,7 @@ void SVGSVGElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     return;
   }
 
-  SVGGraphicsElement::SvgAttributeChanged(attr_name);
+  SVGGraphicsElement::SvgAttributeChanged(params);
 }
 
 // FloatRect::intersects does not consider horizontal or vertical lines (because
@@ -475,8 +477,8 @@ AffineTransform SVGSVGElement::LocalCoordinateSpaceTransform(
       // At the SVG/HTML boundary (aka LayoutSVGRoot), we need to apply the
       // localToBorderBoxTransform to map an element from SVG viewport
       // coordinates to CSS box coordinates.
-      matrix.Multiply(
-          To<LayoutSVGRoot>(layout_object)->LocalToBorderBoxTransform());
+      matrix.Multiply(TransformationMatrix(
+          To<LayoutSVGRoot>(layout_object)->LocalToBorderBoxTransform()));
       // Drop any potential non-affine parts, because we're not able to convey
       // that information further anyway until getScreenCTM returns a DOMMatrix
       // (4x4 matrix.)
@@ -641,26 +643,26 @@ FloatSize SVGSVGElement::CurrentViewportSize() const {
   return viewport_rect.Size();
 }
 
-base::Optional<float> SVGSVGElement::IntrinsicWidth() const {
+absl::optional<float> SVGSVGElement::IntrinsicWidth() const {
   const SVGLength& width_attr = *width()->CurrentValue();
   // TODO(crbug.com/979895): This is the result of a refactoring, which might
   // have revealed an existing bug that we are not handling math functions
   // involving percentages correctly. Fix it if necessary.
   if (width_attr.IsPercentage())
-    return base::nullopt;
+    return absl::nullopt;
   SVGLengthContext length_context(this);
-  return width_attr.Value(length_context);
+  return std::max(0.0f, width_attr.Value(length_context));
 }
 
-base::Optional<float> SVGSVGElement::IntrinsicHeight() const {
+absl::optional<float> SVGSVGElement::IntrinsicHeight() const {
   const SVGLength& height_attr = *height()->CurrentValue();
   // TODO(crbug.com/979895): This is the result of a refactoring, which might
   // have revealed an existing bug that we are not handling math functions
   // involving percentages correctly. Fix it if necessary.
   if (height_attr.IsPercentage())
-    return base::nullopt;
+    return absl::nullopt;
   SVGLengthContext length_context(this);
-  return height_attr.Value(length_context);
+  return std::max(0.0f, height_attr.Value(length_context));
 }
 
 AffineTransform SVGSVGElement::ViewBoxToViewTransform(

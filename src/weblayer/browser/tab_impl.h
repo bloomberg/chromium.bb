@@ -7,17 +7,17 @@
 
 #include <memory>
 #include <set>
+#include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "cc/input/browser_controls_state.h"
 #include "components/find_in_page/find_result_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/browser_controls_state.h"
 #include "weblayer/browser/i18n_util.h"
 #include "weblayer/public/tab.h"
 
@@ -44,7 +44,7 @@ namespace content {
 class RenderWidgetHostView;
 class WebContents;
 struct ContextMenuParams;
-}
+}  // namespace content
 
 namespace gfx {
 class Rect;
@@ -66,7 +66,6 @@ class ProfileImpl;
 #if defined(OS_ANDROID)
 class BrowserControlsContainerView;
 enum class ControlsVisibilityReason;
-class WebMessageHostFactoryProxy;
 #endif
 
 class TabImpl : public Tab,
@@ -127,7 +126,8 @@ class TabImpl : public Tab,
   bool has_new_tab_delegate() const { return new_tab_delegate_ != nullptr; }
   NewTabDelegate* new_tab_delegate() const { return new_tab_delegate_; }
 
-  // Called from Browser when this Tab is losing active status.
+  // Called from Browser when this Tab is gaining/losing active status.
+  void OnGainedActive();
   void OnLosingActive();
 
   bool IsActive();
@@ -160,14 +160,10 @@ class TabImpl : public Tab,
   void SetJavaImpl(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& impl);
 
-  // Invoked every time that the Java-side AutofillProvider instance is
-  // changed (set to null or to a new object). On first invocation with a non-
-  // null object initializes the native Autofill infrastructure. On
-  // subsequent invocations updates the association of that native
-  // infrastructure with its Java counterpart.
-  void OnAutofillProviderChanged(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& autofill_provider);
+  // Invoked every time that the Java-side AutofillProvider instance is created,
+  // the native side autofill might have been initialized in the case that
+  // Android context is switched.
+  void InitializeAutofillIfNecessary(JNIEnv* env);
   void UpdateBrowserControlsConstraint(JNIEnv* env,
                                        jint constraint,
                                        jboolean animate);
@@ -219,18 +215,18 @@ class TabImpl : public Tab,
   void AddObserver(TabObserver* observer) override;
   void RemoveObserver(TabObserver* observer) override;
   NavigationController* GetNavigationController() override;
-  void ExecuteScript(const base::string16& script,
+  void ExecuteScript(const std::u16string& script,
                      bool use_separate_isolate,
                      JavaScriptResultCallback callback) override;
   const std::string& GetGuid() override;
   void SetData(const std::map<std::string, std::string>& data) override;
   const std::map<std::string, std::string>& GetData() override;
-  base::string16 AddWebMessageHostFactory(
+  std::u16string AddWebMessageHostFactory(
       std::unique_ptr<WebMessageHostFactory> factory,
-      const base::string16& js_object_name,
+      const std::u16string& js_object_name,
       const std::vector<std::string>& js_origins) override;
   void RemoveWebMessageHostFactory(
-      const base::string16& js_object_name) override;
+      const std::u16string& js_object_name) override;
   std::unique_ptr<FaviconFetcher> CreateFaviconFetcher(
       FaviconFetcherDelegate* delegate) override;
 #if !defined(OS_ANDROID)
@@ -241,11 +237,10 @@ class TabImpl : public Tab,
   void SetWebPreferences(blink::web_pref::WebPreferences* prefs);
 
   // Executes |script| with a user gesture.
-  void ExecuteScriptWithUserGestureForTests(const base::string16& script);
+  void ExecuteScriptWithUserGestureForTests(const std::u16string& script);
 
-  // Initializes the autofill system with |provider| for tests.
-  void InitializeAutofillForTests(
-      std::unique_ptr<autofill::AutofillProvider> provider);
+  // Initializes the autofill system for tests.
+  void InitializeAutofillForTests();
 
  private:
   // content::WebContentsDelegate:
@@ -266,7 +261,7 @@ class TabImpl : public Tab,
                       scoped_refptr<content::FileSelectListener> listener,
                       const blink::mojom::FileChooserParams& params) override;
   void CreateSmsPrompt(content::RenderFrameHost*,
-                       const url::Origin&,
+                       const std::vector<url::Origin>&,
                        const std::string& one_time_code,
                        base::OnceClosure on_confirm,
                        base::OnceClosure on_cancel) override;
@@ -277,6 +272,7 @@ class TabImpl : public Tab,
       content::WebContents* web_contents) override;
   bool OnlyExpandTopControlsAtPageTop() override;
   bool ShouldAnimateBrowserControlsHeightChanges() override;
+  bool IsBackForwardCacheSupported() override;
   void RequestMediaAccessPermission(
       content::WebContents* web_contents,
       const content::MediaStreamRequest& request,
@@ -321,7 +317,7 @@ class TabImpl : public Tab,
       gfx::Rect* src_rect,
       gfx::Size* output_size);
 
-  void UpdateBrowserControlsState(content::BrowserControlsState new_state,
+  void UpdateBrowserControlsState(cc::BrowserControlsState new_state,
                                   bool animate);
 #endif
 
@@ -336,7 +332,7 @@ class TabImpl : public Tab,
   // BrowserControlsNavigationStateHandlerDelegate:
   void OnBrowserControlsStateStateChanged(
       ControlsVisibilityReason reason,
-      content::BrowserControlsState state) override;
+      cc::BrowserControlsState state) override;
   void OnUpdateBrowserControlsStateBecauseOfProcessSwitch(
       bool did_commit) override;
 #endif
@@ -346,7 +342,7 @@ class TabImpl : public Tab,
 
   void UpdateRendererPrefs(bool should_sync_prefs);
 
-  void InitializeAutofill();
+  void InitializeAutofillDriver();
 
   // Returns the FindTabHelper for the page, or null if none exists.
   find_in_page::FindTabHelper* GetFindTabHelper();
@@ -356,12 +352,14 @@ class TabImpl : public Tab,
 
 #if defined(OS_ANDROID)
   void SetBrowserControlsConstraint(ControlsVisibilityReason reason,
-                                    content::BrowserControlsState constraint);
+                                    cc::BrowserControlsState constraint);
 #endif
 
   void UpdateBrowserVisibleSecurityStateIfNecessary();
 
   bool SetDataInternal(const std::map<std::string, std::string>& data);
+
+  void EnterFullscreenImpl();
 
   BrowserImpl* browser_ = nullptr;
   ErrorPageDelegate* error_page_delegate_ = nullptr;
@@ -372,7 +370,7 @@ class TabImpl : public Tab,
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<NavigationControllerImpl> navigation_controller_;
   base::ObserverList<TabObserver>::Unchecked observers_;
-  std::unique_ptr<i18n::LocaleChangeSubscription> locale_change_subscription_;
+  base::CallbackListSubscription locale_change_subscription_;
 
 #if defined(OS_ANDROID)
   BrowserControlsContainerView* top_controls_container_view_ = nullptr;
@@ -386,12 +384,8 @@ class TabImpl : public Tab,
   // visible, HIDDEN, if for example fullscreen is forcing the controls to be
   // hidden, or BOTH, if either state is viable (e.g. during normal browsing).
   // When BOTH, the actual current state could be showing or hidden.
-  content::BrowserControlsState
-      current_browser_controls_visibility_constraint_ =
-          content::BROWSER_CONTROLS_STATE_SHOWN;
-
-  std::map<std::string, std::unique_ptr<WebMessageHostFactoryProxy>>
-      js_name_to_proxy_;
+  cc::BrowserControlsState current_browser_controls_visibility_constraint_ =
+      cc::BrowserControlsState::kShown;
 
   bool desktop_user_agent_enabled_ = false;
 #endif
@@ -400,18 +394,19 @@ class TabImpl : public Tab,
   // Set to true doing EnterFullscreenModeForTab().
   bool processing_enter_fullscreen_ = false;
 
-  std::unique_ptr<autofill::AutofillProvider> autofill_provider_;
+  // If true, the fullscreen delegate is called when the tab gains active.
+  bool enter_fullscreen_on_gained_active_ = false;
 
   const std::string guid_;
 
   std::map<std::string, std::string> data_;
   base::ObserverList<DataObserver>::Unchecked data_observers_;
 
-  base::string16 title_;
+  std::u16string title_;
 
   std::unique_ptr<js_injection::JsCommunicationHost> js_communication_host_;
 
-  base::WeakPtrFactory<TabImpl> weak_ptr_factory_{this};
+  base::WeakPtrFactory<TabImpl> weak_ptr_factory_for_fullscreen_exit_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabImpl);
 };

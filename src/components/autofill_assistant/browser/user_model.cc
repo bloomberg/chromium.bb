@@ -19,10 +19,10 @@ static const char* const kExtractArraySubidentifierRegex = R"(^(\w+)\[(.+)\]$)";
 
 // Simple wrapper around value_util::GetNthValue to unwrap the base::optional
 // |value|.
-base::Optional<ValueProto> GetNthValue(const base::Optional<ValueProto>& value,
+absl::optional<ValueProto> GetNthValue(const absl::optional<ValueProto>& value,
                                        int index) {
   if (!value.has_value()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return GetNthValue(*value, index);
@@ -30,15 +30,15 @@ base::Optional<ValueProto> GetNthValue(const base::Optional<ValueProto>& value,
 
 // Same as above, but expects |index_value| to point to a single integer value
 // specifying the index to retrieve.
-base::Optional<ValueProto> GetNthValue(
-    const base::Optional<ValueProto>& value,
-    const base::Optional<ValueProto>& index_value) {
+absl::optional<ValueProto> GetNthValue(
+    const absl::optional<ValueProto>& value,
+    const absl::optional<ValueProto>& index_value) {
   if (!value.has_value() || !index_value.has_value()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   if (!AreAllValuesOfSize({*index_value}, 1) ||
       !AreAllValuesOfType({*index_value}, ValueProto::kInts)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return GetNthValue(*value, index_value->ints().values().at(0));
@@ -73,7 +73,7 @@ void UserModel::SetValue(const std::string& identifier,
   }
 }
 
-base::Optional<ValueProto> UserModel::GetValue(
+absl::optional<ValueProto> UserModel::GetValue(
     const std::string& identifier) const {
   auto it = values_.find(identifier);
   if (it != values_.end()) {
@@ -94,10 +94,10 @@ base::Optional<ValueProto> UserModel::GetValue(
       }
     }
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::Optional<ValueProto> UserModel::GetValue(
+absl::optional<ValueProto> UserModel::GetValue(
     const ValueReferenceProto& reference) const {
   switch (reference.kind_case()) {
     case ValueReferenceProto::kValue:
@@ -105,7 +105,7 @@ base::Optional<ValueProto> UserModel::GetValue(
     case ValueReferenceProto::kModelIdentifier:
       return GetValue(reference.model_identifier());
     case ValueReferenceProto::KIND_NOT_SET:
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -154,6 +154,17 @@ void UserModel::SetAutofillCreditCards(
     credit_cards_[credit_card->guid()] = std::move(credit_card);
   }
 }
+void UserModel::SetSelectedCreditCard(
+    std::unique_ptr<autofill::CreditCard> card,
+    UserData* user_data) {
+  if (card == nullptr) {
+    selected_card_.reset();
+    user_data->selected_card_.reset();
+    return;
+  }
+  selected_card_ = std::make_unique<autofill::CreditCard>(*card);
+  user_data->selected_card_ = std::move(card);
+}
 
 void UserModel::SetAutofillProfiles(
     std::unique_ptr<std::vector<std::unique_ptr<autofill::AutofillProfile>>>
@@ -168,19 +179,74 @@ void UserModel::SetCurrentURL(GURL current_url) {
   current_url_ = current_url;
 }
 
-const autofill::CreditCard* UserModel::GetCreditCard(
-    const std::string& guid) const {
-  auto it = credit_cards_.find(guid);
-  if (it == credit_cards_.end()) {
-    return nullptr;
+void UserModel::SetSelectedAutofillProfile(
+    const std::string& profile_name,
+    std::unique_ptr<autofill::AutofillProfile> profile,
+    UserData* user_data) {
+  // Set the profile in the UserModel.
+  auto user_model_it = selected_profiles_.find(profile_name);
+  if (user_model_it != selected_profiles_.end()) {
+    selected_profiles_.erase(user_model_it);
   }
-  return it->second.get();
+  if (profile != nullptr) {
+    selected_profiles_.emplace(
+        profile_name, std::make_unique<autofill::AutofillProfile>(*profile));
+  }
+
+  // Set the profile in the UserData.
+  // TODO(b/187286050): migrate to UserModel so that we can avoid this
+  // duplication.
+  auto user_data_it = user_data->selected_addresses_.find(profile_name);
+  if (user_data_it != user_data->selected_addresses_.end()) {
+    user_data->selected_addresses_.erase(user_data_it);
+  }
+  if (profile != nullptr) {
+    user_data->selected_addresses_.emplace(profile_name, std::move(profile));
+  }
+}
+
+const autofill::CreditCard* UserModel::GetCreditCard(
+    const AutofillCreditCardProto& proto) const {
+  switch (proto.identifier_case()) {
+    case AutofillCreditCardProto::kGuid: {
+      auto it = credit_cards_.find(proto.guid());
+      if (it == credit_cards_.end()) {
+        return nullptr;
+      }
+      return it->second.get();
+    }
+    case AutofillCreditCardProto::kSelectedCreditCard:
+      return GetSelectedCreditCard();
+    case AutofillCreditCardProto::IDENTIFIER_NOT_SET:
+      return nullptr;
+  }
+}
+
+const autofill::CreditCard* UserModel::GetSelectedCreditCard() const {
+  return selected_card_.get();
 }
 
 const autofill::AutofillProfile* UserModel::GetProfile(
-    const std::string& guid) const {
-  auto it = profiles_.find(guid);
-  if (it == profiles_.end()) {
+    const AutofillProfileProto& proto) const {
+  switch (proto.identifier_case()) {
+    case AutofillProfileProto::kGuid: {
+      auto it = profiles_.find(proto.guid());
+      if (it == profiles_.end()) {
+        return nullptr;
+      }
+      return it->second.get();
+    }
+    case AutofillProfileProto::kSelectedProfileName:
+      return GetSelectedAutofillProfile(proto.selected_profile_name());
+    case AutofillProfileProto::IDENTIFIER_NOT_SET:
+      return nullptr;
+  }
+}
+
+const autofill::AutofillProfile* UserModel::GetSelectedAutofillProfile(
+    const std::string& profile_name) const {
+  auto it = selected_profiles_.find(profile_name);
+  if (it == selected_profiles_.end()) {
     return nullptr;
   }
   return it->second.get();

@@ -10,9 +10,10 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
+#include "extensions/common/mojom/manifest.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class FilePath;
@@ -51,7 +52,7 @@ class ChromeTestExtensionLoader {
     creation_flags_ |= flag;
   }
   void set_creation_flags(int flags) { creation_flags_ = flags; }
-  void set_location(Manifest::Location location) { location_ = location; }
+  void set_location(mojom::ManifestLocation location) { location_ = location; }
   void set_should_fail(bool should_fail) { should_fail_ = should_fail; }
   void set_pack_extension(bool pack_extension) {
     pack_extension_ = pack_extension;
@@ -94,8 +95,13 @@ class ChromeTestExtensionLoader {
   scoped_refptr<const Extension> LoadUnpacked(
       const base::FilePath& unpacked_path);
 
-  // Checks that the permissions of the loaded extension are correct.
+  // Checks that the permissions of the loaded extension are correct
+  // and updates them if necessary.
   void CheckPermissions(const Extension* extension);
+
+  // Verifies that the permissions of the loaded extension are correct.
+  // Returns false if they are not.
+  bool VerifyPermissions(const Extension* extension);
 
   // Checks for any install warnings associated with the extension.
   bool CheckInstallWarnings(const Extension& extension);
@@ -123,7 +129,7 @@ class ChromeTestExtensionLoader {
   std::string expected_id_;
 
   // An install param to use with the loaded extension.
-  std::string install_param_;
+  absl::optional<std::string> install_param_;
 
   // Any creation flags (see Extension::InitFromValueFlags) to use for the
   // extension. Only used for crx installs.
@@ -131,7 +137,7 @@ class ChromeTestExtensionLoader {
 
   // The install location of the added extension. Not valid for unpacked
   // extensions.
-  Manifest::Location location_ = Manifest::INTERNAL;
+  mojom::ManifestLocation location_ = mojom::ManifestLocation::kInternal;
 
   // Whether or not the extension load should fail.
   bool should_fail_ = false;
@@ -149,10 +155,10 @@ class ChromeTestExtensionLoader {
   bool grant_permissions_ = true;
 
   // Whether or not to allow file access by default to the extension.
-  base::Optional<bool> allow_file_access_;
+  absl::optional<bool> allow_file_access_;
 
   // Whether or not to allow incognito access by default to the extension.
-  bool allow_incognito_access_ = false;
+  absl::optional<bool> allow_incognito_access_;
 
   // Whether or not to ignore manifest warnings during installation.
   bool ignore_manifest_warnings_ = false;
@@ -164,7 +170,7 @@ class ChromeTestExtensionLoader {
   // If unspecified, this will default to true if there is at least one existent
   // renderer and false otherwise (this roughly maps to "true in browser tests,
   // false in unit tests").
-  base::Optional<bool> wait_for_renderers_;
+  absl::optional<bool> wait_for_renderers_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeTestExtensionLoader);
 };

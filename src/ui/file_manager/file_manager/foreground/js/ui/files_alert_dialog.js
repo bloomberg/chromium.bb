@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {util} from '../../../common/js/util.m.js';
+// #import {AlertDialog} from 'chrome://resources/js/cr/ui/dialogs.m.js';
+
 /**
  * Alert dialog.
  */
-class FilesAlertDialog extends cr.ui.dialogs.AlertDialog {
+/* #export */ class FilesAlertDialog extends cr.ui.dialogs.AlertDialog {
   /**
    * @param {!HTMLElement} parentNode
    */
   constructor(parentNode) {
     super(parentNode);
 
-    if (util.isFilesNg()) {
-      this.container.classList.add('files-ng');
-    }
+    this.container.classList.add('files-ng');
   }
 
   /**
@@ -23,7 +24,30 @@ class FilesAlertDialog extends cr.ui.dialogs.AlertDialog {
    */
   initDom() {
     super.initDom();
+    super.hasModalContainer = true;
+
     this.frame.classList.add('files-alert-dialog');
+  }
+
+  /**
+   * @override
+   * @suppress {accessControls}
+   */
+  show_(...args) {
+    this.parentNode_ = util.getFilesAppModalDialogInstance();
+
+    super.show_(...args);
+
+    this.parentNode_.showModal();
+  }
+
+  /**
+   * @override
+   */
+  hide(...args) {
+    this.parentNode_.close();
+
+    super.hide(...args);
   }
 
   /**

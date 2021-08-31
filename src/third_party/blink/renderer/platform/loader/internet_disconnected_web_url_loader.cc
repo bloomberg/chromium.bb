@@ -8,7 +8,9 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
+#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_request_extra_data.h"
@@ -21,7 +23,10 @@ InternetDisconnectedWebURLLoaderFactory::CreateURLLoader(
     std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
         freezable_task_runner_handle,
     std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>
-        unfreezable_task_runner_handle) {
+        unfreezable_task_runner_handle,
+    CrossVariantMojoRemote<blink::mojom::KeepAliveHandleInterfaceBase>
+        keep_alive_handle,
+    WebBackForwardCacheLoaderHelper back_forward_cache_loader_helper) {
   DCHECK(freezable_task_runner_handle);
   return std::make_unique<InternetDisconnectedWebURLLoader>(
       std::move(freezable_task_runner_handle));
@@ -37,13 +42,12 @@ InternetDisconnectedWebURLLoader::~InternetDisconnectedWebURLLoader() = default;
 void InternetDisconnectedWebURLLoader::LoadSynchronously(
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-    int requestor_id,
     bool pass_response_pipe_to_client,
     bool no_mime_sniffing,
     base::TimeDelta timeout_interval,
     WebURLLoaderClient*,
     WebURLResponse&,
-    base::Optional<WebURLError>&,
+    absl::optional<WebURLError>&,
     WebData&,
     int64_t& encoded_data_length,
     int64_t& encoded_body_length,
@@ -56,7 +60,6 @@ void InternetDisconnectedWebURLLoader::LoadSynchronously(
 void InternetDisconnectedWebURLLoader::LoadAsynchronously(
     std::unique_ptr<network::ResourceRequest> request,
     scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-    int requestor_id,
     bool no_mime_sniffing,
     std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
         resource_load_info_notifier_wrapper,

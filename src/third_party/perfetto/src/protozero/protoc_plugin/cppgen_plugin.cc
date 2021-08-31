@@ -153,8 +153,10 @@ bool CppObjGenerator::Generate(const google::protobuf::FileDescriptor* file,
   cc_printer.Print("#include \"perfetto/protozero/proto_decoder.h\"\n");
   cc_printer.Print("#include \"perfetto/protozero/scattered_heap_buffer.h\"\n");
   cc_printer.Print(kHeader);
+  cc_printer.Print("#if defined(__GNUC__) || defined(__clang__)\n");
   cc_printer.Print("#pragma GCC diagnostic push\n");
   cc_printer.Print("#pragma GCC diagnostic ignored \"-Wfloat-equal\"\n");
+  cc_printer.Print("#endif\n");
 
   // Generate includes for translated types of dependencies.
 
@@ -335,8 +337,10 @@ bool CppObjGenerator::Generate(const google::protobuf::FileDescriptor* file,
     h_printer.Print("}  // namespace $n$\n", "n", ns);
     cc_printer.Print("}  // namespace $n$\n", "n", ns);
   }
-
+  cc_printer.Print("#if defined(__GNUC__) || defined(__clang__)\n");
   cc_printer.Print("#pragma GCC diagnostic pop\n");
+  cc_printer.Print("#endif\n");
+
   h_printer.Print("\n#endif  // $g$\n", "g", include_guard);
 
   return true;
@@ -754,7 +758,7 @@ void CppObjGenerator::GenClassDef(const Descriptor* msg, Printer* p) const {
     } else {
       std::string statement;
       if (field->type() == TYPE_MESSAGE) {
-        statement = "$rval$.ParseFromString(field.as_std_string());\n";
+        statement = "$rval$.ParseFromArray(field.data(), field.size());\n";
       } else {
         if (field->type() == TYPE_SINT32 || field->type() == TYPE_SINT64) {
           // sint32/64 fields are special and need to be zig-zag-decoded.

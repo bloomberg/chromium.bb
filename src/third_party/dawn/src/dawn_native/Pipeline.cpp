@@ -14,26 +14,26 @@
 
 #include "dawn_native/Pipeline.h"
 
-#include "common/HashUtils.h"
 #include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/ObjectContentHasher.h"
 #include "dawn_native/PipelineLayout.h"
 #include "dawn_native/ShaderModule.h"
 
 namespace dawn_native {
 
-    MaybeError ValidateProgrammableStageDescriptor(DeviceBase* device,
-                                                   const ProgrammableStageDescriptor* descriptor,
-                                                   const PipelineLayoutBase* layout,
-                                                   SingleShaderStage stage) {
-        const ShaderModuleBase* module = descriptor->module;
+    MaybeError ValidateProgrammableStage(DeviceBase* device,
+                                         const ShaderModuleBase* module,
+                                         const std::string& entryPoint,
+                                         const PipelineLayoutBase* layout,
+                                         SingleShaderStage stage) {
         DAWN_TRY(device->ValidateObject(module));
 
-        if (!module->HasEntryPoint(descriptor->entryPoint)) {
+        if (!module->HasEntryPoint(entryPoint)) {
             return DAWN_VALIDATION_ERROR("Entry point doesn't exist in the module");
         }
 
-        const EntryPointMetadata& metadata = module->GetEntryPoint(descriptor->entryPoint);
+        const EntryPointMetadata& metadata = module->GetEntryPoint(entryPoint);
 
         if (metadata.stage != stage) {
             return DAWN_VALIDATION_ERROR("Entry point isn't for the correct stage");
@@ -56,9 +56,9 @@ namespace dawn_native {
 
         for (const StageAndDescriptor& stage : stages) {
             // Extract argument for this stage.
-            SingleShaderStage shaderStage = stage.first;
-            ShaderModuleBase* module = stage.second->module;
-            const char* entryPointName = stage.second->entryPoint;
+            SingleShaderStage shaderStage = stage.shaderStage;
+            ShaderModuleBase* module = stage.module;
+            const char* entryPointName = stage.entryPoint.c_str();
 
             const EntryPointMetadata& metadata = module->GetEntryPoint(entryPointName);
             ASSERT(metadata.stage == shaderStage);
@@ -125,38 +125,37 @@ namespace dawn_native {
         return {};
     }
 
-    BindGroupLayoutBase* PipelineBase::GetBindGroupLayout(uint32_t groupIndexIn) {
-        if (GetDevice()->ConsumedError(ValidateGetBindGroupLayout(groupIndexIn))) {
-            return BindGroupLayoutBase::MakeError(GetDevice());
-        }
+    ResultOrError<Ref<BindGroupLayoutBase>> PipelineBase::GetBindGroupLayout(
+        uint32_t groupIndexIn) {
+        DAWN_TRY(ValidateGetBindGroupLayout(groupIndexIn));
 
         BindGroupIndex groupIndex(groupIndexIn);
-
-        BindGroupLayoutBase* bgl = nullptr;
         if (!mLayout->GetBindGroupLayoutsMask()[groupIndex]) {
-            bgl = GetDevice()->GetEmptyBindGroupLayout();
+            return Ref<BindGroupLayoutBase>(GetDevice()->GetEmptyBindGroupLayout());
         } else {
-            bgl = mLayout->GetBindGroupLayout(groupIndex);
+            return Ref<BindGroupLayoutBase>(mLayout->GetBindGroupLayout(groupIndex));
         }
-        bgl->Reference();
-        return bgl;
     }
 
-    // static
-    size_t PipelineBase::HashForCache(const PipelineBase* pipeline) {
-        size_t hash = 0;
+    BindGroupLayoutBase* PipelineBase::APIGetBindGroupLayout(uint32_t groupIndexIn) {
+        Ref<BindGroupLayoutBase> result;
+        if (GetDevice()->ConsumedError(GetBindGroupLayout(groupIndexIn), &result)) {
+            return BindGroupLayoutBase::MakeError(GetDevice());
+        }
+        return result.Detach();
+    }
 
-        // The layout is deduplicated so it can be hashed by pointer.
-        HashCombine(&hash, pipeline->mLayout.Get());
+    size_t PipelineBase::ComputeContentHash() {
+        ObjectContentHasher recorder;
+        recorder.Record(mLayout->GetContentHash());
 
-        HashCombine(&hash, pipeline->mStageMask);
-        for (SingleShaderStage stage : IterateStages(pipeline->mStageMask)) {
-            // The module is deduplicated so it can be hashed by pointer.
-            HashCombine(&hash, pipeline->mStages[stage].module.Get());
-            HashCombine(&hash, pipeline->mStages[stage].entryPoint);
+        recorder.Record(mStageMask);
+        for (SingleShaderStage stage : IterateStages(mStageMask)) {
+            recorder.Record(mStages[stage].module->GetContentHash());
+            recorder.Record(mStages[stage].entryPoint);
         }
 
-        return hash;
+        return recorder.GetContentHash();
     }
 
     // static

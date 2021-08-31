@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.ui.appmenu;
 
-import static org.mockito.ArgumentMatchers.anyInt;
-
 import android.graphics.Rect;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -27,10 +25,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
@@ -53,6 +53,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@Batch(Batch.PER_CLASS)
 public class AppMenuTest extends DummyUiActivityTestCase {
     private AppMenuCoordinatorImpl mAppMenuCoordinator;
     private AppMenuHandlerImpl mAppMenuHandler;
@@ -146,6 +147,8 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         Assert.assertEquals("Popup should be aligned with right of anchor. Anchor rect: " + viewRect
                         + ", popup rect: " + popupRect,
                 viewRect.right, popupRect.right);
+
+        AppMenuCoordinatorImpl.setHasPermanentMenuKeyForTesting(null);
     }
 
     @Test
@@ -162,6 +165,7 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         Assert.assertNotEquals("Popup should be offset from right of anchor."
                         + "Anchor rect: " + viewRect + ", popup rect: " + popupRect,
                 viewRect.right, popupRect.right);
+        AppMenuCoordinatorImpl.setHasPermanentMenuKeyForTesting(null);
     }
 
     @Test
@@ -599,6 +603,7 @@ public class AppMenuTest extends DummyUiActivityTestCase {
     @Test
     @MediumTest
     @DisableIf.Device(type = {UiDisableIf.TABLET})
+    @DisabledTest(message = "crbug.com/1186468")
     public void testDragHelper_ClickItem() throws Exception {
         AppMenuButtonHelperImpl buttonHelper =
                 (AppMenuButtonHelperImpl) mAppMenuHandler.createAppMenuButtonHelper();
@@ -762,30 +767,6 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         Assert.assertEquals(15, height);
     }
 
-    @Test
-    @SmallTest
-    public void testRecordSelectedMenuItem() throws TimeoutException {
-        showMenuAndAssert();
-        AppMenu appMenu = mAppMenuHandler.getAppMenu();
-        AppMenuHandlerImpl spiedHandler = Mockito.spy(mAppMenuHandler);
-        appMenu.mHandler = spiedHandler;
-
-        appMenu.recordSelectedMenuItem(R.id.menu_item_one, 1);
-        Mockito.verify(spiedHandler, Mockito.times(0))
-                .recordAppMenuSimilarSelectionIfNeeded(anyInt(), anyInt());
-
-        appMenu.recordSelectedMenuItem(R.id.menu_item_two, 2);
-        Mockito.verify(spiedHandler, Mockito.times(1))
-                .recordAppMenuSimilarSelectionIfNeeded(R.id.menu_item_one, R.id.menu_item_two);
-
-        appMenu.recordSelectedMenuItem(
-                R.id.menu_item_three, AppMenu.RECENT_SELECTED_MENUITEM_EXPIRATION_MS + 3);
-        Mockito.verify(spiedHandler, Mockito.times(0))
-                .recordAppMenuSimilarSelectionIfNeeded(R.id.menu_item_one, R.id.menu_item_three);
-        Mockito.verify(spiedHandler, Mockito.times(0))
-                .recordAppMenuSimilarSelectionIfNeeded(R.id.menu_item_two, R.id.menu_item_three);
-    }
-
     private void createMenuItem(
             List<MenuItem> menuItems, List<Integer> heightList, int id, int height) {
         Menu menu = mAppMenuHandler.getAppMenu().getMenu();
@@ -828,6 +809,11 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         public boolean isNativeInitializationFinished() {
             return false;
         }
+
+        @Override
+        public boolean isActivityFinishingOrDestroyed() {
+            return false;
+        }
     }
 
     private class TestMenuButtonDelegate implements MenuButtonDelegate {
@@ -850,16 +836,14 @@ public class AppMenuTest extends DummyUiActivityTestCase {
     private Rect getPopupLocationRect() {
         View contentView = mAppMenuHandler.getAppMenu().getPopup().getContentView();
         CriteriaHelper.pollUiThread(() -> contentView.getHeight() != 0);
-        Rect bgPadding = new Rect();
-        mAppMenuHandler.getAppMenu().getPopup().getBackground().getPadding(bgPadding);
 
         Rect popupRect = new Rect();
         int[] popupLocation = new int[2];
         contentView.getLocationOnScreen(popupLocation);
-        popupRect.left = popupLocation[0] - bgPadding.left;
-        popupRect.top = popupLocation[1] - bgPadding.top;
-        popupRect.right = popupLocation[0] + contentView.getWidth() + bgPadding.right;
-        popupRect.bottom = popupLocation[1] + contentView.getHeight() + bgPadding.bottom;
+        popupRect.left = popupLocation[0];
+        popupRect.top = popupLocation[1];
+        popupRect.right = popupLocation[0] + contentView.getWidth();
+        popupRect.bottom = popupLocation[1] + contentView.getHeight();
         return popupRect;
     }
 

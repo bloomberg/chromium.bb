@@ -14,8 +14,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/android/chrome_jni_headers/UmaSessionStats_jni.h"
-#include "chrome/browser/android/metrics/android_profile_session_durations_service.h"
-#include "chrome/browser/android/metrics/android_profile_session_durations_service_factory.h"
+#include "chrome/browser/android/metrics/android_session_durations_service.h"
+#include "chrome/browser/android/metrics/android_session_durations_service_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
@@ -75,12 +75,8 @@ void UmaSessionStats::UmaResumeSession(JNIEnv* env,
     if (ukm_service)
       ukm_service->OnAppEnterForeground();
 
-    AndroidProfileSessionDurationsService* psd_service =
-        AndroidProfileSessionDurationsServiceFactory::GetForActiveUserProfile();
-    if (psd_service) {
-      psd_service->OnAppEnterForeground(
-          session_time_tracker_.session_start_time());
-    }
+    AndroidSessionDurationsServiceFactory::OnAppEnterForeground(
+        session_time_tracker_.session_start_time());
   }
 }
 
@@ -106,10 +102,7 @@ void UmaSessionStats::UmaEndSession(JNIEnv* env,
     if (ukm_service)
       ukm_service->OnAppEnterBackground();
 
-    AndroidProfileSessionDurationsService* psd_service =
-        AndroidProfileSessionDurationsServiceFactory::GetForActiveUserProfile();
-    if (psd_service)
-      psd_service->OnAppEnterBackground(duration);
+    AndroidSessionDurationsServiceFactory::OnAppEnterBackground(duration);
 
     // Note: Keep the line below after |metrics->OnAppEnterBackground()|.
     // Otherwise, |ProvideCurrentSessionData()| may report a small timeslice of

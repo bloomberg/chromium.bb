@@ -123,7 +123,7 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
                         AdvertisementErrorCallback error_callback) override {}
   void ConnectDevice(
       const std::string& address,
-      const base::Optional<BluetoothDevice::AddressType>& address_type,
+      const absl::optional<BluetoothDevice::AddressType>& address_type,
       ConnectDeviceCallback callback,
       ErrorCallback error_callback) override {}
 #endif
@@ -132,6 +132,12 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
       const std::string& identifier) const override {
     return nullptr;
   }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  void SetServiceAllowList(const UUIDList& uuids,
+                           base::OnceClosure callback,
+                           ErrorCallback error_callback) override {}
+#endif
 
   void OnStartDiscoverySessionQuitLoop(
       base::OnceClosure run_loop_quit,
@@ -157,13 +163,12 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
   }
 
   void StopDiscoverySession(base::OnceClosure run_loop_quit) {
-    auto copyable_callback =
-        base::AdaptCallbackForRepeating(std::move(run_loop_quit));
+    auto split_run_loop = base::SplitOnceCallback(std::move(run_loop_quit));
     discovery_sessions_holder_.front()->Stop(
         base::BindOnce(&TestBluetoothAdapter::OnRemoveDiscoverySession, this,
-                       copyable_callback),
+                       std::move(split_run_loop.first)),
         base::BindOnce(&TestBluetoothAdapter::OnRemoveDiscoverySessionError,
-                       this, copyable_callback));
+                       this, std::move(split_run_loop.second)));
     discovery_sessions_holder_.pop();
   }
 

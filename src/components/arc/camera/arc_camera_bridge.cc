@@ -99,6 +99,12 @@ ArcCameraBridge* ArcCameraBridge::GetForBrowserContext(
   return ArcCameraBridgeFactory::GetForBrowserContext(context);
 }
 
+// static
+ArcCameraBridge* ArcCameraBridge::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcCameraBridgeFactory::GetForBrowserContextForTesting(context);
+}
+
 ArcCameraBridge::ArcCameraBridge(content::BrowserContext* context,
                                  ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service) {
@@ -136,10 +142,20 @@ void ArcCameraBridge::StartCameraService(StartCameraServiceCallback callback) {
       fd.get(), token, base::BindOnce([](bool success) {}));
 }
 
-void ArcCameraBridge::RegisterCameraHalClient(
+void ArcCameraBridge::RegisterCameraHalClientLegacy(
     mojo::PendingRemote<cros::mojom::CameraHalClient> client) {
   media::CameraHalDispatcherImpl::GetInstance()->RegisterClient(
       std::move(client));
+}
+
+void ArcCameraBridge::RegisterCameraHalClient(
+    mojo::PendingRemote<cros::mojom::CameraHalClient> client,
+    RegisterCameraHalClientCallback callback) {
+  auto* dispatcher = media::CameraHalDispatcherImpl::GetInstance();
+  auto type = cros::mojom::CameraClientType::ANDROID;
+  dispatcher->RegisterClientWithToken(
+      std::move(client), type, dispatcher->GetTokenForTrustedClient(type),
+      std::move(callback));
 }
 
 }  // namespace arc

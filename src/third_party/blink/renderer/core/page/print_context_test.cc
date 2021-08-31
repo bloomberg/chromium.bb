@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/events/before_print_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -75,12 +76,17 @@ class MockPageContextCanvas : public SkCanvas {
                void(const SkPicture*, const SkMatrix*, const SkPaint*));
   MOCK_METHOD3(DrawPicture,
                void(const SkPicture*, const SkMatrix*, const SkPaint*));
-  MOCK_METHOD4(onDrawImage,
-               void(const SkImage*, SkScalar, SkScalar, const SkPaint*));
-  MOCK_METHOD5(onDrawImageRect,
+  MOCK_METHOD5(onDrawImage2,
                void(const SkImage*,
-                    const SkRect*,
+                    SkScalar,
+                    SkScalar,
+                    const SkSamplingOptions&,
+                    const SkPaint*));
+  MOCK_METHOD6(onDrawImageRect2,
+               void(const SkImage*,
                     const SkRect&,
+                    const SkRect&,
+                    const SkSamplingOptions&,
                     const SkPaint*,
                     SrcRectConstraint));
 
@@ -101,6 +107,11 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
                                            /*use_printing_layout=*/true);
   }
 
+  void TearDown() override {
+    RenderingTest::TearDown();
+    CanvasRenderingContext::GetCanvasPerformanceMonitor().ResetForTesting();
+  }
+
   PrintContext& GetPrintContext() { return *print_context_.Get(); }
 
   void SetBodyInnerHTML(String body_content) {
@@ -119,8 +130,7 @@ class PrintContextTest : public PaintTestConfigurations, public RenderingTest {
     GraphicsContext& context = builder.Context();
     context.SetPrinting(true);
     GetDocument().View()->PaintContentsOutsideOfLifecycle(
-        context, kGlobalPaintPrinting | kGlobalPaintAddUrlMetadata,
-        CullRect(page_rect));
+        context, kGlobalPaintAddUrlMetadata, CullRect(page_rect));
     {
       DrawingRecorder recorder(
           context, *GetDocument().GetLayoutView(),
@@ -489,7 +499,7 @@ TEST_P(PrintContextTest, Canvas2DPixelated) {
       "});");
   GetDocument().body()->AppendChild(script_element);
 
-  EXPECT_CALL(canvas, onDrawImageRect(_, _, _, _, _));
+  EXPECT_CALL(canvas, onDrawImageRect2(_, _, _, _, _, _));
 
   PrintSinglePage(canvas);
 }

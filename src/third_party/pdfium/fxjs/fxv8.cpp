@@ -88,6 +88,17 @@ v8::Local<v8::Array> NewArrayHelper(v8::Isolate* pIsolate) {
   return v8::Array::New(pIsolate);
 }
 
+v8::Local<v8::Array> NewArrayHelper(v8::Isolate* pIsolate,
+                                    pdfium::span<v8::Local<v8::Value>> values) {
+  v8::Local<v8::Array> result = NewArrayHelper(pIsolate);
+  for (size_t i = 0; i < values.size(); ++i) {
+    fxv8::ReentrantPutArrayElementHelper(
+        pIsolate, result, i,
+        values[i].IsEmpty() ? fxv8::NewUndefinedHelper(pIsolate) : values[i]);
+  }
+  return result;
+}
+
 v8::Local<v8::Object> NewObjectHelper(v8::Isolate* pIsolate) {
   return v8::Object::New(pIsolate);
 }
@@ -96,6 +107,16 @@ v8::Local<v8::Date> NewDateHelper(v8::Isolate* pIsolate, double d) {
   return v8::Date::New(pIsolate->GetCurrentContext(), d)
       .ToLocalChecked()
       .As<v8::Date>();
+}
+
+WideString ToWideString(v8::Isolate* pIsolate, v8::Local<v8::String> pValue) {
+  v8::String::Utf8Value s(pIsolate, pValue);
+  return WideString::FromUTF8(ByteStringView(*s, s.length()));
+}
+
+ByteString ToByteString(v8::Isolate* pIsolate, v8::Local<v8::String> pValue) {
+  v8::String::Utf8Value s(pIsolate, pValue);
+  return ByteString(*s, s.length());
 }
 
 int ReentrantToInt32Helper(v8::Isolate* pIsolate, v8::Local<v8::Value> pValue) {
@@ -137,8 +158,7 @@ WideString ReentrantToWideStringHelper(v8::Isolate* pIsolate,
   if (maybe_string.IsEmpty())
     return WideString();
 
-  v8::String::Utf8Value s(pIsolate, maybe_string.ToLocalChecked());
-  return WideString::FromUTF8(ByteStringView(*s, s.length()));
+  return ToWideString(pIsolate, maybe_string.ToLocalChecked());
 }
 
 ByteString ReentrantToByteStringHelper(v8::Isolate* pIsolate,
@@ -152,8 +172,7 @@ ByteString ReentrantToByteStringHelper(v8::Isolate* pIsolate,
   if (maybe_string.IsEmpty())
     return ByteString();
 
-  v8::String::Utf8Value s(pIsolate, maybe_string.ToLocalChecked());
-  return ByteString(*s);
+  return ToByteString(pIsolate, maybe_string.ToLocalChecked());
 }
 
 v8::Local<v8::Object> ReentrantToObjectHelper(v8::Isolate* pIsolate,
@@ -233,8 +252,7 @@ bool ReentrantSetObjectOwnPropertyHelper(v8::Isolate* pIsolate,
                                          v8::Local<v8::Object> pObj,
                                          ByteStringView bsUTF8PropertyName,
                                          v8::Local<v8::Value> pValue) {
-  ASSERT(!pValue.IsEmpty());
-  if (pObj.IsEmpty())
+  if (pObj.IsEmpty() || pValue.IsEmpty())
     return false;
 
   v8::TryCatch squash_exceptions(pIsolate);
@@ -247,8 +265,7 @@ bool ReentrantPutObjectPropertyHelper(v8::Isolate* pIsolate,
                                       v8::Local<v8::Object> pObj,
                                       ByteStringView bsUTF8PropertyName,
                                       v8::Local<v8::Value> pPut) {
-  ASSERT(!pPut.IsEmpty());
-  if (pObj.IsEmpty())
+  if (pObj.IsEmpty() || pPut.IsEmpty())
     return false;
 
   v8::TryCatch squash_exceptions(pIsolate);

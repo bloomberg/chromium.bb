@@ -8,9 +8,10 @@
 #define COMPONENTS_SAFE_BROWSING_CONTENT_RENDERER_PHISHING_CLASSIFIER_PHISHING_CLASSIFIER_DELEGATE_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
+#include "base/memory/read_only_shared_memory_region.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_thread_observer.h"
@@ -49,7 +50,13 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver,
   ~PhishingClassifierDelegate() override;
 
   // mojom::PhishingDetector
-  void SetPhishingModel(const std::string& model) override;
+  void SetPhishingModel(const std::string& model,
+                        base::File tflite_visual_model) override;
+
+  // mojom::PhishingDetector
+  void SetPhishingFlatBufferModel(
+      base::ReadOnlySharedMemoryRegion flatbuffer_region,
+      base::File tflite_visual_model) override;
 
   // Called by the RenderFrame once there is a phishing scorer available.
   // The scorer is passed on to the classifier.
@@ -60,7 +67,7 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver,
   // conditions are met (see MaybeStartClassification for details).
   // We ignore preliminary captures, since these happen before the page has
   // finished loading.
-  void PageCaptured(base::string16* page_text, bool preliminary_capture);
+  void PageCaptured(std::u16string* page_text, bool preliminary_capture);
 
   // RenderFrameObserver implementation, public for testing.
 
@@ -145,7 +152,7 @@ class PhishingClassifierDelegate : public content::RenderFrameObserver,
   // there is no Scorer yet when OnNavigate is called, or the browser has not
   // instructed us to classify the page, the page text will be cached until
   // these conditions are met.
-  base::string16 classifier_page_text_;
+  std::u16string classifier_page_text_;
 
   // Tracks whether we have stored anything in classifier_page_text_ for the
   // most recent load.  We use this to distinguish empty text from cases where

@@ -6,25 +6,66 @@
 
 #include "base/no_destructor.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
+
+namespace {
+
+static features::MBIMode GetMBIMode() {
+  return base::FeatureList::IsEnabled(features::kMBIMode)
+             ? features::kMBIModeParam.Get()
+             : features::MBIMode::kLegacy;
+}
+
+}  // namespace
 
 namespace content {
 
-MockAgentSchedulingGroup::MockAgentSchedulingGroup(
-    RenderThread& render_thread,
-    mojo::PendingAssociatedRemote<mojom::AgentSchedulingGroupHost> host_remote,
-    mojo::PendingAssociatedReceiver<mojom::AgentSchedulingGroup> receiver)
-    : AgentSchedulingGroup(render_thread,
-                           std::move(host_remote),
-                           std::move(receiver)) {}
+// static
+std::unique_ptr<MockAgentSchedulingGroup> MockAgentSchedulingGroup::Create(
+    RenderThread& render_thread) {
+  auto agent_scheduling_group =
+      (GetMBIMode() == features::MBIMode::kLegacy)
+          ? std::make_unique<MockAgentSchedulingGroup>(
+                base::PassKey<MockAgentSchedulingGroup>(), render_thread,
+                mojo::PendingAssociatedReceiver<mojom::AgentSchedulingGroup>())
+          : std::make_unique<MockAgentSchedulingGroup>(
+                base::PassKey<MockAgentSchedulingGroup>(), render_thread,
+                mojo::PendingReceiver<IPC::mojom::ChannelBootstrap>());
+  agent_scheduling_group->Init();
+  return agent_scheduling_group;
+}
 
-mojom::RouteProvider* MockAgentSchedulingGroup::GetRemoteRouteProvider() {
-  DCHECK(!RenderThreadImpl::current());
-  static base::NoDestructor<mojo::Remote<mojom::RouteProvider>> static_remote;
-  if (!static_remote->is_bound()) {
-    ignore_result(static_remote->BindNewPipeAndPassReceiver());
-  }
-  DCHECK(static_remote->is_bound());
-  return static_remote->get();
+MockAgentSchedulingGroup::MockAgentSchedulingGroup(
+    base::PassKey<MockAgentSchedulingGroup> pass_key,
+    RenderThread& render_thread,
+    mojo::PendingAssociatedReceiver<mojom::AgentSchedulingGroup>
+        pending_receiver)
+    : AgentSchedulingGroup(
+          render_thread,
+          std::move(pending_receiver),
+          mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()) {}
+
+MockAgentSchedulingGroup::MockAgentSchedulingGroup(
+    base::PassKey<MockAgentSchedulingGroup> pass_key,
+    RenderThread& render_thread,
+    mojo::PendingReceiver<IPC::mojom::ChannelBootstrap> pending_receiver)
+    : AgentSchedulingGroup(
+          render_thread,
+          std::move(pending_receiver),
+          mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()) {}
+
+void MockAgentSchedulingGroup::Init() {
+  mojo::AssociatedRemote<mojom::AgentSchedulingGroupHost>
+      agent_scheduling_group_host;
+  ignore_result(
+      agent_scheduling_group_host.BindNewEndpointAndPassDedicatedReceiver());
+  mojo::AssociatedRemote<mojom::RouteProvider> browser_route_provider;
+  ignore_result(
+      browser_route_provider.BindNewEndpointAndPassDedicatedReceiver());
+
+  BindAssociatedInterfaces(
+      agent_scheduling_group_host.Unbind(), browser_route_provider.Unbind(),
+      mojo::PendingAssociatedReceiver<mojom::RouteProvider>());
 }
 
 }  // namespace content

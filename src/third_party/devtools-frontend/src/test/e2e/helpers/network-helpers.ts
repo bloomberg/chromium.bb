@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from 'chai';
+
 import {$$, click, goToResource, waitFor, waitForFunction} from '../../shared/helper.js';
 
 const REQUEST_LIST_SELECTOR = '.network-log-grid .data';
@@ -24,7 +26,7 @@ export async function navigateToNetworkTab(testName: string) {
 export async function waitForSomeRequestsToAppear(numberOfRequests: number) {
   await waitForFunction(async () => {
     const requests = await getAllRequestNames();
-    return requests.length >= numberOfRequests && !!requests.map(name => name ? name.trim() : '').join('');
+    return requests.length >= numberOfRequests && Boolean(requests.map(name => name ? name.trim() : '').join(''));
   });
 }
 
@@ -60,4 +62,13 @@ export async function waitForSelectedRequestChange(initialRequestName: string|nu
 
 export async function togglePersistLog() {
   await click('[aria-label="Preserve log"]');
+}
+
+export async function setCacheDisabled(disabled: boolean): Promise<void> {
+  const checkbox = await waitFor('[aria-label="Disable cache"]');
+  const checked = await checkbox.evaluate(box => (box as HTMLInputElement).checked);
+  if (checked !== disabled) {
+    await click('[aria-label="Disable cache"] + label');
+  }
+  assert.strictEqual(await checkbox.evaluate(box => (box as HTMLInputElement).checked), disabled);
 }

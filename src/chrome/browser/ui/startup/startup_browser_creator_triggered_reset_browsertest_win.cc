@@ -98,9 +98,9 @@ class StartupBrowserCreatorTriggeredResetTest : public InProcessBrowserTest {
     create_services_subscription_ =
         BrowserContextDependencyManager::GetInstance()
             ->RegisterCreateServicesCallbackForTesting(
-                base::Bind(&StartupBrowserCreatorTriggeredResetTest::
-                               OnWillCreateBrowserContextServices,
-                           base::Unretained(this)));
+                base::BindRepeating(&StartupBrowserCreatorTriggeredResetTest::
+                                        OnWillCreateBrowserContextServices,
+                                    base::Unretained(this)));
   }
 
  private:
@@ -109,9 +109,7 @@ class StartupBrowserCreatorTriggeredResetTest : public InProcessBrowserTest {
         context, base::BindRepeating(&BuildMockTriggeredProfileResetter));
   }
 
-  std::unique_ptr<
-      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
-      create_services_subscription_;
+  base::CallbackListSubscription create_services_subscription_;
 };
 
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTriggeredResetTest,

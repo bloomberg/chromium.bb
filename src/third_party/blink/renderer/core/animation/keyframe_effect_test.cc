@@ -7,12 +7,15 @@
 #include <memory>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/unrestricted_double_or_keyframe_effect_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_effect_timing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_keyframe_effect_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_optional_effect_timing.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_keyframeeffectoptions_unrestricteddouble.h"
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/animation/animation_test_helpers.h"
@@ -28,6 +31,10 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+
+#define EXPECT_TIMEDELTA(expected, observed)                          \
+  EXPECT_NEAR(expected.InMillisecondsF(), observed.InMillisecondsF(), \
+              Animation::kTimeToleranceMs)
 
 using animation_test_helpers::SetV8ObjectPropertyAsNumber;
 using animation_test_helpers::SetV8ObjectPropertyAsString;
@@ -83,8 +90,13 @@ class AnimationKeyframeEffectV8Test : public KeyframeEffectTest {
     NonThrowableExceptionState exception_state;
     return KeyframeEffect::Create(
         script_state, element, keyframe_object,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+        MakeGarbageCollected<V8UnionKeyframeEffectOptionsOrUnrestrictedDouble>(
+            timing_input),
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
         UnrestrictedDoubleOrKeyframeEffectOptions::FromUnrestrictedDouble(
             timing_input),
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
         exception_state);
   }
   static KeyframeEffect* CreateAnimationFromOption(
@@ -95,8 +107,13 @@ class AnimationKeyframeEffectV8Test : public KeyframeEffectTest {
     NonThrowableExceptionState exception_state;
     return KeyframeEffect::Create(
         script_state, element, keyframe_object,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+        MakeGarbageCollected<V8UnionKeyframeEffectOptionsOrUnrestrictedDouble>(
+            const_cast<KeyframeEffectOptions*>(timing_input)),
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
         UnrestrictedDoubleOrKeyframeEffectOptions::FromKeyframeEffectOptions(
             const_cast<KeyframeEffectOptions*>(timing_input)),
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
         exception_state);
   }
   static KeyframeEffect* CreateAnimation(ScriptState* script_state,
@@ -227,8 +244,8 @@ TEST_F(AnimationKeyframeEffectV8Test, CanSetDuration) {
   KeyframeEffect* animation = CreateAnimationFromTiming(
       script_state, element.Get(), js_keyframes, duration);
 
-  EXPECT_EQ(duration / 1000,
-            animation->SpecifiedTiming().iteration_duration->InSecondsF());
+  EXPECT_TIMEDELTA(AnimationTimeDelta::FromMillisecondsD(duration),
+                   animation->SpecifiedTiming().iteration_duration.value());
 }
 
 TEST_F(AnimationKeyframeEffectV8Test, CanOmitSpecifiedDuration) {
@@ -359,43 +376,66 @@ TEST_F(AnimationKeyframeEffectV8Test, SetKeyframesAdditiveCompositeOperation) {
 TEST_F(KeyframeEffectTest, TimeToEffectChange) {
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(100);
-  timing.start_delay = 100;
-  timing.end_delay = 100;
+  timing.start_delay = AnimationTimeDelta::FromSecondsD(100);
+  timing.end_delay = AnimationTimeDelta::FromSecondsD(100);
   timing.fill_mode = Timing::FillMode::NONE;
   auto* keyframe_effect = MakeGarbageCollected<KeyframeEffect>(
       nullptr, CreateEmptyEffectModel(), timing);
   Animation* animation = GetDocument().Timeline().Play(keyframe_effect);
 
   // Beginning of the animation.
-  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(100),
-            keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(100),
+                   keyframe_effect->TimeToForwardsEffectChange());
   EXPECT_EQ(AnimationTimeDelta::Max(),
             keyframe_effect->TimeToReverseEffectChange());
 
   // End of the before phase.
-  animation->setCurrentTime(100000);
-  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(100),
-            keyframe_effect->TimeToForwardsEffectChange());
-  EXPECT_EQ(AnimationTimeDelta(), keyframe_effect->TimeToReverseEffectChange());
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(100000),
+                            ASSERT_NO_EXCEPTION);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  animation->setCurrentTime(CSSNumberish::FromDouble(100000));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(100),
+                   keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_TIMEDELTA(AnimationTimeDelta(),
+                   keyframe_effect->TimeToReverseEffectChange());
 
   // Nearing the end of the active phase.
-  animation->setCurrentTime(199000);
-  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(1),
-            keyframe_effect->TimeToForwardsEffectChange());
-  EXPECT_EQ(AnimationTimeDelta(), keyframe_effect->TimeToReverseEffectChange());
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(199000),
+                            ASSERT_NO_EXCEPTION);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  animation->setCurrentTime(CSSNumberish::FromDouble(199000));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(1),
+                   keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_TIMEDELTA(AnimationTimeDelta(),
+                   keyframe_effect->TimeToReverseEffectChange());
 
   // End of the active phase.
-  animation->setCurrentTime(200000);
-  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(100),
-            keyframe_effect->TimeToForwardsEffectChange());
-  EXPECT_EQ(AnimationTimeDelta(), keyframe_effect->TimeToReverseEffectChange());
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(200000),
+                            ASSERT_NO_EXCEPTION);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  animation->setCurrentTime(CSSNumberish::FromDouble(200000));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(100),
+                   keyframe_effect->TimeToForwardsEffectChange());
+  EXPECT_TIMEDELTA(AnimationTimeDelta(),
+                   keyframe_effect->TimeToReverseEffectChange());
 
   // End of the animation.
-  animation->setCurrentTime(300000);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  animation->setCurrentTime(MakeGarbageCollected<V8CSSNumberish>(300000),
+                            ASSERT_NO_EXCEPTION);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  animation->setCurrentTime(CSSNumberish::FromDouble(300000));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   EXPECT_EQ(AnimationTimeDelta::Max(),
             keyframe_effect->TimeToForwardsEffectChange());
-  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(100),
-            keyframe_effect->TimeToReverseEffectChange());
+  EXPECT_TIMEDELTA(AnimationTimeDelta::FromSecondsD(100),
+                   keyframe_effect->TimeToReverseEffectChange());
 }
 
 TEST_F(KeyframeEffectTest, CheckCanStartAnimationOnCompositorNoKeyframes) {

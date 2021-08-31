@@ -10,6 +10,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -46,7 +47,7 @@ using bookmarks::UrlAndTitle;
 
 namespace {
 const char kPersistBookmarkURL[] = "http://www.cnn.com/";
-const char kPersistBookmarkTitle[] = "CNN";
+const char16_t kPersistBookmarkTitle[] = u"CNN";
 
 bool IsShowingInterstitial(content::WebContents* tab) {
   security_interstitials::SecurityInterstitialTabHelper* helper =
@@ -134,7 +135,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_Persist) {
   BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
 
   bookmarks::AddIfNotBookmarked(bookmark_model, GURL(kPersistBookmarkURL),
-                                base::ASCIIToUTF16(kPersistBookmarkTitle));
+                                kPersistBookmarkTitle);
 }
 
 #if defined(OS_WIN)
@@ -152,10 +153,10 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, MAYBE_Persist) {
 
   ASSERT_EQ(1u, urls.size());
   ASSERT_EQ(GURL(kPersistBookmarkURL), urls[0].url);
-  ASSERT_EQ(base::ASCIIToUTF16(kPersistBookmarkTitle), urls[0].title);
+  ASSERT_EQ(kPersistBookmarkTitle, urls[0].title);
 }
 
-#if !defined(OS_CHROMEOS)  // No multi-profile on ChromeOS.
+#if !BUILDFLAG(IS_CHROMEOS_ASH)  // No multi-profile on ChromeOS.
 
 // Sanity check that bookmarks from different profiles are separate.
 // DISABLED_ because it regularly times out: http://crbug.com/159002.
@@ -166,12 +167,12 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DISABLED_MultiProfile) {
   BookmarkModel* bookmark_model1 = WaitForBookmarkModel(browser()->profile());
 
   g_browser_process->profile_manager()->CreateMultiProfileAsync(
-      base::string16(), std::string(), ProfileManager::CreateCallback());
+      u"New Profile", 0, false, ProfileManager::CreateCallback());
   Browser* browser2 = ui_test_utils::WaitForBrowserToOpen();
   BookmarkModel* bookmark_model2 = WaitForBookmarkModel(browser2->profile());
 
   bookmarks::AddIfNotBookmarked(bookmark_model1, GURL(kPersistBookmarkURL),
-                                base::ASCIIToUTF16(kPersistBookmarkTitle));
+                                kPersistBookmarkTitle);
   std::vector<UrlAndTitle> urls1, urls2;
   bookmark_model1->GetBookmarks(&urls1);
   bookmark_model2->GetBookmarks(&urls2);
@@ -192,8 +193,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest,
 
   BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
   GURL bookmark_url = embedded_test_server()->GetURL("example.test", "/");
-  bookmarks::AddIfNotBookmarked(bookmark_model, bookmark_url,
-                                base::ASCIIToUTF16("Bookmark"));
+  bookmarks::AddIfNotBookmarked(bookmark_model, bookmark_url, u"Bookmark");
 
   TestBookmarkTabHelperObserver bookmark_observer;
   content::WebContents* web_contents =
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest,
 // generation for dragging a single bookmark.
 IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
   BookmarkModel* model = WaitForBookmarkModel(browser()->profile());
-  const base::string16 page_title(base::ASCIIToUTF16("foo"));
+  const std::u16string page_title(u"foo");
   const GURL page_url("http://www.google.com");
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* node = model->AddURL(root, 0, page_title, page_url);
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
           gfx::NativeView native_view, ui::mojom::DragEventSource source,
           gfx::Point point, int operation) {
         GURL url;
-        base::string16 title;
+        std::u16string title;
         EXPECT_TRUE(drag_data->provider().GetURLAndTitle(
             ui::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES, &url, &title));
         EXPECT_EQ(page_url, url);
@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
       browser()->profile(),
       {{node},
        kDragNodeIndex,
-       platform_util::GetViewForWindow(browser()->window()->GetNativeWindow()),
+       browser()->tab_strip_model()->GetActiveWebContents(),
        ui::mojom::DragEventSource::kMouse,
        expected_point},
       std::move(cb));
@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
 // generation for dragging multiple bookmarks.
 IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
   BookmarkModel* model = WaitForBookmarkModel(browser()->profile());
-  const base::string16 page_title(base::ASCIIToUTF16("foo"));
+  const std::u16string page_title(u"foo");
   const GURL page_url("http://www.google.com");
   const BookmarkNode* root = model->bookmark_bar_node();
   const BookmarkNode* node1 = model->AddURL(root, 0, page_title, page_url);
@@ -284,7 +284,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
                                   gfx::Point point, int operation) {
 #if !defined(OS_MAC)
         GURL url;
-        base::string16 title;
+        std::u16string title;
         // On Mac 10.11 and 10.12, this returns true, even though we set no url.
         // See https://crbug.com/893432.
         EXPECT_FALSE(drag_data->provider().GetURLAndTitle(
@@ -302,46 +302,46 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
       });
 
   constexpr int kDragNodeIndex = 1;
-  chrome::DragBookmarksForTest(browser()->profile(),
-                               {
-                                   {node1, node2},
-                                   kDragNodeIndex,
-                                   platform_util::GetViewForWindow(
-                                       browser()->window()->GetNativeWindow()),
-                                   ui::mojom::DragEventSource::kMouse,
-                                   expected_point,
-                               },
-                               std::move(cb));
+  chrome::DragBookmarksForTest(
+      browser()->profile(),
+      {
+          {node1, node2},
+          kDragNodeIndex,
+          browser()->tab_strip_model()->GetActiveWebContents(),
+          ui::mojom::DragEventSource::kMouse,
+          expected_point,
+      },
+      std::move(cb));
 
   run_loop->Run();
 }
 
 // ChromeOS initializes two profiles (Default and test-user) and it's impossible
 // to distinguish UMA samples separately.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 
 IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_EmitUmaForDuplicates) {
   BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
   const BookmarkNode* parent = bookmarks::GetParentForNewNodes(bookmark_model);
   const BookmarkNode* other_parent =
-      bookmark_model->AddFolder(parent, 0, base::ASCIIToUTF16("Folder"));
+      bookmark_model->AddFolder(parent, 0, u"Folder");
 
   // Add one bookmark with a unique URL, two other bookmarks with a shared URL,
   // and three more with another shared URL.
-  bookmark_model->AddURL(parent, parent->children().size(),
-                         base::ASCIIToUTF16("title1"), GURL("http://a.com"));
-  bookmark_model->AddURL(parent, parent->children().size(),
-                         base::ASCIIToUTF16("title2"), GURL("http://b.com"));
-  bookmark_model->AddURL(parent, parent->children().size(),
-                         base::ASCIIToUTF16("title3"), GURL("http://b.com"));
-  bookmark_model->AddURL(parent, parent->children().size(),
-                         base::ASCIIToUTF16("title4"), GURL("http://c.com"));
-  bookmark_model->AddURL(parent, parent->children().size(),
-                         base::ASCIIToUTF16("title5"), GURL("http://c.com"));
-  bookmark_model->AddURL(parent, parent->children().size(),
-                         base::ASCIIToUTF16("title5"), GURL("http://c.com"));
+  bookmark_model->AddURL(parent, parent->children().size(), u"title1",
+                         GURL("http://a.com"));
+  bookmark_model->AddURL(parent, parent->children().size(), u"title2",
+                         GURL("http://b.com"));
+  bookmark_model->AddURL(parent, parent->children().size(), u"title3",
+                         GURL("http://b.com"));
+  bookmark_model->AddURL(parent, parent->children().size(), u"title4",
+                         GURL("http://c.com"));
+  bookmark_model->AddURL(parent, parent->children().size(), u"title5",
+                         GURL("http://c.com"));
+  bookmark_model->AddURL(parent, parent->children().size(), u"title5",
+                         GURL("http://c.com"));
   bookmark_model->AddURL(other_parent, other_parent->children().size(),
-                         base::ASCIIToUTF16("title5"), GURL("http://c.com"));
+                         u"title5", GURL("http://c.com"));
 }
 
 IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, EmitUmaForDuplicates) {
@@ -384,4 +384,4 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, EmitUmaForDuplicates) {
               testing::ElementsAre(base::Bucket(/*min=*/6, /*count=*/1)));
 }
 
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)

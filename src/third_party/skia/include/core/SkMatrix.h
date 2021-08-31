@@ -15,6 +15,9 @@
 struct SkRSXform;
 struct SkPoint3;
 
+// Remove when clients are updated to live without this
+#define SK_SUPPORT_LEGACY_MATRIX_RECTTORECT
+
 /**
  *  When we transform points through a matrix containing perspective (the bottom row is something
  *  other than 0,0,1), the bruteforce math can produce confusing results (since we might divide
@@ -106,21 +109,49 @@ public:
         return RotateDeg(SkRadiansToDegrees(rad));
     }
 
-#ifdef SK_SUPPORT_LEGACY_MATRIX_FACTORIES
-    // DEPRECATED
-    static SkMatrix SK_WARN_UNUSED_RESULT MakeTrans(SkScalar dx, SkScalar dy) {
-        return Translate(dx, dy);
+    /** Sets SkMatrix to skew by (kx, ky) about pivot point (0, 0).
+
+        @param kx  horizontal skew factor
+        @param ky  vertical skew factor
+        @return    SkMatrix with skew
+    */
+    static SkMatrix SK_WARN_UNUSED_RESULT Skew(SkScalar kx, SkScalar ky) {
+        SkMatrix m;
+        m.setSkew(kx, ky);
+        return m;
     }
-    static SkMatrix SK_WARN_UNUSED_RESULT MakeScale(SkScalar sx, SkScalar sy) {
-        return Scale(sx, sy);
+
+    /** \enum SkMatrix::ScaleToFit
+        ScaleToFit describes how SkMatrix is constructed to map one SkRect to another.
+        ScaleToFit may allow SkMatrix to have unequal horizontal and vertical scaling,
+        or may restrict SkMatrix to square scaling. If restricted, ScaleToFit specifies
+        how SkMatrix maps to the side or center of the destination SkRect.
+    */
+    enum ScaleToFit {
+        kFill_ScaleToFit,   //!< scales in x and y to fill destination SkRect
+        kStart_ScaleToFit,  //!< scales and aligns to left and top
+        kCenter_ScaleToFit, //!< scales and aligns to center
+        kEnd_ScaleToFit,    //!< scales and aligns to right and bottom
+    };
+
+    /** Returns SkMatrix set to scale and translate src to dst. ScaleToFit selects
+        whether mapping completely fills dst or preserves the aspect ratio, and how to
+        align src within dst. Returns the identity SkMatrix if src is empty. If dst is
+        empty, returns SkMatrix set to:
+
+            | 0 0 0 |
+            | 0 0 0 |
+            | 0 0 1 |
+
+        @param src  SkRect to map from
+        @param dst  SkRect to map to
+        @param mode How to handle the mapping
+        @return     SkMatrix mapping src to dst
+    */
+    static SkMatrix SK_WARN_UNUSED_RESULT RectToRect(const SkRect& src, const SkRect& dst,
+                                                     ScaleToFit mode = kFill_ScaleToFit) {
+        return MakeRectToRect(src, dst, mode);
     }
-    static SkMatrix SK_WARN_UNUSED_RESULT MakeScale(SkScalar scale) {
-        return Scale(scale, scale);
-    }
-    static SkMatrix SK_WARN_UNUSED_RESULT MakeTrans(SkVector t) { return MakeTrans(t.x(), t.y()); }
-    static SkMatrix SK_WARN_UNUSED_RESULT MakeTrans(SkIVector t) { return MakeTrans(t.x(), t.y()); }
-    // end DEPRECATED
-#endif
 
     /** Sets SkMatrix to:
 
@@ -1099,19 +1130,9 @@ public:
     */
     SkMatrix& postConcat(const SkMatrix& other);
 
-    /** \enum SkMatrix::ScaleToFit
-        ScaleToFit describes how SkMatrix is constructed to map one SkRect to another.
-        ScaleToFit may allow SkMatrix to have unequal horizontal and vertical scaling,
-        or may restrict SkMatrix to square scaling. If restricted, ScaleToFit specifies
-        how SkMatrix maps to the side or center of the destination SkRect.
-    */
-    enum ScaleToFit {
-        kFill_ScaleToFit,   //!< scales in x and y to fill destination SkRect
-        kStart_ScaleToFit,  //!< scales and aligns to left and top
-        kCenter_ScaleToFit, //!< scales and aligns to center
-        kEnd_ScaleToFit,    //!< scales and aligns to right and bottom
-    };
-
+#ifndef SK_SUPPORT_LEGACY_MATRIX_RECTTORECT
+private:
+#endif
     /** Sets SkMatrix to scale and translate src SkRect to dst SkRect. stf selects whether
         mapping completely fills dst or preserves the aspect ratio, and how to align
         src within dst. Returns false if src is empty, and sets SkMatrix to identity.
@@ -1147,6 +1168,9 @@ public:
         m.setRectToRect(src, dst, stf);
         return m;
     }
+#ifndef SK_SUPPORT_LEGACY_MATRIX_RECTTORECT
+public:
+#endif
 
     /** Sets SkMatrix to map src to dst. count must be zero or greater, and four or less.
 
@@ -1326,6 +1350,27 @@ public:
      */
     void mapHomogeneousPoints(SkPoint3 dst[], const SkPoint src[], int count) const;
 
+    /** Returns SkPoint pt multiplied by SkMatrix. Given:
+
+                     | A B C |        | x |
+            Matrix = | D E F |,  pt = | y |
+                     | G H I |        | 1 |
+
+        result is computed as:
+
+                          |A B C| |x|                               Ax+By+C   Dx+Ey+F
+            Matrix * pt = |D E F| |y| = |Ax+By+C Dx+Ey+F Gx+Hy+I| = ------- , -------
+                          |G H I| |1|                               Gx+Hy+I   Gx+Hy+I
+
+        @param p  SkPoint to map
+        @return   mapped SkPoint
+    */
+    SkPoint mapPoint(SkPoint pt) const {
+        SkPoint result;
+        this->mapXY(pt.x(), pt.y(), &result);
+        return result;
+    }
+
     /** Maps SkPoint (x, y) to result. SkPoint is mapped by multiplying by SkMatrix. Given:
 
                      | A B C |        | x |
@@ -1366,6 +1411,33 @@ public:
         SkPoint result;
         this->mapXY(x,y, &result);
         return result;
+    }
+
+
+    /** Returns (0, 0) multiplied by SkMatrix. Given:
+
+                     | A B C |        | 0 |
+            Matrix = | D E F |,  pt = | 0 |
+                     | G H I |        | 1 |
+
+        result is computed as:
+
+                          |A B C| |0|             C    F
+            Matrix * pt = |D E F| |0| = |C F I| = -  , -
+                          |G H I| |1|             I    I
+
+        @return   mapped (0, 0)
+    */
+    SkPoint mapOrigin() const {
+        SkScalar x = this->getTranslateX(),
+                 y = this->getTranslateY();
+        if (this->hasPerspective()) {
+            SkScalar w = fMat[kMPersp2];
+            if (w) { w = 1 / w; }
+            x *= w;
+            y *= w;
+        }
+        return {x, y};
     }
 
     /** Maps src vector array of length count to vector SkPoint array of equal or greater

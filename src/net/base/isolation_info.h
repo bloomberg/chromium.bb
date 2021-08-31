@@ -5,11 +5,24 @@
 #ifndef NET_BASE_ISOLATION_INFO_H_
 #define NET_BASE_ISOLATION_INFO_H_
 
-#include "base/optional.h"
+#include <set>
+
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
 #include "net/cookies/site_for_cookies.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
+
+namespace network {
+namespace mojom {
+class IsolationInfoDataView;
+}  // namespace mojom
+}  // namespace network
+
+namespace mojo {
+template <typename DataViewType, typename T>
+struct StructTraits;
+}  // namespace mojo
 
 namespace net {
 
@@ -53,8 +66,11 @@ class NET_EXPORT IsolationInfo {
     kOther,
   };
 
+  // Bound the party_context size with a reasonable number.
+  static constexpr size_t kPartyContextMaxSize = 20;
+
   // Default constructor returns an IsolationInfo with empty origins, a null
-  // SiteForCookies(), and a RequestType of kOther.
+  // SiteForCookies(), null |party_context|, and a RequestType of kOther.
   IsolationInfo();
   IsolationInfo(const IsolationInfo&);
   IsolationInfo(IsolationInfo&&);
@@ -66,7 +82,7 @@ class NET_EXPORT IsolationInfo {
   // Simple constructor for internal requests. Sets |frame_origin| and
   // |site_for_cookies| match |top_frame_origin|. Sets |request_type| to
   // kOther. Will only send SameSite cookies to the site associated with
-  // the passed in origin.
+  // the passed in origin. |party_context| is set to be an empty set.
   static IsolationInfo CreateForInternalRequest(
       const url::Origin& top_frame_origin);
 
@@ -91,13 +107,16 @@ class NET_EXPORT IsolationInfo {
   // * If |request_type| is kOther, |top_frame_origin| and
   //   |frame_origin| must be first party with respect to |site_for_cookies|, or
   //   |site_for_cookies| must be null.
+  // * If |party_context_| is not empty, |top_frame_origin| must not be null.
   //
   // Note that the |site_for_cookies| consistency checks are skipped when
   // |site_for_cookies| is not HTTP/HTTPS.
-  static IsolationInfo Create(RequestType request_type,
-                              const url::Origin& top_frame_origin,
-                              const url::Origin& frame_origin,
-                              const SiteForCookies& site_for_cookies);
+  static IsolationInfo Create(
+      RequestType request_type,
+      const url::Origin& top_frame_origin,
+      const url::Origin& frame_origin,
+      const SiteForCookies& site_for_cookies,
+      absl::optional<std::set<SchemefulSite>> party_context = absl::nullopt);
 
   // Create an IsolationInfos that may not be fully correct - in particular,
   // the SiteForCookies will always set to null, and if the NetworkIsolationKey
@@ -107,8 +126,6 @@ class NET_EXPORT IsolationInfo {
   // populated, will create an empty IsolationInfo. This is intended for use
   // while transitioning from NIKs being set on only some requests to
   // IsolationInfos being set on all requests.
-  //
-  // TODO(https://crbug.com/1060631): Remove this once no longer needed.
   static IsolationInfo CreatePartial(
       RequestType request_type,
       const net::NetworkIsolationKey& network_isolation_key);
@@ -119,16 +136,25 @@ class NET_EXPORT IsolationInfo {
   // considered consistent.
   //
   // Intended for use by cross-process deserialization.
-  static base::Optional<IsolationInfo> CreateIfConsistent(
+  static absl::optional<IsolationInfo> CreateIfConsistent(
       RequestType request_type,
-      const base::Optional<url::Origin>& top_frame_origin,
-      const base::Optional<url::Origin>& frame_origin,
+      const absl::optional<url::Origin>& top_frame_origin,
+      const absl::optional<url::Origin>& frame_origin,
       const SiteForCookies& site_for_cookies,
-      bool opaque_and_non_transient);
+      bool opaque_and_non_transient,
+      absl::optional<std::set<SchemefulSite>> party_context = absl::nullopt);
 
   // Create a new IsolationInfo for a redirect to the supplied origin. |this| is
   // unmodified.
   IsolationInfo CreateForRedirect(const url::Origin& new_origin) const;
+
+  // Intended for temporary use in locations that should be using main frame and
+  // frame origin, but are currently only using frame origin, because the
+  // creating object may be shared across main frame objects. Having a special
+  // constructor for these methods makes it easier to keep track of locating
+  // callsites that need to have their IsolationInfo filled in.
+  static IsolationInfo ToDoUseTopFrameOriginAsWell(
+      const url::Origin& incorrectly_used_frame_origin);
 
   RequestType request_type() const { return request_type_; }
 
@@ -140,10 +166,10 @@ class NET_EXPORT IsolationInfo {
   // Note that these are the values the IsolationInfo was created with. In the
   // case an IsolationInfo was created from a NetworkIsolationKey, they may be
   // scheme + eTLD+1 instead of actual origins.
-  const base::Optional<url::Origin>& top_frame_origin() const {
+  const absl::optional<url::Origin>& top_frame_origin() const {
     return top_frame_origin_;
   }
-  const base::Optional<url::Origin>& frame_origin() const {
+  const absl::optional<url::Origin>& frame_origin() const {
     return frame_origin_;
   }
 
@@ -161,19 +187,29 @@ class NET_EXPORT IsolationInfo {
 
   bool opaque_and_non_transient() const { return opaque_and_non_transient_; }
 
+  // Return |party_context| which exclude the top frame origin and the frame
+  // origin.
+  // TODO(mmenke): Make this function PartyContextForTesting() after switching
+  // RenderFrameHostImpl to use the parent IsolationInfo to create the child
+  // IsolationInfo instead of walking through all parent frames.
+  const absl::optional<std::set<SchemefulSite>>& party_context() const {
+    return party_context_;
+  }
+
   bool IsEqualForTesting(const IsolationInfo& other) const;
 
  private:
   IsolationInfo(RequestType request_type,
-                const base::Optional<url::Origin>& top_frame_origin,
-                const base::Optional<url::Origin>& frame_origin,
+                const absl::optional<url::Origin>& top_frame_origin,
+                const absl::optional<url::Origin>& frame_origin,
                 const SiteForCookies& site_for_cookies,
-                bool opaque_and_non_transient);
+                bool opaque_and_non_transient,
+                absl::optional<std::set<SchemefulSite>> party_context);
 
   RequestType request_type_;
 
-  base::Optional<url::Origin> top_frame_origin_;
-  base::Optional<url::Origin> frame_origin_;
+  absl::optional<url::Origin> top_frame_origin_;
+  absl::optional<url::Origin> frame_origin_;
 
   // This can be deduced from the two origins above, but keep a cached version
   // to avoid repeated eTLD+1 calculations, when this is using eTLD+1.
@@ -182,6 +218,29 @@ class NET_EXPORT IsolationInfo {
   SiteForCookies site_for_cookies_;
 
   bool opaque_and_non_transient_ = false;
+
+  // This will hold the list of distinct sites in the form of SchemefulSite to
+  // be used for First-Party-Sets check.
+  //
+  // For |request_type_| being either RequestType::kMainFrame or
+  // RequestType::kSubFrame, |party_context| holds the set of the sites
+  // of the frames in between the current frame and the top frame (i.e. not
+  // considering the current frame or the top frame).
+  //
+  // For |request_type_| being RequestType::kOther, |party_context_| holds the
+  // above, and also the site of the current frame.
+  //
+  // Note that if an intermediate frame shares a site with the top frame, that
+  // frame's site is not reflected in the |party_context_|. Also note that if an
+  // intermediate frame shares a site with the current frame, that frame's site
+  // is still included in the set. The top frame's site is excluded because it
+  // is redundant with the |top_frame_origin_| field. The current frame is
+  // excluded to make it easier to update on subframe redirects.
+  absl::optional<std::set<SchemefulSite>> party_context_;
+
+  // Mojo serialization code needs to access internal party_context_ field.
+  friend struct mojo::StructTraits<network::mojom::IsolationInfoDataView,
+                                   IsolationInfo>;
 };
 
 }  // namespace net

@@ -14,7 +14,6 @@ import androidx.annotation.StringRes;
 
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.toolbar.NewTabPageDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 
 /**
@@ -30,10 +29,22 @@ public interface LocationBarDataProvider {
      * consumer will query the data it cares about.
      */
     interface Observer {
-        void onTitleChanged();
-        // TODO(https://crbug.com/1139481): Add methods for other LocationBarDataProvider
-        // data, e.g. NTP and security state.
-        void onUrlChanged();
+        default void onIncognitoStateChanged(){};
+        default void onNtpStartedLoading(){};
+
+        /**
+         * Notifies about a possible change of the value of {@link #getPrimaryColor()}, or {@link
+         * #isUsingBrandColor()}.
+         */
+        default void onPrimaryColorChanged(){};
+
+        /** Notifies about possible changes to values affecting the status icon. */
+        default void onSecurityStateChanged(){};
+
+        default void onTitleChanged(){};
+        default void onUrlChanged(){};
+
+        default void hintZeroSuggestRefresh(){};
     }
 
     /** Adds an observer of changes to LocationBarDataProvider's data. */
@@ -69,15 +80,14 @@ public interface LocationBarDataProvider {
 
     /**
      * Returns whether the LocationBar's embedder is currently being displayed in overview mode and
-     *         showing the
-     *  omnibox.
+     * showing the omnibox.
      */
     boolean isInOverviewAndShowingOmnibox();
 
     /** Returns the current {@link Profile}. */
     Profile getProfile();
 
-    /** Returns the contents of the {@link org.chromium.chrome.browser.omnibox.UrlBar}. */
+    /** Returns the contents of the {@link UrlBar}. */
     UrlBarData getUrlBarData();
 
     /** Returns the title of the current page, or the empty string if there is currently no tab. */
@@ -92,9 +102,6 @@ public interface LocationBarDataProvider {
     /** Returns whether the page currently shown is an offline page. */
     boolean isOfflinePage();
 
-    /** Returns whether the page currently shown is a preview. */
-    boolean isPreview();
-
     /** Returns whether the page currently shown is a paint preview. */
     default boolean isPaintPreview() {
         return false;
@@ -106,13 +113,15 @@ public interface LocationBarDataProvider {
 
     /**
      * Returns the current page classification.
+     *
      * @param isFocusedFromFakebox If the omnibox focus originated from the fakebox.
-     * @return Integer value representing the OmniboxEventProto.PageClassification.
+     * @return Integer value representing the {@code OmniboxEventProto.PageClassification}.
      */
     int getPageClassification(boolean isFocusedFromFakebox);
 
     /**
      * Returns the resource ID of the icon that should be displayed or 0 if no icon should be shown.
+     *
      * @param isTablet Whether or not the display context of the icon is a tablet.
      */
     @DrawableRes

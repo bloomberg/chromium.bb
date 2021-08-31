@@ -10,14 +10,17 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/format_macros.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/crx_file/id_util.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/file_backed_ruleset_source.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
-#include "extensions/browser/api/declarative_net_request/ruleset_source.h"
+#include "extensions/browser/api/declarative_net_request/rules_count_pair.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -36,7 +39,7 @@ api::declarative_net_request::Rule GetAPIRule(const TestRule& rule) {
   std::unique_ptr<base::DictionaryValue> value = rule.ToValue();
   EXPECT_TRUE(value);
   api::declarative_net_request::Rule result;
-  base::string16 error;
+  std::u16string error;
   EXPECT_TRUE(
       api::declarative_net_request::Rule::Populate(*value, &result, &error))
       << error;
@@ -46,14 +49,15 @@ api::declarative_net_request::Rule GetAPIRule(const TestRule& rule) {
 
 struct TestLoadRulesetInfo {
   bool has_new_checksum = false;
-  base::Optional<bool> reindexing_successful;
-  base::Optional<LoadRulesetResult> load_result;
+  absl::optional<bool> reindexing_successful;
+  absl::optional<LoadRulesetResult> load_result;
 };
 
 struct TestCase {
-  explicit TestCase(RulesetSource source) : source(std::move(source)) {}
+  explicit TestCase(FileBackedRulesetSource source)
+      : source(std::move(source)) {}
   int checksum;
-  RulesetSource source;
+  FileBackedRulesetSource source;
   TestLoadRulesetInfo expected_result;
 };
 
@@ -77,17 +81,17 @@ class FileSequenceHelperTest : public ExtensionsTest {
   }
 
   void TestAddDynamicRules(
-      RulesetSource source,
+      FileBackedRulesetSource source,
       std::vector<api::declarative_net_request::Rule> rules_to_add,
       ReadJSONRulesResult::Status expected_read_status,
       UpdateDynamicRulesStatus expected_update_status,
-      base::Optional<std::string> expected_error,
+      absl::optional<std::string> expected_error,
       bool expected_did_load_successfully) {
     base::RunLoop run_loop;
     auto add_rules_callback = base::BindOnce(
         [](base::RunLoop* run_loop, bool expected_did_load_successfully,
-           base::Optional<std::string> expected_error, LoadRequestData data,
-           base::Optional<std::string> error) {
+           absl::optional<std::string> expected_error, LoadRequestData data,
+           absl::optional<std::string> error) {
           EXPECT_EQ(1u, data.rulesets.size());
           EXPECT_EQ(expected_error, error) << error.value_or("no actual error");
           EXPECT_EQ(expected_did_load_successfully,
@@ -101,11 +105,12 @@ class FileSequenceHelperTest : public ExtensionsTest {
     data.rulesets.emplace_back(std::move(source));
 
     // Unretained is safe because |helper_| outlives the |add_rules_task|.
-    auto add_rules_task =
-        base::BindOnce(&FileSequenceHelper::UpdateDynamicRules,
-                       base::Unretained(helper_.get()), std::move(data),
-                       /* rule_ids_to_remove */ std::vector<int>(),
-                       std::move(rules_to_add), std::move(add_rules_callback));
+    auto add_rules_task = base::BindOnce(
+        &FileSequenceHelper::UpdateDynamicRules,
+        base::Unretained(helper_.get()), std::move(data),
+        /* rule_ids_to_remove */ std::vector<int>(), std::move(rules_to_add),
+        RulesCountPair(GetDynamicAndSessionRuleLimit(), GetRegexRuleLimit()),
+        std::move(add_rules_callback));
 
     base::HistogramTester tester;
     GetExtensionFileTaskRunner()->PostTask(FROM_HERE,
@@ -298,7 +303,7 @@ TEST_F(FileSequenceHelperTest, JSONAndIndexedRulesetDeleted) {
 TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
   // Simulate adding rules for the first time i.e. with no JSON and indexed
   // ruleset files.
-  RulesetSource source = CreateTemporarySource();
+  FileBackedRulesetSource source = CreateTemporarySource();
   base::DeleteFile(source.json_path());
   base::DeleteFile(source.indexed_path());
 
@@ -310,11 +315,11 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
     TestAddDynamicRules(source.Clone(), std::move(api_rules),
                         ReadJSONRulesResult::Status::kFileDoesNotExist,
                         UpdateDynamicRulesStatus::kSuccess,
-                        base::nullopt /* expected_error */,
+                        absl::nullopt /* expected_error */,
                         true /* expected_did_load_successfully*/);
   }
 
-  // Test adding an invalid rule, e.g. a redirect rule without priority.
+  // Test adding an invalid rule, e.g. a rule with invalid priority.
   {
     SCOPED_TRACE("Test adding an invalid rule");
     TestRule rule = CreateGenericRule();
@@ -322,12 +327,12 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
     rule.action->type = std::string("redirect");
     rule.action->redirect.emplace();
     rule.action->redirect->url = std::string("http://google.com");
-    rule.priority.reset();
+    rule.priority = kMinValidPriority - 1;
     api_rules.clear();
     api_rules.push_back(GetAPIRule(rule));
 
     int rule_id = kMinValidID + 1;
-    ParseInfo info(ParseResult::ERROR_EMPTY_RULE_PRIORITY, &rule_id);
+    ParseInfo info(ParseResult::ERROR_INVALID_RULE_PRIORITY, &rule_id);
     TestAddDynamicRules(source.Clone(), std::move(api_rules),
                         ReadJSONRulesResult::Status::kSuccess,
                         UpdateDynamicRulesStatus::kErrorInvalidRules,
@@ -352,7 +357,7 @@ TEST_F(FileSequenceHelperTest, UpdateDynamicRules) {
     TestAddDynamicRules(source.Clone(), std::move(api_rules),
                         ReadJSONRulesResult::Status::kJSONParseError,
                         UpdateDynamicRulesStatus::kSuccess,
-                        base::nullopt /* expected_error */,
+                        absl::nullopt /* expected_error */,
                         true /* expected_did_load_successfully*/);
   }
 }

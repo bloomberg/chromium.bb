@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -16,6 +17,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_range.h"
 #include "third_party/blink/renderer/modules/indexeddb/mock_web_idb_callbacks.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -96,7 +98,7 @@ class MockContinueCallbacks : public testing::StrictMock<MockWebIDBCallbacks> {
   void SuccessCursorContinue(
       std::unique_ptr<IDBKey> key,
       std::unique_ptr<IDBKey> primaryKey,
-      base::Optional<std::unique_ptr<IDBValue>> value) override {
+      absl::optional<std::unique_ptr<IDBValue>> value) override {
     if (key_)
       *key_ = IDBKey::Clone(key);
     if (blobs_ && value.has_value())
@@ -121,14 +123,15 @@ class WebIDBCursorImplTest : public testing::Test {
         blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   }
 
+  // Disallow copy and assign.
+  WebIDBCursorImplTest(const WebIDBCursorImplTest&) = delete;
+  WebIDBCursorImplTest& operator=(const WebIDBCursorImplTest&) = delete;
+
  protected:
   ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
   std::unique_ptr<IDBKey> null_key_;
   std::unique_ptr<WebIDBCursorImpl> cursor_;
   std::unique_ptr<MockCursorImpl> mock_cursor_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WebIDBCursorImplTest);
 };
 
 TEST_F(WebIDBCursorImplTest, PrefetchTest) {

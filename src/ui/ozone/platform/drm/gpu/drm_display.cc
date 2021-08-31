@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/display/display_features.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
@@ -156,7 +157,7 @@ std::unique_ptr<display::DisplaySnapshot> DrmDisplay::Update(
   modes_ = GetDrmModeVector(info->connector());
   is_hdr_capable_ =
       params->bits_per_channel() > 8 && params->color_space().IsHDR();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   is_hdr_capable_ =
       is_hdr_capable_ &&
       base::FeatureList::IsEnabled(display::features::kUseHDRTransferFunction);
@@ -165,6 +166,8 @@ std::unique_ptr<display::DisplaySnapshot> DrmDisplay::Update(
   return params;
 }
 
+// When reading DRM state always check that it's still valid. Any sort of events
+// (such as disconnects) may invalidate the state.
 bool DrmDisplay::GetHDCPState(
     display::HDCPState* state,
     display::ContentProtectionMethod* protection_method) {
@@ -182,6 +185,11 @@ bool DrmDisplay::GetHDCPState(
 
   ScopedDrmObjectPropertyPtr property_values(drm_->GetObjectProperties(
       connector_->connector_id, DRM_MODE_OBJECT_CONNECTOR));
+  if (!property_values) {
+    PLOG(INFO) << "Properties no longer valid for connector "
+               << connector_->connector_id << ".";
+    return false;
+  }
   std::string name =
       GetEnumNameForProperty(property_values.get(), hdcp_property.get());
   size_t i;

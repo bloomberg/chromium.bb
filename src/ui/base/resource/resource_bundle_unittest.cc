@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -296,25 +297,25 @@ TEST_F(ResourceBundleTest, DelegateGetLocalizedString) {
   MockResourceBundleDelegate delegate;
   ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
-  base::string16 data = base::ASCIIToUTF16("My test data");
+  std::u16string data = u"My test data";
   int resource_id = 5;
 
   EXPECT_CALL(delegate, GetLocalizedString(resource_id, _))
       .Times(1)
       .WillOnce(DoAll(SetArgPointee<1>(data), Return(true)));
 
-  base::string16 result = resource_bundle->GetLocalizedString(resource_id);
+  std::u16string result = resource_bundle->GetLocalizedString(resource_id);
   EXPECT_EQ(data, result);
 }
 
 TEST_F(ResourceBundleTest, OverrideStringResource) {
   ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
 
-  base::string16 data = base::ASCIIToUTF16("My test data");
+  std::u16string data = u"My test data";
   int resource_id = 5;
 
-  base::string16 result = resource_bundle->GetLocalizedString(resource_id);
-  EXPECT_EQ(base::string16(), result);
+  std::u16string result = resource_bundle->GetLocalizedString(resource_id);
+  EXPECT_EQ(std::u16string(), result);
 
   resource_bundle->OverrideLocaleStringResource(resource_id, data);
 
@@ -326,7 +327,7 @@ TEST_F(ResourceBundleTest, OverrideStringResource) {
 TEST_F(ResourceBundleTest, CanOverrideStringResources) {
   ResourceBundle* resource_bundle = CreateResourceBundle(nullptr);
 
-  base::string16 data = base::ASCIIToUTF16("My test data");
+  std::u16string data = u"My test data";
   int resource_id = 5;
 
   EXPECT_TRUE(
@@ -341,16 +342,16 @@ TEST_F(ResourceBundleTest, DelegateGetLocalizedStringWithOverride) {
   MockResourceBundleDelegate delegate;
   ResourceBundle* resource_bundle = CreateResourceBundle(&delegate);
 
-  base::string16 delegate_data = base::ASCIIToUTF16("My delegate data");
+  std::u16string delegate_data = u"My delegate data";
   int resource_id = 5;
 
   EXPECT_CALL(delegate, GetLocalizedString(resource_id, _))
       .Times(1)
       .WillOnce(DoAll(SetArgPointee<1>(delegate_data), Return(true)));
 
-  base::string16 override_data = base::ASCIIToUTF16("My override data");
+  std::u16string override_data = u"My override data";
 
-  base::string16 result = resource_bundle->GetLocalizedString(resource_id);
+  std::u16string result = resource_bundle->GetLocalizedString(resource_id);
   EXPECT_EQ(delegate_data, result);
 }
 
@@ -576,7 +577,7 @@ TEST_F(ResourceBundleImageTest, GetImageNamed) {
 
   gfx::ImageSkia* image_skia = resource_bundle->GetImageSkiaNamed(3);
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
   // ChromeOS/Windows load highest scale factor first.
   EXPECT_EQ(ui::SCALE_FACTOR_200P,
             GetSupportedScaleFactor(image_skia->image_reps()[0].scale()));

@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
 #include "components/feed/core/proto/v2/wire/capability.pb.h"
+#include "components/feed/core/v2/public/stream_type.h"
 #include "components/feed/feed_feature_list.h"
 
 namespace feed {
@@ -34,20 +35,45 @@ void OverrideWithFinch(Config* config) {
           kInterestFeedV2, "max_feed_query_requests_per_day",
           config->max_feed_query_requests_per_day);
 
+  config->max_next_page_requests_per_day =
+      base::GetFieldTrialParamByFeatureAsInt(
+          kInterestFeedV2, "max_next_page_requests_per_day",
+          config->max_next_page_requests_per_day);
+
   config->max_action_upload_requests_per_day =
       base::GetFieldTrialParamByFeatureAsInt(
           kInterestFeedV2, "max_action_upload_requests_per_day",
           config->max_action_upload_requests_per_day);
+
+  config->max_list_recommended_web_feeds_requests_per_day =
+      base::GetFieldTrialParamByFeatureAsInt(
+          kWebFeed, "max_list_recommended_web_feeds_requests_per_day",
+          config->max_list_recommended_web_feeds_requests_per_day);
+
+  config->max_list_web_feeds_requests_per_day =
+      base::GetFieldTrialParamByFeatureAsInt(
+          kWebFeed, "max_list_web_feeds_requests_per_day",
+          config->max_list_web_feeds_requests_per_day);
 
   config->stale_content_threshold =
       base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
           kInterestFeedV2, "stale_content_threshold_seconds",
           config->stale_content_threshold.InSecondsF()));
 
+  config->content_expiration_threshold =
+      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+          kInterestFeedV2, "content_expiration_threshold_seconds",
+          config->content_expiration_threshold.InSecondsF()));
+
+  config->background_refresh_window_length =
+      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+          kInterestFeedV2, "background_refresh_window_length_seconds",
+          config->background_refresh_window_length.InSecondsF()));
+
   config->default_background_refresh_interval =
       base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
           kInterestFeedV2, "default_background_refresh_interval_seconds",
-          config->stale_content_threshold.InSecondsF()));
+          config->default_background_refresh_interval.InSecondsF()));
 
   config->max_action_upload_attempts = base::GetFieldTrialParamByFeatureAsInt(
       kInterestFeedV2, "max_action_upload_attempts",
@@ -71,6 +97,11 @@ void OverrideWithFinch(Config* config) {
       kInterestFeedV2, "load_more_trigger_lookahead",
       config->load_more_trigger_lookahead);
 
+  config->load_more_trigger_scroll_distance_dp =
+      base::GetFieldTrialParamByFeatureAsInt(
+          kInterestFeedV2Scrolling, "load_more_trigger_scroll_distance_dp",
+          config->load_more_trigger_scroll_distance_dp);
+
   config->upload_actions_on_enter_background =
       base::GetFieldTrialParamByFeatureAsBool(
           kInterestFeedV2, "upload_actions_on_enter_background",
@@ -90,6 +121,26 @@ void OverrideWithFinch(Config* config) {
       base::GetFieldTrialParamByFeatureAsInt(
           kInterestFeedV2, "max_prefetch_image_requests_per_refresh",
           config->max_prefetch_image_requests_per_refresh);
+
+  config->webfeed_accelerator_recent_visit_history_days =
+      base::GetFieldTrialParamByFeatureAsInt(
+          kWebFeed, "webfeed_accelerator_recent_visit_history_days",
+          config->webfeed_accelerator_recent_visit_history_days);
+
+  config->recommended_feeds_staleness_threshold =
+      base::TimeDelta::FromDays(base::GetFieldTrialParamByFeatureAsInt(
+          kWebFeed, "recommended_feeds_staleness_threshold_days",
+          config->recommended_feeds_staleness_threshold.InDays()));
+
+  config->subscribed_feeds_staleness_threshold =
+      base::TimeDelta::FromDays(base::GetFieldTrialParamByFeatureAsInt(
+          kWebFeed, "subscribed_feeds_staleness_threshold_days",
+          config->subscribed_feeds_staleness_threshold.InDays()));
+
+  config->web_feed_stale_content_threshold =
+      base::TimeDelta::FromSecondsD(base::GetFieldTrialParamByFeatureAsDouble(
+          kWebFeed, "web_feed_stale_content_threshold_seconds",
+          config->web_feed_stale_content_threshold.InSecondsF()));
 
   // Erase any capabilities with "enable_CAPABILITY = false" set.
   base::EraseIf(config->experimental_capabilities, CapabilityDisabled);
@@ -117,5 +168,11 @@ void OverrideConfigWithFinchForTesting() {
 Config::Config() = default;
 Config::Config(const Config& other) = default;
 Config::~Config() = default;
+
+base::TimeDelta Config::GetStalenessThreshold(
+    const StreamType& stream_type) const {
+  return stream_type.IsForYou() ? stale_content_threshold
+                                : web_feed_stale_content_threshold;
+}
 
 }  // namespace feed

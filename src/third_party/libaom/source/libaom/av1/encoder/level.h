@@ -164,8 +164,6 @@ typedef struct AV1LevelParams {
   uint32_t keep_level_stats;
   // Level information for each operating point.
   AV1LevelInfo *level_info[MAX_NUM_OPERATING_POINTS];
-  // Count the number of OBU_FRAME and OBU_FRAME_HEADER for level calculation.
-  int frame_header_count;
 } AV1LevelParams;
 
 static INLINE int is_in_operating_point(int operating_point,

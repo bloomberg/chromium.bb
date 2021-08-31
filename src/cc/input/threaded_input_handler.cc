@@ -249,7 +249,8 @@ InputHandler::ScrollStatus ThreadedInputHandler::ScrollBegin(
                          layer_impl, first_scrolling_layer_or_scrollbar)) {
             TRACE_EVENT_INSTANT0("cc", "Failed Hit Test",
                                  TRACE_EVENT_SCOPE_THREAD);
-            scroll_status.thread = InputHandler::ScrollThread::SCROLL_UNKNOWN;
+            scroll_status.thread =
+                InputHandler::ScrollThread::SCROLL_ON_MAIN_THREAD;
             scroll_status.main_thread_scrolling_reasons =
                 MainThreadScrollingReason::kFailedHitTest;
             return scroll_status;
@@ -277,15 +278,17 @@ InputHandler::ScrollStatus ThreadedInputHandler::ScrollBegin(
     scroll_status.thread = InputHandler::ScrollThread::SCROLL_ON_MAIN_THREAD;
     return scroll_status;
   } else if (!scrolling_node) {
+    // TODO(crbug.com/1155663): Make sure to set main_thread_scrolling_reasons
+    // only when ScrollStatus.thread is set to
+    // InputHander::ScrollThread::SCROLL_ON_MAIN_THREAD
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNoScrollingLayer;
     if (compositor_delegate_.GetSettings().is_layer_tree_for_subframe) {
       // OOPIFs never have a viewport scroll node so if we can't scroll
       // we need to be bubble up to the parent frame. This happens by
-      // returning SCROLL_UNKNOWN.
+      // returning SCROLL_IGNORED.
       TRACE_EVENT_INSTANT0("cc", "Ignored - No ScrollNode (OOPIF)",
                            TRACE_EVENT_SCOPE_THREAD);
-      scroll_status.thread = InputHandler::ScrollThread::SCROLL_UNKNOWN;
     } else {
       // If we didn't hit a layer above we'd usually fallback to the
       // viewport scroll node. However, there may not be one if a scroll
@@ -295,8 +298,8 @@ InputHandler::ScrollStatus ThreadedInputHandler::ScrollBegin(
       // configurations where input is allowed prior to a commit.
       TRACE_EVENT_INSTANT0("cc", "Ignored - No ScrollNode",
                            TRACE_EVENT_SCOPE_THREAD);
-      scroll_status.thread = InputHandler::ScrollThread::SCROLL_IGNORED;
     }
+    scroll_status.thread = InputHandler::ScrollThread::SCROLL_IGNORED;
     return scroll_status;
   }
 
@@ -314,7 +317,12 @@ InputHandler::ScrollStatus ThreadedInputHandler::ScrollBegin(
   // oopif.
   if (GetViewport().ShouldScroll(*CurrentlyScrollingNode()) &&
       !GetViewport().CanScroll(*CurrentlyScrollingNode(), *scroll_state)) {
-    scroll_status.bubble = true;
+    // TODO(crbug.com/1155758): This is a temporary workaround for GuestViews
+    // as they create viewport nodes and want to bubble scroll if the
+    // viewport cannot scroll in the given delta directions. There should be
+    // a parameter to ThreadInputHandler to specify whether unused delta is
+    // consumed by the viewport or bubbles to the parent.
+    scroll_status.viewport_cannot_scroll = true;
   }
 
   return scroll_status;
@@ -357,6 +365,15 @@ InputHandlerScrollResult ThreadedInputHandler::ScrollUpdate(
     return InputHandlerScrollResult();
 
   last_scroll_update_state_ = *scroll_state;
+
+  // Snap on update if interacting with the scrollbar track or arrow buttons.
+  // Interactions with the scrollbar thumb have kScrollByPrecisePixel
+  // granularity.
+  if (scroll_state->is_scrollbar_interaction() &&
+      scroll_state->delta_granularity() !=
+          ui::ScrollGranularity::kScrollByPrecisePixel) {
+    AdjustScrollDeltaForScrollbarSnap(scroll_state);
+  }
 
   gfx::Vector2dF resolvedScrollDelta = ResolveScrollGranularityToPixels(
       *CurrentlyScrollingNode(),
@@ -458,6 +475,36 @@ InputHandlerScrollResult ThreadedInputHandler::ScrollUpdate(
   return scroll_result;
 }
 
+void ThreadedInputHandler::AdjustScrollDeltaForScrollbarSnap(
+    ScrollState* scroll_state) {
+  ScrollNode* scroll_node = CurrentlyScrollingNode();
+  if (!scroll_node || !scroll_node->snap_container_data)
+    return;
+
+  // Ideally, scrollbar track and arrow interactions would have
+  // kScrollByPage and kScrollByLine, respectively. Currently, both have
+  // kScrollByPixel granularity.
+  // TODO(crbug.com/959441): Update snap strategy once the granularity is
+  // properly set. Currently, track and arrow scrolls both use a direction
+  // strategy; however, the track should be using an "end and direction"
+  // strategy.
+  gfx::ScrollOffset current_position = GetVisualScrollOffset(*scroll_node);
+  const SnapContainerData& data = scroll_node->snap_container_data.value();
+  std::unique_ptr<SnapSelectionStrategy> strategy =
+      SnapSelectionStrategy::CreateForDirection(
+          gfx::ScrollOffset(current_position.x(), current_position.y()),
+          gfx::ScrollOffset(scroll_state->delta_x(), scroll_state->delta_y()),
+          true);
+
+  gfx::ScrollOffset snap_position;
+  TargetSnapAreaElementIds snap_target_ids;
+  if (!data.FindSnapPosition(*strategy, &snap_position, &snap_target_ids))
+    return;
+
+  scroll_state->data()->delta_x = snap_position.x() - current_position.x();
+  scroll_state->data()->delta_y = snap_position.y() - current_position.y();
+}
+
 void ThreadedInputHandler::ScrollEnd(bool should_snap) {
   scrollbar_controller_->ResetState();
   if (!CurrentlyScrollingNode())
@@ -473,7 +520,7 @@ void ThreadedInputHandler::ScrollEnd(bool should_snap) {
     return;
   }
 
-  if (should_snap && SnapAtScrollEnd()) {
+  if (should_snap && SnapAtScrollEnd(SnapReason::kGestureScrollEnd)) {
     deferred_scroll_end_ = true;
     return;
   }
@@ -573,6 +620,14 @@ InputHandlerPointerResult ThreadedInputHandler::MouseMoveAt(
   new_animation_controller->DidMouseMove(device_viewport_point);
 
   return result;
+}
+
+PointerResultType ThreadedInputHandler::HitTest(
+    const gfx::PointF& viewport_point) {
+  return compositor_delegate_.GetSettings()
+                 .compositor_threaded_scrollbar_scrolling
+             ? scrollbar_controller_->HitTest(viewport_point)
+             : PointerResultType::kUnhandled;
 }
 
 InputHandlerPointerResult ThreadedInputHandler::MouseDown(
@@ -951,11 +1006,14 @@ void ThreadedInputHandler::ProcessCommitDeltas(
     commit_data->manipulation_info |= kManipulationInfoPrecisionTouchPad;
   if (has_pinch_zoomed_)
     commit_data->manipulation_info |= kManipulationInfoPinchZoom;
+  if (has_scrolled_by_scrollbar_)
+    commit_data->manipulation_info |= kManipulationInfoScrollbar;
 
   has_scrolled_by_wheel_ = false;
   has_scrolled_by_touch_ = false;
   has_scrolled_by_precisiontouchpad_ = false;
   has_pinch_zoomed_ = false;
+  has_scrolled_by_scrollbar_ = false;
 
   commit_data->scroll_gesture_did_end = scroll_gesture_did_end_;
   scroll_gesture_did_end_ = false;
@@ -1038,7 +1096,8 @@ void ThreadedInputHandler::ScrollOffsetAnimationFinished() {
   //  2- snap scroll animation is over (IsAnimatingForSnap == true).
   //
   //  Only for case (1) we should check and run snap scroll animation if needed.
-  if (!IsAnimatingForSnap() && SnapAtScrollEnd())
+  if (!IsAnimatingForSnap() &&
+      SnapAtScrollEnd(SnapReason::kScrollOffsetAnimationFinished))
     return;
 
   // The end of a scroll offset animation means that the scrolling node is at
@@ -1170,15 +1229,15 @@ gfx::Vector2dF ThreadedInputHandler::ResolveScrollGranularityToPixels(
 
   if (granularity == ui::ScrollGranularity::kScrollByPercentage) {
     gfx::SizeF scroller_size = gfx::SizeF(scroll_node.container_bounds);
-
-    gfx::SizeF viewport_size =
-        InnerViewportScrollNode()
-            ? gfx::SizeF(InnerViewportScrollNode()->container_bounds)
-            : gfx::SizeF(ActiveTree().GetDeviceViewport().size());
+    gfx::SizeF viewport_size(compositor_delegate_.VisualDeviceViewportSize());
 
     // Convert from rootframe coordinates to screen coordinates (physical
-    // pixels).
+    // pixels if --use-zoom-for-dsf enabled, DIPs otherwise).
     scroller_size.Scale(compositor_delegate_.PageScaleFactor());
+
+    // Convert from physical pixels to screen coordinates (if --use-zoom-for-dsf
+    // enabled, `DeviceScaleFactor()` returns 1).
+    viewport_size.Scale(1 / compositor_delegate_.DeviceScaleFactor());
 
     pixel_delta = ScrollUtils::ResolveScrollPercentageToPixels(
         pixel_delta, scroller_size, viewport_size);
@@ -1365,26 +1424,15 @@ ThreadedInputHandler::HitTestScrollNode(
       ActiveTree().FindAllLayersUpToAndIncludingFirstScrollable(
           device_viewport_point);
 
-  // It's theoretically possible to hit no layers or only non-scrolling layers.
-  // e.g. an API hit test outside the viewport. In that case, just fallback to
-  // scrolling the viewport.
-  if (layers.empty() || !layers.back()->IsScrollerOrScrollbar()) {
-    result.hit_test_successful = true;
-    if (InnerViewportScrollNode())
-      result.scroll_node = GetNodeToScroll(InnerViewportScrollNode());
+  const LayerImpl* scroller_layer =
+      (!layers.empty() && layers.back()->IsScrollerOrScrollbar())
+          ? layers.back()
+          : nullptr;
 
-    return result;
-  }
-
-  const LayerImpl* scroller_layer = layers.back();
-  layers.pop_back();
-
-  // Go through each layer in front of the scroller. Any of them may block
+  // Go through each layer up to (and including) the scroller. Any may block
   // scrolling if they come from outside the scroller's scroll-subtree or if we
   // hit a non-fast-scrolling-region.
   for (const auto* layer_impl : layers) {
-    DCHECK(!layer_impl->IsScrollbarLayer());
-
     // There are some cases where the hit layer may not be correct (e.g. layer
     // squashing, pointer-events:none layer) because the compositor doesn't
     // know what parts of the layer (if any) are actually visible to hit
@@ -1400,11 +1448,23 @@ ThreadedInputHandler::HitTestScrollNode(
     // If we hit a non-fast scrollable region, that means there's some reason we
     // can't scroll in this region. Primarily, because there's another scroller
     // there that isn't composited and we don't know about so we'll return
-    // nullptr in that case.
+    // failure.
     if (ActiveTree().PointHitsNonFastScrollableRegion(device_viewport_point,
                                                       *layer_impl)) {
       return result;
     }
+  }
+
+  // It's theoretically possible to hit no layers or only non-scrolling layers.
+  // e.g. an API hit test outside the viewport, or sending a scroll to an OOPIF
+  // that does not have overflow. If we made it to here, we also don't have any
+  // non-fast scroll regions. Fallback to scrolling the viewport.
+  if (!scroller_layer) {
+    result.hit_test_successful = true;
+    if (InnerViewportScrollNode())
+      result.scroll_node = GetNodeToScroll(InnerViewportScrollNode());
+
+    return result;
   }
 
   // If we hit a scrollbar layer, get the ScrollNode from its associated
@@ -1414,12 +1474,6 @@ ThreadedInputHandler::HitTestScrollNode(
     scroller_layer = ActiveTree().LayerByElementId(
         ToScrollbarLayer(scroller_layer)->scroll_element_id());
     DCHECK(scroller_layer);
-  } else {
-    // We need to also make sure the scroller itself doesn't have a non-fast
-    // scrolling region in the hit tested area.
-    if (ActiveTree().PointHitsNonFastScrollableRegion(device_viewport_point,
-                                                      *scroller_layer))
-      return result;
   }
 
   ScrollNode* scroll_node =
@@ -1823,6 +1877,7 @@ ScrollNode* ThreadedInputHandler::FindNodeToLatch(ScrollState* scroll_state,
                                                   ui::ScrollInputType type) {
   ScrollTree& scroll_tree = GetScrollTree();
   ScrollNode* scroll_node = nullptr;
+  ScrollNode* first_scrollable_node = nullptr;
   for (ScrollNode* cur_node = starting_node; cur_node;
        cur_node = scroll_tree.parent(cur_node)) {
     if (GetViewport().ShouldScroll(*cur_node)) {
@@ -1836,10 +1891,11 @@ ScrollNode* ThreadedInputHandler::FindNodeToLatch(ScrollState* scroll_state,
     if (!cur_node->scrollable)
       continue;
 
-    // For UX reasons, autoscrolling should always latch to the top-most
-    // scroller, even if it can't scroll in the initial direction.
-    if (type == ui::ScrollInputType::kAutoscroll ||
-        CanConsumeDelta(*scroll_state, *cur_node)) {
+    if (!first_scrollable_node) {
+      first_scrollable_node = cur_node;
+    }
+
+    if (CanConsumeDelta(*scroll_state, *cur_node)) {
       scroll_node = cur_node;
       break;
     }
@@ -1859,6 +1915,14 @@ ScrollNode* ThreadedInputHandler::FindNodeToLatch(ScrollState* scroll_state,
       scroll_state->set_is_scroll_chain_cut(true);
       break;
     }
+  }
+
+  // If the root scroller can not consume delta in an autoscroll, latch on
+  // to the top most autoscrollable scroller. See https://crbug.com/969150
+  if ((type == ui::ScrollInputType::kAutoscroll) && first_scrollable_node) {
+    // If scroll_node is nullptr or delta can not be consumed
+    if (!(scroll_node && CanConsumeDelta(*scroll_state, *scroll_node)))
+      scroll_node = first_scrollable_node;
   }
 
   return scroll_node;
@@ -1938,21 +2002,10 @@ bool ThreadedInputHandler::ShouldAnimateScroll(
   bool has_precise_scroll_deltas = scroll_state.delta_granularity() ==
                                    ui::ScrollGranularity::kScrollByPrecisePixel;
 
-#if defined(OS_MAC)
-  if (has_precise_scroll_deltas)
-    return false;
-
-  // Mac does not smooth scroll wheel events (crbug.com/574283). We allow tests
-  // to force it on.
-  return latched_scroll_type_ == ui::ScrollInputType::kScrollbar
-             ? true
-             : force_smooth_wheel_scrolling_for_testing_;
-#else
   return !has_precise_scroll_deltas;
-#endif
 }
 
-bool ThreadedInputHandler::SnapAtScrollEnd() {
+bool ThreadedInputHandler::SnapAtScrollEnd(SnapReason reason) {
   ScrollNode* scroll_node = CurrentlyScrollingNode();
   if (!scroll_node || !scroll_node->snap_container_data.has_value())
     return false;
@@ -1976,9 +2029,14 @@ bool ThreadedInputHandler::SnapAtScrollEnd() {
   gfx::ScrollOffset last_scroll_delta = last_scroll_state.DeltaOrHint();
 
   std::unique_ptr<SnapSelectionStrategy> strategy;
-
-  if (imprecise_wheel_scrolling && !last_scroll_delta.IsZero()) {
+  if (imprecise_wheel_scrolling && !last_scroll_delta.IsZero() &&
+      reason == SnapReason::kScrollOffsetAnimationFinished) {
     // This was an imprecise wheel scroll so use direction snapping.
+    // Note: gesture scroll end is delayed in anticipation of future wheel
+    // scrolls so it is fired well after the scroll ends as opposed to precise
+    // touch devices where we fire it as soon as the user lifts their finger.
+    // TODO(crbug.com/1201678): The directional scroll should probably be
+    // triggered at gesture scroll begin to improve responsiveness.
     strategy = SnapSelectionStrategy::CreateForDirection(
         current_position, last_scroll_delta, true);
   } else {
@@ -2093,6 +2151,8 @@ void ThreadedInputHandler::UpdateScrollSourceInfo(
     has_scrolled_by_wheel_ = true;
   } else if (type == ui::ScrollInputType::kTouchscreen) {
     has_scrolled_by_touch_ = true;
+  } else if (type == ui::ScrollInputType::kScrollbar) {
+    has_scrolled_by_scrollbar_ = true;
   }
 }
 

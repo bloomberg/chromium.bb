@@ -2,11 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {util} from '../../common/js/util.m.js';
+// #import {DisplayPanel} from './xf_display_panel.m.js';
+// #import './xf_button.m.js';
+// #import './xf_circular_progress.m.js';
+
 /**
  * A panel to display the status or progress of a file operation.
  * @extends HTMLElement
  */
-class PanelItem extends HTMLElement {
+/* #export */ class PanelItem extends HTMLElement {
   constructor() {
     super();
     const host = document.createElement('template');
@@ -253,9 +259,7 @@ class PanelItem extends HTMLElement {
    * @private
    */
   setPanelType(type) {
-    if (util.isTransferDetailsEnabled()) {
-      this.setAttribute('detailed-panel', 'detailed-panel');
-    }
+    this.setAttribute('detailed-panel', 'detailed-panel');
 
     if (this.panelType_ === type) {
       return;

@@ -21,7 +21,7 @@ TEST(NtpTimestampTest, SplitsIntoParts) {
   // 1 Jan 1900 plus 10 ms.
   timestamp = UINT64_C(0x00000000028f5c29);
   EXPECT_EQ(NtpSeconds::zero(), NtpSecondsPart(timestamp));
-  EXPECT_EQ(milliseconds(10), to_microseconds(NtpFractionPart(timestamp)));
+  EXPECT_EQ(milliseconds(10), to_milliseconds(NtpFractionPart(timestamp)));
 
   // 1 Jan 1970 minus 2^-32 seconds.
   timestamp = UINT64_C(0x83aa7e80ffffffff);
@@ -31,7 +31,7 @@ TEST(NtpTimestampTest, SplitsIntoParts) {
   // 2019-03-23 17:25:50.500.
   timestamp = UINT64_C(0xe0414d0e80000000);
   EXPECT_EQ(NtpSeconds(INT64_C(3762375950)), NtpSecondsPart(timestamp));
-  EXPECT_EQ(milliseconds(500), to_microseconds(NtpFractionPart(timestamp)));
+  EXPECT_EQ(milliseconds(500), to_milliseconds(NtpFractionPart(timestamp)));
 }
 
 TEST(NtpTimestampTest, AssemblesFromParts) {
@@ -40,11 +40,11 @@ TEST(NtpTimestampTest, AssemblesFromParts) {
       AssembleNtpTimestamp(NtpSeconds::zero(), NtpFraction::zero());
   EXPECT_EQ(UINT64_C(0x0000000000000000), timestamp);
 
-  // 1 Jan 1900 plus 10 ms. Note that the
-  // std::chrono::duration_cast<NtpFraction>(10ms) truncates rather than rounds
-  // the 10ms value, so the resulting timestamp is one fractional tick less than
-  // the one found in the SplitsIntoParts test. The ~0.4 nanosecond error in the
-  // conversion is totally insignificant to a live system.
+  // 1 Jan 1900 plus 10 ms. Note that the duration_cast<NtpFraction>(10ms)
+  // truncates rather than rounds the 10ms value, so the resulting timestamp is
+  // one fractional tick less than the one found in the SplitsIntoParts test.
+  // The ~0.4 nanosecond error in the conversion is totally insignificant to a
+  // live system.
   timestamp = AssembleNtpTimestamp(
       NtpSeconds::zero(),
       std::chrono::duration_cast<NtpFraction>(milliseconds(10)));
@@ -70,7 +70,7 @@ TEST(NtpTimeConverterTest, ConvertsToNtpTimeAndBack) {
   // our core assumptions (or the design) about the time math are wrong and
   // should be looked into!
   const Clock::time_point steady_clock_start = Clock::now();
-  const std::chrono::seconds wall_clock_start = GetWallTimeSinceUnixEpoch();
+  const seconds wall_clock_start = GetWallTimeSinceUnixEpoch();
   SCOPED_TRACE(::testing::Message()
                << "steady_clock_start.time_since_epoch().count() is "
                << steady_clock_start.time_since_epoch().count()

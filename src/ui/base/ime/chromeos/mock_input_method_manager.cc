@@ -124,7 +124,8 @@ void MockInputMethodManager::State::SetUIStyle(
 MockInputMethodManager::State::~State() = default;
 
 MockInputMethodManager::MockInputMethodManager()
-    : features_enabled_state_(InputMethodManager::FEATURE_ALL) {}
+    : state_(new State()),
+      features_enabled_state_(InputMethodManager::FEATURE_ALL) {}
 
 MockInputMethodManager::~MockInputMethodManager() = default;
 
@@ -146,11 +147,6 @@ void MockInputMethodManager::RemoveCandidateWindowObserver(
 void MockInputMethodManager::RemoveImeMenuObserver(
     InputMethodManager::ImeMenuObserver* observer) {}
 
-std::unique_ptr<InputMethodDescriptors>
-MockInputMethodManager::GetSupportedInputMethods() const {
-  return nullptr;
-}
-
 void MockInputMethodManager::ActivateInputMethodMenuItem(
     const std::string& key) {}
 
@@ -162,6 +158,11 @@ bool MockInputMethodManager::IsISOLevel5ShiftUsedByCurrentInputMethod() const {
 }
 
 bool MockInputMethodManager::IsAltGrUsedByCurrentInputMethod() const {
+  return false;
+}
+
+bool MockInputMethodManager::ArePositionalShortcutsUsedByCurrentInputMethod()
+    const {
   return false;
 }
 
@@ -193,7 +194,7 @@ scoped_refptr<InputMethodManager::State> MockInputMethodManager::CreateNewState(
 
 scoped_refptr<InputMethodManager::State>
 MockInputMethodManager::GetActiveIMEState() {
-  return nullptr;
+  return state_;
 }
 
 void MockInputMethodManager::SetState(
@@ -224,8 +225,8 @@ bool MockInputMethodManager::GetImeMenuFeatureEnabled(
 
 void MockInputMethodManager::NotifyObserversImeExtraInputStateChange() {}
 
-ui::InputMethodKeyboardController*
-MockInputMethodManager::GetInputMethodKeyboardController() {
+ui::VirtualKeyboardController*
+MockInputMethodManager::GetVirtualKeyboardController() {
   return this;
 }
 
@@ -242,10 +243,10 @@ bool MockInputMethodManager::DisplayVirtualKeyboard() {
 void MockInputMethodManager::DismissVirtualKeyboard() {}
 
 void MockInputMethodManager::AddObserver(
-    ui::InputMethodKeyboardControllerObserver* observer) {}
+    ui::VirtualKeyboardControllerObserver* observer) {}
 
 void MockInputMethodManager::RemoveObserver(
-    ui::InputMethodKeyboardControllerObserver* observer) {}
+    ui::VirtualKeyboardControllerObserver* observer) {}
 
 bool MockInputMethodManager::IsKeyboardVisible() {
   return false;

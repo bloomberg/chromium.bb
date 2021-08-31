@@ -21,9 +21,8 @@
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsRenderPass.h"
 #include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrResourceProvider.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
@@ -97,7 +96,7 @@ struct Box {
  */
 
 static void run_test(GrDirectContext*, const char* testName, skiatest::Reporter*,
-                     const std::unique_ptr<GrRenderTargetContext>&, const SkBitmap& gold,
+                     const std::unique_ptr<GrSurfaceDrawContext>&, const SkBitmap& gold,
                      std::function<void(DrawMeshHelper*)> prepareFn,
                      std::function<void(DrawMeshHelper*)> executeFn);
 
@@ -111,9 +110,9 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrMeshTest, reporter, ctxInfo) {
 #endif
     auto dContext = ctxInfo.directContext();
 
-    auto rtc = GrRenderTargetContext::Make(
+    auto rtc = GrSurfaceDrawContext::Make(
             dContext, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact,
-            {kImageWidth, kImageHeight});
+            {kImageWidth, kImageHeight}, SkSurfaceProps());
     if (!rtc) {
         ERRORF(reporter, "could not create render target context.");
         return;
@@ -325,8 +324,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrMeshTest, reporter, ctxInfo) {
                              -1,-1, 0,0, 0,1, 1,0, 1,1, -1,-1, 0,0, 1,0, 0,1, 1,1});
                      VALIDATE(helper->fVertBuffer);
 
-                     GrDrawIndirectCommand* drawIndirect = nullptr;
-                     GrDrawIndexedIndirectCommand* drawIndexedIndirect = nullptr;
+                     GrDrawIndirectWriter indirectWriter;
+                     GrDrawIndexedIndirectWriter indexedIndirectWriter;
                      if (indexed) {
                          // Make helper->fDrawIndirectBufferOffset nonzero.
                          sk_sp<const GrBuffer> dummyBuff;
@@ -334,7 +333,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrMeshTest, reporter, ctxInfo) {
                          // Make a superfluous call to makeDrawIndirectSpace in order to test
                          // "offsetInBytes!=0" for the actual call to makeDrawIndexedIndirectSpace.
                          helper->target()->makeDrawIndirectSpace(29, &dummyBuff, &dummyOffset);
-                         drawIndexedIndirect = helper->target()->makeDrawIndexedIndirectSpace(
+                         indexedIndirectWriter = helper->target()->makeDrawIndexedIndirectSpace(
                                  kBoxCountY, &helper->fDrawIndirectBuffer,
                                  &helper->fDrawIndirectBufferOffset);
                      } else {
@@ -343,8 +342,9 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrMeshTest, reporter, ctxInfo) {
                          size_t dummyOffset;
                          // Make a superfluous call to makeDrawIndexedIndirectSpace in order to test
                          // "offsetInBytes!=0" for the actual call to makeDrawIndirectSpace.
-                         helper->target()->makeDrawIndexedIndirectSpace(7, &dummyBuff, &dummyOffset);
-                         drawIndirect = helper->target()->makeDrawIndirectSpace(
+                         helper->target()->makeDrawIndexedIndirectSpace(7, &dummyBuff,
+                                                                        &dummyOffset);
+                         indirectWriter = helper->target()->makeDrawIndirectSpace(
                                  kBoxCountY, &helper->fDrawIndirectBuffer,
                                  &helper->fDrawIndirectBufferOffset);
                      }
@@ -354,18 +354,10 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GrMeshTest, reporter, ctxInfo) {
                          int baseVertex = (y % 2) ? 1 : 6;
                          if (indexed) {
                              int baseIndex = 1 + y * 6;
-                             drawIndexedIndirect->fIndexCount = 6;
-                             drawIndexedIndirect->fBaseIndex = baseIndex;
-                             drawIndexedIndirect->fInstanceCount = kBoxCountX;
-                             drawIndexedIndirect->fBaseInstance = y * kBoxCountX;
-                             drawIndexedIndirect->fBaseVertex = baseVertex;
-                             ++drawIndexedIndirect;
+                             indexedIndirectWriter.writeIndexed(6, baseIndex, kBoxCountX,
+                                                                y * kBoxCountX, baseVertex);
                          } else {
-                             drawIndirect->fInstanceCount = kBoxCountX;
-                             drawIndirect->fBaseInstance = y * kBoxCountX;
-                             drawIndirect->fVertexCount = 4;
-                             drawIndirect->fBaseVertex = baseVertex;
-                             ++drawIndirect;
+                             indirectWriter.write(kBoxCountX, y * kBoxCountX, 4, baseVertex);
                          }
                      }
                  },
@@ -425,16 +417,16 @@ private:
 
     const char* name() const override { return "GrMeshTestOp"; }
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
-                                      bool hasMixedSampledCoverage, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
 
     void onPrePrepare(GrRecordingContext*,
-                      const GrSurfaceProxyView* writeView,
+                      const GrSurfaceProxyView& writeView,
                       GrAppliedClip*,
                       const GrXferProcessor::DstProxyView&,
-                      GrXferBarrierFlags renderPassXferBarriers) override {}
+                      GrXferBarrierFlags renderPassXferBarriers,
+                      GrLoadOp colorLoadOp) override {}
     void onPrepare(GrOpFlushState* state) override {
         fHelper = std::make_unique<DrawMeshHelper>(state);
         fPrepareFn(fHelper.get());
@@ -453,7 +445,9 @@ private:
 class GrMeshTestProcessor : public GrGeometryProcessor {
 public:
     static GrGeometryProcessor* Make(SkArenaAlloc* arena, bool instanced, bool hasVertexBuffer) {
-        return arena->make<GrMeshTestProcessor>(instanced, hasVertexBuffer);
+        return arena->make([&](void* ptr) {
+            return new (ptr) GrMeshTestProcessor(instanced, hasVertexBuffer);
+        });
     }
 
     const char* name() const override { return "GrMeshTestProcessor"; }
@@ -467,11 +461,10 @@ public:
         b->add32(fVertexPosition.isInitialized());
     }
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const final;
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const final;
 
 private:
     friend class GLSLMeshTestProcessor;
-    friend class ::SkArenaAlloc; // for access to ctor
 
     GrMeshTestProcessor(bool instanced, bool hasVertexBuffer)
             : INHERITED(kGrMeshTestProcessor_ClassID) {
@@ -500,35 +493,38 @@ private:
 };
 
 class GLSLMeshTestProcessor : public GrGLSLGeometryProcessor {
-    void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor&) final {}
+    void setData(const GrGLSLProgramDataManager&,
+                 const GrShaderCaps&,
+                 const GrGeometryProcessor&) final {}
 
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) final {
-        const GrMeshTestProcessor& mp = args.fGP.cast<GrMeshTestProcessor>();
+        const GrMeshTestProcessor& mp = args.fGeomProc.cast<GrMeshTestProcessor>();
+        GrGLSLVertexBuilder* v = args.fVertBuilder;
+        GrGLSLFPFragmentBuilder* f = args.fFragBuilder;
 
         GrGLSLVaryingHandler* varyingHandler = args.fVaryingHandler;
         varyingHandler->emitAttributes(mp);
+        f->codeAppendf("half4 %s;", args.fOutputColor);
         varyingHandler->addPassThroughAttribute(mp.inColor(), args.fOutputColor);
 
-        GrGLSLVertexBuilder* v = args.fVertBuilder;
         if (!mp.fInstanceLocation.isInitialized()) {
             v->codeAppendf("float2 vertex = %s;", mp.fVertexPosition.name());
         } else {
             if (mp.fVertexPosition.isInitialized()) {
                 v->codeAppendf("float2 offset = %s;", mp.fVertexPosition.name());
             } else {
-                v->codeAppend ("float2 offset = float2(sk_VertexID / 2, sk_VertexID % 2);");
+                v->codeAppend("float2 offset = float2(sk_VertexID / 2, sk_VertexID % 2);");
             }
             v->codeAppendf("float2 vertex = %s + offset * %i;", mp.fInstanceLocation.name(),
                            kBoxSize);
         }
         gpArgs->fPositionVar.set(kFloat2_GrSLType, "vertex");
 
-        GrGLSLFPFragmentBuilder* f = args.fFragBuilder;
-        f->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+        f->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
     }
 };
 
-GrGLSLPrimitiveProcessor* GrMeshTestProcessor::createGLSLInstance(const GrShaderCaps&) const {
+GrGLSLGeometryProcessor* GrMeshTestProcessor::createGLSLInstance(const GrShaderCaps&) const {
     return new GLSLMeshTestProcessor;
 }
 
@@ -561,7 +557,6 @@ GrOpsRenderPass* DrawMeshHelper::bindPipeline(GrPrimitiveType primitiveType, boo
                           GrProcessorAnalysisCoverage::kNone,
                           fState->appliedClip(),
                           nullptr,
-                          false,
                           fState->caps(),
                           GrClampType::kAuto,
                           &overrideColor);
@@ -573,10 +568,9 @@ GrOpsRenderPass* DrawMeshHelper::bindPipeline(GrPrimitiveType primitiveType, boo
     GrGeometryProcessor* mtp = GrMeshTestProcessor::Make(fState->allocator(), isInstanced,
                                                          hasVertexBuffer);
 
-    GrProgramInfo programInfo(fState->proxy()->numSamples(), fState->proxy()->numStencilSamples(),
-                              fState->proxy()->backendFormat(), fState->writeView()->origin(),
-                              pipeline, &GrUserStencilSettings::kUnused, mtp, primitiveType, 0,
-                              fState->renderPassBarriers());
+    GrProgramInfo programInfo(fState->writeView(), pipeline, &GrUserStencilSettings::kUnused,
+                              mtp, primitiveType, 0, fState->renderPassBarriers(),
+                              fState->colorLoadOp());
 
     fState->opsRenderPass()->bindPipeline(programInfo, SkRect::MakeIWH(kImageWidth, kImageHeight));
     return fState->opsRenderPass();
@@ -584,10 +578,10 @@ GrOpsRenderPass* DrawMeshHelper::bindPipeline(GrPrimitiveType primitiveType, boo
 
 static void run_test(GrDirectContext* dContext, const char* testName,
                      skiatest::Reporter* reporter,
-                     const std::unique_ptr<GrRenderTargetContext>& rtc, const SkBitmap& gold,
+                     const std::unique_ptr<GrSurfaceDrawContext>& rtc, const SkBitmap& gold,
                      std::function<void(DrawMeshHelper*)> prepareFn,
                      std::function<void(DrawMeshHelper*)> executeFn) {
-    const int w = gold.width(), h = gold.height(), rowBytes = gold.rowBytes();
+    const int w = gold.width(), h = gold.height();
     const uint32_t* goldPx = reinterpret_cast<const uint32_t*>(gold.getPixels());
     if (h != rtc->height() || w != rtc->width()) {
         ERRORF(reporter, "[%s] expectation and rtc not compatible (?).", testName);
@@ -598,11 +592,11 @@ static void run_test(GrDirectContext* dContext, const char* testName,
         return;
     }
 
-    SkAutoSTMalloc<kImageHeight * kImageWidth, uint32_t> resultPx(h * rowBytes);
+    GrPixmap resultPM = GrPixmap::Allocate(gold.info());
     rtc->clear(SkPMColor4f::FromBytes_RGBA(0xbaaaaaad));
-    rtc->priv().testingOnly_addDrawOp(GrMeshTestOp::Make(dContext, prepareFn, executeFn));
+    rtc->addDrawOp(GrMeshTestOp::Make(dContext, prepareFn, executeFn));
 
-    rtc->readPixels(dContext, gold.info(), resultPx, rowBytes, {0, 0});
+    rtc->readPixels(dContext, resultPM, {0, 0});
 
 #ifdef WRITE_PNG_CONTEXT_TYPE
 #define STRINGIFY(X) #X
@@ -610,14 +604,13 @@ static void run_test(GrDirectContext* dContext, const char* testName,
     SkString filename;
     filename.printf("GrMeshTest_%s_%s.png", TOSTRING(WRITE_PNG_CONTEXT_TYPE), testName);
     SkDebugf("writing %s...\n", filename.c_str());
-    ToolUtils::EncodeImageToFile(filename.c_str(), SkPixmap(gold.info(), resultPx, rowBytes),
-                                 SkEncodedImageFormat::kPNG, 100);
+    ToolUtils::EncodeImageToFile(filename.c_str(), resultPM, SkEncodedImageFormat::kPNG, 100);
 #endif
 
     for (int y = 0; y < h; ++y) {
         for (int x = 0; x < w; ++x) {
             uint32_t expected = goldPx[y * kImageWidth + x];
-            uint32_t actual = resultPx[y * kImageWidth + x];
+            uint32_t actual = static_cast<uint32_t*>(resultPM.addr())[y * kImageWidth + x];
             if (expected != actual) {
                 ERRORF(reporter, "[%s] pixel (%i,%i): got 0x%x expected 0x%x",
                        testName, x, y, actual, expected);

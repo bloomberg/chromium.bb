@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import unittest
 import sys
 
@@ -62,7 +63,7 @@ class TestRunner(object):
     result.startTestRun()
     try:
       options_for_unittests.Push(args)
-      for _ in xrange(repeat_count):
+      for _ in range(repeat_count):
         test(result)
     finally:
       options_for_unittests.Pop()

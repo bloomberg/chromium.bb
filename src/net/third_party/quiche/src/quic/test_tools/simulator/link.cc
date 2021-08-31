@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/simulator/link.h"
+#include "quic/test_tools/simulator/link.h"
 
-#include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "absl/strings/str_format.h"
+#include "quic/test_tools/simulator/simulator.h"
 
 namespace quic {
 namespace simulator {
@@ -35,7 +36,7 @@ OneWayLink::QueuedPacket::QueuedPacket(QueuedPacket&& other) = default;
 OneWayLink::QueuedPacket::~QueuedPacket() {}
 
 void OneWayLink::AcceptPacket(std::unique_ptr<Packet> packet) {
-  DCHECK(TimeUntilAvailable().IsZero());
+  QUICHE_DCHECK(TimeUntilAvailable().IsZero());
   QuicTime::Delta transfer_time = bandwidth_.TransferTime(packet->size);
   next_write_at_ = clock_->Now() + transfer_time;
 
@@ -60,8 +61,8 @@ QuicTime::Delta OneWayLink::TimeUntilAvailable() {
 }
 
 void OneWayLink::Act() {
-  DCHECK(!packets_in_transit_.empty());
-  DCHECK(packets_in_transit_.front().dequeue_time >= clock_->Now());
+  QUICHE_DCHECK(!packets_in_transit_.empty());
+  QUICHE_DCHECK(packets_in_transit_.front().dequeue_time >= clock_->Now());
 
   sink_->AcceptPacket(std::move(packets_in_transit_.front().packet));
   packets_in_transit_.pop_front();
@@ -96,12 +97,12 @@ SymmetricLink::SymmetricLink(Simulator* simulator,
                              QuicBandwidth bandwidth,
                              QuicTime::Delta propagation_delay)
     : a_to_b_link_(simulator,
-                   quiche::QuicheStringPrintf("%s (A-to-B)", name.c_str()),
+                   absl::StrCat(name, " (A-to-B)"),
                    sink_b,
                    bandwidth,
                    propagation_delay),
       b_to_a_link_(simulator,
-                   quiche::QuicheStringPrintf("%s (B-to-A)", name.c_str()),
+                   absl::StrCat(name, " (B-to-A)"),
                    sink_a,
                    bandwidth,
                    propagation_delay) {}
@@ -111,9 +112,9 @@ SymmetricLink::SymmetricLink(Endpoint* endpoint_a,
                              QuicBandwidth bandwidth,
                              QuicTime::Delta propagation_delay)
     : SymmetricLink(endpoint_a->simulator(),
-                    quiche::QuicheStringPrintf("Link [%s]<->[%s]",
-                                               endpoint_a->name().c_str(),
-                                               endpoint_b->name().c_str()),
+                    absl::StrFormat("Link [%s]<->[%s]",
+                                    endpoint_a->name(),
+                                    endpoint_b->name()),
                     endpoint_a->GetRxPort(),
                     endpoint_b->GetRxPort(),
                     bandwidth,

@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/dom_distiller/core/url_constants.h"
@@ -28,8 +27,8 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
-#include "third_party/blink/public/platform/web_mixed_content_context_type.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/blink/public/mojom/loader/mixed_content.mojom.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -45,9 +44,7 @@ blink::SecurityStyle SecurityLevelToSecurityStyle(
     case security_state::NONE:
       return blink::SecurityStyle::kNeutral;
     case security_state::WARNING:
-      if (security_state::ShouldShowDangerTriangleForWarningLevel())
-        return blink::SecurityStyle::kInsecure;
-      return blink::SecurityStyle::kNeutral;
+      return blink::SecurityStyle::kInsecure;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
     case security_state::SECURE:
       return blink::SecurityStyle::kSecure;
@@ -113,7 +110,7 @@ void ExplainCertificateSecurity(
         l10n_util::GetStringUTF8(IDS_SHA1),
         l10n_util::GetStringUTF8(IDS_SHA1_DESCRIPTION),
         visible_security_state.certificate,
-        blink::WebMixedContentContextType::kNotMixedContent);
+        blink::mojom::MixedContentContextType::kNotMixedContent);
     // The impact of SHA1 on the certificate status depends on
     // the EnableSHA1ForLocalAnchors policy.
     if (visible_security_state.cert_status &
@@ -133,14 +130,14 @@ void ExplainCertificateSecurity(
             l10n_util::GetStringUTF8(IDS_SUBJECT_ALT_NAME_MISSING),
             l10n_util::GetStringUTF8(IDS_SUBJECT_ALT_NAME_MISSING_DESCRIPTION),
             visible_security_state.certificate,
-            blink::WebMixedContentContextType::kNotMixedContent));
+            blink::mojom::MixedContentContextType::kNotMixedContent));
   }
 
   bool is_cert_status_error =
       net::IsCertStatusError(visible_security_state.cert_status);
 
   if (is_cert_status_error) {
-    base::string16 error_string = base::UTF8ToUTF16(net::ErrorToString(
+    std::u16string error_string = base::UTF8ToUTF16(net::ErrorToString(
         net::MapCertStatusToNetError(visible_security_state.cert_status)));
 
     content::SecurityStyleExplanation explanation(
@@ -149,20 +146,20 @@ void ExplainCertificateSecurity(
         l10n_util::GetStringFUTF8(
             IDS_CERTIFICATE_CHAIN_ERROR_DESCRIPTION_FORMAT, error_string),
         visible_security_state.certificate,
-        blink::WebMixedContentContextType::kNotMixedContent);
+        blink::mojom::MixedContentContextType::kNotMixedContent);
 
     security_style_explanations->insecure_explanations.push_back(explanation);
   } else {
     // If the certificate does not have errors and is not using SHA1, then add
     // an explanation that the certificate is valid.
 
-    base::string16 issuer_name;
+    std::u16string issuer_name;
     if (visible_security_state.certificate) {
       // This results in the empty string if there is no relevant display name.
       issuer_name = base::UTF8ToUTF16(
           visible_security_state.certificate->issuer().GetDisplayName());
     } else {
-      issuer_name = base::string16();
+      issuer_name = std::u16string();
     }
     if (issuer_name.empty()) {
       issuer_name.assign(
@@ -177,7 +174,7 @@ void ExplainCertificateSecurity(
               l10n_util::GetStringFUTF8(
                   IDS_VALID_SERVER_CERTIFICATE_DESCRIPTION, issuer_name),
               visible_security_state.certificate,
-              blink::WebMixedContentContextType::kNotMixedContent));
+              blink::mojom::MixedContentContextType::kNotMixedContent));
     }
   }
 
@@ -227,16 +224,16 @@ void ExplainConnectionSecurity(
       visible_security_state.connection_status);
   net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
                                &is_tls13, cipher_suite);
-  const base::string16 protocol_name = base::ASCIIToUTF16(protocol);
-  const base::string16 cipher_name = base::ASCIIToUTF16(cipher);
-  const base::string16 cipher_full_name =
+  const std::u16string protocol_name = base::ASCIIToUTF16(protocol);
+  const std::u16string cipher_name = base::ASCIIToUTF16(cipher);
+  const std::u16string cipher_full_name =
       (mac == nullptr) ? cipher_name
                        : l10n_util::GetStringFUTF16(IDS_CIPHER_WITH_MAC,
                                                     base::ASCIIToUTF16(cipher),
                                                     base::ASCIIToUTF16(mac));
 
   // Include the key exchange group (previously known as curve) if specified.
-  base::string16 key_exchange_name;
+  std::u16string key_exchange_name;
   if (is_tls13) {
     key_exchange_name = base::ASCIIToUTF16(
         SSL_get_curve_name(visible_security_state.key_exchange_group));
@@ -320,6 +317,7 @@ void ExplainSafetyTipSecurity(
       NOTREACHED();
       return;
 
+    case security_state::SafetyTipStatus::kDigitalAssetLinkMatch:
     case security_state::SafetyTipStatus::kNone:
     case security_state::SafetyTipStatus::kUnknown:
       return;
@@ -353,7 +351,7 @@ void ExplainContentSecurity(
             l10n_util::GetStringUTF8(IDS_RESOURCE_SECURITY_TITLE),
             l10n_util::GetStringUTF8(IDS_MIXED_ACTIVE_CONTENT_SUMMARY),
             l10n_util::GetStringUTF8(IDS_MIXED_ACTIVE_CONTENT_DESCRIPTION),
-            nullptr, blink::WebMixedContentContextType::kBlockable));
+            nullptr, blink::mojom::MixedContentContextType::kBlockable));
   }
 
   if (visible_security_state.displayed_mixed_content) {
@@ -363,7 +361,8 @@ void ExplainContentSecurity(
             l10n_util::GetStringUTF8(IDS_RESOURCE_SECURITY_TITLE),
             l10n_util::GetStringUTF8(IDS_MIXED_PASSIVE_CONTENT_SUMMARY),
             l10n_util::GetStringUTF8(IDS_MIXED_PASSIVE_CONTENT_DESCRIPTION),
-            nullptr, blink::WebMixedContentContextType::kOptionallyBlockable));
+            nullptr,
+            blink::mojom::MixedContentContextType::kOptionallyBlockable));
   }
 
   if (visible_security_state.contained_mixed_form) {
@@ -456,10 +455,6 @@ std::unique_ptr<security_state::VisibleSecurityState> GetVisibleSecurityState(
   state->contained_mixed_form =
       !!(ssl.content_status &
          content::SSLStatus::DISPLAYED_FORM_WITH_INSECURE_ACTION);
-  state->connection_used_legacy_tls =
-      !!(net::ObsoleteSSLStatus(ssl.connection_status,
-                                ssl.peer_signature_algorithm) &
-         net::OBSOLETE_SSL_MASK_PROTOCOL);
 
   SSLStatusInputEventData* input_events =
       static_cast<SSLStatusInputEventData*>(ssl.user_data.get());
@@ -512,7 +507,7 @@ blink::SecurityStyle GetSecurityStyle(
     // Some origins are considered secure even if they're not cryptographic, so
     // display a more precise summary.
     if (security_level == security_state::NONE &&
-        blink::network_utils::IsOriginSecure(visible_security_state.url)) {
+        network::IsUrlPotentiallyTrustworthy(visible_security_state.url)) {
       security_style_explanations->summary =
           l10n_util::GetStringUTF8(IDS_NON_CRYPTO_SECURE_SUMMARY);
     }

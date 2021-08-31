@@ -2,25 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/http_decoder.h"
+#include "quic/core/http/http_decoder.h"
 
 #include <cstdint>
+#include <limits>
 
 #include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/http2/http2_constants.h"
-#include "net/third_party/quiche/src/quic/core/http/http_frames.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "http2/http2_constants.h"
+#include "quic/core/http/http_frames.h"
+#include "quic/core/quic_data_reader.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
-HttpDecoder::HttpDecoder(Visitor* visitor)
+HttpDecoder::HttpDecoder(Visitor* visitor) : HttpDecoder(visitor, Options()) {}
+HttpDecoder::HttpDecoder(Visitor* visitor, Options options)
     : visitor_(visitor),
+      allow_web_transport_stream_(options.allow_web_transport_stream),
       state_(STATE_READING_FRAME_TYPE),
       current_frame_type_(0),
       current_length_field_length_(0),
@@ -32,8 +36,17 @@ HttpDecoder::HttpDecoder(Visitor* visitor)
       current_push_id_length_(0),
       remaining_push_id_length_(0),
       error_(QUIC_NO_ERROR),
-      error_detail_("") {
-  DCHECK(visitor_);
+      error_detail_(""),
+      ignore_old_priority_update_(
+          GetQuicReloadableFlag(quic_ignore_old_priority_update_frame)),
+      error_on_http3_push_(GetQuicReloadableFlag(quic_error_on_http3_push)) {
+  QUICHE_DCHECK(visitor_);
+  if (ignore_old_priority_update_) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_ignore_old_priority_update_frame);
+  }
+  if (error_on_http3_push_) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_error_on_http3_push);
+  }
 }
 
 HttpDecoder::~HttpDecoder() {}
@@ -83,16 +96,16 @@ bool HttpDecoder::DecodeSettings(const char* data,
 }
 
 QuicByteCount HttpDecoder::ProcessInput(const char* data, QuicByteCount len) {
-  DCHECK_EQ(QUIC_NO_ERROR, error_);
-  DCHECK_NE(STATE_ERROR, state_);
+  QUICHE_DCHECK_EQ(QUIC_NO_ERROR, error_);
+  QUICHE_DCHECK_NE(STATE_ERROR, state_);
 
   QuicDataReader reader(data, len);
   bool continue_processing = true;
   while (continue_processing &&
          (reader.BytesRemaining() != 0 || state_ == STATE_FINISH_PARSING)) {
     // |continue_processing| must have been set to false upon error.
-    DCHECK_EQ(QUIC_NO_ERROR, error_);
-    DCHECK_NE(STATE_ERROR, state_);
+    QUICHE_DCHECK_EQ(QUIC_NO_ERROR, error_);
+    QUICHE_DCHECK_NE(STATE_ERROR, state_);
 
     switch (state_) {
       case STATE_READING_FRAME_TYPE:
@@ -105,12 +118,21 @@ QuicByteCount HttpDecoder::ProcessInput(const char* data, QuicByteCount len) {
         continue_processing = ReadFramePayload(&reader);
         break;
       case STATE_FINISH_PARSING:
-        continue_processing = FinishParsing();
+        continue_processing = FinishParsing(&reader);
+        break;
+      case STATE_PARSING_NO_LONGER_POSSIBLE:
+        continue_processing = false;
+        QUIC_BUG(HttpDecoder PARSING_NO_LONGER_POSSIBLE)
+            << "HttpDecoder called after an indefinite-length frame has been "
+               "received";
+        RaiseError(QUIC_INTERNAL_ERROR,
+                   "HttpDecoder called after an indefinite-length frame has "
+                   "been received");
         break;
       case STATE_ERROR:
         break;
       default:
-        QUIC_BUG << "Invalid state: " << state_;
+        QUIC_BUG(quic_bug_10411_1) << "Invalid state: " << state_;
     }
   }
 
@@ -118,11 +140,11 @@ QuicByteCount HttpDecoder::ProcessInput(const char* data, QuicByteCount len) {
 }
 
 bool HttpDecoder::ReadFrameType(QuicDataReader* reader) {
-  DCHECK_NE(0u, reader->BytesRemaining());
+  QUICHE_DCHECK_NE(0u, reader->BytesRemaining());
   if (current_type_field_length_ == 0) {
     // A new frame is coming.
     current_type_field_length_ = reader->PeekVarInt62Length();
-    DCHECK_NE(0u, current_type_field_length_);
+    QUICHE_DCHECK_NE(0u, current_type_field_length_);
     if (current_type_field_length_ > reader->BytesRemaining()) {
       // Buffer a new type field.
       remaining_type_field_length_ = current_type_field_length_;
@@ -131,7 +153,7 @@ bool HttpDecoder::ReadFrameType(QuicDataReader* reader) {
     }
     // The reader has all type data needed, so no need to buffer.
     bool success = reader->ReadVarInt62(&current_frame_type_);
-    DCHECK(success);
+    QUICHE_DCHECK(success);
   } else {
     // Buffer the existing type field.
     BufferFrameType(reader);
@@ -141,38 +163,48 @@ bool HttpDecoder::ReadFrameType(QuicDataReader* reader) {
     }
     QuicDataReader type_reader(type_buffer_.data(), current_type_field_length_);
     bool success = type_reader.ReadVarInt62(&current_frame_type_);
-    DCHECK(success);
+    QUICHE_DCHECK(success);
   }
 
-  if (GetQuicReloadableFlag(quic_reject_spdy_frames)) {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_reject_spdy_frames);
-    // https://tools.ietf.org/html/draft-ietf-quic-http-31#section-7.2.8
-    // specifies that the following frames are treated as errors.
+  // https://tools.ietf.org/html/draft-ietf-quic-http-31#section-7.2.8
+  // specifies that the following frames are treated as errors.
+  if (current_frame_type_ ==
+          static_cast<uint64_t>(http2::Http2FrameType::PRIORITY) ||
+      current_frame_type_ ==
+          static_cast<uint64_t>(http2::Http2FrameType::PING) ||
+      current_frame_type_ ==
+          static_cast<uint64_t>(http2::Http2FrameType::WINDOW_UPDATE) ||
+      current_frame_type_ ==
+          static_cast<uint64_t>(http2::Http2FrameType::CONTINUATION)) {
+    RaiseError(QUIC_HTTP_RECEIVE_SPDY_FRAME,
+               absl::StrCat("HTTP/2 frame received in a HTTP/3 connection: ",
+                            current_frame_type_));
+    return false;
+  }
+
+  if (error_on_http3_push_) {
     if (current_frame_type_ ==
-            static_cast<uint64_t>(http2::Http2FrameType::PRIORITY) ||
-        current_frame_type_ ==
-            static_cast<uint64_t>(http2::Http2FrameType::PING) ||
-        current_frame_type_ ==
-            static_cast<uint64_t>(http2::Http2FrameType::WINDOW_UPDATE) ||
-        current_frame_type_ ==
-            static_cast<uint64_t>(http2::Http2FrameType::CONTINUATION)) {
-      RaiseError(
-          QUIC_HTTP_RECEIVE_SPDY_FRAME,
-          quiche::QuicheStrCat("HTTP/2 frame received in a HTTP/3 connection: ",
-                               current_frame_type_));
+        static_cast<uint64_t>(HttpFrameType::CANCEL_PUSH)) {
+      RaiseError(QUIC_HTTP_FRAME_ERROR, "CANCEL_PUSH frame received.");
+      return false;
+    }
+    if (current_frame_type_ ==
+        static_cast<uint64_t>(HttpFrameType::PUSH_PROMISE)) {
+      RaiseError(QUIC_HTTP_FRAME_ERROR, "PUSH_PROMISE frame received.");
       return false;
     }
   }
+
   state_ = STATE_READING_FRAME_LENGTH;
   return true;
 }
 
 bool HttpDecoder::ReadFrameLength(QuicDataReader* reader) {
-  DCHECK_NE(0u, reader->BytesRemaining());
+  QUICHE_DCHECK_NE(0u, reader->BytesRemaining());
   if (current_length_field_length_ == 0) {
     // A new frame is coming.
     current_length_field_length_ = reader->PeekVarInt62Length();
-    DCHECK_NE(0u, current_length_field_length_);
+    QUICHE_DCHECK_NE(0u, current_length_field_length_);
     if (current_length_field_length_ > reader->BytesRemaining()) {
       // Buffer a new length field.
       remaining_length_field_length_ = current_length_field_length_;
@@ -181,7 +213,7 @@ bool HttpDecoder::ReadFrameLength(QuicDataReader* reader) {
     }
     // The reader has all length data needed, so no need to buffer.
     bool success = reader->ReadVarInt62(&current_frame_length_);
-    DCHECK(success);
+    QUICHE_DCHECK(success);
   } else {
     // Buffer the existing length field.
     BufferFrameLength(reader);
@@ -192,7 +224,20 @@ bool HttpDecoder::ReadFrameLength(QuicDataReader* reader) {
     QuicDataReader length_reader(length_buffer_.data(),
                                  current_length_field_length_);
     bool success = length_reader.ReadVarInt62(&current_frame_length_);
-    DCHECK(success);
+    QUICHE_DCHECK(success);
+  }
+
+  // WEBTRANSPORT_STREAM frames are indefinitely long, and thus require
+  // special handling; the number after the frame type is actually the
+  // WebTransport session ID, and not the length.
+  if (allow_web_transport_stream_ &&
+      current_frame_type_ ==
+          static_cast<uint64_t>(HttpFrameType::WEBTRANSPORT_STREAM)) {
+    visitor_->OnWebTransportStreamFrameType(
+        current_length_field_length_ + current_type_field_length_,
+        current_frame_length_);
+    state_ = STATE_PARSING_NO_LONGER_POSSIBLE;
+    return false;
   }
 
   if (current_frame_length_ > MaxFrameLength(current_frame_type_)) {
@@ -216,11 +261,19 @@ bool HttpDecoder::ReadFrameLength(QuicDataReader* reader) {
           visitor_->OnHeadersFrameStart(header_length, current_frame_length_);
       break;
     case static_cast<uint64_t>(HttpFrameType::CANCEL_PUSH):
+      if (error_on_http3_push_) {
+        QUICHE_NOTREACHED();
+        break;
+      }
       break;
     case static_cast<uint64_t>(HttpFrameType::SETTINGS):
       continue_processing = visitor_->OnSettingsFrameStart(header_length);
       break;
     case static_cast<uint64_t>(HttpFrameType::PUSH_PROMISE):
+      if (error_on_http3_push_) {
+        QUICHE_NOTREACHED();
+        break;
+      }
       // This edge case needs to be handled here, because ReadFramePayload()
       // does not get called if |current_frame_length_| is zero.
       if (current_frame_length_ == 0) {
@@ -235,16 +288,20 @@ bool HttpDecoder::ReadFrameLength(QuicDataReader* reader) {
     case static_cast<uint64_t>(HttpFrameType::MAX_PUSH_ID):
       break;
     case static_cast<uint64_t>(HttpFrameType::PRIORITY_UPDATE):
-      continue_processing = visitor_->OnPriorityUpdateFrameStart(header_length);
-      break;
-    case static_cast<uint64_t>(HttpFrameType::PRIORITY_UPDATE_REQUEST_STREAM):
-      if (GetQuicReloadableFlag(quic_new_priority_update_frame)) {
-        QUIC_CODE_COUNT_N(quic_new_priority_update_frame, 2, 2);
+      if (ignore_old_priority_update_) {
+        continue_processing = visitor_->OnUnknownFrameStart(
+            current_frame_type_, header_length, current_frame_length_);
+      } else {
         continue_processing =
             visitor_->OnPriorityUpdateFrameStart(header_length);
-        break;
       }
-      ABSL_FALLTHROUGH_INTENDED;
+      break;
+    case static_cast<uint64_t>(HttpFrameType::PRIORITY_UPDATE_REQUEST_STREAM):
+      continue_processing = visitor_->OnPriorityUpdateFrameStart(header_length);
+      break;
+    case static_cast<uint64_t>(HttpFrameType::ACCEPT_CH):
+      continue_processing = visitor_->OnAcceptChFrameStart(header_length);
+      break;
     default:
       continue_processing = visitor_->OnUnknownFrameStart(
           current_frame_type_, header_length, current_frame_length_);
@@ -258,8 +315,8 @@ bool HttpDecoder::ReadFrameLength(QuicDataReader* reader) {
 }
 
 bool HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
-  DCHECK_NE(0u, reader->BytesRemaining());
-  DCHECK_NE(0u, remaining_frame_length_);
+  QUICHE_DCHECK_NE(0u, reader->BytesRemaining());
+  QUICHE_DCHECK_NE(0u, remaining_frame_length_);
 
   bool continue_processing = true;
 
@@ -269,8 +326,8 @@ bool HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
           remaining_frame_length_, reader->BytesRemaining());
       absl::string_view payload;
       bool success = reader->ReadStringPiece(&payload, bytes_to_read);
-      DCHECK(success);
-      DCHECK(!payload.empty());
+      QUICHE_DCHECK(success);
+      QUICHE_DCHECK(!payload.empty());
       continue_processing = visitor_->OnDataFramePayload(payload);
       remaining_frame_length_ -= payload.length();
       break;
@@ -280,25 +337,33 @@ bool HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
           remaining_frame_length_, reader->BytesRemaining());
       absl::string_view payload;
       bool success = reader->ReadStringPiece(&payload, bytes_to_read);
-      DCHECK(success);
-      DCHECK(!payload.empty());
+      QUICHE_DCHECK(success);
+      QUICHE_DCHECK(!payload.empty());
       continue_processing = visitor_->OnHeadersFramePayload(payload);
       remaining_frame_length_ -= payload.length();
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::CANCEL_PUSH): {
-      BufferFramePayload(reader);
+      if (error_on_http3_push_) {
+        QUICHE_NOTREACHED();
+      } else {
+        continue_processing = BufferOrParsePayload(reader);
+      }
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::SETTINGS): {
-      BufferFramePayload(reader);
+      continue_processing = BufferOrParsePayload(reader);
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::PUSH_PROMISE): {
+      if (error_on_http3_push_) {
+        QUICHE_NOTREACHED();
+        break;
+      }
       PushId push_id;
       if (current_frame_length_ == remaining_frame_length_) {
         // A new Push Promise frame just arrived.
-        DCHECK_EQ(0u, current_push_id_length_);
+        QUICHE_DCHECK_EQ(0u, current_push_id_length_);
         current_push_id_length_ = reader->PeekVarInt62Length();
         if (current_push_id_length_ > remaining_frame_length_) {
           RaiseError(QUIC_HTTP_FRAME_ERROR,
@@ -307,13 +372,13 @@ bool HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
         }
         if (current_push_id_length_ > reader->BytesRemaining()) {
           // Not all bytes of push id is present yet, buffer push id.
-          DCHECK_EQ(0u, remaining_push_id_length_);
+          QUICHE_DCHECK_EQ(0u, remaining_push_id_length_);
           remaining_push_id_length_ = current_push_id_length_;
           BufferPushId(reader);
           break;
         }
         bool success = reader->ReadVarInt62(&push_id);
-        DCHECK(success);
+        QUICHE_DCHECK(success);
         remaining_frame_length_ -= current_push_id_length_;
         if (!visitor_->OnPushPromiseFramePushId(
                 push_id, current_push_id_length_,
@@ -333,7 +398,7 @@ bool HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
                                       current_push_id_length_);
 
         bool success = push_id_reader.ReadVarInt62(&push_id);
-        DCHECK(success);
+        QUICHE_DCHECK(success);
         if (!visitor_->OnPushPromiseFramePushId(
                 push_id, current_push_id_length_,
                 current_frame_length_ - current_push_id_length_)) {
@@ -345,7 +410,7 @@ bool HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
       }
 
       // Read Push Promise headers.
-      DCHECK_LT(remaining_frame_length_, current_frame_length_);
+      QUICHE_DCHECK_LT(remaining_frame_length_, current_frame_length_);
       QuicByteCount bytes_to_read = std::min<QuicByteCount>(
           remaining_frame_length_, reader->BytesRemaining());
       if (bytes_to_read == 0) {
@@ -353,57 +418,52 @@ bool HttpDecoder::ReadFramePayload(QuicDataReader* reader) {
       }
       absl::string_view payload;
       bool success = reader->ReadStringPiece(&payload, bytes_to_read);
-      DCHECK(success);
-      DCHECK(!payload.empty());
+      QUICHE_DCHECK(success);
+      QUICHE_DCHECK(!payload.empty());
       continue_processing = visitor_->OnPushPromiseFramePayload(payload);
       remaining_frame_length_ -= payload.length();
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::GOAWAY): {
-      BufferFramePayload(reader);
+      continue_processing = BufferOrParsePayload(reader);
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::MAX_PUSH_ID): {
-      BufferFramePayload(reader);
+      continue_processing = BufferOrParsePayload(reader);
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::PRIORITY_UPDATE): {
-      // TODO(bnc): Avoid buffering if the entire frame is present, and
-      // instead parse directly out of |reader|.
-      BufferFramePayload(reader);
+      if (ignore_old_priority_update_) {
+        continue_processing = HandleUnknownFramePayload(reader);
+      } else {
+        continue_processing = BufferOrParsePayload(reader);
+      }
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::PRIORITY_UPDATE_REQUEST_STREAM): {
-      if (GetQuicReloadableFlag(quic_new_priority_update_frame)) {
-        // TODO(bnc): Avoid buffering if the entire frame is present, and
-        // instead parse directly out of |reader|.
-        BufferFramePayload(reader);
-        break;
-      }
-      ABSL_FALLTHROUGH_INTENDED;
+      continue_processing = BufferOrParsePayload(reader);
+      break;
+    }
+    case static_cast<uint64_t>(HttpFrameType::ACCEPT_CH): {
+      continue_processing = BufferOrParsePayload(reader);
+      break;
     }
     default: {
-      QuicByteCount bytes_to_read = std::min<QuicByteCount>(
-          remaining_frame_length_, reader->BytesRemaining());
-      absl::string_view payload;
-      bool success = reader->ReadStringPiece(&payload, bytes_to_read);
-      DCHECK(success);
-      DCHECK(!payload.empty());
-      continue_processing = visitor_->OnUnknownFramePayload(payload);
-      remaining_frame_length_ -= payload.length();
+      continue_processing = HandleUnknownFramePayload(reader);
       break;
     }
   }
 
-  if (remaining_frame_length_ == 0) {
+  // BufferOrParsePayload() may have advanced |state_|.
+  if (state_ == STATE_READING_FRAME_PAYLOAD && remaining_frame_length_ == 0) {
     state_ = STATE_FINISH_PARSING;
   }
 
   return continue_processing;
 }
 
-bool HttpDecoder::FinishParsing() {
-  DCHECK_EQ(0u, remaining_frame_length_);
+bool HttpDecoder::FinishParsing(QuicDataReader* reader) {
+  QUICHE_DCHECK_EQ(0u, remaining_frame_length_);
 
   bool continue_processing = true;
 
@@ -417,93 +477,65 @@ bool HttpDecoder::FinishParsing() {
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::CANCEL_PUSH): {
-      CancelPushFrame frame;
-      QuicDataReader reader(buffer_.data(), current_frame_length_);
-      if (!reader.ReadVarInt62(&frame.push_id)) {
-        RaiseError(QUIC_HTTP_FRAME_ERROR,
-                   "Unable to read CANCEL_PUSH push_id.");
-        return false;
+      if (error_on_http3_push_) {
+        QUICHE_NOTREACHED();
+      } else {
+        // If frame payload is not empty, FinishParsing() is skipped.
+        QUICHE_DCHECK_EQ(0u, current_frame_length_);
+        continue_processing = BufferOrParsePayload(reader);
       }
-      if (!reader.IsDoneReading()) {
-        RaiseError(QUIC_HTTP_FRAME_ERROR,
-                   "Superfluous data in CANCEL_PUSH frame.");
-        return false;
-      }
-      continue_processing = visitor_->OnCancelPushFrame(frame);
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::SETTINGS): {
-      SettingsFrame frame;
-      QuicDataReader reader(buffer_.data(), current_frame_length_);
-      if (!ParseSettingsFrame(&reader, &frame)) {
-        return false;
-      }
-      continue_processing = visitor_->OnSettingsFrame(frame);
+      // If frame payload is not empty, FinishParsing() is skipped.
+      QUICHE_DCHECK_EQ(0u, current_frame_length_);
+      continue_processing = BufferOrParsePayload(reader);
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::PUSH_PROMISE): {
-      continue_processing = visitor_->OnPushPromiseFrameEnd();
+      if (error_on_http3_push_) {
+        QUICHE_NOTREACHED();
+      } else {
+        continue_processing = visitor_->OnPushPromiseFrameEnd();
+      }
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::GOAWAY): {
-      QuicDataReader reader(buffer_.data(), current_frame_length_);
-      GoAwayFrame frame;
-      if (!reader.ReadVarInt62(&frame.id)) {
-        RaiseError(QUIC_HTTP_FRAME_ERROR, "Unable to read GOAWAY ID.");
-        return false;
-      }
-      if (!reader.IsDoneReading()) {
-        RaiseError(QUIC_HTTP_FRAME_ERROR, "Superfluous data in GOAWAY frame.");
-        return false;
-      }
-      continue_processing = visitor_->OnGoAwayFrame(frame);
+      // If frame payload is not empty, FinishParsing() is skipped.
+      QUICHE_DCHECK_EQ(0u, current_frame_length_);
+      continue_processing = BufferOrParsePayload(reader);
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::MAX_PUSH_ID): {
-      QuicDataReader reader(buffer_.data(), current_frame_length_);
-      MaxPushIdFrame frame;
-      if (!reader.ReadVarInt62(&frame.push_id)) {
-        RaiseError(QUIC_HTTP_FRAME_ERROR,
-                   "Unable to read MAX_PUSH_ID push_id.");
-        return false;
-      }
-      if (!reader.IsDoneReading()) {
-        RaiseError(QUIC_HTTP_FRAME_ERROR,
-                   "Superfluous data in MAX_PUSH_ID frame.");
-        return false;
-      }
-      continue_processing = visitor_->OnMaxPushIdFrame(frame);
+      // If frame payload is not empty, FinishParsing() is skipped.
+      QUICHE_DCHECK_EQ(0u, current_frame_length_);
+      continue_processing = BufferOrParsePayload(reader);
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::PRIORITY_UPDATE): {
-      // TODO(bnc): Avoid buffering if the entire frame is present, and
-      // instead parse directly out of |reader|.
-      PriorityUpdateFrame frame;
-      QuicDataReader reader(buffer_.data(), current_frame_length_);
-      if (!ParsePriorityUpdateFrame(&reader, &frame)) {
-        return false;
+      if (ignore_old_priority_update_) {
+        continue_processing = visitor_->OnUnknownFrameEnd();
+      } else {
+        // If frame payload is not empty, FinishParsing() is skipped.
+        QUICHE_DCHECK_EQ(0u, current_frame_length_);
+        continue_processing = BufferOrParsePayload(reader);
       }
-      continue_processing = visitor_->OnPriorityUpdateFrame(frame);
       break;
     }
     case static_cast<uint64_t>(HttpFrameType::PRIORITY_UPDATE_REQUEST_STREAM): {
-      if (GetQuicReloadableFlag(quic_new_priority_update_frame)) {
-        // TODO(bnc): Avoid buffering if the entire frame is present, and
-        // instead parse directly out of |reader|.
-        PriorityUpdateFrame frame;
-        QuicDataReader reader(buffer_.data(), current_frame_length_);
-        if (!ParseNewPriorityUpdateFrame(&reader, &frame)) {
-          return false;
-        }
-        continue_processing = visitor_->OnPriorityUpdateFrame(frame);
-        break;
-      }
-      ABSL_FALLTHROUGH_INTENDED;
-    }
-    default: {
-      continue_processing = visitor_->OnUnknownFrameEnd();
+      // If frame payload is not empty, FinishParsing() is skipped.
+      QUICHE_DCHECK_EQ(0u, current_frame_length_);
+      continue_processing = BufferOrParsePayload(reader);
       break;
     }
+    case static_cast<uint64_t>(HttpFrameType::ACCEPT_CH): {
+      // If frame payload is not empty, FinishParsing() is skipped.
+      QUICHE_DCHECK_EQ(0u, current_frame_length_);
+      continue_processing = BufferOrParsePayload(reader);
+      break;
+    }
+    default:
+      continue_processing = visitor_->OnUnknownFrameEnd();
   }
 
   current_length_field_length_ = 0;
@@ -512,12 +544,23 @@ bool HttpDecoder::FinishParsing() {
   return continue_processing;
 }
 
+bool HttpDecoder::HandleUnknownFramePayload(QuicDataReader* reader) {
+  QuicByteCount bytes_to_read = std::min<QuicByteCount>(
+      remaining_frame_length_, reader->BytesRemaining());
+  absl::string_view payload;
+  bool success = reader->ReadStringPiece(&payload, bytes_to_read);
+  QUICHE_DCHECK(success);
+  QUICHE_DCHECK(!payload.empty());
+  remaining_frame_length_ -= payload.length();
+  return visitor_->OnUnknownFramePayload(payload);
+}
+
 void HttpDecoder::DiscardFramePayload(QuicDataReader* reader) {
   QuicByteCount bytes_to_read = std::min<QuicByteCount>(
       remaining_frame_length_, reader->BytesRemaining());
   absl::string_view payload;
   bool success = reader->ReadStringPiece(&payload, bytes_to_read);
-  DCHECK(success);
+  QUICHE_DCHECK(success);
   remaining_frame_length_ -= payload.length();
   if (remaining_frame_length_ == 0) {
     state_ = STATE_READING_FRAME_TYPE;
@@ -526,18 +569,138 @@ void HttpDecoder::DiscardFramePayload(QuicDataReader* reader) {
   }
 }
 
-void HttpDecoder::BufferFramePayload(QuicDataReader* reader) {
-  if (current_frame_length_ == remaining_frame_length_) {
-    buffer_.erase(buffer_.size());
-    buffer_.reserve(current_frame_length_);
+bool HttpDecoder::BufferOrParsePayload(QuicDataReader* reader) {
+  QUICHE_DCHECK_EQ(current_frame_length_,
+                   buffer_.size() + remaining_frame_length_);
+
+  bool continue_processing = true;
+
+  if (buffer_.empty() && reader->BytesRemaining() >= current_frame_length_) {
+    // |*reader| contains entire payload, which might be empty.
+    remaining_frame_length_ = 0;
+    QuicDataReader current_payload_reader(reader->PeekRemainingPayload().data(),
+                                          current_frame_length_);
+    continue_processing = ParseEntirePayload(&current_payload_reader);
+    reader->Seek(current_frame_length_);
+  } else {
+    if (buffer_.empty()) {
+      buffer_.reserve(current_frame_length_);
+    }
+
+    // Buffer as much of the payload as |*reader| contains.
+    QuicByteCount bytes_to_read = std::min<QuicByteCount>(
+        remaining_frame_length_, reader->BytesRemaining());
+    absl::StrAppend(&buffer_, reader->PeekRemainingPayload().substr(
+                                  /* pos = */ 0, bytes_to_read));
+    reader->Seek(bytes_to_read);
+    remaining_frame_length_ -= bytes_to_read;
+
+    QUICHE_DCHECK_EQ(current_frame_length_,
+                     buffer_.size() + remaining_frame_length_);
+
+    if (remaining_frame_length_ > 0) {
+      QUICHE_DCHECK(reader->IsDoneReading());
+      return true;
+    }
+
+    QuicDataReader buffer_reader(buffer_);
+    continue_processing = ParseEntirePayload(&buffer_reader);
+    buffer_.clear();
   }
-  QuicByteCount bytes_to_read = std::min<QuicByteCount>(
-      remaining_frame_length_, reader->BytesRemaining());
-  bool success = reader->ReadBytes(
-      &(buffer_[0]) + current_frame_length_ - remaining_frame_length_,
-      bytes_to_read);
-  DCHECK(success);
-  remaining_frame_length_ -= bytes_to_read;
+
+  current_length_field_length_ = 0;
+  current_type_field_length_ = 0;
+  state_ = STATE_READING_FRAME_TYPE;
+  return continue_processing;
+}
+
+bool HttpDecoder::ParseEntirePayload(QuicDataReader* reader) {
+  QUICHE_DCHECK_EQ(current_frame_length_, reader->BytesRemaining());
+  QUICHE_DCHECK_EQ(0u, remaining_frame_length_);
+
+  switch (current_frame_type_) {
+    case static_cast<uint64_t>(HttpFrameType::CANCEL_PUSH): {
+      if (error_on_http3_push_) {
+        QUICHE_NOTREACHED();
+        return false;
+      }
+      CancelPushFrame frame;
+      if (!reader->ReadVarInt62(&frame.push_id)) {
+        RaiseError(QUIC_HTTP_FRAME_ERROR,
+                   "Unable to read CANCEL_PUSH push_id.");
+        return false;
+      }
+      if (!reader->IsDoneReading()) {
+        RaiseError(QUIC_HTTP_FRAME_ERROR,
+                   "Superfluous data in CANCEL_PUSH frame.");
+        return false;
+      }
+      return visitor_->OnCancelPushFrame(frame);
+    }
+    case static_cast<uint64_t>(HttpFrameType::SETTINGS): {
+      SettingsFrame frame;
+      if (!ParseSettingsFrame(reader, &frame)) {
+        return false;
+      }
+      return visitor_->OnSettingsFrame(frame);
+    }
+    case static_cast<uint64_t>(HttpFrameType::GOAWAY): {
+      GoAwayFrame frame;
+      if (!reader->ReadVarInt62(&frame.id)) {
+        RaiseError(QUIC_HTTP_FRAME_ERROR, "Unable to read GOAWAY ID.");
+        return false;
+      }
+      if (!reader->IsDoneReading()) {
+        RaiseError(QUIC_HTTP_FRAME_ERROR, "Superfluous data in GOAWAY frame.");
+        return false;
+      }
+      return visitor_->OnGoAwayFrame(frame);
+    }
+    case static_cast<uint64_t>(HttpFrameType::MAX_PUSH_ID): {
+      MaxPushIdFrame frame;
+      if (!reader->ReadVarInt62(&frame.push_id)) {
+        RaiseError(QUIC_HTTP_FRAME_ERROR,
+                   "Unable to read MAX_PUSH_ID push_id.");
+        return false;
+      }
+      if (!reader->IsDoneReading()) {
+        RaiseError(QUIC_HTTP_FRAME_ERROR,
+                   "Superfluous data in MAX_PUSH_ID frame.");
+        return false;
+      }
+      return visitor_->OnMaxPushIdFrame(frame);
+    }
+    case static_cast<uint64_t>(HttpFrameType::PRIORITY_UPDATE): {
+      if (ignore_old_priority_update_) {
+        QUICHE_NOTREACHED();
+        return false;
+      } else {
+        PriorityUpdateFrame frame;
+        if (!ParsePriorityUpdateFrame(reader, &frame)) {
+          return false;
+        }
+        return visitor_->OnPriorityUpdateFrame(frame);
+      }
+    }
+    case static_cast<uint64_t>(HttpFrameType::PRIORITY_UPDATE_REQUEST_STREAM): {
+      PriorityUpdateFrame frame;
+      if (!ParseNewPriorityUpdateFrame(reader, &frame)) {
+        return false;
+      }
+      return visitor_->OnPriorityUpdateFrame(frame);
+    }
+    case static_cast<uint64_t>(HttpFrameType::ACCEPT_CH): {
+      AcceptChFrame frame;
+      if (!ParseAcceptChFrame(reader, &frame)) {
+        return false;
+      }
+      return visitor_->OnAcceptChFrame(frame);
+    }
+    default:
+      // Only above frame types are parsed by ParseEntirePayload().
+      QUICHE_NOTREACHED();
+      return false;
+  }
 }
 
 void HttpDecoder::BufferFrameLength(QuicDataReader* reader) {
@@ -547,7 +710,7 @@ void HttpDecoder::BufferFrameLength(QuicDataReader* reader) {
       reader->ReadBytes(length_buffer_.data() + current_length_field_length_ -
                             remaining_length_field_length_,
                         bytes_to_read);
-  DCHECK(success);
+  QUICHE_DCHECK(success);
   remaining_length_field_length_ -= bytes_to_read;
 }
 
@@ -558,19 +721,19 @@ void HttpDecoder::BufferFrameType(QuicDataReader* reader) {
       reader->ReadBytes(type_buffer_.data() + current_type_field_length_ -
                             remaining_type_field_length_,
                         bytes_to_read);
-  DCHECK(success);
+  QUICHE_DCHECK(success);
   remaining_type_field_length_ -= bytes_to_read;
 }
 
 void HttpDecoder::BufferPushId(QuicDataReader* reader) {
-  DCHECK_LE(remaining_push_id_length_, current_frame_length_);
+  QUICHE_DCHECK_LE(remaining_push_id_length_, current_frame_length_);
   QuicByteCount bytes_to_read = std::min<QuicByteCount>(
       reader->BytesRemaining(), remaining_push_id_length_);
   bool success =
       reader->ReadBytes(push_id_buffer_.data() + current_push_id_length_ -
                             remaining_push_id_length_,
                         bytes_to_read);
-  DCHECK(success);
+  QUICHE_DCHECK(success);
   remaining_push_id_length_ -= bytes_to_read;
   remaining_frame_length_ -= bytes_to_read;
 }
@@ -651,9 +814,30 @@ bool HttpDecoder::ParseNewPriorityUpdateFrame(QuicDataReader* reader,
   return true;
 }
 
+bool HttpDecoder::ParseAcceptChFrame(QuicDataReader* reader,
+                                     AcceptChFrame* frame) {
+  absl::string_view origin;
+  absl::string_view value;
+  while (!reader->IsDoneReading()) {
+    if (!reader->ReadStringPieceVarInt62(&origin)) {
+      RaiseError(QUIC_HTTP_FRAME_ERROR, "Unable to read ACCEPT_CH origin.");
+      return false;
+    }
+    if (!reader->ReadStringPieceVarInt62(&value)) {
+      RaiseError(QUIC_HTTP_FRAME_ERROR, "Unable to read ACCEPT_CH value.");
+      return false;
+    }
+    // Copy data.
+    frame->entries.push_back({std::string(origin.data(), origin.size()),
+                              std::string(value.data(), value.size())});
+  }
+  return true;
+}
+
 QuicByteCount HttpDecoder::MaxFrameLength(uint64_t frame_type) {
   switch (frame_type) {
     case static_cast<uint64_t>(HttpFrameType::CANCEL_PUSH):
+      // TODO(b/171463363): Remove.
       return sizeof(PushId);
     case static_cast<uint64_t>(HttpFrameType::SETTINGS):
       // This limit is arbitrary.
@@ -661,11 +845,15 @@ QuicByteCount HttpDecoder::MaxFrameLength(uint64_t frame_type) {
     case static_cast<uint64_t>(HttpFrameType::GOAWAY):
       return VARIABLE_LENGTH_INTEGER_LENGTH_8;
     case static_cast<uint64_t>(HttpFrameType::MAX_PUSH_ID):
+      // TODO(b/171463363): Remove.
       return sizeof(PushId);
     case static_cast<uint64_t>(HttpFrameType::PRIORITY_UPDATE):
       // This limit is arbitrary.
       return 1024 * 1024;
     case static_cast<uint64_t>(HttpFrameType::PRIORITY_UPDATE_REQUEST_STREAM):
+      // This limit is arbitrary.
+      return 1024 * 1024;
+    case static_cast<uint64_t>(HttpFrameType::ACCEPT_CH):
       // This limit is arbitrary.
       return 1024 * 1024;
     default:

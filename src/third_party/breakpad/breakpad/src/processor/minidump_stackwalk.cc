@@ -57,6 +57,7 @@ namespace {
 struct Options {
   bool machine_readable;
   bool output_stack_contents;
+  bool output_requesting_thread_only;
 
   string minidump_file;
   std::vector<string> symbol_paths;
@@ -111,7 +112,8 @@ bool PrintMinidumpProcess(const Options& options) {
   if (options.machine_readable) {
     PrintProcessStateMachineReadable(process_state);
   } else {
-    PrintProcessState(process_state, options.output_stack_contents, &resolver);
+    PrintProcessState(process_state, options.output_stack_contents,
+                      options.output_requesting_thread_only, &resolver);
   }
 
   return true;
@@ -128,7 +130,8 @@ static void Usage(int argc, const char *argv[], bool error) {
           "Options:\n"
           "\n"
           "  -m         Output in machine-readable format\n"
-          "  -s         Output stack contents\n",
+          "  -s         Output stack contents\n"
+          "  -c         Output thread that causes crash or dump only\n",
           google_breakpad::BaseName(argv[0]).c_str());
 }
 
@@ -137,14 +140,18 @@ static void SetupOptions(int argc, const char *argv[], Options* options) {
 
   options->machine_readable = false;
   options->output_stack_contents = false;
+  options->output_requesting_thread_only = false;
 
-  while ((ch = getopt(argc, (char * const*)argv, "hms")) != -1) {
+  while ((ch = getopt(argc, (char * const*)argv, "chms")) != -1) {
     switch (ch) {
       case 'h':
         Usage(argc, argv, false);
         exit(0);
         break;
 
+      case 'c':
+        options->output_requesting_thread_only = true;
+        break;
       case 'm':
         options->machine_readable = true;
         break;

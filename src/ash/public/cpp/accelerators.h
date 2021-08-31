@@ -14,10 +14,10 @@
 
 namespace ui {
 class Accelerator;
-class AcceleratorHistory;
 }
 
 namespace ash {
+class AcceleratorHistory;
 
 // See documentation in ash/accelerators/accelerator_table.h.
 
@@ -26,12 +26,12 @@ enum AcceleratorAction {
   BRIGHTNESS_UP,
   CYCLE_BACKWARD_MRU,
   CYCLE_FORWARD_MRU,
-  DESKS_ACTIVATE_DESK,
-  DESKS_MOVE_ACTIVE_ITEM,
+  DESKS_ACTIVATE_DESK_LEFT,
+  DESKS_ACTIVATE_DESK_RIGHT,
+  DESKS_MOVE_ACTIVE_ITEM_LEFT,
+  DESKS_MOVE_ACTIVE_ITEM_RIGHT,
   DESKS_NEW_DESK,
   DESKS_REMOVE_CURRENT_DESK,
-  DEV_ADD_REMOVE_DISPLAY,
-  DEV_TOGGLE_UNIFIED_DESKTOP,
   DISABLE_CAPS_LOCK,
   EXIT,
   FOCUS_NEXT_PANE,
@@ -66,7 +66,9 @@ enum AcceleratorAction {
   NEW_INCOGNITO_WINDOW,
   NEW_TAB,
   NEW_WINDOW,
+  OPEN_CALCULATOR,
   OPEN_CROSH,
+  OPEN_DIAGNOSTICS,
   OPEN_FEEDBACK_PAGE,
   OPEN_FILE_MANAGER,
   OPEN_GET_HELP,
@@ -80,6 +82,7 @@ enum AcceleratorAction {
   SCALE_UI_DOWN,
   SCALE_UI_RESET,
   SCALE_UI_UP,
+  SHOW_EMOJI_PICKER,
   SHOW_IME_MENU_BUBBLE,
   SHOW_SHORTCUT_VIEWER,
   SHOW_STYLUS_TOOLS,
@@ -99,6 +102,7 @@ enum AcceleratorAction {
   TOGGLE_APP_LIST,
   TOGGLE_APP_LIST_FULLSCREEN,
   TOGGLE_CAPS_LOCK,
+  TOGGLE_CLIPBOARD_HISTORY,
   TOGGLE_DICTATION,
   TOGGLE_DOCKED_MAGNIFIER,
   TOGGLE_FULLSCREEN,
@@ -128,7 +132,6 @@ enum AcceleratorAction {
   DEBUG_PRINT_VIEW_HIERARCHY,
   DEBUG_PRINT_WINDOW_HIERARCHY,
   DEBUG_SHOW_TOAST,
-  DEBUG_TOGGLE_DEVICE_SCALE_FACTOR,
   DEBUG_TOGGLE_SHOW_DEBUG_BORDERS,
   DEBUG_TOGGLE_SHOW_FPS_COUNTER,
   DEBUG_TOGGLE_SHOW_PAINT_RECTS,
@@ -138,6 +141,11 @@ enum AcceleratorAction {
   DEBUG_TOGGLE_WALLPAPER_MODE,
   DEBUG_TRIGGER_CRASH,  // Intentionally crash the ash process.
   DEBUG_TOGGLE_HUD_DISPLAY,
+  DEV_ADD_REMOVE_DISPLAY,
+  // Different than TOGGLE_APP_LIST to ignore search-as-modifier-key rules for
+  // enabling the accelerator.
+  DEV_TOGGLE_APP_LIST,
+  DEV_TOGGLE_UNIFIED_DESKTOP,
 };
 
 struct AcceleratorData {
@@ -165,6 +173,12 @@ ASH_PUBLIC_EXPORT extern const AcceleratorData
     kDisableWithNewMappingAcceleratorData[];
 ASH_PUBLIC_EXPORT extern const size_t
     kDisableWithNewMappingAcceleratorDataLength;
+
+// Accelerators that are enabled with positional shortcut mapping.
+ASH_PUBLIC_EXPORT extern const AcceleratorData
+    kEnableWithPositionalAcceleratorsData[];
+ASH_PUBLIC_EXPORT extern const size_t
+    kEnableWithPositionalAcceleratorsDataLength;
 
 // The public-facing interface for accelerator handling, which is Ash's duty to
 // implement.
@@ -206,11 +220,19 @@ class ASH_PUBLIC_EXPORT AcceleratorController {
   virtual bool IsRegistered(const ui::Accelerator& accelerator) const = 0;
 
   // Returns the accelerator histotry.
-  virtual ui::AcceleratorHistory* GetAcceleratorHistory() = 0;
+  virtual AcceleratorHistory* GetAcceleratorHistory() = 0;
 
  protected:
   AcceleratorController();
   virtual ~AcceleratorController();
+};
+
+// The public facing interface for AcceleratorHistory, which is implemented in
+// ash.
+class ASH_PUBLIC_EXPORT AcceleratorHistory {
+ public:
+  // Stores |accelerator| if it's different than the currently stored one.
+  virtual void StoreCurrentAccelerator(const ui::Accelerator& accelerator) = 0;
 };
 
 }  // namespace ash

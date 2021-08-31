@@ -29,7 +29,7 @@
 
 #include "src/core/lib/gpr/env.h"
 #include "src/core/lib/iomgr/iomgr.h"
-#include "src/core/lib/security/security_connector/ssl_utils.h"
+#include "src/core/lib/security/security_connector/ssl_utils_config.h"
 #include "test/core/util/port.h"
 #include "test/core/util/subprocess.h"
 #include "test/core/util/test_config.h"
@@ -81,7 +81,7 @@ static void test_get(int port) {
   req.handshaker = &grpc_httpcli_ssl;
 
   grpc_http_response response;
-  memset(&response, 0, sizeof(response));
+  response = {};
   grpc_resource_quota* resource_quota = grpc_resource_quota_create("test_get");
   grpc_httpcli_get(
       &g_context, &g_pops, resource_quota, &req, n_seconds_time(15),
@@ -121,7 +121,7 @@ static void test_post(int port) {
   req.handshaker = &grpc_httpcli_ssl;
 
   grpc_http_response response;
-  memset(&response, 0, sizeof(response));
+  response = {};
   grpc_resource_quota* resource_quota = grpc_resource_quota_create("test_post");
   grpc_httpcli_post(
       &g_context, &g_pops, resource_quota, &req, "hello", 5, n_seconds_time(15),
@@ -143,7 +143,7 @@ static void test_post(int port) {
   grpc_http_response_destroy(&response);
 }
 
-static void destroy_pops(void* p, grpc_error* error) {
+static void destroy_pops(void* p, grpc_error* /*error*/) {
   grpc_pollset_destroy(
       grpc_polling_entity_pollset(static_cast<grpc_polling_entity*>(p)));
 }
@@ -192,7 +192,7 @@ int main(int argc, char** argv) {
   args[1 + arg_shift] = const_cast<char*>("--port");
   gpr_asprintf(&args[2 + arg_shift], "%d", port);
   args[3 + arg_shift] = const_cast<char*>("--ssl");
-  server = gpr_subprocess_create(4 + arg_shift, (const char**)args);
+  server = gpr_subprocess_create(4 + arg_shift, const_cast<const char**>(args));
   GPR_ASSERT(server);
   gpr_free(args[0]);
   if (arg_shift) gpr_free(args[1]);

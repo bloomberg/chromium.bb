@@ -11,6 +11,7 @@
 #include <fuchsia/media/cpp/fidl_test_base.h>
 #include <lib/fidl/cpp/binding.h>
 
+#include <list>
 #include <vector>
 
 #include "base/fuchsia/scoped_service_binding.h"
@@ -156,8 +157,7 @@ class FakeAudioConsumerService
   // Not-implemented handler for SessionAudioConsumerFactory_TestBase.
   void NotImplemented_(const std::string& name) final;
 
-  base::fuchsia::ScopedServiceBinding<
-      fuchsia::media::SessionAudioConsumerFactory>
+  base::ScopedServiceBinding<fuchsia::media::SessionAudioConsumerFactory>
       binding_;
 
   std::vector<std::unique_ptr<FakeAudioConsumer>> audio_consumers_;

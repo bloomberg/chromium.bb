@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SYNC_ENGINE_SYNC_ENGINE_HOST_H_
 #define COMPONENTS_SYNC_ENGINE_SYNC_ENGINE_HOST_H_
 
-#include <string>
-
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/sync_encryption_handler.h"
@@ -38,9 +36,8 @@ class SyncEngineHost {
       ModelTypeSet initial_types,
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-      const std::string& birthday,
-      const std::string& bag_of_chips,
-      bool success) = 0;
+      bool success,
+      bool is_first_time_sync_configure) = 0;
 
   // The engine queried the server recently and received some updates.
   virtual void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) = 0;

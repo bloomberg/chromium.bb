@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/enterprise/browser/reporting/real_time_report_generator.h"
 #include "components/enterprise/browser/reporting/report_scheduler.h"
 
 #include <utility>
@@ -11,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/reporting/extension_request/extension_request_report_throttler.h"
 #include "chrome/browser/enterprise/reporting/prefs.h"
@@ -26,8 +28,12 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
+#include "components/enterprise/browser/reporting/real_time_uploader.h"
 #include "components/enterprise/browser/reporting/report_generator.h"
+#include "components/enterprise/common/proto/extensions_workflow_events.pb.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "components/reporting/client/report_queue_provider.h"
+#include "components/reporting/proto/record_constants.pb.h"
 #include "components/version_info/version_info.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -36,12 +42,13 @@
 using ::base::test::RunOnceCallback;
 using ::testing::_;
 using ::testing::ByMove;
+using ::testing::DoAll;
 using ::testing::Invoke;
+using ::testing::InvokeWithoutArgs;
 using ::testing::Return;
 using ::testing::WithArgs;
 
 namespace em = enterprise_management;
-
 namespace enterprise_reporting {
 
 namespace {
@@ -87,6 +94,31 @@ class MockReportUploader : public ReportUploader {
   DISALLOW_COPY_AND_ASSIGN(MockReportUploader);
 };
 
+class MockRealTimeReportGenerator : public RealTimeReportGenerator {
+ public:
+  explicit MockRealTimeReportGenerator(
+      ReportingDelegateFactoryDesktop* delegate_factory)
+      : RealTimeReportGenerator(delegate_factory) {}
+
+  MOCK_METHOD1(Generate,
+               std::vector<std::unique_ptr<google::protobuf::MessageLite>>(
+                   ReportType type));
+};
+
+class MockRealTimeUploader : public RealTimeUploader {
+ public:
+  MockRealTimeUploader() : RealTimeUploader(reporting::Priority::FAST_BATCH) {}
+
+  void Upload(std::unique_ptr<google::protobuf::MessageLite> report,
+              EnqueueCallback callback) override {
+    OnUpload(report.get(), callback);
+  }
+
+  MOCK_METHOD2(OnUpload,
+               void(google::protobuf::MessageLite* report,
+                    EnqueueCallback& callback));
+};
+
 class ReportSchedulerTest : public ::testing::Test {
  public:
   ReportSchedulerTest()
@@ -94,6 +126,7 @@ class ReportSchedulerTest : public ::testing::Test {
         local_state_(TestingBrowserProcess::GetGlobal()),
         profile_manager_(TestingBrowserProcess::GetGlobal(), &local_state_) {}
   ~ReportSchedulerTest() override = default;
+
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
         features::kEnterpriseRealtimeExtensionRequest);
@@ -105,7 +138,14 @@ class ReportSchedulerTest : public ::testing::Test {
     generator_ = generator_ptr_.get();
     uploader_ptr_ = std::make_unique<MockReportUploader>();
     uploader_ = uploader_ptr_.get();
-#if !defined(OS_CHROMEOS)
+
+    real_time_generator_ptr_ = std::make_unique<MockRealTimeReportGenerator>(
+        &report_delegate_factory_);
+    real_time_generator_ = real_time_generator_ptr_.get();
+    extension_request_uploader_ptr_ = std::make_unique<MockRealTimeUploader>();
+    extension_request_uploader_ = extension_request_uploader_ptr_.get();
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
     SetLastUploadVersion(chrome::kChromeVersion);
 #endif
     Init(true, kDMToken, kClientId);
@@ -121,8 +161,11 @@ class ReportSchedulerTest : public ::testing::Test {
 
   void CreateScheduler() {
     scheduler_ = std::make_unique<ReportScheduler>(
-        client_, std::move(generator_ptr_), &report_delegate_factory_);
+        client_, std::move(generator_ptr_), std::move(real_time_generator_ptr_),
+        &report_delegate_factory_);
     scheduler_->SetReportUploaderForTesting(std::move(uploader_ptr_));
+    scheduler_->SetExtensionRequestUploaderForTesting(
+        std::move(extension_request_uploader_ptr_));
   }
 
   void SetLastUploadInHour(base::TimeDelta gap) {
@@ -136,7 +179,7 @@ class ReportSchedulerTest : public ::testing::Test {
                                        std::make_unique<base::Value>(enabled));
   }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   void SetLastUploadVersion(const std::string& version) {
     local_state_.Get()->SetString(kLastUploadVersion, version);
   }
@@ -144,7 +187,7 @@ class ReportSchedulerTest : public ::testing::Test {
   void ExpectLastUploadVersion(const std::string& version) {
     EXPECT_EQ(local_state_.Get()->GetString(kLastUploadVersion), version);
   }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
   // If lastUploadTimestamp is updated recently, it should be updated as Now().
   // Otherwise, it should be same as previous set timestamp.
@@ -168,7 +211,7 @@ class ReportSchedulerTest : public ::testing::Test {
 
   // Chrome OS needn't setup registration.
   void EXPECT_CALL_SetupRegistration() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     EXPECT_CALL(*client_, SetupRegistration(_, _, _)).Times(0);
 #else
     EXPECT_CALL(*client_, SetupRegistration(kDMToken, kClientId, _));
@@ -176,7 +219,7 @@ class ReportSchedulerTest : public ::testing::Test {
   }
 
   void EXPECT_CALL_SetupRegistrationWithSetDMToken() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     EXPECT_CALL(*client_, SetupRegistration(_, _, _)).Times(0);
 #else
     EXPECT_CALL(*client_, SetupRegistration(kDMToken, kClientId, _))
@@ -202,6 +245,8 @@ class ReportSchedulerTest : public ::testing::Test {
   policy::MockCloudPolicyClient* client_;
   MockReportGenerator* generator_;
   MockReportUploader* uploader_;
+  MockRealTimeReportGenerator* real_time_generator_;
+  MockRealTimeUploader* extension_request_uploader_;
   policy::FakeBrowserDMTokenStorage storage_;
   base::Time previous_set_last_upload_timestamp_;
   base::HistogramTester histogram_tester_;
@@ -210,6 +255,8 @@ class ReportSchedulerTest : public ::testing::Test {
   std::unique_ptr<policy::MockCloudPolicyClient> client_ptr_;
   std::unique_ptr<MockReportGenerator> generator_ptr_;
   std::unique_ptr<MockReportUploader> uploader_ptr_;
+  std::unique_ptr<MockRealTimeReportGenerator> real_time_generator_ptr_;
+  std::unique_ptr<MockRealTimeUploader> extension_request_uploader_ptr_;
   DISALLOW_COPY_AND_ASSIGN(ReportSchedulerTest);
 };
 
@@ -237,7 +284,7 @@ TEST_P(ReportSchedulerFeatureTest, NoReportWithoutPolicy) {
 }
 
 // Chrome OS needn't set dm token and client id in the report scheduler.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_P(ReportSchedulerFeatureTest, NoReportWithoutDMToken) {
   Init(true, "", kClientId);
   CreateScheduler();
@@ -431,7 +478,7 @@ TEST_P(ReportSchedulerFeatureTest, ReportingIsDisabledWhileNewReportIsPosted) {
   ::testing::Mock::VerifyAndClearExpectations(generator_);
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Tests that a basic report is generated and uploaded when a browser update is
 // detected.
@@ -448,7 +495,7 @@ TEST_P(ReportSchedulerFeatureTest, OnUpdate) {
   CreateScheduler();
   g_browser_process->GetBuildState()->SetUpdate(
       BuildState::UpdateType::kNormalUpdate,
-      base::Version("1" + version_info::GetVersionNumber()), base::nullopt);
+      base::Version("1" + version_info::GetVersionNumber()), absl::nullopt);
   task_environment_.RunUntilIdle();
 
   // The timestamp should not have been updated, since a periodic report was not
@@ -471,7 +518,7 @@ TEST_P(ReportSchedulerFeatureTest, OnUpdateAndPersistentError) {
   CreateScheduler();
   g_browser_process->GetBuildState()->SetUpdate(
       BuildState::UpdateType::kNormalUpdate,
-      base::Version("1" + version_info::GetVersionNumber()), base::nullopt);
+      base::Version("1" + version_info::GetVersionNumber()), absl::nullopt);
   task_environment_.RunUntilIdle();
 
   // The timestamp should not have been updated, since a periodic report was not
@@ -483,7 +530,7 @@ TEST_P(ReportSchedulerFeatureTest, OnUpdateAndPersistentError) {
   // The report should be stopped in case of persistent error.
   g_browser_process->GetBuildState()->SetUpdate(
       BuildState::UpdateType::kNormalUpdate,
-      base::Version("2" + version_info::GetVersionNumber()), base::nullopt);
+      base::Version("2" + version_info::GetVersionNumber()), absl::nullopt);
   histogram_tester_.ExpectUniqueSample(kUploadTriggerMetricName, 2, 1);
 }
 
@@ -507,7 +554,7 @@ TEST_P(ReportSchedulerFeatureTest, DeferredTimer) {
 
   g_browser_process->GetBuildState()->SetUpdate(
       BuildState::UpdateType::kNormalUpdate,
-      base::Version("1" + version_info::GetVersionNumber()), base::nullopt);
+      base::Version("1" + version_info::GetVersionNumber()), absl::nullopt);
   task_environment_.RunUntilIdle();
   ::testing::Mock::VerifyAndClearExpectations(generator_);
   ::testing::Mock::VerifyAndClearExpectations(uploader_);
@@ -599,7 +646,7 @@ TEST_P(ReportSchedulerFeatureTest, OnNewVersionRegularReport) {
   histogram_tester_.ExpectUniqueSample(kUploadTriggerMetricName, 1, 1);
 }
 
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(ReportSchedulerTest, OnExtensionRequest) {
   SetLastUploadInHour(base::TimeDelta::FromHours(1));
@@ -656,7 +703,7 @@ TEST_F(ReportSchedulerTest, OnExtensionRequestWithPersistentError) {
   ::testing::Mock::VerifyAndClearExpectations(generator_);
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 
 TEST_F(ReportSchedulerTest, OnExtensionRequestAndUpdate) {
   SetLastUploadInHour(base::TimeDelta::FromHours(1));
@@ -680,7 +727,7 @@ TEST_F(ReportSchedulerTest, OnExtensionRequestAndUpdate) {
 
   g_browser_process->GetBuildState()->SetUpdate(
       BuildState::UpdateType::kNormalUpdate,
-      base::Version("1" + version_info::GetVersionNumber()), base::nullopt);
+      base::Version("1" + version_info::GetVersionNumber()), absl::nullopt);
   TriggerExtensionRequestReport();
 
   task_environment_.RunUntilIdle();
@@ -703,6 +750,39 @@ TEST_F(ReportSchedulerTest, OnExtensionRequestAndUpdate) {
   histogram_tester_.ExpectBucketCount(kUploadTriggerMetricName, 4, 1);
 }
 
-#endif  // !defined(OS_CHROMEOS)
+TEST_F(ReportSchedulerTest, ExtensionRequestWithRealTimePipeline) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeaturesAndParameters(
+      /*enabled_features*/ {{features::kEnterpriseRealtimeExtensionRequest,
+                             {{"with_erp", "true"}}},
+                            {reporting::ReportQueueProvider::
+                                 kEncryptedReportingPipeline,
+                             {{}}}},
+      /*disabled_features=*/{});
+
+  EXPECT_CALL_SetupRegistration();
+  EXPECT_CALL(*generator_, OnGenerate(_, _)).Times(0);
+  EXPECT_CALL(*uploader_, SetRequestAndUpload(_, _)).Times(0);
+
+  std::vector<std::unique_ptr<google::protobuf::MessageLite>> reports;
+  reports.push_back(std::make_unique<ExtensionsWorkflowEvent>());
+  reports.push_back(std::make_unique<ExtensionsWorkflowEvent>());
+  EXPECT_CALL(*real_time_generator_,
+              Generate(RealTimeReportGenerator::kExtensionRequest))
+      .WillOnce(DoAll(InvokeWithoutArgs([]() {
+                        ExtensionRequestReportThrottler::Get()->ResetProfiles();
+                      }),
+                      Return(ByMove(std::move(reports)))));
+  EXPECT_CALL(*extension_request_uploader_, OnUpload(_, _)).Times(2);
+  CreateScheduler();
+
+  TriggerExtensionRequestReport();
+
+  ExpectLastUploadTimestampUpdated(false);
+
+  histogram_tester_.ExpectUniqueSample(kUploadTriggerMetricName, 5, 1);
+}
+
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace enterprise_reporting

@@ -20,7 +20,7 @@
 #include "src/utils/compiler_attributes.h"
 #include "src/utils/cpu.h"
 
-#if LIBGAV1_ENABLE_SSE4_1
+#if LIBGAV1_TARGETING_SSE4_1
 #include <emmintrin.h>
 
 namespace libgav1 {
@@ -30,9 +30,9 @@ LIBGAV1_ALWAYS_INLINE void Transpose2x16_U16(const __m128i* const in,
                                              __m128i* const out) {
   // Unpack 16 bit elements. Goes from:
   // in[0]:  00 01 10 11  20 21 30 31
-  // in[0]:  40 41 50 51  60 61 70 71
-  // in[0]:  80 81 90 91  a0 a1 b0 b1
-  // in[0]:  c0 c1 d0 d1  e0 e1 f0 f1
+  // in[1]:  40 41 50 51  60 61 70 71
+  // in[2]:  80 81 90 91  a0 a1 b0 b1
+  // in[3]:  c0 c1 d0 d1  e0 e1 f0 f1
   // to:
   // a0:     00 40 01 41  10 50 11 51
   // a1:     20 60 21 61  30 70 31 71
@@ -303,5 +303,5 @@ LIBGAV1_ALWAYS_INLINE void Transpose8x8_U16(const __m128i* const in,
 }  // namespace dsp
 }  // namespace libgav1
 
-#endif  // LIBGAV1_ENABLE_SSE4_1
+#endif  // LIBGAV1_TARGETING_SSE4_1
 #endif  // LIBGAV1_SRC_DSP_X86_TRANSPOSE_SSE4_H_

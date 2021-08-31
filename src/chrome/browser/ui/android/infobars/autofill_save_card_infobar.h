@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/android/infobars/chrome_confirm_infobar.h"
+#include "components/infobars/android/confirm_infobar.h"
 #include "components/signin/public/identity_manager/account_info.h"
 
 namespace autofill {
@@ -18,11 +18,11 @@ class AutofillSaveCardInfoBarDelegateMobile;
 }
 
 // Android implementation of the infobar for saving credit card information.
-class AutofillSaveCardInfoBar : public ChromeConfirmInfoBar {
+class AutofillSaveCardInfoBar : public infobars::ConfirmInfoBar {
  public:
   explicit AutofillSaveCardInfoBar(
       std::unique_ptr<autofill::AutofillSaveCardInfoBarDelegateMobile> delegate,
-      base::Optional<AccountInfo> account_info);
+      absl::optional<AccountInfo> account_info);
 
   ~AutofillSaveCardInfoBar() override;
 
@@ -32,7 +32,8 @@ class AutofillSaveCardInfoBar : public ChromeConfirmInfoBar {
  private:
   // ConfirmInfoBar:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
-      JNIEnv* env) override;
+      JNIEnv* env,
+      const ResourceIdMapper& resource_id_mapper) override;
 
   // Returns the infobar delegate.
   autofill::AutofillSaveCardInfoBarDelegateMobile* GetSaveCardDelegate();
@@ -42,7 +43,7 @@ class AutofillSaveCardInfoBar : public ChromeConfirmInfoBar {
   // are stored in /chrome and /components cannot depend on /chrome.
   int GetGooglePayBrandingIconId();
 
-  base::Optional<AccountInfo> account_info_;
+  absl::optional<AccountInfo> account_info_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillSaveCardInfoBar);
 };

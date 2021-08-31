@@ -28,6 +28,8 @@ namespace blink {
 
 namespace web_pref {
 
+using blink::mojom::EffectiveConnectionType;
+
 // "Zyyy" is the ISO 15924 script code for undetermined script aka Common.
 const char kCommonScript[] = "Zyyy";
 
@@ -75,6 +77,7 @@ WebPreferences::WebPreferences()
       webgl_errors_to_console_enabled(true),
       hide_scrollbars(false),
       accelerated_2d_canvas_enabled(false),
+      new_canvas_2d_api_enabled(false),
       antialiased_2d_canvas_disabled(false),
       antialiased_clips_2d_canvas_enabled(true),
       accelerated_filters_enabled(false),
@@ -96,9 +99,9 @@ WebPreferences::WebPreferences()
       touch_event_feature_detection_enabled(false),
       pointer_events_max_touch_points(0),
       available_pointer_types(0),
-      primary_pointer_type(ui::POINTER_TYPE_NONE),
+      primary_pointer_type(blink::mojom::PointerType::kPointerNone),
       available_hover_types(0),
-      primary_hover_type(ui::HOVER_TYPE_NONE),
+      primary_hover_type(blink::mojom::HoverType::kHoverNone),
       dont_send_key_events_to_javascript(false),
       sync_xhr_in_documents_enabled(true),
       number_of_cpu_cores(1),
@@ -108,7 +111,7 @@ WebPreferences::WebPreferences()
       editing_behavior(mojom::EditingBehavior::kEditingWindowsBehavior),
 #elif defined(OS_ANDROID)
       editing_behavior(mojom::EditingBehavior::kEditingAndroidBehavior),
-#elif BUILDFLAG(IS_ASH)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
       editing_behavior(
           base::FeatureList::IsEnabled(blink::features::kCrOSAutoSelect)
               ? mojom::EditingBehavior::kEditingChromeOSBehavior
@@ -142,6 +145,7 @@ WebPreferences::WebPreferences()
 #endif
       spatial_navigation_enabled(false),
       navigate_on_drag_drop(true),
+      fake_no_alloc_direct_call_for_testing_enabled(false),
       v8_cache_options(blink::mojom::V8CacheOptions::kDefault),
       record_whole_document(false),
       cookie_enabled(true),
@@ -183,7 +187,6 @@ WebPreferences::WebPreferences()
       embedded_media_experience_enabled(false),
       css_hex_alpha_color_enabled(true),
       scroll_top_left_interop_enabled(true),
-      disable_features_depending_on_viz(false),
       disable_accelerated_small_canvases(false),
 #endif  // defined(OS_ANDROID)
 #if defined(OS_ANDROID)
@@ -202,28 +205,22 @@ WebPreferences::WebPreferences()
       do_not_update_selection_on_mutating_selection_range(false),
       autoplay_policy(
           blink::mojom::AutoplayPolicy::kDocumentUserActivationRequired),
-      low_priority_iframes_threshold(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+      low_priority_iframes_threshold(
+          EffectiveConnectionType::kEffectiveConnectionUnknownType),
       picture_in_picture_enabled(true),
       translate_service_available(false),
       network_quality_estimator_web_holdback(
-          net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
+          EffectiveConnectionType::kEffectiveConnectionUnknownType),
       allow_mixed_content_upgrades(true),
       always_show_focus(false),
       touch_drag_drop_enabled(IsTouchDragDropEnabled()) {
-  standard_font_family_map[web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Times New Roman");
-  fixed_font_family_map[web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Courier New");
-  serif_font_family_map[web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Times New Roman");
-  sans_serif_font_family_map[web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Arial");
-  cursive_font_family_map[web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Script");
-  fantasy_font_family_map[web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Impact");
-  pictograph_font_family_map[web_pref::kCommonScript] =
-      base::ASCIIToUTF16("Times New Roman");
+  standard_font_family_map[web_pref::kCommonScript] = u"Times New Roman";
+  fixed_font_family_map[web_pref::kCommonScript] = u"Courier New";
+  serif_font_family_map[web_pref::kCommonScript] = u"Times New Roman";
+  sans_serif_font_family_map[web_pref::kCommonScript] = u"Arial";
+  cursive_font_family_map[web_pref::kCommonScript] = u"Script";
+  fantasy_font_family_map[web_pref::kCommonScript] = u"Impact";
+  pictograph_font_family_map[web_pref::kCommonScript] = u"Times New Roman";
 }
 
 WebPreferences::WebPreferences(const WebPreferences& other) = default;

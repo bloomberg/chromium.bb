@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/password_manager/credentials_cleaner_runner_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -23,8 +24,10 @@
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/password_manager/core/browser/password_store_default.h"
 #include "components/password_manager/core/browser/password_store_factory_util.h"
+#include "components/password_manager/core/browser/password_store_impl.h"
+#include "components/password_manager/core/browser/password_store_signin_notifier_impl.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -39,24 +42,20 @@
 #include "chrome/browser/password_manager/password_manager_util_win.h"
 #endif
 
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
-#include "chrome/browser/password_manager/password_store_signin_notifier_impl.h"
-#endif
-
 using password_manager::PasswordStore;
 
 namespace {
 
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
 std::string GetSyncUsername(Profile* profile) {
   auto* identity_manager =
       IdentityManagerFactory::GetForProfileIfExists(profile);
-  return identity_manager ? identity_manager->GetPrimaryAccountInfo().email
-                          : std::string();
+  return identity_manager
+             ? identity_manager
+                   ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+                   .email
+             : std::string();
 }
-#endif
 
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
 bool IsSignedIn(Profile* profile) {
   auto* identity_manager =
       IdentityManagerFactory::GetForProfileIfExists(profile);
@@ -64,7 +63,6 @@ bool IsSignedIn(Profile* profile) {
              ? !identity_manager->GetAccountsWithRefreshTokens().empty()
              : false;
 }
-#endif
 
 }  // namespace
 
@@ -99,7 +97,7 @@ void PasswordStoreFactory::OnPasswordsSyncedStatePotentiallyChanged(
 
   password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
       password_store.get(), sync_service,
-      content::BrowserContext::GetDefaultStoragePartition(profile)
+      profile->GetDefaultStoragePartition()
           ->GetURLLoaderFactoryForBrowserProcess(),
       content::GetNetworkConnectionTracker(), profile->GetPath());
 }
@@ -109,11 +107,9 @@ PasswordStoreFactory::PasswordStoreFactory()
           "PasswordStore",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(WebDataServiceFactory::GetInstance());
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
   // TODO(crbug.com/715987). Remove when PasswordReuseDetector is decoupled
   // from PasswordStore.
   DependsOn(IdentityManagerFactory::GetInstance());
-#endif
 }
 
 PasswordStoreFactory::~PasswordStoreFactory() = default;
@@ -138,9 +134,9 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 #endif
 
   scoped_refptr<PasswordStore> ps;
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_ANDROID) || \
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_ANDROID) || \
     defined(OS_MAC) || defined(USE_X11) || defined(USE_OZONE)
-  ps = new password_manager::PasswordStoreDefault(std::move(login_db));
+  ps = new password_manager::PasswordStoreImpl(std::move(login_db));
 #else
   NOTIMPLEMENTED();
 #endif
@@ -152,17 +148,14 @@ PasswordStoreFactory::BuildServiceInstanceFor(
     return nullptr;
   }
 
-#if defined(PASSWORD_REUSE_DETECTION_ENABLED)
   // Prepare password hash data for reuse detection.
   ps->PreparePasswordHashData(GetSyncUsername(profile), IsSignedIn(profile));
-#endif
 
   auto network_context_getter = base::BindRepeating(
       [](Profile* profile) -> network::mojom::NetworkContext* {
         if (!g_browser_process->profile_manager()->IsValidProfile(profile))
           return nullptr;
-        return content::BrowserContext::GetDefaultStoragePartition(profile)
-            ->GetNetworkContext();
+        return profile->GetDefaultStoragePartition()->GetNetworkContext();
       },
       profile);
   password_manager_util::RemoveUselessCredentials(
@@ -170,13 +163,27 @@ PasswordStoreFactory::BuildServiceInstanceFor(
       profile->GetPrefs(), base::TimeDelta::FromSeconds(60),
       network_context_getter);
 
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
 #if defined(OS_WIN) || defined(OS_MAC) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   std::unique_ptr<password_manager::PasswordStoreSigninNotifier> notifier =
       std::make_unique<password_manager::PasswordStoreSigninNotifierImpl>(
           IdentityManagerFactory::GetForProfile(profile));
   ps->SetPasswordStoreSigninNotifier(std::move(notifier));
 #endif
+
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kFillingAcrossAffiliatedWebsites)) {
+    // Try to create affiliation service without awaiting synced state changes.
+    // TODO(http://crbug.com/1202699): Remove sync service completely after
+    // launching HashAffiliationLookup.
+    password_manager::ToggleAffiliationBasedMatchingBasedOnPasswordSyncedState(
+        ps.get(), /*sync_service=*/nullptr,
+        profile->GetDefaultStoragePartition()
+            ->GetURLLoaderFactoryForBrowserProcess(),
+        content::GetNetworkConnectionTracker(), profile->GetPath());
+  }
 
   return ps;
 }

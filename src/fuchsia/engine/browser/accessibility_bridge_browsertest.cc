@@ -6,17 +6,22 @@
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <zircon/types.h>
 
+#include "base/strings/stringprintf.h"
+#include "base/test/bind.h"
 #include "content/public/test/browser_test.h"
-#include "fuchsia/base/frame_test_util.h"
 #include "fuchsia/base/mem_buffer_util.h"
-#include "fuchsia/base/test_navigation_listener.h"
+#include "fuchsia/base/test/frame_test_util.h"
+#include "fuchsia/base/test/test_navigation_listener.h"
 #include "fuchsia/engine/browser/accessibility_bridge.h"
+#include "fuchsia/engine/browser/context_impl.h"
 #include "fuchsia/engine/browser/fake_semantics_manager.h"
 #include "fuchsia/engine/browser/frame_impl.h"
 #include "fuchsia/engine/test/test_data.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/ax_action_data.h"
+#include "ui/accessibility/ax_tree_observer.h"
 #include "ui/gfx/switches.h"
 #include "ui/ozone/public/ozone_switches.h"
 
@@ -34,6 +39,14 @@ const char kButtonName3[] = "button 3";
 const char kNodeName[] = "last node";
 const char kParagraphName[] = "a third paragraph";
 const char kOffscreenNodeName[] = "offscreen node";
+const char kUpdate1Name[] = "update1";
+const char kUpdate2Name[] = "update2";
+const char kUpdate3Name[] = "update3";
+const char kUpdate4Name[] = "update4";
+const char kUpdate5Name[] = "update5";
+const char kUpdate6Name[] = "update6";
+const char kUpdate7Name[] = "update7";
+const char kUpdate8Name[] = "update8";
 const size_t kPage1NodeCount = 29;
 const size_t kPage2NodeCount = 190;
 const size_t kInitialRangeValue = 51;
@@ -145,17 +158,6 @@ class AccessibilityBridgeTest : public cr_fuchsia::WebEngineBrowserTest {
     navigation_listener_.RunUntilUrlAndTitleEquals(page_url, page_title);
   }
 
-  // Helper function that checks if |num_deletes|, |num_updates| and
-  // |num_commits| match the ones in the FakeSemanticTree.
-  void CheckCallsToFakeSemanticTree(size_t num_deletes,
-                                    size_t num_updates,
-                                    size_t num_commits) {
-    auto* tree = semantics_manager_.semantic_tree();
-    EXPECT_EQ(tree->num_delete_calls(), num_deletes);
-    EXPECT_EQ(tree->num_update_calls(), num_updates);
-    EXPECT_EQ(tree->num_commit_calls(), num_commits);
-  }
-
  protected:
   fuchsia::web::FramePtr frame_ptr_;
   FrameImpl* frame_impl_;
@@ -192,16 +194,17 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, DataSentWithBatching) {
 
   // Checks if the actual batching happened.
   EXPECT_GE(semantics_manager_.semantic_tree()->num_update_calls(), 18u);
-  EXPECT_EQ(semantics_manager_.semantic_tree()->num_commit_calls(), 1u);
+
+  // Checks if one or more commit calls were made to send the data.
+  EXPECT_GE(semantics_manager_.semantic_tree()->num_commit_calls(), 1u);
 }
 
 // Check that semantics information is correctly sent when navigating from page
 // to page.
-IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TestNavigation) {
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, NavigateFromPageToPage) {
   LoadPage(kPage1Path, kPage1Title);
 
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
-  EXPECT_EQ(semantics_manager_.semantic_tree()->num_commit_calls(), 1u);
 
   EXPECT_TRUE(
       semantics_manager_.semantic_tree()->GetNodeFromLabel(kPage1Title));
@@ -212,8 +215,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TestNavigation) {
 
   LoadPage(kPage2Path, kPage2Title);
 
-  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage2NodeCount);
-  EXPECT_EQ(semantics_manager_.semantic_tree()->num_commit_calls(), 2u);
+  semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+      kPage2Title);
 
   EXPECT_TRUE(
       semantics_manager_.semantic_tree()->GetNodeFromLabel(kPage2Title));
@@ -333,8 +336,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, Disconnect) {
 // re-enable it.
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest,
                        DISABLED_PerformScrollToMakeVisible) {
+  // Set the screen height to be small so that we can detect if we've
+  // scrolled past our target, even if the max scroll is bounded.
   constexpr int kScreenWidth = 720;
-  constexpr int kScreenHeight = 640;
+  constexpr int kScreenHeight = 20;
   gfx::Rect screen_bounds(kScreenWidth, kScreenHeight);
 
   LoadPage(kPage1Path, kPage1Title);
@@ -345,26 +350,38 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest,
       frame_impl_->web_contents_for_test()->GetContentNativeView();
   content_view->SetBounds(screen_bounds);
 
-  // Get a node that is off the screen.
-  fuchsia::accessibility::semantics::Node* node =
-      semantics_manager_.semantic_tree()->GetNodeFromLabel(kOffscreenNodeName);
-  ASSERT_TRUE(node);
   AccessibilityBridge* bridge = frame_impl_->accessibility_bridge_for_test();
-  ui::AXNode* ax_node = bridge->ax_tree_for_test()->GetFromId(node->node_id());
+
+  // Get a node that is off the screen, and verify that it is off the screen.
+  fuchsia::accessibility::semantics::Node* fuchsia_node =
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kOffscreenNodeName);
+  ASSERT_TRUE(fuchsia_node);
+
+  // Get the corresponding AXNode.
+  auto ax_node_id = bridge->node_id_mapper_for_test()
+                        ->ToAXNodeID(fuchsia_node->node_id())
+                        ->second;
+  ui::AXNode* ax_node = bridge->ax_tree_for_test()->GetFromId(ax_node_id);
   ASSERT_TRUE(ax_node);
   bool is_offscreen = false;
   bridge->ax_tree_for_test()->GetTreeBounds(ax_node, &is_offscreen);
   EXPECT_TRUE(is_offscreen);
 
-  // Perform SHOW_ON_SCREEN on that node and check that it is on the screen.
+  // Perform SHOW_ON_SCREEN on that node.
+  // The fuchsia root node should receive an update since the root node is
+  // scrolled. Wait for that update.
   base::RunLoop run_loop;
-  bridge->set_event_received_callback_for_test(run_loop.QuitClosure());
+  semantics_manager_.semantic_tree()->SetNodeUpdatedCallback(
+      0u, run_loop.QuitClosure());
+
   semantics_manager_.RequestAccessibilityAction(
-      node->node_id(),
+      fuchsia_node->node_id(),
       fuchsia::accessibility::semantics::Action::SHOW_ON_SCREEN);
   semantics_manager_.RunUntilNumActionsHandledEquals(1);
+
   run_loop.Run();
 
+  // Verify that the AXNode we tried to make visible is now onscreen.
   // Initialize |is_offscreen| to false before calling GetTreeBounds as
   // specified by the API.
   is_offscreen = false;
@@ -373,7 +390,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest,
   EXPECT_FALSE(is_offscreen);
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, Slider) {
+// TODO(1168167): Test sets node-updated callback only after triggering node
+// update, making it flaky.
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, DISABLED_Slider) {
   LoadPage(kPage1Path, kPage1Title);
 
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
@@ -408,10 +427,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, Slider) {
 // full semantic tree is sent in the first update when back on.
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TogglesSemanticsUpdates) {
   LoadPage(kPage1Path, kPage1Title);
-  semantics_manager_.semantic_tree()->RunUntilCommitCountIs(1);
 
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
-  EXPECT_EQ(semantics_manager_.semantic_tree()->num_commit_calls(), 1u);
 
   semantics_manager_.SetSemanticsModeEnabled(false);
   base::RunLoop().RunUntilIdle();
@@ -424,7 +441,6 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TogglesSemanticsUpdates) {
   semantics_manager_.SetSemanticsModeEnabled(true);
   base::RunLoop().RunUntilIdle();
   semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
-  EXPECT_EQ(semantics_manager_.semantic_tree()->num_commit_calls(), 2u);
 
   ASSERT_TRUE(frame_impl_->web_contents_for_test()
                   ->IsWebContentsOnlyAccessibilityModeForTesting());
@@ -440,7 +456,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TreeModificationsAreForwarded) {
   // operations are applied on top of it, using the AXTreeID that corresponds to
   // that frame.
   LoadPage(kPage1Path, kPage1Title);
-  semantics_manager_.semantic_tree()->RunUntilCommitCountIs(1);
+  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
 
   // Fetch the AXTreeID of the main frame (the page just loaded). This ID will
   // be used in the operations that follow to simulate new data coming in.
@@ -459,11 +475,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TreeModificationsAreForwarded) {
   tree_accessibility_event.updates[0].node_id_to_clear =
       bridge->ax_tree_for_test()->root()->id();
 
+  // Set a name in a node so we can wait for this node to appear. This pattern
+  // is used throughout this test to ensure that the new data we are waiting for
+  // arrived.
+  tree_accessibility_event.updates[0].nodes[0].SetName(kUpdate1Name);
+
   bridge->AccessibilityEventReceived(tree_accessibility_event);
 
-  semantics_manager_.semantic_tree()->RunUntilCommitCountIs(2);
-  CheckCallsToFakeSemanticTree(/*num_deletes=*/1, /*num_updates=*/3,
-                               /*num_commits=*/2);
+  semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+      kUpdate1Name);
 
   // Adds a new node with ID 6.
   // (1 (2 (3 (4 (5 6)))))
@@ -475,12 +495,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TreeModificationsAreForwarded) {
     update.nodes[0].child_ids.push_back(5);
     update.nodes[0].child_ids.push_back(6);
     update.nodes[1].id = 6;
+    update.nodes[0].SetName(kUpdate2Name);
 
     bridge->AccessibilityEventReceived(
         CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
-    semantics_manager_.semantic_tree()->RunUntilCommitCountIs(3);
-    CheckCallsToFakeSemanticTree(/*num_deletes=*/1, /*num_updates=*/4,
-                                 /*num_commits=*/3);
+    semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+        kUpdate2Name);
   }
 
   // Removes the added node 6.
@@ -494,13 +514,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TreeModificationsAreForwarded) {
     update.nodes[0].child_ids.push_back(5);
 
     update.nodes[1].id = 5;
+    update.nodes[0].SetName(kUpdate3Name);
 
     bridge->AccessibilityEventReceived(
         CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
 
-    semantics_manager_.semantic_tree()->RunUntilCommitCountIs(4);
-    CheckCallsToFakeSemanticTree(/*num_deletes=*/2, /*num_updates=*/5,
-                                 /*num_commits=*/4);
+    semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+        kUpdate3Name);
     EXPECT_EQ(semantics_manager_.semantic_tree()->tree_size(), tree_size);
   }
 
@@ -517,13 +537,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TreeModificationsAreForwarded) {
 
     update.nodes[1].id = 4;
     update.nodes[2].id = 5;
+    update.nodes[0].SetName(kUpdate4Name);
 
     bridge->AccessibilityEventReceived(
         CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
 
-    semantics_manager_.semantic_tree()->RunUntilCommitCountIs(5);
-    CheckCallsToFakeSemanticTree(/*num_deletes=*/2, /*num_updates=*/6,
-                                 /*num_commits=*/5);
+    semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+        kUpdate4Name);
     EXPECT_EQ(semantics_manager_.semantic_tree()->tree_size(), tree_size);
   }
 
@@ -545,13 +565,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TreeModificationsAreForwarded) {
 
     update.nodes[3].id = 4;
     update.nodes[4].id = 5;
+    update.nodes[0].SetName(kUpdate5Name);
 
     bridge->AccessibilityEventReceived(
         CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
 
-    semantics_manager_.semantic_tree()->RunUntilCommitCountIs(6);
-    CheckCallsToFakeSemanticTree(/*num_deletes=*/2, /*num_updates=*/7,
-                                 /*num_commits=*/6);
+    semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+        kUpdate5Name);
     EXPECT_EQ(semantics_manager_.semantic_tree()->tree_size(), tree_size);
   }
 
@@ -566,13 +586,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TreeModificationsAreForwarded) {
     update.nodes[0].child_ids.push_back(2);
 
     update.nodes[1].id = 2;
+    update.nodes[0].SetName(kUpdate6Name);
 
     bridge->AccessibilityEventReceived(
         CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
 
-    semantics_manager_.semantic_tree()->RunUntilCommitCountIs(7);
-    CheckCallsToFakeSemanticTree(/*num_deletes=*/3, /*num_updates=*/8,
-                                 /*num_commits=*/7);
+    semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+        kUpdate6Name);
     EXPECT_EQ(semantics_manager_.semantic_tree()->tree_size(), 2u);
   }
 
@@ -587,13 +607,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TreeModificationsAreForwarded) {
     update.nodes[0].child_ids.push_back(2);
 
     update.nodes[1].id = 2;
+    update.nodes[0].SetName(kUpdate7Name);
 
     bridge->AccessibilityEventReceived(
         CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
 
-    semantics_manager_.semantic_tree()->RunUntilCommitCountIs(8);
-    CheckCallsToFakeSemanticTree(/*num_deletes=*/4, /*num_updates=*/9,
-                                 /*num_commits=*/8);
+    semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+        kUpdate7Name);
     EXPECT_EQ(semantics_manager_.semantic_tree()->tree_size(), 2u);
   }
 
@@ -605,15 +625,332 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, TreeModificationsAreForwarded) {
     update.node_id_to_clear = 7;
     update.nodes.resize(1);
     update.nodes[0].id = 1;
+    update.nodes[0].SetName(kUpdate8Name);
 
     bridge->AccessibilityEventReceived(
         CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
 
-    semantics_manager_.semantic_tree()->RunUntilCommitCountIs(9);
-    CheckCallsToFakeSemanticTree(/*num_deletes=*/5, /*num_updates=*/10,
-                                 /*num_commits=*/9);
+    semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+        kUpdate8Name);
     EXPECT_EQ(semantics_manager_.semantic_tree()->tree_size(), 1u);
   }
+}
+
+// Verifies that offset container bookkeeping is updated correctly.
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest,
+                       OffsetContainerBookkeepingIsUpdated) {
+  // Loads a page, so a real frame is created for this test. Then, several tree
+  // operations are applied on top of it, using the AXTreeID that corresponds to
+  // that frame.
+  LoadPage(kPage1Path, kPage1Title);
+  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
+
+  // Fetch the AXTreeID of the main frame (the page just loaded). This ID will
+  // be used in the operations that follow to simulate new data coming in.
+  auto tree_id =
+      frame_impl_->web_contents_for_test()->GetMainFrame()->GetAXTreeID();
+
+  AccessibilityBridge* bridge = frame_impl_->accessibility_bridge_for_test();
+  size_t tree_size = 5;
+
+  // The tree has the following form: (1 (2 (3 (4 (5)))))
+  auto tree_accessibility_event = CreateTreeAccessibilityEvent(tree_size);
+  tree_accessibility_event.ax_tree_id = tree_id;
+
+  // The root of this tree needs to be cleared (because it holds the page just
+  // loaded, and we are loading something completely new).
+  tree_accessibility_event.updates[0].node_id_to_clear =
+      bridge->ax_tree_for_test()->root()->id();
+
+  // Set a name in a node so we can wait for this node to appear. This pattern
+  // is used throughout this test to ensure that the new data we are waiting for
+  // arrived.
+  tree_accessibility_event.updates[0].nodes[0].SetName(kUpdate1Name);
+
+  bridge->AccessibilityEventReceived(tree_accessibility_event);
+
+  semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+      kUpdate1Name);
+
+  // Adds a new node with ID 6.
+  // (1 (2 (3 (4 (5 6)))))
+  {
+    ui::AXTreeUpdate update;
+    update.root_id = 1;
+    update.nodes.resize(2);
+    update.nodes[0].id = 4;
+    update.nodes[0].child_ids.push_back(5);
+    update.nodes[0].child_ids.push_back(6);
+    update.nodes[1].id = 6;
+    update.nodes[1].relative_bounds.offset_container_id = 3;
+    update.nodes[1].SetName(kUpdate2Name);
+
+    bridge->AccessibilityEventReceived(
+        CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
+    semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+        kUpdate2Name);
+  }
+
+  // Then, verify that offset container bookkeeping was updated.
+  {
+    auto* tree = bridge->ax_tree_for_test();
+    auto offset_container_children_it = bridge->offset_container_children_.find(
+        std::make_pair(tree->GetAXTreeID(), 3));
+    EXPECT_NE(offset_container_children_it,
+              bridge->offset_container_children_.end());
+    const auto& offset_children = offset_container_children_it->second;
+    EXPECT_EQ(offset_children.size(), 1u);
+    EXPECT_TRUE(offset_children.count(std::make_pair(tree->GetAXTreeID(), 6)));
+  }
+
+  // Now, change node 6's offset container to be node 4.
+  {
+    ui::AXTreeUpdate update;
+    update.root_id = 1;
+    update.nodes.resize(1);
+    update.nodes[0].id = 6;
+    update.nodes[0].relative_bounds.offset_container_id = 4;
+    update.nodes[0].SetName(kUpdate3Name);
+
+    bridge->AccessibilityEventReceived(
+        CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
+    semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+        kUpdate3Name);
+  }
+
+  // Then, verify that offset container bookkeeping was updated.
+  {
+    // Check that node 6 was deleted from node 3's offset children.
+    auto* tree = bridge->ax_tree_for_test();
+    auto offset_container_children_it = bridge->offset_container_children_.find(
+        std::make_pair(tree->GetAXTreeID(), 3));
+    EXPECT_NE(offset_container_children_it,
+              bridge->offset_container_children_.end());
+    const auto& offset_children = offset_container_children_it->second;
+    EXPECT_TRUE(offset_children.empty());
+
+    // Check that node 6 was added to node 4's offset children.
+    auto new_offset_container_children_it =
+        bridge->offset_container_children_.find(
+            std::make_pair(tree->GetAXTreeID(), 4));
+    EXPECT_NE(offset_container_children_it,
+              bridge->offset_container_children_.end());
+    const auto& new_offset_children = new_offset_container_children_it->second;
+    EXPECT_EQ(new_offset_children.size(), 1u);
+    EXPECT_TRUE(
+        new_offset_children.count(std::make_pair(tree->GetAXTreeID(), 6)));
+  }
+
+  // Removes the added node 6.
+  // (1 (2 (3 (4 (5)))))
+  {
+    ui::AXTreeUpdate update;
+    update.root_id = 1;
+    update.node_id_to_clear = 4;
+    update.nodes.resize(2);
+    update.nodes[0].id = 4;
+    update.nodes[0].child_ids.push_back(5);
+
+    update.nodes[1].id = 5;
+    update.nodes[1].SetName(kUpdate4Name);
+
+    bridge->AccessibilityEventReceived(
+        CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
+    semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+        kUpdate4Name);
+  }
+
+  // Verify that node 6 was removed as an offset child of node 4.
+  {
+    auto* tree = bridge->ax_tree_for_test();
+    auto offset_container_children_it = bridge->offset_container_children_.find(
+        std::make_pair(tree->GetAXTreeID(), 4));
+    EXPECT_NE(offset_container_children_it,
+              bridge->offset_container_children_.end());
+    const auto& offset_children = offset_container_children_it->second;
+    EXPECT_TRUE(offset_children.empty());
+  }
+
+  // Removes node 4.
+  // (1 (2 (3 )))
+  {
+    ui::AXTreeUpdate update;
+    update.root_id = 1;
+    update.node_id_to_clear = 3;
+    update.nodes.resize(1);
+    update.nodes[0].id = 3;
+    update.nodes[0].SetName(kUpdate5Name);
+
+    bridge->AccessibilityEventReceived(
+        CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
+    semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+        kUpdate5Name);
+  }
+
+  // Verify that node 4 was cleared from the offset children map.
+  {
+    auto* tree = bridge->ax_tree_for_test();
+    EXPECT_FALSE(bridge->offset_container_children_.count(
+        std::make_pair(tree->GetAXTreeID(), 4)));
+  }
+}
+
+// This test verifies that a node's transform includes a translation for its
+// offset container's bounds.
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest,
+                       TransformAccountsForOffsetContainerBounds) {
+  // Loads a page, so a real frame is created for this test. Then, several tree
+  // operations are applied on top of it, using the AXTreeID that corresponds to
+  // that frame.
+  LoadPage(kPage1Path, kPage1Title);
+  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
+
+  // Fetch the AXTreeID of the main frame (the page just loaded). This ID will
+  // be used in the operations that follow to simulate new data coming in.
+  auto tree_id =
+      frame_impl_->web_contents_for_test()->GetMainFrame()->GetAXTreeID();
+
+  AccessibilityBridge* bridge = frame_impl_->accessibility_bridge_for_test();
+  size_t tree_size = 5;
+
+  // The tree has the following form: (1 (2 (3 (4 (5)))))
+  auto tree_accessibility_event = CreateTreeAccessibilityEvent(tree_size);
+  tree_accessibility_event.ax_tree_id = tree_id;
+
+  // The root of this tree needs to be cleared (because it holds the page just
+  // loaded, and we are loading something completely new).
+  tree_accessibility_event.updates[0].node_id_to_clear =
+      bridge->ax_tree_for_test()->root()->id();
+
+  // Set a name in a node so we can wait for this node to appear. This pattern
+  // is used throughout this test to ensure that the new data we are waiting for
+  // arrived.
+  tree_accessibility_event.updates[0].nodes[0].SetName(kUpdate1Name);
+
+  bridge->AccessibilityEventReceived(tree_accessibility_event);
+
+  semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+      kUpdate1Name);
+
+  const char kNodeName[] = "transfrom should update";
+  // Changes the bounds of node 1.
+  // (1 (2 (3 (4 (5)))))
+  ui::AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes.resize(2);
+  update.nodes[0].id = 1;
+  // Update the relative bounds of node 1, which is node 2's offset container.
+  update.nodes[0].relative_bounds.bounds = gfx::RectF(2, 3, 4, 5);
+  update.nodes[0].child_ids = {2};
+  update.nodes[0].SetName(kUpdate2Name);
+  update.nodes[1].id = 2;
+  update.nodes[1].SetName(kNodeName);
+  update.nodes[1].relative_bounds.offset_container_id = 1;
+  // Node 2 should have non-trivial relative bounds to ensure that the
+  // accessibility bridge correctly composes node 2's transform and the
+  // translation for node 1's bounds.
+  update.nodes[1].relative_bounds.bounds = gfx::RectF(10, 11, 10, 11);
+  update.nodes[1].relative_bounds.transform = std::make_unique<gfx::Transform>(
+      5, 0, 0, 100, 0, 5, 0, 200, 0, 0, 5, 0, 0, 0, 0, 1);
+  bridge->AccessibilityEventReceived(
+      CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
+  semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+      kUpdate2Name);
+
+  auto* tree = bridge->ax_tree_for_test();
+  auto* updated_node = tree->GetFromId(2);
+  ASSERT_TRUE(updated_node);
+
+  // Verify that the transform for the Fuchsia semantic node corresponding to
+  // node 2 reflects the new bounds of node 1.
+  fuchsia::accessibility::semantics::Node* fuchsia_node =
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kNodeName);
+  ASSERT_TRUE(fuchsia_node);
+  // A Fuchsia node's semantic transform should include an offset for its parent
+  // node as a post-translation on top of its existing transform. Therefore, the
+  // x, y, and z scale (indices 0, 5, and 10, respectively) should remain
+  // unchanged, and the x and y bounds of the offset container should be added
+  // to the node's existing translation entries (indices 12 and 13).
+  EXPECT_EQ(fuchsia_node->transform().matrix[0], 5);
+  EXPECT_EQ(fuchsia_node->transform().matrix[5], 5);
+  EXPECT_EQ(fuchsia_node->transform().matrix[10], 5);
+  EXPECT_EQ(fuchsia_node->transform().matrix[12], 102);
+  EXPECT_EQ(fuchsia_node->transform().matrix[13], 203);
+}
+
+// This test verifies that a node's transform is updated correctly when its
+// container's relative bounds change.
+// NOTE: This test is distinct from the above test case.
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest,
+                       UpdateTransformWhenContainerBoundsChange) {
+  // Loads a page, so a real frame is created for this test. Then, several tree
+  // operations are applied on top of it, using the AXTreeID that corresponds to
+  // that frame.
+  LoadPage(kPage1Path, kPage1Title);
+  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
+
+  // Fetch the AXTreeID of the main frame (the page just loaded). This ID will
+  // be used in the operations that follow to simulate new data coming in.
+  auto tree_id =
+      frame_impl_->web_contents_for_test()->GetMainFrame()->GetAXTreeID();
+
+  AccessibilityBridge* bridge = frame_impl_->accessibility_bridge_for_test();
+  size_t tree_size = 5;
+
+  // The tree has the following form: (1 (2 (3 (4 (5)))))
+  auto tree_accessibility_event = CreateTreeAccessibilityEvent(tree_size);
+  tree_accessibility_event.ax_tree_id = tree_id;
+
+  // The root of this tree needs to be cleared (because it holds the page just
+  // loaded, and we are loading something completely new).
+  tree_accessibility_event.updates[0].node_id_to_clear =
+      bridge->ax_tree_for_test()->root()->id();
+
+  // Set a name in a node so we can wait for this node to appear. This pattern
+  // is used throughout this test to ensure that the new data we are waiting for
+  // arrived.
+  tree_accessibility_event.updates[0].nodes[0].SetName(kUpdate1Name);
+
+  bridge->AccessibilityEventReceived(tree_accessibility_event);
+
+  semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+      kUpdate1Name);
+
+  // Ensure that the accessibility bridge's offset container bookkeeping is up
+  // to date.
+  bridge->offset_container_children_[std::make_pair(tree_id, 1)].insert(
+      std::make_pair(tree_id, 2));
+
+  const char kNodeName[] = "transfrom should update";
+  // Changes the bounds of node 1.
+  // (1 (2 (3 (4 (5)))))
+  ui::AXTreeUpdate update;
+  update.root_id = 1;
+  update.nodes.resize(2);
+  update.nodes[0].id = 1;
+  // Update the relative bounds of node 1, which is node 2's offset container.
+  update.nodes[0].relative_bounds.bounds = gfx::RectF(2, 3, 4, 5);
+  update.nodes[0].child_ids = {2};
+  update.nodes[0].SetName(kUpdate2Name);
+  update.nodes[1].id = 2;
+  update.nodes[1].SetName(kNodeName);
+  bridge->AccessibilityEventReceived(
+      CreateAccessibilityEventWithUpdate(std::move(update), tree_id));
+  semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+      kUpdate2Name);
+
+  // Verify that the transform for the Fuchsia semantic node corresponding to
+  // node 2 reflects the new bounds of node 1.
+  fuchsia::accessibility::semantics::Node* fuchsia_node =
+      semantics_manager_.semantic_tree()->GetNodeFromLabel(kNodeName);
+
+  // A Fuchsia node's semantic transform should include an offset for its parent
+  // node as a post-translation on top of its existing transform. Therefore, the
+  // x, y, and z scale (indices 0, 5, and 10, respectively) should remain
+  // unchanged, and the x and y bounds of the offset container should be added
+  // to the node's existing translation entries (indices 12 and 13).
+  EXPECT_EQ(fuchsia_node->transform().matrix[12], 2);
+  EXPECT_EQ(fuchsia_node->transform().matrix[13], 3);
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, OutOfProcessIframe) {
@@ -641,15 +978,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, OutOfProcessIframe) {
       });
   LoadPage(kPageIframePath, "iframe loaded");
 
-  semantics_manager_.semantic_tree()->RunUntilCommitCountIs(1);
-
-  // Run message loop for 200ms to ensure that all AX updates from the iframes
-  // are processed.
-  base::RunLoop run_loop;
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(),
-      base::TimeDelta::FromMilliseconds(200));
-  run_loop.Run();
+  // Run until the title of the iframe page is in the semantic tree. Because
+  // the iframe's semantic tree is only sent when it is connected to the parent
+  // tree, it is guaranteed that both trees will be present.
+  semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+      kPage1Title);
 
   // Two frames should be present.
   int num_frames = frame_impl_->web_contents_for_test()->GetAllFrames().size();
@@ -675,7 +1008,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, OutOfProcessIframe) {
         CHECK(result.is_response());
       });
 
-  semantics_manager_.semantic_tree()->RunUntilCommitCountIs(4);
+  semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(
+      kPage2Title);
 
   // check that the iframe navigated to a different page.
   EXPECT_TRUE(semantics_manager_.semantic_tree()->GetNodeFromLabel(kNodeName));
@@ -688,10 +1022,90 @@ IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, OutOfProcessIframe) {
   // away.
   LoadPage(kPage2Path, kPage2Title);
 
-  semantics_manager_.semantic_tree()->RunUntilCommitCountIs(5);
+  // Wait for the root to be updated, which means that we navigated to a new
+  // page.
+  base::RunLoop run_loop;
+  semantics_manager_.semantic_tree()->SetNodeUpdatedCallback(
+      0u, run_loop.QuitClosure());
+  run_loop.Run();
 
   // We've navigated to a different page that has no iframes. Only one frame
   // should be present.
   num_frames = frame_impl_->web_contents_for_test()->GetAllFrames().size();
   EXPECT_EQ(num_frames, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityBridgeTest, UpdatesFocusInformation) {
+  LoadPage(kPage1Path, kPage1Title);
+
+  semantics_manager_.semantic_tree()->RunUntilNodeCountAtLeast(kPage1NodeCount);
+
+  ASSERT_FALSE(semantics_manager_.semantic_tree()
+                   ->GetNodeWithId(0u)
+                   ->states()
+                   .has_has_input_focus());
+
+  // Focus the root node.
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kFocus;
+  AccessibilityBridge* bridge = frame_impl_->accessibility_bridge_for_test();
+  action_data.target_tree_id = bridge->ax_tree_for_test()->GetAXTreeID();
+  action_data.target_node_id = bridge->ax_tree_for_test()->root()->id();
+
+  frame_impl_->web_contents_for_test()
+      ->GetMainFrame()
+      ->AccessibilityPerformAction(action_data);
+
+  auto* semantic_tree = semantics_manager_.semantic_tree();
+
+  semantic_tree->RunUntilCondititionIsTrue(
+      base::BindLambdaForTesting([semantic_tree]() {
+        auto* node = semantic_tree->GetNodeWithId(0u);
+        if (!node)
+          return false;
+
+        return node->has_states() && node->states().has_has_input_focus() &&
+               node->states().has_input_focus();
+      }));
+
+  ASSERT_TRUE(semantics_manager_.semantic_tree()
+                  ->GetNodeWithId(0u)
+                  ->states()
+                  .has_input_focus());
+
+  // Changes the focus to a different node and checks that the old value is
+  // cleared.
+  auto new_focus_id = semantics_manager_.semantic_tree()
+                          ->GetNodeFromLabel(kButtonName1)
+                          ->node_id();
+  action_data.target_node_id =
+      bridge->node_id_mapper_for_test()->ToAXNodeID(new_focus_id)->second;
+
+  frame_impl_->web_contents_for_test()
+      ->GetMainFrame()
+      ->AccessibilityPerformAction(action_data);
+
+  semantic_tree->RunUntilCondititionIsTrue(
+      base::BindLambdaForTesting([semantic_tree, new_focus_id]() {
+        auto* root = semantic_tree->GetNodeWithId(0u);
+        auto* node = semantic_tree->GetNodeWithId(new_focus_id);
+
+        if (!node || !root)
+          return false;
+
+        // Node has the focus, root does not.
+        return (node->has_states() && node->states().has_has_input_focus() &&
+                node->states().has_input_focus()) &&
+               (root->has_states() && root->states().has_has_input_focus() &&
+                !root->states().has_input_focus());
+      }));
+
+  ASSERT_FALSE(semantics_manager_.semantic_tree()
+                   ->GetNodeWithId(0u)
+                   ->states()
+                   .has_input_focus());
+  ASSERT_TRUE(semantics_manager_.semantic_tree()
+                  ->GetNodeWithId(new_focus_id)
+                  ->states()
+                  .has_input_focus());
 }

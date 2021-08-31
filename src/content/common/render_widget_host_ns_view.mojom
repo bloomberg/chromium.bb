@@ -6,10 +6,11 @@ module remote_cocoa.mojom;
 
 import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/input/input_handler.mojom";
+import "third_party/blink/public/mojom/webshare/share_error.mojom";
 import "ui/base/mojom/attributed_string.mojom";
 import "ui/base/cursor/mojom/cursor.mojom";
 import "ui/base/ime/mojom/ime_types.mojom";
-import "ui/display/mojom/display.mojom";
+import "ui/display/mojom/display_list.mojom";
 import "ui/events/mojom/event.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/ca_layer_params.mojom";
@@ -92,6 +93,14 @@ interface RenderWidgetHostNSView {
 
   // Stop intercepting keyboard events.
   UnlockKeyboard();
+
+  // Show the NSSharingServicePicker using the requested data that is passed and
+  // returning the result of that action.
+  ShowSharingServicePicker(string title,
+                           string text,
+                           string url,
+                           array<string> file_paths)
+    => (blink.mojom.ShareError error);
 };
 
 // The interface through which the RenderWidgetHostViewCocoa NSView in the app
@@ -130,8 +139,8 @@ interface RenderWidgetHostNSViewHost {
   OnWindowFrameInScreenChanged(
       gfx.mojom.Rect window_frame_in_screen_dip);
 
-  // Indicate changes to the NSView's NSScreen's properties.
-  OnDisplayChanged(display.mojom.Display display);
+  // Indicate changes to the NSScreen hosting the NSView, or other NSScreens.
+  OnDisplaysChanged(display.mojom.DisplayList display_list);
 
   // Indicate the begin and end block of a keyboard event. The beginning of this
   // block will record the active RenderWidgetHost, and will forward all

@@ -26,8 +26,9 @@
 #include "components/blocked_content/popup_blocker_tab_helper.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/permissions/notification_permission_ui_selector.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/permission_ui_selector.h"
+#include "components/permissions/request_type.h"
 #include "components/permissions/test/mock_permission_request.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -39,13 +40,12 @@
 
 namespace {
 
-using QuietUiReason =
-    permissions::NotificationPermissionUiSelector::QuietUiReason;
+using QuietUiReason = permissions::PermissionUiSelector::QuietUiReason;
 
 // Test implementation of NotificationPermissionUiSelector that always forces
 // the quiet UI to be used for surfacing notification permission requests.
 class TestQuietNotificationPermissionUiSelector
-    : public permissions::NotificationPermissionUiSelector {
+    : public permissions::PermissionUiSelector {
  public:
   explicit TestQuietNotificationPermissionUiSelector(
       QuietUiReason simulated_reason_for_quiet_ui)
@@ -53,11 +53,16 @@ class TestQuietNotificationPermissionUiSelector
   ~TestQuietNotificationPermissionUiSelector() override = default;
 
  protected:
-  // permissions::NotificationPermissionUiSelector:
+  // permissions::PermissionUiSelector:
   void SelectUiToUse(permissions::PermissionRequest* request,
                      DecisionMadeCallback callback) override {
     std::move(callback).Run(
-        Decision(simulated_reason_for_quiet_ui_, base::nullopt));
+        Decision(simulated_reason_for_quiet_ui_, absl::nullopt));
+  }
+
+  bool IsPermissionRequestSupported(
+      permissions::RequestType request_type) override {
+    return request_type == permissions::RequestType::kNotifications;
   }
 
  private:
@@ -88,7 +93,7 @@ class ContentSettingBubbleDialogTest : public DialogBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::Optional<permissions::MockPermissionRequest>
+  absl::optional<permissions::MockPermissionRequest>
       notification_permission_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleDialogTest);
@@ -163,14 +168,12 @@ void ContentSettingBubbleDialogTest::TriggerQuietNotificationPermissionRequest(
       browser()->tab_strip_model()->GetActiveWebContents();
   auto* permission_request_manager =
       permissions::PermissionRequestManager::FromWebContents(web_contents);
-  permission_request_manager
-      ->set_notification_permission_ui_selector_for_testing(
-          std::make_unique<TestQuietNotificationPermissionUiSelector>(
-              simulated_reason_for_quiet_ui));
+  permission_request_manager->set_permission_ui_selector_for_testing(
+      std::make_unique<TestQuietNotificationPermissionUiSelector>(
+          simulated_reason_for_quiet_ui));
   DCHECK(!notification_permission_request_);
   notification_permission_request_.emplace(
-      "notifications",
-      permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
+      u"notifications", permissions::RequestType::kNotifications,
       GURL("https://example.com"));
   permission_request_manager->AddRequest(web_contents->GetMainFrame(),
                                          &*notification_permission_request_);
@@ -225,11 +228,8 @@ void ContentSettingBubbleDialogTest::ShowUi(const std::string& name) {
       {"cookies", ContentSettingsType::COOKIES, ImageType::COOKIES},
       {"images", ContentSettingsType::IMAGES, ImageType::IMAGES},
       {"javascript", ContentSettingsType::JAVASCRIPT, ImageType::JAVASCRIPT},
-      {"plugins", ContentSettingsType::PLUGINS, ImageType::PLUGINS},
       {"popups", ContentSettingsType::POPUPS, ImageType::POPUPS},
       {"geolocation", ContentSettingsType::GEOLOCATION, ImageType::GEOLOCATION},
-      {"ppapi_broker", ContentSettingsType::PPAPI_BROKER,
-       ImageType::PPAPI_BROKER},
       {"mixed_script", ContentSettingsType::MIXEDSCRIPT,
        ImageType::MIXEDSCRIPT},
       {"protocol_handlers", ContentSettingsType::PROTOCOL_HANDLERS,
@@ -261,20 +261,12 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_javascript) {
   ShowAndVerifyUi();
 }
 
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_plugins) {
-  ShowAndVerifyUi();
-}
-
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_popups) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ShowAndVerifyUi();
 }
 
 IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_geolocation) {
-  ShowAndVerifyUi();
-}
-
-IN_PROC_BROWSER_TEST_F(ContentSettingBubbleDialogTest, InvokeUi_ppapi_broker) {
   ShowAndVerifyUi();
 }
 

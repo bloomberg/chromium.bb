@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -245,7 +246,7 @@ void OutputStream::OnControllerError() {
 void OutputStream::OnLog(base::StringPiece message) {
   // No sequence check: |log_| is thread-safe.
   if (log_) {
-    log_->OnLogMessage(base::StringPrintf("%s", message.as_string().c_str()));
+    log_->OnLogMessage(base::StringPrintf("%s", std::string(message).c_str()));
   }
 }
 
@@ -299,7 +300,10 @@ void OutputStream::SendLogMessage(const char* format, ...) {
     return;
   va_list args;
   va_start(args, format);
-  log_->OnLogMessage("audio::OS::" + base::StringPrintV(format, args));
+  log_->OnLogMessage(
+      "audio::OS::" + base::StringPrintV(format, args) +
+      base::StringPrintf(" [controller=0x%" PRIXPTR "]",
+                         reinterpret_cast<uintptr_t>(&controller_)));
   va_end(args);
 }
 

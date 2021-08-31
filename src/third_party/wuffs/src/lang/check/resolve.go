@@ -34,6 +34,7 @@ var (
 	typeExprGeneric2    = a.NewTypeExpr(0, t.IDBase, t.IDDagger2, nil, nil, nil)
 	typeExprIdeal       = a.NewTypeExpr(0, t.IDBase, t.IDQIdeal, nil, nil, nil)
 	typeExprList        = a.NewTypeExpr(0, t.IDBase, t.IDComma, nil, nil, nil)
+	typeExprNonNullptr  = a.NewTypeExpr(0, t.IDBase, t.IDQNonNullptr, nil, nil, nil)
 	typeExprNullptr     = a.NewTypeExpr(0, t.IDBase, t.IDQNullptr, nil, nil, nil)
 	typeExprPackage     = a.NewTypeExpr(0, t.IDBase, t.IDQPackage, nil, nil, nil)
 	typeExprPlaceholder = a.NewTypeExpr(0, t.IDBase, t.IDQPlaceholder, nil, nil, nil)
@@ -73,6 +74,22 @@ var (
 	typeExprPixelSwizzler = a.NewTypeExpr(0, t.IDBase, t.IDPixelSwizzler, nil, nil, nil)
 
 	typeExprDecodeFrameOptions = a.NewTypeExpr(0, t.IDBase, t.IDDecodeFrameOptions, nil, nil, nil)
+
+	typeExprARMCRC32Utility = a.NewTypeExpr(0, t.IDBase, t.IDARMCRC32Utility, nil, nil, nil)
+	typeExprARMCRC32U32     = a.NewTypeExpr(0, t.IDBase, t.IDARMCRC32U32, nil, nil, nil)
+
+	typeExprARMNeonUtility = a.NewTypeExpr(0, t.IDBase, t.IDARMNeonUtility, nil, nil, nil)
+	typeExprARMNeonU8x8    = a.NewTypeExpr(0, t.IDBase, t.IDARMNeonU8x8, nil, nil, nil)
+	typeExprARMNeonU16x4   = a.NewTypeExpr(0, t.IDBase, t.IDARMNeonU16x4, nil, nil, nil)
+	typeExprARMNeonU32x2   = a.NewTypeExpr(0, t.IDBase, t.IDARMNeonU32x2, nil, nil, nil)
+	typeExprARMNeonU64x1   = a.NewTypeExpr(0, t.IDBase, t.IDARMNeonU64x1, nil, nil, nil)
+	typeExprARMNeonU8x16   = a.NewTypeExpr(0, t.IDBase, t.IDARMNeonU8x16, nil, nil, nil)
+	typeExprARMNeonU16x8   = a.NewTypeExpr(0, t.IDBase, t.IDARMNeonU16x8, nil, nil, nil)
+	typeExprARMNeonU32x4   = a.NewTypeExpr(0, t.IDBase, t.IDARMNeonU32x4, nil, nil, nil)
+	typeExprARMNeonU64x2   = a.NewTypeExpr(0, t.IDBase, t.IDARMNeonU64x2, nil, nil, nil)
+
+	typeExprX86SSE42Utility = a.NewTypeExpr(0, t.IDBase, t.IDX86SSE42Utility, nil, nil, nil)
+	typeExprX86M128I        = a.NewTypeExpr(0, t.IDBase, t.IDX86M128I, nil, nil, nil)
 
 	typeExprSliceU8 = a.NewTypeExpr(t.IDSlice, 0, 0, nil, nil, typeExprU8)
 	typeExprTableU8 = a.NewTypeExpr(t.IDTable, 0, 0, nil, nil, typeExprU8)
@@ -121,11 +138,27 @@ var builtInTypeMap = typeMap{
 	t.IDPixelSwizzler: typeExprPixelSwizzler,
 
 	t.IDDecodeFrameOptions: typeExprDecodeFrameOptions,
+
+	t.IDARMCRC32Utility: typeExprARMCRC32Utility,
+	t.IDARMCRC32U32:     typeExprARMCRC32U32,
+
+	t.IDARMNeonUtility: typeExprARMNeonUtility,
+	t.IDARMNeonU8x8:    typeExprARMNeonU8x8,
+	t.IDARMNeonU16x4:   typeExprARMNeonU16x4,
+	t.IDARMNeonU32x2:   typeExprARMNeonU32x2,
+	t.IDARMNeonU64x1:   typeExprARMNeonU64x1,
+	t.IDARMNeonU8x16:   typeExprARMNeonU8x16,
+	t.IDARMNeonU16x8:   typeExprARMNeonU16x8,
+	t.IDARMNeonU32x4:   typeExprARMNeonU32x4,
+	t.IDARMNeonU64x2:   typeExprARMNeonU64x2,
+
+	t.IDX86SSE42Utility: typeExprX86SSE42Utility,
+	t.IDX86M128I:        typeExprX86M128I,
 }
 
 func (c *Checker) parseBuiltInFuncs(m map[t.QQID]*a.Func, ss []string) error {
 	return builtin.ParseFuncs(c.tm, ss, func(f *a.Func) error {
-		if err := c.checkFuncSignature(f.AsNode()); err != nil {
+		if err := c.checkFuncSignature1(f.AsNode(), false); err != nil {
 			return err
 		}
 		if m != nil {
@@ -148,6 +181,11 @@ func (c *Checker) resolveFunc(typ *a.TypeExpr) (*a.Func, error) {
 		qqid[1] = t.IDDagger1
 		if f := c.builtInSliceFuncs[qqid]; f != nil {
 			return f, nil
+		}
+		if lTyp.Eq(typeExprSliceU8) {
+			if f := c.builtInSliceU8Funcs[qqid]; f != nil {
+				return f, nil
+			}
 		}
 
 	} else if lTyp.IsTableType() {

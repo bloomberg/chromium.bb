@@ -82,7 +82,8 @@ class MockCryptAuthEnrollerFactory : public CryptAuthEnrollerFactory {
   // CryptAuthEnrollerFactory:
   std::unique_ptr<CryptAuthEnroller> CreateInstance() override {
     auto passed_cryptauth_enroller = std::move(next_cryptauth_enroller_);
-    next_cryptauth_enroller_.reset(new NiceMock<MockCryptAuthEnroller>());
+    next_cryptauth_enroller_ =
+        std::make_unique<NiceMock<MockCryptAuthEnroller>>();
     return std::move(passed_cryptauth_enroller);
   }
 
@@ -347,7 +348,7 @@ TEST_F(DeviceSyncCryptAuthEnrollmentManagerImplTest, ForceEnrollment) {
   EXPECT_CALL(*sync_scheduler(), ForceSync());
   enrollment_manager_.ForceEnrollmentNow(
       cryptauth::INVOCATION_REASON_SERVER_INITIATED,
-      base::nullopt /* session_id */);
+      absl::nullopt /* session_id */);
 
   auto completion_callback =
       FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
@@ -452,8 +453,8 @@ TEST_F(DeviceSyncCryptAuthEnrollmentManagerImplTest, ReenrollOnGCMPushMessage) {
   enrollment_manager_.Start();
 
   // Simulate receiving a GCM push message, forcing the device to re-enroll.
-  gcm_manager_.PushReenrollMessage(base::nullopt /* session_id */,
-                                   base::nullopt /* feature_type */);
+  gcm_manager_.PushReenrollMessage(absl::nullopt /* session_id */,
+                                   absl::nullopt /* feature_type */);
   auto completion_callback =
       FireSchedulerForEnrollment(cryptauth::INVOCATION_REASON_SERVER_INITIATED);
 

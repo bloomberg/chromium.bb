@@ -1,0 +1,10 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+declare_args() {
+  # This enables build with TFLite library.
+  # Currently only available for Desktop and Android.
+  build_with_tflite_lib =
+      is_android || is_win || is_linux || is_mac || is_chromeos
+}

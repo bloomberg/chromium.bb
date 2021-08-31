@@ -8,14 +8,15 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "extensions/browser/api/execute_code_function.h"
 #include "extensions/browser/api/web_contents_capture_client.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/guest_view/web_view/web_ui/web_ui_url_fetcher.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 
-namespace content {
-class WebContents;
+namespace base {
+class TaskRunner;
 }
 
 // WARNING: WebViewInternal could be loaded in an unblessed context, thus any
@@ -48,13 +49,20 @@ class WebViewInternalCaptureVisibleRegionFunction
 
   // ExtensionFunction:
   ResponseAction Run() override;
+  void GetQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) const override;
 
  private:
   // extensions::WebContentsCaptureClient:
-  bool IsScreenshotEnabled(content::WebContents* web_contents) const override;
+  ScreenshotAccess GetScreenshotAccess(
+      content::WebContents* web_contents) const override;
   bool ClientAllowsTransparency() override;
   void OnCaptureSuccess(const SkBitmap& bitmap) override;
   void OnCaptureFailure(CaptureResult result) override;
+
+  void EncodeBitmapOnWorkerThread(
+      scoped_refptr<base::TaskRunner> reply_task_runner,
+      const SkBitmap& bitmap);
+  void OnBitmapEncodedOnUIThread(bool success, std::string base64_result);
 
   std::string GetErrorMessage(CaptureResult result);
 

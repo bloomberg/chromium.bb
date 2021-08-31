@@ -51,7 +51,7 @@ class _UiNode(object):
       A geometry.Rectangle instance.
     """
     d = _RE_BOUNDS.match(self._GetAttribute('bounds')).groupdict()
-    return geometry.Rectangle.FromDict({k: int(v) for k, v in d.iteritems()})
+    return geometry.Rectangle.FromDict({k: int(v) for k, v in d.items()})
 
   def Tap(self, point=None, dp_units=False):
     """Send a tap event to the UI node.
@@ -150,7 +150,7 @@ class _UiNode(object):
         and ':id/' not in resource_id):
       kwargs['resource_id'] = '%s:id/%s' % (self._package, resource_id)
 
-    criteria = [(k.replace('_', '-'), v) for k, v in kwargs.iteritems()
+    criteria = [(k.replace('_', '-'), v) for k, v in kwargs.items()
                 if v is not None]
     if not criteria:
       raise TypeError('At least one search criteria should be specified')
@@ -193,8 +193,12 @@ class AppUi(object):
       A UI node instance pointing to the root of the xml screenshot.
     """
     with device_temp_file.DeviceTempFile(self._device.adb) as dtemp:
-      self._device.RunShellCommand(['uiautomator', 'dump', dtemp.name],
-                                   check_return=True)
+      output = self._device.RunShellCommand(
+          ['uiautomator', 'dump', dtemp.name], single_line=True,
+          check_return=True)
+      if output.startswith('ERROR:'):
+        raise RuntimeError(
+            'uiautomator dump command returned error: {}'.format(output))
       xml_node = element_tree.fromstring(
           self._device.ReadFile(dtemp.name, force_pull=True))
     return _UiNode(self._device, xml_node, package=self._package)

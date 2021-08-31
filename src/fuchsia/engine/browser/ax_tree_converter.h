@@ -5,14 +5,14 @@
 #ifndef FUCHSIA_ENGINE_BROWSER_AX_TREE_CONVERTER_H_
 #define FUCHSIA_ENGINE_BROWSER_AX_TREE_CONVERTER_H_
 
-#include <base/containers/flat_map.h>
-#include <base/optional.h>
 #include <fuchsia/accessibility/semantics/cpp/fidl.h>
 
 #include <unordered_map>
 
+#include "base/containers/flat_map.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "fuchsia/engine/web_engine_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // Maps AXNode IDs to Fuchsia Node IDs.
 // This class saves the remapped values.
@@ -32,7 +32,7 @@ class WEB_ENGINE_EXPORT NodeIDMapper {
   // From a Fuchsia Node ID, returns the pair of the AXTreeID and the AXNode ID
   // that maps to it. If the Fuchsia Node ID is not in the map, returns no
   // value.
-  virtual base::Optional<std::pair<ui::AXTreeID, int32_t>> ToAXNodeID(
+  virtual absl::optional<std::pair<ui::AXTreeID, int32_t>> ToAXNodeID(
       uint32_t fuchsia_node_id);
 
   // Updates the  AXNode IDs to point to the new |ax_tree_id|. This method
@@ -65,6 +65,7 @@ class WEB_ENGINE_EXPORT NodeIDMapper {
 // accepts partial updates, so |node| does not require all fields to be set.
 WEB_ENGINE_EXPORT fuchsia::accessibility::semantics::Node
 AXNodeDataToSemanticNode(const ui::AXNodeData& node,
+                         const ui::AXNodeData& container_node,
                          const ui::AXTreeID& tree_id,
                          bool is_root,
                          NodeIDMapper* id_mapper);

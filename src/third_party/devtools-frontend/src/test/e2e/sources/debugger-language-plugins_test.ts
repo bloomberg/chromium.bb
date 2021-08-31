@@ -4,9 +4,10 @@
 
 import {assert} from 'chai';
 
-import {$, click, enableExperiment, getBrowserAndPages, getResourcesPath, goToResource, waitFor, waitForFunction} from '../../shared/helper.js';
+import {$, click, enableExperiment, getBrowserAndPages, getResourcesPath, goToResource, pasteText, waitFor, waitForFunction, waitForMany, waitForNone} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {addBreakpointForLine, getCallFrameLocations, getCallFrameNames, getValuesForScope, listenForSourceFilesAdded, openFileInEditor, openFileInSourcesPanel, openSourcesPanel, PAUSE_ON_EXCEPTION_BUTTON, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, switchToCallFrame, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
+import {CONSOLE_TAB_SELECTOR, focusConsolePrompt, getCurrentConsoleMessages, getStructuredConsoleMessages} from '../helpers/console-helpers.js';
+import {addBreakpointForLine, getCallFrameLocations, getCallFrameNames, getNonBreakableLines, getValuesForScope, isBreakpointSet, listenForSourceFilesAdded, openFileInEditor, openFileInSourcesPanel, openSourceCodeEditorForFile, openSourcesPanel, PAUSE_ON_EXCEPTION_BUTTON, RESUME_BUTTON, retrieveSourceFilesAdded, retrieveTopCallFrameScriptLocation, switchToCallFrame, waitForAdditionalSourceFiles} from '../helpers/sources-helpers.js';
 
 
 // TODO: Remove once Chromium updates its version of Node.js to 12+.
@@ -14,58 +15,48 @@ import {addBreakpointForLine, getCallFrameLocations, getCallFrameNames, getValue
 const globalThis: any = global;
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Window {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     __sourceFilesAddedEvents: string[];
   }
 }
 
 type RawModule = {
   url: string,
-  code?: ArrayBuffer
+  code?: ArrayBuffer,
 };
 
 type RawLocationRange = {
   rawModuleId: string,
   startOffset: number,
-  endOffset: number
+  endOffset: number,
 };
 
 type RawLocation = {
   rawModuleId: string,
   codeOffset: number,
-  inlineFrameIndex?: number
+  inlineFrameIndex?: number,
 };
 
 type SourceLocation = {
   rawModuleId: string,
   sourceFileURL: string,
   lineNumber: number,
-  columnNumber: number
+  columnNumber: number,
 };
 
 type Variable = {
   scope: string,
   name: string,
   type: string,
-  nestedName?: Array<string>
-};
-
-type VariableValue = {
-  value: string|Array<VariableValue>,
-  js_type: string,
-  type: string,
-  name: string
-};
-
-type EvaluatorModule = {
-  code?: ArrayBuffer,
-  constantValue?: VariableValue
+  nestedName?: Array<string>,
 };
 
 type ScopeInfo = {
   type: string,
   typeName: string,
-  icon?: string
+  icon?: string,
 };
 
 interface EvalBase {
@@ -90,7 +81,7 @@ interface TypeInfo {
   hasValue: boolean;
 }
 type FunctionInfo = {
-  name?: string
+  name?: string,
 };
 
 interface TestPluginImpl {
@@ -106,19 +97,21 @@ interface TestPluginImpl {
 
   listVariablesInScope?(rawLocation: RawLocation): Promise<Array<Variable>>;
 
-  evaluateVariable?(name: string, location: RawLocation): Promise<EvaluatorModule|null>;
-
   getTypeInfo?(expression: string, context: RawLocation): Promise<{typeInfos: TypeInfo[], base: EvalBase}|null>;
 
   getFormatter?(expressionOrField: string|{base: EvalBase, field: FieldInfo[]}, context: RawLocation):
       Promise<{js: string}|null>;
   getFunctionInfo?(rawLocation: RawLocation): Promise<{frames: Array<FunctionInfo>}|null>;
 
+  getMappedLines?(rawModuleId: string, sourceFileURL: string): Promise<number[]|undefined>;
+
   dispose?(): void;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 declare function RegisterExtension(
     extensionAPI: unknown, pluginImpl: TestPluginImpl, name: string,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     supportedScriptTypes: {language: string, symbol_types: string[]}): void;
 
 // This testcase reaches into DevTools internals to install the extension plugin. At this point, there is no sensible
@@ -200,14 +193,14 @@ describe('The Debugger Language Plugins', async () => {
     await frontend.evaluate(
         () => globalThis.installExtensionPlugin((extensionServerClient: unknown, extensionAPI: unknown) => {
           class LocationMappingPlugin {
-            _modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocation?: SourceLocation}>;
+            private modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocation?: SourceLocation}>;
             constructor() {
-              this._modules = new Map();
+              this.modules = new Map();
             }
 
             async addRawModule(rawModuleId: string, symbols: string, rawModule: RawModule) {
               const sourceFileURL = new URL('unreachable.ll', rawModule.url || symbols).href;
-              this._modules.set(rawModuleId, {
+              this.modules.set(rawModuleId, {
                 rawLocationRange: {rawModuleId, startOffset: 6, endOffset: 7},
                 sourceLocation: {rawModuleId, sourceFileURL, lineNumber: 5, columnNumber: 2},
               });
@@ -215,7 +208,7 @@ describe('The Debugger Language Plugins', async () => {
             }
 
             async rawLocationToSourceLocation(rawLocation: RawLocation) {
-              const {rawLocationRange, sourceLocation} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange, sourceLocation} = this.modules.get(rawLocation.rawModuleId) || {};
               if (rawLocationRange && sourceLocation && rawLocationRange.startOffset <= rawLocation.codeOffset &&
                   rawLocation.codeOffset < rawLocationRange.endOffset) {
                 return [sourceLocation];
@@ -236,6 +229,14 @@ describe('The Debugger Language Plugins', async () => {
     const callFrameLoc = await waitFor('.call-frame-location');
     const scriptLocation = await callFrameLoc.evaluate(location => location.textContent);
     assert.deepEqual(scriptLocation, 'unreachable.ll:6');
+
+    await click(RESUME_BUTTON);
+    const error = await waitForFunction(async () => {
+      const messages = await getStructuredConsoleMessages();
+      return messages.find(message => message.message.startsWith('Uncaught (in promise) RuntimeError: unreachable'));
+    });
+    const callframes = error.message.split('\n').slice(1);
+    assert.deepEqual(callframes, ['    at Main (unreachable.ll:6)', '    at go (unreachable.html:27)']);
   });
 
   // Resolve the location for a breakpoint.
@@ -246,22 +247,22 @@ describe('The Debugger Language Plugins', async () => {
           // This plugin will emulate a source mapping with a single file and a single corresponding source line and byte
           // code offset pair.
           class LocationMappingPlugin {
-            _modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocation?: SourceLocation}>;
+            private modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocation?: SourceLocation}>;
             constructor() {
-              this._modules = new Map();
+              this.modules = new Map();
             }
 
             async addRawModule(rawModuleId: string, symbols: string, rawModule: RawModule) {
               const sourceFileURL = new URL('global_variable.ll', rawModule.url || symbols).href;
-              this._modules.set(rawModuleId, {
+              this.modules.set(rawModuleId, {
                 rawLocationRange: {rawModuleId, startOffset: 25, endOffset: 26},
-                sourceLocation: {rawModuleId, sourceFileURL, lineNumber: 8, columnNumber: 0},
+                sourceLocation: {rawModuleId, sourceFileURL, lineNumber: 8, columnNumber: -1},
               });
               return [sourceFileURL];
             }
 
             async rawLocationToSourceLocation(rawLocation: RawLocation) {
-              const {rawLocationRange, sourceLocation} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange, sourceLocation} = this.modules.get(rawLocation.rawModuleId) || {};
               if (rawLocationRange && sourceLocation && rawLocationRange.startOffset <= rawLocation.codeOffset &&
                   rawLocation.codeOffset < rawLocationRange.endOffset) {
                 return [sourceLocation];
@@ -271,12 +272,20 @@ describe('The Debugger Language Plugins', async () => {
 
 
             async sourceLocationToRawLocation(sourceLocationArg: SourceLocation) {
-              const {rawLocationRange, sourceLocation} = this._modules.get(sourceLocationArg.rawModuleId) || {};
+              const {rawLocationRange, sourceLocation} = this.modules.get(sourceLocationArg.rawModuleId) || {};
               if (rawLocationRange && sourceLocation &&
                   JSON.stringify(sourceLocation) === JSON.stringify(sourceLocationArg)) {
                 return [rawLocationRange];
               }
               return [];
+            }
+
+            async getMappedLines(rawModuleId: string, sourceFileURL: string) {
+              const {sourceLocation} = this.modules.get(rawModuleId) || {};
+              if (sourceLocation && sourceLocation.sourceFileURL === sourceFileURL) {
+                return [5, 6, 7, 8, 9];
+              }
+              return undefined;
             }
           }
 
@@ -288,10 +297,22 @@ describe('The Debugger Language Plugins', async () => {
     await openFileInSourcesPanel('wasm/global_variable.html');
     await target.evaluate('go();');
     await openFileInEditor('global_variable.ll');
+
+    const toolbar = await waitFor('.sources-toolbar');
+    const itemElements = await waitForMany('.toolbar-item', 2, toolbar);
+    const items = await Promise.all(itemElements.map(e => e.evaluate(e => e.textContent)));
+    assert.isAtLeast(
+        items.indexOf('(provided via debug info by global_variable.wasm)'), 0, 'Toolbar debug info hint not found');
+
+    // Line 4 is non-breakable.
+    assert.include(await getNonBreakableLines(frontend), 4);
+
     await addBreakpointForLine(frontend, 9);
 
     const scriptLocation = await retrieveTopCallFrameScriptLocation('main();', target);
     assert.deepEqual(scriptLocation, 'global_variable.ll:9');
+
+    await waitForFunction(async () => !(await isBreakpointSet(4)));
   });
 
   it('shows top-level and nested variables', async () => {
@@ -299,14 +320,14 @@ describe('The Debugger Language Plugins', async () => {
     await frontend.evaluateHandle(
         () => globalThis.installExtensionPlugin((extensionServerClient: unknown, extensionAPI: unknown) => {
           class VariableListingPlugin {
-            _modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocation?: SourceLocation}>;
+            private modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocation?: SourceLocation}>;
             constructor() {
-              this._modules = new Map();
+              this.modules = new Map();
             }
 
             async addRawModule(rawModuleId: string, symbols: string, rawModule: RawModule) {
               const sourceFileURL = new URL('unreachable.ll', rawModule.url || symbols).href;
-              this._modules.set(rawModuleId, {
+              this.modules.set(rawModuleId, {
                 rawLocationRange: {rawModuleId, startOffset: 6, endOffset: 7},
                 sourceLocation: {rawModuleId, sourceFileURL, lineNumber: 5, columnNumber: 2},
               });
@@ -314,7 +335,7 @@ describe('The Debugger Language Plugins', async () => {
             }
 
             async rawLocationToSourceLocation(rawLocation: RawLocation) {
-              const {rawLocationRange, sourceLocation} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange, sourceLocation} = this.modules.get(rawLocation.rawModuleId) || {};
               if (rawLocationRange && sourceLocation && rawLocationRange.startOffset <= rawLocation.codeOffset &&
                   rawLocation.codeOffset < rawLocationRange.endOffset) {
                 return [sourceLocation];
@@ -327,7 +348,7 @@ describe('The Debugger Language Plugins', async () => {
             }
 
             async listVariablesInScope(rawLocation: RawLocation) {
-              const {rawLocationRange} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange} = this.modules.get(rawLocation.rawModuleId) || {};
               if (rawLocationRange && rawLocationRange.startOffset <= rawLocation.codeOffset &&
                   rawLocation.codeOffset < rawLocationRange.endOffset) {
                 return [
@@ -349,9 +370,9 @@ describe('The Debugger Language Plugins', async () => {
     await goToResource('sources/wasm/unreachable.html');
     await waitFor(RESUME_BUTTON);
 
-    const locals = await getValuesForScope('LOCAL');
+    const locals = await getValuesForScope('LOCAL', 0, 1);
     assert.deepEqual(locals, ['localX: undefined']);
-    const globals = await getValuesForScope('GLOBAL', 2);
+    const globals = await getValuesForScope('GLOBAL', 2, 3);
     assert.deepEqual(globals, ['n1: namespace', 'n2: namespace', 'globalY: undefined']);
   });
 
@@ -360,14 +381,14 @@ describe('The Debugger Language Plugins', async () => {
     await frontend.evaluateHandle(
         () => globalThis.installExtensionPlugin((extensionServerClient: unknown, extensionAPI: unknown) => {
           class InliningPlugin {
-            _modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocations?: SourceLocation[]}>;
+            private modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocations?: SourceLocation[]}>;
             constructor() {
-              this._modules = new Map();
+              this.modules = new Map();
             }
 
             async addRawModule(rawModuleId: string, symbols: string, rawModule: RawModule) {
               const sourceFileURL = new URL('unreachable.ll', rawModule.url || symbols).href;
-              this._modules.set(rawModuleId, {
+              this.modules.set(rawModuleId, {
                 rawLocationRange: {rawModuleId, startOffset: 6, endOffset: 7},
                 sourceLocations: [
                   {rawModuleId, sourceFileURL, lineNumber: 5, columnNumber: 2},
@@ -379,7 +400,7 @@ describe('The Debugger Language Plugins', async () => {
             }
 
             async rawLocationToSourceLocation(rawLocation: RawLocation) {
-              const {rawLocationRange, sourceLocations} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange, sourceLocations} = this.modules.get(rawLocation.rawModuleId) || {};
               if (rawLocationRange && sourceLocations && rawLocationRange.startOffset <= rawLocation.codeOffset &&
                   rawLocation.codeOffset < rawLocationRange.endOffset) {
                 return [sourceLocations[rawLocation.inlineFrameIndex || 0]];
@@ -388,7 +409,7 @@ describe('The Debugger Language Plugins', async () => {
             }
 
             async getFunctionInfo(rawLocation: RawLocation) {
-              const {rawLocationRange} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange} = this.modules.get(rawLocation.rawModuleId) || {};
               if (rawLocationRange && rawLocationRange.startOffset <= rawLocation.codeOffset &&
                   rawLocation.codeOffset < rawLocationRange.endOffset) {
                 return {frames: [{name: 'inner_inline_func'}, {name: 'outer_inline_func'}, {name: 'Main'}]};
@@ -401,7 +422,7 @@ describe('The Debugger Language Plugins', async () => {
             }
 
             async listVariablesInScope(rawLocation: RawLocation) {
-              const {rawLocationRange} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange} = this.modules.get(rawLocation.rawModuleId) || {};
               const frame = rawLocation.inlineFrameIndex || 0;
               if (rawLocationRange && rawLocationRange.startOffset <= rawLocation.codeOffset &&
                   rawLocation.codeOffset < rawLocationRange.endOffset) {
@@ -432,14 +453,28 @@ describe('The Debugger Language Plugins', async () => {
         ['unreachable.ll:6', 'unreachable.ll:11', 'unreachable.ll:16', 'unreachable.html:27', 'unreachable.html:30']);
 
     // We see variables for innermost frame.
-    assert.deepEqual(await getValuesForScope('LOCAL'), ['localX0: undefined']);
+    assert.deepEqual(await getValuesForScope('LOCAL', 0, 1), ['localX0: undefined']);
 
     // Switching frames affects what variables we see.
     await switchToCallFrame(2);
-    assert.deepEqual(await getValuesForScope('LOCAL'), ['localX1: undefined']);
+    assert.deepEqual(await getValuesForScope('LOCAL', 0, 1), ['localX1: undefined']);
 
     await switchToCallFrame(3);
-    assert.deepEqual(await getValuesForScope('LOCAL'), ['localX2: undefined']);
+    assert.deepEqual(await getValuesForScope('LOCAL', 0, 1), ['localX2: undefined']);
+
+    await click(RESUME_BUTTON);
+    await waitForFunction(async () => {
+      const messages = await getStructuredConsoleMessages();
+      if (!messages.length) {
+        return false;
+      }
+      const message = messages[messages.length - 1];
+      return message.message === `Uncaught (in promise) RuntimeError: unreachable
+    at inner_inline_func (unreachable.ll:6)
+    at outer_inline_func (unreachable.ll:11)
+    at Main (unreachable.ll:16)
+    at go (unreachable.html:27)`;
+    });
   });
 
   it('falls back to wasm function names when inline info not present', async () => {
@@ -447,14 +482,14 @@ describe('The Debugger Language Plugins', async () => {
     await frontend.evaluateHandle(
         () => globalThis.installExtensionPlugin((extensionServerClient: unknown, extensionAPI: unknown) => {
           class InliningPlugin {
-            _modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocations?: SourceLocation[]}>;
+            private modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocations?: SourceLocation[]}>;
             constructor() {
-              this._modules = new Map();
+              this.modules = new Map();
             }
 
             async addRawModule(rawModuleId: string, symbols: string, rawModule: RawModule) {
               const sourceFileURL = new URL('unreachable.ll', rawModule.url || symbols).href;
-              this._modules.set(rawModuleId, {
+              this.modules.set(rawModuleId, {
                 rawLocationRange: {rawModuleId, startOffset: 6, endOffset: 7},
                 sourceLocations: [
                   {rawModuleId, sourceFileURL, lineNumber: 5, columnNumber: 2},
@@ -464,7 +499,7 @@ describe('The Debugger Language Plugins', async () => {
             }
 
             async rawLocationToSourceLocation(rawLocation: RawLocation) {
-              const {rawLocationRange, sourceLocations} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange, sourceLocations} = this.modules.get(rawLocation.rawModuleId) || {};
               if (rawLocationRange && sourceLocations && rawLocationRange.startOffset <= rawLocation.codeOffset &&
                   rawLocation.codeOffset < rawLocationRange.endOffset) {
                 return [sourceLocations[rawLocation.inlineFrameIndex || 0]];
@@ -473,7 +508,7 @@ describe('The Debugger Language Plugins', async () => {
             }
 
             async getFunctionInfo(rawLocation: RawLocation) {
-              const {rawLocationRange} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange} = this.modules.get(rawLocation.rawModuleId) || {};
               if (rawLocationRange && rawLocationRange.startOffset <= rawLocation.codeOffset &&
                   rawLocation.codeOffset < rawLocationRange.endOffset) {
                 return {frames: []};
@@ -501,7 +536,7 @@ describe('The Debugger Language Plugins', async () => {
 
     // Call stack shows inline function names and source locations.
     const funcNames = await getCallFrameNames();
-    assert.deepEqual(funcNames, ['Main', 'go', 'await in go (async)', '(anonymous)']);
+    assert.deepEqual(funcNames, ['$Main', 'go', 'await in go (async)', '(anonymous)']);
     const sourceLocations = await getCallFrameLocations();
     assert.deepEqual(sourceLocations, ['unreachable.ll:6', 'unreachable.html:27', 'unreachable.html:30']);
   });
@@ -511,14 +546,14 @@ describe('The Debugger Language Plugins', async () => {
     await frontend.evaluateHandle(
         () => globalThis.installExtensionPlugin((extensionServerClient: unknown, extensionAPI: unknown) => {
           class VariableListingPlugin {
-            _modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocation?: SourceLocation}>;
+            private modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocation?: SourceLocation}>;
             constructor() {
-              this._modules = new Map();
+              this.modules = new Map();
             }
 
             async addRawModule(rawModuleId: string, symbols: string, rawModule: RawModule) {
               const sourceFileURL = new URL('unreachable.ll', rawModule.url || symbols).href;
-              this._modules.set(rawModuleId, {
+              this.modules.set(rawModuleId, {
                 rawLocationRange: {rawModuleId, startOffset: 6, endOffset: 7},
                 sourceLocation: {rawModuleId, sourceFileURL, lineNumber: 5, columnNumber: 2},
               });
@@ -526,7 +561,7 @@ describe('The Debugger Language Plugins', async () => {
             }
 
             async rawLocationToSourceLocation(rawLocation: RawLocation) {
-              const {rawLocationRange, sourceLocation} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange, sourceLocation} = this.modules.get(rawLocation.rawModuleId) || {};
               if (rawLocationRange && sourceLocation && rawLocationRange.startOffset <= rawLocation.codeOffset &&
                   rawLocation.codeOffset < rawLocationRange.endOffset) {
                 return [sourceLocation];
@@ -620,6 +655,7 @@ describe('The Debugger Language Plugins', async () => {
                 }
 
                 const value = {value: 26, recurse: new $tag()};
+                Object.setPrototypeOf(value, null);
                 return {tag: {className: '$tag', symbol: sym}, value};
               }
 
@@ -658,7 +694,6 @@ describe('The Debugger Language Plugins', async () => {
       'member2: TestTypeMember2',
       'recurse: 27',
       'value: 26',
-      '__proto__: Object',
     ]);
   });
 
@@ -667,14 +702,14 @@ describe('The Debugger Language Plugins', async () => {
     await frontend.evaluateHandle(
         () => globalThis.installExtensionPlugin((extensionServerClient: unknown, extensionAPI: unknown) => {
           class VariableListingPlugin {
-            _modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocation?: SourceLocation}>;
+            private modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocation?: SourceLocation}>;
             constructor() {
-              this._modules = new Map();
+              this.modules = new Map();
             }
 
             async addRawModule(rawModuleId: string, symbols: string, rawModule: RawModule) {
               const sourceFileURL = new URL('unreachable.ll', rawModule.url || symbols).href;
-              this._modules.set(rawModuleId, {
+              this.modules.set(rawModuleId, {
                 rawLocationRange: {rawModuleId, startOffset: 6, endOffset: 7},
                 sourceLocation: {rawModuleId, sourceFileURL, lineNumber: 5, columnNumber: 2},
               });
@@ -682,7 +717,7 @@ describe('The Debugger Language Plugins', async () => {
             }
 
             async rawLocationToSourceLocation(rawLocation: RawLocation) {
-              const {rawLocationRange, sourceLocation} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange, sourceLocation} = this.modules.get(rawLocation.rawModuleId) || {};
               if (rawLocationRange && sourceLocation && rawLocationRange.startOffset <= rawLocation.codeOffset &&
                   rawLocation.codeOffset < rawLocationRange.endOffset) {
                 return [sourceLocation];
@@ -695,7 +730,7 @@ describe('The Debugger Language Plugins', async () => {
             }
 
             async listVariablesInScope(rawLocation: RawLocation) {
-              const {rawLocationRange} = this._modules.get(rawLocation.rawModuleId) || {};
+              const {rawLocationRange} = this.modules.get(rawLocation.rawModuleId) || {};
               const {codeOffset} = rawLocation;
               if (!rawLocationRange || rawLocationRange.startOffset > codeOffset ||
                   rawLocationRange.endOffset <= codeOffset) {
@@ -707,14 +742,6 @@ describe('The Debugger Language Plugins', async () => {
               // instruction is where we pause at, so it's really easy to find in the page and is a great mock variable
               // candidate.
               return [{scope: 'LOCAL', name: 'unreachable', type: 'int'}];
-            }
-
-            async evaluateVariable(
-                name: string, location: RawLocation) {  // eslint-disable-line @typescript-eslint/no-unused-vars
-              if (name === 'unreachable') {
-                return {constantValue: {value: '23', js_type: 'number', type: 'int', name: 'unreachable'}};
-              }
-              return null;
             }
 
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -752,7 +779,7 @@ describe('The Debugger Language Plugins', async () => {
 
     await openSourcesPanel();
     await click(PAUSE_ON_EXCEPTION_BUTTON);
-    await goToResource('sources/wasm/unreachable.html');
+    await openSourceCodeEditorForFile('unreachable.ll', 'wasm/unreachable.html');
     await waitFor(RESUME_BUTTON);
 
     const pausedPosition = await waitForFunction(async () => {
@@ -766,5 +793,138 @@ describe('The Debugger Language Plugins', async () => {
     const popover = await waitFor('[data-stable-name-for-test="object-popover-content"]');
     const value = await waitFor('.object-value-number', popover).then(e => e.evaluate(node => node.textContent));
     assert.strictEqual(value, '23');
+  });
+
+  it('shows sensible error messages.', async () => {
+    const {frontend} = getBrowserAndPages();
+    await frontend.evaluateHandle(
+        () => globalThis.installExtensionPlugin((extensionServerClient: unknown, extensionAPI: unknown) => {
+          class FormattingErrorsPlugin {
+            private modules: Map<string, {rawLocationRange?: RawLocationRange, sourceLocation?: SourceLocation}>;
+            constructor() {
+              this.modules = new Map();
+            }
+
+            async addRawModule(rawModuleId: string, symbols: string, rawModule: RawModule) {
+              const sourceFileURL = new URL('unreachable.ll', rawModule.url || symbols).href;
+              this.modules.set(rawModuleId, {
+                rawLocationRange: {rawModuleId, startOffset: 6, endOffset: 7},
+                sourceLocation: {rawModuleId, sourceFileURL, lineNumber: 5, columnNumber: 2},
+              });
+              return [sourceFileURL];
+            }
+
+            async rawLocationToSourceLocation(rawLocation: RawLocation) {
+              const {rawLocationRange, sourceLocation} = this.modules.get(rawLocation.rawModuleId) || {};
+              if (rawLocationRange && sourceLocation && rawLocationRange.startOffset <= rawLocation.codeOffset &&
+                  rawLocation.codeOffset < rawLocationRange.endOffset) {
+                return [sourceLocation];
+              }
+              return [];
+            }
+
+            async getScopeInfo(type: string) {
+              return {type, typeName: type};
+            }
+
+            async listVariablesInScope(rawLocation: RawLocation) {
+              const {rawLocationRange} = this.modules.get(rawLocation.rawModuleId) || {};
+              const {codeOffset} = rawLocation;
+              if (!rawLocationRange || rawLocationRange.startOffset > codeOffset ||
+                  rawLocationRange.endOffset <= codeOffset) {
+                return [];
+              }
+
+              return [{scope: 'LOCAL', name: 'unreachable', type: 'int'}];
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            async getTypeInfo(expression: string, context: RawLocation):
+                Promise<{typeInfos: TypeInfo[], base: EvalBase}|null> {
+              if (expression === 'foo') {
+                const typeInfos = [{
+                  typeNames: ['int'],
+                  typeId: 'int',
+                  members: [],
+                  alignment: 0,
+                  arraySize: 0,
+                  size: 4,
+                  canExpand: false,
+                  hasValue: true,
+                }];
+                const base = {rootType: typeInfos[0], payload: 28};
+
+                return {typeInfos, base};
+              }
+              throw new Error(`No typeinfo for ${expression}`);
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            async getFormatter(expressionOrField: string|{base: EvalBase, field: FieldInfo[]}, context: RawLocation):
+                Promise<{js: string}|null> {
+              if (typeof expressionOrField !== 'string' && expressionOrField.base.payload as number === 28 &&
+                  expressionOrField.field.length === 0) {
+                return {js: '23'};
+              }
+              throw new Error(`cannot format ${expressionOrField}`);
+            }
+          }
+
+          RegisterExtension(
+              extensionAPI, new FormattingErrorsPlugin(), 'Formatter Errors',
+              {language: 'WebAssembly', symbol_types: ['None']});
+        }));
+
+    await openSourcesPanel();
+    await click(PAUSE_ON_EXCEPTION_BUTTON);
+    await goToResource('sources/wasm/unreachable.html');
+    await waitFor(RESUME_BUTTON);
+    const locals = await getValuesForScope('LOCAL', 0, 1);
+    assert.deepStrictEqual(locals, ['unreachable: undefined']);
+
+
+    const watchPane = await waitFor('[aria-label="Watch"]');
+    const isExpanded = await watchPane.evaluate(element => {
+      return element.getAttribute('aria-expanded') === 'true';
+    });
+    if (!isExpanded) {
+      await click('.title-expand-icon', {root: watchPane});
+    }
+
+    await click('[aria-label="Add watch expression"]');
+    await waitFor('.watch-expression-editing');
+    await pasteText('foo');
+    await frontend.keyboard.press('Enter');
+    await waitForNone('.watch-expression-editing');
+
+    await click('[aria-label="Add watch expression"]');
+    await waitFor('.watch-expression-editing');
+    await pasteText('bar');
+    await frontend.keyboard.press('Enter');
+    await waitForNone('.watch-expression-editing');
+
+    const watchResults = await waitForMany('.watch-expression', 2);
+    const watchTexts = await Promise.all(watchResults.map(async watch => await watch.evaluate(e => e.textContent)));
+    assert.deepStrictEqual(watchTexts, ['foo: 23', 'bar: <not available>']);
+
+    await watchResults[1].hover();
+    const tooltip = await waitFor('.tooltip');
+    const tooltipText = await tooltip.evaluate(e => e.textContent);
+    assert.strictEqual(tooltipText, 'No typeinfo for bar');
+
+
+    await click(CONSOLE_TAB_SELECTOR);
+    await focusConsolePrompt();
+
+    await pasteText('bar');
+    await frontend.keyboard.press('Enter');
+
+    // Wait for the console to be usable again.
+    await frontend.waitForFunction(() => {
+      return document.querySelectorAll('.console-user-command-result').length === 1;
+    });
+
+    const messages = await getCurrentConsoleMessages();
+    assert.deepStrictEqual(messages.filter(m => !m.startsWith('[Formatter Errors]')), ['Uncaught No typeinfo for bar']);
   });
 });

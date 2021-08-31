@@ -73,11 +73,11 @@ AddressInfo::AddressInfoAndResult AddressInfo::Get(
       err = ERR_NAME_RESOLUTION_FAILED;
 #endif
 
-    return AddressInfoAndResult(base::Optional<AddressInfo>(), err, os_error);
+    return AddressInfoAndResult(absl::optional<AddressInfo>(), err, os_error);
   }
 
   return AddressInfoAndResult(
-      base::Optional<AddressInfo>(AddressInfo(ai, std::move(getter))), OK, 0);
+      absl::optional<AddressInfo>(AddressInfo(ai, std::move(getter))), OK, 0);
 }
 
 AddressInfo::AddressInfo(AddressInfo&& other)
@@ -107,10 +107,10 @@ AddressInfo::const_iterator AddressInfo::end() const {
   return const_iterator(nullptr);
 }
 
-base::Optional<std::string> AddressInfo::GetCanonicalName() const {
+absl::optional<std::string> AddressInfo::GetCanonicalName() const {
   return (ai_->ai_canonname != nullptr)
-             ? base::Optional<std::string>(std::string(ai_->ai_canonname))
-             : base::Optional<std::string>();
+             ? absl::optional<std::string>(std::string(ai_->ai_canonname))
+             : absl::optional<std::string>();
 }
 
 bool AddressInfo::IsAllLocalhostOfOneFamily() const {
@@ -150,8 +150,10 @@ bool AddressInfo::IsAllLocalhostOfOneFamily() const {
 AddressList AddressInfo::CreateAddressList() const {
   AddressList list;
   auto canonical_name = GetCanonicalName();
-  if (canonical_name)
-    list.set_canonical_name(*canonical_name);
+  if (canonical_name) {
+    std::vector<std::string> aliases({*canonical_name});
+    list.SetDnsAliases(std::move(aliases));
+  }
   for (auto&& ai : *this) {
     IPEndPoint ipe;
     // NOTE: Ignoring non-INET* families.

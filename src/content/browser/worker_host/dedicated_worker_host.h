@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "content/browser/browser_interface_broker_impl.h"
@@ -18,7 +17,9 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/isolation_info.h"
 #include "services/network/public/cpp/cross_origin_embedder_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/loader/content_security_notifier.mojom.h"
@@ -26,7 +27,8 @@
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-forward.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-forward.h"
-#include "third_party/blink/public/mojom/webtransport/quic_transport_connector.mojom-forward.h"
+#include "third_party/blink/public/mojom/webtransport/web_transport_connector.mojom-forward.h"
+#include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/mojom/worker/subresource_loader_updater.mojom.h"
 #include "url/origin.h"
@@ -37,7 +39,6 @@
 
 namespace content {
 
-class CrossOriginEmbedderPolicyReporter;
 class DedicatedWorkerServiceImpl;
 class ServiceWorkerMainResourceHandle;
 class ServiceWorkerObjectHost;
@@ -46,18 +47,24 @@ class StoragePartitionImpl;
 // A host for a single dedicated worker. It deletes itself upon Mojo
 // disconnection from the worker in the renderer or when the RenderProcessHost
 // of the worker is destroyed. This lives on the UI thread.
-class DedicatedWorkerHost final : public RenderProcessHostObserver {
+// TODO(crbug.com/1177652): Align this class's lifetime with the associated
+// frame.
+class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
+                                  public RenderProcessHostObserver {
  public:
   DedicatedWorkerHost(
       DedicatedWorkerServiceImpl* service,
       const blink::DedicatedWorkerToken& token,
       RenderProcessHost* worker_process_host,
-      base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id,
+      absl::optional<GlobalFrameRoutingId> creator_render_frame_host_id,
+      absl::optional<blink::DedicatedWorkerToken> creator_worker_token,
       GlobalFrameRoutingId ancestor_render_frame_host_id,
       const url::Origin& creator_origin,
+      const net::IsolationInfo& isolation_info,
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
-      mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
-          coep_reporter);
+      base::WeakPtr<CrossOriginEmbedderPolicyReporter> creator_coep_reporter,
+      base::WeakPtr<CrossOriginEmbedderPolicyReporter> ancestor_coep_reporter,
+      mojo::PendingReceiver<blink::mojom::DedicatedWorkerHost> host);
   ~DedicatedWorkerHost() final;
 
   void BindBrowserInterfaceBrokerReceiver(
@@ -66,6 +73,12 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
   const blink::DedicatedWorkerToken& GetToken() const { return token_; }
   RenderProcessHost* GetProcessHost() const { return worker_process_host_; }
   const url::Origin& GetWorkerOrigin() const { return worker_origin_; }
+  const GlobalFrameRoutingId& GetAncestorRenderFrameHostId() const {
+    return ancestor_render_frame_host_id_;
+  }
+  const absl::optional<GURL>& GetFinalResponseURL() const {
+    return final_response_url_;
+  }
 
   void CreateContentSecurityNotifier(
       mojo::PendingReceiver<blink::mojom::ContentSecurityNotifier> receiver);
@@ -79,8 +92,8 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
       mojo::PendingReceiver<blink::mojom::WebUsbService> receiver);
   void CreateWebSocketConnector(
       mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver);
-  void CreateQuicTransportConnector(
-      mojo::PendingReceiver<blink::mojom::QuicTransportConnector> receiver);
+  void CreateWebTransportConnector(
+      mojo::PendingReceiver<blink::mojom::WebTransportConnector> receiver);
   void CreateWakeLockService(
       mojo::PendingReceiver<blink::mojom::WakeLockService> receiver);
   void BindCacheStorage(
@@ -102,9 +115,30 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
 
   void ReportNoBinderForInterface(const std::string& error);
 
+  // TODO(crbug.com/906991): Remove this method once PlzDedicatedWorker is
+  // enabled by default.
+  void MaybeCountWebFeature(const GURL& script_url);
+  // TODO(crbug.com/906991): Remove this method once PlzDedicatedWorker is
+  // enabled by default.
+  void ContinueOnMaybeCountWebFeature(
+      const GURL& script_url,
+      base::WeakPtr<ServiceWorkerContainerHost> container_host,
+      blink::ServiceWorkerStatusCode status,
+      const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
+          registrations);
+
+  const net::NetworkIsolationKey& GetNetworkIsolationKey() const {
+    return isolation_info_.network_isolation_key();
+  }
+
   const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy()
       const {
-    return cross_origin_embedder_policy_;
+    DCHECK(worker_cross_origin_embedder_policy_.has_value());
+    return worker_cross_origin_embedder_policy_.value();
+  }
+
+  ServiceWorkerMainResourceHandle* service_worker_handle() {
+    return service_worker_handle_.get();
   }
 
  private:
@@ -160,6 +194,13 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
 
   void OnMojoDisconnect();
 
+  // Returns true if creator and worker's COEP values are valid.
+  bool CheckCrossOriginEmbedderPolicy(
+      network::CrossOriginEmbedderPolicy creator_cross_origin_embedder_policy,
+      network::CrossOriginEmbedderPolicy worker_cross_origin_embedder_policy);
+
+  base::WeakPtr<CrossOriginEmbedderPolicyReporter> GetWorkerCoepReporter();
+
   DedicatedWorkerServiceImpl* const service_;
 
   // The renderer generated ID of this worker, unique across all processes.
@@ -171,9 +212,13 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
   base::ScopedObservation<RenderProcessHost, RenderProcessHostObserver>
       scoped_process_host_observation_{this};
 
-  // The ID of the frame that directly starts this worker. This is base::nullopt
+  // The ID of the frame that directly starts this worker. This is absl::nullopt
   // when this worker is nested.
-  const base::Optional<GlobalFrameRoutingId> creator_render_frame_host_id_;
+  const absl::optional<GlobalFrameRoutingId> creator_render_frame_host_id_;
+
+  // The token of the dedicated worker that directly starts this worker. This is
+  // absl::nullopt when this worker is created from a frame.
+  const absl::optional<blink::DedicatedWorkerToken> creator_worker_token_;
 
   // The ID of the frame that owns this worker, either directly, or (in the case
   // of nested workers) indirectly via a tree of dedicated workers.
@@ -186,10 +231,19 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
   // https://html.spec.whatwg.org/C/#concept-settings-object-origin
   const url::Origin worker_origin_;
 
-  // The DedicatedWorker's Cross-Origin-Embedder-Policy(COEP). It is equals to
-  // the nearest ancestor frame host's COEP:
-  // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
-  const network::CrossOriginEmbedderPolicy cross_origin_embedder_policy_;
+  // The IsolationInfo associated with this worker. Same as that of the
+  // frame or the worker that created this worker.
+  const net::IsolationInfo isolation_info_;
+
+  // The frame/worker's Cross-Origin-Embedder-Policy (COEP) that directly starts
+  // this worker.
+  const network::CrossOriginEmbedderPolicy
+      creator_cross_origin_embedder_policy_;
+
+  // The DedicatedWorker's Cross-Origin-Embedder-Policy (COEP). This is set when
+  // the script's response head is loaded.
+  absl::optional<network::CrossOriginEmbedderPolicy>
+      worker_cross_origin_embedder_policy_;
 
   // This is kept alive during the lifetime of the dedicated worker, since it's
   // associated with Mojo interfaces (ServiceWorkerContainer and
@@ -203,6 +257,7 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
       this};
   mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
       &broker_};
+  mojo::Receiver<blink::mojom::DedicatedWorkerHost> host_receiver_;
 
   // Indicates if subresource loaders of this worker support file URLs.
   bool file_url_support_ = false;
@@ -213,14 +268,22 @@ class DedicatedWorkerHost final : public RenderProcessHostObserver {
   mojo::Remote<blink::mojom::SubresourceLoaderUpdater>
       subresource_loader_updater_;
 
-  // The endpoint of this mojo interface is the RenderFrameHostImpl's COEP
-  // reporter. The COEP endpoint is correct, but the context_url is the
-  // Document's URL.
-  // TODO(arthursonzogni): After landing PlzDedicatedWorker, make the
-  // DedicatedWorkerHost to have its own COEP reporter using the right
-  // context_url.
-  mojo::Remote<network::mojom::CrossOriginEmbedderPolicyReporter>
-      coep_reporter_;  // Never null.
+  // For the PlzDedicatedWorker case. `coep_reporter_` is valid after
+  // DidStartScriptLoad() and remains non-null for the lifetime of `this`.
+  std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter_;
+  // TODO(crbug.com/1177652): Remove `creator_coep_reporter_` after this class's
+  // lifetime is aligned with the associated frame.
+  base::WeakPtr<CrossOriginEmbedderPolicyReporter> creator_coep_reporter_;
+
+  // For the non-PlzDedicatedWorker case. Sending reports to the ancestor frame
+  // is not the behavior defined in the spec, but keep the current behavior and
+  // not to lose reports.
+  // TODO(crbug.com/906991): Remove `ancestor_coep_reporter_` once
+  // PlzDedicatedWorker is enabled by default.
+  base::WeakPtr<CrossOriginEmbedderPolicyReporter> ancestor_coep_reporter_;
+
+  // Will be set once the worker script started loading.
+  absl::optional<GURL> final_response_url_;
 
   base::WeakPtrFactory<DedicatedWorkerHost> weak_factory_{this};
 

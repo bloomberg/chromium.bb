@@ -25,20 +25,27 @@ DuplicateDownloadInfoBar::~DuplicateDownloadInfoBar() {
 
 DuplicateDownloadInfoBar::DuplicateDownloadInfoBar(
     std::unique_ptr<DuplicateDownloadInfoBarDelegate> delegate)
-    : ChromeConfirmInfoBar(std::move(delegate)) {}
+    : infobars::ConfirmInfoBar(std::move(delegate)) {}
 
 base::android::ScopedJavaLocalRef<jobject>
-DuplicateDownloadInfoBar::CreateRenderInfoBar(JNIEnv* env) {
+DuplicateDownloadInfoBar::CreateRenderInfoBar(
+    JNIEnv* env,
+    const ResourceIdMapper& resource_id_mapper) {
   DuplicateDownloadInfoBarDelegate* delegate = GetDelegate();
 
   base::android::ScopedJavaLocalRef<jstring> j_file_path =
       base::android::ConvertUTF8ToJavaString(env, delegate->GetFilePath());
   base::android::ScopedJavaLocalRef<jstring> j_page_url =
       base::android::ConvertUTF8ToJavaString(env, delegate->GetPageURL());
+  base::android::ScopedJavaLocalRef<jobject> j_otr_profile_id;
+  if (delegate->GetOTRProfileID()) {
+    j_otr_profile_id =
+        delegate->GetOTRProfileID()->ConvertToJavaOTRProfileID(env);
+  }
   base::android::ScopedJavaLocalRef<jobject> java_infobar(
       Java_DuplicateDownloadInfoBar_createInfoBar(
           env, j_file_path, delegate->IsOfflinePage(), j_page_url,
-          delegate->IsOffTheRecord(), delegate->DuplicateRequestExists()));
+          j_otr_profile_id, delegate->DuplicateRequestExists()));
   return java_infobar;
 }
 

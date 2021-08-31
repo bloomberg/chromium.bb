@@ -189,7 +189,7 @@ class VIEWS_EXPORT TreeView : public View,
 
   // TextfieldController overrides:
   void ContentsChanged(Textfield* sender,
-                       const base::string16& new_contents) override;
+                       const std::u16string& new_contents) override;
   bool HandleKeyEvent(Textfield* sender,
                       const ui::KeyEvent& key_event) override;
 
@@ -201,7 +201,7 @@ class VIEWS_EXPORT TreeView : public View,
   int GetRowCount() override;
   int GetSelectedRow() override;
   void SetSelectedRow(int row) override;
-  base::string16 GetTextForRow(int row) override;
+  std::u16string GetTextForRow(int row) override;
 
  protected:
   // View overrides:
@@ -215,7 +215,7 @@ class VIEWS_EXPORT TreeView : public View,
   friend class TreeViewTest;
 
   // Enumeration of possible changes to tree view state when the UI is updated.
-  enum SelectionType {
+  enum class SelectionType {
     // Active state is being set to a tree item.
     kActive,
 
@@ -307,12 +307,12 @@ class VIEWS_EXPORT TreeView : public View,
   };
 
   // Used by IncrementSelection.
-  enum IncrementType {
+  enum class IncrementType {
     // Selects the next node.
-    INCREMENT_NEXT,
+    kNext,
 
     // Selects the previous node.
-    INCREMENT_PREVIOUS
+    kPrevious
   };
 
   // Row of the root node. This varies depending upon whether the root is

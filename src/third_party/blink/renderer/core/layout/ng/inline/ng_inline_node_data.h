@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_INLINE_NODE_DATA_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_items_data.h"
+#include "third_party/blink/renderer/core/layout/ng/svg/svg_inline_node_data.h"
 
 namespace blink {
 
@@ -41,7 +41,6 @@ struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
 
   friend class NGInlineItemsBuilderTest;
   friend class NGInlineNode;
-  friend class NGInlineNodeLegacy;
   friend class NGInlineNodeForTest;
   friend class NGOffsetMappingTest;
 
@@ -54,6 +53,8 @@ struct CORE_EXPORT NGInlineNodeData : NGInlineItemsData {
   // text_content and ShapeResult if 'text-transform' is applied or fonts are
   // different.
   std::unique_ptr<NGInlineItemsData> first_line_items_;
+
+  std::unique_ptr<SVGInlineNodeData> svg_node_data_;
 
   unsigned is_bidi_enabled_ : 1;
   unsigned base_direction_ : 1;  // TextDirection

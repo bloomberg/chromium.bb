@@ -5,6 +5,7 @@
 #include "chrome/browser/media/webrtc/webrtc_text_log_handler.h"
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -21,6 +22,7 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/audio_service_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/media/webrtc_logging.mojom.h"
@@ -49,7 +51,7 @@
 #include "base/mac/mac_util.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/system/statistics_provider.h"
 #endif
 
@@ -204,9 +206,9 @@ bool WebRtcTextLogHandler::StartLogging(WebRtcLogUploader* log_uploader,
   logging_state_ = STARTING;
 
   DCHECK(!log_buffer_);
-  log_buffer_.reset(new WebRtcLogBuffer());
+  log_buffer_ = std::make_unique<WebRtcLogBuffer>();
   if (!meta_data_)
-    meta_data_.reset(new WebRtcLogMetaDataMap());
+    meta_data_ = std::make_unique<WebRtcLogMetaDataMap>();
 
   content::GetNetworkService()->GetNetworkList(
       net::EXCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES,
@@ -409,7 +411,7 @@ void WebRtcTextLogHandler::SetWebAppId(int web_app_id) {
 
 void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
     GenericDoneCallback callback,
-    const base::Optional<net::NetworkInterfaceList>& networks) {
+    const absl::optional<net::NetworkInterfaceList>& networks) {
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Hop to a background thread to get the distro string, which can block.
   base::ThreadPool::PostTaskAndReplyWithResult(
@@ -424,7 +426,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
 
 void WebRtcTextLogHandler::OnGetNetworkInterfaceListFinish(
     GenericDoneCallback callback,
-    const base::Optional<net::NetworkInterfaceList>& networks,
+    const absl::optional<net::NetworkInterfaceList>& networks,
     const std::string& linux_distro) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -449,7 +451,8 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceListFinish(
 
   // Chrome version
   LogToCircularBuffer("Chrome version: " + version_info::GetVersionNumber() +
-                      " " + chrome::GetChannelName());
+                      " " +
+                      chrome::GetChannelName(chrome::WithExtendedStable(true)));
 
   // OS
   LogToCircularBuffer(base::SysInfo::OperatingSystemName() + " " +
@@ -472,7 +475,7 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceListFinish(
   std::string computer_model = "Not available";
 #if defined(OS_MAC)
   computer_model = base::mac::GetModelIdentifier();
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
       chromeos::system::kHardwareClassKey, &computer_model);
 #endif

@@ -9,20 +9,18 @@
 
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDirectContextPriv.h"
+#include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrMemoryPool.h"
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrOpsRenderPass.h"
 #include "src/gpu/GrPipeline.h"
-#include "src/gpu/GrPrimitiveProcessor.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrShaderVar.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
-#include "src/gpu/glsl/GrGLSLPrimitiveProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 #include "src/gpu/ops/GrDrawOp.h"
@@ -49,7 +47,7 @@ constexpr static int kHeight = (int)kRect.fBottom + 21;
 class TessellationGM : public GpuGM {
     SkString onShortName() override { return SkString("tessellation"); }
     SkISize onISize() override { return {kWidth, kHeight}; }
-    DrawResult onDraw(GrRecordingContext*, GrRenderTargetContext*, SkCanvas*, SkString*) override;
+    DrawResult onDraw(GrRecordingContext*, GrSurfaceDrawContext*, SkCanvas*, SkString*) override;
 };
 
 
@@ -67,48 +65,24 @@ private:
 
     class Impl : public GrGLSLGeometryProcessor {
         void onEmitCode(EmitArgs& args, GrGPArgs*) override {
-            args.fVaryingHandler->emitAttributes(args.fGP.cast<TessellationTestTriShader>());
+            args.fVaryingHandler->emitAttributes(args.fGeomProc.cast<TessellationTestTriShader>());
             const char* viewMatrix;
             fViewMatrixUniform = args.fUniformHandler->addUniform(
                     nullptr, kVertex_GrShaderFlag, kFloat3x3_GrSLType, "view_matrix", &viewMatrix);
             args.fVertBuilder->declareGlobal(
                     GrShaderVar("P_", kFloat3_GrSLType, GrShaderVar::TypeModifier::Out));
             args.fVertBuilder->codeAppendf(R"(
-                    P_.xy = (%s * float3(position.xy, 1)).xy;
-                    P_.z = position.z;)", viewMatrix);
+            P_.xy = (%s * float3(position.xy, 1)).xy;
+            P_.z = position.z;)", viewMatrix);
             // GrGLProgramBuilder will call writeTess*ShaderGLSL when it is compiling.
             this->writeFragmentShader(args.fFragBuilder, args.fOutputColor, args.fOutputCoverage);
         }
-        void writeFragmentShader(GrGLSLFPFragmentBuilder*, const char* color, const char* coverage);
-        void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrPrimitiveProcessor& proc) override {
-            pdman.setSkMatrix(fViewMatrixUniform,
-                              proc.cast<TessellationTestTriShader>().fViewMatrix);
-        }
-        GrGLSLUniformHandler::UniformHandle fViewMatrixUniform;
-    };
-
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override {
-        return new Impl;
-    }
-
-    SkString getTessControlShaderGLSL(const GrGLSLPrimitiveProcessor*,
-                                      const char* versionAndExtensionDecls,
-                                      const GrGLSLUniformHandler&,
-                                      const GrShaderCaps&) const override;
-    SkString getTessEvaluationShaderGLSL(const GrGLSLPrimitiveProcessor*,
-                                         const char* versionAndExtensionDecls,
-                                         const GrGLSLUniformHandler&,
-                                         const GrShaderCaps&) const override;
-
-    const SkMatrix fViewMatrix;
-};
-
-SkString TessellationTestTriShader::getTessControlShaderGLSL(
-        const GrGLSLPrimitiveProcessor*, const char* versionAndExtensionDecls,
-        const GrGLSLUniformHandler&, const GrShaderCaps&) const {
-    SkString code(versionAndExtensionDecls);
-    code.append(R"(
+        SkString getTessControlShaderGLSL(const GrGeometryProcessor&,
+                                          const char* versionAndExtensionDecls,
+                                          const GrGLSLUniformHandler&,
+                                          const GrShaderCaps&) const override {
+            SkString code(versionAndExtensionDecls);
+            code.append(R"(
             layout(vertices = 3) out;
 
             in vec3 P_[];
@@ -120,14 +94,14 @@ SkString TessellationTestTriShader::getTessControlShaderGLSL(
                 gl_TessLevelInner[0] = 2.0;
             })");
 
-    return code;
-}
-
-SkString TessellationTestTriShader::getTessEvaluationShaderGLSL(
-        const GrGLSLPrimitiveProcessor*, const char* versionAndExtensionDecls,
-        const GrGLSLUniformHandler&, const GrShaderCaps&) const {
-    SkString code(versionAndExtensionDecls);
-    code.append(R"(
+            return code;
+        }
+        SkString getTessEvaluationShaderGLSL(const GrGeometryProcessor&,
+                                             const char* versionAndExtensionDecls,
+                                             const GrGLSLUniformHandler&,
+                                             const GrShaderCaps&) const override {
+            SkString code(versionAndExtensionDecls);
+            code.append(R"(
             layout(triangles, equal_spacing, cw) in;
 
             uniform vec4 sk_RTAdjust;
@@ -161,19 +135,33 @@ SkString TessellationTestTriShader::getTessEvaluationShaderGLSL(
                 barycentric_coord = vec3(i, 0, 1.0 - i);
             })");
 
-    return code;
-}
-
-void TessellationTestTriShader::Impl::writeFragmentShader(
-        GrGLSLFPFragmentBuilder* f, const char* color, const char* coverage) {
-    f->declareGlobal(
-            GrShaderVar("barycentric_coord", kFloat3_GrSLType, GrShaderVar::TypeModifier::In));
-    f->codeAppendf(R"(
+            return code;
+        }
+        void writeFragmentShader(GrGLSLFPFragmentBuilder* f, const char* color,
+                                 const char* coverage) {
+            f->declareGlobal(GrShaderVar("barycentric_coord", kFloat3_GrSLType,
+                                         GrShaderVar::TypeModifier::In));
+            f->codeAppendf(R"(
             half3 d = half3(1 - barycentric_coord/fwidth(barycentric_coord));
             half coverage = max(max(d.x, d.y), d.z);
-            %s = half4(0, coverage, coverage, 1);
-            %s = half4(1);)", color, coverage);
-}
+            half4 %s = half4(0, coverage, coverage, 1);
+            const half4 %s = half4(1);)", color, coverage);
+        }
+        void setData(const GrGLSLProgramDataManager& pdman,
+                     const GrShaderCaps&,
+                     const GrGeometryProcessor& geomProc) override {
+            pdman.setSkMatrix(fViewMatrixUniform,
+                              geomProc.cast<TessellationTestTriShader>().fViewMatrix);
+        }
+        GrGLSLUniformHandler::UniformHandle fViewMatrixUniform;
+    };
+
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
+        return new Impl;
+    }
+
+    const SkMatrix fViewMatrix;
+};
 
 class TessellationTestRectShader : public GrGeometryProcessor {
 public:
@@ -197,36 +185,12 @@ private:
             // GrGLProgramBuilder will call writeTess*ShaderGLSL when it is compiling.
             this->writeFragmentShader(args.fFragBuilder, args.fOutputColor, args.fOutputCoverage);
         }
-        void writeFragmentShader(GrGLSLFPFragmentBuilder*, const char* color, const char* coverage);
-        void setData(const GrGLSLProgramDataManager& pdman,
-                     const GrPrimitiveProcessor& proc) override {
-            pdman.setSkMatrix(fViewMatrixUniform,
-                              proc.cast<TessellationTestRectShader>().fViewMatrix);
-        }
-        GrGLSLUniformHandler::UniformHandle fViewMatrixUniform;
-    };
-
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override {
-        return new Impl;
-    }
-
-    SkString getTessControlShaderGLSL(const GrGLSLPrimitiveProcessor*,
-                                      const char* versionAndExtensionDecls,
-                                      const GrGLSLUniformHandler&,
-                                      const GrShaderCaps&) const override;
-    SkString getTessEvaluationShaderGLSL(const GrGLSLPrimitiveProcessor*,
-                                         const char* versionAndExtensionDecls,
-                                         const GrGLSLUniformHandler&,
-                                         const GrShaderCaps&) const override;
-
-    const SkMatrix fViewMatrix;
-};
-
-SkString TessellationTestRectShader::getTessControlShaderGLSL(
-        const GrGLSLPrimitiveProcessor*, const char* versionAndExtensionDecls,
-        const GrGLSLUniformHandler&, const GrShaderCaps& caps) const {
-    SkString code(versionAndExtensionDecls);
-    code.append(R"(
+        SkString getTessControlShaderGLSL(const GrGeometryProcessor&,
+                                          const char* versionAndExtensionDecls,
+                                          const GrGLSLUniformHandler&,
+                                          const GrShaderCaps&) const override {
+            SkString code(versionAndExtensionDecls);
+            code.append(R"(
             layout(vertices = 1) out;
 
             in mat3 M_[];
@@ -242,14 +206,14 @@ SkString TessellationTestRectShader::getTessControlShaderGLSL(
                 gl_TessLevelOuter[3] = 8.0;
             })");
 
-    return code;
-}
-
-SkString TessellationTestRectShader::getTessEvaluationShaderGLSL(
-        const GrGLSLPrimitiveProcessor*, const char* versionAndExtensionDecls,
-        const GrGLSLUniformHandler&, const GrShaderCaps& caps) const {
-    SkString code(versionAndExtensionDecls);
-    code.appendf(R"(
+            return code;
+        }
+        SkString getTessEvaluationShaderGLSL(const GrGeometryProcessor&,
+                                             const char* versionAndExtensionDecls,
+                                             const GrGLSLUniformHandler&,
+                                             const GrShaderCaps&) const override {
+            SkString code(versionAndExtensionDecls);
+            code.appendf(R"(
             layout(quads, equal_spacing, cw) in;
 
             uniform vec4 sk_RTAdjust;
@@ -273,14 +237,13 @@ SkString TessellationTestRectShader::getTessEvaluationShaderGLSL(
                 }
             })", kRect.left(), kRect.top(), kRect.right(), kRect.bottom());
 
-    return code;
-}
-
-void TessellationTestRectShader::Impl::writeFragmentShader(
-        GrGLSLFPFragmentBuilder* f, const char* color, const char* coverage) {
-    f->declareGlobal(GrShaderVar("barycentric_coord", kFloat4_GrSLType,
-                                 GrShaderVar::TypeModifier::In));
-    f->codeAppendf(R"(
+            return code;
+        }
+        void writeFragmentShader(GrGLSLFPFragmentBuilder* f, const char* color,
+                                 const char* coverage) {
+            f->declareGlobal(GrShaderVar("barycentric_coord", kFloat4_GrSLType,
+                                         GrShaderVar::TypeModifier::In));
+            f->codeAppendf(R"(
             float4 fwidths = fwidth(barycentric_coord);
             half coverage = 0;
             for (int i = 0; i < 4; ++i) {
@@ -288,10 +251,25 @@ void TessellationTestRectShader::Impl::writeFragmentShader(
                     coverage = half(max(coverage, 1 - barycentric_coord[i]/fwidths[i]));
                 }
             }
-            %s = half4(coverage, 0, coverage, 1);
-            %s = half4(1);)", color, coverage);
-}
+            half4 %s = half4(coverage, 0, coverage, 1);
+            const half4 %s = half4(1);)", color, coverage);
 
+        }
+        void setData(const GrGLSLProgramDataManager& pdman,
+                     const GrShaderCaps&,
+                     const GrGeometryProcessor& geomProc) override {
+            pdman.setSkMatrix(fViewMatrixUniform,
+                              geomProc.cast<TessellationTestRectShader>().fViewMatrix);
+        }
+        GrGLSLUniformHandler::UniformHandle fViewMatrixUniform;
+    };
+
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override {
+        return new Impl;
+    }
+
+    const SkMatrix fViewMatrix;
+};
 
 class TessellationTestOp : public GrDrawOp {
     DEFINE_OP_CLASS_ID
@@ -305,16 +283,16 @@ public:
 private:
     const char* name() const override { return "TessellationTestOp"; }
     FixedFunctionFlags fixedFunctionFlags() const override { return FixedFunctionFlags::kNone; }
-    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*,
-                                      bool hasMixedSampledCoverage, GrClampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps&, const GrAppliedClip*, GrClampType) override {
         return GrProcessorSet::EmptySetAnalysis();
     }
 
     void onPrePrepare(GrRecordingContext*,
-                      const GrSurfaceProxyView* writeView,
+                      const GrSurfaceProxyView& writeView,
                       GrAppliedClip*,
                       const GrXferProcessor::DstProxyView&,
-                      GrXferBarrierFlags renderPassXferBarriers) override {}
+                      GrXferBarrierFlags renderPassXferBarriers,
+                      GrLoadOp colorLoadOp) override {}
 
     void onPrepare(GrOpFlushState* flushState) override {
         if (fTriPositions) {
@@ -327,7 +305,7 @@ private:
 
     void onExecute(GrOpFlushState* state, const SkRect& chainBounds) override {
         GrPipeline pipeline(GrScissorTest::kDisabled, SkBlendMode::kSrc,
-                            state->drawOpArgs().writeSwizzle());
+                            state->drawOpArgs().writeView().swizzle());
         int tessellationPatchVertexCount;
         std::unique_ptr<GrGeometryProcessor> shader;
         if (fTriPositions) {
@@ -343,11 +321,10 @@ private:
             shader = std::make_unique<TessellationTestRectShader>(fViewMatrix);
         }
 
-        GrProgramInfo programInfo(state->proxy()->numSamples(), state->proxy()->numStencilSamples(),
-                                  state->proxy()->backendFormat(), state->writeView()->origin(),
-                                  &pipeline, &GrUserStencilSettings::kUnused, shader.get(),
-                                  GrPrimitiveType::kPatches, tessellationPatchVertexCount,
-                                  state->renderPassBarriers());
+        GrProgramInfo programInfo(state->writeView(), &pipeline, &GrUserStencilSettings::kUnused,
+                                  shader.get(), GrPrimitiveType::kPatches,
+                                  tessellationPatchVertexCount, state->renderPassBarriers(),
+                                  state->colorLoadOp());
 
         state->bindPipeline(programInfo, SkRect::MakeIWH(kWidth, kHeight));
         state->bindBuffers(nullptr, nullptr, std::move(fVertexBuffer));
@@ -380,7 +357,7 @@ static SkPath build_outset_triangle(const std::array<float, 3>* tri) {
     return outset;
 }
 
-DrawResult TessellationGM::onDraw(GrRecordingContext* ctx, GrRenderTargetContext* rtc,
+DrawResult TessellationGM::onDraw(GrRecordingContext* ctx, GrSurfaceDrawContext* rtc,
                                   SkCanvas* canvas, SkString* errorMsg) {
     if (!ctx->priv().caps()->shaderCaps()->tessellationSupport()) {
         *errorMsg = "Requires GPU tessellation support.";
@@ -402,12 +379,9 @@ DrawResult TessellationGM::onDraw(GrRecordingContext* ctx, GrRenderTargetContext
     borderPaint.setColor4f({1,0,1,1});
     canvas->drawRect(kRect.makeOutset(1.5f, 1.5f), borderPaint);
 
-    rtc->priv().testingOnly_addDrawOp(
-            GrOp::Make<TessellationTestOp>(ctx, canvas->getTotalMatrix(), kTri1));
-    rtc->priv().testingOnly_addDrawOp(
-            GrOp::Make<TessellationTestOp>(ctx, canvas->getTotalMatrix(), kTri2));
-    rtc->priv().testingOnly_addDrawOp(
-            GrOp::Make<TessellationTestOp>(ctx, canvas->getTotalMatrix(), nullptr));
+    rtc->addDrawOp(GrOp::Make<TessellationTestOp>(ctx, canvas->getTotalMatrix(), kTri1));
+    rtc->addDrawOp(GrOp::Make<TessellationTestOp>(ctx, canvas->getTotalMatrix(), kTri2));
+    rtc->addDrawOp(GrOp::Make<TessellationTestOp>(ctx, canvas->getTotalMatrix(), nullptr));
 
     return skiagm::DrawResult::kOk;
 }

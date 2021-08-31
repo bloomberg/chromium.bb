@@ -38,7 +38,7 @@ public:
 
 	static size_t ComputeRequiredAllocationSize(const void *pCreateInfo);
 
-	void getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabilities) const override;
+	VkResult getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabilities) const override;
 
 	virtual void attachImage(PresentImage *image) override {}
 	virtual void detachImage(PresentImage *image) override {}
@@ -65,4 +65,4 @@ public:
 #endif
 
 }  // namespace vk
-#endif  //SWIFTSHADER_METALSURFACE_HPP
+#endif  // SWIFTSHADER_METALSURFACE_HPP

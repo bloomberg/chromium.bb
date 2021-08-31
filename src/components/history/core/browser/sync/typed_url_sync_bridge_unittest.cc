@@ -25,6 +25,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace history {
+
+namespace {
+
 using base::Time;
 using base::TimeDelta;
 using sync_pb::TypedUrlSpecifics;
@@ -38,14 +42,12 @@ using syncer::MetadataChangeList;
 using syncer::MockModelTypeChangeProcessor;
 using testing::_;
 using testing::AllOf;
+using testing::Contains;
 using testing::Mock;
 using testing::NiceMock;
+using testing::Not;
 using testing::Pointee;
 using testing::Return;
-
-namespace history {
-
-namespace {
 
 // Constants used to limit size of visits processed. See
 // equivalent constants in typed_url_sync_bridge.cc for descriptions.
@@ -140,8 +142,8 @@ void AddOldestVisit(ui::PageTransition transition,
   url->set_visit_count(visits->size());
 }
 
-// Create a new row object and the typed visit çorresponding with the time at
-// |last_visit| in the |visits| vector.
+// Create a new row object and the typed visit corresponding with the time at
+// `last_visit` in the `visits` vector.
 URLRow MakeTypedUrlRow(const std::string& url,
                        const std::string& title,
                        int typed_count,
@@ -159,11 +161,11 @@ URLRow MakeTypedUrlRow(const std::string& url,
   history_url.set_last_visit(last_visit_time);
 
   if (typed_count > 0) {
-    // Add a typed visit for time |last_visit_time|.
+    // Add a typed visit for time `last_visit_time`.
     visits->push_back(VisitRow(history_url.id(), last_visit_time, 0,
                                ui::PAGE_TRANSITION_TYPED, 0, true, false));
   } else {
-    // Add a non-typed visit for time |last_visit_time|.
+    // Add a non-typed visit for time `last_visit_time`.
     visits->push_back(VisitRow(history_url.id(), last_visit_time, 0,
                                ui::PAGE_TRANSITION_RELOAD, 0, false, false));
   }
@@ -195,7 +197,7 @@ URLRow MakeTypedUrlRowWithTwoVisits(const std::string& url,
 
   visits->push_back(VisitRow(history_url.id(), typed_visit_time, 0,
                              ui::PAGE_TRANSITION_TYPED, 0, true, false));
-  // Add a non-typed visit for time |last_visit|.
+  // Add a non-typed visit for time `last_visit`.
   visits->push_back(VisitRow(history_url.id(), reload_visit_time, 0,
                              ui::PAGE_TRANSITION_RELOAD, 0, false, false));
   return history_url;
@@ -256,7 +258,7 @@ class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
   void NotifyURLsDeleted(DeletionInfo deletion_info) override {}
   void NotifyKeywordSearchTermUpdated(const URLRow& row,
                                       KeywordID keyword_id,
-                                      const base::string16& term) override {}
+                                      const std::u16string& term) override {}
   void NotifyKeywordSearchTermDeleted(URLID url_id) override {}
   void DBLoaded() override {}
 
@@ -264,9 +266,9 @@ class TestHistoryBackendDelegate : public HistoryBackend::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TestHistoryBackendDelegate);
 };
 
-class TestHistoryBackend : public HistoryBackend {
+class TestHistoryBackendForSync : public HistoryBackend {
  public:
-  TestHistoryBackend()
+  TestHistoryBackendForSync()
       : HistoryBackend(std::make_unique<TestHistoryBackendDelegate>(),
                        nullptr,
                        base::ThreadTaskRunnerHandle::Get()) {}
@@ -295,7 +297,7 @@ class TestHistoryBackend : public HistoryBackend {
   }
 
  private:
-  ~TestHistoryBackend() override {}
+  ~TestHistoryBackendForSync() override {}
 };
 
 }  // namespace
@@ -303,7 +305,7 @@ class TestHistoryBackend : public HistoryBackend {
 class TypedURLSyncBridgeTest : public testing::Test {
  public:
   void SetUp() override {
-    fake_history_backend_ = new TestHistoryBackend();
+    fake_history_backend_ = new TestHistoryBackendForSync();
     ASSERT_TRUE(test_dir_.CreateUniqueTempDir());
     fake_history_backend_->Init(
         false, TestHistoryDatabaseParamsForPath(test_dir_.GetPath()));
@@ -313,8 +315,7 @@ class TypedURLSyncBridgeTest : public testing::Test {
             mock_processor_.CreateForwardingProcessor());
     typed_url_sync_bridge_ = bridge.get();
     typed_url_sync_bridge_->Init();
-    if (typed_url_sync_bridge_->history_backend_observation_.IsObserving())
-      typed_url_sync_bridge_->history_backend_observation_.RemoveObservation();
+    typed_url_sync_bridge_->history_backend_observation_.Reset();
     fake_history_backend_->SetTypedURLSyncBridgeForTest(std::move(bridge));
   }
 
@@ -322,7 +323,7 @@ class TypedURLSyncBridgeTest : public testing::Test {
     fake_history_backend_->Closing();
   }
 
-  // Starts sync for |typed_url_sync_bridge_| with |initial_data| as the
+  // Starts sync for `typed_url_sync_bridge_` with `initial_data` as the
   // initial sync data.
   void StartSyncing(const std::vector<TypedUrlSpecifics>& specifics) {
     ON_CALL(mock_processor_, IsTrackingMetadata()).WillByDefault(Return(true));
@@ -412,11 +413,9 @@ class TypedURLSyncBridgeTest : public testing::Test {
     bridge()->history_backend_observation_.Observe(fake_history_backend_.get());
   }
 
-  void RemoveObserver() {
-    bridge()->history_backend_observation_.RemoveObservation();
-  }
+  void RemoveObserver() { bridge()->history_backend_observation_.Reset(); }
 
-  // Fills |specifics| with the sync data for |url| and |visits|.
+  // Fills `specifics` with the sync data for `url` and `visits`.
   static bool WriteToTypedUrlSpecifics(const URLRow& url,
                                        const VisitVector& visits,
                                        TypedUrlSpecifics* specifics) {
@@ -518,7 +517,7 @@ class TypedURLSyncBridgeTest : public testing::Test {
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir test_dir_;
-  scoped_refptr<TestHistoryBackend> fake_history_backend_;
+  scoped_refptr<TestHistoryBackendForSync> fake_history_backend_;
   TypedURLSyncBridge* typed_url_sync_bridge_ = nullptr;
   NiceMock<MockModelTypeChangeProcessor> mock_processor_;
 };
@@ -576,7 +575,7 @@ TEST_F(TypedURLSyncBridgeTest, MergeUrlNoChange) {
   sync_pb::TypedUrlSpecifics* typed_url = entity_specifics.mutable_typed_url();
   WriteToTypedUrlSpecifics(row, visits, typed_url);
 
-  EXPECT_CALL(mock_processor_, Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor_, Put).Times(0);
 
   // Even Sync already know the url, bridge still need to tell sync about
   // storage keys.
@@ -602,7 +601,7 @@ TEST_F(TypedURLSyncBridgeTest, MergeUrlNoTypedUrl) {
   row.set_typed_count(1);
   fake_history_backend_->SetVisitsForUrl(&row, visits);
 
-  EXPECT_CALL(mock_processor_, Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor_, Put).Times(0);
   StartSyncing(std::vector<TypedUrlSpecifics>());
 
   MetadataBatch metadata_batch;
@@ -650,7 +649,7 @@ TEST_F(TypedURLSyncBridgeTest, MergeUrlEmptyLocal) {
   WriteToTypedUrlSpecifics(row, visits, typed_url);
 
   // Verify processor receive correct update storage key.
-  EXPECT_CALL(mock_processor_, Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor_, Put).Times(0);
   EXPECT_CALL(mock_processor_,
               UpdateStorageKey(
                   AllOf(HasURLInSpecifics(kURL), HasTitleInSpecifics(kTitle)),
@@ -1093,7 +1092,7 @@ TEST_F(TypedURLSyncBridgeTest, ExpireLocalTypedUrl) {
   EXPECT_CALL(mock_processor_,
               Put(IsValidStorageKey(), Pointee(HasTypedUrlInSpecifics()), _))
       .Times(urls.size());
-  EXPECT_CALL(mock_processor_, UntrackEntityForStorageKey(_)).Times(0);
+  EXPECT_CALL(mock_processor_, UntrackEntityForStorageKey).Times(0);
   BuildAndPushLocalChanges(urls.size(), 0, urls, &url_rows, &visit_vectors);
   // Store the typed_urls incl. metadata into the bridge's database.
   for (const std::string& url : urls) {
@@ -1119,7 +1118,7 @@ TEST_F(TypedURLSyncBridgeTest, ExpireLocalTypedUrl) {
   }
 
   // Notify typed url sync service of these URLs getting expired.
-  EXPECT_CALL(mock_processor_, Delete(_, _)).Times(0);
+  EXPECT_CALL(mock_processor_, Delete).Times(0);
   for (const std::string& storage_key : deleted_storage_keys) {
     EXPECT_CALL(mock_processor_, UntrackEntityForStorageKey(storage_key));
   }
@@ -1131,8 +1130,7 @@ TEST_F(TypedURLSyncBridgeTest, ExpireLocalTypedUrl) {
   metadata_store()->GetAllSyncMetadata(&smaller_metadata_batch);
   EXPECT_EQ(2u, smaller_metadata_batch.GetAllMetadata().size());
   for (const auto& kv : smaller_metadata_batch.GetAllMetadata()) {
-    EXPECT_TRUE(deleted_storage_keys.find(kv.first) ==
-                deleted_storage_keys.end());
+    EXPECT_THAT(deleted_storage_keys, Not(Contains(kv.first)));
   }
 }
 
@@ -1145,14 +1143,14 @@ TEST_F(TypedURLSyncBridgeTest, MaxVisitLocalTypedUrl) {
   std::vector<std::string> urls;
   urls.push_back(kURL);
 
-  EXPECT_CALL(mock_processor_, Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor_, Put).Times(0);
   StartSyncing(std::vector<TypedUrlSpecifics>());
   BuildAndPushLocalChanges(0, 1, urls, &url_rows, &visit_vectors);
 
   URLRow url_row = url_rows.front();
   VisitVector visits;
 
-  // Add |kMaxTypedUrlVisits| + 10 visits to the url. The 10 oldest
+  // Add `kMaxTypedUrlVisits` + 10 visits to the url. The 10 oldest
   // non-typed visits are expected to be skipped.
   int i = 1;
   for (; i <= kMaxTypedUrlVisits - 20; ++i)
@@ -1203,7 +1201,7 @@ TEST_F(TypedURLSyncBridgeTest, ThrottleVisitLocalTypedUrl) {
   std::vector<std::string> urls;
   urls.push_back(kURL);
 
-  EXPECT_CALL(mock_processor_, Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor_, Put).Times(0);
   StartSyncing(std::vector<TypedUrlSpecifics>());
   BuildAndPushLocalChanges(0, 1, urls, &url_rows, &visit_vectors);
 
@@ -1242,8 +1240,8 @@ TEST_F(TypedURLSyncBridgeTest, ThrottleVisitLocalTypedUrl) {
 // has started. Check that local DB is received the new URL and visit.
 TEST_F(TypedURLSyncBridgeTest, AddUrlAndVisits) {
   StartSyncing(std::vector<TypedUrlSpecifics>());
-  EXPECT_CALL(mock_processor_, Put(_, _, _)).Times(0);
-  EXPECT_CALL(mock_processor_, UntrackEntityForStorageKey(_)).Times(0);
+  EXPECT_CALL(mock_processor_, Put).Times(0);
+  EXPECT_CALL(mock_processor_, UntrackEntityForStorageKey).Times(0);
 
   EXPECT_CALL(mock_processor_,
               UpdateStorageKey(
@@ -1272,10 +1270,10 @@ TEST_F(TypedURLSyncBridgeTest, AddUrlAndVisits) {
 // sync has started. Check that local DB did not receive the expired URL and
 // visit.
 TEST_F(TypedURLSyncBridgeTest, AddExpiredUrlAndVisits) {
-  EXPECT_CALL(mock_processor_, Put(_, _, _)).Times(0);
-  EXPECT_CALL(mock_processor_, UpdateStorageKey(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor_, Put).Times(0);
+  EXPECT_CALL(mock_processor_, UpdateStorageKey).Times(0);
 
-  EXPECT_CALL(mock_processor_, UntrackEntityForClientTagHash(_));
+  EXPECT_CALL(mock_processor_, UntrackEntityForClientTagHash);
   StartSyncing(std::vector<TypedUrlSpecifics>());
   ApplyUrlAndVisitsChange(
       kURL, kTitle, /*typed_count=*/1, /*last_visit=*/kExpiredVisit,
@@ -1676,7 +1674,7 @@ TEST_F(TypedURLSyncBridgeTest, LocalExpiredTypedUrlDoNotSync) {
   fake_history_backend_->SetVisitsForUrl(&row, visits);
 
   // Check change processor did not receive expired typed URL.
-  EXPECT_CALL(mock_processor_, Put(_, _, _)).Times(0);
+  EXPECT_CALL(mock_processor_, Put).Times(0);
   StartSyncing(std::vector<TypedUrlSpecifics>());
 
   // Add a non expired typed URL to local.
@@ -1707,7 +1705,7 @@ TEST_F(TypedURLSyncBridgeTest, LocalExpiredTypedUrlDoNotSync) {
 
 // Tests that database error gets reported to processor as model type error.
 TEST_F(TypedURLSyncBridgeTest, DatabaseError) {
-  EXPECT_CALL(mock_processor_, ReportError(_));
+  EXPECT_CALL(mock_processor_, ReportError);
   bridge()->OnDatabaseError();
 }
 

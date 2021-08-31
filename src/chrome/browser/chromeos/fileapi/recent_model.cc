@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/fileapi/recent_arc_media_source.h"
@@ -50,7 +49,7 @@ std::vector<std::unique_ptr<RecentSource>> CreateDefaultSources(
   // Downloads / MyFiles.
   sources.emplace_back(std::make_unique<RecentDiskSource>(
       file_manager::util::GetDownloadsMountPointName(profile),
-      false /* ignore_dotfiles */, 0 /* max_depth unlimited */,
+      true /* ignore_dotfiles */, 0 /* max_depth unlimited */,
       "FileBrowser.Recent.LoadDownloads"));
   sources.emplace_back(std::make_unique<RecentDriveSource>(profile));
   return sources;

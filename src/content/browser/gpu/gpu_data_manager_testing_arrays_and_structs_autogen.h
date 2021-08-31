@@ -171,14 +171,13 @@ const GpuControlList::More kMoreForEntry5_572251052Exception0 = {
     GpuControlList::kDontCare,  // subpixel_font_rendering
 };
 
-const int kFeatureListForGpuManagerTestingEntry6[11] = {
+const int kFeatureListForGpuManagerTestingEntry6[10] = {
     GPU_FEATURE_TYPE_ACCELERATED_WEBGL2,
     GPU_FEATURE_TYPE_ANDROID_SURFACE_CONTROL,
     GPU_FEATURE_TYPE_GPU_RASTERIZATION,
     GPU_FEATURE_TYPE_ACCELERATED_GL,
     GPU_FEATURE_TYPE_METAL,
     GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS,
-    GPU_FEATURE_TYPE_PROTECTED_VIDEO_DECODE,
     GPU_FEATURE_TYPE_OOP_RASTERIZATION,
     GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE,
     GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
@@ -186,29 +185,6 @@ const int kFeatureListForGpuManagerTestingEntry6[11] = {
 };
 
 const GpuControlList::More kMoreForEntry6_572251052 = {
-    GpuControlList::kGLTypeNone,  // gl_type
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
-     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gl_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
-     GpuControlList::kVersionSchemaCommon, nullptr,
-     nullptr},  // pixel_shader_version
-    false,      // in_process_gpu
-    0,          // gl_reset_notification_strategy
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
-     GpuControlList::kVersionSchemaCommon, nullptr,
-     nullptr},  // direct_rendering_version
-    {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
-     GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gpu_count
-    GpuControlList::kDontCare,  // hardware_overlay
-    0,                          // test_group
-    GpuControlList::kDontCare,  // subpixel_font_rendering
-};
-
-const int kFeatureListForGpuManagerTestingEntry7[1] = {
-    GPU_FEATURE_TYPE_ACCELERATED_WEBGL,
-};
-
-const GpuControlList::More kMoreForEntry7_572251052 = {
     GpuControlList::kGLTypeNone,  // gl_type
     {GpuControlList::kUnknown, GpuControlList::kVersionStyleNumerical,
      GpuControlList::kVersionSchemaCommon, nullptr, nullptr},  // gl_version

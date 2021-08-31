@@ -2,7 +2,9 @@ name: msys2
 
 on:
   push:
+    branches: [ master ]
   pull_request:
+    branches: [ master ]
 
 jobs:
   msys2:
@@ -39,9 +41,12 @@ jobs:
             mingw-w64-${{ matrix.MSYS2_ARCH }}-meson
             mingw-w64-${{ matrix.MSYS2_ARCH }}-ninja
             mingw-w64-${{ matrix.MSYS2_ARCH }}-pkg-config
-            mingw-w64-${{ matrix.MSYS2_ARCH }}-python-fonttools
-            mingw-w64-${{ matrix.MSYS2_ARCH }}-python3
+            mingw-w64-${{ matrix.MSYS2_ARCH }}-python
+            mingw-w64-${{ matrix.MSYS2_ARCH }}-python-pip
             mingw-w64-${{ matrix.MSYS2_ARCH }}-ragel
+      - name: Install Python Dependencies
+        run: |
+          pip install --upgrade fonttools
       - name: Build
         run: |
           meson build \
@@ -49,7 +54,8 @@ jobs:
             --auto-features=enabled \
             -Ddirectwrite=enabled \
             -Dgdi=enabled \
-            -Dgraphite=enabled
+            -Dgraphite=enabled \
+            -Dchafa=disabled
           ninja -C build
       - name: Test
         run: |

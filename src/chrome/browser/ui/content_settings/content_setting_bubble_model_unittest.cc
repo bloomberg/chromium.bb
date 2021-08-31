@@ -15,7 +15,7 @@
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/test_protocol_handler_registry_delegate.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
@@ -37,6 +37,7 @@
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_result.h"
@@ -50,31 +51,13 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_MAC)
-#include "chrome/browser/geolocation/geolocation_system_permission_mac.h"
+#include "services/device/public/cpp/geolocation/geolocation_manager.h"
+#include "services/device/public/cpp/geolocation/location_system_permission_status.h"
+#include "services/device/public/cpp/test/fake_geolocation_manager.h"
 #endif
 
 using content::WebContentsTester;
 using content_settings::PageSpecificContentSettings;
-
-namespace {
-
-#if defined(OS_MAC)
-class FakeSystemGeolocationPermissionsManager
-    : public GeolocationSystemPermissionManager {
- public:
-  FakeSystemGeolocationPermissionsManager() = default;
-
-  ~FakeSystemGeolocationPermissionsManager() override = default;
-
-  SystemPermissionStatus GetSystemPermission() override { return status_; }
-  void set_status(SystemPermissionStatus status) { status_ = status; }
-
- private:
-  SystemPermissionStatus status_ = SystemPermissionStatus::kDenied;
-};
-#endif  // defined(OS_MAC)
-
-}  // namespace
 
 class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
  protected:
@@ -85,7 +68,12 @@ class ContentSettingBubbleModelTest : public ChromeRenderViewHostTestHarness {
         web_contents(),
         std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
             web_contents()));
-    InfoBarService::CreateForWebContents(web_contents());
+    infobars::ContentInfoBarManager::CreateForWebContents(web_contents());
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return {{HistoryServiceFactory::GetInstance(),
+             HistoryServiceFactory::GetDefaultFactory()}};
   }
 
   std::string GetDefaultAudioDevice() {
@@ -130,7 +118,7 @@ TEST_F(ContentSettingBubbleModelTest, Cookies) {
           NULL, web_contents(), ContentSettingsType::COOKIES));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
-  base::string16 title = bubble_content.title;
+  std::u16string title = bubble_content.title;
   EXPECT_FALSE(title.empty());
   ASSERT_EQ(2U, bubble_content.radio_group.radio_items.size());
   EXPECT_FALSE(bubble_content.custom_link.empty());
@@ -270,8 +258,6 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
 // Tests whether a changed setting in the setting bubble is displayed again when
 // the bubble is re-opened.
 TEST_F(ContentSettingBubbleModelTest, MediastreamContentBubble) {
-  ASSERT_TRUE(profile()->CreateHistoryService());
-
   // Required to break dependency on BrowserMainLoop.
   MediaCaptureDevicesDispatcher::GetInstance()->
       DisableDeviceEnumerationForTesting();
@@ -570,8 +556,9 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
                                                std::string(),
                                                std::string(),
                                                std::string());
-  content_setting_bubble_model.reset(
-      new ContentSettingMediaStreamBubbleModel(nullptr, web_contents()));
+  content_setting_bubble_model =
+      std::make_unique<ContentSettingMediaStreamBubbleModel>(nullptr,
+                                                             web_contents());
   const ContentSettingBubbleModel::BubbleContent& new_bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(new_bubble_content.title,
@@ -643,8 +630,9 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
                                                GetDefaultVideoDevice(),
                                                std::string(),
                                                std::string());
-  content_setting_bubble_model.reset(
-      new ContentSettingMediaStreamBubbleModel(nullptr, web_contents()));
+  content_setting_bubble_model =
+      std::make_unique<ContentSettingMediaStreamBubbleModel>(nullptr,
+                                                             web_contents());
   const ContentSettingBubbleModel::BubbleContent& new_bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(new_bubble_content.title,
@@ -717,8 +705,9 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
                                                std::string(),
                                                std::string());
 
-  content_setting_bubble_model.reset(
-      new ContentSettingMediaStreamBubbleModel(nullptr, web_contents()));
+  content_setting_bubble_model =
+      std::make_unique<ContentSettingMediaStreamBubbleModel>(nullptr,
+                                                             web_contents());
   const ContentSettingBubbleModel::BubbleContent& new_bubble_content =
       content_setting_bubble_model->bubble_content();
   EXPECT_EQ(new_bubble_content.title,
@@ -737,83 +726,27 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
   EXPECT_EQ(2U, new_bubble_content.media_menus.size());
 }
 
-TEST_F(ContentSettingBubbleModelTest, Plugins) {
-  WebContentsTester::For(web_contents())->
-      NavigateAndCommit(GURL("https://www.example.com"));
-  PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
-  const base::string16 plugin_name = base::ASCIIToUTF16("plugin_name");
+class GeolocationContentSettingBubbleModelTest
+    : public ContentSettingBubbleModelTest {
+ public:
+  GeolocationContentSettingBubbleModelTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kMacCoreLocationImplementation);
+  }
 
-  content_settings->OnContentBlocked(ContentSettingsType::PLUGINS);
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
 
-  std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), ContentSettingsType::PLUGINS));
-  const ContentSettingBubbleModel::BubbleContent& bubble_content =
-      content_setting_bubble_model->bubble_content();
-  EXPECT_FALSE(bubble_content.title.empty());
-  ASSERT_EQ(0U, bubble_content.list_items.size());
-  EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
-  EXPECT_FALSE(bubble_content.custom_link_enabled);
-  EXPECT_TRUE(bubble_content.custom_link.empty());
-  EXPECT_FALSE(bubble_content.manage_text.empty());
-  EXPECT_TRUE(bubble_content.show_learn_more);
-}
-
-TEST_F(ContentSettingBubbleModelTest, PepperBroker) {
-  WebContentsTester::For(web_contents())->
-      NavigateAndCommit(GURL("https://www.example.com"));
-  PageSpecificContentSettings* content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
-  content_settings->OnContentBlocked(ContentSettingsType::PPAPI_BROKER);
-
-  std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), ContentSettingsType::PPAPI_BROKER));
-  const ContentSettingBubbleModel::BubbleContent& bubble_content =
-      content_setting_bubble_model->bubble_content();
-
-  base::string16 title = bubble_content.title;
-  EXPECT_FALSE(title.empty());
-  ASSERT_EQ(2U, bubble_content.radio_group.radio_items.size());
-  base::string16 radio1 = bubble_content.radio_group.radio_items[0];
-  base::string16 radio2 = bubble_content.radio_group.radio_items[1];
-  EXPECT_FALSE(bubble_content.custom_link_enabled);
-  EXPECT_FALSE(bubble_content.manage_text.empty());
-
-  WebContentsTester::For(web_contents())
-      ->NavigateAndCommit(GURL("https://www.example.com"));
-  content_settings =
-      PageSpecificContentSettings::GetForFrame(web_contents()->GetMainFrame());
-  content_settings->OnContentAllowed(ContentSettingsType::PPAPI_BROKER);
-  content_setting_bubble_model =
-      ContentSettingBubbleModel::CreateContentSettingBubbleModel(
-          NULL, web_contents(), ContentSettingsType::PPAPI_BROKER);
-  const ContentSettingBubbleModel::BubbleContent& bubble_content_2 =
-      content_setting_bubble_model->bubble_content();
-
-  EXPECT_FALSE(bubble_content_2.title.empty());
-  EXPECT_NE(title, bubble_content_2.title);
-  ASSERT_EQ(2U, bubble_content_2.radio_group.radio_items.size());
-  EXPECT_NE(radio1, bubble_content_2.radio_group.radio_items[0]);
-  EXPECT_NE(radio2, bubble_content_2.radio_group.radio_items[1]);
-  EXPECT_FALSE(bubble_content_2.custom_link_enabled);
-  EXPECT_FALSE(bubble_content_2.manage_text.empty());
-}
-
-TEST_F(ContentSettingBubbleModelTest, Geolocation) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kMacCoreLocationImplementation);
-
+TEST_F(GeolocationContentSettingBubbleModelTest, Geolocation) {
 #if defined(OS_MAC)
-  auto fake_geolocation_permission_manager =
-      std::make_unique<FakeSystemGeolocationPermissionsManager>();
-  FakeSystemGeolocationPermissionsManager* geolocation_permission_manager =
-      fake_geolocation_permission_manager.get();
+  auto fake_geolocation_manager =
+      std::make_unique<device::FakeGeolocationManager>();
+  device::FakeGeolocationManager* geolocation_manager =
+      fake_geolocation_manager.get();
   TestingBrowserProcess::GetGlobal()
       ->GetTestPlatformPart()
-      ->SetLocationPermissionManager(
-          std::move(fake_geolocation_permission_manager));
+      ->SetGeolocationManager(std::move(fake_geolocation_manager));
 #endif  // defined(OS_MAC)
 
   WebContentsTester::For(web_contents())
@@ -857,8 +790,8 @@ TEST_F(ContentSettingBubbleModelTest, Geolocation) {
         FakeOwner::Create(*content_setting_bubble_model, 0);
     const auto& bubble_content = content_setting_bubble_model->bubble_content();
 
-    geolocation_permission_manager->set_status(
-        SystemPermissionStatus::kAllowed);
+    geolocation_manager->SetSystemPermission(
+        device::LocationSystemPermissionStatus::kAllowed);
 
     EXPECT_EQ(bubble_content.title,
               l10n_util::GetStringUTF16(IDS_GEOLOCATION_TURNED_OFF_IN_MACOS));
@@ -1093,17 +1026,17 @@ TEST_F(ContentSettingBubbleModelTest, FileURL) {
   std::unique_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           nullptr, web_contents(), ContentSettingsType::IMAGES));
-  base::string16 title =
+  std::u16string title =
       content_setting_bubble_model->bubble_content().radio_group.radio_items[0];
-  ASSERT_NE(base::string16::npos, title.find(base::UTF8ToUTF16(file_url)));
+  ASSERT_NE(std::u16string::npos, title.find(base::UTF8ToUTF16(file_url)));
 }
 
 TEST_F(ContentSettingBubbleModelTest, RegisterProtocolHandler) {
-  const GURL page_url("http://toplevel.example/");
+  const GURL page_url("https://toplevel.example/");
   NavigateAndCommit(page_url);
   chrome::PageSpecificContentSettingsDelegate::FromWebContents(web_contents())
       ->set_pending_protocol_handler(ProtocolHandler::CreateProtocolHandler(
-          "mailto", GURL("http://www.toplevel.example/")));
+          "mailto", GURL("https://www.toplevel.example/")));
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
       NULL, web_contents(), NULL);
@@ -1124,13 +1057,13 @@ TEST_F(ContentSettingBubbleModelTest, RPHAllow) {
       profile(), std::make_unique<TestProtocolHandlerRegistryDelegate>());
   registry.InitProtocolSettings();
 
-  const GURL page_url("http://toplevel.example/");
+  const GURL page_url("https://toplevel.example/");
   NavigateAndCommit(page_url);
   auto* content_settings =
       chrome::PageSpecificContentSettingsDelegate::FromWebContents(
           web_contents());
   ProtocolHandler test_handler = ProtocolHandler::CreateProtocolHandler(
-      "mailto", GURL("http://www.toplevel.example/"));
+      "mailto", GURL("https://www.toplevel.example/"));
   content_settings->set_pending_protocol_handler(test_handler);
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
@@ -1191,13 +1124,13 @@ TEST_F(ContentSettingBubbleModelTest, RPHDefaultDone) {
       profile(), std::make_unique<TestProtocolHandlerRegistryDelegate>());
   registry.InitProtocolSettings();
 
-  const GURL page_url("http://toplevel.example/");
+  const GURL page_url("https://toplevel.example/");
   NavigateAndCommit(page_url);
   auto* content_settings =
       chrome::PageSpecificContentSettingsDelegate::FromWebContents(
           web_contents());
   ProtocolHandler test_handler = ProtocolHandler::CreateProtocolHandler(
-      "mailto", GURL("http://www.toplevel.example/"));
+      "mailto", GURL("https://www.toplevel.example/"));
   content_settings->set_pending_protocol_handler(test_handler);
 
   ContentSettingRPHBubbleModel content_setting_bubble_model(
@@ -1238,14 +1171,24 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
   EXPECT_EQ(0U, bubble_content.media_menus.size());
 }
 
+class GenericSensorContentSettingBubbleModelTest
+    : public ContentSettingBubbleModelTest {
+ public:
+  GenericSensorContentSettingBubbleModelTest() {
+    // Enable all sensors just to avoid hardcoding the expected messages to the
+    // motion sensor-specific ones.
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kGenericSensorExtraClasses);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
 // Regression test for https://crbug.com/955408
 // See also: ContentSettingImageModelTest.SensorAccessPermissionsChanged
-TEST_F(ContentSettingBubbleModelTest, SensorAccessPermissionsChanged) {
-  // Enable all sensors just to avoid hardcoding the expected messages to the
-  // motion sensor-specific ones.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kGenericSensorExtraClasses);
-
+TEST_F(GenericSensorContentSettingBubbleModelTest,
+       SensorAccessPermissionsChanged) {
   WebContentsTester::For(web_contents())
       ->NavigateAndCommit(GURL("https://www.example.com"));
   PageSpecificContentSettings* content_settings =

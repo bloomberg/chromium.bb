@@ -10,6 +10,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/chooser_controller/title_util.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/bluetooth/bluetooth_chooser_desktop.h"
@@ -17,16 +20,28 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/webui_url_constants.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if defined(OS_MAC)
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
+#endif
 
 namespace {
+
+#if defined(OS_MAC)
+static constexpr char kBluetoothSettingsUri[] =
+    "x-apple.systempreferences:com.apple.preference.security?Privacy_"
+    "Bluetooth";
+#endif
 
 Browser* GetBrowser() {
   chrome::ScopedTabbedBrowserDisplayer browser_displayer(
@@ -44,12 +59,22 @@ void RecordInteractionWithChooser(bool has_null_handler) {
 BluetoothChooserController::BluetoothChooserController(
     content::RenderFrameHost* owner,
     const content::BluetoothChooser::EventHandler& event_handler)
-    : ChooserController(owner,
-                        IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_ORIGIN,
-                        IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME),
-      event_handler_(event_handler) {}
+    : ChooserController(CreateChooserTitle(
+          owner,
+          IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_ORIGIN,
+          IDS_BLUETOOTH_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME)),
+      event_handler_(event_handler) {
+  if (owner) {
+    frame_tree_node_id_ = owner->GetFrameTreeNodeId();
+  }
+}
 
-BluetoothChooserController::~BluetoothChooserController() {}
+BluetoothChooserController::~BluetoothChooserController() {
+  if (event_handler_) {
+    event_handler_.Run(content::BluetoothChooserEvent::CANCELLED,
+                       std::string());
+  }
+}
 
 bool BluetoothChooserController::ShouldShowIconBeforeText() const {
   return true;
@@ -59,14 +84,22 @@ bool BluetoothChooserController::ShouldShowReScanButton() const {
   return true;
 }
 
-base::string16 BluetoothChooserController::GetNoOptionsText() const {
+std::u16string BluetoothChooserController::GetNoOptionsText() const {
   return l10n_util::GetStringUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
 }
 
-base::string16 BluetoothChooserController::GetOkButtonLabel() const {
+std::u16string BluetoothChooserController::GetOkButtonLabel() const {
   return l10n_util::GetStringUTF16(
       IDS_BLUETOOTH_DEVICE_CHOOSER_PAIR_BUTTON_TEXT);
+}
+
+std::pair<std::u16string, std::u16string>
+BluetoothChooserController::GetThrobberLabelAndTooltip() const {
+  return {
+      l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING_LABEL),
+      l10n_util::GetStringUTF16(
+          IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING_LABEL_TOOLTIP)};
 }
 
 size_t BluetoothChooserController::NumOptions() const {
@@ -85,7 +118,7 @@ bool BluetoothChooserController::IsPaired(size_t index) const {
   return devices_[index].is_paired;
 }
 
-base::string16 BluetoothChooserController::GetOption(size_t index) const {
+std::u16string BluetoothChooserController::GetOption(size_t index) const {
   DCHECK_LT(index, devices_.size());
   const std::string& device_id = devices_[index].id;
   const auto& device_name_it = device_id_to_name_map_.find(device_id);
@@ -108,7 +141,7 @@ void BluetoothChooserController::RefreshOptions() {
 }
 
 void BluetoothChooserController::OpenAdapterOffHelpUrl() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Chrome OS can directly link to the OS setting to turn on the adapter.
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       GetBrowser()->profile(),
@@ -122,8 +155,17 @@ void BluetoothChooserController::OpenAdapterOffHelpUrl() const {
 #endif
 }
 
-base::string16 BluetoothChooserController::GetStatus() const {
-  return status_text_;
+void BluetoothChooserController::OpenPermissionPreferences() const {
+#if defined(OS_MAC)
+  content::WebContents* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+  if (web_contents) {
+    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
+        GURL(kBluetoothSettingsUri), web_contents);
+  }
+#else
+  NOTREACHED();
+#endif
 }
 
 void BluetoothChooserController::Select(const std::vector<size_t>& indices) {
@@ -136,6 +178,7 @@ void BluetoothChooserController::Select(const std::vector<size_t>& indices) {
   DCHECK_LT(index, devices_.size());
   event_handler_.Run(content::BluetoothChooserEvent::SELECTED,
                      devices_[index].id);
+  event_handler_.Reset();
 }
 
 void BluetoothChooserController::Cancel() {
@@ -143,6 +186,7 @@ void BluetoothChooserController::Cancel() {
   if (event_handler_.is_null())
     return;
   event_handler_.Run(content::BluetoothChooserEvent::CANCELLED, std::string());
+  event_handler_.Reset();
 }
 
 void BluetoothChooserController::Close() {
@@ -150,6 +194,7 @@ void BluetoothChooserController::Close() {
   if (event_handler_.is_null())
     return;
   event_handler_.Run(content::BluetoothChooserEvent::CANCELLED, std::string());
+  event_handler_.Reset();
 }
 
 void BluetoothChooserController::OpenHelpCenterUrl() const {
@@ -167,18 +212,20 @@ void BluetoothChooserController::OnAdapterPresenceChanged(
       NOTREACHED();
       break;
     case content::BluetoothChooser::AdapterPresence::POWERED_OFF:
-      status_text_ = base::string16();
       if (view()) {
         view()->OnAdapterEnabledChanged(
             false /* Bluetooth adapter is turned off */);
       }
       break;
     case content::BluetoothChooser::AdapterPresence::POWERED_ON:
-      status_text_ =
-          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN);
       if (view()) {
         view()->OnAdapterEnabledChanged(
             true /* Bluetooth adapter is turned on */);
+      }
+      break;
+    case content::BluetoothChooser::AdapterPresence::UNAUTHORIZED:
+      if (view()) {
+        view()->OnAdapterAuthorizationChanged(/*authorized=*/false);
       }
       break;
   }
@@ -188,8 +235,6 @@ void BluetoothChooserController::OnDiscoveryStateChanged(
     content::BluetoothChooser::DiscoveryState state) {
   switch (state) {
     case content::BluetoothChooser::DiscoveryState::DISCOVERING:
-      status_text_ =
-          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_SCANNING);
       if (view()) {
         view()->OnRefreshStateChanged(
             true /* Refreshing options is in progress */);
@@ -197,8 +242,6 @@ void BluetoothChooserController::OnDiscoveryStateChanged(
       break;
     case content::BluetoothChooser::DiscoveryState::IDLE:
     case content::BluetoothChooser::DiscoveryState::FAILED_TO_START:
-      status_text_ =
-          l10n_util::GetStringUTF16(IDS_BLUETOOTH_DEVICE_CHOOSER_RE_SCAN);
       if (view()) {
         view()->OnRefreshStateChanged(
             false /* Refreshing options is complete */);
@@ -210,14 +253,14 @@ void BluetoothChooserController::OnDiscoveryStateChanged(
 void BluetoothChooserController::AddOrUpdateDevice(
     const std::string& device_id,
     bool should_update_name,
-    const base::string16& device_name,
+    const std::u16string& device_name,
     bool is_gatt_connected,
     bool is_paired,
     int signal_strength_level) {
   auto name_it = device_id_to_name_map_.find(device_id);
   if (name_it != device_id_to_name_map_.end()) {
     if (should_update_name) {
-      base::string16 previous_device_name = name_it->second;
+      std::u16string previous_device_name = name_it->second;
       name_it->second = device_name;
 
       const auto& it = device_name_counts_.find(previous_device_name);

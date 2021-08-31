@@ -44,9 +44,10 @@ const char kPageReloadCommand[] = "{'method': 'Page.reload', id: 1}";
 
 const char kWebViewSocketPrefix[] = "webview_devtools_remote";
 
-static void ScheduleTaskDefault(const base::Closure& task) {
+static void ScheduleTaskDefault(base::OnceClosure task) {
   content::GetUIThreadTaskRunner({})->PostDelayedTask(
-      FROM_HERE, task, base::TimeDelta::FromMilliseconds(kPollingIntervalMs));
+      FROM_HERE, std::move(task),
+      base::TimeDelta::FromMilliseconds(kPollingIntervalMs));
 }
 
 // ProtocolCommand ------------------------------------------------------------
@@ -370,15 +371,14 @@ class DevToolsDeviceDiscovery::DiscoveryRequest
     : public base::RefCountedThreadSafe<DiscoveryRequest,
                                         BrowserThread::DeleteOnUIThread> {
  public:
-  static void Start(
-      AndroidDeviceManager* device_manager,
-      const DevToolsDeviceDiscovery::DeviceListCallback& callback);
+  static void Start(AndroidDeviceManager* device_manager,
+                    base::OnceCallback<void(const CompleteDevices&)> callback);
 
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<DiscoveryRequest>;
   explicit DiscoveryRequest(
-      const DevToolsDeviceDiscovery::DeviceListCallback& callback);
+      base::OnceCallback<void(const CompleteDevices&)> callback);
   virtual ~DiscoveryRequest();
 
   void ReceivedDevices(const AndroidDeviceManager::Devices& devices);
@@ -393,29 +393,30 @@ class DevToolsDeviceDiscovery::DiscoveryRequest
                      int result,
                      const std::string& response);
 
-  DevToolsDeviceDiscovery::DeviceListCallback callback_;
+  base::OnceCallback<void(const CompleteDevices&)> callback_;
   DevToolsDeviceDiscovery::CompleteDevices complete_devices_;
 };
 
 // static
 void DevToolsDeviceDiscovery::DiscoveryRequest::Start(
     AndroidDeviceManager* device_manager,
-    const DevToolsDeviceDiscovery::DeviceListCallback& callback) {
+    base::OnceCallback<void(const CompleteDevices&)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto request = base::WrapRefCounted(new DiscoveryRequest(callback));
+  auto request =
+      base::WrapRefCounted(new DiscoveryRequest(std::move(callback)));
   device_manager->QueryDevices(
-      base::Bind(&DiscoveryRequest::ReceivedDevices, request));
+      base::BindOnce(&DiscoveryRequest::ReceivedDevices, request));
 }
 
 DevToolsDeviceDiscovery::DiscoveryRequest::DiscoveryRequest(
-    const DevToolsDeviceDiscovery::DeviceListCallback& callback)
-    : callback_(callback) {
+    base::OnceCallback<void(const CompleteDevices&)> callback)
+    : callback_(std::move(callback)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 DevToolsDeviceDiscovery::DiscoveryRequest::~DiscoveryRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  callback_.Run(complete_devices_);
+  std::move(callback_).Run(complete_devices_);
 }
 
 void DevToolsDeviceDiscovery::DiscoveryRequest::ReceivedDevices(
@@ -423,7 +424,7 @@ void DevToolsDeviceDiscovery::DiscoveryRequest::ReceivedDevices(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   for (const auto& device : devices) {
     device->QueryDeviceInfo(
-        base::Bind(&DiscoveryRequest::ReceivedDeviceInfo, this, device));
+        base::BindOnce(&DiscoveryRequest::ReceivedDeviceInfo, this, device));
   }
 }
 
@@ -438,7 +439,7 @@ void DevToolsDeviceDiscovery::DiscoveryRequest::ReceivedDeviceInfo(
        it != remote_device->browsers().end(); ++it) {
     device->SendJsonRequest(
         (*it)->socket(), kVersionRequest,
-        base::Bind(&DiscoveryRequest::ReceivedVersion, this, device, *it));
+        base::BindOnce(&DiscoveryRequest::ReceivedVersion, this, device, *it));
   }
 }
 
@@ -451,12 +452,12 @@ void DevToolsDeviceDiscovery::DiscoveryRequest::ReceivedVersion(
 
   device->SendJsonRequest(
       browser->socket(), kPageListRequest,
-      base::Bind(&DiscoveryRequest::ReceivedPages, this, device, browser));
+      base::BindOnce(&DiscoveryRequest::ReceivedPages, this, device, browser));
 
   if (result < 0)
     return;
   // Parse version, append to package name if available,
-  base::Optional<base::Value> value = base::JSONReader::Read(response);
+  absl::optional<base::Value> value = base::JSONReader::Read(response);
   if (value && value->is_dict()) {
     const std::string* browser_name = value->FindStringKey("Browser");
     if (browser_name) {
@@ -486,7 +487,7 @@ void DevToolsDeviceDiscovery::DiscoveryRequest::ReceivedPages(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (result < 0)
     return;
-  base::Optional<base::Value> value = base::JSONReader::Read(response);
+  absl::optional<base::Value> value = base::JSONReader::Read(response);
   if (value && value->is_list()) {
     for (base::Value& page_value : value->GetList()) {
       if (page_value.is_dict())
@@ -587,10 +588,10 @@ DevToolsDeviceDiscovery::RemoteDevice::~RemoteDevice() {
 
 DevToolsDeviceDiscovery::DevToolsDeviceDiscovery(
     AndroidDeviceManager* device_manager,
-    const DeviceListCallback& callback)
+    DeviceListCallback callback)
     : device_manager_(device_manager),
-      callback_(callback),
-      task_scheduler_(base::Bind(&ScheduleTaskDefault)) {
+      callback_(std::move(callback)),
+      task_scheduler_(base::BindRepeating(&ScheduleTaskDefault)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RequestDeviceList();
 }
@@ -600,9 +601,9 @@ DevToolsDeviceDiscovery::~DevToolsDeviceDiscovery() {
 }
 
 void DevToolsDeviceDiscovery::SetScheduler(
-    base::Callback<void(const base::Closure&)> scheduler) {
+    base::RepeatingCallback<void(base::OnceClosure)> scheduler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  task_scheduler_ = scheduler;
+  task_scheduler_ = std::move(scheduler);
 }
 
 // static
@@ -619,15 +620,16 @@ DevToolsDeviceDiscovery::CreateBrowserAgentHost(
 void DevToolsDeviceDiscovery::RequestDeviceList() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DiscoveryRequest::Start(
-      device_manager_, base::Bind(&DevToolsDeviceDiscovery::ReceivedDeviceList,
-                                  weak_factory_.GetWeakPtr()));
+      device_manager_,
+      base::BindOnce(&DevToolsDeviceDiscovery::ReceivedDeviceList,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsDeviceDiscovery::ReceivedDeviceList(
     const CompleteDevices& complete_devices) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  task_scheduler_.Run(base::Bind(&DevToolsDeviceDiscovery::RequestDeviceList,
-                                 weak_factory_.GetWeakPtr()));
+  task_scheduler_.Run(base::BindOnce(
+      &DevToolsDeviceDiscovery::RequestDeviceList, weak_factory_.GetWeakPtr()));
   // |callback_| should be run last as it may destroy |this|.
   callback_.Run(complete_devices);
 }

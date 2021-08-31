@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -23,7 +24,7 @@
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/test/test_pending_app_manager.h"
+#include "chrome/browser/web_applications/test/test_externally_managed_app_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/test/browser_task_environment.h"
@@ -145,10 +146,10 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     }
 
     // AndroidSmsAppSetupControllerImpl::PwaDelegate:
-    base::Optional<web_app::AppId> GetPwaForUrl(const GURL& install_url,
+    absl::optional<web_app::AppId> GetPwaForUrl(const GURL& install_url,
                                                 Profile* profile) override {
       if (!base::Contains(url_to_pwa_map_, install_url))
-        return base::nullopt;
+        return absl::nullopt;
 
       return url_to_pwa_map_[install_url];
     }
@@ -195,10 +196,11 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
         std::make_unique<TestPwaDelegate>(fake_cookie_manager_.get());
     test_pwa_delegate_ = test_pwa_delegate.get();
 
-    test_pending_app_manager_ =
-        std::make_unique<web_app::TestPendingAppManager>(&test_app_registrar_);
+    test_externally_managed_app_manager_ =
+        std::make_unique<web_app::TestExternallyManagedAppManager>(
+            &test_app_registrar_);
     setup_controller_ = base::WrapUnique(new AndroidSmsAppSetupControllerImpl(
-        &profile_, test_pending_app_manager_.get(),
+        &profile_, test_externally_managed_app_manager_.get(),
         host_content_settings_map_));
 
     std::unique_ptr<AndroidSmsAppSetupControllerImpl::PwaDelegate>
@@ -213,13 +215,13 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
                                size_t num_failure_tries,
                                bool expected_setup_result) {
     const auto& install_requests =
-        test_pending_app_manager_->install_requests();
+        test_externally_managed_app_manager_->install_requests();
     size_t num_install_requests_before_call = install_requests.size();
 
     base::RunLoop run_loop;
     base::HistogramTester histogram_tester;
 
-    test_pending_app_manager_->SetInstallResultCode(
+    test_externally_managed_app_manager_->SetInstallResultCode(
         web_app::InstallResultCode::kGetWebApplicationInfoFailed);
 
     setup_controller_->SetUpApp(
@@ -256,7 +258,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
     }
 
     // Send success code for last attempt.
-    test_pending_app_manager_->SetInstallResultCode(
+    test_externally_managed_app_manager_->SetInstallResultCode(
         web_app::InstallResultCode::kSuccessNewInstall);
     task_environment_.FastForwardBy(
         AndroidSmsAppSetupControllerImpl::kInstallRetryDelay *
@@ -278,7 +280,7 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
                     const GURL& install_url,
                     size_t num_expected_app_installs) {
     const auto& install_requests =
-        test_pending_app_manager_->install_requests();
+        test_externally_managed_app_manager_->install_requests();
     size_t num_install_requests_before_call = install_requests.size();
 
     base::RunLoop run_loop;
@@ -421,15 +423,16 @@ class AndroidSmsAppSetupControllerImplTest : public testing::Test {
 
   content::BrowserTaskEnvironment task_environment_;
 
-  base::Optional<bool> last_set_up_app_result_;
-  base::Optional<bool> last_delete_cookie_result_;
-  base::Optional<bool> last_remove_app_result_;
+  absl::optional<bool> last_set_up_app_result_;
+  absl::optional<bool> last_delete_cookie_result_;
+  absl::optional<bool> last_remove_app_result_;
 
   TestingProfile profile_;
   HostContentSettingsMap* host_content_settings_map_;
   std::unique_ptr<FakeCookieManager> fake_cookie_manager_;
   web_app::TestAppRegistrar test_app_registrar_;
-  std::unique_ptr<web_app::TestPendingAppManager> test_pending_app_manager_;
+  std::unique_ptr<web_app::TestExternallyManagedAppManager>
+      test_externally_managed_app_manager_;
   TestPwaDelegate* test_pwa_delegate_;
   std::unique_ptr<AndroidSmsAppSetupController> setup_controller_;
 

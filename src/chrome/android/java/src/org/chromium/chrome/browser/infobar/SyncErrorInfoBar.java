@@ -18,14 +18,12 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.settings.ManageSyncSettings;
-import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils;
 import org.chromium.chrome.browser.sync.settings.SyncSettingsUtils.SyncError;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.infobars.ConfirmInfoBar;
 import org.chromium.components.infobars.InfoBar;
 import org.chromium.components.infobars.InfoBarLayout;
@@ -49,13 +47,15 @@ public class SyncErrorInfoBar
             TimeUnit.MILLISECONDS.convert(24, TimeUnit.HOURS);
 
     @IntDef({SyncErrorInfoBarType.NOT_SHOWN, SyncErrorInfoBarType.AUTH_ERROR,
-            SyncErrorInfoBarType.PASSPHRASE_REQUIRED, SyncErrorInfoBarType.SYNC_SETUP_INCOMPLETE})
+            SyncErrorInfoBarType.PASSPHRASE_REQUIRED, SyncErrorInfoBarType.SYNC_SETUP_INCOMPLETE,
+            SyncErrorInfoBarType.CLIENT_OUT_OF_DATE})
     @Retention(RetentionPolicy.SOURCE)
     private @interface SyncErrorInfoBarType {
         int NOT_SHOWN = -1;
         int AUTH_ERROR = 0;
         int PASSPHRASE_REQUIRED = 1;
         int SYNC_SETUP_INCOMPLETE = 2;
+        int CLIENT_OUT_OF_DATE = 3;
     }
 
     // These values are persisted to logs. Entries should not be renumbered and
@@ -96,13 +96,8 @@ public class SyncErrorInfoBar
         recordHistogram(mType, SyncErrorInfoBarAction.OPEN_SETTINGS_CLICKED);
 
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
-            settingsLauncher.launchSettingsActivity(getApplicationContext(),
-                    ManageSyncSettings.class, ManageSyncSettings.createArguments(false));
-        } else {
-            settingsLauncher.launchSettingsActivity(getApplicationContext(),
-                    SyncAndServicesSettings.class, SyncAndServicesSettings.createArguments(false));
-        }
+        settingsLauncher.launchSettingsActivity(getApplicationContext(), ManageSyncSettings.class,
+                ManageSyncSettings.createArguments(false));
     }
 
     @CalledByNative
@@ -144,6 +139,20 @@ public class SyncErrorInfoBar
         }
     }
 
+    @Override
+    protected void onStartedHiding() {
+        super.onStartedHiding();
+        if (!isFrontInfoBar()) {
+            // SyncErrorInfoBar was not visible to the user, so we need to reset this pref that is
+            // used to block SyncErrorInfoBars from appearing within
+            // |MINIMAL_DURATION_BETWEEN_INFOBARS_MS|
+            ContextUtils.getAppSharedPreferences()
+                    .edit()
+                    .remove(SyncErrorInfoBar.PREF_SYNC_ERROR_INFOBAR_SHOWN_AT_TIME)
+                    .apply();
+        }
+    }
+
     /**
      * Calls native side code to create an infobar.
      */
@@ -175,6 +184,8 @@ public class SyncErrorInfoBar
                 return SyncErrorInfoBarType.PASSPHRASE_REQUIRED;
             case SyncError.SYNC_SETUP_INCOMPLETE:
                 return SyncErrorInfoBarType.SYNC_SETUP_INCOMPLETE;
+            case SyncError.CLIENT_OUT_OF_DATE:
+                return SyncErrorInfoBarType.CLIENT_OUT_OF_DATE;
             default:
                 return SyncErrorInfoBarType.NOT_SHOWN;
         }
@@ -192,6 +203,9 @@ public class SyncErrorInfoBar
                 break;
             case SyncErrorInfoBarType.SYNC_SETUP_INCOMPLETE:
                 name += "SyncSetupIncomplete";
+                break;
+            case SyncErrorInfoBarType.CLIENT_OUT_OF_DATE:
+                name += "ClientOutOfDate";
                 break;
             default:
                 assert false;

@@ -14,6 +14,8 @@ source_set("contacts") {
     "nearby_share_contact_manager.h",
     "nearby_share_contact_manager_impl.cc",
     "nearby_share_contact_manager_impl.h",
+    "nearby_share_contacts_sorter.cc",
+    "nearby_share_contacts_sorter.h",
   ]
 
   deps = [
@@ -53,6 +55,7 @@ source_set("unit_tests") {
   sources = [
     "nearby_share_contact_downloader_impl_unittest.cc",
     "nearby_share_contact_manager_impl_unittest.cc",
+    "nearby_share_contacts_sorter_unittest.cc",
   ]
 
   deps = [
@@ -63,6 +66,7 @@ source_set("unit_tests") {
     "//chrome/browser/nearby_sharing/client",
     "//chrome/browser/nearby_sharing/client:test_support",
     "//chrome/browser/nearby_sharing/common",
+    "//chrome/browser/nearby_sharing/common:test_support",
     "//chrome/browser/nearby_sharing/local_device_data:test_support",
     "//chrome/browser/nearby_sharing/proto",
     "//chrome/browser/nearby_sharing/scheduling",

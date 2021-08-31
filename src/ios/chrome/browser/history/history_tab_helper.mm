@@ -26,14 +26,14 @@
 
 namespace {
 
-base::Optional<base::string16> GetPageTitle(const web::NavigationItem& item) {
-  const base::string16& title = item.GetTitleForDisplay();
+absl::optional<std::u16string> GetPageTitle(const web::NavigationItem& item) {
+  const std::u16string& title = item.GetTitleForDisplay();
   if (title.empty() ||
       title == l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
-  return base::Optional<base::string16>(title);
+  return absl::optional<std::u16string>(title);
 }
 
 }  // namespace
@@ -45,7 +45,7 @@ HistoryTabHelper::~HistoryTabHelper() {
 void HistoryTabHelper::UpdateHistoryPageTitle(const web::NavigationItem& item) {
   DCHECK(!delay_notification_);
 
-  const base::Optional<base::string16> title = GetPageTitle(item);
+  const absl::optional<std::u16string> title = GetPageTitle(item);
   // Don't update the history if current entry has no title.
   if (!title) {
     return;
@@ -177,9 +177,9 @@ void HistoryTabHelper::DidFinishNavigation(
       last_committed_item->GetUniqueID(), referrer_url, redirects, transition,
       hidden, history::SOURCE_BROWSED,
       /*did_replace_entry=*/false, consider_for_ntp_most_visited,
-      /*publicly_routable=*/false,
+      /*floc_allowed=*/false,
       navigation_context->IsSameDocument() ? GetPageTitle(*last_committed_item)
-                                           : base::nullopt);
+                                           : absl::nullopt);
 
   if (delay_notification_) {
     recorded_navigations_.push_back(std::move(add_page_args));

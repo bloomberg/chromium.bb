@@ -57,7 +57,9 @@ class CONTENT_EXPORT SynchronousCompositor {
 
     uint32_t layer_tree_frame_sink_id;
     std::unique_ptr<viz::CompositorFrame> frame;
-    base::Optional<viz::HitTestRegionList> hit_test_region_list;
+    // Invalid if |frame| is nullptr.
+    viz::LocalSurfaceId local_surface_id;
+    absl::optional<viz::HitTestRegionList> hit_test_region_list;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Frame);
@@ -65,10 +67,9 @@ class CONTENT_EXPORT SynchronousCompositor {
 
   class FrameFuture : public base::RefCountedThreadSafe<FrameFuture> {
    public:
-    explicit FrameFuture(viz::LocalSurfaceId local_surface_id);
+    FrameFuture();
     void SetFrame(std::unique_ptr<Frame> frame);
     std::unique_ptr<Frame> GetFrame();
-    const viz::LocalSurfaceId& local_surface_id() { return local_surface_id_; }
 
    private:
     friend class base::RefCountedThreadSafe<FrameFuture>;
@@ -76,7 +77,6 @@ class CONTENT_EXPORT SynchronousCompositor {
 
     base::WaitableEvent waitable_event_;
     std::unique_ptr<Frame> frame_;
-    viz::LocalSurfaceId local_surface_id_;
 #if DCHECK_IS_ON()
     bool waited_ = false;
 #endif
@@ -95,7 +95,7 @@ class CONTENT_EXPORT SynchronousCompositor {
   // Note that all resources must be returned before ReleaseHwDraw.
   virtual void ReturnResources(
       uint32_t layer_tree_frame_sink_id,
-      const std::vector<viz::ReturnedResource>& resources) = 0;
+      std::vector<viz::ReturnedResource> resources) = 0;
 
   virtual void DidPresentCompositorFrames(
       viz::FrameTimingDetailsMap timing_details,
@@ -103,7 +103,9 @@ class CONTENT_EXPORT SynchronousCompositor {
 
   // "On demand" SW draw, into the supplied canvas (observing the transform
   // and clip set there-in).
-  virtual bool DemandDrawSw(SkCanvas* canvas) = 0;
+  // `software canvas` being true means drawing happens immediately instead
+  // of being cached, which allows more efficient drawing.
+  virtual bool DemandDrawSw(SkCanvas* canvas, bool software_canvas) = 0;
 
   // Set the memory limit policy of this compositor.
   virtual void SetMemoryPolicy(size_t bytes_limit) = 0;
@@ -134,6 +136,10 @@ class CONTENT_EXPORT SynchronousCompositor {
   // Called when client invalidated because it was necessary for drawing sub
   // clients. Used with viz for webview only.
   virtual void DidInvalidate() = 0;
+
+  // Called when embedder has evicted the previous compositor frame. So renderer
+  // needs to submit next frame with new LocalSurfaceId.
+  virtual void WasEvicted() = 0;
 
  protected:
   virtual ~SynchronousCompositor() {}

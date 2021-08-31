@@ -5,12 +5,15 @@
 #ifndef QUICHE_SPDY_CORE_HPACK_HPACK_STATIC_TABLE_H_
 #define QUICHE_SPDY_CORE_HPACK_HPACK_STATIC_TABLE_H_
 
-#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
-#include "net/third_party/quiche/src/spdy/core/hpack/hpack_header_table.h"
+#include "common/platform/api/quiche_export.h"
+#include "spdy/core/hpack/hpack_header_table.h"
 
 namespace spdy {
 
 struct HpackStaticEntry;
+
+// Number of entries in the HPACK static table.
+constexpr size_t kStaticTableSize = 61;
 
 // HpackStaticTable provides |static_entries_| and |static_index_| for HPACK
 // encoding and decoding contexts.  Once initialized, an instance is read only
@@ -30,10 +33,10 @@ class QUICHE_EXPORT_PRIVATE HpackStaticTable {
   bool IsInitialized() const;
 
   // Accessors.
-  const HpackHeaderTable::EntryTable& GetStaticEntries() const {
+  const HpackHeaderTable::StaticEntryTable& GetStaticEntries() const {
     return static_entries_;
   }
-  const HpackHeaderTable::UnorderedEntrySet& GetStaticIndex() const {
+  const HpackHeaderTable::NameValueToEntryMap& GetStaticIndex() const {
     return static_index_;
   }
   const HpackHeaderTable::NameToEntryMap& GetStaticNameIndex() const {
@@ -44,8 +47,10 @@ class QUICHE_EXPORT_PRIVATE HpackStaticTable {
   size_t EstimateMemoryUsage() const;
 
  private:
-  HpackHeaderTable::EntryTable static_entries_;
-  HpackHeaderTable::UnorderedEntrySet static_index_;
+  HpackHeaderTable::StaticEntryTable static_entries_;
+  // The following two members have string_views that point to strings stored in
+  // |static_entries_|.
+  HpackHeaderTable::NameValueToEntryMap static_index_;
   HpackHeaderTable::NameToEntryMap static_name_index_;
 };
 

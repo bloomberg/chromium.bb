@@ -9,9 +9,8 @@
 #include "base/run_loop.h"
 #include "ui/events/event.h"
 #include "ui/events/platform/scoped_event_dispatcher.h"
-#include "ui/events/platform/x11/x11_event_source.h"
-#include "ui/events/x/x11_window_event_manager.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/x11_window_event_manager.h"
 #include "ui/gfx/x/xproto.h"
 
 namespace ui {
@@ -21,15 +20,15 @@ X11PropertyChangeWaiter::X11PropertyChangeWaiter(x11::Window window,
     : x_window_(window), property_(property), wait_(true) {
   // Ensure that we are listening to PropertyNotify events for |window|. This
   // is not the case for windows which were not created by X11Window.
-  x_window_events_ = std::make_unique<XScopedEventSelector>(
+  x_window_events_ = std::make_unique<x11::XScopedEventSelector>(
       x_window_, x11::EventMask::PropertyChange);
 
-  // Override the dispatcher so that we get events before X11Window does. We
-  // must do this because X11Window stops propagation.
-  dispatcher_ = X11EventSource::GetInstance()->OverrideXEventDispatcher(this);
+  x11::Connection::Get()->AddEventObserver(this);
 }
 
-X11PropertyChangeWaiter::~X11PropertyChangeWaiter() = default;
+X11PropertyChangeWaiter::~X11PropertyChangeWaiter() {
+  x11::Connection::Get()->RemoveEventObserver(this);
+}
 
 void X11PropertyChangeWaiter::Wait() {
   if (!wait_)
@@ -38,26 +37,23 @@ void X11PropertyChangeWaiter::Wait() {
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
   run_loop.Run();
-
-  dispatcher_.reset();
 }
 
-bool X11PropertyChangeWaiter::ShouldKeepOnWaiting(x11::Event* event) {
+bool X11PropertyChangeWaiter::ShouldKeepOnWaiting() {
   // Stop waiting once we get a property change.
   return true;
 }
 
-bool X11PropertyChangeWaiter::DispatchXEvent(x11::Event* x11_event) {
-  auto* prop = x11_event->As<x11::PropertyNotifyEvent>();
+void X11PropertyChangeWaiter::OnEvent(const x11::Event& x11_event) {
+  auto* prop = x11_event.As<x11::PropertyNotifyEvent>();
   if (!wait_ || !prop || prop->window != x_window_ ||
-      prop->atom != gfx::GetAtom(property_) || ShouldKeepOnWaiting(x11_event)) {
-    return false;
+      prop->atom != x11::GetAtom(property_) || ShouldKeepOnWaiting()) {
+    return;
   }
 
   wait_ = false;
   if (!quit_closure_.is_null())
     std::move(quit_closure_).Run();
-  return false;
 }
 
 }  // namespace ui

@@ -27,9 +27,11 @@
 namespace base {
 
 #if !defined(OS_NACL_NONSFI)
+#if !defined(OS_WIN)
 OnceCallback<void(const FilePath&)> GetDeleteFileCallback() {
   return BindOnce(IgnoreResult(&DeleteFile));
 }
+#endif  // !defined(OS_WIN)
 
 OnceCallback<void(const FilePath&)> GetDeletePathRecursivelyCallback() {
   return BindOnce(IgnoreResult(&DeletePathRecursively));
@@ -47,6 +49,46 @@ bool Move(const FilePath& from_path, const FilePath& to_path) {
   if (from_path.ReferencesParent() || to_path.ReferencesParent())
     return false;
   return internal::MoveUnsafe(from_path, to_path);
+}
+
+bool CopyFileContents(File& infile, File& outfile) {
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  bool retry_slow = false;
+  bool res =
+      internal::CopyFileContentsWithSendfile(infile, outfile, retry_slow);
+  if (res || !retry_slow) {
+    return res;
+  }
+  // Any failures which allow retrying using read/write will not have modified
+  // either file offset or size.
+#endif
+
+  static constexpr size_t kBufferSize = 32768;
+  std::vector<char> buffer(kBufferSize);
+
+  for (;;) {
+    int bytes_read = infile.ReadAtCurrentPos(buffer.data(), buffer.size());
+    if (bytes_read < 0) {
+      return false;
+    }
+    if (bytes_read == 0) {
+      return true;
+    }
+    // Allow for partial writes
+    int bytes_written_per_read = 0;
+    do {
+      int bytes_written_partial = outfile.WriteAtCurrentPos(
+          &buffer[bytes_written_per_read], bytes_read - bytes_written_per_read);
+      if (bytes_written_partial < 0) {
+        return false;
+      }
+
+      bytes_written_per_read += bytes_written_partial;
+    } while (bytes_written_per_read < bytes_read);
+  }
+
+  NOTREACHED();
+  return false;
 }
 
 bool ContentsEqual(const FilePath& filename1, const FilePath& filename2) {

@@ -6,16 +6,17 @@
 #define COMPONENTS_SUBRESOURCE_FILTER_CONTENT_BROWSER_ASYNC_DOCUMENT_SUBRESOURCE_FILTER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/document_subresource_filter.h"
 #include "components/subresource_filter/core/common/load_policy.h"
 #include "components/subresource_filter/core/mojom/subresource_filter.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -46,6 +47,8 @@ mojom::ActivationState ComputeActivationState(
 class AsyncDocumentSubresourceFilter {
  public:
   using LoadPolicyCallback = base::OnceCallback<void(LoadPolicy)>;
+  using MultiLoadPolicyCallback =
+      base::OnceCallback<void(std::vector<LoadPolicy>)>;
 
   class Core;
 
@@ -134,6 +137,13 @@ class AsyncDocumentSubresourceFilter {
   void GetLoadPolicyForSubdocument(const GURL& subdocument_url,
                                    LoadPolicyCallback result_callback);
 
+  // Computes LoadPolicy for each URL in `urls` and returns the vector of
+  // policies back to the calling thread via `result_callback`. If
+  // MemoryMappedRuleset is not present or malformed, then
+  // LoadPolicy::Allow is returned for each of these URLs.
+  void GetLoadPolicyForSubdocumentURLs(const std::vector<GURL>& urls,
+                                       MultiLoadPolicyCallback result_callback);
+
   // Invokes |first_disallowed_load_callback|, if necessary, and posts a task to
   // call DocumentSubresourceFilter::reportDisallowedCallback() on the
   // |task_runner|.
@@ -174,7 +184,7 @@ class AsyncDocumentSubresourceFilter {
   std::unique_ptr<Core, base::OnTaskRunnerDeleter> core_;
   base::OnceClosure first_disallowed_load_callback_;
 
-  base::Optional<mojom::ActivationState> activation_state_;
+  absl::optional<mojom::ActivationState> activation_state_;
 
   base::SequenceChecker sequence_checker_;
 
@@ -197,6 +207,8 @@ class AsyncDocumentSubresourceFilter::Core {
     return filter_ ? &filter_.value() : nullptr;
   }
 
+  std::vector<LoadPolicy> GetLoadPolicies(const std::vector<GURL>& urls);
+
  private:
   friend class AsyncDocumentSubresourceFilter;
 
@@ -215,7 +227,7 @@ class AsyncDocumentSubresourceFilter::Core {
                                 const url::Origin& document_origin,
                                 VerifiedRuleset* verified_ruleset);
 
-  base::Optional<DocumentSubresourceFilter> filter_;
+  absl::optional<DocumentSubresourceFilter> filter_;
   base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);

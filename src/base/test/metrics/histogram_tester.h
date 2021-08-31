@@ -46,17 +46,17 @@ class HistogramTester {
   // object was constructed.
   void ExpectUniqueSample(StringPiece name,
                           HistogramBase::Sample sample,
-                          HistogramBase::Count expected_count) const;
+                          HistogramBase::Count expected_bucket_count) const;
   template <typename T>
   void ExpectUniqueSample(StringPiece name,
                           T sample,
-                          HistogramBase::Count expected_count) const {
+                          HistogramBase::Count expected_bucket_count) const {
     ExpectUniqueSample(name, static_cast<HistogramBase::Sample>(sample),
-                       expected_count);
+                       expected_bucket_count);
   }
   void ExpectUniqueTimeSample(StringPiece name,
                               TimeDelta sample,
-                              HistogramBase::Count expected_count) const;
+                              HistogramBase::Count expected_bucket_count) const;
 
   // We know the exact number of samples in a bucket, but other buckets may
   // have samples as well. Measures the diff from the snapshot taken when this
@@ -82,6 +82,11 @@ class HistogramTester {
   void ExpectTimeBucketCount(StringPiece name,
                              TimeDelta sample,
                              HistogramBase::Count count) const;
+
+  // We don't know the values of the samples, but we know their sum.
+  // This returns the diff from the snapshot taken when this object was
+  // constructed.
+  int64_t GetTotalSum(StringPiece name) const;
 
   // Returns a list of all of the buckets recorded since creation of this
   // object, as vector<Bucket>, where the Bucket represents the min boundary of
@@ -147,6 +152,12 @@ class HistogramTester {
                         HistogramBase::Sample sample,
                         Histogram::Count expected_count,
                         const HistogramSamples& samples) const;
+
+  // Returns the total number of values recorded for histogram |name|. This
+  // is calculated as the number from |samples| minus the snapshot that was
+  // taken for |name|.
+  int GetTotalCountForSamples(StringPiece name,
+                              const HistogramSamples& samples) const;
 
   // Verifies that the total number of values recorded for the histogram |name|
   // is |expected_count|. This is checked against |samples| minus the snapshot

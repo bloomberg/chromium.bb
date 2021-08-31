@@ -221,7 +221,7 @@ class PostFilter {
   uint8_t* GetBufferOffset(uint8_t* base_buffer, int stride, Plane plane,
                            int row, int column) const {
     return base_buffer + (row >> subsampling_y_[plane]) * stride +
-           (column >> subsampling_x_[plane]) * pixel_size_;
+           ((column >> subsampling_x_[plane]) << pixel_size_log2_);
   }
   uint8_t* GetSourceBuffer(Plane plane, int row4x4, int column4x4) const {
     return GetBufferOffset(source_buffer_[plane], frame_buffer_.stride(plane),
@@ -272,8 +272,6 @@ class PostFilter {
   void CopyBordersForOneSuperBlockRow(int row4x4, int sb4x4,
                                       bool for_loop_restoration);
   // Sets up the |loop_restoration_border_| for loop restoration.
-  // TODO(linfengz): Unify duplicates in the following two functions if
-  // possible.
   // This is called when there is no CDEF filter. We copy rows from
   // |superres_buffer_| and do the line extension.
   void SetupLoopRestorationBorder(int row4x4_start);
@@ -401,11 +399,14 @@ class PostFilter {
   // Applies super resolution for the |src| for |rows[plane]| rows of each
   // plane. If |line_buffer_row| is larger than or equal to 0, one more row will
   // be processed, the line buffer indicated by |line_buffer_row| will be used
-  // as the source.
+  // as the source. If |dst_is_loop_restoration_border| is true, then it means
+  // that the |dst| pointers come from |loop_restoration_border_| and the
+  // strides will be populated from that buffer.
   void ApplySuperRes(
       const std::array<uint8_t*, kMaxPlanes>& src,
       const std::array<int, kMaxPlanes>& rows, int line_buffer_row,
-      const std::array<uint8_t*, kMaxPlanes>& dst);  // Section 7.16.
+      const std::array<uint8_t*, kMaxPlanes>& dst,
+      bool dst_is_loop_restoration_border = false);  // Section 7.16.
   // Applies SuperRes for the superblock row starting at |row4x4| with a height
   // of 4*|sb4x4|.
   void ApplySuperResForOneSuperBlockRow(int row4x4, int sb4x4,
@@ -475,7 +476,7 @@ class PostFilter {
   const int8_t subsampling_x_[kMaxPlanes];
   const int8_t subsampling_y_[kMaxPlanes];
   const int8_t planes_;
-  const int pixel_size_;
+  const int pixel_size_log2_;
   const uint8_t* const inner_thresh_;
   const uint8_t* const outer_thresh_;
   const bool needs_chroma_deblock_;

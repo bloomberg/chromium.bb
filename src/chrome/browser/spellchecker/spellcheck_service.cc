@@ -6,13 +6,15 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/supports_user_data.h"
 #include "base/synchronization/waitable_event.h"
@@ -41,6 +43,10 @@
 #include "content/public/browser/storage_partition.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#endif
 
 #if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 #include "base/task/post_task.h"
@@ -121,6 +127,22 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
   }
 #endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 
+  // Migrating kSpellCheckBlacklistedDictionaries preference to
+  // kSpellCheckBlocklistedDictionaries.
+  // TODO(crbug/1161062): Remove after M91.
+  StringListPrefMember old_blocked_dict_pref;
+  old_blocked_dict_pref.Init(
+      spellcheck::prefs::kSpellCheckBlacklistedDictionaries, prefs);
+  StringListPrefMember blocked_dict_pref;
+  blocked_dict_pref.Init(spellcheck::prefs::kSpellCheckBlocklistedDictionaries,
+                         prefs);
+
+  if (blocked_dict_pref.GetValue().empty() &&
+      !old_blocked_dict_pref.GetValue().empty()) {
+    blocked_dict_pref.SetValue(old_blocked_dict_pref.GetValue());
+    old_blocked_dict_pref.SetValue(std::vector<std::string>());
+  }
+
   pref_change_registrar_.Add(
       spellcheck::prefs::kSpellCheckDictionaries,
       base::BindRepeating(&SpellcheckService::OnSpellCheckDictionariesChanged,
@@ -146,7 +168,8 @@ SpellcheckService::SpellcheckService(content::BrowserContext* context)
       base::BindRepeating(&SpellcheckService::InitForAllRenderers,
                           base::Unretained(this)));
 
-  custom_dictionary_.reset(new SpellcheckCustomDictionary(context_->GetPath()));
+  custom_dictionary_ =
+      std::make_unique<SpellcheckCustomDictionary>(context_->GetPath());
   custom_dictionary_->AddObserver(this);
   custom_dictionary_->Load();
 
@@ -184,7 +207,7 @@ void SpellcheckService::GetDictionaries(
   PrefService* prefs = user_prefs::UserPrefs::Get(browser_context);
   std::set<std::string> spellcheck_dictionaries;
   for (const auto& value :
-       *prefs->GetList(spellcheck::prefs::kSpellCheckDictionaries)) {
+       prefs->GetList(spellcheck::prefs::kSpellCheckDictionaries)->GetList()) {
     std::string dictionary;
     if (value.GetAsString(&dictionary))
       spellcheck_dictionaries.insert(dictionary);
@@ -509,18 +532,6 @@ bool SpellcheckService::IsSpellcheckEnabled() const {
 
   return prefs->GetBoolean(spellcheck::prefs::kSpellCheckEnable) &&
          (!hunspell_dictionaries_.empty() || enable_if_uninitialized);
-}
-
-bool SpellcheckService::LoadExternalDictionary(std::string language,
-                                               std::string locale,
-                                               std::string path,
-                                               DictionaryFormat format) {
-  return false;
-}
-
-bool SpellcheckService::UnloadExternalDictionary(
-    const std::string& /* path */) {
-  return false;
 }
 
 void SpellcheckService::Observe(int type,
@@ -848,6 +859,13 @@ void SpellcheckService::OnUseSpellingServiceChanged() {
 }
 
 void SpellcheckService::OnAcceptLanguagesChanged() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Accept-Languages and spell check are decoupled in LSV2 Update 2.
+  if (base::FeatureList::IsEnabled(ash::features::kLanguageSettingsUpdate2)) {
+    return;
+  }
+#endif
+
   std::vector<std::string> accept_languages = GetNormalizedAcceptLanguages();
 
   StringListPrefMember dictionaries_pref;

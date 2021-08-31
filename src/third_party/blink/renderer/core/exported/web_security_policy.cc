@@ -73,6 +73,11 @@ void WebSecurityPolicy::
       scheme);
 }
 
+void WebSecurityPolicy::RegisterURLSchemeAsAllowingSharedArrayBuffers(
+    const WebString& scheme) {
+  SchemeRegistry::RegisterURLSchemeAsAllowingSharedArrayBuffers(scheme);
+}
+
 void WebSecurityPolicy::AddOriginAccessAllowListEntry(
     const WebURL& source_origin,
     const WebString& destination_protocol,
@@ -112,11 +117,6 @@ void WebSecurityPolicy::ClearOriginAccessList() {
   SecurityPolicy::ClearOriginAccessList();
 }
 
-void WebSecurityPolicy::AddOriginToTrustworthySafelist(
-    const WebString& origin) {
-  SecurityPolicy::AddOriginToTrustworthySafelist(origin);
-}
-
 void WebSecurityPolicy::AddSchemeToSecureContextSafelist(
     const WebString& scheme) {
   SchemeRegistry::RegisterURLSchemeBypassingSecureContextCheck(scheme);
@@ -138,6 +138,10 @@ void WebSecurityPolicy::RegisterURLSchemeAsNotAllowingJavascriptURLs(
 void WebSecurityPolicy::RegisterURLSchemeAsAllowedForReferrer(
     const WebString& scheme) {
   SchemeRegistry::RegisterURLSchemeAsAllowedForReferrer(scheme);
+}
+
+void WebSecurityPolicy::RegisterURLSchemeAsError(const WebString& scheme) {
+  SchemeRegistry::RegisterURLSchemeAsError(scheme);
 }
 
 }  // namespace blink

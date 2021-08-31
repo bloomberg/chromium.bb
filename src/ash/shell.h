@@ -96,11 +96,11 @@ class AssistantControllerImpl;
 class AutoclickController;
 class BackGestureEventHandler;
 class BacklightsForcedOffSetter;
-class BloomUiControllerImpl;
 class BluetoothNotificationController;
 class BluetoothPowerController;
 class BrightnessControlDelegate;
 class CaptureModeController;
+class ControlVHistogramRecorder;
 class CrosDisplayConfig;
 class DesksController;
 class DetachableBaseHandler;
@@ -120,12 +120,12 @@ class DragDropController;
 class EventClientImpl;
 class EventRewriterControllerImpl;
 class EventTransformationHandler;
+class FullRestoreController;
 class FocusCycler;
 class FrameThrottlingController;
 class HighContrastController;
 class HighlighterController;
 class HoldingSpaceController;
-class HomeScreenController;
 class ImeControllerImpl;
 class InSessionAuthDialogControllerImpl;
 class KeyAccessibilityEnabler;
@@ -136,10 +136,11 @@ class LocaleUpdateControllerImpl;
 class LockStateController;
 class LogoutConfirmationController;
 class LoginScreenController;
+class LoginUnlockThroughputRecorder;
 class MagnificationController;
+class MarkerController;
 class TabletModeController;
 class MediaControllerImpl;
-class MediaNotificationControllerImpl;
 class MessageCenterController;
 class MouseCursorEventFilter;
 class MruWindowTracker;
@@ -147,12 +148,14 @@ class MultiDeviceNotificationPresenter;
 class NearbyShareControllerImpl;
 class NearbyShareDelegate;
 class NightLightControllerImpl;
+class OcclusionTrackerPauser;
 class OverlayEventFilter;
 class OverviewController;
 class ParentAccessController;
 class PartialMagnificationController;
+class PciePeripheralNotificationController;
+class PeripheralBatteryListener;
 class PeripheralBatteryNotifier;
-class PeripheralBatteryTracker;
 class PersistentWindowController;
 class PolicyRecommendationRestorer;
 class PowerButtonController;
@@ -160,6 +163,7 @@ class PowerEventObserver;
 class PowerPrefs;
 class PrivacyScreenController;
 class ProjectingObserver;
+class ProjectorControllerImpl;
 class QuickAnswersController;
 class ResizeShadowController;
 class ResolutionNotificationController;
@@ -380,9 +384,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   EventTransformationHandler* event_transformation_handler() {
     return event_transformation_handler_.get();
   }
-  HomeScreenController* home_screen_controller() {
-    return home_screen_controller_.get();
-  }
   ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
   AshFocusRules* focus_rules() { return focus_rules_; }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
@@ -423,10 +424,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   MagnificationController* magnification_controller() {
     return magnification_controller_.get();
   }
+  MarkerController* marker_controller() { return marker_controller_.get(); }
   MediaControllerImpl* media_controller() { return media_controller_.get(); }
-  MediaNotificationControllerImpl* media_notification_controller() {
-    return media_notification_controller_.get();
-  }
   MessageCenterController* message_center_controller() {
     return message_center_controller_.get();
   }
@@ -452,6 +451,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   PartialMagnificationController* partial_magnification_controller() {
     return partial_magnification_controller_.get();
+  }
+  PeripheralBatteryListener* peripheral_battery_listener() {
+    return peripheral_battery_listener_.get();
   }
   PolicyRecommendationRestorer* policy_recommendation_restorer() {
     return policy_recommendation_restorer_.get();
@@ -553,6 +555,19 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   FrameThrottlingController* frame_throttling_controller() {
     return frame_throttling_controller_.get();
+  }
+
+  ProjectorControllerImpl* projector_controller() {
+    return projector_controller_.get();
+  }
+
+  PciePeripheralNotificationController*
+  pcie_peripheral_notification_controller() {
+    return pcie_peripheral_notification_controller_.get();
+  }
+
+  OcclusionTrackerPauser* occlusion_tracker_pauser() {
+    return occlusion_tracker_pauser_.get();
   }
 
   // Force the shelf to query for it's current visibility state.
@@ -679,7 +694,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AshDBusServices> ash_dbus_services_;
   std::unique_ptr<AssistantControllerImpl> assistant_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
-  std::unique_ptr<BloomUiControllerImpl> bloom_ui_controller_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CrosDisplayConfig> cros_display_config_;
   std::unique_ptr<DesksController> desks_controller_;
@@ -690,8 +704,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<DisplaySpeakerController> display_speaker_controller_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
+  std::unique_ptr<FullRestoreController> full_restore_controller_;
   std::unique_ptr<HoldingSpaceController> holding_space_controller_;
-  std::unique_ptr<HomeScreenController> home_screen_controller_;
   std::unique_ptr<ImeControllerImpl> ime_controller_;
   std::unique_ptr<chromeos::ImmersiveContext> immersive_context_;
   std::unique_ptr<InSessionAuthDialogControllerImpl>
@@ -703,14 +717,14 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
   std::unique_ptr<TabletModeController> tablet_mode_controller_;
   std::unique_ptr<MediaControllerImpl> media_controller_;
-  std::unique_ptr<MediaNotificationControllerImpl>
-      media_notification_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<MultiDeviceNotificationPresenter>
       multidevice_notification_presenter_;
   std::unique_ptr<NearbyShareControllerImpl> nearby_share_controller_;
   std::unique_ptr<NearbyShareDelegate> nearby_share_delegate_;
   std::unique_ptr<ParentAccessController> parent_access_controller_;
+  std::unique_ptr<PciePeripheralNotificationController>
+      pcie_peripheral_notification_controller_;
   std::unique_ptr<QuickAnswersController> quick_answers_controller_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<SessionControllerImpl> session_controller_;
@@ -724,6 +738,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;
   std::unique_ptr<CaptureModeController> capture_mode_controller_;
+  std::unique_ptr<ControlVHistogramRecorder> control_v_histogram_recorder_;
   std::unique_ptr<ShutdownControllerImpl> shutdown_controller_;
   std::unique_ptr<SystemNotificationController> system_notification_controller_;
   std::unique_ptr<SystemTrayModel> system_tray_model_;
@@ -750,6 +765,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<PersistentWindowController> persistent_window_controller_;
   std::unique_ptr<HighContrastController> high_contrast_controller_;
   std::unique_ptr<MagnificationController> magnification_controller_;
+  std::unique_ptr<MarkerController> marker_controller_;
   std::unique_ptr<AutoclickController> autoclick_controller_;
   std::unique_ptr<::wm::FocusController> focus_controller_;
 
@@ -789,8 +805,8 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   std::unique_ptr<ScreenPinningController> screen_pinning_controller_;
 
+  std::unique_ptr<PeripheralBatteryListener> peripheral_battery_listener_;
   std::unique_ptr<PeripheralBatteryNotifier> peripheral_battery_notifier_;
-  std::unique_ptr<PeripheralBatteryTracker> peripheral_battery_tracker_;
   std::unique_ptr<PowerEventObserver> power_event_observer_;
   std::unique_ptr<PowerPrefs> power_prefs_;
   std::unique_ptr<ui::UserActivityPowerManagerNotifier> user_activity_notifier_;
@@ -848,10 +864,17 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   std::unique_ptr<FrameThrottlingController> frame_throttling_controller_;
 
+  std::unique_ptr<ProjectorControllerImpl> projector_controller_;
+
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_test_ = false;
 
   std::unique_ptr<MessageCenterController> message_center_controller_;
+
+  std::unique_ptr<LoginUnlockThroughputRecorder>
+      login_unlock_throughput_recorder_;
+
+  std::unique_ptr<OcclusionTrackerPauser> occlusion_tracker_pauser_;
 
   base::ObserverList<ShellObserver>::Unchecked shell_observers_;
 

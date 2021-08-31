@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_READABLE_STREAM_BYTES_CONSUMER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_READABLE_STREAM_BYTES_CONSUMER_H_
 
-#include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -47,6 +46,7 @@ class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
   void OnRead(DOMUint8Array*);
   void OnReadDone();
   void OnRejected();
+  void SetErrored();
   void Notify();
 
   Member<ReadableStreamDefaultReader> reader_;

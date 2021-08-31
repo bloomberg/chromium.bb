@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
@@ -38,8 +38,8 @@ namespace {
 //
 class DeviceCatcher : HidService::Observer {
  public:
-  DeviceCatcher(HidService* hid_service, const base::string16& serial_number)
-      : serial_number_(base::UTF16ToUTF8(serial_number)), observer_(this) {
+  DeviceCatcher(HidService* hid_service, const std::u16string& serial_number)
+      : serial_number_(base::UTF16ToUTF8(serial_number)) {
     hid_service->GetDevices(
         base::BindOnce(&DeviceCatcher::OnEnumerationComplete,
                        base::Unretained(this), hid_service));
@@ -47,7 +47,7 @@ class DeviceCatcher : HidService::Observer {
 
   const std::string& WaitForDevice() {
     run_loop_.Run();
-    observer_.RemoveAll();
+    observation_.Reset();
     return device_guid_;
   }
 
@@ -61,7 +61,7 @@ class DeviceCatcher : HidService::Observer {
         break;
       }
     }
-    observer_.Add(hid_service);
+    observation_.Observe(hid_service);
   }
 
   void OnDeviceAdded(mojom::HidDeviceInfoPtr device_info) override {
@@ -72,7 +72,7 @@ class DeviceCatcher : HidService::Observer {
   }
 
   std::string serial_number_;
-  ScopedObserver<HidService, HidService::Observer> observer_;
+  base::ScopedObservation<HidService, HidService::Observer> observation_{this};
   base::RunLoop run_loop_;
   std::string device_guid_;
 };
@@ -185,7 +185,8 @@ TEST_F(HidConnectionTest, ReadWrite) {
     return;
 
   TestConnectCallback connect_callback;
-  service_->Connect(device_guid_, connect_callback.GetCallback());
+  service_->Connect(device_guid_, /*allow_protected_reports=*/false,
+                    connect_callback.GetCallback());
   scoped_refptr<HidConnection> conn = connect_callback.WaitForConnection();
   ASSERT_TRUE(conn.get());
 

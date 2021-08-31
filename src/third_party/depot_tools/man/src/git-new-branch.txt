@@ -13,6 +13,7 @@ SYNOPSIS
 'git new-branch' --upstream_current <branch_name>
 'git new-branch' --upstream <REF> <branch_name>
 'git new-branch' --lkgr <branch_name>
+'git new-branch' --inject_current <branch_name>
 
 DESCRIPTION
 -----------
@@ -41,6 +42,15 @@ OPTIONS
 --lkgr::
   Alias for `--upstream lkgr`.
 
+--inject_current::
+  Set the tracking (upstream) branch of the newly-created branch to the
+  tracking (upstream) branch of the currently-checked-out branch and set the
+  tracking (upstream) branch of the currently-checked-out branch to the
+  newly-created branch.
+
+  Before: current > upstream
+  After: current > new > upstream
+
 <branch_name>::
   The name for the new branch.
 
@@ -59,7 +69,7 @@ EXAMPLE
 -------
 demo:1[]
 
-1. Note that both branches are cyan because they are currently the same
+1. Note that these branches are cyan because they are currently the same
 'commit' object. See linkgit:git-map-branches[1] for more detail.
 
 include::_aliases.txt[]

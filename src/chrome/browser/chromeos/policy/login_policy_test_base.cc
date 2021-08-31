@@ -4,13 +4,15 @@
 
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 
+#include <memory>
+
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/chromeos/login/ui/login_display_webui.h"
-#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ash/login/test/session_manager_state_waiter.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/ui/login_display_webui.h"
+#include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "google_apis/gaia/fake_gaia.h"
@@ -48,8 +50,8 @@ void LoginPolicyTestBase::SetUpInProcessBrowserTestFixture() {
   GetMandatoryPoliciesValue(&mandatory);
   base::DictionaryValue recommended;
   GetRecommendedPoliciesValue(&recommended);
-  user_policy_helper_.reset(
-      new UserPolicyTestHelper(GetAccount(), &local_policy_server_));
+  user_policy_helper_ = std::make_unique<UserPolicyTestHelper>(
+      GetAccount(), &local_policy_server_);
   user_policy_helper_->SetPolicy(mandatory, recommended);
 }
 

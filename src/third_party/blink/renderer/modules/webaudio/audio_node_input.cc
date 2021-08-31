@@ -39,7 +39,7 @@ AudioNodeInput::AudioNodeInput(AudioHandler& handler)
       handler_(handler) {
   // Set to mono by default.
   internal_summing_bus_ =
-      AudioBus::Create(1, audio_utilities::kRenderQuantumFrames);
+      AudioBus::Create(1, GetDeferredTaskHandler().RenderQuantumFrames());
 }
 
 AudioNodeInput::~AudioNodeInput() {
@@ -60,7 +60,7 @@ void AudioNodeInput::UpdateInternalBus() {
     return;
 
   internal_summing_bus_ = AudioBus::Create(
-      number_of_input_channels, audio_utilities::kRenderQuantumFrames);
+      number_of_input_channels, GetDeferredTaskHandler().RenderQuantumFrames());
 }
 
 unsigned AudioNodeInput::NumberOfChannels() const {
@@ -140,11 +140,11 @@ scoped_refptr<AudioBus> AudioNodeInput::Pull(AudioBus* in_place_bus,
   if (NumberOfRenderingConnections() == 1 &&
       Handler().InternalChannelCountMode() == AudioHandler::kMax) {
     // The output will optimize processing using inPlaceBus if it's able.
-    AudioNodeOutput* output = this->RenderingOutput(0);
+    AudioNodeOutput* output = RenderingOutput(0);
     return output->Pull(in_place_bus, frames_to_process);
   }
 
-  scoped_refptr<AudioBus> internal_summing_bus = this->InternalSummingBus();
+  scoped_refptr<AudioBus> internal_summing_bus = InternalSummingBus();
 
   if (!NumberOfRenderingConnections()) {
     // At least, generate silence if we're not connected to anything.

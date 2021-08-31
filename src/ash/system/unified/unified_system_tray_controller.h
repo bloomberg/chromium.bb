@@ -13,7 +13,7 @@
 #include "ash/system/media/unified_media_controls_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/animation/animation_delegate_views.h"
@@ -148,6 +148,10 @@ class ASH_EXPORT UnifiedSystemTrayController
     return detailed_view_controller_.get();
   }
 
+  bool showing_audio_detailed_view() const {
+    return showing_audio_detailed_view_;
+  }
+
  private:
   friend class SystemTrayTestApi;
   friend class UnifiedSystemTrayControllerTest;
@@ -246,7 +250,9 @@ class ASH_EXPORT UnifiedSystemTrayController
   std::unique_ptr<gfx::SlideAnimation> animation_;
 
   // Tracks the smoothness of collapse and expand animation.
-  base::Optional<ui::ThroughputTracker> animation_tracker_;
+  absl::optional<ui::ThroughputTracker> animation_tracker_;
+
+  bool showing_audio_detailed_view_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayController);
 };

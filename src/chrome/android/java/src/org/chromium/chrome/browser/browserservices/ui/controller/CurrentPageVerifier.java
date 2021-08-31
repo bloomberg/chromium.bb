@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.Promise;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar.CustomTabTabObserver;
@@ -69,7 +69,7 @@ public class CurrentPageVerifier implements NativeInitObserver {
                     || navigation.isSameDocument()) {
                 return;
             }
-            verify(navigation.getUrlString());
+            verify(navigation.getUrl().getSpec());
         }
 
         @Override
@@ -77,7 +77,7 @@ public class CurrentPageVerifier implements NativeInitObserver {
             // When a link with target="_blank" is followed and the user navigates back, we
             // don't get the onDidFinishNavigation event (because the original page wasn't
             // navigated away from, it was only ever hidden). https://crbug.com/942088
-            verify(tab.getUrlString());
+            verify(tab.getUrl().getSpec());
         }
     };
 
@@ -140,7 +140,7 @@ public class CurrentPageVerifier implements NativeInitObserver {
         Tab tab = mTabProvider.getTab();
 
         boolean resultStillApplies =
-                tab != null && scope.equals(mDelegate.getVerifiedScope(tab.getUrlString()));
+                tab != null && scope.equals(mDelegate.getVerifiedScope(tab.getUrl().getSpec()));
         if (resultStillApplies) {
             updateState(scope, verified ? VerificationStatus.SUCCESS : VerificationStatus.FAILURE);
         }

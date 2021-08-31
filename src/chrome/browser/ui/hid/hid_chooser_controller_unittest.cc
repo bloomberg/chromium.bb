@@ -7,12 +7,12 @@
 #include <string>
 #include <utility>
 
+#include "base/callback_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
-#include "chrome/browser/chooser_controller/mock_chooser_controller_view.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
 #include "chrome/browser/hid/mock_hid_device_observer.h"
@@ -20,9 +20,11 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/permissions/mock_chooser_controller_view.h"
 #include "content/public/browser/hid_chooser.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/device/public/cpp/hid/fake_hid_manager.h"
+#include "services/device/public/cpp/hid/hid_switches.h"
 #include "services/device/public/mojom/hid.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -33,12 +35,13 @@ using ::testing::_;
 
 namespace {
 
-const char kDefaultTestUrl[] = "https://www.google.com/";
+constexpr char kDefaultTestUrl[] = "https://www.google.com/";
 
 const char* const kTestPhysicalDeviceIds[] = {"1", "2", "3"};
 
-const uint16_t kVendorYubico = 0x1050;
-const uint16_t kProductYubicoGnubby = 0x0200;
+constexpr uint16_t kVendorYubico = 0x1050;
+constexpr uint16_t kProductYubicoGnubby = 0x0200;
+constexpr uint16_t kUsageFidoU2f = 0x0001;
 
 class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -47,7 +50,9 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
   HidChooserControllerTest& operator=(HidChooserControllerTest&) = delete;
   ~HidChooserControllerTest() override = default;
 
-  MockChooserControllerView& view() { return mock_chooser_controller_view_; }
+  permissions::MockChooserControllerView& view() {
+    return mock_chooser_controller_view_;
+  }
   MockHidDeviceObserver& device_observer() { return mock_device_observer_; }
 
   void SetUp() override {
@@ -103,8 +108,16 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
         usage);
   }
 
+  void ConnectDevice(const device::mojom::HidDeviceInfo& device) {
+    hid_manager_.AddDevice(device.Clone());
+  }
+
   void DisconnectDevice(const device::mojom::HidDeviceInfo& device) {
     hid_manager_.RemoveDevice(device.guid);
+  }
+
+  void UpdateDevice(const device::mojom::HidDeviceInfo& device) {
+    hid_manager_.ChangeDevice(device.Clone());
   }
 
   blink::mojom::DeviceIdFilterPtr CreateVendorFilter(uint16_t vendor_id) {
@@ -130,7 +143,7 @@ class HidChooserControllerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   device::FakeHidManager hid_manager_;
-  MockChooserControllerView mock_chooser_controller_view_;
+  permissions::MockChooserControllerView mock_chooser_controller_view_;
   MockHidDeviceObserver mock_device_observer_;
 };
 
@@ -171,9 +184,7 @@ TEST_F(HidChooserControllerTest, AddBlockedFidoDevice) {
 
 TEST_F(HidChooserControllerTest, AddUnknownFidoDevice) {
   // Devices that expose a top-level collection with the FIDO usage page should
-  // be blocked even if they aren't on the USB blocklist.
-  const uint16_t kFidoU2fHidUsage = 1;
-
+  // be blocked even if they aren't on the HID blocklist.
   base::RunLoop device_added_loop1;
   base::RunLoop device_added_loop2;
   EXPECT_CALL(device_observer(), OnDeviceAdded(_))
@@ -186,7 +197,7 @@ TEST_F(HidChooserControllerTest, AddUnknownFidoDevice) {
 
   // 1. Connect a device blocked by HID usage.
   CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], 1, 1, "fido", "001",
-                            device::mojom::kPageFido, kFidoU2fHidUsage);
+                            device::mojom::kPageFido, kUsageFidoU2f);
   device_added_loop1.Run();
 
   // 2. Connect a second device blocked by HID usage.
@@ -199,6 +210,34 @@ TEST_F(HidChooserControllerTest, AddUnknownFidoDevice) {
   options_initialized_loop.Run();
 
   EXPECT_EQ(0u, hid_chooser_controller->NumOptions());
+}
+
+TEST_F(HidChooserControllerTest, BlockedFidoDeviceAllowedWithFlag) {
+  base::RunLoop device_added_loop;
+  EXPECT_CALL(device_observer(), OnDeviceAdded(_))
+      .WillOnce(RunClosure(device_added_loop.QuitClosure()));
+
+  base::RunLoop options_initialized_loop;
+  EXPECT_CALL(view(), OnOptionsInitialized())
+      .WillOnce(RunClosure(options_initialized_loop.QuitClosure()));
+
+  // 1. Allow WebHID to access devices on the HID blocklist.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kDisableHidBlocklist);
+
+  // 2. Connect a device with the FIDO usage page. The device uses
+  // vendor/product IDs that are blocked by the HID blocklist.
+  CreateAndAddFakeHidDevice(kTestPhysicalDeviceIds[0], kVendorYubico,
+                            kProductYubicoGnubby, "gnubby", "001",
+                            device::mojom::kPageFido, kUsageFidoU2f);
+  device_added_loop.Run();
+
+  // 3. Create the HidChooserController. The blocked device should be included.
+  auto hid_chooser_controller = CreateHidChooserController({});
+  options_initialized_loop.Run();
+
+  EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
+  EXPECT_EQ(u"gnubby", hid_chooser_controller->GetOption(0));
 }
 
 TEST_F(HidChooserControllerTest, AddNamedDevice) {
@@ -220,8 +259,7 @@ TEST_F(HidChooserControllerTest, AddNamedDevice) {
   options_initialized_loop.Run();
 
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
-            hid_chooser_controller->GetOption(0));
+  EXPECT_EQ(u"a", hid_chooser_controller->GetOption(0));
 }
 
 TEST_F(HidChooserControllerTest, AddUnnamedDevice) {
@@ -243,9 +281,8 @@ TEST_F(HidChooserControllerTest, AddUnnamedDevice) {
   options_initialized_loop.Run();
 
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
-  EXPECT_EQ(
-      base::ASCIIToUTF16("Unknown Device (Vendor: 0x0001, Product: 0x0001)"),
-      hid_chooser_controller->GetOption(0));
+  EXPECT_EQ(u"Unknown Device (0001:0001)",
+            hid_chooser_controller->GetOption(0));
 }
 
 TEST_F(HidChooserControllerTest, DeviceIdFilterVendorOnly) {
@@ -283,12 +320,9 @@ TEST_F(HidChooserControllerTest, DeviceIdFilterVendorOnly) {
 
   EXPECT_EQ(2u, hid_chooser_controller->NumOptions());
 
-  std::set<base::string16> options{hid_chooser_controller->GetOption(0),
+  std::set<std::u16string> options{hid_chooser_controller->GetOption(0),
                                    hid_chooser_controller->GetOption(1)};
-  EXPECT_THAT(options,
-              testing::UnorderedElementsAre(
-                  base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
-                  base::ASCIIToUTF16("b (Vendor: 0x0001, Product: 0x0002)")));
+  EXPECT_THAT(options, testing::UnorderedElementsAre(u"a", u"b"));
 }
 
 TEST_F(HidChooserControllerTest, DeviceIdFilterVendorAndProduct) {
@@ -325,8 +359,7 @@ TEST_F(HidChooserControllerTest, DeviceIdFilterVendorAndProduct) {
   options_initialized_loop.Run();
 
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
-            hid_chooser_controller->GetOption(0));
+  EXPECT_EQ(u"a", hid_chooser_controller->GetOption(0));
 }
 
 TEST_F(HidChooserControllerTest, UsageFilterUsagePageOnly) {
@@ -360,8 +393,7 @@ TEST_F(HidChooserControllerTest, UsageFilterUsagePageOnly) {
   options_initialized_loop.Run();
 
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
-            hid_chooser_controller->GetOption(0));
+  EXPECT_EQ(u"a", hid_chooser_controller->GetOption(0));
 }
 
 TEST_F(HidChooserControllerTest, UsageFilterUsageAndPage) {
@@ -405,8 +437,7 @@ TEST_F(HidChooserControllerTest, UsageFilterUsageAndPage) {
   options_initialized_loop.Run();
 
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
-            hid_chooser_controller->GetOption(0));
+  EXPECT_EQ(u"a", hid_chooser_controller->GetOption(0));
 }
 
 TEST_F(HidChooserControllerTest, DeviceIdAndUsageFilterIntersection) {
@@ -453,8 +484,7 @@ TEST_F(HidChooserControllerTest, DeviceIdAndUsageFilterIntersection) {
   options_initialized_loop.Run();
 
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
-            hid_chooser_controller->GetOption(0));
+  EXPECT_EQ(u"a", hid_chooser_controller->GetOption(0));
 }
 
 TEST_F(HidChooserControllerTest, DeviceIdAndUsageFilterUnion) {
@@ -543,8 +573,7 @@ TEST_F(HidChooserControllerTest, OneOptionForSamePhysicalDevice) {
   options_initialized_loop.Run();
 
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
-            hid_chooser_controller->GetOption(0));
+  EXPECT_EQ(u"a", hid_chooser_controller->GetOption(0));
 
   // 4. Select the chooser option. The returned device list should include both
   // devices.
@@ -559,8 +588,7 @@ TEST_F(HidChooserControllerTest, OneOptionForSamePhysicalDevice) {
   // Regression test for https://crbug.com/1069057. Ensure that the
   // set of options is still valid after the callback is run.
   EXPECT_EQ(1u, hid_chooser_controller->NumOptions());
-  EXPECT_EQ(base::ASCIIToUTF16("a (Vendor: 0x0001, Product: 0x0001)"),
-            hid_chooser_controller->GetOption(0));
+  EXPECT_EQ(u"a", hid_chooser_controller->GetOption(0));
 }
 
 TEST_F(HidChooserControllerTest, NoMergeWithDifferentPhysicalDeviceIds) {
@@ -685,4 +713,191 @@ TEST_F(HidChooserControllerTest, DeviceDisconnectRemovesOption) {
   option_removed_loop.Run();
 
   EXPECT_EQ(0u, hid_chooser_controller->NumOptions());
+}
+
+namespace {
+
+device::mojom::HidDeviceInfoPtr CreateDeviceWithOneCollection(
+    const std::string& guid) {
+  auto device_info = device::mojom::HidDeviceInfo::New();
+  device_info->guid = guid;
+  device_info->physical_device_id = "physical-device-id";
+  device_info->vendor_id = 1;
+  device_info->product_id = 1;
+  device_info->product_name = "a";
+  auto collection = device::mojom::HidCollectionInfo::New();
+  collection->usage = device::mojom::HidUsageAndPage::New(1, 1);
+  collection->input_reports.push_back(
+      device::mojom::HidReportDescription::New());
+  device_info->collections.push_back(std::move(collection));
+  return device_info;
+}
+
+device::mojom::HidDeviceInfoPtr CreateDeviceWithTwoCollections(
+    const std::string guid) {
+  auto device_info = CreateDeviceWithOneCollection(guid);
+  auto collection = device::mojom::HidCollectionInfo::New();
+  collection->usage = device::mojom::HidUsageAndPage::New(2, 2);
+  collection->output_reports.push_back(
+      device::mojom::HidReportDescription::New());
+  device_info->collections.push_back(std::move(collection));
+  return device_info;
+}
+
+}  // namespace
+
+TEST_F(HidChooserControllerTest, DeviceChangeUpdatesDeviceInfo) {
+  const char kTestGuid[] = "guid";
+
+  // Connect a partially-initialized device with one collection.
+  base::RunLoop device_added_loop;
+  EXPECT_CALL(device_observer(), OnDeviceAdded).WillOnce([&](const auto& d) {
+    EXPECT_EQ(d.guid, kTestGuid);
+    EXPECT_EQ(d.collections.size(), 1u);
+    device_added_loop.Quit();
+  });
+  auto partial_device = CreateDeviceWithOneCollection(kTestGuid);
+  ConnectDevice(*partial_device);
+  device_added_loop.Run();
+
+  // Create the HidChooserController.
+  base::MockCallback<content::HidChooser::Callback> callback;
+  base::RunLoop options_initialized_loop;
+  EXPECT_CALL(view(), OnOptionsInitialized)
+      .WillOnce(RunClosure(options_initialized_loop.QuitClosure()));
+  auto hid_chooser_controller = CreateHidChooserController({}, callback.Get());
+  options_initialized_loop.Run();
+
+  // Check that the option is present.
+  EXPECT_EQ(hid_chooser_controller->NumOptions(), 1u);
+  EXPECT_EQ(u"a", hid_chooser_controller->GetOption(0));
+
+  // Update the device to add another collection.
+  base::RunLoop device_changed_loop;
+  EXPECT_CALL(device_observer(), OnDeviceChanged).WillOnce([&](const auto& d) {
+    EXPECT_EQ(d.guid, kTestGuid);
+    EXPECT_EQ(d.collections.size(), 2u);
+    device_changed_loop.Quit();
+  });
+  auto complete_device = CreateDeviceWithTwoCollections(kTestGuid);
+  UpdateDevice(*complete_device);
+  device_changed_loop.Run();
+
+  // Check that the option is still present and the name has not changed.
+  EXPECT_EQ(hid_chooser_controller->NumOptions(), 1u);
+  EXPECT_EQ(u"a", hid_chooser_controller->GetOption(0));
+
+  // Select the option and check that only the updated device info is returned.
+  base::RunLoop callback_loop;
+  EXPECT_CALL(callback, Run).WillOnce([&](auto devices) {
+    ASSERT_EQ(devices.size(), 1u);
+    EXPECT_EQ(devices[0]->guid, kTestGuid);
+    EXPECT_EQ(devices[0]->collections.size(), 2u);
+    callback_loop.Quit();
+  });
+  hid_chooser_controller->Select({0});
+  callback_loop.Run();
+}
+
+TEST_F(HidChooserControllerTest, ExcludedDeviceChangedToIncludedDevice) {
+  const char kTestGuid[] = "guid";
+
+  // Connect a partially-initialized device with one collection.
+  base::RunLoop device_added_loop;
+  EXPECT_CALL(device_observer(), OnDeviceAdded).WillOnce([&](const auto& d) {
+    EXPECT_EQ(d.guid, kTestGuid);
+    EXPECT_EQ(d.collections.size(), 1u);
+    device_added_loop.Quit();
+  });
+  auto partial_device = CreateDeviceWithOneCollection(kTestGuid);
+  ConnectDevice(*partial_device);
+  device_added_loop.Run();
+
+  // Create the HidChooserController. Set a usage page filter that excludes
+  // |partial_device|.
+  std::vector<blink::mojom::HidDeviceFilterPtr> filters;
+  filters.push_back(
+      blink::mojom::HidDeviceFilter::New(nullptr, CreatePageFilter(2)));
+  base::MockCallback<content::HidChooser::Callback> callback;
+  base::RunLoop options_initialized_loop;
+  EXPECT_CALL(view(), OnOptionsInitialized)
+      .WillOnce(RunClosure(options_initialized_loop.QuitClosure()));
+  auto hid_chooser_controller =
+      CreateHidChooserController(std::move(filters), callback.Get());
+  options_initialized_loop.Run();
+
+  // Check that the option is not present.
+  EXPECT_EQ(hid_chooser_controller->NumOptions(), 0u);
+
+  // Update the device to add another collection. Now the device should be
+  // allowed by the filter.
+  base::RunLoop option_added_loop;
+  EXPECT_CALL(view(), OnOptionAdded(0))
+      .WillOnce(RunClosure(option_added_loop.QuitClosure()));
+  EXPECT_CALL(device_observer(), OnDeviceChanged).WillOnce([&](const auto& d) {
+    EXPECT_EQ(d.guid, kTestGuid);
+    EXPECT_EQ(d.collections.size(), 2u);
+  });
+  auto complete_device = CreateDeviceWithTwoCollections(kTestGuid);
+  UpdateDevice(*complete_device);
+  option_added_loop.Run();
+
+  // Check that the option has been added.
+  EXPECT_EQ(hid_chooser_controller->NumOptions(), 1u);
+  EXPECT_EQ(u"a", hid_chooser_controller->GetOption(0));
+
+  // Select the option and check that only the updated device info is returned.
+  base::RunLoop callback_loop;
+  EXPECT_CALL(callback, Run).WillOnce([&](auto devices) {
+    ASSERT_EQ(devices.size(), 1u);
+    EXPECT_EQ(devices[0]->guid, kTestGuid);
+    EXPECT_EQ(devices[0]->collections.size(), 2u);
+    callback_loop.Quit();
+  });
+  hid_chooser_controller->Select({0});
+  callback_loop.Run();
+}
+
+TEST_F(HidChooserControllerTest, DeviceChangedToBlockedDevice) {
+  const char kTestGuid[] = "guid";
+
+  // Connect a partially-initialized device with one collection.
+  base::RunLoop device_added_loop;
+  EXPECT_CALL(device_observer(), OnDeviceAdded).WillOnce([&](const auto& d) {
+    EXPECT_EQ(d.guid, kTestGuid);
+    EXPECT_EQ(d.collections.size(), 1u);
+    device_added_loop.Quit();
+  });
+  auto partial_device = CreateDeviceWithOneCollection(kTestGuid);
+  ConnectDevice(*partial_device);
+  device_added_loop.Run();
+
+  // Create the HidChooserController.
+  base::RunLoop options_initialized_loop;
+  EXPECT_CALL(view(), OnOptionsInitialized)
+      .WillOnce(RunClosure(options_initialized_loop.QuitClosure()));
+  auto hid_chooser_controller = CreateHidChooserController({});
+  options_initialized_loop.Run();
+
+  // Check that the option is present.
+  EXPECT_EQ(hid_chooser_controller->NumOptions(), 1u);
+  EXPECT_EQ(u"a", hid_chooser_controller->GetOption(0));
+
+  // Update the device to add another collection with the FIDO usage page.
+  // Devices with any FIDO collection are blocked, so the chooser option should
+  // be removed.
+  base::RunLoop option_removed_loop;
+  EXPECT_CALL(view(), OnOptionRemoved(0))
+      .WillOnce(RunClosure(option_removed_loop.QuitClosure()));
+  EXPECT_CALL(device_observer(), OnDeviceChanged).WillOnce([&](const auto& d) {
+    EXPECT_EQ(d.guid, kTestGuid);
+    EXPECT_EQ(d.collections.size(), 2u);
+  });
+  auto complete_device = CreateDeviceWithTwoCollections(kTestGuid);
+  complete_device->collections[1]->usage->usage_page = device::mojom::kPageFido;
+  UpdateDevice(*complete_device);
+  option_removed_loop.Run();
+
+  // Check that the option has been removed.
+  EXPECT_EQ(hid_chooser_controller->NumOptions(), 0u);
 }

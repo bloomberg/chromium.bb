@@ -23,10 +23,15 @@ constexpr int kMinValidID = 1;
 constexpr int kMinValidPriority = 1;
 
 using RulesetID =
-    ::util::IdType<class RulesetIDTag, int, -1 /* invalid value */>;
+    ::util::IdType<class RulesetIDTag, int, -2 /* invalid value */>;
 
 constexpr RulesetID kMinValidStaticRulesetID(1);
 constexpr RulesetID kDynamicRulesetID(0);
+constexpr RulesetID kSessionRulesetID(-1);
+
+// Prefix for reserved ruleset public IDs. Extensions can't specify static
+// rulesets beginning with this.
+constexpr char kReservedRulesetIDPrefix = '_';
 
 // Default priority used for rules when the priority is not explicity provided
 // by an extension.
@@ -44,6 +49,8 @@ extern const char kDomainsKey[];
 extern const char kExcludedDomainsKey[];
 extern const char kResourceTypesKey[];
 extern const char kExcludedResourceTypesKey[];
+extern const char kRequestMethodsKey[];
+extern const char kExcludedRequestMethodsKey[];
 extern const char kDomainTypeKey[];
 extern const char kRuleActionTypeKey[];
 extern const char kRedirectPath[];
@@ -80,6 +87,8 @@ extern const char kResponseHeadersPath[];
 extern const char kHeaderNameKey[];
 extern const char kHeaderOperationKey[];
 extern const char kHeaderValueKey[];
+extern const char kTabIdsKey[];
+extern const char kExcludedTabIdsKey[];
 
 }  // namespace declarative_net_request
 }  // namespace extensions

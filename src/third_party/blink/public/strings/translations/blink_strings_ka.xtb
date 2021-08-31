@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">ბანერი</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> ელემენტი</translation>
 <translation id="1480676835519562650">შესაძლებელია რამდენიმე ვარიანტის არჩევა, არჩეულია <ph name="SELECTED" /> / <ph name="COUNT" />-დან.</translation>
+<translation id="1588438908519853928">ნორმალური</translation>
 <translation id="1589122976691792535">რეგიონი</translation>
 <translation id="1591562245178063882">ამ თვეში</translation>
 <translation id="1637811476055996098">აირჩიეთ ფაილები</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">ტაიმერი</translation>
 <translation id="3199563858620722075">კომბო-ველი</translation>
 <translation id="3220661731597678625">ამჟამინდელი ნაბიჯი</translation>
+<translation id="3321030238473337787">დაკვრის სიჩქარე</translation>
 <translation id="3329013043687509092">გაჯერება</translation>
 <translation id="3450233048674729344">მნიშვნელობა უნდა იყოს ნაკლები ან უდრიდეს <ph name="MAXIMUM" />-ს.</translation>
 <translation id="3486220673238053218">განსაზღვრება</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">მენიუს ზოლი</translation>
 <translation id="4293574643247337246">გვერდის ზედა კოლონტიტული</translation>
 <translation id="4360991593054037559">შეიყვანეთ სწორი მნიშვნელობა. ორი უახლოესი მნიშვნელობაა <ph name="VALID_VALUE_LOW" /> და <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4371899966896349864">დაკვრის სიჩქარის მენიუს დამალვა</translation>
 <translation id="4384249794467006333">ამ სურათს არ აქვს მიმაგრებული ლეიბლი. სურათის აღწერილობის გასაცნობად გახსენით „სხვა ვარიანტების“ მენიუ, რომელიც ზედა მარჯვენა ნაწილშია მოცემული.</translation>
 <translation id="4384583879834880242">კითხვა-პასუხი</translation>
 <translation id="4444765639179266822">როგორც ჩანს, აქ წერია: <ph name="OCR_TEXT" /></translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">მწკრივის სათაური</translation>
 <translation id="5143125788380636750">ეპილოგი</translation>
 <translation id="5164977714490026579">მნიშვნელობა უნდა იყოს მეტი ან უდრიდეს <ph name="MINIMUM" />-ს.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> პბაიტი</translation>
 <translation id="5307600278924710095">გთხოვთ შეიყვანოთ ნაწილი, რომელსაც მოსდევს „<ph name="ATSIGN" />“. „<ph name="INVALIDADDRESS" />“ არის არასრული.</translation>
 <translation id="5334352251556557839">მედიის დაკვრა ვერ მოხერხდა.</translation>
 <translation id="537648784377940524">მინიმალური თარიღი (<ph name="MIN_DATE_OR_TIME" />) წინ უნდა უსწრებდეს მაქსიმალურ თარიღს (<ph name="MAX_DATE_OR_TIME" />).</translation>
+<translation id="5378437566635403538">გაშლილია, გახსნილია დიალოგი.</translation>
 <translation id="5406322316791861025">მონაცემი</translation>
 <translation id="5425179576310518467">ამჟამინდელი თარიღი</translation>
 <translation id="5453733299334684579">ხის ელემენტი</translation>
 <translation id="5466621249238537318">აირჩიეთ ერთი ან მეტი ფაილი.</translation>
 <translation id="5468998798572797635">სრული ეკრანის რეჟიმიდან გასვლა</translation>
+<translation id="5516235301412634559">0,75</translation>
 <translation id="5516424706154626233">თარიღის ამომრჩევი</translation>
 <translation id="5537725057119320332">მაუწყებლობა</translation>
 <translation id="5546461542133609677">ხმის ჩართვა</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">დამატებითი ვარიანტები</translation>
 <translation id="576709008726043716">შესავალი</translation>
 <translation id="57838592816432529">დადუმება</translation>
+<translation id="5786442179789148008">დაკვრის სიჩქარის მენიუს ჩვენება</translation>
+<translation id="5787939484346677755">გაშლილია, ხელმისაწვდომია ავტომატური შევსების ვარიანტები.</translation>
 <translation id="5860033963881614850">გამორთვა</translation>
 <translation id="588258955323874662">სრული ეკრანი</translation>
 <translation id="5888666972993069672">ახლა ტრანსლირდება „<ph name="DEVICE_FRIENDLY_NAME" />“-ზე</translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">ჩართვა</translation>
 <translation id="5939518447894949180">გადატვირთვა</translation>
 <translation id="5966707198760109579">კვირა</translation>
+<translation id="5985507339671257014">0,5</translation>
 <translation id="5987525920412732405">მრიცხველის ღილაკი</translation>
 <translation id="6011459053400940133">ხმის სლაიდერი</translation>
 <translation id="6015796118275082299">წელი</translation>
 <translation id="6023896073578205740">სიის ველი</translation>
 <translation id="6150588977291308318">ბიბლიოგრაფია</translation>
 <translation id="6164829606128959761">მთვლელი</translation>
+<translation id="6165053282446038410">გაშლილია, ხელმისაწვდომია ავტომატური შევსების <ph name="COUNT" /> ვარიანტი.</translation>
 <translation id="6166809985690652833">ბოლოსიტყვაობა</translation>
 <translation id="6209276755895393898">როგორც ჩანს, ეს არის <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">ამჟამინდელი გვერდი</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">გასუფთავება</translation>
 <translation id="668171684555832681">სხვა…</translation>
 <translation id="6692633176391053278">სტეპერი</translation>
+<translation id="6696580792574109116">თვის ამომრჩევი</translation>
 <translation id="6709093583001123835">მნიშვნელობა უნდა იყოს <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">დაკვრის ხარისხი ცუდია</translation>
 <translation id="6755330956360078551">მინიშნება</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">დადუმება</translation>
 <translation id="6885760532393684712">კატალოგი</translation>
 <translation id="689129560213475294">კოლოფონი</translation>
+<translation id="6919891270253167948">1,5</translation>
 <translation id="6934078000481955284">ციტატა</translation>
 <translation id="693476918119313863">ზედა კოლონტიტული</translation>
 <translation id="6941933287844615239">მედია-ფაილის ჩამოტვირთვა</translation>
 <translation id="6981594929165378967">ჩასმა</translation>
+<translation id="698788488269350478">გაშლილია.</translation>
 <translation id="6989848892321993519">გთხოვთ, გაზარდოთ ეს ტექსტი <ph name="MIN_CHARACTERS" /> ან მეტ სიმბოლომდე (ამჟამად 1 სიმბოლოს იყენებთ).</translation>
 <translation id="7034405885550056553">შემოთავაზება</translation>
 <translation id="709897737746224366">გთხოვთ, შეუსაბამეთ მოთხოვნილ ფორმატს.</translation>
 <translation id="7102274145889307184">ამჟამინდელი მდებარეობა</translation>
 <translation id="7118469954320184356">აღწერილობა მიუწვდომელია.</translation>
 <translation id="7139483182332611405">წინათქმა</translation>
+<translation id="7198226213493847604">მენიუს ამომხტარი ღილაკი</translation>
 <translation id="7214187073215825913">ინფორმაცია კონტენტის შესახებ</translation>
 <translation id="7238347055216017155">ხაზგასმა</translation>
 <translation id="7263440858009898357">გთხოვთ აირჩიოთ ელემენტი სიაში.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">სურათების ნაკლული აღწერილობების მისაღებად გახსენით კონტექსტური მენიუ.</translation>
 <translation id="7750228210027921155">გამოსახულება გამოსახულებაში</translation>
 <translation id="775297008183122718">არასწორი ჩანაწერი</translation>
+<translation id="7782515065589691344">1.25</translation>
 <translation id="7789962463072032349">პაუზა</translation>
 <translation id="7802800022689234070">გაშლის სამკუთხედი</translation>
 <translation id="7852167693871241274">ტონის სლაიდერი</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">მითითება შენიშვნაზე</translation>
 <translation id="811583516810654505">მიმდინარეობს აღწერილობის მიღება…</translation>
 <translation id="8117451130807776954">ეს კვირა</translation>
+<translation id="8131955114056917397">0,25</translation>
 <translation id="8199524924445686405">წწწწ</translation>
 <translation id="8208673686607688524">ადგილობრივი თარიღისა და დროის ამომრჩევი</translation>
 <translation id="8261464734335370856">მართლწერა არასწორია</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">დისტანციური დაკვრის მართვა</translation>
 <translation id="862370744433916922">სუბტიტრი</translation>
 <translation id="8634971699417195529">თვის ამომრჩევის ჩვენება</translation>
+<translation id="8637593834423658414">1,75</translation>
+<translation id="8668988909814782445">ახალ ხაზზე გადატანა</translation>
 <translation id="8711688047404765493">გამოტანა</translation>
 <translation id="8750798805984357768">გთხოვთ აირჩიოთ ერთიერთი ამ ვარიანტთაგანი.</translation>
 <translation id="8808573423886751634">თავი</translation>
 <translation id="8845239796550121995">ამჟამად ტრანსლირებს თქვენს ტელევიზორზე</translation>
 <translation id="8851136666856101339">ძირითადი</translation>
+<translation id="8861621546968757188">დიალოგის ამომხტარი ღილაკი</translation>
 <translation id="8875657656876809964">შეცდომა ვიდეოს დაკვრისას</translation>
 <translation id="8889402386540077796">შეფერილობა</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> კბ</translation>

@@ -4,6 +4,7 @@
 
 #include "ash/events/select_to_speak_event_handler.h"
 
+#include <memory>
 #include <set>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
@@ -15,6 +16,7 @@
 #include "base/macros.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/window.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
@@ -42,13 +44,13 @@ class EventCapturer : public ui::EventHandler {
 
  private:
   void OnMouseEvent(ui::MouseEvent* event) override {
-    last_mouse_event_.reset(new ui::MouseEvent(*event));
+    last_mouse_event_ = std::make_unique<ui::MouseEvent>(*event);
   }
   void OnKeyEvent(ui::KeyEvent* event) override {
-    last_key_event_.reset(new ui::KeyEvent(*event));
+    last_key_event_ = std::make_unique<ui::KeyEvent>(*event);
   }
   void OnTouchEvent(ui::TouchEvent* event) override {
-    last_touch_event_.reset(new ui::TouchEvent(*event));
+    last_touch_event_ = std::make_unique<ui::TouchEvent>(*event);
   }
 
   std::unique_ptr<ui::KeyEvent> last_key_event_;
@@ -71,21 +73,28 @@ class TestDelegate : public SelectToSpeakEventHandlerDelegate {
   void Reset() {
     mouse_events_captured_.clear();
     last_mouse_location_.SetPoint(0, 0);
+    last_mouse_root_location_.SetPoint(0, 0);
   }
 
   gfx::Point last_mouse_event_location() { return last_mouse_location_; }
+
+  gfx::Point last_mouse_event_root_location() {
+    return last_mouse_root_location_;
+  }
 
  private:
   // SelectToSpeakEventHandlerDelegate:
   void DispatchMouseEvent(const ui::MouseEvent& event) override {
     mouse_events_captured_.insert(event.type());
     last_mouse_location_ = event.location();
+    last_mouse_root_location_ = event.root_location();
   }
   void DispatchKeyEvent(const ui::KeyEvent& event) override {
     // Unused for now.
   }
 
   gfx::Point last_mouse_location_;
+  gfx::Point last_mouse_root_location_;
   std::set<ui::EventType> mouse_events_captured_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
@@ -102,6 +111,12 @@ class SelectToSpeakEventHandlerTest : public AshTestBase {
     // throttling events. set_throttle_input_on_resize_for_testing() disables
     // this.
     aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
+
+    // Make sure the display is initialized so we don't fail the test due to any
+    // input events caused from creating the display.
+    Shell::Get()->display_manager()->UpdateDisplays();
+    base::RunLoop().RunUntilIdle();
+
     delegate_ = std::make_unique<TestDelegate>();
     generator_ = AshTestBase::GetEventGenerator();
     GetContext()->AddPreTargetHandler(&event_capturer_);
@@ -631,6 +646,30 @@ TEST_F(SelectToSpeakEventHandlerTest, TrackingTouchIgnoresOtherTouchPointers) {
   generator_->PressTouchId(3);
   EXPECT_TRUE(event_capturer_.last_touch_event());
   event_capturer_.Reset();
+}
+
+TEST_F(SelectToSpeakEventHandlerTest, TouchFirstOfMultipleDisplays) {
+  UpdateDisplay("1+0-800x800,801+1-800x800");
+
+  // On the first display.
+  gfx::Point touch_location(200, 200);
+  generator_->set_current_screen_location(touch_location);
+  controller_->SetSelectToSpeakState(
+      SelectToSpeakState::kSelectToSpeakStateSelecting);
+  generator_->PressTouch();
+  EXPECT_EQ(touch_location, delegate_->last_mouse_event_root_location());
+}
+
+TEST_F(SelectToSpeakEventHandlerTest, TouchSecondOfMultipleDisplays) {
+  UpdateDisplay("1+0-800x800,801+1-800x800");
+
+  // On the second display.
+  gfx::Point touch_location(1000, 200);
+  generator_->set_current_screen_location(touch_location);
+  controller_->SetSelectToSpeakState(
+      SelectToSpeakState::kSelectToSpeakStateSelecting);
+  generator_->PressTouch();
+  EXPECT_EQ(touch_location, delegate_->last_mouse_event_root_location());
 }
 
 }  // namespace

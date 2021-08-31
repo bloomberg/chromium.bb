@@ -85,7 +85,8 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
   void SelectBetweenCoordinates(const gfx::PointF& base,
                                 const gfx::PointF& extent) override;
   void OnSelectionEvent(ui::SelectionEventType event) override;
-  void OnDragUpdate(const gfx::PointF& position) override;
+  void OnDragUpdate(const ui::TouchSelectionDraggable::Type type,
+                    const gfx::PointF& position) override;
   std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
   void DidScroll() override;
 
@@ -94,7 +95,7 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
   void ExecuteCommand(int command_id, int event_flags) override;
   void RunContextMenu() override;
   bool ShouldShowQuickMenu() override;
-  base::string16 GetSelectedText() override;
+  std::u16string GetSelectedText() override;
 
   // Not owned, non-null for the lifetime of this object.
   RenderWidgetHostViewAura* rwhva_;
@@ -111,7 +112,8 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
     void SelectBetweenCoordinates(const gfx::PointF& base,
                                   const gfx::PointF& extent) final;
     void OnSelectionEvent(ui::SelectionEventType event) final;
-    void OnDragUpdate(const gfx::PointF& position) final;
+    void OnDragUpdate(const ui::TouchSelectionDraggable::Type type,
+                      const gfx::PointF& position) final;
     std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() final;
     void DidScroll() override;
 

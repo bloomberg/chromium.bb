@@ -5,6 +5,7 @@
 #include "components/sync/test/fake_sync_encryption_handler.h"
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 
@@ -14,8 +15,19 @@ FakeSyncEncryptionHandler::FakeSyncEncryptionHandler() = default;
 
 FakeSyncEncryptionHandler::~FakeSyncEncryptionHandler() = default;
 
-bool FakeSyncEncryptionHandler::Init() {
-  return true;
+void FakeSyncEncryptionHandler::NotifyInitialStateToObservers() {}
+
+ModelTypeSet FakeSyncEncryptionHandler::GetEncryptedTypes() {
+  return AlwaysEncryptedUserTypes();
+}
+
+Cryptographer* FakeSyncEncryptionHandler::GetCryptographer() {
+  // GetCryptographer() must never return null.
+  return &fake_cryptographer_;
+}
+
+PassphraseType FakeSyncEncryptionHandler::GetPassphraseType() {
+  return PassphraseType::kKeystorePassphrase;
 }
 
 bool FakeSyncEncryptionHandler::NeedKeystoreKey() const {
@@ -62,12 +74,17 @@ void FakeSyncEncryptionHandler::AddTrustedVaultDecryptionKeys(
   // Do nothing.
 }
 
-base::Time FakeSyncEncryptionHandler::GetKeystoreMigrationTime() const {
+base::Time FakeSyncEncryptionHandler::GetKeystoreMigrationTime() {
   return base::Time();
 }
 
 KeystoreKeysHandler* FakeSyncEncryptionHandler::GetKeystoreKeysHandler() {
   return this;
+}
+
+const sync_pb::NigoriSpecifics::TrustedVaultDebugInfo&
+FakeSyncEncryptionHandler::GetTrustedVaultDebugInfo() {
+  return sync_pb::NigoriSpecifics::TrustedVaultDebugInfo::default_instance();
 }
 
 }  // namespace syncer

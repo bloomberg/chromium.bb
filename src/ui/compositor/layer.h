@@ -23,6 +23,7 @@
 #include "cc/layers/surface_layer.h"
 #include "cc/layers/texture_layer_client.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animation_delegate.h"
@@ -169,6 +170,23 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // been set. Will not return NULL.
   LayerAnimator* GetAnimator();
 
+  // Sets the given |subtree_id| on the cc::Layer associated with this, so that
+  // the layer subtree rooted here can be uniquely identified by a
+  // FrameSinkVideoCapturer. The existence of a valid SubtreeCaptureId on this
+  // layer will force it to be drawn into a separate CompositorRenderPass.
+  // Setting a non-valid (i.e. default-constructed SubtreeCaptureId) will clear
+  // this property.
+  // It is not allowed to change this ID from a valid ID to another valid ID,
+  // since a client might already using the existing valid ID to make this layer
+  // subtree identifiable by a capturer.
+  //
+  // Note that this is useful when it's desired to video record a layer subtree
+  // of a non-root layer using a FrameSinkVideoCapturer, since non-root layers
+  // are usually not drawn into their own CompositorRenderPass, while the ui
+  // compositor's root layer always is.
+  void SetSubtreeCaptureId(viz::SubtreeCaptureId subtree_id);
+  viz::SubtreeCaptureId GetSubtreeCaptureId() const;
+
   // The transform, relative to the parent.
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return cc_layer_->transform(); }
@@ -312,14 +330,19 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // Converts a point from the coordinates of |source| to the coordinates of
   // |target|. Necessarily, |source| and |target| must inhabit the same Layer
-  // tree.
+  // tree. If `use_target_transform` is true, the target transform is used in
+  // coordinate conversions; otherwise, the current transform is used. If there
+  // is no animation ongoing, the target transform is the same as the current
+  // transform.
   static void ConvertPointToLayer(const Layer* source,
                                   const Layer* target,
+                                  bool use_target_transform,
                                   gfx::PointF* point);
 
-  // Converts a transform to be relative to the given |ancestor|. Returns
-  // whether success (that is, whether the given ancestor was really an
-  // ancestor of this layer).
+  // Calculates the relative transform. See the comment of
+  // `GetTransformRelativeToImpl()` for further details.
+  bool GetTransformRelativeTo(const Layer* ancestor,
+                              gfx::Transform* transform) const;
   bool GetTargetTransformRelativeTo(const Layer* ancestor,
                                     gfx::Transform* transform) const;
 
@@ -338,10 +361,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // Set new TransferableResource for this layer. This method only supports
   // a gpu-backed |resource|.
-  void SetTransferableResource(
-      const viz::TransferableResource& resource,
-      std::unique_ptr<viz::SingleReleaseCallback> release_callback,
-      gfx::Size texture_size_in_dip);
+  void SetTransferableResource(const viz::TransferableResource& resource,
+                               viz::ReleaseCallback release_callback,
+                               gfx::Size texture_size_in_dip);
   void SetTextureSize(gfx::Size texture_size_in_dip);
   void SetTextureFlipped(bool flipped);
   bool TextureFlipped() const;
@@ -440,7 +462,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   void SetScrollOffset(const gfx::ScrollOffset& offset);
 
   // ContentLayerClient implementation.
-  gfx::Rect PaintableRegion() override;
+  gfx::Rect PaintableRegion() const override;
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList() override;
   bool FillsBoundsCompletely() const override;
 
@@ -452,7 +474,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   bool PrepareTransferableResource(
       cc::SharedBitmapIdRegistrar* bitmap_registar,
       viz::TransferableResource* resource,
-      std::unique_ptr<viz::SingleReleaseCallback>* release_callback) override;
+      viz::ReleaseCallback* release_callback) override;
 
   float device_scale_factor() const { return device_scale_factor_; }
 
@@ -523,8 +545,16 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // StackBelow().
   void StackRelativeTo(Layer* child, Layer* other, bool above);
 
-  bool ConvertPointForAncestor(const Layer* ancestor, gfx::PointF* point) const;
+  // If `use_target_transform` is true, coordinate conversions use the target
+  // transform. The target transform is the end value of a transform animation.
+  // If `use_target_transform` is false, coordinate conversions use the current
+  // transform. If there is no animation ongoing, the target transform is the
+  // same as the current transform.
+  bool ConvertPointForAncestor(const Layer* ancestor,
+                               bool use_target_transform,
+                               gfx::PointF* point) const;
   bool ConvertPointFromAncestor(const Layer* ancestor,
+                                bool use_target_transform,
                                 gfx::PointF* point) const;
 
   // Implementation of LayerAnimatorDelegate
@@ -562,7 +592,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   cc::Layer* GetCcLayer() const override;
   LayerThreadedAnimationDelegate* GetThreadedAnimationDelegate() override;
   LayerAnimatorCollection* GetLayerAnimatorCollection() override;
-  base::Optional<int> GetFrameNumber() const override;
+  absl::optional<int> GetFrameNumber() const override;
   float GetRefreshRate() const override;
 
   // Creates a corresponding composited layer for |type_|.
@@ -607,6 +637,15 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // Same as SetFillsBoundsOpaque but with a reason how it's changed.
   void SetFillsBoundsOpaquelyWithReason(bool fills_bounds_opaquely,
                                         PropertyChangeReason reason);
+
+  // Converts a transform to be relative to the given |ancestor|. If
+  // `is_target_transform` is true, the target transform is used in the
+  // coordinate conversions; otherwise, the current transform is used. Returns
+  // whether success (that is, whether the given ancestor was really an ancestor
+  // of this layer).
+  bool GetTransformRelativeToImpl(const Layer* ancestor,
+                                  bool is_target_transform,
+                                  gfx::Transform* transform) const;
 
   const LayerType type_;
 
@@ -718,7 +757,7 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
 
   // The callback to release the mailbox. This is only set after
   // SetTransferableResource() is called, before we give it to the TextureLayer.
-  std::unique_ptr<viz::SingleReleaseCallback> transfer_release_callback_;
+  viz::ReleaseCallback transfer_release_callback_;
 
   // The size of the frame or texture in DIP, set when SetShowDelegatedContent
   // or SetTransferableResource() was called.
@@ -741,6 +780,11 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   // If the value == 0, means we should not perform trilinear filtering on the
   // layer.
   unsigned trilinear_filtering_request_;
+
+  // TODO(crbug.com/1172694): Remove once the root cause is identified.
+#if defined(ADDRESS_SANITIZER)
+  bool destroyed_ = false;
+#endif
 
   base::WeakPtrFactory<Layer> weak_ptr_factory_{this};
 

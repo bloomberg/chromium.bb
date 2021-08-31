@@ -12,7 +12,9 @@
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/containers/stack.h"
+#include "base/dcheck_is_on.h"
 #include "base/gtest_prod_util.h"
+#include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -81,7 +83,7 @@ class BASE_EXPORT RunLoop {
 
   // Run the current RunLoop::Delegate. This blocks until Quit is called
   // (directly or by running the RunLoop::QuitClosure).
-  void Run();
+  void Run(const Location& location = Location::Current());
 
   // Run the current RunLoop::Delegate until it doesn't find any tasks or
   // messages in its queue (it goes idle).
@@ -144,6 +146,9 @@ class BASE_EXPORT RunLoop {
   // capturing lambda or test observer).
   RepeatingClosure QuitClosure();
   RepeatingClosure QuitWhenIdleClosure();
+
+  // Returns true if Quit() or QuitWhenIdle() was called.
+  bool AnyQuitCalled();
 
   // Returns true if there is an active RunLoop on this thread.
   // Safe to call before RegisterDelegateForCurrentThread().
@@ -209,7 +214,8 @@ class BASE_EXPORT RunLoop {
 
    protected:
     // Returns the result of this Delegate's |should_quit_when_idle_callback_|.
-    // "protected" so it can be invoked only by the Delegate itself.
+    // "protected" so it can be invoked only by the Delegate itself. The
+    // Delegate is expected to quit Run() if this returns true.
     bool ShouldQuitWhenIdle();
 
    private:
@@ -252,7 +258,7 @@ class BASE_EXPORT RunLoop {
   static void QuitCurrentWhenIdleDeprecated();
   static RepeatingClosure QuitCurrentWhenIdleClosureDeprecated();
 
-  // Run() will DCHECK if called while there's a ScopedDisallowRunningForTesting
+  // Run() will DCHECK if called while there's a ScopedDisallowRunning
   // in scope on its thread. This is useful to add safety to some test
   // constructs which allow multiple task runners to share the main thread in
   // unit tests. While the main thread can be shared by multiple runners to
@@ -260,14 +266,12 @@ class BASE_EXPORT RunLoop {
   // RunLoop::Delegate per thread and RunLoop::Run() should only be invoked from
   // it (or it would result in incorrectly driving TaskRunner A while in
   // TaskRunner B's context).
-  class BASE_EXPORT ScopedDisallowRunningForTesting {
+  class BASE_EXPORT ScopedDisallowRunning {
    public:
-    ScopedDisallowRunningForTesting();
-    ScopedDisallowRunningForTesting(const ScopedDisallowRunningForTesting&) =
-        delete;
-    ScopedDisallowRunningForTesting& operator=(
-        const ScopedDisallowRunningForTesting&) = delete;
-    ~ScopedDisallowRunningForTesting();
+    ScopedDisallowRunning();
+    ScopedDisallowRunning(const ScopedDisallowRunning&) = delete;
+    ScopedDisallowRunning& operator=(const ScopedDisallowRunning&) = delete;
+    ~ScopedDisallowRunning();
 
    private:
 #if DCHECK_IS_ON()
@@ -282,7 +286,7 @@ class BASE_EXPORT RunLoop {
     RunLoopTimeout();
     ~RunLoopTimeout();
     TimeDelta timeout;
-    RepeatingClosure on_timeout;
+    RepeatingCallback<void(const Location&)> on_timeout;
   };
 
  private:
@@ -320,16 +324,18 @@ class BASE_EXPORT RunLoop {
   const Type type_;
 
 #if DCHECK_IS_ON()
-  bool run_called_ = false;
+  bool run_allowed_ = true;
 #endif
 
   bool quit_called_ = false;
   bool running_ = false;
-  // Used to record that QuitWhenIdle() was called on this RunLoop, meaning that
-  // the Delegate should quit Run() once it becomes idle (it's responsible for
-  // probing this state via ShouldQuitWhenIdle()). This state is stored here
-  // rather than pushed to Delegate to support nested RunLoops.
-  bool quit_when_idle_received_ = false;
+
+  // Used to record that QuitWhenIdle() was called on this RunLoop.
+  bool quit_when_idle_called_ = false;
+  // Whether the Delegate should quit Run() once it becomes idle (it's
+  // responsible for probing this state via ShouldQuitWhenIdle()). This state is
+  // stored here rather than pushed to Delegate to support nested RunLoops.
+  bool quit_when_idle_ = false;
 
   // True if use of QuitCurrent*Deprecated() is allowed. Taking a Quit*Closure()
   // from a RunLoop implicitly sets this to false, so QuitCurrent*Deprecated()

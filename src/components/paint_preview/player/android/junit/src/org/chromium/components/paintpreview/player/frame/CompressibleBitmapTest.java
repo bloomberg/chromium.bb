@@ -48,7 +48,8 @@ public class CompressibleBitmapTest {
         }
 
         @Implementation
-        public static Bitmap decodeByteArray(byte[] array, int offset, int length) {
+        public static Bitmap decodeByteArray(
+                byte[] array, int offset, int length, BitmapFactory.Options options) {
             return sBitmap;
         }
     }
@@ -56,7 +57,9 @@ public class CompressibleBitmapTest {
     @Test
     public void testCompressAndDiscard() {
         Bitmap bitmap = Mockito.mock(Bitmap.class);
+        Bitmap alphaBitmap = Mockito.mock(Bitmap.class);
         when(bitmap.compress(any(), anyInt(), any())).thenReturn(true);
+        when(bitmap.extractAlpha()).thenReturn(alphaBitmap);
 
         SequencedTaskRunner taskRunner = Mockito.mock(SequencedTaskRunner.class);
         doAnswer(invocation -> {
@@ -68,6 +71,7 @@ public class CompressibleBitmapTest {
 
         CompressibleBitmap compressibleBitmap = new CompressibleBitmap(bitmap, taskRunner, false);
         verify(bitmap, times(1)).compress(any(), eq(100), any());
+        verify(bitmap, times(1)).extractAlpha();
 
         Assert.assertNull(compressibleBitmap.getBitmap());
     }
@@ -75,7 +79,9 @@ public class CompressibleBitmapTest {
     @Test
     public void testCompressAndKeep() {
         Bitmap bitmap = Mockito.mock(Bitmap.class);
+        Bitmap alphaBitmap = Mockito.mock(Bitmap.class);
         when(bitmap.compress(any(), anyInt(), any())).thenReturn(true);
+        when(bitmap.extractAlpha()).thenReturn(alphaBitmap);
 
         SequencedTaskRunner taskRunner = Mockito.mock(SequencedTaskRunner.class);
         doAnswer(invocation -> {
@@ -87,6 +93,7 @@ public class CompressibleBitmapTest {
 
         CompressibleBitmap compressibleBitmap = new CompressibleBitmap(bitmap, taskRunner, true);
         verify(bitmap, times(1)).compress(any(), eq(100), any());
+        verify(bitmap, times(1)).extractAlpha();
 
         Assert.assertEquals(compressibleBitmap.getBitmap(), bitmap);
         compressibleBitmap.discardBitmap();
@@ -99,7 +106,9 @@ public class CompressibleBitmapTest {
     @Test
     public void testNoDiscardIfCompressFails() {
         Bitmap bitmap = Mockito.mock(Bitmap.class);
+        Bitmap alphaBitmap = Mockito.mock(Bitmap.class);
         when(bitmap.compress(any(), anyInt(), any())).thenReturn(false);
+        when(bitmap.extractAlpha()).thenReturn(alphaBitmap);
 
         SequencedTaskRunner taskRunner = Mockito.mock(SequencedTaskRunner.class);
         doAnswer(invocation -> {
@@ -111,6 +120,7 @@ public class CompressibleBitmapTest {
 
         CompressibleBitmap compressibleBitmap = new CompressibleBitmap(bitmap, taskRunner, false);
         verify(bitmap, times(1)).compress(any(), eq(100), any());
+        verify(bitmap, times(1)).extractAlpha();
 
         // Discarding should fail.
         Assert.assertEquals(compressibleBitmap.getBitmap(), bitmap);
@@ -121,7 +131,9 @@ public class CompressibleBitmapTest {
     @Test
     public void testInflate() throws TimeoutException {
         Bitmap bitmap = Mockito.mock(Bitmap.class);
+        Bitmap alphaBitmap = Mockito.mock(Bitmap.class);
         when(bitmap.compress(any(), anyInt(), any())).thenReturn(true);
+        when(bitmap.extractAlpha()).thenReturn(alphaBitmap);
 
         SequencedTaskRunner taskRunner = Mockito.mock(SequencedTaskRunner.class);
         doAnswer(invocation -> {
@@ -133,10 +145,13 @@ public class CompressibleBitmapTest {
 
         CompressibleBitmap compressibleBitmap = new CompressibleBitmap(bitmap, taskRunner, false);
         verify(bitmap, times(1)).compress(any(), eq(100), any());
+        verify(bitmap, times(1)).extractAlpha();
         Assert.assertNull(compressibleBitmap.getBitmap());
 
         FakeShadowBitmapFactory.setBitmap(bitmap);
 
+        // The alpha bitmap is mocked. Just ignore it for the purposes of this test.
+        compressibleBitmap.setIgnoreMissingAlphaForTesting(true);
         CallbackHelper helper = new CallbackHelper();
         compressibleBitmap.inflateInBackground(compressible -> { helper.notifyCalled(); });
         helper.waitForFirst();
@@ -155,9 +170,44 @@ public class CompressibleBitmapTest {
     }
 
     @Test
+    public void testInflateAlphaFails() throws TimeoutException {
+        Bitmap bitmap = Mockito.mock(Bitmap.class);
+        Bitmap alphaBitmap = Mockito.mock(Bitmap.class);
+        when(bitmap.compress(any(), anyInt(), any())).thenReturn(true);
+        when(bitmap.getWidth()).thenReturn(4);
+        when(bitmap.getHeight()).thenReturn(4);
+        when(bitmap.extractAlpha()).thenReturn(alphaBitmap);
+
+        SequencedTaskRunner taskRunner = Mockito.mock(SequencedTaskRunner.class);
+        doAnswer(invocation -> {
+            ((Runnable) invocation.getArgument(0)).run();
+            return null;
+        })
+                .when(taskRunner)
+                .postTask(any());
+
+        CompressibleBitmap compressibleBitmap = new CompressibleBitmap(bitmap, taskRunner, false);
+        verify(bitmap, times(1)).compress(any(), eq(100), any());
+        verify(bitmap, times(1)).extractAlpha();
+        Assert.assertNull(compressibleBitmap.getBitmap());
+
+        FakeShadowBitmapFactory.setBitmap(bitmap);
+
+        CallbackHelper helper = new CallbackHelper();
+        compressibleBitmap.mCompressedAlphaBytes = new byte[] {0x12, 0x34, 0x56};
+        compressibleBitmap.inflateInBackground(compressible -> { helper.notifyCalled(); });
+        helper.waitForFirst();
+
+        // Inflation will fail as the bitmap is bad.
+        Assert.assertNull(compressibleBitmap.getBitmap());
+    }
+
+    @Test
     public void testLocking() throws TimeoutException {
         Bitmap bitmap = Mockito.mock(Bitmap.class);
+        Bitmap alphaBitmap = Mockito.mock(Bitmap.class);
         when(bitmap.compress(any(), anyInt(), any())).thenReturn(true);
+        when(bitmap.extractAlpha()).thenReturn(alphaBitmap);
         SequencedTaskRunner taskRunner = Mockito.mock(SequencedTaskRunner.class);
         doAnswer(invocation -> {
             ((Runnable) invocation.getArgument(0)).run();
@@ -168,6 +218,7 @@ public class CompressibleBitmapTest {
 
         CompressibleBitmap compressibleBitmap = new CompressibleBitmap(bitmap, taskRunner, true);
         verify(bitmap, times(1)).compress(any(), eq(100), any());
+        verify(bitmap, times(1)).extractAlpha();
         Assert.assertTrue(compressibleBitmap.lock());
         Assert.assertFalse(compressibleBitmap.lock());
         Assert.assertEquals(compressibleBitmap.getBitmap(), bitmap);

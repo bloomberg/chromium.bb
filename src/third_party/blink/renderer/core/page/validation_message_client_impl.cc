@@ -85,9 +85,8 @@ void ValidationMessageClientImpl::ShowValidationMessage(
   overlay_delegate_ = delegate.get();
   overlay_ = std::make_unique<FrameOverlay>(target_frame, std::move(delegate));
   overlay_delegate_->CreatePage(*overlay_);
-  bool success =
-      target_frame->View()->UpdateLifecycleToCompositingCleanPlusScrolling(
-          DocumentUpdateReason::kOverlay);
+  bool success = target_frame->View()->UpdateAllLifecyclePhasesExceptPaint(
+      DocumentUpdateReason::kOverlay);
   ValidationMessageVisibilityChanged(anchor);
 
   // The lifecycle update should always succeed, because this is not inside
@@ -109,14 +108,15 @@ void ValidationMessageClientImpl::HideValidationMessage(const Element& anchor) {
   }
   DCHECK(overlay_);
   overlay_delegate_->StartToHide();
-  timer_ = std::make_unique<TaskRunnerTimer<ValidationMessageClientImpl>>(
+  timer_ = MakeGarbageCollected<
+      DisallowNewWrapper<HeapTaskRunnerTimer<ValidationMessageClientImpl>>>(
       anchor.GetDocument().GetTaskRunner(TaskType::kInternalDefault), this,
       &ValidationMessageClientImpl::Reset);
   // This should be equal to or larger than transition duration of
   // #container.hiding in validation_bubble.css.
   const base::TimeDelta kHidingAnimationDuration =
       base::TimeDelta::FromSecondsD(0.13333);
-  timer_->StartOneShot(kHidingAnimationDuration, FROM_HERE);
+  timer_->Value().StartOneShot(kHidingAnimationDuration, FROM_HERE);
 }
 
 void ValidationMessageClientImpl::HideValidationMessageImmediately(
@@ -129,6 +129,9 @@ void ValidationMessageClientImpl::HideValidationMessageImmediately(
 void ValidationMessageClientImpl::Reset(TimerBase*) {
   const Element& anchor = *current_anchor_;
 
+  // Clearing out the pointer does not stop the timer.
+  if (timer_)
+    timer_->Value().Stop();
   timer_ = nullptr;
   current_anchor_ = nullptr;
   message_ = String();
@@ -220,6 +223,7 @@ void ValidationMessageClientImpl::PaintOverlay(GraphicsContext& context) {
 void ValidationMessageClientImpl::Trace(Visitor* visitor) const {
   visitor->Trace(page_);
   visitor->Trace(current_anchor_);
+  visitor->Trace(timer_);
   ValidationMessageClient::Trace(visitor);
 }
 

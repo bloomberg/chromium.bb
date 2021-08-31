@@ -616,7 +616,7 @@ unsigned int aom_sub_pixel_avg_variance32xh_avx2(
         src += src_stride;
         dst += dst_stride;
       }
-    } else if (y_offset == 8) {
+    } else if (y_offset == 4) {
       __m256i src_next_reg;
       for (i = 0; i < height; i++) {
         LOAD_SRC_DST
@@ -652,8 +652,8 @@ unsigned int aom_sub_pixel_avg_variance32xh_avx2(
         dst += dst_stride;
       }
     }
-    // x_offset = 8  and y_offset = 0
-  } else if (x_offset == 8) {
+    // x_offset = 4  and y_offset = 0
+  } else if (x_offset == 4) {
     if (y_offset == 0) {
       __m256i src_next_reg;
       for (i = 0; i < height; i++) {
@@ -668,8 +668,8 @@ unsigned int aom_sub_pixel_avg_variance32xh_avx2(
         src += src_stride;
         dst += dst_stride;
       }
-      // x_offset = 8  and y_offset = 8
-    } else if (y_offset == 8) {
+      // x_offset = 4  and y_offset = 4
+    } else if (y_offset == 4) {
       __m256i src_next_reg, src_avg;
       // load source and another source starting from the next
       // following byte
@@ -691,7 +691,7 @@ unsigned int aom_sub_pixel_avg_variance32xh_avx2(
         CALC_SUM_SSE_INSIDE_LOOP
         dst += dst_stride;
       }
-      // x_offset = 8  and y_offset = bilin interpolation
+      // x_offset = 4  and y_offset = bilin interpolation
     } else {
       __m256i filter, pw8, src_next_reg, src_avg;
       y_offset <<= 5;
@@ -741,8 +741,8 @@ unsigned int aom_sub_pixel_avg_variance32xh_avx2(
         src += src_stride;
         dst += dst_stride;
       }
-      // x_offset = bilin interpolation and y_offset = 8
-    } else if (y_offset == 8) {
+      // x_offset = bilin interpolation and y_offset = 4
+    } else if (y_offset == 4) {
       __m256i filter, pw8, src_next_reg, src_pack;
       x_offset <<= 5;
       filter = _mm256_load_si256(

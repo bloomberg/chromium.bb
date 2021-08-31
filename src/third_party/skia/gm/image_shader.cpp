@@ -6,6 +6,7 @@
  */
 
 #include "gm/gm.h"
+#include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColor.h"
 #include "include/core/SkColorSpace.h"
@@ -130,7 +131,7 @@ protected:
         const SkTileMode tile = SkTileMode::kRepeat;
         const SkMatrix localM = SkMatrix::Translate(-50, -50);
         SkPaint paint;
-        paint.setShader(image->makeShader(tile, tile, &localM));
+        paint.setShader(image->makeShader(tile, tile, SkSamplingOptions(), &localM));
         paint.setAntiAlias(true);
         canvas->drawCircle(50, 50, 50, paint);
     }
@@ -153,3 +154,53 @@ private:
     using INHERITED = skiagm::GM;
 };
 DEF_GM( return new ImageShaderGM; )
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+
+#include "tools/ToolUtils.h"
+
+static sk_sp<SkImage> make_checker_img(int w, int h, SkColor c0, SkColor c1, int size) {
+    SkBitmap bm = ToolUtils::create_checkerboard_bitmap(w, h, c0, c1, size);
+    bm.setImmutable();
+    return bm.asImage();
+}
+
+DEF_SIMPLE_GM(drawimage_sampling, canvas, 500, 500) {
+    constexpr int N = 256;
+    constexpr float kScale = 1.0f/6;
+    const SkRect dst = {0, 0, kScale*N, kScale*N};
+
+    auto img = make_checker_img(N, N, SK_ColorBLACK, SK_ColorWHITE, 7)->withDefaultMipmaps();
+    const SkRect src = SkRect::MakeIWH(img->width(), img->height());
+
+    SkMatrix mx = SkMatrix::RectToRect(src, dst);
+
+    SkPaint paint;
+
+    for (auto mm : {SkMipmapMode::kNone, SkMipmapMode::kNearest, SkMipmapMode::kLinear}) {
+        for (auto fm : {SkFilterMode::kNearest, SkFilterMode::kLinear}) {
+            SkSamplingOptions sampling(fm, mm);
+
+            canvas->save();
+
+            canvas->save();
+            canvas->concat(mx);
+            canvas->drawImage(img.get(), 0, 0, sampling);
+            canvas->restore();
+
+            canvas->translate(dst.width() + 4, 0);
+
+            paint.setShader(img->makeShader(SkTileMode::kClamp, SkTileMode::kClamp, sampling, &mx));
+            canvas->drawRect(dst, paint);
+
+            canvas->translate(dst.width() + 4, 0);
+
+            canvas->drawImageRect(img.get(), src, dst, sampling, nullptr,
+                                  SkCanvas::kFast_SrcRectConstraint);
+            canvas->restore();
+
+            canvas->translate(0, dst.height() + 8);
+        }
+    }
+
+}

@@ -8,12 +8,15 @@ import android.os.SystemClock;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewHelper;
+import org.chromium.chrome.browser.paint_preview.StartupPaintPreviewMetrics.PaintPreviewMetricsObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.GURL;
 
 /**
  * Tracks the first navigation and first contentful paint events for a tab within an activity during
@@ -30,6 +33,7 @@ public class ActivityTabStartupMetricsTracker {
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
     private PageLoadMetrics.Observer mPageLoadMetricsObserver;
     private boolean mShouldTrackStartupMetrics;
+    private boolean mFirstVisibleContentRecorded;
     private boolean mVisibleContentRecorded;
 
     public ActivityTabStartupMetricsTracker(
@@ -45,7 +49,7 @@ public class ActivityTabStartupMetricsTracker {
                     private boolean mIsFirstPageLoadStart = true;
 
                     @Override
-                    public void onPageLoadStarted(Tab tab, String url) {
+                    public void onPageLoadStarted(Tab tab, GURL url) {
                         // Discard startup navigation measurements when the user interfered and
                         // started the 2nd navigation (in activity lifetime) in parallel.
                         if (!mIsFirstPageLoadStart) {
@@ -89,6 +93,20 @@ public class ActivityTabStartupMetricsTracker {
             }
         };
         PageLoadMetrics.addObserver(mPageLoadMetricsObserver);
+    }
+
+    /**
+     * Register an observer to be notified on the first paint of a paint preview if present.
+     * @param startupPaintPreviewHelper the helper to register the observer to.
+     */
+    public void registerPaintPreviewObserver(StartupPaintPreviewHelper startupPaintPreviewHelper) {
+        startupPaintPreviewHelper.addMetricsObserver(new PaintPreviewMetricsObserver() {
+            @Override
+            public void onFirstPaint(long durationMs) {
+                recordFirstVisibleContent(durationMs);
+                recordVisibleContent(durationMs);
+            }
+        });
     }
 
     /**
@@ -139,6 +157,9 @@ public class ActivityTabStartupMetricsTracker {
             RecordHistogram.recordMediumTimesHistogram(
                     "Startup.Android.Cold.TimeToFirstNavigationCommit" + mHistogramSuffix,
                     mFirstCommitTimeMs);
+            if (mHistogramSuffix.equals(UMA_HISTOGRAM_TABBED_SUFFIX)) {
+                recordFirstVisibleContent(mFirstCommitTimeMs);
+            }
         }
         mShouldTrackStartupMetrics = false;
     }
@@ -167,6 +188,22 @@ public class ActivityTabStartupMetricsTracker {
     }
 
     /**
+     * Record the time to first visible content. This metric acts as the Clank cold start guardian
+     * metric. Reports the minimum value of
+     * Startup.Android.Cold.TimeToFirstNavigationCommit.Tabbed and
+     * Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap.
+     *
+     * @param durationMs duration in millis.
+     */
+    private void recordFirstVisibleContent(long durationMs) {
+        if (mFirstVisibleContentRecorded) return;
+
+        mFirstVisibleContentRecorded = true;
+        RecordHistogram.recordMediumTimesHistogram(
+                "Startup.Android.Cold.TimeToFirstVisibleContent", durationMs);
+    }
+
+    /**
      * Record the first Visible Content time.
      * This metric reports the minimum value of
      * Startup.Android.Cold.TimeToFirstContentfulPaint.Tabbed and
@@ -174,7 +211,7 @@ public class ActivityTabStartupMetricsTracker {
      *
      * @param durationMs duration in millis.
      */
-    public void recordVisibleContent(long durationMs) {
+    private void recordVisibleContent(long durationMs) {
         if (mVisibleContentRecorded) return;
 
         mVisibleContentRecorded = true;

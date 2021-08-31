@@ -30,8 +30,8 @@ class AutofillPopupControllerImplMac : public AutofillPopupControllerImpl {
 
   // Updates the data list values currently shown with the popup. Calls
   // -invalidateTouchBar from |touchBarController_|.
-  void UpdateDataListValues(const std::vector<base::string16>& values,
-                            const std::vector<base::string16>& labels) override;
+  void UpdateDataListValues(const std::vector<std::u16string>& values,
+                            const std::vector<std::u16string>& labels) override;
 
   // Hides the popup and destroys the controller. This also invalidates
   // |delegate_|.
@@ -49,4 +49,4 @@ class AutofillPopupControllerImplMac : public AutofillPopupControllerImpl {
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_H_
+#endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_CONTROLLER_IMPL_MAC_H_

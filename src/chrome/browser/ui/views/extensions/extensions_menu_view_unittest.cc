@@ -36,6 +36,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -43,6 +44,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/layout/animating_layout_manager_test_util.h"
+#include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -109,6 +111,8 @@ class ExtensionsMenuViewUnitTest : public TestWithBrowserView {
 
   ToolbarActionView* GetPinnedExtensionView(const std::string& name);
 
+  ExtensionsMenuItemView* GetExtensionsMenuItemView(const std::string& name);
+
   // Returns a list of the names of the currently pinned extensions, in order
   // from left to right.
   std::vector<std::string> GetPinnedExtensionNames();
@@ -161,13 +165,13 @@ ExtensionsMenuViewUnitTest::AddSimpleExtension(const std::string& name) {
 }
 
 ExtensionsMenuItemView* ExtensionsMenuViewUnitTest::GetOnlyMenuItem() {
-  std::vector<ExtensionsMenuItemView*> menu_items =
+  base::flat_set<ExtensionsMenuItemView*> menu_items =
       extensions_menu()->extensions_menu_items_for_testing();
   if (menu_items.size() != 1u) {
     ADD_FAILURE() << "Not exactly one item; size is: " << menu_items.size();
     return nullptr;
   }
-  return menu_items[0];
+  return *menu_items.begin();
 }
 
 void ExtensionsMenuViewUnitTest::ClickPinButton(
@@ -196,7 +200,7 @@ ExtensionsMenuViewUnitTest::GetPinnedExtensionViews() {
   std::vector<ToolbarActionView*> result;
   for (views::View* child : extensions_container()->children()) {
     // Ensure we don't downcast the ExtensionsToolbarButton.
-    if (child->GetClassName() == ToolbarActionView::kClassName) {
+    if (views::IsViewClass<ToolbarActionView>(child)) {
       ToolbarActionView* const action = static_cast<ToolbarActionView*>(child);
 #if defined(OS_MAC)
       // TODO(crbug.com/1045212): Use IsActionVisibleOnToolbar() because it
@@ -225,6 +229,18 @@ ToolbarActionView* ExtensionsMenuViewUnitTest::GetPinnedExtensionView(
   if (it == actions.end())
     return nullptr;
   return *it;
+}
+
+ExtensionsMenuItemView* ExtensionsMenuViewUnitTest::GetExtensionsMenuItemView(
+    const std::string& name) {
+  base::flat_set<ExtensionsMenuItemView*> menu_items =
+      extensions_menu()->extensions_menu_items_for_testing();
+  auto iter =
+      base::ranges::find_if(menu_items, [name](ExtensionsMenuItemView* item) {
+        return base::UTF16ToUTF8(item->view_controller()->GetActionName()) ==
+               name;
+      });
+  return iter == menu_items.end() ? nullptr : *iter;
 }
 
 std::vector<std::string> ExtensionsMenuViewUnitTest::GetPinnedExtensionNames() {
@@ -260,14 +276,42 @@ TEST_F(ExtensionsMenuViewUnitTest, ExtensionsAreShownInTheMenu) {
   AddSimpleExtension(kExtensionName);
 
   {
-    std::vector<ExtensionsMenuItemView*> menu_items =
+    base::flat_set<ExtensionsMenuItemView*> menu_items =
         extensions_menu()->extensions_menu_items_for_testing();
     ASSERT_EQ(1u, menu_items.size());
     EXPECT_EQ(kExtensionName,
-              base::UTF16ToUTF8(menu_items[0]
+              base::UTF16ToUTF8((*menu_items.begin())
                                     ->primary_action_button_for_testing()
                                     ->label_text_for_testing()));
   }
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, ExtensionsAreSortedInTheMenu) {
+  constexpr char kExtensionZName[] = "Z Extension";
+  AddSimpleExtension(kExtensionZName);
+  constexpr char kExtensionAName[] = "A Extension";
+  AddSimpleExtension(kExtensionAName);
+  constexpr char kExtensionBName[] = "b Extension";
+  AddSimpleExtension(kExtensionBName);
+  constexpr char kExtensionCName[] = "C Extension";
+  AddSimpleExtension(kExtensionCName);
+
+  std::vector<ExtensionsMenuItemView*> menu_items =
+      ExtensionsMenuView::GetSortedItemsForSectionForTesting(
+          ToolbarActionViewController::PageInteractionStatus::kNone);
+  ASSERT_EQ(4u, menu_items.size());
+
+  std::vector<std::string> item_names;
+  for (auto* menu_item : menu_items) {
+    item_names.push_back(
+        base::UTF16ToUTF8(menu_item->primary_action_button_for_testing()
+                              ->label_text_for_testing()));
+  }
+
+  // Basic std::sort would do A,C,Z,b however we want A,b,C,Z
+  EXPECT_THAT(item_names,
+              testing::ElementsAre(kExtensionAName, kExtensionBName,
+                                   kExtensionCName, kExtensionZName));
 }
 
 TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionAppearsInToolbar) {
@@ -350,14 +394,16 @@ TEST_F(ExtensionsMenuViewUnitTest, ReorderPinnedExtensions) {
   constexpr char kName3[] = "Test 3";
   AddSimpleExtension(kName3);
 
-  std::vector<ExtensionsMenuItemView*> menu_items =
-      extensions_menu()->extensions_menu_items_for_testing();
-  ASSERT_EQ(3u, menu_items.size());
-  for (auto* menu_item : menu_items) {
-    ClickPinButton(menu_item);
+  EXPECT_EQ(3u, extensions_menu()->extensions_menu_items_for_testing().size());
+
+  for (const char* name : {kName1, kName2, kName3}) {
+    ExtensionsMenuItemView* item = GetExtensionsMenuItemView(name);
+    ASSERT_TRUE(item) << name;
+    ClickPinButton(item);
     EXPECT_TRUE(extensions_container()->IsActionVisibleOnToolbar(
-        menu_item->view_controller()));
+        item->view_controller()));
   }
+
   WaitForAnimation();
 
   EXPECT_THAT(GetPinnedExtensionNames(),
@@ -379,6 +425,131 @@ TEST_F(ExtensionsMenuViewUnitTest, ReorderPinnedExtensions) {
               testing::ElementsAre(kName3, kName1, kName2));
 }
 
+TEST_F(ExtensionsMenuViewUnitTest, RunDropCallback) {
+  constexpr char kName1[] = "Test 1";
+  auto ext1 = AddSimpleExtension(kName1);
+  constexpr char kName2[] = "Test 2";
+  auto ext2 = AddSimpleExtension(kName2);
+  constexpr char kName3[] = "Test 3";
+  auto ext3 = AddSimpleExtension(kName3);
+
+  auto* toolbar_model = ToolbarActionsModel::Get(profile());
+  ASSERT_TRUE(toolbar_model);
+
+  toolbar_model->SetActionVisibility(ext1->id(), true);
+  toolbar_model->SetActionVisibility(ext2->id(), true);
+  toolbar_model->SetActionVisibility(ext3->id(), true);
+  WaitForAnimation();
+
+  EXPECT_THAT(GetPinnedExtensionNames(),
+              testing::ElementsAre(kName1, kName2, kName3));
+
+  // Simulate dragging "Test 3" to the first slot.
+  ToolbarActionView* drag_view = GetPinnedExtensionView(kName3);
+  ui::OSExchangeData drag_data;
+  extensions_container()->WriteDragDataForView(drag_view, gfx::Point(),
+                                               &drag_data);
+  gfx::PointF drop_point(GetPinnedExtensionView(kName1)->origin());
+  ui::DropTargetEvent drop_event(drag_data, drop_point, drop_point,
+                                 ui::DragDropTypes::DRAG_MOVE);
+  extensions_container()->OnDragUpdated(drop_event);
+  auto cb = extensions_container()->GetDropCallback(drop_event);
+  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
+  std::move(cb).Run(drop_event, output_drag_op);
+  WaitForAnimation();
+
+  EXPECT_THAT(GetPinnedExtensionNames(),
+              testing::ElementsAre(kName3, kName1, kName2));
+  EXPECT_EQ(output_drag_op, ui::mojom::DragOperation::kMove);
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, ResetDropCallback) {
+  constexpr char kName1[] = "Test 1";
+  auto ext1 = AddSimpleExtension(kName1);
+  constexpr char kName2[] = "Test 2";
+  auto ext2 = AddSimpleExtension(kName2);
+  constexpr char kName3[] = "Test 3";
+  auto ext3 = AddSimpleExtension(kName3);
+
+  auto* toolbar_model = ToolbarActionsModel::Get(profile());
+  ASSERT_TRUE(toolbar_model);
+
+  toolbar_model->SetActionVisibility(ext1->id(), true);
+  toolbar_model->SetActionVisibility(ext2->id(), true);
+  toolbar_model->SetActionVisibility(ext3->id(), true);
+  WaitForAnimation();
+
+  EXPECT_THAT(GetPinnedExtensionNames(),
+              testing::ElementsAre(kName1, kName2, kName3));
+
+  // Simulate dragging "Test 3" to the first slot.
+  ToolbarActionView* drag_view = GetPinnedExtensionView(kName3);
+  ui::OSExchangeData drag_data;
+  extensions_container()->WriteDragDataForView(drag_view, gfx::Point(),
+                                               &drag_data);
+  gfx::PointF drop_point(GetPinnedExtensionView(kName1)->origin());
+  ui::DropTargetEvent drop_event(drag_data, drop_point, drop_point,
+                                 ui::DragDropTypes::DRAG_MOVE);
+  extensions_container()->OnDragUpdated(drop_event);
+  auto cb = extensions_container()->GetDropCallback(drop_event);
+  WaitForAnimation();
+
+  EXPECT_THAT(GetPinnedExtensionNames(),
+              testing::ElementsAre(kName3, kName1, kName2));
+
+  // If the drop callback is reset (and never invoked), the drag should be
+  // aborted, and items should be back in their original order.
+  cb.Reset();
+  WaitForAnimation();
+
+  EXPECT_THAT(GetPinnedExtensionNames(),
+              testing::ElementsAre(kName1, kName2, kName3));
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, InvalidateDropCallback) {
+  constexpr char kName1[] = "Test 1";
+  auto ext1 = AddSimpleExtension(kName1);
+  constexpr char kName2[] = "Test 2";
+  auto ext2 = AddSimpleExtension(kName2);
+
+  auto* toolbar_model = ToolbarActionsModel::Get(profile());
+  ASSERT_TRUE(toolbar_model);
+
+  toolbar_model->SetActionVisibility(ext1->id(), true);
+  toolbar_model->SetActionVisibility(ext2->id(), true);
+  WaitForAnimation();
+
+  EXPECT_THAT(GetPinnedExtensionNames(), testing::ElementsAre(kName1, kName2));
+
+  // Simulate dragging "Test 2" to the first slot.
+  ToolbarActionView* drag_view = GetPinnedExtensionView(kName2);
+  ui::OSExchangeData drag_data;
+  extensions_container()->WriteDragDataForView(drag_view, gfx::Point(),
+                                               &drag_data);
+  gfx::PointF drop_point(GetPinnedExtensionView(kName1)->origin());
+  ui::DropTargetEvent drop_event(drag_data, drop_point, drop_point,
+                                 ui::DragDropTypes::DRAG_MOVE);
+  extensions_container()->OnDragUpdated(drop_event);
+  auto cb = extensions_container()->GetDropCallback(drop_event);
+  WaitForAnimation();
+
+  EXPECT_THAT(GetPinnedExtensionNames(), testing::ElementsAre(kName2, kName1));
+
+  constexpr char kName3[] = "Test 3";
+  auto ext3 = AddSimpleExtension(kName3);
+  toolbar_model->SetActionVisibility(ext3->id(), true);
+  WaitForAnimation();
+
+  // The drop callback should be invalidated, and items should be back in their
+  // original order.
+  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
+  std::move(cb).Run(drop_event, output_drag_op);
+  WaitForAnimation();
+
+  EXPECT_THAT(GetPinnedExtensionNames(),
+              testing::ElementsAre(kName1, kName2, kName3));
+}
+
 TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionsReorderOnPrefChange) {
   constexpr char kName1[] = "Test 1";
   const extensions::ExtensionId id1 = AddSimpleExtension(kName1)->id();
@@ -386,9 +557,11 @@ TEST_F(ExtensionsMenuViewUnitTest, PinnedExtensionsReorderOnPrefChange) {
   const extensions::ExtensionId id2 = AddSimpleExtension(kName2)->id();
   constexpr char kName3[] = "Test 3";
   const extensions::ExtensionId id3 = AddSimpleExtension(kName3)->id();
-  for (auto* menu_item :
-       extensions_menu()->extensions_menu_items_for_testing()) {
-    ClickPinButton(menu_item);
+
+  for (const char* name : {kName1, kName2, kName3}) {
+    ExtensionsMenuItemView* item = GetExtensionsMenuItemView(name);
+    ASSERT_TRUE(item) << name;
+    ClickPinButton(item);
   }
   WaitForAnimation();
 
@@ -505,7 +678,7 @@ TEST_F(ExtensionsMenuViewUnitTest, ReloadExtensionFailed) {
   // Since the extension is removed it's no longer visible on the toolbar or in
   // the menu.
   for (views::View* child : extensions_container()->children())
-    EXPECT_NE(ToolbarActionView::kClassName, child->GetClassName());
+    EXPECT_FALSE(views::IsViewClass<ToolbarActionView>(child));
   EXPECT_EQ(0u, extensions_menu()->extensions_menu_items_for_testing().size());
 }
 
@@ -522,6 +695,14 @@ TEST_F(ExtensionsMenuViewUnitTest, PinButtonUserAction) {
   EXPECT_EQ(1, user_action_tester.GetActionCount(kPinButtonUserAction));
   ClickPinButton(menu_item);  // Unpin.
   EXPECT_EQ(2, user_action_tester.GetActionCount(kPinButtonUserAction));
+}
+
+TEST_F(ExtensionsMenuViewUnitTest, WindowTitle) {
+  AddSimpleExtension("Test Extension");
+
+  ExtensionsMenuView* const menu_view = extensions_menu();
+  EXPECT_FALSE(menu_view->GetWindowTitle().empty());
+  EXPECT_TRUE(menu_view->GetAccessibleWindowTitle().empty());
 }
 
 TEST_F(ExtensionsMenuViewUnitTest, ContextMenuButtonUserAction) {

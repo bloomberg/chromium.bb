@@ -74,7 +74,7 @@ Clock::time_point SDLPlayerBase::ResyncAndDeterminePresentationTime(
           .ToDuration<Clock::duration>(receiver_->rtp_timebase());
   Clock::time_point presentation_time =
       last_sync_reference_time_ + media_time_since_last_sync;
-  const auto drift = to_microseconds(frame.reference_time - presentation_time);
+  const auto drift = to_milliseconds(frame.reference_time - presentation_time);
   if (drift > kMaxPlayoutDrift || drift < -kMaxPlayoutDrift) {
     // Only log if not the very first frame.
     OSP_LOG_IF(INFO, frame.frame_id != FrameId::first())

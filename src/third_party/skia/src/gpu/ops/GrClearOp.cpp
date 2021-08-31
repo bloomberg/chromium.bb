@@ -20,18 +20,24 @@ static bool contains_scissor(const GrScissorState& a, const GrScissorState& b) {
 
 GrOp::Owner GrClearOp::MakeColor(GrRecordingContext* context,
                                  const GrScissorState& scissor,
-                                 const SkPMColor4f& color) {
+                                 std::array<float, 4> color) {
     return GrOp::Make<GrClearOp>(context, Buffer::kColor, scissor, color, false);
 }
 
 GrOp::Owner GrClearOp::MakeStencilClip(GrRecordingContext* context,
                                        const GrScissorState& scissor,
                                        bool insideMask) {
-    return GrOp::Make<GrClearOp>(context, Buffer::kStencilClip, scissor, SkPMColor4f(), insideMask);
+    return GrOp::Make<GrClearOp>(context,
+                                 Buffer::kStencilClip,
+                                 scissor,
+                                 std::array<float, 4>(),
+                                 insideMask);
 }
 
-GrClearOp::GrClearOp(Buffer buffer, const GrScissorState& scissor,
-                     const SkPMColor4f& color, bool insideMask)
+GrClearOp::GrClearOp(Buffer buffer,
+                     const GrScissorState& scissor,
+                     std::array<float, 4> color,
+                     bool insideMask)
         : INHERITED(ClassID())
         , fScissor(scissor)
         , fColor(color)
@@ -60,14 +66,13 @@ GrOp::CombineResult GrClearOp::onCombineIfPossible(GrOp* t, SkArenaAlloc*, const
         // When the scissors are the exact same but the buffers are different, we can combine and
         // clear both stencil and clear together in onExecute().
         if (other->fBuffer & Buffer::kColor) {
-            SkASSERT((fBuffer & Buffer::kStencilClip) && !(fBuffer & Buffer::kColor));
             fColor = other->fColor;
         }
         if (other->fBuffer & Buffer::kStencilClip) {
-            SkASSERT(!(fBuffer & Buffer::kStencilClip) && (fBuffer & Buffer::kColor));
             fStencilInsideMask = other->fStencilInsideMask;
         }
         fBuffer = Buffer::kBoth;
+        return CombineResult::kMerged;
     }
     return CombineResult::kCannotCombine;
 }

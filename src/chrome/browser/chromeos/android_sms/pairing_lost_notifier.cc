@@ -131,7 +131,7 @@ void PairingLostNotifier::ShowPairingLostNotification() {
               IDS_ANDROID_MESSAGES_PAIRING_LOST_NOTIFICATION_TITLE),
           l10n_util::GetStringUTF16(
               IDS_ANDROID_MESSAGES_PAIRING_LOST_NOTIFICATION_MESSAGE),
-          base::string16() /* display_source */, GURL() /* origin_url */,
+          std::u16string() /* display_source */, GURL() /* origin_url */,
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
               kAndroidSmsNotifierId),
@@ -155,7 +155,7 @@ void PairingLostNotifier::ClosePairingLostNotificationIfVisible() {
 }
 
 void PairingLostNotifier::OnPairingLostNotificationClick(
-    base::Optional<int> button_index) {
+    absl::optional<int> button_index) {
   PA_LOG(INFO) << "PairingLostNotifier::OnPairingLostNotificationClick(): "
                << "Pairing notification clicked; opening PWA.";
 

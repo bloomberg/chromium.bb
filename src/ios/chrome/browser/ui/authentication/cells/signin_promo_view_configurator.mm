@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_configurator.h"
 
+#include "base/feature_list.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/signin/public/base/account_consistency_method.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_constants.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -24,11 +26,11 @@ using l10n_util::GetNSStringF;
 @interface SigninPromoViewConfigurator ()
 
 // User email used for the secondary button, and also for the primary button if
-// there is no userFullName.
+// there is no userGivenName.
 @property(nonatomic) NSString* userEmail;
 
 // User full name used fro the primary button.
-@property(nonatomic) NSString* userFullName;
+@property(nonatomic) NSString* userGivenName;
 
 // User profile image.
 @property(nonatomic) UIImage* userImage;
@@ -36,23 +38,23 @@ using l10n_util::GetNSStringF;
 // If YES the close button will be shown.
 @property(nonatomic) BOOL hasCloseButton;
 
+// State of the identity promo view.
+@property(nonatomic, assign) SigninPromoViewMode signinPromoViewMode;
+
 @end
 
 @implementation SigninPromoViewConfigurator
 
-@synthesize userEmail = _userEmail;
-@synthesize userFullName = _userFullName;
-@synthesize userImage = _userImage;
-@synthesize hasCloseButton = _hasCloseButton;
-
-- (instancetype)initWithUserEmail:(NSString*)userEmail
-                     userFullName:(NSString*)userFullName
-                        userImage:(UIImage*)userImage
-                   hasCloseButton:(BOOL)hasCloseButton {
+- (instancetype)initWithSigninPromoViewMode:(SigninPromoViewMode)viewMode
+                                  userEmail:(NSString*)userEmail
+                              userGivenName:(NSString*)userGivenName
+                                  userImage:(UIImage*)userImage
+                             hasCloseButton:(BOOL)hasCloseButton {
   self = [super init];
   if (self) {
-    DCHECK(userEmail || (!userEmail && !userFullName && !userImage));
-    _userFullName = [userFullName copy];
+    DCHECK(userEmail || (!userEmail && !userGivenName && !userImage));
+    _signinPromoViewMode = viewMode;
+    _userGivenName = [userGivenName copy];
     _userEmail = [userEmail copy];
     _userImage = [userImage copy];
     _hasCloseButton = hasCloseButton;
@@ -62,34 +64,51 @@ using l10n_util::GetNSStringF;
 
 - (void)configureSigninPromoView:(SigninPromoView*)signinPromoView {
   signinPromoView.closeButton.hidden = !self.hasCloseButton;
-  if (!self.userEmail) {
-    signinPromoView.mode = SigninPromoViewModeColdState;
-    NSString* signInString =
-        GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN);
-    signinPromoView.accessibilityLabel = signInString;
-    [signinPromoView.primaryButton setTitle:signInString
-                                   forState:UIControlStateNormal];
-  } else {
-    signinPromoView.mode = SigninPromoViewModeWarmState;
-    NSString* name =
-        self.userFullName.length ? self.userFullName : self.userEmail;
-    base::string16 name16 = SysNSStringToUTF16(name);
-    [signinPromoView.primaryButton
-        setTitle:GetNSStringF(IDS_IOS_SIGNIN_PROMO_CONTINUE_AS, name16)
-        forState:UIControlStateNormal];
-    signinPromoView.accessibilityLabel =
-        GetNSStringF(IDS_IOS_SIGNIN_PROMO_ACCESSIBILITY_LABEL, name16);
-    [signinPromoView.secondaryButton
-        setTitle:GetNSString(IDS_IOS_SIGNIN_PROMO_CHANGE_ACCOUNT)
-        forState:UIControlStateNormal];
-    UIImage* image = self.userImage;
-    if (!image) {
-      image = ios::GetChromeBrowserProvider()
-                  ->GetSigninResourcesProvider()
-                  ->GetDefaultAvatar();
+  signinPromoView.mode = self.signinPromoViewMode;
+
+  NSString* name =
+      self.userGivenName.length ? self.userGivenName : self.userEmail;
+  std::u16string name16 = SysNSStringToUTF16(name);
+  switch (self.signinPromoViewMode) {
+    case SigninPromoViewModeNoAccounts: {
+      NSString* signInString =
+          base::FeatureList::IsEnabled(signin::kMobileIdentityConsistency)
+              ? GetNSString(IDS_IOS_SYNC_PROMO_TURN_ON_SYNC)
+              : GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN);
+      signinPromoView.accessibilityLabel = signInString;
+      [signinPromoView.primaryButton setTitle:signInString
+                                     forState:UIControlStateNormal];
+      return;
     }
-    [signinPromoView setProfileImage:image];
+    case SigninPromoViewModeSigninWithAccount: {
+      [signinPromoView.primaryButton
+          setTitle:GetNSStringF(IDS_IOS_SIGNIN_PROMO_CONTINUE_AS, name16)
+          forState:UIControlStateNormal];
+      signinPromoView.accessibilityLabel =
+          GetNSStringF(IDS_IOS_SIGNIN_PROMO_ACCESSIBILITY_LABEL, name16);
+      [signinPromoView.secondaryButton
+          setTitle:GetNSString(IDS_IOS_SIGNIN_PROMO_CHANGE_ACCOUNT)
+          forState:UIControlStateNormal];
+      break;
+    }
+    case SigninPromoViewModeSyncWithPrimaryAccount: {
+      [signinPromoView.primaryButton
+          setTitle:GetNSString(IDS_IOS_SYNC_PROMO_TURN_ON_SYNC)
+          forState:UIControlStateNormal];
+      signinPromoView.accessibilityLabel =
+          GetNSStringF(IDS_IOS_SIGNIN_PROMO_ACCESSIBILITY_LABEL, name16);
+      break;
+    }
   }
+
+  DCHECK_NE(self.signinPromoViewMode, SigninPromoViewModeNoAccounts);
+  UIImage* image = self.userImage;
+  if (!image) {
+    image = ios::GetChromeBrowserProvider()
+                ->GetSigninResourcesProvider()
+                ->GetDefaultAvatar();
+  }
+  [signinPromoView setProfileImage:image];
 }
 
 @end

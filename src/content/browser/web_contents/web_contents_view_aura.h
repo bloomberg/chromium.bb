@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -25,11 +24,13 @@
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/drop_data.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/dragdrop/drop_target_event.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom-forward.h"
 
 namespace ui {
 class DropTargetEvent;
@@ -78,7 +79,7 @@ class CONTENT_EXPORT WebContentsViewAura
                          const ui::DropTargetEvent& event,
                          std::unique_ptr<ui::OSExchangeData> data,
                          base::ScopedClosureRunner end_drag_runner,
-                         base::Optional<gfx::PointF> transformed_pt,
+                         absl::optional<gfx::PointF> transformed_pt,
                          gfx::PointF screen_pt);
     OnPerformDropContext(OnPerformDropContext&& other);
     ~OnPerformDropContext();
@@ -87,7 +88,7 @@ class CONTENT_EXPORT WebContentsViewAura
     ui::DropTargetEvent event;
     std::unique_ptr<ui::OSExchangeData> data;
     base::ScopedClosureRunner end_drag_runner;
-    base::Optional<gfx::PointF> transformed_pt;
+    absl::optional<gfx::PointF> transformed_pt;
     gfx::PointF screen_pt;
   };
 
@@ -103,13 +104,14 @@ class CONTENT_EXPORT WebContentsViewAura
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, DragDropOnOopif);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, OnPerformDrop_DeepScanOK);
   FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, OnPerformDrop_DeepScanBad);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsViewAuraTest, StartDragging);
 
   class WindowObserver;
 
   ~WebContentsViewAura() override;
 
   void EndDrag(base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr,
-               blink::DragOperationsMask ops);
+               ui::mojom::DragOperation op);
 
   void InstallOverscrollControllerDelegate(RenderWidgetHostViewAura* view);
 
@@ -150,7 +152,7 @@ class CONTENT_EXPORT WebContentsViewAura
       RenderWidgetHost* render_widget_host) override;
   RenderWidgetHostViewBase* CreateViewForChildWidget(
       RenderWidgetHost* render_widget_host) override;
-  void SetPageTitle(const base::string16& title) override;
+  void SetPageTitle(const std::u16string& title) override;
   void RenderViewReady() override;
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host) override;
@@ -165,7 +167,7 @@ class CONTENT_EXPORT WebContentsViewAura
                      const gfx::Vector2d& image_offset,
                      const blink::mojom::DragEventSourceInfo& event_info,
                      RenderWidgetHostImpl* source_rwh) override;
-  void UpdateDragCursor(blink::DragOperation operation) override;
+  void UpdateDragCursor(ui::mojom::DragOperation operation) override;
   void GotFocus(RenderWidgetHostImpl* render_widget_host) override;
   void LostFocus(RenderWidgetHostImpl* render_widget_host) override;
   void TakeFocus(bool reverse) override;
@@ -214,22 +216,27 @@ class CONTENT_EXPORT WebContentsViewAura
 
   // Overridden from aura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;
-  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  aura::client::DragUpdateInfo OnDragUpdated(
+      const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event,
-                    std::unique_ptr<ui::OSExchangeData> data) override;
+  ui::mojom::DragOperation OnPerformDrop(
+      const ui::DropTargetEvent& event,
+      std::unique_ptr<ui::OSExchangeData> data) override;
+  aura::client::DragDropDelegate::DropCallback GetDropCallback(
+      const ui::DropTargetEvent& event) override;
+
   void DragEnteredCallback(ui::DropTargetEvent event,
                            std::unique_ptr<DropData> drop_data,
                            base::WeakPtr<RenderWidgetHostViewBase> target,
-                           base::Optional<gfx::PointF> transformed_pt);
+                           absl::optional<gfx::PointF> transformed_pt);
   void DragUpdatedCallback(ui::DropTargetEvent event,
                            std::unique_ptr<DropData> drop_data,
                            base::WeakPtr<RenderWidgetHostViewBase> target,
-                           base::Optional<gfx::PointF> transformed_pt);
+                           absl::optional<gfx::PointF> transformed_pt);
   void PerformDropCallback(ui::DropTargetEvent event,
                            std::unique_ptr<ui::OSExchangeData> data,
                            base::WeakPtr<RenderWidgetHostViewBase> target,
-                           base::Optional<gfx::PointF> transformed_pt);
+                           absl::optional<gfx::PointF> transformed_pt);
 
   // Completes a drag exit operation by communicating with the renderer process.
   void CompleteDragExit();
@@ -290,7 +297,7 @@ class CONTENT_EXPORT WebContentsViewAura
 
   std::unique_ptr<WebContentsViewDelegate> delegate_;
 
-  blink::DragOperationsMask current_drag_op_;
+  ui::mojom::DragOperation current_drag_op_;
 
   std::unique_ptr<DropData> current_drop_data_;
 

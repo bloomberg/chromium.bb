@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include "base/callback.h"
+#include "base/synchronization/lock.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -11,7 +14,6 @@
 #include "chrome/browser/ssl/sct_reporting_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -24,14 +26,66 @@
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/network_service_test_helper.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/sct_status_flags.h"
+#include "net/cert/signed_certificate_timestamp_and_status.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/simple_connection_listener.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/proto/sct_audit_report.pb.h"
 #include "services/network/test/test_url_loader_factory.h"
+
+namespace {
+
+// These LogId constants allow test cases to specify SCTs from both Google and
+// non-Google logs, allowing tests to vary how they meet (or don't meet) the
+// Chrome CT policy. To be compliant, the cert used by the embedded test server
+// currently requires three embedded SCTs, including at least one from a Google
+// log and one from a non-Google log.
+//
+// Google's "Argon2023" log ("6D7Q2j71BjUy51covIlryQPTy9ERa+zraeF3fW0GvW4="):
+const char kTestGoogleLogId[] = {
+    0xe8, 0x3e, 0xd0, 0xda, 0x3e, 0xf5, 0x06, 0x35, 0x32, 0xe7, 0x57,
+    0x28, 0xbc, 0x89, 0x6b, 0xc9, 0x03, 0xd3, 0xcb, 0xd1, 0x11, 0x6b,
+    0xec, 0xeb, 0x69, 0xe1, 0x77, 0x7d, 0x6d, 0x06, 0xbd, 0x6e};
+// Cloudflare's "Nimbus2023" log
+// ("ejKMVNi3LbYg6jjgUh7phBZwMhOFTTvSK8E6V6NS61I="):
+const char kTestNonGoogleLogId1[] = {
+    0x7a, 0x32, 0x8c, 0x54, 0xd8, 0xb7, 0x2d, 0xb6, 0x20, 0xea, 0x38,
+    0xe0, 0x52, 0x1e, 0xe9, 0x84, 0x16, 0x70, 0x32, 0x13, 0x85, 0x4d,
+    0x3b, 0xd2, 0x2b, 0xc1, 0x3a, 0x57, 0xa3, 0x52, 0xeb, 0x52};
+// DigiCert's "Yeti2023" log ("Nc8ZG7+xbFe/D61MbULLu7YnICZR6j/hKu+oA8M71kw="):
+const char kTestNonGoogleLogId2[] = {
+    0x35, 0xcf, 0x19, 0x1b, 0xbf, 0xb1, 0x6c, 0x57, 0xbf, 0x0f, 0xad,
+    0x4c, 0x6d, 0x42, 0xcb, 0xbb, 0xb6, 0x27, 0x20, 0x26, 0x51, 0xea,
+    0x3f, 0xe1, 0x2a, 0xef, 0xa8, 0x03, 0xc3, 0x3b, 0xd6, 0x4c};
+
+// Constructs a net::SignedCertificateTimestampAndStatus with the given
+// information and appends it to |sct_list|.
+void MakeTestSCTAndStatus(
+    net::ct::SignedCertificateTimestamp::Origin origin,
+    const std::string& extensions,
+    const std::string& signature_data,
+    const base::Time& timestamp,
+    const std::string& log_id,
+    net::ct::SCTVerifyStatus status,
+    net::SignedCertificateTimestampAndStatusList* sct_list) {
+  scoped_refptr<net::ct::SignedCertificateTimestamp> sct(
+      new net::ct::SignedCertificateTimestamp());
+  sct->version = net::ct::SignedCertificateTimestamp::V1;
+  sct->log_id = log_id;
+  sct->extensions = extensions;
+  sct->timestamp = timestamp;
+  sct->signature.signature_data = signature_data;
+  sct->origin = origin;
+  sct_list->push_back(net::SignedCertificateTimestampAndStatus(sct, status));
+}
+
+}  // namespace
 
 class SCTReportingServiceBrowserTest : public CertVerifierBrowserTest {
  public:
@@ -50,7 +104,7 @@ class SCTReportingServiceBrowserTest : public CertVerifierBrowserTest {
   }
   ~SCTReportingServiceBrowserTest() override {
     SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
-        base::nullopt);
+        absl::nullopt);
   }
 
   SCTReportingServiceBrowserTest(const SCTReportingServiceBrowserTest&) =
@@ -68,10 +122,33 @@ class SCTReportingServiceBrowserTest : public CertVerifierBrowserTest {
     report_server()->StartAcceptingConnections();
     ASSERT_TRUE(https_server()->Start());
 
-    // Set up two test hosts as using publicly-issued certificates for testing.
+    mock_cert_verifier()->set_default_result(net::OK);
+
+    // Mock the cert verify results so that it has valid CT verification
+    // results.
     net::CertVerifyResult verify_result;
-    verify_result.verified_cert = https_server_.GetCertificate().get();
+    verify_result.verified_cert = https_server()->GetCertificate().get();
     verify_result.is_issued_by_known_root = true;
+    // Add three "valid" SCTs and mark the certificate as compliant.
+    // The default test set up is embedded SCTs where one SCT is from a Google
+    // log and two are from non-Google logs (to meet the Chrome CT policy).
+    MakeTestSCTAndStatus(
+        net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions1",
+        "signature1", base::Time::Now(),
+        std::string(kTestGoogleLogId, base::size(kTestGoogleLogId)),
+        net::ct::SCT_STATUS_OK, &verify_result.scts);
+    MakeTestSCTAndStatus(
+        net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions2",
+        "signature2", base::Time::Now(),
+        std::string(kTestNonGoogleLogId1, base::size(kTestNonGoogleLogId1)),
+        net::ct::SCT_STATUS_OK, &verify_result.scts);
+    MakeTestSCTAndStatus(
+        net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions3",
+        "signature3", base::Time::Now(),
+        std::string(kTestNonGoogleLogId2, base::size(kTestNonGoogleLogId2)),
+        net::ct::SCT_STATUS_OK, &verify_result.scts);
+
+    // Set up two test hosts as using publicly-issued certificates for testing.
     mock_cert_verifier()->AddResultForCertAndHost(
         https_server()->GetCertificate().get(), "a.test", verify_result,
         net::OK);
@@ -101,24 +178,32 @@ class SCTReportingServiceBrowserTest : public CertVerifierBrowserTest {
   net::EmbeddedTestServer* report_server() { return &report_server_; }
 
   void WaitForRequests(size_t num_requests) {
-    if (requests_seen_ >= num_requests)
-      return;
-
-    requests_expected_ = num_requests;
-
-    base::RunLoop run_loop;
-    quit_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
+    // Each loop iteration will account for one request being processed. (This
+    // simplifies the request handler code below, and reduces the state that
+    // must be tracked and handled under locks.)
+    while (true) {
+      base::RunLoop run_loop;
+      {
+        base::AutoLock auto_lock(requests_lock_);
+        if (requests_seen_ >= num_requests)
+          return;
+        requests_closure_ = run_loop.QuitClosure();
+      }
+      run_loop.Run();
+    }
   }
 
-  size_t requests_seen() { return requests_seen_; }
+  size_t requests_seen() {
+    base::AutoLock auto_lock(requests_lock_);
+    return requests_seen_;
+  }
 
-  std::string GetLastSeenHostname() {
-    if (!last_seen_request_.has_content)
-      return std::string();
-    sct_auditing::TLSConnectionReport auditing_report;
-    auditing_report.ParseFromString(last_seen_request_.content);
-    return auditing_report.context().origin().hostname();
+  sct_auditing::SCTClientReport GetLastSeenReport() {
+    base::AutoLock auto_lock(requests_lock_);
+    sct_auditing::SCTClientReport auditing_report;
+    if (last_seen_request_.has_content)
+      auditing_report.ParseFromString(last_seen_request_.content);
+    return auditing_report;
   }
 
   // Checks that no reports have been sent. To do this, opt-in the profile,
@@ -133,32 +218,50 @@ class SCTReportingServiceBrowserTest : public CertVerifierBrowserTest {
         https_server()->GetURL("flush-and-check-zero-reports.test", "/"));
     WaitForRequests(1);
     return (1u == requests_seen() &&
-            "flush-and-check-zero-reports.test" == GetLastSeenHostname());
+            "flush-and-check-zero-reports.test" == GetLastSeenReport()
+                                                       .certificate_report(0)
+                                                       .context()
+                                                       .origin()
+                                                       .hostname());
   }
+
+  void set_error_count(int error_count) { error_count_ = error_count; }
 
  private:
   std::unique_ptr<net::test_server::HttpResponse> HandleReportRequest(
       const net::test_server::HttpRequest& request) {
+    base::AutoLock auto_lock(requests_lock_);
     last_seen_request_ = request;
     ++requests_seen_;
-    if (!quit_closure_.is_null() && requests_seen_ >= requests_expected_) {
-      std::move(quit_closure_).Run();
-    }
+    if (requests_closure_)
+      std::move(requests_closure_).Run();
 
     auto http_response =
         std::make_unique<net::test_server::BasicHttpResponse>();
-    http_response->set_code(net::HTTP_OK);
+
+    if (error_count_ > 0) {
+      http_response->set_code(net::HTTP_TOO_MANY_REQUESTS);
+      --error_count_;
+    } else {
+      http_response->set_code(net::HTTP_OK);
+    }
+
     return http_response;
   }
 
   net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
-  net::EmbeddedTestServer report_server_;
+  net::EmbeddedTestServer report_server_{net::EmbeddedTestServer::TYPE_HTTPS};
   base::test::ScopedFeatureList scoped_feature_list_;
 
+  // `requests_lock_` is used to force sequential access to these variables to
+  // avoid races that can cause test flakes.
+  base::Lock requests_lock_;
   net::test_server::HttpRequest last_seen_request_;
   size_t requests_seen_ = 0;
-  size_t requests_expected_ = 0;
-  base::OnceClosure quit_closure_;
+  base::OnceClosure requests_closure_;
+
+  // How many times the report server should return an error before succeeding.
+  size_t error_count_ = 0;
 };
 
 // Tests that reports should not be sent when extended reporting is not opted
@@ -188,7 +291,9 @@ IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
 
   // Check that one report was sent and contains the expected details.
   EXPECT_EQ(1u, requests_seen());
-  EXPECT_EQ("a.test", GetLastSeenHostname());
+  EXPECT_EQ(
+      "a.test",
+      GetLastSeenReport().certificate_report(0).context().origin().hostname());
 }
 
 // Tests that disabling Safe Browsing entirely should cause reports to not get
@@ -242,7 +347,9 @@ IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
 
   // Check that one report was sent.
   EXPECT_EQ(1u, requests_seen());
-  EXPECT_EQ("a.test", GetLastSeenHostname());
+  EXPECT_EQ(
+      "a.test",
+      GetLastSeenReport().certificate_report(0).context().origin().hostname());
 
   // Disable Extended Reporting which should clear the underlying cache.
   SetExtendedReportingEnabled(false);
@@ -254,7 +361,9 @@ IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
                                https_server()->GetURL("a.test", "/"));
   WaitForRequests(2);
   EXPECT_EQ(2u, requests_seen());
-  EXPECT_EQ("a.test", GetLastSeenHostname());
+  EXPECT_EQ(
+      "a.test",
+      GetLastSeenReport().certificate_report(0).context().origin().hostname());
 }
 
 // Tests that reports are still sent for opted-in profiles after the network
@@ -272,16 +381,35 @@ IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
   // Crash the NetworkService to force it to restart.
   SimulateNetworkServiceCrash();
   // Flush the network interface to make sure it notices the crash.
-  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+  browser()
+      ->profile()
+      ->GetDefaultStoragePartition()
       ->FlushNetworkInterfaceForTesting();
   g_browser_process->system_network_context_manager()
       ->FlushNetworkInterfaceForTesting();
 
   // The mock cert verify result will be lost when the network service restarts,
-  // so set back up the necessary rule for the test host.
+  // so set back up the necessary rules.
+  mock_cert_verifier()->set_default_result(net::OK);
+
   net::CertVerifyResult verify_result;
   verify_result.verified_cert = https_server()->GetCertificate().get();
   verify_result.is_issued_by_known_root = true;
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions1",
+      "signature1", base::Time::Now(),
+      std::string(kTestGoogleLogId, base::size(kTestGoogleLogId)),
+      net::ct::SCT_STATUS_OK, &verify_result.scts);
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions2",
+      "signature2", base::Time::Now(),
+      std::string(kTestNonGoogleLogId1, base::size(kTestNonGoogleLogId1)),
+      net::ct::SCT_STATUS_OK, &verify_result.scts);
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions3",
+      "signature3", base::Time::Now(),
+      std::string(kTestNonGoogleLogId2, base::size(kTestNonGoogleLogId2)),
+      net::ct::SCT_STATUS_OK, &verify_result.scts);
   mock_cert_verifier()->AddResultForCertAndHost(
       https_server()->GetCertificate().get(), "a.test", verify_result, net::OK);
 
@@ -292,32 +420,126 @@ IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
 
   // Check that one report was enqueued.
   EXPECT_EQ(1u, requests_seen());
-  EXPECT_EQ("a.test", GetLastSeenHostname());
+  EXPECT_EQ(
+      "a.test",
+      GetLastSeenReport().certificate_report(0).context().origin().hostname());
 }
 
-// Tests that certificates that aren't issued from publicly known roots don't
-// get reported.
+// Tests that invalid SCTs don't get reported when the overall result is
+// compliant with CT policy.
 IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
-                       PrivateCertsNotReported) {
-  // Set up a hostname that uses a non-publicly issued cert.
+                       CTCompliantInvalidSCTsNotReported) {
+  // Set up a mocked CertVerifyResult that includes both valid and invalid SCTs.
   net::CertVerifyResult verify_result;
   verify_result.verified_cert = https_server()->GetCertificate().get();
-  verify_result.is_issued_by_known_root = false;
+  verify_result.is_issued_by_known_root = true;
+  // Add three valid SCTs and one invalid SCT. The three valid SCTs meet the
+  // Chrome CT policy.
+  MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
+                       "extensions1", "signature1", base::Time::Now(),
+                       std::string(kTestGoogleLogId, sizeof(kTestGoogleLogId)),
+                       net::ct::SCT_STATUS_OK, &verify_result.scts);
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions2",
+      "signature2", base::Time::Now(),
+      std::string(kTestNonGoogleLogId1, sizeof(kTestNonGoogleLogId1)),
+      net::ct::SCT_STATUS_OK, &verify_result.scts);
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions3",
+      "signature3", base::Time::Now(),
+      std::string(kTestNonGoogleLogId2, sizeof(kTestNonGoogleLogId2)),
+      net::ct::SCT_STATUS_OK, &verify_result.scts);
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions4",
+      "signature4", base::Time::Now(),
+      std::string(kTestNonGoogleLogId2, sizeof(kTestNonGoogleLogId2)),
+      net::ct::SCT_STATUS_INVALID_SIGNATURE, &verify_result.scts);
+
   mock_cert_verifier()->AddResultForCertAndHost(
-      https_server()->GetCertificate().get(), "private.test", verify_result,
+      https_server()->GetCertificate().get(), "mixed-scts.test", verify_result,
       net::OK);
 
   SetExtendedReportingEnabled(true);
   ui_test_utils::NavigateToURL(browser(),
-                               https_server()->GetURL("private.test", "/"));
+                               https_server()->GetURL("mixed-scts.test", "/"));
+  WaitForRequests(1);
+  EXPECT_EQ(1u, requests_seen());
 
+  auto report = GetLastSeenReport();
+  EXPECT_EQ(3, report.certificate_report(0).included_sct_size());
+}
+
+// Tests that invalid SCTs don't get included when the overall result is
+// non-compliant with CT policy. Valid SCTs should still be reported.
+IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest,
+                       CTNonCompliantInvalidSCTsNotReported) {
+  // Set up a mocked CertVerifyResult that includes both valid and invalid SCTs.
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert = https_server()->GetCertificate().get();
+  verify_result.is_issued_by_known_root = true;
+  // Add one valid SCT and two invalid SCTs. These SCTs will not meet the Chrome
+  // CT policy requirements.
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions1",
+      "signature1", base::Time::Now(),
+      std::string(kTestNonGoogleLogId1, sizeof(kTestNonGoogleLogId1)),
+      net::ct::SCT_STATUS_OK, &verify_result.scts);
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions2",
+      "signature2", base::Time::Now(),
+      std::string(kTestNonGoogleLogId1, sizeof(kTestNonGoogleLogId1)),
+      net::ct::SCT_STATUS_INVALID_SIGNATURE, &verify_result.scts);
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions3",
+      "signature3", base::Time::Now(),
+      std::string(kTestNonGoogleLogId2, sizeof(kTestNonGoogleLogId2)),
+      net::ct::SCT_STATUS_INVALID_SIGNATURE, &verify_result.scts);
+
+  mock_cert_verifier()->AddResultForCertAndHost(
+      https_server()->GetCertificate().get(), "mixed-scts.test", verify_result,
+      net::OK);
+
+  SetExtendedReportingEnabled(true);
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("mixed-scts.test", "/"));
+  WaitForRequests(1);
+  EXPECT_EQ(1u, requests_seen());
+
+  auto report = GetLastSeenReport();
+  EXPECT_EQ(1, report.certificate_report(0).included_sct_size());
+}
+
+IN_PROC_BROWSER_TEST_F(SCTReportingServiceBrowserTest, NoValidSCTsNoReport) {
+  // Set up a mocked CertVerifyResult with only invalid SCTs.
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert = https_server()->GetCertificate().get();
+  verify_result.is_issued_by_known_root = true;
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions1",
+      "signature1", base::Time::Now(),
+      std::string(kTestNonGoogleLogId1, sizeof(kTestNonGoogleLogId1)),
+      net::ct::SCT_STATUS_INVALID_TIMESTAMP, &verify_result.scts);
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions2",
+      "signature2", base::Time::Now(),
+      std::string(kTestNonGoogleLogId1, sizeof(kTestNonGoogleLogId1)),
+      net::ct::SCT_STATUS_INVALID_SIGNATURE, &verify_result.scts);
+  MakeTestSCTAndStatus(
+      net::ct::SignedCertificateTimestamp::SCT_EMBEDDED, "extensions3",
+      "signature3", base::Time::Now(),
+      std::string(kTestNonGoogleLogId1, sizeof(kTestNonGoogleLogId1)),
+      net::ct::SCT_STATUS_INVALID_SIGNATURE, &verify_result.scts);
+
+  mock_cert_verifier()->AddResultForCertAndHost(
+      https_server()->GetCertificate().get(), "invalid-scts.test",
+      verify_result, net::OK);
+
+  SetExtendedReportingEnabled(true);
+  ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("invalid-scts.test", "/"));
   EXPECT_EQ(0u, requests_seen());
   EXPECT_TRUE(FlushAndCheckZeroReports());
 }
-
-// TODO(crbug.com/1107975): Add test for "invalid SCTs should not get reported".
-// This is blocked on https://crrev.com/c/1188845 to allow us to use the
-// MockCertVerifier to mock CT results.
 
 class SCTReportingServiceZeroSamplingRateBrowserTest
     : public SCTReportingServiceBrowserTest {
@@ -327,12 +549,6 @@ class SCTReportingServiceZeroSamplingRateBrowserTest
         {{features::kSCTAuditing,
           {{features::kSCTAuditingSamplingRate.name, "0.0"}}}},
         {});
-    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
-        true);
-  }
-  ~SCTReportingServiceZeroSamplingRateBrowserTest() override {
-    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
-        base::nullopt);
   }
 
   SCTReportingServiceZeroSamplingRateBrowserTest(
@@ -354,4 +570,186 @@ IN_PROC_BROWSER_TEST_F(SCTReportingServiceZeroSamplingRateBrowserTest,
 
   // Check that no reports are observed.
   EXPECT_EQ(0u, requests_seen());
+}
+
+// Test fixture with SCT auditing and retry/persist enabled.
+class SCTReportingServiceWithRetryAndPersistBrowserTest
+    : public SCTReportingServiceBrowserTest {
+ public:
+  SCTReportingServiceWithRetryAndPersistBrowserTest() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kSCTAuditing,
+          {{features::kSCTAuditingSamplingRate.name, "1.0"}}},
+         {network::features::kSCTAuditingRetryAndPersistReports, {}}},
+        {});
+  }
+  ~SCTReportingServiceWithRetryAndPersistBrowserTest() override = default;
+
+  SCTReportingServiceWithRetryAndPersistBrowserTest(
+      const SCTReportingServiceWithRetryAndPersistBrowserTest&) = delete;
+  const SCTReportingServiceWithRetryAndPersistBrowserTest& operator=(
+      const SCTReportingServiceWithRetryAndPersistBrowserTest&) = delete;
+
+  void SetUpOnMainThread() override {
+    // ConnectionListener must be set before the report server is started. Lets
+    // tests wait for one connection to be made to the report server (e.g. a
+    // failed connection due to the cert error that won't trigger the
+    // WaitForRequests() helper from the parent class).
+    report_connection_listener_ =
+        std::make_unique<net::test_server::SimpleConnectionListener>(
+            1, net::test_server::SimpleConnectionListener::
+                   ALLOW_ADDITIONAL_CONNECTIONS);
+    report_server()->SetConnectionListener(report_connection_listener());
+
+    // Parent test fixture setup will start the report server.
+    SCTReportingServiceBrowserTest::SetUpOnMainThread();
+
+    // Set up NetworkServiceTest once.
+    content::GetNetworkService()->BindTestInterface(
+        network_service_test_.BindNewPipeAndPassReceiver());
+
+    // Override the retry delay to 0 so that retries happen immediately.
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    network_service_test()->SetSCTAuditingRetryDelay(base::TimeDelta());
+  }
+
+  void TearDownOnMainThread() override {
+    // Reset the retry delay override.
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    network_service_test()->SetSCTAuditingRetryDelay(absl::nullopt);
+
+    SCTReportingServiceBrowserTest::TearDownOnMainThread();
+  }
+
+  net::test_server::SimpleConnectionListener* report_connection_listener() {
+    return report_connection_listener_.get();
+  }
+
+  network::mojom::NetworkServiceTest* network_service_test() {
+    return network_service_test_.get();
+  }
+
+  uint64_t GetSCTAuditingPendingReportsCount() {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    uint64_t count;
+    network_service_test()->GetSCTAuditingPendingReportsCount(&count);
+    return count;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  std::unique_ptr<net::test_server::SimpleConnectionListener>
+      report_connection_listener_;
+  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test_;
+};
+
+// Tests the simple case where a report succeeds on the first try.
+IN_PROC_BROWSER_TEST_F(SCTReportingServiceWithRetryAndPersistBrowserTest,
+                       SucceedOnFirstTry) {
+  // Succeed on the first try.
+  set_error_count(0);
+
+  SetExtendedReportingEnabled(true);
+
+  // Visit an HTTPS page and wait for the report to be sent.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("a.test", "/"));
+  WaitForRequests(1);
+
+  // Check that one report was sent and contains the expected details.
+  EXPECT_EQ(1u, requests_seen());
+  EXPECT_EQ(
+      "a.test",
+      GetLastSeenReport().certificate_report(0).context().origin().hostname());
+}
+
+IN_PROC_BROWSER_TEST_F(SCTReportingServiceWithRetryAndPersistBrowserTest,
+                       RetryOnceAndSucceed) {
+  // Succeed on the second try.
+  set_error_count(1);
+
+  SetExtendedReportingEnabled(true);
+
+  // Visit an HTTPS page and wait for the report to be sent twice.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("a.test", "/"));
+  WaitForRequests(2);
+
+  // Check that the report was sent twice and contains the expected details.
+  EXPECT_EQ(2u, requests_seen());
+  EXPECT_EQ(
+      "a.test",
+      GetLastSeenReport().certificate_report(0).context().origin().hostname());
+}
+
+IN_PROC_BROWSER_TEST_F(SCTReportingServiceWithRetryAndPersistBrowserTest,
+                       FailAfterMaxRetries) {
+  // Don't succeed for max_retries+1.
+  set_error_count(16);
+
+  SetExtendedReportingEnabled(true);
+
+  // Set the callback to run when a reporter completes.
+  base::RunLoop run_loop;
+  network_service_test()->SetSCTAuditingReportCompletionCallback(
+      run_loop.QuitClosure());
+
+  // Visit an HTTPS page and wait for the report to be sent.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("a.test", "/"));
+
+  // Wait until the reporter completes.
+  run_loop.Run();
+
+  // Check that the report was sent 16x and contains the expected details.
+  EXPECT_EQ(16u, requests_seen());
+  EXPECT_EQ(
+      "a.test",
+      GetLastSeenReport().certificate_report(0).context().origin().hostname());
+
+  // Check that the pending reporter completed and was deleted.
+  EXPECT_EQ(0u, GetSCTAuditingPendingReportsCount());
+}
+
+// Test that a cert error on the first attempt to send a report will trigger
+// retries that succeed if the server starts using a good cert.
+IN_PROC_BROWSER_TEST_F(SCTReportingServiceWithRetryAndPersistBrowserTest,
+                       CertificateErrorTriggersRetry) {
+  {
+    // Override the retry delay to 1s so that the retries don't all happen
+    // immediately and the test can reset the default verifier result in
+    // between retry attempts.
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    network_service_test()->SetSCTAuditingRetryDelay(
+        base::TimeDelta::FromSeconds(1));
+
+    // Default test fixture teardown will reset the delay back to the default.
+  }
+
+  // The first request to the report server will trigger a certificate error via
+  // the mock cert verifier.
+  mock_cert_verifier()->set_default_result(net::ERR_CERT_COMMON_NAME_INVALID);
+
+  SetExtendedReportingEnabled(true);
+
+  // Visit an HTTPS page, which will trigger a report being sent to the report
+  // server but that report request will result in a cert error.
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("a.test", "/"));
+
+  report_connection_listener()->WaitForConnections();
+
+  // After seeing one connection, replace the mock cert verifier result with a
+  // successful result.
+  mock_cert_verifier()->set_default_result(net::OK);
+
+  WaitForRequests(1);
+
+  // The second try should have resulted in the first successful report being
+  // seen by the HandleRequest() handler.
+  EXPECT_EQ(1u, requests_seen());
+  EXPECT_EQ(
+      "a.test",
+      GetLastSeenReport().certificate_report(0).context().origin().hostname());
 }

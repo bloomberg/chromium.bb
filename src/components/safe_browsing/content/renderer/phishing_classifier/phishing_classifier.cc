@@ -19,6 +19,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "components/paint_preview/common/paint_preview_tracker.h"
 #include "components/safe_browsing/buildflags.h"
@@ -66,7 +67,7 @@ void PhishingClassifier::set_phishing_scorer(const Scorer* scorer) {
     url_extractor_ = std::make_unique<PhishingUrlFeatureExtractor>();
     dom_extractor_ = std::make_unique<PhishingDOMFeatureExtractor>();
     term_extractor_ = std::make_unique<PhishingTermFeatureExtractor>(
-        &scorer_->page_terms(), &scorer_->page_words(),
+        scorer_->find_page_term_callback(), scorer_->find_page_word_callback(),
         scorer_->max_words_per_term(), scorer_->murmurhash3_seed(),
         scorer_->max_shingles_per_page(), scorer_->shingle_size());
   } else {
@@ -82,8 +83,10 @@ bool PhishingClassifier::is_ready() const {
   return !!scorer_;
 }
 
-void PhishingClassifier::BeginClassification(const base::string16* page_text,
+void PhishingClassifier::BeginClassification(const std::u16string* page_text,
                                              DoneCallback done_callback) {
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("safe_browsing", "PhishingClassification",
+                                    this);
   DCHECK(is_ready());
 
   // The RenderView should have called CancelPendingClassification() before
@@ -123,7 +126,7 @@ void PhishingClassifier::BeginFeatureExtraction() {
     return;
   }
 
-  features_.reset(new FeatureMap);
+  features_ = std::make_unique<FeatureMap>();
   if (!url_extractor_->ExtractFeatures(url, features_.get())) {
     RunFailureCallback();
     return;
@@ -148,7 +151,7 @@ void PhishingClassifier::CancelPendingClassification() {
 }
 
 void PhishingClassifier::DOMExtractionFinished(bool success) {
-  shingle_hashes_.reset(new std::set<uint32_t>);
+  shingle_hashes_ = std::make_unique<std::set<uint32_t>>();
   if (success) {
     // Term feature extraction can take awhile, so it runs asynchronously
     // in several chunks of work and invokes the callback when finished.
@@ -166,7 +169,11 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
     ExtractVisualFeatures();
 #else
-    VisualExtractionFinished(true);
+    if (scorer_->HasVisualTfLiteModel()) {
+      ExtractVisualFeatures();
+    } else {
+      VisualExtractionFinished(true);
+    }
 #endif
   } else {
     RunFailureCallback();
@@ -176,6 +183,7 @@ void PhishingClassifier::TermExtractionFinished(bool success) {
 void PhishingClassifier::ExtractVisualFeatures() {
   DCHECK(content::RenderThread::IsMainThread());
   base::TimeTicks start_time = base::TimeTicks::Now();
+  TRACE_EVENT0("safe_browsing", "ExtractVisualFeatures");
 
   blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
   gfx::SizeF viewport_size = frame->View()->VisualViewportSize();
@@ -186,7 +194,7 @@ void PhishingClassifier::ExtractVisualFeatures() {
       {2.22222f, 0.909672f, 0.0903276f, 0.222222f, 0.0812429f, 0, 0},
       SkNamedGamut::kRec2020);
   SkImageInfo bitmap_info = SkImageInfo::Make(
-      bounds.width(), bounds.height(), SkColorType::kRGBA_8888_SkColorType,
+      bounds.width(), bounds.height(), SkColorType::kN32_SkColorType,
       SkAlphaType::kUnpremul_SkAlphaType, rec2020);
   if (!bitmap_->tryAllocPixels(bitmap_info))
     return VisualExtractionFinished(/*success=*/false);
@@ -197,7 +205,8 @@ void PhishingClassifier::ExtractVisualFeatures() {
       /*is_main_frame=*/true);
   cc_canvas.SetPaintPreviewTracker(tracker.get());
   VisualExtractionFinished(frame->CapturePaintPreview(
-      bounds, &cc_canvas, /*include_linked_destinations=*/false));
+      bounds, &cc_canvas, /*include_linked_destinations=*/false,
+      /*skip_accelerated_content=*/false));
   base::UmaHistogramTimes("SBClientPhishing.VisualFeatureTime",
                           base::TimeTicks::Now() - start_time);
 }
@@ -231,7 +240,9 @@ void PhishingClassifier::VisualExtractionFinished(bool success) {
   }
   float score = static_cast<float>(scorer_->ComputeScore(hashed_features));
   verdict->set_client_score(score);
-  verdict->set_is_phishing(score >= scorer_->threshold_probability());
+  bool is_dom_match = (score >= scorer_->threshold_probability());
+  verdict->set_is_phishing(is_dom_match);
+  verdict->set_is_dom_match(is_dom_match);
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   visual_matching_start_ = base::TimeTicks::Now();
@@ -240,7 +251,9 @@ void PhishingClassifier::VisualExtractionFinished(bool success) {
       base::BindOnce(&PhishingClassifier::OnVisualTargetsMatched,
                      weak_factory_.GetWeakPtr()));
 #else
-  RunCallback(*verdict);
+  scorer_->ApplyVisualTfLiteModel(
+      *bitmap_, base::BindOnce(&PhishingClassifier::OnVisualTfLiteModelDone,
+                               weak_factory_.GetWeakPtr(), std::move(verdict)));
 #endif
 }
 
@@ -253,10 +266,39 @@ void PhishingClassifier::OnVisualTargetsMatched(
   base::UmaHistogramTimes("SBClientPhishing.VisualComparisonTime",
                           base::TimeTicks::Now() - visual_matching_start_);
 
+  scorer_->ApplyVisualTfLiteModel(
+      *bitmap_, base::BindOnce(&PhishingClassifier::OnVisualTfLiteModelDone,
+                               weak_factory_.GetWeakPtr(), std::move(verdict)));
+}
+
+void PhishingClassifier::OnVisualTfLiteModelDone(
+    std::unique_ptr<ClientPhishingRequest> verdict,
+    std::vector<double> result) {
+  if (static_cast<int>(result.size()) > scorer_->tflite_thresholds().size()) {
+    // Model is misconfigured, so bail out.
+    RunFailureCallback();
+    return;
+  }
+
+  verdict->set_tflite_model_version(scorer_->tflite_model_version());
+  for (size_t i = 0; i < result.size(); i++) {
+    ClientPhishingRequest::CategoryScore* category =
+        verdict->add_tflite_model_scores();
+    category->set_label(scorer_->tflite_thresholds().at(i).label());
+    category->set_value(result[i]);
+
+    if (result[i] >= scorer_->tflite_thresholds().at(i).threshold()) {
+      verdict->set_is_phishing(true);
+      verdict->set_is_tflite_match(true);
+    }
+  }
+
   RunCallback(*verdict);
 }
 
 void PhishingClassifier::RunCallback(const ClientPhishingRequest& verdict) {
+  TRACE_EVENT_NESTABLE_ASYNC_END0("safe_browsing", "PhishingClassification",
+                                  this);
   std::move(done_callback_).Run(verdict);
   Clear();
 }

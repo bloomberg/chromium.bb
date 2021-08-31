@@ -12,9 +12,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
-#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -87,13 +88,13 @@ const char kInvalidOriginError[] = "'%s' is not a valid origin.";
 namespace {
 
 const int64_t kFilterableDataTypes =
-    ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA |
+    chrome_browsing_data_remover::DATA_TYPE_SITE_DATA |
     content::BrowsingDataRemover::DATA_TYPE_CACHE;
 
 static_assert((kFilterableDataTypes &
-               ~ChromeBrowsingDataRemoverDelegate::FILTERABLE_DATA_TYPES) == 0,
+               ~chrome_browsing_data_remover::FILTERABLE_DATA_TYPES) == 0,
               "kFilterableDataTypes must be a subset of "
-              "ChromeBrowsingDataRemoverDelegate::FILTERABLE_DATA_TYPES");
+              "chrome_browsing_data_remover::FILTERABLE_DATA_TYPES");
 
 uint64_t MaskForKey(const char* key) {
   if (strcmp(key, extension_browsing_data_api_constants::kAppCacheKey) == 0)
@@ -107,15 +108,15 @@ uint64_t MaskForKey(const char* key) {
   if (strcmp(key, extension_browsing_data_api_constants::kFileSystemsKey) == 0)
     return content::BrowsingDataRemover::DATA_TYPE_FILE_SYSTEMS;
   if (strcmp(key, extension_browsing_data_api_constants::kFormDataKey) == 0)
-    return ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
+    return chrome_browsing_data_remover::DATA_TYPE_FORM_DATA;
   if (strcmp(key, extension_browsing_data_api_constants::kHistoryKey) == 0)
-    return ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY;
+    return chrome_browsing_data_remover::DATA_TYPE_HISTORY;
   if (strcmp(key, extension_browsing_data_api_constants::kIndexedDBKey) == 0)
     return content::BrowsingDataRemover::DATA_TYPE_INDEXED_DB;
   if (strcmp(key, extension_browsing_data_api_constants::kLocalStorageKey) == 0)
     return content::BrowsingDataRemover::DATA_TYPE_LOCAL_STORAGE;
   if (strcmp(key, extension_browsing_data_api_constants::kPasswordsKey) == 0)
-    return ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
+    return chrome_browsing_data_remover::DATA_TYPE_PASSWORDS;
   if (strcmp(key, extension_browsing_data_api_constants::kServiceWorkersKey) ==
       0)
     return content::BrowsingDataRemover::DATA_TYPE_SERVICE_WORKERS;
@@ -132,7 +133,7 @@ uint64_t MaskForKey(const char* key) {
 bool IsRemovalPermitted(uint64_t removal_mask, PrefService* prefs) {
   // Enterprise policy or user preference might prohibit deleting browser or
   // download history.
-  if ((removal_mask & ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY) ||
+  if ((removal_mask & chrome_browsing_data_remover::DATA_TYPE_HISTORY) ||
       (removal_mask & content::BrowsingDataRemover::DATA_TYPE_DOWNLOADS)) {
     return prefs->GetBoolean(prefs::kAllowDeletingBrowserHistory);
   }
@@ -265,7 +266,7 @@ void BrowsingDataSettingsFunction::SetDetails(
   permitted_dict->SetBoolean(data_type, is_permitted);
 }
 
-BrowsingDataRemoverFunction::BrowsingDataRemoverFunction() : observer_(this) {}
+BrowsingDataRemoverFunction::BrowsingDataRemoverFunction() = default;
 
 void BrowsingDataRemoverFunction::OnBrowsingDataRemoverDone(
     uint64_t failed_data_types) {
@@ -278,7 +279,7 @@ void BrowsingDataRemoverFunction::OnTaskFinished() {
   if (--pending_tasks_ > 0)
     return;
   synced_data_deletion_.reset();
-  observer_.RemoveAll();
+  observation_.Reset();
   Respond(NoArguments());
   Release();  // Balanced in StartRemoving.
 }
@@ -360,8 +361,7 @@ bool BrowsingDataRemoverFunction::IsPauseSyncAllowed() {
 
 void BrowsingDataRemoverFunction::StartRemoving() {
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  content::BrowsingDataRemover* remover =
-      content::BrowserContext::GetBrowsingDataRemover(profile);
+  content::BrowsingDataRemover* remover = profile->GetBrowsingDataRemover();
 
   // Add a ref (Balanced in OnTaskFinished)
   AddRef();
@@ -377,7 +377,7 @@ void BrowsingDataRemoverFunction::StartRemoving() {
   // that we're notified after removal) and call remove() with the arguments
   // we've generated above. We can use a raw pointer here, as the browsing data
   // remover is responsible for deleting itself once data removal is complete.
-  observer_.Add(remover);
+  observation_.Observe(remover);
 
   DCHECK_EQ(pending_tasks_, 0);
   pending_tasks_ = 1;
@@ -462,7 +462,7 @@ bool BrowsingDataRemoverFunction::ParseOriginTypeMask(
         return false;
       }
       *origin_type_mask |=
-          value ? ChromeBrowsingDataRemoverDelegate::ORIGIN_TYPE_EXTENSION : 0;
+          value ? chrome_browsing_data_remover::ORIGIN_TYPE_EXTENSION : 0;
     }
   }
 
@@ -503,10 +503,9 @@ bool BrowsingDataRemoveFunction::GetRemovalMask(uint64_t* removal_mask) {
   for (base::DictionaryValue::Iterator i(*data_to_remove);
        !i.IsAtEnd();
        i.Advance()) {
-    bool selected = false;
-    if (!i.value().GetAsBoolean(&selected))
+    if (!i.value().is_bool())
       return false;
-    if (selected)
+    if (i.value().GetBool())
       *removal_mask |= MaskForKey(i.key().c_str());
   }
 
@@ -547,12 +546,12 @@ bool BrowsingDataRemoveFileSystemsFunction::GetRemovalMask(
 
 bool BrowsingDataRemoveFormDataFunction::GetRemovalMask(
     uint64_t* removal_mask) {
-  *removal_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_FORM_DATA;
+  *removal_mask = chrome_browsing_data_remover::DATA_TYPE_FORM_DATA;
   return true;
 }
 
 bool BrowsingDataRemoveHistoryFunction::GetRemovalMask(uint64_t* removal_mask) {
-  *removal_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY;
+  *removal_mask = chrome_browsing_data_remover::DATA_TYPE_HISTORY;
   return true;
 }
 
@@ -577,7 +576,7 @@ bool BrowsingDataRemovePluginDataFunction::GetRemovalMask(
 
 bool BrowsingDataRemovePasswordsFunction::GetRemovalMask(
     uint64_t* removal_mask) {
-  *removal_mask = ChromeBrowsingDataRemoverDelegate::DATA_TYPE_PASSWORDS;
+  *removal_mask = chrome_browsing_data_remover::DATA_TYPE_PASSWORDS;
   return true;
 }
 

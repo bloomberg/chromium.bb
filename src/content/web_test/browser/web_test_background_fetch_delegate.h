@@ -8,9 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "components/download/public/background_service/client.h"
 #include "content/public/browser/background_fetch_delegate.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class SimpleFactoryKey;
 
@@ -29,9 +29,6 @@ class WebTestBackgroundFetchDelegate : public BackgroundFetchDelegate {
 
   // BackgroundFetchDelegate implementation:
   void GetIconDisplaySize(GetIconDisplaySizeCallback callback) override;
-  void GetPermissionForOrigin(const url::Origin& origin,
-                              const WebContents::Getter& wc_getter,
-                              GetPermissionForOriginCallback callback) override;
   void CreateDownloadJob(
       base::WeakPtr<Client> client,
       std::unique_ptr<BackgroundFetchDescription> fetch_description) override;
@@ -45,8 +42,8 @@ class WebTestBackgroundFetchDelegate : public BackgroundFetchDelegate {
   void Abort(const std::string& job_unique_id) override;
   void MarkJobComplete(const std::string& job_unique_id) override;
   void UpdateUI(const std::string& job_unique_id,
-                const base::Optional<std::string>& title,
-                const base::Optional<SkBitmap>& icon) override;
+                const absl::optional<std::string>& title,
+                const absl::optional<SkBitmap>& icon) override;
 
  private:
   class WebTestBackgroundFetchDownloadClient;

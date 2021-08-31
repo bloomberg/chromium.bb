@@ -4,8 +4,8 @@
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_icons_css.m.js';
-import 'chrome://resources/cr_elements/cr_page_host_style_css.m.js';
-import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.m.js';
+import 'chrome://resources/cr_elements/cr_page_host_style_css.js';
+import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
@@ -14,6 +14,7 @@ import './strings.m.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -52,6 +53,12 @@ Polymer({
      * @private {?Array<!Extension>}
      */
     extensions_: Array,
+
+    /**
+     * List of messages related to browser reporting.
+     * @private (?Array<!String>)
+     */
+    managedWebsites_: Array,
 
     // <if expr="chromeos">
     /**
@@ -132,6 +139,7 @@ Polymer({
         info => this.threatProtectionInfo_ = info);
 
     this.getExtensions_();
+    this.getManagedWebsites_();
     // <if expr="chromeos">
     this.getDeviceReportingInfo_();
     this.getPluginVmDataCollectionStatus_();
@@ -177,6 +185,13 @@ Polymer({
   getExtensions_() {
     this.browserProxy_.getExtensions().then(extensions => {
       this.extensions_ = extensions;
+    });
+  },
+
+  /** @private */
+  getManagedWebsites_() {
+    this.browserProxy_.getManagedWebsites().then(managedWebsites => {
+      this.managedWebsites_ = managedWebsites;
     });
   },
 
@@ -262,6 +277,10 @@ Polymer({
         return 'management:report';
       case DeviceReportingType.PRINT:
         return 'cr:print';
+      case DeviceReportingType.PRINT_JOBS:
+        return 'cr:print';
+      case DeviceReportingType.DLP_EVENTS:
+        return 'management:policy';
       case DeviceReportingType.CROSTINI:
         return 'management:linux';
       case DeviceReportingType.USERNAME:
@@ -292,6 +311,15 @@ Polymer({
   showExtensionReportingInfo_() {
     return !!this.extensions_ && this.extensions_.length > 0;
   },
+
+  /**
+   * @return {boolean} True of there is managed websites info to show.
+   * @private
+   */
+  showManagedWebsitesInfo_() {
+    return !!this.managedWebsites_ && this.managedWebsites_.length > 0;
+  },
+
 
   /**
    * @param {ReportingType} reportingType
@@ -342,6 +370,7 @@ Polymer({
     this.browserProxy_.getContextualManagedData().then(data => {
       this.managed_ = data.managed;
       this.extensionReportingSubtitle_ = data.extensionReportingTitle;
+      this.managedWebsitesSubtitle_ = data.managedWebsitesSubtitle;
       this.subtitle_ = data.pageSubtitle;
       // <if expr="chromeos">
       this.customerLogo_ = data.customerLogo;
@@ -352,8 +381,7 @@ Polymer({
       try {
         // Sanitizing the message could throw an error if it contains non
         // supported markup.
-        this.eolAdminMessage_ =
-            loadTimeData.sanitizeInnerHtml(data.eolAdminMessage);
+        this.eolAdminMessage_ = sanitizeInnerHtml(data.eolAdminMessage);
       } catch (e) {
         this.eolAdminMessage_ = '';
       }

@@ -5,20 +5,17 @@
 #ifndef CHROME_BROWSER_AUTOFILL_ADDRESS_ACCESSORY_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_AUTOFILL_ADDRESS_ACCESSORY_CONTROLLER_IMPL_H_
 
-#include <vector>
-
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/autofill/address_accessory_controller.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/common/unique_ids.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
 class ManualFillingController;
 
 namespace autofill {
-class AutofillProfile;
 class PersonalDataManager;
 
 // Use either AddressAccessoryController::GetOrCreate or
@@ -33,7 +30,10 @@ class AddressAccessoryControllerImpl
   ~AddressAccessoryControllerImpl() override;
 
   // AccessoryController:
-  void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
+  void RegisterFillingSourceObserver(FillingSourceObserver observer) override;
+  absl::optional<AccessorySheetData> GetSheetData() const override;
+  void OnFillingTriggered(FieldGlobalId focused_field_id,
+                          const UserInfo::Field& selection) override;
   void OnOptionSelected(AccessoryAction selected_action) override;
   void OnToggleChanged(AccessoryAction toggled_action, bool enabled) override;
 
@@ -56,8 +56,6 @@ class AddressAccessoryControllerImpl
   // Required for construction via |CreateForWebContents|:
   explicit AddressAccessoryControllerImpl(content::WebContents* contents);
 
-  std::vector<autofill::AutofillProfile*> GetProfiles();
-
   // Constructor that allows to inject a mock filling controller.
   AddressAccessoryControllerImpl(
       content::WebContents* web_contents,
@@ -70,11 +68,14 @@ class AddressAccessoryControllerImpl
   // The tab for which this class is scoped.
   content::WebContents* web_contents_;
 
+  // The observer to notify if available suggestions change.
+  FillingSourceObserver source_observer_;
+
   // The password accessory controller object to forward client requests to.
   base::WeakPtr<ManualFillingController> mf_controller_;
 
   // The data manager used to retrieve the profiles.
-  autofill::PersonalDataManager* personal_data_manager_;
+  PersonalDataManager* personal_data_manager_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

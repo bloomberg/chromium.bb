@@ -60,6 +60,9 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
                           PresentationCallback presentation_callback) override;
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
+  bool SupportsPlaneGpuFences() const override;
+  bool SupportsOverridePlatformSize() const override;
+  bool SupportsViewporter() const override;
   gfx::SurfaceOrigin GetOrigin() const override;
 
  private:
@@ -74,7 +77,8 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
 
   // WaylandSurfaceGpu overrides:
   void OnSubmission(BufferId buffer_id,
-                    const gfx::SwapResult& swap_result) override;
+                    const gfx::SwapResult& swap_result,
+                    gfx::GpuFenceHandle release_fence) override;
   void OnPresentation(BufferId buffer_id,
                       const gfx::PresentationFeedback& feedback) override;
 
@@ -88,9 +92,6 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
 
     bool ready = false;
 
-    // The id of the buffer, which represents this frame.
-    BufferId buffer_id = 0;
-
     // A region of the updated content in a corresponding frame. It's used to
     // advice Wayland which part of a buffer is going to be updated. Passing {0,
     // 0, 0, 0} results in a whole buffer update on the Wayland compositor side.
@@ -99,7 +100,9 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
     std::vector<gl::GLSurfaceOverlay> overlays;
     SwapCompletionCallback completion_callback;
     PresentationCallback presentation_callback;
-
+    // Merged release fence fd. This is taken as the union of all release
+    // fences for a particular OnSubmission.
+    base::ScopedFD merged_release_fence_fd;
     bool schedule_planes_succeeded = false;
 
     // Maps |buffer_id| to an OverlayPlane, used for committing overlays and
@@ -119,6 +122,12 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   void SetNoGLFlushForTests();
 
   WaylandBufferManagerGpu* const buffer_manager_;
+
+  // |background_buffer_id| is sent to WaylandBufferManagerHost once per
+  // background_buffer allocation. However WaylandBufferManagerHost may commit
+  // this buffer more often b/c buffers needs to be re-attached when wl_surface
+  // is reshown.
+  BufferId background_buffer_id_;
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   gfx::AcceleratedWidget widget_;

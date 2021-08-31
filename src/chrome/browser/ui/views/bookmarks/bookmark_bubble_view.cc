@@ -6,6 +6,7 @@
 
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,13 +19,14 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/dialog_model.h"
 #include "ui/views/bubble/bubble_dialog_model_host.h"
 
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/ui/views/sync/dice_bubble_sync_promo_view.h"
 #endif
 
@@ -121,7 +123,7 @@ class BookmarkBubbleView::BookmarkBubbleDelegate
         model->GetMostRecentlyAddedUserNodeForURL(url_);
     if (!node)
       return;
-    const base::string16 new_title =
+    const std::u16string new_title =
         dialog_model()->GetTextfieldByUniqueId(kBookmarkName)->text();
     if (new_title != node->GetTitle()) {
       model->SetTitle(node, new_title);
@@ -165,9 +167,9 @@ void BookmarkBubbleView::ShowBubble(
     bool already_bookmarked) {
   if (bookmark_bubble_)
     return;
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   BubbleSyncPromoDelegate* const delegate_ptr = delegate.get();
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
   bookmarks::BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
   const bookmarks::BookmarkNode* bookmark_node =
@@ -224,12 +226,11 @@ void BookmarkBubbleView::ShowBubble(
   // bubbles.
   auto bubble = std::make_unique<views::BubbleDialogModelHost>(
       std::move(dialog_model), anchor_view, views::BubbleBorder::TOP_RIGHT);
-  bubble->SelectAllText(kBookmarkName);
   bookmark_bubble_ = bubble.get();
   if (highlighted_button)
     bubble->SetHighlightedButton(highlighted_button);
 
-#if !defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   if (SyncPromoUI::ShouldShowSyncPromo(profile)) {
     // TODO(pbos): Consider adding model support for footnotes so that this does
     // not need to be tied to views.

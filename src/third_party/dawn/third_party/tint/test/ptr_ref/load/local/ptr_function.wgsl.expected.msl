@@ -1,0 +1,10 @@
+#include <metal_stdlib>
+
+using namespace metal;
+kernel void tint_symbol() {
+  int i = 123;
+  thread int* const p = &(i);
+  int const use = (*(p) + 1);
+  return;
+}
+

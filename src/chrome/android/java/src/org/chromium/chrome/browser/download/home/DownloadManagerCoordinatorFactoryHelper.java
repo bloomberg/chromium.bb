@@ -7,13 +7,15 @@ package org.chromium.chrome.browser.download.home;
 import android.app.Activity;
 import android.content.Context;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.download.settings.DownloadSettings;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -31,13 +33,16 @@ public class DownloadManagerCoordinatorFactoryHelper {
     public static DownloadManagerCoordinator create(Activity activity,
             DownloadManagerUiConfig config, SnackbarManager snackbarManager,
             ModalDialogManager modalDialogManager) {
-        Profile profile = config.isOffTheRecord
-                ? Profile.getLastUsedRegularProfile().getPrimaryOTRProfile()
+        Profile profile = OTRProfileID.isOffTheRecord(config.otrProfileID)
+                ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile(
+                        config.otrProfileID, /*createIfNeeded=*/true)
                 : Profile.getLastUsedRegularProfile();
         LegacyDownloadProvider legacyProvider =
                 config.useNewDownloadPath ? null : new LegacyDownloadProviderImpl();
-        return new DownloadManagerCoordinatorImpl(activity, config, new PrefetchEnabledSupplier(),
-                DownloadManagerCoordinatorFactoryHelper::settingsLaunchHelper, snackbarManager,
+        Callback<Context> settingsLaunchHelper =
+                DownloadManagerCoordinatorFactoryHelper::settingsLaunchHelper;
+        return DownloadManagerCoordinatorFactory.create(activity, config,
+                new PrefetchEnabledSupplier(), settingsLaunchHelper, snackbarManager,
                 modalDialogManager, UserPrefs.get(profile),
                 TrackerFactory.getTrackerForProfile(profile), new FaviconProviderImpl(profile),
                 OfflineContentAggregatorFactory.get(), legacyProvider,

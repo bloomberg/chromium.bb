@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/base_export.h"
+#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
@@ -90,6 +91,9 @@ class BASE_EXPORT WorkerThread : public RefCountedThreadSafe<WorkerThread>,
     // guaranteed that WorkerThread won't access the Delegate or the
     // TaskTracker after calling OnMainExit() on the Delegate.
     virtual void OnMainExit(WorkerThread* worker) {}
+
+    static constexpr TimeDelta kPurgeThreadCacheIdleDelay =
+        TimeDelta::FromSeconds(1);
   };
 
   // Creates a WorkerThread that runs Tasks from TaskSources returned by
@@ -194,7 +198,7 @@ class BASE_EXPORT WorkerThread : public RefCountedThreadSafe<WorkerThread>,
   //     ThreadMain() -> RunLabeledWorker() -> RunWorker().
   // "RunLabeledWorker()" is a dummy frame based on ThreadLabel+ThreadPriority
   // and used to easily identify threads in stack traces.
-  void RunWorker();
+  void NOT_TAIL_CALLED RunWorker();
 
   // Self-reference to prevent destruction of |this| while the thread is alive.
   // Set in Start() before creating the thread. Reset in ThreadMain() before the

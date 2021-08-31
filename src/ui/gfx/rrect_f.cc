@@ -8,7 +8,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 
@@ -66,8 +65,9 @@ gfx::Vector2dF RRectF::GetSimpleRadii() const {
 }
 
 float RRectF::GetSimpleRadius() const {
-  DCHECK(GetType() <= Type::kSingle);
+  DCHECK(GetType() <= Type::kOval);
   SkPoint result = skrrect_.getSimpleRadii();
+  DCHECK_EQ(result.x(), result.y());
   return result.x();
 }
 
@@ -85,6 +85,10 @@ RRectF::Type RRectF::GetType() const {
       }
       return Type::kSimple;
     case SkRRect::kOval_Type:
+      rad = skrrect_.getSimpleRadii();
+      if (rad.x() == rad.y()) {
+        return Type::kSingle;
+      }
       return Type::kOval;
     case SkRRect::kNinePatch_Type:
     case SkRRect::kComplex_Type:

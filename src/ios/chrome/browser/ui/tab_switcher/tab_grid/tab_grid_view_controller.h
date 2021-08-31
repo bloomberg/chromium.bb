@@ -11,21 +11,62 @@
 #import "ios/chrome/browser/ui/gestures/view_revealing_animatee.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/transitions/grid_transition_animation_layout_providing.h"
+#import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
 
 @protocol ApplicationCommands;
 @protocol GridConsumer;
 @protocol GridCommands;
 @protocol GridDragDropHandler;
 @protocol GridImageDataSource;
+class GURL;
+@protocol IncognitoReauthCommands;
+@protocol IncognitoReauthConsumer;
+@protocol PopupMenuCommands;
 @protocol RecentTabsConsumer;
 @class RecentTabsTableViewController;
+@class TabGridViewController;
+@protocol ThumbStripCommands;
+@protocol ViewControllerTraitCollectionObserver;
+@protocol GridContextMenuProvider;
+
+// Configurations for tab grid pages.
+enum class TabGridPageConfiguration {
+  // All pages are enabled.
+  kAllPagesEnabled = 0,
+  // Only the incognito page is disabled.
+  kIncognitoPageDisabled = 1,
+  // Only incognito page is enabled.
+  kIncognitoPageOnly = 2,
+};
 
 // Delegate protocol for an object that can handle presenting ("opening") tabs
 // from the tab grid.
 @protocol TabPresentationDelegate <NSObject>
 // Show the active tab in |page|, presented on top of the tab grid.  The
-// omnibox will be focused after the animation if |focusOmnibox| is YES.
-- (void)showActiveTabInPage:(TabGridPage)page focusOmnibox:(BOOL)focusOmnibox;
+// omnibox will be focused after the animation if |focusOmnibox| is YES. If
+// |closeTabGrid| is NO, then the tab grid will not be closed, and the active
+// tab will simply be displayed in its current position.
+// This last parameter is used for the thumb strip, where the
+// BVCContainerViewController is never dismissed.
+- (void)showActiveTabInPage:(TabGridPage)page
+               focusOmnibox:(BOOL)focusOmnibox
+               closeTabGrid:(BOOL)closeTabGrid;
+@end
+
+@protocol TabGridViewControllerDelegate <NSObject>
+
+// Asks the delegate for the page that should currently be active.
+- (TabGridPage)activePageForTabGridViewController:
+    (TabGridViewController*)tabGridViewController;
+
+// Notifies the delegate that the tab grid was dismissed via the
+// ViewRevealingAnimatee.
+- (void)tabGridViewControllerDidDismiss:
+    (TabGridViewController*)tabGridViewController;
+
+// Opens a link when the user clicks on the in-text link.
+- (void)openLinkWithURL:(const GURL&)URL;
+
 @end
 
 // View controller representing a tab switcher. The tab switcher has an
@@ -34,16 +75,26 @@
     : UIViewController <GridTransitionAnimationLayoutProviding,
                         LayoutSwitcherProvider,
                         TabGridPaging,
-                        ViewRevealingAnimatee>
+                        ThumbStripSupporting>
 
 @property(nonatomic, weak) id<ApplicationCommands> handler;
+@property(nonatomic, weak) id<IncognitoReauthCommands> reauthHandler;
+// Handlers for popup menu commands for the regular and incognito states.
+@property(nonatomic, weak) id<PopupMenuCommands> regularPopupMenuHandler;
+@property(nonatomic, weak) id<PopupMenuCommands> incognitoPopupMenuHandler;
+// Handlers for thumb strip commands for the regular and incognito states.
+@property(nonatomic, weak) id<ThumbStripCommands> regularThumbStripHandler;
+@property(nonatomic, weak) id<ThumbStripCommands> incognitoThumbStripHandler;
 
 // Delegate for this view controller to handle presenting tab UI.
 @property(nonatomic, weak) id<TabPresentationDelegate> tabPresentationDelegate;
 
+@property(nonatomic, weak) id<TabGridViewControllerDelegate> delegate;
+
 // Consumers send updates from the model layer to the UI layer.
 @property(nonatomic, readonly) id<GridConsumer> regularTabsConsumer;
-@property(nonatomic, readonly) id<GridConsumer> incognitoTabsConsumer;
+@property(nonatomic, readonly) id<GridConsumer, IncognitoReauthConsumer>
+    incognitoTabsConsumer;
 @property(nonatomic, readonly) id<RecentTabsConsumer> remoteTabsConsumer;
 
 // Delegates send updates from the UI layer to the model layer.
@@ -58,6 +109,11 @@
 @property(nonatomic, weak) id<GridImageDataSource> regularTabsImageDataSource;
 @property(nonatomic, weak) id<GridImageDataSource> incognitoTabsImageDataSource;
 
+// An optional object to be notified whenever the trait collection of this view
+// controller changes.
+@property(nonatomic, weak) id<ViewControllerTraitCollectionObserver>
+    traitCollectionObserver;
+
 // Readwrite override of the UIViewController property. This object will ignore
 // the value supplied by UIViewController.
 @property(nonatomic, weak, readwrite)
@@ -69,6 +125,23 @@
 // model objects used in this view controller should be factored out.
 @property(nonatomic, strong)
     RecentTabsTableViewController* remoteTabsViewController;
+
+// Provides the context menu for the tabs on the grid.
+@property(nonatomic, weak) id<GridContextMenuProvider>
+    regularTabsContextMenuProvider API_AVAILABLE(ios(13.0));
+@property(nonatomic, weak) id<GridContextMenuProvider>
+    incognitoTabsContextMenuProvider API_AVAILABLE(ios(13.0));
+
+// Init with tab grid view configuration, which decides which sub view
+// controller should be added.
+- (instancetype)initWithPageConfiguration:
+    (TabGridPageConfiguration)tabGridPageConfiguration
+    NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 
 // Tells the receiver to prepare for its appearance by pre-requesting any
 // resources it needs from data sources. This should be called before any
@@ -83,6 +156,9 @@
 // Notifies the ViewController that the Close All Tabs confirmation action sheet
 // has been closed.
 - (void)closeAllTabsConfirmationClosed;
+
+// Dismisses any modal UI which may be presented.
+- (void)dismissModals;
 
 @end
 

@@ -22,6 +22,7 @@ from devil.android import decorators
 from devil.android import device_errors
 from devil.android import device_temp_file
 from devil.android.sdk import version_codes
+from devil.android.sdk import adb_wrapper
 from devil.android.tools import script_common
 from devil.utils import cmd_helper
 from devil.utils import parallelizer
@@ -34,8 +35,9 @@ logger = logging.getLogger(__name__)
 SPECIAL_SYSTEM_APP_LOCATIONS = {
     # Older versions of ArCore were installed in /data/app/ regardless of
     # whether they were system apps or not. Newer versions install in /system/
-    # if they are system apps, and in /data/app/ if they aren't.
-    'com.google.ar.core': ['/data/app/', '/system/'],
+    # if they are system apps, and in /data/app/ if they aren't. Some newer
+    # devices/OSes install in /product/app/ for system apps, as well.
+    'com.google.ar.core': ['/data/app/', '/system/', '/product/app/'],
     # On older versions of VrCore, the system app version is installed in
     # /system/ like normal. However, at some point, this moved to /data/.
     # So, we have to handle both cases. Like ArCore, this means we'll end up
@@ -127,7 +129,15 @@ _ENABLE_MODIFICATION_PROP = 'devil.modify_sys_apps'
 
 
 def _ShouldRetryModification(exc):
-  return not isinstance(exc, device_errors.CommandTimeoutError)
+  try:
+    if isinstance(exc, device_errors.CommandTimeoutError):
+      logger.info('Restarting the adb server')
+      adb_wrapper.RestartServer()
+    return True
+  except Exception: # pylint: disable=broad-except
+    logger.exception(('Caught an exception when deciding'
+                      ' to retry system modification'))
+    return False
 
 
 # timeout and retries are both required by the decorator, but neither
@@ -171,7 +181,7 @@ def _SetUpSystemAppModification(device, timeout=None, retries=None):
       # Point the user to documentation, since there's a good chance they can
       # workaround this on an emulator.
       docs_url = ('https://chromium.googlesource.com/chromium/src/+/'
-                  'master/docs/android_emulator.md#writable-system-partition')
+                  'HEAD/docs/android_emulator.md#writable-system-partition')
       logger.error(
           'Did you start the emulator with "-writable-system?"\n'
           'See %s\n', docs_url)
@@ -186,6 +196,22 @@ def _TearDownSystemAppModification(device,
                                    timeout=None,
                                    retries=None):
   try:
+    # The function may be re-entered after the the device loses root
+    # privilege. For instance if the adb server is restarted before
+    # re-entering the function then the device may lose root privilege.
+    # Therefore we need to do a sanity check for root privilege
+    # on the device and then re-enable root privilege if the device
+    # does not have it.
+    if not device.HasRoot():
+      logger.warning('Need to re-enable root.')
+      device.EnableRoot()
+
+      if not device.HasRoot():
+        raise device_errors.CommandFailedError(
+          ('Failed to tear down modification of '
+           'system apps on non-rooted device.'),
+          str(device))
+
     device.SetProp(_ENABLE_MODIFICATION_PROP, '0')
     device.Reboot()
     device.WaitUntilFullyBooted()
@@ -233,9 +259,7 @@ def _RelocateApp(device, package_name, relocate_to):
         p: posixpath.join(relocate_to, posixpath.relpath(p, '/'))
         for p in system_package_paths
     }
-    relocation_dirs = [
-        posixpath.dirname(d) for _, d in relocation_map.iteritems()
-    ]
+    relocation_dirs = [posixpath.dirname(d) for _, d in relocation_map.items()]
     device.RunShellCommand(['mkdir', '-p'] + relocation_dirs, check_return=True)
     _MoveApp(device, relocation_map)
   else:
@@ -244,7 +268,7 @@ def _RelocateApp(device, package_name, relocate_to):
   try:
     yield
   finally:
-    _MoveApp(device, {v: k for k, v in relocation_map.iteritems()})
+    _MoveApp(device, {v: k for k, v in relocation_map.items()})
 
 
 @contextlib.contextmanager
@@ -268,7 +292,7 @@ def _MoveApp(device, relocation_map):
     device: (device_utils.DeviceUtils)
     relocation_map: (dict) A dict that maps src to dest
   """
-  movements = ['mv %s %s' % (k, v) for k, v in relocation_map.iteritems()]
+  movements = ['mv %s %s' % (k, v) for k, v in relocation_map.items()]
   cmd = ' && '.join(movements)
   with EnableSystemAppModification(device):
     device.RunShellCommand(cmd, as_root=True, check_return=True, shell=True)

@@ -10,7 +10,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_change_dispatcher.h"
+#include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_monster.h"
+#include "net/cookies/cookie_util.h"
 
 namespace net {
 
@@ -49,7 +53,8 @@ CookieMonsterChangeDispatcher::Subscription::~Subscription() {
 }
 
 void CookieMonsterChangeDispatcher::Subscription::DispatchChange(
-    const CookieChangeInfo& change) {
+    const CookieChangeInfo& change,
+    const CookieAccessDelegate* cookie_access_delegate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   const CanonicalCookie& cookie = change.cookie;
@@ -57,12 +62,22 @@ void CookieMonsterChangeDispatcher::Subscription::DispatchChange(
   // The net::CookieOptions are hard-coded for now, but future APIs may set
   // different options. For example, JavaScript observers will not be allowed to
   // see HTTP-only changes.
-  if (!url_.is_empty() &&
-      !cookie
-           .IncludeForRequestURL(url_, CookieOptions::MakeAllInclusive(),
-                                 change.access_result.access_semantics)
-           .status.IsInclude()) {
-    return;
+  if (!url_.is_empty()) {
+    bool delegate_treats_url_as_trustworthy =
+        cookie_access_delegate &&
+        cookie_access_delegate->ShouldTreatUrlAsTrustworthy(url_);
+    CookieOptions options = CookieOptions::MakeAllInclusive();
+    CookieSamePartyStatus same_party_status =
+        cookie_util::GetSamePartyStatus(cookie, options);
+    if (!cookie
+             .IncludeForRequestURL(
+                 url_, options,
+                 CookieAccessParams{change.access_result.access_semantics,
+                                    delegate_treats_url_as_trustworthy,
+                                    same_party_status})
+             .status.IsInclude()) {
+      return;
+    }
   }
 
   // TODO(mmenke, pwnall): Run callbacks synchronously?
@@ -78,7 +93,9 @@ void CookieMonsterChangeDispatcher::Subscription::DoDispatchChange(
   callback_.Run(change);
 }
 
-CookieMonsterChangeDispatcher::CookieMonsterChangeDispatcher() {}
+CookieMonsterChangeDispatcher::CookieMonsterChangeDispatcher(
+    const CookieMonster* cookie_monster)
+    : cookie_monster_(cookie_monster) {}
 
 CookieMonsterChangeDispatcher::~CookieMonsterChangeDispatcher() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -187,7 +204,8 @@ void CookieMonsterChangeDispatcher::DispatchChangeToNameKey(
   SubscriptionList& subscription_list = it->second;
   for (base::LinkNode<Subscription>* node = subscription_list.head();
        node != subscription_list.end(); node = node->next()) {
-    node->value()->DispatchChange(change);
+    node->value()->DispatchChange(change,
+                                  cookie_monster_->cookie_access_delegate());
   }
 }
 

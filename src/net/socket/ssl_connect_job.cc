@@ -280,6 +280,7 @@ int SSLConnectJob::DoTransportConnectComplete(int result) {
     next_state_ = STATE_SSL_CONNECT;
     nested_socket_ = nested_connect_job_->PassSocket();
     nested_socket_->GetPeerAddress(&server_address_);
+    dns_aliases_ = nested_socket_->GetDnsAliases();
   }
 
   return result;
@@ -402,7 +403,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
   }
 
   const std::string& host = params_->host_and_port().host();
-  bool tls13_supported = IsTLS13ExperimentHost(host);
 
   if (result == OK) {
     DCHECK(!connect_timing_.ssl_start.is_null());
@@ -436,13 +436,6 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
     if (ssl_info.key_exchange_group != 0) {
       base::UmaHistogramSparse("Net.SSL_KeyExchange.ECDHE",
                                ssl_info.key_exchange_group);
-    }
-
-    if (tls13_supported) {
-      UMA_HISTOGRAM_CUSTOM_TIMES("Net.SSL_Connection_Latency_TLS13Experiment",
-                                 connect_duration,
-                                 base::TimeDelta::FromMilliseconds(1),
-                                 base::TimeDelta::FromMinutes(1), 100);
     }
 
     // Classify whether the connection required the legacy crypto fallback.
@@ -491,13 +484,9 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
   }
 
   base::UmaHistogramSparse("Net.SSL_Connection_Error", std::abs(result));
-  if (tls13_supported) {
-    base::UmaHistogramSparse("Net.SSL_Connection_Error_TLS13Experiment",
-                             std::abs(result));
-  }
 
   if (result == OK || IsCertificateError(result)) {
-    SetSocket(std::move(ssl_socket_));
+    SetSocket(std::move(ssl_socket_), std::move(dns_aliases_));
   } else if (result == ERR_SSL_CLIENT_AUTH_CERT_NEEDED) {
     ssl_cert_request_info_ = base::MakeRefCounted<SSLCertRequestInfo>();
     ssl_socket_->GetSSLCertRequestInfo(ssl_cert_request_info_.get());

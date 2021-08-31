@@ -15,7 +15,6 @@
 #include "base/containers/span.h"
 #include "base/json/json_reader.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -28,6 +27,7 @@
 #include "net/base/net_errors.h"
 #include "net/cookies/cookie_constants.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -52,16 +52,10 @@ const char kOAuth2IssueTokenBodyFormatDeviceIdAddendum[] =
 const char kOAuth2IssueTokenBodyFormatConsentResultAddendum[] =
     "&consent_result=%s";
 const char kIssueAdviceKey[] = "issueAdvice";
-const char kIssueAdviceValueConsent[] = "consent";
 const char kIssueAdviceValueRemoteConsent[] = "remoteConsent";
 const char kAccessTokenKey[] = "token";
-const char kConsentKey[] = "consent";
 const char kExpiresInKey[] = "expiresIn";
-const char kScopesKey[] = "scopes";
 const char kGrantedScopesKey[] = "grantedScopes";
-const char kDescriptionKey[] = "description";
-const char kDetailKey[] = "detail";
-const char kDetailSeparators[] = "\n";
 const char kError[] = "error";
 const char kMessage[] = "message";
 
@@ -81,7 +75,7 @@ static GoogleServiceAuthError CreateAuthError(
   if (body)
     response_body = std::move(*body);
 
-  base::Optional<base::Value> value = base::JSONReader::Read(response_body);
+  absl::optional<base::Value> value = base::JSONReader::Read(response_body);
   if (!value || !value->is_dict()) {
     int http_response_code = -1;
     if (head && head->headers)
@@ -118,18 +112,6 @@ void RecordApiCallResult(OAuth2MintTokenApiCallResult result) {
 
 const char kOAuth2MintTokenApiCallResultHistogram[] =
     "Signin.OAuth2MintToken.ApiCallResult";
-
-IssueAdviceInfoEntry::IssueAdviceInfoEntry() = default;
-IssueAdviceInfoEntry::~IssueAdviceInfoEntry() = default;
-
-IssueAdviceInfoEntry::IssueAdviceInfoEntry(const IssueAdviceInfoEntry& other) =
-    default;
-IssueAdviceInfoEntry& IssueAdviceInfoEntry::operator=(
-    const IssueAdviceInfoEntry& other) = default;
-
-bool IssueAdviceInfoEntry::operator ==(const IssueAdviceInfoEntry& rhs) const {
-  return description == rhs.description && details == rhs.details;
-}
 
 RemoteConsentResolutionData::RemoteConsentResolutionData() = default;
 RemoteConsentResolutionData::~RemoteConsentResolutionData() = default;
@@ -184,14 +166,6 @@ void OAuth2MintTokenFlow::ReportSuccess(
     int time_to_live) {
   if (delegate_)
     delegate_->OnMintTokenSuccess(access_token, granted_scopes, time_to_live);
-
-  // |this| may already be deleted.
-}
-
-void OAuth2MintTokenFlow::ReportIssueAdviceSuccess(
-    const IssueAdviceInfo& issue_advice) {
-  if (delegate_)
-    delegate_->OnIssueAdviceSuccess(issue_advice);
 
   // |this| may already be deleted.
 }
@@ -264,7 +238,7 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
   if (body)
     response_body = std::move(*body);
 
-  base::Optional<base::Value> value = base::JSONReader::Read(response_body);
+  absl::optional<base::Value> value = base::JSONReader::Read(response_body);
   if (!value || !value->is_dict()) {
     RecordApiCallResult(OAuth2MintTokenApiCallResult::kParseJsonFailure);
     ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
@@ -278,21 +252,6 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
         OAuth2MintTokenApiCallResult::kIssueAdviceKeyNotFoundFailure);
     ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
         "Not able to find an issueAdvice in a service response."));
-    return;
-  }
-
-  if (*issue_advice_value == kIssueAdviceValueConsent) {
-    IssueAdviceInfo issue_advice;
-    if (ParseIssueAdviceResponse(&(*value), &issue_advice)) {
-      RecordApiCallResult(OAuth2MintTokenApiCallResult::kIssueAdviceSuccess);
-      ReportIssueAdviceSuccess(issue_advice);
-    } else {
-      RecordApiCallResult(
-          OAuth2MintTokenApiCallResult::kParseIssueAdviceFailure);
-      ReportFailure(GoogleServiceAuthError::FromUnexpectedServiceResponse(
-          "Not able to parse the contents of consent "
-          "from a service response."));
-    }
     return;
   }
 
@@ -316,14 +275,7 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
   int time_to_live;
   if (ParseMintTokenResponse(&(*value), &access_token, &granted_scopes,
                              &time_to_live)) {
-    if (granted_scopes.empty()) {
-      granted_scopes.insert(parameters_.scopes.begin(),
-                            parameters_.scopes.end());
-      RecordApiCallResult(
-          OAuth2MintTokenApiCallResult::kMintTokenSuccessWithFallbackScopes);
-    } else {
-      RecordApiCallResult(OAuth2MintTokenApiCallResult::kMintTokenSuccess);
-    }
+    RecordApiCallResult(OAuth2MintTokenApiCallResult::kMintTokenSuccess);
     ReportSuccess(access_token, granted_scopes, time_to_live);
   } else {
     RecordApiCallResult(OAuth2MintTokenApiCallResult::kParseMintTokenFailure);
@@ -368,13 +320,8 @@ bool OAuth2MintTokenFlow::ParseMintTokenResponse(
   const std::string* granted_scopes_string =
       dict->FindStringKey(kGrantedScopesKey);
 
-  if (!granted_scopes_string) {
-    // TODO(https://crbug.com/1100535): Once unbundled consent has successfully
-    // launched, remove the fallback to the requested scopes when the
-    // grantedScopes parameter is missing from the response. After launch,
-    // ParseMintTokenResponse should return false in these situations.
-    return true;
-  }
+  if (!granted_scopes_string)
+    return false;
 
   const std::vector<std::string> granted_scopes_vector =
       base::SplitString(*granted_scopes_string, " ", base::TRIM_WHITESPACE,
@@ -386,52 +333,6 @@ bool OAuth2MintTokenFlow::ParseMintTokenResponse(
                                                  granted_scopes_vector.end());
   *granted_scopes = std::move(granted_scopes_set);
   return true;
-}
-
-// static
-bool OAuth2MintTokenFlow::ParseIssueAdviceResponse(
-    const base::Value* dict,
-    IssueAdviceInfo* issue_advice) {
-  CHECK(dict);
-  CHECK(dict->is_dict());
-  CHECK(issue_advice);
-
-  const base::Value* consent_dict = dict->FindDictKey(kConsentKey);
-  if (!consent_dict)
-    return false;
-
-  const base::Value* scopes_list = consent_dict->FindListKey(kScopesKey);
-  if (!scopes_list)
-    return false;
-
-  bool success = true;
-  for (const auto& scopes_entry : scopes_list->GetList()) {
-    if (!scopes_entry.is_dict()) {
-      success = false;
-      break;
-    }
-
-    const std::string* description =
-        scopes_entry.FindStringKey(kDescriptionKey);
-    const std::string* detail = scopes_entry.FindStringKey(kDetailKey);
-    if (!description || !detail) {
-      success = false;
-      break;
-    }
-
-    IssueAdviceInfoEntry entry;
-    entry.description = base::UTF8ToUTF16(*description);
-    base::TrimWhitespace(entry.description, base::TRIM_ALL, &entry.description);
-    entry.details = base::SplitString(
-        base::UTF8ToUTF16(*detail), base::ASCIIToUTF16(kDetailSeparators),
-        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    issue_advice->push_back(std::move(entry));
-  }
-
-  if (!success)
-    issue_advice->clear();
-
-  return success;
 }
 
 // static
@@ -487,8 +388,8 @@ bool OAuth2MintTokenFlow::ParseRemoteConsentResponse(
     const std::string* path = cookie_dict.FindStringKey("path");
     const std::string* max_age_seconds =
         cookie_dict.FindStringKey("maxAgeSeconds");
-    base::Optional<bool> is_secure = cookie_dict.FindBoolKey("isSecure");
-    base::Optional<bool> is_http_only = cookie_dict.FindBoolKey("isHttpOnly");
+    absl::optional<bool> is_secure = cookie_dict.FindBoolKey("isSecure");
+    absl::optional<bool> is_http_only = cookie_dict.FindBoolKey("isHttpOnly");
     const std::string* same_site = cookie_dict.FindStringKey("sameSite");
 
     int64_t max_age = -1;

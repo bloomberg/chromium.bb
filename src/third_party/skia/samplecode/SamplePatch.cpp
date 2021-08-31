@@ -34,7 +34,7 @@ static sk_sp<SkShader> make_shader0(SkIPoint* size) {
     SkBitmap bm;
     decode_file(GetResourceAsData("images/dog.jpg"), &bm);
     *size = SkIPoint{bm.width(), bm.height()};
-    return bm.makeShader();
+    return bm.makeShader(SkSamplingOptions(SkFilterMode::kLinear));
 }
 
 static sk_sp<SkShader> make_shader1(const SkIPoint& size) {
@@ -241,7 +241,6 @@ struct PatchView : public Sample {
 
         SkPaint paint;
         paint.setDither(true);
-        paint.setFilterQuality(kLow_SkFilterQuality);
 
         canvas->translate(DX, DY);
 

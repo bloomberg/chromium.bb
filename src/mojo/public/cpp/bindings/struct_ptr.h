@@ -12,9 +12,11 @@
 
 #include "base/check.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "base/template_util.h"
 #include "mojo/public/cpp/bindings/lib/hash_util.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 
 namespace mojo {
 namespace internal {
@@ -107,6 +109,13 @@ class StructPtr {
   }
 
   explicit operator bool() const { return !is_null(); }
+
+  // If T is serialisable into trace, StructPtr<T> is also serialisable.
+  template <class U = S>
+  typename perfetto::check_traced_value_support<U>::type WriteIntoTrace(
+      perfetto::TracedValue&& context) const {
+    perfetto::WriteIntoTracedValue(std::move(context), ptr_);
+  }
 
  private:
   friend class internal::StructPtrWTFHelper<Struct>;
@@ -201,6 +210,13 @@ class InlinedStructPtr {
   }
 
   explicit operator bool() const { return !is_null(); }
+
+  // If T is serialisable into trace, StructPtr<T> is also serialisable.
+  template <class U = S>
+  typename perfetto::check_traced_value_support<U>::type WriteIntoTrace(
+      perfetto::TracedValue&& context) const {
+    perfetto::WriteIntoTracedValue(std::move(context), get());
+  }
 
  private:
   friend class internal::InlinedStructPtrWTFHelper<Struct>;

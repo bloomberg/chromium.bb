@@ -8,9 +8,10 @@
 
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 #include "services/device/public/mojom/sensor.mojom-blink.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
@@ -26,9 +27,9 @@ const double kWaitingIntervalThreshold = 0.01;
 
 bool AreFeaturesEnabled(
     ExecutionContext* context,
-    const Vector<mojom::blink::FeaturePolicyFeature>& features) {
+    const Vector<mojom::blink::PermissionsPolicyFeature>& features) {
   return std::all_of(features.begin(), features.end(),
-                     [context](mojom::blink::FeaturePolicyFeature feature) {
+                     [context](mojom::blink::PermissionsPolicyFeature feature) {
                        return context->IsFeatureEnabled(
                            feature, ReportOptions::kReportOnFailure);
                      });
@@ -40,7 +41,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
                const SensorOptions* sensor_options,
                ExceptionState& exception_state,
                device::mojom::blink::SensorType type,
-               const Vector<mojom::blink::FeaturePolicyFeature>& features)
+               const Vector<mojom::blink::PermissionsPolicyFeature>& features)
     : ExecutionContextLifecycleObserver(execution_context),
       frequency_(0.0),
       type_(type),
@@ -52,7 +53,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
 
   if (!AreFeaturesEnabled(execution_context, features)) {
     exception_state.ThrowSecurityError(
-        "Access to sensor features is disallowed by feature policy");
+        "Access to sensor features is disallowed by permissions policy");
     return;
   }
 
@@ -78,7 +79,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
                const SpatialSensorOptions* options,
                ExceptionState& exception_state,
                device::mojom::blink::SensorType sensor_type,
-               const Vector<mojom::blink::FeaturePolicyFeature>& features)
+               const Vector<mojom::blink::PermissionsPolicyFeature>& features)
     : Sensor(execution_context,
              static_cast<const SensorOptions*>(options),
              exception_state,
@@ -115,15 +116,15 @@ bool Sensor::hasReading() const {
   return sensor_proxy_->GetReading().timestamp() != 0.0;
 }
 
-base::Optional<DOMHighResTimeStamp> Sensor::timestamp(
+absl::optional<DOMHighResTimeStamp> Sensor::timestamp(
     ScriptState* script_state) const {
   if (!hasReading()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   LocalDOMWindow* window = LocalDOMWindow::From(script_state);
   if (!window) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   WindowPerformance* performance = DOMWindowPerformance::performance(*window);

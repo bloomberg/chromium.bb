@@ -163,7 +163,8 @@ void GLOutputSurface::ApplyExternalStencil() {}
 
 void GLOutputSurface::DidReceiveSwapBuffersAck(
     const gfx::SwapResponse& response) {
-  client_->DidReceiveSwapBuffersAck(response.timings);
+  client_->DidReceiveSwapBuffersAck(response.timings,
+                                    /*release_fence=*/gfx::GpuFenceHandle());
 }
 
 void GLOutputSurface::HandlePartialSwap(
@@ -189,7 +190,7 @@ void GLOutputSurface::OnGpuSwapBuffersCompleted(
 
   UpdateLatencyInfoOnSwap(params.swap_response, &latency_info);
   latency_tracker_.OnGpuSwapBuffersCompleted(
-      latency_info, top_controls_visible_height_changed);
+      std::move(latency_info), top_controls_visible_height_changed);
 
   if (needs_swap_size_notifications_)
     client_->DidSwapWithSize(pixel_size);

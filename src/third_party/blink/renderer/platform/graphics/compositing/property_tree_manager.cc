@@ -19,8 +19,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/transform_paint_property_node.h"
-#include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
-#include "third_party/skia/include/effects/SkLumaColorFilter.h"
 
 namespace blink {
 
@@ -440,7 +438,12 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
       transform_node.IsInSubtreeOfPageScale();
 
   compositor_node.will_change_transform =
-      transform_node.RequiresCompositingForWillChangeTransform();
+      transform_node.RequiresCompositingForWillChangeTransform() &&
+      // cc assumes preference of performance over raster quality for
+      // will-change:transform, but for SVG we still prefer raster quality, so
+      // don't pass will-change:transform to cc for SVG.
+      // TODO(crbug.com/1186020): find a better way to handle this.
+      !transform_node.IsForSVGChild();
 
   if (const auto* sticky_constraint = transform_node.GetStickyConstraint()) {
     cc::StickyPositionNodeData& sticky_data =
@@ -868,7 +871,7 @@ bool PropertyTreeManager::SupportsShaderBasedRoundedCorner(
   // Don't use shader based rounded corner if the next effect has backdrop
   // filter and the clip is in different transform space, because we will use
   // the effect's transform space for the mask isolation effect node.
-  if (next_effect && !next_effect->BackdropFilter().IsEmpty() &&
+  if (next_effect && next_effect->BackdropFilter() &&
       &next_effect->LocalTransformSpace() != &clip.LocalTransformSpace())
     return false;
 
@@ -966,7 +969,7 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
 
   int cc_effect_id_for_backdrop_effect = cc::EffectTree::kInvalidNodeId;
   for (auto i = pending_clips.size(); i--;) {
-    const auto& pending_clip = pending_clips[i];
+    auto& pending_clip = pending_clips[i];
     int clip_id = backdrop_effect_clip_id;
 
     // For a non-trivial clip, the synthetic effect is an isolation to enclose
@@ -975,6 +978,26 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     // surface which is axis-aligned with the clip.
     cc::EffectNode& synthetic_effect = *GetEffectTree().Node(
         GetEffectTree().Insert(cc::EffectNode(), current_.effect_id));
+
+    if (pending_clip.type & CcEffectType::kSyntheticFor2dAxisAlignment) {
+      if (should_realize_backdrop_effect) {
+        // We need a synthetic mask clip layer for the non-2d-axis-aligned clip
+        // when we also need to realize a backdrop effect.
+        pending_clip.type = static_cast<CcEffectType>(
+            pending_clip.type | CcEffectType::kSyntheticForNonTrivialClip);
+      } else {
+        synthetic_effect.stable_id =
+            CompositorElementIdFromUniqueObjectId(NewUniqueObjectId())
+                .GetStableId();
+        synthetic_effect.render_surface_reason =
+            cc::RenderSurfaceReason::kClipAxisAlignment;
+        // The clip of the synthetic effect is the parent of the clip, so that
+        // the clip itself will be applied in the render surface.
+        DCHECK(pending_clip.clip->UnaliasedParent());
+        clip_id =
+            EnsureCompositorClipNode(*pending_clip.clip->UnaliasedParent());
+      }
+    }
 
     if (pending_clip.type & CcEffectType::kSyntheticForNonTrivialClip) {
       if (clip_id == cc::ClipTree::kInvalidNodeId)
@@ -1008,18 +1031,6 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
                 : cc::RenderSurfaceReason::kClipPath;
       }
       pending_synthetic_mask_layers_.insert(synthetic_effect.id);
-    }
-
-    if (pending_clip.type & CcEffectType::kSyntheticFor2dAxisAlignment) {
-      synthetic_effect.stable_id =
-          CompositorElementIdFromUniqueObjectId(NewUniqueObjectId())
-              .GetStableId();
-      synthetic_effect.render_surface_reason =
-          cc::RenderSurfaceReason::kClipAxisAlignment;
-      // The clip of the synthetic effect is the parent of the clip, so that
-      // the clip itself will be applied in the render surface.
-      DCHECK(pending_clip.clip->UnaliasedParent());
-      clip_id = EnsureCompositorClipNode(*pending_clip.clip->UnaliasedParent());
     }
 
     const TransformPaintPropertyNode* transform = nullptr;
@@ -1133,7 +1144,7 @@ static cc::RenderSurfaceReason RenderSurfaceReasonForEffect(
     return cc::RenderSurfaceReason::kFilter;
   if (effect.HasActiveFilterAnimation())
     return cc::RenderSurfaceReason::kFilterAnimation;
-  if (!effect.BackdropFilter().IsEmpty())
+  if (effect.BackdropFilter())
     return cc::RenderSurfaceReason::kBackdropFilter;
   if (effect.HasActiveBackdropFilterAnimation())
     return cc::RenderSurfaceReason::kBackdropFilterAnimation;
@@ -1144,6 +1155,8 @@ static cc::RenderSurfaceReason RenderSurfaceReasonForEffect(
       effect.BlendMode() != SkBlendMode::kDstIn) {
     return cc::RenderSurfaceReason::kBlendMode;
   }
+  if (effect.DocumentTransitionSharedElementId().valid())
+    return cc::RenderSurfaceReason::kDocumentTransitionParticipant;
   return cc::RenderSurfaceReason::kNone;
 }
 
@@ -1156,32 +1169,23 @@ void PropertyTreeManager::PopulateCcEffectNode(
   effect_node.render_surface_reason = RenderSurfaceReasonForEffect(effect);
   effect_node.opacity = effect.Opacity();
   const auto& transform = effect.LocalTransformSpace().Unalias();
-  if (effect.GetColorFilter() != kColorFilterNone) {
-    // Currently color filter is only used by SVG masks.
-    // We are cutting corner here by support only specific configuration.
-    DCHECK_EQ(effect.GetColorFilter(), kColorFilterLuminanceToAlpha);
-    DCHECK_EQ(effect.BlendMode(), SkBlendMode::kDstIn);
+  effect_node.transform_id = EnsureCompositorTransformNode(transform);
+  if (effect.HasBackdropEffect()) {
+    // We never have backdrop effect and filter on the same effect node.
     DCHECK(effect.Filter().IsEmpty());
-    effect_node.filters.Append(cc::FilterOperation::CreateReferenceFilter(
-        sk_make_sp<ColorFilterPaintFilter>(SkLumaColorFilter::Make(),
-                                           nullptr)));
-    effect_node.blend_mode = SkBlendMode::kDstIn;
-  } else {
-    effect_node.transform_id = EnsureCompositorTransformNode(transform);
-    if (effect.HasBackdropEffect()) {
-      // We never have backdrop effect and filter on the same effect node.
-      DCHECK(effect.Filter().IsEmpty());
-      effect_node.backdrop_filters =
-          effect.BackdropFilter().AsCcFilterOperations();
+    if (auto* backdrop_filter = effect.BackdropFilter()) {
+      effect_node.backdrop_filters = backdrop_filter->AsCcFilterOperations();
       effect_node.backdrop_filter_bounds = effect.BackdropFilterBounds();
-      effect_node.blend_mode = effect.BlendMode();
       effect_node.backdrop_mask_element_id = effect.BackdropMaskElementId();
-    } else {
-      effect_node.filters = effect.Filter().AsCcFilterOperations();
     }
+    effect_node.blend_mode = effect.BlendMode();
+  } else {
+    effect_node.filters = effect.Filter().AsCcFilterOperations();
   }
   effect_node.double_sided = !transform.IsBackfaceHidden();
   effect_node.effect_changed = effect.NodeChangeAffectsRaster();
+  effect_node.document_transition_shared_element_id =
+      effect.DocumentTransitionSharedElementId();
 }
 
 }  // namespace blink

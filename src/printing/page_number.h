@@ -15,7 +15,7 @@ class PrintSettings;
 
 // Represents a page series following the array of page ranges defined in a
 // PrintSettings.
-class PRINTING_EXPORT PageNumber {
+class COMPONENT_EXPORT(PRINTING) PageNumber {
  public:
   // Initializes the page to the first page in the settings's range or 0.
   PageNumber(const PrintSettings& settings, uint32_t document_page_count);
@@ -46,10 +46,10 @@ class PRINTING_EXPORT PageNumber {
   // The page range to follow.
   const PageRanges* ranges_;
 
-  // The next page to be printed. |kInvalidPageIndex| when not printing.
+  // The next page to be printed. `kInvalidPageIndex` when not printing.
   uint32_t page_number_;
 
-  // The next page to be printed. |kInvalidPageIndex| when not used. Valid only
+  // The next page to be printed. `kInvalidPageIndex` when not used. Valid only
   // if document()->settings().range.empty() is false.
   uint32_t page_range_index_;
 

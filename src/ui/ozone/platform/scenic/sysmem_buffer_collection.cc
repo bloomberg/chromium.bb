@@ -75,16 +75,6 @@ bool SysmemBufferCollection::IsNativePixmapConfigSupported(
 
     case gfx::BufferUsage::SCANOUT_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-#if defined(ARCH_CPU_X86_64)
-      // SwiftShader currently doesn't support liner image layouts (b/171299814)
-      // required for images accessed by CPU, so these formats cannot be
-      // supported with Goldfish Vulkan drivers running under emulator.It's not
-      // straightforward to detect format support here because this code runs in
-      // the renderer process. Disable these formats for all X64 devices for
-      // now.
-      // TODO(crbug.com/1141538): remove this workaround.
-      return false;
-#endif
       break;
 
     default:
@@ -108,7 +98,6 @@ bool SysmemBufferCollection::Initialize(
     gfx::BufferUsage usage,
     VkDevice vk_device,
     size_t min_buffer_count,
-    bool force_protected,
     bool register_with_image_pipe) {
   DCHECK(IsNativePixmapConfigSupported(format, usage));
   DCHECK(!collection_);
@@ -137,11 +126,12 @@ bool SysmemBufferCollection::Initialize(
   format_ = format;
   usage_ = usage;
   vk_device_ = vk_device;
-  is_protected_ = force_protected;
+  is_protected_ = false;
 
   if (register_with_image_pipe) {
-    scenic_overlay_view_.emplace(scenic_surface_factory->CreateScenicSession(),
-                                 scenic_surface_factory);
+    overlay_view_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    scenic_overlay_view_ = std::make_unique<ScenicOverlayView>(
+        scenic_surface_factory->CreateScenicSession(), scenic_surface_factory);
     surface_factory_ = scenic_surface_factory;
   }
 
@@ -217,7 +207,7 @@ bool SysmemBufferCollection::CreateVkImage(
     VkImageCreateInfo* vk_image_info,
     VkDeviceMemory* vk_device_memory,
     VkDeviceSize* mem_allocation_size,
-    base::Optional<gpu::VulkanYCbCrInfo>* ycbcr_info) {
+    absl::optional<gpu::VulkanYCbCrInfo>* ycbcr_info) {
   DCHECK_CALLED_ON_VALID_THREAD(vulkan_thread_checker_);
 
   if (vk_device_ != vk_device) {
@@ -258,8 +248,12 @@ bool SysmemBufferCollection::CreateVkImage(
       properties.memoryTypeBits & requirements.memoryTypeBits;
   uint32_t memory_type = base::bits::CountTrailingZeroBits(viable_memory_types);
 
+  VkMemoryDedicatedAllocateInfoKHR dedicated_allocate = {
+      VK_STRUCTURE_TYPE_MEMORY_DEDICATED_ALLOCATE_INFO_KHR};
+  dedicated_allocate.image = *vk_image;
   VkImportMemoryBufferCollectionFUCHSIA buffer_collection_info = {
-      VK_STRUCTURE_TYPE_IMPORT_MEMORY_BUFFER_COLLECTION_FUCHSIA};
+      VK_STRUCTURE_TYPE_IMPORT_MEMORY_BUFFER_COLLECTION_FUCHSIA,
+      &dedicated_allocate};
   buffer_collection_info.collection = vk_buffer_collection_;
   buffer_collection_info.index = buffer_index;
 
@@ -292,7 +286,7 @@ bool SysmemBufferCollection::CreateVkImage(
       buffers_info_.settings.image_format_constraints.color_space[0].type;
   switch (color_space) {
     case fuchsia::sysmem::ColorSpaceType::SRGB:
-      *ycbcr_info = base::nullopt;
+      *ycbcr_info = absl::nullopt;
       break;
 
     case fuchsia::sysmem::ColorSpaceType::REC709: {
@@ -335,6 +329,12 @@ SysmemBufferCollection::~SysmemBufferCollection() {
 
   if (on_deleted_)
     std::move(on_deleted_).Run();
+
+  if (scenic_overlay_view_ &&
+      !overlay_view_task_runner_->BelongsToCurrentThread()) {
+    overlay_view_task_runner_->DeleteSoon(FROM_HERE,
+                                          std::move(scenic_overlay_view_));
+  }
 }
 
 bool SysmemBufferCollection::InitializeInternal(
@@ -350,7 +350,7 @@ bool SysmemBufferCollection::InitializeInternal(
   // overlay.
   fidl::InterfaceHandle<fuchsia::sysmem::BufferCollectionToken>
       collection_token_for_scenic;
-  if (scenic_overlay_view_.has_value()) {
+  if (scenic_overlay_view_) {
     collection_token->Duplicate(ZX_RIGHT_SAME_RIGHTS,
                                 collection_token_for_scenic.NewRequest());
   }
@@ -361,7 +361,7 @@ bool SysmemBufferCollection::InitializeInternal(
     return false;
   }
 
-  if (scenic_overlay_view_.has_value()) {
+  if (scenic_overlay_view_) {
     scenic_overlay_view_->Initialize(std::move(collection_token_for_scenic));
   }
 
@@ -450,7 +450,7 @@ bool SysmemBufferCollection::InitializeInternal(
   is_protected_ = buffers_info_.settings.buffer_settings.is_secure;
 
   // Add all images to Image pipe for presentation later.
-  if (scenic_overlay_view_.has_value()) {
+  if (scenic_overlay_view_) {
     scenic_overlay_view_->AddImages(buffers_info_.buffer_count, image_size_);
   }
 

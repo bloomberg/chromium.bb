@@ -7,13 +7,13 @@
 
 #include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/shared_image_backing.h"
 #include "gpu/gpu_gles2_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace gpu {
 class SharedImageRepresentationFactoryRef;
@@ -57,6 +57,13 @@ class GPU_GLES2_EXPORT SharedImageManager {
       const Mailbox& mailbox,
       MemoryTypeTracker* ref,
       scoped_refptr<SharedContextState> context_state);
+
+  // ProduceDawn must also be called using same |device| if
+  // using the same |mailbox|. This is because the underlying shared image
+  // compatibility also depends on the WGPUAdapter which ProduceDawn does not
+  // associate with the representation.
+  // TODO(crbug.com/1147184): Revisit this in the future for WebGPU
+  // multi-adapter support.
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       const Mailbox& mailbox,
       MemoryTypeTracker* ref,
@@ -68,6 +75,9 @@ class GPU_GLES2_EXPORT SharedImageManager {
       const Mailbox& mailbox,
       MemoryTypeTracker* ref,
       VaapiDependenciesFactory* dep_factory);
+  std::unique_ptr<SharedImageRepresentationMemory> ProduceMemory(
+      const Mailbox& mailbox,
+      MemoryTypeTracker* ref);
 
   // Called by SharedImageRepresentation in the destructor.
   void OnRepresentationDestroyed(const Mailbox& mailbox,
@@ -106,7 +116,7 @@ class GPU_GLES2_EXPORT SharedImageManager {
  private:
   class AutoLock;
   // The lock for protecting |images_|.
-  base::Optional<base::Lock> lock_;
+  absl::optional<base::Lock> lock_;
 
   base::flat_set<std::unique_ptr<SharedImageBacking>> images_ GUARDED_BY(lock_);
 

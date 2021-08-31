@@ -36,8 +36,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client_walker.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/response_body_loader.h"
-#include "third_party/blink/renderer/platform/loader/fetch/script_cached_metadata_handler.h"
-#include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -51,15 +49,6 @@ RawResource* RawResource::FetchSynchronously(FetchParameters& params,
   params.MakeSynchronous();
   return ToRawResource(fetcher->RequestResource(
       params, RawResourceFactory(ResourceType::kRaw), client));
-}
-
-RawResource* RawResource::FetchImport(FetchParameters& params,
-                                      ResourceFetcher* fetcher,
-                                      RawResourceClient* client) {
-  params.SetRequestContext(mojom::blink::RequestContextType::IMPORT);
-  params.SetRequestDestination(network::mojom::RequestDestination::kEmpty);
-  return ToRawResource(fetcher->RequestResource(
-      params, RawResourceFactory(ResourceType::kImportResource), client));
 }
 
 RawResource* RawResource::Fetch(FetchParameters& params,
@@ -233,11 +222,6 @@ void RawResource::WillNotFollowRedirect() {
     c->RedirectBlocked();
 }
 
-SingleCachedMetadataHandler* RawResource::ScriptCacheHandler() {
-  DCHECK_EQ(ResourceType::kRaw, GetType());
-  return static_cast<SingleCachedMetadataHandler*>(Resource::CacheHandler());
-}
-
 scoped_refptr<BlobDataHandle> RawResource::DownloadedBlob() const {
   return downloaded_blob_;
 }
@@ -248,20 +232,11 @@ void RawResource::Trace(Visitor* visitor) const {
 }
 
 void RawResource::ResponseReceived(const ResourceResponse& response) {
-  if (response.WasFallbackRequiredByServiceWorker()) {
-    // The ServiceWorker asked us to re-fetch the request. This resource must
-    // not be reused.
-    // Note: This logic is needed here because ThreadableLoader handles
-    // CORS independently from ResourceLoader. Fix it.
-    if (IsMainThread())
-      GetMemoryCache()->Remove(this);
-  }
-
   Resource::ResponseReceived(response);
 
   ResourceClientWalker<RawResourceClient> w(Clients());
   while (RawResourceClient* c = w.Next()) {
-    c->ResponseReceived(this, this->GetResponse());
+    c->ResponseReceived(this, GetResponse());
   }
 }
 
@@ -300,33 +275,15 @@ void RawResource::ResponseBodyReceived(
   client->ResponseBodyReceived(this, body_loader.DrainAsBytesConsumer());
 }
 
-CachedMetadataHandler* RawResource::CreateCachedMetadataHandler(
-    std::unique_ptr<CachedMetadataSender> send_callback) {
-  if (GetType() == ResourceType::kRaw) {
-    // This is a resource of indeterminate type, e.g. a fetched WebAssembly
-    // module; create a cache handler that can store a single metadata entry.
-    return MakeGarbageCollected<ScriptCachedMetadataHandler>(
-        Encoding(), std::move(send_callback));
-  }
-  return Resource::CreateCachedMetadataHandler(std::move(send_callback));
-}
-
 void RawResource::SetSerializedCachedMetadata(mojo_base::BigBuffer data) {
   // Resource ignores the cached metadata.
   Resource::SetSerializedCachedMetadata(mojo_base::BigBuffer());
 
-  // Notify clients before potentially transferring ownership of the buffer.
   ResourceClientWalker<RawResourceClient> w(Clients());
-  while (RawResourceClient* c = w.Next()) {
-    c->SetSerializedCachedMetadata(this, data.data(), data.size());
-  }
-
-  if (GetType() == ResourceType::kRaw) {
-    ScriptCachedMetadataHandler* cache_handler =
-        static_cast<ScriptCachedMetadataHandler*>(Resource::CacheHandler());
-    if (cache_handler) {
-      cache_handler->SetSerializedCachedMetadata(std::move(data));
-    }
+  // We rely on the fact that RawResource cannot have multiple clients.
+  CHECK_LE(Clients().size(), 1u);
+  if (RawResourceClient* c = w.Next()) {
+    c->CachedMetadataReceived(this, std::move(data));
   }
 }
 

@@ -10,9 +10,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/input_method_keyboard_controller_stub.h"
 #include "ui/base/ime/input_method_observer.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/virtual_keyboard_controller_stub.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -22,7 +22,7 @@ InputMethodBase::InputMethodBase(internal::InputMethodDelegate* delegate)
 
 InputMethodBase::InputMethodBase(
     internal::InputMethodDelegate* delegate,
-    std::unique_ptr<InputMethodKeyboardController> keyboard_controller)
+    std::unique_ptr<VirtualKeyboardController> keyboard_controller)
     : delegate_(delegate),
       keyboard_controller_(std::move(keyboard_controller)) {}
 
@@ -45,6 +45,12 @@ void InputMethodBase::OnBlur() {
 bool InputMethodBase::OnUntranslatedIMEMessage(
     const MSG event,
     InputMethod::NativeEventResult* result) {
+  return false;
+}
+
+void InputMethodBase::OnInputLocaleChanged() {}
+
+bool InputMethodBase::IsInputLocaleCJK() const {
   return false;
 }
 #endif
@@ -75,13 +81,6 @@ void InputMethodBase::OnTextInputTypeChanged(const TextInputClient* client) {
   NotifyTextInputStateChanged(client);
 }
 
-void InputMethodBase::OnInputLocaleChanged() {
-}
-
-bool InputMethodBase::IsInputLocaleCJK() const {
-  return false;
-}
-
 TextInputType InputMethodBase::GetTextInputType() const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->GetTextInputType() : TEXT_INPUT_TYPE_NONE;
@@ -110,7 +109,7 @@ bool InputMethodBase::GetClientShouldDoLearning() {
 void InputMethodBase::ShowVirtualKeyboardIfEnabled() {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnShowVirtualKeyboardIfEnabled();
-  if (auto* keyboard = GetInputMethodKeyboardController())
+  if (auto* keyboard = GetVirtualKeyboardController())
     keyboard->DisplayVirtualKeyboard();
 }
 
@@ -122,8 +121,7 @@ void InputMethodBase::RemoveObserver(InputMethodObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-InputMethodKeyboardController*
-InputMethodBase::GetInputMethodKeyboardController() {
+VirtualKeyboardController* InputMethodBase::GetVirtualKeyboardController() {
   return keyboard_controller_.get();
 }
 

@@ -37,7 +37,7 @@ class BrowserGpuVideoAcceleratorFactories
       media::MediaLog* media_log,
       media::VideoDecoderImplementation implementation,
       media::RequestOverlayInfoCB request_overlay_info_cb) override;
-  base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
+  absl::optional<media::VideoEncodeAccelerator::SupportedProfiles>
   GetVideoEncodeAcceleratorSupportedProfiles() override;
   bool IsEncoderSupportKnown() override;
   void NotifyEncoderSupportKnown(base::OnceClosure) override;
@@ -58,6 +58,7 @@ class BrowserGpuVideoAcceleratorFactories
   scoped_refptr<base::SequencedTaskRunner> GetTaskRunner() override;
   viz::RasterContextProvider* GetMediaContextProvider() override;
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
+  const gfx::ColorSpace& GetRenderingColorSpace() const override;
 
   scoped_refptr<viz::ContextProviderCommandBuffer> context_provider_;
   base::UnguessableToken channel_token_;

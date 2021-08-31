@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/webrtc/api/ice_transport_factory.h"
 #include "third_party/webrtc/api/ice_transport_interface.h"
@@ -40,14 +39,14 @@ namespace {
 const char* kIceRoleControllingStr = "controlling";
 const char* kIceRoleControlledStr = "controlled";
 
-base::Optional<cricket::Candidate> ConvertToCricketIceCandidate(
+absl::optional<cricket::Candidate> ConvertToCricketIceCandidate(
     const RTCIceCandidate& candidate) {
   webrtc::JsepIceCandidate jsep_candidate("", 0);
   webrtc::SdpParseError error;
   if (!webrtc::SdpDeserializeCandidate(candidate.candidate().Utf8(),
                                        &jsep_candidate, &error)) {
     LOG(WARNING) << "Failed to deserialize candidate: " << error.description;
-    return base::nullopt;
+    return absl::nullopt;
   }
   return jsep_candidate.candidate();
 }
@@ -77,49 +76,7 @@ class DtlsIceTransportAdapterCrossThreadFactory
   rtc::scoped_refptr<webrtc::IceTransportInterface> ice_transport_;
 };
 
-class DefaultIceTransportAdapterCrossThreadFactory
-    : public IceTransportAdapterCrossThreadFactory {
- public:
-  void InitializeOnMainThread(LocalFrame& frame) override {
-    DCHECK(!port_allocator_);
-    DCHECK(!async_resolver_factory_);
-
-    auto* rtc_dependency_factory =
-        blink::PeerConnectionDependencyFactory::GetInstance();
-    port_allocator_ = rtc_dependency_factory->CreatePortAllocator(
-        frame.Client()->GetWebFrame());
-    async_resolver_factory_ =
-        rtc_dependency_factory->CreateAsyncResolverFactory();
-  }
-
-  std::unique_ptr<IceTransportAdapter> ConstructOnWorkerThread(
-      IceTransportAdapter::Delegate* delegate) override {
-    DCHECK(port_allocator_);
-    DCHECK(async_resolver_factory_);
-    return std::make_unique<IceTransportAdapterImpl>(
-        delegate, std::move(port_allocator_),
-        std::move(async_resolver_factory_));
-  }
-
- private:
-  std::unique_ptr<cricket::PortAllocator> port_allocator_;
-  std::unique_ptr<webrtc::AsyncResolverFactory> async_resolver_factory_;
-};
-
 }  // namespace
-
-RTCIceTransport* RTCIceTransport::Create(ExecutionContext* context) {
-  scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
-      context->GetTaskRunner(TaskType::kNetworking);
-
-  PeerConnectionDependencyFactory::GetInstance()->EnsureInitialized();
-  scoped_refptr<base::SingleThreadTaskRunner> host_thread =
-      PeerConnectionDependencyFactory::GetInstance()
-          ->GetWebRtcNetworkTaskRunner();
-  return MakeGarbageCollected<RTCIceTransport>(
-      context, std::move(proxy_thread), std::move(host_thread),
-      std::make_unique<DefaultIceTransportAdapterCrossThreadFactory>());
-}
 
 RTCIceTransport* RTCIceTransport::Create(
     ExecutionContext* context,
@@ -128,10 +85,10 @@ RTCIceTransport* RTCIceTransport::Create(
   scoped_refptr<base::SingleThreadTaskRunner> proxy_thread =
       context->GetTaskRunner(TaskType::kNetworking);
 
-  PeerConnectionDependencyFactory::GetInstance()->EnsureInitialized();
+  PeerConnectionDependencyFactory::From(*context).EnsureInitialized();
   scoped_refptr<base::SingleThreadTaskRunner> host_thread =
-      PeerConnectionDependencyFactory::GetInstance()
-          ->GetWebRtcNetworkTaskRunner();
+      PeerConnectionDependencyFactory::From(*context)
+          .GetWebRtcNetworkTaskRunner();
   return MakeGarbageCollected<RTCIceTransport>(
       context, std::move(proxy_thread), std::move(host_thread),
       std::make_unique<DtlsIceTransportAdapterCrossThreadFactory>(
@@ -428,7 +385,7 @@ void RTCIceTransport::addRemoteCandidate(RTCIceCandidate* remote_candidate,
   if (RaiseExceptionIfClosed(exception_state)) {
     return;
   }
-  base::Optional<cricket::Candidate> converted_remote_candidate =
+  absl::optional<cricket::Candidate> converted_remote_candidate =
       ConvertToCricketIceCandidate(*remote_candidate);
   if (!converted_remote_candidate) {
     exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,

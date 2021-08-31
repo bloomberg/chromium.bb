@@ -12,6 +12,7 @@
 #include "base/check_op.h"
 #include "base/i18n/rtl.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
@@ -85,6 +86,10 @@ bool FocusManager::OnKeyEvent(const ui::KeyEvent& event) {
       View::Views views;
       focused_view_->parent()->GetViewsInGroup(focused_view_->GetGroup(),
                                                &views);
+      // Remove any views except current, which are disabled or hidden.
+      base::EraseIf(views, [this](View* v) {
+        return v != focused_view_ && !v->IsAccessibilityFocusable();
+      });
       View::Views::const_iterator i(
           std::find(views.begin(), views.end(), focused_view_));
       DCHECK(i != views.end());
@@ -329,6 +334,10 @@ void FocusManager::SetKeyboardAccessible(bool keyboard_accessible) {
   AdvanceFocusIfNecessary();
 }
 
+bool FocusManager::IsSettingFocusedView() const {
+  return setting_focused_view_entrance_count > 0;
+}
+
 void FocusManager::SetFocusedViewWithReason(View* view,
                                             FocusChangeReason reason) {
   if (focused_view_ == view)
@@ -338,9 +347,9 @@ void FocusManager::SetFocusedViewWithReason(View* view,
   // Change this to DCHECK once it's resolved.
   CHECK(!view || ContainsView(view));
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   // TODO(warx): There are some AccessiblePaneViewTest failed on macosx.
-  // crbug.com/650859. Remove !defined(OS_APPLE) once that is fixed.
+  // crbug.com/650859. Remove !defined(OS_MAC) once that is fixed.
   //
   // If the widget isn't active store the focused view and then attempt to
   // activate the widget. If activation succeeds |view| will be focused.
@@ -361,6 +370,10 @@ void FocusManager::SetFocusedViewWithReason(View* view,
 
   View* old_focused_view = focused_view_;
   focused_view_ = view;
+  base::AutoReset<int> entrance_count_resetter(
+      &setting_focused_view_entrance_count,
+      setting_focused_view_entrance_count + 1);
+
   if (old_focused_view) {
     old_focused_view->RemoveObserver(this);
     old_focused_view->Blur();
@@ -527,7 +540,7 @@ bool FocusManager::ProcessAccelerator(const ui::Accelerator& accelerator) {
   if (delegate_ && delegate_->ProcessAccelerator(accelerator))
     return true;
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   // On MacOS accelerators are processed when a bubble is opened without
   // manual redirection to bubble anchor widget. Including redirect on MacOS
   // breaks processing accelerators by the bubble itself.
@@ -592,7 +605,7 @@ bool FocusManager::IsFocusable(View* view) const {
   DCHECK(view);
 
 // |keyboard_accessible_| is only used on Mac.
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   return keyboard_accessible_ ? view->IsAccessibilityFocusable()
                               : view->IsFocusable();
 #else
@@ -621,7 +634,9 @@ bool FocusManager::RedirectAcceleratorToBubbleAnchorWidget(
   if (!focus_manager->IsAcceleratorRegistered(accelerator))
     return false;
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Processing an accelerator can delete things. Because we
   // need these objects afterwards on Linux, save widget_ as weak pointer and
   // save the close_on_deactivate property value of widget_delegate in a
@@ -636,7 +651,9 @@ bool FocusManager::RedirectAcceleratorToBubbleAnchorWidget(
   const bool accelerator_processed =
       focus_manager->ProcessAccelerator(accelerator);
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Need to manually close the bubble widget on Linux. On Linux when the
   // bubble is shown, the main widget remains active. Because of that when
   // focus is set to the main widget to process accelerator, the main widget
@@ -656,7 +673,8 @@ bool FocusManager::IsArrowKeyTraversalEnabledForWidget() const {
   Widget* const widget = (focused_view_ && focused_view_->GetWidget())
                              ? focused_view_->GetWidget()
                              : widget_;
-  return widget->widget_delegate()->enable_arrow_key_traversal();
+  return widget && widget->widget_delegate() &&
+         widget->widget_delegate()->enable_arrow_key_traversal();
 }
 
 }  // namespace views

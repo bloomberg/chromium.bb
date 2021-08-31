@@ -4,11 +4,12 @@
 
 #include "chrome/test/media_router/media_router_e2e_browsertest.h"
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -51,7 +52,7 @@ MediaRouterE2EBrowserTest::MediaRouterE2EBrowserTest()
 MediaRouterE2EBrowserTest::~MediaRouterE2EBrowserTest() {}
 
 void MediaRouterE2EBrowserTest::SetUpOnMainThread() {
-  MediaRouterBaseBrowserTest::SetUpOnMainThread();
+  MediaRouterIntegrationBrowserTest::SetUpOnMainThread();
   media_router_ =
       MediaRouterFactory::GetApiForBrowserContext(browser()->profile());
   DCHECK(media_router_);
@@ -61,7 +62,7 @@ void MediaRouterE2EBrowserTest::TearDownOnMainThread() {
   observer_.reset();
   route_id_.clear();
   media_router_ = nullptr;
-  MediaRouterBaseBrowserTest::TearDownOnMainThread();
+  InProcessBrowserTest::TearDownOnMainThread();
 }
 
 void MediaRouterE2EBrowserTest::OnRouteResponseReceived(
@@ -76,7 +77,8 @@ void MediaRouterE2EBrowserTest::CreateMediaRoute(
     const url::Origin& origin,
     content::WebContents* web_contents) {
   DCHECK(media_router_);
-  observer_.reset(new TestMediaSinksObserver(media_router_, source, origin));
+  observer_ =
+      std::make_unique<TestMediaSinksObserver>(media_router_, source, origin);
   observer_->Init();
 
   DVLOG(1) << "Receiver name: " << receiver_;

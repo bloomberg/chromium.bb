@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
-#include "base/time/time.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/demuxer_stream.h"
@@ -40,7 +39,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   ~FFmpegAudioDecoder() override;
 
   // AudioDecoder implementation.
-  std::string GetDisplayName() const override;
+  AudioDecoderType GetDecoderType() const override;
   void Initialize(const AudioDecoderConfig& config,
                   CdmContext* cdm_context,
                   InitCB init_cb,

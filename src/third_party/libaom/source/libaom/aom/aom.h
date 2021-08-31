@@ -41,27 +41,45 @@ extern "C" {
 /*!\brief Control functions
  *
  * The set of macros define the control functions of AOM interface
+ * The range for common control IDs is 230-255(max).
  */
 enum aom_com_control_id {
-  /* TODO(https://crbug.com/aomedia/2671): The encoder overlaps the range of
-   * these values for its control ids, see the NOTEs in aom/aomcx.h. These
-   * should be migrated to something like the AOM_DECODER_CTRL_ID_START range
-   * next time we're ready to break the ABI.
+  /*!\brief Codec control function to get a pointer to a reference frame
+   *
+   * av1_ref_frame_t* parameter
    */
-  AV1_GET_REFERENCE = 128,  /**< get a pointer to a reference frame,
-                               av1_ref_frame_t* parameter */
-  AV1_SET_REFERENCE = 129,  /**< write a frame into a reference buffer,
-                               av1_ref_frame_t* parameter */
-  AV1_COPY_REFERENCE = 130, /**< get a copy of reference frame from the decoderm
-                               av1_ref_frame_t* parameter */
-  AOM_COMMON_CTRL_ID_MAX,
+  AV1_GET_REFERENCE = 230,
 
-  AV1_GET_NEW_FRAME_IMAGE =
-      192, /**< get a pointer to the new frame, aom_image_t* parameter */
-  AV1_COPY_NEW_FRAME_IMAGE = 193, /**< copy the new frame to an external buffer,
-                                     aom_image_t* parameter */
+  /*!\brief Codec control function to write a frame into a reference buffer
+   *
+   * av1_ref_frame_t* parameter
+   */
+  AV1_SET_REFERENCE = 231,
 
+  /*!\brief Codec control function to get a copy of reference frame from the
+   * decoder
+   *
+   * av1_ref_frame_t* parameter
+   */
+  AV1_COPY_REFERENCE = 232,
+
+  /*!\brief Codec control function to get a pointer to the new frame
+   *
+   * aom_image_t* parameter
+   */
+  AV1_GET_NEW_FRAME_IMAGE = 233,
+
+  /*!\brief Codec control function to copy the new frame to an external buffer
+   *
+   * aom_image_t* parameter
+   */
+  AV1_COPY_NEW_FRAME_IMAGE = 234,
+
+  /*!\brief Start point of control IDs for aom_dec_control_id.
+   * Any new common control IDs should be added above.
+   */
   AOM_DECODER_CTRL_ID_START = 256
+  // No common control IDs should be added after AOM_DECODER_CTRL_ID_START.
 };
 
 /*!\brief AV1 specific reference frame data struct

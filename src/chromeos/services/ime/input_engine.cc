@@ -77,11 +77,11 @@ InputEngineContext::InputEngineContext(const std::string& ime) : ime_spec(ime) {
   }
 }
 
-InputEngineContext::~InputEngineContext() {}
+InputEngineContext::~InputEngineContext() = default;
 
-InputEngine::InputEngine() {}
+InputEngine::InputEngine() = default;
 
-InputEngine::~InputEngine() {}
+InputEngine::~InputEngine() = default;
 
 bool InputEngine::BindRequest(
     const std::string& ime_spec,
@@ -195,7 +195,8 @@ void InputEngine::GetRulebasedKeypressCountForTesting(
   std::move(callback).Run(engine ? engine->process_key_count() : -1);
 }
 
-void InputEngine::CommitText(const std::string& text) {
+void InputEngine::CommitText(const std::string& text,
+                             mojom::CommitTextCursorBehavior cursor_behavior) {
   NOTIMPLEMENTED();  // Not used in the rulebased engine.
 }
 
@@ -213,6 +214,25 @@ void InputEngine::FinishComposition() {
 
 void InputEngine::DeleteSurroundingText(uint32_t num_bytes_before_cursor,
                                         uint32_t num_bytes_after_cursor) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::HandleAutocorrect(
+    mojom::AutocorrectSpanPtr autocorrect_span) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::RequestSuggestions(mojom::SuggestionsRequestPtr request,
+                                     RequestSuggestionsCallback callback) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::DisplaySuggestions(
+    const std::vector<TextSuggestion>& suggestions) {
+  NOTIMPLEMENTED();  // Not used in the rulebased engine.
+}
+
+void InputEngine::RecordUkm(mojom::UkmEntryPtr entry) {
   NOTIMPLEMENTED();  // Not used in the rulebased engine.
 }
 

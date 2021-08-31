@@ -12,6 +12,7 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_stream.h"
 #include "core/fpdfapi/parser/cpdf_stream_acc.h"
+#include "third_party/base/check.h"
 #include "third_party/base/span.h"
 
 namespace {
@@ -102,8 +103,7 @@ CPDF_MeshStream::CPDF_MeshStream(
       m_funcs(funcs),
       m_pShadingStream(pShadingStream),
       m_pCS(pCS),
-      m_pStream(pdfium::MakeRetain<CPDF_StreamAcc>(pShadingStream)) {
-}
+      m_pStream(pdfium::MakeRetain<CPDF_StreamAcc>(pShadingStream)) {}
 
 CPDF_MeshStream::~CPDF_MeshStream() = default;
 
@@ -162,12 +162,12 @@ bool CPDF_MeshStream::CanReadColor() const {
 }
 
 uint32_t CPDF_MeshStream::ReadFlag() {
-  ASSERT(ShouldCheckBitsPerFlag(m_type));
+  DCHECK(ShouldCheckBitsPerFlag(m_type));
   return m_BitStream->GetBits(m_nFlagBits) & 0x03;
 }
 
 CFX_PointF CPDF_MeshStream::ReadCoords() {
-  ASSERT(ShouldCheckBPC(m_type));
+  DCHECK(ShouldCheckBPC(m_type));
 
   CFX_PointF pos;
   if (m_nCoordBits == 32) {
@@ -185,7 +185,7 @@ CFX_PointF CPDF_MeshStream::ReadCoords() {
 }
 
 std::tuple<float, float, float> CPDF_MeshStream::ReadColor() {
-  ASSERT(ShouldCheckBPC(m_type));
+  DCHECK(ShouldCheckBPC(m_type));
 
   float color_value[kMaxComponents];
   for (uint32_t i = 0; i < m_nComponents; ++i) {

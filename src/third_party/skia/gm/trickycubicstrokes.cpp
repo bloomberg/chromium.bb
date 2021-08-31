@@ -26,7 +26,7 @@
 static constexpr float kStrokeWidth = 30;
 static constexpr int kCellSize = 200;
 static constexpr int kNumCols = 5;
-static constexpr int kNumRows = 4;
+static constexpr int kNumRows = 5;
 static constexpr int kTestWidth = kNumCols * kCellSize;
 static constexpr int kTestHeight = kNumRows * kCellSize;
 
@@ -64,8 +64,12 @@ static const TrickyCubic kTrickyCubics[] = {
      CellFillMode::kStretch},  // Flat line with no turns
     {{{0.5f,0}, {0,0}, {20,0}, {10,0}}, 4, CellFillMode::kStretch},  // Flat line with 2 180s
     {{{10,0}, {0,0}, {10,0}, {10,0}}, 4, CellFillMode::kStretch},  // Flat line with a 180
-    {{{1,1}, {2,1}, {1,1}, {std::numeric_limits<float>::quiet_NaN(), 0}}, 3,
-     CellFillMode::kStretch},  // Flat QUAD with a 180
+    {{{1,1}, {2,1}, {1,1}, {1, std::numeric_limits<float>::quiet_NaN()}}, 3,
+     CellFillMode::kStretch},  // Flat QUAD with a cusp
+    {{{1,1}, {100,1}, {25,1}, {.3f, std::numeric_limits<float>::quiet_NaN()}}, 3,
+     CellFillMode::kStretch},  // Flat CONIC with a cusp
+    {{{1,1}, {100,1}, {25,1}, {1.5f, std::numeric_limits<float>::quiet_NaN()}}, 3,
+     CellFillMode::kStretch},  // Flat CONIC with a cusp
 };
 
 static SkRect calc_tight_cubic_bounds(const SkPoint P[4], int depth=5) {
@@ -95,14 +99,25 @@ enum class FillMode {
     kScale
 };
 
-static void draw_test(SkCanvas* canvas, const SkColor strokeColor) {
+static void draw_test(SkCanvas* canvas, SkPaint::Cap cap, SkPaint::Join join) {
+    SkRandom rand;
+
+    if (canvas->recordingContext() &&
+        canvas->recordingContext()->priv().caps()->shaderCaps()->tessellationSupport() &&
+        canvas->recordingContext()->priv().caps()->shaderCaps()->maxTessellationSegments() < 64) {
+        // There are fewer tessellation segments than the spec minimum. It must have been overriden
+        // for testing. Indicate this in the background color.
+        canvas->clear(SkColorSetARGB(255, 64, 0, 0));
+    } else {
+        canvas->clear(SK_ColorBLACK);
+    }
+
     SkPaint strokePaint;
     strokePaint.setAntiAlias(true);
     strokePaint.setStrokeWidth(kStrokeWidth);
-    strokePaint.setColor(strokeColor);
     strokePaint.setStyle(SkPaint::kStroke_Style);
-
-    canvas->clear(SK_ColorBLACK);
+    strokePaint.setStrokeCap(cap);
+    strokePaint.setStrokeJoin(join);
 
     for (size_t i = 0; i < SK_ARRAY_COUNT(kTrickyCubics); ++i) {
         auto [originalPts, numPts, fillMode, scale] = kTrickyCubics[i];
@@ -113,6 +128,7 @@ static void draw_test(SkCanvas* canvas, const SkColor strokeColor) {
         for (int j = 0; j < numPts; ++j) {
             p[j] *= scale;
         }
+        float w = originalPts[3].fX;
 
         auto cellRect = SkRect::MakeXYWH((i % kNumCols) * kCellSize, (i / kNumCols) * kCellSize,
                                          kCellSize, kCellSize);
@@ -129,7 +145,7 @@ static void draw_test(SkCanvas* canvas, const SkColor strokeColor) {
 
         SkMatrix matrix;
         if (fillMode == CellFillMode::kStretch) {
-            matrix.setRectToRect(strokeBounds, cellRect, SkMatrix::kCenter_ScaleToFit);
+            matrix = SkMatrix::RectToRect(strokeBounds, cellRect, SkMatrix::kCenter_ScaleToFit);
         } else {
             matrix.setTranslate(cellRect.x() + kStrokeWidth +
                                 (cellRect.width() - strokeBounds.width()) / 2,
@@ -140,19 +156,27 @@ static void draw_test(SkCanvas* canvas, const SkColor strokeColor) {
         SkAutoCanvasRestore acr(canvas, true);
         canvas->concat(matrix);
         strokePaint.setStrokeWidth(kStrokeWidth / matrix.getMaxScale());
+        strokePaint.setColor(rand.nextU() | 0xff808080);
         SkPath path = SkPath().moveTo(p[0]);
         if (numPts == 4) {
             path.cubicTo(p[1], p[2], p[3]);
-        } else {
+        } else if (w == 1) {
             SkASSERT(numPts == 3);
             path.quadTo(p[1], p[2]);
+        } else {
+            SkASSERT(numPts == 3);
+            path.conicTo(p[1], p[2], w);
         }
         canvas->drawPath(path, strokePaint);
     }
 }
 
 DEF_SIMPLE_GM(trickycubicstrokes, canvas, kTestWidth, kTestHeight) {
-    draw_test(canvas, SK_ColorGREEN);
+    draw_test(canvas, SkPaint::kButt_Cap, SkPaint::kMiter_Join);
+}
+
+DEF_SIMPLE_GM(trickycubicstrokes_roundcaps, canvas, kTestWidth, kTestHeight) {
+    draw_test(canvas, SkPaint::kRound_Cap, SkPaint::kRound_Join);
 }
 
 class TrickyCubicStrokes_tess_segs_5 : public skiagm::GpuGM {
@@ -180,7 +204,7 @@ class TrickyCubicStrokes_tess_segs_5 : public skiagm::GpuGM {
                                                         (int)GpuPathRenderers::kTessellation);
     }
 
-    DrawResult onDraw(GrRecordingContext* context, GrRenderTargetContext*, SkCanvas* canvas,
+    DrawResult onDraw(GrRecordingContext* context, GrSurfaceDrawContext*, SkCanvas* canvas,
                       SkString* errorMsg) override {
         if (!context->priv().caps()->shaderCaps()->tessellationSupport() ||
             !GrTessellationPathRenderer::IsSupported(*context->priv().caps())) {
@@ -200,7 +224,7 @@ class TrickyCubicStrokes_tess_segs_5 : public skiagm::GpuGM {
         }
         // Suppress a tessellator warning message that caps.maxTessellationSegments is too small.
         GrRecordingContextPriv::AutoSuppressWarningMessages aswm(context);
-        draw_test(canvas, SK_ColorRED);
+        draw_test(canvas, SkPaint::kButt_Cap, SkPaint::kMiter_Join);
         return DrawResult::kOk;
     }
 };

@@ -15,16 +15,21 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.Function;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.external_intents.ExternalNavigationDelegate.IntentToAutofillAllowingAppResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
 import org.chromium.components.external_intents.ExternalNavigationParams;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
 /**
@@ -40,6 +45,17 @@ import org.chromium.url.Origin;
             "intent://www.example.com#Intent;scheme=https;"
             + "B.org.chromium.chrome.browser.autofill_assistant.ENABLED=true;"
             + "B.org.chromium.chrome.browser.autofill_assistant.START_IMMEDIATELY=true;"
+            + "S.org.chromium.chrome.browser.autofill_assistant.ORIGINAL_DEEPLINK="
+            + Uri.encode("https://www.example.com") + ";"
+            + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
+            + Uri.encode("https://www.example.com") + ";end";
+    private static final String AUTOFILL_ASSISTANT_APP_OVERRIDE_INTENT_URL =
+            "intent://www.example.com#Intent;scheme=https;"
+            + "B.org.chromium.chrome.browser.autofill_assistant.ENABLED=true;"
+            + "B.org.chromium.chrome.browser.autofill_assistant.START_IMMEDIATELY=true;"
+            + "S.org.chromium.chrome.browser.autofill_assistant.ALLOW_APP=true;"
+            + "S.org.chromium.chrome.browser.autofill_assistant.ORIGINAL_DEEPLINK="
+            + Uri.encode("https://www.example.com") + ";"
             + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
             + Uri.encode("https://www.example.com") + ";end";
     private static final String[] SUPERVISOR_START_ACTIONS = {
@@ -48,18 +64,30 @@ import org.chromium.url.Origin;
     private static final boolean IS_GOOGLE_REFERRER = true;
 
     class ExternalNavigationDelegateImplForTesting extends ExternalNavigationDelegateImpl {
-        public ExternalNavigationDelegateImplForTesting() {
-            super(mActivityTestRule.getActivity().getActivityTab());
+        private boolean mWasAutofillAssistantStarted;
+        private @IntentToAutofillAllowingAppResult int mAutofillAssistantAppOverrideResult;
+        private Function<Intent, Boolean> mCanExternalAppHandleIntent;
+
+        public ExternalNavigationDelegateImplForTesting(Tab activityTab) {
+            super(activityTab);
         }
 
         @Override
         protected void startAutofillAssistantWithIntent(
-                Intent targetIntent, String browserFallbackUrl) {
+                Intent targetIntent, GURL browserFallbackUrl) {
             mWasAutofillAssistantStarted = true;
         }
 
         public boolean wasAutofillAssistantStarted() {
             return mWasAutofillAssistantStarted;
+        }
+
+        public @IntentToAutofillAllowingAppResult int getAutofillAssistantAppOverrideResult() {
+            return mAutofillAssistantAppOverrideResult;
+        }
+
+        public void setCanExternalAppHandleIntent(Function<Intent, Boolean> value) {
+            mCanExternalAppHandleIntent = value;
         }
 
         // Convenience for testing that reduces boilerplate in constructing arguments to the
@@ -68,18 +96,18 @@ import org.chromium.url.Origin;
                 ExternalNavigationParams params, boolean isGoogleReferrer) {
             Intent intent;
             try {
-                intent = Intent.parseUri(AUTOFILL_ASSISTANT_INTENT_URL, Intent.URI_INTENT_SCHEME);
+                intent = Intent.parseUri(params.getUrl().getSpec(), Intent.URI_INTENT_SCHEME);
             } catch (Exception ex) {
                 Assert.assertTrue(false);
                 return false;
             }
 
-            String fallbackUrl = "https://www.example.com";
+            GURL fallbackUrl = new GURL("https://www.example.com");
 
+            mAutofillAssistantAppOverrideResult = isIntentToAutofillAssistantAllowingApp(
+                    params, intent, mCanExternalAppHandleIntent);
             return handleWithAutofillAssistant(params, intent, fallbackUrl, isGoogleReferrer);
         }
-
-        private boolean mWasAutofillAssistantStarted;
     }
 
     private static class MockOrigin extends Origin {};
@@ -99,17 +127,29 @@ import org.chromium.url.Origin;
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
+    private ExternalNavigationDelegateImpl mExternalNavigationDelegateImpl;
+    private ExternalNavigationDelegateImplForTesting mExternalNavigationDelegateImplForTesting;
+
+    @Before
+    public void setUp() throws InterruptedException {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        Tab tab = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().getActivityTab());
+        mExternalNavigationDelegateImpl = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> new ExternalNavigationDelegateImpl(tab));
+        mExternalNavigationDelegateImplForTesting =
+                TestThreadUtils.runOnUiThreadBlockingNoException(
+                        () -> new ExternalNavigationDelegateImplForTesting(tab));
+    }
+
     @Test
     @SmallTest
     public void testMaybeSetPendingIncognitoUrl() {
-        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
-                mActivityTestRule.getActivity().getActivityTab());
-
         String url = "http://www.example.com";
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
 
-        delegate.maybeSetPendingIncognitoUrl(intent);
+        mExternalNavigationDelegateImpl.maybeSetPendingIncognitoUrl(intent);
 
         Assert.assertTrue(
                 intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false));
@@ -119,9 +159,6 @@ import org.chromium.url.Origin;
     @Test
     @SmallTest
     public void testIsIntentToInstantApp() {
-        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
-                mActivityTestRule.getActivity().getActivityTab());
-
         // Check that the delegate correctly distinguishes instant app intents from others.
         String vanillaUrl = "http://www.example.com";
         Intent vanillaIntent = new Intent(Intent.ACTION_VIEW);
@@ -142,8 +179,8 @@ import org.chromium.url.Origin;
             return;
         }
 
-        Assert.assertFalse(delegate.isIntentToInstantApp(vanillaIntent));
-        Assert.assertTrue(delegate.isIntentToInstantApp(instantAppIntent));
+        Assert.assertFalse(mExternalNavigationDelegateImpl.isIntentToInstantApp(vanillaIntent));
+        Assert.assertTrue(mExternalNavigationDelegateImpl.isIntentToInstantApp(instantAppIntent));
 
         // Check that Supervisor is detected by action even without package.
         for (String action : SUPERVISOR_START_ACTIONS) {
@@ -160,69 +197,59 @@ import org.chromium.url.Origin;
                 Assert.assertTrue(false);
                 return;
             }
-            Assert.assertTrue(delegate.isIntentToInstantApp(instantAppIntent));
+            Assert.assertTrue(
+                    mExternalNavigationDelegateImpl.isIntentToInstantApp(instantAppIntent));
         }
     }
 
     @Test
     @SmallTest
     public void testMaybeAdjustInstantAppExtras() {
-        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
-                mActivityTestRule.getActivity().getActivityTab());
-
         String url = "http://www.example.com";
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
 
-        delegate.maybeAdjustInstantAppExtras(intent, /*isIntentToInstantApp=*/true);
+        mExternalNavigationDelegateImpl.maybeAdjustInstantAppExtras(
+                intent, /*isIntentToInstantApp=*/true);
         Assert.assertTrue(intent.hasExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
 
-        delegate.maybeAdjustInstantAppExtras(intent, /*isIntentToInstantApp=*/false);
+        mExternalNavigationDelegateImpl.maybeAdjustInstantAppExtras(
+                intent, /*isIntentToInstantApp=*/false);
         Assert.assertFalse(intent.hasExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
     }
 
     @Test
     @SmallTest
     public void maybeSetRequestMetadata() {
-        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
-                mActivityTestRule.getActivity().getActivityTab());
-
         String url = "http://www.example.com";
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
 
-        delegate.maybeSetRequestMetadata(intent, false, false, null);
+        mExternalNavigationDelegateImpl.maybeSetRequestMetadata(intent, false, false, null);
         Assert.assertNull(
                 IntentWithRequestMetadataHandler.getInstance().getRequestMetadataAndClear(intent));
 
-        maybeSetAndGetRequestMetadata(delegate, intent, true, true, null);
-        maybeSetAndGetRequestMetadata(delegate, intent, true, false, null);
-        maybeSetAndGetRequestMetadata(delegate, intent, false, true, null);
-        maybeSetAndGetRequestMetadata(delegate, intent, false, false, new MockOrigin());
+        maybeSetAndGetRequestMetadata(mExternalNavigationDelegateImpl, intent, true, true, null);
+        maybeSetAndGetRequestMetadata(mExternalNavigationDelegateImpl, intent, true, false, null);
+        maybeSetAndGetRequestMetadata(mExternalNavigationDelegateImpl, intent, false, true, null);
+        maybeSetAndGetRequestMetadata(
+                mExternalNavigationDelegateImpl, intent, false, false, new MockOrigin());
     }
 
     @Test
     @SmallTest
     public void testMaybeSetPendingReferrer() {
-        ExternalNavigationDelegateImpl delegate = new ExternalNavigationDelegateImpl(
-                mActivityTestRule.getActivity().getActivityTab());
-
-        String url = "http://www.example.com";
+        String url = "http://www.example.com/";
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(url));
 
-        String referrerUrl = "http://www.example-referrer.com";
-        delegate.maybeSetPendingReferrer(intent, referrerUrl);
+        String referrerUrl = "http://www.example-referrer.com/";
+        mExternalNavigationDelegateImpl.maybeSetPendingReferrer(intent, new GURL(referrerUrl));
 
         Assert.assertEquals(
                 Uri.parse(referrerUrl), intent.getParcelableExtra(Intent.EXTRA_REFERRER));
         Assert.assertEquals(1, intent.getIntExtra(IntentHandler.EXTRA_REFERRER_ID, 0));
         Assert.assertEquals(referrerUrl, IntentHandler.getPendingReferrerUrl(1));
-    }
-
-    @Before
-    public void setUp() throws InterruptedException {
-        mActivityTestRule.startMainActivityOnBlankPage();
     }
 
     @Test
@@ -231,16 +258,14 @@ import org.chromium.url.Origin;
             ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
     public void
     testHandleWithAutofillAssistant_TriggersFromSearch() {
-        ExternalNavigationDelegateImplForTesting delegate =
-                new ExternalNavigationDelegateImplForTesting();
-
         ExternalNavigationParams params =
                 new ExternalNavigationParams
-                        .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/false)
+                        .Builder(new GURL(AUTOFILL_ASSISTANT_INTENT_URL), /*isIncognito=*/false)
                         .build();
 
-        Assert.assertTrue(delegate.handleWithAutofillAssistant(params, IS_GOOGLE_REFERRER));
-        Assert.assertTrue(delegate.wasAutofillAssistantStarted());
+        Assert.assertTrue(mExternalNavigationDelegateImplForTesting.handleWithAutofillAssistant(
+                params, IS_GOOGLE_REFERRER));
+        Assert.assertTrue(mExternalNavigationDelegateImplForTesting.wasAutofillAssistantStarted());
     }
 
     @Test
@@ -249,16 +274,14 @@ import org.chromium.url.Origin;
             ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
     public void
     testHandleWithAutofillAssistant_DoesNotTriggerFromSearchInIncognito() {
-        ExternalNavigationDelegateImplForTesting delegate =
-                new ExternalNavigationDelegateImplForTesting();
-
         ExternalNavigationParams params =
                 new ExternalNavigationParams
-                        .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/true)
+                        .Builder(new GURL(AUTOFILL_ASSISTANT_INTENT_URL), /*isIncognito=*/true)
                         .build();
 
-        Assert.assertFalse(delegate.handleWithAutofillAssistant(params, IS_GOOGLE_REFERRER));
-        Assert.assertFalse(delegate.wasAutofillAssistantStarted());
+        Assert.assertFalse(mExternalNavigationDelegateImplForTesting.handleWithAutofillAssistant(
+                params, IS_GOOGLE_REFERRER));
+        Assert.assertFalse(mExternalNavigationDelegateImplForTesting.wasAutofillAssistantStarted());
     }
 
     @Test
@@ -267,16 +290,14 @@ import org.chromium.url.Origin;
             ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
     public void
     testHandleWithAutofillAssistant_DoesNotTriggerFromDifferentOrigin() {
-        ExternalNavigationDelegateImplForTesting delegate =
-                new ExternalNavigationDelegateImplForTesting();
-
         ExternalNavigationParams params =
                 new ExternalNavigationParams
-                        .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/false)
+                        .Builder(new GURL(AUTOFILL_ASSISTANT_INTENT_URL), /*isIncognito=*/false)
                         .build();
 
-        Assert.assertFalse(delegate.handleWithAutofillAssistant(params, !IS_GOOGLE_REFERRER));
-        Assert.assertFalse(delegate.wasAutofillAssistantStarted());
+        Assert.assertFalse(mExternalNavigationDelegateImplForTesting.handleWithAutofillAssistant(
+                params, !IS_GOOGLE_REFERRER));
+        Assert.assertFalse(mExternalNavigationDelegateImplForTesting.wasAutofillAssistantStarted());
     }
 
     @Test
@@ -285,15 +306,72 @@ import org.chromium.url.Origin;
             ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
     public void
     testHandleWithAutofillAssistant_DoesNotTriggerWhenFeatureDisabled() {
-        ExternalNavigationDelegateImplForTesting delegate =
-                new ExternalNavigationDelegateImplForTesting();
-
         ExternalNavigationParams params =
                 new ExternalNavigationParams
-                        .Builder(AUTOFILL_ASSISTANT_INTENT_URL, /*isIncognito=*/false)
+                        .Builder(new GURL(AUTOFILL_ASSISTANT_INTENT_URL), /*isIncognito=*/false)
                         .build();
 
-        Assert.assertFalse(delegate.handleWithAutofillAssistant(params, IS_GOOGLE_REFERRER));
-        Assert.assertFalse(delegate.wasAutofillAssistantStarted());
+        Assert.assertFalse(mExternalNavigationDelegateImplForTesting.handleWithAutofillAssistant(
+                params, IS_GOOGLE_REFERRER));
+        Assert.assertFalse(mExternalNavigationDelegateImplForTesting.wasAutofillAssistantStarted());
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+    public void
+    testHandleWithAutofillAssistant_DoesNotAllowAppOverrideIfNotSpecified() {
+        ExternalNavigationParams params =
+                new ExternalNavigationParams
+                        .Builder(new GURL(AUTOFILL_ASSISTANT_INTENT_URL), /*isIncognito=*/false)
+                        .build();
+
+        mExternalNavigationDelegateImplForTesting.setCanExternalAppHandleIntent((i) -> true);
+
+        Assert.assertTrue(mExternalNavigationDelegateImplForTesting.handleWithAutofillAssistant(
+                params, IS_GOOGLE_REFERRER));
+        Assert.assertEquals(IntentToAutofillAllowingAppResult.NONE,
+                mExternalNavigationDelegateImplForTesting.getAutofillAssistantAppOverrideResult());
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+    public void
+    testHandleWithAutofillAssistant_AllowAppOverrideIfSpecified() {
+        ExternalNavigationParams params =
+                new ExternalNavigationParams
+                        .Builder(new GURL(AUTOFILL_ASSISTANT_APP_OVERRIDE_INTENT_URL),
+                                /*isIncognito=*/false)
+                        .build();
+
+        mExternalNavigationDelegateImplForTesting.setCanExternalAppHandleIntent((i) -> true);
+
+        Assert.assertTrue(mExternalNavigationDelegateImplForTesting.handleWithAutofillAssistant(
+                params, IS_GOOGLE_REFERRER));
+        Assert.assertEquals(IntentToAutofillAllowingAppResult.DEFER_TO_APP_NOW,
+                mExternalNavigationDelegateImplForTesting.getAutofillAssistantAppOverrideResult());
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures({ChromeFeatureList.AUTOFILL_ASSISTANT,
+            ChromeFeatureList.AUTOFILL_ASSISTANT_CHROME_ENTRY})
+    public void
+    testHandleWithAutofillAssistant_DoesNotAllowAppOverrideIfSpecifiedInIncognito() {
+        ExternalNavigationParams params =
+                new ExternalNavigationParams
+                        .Builder(new GURL(AUTOFILL_ASSISTANT_APP_OVERRIDE_INTENT_URL),
+                                /*isIncognito=*/true)
+                        .build();
+
+        mExternalNavigationDelegateImplForTesting.setCanExternalAppHandleIntent((i) -> true);
+
+        Assert.assertFalse(mExternalNavigationDelegateImplForTesting.handleWithAutofillAssistant(
+                params, IS_GOOGLE_REFERRER));
+        Assert.assertEquals(IntentToAutofillAllowingAppResult.NONE,
+                mExternalNavigationDelegateImplForTesting.getAutofillAssistantAppOverrideResult());
     }
 }

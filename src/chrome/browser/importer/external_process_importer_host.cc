@@ -4,6 +4,8 @@
 
 #include "chrome/browser/importer/external_process_importer_host.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -98,7 +100,7 @@ ExternalProcessImporterHost::~ExternalProcessImporterHost() {
 }
 
 void ExternalProcessImporterHost::LaunchImportIfReady() {
-  if (waiting_for_bookmarkbar_model_ || template_service_subscription_.get() ||
+  if (waiting_for_bookmarkbar_model_ || template_service_subscription_ ||
       !is_source_readable_ || cancelled_)
     return;
 
@@ -134,7 +136,7 @@ void ExternalProcessImporterHost::BookmarkModelChanged() {
 }
 
 void ExternalProcessImporterHost::OnTemplateURLServiceLoaded() {
-  template_service_subscription_.reset();
+  template_service_subscription_ = {};
   LaunchImportIfReady();
 }
 
@@ -169,7 +171,8 @@ bool ExternalProcessImporterHost::CheckForFirefoxLock(
     return true;
 
   DCHECK(!firefox_lock_.get());
-  firefox_lock_.reset(new FirefoxProfileLock(source_profile.source_path));
+  firefox_lock_ =
+      std::make_unique<FirefoxProfileLock>(source_profile.source_path);
   if (firefox_lock_->HasAcquired())
     return true;
 
@@ -204,7 +207,7 @@ void ExternalProcessImporterHost::CheckForLoadedModels(uint16_t items) {
       TemplateURLService* model =
           TemplateURLServiceFactory::GetForProfile(profile_);
       template_service_subscription_ =
-          model->RegisterOnLoadedCallback(base::BindRepeating(
+          model->RegisterOnLoadedCallback(base::BindOnce(
               &ExternalProcessImporterHost::OnTemplateURLServiceLoaded,
               weak_ptr_factory_.GetWeakPtr()));
       model->Load();

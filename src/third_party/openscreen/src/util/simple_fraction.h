@@ -5,6 +5,8 @@
 #ifndef UTIL_SIMPLE_FRACTION_H_
 #define UTIL_SIMPLE_FRACTION_H_
 
+#include <cmath>
+#include <limits>
 #include <string>
 
 #include "absl/strings/string_view.h"
@@ -14,30 +16,56 @@ namespace openscreen {
 
 // SimpleFraction is used to represent simple (or "common") fractions, composed
 // of a rational number written a/b where a and b are both integers.
-
-// Note: Since SimpleFraction is a trivial type, it comes with a
-// default constructor and is copyable, as well as allowing static
-// initialization.
-
 // Some helpful notes on SimpleFraction assumptions/limitations:
 // 1. SimpleFraction does not perform reductions. 2/4 != 1/2, and -1/-1 != 1/1.
 // 2. denominator = 0 is considered undefined.
 // 3. numerator = saturates range to int min or int max
 // 4. A SimpleFraction is "positive" if and only if it is defined and at least
 //    equal to zero. Since reductions are not performed, -1/-1 is negative.
-struct SimpleFraction {
+class SimpleFraction {
+ public:
   static ErrorOr<SimpleFraction> FromString(absl::string_view value);
   std::string ToString() const;
 
-  bool operator==(const SimpleFraction& other) const;
-  bool operator!=(const SimpleFraction& other) const;
+  constexpr SimpleFraction() = default;
+  constexpr SimpleFraction(int numerator)  // NOLINT
+      : numerator_(numerator) {}
+  constexpr SimpleFraction(int numerator, int denominator)
+      : numerator_(numerator), denominator_(denominator) {}
 
-  bool is_defined() const;
-  bool is_positive() const;
-  explicit operator double() const;
+  constexpr SimpleFraction(const SimpleFraction&) = default;
+  constexpr SimpleFraction(SimpleFraction&&) noexcept = default;
+  constexpr SimpleFraction& operator=(const SimpleFraction&) = default;
+  constexpr SimpleFraction& operator=(SimpleFraction&&) = default;
+  ~SimpleFraction() = default;
 
-  int numerator = 0;
-  int denominator = 0;
+  constexpr bool operator==(const SimpleFraction& other) const {
+    return numerator_ == other.numerator_ && denominator_ == other.denominator_;
+  }
+
+  constexpr bool operator!=(const SimpleFraction& other) const {
+    return !(*this == other);
+  }
+
+  constexpr bool is_defined() const { return denominator_ != 0; }
+
+  constexpr bool is_positive() const {
+    return (numerator_ >= 0) && (denominator_ > 0);
+  }
+
+  constexpr explicit operator double() const {
+    if (denominator_ == 0) {
+      return nan("");
+    }
+    return static_cast<double>(numerator_) / static_cast<double>(denominator_);
+  }
+
+  constexpr int numerator() const { return numerator_; }
+  constexpr int denominator() const { return denominator_; }
+
+ private:
+  int numerator_ = 0;
+  int denominator_ = 1;
 };
 
 }  // namespace openscreen

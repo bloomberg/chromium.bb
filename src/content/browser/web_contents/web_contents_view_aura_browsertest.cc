@@ -19,13 +19,13 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
-#include "content/common/input_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/overscroll_configuration.h"
@@ -164,14 +164,14 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
     {
       // Do a swipe-right now. That should navigate backwards.
-      base::string16 expected_title = base::ASCIIToUTF16("Title: #1");
+      std::u16string expected_title = u"Title: #1";
       content::TitleWatcher title_watcher(web_contents, expected_title);
       generator.GestureScrollSequence(
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
           base::TimeDelta::FromMilliseconds(kScrollDurationMs),
           kScrollSteps);
-      base::string16 actual_title = title_watcher.WaitAndGetTitle();
+      std::u16string actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = ExecuteScriptAndGetValue(main_frame, "get_current()");
       index = value.GetInt();
@@ -182,14 +182,14 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
     {
       // Do a fling-right now. That should navigate backwards.
-      base::string16 expected_title = base::ASCIIToUTF16("Title:");
+      std::u16string expected_title = u"Title:";
       content::TitleWatcher title_watcher(web_contents, expected_title);
       generator.GestureScrollSequence(
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
           base::TimeDelta::FromMilliseconds(kScrollDurationMs),
           kScrollSteps);
-      base::string16 actual_title = title_watcher.WaitAndGetTitle();
+      std::u16string actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = ExecuteScriptAndGetValue(main_frame, "get_current()");
       index = value.GetInt();
@@ -200,14 +200,14 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
 
     {
       // Do a swipe-left now. That should navigate forward.
-      base::string16 expected_title = base::ASCIIToUTF16("Title: #1");
+      std::u16string expected_title = u"Title: #1";
       content::TitleWatcher title_watcher(web_contents, expected_title);
       generator.GestureScrollSequence(
           gfx::Point(bounds.right() - 10, bounds.y() + 10),
           gfx::Point(bounds.x() + 2, bounds.y() + 10),
           base::TimeDelta::FromMilliseconds(kScrollDurationMs),
           kScrollSteps);
-      base::string16 actual_title = title_watcher.WaitAndGetTitle();
+      std::u16string actual_title = title_watcher.WaitAndGetTitle();
       EXPECT_EQ(expected_title, actual_title);
       value = ExecuteScriptAndGetValue(main_frame, "get_current()");
       index = value.GetInt();
@@ -228,14 +228,12 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
   }
 
   int ExecuteScriptAndExtractInt(const std::string& script) {
-    int value = 0;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractInt(
-        shell(), "domAutomationController.send(" + script + ")", &value));
-    return value;
+    return EvalJs(shell(), script).ExtractInt();
   }
 
   RenderViewHost* GetRenderViewHost() const {
-    RenderViewHost* const rvh = shell()->web_contents()->GetRenderViewHost();
+    RenderViewHost* const rvh =
+        shell()->web_contents()->GetMainFrame()->GetRenderViewHost();
     CHECK(rvh);
     return rvh;
   }
@@ -436,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 // Disabled because the test always fails the first time it runs on the Win Aura
 // bots, and usually but not always passes second-try (See crbug.com/179532).
 // Flaky on CrOS as well: https://crbug.com/856079
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_QuickOverscrollDirectionChange \
   DISABLED_QuickOverscrollDirectionChange
 #else
@@ -463,7 +461,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   EXPECT_EQ(1, GetCurrentIndex());
 
   aura::Window* content = web_contents->GetContentNativeView();
-  ui::EventSink* sink = content->GetHost()->event_sink();
+  ui::EventSink* sink = content->GetHost()->GetEventSink();
   gfx::Rect bounds = content->GetBoundsInRootWindow();
 
   // Spurious mouse moves interfere with the overscroll gesture which causes
@@ -788,7 +786,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
   web_contents->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(web_contents));
   EXPECT_EQ(1, GetCurrentIndex());
-  EXPECT_EQ(base::ASCIIToUTF16("Title: #1"), web_contents->GetTitle());
+  EXPECT_EQ(u"Title: #1", web_contents->GetTitle());
   EXPECT_TRUE(controller.CanGoBack());
   EXPECT_TRUE(controller.CanGoForward());
 
@@ -798,7 +796,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 
   // Do a swipe left to start a forward navigation. Then quickly do a swipe
   // right.
-  base::string16 expected_title = base::ASCIIToUTF16("Title: #2");
+  std::u16string expected_title = u"Title: #2";
   content::TitleWatcher title_watcher(web_contents, expected_title);
   TestNavigationManager nav_watcher(web_contents,
       embedded_test_server()->GetURL("/overscroll_navigation.html#2"));
@@ -815,7 +813,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
       gfx::Point(bounds.right() - 10, bounds.y() + 10),
       base::TimeDelta::FromMilliseconds(2000),
       10);
-  base::string16 actual_title = title_watcher.WaitAndGetTitle();
+  std::u16string actual_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, actual_title);
 
   EXPECT_EQ(2, GetCurrentIndex());
@@ -839,7 +837,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 // tests. http://crbug.com/305722
 // TODO(tdresser): Re-enable this once eager GR is back on. See
 // crbug.com/410280.
-#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #define MAYBE_OverscrollNavigationTouchThrottling \
         DISABLED_OverscrollNavigationTouchThrottling
 #else

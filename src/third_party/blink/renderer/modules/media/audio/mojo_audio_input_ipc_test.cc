@@ -10,10 +10,10 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
 #include "media/audio/audio_device_description.h"
+#include "media/base/audio_capturer_source.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/mojom/audio_data_pipe.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using testing::_;
 using testing::AtLeast;
@@ -67,7 +68,7 @@ class MockDelegate : public media::AudioInputIPCDelegate {
   }
 
   MOCK_METHOD1(GotOnStreamCreated, void(bool initially_muted));
-  MOCK_METHOD0(OnError, void());
+  MOCK_METHOD1(OnError, void(media::AudioCapturerSource::ErrorCode));
   MOCK_METHOD1(OnMuted, void(bool));
   MOCK_METHOD0(OnIPCClosed, void());
 };
@@ -117,7 +118,7 @@ class FakeStreamCreator {
 
   void SignalError() {
     ASSERT_TRUE(stream_client_);
-    stream_client_->OnError();
+    stream_client_->OnError(media::mojom::InputStreamErrorCode::kUnknown);
   }
 
  private:
@@ -172,7 +173,8 @@ TEST(MojoAudioInputIPC, FactoryDisconnected_SendsError) {
                  bool automatic_gain_control, uint32_t total_segments) {}),
           base::BindRepeating(&AssociateOutputForAec));
 
-  EXPECT_CALL(delegate, OnError());
+  EXPECT_CALL(delegate,
+              OnError(media::AudioCapturerSource::ErrorCode::kUnknown));
 
   ipc->CreateStream(&delegate, Params(), false, kTotalSegments);
   base::RunLoop().RunUntilIdle();
@@ -243,7 +245,8 @@ TEST(MojoAudioInputIPC, IsReusableAfterError) {
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&delegate);
 
-    EXPECT_CALL(delegate, OnError());
+    EXPECT_CALL(delegate,
+                OnError(media::AudioCapturerSource::ErrorCode::kUnknown));
     creator.SignalError();
     base::RunLoop().RunUntilIdle();
     Mock::VerifyAndClearExpectations(&delegate);

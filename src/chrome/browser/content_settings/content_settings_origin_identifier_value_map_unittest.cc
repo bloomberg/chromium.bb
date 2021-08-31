@@ -46,19 +46,21 @@ TEST(OriginIdentifierValueMapTest, SetDeleteValue) {
 
   EXPECT_EQ(nullptr, map.GetValue(GURL("http://www.google.com"),
                                   GURL("http://www.google.com"),
-                                  ContentSettingsType::PLUGINS));
+                                  ContentSettingsType::GEOLOCATION));
 
   // Set sample values.
   map.SetValue(ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsPattern::FromString("[*.]google.com"),
-               ContentSettingsType::PLUGINS, base::Time(), base::Value(1), {});
+               ContentSettingsType::GEOLOCATION, base::Time(), base::Value(1),
+               {});
 
-  int actual_value;
-  EXPECT_TRUE(map.GetValue(GURL("http://www.google.com"),
-                           GURL("http://www.google.com"),
-                           ContentSettingsType::PLUGINS)
-                  ->GetAsInteger(&actual_value));
-  EXPECT_EQ(1, actual_value);
+  {
+    const base::Value* value = map.GetValue(GURL("http://www.google.com"),
+                                            GURL("http://www.google.com"),
+                                            ContentSettingsType::GEOLOCATION);
+    ASSERT_TRUE(value->is_int());
+    EXPECT_EQ(1, value->GetInt());
+  }
   EXPECT_EQ(nullptr, map.GetValue(GURL("http://www.google.com"),
                                   GURL("http://www.google.com"),
                                   ContentSettingsType::NOTIFICATIONS));
@@ -69,20 +71,22 @@ TEST(OriginIdentifierValueMapTest, SetDeleteValue) {
   EXPECT_EQ(nullptr, map.GetValue(GURL("http://www.google.com"),
                                   GURL("http://www.google.com"),
                                   ContentSettingsType::NOTIFICATIONS));
-  EXPECT_TRUE(map.GetValue(GURL("http://www.google.com"),
-                           GURL("http://www.google.com"),
-                           ContentSettingsType::PLUGINS)
-                  ->GetAsInteger(&actual_value));
-  EXPECT_EQ(1, actual_value);
+  {
+    const base::Value* value = map.GetValue(GURL("http://www.google.com"),
+                                            GURL("http://www.google.com"),
+                                            ContentSettingsType::GEOLOCATION);
+    ASSERT_TRUE(value->is_int());
+    EXPECT_EQ(1, value->GetInt());
+  }
 
   // Delete existing value.
   map.DeleteValue(ContentSettingsPattern::FromString("[*.]google.com"),
                   ContentSettingsPattern::FromString("[*.]google.com"),
-                  ContentSettingsType::PLUGINS);
+                  ContentSettingsType::GEOLOCATION);
 
   EXPECT_EQ(nullptr, map.GetValue(GURL("http://www.google.com"),
                                   GURL("http://www.google.com"),
-                                  ContentSettingsType::PLUGINS));
+                                  ContentSettingsType::GEOLOCATION));
 }
 
 TEST(OriginIdentifierValueMapTest, Clear) {
@@ -92,24 +96,24 @@ TEST(OriginIdentifierValueMapTest, Clear) {
   // Set two values.
   map.SetValue(ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsPattern::FromString("[*.]google.com"),
-               ContentSettingsType::PLUGINS, base::Time(), base::Value(1), {});
+               ContentSettingsType::GEOLOCATION, base::Time(), base::Value(1),
+               {});
   map.SetValue(ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsType::COOKIES, base::Time(), base::Value(1), {});
   EXPECT_FALSE(map.empty());
-  int actual_value;
-  EXPECT_TRUE(map.GetValue(GURL("http://www.google.com"),
-                           GURL("http://www.google.com"),
-                           ContentSettingsType::PLUGINS)
-                  ->GetAsInteger(&actual_value));
-  EXPECT_EQ(1, actual_value);
+  const base::Value* value =
+      map.GetValue(GURL("http://www.google.com"), GURL("http://www.google.com"),
+                   ContentSettingsType::GEOLOCATION);
+  ASSERT_TRUE(value->is_int());
+  EXPECT_EQ(1, value->GetInt());
 
   // Clear the map.
   map.clear();
   EXPECT_TRUE(map.empty());
   EXPECT_EQ(nullptr, map.GetValue(GURL("http://www.google.com"),
                                   GURL("http://www.google.com"),
-                                  ContentSettingsType::PLUGINS));
+                                  ContentSettingsType::GEOLOCATION));
 }
 
 TEST(OriginIdentifierValueMapTest, ListEntryPrecedences) {
@@ -123,18 +127,21 @@ TEST(OriginIdentifierValueMapTest, ListEntryPrecedences) {
                ContentSettingsPattern::FromString("[*.]google.com"),
                ContentSettingsType::COOKIES, base::Time(), base::Value(2), {});
 
-  int actual_value;
-  EXPECT_TRUE(map.GetValue(GURL("http://mail.google.com"),
-                           GURL("http://www.google.com"),
-                           ContentSettingsType::COOKIES)
-                  ->GetAsInteger(&actual_value));
-  EXPECT_EQ(1, actual_value);
+  {
+    const base::Value* value = map.GetValue(GURL("http://mail.google.com"),
+                                            GURL("http://www.google.com"),
+                                            ContentSettingsType::COOKIES);
+    ASSERT_TRUE(value->is_int());
+    EXPECT_EQ(1, value->GetInt());
+  }
 
-  EXPECT_TRUE(map.GetValue(GURL("http://www.google.com"),
-                           GURL("http://www.google.com"),
-                           ContentSettingsType::COOKIES)
-                  ->GetAsInteger(&actual_value));
-  EXPECT_EQ(2, actual_value);
+  {
+    const base::Value* value = map.GetValue(GURL("http://www.google.com"),
+                                            GURL("http://www.google.com"),
+                                            ContentSettingsType::COOKIES);
+    ASSERT_TRUE(value->is_int());
+    EXPECT_EQ(2, value->GetInt());
+  }
 }
 
 TEST(OriginIdentifierValueMapTest, IterateEmpty) {

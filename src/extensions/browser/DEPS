@@ -1,5 +1,6 @@
 include_rules = [
   "+chromeos",
+  "+components/back_forward_cache",
   "+components/guest_view",
   "+components/keyed_service",
   "+components/pref_registry",
@@ -71,5 +72,9 @@ specific_include_rules = {
   "sandboxed_unpacker_unittest.cc": [
     "+components/services/unzip",
     "+services/data_decoder",
+  ],
+  "extension_prefs.cc": [
+    # For CONTENT_SETTING_ALLOW / BLOCK.
+    "+components/content_settings/core/common",
   ],
 }

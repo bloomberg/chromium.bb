@@ -7,7 +7,10 @@ This is a port of the trace event importer from
 https://code.google.com/p/trace-viewer/
 """
 
+from __future__ import division
+from __future__ import absolute_import
 import collections
+import six
 
 import telemetry.timeline.async_slice as tracing_async_slice
 import telemetry.timeline.flow_event as tracing_flow_event
@@ -15,7 +18,8 @@ from telemetry.timeline import importer
 from telemetry.timeline import memory_dump_event
 from tracing.trace_data import trace_data as trace_data_module
 
-
+# 2To3-division: those lines like xxx / 1000.0 are unchanged as result is
+# expected floats.
 class TraceEventTimelineImporter(importer.TimelineImporter):
   def __init__(self, model, trace_data):
     super(TraceEventTimelineImporter, self).__init__(model, trace_data)
@@ -35,7 +39,7 @@ class TraceEventTimelineImporter(importer.TimelineImporter):
   def CollectMetadataRecords(self, trace):
     part_field_names = {p.raw_field_name for p in
                         trace_data_module.ALL_TRACE_PARTS}
-    for k, v in trace.iteritems():
+    for k, v in six.iteritems(trace):
       if k in part_field_names:
         continue
       self._metadata.append({'name': k, 'value': v})
@@ -126,7 +130,7 @@ class TraceEventTimelineImporter(importer.TimelineImporter):
       new_slice = thread.EndSlice(
           event['ts'] / 1000.0,
           event['tts'] / 1000.0 if 'tts' in event else None)
-      for arg_name, arg_value in event.get('args', {}).iteritems():
+      for arg_name, arg_value in six.iteritems(event.get('args', {})):
         if arg_name in new_slice.args:
           self._model.import_errors.append(
               'Both the B and E phases of ' + new_slice.name +
@@ -210,8 +214,8 @@ class TraceEventTimelineImporter(importer.TimelineImporter):
       global_dump = global_dumps.setdefault(event['id'], {})
       dump_events = global_dump.setdefault(event['pid'], [])
       dump_events.append(event)
-    for dump_id, global_dump in global_dumps.iteritems():
-      for pid, dump_events in global_dump.iteritems():
+    for dump_id, global_dump in six.iteritems(global_dumps):
+      for pid, dump_events in six.iteritems(global_dump):
         process = self._GetOrCreateProcess(pid)
         memory_dump = memory_dump_event.ProcessMemoryDumpEvent(process,
                                                                dump_events)
@@ -371,7 +375,7 @@ class TraceEventTimelineImporter(importer.TimelineImporter):
           async_slice.args = events[0]['event']['args']
 
           # Create sub_slices for each step.
-          for j in xrange(1, len(events)):
+          for j in range(1, len(events)):
             sub_name = name
             if events[j - 1]['event']['ph'] == 'T':
               sub_name = name + ':' + events[j - 1]['event']['args']['step']
@@ -401,7 +405,7 @@ class TraceEventTimelineImporter(importer.TimelineImporter):
 
           # The args for the finish event go in the last sub_slice.
           last_slice = async_slice.sub_slices[-1]
-          for arg_name, arg_value in event['args'].iteritems():
+          for arg_name, arg_value in six.iteritems(event['args']):
             last_slice.args[arg_name] = arg_value
 
           # Add |async_slice| to the start-thread's async_slices.
@@ -468,7 +472,7 @@ class TraceEventTimelineImporter(importer.TimelineImporter):
   def _CreateMemoryDumps(self):
     self._model.SetGlobalMemoryDumps(
         memory_dump_event.GlobalMemoryDump(events)
-        for events in self._all_memory_dumps_by_dump_id.itervalues())
+        for events in six.itervalues(self._all_memory_dumps_by_dump_id))
 
   def _SetBrowserProcess(self):
     for thread in self._model.GetAllThreads():

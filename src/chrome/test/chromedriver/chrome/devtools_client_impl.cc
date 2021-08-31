@@ -4,6 +4,7 @@
 
 #include "chrome/test/chromedriver/chrome/devtools_client_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -194,7 +195,8 @@ Status DevToolsClientImpl::SetUpDevTools() {
   unnotified_event_listeners_.clear();
   response_info_map_.clear();
 
-  if (id_ != kBrowserwideDevToolsClientId) {
+  if (id_ != kBrowserwideDevToolsClientId &&
+      (GetOwner() == nullptr || !GetOwner()->IsServiceWorker())) {
     base::DictionaryValue params;
     std::string script =
         "(function () {"
@@ -332,6 +334,10 @@ void DevToolsClientImpl::SetDetached() {
 
 void DevToolsClientImpl::SetOwner(WebViewImpl* owner) {
   owner_ = owner;
+}
+
+WebViewImpl* DevToolsClientImpl::GetOwner() const {
+  return owner_;
 }
 
 DevToolsClientImpl::ResponseInfo::ResponseInfo(const std::string& method)
@@ -670,7 +676,7 @@ bool ParseInspectorMessage(const std::string& message,
     if (params)
       event->params.reset(params->DeepCopy());
     else
-      event->params.reset(new base::DictionaryValue());
+      event->params = std::make_unique<base::DictionaryValue>();
     return true;
   } else if (message_dict->GetInteger("id", &id)) {
     base::DictionaryValue* unscoped_error = nullptr;
@@ -687,7 +693,7 @@ bool ParseInspectorMessage(const std::string& message,
     else if (message_dict->GetDictionary("error", &unscoped_error))
       base::JSONWriter::Write(*unscoped_error, &command_response->error);
     else
-      command_response->result.reset(new base::DictionaryValue());
+      command_response->result = std::make_unique<base::DictionaryValue>();
     return true;
   }
   return false;
@@ -714,7 +720,7 @@ Status ParseInspectorError(const std::string& error_json) {
                error_message == kInspectorOpaqueOrigins) {
       return Status(kInvalidArgument, error_message);
     }
-    base::Optional<int> error_code = error_dict->FindIntPath("code");
+    absl::optional<int> error_code = error_dict->FindIntPath("code");
     if (error_code == kInvalidParamsInspectorCode)
       return Status(kInvalidArgument, error_message);
   }

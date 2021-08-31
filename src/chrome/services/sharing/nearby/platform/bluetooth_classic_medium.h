@@ -8,12 +8,13 @@
 #include <memory>
 #include <string>
 
-#include "base/optional.h"
+#include "base/timer/timer.h"
 #include "chrome/services/sharing/nearby/platform/bluetooth_device.h"
 #include "device/bluetooth/public/mojom/adapter.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/nearby/src/cpp/platform/api/bluetooth_classic.h"
 
 namespace location {
@@ -39,7 +40,8 @@ class BluetoothClassicMedium : public api::BluetoothClassicMedium,
   bool StopDiscovery() override;
   std::unique_ptr<api::BluetoothSocket> ConnectToService(
       api::BluetoothDevice& remote_device,
-      const std::string& service_uuid) override;
+      const std::string& service_uuid,
+      CancellationFlag* cancellation_flag) override;
   std::unique_ptr<api::BluetoothServerSocket> ListenForService(
       const std::string& service_name,
       const std::string& service_uuid) override;
@@ -55,6 +57,8 @@ class BluetoothClassicMedium : public api::BluetoothClassicMedium,
   void DeviceChanged(bluetooth::mojom::DeviceInfoPtr device) override;
   void DeviceRemoved(bluetooth::mojom::DeviceInfoPtr device) override;
 
+  void RemoveStaleBluetoothDevices();
+
   mojo::SharedRemote<bluetooth::mojom::Adapter> adapter_;
 
   // |adapter_observer_| is only set and bound during active discovery so that
@@ -62,11 +66,16 @@ class BluetoothClassicMedium : public api::BluetoothClassicMedium,
   mojo::Receiver<bluetooth::mojom::AdapterObserver> adapter_observer_{this};
 
   // These properties are only set while discovery is active.
-  base::Optional<DiscoveryCallback> discovery_callback_;
+  absl::optional<DiscoveryCallback> discovery_callback_;
   mojo::Remote<bluetooth::mojom::DiscoverySession> discovery_session_;
 
+  // This is a mapping of MAC addresses to discovered Bluetooth devices.
   std::map<std::string, chrome::BluetoothDevice>
       discovered_bluetooth_devices_map_;
+
+  // Used to periodically remove devices that haven't produced any Bluetooth
+  // events for N minutes.
+  base::RepeatingTimer stale_bluetooth_device_timer_;
 };
 
 }  // namespace chrome

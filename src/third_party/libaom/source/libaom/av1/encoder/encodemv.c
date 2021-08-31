@@ -173,8 +173,8 @@ static void build_nmv_component_cost_table(int *mvcost,
   }
 }
 
-void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
-                   nmv_context *mvctx, int usehp) {
+void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, ThreadData *td, const MV *mv,
+                   const MV *ref, nmv_context *mvctx, int usehp) {
   const MV diff = { mv->row - ref->row, mv->col - ref->col };
   const MV_JOINT_TYPE j = av1_get_mv_joint(&diff);
   // If the mv_diff is zero, then we should have used near or nearest instead.
@@ -193,8 +193,7 @@ void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
   // motion vector component used.
   if (cpi->sf.mv_sf.auto_mv_step_size) {
     int maxv = AOMMAX(abs(mv->row), abs(mv->col)) >> 3;
-    cpi->mv_search_params.max_mv_magnitude =
-        AOMMAX(maxv, cpi->mv_search_params.max_mv_magnitude);
+    td->max_mv_magnitude = AOMMAX(maxv, td->max_mv_magnitude);
   }
 }
 

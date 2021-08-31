@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_config.h"
+#include "quic/core/quic_config.h"
 
+#include <memory>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "quic/core/crypto/crypto_handshake_message.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/crypto/transport_parameters.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_config_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
 
 namespace quic {
 namespace test {
@@ -186,7 +187,9 @@ TEST_P(QuicConfigTest, ProcessServerHello) {
   QuicIpAddress host;
   host.FromString("127.0.3.1");
   const QuicSocketAddress kTestServerAddress = QuicSocketAddress(host, 1234);
-  const QuicUint128 kTestResetToken = MakeQuicUint128(0, 10111100001);
+  const StatelessResetToken kTestStatelessResetToken{
+      0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+      0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f};
   const uint32_t kTestMaxAckDelayMs =
       static_cast<uint32_t>(kDefaultDelayedAckTimeMs + 1);
   QuicConfig server_config;
@@ -200,7 +203,7 @@ TEST_P(QuicConfigTest, ProcessServerHello) {
   server_config.SetInitialSessionFlowControlWindowToSend(
       2 * kInitialSessionFlowControlWindowForTest);
   server_config.SetIPv4AlternateServerAddressToSend(kTestServerAddress);
-  server_config.SetStatelessResetTokenToSend(kTestResetToken);
+  server_config.SetStatelessResetTokenToSend(kTestStatelessResetToken);
   server_config.SetMaxAckDelayToSendMs(kTestMaxAckDelayMs);
   CryptoHandshakeMessage msg;
   server_config.ToHandshakeMessage(&msg, version_.transport_version);
@@ -220,7 +223,7 @@ TEST_P(QuicConfigTest, ProcessServerHello) {
   EXPECT_EQ(kTestServerAddress, config_.ReceivedIPv4AlternateServerAddress());
   EXPECT_FALSE(config_.HasReceivedIPv6AlternateServerAddress());
   EXPECT_TRUE(config_.HasReceivedStatelessResetToken());
-  EXPECT_EQ(kTestResetToken, config_.ReceivedStatelessResetToken());
+  EXPECT_EQ(kTestStatelessResetToken, config_.ReceivedStatelessResetToken());
   EXPECT_TRUE(config_.HasReceivedMaxAckDelayMs());
   EXPECT_EQ(kTestMaxAckDelayMs, config_.ReceivedMaxAckDelayMs());
 
@@ -437,7 +440,6 @@ TEST_P(QuicConfigTest, ReceivedInvalidMinAckDelayInTransportParameter) {
     // TransportParameters are only used for QUIC+TLS.
     return;
   }
-  SetQuicReloadableFlag(quic_record_received_min_ack_delay, true);
   TransportParameters params;
 
   params.max_ack_delay.set_value(25 /*ms*/);
@@ -476,6 +478,15 @@ TEST_P(QuicConfigTest, FillTransportParams) {
   config_.SetRetrySourceConnectionIdToSend(TestConnectionId(0x3333));
   config_.SetMinAckDelayMs(kDefaultMinAckDelayTimeMs);
 
+  QuicIpAddress host;
+  host.FromString("127.0.3.1");
+  QuicSocketAddress kTestServerAddress = QuicSocketAddress(host, 1234);
+  QuicConnectionId new_connection_id = TestConnectionId(5);
+  StatelessResetToken new_stateless_reset_token =
+      QuicUtils::GenerateStatelessResetToken(new_connection_id);
+  config_.SetIPv4AlternateServerAddressToSend(
+      kTestServerAddress, new_connection_id, new_stateless_reset_token);
+
   TransportParameters params;
   config_.FillTransportParameters(&params);
 
@@ -509,6 +520,11 @@ TEST_P(QuicConfigTest, FillTransportParams) {
       static_cast<uint64_t>(kDefaultMinAckDelayTimeMs) * kNumMicrosPerMilli,
       params.min_ack_delay_us.value());
   EXPECT_TRUE(params.key_update_not_yet_supported);
+
+  EXPECT_EQ(params.preferred_address->ipv4_socket_address, kTestServerAddress);
+  EXPECT_EQ(*reinterpret_cast<StatelessResetToken*>(
+                &params.preferred_address->stateless_reset_token.front()),
+            new_stateless_reset_token);
 }
 
 TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
@@ -570,7 +586,6 @@ TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
             config_.ReceivedMaxBidirectionalStreams());
 
   EXPECT_FALSE(config_.DisableConnectionMigration());
-  EXPECT_FALSE(config_.PeerSupportsHandshakeDone());
 
   // The following config shouldn't be processed because of resumption.
   EXPECT_FALSE(config_.HasReceivedStatelessResetToken());
@@ -595,7 +610,6 @@ TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
   params.initial_max_streams_bidi.set_value(2 *
                                             kDefaultMaxStreamsPerConnection);
   params.disable_active_migration = true;
-  params.support_handshake_done = true;
 
   EXPECT_THAT(config_.ProcessTransportParameters(
                   params, /* is_resumption = */ false, &error_details),
@@ -630,20 +644,15 @@ TEST_P(QuicConfigTest, ProcessTransportParametersServer) {
             config_.ReceivedMaxBidirectionalStreams());
 
   EXPECT_TRUE(config_.DisableConnectionMigration());
-  EXPECT_TRUE(config_.PeerSupportsHandshakeDone());
 
   ASSERT_TRUE(config_.HasReceivedStatelessResetToken());
 
   ASSERT_TRUE(config_.HasReceivedMaxAckDelayMs());
   EXPECT_EQ(config_.ReceivedMaxAckDelayMs(), kMaxAckDelayForTest);
 
-  if (GetQuicReloadableFlag(quic_record_received_min_ack_delay)) {
-    ASSERT_TRUE(config_.HasReceivedMinAckDelayMs());
-    EXPECT_EQ(config_.ReceivedMinAckDelayMs(),
-              kMinAckDelayUsForTest / kNumMicrosPerMilli);
-  } else {
-    ASSERT_FALSE(config_.HasReceivedMinAckDelayMs());
-  }
+  ASSERT_TRUE(config_.HasReceivedMinAckDelayMs());
+  EXPECT_EQ(config_.ReceivedMinAckDelayMs(),
+            kMinAckDelayUsForTest / kNumMicrosPerMilli);
 
   ASSERT_TRUE(config_.HasReceivedAckDelayExponent());
   EXPECT_EQ(config_.ReceivedAckDelayExponent(), kAckDelayExponentForTest);
@@ -751,6 +760,47 @@ TEST_P(QuicConfigTest, KeyUpdateSupported) {
   EXPECT_TRUE(config_.KeyUpdateSupportedForConnection());
   EXPECT_TRUE(config_.KeyUpdateSupportedLocally());
   EXPECT_TRUE(config_.KeyUpdateSupportedRemotely());
+}
+
+TEST_P(QuicConfigTest, SendPreferredIPv4Address) {
+  if (!version_.UsesTls()) {
+    // TransportParameters are only used for QUIC+TLS.
+    return;
+  }
+
+  EXPECT_FALSE(config_.HasReceivedPreferredAddressConnectionIdAndToken());
+
+  TransportParameters params;
+  QuicIpAddress host;
+  host.FromString("::ffff:192.0.2.128");
+  QuicSocketAddress kTestServerAddress = QuicSocketAddress(host, 1234);
+  QuicConnectionId new_connection_id = TestConnectionId(5);
+  StatelessResetToken new_stateless_reset_token =
+      QuicUtils::GenerateStatelessResetToken(new_connection_id);
+  auto preferred_address =
+      std::make_unique<TransportParameters::PreferredAddress>();
+  preferred_address->ipv6_socket_address = kTestServerAddress;
+  preferred_address->connection_id = new_connection_id;
+  preferred_address->stateless_reset_token.assign(
+      reinterpret_cast<const char*>(&new_stateless_reset_token),
+      reinterpret_cast<const char*>(&new_stateless_reset_token) +
+          sizeof(new_stateless_reset_token));
+  params.preferred_address = std::move(preferred_address);
+
+  std::string error_details;
+  EXPECT_THAT(config_.ProcessTransportParameters(
+                  params, /* is_resumption = */ false, &error_details),
+              IsQuicNoError());
+
+  EXPECT_TRUE(config_.HasReceivedIPv6AlternateServerAddress());
+  EXPECT_EQ(config_.ReceivedIPv6AlternateServerAddress(), kTestServerAddress);
+  EXPECT_TRUE(config_.HasReceivedPreferredAddressConnectionIdAndToken());
+  const std::pair<QuicConnectionId, StatelessResetToken>&
+      preferred_address_connection_id_and_token =
+          config_.ReceivedPreferredAddressConnectionIdAndToken();
+  EXPECT_EQ(preferred_address_connection_id_and_token.first, new_connection_id);
+  EXPECT_EQ(preferred_address_connection_id_and_token.second,
+            new_stateless_reset_token);
 }
 
 }  // namespace

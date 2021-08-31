@@ -4,7 +4,7 @@
 
 package osp
 
-// TODO(pthatcher):
+// TODO(jophba):
 // - Read and write size prefixes
 
 import (

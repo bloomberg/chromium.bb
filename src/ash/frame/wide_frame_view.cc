@@ -7,6 +7,7 @@
 #include "ash/frame/header_view.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/window_state.h"
@@ -64,12 +65,11 @@ gfx::Rect WideFrameView::GetFrameBounds(views::Widget* target) {
       views::GetCaptionButtonLayoutSize(
           views::CaptionButtonLayoutSize::kNonBrowserCaption)
           .height();
-  display::Screen* screen = display::Screen::GetScreen();
   aura::Window* target_window = target->GetNativeWindow();
   gfx::Rect bounds =
-      target->IsFullscreen()
-          ? screen->GetDisplayNearestWindow(target_window).bounds()
-          : screen->GetDisplayNearestWindow(target_window).work_area();
+      screen_util::GetIdealBoundsForMaximizedOrFullscreenOrPinnedState(
+          target_window);
+
   bounds.set_height(kFrameHeight);
   return bounds;
 }
@@ -86,7 +86,9 @@ void WideFrameView::SetCaptionButtonModel(
 }
 
 WideFrameView::WideFrameView(views::Widget* target)
-    : target_(target), widget_(std::make_unique<views::Widget>()) {
+    : target_(target),
+      frame_context_menu_controller_(
+          std::make_unique<FrameContextMenuController>(target_, this)) {
   // WideFrameView is owned by its client, not by Views.
   SetOwnedByWidget(false);
   display::Screen::GetScreen()->AddObserver(this);
@@ -98,6 +100,8 @@ WideFrameView::WideFrameView(views::Widget* target)
   header_view_ = new HeaderView(target, /*frame view=*/nullptr);
   AddChildView(header_view_);
   GetTargetHeaderView()->SetShouldPaintHeader(false);
+  header_view_->set_context_menu_controller(
+      frame_context_menu_controller_.get());
 
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
@@ -109,8 +113,9 @@ WideFrameView::WideFrameView(views::Widget* target)
   // Setup Opacity Control.
   // WideFrame should be used only when the rounded corner is not necessary.
   params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
-
-  widget_->Init(std::move(params));
+  auto widget = std::make_unique<views::Widget>();
+  widget->Init(std::move(params));
+  widget_ = std::move(widget);
 
   aura::Window* window = widget_->GetNativeWindow();
   // Overview normally clips the caption container which exists on the same
@@ -121,6 +126,7 @@ WideFrameView::WideFrameView(views::Widget* target)
   window->SetProperty(kForceVisibleInMiniViewKey, true);
   window->SetEventTargeter(std::make_unique<WideFrameTargeter>(header_view()));
   set_owned_by_client();
+  WindowState::Get(window)->set_allow_set_bounds_direct(true);
 
   paint_as_active_subscription_ =
       target_->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
@@ -172,10 +178,20 @@ void WideFrameView::OnDisplayMetricsChanged(const display::Display& display,
                                             uint32_t changed_metrics) {
   display::Screen* screen = display::Screen::GetScreen();
   if (screen->GetDisplayNearestWindow(target_->GetNativeWindow()).id() !=
-      display.id()) {
+          display.id() ||
+      !widget_) {
     return;
   }
   DCHECK(target_);
+
+  // Ignore if this is called when the targe window state is nor proper
+  // state. This can happen when switching the state to other states, in which
+  // case, the wide frame will be removed.
+  if (!WindowState::Get(target_->GetNativeWindow())
+           ->IsMaximizedOrFullscreenOrPinned()) {
+    return;
+  }
+
   GetWidget()->SetBounds(GetFrameBounds(target_));
 }
 
@@ -189,12 +205,14 @@ void WideFrameView::OnImmersiveRevealEnded() {
 
 void WideFrameView::OnImmersiveFullscreenEntered() {
   header_view_->OnImmersiveFullscreenEntered();
+  widget_->GetNativeWindow()->SetTransparent(true);
   if (target_)
     GetTargetHeaderView()->OnImmersiveFullscreenEntered();
 }
 
 void WideFrameView::OnImmersiveFullscreenExited() {
   header_view_->OnImmersiveFullscreenExited();
+  widget_->GetNativeWindow()->SetTransparent(false);
   if (target_)
     GetTargetHeaderView()->OnImmersiveFullscreenExited();
   Layout();
@@ -206,6 +224,16 @@ void WideFrameView::SetVisibleFraction(double visible_fraction) {
 
 std::vector<gfx::Rect> WideFrameView::GetVisibleBoundsInScreen() const {
   return header_view_->GetVisibleBoundsInScreen();
+}
+
+bool WideFrameView::ShouldShowContextMenu(
+    View* source,
+    const gfx::Point& screen_coords_point) {
+  gfx::Point point_in_header_coords(screen_coords_point);
+  views::View::ConvertPointToTarget(this, header_view_,
+                                    &point_in_header_coords);
+  return header_view_->HitTestRect(
+      gfx::Rect(point_in_header_coords, gfx::Size(1, 1)));
 }
 
 HeaderView* WideFrameView::GetTargetHeaderView() {

@@ -54,7 +54,10 @@ def main():
   if project_head != 'refs/heads/main':
     raise RuntimeError("The repository is not migrated yet.")
 
+  logging.info("Running fetch...")
   git_common.run('fetch', remote)
+  logging.info("Updating remote HEAD...")
+  git_common.run('remote', 'set-head', '-a', remote)
 
   branches = git_common.get_branches_info(True)
 

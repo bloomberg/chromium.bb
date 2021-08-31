@@ -5,14 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DRAWING_RECORDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_DRAWING_RECORDER_H_
 
-#include "third_party/blink/renderer/platform/platform_export.h"
-
 #include "base/auto_reset.h"
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -82,7 +82,7 @@ class PLATFORM_EXPORT DrawingRecorder {
   const DisplayItemClient& client_;
   const DisplayItem::Type type_;
   IntRect visual_rect_;
-  base::Optional<DOMNodeId> dom_node_id_to_restore_;
+  absl::optional<DOMNodeId> dom_node_id_to_restore_;
 
   DISALLOW_COPY_AND_ASSIGN(DrawingRecorder);
 };

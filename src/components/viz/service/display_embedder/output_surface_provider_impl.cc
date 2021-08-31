@@ -14,6 +14,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/chromecast_buildflags.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
@@ -68,7 +69,7 @@
 #include "ui/ozone/public/surface_ozone_canvas.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/viz/service/display_embedder/gl_output_surface_chromeos.h"
 #include "components/viz/service/display_embedder/output_surface_unified.h"
 #endif
@@ -110,9 +111,10 @@ OutputSurfaceProviderImpl::CreateGpuDependency(
     return nullptr;
 
   if (renderer_settings.use_skia_renderer) {
+    DCHECK(task_executor_);
     gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
     auto skia_deps = std::make_unique<SkiaOutputSurfaceDependencyImpl>(
-        gpu_service_impl_, surface_handle);
+        gpu_service_impl_, task_executor_, surface_handle);
     return std::make_unique<DisplayCompositorMemoryAndTaskController>(
         std::move(skia_deps));
   } else {
@@ -130,7 +132,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
     DisplayCompositorMemoryAndTaskController* gpu_dependency,
     const RendererSettings& renderer_settings,
     const DebugRendererSettings* debug_settings) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (surface_handle == gpu::kNullSurfaceHandle)
     return std::make_unique<OutputSurfaceUnified>();
 #endif
@@ -149,8 +151,18 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
       output_surface = SkiaOutputSurfaceImpl::Create(
           gpu_dependency, renderer_settings, debug_settings);
     }
+
+#if defined(OS_ANDROID)
+    // As with non-skia-renderer case, communicate the creation result to
+    // CompositorImplAndroid so that it can attempt to recreate the surface on
+    // failure.
+    display_client->OnContextCreationResult(
+        output_surface ? gpu::ContextResult::kSuccess
+                       : gpu::ContextResult::kSurfaceFailure);
+#endif  // defined(OS_ANDROID)
+
     if (!output_surface) {
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMECAST)
       // GPU compositing is expected to always work on Chrome OS so we should
       // never encounter fatal context error. This could be an unrecoverable
       // hardware error or a bug.
@@ -189,7 +201,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
 #endif
 
       if (IsFatalOrSurfaceFailure(context_result)) {
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMECAST)
         // GL compositing is expected to always work on Chrome OS so we should
         // never encounter fatal context error. This could be an unrecoverable
         // hardware error or a bug.
@@ -224,7 +236,7 @@ std::unique_ptr<OutputSurface> OutputSurfaceProviderImpl::CreateOutputSurface(
 #elif defined(OS_ANDROID)
       output_surface = std::make_unique<GLOutputSurfaceAndroid>(
           std::move(context_provider), surface_handle);
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
       output_surface = std::make_unique<GLOutputSurfaceChromeOS>(
           std::move(context_provider), surface_handle);
 #else

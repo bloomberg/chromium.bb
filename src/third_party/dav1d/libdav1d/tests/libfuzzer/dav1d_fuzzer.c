@@ -31,14 +31,13 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include <dav1d/dav1d.h>
 #include "src/cpu.h"
 #include "dav1d_fuzzer.h"
 
 #ifdef DAV1D_ALLOC_FAIL
-
-#include <stdlib.h>
 
 #include "alloc_fail.h"
 
@@ -55,6 +54,39 @@ static unsigned r32le(const uint8_t *const p) {
 }
 
 #define DAV1D_FUZZ_MAX_SIZE 4096 * 4096
+
+// search for "--cpumask xxx" in argv and remove both parameters
+int LLVMFuzzerInitialize(int *argc, char ***argv) {
+    int i = 1;
+    for (; i < *argc; i++) {
+        if (!strcmp((*argv)[i], "--cpumask")) {
+            const char * cpumask = (*argv)[i+1];
+            if (cpumask) {
+                char *end;
+                unsigned res;
+                if (!strncmp(cpumask, "0x", 2)) {
+                    cpumask += 2;
+                    res = (unsigned) strtoul(cpumask, &end, 16);
+                } else {
+                    res = (unsigned) strtoul(cpumask, &end, 0);
+                }
+                if (end != cpumask && !end[0]) {
+                    dav1d_set_cpu_flags_mask(res);
+                }
+            }
+            break;
+        }
+    }
+
+    for (; i < *argc - 2; i++) {
+        (*argv)[i] = (*argv)[i + 2];
+    }
+
+    *argc = i;
+
+    return 0;
+}
+
 
 // expects ivf input
 
@@ -146,15 +178,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
             dav1d_data_unref(&buf);
     }
 
-    do {
-        memset(&pic, 0, sizeof(pic));
-        err = dav1d_get_picture(ctx, &pic);
-        if (err == 0)
-            dav1d_picture_unref(&pic);
-    } while (err != DAV1D_ERR(EAGAIN));
+    memset(&pic, 0, sizeof(pic));
+    if ((err = dav1d_get_picture(ctx, &pic)) == 0) {
+        /* Test calling dav1d_picture_unref() after dav1d_close() */
+        do {
+            Dav1dPicture pic2 = { 0 };
+            if ((err = dav1d_get_picture(ctx, &pic2)) == 0)
+                dav1d_picture_unref(&pic2);
+        } while (err != DAV1D_ERR(EAGAIN));
+
+        dav1d_close(&ctx);
+        dav1d_picture_unref(&pic);
+        return 0;
+    }
 
 cleanup:
-    dav1d_flush(ctx);
     dav1d_close(&ctx);
 end:
     return 0;

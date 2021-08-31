@@ -19,12 +19,16 @@ MEDIA_EXPORT extern const base::Feature kDumpOnAudioServiceHang;
 MEDIA_EXPORT extern const base::Feature kUseAAudioDriver;
 #endif
 
-#if BUILDFLAG(IS_ASH) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 MEDIA_EXPORT extern const base::Feature kCrOSSystemAEC;
 MEDIA_EXPORT extern const base::Feature kCrOSSystemAECDeactivatedGroups;
+MEDIA_EXPORT extern const base::Feature kCrOSEnforceSystemAecNsAgc;
+MEDIA_EXPORT extern const base::Feature kCrOSEnforceSystemAecNs;
+MEDIA_EXPORT extern const base::Feature kCrOSEnforceSystemAecAgc;
+MEDIA_EXPORT extern const base::Feature kCrOSEnforceSystemAec;
 #endif
 
-#if defined(OS_MAC) || BUILDFLAG(IS_ASH)
+#if defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 MEDIA_EXPORT extern const base::Feature kForceEnableSystemAec;
 #endif
 

@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -127,7 +127,7 @@ void PrinterQuery::SetSettings(base::Value new_settings,
                          base::Unretained(this), std::move(callback))));
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void PrinterQuery::SetSettingsFromPOD(
     std::unique_ptr<printing::PrintSettings> new_settings,
     base::OnceClosure callback) {
@@ -169,8 +169,8 @@ void PrinterQuery::StopWorker() {
 
 bool PrinterQuery::PostTask(const base::Location& from_here,
                             base::OnceClosure task) {
-  return base::PostTask(from_here, {content::BrowserThread::IO},
-                        std::move(task));
+  return content::GetIOThreadTaskRunner({})->PostTask(from_here,
+                                                      std::move(task));
 }
 
 bool PrinterQuery::is_valid() const {

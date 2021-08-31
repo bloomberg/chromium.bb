@@ -10,11 +10,11 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
@@ -32,6 +32,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
+#include "extensions/common/utils/base_string.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
@@ -139,7 +140,7 @@ std::unique_ptr<ContentVerifierIOData::ExtensionData> CreateIOData(
       std::move(indexed_ruleset_paths), extension->version(), source_type);
 }
 
-// Returns all locales, possibly with lowercasing them for case-insensitive OS.
+// Returns all locales.
 std::set<std::string> GetAllLocaleCandidates() {
   std::set<std::string> all_locales;
   // TODO(asargent) - see if we can cache this list longer to avoid
@@ -147,19 +148,8 @@ std::set<std::string> GetAllLocaleCandidates() {
   // browser. Maybe it can never change at runtime? (Or if it can, maybe
   // there is an event we can listen for to know to drop our cache).
   extension_l10n_util::GetAllLocales(&all_locales);
-  if (content_verifier_utils::IsFileAccessCaseSensitive())
-    return all_locales;
-
-  // Lower-case the locales candidate so we can search in
-  // case-insensitive manner for win/mac.
-  std::set<std::string> all_locales_candidate;
-  std::transform(
-      all_locales.begin(), all_locales.end(),
-      std::inserter(all_locales_candidate, all_locales_candidate.begin()),
-      [](const std::string& locale) { return base::ToLowerASCII(locale); });
-  return all_locales_candidate;
+  return all_locales;
 }
-
 }  // namespace
 
 struct ContentVerifier::CacheKey {
@@ -441,7 +431,7 @@ ContentVerifier::~ContentVerifier() {
 
 void ContentVerifier::Start() {
   ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
-  observer_.Add(registry);
+  observation_.Observe(registry);
 }
 
 void ContentVerifier::Shutdown() {
@@ -449,7 +439,7 @@ void ContentVerifier::Shutdown() {
   delegate_->Shutdown();
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&ContentVerifier::ShutdownOnIO, this));
-  observer_.RemoveAll();
+  observation_.Reset();
 }
 
 void ContentVerifier::ShutdownOnIO() {
@@ -705,7 +695,7 @@ void ContentVerifier::BindURLLoaderFactoryReceiverOnUIThread(
   if (shutdown_on_ui_)
     return;
 
-  content::BrowserContext::GetDefaultStoragePartition(context_)
+  context_->GetDefaultStoragePartition()
       ->GetURLLoaderFactoryForBrowserProcess()
       ->Clone(std::move(url_loader_factory_receiver));
 }
@@ -727,7 +717,7 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
   const std::set<CanonicalRelativePath>& indexed_ruleset_paths =
       *(data->canonical_indexed_ruleset_paths);
 
-  base::Optional<std::set<std::string>> all_locale_candidates;
+  absl::optional<std::set<std::string>> all_locale_candidates;
 
   const CanonicalRelativePath manifest_file =
       content_verifier_utils::CanonicalizeRelativePath(
@@ -772,8 +762,9 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
       // _locales/<some locale>/messages.json - if so then skip it.
       if (canonical_path.BaseName() == messages_file &&
           canonical_path.DirName().DirName() == locales_relative_dir &&
-          base::Contains(*all_locale_candidates,
-                         canonical_path.DirName().BaseName().MaybeAsASCII())) {
+          ContainsStringIgnoreCaseASCII(
+              *all_locale_candidates,
+              canonical_path.DirName().BaseName().MaybeAsASCII())) {
         continue;
       }
     }

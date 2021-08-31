@@ -5,7 +5,7 @@
 # found in the LICENSE file.
 
 # Script to install everything needed to build chromium (well, ideally, anyway)
-# See https://chromium.googlesource.com/chromium/src/+/master/docs/linux/build_instructions.md
+# See https://chromium.googlesource.com/chromium/src/+/main/docs/linux/build_instructions.md
 
 usage() {
   echo "Usage: $0 [--options]"
@@ -33,8 +33,7 @@ usage() {
 build_apt_package_list() {
   echo "Building apt package list." >&2
   apt-cache dumpavail | \
-    python -c '\
-      from __future__ import print_function; \
+    python3 -c '\
       import re,sys; \
       o = sys.stdin.read(); \
       p = {"i386": ":i386"}; \
@@ -103,7 +102,7 @@ fi
 
 distro_codename=$(lsb_release --codename --short)
 distro_id=$(lsb_release --id --short)
-supported_codenames="(trusty|xenial|bionic|disco|eoan|focal)"
+supported_codenames="(trusty|xenial|bionic|disco|eoan|focal|groovy)"
 supported_ids="(Debian)"
 if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
   if [[ ! $distro_codename =~ $supported_codenames &&
@@ -113,8 +112,7 @@ if [ 0 -eq "${do_unsupported-0}" ] && [ 0 -eq "${do_quick_check-0}" ] ; then
       "\tUbuntu 16.04 LTS (xenial with EoL April 2024)\n" \
       "\tUbuntu 18.04 LTS (bionic with EoL April 2028)\n" \
       "\tUbuntu 20.04 LTS (focal with Eol April 2030)\n" \
-      "\tUbuntu 19.04 (disco)\n" \
-      "\tUbuntu 19.10 (eoan)\n" \
+      "\tUbuntu 20.10 (groovy)\n" \
       "\tDebian 8 (jessie) or later" >&2
     exit 1
   fi
@@ -142,7 +140,7 @@ fi
 apt_package_list=$(build_apt_package_list)
 
 # Packages needed for chromeos only
-chromeos_dev_list="libbluetooth-dev libxkbcommon-dev"
+chromeos_dev_list="libbluetooth-dev libxkbcommon-dev mesa-common-dev"
 
 if package_exists realpath; then
   chromeos_dev_list="${chromeos_dev_list} realpath"
@@ -192,7 +190,9 @@ dev_list="\
   libsqlite3-dev
   libssl-dev
   libudev-dev
+  libva-dev
   libwww-perl
+  libxshmfence-dev
   libxslt1-dev
   libxss-dev
   libxt-dev
@@ -203,13 +203,7 @@ dev_list="\
   patch
   perl
   pkg-config
-  python
-  python-crypto
-  python-dev
-  python-numpy
-  python-openssl
-  python-psutil
-  python-yaml
+  python-setuptools
   rpm
   ruby
   subversion
@@ -221,6 +215,12 @@ dev_list="\
   zip
   $chromeos_dev_list
 "
+
+if package_exists python-is-python2; then
+  dev_list="${dev_list} python-is-python2 python2-dev"
+else
+  dev_list="${dev_list} python python-dev"
+fi
 
 # 64-bit systems need a minimum set of 32-bit compat packages for the pre-built
 # NaCl binaries.
@@ -345,6 +345,10 @@ backwards_compatible_list="\
   ttf-mscorefonts-installer
   xfonts-mathml
 "
+if package_exists python-is-python2; then
+  backwards_compatible_list="${backwards_compatible_list} python-dev"
+fi
+
 case $distro_codename in
   trusty)
     backwards_compatible_list+=" \
@@ -429,6 +433,13 @@ case $distro_codename in
                 gcc-10-multilib-arm-linux-gnueabihf
                 gcc-arm-linux-gnueabihf"
     ;;
+  groovy)
+    arm_list+=" g++-10-multilib-arm-linux-gnueabihf
+                gcc-10-multilib-arm-linux-gnueabihf
+                gcc-arm-linux-gnueabihf
+                g++-10-arm-linux-gnueabihf
+                gcc-10-arm-linux-gnueabihf"
+    ;;
 esac
 
 # Packages to build NaCl, its toolchains, and its ports.
@@ -496,7 +507,9 @@ else
   dev_list="${dev_list} libudev0"
   nacl_list="${nacl_list} libudev0:i386"
 fi
-if package_exists libbrlapi0.7; then
+if package_exists libbrlapi0.8; then
+  dev_list="${dev_list} libbrlapi0.8"
+elif package_exists libbrlapi0.7; then
   dev_list="${dev_list} libbrlapi0.7"
 elif package_exists libbrlapi0.6; then
   dev_list="${dev_list} libbrlapi0.6"
@@ -523,6 +536,24 @@ elif package_exists php7.0-cgi; then
   dev_list="${dev_list} php7.0-cgi libapache2-mod-php7.0"
 else
   dev_list="${dev_list} php5-cgi libapache2-mod-php5"
+fi
+
+# Most python 2 packages are removed in Ubuntu 20.10, but the build doesn't seem
+# to need them, so only install them if they're available.
+if package_exists python-crypto; then
+  dev_list="${dev_list} python-crypto"
+fi
+if package_exists python-numpy; then
+  dev_list="${dev_list} python-numpy"
+fi
+if package_exists python-openssl; then
+  dev_list="${dev_list} python-openssl"
+fi
+if package_exists python-psutil; then
+  dev_list="${dev_list} python-psutil"
+fi
+if package_exists python-yaml; then
+  dev_list="${dev_list} python-yaml"
 fi
 
 # Some packages are only needed if the distribution actually supports

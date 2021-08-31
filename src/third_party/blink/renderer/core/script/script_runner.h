@@ -55,7 +55,6 @@ class CORE_EXPORT ScriptRunner final
     return !pending_in_order_scripts_.IsEmpty() ||
            !pending_async_scripts_.IsEmpty();
   }
-  void SetForceDeferredExecution(bool force_deferred);
   void NotifyScriptReady(PendingScript*);
   void NotifyDelayedAsyncScriptsMilestoneReached();
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
@@ -70,17 +69,26 @@ class CORE_EXPORT ScriptRunner final
   void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "ScriptRunner"; }
 
+  // HTML parser can defer async scripts until after it's processed sequential
+  // sync <script> tags.
+  void PauseAsyncScriptExecution();
+  void ResumeAsyncScriptExecution();
+  bool AsyncScriptExecutionPaused() const {
+    return async_script_execution_paused_;
+  }
+
  private:
   class Task;
 
   void MovePendingScript(ScriptRunner*, PendingScript*);
   bool RemovePendingInOrderScript(PendingScript*);
   void ScheduleReadyInOrderScripts();
+  void ScheduleDelayedAsyncScripts();
 
   // Used to delay async scripts. These scripts are delayed until
   // |NotifyDelayedAsyncScriptsMilestoneReached()| is called.
   bool CanDelayAsyncScripts();
-  void DelayAsyncScriptUntilMilestoneReached(PendingScript*);
+  void DelayAsyncScript(PendingScript*);
 
   void PostTask(const base::Location&);
   void PostTasksForReadyScripts(const base::Location&);
@@ -111,11 +119,6 @@ class CORE_EXPORT ScriptRunner final
 
   int number_of_in_order_scripts_with_pending_notification_ = 0;
 
-  // Whether script execution is suspended due to there being force deferred
-  // scripts that have not yet been executed. This is expected to be in sync
-  // with HTMLParserScriptRunner::suspended_async_script_execution_.
-  bool is_force_deferred_ = false;
-
   // Scripts in |pending_delayed_async_scripts_| are delayed until the
   // |NotifyDelayedAsyncScriptsMilestoneReached()| is called. After this point,
   // the ScriptRunner no longer delays async scripts. This bool is used to
@@ -123,6 +126,7 @@ class CORE_EXPORT ScriptRunner final
   // design doc:
   // https://docs.google.com/document/u/1/d/1G-IUrT4enARZlsIrFQ4d4cRVe9MRTJASfWwolV09JZE/edit.
   bool delay_async_script_milestone_reached_ = false;
+  bool async_script_execution_paused_ = false;
 };
 
 }  // namespace blink

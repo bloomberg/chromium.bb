@@ -22,6 +22,8 @@ public:
     void insertFunction(const char* functionDefinition) {
         this->functions().append(functionDefinition);
     }
+    using GrGLSLShaderBuilder::functions;
+    using GrGLSLShaderBuilder::code;
 
 protected:
     GrGLSLVertexGeoBuilder(GrGLSLProgramBuilder* program) : INHERITED(program) {}

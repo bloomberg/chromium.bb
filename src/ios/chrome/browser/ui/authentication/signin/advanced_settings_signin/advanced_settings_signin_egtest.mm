@@ -24,6 +24,7 @@
 #endif
 
 using chrome_test_util::GoogleServicesSettingsView;
+using chrome_test_util::GoogleServicesSettingsButton;
 using chrome_test_util::PrimarySignInButton;
 using chrome_test_util::SyncSettingsConfirmButton;
 using l10n_util::GetNSString;
@@ -64,6 +65,62 @@ const NSTimeInterval kSyncOperationTimeout = 5.0;
 
   // Test the user is signed in.
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+}
+
+// Tests that a user that signs in and gives sync consent can sign
+// out through the "Sign out and Turn Off Sync" option in Sync settings.
+- (void)testSignInOpenSyncSettingsSignOutAndTurnOffSync {
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
+  [SigninEarlGreyUI tapSettingsLink];
+  [[EarlGrey selectElementWithMatcher:SyncSettingsConfirmButton()]
+      performAction:grey_tap()];
+
+  // Test the user is signed in.
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+
+  [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
+
+  [[[EarlGrey selectElementWithMatcher:
+                  grey_accessibilityLabel(l10n_util::GetNSString(
+                      IDS_IOS_OPTIONS_ACCOUNTS_SIGN_OUT_TURN_OFF_SYNC))]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown, 200)
+      onElementWithMatcher:grey_accessibilityID(
+                               kManageSyncTableViewAccessibilityIdentifier)]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_SIGNOUT_DIALOG_CLEAR_DATA_BUTTON)]
+      performAction:grey_tap()];
+  [SigninEarlGrey verifySignedOut];
+}
+
+// Tests that a user account with a sync password displays a sync error
+// message after sign-in.
+- (void)testSigninOpenSyncSettingsWithPasswordError {
+  [ChromeEarlGrey addBookmarkWithSyncPassphrase:@"hello"];
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
+  [SigninEarlGreyUI tapSettingsLink];
+  [[EarlGrey selectElementWithMatcher:SyncSettingsConfirmButton()]
+      performAction:grey_tap()];
+
+  // Test the user is signed in.
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+
+  // Test the sync error message is visible.
+  [ChromeEarlGreyUI tapSettingsMenuButton:GoogleServicesSettingsButton()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_SYNC_ERROR_TITLE))]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Verifies that advanced sign-in shows an alert dialog when being swiped to
@@ -108,7 +165,7 @@ const NSTimeInterval kSyncOperationTimeout = 5.0;
   [ChromeEarlGrey simulateExternalAppURLOpening];
 
   [ChromeEarlGrey waitForSyncInitialized:NO syncTimeout:kSyncOperationTimeout];
-  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedOut];
 }
 
 // Tests interrupting sign-in by opening an URL from another app.
@@ -128,7 +185,7 @@ const NSTimeInterval kSyncOperationTimeout = 5.0;
   [ChromeEarlGrey simulateExternalAppURLOpening];
 
   [ChromeEarlGrey waitForSyncInitialized:NO syncTimeout:kSyncOperationTimeout];
-  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedOut];
 }
 
 // Tests interrupting sign-in by opening an URL from another app.
@@ -138,17 +195,14 @@ const NSTimeInterval kSyncOperationTimeout = 5.0;
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
-  [ChromeEarlGreyUI openToolsMenu];
-  [ChromeEarlGreyUI
-      tapToolsMenuButton:chrome_test_util::RecentTabsMenuButton()];
-  [SigninEarlGreyUI scrollToPrimarySignInButtonInRecentTabs];
+  [SigninEarlGreyUI tapPrimarySignInButtonInRecentTabs];
   [SigninEarlGreyUI tapSettingsLink];
   [ChromeEarlGreyUI waitForAppToIdle];
 
   [ChromeEarlGrey simulateExternalAppURLOpening];
 
   [ChromeEarlGrey waitForSyncInitialized:NO syncTimeout:kSyncOperationTimeout];
-  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedOut];
 }
 
 // Tests interrupting sign-in by opening an URL from another app.
@@ -158,21 +212,14 @@ const NSTimeInterval kSyncOperationTimeout = 5.0;
   FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
   [SigninEarlGrey addFakeIdentity:fakeIdentity];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::ShowTabsButton()]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          TabGridOtherDevicesPanelButton()]
-      performAction:grey_tap()];
-
-  [SigninEarlGreyUI collapseRecentlyClosedTabsIfSigninPromoNotVisible];
-  [SigninEarlGreyUI scrollToPrimarySignInButtonInRecentTabs];
+  [SigninEarlGreyUI tapPrimarySignInButtonInTabSwitcher];
   [SigninEarlGreyUI tapSettingsLink];
   [ChromeEarlGreyUI waitForAppToIdle];
 
   [ChromeEarlGrey simulateExternalAppURLOpening];
 
   [ChromeEarlGrey waitForSyncInitialized:NO syncTimeout:kSyncOperationTimeout];
-  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
+  [SigninEarlGrey verifySignedOut];
 }
 
 @end

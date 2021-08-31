@@ -68,6 +68,8 @@ class TestPopupObserver : public PasswordGenerationPopupObserver {
   void WaitForStatus(GenerationPopup status) {
     if (status == popup_showing_)
       return;
+    SCOPED_TRACE(::testing::Message()
+                 << "WaitForStatus " << static_cast<int>(status));
     base::RunLoop run_loop;
     run_loop_ = &run_loop;
     run_loop_->Run();
@@ -76,6 +78,7 @@ class TestPopupObserver : public PasswordGenerationPopupObserver {
 
   // Waits until the popup is either shown or hidden.
   void WaitForStatusChange() {
+    SCOPED_TRACE(::testing::Message() << "WaitForStatusChange");
     base::RunLoop run_loop;
     run_loop_ = &run_loop;
     run_loop_->Run();
@@ -151,10 +154,10 @@ class PasswordGenerationInteractiveTest
         "}",
         field_id.c_str(), RETURN_CODE_NO_ELEMENT, RETURN_CODE_OK,
         RETURN_CODE_OK);
-    int return_value = RETURN_CODE_INVALID;
-    ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractInt(
-        RenderFrameHost(), script, &return_value));
-    EXPECT_EQ(RETURN_CODE_OK, return_value);
+    EXPECT_EQ(RETURN_CODE_OK,
+              content::EvalJs(RenderFrameHost(), script,
+                              content::EXECUTE_SCRIPT_NO_USER_GESTURE |
+                                  content::EXECUTE_SCRIPT_USE_MANUAL_REPLY));
   }
 
   std::string GetFocusedElement() {
@@ -206,7 +209,12 @@ class PasswordGenerationInteractiveTest
     observer_.WaitForStatus(status);
   }
 
-  void WaitForPopupStatusChange() { observer_.WaitForStatusChange(); }
+  void WaitForGenerationPopupShowing() {
+    if (GenerationPopupShowing())
+      return;
+    observer_.WaitForStatusChange();
+    EXPECT_TRUE(GenerationPopupShowing());
+  }
 
  private:
   TestPopupObserver observer_;
@@ -258,9 +266,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
   // Delete the password. The generation prompt should be visible.
   base::HistogramTester histogram_tester;
   SimulateUserDeletingFieldContent("password_field");
-  WaitForPopupStatusChange();
-  EXPECT_FALSE(EditingPopupShowing());
-  EXPECT_TRUE(GenerationPopupShowing());
+  WaitForGenerationPopupShowing();
 
   // The metrics are recorded on navigation when the frame is destroyed.
   NavigateToFile("/password/done.html");
@@ -299,7 +305,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
-                       DISABLED_PopupShownAndDismissed) {
+                       PopupShownAndDismissed) {
   FocusPasswordField();
   EXPECT_TRUE(GenerationPopupShowing());
 
@@ -350,23 +356,21 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
 
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
                        GenerationTriggeredOnTap) {
-  // Tap in the middle of the field.
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
+  ASSERT_TRUE(content::ExecJs(
       RenderFrameHost(),
       "var submitRect = document.getElementById('password_field')"
-      ".getBoundingClientRect();"));
-  double y;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractDouble(
-      RenderFrameHost(),
-      "window.domAutomationController.send((submitRect.top +"
-      "submitRect.bottom) / 2);",
-      &y));
-  double x;
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractDouble(
-      RenderFrameHost(),
-      "window.domAutomationController.send((submitRect.left + submitRect.right)"
-      "/ 2);",
-      &x));
+      ".getBoundingClientRect();",
+      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  double y = content::EvalJs(RenderFrameHost(),
+                             "(submitRect.top + submitRect.bottom) / 2;",
+                             content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+                 .ExtractDouble();
+  double x = content::EvalJs(RenderFrameHost(),
+                             "(submitRect.left + submitRect.right) / 2;",
+                             content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+                 .ExtractDouble();
+
+  // Tap in the middle of the field.
   content::SimulateTapAt(WebContents(),
                          gfx::Point(static_cast<int>(x), static_cast<int>(y)));
   WaitForStatus(TestPopupObserver::GenerationPopup::kShown);
@@ -374,23 +378,21 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
 
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
                        GenerationTriggeredOnClick) {
-  // Tap in the middle of the field.
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
+  ASSERT_TRUE(content::ExecJs(
       RenderFrameHost(),
       "var submitRect = document.getElementById('password_field')"
-      ".getBoundingClientRect();"));
-  double y;
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractDouble(
-      RenderFrameHost(),
-      "window.domAutomationController.send((submitRect.top +"
-      "submitRect.bottom) / 2);",
-      &y));
-  double x;
-  EXPECT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractDouble(
-      RenderFrameHost(),
-      "window.domAutomationController.send((submitRect.left + submitRect.right)"
-      "/ 2);",
-      &x));
+      ".getBoundingClientRect();",
+      content::EXECUTE_SCRIPT_NO_USER_GESTURE));
+  double y = content::EvalJs(RenderFrameHost(),
+                             "(submitRect.top + submitRect.bottom) / 2;",
+                             content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+                 .ExtractDouble();
+  double x = content::EvalJs(RenderFrameHost(),
+                             "(submitRect.left + submitRect.right) / 2;",
+                             content::EXECUTE_SCRIPT_NO_USER_GESTURE)
+                 .ExtractDouble();
+
+  // Click in the middle of the field.
   content::SimulateMouseClickAt(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft,
       gfx::Point(static_cast<int>(x), static_cast<int>(y)));
@@ -434,8 +436,7 @@ IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
       password_store->stored_passwords();
   EXPECT_EQ(1u, stored_passwords.size());
   EXPECT_EQ(1u, stored_passwords.begin()->second.size());
-  EXPECT_EQ(base::UTF8ToUTF16("UN"),
-            (stored_passwords.begin()->second)[0].username_value);
+  EXPECT_EQ(u"UN", (stored_passwords.begin()->second)[0].username_value);
 }
 
 // Verify that navigating away closes the popup.

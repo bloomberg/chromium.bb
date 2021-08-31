@@ -10,15 +10,13 @@
 #include <set>
 
 #include "base/memory/ref_counted.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/timer/timer.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 
 class Profile;
 class ProfileImpl;
-
-namespace content {
-class RenderProcessHost;
-}
 
 // We use this class to destroy the off the record profile so that we can make
 // sure it gets done asynchronously after all render process hosts are gone.
@@ -51,10 +49,14 @@ class ProfileDestroyer : public content::RenderProcessHostObserver {
   // Fetch the list of render process hosts that still point to |profile_ptr|.
   // |profile_ptr| is a void* because the Profile object may be freed. Only
   // pointer comparison is allowed, it will never be dereferenced as a Profile.
-  static HostSet GetHostsForProfile(void* const profile_ptr);
+  //
+  // If |include_spare_rph| is true, include spare render process hosts in the
+  // output.
+  static HostSet GetHostsForProfile(void* const profile_ptr,
+                                    bool include_spare_rph = false);
 
-  // Destroys a regular profile immediately.
-  static void DestroyRegularProfileNow(Profile* const profile);
+  // Destroys an Original (non-off-the-record) profile immediately.
+  static void DestroyOriginalProfileNow(Profile* const profile);
 
   // Destroys an OffTheRecord profile immediately and removes it from all
   // pending destroyers.
@@ -70,6 +72,10 @@ class ProfileDestroyer : public content::RenderProcessHostObserver {
 
   // We don't want to wait forever, so we have a cancellation timer.
   base::OneShotTimer timer_;
+
+  base::ScopedMultiSourceObservation<content::RenderProcessHost,
+                                     content::RenderProcessHostObserver>
+      observations_{this};
 
   // Used to count down the number of render process host left.
   uint32_t num_hosts_;

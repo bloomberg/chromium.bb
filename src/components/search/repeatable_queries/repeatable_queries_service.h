@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -18,9 +19,15 @@
 
 class SearchProviderObserver;
 class TemplateURLService;
+class TemplateURL;
+
+namespace base {
+class SequencedTaskRunner;
+}  // namespace base
 
 namespace history {
 class HistoryService;
+class URLDatabase;
 }  // namespace history
 
 namespace network {
@@ -47,7 +54,7 @@ class RepeatableQuery {
   }
 
   // Repeatable query suggestion.
-  base::string16 query;
+  std::u16string query;
 
   // The URL to navigate to when the suggestion is selected.
   GURL destination_url;
@@ -59,8 +66,8 @@ class RepeatableQuery {
 
 // Provides repeatable query suggestions to be shown in the NTP Most Visited
 // tiles when Google is the default search provider. The repeatable queries are
-// requested from the server for signed-in users and extracted from the URL
-// database for unauthenticated users.
+// requested from the server for signed-in users and extracted from the
+// in-memory URLDatabase for unauthenticated users.
 class RepeatableQueriesService : public KeyedService {
  public:
   RepeatableQueriesService(
@@ -85,7 +92,7 @@ class RepeatableQueriesService : public KeyedService {
 
   // If Google is the default search provider, asynchronously requests
   // repeatable query suggestions from the server for signed-in users and
-  // synchronously extracts them from the URL database for
+  // synchronously extracts them from the in-memory URLDatabase for
   // unauthenticated users. Regardless of success, observers are notified via
   // RepeatableQueriesServiceObserver::OnRepeatableQueriesUpdated.
   void Refresh();
@@ -113,14 +120,18 @@ class RepeatableQueriesService : public KeyedService {
   // Called when the signin status changes.
   void SigninStatusChanged();
 
-  // Returns the server destination URL for |query|.
-  GURL GetQueryDestinationURL(const base::string16& query);
+  // Returns the server destination URL for |query| with |search_provider|.
+  // |search_provider| may not be nullptr.
+  GURL GetQueryDestinationURL(const std::u16string& query,
+                              const TemplateURL* search_provider);
 
   // Returns the resolved deletion URL for the given relative deletion URL.
   GURL GetQueryDeletionURL(const std::string& deletion_url);
 
   // Returns the server request URL.
   GURL GetRequestURL();
+
+  void FlushForTesting(base::OnceClosure flushed);
 
  private:
   // Requests repeatable queries from the server. Called for signed-in users.
@@ -134,7 +145,9 @@ class RepeatableQueriesService : public KeyedService {
   void GetRepeatableQueriesFromURLDatabase();
 
   // Deletes |query| from the in-memory URLDatabase.
-  void DeleteRepeatableQueryFromURLDatabase(const base::string16& query);
+  void DeleteRepeatableQueryFromURLDatabase(const std::u16string& query);
+  void DeleteRepeatableQueryFromURLDatabaseTask(const std::u16string& query,
+                                                history::URLDatabase* url_db);
 
   // Deletes the query with |deletion_url| from the server.
   void DeleteRepeatableQueryFromServer(const std::string& deletion_url);
@@ -143,8 +156,8 @@ class RepeatableQueriesService : public KeyedService {
 
   void NotifyObservers();
 
-  bool IsQueryDeleted(const base::string16& query);
-  void MarkQueryAsDeleted(const base::string16& query);
+  bool IsQueryDeleted(const std::u16string& query);
+  void MarkQueryAsDeleted(const std::u16string& query);
 
   history::HistoryService* history_service_;
 
@@ -165,9 +178,12 @@ class RepeatableQueriesService : public KeyedService {
   // Used to ensure the deleted repeatable queries won't be suggested again.
   // This does not need to be persisted across sessions as the queries do get
   // deleted on the server as well as on the device, whichever is applicable.
-  std::set<base::string16> deleted_repeatable_queries_;
+  std::set<std::u16string> deleted_repeatable_queries_;
 
   std::vector<std::unique_ptr<network::SimpleURLLoader>> loaders_;
+
+  // The TaskRunner to which in-memory URLDatabase deletion tasks are posted.
+  scoped_refptr<base::SequencedTaskRunner> deletion_task_runner_;
 
   base::WeakPtrFactory<RepeatableQueriesService> weak_ptr_factory_{this};
 };

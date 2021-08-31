@@ -20,6 +20,9 @@ class EligibleHostDevicesProviderImpl
     : public EligibleHostDevicesProvider,
       public device_sync::DeviceSyncClient::Observer {
  public:
+  static constexpr base::TimeDelta kInactiveDeviceThresholdInDays =
+      base::TimeDelta::FromDays(30);
+
   class Factory {
    public:
     static std::unique_ptr<EligibleHostDevicesProvider> Create(
@@ -53,7 +56,7 @@ class EligibleHostDevicesProviderImpl
 
   void OnGetDevicesActivityStatus(
       device_sync::mojom::NetworkRequestResult,
-      base::Optional<std::vector<device_sync::mojom::DeviceActivityStatusPtr>>);
+      absl::optional<std::vector<device_sync::mojom::DeviceActivityStatusPtr>>);
 
   device_sync::DeviceSyncClient* device_sync_client_;
 

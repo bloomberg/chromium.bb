@@ -10,29 +10,31 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
+#include "chrome/browser/chromeos/input_method/suggestions_source.h"
 
 namespace chromeos {
 
 // A generic agent to suggest when the user types, and adopt or dismiss the
 // suggestion according to the user action.
-class Suggester {
+class Suggester : public SuggestionsSource {
  public:
-  virtual ~Suggester() {}
-
   // Called when a text field gains focus, and suggester starts working.
   virtual void OnFocus(int context_id) = 0;
 
   // Called when a text field loses focus, and suggester stops working.
   virtual void OnBlur() = 0;
 
+  // Called when suggestions are generated outside of the assisitve framework.
+  virtual void OnExternalSuggestionsUpdated(
+      const std::vector<ime::TextSuggestion>& suggestions) = 0;
+
   // Called when suggestion is being shown.
   // Returns SuggestionStatus as suggester handles the event.
-  virtual SuggestionStatus HandleKeyEvent(
-      const InputMethodEngineBase::KeyboardEvent& event) = 0;
+  virtual SuggestionStatus HandleKeyEvent(const ui::KeyEvent& event) = 0;
 
   // Check if suggestion should be displayed according to the surrounding text
   // information.
-  virtual bool Suggest(const base::string16& text) = 0;
+  virtual bool Suggest(const std::u16string& text) = 0;
 
   // Accepts the suggestion at a given index, index can be made default if
   // unnecessary. Returns true if suggestion is accepted successfully.
@@ -42,6 +44,9 @@ class Suggester {
 
   // Return the propose assistive action type.
   virtual AssistiveType GetProposeActionType() = 0;
+
+  // Is the suggester currently suggesting a candidate to the user?
+  virtual bool HasSuggestions() = 0;
 };
 
 }  // namespace chromeos

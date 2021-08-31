@@ -60,6 +60,9 @@ class POLICY_EXPORT ManagementService {
   // Returns the highest trustworthiness of the active management authorities.
   ManagementAuthorityTrustworthiness GetManagementAuthorityTrustworthiness();
 
+  // Returns whether there is any management authority at all.
+  bool IsManaged();
+
  protected:
   // Initializes the management status providers.
   virtual void InitManagementStatusProviders() = 0;
@@ -82,5 +85,4 @@ class POLICY_EXPORT ManagementService {
 
 }  // namespace policy
 
-#endif  // #define
-        // COMPONENTS_POLICY_CORE_COMMON_MANAGEMENT_MANAGEMENT_SERVICE_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_MANAGEMENT_MANAGEMENT_SERVICE_H_

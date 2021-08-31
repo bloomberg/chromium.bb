@@ -6,32 +6,30 @@
 //
 //===----------------------------------------------------------------------===//
 
-// UNSUPPORTED: libcxxabi-no-exceptions
+// UNSUPPORTED: no-exceptions
+
+// __cxa_uncaught_exceptions is not re-exported from libc++ until macOS 10.15.
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.14
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.13
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.12
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.11
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.10
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.9
 
 #include <cxxabi.h>
-#include <exception>
 #include <cassert>
 
 // namespace __cxxabiv1 {
-//      extern bool          __cxa_uncaught_exception () throw();
-//      extern unsigned int  __cxa_uncaught_exceptions() throw();
+//      extern unsigned int __cxa_uncaught_exceptions() throw();
 // }
 
 struct A {
-    ~A() { assert( __cxxabiv1::__cxa_uncaught_exception()); }
-    };
-
-struct B {
-    B(unsigned cnt) : data_(cnt) {}
-    ~B() { assert( data_ == __cxxabiv1::__cxa_uncaught_exceptions()); }
+    A(unsigned cnt) : data_(cnt) {}
+    ~A() { assert( data_ == __cxxabiv1::__cxa_uncaught_exceptions()); }
     unsigned data_;
-    };
+};
 
-int main ()
-{
-    try { A a; throw 3; assert (false); }
-    catch (int) {}
-    
-    try { B b(1); throw 3; assert (false); }
+int main () {
+    try { A a(1); throw 3; assert(false); }
     catch (int) {}
 }

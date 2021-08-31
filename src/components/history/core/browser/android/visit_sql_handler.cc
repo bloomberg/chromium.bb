@@ -32,7 +32,7 @@ VisitSQLHandler::VisitSQLHandler(URLDatabase* url_db, VisitDatabase* visit_db)
 VisitSQLHandler::~VisitSQLHandler() {
 }
 
-// The created time is updated according the given |row|.
+// The created time is updated according the given `row`.
 // We simulate updating created time by
 // a. Remove all visits.
 // b. Insert a new visit which has visit time same as created time.
@@ -123,7 +123,7 @@ bool VisitSQLHandler::AddVisit(URLID url_id, const Time& visit_time) {
                      ui::PAGE_TRANSITION_AUTO_BOOKMARK,
                      /*segment_id=*/0,
                      /*incremented_omnibox_typed_score=*/false,
-                     /*publicly_routable=*/false);
+                     /*floc_allowed=*/false);
   return visit_db_->AddVisit(&visit_row, SOURCE_BROWSED);
 }
 

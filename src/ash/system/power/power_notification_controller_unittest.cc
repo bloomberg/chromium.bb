@@ -9,6 +9,7 @@
 #include <string>
 
 #include "ash/test/ash_test_base.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "ui/message_center/fake_message_center.h"
@@ -80,8 +81,9 @@ class PowerNotificationControllerTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
-    message_center_.reset(new MockMessageCenter());
-    controller_.reset(new PowerNotificationController(message_center_.get()));
+    message_center_ = std::make_unique<MockMessageCenter>();
+    controller_ =
+        std::make_unique<PowerNotificationController>(message_center_.get());
   }
 
   void TearDown() override {
@@ -291,8 +293,7 @@ TEST_F(PowerNotificationControllerTest,
   ASSERT_TRUE(notification);
   EXPECT_TRUE(notification->never_timeout());
   EXPECT_FALSE(notification->pinned());
-  EXPECT_NE(std::string::npos,
-            notification->message().find(base::ASCIIToUTF16("60W")))
+  EXPECT_NE(std::string::npos, notification->message().find(u"60W"))
       << notification->message();
 }
 

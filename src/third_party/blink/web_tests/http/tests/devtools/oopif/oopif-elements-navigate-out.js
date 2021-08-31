@@ -4,12 +4,11 @@
 
 (async function() {
   TestRunner.addResult(`Tests that oopif iframes are rendered inline.\n`);
-  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadModule('elements'); await TestRunner.loadTestModule('elements_test_runner');
   await TestRunner.showPanel('elements');
 
   // Save time on style updates.
-  Elements.StylesSidebarPane.prototype.update = function() {};
-  Elements.MetricsSidebarPane.prototype.update = function() {};
+  ElementsTestRunner.ignoreSidebarUpdates();
 
   await TestRunner.navigatePromise('resources/page-in.html');
 
@@ -20,12 +19,20 @@
   SDK.targetManager.observeTargets({
     targetAdded: async function(target) {
       target.model(SDK.ResourceTreeModel)._agent.setLifecycleEventsEnabled(true);
-      let complete = false;
+      let loadedModels = 0;
       target.model(SDK.ResourceTreeModel).addEventListener(SDK.ResourceTreeModel.Events.LifecycleEvent, async (event) => {
-        if (event.data.name === 'load' && !complete) {
-          complete = true;
-          await ElementsTestRunner.expandAndDump();
-          TestRunner.completeTest();
+        if (event.data.name === 'load') {
+          loadedModels++;
+
+          if (loadedModels >= 2) {
+            ElementsTestRunner.expandElementsTree(async () => {
+              // Because of the out-of-process component, there is a slight delay here
+              // This requires expanding twice.
+              await timeout(200);
+              await ElementsTestRunner.expandAndDump();
+              TestRunner.completeTest();
+            });
+          }
         }
       });
     },
@@ -33,3 +40,7 @@
     targetRemoved: function(target) {},
   });
 })();
+
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}

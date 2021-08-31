@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <tuple>
 
 #include "base/bind.h"
@@ -67,15 +68,14 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
  private:
   // mojom::AutofillDriver:
   void SetFormToBeProbablySubmitted(
-      const base::Optional<FormData>& form) override {}
+      const absl::optional<FormData>& form) override {}
 
-  void FormsSeen(const std::vector<FormData>& forms,
-                 base::TimeTicks timestamp) override {}
+  void FormsSeen(const std::vector<FormData>& forms) override {}
 
   void FormSubmitted(const FormData& form,
                      bool known_success,
                      SubmissionSource source) override {
-    form_submitted_.reset(new FormData(form));
+    form_submitted_ = std::make_unique<FormData>(form);
     known_success_ = known_success;
     submission_source_ = source;
   }
@@ -154,9 +154,9 @@ void VerifyReceivedRendererMessages(
   // The tuple also includes a timestamp, which is ignored.
   const FormData& submitted_form = *(fake_driver.form_submitted());
   ASSERT_LE(2U, submitted_form.fields.size());
-  EXPECT_EQ(base::ASCIIToUTF16("fname"), submitted_form.fields[0].name);
+  EXPECT_EQ(u"fname", submitted_form.fields[0].name);
   EXPECT_EQ(base::UTF8ToUTF16(fname), submitted_form.fields[0].value);
-  EXPECT_EQ(base::ASCIIToUTF16("lname"), submitted_form.fields[1].name);
+  EXPECT_EQ(u"lname", submitted_form.fields[1].name);
   EXPECT_EQ(expect_known_success, fake_driver.known_success());
   EXPECT_EQ(expect_submission_source,
             mojo::ConvertTo<SubmissionSource>(fake_driver.submission_source()));
@@ -172,7 +172,7 @@ void VerifyReceivedAddressRendererMessages(
   // The tuple also includes a timestamp, which is ignored.
   const FormData& submitted_form = *(fake_driver.form_submitted());
   ASSERT_LE(1U, submitted_form.fields.size());
-  EXPECT_EQ(base::ASCIIToUTF16("address"), submitted_form.fields[0].name);
+  EXPECT_EQ(u"address", submitted_form.fields[0].name);
   EXPECT_EQ(base::UTF8ToUTF16(address), submitted_form.fields[0].value);
   EXPECT_EQ(expect_known_success, fake_driver.known_success());
   EXPECT_EQ(expect_submission_source,
@@ -187,11 +187,10 @@ void VerifyNoSubmitMessagesReceived(
   EXPECT_EQ(nullptr, fake_driver.form_submitted());
 }
 
-// Simulates receiving a message from the browser to fill a form.
-void SimulateOnFillForm(autofill::AutofillAgent* autofill_agent,
-                        blink::WebLocalFrame* main_frame) {
+FormData CreateAutofillFormData(blink::WebLocalFrame* main_frame) {
   FormData data;
-  data.name = base::ASCIIToUTF16("name");
+  data.host_frame = LocalFrameToken(main_frame->GetLocalFrameToken().value());
+  data.name = u"name";
   data.url = GURL("http://example.com/");
   data.action = GURL("http://example.com/blade.php");
   data.is_form_tag = true;  // Default value.
@@ -200,39 +199,61 @@ void SimulateOnFillForm(autofill::AutofillAgent* autofill_agent,
   WebFormControlElement fname_element =
       document.GetElementById(WebString::FromUTF8("fname"))
           .To<WebFormControlElement>();
-  ASSERT_FALSE(fname_element.IsNull());
   WebFormControlElement lname_element =
       document.GetElementById(WebString::FromUTF8("lname"))
           .To<WebFormControlElement>();
 
   FormFieldData field_data;
-  field_data.name = base::ASCIIToUTF16("fname");
-  field_data.value = base::ASCIIToUTF16("John");
+  field_data.name = u"fname";
+  field_data.value = u"John";
   field_data.is_autofilled = true;
+  field_data.host_frame = LocalFrameToken(
+      fname_element.GetDocument().GetFrame()->GetLocalFrameToken().value());
   field_data.unique_renderer_id =
       FieldRendererId(fname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
 
-  field_data.name = base::ASCIIToUTF16("lname");
-  field_data.value = base::ASCIIToUTF16("Smith");
+  field_data.name = u"lname";
+  field_data.value = u"Smith";
   field_data.is_autofilled = true;
   if (!lname_element.IsNull()) {
+    field_data.host_frame = LocalFrameToken(
+        lname_element.GetDocument().GetFrame()->GetLocalFrameToken().value());
     field_data.unique_renderer_id =
         FieldRendererId(lname_element.UniqueRendererFormControlId());
   }
   data.fields.push_back(field_data);
 
+  return data;
+}
+
+void SimulateFillForm(const FormData& form_data,
+                      autofill::AutofillAgent* autofill_agent,
+                      blink::WebLocalFrame* main_frame) {
+  WebDocument document = main_frame->GetDocument();
+  WebFormControlElement fname_element =
+      document.GetElementById(WebString::FromUTF8("fname"))
+          .To<WebFormControlElement>();
+
+  ASSERT_FALSE(fname_element.IsNull());
   // This call is necessary to setup the autofill agent appropriate for the
   // user selection; simulates the menu actually popping up.
   autofill_agent->FormControlElementClicked(fname_element.To<WebInputElement>(),
                                             false);
 
-  autofill_agent->FillForm(0, data);
+  autofill_agent->FillForm(0, form_data);
+}
+
+// Simulates receiving a message from the browser to fill a form.
+void SimulateFillForm(autofill::AutofillAgent* autofill_agent,
+                      blink::WebLocalFrame* main_frame) {
+  FormData data = CreateAutofillFormData(main_frame);
+  SimulateFillForm(data, autofill_agent, main_frame);
 }
 
 // Simulates receiving a message from the browser to fill a form with an
 // additional non-autofillable field.
-void SimulateOnFillFormWithNonFillableFields(
+void SimulateFillFormWithNonFillableFields(
     autofill::AutofillAgent* autofill_agent,
     blink::WebLocalFrame* main_frame) {
   WebDocument document = main_frame->GetDocument();
@@ -250,30 +271,37 @@ void SimulateOnFillFormWithNonFillableFields(
   ASSERT_FALSE(lname_element.IsNull());
 
   FormData data;
-  data.name = base::ASCIIToUTF16("name");
+  data.host_frame = LocalFrameToken(main_frame->GetLocalFrameToken().value());
+  data.name = u"name";
   data.url = GURL("http://example.com/");
   data.action = GURL("http://example.com/blade.php");
   data.is_form_tag = true;  // Default value.
 
   FormFieldData field_data;
-  field_data.name = base::ASCIIToUTF16("fname");
-  field_data.value = base::ASCIIToUTF16("John");
+  field_data.name = u"fname";
+  field_data.value = u"John";
   field_data.is_autofilled = true;
+  field_data.host_frame = LocalFrameToken(
+      fname_element.GetDocument().GetFrame()->GetLocalFrameToken().value());
   field_data.unique_renderer_id =
       FieldRendererId(fname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
 
-  field_data.name = base::ASCIIToUTF16("lname");
-  field_data.value = base::ASCIIToUTF16("Smith");
+  field_data.name = u"lname";
+  field_data.value = u"Smith";
   field_data.is_autofilled = true;
+  field_data.host_frame = LocalFrameToken(
+      lname_element.GetDocument().GetFrame()->GetLocalFrameToken().value());
   field_data.unique_renderer_id =
       FieldRendererId(lname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
 
   // Additional non-autofillable field.
-  field_data.name = base::ASCIIToUTF16("mname");
-  field_data.value = base::ASCIIToUTF16("James");
+  field_data.name = u"mname";
+  field_data.value = u"James";
   field_data.is_autofilled = false;
+  field_data.host_frame = LocalFrameToken(
+      mname_element.GetDocument().GetFrame()->GetLocalFrameToken().value());
   field_data.unique_renderer_id =
       FieldRendererId(mname_element.UniqueRendererFormControlId());
   data.fields.push_back(field_data);
@@ -571,7 +599,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormIsInvisible) {
       "<input name='lname'/></form></html>");
 
   // Simulate filling a form using Autofill.
-  SimulateOnFillForm(autofill_agent_, GetMainFrame());
+  SimulateFillForm(autofill_agent_, GetMainFrame());
 
   // Simulate user input since ajax request doesn't fire submission message
   // if there is no user input.
@@ -602,7 +630,7 @@ TEST_F(FormAutocompleteTest, AjaxSucceeded_FilledFormStillVisible) {
       "<input name='lname' value='Deckard'/></form></html>");
 
   // Simulate filling a form using Autofill.
-  SimulateOnFillForm(autofill_agent_, GetMainFrame());
+  SimulateFillForm(autofill_agent_, GetMainFrame());
 
   // Form still visible.
 
@@ -630,7 +658,7 @@ TEST_F(FormAutocompleteTest, VerifyFocusAndBlurEventsAfterAutofill) {
   focus_test_utils_->FocusElement("fname");
 
   // Simulate filling the form using Autofill.
-  SimulateOnFillFormWithNonFillableFields(autofill_agent_, GetMainFrame());
+  SimulateFillFormWithNonFillableFields(autofill_agent_, GetMainFrame());
   base::RunLoop().RunUntilIdle();
 
   // Expected Result in order:
@@ -658,7 +686,7 @@ TEST_F(FormAutocompleteTest,
   focus_test_utils_->FocusElement("fname");
 
   // Simulate filling the form using Autofill.
-  SimulateOnFillForm(autofill_agent_, GetMainFrame());
+  SimulateFillForm(autofill_agent_, GetMainFrame());
   base::RunLoop().RunUntilIdle();
 
   // Expected Result in order:
@@ -686,10 +714,71 @@ TEST_F(FormAutocompleteTest,
   focus_test_utils_->FocusElement("fname");
 
   // Simulate filling the form using Autofill.
-  SimulateOnFillForm(autofill_agent_, GetMainFrame());
+  SimulateFillForm(autofill_agent_, GetMainFrame());
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(GetFocusLog(), "");
+  // Expected Result in order:
+  // * Change fname
+  EXPECT_EQ(GetFocusLog(), "c0");
+}
+
+// Tests that a field is added to the form between the times of triggering
+// and executing the filling.
+TEST_F(FormAutocompleteTest, VerifyFocusAndBlurEventAfterElementAdded) {
+  // Load a form.
+  LoadHTML(
+      "<html><form id='myForm'>"
+      "<label>First Name:</label><input id='fname' name='0'/><br/>"
+      "<label>Last Name:</label> <input id='lname' name='1'/><br/>"
+      "</form></html>");
+
+  focus_test_utils_->SetUpFocusLogging();
+  focus_test_utils_->FocusElement("fname");
+
+  // Simulate filling the form using Autofill.
+  FormData data = CreateAutofillFormData(GetMainFrame());
+  // Simulate that the form was modified between parsing and executing the fill.
+  // The element is inserted at the beginning of the form to verify that
+  // everything works correctly even if unique_renderer_ids of the <input>
+  // elements are not in ascending order.
+  ExecuteJavaScriptForTests(
+      "document.getElementById('fname').insertAdjacentHTML('beforebegin', "
+      "'<label>Zip code:</label><input id=\"zip_code\"/>');");
+  SimulateFillForm(data, autofill_agent_, GetMainFrame());
+  base::RunLoop().RunUntilIdle();
+
+  // Expected Result in order:
+  // * Change fname
+  // * Blur fname
+  // * Focus lname
+  // * Change lname
+  // * Blur lname
+  // * Focus fname
+  EXPECT_EQ(GetFocusLog(), "c0b0f1c1b1f0");
+}
+
+// Tests that a field is removed from the form between the times of
+// triggering and executing the filling.
+TEST_F(FormAutocompleteTest, VerifyFocusAndBlurEventAfterElementRemoved) {
+  // Load a form.
+  LoadHTML(
+      "<html><form id='myForm'>"
+      "<label>First Name:</label><input id='fname' name='0'/><br/>"
+      "<label>Last Name:</label> <input id='lname' name='1'/><br/>"
+      "</form></html>");
+
+  focus_test_utils_->SetUpFocusLogging();
+  focus_test_utils_->FocusElement("fname");
+
+  // Simulate filling the form using Autofill.
+  FormData data = CreateAutofillFormData(GetMainFrame());
+  ExecuteJavaScriptForTests("document.getElementById('lname').remove()");
+  SimulateFillForm(data, autofill_agent_, GetMainFrame());
+  base::RunLoop().RunUntilIdle();
+
+  // Expected Result in order:
+  // * Change fname
+  EXPECT_EQ(GetFocusLog(), "c0");
 }
 
 // Tests that completing an Ajax request without a form present will still
@@ -744,10 +833,10 @@ TEST_F(FormAutocompleteTest, CollectFormlessElements) {
   // Asserting size 4 also ensures that 'excluded' field inside <form> is not
   // collected.
   ASSERT_EQ(4U, result.fields.size());
-  EXPECT_EQ(base::ASCIIToUTF16("text_input"), result.fields[0].name);
-  EXPECT_EQ(base::ASCIIToUTF16("check_input"), result.fields[1].name);
-  EXPECT_EQ(base::ASCIIToUTF16("number_input"), result.fields[2].name);
-  EXPECT_EQ(base::ASCIIToUTF16("select_input"), result.fields[3].name);
+  EXPECT_EQ(u"text_input", result.fields[0].name);
+  EXPECT_EQ(u"check_input", result.fields[1].name);
+  EXPECT_EQ(u"number_input", result.fields[2].name);
+  EXPECT_EQ(u"select_input", result.fields[3].name);
 }
 
 // Unit test for AutofillAgent::AcceptDataListSuggestion.
@@ -768,8 +857,7 @@ TEST_F(FormAutocompleteTest, AcceptDataListSuggestion) {
   WebDocument document = GetMainFrame()->GetDocument();
 
   // Each case tests a different field value with the same suggestion.
-  const base::string16 kSuggestion =
-      base::ASCIIToUTF16("suggestion@example.com");
+  const std::u16string kSuggestion = u"suggestion@example.com";
   struct TestCase {
     std::string id;
     std::string expected;
@@ -794,11 +882,12 @@ TEST_F(FormAutocompleteTest, AcceptDataListSuggestion) {
     ASSERT_FALSE(element.IsNull());
     WebInputElement* input_element = blink::ToWebInputElement(&element);
     ASSERT_TRUE(input_element);
+    FieldRendererId field_id(input_element->UniqueRendererFormControlId());
     // Select this element in |autofill_agent_|.
     autofill_agent_->FormControlElementClicked(element.To<WebInputElement>(),
                                                false);
 
-    autofill_agent_->AcceptDataListSuggestion(kSuggestion);
+    autofill_agent_->AcceptDataListSuggestion(field_id, kSuggestion);
     EXPECT_EQ(c.expected, input_element->Value().Utf8()) << "Case id: " << c.id;
   }
 }
@@ -1099,8 +1188,8 @@ TEST_F(FormAutocompleteTest, SelectControlChanged) {
 
   const FormFieldData* field = fake_driver_.select_control_changed();
   ASSERT_TRUE(field);
-  EXPECT_EQ(base::ASCIIToUTF16("color"), field->name);
-  EXPECT_EQ(base::ASCIIToUTF16("blue"), field->value);
+  EXPECT_EQ(u"color", field->name);
+  EXPECT_EQ(u"blue", field->value);
 }
 
 }  // namespace autofill

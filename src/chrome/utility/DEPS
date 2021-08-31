@@ -6,8 +6,7 @@ include_rules = [
   "+chrome/services/ipp_parser/public/mojom",
   "+chrome/services/file_util/file_util_service.h",
   "+chrome/services/file_util/public/mojom",
-  "+chrome/services/machine_learning/machine_learning_service.h",
-  "+chrome/services/machine_learning/public/mojom",
+  "+chrome/services/mac_notifications",
   "+chrome/services/media_gallery_util",
   # TODO(crbug.com/798782): remove dependency to pdf_to_emf_converter_factory.h
   # when Cloud print chrome/service is removed.
@@ -23,9 +22,12 @@ include_rules = [
   "+chrome/services/util_win/util_win_impl.h",
   "+chrome/services/util_win/public/mojom",
   "+chromeos/assistant/buildflags.h",
+  "+chromeos/components/local_search_service/local_search_service.h",
+  "+chromeos/components/local_search_service/public/mojom",
   "+chromeos/services/assistant",
   "+chromeos/services/ime/ime_service.h",
   "+chromeos/services/ime/public/mojom",
+  "+chromeos/services/libassistant/libassistant_service.h",
   "+chromeos/services/nearby",
   "+chromeos/services/tts",
   "+components/crash/core/common/crash_keys.h",
@@ -40,6 +42,7 @@ include_rules = [
   "+components/services/print_compositor",
   "+components/services/quarantine",
   "+components/services/unzip",
+  "+components/webapps/services/web_app_origin_association",
   "+components/wifi",
   "+content/public/child",
   "+content/public/utility",
@@ -50,5 +53,6 @@ include_rules = [
   "+services/network/url_request_context_builder_mojo.h",
   "+services/proxy_resolver",
   "+skia/ext",
+  "+third_party/blink/public/common",
   "+third_party/zlib/google",
 ]

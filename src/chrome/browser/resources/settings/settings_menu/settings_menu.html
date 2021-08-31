@@ -111,12 +111,14 @@
             <iron-icon icon="settings:assignment"></iron-icon>
             $i18n{autofillPageTitle}
           </a>
-          <a role="menuitem" href="/safetyCheck"
-              hidden="[[!pageVisibility.safetyCheck]]"
-              id="safetyCheck">
-            <iron-icon icon="settings20:safety-check"></iron-icon>
-            $i18n{safetyCheckSectionTitle}
-          </a>
+          <template is="dom-if" if="[[!enableLandingPageRedesign_]]">
+            <a role="menuitem" href="/safetyCheck"
+                hidden="[[!pageVisibility.safetyCheck]]"
+                id="safetyCheck">
+              <iron-icon icon="settings20:safety-check"></iron-icon>
+              $i18n{safetyCheckSectionTitle}
+            </a>
+          </template>
           <a role="menuitem" href="/privacy"
               hidden="[[!pageVisibility.privacy]]">
             <iron-icon icon="cr:security"></iron-icon>
@@ -131,7 +133,7 @@
             <iron-icon icon="cr:search"></iron-icon>
             $i18n{searchPageTitle}
           </a>
-    <if expr="not chromeos">
+    <if expr="not chromeos and not lacros">
           <a role="menuitem" id="defaultBrowser"
             href="/defaultBrowser"
             hidden="[[!pageVisibility.defaultBrowser]]">
@@ -172,7 +174,7 @@
                 <iron-icon icon="settings:accessibility"></iron-icon>
                 $i18n{a11yPageTitle}
               </a>
-    <if expr="not chromeos">
+    <if expr="not chromeos and not lacros">
               <a role="menuitem" href="/system"
                   disabled$="[[!advancedOpened]]">
                 <iron-icon icon="settings:build"></iron-icon>

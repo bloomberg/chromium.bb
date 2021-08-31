@@ -4,6 +4,13 @@
 //build/android/pylib/__init__.py
 //build/android/pylib/constants/__init__.py
 //build/android/pylib/constants/host_paths.py
+//build/android/pylib/local/__init__.py
+//build/android/pylib/local/emulator/__init__.py
+//build/android/pylib/local/emulator/avd.py
+//build/android/pylib/local/emulator/ini.py
+//build/android/pylib/local/emulator/proto/__init__.py
+//build/android/pylib/local/emulator/proto/avd_pb2.py
+//build/gn_helpers.py
 //testing/scripts/common.py
 //testing/scripts/run_android_wpt.py
 //testing/scripts/wpt_common.py
@@ -19,6 +26,8 @@
 //third_party/blink/tools/blinkpy/common/html_diff.py
 //third_party/blink/tools/blinkpy/common/memoized.py
 //third_party/blink/tools/blinkpy/common/net/__init__.py
+//third_party/blink/tools/blinkpy/common/net/bb_agent.py
+//third_party/blink/tools/blinkpy/common/net/luci_auth.py
 //third_party/blink/tools/blinkpy/common/net/network_transaction.py
 //third_party/blink/tools/blinkpy/common/net/results_fetcher.py
 //third_party/blink/tools/blinkpy/common/net/web.py
@@ -145,4 +154,3 @@
 //third_party/catapult/third_party/typ/typ/stats.py
 //third_party/catapult/third_party/typ/typ/test_case.py
 //third_party/catapult/third_party/typ/typ/version.py
-//third_party/catapult/third_party/zipfile/zipfile_2_7_13.py

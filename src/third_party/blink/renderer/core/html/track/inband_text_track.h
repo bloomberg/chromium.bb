@@ -29,7 +29,6 @@
 #include "third_party/blink/public/platform/web_inband_text_track_client.h"
 #include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -66,4 +65,4 @@ struct DowncastTraits<InbandTextTrack> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_HTML_TRACK_INBAND_TEXT_TRACK_H_

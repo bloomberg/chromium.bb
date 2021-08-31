@@ -12,7 +12,9 @@
 
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
@@ -24,6 +26,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom-forward.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/vector2d.h"
@@ -35,7 +38,7 @@
 
 class AccessibilityLabelsMenuObserver;
 class ClickToCallContextMenuObserver;
-class CopyLinkToTextMenuObserver;
+class LinkToTextMenuObserver;
 class PrintPreviewContextMenuObserver;
 class Profile;
 class QuickAnswersMenuObserver;
@@ -67,7 +70,8 @@ namespace ui {
 class DataTransferEndpoint;
 }
 
-class RenderViewContextMenu : public RenderViewContextMenuBase {
+class RenderViewContextMenu : public RenderViewContextMenuBase,
+                              public ProtocolHandlerRegistry::Observer {
  public:
   RenderViewContextMenu(content::RenderFrameHost* render_frame_host,
                         const content::ContextMenuParams& params);
@@ -99,10 +103,10 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 
   // Returns a (possibly truncated) version of the current selection text
   // suitable for putting in the title of a menu item.
-  base::string16 PrintableSelectionText();
+  std::u16string PrintableSelectionText();
 
   // Helper function to escape "&" as "&&".
-  void EscapeAmpersands(base::string16* text);
+  void EscapeAmpersands(std::u16string* text);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions::ContextMenuMatcher extension_items_;
@@ -136,7 +140,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // string. Used by WriteURLToClipboard(), but kept in a separate function so
   // the formatting behavior can be tested without having to initialize the
   // clipboard. |url| must be valid and non-empty.
-  static base::string16 FormatURLForClipboard(const GURL& url);
+  static std::u16string FormatURLForClipboard(const GURL& url);
 
   // Writes the specified text/url to the system clipboard.
   void WriteURLToClipboard(const GURL& url);
@@ -172,7 +176,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendPageItems();
   void AppendExitFullscreenItem();
   void AppendCopyItem();
-  void AppendCopyLinkToTextItem();
+  void AppendLinkToTextItems();
   void AppendPrintItem();
   void AppendMediaRouterItem();
   void AppendRotationItems();
@@ -188,6 +192,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void AppendCurrentExtensionItems();
 #endif
   void AppendPrintPreviewItems();
+  void AppendSearchLensForImageItems();
   void AppendSearchWebForImageItems();
   void AppendProtocolHandlerSubMenu();
   void AppendPasswordItems();
@@ -227,6 +232,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   void ExecExitFullscreen();
   void ExecCopyLinkText();
   void ExecCopyImageAt();
+  void ExecSearchLensForImage();
   void ExecSearchWebForImage();
   void ExecLoadImage();
   void ExecPlayPause();
@@ -253,6 +259,9 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // on URL.
   ProtocolHandlerRegistry::ProtocolHandlerList GetHandlersForLinkUrl();
 
+  // ProtocolHandlerRegistry::Observer:
+  void OnProtocolHandlerRegistryChanged() override;
+
   // The destination URL to use if the user tries to search for or navigate to
   // a text selection.
   GURL selection_navigation_url_;
@@ -260,8 +269,19 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   ui::SimpleMenuModel profile_link_submenu_model_;
   std::vector<base::FilePath> profile_link_paths_;
   bool multiple_profiles_open_;
+
+  // Protocol handling:
+  // - The submenu containing the installed protocol handlers.
   ui::SimpleMenuModel protocol_handler_submenu_model_;
+  // - The registry with the protocols.
   ProtocolHandlerRegistry* protocol_handler_registry_;
+  // - The observation of the registry.
+  base::ScopedObservation<ProtocolHandlerRegistry,
+                          ProtocolHandlerRegistry::Observer>
+      protocol_handler_registry_observation_{this};
+  // - Whether or not the registered protocols have changed since the menu was
+  //   built.
+  bool is_protocol_submenu_valid_ = false;
 
   // An observer that handles spelling suggestions, "Add to dictionary", and
   // "Use enhanced spell check" items.
@@ -279,7 +299,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
       spelling_options_submenu_observer_;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // An observer that handles "Open with <app>" items.
   std::unique_ptr<RenderViewContextMenuObserver> open_with_menu_observer_;
   // An observer that handles smart text selection action items.
@@ -293,7 +313,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   std::unique_ptr<PrintPreviewContextMenuObserver> print_preview_menu_observer_;
 #endif
 
-  std::unique_ptr<CopyLinkToTextMenuObserver> copy_link_to_text_menu_observer_;
+  std::unique_ptr<LinkToTextMenuObserver> link_to_text_menu_observer_;
 
   // In the case of a MimeHandlerView this will point to the WebContents that
   // embeds the MimeHandlerViewGuest. Otherwise this will be the same as

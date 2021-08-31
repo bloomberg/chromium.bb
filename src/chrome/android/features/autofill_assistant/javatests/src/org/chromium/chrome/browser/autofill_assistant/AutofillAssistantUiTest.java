@@ -18,7 +18,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.inOrder;
 
-import android.content.Intent;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +45,6 @@ import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsC
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetails;
-import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsModel;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBox;
 import org.chromium.chrome.browser.autofill_assistant.infobox.AssistantInfoBoxModel;
@@ -97,14 +95,6 @@ public class AutofillAssistantUiTest {
         mTestServer.stopAndDestroyServer();
     }
 
-    /**
-     * @see CustomTabsTestUtils#createMinimalCustomTabIntent(Context, String).
-     */
-    private Intent createMinimalCustomTabIntent() {
-        return AutofillAssistantUiTestUtil.createMinimalCustomTabIntentForAutobot(
-                mTestPage, /* startImmediately = */ true);
-    }
-
     private CustomTabActivity getActivity() {
         return mCustomTabActivityTestRule.getActivity();
     }
@@ -121,7 +111,9 @@ public class AutofillAssistantUiTest {
     public void testStartAndAccept() throws Exception {
         InOrder inOrder = inOrder(mRunnableMock);
 
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
+                CustomTabsTestUtils.createMinimalCustomTabIntent(
+                        InstrumentationRegistry.getTargetContext(), mTestPage));
         BottomSheetController bottomSheetController =
                 TestThreadUtils.runOnUiThreadBlocking(this::initializeBottomSheet);
         AssistantCoordinator assistantCoordinator = TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -180,13 +172,11 @@ public class AutofillAssistantUiTest {
         String descriptionLine3 = "This is a fancy line3";
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> assistantCoordinator.getModel().getDetailsModel().set(
-                                AssistantDetailsModel.DETAILS,
-                                new AssistantDetails(movieTitle, /* titleMaxLines = */ 1,
+                        -> assistantCoordinator.getModel().getDetailsModel().setDetailsList(
+                                Arrays.asList(new AssistantDetails(movieTitle,
                                         /* imageUrl = */ "",
                                         /* imageAccessibilityHint = */ "",
                                         /* imageClickthroughData = */ null,
-                                        /* showImage = */ false,
                                         /* totalPriceLabel = */ "",
                                         /* totalPrice = */ "", descriptionLine1, descriptionLine2,
                                         descriptionLine3,
@@ -195,7 +185,7 @@ public class AutofillAssistantUiTest {
                                         /* highlightTitle= */ false, /* highlightLine1= */
                                         false, /* highlightLine2 = */ false,
                                         /* highlightLine3 = */ false,
-                                        /* animatePlaceholders= */ false)));
+                                        AutofillAssistantDetailsUiTest.NO_PLACEHOLDERS))));
         onView(withId(R.id.details_title))
                 .check(matches(allOf(withText(movieTitle), withEffectiveVisibility(VISIBLE))));
         onView(withId(R.id.details_line1))
@@ -237,11 +227,12 @@ public class AutofillAssistantUiTest {
                 Arrays.asList(new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE,
                                       AssistantChip.Icon.NONE, "chip 0",
                                       /* disabled= */ false, /* sticky= */ false,
-                                      /* visible= */ true, () -> {/* do nothing */}),
+                                      /* visible= */ true,
+                                      () -> {/* do nothing */}, /* contentDescription= */ ""),
                         new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE,
                                 AssistantChip.Icon.NONE, "chip 1",
                                 /* disabled= */ false, /* sticky= */ false, /* visible= */ true,
-                                mRunnableMock));
+                                mRunnableMock, /* contentDescription= */ ""));
         TestThreadUtils.runOnUiThreadBlocking(() -> carouselModel.setChips(chips));
         RecyclerView chipsViewContainer = carouselCoordinator.getView();
         Assert.assertEquals(2, chipsViewContainer.getAdapter().getItemCount());
@@ -257,7 +248,9 @@ public class AutofillAssistantUiTest {
     public void testTooltipBubble() throws Exception {
         InOrder inOrder = inOrder(mRunnableMock);
 
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
+                CustomTabsTestUtils.createMinimalCustomTabIntent(
+                        InstrumentationRegistry.getTargetContext(), mTestPage));
         BottomSheetController bottomSheetController =
                 TestThreadUtils.runOnUiThreadBlocking(this::initializeBottomSheet);
         AssistantCoordinator assistantCoordinator = TestThreadUtils.runOnUiThreadBlocking(() -> {

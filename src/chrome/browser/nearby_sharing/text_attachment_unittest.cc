@@ -67,7 +67,9 @@ using TextAttachmentTextTitleTest =
 }  // namespace
 
 TEST_P(TextAttachmentTextTitleTest, TextTitleMatches) {
-  TextAttachment attachment(GetParam().type, GetParam().text_body);
+  TextAttachment attachment(GetParam().type, GetParam().text_body,
+                            /*title=*/absl::nullopt,
+                            /*mime_type=*/absl::nullopt);
   EXPECT_EQ(GetParam().expected_text_title, attachment.text_title());
 }
 

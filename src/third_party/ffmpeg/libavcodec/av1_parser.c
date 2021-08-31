@@ -73,7 +73,7 @@ static int av1_parser_parse(AVCodecParserContext *ctx,
     if (avctx->extradata_size && !s->parsed_extradata) {
         s->parsed_extradata = 1;
 
-        ret = ff_cbs_read(s->cbc, td, avctx->extradata, avctx->extradata_size);
+        ret = ff_cbs_read_extradata_from_codec(s->cbc, td, avctx);
         if (ret < 0) {
             av_log(avctx, AV_LOG_WARNING, "Failed to parse extradata.\n");
         }
@@ -191,7 +191,7 @@ static av_cold int av1_parser_init(AVCodecParserContext *ctx)
     if (ret < 0)
         return ret;
 
-    s->cbc->decompose_unit_types    = (CodedBitstreamUnitType *)decompose_unit_types;
+    s->cbc->decompose_unit_types    = decompose_unit_types;
     s->cbc->nb_decompose_unit_types = FF_ARRAY_ELEMS(decompose_unit_types);
 
     return 0;

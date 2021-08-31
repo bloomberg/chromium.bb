@@ -2,8 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_util.h"
 #include "base/test/bind.h"
+#include "build/build_config.h"
+#include "content/public/browser/browser_context.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "weblayer/browser/cookie_manager_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/public/cookie_manager.h"
 #include "weblayer/test/weblayer_browser_test.h"
@@ -45,6 +49,16 @@ class CookieManagerBrowserTest : public WebLayerBrowserTest {
     return final_result;
   }
 
+  base::Time GetCookieDbModifiedTime() {
+    base::FilePath cookie_path =
+        GetBrowserContext()->GetPath().Append(FILE_PATH_LITERAL("Cookies"));
+
+    base::ScopedAllowBlockingForTesting scoped_allow_blocking;
+    base::File::Info info;
+    EXPECT_TRUE(base::GetFileInfo(cookie_path, &info));
+    return info.last_modified;
+  }
+
  private:
   size_t num_to_wait_for_ = 0;
   std::vector<net::CookieChangeInfo> change_infos_;
@@ -57,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(CookieManagerBrowserTest, CookieChanged) {
       embedded_test_server()->GetURL("/simple_page.html"), shell());
 
   GURL base_url = embedded_test_server()->base_url();
-  auto subscription =
+  base::CallbackListSubscription subscription =
       GetProfile()->GetCookieManager()->AddCookieChangedCallback(
           base_url, nullptr,
           base::BindRepeating(&CookieManagerBrowserTest::OnCookieChanged,
@@ -79,13 +93,13 @@ IN_PROC_BROWSER_TEST_F(CookieManagerBrowserTest,
 
   GURL base_url = embedded_test_server()->base_url();
   std::string cookie1 = "cookie1";
-  auto subscription1 =
+  base::CallbackListSubscription subscription1 =
       GetProfile()->GetCookieManager()->AddCookieChangedCallback(
           base_url, &cookie1,
           base::BindRepeating(&CookieManagerBrowserTest::OnCookieChanged,
                               base::Unretained(this)));
   std::string cookie2 = "cookie2";
-  auto subscription2 =
+  base::CallbackListSubscription subscription2 =
       GetProfile()->GetCookieManager()->AddCookieChangedCallback(
           base_url, &cookie2,
           base::BindRepeating(&CookieManagerBrowserTest::OnCookieChanged,
@@ -99,7 +113,7 @@ IN_PROC_BROWSER_TEST_F(CookieManagerBrowserTest,
   }
 
   Reset();
-  subscription1 = nullptr;
+  subscription1 = {};
 
   // Set cookie1 first and then cookie2. We should only receive a cookie change
   // event for cookie2.
@@ -110,6 +124,63 @@ IN_PROC_BROWSER_TEST_F(CookieManagerBrowserTest,
     ASSERT_EQ(changes.size(), 1u);
     EXPECT_EQ(changes[0].cookie.Name(), cookie2);
   }
+}
+
+#if defined(OS_WIN)
+// TODO(crbug.com/1204901): Disabled due to flakiness on Windows.
+#define MAYBE_FlushCookiesAfterSet DISABLED_FlushCookiesAfterSet
+#else
+#define MAYBE_FlushCookiesAfterSet FlushCookiesAfterSet
+#endif
+IN_PROC_BROWSER_TEST_F(CookieManagerBrowserTest, MAYBE_FlushCookiesAfterSet) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+  NavigateAndWaitForCompletion(
+      embedded_test_server()->GetURL("/simple_page.html"), shell());
+
+  base::Time original_modified_time = GetCookieDbModifiedTime();
+
+  ASSERT_TRUE(SetCookie("a=b; expires=Fri, 01 Jan 2038 00:00:00 GMT"));
+  EXPECT_EQ(GetCookieDbModifiedTime(), original_modified_time);
+
+  EXPECT_TRUE(static_cast<CookieManagerImpl*>(GetProfile()->GetCookieManager())
+                  ->FireFlushTimerForTesting());
+  EXPECT_GT(GetCookieDbModifiedTime(), original_modified_time);
+}
+
+#if defined(OS_WIN)
+// TODO(crbug.com/1204901): Disabled due to flakiness on Windows.
+#define MAYBE_FlushCookiesAfterSetMultiple DISABLED_FlushCookiesAfterSetMultiple
+#else
+#define MAYBE_FlushCookiesAfterSetMultiple FlushCookiesAfterSetMultiple
+#endif
+IN_PROC_BROWSER_TEST_F(CookieManagerBrowserTest,
+                       MAYBE_FlushCookiesAfterSetMultiple) {
+  EXPECT_TRUE(embedded_test_server()->Start());
+  NavigateAndWaitForCompletion(
+      embedded_test_server()->GetURL("/simple_page.html"), shell());
+
+  base::Time original_modified_time = GetCookieDbModifiedTime();
+
+  ASSERT_TRUE(SetCookie("a=b; expires=Fri, 01 Jan 2038 00:00:00 GMT"));
+  EXPECT_EQ(GetCookieDbModifiedTime(), original_modified_time);
+  ASSERT_TRUE(SetCookie("c=d; expires=Fri, 01 Jan 2038 00:00:00 GMT"));
+  EXPECT_EQ(GetCookieDbModifiedTime(), original_modified_time);
+
+  CookieManagerImpl* cookie_manager =
+      static_cast<CookieManagerImpl*>(GetProfile()->GetCookieManager());
+  EXPECT_TRUE(cookie_manager->FireFlushTimerForTesting());
+  EXPECT_GT(GetCookieDbModifiedTime(), original_modified_time);
+
+  // Flush timer should be gone now.
+  EXPECT_FALSE(cookie_manager->FireFlushTimerForTesting());
+
+  // Try again to make sure it works a second time.
+  original_modified_time = GetCookieDbModifiedTime();
+  ASSERT_TRUE(SetCookie("d=f; expires=Fri, 01 Jan 2038 00:00:00 GMT"));
+  EXPECT_EQ(GetCookieDbModifiedTime(), original_modified_time);
+
+  EXPECT_TRUE(cookie_manager->FireFlushTimerForTesting());
+  EXPECT_GT(GetCookieDbModifiedTime(), original_modified_time);
 }
 
 }  // namespace weblayer

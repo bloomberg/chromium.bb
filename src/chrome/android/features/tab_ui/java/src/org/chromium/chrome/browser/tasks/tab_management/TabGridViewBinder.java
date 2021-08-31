@@ -41,6 +41,7 @@ import org.chromium.ui.widget.ViewLookupCachingFrameLayout;
  */
 class TabGridViewBinder {
     private static TabListMediator.ThumbnailFetcher sThumbnailFetcherForTesting;
+    private static final String SHOPPING_METRICS_IDENTIFIER = "EnterTabSwitcher";
     /**
      * Bind a closable tab to a view.
      * @param model The model to bind.
@@ -226,19 +227,46 @@ class TabGridViewBinder {
                             if (shoppingPersistedTabData == null
                                     || shoppingPersistedTabData.getPriceDrop() == null) {
                                 priceCardView.setVisibility(View.GONE);
-                                model.set(TabProperties.PRICE_DROP, null);
                             } else {
                                 priceCardView.setPriceStrings(
                                         shoppingPersistedTabData.getPriceDrop().price,
                                         shoppingPersistedTabData.getPriceDrop().previousPrice);
                                 priceCardView.setVisibility(View.VISIBLE);
-                                model.set(TabProperties.PRICE_DROP,
-                                        shoppingPersistedTabData.getPriceDrop());
+                            }
+                            if (shoppingPersistedTabData != null) {
+                                shoppingPersistedTabData.logPriceDropMetrics(
+                                        SHOPPING_METRICS_IDENTIFIER);
                             }
                         });
             } else {
                 priceCardView.setVisibility(View.GONE);
-                model.set(TabProperties.PRICE_DROP, null);
+            }
+        } else if (TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER == propertyKey) {
+            StoreHoursCardView storeHoursCardView =
+                    (StoreHoursCardView) view.fastFindViewById(R.id.store_hours_box_outer);
+            if (model.get(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER) != null) {
+                model.get(TabProperties.STORE_PERSISTED_TAB_DATA_FETCHER)
+                        .fetch((storePersistedTabData) -> {
+                            if (storePersistedTabData == null
+                                    || TextUtils.isEmpty(
+                                            storePersistedTabData.getStoreHoursString())) {
+                                storeHoursCardView.setVisibility(View.GONE);
+                            } else {
+                                storeHoursCardView.setStoreHours(
+                                        storePersistedTabData.getStoreHoursString());
+                                storeHoursCardView.setVisibility(View.VISIBLE);
+                            }
+                        });
+            } else {
+                storeHoursCardView.setVisibility(View.GONE);
+            }
+        } else if (TabProperties.SHOULD_SHOW_PRICE_DROP_TOOLTIP == propertyKey) {
+            if (model.get(TabProperties.SHOULD_SHOW_PRICE_DROP_TOOLTIP)) {
+                PriceCardView priceCardView =
+                        (PriceCardView) view.fastFindViewById(R.id.price_info_box_outer);
+                assert priceCardView.getVisibility() == View.VISIBLE;
+                LargeMessageCardView.showPriceDropTooltip(
+                        priceCardView.findViewById(R.id.current_price));
             }
         } else if (TabProperties.PAGE_INFO_LISTENER == propertyKey) {
             TabListMediator.TabActionListener listener =
@@ -376,7 +404,7 @@ class TabGridViewBinder {
                     TabUiColorProvider.getThumbnailPlaceHolderColorResource(isIncognito));
         }
 
-        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
+        if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled(rootView.getContext())) {
             ViewCompat.setBackgroundTintList(backgroundView,
                     TabUiColorProvider.getHoveredCardBackgroundTintList(
                             backgroundView.getContext(), isIncognito));

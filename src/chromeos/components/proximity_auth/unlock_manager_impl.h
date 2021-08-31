@@ -97,7 +97,7 @@ class UnlockManagerImpl : public UnlockManager,
 
   // chromeos::PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
-  void SuspendDone(const base::TimeDelta& sleep_duration) override;
+  void SuspendDone(base::TimeDelta sleep_duration) override;
 
   // RemoteDeviceLifeCycle::Observer:
   void OnLifeCycleStateChanged(RemoteDeviceLifeCycle::State old_state,
@@ -158,7 +158,7 @@ class UnlockManagerImpl : public UnlockManager,
   // if and only if |error| is empty. If the auth attempt is accepted, unlocks
   // the screen.
   void FinalizeAuthAttempt(
-      const base::Optional<
+      const absl::optional<
           SmartLockMetricsRecorder::SmartLockAuthResultFailureReason>& error);
 
   // Failed to create a connection to the host during the "initial scan". See

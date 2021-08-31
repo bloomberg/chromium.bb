@@ -40,7 +40,7 @@ class V8_EXPORT_PRIVATE Graph final : public NON_EXPORTED_BASE(ZoneObject) {
   // Scope used when creating a subgraph for inlining. Automatically preserves
   // the original start and end nodes of the graph, and resets them when you
   // leave the scope.
-  class SubgraphScope final {
+  class V8_NODISCARD SubgraphScope final {
    public:
     explicit SubgraphScope(Graph* graph)
         : graph_(graph), start_(graph->start()), end_(graph->end()) {}
@@ -67,7 +67,7 @@ class V8_EXPORT_PRIVATE Graph final : public NON_EXPORTED_BASE(ZoneObject) {
 
   // Factory template for nodes with static input counts.
   // Note: Template magic below is used to ensure this method is only considered
-  // for argument types convertible to Node* during overload resoluation.
+  // for argument types convertible to Node* during overload resolution.
   template <typename... Nodes,
             typename = typename std::enable_if_t<
                 base::all(std::is_convertible<Nodes, Node*>::value...)>>

@@ -5,8 +5,6 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_PUBLIC_SHARED_CONSTANTS_H_
 #define CHROMEOS_SERVICES_ASSISTANT_PUBLIC_SHARED_CONSTANTS_H_
 
-#include <string>
-
 #include "base/component_export.h"
 
 namespace chromeos {
@@ -25,24 +23,6 @@ COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
 extern const char kSampleServiceIdRequest[];
 COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
 extern const char kServiceIdRequestPayload[];
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
-extern const char kBloomScope[];
-COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
-extern const char kBloomServiceUrl[];
-COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
-extern const char kBloomCreateImagePath[];
-COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
-extern const char kBloomOcrImagePath[];
-COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
-extern const char kBloomSearchProblemPath[];
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
-extern const char kBloomCreateImagePath[];
-COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
-extern const char kBloomOcrImagePath[];
-COMPONENT_EXPORT(ASSISTANT_SERVICE_SHARED)
-extern const char kBloomSearchProblemPath[];
 
 }  // namespace assistant
 }  // namespace chromeos

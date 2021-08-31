@@ -7,7 +7,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/run_loop.h"
+#include "ui/aura/window_tree_host.h"
+#include "ui/aura/window_tree_host_observer.h"
+#include "ui/compositor/layer.h"
+#include "ui/display/display_switches.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget_observer.h"
@@ -165,6 +171,36 @@ TEST_F(DesktopWindowTreeHostPlatformTest,
   EXPECT_TRUE(widget->GetNativeWindow()->IsVisible());
 }
 
+// Tests that the window shape is updated from the
+// |NonClientView::GetWindowMask|.
+TEST_F(DesktopWindowTreeHostPlatformTest, UpdateWindowShapeFromWindowMask) {
+  std::unique_ptr<Widget> widget = CreateWidgetWithNativeWidget();
+  widget->Show();
+
+  auto* host_platform = DesktopWindowTreeHostPlatform::GetHostForWidget(
+      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+  ASSERT_TRUE(host_platform);
+  if (!host_platform->platform_window()->ShouldUpdateWindowShape())
+    return;
+
+  auto* content_window =
+      DesktopWindowTreeHostPlatform::GetContentWindowForWidget(
+          widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+  ASSERT_TRUE(content_window);
+  EXPECT_FALSE(host_platform->GetWindowMaskForWindowShapeInPixels().isEmpty());
+  // SetClipPath for the layer of the content window is updated from it.
+  EXPECT_TRUE(host_platform->ShouldWindowContentsBeTransparent());
+  EXPECT_FALSE(widget->GetLayer()->FillsBoundsCompletely());
+
+  // When fullscreen mode, clip_path_ is set to empty since there is no
+  // |NonClientView::GetWindowMask|.
+  host_platform->SetFullscreen(true);
+  widget->SetBounds(gfx::Rect(800, 800));
+  EXPECT_TRUE(host_platform->GetWindowMaskForWindowShapeInPixels().isEmpty());
+  EXPECT_FALSE(host_platform->ShouldWindowContentsBeTransparent());
+  EXPECT_TRUE(widget->GetLayer()->FillsBoundsCompletely());
+}
+
 // A Widget that allows setting the min/max size for the widget.
 class CustomSizeWidget : public Widget {
  public:
@@ -205,6 +241,51 @@ TEST_F(DesktopWindowTreeHostPlatformTest, SetBoundsWithMinMax) {
   widget.SetBounds(gfx::Rect(50, 500));
   EXPECT_EQ(gfx::Size(100, 500).ToString(),
             widget.GetWindowBoundsInScreen().size().ToString());
+}
+
+class ResizeObserver : public aura::WindowTreeHostObserver {
+ public:
+  explicit ResizeObserver(aura::WindowTreeHost* host) : host_(host) {
+    host_->AddObserver(this);
+  }
+  ResizeObserver(const ResizeObserver&) = delete;
+  ResizeObserver& operator=(const ResizeObserver&) = delete;
+  ~ResizeObserver() override { host_->RemoveObserver(this); }
+
+  int bounds_change_count() const { return bounds_change_count_; }
+  int resize_count() const { return resize_count_; }
+
+  // aura::WindowTreeHostObserver:
+  void OnHostResized(aura::WindowTreeHost* host) override { resize_count_++; }
+  void OnHostWillProcessBoundsChange(aura::WindowTreeHost* host) override {
+    bounds_change_count_++;
+  }
+
+ private:
+  aura::WindowTreeHost* const host_;
+  int resize_count_ = 0;
+  int bounds_change_count_ = 0;
+};
+
+// Verifies that setting widget bounds, just after creating it, with the same
+// size passed in InitParams does not lead to a "bounds change" event. Prevents
+// regressions, such as https://crbug.com/1151092.
+TEST_F(DesktopWindowTreeHostPlatformTest, SetBoundsWithUnchangedSize) {
+  auto widget = CreateWidgetWithNativeWidget();
+  widget->Show();
+
+  EXPECT_EQ(gfx::Size(100, 100), widget->GetWindowBoundsInScreen().size());
+  auto* host = widget->GetNativeWindow()->GetHost();
+  ResizeObserver observer(host);
+
+  auto* dwth_platform = DesktopWindowTreeHostPlatform::GetHostForWidget(
+      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget());
+  ASSERT_TRUE(dwth_platform);
+
+  // Check with different origin.
+  dwth_platform->SetBoundsInPixels(gfx::Rect(2, 2, 100, 100));
+  EXPECT_EQ(1, observer.bounds_change_count());
+  EXPECT_EQ(0, observer.resize_count());
 }
 
 }  // namespace views

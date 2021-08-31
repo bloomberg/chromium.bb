@@ -1,0 +1,18 @@
+{
+  "dependencies": [
+    "ui/legacy/components/text_editor",
+    "ui/legacy",
+    "models/persistence",
+    "ui/legacy/components/object_ui",
+    "models/workspace_diff"
+  ],
+    "resources": [
+    "fontView.css",
+    "imageView.css",
+    "jsonView.css",
+    "messagesPopover.css",
+    "xmlTree.css",
+    "xmlView.css",
+    "resourceSourceFrame.css"
+  ]
+}

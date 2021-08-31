@@ -28,16 +28,16 @@ BOOL IsValidDictValue(const base::Value* value) {
   return value && value->is_dict() && !value->DictEmpty();
 }
 
-base::Optional<LinkGenerationOutcome> ParseStatus(
-    base::Optional<double> status) {
+absl::optional<LinkGenerationOutcome> ParseStatus(
+    absl::optional<double> status) {
   if (!status.has_value()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   int status_value = static_cast<int>(status.value());
   if (status_value < 0 ||
       status_value > static_cast<int>(LinkGenerationOutcome::kMaxValue)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return static_cast<LinkGenerationOutcome>(status_value);
@@ -52,6 +52,9 @@ shared_highlighting::LinkGenerationError OutcomeToError(
     case LinkGenerationOutcome::kAmbiguous:
       return LinkGenerationError::kContextExhausted;
       break;
+    case LinkGenerationOutcome::kTimeout:
+      return LinkGenerationError::kTimeout;
+      break;
     case LinkGenerationOutcome::kSuccess:
       // kSuccess is not supposed to happen, as it is not an error.
       NOTREACHED();
@@ -60,9 +63,9 @@ shared_highlighting::LinkGenerationError OutcomeToError(
   }
 }
 
-base::Optional<CGRect> ParseRect(const base::Value* value) {
+absl::optional<CGRect> ParseRect(const base::Value* value) {
   if (!IsValidDictValue(value)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const base::Value* xValue =
@@ -75,11 +78,24 @@ base::Optional<CGRect> ParseRect(const base::Value* value) {
       value->FindKeyOfType("height", base::Value::Type::DOUBLE);
 
   if (!xValue || !yValue || !widthValue || !heightValue) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return CGRectMake(xValue->GetDouble(), yValue->GetDouble(),
                     widthValue->GetDouble(), heightValue->GetDouble());
+}
+
+absl::optional<GURL> ParseURL(const std::string* url_value) {
+  if (!url_value) {
+    return absl::nullopt;
+  }
+
+  GURL url(*url_value);
+  if (!url.is_empty() && url.is_valid()) {
+    return url;
+  }
+
+  return absl::nullopt;
 }
 
 CGRect ConvertToBrowserRect(CGRect web_view_rect, web::WebState* web_state) {

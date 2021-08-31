@@ -12,7 +12,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "base/strings/string16.h"
 #include "components/metrics/clean_exit_beacon.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/cloned_install_detector.h"
@@ -67,6 +66,15 @@ class MetricsStateManager final {
     return &clean_exit_beacon_;
   }
 
+  // Signals whether the session has shutdown cleanly. Passing `false` means
+  // that Chrome has launched and has not yet shut down safely. Passing `true`
+  // signals that Chrome has shut down safely.
+  //
+  // Seeing a call with `false` without a matching call with `true` suggests
+  // that Chrome crashed or otherwise did not shut down cleanly, e.g. maybe the
+  // OS crashed.
+  void LogHasSessionShutdownCleanly(bool has_session_shutdown_cleanly);
+
   // Forces the client ID to be generated. This is useful in case it's needed
   // before recording.
   void ForceClientIdCreation();
@@ -104,7 +112,7 @@ class MetricsStateManager final {
   static std::unique_ptr<MetricsStateManager> Create(
       PrefService* local_state,
       EnabledStateProvider* enabled_state_provider,
-      const base::string16& backup_registry_key,
+      const std::wstring& backup_registry_key,
       StoreClientInfoCallback store_client_info,
       LoadClientInfoCallback load_client_info);
 
@@ -140,7 +148,7 @@ class MetricsStateManager final {
   // that it is later retrievable by |load_client_info|.
   MetricsStateManager(PrefService* local_state,
                       EnabledStateProvider* enabled_state_provider,
-                      const base::string16& backup_registry_key,
+                      const std::wstring& backup_registry_key,
                       StoreClientInfoCallback store_client_info,
                       LoadClientInfoCallback load_client_info);
 

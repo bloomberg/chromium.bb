@@ -226,15 +226,18 @@ void FrameSinkVideoCapturerImpl::SetAutoThrottlingEnabled(bool enabled) {
 }
 
 void FrameSinkVideoCapturerImpl::ChangeTarget(
-    const base::Optional<FrameSinkId>& frame_sink_id) {
+    const absl::optional<FrameSinkId>& frame_sink_id,
+    const SubtreeCaptureId& subtree_capture_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (frame_sink_id) {
     requested_target_ = *frame_sink_id;
+    request_subtree_id_ = subtree_capture_id;
     SetResolvedTarget(
         frame_sink_manager_->FindCapturableFrameSink(requested_target_));
   } else {
     requested_target_ = FrameSinkId();
+    request_subtree_id_ = SubtreeCaptureId();
     SetResolvedTarget(nullptr);
   }
 }
@@ -244,7 +247,14 @@ void FrameSinkVideoCapturerImpl::Start(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(consumer);
 
-  Stop();
+  if (video_capture_started_)
+    Stop();
+
+  video_capture_started_ = true;
+
+  if (resolved_target_)
+    resolved_target_->OnClientCaptureStarted();
+
   consumer_.Bind(std::move(consumer));
   // In the future, if the connection to the consumer is lost before a call to
   // Stop(), make that call on its behalf.
@@ -254,6 +264,9 @@ void FrameSinkVideoCapturerImpl::Start(
 }
 
 void FrameSinkVideoCapturerImpl::Stop() {
+  if (!video_capture_started_)
+    return;
+
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   refresh_frame_retry_timer_->Stop();
@@ -270,6 +283,11 @@ void FrameSinkVideoCapturerImpl::Stop() {
     consumer_->OnStopped();
     consumer_.reset();
   }
+
+  if (resolved_target_)
+    resolved_target_->OnClientCaptureStopped();
+
+  video_capture_started_ = false;
 }
 
 void FrameSinkVideoCapturerImpl::RequestRefreshFrame() {
@@ -381,6 +399,10 @@ void FrameSinkVideoCapturerImpl::OnFrameDamaged(
 
   MaybeCaptureFrame(VideoCaptureOracle::kCompositorUpdate, damage_rect,
                     expected_display_time, frame_metadata);
+}
+
+bool FrameSinkVideoCapturerImpl::IsVideoCaptureStarted() {
+  return video_capture_started_;
 }
 
 gfx::Size FrameSinkVideoCapturerImpl::GetSourceSize() {
@@ -521,21 +543,21 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
   // At this point, the capture is going to proceed. Populate the VideoFrame's
   // metadata, and notify the oracle.
   const int64_t capture_frame_number = next_capture_frame_number_++;
-  VideoFrameMetadata* const metadata = frame->metadata();
-  metadata->capture_begin_time = clock_->NowTicks();
-  metadata->capture_counter = capture_frame_number;
-  metadata->frame_duration = oracle_->estimated_frame_duration();
-  metadata->frame_rate = 1.0 / oracle_->min_capture_period().InSecondsF();
-  metadata->reference_time = event_time;
-  metadata->device_scale_factor = frame_metadata.device_scale_factor;
-  metadata->page_scale_factor = frame_metadata.page_scale_factor;
-  metadata->root_scroll_offset_x = frame_metadata.root_scroll_offset.x();
-  metadata->root_scroll_offset_y = frame_metadata.root_scroll_offset.y();
+  VideoFrameMetadata& metadata = frame->metadata();
+  metadata.capture_begin_time = clock_->NowTicks();
+  metadata.capture_counter = capture_frame_number;
+  metadata.frame_duration = oracle_->estimated_frame_duration();
+  metadata.frame_rate = 1.0 / oracle_->min_capture_period().InSecondsF();
+  metadata.reference_time = event_time;
+  metadata.device_scale_factor = frame_metadata.device_scale_factor;
+  metadata.page_scale_factor = frame_metadata.page_scale_factor;
+  metadata.root_scroll_offset_x = frame_metadata.root_scroll_offset.x();
+  metadata.root_scroll_offset_y = frame_metadata.root_scroll_offset.y();
   if (frame_metadata.top_controls_visible_height.has_value()) {
     last_top_controls_visible_height_ =
         *frame_metadata.top_controls_visible_height;
   }
-  metadata->top_controls_visible_height = last_top_controls_visible_height_;
+  metadata.top_controls_visible_height = last_top_controls_visible_height_;
 
   oracle_->RecordCapture(utilization);
   TRACE_EVENT_ASYNC_BEGIN2("gpu.capture", "Capture", oracle_frame_number,
@@ -552,9 +574,14 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     DCHECK_EQ(media::PIXEL_FORMAT_ARGB, pixel_format_);
     content_rect =
         media::ComputeLetterboxRegion(frame->visible_rect(), source_size);
+    // The media letterboxing computation explicitly allows for off-by-one
+    // errors due to computation, so we address those here.
+    if (content_rect.ApproximatelyEqual(frame->visible_rect(), 1)) {
+      content_rect = frame->visible_rect();
+    }
   }
 
-  // Determine what rectangluar region has changed since the last captured
+  // Determine what rectangular region has changed since the last captured
   // frame.
   gfx::Rect update_rect;
   if (dirty_rect_ == kMaxRect ||
@@ -570,7 +597,7 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
     if (pixel_format_ == media::PIXEL_FORMAT_I420)
       update_rect = ExpandRectToI420SubsampleBoundaries(update_rect);
   }
-  metadata->capture_update_rect = update_rect;
+  metadata.capture_update_rect = update_rect;
 
   // Extreme edge-case: If somehow the source size is so tiny that the content
   // region becomes empty, just deliver a frame filled with black.
@@ -660,7 +687,8 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
         request->scale_to().ToString().c_str(), utilization));
   }
 
-  resolved_target_->RequestCopyOfOutput(LocalSurfaceId(), std::move(request));
+  resolved_target_->RequestCopyOfOutput(
+      {LocalSurfaceId(), request_subtree_id_, std::move(request)});
 }
 
 void FrameSinkVideoCapturerImpl::DidCopyFrame(
@@ -797,7 +825,7 @@ void FrameSinkVideoCapturerImpl::OnFrameReadyForDelivery(
   DCHECK_GE(capture_frame_number, next_delivery_frame_number_);
 
   if (frame)
-    frame->metadata()->capture_end_time = clock_->NowTicks();
+    frame->metadata().capture_end_time = clock_->NowTicks();
 
   // Ensure frames are delivered in-order by using a min-heap, and only
   // deliver the next frame(s) in-sequence when they are found at the top.
@@ -862,7 +890,7 @@ void FrameSinkVideoCapturerImpl::MaybeDeliverFrame(
   // the consumer.
   media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
   info->timestamp = frame->timestamp();
-  info->metadata = *(frame->metadata());
+  info->metadata = frame->metadata();
   info->pixel_format = frame->format();
   info->coded_size = frame->coded_size();
   info->visible_rect = frame->visible_rect();

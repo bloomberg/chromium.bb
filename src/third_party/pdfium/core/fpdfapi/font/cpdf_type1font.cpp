@@ -14,8 +14,8 @@
 #include "core/fxge/fx_freetype.h"
 
 #if defined(OS_APPLE)
-#include "core/fxge/apple/fx_mac_impl.h"
-#endif
+#include <Carbon/Carbon.h>
+#endif  // defined(OS_APPLE)
 
 namespace {
 
@@ -125,15 +125,13 @@ void CPDF_Type1Font::LoadGlyphMap() {
 
 #if defined(OS_APPLE)
   bool bCoreText = true;
-  CQuartz2D& quartz2d =
-      static_cast<CApplePlatform*>(CFX_GEModule::Get()->GetPlatform())
-          ->m_quartz2d;
   if (!m_Font.GetPlatformFont()) {
     if (m_Font.GetPsName() == "DFHeiStd-W5")
       bCoreText = false;
 
+    auto* pPlatform = CFX_GEModule::Get()->GetPlatform();
     pdfium::span<const uint8_t> span = m_Font.GetFontSpan();
-    m_Font.SetPlatformFont(quartz2d.CreateFont(span.data(), span.size()));
+    m_Font.SetPlatformFont(pPlatform->CreatePlatformFont(span));
     if (!m_Font.GetPlatformFont())
       bCoreText = false;
   }
@@ -159,7 +157,7 @@ void CPDF_Type1Font::LoadGlyphMap() {
       if (bGotOne) {
 #if defined(OS_APPLE)
         if (!bCoreText)
-          memcpy(m_ExtGID, m_GlyphIndex, 256);
+          memcpy(m_ExtGID, m_GlyphIndex, sizeof(m_ExtGID));
 #endif
         return;
       }
@@ -190,7 +188,7 @@ void CPDF_Type1Font::LoadGlyphMap() {
     }
 #if defined(OS_APPLE)
     if (!bCoreText)
-      memcpy(m_ExtGID, m_GlyphIndex, 256);
+      memcpy(m_ExtGID, m_GlyphIndex, sizeof(m_ExtGID));
 #endif
     return;
   }
@@ -290,8 +288,7 @@ void CPDF_Type1Font::LoadGlyphMap() {
     }
 #if defined(OS_APPLE)
     if (!bCoreText)
-      memcpy(m_ExtGID, m_GlyphIndex, 256);
-
+      memcpy(m_ExtGID, m_GlyphIndex, sizeof(m_ExtGID));
 #endif
     return;
   }
@@ -319,7 +316,7 @@ void CPDF_Type1Font::LoadGlyphMap() {
   }
 #if defined(OS_APPLE)
   if (!bCoreText)
-    memcpy(m_ExtGID, m_GlyphIndex, 256);
+    memcpy(m_ExtGID, m_GlyphIndex, sizeof(m_ExtGID));
 #endif
 }
 

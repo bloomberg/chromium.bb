@@ -6,7 +6,6 @@
 #define COMPONENTS_METRICS_METRICS_SERVICE_ACCESSOR_H_
 
 #include <stdint.h>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
@@ -31,12 +30,11 @@ class MetricsServiceAccessor {
   // has enabled reporting.
   static bool IsMetricsReportingEnabled(PrefService* pref_service);
 
-
   // Registers a field trial name and group with |metrics_service| (if not
   // null), to be used to annotate a UMA report with a particular configuration
   // state. Returns true on success.
-  // See the comment on MetricsService::RegisterSyntheticFieldTrial() for
-  // details.
+  // See the comment on SyntheticTrialRegistry::RegisterSyntheticFieldTrial()
+  // for details.
   static bool RegisterSyntheticFieldTrial(MetricsService* metrics_service,
                                           base::StringPiece trial_name,
                                           base::StringPiece group_name);

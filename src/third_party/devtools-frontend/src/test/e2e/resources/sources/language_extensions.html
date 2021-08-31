@@ -88,18 +88,6 @@ class ExtensionPluginBase {
     return Promise.resolve({frames: []});
   }
 
-  /** Evaluate the content of a variable in a given lexical scope
-   * @param {string} name
-   * @param {!RawLocation} location
-   * @return {!Promise<?*>}
-   */
-  /*async*/ evaluateVariable(name, location) {
-    if (this._impl.evaluateVariable) {
-      return this._impl.evaluateVariable(name, location);
-    }
-    return Promise.resolve(null);
-  }
-
   /**
    * @param {string} expression
    * @param {!RawLocation} context
@@ -122,6 +110,18 @@ class ExtensionPluginBase {
       return this._impl.getFormatter(expressionOrField, context);
     }
     return Promise.resolve(null);
+  }
+
+  /**
+   * @param {string} rawModuleId
+   * @param {string} sourceFileURL
+   * @return {!Promise<!Array<number>|undefined>}
+   */
+  async getMappedLines(rawModuleId, sourceFileURL) {
+    if (this._impl.getMappedLines) {
+      return this._impl.getMappedLines(rawModuleId, sourceFileURL);
+    }
+    return Promise.resolve(undefined);
   }
 }
 

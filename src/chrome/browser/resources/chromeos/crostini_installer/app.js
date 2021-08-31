@@ -29,13 +29,13 @@ const State = {
   CONFIGURE: 'configure',
   INSTALLING: 'installing',
   ERROR: 'error',
-  ERROR_NO_RETRY: 'error_no_retry',
   CANCELING: 'canceling',
 };
 
 const MAX_USERNAME_LENGTH = 32;
 const InstallerState = crostini.mojom.InstallerState;
 const InstallerError = crostini.mojom.InstallerError;
+const NoDiskSpaceError = 'no_disk_space';
 
 const UNAVAILABLE_USERNAMES = [
   'root',
@@ -80,6 +80,12 @@ Polymer({
     state_: {
       type: String,
       value: State.PROMPT,
+    },
+
+    /** @private */
+    error_: {
+      type: String,
+      value: InstallerError.kNone,
     },
 
     /** @private */
@@ -176,6 +182,7 @@ Polymer({
         } else {
           assert(this.state_ === State.INSTALLING);
           this.errorMessage_ = this.getErrorMessage_(error);
+          this.error_ = error;
           this.state_ = State.ERROR;
         }
       }),
@@ -183,29 +190,9 @@ Polymer({
       callbackRouter.requestClose.addListener(() => this.cancelOrBack_(true)),
     ];
 
-    // TODO(lxj): The listener should only be invoked once, so it is fine to use
-    // it with a promise. However, it is probably better to just make the mojom
-    // method requestAmountOfFreeDiskSpace() returns the result directly.
-    this.diskSpacePromise_ = new Promise((resolve, reject) => {
-      this.listenerIds_.push(callbackRouter.onAmountOfFreeDiskSpace.addListener(
-          (ticks, defaultIndex, isLowSpaceAvailable) => {
-            if (ticks.length === 0) {
-              reject();
-            } else {
-              this.defaultDiskSizeTick_ = defaultIndex;
-              this.diskSizeTicks_ = ticks;
-
-              this.minDisk_ = ticks[0].label;
-              this.maxDisk_ = ticks[ticks.length - 1].label;
-
-              this.isLowSpaceAvailable_ = isLowSpaceAvailable;
-              if (isLowSpaceAvailable) {
-                this.showDiskSlider_ = true;
-              }
-              resolve();
-            }
-          }));
-    });
+    // Query the disk space sooner than later to minimize delay.
+    this.diskSpacePromise_ =
+        BrowserProxy.getInstance().handler.requestAmountOfFreeDiskSpace();
 
     document.addEventListener('keyup', event => {
       if (event.key == 'Escape') {
@@ -214,7 +201,6 @@ Polymer({
       }
     });
 
-    BrowserProxy.getInstance().handler.requestAmountOfFreeDiskSpace();
     this.$$('.action-button:not([hidden])').focus();
   },
 
@@ -225,34 +211,49 @@ Polymer({
   },
 
   /** @private */
-  onNextButtonClick_() {
+  async onNextButtonClick_() {
     if (!this.onNextButtonClickIsRunning_) {
       assert(this.state_ === State.PROMPT);
       this.onNextButtonClickIsRunning_ = true;
-      // Making this async is not ideal, but we should get the disk space very
-      // soon (if have not already got it) so the user will at worst see a very
-      // short delay.
-      this.diskSpacePromise_
-          .then(() => {
-            this.state_ = State.CONFIGURE;
-            // Focus the username input and move the cursor to the end.
-            this.$.username.select(
-                this.username_.length, this.username_.length);
-          })
-          .catch(() => {
-            this.errorMessage_ =
-                loadTimeData.getString('minimumFreeSpaceUnmetError');
-            this.state_ = State.ERROR_NO_RETRY;
-          })
-          .finally(() => {
-            this.onNextButtonClickIsRunning_ = false;
-          });
+
+      // We should get the disk space very soon (if we have not already got it)
+      // so the user will at worst see a very short delay.
+      const diskSpace = await this.diskSpacePromise_;
+      const ticks = diskSpace.ticks;
+
+      if (ticks.length === 0) {
+        this.errorMessage_ =
+            loadTimeData.getString('minimumFreeSpaceUnmetError');
+        this.error_ = NoDiskSpaceError;
+        this.state_ = State.ERROR;
+
+        this.onNextButtonClickIsRunning_ = false;
+        return;
+      }
+
+
+      this.defaultDiskSizeTick_ = diskSpace.defaultIndex;
+      this.diskSizeTicks_ = ticks;
+
+      this.minDisk_ = ticks[0].label;
+      this.maxDisk_ = ticks[ticks.length - 1].label;
+
+      this.isLowSpaceAvailable_ = diskSpace.isLowSpaceAvailable;
+      if (this.isLowSpaceAvailable_) {
+        this.showDiskSlider_ = true;
+      }
+
+      this.state_ = State.CONFIGURE;
+      // Focus the username input and move the cursor to the end.
+      this.$.username.select(this.username_.length, this.username_.length);
+
+      this.onNextButtonClickIsRunning_ = false;
     }
   },
 
   /** @private */
   onInstallButtonClick_() {
-    assert(this.showInstallButton_(this.state_));
+    assert(this.showInstallButton_(this.state_, this.error_));
     var diskSize = 0;
     if (loadTimeData.getBoolean('diskResizingEnabled')) {
       if (this.showDiskSlider_) {
@@ -265,6 +266,11 @@ Polymer({
     this.installerProgress_ = 0;
     this.state_ = State.INSTALLING;
     BrowserProxy.getInstance().handler.install(diskSize, this.username_);
+  },
+
+  /** @private */
+  onSettingsButtonClick_() {
+    window.open('chrome://os-settings/help');
   },
 
   /**
@@ -296,7 +302,6 @@ Polymer({
         BrowserProxy.getInstance().handler.cancel();
         break;
       case State.ERROR:
-      case State.ERROR_NO_RETRY:
         this.closePage_();
         break;
       case State.CANCELING:
@@ -318,7 +323,7 @@ Polymer({
    * @returns {string}
    * @private
    */
-  getTitle_(state) {
+  getTitle_(state, error) {
     let titleId;
     switch (state) {
       case State.PROMPT:
@@ -329,8 +334,11 @@ Polymer({
         titleId = 'installingTitle';
         break;
       case State.ERROR:
-      case State.ERROR_NO_RETRY:
-        titleId = 'errorTitle';
+        if (error == InstallerError.kNeedUpdate) {
+          titleId = 'needUpdateTitle';
+        } else {
+          titleId = 'errorTitle';
+        }
         break;
       case State.CANCELING:
         titleId = 'cancelingTitle';
@@ -353,11 +361,14 @@ Polymer({
 
   /**
    * @param {State} state
+   * @param {string} error
    * @returns {boolean}
    * @private
    */
-  showInstallButton_(state) {
-    return state === State.CONFIGURE || state === State.ERROR;
+  showInstallButton_(state, error) {
+    return state === State.CONFIGURE ||
+        (state === State.ERROR && error != NoDiskSpaceError &&
+         error != InstallerError.kNeedUpdate);
   },
 
   /**
@@ -381,6 +392,16 @@ Polymer({
    */
   showNextButton_(state) {
     return state === State.PROMPT;
+  },
+
+  /**
+   * @param {State} state
+   * @param {string} error
+   * @returns {boolean}
+   * @private
+   */
+  showSettingsButton_(state, error) {
+    return state === State.ERROR && error == InstallerError.kNeedUpdate;
   },
 
   /**
@@ -418,6 +439,9 @@ Polymer({
       case InstallerState.kStartTerminaVm:
         messageId = 'startTerminaVmMessage';
         break;
+      case InstallerState.kStartLxd:
+        messageId = 'startLxdMessage';
+        break;
       case InstallerState.kCreateContainer:
         // TODO(crbug.com/1015722): we are using the same message as for
         // |START_CONTAINER|, which is weird because user is going to see
@@ -433,12 +457,6 @@ Polymer({
         break;
       case InstallerState.kConfigureContainer:
         messageId = 'configureContainerMessage';
-        break;
-      case InstallerState.kFetchSshKeys:
-        messageId = 'fetchSshKeysMessage';
-        break;
-      case InstallerState.kMountContainer:
-        messageId = 'mountContainerMessage';
         break;
       default:
         assertNotReached();
@@ -458,11 +476,17 @@ Polymer({
       case InstallerError.kErrorLoadingTermina:
         messageId = 'loadTerminaError';
         break;
+      case InstallerError.kNeedUpdate:
+        messageId = 'needUpdateError';
+        break;
       case InstallerError.kErrorCreatingDiskImage:
         messageId = 'createDiskImageError';
         break;
       case InstallerError.kErrorStartingTermina:
         messageId = 'startTerminaVmError';
+        break;
+      case InstallerError.kErrorStartingLxd:
+        messageId = 'startLxdError';
         break;
       case InstallerError.kErrorStartingContainer:
         messageId = 'startContainerError';
@@ -472,12 +496,6 @@ Polymer({
         break;
       case InstallerError.kErrorOffline:
         messageId = 'offlineError';
-        break;
-      case InstallerError.kErrorFetchingSshKeys:
-        messageId = 'fetchSshKeysError';
-        break;
-      case InstallerError.kErrorMountingContainer:
-        messageId = 'mountContainerError';
         break;
       case InstallerError.kErrorSettingUpContainer:
         messageId = 'setupContainerError';
@@ -542,7 +560,7 @@ Polymer({
 
   /** @private */
   showErrorMessage_(state) {
-    return state === State.ERROR || state === State.ERROR_NO_RETRY;
+    return state === State.ERROR;
   },
 
   /** @private */

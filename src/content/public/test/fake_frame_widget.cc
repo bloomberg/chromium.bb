@@ -28,7 +28,7 @@ void FakeFrameWidget::GetStringAtPoint(const gfx::Point& point_in_local_root,
 }
 #endif
 
-base::Optional<bool> FakeFrameWidget::GetActive() const {
+absl::optional<bool> FakeFrameWidget::GetActive() const {
   return active_;
 }
 
@@ -42,7 +42,8 @@ FakeFrameWidget::GetIntersectionState() const {
 }
 
 void FakeFrameWidget::SetViewportIntersection(
-    blink::mojom::ViewportIntersectionStatePtr intersection_state) {
+    blink::mojom::ViewportIntersectionStatePtr intersection_state,
+    const absl::optional<blink::VisualProperties>& visual_properties) {
   intersection_state_ = std::move(intersection_state);
 }
 

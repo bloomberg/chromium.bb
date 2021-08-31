@@ -10,6 +10,7 @@
 #include "ash/public/cpp/holding_space/holding_space_controller.h"
 #include "ash/public/cpp/holding_space/holding_space_image.h"
 #include "ash/public/cpp/holding_space/holding_space_item.h"
+#include "ash/public/cpp/holding_space/holding_space_metrics.h"
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_path.h"
@@ -38,6 +39,15 @@ constexpr char kImageFilePath[] = "image.png";
 constexpr char kTextFilePath[] = "text.txt";
 
 // Helpers ---------------------------------------------------------------------
+
+// Creates an empty holding space image.
+std::unique_ptr<HoldingSpaceImage> CreateTestHoldingSpaceImage(
+    HoldingSpaceItem::Type type,
+    const base::FilePath& file_path) {
+  return std::make_unique<HoldingSpaceImage>(
+      HoldingSpaceImage::GetMaxSizeForType(type), file_path,
+      /*async_bitmap_resolver=*/base::DoNothing());
+}
 
 // Copies the file for the `relative_path` in the test data directory to
 // downloads directory, and returns the path to the copy.
@@ -135,6 +145,23 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceClientImplTest, DISABLED_OpenDownloads) {
   run_loop.Run();
 }
 
+// Verifies that `HoldingSpaceClient::OpenMyFiles()` works as intended.
+IN_PROC_BROWSER_TEST_F(HoldingSpaceClientImplTest, OpenMyFiles) {
+  ASSERT_TRUE(HoldingSpaceController::Get());
+
+  auto* holding_space_client = HoldingSpaceController::Get()->client();
+  ASSERT_TRUE(holding_space_client);
+
+  // We expect `HoldingSpaceClient::OpenMyFiles()` to succeed.
+  base::RunLoop run_loop;
+  holding_space_client->OpenMyFiles(
+      base::BindLambdaForTesting([&run_loop](bool success) {
+        EXPECT_TRUE(success);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
 // Verifies that `HoldingSpaceClient::OpenItems()` works as intended when
 // attempting to open holding space items backed by both non-existing and
 // existing files.
@@ -144,22 +171,36 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceClientImplTest, OpenItems) {
   auto* holding_space_client = HoldingSpaceController::Get()->client();
   ASSERT_TRUE(holding_space_client);
 
+  // Verify no failures have yet been recorded.
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectTotalCount("HoldingSpace.Item.FailureToLaunch", 0);
+  histogram_tester.ExpectTotalCount(
+      "HoldingSpace.Item.FailureToLaunch.Extension", 0);
+
   {
     // Create a holding space item backed by a non-existing file.
     auto holding_space_item = HoldingSpaceItem::CreateFileBackedItem(
-        HoldingSpaceItem::Type::kDownload, base::FilePath("foo"),
-        GURL("filesystem:fake"),
-        std::make_unique<HoldingSpaceImage>(
-            /*placeholder=*/gfx::ImageSkia(),
-            /*async_bitmap_resolver=*/base::DoNothing()));
+        HoldingSpaceItem::Type::kDownload, base::FilePath("foo.pdf"),
+        GURL("filesystem:fake"), base::BindOnce(&CreateTestHoldingSpaceImage));
 
     // We expect `HoldingSpaceClient::OpenItems()` to fail when the backing file
     // for `holding_space_item` does not exist.
     base::RunLoop run_loop;
     holding_space_client->OpenItems(
         {holding_space_item.get()},
-        base::BindLambdaForTesting([&run_loop](bool success) {
+        base::BindLambdaForTesting([&](bool success) {
           EXPECT_FALSE(success);
+
+          // Verify the failure has been recorded.
+          histogram_tester.ExpectBucketCount(
+              "HoldingSpace.Item.FailureToLaunch", holding_space_item->type(),
+              1);
+          histogram_tester.ExpectBucketCount(
+              "HoldingSpace.Item.FailureToLaunch.Extension",
+              holding_space_metrics::FilePathToExtension(
+                  holding_space_item->file_path()),
+              1);
+
           run_loop.Quit();
         }));
     run_loop.Run();
@@ -180,6 +221,11 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceClientImplTest, OpenItems) {
         }));
     run_loop.Run();
   }
+
+  // Verify that only the expected failure was recorded.
+  histogram_tester.ExpectTotalCount("HoldingSpace.Item.FailureToLaunch", 1);
+  histogram_tester.ExpectTotalCount(
+      "HoldingSpace.Item.FailureToLaunch.Extension", 1);
 }
 
 // Verifies that `HoldingSpaceClient::ShowItemInFolder()` works as intended when
@@ -201,10 +247,7 @@ IN_PROC_BROWSER_TEST_F(HoldingSpaceClientImplTest, MAYBE_ShowItemInFolder) {
     // Create a holding space item backed by a non-existing file.
     auto holding_space_item = HoldingSpaceItem::CreateFileBackedItem(
         HoldingSpaceItem::Type::kDownload, base::FilePath("foo"),
-        GURL("filesystem:fake"),
-        std::make_unique<HoldingSpaceImage>(
-            /*placeholder=*/gfx::ImageSkia(),
-            /*async_bitmap_resolver=*/base::DoNothing()));
+        GURL("filesystem:fake"), base::BindOnce(&CreateTestHoldingSpaceImage));
 
     // We expect `HoldingSpaceClient::ShowItemInFolder()` to fail when the
     // backing file for `holding_space_item` does not exist.

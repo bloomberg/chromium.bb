@@ -7,12 +7,13 @@
 #include <type_traits>
 
 #include "base/notreached.h"
-#include "base/optional.h"
+#include "build/chromeos_buildflags.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_features.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #endif
 
 namespace syncer {
@@ -46,7 +47,7 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
     case UserSelectableType::kPreferences: {
       ModelTypeSet model_types = {PREFERENCES, DICTIONARY, PRIORITY_PREFERENCES,
                                   SEARCH_ENGINES};
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       // SplitSettingsSync makes Printers a separate OS setting.
       if (!chromeos::features::IsSplitSettingsSyncEnabled())
         model_types.Put(PRINTERS);
@@ -66,13 +67,12 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
       return {kTypedUrlsTypeName,
               TYPED_URLS,
               {TYPED_URLS, HISTORY_DELETE_DIRECTIVES, SESSIONS,
-               DEPRECATED_FAVICON_IMAGES, DEPRECATED_FAVICON_TRACKING,
                USER_EVENTS}};
     case UserSelectableType::kExtensions:
       return {
           kExtensionsTypeName, EXTENSIONS, {EXTENSIONS, EXTENSION_SETTINGS}};
     case UserSelectableType::kApps: {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       // SplitSettingsSync moves apps to Chrome OS settings.
       if (chromeos::features::IsSplitSettingsSyncEnabled()) {
         return {kAppsTypeName, UNSPECIFIED};
@@ -88,12 +88,10 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
     case UserSelectableType::kReadingList:
       return {kReadingListTypeName, READING_LIST, {READING_LIST}};
     case UserSelectableType::kTabs:
-      return {kTabsTypeName,
-              PROXY_TABS,
-              {PROXY_TABS, SESSIONS, DEPRECATED_FAVICON_IMAGES,
-               DEPRECATED_FAVICON_TRACKING, SEND_TAB_TO_SELF}};
+      return {
+          kTabsTypeName, PROXY_TABS, {PROXY_TABS, SESSIONS, SEND_TAB_TO_SELF}};
     case UserSelectableType::kWifiConfigurations: {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       // SplitSettingsSync moves Wi-Fi configurations to Chrome OS settings.
       if (chromeos::features::IsSplitSettingsSyncEnabled())
         return {kWifiConfigurationsTypeName, UNSPECIFIED};
@@ -107,7 +105,7 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
   return {nullptr, UNSPECIFIED};
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kOsAppsTypeName[] = "osApps";
 constexpr char kOsPreferencesTypeName[] = "osPreferences";
 constexpr char kOsWifiConfigurationsTypeName[] = "osWifiConfigurations";
@@ -130,7 +128,7 @@ UserSelectableTypeInfo GetUserSelectableOsTypeInfo(UserSelectableOsType type) {
               {WIFI_CONFIGURATIONS}};
   }
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -138,7 +136,7 @@ const char* GetUserSelectableTypeName(UserSelectableType type) {
   return GetUserSelectableTypeInfo(type).type_name;
 }
 
-base::Optional<UserSelectableType> GetUserSelectableTypeFromString(
+absl::optional<UserSelectableType> GetUserSelectableTypeFromString(
     const std::string& type) {
   if (type == kBookmarksTypeName) {
     return UserSelectableType::kBookmarks;
@@ -173,7 +171,7 @@ base::Optional<UserSelectableType> GetUserSelectableTypeFromString(
   if (type == kWifiConfigurationsTypeName) {
     return UserSelectableType::kWifiConfigurations;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 std::string UserSelectableTypeSetToString(UserSelectableTypeSet types) {
@@ -195,19 +193,12 @@ ModelType UserSelectableTypeToCanonicalModelType(UserSelectableType type) {
   return GetUserSelectableTypeInfo(type).canonical_model_type;
 }
 
-int UserSelectableTypeToHistogramInt(UserSelectableType type) {
-  // TODO(crbug.com/1007293): Use ModelTypeHistogramValue instead of casting to
-  // int.
-  return static_cast<int>(
-      ModelTypeHistogramValue(UserSelectableTypeToCanonicalModelType(type)));
-}
-
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 const char* GetUserSelectableOsTypeName(UserSelectableOsType type) {
   return GetUserSelectableOsTypeInfo(type).type_name;
 }
 
-base::Optional<UserSelectableOsType> GetUserSelectableOsTypeFromString(
+absl::optional<UserSelectableOsType> GetUserSelectableOsTypeFromString(
     const std::string& type) {
   if (type == kOsAppsTypeName) {
     return UserSelectableOsType::kOsApps;
@@ -234,7 +225,7 @@ base::Optional<UserSelectableOsType> GetUserSelectableOsTypeFromString(
   if (type == kPreferencesTypeName) {
     return UserSelectableOsType::kOsPreferences;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 ModelTypeSet UserSelectableOsTypeToAllModelTypes(UserSelectableOsType type) {
@@ -244,6 +235,6 @@ ModelTypeSet UserSelectableOsTypeToAllModelTypes(UserSelectableOsType type) {
 ModelType UserSelectableOsTypeToCanonicalModelType(UserSelectableOsType type) {
   return GetUserSelectableOsTypeInfo(type).canonical_model_type;
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace syncer

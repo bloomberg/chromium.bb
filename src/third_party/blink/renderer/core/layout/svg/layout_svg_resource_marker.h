@@ -76,6 +76,7 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
  private:
   void UpdateLayout() override;
   SVGTransformChange CalculateLocalTransform(bool bounds_changed) final;
+  bool FindCycleFromSelf() const override;
 
   AffineTransform local_to_parent_transform_;
   FloatSize viewport_size_;
@@ -83,9 +84,13 @@ class LayoutSVGResourceMarker final : public LayoutSVGResourceContainer {
   bool is_in_layout_;
 };
 
-DEFINE_LAYOUT_SVG_RESOURCE_TYPE_CASTS(LayoutSVGResourceMarker,
-                                      kMarkerResourceType);
+template <>
+struct DowncastTraits<LayoutSVGResourceMarker> {
+  static bool AllowFrom(const LayoutSVGResourceContainer& container) {
+    return container.ResourceType() == kMarkerResourceType;
+  }
+};
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_RESOURCE_MARKER_H_

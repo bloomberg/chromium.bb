@@ -7,14 +7,21 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/command_line.h"
+#include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
+#include "base/stl_util.h"
+#include "chrome/browser/chooser_controller/title_util.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
 #include "chrome/browser/hid/hid_chooser_context_factory.h"
+#include "chrome/browser/hid/web_hid_histograms.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/usb/usb_blocklist.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
+#include "services/device/public/cpp/hid/hid_blocklist.h"
+#include "services/device/public/cpp/hid/hid_switches.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -37,16 +44,16 @@ HidChooserController::HidChooserController(
     content::RenderFrameHost* render_frame_host,
     std::vector<blink::mojom::HidDeviceFilterPtr> filters,
     content::HidChooser::Callback callback)
-    : ChooserController(render_frame_host,
-                        IDS_HID_CHOOSER_PROMPT_ORIGIN,
-                        IDS_HID_CHOOSER_PROMPT_EXTENSION_NAME),
+    : ChooserController(
+          CreateChooserTitle(render_frame_host,
+                             IDS_HID_CHOOSER_PROMPT_ORIGIN,
+                             IDS_HID_CHOOSER_PROMPT_EXTENSION_NAME)),
       filters_(std::move(filters)),
       callback_(std::move(callback)),
-      requesting_origin_(render_frame_host->GetLastCommittedOrigin()),
-      embedding_origin_(
-          content::WebContents::FromRenderFrameHost(render_frame_host)
-              ->GetMainFrame()
-              ->GetLastCommittedOrigin()) {
+      origin_(content::WebContents::FromRenderFrameHost(render_frame_host)
+                  ->GetMainFrame()
+                  ->GetLastCommittedOrigin()),
+      frame_tree_node_id_(render_frame_host->GetFrameTreeNodeId()) {
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   auto* profile =
@@ -65,22 +72,28 @@ HidChooserController::~HidChooserController() {
 }
 
 bool HidChooserController::ShouldShowHelpButton() const {
-  return false;
+  return true;
 }
 
-base::string16 HidChooserController::GetNoOptionsText() const {
+std::u16string HidChooserController::GetNoOptionsText() const {
   return l10n_util::GetStringUTF16(IDS_DEVICE_CHOOSER_NO_DEVICES_FOUND_PROMPT);
 }
 
-base::string16 HidChooserController::GetOkButtonLabel() const {
+std::u16string HidChooserController::GetOkButtonLabel() const {
   return l10n_util::GetStringUTF16(IDS_USB_DEVICE_CHOOSER_CONNECT_BUTTON_TEXT);
+}
+
+std::pair<std::u16string, std::u16string>
+HidChooserController::GetThrobberLabelAndTooltip() const {
+  return {l10n_util::GetStringUTF16(IDS_HID_CHOOSER_LOADING_LABEL),
+          l10n_util::GetStringUTF16(IDS_HID_CHOOSER_LOADING_LABEL_TOOLTIP)};
 }
 
 size_t HidChooserController::NumOptions() const {
   return items_.size();
 }
 
-base::string16 HidChooserController::GetOption(size_t index) const {
+std::u16string HidChooserController::GetOption(size_t index) const {
   DCHECK_LT(index, items_.size());
   DCHECK(base::Contains(device_map_, items_[index]));
   const auto& device = *device_map_.find(items_[index])->second.front();
@@ -97,8 +110,7 @@ bool HidChooserController::IsPaired(size_t index) const {
   const auto& device_infos = device_map_.find(items_[index])->second;
   DCHECK_GT(device_infos.size(), 0u);
   for (const auto& device : device_infos) {
-    if (!chooser_context_->HasDevicePermission(requesting_origin_,
-                                               embedding_origin_, *device)) {
+    if (!chooser_context_->HasDevicePermission(origin_, *device)) {
       return false;
     }
   }
@@ -107,7 +119,6 @@ bool HidChooserController::IsPaired(size_t index) const {
 }
 
 void HidChooserController::Select(const std::vector<size_t>& indices) {
-  // TODO(crbug.com/964041): Record metrics when an item is selected.
   DCHECK_EQ(1u, indices.size());
   size_t index = indices[0];
   DCHECK_LT(index, items_.size());
@@ -122,27 +133,42 @@ void HidChooserController::Select(const std::vector<size_t>& indices) {
   DCHECK_GT(device_infos.size(), 0u);
   std::vector<device::mojom::HidDeviceInfoPtr> devices;
   devices.reserve(device_infos.size());
+  bool any_persistent_permission_granted = false;
   for (auto& device : device_infos) {
-    chooser_context_->GrantDevicePermission(requesting_origin_,
-                                            embedding_origin_, *device);
+    chooser_context_->GrantDevicePermission(origin_, *device);
+    if (HidChooserContext::CanStorePersistentEntry(*device))
+      any_persistent_permission_granted = true;
     devices.push_back(device->Clone());
   }
+
+  RecordWebHidChooserClosure(
+      any_persistent_permission_granted
+          ? WebHidChooserClosed::kPermissionGranted
+          : WebHidChooserClosed::kEphemeralPermissionGranted);
+
   std::move(callback_).Run(std::move(devices));
 }
 
 void HidChooserController::Cancel() {
   // Called when the user presses the Cancel button in the chooser dialog.
-  // TODO(crbug.com/964041): Record metrics when the chooser dialog is canceled.
+  RecordWebHidChooserClosure(device_map_.empty()
+                                 ? WebHidChooserClosed::kCancelledNoDevices
+                                 : WebHidChooserClosed::kCancelled);
 }
 
 void HidChooserController::Close() {
   // Called when the user dismisses the chooser by clicking outside the chooser
   // dialog, or when the dialog closes without the user taking action.
-  // TODO(crbug.com/964041): Record metrics when the chooser dialog is closed.
+  RecordWebHidChooserClosure(WebHidChooserClosed::kLostFocus);
 }
 
 void HidChooserController::OpenHelpCenterUrl() const {
-  NOTIMPLEMENTED();
+  auto* web_contents =
+      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+  web_contents->OpenURL(content::OpenURLParams(
+      GURL(chrome::kChooserHidOverviewUrl), content::Referrer(),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui::PAGE_TRANSITION_AUTO_TOPLEVEL, /*is_renderer_initiated=*/false));
 }
 
 void HidChooserController::OnDeviceAdded(
@@ -167,12 +193,31 @@ void HidChooserController::OnDeviceRemoved(
     view()->OnOptionRemoved(index);
 }
 
+void HidChooserController::OnDeviceChanged(
+    const device::mojom::HidDeviceInfo& device) {
+  bool has_chooser_item =
+      base::Contains(items_, PhysicalDeviceIdFromDeviceInfo(device));
+  if (!DisplayDevice(device)) {
+    if (has_chooser_item)
+      OnDeviceRemoved(device);
+    return;
+  }
+
+  if (!has_chooser_item) {
+    OnDeviceAdded(device);
+    return;
+  }
+
+  // Update the item to replace the old device info with |device|.
+  UpdateDeviceInfo(device);
+}
+
 void HidChooserController::OnHidManagerConnectionError() {
-  observer_.RemoveAll();
+  observation_.Reset();
 }
 
 void HidChooserController::OnHidChooserContextShutdown() {
-  observer_.RemoveAll();
+  observation_.Reset();
 }
 
 void HidChooserController::OnGotDevices(
@@ -185,7 +230,7 @@ void HidChooserController::OnGotDevices(
   // Listen to HidChooserContext for OnDeviceAdded/Removed events after the
   // enumeration.
   if (chooser_context_)
-    observer_.Add(chooser_context_.get());
+    observation_.Observe(chooser_context_.get());
 
   if (view())
     view()->OnOptionsInitialized();
@@ -193,19 +238,27 @@ void HidChooserController::OnGotDevices(
 
 bool HidChooserController::DisplayDevice(
     const device::mojom::HidDeviceInfo& device) const {
-  // Do not pass the device to the chooser if it is on the USB blocklist.
-  if (UsbBlocklist::Get().IsExcluded({device.vendor_id, device.product_id, 0}))
+  // Do not pass the device to the chooser if it is excluded by the blocklist.
+  if (device::HidBlocklist::IsDeviceExcluded(device))
     return false;
 
-  // Do not pass the device to the chooser if it has a top-level collection with
-  // the FIDO usage page.
-  auto find_it =
-      std::find_if(device.collections.begin(), device.collections.end(),
-                   [](const device::mojom::HidCollectionInfoPtr& c) {
-                     return c->usage->usage_page == device::mojom::kPageFido;
-                   });
-  if (find_it != device.collections.end())
-    return false;
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableHidBlocklist)) {
+    // Do not pass the device to the chooser if it has a top-level collection
+    // with the FIDO usage page.
+    //
+    // Note: The HID blocklist also blocks top-level collections with the FIDO
+    // usage page, but will not block the device if it has other (non-FIDO)
+    // collections. The check below will exclude the device from the chooser
+    // if it has any top-level FIDO collection.
+    auto find_it =
+        std::find_if(device.collections.begin(), device.collections.end(),
+                     [](const device::mojom::HidCollectionInfoPtr& c) {
+                       return c->usage->usage_page == device::mojom::kPageFido;
+                     });
+    if (find_it != device.collections.end())
+      return false;
+  }
 
   return FilterMatchesAny(device);
 }
@@ -289,4 +342,18 @@ bool HidChooserController::RemoveDeviceInfo(
   device_map_.erase(find_it);
   base::Erase(items_, id);
   return true;
+}
+
+void HidChooserController::UpdateDeviceInfo(
+    const device::mojom::HidDeviceInfo& device) {
+  auto id = PhysicalDeviceIdFromDeviceInfo(device);
+  auto physical_device_it = device_map_.find(id);
+  DCHECK(physical_device_it != device_map_.end());
+  auto& device_infos = physical_device_it->second;
+  auto device_it = base::ranges::find_if(
+      device_infos, [&device](const device::mojom::HidDeviceInfoPtr& d) {
+        return d->guid == device.guid;
+      });
+  DCHECK(device_it != device_infos.end());
+  *device_it = device.Clone();
 }

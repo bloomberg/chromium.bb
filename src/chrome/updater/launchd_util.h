@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "chrome/updater/updater_scope.h"
 
 namespace base {
 class TimeDelta;
@@ -15,10 +16,19 @@ class TimeDelta;
 
 namespace updater {
 
-// Query `launchctl list |service|` with retries, calling |callback| with
-// 'true' if launchctl has the service, and false if |timeout| is reached.
-// Must be called in a sequence. The callback is posted to the same sequence.
-void PollLaunchctlList(const std::string& service,
+enum class LaunchctlPresence {
+  kAbsent,
+  kPresent,
+};
+
+// Query `launchctl list |service|` with retries, until either the
+// `expectation` about the presence of `service` is met, or `timeout` is
+// reached. Calls `callback` with 'true' if the expectation is met, and false
+// if |timeout| is reached.  Must be called in a sequence. The callback is
+// posted to the same sequence.
+void PollLaunchctlList(UpdaterScope scope,
+                       const std::string& service,
+                       LaunchctlPresence expectation,
                        base::TimeDelta timeout,
                        base::OnceCallback<void(bool)> callback);
 

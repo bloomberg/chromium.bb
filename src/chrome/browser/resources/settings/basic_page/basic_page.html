@@ -54,6 +54,10 @@
       iron-icon {
         margin-inline-start: 16px;
       }
+
+      :host-context([enable-landing-page-redesign]):host(:not([in-search-mode])) settings-section:not([active]) {
+        display: none;
+      }
     </style>
     <template is="dom-if" if="[[showBasicPage_(
         currentRoute_, inSearchMode, hasExpandedSection_)]]">
@@ -62,9 +66,9 @@
           <settings-reset-profile-banner on-close="onResetProfileBannerClosed_">
           </settings-reset-profile-banner>
         </template>
-<if expr="chromeos">
+<if expr="chromeos or lacros">
         <template is="dom-if" if="[[showOSSettingsBanner_]]">
-          <div id="osSettingsBanner" class="cr-row">
+          <div id="osSettingsBanner" class="cr-row first">
             <div class="flex cr-padded-text"
                 on-click="onOSSettingsBannerClick_">
               $i18nRaw{osSettingsBannerText}
@@ -94,7 +98,7 @@
         <template is="dom-if" if="[[showPage_(pageVisibility.safetyCheck)]]"
             restamp>
           <settings-section page-title="$i18n{safetyCheckSectionTitle}"
-              section="safetyCheck"
+              section="safetyCheck" nest-under-section="privacy"
               id="safetyCheckSettingsSection">
             <settings-safety-check-page prefs="{{prefs}}">
             </settings-safety-check-page>
@@ -122,7 +126,7 @@
             section="search">
           <settings-search-page prefs="{{prefs}}"></settings-search-page>
         </settings-section>
-<if expr="not chromeos">
+<if expr="not chromeos and not lacros">
         <template is="dom-if" if="[[showPage_(pageVisibility.defaultBrowser)]]"
             restamp>
           <settings-section page-title="$i18n{defaultBrowser}"
@@ -183,7 +187,7 @@
                 <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
               </settings-section>
             </template>
-<if expr="not chromeos">
+<if expr="not chromeos and not lacros">
             <settings-section page-title="$i18n{systemPageTitle}"
                 section="system">
               <settings-system-page prefs="{{prefs}}"></settings-system-page>

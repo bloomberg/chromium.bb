@@ -1,5 +1,6 @@
 # All APIs that have their externs generated.
 # TODO(rdevlin.cronin): Add more!
+accessibility_features.json
 accessibility_private.json
 activity_log_private.json
 autofill_private.idl
@@ -21,5 +22,6 @@ safe_browsing_private.idl
 settings_private.idl
 system_private.json
 terminal_private.json
+tts.json
 users_private.idl
 webview_tag.json

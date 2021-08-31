@@ -267,7 +267,7 @@ static CTFontVariation ctvariation_from_skfontdata(CTFontRef ct, SkFontData* fon
                 CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType, &value));
         CFDictionaryAddValue(dict.get(), tagNumber, valueNumber.get());
     }
-    return { SkUniqueCFRef<CFDictionaryRef>(std::move(dict)), opsz };
+    return { SkUniqueCFRef<CFDictionaryRef>(std::move(dict)), nullptr, opsz };
 }
 
 static sk_sp<SkData> skdata_from_skstreamasset(std::unique_ptr<SkStreamAsset> stream) {
@@ -557,11 +557,6 @@ protected:
         return SkTypeface_Mac::Make(std::move(fallbackFont), OpszVariation(), nullptr).release();
     }
 
-    SkTypeface* onMatchFaceStyle(const SkTypeface* familyMember,
-                                 const SkFontStyle&) const override {
-        return nullptr;
-    }
-
     sk_sp<SkTypeface> onMakeFromData(sk_sp<SkData> data, int ttcIndex) const override {
         if (ttcIndex != 0) {
             return nullptr;
@@ -615,13 +610,13 @@ protected:
         CTFontVariation ctVariation = SkCTVariationFromSkFontArguments(ct.get(), args);
 
         SkUniqueCFRef<CTFontRef> ctVariant;
-        if (ctVariation.dict) {
+        if (ctVariation.variation) {
             SkUniqueCFRef<CFMutableDictionaryRef> attributes(
                     CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
                                               &kCFTypeDictionaryKeyCallBacks,
                                               &kCFTypeDictionaryValueCallBacks));
             CFDictionaryAddValue(attributes.get(),
-                                 kCTFontVariationAttribute, ctVariation.dict.get());
+                                 kCTFontVariationAttribute, ctVariation.variation.get());
             SkUniqueCFRef<CTFontDescriptorRef> varDesc(
                     CTFontDescriptorCreateWithAttributes(attributes.get()));
             ctVariant.reset(CTFontCreateCopyWithAttributes(ct.get(), 0, nullptr, varDesc.get()));
@@ -653,13 +648,13 @@ protected:
         CTFontVariation ctVariation = ctvariation_from_skfontdata(ct.get(), fontData.get());
 
         SkUniqueCFRef<CTFontRef> ctVariant;
-        if (ctVariation.dict) {
+        if (ctVariation.variation) {
             SkUniqueCFRef<CFMutableDictionaryRef> attributes(
                     CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
                                               &kCFTypeDictionaryKeyCallBacks,
                                               &kCFTypeDictionaryValueCallBacks));
             CFDictionaryAddValue(attributes.get(),
-                                 kCTFontVariationAttribute, ctVariation.dict.get());
+                                 kCTFontVariationAttribute, ctVariation.variation.get());
             SkUniqueCFRef<CTFontDescriptorRef> varDesc(
                     CTFontDescriptorCreateWithAttributes(attributes.get()));
             ctVariant.reset(CTFontCreateCopyWithAttributes(ct.get(), 0, nullptr, varDesc.get()));

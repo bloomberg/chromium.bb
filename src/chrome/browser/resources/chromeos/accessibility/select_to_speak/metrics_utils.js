@@ -2,20 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {PrefsManager} from './prefs_manager.js';
+
 // Utilities for UMA metrics.
 
-class MetricsUtils {
+export class MetricsUtils {
   constructor() {}
 
   /**
    * Records a cancel event if speech was in progress.
-   * @param {boolean} speaking Whether speech was in progress
-   * @public
    */
-  static recordCancelIfSpeaking(speaking) {
-    if (speaking) {
-      MetricsUtils.recordCancelEvent_();
-    }
+  static recordCancelIfSpeaking() {
+    // TODO(b/1157214): Use select-to-speak's internal state instead of TTS
+    // state.
+    chrome.tts.isSpeaking((speaking) => {
+      if (speaking) {
+        MetricsUtils.recordCancelEvent_();
+      }
+    });
   }
 
   /**
@@ -24,7 +28,6 @@ class MetricsUtils {
    *    that reflects how this event was triggered by the user.
    * @param {PrefsManager} prefsManager A PrefsManager with the users's current
    *    preferences.
-   * @public
    */
   static recordStartEvent(method, prefsManager) {
     chrome.metricsPrivate.recordUserAction(MetricsUtils.START_SPEECH_METRIC);
@@ -34,6 +37,9 @@ class MetricsUtils {
     chrome.metricsPrivate.recordBoolean(
         MetricsUtils.BACKGROUND_SHADING_METRIC,
         prefsManager.backgroundShadingEnabled());
+    chrome.metricsPrivate.recordBoolean(
+        MetricsUtils.NAVIGATION_CONTROLS_METRIC,
+        prefsManager.navigationControlsEnabled());
   }
 
   /**
@@ -45,14 +51,51 @@ class MetricsUtils {
   }
 
   /**
+   * Records an event that Select-to-Speak speech has been paused.
+   */
+  static recordPauseEvent() {
+    chrome.metricsPrivate.recordUserAction(MetricsUtils.PAUSE_SPEECH_METRIC);
+  }
+
+  /**
+   * Records an event that Select-to-Speak speech has been resumed from pause.
+   */
+  static recordResumeEvent() {
+    chrome.metricsPrivate.recordUserAction(MetricsUtils.RESUME_SPEECH_METRIC);
+  }
+
+  /**
    * Records a user-requested state change event from a given state.
    * @param {number} changeType
-   * @public
    */
   static recordSelectToSpeakStateChangeEvent(changeType) {
     chrome.metricsPrivate.recordEnumerationValue(
         MetricsUtils.STATE_CHANGE_METRIC.METRIC_NAME, changeType,
         MetricsUtils.STATE_CHANGE_METRIC.EVENT_COUNT);
+  }
+
+  /**
+   * Converts the speech multiplier into an enum based on
+   * tools/metrics/histograms/enums.xml.
+   * The value returned by this function is persisted to logs. Log entries
+   * should not be renumbered and numeric values should never be reused, so this
+   * function should not be changed.
+   * @param {number} speechRate The current speech rate.
+   * @return {number} The current speech rate as an int for metrics.
+   * @private
+   */
+  static speechMultiplierToSparseHistogramInt_(speechRate) {
+    return Math.floor(speechRate * 100);
+  }
+
+  /**
+   * Records the speed override chosen by the user.
+   * @param {number} rate
+   */
+  static recordSpeechRateOverrideMultiplier(rate) {
+    chrome.metricsPrivate.recordSparseValue(
+        MetricsUtils.OVERRIDE_SPEECH_RATE_MULTIPLIER_METRIC,
+        MetricsUtils.speechMultiplierToSparseHistogramInt_(rate));
   }
 }
 
@@ -121,8 +164,36 @@ MetricsUtils.CANCEL_SPEECH_METRIC =
     'Accessibility.CrosSelectToSpeak.CancelSpeech';
 
 /**
+ * The pause speech metric name.
+ * @type {string}
+ */
+MetricsUtils.PAUSE_SPEECH_METRIC =
+    'Accessibility.CrosSelectToSpeak.PauseSpeech';
+
+/**
+ * The resume speech after pausing metric name.
+ * @type {string}
+ */
+MetricsUtils.RESUME_SPEECH_METRIC =
+    'Accessibility.CrosSelectToSpeak.ResumeSpeech';
+
+/**
  * The background shading metric name.
  * @type {string}
  */
 MetricsUtils.BACKGROUND_SHADING_METRIC =
     'Accessibility.CrosSelectToSpeak.BackgroundShading';
+
+/**
+ * The navigation controls metric name.
+ * @type {string}
+ */
+MetricsUtils.NAVIGATION_CONTROLS_METRIC =
+    'Accessibility.CrosSelectToSpeak.NavigationControls';
+
+/**
+ * The speech rate override histogram metric name.
+ * @type {string}
+ */
+MetricsUtils.OVERRIDE_SPEECH_RATE_MULTIPLIER_METRIC =
+    'Accessibility.CrosSelectToSpeak.OverrideSpeechRateMultiplier';

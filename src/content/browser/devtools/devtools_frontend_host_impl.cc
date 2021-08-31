@@ -53,9 +53,8 @@ scoped_refptr<base::RefCountedMemory>
 DevToolsFrontendHost::GetFrontendResourceBytes(const std::string& path) {
 #if !defined(OS_FUCHSIA)
   for (size_t i = 0; i < kDevtoolsResourcesSize; ++i) {
-    if (path == kDevtoolsResources[i].name) {
-      return GetContentClient()->GetDataResourceBytes(
-          kDevtoolsResources[i].value);
+    if (path == kDevtoolsResources[i].path) {
+      return GetContentClient()->GetDataResourceBytes(kDevtoolsResources[i].id);
     }
   }
 #endif  // defined(OS_FUCHSIA)
@@ -91,9 +90,8 @@ void DevToolsFrontendHostImpl::BadMessageReceived() {
                                   bad_message::DFH_BAD_EMBEDDER_MESSAGE);
 }
 
-void DevToolsFrontendHostImpl::DispatchEmbedderMessage(
-    const std::string& message) {
-  handle_message_callback_.Run(message);
+void DevToolsFrontendHostImpl::DispatchEmbedderMessage(base::Value message) {
+  handle_message_callback_.Run(std::move(message));
 }
 
 }  // namespace content

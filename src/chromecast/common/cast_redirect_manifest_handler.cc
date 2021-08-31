@@ -29,13 +29,13 @@ CastRedirectHandler::CastRedirectHandler() {}
 CastRedirectHandler::~CastRedirectHandler() {}
 
 bool CastRedirectHandler::Parse(extensions::Extension* extension,
-                                base::string16* error) {
+                                std::u16string* error) {
   std::unique_ptr<Data> info(new Data);
   const base::DictionaryValue* dict;
   if (extension->manifest()->GetDictionary(kCastRedirect, &dict)) {
-    for (const auto& kv : *dict) {
+    for (const auto& kv : dict->DictItems()) {
       std::string path;
-      if (kv.second->GetAsString(&path)) {
+      if (kv.second.GetAsString(&path)) {
         info->redirects.emplace_back(kv.first, path);
       }
     }

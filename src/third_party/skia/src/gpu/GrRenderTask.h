@@ -9,13 +9,14 @@
 #define GrRenderTask_DEFINED
 
 #include "include/core/SkRefCnt.h"
-#include "include/private/SkColorData.h"
-#include "include/private/SkTDArray.h"
+#include "include/private/SkTArray.h"
+#include "src/core/SkTInternalLList.h"
 #include "src/gpu/GrSurfaceProxyView.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/GrTextureResolveManager.h"
 #include "src/gpu/ops/GrOp.h"
 
+class GrMockRenderTask;
 class GrOpFlushState;
 class GrOpsTask;
 class GrResourceAllocator;
@@ -37,6 +38,8 @@ public:
     void prepare(GrOpFlushState* flushState);
     bool execute(GrOpFlushState* flushState) { return this->onExecute(flushState); }
 
+    virtual bool requiresExplicitCleanup() const { return false; }
+
     // Called when this class will survive a flush and needs to truncate its ops and start over.
     // TODO: ultimately it should be invalid for an op list to survive a flush.
     // https://bugs.chromium.org/p/skia/issues/detail?id=7111
@@ -48,6 +51,20 @@ public:
     virtual void disown(GrDrawingManager*);
 
     bool isClosed() const { return this->isSetFlag(kClosed_Flag); }
+
+    /**
+     * Make this task skippable. This must be used purely for optimization purposes
+     * at this point as not all tasks will actually skip their work. It would be better if we could
+     * detect tasks that can be skipped automatically. We'd need to support minimal flushes (i.e.,
+     * only flush that which is required for SkSurfaces/SkImages) and the ability to detect
+     * "orphaned tasks" and clean them out from the DAG so they don't indefinitely accumulate.
+     * Finally, we'd probably have to track whether a proxy's backing store was imported or ever
+     * exported to the client in case the client is doing direct reads outside of Skia and thus
+     * may require tasks targeting the proxy to execute even if our DAG contains no reads.
+     */
+    void makeSkippable();
+
+    bool isSkippable() const { return this->isSetFlag(kSkippable_Flag); }
 
     /*
      * Notify this GrRenderTask that it relies on the contents of 'dependedOn'
@@ -61,14 +78,24 @@ public:
      */
     void addDependenciesFromOtherTask(GrRenderTask* otherTask);
 
+    SkSpan<GrRenderTask*> dependencies() { return SkMakeSpan(fDependencies); }
+    SkSpan<GrRenderTask*> dependents() { return SkMakeSpan(fDependents); }
+
+    void replaceDependency(const GrRenderTask* toReplace, GrRenderTask* replaceWith);
+    void replaceDependent(const GrRenderTask* toReplace, GrRenderTask* replaceWith);
+
+
     /*
      * Does this renderTask depend on 'dependedOn'?
      */
     bool dependsOn(const GrRenderTask* dependedOn) const;
 
+    virtual void gatherIDs(SkSTArray<8, uint32_t, true>* idArray) const {
+        idArray->push_back(fUniqueID);
+    }
     uint32_t uniqueID() const { return fUniqueID; }
     int numTargets() const { return fTargets.count(); }
-    const GrSurfaceProxyView& target(int i) const { return fTargets[i]; }
+    GrSurfaceProxy* target(int i) const { return fTargets[i].get(); }
 
     /*
      * Safely cast this GrRenderTask to a GrOpsTask (if possible).
@@ -79,7 +106,10 @@ public:
     /*
      * Dump out the GrRenderTask dependency DAG
      */
-    virtual void dump(bool printDependencies) const;
+    virtual void dump(const SkString& label,
+                      SkString indent,
+                      bool printDependencies,
+                      bool close) const;
     virtual const char* name() const = 0;
 #endif
 
@@ -90,22 +120,43 @@ public:
 
     void visitTargetAndSrcProxies_debugOnly(const GrOp::VisitProxyFunc& fn) const {
         this->visitProxies_debugOnly(fn);
-        for (int i = 0; i < this->numTargets(); ++i) {
-            fn(this->target(i).proxy(), GrMipmapped::kNo);
+        for (const sk_sp<GrSurfaceProxy>& target : fTargets) {
+            fn(target.get(), GrMipmapped::kNo);
         }
     }
 #endif
 
-protected:
+    bool isUsed(GrSurfaceProxy* proxy) const {
+        for (const sk_sp<GrSurfaceProxy>& target : fTargets) {
+            if (target.get() == proxy) {
+                return true;
+            }
+        }
+
+        return this->onIsUsed(proxy);
+    }
+
+    // Feed proxy usage intervals to the GrResourceAllocator class
+    virtual void gatherProxyIntervals(GrResourceAllocator*) const = 0;
+
     // In addition to just the GrSurface being allocated, has the stencil buffer been allocated (if
     // it is required)?
     bool isInstantiated() const;
 
+    // Used by GrRenderTaskCluster.
+    SK_DECLARE_INTERNAL_LLIST_INTERFACE(GrRenderTask);
+
+protected:
     SkDEBUGCODE(bool deferredProxiesAreInstantiated() const;)
 
     // Add a target surface proxy to the list of targets for this task.
     // This also informs the drawing manager to update the lastRenderTask association.
-    void addTarget(GrDrawingManager*, GrSurfaceProxyView);
+    void addTarget(GrDrawingManager*, sk_sp<GrSurfaceProxy>);
+
+    // Helper that adds the proxy owned by a view.
+    void addTarget(GrDrawingManager* dm, const GrSurfaceProxyView& view) {
+        this->addTarget(dm, view.refProxy());
+    }
 
     enum class ExpectedOutcome : bool {
         kTargetUnchanged,
@@ -119,53 +170,20 @@ protected:
     // targetUpdateBounds must not extend beyond the proxy bounds.
     virtual ExpectedOutcome onMakeClosed(const GrCaps&, SkIRect* targetUpdateBounds) = 0;
 
-    SkSTArray<1, GrSurfaceProxyView> fTargets;
+    SkSTArray<1, sk_sp<GrSurfaceProxy>> fTargets;
 
     // List of texture proxies whose contents are being prepared on a worker thread
     // TODO: this list exists so we can fire off the proper upload when an renderTask begins
     // executing. Can this be replaced?
     SkTArray<GrTextureProxy*, true> fDeferredProxies;
 
-private:
-    // for resetFlag, TopoSortTraits, gatherProxyIntervals, handleInternalAllocationFailure
-    friend class GrDrawingManager;
-
-    // Drops any pending operations that reference proxies that are not instantiated.
-    // NOTE: Derived classes don't need to check targets. That is handled when the
-    // drawingManager calls isInstantiated.
-    virtual void handleInternalAllocationFailure() = 0;
-
-    // Derived classes can override to indicate usage of proxies _other than target proxies_.
-    // GrRenderTask itself will handle checking the target proxies.
-    virtual bool onIsUsed(GrSurfaceProxy*) const = 0;
-
-    bool isUsed(GrSurfaceProxy* proxy) const {
-        for (const GrSurfaceProxyView& target : fTargets) {
-            if (target.proxy() == proxy) {
-                return true;
-            }
-        }
-
-        return this->onIsUsed(proxy);
-    }
-
-    void addDependency(GrRenderTask* dependedOn);
-    void addDependent(GrRenderTask* dependent);
-    SkDEBUGCODE(bool isDependedent(const GrRenderTask* dependent) const;)
-    SkDEBUGCODE(void validate() const;)
-    void closeThoseWhoDependOnMe(const GrCaps&);
-
-    // Feed proxy usage intervals to the GrResourceAllocator class
-    virtual void gatherProxyIntervals(GrResourceAllocator*) const = 0;
-
-    static uint32_t CreateUniqueID();
-
     enum Flags {
         kClosed_Flag    = 0x01,   //!< This task can't accept any more dependencies.
         kDisowned_Flag  = 0x02,   //!< This task is disowned by its creating GrDrawingManager.
+        kSkippable_Flag = 0x04,   //!< This task is skippable.
 
-        kWasOutput_Flag = 0x04,   //!< Flag for topological sorting
-        kTempMark_Flag  = 0x08,   //!< Flag for topological sorting
+        kWasOutput_Flag = 0x08,   //!< Flag for topological sorting
+        kTempMark_Flag  = 0x10,   //!< Flag for topological sorting
     };
 
     void setFlag(uint32_t flag) {
@@ -180,8 +198,40 @@ private:
         return SkToBool(fFlags & flag);
     }
 
+    void setIndex(uint32_t index) {
+        SkASSERT(!this->isSetFlag(kWasOutput_Flag));
+        SkASSERT(index < (1 << 27));
+        fFlags |= index << 5;
+    }
+
+    uint32_t getIndex() const {
+        SkASSERT(this->isSetFlag(kWasOutput_Flag));
+        return fFlags >> 5;
+    }
+
+private:
+    // for TopoSortTraits, fTextureResolveTask, closeThoseWhoDependOnMe, addDependency
+    friend class GrDrawingManager;
+    friend class GrMockRenderTask;
+
+    // Derived classes can override to indicate usage of proxies _other than target proxies_.
+    // GrRenderTask itself will handle checking the target proxies.
+    virtual bool onIsUsed(GrSurfaceProxy*) const = 0;
+
+    void addDependency(GrRenderTask* dependedOn);
+    void addDependent(GrRenderTask* dependent);
+    SkDEBUGCODE(bool isDependent(const GrRenderTask* dependent) const;)
+    SkDEBUGCODE(void validate() const;)
+    void closeThoseWhoDependOnMe(const GrCaps&);
+
+    static uint32_t CreateUniqueID();
+
     struct TopoSortTraits {
-        static void Output(GrRenderTask* renderTask, int /* index */) {
+        static uint32_t GetIndex(GrRenderTask* renderTask) {
+            return renderTask->getIndex();
+        }
+        static void Output(GrRenderTask* renderTask, uint32_t index) {
+            renderTask->setIndex(index);
             renderTask->setFlag(kWasOutput_Flag);
         }
         static bool WasOutput(const GrRenderTask* renderTask) {
@@ -204,9 +254,9 @@ private:
         }
     };
 
-    // Only the GrOpsTask currently overrides this virtual
-    virtual void onPrePrepare(GrRecordingContext*) {}
-    virtual void onPrepare(GrOpFlushState*) {} // Only the GrOpsTask overrides this virtual
+    virtual void onMakeSkippable() {}
+    virtual void onPrePrepare(GrRecordingContext*) {} // Only GrOpsTask currently overrides this
+    virtual void onPrepare(GrOpFlushState*) {} // GrOpsTask and GrDDLTask override this
     virtual bool onExecute(GrOpFlushState* flushState) = 0;
 
     const uint32_t         fUniqueID;

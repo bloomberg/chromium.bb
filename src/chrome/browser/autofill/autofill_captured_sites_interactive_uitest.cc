@@ -12,10 +12,8 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -35,9 +33,9 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
-#include "components/autofill/core/browser/autofill_manager.h"
-#include "components/autofill/core/browser/autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
+#include "components/autofill/core/browser/browser_autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -46,6 +44,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/variations/variations_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
@@ -88,15 +87,15 @@ class AutofillCapturedSitesInteractiveTest
  public:
   // TestRecipeReplayChromeFeatureActionExecutor
   bool AutofillForm(const std::string& focus_element_css_selector,
-                    const std::vector<std::string> iframe_path,
+                    const std::vector<std::string>& iframe_path,
                     const int attempts,
                     content::RenderFrameHost* frame) override {
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(frame);
-    AutofillManager* autofill_manager =
+    BrowserAutofillManager* autofill_manager =
         ContentAutofillDriverFactory::FromWebContents(web_contents)
             ->DriverForFrame(frame)
-            ->autofill_manager();
+            ->browser_autofill_manager();
     autofill_manager->SetTestDelegate(test_delegate());
 
     int tries = 0;
@@ -155,8 +154,7 @@ class AutofillCapturedSitesInteractiveTest
                          base::CompareCase::INSENSITIVE_ASCII)) {
       if (type == autofill::CREDIT_CARD_NAME_FIRST ||
           type == autofill::CREDIT_CARD_NAME_LAST) {
-        card_.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL,
-                         base::ASCIIToUTF16(""));
+        card_.SetRawInfo(autofill::CREDIT_CARD_NAME_FULL, u"");
       }
       card_.SetRawInfo(type, base::UTF8ToUTF16(field_value));
     } else {
@@ -167,13 +165,13 @@ class AutofillCapturedSitesInteractiveTest
   }
 
   bool SetupAutofillProfile() override {
-    AddTestAutofillData(browser(), profile(), credit_card());
+    AddTestAutofillData(browser()->profile(), profile(), credit_card());
     return true;
   }
 
  protected:
   AutofillCapturedSitesInteractiveTest()
-      : profile_(test::GetFullProfile()),
+      : profile_(test::GetIncompleteProfile2()),
         card_(CreditCard(base::GenerateGUID(), "http://www.example.com")) {
     for (size_t i = NO_SERVER_DATA; i < MAX_VALID_FIELD_TYPE; ++i) {
       ServerFieldType field_type = static_cast<ServerFieldType>(i);
@@ -236,10 +234,11 @@ class AutofillCapturedSitesInteractiveTest
     // elements in a form to determine if the form is ready for interaction.
     feature_list_.InitWithFeatures(
         /*enabled_features=*/{features::kAutofillShowTypePredictions},
-        /*disabled_features=*/{features::kAutofillCacheQueryResponses});
+        /*disabled_features=*/{});
     command_line->AppendSwitch(switches::kShowAutofillTypePredictions);
-    command_line->AppendSwitchASCII(::switches::kForceFieldTrials,
-                                    "AutofillFieldMetadata/Enabled/");
+    command_line->AppendSwitchASCII(
+        variations::switches::kVariationsOverrideCountry, "us");
+    command_line->AppendSwitchASCII(::switches::kForceFieldTrials, "Foo/Bar");
 
     captured_sites_test_utils::TestRecipeReplayer::SetUpCommandLine(
         command_line);
@@ -303,6 +302,9 @@ class AutofillCapturedSitesInteractiveTest
 };
 
 IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
+  captured_sites_test_utils::PrintInstructions(
+      "autofill_captured_sites_interactive_uitest");
+
   // Prints the path of the test to be executed.
   VLOG(1) << GetParam().site_name;
 
@@ -310,7 +312,8 @@ IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
   ASSERT_TRUE(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
 
   bool test_completed = recipe_replayer()->ReplayTest(
-      GetParam().capture_file_path, GetParam().recipe_file_path);
+      GetParam().capture_file_path, GetParam().recipe_file_path,
+      captured_sites_test_utils::GetCommandFilePath());
   if (!test_completed)
     ADD_FAILURE() << "Full execution was unable to complete.";
 
@@ -337,6 +340,12 @@ IN_PROC_BROWSER_TEST_P(AutofillCapturedSitesInteractiveTest, Recipe) {
     }
   }
 }
+
+// This test is called with a dynamic list and will be empty during the Password
+// run instance, so adding GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST a la
+// crbug/1192206
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
+    AutofillCapturedSitesInteractiveTest);
 INSTANTIATE_TEST_SUITE_P(
     All,
     AutofillCapturedSitesInteractiveTest,

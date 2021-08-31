@@ -159,12 +159,11 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(
-            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-            GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                      GrClampType clampType) override {
         // This Op uses uniform (not vertex) color, so doesn't need to track wide color.
-        return fHelper.finalizeProcessors(caps, clip, hasMixedSampledCoverage, clampType,
-                                          GrProcessorAnalysisCoverage::kNone, &fColor, nullptr);
+        return fHelper.finalizeProcessors(caps, clip, clampType, GrProcessorAnalysisCoverage::kNone,
+                                          &fColor, nullptr);
     }
 
 private:
@@ -172,10 +171,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& clip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         GrGeometryProcessor* gp;
         {
             using namespace GrDefaultGeoProcFactory;
@@ -192,7 +192,7 @@ private:
 
         fProgramInfo = fHelper.createProgramInfo(caps, arena, writeView, std::move(clip),
                                                  dstProxyView, gp, primType,
-                                                 renderPassXferBarriers);
+                                                 renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrepareDraws(Target* target) override {
@@ -200,7 +200,7 @@ private:
             this->createProgramInfo(target);
         }
 
-        size_t kVertexStride = fProgramInfo->primProc().vertexStride();
+        size_t kVertexStride = fProgramInfo->geomProc().vertexStride();
         int vertexCount = kVertsPerHairlineRect;
         if (fStrokeWidth > 0) {
             vertexCount = kVertsPerStrokeRect;
@@ -240,7 +240,7 @@ private:
         }
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
         flushState->drawMesh(*fMesh);
     }
 
@@ -427,12 +427,11 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(
-            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-            GrClampType clampType) override {
-        return fHelper.finalizeProcessors(
-                caps, clip, hasMixedSampledCoverage, clampType,
-                GrProcessorAnalysisCoverage::kSingleChannel, &fRects.back().fColor, &fWideColor);
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                      GrClampType clampType) override {
+        return fHelper.finalizeProcessors(caps, clip, clampType,
+                                          GrProcessorAnalysisCoverage::kSingleChannel,
+                                          &fRects.back().fColor, &fWideColor);
     }
 
 private:
@@ -440,10 +439,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps*,
                              SkArenaAlloc*,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&&,
                              const GrXferProcessor::DstProxyView&,
-                             GrXferBarrierFlags renderPassXferBarriers) override;
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override;
 
     void onPrepareDraws(Target*) override;
     void onExecute(GrOpFlushState*, const SkRect& chainBounds) override;
@@ -516,10 +516,11 @@ private:
 
 void AAStrokeRectOp::onCreateProgramInfo(const GrCaps* caps,
                                          SkArenaAlloc* arena,
-                                         const GrSurfaceProxyView* writeView,
+                                         const GrSurfaceProxyView& writeView,
                                          GrAppliedClip&& appliedClip,
                                          const GrXferProcessor::DstProxyView& dstProxyView,
-                                         GrXferBarrierFlags renderPassXferBarriers) {
+                                         GrXferBarrierFlags renderPassXferBarriers,
+                                         GrLoadOp colorLoadOp) {
 
     GrGeometryProcessor* gp = create_aa_stroke_rect_gp(arena,
                                                        fHelper.compatibleWithCoverageAsAlpha(),
@@ -538,7 +539,8 @@ void AAStrokeRectOp::onCreateProgramInfo(const GrCaps* caps,
                                              dstProxyView,
                                              gp,
                                              GrPrimitiveType::kTriangles,
-                                             renderPassXferBarriers);
+                                             renderPassXferBarriers,
+                                             colorLoadOp);
 }
 
 void AAStrokeRectOp::onPrepareDraws(Target* target) {
@@ -564,7 +566,7 @@ void AAStrokeRectOp::onPrepareDraws(Target* target) {
         return;
     }
     PatternHelper helper(target, GrPrimitiveType::kTriangles,
-                         fProgramInfo->primProc().vertexStride(), std::move(indexBuffer),
+                         fProgramInfo->geomProc().vertexStride(), std::move(indexBuffer),
                          verticesPerInstance, indicesPerInstance, instanceCount, maxQuads);
     GrVertexWriter vertices{ helper.vertices() };
     if (!vertices.fPtr) {
@@ -594,7 +596,7 @@ void AAStrokeRectOp::onExecute(GrOpFlushState* flushState, const SkRect& chainBo
     }
 
     flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-    flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+    flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
     flushState->drawMesh(*fMesh);
 }
 

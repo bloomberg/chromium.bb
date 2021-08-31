@@ -10,7 +10,6 @@
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "base/values.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "url/gurl.h"
@@ -38,7 +37,7 @@ class AutocompleteController : public ::AutocompleteController::Observer {
   // navigates to the default search engine with |input| as query and false.
   // This function runs independently of any currently-running autocomplete
   // session.
-  std::tuple<GURL, bool> GetUrlFromVoiceInput(const base::string16& input);
+  std::tuple<GURL, bool> GetUrlFromVoiceInput(const std::u16string& input);
 
  private:
   // ::AutocompleteController::Observer:
@@ -56,7 +55,7 @@ class AutocompleteController : public ::AutocompleteController::Observer {
   // will wait for a period of time after the receipt of each suggestion and
   // batch incoming suggestions that arrive before that period of time has been
   // exceeded.
-  base::CancelableCallback<void()> suggestions_timeout_;
+  base::CancelableOnceClosure suggestions_timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteController);
 };

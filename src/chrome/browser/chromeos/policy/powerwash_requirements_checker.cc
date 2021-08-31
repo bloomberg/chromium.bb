@@ -5,16 +5,14 @@
 #include "chrome/browser/chromeos/policy/powerwash_requirements_checker.h"
 
 #include "ash/public/cpp/notification_utils.h"
-#include "base/callback_forward.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,10 +20,11 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
+#include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/vector_icons/vector_icons.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -56,10 +55,10 @@ constexpr mc::SystemNotificationWarningLevel kNotificationLevel =
 const char kNotificationLearnMoreLink[] =
     "https://support.google.com/chromebook?p=factory_reset";
 
-base::string16 GetEnterpriseDisplayDomain() {
+std::u16string GetEnterpriseManager() {
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  return base::UTF8ToUTF16(connector->GetEnterpriseDisplayDomain());
+  return base::UTF8ToUTF16(connector->GetEnterpriseDomainManager());
 }
 
 void OnNotificationClicked(Profile* profile) {
@@ -76,13 +75,13 @@ void OnNotificationClickedCloseIt(Profile* profile,
       kNotificationHandlerType, notification_id);
 }
 
-void OnCryptohomeCheckHealth(base::OnceClosure on_initialized_callback,
-                             base::Optional<cryptohome::BaseReply> reply) {
-  if (!reply || !reply->HasExtension(cryptohome::CheckHealthReply::reply)) {
+void OnCryptohomeCheckHealth(
+    base::OnceClosure on_initialized_callback,
+    absl::optional<user_data_auth::CheckHealthReply> reply) {
+  if (!reply) {
     LOG(ERROR) << "Cryptohome failed to send health state";
   } else {
-    const bool state = reply->GetExtension(cryptohome::CheckHealthReply::reply)
-                           .requires_powerwash();
+    const bool state = reply->requires_powerwash();
     g_cached_cryptohome_powerwash_state =
         state ? PowerwashRequirementsChecker::State::kRequired
               : PowerwashRequirementsChecker::State::kNotRequired;
@@ -101,8 +100,8 @@ void OnCryptohomeAvailability(base::OnceClosure on_initialized_callback,
       std::move(on_initialized_callback).Run();
     return;
   }
-  chromeos::CryptohomeClient::Get()->CheckHealth(
-      cryptohome::CheckHealthRequest(),
+  chromeos::CryptohomeMiscClient::Get()->CheckHealth(
+      user_data_auth::CheckHealthRequest(),
       base::BindOnce(OnCryptohomeCheckHealth,
                      std::move(on_initialized_callback)));
 }
@@ -111,14 +110,14 @@ void OnCryptohomeAvailability(base::OnceClosure on_initialized_callback,
 
 // static
 void PowerwashRequirementsChecker::Initialize() {
-  chromeos::CryptohomeClient::Get()->WaitForServiceToBeAvailable(
+  chromeos::CryptohomeMiscClient::Get()->WaitForServiceToBeAvailable(
       base::BindOnce(OnCryptohomeAvailability, base::OnceClosure{}));
 }
 
 // static
 void PowerwashRequirementsChecker::InitializeSynchronouslyForTesting() {
   base::RunLoop run_loop;
-  chromeos::CryptohomeClient::Get()->WaitForServiceToBeAvailable(
+  chromeos::CryptohomeMiscClient::Get()->WaitForServiceToBeAvailable(
       base::BindOnce(OnCryptohomeAvailability, run_loop.QuitClosure()));
   run_loop.Run();
 }
@@ -143,7 +142,7 @@ PowerwashRequirementsChecker::State PowerwashRequirementsChecker::GetState()
 
 bool PowerwashRequirementsChecker::IsPolicySet() const {
   int policy_value = RebootOnSignOutPolicy::NEVER;
-  if (!chromeos::CrosSettings::Get()->GetInteger(
+  if (!ash::CrosSettings::Get()->GetInteger(
           chromeos::kDeviceRebootOnUserSignout, &policy_value)) {
     return false;
   }
@@ -205,8 +204,8 @@ void PowerwashRequirementsChecker::ShowNotification() {
   auto notification = ash::CreateSystemNotification(
       mc::NOTIFICATION_TYPE_SIMPLE, notification_id,
       l10n_util::GetStringUTF16(IDS_POWERWASH_REQUEST_TITLE),
-      l10n_util::GetStringFUTF16(message_id, GetEnterpriseDisplayDomain()),
-      base::string16{}, GURL{},
+      l10n_util::GetStringFUTF16(message_id, GetEnterpriseManager()),
+      std::u16string{}, GURL{},
       mc::NotifierId(mc::NotifierType::SYSTEM_COMPONENT, notification_id),
       std::move(rich_data), std::move(delegate), kNotificationIcon,
       kNotificationLevel);
@@ -244,7 +243,7 @@ void PowerwashRequirementsChecker::ShowCryptohomeErrorNotification() {
       mc::NOTIFICATION_TYPE_SIMPLE, notification_id,
       l10n_util::GetStringUTF16(
           IDS_POWERWASH_REQUEST_UNDEFINED_STATE_ERROR_TITLE),
-      l10n_util::GetStringUTF16(message_id), base::string16{}, GURL{},
+      l10n_util::GetStringUTF16(message_id), std::u16string{}, GURL{},
       mc::NotifierId(mc::NotifierType::SYSTEM_COMPONENT, notification_id), {},
       std::move(delegate), kNotificationIcon, kNotificationLevel);
 

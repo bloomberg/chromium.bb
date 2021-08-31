@@ -15,46 +15,13 @@
 
 #include "aom/aom_codec.h"
 #include "aom/aom_encoder.h"
+#include "common/args_helper.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct arg {
-  char **argv;
-  const char *name;
-  const char *val;
-  unsigned int argv_step;
-  const struct arg_def *def;
-};
-
-struct arg_enum_list {
-  const char *name;
-  int val;
-};
-#define ARG_ENUM_LIST_END \
-  { 0 }
-
-typedef struct arg_def {
-  const char *short_name;
-  const char *long_name;
-  int has_val;  //  0: The argument must not have a value.
-                //  1: The argument must have a value.
-                // -1: The argument may or may not have a value.
-  const char *desc;
-  const struct arg_enum_list *enums;
-} arg_def_t;
-#define ARG_DEF(s, l, v, d) \
-  { s, l, v, d, NULL }
-#define ARG_DEF_ENUM(s, l, v, d, e) \
-  { s, l, v, d, e }
-#define ARG_DEF_LIST_END \
-  { 0 }
-
-struct arg arg_init(char **argv);
 int arg_match(struct arg *arg_, const struct arg_def *def, char **argv);
-char *ignore_front_spaces(const char *str);
-void ignore_end_spaces(char *str);
 int parse_cfg(const char *file, cfg_options_t *config);
 const char *arg_next(struct arg *arg);
 void arg_show_usage(FILE *fp, const struct arg_def *const *defs);

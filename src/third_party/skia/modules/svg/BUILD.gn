@@ -11,33 +11,57 @@ if (skia_enable_svg) {
     include_dirs = [ "include" ]
   }
 
-  component("svg") {
+  skia_component("svg") {
     check_includes = false
     import("svg.gni")
     public_configs = [ ":public_config" ]
     public = skia_svg_public
     sources = skia_svg_sources
-    configs += [ "../../:skia_private" ]
-    deps = [ "../..:skia" ]
+    configs = [ "../../:skia_private" ]
+    deps = [
+      "../..:skia",
+      "../skresources",
+      "../skshaper",
+    ]
   }
 
-  if (skia_enable_tools && defined(is_skia_standalone)) {
-    source_set("tool") {
-      check_includes = false
+  if (skia_enable_tools) {
+    if (defined(is_skia_standalone)) {
+      skia_source_set("tool") {
+        check_includes = false
+        testonly = true
+
+        configs = [ "../..:skia_private" ]
+        sources = [ "utils/SvgTool.cpp" ]
+
+        deps = [
+          "../..:flags",
+          "../..:skia",
+        ]
+
+        public_deps = [ ":svg" ]
+      }
+    }
+
+    skia_source_set("tests") {
       testonly = true
 
-      configs += [ "../..:skia_private" ]
-      sources = [ "utils/SvgTool.cpp" ]
-
-      deps = [
-        "../..:flags",
-        "../..:skia",
+      configs = [ "../..:skia_private" ]
+      sources = [
+        "tests/Filters.cpp",
+        "tests/Text.cpp",
       ]
 
-      public_deps = [ ":svg" ]
+      deps = [
+        ":svg",
+        "../..:skia",
+        "../..:test",
+      ]
     }
   }
 } else {
   group("svg") {
+  }
+  group("tests") {
   }
 }

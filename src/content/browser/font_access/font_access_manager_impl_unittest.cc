@@ -144,6 +144,10 @@ void ValidateFontEnumerationBasic(FontEnumerationStatus status,
         << "postscript_name size is not zero.";
     EXPECT_GT(font.full_name().size(), 0ULL) << "full_name size is not zero.";
     EXPECT_GT(font.family().size(), 0ULL) << "family size is not zero.";
+    EXPECT_GE(font.stretch(), 0.5f) << "stretch is in 0.5..2.0.";
+    EXPECT_LE(font.stretch(), 2.0f) << "stretch is in 0.5..2.0.";
+    EXPECT_GE(font.weight(), 1.f) << "weight is in 1..1000.";
+    EXPECT_LE(font.weight(), 1000.f) << "weight is in 1..1000.";
 
     if (previous_font.IsInitialized()) {
       EXPECT_LT(previous_font.postscript_name(), font.postscript_name())
@@ -279,6 +283,24 @@ TEST_F(FontAccessManagerImplTest, PermissionPreviouslyDeniedErrors) {
       }));
   run_loop.Run();
 }
+
+TEST_F(FontAccessManagerImplTest, FontAccessContextFindAllFontsTest) {
+  FontAccessContext* font_access_context =
+      static_cast<FontAccessContext*>(manager_.get());
+
+  base::RunLoop run_loop;
+  font_access_context->FindAllFonts(base::BindLambdaForTesting(
+      [&](FontEnumerationStatus status,
+          std::vector<blink::mojom::FontMetadata> fonts) {
+        EXPECT_EQ(status, FontEnumerationStatus::kOk)
+            << "Enumeration expected to be successful.";
+        EXPECT_GT(fonts.size(), 0u)
+            << "Enumeration expected to yield at least 1 font";
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
 #endif
 
 }  // namespace content

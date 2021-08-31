@@ -7,9 +7,9 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "components/performance_manager/persistence/site_data/leveldb_site_data_store.h"
 #include "components/performance_manager/persistence/site_data/site_data_cache_factory.h"
 #include "components/performance_manager/persistence/site_data/site_data_writer.h"
@@ -168,6 +168,7 @@ void SiteDataCacheImpl::ClearAllSiteData() {
 
 void SiteDataCacheImpl::SetInitializationCallbackForTesting(
     base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   data_store_->SetInitializationCallbackForTesting(std::move(callback));
 }
 

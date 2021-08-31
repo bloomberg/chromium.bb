@@ -18,16 +18,20 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/invalidate_type.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/declarative_user_script_manager.h"
+#include "extensions/browser/content_script_tracker.h"
 #include "extensions/browser/extension_action.h"
 #include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_user_script_loader.h"
+#include "extensions/browser/extension_web_contents_observer.h"
+#include "extensions/browser/user_script_manager.h"
 #include "extensions/common/api/declarative/declarative_constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/image_util.h"
+#include "extensions/common/mojom/host_id.mojom.h"
+#include "extensions/common/mojom/run_location.mojom-shared.h"
 #include "extensions/common/script_constants.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -171,9 +175,9 @@ class SetIcon : public ContentAction {
 // Helper for getting JS collections into C++.
 static bool AppendJSStringsToCPPStrings(const base::ListValue& append_strings,
                                         std::vector<std::string>* append_to) {
-  for (auto it = append_strings.begin(); it != append_strings.end(); ++it) {
+  for (const auto& entry : append_strings.GetList()) {
     std::string value;
-    if (it->GetAsString(&value)) {
+    if (entry.GetAsString(&value)) {
       append_to->push_back(value);
     } else {
       return false;
@@ -237,41 +241,12 @@ std::unique_ptr<ContentAction> RequestContentScript::Create(
     std::string* error) {
   ScriptData script_data;
   if (!InitScriptData(dict, error, &script_data))
-    return std::unique_ptr<ContentAction>();
+    return nullptr;
 
   RecordContentActionCreated(
       declarative_content_constants::ContentActionType::kRequestContentScript);
   return base::WrapUnique(
       new RequestContentScript(browser_context, extension, script_data));
-}
-
-// static
-std::unique_ptr<ContentAction> RequestContentScript::CreateForTest(
-    DeclarativeUserScriptSet* script_set,
-    const Extension* extension,
-    const base::Value& json_action,
-    std::string* error) {
-  // Simulate ContentAction-level initialization. Check that instance type is
-  // RequestContentScript.
-  error->clear();
-  const base::DictionaryValue* action_dict = NULL;
-  std::string instance_type;
-  if (!(json_action.GetAsDictionary(&action_dict) &&
-        action_dict->GetString(declarative_content_constants::kInstanceType,
-                               &instance_type) &&
-        instance_type ==
-            std::string(declarative_content_constants::kRequestContentScript)))
-    return std::unique_ptr<ContentAction>();
-
-  // Normal RequestContentScript data initialization.
-  ScriptData script_data;
-  if (!InitScriptData(action_dict, error, &script_data))
-    return std::unique_ptr<ContentAction>();
-
-  // Inject provided DeclarativeUserScriptSet, rather than looking it up
-  // using a BrowserContext.
-  return base::WrapUnique(
-      new RequestContentScript(script_set, extension, script_data));
 }
 
 // static
@@ -318,35 +293,33 @@ RequestContentScript::RequestContentScript(
     content::BrowserContext* browser_context,
     const Extension* extension,
     const ScriptData& script_data) {
-  HostID host_id(HostID::EXTENSIONS, extension->id());
+  mojom::HostID host_id(mojom::HostID::HostType::kExtensions, extension->id());
   InitScript(host_id, extension, script_data);
 
-  script_set_ = DeclarativeUserScriptManager::Get(browser_context)
-                    ->GetDeclarativeUserScriptSetByID(host_id);
-  AddScript();
-}
-
-RequestContentScript::RequestContentScript(DeclarativeUserScriptSet* script_set,
-                                           const Extension* extension,
-                                           const ScriptData& script_data) {
-  HostID host_id(HostID::EXTENSIONS, extension->id());
-  InitScript(host_id, extension, script_data);
-
-  script_set_ = script_set;
+  script_loader_ = ExtensionSystem::Get(browser_context)
+                       ->user_script_manager()
+                       ->GetUserScriptLoaderForExtension(extension->id());
+  scoped_observation_.Observe(script_loader_);
   AddScript();
 }
 
 RequestContentScript::~RequestContentScript() {
-  DCHECK(script_set_);
-  script_set_->RemoveScript(UserScriptIDPair(script_.id(), script_.host_id()));
+  // This can occur either if this RequestContentScript action is removed via an
+  // API call or if its extension is unloaded. If the extension is unloaded, the
+  // associated `script_loader_` may have been deleted before this object which
+  // means the loader has already removed `script_`.
+  if (script_loader_) {
+    script_loader_->RemoveScripts({script_.id()},
+                                  UserScriptLoader::ScriptsLoadedCallback());
+  }
 }
 
-void RequestContentScript::InitScript(const HostID& host_id,
+void RequestContentScript::InitScript(const mojom::HostID& host_id,
                                       const Extension* extension,
                                       const ScriptData& script_data) {
   script_.set_id(UserScript::GenerateUserScriptID());
   script_.set_host_id(host_id);
-  script_.set_run_location(UserScript::BROWSER_DRIVEN);
+  script_.set_run_location(mojom::RunLocation::kBrowserDriven);
   script_.set_match_all_frames(script_data.all_frames);
   script_.set_match_origin_as_fallback(
       script_data.match_about_blank
@@ -369,8 +342,11 @@ void RequestContentScript::InitScript(const HostID& host_id,
 }
 
 void RequestContentScript::AddScript() {
-  DCHECK(script_set_);
-  script_set_->AddScript(UserScript::CopyMetadataFrom(script_));
+  DCHECK(script_loader_);
+  auto scripts = std::make_unique<UserScriptList>();
+  scripts->push_back(UserScript::CopyMetadataFrom(script_));
+  script_loader_->AddScripts(std::move(scripts),
+                             UserScriptLoader::ScriptsLoadedCallback());
 }
 
 void RequestContentScript::Apply(const ApplyInfo& apply_info) const {
@@ -386,11 +362,31 @@ void RequestContentScript::Revert(const ApplyInfo& apply_info) const {}
 void RequestContentScript::InstructRenderProcessToInject(
     content::WebContents* contents,
     const Extension* extension) const {
-  content::RenderFrameHost* render_frame_host = contents->GetMainFrame();
-  render_frame_host->Send(new ExtensionMsg_ExecuteDeclarativeScript(
-      render_frame_host->GetRoutingID(),
+  ContentScriptTracker::WillExecuteCode(base::PassKey<RequestContentScript>(),
+                                        contents->GetMainFrame(), *extension);
+
+  mojom::LocalFrame* local_frame =
+      ExtensionWebContentsObserver::GetForWebContents(contents)->GetLocalFrame(
+          contents->GetMainFrame());
+  if (!local_frame) {
+    // TODO(https://crbug.com/1203579): Need to review when this method is
+    // called with non-live frame.
+    return;
+  }
+  local_frame->ExecuteDeclarativeScript(
       sessions::SessionTabHelper::IdForTab(contents).id(), extension->id(),
-      script_.id(), contents->GetLastCommittedURL()));
+      script_.id(), contents->GetLastCommittedURL());
+}
+
+void RequestContentScript::OnScriptsLoaded(
+    UserScriptLoader* loader,
+    content::BrowserContext* browser_context) {}
+
+void RequestContentScript::OnUserScriptLoaderDestroyed(
+    UserScriptLoader* loader) {
+  DCHECK_EQ(script_loader_, loader);
+  scoped_observation_.Reset();
+  script_loader_ = nullptr;
 }
 
 // static
@@ -454,7 +450,7 @@ std::unique_ptr<ContentAction> ContentAction::Create(
         action_dict->GetString(declarative_content_constants::kInstanceType,
                                &instance_type))) {
     *error = kMissingInstanceTypeError;
-    return std::unique_ptr<ContentAction>();
+    return nullptr;
   }
 
   ContentActionFactory& factory = g_content_action_factory.Get();
@@ -464,7 +460,7 @@ std::unique_ptr<ContentAction> ContentAction::Create(
         browser_context, extension, action_dict, error);
 
   *error = base::StringPrintf(kInvalidInstanceTypeError, instance_type.c_str());
-  return std::unique_ptr<ContentAction>();
+  return nullptr;
 }
 
 // static

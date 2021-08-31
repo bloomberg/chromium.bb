@@ -9,11 +9,12 @@
 #include <cstdint>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/http/http_constants.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_header_list.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
+#include "absl/types/optional.h"
+#include "quic/core/http/http_constants.h"
+#include "quic/core/http/quic_header_list.h"
+#include "quic/core/quic_packets.h"
+#include "quic/platform/api/quic_export.h"
+#include "spdy/core/spdy_header_block.h"
 
 namespace quic {
 
@@ -52,9 +53,14 @@ class QUIC_EXPORT_PRIVATE SpdyUtils {
   static bool PopulateHeaderBlockFromUrl(const std::string url,
                                          spdy::SpdyHeaderBlock* headers);
 
-  // Returns HTTP/3 SETTINGS identifier as a string.
-  static std::string H3SettingsToString(
-      Http3AndQpackSettingsIdentifiers identifier);
+  // Parses the "datagram-flow-id" header, returns the flow ID on success, or
+  // returns absl::nullopt if the header was not present or failed to parse.
+  static absl::optional<QuicDatagramFlowId> ParseDatagramFlowIdHeader(
+      const spdy::SpdyHeaderBlock& headers);
+
+  // Adds the "datagram-flow-id" header.
+  static void AddDatagramFlowIdHeader(spdy::SpdyHeaderBlock* headers,
+                                      QuicDatagramFlowId flow_id);
 };
 
 }  // namespace quic

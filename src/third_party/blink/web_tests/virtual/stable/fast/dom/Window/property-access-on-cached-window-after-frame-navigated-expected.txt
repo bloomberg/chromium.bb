@@ -35,7 +35,10 @@ PASS oldChildWindow.navigator.cookieEnabled is newChildWindow.navigator.cookieEn
 PASS oldChildWindow.navigator.deviceMemory is newChildWindow.navigator.deviceMemory
 PASS oldChildWindow.navigator.doNotTrack is newChildWindow.navigator.doNotTrack
 PASS oldChildWindow.navigator.hardwareConcurrency is newChildWindow.navigator.hardwareConcurrency
+PASS oldChildWindow.navigator.hid.onconnect is newChildWindow.navigator.hid.onconnect
+PASS oldChildWindow.navigator.hid.ondisconnect is newChildWindow.navigator.hid.ondisconnect
 PASS oldChildWindow.navigator.language is newChildWindow.navigator.language
+PASS oldChildWindow.navigator.managed.onmanagedconfigurationchange is newChildWindow.navigator.managed.onmanagedconfigurationchange
 PASS oldChildWindow.navigator.maxTouchPoints is newChildWindow.navigator.maxTouchPoints
 PASS oldChildWindow.navigator.mediaDevices.ondevicechange is newChildWindow.navigator.mediaDevices.ondevicechange
 PASS oldChildWindow.navigator.mediaSession.metadata is newChildWindow.navigator.mediaSession.metadata
@@ -46,6 +49,8 @@ PASS oldChildWindow.navigator.presentation.defaultRequest is newChildWindow.navi
 PASS oldChildWindow.navigator.presentation.receiver is newChildWindow.navigator.presentation.receiver
 PASS oldChildWindow.navigator.product is newChildWindow.navigator.product
 PASS oldChildWindow.navigator.productSub is newChildWindow.navigator.productSub
+PASS oldChildWindow.navigator.serial.onconnect is newChildWindow.navigator.serial.onconnect
+PASS oldChildWindow.navigator.serial.ondisconnect is newChildWindow.navigator.serial.ondisconnect
 PASS oldChildWindow.navigator.serviceWorker.controller is newChildWindow.navigator.serviceWorker.controller
 PASS oldChildWindow.navigator.serviceWorker.oncontrollerchange is newChildWindow.navigator.serviceWorker.oncontrollerchange
 PASS oldChildWindow.navigator.serviceWorker.onmessage is newChildWindow.navigator.serviceWorker.onmessage
@@ -55,8 +60,12 @@ PASS oldChildWindow.navigator.usb.ondisconnect is newChildWindow.navigator.usb.o
 PASS oldChildWindow.navigator.userActivation.hasBeenActive is newChildWindow.navigator.userActivation.hasBeenActive
 PASS oldChildWindow.navigator.userActivation.isActive is newChildWindow.navigator.userActivation.isActive
 PASS oldChildWindow.navigator.userAgent is newChildWindow.navigator.userAgent
+PASS oldChildWindow.navigator.userAgentData.brands[0].brand is newChildWindow.navigator.userAgentData.brands[0].brand
+PASS oldChildWindow.navigator.userAgentData.brands[0].version is newChildWindow.navigator.userAgentData.brands[0].version
+PASS oldChildWindow.navigator.userAgentData.mobile is newChildWindow.navigator.userAgentData.mobile
 PASS oldChildWindow.navigator.vendor is newChildWindow.navigator.vendor
 PASS oldChildWindow.navigator.vendorSub is newChildWindow.navigator.vendorSub
+PASS oldChildWindow.navigator.webdriver is newChildWindow.navigator.webdriver
 PASS oldChildWindow.navigator.xr.ondevicechange is newChildWindow.navigator.xr.ondevicechange
 PASS oldChildWindow.onabort is newChildWindow.onabort
 PASS oldChildWindow.onafterprint is newChildWindow.onafterprint
@@ -68,6 +77,7 @@ PASS oldChildWindow.onauxclick is newChildWindow.onauxclick
 PASS oldChildWindow.onbeforeinstallprompt is newChildWindow.onbeforeinstallprompt
 PASS oldChildWindow.onbeforeprint is newChildWindow.onbeforeprint
 PASS oldChildWindow.onbeforeunload is newChildWindow.onbeforeunload
+PASS oldChildWindow.onbeforexrselect is newChildWindow.onbeforexrselect
 PASS oldChildWindow.onblur is newChildWindow.onblur
 PASS oldChildWindow.oncancel is newChildWindow.oncancel
 PASS oldChildWindow.oncanplay is newChildWindow.oncanplay
@@ -171,6 +181,7 @@ PASS oldChildWindow.onwebkittransitionend is newChildWindow.onwebkittransitionen
 PASS oldChildWindow.onwheel is newChildWindow.onwheel
 PASS oldChildWindow.opener is newChildWindow.opener
 PASS oldChildWindow.origin is newChildWindow.origin
+PASS oldChildWindow.originAgentCluster is newChildWindow.originAgentCluster
 PASS oldChildWindow.outerHeight is newChildWindow.outerHeight
 PASS oldChildWindow.outerWidth is newChildWindow.outerWidth
 PASS oldChildWindow.pageXOffset is newChildWindow.pageXOffset

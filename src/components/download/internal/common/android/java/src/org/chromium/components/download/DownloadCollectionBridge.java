@@ -11,10 +11,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
-import android.os.FileUtils;
 import android.os.ParcelFileDescriptor;
 import android.provider.BaseColumns;
-import android.provider.MediaStore;
 import android.provider.MediaStore.Downloads;
 import android.provider.MediaStore.MediaColumns;
 import android.text.TextUtils;
@@ -22,13 +20,13 @@ import android.text.format.DateUtils;
 
 import androidx.annotation.NonNull;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.compat.ApiHelperForQ;
 import org.chromium.third_party.android.provider.MediaStoreUtils;
 import org.chromium.third_party.android.provider.MediaStoreUtils.PendingParams;
 import org.chromium.third_party.android.provider.MediaStoreUtils.PendingSession;
@@ -132,7 +130,7 @@ public class DownloadCollectionBridge {
      */
     @CalledByNative
     public static boolean shouldPublishDownload(final String filePath) {
-        if (isAtLeastQ()) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             if (filePath == null) return false;
             // Only need to publish downloads that are on primary storage.
             return !sDownloadDelegate.isDownloadOnSDCard(filePath);
@@ -154,7 +152,7 @@ public class DownloadCollectionBridge {
             PendingSession session = openPendingUri(destinationUri);
             OutputStream out = session.openOutputStream();
             InputStream in = new FileInputStream(sourcePath);
-            FileUtils.copy(in, out);
+            ApiHelperForQ.copy(in, out);
             in.close();
             out.close();
             return true;
@@ -273,7 +271,7 @@ public class DownloadCollectionBridge {
         Cursor cursor = null;
         try {
             Uri uri = Downloads.EXTERNAL_CONTENT_URI;
-            cursor = resolver.query(MediaStore.setIncludePending(uri),
+            cursor = resolver.query(ApiHelperForQ.setIncludePending(uri),
                     new String[] {BaseColumns._ID, MediaColumns.DISPLAY_NAME}, null, null, null);
             if (cursor == null || cursor.getCount() == 0) return null;
             List<DisplayNameInfo> infos = new ArrayList<DisplayNameInfo>();
@@ -297,7 +295,7 @@ public class DownloadCollectionBridge {
      * @return whether download collection is supported.
      */
     public static boolean supportsDownloadCollection() {
-        return isAtLeastQ();
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 
     /**
@@ -311,7 +309,7 @@ public class DownloadCollectionBridge {
         try {
             Uri uri = Downloads.EXTERNAL_CONTENT_URI;
             cursor = ContextUtils.getApplicationContext().getContentResolver().query(
-                    MediaStore.setIncludePending(uri), new String[] {BaseColumns._ID},
+                    ApiHelperForQ.setIncludePending(uri), new String[] {BaseColumns._ID},
                     "_display_name LIKE ?1", new String[] {fileName}, null);
             if (cursor == null) return null;
             if (cursor.moveToNext()) {
@@ -331,10 +329,6 @@ public class DownloadCollectionBridge {
      */
     public static int getExpirationDurationInDays() {
         return DownloadCollectionBridgeJni.get().getExpirationDurationInDays();
-    }
-
-    private static boolean isAtLeastQ() {
-        return BuildInfo.isAtLeastQ() || Build.VERSION.SDK_INT >= 29;
     }
 
     /**

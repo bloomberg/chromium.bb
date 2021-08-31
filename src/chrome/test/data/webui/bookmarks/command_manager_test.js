@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Command, CommandManager, createBookmark, DialogFocusManager, getDisplayedList, MenuSource, selectFolder} from 'chrome://bookmarks/bookmarks.js';
+import {BookmarksCommandManagerElement, Command, createBookmark, DialogFocusManager, getDisplayedList, MenuSource, selectFolder} from 'chrome://bookmarks/bookmarks.js';
 import {isMac} from 'chrome://resources/js/cr.m.js';
 import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -87,7 +87,7 @@ suite('<bookmarks-command-manager>', function() {
     commandManager = testCommandManager.getCommandManager();
     replaceBody(commandManager);
     document.body.appendChild(document.createElement('cr-toast-manager'));
-    DialogFocusManager.instance_ = null;
+    DialogFocusManager.setInstance(null);
   });
 
   test('Copy URL is only active for single URL items', function() {

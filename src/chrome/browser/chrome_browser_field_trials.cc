@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
@@ -28,16 +29,15 @@
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #include "base/android/bundle_utils.h"
+#include "base/task/thread_pool/environment_config.h"
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
 #include "chrome/browser/flags/android/cached_feature_flags.h"
+#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/common/chrome_features.h"
-#else
-#include "chrome/browser/chrome_browser_field_trials_desktop.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/first_run/help_app_first_run_field_trial.h"
-#include "chrome/browser/chromeos/sync/split_settings_sync_field_trial.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/sync/split_settings_sync_field_trial.h"
 #include "chromeos/services/multidevice_setup/public/cpp/first_run_field_trial.h"
 #endif
 
@@ -75,14 +75,12 @@ void ChromeBrowserFieldTrials::SetupFieldTrials() {
 
 #if defined(OS_ANDROID)
   chrome::SetupMobileFieldTrials();
-#else
-  chrome::SetupDesktopFieldTrials();
 #endif
 }
 
 void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
     bool has_seed,
-    const base::FieldTrial::EntropyProvider& low_entropy_provider,
+    const base::FieldTrial::EntropyProvider* low_entropy_provider,
     base::FeatureList* feature_list) {
   // Only create the fallback trials if there isn't already a variations seed
   // being applied. This should occur during first run when first-run variations
@@ -92,15 +90,14 @@ void ChromeBrowserFieldTrials::SetupFeatureControllingFieldTrials(
   if (!has_seed) {
     CreateFallbackSamplingTrialIfNeeded(feature_list);
     CreateFallbackUkmSamplingTrialIfNeeded(feature_list);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     chromeos::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
 #endif
   }
-#if defined(OS_CHROMEOS)
-  // These trials are fully client controlled and must be configured whether or
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // This trial is fully client controlled and must be configured whether or
   // not a seed is available.
   split_settings_sync_field_trial::Create(feature_list, local_state_);
-  help_app_first_run_field_trial::Create(feature_list, local_state_);
 #endif
 }
 
@@ -115,37 +112,69 @@ void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
         kReachedCodeProfilerTrial, reached_code_profiler_group);
   }
 
-  const char* group_name;
-  bool java_feature_enabled =
-      chrome::android::IsJavaDrivenFeatureEnabled(features::kEarlyLibraryLoad);
-  bool feature_enabled =
-      base::FeatureList::IsEnabled(features::kEarlyLibraryLoad);
-  // Use the default group if cc and java feature values don't agree (can happen
-  // on first startup after feature is enabled by Finch), or the feature is not
-  // overridden by Finch.
-  if (feature_enabled != java_feature_enabled ||
-      !base::FeatureList::GetInstance()->IsFeatureOverridden(
-          features::kEarlyLibraryLoad.name)) {
-    group_name = "Default";
-  } else if (java_feature_enabled) {
-    group_name = "Enabled";
-  } else {
-    group_name = "Disabled";
-  }
-  static constexpr char kEarlyLibraryLoadTrial[] = "EarlyLibraryLoadSynthetic";
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      kEarlyLibraryLoadTrial, group_name);
-
-  // If isolated splits are enabled at build time, Monochrome and Trichrome will
-  // have a different bundle layout, so measure N+ even though isolated splits
-  // are only supported by Android in O+.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
-      base::android::SDK_VERSION_NOUGAT) {
-    static constexpr char kIsolatedSplitsTrial[] = "IsolatedSplitsSynthetic";
+  {
+    // EarlyLibraryLoadSynthetic field trial.
+    const char* group_name;
+    bool java_feature_enabled = chrome::android::IsJavaDrivenFeatureEnabled(
+        features::kEarlyLibraryLoad);
+    bool feature_enabled =
+        base::FeatureList::IsEnabled(features::kEarlyLibraryLoad);
+    // Use the default group if cc and java feature values don't agree (can
+    // happen on first startup after feature is enabled by Finch), or the
+    // feature is not overridden by Finch.
+    if (feature_enabled != java_feature_enabled ||
+        !base::FeatureList::GetInstance()->IsFeatureOverridden(
+            features::kEarlyLibraryLoad.name)) {
+      group_name = "Default";
+    } else if (java_feature_enabled) {
+      group_name = "Enabled";
+    } else {
+      group_name = "Disabled";
+    }
+    static constexpr char kEarlyLibraryLoadTrial[] =
+        "EarlyLibraryLoadSynthetic";
     ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-        kIsolatedSplitsTrial,
-        base::android::BundleUtils::IsolatedSplitsEnabled() ? "Enabled"
-                                                            : "Disabled");
+        kEarlyLibraryLoadTrial, group_name);
+  }
+
+  {
+    // BackgroundThreadPoolSynthetic field trial.
+    const char* group_name;
+    // Target group as indicated by finch feature.
+    bool feature_enabled =
+        base::FeatureList::IsEnabled(chrome::android::kBackgroundThreadPool);
+    // Whether the feature was overridden by either the commandline or Finch.
+    bool feature_overridden =
+        base::FeatureList::GetInstance()->IsFeatureOverridden(
+            chrome::android::kBackgroundThreadPool.name);
+    // Whether the feature was overridden manually via the commandline.
+    bool cmdline_overridden =
+        feature_overridden &&
+        base::FeatureList::GetInstance()->IsFeatureOverriddenFromCommandLine(
+            chrome::android::kBackgroundThreadPool.name);
+    // The finch feature value is cached by Java in a setting and applied via a
+    // command line flag. Check if this has happened -- it may not have happened
+    // if this is the first startup after the feature is enabled.
+    bool actually_enabled =
+        base::internal::CanUseBackgroundPriorityForWorkerThread();
+    // Use the default group if either the feature wasn't overridden or if the
+    // feature target state and actual state don't agree. Also separate users
+    // that override the feature via the commandline into separate groups.
+    if (actually_enabled != feature_enabled || !feature_overridden) {
+      group_name = "Default";
+    } else if (cmdline_overridden && feature_enabled) {
+      group_name = "ForceEnabled";
+    } else if (cmdline_overridden && !feature_enabled) {
+      group_name = "ForceDisabled";
+    } else if (feature_enabled) {
+      group_name = "Enabled";
+    } else {
+      group_name = "Disabled";
+    }
+    static constexpr char kBackgroundThreadPoolTrial[] =
+        "BackgroundThreadPoolSynthetic";
+    ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        kBackgroundThreadPoolTrial, group_name);
   }
 #endif  // defined(OS_ANDROID)
 }

@@ -98,9 +98,9 @@ void Serializer::OutputStatistics(const char* name) {
   }
   INSTANCE_TYPE_LIST(PRINT_INSTANCE_TYPE)
 #undef PRINT_INSTANCE_TYPE
+#endif  // OBJECT_PRINT
 
   PrintF("\n");
-#endif  // OBJECT_PRINT
 }
 
 void Serializer::SerializeDeferredObjects() {
@@ -121,6 +121,12 @@ void Serializer::SerializeObject(Handle<HeapObject> obj) {
   // indirection and serialize the actual string directly.
   if (obj->IsThinString(isolate())) {
     obj = handle(ThinString::cast(*obj).actual(isolate()), isolate());
+  } else if (obj->IsBaselineData()) {
+    // For now just serialize the BytecodeArray instead of baseline data.
+    // TODO(v8:11429,pthier): Handle BaselineData in cases we want to serialize
+    // Baseline code.
+    obj = handle(Handle<BaselineData>::cast(obj)->GetActiveBytecodeArray(),
+                 isolate());
   }
   SerializeObjectImpl(obj);
 }
@@ -608,7 +614,7 @@ void Serializer::ObjectSerializer::SerializeExternalStringAsSequentialString() {
 
 // Clear and later restore the next link in the weak cell or allocation site.
 // TODO(all): replace this with proper iteration of weak slots in serializer.
-class UnlinkWeakNextScope {
+class V8_NODISCARD UnlinkWeakNextScope {
  public:
   explicit UnlinkWeakNextScope(Heap* heap, Handle<HeapObject> object) {
     if (object->IsAllocationSite() &&
@@ -631,14 +637,14 @@ class UnlinkWeakNextScope {
  private:
   Handle<HeapObject> object_;
   Handle<Object> next_;
-  DISALLOW_HEAP_ALLOCATION(no_gc_)
+  DISALLOW_GARBAGE_COLLECTION(no_gc_)
 };
 
 void Serializer::ObjectSerializer::Serialize() {
   RecursionScope recursion(serializer_);
 
   // Defer objects as "pending" if they cannot be serialized now, or if we
-  // exceed a certain recursion depth. Some objects cannot be deferred
+  // exceed a certain recursion depth. Some objects cannot be deferred.
   if ((recursion.ExceedsMaximum() && CanBeDeferred(*object_)) ||
       serializer_->MustBeDeferred(*object_)) {
     DCHECK(CanBeDeferred(*object_));
@@ -997,11 +1003,12 @@ void Serializer::ObjectSerializer::VisitOffHeapTarget(Code host,
   Address addr = rinfo->target_off_heap_target();
   CHECK_NE(kNullAddress, addr);
 
-  Code target = InstructionStream::TryLookupCode(isolate(), addr);
-  CHECK(Builtins::IsIsolateIndependentBuiltin(target));
+  Builtins::Name builtin = InstructionStream::TryLookupCode(isolate(), addr);
+  CHECK(Builtins::IsBuiltinId(builtin));
+  CHECK(Builtins::IsIsolateIndependent(builtin));
 
   sink_->Put(kOffHeapTarget, "OffHeapTarget");
-  sink_->PutInt(target.builtin_index(), "builtin index");
+  sink_->PutInt(builtin, "builtin index");
 }
 
 void Serializer::ObjectSerializer::VisitCodeTarget(Code host,

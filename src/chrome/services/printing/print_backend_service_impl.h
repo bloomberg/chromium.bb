@@ -9,11 +9,11 @@
 
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "printing/backend/print_backend.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace printing {
 
@@ -28,14 +28,20 @@ class PrintBackendServiceImpl : public mojom::PrintBackendService {
  private:
   friend class PrintBackendServiceTestImpl;
 
-  using GetDefaultPrinterCallback =
-      base::OnceCallback<void(const base::Optional<std::string>& printer_name)>;
-
   // mojom::PrintBackendService implementation:
   void Init(const std::string& locale) override;
+  void EnumeratePrinters(
+      mojom::PrintBackendService::EnumeratePrintersCallback callback) override;
   void GetDefaultPrinterName(
       mojom::PrintBackendService::GetDefaultPrinterNameCallback callback)
       override;
+  void GetPrinterSemanticCapsAndDefaults(
+      const std::string& printer_name,
+      mojom::PrintBackendService::GetPrinterSemanticCapsAndDefaultsCallback
+          callback) override;
+  void FetchCapabilities(
+      const std::string& printer_name,
+      mojom::PrintBackendService::FetchCapabilitiesCallback callback) override;
 
   scoped_refptr<PrintBackend> print_backend_;
 

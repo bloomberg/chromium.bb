@@ -23,6 +23,9 @@ class SkPath;
 class SkPathEffect;
 class SkShader;
 
+// Move to clients when they are ready -- aid in deprecating the enum
+#define SK_SUPPORT_LEGACY_SETFILTERQUALITY
+
 /** \class SkPaint
     SkPaint controls options applied when drawing. SkPaint collects all
     options outside of the SkCanvas clip and SkCanvas matrix.
@@ -189,21 +192,17 @@ public:
     */
     void setDither(bool dither) { fBitfields.fDither = static_cast<unsigned>(dither); }
 
-    /** Returns SkFilterQuality, the image filtering level. A lower setting
-        draws faster; a higher setting looks better when the image is scaled.
-    */
+#ifdef SK_SUPPORT_LEGACY_SETFILTERQUALITY
+    // DEPRECATED -- this field is unused.
     SkFilterQuality getFilterQuality() const {
         return (SkFilterQuality)fBitfields.fFilterQuality;
     }
 
-    /** Sets SkFilterQuality, the image filtering level. A lower setting
-        draws faster; a higher setting looks better when the image is scaled.
-        Does not check to see if quality is valid.
-
-        example: https://fiddle.skia.org/c/@Color_Methods
-        example: https://fiddle.skia.org/c/@Paint_setFilterQuality
-    */
-    void setFilterQuality(SkFilterQuality quality);
+    // DEPRECATED -- this field is unused.
+    void setFilterQuality(SkFilterQuality fq) {
+        fBitfields.fFilterQuality = fq;
+    }
+#endif
 
     /** \enum SkPaint::Style
         Set Style to fill, stroke, or both fill and stroke geometry.
@@ -709,6 +708,8 @@ private:
         } fBitfields;
         uint32_t fBitfieldsUInt;
     };
+
+    friend class SkPaintPriv;
 };
 
 #endif

@@ -5,10 +5,12 @@
 #ifndef NET_QUIC_QUIC_CONNECTIVITY_MONITOR_H_
 #define NET_QUIC_QUIC_CONNECTIVITY_MONITOR_H_
 
+#include <set>
+
+#include "base/containers/flat_set.h"
 #include "base/numerics/clamped_math.h"
 #include "net/base/network_change_notifier.h"
 #include "net/quic/quic_chromium_client_session.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
 
 namespace net {
 
@@ -85,19 +87,19 @@ class NET_EXPORT_PRIVATE QuicConnectivityMonitor
 
  private:
   // Size chosen per net.QuicSession.WriteError histogram.
-  using WriteErrorMap = quic::QuicSmallMap<int, size_t, 20>;
+  using WriteErrorMap = base::flat_map<int, size_t>;
   // The most common QuicErrorCode cared by this monitor is:
   // QUIC_PUBLIC_RESET by the peer, or
   // QUIC_PACKET_WRITE_ERROR/QUIC_TOO_MANY_RTOS by self.
-  using QuicErrorCodeMap = quic::QuicSmallMap<quic::QuicErrorCode, size_t, 5>;
+  using QuicErrorCodeMap = base::flat_map<quic::QuicErrorCode, size_t>;
 
   // If NetworkHandle is not supported, always set to
   // NetworkChangeNotifier::kInvalidNetworkHandle.
   NetworkChangeNotifier::NetworkHandle default_network_;
   // Sessions that are currently degrading on the |default_network_|.
-  quic::QuicHashSet<QuicChromiumClientSession*> degrading_sessions_;
+  std::set<QuicChromiumClientSession*> degrading_sessions_;
   // Sessions that are currently active on the |default_network_|.
-  quic::QuicHashSet<QuicChromiumClientSession*> active_sessions_;
+  std::set<QuicChromiumClientSession*> active_sessions_;
 
   // Number of sessions that have been active or created during the period of
   // a speculative connectivity failure.
@@ -106,7 +108,7 @@ class NET_EXPORT_PRIVATE QuicConnectivityMonitor
   //   related packet write error,
   // - ends immediately by the detection of path recovery or a network change.
   // Use clamped math to cap number of sessions at INT_MAX.
-  base::Optional<base::ClampedNumeric<int>>
+  absl::optional<base::ClampedNumeric<int>>
       num_sessions_active_during_current_speculative_connectivity_failure_;
   // Total number of sessions that has been degraded before any recovery,
   // including no longer active sessions.

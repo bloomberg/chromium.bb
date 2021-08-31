@@ -38,8 +38,7 @@ class DatarateTestLarge
   virtual ~DatarateTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
+    InitializeConfig(GET_PARAM(1));
     ResetModel();
   }
 
@@ -58,7 +57,7 @@ class DatarateTestLarge
     ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
     ASSERT_GE(effective_datarate_, cfg_.rc_target_bitrate * 0.7)
         << " The datarate for the file is lower than target by too much!";
-    ASSERT_LE(effective_datarate_, cfg_.rc_target_bitrate * 1.3)
+    ASSERT_LE(effective_datarate_, cfg_.rc_target_bitrate * 1.4)
         << " The datarate for the file is greater than target by too much!";
   }
 
@@ -82,6 +81,33 @@ class DatarateTestLarge
         << " The datarate for the file is lower than target by too much!";
     ASSERT_LE(effective_datarate_, cfg_.rc_target_bitrate * 1.15)
         << " The datarate for the file is greater than target by too much!";
+  }
+
+  virtual void BasicRateTargetingMTCBRTest() {
+    ::libaom_test::I420VideoSource video("niklas_640_480_30.yuv", 640, 480, 30,
+                                         1, 0, 400);
+    cfg_.rc_buf_initial_sz = 500;
+    cfg_.rc_buf_optimal_sz = 500;
+    cfg_.rc_buf_sz = 1000;
+    cfg_.rc_dropframe_thresh = 1;
+    cfg_.rc_min_quantizer = 0;
+    cfg_.rc_max_quantizer = 63;
+    cfg_.rc_end_usage = AOM_CBR;
+    cfg_.g_lag_in_frames = 0;
+    cfg_.g_threads = 4;
+
+    const int bitrate_array[2] = { 250, 650 };
+    cfg_.rc_target_bitrate = bitrate_array[GET_PARAM(4)];
+    ResetModel();
+    tile_column_ = 2;
+    ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+    ASSERT_GE(static_cast<double>(cfg_.rc_target_bitrate),
+              effective_datarate_ * 0.85)
+        << " The datarate for the file exceeds the target by too much!";
+    ASSERT_LE(static_cast<double>(cfg_.rc_target_bitrate),
+              effective_datarate_ * 1.15)
+        << " The datarate for the file missed the target!"
+        << cfg_.rc_target_bitrate << " " << effective_datarate_;
   }
 
   virtual void ErrorResilienceOnSceneCuts() {
@@ -225,8 +251,7 @@ class DatarateTestFrameDropLarge
   virtual ~DatarateTestFrameDropLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
+    InitializeConfig(GET_PARAM(1));
     ResetModel();
   }
 
@@ -287,6 +312,11 @@ TEST_P(DatarateTestLarge, BasicRateTargetingCBR) {
   BasicRateTargetingCBRTest();
 }
 
+// Check basic rate targeting for CBR, with 4 threads
+TEST_P(DatarateTestLarge, BasicRateTargetingMTCBR) {
+  BasicRateTargetingMTCBRTest();
+}
+
 // Check basic rate targeting for periodic key frame.
 TEST_P(DatarateTestLarge, PeriodicKeyFrameCBR) {
   BasicRateTargetingCBRPeriodicKeyFrameTest();
@@ -338,8 +368,7 @@ class DatarateTestSpeedChangeRealtime
   virtual ~DatarateTestSpeedChangeRealtime() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
+    InitializeConfig(GET_PARAM(1));
     ResetModel();
   }
 
@@ -380,6 +409,11 @@ TEST_P(DatarateTestRealtime, BasicRateTargetingVBR) {
 // Check basic rate targeting for CBR.
 TEST_P(DatarateTestRealtime, BasicRateTargetingCBR) {
   BasicRateTargetingCBRTest();
+}
+
+// Check basic rate targeting for CBR, with 4 threads
+TEST_P(DatarateTestRealtime, BasicRateTargetingMTCBR) {
+  BasicRateTargetingMTCBRTest();
 }
 
 // Check basic rate targeting for periodic key frame.

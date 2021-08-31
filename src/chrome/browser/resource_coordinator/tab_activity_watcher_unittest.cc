@@ -10,7 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
 #include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
@@ -25,6 +25,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -103,7 +104,7 @@ class TabActivityWatcherTest : public ChromeRenderViewHostTestHarness {
   }
 
   // Calculate reactivation score of the |lifecycle_unit| using tab_ranker.
-  base::Optional<float> GetReactivationScore(
+  absl::optional<float> GetReactivationScore(
       LifecycleUnit* const lifecycle_unit) {
     return TabActivityWatcher::GetInstance()->CalculateReactivationScore(
         lifecycle_unit->AsTabLifecycleUnitExternal()->GetWebContents());
@@ -458,8 +459,8 @@ TEST_F(TabMetricsTest, TabMetrics) {
   }
 
   // Site engagement score should round down to the nearest 10.
-  SiteEngagementService::Get(profile())->ResetBaseScoreForURL(TestUrls()[1],
-                                                              45);
+  site_engagement::SiteEngagementService::Get(profile())->ResetBaseScoreForURL(
+      TestUrls()[1], 45);
   expected_metrics[TabManager_TabMetrics::kSiteEngagementScoreName] = 40;
 
   auto* audible_helper_2 =
@@ -636,7 +637,7 @@ TEST_F(TabMetricsTest, Navigations) {
                                     ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
   WebContentsTester::For(test_contents)->TestSetIsLoading(false);
   expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
-      base::nullopt;
+      absl::nullopt;
   expected_metrics[TabManager_TabMetrics::kPageTransitionFromAddressBarName] =
       true;
   expected_metrics[TabManager_TabMetrics::kPageTransitionIsRedirectName] =
@@ -726,7 +727,7 @@ TEST_F(TabMetricsTest, Navigations) {
                                 ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
   WebContentsTester::For(test_contents)->TestSetIsLoading(false);
   expected_metrics[TabManager_TabMetrics::kPageTransitionCoreTypeName] =
-      base::nullopt;
+      absl::nullopt;
   expected_metrics[TabManager_TabMetrics::kPageTransitionFromAddressBarName] =
       true;
   expected_metrics[TabManager_TabMetrics::kNavigationEntryCountName].value()++;
@@ -814,7 +815,7 @@ class ForegroundedOrClosedTest : public TabActivityWatcherTest {
 
 // Tests TabManager.Backgrounded.ForegroundedOrClosed UKM logging.
 // Flaky on ChromeOS. http://crbug.com/924864
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_SingleTab DISABLED_SingleTab
 #else
 #define MAYBE_SingleTab SingleTab

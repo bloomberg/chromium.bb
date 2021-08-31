@@ -4,12 +4,13 @@
 
 #include "extensions/browser/api/declarative/rules_registry.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -417,7 +418,7 @@ std::string RulesRegistry::CheckAndFillInOptionalRules(
   // cannot fail so we do not need to keep track of a rollback log.
   for (auto& rule : *rules) {
     if (!rule.id.get()) {
-      rule.id.reset(new std::string(GenerateUniqueId(extension_id)));
+      rule.id = std::make_unique<std::string>(GenerateUniqueId(extension_id));
       used_rule_identifiers_[extension_id].insert(*(rule.id));
     }
   }
@@ -428,7 +429,7 @@ void RulesRegistry::FillInOptionalPriorities(
     std::vector<api::events::Rule>* rules) {
   for (auto& rule : *rules) {
     if (!rule.priority.get())
-      rule.priority.reset(new int(DEFAULT_PRIORITY));
+      rule.priority = std::make_unique<int>(DEFAULT_PRIORITY);
   }
 }
 

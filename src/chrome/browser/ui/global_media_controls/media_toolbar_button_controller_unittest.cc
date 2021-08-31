@@ -7,11 +7,15 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
+#include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/ui/global_media_controls/media_dialog_delegate.h"
 #include "chrome/browser/ui/global_media_controls/media_notification_service.h"
+#include "chrome/browser/ui/global_media_controls/media_session_notification_producer.h"
 #include "chrome/browser/ui/global_media_controls/media_toolbar_button_controller_delegate.h"
 #include "chrome/browser/ui/global_media_controls/overlay_media_notification.h"
+#include "chrome/browser/ui/global_media_controls/test_helper.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/media_message_center/media_notification_item.h"
 #include "components/media_message_center/media_notification_util.h"
@@ -44,56 +48,21 @@ class MockMediaToolbarButtonControllerDelegate
   MOCK_METHOD0(Disable, void());
 };
 
-class MockMediaDialogDelegate : public MediaDialogDelegate {
- public:
-  MockMediaDialogDelegate() = default;
-  ~MockMediaDialogDelegate() override { Close(); }
-
-  void Open(MediaNotificationService* service) {
-    ASSERT_NE(nullptr, service);
-    service_ = service;
-    service_->SetDialogDelegate(this);
-  }
-
-  void Close() {
-    if (!service_)
-      return;
-
-    service_->SetDialogDelegate(nullptr);
-    service_ = nullptr;
-  }
-
-  // MediaDialogDelegate implementation.
-  MOCK_METHOD2(
-      ShowMediaSession,
-      MediaNotificationContainerImpl*(
-          const std::string& id,
-          base::WeakPtr<media_message_center::MediaNotificationItem> item));
-  MOCK_METHOD1(HideMediaSession, void(const std::string& id));
-  MOCK_METHOD2(PopOut,
-               std::unique_ptr<OverlayMediaNotification>(const std::string& id,
-                                                         gfx::Rect bounds));
-  MOCK_METHOD0(HideMediaDialog, void());
-
- private:
-  MediaNotificationService* service_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockMediaDialogDelegate);
-};
-
 }  // anonymous namespace
 
 class MediaToolbarButtonControllerTest : public testing::Test {
  public:
   MediaToolbarButtonControllerTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME,
-                          base::test::TaskEnvironment::MainThreadType::UI),
-        service_(&profile_, false) {}
+                          base::test::TaskEnvironment::MainThreadType::UI) {}
   ~MediaToolbarButtonControllerTest() override = default;
 
   void SetUp() override {
-    controller_ =
-        std::make_unique<MediaToolbarButtonController>(&delegate_, &service_);
+    // Disable Media Router, which has many dependencies of its own.
+    feature_list_.InitAndDisableFeature(media_router::kMediaRouter);
+    service_ = std::make_unique<MediaNotificationService>(&profile_, false);
+    controller_ = std::make_unique<MediaToolbarButtonController>(
+        &delegate_, service_.get());
   }
 
   void TearDown() override { controller_.reset(); }
@@ -124,13 +93,15 @@ class MediaToolbarButtonControllerTest : public testing::Test {
 
   void SimulateFocusGained(const base::UnguessableToken& id,
                            bool controllable) {
-    service_.OnFocusGained(CreateFocusRequest(id, controllable));
+    service_->media_session_notification_producer_->OnFocusGained(
+        CreateFocusRequest(id, controllable));
   }
 
   void SimulateFocusLost(const base::UnguessableToken& id) {
     AudioFocusRequestStatePtr focus(AudioFocusRequestState::New());
     focus->request_id = id;
-    service_.OnFocusLost(std::move(focus));
+    service_->media_session_notification_producer_->OnFocusLost(
+        std::move(focus));
   }
 
   void SimulateNecessaryMetadata(const base::UnguessableToken& id) {
@@ -140,17 +111,20 @@ class MediaToolbarButtonControllerTest : public testing::Test {
     // service, but since the service doesn't run for this test, we'll manually
     // grab the MediaNotificationItem from the MediaNotificationService and
     // set the metadata.
-    auto item_itr = service_.sessions_.find(id.ToString());
-    ASSERT_NE(service_.sessions_.end(), item_itr);
+    auto item_itr =
+        service_->media_session_notification_producer_->sessions_.find(
+            id.ToString());
+    ASSERT_NE(service_->media_session_notification_producer_->sessions_.end(),
+              item_itr);
 
     media_session::MediaMetadata metadata;
-    metadata.title = base::ASCIIToUTF16("title");
-    metadata.artist = base::ASCIIToUTF16("artist");
+    metadata.title = u"title";
+    metadata.artist = u"artist";
     item_itr->second.item()->MediaSessionMetadataChanged(std::move(metadata));
   }
 
   void SimulateDialogOpened(MockMediaDialogDelegate* delegate) {
-    delegate->Open(&service_);
+    delegate->Open(service_.get());
   }
 
   MockMediaToolbarButtonControllerDelegate& delegate() { return delegate_; }
@@ -159,8 +133,9 @@ class MediaToolbarButtonControllerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   MockMediaToolbarButtonControllerDelegate delegate_;
   TestingProfile profile_;
-  MediaNotificationService service_;
+  std::unique_ptr<MediaNotificationService> service_;
   std::unique_ptr<MediaToolbarButtonController> controller_;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaToolbarButtonControllerTest);
 };

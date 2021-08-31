@@ -5,12 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_BLUETOOTH_POLICY_HANDLER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_BLUETOOTH_POLICY_HANDLER_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace policy {
@@ -20,7 +18,7 @@ namespace policy {
 // setting.
 class BluetoothPolicyHandler {
  public:
-  explicit BluetoothPolicyHandler(chromeos::CrosSettings* cros_settings);
+  explicit BluetoothPolicyHandler(ash::CrosSettings* cros_settings);
   ~BluetoothPolicyHandler();
 
  private:
@@ -34,9 +32,9 @@ class BluetoothPolicyHandler {
   // |Shutdown| on the Bluetooth stack in order to disable it.
   void SetBluetoothPolicy(scoped_refptr<device::BluetoothAdapter> adapter);
 
-  chromeos::CrosSettings* cros_settings_;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
-      bluetooth_policy_subscription_;
+  ash::CrosSettings* cros_settings_;
+  base::CallbackListSubscription allow_bluetooth_subscription_;
+  base::CallbackListSubscription allowed_services_subscription_;
   scoped_refptr<device::BluetoothAdapter> adapter_;
   base::WeakPtrFactory<BluetoothPolicyHandler> weak_factory_{this};
 

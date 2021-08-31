@@ -5,11 +5,13 @@
 #include "net/url_request/url_fetcher_core.h"
 
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
@@ -80,7 +82,7 @@ URLFetcherCore::URLFetcherCore(
       delegate_(d),
       delegate_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       load_flags_(LOAD_NORMAL),
-      allow_credentials_(base::nullopt),
+      allow_credentials_(absl::nullopt),
       response_code_(URLFetcher::RESPONSE_CODE_INVALID),
       url_request_data_key_(nullptr),
       was_cached_(false),
@@ -216,7 +218,7 @@ void URLFetcherCore::SetLoadFlags(int load_flags) {
 }
 
 void URLFetcherCore::SetAllowCredentials(bool allow_credentials) {
-  allow_credentials_ = base::make_optional<bool>(allow_credentials);
+  allow_credentials_ = absl::make_optional<bool>(allow_credentials);
 }
 
 int URLFetcherCore::GetLoadFlags() const {
@@ -231,14 +233,13 @@ void URLFetcherCore::SetReferrerPolicy(ReferrerPolicy referrer_policy) {
   referrer_policy_ = referrer_policy;
 }
 
-void URLFetcherCore::SetExtraRequestHeaders(
-    const std::string& extra_request_headers) {
+void URLFetcherCore::ClearExtraRequestHeaders() {
   extra_request_headers_.Clear();
-  extra_request_headers_.AddHeadersFromString(extra_request_headers);
 }
 
-void URLFetcherCore::AddExtraRequestHeader(const std::string& header_line) {
-  extra_request_headers_.AddHeaderFromString(header_line);
+void URLFetcherCore::AddExtraRequestHeader(const std::string& name,
+                                           const std::string& value) {
+  extra_request_headers_.SetHeader(name, value);
 }
 
 void URLFetcherCore::SetRequestContext(
@@ -249,7 +250,7 @@ void URLFetcherCore::SetRequestContext(
 }
 
 void URLFetcherCore::SetInitiator(
-    const base::Optional<url::Origin>& initiator) {
+    const absl::optional<url::Origin>& initiator) {
   DCHECK(!initiator_.has_value());
   initiator_ = initiator;
 }
@@ -520,12 +521,12 @@ void URLFetcherCore::StartOnIOThread() {
   // appending data.  Have to do it here because StartURLRequest() may be called
   // asynchonously.
   if (is_chunked_upload_) {
-    chunked_stream_.reset(new ChunkedUploadDataStream(0));
+    chunked_stream_ = std::make_unique<ChunkedUploadDataStream>(0);
     chunked_stream_writer_ = chunked_stream_->CreateWriter();
   }
 
   if (!response_writer_)
-    response_writer_.reset(new URLFetcherStringWriter);
+    response_writer_ = std::make_unique<URLFetcherStringWriter>();
 
   const int result = response_writer_->Initialize(
       base::BindOnce(&URLFetcherCore::DidInitializeWriter, this));
@@ -616,7 +617,7 @@ void URLFetcherCore::StartURLRequest() {
       current_upload_bytes_ = -1;
       // TODO(kinaba): http://crbug.com/118103. Implement upload callback in the
       //  layer and avoid using timer here.
-      upload_progress_checker_timer_.reset(new base::RepeatingTimer());
+      upload_progress_checker_timer_ = std::make_unique<base::RepeatingTimer>();
       upload_progress_checker_timer_->Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kUploadProgressTimerInterval),

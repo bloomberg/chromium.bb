@@ -49,27 +49,43 @@ void TLSClientSocket::Connect(
 void TLSClientSocket::OnTLSConnectCompleted(int result) {
   DCHECK(!connect_callback_.is_null());
 
+  mojo::ScopedDataPipeProducerHandle send_producer_handle;
+  mojo::ScopedDataPipeConsumerHandle send_consumer_handle;
+  if (result == net::OK) {
+    if (mojo::CreateDataPipe(nullptr, send_producer_handle,
+                             send_consumer_handle) != MOJO_RESULT_OK) {
+      result = net::ERR_FAILED;
+    }
+  }
+
+  mojo::ScopedDataPipeProducerHandle receive_producer_handle;
+  mojo::ScopedDataPipeConsumerHandle receive_consumer_handle;
+  if (result == net::OK) {
+    if (mojo::CreateDataPipe(nullptr, receive_producer_handle,
+                             receive_consumer_handle) != MOJO_RESULT_OK) {
+      result = net::ERR_FAILED;
+    }
+  }
+
   if (result != net::OK) {
     socket_ = nullptr;
     std::move(connect_callback_)
         .Run(result, mojo::ScopedDataPipeConsumerHandle(),
-             mojo::ScopedDataPipeProducerHandle(), base::nullopt);
+             mojo::ScopedDataPipeProducerHandle(), absl::nullopt);
     return;
   }
-  mojo::DataPipe send_pipe;
-  mojo::DataPipe receive_pipe;
   socket_data_pump_ = std::make_unique<SocketDataPump>(
-      socket_.get(), this /*delegate*/, std::move(receive_pipe.producer_handle),
-      std::move(send_pipe.consumer_handle), traffic_annotation_);
-  base::Optional<net::SSLInfo> ssl_info;
+      socket_.get(), this /*delegate*/, std::move(receive_producer_handle),
+      std::move(send_consumer_handle), traffic_annotation_);
+  absl::optional<net::SSLInfo> ssl_info;
   if (send_ssl_info_) {
     net::SSLInfo local;
     socket_->GetSSLInfo(&local);
     ssl_info = std::move(local);
   }
   std::move(connect_callback_)
-      .Run(net::OK, std::move(receive_pipe.consumer_handle),
-           std::move(send_pipe.producer_handle), std::move(ssl_info));
+      .Run(net::OK, std::move(receive_consumer_handle),
+           std::move(send_producer_handle), std::move(ssl_info));
 }
 
 void TLSClientSocket::OnNetworkReadError(int net_error) {

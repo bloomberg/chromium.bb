@@ -7,9 +7,11 @@
 
 #include <memory>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "cc/input/layer_selection_bound.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/picture_layer.h"
@@ -29,6 +31,7 @@
 
 namespace cc {
 class ScrollbarLayerBase;
+class DocumentTransitionRequest;
 }
 
 namespace blink {
@@ -104,10 +107,11 @@ class SynthesizedClip : private cc::ContentLayerClient {
 
  private:
   // ContentLayerClient implementation.
-  gfx::Rect PaintableRegion() final { return gfx::Rect(layer_->bounds()); }
-  bool FillsBoundsCompletely() const final { return false; }
-
+  gfx::Rect PaintableRegion() const final {
+    return gfx::Rect(layer_->bounds());
+  }
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList() final;
+  bool FillsBoundsCompletely() const final { return false; }
 
  private:
   scoped_refptr<cc::PictureLayer> layer_;
@@ -153,12 +157,30 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // noncomposited nodes, and is used for Scroll Unification to generate scroll
   // nodes for noncomposited scrollers to complete the compositor's scroll
   // property tree.
-  void Update(const Vector<PreCompositedLayerInfo>&,
-              const ViewportProperties& viewport_properties,
-              const Vector<const TransformPaintPropertyNode*>&
-                  scroll_translation_nodes);
+  void Update(
+      const Vector<PreCompositedLayerInfo>& updated,
+      const ViewportProperties& viewport_properties,
+      const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes,
+      Vector<std::unique_ptr<cc::DocumentTransitionRequest>> requests);
 
-  void UpdateRepaintedLayerProperties() const;
+  // Fast-path update where the painting of existing composited layers changed,
+  // but property trees and compositing decisions remain the same. See:
+  // |Update| for full updates.
+  //
+  // When this update can be used is tightly coupled with |Update|, see
+  // |SetNeedsFullUpdateAfterPaintIfNeeded| for details. For example, this
+  // update can be used when the color of a display item is updated. This update
+  // can not be used if the size of a display item increases because that could
+  // require different cc::layers due to changes in overlap. This update also
+  // can not be used if property trees change (with the exception of fast-path
+  // direct updates that do not change compositing such as
+  // |DirectlyUpdateCompositedOpacityValue|) because property tree values in
+  // effect and clip nodes create cc::layers (e.g., clip mask layers).
+  //
+  // This copies over the newly-painted PaintChunks to existing
+  // |pending_layers_|, issues raster invalidations, and updates the existing
+  // cc::Layer properties such as background color.
+  void UpdateRepaintedLayers(Vector<PreCompositedLayerInfo>& updated);
 
   bool DirectlyUpdateCompositedOpacityValue(const EffectPaintPropertyNode&);
   bool DirectlyUpdateScrollOffsetTransform(const TransformPaintPropertyNode&);
@@ -193,13 +215,36 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     return content_layer_clients_;
   }
 
+  // Mark this as needing a full compositing update. Repaint-only updates that
+  // do not affect compositing can use a fast-path in |UpdateRepaintedLayers|
+  // (see comment above that function for more information), and should not call
+  // SetNeedsUpdate.
   void SetNeedsUpdate() { needs_update_ = true; }
   bool NeedsUpdate() const { return needs_update_; }
   void ClearNeedsUpdateForTesting() { needs_update_ = false; }
 
+  // There is no mechanism for doing a paint lifecycle phase without running
+  // PaintArtifactCompositor::Update so this is exposed so tests can check the
+  // last update type.
+  enum class PreviousUpdateType { kNone, kRepaint, kFull };
+  PreviousUpdateType PreviousUpdateForTesting() const {
+    return previous_update_for_testing_;
+  }
+  void ClearPreviousUpdateForTesting() {
+    previous_update_for_testing_ = PreviousUpdateType::kNone;
+  }
+
+  void SetNeedsFullUpdateAfterPaintIfNeeded(const PaintChunkSubset& previous,
+                                            const PaintChunkSubset& repainted);
+
   // Returns true if a property tree node associated with |element_id| exists
   // on any of the PropertyTrees constructed by |Update|.
   bool HasComposited(CompositorElementId element_id) const;
+
+  // Returns true if any property tree state change is >= |change|. Note that
+  // this is O(|nodes|).
+  static bool PropertyTreeStateChangedToRoot(const PropertyTreeState&,
+                                             PaintPropertyChangeType change);
 
   void SetLayerDebugInfoEnabled(bool);
 
@@ -208,6 +253,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   void ClearPropertyTreeChangedState();
 
   size_t ApproximateUnsharedMemoryUsage() const;
+
+  void SetScrollbarNeedsDisplay(CompositorElementId element_id);
 
  private:
   // A pending layer is a collection of paint chunks that will end up in
@@ -240,8 +287,9 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     // current state).
     bool CanMerge(const PendingLayer& guest,
                   const PropertyTreeState& guest_state,
-                  PropertyTreeState* merged_state = nullptr,
-                  FloatRect* merged_bounds = nullptr) const;
+                  PropertyTreeState* out_merged_state = nullptr,
+                  FloatRect* out_guest_bounds = nullptr,
+                  FloatRect* out_merged_bounds = nullptr) const;
 
     // Mutate this layer's property tree state to a more general (shallower)
     // state, thus the name "upcast". The concrete effect of this is to
@@ -260,7 +308,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
     std::unique_ptr<JSONObject> ToJSON() const;
 
-    FloatRect VisualRectForOverlapTesting() const;
+    FloatRect VisualRectForOverlapTesting(
+        const PropertyTreeState& ancestor_state) const;
 
     bool MayDrawContent() const;
 
@@ -268,19 +317,28 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
       return compositing_type != kOverlap && compositing_type != kOther;
     }
 
+    bool PropertyTreeStateChanged() const;
+
     // The rects are in the space of property_tree_state.
     FloatRect bounds;
     FloatRect rect_known_to_be_opaque;
+    bool text_known_to_be_on_opaque_background;
     PaintChunkSubset chunks;
     PropertyTreeState property_tree_state;
     FloatPoint offset_of_decomposited_transforms;
+    PaintPropertyChangeType change_of_decomposited_transforms =
+        PaintPropertyChangeType::kUnchanged;
     const GraphicsLayer* graphics_layer = nullptr;
     CompositingType compositing_type;
   };
 
   static void UpdateLayerProperties(cc::Layer&,
                                     const PendingLayer&,
+                                    cc::LayerSelection& layer_selection,
                                     PropertyTreeManager* = nullptr);
+
+  void UpdateRepaintedLayer(PendingLayer& pending_layer,
+                            cc::LayerSelection& layer_selection);
 
   void DecompositeTransforms();
 
@@ -321,8 +379,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
           new_content_layer_clients,
       Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers,
       Vector<scoped_refptr<cc::ScrollbarLayerBase>>& new_scrollbar_layers);
-
-  bool PropertyTreeStateChanged(const PropertyTreeState&) const;
 
   const TransformPaintPropertyNode& NearestScrollTranslationForLayer(
       const PendingLayer&);
@@ -376,11 +432,14 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   void UpdateDebugInfo() const;
 
+  cc::ScrollbarLayerBase* ScrollbarLayer(CompositorElementId);
+
   // For notifying blink of composited scrolling.
   base::WeakPtr<CompositorScrollCallbacks> scroll_callbacks_;
 
-  bool tracks_raster_invalidations_ = false;
+  bool tracks_raster_invalidations_;
   bool needs_update_ = true;
+  PreviousUpdateType previous_update_for_testing_ = PreviousUpdateType::kNone;
   bool layer_debug_info_enabled_ = false;
 
   scoped_refptr<cc::Layer> root_layer_;

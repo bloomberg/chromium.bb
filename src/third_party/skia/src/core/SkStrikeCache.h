@@ -26,10 +26,6 @@ class SkTraceMemoryDump;
     #define SK_DEFAULT_FONT_CACHE_LIMIT     (2 * 1024 * 1024)
 #endif
 
-#ifndef SK_DEFAULT_FONT_CACHE_POINT_SIZE_LIMIT
-    #define SK_DEFAULT_FONT_CACHE_POINT_SIZE_LIMIT  256
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////
 
 class SkStrikePinner {
@@ -182,9 +178,6 @@ public:
     size_t setCacheSizeLimit(size_t limit) SK_EXCLUDES(fLock);
     size_t getTotalMemoryUsed() const SK_EXCLUDES(fLock);
 
-    int  getCachePointSizeLimit() const SK_EXCLUDES(fLock);
-    int  setCachePointSizeLimit(int limit) SK_EXCLUDES(fLock);
-
 private:
     sk_sp<Strike> internalFindStrikeOrNull(const SkDescriptor& desc) SK_REQUIRES(fLock);
     sk_sp<Strike> internalCreateStrike(
@@ -207,7 +200,7 @@ private:
 
     void forEachStrike(std::function<void(const Strike&)> visitor) const SK_EXCLUDES(fLock);
 
-    mutable SkSpinlock fLock;
+    mutable SkMutex fLock;
     Strike* fHead SK_GUARDED_BY(fLock) {nullptr};
     Strike* fTail SK_GUARDED_BY(fLock) {nullptr};
     struct StrikeTraits {
@@ -224,7 +217,6 @@ private:
     size_t  fTotalMemoryUsed SK_GUARDED_BY(fLock) {0};
     int32_t fCacheCountLimit{SK_DEFAULT_FONT_CACHE_COUNT_LIMIT};
     int32_t fCacheCount SK_GUARDED_BY(fLock) {0};
-    int32_t fPointSizeLimit{SK_DEFAULT_FONT_CACHE_POINT_SIZE_LIMIT};
 };
 
 using SkStrike = SkStrikeCache::Strike;

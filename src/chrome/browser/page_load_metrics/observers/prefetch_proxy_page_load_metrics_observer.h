@@ -11,18 +11,18 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
 #include "chrome/browser/prefetch/prefetch_proxy/prefetch_proxy_tab_helper.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "net/cookies/canonical_cookie.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace content {
-class BrowserContext;
 class NavigationHandle;
 }  // namespace content
 
@@ -38,22 +38,10 @@ class PrefetchProxyPageLoadMetricsObserver
   // Used as a callback for history service query results. Protected for
   // testing.
   void OnOriginLastVisitResult(base::Time query_start_time,
-                               history::HistoryLastVisitToHostResult result);
+                               history::HistoryLastVisitResult result);
 
  private:
   void RecordMetrics();
-
-  // Starts an async call to the cookie manager to determine if there are likely
-  // to be cookies set on a mainframe request. This is called on navigation
-  // start and redirects but should not be called on commit because it'll get
-  // cookies from the mainframe response, if any.
-  void CheckForCookiesOnURL(content::BrowserContext* browser_context,
-                            const GURL& url);
-
-  // Used as a callback for the cookie manager query.
-  void OnCookieResult(base::Time query_start_time,
-                      const net::CookieAccessResultList& cookies,
-                      const net::CookieAccessResultList& excluded_cookies);
 
   // Sets |prefetch_metrics_| for this page load. Done in a separate method so
   // that this can be done in an event notification.
@@ -83,10 +71,7 @@ class PrefetchProxyPageLoadMetricsObserver
       content::RenderFrameHost* rfh,
       const std::vector<page_load_metrics::mojom::ResourceDataUpdatePtr>&
           resources) override;
-  void OnEventOccurred(const void* const event_key) override;
-
-  // Whether data saver was enabled for this page load when it committed.
-  bool data_saver_enabled_at_commit_ = false;
+  void OnEventOccurred(page_load_metrics::PageLoadMetricsEvent event) override;
 
   // The time that the navigation started. Used to timebox the history service
   // query on commit.
@@ -95,22 +80,10 @@ class PrefetchProxyPageLoadMetricsObserver
   size_t loaded_css_js_from_cache_before_fcp_ = 0;
   size_t loaded_css_js_from_network_before_fcp_ = 0;
 
-  // These vectors hold the durations that queries to the cookie manager and
-  // history service took, respectively. Since we only want to record these when
-  // we also record the query results, the query times are stashed here until
-  // |RecordMetrics()| is called.
-  std::vector<base::TimeDelta> cookie_query_times_;
-  std::vector<base::TimeDelta> history_query_times_;
-
   // The minimum number of days since the last visit, as reported by
   // HistoryService, to any origin in the redirect chain. Set to -1 if there is
   // a response from the history service but was no previous visit.
-  base::Optional<int> min_days_since_last_visit_to_origin_;
-
-  // Set to true if any main frame request in the redirect chain had cookies set
-  // on the request. Set to false if there were no cookies set. Not set if we
-  // didn't get a response from the CookieManager before recording metrics.
-  base::Optional<bool> mainframe_had_cookies_;
+  absl::optional<int> min_days_since_last_visit_to_origin_;
 
   // Metrics related to Prefetch Proxy prefetching on a SRP, for plumbing
   // into UKM.
@@ -118,7 +91,7 @@ class PrefetchProxyPageLoadMetricsObserver
 
   // Metrics for the page load after a Google SRP where NavigationPredictor
   // passed parsed SRP links to the TabHelper. Not set if that isn't true.
-  base::Optional<PrefetchProxyTabHelper::AfterSRPMetrics> after_srp_metrics_;
+  absl::optional<PrefetchProxyTabHelper::AfterSRPMetrics> after_srp_metrics_;
 
   // Task tracker for calls for the history service.
   base::CancelableTaskTracker task_tracker_;

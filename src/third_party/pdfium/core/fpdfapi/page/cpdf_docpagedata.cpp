@@ -32,11 +32,13 @@
 #include "core/fxcrt/fx_codepage.h"
 #include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "core/fxcrt/scoped_set_insertion.h"
 #include "core/fxge/cfx_font.h"
 #include "core/fxge/cfx_fontmapper.h"
 #include "core/fxge/cfx_substfont.h"
 #include "core/fxge/cfx_unicodeencoding.h"
 #include "core/fxge/fx_font.h"
+#include "third_party/base/check.h"
 #include "third_party/base/stl_util.h"
 
 namespace {
@@ -261,8 +263,7 @@ RetainPtr<CPDF_ColorSpace> CPDF_DocPageData::GetColorSpaceInternal(
   if (pdfium::Contains(*pVisitedInternal, pCSObj))
     return nullptr;
 
-  pdfium::ScopedSetInsertion<const CPDF_Object*> insertion(pVisitedInternal,
-                                                           pCSObj);
+  ScopedSetInsertion<const CPDF_Object*> insertion(pVisitedInternal, pCSObj);
 
   if (pCSObj->IsName()) {
     ByteString name = pCSObj->GetString();
@@ -283,14 +284,16 @@ RetainPtr<CPDF_ColorSpace> CPDF_DocPageData::GetColorSpaceInternal(
 
     const CPDF_Object* pDefaultCS = nullptr;
     switch (pCS->GetFamily()) {
-      case PDFCS_DEVICERGB:
+      case CPDF_ColorSpace::Family::kDeviceRGB:
         pDefaultCS = pColorSpaces->GetDirectObjectFor("DefaultRGB");
         break;
-      case PDFCS_DEVICEGRAY:
+      case CPDF_ColorSpace::Family::kDeviceGray:
         pDefaultCS = pColorSpaces->GetDirectObjectFor("DefaultGray");
         break;
-      case PDFCS_DEVICECMYK:
+      case CPDF_ColorSpace::Family::kDeviceCMYK:
         pDefaultCS = pColorSpaces->GetDirectObjectFor("DefaultCMYK");
+        break;
+      default:
         break;
     }
     if (!pDefaultCS)
@@ -358,7 +361,7 @@ RetainPtr<CPDF_Pattern> CPDF_DocPageData::GetPattern(CPDF_Object* pPatternObj,
 }
 
 RetainPtr<CPDF_Image> CPDF_DocPageData::GetImage(uint32_t dwStreamObjNum) {
-  ASSERT(dwStreamObjNum);
+  DCHECK(dwStreamObjNum);
   auto it = m_ImageMap.find(dwStreamObjNum);
   if (it != m_ImageMap.end())
     return it->second;
@@ -369,7 +372,7 @@ RetainPtr<CPDF_Image> CPDF_DocPageData::GetImage(uint32_t dwStreamObjNum) {
 }
 
 void CPDF_DocPageData::MaybePurgeImage(uint32_t dwStreamObjNum) {
-  ASSERT(dwStreamObjNum);
+  DCHECK(dwStreamObjNum);
   auto it = m_ImageMap.find(dwStreamObjNum);
   if (it != m_ImageMap.end() && it->second->HasOneRef())
     m_ImageMap.erase(it);
@@ -403,7 +406,7 @@ RetainPtr<CPDF_IccProfile> CPDF_DocPageData::GetIccProfile(
 
 RetainPtr<CPDF_StreamAcc> CPDF_DocPageData::GetFontFileStreamAcc(
     const CPDF_Stream* pFontStream) {
-  ASSERT(pFontStream);
+  DCHECK(pFontStream);
   auto it = m_FontFileMap.find(pFontStream);
   if (it != m_FontFileMap.end())
     return it->second;

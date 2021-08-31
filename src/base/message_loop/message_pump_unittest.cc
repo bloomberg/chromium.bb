@@ -46,8 +46,8 @@ class MockMessagePumpDelegate : public MessagePump::Delegate {
   MOCK_METHOD0(DoWork, MessagePump::Delegate::NextWorkInfo());
   MOCK_METHOD0(DoIdleWork, bool());
 
-  MOCK_METHOD0(OnBeginNativeWork, void(void));
-  MOCK_METHOD0(OnEndNativeWork, void(void));
+  MOCK_METHOD0(OnBeginWorkItem, void(void));
+  MOCK_METHOD0(OnEndWorkItem, void(void));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockMessagePumpDelegate);
@@ -64,14 +64,14 @@ class MessagePumpTest : public ::testing::TestWithParam<MessagePumpType> {
     if (GetParam() == MessagePumpType::UI) {
       // The Windows MessagePumpForUI may do native work from ::PeekMessage()
       // and labels itself as such.
-      EXPECT_CALL(delegate, OnBeginNativeWork);
-      EXPECT_CALL(delegate, OnEndNativeWork);
+      EXPECT_CALL(delegate, OnBeginWorkItem);
+      EXPECT_CALL(delegate, OnEndWorkItem);
 
       // If the above event was MessagePumpForUI's own kMsgHaveWork internal
       // event, it will process another event to replace it (ref.
       // ProcessPumpReplacementMessage).
-      EXPECT_CALL(delegate, OnBeginNativeWork).Times(AtMost(1));
-      EXPECT_CALL(delegate, OnEndNativeWork).Times(AtMost(1));
+      EXPECT_CALL(delegate, OnBeginWorkItem).Times(AtMost(1));
+      EXPECT_CALL(delegate, OnEndWorkItem).Times(AtMost(1));
     }
 #endif  // defined(OS_WIN)
   }
@@ -85,8 +85,8 @@ class MessagePumpTest : public ::testing::TestWithParam<MessagePumpType> {
          std::is_same<MessagePumpForIO, MessagePumpLibevent>::value)) {
       // MessagePumpLibEvent checks for native notifications once after
       // processing a DoWork().
-      EXPECT_CALL(delegate, OnBeginNativeWork);
-      EXPECT_CALL(delegate, OnEndNativeWork);
+      EXPECT_CALL(delegate, OnBeginWorkItem);
+      EXPECT_CALL(delegate, OnEndWorkItem);
     }
 #endif  // defined(OS_POSIX) && !defined(OS_NACL_SFI)
   }
@@ -160,6 +160,36 @@ TEST_P(MessagePumpTest, QuitStopsWorkWithNestedRunLoop) {
   message_pump_->Run(&delegate);
 }
 
+TEST_P(MessagePumpTest, YieldToNativeRequestedSmokeTest) {
+  // The handling of the "yield_to_native" boolean in the NextWorkInfo is only
+  // implemented on the MessagePumpForUI on android. However since we inject a
+  // fake one for testing this is hard to test. This test ensures that setting
+  // this boolean doesn't cause any MessagePump to explode.
+  testing::InSequence sequence;
+  testing::StrictMock<MockMessagePumpDelegate> delegate;
+
+  // Return an immediate task with |yield_to_native| set.
+  AddPreDoWorkExpectations(delegate);
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([] {
+    return MessagePump::Delegate::NextWorkInfo{TimeTicks(), TimeTicks(),
+                                               /* yield_to_native = */ true};
+  }));
+  AddPostDoWorkExpectations(delegate);
+
+  // Return a delayed task with |yield_to_native| set, and exit.
+  AddPreDoWorkExpectations(delegate);
+  EXPECT_CALL(delegate, DoWork).WillOnce(Invoke([this] {
+    message_pump_->Quit();
+    auto now = TimeTicks::Now();
+    return MessagePump::Delegate::NextWorkInfo{
+        now + TimeDelta::FromMilliseconds(1), now, true};
+  }));
+  EXPECT_CALL(delegate, DoIdleWork()).Times(AnyNumber());
+
+  message_pump_->ScheduleWork();
+  message_pump_->Run(&delegate);
+}
+
 namespace {
 
 class TimerSlackTestDelegate : public MessagePump::Delegate {
@@ -176,8 +206,8 @@ class TimerSlackTestDelegate : public MessagePump::Delegate {
     action_.store(NONE);
   }
 
-  void OnBeginNativeWork() override {}
-  void OnEndNativeWork() override {}
+  void OnBeginWorkItem() override {}
+  void OnEndWorkItem() override {}
   void BeforeWait() override {}
 
   MessagePump::Delegate::NextWorkInfo DoWork() override {

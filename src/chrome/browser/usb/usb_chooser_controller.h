@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
-#include "chrome/browser/chooser_controller/chooser_controller.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
+#include "components/permissions/chooser_controller.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "url/origin.h"
@@ -26,7 +26,7 @@ class WebContents;
 }
 
 // UsbChooserController creates a chooser for WebUSB.
-class UsbChooserController : public ChooserController,
+class UsbChooserController : public permissions::ChooserController,
                              public UsbChooserContext::DeviceObserver {
  public:
   UsbChooserController(
@@ -35,11 +35,13 @@ class UsbChooserController : public ChooserController,
       blink::mojom::WebUsbService::GetPermissionCallback callback);
   ~UsbChooserController() override;
 
-  // ChooserController:
-  base::string16 GetNoOptionsText() const override;
-  base::string16 GetOkButtonLabel() const override;
+  // permissions::ChooserController:
+  std::u16string GetNoOptionsText() const override;
+  std::u16string GetOkButtonLabel() const override;
+  std::pair<std::u16string, std::u16string> GetThrobberLabelAndTooltip()
+      const override;
   size_t NumOptions() const override;
-  base::string16 GetOption(size_t index) const override;
+  std::u16string GetOption(size_t index) const override;
   bool IsPaired(size_t index) const override;
   void Select(const std::vector<size_t>& indices) override;
   void Cancel() override;
@@ -58,18 +60,17 @@ class UsbChooserController : public ChooserController,
 
   std::vector<device::mojom::UsbDeviceFilterPtr> filters_;
   blink::mojom::WebUsbService::GetPermissionCallback callback_;
-  url::Origin requesting_origin_;
-  url::Origin embedding_origin_;
+  url::Origin origin_;
 
   content::WebContents* const web_contents_;
   base::WeakPtr<UsbChooserContext> chooser_context_;
-  ScopedObserver<UsbChooserContext, UsbChooserContext::DeviceObserver>
-      observer_;
+  base::ScopedObservation<UsbChooserContext, UsbChooserContext::DeviceObserver>
+      observation_{this};
 
   // Each pair is a (device guid, device name).
-  std::vector<std::pair<std::string, base::string16>> devices_;
+  std::vector<std::pair<std::string, std::u16string>> devices_;
   // Maps from device name to number of devices.
-  std::unordered_map<base::string16, int> device_name_map_;
+  std::unordered_map<std::u16string, int> device_name_map_;
   base::WeakPtrFactory<UsbChooserController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UsbChooserController);

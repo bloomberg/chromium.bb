@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/i18n/message_formatter.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -20,8 +19,9 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -39,7 +39,7 @@ namespace chrome {
 
 void ShowExtensionInstallBlockedDialog(
     const std::string& extension_name,
-    const base::string16& custom_error_message,
+    const std::u16string& custom_error_message,
     const gfx::ImageSkia& icon,
     content::WebContents* web_contents,
     base::OnceClosure done_callback) {
@@ -54,7 +54,7 @@ void ShowExtensionInstallBlockedDialog(
 
 ExtensionInstallBlockedDialogView::ExtensionInstallBlockedDialogView(
     const std::string& extension_name,
-    const base::string16& custom_error_message,
+    const std::u16string& custom_error_message,
     const gfx::ImageSkia& icon,
     base::OnceClosure done_callback)
     : done_callback_(std::move(done_callback)) {
@@ -70,6 +70,13 @@ ExtensionInstallBlockedDialogView::ExtensionInstallBlockedDialogView(
   SetTitle(
       l10n_util::GetStringFUTF16(IDS_EXTENSION_BLOCKED_BY_POLICY_PROMPT_TITLE,
                                  base::UTF8ToUTF16(extension_name)));
+
+  // Make sure user know the installation is blocked before taking further
+  // action.
+  SetModalType(ui::MODAL_TYPE_CHILD);
+  set_fixed_width(views::LayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
+
   set_draggable(true);
   set_close_on_deactivate(false);
   SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -82,27 +89,14 @@ ExtensionInstallBlockedDialogView::~ExtensionInstallBlockedDialogView() {
     std::move(done_callback_).Run();
 }
 
-gfx::Size ExtensionInstallBlockedDialogView::CalculatePreferredSize() const {
-  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-                        views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
-                    margins().width();
-  return gfx::Size(width, GetHeightForWidth(width));
-}
-
-ui::ModalType ExtensionInstallBlockedDialogView::GetModalType() const {
-  // Make sure user know the installation is blocked before taking further
-  // action.
-  return ui::MODAL_TYPE_CHILD;
-}
-
 void ExtensionInstallBlockedDialogView::AddCustomMessageContents(
-    const base::string16& custom_error_message) {
+    const std::u16string& custom_error_message) {
   DCHECK(!custom_error_message.empty());
 
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   auto extension_info_container = std::make_unique<views::View>();
-  const gfx::Insets content_insets =
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT);
+  const gfx::Insets content_insets = provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kText, views::DialogContentType::kText);
   extension_info_container->SetBorder(views::CreateEmptyBorder(
       0, content_insets.left(), 0, content_insets.right()));
   extension_info_container->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -128,3 +122,7 @@ void ExtensionInstallBlockedDialogView::AddCustomMessageContents(
       0, provider->GetDistanceMetric(
              views::DISTANCE_DIALOG_SCROLLABLE_AREA_MAX_HEIGHT));
 }
+
+BEGIN_METADATA(ExtensionInstallBlockedDialogView,
+               views::BubbleDialogDelegateView)
+END_METADATA

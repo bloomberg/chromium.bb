@@ -9,7 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "content/common/content_export.h"
-#include "ui/accessibility/platform/inspect/inspect.h"
+#include "ui/accessibility/platform/inspect/ax_inspect.h"
 
 using ui::AXTreeSelector;
 
@@ -31,6 +31,12 @@ CONTENT_EXPORT bool IsAXUIElement(const id node);
 // BrowserAccessibilityCocoa.
 //
 CONTENT_EXPORT NSArray* ChildrenOf(const id node);
+
+//
+// Returns AXSize and AXPosition attributes for an accessible object.
+//
+CONTENT_EXPORT NSSize SizeOf(const id node);
+CONTENT_EXPORT NSPoint PositionOf(const id node);
 
 //
 // Returns (parameterized) attributes of an accessible object, (either
@@ -63,6 +69,12 @@ CONTENT_EXPORT void SetAttributeValueOf(const id node,
                                         id value);
 
 //
+// Returns DOM id of a given node (either AXUIElement or
+// BrowserAccessibilityCocoa).
+//
+CONTENT_EXPORT std::string GetDOMId(const id node);
+
+//
 // Return AXElement in a tree by a given criteria.
 //
 using FindCriteria = base::RepeatingCallback<bool(const AXUIElementRef)>;
@@ -74,6 +86,9 @@ CONTENT_EXPORT AXUIElementRef FindAXUIElement(const AXUIElementRef node,
 //
 CONTENT_EXPORT std::pair<AXUIElementRef, int> FindAXUIElement(
     const AXTreeSelector&);
+
+AXUIElementRef FindAXWindowChild(AXUIElementRef parent,
+                                 const std::string& pattern);
 
 }  // namespace a11y
 }  // namespace content

@@ -14,10 +14,10 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_checker.h"
@@ -89,7 +89,8 @@ class UpdateCheckerImpl : public UpdateChecker {
       const std::string& session_id,
       const IdToComponentPtrMap& components,
       const base::flat_map<std::string, std::string>& additional_attributes,
-      bool enabled_component_updates);
+      bool enabled_component_updates,
+      const std::set<std::string>& active_ids);
   void OnRequestSenderComplete(int error,
                                const std::string& response,
                                int retry_after_sec);
@@ -135,9 +136,17 @@ void UpdateCheckerImpl::CheckForUpdates(
       FROM_HERE, kTaskTraits,
       base::BindOnce(&UpdateCheckerImpl::ReadUpdaterStateAttributes,
                      base::Unretained(this)),
-      base::BindOnce(&UpdateCheckerImpl::CheckForUpdatesHelper,
-                     base::Unretained(this), session_id, std::cref(components),
-                     additional_attributes, enabled_component_updates));
+      base::BindOnce(
+          [](base::OnceCallback<void(const std::set<std::string>&)>
+                 checkForUpdatesHelper,
+             PersistedData* metadata, std::vector<std::string> ids) {
+            metadata->GetActiveBits(ids, std::move(checkForUpdatesHelper));
+          },
+          base::BindOnce(&UpdateCheckerImpl::CheckForUpdatesHelper,
+                         base::Unretained(this), session_id,
+                         std::cref(components), additional_attributes,
+                         enabled_component_updates),
+          base::Unretained(metadata_), ids_checked));
 }
 
 // This function runs on the blocking pool task runner.
@@ -158,7 +167,8 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
     const std::string& session_id,
     const IdToComponentPtrMap& components,
     const base::flat_map<std::string, std::string>& additional_attributes,
-    bool enabled_component_updates) {
+    bool enabled_component_updates,
+    const std::set<std::string>& active_ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto urls(config_->UpdateUrl());
@@ -203,7 +213,8 @@ void UpdateCheckerImpl::CheckForUpdatesHelper(
         metadata_->GetCohortHint(app_id), crx_component->channel,
         crx_component->disabled_reasons,
         MakeProtocolUpdateCheck(is_update_disabled),
-        MakeProtocolPing(app_id, metadata_)));
+        MakeProtocolPing(app_id, metadata_,
+                         active_ids.find(app_id) != active_ids.end())));
   }
 
   const auto request = MakeProtocolRequest(
@@ -257,10 +268,6 @@ void UpdateCheckerImpl::UpdateCheckSucceeded(
   DCHECK(thread_checker_.CalledOnValidThread());
 
   const int daynum = results.daystart_elapsed_days;
-  if (daynum != ProtocolParser::kNoDaystart) {
-    metadata_->SetDateLastActive(ids_checked_, daynum);
-    metadata_->SetDateLastRollCall(ids_checked_, daynum);
-  }
   for (const auto& result : results.list) {
     auto entry = result.cohort_attrs.find(ProtocolParser::Result::kCohort);
     if (entry != result.cohort_attrs.end())
@@ -273,11 +280,17 @@ void UpdateCheckerImpl::UpdateCheckSucceeded(
       metadata_->SetCohortHint(result.extension_id, entry->second);
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
+  base::OnceClosure reply =
       base::BindOnce(std::move(update_check_callback_),
-                     base::make_optional<ProtocolParser::Results>(results),
-                     ErrorCategory::kNone, 0, retry_after_sec));
+                     absl::make_optional<ProtocolParser::Results>(results),
+                     ErrorCategory::kNone, 0, retry_after_sec);
+
+  if (daynum != ProtocolParser::kNoDaystart) {
+    metadata_->SetDateLastData(ids_checked_, daynum, std::move(reply));
+    return;
+  }
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(reply));
 }
 
 void UpdateCheckerImpl::UpdateCheckFailed(ErrorCategory error_category,
@@ -288,7 +301,7 @@ void UpdateCheckerImpl::UpdateCheckFailed(ErrorCategory error_category,
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(std::move(update_check_callback_), base::nullopt,
+      base::BindOnce(std::move(update_check_callback_), absl::nullopt,
                      error_category, error, retry_after_sec));
 }
 

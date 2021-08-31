@@ -17,7 +17,6 @@
 #include "remoting/base/running_samples.h"
 #include "remoting/base/session_options.h"
 #include "remoting/codec/frame_processing_time_estimator.h"
-#include "remoting/protocol/video_channel_state_observer.h"
 
 namespace remoting {
 namespace protocol {
@@ -28,25 +27,29 @@ class BandwidthEstimator;
 // that always keeps only one frame in the pipeline. It schedules each frame
 // such that it is encoded and ready to be sent by the time previous one is
 // expected to finish sending.
-class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
-                                   public WebrtcFrameScheduler {
+class WebrtcFrameSchedulerSimple : public WebrtcFrameScheduler {
  public:
   explicit WebrtcFrameSchedulerSimple(const SessionOptions& options);
   ~WebrtcFrameSchedulerSimple() override;
 
   // VideoChannelStateObserver implementation.
+  void OnEncoderReady() override;
   void OnKeyFrameRequested() override;
-  void OnChannelParameters(int packet_loss, base::TimeDelta rtt) override;
   void OnTargetBitrateChanged(int bitrate_kbps) override;
+  void OnRttUpdate(base::TimeDelta rtt) override;
+  void OnTopOffActive(bool active) override;
+  void OnFrameEncoded(WebrtcVideoEncoder::EncodeResult encode_result,
+                      WebrtcVideoEncoder::EncodedFrame* encoded_frame) override;
+  void OnEncodedFrameSent(
+      webrtc::EncodedImageCallback::Result result,
+      const WebrtcVideoEncoder::EncodedFrame& frame) override;
 
   // WebrtcFrameScheduler implementation.
-  void Start(WebrtcDummyVideoEncoderFactory* video_encoder_factory,
-             const base::RepeatingClosure& capture_callback) override;
+  void Start(const base::RepeatingClosure& capture_callback) override;
   void Pause(bool pause) override;
   bool OnFrameCaptured(const webrtc::DesktopFrame* frame,
                        WebrtcVideoEncoder::FrameParams* params_out) override;
-  void OnFrameEncoded(const WebrtcVideoEncoder::EncodedFrame* encoded_frame,
-                      HostFrameStats* frame_stats) override;
+  void GetSchedulerStats(HostFrameStats& frame_stats_out) const override;
 
   // Allows unit-tests to provide a mock clock.
   void SetTickClockForTest(const base::TickClock* tick_clock);
@@ -62,7 +65,7 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   base::RepeatingClosure capture_callback_;
   bool paused_ = false;
 
-  // Set to true after the first key frame is requested.
+  // Set to true when the encoder is ready to receive frames.
   bool encoder_ready_ = false;
 
   // Set to true when a key frame was requested.
@@ -80,7 +83,11 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   // Set to true when a frame is being captured or encoded.
   bool frame_pending_ = false;
 
-  base::TimeDelta rtt_estimate_;
+  base::TimeDelta rtt_estimate_{base::TimeDelta::Max()};
+
+  // An estimate, set by OnFrameEncoded(), of the delay before WebRTC will send
+  // the encoded frame.
+  base::TimeDelta send_pending_delay_{base::TimeDelta::Max()};
 
   // Set to true when encoding unchanged frames for top-off.
   bool top_off_is_active_ = false;
@@ -98,7 +105,6 @@ class WebrtcFrameSchedulerSimple : public VideoChannelStateObserver,
   const std::unique_ptr<BandwidthEstimator> bandwidth_estimator_;
 
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<WebrtcFrameSchedulerSimple> weak_factory_{this};
 };
 
 }  // namespace protocol

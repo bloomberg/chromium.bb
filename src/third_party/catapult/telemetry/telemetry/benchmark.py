@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import logging
 import optparse
+import six
 
 from telemetry import decorators
 from telemetry.internal import story_runner
@@ -130,7 +132,7 @@ class Benchmark(command_line.Command):
   def ProcessCommandLineArgs(cls, parser, args):
     pass
 
-  def CustomizeOptions(self, finder_options):
+  def CustomizeOptions(self, finder_options, possible_browser=None):
     """Add options that are required by this benchmark."""
 
   def GetBugComponents(self):
@@ -195,7 +197,7 @@ class Benchmark(command_line.Command):
       tbm_options.config.enable_atrace_trace = True
 
       categories = tbm_options.config.atrace_config.categories
-      if isinstance(categories, basestring):
+      if isinstance(categories, six.string_types):
         # Categories can either be a list or comma-separated string.
         # https://github.com/catapult-project/catapult/issues/3712
         categories = categories.split(',')

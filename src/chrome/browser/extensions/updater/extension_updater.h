@@ -207,6 +207,15 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                        ManifestFetchData::FetchPriority fetch_priority,
                        ExtensionUpdateCheckParams* update_check_params);
 
+  // Adds |extension| to the downloader, providing it with |fetch_priority|,
+  // |request_id| and data extracted from the extension object.
+  // |fetch_priority| parameter notifies the downloader the priority of this
+  // extension update (either foreground or background).
+  bool AddExtensionToDownloader(
+      const Extension& extension,
+      int request_id,
+      ManifestFetchData::FetchPriority fetch_priority);
+
   // Conduct a check as scheduled by ScheduleNextCheck.
   void NextCheck();
 
@@ -223,6 +232,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                                  const PingResult& ping,
                                  const std::set<int>& request_ids,
                                  const FailureData& data) override;
+  void OnExtensionDownloadRetry(const ExtensionId& id,
+                                const FailureData& data) override;
   void OnExtensionDownloadFinished(const CRXFileInfo& file,
                                    bool file_ownership_passed,
                                    const GURL& download_url,
@@ -231,7 +242,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
                                    InstallCallback callback) override;
   bool GetPingDataForExtension(const ExtensionId& id,
                                ManifestFetchData::PingData* ping_data) override;
-  std::string GetUpdateUrlData(const ExtensionId& id) override;
   bool IsExtensionPending(const ExtensionId& id) override;
   bool GetExtensionExistingVersion(const ExtensionId& id,
                                    std::string* version) override;

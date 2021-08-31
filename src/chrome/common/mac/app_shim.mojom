@@ -43,6 +43,18 @@ enum AppShimAttentionType {
   kCritical,
 };
 
+// Enum describing if the application was launched automatically as a
+// 'Login Item' or via Resume.
+enum AppShimLoginItemRestoreState {
+  // The appilcation as not launched during OS login.
+  kNone,
+  // The application was launched during OS login.
+  kWindowed,
+  // The application was launched during OS login, with the
+  // 'hide on startup' flag.
+  kHidden,
+};
+
 // An entry in the profiles NSMenu.
 struct ProfileMenuItem {
   // The name to display.
@@ -101,6 +113,9 @@ interface AppShimHost {
 
   // Called when a profile is selected from the profiles menu.
   ProfileSelectedFromMenu(mojo_base.mojom.FilePath profile_path);
+
+  // Sent when urls are opened by the app (e.g. clicking a link in mail)
+  UrlsOpened(array<url.mojom.Url> urls);
 };
 
 // Properties of an app shim that are specified when it connects to the browser
@@ -121,6 +136,12 @@ struct AppShimInfo {
 
   // The files that were dragged on to this app when launching it.
   array<mojo_base.mojom.FilePath> files;
+
+  // Indicates if the app launched during OS login.
+  AppShimLoginItemRestoreState login_item_restore_state;
+
+  // The urls that are to be opened by this app.
+  array<url.mojom.Url> urls;
 };
 
 // The initial interface provided by the browser process. Used to bootstrap to

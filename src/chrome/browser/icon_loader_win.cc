@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/win/icon_reader_service.h"
@@ -28,19 +29,21 @@ class IconLoaderHelper {
   static void ExecuteLoadIcon(
       base::FilePath filename,
       chrome::mojom::IconSize size,
+      float scale,
       gfx::Image default_icon,
       scoped_refptr<base::SingleThreadTaskRunner> target_task_runner,
       IconLoader::IconLoadedCallback icon_loaded_callback);
 
   IconLoaderHelper(base::FilePath filename,
                    chrome::mojom::IconSize size,
+                   float scale,
                    gfx::Image default_icon);
 
  private:
   void StartReadIconRequest();
   void OnConnectionError();
   void OnReadIconExecuted(const gfx::ImageSkia& icon,
-                          const base::string16& group);
+                          const std::u16string& group);
 
   using IconLoaderHelperCallback =
       base::OnceCallback<void(gfx::Image image,
@@ -53,6 +56,7 @@ class IconLoaderHelper {
   mojo::Remote<chrome::mojom::UtilReadIcon> remote_read_icon_;
   base::FilePath filename_;
   chrome::mojom::IconSize size_;
+  const float scale_;
   // This callback owns the object until work is done.
   IconLoaderHelperCallback finally_;
   gfx::Image default_icon_;
@@ -65,11 +69,12 @@ class IconLoaderHelper {
 void IconLoaderHelper::ExecuteLoadIcon(
     base::FilePath filename,
     chrome::mojom::IconSize size,
+    float scale,
     gfx::Image default_icon,
     scoped_refptr<base::SingleThreadTaskRunner> target_task_runner,
     IconLoader::IconLoadedCallback icon_loaded_callback) {
   // Self-deleting helper manages service lifetime.
-  auto helper = std::make_unique<IconLoaderHelper>(filename, size,
+  auto helper = std::make_unique<IconLoaderHelper>(filename, size, scale,
                                                    std::move(default_icon));
   auto* helper_raw = helper.get();
   // This callback owns the helper and extinguishes itself once work is done.
@@ -90,8 +95,12 @@ void IconLoaderHelper::ExecuteLoadIcon(
 
 IconLoaderHelper::IconLoaderHelper(base::FilePath filename,
                                    chrome::mojom::IconSize size,
+                                   float scale,
                                    gfx::Image default_icon)
-    : filename_(filename), size_(size), default_icon_(std::move(default_icon)) {
+    : filename_(filename),
+      size_(size),
+      scale_(scale),
+      default_icon_(std::move(default_icon)) {
   remote_read_icon_ = LaunchIconReaderInstance();
   remote_read_icon_.set_disconnect_handler(base::BindOnce(
       &IconLoaderHelper::OnConnectionError, base::Unretained(this)));
@@ -99,7 +108,7 @@ IconLoaderHelper::IconLoaderHelper(base::FilePath filename,
 
 void IconLoaderHelper::StartReadIconRequest() {
   remote_read_icon_->ReadIcon(
-      filename_, size_,
+      filename_, size_, scale_,
       base::BindOnce(&IconLoaderHelper::OnReadIconExecuted,
                      base::Unretained(this)));
 }
@@ -113,19 +122,20 @@ void IconLoaderHelper::OnConnectionError() {
 }
 
 void IconLoaderHelper::OnReadIconExecuted(const gfx::ImageSkia& icon,
-                                          const base::string16& group) {
+                                          const std::u16string& group) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  std::wstring icon_group = base::AsWString(group);
   if (icon.isNull()) {
-    std::move(finally_).Run(std::move(default_icon_), group);
+    std::move(finally_).Run(std::move(default_icon_), icon_group);
   } else {
     gfx::Image image(icon);
-    std::move(finally_).Run(std::move(image), group);
+    std::move(finally_).Run(std::move(image), icon_group);
   }
 }
 
 // Must be called in a COM context. |group| should be a file extension.
-gfx::Image GetIconForFileExtension(base::string16 group,
+gfx::Image GetIconForFileExtension(const std::wstring& group,
                                    IconLoader::IconSize icon_size) {
   int size = 0;
   switch (icon_size) {
@@ -229,9 +239,10 @@ void IconLoader::ReadIconInSandbox() {
   }
 
   target_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&IconLoaderHelper::ExecuteLoadIcon,
-                                std::move(path), size, std::move(default_icon),
-                                target_task_runner_, std::move(callback_)));
+      FROM_HERE,
+      base::BindOnce(&IconLoaderHelper::ExecuteLoadIcon, std::move(path), size,
+                     scale_, std::move(default_icon), target_task_runner_,
+                     std::move(callback_)));
 
   delete this;
 }

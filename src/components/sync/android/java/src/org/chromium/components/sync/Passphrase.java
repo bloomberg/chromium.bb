@@ -12,10 +12,10 @@ import java.util.List;
  */
 public class Passphrase {
     /**
-     * Returns whether a passphrase type represents a "secondary" passphrase, which usually means
+     * Returns whether a passphrase type represents an "explicit" passphrase, which usually means
      * a custom passphrase, but also includes the legacy equivalent, a frozen implicit passphrase.
      */
-    private static boolean isSecondaryPassphraseType(@PassphraseType int type) {
+    private static boolean isExplicitPassphraseType(@PassphraseType int type) {
         switch (type) {
             case PassphraseType.IMPLICIT_PASSPHRASE: // Intentional fall through.
             case PassphraseType.TRUSTED_VAULT_PASSPHRASE: // Intentional fall through.
@@ -34,7 +34,7 @@ public class Passphrase {
      */
     public static List<Integer /* @Type */> getVisibleTypes(@PassphraseType int type) {
         List<Integer /* @Type */> visibleTypes = new ArrayList<>();
-        if (isSecondaryPassphraseType(type)) {
+        if (isExplicitPassphraseType(type)) {
             visibleTypes.add(type);
             visibleTypes.add(PassphraseType.KEYSTORE_PASSPHRASE);
         } else {
@@ -46,14 +46,14 @@ public class Passphrase {
 
     /**
      * Get the types that are allowed to be enabled from the current type.
-     * @param isEncryptEverythingAllowed Whether encrypting all data is allowed.
+     * @param isCustomPassphraseAllowed Whether setting a custom passphrase is allowed.
      */
     public static List<Integer /* @Type */> getAllowedTypes(
-            @PassphraseType int type, boolean isEncryptEverythingAllowed) {
+            @PassphraseType int type, boolean isCustomPassphraseAllowed) {
         List<Integer /* @Type */> allowedTypes = new ArrayList<>();
-        if (!isSecondaryPassphraseType(type)) {
+        if (!isExplicitPassphraseType(type)) {
             allowedTypes.add(type);
-            if (isEncryptEverythingAllowed) allowedTypes.add(PassphraseType.CUSTOM_PASSPHRASE);
+            if (isCustomPassphraseAllowed) allowedTypes.add(PassphraseType.CUSTOM_PASSPHRASE);
         }
         return allowedTypes;
     }

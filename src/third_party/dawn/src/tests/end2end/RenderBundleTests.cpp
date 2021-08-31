@@ -31,36 +31,33 @@ class RenderBundleTest : public DawnTest {
 
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
-        wgpu::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-                #version 450
-                layout(location = 0) in vec4 pos;
-                void main() {
-                    gl_Position = pos;
-                })");
+        wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
+            [[stage(vertex)]]
+            fn main([[location(0)]] pos : vec4<f32>) -> [[builtin(position)]] vec4<f32> {
+                return pos;
+            })");
 
-        wgpu::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-                #version 450
-                layout(location = 0) out vec4 fragColor;
-                layout (set = 0, binding = 0) uniform fragmentUniformBuffer {
-                    vec4 color;
-                };
-                void main() {
-                    fragColor = color;
-                })");
+        wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
+            [[block]] struct Ubo {
+                color : vec4<f32>;
+            };
+            [[group(0), binding(0)]] var<uniform> fragmentUniformBuffer : Ubo;
 
-        utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.vertexStage.module = vsModule;
-        descriptor.cFragmentStage.module = fsModule;
-        descriptor.primitiveTopology = wgpu::PrimitiveTopology::TriangleList;
-        descriptor.cVertexState.vertexBufferCount = 1;
-        descriptor.cVertexState.cVertexBuffers[0].arrayStride = 4 * sizeof(float);
-        descriptor.cVertexState.cVertexBuffers[0].attributeCount = 1;
-        descriptor.cVertexState.cAttributes[0].format = wgpu::VertexFormat::Float4;
-        descriptor.cColorStates[0].format = renderPass.colorFormat;
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                return fragmentUniformBuffer.color;
+            })");
 
-        pipeline = device.CreateRenderPipeline(&descriptor);
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+        descriptor.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+        descriptor.vertex.bufferCount = 1;
+        descriptor.cBuffers[0].arrayStride = 4 * sizeof(float);
+        descriptor.cBuffers[0].attributeCount = 1;
+        descriptor.cAttributes[0].format = wgpu::VertexFormat::Float32x4;
+        descriptor.cTargets[0].format = renderPass.colorFormat;
+
+        pipeline = device.CreateRenderPipeline2(&descriptor);
 
         float colors0[] = {kColors[0].r / 255.f, kColors[0].g / 255.f, kColors[0].b / 255.f,
                            kColors[0].a / 255.f};
@@ -200,4 +197,5 @@ DAWN_INSTANTIATE_TEST(RenderBundleTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

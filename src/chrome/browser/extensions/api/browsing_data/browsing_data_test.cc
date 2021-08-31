@@ -53,11 +53,11 @@ const char kRemoveEverythingArguments[] =
 // Sets the SAPISID Gaia cookie, which is monitored by the AccountReconcilor.
 bool SetGaiaCookieForProfile(Profile* profile) {
   GURL google_url = GaiaUrls::GetInstance()->secure_google_url();
-  net::CanonicalCookie cookie("SAPISID", std::string(), "." + google_url.host(),
-                              "/", base::Time(), base::Time(), base::Time(),
-                              /*secure=*/true, false,
-                              net::CookieSameSite::NO_RESTRICTION,
-                              net::COOKIE_PRIORITY_DEFAULT, false);
+  auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
+      "SAPISID", std::string(), "." + google_url.host(), "/", base::Time(),
+      base::Time(), base::Time(),
+      /*secure=*/true, false, net::CookieSameSite::NO_RESTRICTION,
+      net::COOKIE_PRIORITY_DEFAULT, false);
 
   bool success = false;
   base::RunLoop loop;
@@ -69,10 +69,10 @@ bool SetGaiaCookieForProfile(Profile* profile) {
             std::move(loop_quit).Run();
           });
   network::mojom::CookieManager* cookie_manager =
-      content::BrowserContext::GetDefaultStoragePartition(profile)
+      profile->GetDefaultStoragePartition()
           ->GetCookieManagerForBrowserProcess();
   cookie_manager->SetCanonicalCookie(
-      cookie, google_url, net::CookieOptions::MakeAllInclusive(),
+      *cookie, google_url, net::CookieOptions::MakeAllInclusive(),
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(
           std::move(callback),
           net::CookieAccessResult(net::CookieInclusionStatus(
@@ -97,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, Syncing) {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
   AccountInfo primary_account_info = signin::MakePrimaryAccountAvailable(
-      identity_manager, kPrimaryAccountEmail);
+      identity_manager, kPrimaryAccountEmail, signin::ConsentLevel::kSync);
   AccountInfo secondary_account_info =
       signin::MakeAccountAvailable(identity_manager, kSecondaryAccountEmail);
 
@@ -134,8 +134,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, SyncError) {
   const char kAccountEmail[] = "account@email.com";
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  AccountInfo account_info =
-      signin::MakePrimaryAccountAvailable(identity_manager, kAccountEmail);
+  AccountInfo account_info = signin::MakePrimaryAccountAvailable(
+      identity_manager, kAccountEmail, signin::ConsentLevel::kSync);
   signin::UpdatePersistentErrorOfRefreshTokenForAccount(
       identity_manager, account_info.account_id,
       GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(

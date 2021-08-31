@@ -1,0 +1,17 @@
+{
+
+  "*": [
+    "xr_browser_tests",
+    "telemetry_gpu_integration_test",
+    "metrics_python_tests",
+    "mojo_python_unittests",
+    "blink_python_tests",
+    "grit_python_unittests",
+    "telemetry_perf_unittests",
+    "maps_tests",
+    "telemetry_gpu_unittests"
+  ],
+  "fuchsia_x64_rts": [
+    "blink_web_tests"
+  ]
+}

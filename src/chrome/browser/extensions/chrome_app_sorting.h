@@ -14,7 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
@@ -96,6 +96,7 @@ class ChromeAppSorting : public AppSorting,
   friend class ChromeAppSortingInitializeWithNoApps;
   friend class ChromeAppSortingPageOrdinalMapping;
   friend class ChromeAppSortingSetExtensionVisible;
+  friend class ChromeAppSortingMigratedBookmarkApp;
 
   // An enum used by GetMinOrMaxAppLaunchOrdinalsOnPage to specify which
   // value should be returned.
@@ -165,11 +166,18 @@ class ChromeAppSorting : public AppSorting,
   // Returns the number of items in |m| visible on the new tab page.
   size_t CountItemsVisibleOnNtp(const AppLaunchOrdinalMap& m) const;
 
+  // Sets |web_app_registrar_|. Only for use by tests.
+  void SetWebAppRegistrarForTesting(
+      const web_app::WebAppRegistrar* web_app_registrar);
+
+  // Sets |web_app_sync_bridge_|. Only for use by tests.
+  void SetWebAppSyncBridgeForTesting(web_app::WebAppSyncBridge* sync_bridge);
+
   content::BrowserContext* const browser_context_ = nullptr;
   const web_app::WebAppRegistrar* web_app_registrar_ = nullptr;
   web_app::WebAppSyncBridge* web_app_sync_bridge_ = nullptr;
-  ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
-      app_registrar_observer_{this};
+  base::ScopedObservation<web_app::AppRegistrar, web_app::AppRegistrarObserver>
+      app_registrar_observation_{this};
 
   // A map of all the StringOrdinal page ordinals mapping to the collections of
   // app launch ordinals that exist on that page. This is used for mapping

@@ -5,10 +5,10 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
@@ -89,7 +89,7 @@ class LayerTreeHostScrollTest : public LayerTreeTest, public ScrollCallbacks {
   // ScrollCallbacks
   void DidScroll(ElementId element_id,
                  const gfx::ScrollOffset& scroll_offset,
-                 const base::Optional<TargetSnapAreaElementIds>&
+                 const absl::optional<TargetSnapAreaElementIds>&
                      snap_target_ids) override {
     // Simulates cc client (e.g Blink) behavior when handling impl-side scrolls.
     SetScrollOffsetFromImplSide(layer_tree_host()->LayerByElementId(element_id),
@@ -541,7 +541,7 @@ class LayerTreeHostScrollTestScrollSnapping : public LayerTreeHostScrollTest {
         PostSetNeedsCommitToMainThread();
         break;
       case 2:
-        translate.Translate(-3, 0);
+        translate.Translate(-4, 0);
         EXPECT_EQ(translate,
                   scroll_layer->draw_properties().screen_space_transform);
         EndTest();
@@ -623,7 +623,7 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
 
   void DidScroll(ElementId element_id,
                  const gfx::ScrollOffset& offset,
-                 const base::Optional<TargetSnapAreaElementIds>&
+                 const absl::optional<TargetSnapAreaElementIds>&
                      snap_target_ids) override {
     LayerTreeHostScrollTest::DidScroll(element_id, offset, snap_target_ids);
     if (element_id == expected_scroll_layer_->element_id()) {
@@ -1322,7 +1322,10 @@ class LayerTreeHostScrollTestImplOnlyScrollSnap
   bool snap_animation_finished_ = false;
 };
 
+// TODO(crbug.com/1201662): Flaky on Fuchsia, ChromeOS, and Linux.
+#if !defined(OS_FUCHSIA) && !defined(OS_CHROMEOS) && !defined(OS_LINUX)
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplOnlyScrollSnap);
+#endif
 
 // This test simulates scrolling on the impl thread such that 2 impl-only
 // scrolls occur between main frames. It ensures that the snap target ids will
@@ -1729,8 +1732,17 @@ class LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent
   scoped_refptr<Layer> scroller_;
 };
 
+// This test is flaky in the single threaded configuration, only on the
+// chromeos-amd64-generic-rel bot. https://crbug.com/1093078.
+#if defined(OS_CHROMEOS)
+// SINGLE_THREAD_TEST_F(
+//    LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent);
+MULTI_THREAD_TEST_F(
+    LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent);
+#else
 SINGLE_AND_MULTI_THREAD_TEST_F(
     LayerTreeHostScrollTestImplScrollUnderMainThreadScrollingParent);
+#endif
 
 class ThreadCheckingInputHandlerClient : public InputHandlerClient {
  public:
@@ -1830,7 +1842,7 @@ class LayerTreeHostScrollTestLayerStructureChange
 
   void DidScroll(ElementId element_id,
                  const gfx::ScrollOffset&,
-                 const base::Optional<TargetSnapAreaElementIds>&) override {
+                 const absl::optional<TargetSnapAreaElementIds>&) override {
     if (scroll_destroy_whole_tree_) {
       layer_tree_host()->SetRootLayer(nullptr);
       layer_tree_host()->property_trees()->clear();

@@ -6,7 +6,7 @@
 
 #include "base/callback_helpers.h"
 #import "ios/web/public/test/fakes/crw_fake_web_state_policy_decider.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,10 +20,10 @@ class WebStatePolicyDeciderBridgeTest : public PlatformTest {
  public:
   WebStatePolicyDeciderBridgeTest()
       : decider_([[CRWFakeWebStatePolicyDecider alloc] init]),
-        decider_bridge_(&test_web_state_, decider_) {}
+        decider_bridge_(&fake_web_state_, decider_) {}
 
  protected:
-  web::TestWebState test_web_state_;
+  web::FakeWebState fake_web_state_;
   CRWFakeWebStatePolicyDecider* decider_;
   WebStatePolicyDeciderBridge decider_bridge_;
 };
@@ -35,9 +35,11 @@ TEST_F(WebStatePolicyDeciderBridgeTest, ShouldAllowRequest) {
   NSURLRequest* request = [NSURLRequest requestWithURL:url];
   ui::PageTransition transition_type = ui::PageTransition::PAGE_TRANSITION_LINK;
   bool target_frame_is_main = true;
+  bool target_frame_is_cross_origin = false;
   bool has_user_gesture = false;
   WebStatePolicyDecider::RequestInfo request_info(
-      transition_type, target_frame_is_main, has_user_gesture);
+      transition_type, target_frame_is_main, target_frame_is_cross_origin,
+      has_user_gesture);
   decider_bridge_.ShouldAllowRequest(request, request_info);
   FakeShouldAllowRequestInfo* should_allow_request_info =
       [decider_ shouldAllowRequestInfo];

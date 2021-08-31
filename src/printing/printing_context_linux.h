@@ -16,7 +16,7 @@ class MetafilePlayer;
 class PrintDialogGtkInterface;
 
 // PrintingContext with optional native UI for print dialog and pdf_paper_size.
-class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
+class COMPONENT_EXPORT(PRINTING) PrintingContextLinux : public PrintingContext {
  public:
   explicit PrintingContextLinux(Delegate* delegate);
   PrintingContextLinux(const PrintingContextLinux&) = delete;
@@ -31,7 +31,7 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   static void SetPdfPaperSizeFunction(
       gfx::Size (*get_pdf_paper_size)(PrintingContextLinux* context));
 
-  // Prints the document contained in |metafile|.
+  // Prints the document contained in `metafile`.
   void PrintDocument(const MetafilePlayer& metafile);
 
   // Initializes with predefined settings.
@@ -47,7 +47,7 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   Result UpdatePrinterSettings(bool external_preview,
                                bool show_system_dialog,
                                int page_count) override;
-  Result NewDocument(const base::string16& document_name) override;
+  Result NewDocument(const std::u16string& document_name) override;
   Result NewPage() override;
   Result PageDone() override;
   Result DocumentDone() override;
@@ -56,7 +56,7 @@ class PRINTING_EXPORT PrintingContextLinux : public PrintingContext {
   printing::NativeDrawingContext context() const override;
 
  private:
-  base::string16 document_name_;
+  std::u16string document_name_;
   PrintDialogGtkInterface* print_dialog_;
 };
 

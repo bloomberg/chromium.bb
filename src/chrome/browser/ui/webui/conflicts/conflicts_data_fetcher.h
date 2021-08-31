@@ -8,13 +8,14 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/win/conflicts/module_database_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "chrome/browser/win/conflicts/third_party_conflicts_manager.h"
 #endif
 
@@ -48,7 +49,7 @@ class ConflictsDataFetcher : public ModuleDatabaseObserver {
 
   void InitializeOnModuleDatabaseTaskRunner();
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Invoked when the ThirdPartyConflictsManager initialization state is
   // available.
   void OnManagerInitializationComplete(ThirdPartyConflictsManager::State state);
@@ -71,8 +72,8 @@ class ConflictsDataFetcher : public ModuleDatabaseObserver {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-#if defined(GOOGLE_CHROME_BUILD)
-  base::Optional<ThirdPartyConflictsManager::State>
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  absl::optional<ThirdPartyConflictsManager::State>
       third_party_conflicts_manager_state_;
 
   base::WeakPtrFactory<ConflictsDataFetcher> weak_ptr_factory_;

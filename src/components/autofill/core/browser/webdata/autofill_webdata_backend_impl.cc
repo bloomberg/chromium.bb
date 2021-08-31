@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/location.h"
@@ -147,7 +149,7 @@ void AutofillWebDataBackendImpl::NotifyThatSyncHasStarted(
 base::SupportsUserData* AutofillWebDataBackendImpl::GetDBUserData() {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   if (!user_data_)
-    user_data_.reset(new SupportsUserDataAggregatable());
+    user_data_ = std::make_unique<SupportsUserDataAggregatable>();
   return user_data_.get();
 }
 
@@ -177,8 +179,8 @@ WebDatabase::State AutofillWebDataBackendImpl::AddFormElements(
 
 std::unique_ptr<WDTypedResult>
 AutofillWebDataBackendImpl::GetFormValuesForElementName(
-    const base::string16& name,
-    const base::string16& prefix,
+    const std::u16string& name,
+    const std::u16string& prefix,
     int limit,
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
@@ -211,8 +213,8 @@ WebDatabase::State AutofillWebDataBackendImpl::RemoveFormElementsAddedBetween(
 }
 
 WebDatabase::State AutofillWebDataBackendImpl::RemoveFormValueForElementName(
-    const base::string16& name,
-    const base::string16& value,
+    const std::u16string& name,
+    const std::u16string& value,
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
 
@@ -476,7 +478,7 @@ std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetServerCreditCards(
 
 WebDatabase::State AutofillWebDataBackendImpl::UnmaskServerCreditCard(
     const CreditCard& card,
-    const base::string16& full_number,
+    const std::u16string& full_number,
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   if (AutofillTable::FromWebDatabase(db)->UnmaskServerCreditCard(card,
@@ -568,11 +570,11 @@ AutofillWebDataBackendImpl::GetCreditCardCloudTokenData(WebDatabase* db) {
       AUTOFILL_CLOUDTOKEN_RESULT, std::move(cloud_token_data));
 }
 
-std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetCreditCardOffers(
+std::unique_ptr<WDTypedResult> AutofillWebDataBackendImpl::GetAutofillOffers(
     WebDatabase* db) {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
   std::vector<std::unique_ptr<AutofillOfferData>> offers;
-  AutofillTable::FromWebDatabase(db)->GetCreditCardOffers(&offers);
+  AutofillTable::FromWebDatabase(db)->GetAutofillOffers(&offers);
   return std::make_unique<
       WDResult<std::vector<std::unique_ptr<AutofillOfferData>>>>(
       AUTOFILL_OFFER_DATA, std::move(offers));

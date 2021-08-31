@@ -8,25 +8,24 @@
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "remoting/codec/webrtc_video_encoder.h"
+#include "remoting/protocol/video_channel_state_observer.h"
 
 namespace remoting {
 namespace protocol {
 
 struct HostFrameStats;
-class WebrtcDummyVideoEncoderFactory;
 
 // An abstract interface for frame schedulers, which are responsible for
 // scheduling when video frames are captured and for defining encoding
 // parameters for each frame.
-class WebrtcFrameScheduler {
+class WebrtcFrameScheduler : public VideoChannelStateObserver {
  public:
-  WebrtcFrameScheduler() {}
-  virtual ~WebrtcFrameScheduler() {}
+  WebrtcFrameScheduler() = default;
+  ~WebrtcFrameScheduler() override = default;
 
   // Starts the scheduler. |capture_callback| will be called whenever a new
   // frame should be captured.
-  virtual void Start(WebrtcDummyVideoEncoderFactory* video_encoder_factory,
-                     const base::RepeatingClosure& capture_callback) = 0;
+  virtual void Start(const base::RepeatingClosure& capture_callback) = 0;
 
   // Pause and resumes the scheduler.
   virtual void Pause(bool pause) = 0;
@@ -38,12 +37,13 @@ class WebrtcFrameScheduler {
   virtual bool OnFrameCaptured(const webrtc::DesktopFrame* frame,
                                WebrtcVideoEncoder::FrameParams* params_out) = 0;
 
-  // Called after a frame has been encoded and passed to the sender.
-  // |encoded_frame| may be nullptr. If |frame_stats| is not null then sets
-  // send_pending_delay, rtt_estimate and bandwidth_estimate_kbps fields.
-  virtual void OnFrameEncoded(
-      const WebrtcVideoEncoder::EncodedFrame* encoded_frame,
-      HostFrameStats* frame_stats) = 0;
+  // Writes the following bandwidth-related statistics to |frame_stats_out|:
+  // * bandwidth_estimate_kbps
+  // * rtt_estimate
+  // * send_pending_delay - an estimate of the delay (due to WebRTC's pacing
+  //   buffer) before the recently-encoded frame will be sent.
+  // This should be called just after OnFrameEncoded().
+  virtual void GetSchedulerStats(HostFrameStats& frame_stats_out) const = 0;
 };
 
 }  // namespace protocol

@@ -40,10 +40,14 @@ source_set("permission_checking") {
     "permission_wizard.mm",
   ]
 
+  public_deps = [ "//base" ]
+
   deps = [
     ":constants",
     "//remoting/resources",
   ]
+
+  frameworks = [ "AVFoundation.framework" ]
 }
 
 executable("remoting_me2me_host_service") {

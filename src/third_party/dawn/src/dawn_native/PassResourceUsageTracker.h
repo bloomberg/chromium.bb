@@ -23,27 +23,59 @@
 
 namespace dawn_native {
 
+    class BindGroupBase;
     class BufferBase;
+    class QuerySetBase;
     class TextureBase;
 
-    // Helper class to encapsulate the logic of tracking per-resource usage during the
-    // validation of command buffer passes. It is used both to know if there are validation
-    // errors, and to get a list of resources used per pass for backends that need the
-    // information.
-    class PassResourceUsageTracker {
+    using QueryAvailabilityMap = std::map<QuerySetBase*, std::vector<bool>>;
+
+    // Helper class to build SyncScopeResourceUsages
+    class SyncScopeUsageTracker {
       public:
-        PassResourceUsageTracker(PassType passType);
         void BufferUsedAs(BufferBase* buffer, wgpu::BufferUsage usage);
         void TextureViewUsedAs(TextureViewBase* texture, wgpu::TextureUsage usage);
-        void AddTextureUsage(TextureBase* texture, const PassTextureUsage& textureUsage);
+        void AddTextureUsage(TextureBase* texture, const TextureSubresourceUsage& textureUsage);
+
+        // Walks the bind groups and tracks all its resources.
+        void AddBindGroup(BindGroupBase* group);
 
         // Returns the per-pass usage for use by backends for APIs with explicit barriers.
-        PassResourceUsage AcquireResourceUsage();
+        SyncScopeResourceUsage AcquireSyncScopeUsage();
 
       private:
-        PassType mPassType;
         std::map<BufferBase*, wgpu::BufferUsage> mBufferUsages;
-        std::map<TextureBase*, PassTextureUsage> mTextureUsages;
+        std::map<TextureBase*, TextureSubresourceUsage> mTextureUsages;
+    };
+
+    // Helper class to build ComputePassResourceUsages
+    class ComputePassResourceUsageTracker {
+      public:
+        void AddDispatch(SyncScopeResourceUsage scope);
+        void AddReferencedBuffer(BufferBase* buffer);
+        void AddResourcesReferencedByBindGroup(BindGroupBase* group);
+
+        ComputePassResourceUsage AcquireResourceUsage();
+
+      private:
+        ComputePassResourceUsage mUsage;
+    };
+
+    // Helper class to build RenderPassResourceUsages
+    class RenderPassResourceUsageTracker : public SyncScopeUsageTracker {
+      public:
+        void TrackQueryAvailability(QuerySetBase* querySet, uint32_t queryIndex);
+        const QueryAvailabilityMap& GetQueryAvailabilityMap() const;
+
+        RenderPassResourceUsage AcquireResourceUsage();
+
+      private:
+        // Hide AcquireSyncScopeUsage since users of this class should use AcquireResourceUsage
+        // instead.
+        using SyncScopeUsageTracker::AcquireSyncScopeUsage;
+
+        // Tracks queries used in the render pass to validate that they aren't written twice.
+        QueryAvailabilityMap mQueryAvailabilities;
     };
 
 }  // namespace dawn_native

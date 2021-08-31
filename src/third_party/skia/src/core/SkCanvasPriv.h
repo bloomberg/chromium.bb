@@ -26,10 +26,6 @@ private:
 
 class SkCanvasPriv {
 public:
-    enum {
-        kDontClipToLayer_SaveLayerFlag = SkCanvas::kDontClipToLayer_PrivateSaveLayerFlag,
-    };
-
     // The lattice has pointers directly into the readbuffer
     static bool ReadLattice(SkReadBuffer&, SkCanvas::Lattice*);
 
@@ -38,8 +34,6 @@ public:
     // return the byte-size of the lattice, even if the buffer is null
     // storage must be 4-byte aligned
     static size_t WriteLattice(void* storage, const SkCanvas::Lattice&);
-
-    static SkCanvas::SaveLayerFlags LegacySaveFlagsToSaveLayerFlags(uint32_t legacySaveFlags);
 
     static int SaveBehind(SkCanvas* canvas, const SkRect* subset) {
         return canvas->only_axis_aligned_saveBehind(subset);
@@ -51,6 +45,10 @@ public:
     // Exposed for testing on non-Android framework builds
     static void ReplaceClip(SkCanvas* canvas, const SkIRect& rect) {
         canvas->androidFramework_replaceClip(rect);
+    }
+
+    static GrSurfaceDrawContext* TopDeviceSurfaceDrawContext(SkCanvas* canvas) {
+        return canvas->topDeviceSurfaceDrawContext();
     }
 
     // The experimental_DrawEdgeAAImageSet API accepts separate dstClips and preViewMatrices arrays,

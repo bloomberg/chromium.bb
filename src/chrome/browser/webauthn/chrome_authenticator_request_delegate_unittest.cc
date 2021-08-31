@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "build/build_config.h"
+#include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_context.h"
@@ -29,28 +30,64 @@
 class ChromeAuthenticatorRequestDelegateTest
     : public ChromeRenderViewHostTestHarness {};
 
-TEST_F(ChromeAuthenticatorRequestDelegateTest, TestTransportPrefType) {
-  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
-  EXPECT_FALSE(delegate.GetLastTransportUsed());
-  delegate.UpdateLastTransportUsed(device::FidoTransportProtocol::kInternal);
-  const auto transport = delegate.GetLastTransportUsed();
-  ASSERT_TRUE(transport);
-  EXPECT_EQ(device::FidoTransportProtocol::kInternal, transport);
+class TestAuthenticatorModelObserver
+    : public AuthenticatorRequestDialogModel::Observer {
+ public:
+  explicit TestAuthenticatorModelObserver(
+      AuthenticatorRequestDialogModel* model)
+      : model_(model) {
+    last_step_ = model_->current_step();
+  }
+
+  AuthenticatorRequestDialogModel::Step last_step() { return last_step_; }
+
+  // AuthenticatorRequestDialogModel::Observer:
+  void OnStepTransition() override { last_step_ = model_->current_step(); }
+
+  void OnModelDestroyed(AuthenticatorRequestDialogModel* model) override {
+    model_ = nullptr;
+  }
+
+ private:
+  AuthenticatorRequestDialogModel* model_;
+  AuthenticatorRequestDialogModel::Step last_step_;
+};
+
+TEST_F(ChromeAuthenticatorRequestDelegateTest, ConditionalUI) {
+  // Enabling conditional mode should cause the modal dialog to stay hidden at
+  // the beginning of a request. An omnibar icon might be shown instead.
+  for (bool conditional_ui : {true, false}) {
+    ChromeAuthenticatorRequestDelegate delegate(main_rfh());
+    delegate.SetConditionalRequest(conditional_ui);
+    delegate.SetRelyingPartyId(/*rp_id=*/"example.com");
+    AuthenticatorRequestDialogModel* model = delegate.dialog_model();
+    TestAuthenticatorModelObserver observer(model);
+    model->AddObserver(&observer);
+    EXPECT_EQ(observer.last_step(),
+              AuthenticatorRequestDialogModel::Step::kNotStarted);
+    delegate.OnTransportAvailabilityEnumerated(
+        AuthenticatorRequestDialogModel::TransportAvailabilityInfo());
+    EXPECT_EQ(observer.last_step() ==
+                  AuthenticatorRequestDialogModel::Step::kLocationBarBubble,
+              conditional_ui);
+  }
 }
 
 #if defined(OS_MAC)
 API_AVAILABLE(macos(10.12.2))
-std::string TouchIdMetadataSecret(
-    ChromeAuthenticatorRequestDelegate* delegate) {
-  return delegate->GetTouchIdAuthenticatorConfig()->metadata_secret;
+std::string TouchIdMetadataSecret(ChromeWebAuthenticationDelegate& delegate,
+                                  content::BrowserContext* browser_context) {
+  return delegate.GetTouchIdAuthenticatorConfig(browser_context)
+      ->metadata_secret;
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest, TouchIdMetadataSecret) {
   if (__builtin_available(macOS 10.12.2, *)) {
-    ChromeAuthenticatorRequestDelegate delegate(main_rfh());
-    std::string secret = TouchIdMetadataSecret(&delegate);
+    ChromeWebAuthenticationDelegate delegate;
+    std::string secret = TouchIdMetadataSecret(delegate, GetBrowserContext());
     EXPECT_EQ(secret.size(), 32u);
-    EXPECT_EQ(secret, TouchIdMetadataSecret(&delegate));
+    // The secret should be stable.
+    EXPECT_EQ(secret, TouchIdMetadataSecret(delegate, GetBrowserContext()));
   }
 }
 
@@ -59,27 +96,25 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   if (__builtin_available(macOS 10.12.2, *)) {
     // Different delegates on the same BrowserContext (Profile) should return
     // the same secret.
-    ChromeAuthenticatorRequestDelegate delegate1(main_rfh());
-    ChromeAuthenticatorRequestDelegate delegate2(main_rfh());
-    EXPECT_EQ(TouchIdMetadataSecret(&delegate1),
-              TouchIdMetadataSecret(&delegate2));
+    ChromeWebAuthenticationDelegate delegate1;
+    ChromeWebAuthenticationDelegate delegate2;
+    EXPECT_EQ(TouchIdMetadataSecret(delegate1, GetBrowserContext()),
+              TouchIdMetadataSecret(delegate2, GetBrowserContext()));
   }
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest,
        TouchIdMetadataSecret_NotEqualForDifferentProfiles) {
   if (__builtin_available(macOS 10.12.2, *)) {
-    // Different profiles have different secrets. (No way to reset
-    // browser_context(), so we have to create our own.)
-    auto browser_context = CreateBrowserContext();
-    auto web_contents = content::WebContentsTester::CreateTestWebContents(
-        browser_context.get(), nullptr);
-    ChromeAuthenticatorRequestDelegate delegate1(main_rfh());
-    ChromeAuthenticatorRequestDelegate delegate2(web_contents->GetMainFrame());
-    EXPECT_NE(TouchIdMetadataSecret(&delegate1),
-              TouchIdMetadataSecret(&delegate2));
+    // Different profiles have different secrets.
+    auto other_browser_context = CreateBrowserContext();
+    ChromeWebAuthenticationDelegate delegate;
+    EXPECT_NE(TouchIdMetadataSecret(delegate, GetBrowserContext()),
+              TouchIdMetadataSecret(delegate, other_browser_context.get()));
     // Ensure this second secret is actually valid.
-    EXPECT_EQ(32u, TouchIdMetadataSecret(&delegate2).size());
+    EXPECT_EQ(
+        32u,
+        TouchIdMetadataSecret(delegate, other_browser_context.get()).size());
   }
 }
 #endif  // defined(OS_MAC)

@@ -104,11 +104,10 @@ class ServiceControllerRouter {
   void ClientDisconnecting(ClientProxy* client, const ResultCallback& callback);
 
  private:
-  friend class ServiceControllerRouterTest;
   static bool ClientHasConnectionToAtLeastOneEndpoint(
       ClientProxy* client, const std::vector<std::string>& remote_endpoint_ids);
 
-  void RouteToServiceController(Runnable runnable);
+  void RouteToServiceController(const std::string& name, Runnable runnable);
 
   Status AcquireServiceControllerForClient(ClientProxy* client,
                                            Strategy strategy);

@@ -32,19 +32,7 @@ IPEndpoint DetermineEndpoint(const InterfaceInfo& interface) {
 }
 
 discovery::Config MakeDiscoveryConfig(const InterfaceInfo& interface) {
-  discovery::Config config;
-
-  discovery::Config::NetworkInfo::AddressFamilies supported_address_families =
-      discovery::Config::NetworkInfo::kNoAddressFamily;
-  if (interface.GetIpAddressV4()) {
-    supported_address_families |= discovery::Config::NetworkInfo::kUseIpV4;
-  }
-  if (interface.GetIpAddressV6()) {
-    supported_address_families |= discovery::Config::NetworkInfo::kUseIpV6;
-  }
-  config.network_info.push_back({interface, supported_address_families});
-
-  return config;
+  return discovery::Config{.network_info = {interface}};
 }
 
 }  // namespace
@@ -84,6 +72,7 @@ CastService::CastService(TaskRunner* task_runner,
     info.unique_id = HexEncode(interface.hardware_address);
     info.friendly_name = friendly_name;
     info.model_name = model_name;
+    info.capabilities = kHasVideoOutput | kHasAudioOutput;
     Error error = discovery_publisher_->Register(info);
     if (!error.ok()) {
       OnFatalError(std::move(error));

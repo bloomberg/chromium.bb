@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
@@ -35,6 +36,27 @@ namespace {
 // to be parsed.
 const char kTemplateSampleTest[] = "-- Template --";
 
+enum class PrefLocation {
+  kUserProfile,
+  kSigninProfile,
+  kLocalState,
+  kCrosSetting,
+};
+
+PrefLocation GetPrefLocation(const base::Value& settings) {
+  const std::string* location = settings.FindStringKey("location");
+  if (!location || *location == "user_profile")
+    return PrefLocation::kUserProfile;
+  if (*location == "local_state")
+    return PrefLocation::kLocalState;
+  if (*location == "signin_profile")
+    return PrefLocation::kSigninProfile;
+  if (*location == "cros_setting")
+    return PrefLocation::kCrosSetting;
+  NOTREACHED() << "Unknown pref location: " << *location;
+  return PrefLocation::kUserProfile;
+}
+
 std::string GetPolicyName(const std::string& policy_name_decorated) {
   const size_t offset = policy_name_decorated.find('.');
   if (offset != std::string::npos)
@@ -42,48 +64,49 @@ std::string GetPolicyName(const std::string& policy_name_decorated) {
   return policy_name_decorated;
 }
 
-// Contains the details of a single test case verifying that the controlled
-// setting indicators for a pref affected by a policy work correctly. This is
-// part of the data loaded from chrome/test/data/policy/policy_test_cases.json.
-class PrefIndicatorTest {
- public:
-  explicit PrefIndicatorTest(const base::Value& indicator_test) {
-    base::Optional<bool> readonly = indicator_test.FindBoolKey("readonly");
-    const std::string* value = indicator_test.FindStringKey("value");
-    const std::string* selector = indicator_test.FindStringKey("selector");
-    const std::string* test_url = indicator_test.FindStringKey("test_url");
-    const std::string* pref = indicator_test.FindStringKey("pref");
-    const std::string* test_setup_js =
-        indicator_test.FindStringKey("test_setup_js");
+// TODO(https://crbug.com/1192629): Revisit it after all chromeos policies
+// touching lacros will get their handlers in place.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+void CheckPrefHasValue(const PrefService::Preference* pref,
+                       const base::Value* expected_value) {
+  EXPECT_TRUE(pref->GetValue()->Equals(expected_value))
+      << *pref->GetValue() << " != " << *expected_value;
+}
 
-    readonly_ = readonly.value_or(false);
-    value_ = value ? *value : std::string();
-    test_url_ = test_url ? *test_url : std::string();
-    test_setup_js_ = test_setup_js ? *test_setup_js : std::string();
-    selector_ = selector ? *selector : std::string();
-    pref_ = pref ? *pref : std::string();
-  }
+void CheckPrefHasDefaultValue(const PrefService::Preference* pref,
+                              const base::Value* expected_value = nullptr) {
+  EXPECT_TRUE(pref->IsDefaultValue());
+  EXPECT_TRUE(pref->IsUserModifiable());
+  EXPECT_FALSE(pref->IsUserControlled());
+  EXPECT_FALSE(pref->IsManaged());
+  EXPECT_FALSE(pref->IsRecommended());
+  if (expected_value)
+    CheckPrefHasValue(pref, expected_value);
+}
 
-  ~PrefIndicatorTest() = default;
+void CheckPrefHasRecommendedValue(const PrefService::Preference* pref,
+                                  const base::Value* expected_value = nullptr) {
+  EXPECT_FALSE(pref->IsDefaultValue());
+  EXPECT_TRUE(pref->IsUserModifiable());
+  EXPECT_FALSE(pref->IsUserControlled());
+  EXPECT_FALSE(pref->IsManaged());
+  EXPECT_TRUE(pref->IsRecommended());
+  if (expected_value)
+    CheckPrefHasValue(pref, expected_value);
+}
 
-  const std::string& value() const { return value_; }
-  const std::string& test_url() const { return test_url_; }
-  const std::string& test_setup_js() const { return test_setup_js_; }
-  const std::string& selector() const { return selector_; }
-  const std::string& pref() const { return pref_; }
+void CheckPrefHasMandatoryValue(const PrefService::Preference* pref,
+                                const base::Value* expected_value = nullptr) {
+  EXPECT_FALSE(pref->IsDefaultValue());
+  EXPECT_FALSE(pref->IsUserModifiable());
+  EXPECT_FALSE(pref->IsUserControlled());
+  EXPECT_TRUE(pref->IsManaged());
+  EXPECT_FALSE(pref->IsRecommended());
+  if (expected_value)
+    CheckPrefHasValue(pref, expected_value);
+}
 
-  bool readonly() const { return readonly_; }
-
- private:
-  bool readonly_;
-  std::string value_;
-  std::string test_url_;
-  std::string test_setup_js_;
-  std::string selector_;
-  std::string pref_;
-
-  DISALLOW_COPY_AND_ASSIGN(PrefIndicatorTest);
-};
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Contains the testing details for a single pref affected by one or multiple
 // policies. This is part of the data loaded from
@@ -92,8 +115,7 @@ class PrefTestCase {
  public:
   explicit PrefTestCase(const std::string& name, const base::Value& settings) {
     const base::Value* value = settings.FindKey("value");
-    const base::Value* indicator_test = settings.FindDictKey("indicator_test");
-    is_local_state_ = settings.FindBoolKey("local_state").value_or(false);
+    location_ = GetPrefLocation(settings);
     check_for_mandatory_ =
         settings.FindBoolKey("check_for_mandatory").value_or(true);
     check_for_recommended_ =
@@ -103,10 +125,6 @@ class PrefTestCase {
     pref_ = name;
     if (value)
       value_ = value->CreateDeepCopy();
-    if (indicator_test) {
-      pref_indicator_test_ =
-          std::make_unique<PrefIndicatorTest>(*indicator_test);
-    }
   }
 
   ~PrefTestCase() = default;
@@ -116,7 +134,7 @@ class PrefTestCase {
   const std::string& pref() const { return pref_; }
   const base::Value* value() const { return value_.get(); }
 
-  bool is_local_state() const { return is_local_state_; }
+  PrefLocation location() const { return location_; }
 
   bool check_for_mandatory() const { return check_for_mandatory_; }
 
@@ -124,18 +142,13 @@ class PrefTestCase {
 
   bool expect_default() const { return expect_default_; }
 
-  const PrefIndicatorTest* indicator_test_case() const {
-    return pref_indicator_test_.get();
-  }
-
  private:
   std::string pref_;
   std::unique_ptr<base::Value> value_;
-  bool is_local_state_;
+  PrefLocation location_;
   bool check_for_mandatory_;
   bool check_for_recommended_;
   bool expect_default_;
-  std::unique_ptr<PrefIndicatorTest> pref_indicator_test_;
 };
 
 // Contains the testing details for a single pref affected by a policy. This is
@@ -233,12 +246,8 @@ class PolicyTestCase {
       }
     }
 
-    const base::Value* test_policy = test_case.FindDictKey("test_policy");
-    if (test_policy)
-      test_policy_ = test_policy->CreateDeepCopy();
-
     const base::Value* policy_pref_mapping_tests =
-        test_case.FindListKey("policy_pref_mapping_test");
+        test_case.FindListKey("policy_pref_mapping_tests");
     if (policy_pref_mapping_tests) {
       for (const auto& mapping : policy_pref_mapping_tests->GetList()) {
         if (mapping.is_dict()) {
@@ -264,7 +273,7 @@ class PolicyTestCase {
     const std::string os("win");
 #elif defined(OS_IOS)
     const std::string os("ios");
-#elif defined(OS_APPLE)
+#elif defined(OS_MAC)
     const std::string os("mac");
 #elif defined(OS_CHROMEOS)
     const std::string os("chromeos");
@@ -285,8 +294,6 @@ class PolicyTestCase {
     return IsOsSupported();
   }
 
-  const base::Value* test_policy() const { return test_policy_.get(); }
-
   const std::vector<std::unique_ptr<PolicyPrefMappingTest>>&
   policy_pref_mapping_test() const {
     return policy_pref_mapping_test_;
@@ -297,7 +304,6 @@ class PolicyTestCase {
   bool is_official_only_;
   bool can_be_recommended_;
   std::vector<std::string> supported_os_;
-  std::unique_ptr<base::Value> test_policy_;
   std::vector<std::unique_ptr<PolicyPrefMappingTest>> policy_pref_mapping_test_;
 };
 
@@ -350,6 +356,9 @@ class PolicyTestCases {
   PolicyTestCaseMap policy_test_cases_;
 };
 
+// TODO(https://crbug.com/1192629): Revisit it after all chromeos policies
+// touching lacros will get their handlers in place.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
 void SetProviderPolicy(MockConfigurationPolicyProvider* provider,
                        const base::Value& policies,
                        PolicyLevel level) {
@@ -369,6 +378,7 @@ void SetProviderPolicy(MockConfigurationPolicyProvider* provider,
   }
   provider->UpdateChromePolicy(policy_map);
 }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace
 
@@ -398,7 +408,7 @@ void VerifyAllPoliciesHaveATestCase(const base::FilePath& test_case_path) {
 
     // This can only be a warning as many policies are not really testable
     // this way and only present as a single line in the file.
-    // Although they could at least contain the "os" and "test_policy" fields.
+    // Although they could at least contain the "os" fields.
     // See http://crbug.com/791125.
     LOG_IF(WARNING, !has_test_case_for_this_os)
         << "Policy " << policy->first
@@ -412,8 +422,8 @@ void VerifyAllPoliciesHaveATestCase(const base::FilePath& test_case_path) {
 void VerifyPolicyToPrefMappings(const base::FilePath& test_case_path,
                                 PrefService* local_state,
                                 PrefService* user_prefs,
-                                MockConfigurationPolicyProvider* provider,
-                                const std::string& skipped_pref_prefix) {
+                                PrefService* signin_profile_prefs,
+                                MockConfigurationPolicyProvider* provider) {
   Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
   ASSERT_TRUE(chrome_schema.valid());
 
@@ -443,63 +453,89 @@ void VerifyPolicyToPrefMappings(const base::FilePath& test_case_path,
       if (!test_case->IsSupported() || pref_mappings.empty())
         continue;
 
-      LOG(INFO) << "Testing policy: " << policy.first;
-
+// TODO(https://crbug.com/1192629): Revisit it after all chromeos policies
+// touching lacros will get their handlers in place.
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
       for (const auto& pref_mapping : pref_mappings) {
-        if (!preprocessor_macros_checker.SupportsTest(pref_mapping.get())) {
-          LOG(INFO) << " Skipping policy_pref_mapping_test because of "
-                    << "preprocessor macros";
-          continue;
-        }
-
         for (const auto& pref_case : pref_mapping->prefs()) {
-          // Skip Chrome OS preferences that use a different backend and cannot
-          // be retrieved through the prefs mechanism.
-          if (!skipped_pref_prefix.empty() &&
-              base::StartsWith(pref_case->pref(), skipped_pref_prefix,
-                               base::CompareCase::SENSITIVE))
+          const bool check_recommended = test_case->can_be_recommended() &&
+                                         pref_case->check_for_recommended();
+          const bool check_mandatory = pref_case->check_for_mandatory();
+
+          EXPECT_TRUE(check_recommended || check_mandatory)
+              << "pref mapping test for " << policy.first << "(pref "
+              << pref_case->pref()
+              << ") has to either be for recommended/mandatory or both";
+
+          PrefService* prefs = nullptr;
+          switch (pref_case->location()) {
+            case PrefLocation::kUserProfile:
+              prefs = user_prefs;
+              break;
+            case PrefLocation::kSigninProfile:
+              prefs = signin_profile_prefs;
+              break;
+            case PrefLocation::kLocalState:
+              prefs = local_state;
+              break;
+            case PrefLocation::kCrosSetting:
+              // TODO(https://crbug.com/809991) Verify CrosSettings mappings
+              continue;
+            default:
+              NOTREACHED() << "Unhandled pref location: "
+                           << static_cast<int>(pref_case->location());
+          }
+
+          // Skip preference mapping if required PrefService was not provided.
+          if (!prefs)
             continue;
 
-          // Skip preferences that should not be checked when the policy is set
-          // to a mandatory value.
-          if (!pref_case->check_for_mandatory())
-            continue;
+          LOG(INFO) << "Testing policy " << policy.first << " (pref "
+                    << pref_case->pref() << " with "
+                    << ((check_recommended) ? "recommended" : "")
+                    << ((check_recommended && check_mandatory) ? " & " : "")
+                    << ((check_mandatory) ? "mandatory" : "")
+                    << " policy values)";
 
-          PrefService* prefs =
-              pref_case->is_local_state() ? local_state : user_prefs;
+          if (!preprocessor_macros_checker.SupportsTest(pref_mapping.get())) {
+            LOG(INFO) << " Skipping policy_pref_mapping_test because of "
+                      << "preprocessor macros";
+            continue;
+          }
           // The preference must have been registered.
           const PrefService::Preference* pref =
-              prefs->FindPreference(pref_case->pref().c_str());
+              prefs->FindPreference(pref_case->pref());
           ASSERT_TRUE(pref)
-              << "Pref " << pref_case->pref().c_str() << " not registered";
+              << "Pref " << pref_case->pref() << " not registered";
 
-          // Verify that setting the policy overrides the pref.
           provider->UpdateChromePolicy(PolicyMap());
-          prefs->ClearPref(pref_case->pref().c_str());
-          EXPECT_TRUE(pref->IsDefaultValue());
-          EXPECT_TRUE(pref->IsUserModifiable());
-          EXPECT_FALSE(pref->IsUserControlled());
-          EXPECT_FALSE(pref->IsManaged());
+          prefs->ClearPref(pref_case->pref());
+          CheckPrefHasDefaultValue(pref);
 
-          ASSERT_NO_FATAL_FAILURE(SetProviderPolicy(
-              provider, pref_mapping->policies(), POLICY_LEVEL_MANDATORY));
-          if (pref_case->expect_default()) {
-            EXPECT_TRUE(pref->IsDefaultValue());
-            EXPECT_TRUE(pref->IsUserModifiable());
-            EXPECT_FALSE(pref->IsUserControlled());
-            EXPECT_FALSE(pref->IsManaged());
-          } else {
-            EXPECT_FALSE(pref->IsDefaultValue());
-            EXPECT_FALSE(pref->IsUserModifiable());
-            EXPECT_FALSE(pref->IsUserControlled());
-            EXPECT_TRUE(pref->IsManaged());
+          const base::Value* expected_value = pref_case->value();
+
+          if (check_recommended) {
+            ASSERT_NO_FATAL_FAILURE(SetProviderPolicy(
+                provider, pref_mapping->policies(), POLICY_LEVEL_RECOMMENDED));
+            if (pref_case->expect_default()) {
+              CheckPrefHasDefaultValue(pref, expected_value);
+            } else {
+              CheckPrefHasRecommendedValue(pref, expected_value);
+            }
           }
-          if (pref_case->value()) {
-            EXPECT_TRUE(pref->GetValue()->Equals(pref_case->value()))
-                << *pref->GetValue() << " != " << *pref_case->value();
+
+          if (check_mandatory) {
+            ASSERT_NO_FATAL_FAILURE(SetProviderPolicy(
+                provider, pref_mapping->policies(), POLICY_LEVEL_MANDATORY));
+            if (pref_case->expect_default()) {
+              CheckPrefHasDefaultValue(pref, expected_value);
+            } else {
+              CheckPrefHasMandatoryValue(pref, expected_value);
+            }
           }
         }
       }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
     }
   }
 }

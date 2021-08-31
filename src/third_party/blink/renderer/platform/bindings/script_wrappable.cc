@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
 
@@ -17,17 +18,18 @@ struct SameSizeAsScriptWrappable {
 
 ASSERT_SIZE(ScriptWrappable, SameSizeAsScriptWrappable);
 
-v8::Local<v8::Value> ScriptWrappable::Wrap(
-    v8::Isolate* isolate,
-    v8::Local<v8::Object> creation_context) {
-  const WrapperTypeInfo* wrapper_type_info = this->GetWrapperTypeInfo();
+v8::MaybeLocal<v8::Value> ScriptWrappable::Wrap(ScriptState* script_state) {
+  const WrapperTypeInfo* wrapper_type_info = GetWrapperTypeInfo();
 
-  DCHECK(!DOMDataStore::ContainsWrapper(this, isolate));
+  DCHECK(!DOMDataStore::ContainsWrapper(this, script_state->GetIsolate()));
 
-  v8::Local<v8::Object> wrapper =
-      V8DOMWrapper::CreateWrapper(isolate, creation_context, wrapper_type_info);
-  DCHECK(!wrapper.IsEmpty());
-  return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
+  v8::Local<v8::Object> wrapper;
+  if (!V8DOMWrapper::CreateWrapper(script_state, wrapper_type_info)
+           .ToLocal(&wrapper)) {
+    return v8::MaybeLocal<v8::Value>();
+  }
+  return AssociateWithWrapper(script_state->GetIsolate(), wrapper_type_info,
+                              wrapper);
 }
 
 v8::Local<v8::Object> ScriptWrappable::AssociateWithWrapper(

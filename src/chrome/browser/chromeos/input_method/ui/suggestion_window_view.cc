@@ -19,6 +19,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
@@ -36,7 +37,6 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/layout_provider.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_properties.h"
@@ -99,7 +99,7 @@ void SuggestionWindowView::Show(const SuggestionDetails& details) {
 
 void SuggestionWindowView::ShowMultipleCandidates(
     const chromeos::AssistiveWindowProperties& properties) {
-  const std::vector<base::string16>& candidates = properties.candidates;
+  const std::vector<std::u16string>& candidates = properties.candidates;
   ResizeCandidateArea(candidates.size());
   for (size_t i = 0; i < candidates.size(); ++i) {
     auto* const candidate =

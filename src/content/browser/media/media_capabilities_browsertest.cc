@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/common/content_switches.h"
@@ -23,8 +22,10 @@ namespace {
 
 const char kDecodeTestFile[] = "decode_capabilities_test.html";
 const char kSupported[] = "SUPPORTED";
+const char16_t kSupported16[] = u"SUPPORTED";
 const char kUnsupported[] = "UNSUPPORTED";
-const char kError[] = "ERROR";
+const char16_t kUnsupported16[] = u"UNSUPPORTED";
+const char16_t kError[] = u"ERROR";
 const char kFileString[] = "file";
 const char kMediaSourceString[] = "media-source";
 
@@ -140,12 +141,11 @@ class MediaCapabilitiesTest : public ContentBrowserTest {
     command.append(content_type);
     command.append(");");
 
-    EXPECT_TRUE(ExecuteScript(shell(), command));
+    EXPECT_TRUE(ExecJs(shell(), command));
 
-    TitleWatcher title_watcher(shell()->web_contents(),
-                               base::ASCIIToUTF16(kSupported));
-    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kUnsupported));
-    title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16(kError));
+    TitleWatcher title_watcher(shell()->web_contents(), kSupported16);
+    title_watcher.AlsoWaitForTitle(kUnsupported16);
+    title_watcher.AlsoWaitForTitle(kError);
     return base::UTF16ToASCII(title_watcher.WaitAndGetTitle());
   }
 

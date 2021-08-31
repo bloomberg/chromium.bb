@@ -60,8 +60,7 @@ class BackgroundXhrTest : public ExtensionBrowserTest {
     GURL test_url = net::AppendQueryParameter(extension->GetResourceURL(path),
                                               "url", url.spec());
     ui_test_utils::NavigateToURL(browser(), test_url);
-    content::BrowserContext::GetDefaultStoragePartition(profile())
-        ->FlushNetworkInterfaceForTesting();
+    profile()->GetDefaultStoragePartition()->FlushNetworkInterfaceForTesting();
     constexpr char kSendXHRScript[] = R"(
       var xhr = new XMLHttpRequest();
       xhr.open('GET', '%s');
@@ -132,7 +131,7 @@ class BackgroundXhrWebstoreTest : public ExtensionApiTestWithManagementPolicy {
         content::JsReplace("executeFetch($1);", url));
     std::string json;
     EXPECT_TRUE(message_queue.WaitForMessage(&json));
-    base::Optional<base::Value> value =
+    absl::optional<base::Value> value =
         base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
     std::string result;
     EXPECT_TRUE(value->GetAsString(&result));

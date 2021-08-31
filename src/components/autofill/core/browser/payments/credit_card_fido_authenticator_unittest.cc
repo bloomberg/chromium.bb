@@ -20,10 +20,8 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -73,13 +71,12 @@
 
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 
-using base::ASCIIToUTF16;
-
 namespace autofill {
 namespace {
 
 const char kTestGUID[] = "00000000-0000-0000-0000-000000000001";
 const char kTestNumber[] = "4234567890123456";  // Visa
+const char16_t kTestNumber16[] = u"4234567890123456";
 const char kTestRelyingPartyId[] = "google.com";
 // Base64 encoding of "This is a test challenge".
 constexpr char kTestChallenge[] = "VGhpcyBpcyBhIHRlc3QgY2hhbGxlbmdl";
@@ -114,13 +111,15 @@ class CreditCardFIDOAuthenticatorTest : public testing::Test {
     personal_data_manager_.Init(/*profile_database=*/database_,
                                 /*account_database=*/nullptr,
                                 /*pref_service=*/autofill_client_.GetPrefs(),
+                                /*local_state=*/autofill_client_.GetPrefs(),
                                 /*identity_manager=*/nullptr,
                                 /*client_profile_validator=*/nullptr,
                                 /*history_service=*/nullptr,
+                                /*strike_database=*/nullptr,
                                 /*is_off_the_record=*/false);
     personal_data_manager_.SetPrefService(autofill_client_.GetPrefs());
 
-    requester_.reset(new TestAuthenticationRequester());
+    requester_ = std::make_unique<TestAuthenticationRequester>();
     autofill_driver_ =
         std::make_unique<testing::NiceMock<TestAutofillDriver>>();
     autofill_driver_->SetAuthenticator(new TestInternalAuthenticator());
@@ -457,7 +456,7 @@ TEST_F(CreditCardFIDOAuthenticatorTest, AuthenticateCard_Success) {
   GetRealPan(AutofillClient::PaymentsRpcResult::SUCCESS, kTestNumber);
 
   EXPECT_TRUE(requester_->did_succeed());
-  EXPECT_EQ(ASCIIToUTF16(kTestNumber), requester_->number());
+  EXPECT_EQ(kTestNumber16, requester_->number());
 }
 
 TEST_F(CreditCardFIDOAuthenticatorTest, OptIn_PaymentsResponseError) {

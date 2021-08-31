@@ -45,8 +45,7 @@ class AV1SBMultipassTest
   virtual ~AV1SBMultipassTest() { delete decoder_; }
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(::libaom_test::kTwoPassGood);
+    InitializeConfig(::libaom_test::kTwoPassGood);
 
     cfg_.g_lag_in_frames = 5;
     cfg_.rc_end_usage = AOM_VBR;

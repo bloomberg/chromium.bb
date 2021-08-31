@@ -69,9 +69,9 @@ class FrameSettingImageProvider : public cc::ImageProvider {
     DCHECK(!draw_image.paint_image().IsPaintWorklet());
     auto sk_image =
         draw_image.paint_image().GetSkImageForFrame(frame_index_, client_id_);
-    return ScopedResult(
-        cc::DecodedDrawImage(sk_image, nullptr, SkSize::MakeEmpty(),
-                             SkSize::Make(1, 1), draw_image.filter_quality()));
+    return ScopedResult(cc::DecodedDrawImage(
+        sk_image, nullptr, SkSize::MakeEmpty(), SkSize::Make(1, 1),
+        draw_image.filter_quality(), true));
   }
 
  private:
@@ -92,7 +92,7 @@ void GenerateBitmapForPaintImage(cc::PaintImage paint_image,
   bitmap->eraseColor(SK_AlphaTRANSPARENT);
   FrameSettingImageProvider image_provider(frame_index, client_id);
   cc::SkiaPaintCanvas canvas(*bitmap, &image_provider);
-  canvas.drawImage(paint_image, 0u, 0u, nullptr);
+  canvas.drawImage(paint_image, 0u, 0u);
 }
 
 }  // namespace
@@ -187,7 +187,7 @@ class BitmapImageTest : public testing::Test {
     bitmap.allocPixels(info, image->Size().Width() * 4);
     bitmap.eraseColor(SK_AlphaTRANSPARENT);
     cc::SkiaPaintCanvas canvas(bitmap);
-    canvas.drawImage(paint_image, 0u, 0u, nullptr);
+    canvas.drawImage(paint_image, 0u, 0u);
     return bitmap;
   }
 
@@ -272,12 +272,6 @@ TEST_F(BitmapImageTest, isAllDataReceived) {
   EXPECT_FALSE(image->IsAllDataReceived());
 
   image->SetData(image_data, false);
-  EXPECT_FALSE(image->IsAllDataReceived());
-
-  image->SetData(image_data, true);
-  EXPECT_TRUE(image->IsAllDataReceived());
-
-  image->SetData(SharedBuffer::Create("data", sizeof("data")), false);
   EXPECT_FALSE(image->IsAllDataReceived());
 
   image->SetData(image_data, true);
@@ -832,33 +826,6 @@ TEST_F(BitmapHistogramTest, DecodedImageType) {
                            "Blink.DecodedImageType",
                            BitmapImageMetrics::DecodedImageType::kAVIF);
 #endif  // BUILDFLAG(ENABLE_AV1_DECODER)
-}
-
-TEST_F(BitmapHistogramTest, DecodedImageDensitySizeCorrectionDetected) {
-  ExpectImageRecordsSample("exif-resolution-none.jpg",
-                           "Blink.DecodedImage.DensitySizeCorrectionDetected",
-                           false);
-  ExpectImageRecordsSample("exif-resolution-invalid-cm.jpg",
-                           "Blink.DecodedImage.DensitySizeCorrectionDetected",
-                           false);
-  ExpectImageRecordsSample("exif-resolution-invalid-no-match.jpg",
-                           "Blink.DecodedImage.DensitySizeCorrectionDetected",
-                           false);
-  ExpectImageRecordsSample("exif-resolution-invalid-partial.jpg",
-                           "Blink.DecodedImage.DensitySizeCorrectionDetected",
-                           false);
-  ExpectImageRecordsSample("exif-resolution-no-change.jpg",
-                           "Blink.DecodedImage.DensitySizeCorrectionDetected",
-                           false);
-  ExpectImageRecordsSample("exif-resolution-valid-hires.jpg",
-                           "Blink.DecodedImage.DensitySizeCorrectionDetected",
-                           true);
-  ExpectImageRecordsSample("exif-resolution-valid-lores.jpg",
-                           "Blink.DecodedImage.DensitySizeCorrectionDetected",
-                           true);
-  ExpectImageRecordsSample("exif-resolution-valid-non-uniform.jpg",
-                           "Blink.DecodedImage.DensitySizeCorrectionDetected",
-                           true);
 }
 
 TEST_F(BitmapHistogramTest, DecodedImageDensityKiBWeighted_JpegDensity) {

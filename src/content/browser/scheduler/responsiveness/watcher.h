@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/power_monitor/power_observer.h"
 #include "content/browser/scheduler/responsiveness/metric_source.h"
 
 namespace content {
@@ -16,12 +15,18 @@ namespace responsiveness {
 class Calculator;
 
 class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher>,
-                               public MetricSource::Delegate,
-                               public base::PowerObserver {
+                               public MetricSource::Delegate {
  public:
   Watcher();
   void SetUp();
   void Destroy();
+
+  // Must be invoked once-and-only-once, after SetUp(), the first time
+  // MainMessageLoopRun() reaches idle (i.e. done running all tasks queued
+  // during startup). This will be used as a signal for the true end of
+  // "startup" and the beginning of recording
+  // Browser.Responsiveness.JankyIntervalsPerThirtySeconds3.
+  void OnFirstIdle();
 
  protected:
   friend class base::RefCounted<Watcher>;
@@ -47,13 +52,6 @@ class CONTENT_EXPORT Watcher : public base::RefCounted<Watcher>,
 
   void WillRunEventOnUIThread(const void* opaque_identifier) override;
   void DidRunEventOnUIThread(const void* opaque_identifier) override;
-
-  // base::PowerObserver interface implementation. The PowerObserver
-  // notifications are asynchronously callbacks on their registration sequence
-  // and may be delayed if there is a long queue of pending tasks to be
-  // executed.
-  void OnSuspend() override;
-  void OnResume() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ResponsivenessWatcherTest, TaskForwarding);

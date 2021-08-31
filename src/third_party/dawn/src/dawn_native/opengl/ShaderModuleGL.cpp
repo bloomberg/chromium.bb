@@ -16,10 +16,19 @@
 
 #include "common/Assert.h"
 #include "common/Platform.h"
+#include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/SpirvUtils.h"
+#include "dawn_native/TintUtils.h"
 #include "dawn_native/opengl/DeviceGL.h"
+#include "dawn_native/opengl/PipelineLayoutGL.h"
 
 #include <spirv_glsl.hpp>
+
+// Tint include must be after spirv_glsl.hpp, because spirv-cross has its own
+// version of spirv_headers. We also need to undef SPV_REVISION because SPIRV-Cross
+// is at 3 while spirv-headers is at 4.
+#undef SPV_REVISION
+#include <tint/tint.h>
 
 #include <sstream>
 
@@ -37,35 +46,73 @@ namespace dawn_native { namespace opengl {
     }
 
     bool operator<(const CombinedSampler& a, const CombinedSampler& b) {
-        return std::tie(a.samplerLocation, a.textureLocation) <
-               std::tie(b.samplerLocation, b.textureLocation);
+        return std::tie(a.useDummySampler, a.samplerLocation, a.textureLocation) <
+               std::tie(b.useDummySampler, a.samplerLocation, b.textureLocation);
     }
 
     std::string CombinedSampler::GetName() const {
         std::ostringstream o;
         o << "dawn_combined";
-        o << "_" << static_cast<uint32_t>(samplerLocation.group) << "_"
-          << static_cast<uint32_t>(samplerLocation.binding);
+        if (useDummySampler) {
+            o << "_dummy_sampler";
+        } else {
+            o << "_" << static_cast<uint32_t>(samplerLocation.group) << "_"
+              << static_cast<uint32_t>(samplerLocation.binding);
+        }
         o << "_with_" << static_cast<uint32_t>(textureLocation.group) << "_"
           << static_cast<uint32_t>(textureLocation.binding);
         return o.str();
     }
 
     // static
-    ResultOrError<ShaderModule*> ShaderModule::Create(Device* device,
-                                                      const ShaderModuleDescriptor* descriptor) {
+    ResultOrError<Ref<ShaderModule>> ShaderModule::Create(Device* device,
+                                                          const ShaderModuleDescriptor* descriptor,
+                                                          ShaderModuleParseResult* parseResult) {
         Ref<ShaderModule> module = AcquireRef(new ShaderModule(device, descriptor));
-        DAWN_TRY(module->InitializeBase());
-        return module.Detach();
+        DAWN_TRY(module->Initialize(parseResult));
+        return module;
     }
 
     ShaderModule::ShaderModule(Device* device, const ShaderModuleDescriptor* descriptor)
         : ShaderModuleBase(device, descriptor) {
     }
 
+    MaybeError ShaderModule::Initialize(ShaderModuleParseResult* parseResult) {
+        ScopedTintICEHandler scopedICEHandler(GetDevice());
+
+        DAWN_TRY(InitializeBase(parseResult));
+        // Tint currently does not support emitting GLSL, so when provided a Tint program need to
+        // generate SPIRV and SPIRV-Cross reflection data to be used in this backend.
+        if (GetDevice()->IsToggleEnabled(Toggle::UseTintGenerator)) {
+            tint::transform::Manager transformManager;
+            transformManager.append(std::make_unique<tint::transform::Spirv>());
+
+            tint::transform::DataMap transformInputs;
+
+            tint::Program program;
+            DAWN_TRY_ASSIGN(program,
+                            RunTransforms(&transformManager, GetTintProgram(), transformInputs,
+                                          nullptr, GetCompilationMessages()));
+
+            tint::writer::spirv::Generator generator(&program);
+            if (!generator.Generate()) {
+                std::ostringstream errorStream;
+                errorStream << "Generator: " << generator.error() << std::endl;
+                return DAWN_VALIDATION_ERROR(errorStream.str().c_str());
+            }
+
+            mGLSpirv = generator.result();
+            DAWN_TRY_ASSIGN(mGLEntryPoints, ReflectShaderUsingSPIRVCross(GetDevice(), mGLSpirv));
+        }
+
+        return {};
+    }
+
     std::string ShaderModule::TranslateToGLSL(const char* entryPointName,
                                               SingleShaderStage stage,
-                                              CombinedSamplerInfo* combinedSamplers) const {
+                                              CombinedSamplerInfo* combinedSamplers,
+                                              const PipelineLayout* layout,
+                                              bool* needsDummySampler) const {
         // If these options are changed, the values in DawnSPIRVCrossGLSLFastFuzzer.cpp need to
         // be updated.
         spirv_cross::CompilerGLSL::Options options;
@@ -77,16 +124,25 @@ namespace dawn_native { namespace opengl {
         options.vertex.flip_vert_y = true;
         options.vertex.fixup_clipspace = true;
 
-        // TODO(cwallez@chromium.org): discover the backing context version and use that.
-#if defined(DAWN_PLATFORM_APPLE)
-        options.version = 410;
-#else
-        options.version = 440;
-#endif
+        const OpenGLVersion& version = ToBackend(GetDevice())->gl.GetVersion();
+        if (version.IsDesktop()) {
+            // The computation of GLSL version below only works for 3.3 and above.
+            ASSERT(version.IsAtLeast(3, 3));
+        }
+        options.es = version.IsES();
+        options.version = version.GetMajor() * 100 + version.GetMinor() * 10;
 
-        spirv_cross::CompilerGLSL compiler(GetSpirv());
+        spirv_cross::CompilerGLSL compiler(
+            GetDevice()->IsToggleEnabled(Toggle::UseTintGenerator) ? mGLSpirv : GetSpirv());
         compiler.set_common_options(options);
         compiler.set_entry_point(entryPointName, ShaderStageToExecutionModel(stage));
+
+        // Analyzes all OpImageFetch opcodes and checks if there are instances where
+        // said instruction is used without a combined image sampler.
+        // GLSL does not support texelFetch without a sampler.
+        // To workaround this, we must inject a dummy sampler which can be used to form a sampler2D
+        // at the call-site of texelFetch as necessary.
+        spirv_cross::VariableID dummySamplerId = compiler.build_dummy_sampler_for_combined_images();
 
         // Extract bindings names so that it can be used to get its location in program.
         // Now translate the separate sampler / textures into combined ones and store their info. We
@@ -97,10 +153,17 @@ namespace dawn_native { namespace opengl {
             combinedSamplers->emplace_back();
 
             CombinedSampler* info = &combinedSamplers->back();
-            info->samplerLocation.group = BindGroupIndex(
-                compiler.get_decoration(combined.sampler_id, spv::DecorationDescriptorSet));
-            info->samplerLocation.binding =
-                BindingNumber(compiler.get_decoration(combined.sampler_id, spv::DecorationBinding));
+            if (combined.sampler_id == dummySamplerId) {
+                *needsDummySampler = true;
+                info->useDummySampler = true;
+                info->samplerLocation = {};
+            } else {
+                info->useDummySampler = false;
+                info->samplerLocation.group = BindGroupIndex(
+                    compiler.get_decoration(combined.sampler_id, spv::DecorationDescriptorSet));
+                info->samplerLocation.binding = BindingNumber(
+                    compiler.get_decoration(combined.sampler_id, spv::DecorationBinding));
+            }
             info->textureLocation.group = BindGroupIndex(
                 compiler.get_decoration(combined.image_id, spv::DecorationDescriptorSet));
             info->textureLocation.binding =
@@ -108,33 +171,49 @@ namespace dawn_native { namespace opengl {
             compiler.set_name(combined.combined_id, info->GetName());
         }
 
-        const EntryPointMetadata::BindingInfo& bindingInfo = GetEntryPoint(entryPointName).bindings;
+        const EntryPointMetadata::BindingInfoArray& bindingInfo =
+            GetDevice()->IsToggleEnabled(Toggle::UseTintGenerator)
+                ? (*mGLEntryPoints.at(entryPointName)).bindings
+                : GetEntryPoint(entryPointName).bindings;
 
         // Change binding names to be "dawn_binding_<group>_<binding>".
         // Also unsets the SPIRV "Binding" decoration as it outputs "layout(binding=)" which
         // isn't supported on OSX's OpenGL.
-        for (BindGroupIndex group(0); group < kMaxBindGroupsTyped; ++group) {
+        const PipelineLayout::BindingIndexInfo& indices = layout->GetBindingIndexInfo();
+
+        // Modify the decoration of variables so that SPIRV-Cross outputs only
+        //  layout(binding=<index>) for interface variables.
+        //
+        // When the use_tint_generator toggle is on, Tint is used for the reflection of bindings
+        // for the implicit pipeline layout and pipeline/layout validation, but bindingInfo is set
+        // to mGLEntryPoints which is the SPIRV-Cross reflection. Tint reflects bindings used more
+        // precisely than SPIRV-Cross so some bindings in bindingInfo might not exist in the layout
+        // and querying the layout for them would cause an ASSERT. That's why we defensively check
+        // that bindings are in the layout before modifying them. This slight hack is ok because in
+        // the long term we will use Tint to produce GLSL.
+        for (BindGroupIndex group : IterateBitSet(layout->GetBindGroupLayoutsMask())) {
             for (const auto& it : bindingInfo[group]) {
+                const BindGroupLayoutBase* bgl = layout->GetBindGroupLayout(group);
                 BindingNumber bindingNumber = it.first;
                 const auto& info = it.second;
 
-                uint32_t resourceId;
-                switch (info.type) {
-                    // When the resource is a uniform or shader storage block, we should change the
-                    // block name instead of the instance name.
-                    case wgpu::BindingType::ReadonlyStorageBuffer:
-                    case wgpu::BindingType::StorageBuffer:
-                    case wgpu::BindingType::UniformBuffer:
-                        resourceId = info.base_type_id;
-                        break;
-                    default:
-                        resourceId = info.id;
-                        break;
+                if (!bgl->HasBinding(bindingNumber)) {
+                    continue;
                 }
 
-                compiler.set_name(resourceId, GetBindingName(group, bindingNumber));
-                compiler.unset_decoration(info.id, spv::DecorationBinding);
+                // Remove the name of the base type. This works around an issue where if the SPIRV
+                // has two uniform/storage interface variables that point to the same base type,
+                // then SPIRV-Cross would emit two bindings with type names that conflict:
+                //
+                //   layout(binding=0) uniform Buf {...} binding0;
+                //   layout(binding=1) uniform Buf {...} binding1;
+                compiler.set_name(info.base_type_id, "");
+
+                BindingIndex bindingIndex = bgl->GetBindingIndex(bindingNumber);
+
                 compiler.unset_decoration(info.id, spv::DecorationDescriptorSet);
+                compiler.set_decoration(info.id, spv::DecorationBinding,
+                                        indices[group][bindingIndex]);
             }
         }
 

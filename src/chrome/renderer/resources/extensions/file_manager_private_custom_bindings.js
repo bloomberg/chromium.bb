@@ -74,6 +74,12 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     });
   });
 
+  apiFunctions.setHandleRequest('getVolumeRoot', function(options, callback) {
+    fileManagerPrivateInternal.getVolumeRoot(options, function(entry) {
+      callback(entry ? GetExternalFileEntry(entry) : undefined);
+    });
+  });
+
   apiFunctions.setHandleRequest('getEntryProperties',
                                 function(entries, names, callback) {
     var urls = entries.map(function(entry) {
@@ -225,7 +231,7 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
   });
 
   apiFunctions.setHandleRequest('zipSelection', function(
-        parentEntry, entries, destName, callback) {
+        entries, parentEntry, destName, callback) {
     var parentUrl = getEntryURL(parentEntry);
     var urls = entries.map(function(entry) {
       return getEntryURL(entry);
@@ -347,11 +353,12 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
       });
 
   apiFunctions.setHandleRequest(
-      'invokeSharesheet', function(entries, callback) {
+      'invokeSharesheet', function(entries, launchSource, callback) {
         var urls = entries.map(function(entry) {
           return getEntryURL(entry);
         });
-        fileManagerPrivateInternal.invokeSharesheet(urls, callback);
+        fileManagerPrivateInternal.invokeSharesheet(
+            urls, launchSource, callback);
       });
 
   apiFunctions.setHandleRequest(

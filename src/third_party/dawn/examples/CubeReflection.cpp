@@ -94,63 +94,68 @@ struct CameraData {
 void init() {
     device = CreateCppDawnDevice();
 
-    queue = device.GetDefaultQueue();
+    queue = device.GetQueue();
     swapchain = GetSwapChain(device);
     swapchain.Configure(GetPreferredSwapChainTextureFormat(), wgpu::TextureUsage::RenderAttachment,
                         640, 480);
 
     initBuffers();
 
-    wgpu::ShaderModule vsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        layout(set = 0, binding = 0) uniform cameraData {
-            mat4 view;
-            mat4 proj;
-        } camera;
-        layout(set = 0, binding = 1) uniform modelData {
-            mat4 modelMatrix;
+    wgpu::ShaderModule vsModule = utils::CreateShaderModule(device, R"(
+        [[block]] struct Camera {
+            view : mat4x4<f32>;
+            proj : mat4x4<f32>;
         };
-        layout(location = 0) in vec3 pos;
-        layout(location = 1) in vec3 col;
-        layout(location = 2) out vec3 f_col;
-        void main() {
-            f_col = col;
-            gl_Position = camera.proj * camera.view * modelMatrix * vec4(pos, 1.0);
+        [[group(0), binding(0)]] var<uniform> camera : Camera;
+
+        [[block]] struct Model {
+            matrix : mat4x4<f32>;
+        };
+        [[group(0), binding(1)]] var<uniform> model : Model;
+
+        struct VertexOut {
+            [[location(2)]] f_col : vec3<f32>;
+            [[builtin(position)]] Position : vec4<f32>;
+        };
+
+        [[stage(vertex)]] fn main(
+            [[location(0)]] pos : vec3<f32>,
+            [[location(1)]] col : vec3<f32>) -> VertexOut {
+            var output : VertexOut;
+            output.f_col = col;
+            output.Position = camera.proj * camera.view * model.matrix * vec4<f32>(pos, 1.0);
+            return output;
         })");
 
-    wgpu::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout(location = 2) in vec3 f_col;
-        layout(location = 0) out vec4 fragColor;
-        void main() {
-            fragColor = vec4(f_col, 1.0);
+    wgpu::ShaderModule fsModule = utils::CreateShaderModule(device, R"(
+        [[stage(fragment)]] fn main(
+            [[location(2)]] f_col : vec3<f32>) -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(f_col, 1.0);
         })");
 
-    wgpu::ShaderModule fsReflectionModule =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout(location = 2) in vec3 f_col;
-        layout(location = 0) out vec4 fragColor;
-        void main() {
-            fragColor = vec4(mix(f_col, vec3(0.5, 0.5, 0.5), 0.5), 1.0);
+    wgpu::ShaderModule fsReflectionModule = utils::CreateShaderModule(device, R"(
+        [[stage(fragment)]] fn main(
+            [[location(2)]] f_col : vec3<f32>) -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(mix(f_col, vec3<f32>(0.5, 0.5, 0.5), vec3<f32>(0.5, 0.5, 0.5)), 1.0);
         })");
 
-    utils::ComboVertexStateDescriptor vertexState;
-    vertexState.cVertexBuffers[0].attributeCount = 2;
-    vertexState.cAttributes[0].format = wgpu::VertexFormat::Float3;
-    vertexState.cAttributes[1].shaderLocation = 1;
-    vertexState.cAttributes[1].offset = 3 * sizeof(float);
-    vertexState.cAttributes[1].format = wgpu::VertexFormat::Float3;
+    wgpu::VertexAttribute attributes[2];
+    attributes[0].shaderLocation = 0;
+    attributes[0].offset = 0;
+    attributes[0].format = wgpu::VertexFormat::Float32x3;
+    attributes[1].shaderLocation = 1;
+    attributes[1].offset = 3 * sizeof(float);
+    attributes[1].format = wgpu::VertexFormat::Float32x3;
 
-    vertexState.vertexBufferCount = 1;
-    vertexState.cVertexBuffers[0].arrayStride = 6 * sizeof(float);
+    wgpu::VertexBufferLayout vertexBufferLayout;
+    vertexBufferLayout.attributeCount = 2;
+    vertexBufferLayout.attributes = attributes;
+    vertexBufferLayout.arrayStride = 6 * sizeof(float);
 
     auto bgl = utils::MakeBindGroupLayout(
         device, {
-                    {0, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
-                    {1, wgpu::ShaderStage::Vertex, wgpu::BindingType::UniformBuffer},
+                    {0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
+                    {1, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
                 });
 
     wgpu::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
@@ -178,49 +183,64 @@ void init() {
 
     depthStencilView = CreateDefaultDepthStencilView(device);
 
-    utils::ComboRenderPipelineDescriptor descriptor(device);
-    descriptor.layout = pl;
-    descriptor.vertexStage.module = vsModule;
-    descriptor.cFragmentStage.module = fsModule;
-    descriptor.vertexState = &vertexState;
-    descriptor.depthStencilState = &descriptor.cDepthStencilState;
-    descriptor.cDepthStencilState.format = wgpu::TextureFormat::Depth24PlusStencil8;
-    descriptor.cColorStates[0].format = GetPreferredSwapChainTextureFormat();
-    descriptor.cDepthStencilState.depthWriteEnabled = true;
-    descriptor.cDepthStencilState.depthCompare = wgpu::CompareFunction::Less;
+    {
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.vertex.bufferCount = 1;
+        descriptor.vertex.buffers = &vertexBufferLayout;
 
-    pipeline = device.CreateRenderPipeline(&descriptor);
+        descriptor.layout = pl;
+        descriptor.cFragment.module = fsModule;
+        descriptor.cTargets[0].format = GetPreferredSwapChainTextureFormat();
 
-    utils::ComboRenderPipelineDescriptor pDescriptor(device);
-    pDescriptor.layout = pl;
-    pDescriptor.vertexStage.module = vsModule;
-    pDescriptor.cFragmentStage.module = fsModule;
-    pDescriptor.vertexState = &vertexState;
-    pDescriptor.depthStencilState = &pDescriptor.cDepthStencilState;
-    pDescriptor.cDepthStencilState.format = wgpu::TextureFormat::Depth24PlusStencil8;
-    pDescriptor.cColorStates[0].format = GetPreferredSwapChainTextureFormat();
-    pDescriptor.cDepthStencilState.stencilFront.passOp = wgpu::StencilOperation::Replace;
-    pDescriptor.cDepthStencilState.stencilBack.passOp = wgpu::StencilOperation::Replace;
-    pDescriptor.cDepthStencilState.depthCompare = wgpu::CompareFunction::Less;
+        wgpu::DepthStencilState* depthStencil =
+            descriptor.EnableDepthStencil(wgpu::TextureFormat::Depth24PlusStencil8);
+        depthStencil->depthWriteEnabled = true;
+        depthStencil->depthCompare = wgpu::CompareFunction::Less;
 
-    planePipeline = device.CreateRenderPipeline(&pDescriptor);
+        pipeline = device.CreateRenderPipeline2(&descriptor);
+    }
 
-    utils::ComboRenderPipelineDescriptor rfDescriptor(device);
-    rfDescriptor.layout = pl;
-    rfDescriptor.vertexStage.module = vsModule;
-    rfDescriptor.cFragmentStage.module = fsReflectionModule;
-    rfDescriptor.vertexState = &vertexState;
-    rfDescriptor.depthStencilState = &rfDescriptor.cDepthStencilState;
-    rfDescriptor.cDepthStencilState.format = wgpu::TextureFormat::Depth24PlusStencil8;
-    rfDescriptor.cColorStates[0].format = GetPreferredSwapChainTextureFormat();
-    rfDescriptor.cDepthStencilState.stencilFront.compare = wgpu::CompareFunction::Equal;
-    rfDescriptor.cDepthStencilState.stencilBack.compare = wgpu::CompareFunction::Equal;
-    rfDescriptor.cDepthStencilState.stencilFront.passOp = wgpu::StencilOperation::Replace;
-    rfDescriptor.cDepthStencilState.stencilBack.passOp = wgpu::StencilOperation::Replace;
-    rfDescriptor.cDepthStencilState.depthWriteEnabled = true;
-    rfDescriptor.cDepthStencilState.depthCompare = wgpu::CompareFunction::Less;
+    {
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.vertex.bufferCount = 1;
+        descriptor.vertex.buffers = &vertexBufferLayout;
 
-    reflectionPipeline = device.CreateRenderPipeline(&rfDescriptor);
+        descriptor.layout = pl;
+        descriptor.cFragment.module = fsModule;
+        descriptor.cTargets[0].format = GetPreferredSwapChainTextureFormat();
+
+        wgpu::DepthStencilState* depthStencil =
+            descriptor.EnableDepthStencil(wgpu::TextureFormat::Depth24PlusStencil8);
+        depthStencil->stencilFront.passOp = wgpu::StencilOperation::Replace;
+        depthStencil->stencilBack.passOp = wgpu::StencilOperation::Replace;
+        depthStencil->depthCompare = wgpu::CompareFunction::Less;
+
+        planePipeline = device.CreateRenderPipeline2(&descriptor);
+    }
+
+    {
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.vertex.bufferCount = 1;
+        descriptor.vertex.buffers = &vertexBufferLayout;
+
+        descriptor.layout = pl;
+        descriptor.cFragment.module = fsReflectionModule;
+        descriptor.cTargets[0].format = GetPreferredSwapChainTextureFormat();
+
+        wgpu::DepthStencilState* depthStencil =
+            descriptor.EnableDepthStencil(wgpu::TextureFormat::Depth24PlusStencil8);
+        depthStencil->stencilFront.compare = wgpu::CompareFunction::Equal;
+        depthStencil->stencilBack.compare = wgpu::CompareFunction::Equal;
+        depthStencil->stencilFront.passOp = wgpu::StencilOperation::Replace;
+        depthStencil->stencilBack.passOp = wgpu::StencilOperation::Replace;
+        depthStencil->depthWriteEnabled = true;
+        depthStencil->depthCompare = wgpu::CompareFunction::Less;
+
+        reflectionPipeline = device.CreateRenderPipeline2(&descriptor);
+    }
 
     cameraData.proj = glm::perspective(glm::radians(45.0f), 1.f, 1.0f, 100.0f);
 }
@@ -251,7 +271,7 @@ void frame() {
         pass.SetPipeline(pipeline);
         pass.SetBindGroup(0, bindGroup[0]);
         pass.SetVertexBuffer(0, vertexBuffer);
-        pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
         pass.DrawIndexed(36);
 
         pass.SetStencilReference(0x1);

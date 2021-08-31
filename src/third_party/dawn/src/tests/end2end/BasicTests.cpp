@@ -25,6 +25,13 @@ TEST_P(BasicTests, VendorIdFilter) {
     ASSERT_EQ(GetAdapterProperties().vendorID, GetVendorIdFilter());
 }
 
+// Test adapter filter by backend type.
+TEST_P(BasicTests, BackendType) {
+    DAWN_SKIP_TEST_IF(!HasBackendTypeFilter());
+
+    ASSERT_EQ(GetAdapterProperties().backendType, GetBackendTypeFilter());
+}
+
 // Test Queue::WriteBuffer changes the content of the buffer, but really this is the most
 // basic test possible, and tests the test harness
 TEST_P(BasicTests, QueueWriteBuffer) {
@@ -51,4 +58,9 @@ TEST_P(BasicTests, QueueWriteBufferError) {
     ASSERT_DEVICE_ERROR(queue.WriteBuffer(buffer, 1000, &value, sizeof(value)));
 }
 
-DAWN_INSTANTIATE_TEST(BasicTests, D3D12Backend(), MetalBackend(), OpenGLBackend(), VulkanBackend());
+DAWN_INSTANTIATE_TEST(BasicTests,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      OpenGLESBackend(),
+                      VulkanBackend());

@@ -179,15 +179,14 @@ class BackgroundFetchJobControllerTest : public BackgroundFetchTestBase {
     BackgroundFetchTestBase::SetUp();
 
     StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-        BrowserContext::GetDefaultStoragePartition(browser_context()));
+        browser_context()->GetDefaultStoragePartition());
 
     delegate_proxy_ =
         std::make_unique<BackgroundFetchDelegateProxy>(browser_context());
 
     context_ = base::MakeRefCounted<BackgroundFetchContext>(
-        browser_context(),
+        browser_context(), partition,
         base::WrapRefCounted(embedded_worker_test_helper()->context_wrapper()),
-        base::WrapRefCounted(partition->GetCacheStorageContext()),
         /* quota_manager_proxy= */ nullptr, devtools_context());
   }
 

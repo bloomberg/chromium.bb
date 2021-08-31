@@ -15,12 +15,16 @@
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_item.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_reader.h"
-#include "third_party/blink/renderer/modules/clipboard/clipboard_writer.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 
+namespace mojo_base {
+class BigBuffer;
+}
+
 namespace blink {
 
+class ClipboardWriter;
 class ScriptPromiseResolver;
 class LocalFrame;
 class ExecutionContext;
@@ -42,7 +46,7 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
                                           const String&);
 
   ClipboardPromise(ExecutionContext*, ScriptState*);
-  virtual ~ClipboardPromise();
+  ~ClipboardPromise() override;
 
   // Completes current write and starts next write.
   void CompleteWriteRepresentation();
@@ -95,9 +99,7 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
   Member<ClipboardWriter> clipboard_writer_;
 
   // Checks for Read and Write permission.
-  HeapMojoRemote<mojom::blink::PermissionService,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      permission_service_;
+  HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
 
   // Only for use in writeText().
   String plain_text_;

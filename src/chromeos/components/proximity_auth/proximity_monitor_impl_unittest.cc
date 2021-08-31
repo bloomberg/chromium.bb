@@ -22,7 +22,6 @@
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
 #include "chromeos/components/proximity_auth/proximity_monitor_observer.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "chromeos/services/secure_channel/fake_connection.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
@@ -103,7 +102,7 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
 
   void RunPendingTasks() { task_runner_->RunPendingTasks(); }
 
-  void ProvideRssi(base::Optional<int32_t> rssi) {
+  void ProvideRssi(absl::optional<int32_t> rssi) {
     RunPendingTasks();
 
     std::vector<chromeos::secure_channel::mojom::ConnectionCreationDetail>
@@ -180,7 +179,7 @@ TEST_F(ProximityAuthProximityMonitorImplTest, IsUnlockAllowed_UnknownRssi) {
   monitor_->Start();
 
   ProvideRssi(0);
-  ProvideRssi(base::nullopt);
+  ProvideRssi(absl::nullopt);
 
   EXPECT_FALSE(monitor_->IsUnlockAllowed());
 }

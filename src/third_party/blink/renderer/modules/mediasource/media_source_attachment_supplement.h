@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_MEDIA_SOURCE_ATTACHMENT_SUPPLEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIASOURCE_MEDIA_SOURCE_ATTACHMENT_SUPPLEMENT_H_
 
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
 #include "third_party/blink/renderer/core/html/media/media_source_attachment.h"
 #include "third_party/blink/renderer/core/html/media/media_source_tracer.h"
 #include "third_party/blink/renderer/core/html/track/audio_track.h"
@@ -18,6 +18,7 @@ namespace blink {
 
 class AudioTrackList;
 class MediaSource;
+class SourceBuffer;
 class VideoTrackList;
 
 // Modules-specific common extension of the core MediaSourceAttachment
@@ -26,8 +27,9 @@ class VideoTrackList;
 // members common to all concrete attachments.
 class MediaSourceAttachmentSupplement : public MediaSourceAttachment {
  public:
-  using ExclusiveKey = util::PassKey<MediaSourceAttachmentSupplement>;
+  using ExclusiveKey = base::PassKey<MediaSourceAttachmentSupplement>;
   using RunExclusivelyCB = base::OnceCallback<void(ExclusiveKey)>;
+  using SourceBufferPassKey = base::PassKey<SourceBuffer>;
 
   // Communicates a change in the media resource duration to the attached media
   // element. In a same-thread attachment, communicates this information
@@ -110,6 +112,17 @@ class MediaSourceAttachmentSupplement : public MediaSourceAttachment {
   // within the scope of this method.
   virtual bool RunExclusively(bool abort_if_not_fully_attached,
                               RunExclusivelyCB cb);
+
+  // Simpler than RunExclusively(), the default implementation returns true
+  // always. CrossThreadMediaSourceAttachment implementation should first verify
+  // the lock is already held, then return true iff the media element is still
+  // attached, has not yet signaled that its context's destruction has begun,
+  // and has not yet told the attachment to Close() - these conditions mirror
+  // the cross-thread RunExclusively checks when |abort_if_not_fully_attached|
+  // is true. This helper is expected to only be used by SourceBuffer's
+  // RemovedFromMediaSource(), hence we use the PassKey pattern to help enforce
+  // that.
+  virtual bool FullyAttachedOrSameThread(SourceBufferPassKey) const;
 
   // Default implementation fails DCHECK. See CrossThreadMediaSourceAttachment
   // for override. MediaSource and SourceBuffer use this to help verify they

@@ -23,8 +23,8 @@
 #include "content/public/test/browser_task_environment.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/fake_oauth2_access_token_manager.h"
+#include "google_apis/gaia/gaia_access_token_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_access_token_fetcher_impl.h"
 #include "google_apis/gaia/oauth2_access_token_manager.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -172,8 +172,9 @@ class FakeOAuth2AccessTokenManagerDelegate
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       OAuth2AccessTokenConsumer* consumer) override {
     EXPECT_EQ(CoreAccountId(kRobotAccountId), account_id);
-    return std::make_unique<OAuth2AccessTokenFetcherImpl>(
-        consumer, url_loader_factory, "fake_refresh_token");
+    return GaiaAccessTokenFetcher::
+        CreateExchangeRefreshTokenForAccessTokenInstance(
+            consumer, url_loader_factory, "fake_refresh_token");
   }
 
   bool HasRefreshToken(const CoreAccountId& account_id) const override {
@@ -262,8 +263,8 @@ class UploadFlowTest : public UploadJobTestBase {
 
   // UploadJobTestBase:
   void SetUp() override {
-    test_server_.RegisterRequestHandler(
-        base::Bind(&UploadFlowTest::HandlePostRequest, base::Unretained(this)));
+    test_server_.RegisterRequestHandler(base::BindRepeating(
+        &UploadFlowTest::HandlePostRequest, base::Unretained(this)));
     UploadJobTestBase::SetUp();
     upload_attempt_count_ = 0;
   }
@@ -326,8 +327,8 @@ TEST_F(UploadFlowTest, TokenInvalid) {
   access_token_manager_.AddTokenToQueue(kTokenInvalid);
   access_token_manager_.AddTokenToQueue(kTokenInvalid);
   access_token_manager_.AddTokenToQueue(kTokenInvalid);
-  SetExpectedError(std::unique_ptr<UploadJob::ErrorCode>(
-      new UploadJob::ErrorCode(UploadJob::AUTHENTICATION_ERROR)));
+  SetExpectedError(
+      std::make_unique<UploadJob::ErrorCode>(UploadJob::AUTHENTICATION_ERROR));
 
   std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
@@ -350,8 +351,8 @@ TEST_F(UploadFlowTest, TokenMultipleTries) {
 }
 
 TEST_F(UploadFlowTest, TokenFetchFailure) {
-  SetExpectedError(std::unique_ptr<UploadJob::ErrorCode>(
-      new UploadJob::ErrorCode(UploadJob::AUTHENTICATION_ERROR)));
+  SetExpectedError(
+      std::make_unique<UploadJob::ErrorCode>(UploadJob::AUTHENTICATION_ERROR));
 
   std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
@@ -366,8 +367,8 @@ TEST_F(UploadFlowTest, InternalServerError) {
   access_token_manager_.SetTokenValid(kTokenValid);
   access_token_manager_.AddTokenToQueue(kTokenValid);
 
-  SetExpectedError(std::unique_ptr<UploadJob::ErrorCode>(
-      new UploadJob::ErrorCode(UploadJob::SERVER_ERROR)));
+  SetExpectedError(
+      std::make_unique<UploadJob::ErrorCode>(UploadJob::SERVER_ERROR));
 
   std::unique_ptr<UploadJob> upload_job = PrepareUploadJob(
       base::WrapUnique(new UploadJobImpl::RandomMimeBoundaryGenerator));
@@ -383,7 +384,7 @@ class UploadRequestTest : public UploadJobTestBase {
 
   // UploadJobTestBase:
   void SetUp() override {
-    test_server_.RegisterRequestHandler(base::Bind(
+    test_server_.RegisterRequestHandler(base::BindRepeating(
         &UploadRequestTest::HandlePostRequest, base::Unretained(this)));
     UploadJobTestBase::SetUp();
   }

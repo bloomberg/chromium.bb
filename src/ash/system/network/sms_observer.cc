@@ -11,6 +11,7 @@
 #include "ash/system/tray/tray_constants.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/values.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -45,7 +46,7 @@ void ShowNotification(const base::Value* message,
       base::ASCIIToUTF16(message_number),
       base::CollapseWhitespace(base::UTF8ToUTF16(message_text),
                                false /* trim_sequences_with_line_breaks */),
-      base::string16(), GURL(),
+      std::u16string(), GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierSms),
       message_center::RichNotificationData(), nullptr, kNotificationSmsSyncIcon,

@@ -23,7 +23,7 @@ export class DevicePool {
   private nonDefaultHolders = new DescriptorToHolderMap();
 
   /** Request a device from the pool. */
-  async reserve(descriptor?: GPUDeviceDescriptor): Promise<DeviceProvider> {
+  async reserve(descriptor?: UncanonicalizedDeviceDescriptor): Promise<DeviceProvider> {
     // Always attempt to initialize default device, to see if it succeeds.
     if (this.defaultHolder === 'uninitialized') {
       try {
@@ -108,7 +108,9 @@ class DescriptorToHolderMap {
    *
    * Throws SkipTestCase if devices with this descriptor are unsupported.
    */
-  async getOrCreate(uncanonicalizedDescriptor: GPUDeviceDescriptor): Promise<DeviceHolder> {
+  async getOrCreate(
+    uncanonicalizedDescriptor: UncanonicalizedDeviceDescriptor
+  ): Promise<DeviceHolder> {
     const [descriptor, key] = canonicalizeDescriptor(uncanonicalizedDescriptor);
     // Never retry unsupported configurations.
     if (this.unsupported.has(key)) {
@@ -157,27 +159,43 @@ class DescriptorToHolderMap {
   }
 }
 
-type CanonicalDeviceDescriptor = Omit<Required<GPUDeviceDescriptor>, 'label'>;
+export type UncanonicalizedDeviceDescriptor = {
+  nonGuaranteedFeatures?: Iterable<GPUFeatureName>;
+  nonGuaranteedLimits?: Record<string, GPUSize32>;
+  /** @deprecated this field cannot be used */
+  extensions?: undefined;
+  /** @deprecated this field cannot be used */
+  features?: undefined;
+};
+type CanonicalDeviceDescriptor = Omit<
+  Required<GPUDeviceDescriptor>,
+  'label' | 'extensions' | 'limits'
+>;
 /**
  * Make a stringified map-key from a GPUDeviceDescriptor.
  * Tries to make sure all defaults are resolved, first - but it's okay if some are missed
  * (it just means some GPUDevice objects won't get deduplicated).
  */
-function canonicalizeDescriptor(desc: GPUDeviceDescriptor): [CanonicalDeviceDescriptor, string] {
-  const extensionsCanonicalized = desc.extensions ? Array.from(desc.extensions).sort() : [];
-  const limits: GPULimits = { ...desc.limits };
+function canonicalizeDescriptor(
+  desc: UncanonicalizedDeviceDescriptor
+): [CanonicalDeviceDescriptor, string] {
+  const featuresCanonicalized = desc.nonGuaranteedFeatures
+    ? Array.from(new Set(desc.nonGuaranteedFeatures)).sort()
+    : [];
 
-  const limitsCanonicalized: GPULimits = { ...DefaultLimits };
-  for (const k of Object.keys(limits) as (keyof GPULimits)[]) {
-    if (limits[k] !== undefined) {
-      limitsCanonicalized[k] = limits[k];
+  const limitsCanonicalized: Record<string, number> = { ...DefaultLimits };
+  if (desc.nonGuaranteedLimits) {
+    for (const k of Object.keys(desc.nonGuaranteedLimits)) {
+      if (desc.nonGuaranteedLimits[k] !== undefined) {
+        limitsCanonicalized[k] = desc.nonGuaranteedLimits[k];
+      }
     }
   }
 
   // Type ensures every field is carried through.
   const descriptorCanonicalized: CanonicalDeviceDescriptor = {
-    extensions: extensionsCanonicalized,
-    limits: limitsCanonicalized,
+    nonGuaranteedFeatures: featuresCanonicalized,
+    nonGuaranteedLimits: limitsCanonicalized,
   };
   return [descriptorCanonicalized, JSON.stringify(descriptorCanonicalized)];
 }

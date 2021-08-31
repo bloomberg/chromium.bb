@@ -4,6 +4,8 @@
 
 #include "components/omnibox/browser/on_device_head_provider.h"
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
@@ -15,6 +17,7 @@
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
 #include "components/omnibox/browser/on_device_head_model.h"
+#include "components/omnibox/browser/on_device_model_update_listener.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/omnibox_focus_type.h"
@@ -29,10 +32,9 @@ class OnDeviceHeadProviderTest : public testing::Test,
                                  public AutocompleteProviderListener {
  protected:
   void SetUp() override {
-    client_.reset(new FakeAutocompleteProviderClient());
+    client_ = std::make_unique<FakeAutocompleteProviderClient>();
     SetTestOnDeviceHeadModel();
     provider_ = OnDeviceHeadProvider::Create(client_.get(), this);
-    provider_->AddModelUpdateCallback();
     task_environment_.RunUntilIdle();
   }
 
@@ -60,9 +62,9 @@ class OnDeviceHeadProviderTest : public testing::Test,
   }
 
   void ResetModelInstance() {
-    if (provider_) {
-      provider_->model_filename_.clear();
-    }
+    auto* update_listener = OnDeviceModelUpdateListener::GetInstance();
+    if (update_listener)
+      update_listener->ResetListenerForTest();
   }
 
   bool IsOnDeviceHeadProviderAllowed(const AutocompleteInput& input) {
@@ -79,8 +81,7 @@ TEST_F(OnDeviceHeadProviderTest, ModelInstanceNotCreated) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       omnibox::kOnDeviceHeadProviderNonIncognito,
       {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
-  AutocompleteInput input(base::UTF8ToUTF16("M"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"M", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(true);
   ResetModelInstance();
@@ -103,8 +104,7 @@ TEST_F(OnDeviceHeadProviderTest, RejectSynchronousRequest) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       omnibox::kOnDeviceHeadProviderNonIncognito,
       {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
-  AutocompleteInput input(base::UTF8ToUTF16("M"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"M", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(false);
 
@@ -112,8 +112,7 @@ TEST_F(OnDeviceHeadProviderTest, RejectSynchronousRequest) {
 }
 
 TEST_F(OnDeviceHeadProviderTest, TestIfIncognitoIsAllowed) {
-  AutocompleteInput input(base::UTF8ToUTF16("M"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"M", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(true);
 
@@ -121,19 +120,9 @@ TEST_F(OnDeviceHeadProviderTest, TestIfIncognitoIsAllowed) {
   EXPECT_CALL(*client_.get(), SearchSuggestEnabled())
       .WillRepeatedly(Return(true));
 
-  // By default incognito request will be accepted.
+  // By default Incognito request will be accepted.
   {
     ASSERT_TRUE(IsOnDeviceHeadProviderAllowed(input));
-  }
-
-  // Disable omnibox::kNewSearchFeatures and now all modes should be disabled.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures(
-        {omnibox::kOnDeviceHeadProviderNonIncognito,
-         omnibox::kOnDeviceHeadProviderIncognito},
-        {omnibox::kNewSearchFeatures});
-    ASSERT_FALSE(IsOnDeviceHeadProviderAllowed(input));
   }
 }
 
@@ -142,8 +131,7 @@ TEST_F(OnDeviceHeadProviderTest, RejectOnFocusRequest) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       omnibox::kOnDeviceHeadProviderNonIncognito,
       {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
-  AutocompleteInput input(base::UTF8ToUTF16("M"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"M", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(true);
   input.set_focus_type(OmniboxFocusType::ON_FOCUS);
@@ -159,8 +147,7 @@ TEST_F(OnDeviceHeadProviderTest, NoMatches) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       omnibox::kOnDeviceHeadProviderNonIncognito,
       {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
-  AutocompleteInput input(base::UTF8ToUTF16("b"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"b", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(true);
 
@@ -182,8 +169,7 @@ TEST_F(OnDeviceHeadProviderTest, HasMatches) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       omnibox::kOnDeviceHeadProviderNonIncognito,
       {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
-  AutocompleteInput input(base::UTF8ToUTF16("M"),
-                          metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input(u"M", metrics::OmniboxEventProto::OTHER,
                           TestSchemeClassifier());
   input.set_want_asynchronous_matches(true);
 
@@ -198,9 +184,9 @@ TEST_F(OnDeviceHeadProviderTest, HasMatches) {
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());
-  EXPECT_EQ(base::UTF8ToUTF16("maps"), provider_->matches()[0].contents);
-  EXPECT_EQ(base::UTF8ToUTF16("mail"), provider_->matches()[1].contents);
-  EXPECT_EQ(base::UTF8ToUTF16("map"), provider_->matches()[2].contents);
+  EXPECT_EQ(u"maps", provider_->matches()[0].contents);
+  EXPECT_EQ(u"mail", provider_->matches()[1].contents);
+  EXPECT_EQ(u"map", provider_->matches()[2].contents);
 }
 
 TEST_F(OnDeviceHeadProviderTest, CancelInProgressRequest) {
@@ -208,12 +194,10 @@ TEST_F(OnDeviceHeadProviderTest, CancelInProgressRequest) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       omnibox::kOnDeviceHeadProviderNonIncognito,
       {{OmniboxFieldTrial::kOnDeviceHeadSuggestDelaySuggestRequestMs, "0"}});
-  AutocompleteInput input1(base::UTF8ToUTF16("g"),
-                           metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input1(u"g", metrics::OmniboxEventProto::OTHER,
                            TestSchemeClassifier());
   input1.set_want_asynchronous_matches(true);
-  AutocompleteInput input2(base::UTF8ToUTF16("m"),
-                           metrics::OmniboxEventProto::OTHER,
+  AutocompleteInput input2(u"m", metrics::OmniboxEventProto::OTHER,
                            TestSchemeClassifier());
   input2.set_want_asynchronous_matches(true);
 
@@ -230,7 +214,7 @@ TEST_F(OnDeviceHeadProviderTest, CancelInProgressRequest) {
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());
-  EXPECT_EQ(base::UTF8ToUTF16("maps"), provider_->matches()[0].contents);
-  EXPECT_EQ(base::UTF8ToUTF16("mail"), provider_->matches()[1].contents);
-  EXPECT_EQ(base::UTF8ToUTF16("map"), provider_->matches()[2].contents);
+  EXPECT_EQ(u"maps", provider_->matches()[0].contents);
+  EXPECT_EQ(u"mail", provider_->matches()[1].contents);
+  EXPECT_EQ(u"map", provider_->matches()[2].contents);
 }

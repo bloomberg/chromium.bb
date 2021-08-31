@@ -43,15 +43,15 @@ base::LazyInstance<WebContentsGuestViewMap>::Leaky g_webcontents_guestview_map =
 
 }  // namespace
 
-SetSizeParams::SetSizeParams() {
-}
-SetSizeParams::~SetSizeParams() {
-}
+SetSizeParams::SetSizeParams() = default;
+SetSizeParams::~SetSizeParams() = default;
 
+// TODO(832879): It would be better to have proper ownership semantics than
+// manually destroying guests and their WebContents.
+//
 // This observer ensures that the GuestViewBase destroys itself when its
 // embedder goes away. It also tracks when the embedder's fullscreen is
-// toggled or when its page scale factor changes so the guest can change
-// itself accordingly.
+// toggled so the guest can change itself accordingly.
 class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
  public:
   OwnerContentsObserver(GuestViewBase* guest,
@@ -61,7 +61,7 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
         destroyed_(false),
         guest_(guest) {}
 
-  ~OwnerContentsObserver() override {}
+  ~OwnerContentsObserver() override = default;
 
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override {
@@ -71,6 +71,8 @@ class GuestViewBase::OwnerContentsObserver : public WebContentsObserver {
 
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override {
+    // TODO(1206312, 1205920): It is incorrect to assume that a navigation will
+    // destroy the embedder.
     // If the embedder navigates to a different page then destroy the guest.
     if (!navigation_handle->IsInMainFrame() ||
         !navigation_handle->HasCommitted() ||
@@ -149,7 +151,7 @@ class GuestViewBase::OpenerLifetimeObserver : public WebContentsObserver {
       : WebContentsObserver(guest->GetOpener()->web_contents()),
         guest_(guest) {}
 
-  ~OpenerLifetimeObserver() override {}
+  ~OpenerLifetimeObserver() override = default;
 
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override {
@@ -394,7 +396,7 @@ WebContents* GuestViewBase::CreateNewGuestWindow(
 
 void GuestViewBase::OnRenderFrameHostDeleted(int process_id, int routing_id) {}
 
-void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
+void GuestViewBase::DidAttach() {
   DCHECK(attach_in_progress_);
   // Clear this flag here, as functions called below may check attached().
   attach_in_progress_ = false;
@@ -408,10 +410,6 @@ void GuestViewBase::DidAttach(int guest_proxy_routing_id) {
 
   // Give the derived class an opportunity to perform some actions.
   DidAttachToEmbedder();
-
-  // Inform the associated GuestViewContainer that the contentWindow is ready.
-  GetOwnerRenderWidgetHost()->GetProcess()->Send(new GuestViewMsg_GuestAttached(
-      element_instance_id_, guest_proxy_routing_id));
 
   SendQueuedEvents();
 }
@@ -468,16 +466,16 @@ void GuestViewBase::SetAttachParams(const base::DictionaryValue& params) {
 }
 
 void GuestViewBase::SetOpener(GuestViewBase* guest) {
-  if (guest && guest->IsViewType(GetViewType())) {
+  if (guest) {
     opener_ = guest->weak_ptr_factory_.GetWeakPtr();
     if (!attached()) {
       opener_lifetime_observer_ =
           std::make_unique<OpenerLifetimeObserver>(this);
     }
-    return;
+  } else {
+    opener_ = base::WeakPtr<GuestViewBase>();
+    opener_lifetime_observer_.reset();
   }
-  opener_ = base::WeakPtr<GuestViewBase>();
-  opener_lifetime_observer_.reset();
 }
 
 void GuestViewBase::SetGuestHost(content::GuestHost* guest_host) {
@@ -737,8 +735,7 @@ void GuestViewBase::AttachToOuterWebContentsFrame(
     int32_t element_instance_id,
     bool is_full_page_plugin) {
   auto completion_callback =
-      base::BindOnce(&GuestViewBase::DidAttach, weak_ptr_factory_.GetWeakPtr(),
-                     MSG_ROUTING_NONE);
+      base::BindOnce(&GuestViewBase::DidAttach, weak_ptr_factory_.GetWeakPtr());
   WillAttach(WebContents::FromRenderFrameHost(embedder_frame), embedder_frame,
              element_instance_id, is_full_page_plugin,
              std::move(completion_callback));
@@ -852,10 +849,11 @@ void GuestViewBase::SetUpSizing(const base::DictionaryValue& params) {
   }
 
   SetSizeParams set_size_params;
-  set_size_params.enable_auto_size.reset(new bool(auto_size_enabled));
-  set_size_params.min_size.reset(new gfx::Size(min_width, min_height));
-  set_size_params.max_size.reset(new gfx::Size(max_width, max_height));
-  set_size_params.normal_size.reset(new gfx::Size(normal_width, normal_height));
+  set_size_params.enable_auto_size = std::make_unique<bool>(auto_size_enabled);
+  set_size_params.min_size = std::make_unique<gfx::Size>(min_width, min_height);
+  set_size_params.max_size = std::make_unique<gfx::Size>(max_width, max_height);
+  set_size_params.normal_size =
+      std::make_unique<gfx::Size>(normal_width, normal_height);
 
   // Call SetSize to apply all the appropriate validation and clipping of
   // values.

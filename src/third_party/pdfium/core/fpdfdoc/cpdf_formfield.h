@@ -85,7 +85,7 @@ class CPDF_FormField {
   Type GetType() const { return m_Type; }
 
   CPDF_Dictionary* GetFieldDict() const { return m_pDict.Get(); }
-  bool ResetField(NotificationOption notify);
+  bool ResetField();
 
   int CountControls() const;
   CPDF_FormControl* GetControl(int index) const;
@@ -113,7 +113,7 @@ class CPDF_FormField {
 
   bool ClearSelection(NotificationOption notify);
   bool IsItemSelected(int index) const;
-  bool SetItemSelection(int index, bool bSelected, NotificationOption notify);
+  bool SetItemSelection(int index, NotificationOption notify);
 
   bool IsItemDefaultSelected(int index) const;
 
@@ -161,7 +161,6 @@ class CPDF_FormField {
                      bool bDefault,
                      NotificationOption notify);
   void SetItemSelectionSelected(int index, const WideString& opt_value);
-  void SetItemSelectionUnselected(int index, const WideString& opt_value);
   bool NotifyBeforeSelectionChange(const WideString& value);
   void NotifyAfterSelectionChange();
   bool NotifyBeforeValueChange(const WideString& value);

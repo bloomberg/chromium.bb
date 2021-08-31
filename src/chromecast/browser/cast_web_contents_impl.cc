@@ -8,10 +8,11 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/chromecast_switches.h"
@@ -36,7 +37,9 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/renderer_preferences/renderer_preferences.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
@@ -161,6 +164,11 @@ CastWebContentsImpl::CastWebContentsImpl(content::WebContents* web_contents,
       renderer_type_ == content::mojom::RendererType::MOJO_RENDERER) {
     renderer_type_ = content::mojom::RendererType::DEFAULT_RENDERER;
   }
+
+  if (init_params.webrtc_allow_legacy_tls_protocols) {
+    web_contents_->GetMutableRendererPrefs()
+        ->webrtc_allow_legacy_tls_protocols = true;
+  }
 }
 
 CastWebContentsImpl::~CastWebContentsImpl() {
@@ -193,19 +201,19 @@ CastWebContents::PageState CastWebContentsImpl::page_state() const {
   return page_state_;
 }
 
-base::Optional<pid_t> CastWebContentsImpl::GetMainFrameRenderProcessPid()
+absl::optional<pid_t> CastWebContentsImpl::GetMainFrameRenderProcessPid()
     const {
   // Returns empty value if |web_contents_| is (being) destroyed or the main
   // frame is not available yet.
   if (!web_contents_ || !web_contents_->GetMainFrame()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   auto* rph = web_contents_->GetMainFrame()->GetProcess();
   if (!rph || rph->GetProcess().Handle() == base::kNullProcessHandle) {
-    return base::nullopt;
+    return absl::nullopt;
   }
-  return base::make_optional(rph->GetProcess().Handle());
+  return absl::make_optional(rph->GetProcess().Handle());
 }
 
 void CastWebContentsImpl::AddRendererFeatures(
@@ -326,33 +334,28 @@ CastWebContentsImpl::script_injector() {
   return &script_injector_;
 }
 
-void CastWebContentsImpl::InjectScriptsIntoMainFrame() {
-  script_injector_.InjectScriptsForURL(web_contents_->GetURL(),
-                                       web_contents_->GetMainFrame());
-}
-
 void CastWebContentsImpl::PostMessageToMainFrame(
     const std::string& target_origin,
     const std::string& data,
     std::vector<blink::WebMessagePort> ports) {
   DCHECK(!data.empty());
 
-  base::string16 data_utf16;
+  std::u16string data_utf16;
   data_utf16 = base::UTF8ToUTF16(data);
 
   // If origin is set as wildcard, no origin scoping would be applied.
   constexpr char kWildcardOrigin[] = "*";
-  base::Optional<base::string16> target_origin_utf16;
+  absl::optional<std::u16string> target_origin_utf16;
   if (target_origin != kWildcardOrigin)
     target_origin_utf16 = base::UTF8ToUTF16(target_origin);
 
   content::MessagePortProvider::PostMessageToFrame(
-      web_contents(), base::string16(), target_origin_utf16, data_utf16,
+      web_contents(), std::u16string(), target_origin_utf16, data_utf16,
       std::move(ports));
 }
 
 void CastWebContentsImpl::ExecuteJavaScript(
-    const base::string16& javascript,
+    const std::u16string& javascript,
     base::OnceCallback<void(base::Value)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!web_contents_ || closing_ || !main_frame_loaded_ ||
@@ -397,6 +400,31 @@ service_manager::BinderRegistry* CastWebContentsImpl::binder_registry() {
   return &binder_registry_;
 }
 
+bool CastWebContentsImpl::TryBindReceiver(
+    mojo::GenericPendingReceiver& receiver) {
+  const std::string interface_name = *receiver.interface_name();
+  mojo::ScopedMessagePipeHandle interface_pipe = receiver.PassPipe();
+  if (binder_registry_.TryBindInterface(interface_name, &interface_pipe)) {
+    return true;
+  }
+
+  for (auto& entry : interface_providers_map_) {
+    auto const& interface_set = entry.first;
+    // Interface is provided by this InterfaceProvider.
+    if (interface_set.find(interface_name) != interface_set.end()) {
+      auto* interface_provider = entry.second;
+      interface_provider->GetInterfaceByName(interface_name,
+                                             std::move(interface_pipe));
+      return true;
+    }
+  }
+
+  // Unsuccessful, so give the caller its receiver back.
+  receiver =
+      mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe));
+  return false;
+}
+
 void CastWebContentsImpl::RegisterInterfaceProvider(
     const InterfaceSet& interface_set,
     service_manager::InterfaceProvider* interface_provider) {
@@ -429,38 +457,43 @@ void CastWebContentsImpl::OnClosePageTimeout() {
 }
 
 void CastWebContentsImpl::RenderFrameCreated(
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* frame_host) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(render_frame_host);
+  DCHECK(frame_host);
 
-  auto* process = render_frame_host->GetProcess();
+  auto* process = frame_host->GetProcess();
   const int render_process_id = process->GetID();
-  const int render_frame_id = render_frame_host->GetRoutingID();
+  const int render_frame_id = frame_host->GetRoutingID();
 
   // Allow observers to use remote interfaces which are hosted by the new
   // RenderFrame.
   for (Observer& observer : observer_list_) {
-    observer.RenderFrameCreated(
-        render_process_id, render_frame_id,
-        render_frame_host->GetRemoteInterfaces(),
-        render_frame_host->GetRemoteAssociatedInterfaces());
+    observer.RenderFrameCreated(render_process_id, render_frame_id,
+                                frame_host->GetRemoteInterfaces(),
+                                frame_host->GetRemoteAssociatedInterfaces());
   }
 
+  // TODO(b/187758538): Merge the two ConfigureFeatures() calls.
   mojo::Remote<chromecast::shell::mojom::FeatureManager> feature_manager_remote;
-  render_frame_host->GetRemoteInterfaces()->GetInterface(
+  frame_host->GetRemoteInterfaces()->GetInterface(
       feature_manager_remote.BindNewPipeAndPassReceiver());
   feature_manager_remote->ConfigureFeatures(GetRendererFeatures());
+  mojo::AssociatedRemote<chromecast::shell::mojom::FeatureManager>
+      feature_manager_associated_remote;
+  frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+      &feature_manager_associated_remote);
+  feature_manager_associated_remote->ConfigureFeatures(GetRendererFeatures());
 
   mojo::AssociatedRemote<components::media_control::mojom::MediaPlaybackOptions>
       media_playback_options;
-  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+  frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
       &media_playback_options);
   media_playback_options->SetRendererType(renderer_type_);
 
   // Send queryable values
   mojo::Remote<chromecast::shell::mojom::QueryableDataStore>
       queryable_data_store_remote;
-  render_frame_host->GetRemoteInterfaces()->GetInterface(
+  frame_host->GetRemoteInterfaces()->GetInterface(
       queryable_data_store_remote.BindNewPipeAndPassReceiver());
   for (const auto& value : QueryableData::GetValues()) {
     // base::Value is not copyable.
@@ -471,18 +504,26 @@ void CastWebContentsImpl::RenderFrameCreated(
   if (activity_url_filter_) {
     mojo::AssociatedRemote<chromecast::mojom::ActivityUrlFilterConfiguration>
         activity_filter_setter;
-    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
+    frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
         &activity_filter_setter);
     activity_filter_setter->SetFilter(
         chromecast::mojom::ActivityUrlFilterCriteria::New(
             activity_url_filter_.value()));
   }
-}
 
-void CastWebContentsImpl::RenderFrameHostChanged(
-    content::RenderFrameHost* old_host,
-    content::RenderFrameHost* new_host) {
-  RenderFrameCreated(new_host);
+  // Set the background color for main frames.
+  if (!frame_host->GetParent()) {
+    if (view_background_color_ == BackgroundColor::WHITE) {
+      frame_host->GetView()->SetBackgroundColor(SK_ColorWHITE);
+    } else if (view_background_color_ == BackgroundColor::BLACK) {
+      frame_host->GetView()->SetBackgroundColor(SK_ColorBLACK);
+    } else if (view_background_color_ == BackgroundColor::TRANSPARENT) {
+      frame_host->GetView()->SetBackgroundColor(SK_ColorTRANSPARENT);
+    } else {
+      frame_host->GetView()->SetBackgroundColor(chromecast::GetSwitchValueColor(
+          switches::kCastAppBackgroundColor, SK_ColorBLACK));
+    }
+  }
 }
 
 std::vector<chromecast::shell::mojom::FeaturePtr>
@@ -504,36 +545,12 @@ void CastWebContentsImpl::OnInterfaceRequestFromFrame(
   if (!can_bind_interfaces()) {
     return;
   }
-  if (binder_registry_.TryBindInterface(interface_name, interface_pipe)) {
-    return;
-  }
-  for (auto& entry : interface_providers_map_) {
-    auto const& interface_set = entry.first;
-    // Interface is provided by this InterfaceProvider.
-    if (interface_set.find(interface_name) != interface_set.end()) {
-      auto* interface_provider = entry.second;
-      interface_provider->GetInterfaceByName(interface_name,
-                                             std::move(*interface_pipe));
-      break;
-    }
-  }
-}
 
-void CastWebContentsImpl::RenderViewCreated(
-    content::RenderViewHost* render_view_host) {
-  content::RenderWidgetHostView* view =
-      render_view_host->GetWidget()->GetView();
-  if (!view)
-    return;
-  if (view_background_color_ == BackgroundColor::WHITE) {
-    view->SetBackgroundColor(SK_ColorWHITE);
-  } else if (view_background_color_ == BackgroundColor::BLACK) {
-    view->SetBackgroundColor(SK_ColorBLACK);
-  } else if (view_background_color_ == BackgroundColor::TRANSPARENT) {
-    view->SetBackgroundColor(SK_ColorTRANSPARENT);
-  } else {
-    view->SetBackgroundColor(chromecast::GetSwitchValueColor(
-        switches::kCastAppBackgroundColor, SK_ColorBLACK));
+  mojo::GenericPendingReceiver receiver(interface_name,
+                                        std::move(*interface_pipe));
+  if (!TryBindReceiver(receiver)) {
+    // If binding was unsuccessful, give the caller its pipe back.
+    *interface_pipe = receiver.PassPipe();
   }
 }
 
@@ -549,9 +566,19 @@ void CastWebContentsImpl::DidStartNavigation(
   DCHECK(navigation_handle);
   if (!web_contents_ || closing_ || stopped_)
     return;
-  if (!navigation_handle->IsInMainFrame())
+
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
     return;
+  }
+
+  // Main frame has an ongoing navigation. This might overwrite a
+  // previously active navigation. We only care about tracking
+  // the most recent main frame navigation.
+  active_navigation_ = navigation_handle;
+
   // Main frame has begun navigating/loading.
+  LOG(INFO) << "Navigation started: " << navigation_handle->GetURL();
   OnPageLoading();
   start_loading_ticks_ = base::TimeTicks::Now();
   GURL loading_url;
@@ -564,6 +591,19 @@ void CastWebContentsImpl::DidStartNavigation(
   UpdatePageState();
   DCHECK_EQ(page_state_, PageState::LOADING);
   NotifyPageState();
+}
+
+void CastWebContentsImpl::DidRedirectNavigation(
+    content::NavigationHandle* navigation_handle) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(navigation_handle);
+  if (!web_contents_ || closing_ || stopped_)
+    return;
+  if (!navigation_handle->IsInMainFrame())
+    return;
+  // Main frame navigation was redirected by the server.
+  LOG(INFO) << "Navigation was redirected by server: "
+            << navigation_handle->GetURL();
 }
 
 void CastWebContentsImpl::ReadyToCommitNavigation(
@@ -591,29 +631,28 @@ void CastWebContentsImpl::ReadyToCommitNavigation(
   auto autoplay_origin = url::Origin::Create(navigation_handle->GetURL());
   client->AddAutoplayFlags(autoplay_origin, autoplay_flags);
 
-  if (!navigation_handle->IsInMainFrame())
+  // Skip injecting bindings scripts if |navigation_handle| is not
+  // 'current' main frame navigation, e.g. another DidStartNavigation is
+  // emitted. Also skip injecting for same document navigation and error page.
+  if (navigation_handle != active_navigation_ ||
+      navigation_handle->IsErrorPage()) {
     return;
-
-  // Main frame has begun navigating/loading.
-  OnPageLoading();
-  start_loading_ticks_ = base::TimeTicks::Now();
-  GURL loading_url;
-  content::NavigationEntry* nav_entry =
-      web_contents()->GetController().GetVisibleEntry();
-  if (nav_entry) {
-    loading_url = nav_entry->GetVirtualURL();
   }
-  TracePageLoadBegin(loading_url);
-  UpdatePageState();
-  DCHECK_EQ(page_state_, PageState::LOADING);
-  NotifyPageState();
+
+  // Injects registered bindings script into the main frame.
+  script_injector_.InjectScriptsForURL(navigation_handle->GetURL(),
+                                       navigation_handle->GetRenderFrameHost());
 }
 
 void CastWebContentsImpl::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  const net::Error error_code = navigation_handle->GetNetErrorCode();
+  // Ignore sub-frame and non-current main frame navigation.
+  if (navigation_handle != active_navigation_) {
+    return;
+  }
+  active_navigation_ = nullptr;
 
   // If the navigation was not committed, it means either the page was a
   // download or error 204/205, or the navigation never left the previous
@@ -621,51 +660,24 @@ void CastWebContentsImpl::DidFinishNavigation(
   if (!navigation_handle->HasCommitted()) {
     LOG(WARNING) << "Navigation did not commit: url="
                  << navigation_handle->GetURL();
-
-    // Detect if there was a blocked navigation. Some pages may disallow
-    // navigation, such as with a web-based window manager. In this case, the
-    // page can handle the navigation by opening a new tab or simply ignoring
-    // the request.
-    if (navigation_handle->HasUserGesture() &&
-        (error_code == net::ERR_ABORTED)) {
-      for (Observer& observer : observer_list_) {
-        observer.DidFinishBlockedNavigation(navigation_handle->GetURL());
-      }
-    }
-
     return;
   }
 
-  // Notifies observers that the navigation of the main frame has finished.
-  if (!navigation_handle->IsErrorPage() && navigation_handle->IsInMainFrame()) {
-    for (Observer& observer : observer_list_) {
-      observer.MainFrameFinishedNavigation();
-    }
-  }
-
-  // Return early if we didn't navigate to an error page. Note that even if we
-  // haven't navigated to an error page, there could still be errors in loading
-  // the desired content: e.g. if the server returned HTTP 404, or if there is
-  // an error with the content itself.
-  if (!navigation_handle->IsErrorPage())
-    return;
-
-  // If we abort errors in an iframe, it can create a really confusing
-  // and fragile user experience.  Rather than create a list of errors
-  // that are most likely to occur, we ignore all of them for now.
-  if (!navigation_handle->IsInMainFrame()) {
-    LOG(ERROR) << "Got error on sub-iframe: url=" << navigation_handle->GetURL()
-               << ", error=" << error_code
+  if (navigation_handle->IsErrorPage()) {
+    const net::Error error_code = navigation_handle->GetNetErrorCode();
+    LOG(ERROR) << "Got error on navigation: url=" << navigation_handle->GetURL()
+               << ", error_code=" << error_code
                << ", description=" << net::ErrorToShortString(error_code);
-    return;
+
+    Stop(error_code);
+    DCHECK_EQ(page_state_, PageState::ERROR);
   }
 
-  LOG(ERROR) << "Got error on navigation: url=" << navigation_handle->GetURL()
-             << ", error_code=" << error_code
-             << ", description=" << net::ErrorToShortString(error_code);
-
-  Stop(error_code);
-  DCHECK_EQ(page_state_, PageState::ERROR);
+  // Notifies observers that the navigation of the main frame has finished
+  // with no errors.
+  for (Observer& observer : observer_list_) {
+    observer.MainFrameFinishedNavigation();
+  }
 }
 
 void CastWebContentsImpl::DidFinishLoad(
@@ -676,6 +688,13 @@ void CastWebContentsImpl::DidFinishLoad(
       render_frame_host != web_contents_->GetMainFrame()) {
     return;
   }
+
+  // Don't process load completion on the current document if the WebContents
+  // is already in the process of navigating to a different page.
+  if (active_navigation_) {
+    return;
+  }
+
   // The main frame finished loading. Before proceeding, we need to verify that
   // the loaded page is the one that was requested.
   TracePageLoadEnd(validated_url);

@@ -17,6 +17,7 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 
 namespace ash {
@@ -194,7 +195,7 @@ void FloatingAccessibilityController::BubbleViewDestroyed() {
   menu_view_ = nullptr;
 }
 
-base::string16 FloatingAccessibilityController::GetAccessibleNameForBubble() {
+std::u16string FloatingAccessibilityController::GetAccessibleNameForBubble() {
   return l10n_util::GetStringUTF16(IDS_ASH_FLOATING_ACCESSIBILITY_MAIN_MENU);
 }
 

@@ -25,6 +25,10 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
 
+#if defined(OS_ANDROID)
+#include <android/native_window_jni.h>
+#endif
+
 namespace viz {
 
 // static
@@ -34,7 +38,7 @@ std::unique_ptr<SkiaOutputDeviceVulkan> SkiaOutputDeviceVulkan::Create(
     gpu::MemoryTracker* memory_tracker,
     DidSwapBufferCompleteCallback did_swap_buffer_complete_callback) {
   auto output_device = std::make_unique<SkiaOutputDeviceVulkan>(
-      util::PassKey<SkiaOutputDeviceVulkan>(), context_provider, surface_handle,
+      base::PassKey<SkiaOutputDeviceVulkan>(), context_provider, surface_handle,
       memory_tracker, did_swap_buffer_complete_callback);
   if (UNLIKELY(!output_device->Initialize()))
     return nullptr;
@@ -42,7 +46,7 @@ std::unique_ptr<SkiaOutputDeviceVulkan> SkiaOutputDeviceVulkan::Create(
 }
 
 SkiaOutputDeviceVulkan::SkiaOutputDeviceVulkan(
-    util::PassKey<SkiaOutputDeviceVulkan>,
+    base::PassKey<SkiaOutputDeviceVulkan>,
     VulkanContextProvider* context_provider,
     gpu::SurfaceHandle surface_handle,
     gpu::MemoryTracker* memory_tracker,
@@ -109,17 +113,15 @@ void SkiaOutputDeviceVulkan::Submit(bool sync_cpu, base::OnceClosure callback) {
   SkiaOutputDevice::Submit(sync_cpu, std::move(callback));
 }
 
-void SkiaOutputDeviceVulkan::SwapBuffers(
-    BufferPresentedCallback feedback,
-    std::vector<ui::LatencyInfo> latency_info) {
+void SkiaOutputDeviceVulkan::SwapBuffers(BufferPresentedCallback feedback,
+                                         OutputSurfaceFrame frame) {
   PostSubBuffer(gfx::Rect(vulkan_surface_->image_size()), std::move(feedback),
-                std::move(latency_info));
+                std::move(frame));
 }
 
-void SkiaOutputDeviceVulkan::PostSubBuffer(
-    const gfx::Rect& rect,
-    BufferPresentedCallback feedback,
-    std::vector<ui::LatencyInfo> latency_info) {
+void SkiaOutputDeviceVulkan::PostSubBuffer(const gfx::Rect& rect,
+                                           BufferPresentedCallback feedback,
+                                           OutputSurfaceFrame frame) {
   // Reshape should have been called first.
   DCHECK(vulkan_surface_);
   DCHECK(!scoped_write_);
@@ -156,10 +158,9 @@ void SkiaOutputDeviceVulkan::PostSubBuffer(
     // present thread. So the old swapchain can be destroyed properly.
     vulkan_surface_->PostSubBufferAsync(
         rect, base::BindOnce(&SkiaOutputDeviceVulkan::OnPostSubBufferFinished,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             std::move(latency_info)));
+                             weak_ptr_factory_.GetWeakPtr(), std::move(frame)));
   } else {
-    OnPostSubBufferFinished(std::move(latency_info), gfx::SwapResult::SWAP_ACK);
+    OnPostSubBufferFinished(std::move(frame), gfx::SwapResult::SWAP_ACK);
   }
 }
 
@@ -170,23 +171,9 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint(
 
   scoped_write_.emplace(vulkan_surface_->swap_chain());
   if (UNLIKELY(!scoped_write_->success())) {
+    // Return nullptr, and then the caller will make context lost.
     scoped_write_.reset();
-    if (UNLIKELY(vulkan_surface_->swap_chain()->state() !=
-                 VK_ERROR_SURFACE_LOST_KHR))
-      return nullptr;
-    auto result = RecreateSwapChain(vulkan_surface_->image_size(), color_space_,
-                                    vulkan_surface_->transform());
-    // If vulkan surface is lost, we will try to recreate swap chain.
-    if (UNLIKELY(!result)) {
-      LOG(DFATAL) << "Failed to recreate vulkan swap chain.";
-      return nullptr;
-    }
-
-    scoped_write_.emplace(vulkan_surface_->swap_chain());
-    if (UNLIKELY(!scoped_write_->success())) {
-      scoped_write_.reset();
-      return nullptr;
-    }
+    return nullptr;
   }
 
   auto& sk_surface =
@@ -207,10 +194,7 @@ SkSurface* SkiaOutputDeviceVulkan::BeginPaint(
     vk_image_info.fSampleCount = 1;
     vk_image_info.fLevelCount = 1;
     vk_image_info.fCurrentQueueFamily = VK_QUEUE_FAMILY_IGNORED;
-    vk_image_info.fProtected =
-        vulkan_surface_->swap_chain()->use_protected_memory()
-            ? GrProtected::kYes
-            : GrProtected::kNo;
+    vk_image_info.fProtected = GrProtected::kNo;
     const auto& vk_image_size = vulkan_surface_->image_size();
     GrBackendRenderTarget render_target(vk_image_size.width(),
                                         vk_image_size.height(),
@@ -278,6 +262,12 @@ bool SkiaOutputDeviceVulkan::Initialize() {
   accelerated_widget =
       gpu::GpuSurfaceLookup::GetInstance()->AcquireNativeWidget(
           surface_handle_, &can_be_used_with_surface_control);
+  base::ScopedClosureRunner release_runner(base::BindOnce(
+      [](gfx::AcceleratedWidget widget) {
+        if (widget)
+          ANativeWindow_release(widget);
+      },
+      accelerated_widget));
 #else
   accelerated_widget = surface_handle_;
 #endif
@@ -366,17 +356,16 @@ bool SkiaOutputDeviceVulkan::RecreateSwapChain(
   return true;
 }
 
-void SkiaOutputDeviceVulkan::OnPostSubBufferFinished(
-    std::vector<ui::LatencyInfo> latency_info,
-    gfx::SwapResult result) {
+void SkiaOutputDeviceVulkan::OnPostSubBufferFinished(OutputSurfaceFrame frame,
+                                                     gfx::SwapResult result) {
   if (LIKELY(result == gfx::SwapResult::SWAP_ACK)) {
     auto image_index = vulkan_surface_->swap_chain()->current_image_index();
     FinishSwapBuffers(gfx::SwapCompletionResult(result),
-                      vulkan_surface_->image_size(), std::move(latency_info),
+                      vulkan_surface_->image_size(), std::move(frame),
                       damage_of_images_[image_index]);
   } else {
     FinishSwapBuffers(gfx::SwapCompletionResult(result),
-                      vulkan_surface_->image_size(), std::move(latency_info),
+                      vulkan_surface_->image_size(), std::move(frame),
                       gfx::Rect(vulkan_surface_->image_size()));
   }
 }

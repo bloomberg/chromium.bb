@@ -17,14 +17,16 @@
 #include "ios/web/common/features.h"
 #include "ios/web/common/url_util.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
-#import "ios/web/navigation/error_page_helper.h"
+#import "ios/web/js_messaging/web_view_js_utils.h"
+#import "ios/web/navigation/crw_error_page_helper.h"
 #import "ios/web/navigation/navigation_context_impl.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/navigation/session_storage_builder.h"
-#import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/favicon/favicon_url.h"
+#include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
@@ -37,7 +39,6 @@
 #import "ios/web/public/web_state_delegate.h"
 #include "ios/web/public/web_state_observer.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
-#import "ios/web/security/web_interstitial_impl.h"
 #import "ios/web/session/session_certificate_policy_cache_impl.h"
 #import "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/policy_decision_state_tracker.h"
@@ -64,12 +65,7 @@ web::WebState* ReturnWeakReference(base::WeakPtr<WebStateImpl> weak_web_state) {
 
 /* static */
 std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
-  std::unique_ptr<WebStateImpl> web_state(new WebStateImpl(params));
-
-  // Initialize the new session.
-  web_state->GetNavigationManagerImpl().InitializeSession();
-
-  return web_state;
+  return std::make_unique<WebStateImpl>(params);
 }
 
 /* static */
@@ -90,13 +86,12 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
       is_being_destroyed_(false),
       web_controller_(nil),
       web_frames_manager_(*this),
-      interstitial_(nullptr),
       created_with_opener_(params.created_with_opener),
       user_agent_type_(features::UseWebClientDefaultUserAgent()
                            ? UserAgentType::AUTOMATIC
                            : UserAgentType::MOBILE),
       weak_factory_(this) {
-  navigation_manager_ = std::make_unique<WKBasedNavigationManagerImpl>();
+  navigation_manager_ = std::make_unique<NavigationManagerImpl>();
 
   navigation_manager_->SetDelegate(this);
   navigation_manager_->SetBrowserState(params.browser_state);
@@ -104,7 +99,7 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
   GlobalWebStateEventTracker::GetInstance()->OnWebStateCreated(this);
   web_controller_ = [[CRWWebController alloc] initWithWebState:this];
 
-  // Restore session history last because WKBasedNavigationManagerImpl relies on
+  // Restore session history last because NavigationManagerImpl relies on
   // CRWWebController to restore history into the web view.
   if (session_storage) {
     RestoreSessionStorage(session_storage);
@@ -332,34 +327,14 @@ bool WebStateImpl::HasWebUI() {
   return !!web_ui_;
 }
 
-const base::string16& WebStateImpl::GetTitle() const {
+const std::u16string& WebStateImpl::GetTitle() const {
   // TODO(stuartmorgan): Implement the NavigationManager logic necessary to
   // match the WebContents implementation of this method.
   DCHECK(Configured());
   web::NavigationItem* item = navigation_manager_->GetLastCommittedItem();
-  // Display title for the visible item makes more sense. Only do this in
-  // WKBasedNavigationManager for now to limit impact.
+  // Display title for the visible item makes more sense.
   item = navigation_manager_->GetVisibleItem();
   return item ? item->GetTitleForDisplay() : empty_string16_;
-}
-
-bool WebStateImpl::IsShowingWebInterstitial() const {
-  // Technically we could have |interstitial_| set but its view isn't
-  // being displayed, but there's no code path where that could occur.
-  return interstitial_ != nullptr;
-}
-
-WebInterstitial* WebStateImpl::GetWebInterstitial() const {
-  return interstitial_;
-}
-
-void WebStateImpl::ShowWebInterstitial(WebInterstitialImpl* interstitial) {
-  DCHECK(Configured());
-  interstitial_ = interstitial;
-
-  DCHECK(interstitial_->GetContentView());
-  DCHECK(interstitial_->GetContentView().scrollView);
-  [web_controller_ showTransientContentView:interstitial_->GetContentView()];
 }
 
 void WebStateImpl::SendChangeLoadProgress(double progress) {
@@ -412,6 +387,10 @@ void WebStateImpl::JavaScriptDialogClosed(
     weak_web_state->running_javascript_dialog_ = false;
   }
   std::move(callback).Run(success, user_input);
+}
+
+bool WebStateImpl::IsJavaScriptDialogRunning() {
+  return running_javascript_dialog_;
 }
 
 WebState* WebStateImpl::CreateNewWebState(const GURL& url,
@@ -497,6 +476,17 @@ WebStatePolicyDecider::PolicyDecision WebStateImpl::ShouldAllowRequest(
     }
   }
   return WebStatePolicyDecider::PolicyDecision::Allow();
+}
+
+bool WebStateImpl::ShouldAllowErrorPageToBeDisplayed(NSURLResponse* response,
+                                                     bool for_main_frame) {
+  for (auto& policy_decider : policy_deciders_) {
+    if (!policy_decider.ShouldAllowErrorPageToBeDisplayed(response,
+                                                          for_main_frame)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void WebStateImpl::ShouldAllowResponse(
@@ -622,7 +612,6 @@ BrowserState* WebStateImpl::GetBrowserState() const {
 
 void WebStateImpl::OpenURL(const WebState::OpenURLParams& params) {
   DCHECK(Configured());
-  ClearTransientContent();
   if (delegate_)
     delegate_->OpenURLFromWebState(this, params);
 }
@@ -688,20 +677,20 @@ CRWJSInjectionReceiver* WebStateImpl::GetJSInjectionReceiver() const {
   return [web_controller_.jsInjector JSInjectionReceiver];
 }
 
-void WebStateImpl::ExecuteJavaScript(const base::string16& javascript) {
+void WebStateImpl::ExecuteJavaScript(const std::u16string& javascript) {
   [web_controller_.jsInjector
       executeJavaScript:base::SysUTF16ToNSString(javascript)
       completionHandler:nil];
 }
 
-void WebStateImpl::ExecuteJavaScript(const base::string16& javascript,
+void WebStateImpl::ExecuteJavaScript(const std::u16string& javascript,
                                      JavaScriptResultCallback callback) {
   __block JavaScriptResultCallback stack_callback = std::move(callback);
   [web_controller_.jsInjector
       executeJavaScript:base::SysUTF16ToNSString(javascript)
       completionHandler:^(id value, NSError* error) {
         if (error) {
-          DLOG(WARNING) << "Script execution has failed: "
+          DLOG(WARNING) << "Script execution failed with error: "
                         << base::SysNSStringToUTF16(
                                error.userInfo[NSLocalizedDescriptionKey]);
         }
@@ -774,9 +763,9 @@ GURL WebStateImpl::GetCurrentURL(URLVerificationTrustLevel* trust_level) const {
   return result;
 }
 
-std::unique_ptr<WebState::ScriptCommandSubscription>
-WebStateImpl::AddScriptCommandCallback(const ScriptCommandCallback& callback,
-                                       const std::string& command_prefix) {
+base::CallbackListSubscription WebStateImpl::AddScriptCommandCallback(
+    const ScriptCommandCallback& callback,
+    const std::string& command_prefix) {
   DCHECK(!command_prefix.empty());
   DCHECK(command_prefix.find_first_of('.') == std::string::npos);
   DCHECK(script_command_callbacks_.count(command_prefix) == 0 ||
@@ -832,7 +821,7 @@ void WebStateImpl::OnNavigationStarted(web::NavigationContextImpl* context) {
   if ((!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
        context->IsPlaceholderNavigation()) ||
       (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
-       [ErrorPageHelper isErrorPageFileURL:context->GetUrl()]) ||
+       [CRWErrorPageHelper isErrorPageFileURL:context->GetUrl()]) ||
       wk_navigation_util::IsRestoreSessionUrl(context->GetUrl())) {
     return;
   }
@@ -852,7 +841,7 @@ void WebStateImpl::OnNavigationFinished(web::NavigationContextImpl* context) {
   if ((!base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
        context->IsPlaceholderNavigation()) ||
       (base::FeatureList::IsEnabled(web::features::kUseJSForErrorPage) &&
-       [ErrorPageHelper isErrorPageFileURL:context->GetUrl()]) ||
+       [CRWErrorPageHelper isErrorPageFileURL:context->GetUrl()]) ||
       wk_navigation_util::IsRestoreSessionUrl(context->GetUrl())) {
     return;
   }
@@ -876,44 +865,12 @@ void WebStateImpl::OnNavigationFinished(web::NavigationContextImpl* context) {
 
 #pragma mark - NavigationManagerDelegate implementation
 
-void WebStateImpl::ClearTransientContent() {
-  if (interstitial_) {
-    // |visible_item| can be null if non-committed entries where discarded.
-    NavigationItem* visible_item = navigation_manager_->GetVisibleItem();
-    const SSLStatus old_status =
-        visible_item ? visible_item->GetSSL() : SSLStatus();
-    // Store the currently displayed interstitial in a local variable and reset
-    // |interstitial_| early.  This is to prevent an infinite loop, as
-    // |DontProceed()| internally calls |ClearTransientContent()|.
-    web::WebInterstitial* interstitial = interstitial_;
-    interstitial_ = nullptr;
-    interstitial->DontProceed();
-    // Don't access |interstitial| after calling |DontProceed()|, as it triggers
-    // deletion.
-
-    const web::NavigationItem* new_item = navigation_manager_->GetVisibleItem();
-    if (!new_item || !visible_item || !new_item->GetSSL().Equals(old_status)) {
-      // Visible SSL state has actually changed after interstitial dismissal.
-      DidChangeVisibleSecurityState();
-    }
-  }
-  [web_controller_ clearTransientContentView];
-}
-
 void WebStateImpl::ClearDialogs() {
   CancelDialogs();
 }
 
 void WebStateImpl::RecordPageStateInNavigationItem() {
   [web_controller_ recordStateInHistory];
-}
-
-void WebStateImpl::OnGoToIndexSameDocumentNavigation(
-    NavigationInitiationType type,
-    bool has_user_gesture) {
-  [web_controller_
-      didFinishGoToIndexSameDocumentNavigationWithType:type
-                                        hasUserGesture:has_user_gesture];
 }
 
 void WebStateImpl::LoadCurrentItem(NavigationInitiationType type) {
@@ -970,16 +927,32 @@ NavigationItemImpl* WebStateImpl::GetPendingItem() {
 }
 
 void WebStateImpl::RestoreSessionStorage(CRWSessionStorage* session_storage) {
-  // Session storage restore is asynchronous with WKBasedNavigationManager
-  // because it involves a page load in WKWebView. Temporarily cache the
-  // restored session so it can be returned if BuildSessionStorage() or
-  // GetTitle() is called before the actual restoration completes. This can
-  // happen to inactive tabs when a navigation in the current tab triggers the
-  // serialization of all tabs and when user clicks on tab switcher without
-  // switching to a tab.
+  // Session storage restore is asynchronous because it involves a page load in
+  // WKWebView. Temporarily cache the restored session so it can be returned if
+  // BuildSessionStorage() or GetTitle() is called before the actual restoration
+  // completes. This can happen to inactive tabs when a navigation in the
+  // current tab triggers the serialization of all tabs and when user clicks on
+  // tab switcher without switching to a tab.
   restored_session_storage_ = session_storage;
   SessionStorageBuilder session_storage_builder;
   session_storage_builder.ExtractSessionState(this, session_storage);
+}
+
+bool WebStateImpl::SetSessionStateData(NSData* data) {
+  return [web_controller_ setSessionStateData:data];
+}
+
+NSData* WebStateImpl::SessionStateData() {
+  // Don't mix safe and unsafe session restoration -- if a webState still
+  // has unrestored targetUrl pages, leave it that way.
+  for (int i = 0; i < navigation_manager_->GetItemCount(); i++) {
+    web::NavigationItem* item = navigation_manager_->GetItemAtIndex(i);
+    if (web::wk_navigation_util::IsRestoreSessionUrl(item->GetURL())) {
+      return nullptr;
+    }
+  }
+
+  return [web_controller_ sessionStateData];
 }
 
 }  // namespace web

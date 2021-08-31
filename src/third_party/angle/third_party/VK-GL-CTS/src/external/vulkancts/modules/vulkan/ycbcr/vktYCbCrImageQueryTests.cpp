@@ -280,11 +280,11 @@ Move<VkDescriptorSetLayout> createDescriptorSetLayout (const DeviceInterface& vk
 	return createDescriptorSetLayout(vkd, device, &layoutInfo);
 }
 
-Move<VkDescriptorPool> createDescriptorPool (const DeviceInterface& vkd, VkDevice device)
+Move<VkDescriptorPool> createDescriptorPool (const DeviceInterface& vkd, VkDevice device, const deUint32 combinedSamplerDescriptorCount)
 {
 	const VkDescriptorPoolSize			poolSizes[]	=
 	{
-		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	1u	},
+		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	combinedSamplerDescriptorCount	},
 	};
 	const VkDescriptorPoolCreateInfo	poolInfo	=
 	{
@@ -361,6 +361,7 @@ UVec2 getMaxPlaneDivisor (const PlanarFormatDescription& formatDesc)
 tcu::TestStatus testImageQuery (Context& context, TestParameters params)
 {
 	const bool							isYCbCrImage	= isYCbCrFormat(params.format);
+	const InstanceInterface&			vk				= context.getInstanceInterface();
 	const DeviceInterface&				vkd				= context.getDeviceInterface();
 	const VkDevice						device			= context.getDevice();
 
@@ -415,9 +416,37 @@ tcu::TestStatus testImageQuery (Context& context, TestParameters params)
 		VK_FALSE,									// unnormalizedCoords
 	};
 
+	deUint32										combinedSamplerDescriptorCount	= 1;
+
+	if (isYCbCrImage)
+	{
+		const VkPhysicalDeviceImageFormatInfo2			imageFormatInfo				=
+		{
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,	// sType
+			DE_NULL,												// pNext
+			params.format,											// format
+			VK_IMAGE_TYPE_2D,										// type
+			VK_IMAGE_TILING_OPTIMAL,								// tiling
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+			VK_IMAGE_USAGE_SAMPLED_BIT,								// usage
+			params.flags											// flags
+		};
+
+		VkSamplerYcbcrConversionImageFormatProperties	samplerYcbcrConversionImage	= {};
+		samplerYcbcrConversionImage.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES;
+		samplerYcbcrConversionImage.pNext = DE_NULL;
+
+		VkImageFormatProperties2						imageFormatProperties		= {};
+		imageFormatProperties.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2;
+		imageFormatProperties.pNext = &samplerYcbcrConversionImage;
+
+		VK_CHECK(vk.getPhysicalDeviceImageFormatProperties2(context.getPhysicalDevice(), &imageFormatInfo, &imageFormatProperties));
+		combinedSamplerDescriptorCount = samplerYcbcrConversionImage.combinedImageSamplerDescriptorCount;
+	}
+
 	const Unique<VkSampler>				sampler		(createSampler(vkd, device, &samplerInfo));
 	const Unique<VkDescriptorSetLayout>	descLayout	(createDescriptorSetLayout(vkd, device, *sampler));
-	const Unique<VkDescriptorPool>		descPool	(createDescriptorPool(vkd, device));
+	const Unique<VkDescriptorPool>		descPool	(createDescriptorPool(vkd, device, combinedSamplerDescriptorCount));
 	const Unique<VkDescriptorSet>		descSet		(createDescriptorSet(vkd, device, *descPool, *descLayout));
 
 	vector<TestImageSp>					testImages;
@@ -508,11 +537,14 @@ void checkSupport (Context& context, TestParameters params)
 
 	if (isYCbCrImage)
 		checkImageSupport(context, params.format, params.flags);
+
+	checkSupportShader(context, params.shaderType);
 }
 
 tcu::TestStatus testImageQueryLod (Context& context, TestParameters params)
 {
 	const bool							isYCbCrImage	= isYCbCrFormat(params.format);
+	const InstanceInterface&			vk				= context.getInstanceInterface();
 	const DeviceInterface&				vkd				= context.getDeviceInterface();
 	const VkDevice						device			= context.getDevice();
 
@@ -567,9 +599,37 @@ tcu::TestStatus testImageQueryLod (Context& context, TestParameters params)
 		VK_FALSE,									// unnormalizedCoords
 	};
 
+	deUint32										combinedSamplerDescriptorCount	= 1;
+
+	if (isYCbCrImage)
+	{
+		const VkPhysicalDeviceImageFormatInfo2		imageFormatInfo					=
+		{
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,	// sType;
+			DE_NULL,												// pNext;
+			params.format,											// format;
+			VK_IMAGE_TYPE_2D,										// type;
+			VK_IMAGE_TILING_OPTIMAL,								// tiling;
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+			VK_IMAGE_USAGE_SAMPLED_BIT,								// usage;
+			params.flags											// flags;
+		};
+
+		VkSamplerYcbcrConversionImageFormatProperties	samplerYcbcrConversionImage = {};
+		samplerYcbcrConversionImage.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES;
+		samplerYcbcrConversionImage.pNext = DE_NULL;
+
+		VkImageFormatProperties2						imageFormatProperties		= {};
+		imageFormatProperties.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2;
+		imageFormatProperties.pNext = &samplerYcbcrConversionImage;
+
+		VK_CHECK(vk.getPhysicalDeviceImageFormatProperties2(context.getPhysicalDevice(), &imageFormatInfo, &imageFormatProperties));
+		combinedSamplerDescriptorCount = samplerYcbcrConversionImage.combinedImageSamplerDescriptorCount;
+	}
+
 	const Unique<VkSampler>				sampler		(createSampler(vkd, device, &samplerInfo));
 	const Unique<VkDescriptorSetLayout>	descLayout	(createDescriptorSetLayout(vkd, device, *sampler));
-	const Unique<VkDescriptorPool>		descPool	(createDescriptorPool(vkd, device));
+	const Unique<VkDescriptorPool>		descPool	(createDescriptorPool(vkd, device, combinedSamplerDescriptorCount));
 	const Unique<VkDescriptorSet>		descSet		(createDescriptorSet(vkd, device, *descPool, *descLayout));
 
 	vector<TestImageSp>					testImages;
@@ -766,6 +826,16 @@ void populateQueryInShaderGroup (tcu::TestCaseGroup* group, QueryGroupParams par
 	addImageQueryCase(group, TestParameters(params.query, VK_FORMAT_R8G8B8A8_UNORM, 0u, params.shaderType));
 
 	for (int formatNdx = VK_YCBCR_FORMAT_FIRST; formatNdx < VK_YCBCR_FORMAT_LAST; formatNdx++)
+	{
+		const VkFormat	format	= (VkFormat)formatNdx;
+
+		addImageQueryCase(group, TestParameters(params.query, format, 0u, params.shaderType));
+
+		if (getPlaneCount(format) > 1)
+			addImageQueryCase(group, TestParameters(params.query, format, (VkImageCreateFlags)VK_IMAGE_CREATE_DISJOINT_BIT, params.shaderType));
+	}
+
+	for (int formatNdx = VK_FORMAT_G8_B8R8_2PLANE_444_UNORM_EXT; formatNdx <= VK_FORMAT_G16_B16R16_2PLANE_444_UNORM_EXT; formatNdx++)
 	{
 		const VkFormat	format	= (VkFormat)formatNdx;
 

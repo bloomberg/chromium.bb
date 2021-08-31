@@ -74,8 +74,8 @@
 #define WUFFS_IMPLEMENTATION
 
 // Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
-// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
-// the entire Wuffs standard library, implementing a variety of codecs and file
+// release/c/etc.c choose which parts of Wuffs to build. That file contains the
+// entire Wuffs standard library, implementing a variety of codecs and file
 // formats. Without this macro definition, an optimizing compiler or linker may
 // very well discard Wuffs code for unused codecs, but listing the Wuffs
 // modules we use makes that process explicit. Preprocessing means that such
@@ -365,19 +365,19 @@ main1(int argc, char** argv) {
 
         } else {
           uint8_t buf[16];
-          wuffs_base__store_u32be__no_bounds_check(&buf[0x0], (uint32_t)(pos));
-          wuffs_base__store_u16be__no_bounds_check(&buf[0x4], len);
-          wuffs_base__store_u16be__no_bounds_check(&buf[0x6], con);
+          wuffs_base__poke_u32be__no_bounds_check(&buf[0x0], (uint32_t)(pos));
+          wuffs_base__poke_u16be__no_bounds_check(&buf[0x4], len);
+          wuffs_base__poke_u16be__no_bounds_check(&buf[0x6], con);
           if (vmajor > 0) {
-            wuffs_base__store_u32be__no_bounds_check(&buf[0x8], vmajor);
-            wuffs_base__store_u32be__no_bounds_check(&buf[0xC], vminor);
+            wuffs_base__poke_u32be__no_bounds_check(&buf[0x8], vmajor);
+            wuffs_base__poke_u32be__no_bounds_check(&buf[0xC], vminor);
           } else if (vmajor == 0) {
-            wuffs_base__store_u32be__no_bounds_check(&buf[0x8], 0);
-            wuffs_base__store_u8__no_bounds_check(&buf[0x000C], vbc);
-            wuffs_base__store_u24be__no_bounds_check(&buf[0xD], vbd);
+            wuffs_base__poke_u32be__no_bounds_check(&buf[0x8], 0);
+            wuffs_base__poke_u8__no_bounds_check(&buf[0x000C], vbc);
+            wuffs_base__poke_u24be__no_bounds_check(&buf[0xD], vbd);
           } else {
-            wuffs_base__store_u8__no_bounds_check(&buf[0x0008], 0x01);
-            wuffs_base__store_u56be__no_bounds_check(
+            wuffs_base__poke_u8__no_bounds_check(&buf[0x0008], 0x01);
+            wuffs_base__poke_u56be__no_bounds_check(
                 &buf[0x9], wuffs_base__token__value_extension(t));
           }
           const int stdout_fd = 1;

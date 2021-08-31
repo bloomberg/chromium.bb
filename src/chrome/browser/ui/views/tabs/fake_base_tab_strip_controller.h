@@ -9,11 +9,11 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/optional.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/list_selection_model.h"
 
 class FakeBaseTabStripController : public TabStripController {
@@ -29,7 +29,7 @@ class FakeBaseTabStripController : public TabStripController {
   void RemoveTab(int index);
 
   void MoveTabIntoGroup(int index,
-                        base::Optional<tab_groups::TabGroupId> new_group);
+                        absl::optional<tab_groups::TabGroupId> new_group);
 
   ui::ListSelectionModel* selection_model() { return &selection_model_; }
 
@@ -60,14 +60,14 @@ class FakeBaseTabStripController : public TabStripController {
   int HasAvailableDragActions() const override;
   void OnDropIndexUpdate(int index, bool drop_before) override;
   void CreateNewTab() override;
-  void CreateNewTabWithLocation(const base::string16& loc) override;
+  void CreateNewTabWithLocation(const std::u16string& loc) override;
   void StackedLayoutMaybeChanged() override;
   void OnStartedDragging(bool dragging_window) override;
   void OnStoppedDragging() override;
-  void OnKeyboardFocusedTabChanged(base::Optional<int> index) override;
-  base::string16 GetGroupTitle(
+  void OnKeyboardFocusedTabChanged(absl::optional<int> index) override;
+  std::u16string GetGroupTitle(
       const tab_groups::TabGroupId& group_id) const override;
-  base::string16 GetGroupContentString(
+  std::u16string GetGroupContentString(
       const tab_groups::TabGroupId& group_id) const override;
   tab_groups::TabGroupColorId GetGroupColorId(
       const tab_groups::TabGroupId& group_id) const override;
@@ -75,7 +75,11 @@ class FakeBaseTabStripController : public TabStripController {
   void SetVisualDataForGroup(
       const tab_groups::TabGroupId& group,
       const tab_groups::TabGroupVisualData& visual_data) override;
-  std::vector<int> ListTabsInGroup(
+  absl::optional<int> GetFirstTabInGroup(
+      const tab_groups::TabGroupId& group) const override;
+  absl::optional<int> GetLastTabInGroup(
+      const tab_groups::TabGroupId& group) const override;
+  gfx::Range ListTabsInGroup(
       const tab_groups::TabGroupId& group) const override;
   void AddTabToGroup(int model_index,
                      const tab_groups::TabGroupId& group) override;
@@ -87,9 +91,9 @@ class FakeBaseTabStripController : public TabStripController {
   bool CanDrawStrokes() const override;
   SkColor GetFrameColor(BrowserFrameActiveState active_state) const override;
   SkColor GetToolbarTopSeparatorColor() const override;
-  base::Optional<int> GetCustomBackgroundId(
+  absl::optional<int> GetCustomBackgroundId(
       BrowserFrameActiveState active_state) const override;
-  base::string16 GetAccessibleTabName(const Tab* tab) const override;
+  std::u16string GetAccessibleTabName(const Tab* tab) const override;
   Profile* GetProfile() const override;
   const Browser* GetBrowser() const override;
 
@@ -102,7 +106,7 @@ class FakeBaseTabStripController : public TabStripController {
   int active_index_ = -1;
 
   tab_groups::TabGroupVisualData fake_group_data_;
-  std::vector<base::Optional<tab_groups::TabGroupId>> tab_groups_;
+  std::vector<absl::optional<tab_groups::TabGroupId>> tab_groups_;
 
   ui::ListSelectionModel selection_model_;
 };

@@ -10,31 +10,41 @@ source_set("share") {
   sources = [
     "bitmap_download_request.cc",
     "editor_screenshot_task.cc",
-    "features.cc",
-    "features.h",
-    "link_to_text_metrics_bridge.cc",
+    "link_to_text_bridge.cc",
     "qr_code_generation_request.cc",
     "qr_code_generation_request.h",
+    "share_history.cc",
+    "share_history.h",
   ]
   deps = [
     "//base",
+    "//chrome/browser/profiles:profile",
     "//chrome/browser/share/android:jni_headers",
+    "//chrome/browser/share/proto:proto",
     "//chrome/services/qrcode_generator/public/cpp",
     "//chrome/services/qrcode_generator/public/mojom",
+    "//components/leveldb_proto:leveldb_proto",
     "//components/shared_highlighting/core/common",
     "//content/public/browser",
     "//skia",
     "//ui/android",
     "//ui/gfx",
     "//ui/snapshot",
+    "//url:gurl_android",
   ]
 }
 
 android_library("java") {
   sources = [
     "android/java/src/org/chromium/chrome/browser/share/ChromeShareExtras.java",
+    "android/java/src/org/chromium/chrome/browser/share/ShareDelegate.java",
     "android/java/src/org/chromium/chrome/browser/share/share_sheet/ChromeOptionShareCallback.java",
   ]
 
-  deps = [ "//components/browser_ui/share/android:java" ]
+  deps = [
+    "//chrome/browser/tab:java",
+    "//components/browser_ui/share/android:java",
+    "//third_party/androidx:androidx_annotation_annotation_java",
+    "//url:gurl_java",
+  ]
 }

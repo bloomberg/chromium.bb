@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
@@ -31,11 +30,9 @@ class SubresourceFilterWorkerFetchBrowserTest
  protected:
   void RunTest(const std::string& document_path,
                const std::string& filter_path) {
-    const base::string16 fetch_succeeded_title =
-        base::ASCIIToUTF16("FetchSucceeded");
-    const base::string16 fetch_failed_title = base::ASCIIToUTF16("FetchFailed");
-    const base::string16 fetch_partially_failed_title =
-        base::ASCIIToUTF16("FetchPartiallyFailed");
+    const std::u16string fetch_succeeded_title = u"FetchSucceeded";
+    const std::u16string fetch_failed_title = u"FetchFailed";
+    const std::u16string fetch_partially_failed_title = u"FetchPartiallyFailed";
 
     GURL url(GetTestUrl(document_path));
     ConfigureAsPhishingURL(url);
@@ -70,8 +67,8 @@ class SubresourceFilterWorkerFetchBrowserTest
   }
 
   void ClearTitle() {
-    ASSERT_TRUE(content::ExecuteScript(web_contents()->GetMainFrame(),
-                                       "document.title = \"\";"));
+    ASSERT_TRUE(content::ExecJs(web_contents()->GetMainFrame(),
+                                "document.title = \"\";"));
   }
 
  private:

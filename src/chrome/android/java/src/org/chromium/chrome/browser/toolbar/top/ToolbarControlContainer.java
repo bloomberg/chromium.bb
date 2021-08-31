@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,13 +17,15 @@ import android.view.ViewStub;
 
 import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.resources.ResourceFactory;
-import org.chromium.chrome.browser.contextualsearch.SwipeRecognizer;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
 import org.chromium.chrome.browser.toolbar.ToolbarProgressBar;
 import org.chromium.components.browser_ui.widget.ClipDrawableProgressBar.DrawingInfo;
 import org.chromium.components.browser_ui.widget.ViewResourceFrameLayout;
+import org.chromium.components.browser_ui.widget.gesture.SwipeGestureListener;
+import org.chromium.components.browser_ui.widget.gesture.SwipeGestureListener.SwipeHandler;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.resources.dynamics.ViewResourceAdapter;
@@ -37,8 +40,7 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
     private Toolbar mToolbar;
     private ToolbarViewResourceFrameLayout mToolbarContainer;
 
-    private final SwipeRecognizer mSwipeRecognizer;
-    private EdgeSwipeHandler mSwipeHandler;
+    private SwipeGestureListener mSwipeGestureListener;
 
     /**
      * Constructs a new control container.
@@ -51,7 +53,6 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
     public ToolbarControlContainer(Context context, AttributeSet attrs) {
         super(context, attrs);
         mTabStripHeight = context.getResources().getDimension(R.dimen.tab_strip_height);
-        mSwipeRecognizer = new SwipeRecognizerImpl(context);
     }
 
     @Override
@@ -79,9 +80,8 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
     }
 
     @Override
-    public void setSwipeHandler(EdgeSwipeHandler handler) {
-        mSwipeHandler = handler;
-        mSwipeRecognizer.setSwipeHandler(handler);
+    public void setSwipeHandler(SwipeHandler handler) {
+        mSwipeGestureListener = new SwipeGestureListenerImpl(getContext(), handler);
     }
 
     @Override
@@ -111,21 +111,6 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
             // ready to draw the real tab strip. (On phone, the toolbar is made entirely
             // of Android views, which are already initialized.)
             setBackgroundResource(R.drawable.toolbar_background);
-        }
-    }
-
-    /**
-     * TODO(crbug.com/1136111): Try to remove this method. ToolbarContainer's visibility should not
-     * be set outside this class. Please do not use this method without discussing with the owners.
-     *
-     * Sets the visibility of the toolbar_container view.
-     */
-    @Deprecated
-    void setToolbarContainerVisibility(int visibility) {
-        mToolbarContainer.setVisibility(visibility);
-        // Trigger a capture when toolbar container view is set visible.
-        if (mToolbarContainer.isReadyForCapture()) {
-            invalidateBitmap();
         }
     }
 
@@ -171,7 +156,12 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
 
         @Override
         protected ViewResourceAdapter createResourceAdapter() {
-            return new ToolbarViewResourceAdapter(this);
+            boolean useHardwareBitmapDraw = false;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                useHardwareBitmapDraw = CachedFeatureFlags.isEnabled(
+                        ChromeFeatureList.TOOLBAR_USE_HARDWARE_BITMAP_DRAW);
+            }
+            return new ToolbarViewResourceAdapter(this, useHardwareBitmapDraw);
         }
 
         public void setToolbar(Toolbar toolbar) {
@@ -194,8 +184,8 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
         private int mTabStripHeightPx;
 
         /** Builds the resource adapter for the toolbar. */
-        public ToolbarViewResourceAdapter(View toolbarContainer) {
-            super(toolbarContainer);
+        public ToolbarViewResourceAdapter(View toolbarContainer, boolean useHardwareBitmapDraw) {
+            super(toolbarContainer, useHardwareBitmapDraw);
             mToolbarContainer = toolbarContainer;
         }
 
@@ -263,7 +253,7 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         // Don't eat the event if we don't have a handler.
-        if (mSwipeHandler == null) return false;
+        if (mSwipeGestureListener == null) return false;
 
         // Don't react on touch events if the toolbar container is not fully visible.
         if (!isToolbarContainerFullyVisible()) return true;
@@ -277,15 +267,15 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
             return true;
         }
 
-        return mSwipeRecognizer.onTouchEvent(event);
+        return mSwipeGestureListener.onTouchEvent(event);
     }
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
         if (!isToolbarContainerFullyVisible()) return true;
-        if (mSwipeHandler == null || isOnTabStrip(event)) return false;
+        if (mSwipeGestureListener == null || isOnTabStrip(event)) return false;
 
-        return mSwipeRecognizer.onTouchEvent(event);
+        return mSwipeGestureListener.onTouchEvent(event);
     }
 
     private boolean isOnTabStrip(MotionEvent e) {
@@ -300,9 +290,9 @@ public class ToolbarControlContainer extends OptimizedFrameLayout implements Con
                 && mToolbarContainer.getVisibility() == VISIBLE;
     }
 
-    private class SwipeRecognizerImpl extends SwipeRecognizer {
-        public SwipeRecognizerImpl(Context context) {
-            super(context);
+    private class SwipeGestureListenerImpl extends SwipeGestureListener {
+        public SwipeGestureListenerImpl(Context context, SwipeHandler handler) {
+            super(context, handler);
         }
 
         @Override

@@ -30,6 +30,7 @@
 #define AVCODEC_MJPEGDEC_H
 
 #include "libavutil/log.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/stereo3d.h"
 
@@ -49,6 +50,8 @@ typedef struct MJpegDecodeContext {
     GetBitContext gb;
     int buf_size;
 
+    AVPacket *pkt;
+
     int start_code; /* current start code */
     int buffer_size;
     uint8_t *buffer;
@@ -57,7 +60,7 @@ typedef struct MJpegDecodeContext {
     VLC vlcs[3][4];
     int qscale[4];      ///< quantizer scale calculated from quant_matrixes
 
-    int org_height;  /* size given at codec init */
+    int orig_height;  /* size given at codec init */
     int first_picture;    /* true if decoding first picture */
     int interlaced;     /* true if interlaced */
     int bottom_field;   /* true if bottom field */
@@ -140,6 +143,10 @@ typedef struct MJpegDecodeContext {
     int iccnum;
     int iccread;
 
+    AVFrame *smv_frame;
+    int smv_frames_per_jpeg;
+    int smv_next_frame;
+
     // Raw stream data for hwaccel use.
     const uint8_t *raw_image_buffer;
     size_t         raw_image_buffer_size;
@@ -154,11 +161,11 @@ typedef struct MJpegDecodeContext {
     void *hwaccel_picture_private;
 } MJpegDecodeContext;
 
+int ff_mjpeg_build_vlc(VLC *vlc, const uint8_t *bits_table,
+                       const uint8_t *val_table, int is_ac, void *logctx);
 int ff_mjpeg_decode_init(AVCodecContext *avctx);
 int ff_mjpeg_decode_end(AVCodecContext *avctx);
-int ff_mjpeg_decode_frame(AVCodecContext *avctx,
-                          void *data, int *got_frame,
-                          AVPacket *avpkt);
+int ff_mjpeg_receive_frame(AVCodecContext *avctx, AVFrame *frame);
 int ff_mjpeg_decode_dqt(MJpegDecodeContext *s);
 int ff_mjpeg_decode_dht(MJpegDecodeContext *s);
 int ff_mjpeg_decode_sof(MJpegDecodeContext *s);
@@ -168,5 +175,7 @@ int ff_mjpeg_decode_sos(MJpegDecodeContext *s,
 int ff_mjpeg_find_marker(MJpegDecodeContext *s,
                          const uint8_t **buf_ptr, const uint8_t *buf_end,
                          const uint8_t **unescaped_buf_ptr, int *unescaped_buf_size);
+
+int ff_sp5x_process_packet(AVCodecContext *avctx, AVPacket *avpkt);
 
 #endif /* AVCODEC_MJPEGDEC_H */

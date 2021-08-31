@@ -51,20 +51,20 @@ public class AutofillAssistantPreferencesUtil {
                 ChromePreferenceKeys.AUTOFILL_ASSISTANT_PROACTIVE_HELP, enabled);
     }
 
-    /** Returns whether the user has seen a lite script before or not. */
-    public static boolean isAutofillAssistantFirstTimeLiteScriptUser() {
+    /** Returns whether the user has seen a trigger script before or not. */
+    public static boolean isAutofillAssistantFirstTimeTriggerScriptUser() {
         return SharedPreferencesManager.getInstance().readBoolean(
                 ChromePreferenceKeys.AUTOFILL_ASSISTANT_FIRST_TIME_LITE_SCRIPT_USER, true);
     }
 
-    /** Marks a user as having seen a lite script at least once before. */
-    public static void setAutofillAssistantReturningLiteScriptUser() {
+    /** Marks a user as having seen a trigger script at least once before. */
+    public static void setAutofillAssistantFirstTimeTriggerScriptUser(boolean firstTimeUser) {
         SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.AUTOFILL_ASSISTANT_FIRST_TIME_LITE_SCRIPT_USER, false);
+                ChromePreferenceKeys.AUTOFILL_ASSISTANT_FIRST_TIME_LITE_SCRIPT_USER, firstTimeUser);
     }
 
     /** Returns the number of times a user has explicitly canceled a lite script. */
-    static int getAutofillAssistantNumberOfLiteScriptsCanceled() {
+    private static int getAutofillAssistantNumberOfLiteScriptsCanceled() {
         return SharedPreferencesManager.getInstance().readInt(
                 ChromePreferenceKeys.AUTOFILL_ASSISTANT_NUMBER_OF_LITE_SCRIPTS_CANCELED, 0);
     }
@@ -73,13 +73,13 @@ public class AutofillAssistantPreferencesUtil {
      * Returns whether the user has explicitly canceled the lite script at least {@code
      * LITE_SCRIPT_MAX_NUM_CANCELED_TO_OPT_OUT} times.
      */
-    static boolean isAutofillAssistantLiteScriptCancelThresholdReached() {
+    public static boolean isAutofillAssistantLiteScriptCancelThresholdReached() {
         return getAutofillAssistantNumberOfLiteScriptsCanceled()
                 >= LITE_SCRIPT_MAX_NUM_CANCELED_TO_OPT_OUT;
     }
 
     /** Increments the number of times a user has explicitly canceled a lite script. */
-    static void incrementAutofillAssistantNumberOfLiteScriptsCanceled() {
+    public static void incrementAutofillAssistantNumberOfLiteScriptsCanceled() {
         int numCanceled = getAutofillAssistantNumberOfLiteScriptsCanceled() + 1;
         SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
         sharedPreferencesManager.writeInt(
@@ -97,7 +97,7 @@ public class AutofillAssistantPreferencesUtil {
     }
 
     /** Checks whether the Autofill Assistant onboarding has been accepted. */
-    static boolean isAutofillOnboardingAccepted() {
+    public static boolean isAutofillOnboardingAccepted() {
         return SharedPreferencesManager.getInstance().readBoolean(
                        ChromePreferenceKeys.AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED, false)
                 ||
@@ -121,7 +121,7 @@ public class AutofillAssistantPreferencesUtil {
      *
      * @param accept Flag indicating whether the ToS have been accepted.
      */
-    static void setInitialPreferences(boolean accept) {
+    public static void setInitialPreferences(boolean accept) {
         if (accept) {
             SharedPreferencesManager.getInstance().writeBoolean(
                     ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, accept);

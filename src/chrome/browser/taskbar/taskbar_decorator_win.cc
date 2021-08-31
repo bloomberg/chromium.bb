@@ -7,6 +7,8 @@
 #include <objbase.h>
 #include <shobjidl.h>
 #include <wrl/client.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -92,7 +94,7 @@ void SetOverlayIcon(HWND hwnd,
     // it in the paintable region instead, rounding up to the closest pixel to
     // avoid smearing.
     const int y_offset = std::ceilf((kOverlayIconSize - resized_height) / 2.0f);
-    offscreen_canvas.drawBitmap(sk_icon, 0, y_offset);
+    offscreen_canvas.drawImage(sk_icon.asImage(), 0, y_offset);
 
     icon = IconUtil::CreateHICONFromSkBitmap(offscreen_bitmap);
     if (!icon.is_valid())
@@ -180,8 +182,8 @@ void DrawTaskbarDecoration(gfx::NativeWindow window, const gfx::Image* image) {
   if (image) {
     // If `image` is an old avatar, then it's guaranteed to by 2x by code in
     // ProfileAttributesEntry::GetAvatarIcon().
-    bitmap.reset(new SkBitmap(
-        profiles::GetWin2xAvatarIconAsSquare(*image->ToSkBitmap())));
+    bitmap = std::make_unique<SkBitmap>(
+        profiles::GetWin2xAvatarIconAsSquare(*image->ToSkBitmap()));
   }
 
   PostSetOverlayIcon(hwnd, std::move(bitmap), "");

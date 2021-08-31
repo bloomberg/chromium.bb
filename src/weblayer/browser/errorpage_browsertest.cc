@@ -7,12 +7,12 @@
 #include "base/macros.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/embedder_support/switches.h"
 #include "components/error_page/content/browser/net_error_auto_reloader.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "weblayer/browser/tab_impl.h"
-#include "weblayer/public/common/switches.h"
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
@@ -34,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageBrowserTest, NameNotResolved) {
 
   // Currently, interstitials for error pages are displayed only on Android.
 #if defined(OS_ANDROID)
-  base::string16 expected_title =
+  std::u16string expected_title =
       l10n_util::GetStringUTF16(IDS_ANDROID_ERROR_PAGE_WEBPAGE_NOT_AVAILABLE);
   EXPECT_EQ(expected_title, GetTitle(shell()));
 #endif
@@ -55,7 +55,7 @@ class ErrorPageReloadBrowserTest : public ErrorPageBrowserTest {
   ErrorPageReloadBrowserTest() = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kEnableAutoReload);
+    command_line->AppendSwitch(embedder_support::kEnableAutoReload);
     ErrorPageBrowserTest::SetUpCommandLine(command_line);
   }
 
@@ -84,15 +84,15 @@ class ErrorPageReloadBrowserTest : public ErrorPageBrowserTest {
 
   // Returns the time-delay of the currently scheduled auto-reload task, if one
   // is scheduled. If no auto-reload is scheduled, this returns null.
-  base::Optional<base::TimeDelta> GetCurrentAutoReloadDelay() {
+  absl::optional<base::TimeDelta> GetCurrentAutoReloadDelay() {
     auto* auto_reloader =
         error_page::NetErrorAutoReloader::FromWebContents(web_contents());
     if (!auto_reloader)
-      return base::nullopt;
-    const base::Optional<base::OneShotTimer>& timer =
+      return absl::nullopt;
+    const absl::optional<base::OneShotTimer>& timer =
         auto_reloader->next_reload_timer_for_testing();
     if (!timer)
-      return base::nullopt;
+      return absl::nullopt;
     return timer->GetCurrentDelay();
   }
 
@@ -117,8 +117,6 @@ class ErrorPageReloadBrowserTest : public ErrorPageBrowserTest {
    private:
     NavigationController* controller_;
   };
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(ErrorPageReloadBrowserTest, ReloadOnNetworkChanged) {
@@ -195,7 +193,7 @@ IN_PROC_BROWSER_TEST_F(ErrorPageReloadBrowserTest, AutoReloadDisabled) {
       }));
 
   EXPECT_FALSE(Navigate(url, true));
-  EXPECT_EQ(base::nullopt, GetCurrentAutoReloadDelay());
+  EXPECT_EQ(absl::nullopt, GetCurrentAutoReloadDelay());
 }
 
 }  // namespace weblayer

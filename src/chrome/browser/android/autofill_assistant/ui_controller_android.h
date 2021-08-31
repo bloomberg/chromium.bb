@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
@@ -45,7 +46,7 @@ class UiControllerAndroid : public ControllerObserver {
  public:
   static std::unique_ptr<UiControllerAndroid> CreateFromWebContents(
       content::WebContents* web_contents,
-      const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
+      const base::android::JavaRef<jobject>& joverlay_coordinator);
 
   // pointers to |web_contents|, |client| must remain valid for the lifetime of
   // this instance.
@@ -55,7 +56,7 @@ class UiControllerAndroid : public ControllerObserver {
   UiControllerAndroid(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jactivity,
-      const base::android::JavaParamRef<jobject>& jonboarding_coordinator);
+      const base::android::JavaRef<jobject>& joverlay_coordinator);
   ~UiControllerAndroid() override;
 
   // Attaches the UI to the given client, its web contents and delegate.
@@ -86,6 +87,10 @@ class UiControllerAndroid : public ControllerObserver {
   void CloseOrCancel(int action_index,
                      std::unique_ptr<TriggerContext> trigger_context,
                      Metrics::DropOutReason dropout_reason);
+  // Returns the size of the window.
+  absl::optional<std::pair<int, int>> GetWindowSize() const;
+  // Returns the screen's orientation.
+  ClientContextProto::ScreenOrientation GetScreenOrientation() const;
 
   // Overrides ControllerObserver:
   void OnStateChanged(AutofillAssistantState new_state) override;
@@ -97,7 +102,7 @@ class UiControllerAndroid : public ControllerObserver {
       const CollectUserDataOptions* collect_user_data_options) override;
   void OnUserDataChanged(const UserData* state,
                          UserData::FieldChange field_change) override;
-  void OnDetailsChanged(const Details* details) override;
+  void OnDetailsChanged(const std::vector<Details>& details) override;
   void OnInfoBoxChanged(const InfoBox* info_box) override;
   void OnProgressChanged(int progress) override;
   void OnProgressActiveStepChanged(int active_step) override;
@@ -121,15 +126,16 @@ class UiControllerAndroid : public ControllerObserver {
   void OnClientSettingsChanged(const ClientSettings& settings) override;
   void OnGenericUserInterfaceChanged(
       const GenericUserInterfaceProto* generic_ui) override;
+  void OnPersistentGenericUserInterfaceChanged(
+      const GenericUserInterfaceProto* generic_ui) override;
   void OnShouldShowOverlayChanged(bool should_show) override;
-  void OnFeedbackFormRequested() override;
 
   // Called by AssistantOverlayDelegate:
   void OnUnexpectedTaps();
   void OnUserInteractionInsideTouchableArea();
 
   // Called by AssistantHeaderDelegate:
-  void OnFeedbackButtonClicked();
+  void OnHeaderFeedbackButtonClicked();
 
   // Called by AssistantGenericUiDelegate:
   void OnViewEvent(const EventHandler::EventKey& key);
@@ -155,7 +161,7 @@ class UiControllerAndroid : public ControllerObserver {
   void OnDateTimeRangeEndTimeSlotChanged(int index);
   void OnDateTimeRangeEndTimeSlotCleared();
   void OnKeyValueChanged(const std::string& key, const ValueProto& value);
-  void OnTextFocusLost();
+  void OnInputTextFocusChanged(bool is_text_focused);
   bool IsContactComplete(autofill::AutofillProfile* contact);
   bool IsShippingAddressComplete(autofill::AutofillProfile* address);
   bool IsPaymentInstrumentComplete(autofill::CreditCard* card,
@@ -237,6 +243,7 @@ class UiControllerAndroid : public ControllerObserver {
   base::android::ScopedJavaLocalRef<jobject> GetCollectUserDataModel();
   base::android::ScopedJavaLocalRef<jobject> GetFormModel();
   base::android::ScopedJavaLocalRef<jobject> GetGenericUiModel();
+  base::android::ScopedJavaLocalRef<jobject> GetPersistentGenericUiModel();
 
   // The UiDelegate has the last say on whether we should show the overlay.
   // This saves the AutofillAssistantState-determined OverlayState and then
@@ -286,6 +293,8 @@ class UiControllerAndroid : public ControllerObserver {
   std::unique_ptr<GenericUiRootControllerAndroid>
       collect_user_data_appended_generic_ui_controller_;
   std::unique_ptr<GenericUiRootControllerAndroid> generic_ui_controller_;
+  std::unique_ptr<GenericUiRootControllerAndroid>
+      persistent_generic_ui_controller_;
 
   OverlayState desired_overlay_state_ = OverlayState::FULL;
   OverlayState overlay_state_ = OverlayState::FULL;

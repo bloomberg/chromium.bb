@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_OVERLAY_PANEL_LAYER_H_
 #define CHROME_BROWSER_ANDROID_COMPOSITOR_LAYER_OVERLAY_PANEL_LAYER_H_
 
-#include <memory>
-
 #include "chrome/browser/android/compositor/layer/layer.h"
 
 namespace cc {
@@ -81,7 +79,6 @@ class OverlayPanelLayer : public Layer {
   scoped_refptr<cc::Layer> layer_;
 
   scoped_refptr<cc::NinePatchLayer> panel_shadow_;
-  scoped_refptr<cc::NinePatchLayer> panel_shadow_right_;
   scoped_refptr<cc::NinePatchLayer> rounded_bar_top_;
   scoped_refptr<cc::SolidColorLayer> bar_background_;
   scoped_refptr<cc::UIResourceLayer> bar_text_;

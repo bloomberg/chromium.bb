@@ -22,13 +22,17 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
                                NGBoxFragmentBuilder,
                                NGBlockBreakToken> {
  public:
-  NGColumnLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
+  explicit NGColumnLayoutAlgorithm(const NGLayoutAlgorithmParams& params);
 
   scoped_refptr<const NGLayoutResult> Layout() override;
 
-  MinMaxSizesResult ComputeMinMaxSizes(const MinMaxSizesInput&) const override;
+  MinMaxSizesResult ComputeMinMaxSizes(
+      const MinMaxSizesFloatInput&) const override;
 
  private:
+  MinMaxSizesResult ComputeSpannersMinMaxSizes(
+      const NGBlockNode& search_parent) const;
+
   // Lay out as many children as we can. If |kNeedsEarlierBreak| is returned, it
   // means that we ran out of space at an unappealing location, and need to
   // relayout and break earlier (because we have a better breakpoint there). If
@@ -52,6 +56,20 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
                               const NGBlockBreakToken* break_token,
                               NGMarginStrut*);
 
+  // Attempt to position the list-item marker (if any) beside the child
+  // fragment. This requires the fragment to have a baseline. If it doesn't,
+  // we'll keep the unpositioned marker around, so that we can retry with a
+  // later fragment (if any). If we reach the end of layout and still have an
+  // unpositioned marker, it can be placed by calling
+  // PositionAnyUnclaimedListMarker().
+  void AttemptToPositionListMarker(const NGPhysicalBoxFragment& child_fragment,
+                                   LayoutUnit block_offset);
+
+  // At the end of layout, if no column or spanner were able to position the
+  // list-item marker, position the marker at the beginning of the multicol
+  // container.
+  void PositionAnyUnclaimedListMarker();
+
   // Propagate the baseline from the given |child| if needed.
   void PropagateBaselineFromChild(const NGPhysicalBoxFragment& child,
                                   LayoutUnit block_offset);
@@ -70,12 +88,6 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
     return intrinsic_block_size_ - BorderScrollbarPadding().block_start;
   }
 
-  // Lay out again, this time with a predefined good breakpoint that we
-  // discovered in the first pass. This happens when we run out of space in a
-  // fragmentainer at an less-than-ideal location, due to breaking restrictions,
-  // such as break-before:avoid or break-after:avoid.
-  scoped_refptr<const NGLayoutResult> RelayoutAndBreakEarlier();
-
   // Get the percentage resolution size to use for column content (i.e. not
   // spanners).
   LogicalSize ColumnPercentageResolutionSize() const {
@@ -92,14 +104,12 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
       LayoutUnit block_offset) const;
   NGConstraintSpace CreateConstraintSpaceForMinMax() const;
 
-  // When set, this will specify where to break before or inside.
-  const NGEarlyBreak* early_break_ = nullptr;
-
   int used_column_count_;
   LayoutUnit column_inline_size_;
   LayoutUnit column_inline_progression_;
   LayoutUnit column_block_size_;
   LayoutUnit intrinsic_block_size_;
+  LayoutUnit tallest_unbreakable_block_size_;
   bool is_constrained_by_outer_fragmentation_context_ = false;
 
   // This will be set during (outer) block fragmentation once we've processed

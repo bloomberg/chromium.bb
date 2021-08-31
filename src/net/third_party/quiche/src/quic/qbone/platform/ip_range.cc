@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/platform/ip_range.h"
+#include "quic/qbone/platform/ip_range.h"
 
-#include "net/third_party/quiche/src/common/quiche_endian.h"
+#include "common/quiche_endian.h"
 
 namespace quic {
 
@@ -94,7 +94,7 @@ bool IpRange::FromString(const std::string& range) {
   return true;
 }
 
-QuicIpAddress IpRange::FirstAddressInRange() {
+QuicIpAddress IpRange::FirstAddressInRange() const {
   return prefix();
 }
 

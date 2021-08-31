@@ -22,6 +22,7 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.Task;
 
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -39,6 +40,13 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
     private final SmsProviderGms mProvider;
     private boolean mDestroyed;
     private Wrappers.WebOTPServiceContext mContext;
+    private enum BackendAvailability {
+        AVAILABLE,
+        API_NOT_CONNECTED,
+        PLATFORM_NOT_SUPPORTED,
+        API_NOT_AVAILABLE,
+        NUM_ENTRIES
+    }
 
     public SmsVerificationReceiver(SmsProviderGms provider, Wrappers.WebOTPServiceContext context) {
         if (DEBUG) Log.d(TAG, "Creating SmsVerificationReceiver.");
@@ -65,6 +73,7 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
     }
 
     public void destroy() {
+        if (mDestroyed) return;
         if (DEBUG) Log.d(TAG, "Destroying SmsVerificationReceiver.");
         mDestroyed = true;
         mContext.unregisterReceiver(this);
@@ -99,7 +108,7 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
             case CommonStatusCodes.SUCCESS:
                 String message = intent.getExtras().getString(SmsCodeRetriever.EXTRA_SMS_CODE_LINE);
                 if (DEBUG) Log.d(TAG, "Got message: %s!", message);
-                mProvider.onReceive(message);
+                mProvider.onReceive(message, GmsBackend.VERIFICATION);
                 break;
             case CommonStatusCodes.TIMEOUT:
                 if (DEBUG) Log.d(TAG, "Timeout");
@@ -108,14 +117,14 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
         }
     }
 
-    public void onPermissionDone(WindowAndroid window, int resultCode) {
+    public void onPermissionDone(WindowAndroid window, int resultCode, boolean isLocalRequest) {
         if (resultCode == Activity.RESULT_OK) {
-            // We have been granted permission to use the SmsCoderetriever so
-            // restart the process.
+            // We have been granted permission to use the SmsCoderetriever so restart the process.
+            // |listen| will record the backend availability so no need to do it here.
             if (DEBUG) Log.d(TAG, "The one-time permission was granted");
-            listen(window);
+            listen(window, isLocalRequest);
         } else {
-            mProvider.onCancel();
+            cancelRequestAndReportBackendAvailability();
             if (DEBUG) Log.d(TAG, "The one-time permission was rejected");
         }
     }
@@ -124,20 +133,23 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
      * Handles failure for the `SmsCodeBrowserClient.startSmsCodeRetriever()`
      * task.
      */
-    public void onRetrieverTaskFailure(WindowAndroid window, Exception e) {
+    public void onRetrieverTaskFailure(WindowAndroid window, boolean isLocalRequest, Exception e) {
         if (DEBUG) Log.d(TAG, "Task failed. Attempting recovery.", e);
         ApiException exception = (ApiException) e;
         if (exception.getStatusCode() == SmsRetrieverStatusCodes.API_NOT_CONNECTED) {
-            mProvider.onMethodNotAvailable();
+            reportBackendAvailability(BackendAvailability.API_NOT_CONNECTED);
+            mProvider.onMethodNotAvailable(isLocalRequest);
             Log.d(TAG, "update GMS services.");
         } else if (exception.getStatusCode() == SmsRetrieverStatusCodes.PLATFORM_NOT_SUPPORTED) {
-            mProvider.onMethodNotAvailable();
+            reportBackendAvailability(BackendAvailability.PLATFORM_NOT_SUPPORTED);
+            mProvider.onMethodNotAvailable(isLocalRequest);
             Log.d(TAG, "old android platform.");
         } else if (exception.getStatusCode() == SmsRetrieverStatusCodes.API_NOT_AVAILABLE) {
-            mProvider.onMethodNotAvailable();
+            reportBackendAvailability(BackendAvailability.API_NOT_AVAILABLE);
+            mProvider.onMethodNotAvailable(isLocalRequest);
             Log.d(TAG, "not the default browser.");
         } else if (exception.getStatusCode() == SmsRetrieverStatusCodes.USER_PERMISSION_REQUIRED) {
-            mProvider.onCancel();
+            cancelRequestAndReportBackendAvailability();
             Log.d(TAG, "user permission is required.");
         } else if (exception.getStatusCode() == CommonStatusCodes.RESOLUTION_REQUIRED) {
             if (exception instanceof ResolvableApiException) {
@@ -153,10 +165,12 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
                         @Override
                         public void onIntentCompleted(
                                 WindowAndroid w, int resultCode, Intent data) {
-                            onPermissionDone(w, resultCode);
+                            // Backend availability will be recorded inside |onPermissionDone|.
+                            onPermissionDone(w, resultCode, isLocalRequest);
                         }
                     }, null);
                 } catch (Exception ex) {
+                    cancelRequestAndReportBackendAvailability();
                     Log.e(TAG, "Cannot launch user permission", ex);
                 }
             }
@@ -165,12 +179,32 @@ public class SmsVerificationReceiver extends BroadcastReceiver {
         }
     }
 
-    public void listen(WindowAndroid window) {
+    public void listen(WindowAndroid window, boolean isLocalRequest) {
         Wrappers.SmsRetrieverClientWrapper client = mProvider.getClient();
         Task<Void> task = client.startSmsCodeBrowserRetriever();
 
-        task.addOnFailureListener((Exception e) -> { this.onRetrieverTaskFailure(window, e); });
+        task.addOnSuccessListener(unused -> {
+            this.reportBackendAvailability(BackendAvailability.AVAILABLE);
+            mProvider.destoryUserConsentReceiver();
+        });
+        task.addOnFailureListener((Exception e) -> {
+            this.onRetrieverTaskFailure(window, isLocalRequest, e);
+            mProvider.destoryVerificationReceiver();
+        });
 
         if (DEBUG) Log.d(TAG, "Installed task");
+    }
+
+    public void reportBackendAvailability(BackendAvailability availability) {
+        if (DEBUG) Log.d(TAG, "Backend availability: %d", availability.ordinal());
+        RecordHistogram.recordEnumeratedHistogram("Blink.Sms.BackendAvailability",
+                availability.ordinal(), BackendAvailability.NUM_ENTRIES.ordinal());
+    }
+
+    // Handles the case when the backend is available but user has previously denied to grant the
+    // permission or we cannot launch user permission.
+    private void cancelRequestAndReportBackendAvailability() {
+        reportBackendAvailability(BackendAvailability.AVAILABLE);
+        mProvider.onCancel();
     }
 }

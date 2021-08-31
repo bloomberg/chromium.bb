@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -18,12 +19,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/udev_linux/udev_watcher.h"
 #include "services/device/usb/usb_device_handle.h"
@@ -38,6 +39,27 @@ namespace {
 const uint16_t kUsbVersion2_1 = 0x0210;
 
 const uint8_t kDeviceClassHub = 0x09;
+constexpr int kUsbClassMassStorage = 0x08;
+
+bool ShouldReadDescriptors(const UsbDeviceLinux& device) {
+  if (device.usb_version() < kUsbVersion2_1)
+    return false;
+
+  // Avoid detaching the usb-storage driver.
+  // TODO(crbug.com/1176107): We should read descriptors for composite mass
+  // storage devices.
+  auto* configuration = device.GetActiveConfiguration();
+  if (configuration) {
+    for (const auto& interface : configuration->interfaces) {
+      for (const auto& alternate : interface->alternates) {
+        if (alternate->class_code == kUsbClassMassStorage)
+          return false;
+      }
+    }
+  }
+
+  return true;
+}
 
 void OnReadDescriptors(base::OnceCallback<void(bool)> callback,
                        scoped_refptr<UsbDeviceHandle> device_handle,
@@ -247,13 +269,14 @@ void UsbServiceLinux::OnDeviceAdded(
   scoped_refptr<UsbDeviceLinux> device(
       new UsbDeviceLinux(device_path, std::move(descriptor)));
   devices_by_path_[device->device_path()] = device;
-  if (device->usb_version() >= kUsbVersion2_1) {
+
+  if (ShouldReadDescriptors(*device)) {
     device->Open(
         base::BindOnce(&OnDeviceOpenedToReadDescriptors,
                        base::BindOnce(&UsbServiceLinux::DeviceReady,
                                       weak_factory_.GetWeakPtr(), device)));
   } else {
-    DeviceReady(device, true /* success */);
+    DeviceReady(device, /*success=*/true);
   }
 }
 

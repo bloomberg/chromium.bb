@@ -9,7 +9,9 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/scoped_observation.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
@@ -41,7 +43,7 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/signin/signin_global_error_factory.h"
 #endif
@@ -84,7 +86,7 @@ class GlobalErrorWaiter : public GlobalErrorObserver {
  public:
   explicit GlobalErrorWaiter(Profile* profile)
       : service_(GlobalErrorServiceFactory::GetForProfile(profile)) {
-    scoped_observer_.Add(service_);
+    scoped_observation_.Observe(service_);
   }
 
   ~GlobalErrorWaiter() override = default;
@@ -100,8 +102,8 @@ class GlobalErrorWaiter : public GlobalErrorObserver {
  private:
   base::RunLoop run_loop_;
   GlobalErrorService* service_;
-  ScopedObserver<GlobalErrorService, GlobalErrorObserver> scoped_observer_{
-      this};
+  base::ScopedObservation<GlobalErrorService, GlobalErrorObserver>
+      scoped_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorWaiter);
 };
@@ -130,7 +132,7 @@ void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
 
   extensions::ExtensionBuilder builder("Browser Action");
   builder.SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION);
-  builder.SetLocation(extensions::Manifest::INTERNAL);
+  builder.SetLocation(extensions::mojom::ManifestLocation::kInternal);
   scoped_refptr<const extensions::Extension> test_extension = builder.Build();
   extension_service->AddExtension(test_extension.get());
 
@@ -185,7 +187,7 @@ void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
 
     GlobalErrorWaiter waiter(profile);
     auto provider = std::make_unique<extensions::MockExternalProvider>(
-        extension_service, extensions::Manifest::EXTERNAL_PREF);
+        extension_service, extensions::mojom::ManifestLocation::kExternalPref);
     extensions::MockExternalProvider* provider_ptr = provider.get();
     extension_service->AddProviderForTesting(std::move(provider));
     provider_ptr->UpdateOrAddExtension(kExtensionWithUpdateUrl, "1.0.0.0",
@@ -201,7 +203,7 @@ void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
         prefs::kRecoveryComponentNeedsElevation, true);
     waiter.Wait();
     ShowPendingError(browser());
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   } else if (name == "SigninGlobalError") {
     SigninGlobalErrorFactory::GetForProfile(profile)->ShowBubbleView(browser());
 #endif
@@ -246,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest,
 #endif
 
 // Signin global errors never happon on ChromeOS.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(GlobalErrorBubbleTest, InvokeUi_SigninGlobalError) {
   ShowAndVerifyUi();
 }

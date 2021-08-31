@@ -5,15 +5,20 @@
 #include "third_party/blink/renderer/core/layout/depth_ordered_layout_object_list.h"
 
 #include <algorithm>
+#include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 
 namespace blink {
 
 struct DepthOrderedLayoutObjectListData {
+  Vector<LayoutObjectWithDepth>& ordered_objects() { return ordered_objects_; }
+  HashSet<LayoutObject*>& objects() { return objects_; }
+
   // LayoutObjects sorted by depth (deepest first). This structure is only
   // populated at the beginning of enumerations. See ordered().
-  Vector<DepthOrderedLayoutObjectList::LayoutObjectWithDepth> ordered_objects_;
+  Vector<LayoutObjectWithDepth> ordered_objects_;
 
   // Outside of layout, LayoutObjects can be added and removed as needed such
   // as when style was changed or destroyed. They're kept in this hashset to
@@ -36,19 +41,33 @@ bool DepthOrderedLayoutObjectList::IsEmpty() const {
   return data_->objects_.IsEmpty();
 }
 
+namespace {
+
+bool ListModificationAllowedFor(const LayoutObject& object) {
+  if (!object.GetFrameView()->IsInPerformLayout())
+    return true;
+  // We are allowed to insert/remove orthogonal writing mode roots during
+  // layout for interleaved style recalcs, but only when these roots are fully
+  // managed by LayoutNG.
+  return object.GetDocument().GetStyleEngine().InContainerQueryStyleRecalc() &&
+         IsManagedByLayoutNG(object);
+}
+
+}  // namespace
+
 void DepthOrderedLayoutObjectList::Add(LayoutObject& object) {
-  DCHECK(!object.GetFrameView()->IsInPerformLayout());
-  data_->objects_.insert(&object);
-  data_->ordered_objects_.clear();
+  DCHECK(ListModificationAllowedFor(object));
+  data_->objects().insert(&object);
+  data_->ordered_objects().clear();
 }
 
 void DepthOrderedLayoutObjectList::Remove(LayoutObject& object) {
   auto it = data_->objects_.find(&object);
   if (it == data_->objects_.end())
     return;
-  DCHECK(!object.GetFrameView()->IsInPerformLayout());
-  data_->objects_.erase(it);
-  data_->ordered_objects_.clear();
+  DCHECK(ListModificationAllowedFor(object));
+  data_->objects().erase(it);
+  data_->ordered_objects().clear();
 }
 
 void DepthOrderedLayoutObjectList::Clear() {
@@ -56,8 +75,7 @@ void DepthOrderedLayoutObjectList::Clear() {
   data_->ordered_objects_.clear();
 }
 
-unsigned DepthOrderedLayoutObjectList::LayoutObjectWithDepth::DetermineDepth(
-    LayoutObject* object) {
+unsigned LayoutObjectWithDepth::DetermineDepth(LayoutObject* object) {
   unsigned depth = 1;
   for (LayoutObject* parent = object->Parent(); parent;
        parent = parent->Parent())
@@ -69,8 +87,7 @@ const HashSet<LayoutObject*>& DepthOrderedLayoutObjectList::Unordered() const {
   return data_->objects_;
 }
 
-const Vector<DepthOrderedLayoutObjectList::LayoutObjectWithDepth>&
-DepthOrderedLayoutObjectList::Ordered() {
+const Vector<LayoutObjectWithDepth>& DepthOrderedLayoutObjectList::Ordered() {
   if (data_->objects_.IsEmpty() || !data_->ordered_objects_.IsEmpty())
     return data_->ordered_objects_;
 

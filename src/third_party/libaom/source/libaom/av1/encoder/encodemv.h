@@ -18,8 +18,8 @@
 extern "C" {
 #endif
 
-void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, const MV *mv, const MV *ref,
-                   nmv_context *mvctx, int usehp);
+void av1_encode_mv(AV1_COMP *cpi, aom_writer *w, ThreadData *td, const MV *mv,
+                   const MV *ref, nmv_context *mvctx, int usehp);
 
 void av1_update_mv_stats(const MV *mv, const MV *ref, nmv_context *mvctx,
                          MvSubpelPrecision precision);

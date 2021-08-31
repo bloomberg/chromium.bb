@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
 #include "base/version.h"
 #include "chromeos/chromeos_export.h"
@@ -46,6 +45,11 @@ struct CHROMEOS_EXPORT PrinterSearchData {
   // 16-bit usb identifiers.
   int usb_vendor_id = 0;
   int usb_product_id = 0;
+
+  // Original make and model for USB printer. Note, it is used only in metrics
+  // for USB printers (in printer_event_tracker.cc).
+  std::string usb_manufacturer;
+  std::string usb_model;
 
   // Method of printer discovery.
   enum PrinterDiscoveryType {

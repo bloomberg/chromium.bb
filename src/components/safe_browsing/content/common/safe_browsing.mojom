@@ -4,9 +4,12 @@
 
 module safe_browsing.mojom;
 
+
 import "components/safe_browsing/core/common/safe_browsing_url_checker.mojom";
+import "mojo/public/mojom/base/read_only_file.mojom";
+import "mojo/public/mojom/base/shared_memory.mojom";
 import "services/network/public/mojom/http_request_headers.mojom";
-import "third_party/blink/public/mojom/loader/resource_load_info.mojom";
+import "services/network/public/mojom/fetch_api.mojom";
 import "url/mojom/url.mojom";
 
 // Provided by the browser and used by renderers to perform SafeBrowsing URL
@@ -16,7 +19,7 @@ interface SafeBrowsing {
   // SafeBrowsingUrlChecker interface.
   //
   // The check and (subsequent checks performed using SafeBrowsingUrlChecker)
-  // checks against SafeBrowsing's Malware, Phishing, and UwS blacklists.
+  // checks against SafeBrowsing's Malware, Phishing, and UwS blocklists.
   //
   // The SafeBrowsingUrlChecker interface should be used (and only used) for
   // subsequent checks of redirects, so that the server side could keep track of
@@ -45,7 +48,7 @@ interface SafeBrowsing {
       string method,
       network.mojom.HttpRequestHeaders headers,
       int32 load_flags,
-      blink.mojom.ResourceType resource_type,
+      network.mojom.RequestDestination request_destination,
       bool has_user_gesture,
       bool originated_from_service_worker)
           => (pending_receiver<UrlCheckNotifier>? slow_check_notifier,
@@ -122,8 +125,20 @@ enum PhishingDetectorResult {
 interface PhishingDetector {
   // A classification model for client-side phishing detection.
   // The string is an encoded safe_browsing::ClientSideModel protocol buffer, or
-  // empty to disable client-side phishing detection for this renderer.
-  SetPhishingModel(string model);
+  // empty to disable client-side phishing detection for this renderer. The
+  // |tflite_model| is a file handle with contents a TfLite model, which is used
+  // to classify the appearance of pages.
+  SetPhishingModel(string model, mojo_base.mojom.ReadOnlyFile? tflite_model);
+
+  // A classification model for client-side phishing detection. This call sends
+  // the model from the browser process to the renderer process. The model is
+  // sent as a safe_browsing::ClientSideModel flatbuffer string in a
+  // ReadOnlySharedMemoryRegion to client-side phishing detection on the
+  // renderer process. An invalid region is used to disable classification. The
+  // |tflite_model| is a file handle with contents a TfLite model, which is used
+  // to classify the appearance of pages.
+  SetPhishingFlatBufferModel(mojo_base.mojom.ReadOnlySharedMemoryRegion region,
+                             mojo_base.mojom.ReadOnlyFile? tflite_model);
 
   // Tells the renderer to begin phishing detection for the given toplevel URL
   // which it has started loading. Returns the serialized request proto and a

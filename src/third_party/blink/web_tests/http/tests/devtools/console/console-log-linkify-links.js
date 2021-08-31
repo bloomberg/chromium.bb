@@ -5,7 +5,8 @@
 (async function() {
   TestRunner.addResult(`Test that console.log() would linkify the links. Bug 231074.\n`);
 
-  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadModule('console'); await TestRunner.loadTestModule('console_test_runner');
+  await TestRunner.loadLegacyModule('components');
   await TestRunner.showPanel('console');
   await TestRunner.evaluateInPagePromise(`
     console.log("www.chromium.org");
@@ -46,7 +47,7 @@
     TestRunner.addResult('\nText: ' + element.deepTextContent());
     var links = element.querySelectorAll('.devtools-link');
     for (var link of links) {
-      var info = Components.Linkifier._linkInfo(link);
+      var info = Components.Linkifier.linkInfo(link);
       if (info && info.url) {
         TestRunner.addResult('Linked url: ' + info.url);
         if (info.lineNumber !== null || info.columnNumber !== null)

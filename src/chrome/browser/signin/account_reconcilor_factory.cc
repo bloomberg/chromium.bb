@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
@@ -22,12 +23,12 @@
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_buildflags.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
-#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
-#include "chrome/browser/chromeos/account_manager/account_migration_runner.h"
+#include "chrome/browser/ash/account_manager/account_manager_migrator.h"
+#include "chrome/browser/ash/account_manager/account_manager_util.h"
+#include "chrome/browser/ash/account_manager/account_migration_runner.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/tpm/install_attributes.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -44,7 +45,7 @@
 
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 class ChromeOSLimitedAccessAccountReconcilorDelegate
     : public signin::MirrorAccountReconcilorDelegate {
  public:
@@ -85,7 +86,7 @@ class ChromeOSLimitedAccessAccountReconcilorDelegate
 
     if (!GetIdentityManager()->HasAccountWithRefreshTokenInPersistentErrorState(
             GetIdentityManager()->GetPrimaryAccountId(
-                signin::ConsentLevel::kNotRequired))) {
+                signin::ConsentLevel::kSignin))) {
       return;
     }
 
@@ -119,7 +120,7 @@ class ChromeOSAccountReconcilorDelegate
  public:
   ChromeOSAccountReconcilorDelegate(
       signin::IdentityManager* identity_manager,
-      chromeos::AccountManagerMigrator* account_migrator)
+      ash::AccountManagerMigrator* account_migrator)
       : signin::MirrorAccountReconcilorDelegate(identity_manager),
         account_migrator_(account_migrator) {}
   ~ChromeOSAccountReconcilorDelegate() override = default;
@@ -131,18 +132,18 @@ class ChromeOSAccountReconcilorDelegate
       return false;
     }
 
-    const chromeos::AccountMigrationRunner::Status status =
+    const ash::AccountMigrationRunner::Status status =
         account_migrator_->GetStatus();
-    return status != chromeos::AccountMigrationRunner::Status::kNotStarted &&
-           status != chromeos::AccountMigrationRunner::Status::kRunning;
+    return status != ash::AccountMigrationRunner::Status::kNotStarted &&
+           status != ash::AccountMigrationRunner::Status::kRunning;
   }
 
   // A non-owning pointer.
-  const chromeos::AccountManagerMigrator* const account_migrator_;
+  const ash::AccountManagerMigrator* const account_migrator_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeOSAccountReconcilorDelegate);
 };
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -183,7 +184,7 @@ KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
 
 void AccountReconcilorFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   registry->RegisterBooleanPref(prefs::kForceLogoutUnauthenticatedUserEnabled,
                                 false);
 #endif
@@ -196,7 +197,7 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
       AccountConsistencyModeManager::GetMethodForProfile(profile);
   switch (account_consistency) {
     case signin::AccountConsistencyMethod::kMirror:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       // Only for child accounts on Chrome OS, use the specialized Mirror
       // delegate.
       if (profile->IsChild()) {
@@ -210,7 +211,7 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
       // TODO(https://crbug.com/993317): Remove the check for
       // |IsAccountManagerAvailable| after fixing https://crbug.com/1008349 and
       // https://crbug.com/993317.
-      if (chromeos::IsAccountManagerAvailable(profile) &&
+      if (ash::IsAccountManagerAvailable(profile) &&
           chromeos::InstallAttributes::Get()->IsActiveDirectoryManaged()) {
         return std::make_unique<
             signin::ActiveDirectoryAccountReconcilorDelegate>();
@@ -228,8 +229,7 @@ AccountReconcilorFactory::CreateAccountReconcilorDelegate(Profile* profile) {
       // users have been migrated to Account Manager.
       return std::make_unique<ChromeOSAccountReconcilorDelegate>(
           IdentityManagerFactory::GetForProfile(profile),
-          chromeos::AccountManagerMigratorFactory::GetForBrowserContext(
-              profile));
+          ash::AccountManagerMigratorFactory::GetForBrowserContext(profile));
 #endif
       return std::make_unique<signin::MirrorAccountReconcilorDelegate>(
           IdentityManagerFactory::GetForProfile(profile));

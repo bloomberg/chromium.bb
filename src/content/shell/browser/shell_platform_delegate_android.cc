@@ -9,6 +9,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -107,9 +108,9 @@ void ShellPlatformDelegate::SetIsLoading(Shell* shell, bool loading) {
 }
 
 void ShellPlatformDelegate::SetTitle(Shell* shell,
-                                     const base::string16& title) {}
+                                     const std::u16string& title) {}
 
-void ShellPlatformDelegate::RenderViewReady(Shell* shell) {}
+void ShellPlatformDelegate::MainFrameCreated(Shell* shell) {}
 
 bool ShellPlatformDelegate::DestroyShell(Shell* shell) {
   return false;  // Shell destroys itself.

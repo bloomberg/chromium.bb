@@ -1,5 +1,23 @@
 export const description = `
 createView validation tests.
+
+TODO: review existing tests and merge with this plan:
+> All x= every texture format for the underlying texture
+>
+> - view format doesn't match/isn't compatible
+>     - with/without flag set <- I don't think this flag exists yet
+>     - x= every possible view format
+> - dimension isn't one of the following compatible options:
+>     - texture 1d -> view 1d
+>     - texture 2d -> view 2d, 2d-array, cube, cube-array
+>     - texture 3d -> view 3d
+> - {cube, cube-array} not enough layers
+> - all aspects
+>     - "depth-only" only allowed for D and DS
+>     - "stencil-only" only allowed for S and DS
+>     - "all" allowed for any format
+> - baseMipLevel+mipLevelCount various values {in, out of} range
+> - baseArrayLayer+arrayLayerCount various values {in, out of} range
 `;
 
 import { makeTestGroup } from '../../../common/framework/test_group.js';
@@ -29,7 +47,7 @@ class F extends ValidationTest {
     } = options;
 
     return this.device.createTexture({
-      size: { width, height, depth: arrayLayerCount },
+      size: { width, height, depthOrArrayLayers: arrayLayerCount },
       mipLevelCount,
       sampleCount,
       dimension: '2d',
@@ -70,6 +88,11 @@ class F extends ValidationTest {
 export const g = makeTestGroup(F);
 
 g.test('creating_texture_view_on_a_2D_non_array_texture')
+  .desc(
+    `TODO: write description, and shorten name
+
+  TODO: mipLevelCount == 0 should mean 0, not "auto". "undefined" means "auto".`
+  )
   .params([
     { _success: true }, // default view works
     { arrayLayerCount: 1, _success: true }, // it is OK to create a 2D texture view on a 2D texture
@@ -107,6 +130,11 @@ g.test('creating_texture_view_on_a_2D_non_array_texture')
   });
 
 g.test('creating_texture_view_on_a_2D_array_texture')
+  .desc(
+    `TODO: write description, and shorten name
+
+  TODO: arrayLayerCount == 0 should mean 0, not "auto". "undefined" means "auto".`
+  )
   .params([
     { _success: true }, // default view works
     { dimension: '2d' as const, arrayLayerCount: 1, _success: true }, // it is OK to create a 2D texture view on a 2D array texture
@@ -265,8 +293,9 @@ g.test('it_is_invalid_to_use_a_texture_view_created_from_a_destroyed_texture').f
   const renderPass = commandEncoder.beginRenderPass({
     colorAttachments: [
       {
-        attachment: texture.createView(),
+        view: texture.createView(),
         loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+        storeOp: 'store',
       },
     ],
   });

@@ -90,8 +90,8 @@ SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
                         IsEnhancedProtectionEnabled(pref_service),
                         /*is_proceed_anyway_disabled=*/false,
                         /*should_open_links_in_new_tab=*/false,
-                        /*show_back_to_safety_button=*/true,
-                        IsEnhancedProtectionMessageInInterstitialsEnabled(),
+                        /*always_show_back_to_safety=*/true,
+                        /*is_enhanced_protection_message_enabled=*/true,
                         IsSafeBrowsingPolicyManaged(pref_service),
                         /*help_center_article_link=*/std::string());
 }
@@ -240,17 +240,6 @@ TriggerManagerWebContentsHelper::TriggerManagerWebContentsHelper(
       trigger_manager_(trigger_manager) {}
 
 TriggerManagerWebContentsHelper::~TriggerManagerWebContentsHelper() {}
-
-void TriggerManagerWebContentsHelper::CreateForWebContents(
-    content::WebContents* web_contents,
-    TriggerManager* trigger_manager) {
-  DCHECK(web_contents);
-  if (!FromWebContents(web_contents)) {
-    web_contents->SetUserData(
-        UserDataKey(), base::WrapUnique(new TriggerManagerWebContentsHelper(
-                           web_contents, trigger_manager)));
-  }
-}
 
 void TriggerManagerWebContentsHelper::WebContentsDestroyed() {
   trigger_manager_->WebContentsDestroyed(web_contents());

@@ -14,10 +14,14 @@ static_library("browser") {
     "content_activation_list_utils.h",
     "content_subresource_filter_throttle_manager.cc",
     "content_subresource_filter_throttle_manager.h",
+    "devtools_interaction_tracker.cc",
+    "devtools_interaction_tracker.h",
     "navigation_console_logger.cc",
     "navigation_console_logger.h",
     "page_load_statistics.cc",
     "page_load_statistics.h",
+    "profile_interaction_manager.cc",
+    "profile_interaction_manager.h",
     "ruleset_publisher.h",
     "ruleset_publisher_impl.cc",
     "ruleset_publisher_impl.h",
@@ -27,7 +31,6 @@ static_library("browser") {
     "ruleset_version.h",
     "subframe_navigation_filtering_throttle.cc",
     "subframe_navigation_filtering_throttle.h",
-    "subresource_filter_client.h",
     "subresource_filter_content_settings_manager.cc",
     "subresource_filter_content_settings_manager.h",
     "subresource_filter_observer.h",
@@ -48,6 +51,7 @@ static_library("browser") {
   ]
   deps = [
     "//base",
+    "//components/content_settings/browser",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
     "//components/keyed_service/core",
@@ -62,6 +66,7 @@ static_library("browser") {
     "//content/public/common",
     "//ipc",
     "//net",
+    "//third_party/blink/public/common",
     "//url",
   ]
   public_deps = [
@@ -69,11 +74,29 @@ static_library("browser") {
     "//third_party/flatbuffers:flatbuffers",
     "//ui/base",
   ]
+  if (is_android) {
+    sources += [
+      "ads_blocked_infobar.cc",
+      "ads_blocked_infobar.h",
+      "ads_blocked_infobar_delegate.cc",
+      "ads_blocked_infobar_delegate.h",
+    ]
+    deps += [
+      "//components/infobars/android",
+      "//components/infobars/content",
+      "//components/infobars/core",
+      "//components/resources:android_resources",
+      "//components/strings:components_strings_grit",
+      "//components/subresource_filter/android:subresource_filter_jni_headers",
+    ]
+  }
 }
 
 static_library("test_support") {
   testonly = true
   sources = [
+    "ad_tagging_browser_test_utils.cc",
+    "ad_tagging_browser_test_utils.h",
     "async_document_subresource_filter_test_utils.cc",
     "async_document_subresource_filter_test_utils.h",
     "fake_safe_browsing_database_manager.cc",
@@ -82,17 +105,34 @@ static_library("test_support") {
     "subframe_navigation_test_utils.h",
     "subresource_filter_observer_test_utils.cc",
     "subresource_filter_observer_test_utils.h",
+    "subresource_filter_test_harness.cc",
+    "subresource_filter_test_harness.h",
     "test_ruleset_publisher.cc",
     "test_ruleset_publisher.h",
+    "throttle_manager_test_support.cc",
+    "throttle_manager_test_support.h",
   ]
   deps = [
     ":browser",
     "//base/test:test_support",
+    "//components/content_settings/browser",
+    "//components/content_settings/browser:test_support",
+    "//components/content_settings/core/browser",
+    "//components/infobars/content",
+    "//components/infobars/core",
+    "//components/prefs:test_support",
+    "//components/safe_browsing/core/db:database_manager",
+    "//components/subresource_filter/content/common",
+    "//components/subresource_filter/core/browser",
+    "//components/subresource_filter/core/browser:test_support",
     "//components/subresource_filter/core/common",
     "//components/subresource_filter/core/common:test_support",
+    "//components/sync_preferences:test_support",
+    "//components/user_prefs",
     "//content/public/browser",
     "//content/test:test_support",
     "//net",
+    "//services/network/public/mojom",
     "//testing/gtest:gtest",
     "//url",
   ]
@@ -114,16 +154,21 @@ source_set("unit_tests") {
     "ruleset_publisher_impl_unittest.cc",
     "ruleset_service_unittest.cc",
     "subframe_navigation_filtering_throttle_unittest.cc",
+    "subresource_filter_configuration_unittest.cc",
     "subresource_filter_content_settings_manager_unittest.cc",
     "subresource_filter_safe_browsing_activation_throttle_unittest.cc",
+    "subresource_filter_unittest.cc",
     "verified_ruleset_dealer_unittest.cc",
   ]
   deps = [
     ":browser",
     ":test_support",
     "//base/test:test_support",
+    "//components/content_settings/browser",
     "//components/content_settings/core/browser",
     "//components/content_settings/core/common",
+    "//components/infobars/content",
+    "//components/infobars/core",
     "//components/prefs:test_support",
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:util",

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ndef_scan_options.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/nfc/ndef_reader.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_proxy.h"
@@ -105,9 +106,7 @@ class FakeNfcService : public device::mojom::blink::NFC {
     set_tag_message(std::move(message));
     std::move(callback).Run(nullptr);
   }
-  void CancelPush(CancelPushCallback callback) override {
-    std::move(callback).Run(nullptr);
-  }
+  void CancelPush() override {}
   void Watch(uint32_t id, WatchCallback callback) override {
     if (watch_error_) {
       std::move(callback).Run(watch_error_.Clone());
@@ -117,19 +116,10 @@ class FakeNfcService : public device::mojom::blink::NFC {
       watchIDs_.push_back(id);
     std::move(callback).Run(nullptr);
   }
-  void CancelWatch(uint32_t id, CancelWatchCallback callback) override {
+  void CancelWatch(uint32_t id) override {
     size_t index = watchIDs_.Find(id);
-    if (index == kNotFound) {
-      std::move(callback).Run(device::mojom::blink::NDEFError::New(
-          device::mojom::blink::NDEFErrorType::NOT_FOUND, ""));
-    } else {
+    if (index != kNotFound)
       watchIDs_.EraseAt(index);
-      std::move(callback).Run(nullptr);
-    }
-  }
-  void CancelAllWatches(CancelAllWatchesCallback callback) override {
-    watchIDs_.clear();
-    std::move(callback).Run(nullptr);
   }
 
   device::mojom::blink::NDEFErrorPtr watch_error_;

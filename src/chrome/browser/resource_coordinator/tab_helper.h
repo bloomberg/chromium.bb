@@ -5,13 +5,8 @@
 #ifndef CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_HELPER_H_
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_TAB_HELPER_H_
 
-#include <map>
-#include <memory>
-#include <string>
-
 #include "base/macros.h"
 #include "base/process/kill.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"

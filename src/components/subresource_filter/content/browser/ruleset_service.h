@@ -33,7 +33,6 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -258,7 +257,7 @@ class RulesetService : public base::SupportsWeakPtr<RulesetService> {
                         const IndexedRulesetVersion& version);
 
   void OpenAndPublishRuleset(const IndexedRulesetVersion& version);
-  void OnRulesetSet(base::File file);
+  void OnRulesetSet(RulesetFilePtr file);
 
   PrefService* const local_state_;
 

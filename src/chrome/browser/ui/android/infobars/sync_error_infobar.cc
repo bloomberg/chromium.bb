@@ -6,12 +6,14 @@
 
 SyncErrorInfoBar::SyncErrorInfoBar(
     std::unique_ptr<SyncErrorInfoBarDelegateAndroid> delegate)
-    : ChromeConfirmInfoBar(std::move(delegate)) {}
+    : infobars::ConfirmInfoBar(std::move(delegate)) {}
 
 SyncErrorInfoBar::~SyncErrorInfoBar() {}
 
 base::android::ScopedJavaLocalRef<jobject>
-SyncErrorInfoBar::CreateRenderInfoBar(JNIEnv* env) {
+SyncErrorInfoBar::CreateRenderInfoBar(
+    JNIEnv* env,
+    const ResourceIdMapper& resource_id_mapper) {
   return static_cast<SyncErrorInfoBarDelegateAndroid*>(delegate())
       ->CreateRenderInfoBar(env);
 }

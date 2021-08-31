@@ -11,7 +11,8 @@
 
 namespace translate {
 
-class DriverObserver : public ContentTranslateDriver::Observer {
+class DriverObserver
+    : public ContentTranslateDriver::LanguageDetectionObserver {
  public:
   void OnLanguageDetermined(
       const translate::LanguageDetectionDetails& details) override {
@@ -34,11 +35,11 @@ class PerFrameContentTranslateDriverTest
     driver_ = std::make_unique<PerFrameContentTranslateDriver>(
         &(web_contents()->GetController()),
         nullptr /* url_language_histogram */);
-    driver_->AddObserver(&observer_);
+    driver_->AddLanguageDetectionObserver(&observer_);
   }
 
   void TearDown() override {
-    driver_->RemoveObserver(&observer_);
+    driver_->RemoveLanguageDetectionObserver(&observer_);
     driver_.reset();
     content::RenderViewHostTestHarness::TearDown();
   }
@@ -68,7 +69,7 @@ class PerFrameContentTranslateDriverTest
   }
 
   bool HasGoodContentDetection() const {
-    return observer_.GetObservedDetails().is_cld_reliable;
+    return observer_.GetObservedDetails().is_model_reliable;
   }
 
   bool DoNotTranslate() const {

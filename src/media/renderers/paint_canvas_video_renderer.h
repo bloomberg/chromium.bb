@@ -10,9 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
@@ -23,6 +21,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_transformation.h"
 #include "media/renderers/video_frame_yuv_converter.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace gfx {
 class RectF;
@@ -41,6 +40,7 @@ class RasterContextProvider;
 }
 
 namespace media {
+class VideoTextureBacking;
 
 // Handles rendering of VideoFrames to PaintCanvases.
 class MEDIA_EXPORT PaintCanvasVideoRenderer {
@@ -136,7 +136,7 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
   bool CopyVideoFrameYUVDataToGLTexture(
       viz::RasterContextProvider* raster_context_provider,
       gpu::gles2::GLES2Interface* destination_gl,
-      const VideoFrame& video_frame,
+      scoped_refptr<VideoFrame> video_frame,
       unsigned int target,
       unsigned int texture,
       unsigned int internal_format,
@@ -211,22 +211,15 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
     // to the visible size of the VideoFrame. Its contents are generated lazily.
     cc::PaintImage paint_image;
 
-    // The context provider used to generate |source_mailbox| and
-    // |source_texture|. This is only set if the VideoFrame was texture-backed.
-    scoped_refptr<viz::RasterContextProvider> raster_context_provider;
+    // The backing for the source texture. This is also responsible for managing
+    // the lifetime of the texture.
+    sk_sp<VideoTextureBacking> texture_backing;
 
-    // The mailbox for the source texture. This can be either the source
-    // VideoFrame's texture (if |wraps_video_frame_texture| is true) or a newly
-    // allocated shared image (if |wraps_video_frame_texture| is false) if a
-    // copy or conversion was necessary.
-    // This is only set if the VideoFrame was texture-backed.
-    gpu::Mailbox source_mailbox;
-
-    // The texture ID created when importing |source_mailbox|.
+    // The GL texture ID used in non-OOP code path.
     // This is only set if the VideoFrame was texture-backed.
     uint32_t source_texture = 0;
 
-    // The allocated size of |source_mailbox|.
+    // The allocated size of VideoFrame texture.
     // This is only set if the VideoFrame was texture-backed.
     gfx::Size coded_size;
 
@@ -234,13 +227,6 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
     // of the frame after cropping.
     // This is only set if the VideoFrame was texture-backed.
     gfx::Rect visible_rect;
-
-    // Whether |source_mailbox| directly points to a texture of the VideoFrame
-    // (if true), or to an allocated shared image (if false).
-    bool wraps_video_frame_texture = false;
-
-    // Whether the texture pointed by |paint_image| is owned by skia or not.
-    bool texture_ownership_in_skia = false;
 
     // Used to allow recycling of the previous shared image. This requires that
     // no external users have access to this resource via SkImage. Returns true
@@ -269,7 +255,9 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
       unsigned int type,
       bool flip_y);
 
-  base::Optional<Cache> cache_;
+  bool CacheBackingWrapsTexture() const;
+
+  absl::optional<Cache> cache_;
 
   // If |cache_| is not used for a while, it's deleted to save memory.
   base::DelayTimer cache_deleting_timer_;

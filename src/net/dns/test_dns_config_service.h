@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/optional.h"
 #include "net/dns/dns_config_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -20,7 +20,8 @@ class TestDnsConfigService : public DnsConfigService {
   TestDnsConfigService();
   ~TestDnsConfigService() override;
 
-  void ReadNow() override {}
+  void ReadConfigNow() override {}
+  void ReadHostsNow() override {}
   bool StartWatching() override;
 
   // Expose the protected methods to this test suite.
@@ -36,10 +37,6 @@ class TestDnsConfigService : public DnsConfigService {
     DnsConfigService::OnHostsRead(hosts);
   }
 
-  void set_watch_failed(bool value) {
-    DnsConfigService::set_watch_failed(value);
-  }
-
   void RefreshConfig() override;
 
   void SetConfigForRefresh(DnsConfig config) {
@@ -48,7 +45,7 @@ class TestDnsConfigService : public DnsConfigService {
   }
 
  private:
-  base::Optional<DnsConfig> config_for_refresh_;
+  absl::optional<DnsConfig> config_for_refresh_;
 };
 
 }  // namespace net

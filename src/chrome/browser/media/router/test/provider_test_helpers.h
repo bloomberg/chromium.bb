@@ -51,7 +51,7 @@ class MockCastMediaSinkService : public CastMediaSinkService {
   MOCK_METHOD2(Start,
                void(const OnSinksDiscoveredCallback&, MediaSinkServiceBase*));
   MOCK_METHOD0(OnUserGesture, void());
-  MOCK_METHOD1(BindLogger, void(mojo::PendingRemote<mojom::Logger>));
+  MOCK_METHOD1(BindLogger, void(LoggerImpl*));
   MOCK_METHOD0(StartMdnsDiscovery, void());
 };
 
@@ -60,7 +60,7 @@ class MockCastAppDiscoveryService : public CastAppDiscoveryService {
   MockCastAppDiscoveryService();
   ~MockCastAppDiscoveryService() override;
 
-  Subscription StartObservingMediaSinks(
+  base::CallbackListSubscription StartObservingMediaSinks(
       const CastMediaSource& source,
       const SinkQueryCallback& callback) override;
   scoped_refptr<base::SequencedTaskRunner> task_runner() override;
@@ -99,13 +99,13 @@ class TestDialURLFetcher : public DialURLFetcher {
   ~TestDialURLFetcher() override;
   void Start(const GURL& url,
              const std::string& method,
-             const base::Optional<std::string>& post_data,
+             const absl::optional<std::string>& post_data,
              int max_retries,
              bool set_origin_header) override;
   MOCK_METHOD4(DoStart,
                void(const GURL&,
                     const std::string&,
-                    const base::Optional<std::string>&,
+                    const absl::optional<std::string>&,
                     int));
   void StartDownload() override;
 
@@ -125,7 +125,7 @@ class TestDialActivityManager : public DialActivityManager {
 
   void SetExpectedRequest(const GURL& url,
                           const std::string& method,
-                          const base::Optional<std::string>& post_data);
+                          const absl::optional<std::string>& post_data);
 
   MOCK_METHOD0(OnFetcherCreated, void());
 
@@ -134,7 +134,7 @@ class TestDialActivityManager : public DialActivityManager {
 
   GURL expected_url_;
   std::string expected_method_;
-  base::Optional<std::string> expected_post_data_;
+  absl::optional<std::string> expected_post_data_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDialActivityManager);
 };

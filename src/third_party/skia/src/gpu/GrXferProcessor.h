@@ -147,20 +147,11 @@ public:
         BlendInfo blendInfo;
         if (!this->willReadDstColor()) {
             this->onGetBlendInfo(&blendInfo);
-        } else if (this->dstReadUsesMixedSamples()) {
-            blendInfo.fDstBlend = kIS2A_GrBlendCoeff;
         }
         return blendInfo;
     }
 
     bool willReadDstColor() const { return fWillReadDstColor; }
-
-    /**
-     * If we are performing a dst read, returns whether the base class will use mixed samples to
-     * antialias the shader's final output. If not doing a dst read, the subclass is responsible
-     * for antialiasing and this returns false.
-     */
-    bool dstReadUsesMixedSamples() const { return fDstReadUsesMixedSamples; }
 
     /**
      * Returns whether or not this xferProcossor will set a secondary output to be used with dual
@@ -185,9 +176,6 @@ public:
         if (this->fWillReadDstColor != that.fWillReadDstColor) {
             return false;
         }
-        if (this->fDstReadUsesMixedSamples != that.fDstReadUsesMixedSamples) {
-            return false;
-        }
         if (fIsLCD != that.fIsLCD) {
             return false;
         }
@@ -196,8 +184,7 @@ public:
 
 protected:
     GrXferProcessor(ClassID classID);
-    GrXferProcessor(ClassID classID, bool willReadDstColor, bool hasMixedSamples,
-                    GrProcessorAnalysisCoverage);
+    GrXferProcessor(ClassID classID, bool willReadDstColor, GrProcessorAnalysisCoverage);
 
 private:
     /**
@@ -223,7 +210,6 @@ private:
     virtual bool onIsEqual(const GrXferProcessor&) const = 0;
 
     bool fWillReadDstColor;
-    bool fDstReadUsesMixedSamples;
     bool fIsLCD;
 
     using INHERITED = GrProcessor;
@@ -290,13 +276,16 @@ public:
          * If set the draw will use fixed function non coherent advanced blends.
          */
         kUsesNonCoherentHWBlending = 0x40,
+        /**
+         * If set, the existing dst value has no effect on the final output.
+         */
+        kUnaffectedByDstValue = 0x80,
     };
     GR_DECL_BITFIELD_CLASS_OPS_FRIENDS(AnalysisProperties);
 
     static sk_sp<const GrXferProcessor> MakeXferProcessor(const GrXPFactory*,
                                                           const GrProcessorAnalysisColor&,
                                                           GrProcessorAnalysisCoverage,
-                                                          bool hasMixedSamples,
                                                           const GrCaps& caps,
                                                           GrClampType);
 
@@ -312,7 +301,6 @@ protected:
 private:
     virtual sk_sp<const GrXferProcessor> makeXferProcessor(const GrProcessorAnalysisColor&,
                                                            GrProcessorAnalysisCoverage,
-                                                           bool hasMixedSamples,
                                                            const GrCaps&,
                                                            GrClampType) const = 0;
 

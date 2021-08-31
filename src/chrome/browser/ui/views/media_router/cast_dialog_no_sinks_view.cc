@@ -5,10 +5,10 @@
 #include "chrome/browser/ui/views/media_router/cast_dialog_no_sinks_view.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
-#include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -84,11 +85,14 @@ void CastDialogNoSinksView::SetHelpIconView() {
   icon->SetBorder(views::CreateEmptyBorder(media_router::kPrimaryIconBorder));
   icon->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_NO_DEVICES_FOUND_BUTTON));
-  icon->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
+  icon->ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
   icon_ = icon;
 
   label_->SetText(
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_STATUS_NO_DEVICES_FOUND));
 }
+
+BEGIN_METADATA(CastDialogNoSinksView, views::View)
+END_METADATA
 
 }  // namespace media_router

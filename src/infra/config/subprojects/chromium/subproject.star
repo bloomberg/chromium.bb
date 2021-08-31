@@ -7,6 +7,7 @@ load("//lib/branches.star", "branches")
 exec("./ci.star")
 exec("./try.star")
 exec("./gpu.try.star")
+exec("./angle.try.star")
 exec("./swangle.try.star")
 
 # TODO(gbeaty) external_console_view uses new fields/types that aren't present
@@ -30,9 +31,5 @@ exec("./swangle.try.star")
 #     title = "Chromium M86 CQ Console",
 #     source = "chromium-m86:try",
 # )
-
-branches.exec("./consoles/android.packager.star")
-branches.exec("./consoles/metadata.exporter.star")
-branches.exec("./consoles/sheriff.ios.star")
 
 branches.exec("./fallback-cq.star")

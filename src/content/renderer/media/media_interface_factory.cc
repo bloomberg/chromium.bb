@@ -21,6 +21,16 @@ MediaInterfaceFactory::MediaInterfaceFactory(
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
+MediaInterfaceFactory::MediaInterfaceFactory(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    mojo::PendingRemote<media::mojom::InterfaceFactory> interface_factory)
+    : media_interface_factory_(std::move(interface_factory)),
+      task_runner_(std::move(task_runner)) {
+  // `interface_broker_` remains null, but we don't need it since we already
+  // have `media_interface_factory_`.
+  weak_this_ = weak_factory_.GetWeakPtr();
+}
+
 MediaInterfaceFactory::~MediaInterfaceFactory() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 }
@@ -127,6 +137,26 @@ void MediaInterfaceFactory::CreateFlingingRenderer(
       presentation_id, std::move(client_extension), std::move(receiver));
 }
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+void MediaInterfaceFactory::CreateMediaFoundationRenderer(
+    mojo::PendingReceiver<media::mojom::Renderer> receiver,
+    mojo::PendingReceiver<media::mojom::MediaFoundationRendererExtension>
+        renderer_extension_receiver) {
+  if (!task_runner_->BelongsToCurrentThread()) {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MediaInterfaceFactory::CreateMediaFoundationRenderer,
+                       weak_this_, std::move(receiver),
+                       std::move(renderer_extension_receiver)));
+    return;
+  }
+
+  DVLOG(1) << __func__;
+  GetMediaInterfaceFactory()->CreateMediaFoundationRenderer(
+      std::move(receiver), std::move(renderer_extension_receiver));
+}
+#endif  // defined(OS_WIN)
 
 void MediaInterfaceFactory::CreateCdm(const std::string& key_system,
                                       const media::CdmConfig& cdm_config,

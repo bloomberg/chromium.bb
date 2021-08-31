@@ -8,10 +8,15 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ui/views/animation/ink_drop_host_view.h"
-#include "ui/views/metadata/metadata_header_macros.h"
+#include "ash/public/cpp/holding_space/holding_space_model.h"
+#include "ash/public/cpp/holding_space/holding_space_model_observer.h"
+#include "base/callback_list.h"
+#include "base/scoped_observation.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/view.h"
 
 namespace views {
+class ImageView;
 class ToggleImageButton;
 }  // namespace views
 
@@ -20,9 +25,12 @@ namespace ash {
 class HoldingSpaceItem;
 class HoldingSpaceItemViewDelegate;
 
-// Base class for HoldingSpaceItemChipView and
-// HoldingSpaceItemScreenCaptureView.
-class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
+// Base class for `HoldingSpaceItemChipView` and
+// `HoldingSpaceItemScreenCaptureView`. Note that `HoldingSpaceItemView` may
+// temporarily outlive its associated `HoldingSpaceItem` when it is being
+// animated out.
+class ASH_EXPORT HoldingSpaceItemView : public views::View,
+                                        public HoldingSpaceModelObserver {
  public:
   METADATA_HEADER(HoldingSpaceItemView);
 
@@ -34,12 +42,16 @@ class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
   // Returns `view` cast as a `HoldingSpaceItemView`. Note that this performs a
   // DCHECK to assert that `view` is in fact a `HoldingSpaceItemView` instance.
   static HoldingSpaceItemView* Cast(views::View* view);
+  static const HoldingSpaceItemView* Cast(const views::View* view);
 
   // Returns if `view` is an instance of `HoldingSpaceItemView`.
-  static bool IsInstance(views::View* view);
+  static bool IsInstance(const views::View* view);
 
-  // views::InkDropHostView:
-  SkColor GetInkDropBaseColor() const override;
+  // Resets the view. Called when the tray bubble starts closing to ensure
+  // that any references that may be outlived are cleared out.
+  void Reset();
+
+  // views::View:
   bool HandleAccessibleAction(const ui::AXActionData& action_data) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnFocus() override;
@@ -49,6 +61,10 @@ class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
   void OnMouseEvent(ui::MouseEvent* event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnThemeChanged() override;
+
+  // HoldingSpaceModelObserver:
+  void OnHoldingSpaceItemUpdated(const HoldingSpaceItem* item) override;
 
   // Starts a drag from this view at the location specified by the given `event`
   // and with the specified `source`. Note that this method copies the logic of
@@ -57,12 +73,20 @@ class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
                  ui::mojom::DragEventSource source);
 
   const HoldingSpaceItem* item() const { return item_; }
+  const std::string& item_id() const { return item_id_; }
 
   void SetSelected(bool selected);
   bool selected() const { return selected_; }
 
  protected:
+  views::ImageView* AddCheckmark(views::View* parent);
   views::ToggleImageButton* AddPin(views::View* parent);
+  virtual void OnPinVisibilityChanged(bool pin_visible) {}
+  virtual void OnSelectionUiChanged();
+
+  HoldingSpaceItemViewDelegate* delegate() { return delegate_; }
+  views::ImageView* checkmark() { return checkmark_; }
+  views::ToggleImageButton* pin() { return pin_; }
 
  private:
   void OnPaintFocus(gfx::Canvas* canvas, gfx::Size size);
@@ -70,8 +94,19 @@ class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
   void OnPinPressed();
   void UpdatePin();
 
-  HoldingSpaceItemViewDelegate* const delegate_;
-  const HoldingSpaceItem* const item_;
+  // NOTE: This view may outlive `delegate_` and/or `item_` during destruction
+  // since the widget is closed asynchronously and the model is updated prior
+  // to animation completion.
+  HoldingSpaceItemViewDelegate* delegate_ = nullptr;
+  const HoldingSpaceItem* item_ = nullptr;
+
+  // Cache the id of the associated holding space item so that it can be
+  // accessed even after `item_` has been destroyed. Note that `item_` may be
+  // destroyed if this view is in the process of animating out.
+  const std::string item_id_;
+
+  // Owned by view hierarchy.
+  views::ImageView* checkmark_ = nullptr;
   views::ToggleImageButton* pin_ = nullptr;
 
   // Owners for the layers used to paint focused and selected states.
@@ -80,6 +115,15 @@ class ASH_EXPORT HoldingSpaceItemView : public views::InkDropHostView {
 
   // Whether or not this view is selected.
   bool selected_ = false;
+
+  // Subscription to be notified of `item_` deletion.
+  base::RepeatingClosureList::Subscription item_deletion_subscription_;
+
+  // Subscription to be notified of changes to `delegate_''s selection UI.
+  base::RepeatingClosureList::Subscription selection_ui_changed_subscription_;
+
+  base::ScopedObservation<HoldingSpaceModel, HoldingSpaceModelObserver>
+      model_observer_{this};
 
   base::WeakPtrFactory<HoldingSpaceItemView> weak_factory_{this};
 };

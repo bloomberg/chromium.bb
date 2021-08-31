@@ -1,9 +1,0 @@
-@hex:
-  # ud2
-  0F 0B
-@dis:
-     0:	0f 0b                                        	ud2    
-@rdfa_output:
-  return code: 0
-@spec:
-  SAFE

@@ -13,16 +13,11 @@
 
 #include "aom/aom_codec.h"
 #include "aom/aom_encoder.h"
+#include "av1/arg_defs.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-enum TestDecodeFatality {
-  TEST_DECODE_OFF,
-  TEST_DECODE_FATAL,
-  TEST_DECODE_WARN,
-};
 
 typedef enum {
   I420,  // 4:2:0 8+ bit-depth

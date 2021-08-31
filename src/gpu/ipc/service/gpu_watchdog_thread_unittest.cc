@@ -8,7 +8,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/task/current_thread.h"
-#include "base/test/power_monitor_test_base.h"
+#include "base/test/power_monitor_test.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -19,8 +19,6 @@ namespace gpu {
 namespace {
 constexpr auto kGpuWatchdogTimeoutForTesting =
     base::TimeDelta::FromMilliseconds(1000);
-
-constexpr int kMaxExtraCyclesBeforeKillForTesting = 1;
 
 // This task will run for duration_ms milliseconds.
 void SimpleTask(base::TimeDelta duration) {
@@ -62,7 +60,7 @@ class GpuWatchdogPowerTest : public GpuWatchdogTest {
 
  protected:
   ~GpuWatchdogPowerTest() override = default;
-  base::PowerMonitorTestSource* power_monitor_source_ = nullptr;
+  base::test::ScopedPowerMonitorTestSource power_monitor_source_;
 };
 
 void GpuWatchdogTest::SetUp() {
@@ -75,7 +73,6 @@ void GpuWatchdogTest::SetUp() {
       /*timeout*/ kGpuWatchdogTimeoutForTesting,
       /*init_factor*/ kInitFactor,
       /*restart_factor*/ kRestartFactor,
-      /*max_extra_cycles_before_kill*/ kMaxExtraCyclesBeforeKillForTesting,
       /*test_mode*/ true);
 }
 
@@ -85,10 +82,7 @@ void GpuWatchdogPowerTest::SetUp() {
   // Report GPU init complete.
   watchdog_thread_->OnInitComplete();
 
-  // Create a power monitor test source.
-  auto power_monitor_source = std::make_unique<base::PowerMonitorTestSource>();
-  power_monitor_source_ = power_monitor_source.get();
-  base::PowerMonitor::Initialize(std::move(power_monitor_source));
+  // Add a power monitor observer.
   watchdog_thread_->AddPowerObserver();
 
   // Wait until the power observer is added on the watchdog thread
@@ -98,7 +92,6 @@ void GpuWatchdogPowerTest::SetUp() {
 void GpuWatchdogPowerTest::TearDown() {
   GpuWatchdogTest::TearDown();
   watchdog_thread_.reset();
-  base::PowerMonitor::ShutdownForTesting();
 }
 
 // This task will run for duration_ms milliseconds. It will also call watchdog
@@ -130,12 +123,12 @@ void GpuWatchdogPowerTest::LongTaskOnResume(
     base::TimeDelta duration,
     base::TimeDelta time_to_power_resume) {
   // Stay in power suspension mode first.
-  power_monitor_source_->GenerateSuspendEvent();
+  power_monitor_source_.GenerateSuspendEvent();
 
   base::PlatformThread::Sleep(time_to_power_resume);
 
   // Now wake up on power resume.
-  power_monitor_source_->GenerateResumeEvent();
+  power_monitor_source_.GenerateResumeEvent();
   // Continue the GPU task for the remaining time.
   base::PlatformThread::Sleep(duration - time_to_power_resume);
 }
@@ -147,12 +140,9 @@ TEST_F(GpuWatchdogTest, GpuInitializationHang) {
   SimpleTask(
       kGpuWatchdogTimeoutForTesting * kInitFactor +
       kGpuWatchdogTimeoutForTesting * kMaxCountOfMoreGpuThreadTimeAllowed +
-      kGpuWatchdogTimeoutForTesting * kMaxExtraCyclesBeforeKillForTesting +
       base::TimeDelta::FromMilliseconds(3000));
 #else
   SimpleTask(kGpuWatchdogTimeoutForTesting * kInitFactor +
-             kGpuWatchdogTimeoutForTesting *
-                 kMaxExtraCyclesBeforeKillForTesting +
              base::TimeDelta::FromMilliseconds(3000));
 #endif
 
@@ -207,15 +197,11 @@ TEST_F(GpuWatchdogTest, GpuRunningATaskHang) {
       base::BindOnce(&SimpleTask, kGpuWatchdogTimeoutForTesting * 2 +
                                       kGpuWatchdogTimeoutForTesting *
                                           kMaxCountOfMoreGpuThreadTimeAllowed +
-                                      kGpuWatchdogTimeoutForTesting *
-                                          kMaxExtraCyclesBeforeKillForTesting +
                                       base::TimeDelta::FromMilliseconds(4000)));
 #else
   task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&SimpleTask, kGpuWatchdogTimeoutForTesting * 2 +
-                                      kGpuWatchdogTimeoutForTesting *
-                                          kMaxExtraCyclesBeforeKillForTesting +
                                       base::TimeDelta::FromMilliseconds(4000)));
 #endif
 
@@ -268,8 +254,6 @@ TEST_F(GpuWatchdogTest, GpuSwitchingToForegroundHang) {
                      /*duration*/ kGpuWatchdogTimeoutForTesting * 2 +
                          kGpuWatchdogTimeoutForTesting *
                              kMaxCountOfMoreGpuThreadTimeAllowed +
-                         kGpuWatchdogTimeoutForTesting *
-                             kMaxExtraCyclesBeforeKillForTesting +
                          base::TimeDelta::FromMilliseconds(4200),
                      /*time_to_switch_to_foreground*/
                      base::TimeDelta::FromMilliseconds(200)));
@@ -279,8 +263,6 @@ TEST_F(GpuWatchdogTest, GpuSwitchingToForegroundHang) {
       base::BindOnce(&GpuWatchdogTest::LongTaskFromBackgroundToForeground,
                      base::Unretained(this),
                      /*duration*/ kGpuWatchdogTimeoutForTesting * 2 +
-                         kGpuWatchdogTimeoutForTesting *
-                             kMaxExtraCyclesBeforeKillForTesting +
                          base::TimeDelta::FromMilliseconds(4200),
                      /*time_to_switch_to_foreground*/
                      base::TimeDelta::FromMilliseconds(200)));
@@ -316,12 +298,9 @@ TEST_F(GpuWatchdogTest, GpuInitializationPause) {
   SimpleTask(
       kGpuWatchdogTimeoutForTesting * kInitFactor +
       kGpuWatchdogTimeoutForTesting * kMaxCountOfMoreGpuThreadTimeAllowed +
-      kGpuWatchdogTimeoutForTesting * kMaxExtraCyclesBeforeKillForTesting +
       base::TimeDelta::FromMilliseconds(4000));
 #else
   SimpleTask(kGpuWatchdogTimeoutForTesting * kInitFactor +
-             kGpuWatchdogTimeoutForTesting *
-                 kMaxExtraCyclesBeforeKillForTesting +
              base::TimeDelta::FromMilliseconds(4000));
 #endif
 
@@ -334,7 +313,7 @@ TEST_F(GpuWatchdogPowerTest, GpuOnSuspend) {
   // watchdog_thread_->OnInitComplete() is called in SetUp
 
   // Enter power suspension mode.
-  power_monitor_source_->GenerateSuspendEvent();
+  power_monitor_source_.GenerateSuspendEvent();
 
   // Run a task that takes longer (5000 milliseconds) than timeout.
   task_environment_.GetMainThreadTaskRunner()->PostTask(
@@ -365,8 +344,6 @@ TEST_F(GpuWatchdogPowerTest, GpuOnResumeHang) {
           /*duration*/ kGpuWatchdogTimeoutForTesting * kRestartFactor +
               kGpuWatchdogTimeoutForTesting *
                   kMaxCountOfMoreGpuThreadTimeAllowed +
-              kGpuWatchdogTimeoutForTesting *
-                  kMaxExtraCyclesBeforeKillForTesting +
               base::TimeDelta::FromMilliseconds(4200),
           /*time_to_power_resume*/
           base::TimeDelta::FromMilliseconds(200)));
@@ -376,8 +353,6 @@ TEST_F(GpuWatchdogPowerTest, GpuOnResumeHang) {
       base::BindOnce(
           &GpuWatchdogPowerTest::LongTaskOnResume, base::Unretained(this),
           /*duration*/ kGpuWatchdogTimeoutForTesting * kRestartFactor +
-              kGpuWatchdogTimeoutForTesting *
-                  kMaxExtraCyclesBeforeKillForTesting +
               base::TimeDelta::FromMilliseconds(4200),
           /*time_to_power_resume*/
           base::TimeDelta::FromMilliseconds(200)));

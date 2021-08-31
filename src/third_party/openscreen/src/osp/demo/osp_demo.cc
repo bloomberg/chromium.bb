@@ -644,8 +644,7 @@ int main(int argc, char** argv) {
   // TODO(jophba): Mac on Mojave hangs on this command forever.
   openscreen::SetLogFifoOrDie(log_filename);
 
-  PlatformClientPosix::Create(std::chrono::milliseconds(50),
-                              std::chrono::milliseconds(50));
+  PlatformClientPosix::Create(std::chrono::milliseconds(50));
 
   if (is_receiver_demo) {
     OSP_LOG_INFO << "Running publisher demo...";

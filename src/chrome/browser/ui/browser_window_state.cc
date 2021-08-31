@@ -11,10 +11,12 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/buildflags.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sessions/session_service_factory.h"
+#include "chrome/browser/sessions/session_service_base.h"
+#include "chrome/browser/sessions/session_service_lookup.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
@@ -78,7 +80,7 @@ class WindowPlacementPrefUpdate : public DictionaryPrefUpdate {
 std::string GetWindowName(const Browser* browser) {
   switch (browser->type()) {
     case Browser::TYPE_NORMAL:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     case Browser::TYPE_CUSTOM_TAB:
 #endif
       return prefs::kBrowserWindowPlacement;
@@ -142,17 +144,24 @@ void SaveWindowPlacement(const Browser* browser,
   // Note that we don't want to be the ones who cause lazy initialization of
   // the session service. This function gets called during initial window
   // showing, and we don't want to bring in the session service this early.
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfileIfExisting(browser->profile());
-  if (session_service)
-    session_service->SetWindowBounds(browser->session_id(), bounds, show_state);
+  SessionServiceBase* service = GetAppropriateSessionServiceIfExisting(browser);
+  if (service)
+    service->SetWindowBounds(browser->session_id(), bounds, show_state);
 }
 
 void SaveWindowWorkspace(const Browser* browser, const std::string& workspace) {
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfileIfExisting(browser->profile());
-  if (session_service)
-    session_service->SetWindowWorkspace(browser->session_id(), workspace);
+  SessionServiceBase* service = GetAppropriateSessionServiceIfExisting(browser);
+  if (service)
+    service->SetWindowWorkspace(browser->session_id(), workspace);
+}
+
+void SaveWindowVisibleOnAllWorkspaces(const Browser* browser,
+                                      bool visible_on_all_workspaces) {
+  SessionServiceBase* service = GetAppropriateSessionServiceIfExisting(browser);
+  if (service) {
+    service->SetWindowVisibleOnAllWorkspaces(browser->session_id(),
+                                             visible_on_all_workspaces);
+  }
 }
 
 void GetSavedWindowBoundsAndShowState(const Browser* browser,

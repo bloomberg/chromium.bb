@@ -4,8 +4,9 @@
 
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 
+#include <ostream>
+
 #include "base/notreached.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -15,8 +16,6 @@ const char* PaintInvalidationReasonToString(PaintInvalidationReason reason) {
       return "none";
     case PaintInvalidationReason::kIncremental:
       return "incremental";
-    case PaintInvalidationReason::kRectangle:
-      return "invalidate paint rectangle";
     case PaintInvalidationReason::kHitTest:
       return "hit testing change";
     case PaintInvalidationReason::kFull:

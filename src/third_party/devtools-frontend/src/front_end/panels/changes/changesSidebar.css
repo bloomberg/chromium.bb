@@ -1,0 +1,44 @@
+li .icon {
+  margin: -3px -5px -3px -5px;
+  background: var(--color-background-elevation-2);
+}
+
+.tree-outline li {
+  min-height: 20px;
+}
+
+.tree-outline li:hover:not(.selected) .selection {
+  display: block;
+  background-color: var(--item-hover-color);
+}
+
+.navigator-sm-script-tree-item .icon,
+.navigator-script-tree-item .icon,
+.navigator-snippet-tree-item .icon {
+  background: var(--color-syntax-4);
+}
+
+.navigator-sm-stylesheet-tree-item .icon,
+.navigator-stylesheet-tree-item .icon {
+  background: var(--color-syntax-2);
+}
+
+.navigator-image-tree-item .icon,
+.navigator-font-tree-item .icon {
+  background: var(--color-syntax-6);
+}
+
+@media (forced-colors: active) {
+  li .icon,
+  .navigator-sm-script-tree-item .icon,
+  .navigator-script-tree-item .icon,
+  .navigator-snippet-tree-item .icon,
+  .navigator-sm-stylesheet-tree-item .icon,
+  .navigator-stylesheet-tree-item .icon,
+  .navigator-image-tree-item .icon,
+  .navigator-font-tree-item .icon {
+    background-color: ButtonText;
+    background-image: none;
+    forced-color-adjust: none;
+  }
+}

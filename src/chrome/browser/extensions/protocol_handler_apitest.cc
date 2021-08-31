@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/scoped_observation.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -16,14 +17,27 @@
 #include "extensions/test/result_catcher.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 
+#if defined(OS_MAC)
+#include "chrome/test/base/launchservices_utils_mac.h"
+#endif
+
 namespace extensions {
 
-using ProtocolHandlerApiTest = ExtensionApiTest;
+class ProtocolHandlerApiTest : public ExtensionApiTest {
+ public:
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+
+#if defined(OS_MAC)
+    ASSERT_TRUE(test::RegisterAppWithLaunchServices());
+#endif
+  }
+};
 
 class ProtocolHandlerChangeWaiter : public ProtocolHandlerRegistry::Observer {
  public:
   explicit ProtocolHandlerChangeWaiter(ProtocolHandlerRegistry* registry) {
-    registry_observer_.Add(registry);
+    registry_observation_.Observe(registry);
   }
   ProtocolHandlerChangeWaiter(const ProtocolHandlerChangeWaiter&) = delete;
   ProtocolHandlerChangeWaiter& operator=(const ProtocolHandlerChangeWaiter&) =
@@ -35,8 +49,9 @@ class ProtocolHandlerChangeWaiter : public ProtocolHandlerRegistry::Observer {
   void OnProtocolHandlerRegistryChanged() override { run_loop_.Quit(); }
 
  private:
-  ScopedObserver<ProtocolHandlerRegistry, ProtocolHandlerRegistry::Observer>
-      registry_observer_{this};
+  base::ScopedObservation<ProtocolHandlerRegistry,
+                          ProtocolHandlerRegistry::Observer>
+      registry_observation_{this};
   base::RunLoop run_loop_;
 };
 
@@ -54,8 +69,7 @@ IN_PROC_BROWSER_TEST_F(ProtocolHandlerApiTest, Registration) {
   // Load the extension test page.
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("protocol_handler");
-  const Extension* extension =
-      LoadExtensionWithFlags(extension_path, kFlagNone);
+  const Extension* extension = LoadExtension(extension_path);
   ASSERT_TRUE(extension);
   GURL url = extension->GetResourceURL("test_registration.html");
   ui_test_utils::NavigateToURL(browser(), url);
@@ -128,8 +142,9 @@ IN_PROC_BROWSER_TEST_F(ProtocolHandlerApiTest, BrowserProcessSecurityLevel) {
   ASSERT_TRUE(StartEmbeddedTestServer());
 
   // Run the extension subtest and wait for the initialization.
-  ASSERT_TRUE(RunExtensionSubtest("protocol_handler",
-                                  "test_browser_process_security_level.html"))
+  ASSERT_TRUE(RunExtensionTest(
+      {.name = "protocol_handler",
+       .page_url = "test_browser_process_security_level.html"}))
       << message_;
 
   content::WebContentsDelegate* web_contents_delegate =
@@ -143,7 +158,7 @@ IN_PROC_BROWSER_TEST_F(ProtocolHandlerApiTest, BrowserProcessSecurityLevel) {
   // Main frame has extension privilege.
   ASSERT_EQ(main_frame, subframes[0]);
   EXPECT_EQ(
-      blink::ProtocolHandlerSecurityLevel::kUntrustedOrigins,
+      blink::ProtocolHandlerSecurityLevel::kExtensionFeatures,
       web_contents_delegate->GetProtocolHandlerSecurityLevel(subframes[0]));
 
   // First subframe is in strict mode.
@@ -155,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(ProtocolHandlerApiTest, BrowserProcessSecurityLevel) {
   // Nested subframe has extension privilege.
   ASSERT_EQ("chrome_extension", subframes[2]->GetFrameName());
   EXPECT_EQ(
-      blink::ProtocolHandlerSecurityLevel::kUntrustedOrigins,
+      blink::ProtocolHandlerSecurityLevel::kExtensionFeatures,
       web_contents_delegate->GetProtocolHandlerSecurityLevel(subframes[2]));
 }
 

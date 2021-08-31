@@ -82,9 +82,10 @@ FocusAutomationHandler = class extends BaseAutomationHandler {
         cursors.Range.fromNode(this.previousActiveDescendant_) :
         ChromeVoxState.instance.currentRange;
     new Output()
+        .withoutHints()
         .withRichSpeechAndBraille(
             cursors.Range.fromNode(evt.target.activeDescendant), prev,
-            Output.EventType.NAVIGATE)
+            OutputEventType.NAVIGATE)
         .go();
     this.previousActiveDescendant_ = evt.target.activeDescendant;
   }

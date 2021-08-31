@@ -14,22 +14,22 @@ namespace {
 
 std::string GetInterstitialScreenEventHistogramName(Screen screen) {
   switch (screen) {
-    case Screen::kConnectionError:
-      return "Ash.PhoneHub.InterstitialScreenEvent.ConnectionError";
+    case Screen::kPhoneDisconnected:
+      return "PhoneHub.InterstitialScreenEvent.PhoneDisconnected";
     case Screen::kBluetoothOrWifiDisabled:
-      return "Ash.PhoneHub.InterstitialScreenEvent.BluetoothOrWifiDisabled";
-    case Screen::kReconnecting:
-      return "Ash.PhoneHub.InterstitialScreenEvent.Reconnecting";
-    case Screen::kInitialConnecting:
-      return "Ash.PhoneHub.InterstitialScreenEvent.InitialConnecting";
+      return "PhoneHub.InterstitialScreenEvent.BluetoothOrWifiDisabled";
+    case Screen::kPhoneConnecting:
+      return "PhoneHub.InterstitialScreenEvent.PhoneConnecting";
+    case Screen::kTetherConnectionPending:
+      return "PhoneHub.InterstitialScreenEvent.TetherConnectionPending";
     case Screen::kOnboardingExistingMultideviceUser:
-      return "Ash.PhoneHub.InterstitialScreenEvent.Onboarding."
-             "ExistingMultideviceUser";
+      return "PhoneHub.InterstitialScreenEvent.Onboarding."
+             "ExistingMultideviceUser2";
     case Screen::kOnboardingNewMultideviceUser:
-      return "Ash.PhoneHub.InterstitialScreenEvent.Onboarding."
-             "NewMultideviceUser";
+      return "PhoneHub.InterstitialScreenEvent.Onboarding."
+             "NewMultideviceUser2";
     case Screen::kOnboardingDismissPrompt:
-      return "Ash.PhoneHub.InterstitialScreenEvent.OnboardingDismissPrompt";
+      return "PhoneHub.InterstitialScreenEvent.OnboardingDismissPrompt";
     default:
       DCHECK(false) << "Invalid interstitial screen";
       return "";
@@ -41,36 +41,51 @@ std::string GetInterstitialScreenEventHistogramName(Screen screen) {
 void LogInterstitialScreenEvent(Screen screen, InterstitialScreenEvent event) {
   base::UmaHistogramEnumeration(GetInterstitialScreenEventHistogramName(screen),
                                 event);
+
+  // NOTE(https://crbug.com/1187255): The new- and existing-user metrics were
+  // previously reversed. For continuity, we continue logging the old metrics in
+  // reverse. The new metrics
+  // "PhoneHub.InterstitialScreenEvent.Onboarding.NewMultideviceUser2" and
+  // "PhoneHub.InterstitialScreenEvent.Onboarding.ExistingMultideviceUser2" are
+  // logged correctly.
+  if (screen == Screen::kOnboardingExistingMultideviceUser) {
+    base::UmaHistogramEnumeration(
+        "PhoneHub.InterstitialScreenEvent.Onboarding.NewMultideviceUser",
+        event);
+  } else if (screen == Screen::kOnboardingNewMultideviceUser) {
+    base::UmaHistogramEnumeration(
+        "PhoneHub.InterstitialScreenEvent.Onboarding.ExistingMultideviceUser",
+        event);
+  }
 }
 
 void LogScreenOnBubbleOpen(Screen screen) {
-  base::UmaHistogramEnumeration("Ash.PhoneHub.ScreenOnBubbleOpen", screen);
+  base::UmaHistogramEnumeration("PhoneHub.ScreenOnBubbleOpen", screen);
 }
 
 void LogScreenOnBubbleClose(Screen screen) {
-  base::UmaHistogramEnumeration("Ash.PhoneHub.ScreenOnBubbleClose", screen);
+  base::UmaHistogramEnumeration("PhoneHub.ScreenOnBubbleClose", screen);
 }
 
 void LogScreenOnSettingsButtonClicked(Screen screen) {
-  base::UmaHistogramEnumeration("Ash.PhoneHub.Screen.OnSettingsButtonClicked",
+  base::UmaHistogramEnumeration("PhoneHub.ScreenOnSettingsButtonClicked",
                                 screen);
 }
 
 void LogNotificationOptInEvent(InterstitialScreenEvent event) {
-  base::UmaHistogramEnumeration("Ash.PhoneHub.NotificationOptIn", event);
+  base::UmaHistogramEnumeration("PhoneHub.NotificationOptInEvents", event);
 }
 
 void LogTabContinuationChipClicked(int tab_index) {
-  base::UmaHistogramCounts100("Ash.PhoneHub.TabContinuationChipClicked",
-                              tab_index);
+  base::UmaHistogramCounts100("PhoneHub.TabContinuationChipClicked", tab_index);
 }
 
 void LogQuickActionClick(QuickAction action) {
-  base::UmaHistogramEnumeration("Ash.PhoneHub.QuickActionClicked", action);
+  base::UmaHistogramEnumeration("PhoneHub.QuickActionClicked", action);
 }
 
 void LogNotificationCount(int count) {
-  base::UmaHistogramCounts100("Ash.PhoneHub.NotificationCount", count);
+  base::UmaHistogramCounts100("PhoneHub.NotificationCount", count);
 }
 
 void LogNotificationInteraction(NotificationInteraction interaction) {

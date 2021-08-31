@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "ui/base/buildflags.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -103,7 +104,7 @@ void GlobalErrorBubbleView::Init() {
   // |error_| is assumed to be valid, and stay valid, at least until Init()
   // returns.
 
-  std::vector<base::string16> message_strings(error_->GetBubbleViewMessages());
+  std::vector<std::u16string> message_strings(error_->GetBubbleViewMessages());
   std::vector<std::unique_ptr<views::Label>> message_labels;
   for (const auto& message_string : message_strings) {
     auto message_label = std::make_unique<views::Label>(message_string);
@@ -147,3 +148,6 @@ void GlobalErrorBubbleView::OnDialogInitialized() {
 void GlobalErrorBubbleView::CloseBubbleView() {
   GetWidget()->Close();
 }
+
+BEGIN_METADATA(GlobalErrorBubbleView, views::BubbleDialogDelegateView)
+END_METADATA

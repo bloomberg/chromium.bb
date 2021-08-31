@@ -14,8 +14,10 @@
 #include "base/timer/timer.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -56,7 +58,7 @@ void AutofillOfferManager::UpdateSuggestionsWithOffers(
   }
 
   AutofillOfferManager::OffersMap eligible_offers_map =
-      CreateOffersMap(last_committed_url_origin);
+      CreateCardLinkedOffersMap(last_committed_url_origin);
 
   // Update |offer_label| for each suggestion.
   for (auto& suggestion : suggestions) {
@@ -66,12 +68,42 @@ void AutofillOfferManager::UpdateSuggestionsWithOffers(
           l10n_util::GetStringUTF16(IDS_AUTOFILL_OFFERS_CASHBACK);
     }
   }
+  // Sort the suggestions such that suggestions with offers are shown at the
+  // top.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillSortSuggestionsBasedOnOfferPresence)) {
+    std::sort(suggestions.begin(), suggestions.end(),
+              [](const Suggestion& a, const Suggestion& b) {
+                if (!a.offer_label.empty() && b.offer_label.empty()) {
+                  return true;
+                }
+                return false;
+              });
+  }
+}
+
+bool AutofillOfferManager::IsUrlEligible(const GURL& last_committed_url) {
+  // Checking set::empty and using set::count to prevent possible crashes (see
+  // crbug.com/1195949).
+  // For most cases this vector will be empty, so add the empty check to avoid
+  // unnecessary calls.
+  return !eligible_merchant_domains_.empty() &&
+         eligible_merchant_domains_.count(last_committed_url.GetOrigin());
+}
+
+AutofillOfferData* AutofillOfferManager::GetOfferForUrl(
+    const GURL& last_committed_url) {
+  for (AutofillOfferData* offer : personal_data_->GetAutofillOffers()) {
+    if (IsOfferEligible(*offer, last_committed_url.GetOrigin())) {
+      return offer;
+    }
+  }
+  return nullptr;
 }
 
 void AutofillOfferManager::UpdateEligibleMerchantDomains() {
   eligible_merchant_domains_.clear();
-  std::vector<AutofillOfferData*> offers =
-      personal_data_->GetCreditCardOffers();
+  std::vector<AutofillOfferData*> offers = personal_data_->GetAutofillOffers();
 
   for (auto* offer : offers) {
     for (auto& domain : offer->merchant_domain) {
@@ -80,17 +112,20 @@ void AutofillOfferManager::UpdateEligibleMerchantDomains() {
   }
 }
 
-AutofillOfferManager::OffersMap AutofillOfferManager::CreateOffersMap(
+AutofillOfferManager::OffersMap AutofillOfferManager::CreateCardLinkedOffersMap(
     const GURL& last_committed_url_origin) const {
   AutofillOfferManager::OffersMap offers_map;
 
-  std::vector<AutofillOfferData*> offers =
-      personal_data_->GetCreditCardOffers();
+  std::vector<AutofillOfferData*> offers = personal_data_->GetAutofillOffers();
   std::vector<CreditCard*> cards = personal_data_->GetCreditCards();
 
   for (auto* offer : offers) {
     // Ensure the offer is valid.
     if (!IsOfferEligible(*offer, last_committed_url_origin)) {
+      continue;
+    }
+    // Ensure the offer is a card-linked offer.
+    if (!offer->IsCardLinkedOffer()) {
       continue;
     }
 

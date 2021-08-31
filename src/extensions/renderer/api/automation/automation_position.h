@@ -53,15 +53,15 @@ class AutomationPosition final : public gin::Wrappable<AutomationPosition> {
   bool AtEndOfPage(gin::Arguments* arguments);
   bool AtStartOfFormat(gin::Arguments* arguments);
   bool AtEndOfFormat(gin::Arguments* arguments);
-  bool AtStartOfDocument(gin::Arguments* arguments);
-  bool AtEndOfDocument(gin::Arguments* arguments);
+  bool AtStartOfContent(gin::Arguments* arguments);
+  bool AtEndOfContent(gin::Arguments* arguments);
   void AsTreePosition(gin::Arguments* arguments);
   void AsTextPosition(gin::Arguments* arguments);
   void AsLeafTextPosition(gin::Arguments* arguments);
   void MoveToPositionAtStartOfAnchor(gin::Arguments* arguments);
   void MoveToPositionAtEndOfAnchor(gin::Arguments* arguments);
-  void MoveToPositionAtStartOfDocument(gin::Arguments* arguments);
-  void MoveToPositionAtEndOfDocument(gin::Arguments* arguments);
+  void MoveToPositionAtStartOfContent(gin::Arguments* arguments);
+  void MoveToPositionAtEndOfContent(gin::Arguments* arguments);
   void MoveToParentPosition(gin::Arguments* arguments);
   void MoveToNextLeafTreePosition(gin::Arguments* arguments);
   void MoveToPreviousLeafTreePosition(gin::Arguments* arguments);
@@ -94,7 +94,7 @@ class AutomationPosition final : public gin::Wrappable<AutomationPosition> {
   bool IsInTextObject(gin::Arguments* arguments);
   bool IsInWhiteSpace(gin::Arguments* arguments);
   bool IsValid(gin::Arguments* arguments);
-  base::string16 GetText(gin::Arguments* arguments);
+  std::u16string GetText(gin::Arguments* arguments);
 
   ui::AXNodePosition::AXPositionInstance position_;
 

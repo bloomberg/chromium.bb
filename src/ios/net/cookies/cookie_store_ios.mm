@@ -7,6 +7,8 @@
 #import <Foundation/Foundation.h>
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/files/file_path.h"
@@ -29,6 +31,7 @@
 #import "ios/net/cookies/system_cookie_util.h"
 #include "ios/net/ios_net_buildflags.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "net/log/net_log.h"
@@ -131,7 +134,7 @@ void OnlyCookiesWithName(const net::CookieAccessResultList& cookies,
 #pragma mark CookieStoreIOS::Subscription
 
 CookieStoreIOS::Subscription::Subscription(
-    std::unique_ptr<CookieChangeCallbackList::Subscription> subscription)
+    base::CallbackListSubscription subscription)
     : subscription_(std::move(subscription)) {
   DCHECK(subscription_);
 }
@@ -147,7 +150,7 @@ CookieStoreIOS::Subscription::~Subscription() {
 }
 
 void CookieStoreIOS::Subscription::ResetSubscription() {
-  subscription_.reset();
+  subscription_ = {};
 }
 
 #pragma mark -
@@ -244,9 +247,11 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
   // engine.
   DCHECK(!options.exclude_httponly());
 
-  bool secure_source = source_url.SchemeIsCryptographic();
+  CookieAccessScheme access_scheme =
+      cookie_util::ProvisionalAccessScheme(source_url);
 
-  if (cookie->IsSecure() && !secure_source) {
+  if (cookie->IsSecure() &&
+      access_scheme == CookieAccessScheme::kNonCryptographic) {
     if (!callback.is_null())
       std::move(callback).Run(
           net::CookieAccessResult(net::CookieInclusionStatus(
@@ -283,7 +288,7 @@ void CookieStoreIOS::GetCookieListWithOptionsAsync(
   system_store_->GetCookiesForURLAsync(
       url,
       base::BindOnce(&CookieStoreIOS::RunGetCookieListCallbackOnSystemCookies,
-                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void CookieStoreIOS::GetAllCookiesAsync(GetAllCookiesCallback callback) {
@@ -297,7 +302,7 @@ void CookieStoreIOS::GetAllCookiesAsync(GetAllCookiesCallback callback) {
   // to pass options in here as well.
   system_store_->GetAllCookiesAsync(
       base::BindOnce(&CookieStoreIOS::RunGetAllCookiesCallbackOnSystemCookies,
-                     weak_factory_.GetWeakPtr(), base::Passed(&callback)));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void CookieStoreIOS::DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
@@ -327,9 +332,6 @@ void CookieStoreIOS::DeleteAllCreatedInTimeRangeAsync(
   // instead.
   DCHECK(SystemCookiesAllowed());
 
-  if (metrics_enabled())
-    ResetCookieCountMetrics();
-
   CookieDeletionInfo delete_info(creation_range.start(), creation_range.end());
   DeleteCookiesMatchingInfoAsync(std::move(delete_info), std::move(callback));
 }
@@ -342,9 +344,6 @@ void CookieStoreIOS::DeleteAllMatchingInfoAsync(CookieDeletionInfo delete_info,
   // instead.
   DCHECK(SystemCookiesAllowed());
 
-  if (metrics_enabled())
-    ResetCookieCountMetrics();
-
   DeleteCookiesMatchingInfoAsync(std::move(delete_info), std::move(callback));
 }
 
@@ -355,13 +354,22 @@ void CookieStoreIOS::DeleteSessionCookiesAsync(DeleteCallback callback) {
   // instead.
   DCHECK(SystemCookiesAllowed());
 
-  if (metrics_enabled())
-    ResetCookieCountMetrics();
-
   CookieDeletionInfo delete_info;
   delete_info.session_control =
       CookieDeletionInfo::SessionControl::SESSION_COOKIES;
   DeleteCookiesMatchingInfoAsync(std::move(delete_info), std::move(callback));
+}
+
+void CookieStoreIOS::DeleteMatchingCookiesAsync(DeletePredicate predicate,
+                                                DeleteCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // If cookies are not allowed, a CookieStoreIOS subclass should be used
+  // instead.
+  DCHECK(SystemCookiesAllowed());
+
+  DeleteCookiesMatchingPredicateAsync(std::move(predicate),
+                                      std::move(callback));
 }
 
 void CookieStoreIOS::FlushStore(base::OnceClosure closure) {
@@ -468,7 +476,13 @@ void CookieStoreIOS::DeleteCookiesMatchingInfoAsync(
       base::BindRepeating(
           [](const CookieDeletionInfo& delete_info,
              const net::CanonicalCookie& cc) {
-            return delete_info.Matches(cc);
+            // No extra trustworthy URLs.
+            bool delegate_treats_url_as_trustworthy = false;
+            net::CookieAccessParams params = {
+                net::CookieAccessSemantics::UNKNOWN,
+                delegate_treats_url_as_trustworthy,
+                net::CookieSamePartyStatus::kNoSamePartyEnforcement};
+            return delete_info.Matches(cc, params);
           },
           std::move(delete_info)),
       std::move(callback));

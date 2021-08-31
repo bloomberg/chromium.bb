@@ -63,9 +63,10 @@ WebViewPersonalDataManagerFactory::BuildServiceInstanceFor(
           browser_state, ServiceAccessType::EXPLICIT_ACCESS);
   service->Init(
       profile_db, account_db, browser_state->GetPrefs(),
+      ApplicationContext::GetInstance()->GetLocalState(),
       WebViewIdentityManagerFactory::GetForBrowserState(browser_state),
       /*client_profile_validator=*/nullptr, /*history_service=*/nullptr,
-      browser_state->IsOffTheRecord());
+      /*strike_database*/ nullptr, browser_state->IsOffTheRecord());
   return service;
 }
 

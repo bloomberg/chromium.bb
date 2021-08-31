@@ -9,15 +9,52 @@
 #include "base/check_op.h"
 #include "components/performance_manager/graph/frame_node_impl.h"
 #include "components/performance_manager/graph/graph_impl.h"
+#include "components/performance_manager/graph/graph_impl_util.h"
 #include "components/performance_manager/graph/page_node_impl.h"
+#include "components/performance_manager/graph/worker_node_impl.h"
+#include "components/performance_manager/public/execution_context/execution_context_registry.h"
 #include "components/performance_manager/v8_memory/v8_context_tracker.h"
+#include "content/public/browser/background_tracing_manager.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace performance_manager {
+
+namespace {
+
+void FireBackgroundTracingTriggerOnUI(
+    const std::string& trigger_name,
+    content::BackgroundTracingManager* manager) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Don't fire a trigger unless we're in an active tracing scenario.
+  // Renderer-initiated background tracing triggers are always "preemptive"
+  // traces so we expect a scenario to be active.
+  if (!manager)
+    manager = content::BackgroundTracingManager::GetInstance();
+  if (!manager->HasActiveScenario())
+    return;
+
+  static content::BackgroundTracingManager::TriggerHandle trigger_handle = -1;
+  if (trigger_handle == -1) {
+    trigger_handle = manager->RegisterTriggerType(
+        content::BackgroundTracingManager::kContentTriggerConfig);
+  }
+
+  // Actually fire the trigger. We don't need to know when the trace is being
+  // finalized so pass an empty callback.
+  manager->TriggerNamedEvent(
+      trigger_handle,
+      content::BackgroundTracingManager::StartedFinalizingCallback());
+}
+
+}  // namespace
 
 ProcessNodeImpl::ProcessNodeImpl(content::ProcessType process_type,
                                  RenderProcessHostProxy render_process_proxy)
     : process_type_(process_type),
       render_process_host_proxy_(std::move(render_process_proxy)) {
+  weak_this_ = weak_factory_.GetWeakPtr();
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -27,10 +64,13 @@ ProcessNodeImpl::~ProcessNodeImpl() {
   // TODO(https://crbug.com/1058705): Turn this into a DCHECK once the issue is
   //                                  resolved.
   CHECK(worker_nodes_.empty());
+  DCHECK(!frozen_frame_data_);
+  DCHECK(!process_priority_data_);
 }
 
 void ProcessNodeImpl::Bind(
     mojo::PendingReceiver<mojom::ProcessCoordinationUnit> receiver) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // A RenderProcessHost can be reused if the backing process suddenly dies, in
   // which case we will receive a new receiver from the newly spawned process.
   receiver_.reset();
@@ -39,6 +79,8 @@ void ProcessNodeImpl::Bind(
 
 void ProcessNodeImpl::SetMainThreadTaskLoadIsLow(
     bool main_thread_task_load_is_low) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   main_thread_task_load_is_low_.SetAndMaybeNotify(this,
                                                   main_thread_task_load_is_low);
 }
@@ -46,6 +88,7 @@ void ProcessNodeImpl::SetMainThreadTaskLoadIsLow(
 void ProcessNodeImpl::OnV8ContextCreated(
     mojom::V8ContextDescriptionPtr description,
     mojom::IframeAttributionDataPtr iframe_attribution_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (auto* tracker = v8_memory::V8ContextTracker::GetFromGraph(graph())) {
     tracker->OnV8ContextCreated(PassKey(), this, *description,
                                 std::move(iframe_attribution_data));
@@ -54,14 +97,61 @@ void ProcessNodeImpl::OnV8ContextCreated(
 
 void ProcessNodeImpl::OnV8ContextDetached(
     const blink::V8ContextToken& v8_context_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (auto* tracker = v8_memory::V8ContextTracker::GetFromGraph(graph()))
     tracker->OnV8ContextDetached(PassKey(), this, v8_context_token);
 }
 
 void ProcessNodeImpl::OnV8ContextDestroyed(
     const blink::V8ContextToken& v8_context_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (auto* tracker = v8_memory::V8ContextTracker::GetFromGraph(graph()))
     tracker->OnV8ContextDestroyed(PassKey(), this, v8_context_token);
+}
+
+void ProcessNodeImpl::OnRemoteIframeAttached(
+    const blink::LocalFrameToken& parent_frame_token,
+    const blink::RemoteFrameToken& remote_frame_token,
+    mojom::IframeAttributionDataPtr iframe_attribution_data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (auto* tracker = v8_memory::V8ContextTracker::GetFromGraph(graph())) {
+    auto* ec_registry =
+        execution_context::ExecutionContextRegistry::GetFromGraph(graph());
+    DCHECK(ec_registry);
+    auto* parent_frame_node =
+        ec_registry->GetFrameNodeByFrameToken(parent_frame_token);
+    if (parent_frame_node) {
+      tracker->OnRemoteIframeAttached(
+          PassKey(), FrameNodeImpl::FromNode(parent_frame_node),
+          remote_frame_token, std::move(iframe_attribution_data));
+    }
+  }
+}
+
+void ProcessNodeImpl::OnRemoteIframeDetached(
+    const blink::LocalFrameToken& parent_frame_token,
+    const blink::RemoteFrameToken& remote_frame_token) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (auto* tracker = v8_memory::V8ContextTracker::GetFromGraph(graph())) {
+    auto* ec_registry =
+        execution_context::ExecutionContextRegistry::GetFromGraph(graph());
+    DCHECK(ec_registry);
+    auto* parent_frame_node =
+        ec_registry->GetFrameNodeByFrameToken(parent_frame_token);
+    if (parent_frame_node) {
+      tracker->OnRemoteIframeDetached(
+          PassKey(), FrameNodeImpl::FromNode(parent_frame_node),
+          remote_frame_token);
+    }
+  }
+}
+
+void ProcessNodeImpl::FireBackgroundTracingTrigger(
+    const std::string& trigger_name) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FireBackgroundTracingTriggerOnUI, trigger_name, nullptr));
 }
 
 void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
@@ -96,6 +186,8 @@ const base::flat_set<FrameNodeImpl*>& ProcessNodeImpl::frame_nodes() const {
 }
 
 PageNodeImpl* ProcessNodeImpl::GetPageNodeIfExclusive() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   PageNodeImpl* page_node = nullptr;
   for (auto* frame_node : frame_nodes_) {
     if (!page_node)
@@ -137,7 +229,25 @@ void ProcessNodeImpl::RemoveWorker(WorkerNodeImpl* worker_node) {
 }
 
 void ProcessNodeImpl::set_priority(base::TaskPriority priority) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   priority_.SetAndMaybeNotify(this, priority);
+}
+
+// static
+void ProcessNodeImpl::FireBackgroundTracingTriggerOnUIForTesting(
+    const std::string& trigger_name,
+    content::BackgroundTracingManager* manager) {
+  FireBackgroundTracingTriggerOnUI(trigger_name, manager);
+}
+
+base::WeakPtr<ProcessNodeImpl> ProcessNodeImpl::GetWeakPtrOnUIThread() {
+  // TODO(siggi): Validate thread context.
+  return weak_this_;
+}
+
+base::WeakPtr<ProcessNodeImpl> ProcessNodeImpl::GetWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return weak_factory_.GetWeakPtr();
 }
 
 void ProcessNodeImpl::SetProcessImpl(base::Process process,
@@ -182,7 +292,7 @@ base::Time ProcessNodeImpl::GetLaunchTime() const {
   return launch_time();
 }
 
-base::Optional<int32_t> ProcessNodeImpl::GetExitStatus() const {
+absl::optional<int32_t> ProcessNodeImpl::GetExitStatus() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return exit_status();
 }
@@ -199,13 +309,12 @@ bool ProcessNodeImpl::VisitFrameNodes(const FrameNodeVisitor& visitor) const {
 
 base::flat_set<const FrameNode*> ProcessNodeImpl::GetFrameNodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::flat_set<const FrameNode*> frames;
-  const base::flat_set<FrameNodeImpl*>& frame_impls = frame_nodes();
-  for (auto* frame_impl : frame_impls) {
-    const FrameNode* frame = frame_impl;
-    frames.insert(frame);
-  }
-  return frames;
+  return UpcastNodeSet<FrameNode>(frame_nodes());
+}
+
+base::flat_set<const WorkerNode*> ProcessNodeImpl::GetWorkerNodes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return UpcastNodeSet<WorkerNode>(worker_nodes_);
 }
 
 bool ProcessNodeImpl::GetMainThreadTaskLoadIsLow() const {
@@ -254,6 +363,12 @@ void ProcessNodeImpl::OnBeforeLeavingGraph() {
 
   // All child frames should have been removed before the process is removed.
   DCHECK(frame_nodes_.empty());
+}
+
+void ProcessNodeImpl::RemoveNodeAttachedData() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  frozen_frame_data_.Reset();
+  process_priority_data_.reset();
 }
 
 }  // namespace performance_manager

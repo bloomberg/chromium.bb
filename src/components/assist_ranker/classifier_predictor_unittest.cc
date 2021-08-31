@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/assist_ranker/example_preprocessing.h"
 #include "components/assist_ranker/fake_ranker_model_loader.h"
@@ -72,7 +73,7 @@ const base::FeatureParam<std::string> kTestRankerUrl{
 
 PredictorConfig ClassifierPredictorTest::GetConfig() {
   return PredictorConfig("model_name", "logging_name", "uma_prefix", LOG_NONE,
-                         GetEmptyWhitelist(), &kTestRankerQuery,
+                         GetEmptyAllowlist(), &kTestRankerQuery,
                          &kTestRankerUrl, 0);
 }
 

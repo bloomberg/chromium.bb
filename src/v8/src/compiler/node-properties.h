@@ -21,14 +21,14 @@ class Operator;
 class CommonOperatorBuilder;
 
 // A facade that simplifies access to the different kinds of inputs to a node.
-class V8_EXPORT_PRIVATE NodeProperties final {
+class V8_EXPORT_PRIVATE NodeProperties {
  public:
   // ---------------------------------------------------------------------------
   // Input layout.
   // Inputs are always arranged in order as follows:
   //     0 [ values, context, frame state, effects, control ] node->InputCount()
 
-  static int FirstValueIndex(Node* node) { return 0; }
+  static int FirstValueIndex(const Node* node) { return 0; }
   static int FirstContextIndex(Node* node) { return PastValueIndex(node); }
   static int FirstFrameStateIndex(Node* node) { return PastContextIndex(node); }
   static int FirstEffectIndex(Node* node) { return PastFrameStateIndex(node); }
@@ -60,6 +60,12 @@ class V8_EXPORT_PRIVATE NodeProperties final {
   // Input accessors.
 
   static Node* GetValueInput(Node* node, int index) {
+    CHECK_LE(0, index);
+    CHECK_LT(index, node->op()->ValueInputCount());
+    return node->InputAt(FirstValueIndex(node) + index);
+  }
+
+  static const Node* GetValueInput(const Node* node, int index) {
     CHECK_LE(0, index);
     CHECK_LT(index, node->op()->ValueInputCount());
     return node->InputAt(FirstValueIndex(node) + index);
@@ -135,6 +141,10 @@ class V8_EXPORT_PRIVATE NodeProperties final {
         return false;
     }
   }
+
+  // Determines if {node} has an allocating opcode, or is a builtin known to
+  // return a fresh object.
+  static bool IsFreshObject(Node* node);
 
   // ---------------------------------------------------------------------------
   // Miscellaneous mutators.
@@ -244,12 +254,12 @@ class V8_EXPORT_PRIVATE NodeProperties final {
   // ---------------------------------------------------------------------------
   // Type.
 
-  static bool IsTyped(Node* node) { return !node->type().IsInvalid(); }
-  static Type GetType(Node* node) {
+  static bool IsTyped(const Node* node) { return !node->type().IsInvalid(); }
+  static Type GetType(const Node* node) {
     DCHECK(IsTyped(node));
     return node->type();
   }
-  static Type GetTypeOrAny(Node* node);
+  static Type GetTypeOrAny(const Node* node);
   static void SetType(Node* node, Type type) {
     DCHECK(!type.IsInvalid());
     node->set_type(type);

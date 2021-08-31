@@ -5,12 +5,12 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 
 #include "ash/public/cpp/app_types.h"
-#include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/window_properties.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -21,9 +21,8 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/client/aura_constants.h"
 #include "url/gurl.h"
@@ -33,23 +32,21 @@ namespace chrome {
 namespace {
 
 bool g_force_deprecated_settings_window_for_testing = false;
-
-// This method handles the case of resurfacing the user's OS Settings
-// standalone window that may be at the time located on another user's desktop.
-void ShowSettingsOnCurrentDesktop(Browser* browser) {
-  auto* window_manager = MultiUserWindowManagerHelper::GetWindowManager();
-  if (window_manager && browser) {
-    window_manager->ShowWindowForUser(browser->window()->GetNativeWindow(),
-                                      window_manager->CurrentAccountId());
-    browser->window()->Show();
-  }
-}
+SettingsWindowManager* g_settings_window_manager_for_testing = nullptr;
 
 }  // namespace
 
 // static
 SettingsWindowManager* SettingsWindowManager::GetInstance() {
-  return base::Singleton<SettingsWindowManager>::get();
+  return g_settings_window_manager_for_testing
+             ? g_settings_window_manager_for_testing
+             : base::Singleton<SettingsWindowManager>::get();
+}
+
+// static
+void SettingsWindowManager::SetInstanceForTesting(
+    SettingsWindowManager* manager) {
+  g_settings_window_manager_for_testing = manager;
 }
 
 // static
@@ -76,26 +73,31 @@ void SettingsWindowManager::RemoveObserver(
 }
 
 void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
-                                                     const GURL& gurl) {
+                                                     const GURL& gurl,
+                                                     int64_t display_id) {
   // Use the original (non off-the-record) profile for settings unless
   // this is a guest session.
   if (!profile->IsGuestSession() && profile->IsOffTheRecord())
     profile = profile->GetOriginalProfile();
 
+  // If this profile isn't allowed to create browser windows (e.g. the login
+  // screen profile) then bail out. Neither the new SWA code path nor the legacy
+  // code path can successfully open the window for these profiles.
+  if (Browser::GetCreationStatusForProfile(profile) !=
+      Browser::CreationStatus::kOk) {
+    LOG(ERROR) << "Unable to open settings for this profile, url "
+               << gurl.spec();
+    return;
+  }
+
   // TODO(crbug.com/1067073): Remove legacy Settings Window.
   if (!UseDeprecatedSettingsWindow(profile)) {
-    bool did_create;
-    Browser* browser = web_app::LaunchSystemWebApp(
-        profile, web_app::SystemAppType::SETTINGS, gurl,
-        /*params=*/base::nullopt, &did_create);
-    ShowSettingsOnCurrentDesktop(browser);
-    // Only notify if we created a new browser.
-    if (!did_create || !browser)
-      return;
-
-    for (SettingsWindowManagerObserver& observer : observers_)
-      observer.OnNewSettingsWindow(browser);
-
+    web_app::SystemAppLaunchParams params;
+    params.url = gurl;
+    web_app::LaunchSystemWebAppAsync(profile, web_app::SystemAppType::SETTINGS,
+                                     params, apps::MakeWindowInfo(display_id));
+    // SWA OS Settings don't use SettingsWindowManager to manage windows, don't
+    // notify SettingsWindowObservers.
     return;
   }
 
@@ -126,6 +128,7 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   params.path_behavior = NavigateParams::IGNORE_AND_NAVIGATE;
   Navigate(&params);
   browser = params.browser;
+  CHECK(browser);  // See https://crbug.com/1174525
 
   // operator[] not used because SessionID has no default constructor.
   settings_session_map_.emplace(profile, SessionID::InvalidValue())
@@ -141,13 +144,16 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
     observer.OnNewSettingsWindow(browser);
 }
 
-void SettingsWindowManager::ShowOSSettings(Profile* profile) {
-  ShowOSSettings(profile, std::string());
+void SettingsWindowManager::ShowOSSettings(Profile* profile,
+                                           int64_t display_id) {
+  ShowOSSettings(profile, std::string(), display_id);
 }
 
 void SettingsWindowManager::ShowOSSettings(Profile* profile,
-                                           const std::string& sub_page) {
-  ShowChromePageForProfile(profile, chrome::GetOSSettingsUrl(sub_page));
+                                           const std::string& sub_page,
+                                           int64_t display_id) {
+  ShowChromePageForProfile(profile, chrome::GetOSSettingsUrl(sub_page),
+                           display_id);
 }
 
 Browser* SettingsWindowManager::FindBrowserForProfile(Profile* profile) {
@@ -173,7 +179,7 @@ bool SettingsWindowManager::IsSettingsBrowser(Browser* browser) const {
 
     // TODO(calamity): Determine whether, during startup, we need to wait for
     // app install and then provide a valid answer here.
-    base::Optional<std::string> settings_app_id =
+    absl::optional<std::string> settings_app_id =
         web_app::GetAppIdForSystemWebApp(profile,
                                          web_app::SystemAppType::SETTINGS);
     return settings_app_id &&

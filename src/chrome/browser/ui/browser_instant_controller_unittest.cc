@@ -44,7 +44,6 @@ struct TabReloadTestCase {
 
 // Test cases for when Google is the initial, but not final provider.
 const TabReloadTestCase kTabReloadTestCasesFinalProviderNotGoogle[] = {
-    {"Local NTP", chrome::kChromeSearchLocalNtpUrl, true, true},
     {"NTP", chrome::kChromeUINewTabPageURL, false, true},
     {"Remote SERP", "https://www.google.com/url?bar=search+terms", false,
      false},
@@ -60,8 +59,6 @@ class FakeWebContentsObserver : public content::WebContentsObserver {
         num_reloads_(0) {}
 
   void DidStartNavigation(content::NavigationHandle* navigation) override {
-    fprintf(stderr, "### DidStartNavigation reload_type = %d, url = %s\n",
-            navigation->GetReloadType(), navigation->GetURL().spec().c_str());
     if (navigation->GetReloadType() == content::ReloadType::NONE)
       return;
     if (url_ == navigation->GetURL())

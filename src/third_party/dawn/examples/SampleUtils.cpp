@@ -17,6 +17,7 @@
 #include "common/Assert.h"
 #include "common/Log.h"
 #include "common/Platform.h"
+#include "common/SystemUtils.h"
 #include "utils/BackendBinding.h"
 #include "utils/GLFWUtils.h"
 #include "utils/TerribleCommandBuffer.h"
@@ -71,7 +72,9 @@ static wgpu::BackendType backendType = wgpu::BackendType::D3D12;
 static wgpu::BackendType backendType = wgpu::BackendType::Metal;
 #elif defined(DAWN_ENABLE_BACKEND_VULKAN)
 static wgpu::BackendType backendType = wgpu::BackendType::Vulkan;
-#elif defined(DAWN_ENABLE_BACKEND_OPENGL)
+#elif defined(DAWN_ENABLE_BACKEND_OPENGLES)
+static wgpu::BackendType backendType = wgpu::BackendType::OpenGLES;
+#elif defined(DAWN_ENABLE_BACKEND_DESKTOP_GL)
 static wgpu::BackendType backendType = wgpu::BackendType::OpenGL;
 #else
 #    error
@@ -89,6 +92,10 @@ static utils::TerribleCommandBuffer* c2sBuf = nullptr;
 static utils::TerribleCommandBuffer* s2cBuf = nullptr;
 
 wgpu::Device CreateCppDawnDevice() {
+    if (GetEnvironmentVar("ANGLE_DEFAULT_PLATFORM").empty()) {
+        SetEnvironmentVar("ANGLE_DEFAULT_PLATFORM", "swiftshader");
+    }
+
     glfwSetErrorCallback(PrintGLFWError);
     if (!glfwInit()) {
         return wgpu::Device();
@@ -142,7 +149,6 @@ wgpu::Device CreateCppDawnDevice() {
             s2cBuf = new utils::TerribleCommandBuffer();
 
             dawn_wire::WireServerDescriptor serverDesc = {};
-            serverDesc.device = backendDevice;
             serverDesc.procs = &backendProcs;
             serverDesc.serializer = s2cBuf;
 
@@ -153,9 +159,14 @@ wgpu::Device CreateCppDawnDevice() {
             clientDesc.serializer = c2sBuf;
 
             wireClient = new dawn_wire::WireClient(clientDesc);
-            cDevice = wireClient->GetDevice();
             procs = dawn_wire::client::GetProcs();
             s2cBuf->SetHandler(wireClient);
+
+            auto deviceReservation = wireClient->ReserveDevice();
+            wireServer->InjectDevice(backendDevice, deviceReservation.id,
+                                     deviceReservation.generation);
+
+            cDevice = deviceReservation.device;
         } break;
     }
 
@@ -184,7 +195,7 @@ wgpu::TextureView CreateDefaultDepthStencilView(const wgpu::Device& device) {
     descriptor.dimension = wgpu::TextureDimension::e2D;
     descriptor.size.width = 640;
     descriptor.size.height = 480;
-    descriptor.size.depth = 1;
+    descriptor.size.depthOrArrayLayers = 1;
     descriptor.sampleCount = 1;
     descriptor.format = wgpu::TextureFormat::Depth24PlusStencil8;
     descriptor.mipLevelCount = 1;
@@ -213,12 +224,17 @@ bool InitSample(int argc, const char** argv) {
                 backendType = wgpu::BackendType::OpenGL;
                 continue;
             }
+            if (i < argc && std::string("opengles") == argv[i]) {
+                backendType = wgpu::BackendType::OpenGLES;
+                continue;
+            }
             if (i < argc && std::string("vulkan") == argv[i]) {
                 backendType = wgpu::BackendType::Vulkan;
                 continue;
             }
             fprintf(stderr,
-                    "--backend expects a backend name (opengl, metal, d3d12, null, vulkan)\n");
+                    "--backend expects a backend name (opengl, opengles, metal, d3d12, null, "
+                    "vulkan)\n");
             return false;
         }
         if (std::string("-c") == argv[i] || std::string("--command-buffer") == argv[i]) {
@@ -236,7 +252,7 @@ bool InitSample(int argc, const char** argv) {
         }
         if (std::string("-h") == argv[i] || std::string("--help") == argv[i]) {
             printf("Usage: %s [-b BACKEND] [-c COMMAND_BUFFER]\n", argv[0]);
-            printf("  BACKEND is one of: d3d12, metal, null, opengl, vulkan\n");
+            printf("  BACKEND is one of: d3d12, metal, null, opengl, opengles, vulkan\n");
             printf("  COMMAND_BUFFER is one of: none, terrible\n");
             return false;
         }

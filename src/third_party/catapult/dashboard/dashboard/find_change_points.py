@@ -18,9 +18,9 @@ not exactly the E-divisive algorithm, but is close enough.
 
 See: https://arxiv.org/abs/1306.4933
 """
-from __future__ import print_function
-from __future__ import division
 from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
 
 import collections
 import logging
@@ -29,28 +29,7 @@ from dashboard import find_step
 from dashboard import ttest
 from dashboard.common import math_utils
 from dashboard.common import clustering_change_detector
-
-# Maximum number of points to consider at one time.
-_MAX_WINDOW_SIZE = 50
-
-# Minimum number of points in a segment. This can help filter out erroneous
-# results by ignoring results that were found from looking at too few points.
-MIN_SEGMENT_SIZE = 6
-
-# Minimum absolute difference between medians before and after.
-_MIN_ABSOLUTE_CHANGE = 0
-
-# Minimum relative difference between medians before and after.
-_MIN_RELATIVE_CHANGE = 0.01
-
-# "Steppiness" is a number between 0 and 1 that indicates how similar the
-# shape is to a perfect step function, where 1 represents a step function.
-_MIN_STEPPINESS = 0.5
-
-# The "standard deviation" is based on a subset of points in the series.
-# This parameter is the minimum acceptable ratio of the relative change
-# and this standard deviation.
-_MULTIPLE_OF_STD_DEV = 2.5
+from dashboard.common import defaults
 
 
 class ChangePoint(
@@ -75,7 +54,11 @@ class ChangePoint(
             # Results of the Welch's t-test for values before and after.
             't_statistic',
             'degrees_of_freedom',
-            'p_value'))):
+            'p_value',
+            # Extended possible change point range
+            'extended_start',
+            'extended_end',
+        ))):
   """A ChangePoint represents a change in a series -- a potential alert."""
   _slots = None
 
@@ -85,12 +68,13 @@ class ChangePoint(
 
 
 def FindChangePoints(series,
-                     max_window_size=_MAX_WINDOW_SIZE,
-                     min_segment_size=MIN_SEGMENT_SIZE,
-                     min_absolute_change=_MIN_ABSOLUTE_CHANGE,
-                     min_relative_change=_MIN_RELATIVE_CHANGE,
-                     min_steppiness=_MIN_STEPPINESS,
-                     multiple_of_std_dev=_MULTIPLE_OF_STD_DEV):
+                     max_window_size=defaults.MAX_WINDOW_SIZE,
+                     min_segment_size=defaults.MIN_SEGMENT_SIZE,
+                     min_absolute_change=defaults.MIN_ABSOLUTE_CHANGE,
+                     min_relative_change=defaults.MIN_RELATIVE_CHANGE,
+                     min_steppiness=defaults.MIN_STEPPINESS,
+                     multiple_of_std_dev=defaults.MULTIPLE_OF_STD_DEV,
+                     rand=None):
   """Finds change points in the given series.
 
   Only the last |max_window_size| points are examined, regardless of how many
@@ -118,72 +102,40 @@ def FindChangePoints(series,
   series = series[-max_window_size:]
   _, y_values = zip(*series)
 
-  candidate_indices = []
-  split_index = 0
-
-  def RelativeIndexAdjuster(base, offset):
-    if base == 0:
-      return offset
-
-    # Prevent negative indices.
-    return max((base + offset) - min_segment_size, 0)
-
-  # We iteratively find all potential change-points in the range.
-  while split_index + min_segment_size < len(y_values):
-    try:
-      # First we get an adjusted set of indices, starting from split_index,
-      # filtering out the ones we've already seen.
-      potential_candidates_unadjusted = (
-          clustering_change_detector.ClusterAndFindSplit(
-              y_values[max(split_index - min_segment_size, 0):]))
-      potential_candidates_unfiltered = [
-          RelativeIndexAdjuster(split_index, x)
-          for x in potential_candidates_unadjusted
-      ]
-      potential_candidates = [
-          x for x in potential_candidates_unfiltered
-          if x not in candidate_indices
-      ]
-      logging.debug('New indices: %s', potential_candidates)
-
-      if potential_candidates:
-        candidate_indices.extend(potential_candidates)
-        split_index = max(potential_candidates)
-      else:
-        break
-    except clustering_change_detector.Error as e:
-      if not candidate_indices:
-        logging.warning('Clustering change point detection failed: %s', e)
-        return []
-      break
+  candidate_points = []
+  try:
+    candidate_points = clustering_change_detector.ClusterAndFindSplit(
+        y_values, rand=rand)
+  except clustering_change_detector.InsufficientData:
+    pass
 
   def RevAndIdx(idx):
     return ('rev:%s' % (series[idx][0],), 'idx:%s' % (idx,))
 
   logging.info('E-Divisive candidate change-points: %s',
-               [RevAndIdx(idx) for idx in candidate_indices])
+               [RevAndIdx(idx) for idx, _ in candidate_points])
   change_points = []
-  for potential_index in reversed(sorted(candidate_indices)):
+  for point in reversed(sorted(candidate_points)):
     passed_filter, reject_reason = _PassesThresholds(
         y_values,
-        potential_index,
+        point[0],
         min_segment_size=min_segment_size,
         min_absolute_change=min_absolute_change,
         min_relative_change=min_relative_change,
         min_steppiness=min_steppiness,
         multiple_of_std_dev=multiple_of_std_dev)
     if passed_filter:
-      change_points.append(potential_index)
+      change_points.append(point)
     else:
       logging.debug('Rejected %s as potential index (%s); reason = %s',
-                    potential_index, RevAndIdx(potential_index), reject_reason)
+                    point, RevAndIdx(point[0]), reject_reason)
 
   logging.info('E-Divisive potential change-points: %s',
-               [RevAndIdx(idx) for idx in change_points])
-  return [MakeChangePoint(series, index) for index in change_points]
+               [RevAndIdx(idx) for idx, _ in change_points])
+  return [MakeChangePoint(series, point) for point in change_points]
 
 
-def MakeChangePoint(series, split_index):
+def MakeChangePoint(series, point):
   """Makes a ChangePoint object for the given series at the given point.
 
   Args:
@@ -193,6 +145,7 @@ def MakeChangePoint(series, split_index):
   Returns:
     A ChangePoint object.
   """
+  split_index, (lower, upper) = point
   assert 0 <= split_index < len(series)
   x_values, y_values = zip(*series)
   left, right = y_values[:split_index], y_values[split_index:]
@@ -210,7 +163,10 @@ def MakeChangePoint(series, split_index):
       std_dev_before=math_utils.StandardDeviation(left),
       t_statistic=ttest_results.t,
       degrees_of_freedom=ttest_results.df,
-      p_value=ttest_results.p)
+      p_value=ttest_results.p,
+      extended_start=x_values[lower],
+      extended_end=x_values[upper],
+  )
 
 
 def _PassesThresholds(values, split_index, min_segment_size,

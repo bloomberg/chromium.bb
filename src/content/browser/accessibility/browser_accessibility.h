@@ -16,13 +16,10 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
-#include "content/browser/accessibility/accessibility_buildflags.h"
-#include "content/browser/accessibility/browser_accessibility_position.h"
 #include "content/common/content_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_node.h"
@@ -31,27 +28,7 @@
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
-
-// Set PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL if this platform has
-// a platform-specific subclass of BrowserAccessibility and
-// BrowserAccessibilityManager.
-#undef PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL
-
-#if defined(OS_WIN)
-#define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
-#endif
-
-#if defined(OS_MAC)
-#define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
-#endif
-
-#if defined(OS_ANDROID) && !defined(USE_AURA)
-#define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
-#endif
-
-#if BUILDFLAG(USE_ATK)
-#define PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL 1
-#endif
+#include "ui/base/buildflags.h"
 
 #if defined(OS_MAC) && __OBJC__
 @class BrowserAccessibilityCocoa;
@@ -75,6 +52,10 @@ class BrowserAccessibilityManager;
 ////////////////////////////////////////////////////////////////////////////////
 class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
  public:
+  using AXPosition = ui::AXNodePosition::AXPositionInstance;
+  using SerializedPosition = ui::AXNodePosition::SerializedPosition;
+  using AXRange = ui::AXRange<AXPosition::element_type>;
+
   // Creates a platform specific BrowserAccessibility. Ownership passes to the
   // caller.
   static BrowserAccessibility* Create();
@@ -94,7 +75,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // Called after the object is first initialized and again every time
   // its data changes.
-  virtual void OnDataChanged() {}
+  virtual void OnDataChanged();
 
   // Called when the location changed.
   virtual void OnLocationChanged() {}
@@ -107,13 +88,21 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Return true if this object is equal to or a descendant of |ancestor|.
   bool IsDescendantOf(const BrowserAccessibility* ancestor) const;
 
-  bool IsDocument() const;
+  // Returns true if this object is at the root of what most accessibility APIs
+  // consider to be a document, such as the root of a webpage, an iframe, or a
+  // PDF.
+  bool IsPlatformDocument() const;
 
   bool IsIgnored() const;
 
+  bool IsIgnoredForTextNavigation() const;
+
   bool IsLineBreakObject() const;
 
-  // See AXNode::IsLeaf().
+  // See `AXNode::IsEmptyLeaf()`.
+  bool IsEmptyLeaf() const;
+
+  // See `AXNode::IsLeaf()`.
   bool PlatformIsLeaf() const;
 
   // Returns true if this object can fire events.
@@ -171,9 +160,16 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Return a pointer to the first ancestor that is a selection container
   BrowserAccessibility* PlatformGetSelectionContainer() const;
 
-  // If this object is exposed to the platform, returns this object. Otherwise,
-  // returns the platform leaf under which this object is found.
-  BrowserAccessibility* PlatformGetClosestPlatformObject() const;
+  // If this object is exposed to the platform's accessibility layer, returns
+  // this object. Otherwise, returns the lowest ancestor that is exposed to the
+  // platform.
+  virtual BrowserAccessibility* PlatformGetLowestPlatformAncestor() const;
+
+  // If this node is within an editable region, such as a content editable,
+  // returns the node that is at the root of that editable region, otherwise
+  // returns nullptr. In accessibility, an editable region includes all types of
+  // text fields, (see `AXNodeData::IsTextField()`).
+  BrowserAccessibility* PlatformGetTextFieldAncestor() const;
 
   bool IsPreviousSiblingOnSameLine() const;
   bool IsNextSiblingOnSameLine() const;
@@ -280,7 +276,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   InternalChildIterator InternalChildrenBegin() const;
   InternalChildIterator InternalChildrenEnd() const;
 
-  ui::AXNode::AXID GetId() const;
+  ui::AXNodeID GetId() const;
   gfx::RectF GetLocation() const;
   ax::mojom::Role GetRole() const;
   int32_t GetState() const;
@@ -301,7 +297,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // need to distinguish between the default value and a missing attribute),
   // and another that returns the default value for that type if the
   // attribute is not present. In addition, strings can be returned as
-  // either std::string or base::string16, for convenience.
+  // either std::string or std::u16string, for convenience.
 
   bool HasBoolAttribute(ax::mojom::BoolAttribute attr) const;
   bool GetBoolAttribute(ax::mojom::BoolAttribute attr) const;
@@ -314,7 +310,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool HasInheritedStringAttribute(ax::mojom::StringAttribute attribute) const;
   const std::string& GetInheritedStringAttribute(
       ax::mojom::StringAttribute attribute) const;
-  base::string16 GetInheritedString16Attribute(
+  std::u16string GetInheritedString16Attribute(
       ax::mojom::StringAttribute attribute) const;
 
   bool HasIntAttribute(ax::mojom::IntAttribute attribute) const;
@@ -327,10 +323,10 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool GetStringAttribute(ax::mojom::StringAttribute attribute,
                           std::string* value) const;
 
-  base::string16 GetString16Attribute(
+  std::u16string GetString16Attribute(
       ax::mojom::StringAttribute attribute) const;
   bool GetString16Attribute(ax::mojom::StringAttribute attribute,
-                            base::string16* value) const;
+                            std::u16string* value) const;
 
   bool HasIntListAttribute(ax::mojom::IntListAttribute attribute) const;
   const std::vector<int32_t>& GetIntListAttribute(
@@ -341,7 +337,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Retrieve the value of a html attribute from the attribute map and
   // returns true if found.
   bool GetHtmlAttribute(const char* attr, std::string* value) const;
-  bool GetHtmlAttribute(const char* attr, base::string16* value) const;
+  bool GetHtmlAttribute(const char* attr, std::u16string* value) const;
 
   // Returns true if the bit corresponding to the given enum is 1.
   bool HasState(ax::mojom::State state_enum) const;
@@ -358,11 +354,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // See AXNodeData::IsPasswordField().
   bool IsPasswordField() const;
 
-  // See AXNodeData::IsPlainTextField().
-  bool IsPlainTextField() const;
+  // See AXNodeData::IsAtomicTextField().
+  bool IsAtomicTextField() const;
 
-  // See AXNodeData::IsRichTextField().
-  bool IsRichTextField() const;
+  // See AXNodeData::IsNonAtomicTextField().
+  bool IsNonAtomicTextField() const;
 
   // Returns true if the accessible name was explicitly set to "" by the author
   bool HasExplicitlyEmptyName() const;
@@ -371,47 +367,35 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // implement this functionality.
   std::string GetLiveRegionText() const;
 
-  // Creates a text position rooted at this object. Does not conver to a
-  // leaf text position - see CreatePositionForSelectionAt, below.
-  BrowserAccessibilityPosition::AXPositionInstance CreatePositionAt(
-      int offset,
-      ax::mojom::TextAffinity affinity =
-          ax::mojom::TextAffinity::kDownstream) const;
+  // Creates a text position rooted at this object. Does not convert to a
+  // leaf text position - see CreatePositionForSelectionAt, below. |offset|
+  // could only be a character offset, either in the object's inner text
+  // (Android and Mac), or in the object's hypertext (Linux ATK and Windows
+  // IA2).
+  AXPosition CreatePositionAt(int offset,
+                              ax::mojom::TextAffinity affinity =
+                                  ax::mojom::TextAffinity::kDownstream) const;
 
-  // |offset| could either be a text character or a child index in case of
-  // non-text objects. Converts to a leaf text position if you pass a
-  // character offset on a container node.
-  BrowserAccessibilityPosition::AXPositionInstance CreatePositionForSelectionAt(
-      int offset) const;
+  // |offset| could only be a character offset. Depending on the platform, the
+  // character offset could be either in the object's inner text (Android and
+  // Mac), or an offset in the object's hypertext (Linux ATK and Windows IA2).
+  // Converts to a leaf text position if you pass a character offset on a
+  // non-leaf node.
+  AXPosition CreatePositionForSelectionAt(int offset) const;
 
   // Gets the text offsets where new lines start.
   std::vector<int> GetLineStartOffsets() const;
 
-  gfx::NativeViewAccessible GetNativeViewAccessible() override;
-
-  // AXPosition Support
-
-  // Returns the text that is present inside this node, where the
-  // representation of text found in descendant nodes depends on the platform.
-  // For example some platforms may include descendant text while while other
-  // platforms may use a special character to represent descendant text.
-  // Prefer either GetHypertext or GetInnerText so it's clear which API is
-  // called.
-  //
-  // TODO(nektar): Move this method to AXNode when AXNodePosition and
-  // BrowserAccessibilityPosition are merged into one class.
-  virtual base::string16 GetText() const;
-
-  base::string16 GetNameAsString16() const;
+  std::u16string GetNameAsString16() const;
 
   // AXPlatformNodeDelegate.
-  base::string16 GetAuthorUniqueId() const override;
+  std::u16string GetAuthorUniqueId() const override;
   const ui::AXNodeData& GetData() const override;
   const ui::AXTreeData& GetTreeData() const override;
   const ui::AXTree::Selection GetUnignoredSelection() const override;
-  ui::AXNodePosition::AXPositionInstance CreateTextPositionAt(
-      int offset) const override;
+  AXPosition CreateTextPositionAt(int offset) const override;
   gfx::NativeViewAccessible GetNSWindow() override;
+  gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() const override;
   gfx::NativeViewAccessible ChildAtIndex(int index) override;
@@ -422,19 +406,22 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetPreviousSibling() override;
 
   bool IsChildOfLeaf() const override;
-  bool IsDescendantOfPlainTextField() const override;
+  bool IsDescendantOfAtomicTextField() const override;
   bool IsLeaf() const override;
+  bool IsFocused() const override;
+  bool IsInvisibleOrIgnored() const override;
   bool IsToplevelBrowserWindow() override;
-  gfx::NativeViewAccessible GetClosestPlatformObject() const override;
+  gfx::NativeViewAccessible GetLowestPlatformAncestor() const override;
+  gfx::NativeViewAccessible GetTextFieldAncestor() const override;
 
   std::unique_ptr<ChildIterator> ChildrenBegin() override;
   std::unique_ptr<ChildIterator> ChildrenEnd() override;
 
   std::string GetName() const override;
-  base::string16 GetHypertext() const override;
+  std::u16string GetHypertext() const override;
   bool SetHypertextSelection(int start_offset, int end_offset) override;
-  base::string16 GetInnerText() const override;
-  base::string16 GetValueForControl() const override;
+  std::u16string GetInnerText() const override;
+  std::u16string GetValueForControl() const override;
   gfx::Rect GetBoundsRect(
       const ui::AXCoordinateSystem coordinate_system,
       const ui::AXClippingBehavior clipping_behavior,
@@ -453,14 +440,14 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       ui::AXOffscreenResult* offscreen_result = nullptr) const override;
   gfx::NativeViewAccessible HitTestSync(int physical_pixel_x,
                                         int physical_pixel_y) const override;
-  gfx::NativeViewAccessible GetFocus() override;
+  gfx::NativeViewAccessible GetFocus() const override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
   ui::AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
                                              int32_t id) override;
   int GetIndexInParent() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
 
-  base::Optional<int> FindTextBoundary(
+  absl::optional<int> FindTextBoundary(
       ax::mojom::TextBoundary boundary,
       int offset,
       ax::mojom::MoveDirection direction,
@@ -472,45 +459,43 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   std::string GetLanguage() const override;
 
   bool IsTable() const override;
-  base::Optional<int> GetTableColCount() const override;
-  base::Optional<int> GetTableRowCount() const override;
-  base::Optional<int> GetTableAriaColCount() const override;
-  base::Optional<int> GetTableAriaRowCount() const override;
-  base::Optional<int> GetTableCellCount() const override;
-  base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
-  std::vector<ui::AXNode::AXID> GetColHeaderNodeIds() const override;
-  std::vector<ui::AXNode::AXID> GetColHeaderNodeIds(
-      int col_index) const override;
-  std::vector<ui::AXNode::AXID> GetRowHeaderNodeIds() const override;
-  std::vector<ui::AXNode::AXID> GetRowHeaderNodeIds(
-      int row_index) const override;
+  absl::optional<int> GetTableColCount() const override;
+  absl::optional<int> GetTableRowCount() const override;
+  absl::optional<int> GetTableAriaColCount() const override;
+  absl::optional<int> GetTableAriaRowCount() const override;
+  absl::optional<int> GetTableCellCount() const override;
+  absl::optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
+  std::vector<ui::AXNodeID> GetColHeaderNodeIds() const override;
+  std::vector<ui::AXNodeID> GetColHeaderNodeIds(int col_index) const override;
+  std::vector<ui::AXNodeID> GetRowHeaderNodeIds() const override;
+  std::vector<ui::AXNodeID> GetRowHeaderNodeIds(int row_index) const override;
   ui::AXPlatformNode* GetTableCaption() const override;
 
   bool IsTableRow() const override;
-  base::Optional<int> GetTableRowRowIndex() const override;
+  absl::optional<int> GetTableRowRowIndex() const override;
 
   bool IsTableCellOrHeader() const override;
-  base::Optional<int> GetTableCellIndex() const override;
-  base::Optional<int> GetTableCellColIndex() const override;
-  base::Optional<int> GetTableCellRowIndex() const override;
-  base::Optional<int> GetTableCellColSpan() const override;
-  base::Optional<int> GetTableCellRowSpan() const override;
-  base::Optional<int> GetTableCellAriaColIndex() const override;
-  base::Optional<int> GetTableCellAriaRowIndex() const override;
-  base::Optional<int32_t> GetCellId(int row_index,
+  absl::optional<int> GetTableCellIndex() const override;
+  absl::optional<int> GetTableCellColIndex() const override;
+  absl::optional<int> GetTableCellRowIndex() const override;
+  absl::optional<int> GetTableCellColSpan() const override;
+  absl::optional<int> GetTableCellRowSpan() const override;
+  absl::optional<int> GetTableCellAriaColIndex() const override;
+  absl::optional<int> GetTableCellAriaRowIndex() const override;
+  absl::optional<int32_t> GetCellId(int row_index,
                                     int col_index) const override;
-  base::Optional<int32_t> CellIndexToId(int cell_index) const override;
+  absl::optional<int32_t> CellIndexToId(int cell_index) const override;
 
   bool IsCellOrHeaderOfARIATable() const override;
   bool IsCellOrHeaderOfARIAGrid() const override;
 
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
-  base::string16 GetLocalizedStringForImageAnnotationStatus(
+  std::u16string GetLocalizedStringForImageAnnotationStatus(
       ax::mojom::ImageAnnotationStatus status) const override;
-  base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
-  base::string16 GetLocalizedStringForLandmarkType() const override;
-  base::string16 GetLocalizedStringForRoleDescription() const override;
-  base::string16 GetStyleNameAttributeAsLocalizedString() const override;
+  std::u16string GetLocalizedRoleDescriptionForUnlabeledImage() const override;
+  std::u16string GetLocalizedStringForLandmarkType() const override;
+  std::u16string GetLocalizedStringForRoleDescription() const override;
+  std::u16string GetStyleNameAttributeAsLocalizedString() const override;
   ui::TextAttributeMap ComputeTextAttributeMap(
       const ui::TextAttributeList& default_attributes) const override;
   std::string GetInheritedFontFamilyName() const override;
@@ -530,8 +515,10 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       ax::mojom::IntListAttribute attr) override;
   bool IsOrderedSetItem() const override;
   bool IsOrderedSet() const override;
-  base::Optional<int> GetPosInSet() const override;
-  base::Optional<int> GetSetSize() const override;
+  absl::optional<int> GetPosInSet() const override;
+  absl::optional<int> GetSetSize() const override;
+  SkColor GetColor() const override;
+  SkColor GetBackgroundColor() const override;
 
   // Returns true if this node is a list marker or if it's a descendant
   // of a list marker node. Returns false otherwise.
@@ -546,11 +533,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // collapsed.
   BrowserAccessibility* GetCollapsedMenuListPopUpButtonAncestor() const;
 
-  // If this node is within an editable region, returns the node that is at the
-  // root of that editable region, otherwise returns nullptr. In accessibility,
-  // an editable region is synonymous to a text field.
-  BrowserAccessibility* GetTextFieldAncestor() const;
-
   // Returns true if:
   // 1. This node is a list, AND
   // 2. This node has a list ancestor or a list descendant.
@@ -560,15 +542,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   std::string ToString() const;
 
  protected:
-  // The UIA tree formatter needs access to GetUniqueId() to identify the
-  // starting point for tree dumps.
-  friend class AccessibilityTreeFormatterUia;
-
-  using BrowserAccessibilityPositionInstance =
-      BrowserAccessibilityPosition::AXPositionInstance;
-  using AXPlatformRange =
-      ui::AXRange<BrowserAccessibilityPositionInstance::element_type>;
-
   virtual ui::TextAttributeList ComputeTextAttributes() const;
 
   // The manager of this tree of accessibility objects.
@@ -589,6 +562,10 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   ui::TextAttributeMap GetSpellingAndGrammarAttributes() const;
 
   std::string SubtreeToStringHelper(size_t level) override;
+
+  // The UIA tree formatter needs access to GetUniqueId() to identify the
+  // starting point for tree dumps.
+  friend class AccessibilityTreeFormatterUia;
 
  private:
   // Return the bounds after converting from this node's coordinate system
@@ -634,6 +611,9 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // If the node has a child tree, get the root node.
   BrowserAccessibility* PlatformGetRootOfChildTree() const;
+
+  // Determines whether this object is valid.
+  bool IsValid() const;
 
   // Given a set of map of spelling text attributes and a start offset, merge
   // them into the given map of existing text attributes. Merges the given

@@ -14,7 +14,7 @@
 #include "ash/shell.h"
 #include "ash/wm/window_dimmer.h"
 #include "ash/wm/window_util.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -48,7 +48,7 @@ SystemModalContainerLayoutManager::SystemModalContainerLayoutManager(
     aura::Window* container)
     : container_(container) {
   Shelf* shelf = RootWindowController::ForWindow(container_)->shelf();
-  shelf_observer_.Add(shelf);
+  shelf_observation_.Observe(shelf);
 }
 
 SystemModalContainerLayoutManager::~SystemModalContainerLayoutManager() {
@@ -81,9 +81,9 @@ void SystemModalContainerLayoutManager::OnWindowResized() {
 
 void SystemModalContainerLayoutManager::OnWindowAddedToLayout(
     aura::Window* child) {
-  DCHECK(child->type() == aura::client::WINDOW_TYPE_NORMAL ||
-         child->type() == aura::client::WINDOW_TYPE_POPUP);
-  DCHECK(container_->id() != kShellWindowId_LockSystemModalContainer ||
+  DCHECK(child->GetType() == aura::client::WINDOW_TYPE_NORMAL ||
+         child->GetType() == aura::client::WINDOW_TYPE_POPUP);
+  DCHECK(container_->GetId() != kShellWindowId_LockSystemModalContainer ||
          Shell::Get()->session_controller()->IsUserSessionBlocked());
   // Since this is for SystemModal, there is no good reason to add windows
   // other than MODAL_TYPE_NONE or MODAL_TYPE_SYSTEM. DCHECK to avoid simple
@@ -183,7 +183,7 @@ void SystemModalContainerLayoutManager::DestroyModalBackground() {
 // static
 bool SystemModalContainerLayoutManager::IsModalBackground(
     aura::Window* window) {
-  int id = window->parent()->id();
+  int id = window->parent()->GetId();
   if (id != kShellWindowId_SystemModalContainer &&
       id != kShellWindowId_LockSystemModalContainer)
     return false;

@@ -271,9 +271,9 @@ static void TestBitmapSerialization(const SkBitmap& validBitmap,
                                     const SkBitmap& invalidBitmap,
                                     bool shouldSucceed,
                                     skiatest::Reporter* reporter) {
-    sk_sp<SkImage> validImage(SkImage::MakeFromBitmap(validBitmap));
+    sk_sp<SkImage> validImage(validBitmap.asImage());
     sk_sp<SkImageFilter> validBitmapSource(SkImageFilters::Image(std::move(validImage)));
-    sk_sp<SkImage> invalidImage(SkImage::MakeFromBitmap(invalidBitmap));
+    sk_sp<SkImage> invalidImage(invalidBitmap.asImage());
     sk_sp<SkImageFilter> invalidBitmapSource(SkImageFilters::Image(std::move(invalidImage)));
     sk_sp<SkImageFilter> xfermodeImageFilter(
         SkImageFilters::Blend(SkBlendMode::kSrcOver,
@@ -294,7 +294,7 @@ static void TestBitmapSerialization(const SkBitmap& validBitmap,
         SkPaint paint;
         paint.setImageFilter(deserializedFilter);
         canvas.clipRect(SkRect::MakeXYWH(0, 0, SkIntToScalar(24), SkIntToScalar(24)));
-        canvas.drawBitmap(bitmap, 0, 0, &paint);
+        canvas.drawImage(bitmap.asImage(), 0, 0, SkSamplingOptions(), &paint);
     }
 }
 
@@ -456,14 +456,22 @@ static void TestTypefaceSerialization(skiatest::Reporter* reporter, sk_sp<SkType
     sk_sp<SkTypeface> cloneTypeface = SkTypeface::MakeDeserialize(typefaceStream.get());
     SkASSERT(cloneTypeface);
 
+    SkString name, cloneName;
+    typeface->getFamilyName(&name);
+    cloneTypeface->getFamilyName(&cloneName);
+
+    REPORTER_ASSERT(reporter, typeface->countGlyphs() == cloneTypeface->countGlyphs(),
+        "Typeface: \"%s\" CloneTypeface: \"%s\"", name.c_str(), cloneName.c_str());
+    REPORTER_ASSERT(reporter, typeface->fontStyle() == cloneTypeface->fontStyle(),
+        "Typeface: \"%s\" CloneTypeface: \"%s\"", name.c_str(), cloneName.c_str());
+
     SkFont font(typeface, 12);
     SkFont clone(cloneTypeface, 12);
     SkFontMetrics fontMetrics, cloneMetrics;
     font.getMetrics(&fontMetrics);
     clone.getMetrics(&cloneMetrics);
-    REPORTER_ASSERT(reporter, fontMetrics == cloneMetrics);
-    REPORTER_ASSERT(reporter, typeface->countGlyphs() == cloneTypeface->countGlyphs());
-    REPORTER_ASSERT(reporter, typeface->fontStyle() == cloneTypeface->fontStyle());
+    REPORTER_ASSERT(reporter, fontMetrics == cloneMetrics,
+        "Typeface: \"%s\" CloneTypeface: \"%s\"", name.c_str(), cloneName.c_str());
 }
 DEF_TEST(Serialization_Typeface, reporter) {
     SkFont font;
@@ -475,7 +483,8 @@ static void setup_bitmap_for_canvas(SkBitmap* bitmap) {
     bitmap->allocN32Pixels(kBitmapSize, kBitmapSize);
 }
 
-static void make_checkerboard_bitmap(SkBitmap& bitmap) {
+static sk_sp<SkImage> make_checkerboard_image() {
+    SkBitmap bitmap;
     setup_bitmap_for_canvas(&bitmap);
 
     SkCanvas canvas(bitmap);
@@ -497,20 +506,17 @@ static void make_checkerboard_bitmap(SkBitmap& bitmap) {
             canvas.restore();
         }
     }
+    return bitmap.asImage();
 }
 
 static void draw_something(SkCanvas* canvas) {
-    SkPaint paint;
-    SkBitmap bitmap;
-    make_checkerboard_bitmap(bitmap);
-
     canvas->save();
     canvas->scale(0.5f, 0.5f);
-    canvas->drawBitmap(bitmap, 0, 0, nullptr);
+    canvas->drawImage(make_checkerboard_image(), 0, 0);
     canvas->restore();
 
+    SkPaint paint;
     paint.setAntiAlias(true);
-
     paint.setColor(SK_ColorRED);
     canvas->drawCircle(SkIntToScalar(kBitmapSize/2), SkIntToScalar(kBitmapSize/2), SkIntToScalar(kBitmapSize/3), paint);
     paint.setColor(SK_ColorBLACK);

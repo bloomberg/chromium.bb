@@ -98,19 +98,16 @@ class CORE_EXPORT WebPluginContainerImpl final
   void Hide() override;
 
   cc::Layer* CcLayer() const;
-  bool PreventContentsOpaqueChangesToCcLayer() const;
   v8::Local<v8::Object> ScriptableObject(v8::Isolate*);
   bool SupportsKeyboardFocus() const;
   bool SupportsInputMethod() const;
   bool CanProcessDrag() const;
   bool WantsWheelEvents() const;
   void UpdateAllLifecyclePhases();
-  void InvalidateRect(const IntRect&);
   void SetFocused(bool, mojom::blink::FocusType);
   void HandleEvent(Event&);
   bool IsErrorplaceholder();
   void EventListenersRemoved();
-  void InvalidatePaint() {}
 
   // WebPluginContainer methods
   WebElement GetElement() override;
@@ -122,12 +119,11 @@ class CORE_EXPORT WebPluginContainerImpl final
                              const WebString& url) override;
   void EnqueueMessageEvent(const WebDOMMessageEvent&) override;
   void Invalidate() override;
-  void InvalidateRect(const WebRect&) override;
   void ScheduleAnimation() override;
   void ReportGeometry() override;
   v8::Local<v8::Object> V8ObjectForElement() override;
   void LoadFrameRequest(const WebURLRequest&, const WebString& target) override;
-  bool IsRectTopmost(const WebRect&) override;
+  bool IsRectTopmost(const gfx::Rect&) override;
   void RequestTouchEventType(TouchEventRequestType) override;
   void SetWantsWheelEvents(bool) override;
   gfx::Point RootFrameToLocalPoint(const gfx::Point&) override;
@@ -145,7 +141,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   float DeviceScaleFactor() override;
   float PageScaleFactor() override;
   float PageZoomFactor() override;
-  void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes) override;
+  void SetCcLayer(cc::Layer*) override;
   void RequestFullscreen() override;
   bool IsFullscreenElement() const override;
   void CancelFullscreen() override;
@@ -238,7 +234,6 @@ class CORE_EXPORT WebPluginContainerImpl final
   WebPlugin* web_plugin_;
   cc::Layer* layer_;
   TouchEventRequestType touch_event_request_type_;
-  bool prevent_contents_opaque_changes_;
   bool wants_wheel_events_;
 };
 
@@ -255,4 +250,4 @@ struct DowncastTraits<WebPluginContainerImpl> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PLUGIN_CONTAINER_IMPL_H_

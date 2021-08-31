@@ -14,6 +14,8 @@
 #error This file must be compiled with Arc. Use -fobjc-arc flag
 #endif
 
+GR_NORETAIN_BEGIN
+
 // Called for wrapped non-texture render targets.
 GrMtlRenderTarget::GrMtlRenderTarget(GrMtlGpu* gpu,
                                      SkISize dimensions,
@@ -100,6 +102,7 @@ sk_sp<GrMtlRenderTarget> GrMtlRenderTarget::MakeWrappedRenderTarget(GrMtlGpu* gp
             }
             mtlRT = new GrMtlRenderTarget(
                     gpu, dimensions, sampleCnt, colorTexture, texture, kWrapped);
+            mtlRT->setRequiresManualMSAAResolve();
         } else {
             SkASSERT(sampleCnt == static_cast<int>([texture sampleCount]));
             mtlRT = new GrMtlRenderTarget(gpu, dimensions, sampleCnt, texture, nil, kWrapped);
@@ -143,7 +146,9 @@ void GrMtlRenderTarget::onRelease() {
     INHERITED::onRelease();
 }
 
-bool GrMtlRenderTarget::completeStencilAttachment() {
+bool GrMtlRenderTarget::completeStencilAttachment(GrAttachment* stencil, bool useMSAASurface) {
+    SkASSERT(useMSAASurface == (this->numSamples() > 1));
     return true;
 }
 
+GR_NORETAIN_END

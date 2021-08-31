@@ -6,6 +6,7 @@
 #define COMPONENTS_POLICY_CORE_COMMON_FEATURES_H_
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "components/policy/policy_export.h"
 
@@ -21,6 +22,17 @@ POLICY_EXPORT extern const base::Feature kCBCMPolicyInvalidations;
 // the browser will register for remote commands FCM invalidations, and fetch
 // remote commands when fetching policies.
 POLICY_EXPORT extern const base::Feature kCBCMRemoteCommands;
+
+// PolicyBlocklistThrottle defers navigations until policies are loaded.
+POLICY_EXPORT extern const base::Feature
+    kPolicyBlocklistThrottleRequiresPoliciesLoaded;
+
+// Max time to defer the navigation while waiting for policies to load.
+POLICY_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kPolicyBlocklistThrottlePolicyLoadTimeout;
+
+// Update browser device identifier during enrollment and fetching policies.
+POLICY_EXPORT extern const base::Feature kUploadBrowserDeviceIdentifier;
 
 }  // namespace features
 }  // namespace policy

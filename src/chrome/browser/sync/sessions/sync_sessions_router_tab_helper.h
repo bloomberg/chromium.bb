@@ -8,7 +8,7 @@
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/sessions/core/session_id.h"
-#include "components/translate/content/browser/content_translate_driver.h"
+#include "components/translate/core/browser/translate_driver.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -25,18 +25,14 @@ class SyncSessionsWebContentsRouter;
 // these events to sessions sync.
 // A TabHelper is a WebContentsObserver tied to the top level WebContents for a
 // browser tab.
-// https://chromium.googlesource.com/chromium/src/+/master/docs/tab_helpers.md
+// https://chromium.googlesource.com/chromium/src/+/main/docs/tab_helpers.md
 class SyncSessionsRouterTabHelper
     : public content::WebContentsUserData<SyncSessionsRouterTabHelper>,
       public content::WebContentsObserver,
-      public translate::ContentTranslateDriver::Observer,
+      public translate::TranslateDriver::LanguageDetectionObserver,
       public favicon::FaviconDriverObserver {
  public:
   ~SyncSessionsRouterTabHelper() override;
-
-  static void CreateForWebContents(
-      content::WebContents* web_contents,
-      SyncSessionsWebContentsRouter* session_router);
 
   // WebContentsObserver implementation.
   void DidFinishNavigation(
@@ -54,7 +50,7 @@ class SyncSessionsRouterTabHelper
                            bool started_from_context_menu,
                            bool renderer_initiated) override;
 
-  // ContentTranslateDriver::Observer implementation.
+  // TranslateDriver::LanguageDetectionObserver implementation.
   void OnLanguageDetermined(
       const translate::LanguageDetectionDetails& details) override;
 

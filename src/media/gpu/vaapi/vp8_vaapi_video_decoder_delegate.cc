@@ -4,6 +4,7 @@
 
 #include "media/gpu/vaapi/vp8_vaapi_video_decoder_delegate.h"
 
+#include "base/callback_helpers.h"
 #include "base/trace_event/trace_event.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/vaapi/va_surface.h"
@@ -16,7 +17,10 @@ namespace media {
 VP8VaapiVideoDecoderDelegate::VP8VaapiVideoDecoderDelegate(
     DecodeSurfaceHandler<VASurface>* const vaapi_dec,
     scoped_refptr<VaapiWrapper> vaapi_wrapper)
-    : VaapiVideoDecoderDelegate(vaapi_dec, std::move(vaapi_wrapper)) {}
+    : VaapiVideoDecoderDelegate(vaapi_dec,
+                                std::move(vaapi_wrapper),
+                                base::DoNothing(),
+                                nullptr) {}
 
 VP8VaapiVideoDecoderDelegate::~VP8VaapiVideoDecoderDelegate() {
   DCHECK(!iq_matrix_);
@@ -112,7 +116,8 @@ bool VP8VaapiVideoDecoderDelegate::OutputPicture(
 
 void VP8VaapiVideoDecoderDelegate::OnVAContextDestructionSoon() {
   // Destroy the member ScopedVABuffers below since they refer to a VAContextID
-  // that will be destroyed soon. iq_matrix_.reset();
+  // that will be destroyed soon.
+  iq_matrix_.reset();
   prob_buffer_.reset();
   picture_params_.reset();
   slice_params_.reset();

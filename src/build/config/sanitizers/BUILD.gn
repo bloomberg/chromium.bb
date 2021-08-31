@@ -157,12 +157,6 @@ config("default_sanitizer_ldflags") {
     ldflags = []
     if (is_asan) {
       ldflags += [ "-fsanitize=address" ]
-      if (is_mac) {
-        # https://crbug.com/708707
-        ldflags += [ "-fno-sanitize-address-use-after-scope" ]
-      } else {
-        ldflags += [ "-fsanitize-address-use-after-scope" ]
-      }
     }
     if (is_hwasan) {
       ldflags += [ "-fsanitize=hwaddress" ]
@@ -277,34 +271,12 @@ config("asan_flags") {
   cflags = []
   if (is_asan) {
     cflags += [ "-fsanitize=address" ]
-    if (!is_mac) {
-      cflags += [ "-fsanitize-address-use-after-scope" ]
-    } else {
-      # https://crbug.com/708707
-      cflags += [ "-fno-sanitize-address-use-after-scope" ]
-    }
-    if (!asan_globals) {
-      cflags += [
-        "-mllvm",
-        "-asan-globals=0",
-      ]
-    }
-    if (asan_use_blacklist) {
-      if (is_win) {
-        if (!defined(asan_win_blacklist_path)) {
-          asan_win_blacklist_path =
-              rebase_path("//tools/memory/asan/blacklist_win.txt",
-                          root_build_dir)
-        }
-        cflags += [ "-fsanitize-blacklist=$asan_win_blacklist_path" ]
-      } else {
-        # TODO(rnk): Remove this as discussed in http://crbug.com/427202.
-        if (!defined(asan_blacklist_path)) {
-          asan_blacklist_path =
-              rebase_path("//tools/memory/asan/blacklist.txt", root_build_dir)
-        }
-        cflags += [ "-fsanitize-blacklist=$asan_blacklist_path" ]
+    if (is_win) {
+      if (!defined(asan_win_blacklist_path)) {
+        asan_win_blacklist_path =
+            rebase_path("//tools/memory/asan/blocklist_win.txt", root_build_dir)
       }
+      cflags += [ "-fsanitize-blacklist=$asan_win_blacklist_path" ]
     }
   }
 }
@@ -468,7 +440,7 @@ config("ubsan_flags") {
   if (is_ubsan) {
     if (!defined(ubsan_blacklist_path)) {
       ubsan_blacklist_path =
-          rebase_path("//tools/ubsan/blacklist.txt", root_build_dir)
+          rebase_path("//tools/ubsan/ignorelist.txt", root_build_dir)
     }
     cflags += [
       "-fsanitize=bool",
@@ -516,14 +488,13 @@ config("ubsan_security_flags") {
   if (is_ubsan_security) {
     if (!defined(ubsan_security_blacklist_path)) {
       ubsan_security_blacklist_path =
-          rebase_path("//tools/ubsan/security_blacklist.txt", root_build_dir)
+          rebase_path("//tools/ubsan/security_ignorelist.txt", root_build_dir)
     }
     cflags = [
       "-fsanitize=function",
       "-fsanitize=shift",
       "-fsanitize=signed-integer-overflow",
       "-fsanitize=vla-bound",
-      "-fsanitize=vptr",
       "-fsanitize-blacklist=$ubsan_security_blacklist_path",
     ]
   }
@@ -539,7 +510,7 @@ config("ubsan_vptr_flags") {
   if (is_ubsan_vptr) {
     if (!defined(ubsan_vptr_blacklist_path)) {
       ubsan_vptr_blacklist_path =
-          rebase_path("//tools/ubsan/vptr_blacklist.txt", root_build_dir)
+          rebase_path("//tools/ubsan/vptr_ignorelist.txt", root_build_dir)
     }
     cflags = [
       "-fsanitize=vptr",

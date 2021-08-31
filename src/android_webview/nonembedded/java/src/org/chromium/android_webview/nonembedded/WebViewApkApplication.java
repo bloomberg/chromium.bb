@@ -8,11 +8,16 @@ import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
+
+import com.android.webview.chromium.WebViewLibraryPreloader;
 
 import org.chromium.android_webview.AwLocaleConfig;
+import org.chromium.android_webview.ProductConfig;
 import org.chromium.android_webview.common.CommandLineUtil;
 import org.chromium.android_webview.devui.util.WebViewPackageHelper;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -22,7 +27,9 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.UmaRecorderHolder;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
+import org.chromium.build.BuildConfig;
 import org.chromium.components.embedder_support.application.FontPreloadingWorkaround;
+import org.chromium.components.version_info.VersionConstants;
 import org.chromium.ui.base.ResourceBundle;
 
 /**
@@ -35,18 +42,26 @@ import org.chromium.ui.base.ResourceBundle;
  */
 @JNINamespace("android_webview")
 public class WebViewApkApplication extends Application {
+    private static final String TAG = "WebViewApkApp";
+
     // Called by the framework for ALL processes. Runs before ContentProviders are created.
     // Quirk: context.getApplicationContext() returns null during this method.
     @Override
     protected void attachBaseContext(Context context) {
         super.attachBaseContext(context);
+        // Using concatenation rather than %s to allow values to be inlined by R8.
+        Log.i(TAG,
+                "Launched version=" + VersionConstants.PRODUCT_VERSION
+                        + " minSdkVersion=" + BuildConfig.MIN_SDK_VERSION
+                        + " isBundle=" + ProductConfig.IS_BUNDLE + " processName=%s",
+                ContextUtils.getProcessName());
+
         ContextUtils.initApplicationContext(this);
         maybeInitProcessGlobals();
 
         // MonochromeApplication has its own locale configuration already, so call this here
         // rather than in maybeInitProcessGlobals.
-        ResourceBundle.setAvailablePakLocales(
-                new String[] {}, AwLocaleConfig.getWebViewSupportedPakLocales());
+        ResourceBundle.setAvailablePakLocales(AwLocaleConfig.getWebViewSupportedPakLocales());
     }
 
     @Override
@@ -69,6 +84,12 @@ public class WebViewApkApplication extends Application {
             // disable using a native recorder in this process because native lib isn't loaded.
             UmaRecorderHolder.setAllowNativeUmaRecorder(false);
             UmaRecorderHolder.setNonNativeDelegate(new AwNonembeddedUmaRecorder());
+        }
+
+        // Limit to N+ since external services were added in N.
+        if (!LibraryLoader.getInstance().isLoadedByZygote()
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            LibraryLoader.getInstance().setNativeLibraryPreloader(new WebViewLibraryPreloader());
         }
     }
 
@@ -129,7 +150,8 @@ public class WebViewApkApplication extends Application {
             }
             // Should not call LibraryLoader.initialize() since this will reset UmaRecorder
             // delegate.
-            LibraryLoader.getInstance().setLibraryProcessType(LibraryProcessType.PROCESS_WEBVIEW);
+            LibraryLoader.getInstance().setLibraryProcessType(
+                    LibraryProcessType.PROCESS_WEBVIEW_NONEMBEDDED);
             LibraryLoader.getInstance().loadNow();
         } catch (Throwable unused) {
             // Happens for WebView Stub. Throws NoClassDefFoundError because of no
@@ -137,12 +159,12 @@ public class WebViewApkApplication extends Application {
             return false;
         }
         LibraryLoader.getInstance().switchCommandLineForWebView();
-        WebViewApkApplicationJni.get().initializePakResources();
+        WebViewApkApplicationJni.get().initializeGlobalsAndResources();
         return true;
     }
 
     @NativeMethods
     interface Natives {
-        void initializePakResources();
+        void initializeGlobalsAndResources();
     }
 }

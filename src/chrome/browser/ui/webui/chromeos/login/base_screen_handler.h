@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_BASE_SCREEN_HANDLER_H_
 
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/oobe_screen.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
+// TODO(https://crbug.com/1164001): move to forward declaration
+#include "chrome/browser/ash/login/screens/base_screen.h"
 
 namespace chromeos {
-
-class BaseScreen;
 
 // Base class for the OOBE/Login WebUI handlers which provide methods specific
 // to a particular OobeScreen.

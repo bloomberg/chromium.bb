@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/notreached.h"
-#include "build/build_config.h"
 #include "media/mojo/buildflags.h"
 #include "media/mojo/services/gpu_mojo_media_client.h"
 #include "media/mojo/services/media_service.h"
@@ -15,6 +14,10 @@
 
 #if defined(OS_ANDROID)
 #include "media/mojo/services/android_mojo_media_client.h"  // nogncheck
+#endif
+
+#if defined(OS_WIN)
+#include "media/mojo/services/media_foundation_mojo_media_client.h"
 #endif
 
 namespace media {

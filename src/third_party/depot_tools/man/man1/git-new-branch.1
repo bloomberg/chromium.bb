@@ -36,6 +36,7 @@ git-new-branch \- Create a new branch with correct tracking information\&.
 \fIgit new\-branch\fR \-\-upstream_current <branch_name>
 \fIgit new\-branch\fR \-\-upstream <REF> <branch_name>
 \fIgit new\-branch\fR \-\-lkgr <branch_name>
+\fIgit new\-branch\fR \-\-inject_current <branch_name>
 .fi
 .sp
 .SH "DESCRIPTION"
@@ -59,6 +60,17 @@ Set the tracking (upstream) branch to <REF>\&. <REF> may be a local branch, remo
 .RS 4
 Alias for
 \-\-upstream lkgr\&.
+.RE
+.PP
+\-\-inject_current
+.RS 4
+Set the tracking (upstream) branch of the newly\-created branch to the tracking (upstream) branch of the currently\-checked\-out branch and set the tracking (upstream) branch of the currently\-checked\-out branch to the newly\-created branch\&.
+.RE
+.RS 4
+Before: current > upstream
+.RE
+.RS 4
+After: current > new > upstream
 .RE
 .PP
 <branch_name>
@@ -122,6 +134,22 @@ origin/master
   fixit                             [ ahead 2            ]
     frozen_branch                   [ ahead 3            ]
   independent_cl                    [ ahead 1            ]
+\fB$ git checkout subfeature\fR
+Switched to branch \*(Aqsubfeature\*(Aq
+Your branch and \*(Aqcool_feature\*(Aq have diverged,
+and have 2 and 1 different commits each, respectively\&.
+  (use "git pull" to merge the remote branch into yours)
+\fB$ git new\-branch \-\-inject_current injected_cl\fR
+\fB$ git map\-branches \-v\fR
+origin/master
+\fB  cool_feature                      [ ahead 4            ]  \fR\fB\fB(1)\fR\fR\fB
+    cl_depends_on_cool_feature
+    injected_cl *
+\fR      subfeature                    [ ahead 2 | behind 1 ]
+        nested_cl
+  fixit                             [ ahead 2            ]
+    frozen_branch                   [ ahead 3            ]
+  independent_cl                    [ ahead 1            ]
 .fi
 .if n \{\
 .RE
@@ -137,7 +165,7 @@ origin/master
 .sp -1
 .IP "  1." 4.2
 .\}
-Note that both branches are cyan because they are currently the same
+Note that these branches are cyan because they are currently the same
 \fIcommit\fR
 object\&. See
 \fBgit-map-branches\fR(1)

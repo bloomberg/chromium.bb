@@ -41,13 +41,11 @@ TestOptionsProvider::TestOptionsProvider()
       serialize_options_(this,
                          this,
                          &client_paint_cache_,
-                         &canvas_,
                          &strike_server_,
                          color_space_,
                          can_use_lcd_text_,
                          context_supports_distance_field_text_,
-                         max_texture_size_,
-                         SkMatrix::I()),
+                         max_texture_size_),
       deserialize_options_(this,
                            &service_paint_cache_,
                            &strike_client_,
@@ -72,9 +70,9 @@ ImageProvider::ScopedResult TestOptionsProvider::GetRasterContent(
   // Lock and reuse the entry if possible.
   const EntryKey entry_key(TransferCacheEntryType::kImage, image_id);
   if (LockEntryDirect(entry_key)) {
-    return ScopedResult(DecodedDrawImage(image_id, nullptr, SkSize::MakeEmpty(),
-                                         draw_image.scale(),
-                                         draw_image.filter_quality(), false));
+    return ScopedResult(DecodedDrawImage(
+        image_id, nullptr, SkSize::MakeEmpty(), draw_image.scale(),
+        draw_image.filter_quality(), false, true));
   }
 
   decoded_images_.push_back(draw_image);
@@ -96,9 +94,9 @@ ImageProvider::ScopedResult TestOptionsProvider::GetRasterContent(
 
   CreateEntryDirect(entry_key, base::span<uint8_t>(data.data(), data.size()));
 
-  return ScopedResult(DecodedDrawImage(image_id, nullptr, SkSize::MakeEmpty(),
-                                       draw_image.scale(),
-                                       draw_image.filter_quality(), false));
+  return ScopedResult(DecodedDrawImage(
+      image_id, nullptr, SkSize::MakeEmpty(), draw_image.scale(),
+      draw_image.filter_quality(), false, true));
 }
 
 void TestOptionsProvider::ClearPaintCache() {

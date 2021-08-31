@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "ui/display/display_change_notifier.h"
 #include "ui/display/display_export.h"
 #include "ui/display/screen.h"
@@ -154,6 +154,9 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
   // Returns the NativeWindow associated with the HWND.
   virtual gfx::NativeWindow GetNativeWindowFromHWND(HWND hwnd) const;
 
+  // Returns true if the native window is occluded.
+  virtual bool IsNativeWindowOccluded(gfx::NativeWindow window) const;
+
  protected:
   ScreenWin(bool initialize);
 
@@ -263,8 +266,8 @@ class DISPLAY_EXPORT ScreenWin : public Screen,
   // advanced color" setting.
   bool hdr_enabled_ = false;
 
-  ScopedObserver<UwpTextScaleFactor, UwpTextScaleFactor::Observer>
-      scale_factor_observer_{this};
+  base::ScopedObservation<UwpTextScaleFactor, UwpTextScaleFactor::Observer>
+      scale_factor_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ScreenWin);
 };

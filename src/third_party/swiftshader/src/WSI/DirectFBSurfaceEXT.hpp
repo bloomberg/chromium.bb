@@ -34,7 +34,7 @@ public:
 
 	static size_t ComputeRequiredAllocationSize(const VkDirectFBSurfaceCreateInfoEXT *pCreateInfo);
 
-	void getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabilities) const override;
+	VkResult getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabilities) const override;
 
 	virtual void attachImage(PresentImage *image) override;
 	virtual void detachImage(PresentImage *image) override;
@@ -47,4 +47,4 @@ private:
 };
 
 }  // namespace vk
-#endif  //SWIFTSHADER_DIRECTFBSURFACEEXT_HPP
+#endif  // SWIFTSHADER_DIRECTFBSURFACEEXT_HPP

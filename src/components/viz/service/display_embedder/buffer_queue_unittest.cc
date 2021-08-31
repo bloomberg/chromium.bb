@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <utility>
 
@@ -91,10 +92,11 @@ class StubGpuMemoryBufferManager : public TestGpuMemoryBufferManager {
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      gpu::SurfaceHandle surface_handle) override {
+      gpu::SurfaceHandle surface_handle,
+      base::WaitableEvent* shutdown_event) override {
     if (surface_handle == gpu::kNullSurfaceHandle) {
       return TestGpuMemoryBufferManager::CreateGpuMemoryBuffer(
-          size, format, usage, surface_handle);
+          size, format, usage, surface_handle, shutdown_event);
     }
     if (allocate_succeeds_)
       return base::WrapUnique<gfx::GpuMemoryBuffer>(
@@ -131,8 +133,8 @@ class BufferQueueTest : public ::testing::Test,
       std::unique_ptr<TestSharedImageInterface> sii) {
     context_provider_ = TestContextProvider::Create(std::move(sii));
     context_provider_->BindToCurrentThread();
-    output_surface_.reset(new BufferQueue(
-        context_provider_->SharedImageInterface(), kFakeSurfaceHandle));
+    output_surface_ = std::make_unique<BufferQueue>(
+        context_provider_->SharedImageInterface(), kFakeSurfaceHandle);
     output_surface_->SetSyncTokenProvider(this);
   }
 

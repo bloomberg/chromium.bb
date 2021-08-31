@@ -7,6 +7,10 @@
 #include <map>
 #include <string>
 
+// NOTE: although we use gtest here, prefer OSP_CHECKs to
+// ASSERTS due to asynchronous concerns around test failures.
+// Although this causes the entire test binary to fail instead of
+// just a single test, it makes debugging easier/possible.
 #include "cast/common/public/service_info.h"
 #include "discovery/common/config.h"
 #include "discovery/common/reporting_client.h"
@@ -105,7 +109,8 @@ class ServiceReceiver : public discovery::DnsSdServiceWatcher<ServiceInfo> {
 
 class FailOnErrorReporting : public discovery::ReportingClient {
   void OnFatalError(Error error) override {
-    OSP_NOTREACHED() << "Fatal error received: '" << error << "'";
+    OSP_LOG_FATAL << "Fatal error received: '" << error << "'";
+    OSP_NOTREACHED();
   }
 
   void OnRecoverableError(Error error) override {
@@ -117,17 +122,10 @@ class FailOnErrorReporting : public discovery::ReportingClient {
 };
 
 discovery::Config GetConfigSettings() {
-  discovery::Config config;
-
   // Get the loopback interface to run on.
-  absl::optional<InterfaceInfo> loopback = GetLoopbackInterfaceForTesting();
-  OSP_CHECK(loopback.has_value());
-  discovery::Config::NetworkInfo::AddressFamilies address_families =
-      discovery::Config::NetworkInfo::kUseIpV4 |
-      discovery::Config::NetworkInfo::kUseIpV6;
-  config.network_info.push_back({loopback.value(), address_families});
-
-  return config;
+  InterfaceInfo loopback = GetLoopbackInterfaceForTesting().value();
+  OSP_LOG_INFO << "Selected network interface for testing: " << loopback;
+  return discovery::Config{{std::move(loopback)}};
 }
 
 class DiscoveryE2ETest : public testing::Test {
@@ -136,7 +134,7 @@ class DiscoveryE2ETest : public testing::Test {
     // Sleep to let any packets clear off the network before further tests.
     std::this_thread::sleep_for(milliseconds(500));
 
-    PlatformClientPosix::Create(milliseconds(50), milliseconds(50));
+    PlatformClientPosix::Create(milliseconds(50));
     task_runner_ = PlatformClientPosix::GetInstance()->GetTaskRunner();
   }
 
@@ -277,10 +275,8 @@ class DiscoveryE2ETest : public testing::Test {
       return;
     }
 
-    if (attempts++ > kMaxCheckLoopIterations) {
-      OSP_NOTREACHED() << "Service " << service_info.friendly_name
-                       << " publication failed.";
-    }
+    OSP_CHECK_LE(attempts++, kMaxCheckLoopIterations)
+        << "Service " << service_info.friendly_name << " publication failed.";
     task_runner_->PostTaskWithDelay(
         [this, info = std::move(service_info), has_been_seen,
          attempts]() mutable {
@@ -310,8 +306,7 @@ class DiscoveryE2ETest : public testing::Test {
       // TODO(crbug.com/openscreen/110): Log the discovered service instance.
       *has_been_seen = true;
     } else {
-      OSP_NOTREACHED() << "Found instance '" << service_info.friendly_name
-                       << "'!";
+      OSP_LOG_FATAL << "Found instance '" << service_info.friendly_name << "'!";
     }
   }
 };

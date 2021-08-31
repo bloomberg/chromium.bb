@@ -25,8 +25,7 @@ public:
         const GrRadialGradientLayout& _outer = args.fFp.cast<GrRadialGradientLayout>();
         (void)_outer;
         fragBuilder->codeAppendf(
-                R"SkSL(half t = half(length(%s));
-return half4(t, 1.0, 0.0, 0.0);
+                R"SkSL(return half4(half(length(%s)), 1.0, 0.0, 0.0);
 )SkSL",
                 args.fSampleCoord);
     }
@@ -35,8 +34,8 @@ private:
     void onSetData(const GrGLSLProgramDataManager& pdman,
                    const GrFragmentProcessor& _proc) override {}
 };
-GrGLSLFragmentProcessor* GrRadialGradientLayout::onCreateGLSLInstance() const {
-    return new GrGLSLRadialGradientLayout();
+std::unique_ptr<GrGLSLFragmentProcessor> GrRadialGradientLayout::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLRadialGradientLayout>();
 }
 void GrRadialGradientLayout::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                    GrProcessorKeyBuilder* b) const {}
@@ -45,7 +44,6 @@ bool GrRadialGradientLayout::onIsEqual(const GrFragmentProcessor& other) const {
     (void)that;
     return true;
 }
-bool GrRadialGradientLayout::usesExplicitReturn() const { return true; }
 GrRadialGradientLayout::GrRadialGradientLayout(const GrRadialGradientLayout& src)
         : INHERITED(kGrRadialGradientLayout_ClassID, src.optimizationFlags()) {
     this->cloneAndRegisterAllChildProcessors(src);
@@ -65,17 +63,24 @@ std::unique_ptr<GrFragmentProcessor> GrRadialGradientLayout::TestCreate(GrProces
     GrTest::TestAsFPArgs asFPArgs(d);
     do {
         GrGradientShader::RandomParams params(d->fRandom);
-        SkPoint center = {d->fRandom->nextRangeScalar(0.0f, scale),
-                          d->fRandom->nextRangeScalar(0.0f, scale)};
+        SkPoint center;
+        center.fX = d->fRandom->nextRangeScalar(0.0f, scale);
+        center.fY = d->fRandom->nextRangeScalar(0.0f, scale);
         SkScalar radius = d->fRandom->nextRangeScalar(0.0f, scale);
-        sk_sp<SkShader> shader =
-                params.fUseColors4f
-                        ? SkGradientShader::MakeRadial(center, radius, params.fColors4f,
-                                                       params.fColorSpace, params.fStops,
-                                                       params.fColorCount, params.fTileMode)
-                        : SkGradientShader::MakeRadial(center, radius, params.fColors,
-                                                       params.fStops, params.fColorCount,
-                                                       params.fTileMode);
+        sk_sp<SkShader> shader = params.fUseColors4f
+                                         ? SkGradientShader::MakeRadial(center,
+                                                                        radius,
+                                                                        params.fColors4f,
+                                                                        params.fColorSpace,
+                                                                        params.fStops,
+                                                                        params.fColorCount,
+                                                                        params.fTileMode)
+                                         : SkGradientShader::MakeRadial(center,
+                                                                        radius,
+                                                                        params.fColors,
+                                                                        params.fStops,
+                                                                        params.fColorCount,
+                                                                        params.fTileMode);
         // Degenerate params can create an Empty (non-null) shader, where fp will be nullptr
         fp = shader ? as_SB(shader)->asFragmentProcessor(asFPArgs.args()) : nullptr;
     } while (!fp);

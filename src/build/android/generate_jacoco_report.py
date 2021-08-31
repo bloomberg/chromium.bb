@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -40,22 +40,27 @@ _DEVICE_CLASS_EXCLUDE_SUFFIX = 'host_filter.jar'
 _HOST_CLASS_EXCLUDE_SUFFIX = 'device_filter.jar'
 
 
-def _CreateClassfileArgs(class_files, exclude_suffix=None):
-  """Returns a list of files that don't have a given suffix.
+def _CreateClassfileArgs(class_files, exclude_suffix=None, include_substr=None):
+  """Returns a filtered list of files with classfile option.
 
   Args:
     class_files: A list of class files.
     exclude_suffix: Suffix to look for to exclude.
+    include_substr: A substring that must be present to include the file.
+        exclude_suffix takes precedence over this.
 
   Returns:
     A list of files that don't use the suffix.
   """
   result_class_files = []
   for f in class_files:
-    if exclude_suffix:
-      if not f.endswith(exclude_suffix):
-        result_class_files += ['--classfiles', f]
-    else:
+    include_file = True
+    if exclude_suffix and f.endswith(exclude_suffix):
+      include_file = False
+    # Exclude overrides include.
+    if include_file and include_substr and include_substr not in f:
+      include_file = False
+    if include_file:
       result_class_files += ['--classfiles', f]
 
   return result_class_files
@@ -68,7 +73,8 @@ def _GenerateReportOutputArgs(args, class_files, report_type):
   elif report_type == 'host':
     class_jar_exclude = _HOST_CLASS_EXCLUDE_SUFFIX
 
-  cmd = _CreateClassfileArgs(class_files, class_jar_exclude)
+  cmd = _CreateClassfileArgs(class_files, class_jar_exclude,
+                             args.include_substr_filter)
   if args.format == 'html':
     report_dir = os.path.join(args.output_dir, report_type)
     if not os.path.exists(report_dir):
@@ -100,6 +106,26 @@ def _GetFilesWithSuffix(root_dir, suffix):
   return files
 
 
+def _GetExecFiles(root_dir, exclude_substr=None):
+  """ Gets all .exec files
+
+  Args:
+    root_dir: Root directory in which to search for files.
+    exclude_substr: Substring which should be absent in filename. If None, all
+      files are selected.
+
+  Returns:
+    A list of absolute paths to .exec files
+
+  """
+  all_exec_files = _GetFilesWithSuffix(root_dir, ".exec")
+  valid_exec_files = []
+  for exec_file in all_exec_files:
+    if not exclude_substr or exclude_substr not in exec_file:
+      valid_exec_files.append(exec_file)
+  return valid_exec_files
+
+
 def _ParseArguments(parser):
   """Parses the command line arguments.
 
@@ -121,6 +147,10 @@ def _ParseArguments(parser):
       'host classpath files. Host would typically be used for junit tests '
       ' and device for tests that run on the device. Only used for xml and csv'
       ' reports.')
+  parser.add_argument('--include-substr-filter',
+                      help='Substring that must be included in classjars.',
+                      type=str,
+                      default='')
   parser.add_argument('--output-dir', help='html report output directory.')
   parser.add_argument('--output-file',
                       help='xml file to write device coverage results.')
@@ -129,6 +159,10 @@ def _ParseArguments(parser):
       required=True,
       help='Root of the directory in which to search for '
       'coverage data (.exec) files.')
+  parser.add_argument('--exec-filename-excludes',
+                      required=False,
+                      help='Excludes .exec files which contain a particular '
+                      'substring in their name')
   parser.add_argument(
       '--sources-json-dir',
       help='Root of the directory in which to search for '
@@ -161,10 +195,8 @@ def _ParseArguments(parser):
       parser.error('--output-file needed for xml/csv reports.')
     if not args.device_or_host and args.sources_json_dir:
       parser.error('--device-or-host selection needed with --sources-json-dir')
-
   if not (args.sources_json_dir or args.class_files):
     parser.error('At least either --sources-json-dir or --class-files needed.')
-
   return args
 
 
@@ -174,7 +206,7 @@ def main():
 
   devil_chromium.Initialize()
 
-  coverage_files = _GetFilesWithSuffix(args.coverage_dir, '.exec')
+  coverage_files = _GetExecFiles(args.coverage_dir, args.exec_filename_excludes)
   if not coverage_files:
     parser.error('No coverage file found under %s' % args.coverage_dir)
   print('Found coverage files: %s' % str(coverage_files))
@@ -219,6 +251,7 @@ def main():
     # report and we wouldn't know which one a developer needed.
     device_cmd = cmd + _GenerateReportOutputArgs(args, class_files, 'device')
     host_cmd = cmd + _GenerateReportOutputArgs(args, class_files, 'host')
+
     device_exit_code = cmd_helper.RunCmd(device_cmd)
     host_exit_code = cmd_helper.RunCmd(host_cmd)
     exit_code = device_exit_code or host_exit_code

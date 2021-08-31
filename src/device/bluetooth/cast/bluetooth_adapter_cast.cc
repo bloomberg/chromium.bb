@@ -177,7 +177,7 @@ void BluetoothAdapterCast::SetAdvertisingInterval(
 
 void BluetoothAdapterCast::ConnectDevice(
     const std::string& address,
-    const base::Optional<BluetoothDevice::AddressType>& address_type,
+    const absl::optional<BluetoothDevice::AddressType>& address_type,
     ConnectDeviceCallback callback,
     ErrorCallback error_callback) {
   NOTIMPLEMENTED() << __func__ << " GATT server mode not supported";
@@ -223,14 +223,14 @@ void BluetoothAdapterCast::StartScanWithFilter(
   // TODO(bcf|slan): Wire this up once scan filters are implemented.
   (void)discovery_filter;
 
-  auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
 
   // Add this request to the queue.
   pending_discovery_requests_.emplace(BluetoothAdapterCast::DiscoveryParams(
       std::move(discovery_filter),
-      base::BindOnce(copyable_callback, /*is_error=*/false,
+      base::BindOnce(std::move(split_callback.first), /*is_error=*/false,
                      UMABluetoothDiscoverySessionOutcome::SUCCESS),
-      base::BindOnce(copyable_callback, /*is_error=*/true)));
+      base::BindOnce(std::move(split_callback.second), /*is_error=*/true)));
 
   // If the queue length is greater than 1 (i.e. there was a pending request
   // when this method was called), exit early. This request will be processed

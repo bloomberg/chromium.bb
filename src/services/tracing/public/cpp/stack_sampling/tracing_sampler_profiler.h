@@ -43,6 +43,10 @@ namespace tracing {
 
 class PerfettoProducer;
 
+#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
+class LoaderLockSamplingThread;
+#endif
+
 // This class is a bridge between the base stack sampling profiler and chrome
 // tracing. It's listening to TraceLog enabled/disabled events and it's starting
 // a stack profiler on the current thread if needed. The sampling profiler is
@@ -66,12 +70,6 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
         const base::RepeatingClosure& sample_callback_for_testing =
             base::RepeatingClosure());
     ~TracingProfileBuilder() override;
-
-#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
-    void EnableLoaderLockSampling() { should_sample_loader_lock_ = true; }
-
-    void SampleLoaderLock();
-#endif
 
     // base::ProfileBuilder
     base::ModuleCache* GetModuleCache() override;
@@ -125,33 +123,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
     base::TimeTicks last_timestamp_;
     const bool should_enable_filtering_;
     base::RepeatingClosure sample_callback_for_testing_;
-
-#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
-    bool should_sample_loader_lock_ = false;
-    bool loader_lock_is_held_ = false;
-#endif
   };
-
-#if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
-  // This class can be implemented to check whether the loader lock is held
-  // whenever stack frames are sampled. Exposed for testing.
-  class LoaderLockSampler {
-   public:
-    virtual ~LoaderLockSampler() = default;
-
-    virtual bool IsLoaderLockHeld() const = 0;
-  };
-
-  // The name of a trace event that will be recorded when the loader lock is
-  // held.
-  static const char kLoaderLockHeldEventName[];
-
-  // Registers a mock LoaderLockSampler to be called during tests. |sampler| is
-  // owned by the caller. It must be reset to |nullptr| at the end of the test.
-  static void SetLoaderLockSamplerForTesting(LoaderLockSampler* sampler);
-
-  void EnableLoaderLockSampling() { should_sample_loader_lock_ = true; }
-#endif
 
   // Creates sampling profiler on main thread. The profiler *must* be
   // destroyed prior to process shutdown.
@@ -221,7 +193,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TracingSamplerProfiler {
   base::RepeatingClosure sample_callback_for_testing_;
 
 #if BUILDFLAG(ENABLE_LOADER_LOCK_SAMPLING)
-  bool should_sample_loader_lock_ = false;
+  // A thread that periodically samples the loader lock. Sampling will start
+  // and stop at the same time that stack sampling does.
+  std::unique_ptr<LoaderLockSamplingThread> loader_lock_sampling_thread_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(TracingSamplerProfiler);

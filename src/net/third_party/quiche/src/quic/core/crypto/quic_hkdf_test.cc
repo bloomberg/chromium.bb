@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/quic_hkdf.h"
+#include "quic/core/crypto/quic_hkdf.h"
 
 #include <string>
 
 #include "absl/base/macros.h"
 #include "absl/strings/escaping.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/platform/api/quic_test.h"
 
 namespace quic {
 namespace test {

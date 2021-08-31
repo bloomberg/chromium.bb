@@ -19,11 +19,11 @@
 
 #include <arm_neon.h>
 
-#include <algorithm>  // std::min
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>  // memset
+#include <cstring>
 
 #include "src/dsp/arm/common_neon.h"
 #include "src/dsp/constants.h"
@@ -112,7 +112,7 @@ inline void DirectionalZone1_WxH(uint8_t* dst, const ptrdiff_t stride,
     // 4 wide subsamples the output. 8 wide subsamples the input.
     if (width == 4) {
       const uint8x8_t left_values = vld1_u8(top + top_base_x);
-      const uint8x8_t right_values = RightShift<8>(left_values);
+      const uint8x8_t right_values = RightShiftVector<8>(left_values);
       const uint8x8_t value = WeightedBlend(left_values, right_values, shift);
 
       // If |upsampled| is true then extract every other value for output.
@@ -915,7 +915,7 @@ void IntraPredDirectionalInit_NEON() { low_bitdepth::Init8bpp(); }
 }  // namespace dsp
 }  // namespace libgav1
 
-#else  // !LIBGAV1_ENABLE_NEON
+#else   // !LIBGAV1_ENABLE_NEON
 namespace libgav1 {
 namespace dsp {
 

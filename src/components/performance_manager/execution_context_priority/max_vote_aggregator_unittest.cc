@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/performance_manager/public/execution_context_priority/max_vote_aggregator.h"
+#include "components/performance_manager/execution_context_priority/max_vote_aggregator.h"
 
 #include "base/rand_util.h"
 #include "components/performance_manager/test_support/voting.h"
@@ -22,8 +22,7 @@ using StampedVote = MaxVoteAggregatorTestAccess::StampedVote;
 
 namespace {
 
-using DummyVoter = voting::test::DummyVoter<Vote>;
-using DummyVoteConsumer = voting::test::DummyVoteConsumer<Vote>;
+using DummyVoteObserver = voting::test::DummyVoteObserver<Vote>;
 
 // Some dummy execution contexts.
 const ExecutionContext* kExecutionContext0 =
@@ -31,288 +30,210 @@ const ExecutionContext* kExecutionContext0 =
 const ExecutionContext* kExecutionContext1 =
     reinterpret_cast<const ExecutionContext*>(0xBAADF00D);
 
-static constexpr base::TaskPriority kPriority0 = base::TaskPriority::LOWEST;
-static constexpr base::TaskPriority kPriority1 =
-    base::TaskPriority::USER_VISIBLE;
-static constexpr base::TaskPriority kPriority2 = base::TaskPriority::HIGHEST;
+static const Vote kLowPriorityVote0(base::TaskPriority::LOWEST, "low reason 0");
+static const Vote kLowPriorityVote1(base::TaskPriority::LOWEST, "low reason 1");
 
-static_assert(kPriority0 < kPriority1 && kPriority1 < kPriority2,
-              "priorities must be well ordered");
+static const Vote kMediumPriorityVote0(base::TaskPriority::USER_VISIBLE,
+                                       "medium reason 0");
+static const Vote kMediumPriorityVote1(base::TaskPriority::USER_VISIBLE,
+                                       "medium reason 1");
 
-static const char kReason0[] = "a reason";
-static const char kReason1[] = "another reason";
-static const char kReason2[] = "yet another reason";
-
-size_t RandIndex(const VoteData& vote_data) {
-  DCHECK(!vote_data.IsEmpty());
-  int i = base::RandInt(0, static_cast<int>(vote_data.GetSize() - 1));
-  return static_cast<size_t>(i);
-}
-
-base::TaskPriority RandPriority() {
-  int i = base::RandInt(static_cast<int>(base::TaskPriority::LOWEST),
-                        static_cast<int>(base::TaskPriority::HIGHEST));
-  return static_cast<base::TaskPriority>(i);
-}
-
-const char* RandReason() {
-  int i = base::RandInt(0, 2);
-  if (i == 0)
-    return kReason0;
-  if (i == 1)
-    return kReason1;
-  DCHECK_EQ(2, i);
-  return kReason2;
-}
-
-class FakeVoteConsumer : public DummyVoteConsumer {
- public:
-  FakeVoteConsumer() = default;
-  ~FakeVoteConsumer() override = default;
-
- protected:
-  // Deliberately override VoteInvalidated so that this consumer silently
-  // ignores these notifications.
-  void VoteInvalidated(util::PassKey<AcceptedVote>,
-                       AcceptedVote* vote) override {
-    return;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeVoteConsumer);
-};
+static const Vote kHighPriorityVote0(base::TaskPriority::HIGHEST,
+                                     "high reason 0");
+static const Vote kHighPriorityVote1(base::TaskPriority::HIGHEST,
+                                     "high reason 1");
 
 }  // namespace
 
-TEST(MaxVoteAggregatorTest, StampedVoteCast) {
-  StampedVote stamped_vote;
+class MaxVoteAggregatorTest : public testing::Test {
+ public:
+  MaxVoteAggregatorTest() = default;
+  ~MaxVoteAggregatorTest() override = default;
 
-  EXPECT_EQ(&stamped_vote, StampedVote::FromAcceptedVote(&stamped_vote.vote));
+  void SetUp() override {
+    VotingChannel channel = observer_.BuildVotingChannel();
+    aggregator_voter_id_ = channel.voter_id();
+    aggregator_.SetUpstreamVotingChannel(std::move(channel));
+  }
+
+  void TearDown() override {}
+
+  VoterId aggregator_voter_id() const { return aggregator_voter_id_; }
+
+  const DummyVoteObserver& observer() const { return observer_; }
+
+  MaxVoteAggregator* aggregator() { return &aggregator_; }
+
+ private:
+  DummyVoteObserver observer_;
+  MaxVoteAggregator aggregator_;
+  VoterId aggregator_voter_id_;
+};
+
+// Tests that in the case of a single voter, the vote is simply propagated
+// upwards.
+TEST_F(MaxVoteAggregatorTest, SingleVoter) {
+  VotingChannel voter0 = aggregator()->GetVotingChannel();
+
+  EXPECT_FALSE(observer().HasVote(aggregator_voter_id(), kExecutionContext0));
+
+  voter0.SubmitVote(kExecutionContext0, kLowPriorityVote0);
+  EXPECT_EQ(observer().GetVoteCount(), 1u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kLowPriorityVote0));
+
+  // Change only the reason.
+  voter0.ChangeVote(kExecutionContext0, kLowPriorityVote1);
+  EXPECT_EQ(observer().GetVoteCount(), 1u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kLowPriorityVote1));
+
+  // Change the priority.
+  voter0.ChangeVote(kExecutionContext0, kHighPriorityVote0);
+  EXPECT_EQ(observer().GetVoteCount(), 1u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kHighPriorityVote0));
+
+  // Add a vote for a different execution context.
+  voter0.SubmitVote(kExecutionContext1, kMediumPriorityVote0);
+  EXPECT_EQ(observer().GetVoteCount(), 2u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kHighPriorityVote0));
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext1,
+                                 kMediumPriorityVote0));
+
+  voter0.ChangeVote(kExecutionContext1, kHighPriorityVote1);
+  EXPECT_EQ(observer().GetVoteCount(), 2u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kHighPriorityVote0));
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext1,
+                                 kHighPriorityVote1));
+
+  // Invalidate vote for the first execution context.
+  voter0.InvalidateVote(kExecutionContext0);
+  EXPECT_EQ(observer().GetVoteCount(), 1u);
+  EXPECT_FALSE(observer().HasVote(aggregator_voter_id(), kExecutionContext0));
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext1,
+                                 kHighPriorityVote1));
+
+  voter0.InvalidateVote(kExecutionContext1);
+  EXPECT_EQ(observer().GetVoteCount(), 0u);
+  EXPECT_FALSE(observer().HasVote(aggregator_voter_id(), kExecutionContext0));
+  EXPECT_FALSE(observer().HasVote(aggregator_voter_id(), kExecutionContext0));
 }
 
-TEST(MaxVoteAggregatorTest, VoteDataHeapStressTest) {
-  // Build a simple consumer/voter chain so that we generate an actual
-  // voting::VoterId.
-  FakeVoteConsumer consumer;
-  DummyVoter voter;
-  voting::VoterId<Vote> voter_id;
-  {
-    auto channel = consumer.voting_channel_factory_.BuildVotingChannel();
-    voter_id = channel.voter_id();
-    voter.SetVotingChannel(std::move(channel));
-  }
+TEST_F(MaxVoteAggregatorTest, TwoVotersOneContext) {
+  VotingChannel voter0 = aggregator()->GetVotingChannel();
+  VotingChannel voter1 = aggregator()->GetVotingChannel();
 
-  MaxVoteAggregatorTestAccess::VoteData vd;
+  EXPECT_FALSE(observer().HasVote(aggregator_voter_id(), kExecutionContext0));
 
-  // Parameters controlling the test.
-  static constexpr int kInsert = 0;
-  static constexpr int kMove = 1;
-  static constexpr int kRemove = 2;
-  static constexpr size_t kInitialInserts = 100;
-  static constexpr size_t kNops = 10000;
+  // Submit a first vote to the execution context. Using the 2nd voter to test
+  // the stability.
+  voter1.SubmitVote(kExecutionContext0, kLowPriorityVote1);
+  EXPECT_EQ(observer().GetVoteCount(), 1u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kLowPriorityVote1));
 
-  uint32_t next_vote_id = 0;
+  // Votes are stable. Voting with the same priority but a different reason will
+  // not change the upstream vote.
+  voter0.SubmitVote(kExecutionContext0, kLowPriorityVote0);
+  EXPECT_EQ(observer().GetVoteCount(), 1u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kLowPriorityVote1));
 
-  for (size_t i = 0; i < kNops; ++i) {
-    const size_t ops_left = kNops - i;
+  // Change the vote of the first voter to a higher priority. This will modify
+  // the upstream.
+  voter0.ChangeVote(kExecutionContext0, kHighPriorityVote0);
+  EXPECT_EQ(observer().GetVoteCount(), 1u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kHighPriorityVote0));
 
-    // Determine the type of operation to perform.
-    int operation = base::RandInt(kInsert, kRemove);
-    if (vd.GetSize() == 0 || i < kInitialInserts)
-      operation = kInsert;
+  // Change the vote of the second voter to a higher priority but still lower
+  // than the first voter's vote.
+  voter1.ChangeVote(kExecutionContext0, kMediumPriorityVote1);
+  EXPECT_EQ(observer().GetVoteCount(), 1u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kHighPriorityVote0));
 
-    // If an insertion will make it impossible to remove all elements with the
-    // remaining nops, make it a move instead. This guarantees that we finish
-    // with zero elements in the heap, although we may actually get to that
-    // point before we completely run out of operations.
-    if (operation == kInsert && vd.GetSize() + 1 > ops_left - 1)
-      operation = kMove;
+  // Invalidate the top vote. This means the second voter will dictate the new
+  // top vote.
+  voter0.InvalidateVote(kExecutionContext0);
+  EXPECT_EQ(observer().GetVoteCount(), 1u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kMediumPriorityVote1));
 
-    // If there are as many operations left as elements then do a removal.
-    if (ops_left == vd.GetSize())
-      operation = kRemove;
-
-    switch (operation) {
-      case kInsert: {
-        auto priority = RandPriority();
-        auto* reason = RandReason();
-        vd.AddVote(AcceptedVote(&consumer, voter_id, kExecutionContext0,
-                                Vote(priority, reason)),
-                   next_vote_id++);
-      } break;
-
-      case kMove: {
-        // Choose a vote and generate a new priority/reason for it.
-        size_t index = RandIndex(vd);
-        auto& vote = vd.GetVoteForTesting(index);
-        auto priority = RandPriority();
-        auto* reason = RandReason();
-        while (priority == vote.vote().value() &&
-               reason == vote.vote().reason()) {
-          priority = RandPriority();
-          reason = RandReason();
-        }
-
-        // Update the vote.
-        vote.UpdateVote(Vote(priority, reason));
-        vd.UpdateVote(index, next_vote_id++);
-      } break;
-
-      case kRemove: {
-        // Choose a vote and remove it.
-        size_t index = RandIndex(vd);
-
-        // Issue a receipt that is immediately destroyed, so that the vote is no
-        // longer valid. Then remove the vote.
-        vd.GetVoteForTesting(index).IssueReceipt();
-        vd.RemoveVote(index);
-      } break;
-
-      default:
-        NOTREACHED();
-    }
-  }
-
-  // Expect the heap to be empty at the end of the test.
-  EXPECT_TRUE(vd.IsEmpty());
+  // Invalidate the vote for the second voter. The upstream vote should also be
+  // invalidated.
+  voter1.InvalidateVote(kExecutionContext0);
+  EXPECT_EQ(observer().GetVoteCount(), 0u);
+  EXPECT_FALSE(observer().HasVote(aggregator_voter_id(), kExecutionContext0));
 }
 
-TEST(MaxVoteAggregatorTest, BlackboxTest) {
-  // Builds the small hierarchy of voters as follows:
-  //
-  //        consumer
-  //           |
-  //          agg
-  //         / |  \
-  //        /  |   \
-  //  voter0 voter1 voter2
-  DummyVoteConsumer consumer;
-  MaxVoteAggregator agg;
-  DummyVoter voter0;
-  DummyVoter voter1;
-  DummyVoter voter2;
+// A less extensive test than TwoVotersOneContext that sanity checks that votes
+// for different contextes are aggregated independently.
+TEST_F(MaxVoteAggregatorTest, TwoVotersMultipleContext) {
+  VotingChannel voter0 = aggregator()->GetVotingChannel();
+  VotingChannel voter1 = aggregator()->GetVotingChannel();
 
-  voting::VoterId<Vote> agg_id = voting::kInvalidVoterId<Vote>;
-  {
-    auto channel = consumer.voting_channel_factory_.BuildVotingChannel();
-    agg_id = channel.voter_id();
-    agg.SetUpstreamVotingChannel(std::move(channel));
+  // Vote for execution context 1, making sure the first voter submits a higher
+  // priority vote.
+  voter0.SubmitVote(kExecutionContext0, kHighPriorityVote0);
+  voter1.SubmitVote(kExecutionContext0, kMediumPriorityVote1);
+
+  // Vote for execution context 2, making sure the second voter submits a higher
+  // priority vote.
+  voter0.SubmitVote(kExecutionContext1, kLowPriorityVote0);
+  voter1.SubmitVote(kExecutionContext1, kMediumPriorityVote1);
+
+  // There is an aggregated vote for each context.
+  EXPECT_EQ(observer().GetVoteCount(), 2u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kHighPriorityVote0));
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext1,
+                                 kMediumPriorityVote1));
+
+  // Cleanup.
+  voter0.InvalidateVote(kExecutionContext0);
+  voter0.InvalidateVote(kExecutionContext1);
+  voter1.InvalidateVote(kExecutionContext0);
+  voter1.InvalidateVote(kExecutionContext1);
+
+  EXPECT_EQ(observer().GetVoteCount(), 0u);
+}
+
+// A simple test that ensures MaxVoteAggregator supports an arbitrary number of
+// voters.
+TEST_F(MaxVoteAggregatorTest, LotsOfVoters) {
+  static constexpr int kNumVoters = 2000;
+  std::vector<VotingChannel> voters;
+
+  voters.reserve(kNumVoters);
+  for (int i = 0; i < kNumVoters; ++i) {
+    VotingChannel voter = aggregator()->GetVotingChannel();
+    voters.push_back(std::move(voter));
   }
 
-  voter0.SetVotingChannel(agg.GetVotingChannel());
-  voter1.SetVotingChannel(agg.GetVotingChannel());
-  voter2.SetVotingChannel(agg.GetVotingChannel());
+  for (auto& voter : voters)
+    voter.SubmitVote(kExecutionContext0, kLowPriorityVote0);
 
-  // Create some dummy votes for each execution context and immediately expect
-  // them to propagate upwards.
-  voter0.EmitVote(kExecutionContext0, kPriority0, kReason0);
-  voter1.EmitVote(kExecutionContext1, kPriority1, kReason0);
-  EXPECT_EQ(1u, voter0.receipts_.size());
-  EXPECT_EQ(1u, voter1.receipts_.size());
-  EXPECT_EQ(0u, voter2.receipts_.size());
-  EXPECT_EQ(2u, consumer.votes_.size());
-  EXPECT_EQ(2u, consumer.valid_vote_count_);
-  consumer.ExpectValidVote(0, agg_id, kExecutionContext0, kPriority0, kReason0);
-  consumer.ExpectValidVote(1, agg_id, kExecutionContext1, kPriority1, kReason0);
+  EXPECT_EQ(observer().GetVoteCount(), 1u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kLowPriorityVote0));
 
-  // Change an existing vote, and expect it to propagate upwards.
-  voter0.receipts_[0].ChangeVote(kPriority0, kReason1);
-  EXPECT_EQ(1u, voter0.receipts_.size());
-  EXPECT_EQ(1u, voter1.receipts_.size());
-  EXPECT_EQ(0u, voter2.receipts_.size());
-  EXPECT_EQ(2u, consumer.votes_.size());
-  EXPECT_EQ(2u, consumer.valid_vote_count_);
-  consumer.ExpectValidVote(0, agg_id, kExecutionContext0, kPriority0, kReason1);
-  consumer.ExpectValidVote(1, agg_id, kExecutionContext1, kPriority1, kReason0);
+  // Pick a random voter and change its vote.
+  int chosen_voter_index = base::RandGenerator(kNumVoters);
+  voters[chosen_voter_index].ChangeVote(kExecutionContext0, kHighPriorityVote0);
 
-  // Submit a new vote with lower priority than the upstream vote and expect no
-  // change.
-  voter2.EmitVote(kExecutionContext1, kPriority0, kReason0);
-  EXPECT_EQ(1u, voter0.receipts_.size());
-  EXPECT_EQ(1u, voter1.receipts_.size());
-  EXPECT_EQ(1u, voter2.receipts_.size());
-  EXPECT_EQ(2u, consumer.votes_.size());
-  EXPECT_EQ(2u, consumer.valid_vote_count_);
-  consumer.ExpectValidVote(0, agg_id, kExecutionContext0, kPriority0, kReason1);
-  consumer.ExpectValidVote(1, agg_id, kExecutionContext1, kPriority1, kReason0);
+  EXPECT_EQ(observer().GetVoteCount(), 1u);
+  EXPECT_TRUE(observer().HasVote(aggregator_voter_id(), kExecutionContext0,
+                                 kHighPriorityVote0));
 
-  // Submit a new vote with a higher priority than the upstream vote and expect
-  // it to propagate.
-  voter2.EmitVote(kExecutionContext0, kPriority2, kReason0);
-  EXPECT_EQ(1u, voter0.receipts_.size());
-  EXPECT_EQ(1u, voter1.receipts_.size());
-  EXPECT_EQ(2u, voter2.receipts_.size());
-  EXPECT_EQ(2u, consumer.votes_.size());
-  EXPECT_EQ(2u, consumer.valid_vote_count_);
-  consumer.ExpectValidVote(0, agg_id, kExecutionContext0, kPriority2, kReason0);
-  consumer.ExpectValidVote(1, agg_id, kExecutionContext1, kPriority1, kReason0);
+  // Cleanup.
+  for (auto& voter : voters)
+    voter.InvalidateVote(kExecutionContext0);
 
-  // Invalidate a lower priority vote that is not upstreamed. Expect no
-  // upstream change.
-  voter2.receipts_[0].Reset();
-  EXPECT_EQ(1u, voter0.receipts_.size());
-  EXPECT_EQ(1u, voter1.receipts_.size());
-  EXPECT_EQ(2u, voter2.receipts_.size());
-  EXPECT_EQ(2u, consumer.votes_.size());
-  EXPECT_EQ(2u, consumer.valid_vote_count_);
-  consumer.ExpectValidVote(0, agg_id, kExecutionContext0, kPriority2, kReason0);
-  consumer.ExpectValidVote(1, agg_id, kExecutionContext1, kPriority1, kReason0);
-
-  // Create a third vote for kExecutionContext0 with yet another priority.
-  // Expect this not to propagate.
-  voter1.EmitVote(kExecutionContext0, kPriority1, kReason0);
-  EXPECT_EQ(1u, voter0.receipts_.size());
-  EXPECT_EQ(2u, voter1.receipts_.size());
-  EXPECT_EQ(2u, voter2.receipts_.size());
-  EXPECT_EQ(2u, consumer.votes_.size());
-  EXPECT_EQ(2u, consumer.valid_vote_count_);
-  consumer.ExpectValidVote(0, agg_id, kExecutionContext0, kPriority2, kReason0);
-  consumer.ExpectValidVote(1, agg_id, kExecutionContext1, kPriority1, kReason0);
-
-  // Invalidate the highest priority vote that is upstreamed. Expect the vote to
-  // revert to the next highest priority.
-  voter2.receipts_.clear();
-  EXPECT_EQ(1u, voter0.receipts_.size());
-  EXPECT_EQ(2u, voter1.receipts_.size());
-  EXPECT_EQ(0u, voter2.receipts_.size());
-  EXPECT_EQ(2u, consumer.votes_.size());
-  EXPECT_EQ(2u, consumer.valid_vote_count_);
-  consumer.ExpectValidVote(0, agg_id, kExecutionContext0, kPriority1, kReason0);
-  consumer.ExpectValidVote(1, agg_id, kExecutionContext1, kPriority1, kReason0);
-
-  // Invalidate the next highest vote and expect it to revert to the lowest
-  // vote.
-  voter1.receipts_.back().Reset();
-  EXPECT_EQ(1u, voter0.receipts_.size());
-  EXPECT_EQ(2u, voter1.receipts_.size());
-  EXPECT_EQ(0u, voter2.receipts_.size());
-  EXPECT_EQ(2u, consumer.votes_.size());
-  EXPECT_EQ(2u, consumer.valid_vote_count_);
-  consumer.ExpectValidVote(0, agg_id, kExecutionContext0, kPriority0, kReason1);
-  consumer.ExpectValidVote(1, agg_id, kExecutionContext1, kPriority1, kReason0);
-
-  // Clear the last vote for |kExecutionContext0| and expect the upstream vote
-  // to be invalidated.
-  voter0.receipts_[0].Reset();
-  EXPECT_EQ(1u, voter0.receipts_.size());
-  EXPECT_EQ(2u, voter1.receipts_.size());
-  EXPECT_EQ(0u, voter2.receipts_.size());
-  EXPECT_EQ(2u, consumer.votes_.size());
-  EXPECT_EQ(1u, consumer.valid_vote_count_);
-  EXPECT_FALSE(consumer.votes_[0].IsValid());
-  consumer.ExpectValidVote(1, agg_id, kExecutionContext1, kPriority1, kReason0);
-
-  // Clear the last outstanding votes and expect all upstream votes to have
-  // been canceled.
-  voter0.receipts_.clear();
-  voter1.receipts_.clear();
-  EXPECT_EQ(0u, voter0.receipts_.size());
-  EXPECT_EQ(0u, voter1.receipts_.size());
-  EXPECT_EQ(0u, voter2.receipts_.size());
-  EXPECT_EQ(2u, consumer.votes_.size());
-  EXPECT_EQ(0u, consumer.valid_vote_count_);
-  EXPECT_FALSE(consumer.votes_[0].IsValid());
-  EXPECT_FALSE(consumer.votes_[1].IsValid());
+  EXPECT_EQ(observer().GetVoteCount(), 0u);
 }
 
 }  // namespace execution_context_priority

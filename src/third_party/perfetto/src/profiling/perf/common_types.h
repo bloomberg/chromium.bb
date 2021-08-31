@@ -31,6 +31,16 @@
 namespace perfetto {
 namespace profiling {
 
+// Data present in all types of samples.
+struct CommonSampleData {
+  uint16_t cpu_mode = PERF_RECORD_MISC_CPUMODE_UNKNOWN;
+  uint32_t cpu = 0;
+  pid_t pid = 0;
+  pid_t tid = 0;
+  uint64_t timestamp = 0;
+  uint64_t timebase_count = 0;
+};
+
 // A parsed perf sample record (PERF_RECORD_SAMPLE from the kernel buffer).
 // Self-contained, used as as input to the callstack unwinding.
 struct ParsedSample {
@@ -41,14 +51,11 @@ struct ParsedSample {
   ParsedSample(ParsedSample&&) noexcept = default;
   ParsedSample& operator=(ParsedSample&&) noexcept = default;
 
-  uint16_t cpu_mode = PERF_RECORD_MISC_CPUMODE_UNKNOWN;
-  uint32_t cpu = 0;
-  pid_t pid = 0;
-  pid_t tid = 0;
-  uint64_t timestamp = 0;
+  CommonSampleData common;
   std::unique_ptr<unwindstack::Regs> regs;
   std::vector<char> stack;
   bool stack_maxed = false;
+  std::vector<uint64_t> kernel_ips;
 };
 
 // Entry in an unwinding queue. Either a sample that requires unwinding, or a
@@ -77,12 +84,9 @@ struct CompletedSample {
   CompletedSample(CompletedSample&&) noexcept = default;
   CompletedSample& operator=(CompletedSample&&) noexcept = default;
 
-  uint16_t cpu_mode = PERF_RECORD_MISC_CPUMODE_UNKNOWN;
-  uint32_t cpu = 0;
-  pid_t pid = 0;
-  pid_t tid = 0;
-  uint64_t timestamp = 0;
-  std::vector<FrameData> frames;
+  CommonSampleData common;
+  std::vector<unwindstack::FrameData> frames;
+  std::vector<std::string> build_ids;
   unwindstack::ErrorCode unwind_error = unwindstack::ERROR_NONE;
 };
 

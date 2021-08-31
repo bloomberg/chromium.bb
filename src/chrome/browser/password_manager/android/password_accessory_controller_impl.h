@@ -10,8 +10,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/password_manager/android/all_passwords_bottom_sheet_helper.h"
@@ -22,6 +22,8 @@
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/security_state/core/security_state.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
@@ -40,10 +42,16 @@ class PasswordAccessoryControllerImpl
     : public PasswordAccessoryController,
       public content::WebContentsUserData<PasswordAccessoryControllerImpl> {
  public:
+  using PasswordDriverSupplierForFocusedFrame =
+      base::RepeatingCallback<password_manager::PasswordManagerDriver*(
+          content::WebContents*)>;
   ~PasswordAccessoryControllerImpl() override;
 
   // AccessoryController:
-  void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
+  void RegisterFillingSourceObserver(FillingSourceObserver observer) override;
+  absl::optional<autofill::AccessorySheetData> GetSheetData() const override;
+  void OnFillingTriggered(autofill::FieldGlobalId focused_field_id,
+                          const autofill::UserInfo::Field& selection) override;
   void OnOptionSelected(autofill::AccessoryAction selected_action) override;
   void OnToggleChanged(autofill::AccessoryAction toggled_action,
                        bool enabled) override;
@@ -69,7 +77,8 @@ class PasswordAccessoryControllerImpl
       content::WebContents* web_contents,
       password_manager::CredentialCache* credential_cache,
       base::WeakPtr<ManualFillingController> mf_controller,
-      password_manager::PasswordManagerClient* password_client);
+      password_manager::PasswordManagerClient* password_client,
+      PasswordDriverSupplierForFocusedFrame driver_supplier);
 
   // True if the focus event was sent for the current focused frame or if it is
   // a blur event and no frame is focused. This check avoids reacting to
@@ -83,7 +92,7 @@ class PasswordAccessoryControllerImpl
 
   // Returns true if the current site attached to `web_contents_` has a SECURE
   // security level.
-  bool IsSecureSite();
+  bool IsSecureSite() const;
 
 #if defined(UNIT_TEST)
   // Used for testing to set `security_level_for_testing_`.
@@ -96,6 +105,26 @@ class PasswordAccessoryControllerImpl
  private:
   friend class content::WebContentsUserData<PasswordAccessoryControllerImpl>;
 
+  // This struct is used to remember the meta information about the last focused
+  // field.
+  struct LastFocusedFieldInfo {
+    LastFocusedFieldInfo(url::Origin focused_origin,
+                         autofill::mojom::FocusedFieldType focused_field,
+                         bool manual_generation_available);
+
+    // Records the origin at the time of focusing the field to double-check that
+    // the frame origin hasn't changed.
+    url::Origin origin;
+
+    // Records the last focused field type to infer whether the accessory is
+    // available and whether passwords or usernames will be fillable.
+    autofill::mojom::FocusedFieldType focused_field_type =
+        autofill::mojom::FocusedFieldType::kUnknown;
+
+    // If true, manual generation will be available for the focused field.
+    bool is_manual_generation_available = false;
+  };
+
   // This constructor can also be used by |CreateForWebContentsForTesting|
   // to inject a fake |ManualFillingController| and a fake
   // |PasswordManagerClient|.
@@ -103,14 +132,15 @@ class PasswordAccessoryControllerImpl
       content::WebContents* web_contents,
       password_manager::CredentialCache* credential_cache,
       base::WeakPtr<ManualFillingController> mf_controller,
-      password_manager::PasswordManagerClient* password_client);
+      password_manager::PasswordManagerClient* password_client,
+      PasswordDriverSupplierForFocusedFrame driver_supplier);
 
   // Enables or disables saving for the focused origin. This involves removing
-  // or adding blacklisted entry in the |PasswordStore|.
+  // or adding blocklisted entry in the |PasswordStore|.
   void ChangeCurrentOriginSavePasswordsStatus(bool enabled);
 
   // Returns true if |suggestion| matches a credential for |origin|.
-  bool AppearsInSuggestions(const base::string16& suggestion,
+  bool AppearsInSuggestions(const std::u16string& suggestion,
                             bool is_password,
                             const url::Origin& origin) const;
 
@@ -127,13 +157,23 @@ class PasswordAccessoryControllerImpl
 
   url::Origin GetFocusedFrameOrigin() const;
 
+  // Returns true if authentication should be triggered before filling
+  // |selection| in to the field.
+  bool ShouldTriggerBiometricReauth(
+      const autofill::UserInfo::Field& selection) const;
+
+  // Called when the biometric authentication completes. If |auth_succeeded| is
+  // true, |selection| will be passed on to be filled.
+  void OnReauthCompleted(autofill::UserInfo::Field selection,
+                         bool auth_succeeded);
+
+  // Sends |selection| to the renderer to be filled, if it's a valid
+  // entry for the origin of the frame that is currently focused.
+  void FillSelection(const autofill::UserInfo::Field& selection);
+
   // Called From |AllPasswordsBottomSheetController| when
   // the Bottom Sheet view is destroyed.
   void AllPasswordsSheetDismissed();
-
-  // ------------------------------------------------------------------------
-  // Members - Make sure to NEVER store state related to a single frame here!
-  // ------------------------------------------------------------------------
 
   // The tab for which this class is scoped.
   content::WebContents* web_contents_ = nullptr;
@@ -147,6 +187,23 @@ class PasswordAccessoryControllerImpl
   // The password manager client is used to update the save passwords status
   // for the currently focused origin.
   password_manager::PasswordManagerClient* password_client_ = nullptr;
+
+  // The authenticator used to trigger a biometric re-auth before filling.
+  // null, if there is no ongoing authentication.
+  scoped_refptr<password_manager::BiometricAuthenticator> authenticator_;
+
+  // Information about the currently focused field. This is the only place
+  // allowed to store frame-specific data. If a new field is focused or focus is
+  // lost, this data needs to be reset to absl::nullopt to make sure that data
+  // related to a former frame isn't displayed incorrectly in a different one.
+  absl::optional<LastFocusedFieldInfo> last_focused_field_info_ = absl::nullopt;
+
+  // The observer to notify if available suggestions change.
+  FillingSourceObserver source_observer_;
+
+  // Callback that returns a |PasswordManagerDriver| corresponding to the
+  // currently-focused frame of the passed-in |WebContents|.
+  PasswordDriverSupplierForFocusedFrame driver_supplier_;
 
   // Controller for the all passwords bottom sheet. Created on demand during the
   // first call to |ShowAllPasswords()|.

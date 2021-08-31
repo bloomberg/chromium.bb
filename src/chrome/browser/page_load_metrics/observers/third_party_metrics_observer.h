@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_THIRD_PARTY_METRICS_OBSERVER_H_
 
 #include <map>
-#include <string>
 
 #include "base/macros.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
@@ -38,7 +37,7 @@ class ThirdPartyMetricsObserver
   // page_load_metrics::PageLoadMetricsObserver:
   ObservePolicy FlushMetricsOnAppEnterBackground(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
-  void FrameReceivedFirstUserActivation(
+  void FrameReceivedUserActivation(
       content::RenderFrameHost* render_frame_host) override;
   void OnComplete(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
@@ -58,7 +57,8 @@ class ThirdPartyMetricsObserver
                          page_load_metrics::StorageType storage_type) override;
   void OnDidFinishSubFrameNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void OnFrameDeleted(content::RenderFrameHost* render_frame_host) override;
+  void OnRenderFrameDeleted(
+      content::RenderFrameHost* render_frame_host) override;
   void OnTimingUpdate(
       content::RenderFrameHost* subframe_rfh,
       const page_load_metrics::mojom::PageLoadTiming& timing) override;

@@ -199,6 +199,7 @@ int do_not_release_aom_frame_buffer(void *user_priv,
 
 #endif  // CONFIG_WEBM_IO
 
+#if !CONFIG_REALTIME_ONLY
 // Class for testing passing in external frame buffers to libaom.
 class ExternalFrameBufferMD5Test
     : public ::libaom_test::DecoderTest,
@@ -298,6 +299,7 @@ class ExternalFrameBufferMD5Test
   int num_buffers_;
   ExternalFrameBufferList fb_list_;
 };
+#endif  // !CONFIG_REALTIME_ONLY
 
 #if CONFIG_WEBM_IO
 const char kAV1TestFile[] = "av1-1-b8-03-sizeup.mkv";
@@ -395,6 +397,7 @@ class ExternalFrameBufferNonRefTest : public ExternalFrameBufferTest {
 };
 #endif  // CONFIG_WEBM_IO
 
+#if !CONFIG_REALTIME_ONLY
 // This test runs through the set of test vectors, and decodes them.
 // Libaom will call into the application to allocate a frame buffer when
 // needed. The md5 checksums are computed for each frame in the video file.
@@ -438,6 +441,7 @@ TEST_P(ExternalFrameBufferMD5Test, ExtFBMD5Match) {
   // Decode frame, and check the md5 matching.
   ASSERT_NO_FATAL_FAILURE(RunLoop(video.get(), cfg));
 }
+#endif  // !CONFIG_REALTIME_ONLY
 
 #if CONFIG_WEBM_IO
 TEST_F(ExternalFrameBufferTest, MinFrameBuffers) {
@@ -447,7 +451,11 @@ TEST_F(ExternalFrameBufferTest, MinFrameBuffers) {
   ASSERT_EQ(AOM_CODEC_OK,
             SetFrameBufferFunctions(num_buffers, get_aom_frame_buffer,
                                     release_aom_frame_buffer));
+#if CONFIG_REALTIME_ONLY
+  ASSERT_EQ(AOM_CODEC_UNSUP_FEATURE, DecodeRemainingFrames());
+#else
   ASSERT_EQ(AOM_CODEC_OK, DecodeRemainingFrames());
+#endif
 }
 
 TEST_F(ExternalFrameBufferTest, EightJitterBuffers) {
@@ -459,7 +467,11 @@ TEST_F(ExternalFrameBufferTest, EightJitterBuffers) {
   ASSERT_EQ(AOM_CODEC_OK,
             SetFrameBufferFunctions(num_buffers, get_aom_frame_buffer,
                                     release_aom_frame_buffer));
+#if CONFIG_REALTIME_ONLY
+  ASSERT_EQ(AOM_CODEC_UNSUP_FEATURE, DecodeRemainingFrames());
+#else
   ASSERT_EQ(AOM_CODEC_OK, DecodeRemainingFrames());
+#endif
 }
 
 TEST_F(ExternalFrameBufferTest, NotEnoughBuffers) {
@@ -470,10 +482,14 @@ TEST_F(ExternalFrameBufferTest, NotEnoughBuffers) {
   ASSERT_EQ(AOM_CODEC_OK,
             SetFrameBufferFunctions(num_buffers, get_aom_frame_buffer,
                                     release_aom_frame_buffer));
+#if CONFIG_REALTIME_ONLY
+  ASSERT_EQ(AOM_CODEC_UNSUP_FEATURE, DecodeOneFrame());
+#else
   ASSERT_EQ(AOM_CODEC_OK, DecodeOneFrame());
   // Only run this on long clips. Decoding a very short clip will return
   // AOM_CODEC_OK even with only 2 buffers.
   ASSERT_EQ(AOM_CODEC_MEM_ERROR, DecodeRemainingFrames());
+#endif
 }
 
 TEST_F(ExternalFrameBufferTest, NoRelease) {
@@ -481,8 +497,12 @@ TEST_F(ExternalFrameBufferTest, NoRelease) {
   ASSERT_EQ(AOM_CODEC_OK,
             SetFrameBufferFunctions(num_buffers, get_aom_frame_buffer,
                                     do_not_release_aom_frame_buffer));
+#if CONFIG_REALTIME_ONLY
+  ASSERT_EQ(AOM_CODEC_UNSUP_FEATURE, DecodeOneFrame());
+#else
   ASSERT_EQ(AOM_CODEC_OK, DecodeOneFrame());
   ASSERT_EQ(AOM_CODEC_MEM_ERROR, DecodeRemainingFrames());
+#endif
 }
 
 TEST_F(ExternalFrameBufferTest, NullRealloc) {
@@ -515,11 +535,15 @@ TEST_F(ExternalFrameBufferTest, NullReleaseFunction) {
 }
 
 TEST_F(ExternalFrameBufferTest, SetAfterDecode) {
+#if CONFIG_REALTIME_ONLY
+  ASSERT_EQ(AOM_CODEC_UNSUP_FEATURE, DecodeOneFrame());
+#else
   const int num_buffers = AOM_MAXIMUM_REF_BUFFERS + AOM_MAXIMUM_WORK_BUFFERS;
   ASSERT_EQ(AOM_CODEC_OK, DecodeOneFrame());
   ASSERT_EQ(AOM_CODEC_ERROR,
             SetFrameBufferFunctions(num_buffers, get_aom_frame_buffer,
                                     release_aom_frame_buffer));
+#endif
 }
 
 TEST_F(ExternalFrameBufferNonRefTest, ReleaseNonRefFrameBuffer) {
@@ -527,14 +551,20 @@ TEST_F(ExternalFrameBufferNonRefTest, ReleaseNonRefFrameBuffer) {
   ASSERT_EQ(AOM_CODEC_OK,
             SetFrameBufferFunctions(num_buffers, get_aom_frame_buffer,
                                     release_aom_frame_buffer));
+#if CONFIG_REALTIME_ONLY
+  ASSERT_EQ(AOM_CODEC_UNSUP_FEATURE, DecodeRemainingFrames());
+#else
   ASSERT_EQ(AOM_CODEC_OK, DecodeRemainingFrames());
+#endif
   CheckFrameBufferRelease();
 }
 #endif  // CONFIG_WEBM_IO
 
+#if !CONFIG_REALTIME_ONLY
 AV1_INSTANTIATE_TEST_SUITE(
     ExternalFrameBufferMD5Test,
     ::testing::ValuesIn(libaom_test::kAV1TestVectors,
                         libaom_test::kAV1TestVectors +
                             libaom_test::kNumAV1TestVectors));
+#endif
 }  // namespace

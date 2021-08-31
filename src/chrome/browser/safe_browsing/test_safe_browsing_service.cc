@@ -48,13 +48,12 @@ TestSafeBrowsingService::GetTestUrlLoaderFactory() {
   return &test_url_loader_factory_;
 }
 
-std::unique_ptr<SafeBrowsingService::StateSubscription>
-TestSafeBrowsingService::RegisterStateCallback(
+base::CallbackListSubscription TestSafeBrowsingService::RegisterStateCallback(
     const base::RepeatingClosure& callback) {
   // This override is required since TestSafeBrowsingService can be destroyed
   // before CertificateReportingService, which causes a crash due to the
   // leftover callback at destruction time.
-  return nullptr;
+  return {};
 }
 
 std::string TestSafeBrowsingService::serilized_download_report() {
@@ -111,9 +110,6 @@ bool TestSafeBrowsingService::CanCreateDownloadProtectionService() {
 bool TestSafeBrowsingService::CanCreateIncidentReportingService() {
   return true;
 }
-bool TestSafeBrowsingService::CanCreateResourceRequestDetector() {
-  return false;
-}
 
 SafeBrowsingDatabaseManager* TestSafeBrowsingService::CreateDatabaseManager() {
   DCHECK(!use_v4_local_db_manager_);
@@ -140,11 +136,6 @@ TestSafeBrowsingService::CreateIncidentReportingService() {
   NOTIMPLEMENTED();
   return nullptr;
 #endif  // BUILDFLAG(FULL_SAFE_BROWSING)
-}
-ResourceRequestDetector*
-TestSafeBrowsingService::CreateResourceRequestDetector() {
-  NOTIMPLEMENTED();
-  return nullptr;
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>

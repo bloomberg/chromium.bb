@@ -8,151 +8,25 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/containers/flat_map.h"
+#include "base/containers/fixed_flat_map.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_manager.h"
+#include "ui/color/color_provider_utils.h"
 #include "ui/native_theme/common_theme.h"
-
-#if !defined(OS_ANDROID)
-#include "ui/color/color_mixers.h"
-#endif
+#include "ui/native_theme/native_theme_utils.h"
 
 namespace ui {
 
 namespace {
-// clang-format off
-const base::flat_map<NativeTheme::ColorId, ColorId>&
-NativeThemeColorIdToColorIdMap() {
-  using NTCID = NativeTheme::ColorId;
-  static const base::NoDestructor<base::flat_map<NativeTheme::ColorId, ColorId>>
-      map({
-        {NTCID::kColorId_AlertSeverityHigh, kColorAlertHighSeverity},
-        {NTCID::kColorId_AlertSeverityLow, kColorAlertLowSeverity},
-        {NTCID::kColorId_AlertSeverityMedium, kColorAlertMediumSeverity},
-        {NTCID::kColorId_AvatarHeaderArt, kColorAvatarHeaderArt},
-        {NTCID::kColorId_AvatarIconGuest, kColorAvatarIconGuest},
-        {NTCID::kColorId_AvatarIconIncognito, kColorAvatarIconIncognito},
-        {NTCID::kColorId_BubbleBackground, kColorBubbleBackground},
-        {NTCID::kColorId_BubbleFooterBackground,
-          kColorBubbleFooterBackground},
-        {NTCID::kColorId_ButtonColor, kColorButtonBackground},
-        {NTCID::kColorId_ButtonBorderColor, kColorButtonBorder},
-        {NTCID::kColorId_DisabledButtonBorderColor, kColorButtonBorderDisabled},
-        {NTCID::kColorId_ButtonDisabledColor,
-          kColorButtonForegroundDisabled},
-        {NTCID::kColorId_ButtonEnabledColor, kColorButtonForeground},
-        {NTCID::kColorId_ProminentButtonColor,
-          kColorButtonBackgroundProminent},
-        {NTCID::kColorId_ProminentButtonDisabledColor,
-          kColorButtonBackgroundProminentDisabled},
-        {NTCID::kColorId_ProminentButtonFocusedColor,
-          kColorButtonBackgroundProminentFocused},
-        {NTCID::kColorId_TextOnProminentButtonColor,
-          kColorButtonForegroundProminent},
-        {NTCID::kColorId_ButtonUncheckedColor,
-          kColorButtonForegroundUnchecked},
-        {NTCID::kColorId_DialogBackground, kColorDialogBackground},
-        {NTCID::kColorId_DialogForeground, kColorDialogForeground},
-        {NTCID::kColorId_FocusedBorderColor, kColorFocusableBorderFocused},
-        {NTCID::kColorId_UnfocusedBorderColor,
-          kColorFocusableBorderUnfocused},
-        {NTCID::kColorId_MenuIconColor, kColorMenuIcon},
-        {NTCID::kColorId_DefaultIconColor, kColorIcon},
-        {NTCID::kColorId_LabelDisabledColor, kColorLabelForegroundDisabled},
-        {NTCID::kColorId_LabelEnabledColor, kColorLabelForeground},
-        {NTCID::kColorId_LabelSecondaryColor,
-          kColorLabelForegroundSecondary},
-        {NTCID::kColorId_LabelTextSelectionBackgroundFocused,
-          kColorLabelSelectionBackground},
-        {NTCID::kColorId_LabelTextSelectionColor,
-          kColorLabelSelectionForeground},
-        {NTCID::kColorId_LinkDisabled, kColorLinkForegroundDisabled},
-        {NTCID::kColorId_LinkEnabled, kColorLinkForeground},
-        {NTCID::kColorId_LinkPressed, kColorLinkForegroundPressed},
-        {NTCID::kColorId_MenuBackgroundColor, kColorMenuBackground},
-        {NTCID::kColorId_MenuBorderColor, kColorMenuBorder},
-        {NTCID::kColorId_MenuItemInitialAlertBackgroundColor,
-          kColorMenuItemBackgroundAlertedInitial},
-        {NTCID::kColorId_MenuItemTargetAlertBackgroundColor,
-          kColorMenuItemBackgroundAlertedTarget},
-        {NTCID::kColorId_DisabledMenuItemForegroundColor,
-          kColorMenuItemForegroundDisabled},
-        {NTCID::kColorId_EnabledMenuItemForegroundColor,
-          kColorMenuItemForeground},
-        {NTCID::kColorId_HighlightedMenuItemBackgroundColor,
-          kColorMenuItemBackgroundHighlighted},
-        {NTCID::kColorId_HighlightedMenuItemForegroundColor,
-          kColorMenuItemForegroundHighlighted},
-        {NTCID::kColorId_MenuItemMinorTextColor,
-          kColorMenuItemForegroundSecondary},
-        {NTCID::kColorId_FocusedMenuItemBackgroundColor,
-          kColorMenuItemBackgroundSelected},
-        {NTCID::kColorId_SelectedMenuItemForegroundColor,
-          kColorMenuItemForegroundSelected},
-        {NTCID::kColorId_MenuSeparatorColor, kColorMenuSeparator},
-        {NTCID::kColorId_TabBottomBorder, kColorTabContentSeparator},
-        {NTCID::kColorId_TabTitleColorInactive, kColorTabForeground},
-        {NTCID::kColorId_TabSelectedBorderColor, kColorTabBorderSelected},
-        {NTCID::kColorId_TabTitleColorActive, kColorTabForegroundSelected},
-        {NTCID::kColorId_TableBackground, kColorTableBackground},
-#if defined(OS_APPLE)
-        {NTCID::kColorId_TableBackgroundAlternate,
-          kColorTableBackgroundAlternate},
-#endif
-        {NTCID::kColorId_TableText, kColorTableForeground},
-        {NTCID::kColorId_TableGroupingIndicatorColor,
-          kColorTableGroupingIndicator},
-        {NTCID::kColorId_TableHeaderBackground,
-          kColorTableHeaderBackground},
-        {NTCID::kColorId_TableHeaderText, kColorTableHeaderForeground},
-        // TODO(http://crbug.com/1057754): kColorId_TableHeaderSeparator,
-        // which is implemented as a native theme override on Mac.
-        {NTCID::kColorId_TableSelectionBackgroundFocused,
-          kColorTableBackgroundSelectedFocused},
-        {NTCID::kColorId_TableSelectedText,
-          kColorTableForegroundSelectedFocused},
-        {NTCID::kColorId_TableSelectionBackgroundUnfocused,
-          kColorTableBackgroundSelectedUnfocused},
-        {NTCID::kColorId_TableSelectedTextUnfocused,
-          kColorTableForegroundSelectedUnfocused},
-        {NTCID::kColorId_TextfieldDefaultBackground,
-          kColorTextfieldBackground},
-        {NTCID::kColorId_TextfieldReadOnlyBackground,
-          kColorTextfieldBackgroundDisabled},
-        {NTCID::kColorId_TextfieldReadOnlyColor,
-          kColorTextfieldForegroundDisabled},
-        {NTCID::kColorId_TextfieldPlaceholderColor,
-          kColorTextfieldForegroundPlaceholder},
-        {NTCID::kColorId_TextfieldDefaultColor, kColorTextfieldForeground},
-        {NTCID::kColorId_TextfieldSelectionBackgroundFocused,
-          kColorTextfieldSelectionBackground},
-        {NTCID::kColorId_TextfieldSelectionColor,
-          kColorTextfieldSelectionForeground},
-        {NTCID::kColorId_ThrobberSpinningColor, kColorThrobber},
-        {NTCID::kColorId_TooltipBackground, kColorTooltipBackground},
-        {NTCID::kColorId_TooltipText, kColorTooltipForeground},
-        {NTCID::kColorId_TreeBackground, kColorTreeBackground},
-        {NTCID::kColorId_TreeText, kColorTreeNodeForeground},
-        {NTCID::kColorId_TreeSelectionBackgroundFocused,
-          kColorTreeNodeBackgroundSelectedFocused},
-        {NTCID::kColorId_TreeSelectedText,
-          kColorTreeNodeForegroundSelectedFocused},
-        {NTCID::kColorId_TreeSelectionBackgroundUnfocused,
-          kColorTreeNodeBackgroundSelectedUnfocused},
-        {NTCID::kColorId_TreeSelectedTextUnfocused,
-          kColorTreeNodeForegroundSelectedUnfocused},
-        {NTCID::kColorId_WindowBackground, kColorWindowBackground},
-      });
-  return *map;
-}
-// clang-format on
 
 void ReportHistogramBooleanUsesColorProvider(bool uses_color_provider) {
   UMA_HISTOGRAM_BOOLEAN("NativeTheme.GetSystemColor.UsesColorProvider",
@@ -178,28 +52,16 @@ bool NativeTheme::SystemDarkModeSupported() {
 
 SkColor NativeTheme::GetSystemColor(ColorId color_id,
                                     ColorScheme color_scheme) const {
-  SCOPED_UMA_HISTOGRAM_TIMER("NativeTheme.GetSystemColor");
-  if (color_scheme == NativeTheme::ColorScheme::kDefault)
-    color_scheme = GetDefaultSystemColorScheme();
+  return GetSystemColorCommon(color_id, color_scheme, true);
+}
 
-  // TODO(http://crbug.com/1057754): Remove the below restrictions.
-  if (base::FeatureList::IsEnabled(features::kColorProviderRedirection) &&
-      color_scheme != NativeTheme::ColorScheme::kPlatformHighContrast) {
-    auto color_mode = (color_scheme == NativeTheme::ColorScheme::kDark)
-                          ? ColorProviderManager::ColorMode::kDark
-                          : ColorProviderManager::ColorMode::kLight;
-    // TODO(http://crbug.com/1057754): Handle high contrast modes.
-    auto* color_provider = ColorProviderManager::Get().GetColorProviderFor(
-        color_mode, ColorProviderManager::ContrastMode::kNormal);
-    auto color_id_map = NativeThemeColorIdToColorIdMap();
-    auto result = color_id_map.find(color_id);
-    if (result != color_id_map.cend()) {
-      ReportHistogramBooleanUsesColorProvider(true);
-      return color_provider->GetColor(result->second);
-    }
-  }
-  ReportHistogramBooleanUsesColorProvider(false);
-  return GetAuraColor(color_id, this, color_scheme);
+SkColor NativeTheme::GetUnprocessedSystemColor(ColorId color_id,
+                                               ColorScheme color_scheme) const {
+  auto color = GetSystemColorCommon(color_id, color_scheme, false);
+  DVLOG(2) << "GetUnprocessedSystemColor: "
+           << "NativeTheme::ColorId: " << NativeThemeColorIdName(color_id)
+           << " Color: " << SkColorName(color);
+  return color;
 }
 
 SkColor NativeTheme::GetSystemButtonPressedColor(SkColor base_color) const {
@@ -212,8 +74,7 @@ SkColor NativeTheme::FocusRingColorForBaseColor(SkColor base_color) const {
 
 float NativeTheme::GetBorderRadiusForPart(Part part,
                                           float width,
-                                          float height,
-                                          float zoom) const {
+                                          float height) const {
   return 0;
 }
 
@@ -225,43 +86,66 @@ void NativeTheme::RemoveObserver(NativeThemeObserver* observer) {
   native_theme_observers_.RemoveObserver(observer);
 }
 
-void NativeTheme::NotifyObservers() {
+void NativeTheme::NotifyOnNativeThemeUpdated() {
+  // This specific method is prone to being mistakenly called on the wrong
+  // sequence, because it is often invoked from a platform-specific event
+  // listener, and those events may be delivered on unexpected sequences.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (NativeThemeObserver& observer : native_theme_observers_)
     observer.OnNativeThemeUpdated(this);
 }
 
-NativeTheme::NativeTheme(bool should_use_dark_colors)
-    : should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
-      is_high_contrast_(IsForcedHighContrast()),
-      preferred_color_scheme_(CalculatePreferredColorScheme()),
-      preferred_contrast_(CalculatePreferredContrast()) {
-#if !defined(OS_ANDROID)
-  // TODO(http://crbug.com/1057754): Merge this into the ColorProviderManager.
-  static base::OnceClosure color_provider_manager_init = base::BindOnce([]() {
-    ColorProviderManager::Get().SetColorProviderInitializer(base::BindRepeating(
-        [](ColorProvider* provider, ColorProviderManager::ColorMode color_mode,
-           ColorProviderManager::ContrastMode contrast_mode) {
-          const bool is_dark_color_mode =
-              color_mode == ColorProviderManager::ColorMode::kDark;
-          ui::AddCoreDefaultColorMixer(provider, is_dark_color_mode);
-          ui::AddNativeCoreColorMixer(provider, is_dark_color_mode);
-          ui::AddUiColorMixer(provider);
-          ui::AddNativeUiColorMixer(provider, is_dark_color_mode);
-        }));
-  });
-  if (!color_provider_manager_init.is_null())
-    std::move(color_provider_manager_init).Run();
-#endif  // !defined(OS_ANDROID)
+void NativeTheme::NotifyOnCaptionStyleUpdated() {
+  // This specific method is prone to being mistakenly called on the wrong
+  // sequence, because it is often invoked from a platform-specific event
+  // listener, and those events may be delivered on unexpected sequences.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (NativeThemeObserver& observer : native_theme_observers_)
+    observer.OnCaptionStyleUpdated();
 }
 
+NativeTheme::NativeTheme(bool should_use_dark_colors)
+    : should_use_dark_colors_(should_use_dark_colors || IsForcedDarkMode()),
+      forced_colors_(IsForcedHighContrast()),
+      preferred_color_scheme_(CalculatePreferredColorScheme()),
+      preferred_contrast_(CalculatePreferredContrast()) {}
+
 NativeTheme::~NativeTheme() = default;
+
+absl::optional<SkColor> NativeTheme::GetColorProviderColor(
+    ColorId color_id,
+    ColorScheme color_scheme,
+    std::string theme_name) const {
+  if (base::FeatureList::IsEnabled(features::kColorProviderRedirection) &&
+      AllowColorPipelineRedirection(color_scheme)) {
+    if (auto provider_color_id = NativeThemeColorIdToColorId(color_id)) {
+      auto* color_provider = ColorProviderManager::Get().GetColorProviderFor(
+          {(color_scheme == NativeTheme::ColorScheme::kDark)
+               ? ColorProviderManager::ColorMode::kDark
+               : ColorProviderManager::ColorMode::kLight,
+           (color_scheme == NativeTheme::ColorScheme::kPlatformHighContrast)
+               ? ColorProviderManager::ContrastMode::kHigh
+               : ColorProviderManager::ContrastMode::kNormal,
+           std::move(theme_name)});
+      ReportHistogramBooleanUsesColorProvider(true);
+      return color_provider->GetColor(provider_color_id.value());
+    }
+  }
+  return absl::nullopt;
+}
 
 bool NativeTheme::ShouldUseDarkColors() const {
   return should_use_dark_colors_;
 }
 
-bool NativeTheme::UsesHighContrastColors() const {
-  return is_high_contrast_;
+bool NativeTheme::UserHasContrastPreference() const {
+  return GetPreferredContrast() !=
+             NativeTheme::PreferredContrast::kNoPreference ||
+         InForcedColorsMode();
+}
+
+bool NativeTheme::InForcedColorsMode() const {
+  return forced_colors_;
 }
 
 NativeTheme::PlatformHighContrastColorScheme
@@ -271,6 +155,10 @@ NativeTheme::GetPlatformHighContrastColorScheme() const {
   return (GetPreferredColorScheme() == PreferredColorScheme::kDark)
              ? PlatformHighContrastColorScheme::kDark
              : PlatformHighContrastColorScheme::kLight;
+}
+
+std::string NativeTheme::GetNativeThemeName() const {
+  return std::string();
 }
 
 NativeTheme::PreferredColorScheme NativeTheme::GetPreferredColorScheme() const {
@@ -306,7 +194,23 @@ NativeTheme::PreferredContrast NativeTheme::CalculatePreferredContrast() const {
                                 : PreferredContrast::kNoPreference;
 }
 
-base::Optional<CaptionStyle> NativeTheme::GetSystemCaptionStyle() const {
+bool NativeTheme::AllowColorPipelineRedirection(
+    ColorScheme color_scheme) const {
+  // TODO(kerenzhu): Don't use UserHasContrastPreference().
+  // ColorScheme should encode high contrast info but currently on mac it does
+  // not. ColorScheme should also allow combination of light/dark mode with high
+  // contrast.
+  return color_scheme != ColorScheme::kPlatformHighContrast &&
+         !UserHasContrastPreference();
+}
+
+SkColor NativeTheme::GetSystemColorDeprecated(ColorId color_id,
+                                              ColorScheme color_scheme,
+                                              bool apply_processing) const {
+  return GetAuraColor(color_id, this, color_scheme);
+}
+
+absl::optional<CaptionStyle> NativeTheme::GetSystemCaptionStyle() const {
   return CaptionStyle::FromSystemSettings();
 }
 
@@ -315,13 +219,13 @@ NativeTheme::GetSystemColors() const {
   return system_colors_;
 }
 
-base::Optional<SkColor> NativeTheme::GetSystemThemeColor(
+absl::optional<SkColor> NativeTheme::GetSystemThemeColor(
     SystemThemeColor theme_color) const {
   auto color = system_colors_.find(theme_color);
   if (color != system_colors_.end())
     return color->second;
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool NativeTheme::HasDifferentSystemColors(
@@ -336,16 +240,16 @@ void NativeTheme::set_system_colors(
 
 bool NativeTheme::UpdateSystemColorInfo(
     bool is_dark_mode,
-    bool is_high_contrast,
+    bool forced_colors,
     const base::flat_map<SystemThemeColor, uint32_t>& colors) {
   bool did_system_color_info_change = false;
   if (is_dark_mode != ShouldUseDarkColors()) {
     did_system_color_info_change = true;
     set_use_dark_colors(is_dark_mode);
   }
-  if (is_high_contrast != UsesHighContrastColors()) {
+  if (forced_colors != InForcedColorsMode()) {
     did_system_color_info_change = true;
-    set_high_contrast(is_high_contrast);
+    set_forced_colors(forced_colors);
   }
   for (const auto& color : colors) {
     if (color.second != GetSystemThemeColor(color.first)) {
@@ -366,7 +270,7 @@ NativeTheme::ColorSchemeNativeThemeObserver::~ColorSchemeNativeThemeObserver() =
 void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     ui::NativeTheme* observed_theme) {
   bool should_use_dark_colors = observed_theme->ShouldUseDarkColors();
-  bool is_high_contrast = observed_theme->UsesHighContrastColors();
+  bool forced_colors = observed_theme->InForcedColorsMode();
   PreferredColorScheme preferred_color_scheme =
       observed_theme->GetPreferredColorScheme();
   PreferredContrast preferred_contrast = observed_theme->GetPreferredContrast();
@@ -376,8 +280,8 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     theme_to_update_->set_use_dark_colors(should_use_dark_colors);
     notify_observers = true;
   }
-  if (theme_to_update_->UsesHighContrastColors() != is_high_contrast) {
-    theme_to_update_->set_high_contrast(is_high_contrast);
+  if (theme_to_update_->InForcedColorsMode() != forced_colors) {
+    theme_to_update_->set_forced_colors(forced_colors);
     notify_observers = true;
   }
   if (theme_to_update_->GetPreferredColorScheme() != preferred_color_scheme) {
@@ -396,11 +300,27 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
   }
 
   if (notify_observers)
-    theme_to_update_->NotifyObservers();
+    theme_to_update_->NotifyOnNativeThemeUpdated();
 }
 
 NativeTheme::ColorScheme NativeTheme::GetDefaultSystemColorScheme() const {
   return ShouldUseDarkColors() ? ColorScheme::kDark : ColorScheme::kLight;
+}
+
+SkColor NativeTheme::GetSystemColorCommon(ColorId color_id,
+                                          ColorScheme color_scheme,
+                                          bool apply_processing) const {
+  SCOPED_UMA_HISTOGRAM_TIMER("NativeTheme.GetSystemColor");
+  if (color_scheme == NativeTheme::ColorScheme::kDefault)
+    color_scheme = GetDefaultSystemColorScheme();
+
+  if (auto color =
+          GetColorProviderColor(color_id, color_scheme, GetNativeThemeName())) {
+    return color.value();
+  }
+
+  ReportHistogramBooleanUsesColorProvider(false);
+  return GetSystemColorDeprecated(color_id, color_scheme, apply_processing);
 }
 
 }  // namespace ui

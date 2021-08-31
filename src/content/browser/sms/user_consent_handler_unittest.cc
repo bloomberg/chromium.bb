@@ -25,7 +25,6 @@ using url::Origin;
 namespace content {
 
 namespace {
-using blink::mojom::SmsStatus;
 
 const char kTestUrl[] = "https://testing.test";
 
@@ -38,11 +37,13 @@ class PromptBasedUserConsentHandlerTest : public RenderViewHostTestHarness {
     web_contents_impl->SetDelegate(&delegate_);
   }
 
+  using OriginList = std::vector<url::Origin>;
   void ExpectCreateSmsPrompt(RenderFrameHost* rfh,
-                             const url::Origin& origin,
+                             const OriginList& origin_list,
                              const std::string& one_time_code) {
-    EXPECT_CALL(delegate_, CreateSmsPrompt(rfh, origin, one_time_code, _, _))
-        .WillOnce(Invoke([=](RenderFrameHost*, const Origin& origin,
+    EXPECT_CALL(delegate_,
+                CreateSmsPrompt(rfh, origin_list, one_time_code, _, _))
+        .WillOnce(Invoke([=](RenderFrameHost*, const OriginList& origin_list,
                              const std::string&, base::OnceClosure on_confirm,
                              base::OnceClosure on_cancel) {
           confirm_callback_ = std::move(on_confirm);
@@ -85,9 +86,9 @@ TEST_F(PromptBasedUserConsentHandlerTest, PromptsUser) {
       web_contents()->GetMainFrame()->GetLastCommittedOrigin();
   base::RunLoop loop;
 
-  ExpectCreateSmsPrompt(main_rfh(), origin, "12345");
+  ExpectCreateSmsPrompt(main_rfh(), OriginList{origin}, "12345");
   CompletionCallback callback;
-  PromptBasedUserConsentHandler consent_handler{main_rfh(), origin};
+  PromptBasedUserConsentHandler consent_handler{main_rfh(), OriginList{origin}};
   consent_handler.RequestUserConsent("12345", std::move(callback));
 }
 
@@ -97,12 +98,13 @@ TEST_F(PromptBasedUserConsentHandlerTest, ConfirmInvokedCallback) {
   const url::Origin& origin =
       web_contents()->GetMainFrame()->GetLastCommittedOrigin();
 
-  ExpectCreateSmsPrompt(main_rfh(), origin, "12345");
-  PromptBasedUserConsentHandler consent_handler{main_rfh(), origin};
+  ExpectCreateSmsPrompt(main_rfh(), OriginList{origin}, "12345");
+  PromptBasedUserConsentHandler consent_handler{main_rfh(), OriginList{origin}};
   EXPECT_FALSE(consent_handler.is_active());
   bool succeed;
-  auto callback = base::BindLambdaForTesting(
-      [&](SmsStatus status) { succeed = (status == SmsStatus::kSuccess); });
+  auto callback = base::BindLambdaForTesting([&](UserConsentResult result) {
+    succeed = (result == UserConsentResult::kApproved);
+  });
   consent_handler.RequestUserConsent("12345", std::move(callback));
   EXPECT_TRUE(consent_handler.is_active());
   ConfirmPrompt();
@@ -116,12 +118,13 @@ TEST_F(PromptBasedUserConsentHandlerTest, CancelingInvokedCallback) {
   const url::Origin& origin =
       web_contents()->GetMainFrame()->GetLastCommittedOrigin();
 
-  ExpectCreateSmsPrompt(main_rfh(), origin, "12345");
-  PromptBasedUserConsentHandler consent_handler{main_rfh(), origin};
+  ExpectCreateSmsPrompt(main_rfh(), OriginList{origin}, "12345");
+  PromptBasedUserConsentHandler consent_handler{main_rfh(), OriginList{origin}};
   EXPECT_FALSE(consent_handler.is_active());
   bool cancelled;
-  auto callback = base::BindLambdaForTesting(
-      [&](SmsStatus status) { cancelled = (status == SmsStatus::kCancelled); });
+  auto callback = base::BindLambdaForTesting([&](UserConsentResult result) {
+    cancelled = (result == UserConsentResult::kDenied);
+  });
   consent_handler.RequestUserConsent("12345", std::move(callback));
   EXPECT_TRUE(consent_handler.is_active());
   DismissPrompt();
@@ -141,10 +144,11 @@ TEST_F(PromptBasedUserConsentHandlerTest, CancelsWhenNoDelegate) {
 
   ExpectNoSmsPrompt();
 
-  PromptBasedUserConsentHandler consent_handler{main_rfh(), origin};
+  PromptBasedUserConsentHandler consent_handler{main_rfh(), OriginList{origin}};
   bool cancelled;
-  auto callback = base::BindLambdaForTesting(
-      [&](SmsStatus status) { cancelled = (status == SmsStatus::kCancelled); });
+  auto callback = base::BindLambdaForTesting([&](UserConsentResult result) {
+    cancelled = (result == UserConsentResult::kNoDelegate);
+  });
   consent_handler.RequestUserConsent("12345", std::move(callback));
   EXPECT_TRUE(cancelled);
 }

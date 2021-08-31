@@ -8,18 +8,22 @@ package org.chromium.components.embedder_support.util;
  * Java side version of chrome/common/url_constants.cc
  */
 public class UrlConstants {
+    public static final String APP_INTENT_SCHEME = "android-app";
     public static final String BLOB_SCHEME = "blob";
     public static final String CHROME_SCHEME = "chrome";
     public static final String CHROME_NATIVE_SCHEME = "chrome-native";
     public static final String CONTENT_SCHEME = "content";
     public static final String CUSTOM_TAB_SCHEME = "customtab";
     public static final String DATA_SCHEME = "data";
+    public static final String DEVTOOLS_SCHEME = "devtools";
     public static final String DOCUMENT_SCHEME = "document";
     public static final String FILE_SCHEME = "file";
+    public static final String FILESYSTEM_SCHEME = "filesystem";
     public static final String FTP_SCHEME = "ftp";
     public static final String HTTP_SCHEME = "http";
     public static final String HTTPS_SCHEME = "https";
     public static final String INLINE_SCHEME = "inline";
+    public static final String INTENT_SCHEME = "intent";
     public static final String JAR_SCHEME = "jar";
     public static final String JAVASCRIPT_SCHEME = "javascript";
     public static final String SMS_SCHEME = "sms";
@@ -29,9 +33,6 @@ public class UrlConstants {
     public static final String CHROME_URL_SHORT_PREFIX = "chrome:";
     public static final String CHROME_NATIVE_URL_SHORT_PREFIX = "chrome-native:";
     public static final String FILE_URL_SHORT_PREFIX = "file:";
-    public static final String DEVTOOLS_URL_SHORT_PREFIX = "devtools:";
-    public static final String INTENT_URL_SHORT_PREFIX = "intent:";
-    public static final String APP_INTENT_URL_SHORT_PREFIX = "android-app:";
 
     public static final String CHROME_URL_PREFIX = "chrome://";
     public static final String CHROME_NATIVE_URL_PREFIX = "chrome-native://";
@@ -47,6 +48,7 @@ public class UrlConstants {
     public static final String NTP_HOST = "newtab";
     public static final String NTP_URL = "chrome-native://newtab/";
     public static final String NTP_NON_NATIVE_URL = "chrome://newtab/";
+    public static final String NTP_ABOUT_URL = "about:newtab";
 
     public static final String BOOKMARKS_HOST = "bookmarks";
     public static final String BOOKMARKS_URL = "chrome-native://bookmarks/";
@@ -66,11 +68,17 @@ public class UrlConstants {
     public static final String HISTORY_URL = "chrome://history/";
     public static final String NATIVE_HISTORY_URL = "chrome-native://history/";
 
+    public static final String LAUNCHPAD_HOST = "apps";
+    public static final String LAUNCHPAD_URL = "chrome://apps/";
+
     public static final String INTERESTS_HOST = "interests";
     public static final String INTERESTS_URL = "chrome-native://interests/";
 
     public static final String GOOGLE_ACCOUNT_ACTIVITY_CONTROLS_URL =
             "https://myaccount.google.com/activitycontrols/search";
+
+    public static final String GOOGLE_SEARCH_HISTORY_URL_IN_CBD =
+            "https://myactivity.google.com/myactivity?product=19&utm_source=chrome_cbd";
 
     public static final String MY_ACTIVITY_URL_IN_CBD =
             "https://myactivity.google.com/myactivity/?utm_source=chrome_cbd";

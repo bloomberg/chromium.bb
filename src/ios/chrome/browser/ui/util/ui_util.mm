@@ -19,6 +19,15 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+
+// The em-width value used to differentiate small and large devices.
+// With Larger Text Off, Bold Text Off and the device orientation in portrait:
+// iPhone 5s is considered as a small device, unlike iPhone 8 or iPhone 12 mini.
+const CGFloat kSmallDeviceThreshold = 22.0;
+
+}  // namespace
+
 bool IsIPadIdiom() {
   return ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET;
 }
@@ -36,6 +45,14 @@ bool IsIPhoneX() {
   CGFloat height = CGRectGetHeight([[UIScreen mainScreen] nativeBounds]);
   return (idiom == UIUserInterfaceIdiomPhone &&
           (height == 2436 || height == 2688 || height == 1792));
+}
+
+bool IsSmallDevice() {
+  CGSize mSize = [@"m" sizeWithAttributes:@{
+    NSFontAttributeName : [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+  }];
+  CGFloat emWidth = CurrentScreenWidth() / mSize.width;
+  return emWidth < kSmallDeviceThreshold;
 }
 
 CGFloat DeviceCornerRadius() {

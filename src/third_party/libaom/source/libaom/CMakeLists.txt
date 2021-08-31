@@ -8,7 +8,7 @@
 # License 1.0 was not distributed with this source code in the PATENTS file, you
 # can obtain it at www.aomedia.org/license/patent.
 #
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.6)
 
 set(AOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(AOM_CONFIG_DIR "${CMAKE_CURRENT_BINARY_DIR}")
@@ -23,6 +23,11 @@ endif()
 
 project(AOM C CXX)
 
+# GENERATED source property global visibility.
+if(POLICY CMP0118)
+  cmake_policy(SET CMP0118 NEW)
+endif()
+
 if(NOT EMSCRIPTEN)
   if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE
@@ -32,10 +37,24 @@ if(NOT EMSCRIPTEN)
   endif()
 endif()
 
-# Updating version info.
+# Library version info. Update LT_CURRENT, LT_REVISION and LT_AGE when making a
+# public release by following the guidelines in the libtool document:
 # https://www.gnu.org/software/libtool/manual/libtool.html#Updating-version-info
-set(SO_VERSION 2)
-set(SO_FILE_VERSION 2.0.0)
+#
+# c=<current>, r=<revision>, a=<age>
+#
+# libtool generates a .so file as .so.[c-a].a.r, while -version-info c:r:a is
+# passed to libtool.
+#
+# We set SO_FILE_VERSION = [c-a].a.r
+set(LT_CURRENT 3)
+set(LT_REVISION 0)
+set(LT_AGE 0)
+math(EXPR SO_VERSION "${LT_CURRENT} - ${LT_AGE}")
+set(SO_FILE_VERSION "${SO_VERSION}.${LT_AGE}.${LT_REVISION}")
+unset(LT_CURRENT)
+unset(LT_REVISION)
+unset(LT_AGE)
 
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
 include("${AOM_ROOT}/aom_dsp/aom_dsp.cmake")
@@ -88,6 +107,7 @@ list(APPEND AOM_LIBYUV_SOURCES
             "${AOM_ROOT}/third_party/libyuv/include/libyuv/row.h"
             "${AOM_ROOT}/third_party/libyuv/include/libyuv/scale.h"
             "${AOM_ROOT}/third_party/libyuv/include/libyuv/scale_row.h"
+            "${AOM_ROOT}/third_party/libyuv/source/convert_argb.cc"
             "${AOM_ROOT}/third_party/libyuv/source/cpu_id.cc"
             "${AOM_ROOT}/third_party/libyuv/source/planar_functions.cc"
             "${AOM_ROOT}/third_party/libyuv/source/row_any.cc"
@@ -104,7 +124,8 @@ list(APPEND AOM_LIBYUV_SOURCES
             "${AOM_ROOT}/third_party/libyuv/source/scale_mips.cc"
             "${AOM_ROOT}/third_party/libyuv/source/scale_neon.cc"
             "${AOM_ROOT}/third_party/libyuv/source/scale_neon64.cc"
-            "${AOM_ROOT}/third_party/libyuv/source/scale_win.cc")
+            "${AOM_ROOT}/third_party/libyuv/source/scale_win.cc"
+            "${AOM_ROOT}/third_party/libyuv/source/scale_uv.cc")
 
 list(APPEND AOM_SOURCES
             "${AOM_CONFIG_DIR}/config/aom_config.c"
@@ -113,6 +134,7 @@ list(APPEND AOM_SOURCES
             "${AOM_ROOT}/aom/aom_codec.h"
             "${AOM_ROOT}/aom/aom_decoder.h"
             "${AOM_ROOT}/aom/aom_encoder.h"
+            "${AOM_ROOT}/aom/aom_external_partition.h"
             "${AOM_ROOT}/aom/aom_frame_buffer.h"
             "${AOM_ROOT}/aom/aom_image.h"
             "${AOM_ROOT}/aom/aom_integer.h"
@@ -127,6 +149,10 @@ list(APPEND AOM_SOURCES
             "${AOM_ROOT}/aom/src/aom_integer.c")
 
 list(APPEND AOM_COMMON_APP_UTIL_SOURCES
+            "${AOM_ROOT}/av1/arg_defs.h"
+            "${AOM_ROOT}/av1/arg_defs.c"
+            "${AOM_ROOT}/common/args_helper.c"
+            "${AOM_ROOT}/common/args_helper.h"
             "${AOM_ROOT}/common/args.c"
             "${AOM_ROOT}/common/args.h"
             "${AOM_ROOT}/common/av1_config.c"
@@ -376,6 +402,14 @@ if(CONFIG_AV1_DECODER AND ENABLE_EXAMPLES)
   list(APPEND AOM_APP_TARGETS ${AOM_DECODER_EXAMPLE_TARGETS})
 endif()
 
+if(CONFIG_LIBYUV OR CONFIG_TUNE_BUTTERAUGLI)
+  add_library(yuv OBJECT ${AOM_LIBYUV_SOURCES})
+  if(NOT MSVC)
+    target_compile_options(yuv PRIVATE -Wno-unused-parameter)
+  endif()
+  include_directories("${AOM_ROOT}/third_party/libyuv/include")
+endif()
+
 if(CONFIG_AV1_ENCODER)
   if(ENABLE_EXAMPLES)
     add_executable(aomenc "${AOM_ROOT}/apps/aomenc.c"
@@ -432,42 +466,79 @@ if(CONFIG_AV1_ENCODER)
   list(APPEND AOM_APP_TARGETS ${AOM_ENCODER_EXAMPLE_TARGETS}
               ${AOM_ENCODER_TOOL_TARGETS})
 
-  if(CONFIG_USE_VMAF_RC AND NOT CONFIG_TUNE_VMAF)
-    message(FATAL_ERROR "Turn on CONFIG_TUNE_VMAF to use CONFIG_USE_VMAF_RC.")
+  if(CONFIG_TUNE_BUTTERAUGLI)
+    find_package(PkgConfig)
+    # Use find_library() with STATIC_LINK_JXL for static build since
+    # pkg_check_modules() with LIBJXL_STATIC is not working.
+    if(STATIC_LINK_JXL OR NOT PKG_CONFIG_FOUND)
+      find_library(LIBJXL_LIBRARIES libjxl.a)
+      find_library(LIBHWY_LIBRARIES libhwy.a)
+      find_library(LIBSKCMS_LIBRARIES libskcms.a)
+      find_library(LIBBROTLICOMMON_LIBRARIES libbrotlicommon-static.a)
+      find_library(LIBBROTLIENC_LIBRARIES libbrotlienc-static.a)
+      find_library(LIBBROTLIDEC_LIBRARIES libbrotlidec-static.a)
+      find_path(LIBJXL_INCLUDE_DIRS butteraugli.h PATH_SUFFIXES jxl)
+      if(LIBJXL_LIBRARIES
+         AND LIBHWY_LIBRARIES
+         AND LIBSKCMS_LIBRARIES
+         AND LIBBROTLICOMMON_LIBRARIES
+         AND LIBBROTLIENC_LIBRARIES
+         AND LIBBROTLIDEC_LIBRARIES
+         AND LIBJXL_INCLUDE_DIRS)
+        message(STATUS "Found JXL library: ${LIBJXL_LIBRARIES} "
+                       "${LIBHWY_LIBRARIES} ${LIBSKCMS_LIBRARIES} "
+                       "${LIBBROTLICOMMON_LIBRARIES} ${LIBBROTLIENC_LIBRARIES}"
+                       "${LIBBROTLIDEC_LIBRARIES}")
+        message(STATUS "Found JXL include: ${LIBJXL_INCLUDE_DIRS}")
+      else()
+        message(FATAL_ERROR "JXL library not found.")
+      endif()
+      target_link_libraries(aom
+                            PRIVATE ${LIBJXL_LIBRARIES} ${LIBHWY_LIBRARIES}
+                                    ${LIBSKCMS_LIBRARIES}
+                                    ${LIBBROTLIENC_LIBRARIES}
+                                    ${LIBBROTLIDEC_LIBRARIES}
+                                    ${LIBBROTLICOMMON_LIBRARIES})
+      target_include_directories(aom PRIVATE ${LIBJXL_INCLUDE_DIRS})
+    else()
+      pkg_check_modules(LIBJXL REQUIRED libjxl)
+      target_link_libraries(aom PRIVATE ${LIBJXL_LDFLAGS} ${LIBJXL_LIBRARIES})
+      target_include_directories(aom PRIVATE ${LIBJXL_INCLUDE_DIRS})
+      if(LIBJXL_CFLAGS)
+        append_compiler_flag("${LIBJXL_CFLAGS}")
+      endif()
+      pkg_check_modules(LIBHWY REQUIRED libhwy)
+      target_link_libraries(aom PRIVATE ${LIBHWY_LDFLAGS} ${LIBHWY_LIBRARIES})
+      target_include_directories(aom PRIVATE ${LIBLIBHWY_INCLUDE_DIRS})
+      if(LIBHWY_CFLAGS)
+        append_compiler_flag("${LIBHWY_CFLAGS}")
+      endif()
+    endif()
+
+    set_target_properties(aom PROPERTIES LINKER_LANGUAGE CXX)
+    if(BUILD_SHARED_LIBS)
+      set_target_properties(aom_static PROPERTIES LINKER_LANGUAGE CXX)
+    endif()
+
+    list(APPEND AOM_LIB_TARGETS yuv)
+    target_sources(aom PRIVATE $<TARGET_OBJECTS:yuv>)
+    if(BUILD_SHARED_LIBS)
+      target_sources(aom_static PRIVATE $<TARGET_OBJECTS:yuv>)
+    endif()
   endif()
 
   if(CONFIG_TUNE_VMAF)
     find_package(PkgConfig)
-    if(CONFIG_USE_VMAF_RC)
-      if(PKG_CONFIG_FOUND)
-        pkg_check_modules(VMAF_RC REQUIRED libvmaf_rc)
-        target_link_libraries(aom
-                              PRIVATE ${VMAF_RC_LDFLAGS} ${VMAF_RC_LIBRARIES})
-        target_include_directories(aom PRIVATE ${VMAF_RC_INCLUDE_DIRS})
-        if(VMAF_RC_CFLAGS)
-          append_compiler_flag("${VMAF_RC_CFLAGS}")
-        endif()
-      else()
-        message(FATAL_ERROR "CONFIG_USE_VMAF_RC error: pkg-config not found.")
-      endif()
-    else()
-      if(PKG_CONFIG_FOUND)
-        pkg_check_modules(VMAF REQUIRED libvmaf)
-      else()
-        find_library(VMAF_LIBRARIES vmaf)
-        find_path(VMAF_INCLUDE_DIRS libvmaf.h PATH_SUFFIXES libvmaf)
-        if(VMAF_LIBRARIES AND VMAF_INCLUDE_DIRS)
-          message(STATUS "Found VMAF library: ${VMAF_LIBRARIES}")
-          message(STATUS "Found VMAF include: ${VMAF_INCLUDE_DIRS}")
-        else()
-          message(FATAL_ERROR "VMAF library not found.")
-        endif()
-      endif()
-      target_link_libraries(aom PRIVATE ${VMAF_LDFLAGS} ${VMAF_LIBRARIES})
+    if(PKG_CONFIG_FOUND)
+      pkg_check_modules(VMAF REQUIRED libvmaf)
+      target_link_libraries(aom
+                            PRIVATE ${VMAF_LDFLAGS} ${VMAF_LIBRARIES} -static)
       target_include_directories(aom PRIVATE ${VMAF_INCLUDE_DIRS})
       if(VMAF_CFLAGS)
         append_compiler_flag("${VMAF_CFLAGS}")
       endif()
+    else()
+      message(FATAL_ERROR "CONFIG_TUNE_VMAF error: pkg-config not found.")
     endif()
     set_target_properties(aom PROPERTIES LINKER_LANGUAGE CXX)
     if(BUILD_SHARED_LIBS)
@@ -554,12 +625,6 @@ endforeach()
 
 if(ENABLE_EXAMPLES OR ENABLE_TESTS OR ENABLE_TOOLS)
   if(CONFIG_LIBYUV)
-    add_library(yuv OBJECT ${AOM_LIBYUV_SOURCES})
-    if(NOT MSVC)
-      target_compile_options(yuv PRIVATE -Wno-unused-parameter)
-    endif()
-    include_directories("${AOM_ROOT}/third_party/libyuv/include")
-
     # Add to existing targets.
     foreach(aom_app ${AOM_APP_TARGETS})
       target_sources(${aom_app} PRIVATE $<TARGET_OBJECTS:yuv>)
@@ -749,6 +814,10 @@ foreach(var ${all_cmake_vars})
   endif()
 endforeach()
 
+if(NOT CONFIG_AV1_DECODER)
+  list(FILTER aom_source_vars EXCLUDE REGEX "_DECODER_")
+endif()
+
 # Libaom_srcs.txt generation.
 set(libaom_srcs_txt_file "${AOM_CONFIG_DIR}/libaom_srcs.txt")
 file(WRITE "${libaom_srcs_txt_file}" "# This file is generated. DO NOT EDIT.\n")
@@ -758,6 +827,9 @@ foreach(aom_source_var ${aom_source_vars})
   foreach(file ${${aom_source_var}})
     if(NOT "${file}" MATCHES "${AOM_CONFIG_DIR}")
       string(REPLACE "${AOM_ROOT}/" "" file "${file}")
+      if(NOT CONFIG_AV1_DECODER AND "${file}" MATCHES "aom_decoder")
+        continue()
+      endif()
       file(APPEND "${libaom_srcs_txt_file}" "${file}\n")
     endif()
   endforeach()
@@ -788,6 +860,9 @@ foreach(aom_source_var ${aom_source_vars})
     if(NOT "${file}" MATCHES "${AOM_CONFIG_DIR}")
       string(REPLACE "${AOM_ROOT}" "//third_party/libaom/source/libaom" file
                      "${file}")
+      if(NOT CONFIG_AV1_DECODER AND "${file}" MATCHES "aom_decoder")
+        continue()
+      endif()
       file(APPEND "${libaom_srcs_gni_file}" "  \"${file}\",\n")
     endif()
   endforeach()

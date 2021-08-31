@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -484,6 +484,10 @@ def _RunDiskUsage(devices, package_name):
     awful_wrapping = r'\s*'.join('compilation_filter=')
     for m in re.finditer(awful_wrapping + r'([\s\S]+?)[\],]', package_output):
       compilation_filters.add(re.sub(r'\s+', '', m.group(1)))
+    # Starting Android Q, output looks like:
+    #  arm: [status=speed-profile] [reason=install]
+    for m in re.finditer(r'\[status=(.+?)\]', package_output):
+      compilation_filters.add(m.group(1))
     compilation_filter = ','.join(sorted(compilation_filters))
 
     data_dir_sizes = _DuHelper(d, '%s/{*,.*}' % data_dir, run_as=package_name)
@@ -616,7 +620,7 @@ class _LogcatProcessor(object):
 
   # Logcat tags for messages that are generally relevant but are not from PIDs
   # associated with the apk.
-  _WHITELISTED_TAGS = {
+  _ALLOWLISTED_TAGS = {
       'ActivityManager',  # Shows activity lifecycle messages.
       'ActivityTaskManager',  # More activity lifecycle messages.
       'AndroidRuntime',  # Java crash dumps
@@ -671,6 +675,15 @@ class _LogcatProcessor(object):
     # _start_pattern. There can be multiple "Start proc" messages from prior
     # runs of the app.
     self._found_initial_pid = self._primary_pid != None
+    # Retrieve any additional patterns that are relevant for the User.
+    self._user_defined_highlight = None
+    user_regex = os.environ.get('CHROMIUM_LOGCAT_HIGHLIGHT')
+    if user_regex:
+      self._user_defined_highlight = re.compile(user_regex)
+      if not self._user_defined_highlight:
+        print(_Colorize(
+            'Rejecting invalid regular expression: {}'.format(user_regex),
+            colorama.Fore.RED + colorama.Style.BRIGHT))
 
   def _UpdateMyPids(self):
     # We intentionally do not clear self._my_pids to make sure that the
@@ -715,10 +728,19 @@ class _LogcatProcessor(object):
     def consume_token_or_default(default):
       return tokens.pop(0) if len(tokens) > 0 else default
 
+    def consume_integer_token_or_default(default):
+      if len(tokens) == 0:
+        return default
+
+      try:
+        return int(tokens.pop(0))
+      except ValueError:
+        return default
+
     date = consume_token_or_default('')
     invokation_time = consume_token_or_default('')
-    pid = int(consume_token_or_default(-1))
-    tid = int(consume_token_or_default(-1))
+    pid = consume_integer_token_or_default(-1)
+    tid = consume_integer_token_or_default(-1)
     priority = consume_token_or_default('')
     tag = consume_token_or_default('')
     original_message = consume_token_or_default('')
@@ -737,10 +759,16 @@ class _LogcatProcessor(object):
 
   def _PrintParsedLine(self, parsed_line, dim=False):
     tid_style = colorama.Style.NORMAL
+    user_match = self._user_defined_highlight and (
+        re.search(self._user_defined_highlight, parsed_line.tag)
+        or re.search(self._user_defined_highlight, parsed_line.message))
+
     # Make the main thread bright.
     if not dim and parsed_line.pid == parsed_line.tid:
       tid_style = colorama.Style.BRIGHT
     pid_style = self._GetPidStyle(parsed_line.pid, dim)
+    msg_style = pid_style if not user_match else (colorama.Fore.GREEN +
+                                                  colorama.Style.BRIGHT)
     # We have to pad before adding color as that changes the width of the tag.
     pid_str = _Colorize('{:5}'.format(parsed_line.pid), pid_style)
     tid_str = _Colorize('{:5}'.format(parsed_line.tid), tid_style)
@@ -752,7 +780,7 @@ class _LogcatProcessor(object):
     if self._deobfuscator:
       messages = self._deobfuscator.TransformLines(messages)
     for message in messages:
-      message = _Colorize(message, pid_style)
+      message = _Colorize(message, msg_style)
       sys.stdout.write('{} {} {} {} {} {}: {}\n'.format(
           parsed_line.date, parsed_line.invokation_time, pid_str, tid_str,
           priority, tag, message))
@@ -807,7 +835,7 @@ class _LogcatProcessor(object):
         return
 
     if owned_pid or self._verbose or (log.priority == 'F' or  # Java crash dump
-                                      log.tag in self._WHITELISTED_TAGS):
+                                      log.tag in self._ALLOWLISTED_TAGS):
       if nonce_found:
         self._native_stack_symbolizer.AddLine(log, not owned_pid)
       else:
@@ -1627,7 +1655,11 @@ class _PrintCertsCommand(_Command):
           '--verbose', self.apk_helper.path
       ]
       logging.warning('Running: %s', ' '.join(cmd))
-      stdout = subprocess.check_output(cmd)
+      env = os.environ.copy()
+      env['PATH'] = os.path.pathsep.join(
+          [os.path.join(_JAVA_HOME, 'bin'),
+           env.get('PATH')])
+      stdout = subprocess.check_output(cmd, env=env)
       print(stdout)
       if self.args.full_cert:
         if 'v1 scheme (JAR signing): true' not in stdout:

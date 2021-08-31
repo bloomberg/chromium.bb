@@ -5,6 +5,7 @@
 #include "content/browser/devtools/worker_devtools_agent_host.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/protocol/io_handler.h"
 #include "content/browser/devtools/protocol/network_handler.h"
@@ -109,11 +110,11 @@ DedicatedWorkerHost* WorkerDevToolsAgentHost::GetDedicatedWorkerHost() {
       blink::DedicatedWorkerToken(devtools_worker_token_));
 }
 
-base::Optional<network::CrossOriginEmbedderPolicy>
+absl::optional<network::CrossOriginEmbedderPolicy>
 WorkerDevToolsAgentHost::cross_origin_embedder_policy(const std::string&) {
   DedicatedWorkerHost* host = GetDedicatedWorkerHost();
   if (!host) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return host->cross_origin_embedder_policy();
 }

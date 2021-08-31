@@ -4,6 +4,8 @@
 
 #include "chrome/browser/performance_manager/policies/working_set_trimmer_policy.h"
 
+#include <memory>
+
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,10 +27,15 @@ class MockWorkingSetTrimmerPolicy : public WorkingSetTrimmerPolicy {
 
 class WorkingSetTrimmerPolicyTest : public GraphTestHarness {
  public:
+  using Super = GraphTestHarness;
+
   WorkingSetTrimmerPolicyTest() {}
   ~WorkingSetTrimmerPolicyTest() override {}
 
-  void SetUp() override { policy_.reset(new WorkingSetTrimmerPolicy); }
+  void SetUp() override {
+    Super::SetUp();
+    policy_ = std::make_unique<WorkingSetTrimmerPolicy>();
+  }
 
   void SetLastTrimTime(const ProcessNode* node, base::TimeTicks time) {
     policy_->SetLastTrimTime(node, time);

@@ -32,6 +32,7 @@ IP_ALLOWLIST_KEY = 'ip_whitelist'
 SERVICE_ACCOUNT_KEY = 'service_account'
 PINPOINT_REPO_EXCLUSION_KEY = 'pinpoint_repo_exclusions'
 EMAIL_SCOPE = 'https://www.googleapis.com/auth/userinfo.email'
+CLOUD_SCOPE = 'https://www.googleapis.com/auth/cloud-platform'
 _PROJECT_ID_KEY = 'project_id'
 _DEFAULT_CUSTOM_METRIC_VAL = 1
 OAUTH_SCOPES = ('https://www.googleapis.com/auth/userinfo.email',)
@@ -490,11 +491,12 @@ def IsInternalUser():
   return is_internal_user
 
 
-def IsAdministrator():
+def IsAdministrator(email=None):
   """Checks whether the user is an administrator of the Dashboard."""
   if IsDevAppserver():
     return True
-  email = GetEmail()
+  if not email:
+    email = GetEmail()
   if not email:
     return False
   cached = GetCachedIsAdministrator(email)
@@ -642,6 +644,12 @@ def IsTryjobUser():
       identity=email, group='project-pinpoint-tryjob-access')
 
 
+def IsAllowedToDelegate(email):
+  return bool(email) and IsGroupMember(
+      identity=email,
+      group='project-pinpoint-service-account-delegation-access')
+
+
 @ndb.transactional(propagation=ndb.TransactionOptions.INDEPENDENT, xg=True)
 def GetIpAllowlist():
   """Returns a list of IP addresses allowed to post data."""
@@ -779,28 +787,6 @@ def GetStdioLinkFromRow(row):
   """
   return (getattr(row, 'a_stdio_uri', None)
           or getattr(row, 'a_a_stdio_uri', None))
-
-
-def GetBuildbotStatusPageUriFromStdioLink(stdio_link):
-  base_url, _, bot, buildnumber, _ = GetBuildDetailsFromStdioLink(stdio_link)
-  if not base_url:
-    # Can't parse status page
-    return None
-  return '%s%s/builds/%s' % (base_url, urllib.quote(bot), buildnumber)
-
-
-def GetLogdogLogUriFromStdioLink(stdio_link):
-  base_url, master, bot, buildnumber, step = GetBuildDetailsFromStdioLink(
-      stdio_link)
-  if not base_url:
-    # Can't parse status page
-    return None
-  bot = re.sub(r'[ \(\)]', '_', bot)
-  s_param = urllib.quote(
-      'chrome/bb/%s/%s/%s/+/recipes/steps/%s/0/stdout' %
-      (master, bot, buildnumber, step),
-      safe='')
-  return 'https://luci-logdog.appspot.com/v/?s=%s' % s_param
 
 
 def GetRowKey(testmetadata_key, revision):

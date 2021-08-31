@@ -5,8 +5,8 @@
 #ifndef QUICHE_QUIC_CORE_QUIC_FLOW_CONTROLLER_H_
 #define QUICHE_QUIC_CORE_QUIC_FLOW_CONTROLLER_H_
 
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/quic_packets.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -77,6 +77,8 @@ class QUIC_EXPORT_PRIVATE QuicFlowController
   // Returns the current available send window.
   QuicByteCount SendWindowSize() const;
 
+  QuicByteCount receive_window_size() const { return receive_window_size_; }
+
   // Returns whether a BLOCKED frame should be sent.
   bool ShouldSendBlocked();
 
@@ -100,7 +102,7 @@ class QUIC_EXPORT_PRIVATE QuicFlowController
   }
 
   void set_receive_window_size_limit(QuicByteCount receive_window_size_limit) {
-    DCHECK_GE(receive_window_size_limit, receive_window_size_limit_);
+    QUICHE_DCHECK_GE(receive_window_size_limit, receive_window_size_limit_);
     receive_window_size_limit_ = receive_window_size_limit;
   }
 

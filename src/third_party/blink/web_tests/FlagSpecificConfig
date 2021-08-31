@@ -16,8 +16,16 @@
     "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
+    "name": "enable-percent-based-scrolling",
+    "args": ["--enable-features=PercentBasedScrolling"]
+  },
+  {
     "name": "new-system-colors",
     "args": ["--enable-blink-features=NewSystemColors"]
+  },
+  {
+    "name": "highdpi",
+    "args": ["--force-device-scale-factor=1.5"]
   }
 ]
 

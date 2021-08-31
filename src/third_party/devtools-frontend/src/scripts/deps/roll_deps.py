@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 #
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -46,7 +46,8 @@ def parse_options(cli_args):
 
 def update(options):
     subprocess.check_call(['git', 'fetch', 'origin'], cwd=options.chromium_dir)
-    subprocess.check_call(['git', 'checkout', 'origin/master'], cwd=options.chromium_dir)
+    subprocess.check_call(['git', 'checkout', 'origin/main'],
+                          cwd=options.chromium_dir)
     subprocess.check_call(['gclient', 'sync'], cwd=options.chromium_dir)
 
 def copy_files(options):

@@ -19,19 +19,17 @@ class VersionUpdaterCros : public VersionUpdater,
                            public chromeos::UpdateEngineClient::Observer {
  public:
   // VersionUpdater implementation.
-  void CheckForUpdate(const StatusCallback& callback,
-                      const PromoteCallback&) override;
+  void CheckForUpdate(StatusCallback callback, PromoteCallback) override;
   void SetChannel(const std::string& channel,
                   bool is_powerwash_allowed) override;
-  void GetChannel(bool get_current_channel,
-                  const ChannelCallback& callback) override;
+  void GetChannel(bool get_current_channel, ChannelCallback callback) override;
   void GetEolInfo(EolInfoCallback callback) override;
-  void SetUpdateOverCellularOneTimePermission(const StatusCallback& callback,
+  void SetUpdateOverCellularOneTimePermission(StatusCallback callback,
                                               const std::string& update_version,
                                               int64_t update_size) override;
 
   // Gets the last update status, without triggering a new check or download.
-  void GetUpdateStatus(const StatusCallback& callback);
+  void GetUpdateStatus(StatusCallback callback);
 
  protected:
   friend class VersionUpdater;
@@ -51,8 +49,7 @@ class VersionUpdaterCros : public VersionUpdater,
   void OnSetUpdateOverCellularOneTimePermission(bool success);
 
   // Callback from UpdateEngineClient::GetChannel().
-  void OnGetChannel(const ChannelCallback& cb,
-                    const std::string& current_channel);
+  void OnGetChannel(ChannelCallback cb, const std::string& current_channel);
 
   // Callback from UpdateEngineClient::GetEolInfo().
   void OnGetEolInfo(EolInfoCallback cb,

@@ -27,7 +27,7 @@ Polymer({
         progress: 0,
         rollback: false,
         powerwash: false,
-        status: UpdateStatus.DISABLED
+        status: UpdateStatus.UPDATED
       },
     },
 
@@ -114,6 +114,14 @@ Polymer({
           'currentUpdateStatusEvent_, hasCheckedForUpdates_, hasEndOfLife_)',
     },
 
+    /** @private */
+    showDiagnosticsApp_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('diagnosticsAppEnabled');
+      }
+    },
+
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
@@ -168,6 +176,7 @@ Polymer({
         chromeos.settings.mojom.Setting.kGetHelpWithChromeOs,
         chromeos.settings.mojom.Setting.kReportAnIssue,
         chromeos.settings.mojom.Setting.kTermsOfService,
+        chromeos.settings.mojom.Setting.kDiagnostics,
       ]),
     },
   },
@@ -301,6 +310,13 @@ Polymer({
   },
 
   /** @private */
+  onDiagnosticsClick_() {
+    assert(this.showDiagnosticsApp_);
+    this.aboutBrowserProxy_.openDiagnostics();
+    settings.recordSettingChange(chromeos.settings.mojom.Setting.kDiagnostics);
+  },
+
+  /** @private */
   onRelaunchClick_() {
     settings.recordSettingChange();
     this.lifetimeBrowserProxy_.relaunch();
@@ -308,9 +324,15 @@ Polymer({
 
   /** @private */
   updateShowUpdateStatus_() {
-    // Do not show the "updated" status if we haven't checked yet or the update
-    // warning dialog is shown to user.
-    if (this.currentUpdateStatusEvent_.status === UpdateStatus.UPDATED &&
+    // Do not show the "updated" status or error states from a previous update
+    // attempt if we haven't checked yet or the update warning dialog is shown
+    // to user.
+    if ((this.currentUpdateStatusEvent_.status === UpdateStatus.UPDATED ||
+         this.currentUpdateStatusEvent_.status ===
+             UpdateStatus.FAILED_DOWNLOAD ||
+         this.currentUpdateStatusEvent_.status === UpdateStatus.FAILED_HTTP ||
+         this.currentUpdateStatusEvent_.status ===
+             UpdateStatus.DISABLED_BY_ADMIN) &&
         (!this.hasCheckedForUpdates_ || this.showUpdateWarningDialog_)) {
       this.showUpdateStatus_ = false;
       return;
@@ -409,6 +431,12 @@ Polymer({
           });
         }
         return this.i18nAdvanced('aboutUpgradeUpdating');
+      case UpdateStatus.FAILED_HTTP:
+        return this.i18nAdvanced('aboutUpgradeTryAgain');
+      case UpdateStatus.FAILED_DOWNLOAD:
+        return this.i18nAdvanced('aboutUpgradeDownloadError');
+      case UpdateStatus.DISABLED_BY_ADMIN:
+        return this.i18nAdvanced('aboutUpgradeAdministrator');
       default:
         function formatMessage(msg) {
           return parseHtmlSubset('<b>' + msg + '</b>', ['br', 'pre'])
@@ -441,8 +469,10 @@ Polymer({
     switch (this.currentUpdateStatusEvent_.status) {
       case UpdateStatus.DISABLED_BY_ADMIN:
         return 'cr20:domain';
+      case UpdateStatus.FAILED_DOWNLOAD:
+      case UpdateStatus.FAILED_HTTP:
       case UpdateStatus.FAILED:
-        return 'cr:error';
+        return 'cr:error-outline';
       case UpdateStatus.UPDATED:
       case UpdateStatus.NEARLY_UPDATED:
         // TODO(crbug.com/986596): Don't use browser icons here. Fork them.
@@ -533,8 +563,10 @@ Polymer({
     // update has failed. Disable it otherwise.
     const staleUpdatedStatus =
         !this.hasCheckedForUpdates_ && this.checkStatus_(UpdateStatus.UPDATED);
-
-    return staleUpdatedStatus || this.checkStatus_(UpdateStatus.FAILED);
+    return staleUpdatedStatus || this.checkStatus_(UpdateStatus.FAILED) ||
+        this.checkStatus_(UpdateStatus.FAILED_HTTP) ||
+        this.checkStatus_(UpdateStatus.FAILED_DOWNLOAD) ||
+        this.checkStatus_(UpdateStatus.DISABLED_BY_ADMIN);
   },
 
   /**

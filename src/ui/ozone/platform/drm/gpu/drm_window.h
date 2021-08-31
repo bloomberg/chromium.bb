@@ -22,6 +22,10 @@
 
 class SkBitmap;
 
+namespace base {
+class TimeDelta;
+}
+
 namespace gfx {
 class Point;
 class Rect;
@@ -73,7 +77,7 @@ class DrmWindow {
   // the bitmap is empty, the cursor is hidden.
   void SetCursor(const std::vector<SkBitmap>& bitmaps,
                  const gfx::Point& location,
-                 int frame_delay_ms);
+                 base::TimeDelta frame_delay);
 
   // Move the HW cursor to the specified location.
   void MoveCursor(const gfx::Point& location);
@@ -84,8 +88,9 @@ class DrmWindow {
   OverlayStatusList TestPageFlip(
       const OverlaySurfaceCandidateList& overlay_params);
 
-  // Returns the last buffer associated with this window.
-  const DrmOverlayPlane* GetLastModesetBuffer() const;
+  const DrmOverlayPlaneList& last_submitted_planes() const {
+    return last_submitted_planes_;
+  }
 
  private:
   // Draw next frame in an animated cursor.
@@ -114,7 +119,6 @@ class DrmWindow {
   std::vector<SkBitmap> cursor_bitmaps_;
   gfx::Point cursor_location_;
   int cursor_frame_ = 0;
-  int cursor_frame_delay_ms_ = 0;
 
   DrmOverlayPlaneList last_submitted_planes_;
 

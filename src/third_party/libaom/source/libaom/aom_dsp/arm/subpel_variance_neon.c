@@ -196,21 +196,6 @@ unsigned int aom_sub_pixel_variance4x8_neon(const uint8_t *a, int a_stride,
   return aom_variance4x8(temp1, 4, b, b_stride, sse);
 }
 
-unsigned int aom_sub_pixel_variance4x16_neon(const uint8_t *a, int a_stride,
-                                             int xoffset, int yoffset,
-                                             const uint8_t *b, int b_stride,
-                                             uint32_t *sse) {
-  uint8_t temp0[4 * (16 + 2)];
-  uint8_t temp1[4 * 16];
-
-  var_filter_block2d_bil_w4(a, temp0, a_stride, 1, (16 + 2),
-                            bilinear_filters_2t[xoffset]);
-  var_filter_block2d_bil_w4(temp0, temp1, 4, 4, 16,
-                            bilinear_filters_2t[yoffset]);
-
-  return aom_variance4x16(temp1, 4, b, b_stride, sse);
-}
-
 unsigned int aom_sub_pixel_variance8x4_neon(const uint8_t *a, int a_stride,
                                             int xoffset, int yoffset,
                                             const uint8_t *b, int b_stride,
@@ -239,36 +224,6 @@ unsigned int aom_sub_pixel_variance8x16_neon(const uint8_t *a, int a_stride,
                             bilinear_filters_2t[yoffset]);
 
   return aom_variance8x16(temp1, 8, b, b_stride, sse);
-}
-
-unsigned int aom_sub_pixel_variance8x32_neon(const uint8_t *a, int a_stride,
-                                             int xoffset, int yoffset,
-                                             const uint8_t *b, int b_stride,
-                                             uint32_t *sse) {
-  uint8_t temp0[8 * (32 + 1)];
-  uint8_t temp1[8 * 32];
-
-  var_filter_block2d_bil_w8(a, temp0, a_stride, 1, (32 + 1), 8,
-                            bilinear_filters_2t[xoffset]);
-  var_filter_block2d_bil_w8(temp0, temp1, 8, 8, 32, 8,
-                            bilinear_filters_2t[yoffset]);
-
-  return aom_variance8x32(temp1, 8, b, b_stride, sse);
-}
-
-unsigned int aom_sub_pixel_variance16x4_neon(const uint8_t *a, int a_stride,
-                                             int xoffset, int yoffset,
-                                             const uint8_t *b, int b_stride,
-                                             uint32_t *sse) {
-  uint8_t temp0[16 * (4 + 1)];
-  uint8_t temp1[16 * 4];
-
-  var_filter_block2d_bil_w16(a, temp0, a_stride, 1, (4 + 1), 16,
-                             bilinear_filters_2t[xoffset]);
-  var_filter_block2d_bil_w16(temp0, temp1, 16, 16, 4, 16,
-                             bilinear_filters_2t[yoffset]);
-
-  return aom_variance16x4(temp1, 16, b, b_stride, sse);
 }
 
 unsigned int aom_sub_pixel_variance16x8_neon(const uint8_t *a, int a_stride,
@@ -301,36 +256,6 @@ unsigned int aom_sub_pixel_variance16x32_neon(const uint8_t *a, int a_stride,
   return aom_variance16x32(temp1, 16, b, b_stride, sse);
 }
 
-unsigned int aom_sub_pixel_variance16x64_neon(const uint8_t *a, int a_stride,
-                                              int xoffset, int yoffset,
-                                              const uint8_t *b, int b_stride,
-                                              uint32_t *sse) {
-  uint8_t temp0[16 * (64 + 1)];
-  uint8_t temp1[16 * 64];
-
-  var_filter_block2d_bil_w16(a, temp0, a_stride, 1, (64 + 1), 16,
-                             bilinear_filters_2t[xoffset]);
-  var_filter_block2d_bil_w16(temp0, temp1, 16, 16, 64, 16,
-                             bilinear_filters_2t[yoffset]);
-
-  return aom_variance16x64(temp1, 16, b, b_stride, sse);
-}
-
-unsigned int aom_sub_pixel_variance32x8_neon(const uint8_t *a, int a_stride,
-                                             int xoffset, int yoffset,
-                                             const uint8_t *b, int b_stride,
-                                             uint32_t *sse) {
-  uint8_t temp0[32 * (8 + 1)];
-  uint8_t temp1[32 * 8];
-
-  var_filter_block2d_bil_w16(a, temp0, a_stride, 1, (8 + 1), 32,
-                             bilinear_filters_2t[xoffset]);
-  var_filter_block2d_bil_w16(temp0, temp1, 32, 32, 8, 32,
-                             bilinear_filters_2t[yoffset]);
-
-  return aom_variance32x8(temp1, 32, b, b_stride, sse);
-}
-
 unsigned int aom_sub_pixel_variance32x16_neon(const uint8_t *a, int a_stride,
                                               int xoffset, int yoffset,
                                               const uint8_t *b, int b_stride,
@@ -359,21 +284,6 @@ unsigned int aom_sub_pixel_variance32x64_neon(const uint8_t *a, int a_stride,
                              bilinear_filters_2t[yoffset]);
 
   return aom_variance32x64(temp1, 32, b, b_stride, sse);
-}
-
-unsigned int aom_sub_pixel_variance64x16_neon(const uint8_t *a, int a_stride,
-                                              int xoffset, int yoffset,
-                                              const uint8_t *b, int b_stride,
-                                              uint32_t *sse) {
-  uint8_t temp0[64 * (16 + 1)];
-  uint8_t temp1[64 * 16];
-
-  var_filter_block2d_bil_w16(a, temp0, a_stride, 1, (16 + 1), 64,
-                             bilinear_filters_2t[xoffset]);
-  var_filter_block2d_bil_w16(temp0, temp1, 64, 64, 16, 64,
-                             bilinear_filters_2t[yoffset]);
-
-  return aom_variance64x16(temp1, 64, b, b_stride, sse);
 }
 
 unsigned int aom_sub_pixel_variance64x32_neon(const uint8_t *a, int a_stride,
@@ -435,3 +345,96 @@ unsigned int aom_sub_pixel_variance128x128_neon(const uint8_t *a, int a_stride,
 
   return aom_variance128x128(temp1, 128, b, b_stride, sse);
 }
+
+// Realtime mode doesn't use 4x rectangular blocks.
+#if !CONFIG_REALTIME_ONLY
+unsigned int aom_sub_pixel_variance4x16_neon(const uint8_t *a, int a_stride,
+                                             int xoffset, int yoffset,
+                                             const uint8_t *b, int b_stride,
+                                             uint32_t *sse) {
+  uint8_t temp0[4 * (16 + 2)];
+  uint8_t temp1[4 * 16];
+
+  var_filter_block2d_bil_w4(a, temp0, a_stride, 1, (16 + 2),
+                            bilinear_filters_2t[xoffset]);
+  var_filter_block2d_bil_w4(temp0, temp1, 4, 4, 16,
+                            bilinear_filters_2t[yoffset]);
+
+  return aom_variance4x16(temp1, 4, b, b_stride, sse);
+}
+
+unsigned int aom_sub_pixel_variance8x32_neon(const uint8_t *a, int a_stride,
+                                             int xoffset, int yoffset,
+                                             const uint8_t *b, int b_stride,
+                                             uint32_t *sse) {
+  uint8_t temp0[8 * (32 + 1)];
+  uint8_t temp1[8 * 32];
+
+  var_filter_block2d_bil_w8(a, temp0, a_stride, 1, (32 + 1), 8,
+                            bilinear_filters_2t[xoffset]);
+  var_filter_block2d_bil_w8(temp0, temp1, 8, 8, 32, 8,
+                            bilinear_filters_2t[yoffset]);
+
+  return aom_variance8x32(temp1, 8, b, b_stride, sse);
+}
+
+unsigned int aom_sub_pixel_variance16x4_neon(const uint8_t *a, int a_stride,
+                                             int xoffset, int yoffset,
+                                             const uint8_t *b, int b_stride,
+                                             uint32_t *sse) {
+  uint8_t temp0[16 * (4 + 1)];
+  uint8_t temp1[16 * 4];
+
+  var_filter_block2d_bil_w16(a, temp0, a_stride, 1, (4 + 1), 16,
+                             bilinear_filters_2t[xoffset]);
+  var_filter_block2d_bil_w16(temp0, temp1, 16, 16, 4, 16,
+                             bilinear_filters_2t[yoffset]);
+
+  return aom_variance16x4(temp1, 16, b, b_stride, sse);
+}
+
+unsigned int aom_sub_pixel_variance64x16_neon(const uint8_t *a, int a_stride,
+                                              int xoffset, int yoffset,
+                                              const uint8_t *b, int b_stride,
+                                              uint32_t *sse) {
+  uint8_t temp0[64 * (16 + 1)];
+  uint8_t temp1[64 * 16];
+
+  var_filter_block2d_bil_w16(a, temp0, a_stride, 1, (16 + 1), 64,
+                             bilinear_filters_2t[xoffset]);
+  var_filter_block2d_bil_w16(temp0, temp1, 64, 64, 16, 64,
+                             bilinear_filters_2t[yoffset]);
+
+  return aom_variance64x16(temp1, 64, b, b_stride, sse);
+}
+
+unsigned int aom_sub_pixel_variance16x64_neon(const uint8_t *a, int a_stride,
+                                              int xoffset, int yoffset,
+                                              const uint8_t *b, int b_stride,
+                                              uint32_t *sse) {
+  uint8_t temp0[16 * (64 + 1)];
+  uint8_t temp1[16 * 64];
+
+  var_filter_block2d_bil_w16(a, temp0, a_stride, 1, (64 + 1), 16,
+                             bilinear_filters_2t[xoffset]);
+  var_filter_block2d_bil_w16(temp0, temp1, 16, 16, 64, 16,
+                             bilinear_filters_2t[yoffset]);
+
+  return aom_variance16x64(temp1, 16, b, b_stride, sse);
+}
+
+unsigned int aom_sub_pixel_variance32x8_neon(const uint8_t *a, int a_stride,
+                                             int xoffset, int yoffset,
+                                             const uint8_t *b, int b_stride,
+                                             uint32_t *sse) {
+  uint8_t temp0[32 * (8 + 1)];
+  uint8_t temp1[32 * 8];
+
+  var_filter_block2d_bil_w16(a, temp0, a_stride, 1, (8 + 1), 32,
+                             bilinear_filters_2t[xoffset]);
+  var_filter_block2d_bil_w16(temp0, temp1, 32, 32, 8, 32,
+                             bilinear_filters_2t[yoffset]);
+
+  return aom_variance32x8(temp1, 32, b, b_stride, sse);
+}
+#endif  // !CONFIG_REALTIME_ONLY

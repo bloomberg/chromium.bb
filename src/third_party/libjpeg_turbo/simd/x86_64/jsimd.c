@@ -472,12 +472,6 @@ jsimd_can_h2v1_fancy_upsample(void)
   return 0;
 }
 
-GLOBAL(int)
-jsimd_can_h1v2_fancy_upsample(void)
-{
-  return 0;
-}
-
 GLOBAL(void)
 jsimd_h2v2_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
                           JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)
@@ -504,12 +498,6 @@ jsimd_h2v1_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
     jsimd_h2v1_fancy_upsample_sse2(cinfo->max_v_samp_factor,
                                    compptr->downsampled_width, input_data,
                                    output_data_ptr);
-}
-
-GLOBAL(void)
-jsimd_h1v2_fancy_upsample(j_decompress_ptr cinfo, jpeg_component_info *compptr,
-                          JSAMPARRAY input_data, JSAMPARRAY *output_data_ptr)
-{
 }
 
 GLOBAL(int)
@@ -1043,8 +1031,6 @@ jsimd_can_encode_mcu_AC_first_prepare(void)
     return 0;
   if (sizeof(JCOEF) != 2)
     return 0;
-  if (SIZEOF_SIZE_T != 8)
-    return 0;
   if (simd_support & JSIMD_SSE2)
     return 1;
 
@@ -1068,8 +1054,6 @@ jsimd_can_encode_mcu_AC_refine_prepare(void)
   if (DCTSIZE != 8)
     return 0;
   if (sizeof(JCOEF) != 2)
-    return 0;
-  if (SIZEOF_SIZE_T != 8)
     return 0;
   if (simd_support & JSIMD_SSE2)
     return 1;

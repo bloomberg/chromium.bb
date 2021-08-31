@@ -48,8 +48,9 @@ class TouchExplorationManager : public ui::EventRewriter,
       const Continuation continuation) override;
 
   // TouchExplorationControllerDelegate overrides:
-  void HandleAccessibilityGesture(ax::mojom::Gesture gesture) override;
-  void HandleTap(const gfx::Point touch_location) override;
+  void HandleAccessibilityGesture(const ax::mojom::Gesture gesture,
+                                  const gfx::PointF& location) override;
+  void HandleTap(const gfx::Point& touch_location) override;
 
   // wm::ActivationChangeObserver overrides:
   void OnWindowActivated(
@@ -60,6 +61,10 @@ class TouchExplorationManager : public ui::EventRewriter,
   // Update the touch exploration controller so that synthesized touch
   // events are anchored at this point.
   void SetTouchAccessibilityAnchorPoint(const gfx::Point& anchor_point);
+
+  // Sets the bounds for virtual keyboard. Update the touch exploration
+  // controller so that it knows the bounds of the virtual keyboard.
+  void SetVirtualKeyboardBounds(const gfx::Rect& rect);
 
  private:
   void UpdateTouchExplorationState();

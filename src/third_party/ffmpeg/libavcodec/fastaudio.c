@@ -1,5 +1,7 @@
 /*
  * MOFLEX Fast Audio decoder
+ * Copyright (c) 2015-2016 Florian Nouwt
+ * Copyright (c) 2017 Adib Surani
  * Copyright (c) 2020 Paul B Mahol
  *
  * This file is part of FFmpeg.
@@ -89,7 +91,7 @@ static int read_bits(int bits, int *ppos, unsigned *src)
 
     pos = *ppos;
     pos += bits;
-    r = src[(pos - 1) / 32] >> (32 - pos % 32);
+    r = src[(pos - 1) / 32] >> ((-pos) & 31);
     *ppos = pos;
 
     return r & ((1 << bits) - 1);

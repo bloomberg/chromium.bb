@@ -23,7 +23,7 @@ void ProcessPowerEventHelper(PowerMonitorSource::PowerEvent event) {
   PowerMonitorSource::ProcessPowerEvent(event);
 }
 
-bool PowerMonitorDeviceSource::IsOnBatteryPowerImpl() {
+bool PowerMonitorDeviceSource::IsOnBatteryPower() {
   base::ScopedCFTypeRef<CFTypeRef> info(IOPSCopyPowerSourcesInfo());
   if (!info)
     return false;
@@ -67,12 +67,9 @@ bool PowerMonitorDeviceSource::IsOnBatteryPowerImpl() {
   return found_battery;
 }
 
-PowerObserver::DeviceThermalState
+PowerThermalObserver::DeviceThermalState
 PowerMonitorDeviceSource::GetCurrentThermalState() {
-  if (@available(macOS 10.10.3, *)) {
-    return thermal_state_observer_->GetCurrentThermalState();
-  };
-  return PowerObserver::DeviceThermalState::kUnknown;
+  return thermal_state_observer_->GetCurrentThermalState();
 }
 
 namespace {
@@ -107,10 +104,8 @@ void PowerMonitorDeviceSource::PlatformInit() {
   CFRunLoopAddSource(CFRunLoopGetCurrent(), power_source_run_loop_source_,
                      kCFRunLoopDefaultMode);
 
-  if (@available(macOS 10.10.3, *)) {
-    thermal_state_observer_ = std::make_unique<ThermalStateObserverMac>(
-        BindRepeating(&PowerMonitorSource::ProcessThermalEvent));
-  };
+  thermal_state_observer_ = std::make_unique<ThermalStateObserverMac>(
+      BindRepeating(&PowerMonitorSource::ProcessThermalEvent));
 }
 
 void PowerMonitorDeviceSource::PlatformDestroy() {

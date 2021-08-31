@@ -12,17 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import("reactor.gni")
 import("../swiftshader.gni")
 
-declare_args() {
-  # Subzero produces smaller binaries, but doesn't support ARM64, MIPS64, and
-  # PPC64.
-  use_swiftshader_with_subzero =
-      current_cpu != "arm64" && current_cpu != "mips64el" && current_cpu != "ppc64"
-  supports_llvm = is_linux || is_chromeos || is_fuchsia || is_win || is_android || is_mac
-}
-
-config("swiftshader_reactor_private_config") {
+config("swiftshader_llvm_reactor_private_config") {
   if (is_win) {
     cflags = [
       "/wd4141",  # 'inline' used more than once. (LLVM 7.0)
@@ -44,6 +37,12 @@ config("swiftshader_reactor_private_config") {
   }
 }
 
+config("swiftshader_reactor_base_private_config") {
+  defines = [
+    "REACTOR_ANONYMOUS_MMAP_NAME=swiftshader_jit",
+  ]
+}
+
 swiftshader_source_set("swiftshader_reactor_base") {
   sources = [
     "Debug.cpp",
@@ -52,9 +51,13 @@ swiftshader_source_set("swiftshader_reactor_base") {
     "OptimalIntrinsics.cpp",
     "Reactor.cpp",
   ]
+
+  configs = [
+      ":swiftshader_reactor_base_private_config",
+  ]
 }
 
-if (use_swiftshader_with_subzero) {
+if (supports_subzero) {
   # Need a separate config to ensure the warnings are added to the end.
   config("swiftshader_subzero_common_private_config") {
     defines = [
@@ -220,7 +223,6 @@ if (use_swiftshader_with_subzero) {
       "$subzero_dir/src/IceMangling.cpp",
       "$subzero_dir/src/IceMemory.cpp",
       "$subzero_dir/src/IceOperand.cpp",
-      "$subzero_dir/src/IceRNG.cpp",
       "$subzero_dir/src/IceRangeSpec.cpp",
       "$subzero_dir/src/IceRegAlloc.cpp",
       "$subzero_dir/src/IceRevision.cpp",
@@ -299,6 +301,7 @@ if (use_swiftshader_with_subzero) {
       ":swiftshader_subzero_private_config",
     ]
   }
+
   swiftshader_source_set("swiftshader_subzero_reactor") {
     deps = [
       "../../third_party/marl:Marl",
@@ -333,7 +336,7 @@ if (supports_llvm) {
       "LLVMReactor.cpp",
     ]
 
-    configs = [ ":swiftshader_reactor_private_config" ]
+    configs = [ ":swiftshader_llvm_reactor_private_config" ]
 
     include_dirs = [
       "$llvm_dir/llvm/include/",

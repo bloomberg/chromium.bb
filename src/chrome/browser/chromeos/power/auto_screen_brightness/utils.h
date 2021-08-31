@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/containers/ring_buffer.h"
-#include "base/time/time.h"
 
 namespace chromeos {
 namespace power {
@@ -20,7 +19,8 @@ namespace auto_screen_brightness {
 enum class DataError {
   kAlsValue = 0,
   kBrightnessPercent = 1,
-  kMaxValue = kBrightnessPercent
+  kMojoSamplesObserver = 2,
+  kMaxValue = kMojoSamplesObserver
 };
 
 // Logs data errors to UMA.

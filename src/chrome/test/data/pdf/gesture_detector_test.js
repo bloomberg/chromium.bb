@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {GestureDetector, PinchEventDetail} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/gesture_detector.js';
+import {GestureDetector, PinchEventDetail} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer_wrapper.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+import {createWheelEvent} from './test_util.js';
 
 chrome.test.runTests(function() {
   'use strict';
@@ -35,23 +36,6 @@ chrome.test.runTests(function() {
     onPinch_(pinchEvent) {
       this.lastEvent = pinchEvent;
     }
-  }
-
-  /**
-   * @param {number} deltaY
-   * @param {{clientX: number, clientY: number}} position
-   * @param {boolean} ctrlKey
-   * @return {!WheelEvent}
-   */
-  function createWheelEvent(deltaY, position, ctrlKey) {
-    return new WheelEvent('wheel', {
-      deltaY,
-      clientX: position.clientX,
-      clientY: position.clientY,
-      ctrlKey,
-      // Necessary for preventDefault() to work.
-      cancelable: true,
-    });
   }
 
   /** @type {!EventTarget} */

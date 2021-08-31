@@ -1,6 +1,7 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import os
 import stat
 import unittest
@@ -147,10 +148,10 @@ class OSXFindTest(FindTestBase):
     types = self.DoFindAllTypes()
     self.assertEquals(
         set(types),
-        set([
+        {
             'debug', 'release', 'content-shell-debug', 'content-shell-release',
             'canary', 'system'
-        ]))
+        })
 
   def testFindExact(self):
     if not self.CanFindAvailableBrowsers():
@@ -287,10 +288,13 @@ class WinFindTest(FindTestBase):
       return
 
     types = self.DoFindAllTypes()
-    self.assertEquals(set(types),
-                      set(['debug', 'release',
-                           'content-shell-debug', 'content-shell-release',
-                           'system', 'canary']))
+    self.assertEquals(
+        set(types),
+        {
+            'debug', 'release', 'content-shell-debug', 'content-shell-release',
+            'system', 'canary'
+        }
+    )
 
   def testFindAllWithExact(self):
     if not self.CanFindAvailableBrowsers():
@@ -300,10 +304,11 @@ class WinFindTest(FindTestBase):
     types = self.DoFindAllTypes()
     self.assertEquals(
         set(types),
-        set(['exact',
-             'debug', 'release',
-             'content-shell-debug', 'content-shell-release',
-             'system', 'canary']))
+        {
+            'exact', 'debug', 'release', 'content-shell-debug',
+            'content-shell-release', 'system', 'canary'
+        }
+    )
 
   def testNoErrorWithUnrecognizedExecutableName(self):
     if not self.CanFindAvailableBrowsers():

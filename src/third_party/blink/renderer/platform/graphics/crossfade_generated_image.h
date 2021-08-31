@@ -56,6 +56,7 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
             const cc::PaintFlags&,
             const FloatRect&,
             const FloatRect&,
+            const SkSamplingOptions&,
             RespectImageOrientationEnum,
             ImageClampingMode,
             ImageDecodingMode) override;
@@ -71,6 +72,7 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
 
  private:
   void DrawCrossfade(cc::PaintCanvas*,
+                     const SkSamplingOptions&,
                      const cc::PaintFlags&,
                      RespectImageOrientationEnum,
                      ImageClampingMode,
@@ -85,4 +87,4 @@ class PLATFORM_EXPORT CrossfadeGeneratedImage final : public GeneratedImage {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CROSSFADE_GENERATED_IMAGE_H_

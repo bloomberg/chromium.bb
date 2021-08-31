@@ -65,17 +65,17 @@ void ImmersiveModeControllerChromeos::Init(BrowserView* browser_view) {
   controller_.Init(this, browser_view_->frame(),
                    browser_view_->top_container());
 
-  observed_windows_.Add(browser_view_->GetNativeWindow());
+  window_observation_.Observe(browser_view_->GetNativeWindow());
 }
 
 void ImmersiveModeControllerChromeos::SetEnabled(bool enabled) {
   if (controller_.IsEnabled() == enabled)
     return;
 
-  if (!fullscreen_observer_.IsObservingSources()) {
-    fullscreen_observer_.Add(browser_view_->browser()
-                                 ->exclusive_access_manager()
-                                 ->fullscreen_controller());
+  if (!fullscreen_observer_.IsObserving()) {
+    fullscreen_observer_.Observe(browser_view_->browser()
+                                     ->exclusive_access_manager()
+                                     ->fullscreen_controller());
   }
 
   chromeos::ImmersiveFullscreenController::EnableForWidget(
@@ -116,14 +116,14 @@ void ImmersiveModeControllerChromeos::OnFindBarVisibleBoundsChanged(
 
 bool ImmersiveModeControllerChromeos::
     ShouldStayImmersiveAfterExitingFullscreen() {
-  return !browser_view_->CanSupportTabStrip() &&
+  return !browser_view_->GetSupportsTabStrip() &&
          chromeos::TabletState::Get()->InTabletMode();
 }
 
 void ImmersiveModeControllerChromeos::OnWidgetActivationChanged(
     views::Widget* widget,
     bool active) {
-  if (browser_view_->CanSupportTabStrip())
+  if (browser_view_->GetSupportsTabStrip())
     return;
 
   if (!chromeos::TabletState::Get()->InTabletMode())
@@ -179,7 +179,7 @@ void ImmersiveModeControllerChromeos::SetVisibleFraction(
   // means some gesture may not be recognized well during the animation, but
   // that's fine since a complicated gesture wouldn't be involved during the
   // animation duration. See: https://crbug.com/901544.
-  if (browser_view_->CanSupportTabStrip()) {
+  if (browser_view_->GetSupportsTabStrip()) {
     if (visible_fraction == 1.0) {
       browser_view_->contents_web_view()->holder()->SetHitTestTopInset(
           browser_view_->top_container()->height());
@@ -254,6 +254,7 @@ void ImmersiveModeControllerChromeos::OnWindowPropertyChanged(
 void ImmersiveModeControllerChromeos::OnWindowDestroying(aura::Window* window) {
   // Clean up observers here rather than in the destructor because the owning
   // BrowserView has already destroyed the aura::Window.
-  observed_windows_.Remove(window);
-  DCHECK(!observed_windows_.IsObservingSources());
+  DCHECK(window_observation_.IsObservingSource(window));
+  window_observation_.Reset();
+  DCHECK(!window_observation_.IsObserving());
 }

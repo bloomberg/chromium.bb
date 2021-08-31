@@ -21,16 +21,15 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.lifecycle.Destroyable;
+import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -42,7 +41,7 @@ import org.chromium.ui.util.ColorUtils;
  * Maintains the status bar color for a {@link Window}.
  */
 public class StatusBarColorController
-        implements Destroyable, TopToolbarCoordinator.UrlExpansionObserver,
+        implements DestroyObserver, TopToolbarCoordinator.UrlExpansionObserver,
                    StatusIndicatorCoordinator.StatusIndicatorObserver {
     public static final @ColorInt int UNDEFINED_STATUS_BAR_COLOR = Color.TRANSPARENT;
     public static final @ColorInt int DEFAULT_STATUS_BAR_COLOR = Color.argb(0x01, 0, 0, 0);
@@ -72,7 +71,7 @@ public class StatusBarColorController
     private final StatusBarColorProvider mStatusBarColorProvider;
     private final ActivityTabProvider.ActivityTabTabObserver mStatusBarColorTabObserver;
     private final TabModelSelectorObserver mTabModelSelectorObserver;
-
+    private final TopUiThemeColorProvider mTopUiThemeColor;
     private final @ColorInt int mStandardPrimaryBgColor;
     private final @ColorInt int mIncognitoPrimaryBgColor;
     private final @ColorInt int mStandardDefaultThemeColor;
@@ -103,12 +102,13 @@ public class StatusBarColorController
      * @param overviewModeBehaviorSupplier Supplies the overview mode behavior.
      * @param activityLifecycleDispatcher Allows observation of the activity lifecycle.
      * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
+     * @param topUiThemeColorProvider The {@link ThemeColorProvider} for top UI.
      */
     public StatusBarColorController(Window window, boolean isTablet, Resources resources,
             StatusBarColorProvider statusBarColorProvider,
             OneshotSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
             ActivityLifecycleDispatcher activityLifecycleDispatcher,
-            ActivityTabProvider tabProvider) {
+            ActivityTabProvider tabProvider, TopUiThemeColorProvider topUiThemeColorProvider) {
         mWindow = window;
         mIsTablet = isTablet;
         mStatusBarColorProvider = statusBarColorProvider;
@@ -171,7 +171,7 @@ public class StatusBarColorController
             }
         };
 
-        mTabModelSelectorObserver = new EmptyTabModelSelectorObserver() {
+        mTabModelSelectorObserver = new TabModelSelectorObserver() {
             @Override
             public void onTabModelSelected(TabModel newModel, TabModel oldModel) {
                 mIsIncognito = newModel.isIncognito();
@@ -207,11 +207,12 @@ public class StatusBarColorController
         }
 
         activityLifecycleDispatcher.register(this);
+        mTopUiThemeColor = topUiThemeColorProvider;
     }
 
-    // Destroyable implementation.
+    // DestroyObserver implementation.
     @Override
-    public void destroy() {
+    public void onDestroy() {
         mStatusBarColorTabObserver.destroy();
         if (mOverviewModeBehavior != null) {
             mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
@@ -300,7 +301,9 @@ public class StatusBarColorController
         if (mIsInOverviewMode) {
             if (shouldDarkenStatusBarColor()) return Color.BLACK;
 
-            return (mIsIncognito && ToolbarColors.canUseIncognitoToolbarThemeColorInOverview())
+            return (mIsIncognito
+                           && ToolbarColors.canUseIncognitoToolbarThemeColorInOverview(
+                                   mWindow.getContext()))
                     ? mIncognitoPrimaryBgColor
                     : mStandardPrimaryBgColor;
         }
@@ -310,17 +313,13 @@ public class StatusBarColorController
         if (isLocationBarShownInNTP()) {
             if (shouldDarkenStatusBarColor()) return Color.BLACK;
 
-            return ColorUtils.getColorWithOverlay(
-                    TabThemeColorHelper.getBackgroundColor(mCurrentTab),
-                    TabThemeColorHelper.getColor(mCurrentTab), mToolbarUrlExpansionPercentage);
+            return ColorUtils.getColorWithOverlay(mTopUiThemeColor.getBackgroundColor(mCurrentTab),
+                    mTopUiThemeColor.getThemeColor(), mToolbarUrlExpansionPercentage);
         }
 
         // Return status bar color to match the toolbar.
-        if (mCurrentTab != null && !TabThemeColorHelper.isDefaultColorUsed(mCurrentTab)) {
-            return TabThemeColorHelper.getColor(mCurrentTab);
-        }
-
-        return calculateDefaultStatusBarColor();
+        return mTopUiThemeColor.getThemeColorOrFallback(
+                mCurrentTab, calculateDefaultStatusBarColor());
     }
 
     /**
@@ -373,7 +372,7 @@ public class StatusBarColorController
         if (mScrimColor == 0) {
             final View root = mWindow.getDecorView().getRootView();
             final Resources resources = root.getResources();
-            mScrimColor = ApiCompatibilityUtils.getColor(resources, R.color.black_alpha_65);
+            mScrimColor = ApiCompatibilityUtils.getColor(resources, R.color.default_scrim_color);
         }
         // Apply a color overlay if the scrim is showing.
         float scrimColorAlpha = (mScrimColor >>> 24) / 255f;

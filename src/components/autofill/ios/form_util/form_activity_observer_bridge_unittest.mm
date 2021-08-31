@@ -6,7 +6,7 @@
 
 #include "components/autofill/ios/form_util/test_form_activity_observer.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -72,10 +72,10 @@ class FormActivityObserverBridgeTest : public PlatformTest {
  public:
   FormActivityObserverBridgeTest()
       : observer_([[FakeFormActivityObserver alloc] init]),
-        observer_bridge_(&test_web_state_, observer_) {}
+        observer_bridge_(&fake_web_state_, observer_) {}
 
  protected:
-  web::TestWebState test_web_state_;
+  web::FakeWebState fake_web_state_;
   FakeFormActivityObserver* observer_;
   autofill::FormActivityObserverBridge observer_bridge_;
 };
@@ -87,13 +87,14 @@ TEST_F(FormActivityObserverBridgeTest, DocumentSubmitted) {
   std::string kTestFormData("[]");
   bool has_user_gesture = true;
   bool form_in_main_frame = true;
-  web::FakeWebFrame sender_frame("sender_frame", true, GURL::EmptyGURL());
-  observer_bridge_.DocumentSubmitted(&test_web_state_, &sender_frame,
+  auto sender_frame =
+      web::FakeWebFrame::Create("sender_frame", true, GURL::EmptyGURL());
+  observer_bridge_.DocumentSubmitted(&fake_web_state_, sender_frame.get(),
                                      kTestFormName, kTestFormData,
                                      has_user_gesture, form_in_main_frame);
   ASSERT_TRUE([observer_ submitDocumentInfo]);
-  EXPECT_EQ(&test_web_state_, [observer_ submitDocumentInfo]->web_state);
-  EXPECT_EQ(&sender_frame, [observer_ submitDocumentInfo]->sender_frame);
+  EXPECT_EQ(&fake_web_state_, [observer_ submitDocumentInfo]->web_state);
+  EXPECT_EQ(sender_frame.get(), [observer_ submitDocumentInfo]->sender_frame);
   EXPECT_EQ(kTestFormName, [observer_ submitDocumentInfo]->form_name);
   EXPECT_EQ(kTestFormData, [observer_ submitDocumentInfo]->form_data);
   EXPECT_EQ(has_user_gesture, [observer_ submitDocumentInfo]->has_user_gesture);
@@ -106,17 +107,18 @@ TEST_F(FormActivityObserverBridgeTest, FormActivityRegistered) {
   ASSERT_FALSE([observer_ formActivityInfo]);
 
   autofill::FormActivityParams params;
-  web::FakeWebFrame sender_frame("sender_frame", true, GURL::EmptyGURL());
+  auto sender_frame =
+      web::FakeWebFrame::Create("sender_frame", true, GURL::EmptyGURL());
   params.form_name = "form-name";
   params.field_type = "field-type";
   params.type = "type";
   params.value = "value";
   params.input_missing = true;
-  observer_bridge_.FormActivityRegistered(&test_web_state_, &sender_frame,
+  observer_bridge_.FormActivityRegistered(&fake_web_state_, sender_frame.get(),
                                           params);
   ASSERT_TRUE([observer_ formActivityInfo]);
-  EXPECT_EQ(&test_web_state_, [observer_ formActivityInfo]->web_state);
-  EXPECT_EQ(&sender_frame, [observer_ formActivityInfo]->sender_frame);
+  EXPECT_EQ(&fake_web_state_, [observer_ formActivityInfo]->web_state);
+  EXPECT_EQ(sender_frame.get(), [observer_ formActivityInfo]->sender_frame);
   EXPECT_EQ(params.form_name,
             [observer_ formActivityInfo]->form_activity.form_name);
   EXPECT_EQ(params.field_type,

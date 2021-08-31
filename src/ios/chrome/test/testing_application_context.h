@@ -52,7 +52,6 @@ class TestingApplicationContext : public ApplicationContext {
   metrics::MetricsService* GetMetricsService() override;
   ukm::UkmRecorder* GetUkmRecorder() override;
   variations::VariationsService* GetVariationsService() override;
-  rappor::RapporServiceImpl* GetRapporServiceImpl() override;
   net::NetLog* GetNetLog() override;
   net_log::NetExportFileWriter* GetNetExportFileWriter() override;
   network_time::NetworkTimeTracker* GetNetworkTimeTracker() override;
@@ -63,8 +62,8 @@ class TestingApplicationContext : public ApplicationContext {
   SafeBrowsingService* GetSafeBrowsingService() override;
   network::NetworkConnectionTracker* GetNetworkConnectionTracker() override;
   BrowserPolicyConnectorIOS* GetBrowserPolicyConnector() override;
-  BreadcrumbPersistentStorageManager* GetBreadcrumbPersistentStorageManager()
-      override;
+  breadcrumbs::BreadcrumbPersistentStorageManager*
+  GetBreadcrumbPersistentStorageManager() override;
 
  private:
   base::ThreadChecker thread_checker_;

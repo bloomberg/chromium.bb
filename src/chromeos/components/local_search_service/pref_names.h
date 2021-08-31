@@ -10,13 +10,20 @@ namespace local_search_service {
 namespace prefs {
 
 // Integer pref used by the metrics::DailyEvent owned by
-// local_search_service::MetricsReporter.
+// local_search_service::SearchMetricsReporter.
 extern const char kLocalSearchServiceMetricsDailySample[];
+// TODO(thanhdng): clean this up after LSS is sandboxed.
+extern const char kLocalSearchServiceSyncMetricsDailySample[];
 
 // Integer prefs used to back event counts reported by
-// local_search_service::MetricsReporter.
+// local_search_service::SearchMetricsReporter.
 extern const char kLocalSearchServiceMetricsCrosSettingsCount[];
 extern const char kLocalSearchServiceMetricsHelpAppCount[];
+extern const char kLocalSearchServiceMetricsHelpAppLauncherCount[];
+// TODO(thanhdng): clean this up after LSS is sandboxed.
+extern const char kLocalSearchServiceSyncMetricsCrosSettingsCount[];
+extern const char kLocalSearchServiceSyncMetricsHelpAppCount[];
+extern const char kLocalSearchServiceSyncMetricsHelpAppLauncherCount[];
 
 }  // namespace prefs
 }  // namespace local_search_service

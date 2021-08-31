@@ -26,18 +26,25 @@ class RateLimiter {
  public:
   struct Args {
     bool is_user_build = false;
-    bool is_dropbox = false;
+    bool is_uploading = false;
     bool ignore_guardrails = false;
     bool allow_user_build_tracing = false;
     base::TimeSeconds current_time = base::TimeSeconds(0);
     uint64_t max_upload_bytes_override = 0;
     std::string unique_session_name = "";
   };
+  enum ShouldTraceResponse {
+    kOkToTrace,
+    kNotAllowedOnUserBuild,
+    kFailedToInitState,
+    kInvalidState,
+    kHitUploadLimit,
+  };
 
   RateLimiter();
   virtual ~RateLimiter();
 
-  bool ShouldTrace(const Args& args);
+  ShouldTraceResponse ShouldTrace(const Args& args);
   bool OnTraceDone(const Args& args, bool success, uint64_t bytes);
 
   bool ClearState();

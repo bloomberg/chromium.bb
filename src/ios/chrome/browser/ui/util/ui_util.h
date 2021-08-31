@@ -26,6 +26,9 @@ CGFloat CurrentScreenWidth();
 // Returns true if the device is an iPhone X.
 bool IsIPhoneX();
 
+// Returns true if the device is considered as a small device.
+bool IsSmallDevice();
+
 // Returns the approximate corner radius of the current device.
 CGFloat DeviceCornerRadius();
 

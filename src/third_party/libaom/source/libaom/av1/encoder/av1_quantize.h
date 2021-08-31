@@ -118,6 +118,32 @@ int av1_qindex_to_quantizer(int qindex);
 void av1_quantize_skip(intptr_t n_coeffs, tran_low_t *qcoeff_ptr,
                        tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr);
 
+/*!\brief Quantize transform coefficients without using qmatrix
+ *
+ * quant_ptr, dequant_ptr and round_ptr are size 2 arrays,
+ * where index 0 corresponds to dc coeff and index 1 corresponds to ac coeffs.
+ *
+ * \param[in]  quant_ptr    16-bit fixed point representation of inverse
+ *                          quantize step size, i.e. 2^16/dequant
+ * \param[in]  dequant_ptr  quantize step size
+ * \param[in]  round_ptr    rounding
+ * \param[in]  log_scale    the relative log scale of the transform
+ *                          coefficients
+ * \param[in]  scan         scan[i] indicates the position of ith to-be-coded
+ *                          coefficient
+ * \param[in]  coeff_count  number of coefficients
+ * \param[out] qcoeff_ptr   quantized coefficients
+ * \param[out] dqcoeff_ptr  dequantized coefficients
+ *
+ * \return The last non-zero coefficient's scan index plus 1
+ */
+int av1_quantize_fp_no_qmatrix(const int16_t quant_ptr[2],
+                               const int16_t dequant_ptr[2],
+                               const int16_t round_ptr[2], int log_scale,
+                               const int16_t *scan, int coeff_count,
+                               const tran_low_t *coeff_ptr,
+                               tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr);
+
 void av1_quantize_fp_facade(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                             const MACROBLOCK_PLANE *p, tran_low_t *qcoeff_ptr,
                             tran_low_t *dqcoeff_ptr, uint16_t *eob_ptr,

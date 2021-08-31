@@ -9,17 +9,18 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/flags_ui/feature_entry.h"
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
@@ -43,61 +44,6 @@ namespace {
 // and saved in the dictionary pref (kAboutFlagsOriginLists).
 // E.g. --isolate_origins=http://example1.net,http://example2.net
 const char kOriginListValueSeparator[] = ",";
-
-// Convert switch constants to proper CommandLine::StringType strings.
-base::CommandLine::StringType GetSwitchString(const std::string& flag) {
-  base::CommandLine cmd_line(base::CommandLine::NO_PROGRAM);
-  cmd_line.AppendSwitch(flag);
-  DCHECK_EQ(2U, cmd_line.argv().size());
-  return cmd_line.argv()[1];
-}
-
-// Return the span between the first occurrence of |begin_sentinel_switch| and
-// the last occurrence of |end_sentinel_switch|.
-base::span<const base::CommandLine::StringType> GetSwitchesBetweenSentinels(
-    const base::CommandLine::StringVector& switches,
-    const base::CommandLine::StringType& begin_sentinel_switch,
-    const base::CommandLine::StringType& end_sentinel_switch) {
-  const auto first =
-      std::find(switches.begin(), switches.end(), begin_sentinel_switch);
-  if (first == switches.end())
-    return {};
-  // Go backwards in order to find the last occurrence (as opposed to
-  // std::find() which would return the first one).
-  for (auto last = --switches.end(); last != first; --last) {
-    if (*last == end_sentinel_switch)
-      return base::make_span(&first[1], last - first - 1);
-  }
-  return {};
-}
-
-// Scoops flags from a command line.
-// Only switches between --flag-switches-begin and --flag-switches-end are
-// compared. The embedder may use |extra_flag_sentinel_begin_flag_name| and
-// |extra_sentinel_end_flag_name| to specify other delimiters, if supported.
-std::set<base::CommandLine::StringType> ExtractFlagsFromCommandLine(
-    const base::CommandLine& cmdline,
-    const char* extra_flag_sentinel_begin_flag_name,
-    const char* extra_flag_sentinel_end_flag_name) {
-  DCHECK_EQ(!!extra_flag_sentinel_begin_flag_name,
-            !!extra_flag_sentinel_end_flag_name);
-  std::set<base::CommandLine::StringType> flags;
-  // First do the ones between --flag-switches-begin and --flag-switches-end.
-  const auto flags_span = GetSwitchesBetweenSentinels(
-      cmdline.argv(), GetSwitchString(switches::kFlagSwitchesBegin),
-      GetSwitchString(switches::kFlagSwitchesEnd));
-  flags.insert(flags_span.begin(), flags_span.end());
-
-  // Then add those between the extra sentinels.
-  if (extra_flag_sentinel_begin_flag_name &&
-      extra_flag_sentinel_end_flag_name) {
-    const auto extra_flags_span = GetSwitchesBetweenSentinels(
-        cmdline.argv(), GetSwitchString(extra_flag_sentinel_begin_flag_name),
-        GetSwitchString(extra_flag_sentinel_end_flag_name));
-    flags.insert(extra_flags_span.begin(), extra_flags_span.end());
-  }
-  return flags;
-}
 
 const struct {
   unsigned bit;
@@ -244,10 +190,8 @@ std::set<std::string> TokenizeOriginList(const std::string& value) {
   base::StringTokenizer tokenizer(input, delimiters);
   std::set<std::string> origin_strings;
   while (tokenizer.GetNext()) {
-    const std::string token = tokenizer.token();
-    if (token.empty()) {
-      continue;
-    }
+    base::StringPiece token = tokenizer.token_piece();
+    DCHECK(!token.empty());
     const GURL url(token);
     if (!url.is_valid() ||
         (!url.SchemeIsHTTPOrHTTPS() && !url.SchemeIsWSOrWSS())) {
@@ -289,7 +233,7 @@ std::string GetCombinedOriginListValue(const FlagsStorage& flags_storage,
   return CombineAndSanitizeOriginLists(existing_value, new_value);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // ChromeOS does not call ConvertFlagsToSwitches on startup (see
 // ChromeFeatureListCreator::ConvertFlagsToSwitches() for details) so the
 // command line cannot be updated using pref values. Instead, this method
@@ -436,7 +380,7 @@ void FlagsState::SetFeatureEntryEnabled(FlagsStorage* flags_storage,
     else
       needs_restart_ |= (enabled_entries.erase(internal_name) > 0);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // If an origin list was enabled or disabled, update the command line flag.
     if (e->type == FeatureEntry::ORIGIN_LIST_VALUE && enable)
       DidModifyOriginListFlag(*flags_storage, *e);
@@ -475,7 +419,7 @@ void FlagsState::SetOriginListFlag(const std::string& internal_name,
       CombineAndSanitizeOriginLists(std::string(), value);
   flags_storage->SetOriginListFlag(internal_name, new_value);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   const FeatureEntry* entry = FindFeatureEntryByName(internal_name);
   DCHECK(entry);
 
@@ -498,10 +442,10 @@ void FlagsState::RemoveFlagsSwitches(
     const auto& switch_name = entry.first;
     const auto& switch_added_values = entry.second;
 
-    // The below is either a std::string or a base::string16 based on platform.
+    // The below is either a std::string or a std::u16string based on platform.
     const auto& existing_value = (*switch_list)[switch_name];
 #if defined(OS_WIN)
-    const std::string existing_value_utf8 = base::UTF16ToUTF8(existing_value);
+    const std::string existing_value_utf8 = base::WideToUTF8(existing_value);
 #else
     const std::string& existing_value_utf8 = existing_value;
 #endif
@@ -512,7 +456,7 @@ void FlagsState::RemoveFlagsSwitches(
     // For any featrue name in |features| that is not in |switch_added_values| -
     // i.e. it wasn't added by about_flags code, add it to |remaining_features|.
     for (const auto& feature : features) {
-      if (!base::Contains(switch_added_values, feature.as_string()))
+      if (!base::Contains(switch_added_values, std::string(feature)))
         remaining_features.push_back(feature);
     }
 
@@ -523,7 +467,7 @@ void FlagsState::RemoveFlagsSwitches(
     } else {
       std::string switch_value = base::JoinString(remaining_features, ",");
 #if defined(OS_WIN)
-      (*switch_list)[switch_name] = base::UTF8ToUTF16(switch_value);
+      (*switch_list)[switch_name] = base::UTF8ToWide(switch_value);
 #else
       (*switch_list)[switch_name] = switch_value;
 #endif
@@ -663,7 +607,7 @@ void FlagsState::GetFlagFeatureEntries(
     }
 
     bool supported = (entry.supported_platforms & current_platform) != 0;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     if (access == kOwnerAccessToFlags &&
         (entry.supported_platforms & kOsCrOSOwnerOnly) != 0) {
       supported = true;
@@ -685,9 +629,10 @@ int FlagsState::GetCurrentPlatform() {
   return kOsMac;
 #elif defined(OS_WIN)
   return kOsWin;
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
   return kOsCrOS;
-#elif defined(OS_LINUX) || defined(OS_OPENBSD)
+#elif (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)) || \
+    defined(OS_OPENBSD)
   return kOsLinux;
 #elif defined(OS_ANDROID)
   return kOsAndroid;
@@ -696,39 +641,6 @@ int FlagsState::GetCurrentPlatform() {
 #else
 #error Unknown platform
 #endif
-}
-
-// static
-bool FlagsState::AreSwitchesIdenticalToCurrentCommandLine(
-    const base::CommandLine& new_cmdline,
-    const base::CommandLine& active_cmdline,
-    std::set<base::CommandLine::StringType>* out_difference,
-    const char* extra_flag_sentinel_begin_flag_name,
-    const char* extra_flag_sentinel_end_flag_name) {
-  std::set<base::CommandLine::StringType> new_flags =
-      ExtractFlagsFromCommandLine(new_cmdline,
-                                  extra_flag_sentinel_begin_flag_name,
-                                  extra_flag_sentinel_end_flag_name);
-  std::set<base::CommandLine::StringType> active_flags =
-      ExtractFlagsFromCommandLine(active_cmdline,
-                                  extra_flag_sentinel_begin_flag_name,
-                                  extra_flag_sentinel_end_flag_name);
-
-  bool result = false;
-  // Needed because std::equal doesn't check if the 2nd set is empty.
-  if (new_flags.size() == active_flags.size()) {
-    result =
-        std::equal(new_flags.begin(), new_flags.end(), active_flags.begin());
-  }
-
-  if (out_difference && !result) {
-    std::set_symmetric_difference(
-        new_flags.begin(), new_flags.end(), active_flags.begin(),
-        active_flags.end(),
-        std::inserter(*out_difference, out_difference->begin()));
-  }
-
-  return result;
 }
 
 void FlagsState::AddSwitchMapping(
@@ -863,7 +775,7 @@ void FlagsState::GetSanitizedEnabledFlagsForCurrentPlatform(
   GetSanitizedEnabledFlags(flags_storage, result);
 
   int platform_mask = GetCurrentPlatform();
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   platform_mask |= kOsCrOSOwnerOnly;
 #endif
   std::set<std::string> platform_entries =

@@ -78,8 +78,6 @@ class AccountTrackerService {
   // Registers the preferences used by AccountTrackerService.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  void Shutdown();
-
   // Initializes the list of accounts from |pref_service| and load images from
   // |user_data_dir|. If |user_data_dir| is empty, images will not be saved to
   // nor loaded from disk.
@@ -121,10 +119,6 @@ class AccountTrackerService {
 
   void RemoveAccount(const CoreAccountId& account_id);
 
-  // Is migration of the account id from normalized email to gaia id supported
-  // on the current platform?
-  static bool IsMigrationSupported();
-
   AccountIdMigrationState GetMigrationState() const;
   void SetMigrationDone();
 
@@ -137,11 +131,6 @@ class AccountTrackerService {
       JNIEnv* env,
       const base::android::JavaParamRef<jobjectArray>& gaiaIds,
       const base::android::JavaParamRef<jobjectArray>& accountNames);
-
-  // Checks whether all the accounts with |accountNames| are seeded.
-  jboolean AreAccountsSeeded(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobjectArray>& accountNames) const;
 #endif
 
   // If set, this callback will be invoked whenever the details of a tracked
@@ -155,6 +144,10 @@ class AccountTrackerService {
   // Flushes the account changes to disk. The flush happens asynchronously and
   // this function does not block on disk IO.
   void CommitPendingAccountChanges();
+
+  // Only used in tests to simulate a restart of the service. Accounts are
+  // reloaded.
+  void ResetForTesting();
 
  protected:
   // Available to be called in tests.
@@ -213,7 +206,7 @@ class AccountTrackerService {
 
   // Returns whether the accounts are all keyed by gaia id. This should
   // be the case when the migration state is set to MIGRATION_DONE.
-  bool IsMigrationDone() const;
+  bool AreAllAccountsMigrated() const;
 
   // Computes the new migration state. The state is saved to preference
   // before performing the migration in order to support resuming the

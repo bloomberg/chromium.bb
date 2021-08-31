@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">ਬਿਲਟ-ਇਨ ਡਿਸਪਲੇ</translation>
 <translation id="335581015389089642">ਸਪੀਚ</translation>
 <translation id="3389286852084373014">ਲਿਖਤ ਬਹੁਤ ਜ਼ਿਆਦਾ ਵੱਡੀ ਹੈ</translation>
+<translation id="3406306243914553062">HTML ਸਮੱਗਰੀ</translation>
 <translation id="348799646910989694">ਸ਼ੈਲਫ਼ ਸਵੈਚਲਿਤ ਤੌਰ 'ਤੇ ਲੁਕ ਜਾਵੇਗੀ</translation>
 <translation id="3554637740840164787"><ph name="ITEM_TITLE" /> ਨੂੰ ਪਿੰਨ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{1 ਦਿਨ ਬਾਕੀ}one{# ਦਿਨ ਬਾਕੀ}other{# ਦਿਨ ਬਾਕੀ}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">ਨੰਬਰ</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />। <ph name="TYPE_2" />।</translation>
 <translation id="3842239759367498783">ਆਪਣੇ ਮੋਬਾਈਲ ਡੀਵਾਈਸ <ph name="TITLE" /> ਤੋਂ ਪੜ੍ਹਨਾ ਜਾਰੀ ਰੱਖੋ</translation>
 <translation id="385051799172605136">ਪਿੱਛੇ</translation>
 <translation id="3889424535448813030">ਸੱਜਾ ਤੀਰ</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 ਮਹੀਨਾ ਪਹਿਲਾਂ}one{# ਮਹੀਨਾ ਪਹਿਲਾਂ}other{# ਮਹੀਨੇ ਪਹਿਲਾਂ}}</translation>
 <translation id="4289300219472526559">ਬੋਲਣਾ ਸ਼ੁਰੂ ਕਰੋ</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> ਨੂੰ <ph name="FOLDER_NAME" /> ਫੋਲਡਰ ਵਿੱਚ ਲਿਜਾਇਆ ਗਿਆ।</translation>
+<translation id="4306392492252714209">ਕਲਿੱਪਬੋਰਡ ਵਿੱਚੋਂ ਹਟਾਓ।</translation>
 <translation id="4316910396681052118">ਸਭ ਐਪਾਂ</translation>
 <translation id="4491109536499578614">ਚਿੱਤਰ</translation>
 <translation id="4588090240171750605">ਸੱਜੇ ਪਾਸੇ ਸਕ੍ਰੌਲ ਕਰੋ</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">ਕੀ ਇਸ ਖੋਜ ਨੂੰ ਤੁਹਾਡੇ ਇਤਿਹਾਸ ਵਿੱਚੋਂ ਮਿਟਾਉਣਾ ਹੈ?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">ਇਮੋਜੀ</translation>
+<translation id="7620655452534002301">ਹਟਾਇਆ ਗਿਆ।</translation>
 <translation id="7658239707568436148">ਰੱਦ ਕਰੋ</translation>
 <translation id="7781829728241885113">ਕੱਲ੍ਹ</translation>
 <translation id="7814458197256864873">&amp;ਕਾਪੀ ਕਰੋ</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{1 ਘੰਟਾ ਪਹਿਲਾਂ}one{# ਘੰਟੇ ਪਹਿਲਾਂ}other{# ਘੰਟੇ ਪਹਿਲਾਂ}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{1 ਸਕਿੰਟ ਬਾਕੀ}one{# ਸਕਿੰਟ ਬਾਕੀ}other{# ਸਕਿੰਟ ਬਾਕੀ}}</translation>
 <translation id="8134065097954893699">ਇਸ ਪੰਨੇ ਨੂੰ ਰੀਲੋਡ ਕਰਨਾ</translation>
-<translation id="8144660977431427332">ਤੁਹਾਡੀਆਂ ਖੋਜਾਂ ਨੂੰ 'Google ਅਸਿਸਟੈਂਟ' ਰਾਹੀਂ ਸੰਚਾਲਿਤ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, ਸਵੈ-ਮੁਕੰਮਲ</translation>
 <translation id="815598010540052116">ਸਕ੍ਰੌਲ ਡਾਊਨ</translation>
 <translation id="8179976553408161302">ਦਰਜ ਕਰੋ</translation>
 <translation id="8210608804940886430">ਸਫ਼ਾ ਹੇਠਾਂ</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">ਟੈਬ</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, ਐਪ</translation>
 <translation id="8259556432390118667">ਹੈਕਸ ਰੰਗ ਮੁੱਲ</translation>

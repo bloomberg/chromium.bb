@@ -663,6 +663,17 @@ class Runner(object):
                 self._print_test_started(stats, test_input)
 
             result, should_retry_on_failure = pool.get()
+            if result.is_regression:
+                stats.failed += 1
+            if (self.args.typ_max_failures is not None
+                and stats.failed >= self.args.typ_max_failures):
+                print('\nAborting, waiting for processes to close')
+                pool.close()
+                pool.join()
+                raise RuntimeError(
+                    'Encountered %d failures with max of %d set, aborting.' % (
+                    stats.failed, self.args.typ_max_failures))
+
             if (self.args.retry_only_retry_on_failure_tests and
                 result.actual == ResultType.Failure and
                 should_retry_on_failure):
@@ -1085,10 +1096,11 @@ def _run_one_test(child, test_input):
                                     err, child.worker_num, pid,
                                     expected_results, child.has_expectations,
                                     art.artifacts)
+    test_location = inspect.getsourcefile(test_case.__class__)
     result.result_sink_retcode =\
             child.result_sink_reporter.report_individual_test_result(
                 child.test_name_prefix, result, child.artifact_output_dir,
-                child.expectations.tags if child.expectations else [])
+                child.expectations, test_location)
     return (result, should_retry_on_failure)
 
 

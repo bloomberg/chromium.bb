@@ -5,6 +5,7 @@
 #include "extensions/browser/api/serial/serial_connection.h"
 
 #include <algorithm>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -167,7 +168,7 @@ SerialConnection::SerialConnection(const std::string& owner_extension_id)
       receive_timeout_(0),
       send_timeout_(0),
       paused_(true),
-      read_error_(base::nullopt),
+      read_error_(absl::nullopt),
       bytes_written_(0),
       receive_pipe_watcher_(FROM_HERE,
                             mojo::SimpleWatcher::ArmingPolicy::MANUAL),
@@ -261,7 +262,8 @@ void SerialConnection::CreatePipe(
   options.element_num_bytes = 1;
   options.capacity_num_bytes = buffer_size_;
 
-  CHECK_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(&options, producer, consumer));
+  CHECK_EQ(MOJO_RESULT_OK,
+           mojo::CreateDataPipe(&options, *producer, *consumer));
 }
 
 void SerialConnection::SetUpReceiveDataPipe() {
@@ -416,8 +418,8 @@ bool SerialConnection::Send(const std::vector<uint8_t>& data,
 
   send_timeout_task_.Cancel();
   if (send_timeout_ > 0) {
-    send_timeout_task_.Reset(base::Bind(&SerialConnection::OnSendTimeout,
-                                        weak_factory_.GetWeakPtr()));
+    send_timeout_task_.Reset(base::BindOnce(&SerialConnection::OnSendTimeout,
+                                            weak_factory_.GetWeakPtr()));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, send_timeout_task_.callback(),
         base::TimeDelta::FromMilliseconds(send_timeout_));
@@ -464,11 +466,12 @@ void SerialConnection::GetInfo(GetInfoCompleteCallback callback) const {
           std::move(callback).Run(false, std::move(info));
           return;
         }
-        info->bitrate.reset(new int(port_info->bitrate));
+        info->bitrate = std::make_unique<int>(port_info->bitrate);
         info->data_bits = ConvertDataBitsFromMojo(port_info->data_bits);
         info->parity_bit = ConvertParityBitFromMojo(port_info->parity_bit);
         info->stop_bits = ConvertStopBitsFromMojo(port_info->stop_bits);
-        info->cts_flow_control.reset(new bool(port_info->cts_flow_control));
+        info->cts_flow_control =
+            std::make_unique<bool>(port_info->cts_flow_control);
         std::move(callback).Run(true, std::move(info));
       },
       std::move(callback), std::move(info));
@@ -527,8 +530,8 @@ void SerialConnection::InitSerialPortForTesting() {
 
 void SerialConnection::SetTimeoutCallback() {
   if (receive_timeout_ > 0) {
-    receive_timeout_task_.Reset(base::Bind(&SerialConnection::OnReceiveTimeout,
-                                           weak_factory_.GetWeakPtr()));
+    receive_timeout_task_.Reset(base::BindOnce(
+        &SerialConnection::OnReceiveTimeout, weak_factory_.GetWeakPtr()));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, receive_timeout_task_.callback(),
         base::TimeDelta::FromMilliseconds(receive_timeout_));

@@ -19,10 +19,8 @@ bool WebTestTtsPlatform::PlatformImplInitialized() {
   return true;
 }
 
-bool WebTestTtsPlatform::LoadBuiltInTtsEngine(
-    content::BrowserContext* browser_context) {
-  return false;
-}
+void WebTestTtsPlatform::LoadBuiltInTtsEngine(
+    content::BrowserContext* browser_context) {}
 
 void WebTestTtsPlatform::Speak(
     int utterance_id,
@@ -69,6 +67,10 @@ void WebTestTtsPlatform::SetError(const std::string& error) {}
 
 void WebTestTtsPlatform::Shutdown() {}
 
-WebTestTtsPlatform::WebTestTtsPlatform() {}
+bool WebTestTtsPlatform::PreferEngineDelegateVoices() {
+  return false;
+}
 
-WebTestTtsPlatform::~WebTestTtsPlatform() {}
+WebTestTtsPlatform::WebTestTtsPlatform() = default;
+
+WebTestTtsPlatform::~WebTestTtsPlatform() = default;

@@ -49,9 +49,9 @@ static GrSwizzle get_swizzle(const GrBackendFormat& format, GrColorType colorTyp
         case GrColorType::kAlpha_8: // fall through
         case GrColorType::kAlpha_F16:
             if (forOutput) {
-                return GrSwizzle::AAAA();
+                return GrSwizzle("a000");
             } else {
-                return GrSwizzle::RRRR();
+                return GrSwizzle("000r");
             }
         case GrColorType::kGray_8:
             if (!forOutput) {
@@ -164,22 +164,21 @@ static uint32_t get_blend_info_key(const GrPipeline& pipeline) {
     return key;
 }
 
-GrProgramDesc GrDawnCaps::makeDesc(GrRenderTarget* rt, const GrProgramInfo& programInfo) const {
+GrProgramDesc GrDawnCaps::makeDesc(GrRenderTarget* rt,
+                                   const GrProgramInfo& programInfo,
+                                   ProgramDescOverrideFlags overrideFlags) const {
+    SkASSERT(overrideFlags == ProgramDescOverrideFlags::kNone);
     GrProgramDesc desc;
-    if (!GrProgramDesc::Build(&desc, rt, programInfo, *this)) {
-        SkASSERT(!desc.isValid());
-        return desc;
-    }
+    GrProgramDesc::Build(&desc, programInfo, *this);
 
     wgpu::TextureFormat format;
     if (!programInfo.backendFormat().asDawnFormat(&format)) {
-        desc.key().reset();
+        desc.reset();
         SkASSERT(!desc.isValid());
         return desc;
     }
 
-    GrProcessorKeyBuilder b(&desc.key());
-
+    GrProcessorKeyBuilder b(desc.key());
     GrStencilSettings stencil = programInfo.nonGLStencilSettings();
     stencil.genKey(&b, true);
 
@@ -190,6 +189,8 @@ GrProgramDesc GrDawnCaps::makeDesc(GrRenderTarget* rt, const GrProgramInfo& prog
     b.add32(static_cast<int32_t>(hasDepthStencil));
     b.add32(get_blend_info_key(programInfo.pipeline()));
     b.add32(programInfo.primitiveTypeKey());
+
+    b.flush();
     return desc;
 }
 

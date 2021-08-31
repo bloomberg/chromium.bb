@@ -38,16 +38,28 @@ namespace {
 
 // Encapsulates logic to determine if enterprise policies should be honored.
 bool ShouldHonorPolicies() {
+  // Only honor sensitive policies if the Mac is managed externally.
   base::DeviceUserDomainJoinState join_state =
       base::AreDeviceAndUserJoinedToDomain();
+  if (join_state.device_joined)
+    return true;
+
   // IsDeviceRegisteredWithManagementNew is only available after 10.13.4.
   // Eventually switch to it when that is the minimum OS required by Chromium.
-  base::MacDeviceManagementStateOld mdm_state =
-      base::IsDeviceRegisteredWithManagementOld();
+  if (@available(macOS 10.13.4, *)) {
+    base::MacDeviceManagementStateNew mdm_state =
+        base::IsDeviceRegisteredWithManagementNew();
+    return mdm_state ==
+               base::MacDeviceManagementStateNew::kLimitedMDMEnrollment ||
+           mdm_state == base::MacDeviceManagementStateNew::kFullMDMEnrollment ||
+           mdm_state == base::MacDeviceManagementStateNew::kDEPMDMEnrollment;
+  } else {
+    base::MacDeviceManagementStateOld mdm_state =
+        base::IsDeviceRegisteredWithManagementOld();
+    return mdm_state == base::MacDeviceManagementStateOld::kMDMEnrollment;
+  }
 
-  // Only honor sensitive policies if the Mac is managed externally.
-  return join_state.device_joined ||
-         mdm_state == base::MacDeviceManagementStateOld::kMDMEnrollment;
+  return false;
 }
 
 }  // namespace
@@ -66,7 +78,7 @@ PolicyLoaderMac::PolicyLoaderMac(
     const base::FilePath& managed_policy_path,
     MacPreferences* preferences,
     CFStringRef application_id)
-    : AsyncPolicyLoader(task_runner),
+    : AsyncPolicyLoader(task_runner, /*periodic_updates=*/true),
       preferences_(preferences),
       managed_policy_path_(managed_policy_path),
       application_id_(CFStringCreateCopy(kCFAllocatorDefault, application_id)) {
@@ -77,7 +89,8 @@ PolicyLoaderMac::~PolicyLoaderMac() {
 
 void PolicyLoaderMac::InitOnBackgroundThread() {
   if (!managed_policy_path_.empty()) {
-    watcher_.Watch(managed_policy_path_, false,
+    watcher_.Watch(managed_policy_path_,
+                   base::FilePathWatcher::Type::kNonRecursive,
                    base::BindRepeating(&PolicyLoaderMac::OnFileUpdated,
                                        base::Unretained(this)));
   }
@@ -187,7 +200,7 @@ base::FilePath PolicyLoaderMac::GetManagedPolicyPath(CFStringRef bundle_id) {
 void PolicyLoaderMac::LoadPolicyForDomain(PolicyDomain domain,
                                           const std::string& domain_name,
                                           PolicyBundle* bundle) {
-  std::string id_prefix(base::mac::BaseBundleID());
+  std::string id_prefix(base::SysCFStringRefToUTF8(application_id_));
   id_prefix.append(".").append(domain_name).append(".");
 
   const ComponentMap* components = schema_map()->GetComponents(domain);

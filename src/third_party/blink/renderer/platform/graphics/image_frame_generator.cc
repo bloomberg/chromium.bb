@@ -34,36 +34,39 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkYUVASizeInfo.h"
 
 namespace blink {
 
-static bool UpdateYUVAInfoPlanarConfigAndWidthBytes(
-    ImageDecoder* decoder,
-    SkYUVAInfo::PlanarConfig* config,
-    size_t component_width_bytes[SkYUVAInfo::kMaxPlanes]) {
-  switch (decoder->GetYUVSubsampling()) {
+SkYUVAInfo::Subsampling SubsamplingToSkiaSubsampling(
+    cc::YUVSubsampling subsampling) {
+  switch (subsampling) {
     case cc::YUVSubsampling::k410:
-      *config = SkYUVAInfo::PlanarConfig::kY_U_V_410;
-      break;
+      return SkYUVAInfo::Subsampling::k410;
     case cc::YUVSubsampling::k411:
-      *config = SkYUVAInfo::PlanarConfig::kY_U_V_411;
-      break;
+      return SkYUVAInfo::Subsampling::k411;
     case cc::YUVSubsampling::k420:
-      *config = SkYUVAInfo::PlanarConfig::kY_U_V_420;
-      break;
+      return SkYUVAInfo::Subsampling::k420;
     case cc::YUVSubsampling::k422:
-      *config = SkYUVAInfo::PlanarConfig::kY_U_V_422;
-      break;
+      return SkYUVAInfo::Subsampling::k422;
     case cc::YUVSubsampling::k440:
-      *config = SkYUVAInfo::PlanarConfig::kY_U_V_440;
-      break;
+      return SkYUVAInfo::Subsampling::k440;
     case cc::YUVSubsampling::k444:
-      *config = SkYUVAInfo::PlanarConfig::kY_U_V_444;
-      break;
-    default:
-      return false;
+      return SkYUVAInfo::Subsampling::k444;
+    case cc::YUVSubsampling::kUnknown:
+      return SkYUVAInfo::Subsampling::kUnknown;
   }
+}
+
+static bool UpdateYUVAInfoSubsamplingAndWidthBytes(
+    ImageDecoder* decoder,
+    SkYUVAInfo::Subsampling* subsampling,
+    size_t component_width_bytes[SkYUVAInfo::kMaxPlanes]) {
+  SkYUVAInfo::Subsampling tempSubsampling =
+      SubsamplingToSkiaSubsampling(decoder->GetYUVSubsampling());
+  if (tempSubsampling == SkYUVAInfo::Subsampling::kUnknown) {
+    return false;
+  }
+  *subsampling = tempSubsampling;
   component_width_bytes[0] = decoder->DecodedYUVWidthBytes(cc::YUVIndex::kY);
   component_width_bytes[1] = decoder->DecodedYUVWidthBytes(cc::YUVIndex::kU);
   component_width_bytes[2] = decoder->DecodedYUVWidthBytes(cc::YUVIndex::kV);
@@ -112,7 +115,7 @@ bool ImageFrameGenerator::DecodeAndScale(
   }
 
   TRACE_EVENT1("blink", "ImageFrameGenerator::decodeAndScale", "generator",
-               this);
+               static_cast<void*>(this));
 
   // This implementation does not support arbitrary scaling so check the
   // requested size.
@@ -205,14 +208,20 @@ bool ImageFrameGenerator::DecodeToYUV(
     decoder->DecodeToYUV();
   }
 
-  if (!decoder->Failed()) {
+  // Display a complete scan if available, even if decoding fails.
+  if (decoder->HasDisplayableYUVData()) {
     // TODO(crbug.com/910276): Set this properly for alpha support.
     SetHasAlpha(index, false);
     return true;
   }
 
-  DCHECK(decoder->Failed());
-  yuv_decoding_failed_ = true;
+  // Currently if there is no displayable data, the decoder always fails.
+  // This may not be the case once YUV supports incremental decoding
+  // (crbug.com/943519).
+  if (decoder->Failed()) {
+    yuv_decoding_failed_ = true;
+  }
+
   return false;
 }
 
@@ -253,26 +262,29 @@ bool ImageFrameGenerator::GetYUVAInfo(
   DCHECK(decoder);
 
   DCHECK(decoder->CanDecodeToYUV());
-  SkYUVAInfo::PlanarConfig config;
+  SkYUVAInfo::Subsampling subsampling;
   size_t width_bytes[SkYUVAInfo::kMaxPlanes];
-  if (!UpdateYUVAInfoPlanarConfigAndWidthBytes(decoder.get(), &config,
-                                               width_bytes)) {
+  if (!UpdateYUVAInfoSubsamplingAndWidthBytes(decoder.get(), &subsampling,
+                                              width_bytes)) {
     return false;
   }
-  SkYUVAInfo yuva_info(full_size_, config, decoder->GetYUVColorSpace());
+  SkYUVAInfo yuva_info(full_size_, SkYUVAInfo::PlaneConfig::kY_U_V, subsampling,
+                       decoder->GetYUVColorSpace());
   SkYUVAPixmapInfo::DataType dataType;
   if (decoder->GetYUVBitDepth() > 8) {
-    if (supported_data_types.supported(config,
+    if (supported_data_types.supported(SkYUVAInfo::PlaneConfig::kY_U_V,
                                        SkYUVAPixmapInfo::DataType::kUnorm16)) {
       dataType = SkYUVAPixmapInfo::DataType::kUnorm16;
     } else if (supported_data_types.supported(
-                   config, SkYUVAPixmapInfo::DataType::kFloat16)) {
+                   SkYUVAInfo::PlaneConfig::kY_U_V,
+                   SkYUVAPixmapInfo::DataType::kFloat16)) {
       dataType = SkYUVAPixmapInfo::DataType::kFloat16;
     } else {
       return false;
     }
   } else if (supported_data_types.supported(
-                 config, SkYUVAPixmapInfo::DataType::kUnorm8)) {
+                 SkYUVAInfo::PlaneConfig::kY_U_V,
+                 SkYUVAPixmapInfo::DataType::kUnorm8)) {
     dataType = SkYUVAPixmapInfo::DataType::kUnorm8;
   } else {
     return false;

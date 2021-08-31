@@ -79,7 +79,11 @@ struct hb_subset_plan_t
   hb_map_t *gsub_lookups;
   hb_map_t *gpos_lookups;
 
-  //active features we'd like to retain
+  //active langsys we'd like to retain
+  hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *gsub_langsys;
+  hb_hashmap_t<unsigned, hb_set_t *, (unsigned)-1, nullptr> *gpos_langsys;
+
+  //active features after removing redundant langsys and prune_features
   hb_map_t *gsub_features;
   hb_map_t *gpos_features;
 
@@ -172,12 +176,15 @@ struct hb_subset_plan_t
   add_table (hb_tag_t tag,
 	     hb_blob_t *contents)
   {
-    hb_blob_t *source_blob = source->reference_table (tag);
-    DEBUG_MSG(SUBSET, nullptr, "add table %c%c%c%c, dest %d bytes, source %d bytes",
-	      HB_UNTAG(tag),
-	      hb_blob_get_length (contents),
-	      hb_blob_get_length (source_blob));
-    hb_blob_destroy (source_blob);
+    if (HB_DEBUG_SUBSET)
+    {
+      hb_blob_t *source_blob = source->reference_table (tag);
+      DEBUG_MSG(SUBSET, nullptr, "add table %c%c%c%c, dest %d bytes, source %d bytes",
+		HB_UNTAG(tag),
+		hb_blob_get_length (contents),
+		hb_blob_get_length (source_blob));
+      hb_blob_destroy (source_blob);
+    }
     return hb_face_builder_add_table (dest, tag, contents);
   }
 };

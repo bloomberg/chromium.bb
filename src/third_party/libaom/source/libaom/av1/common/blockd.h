@@ -194,11 +194,6 @@ typedef struct RD_STATS {
   int zero_rate;
 #if CONFIG_RD_DEBUG
   int txb_coeff_cost[MAX_MB_PLANE];
-  // TODO(jingning): Temporary solution to silence stack over-size warning
-  // in handle_inter_mode. This should be fixed after rate-distortion
-  // optimization refactoring.
-  int16_t txb_coeff_cost_map[MAX_MB_PLANE][TXB_COEFF_COST_MAP_SIZE]
-                            [TXB_COEFF_COST_MAP_SIZE];
 #endif  // CONFIG_RD_DEBUG
 } RD_STATS;
 
@@ -552,10 +547,6 @@ typedef struct cfl_ctx {
 
   // Whether the reconstructed luma pixels need to be stored
   int store_y;
-
-#if CONFIG_DEBUG
-  int rate;
-#endif  // CONFIG_DEBUG
 } CFL_CTX;
 
 typedef struct dist_wtd_comp_params {
@@ -810,7 +801,7 @@ typedef struct macroblockd {
   FRAME_CONTEXT *tile_ctx;
 
   /*!
-   * Bit depth: copied from cm->seq_params.bit_depth for convenience.
+   * Bit depth: copied from cm->seq_params->bit_depth for convenience.
    */
   int bd;
 
@@ -893,7 +884,7 @@ typedef struct macroblockd {
   /*!
    * Mask for this block used for compound prediction.
    */
-  DECLARE_ALIGNED(16, uint8_t, seg_mask[2 * MAX_SB_SQUARE]);
+  uint8_t *seg_mask;
 
   /*!
    * CFL (chroma from luma) related parameters.
@@ -937,13 +928,42 @@ typedef struct macroblockd {
 /*!\cond */
 
 static INLINE int is_cur_buf_hbd(const MACROBLOCKD *xd) {
+#if CONFIG_AV1_HIGHBITDEPTH
   return xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH ? 1 : 0;
+#else
+  (void)xd;
+  return 0;
+#endif
 }
 
 static INLINE uint8_t *get_buf_by_bd(const MACROBLOCKD *xd, uint8_t *buf16) {
+#if CONFIG_AV1_HIGHBITDEPTH
   return (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
              ? CONVERT_TO_BYTEPTR(buf16)
              : buf16;
+#else
+  (void)xd;
+  return buf16;
+#endif
+}
+
+typedef struct BitDepthInfo {
+  int bit_depth;
+  /*! Is the image buffer high bit depth?
+   * Low bit depth buffer uses uint8_t.
+   * High bit depth buffer uses uint16_t.
+   * Equivalent to cm->seq_params->use_highbitdepth
+   */
+  int use_highbitdepth_buf;
+} BitDepthInfo;
+
+static INLINE BitDepthInfo get_bit_depth_info(const MACROBLOCKD *xd) {
+  BitDepthInfo bit_depth_info;
+  bit_depth_info.bit_depth = xd->bd;
+  bit_depth_info.use_highbitdepth_buf = is_cur_buf_hbd(xd);
+  assert(IMPLIES(!bit_depth_info.use_highbitdepth_buf,
+                 bit_depth_info.bit_depth == 8));
+  return bit_depth_info;
 }
 
 static INLINE int get_sqr_bsize_idx(BLOCK_SIZE bsize) {
@@ -1018,6 +1038,28 @@ static const int av1_ext_tx_used[EXT_TX_SET_TYPES][TX_TYPES] = {
   { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0 },
   { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },
   { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 },
+};
+
+// The bitmask corresponds to the transform types as defined in
+// enums.h TX_TYPE enumeration type. Setting the bit 0 means to disable
+// the use of the corresponding transform type in that table.
+// The av1_derived_intra_tx_used_flag table is used when
+// use_reduced_intra_txset is set to 2, where one only searches
+// the transform types derived from residual statistics.
+static const uint16_t av1_derived_intra_tx_used_flag[INTRA_MODES] = {
+  0x0209,  // DC_PRED:       0000 0010 0000 1001
+  0x0403,  // V_PRED:        0000 0100 0000 0011
+  0x0805,  // H_PRED:        0000 1000 0000 0101
+  0x020F,  // D45_PRED:      0000 0010 0000 1111
+  0x0009,  // D135_PRED:     0000 0000 0000 1001
+  0x0009,  // D113_PRED:     0000 0000 0000 1001
+  0x0009,  // D157_PRED:     0000 0000 0000 1001
+  0x0805,  // D203_PRED:     0000 1000 0000 0101
+  0x0403,  // D67_PRED:      0000 0100 0000 0011
+  0x0205,  // SMOOTH_PRED:   0000 0010 0000 1001
+  0x0403,  // SMOOTH_V_PRED: 0000 0100 0000 0011
+  0x0805,  // SMOOTH_H_PRED: 0000 1000 0000 0101
+  0x0209,  // PAETH_PRED:    0000 0010 0000 1001
 };
 
 static const uint16_t av1_reduced_intra_tx_used_flag[INTRA_MODES] = {
@@ -1507,10 +1549,12 @@ static INLINE void av1_get_block_dimensions(BLOCK_SIZE bsize, int plane,
 }
 
 /* clang-format off */
+// Pointer to a three-dimensional array whose first dimension is PALETTE_SIZES.
 typedef aom_cdf_prob (*MapCdf)[PALETTE_COLOR_INDEX_CONTEXTS]
                               [CDF_SIZE(PALETTE_COLORS)];
-typedef const int (*ColorCost)[PALETTE_SIZES][PALETTE_COLOR_INDEX_CONTEXTS]
-                              [PALETTE_COLORS];
+// Pointer to a const three-dimensional array whose first dimension is
+// PALETTE_SIZES.
+typedef const int (*ColorCost)[PALETTE_COLOR_INDEX_CONTEXTS][PALETTE_COLORS];
 /* clang-format on */
 
 typedef struct {

@@ -78,8 +78,11 @@ class ScrollLatencyBrowserTest : public ContentBrowserTest {
   ~ScrollLatencyBrowserTest() override {}
 
   RenderWidgetHostImpl* GetWidgetHost() {
-    return RenderWidgetHostImpl::From(
-        shell()->web_contents()->GetRenderViewHost()->GetWidget());
+    return RenderWidgetHostImpl::From(shell()
+                                          ->web_contents()
+                                          ->GetMainFrame()
+                                          ->GetRenderViewHost()
+                                          ->GetWidget());
   }
 
   // TODO(tdresser): Find a way to avoid sleeping like this. See
@@ -212,7 +215,13 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, MultipleWheelScroll) {
   RunMultipleWheelScroll();
 }
 
-IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest, MultipleWheelScrollOnMain) {
+#if !defined(NDEBUG) && defined(OS_LINUX)
+#define MAYBE_MultipleWheelScrollOnMain DISABLED_MultipleWheelScrollOnMain
+#else
+#define MAYBE_MultipleWheelScrollOnMain MultipleWheelScrollOnMain
+#endif
+IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
+                       MAYBE_MultipleWheelScrollOnMain) {
   disable_threaded_scrolling_ = true;
   LoadURL();
   RunMultipleWheelScroll();
@@ -229,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyBrowserTest,
   // Try to scroll upward, the GSU(s) will get ignored since the scroller is at
   // its extent.
   SyntheticSmoothScrollGestureParams params;
-  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.gesture_source_type = content::mojom::GestureSourceType::kTouchInput;
   params.anchor = gfx::PointF(10, 10);
   params.distances.push_back(gfx::Vector2d(0, 60));
 
@@ -279,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(ScrollThroughputBrowserTest,
       GetWidgetHost(), blink::WebInputEvent::Type::kGestureScrollEnd);
 
   SyntheticSmoothScrollGestureParams params;
-  params.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
+  params.gesture_source_type = content::mojom::GestureSourceType::kTouchInput;
   params.anchor = gfx::PointF(10, 10);
   params.distances.push_back(gfx::Vector2d(0, -6000));
   params.fling_velocity_x = 0;
@@ -502,8 +511,9 @@ IN_PROC_BROWSER_TEST_F(ScrollLatencyScrollbarBrowserTest,
   RunScrollbarButtonLatencyTest();
 }
 
+// Disabled due to flakes; see https://crbug.com/1188553.
 IN_PROC_BROWSER_TEST_F(ScrollLatencyScrollbarBrowserTest,
-                       ScrollbarThumbDragLatency) {
+                       DISABLED_ScrollbarThumbDragLatency) {
   LoadURL();
 
   RunScrollbarThumbDragLatencyTest();
@@ -528,18 +538,86 @@ class ScrollLatencyCompositedScrollbarBrowserTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// Flaky test on all platforms: https://crbug.com/1122371.
 IN_PROC_BROWSER_TEST_F(ScrollLatencyCompositedScrollbarBrowserTest,
-                       ScrollbarButtonLatency) {
+                       DISABLED_ScrollbarButtonLatency) {
   LoadURL();
 
   RunScrollbarButtonLatencyTest();
 }
 
+// Crashes on Mac ASAN.  https://crbug.com/1188553
+#if defined(OS_MAC)
+#define MAYBE_ScrollbarThumbDragLatency DISABLED_ScrollbarThumbDragLatency
+#else
+#define MAYBE_ScrollbarThumbDragLatency ScrollbarThumbDragLatency
+#endif
 IN_PROC_BROWSER_TEST_F(ScrollLatencyCompositedScrollbarBrowserTest,
-                       ScrollbarThumbDragLatency) {
+                       MAYBE_ScrollbarThumbDragLatency) {
   LoadURL();
 
   RunScrollbarThumbDragLatencyTest();
+}
+
+IN_PROC_BROWSER_TEST_F(ScrollLatencyCompositedScrollbarBrowserTest,
+                       ScrollbarThumbDragDeviceChange) {
+#if !defined(OS_ANDROID)
+  LoadURL();
+
+  // First, set up a gesture scroll for any device other than a scrollbar.
+  const blink::WebGestureEvent scroll_begin =
+      blink::SyntheticWebGestureEventBuilder::BuildScrollBegin(
+          0, 0, blink::WebGestureDevice::kTouchpad, 1);
+  GetWidgetHost()->ForwardGestureEvent(scroll_begin);
+
+  const blink::WebGestureEvent scroll_update =
+      blink::SyntheticWebGestureEventBuilder::BuildScrollUpdate(
+          0, -10, 0, blink::WebGestureDevice::kTouchpad);
+  GetWidgetHost()->ForwardGestureEvent(scroll_update);
+
+  // Next, drag the scrollbar thumb. Start with a mousedown.
+  const gfx::PointF scrollbar_thumb(795, 30);
+  blink::WebMouseEvent mouse_down = blink::SyntheticWebMouseEventBuilder::Build(
+      blink::WebInputEvent::Type::kMouseDown, scrollbar_thumb.x(),
+      scrollbar_thumb.y(), 0);
+  mouse_down.button = blink::WebMouseEvent::Button::kLeft;
+  mouse_down.SetTimeStamp(base::TimeTicks::Now());
+  GetWidgetHost()->ForwardMouseEvent(mouse_down);
+  RunUntilInputProcessed(GetWidgetHost());
+
+  // Followed by a couple of mousemoves.
+  blink::WebMouseEvent mouse_move = blink::SyntheticWebMouseEventBuilder::Build(
+      blink::WebInputEvent::Type::kMouseMove, scrollbar_thumb.x(),
+      scrollbar_thumb.y() + 10, 0);
+  mouse_move.button = blink::WebMouseEvent::Button::kLeft;
+  mouse_move.SetTimeStamp(base::TimeTicks::Now());
+  GetWidgetHost()->ForwardMouseEvent(mouse_move);
+  RunUntilInputProcessed(GetWidgetHost());
+
+  mouse_move.SetPositionInWidget(scrollbar_thumb.x(), scrollbar_thumb.y() + 20);
+  mouse_move.SetPositionInScreen(scrollbar_thumb.x(), scrollbar_thumb.y() + 20);
+  GetWidgetHost()->ForwardMouseEvent(mouse_move);
+  RunUntilInputProcessed(GetWidgetHost());
+
+  // And end with a mouseup.
+  blink::WebMouseEvent mouse_up = blink::SyntheticWebMouseEventBuilder::Build(
+      blink::WebInputEvent::Type::kMouseUp, scrollbar_thumb.x(),
+      scrollbar_thumb.y() + 20, 0);
+  mouse_up.button = blink::WebMouseEvent::Button::kLeft;
+  mouse_up.SetTimeStamp(base::TimeTicks::Now());
+  GetWidgetHost()->ForwardMouseEvent(mouse_up);
+  RunUntilInputProcessed(GetWidgetHost());
+  FetchHistogramsFromChildProcesses();
+
+  // Expect to see histograms generated for scroll begin and updates.
+  EXPECT_GT(
+      GetSampleCountForHistogram(
+          "Event.Latency.ScrollBegin.Scrollbar.RendererSwapToBrowserNotified2"),
+      0u);
+  EXPECT_GT(GetSampleCountForHistogram("Event.Latency.ScrollUpdate.Scrollbar."
+                                       "RendererSwapToBrowserNotified2"),
+            0u);
+#endif  // !defined(OS_ANDROID)
 }
 
 }  // namespace content

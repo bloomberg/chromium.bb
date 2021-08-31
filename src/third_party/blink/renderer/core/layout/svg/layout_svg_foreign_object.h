@@ -72,7 +72,7 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
   }
   FloatRect StrokeBoundingBox() const override {
     NOT_DESTROYED();
-    return ObjectBoundingBox();
+    return VisualRectInLocalSVGCoordinates();
   }
   FloatRect VisualRectInLocalSVGCoordinates() const override {
     NOT_DESTROYED();
@@ -134,4 +134,4 @@ struct DowncastTraits<LayoutSVGForeignObject> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_LAYOUT_SVG_FOREIGN_OBJECT_H_

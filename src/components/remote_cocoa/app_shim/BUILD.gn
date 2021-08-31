@@ -50,6 +50,8 @@ component("app_shim") {
     "views_nswindow_delegate.mm",
     "views_scrollbar_bridge.h",
     "views_scrollbar_bridge.mm",
+    "window_controls_overlay_nsview.h",
+    "window_controls_overlay_nsview.mm",
     "window_move_loop.h",
     "window_move_loop.mm",
     "window_touch_bar_delegate.h",
@@ -64,9 +66,11 @@ component("app_shim") {
     "//net",
     "//ui/accelerated_widget_mac",
     "//ui/base",
+    "//ui/base/dragdrop:types",
     "//ui/base/ime:ime",
     "//ui/events",
     "//ui/gfx",
+    "//ui/gfx/geometry",
     "//ui/strings:ui_strings_grit",
   ]
   frameworks = [

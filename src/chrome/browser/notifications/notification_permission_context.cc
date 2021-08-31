@@ -21,6 +21,7 @@
 #include "components/permissions/permission_request_id.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -86,7 +87,8 @@ NotificationPermissionContext::NotificationPermissionContext(
     content::BrowserContext* browser_context)
     : PermissionContextBase(browser_context,
                             ContentSettingsType::NOTIFICATIONS,
-                            blink::mojom::FeaturePolicyFeature::kNotFound) {}
+                            blink::mojom::PermissionsPolicyFeature::kNotFound) {
+}
 
 NotificationPermissionContext::~NotificationPermissionContext() {}
 
@@ -136,7 +138,7 @@ ContentSetting NotificationPermissionContext::GetPermissionStatusForExtension(
           .GetByID(origin.host());
 
   if (!extension || !extension->permissions_data()->HasAPIPermission(
-                        extensions::APIPermission::kNotifications)) {
+                        extensions::mojom::APIPermissionID::kNotifications)) {
     // The |extension| doesn't exist, or doesn't have the "notifications"
     // permission declared in their manifest
     return kDefaultSetting;

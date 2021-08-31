@@ -30,9 +30,9 @@ class StreamSocketPosix : public StreamSocket {
   // StreamSocketPosix is non-copyable, due to directly managing the file
   // descriptor.
   StreamSocketPosix(const StreamSocketPosix& other) = delete;
-  StreamSocketPosix(StreamSocketPosix&& other) = default;
+  StreamSocketPosix(StreamSocketPosix&& other) noexcept;
   StreamSocketPosix& operator=(const StreamSocketPosix& other) = delete;
-  StreamSocketPosix& operator=(StreamSocketPosix&& other) = default;
+  StreamSocketPosix& operator=(StreamSocketPosix&& other);
   virtual ~StreamSocketPosix();
 
   WeakPtr<StreamSocketPosix> GetWeakPtr() const;
@@ -49,7 +49,7 @@ class StreamSocketPosix : public StreamSocket {
   const SocketHandle& socket_handle() const override { return handle_; }
   absl::optional<IPEndpoint> remote_address() const override;
   absl::optional<IPEndpoint> local_address() const override;
-  SocketState state() const override;
+  TcpSocketState state() const override;
   IPAddress::Version version() const override;
 
  private:
@@ -76,7 +76,7 @@ class StreamSocketPosix : public StreamSocket {
   absl::optional<IPEndpoint> remote_address_;
 
   bool is_bound_ = false;
-  SocketState state_ = SocketState::kNotConnected;
+  TcpSocketState state_ = TcpSocketState::kNotConnected;
 
   WeakPtrFactory<StreamSocketPosix> weak_factory_{this};
 };

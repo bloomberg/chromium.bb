@@ -76,7 +76,7 @@ class CryptoThreadPool {
   CryptoThreadPool() : worker_thread_("WebCrypto") {
     base::Thread::Options options;
     options.joinable = false;
-    worker_thread_.StartWithOptions(options);
+    worker_thread_.StartWithOptions(std::move(options));
   }
 
   static bool PostTask(const base::Location& from_here, base::OnceClosure task);
@@ -144,8 +144,8 @@ void CompleteWithKeyOrError(const Status& status,
 // State
 // --------------------------------------------------------------------
 //
-// Explicit state classes are used rather than base::Bind(). This is done
-// both for clarity, but also to avoid extraneous allocations for things
+// Explicit state classes are used rather than base::Bind{Once,Repeating}. This
+// is done both for clarity, but also to avoid extraneous allocations for things
 // like passing buffers and result objects between threads.
 //
 // BaseState is the base class common to all of the async operations, and

@@ -6,7 +6,7 @@
 #define ASH_WM_OVERVIEW_OVERVIEW_GRID_EVENT_HANDLER_H_
 
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/compositor/compositor_animation_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"
@@ -65,6 +65,8 @@ class OverviewGridEventHandler : public ui::EventHandler,
 
   // Gesture curve of the current active fling. nullptr while a fling is not
   // active.
+  // TODO(chinsenj|sammiequon): Extract common logic between window cycle list's
+  // and overview grid's fling logic into common class.
   std::unique_ptr<ui::FlingCurve> fling_curve_;
 
   // Velocity of the fling that will gradually decrease during a fling.
@@ -72,7 +74,7 @@ class OverviewGridEventHandler : public ui::EventHandler,
 
   // Cached value of an earlier offset that determines values to scroll through
   // overview mode by being compared to an updated offset.
-  base::Optional<gfx::Vector2dF> fling_last_offset_;
+  absl::optional<gfx::Vector2dF> fling_last_offset_;
 
   // The compositor we are observing when a fling is underway.
   ui::Compositor* observed_compositor_ = nullptr;

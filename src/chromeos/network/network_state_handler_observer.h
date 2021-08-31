@@ -72,6 +72,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandlerObserver {
   // A scan for |device| completed.
   virtual void ScanCompleted(const DeviceState* device);
 
+  // A network has updated its identifiers (path and GUID).
+  virtual void NetworkIdentifierTransitioned(
+      const std::string& old_service_path,
+      const std::string& new_service_path,
+      const std::string& old_guid,
+      const std::string& new_guid);
+
   // The DHCP Hostname changed.
   virtual void HostnameChanged(const std::string& hostname);
 
@@ -84,5 +91,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandlerObserver {
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when moved to ash.
+namespace ash {
+using ::chromeos::NetworkStateHandlerObserver;
+}
 
 #endif  // CHROMEOS_NETWORK_NETWORK_STATE_HANDLER_OBSERVER_H_

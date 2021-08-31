@@ -48,8 +48,8 @@ the first "./a.out" with "./a.out -bench". Combine these changes with the
 #define WUFFS_IMPLEMENTATION
 
 // Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
-// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
-// the entire Wuffs standard library, implementing a variety of codecs and file
+// release/c/etc.c choose which parts of Wuffs to build. That file contains the
+// entire Wuffs standard library, implementing a variety of codecs and file
 // formats. Without this macro definition, an optimizing compiler or linker may
 // very well discard Wuffs code for unused codecs, but listing the Wuffs
 // modules we use makes that process explicit. Preprocessing means that such
@@ -861,14 +861,14 @@ bench_wuffs_deflate_decode_100k_many_big_reads() {
 #ifdef WUFFS_MIMIC
 
 const char*  //
-bench_mimic_deflate_decode_1k() {
+bench_mimic_deflate_decode_1k_full_init() {
   CHECK_FOCUS(__func__);
   return do_bench_io_buffers(mimic_deflate_decode, 0, tcounter_dst,
                              &g_deflate_romeo_gt, UINT64_MAX, UINT64_MAX, 2000);
 }
 
 const char*  //
-bench_mimic_deflate_decode_10k() {
+bench_mimic_deflate_decode_10k_full_init() {
   CHECK_FOCUS(__func__);
   return do_bench_io_buffers(mimic_deflate_decode, 0, tcounter_dst,
                              &g_deflate_midsummer_gt, UINT64_MAX, UINT64_MAX,
@@ -944,8 +944,8 @@ proc g_benches[] = {
 
 #ifdef WUFFS_MIMIC
 
-    bench_mimic_deflate_decode_1k,
-    bench_mimic_deflate_decode_10k,
+    bench_mimic_deflate_decode_1k_full_init,
+    bench_mimic_deflate_decode_10k_full_init,
     bench_mimic_deflate_decode_100k_just_one_read,
     bench_mimic_deflate_decode_100k_many_big_reads,
 

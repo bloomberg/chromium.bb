@@ -28,7 +28,6 @@ public:
     GrAlphaThresholdFragmentProcessor(const GrAlphaThresholdFragmentProcessor& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "AlphaThresholdFragmentProcessor"; }
-    bool usesExplicitReturn() const override;
     float innerThreshold;
     float outerThreshold;
 
@@ -38,17 +37,15 @@ private:
                                       float innerThreshold,
                                       float outerThreshold)
             : INHERITED(kGrAlphaThresholdFragmentProcessor_ClassID,
-                        (OptimizationFlags)(inputFP ? ProcessorOptimizationFlags(inputFP.get())
-                                                    : kAll_OptimizationFlags) &
+                        (OptimizationFlags)ProcessorOptimizationFlags(inputFP.get()) &
                                 ((outerThreshold >= 1.0) ? kPreservesOpaqueInput_OptimizationFlag
                                                          : kNone_OptimizationFlags))
             , innerThreshold(innerThreshold)
             , outerThreshold(outerThreshold) {
         this->registerChild(std::move(inputFP), SkSL::SampleUsage::PassThrough());
-        SkASSERT(maskFP);
         this->registerChild(std::move(maskFP), SkSL::SampleUsage::PassThrough());
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

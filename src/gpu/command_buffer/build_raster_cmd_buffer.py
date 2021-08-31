@@ -197,19 +197,29 @@ _FUNCTION_INFO = {
     'unit_test': False,
     'trace_level': 2,
   },
-  'ReadbackImagePixelsINTERNAL': {
-    'decoder_func': 'DoReadbackImagePixelsINTERNAL',
+  'ReadbackARGBImagePixelsINTERNAL': {
+    'decoder_func': 'DoReadbackARGBImagePixelsINTERNAL',
     'internal': True,
     'type': 'PUT',
     'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
     'unit_test': False,
+    'result': ['uint32_t'],
     'trace_level': 2,
   },
-  'ConvertYUVMailboxesToRGBINTERNAL': {
-    'decoder_func': 'DoConvertYUVMailboxesToRGBINTERNAL',
+  'ReadbackYUVImagePixelsINTERNAL': {
+    'decoder_func': 'DoReadbackYUVImagePixelsINTERNAL',
     'internal': True,
     'type': 'PUT',
-    'count': 64, #GL_MAILBOX_SIZE_CHROMIUM x4
+    'count': 16, # GL_MAILBOX_SIZE_CHROMIUM
+    'unit_test': False,
+    'result': ['uint32_t'],
+    'trace_level': 2,
+  },
+  'ConvertYUVAMailboxesToRGBINTERNAL': {
+    'decoder_func': 'DoConvertYUVAMailboxesToRGBINTERNAL',
+    'internal': True,
+    'type': 'PUT',
+    'count': 80, #GL_MAILBOX_SIZE_CHROMIUM x5
     'unit_test': False,
     'trace_level': 2,
   },
@@ -279,9 +289,6 @@ _FUNCTION_INFO = {
   'GetQueryObjectui64vEXT': {
     'type': 'NoCommand',
     'gl_test_func': 'glGetQueryObjectui64v',
-  },
-  'ShallowFlushCHROMIUM': {
-    'type': 'NoCommand',
   },
   'OrderingBarrierCHROMIUM': {
     'type': 'NoCommand',

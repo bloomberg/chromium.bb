@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -293,7 +294,9 @@ void SpeechRecognizerImpl::Capture(const AudioBus* data,
   CHECK(audio_converter_->data_was_converted());
 }
 
-void SpeechRecognizerImpl::OnCaptureError(const std::string& message) {
+void SpeechRecognizerImpl::OnCaptureError(
+    media::AudioCapturerSource::ErrorCode code,
+    const std::string& message) {
   FSMEventArgs event_args(EVENT_AUDIO_ERROR);
   GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&SpeechRecognizerImpl::DispatchEvent,
@@ -535,7 +538,7 @@ void SpeechRecognizerImpl::ProcessAudioPipeline(const AudioChunk& raw_audio) {
 }
 
 void SpeechRecognizerImpl::OnDeviceInfo(
-    const base::Optional<media::AudioParameters>& params) {
+    const absl::optional<media::AudioParameters>& params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   device_params_ = params.value_or(AudioParameters());
   DVLOG(1) << "Device parameters: " << device_params_.AsHumanReadableString();
@@ -617,8 +620,8 @@ SpeechRecognizerImpl::StartRecording(const FSMEventArgs&) {
 
   // Create an audio converter which converts data between native input format
   // and WebSpeech specific output format.
-  audio_converter_.reset(
-      new OnDataConverter(input_parameters, output_parameters));
+  audio_converter_ =
+      std::make_unique<OnDataConverter>(input_parameters, output_parameters);
 
   // The endpointer needs to estimate the environment/background noise before
   // starting to treat the audio as user input. We wait in the state
@@ -874,7 +877,7 @@ media::AudioSystem* SpeechRecognizerImpl::GetAudioSystem() {
 }
 
 void SpeechRecognizerImpl::CreateAudioCapturerSource() {
-  mojo::PendingRemote<audio::mojom::StreamFactory> stream_factory;
+  mojo::PendingRemote<media::mojom::AudioStreamFactory> stream_factory;
   GetAudioServiceStreamFactoryBinder().Run(
       stream_factory.InitWithNewPipeAndPassReceiver());
   audio_capturer_source_ = audio::CreateInputDevice(

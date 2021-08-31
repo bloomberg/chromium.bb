@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_SPEECH_SPEECH_RECOGNITION_CLIENT_BROWSER_INTERFACE_H_
 
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/soda/constants.h"
+#include "components/soda/soda_installer.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -21,7 +23,8 @@ namespace speech {
 
 class SpeechRecognitionClientBrowserInterface
     : public KeyedService,
-      public media::mojom::SpeechRecognitionClientBrowserInterface {
+      public media::mojom::SpeechRecognitionClientBrowserInterface,
+      public speech::SodaInstaller::Observer {
  public:
   explicit SpeechRecognitionClientBrowserInterface(
       content::BrowserContext* context);
@@ -36,14 +39,26 @@ class SpeechRecognitionClientBrowserInterface
           media::mojom::SpeechRecognitionClientBrowserInterface> receiver);
 
   // media::mojom::SpeechRecognitionClientBrowserInterface
-  void BindSpeechRecognitionAvailabilityObserver(
-      mojo::PendingRemote<media::mojom::SpeechRecognitionAvailabilityObserver>
+  void BindSpeechRecognitionBrowserObserver(
+      mojo::PendingRemote<media::mojom::SpeechRecognitionBrowserObserver>
           pending_remote) override;
+
+  // SodaInstaller::Observer:
+  void OnSodaInstalled() override;
+  void OnSodaLanguagePackInstalled(
+      speech::LanguageCode language_code) override {}
+  void OnSodaProgress(int combined_progress) override {}
+  void OnSodaLanguagePackProgress(int language_progress,
+                                  LanguageCode language_code) override {}
+  void OnSodaError() override {}
+  void OnSodaLanguagePackError(speech::LanguageCode language_code) override {}
 
  private:
   void OnSpeechRecognitionAvailabilityChanged();
+  void OnSpeechRecognitionLanguageChanged();
+  void NotifyObservers(bool enabled);
 
-  mojo::RemoteSet<media::mojom::SpeechRecognitionAvailabilityObserver>
+  mojo::RemoteSet<media::mojom::SpeechRecognitionBrowserObserver>
       speech_recognition_availibility_observers_;
 
   mojo::ReceiverSet<media::mojom::SpeechRecognitionClientBrowserInterface>

@@ -8,7 +8,6 @@
 #include "base/profiler/unwinder.h"
 
 #include "base/base_export.h"
-#include "base/optional.h"
 #include "base/profiler/arm_cfi_table.h"
 #include "base/profiler/module_cache.h"
 #include "base/profiler/register_context.h"
@@ -28,7 +27,6 @@ class BASE_EXPORT ChromeUnwinderAndroid : public Unwinder {
   bool CanUnwindFrom(const Frame& current_frame) const override;
   UnwindResult TryUnwind(RegisterContext* thread_context,
                          uintptr_t stack_top,
-                         ModuleCache* module_cache,
                          std::vector<Frame>* stack) const override;
 
   static bool StepForTesting(RegisterContext* thread_context,

@@ -16,6 +16,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -34,10 +35,9 @@
 #include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/transferable_resource.h"
-#include "components/viz/service/display/display_resource_provider.h"
+#include "components/viz/service/display/display_resource_provider_gl.h"
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_gles2_interface.h"
-#include "components/viz/test/test_shared_bitmap_manager.h"
 #include "components/viz/test/viz_test_suite.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -102,7 +102,8 @@ class GLRendererTest : public testing::Test {
                      gfx::DisplayColorSpaces()) {
     SurfaceDamageRectList surface_damage_rect_list;
     renderer->DrawFrame(&render_passes_in_draw_order_, 1.f, viewport_size,
-                        display_color_spaces, &surface_damage_rect_list);
+                        display_color_spaces,
+                        std::move(surface_damage_rect_list));
   }
 
   static const Program* current_program(GLRenderer* renderer) {
@@ -363,57 +364,45 @@ class GLRendererShaderPixelTest : public cc::PixelTest {
                                       false));
   }
 
-  void TestShadersWithPrecisionAndSampler(TexCoordPrecision precision,
-                                          SamplerType sampler) {
-    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   false, true, false, false));
-    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   false, false, false, false));
-    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   true, true, false, false));
-    TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
-                                   true, false, false, false));
-    TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   false, true, false, false));
-    TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   false, false, false, false));
-    TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   true, true, false, false));
-    TestShader(ProgramKey::Texture(precision, sampler, NON_PREMULTIPLIED_ALPHA,
-                                   true, false, false, false));
+  void TestShadersWithPrecisionAndSampler(
+      TexCoordPrecision precision,
+      SamplerType sampler,
+      PremultipliedAlphaMode premultipliedAlpha,
+      bool has_background_color,
+      bool has_tex_clamp_rect) {
+    TestShader(ProgramKey::Texture(precision, sampler, premultipliedAlpha,
+                                   has_background_color, has_tex_clamp_rect,
+                                   false, false));
+  }
 
-    TestShader(ProgramKey::Tile(precision, sampler, USE_AA, PREMULTIPLIED_ALPHA,
+  void TestShadersWithPrecisionAndSamplerTiledAA(
+      TexCoordPrecision precision,
+      SamplerType sampler,
+      PremultipliedAlphaMode premultipliedAlpha) {
+    TestShader(ProgramKey::Tile(precision, sampler, USE_AA, premultipliedAlpha,
                                 false, false, false, false));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, PREMULTIPLIED_ALPHA,
-                                false, false, false, false));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, PREMULTIPLIED_ALPHA,
-                                true, false, false, false));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, PREMULTIPLIED_ALPHA,
-                                false, true, false, false));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, PREMULTIPLIED_ALPHA,
-                                true, true, false, false));
-    TestShader(ProgramKey::Tile(precision, sampler, USE_AA,
-                                NON_PREMULTIPLIED_ALPHA, false, false, false,
-                                false));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA,
-                                NON_PREMULTIPLIED_ALPHA, false, false, false,
-                                false));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA,
-                                NON_PREMULTIPLIED_ALPHA, true, false, false,
-                                false));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA,
-                                NON_PREMULTIPLIED_ALPHA, false, true, false,
-                                false));
-    TestShader(ProgramKey::Tile(precision, sampler, NO_AA,
-                                NON_PREMULTIPLIED_ALPHA, true, true, false,
-                                false));
+  }
 
+  void TestShadersWithPrecisionAndSamplerTiled(
+      TexCoordPrecision precision,
+      SamplerType sampler,
+      PremultipliedAlphaMode premultipliedAlpha,
+      bool is_opaque,
+      bool has_tex_clamp_rect) {
+    TestShader(ProgramKey::Tile(precision, sampler, NO_AA, premultipliedAlpha,
+                                is_opaque, has_tex_clamp_rect, false, false));
+  }
+
+  void TestYUVShadersWithPrecisionAndSampler(TexCoordPrecision precision,
+                                             SamplerType sampler) {
     // Iterate over alpha plane and nv12 parameters.
     UVTextureMode uv_modes[2] = {UV_TEXTURE_MODE_UV, UV_TEXTURE_MODE_U_V};
     YUVAlphaTextureMode a_modes[2] = {YUV_NO_ALPHA_TEXTURE,
                                       YUV_HAS_ALPHA_TEXTURE};
     for (auto uv_mode : uv_modes) {
+      SCOPED_TRACE(uv_mode);
       for (auto a_mode : a_modes) {
+        SCOPED_TRACE(a_mode);
         TestShader(ProgramKey::YUVVideo(precision, sampler, a_mode, uv_mode,
                                         false, false));
       }
@@ -458,6 +447,9 @@ static const SamplerType kSamplerList[] = {
     SAMPLER_TYPE_2D, SAMPLER_TYPE_2D_RECT, SAMPLER_TYPE_EXTERNAL_OES,
 };
 
+static const PremultipliedAlphaMode kPremultipliedAlphaModeList[] = {
+    PREMULTIPLIED_ALPHA, NON_PREMULTIPLIED_ALPHA};
+
 TEST_F(GLRendererShaderPixelTest, BasicShadersCompile) {
   TestBasicShaders();
 }
@@ -497,18 +489,107 @@ INSTANTIATE_TEST_SUITE_P(
 class PrecisionSamplerShaderPixelTest
     : public GLRendererShaderPixelTest,
       public ::testing::WithParamInterface<
-          std::tuple<TexCoordPrecision, SamplerType>> {};
+          std::tuple<TexCoordPrecision,
+                     SamplerType,
+                     PremultipliedAlphaMode,
+                     bool,       // has_background_color
+                     bool>> {};  // has_tex_clamp_rect
 
 TEST_P(PrecisionSamplerShaderPixelTest, ShadersCompile) {
   SamplerType sampler = std::get<1>(GetParam());
   if (sampler != SAMPLER_TYPE_2D_RECT ||
       context_provider()->ContextCapabilities().texture_rectangle) {
-    TestShadersWithPrecisionAndSampler(std::get<0>(GetParam()), sampler);
+    TestShadersWithPrecisionAndSampler(
+        std::get<0>(GetParam()),  // TexCoordPrecision
+        sampler,
+        std::get<2>(GetParam()),   // PremultipliedAlphaMode
+        std::get<3>(GetParam()),   // has_background_color
+        std::get<4>(GetParam()));  // has_tex_clamp_rect
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    PrecisionSamplerShadersCompile,
+    PrecisionSamplerShaderPixelTest,
+    ::testing::Combine(::testing::ValuesIn(kPrecisionList),
+                       ::testing::ValuesIn(kSamplerList),
+                       ::testing::ValuesIn(kPremultipliedAlphaModeList),
+                       ::testing::Bool(),    // has_background_color
+                       ::testing::Bool()));  // has_tex_clamp_rect
+
+class PrecisionSamplerShaderPixelTestTiled
+    : public GLRendererShaderPixelTest,
+      public ::testing::WithParamInterface<
+          std::tuple<TexCoordPrecision,
+                     SamplerType,
+                     PremultipliedAlphaMode,
+                     bool,   // is_opaque
+                     bool>>  // has_tex_clamp_rect
+{};
+
+TEST_P(PrecisionSamplerShaderPixelTestTiled, ShadersCompile) {
+  SamplerType sampler = std::get<1>(GetParam());
+  if (sampler != SAMPLER_TYPE_2D_RECT ||
+      context_provider()->ContextCapabilities().texture_rectangle) {
+    TestShadersWithPrecisionAndSamplerTiled(
+        std::get<0>(GetParam()),  // TexCoordPrecision
+        sampler,
+        std::get<2>(GetParam()),   // PremultipliedAlphaMode
+        std::get<3>(GetParam()),   // is_opaque
+        std::get<4>(GetParam()));  // has_tex_clamp_rect
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    PrecisionSamplerShadersCompile,
+    PrecisionSamplerShaderPixelTestTiled,
+    ::testing::Combine(::testing::ValuesIn(kPrecisionList),
+                       ::testing::ValuesIn(kSamplerList),
+                       ::testing::ValuesIn(kPremultipliedAlphaModeList),
+                       ::testing::Bool(),    // is_opaque
+                       ::testing::Bool()));  // has_tex_clamp_rect
+
+class PrecisionSamplerShaderPixelTestTiledAA
+    : public GLRendererShaderPixelTest,
+      public ::testing::WithParamInterface<
+          std::tuple<TexCoordPrecision, SamplerType, PremultipliedAlphaMode>> {
+};
+
+TEST_P(PrecisionSamplerShaderPixelTestTiledAA, ShadersCompile) {
+  SamplerType sampler = std::get<1>(GetParam());
+  if (sampler != SAMPLER_TYPE_2D_RECT ||
+      context_provider()->ContextCapabilities().texture_rectangle) {
+    TestShadersWithPrecisionAndSamplerTiledAA(
+        std::get<0>(GetParam()),  // TexCoordPrecision
+        sampler,
+        std::get<2>(GetParam()));  // PremultipliedAlphaMode
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    PrecisionSamplerShadersCompile,
+    PrecisionSamplerShaderPixelTestTiledAA,
+    ::testing::Combine(::testing::ValuesIn(kPrecisionList),
+                       ::testing::ValuesIn(kSamplerList),
+                       ::testing::ValuesIn(kPremultipliedAlphaModeList)));
+
+class PrecisionSamplerYUVShaderPixelTest
+    : public GLRendererShaderPixelTest,
+      public ::testing::WithParamInterface<
+          std::tuple<TexCoordPrecision, SamplerType>> {};
+
+TEST_P(PrecisionSamplerYUVShaderPixelTest, ShadersCompile) {
+  SamplerType sampler = std::get<1>(GetParam());
+  if (sampler != SAMPLER_TYPE_2D_RECT ||
+      context_provider()->ContextCapabilities().texture_rectangle) {
+    TestYUVShadersWithPrecisionAndSampler(
+        std::get<0>(GetParam()),  // TexCoordPrecision
+        sampler);
   }
 }
 
 INSTANTIATE_TEST_SUITE_P(PrecisionSamplerShadersCompile,
-                         PrecisionSamplerShaderPixelTest,
+                         PrecisionSamplerYUVShaderPixelTest,
                          ::testing::Combine(::testing::ValuesIn(kPrecisionList),
                                             ::testing::ValuesIn(kSamplerList)));
 
@@ -540,7 +621,7 @@ class FakeRendererGL : public GLRenderer {
   FakeRendererGL(const RendererSettings* settings,
                  const DebugRendererSettings* debug_settings,
                  OutputSurface* output_surface,
-                 DisplayResourceProvider* resource_provider)
+                 DisplayResourceProviderGL* resource_provider)
       : GLRenderer(settings,
                    debug_settings,
                    output_surface,
@@ -551,7 +632,7 @@ class FakeRendererGL : public GLRenderer {
   FakeRendererGL(const RendererSettings* settings,
                  const DebugRendererSettings* debug_settings,
                  OutputSurface* output_surface,
-                 DisplayResourceProvider* resource_provider,
+                 DisplayResourceProviderGL* resource_provider,
                  OverlayProcessorInterface* overlay_processor)
       : GLRenderer(settings,
                    debug_settings,
@@ -564,7 +645,7 @@ class FakeRendererGL : public GLRenderer {
       const RendererSettings* settings,
       const DebugRendererSettings* debug_settings,
       OutputSurface* output_surface,
-      DisplayResourceProvider* resource_provider,
+      DisplayResourceProviderGL* resource_provider,
       OverlayProcessorInterface* overlay_processor,
       scoped_refptr<base::SingleThreadTaskRunner> current_task_runner)
       : GLRenderer(settings,
@@ -586,10 +667,8 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
     output_surface_ = FakeOutputSurface::Create3d();
     output_surface_->BindToClient(&output_surface_client_);
 
-    shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
-    resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        DisplayResourceProvider::kGpu, output_surface_->context_provider(),
-        shared_bitmap_manager_.get());
+    resource_provider_ = std::make_unique<DisplayResourceProviderGL>(
+        output_surface_->context_provider());
     renderer_ = std::make_unique<FakeRendererGL>(&settings_, &debug_settings_,
                                                  output_surface_.get(),
                                                  resource_provider_.get());
@@ -602,8 +681,7 @@ class GLRendererWithDefaultHarnessTest : public GLRendererTest {
   RendererSettings settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProviderGL> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -618,13 +696,11 @@ class GLRendererShaderTest : public GLRendererTest {
     output_surface_ = FakeOutputSurface::Create3d();
     output_surface_->BindToClient(&output_surface_client_);
 
-    shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
-    resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        DisplayResourceProvider::kGpu, output_surface_->context_provider(),
-        shared_bitmap_manager_.get());
-    renderer_.reset(new FakeRendererGL(&settings_, &debug_settings_,
-                                       output_surface_.get(),
-                                       resource_provider_.get(), nullptr));
+    resource_provider_ = std::make_unique<DisplayResourceProviderGL>(
+        output_surface_->context_provider());
+    renderer_ = std::make_unique<FakeRendererGL>(
+        &settings_, &debug_settings_, output_surface_.get(),
+        resource_provider_.get(), nullptr);
     renderer_->Initialize();
     renderer_->SetVisible(true);
 
@@ -723,8 +799,7 @@ class GLRendererShaderTest : public GLRendererTest {
   RendererSettings settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProviderGL> resource_provider_;
   scoped_refptr<TestContextProvider> child_context_provider_;
   std::unique_ptr<ClientResourceProvider> child_resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
@@ -778,13 +853,13 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionHigh) {
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(1025, 1025), true);
   ResourceId client_resource_id = child_resource_provider->ImportResource(
-      transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+      transfer_resource, base::DoNothing());
 
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {client_resource_id}, resource_provider_.get(),
           child_resource_provider.get(), child_context_provider.get());
-  unsigned resource_id = resource_map[client_resource_id];
+  ResourceId resource_id = resource_map[client_resource_id];
 
   // The values defined here should not alter the size of the already created
   // texture.
@@ -793,8 +868,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionHigh) {
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
                        gfx::Rect(1023, 1023), gfx::MaskFilterInfo(),
-                       gfx::Rect(1023, 1023), false, false, 1,
-                       SkBlendMode::kSrcOver, 0);
+                       absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(1023, 1023),
                        gfx::Rect(1023, 1023), needs_blending, resource_id,
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
@@ -841,13 +915,13 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(1023, 1023), true);
   ResourceId client_resource_id = child_resource_provider->ImportResource(
-      transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+      transfer_resource, base::DoNothing());
 
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap(
           {client_resource_id}, resource_provider_.get(),
           child_resource_provider.get(), child_context_provider.get());
-  unsigned resource_id = resource_map[client_resource_id];
+  ResourceId resource_id = resource_map[client_resource_id];
 
   // The values defined here should not alter the size of the already created
   // texture.
@@ -856,8 +930,7 @@ TEST_F(GLRendererWithDefaultHarnessTest, TextureDrawQuadShaderPrecisionMedium) {
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
                        gfx::Rect(1025, 1025), gfx::MaskFilterInfo(),
-                       gfx::Rect(1025, 1025), false, false, 1,
-                       SkBlendMode::kSrcOver, 0);
+                       absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(1025, 1025),
                        gfx::Rect(1025, 1025), needs_blending, resource_id,
                        premultiplied_alpha, uv_top_left, uv_bottom_right,
@@ -901,21 +974,20 @@ class GLRendererTextureDrawQuadHDRTest
         kTextureSize, true);
     transfer_resource.color_space = gfx::ColorSpace::CreateSCRGBLinear();
     ResourceId client_resource_id = child_resource_provider->ImportResource(
-        transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+        transfer_resource, base::DoNothing());
 
-    std::unordered_map<ResourceId, ResourceId> resource_map =
+    std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
         cc::SendResourceAndGetChildToParentMap(
             {client_resource_id}, resource_provider_.get(),
             child_resource_provider.get(), child_context_provider.get());
-    unsigned resource_id = resource_map[client_resource_id];
+    ResourceId resource_id = resource_map[client_resource_id];
 
     TextureDrawQuad* overlay_quad =
         root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
     SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
     shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
                          gfx::Rect(kTextureSize), gfx::MaskFilterInfo(),
-                         gfx::Rect(kTextureSize), false, false, 1,
-                         SkBlendMode::kSrcOver, 0);
+                         absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
     overlay_quad->SetNew(shared_state, gfx::Rect(kTextureSize),
                          gfx::Rect(kTextureSize), needs_blending, resource_id,
                          premultiplied_alpha, uv_top_left, uv_bottom_right,
@@ -1071,12 +1143,8 @@ TEST_F(GLRendererTest, InitializationDoesNotMakeSynchronousCalls) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   RendererSettings settings;
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
@@ -1110,12 +1178,8 @@ TEST_F(GLRendererTest, InitializationWithQuicklyLostContextDoesNotAssert) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   RendererSettings settings;
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
@@ -1147,12 +1211,8 @@ TEST_F(GLRendererTest, OpaqueBackground) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   RendererSettings settings;
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
@@ -1193,12 +1253,8 @@ TEST_F(GLRendererTest, TransparentBackground) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   RendererSettings settings;
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
@@ -1232,12 +1288,8 @@ TEST_F(GLRendererTest, OffscreenOutputSurface) {
       FakeOutputSurface::CreateOffscreen(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   RendererSettings settings;
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
@@ -1303,12 +1355,8 @@ TEST_F(GLRendererTest, ActiveTextureState) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   RendererSettings settings;
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
@@ -1426,12 +1474,8 @@ TEST_F(GLRendererTest, DrawYUVVideoDrawQuadWithVisibleRect) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   RendererSettings settings;
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
@@ -1451,14 +1495,15 @@ TEST_F(GLRendererTest, DrawYUVVideoDrawQuadWithVisibleRect) {
 
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(), rect,
-                       gfx::MaskFilterInfo(), rect, false, false, 1,
+                       gfx::MaskFilterInfo(), absl::nullopt, false, 1,
                        SkBlendMode::kSrcOver, 0);
 
   YUVVideoDrawQuad* quad =
       root_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
   quad->SetNew(shared_state, rect, visible_rect, /*needs_blending=*/false,
-               tex_coord_rect, tex_coord_rect, rect.size(), rect.size(), 1, 1,
-               1, 1, gfx::ColorSpace(), 0, 1.0, 8);
+               tex_coord_rect, tex_coord_rect, rect.size(), rect.size(),
+               ResourceId(1), ResourceId(1), ResourceId(1), ResourceId(1),
+               gfx::ColorSpace(), 0, 1.0, 8);
 
   DrawFrame(&renderer, viewport_size);
 
@@ -1499,12 +1544,8 @@ TEST_F(GLRendererTest, ShouldClearRootRenderPass) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   RendererSettings settings;
   settings.should_clear_root_render_pass = false;
@@ -1609,12 +1650,8 @@ TEST_F(GLRendererTest, ScissorTestWhenClearing) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   RendererSettings settings;
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
@@ -1683,12 +1720,8 @@ TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   auto output_surface = FakeOutputSurface::Create3d(std::move(provider));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   RendererSettings settings;
   settings.partial_swap_enabled = true;
@@ -1897,12 +1930,8 @@ TEST_F(GLRendererTest, NoResourceLeak) {
   auto output_surface = FakeOutputSurface::Create3d(std::move(provider));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   {
     RendererSettings settings;
@@ -1946,10 +1975,8 @@ class GLRendererSkipTest : public GLRendererTest {
     output_surface_ = FakeOutputSurface::Create3d(std::move(provider));
     output_surface_->BindToClient(&output_surface_client_);
 
-    shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
-    resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        DisplayResourceProvider::kGpu, output_surface_->context_provider(),
-        shared_bitmap_manager_.get());
+    resource_provider_ = std::make_unique<DisplayResourceProviderGL>(
+        output_surface_->context_provider());
     settings_.partial_swap_enabled = true;
     renderer_ = std::make_unique<FakeRendererGL>(&settings_, &debug_settings_,
                                                  output_surface_.get(),
@@ -1980,8 +2007,7 @@ class GLRendererSkipTest : public GLRendererTest {
   RendererSettings settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProviderGL> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -2025,7 +2051,6 @@ TEST_F(GLRendererSkipTest, SkipVisibleRect) {
       gfx::Transform(), cc::FilterOperations());
   root_pass->damage_rect = gfx::Rect(0, 0, 10, 10);
   cc::AddQuad(root_pass, quad_rect, SK_ColorGREEN);
-  root_pass->shared_quad_state_list.front()->is_clipped = true;
   root_pass->shared_quad_state_list.front()->clip_rect =
       gfx::Rect(0, 0, 40, 40);
   root_pass->quad_list.front()->visible_rect = gfx::Rect(20, 20, 20, 20);
@@ -2075,12 +2100,8 @@ TEST_F(GLRendererTest, DrawFramePreservesFramebuffer) {
       FakeOutputSurface::Create3d());
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          shared_bitmap_manager.get());
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   RendererSettings settings;
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
@@ -2125,11 +2146,11 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       child_rect.size(), false /* is_overlay_candidate */);
-  ResourceId mask = child_resource_provider_->ImportResource(
-      transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+  ResourceId mask = child_resource_provider_->ImportResource(transfer_resource,
+                                                             base::DoNothing());
 
   // Return the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       cc::SendResourceAndGetChildToParentMap({mask}, resource_provider_.get(),
                                              child_resource_provider_.get(),
                                              child_context_provider_.get());
@@ -2173,8 +2194,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                                   gfx::Rect(viewport_size), gfx::Transform(),
                                   cc::FilterOperations());
 
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          xfer_mode);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), xfer_mode);
 
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
@@ -2191,8 +2212,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                                   gfx::Rect(viewport_size), gfx::Transform(),
                                   cc::FilterOperations());
 
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          xfer_mode);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), xfer_mode);
 
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
@@ -2249,8 +2270,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                                   gfx::Rect(viewport_size), gfx::Transform(),
                                   cc::FilterOperations());
 
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, transform_causing_aa,
-                          xfer_mode);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          transform_causing_aa, xfer_mode);
 
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
@@ -2267,8 +2288,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
                                   gfx::Rect(viewport_size), gfx::Transform(),
                                   cc::FilterOperations());
 
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, transform_causing_aa,
-                          xfer_mode);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          transform_causing_aa, xfer_mode);
 
     renderer_->DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
@@ -2347,8 +2368,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadSkipsAAForClippingTransform) {
                                 gfx::Rect(viewport_size), gfx::Transform(),
                                 cc::FilterOperations());
 
-  cc::AddRenderPassQuad(root_pass, child_pass, 0, transform_preventing_aa,
-                        SkBlendMode::kSrcOver);
+  cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                        transform_preventing_aa, SkBlendMode::kSrcOver);
 
   renderer_->DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
   DrawFrame(renderer_.get(), viewport_size);
@@ -2450,14 +2471,12 @@ class MockOutputSurfaceTest : public GLRendererTest {
     cc::FakeOutputSurfaceClient output_surface_client_;
     output_surface_->BindToClient(&output_surface_client_);
 
-    shared_bitmap_manager_ = std::make_unique<TestSharedBitmapManager>();
-    resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        DisplayResourceProvider::kGpu, output_surface_->context_provider(),
-        shared_bitmap_manager_.get());
+    resource_provider_ = std::make_unique<DisplayResourceProviderGL>(
+        output_surface_->context_provider());
 
-    renderer_.reset(new FakeRendererGL(&settings_, &debug_settings_,
-                                       output_surface_.get(),
-                                       resource_provider_.get()));
+    renderer_ = std::make_unique<FakeRendererGL>(&settings_, &debug_settings_,
+                                                 output_surface_.get(),
+                                                 resource_provider_.get());
     renderer_->Initialize();
 
     EXPECT_CALL(*output_surface_, EnsureBackbuffer()).Times(1);
@@ -2496,15 +2515,14 @@ class MockOutputSurfaceTest : public GLRendererTest {
     SurfaceDamageRectList surface_damage_rect_list;
     renderer_->DrawFrame(&render_passes_in_draw_order_, device_scale_factor,
                          viewport_size, gfx::DisplayColorSpaces(),
-                         &surface_damage_rect_list);
+                         std::move(surface_damage_rect_list));
   }
 
   RendererSettings settings_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   OutputSurfaceMockGLES2Interface* gl_ = nullptr;
   std::unique_ptr<StrictMock<MockOutputSurface>> output_surface_;
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager_;
-  std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProviderGL> resource_provider_;
   std::unique_ptr<FakeRendererGL> renderer_;
 };
 
@@ -2535,7 +2553,7 @@ class MockDCLayerOverlayProcessor : public DCLayerOverlayProcessor {
                     const FilterOperationsMap& render_pass_backdrop_filters,
                     AggregatedRenderPassList* render_passes,
                     gfx::Rect* damage_rect,
-                    SurfaceDamageRectList* surface_damage_rect_list,
+                    SurfaceDamageRectList surface_damage_rect_list,
                     DCLayerOverlayList* dc_layer_overlays));
 
  protected:
@@ -2603,6 +2621,32 @@ class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
                  primary_surface,
              OverlayCandidateList* candidates,
              std::vector<gfx::Rect>* content_bounds));
+
+    void ProposePrioritized(
+        const SkMatrix44& output_color_matrix,
+        const FilterOperationsMap& render_pass_backdrop_filters,
+        DisplayResourceProvider* resource_provider,
+        AggregatedRenderPassList* render_pass_list,
+        SurfaceDamageRectList* surface_damage_rect_list,
+        const PrimaryPlane* primary_plane,
+        OverlayProposedCandidateList* candidates,
+        std::vector<gfx::Rect>* content_bounds) override {
+      auto* render_pass = render_pass_list->back().get();
+      QuadList& quad_list = render_pass->quad_list;
+      OverlayCandidate candidate;
+      candidates->push_back({quad_list.end(), candidate, this});
+    }
+
+    MOCK_METHOD9(AttemptPrioritized,
+                 bool(const SkMatrix44& output_color_matrix,
+                      const FilterOperationsMap& render_pass_backdrop_filters,
+                      DisplayResourceProvider* resource_provider,
+                      AggregatedRenderPassList* render_pass_list,
+                      SurfaceDamageRectList* surface_damage_rect_list,
+                      const PrimaryPlane* primary_plane,
+                      OverlayCandidateList* candidates,
+                      std::vector<gfx::Rect>* content_bounds,
+                      OverlayProposedCandidate* proposed_candidate));
   };
 
   bool IsOverlaySupported() const override { return true; }
@@ -2626,6 +2670,8 @@ class TestOverlayProcessor : public OverlayProcessorUsingStrategy {
   explicit TestOverlayProcessor(OutputSurface* output_surface)
       : OverlayProcessorUsingStrategy() {
     strategies_.push_back(std::make_unique<Strategy>());
+    prioritization_config_.changing_threshold = false;
+    prioritization_config_.damage_rate_threshold = false;
   }
   ~TestOverlayProcessor() override = default;
 };
@@ -2641,8 +2687,9 @@ class TestOverlayProcessor : public OverlayProcessorStub {
 void MailboxReleased(const gpu::SyncToken& sync_token, bool lost_resource) {}
 
 static void CollectResources(std::vector<ReturnedResource>* array,
-                             const std::vector<ReturnedResource>& returned) {
-  array->insert(array->end(), returned.begin(), returned.end());
+                             std::vector<ReturnedResource> returned) {
+  array->insert(array->end(), std::make_move_iterator(returned.begin()),
+                std::make_move_iterator(returned.end()));
 }
 
 TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
@@ -2654,11 +2701,8 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
 #endif
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  auto parent_resource_provider = std::make_unique<DisplayResourceProvider>(
-      DisplayResourceProvider::kGpu, output_surface->context_provider(),
-      shared_bitmap_manager.get());
+  auto parent_resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   auto child_context_provider = TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
@@ -2667,14 +2711,13 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(256, 256), true);
-  auto release_callback =
-      SingleReleaseCallback::Create(base::BindOnce(&MailboxReleased));
+  auto release_callback = base::BindOnce(&MailboxReleased);
   ResourceId resource_id = child_resource_provider->ImportResource(
       transfer_resource, std::move(release_callback));
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), SurfaceId());
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -2686,7 +2729,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   parent_resource_provider->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       parent_resource_provider->GetChildToParentMap(child_id);
   ResourceId parent_resource_id = resource_map[list[0].id];
 
@@ -2734,7 +2777,14 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // any attempt to overlay, which there shouldn't be. We can't use the quad
   // list because the render pass is cleaned up by DrawFrame.
 #if defined(USE_OZONE) || defined(OS_ANDROID)
-  EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _, _)).Times(0);
+  if (features::IsOverlayPrioritizationEnabled()) {
+    EXPECT_CALL(processor->strategy(),
+                AttemptPrioritized(_, _, _, _, _, _, _, _, _))
+        .Times(0);
+  } else {
+    EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _, _))
+        .Times(0);
+  }
 #elif defined(OS_APPLE)
   EXPECT_CALL(*mock_ca_processor, ProcessForCALayerOverlays(_, _, _, _, _, _))
       .Times(0);
@@ -2766,7 +2816,14 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor,
       /*secure_output_only=*/false, gfx::ProtectedVideoType::kClear);
 #if defined(USE_OZONE) || defined(OS_ANDROID)
-  EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _, _)).Times(1);
+  if (features::IsOverlayPrioritizationEnabled()) {
+    EXPECT_CALL(processor->strategy(),
+                AttemptPrioritized(_, _, _, _, _, _, _, _, _))
+        .Times(1);
+  } else {
+    EXPECT_CALL(processor->strategy(), Attempt(_, _, _, _, _, _, _, _))
+        .Times(1);
+  }
 #elif defined(OS_APPLE)
   EXPECT_CALL(*mock_ca_processor, ProcessForCALayerOverlays(_, _, _, _, _, _))
       .Times(1);
@@ -2790,6 +2847,8 @@ class SingleOverlayOnTopProcessor : public OverlayProcessorUsingStrategy {
   SingleOverlayOnTopProcessor() : OverlayProcessorUsingStrategy() {
     strategies_.push_back(std::make_unique<OverlayStrategySingleOnTop>(this));
     strategies_.push_back(std::make_unique<OverlayStrategyUnderlay>(this));
+    prioritization_config_.changing_threshold = false;
+    prioritization_config_.damage_rate_threshold = false;
   }
 
   bool NeedsSurfaceDamageRectList() const override { return true; }
@@ -2848,11 +2907,8 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
       FakeOutputSurface::Create3d(std::move(provider)));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<SharedBitmapManager> shared_bitmap_manager =
-      std::make_unique<TestSharedBitmapManager>();
-  auto parent_resource_provider = std::make_unique<DisplayResourceProvider>(
-      DisplayResourceProvider::kGpu, output_surface->context_provider(),
-      shared_bitmap_manager.get());
+  auto parent_resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   auto child_context_provider = TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
@@ -2863,14 +2919,13 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, sync_token,
       gfx::Size(256, 256), true);
-  auto release_callback =
-      SingleReleaseCallback::Create(base::BindOnce(&MailboxReleased));
+  auto release_callback = base::BindOnce(&MailboxReleased);
   ResourceId resource_id = child_resource_provider->ImportResource(
       transfer_resource, std::move(release_callback));
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), SurfaceId());
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -2882,7 +2937,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   parent_resource_provider->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       parent_resource_provider->GetChildToParentMap(child_id);
   ResourceId parent_resource_id = resource_map[list[0].id];
 
@@ -2913,8 +2968,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
                        gfx::Rect(viewport_size), gfx::MaskFilterInfo(),
-                       gfx::Rect(viewport_size), false, false, 1,
-                       SkBlendMode::kSrcOver, 0);
+                       absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(shared_state, gfx::Rect(viewport_size),
                        gfx::Rect(viewport_size), needs_blending,
                        parent_resource_id, premultiplied_alpha, uv_top_left,
@@ -2971,10 +3025,8 @@ TEST_F(GLRendererTest, OutputColorMatrixTest) {
       FakeOutputSurface::Create3d(std::move(provider)));
   cc::FakeOutputSurfaceClient output_surface_client;
   output_surface->BindToClient(&output_surface_client);
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          nullptr);
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
   RendererSettings settings;
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
@@ -3058,10 +3110,8 @@ TEST_F(GLRendererTest, GenerateMipmap) {
       FakeOutputSurface::Create3d(std::move(provider)));
   cc::FakeOutputSurfaceClient output_surface_client;
   output_surface->BindToClient(&output_surface_client);
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          nullptr);
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
   RendererSettings settings;
   FakeRendererGL renderer(&settings, &debug_settings_, output_surface.get(),
                           resource_provider.get());
@@ -3121,9 +3171,8 @@ class GLRendererFastSolidColorTest : public GLRendererTest {
     output_surface_ = FakeOutputSurface::Create3d(std::move(provider));
     output_surface_->BindToClient(&output_surface_client_);
 
-    resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        DisplayResourceProvider::kGpu, output_surface_->context_provider(),
-        nullptr);
+    resource_provider_ = std::make_unique<DisplayResourceProviderGL>(
+        output_surface_->context_provider());
 
     settings_.partial_swap_enabled = true;
     settings_.slow_down_compositing_scale_factor = 1;
@@ -3205,7 +3254,7 @@ class GLRendererFastSolidColorTest : public GLRendererTest {
   FastSolidColorMockGLES2Interface* gl_ = nullptr;
   std::unique_ptr<FakeRendererGL> fake_renderer_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProviderGL> resource_provider_;
   cc::FakeOutputSurfaceClient output_surface_client_;
   RendererSettings settings_;
   base::test::ScopedFeatureList feature_list_;
@@ -3480,10 +3529,8 @@ class GLRendererPartialSwapTest : public GLRendererTest {
     output_surface->set_supports_dc_layers(set_draw_rectangle);
     output_surface->BindToClient(&output_surface_client);
 
-    std::unique_ptr<DisplayResourceProvider> resource_provider =
-        std::make_unique<DisplayResourceProvider>(
-            DisplayResourceProvider::kGpu, output_surface->context_provider(),
-            nullptr);
+    auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+        output_surface->context_provider());
 
     RendererSettings settings;
     settings.partial_swap_enabled = partial_swap;
@@ -3639,9 +3686,8 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   output_surface->set_supports_dc_layers(true);
   output_surface->BindToClient(&output_surface_client);
 
-  auto parent_resource_provider = std::make_unique<DisplayResourceProvider>(
-      DisplayResourceProvider::kGpu, output_surface->context_provider(),
-      nullptr);
+  auto parent_resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   auto child_context_provider = TestContextProvider::Create();
   child_context_provider->BindToCurrentThread();
@@ -3650,14 +3696,13 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   auto transfer_resource = TransferableResource::MakeGL(
       gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
       gfx::Size(256, 256), true);
-  auto release_callback =
-      SingleReleaseCallback::Create(base::BindOnce(&MailboxReleased));
+  auto release_callback = base::BindOnce(&MailboxReleased);
   ResourceId resource_id = child_resource_provider->ImportResource(
       transfer_resource, std::move(release_callback));
 
   std::vector<ReturnedResource> returned_to_child;
   int child_id = parent_resource_provider->CreateChild(
-      base::BindRepeating(&CollectResources, &returned_to_child));
+      base::BindRepeating(&CollectResources, &returned_to_child), SurfaceId());
 
   // Transfer resource to the parent.
   std::vector<ResourceId> resource_ids_to_transfer;
@@ -3668,7 +3713,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       static_cast<RasterContextProvider*>(child_context_provider.get()));
   parent_resource_provider->ReceiveFromChild(child_id, list);
   // In DisplayResourceProvider's namespace, use the mapped resource id.
-  std::unordered_map<ResourceId, ResourceId> resource_map =
+  std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
       parent_resource_provider->GetChildToParentMap(child_id);
   ResourceId parent_resource_id = resource_map[list[0].id];
 
@@ -3698,7 +3743,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
       SharedQuadState* shared_state =
           root_pass->CreateAndAppendSharedQuadState();
       shared_state->SetAll(gfx::Transform(), rect, rect, gfx::MaskFilterInfo(),
-                           rect, false, false, 1, SkBlendMode::kSrcOver, 0);
+                           absl::nullopt, false, 1, SkBlendMode::kSrcOver, 0);
       YUVVideoDrawQuad* quad =
           root_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
       quad->SetNew(shared_state, rect, rect, needs_blending, tex_coord_rect,
@@ -3763,9 +3808,8 @@ class GLRendererWithMockContextTest : public ::testing::Test {
               gpu::ContextResult::kSuccess);
     output_surface_ = FakeOutputSurface::Create3d(std::move(context_provider));
     output_surface_->BindToClient(&output_surface_client_);
-    resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        DisplayResourceProvider::kGpu, output_surface_->context_provider(),
-        nullptr);
+    resource_provider_ = std::make_unique<DisplayResourceProviderGL>(
+        output_surface_->context_provider());
     renderer_ = std::make_unique<GLRenderer>(
         &settings_, &debug_settings_, output_surface_.get(),
         resource_provider_.get(), nullptr, nullptr);
@@ -3777,7 +3821,7 @@ class GLRendererWithMockContextTest : public ::testing::Test {
   cc::FakeOutputSurfaceClient output_surface_client_;
   MockContextSupport* context_support_ptr_;
   std::unique_ptr<OutputSurface> output_surface_;
-  std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProviderGL> resource_provider_;
   std::unique_ptr<GLRenderer> renderer_;
 };
 
@@ -3815,6 +3859,38 @@ class ContentBoundsOverlayProcessor : public OverlayProcessorUsingStrategy {
       return true;
     }
 
+    void ProposePrioritized(
+        const SkMatrix44& output_color_matrix,
+        const FilterOperationsMap& render_pass_backdrop_filters,
+        DisplayResourceProvider* resource_provider,
+        AggregatedRenderPassList* render_pass_list,
+        SurfaceDamageRectList* surface_damage_rect_list,
+        const PrimaryPlane* primary_plane,
+        OverlayProposedCandidateList* candidates,
+        std::vector<gfx::Rect>* content_bounds) override {
+      auto* render_pass = render_pass_list->back().get();
+      QuadList& quad_list = render_pass->quad_list;
+      OverlayCandidate candidate;
+      // Adding a mock candidate to the propose list so that
+      // 'AttemptPrioritized' will be called.
+      candidates->push_back({quad_list.end(), candidate, this});
+    }
+
+    bool AttemptPrioritized(
+        const SkMatrix44& output_color_matrix,
+        const FilterOperationsMap& render_pass_backdrop_filters,
+        DisplayResourceProvider* resource_provider,
+        AggregatedRenderPassList* render_pass_list,
+        SurfaceDamageRectList* surface_damage_rect_list,
+        const PrimaryPlane* primary_plane,
+        OverlayCandidateList* candidates,
+        std::vector<gfx::Rect>* content_bounds,
+        OverlayProposedCandidate* proposed_candidate) override {
+      content_bounds->insert(content_bounds->end(), content_bounds_.begin(),
+                             content_bounds_.end());
+      return true;
+    }
+
    private:
     const std::vector<gfx::Rect> content_bounds_;
   };
@@ -3824,6 +3900,8 @@ class ContentBoundsOverlayProcessor : public OverlayProcessorUsingStrategy {
       : OverlayProcessorUsingStrategy(), content_bounds_(content_bounds) {
     strategies_.push_back(
         std::make_unique<Strategy>(std::move(content_bounds_)));
+    prioritization_config_.changing_threshold = false;
+    prioritization_config_.damage_rate_threshold = false;
   }
 
   Strategy& strategy() { return static_cast<Strategy&>(*strategies_.back()); }
@@ -3860,10 +3938,8 @@ class GLRendererSwapWithBoundsTest : public GLRendererTest {
         FakeOutputSurface::Create3d(std::move(provider)));
     output_surface->BindToClient(&output_surface_client);
 
-    std::unique_ptr<DisplayResourceProvider> resource_provider =
-        std::make_unique<DisplayResourceProvider>(
-            DisplayResourceProvider::kGpu, output_surface->context_provider(),
-            nullptr);
+    auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+        output_surface->context_provider());
 
     RendererSettings settings;
     auto processor =
@@ -3952,9 +4028,8 @@ class CALayerGLRendererTest : public GLRendererTest {
     output_surface_ = FakeOutputSurface::Create3d(std::move(provider));
     output_surface_->BindToClient(&output_surface_client);
 
-    display_resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        DisplayResourceProvider::kGpu, output_surface_->context_provider(),
-        nullptr);
+    display_resource_provider_ = std::make_unique<DisplayResourceProviderGL>(
+        output_surface_->context_provider());
 
     settings_ = std::make_unique<RendererSettings>();
     // This setting is enabled to use CALayer overlays.
@@ -3990,7 +4065,7 @@ class CALayerGLRendererTest : public GLRendererTest {
 
     DrawFrame(&renderer(), viewport_size);
     renderer().SwapBuffers(DirectRenderer::SwapFrameData());
-    renderer().SwapBuffersComplete();
+    renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
     Mock::VerifyAndClearExpectations(&gl());
   }
 
@@ -4001,7 +4076,7 @@ class CALayerGLRendererTest : public GLRendererTest {
  private:
   MockCALayerGLES2Interface* gl_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<DisplayResourceProvider> display_resource_provider_;
+  std::unique_ptr<DisplayResourceProviderGL> display_resource_provider_;
   std::unique_ptr<RendererSettings> settings_;
   std::unique_ptr<OverlayProcessorInterface> overlay_processor_;
   std::unique_ptr<FakeRendererGL> renderer_;
@@ -4025,8 +4100,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysWithAllQuadsPromoted) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
   }
 
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -4064,8 +4139,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysWithAllQuadsPromoted) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
 
     // Use a cached RenderPass for the child.
     child_pass->cache_render_pass = true;
@@ -4109,11 +4184,10 @@ TEST_F(CALayerGLRendererTest, CALayerRoundRects) {
     SharedQuadState* sqs =
         const_cast<SharedQuadState*>(quad->shared_quad_state);
 
-    sqs->is_clipped = true;
     sqs->clip_rect = gfx::Rect(2, 2, 6, 6);
     const float radius = 2;
     sqs->mask_filter_info =
-        gfx::MaskFilterInfo(gfx::RRectF(gfx::RectF(sqs->clip_rect), radius));
+        gfx::MaskFilterInfo(gfx::RRectF(gfx::RectF(*sqs->clip_rect), radius));
 
     switch (subtest) {
       case 0:
@@ -4173,8 +4247,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
   }
 
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -4213,7 +4287,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
 
   // The texture will be checked to verify if it is free yet.
   EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(1, _));
-  renderer().SwapBuffersComplete();
+  renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
   Mock::VerifyAndClearExpectations(&gl());
 
   // Frame number 2. We change the size of the child RenderPass to be smaller
@@ -4228,8 +4302,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
   }
 
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -4259,7 +4333,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
 
   // There are now 2 textures to check if they are free.
   EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(2, _));
-  renderer().SwapBuffersComplete();
+  renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
   Mock::VerifyAndClearExpectations(&gl());
 
   // The first (256x256) texture is returned to the GLRenderer.
@@ -4276,8 +4350,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReusesTextureWithDifferentSizes) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
   }
 
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -4328,8 +4402,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
   }
 
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -4368,7 +4442,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
 
   // The texture will be checked to verify if it is free yet.
   EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(1, _));
-  renderer().SwapBuffersComplete();
+  renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
   Mock::VerifyAndClearExpectations(&gl());
 
   // Frame number 2. We change the size of the child RenderPass to be much
@@ -4381,8 +4455,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
   }
 
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -4412,7 +4486,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
 
   // There are now 2 textures to check if they are free.
   EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(2, _));
-  renderer().SwapBuffersComplete();
+  renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
   Mock::VerifyAndClearExpectations(&gl());
 
   // The first (256x256) texture is returned to the GLRenderer.
@@ -4428,8 +4502,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysDontReuseTooBigTexture) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
   }
 
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -4474,8 +4548,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
   }
 
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -4516,8 +4590,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
   }
 
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -4546,7 +4620,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
 
   // There are 2 textures to check if they are free.
   EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(2, _));
-  renderer().SwapBuffersComplete();
+  renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
   Mock::VerifyAndClearExpectations(&gl());
 
   // Both textures get returned and the 2nd one can be reused.
@@ -4562,8 +4636,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseAfterNoSwapBuffers) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
   }
 
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -4615,8 +4689,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
 
     renderer().DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
@@ -4646,7 +4720,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
 
     // All sent textures will be checked to verify if they are free yet.
     EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(i + 1, _));
-    renderer().SwapBuffersComplete();
+    renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
     Mock::VerifyAndClearExpectations(&gl());
   }
 
@@ -4676,8 +4750,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
 
     renderer().DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
@@ -4715,7 +4789,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysReuseManyIfReturnedSlowly) {
     // also 1 outstanding texture to check for that wasn't returned yet from the
     // above loop.
     EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(i + 2, _));
-    renderer().SwapBuffersComplete();
+    renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
     Mock::VerifyAndClearExpectations(&gl());
   }
 }
@@ -4744,8 +4818,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
 
     renderer().DecideRenderPassAllocationsForFrame(
         render_passes_in_draw_order_);
@@ -4775,7 +4849,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
 
     // All sent textures will be checked to verify if they are free yet.
     EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(i + 1, _));
-    renderer().SwapBuffersComplete();
+    renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
     Mock::VerifyAndClearExpectations(&gl());
   }
 
@@ -4808,7 +4882,7 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
 
     // There's just 1 outstanding RenderPass texture to query for.
     EXPECT_CALL(gl(), ScheduleCALayerInUseQueryCHROMIUM(1, _));
-    renderer().SwapBuffersComplete();
+    renderer().SwapBuffersComplete(/*release_fence=*/gfx::GpuFenceHandle());
     Mock::VerifyAndClearExpectations(&gl());
   }
 
@@ -4824,8 +4898,8 @@ TEST_F(CALayerGLRendererTest, CALayerOverlaysCachedTexturesAreFreed) {
     AggregatedRenderPass* root_pass = cc::AddRenderPass(
         &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
         gfx::Transform(), cc::FilterOperations());
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
   }
 
   renderer().DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -4859,7 +4933,7 @@ class FramebufferWatchingGLRenderer : public FakeRendererGL {
   FramebufferWatchingGLRenderer(RendererSettings* settings,
                                 const DebugRendererSettings* debug_settings,
                                 OutputSurface* output_surface,
-                                DisplayResourceProvider* resource_provider)
+                                DisplayResourceProviderGL* resource_provider)
       : FakeRendererGL(settings,
                        debug_settings,
                        output_surface,
@@ -4901,10 +4975,8 @@ TEST_F(GLRendererTest, UndamagedRenderPassStillDrawnWhenNoPartialSwap) {
   auto output_surface = FakeOutputSurface::Create3d(std::move(provider));
   output_surface->BindToClient(&output_surface_client);
 
-  std::unique_ptr<DisplayResourceProvider> resource_provider =
-      std::make_unique<DisplayResourceProvider>(
-          DisplayResourceProvider::kGpu, output_surface->context_provider(),
-          nullptr);
+  auto resource_provider = std::make_unique<DisplayResourceProviderGL>(
+      output_surface->context_provider());
 
   for (int i = 0; i < 2; ++i) {
     bool use_partial_swap = i == 0;
@@ -4933,8 +5005,8 @@ TEST_F(GLRendererTest, UndamagedRenderPassStillDrawnWhenNoPartialSwap) {
         &render_passes_in_draw_order_, AggregatedRenderPassId{1},
         gfx::Rect(viewport_size), gfx::Transform(), cc::FilterOperations());
     cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorRED);
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
     root_pass->damage_rect = gfx::Rect(viewport_size);
 
     EXPECT_EQ(0, renderer.bind_root_framebuffer_calls());
@@ -4964,8 +5036,8 @@ TEST_F(GLRendererTest, UndamagedRenderPassStillDrawnWhenNoPartialSwap) {
         &render_passes_in_draw_order_, AggregatedRenderPassId{1},
         gfx::Rect(viewport_size), gfx::Transform(), cc::FilterOperations());
     cc::AddQuad(root_pass, gfx::Rect(viewport_size), SK_ColorRED);
-    cc::AddRenderPassQuad(root_pass, child_pass, 0, gfx::Transform(),
-                          SkBlendMode::kSrcOver);
+    cc::AddRenderPassQuad(root_pass, child_pass, kInvalidResourceId,
+                          gfx::Transform(), SkBlendMode::kSrcOver);
     root_pass->damage_rect = gfx::Rect(child_rect.right(), 0, 10, 10);
 
     EXPECT_EQ(0, renderer.bind_root_framebuffer_calls());
@@ -5003,9 +5075,8 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
     output_surface_ = FakeOutputSurface::Create3d(std::move(provider));
     output_surface_->set_overlay_texture_id(kSurfaceOverlayTextureId);
     output_surface_->set_gpu_fence_id(kGpuFenceId);
-    resource_provider_ = std::make_unique<DisplayResourceProvider>(
-        DisplayResourceProvider::kGpu, output_surface_->context_provider(),
-        nullptr);
+    resource_provider_ = std::make_unique<DisplayResourceProviderGL>(
+        output_surface_->context_provider());
     overlay_processor_ = std::make_unique<SingleOverlayOnTopProcessor>();
     overlay_processor_->AllowMultipleCandidates();
     renderer_ = std::make_unique<FakeRendererGL>(
@@ -5034,9 +5105,9 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
         gpu::Mailbox::Generate(), GL_LINEAR, GL_TEXTURE_2D, gpu::SyncToken(),
         gfx::Size(256, 256), true);
     ResourceId client_resource_id = child_resource_provider_->ImportResource(
-        transfer_resource, SingleReleaseCallback::Create(base::DoNothing()));
+        transfer_resource, base::DoNothing());
 
-    std::unordered_map<ResourceId, ResourceId> resource_map =
+    std::unordered_map<ResourceId, ResourceId, ResourceIdHasher> resource_map =
         cc::SendResourceAndGetChildToParentMap(
             {client_resource_id}, resource_provider_.get(),
             child_resource_provider_.get(), child_context_provider_.get());
@@ -5051,7 +5122,7 @@ class GLRendererWithGpuFenceTest : public GLRendererTest {
 
   cc::FakeOutputSurfaceClient output_surface_client_;
   std::unique_ptr<FakeOutputSurface> output_surface_;
-  std::unique_ptr<DisplayResourceProvider> resource_provider_;
+  std::unique_ptr<DisplayResourceProviderGL> resource_provider_;
   scoped_refptr<TestContextProvider> child_context_provider_;
   std::unique_ptr<ClientResourceProvider> child_resource_provider_;
   RendererSettings settings_;
@@ -5099,9 +5170,8 @@ TEST_F(GLRendererWithGpuFenceTest,
       root_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
   SharedQuadState* shared_state = root_pass->CreateAndAppendSharedQuadState();
   shared_state->SetAll(gfx::Transform(), gfx::Rect(viewport_size),
-                       gfx::Rect(50, 50), gfx::MaskFilterInfo(),
-                       gfx::Rect(viewport_size), false, false, 1,
-                       SkBlendMode::kSrcOver, 0);
+                       gfx::Rect(50, 50), gfx::MaskFilterInfo(), absl::nullopt,
+                       false, 1, SkBlendMode::kSrcOver, 0);
   overlay_quad->SetNew(
       shared_state, gfx::Rect(viewport_size), gfx::Rect(viewport_size),
       needs_blending, create_overlay_resource(), premultiplied_alpha,

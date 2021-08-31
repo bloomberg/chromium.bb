@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 #include "url/gurl.h"
@@ -24,6 +23,23 @@ DialAppState ParseDialAppState(const std::string& app_state) {
     return DialAppState::kStopped;
   }
   return DialAppState::kUnknown;
+}
+
+void ProcessAdditionalDataElement(const base::Value& additional_data_element,
+                                  ParsedDialAppInfo* out_app_info) {
+  const base::Value* child_elements =
+      data_decoder::GetXmlElementChildren(additional_data_element);
+  if (!child_elements || !child_elements->is_list())
+    return;
+  for (const auto& child_element : child_elements->GetList()) {
+    std::string tag_name;
+    if (!data_decoder::GetXmlElementTagName(child_element, &tag_name))
+      continue;
+    std::string extra_data;
+    if (data_decoder::GetXmlElementText(child_element, &extra_data)) {
+      out_app_info->extra_data[tag_name] = extra_data;
+    }
+  }
 }
 
 // Parses |child_element| content, and sets corresponding fields of
@@ -49,11 +65,10 @@ SafeDialAppInfoParser::ParsingResult ProcessChildElement(
     if (!data_decoder::GetXmlElementText(child_element, &state))
       return SafeDialAppInfoParser::ParsingResult::kFailToReadState;
     out_app_info->state = ParseDialAppState(state);
+  } else if (tag_name == "additionalData") {
+    ProcessAdditionalDataElement(child_element, out_app_info);
   } else {
-    std::string extra_data;
-    if (data_decoder::GetXmlElementText(child_element, &extra_data)) {
-      out_app_info->extra_data[tag_name] = extra_data;
-    }
+    // We ignore unexpected elements outside of <additionalData>.
   }
   return SafeDialAppInfoParser::ParsingResult::kSuccess;
 }
@@ -74,8 +89,7 @@ SafeDialAppInfoParser::ParsingResult ValidateParsedAppInfo(
 }  // namespace
 
 SafeDialAppInfoParser::SafeDialAppInfoParser() = default;
-
-SafeDialAppInfoParser::~SafeDialAppInfoParser() {}
+SafeDialAppInfoParser::~SafeDialAppInfoParser() = default;
 
 void SafeDialAppInfoParser::Parse(const std::string& xml_text,
                                   ParseCallback callback) {

@@ -5,6 +5,7 @@
 #include "chrome/browser/media/router/providers/cast/cast_media_controller.h"
 
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -54,17 +55,17 @@ void SetIfValid(base::TimeDelta* out, const base::Value* value) {
 }
 
 // If |value| has "width" and "height" fields with positive values, it gets
-// converted into gfx::Size. Otherwise base::nullopt is returned.
-base::Optional<gfx::Size> GetValidSize(const base::Value* value) {
+// converted into gfx::Size. Otherwise absl::nullopt is returned.
+absl::optional<gfx::Size> GetValidSize(const base::Value* value) {
   if (!value || !value->is_dict())
-    return base::nullopt;
+    return absl::nullopt;
   int width = 0;
   int height = 0;
   SetIfValid(&width, value->FindPath("width"));
   SetIfValid(&height, value->FindPath("height"));
   if (width <= 0 || height <= 0)
-    return base::nullopt;
-  return base::make_optional<gfx::Size>(width, height);
+    return absl::nullopt;
+  return absl::make_optional<gfx::Size>(width, height);
 }
 
 }  // namespace
@@ -233,14 +234,14 @@ void CastMediaController::UpdateMediaStatus(const base::Value& message_value) {
         base::Value::AsListValue(*commands_value);
     // |can_set_volume| and |can_mute| are not used, because the receiver volume
     // info obtained in SetSession() is used instead.
-    media_status_.can_play_pause =
-        base::Contains(commands_list, base::Value(kMediaCommandPause));
+    media_status_.can_play_pause = base::Contains(
+        commands_list.GetList(), base::Value(kMediaCommandPause));
     media_status_.can_seek =
-        base::Contains(commands_list, base::Value(kMediaCommandSeek));
-    media_status_.can_skip_to_next_track =
-        base::Contains(commands_list, base::Value(kMediaCommandQueueNext));
-    media_status_.can_skip_to_previous_track =
-        base::Contains(commands_list, base::Value(kMediaCommandQueuePrev));
+        base::Contains(commands_list.GetList(), base::Value(kMediaCommandSeek));
+    media_status_.can_skip_to_next_track = base::Contains(
+        commands_list.GetList(), base::Value(kMediaCommandQueueNext));
+    media_status_.can_skip_to_previous_track = base::Contains(
+        commands_list.GetList(), base::Value(kMediaCommandQueuePrev));
   }
 
   const base::Value* player_state = status_value.FindKey("playerState");

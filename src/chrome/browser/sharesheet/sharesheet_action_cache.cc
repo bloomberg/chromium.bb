@@ -4,26 +4,32 @@
 
 #include "chrome/browser/sharesheet/sharesheet_action_cache.h"
 
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/about_flags.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sharesheet/example_action.h"
 #include "chrome/browser/sharesheet/share_action.h"
 #include "chrome/browser/sharesheet/sharesheet_types.h"
+#include "chrome/common/chrome_features.h"
 #include "ui/gfx/vector_icon_types.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/nearby_sharing/sharesheet/nearby_share_action.h"
 #include "chrome/browser/sharesheet/drive_share_action.h"
 #endif
 
 namespace sharesheet {
 
-SharesheetActionCache::SharesheetActionCache() {
+SharesheetActionCache::SharesheetActionCache(Profile* profile) {
   // ShareActions will be initialised here by calling AddShareAction.
-#if defined(OS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(features::kNearbySharing)) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (NearbySharingServiceFactory::IsNearbyShareSupportedForBrowserContext(
+          profile)) {
     AddShareAction(std::make_unique<NearbyShareAction>());
   }
   AddShareAction(std::make_unique<DriveShareAction>());
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 SharesheetActionCache::~SharesheetActionCache() = default;
@@ -34,7 +40,7 @@ SharesheetActionCache::GetShareActions() {
 }
 
 ShareAction* SharesheetActionCache::GetActionFromName(
-    const base::string16& action_name) {
+    const std::u16string& action_name) {
   auto iter = share_actions_.begin();
   while (iter != share_actions_.end()) {
     if ((*iter)->GetActionName() == action_name) {
@@ -47,7 +53,7 @@ ShareAction* SharesheetActionCache::GetActionFromName(
 }
 
 const gfx::VectorIcon* SharesheetActionCache::GetVectorIconFromName(
-    const base::string16& display_name) {
+    const std::u16string& display_name) {
   ShareAction* share_action = GetActionFromName(display_name);
   if (share_action == nullptr) {
     return nullptr;

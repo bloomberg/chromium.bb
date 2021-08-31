@@ -9,8 +9,9 @@
 #include "base/check.h"
 #include "base/hash/hash.h"
 #include "base/i18n/case_conversion.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -30,6 +31,8 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 #include "chrome/common/pref_names.h"
@@ -42,22 +45,19 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
 constexpr char kProfileCreationInterceptionDeclinedPref[] =
     "signin.ProfileCreationInterceptionDeclinedPref";
+constexpr char kProfileSwitchInterceptionDeclinedPref[] =
+    "signin.ProfileSwitchInterceptionDeclinedPref";
 
 void RecordSigninInterceptionHeuristicOutcome(
     SigninInterceptionHeuristicOutcome outcome) {
   base::UmaHistogramEnumeration("Signin.Intercept.HeuristicOutcome", outcome);
-}
-
-bool IsProfileCreationAllowed() {
-  PrefService* service = g_browser_process->local_state();
-  DCHECK(service);
-  return service->GetBoolean(prefs::kBrowserAddPersonEnabled);
 }
 
 // Helper function to return the primary account info. The returned info is
@@ -65,11 +65,11 @@ bool IsProfileCreationAllowed() {
 // fields may be missing if they are not available.
 AccountInfo GetPrimaryAccountInfo(signin::IdentityManager* manager) {
   CoreAccountInfo primary_core_account_info =
-      manager->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired);
+      manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
   if (primary_core_account_info.IsEmpty())
     return AccountInfo();
 
-  base::Optional<AccountInfo> primary_account_info =
+  absl::optional<AccountInfo> primary_account_info =
       manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           primary_core_account_info);
 
@@ -88,7 +88,40 @@ bool HasNoBrowser(content::WebContents* web_contents) {
   return chrome::FindBrowserWithWebContents(web_contents) == nullptr;
 }
 
+// Different conditions which make Guest option available or not.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class SigninInterceptGuestAvailability {
+  kAvailable = 0,
+  kGuestAlreadyOpen = 1,
+  kGuestBlocked = 2,
+  kEphemeralGuestDisabled = 3,
+  kMaxValue = kEphemeralGuestDisabled
+};
+
+SigninInterceptGuestAvailability GetGuestOptionAvailablity() {
+  if (!Profile::IsEphemeralGuestProfileEnabled())
+    return SigninInterceptGuestAvailability::kEphemeralGuestDisabled;
+
+  if (BrowserList::GetGuestBrowserCount())
+    return SigninInterceptGuestAvailability::kGuestAlreadyOpen;
+
+  if (!profiles::IsGuestModeEnabled()) {
+    return SigninInterceptGuestAvailability::kGuestBlocked;
+  }
+  return SigninInterceptGuestAvailability::kAvailable;
+}
+
+void RecordGuestOptionAvailablity(
+    SigninInterceptGuestAvailability availability) {
+  base::UmaHistogramEnumeration("Signin.Intercept.Guest.Availability",
+                                availability);
+}
+
 }  // namespace
+
+ScopedDiceWebSigninInterceptionBubbleHandle::
+    ~ScopedDiceWebSigninInterceptionBubbleHandle() = default;
 
 bool SigninInterceptionHeuristicOutcomeIsSuccess(
     SigninInterceptionHeuristicOutcome outcome) {
@@ -114,10 +147,11 @@ DiceWebSigninInterceptor::~DiceWebSigninInterceptor() = default;
 void DiceWebSigninInterceptor::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(kProfileCreationInterceptionDeclinedPref);
+  registry->RegisterDictionaryPref(kProfileSwitchInterceptionDeclinedPref);
   registry->RegisterBooleanPref(prefs::kSigninInterceptionEnabled, true);
 }
 
-base::Optional<SigninInterceptionHeuristicOutcome>
+absl::optional<SigninInterceptionHeuristicOutcome>
 DiceWebSigninInterceptor::GetHeuristicOutcome(
     bool is_new_account,
     bool is_sync_signin,
@@ -142,6 +176,10 @@ DiceWebSigninInterceptor::GetHeuristicOutcome(
       email,
       &g_browser_process->profile_manager()->GetProfileAttributesStorage());
   if (switch_to_entry) {
+    if (HasUserDeclinedProfileSwitch(email)) {
+      return SigninInterceptionHeuristicOutcome::
+          kAbortUserDeclinedProfileForAccount;
+    }
     if (entry)
       *entry = switch_to_entry;
     return SigninInterceptionHeuristicOutcome::kInterceptProfileSwitch;
@@ -149,7 +187,7 @@ DiceWebSigninInterceptor::GetHeuristicOutcome(
 
   // From this point the remaining possible interceptions involve creating a new
   // profile.
-  if (!IsProfileCreationAllowed()) {
+  if (!profiles::IsProfileCreationAllowed()) {
     return SigninInterceptionHeuristicOutcome::kAbortProfileCreationDisallowed;
   }
 
@@ -168,7 +206,7 @@ DiceWebSigninInterceptor::GetHeuristicOutcome(
         kAbortUserDeclinedProfileForAccount;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void DiceWebSigninInterceptor::MaybeInterceptWebSignin(
@@ -215,13 +253,13 @@ void DiceWebSigninInterceptor::MaybeInterceptWebSignin(
     return;
   }
 
-  base::Optional<AccountInfo> account_info =
+  absl::optional<AccountInfo> account_info =
       identity_manager_
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
               account_id);
   DCHECK(account_info) << "Intercepting unknown account.";
   const ProfileAttributesEntry* entry = nullptr;
-  base::Optional<SigninInterceptionHeuristicOutcome> heuristic_outcome =
+  absl::optional<SigninInterceptionHeuristicOutcome> heuristic_outcome =
       GetHeuristicOutcome(is_new_account, is_sync_signin, account_info->email,
                           &entry);
   account_id_ = account_id;
@@ -236,11 +274,13 @@ void DiceWebSigninInterceptor::MaybeInterceptWebSignin(
       Delegate::BubbleParameters bubble_parameters{
           SigninInterceptionType::kProfileSwitch, *account_info,
           GetPrimaryAccountInfo(identity_manager_),
-          entry->GetProfileThemeColors().profile_highlight_color};
-      delegate_->ShowSigninInterceptionBubble(
+          entry->GetProfileThemeColors().profile_highlight_color,
+          /*show_guest_option=*/false};
+      interception_bubble_handle_ = delegate_->ShowSigninInterceptionBubble(
           web_contents, bubble_parameters,
           base::BindOnce(&DiceWebSigninInterceptor::OnProfileSwitchChoice,
-                         base::Unretained(this), entry->GetPath()));
+                         base::Unretained(this), account_info->email,
+                         entry->GetPath()));
       was_interception_ui_displayed_ = true;
     } else {
       // Interception is aborted.
@@ -260,21 +300,24 @@ void DiceWebSigninInterceptor::MaybeInterceptWebSignin(
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, on_account_info_update_timeout_.callback(),
         base::TimeDelta::FromSeconds(5));
-    account_info_update_observer_.Add(identity_manager_);
+    account_info_update_observation_.Observe(identity_manager_);
   }
 }
 
 void DiceWebSigninInterceptor::CreateBrowserAfterSigninInterception(
     CoreAccountId account_id,
     content::WebContents* intercepted_contents,
-    bool show_customization_bubble) {
+    std::unique_ptr<ScopedDiceWebSigninInterceptionBubbleHandle> bubble_handle,
+    bool is_new_profile) {
   DCHECK(!session_startup_helper_);
+  DCHECK(bubble_handle);
+  interception_bubble_handle_ = std::move(bubble_handle);
   session_startup_helper_ =
       std::make_unique<DiceInterceptedSessionStartupHelper>(
-          profile_, account_id, intercepted_contents);
+          profile_, is_new_profile, account_id, intercepted_contents);
   session_startup_helper_->Startup(
-      base::Bind(&DiceWebSigninInterceptor::OnNewBrowserCreated,
-                 base::Unretained(this), show_customization_bubble));
+      base::BindOnce(&DiceWebSigninInterceptor::OnNewBrowserCreated,
+                     base::Unretained(this), is_new_profile));
 }
 
 void DiceWebSigninInterceptor::Shutdown() {
@@ -287,7 +330,7 @@ void DiceWebSigninInterceptor::Shutdown() {
 
 void DiceWebSigninInterceptor::Reset() {
   Observe(/*web_contents=*/nullptr);
-  account_info_update_observer_.RemoveAll();
+  account_info_update_observation_.Reset();
   on_account_info_update_timeout_.Cancel();
   is_interception_in_progress_ = false;
   account_id_ = CoreAccountId();
@@ -295,6 +338,7 @@ void DiceWebSigninInterceptor::Reset() {
   was_interception_ui_displayed_ = false;
   account_info_fetch_start_time_ = base::TimeTicks();
   profile_creation_start_time_ = base::TimeTicks();
+  interception_bubble_handle_.reset();
 }
 
 const ProfileAttributesEntry*
@@ -320,8 +364,7 @@ bool DiceWebSigninInterceptor::ShouldShowEnterpriseBubble(
   DCHECK(intercepted_account_info.IsValid());
   // Check if the intercepted account or the primary account is managed.
   CoreAccountInfo primary_core_account_info =
-      identity_manager_->GetPrimaryAccountInfo(
-          signin::ConsentLevel::kNotRequired);
+      identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
 
   if (primary_core_account_info.IsEmpty() ||
       primary_core_account_info.account_id ==
@@ -329,16 +372,14 @@ bool DiceWebSigninInterceptor::ShouldShowEnterpriseBubble(
     return false;
   }
 
-  if (intercepted_account_info.hosted_domain != kNoHostedDomainFound)
+  if (intercepted_account_info.IsManaged())
     return true;
 
-  base::Optional<AccountInfo> primary_account_info =
+  absl::optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
           primary_core_account_info);
-  if (!primary_account_info || !primary_account_info->IsValid())
-    return false;
 
-  return primary_account_info->hosted_domain != kNoHostedDomainFound;
+  return primary_account_info && primary_account_info->IsManaged();
 }
 
 bool DiceWebSigninInterceptor::ShouldShowMultiUserBubble(
@@ -368,13 +409,13 @@ void DiceWebSigninInterceptor::OnExtendedAccountInfoUpdated(
   if (!info.IsValid())
     return;
 
-  account_info_update_observer_.RemoveAll();
+  account_info_update_observation_.Reset();
   on_account_info_update_timeout_.Cancel();
   base::UmaHistogramTimes(
       "Signin.Intercept.AccountInfoFetchDuration",
       base::TimeTicks::Now() - account_info_fetch_start_time_);
 
-  base::Optional<SigninInterceptionType> interception_type;
+  absl::optional<SigninInterceptionType> interception_type;
 
   if (ShouldShowEnterpriseBubble(info))
     interception_type = SigninInterceptionType::kEnterprise;
@@ -389,15 +430,18 @@ void DiceWebSigninInterceptor::OnExtendedAccountInfoUpdated(
     return;
   }
 
-  ProfileAttributesEntry* entry;
-  g_browser_process->profile_manager()
-      ->GetProfileAttributesStorage()
-      .GetProfileAttributesWithPath(profile_->GetPath(), &entry);
+  ProfileAttributesEntry* entry =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_->GetPath());
   SkColor profile_color = GenerateNewProfileColor(entry).color;
+  auto guest_option_availability = GetGuestOptionAvailablity();
   Delegate::BubbleParameters bubble_parameters{
       *interception_type, info, GetPrimaryAccountInfo(identity_manager_),
-      GetAutogeneratedThemeColors(profile_color).frame_color};
-  delegate_->ShowSigninInterceptionBubble(
+      GetAutogeneratedThemeColors(profile_color).frame_color,
+      guest_option_availability ==
+          SigninInterceptGuestAvailability::kAvailable};
+  interception_bubble_handle_ = delegate_->ShowSigninInterceptionBubble(
       web_contents(), bubble_parameters,
       base::BindOnce(&DiceWebSigninInterceptor::OnProfileCreationChoice,
                      base::Unretained(this), info, profile_color));
@@ -406,6 +450,7 @@ void DiceWebSigninInterceptor::OnExtendedAccountInfoUpdated(
       *interception_type == SigninInterceptionType::kEnterprise
           ? SigninInterceptionHeuristicOutcome::kInterceptEnterprise
           : SigninInterceptionHeuristicOutcome::kInterceptMultiUser);
+  RecordGuestOptionAvailablity(guest_option_availability);
 }
 
 void DiceWebSigninInterceptor::OnExtendedAccountInfoFetchTimeout() {
@@ -418,15 +463,17 @@ void DiceWebSigninInterceptor::OnProfileCreationChoice(
     const AccountInfo& account_info,
     SkColor profile_color,
     SigninInterceptionResult create) {
-  if (create != SigninInterceptionResult::kAccepted) {
+  if (create != SigninInterceptionResult::kAccepted &&
+      create != SigninInterceptionResult::kAcceptedWithGuest) {
     if (create == SigninInterceptionResult::kDeclined)
       RecordProfileCreationDeclined(account_info.email);
     Reset();
     return;
   }
 
+  DCHECK(interception_bubble_handle_);
   profile_creation_start_time_ = base::TimeTicks::Now();
-  base::string16 profile_name;
+  std::u16string profile_name;
   profile_name = profiles::GetDefaultNameForNewSignedInProfile(account_info);
 
   DCHECK(!dice_signed_in_profile_creator_);
@@ -435,30 +482,35 @@ void DiceWebSigninInterceptor::OnProfileCreationChoice(
       std::make_unique<DiceSignedInProfileCreator>(
           profile_, account_id_, profile_name,
           profiles::GetPlaceholderAvatarIndex(),
+          create == SigninInterceptionResult::kAcceptedWithGuest,
           base::BindOnce(&DiceWebSigninInterceptor::OnNewSignedInProfileCreated,
                          base::Unretained(this), profile_color));
 }
 
 void DiceWebSigninInterceptor::OnProfileSwitchChoice(
+    const std::string& email,
     const base::FilePath& profile_path,
     SigninInterceptionResult switch_profile) {
   if (switch_profile != SigninInterceptionResult::kAccepted) {
+    if (switch_profile == SigninInterceptionResult::kDeclined)
+      RecordProfileSwitchDeclined(email);
     Reset();
     return;
   }
 
-  profile_creation_start_time_ = base::TimeTicks::Now();
+  DCHECK(interception_bubble_handle_);
   DCHECK(!dice_signed_in_profile_creator_);
+  profile_creation_start_time_ = base::TimeTicks::Now();
   // Unretained is fine because the profile creator is owned by this.
   dice_signed_in_profile_creator_ =
       std::make_unique<DiceSignedInProfileCreator>(
           profile_, account_id_, profile_path,
           base::BindOnce(&DiceWebSigninInterceptor::OnNewSignedInProfileCreated,
-                         base::Unretained(this), base::nullopt));
+                         base::Unretained(this), absl::nullopt));
 }
 
 void DiceWebSigninInterceptor::OnNewSignedInProfileCreated(
-    base::Optional<SkColor> profile_color,
+    absl::optional<SkColor> profile_color,
     Profile* new_profile) {
   DCHECK(dice_signed_in_profile_creator_);
   dice_signed_in_profile_creator_.reset();
@@ -468,21 +520,22 @@ void DiceWebSigninInterceptor::OnNewSignedInProfileCreated(
     return;
   }
 
-  bool show_customization_bubble = false;
-  if (profile_color.has_value()) {
-    // The profile color is defined only when the profile has just been created
-    // (with interception type kMultiUser or kEnterprise). If the profile is not
-    // new (kProfileSwitch), then the color is not updated.
+  // The profile color is defined only when the profile has just been created
+  // (with interception type kMultiUser or kEnterprise). If the profile is not
+  // new (kProfileSwitch) or if it is a guest profile, then the color is not
+  // updated.
+  bool is_new_profile = profile_color.has_value();
+  if (is_new_profile) {
     base::UmaHistogramTimes(
         "Signin.Intercept.ProfileCreationDuration",
         base::TimeTicks::Now() - profile_creation_start_time_);
     ProfileMetrics::LogProfileAddNewUser(
         ProfileMetrics::ADD_NEW_USER_SIGNIN_INTERCEPTION);
-    // Apply the new color to the profile.
-    ThemeServiceFactory::GetForProfile(new_profile)
-        ->BuildAutogeneratedThemeFromColor(*profile_color);
-    // Show the customization UI to allow changing the color.
-    show_customization_bubble = true;
+    if (!new_profile->IsEphemeralGuestProfile()) {
+      // Apply the new color to the profile.
+      ThemeServiceFactory::GetForProfile(new_profile)
+          ->BuildAutogeneratedThemeFromColor(*profile_color);
+    }
   } else {
     base::UmaHistogramTimes(
         "Signin.Intercept.ProfileSwitchDuration",
@@ -492,19 +545,31 @@ void DiceWebSigninInterceptor::OnNewSignedInProfileCreated(
   // Work is done in this profile, the flow continues in the
   // DiceWebSigninInterceptor that is attached to the new profile.
   DiceWebSigninInterceptorFactory::GetForProfile(new_profile)
-      ->CreateBrowserAfterSigninInterception(account_id_, web_contents(),
-                                             show_customization_bubble);
+      ->CreateBrowserAfterSigninInterception(
+          account_id_, web_contents(), std::move(interception_bubble_handle_),
+          is_new_profile);
   Reset();
 }
 
-void DiceWebSigninInterceptor::OnNewBrowserCreated(
-    bool show_customization_bubble) {
+void DiceWebSigninInterceptor::OnNewBrowserCreated(bool is_new_profile) {
+  DCHECK(interception_bubble_handle_);
+  interception_bubble_handle_.reset();  // Close the bubble now.
   session_startup_helper_.reset();
-  if (show_customization_bubble) {
-    Browser* browser = chrome::FindBrowserWithProfile(profile_);
-    DCHECK(browser);
-    delegate_->ShowProfileCustomizationBubble(browser);
+
+  if (!is_new_profile || profile_->IsEphemeralGuestProfile())
+    return;
+
+  // Don't show the customization bubble if a valid policy theme is set.
+  Browser* browser = chrome::FindBrowserWithProfile(profile_);
+  if (ThemeServiceFactory::GetForProfile(profile_)->UsingPolicyTheme()) {
+    // Show the profile switch IPH that is normally shown after the
+    // customization bubble.
+    browser->window()->MaybeShowProfileSwitchIPH();
+    return;
   }
+
+  DCHECK(browser);
+  delegate_->ShowProfileCustomizationBubble(browser);
 }
 
 // static
@@ -521,19 +586,46 @@ void DiceWebSigninInterceptor::RecordProfileCreationDeclined(
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               kProfileCreationInterceptionDeclinedPref);
   std::string key = GetPersistentEmailHash(email);
-  base::Optional<int> declined_count = update->FindIntKey(key);
-  update->SetIntKey(
-      key, declined_count.has_value() ? declined_count.value() + 1 : 1);
+  absl::optional<int> declined_count = update->FindIntKey(key);
+  update->SetIntKey(key, declined_count.value_or(0) + 1);
 }
 
 bool DiceWebSigninInterceptor::HasUserDeclinedProfileCreation(
     const std::string& email) const {
   const base::DictionaryValue* pref_data = profile_->GetPrefs()->GetDictionary(
       kProfileCreationInterceptionDeclinedPref);
-  base::Optional<int> declined_count =
+  absl::optional<int> declined_count =
       pref_data->FindIntKey(GetPersistentEmailHash(email));
-  // Check if the user declined 3 times.
-  constexpr int kMaxProfileCreationDeclinedCount = 3;
+  // Check if the user declined 2 times.
+  constexpr int kMaxProfileCreationDeclinedCount = 2;
   return declined_count &&
          declined_count.value() >= kMaxProfileCreationDeclinedCount;
+}
+
+void DiceWebSigninInterceptor::RecordProfileSwitchDeclined(
+    const std::string& email) {
+  DictionaryPrefUpdate update(profile_->GetPrefs(),
+                              kProfileSwitchInterceptionDeclinedPref);
+  std::string key = GetPersistentEmailHash(email);
+  absl::optional<int> declined_count = update->FindIntKey(key);
+  update->SetIntKey(key, declined_count.value_or(0) + 1);
+}
+
+bool DiceWebSigninInterceptor::HasUserDeclinedProfileSwitch(
+    const std::string& email) const {
+  const base::DictionaryValue* pref_data = profile_->GetPrefs()->GetDictionary(
+      kProfileSwitchInterceptionDeclinedPref);
+  absl::optional<int> declined_count =
+      pref_data->FindIntKey(GetPersistentEmailHash(email));
+
+  // The limit is controlled by an experiment. Zero value completely turns off
+  // the profile switch bubble. Negative values mean there is no limit. By
+  // default, there is no limit.
+  int max_profile_switch_declined_count =
+      base::GetFieldTrialParamByFeatureAsInt(
+          kDiceWebSigninInterceptionFeature,
+          "max_profile_switch_declined_count", -1);
+
+  return max_profile_switch_declined_count >= 0 &&
+         declined_count.value_or(0) >= max_profile_switch_declined_count;
 }

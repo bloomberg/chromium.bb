@@ -5,6 +5,7 @@
 package org.chromium.weblayer_private.test;
 
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -15,6 +16,7 @@ import androidx.fragment.app.FragmentManager;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.annotations.UsedByReflection;
+import org.chromium.components.autofill.AutofillProviderTestHelper;
 import org.chromium.components.infobars.InfoBarAnimationListener;
 import org.chromium.components.infobars.InfoBarUiItem;
 import org.chromium.components.location.LocationUtils;
@@ -22,6 +24,8 @@ import org.chromium.components.media_router.BrowserMediaRouter;
 import org.chromium.components.media_router.MockMediaRouteProvider;
 import org.chromium.components.media_router.RouterTestUtils;
 import org.chromium.components.permissions.PermissionDialogController;
+import org.chromium.components.webauthn.Fido2ApiHandler;
+import org.chromium.components.webauthn.MockFido2ApiHandler;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
 import org.chromium.device.geolocation.LocationProviderOverrider;
@@ -29,16 +33,20 @@ import org.chromium.device.geolocation.MockLocationProvider;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.weblayer_private.BrowserImpl;
+import org.chromium.weblayer_private.DownloadImpl;
 import org.chromium.weblayer_private.InfoBarContainer;
+import org.chromium.weblayer_private.ProfileImpl;
 import org.chromium.weblayer_private.TabImpl;
 import org.chromium.weblayer_private.WebLayerAccessibilityUtil;
 import org.chromium.weblayer_private.interfaces.IBrowser;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
+import org.chromium.weblayer_private.interfaces.IProfile;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.media.MediaRouteDialogFragmentImpl;
 import org.chromium.weblayer_private.test_interfaces.ITestWebLayer;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -166,13 +174,6 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
                 () -> { NetworkChangeNotifier.forceConnectivityState(true); });
     }
 
-    @NativeMethods
-    interface Natives {
-        void waitForBrowserControlsMetadataState(
-                long tabImpl, int top, int bottom, Runnable runnable);
-        void setIgnoreMissingKeyForTranslateManager(boolean ignore);
-    }
-
     @Override
     public boolean canInfoBarContainerScroll(ITab tab) {
         return ((TabImpl) tab).canInfoBarContainerScrollForTesting();
@@ -262,5 +263,71 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
         View securityIconView = urlBarLayout.getChildAt(0);
         assert (securityIconView instanceof ImageView);
         return ObjectWrapper.wrap((ImageView) securityIconView);
+    }
+
+    @Override
+    public void fetchAccessToken(IProfile profile, IObjectWrapper /* Set<String> */ scopes,
+            IObjectWrapper /* ValueCallback<String> */ onTokenFetched) throws RemoteException {
+        ProfileImpl profileImpl = (ProfileImpl) profile;
+        profileImpl.fetchAccessTokenForTesting(scopes, onTokenFetched);
+    }
+
+    @Override
+    public void addContentCaptureConsumer(IBrowser browser,
+            IObjectWrapper /* Runnable */ onNewEvents,
+            IObjectWrapper /* ArrayList<Integer>*/ eventsObserved) {
+        Runnable unwrappedOnNewEvents = ObjectWrapper.unwrap(onNewEvents, Runnable.class);
+        ArrayList<Integer> unwrappedEventsObserved =
+                ObjectWrapper.unwrap(eventsObserved, ArrayList.class);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            BrowserImpl browserImpl = (BrowserImpl) browser;
+            browserImpl.getViewController().addContentCaptureConsumerForTesting(
+                    new TestContentCaptureConsumer(unwrappedOnNewEvents, unwrappedEventsObserved));
+        });
+    }
+
+    @Override
+    public void notifyOfAutofillEvents(IBrowser browser, IObjectWrapper /* Runnable */ onNewEvents,
+            IObjectWrapper /* ArrayList<Integer>*/ eventsObserved) {
+        Runnable unwrappedOnNewEvents = ObjectWrapper.unwrap(onNewEvents, Runnable.class);
+        ArrayList<Integer> unwrappedEventsObserved =
+                ObjectWrapper.unwrap(eventsObserved, ArrayList.class);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AutofillProviderTestHelper.disableDownloadServerForTesting();
+            BrowserImpl browserImpl = (BrowserImpl) browser;
+            TabImpl tab = browserImpl.getActiveTab();
+            tab.getAutofillProviderForTesting().replaceAutofillManagerWrapperForTesting(
+                    new TestAutofillManagerWrapper(browserImpl.getContext(), unwrappedOnNewEvents,
+                            unwrappedEventsObserved));
+        });
+    }
+
+    @Override
+    public void activateBackgroundFetchNotification(int id) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> DownloadImpl.activateNotificationForTesting(id));
+    }
+
+    @Override
+    public void expediteDownloadService() {
+        TestWebLayerImplJni.get().expediteDownloadService();
+    }
+
+    @Override
+    public void setMockWebAuthnEnabled(boolean enabled) {
+        if (enabled) {
+            Fido2ApiHandler.overrideInstanceForTesting(new MockFido2ApiHandler());
+        } else {
+            Fido2ApiHandler.overrideInstanceForTesting(null);
+        }
+    }
+
+    @NativeMethods
+    interface Natives {
+        void waitForBrowserControlsMetadataState(
+                long tabImpl, int top, int bottom, Runnable runnable);
+        void setIgnoreMissingKeyForTranslateManager(boolean ignore);
+        void expediteDownloadService();
     }
 }

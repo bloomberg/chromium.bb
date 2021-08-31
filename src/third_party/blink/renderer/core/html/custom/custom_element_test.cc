@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_definition_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_definition.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_test_helpers.h"
@@ -165,16 +166,14 @@ TEST(CustomElementTest, StateByParser) {
   struct {
     const char* id;
     CustomElementState state;
-    Element::V0CustomElementState v0state;
   } parser_data[] = {
-      {"div", CustomElementState::kUncustomized, Element::kV0NotCustomElement},
-      {"v1v0", CustomElementState::kUndefined, Element::kV0WaitingForUpgrade},
-      {"v0", CustomElementState::kUncustomized, Element::kV0WaitingForUpgrade},
+      {"div", CustomElementState::kUncustomized},
+      {"v1v0", CustomElementState::kUndefined},
+      {"v0", CustomElementState::kUncustomized},
   };
   for (const auto& data : parser_data) {
     Element* element = document.getElementById(data.id);
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.id;
-    EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.id;
   }
 }
 
@@ -182,35 +181,27 @@ TEST(CustomElementTest, StateByCreateElement) {
   struct {
     const char* name;
     CustomElementState state;
-    Element::V0CustomElementState v0state;
   } create_element_data[] = {
-      {"div", CustomElementState::kUncustomized, Element::kV0NotCustomElement},
-      {"a-a", CustomElementState::kUndefined, Element::kV0WaitingForUpgrade},
-      // TODO(pdr): <font-face> should be V0NotCustomElement as per the spec,
-      // but was regressed to be V0WaitingForUpgrade in
-      // http://crrev.com/656913006
-      {"font-face", CustomElementState::kUncustomized,
-       Element::kV0WaitingForUpgrade},
-      {"_-X", CustomElementState::kUncustomized, Element::kV0WaitingForUpgrade},
+      {"div", CustomElementState::kUncustomized},
+      {"a-a", CustomElementState::kUndefined},
+      {"font-face", CustomElementState::kUncustomized},
+      {"_-X", CustomElementState::kUncustomized},
   };
   auto page_holder = std::make_unique<DummyPageHolder>();
   Document& document = page_holder->GetDocument();
   for (const auto& data : create_element_data) {
     Element* element = document.CreateElementForBinding(data.name);
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
-    EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
 
     element = document.createElementNS(html_names::xhtmlNamespaceURI, data.name,
                                        ASSERT_NO_EXCEPTION);
     EXPECT_EQ(data.state, element->GetCustomElementState()) << data.name;
-    EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
 
     element = document.createElementNS(svg_names::kNamespaceURI, data.name,
                                        ASSERT_NO_EXCEPTION);
     EXPECT_EQ(CustomElementState::kUncustomized,
               element->GetCustomElementState())
         << data.name;
-    EXPECT_EQ(data.v0state, element->GetV0CustomElementState()) << data.name;
   }
 }
 

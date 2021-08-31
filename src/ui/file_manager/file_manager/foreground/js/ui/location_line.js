@@ -2,10 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {FakeEntry} from '../../../externs/files_app_entry_interfaces.m.js';
+// #import {FilesTooltip} from '../../elements/files_tooltip.m.js';
+// #import {ListContainer} from './list_container.m.js';
+// #import {VolumeManager} from '../../../externs/volume_manager.m.js';
+// #import {util} from '../../../common/js/util.m.js';
+// #import {PathComponent} from '../path_component.m.js';
+// #import {NativeEventTarget as EventTarget} from 'chrome://resources/js/cr/event_target.m.js';
+// #import {metrics} from '../../../common/js/metrics.m.js';
+// #import {BreadCrumb} from './breadcrumb.m.js';
+// clang-format on
+
 /**
  * Location line.
  */
-class LocationLine extends cr.EventTarget {
+/* #export */ class LocationLine extends cr.EventTarget {
   /**
    * @param {!Element} breadcrumbs Container element for breadcrumbs.
    * @param {!VolumeManager} volumeManager Volume manager.
@@ -55,11 +67,7 @@ class LocationLine extends cr.EventTarget {
       return;
     }
 
-    if (util.isFilesNg()) {
-      this.updateNg_(components);
-    } else {
-      this.update_(components);
-    }
+    this.updateNg_(components);
   }
 
   /**
@@ -78,7 +86,8 @@ class LocationLine extends cr.EventTarget {
   updateNg_(components) {
     this.components_ = Array.from(components);
 
-    let breadcrumbs = document.querySelector('bread-crumb');
+    let breadcrumbs =
+        /** @type {!BreadCrumb} */ (document.querySelector('bread-crumb'));
     if (!breadcrumbs) {
       breadcrumbs = document.createElement('bread-crumb');
       breadcrumbs.id = 'breadcrumbs';
@@ -93,92 +102,6 @@ class LocationLine extends cr.EventTarget {
 
     breadcrumbs.path = path;
     this.breadcrumbs_.hidden = false;
-  }
-
-  /**
-   * Updates the breadcrumb display.
-   * @param {!Array<!PathComponent>} components Components to the
-   *     target path.
-   * @private
-   */
-  update_(components) {
-    this.components_ = components;
-
-    // Make the new breadcrumbs temporarily.
-    const newBreadcrumbs = document.createElement('div');
-    for (let i = 0; i < components.length; i++) {
-      // Add a component.
-      const component = components[i];
-      const button = document.createElement('button');
-      button.id = 'breadcrumb-path-' + i;
-      button.classList.add(
-          'breadcrumb-path', 'entry-name', 'imitate-paper-button');
-      button.setAttribute('aria-label', component.name);
-      button.setAttribute('has-tooltip', '');
-      if (this.filesTooltip_) {
-        this.filesTooltip_.addTarget(button);
-      }
-
-      const nameElement = document.createElement('div');
-      nameElement.classList.add('name');
-      nameElement.textContent = component.name;
-      button.appendChild(nameElement);
-
-      button.addEventListener('click', this.onClick_.bind(this, i));
-      newBreadcrumbs.appendChild(button);
-
-      const ripple = document.createElement('paper-ripple');
-      ripple.classList.add('recenteringTouch');
-      ripple.setAttribute('fit', '');
-      button.appendChild(ripple);
-
-      // If this is the last component, break here.
-      if (i === components.length - 1) {
-        break;
-      }
-
-      // Add a separator.
-      const separator = document.createElement('span');
-      separator.classList.add('separator');
-      newBreadcrumbs.appendChild(separator);
-    }
-
-    // Replace the shown breadcrumbs with the new one, keeping the DOMs for
-    // common prefix of the path.
-    // 1. Forward the references to the path element while in the common prefix.
-    let childOriginal = this.breadcrumbs_.firstChild;
-    let childNew = newBreadcrumbs.firstChild;
-    let cnt = 0;
-    while (childOriginal && childNew &&
-           childOriginal.textContent === childNew.textContent) {
-      childOriginal = childOriginal.nextSibling;
-      childNew = childNew.nextSibling;
-      cnt++;
-    }
-    // 2. Remove all elements in original breadcrumbs which are not in the
-    // common prefix.
-    while (childOriginal) {
-      const childToRemove = childOriginal;
-      childOriginal = childOriginal.nextSibling;
-      this.breadcrumbs_.removeChild(childToRemove);
-    }
-    // 3. Append new elements after the common prefix.
-    while (childNew) {
-      const childToAppend = childNew;
-      childNew = childNew.nextSibling;
-      this.breadcrumbs_.appendChild(childToAppend);
-    }
-    // 4. Reset the tab index and class 'breadcrumb-last'.
-    for (let el = this.breadcrumbs_.firstChild; el; el = el.nextSibling) {
-      if (el.classList.contains('breadcrumb-path')) {
-        const isLast = !el.nextSibling;
-        el.tabIndex = isLast ? -1 : 9;
-        el.classList.toggle('breadcrumb-last', isLast);
-      }
-    }
-
-    this.breadcrumbs_.hidden = false;
-    this.truncate();
   }
 
   /**

@@ -18,6 +18,7 @@
 #define LIBGAV1_SRC_UTILS_TYPES_H_
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 
@@ -512,6 +513,10 @@ struct ObuFrameHeader {
   Delta delta_lf;
   // A valid value of reference_frame_index[i] is in the range [0, 7]. -1
   // indicates an invalid value.
+  //
+  // NOTE: When the frame is an intra frame (frame_type is kFrameKey or
+  // kFrameIntraOnly), reference_frame_index is not used and may be
+  // uninitialized.
   int8_t reference_frame_index[kNumInterReferenceFrameTypes];
   // The ref_order_hint[ i ] syntax element in the uncompressed header.
   // Specifies the expected output order hint for each reference frame.
@@ -519,6 +524,25 @@ struct ObuFrameHeader {
   LoopFilter loop_filter;
   Cdef cdef;
   FilmGrainParams film_grain_params;
+};
+
+// Structure used for traversing the partition tree.
+struct PartitionTreeNode {
+  PartitionTreeNode() = default;
+  PartitionTreeNode(int row4x4, int column4x4, BlockSize block_size)
+      : row4x4(row4x4), column4x4(column4x4), block_size(block_size) {}
+  int row4x4 = -1;
+  int column4x4 = -1;
+  BlockSize block_size = kBlockInvalid;
+};
+
+// Structure used for storing the transform parameters in a superblock.
+struct TransformParameters {
+  TransformParameters() = default;
+  TransformParameters(TransformType type, int non_zero_coeff_count)
+      : type(type), non_zero_coeff_count(non_zero_coeff_count) {}
+  TransformType type;
+  int non_zero_coeff_count;
 };
 
 }  // namespace libgav1

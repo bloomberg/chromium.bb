@@ -156,52 +156,55 @@ bool ValueToString(UserModel* user_model,
         break;
       }
       case ValueProto::kCreditCards: {
-        if (proto.autofill_format().pattern().empty()) {
+        if (proto.autofill_format().value_expression().chunk().empty()) {
           DVLOG(2) << "Error evaluating " << __func__ << ": pattern not set";
           return false;
         }
         auto* credit_card =
-            user_model->GetCreditCard(value->credit_cards().values(i).guid());
+            user_model->GetCreditCard(value->credit_cards().values(i));
         if (!credit_card) {
           DVLOG(2) << "Error evaluating " << __func__
                    << ": credit card not found";
           return false;
         }
-        auto formatted_string = field_formatter::FormatString(
-            proto.autofill_format().pattern(),
+        std::string formatted_string;
+        auto format_status = field_formatter::FormatExpression(
+            proto.autofill_format().value_expression(),
             field_formatter::CreateAutofillMappings(
-                *credit_card, proto.autofill_format().locale()));
-        if (!formatted_string.has_value()) {
+                *credit_card, proto.autofill_format().locale()),
+            /* quote_meta= */ false, &formatted_string);
+        if (!format_status.ok()) {
           DVLOG(2) << "Error evaluating " << __func__
                    << ": error formatting pattern '"
-                   << proto.autofill_format().pattern() << "'";
+                   << proto.autofill_format().value_expression() << "'";
           return false;
         }
-        result.mutable_strings()->add_values(*formatted_string);
+        result.mutable_strings()->add_values(formatted_string);
         break;
       }
       case ValueProto::kProfiles: {
-        if (proto.autofill_format().pattern().empty()) {
+        if (proto.autofill_format().value_expression().chunk().empty()) {
           DVLOG(2) << "Error evaluating " << __func__ << ": pattern not set";
           return false;
         }
-        auto* profile =
-            user_model->GetProfile(value->profiles().values(i).guid());
+        auto* profile = user_model->GetProfile(value->profiles().values(i));
         if (!profile) {
           DVLOG(2) << "Error evaluating " << __func__ << ": profile not found";
           return false;
         }
-        auto formatted_string = field_formatter::FormatString(
-            proto.autofill_format().pattern(),
+        std::string formatted_string;
+        auto format_status = field_formatter::FormatExpression(
+            proto.autofill_format().value_expression(),
             field_formatter::CreateAutofillMappings(
-                *profile, proto.autofill_format().locale()));
-        if (!formatted_string.has_value()) {
+                *profile, proto.autofill_format().locale()),
+            /* quote_meta= */ false, &formatted_string);
+        if (!format_status.ok()) {
           DVLOG(2) << "Error evaluating " << __func__
                    << ": error formatting pattern '"
-                   << proto.autofill_format().pattern() << "'";
+                   << proto.autofill_format().value_expression() << "'";
           return false;
         }
-        result.mutable_strings()->add_values(*formatted_string);
+        result.mutable_strings()->add_values(formatted_string);
         break;
       }
       case ValueProto::kUserActions:
@@ -347,7 +350,7 @@ bool CreateCreditCardResponse(UserModel* user_model,
   }
 
   auto* credit_card =
-      user_model->GetCreditCard(value->credit_cards().values(0).guid());
+      user_model->GetCreditCard(value->credit_cards().values(0));
   if (!credit_card) {
     DVLOG(2) << "Error evaluating " << __func__ << ": card not found for guid "
              << value->credit_cards().values(0).guid();
@@ -382,6 +385,27 @@ bool CreateLoginOptionResponse(UserModel* user_model,
   ValueProto result;
   result.set_server_payload(value->login_options().values(0).payload());
   user_model->SetValue(result_model_identifier, result);
+  return true;
+}
+
+bool StringEmpty(UserModel* user_model,
+                 const std::string& result_model_identifier,
+                 const StringEmptyProto& proto) {
+  auto value = user_model->GetValue(proto.value());
+  if (!value.has_value()) {
+    DVLOG(2) << "Failed to find value in user model";
+    return false;
+  }
+
+  if (value->strings().values().size() != 1) {
+    DVLOG(2) << "Error evaluating " << __func__
+             << ": expected single string, but got " << *value;
+    return false;
+  }
+
+  user_model->SetValue(result_model_identifier,
+                       SimpleValue(value->strings().values(0).empty(),
+                                   ContainsClientOnlyValue({*value})));
   return true;
 }
 
@@ -479,6 +503,14 @@ bool BasicInteractions::ComputeValue(const ComputeValueProto& proto) {
                                        proto.result_model_identifier(),
                                        proto.create_login_option_response());
       break;
+    case ComputeValueProto::kStringEmpty:
+      if (!proto.string_empty().has_value()) {
+        DVLOG(2)
+            << "Error computing ComputeValue::StringEmpty: no value specified";
+        return false;
+      }
+      return StringEmpty(delegate_->GetUserModel(),
+                         proto.result_model_identifier(), proto.string_empty());
     case ComputeValueProto::KIND_NOT_SET:
       DVLOG(2) << "Error computing value: kind not set";
       return false;
@@ -591,9 +623,22 @@ bool BasicInteractions::NotifyViewInflationFinished(
   return true;
 }
 
+bool BasicInteractions::NotifyPersistentViewInflationFinished(
+    const ClientStatus& status) {
+  if (!persistent_view_inflation_finished_callback_) {
+    return false;
+  }
+  std::move(persistent_view_inflation_finished_callback_).Run(status);
+  return true;
+}
+
 void BasicInteractions::ClearCallbacks() {
   end_action_callback_.Reset();
   view_inflation_finished_callback_.Reset();
+}
+
+void BasicInteractions::ClearPersistentUiCallbacks() {
+  persistent_view_inflation_finished_callback_.Reset();
 }
 
 void BasicInteractions::SetEndActionCallback(
@@ -606,6 +651,13 @@ void BasicInteractions::SetViewInflationFinishedCallback(
         view_inflation_finished_callback) {
   view_inflation_finished_callback_ =
       std::move(view_inflation_finished_callback);
+}
+
+void BasicInteractions::SetPersistentViewInflationFinishedCallback(
+    base::OnceCallback<void(const ClientStatus&)>
+        persistent_view_inflation_finished_callback) {
+  persistent_view_inflation_finished_callback_ =
+      std::move(persistent_view_inflation_finished_callback);
 }
 
 bool BasicInteractions::RunConditionalCallback(

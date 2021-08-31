@@ -18,19 +18,39 @@ namespace policy {
 // A system feature that can be disabled by SystemFeaturesDisableList policy.
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-enum SystemFeature {
-  UNKNOWN_SYSTEM_FEATURE = 0,
-  CAMERA = 1,            // The camera chrome app on Chrome OS.
-  BROWSER_SETTINGS = 2,  // Browser settings.
-  OS_SETTINGS = 3,       // The settings feature on Chrome OS.
-  SCANNING = 4,          // The scan SWA on Chrome OS.
-  kMaxValue = SCANNING
+enum SystemFeature : int {
+  kUnknownSystemFeature = 0,
+  kCamera = 1,           // The camera chrome app on Chrome OS.
+  kBrowserSettings = 2,  // Browser settings.
+  kOsSettings = 3,       // The settings feature on Chrome OS.
+  kScanning = 4,         // The scan SWA on Chrome OS.
+  kWebStore = 5,         // The web store chrome app on Chrome OS.
+  kCanvas = 6,           // The canvas web app on Chrome OS.
+  kGoogleNews = 7,       // The Google news web app on Chrome OS.
+  kExplore = 8,          // The explore web app on Chrome OS.
+  kMaxValue = kExplore
+};
+
+// A disabling mode that decides the user experience when a system feature is
+// added into SystemFeaturesDisableList policy.
+enum class SystemFeatureDisableMode {
+  kUnknownDisableMode = 0,
+  kBlocked = 1,  // The disabled feature is blocked.
+  kHidden = 2,   // The disabled feature is blocked and hidden.
+  kMaxValue = kHidden
 };
 
 extern const char kCameraFeature[];
 extern const char kBrowserSettingsFeature[];
 extern const char kOsSettingsFeature[];
 extern const char kScanningFeature[];
+extern const char kWebStoreFeature[];
+extern const char kCanvasFeature[];
+extern const char kGoogleNewsFeature[];
+extern const char kExploreFeature[];
+
+extern const char kBlockedDisableMode[];
+extern const char kHiddenDisableMode[];
 
 extern const char kSystemFeaturesDisableListHistogram[];
 
@@ -41,6 +61,7 @@ class SystemFeaturesDisableListPolicyHandler
   ~SystemFeaturesDisableListPolicyHandler() override;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
+  static SystemFeature GetSystemFeatureFromAppId(const std::string& app_id);
 
  protected:
   // ListPolicyHandler:

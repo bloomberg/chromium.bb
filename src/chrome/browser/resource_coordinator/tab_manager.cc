@@ -7,32 +7,34 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/memory/oom_memory_details.h"
-#include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/background_tab_navigation_throttle.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
@@ -55,6 +57,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/features.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -68,7 +71,7 @@
 #include "content/public/common/content_features.h"
 #include "net/base/network_change_notifier.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/resource_coordinator/tab_manager_delegate_chromeos.h"
 #endif
 
@@ -143,13 +146,15 @@ TabManager::TabManager(TabLoadTracker* tab_load_tracker)
       background_tab_loading_mode_(BackgroundTabLoadingMode::kStaggered),
       loading_slots_(kNumOfLoadingSlots),
       tab_load_tracker_(tab_load_tracker) {
-#if defined(OS_CHROMEOS)
-  delegate_.reset(new TabManagerDelegate(weak_ptr_factory_.GetWeakPtr()));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  delegate_ =
+      std::make_unique<TabManagerDelegate>(weak_ptr_factory_.GetWeakPtr());
 #endif
   browser_tab_strip_tracker_.Init();
-  session_restore_observer_.reset(new TabManagerSessionRestoreObserver(this));
+  session_restore_observer_ =
+      std::make_unique<TabManagerSessionRestoreObserver>(this);
 
-  stats_collector_.reset(new TabManagerStatsCollector());
+  stats_collector_ = std::make_unique<TabManagerStatsCollector>();
   tab_load_tracker_->AddObserver(this);
 }
 
@@ -160,13 +165,14 @@ TabManager::~TabManager() {
 void TabManager::Start() {
   background_tab_loading_mode_ = BackgroundTabLoadingMode::kStaggered;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   delegate_->StartPeriodicOOMScoreUpdate();
 #endif
 
 // MemoryPressureMonitor is not implemented on Linux so far and tabs are never
 // discarded.
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS)
   // Don't handle memory pressure events here if this is done by
   // PerformanceManager.
   if (!base::FeatureList::IsEnabled(
@@ -222,12 +228,12 @@ LifecycleUnitVector TabManager::GetSortedLifecycleUnits() {
 
 void TabManager::DiscardTab(LifecycleUnitDiscardReason reason,
                             TabDiscardDoneCB tab_discard_done) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Call Chrome OS specific low memory handling process.
   delegate_->LowMemoryKill(reason, std::move(tab_discard_done));
 #else
   DiscardTabImpl(reason, std::move(tab_discard_done));
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 WebContents* TabManager::DiscardTabByExtension(content::WebContents* contents) {
@@ -249,7 +255,7 @@ void TabManager::DiscardTabFromMemoryPressure() {
   DCHECK(!base::FeatureList::IsEnabled(
       performance_manager::features::kUrgentDiscardingFromPerformanceManager));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Output a log with per-process memory usage and number of file descriptors,
   // as well as GPU memory details. Discard happens without waiting for the log
   // (https://crbug.com/850545) Per comment at
@@ -258,7 +264,7 @@ void TabManager::DiscardTabFromMemoryPressure() {
   // platforms since it is not used and data shows it can create IO thread hangs
   // (https://crbug.com/1040522).
   memory::OomMemoryDetails::Log("Tab Discards Memory details");
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Start handling memory pressure. Suppress further notifications before
   // completion in case a slow handler queues up multiple dispatches of this

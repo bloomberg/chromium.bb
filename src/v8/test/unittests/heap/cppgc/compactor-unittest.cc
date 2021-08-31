@@ -7,6 +7,7 @@
 #include "include/cppgc/allocation.h"
 #include "include/cppgc/custom-space.h"
 #include "include/cppgc/persistent.h"
+#include "src/heap/cppgc/garbage-collector.h"
 #include "src/heap/cppgc/heap-object-header.h"
 #include "src/heap/cppgc/heap-page.h"
 #include "src/heap/cppgc/marker.h"
@@ -75,13 +76,6 @@ class CompactorTest : public testing::TestWithPlatform {
     EXPECT_TRUE(compactor().IsEnabledForTesting());
   }
 
-  void CancelCompaction() {
-    bool cancelled = compactor().CancelIfShouldNotCompact(
-        GarbageCollector::Config::MarkingType::kAtomic,
-        GarbageCollector::Config::StackState::kMayContainHeapPointers);
-    EXPECT_TRUE(cancelled);
-  }
-
   void FinishCompaction() { compactor().CompactSpacesIfEnabled(); }
 
   void StartGC() {
@@ -125,12 +119,12 @@ namespace internal {
 
 TEST_F(CompactorTest, NothingToCompact) {
   StartCompaction();
+  heap()->stats_collector()->NotifyMarkingStarted(
+      GarbageCollector::Config::CollectionType::kMajor,
+      GarbageCollector::Config::IsForcedGC::kNotForced);
+  heap()->stats_collector()->NotifyMarkingCompleted(0);
   FinishCompaction();
-}
-
-TEST_F(CompactorTest, CancelledNothingToCompact) {
-  StartCompaction();
-  CancelCompaction();
+  heap()->stats_collector()->NotifySweepingCompleted();
 }
 
 TEST_F(CompactorTest, NonEmptySpaceAllLive) {

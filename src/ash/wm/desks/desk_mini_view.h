@@ -34,6 +34,15 @@ class ASH_EXPORT DeskMiniView
       public views::TextfieldController,
       public views::ViewObserver {
  public:
+  // Returns the width of the desk preview based on its |preview_height| and the
+  // aspect ratio of the root window taken from |root_window_size|.
+  static int GetPreviewWidth(const gfx::Size& root_window_size,
+                             int preview_height);
+
+  // The desk preview bounds are proportional to the bounds of the display on
+  // which it resides.
+  static gfx::Rect GetDeskPreviewBounds(aura::Window* root_window);
+
   DeskMiniView(DesksBarView* owner_bar, aura::Window* root_window, Desk* desk);
   ~DeskMiniView() override;
 
@@ -46,6 +55,11 @@ class ASH_EXPORT DeskMiniView
   const CloseDeskButton* close_desk_button() const {
     return close_desk_button_;
   }
+
+  DesksBarView* owner_bar() { return owner_bar_; }
+  const DeskPreviewView* desk_preview() const { return desk_preview_; }
+
+  gfx::Rect GetPreviewBoundsInScreen() const;
 
   // Returns the associated desk's container window on the display this
   // mini_view resides on.
@@ -68,6 +82,9 @@ class ASH_EXPORT DeskMiniView
   // state of the corresponding desk.
   void UpdateBorderColor();
 
+  // Gets the preview border's insets.
+  gfx::Insets GetPreviewBorderInsets() const;
+
   // views::View:
   const char* GetClassName() const override;
   void Layout() override;
@@ -78,18 +95,21 @@ class ASH_EXPORT DeskMiniView
   // Desk::Observer:
   void OnContentChanged() override;
   void OnDeskDestroyed(const Desk* desk) override;
-  void OnDeskNameChanged(const base::string16& new_name) override;
+  void OnDeskNameChanged(const std::u16string& new_name) override;
 
   // OverviewHighlightController::OverviewHighlightableView:
   views::View* GetView() override;
   void MaybeActivateHighlightedView() override;
   void MaybeCloseHighlightedView() override;
+  void MaybeSwapHighlightedView(bool right) override;
+  bool MaybeActivateHighlightedViewOnOverviewExit(
+      OverviewSession* overview_session) override;
   void OnViewHighlighted() override;
   void OnViewUnhighlighted() override;
 
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
-                       const base::string16& new_contents) override;
+                       const std::u16string& new_contents) override;
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
   bool HandleMouseEvent(views::Textfield* sender,
@@ -101,16 +121,7 @@ class ASH_EXPORT DeskMiniView
 
   bool IsPointOnMiniView(const gfx::Point& screen_location) const;
 
-  // Gets the minimum width of this view to properly lay out all its contents in
-  // default layout.
-  // The view containing this object can use the width returned from this
-  // function to decide its own proper size or layout.
-  int GetMinWidthForDefaultLayout() const;
-
   bool IsDeskNameViewVisibleForTesting() const;
-  const DeskPreviewView* GetDeskPreviewForTesting() const {
-    return desk_preview_;
-  }
 
  private:
   void OnCloseButtonPressed();

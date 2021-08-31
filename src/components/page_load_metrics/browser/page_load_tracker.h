@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/page_load_metrics/browser/observers/core/largest_contentful_paint_handler.h"
+#include "components/page_load_metrics/browser/page_load_metrics_event.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer_delegate.h"
 #include "components/page_load_metrics/browser/page_load_metrics_update_dispatcher.h"
@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/scoped_visibility_tracker.h"
 #include "ui/gfx/geometry/size.h"
@@ -39,6 +40,7 @@ class WebContents;
 
 namespace page_load_metrics {
 
+struct MemoryUpdate;
 class PageLoadMetricsEmbedderInterface;
 
 namespace internal {
@@ -193,7 +195,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                                  const mojom::FrameMetadata& metadata) override;
   void UpdateFeaturesUsage(
       content::RenderFrameHost* rfh,
-      const mojom::PageLoadFeatures& new_features) override;
+      const std::vector<blink::UseCounterFeature>& new_features) override;
   void UpdateResourceDataUse(
       content::RenderFrameHost* rfh,
       const std::vector<mojom::ResourceDataUpdatePtr>& resources) override;
@@ -210,9 +212,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // PageLoadMetricsObserverDelegate implementation:
   content::WebContents* GetWebContents() const override;
   base::TimeTicks GetNavigationStart() const override;
-  const base::Optional<base::TimeDelta>& GetFirstBackgroundTime()
+  const absl::optional<base::TimeDelta>& GetFirstBackgroundTime()
       const override;
-  const base::Optional<base::TimeDelta>& GetFirstForegroundTime()
+  const absl::optional<base::TimeDelta>& GetFirstForegroundTime()
       const override;
   const BackForwardCacheRestore& GetBackForwardCacheRestore(
       size_t index) const override;
@@ -223,11 +225,12 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   bool DidCommit() const override;
   PageEndReason GetPageEndReason() const override;
   const UserInitiatedInfo& GetPageEndUserInitiatedInfo() const override;
-  base::Optional<base::TimeDelta> GetPageEndTime() const override;
+  absl::optional<base::TimeDelta> GetPageEndTime() const override;
   const mojom::FrameMetadata& GetMainFrameMetadata() const override;
   const mojom::FrameMetadata& GetSubframeMetadata() const override;
   const PageRenderData& GetPageRenderData() const override;
-  const NormalizedCLSData& GetNormalizedCLSData() const override;
+  const NormalizedCLSData& GetNormalizedCLSData(
+      BfcacheStrategy bfcache_strategy) const override;
   const mojom::InputTiming& GetPageInputTiming() const override;
   const blink::MobileFriendliness& GetMobileFriendliness() const override;
   const PageRenderData& GetMainFrameRenderData() const override;
@@ -254,7 +257,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
                              base::TimeTicks failed_load_time);
   void PageHidden();
   void PageShown();
-  void FrameDeleted(content::RenderFrameHost* rfh);
+  void RenderFrameDeleted(content::RenderFrameHost* rfh);
+  void FrameDeleted(int frame_tree_node_id);
 
   void OnInputEvent(const blink::WebInputEvent& event);
 
@@ -275,7 +279,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info);
 
-  void FrameReceivedFirstUserActivation(content::RenderFrameHost* rfh);
+  void FrameReceivedUserActivation(content::RenderFrameHost* rfh);
   void FrameDisplayStateChanged(content::RenderFrameHost* render_frame_host,
                                 bool is_display_none);
   void FrameSizeChanged(content::RenderFrameHost* render_frame_host,
@@ -362,9 +366,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
       const content::WebContentsObserver::MediaPlayerInfo& video_type,
       content::RenderFrameHost* render_frame_host);
 
-  // Informs the observers that the event corresponding to |event_key| has
-  // occurred.
-  void BroadcastEventToObservers(const void* const event_key);
+  // Informs the observers that |event| has occurred.
+  void BroadcastEventToObservers(PageLoadMetricsEvent event);
 
   void OnEnterBackForwardCache();
   void OnRestoreFromBackForwardCache(
@@ -373,6 +376,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // Called when the page tracked was just activated after being loaded inside a
   // portal.
   void DidActivatePortal(base::TimeTicks activation_time);
+
+  // Called when V8 per-frame memory usage updates are available.
+  void OnV8MemoryChanged(const std::vector<MemoryUpdate>& memory_updates);
 
  private:
   // This function converts a TimeTicks value taken in the browser process
@@ -441,8 +447,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // We record separate metrics for events that occur after a background,
   // because metrics like layout/paint are delayed artificially
   // when they occur in the background.
-  base::Optional<base::TimeDelta> first_background_time_;
-  base::Optional<base::TimeDelta> first_foreground_time_;
+  absl::optional<base::TimeDelta> first_background_time_;
+  absl::optional<base::TimeDelta> first_foreground_time_;
   std::vector<BackForwardCacheRestore> back_forward_cache_restores_;
   const bool started_in_foreground_;
 
@@ -451,7 +457,7 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
 
   ui::PageTransition page_transition_;
 
-  base::Optional<content::GlobalRequestID> navigation_request_id_;
+  absl::optional<content::GlobalRequestID> navigation_request_id_;
 
   // Whether this page load was user initiated.
   UserInitiatedInfo user_initiated_info_;

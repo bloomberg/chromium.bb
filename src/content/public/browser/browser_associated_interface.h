@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
-#define CONTENT_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
+#define CONTENT_PUBLIC_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
 
 #include <string>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -18,18 +17,18 @@
 #include "ipc/ipc_channel_proxy.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
-// A helper interface which owns an associated interface receiver on the IO
-// thread. Subclassess of BrowserMessageFilter may use this to simplify
-// the transition to Mojo interfaces.
+// A helper class which owns an associated interface receiver on the IO thread.
+// Subclassess of BrowserMessageFilter may use this to simplify the transition
+// to Mojo interfaces.
 //
 // In general the correct pattern for using this is as follows:
 //
 //   class FooMessageFilter : public BrowserMessageFilter,
-//                            public BrowserAssociatedInterface<mojom::Foo>,
-//                            public mojom::Foo {
+//                            public BrowserAssociatedInterface<mojom::Foo> {
 //    public:
 //     FooMessageFilter()
 //         : BrowserMessageFilter(FooMsgStart),
@@ -52,11 +51,11 @@ namespace content {
 //
 // See BrowserAssociatedInterfaceTest.Basic for a simple working example usage.
 template <typename Interface>
-class BrowserAssociatedInterface {
+class BrowserAssociatedInterface : public Interface {
  public:
   // |filter| and |impl| must live at least as long as this object.
-  BrowserAssociatedInterface(BrowserMessageFilter* filter, Interface* impl)
-      : internal_state_(new InternalState(impl)) {
+  explicit BrowserAssociatedInterface(BrowserMessageFilter* filter)
+      : internal_state_(new InternalState(this)) {
     filter->AddAssociatedInterface(
         Interface::Name_,
         base::BindRepeating(&InternalState::BindReceiver, internal_state_),
@@ -71,7 +70,7 @@ class BrowserAssociatedInterface {
   class InternalState : public base::RefCountedThreadSafe<InternalState> {
    public:
     explicit InternalState(Interface* impl)
-        : impl_(impl), receivers_(base::in_place) {}
+        : impl_(impl), receivers_(absl::in_place) {}
 
     void ClearReceivers() {
       if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
@@ -98,7 +97,7 @@ class BrowserAssociatedInterface {
     ~InternalState() {}
 
     Interface* impl_;
-    base::Optional<mojo::AssociatedReceiverSet<Interface>> receivers_;
+    absl::optional<mojo::AssociatedReceiverSet<Interface>> receivers_;
 
     DISALLOW_COPY_AND_ASSIGN(InternalState);
   };
@@ -110,4 +109,4 @@ class BrowserAssociatedInterface {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_
+#endif  // CONTENT_PUBLIC_BROWSER_BROWSER_ASSOCIATED_INTERFACE_H_

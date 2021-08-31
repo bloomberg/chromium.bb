@@ -18,7 +18,7 @@ namespace {
 
 OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
     AutocompleteMatchType::Type type,
-    base::Optional<int> answerType) {
+    absl::optional<int> answerType) {
   // Some suggestions have custom icons. Others fallback to the icon from the
   // overall match type.
   if (answerType) {
@@ -57,7 +57,7 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
     case AutocompleteMatchType::DOCUMENT_SUGGESTION:
-    case AutocompleteMatchType::PEDAL:
+    case AutocompleteMatchType::PEDAL_DEPRECATED:
     case AutocompleteMatchType::HISTORY_BODY:
     case AutocompleteMatchType::HISTORY_KEYWORD:
     case AutocompleteMatchType::HISTORY_TITLE:
@@ -113,7 +113,7 @@ OmniboxSuggestionIconType IconTypeFromMatchAndAnswerType(
   }
 
   auto answerType =
-      isAnswer ? base::make_optional<int>(match.answer->type()) : base::nullopt;
+      isAnswer ? absl::make_optional<int>(match.answer->type()) : absl::nullopt;
   OmniboxSuggestionIconType suggestionIconType =
       IconTypeFromMatchAndAnswerType(match.type, answerType);
   return [self initWithIconType:iconType

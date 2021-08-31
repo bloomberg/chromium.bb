@@ -34,8 +34,9 @@
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/background_sync/background_sync.mojom.h"
+#include "third_party/blink/public/mojom/buckets/bucket_manager_host.mojom-forward.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-forward.h"
-#include "third_party/blink/public/mojom/file_system_access/native_file_system_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-forward.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/public/mojom/permissions/permission.mojom-forward.h"
 #include "third_party/blink/public/mojom/quota/quota_manager_host.mojom-forward.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-forward.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
@@ -90,10 +92,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
                                          public base::SupportsUserData {
  public:
   using iterator = base::IDMap<RenderProcessHost*>::iterator;
-
-  // The priority of a frame added to the RenderProcessHost.
-  // TODO(ericrobinson): Move to RenderProcessHostImpl after Mock refactor.
-  enum class FramePriority { kLow, kNormal };
 
   // Priority (or on Android, the importance) that a client contributes to this
   // RenderProcessHost. Eg a RenderProcessHost with a visible client has higher
@@ -169,15 +167,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // individual priority changes.
   virtual void UpdateClientPriority(PriorityClient* client) = 0;
 
-  // Update the total and low priority count as indicated by the previous and
-  // new priorities of the underlying document.  The nullopt option is used when
-  // there is no previous/subsequent navigation (when the frame is added/removed
-  // from the RenderProcessHost).
-  // TODO(ericrobinson): Move to RenderProcessHostImpl after Mock refactor.
-  virtual void UpdateFrameWithPriority(
-      base::Optional<FramePriority> previous_priority,
-      base::Optional<FramePriority> new_priority) = 0;
-
   // Number of visible (ie |!is_hidden|) PriorityClients.
   virtual int VisibleClientCount() = 0;
 
@@ -207,11 +196,13 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns the storage partition associated with this process.
   virtual StoragePartition* GetStoragePartition() = 0;
 
-  // Try to shut down the associated renderer process without running unload
-  // handlers, etc, giving it the specified exit code.  Returns true
-  // if it was able to shut down.  On Windows, this must not be called before
-  // RenderProcessReady was called on a RenderProcessHostObserver, otherwise
-  // RenderProcessExited may never be called.
+  // Terminate the associated renderer process without running unload handlers,
+  // waiting for the process to exit, etc. If supported by the OS, set the
+  // process exit code to |exit_code|. Returns false if the shutdown request
+  // will not be dispatched. If called before
+  // RenderProcessHostObserver::RenderProcessReady,
+  // RenderProcessHostObserver::RenderProcessExited may never be called since
+  // Shutdown() will race with child process startup.
   virtual bool Shutdown(int exit_code) = 0;
 
   // Returns true if shutdown was started by calling |Shutdown()|.
@@ -287,8 +278,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   using BlockStateChangedCallbackList = base::RepeatingCallbackList<void(bool)>;
   using BlockStateChangedCallback = BlockStateChangedCallbackList::CallbackType;
-  virtual std::unique_ptr<BlockStateChangedCallbackList::Subscription>
-  RegisterBlockStateChangedCallback(const BlockStateChangedCallback& cb) = 0;
+  virtual base::CallbackListSubscription RegisterBlockStateChangedCallback(
+      const BlockStateChangedCallback& cb) = 0;
 
   // Schedules the host for deletion and removes it from the all_hosts list.
   virtual void Cleanup() = 0;
@@ -352,11 +343,6 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       bool outgoing,
       WebRtcRtpPacketCallback packet_callback) = 0;
 
-  // Start/stop event log output from WebRTC on this RPH for the peer connection
-  // identified locally within the RPH using the ID |lid|.
-  virtual void EnableWebRtcEventLogOutput(int lid, int output_period_ms) = 0;
-  virtual void DisableWebRtcEventLogOutput(int lid) = 0;
-
   // Asks the renderer process to bind |receiver|. |receiver| arrives in the
   // renderer process and is carried through the following flow, stopping if any
   // step decides to bind it:
@@ -409,6 +395,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //    Keeps the process alive briefly to give subframe unload handlers a
   //    chance to execute after their parent frame navigates or is detached.
   //    See https://crbug.com/852204.
+  //  - Process reuse timer (experimental):
+  //    Keeps the process alive for a set period of time in case it can be
+  //    reused for the same site. See https://crbug.com/894253.
   virtual void IncrementKeepAliveRefCount() = 0;
   virtual void DecrementKeepAliveRefCount() = 0;
 
@@ -476,6 +465,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // The following several methods are for internal use only, and are only
   // exposed here to support MockRenderProcessHost usage in tests.
+  virtual void CancelAllProcessShutdownDelays() = 0;
   virtual void BindCacheStorage(
       const network::CrossOriginEmbedderPolicy& cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
@@ -485,9 +475,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void BindFileSystemManager(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver) = 0;
-  virtual void BindNativeFileSystemManager(
+  virtual void BindFileSystemAccessManager(
       const url::Origin& origin,
-      mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>
+      mojo::PendingReceiver<blink::mojom::FileSystemAccessManager>
           receiver) = 0;
 
   // |render_frame_id| is the frame associated with |receiver|, or
@@ -495,6 +485,9 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void BindIndexedDB(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) = 0;
+  virtual void BindBucketManagerHost(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::BucketManagerHost> receiver) = 0;
   virtual void BindRestrictedCookieManagerForServiceWorker(
       const url::Origin& origin,
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager>
@@ -522,6 +515,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
       const url::Origin& origin,
       mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) = 0;
   virtual void CreateNotificationService(
+      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::NotificationService> receiver) = 0;
   virtual void CreateWebSocketConnector(
@@ -544,19 +538,21 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // Controls whether the destructor of RenderProcessHost*Impl* will end up
   // cleaning the memory used by the exception added via
-  // RenderProcessHostImpl::AddCorbExceptionForPlugin and
-  // AddAllowedRequestInitiatorForPlugin.
+  // RenderProcessHostImpl::AddAllowedRequestInitiatorForPlugin.
   //
   // TODO(lukasza): https://crbug.com/652474: This method shouldn't be part of
   // the //content public API, because it shouldn't be called by anyone other
   // than RenderProcessHostImpl (from underneath
-  // RenderProcessHostImpl::AddCorbExceptionForPlugin).
+  // RenderProcessHostImpl::AddAllowedRequestInitiatorForPlugin).
   virtual void CleanupNetworkServicePluginExceptionsUponDestruction() = 0;
 
   // Returns a string that contains information useful for debugging
   // crashes related to RenderProcessHost objects staying alive longer than
   // the BrowserContext they are associated with.
   virtual std::string GetInfoForBrowserContextDestructionCrashReporting() = 0;
+
+  // Write a representation of this object into a trace.
+  virtual void WriteIntoTrace(perfetto::TracedValue context) = 0;
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   // Ask the renderer process to dump its profiling data to disk. Invokes
@@ -594,8 +590,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // when the host is ready (RenderProcessHostObserver::RenderProcessReady). If
   // the spare RenderProcessHost is promoted to be a "real" RenderProcessHost or
   // discarded for any reason, the callback is made with a null pointer.
-  static std::unique_ptr<
-      base::CallbackList<void(RenderProcessHost*)>::Subscription>
+  static base::CallbackListSubscription
   RegisterSpareRenderProcessHostChangedCallback(
       const base::RepeatingCallback<void(RenderProcessHost*)>& cb);
 
@@ -609,7 +604,15 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
   // This also calls out to ContentBrowserClient::GetApplicationLocale and
   // modifies the current process' command line.
+  // NOTE: This function is fundamentally unsafe and *should not be used*. By
+  // the time a ContentBrowserClient exists in test fixtures, it is already
+  // unsafe to modify the command-line. The command-line should only be modified
+  // from SetUpCommandLine, which is before the ContentClient is created. See
+  // crbug.com/1197147
   static void SetRunRendererInProcess(bool value);
+
+  // This forces a renderer that is running "in process" to shut down.
+  static void ShutDownInProcessRenderer();
 
   // Allows iteration over all the RenderProcessHosts in the browser. Note
   // that each host may not be active, and therefore may have nullptr channels.

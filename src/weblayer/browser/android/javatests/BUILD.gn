@@ -13,6 +13,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/BrowserTest.java",
     "src/org/chromium/weblayer/test/CookieManagerTest.java",
     "src/org/chromium/weblayer/test/CrashReporterTest.java",
+    "src/org/chromium/weblayer/test/DarkModeTest.java",
     "src/org/chromium/weblayer/test/DataClearingTest.java",
     "src/org/chromium/weblayer/test/DisplayCutoutTest.java",
     "src/org/chromium/weblayer/test/DowngradeTest.java",
@@ -26,6 +27,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/FullscreenSizeTest.java",
     "src/org/chromium/weblayer/test/GoogleAccountsTest.java",
     "src/org/chromium/weblayer/test/InputTypesTest.java",
+    "src/org/chromium/weblayer/test/MediaSessionTest.java",
     "src/org/chromium/weblayer/test/NavigationTest.java",
     "src/org/chromium/weblayer/test/NewTabCallbackTest.java",
     "src/org/chromium/weblayer/test/OnTabRemovedTabListCallbackImpl.java",
@@ -52,12 +54,14 @@ android_library("weblayer_java_tests") {
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
     "//third_party/android_deps:android_support_v4_java",
-    "//third_party/android_deps:androidx_core_core_java",
-    "//third_party/android_deps:androidx_fragment_fragment_java",
-    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:espresso_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_activity_activity_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_java",
+    "//third_party/androidx:androidx_core_core_java",
+    "//third_party/androidx:androidx_fragment_fragment_java",
+    "//third_party/androidx:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
     "//weblayer/browser/java:interfaces_java",
@@ -70,10 +74,14 @@ android_library("weblayer_java_tests") {
 android_library("weblayer_private_java_tests") {
   testonly = true
   sources = [
+    "src/org/chromium/weblayer/test/AutofillTest.java",
+    "src/org/chromium/weblayer/test/BackgroundFetchTest.java",
     "src/org/chromium/weblayer/test/BrowserControlsOffsetCallbackTest.java",
     "src/org/chromium/weblayer/test/BrowserControlsTest.java",
+    "src/org/chromium/weblayer/test/ContentCaptureTest.java",
     "src/org/chromium/weblayer/test/FullscreenCallbackPrivateTest.java",
     "src/org/chromium/weblayer/test/GeolocationTest.java",
+    "src/org/chromium/weblayer/test/GoogleAccountAccessTokenFetcherTest.java",
     "src/org/chromium/weblayer/test/InfoBarTest.java",
     "src/org/chromium/weblayer/test/MediaCaptureTest.java",
     "src/org/chromium/weblayer/test/MediaRouterTest.java",
@@ -85,6 +93,7 @@ android_library("weblayer_private_java_tests") {
     "src/org/chromium/weblayer/test/TabPrivateTest.java",
     "src/org/chromium/weblayer/test/TranslateTest.java",
     "src/org/chromium/weblayer/test/UrlBarControllerTest.java",
+    "src/org/chromium/weblayer/test/WebAuthnTest.java",
   ]
   deps = [
     ":weblayer_java_private_test_support",
@@ -95,15 +104,16 @@ android_library("weblayer_private_java_tests") {
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
     "//third_party/android_deps:android_support_v4_java",
-    "//third_party/android_deps:androidx_fragment_fragment_java",
-    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:espresso_java",
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_fragment_fragment_java",
+    "//third_party/androidx:androidx_test_runner_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
     "//ui/android:ui_java_test_support",
+    "//weblayer/browser/java:test_interfaces_java",
     "//weblayer/public/java",
     "//weblayer/public/javatestutil:test_java",
     "//weblayer/shell/android:weblayer_shell_java",
@@ -130,12 +140,13 @@ android_library("weblayer_java_test_support") {
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java_test_support",
-    "//third_party/android_deps:androidx_core_core_java",
-    "//third_party/android_deps:androidx_fragment_fragment_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_core_core_java",
+    "//third_party/androidx:androidx_fragment_fragment_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
+    "//ui/android:ui_java_test_support",
     "//weblayer/public/java",
     "//weblayer/shell/android:weblayer_shell_java",
   ]
@@ -145,7 +156,7 @@ android_library("weblayer_java_private_test_support") {
   testonly = true
   sources = [
     "src/org/chromium/weblayer/test/BrowserControlsHelper.java",
-    "src/org/chromium/weblayer/test/SiteSettingsActivityTestRule.java",
+    "src/org/chromium/weblayer/test/SettingsActivityTestRule.java",
   ]
   deps = [
     ":weblayer_java_test_support",
@@ -172,7 +183,11 @@ template("weblayer_instrumentation") {
       additional_apks = []
     }
     additional_apks += [ "//net/android:net_test_support_apk" ]
-    data = [ "//weblayer/test/data/" ]
+    data = [
+      "//content/test/data/android/authenticator.html",
+      "//weblayer/test/data/",
+    ]
+    proguard_enabled = !is_java_debug
   }
 }
 
@@ -186,6 +201,24 @@ weblayer_instrumentation("weblayer_instrumentation_test_apk") {
   use_webview_provider = system_webview_apk_target
 
   deps = [ ":weblayer_java_tests" ]
+}
+
+# This target compiles Chrome as well as the WebLayer instrumentation test
+# apk. Use this target for builders that use devices which do not have
+# Chrome installed like Android Marshmallow x86 emulators. If your device
+# does not have Chrome installed, then you can use this target when running
+# tests locally also.
+weblayer_instrumentation("weblayer_instrumentation_test_with_chrome_apk") {
+  apk_name = "WebLayerInstrumentationTestWithChrome"
+  apk_under_test = "//weblayer/shell/android:weblayer_shell_system_webview_apk"
+  use_webview_provider = system_webview_apk_target
+
+  deps = [
+      ":weblayer_java_tests",
+      "//chrome/android/:chrome_public_apk",
+  ]
+
+  data_deps = [ "//chrome/android/:chrome_public_apk" ]
 }
 
 # Runs the instrumentation tests loading the implementation from the WebLayer
@@ -209,8 +242,8 @@ weblayer_instrumentation("weblayer_private_instrumentation_test_apk") {
   deps = [ ":weblayer_private_java_tests" ]
 }
 
-# Runs WebLayer instrumentation tests against arbitrary versions of tests, the
-# client, and the implementation.
+# Runs WebLayer instrumentation tests against arbitrary versions of the
+# client and implementation libraries.
 #
 # Example usage, testing M80 tests and client against master implementation:
 #   autoninja -C out/Release weblayer_instrumentation_test_versions_apk
@@ -219,17 +252,17 @@ weblayer_instrumentation("weblayer_private_instrumentation_test_apk") {
 #       --test-runner-outdir out/Release
 #       --client-outdir /tmp/M80/out/Release
 #       --implementation-outdir out/Release
-copy("weblayer_instrumentation_test_versions_apk") {
+copy("weblayer_skew_tests") {
   testonly = true
 
   sources = [ "weblayer_instrumentation_test_versions.py" ]
 
   outputs =
-      [ "$root_build_dir/bin/run_weblayer_instrumentation_test_versions_apk" ]
+      [ "$root_build_dir/bin/run_weblayer_skew_tests" ]
 
   # Also explicitly list the output as data so it gets isolated on bots.
   data = [
-    "$root_build_dir/bin/run_weblayer_instrumentation_test_versions_apk",
+    "$root_build_dir/bin/run_weblayer_skew_tests",
     "//third_party/catapult/third_party/typ/",
     "//weblayer/browser/android/javatests/skew/expectations.txt",
   ]
@@ -237,6 +270,36 @@ copy("weblayer_instrumentation_test_versions_apk") {
   deps = [ ":weblayer_instrumentation_test_apk" ]
 
   data_deps = [ ":weblayer_instrumentation_test_apk" ]
+}
+
+# Runs WebLayer instrumentation tests against arbitrary versions of the
+# client and implementation libraries. This target also compiles
+# Chrome for devices that do not come with Chrome installed. For usage
+# please see the comment above.
+copy("weblayer_skew_tests_with_chrome") {
+  testonly = true
+
+  sources = [ "weblayer_instrumentation_test_versions.py" ]
+
+  outputs =
+      [ "$root_build_dir/bin/run_weblayer_skew_tests_with_chrome" ]
+
+  # Also explicitly list the output as data so it gets isolated on bots.
+  data = [
+    "$root_build_dir/bin/run_weblayer_skew_tests_with_chrome",
+    "//third_party/catapult/third_party/typ/",
+    "//weblayer/browser/android/javatests/skew/expectations.txt",
+  ]
+
+  deps = [
+    ":weblayer_instrumentation_test_apk",
+    "//chrome/android/:chrome_public_apk",
+  ]
+
+  data_deps = [
+    ":weblayer_instrumentation_test_apk",
+    "//chrome/android/:chrome_public_apk",
+  ]
 }
 
 android_test_apk("weblayer_bundle_test_apk") {
@@ -255,9 +318,9 @@ android_test_apk("weblayer_bundle_test_apk") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
-    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit:junit",
     "//weblayer/public/java",
     "//weblayer/public/javatestutil:test_java",

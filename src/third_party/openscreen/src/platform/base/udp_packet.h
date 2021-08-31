@@ -27,7 +27,7 @@ class UdpPacket : public std::vector<uint8_t> {
   explicit UdpPacket(size_type size, uint8_t fill_value = {});
   template <typename InputIt>
   UdpPacket(InputIt first, InputIt last) : std::vector<uint8_t>(first, last) {}
-  UdpPacket(UdpPacket&& other);
+  UdpPacket(UdpPacket&& other) noexcept;
   UdpPacket(std::initializer_list<uint8_t> init);
 
   ~UdpPacket();
@@ -47,7 +47,7 @@ class UdpPacket : public std::vector<uint8_t> {
 
   std::string ToString() const;
 
-  static constexpr size_type kUdpMaxPacketSize = 1 << 16;
+  static const size_type kUdpMaxPacketSize;
 
  private:
   IPEndpoint source_ = {};

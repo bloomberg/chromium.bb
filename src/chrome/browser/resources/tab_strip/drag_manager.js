@@ -82,6 +82,9 @@ export class DragManagerDelegate {
    * @param {number} index
    */
   placeTabGroupElement(element, index) {}
+
+  /** @return {boolean} */
+  shouldPreventDrag() {}
 }
 
 /** @typedef {!DragManagerDelegate|!HTMLElement} */
@@ -251,10 +254,6 @@ class DragSession {
 
     this.element_.setDragging(false);
     this.element_.setDraggedOut(false);
-
-    if (event.type === 'dragend') {
-      this.maybeShowTabContextMenu_();
-    }
   }
 
   /** @return {boolean} */
@@ -283,7 +282,8 @@ class DragSession {
 
   /** @param {!DragEvent} event */
   finish(event) {
-    if (this.isDraggingPlaceholderTab_()) {
+    const wasDraggingPlaceholder = this.isDraggingPlaceholderTab_();
+    if (wasDraggingPlaceholder) {
       const id = Number(event.dataTransfer.getData(getTabIdDataType()));
       this.element_.tab = Object.assign({}, this.element_.tab, {id});
     } else if (this.isDraggingPlaceholderGroup_()) {
@@ -307,20 +307,6 @@ class DragSession {
 
     this.element_.setDragging(false);
     this.element_.setDraggedOut(false);
-
-    this.maybeShowTabContextMenu_();
-  }
-
-  /** @private */
-  maybeShowTabContextMenu_() {
-    if (!isTabElement(this.element_) || this.hasMoved_) {
-      return;
-    }
-
-    // If the user was dragging a tab and the tab has not ever been moved,
-    // show a context menu instead.
-    this.tabStripEmbedderProxy_.showTabContextMenu(
-        this.element_.tab.id, this.lastPoint_.x, this.lastPoint_.y);
   }
 
   /**
@@ -508,6 +494,9 @@ export class DragManager {
 
     /** @private {!TabsApiProxy} */
     this.tabsProxy_ = TabsApiProxyImpl.getInstance();
+
+    /** @private {!TabStripEmbedderProxy} */
+    this.tabStripEmbedderProxy_ = TabStripEmbedderProxyImpl.getInstance();
   }
 
   /**
@@ -541,6 +530,17 @@ export class DragManager {
           return isTabElement(item) || isTabGroupElement(item);
         });
     if (!draggedItem) {
+      return;
+    }
+
+    // If we are dragging a tab element ensure its touch pressed state is reset
+    // to avoid any associated css effects making it onto the drag image.
+    if (isTabElement(draggedItem)) {
+      /** @private {!TabElement} */ (draggedItem).setTouchPressed(false);
+    }
+
+    if (this.delegate_.shouldPreventDrag()) {
+      event.preventDefault();
       return;
     }
 

@@ -2,29 +2,75 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "media/gpu/vaapi/test/vp9_decoder.h"
+
 #include <va/va.h>
 
+#include "media/filters/ivf_parser.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/test/macros.h"
-#include "media/gpu/vaapi/test/vp9_decoder.h"
+#include "media/gpu/vaapi/test/scoped_va_config.h"
+#include "media/gpu/vaapi/test/scoped_va_context.h"
+#include "media/gpu/vaapi/test/shared_va_surface.h"
+#include "media/gpu/vaapi/test/vaapi_device.h"
 
 namespace media {
 namespace vaapi_test {
 
+namespace {
+
+// Returns the VAProfile from |frame_hdr|.
+VAProfile GetProfile(Vp9FrameHeader frame_hdr) {
+  switch (frame_hdr.profile) {
+    case 0:
+      return VAProfileVP9Profile0;
+    case 1:
+      break;
+    case 2:
+      LOG_ASSERT(frame_hdr.bit_depth == 10)
+          << "Only 10-bit streams are supported for VP9 profile 2";
+      return VAProfileVP9Profile2;
+    case 3:
+      break;
+    default:
+      break;
+  }
+
+  LOG_ASSERT(false) << "Unsupported VP9 profile " << frame_hdr.profile;
+  return VAProfileNone;
+}
+
+// Returns the preferred VA_RT_FORMAT for the given |profile|.
+// TODO(jchinlee): Have format dependent on bit depth, not profile.
+unsigned int GetFormatForProfile(VAProfile profile) {
+  if (profile == VAProfileVP9Profile2 || profile == VAProfileVP9Profile3)
+    return VA_RT_FORMAT_YUV420_10;
+  return VA_RT_FORMAT_YUV420;
+}
+
+}  // namespace
+
 Vp9Decoder::Vp9Decoder(std::unique_ptr<IvfParser> ivf_parser,
-                       const VaapiDevice& va)
-    : ivf_parser_(std::move(ivf_parser)),
-      va_(va),
-      context_id_(VA_INVALID_ID),
+                       const VaapiDevice& va_device,
+                       SharedVASurface::FetchPolicy fetch_policy)
+    : VideoDecoder::VideoDecoder(std::move(ivf_parser),
+                                 va_device,
+                                 fetch_policy),
       vp9_parser_(
           std::make_unique<Vp9Parser>(/*parsing_compressed_header=*/false)),
       ref_frames_(kVp9NumRefFrames) {}
 
 Vp9Decoder::~Vp9Decoder() {
-  if (context_id_ != VA_INVALID_ID) {
-    VAStatus res = vaDestroyContext(va_.display(), context_id_);
-    VA_LOG_ASSERT(res, "vaDestroyContext");
-  }
+  // We destroy the VA handles explicitly to ensure the correct order.
+  // The configuration must be destroyed after the context so that the
+  // configuration reference remains valid in the context, and surfaces can only
+  // be destroyed after the context as per
+  // https://github.com/intel/libva/blob/8c6126e67c446f4c7808cb51b609077e4b9bd8fe/va/va.h#L1549
+  va_context_.reset();
+  va_config_.reset();
+
+  ref_frames_.clear();
+  last_decoded_surface_.reset();
 }
 
 Vp9Parser::Result Vp9Decoder::ReadNextFrame(Vp9FrameHeader& vp9_frame_header,
@@ -65,12 +111,11 @@ VideoDecoder::Result Vp9Decoder::DecodeNextFrame() {
   Vp9Parser::Result parser_res = ReadNextFrame(frame_hdr, size);
   if (parser_res == Vp9Parser::kEOStream)
     return VideoDecoder::kEOStream;
-  if (parser_res != Vp9Parser::kOk) {
-    LOG(ERROR) << "Failed to parse next frame, got " << parser_res;
-    return VideoDecoder::kFailed;
-  }
+  LOG_ASSERT(parser_res == Vp9Parser::kOk)
+      << "Failed to parse next frame, got " << parser_res;
 
   VLOG_IF(2, !frame_hdr.show_frame) << "not displaying frame";
+  last_decoded_frame_visible_ = frame_hdr.show_frame;
 
   if (frame_hdr.show_existing_frame) {
     last_decoded_surface_ = ref_frames_[frame_hdr.frame_to_show_map_idx];
@@ -80,14 +125,25 @@ VideoDecoder::Result Vp9Decoder::DecodeNextFrame() {
     return VideoDecoder::kOk;
   }
 
-  // Create context for decode.
-  VAStatus res;
-  if (context_id_ == VA_INVALID_ID) {
-    res = vaCreateContext(va_.display(), va_.config_id(), size.width(),
-                          size.height(), VA_PROGRESSIVE,
-                          /*render_targets=*/nullptr,
-                          /*num_render_targets=*/0, &context_id_);
-    VA_LOG_ASSERT(res, "vaCreateContext");
+  const VAProfile profile = GetProfile(frame_hdr);
+  // Note: some streams may fail to decode; see
+  // https://source.chromium.org/chromium/chromium/src/+/main:media/gpu/vp9_decoder.cc;l=249-285;drc=3893688a88eb1b4cf39e346fd8f8c743ad255469
+  if (!va_config_ || va_config_->profile() != profile) {
+    va_context_.reset();
+    va_config_ = std::make_unique<ScopedVAConfig>(va_device_, profile,
+                                                  GetFormatForProfile(profile));
+  }
+
+  // [Re]create context for decode.
+  // A resolution change may occur on a frame that is neither keyframe nor
+  // intra-only, i.e. may refer to earlier frames. If the earlier referred frame
+  // is larger than the new frame, consequently, do *not* recreate the context.
+  // See also
+  // https://cgit.freedesktop.org/gstreamer/gstreamer-vaapi/tree/gst-libs/gst/vaapi/gstvaapidecoder_vp9.c?h=1.18#n652
+  if (!va_context_ || va_context_->size().width() < size.width() ||
+      va_context_->size().height() < size.height()) {
+    va_context_ =
+        std::make_unique<ScopedVAContext>(va_device_, *va_config_, size);
   }
 
   // Create surfaces for decode.
@@ -96,8 +152,8 @@ VideoDecoder::Result Vp9Decoder::DecodeNextFrame() {
   attribute.flags = VA_SURFACE_ATTRIB_SETTABLE;
   attribute.value.type = VAGenericValueTypeInteger;
   attribute.value.value.i = VA_SURFACE_ATTRIB_USAGE_HINT_DECODER;
-  scoped_refptr<SharedVASurface> surface =
-      SharedVASurface::Create(va_, size, attribute);
+  scoped_refptr<SharedVASurface> surface = SharedVASurface::Create(
+      va_device_, va_config_->va_rt_format(), size, attribute);
 
   const Vp9Parser::Context& context = vp9_parser_->context();
   const Vp9SegmentationParams& seg = context.segmentation();
@@ -162,9 +218,9 @@ VideoDecoder::Result Vp9Decoder::DecodeNextFrame() {
 
   std::vector<VABufferID> buffers;
   VABufferID buffer_id;
-  res = vaCreateBuffer(va_.display(), context_id_, VAPictureParameterBufferType,
-                       sizeof(VADecPictureParameterBufferVP9), 1u, &pic_param,
-                       &buffer_id);
+  VAStatus res = vaCreateBuffer(
+      va_device_.display(), va_context_->id(), VAPictureParameterBufferType,
+      sizeof(VADecPictureParameterBufferVP9), 1u, &pic_param, &buffer_id);
   VA_LOG_ASSERT(res, "vaCreateBuffer");
   buffers.push_back(buffer_id);
 
@@ -194,27 +250,27 @@ VideoDecoder::Result Vp9Decoder::DecodeNextFrame() {
     seg_param.chroma_ac_quant_scale = seg.uv_dequant[i][1];
   }
 
-  res = vaCreateBuffer(va_.display(), context_id_, VASliceParameterBufferType,
-                       sizeof(VASliceParameterBufferVP9), 1u, &slice_param,
-                       &buffer_id);
+  res = vaCreateBuffer(
+      va_device_.display(), va_context_->id(), VASliceParameterBufferType,
+      sizeof(VASliceParameterBufferVP9), 1u, &slice_param, &buffer_id);
   VA_LOG_ASSERT(res, "vaCreateBuffer");
   buffers.push_back(buffer_id);
 
   // Set up buffer for frame header.
-  res = vaCreateBuffer(va_.display(), context_id_, VASliceDataBufferType,
-                       frame_hdr.frame_size, 1u,
+  res = vaCreateBuffer(va_device_.display(), va_context_->id(),
+                       VASliceDataBufferType, frame_hdr.frame_size, 1u,
                        const_cast<uint8_t*>(frame_hdr.data), &buffer_id);
   VA_LOG_ASSERT(res, "vaCreateBuffer");
   buffers.push_back(buffer_id);
 
-  res = vaBeginPicture(va_.display(), context_id_, surface->id());
+  res = vaBeginPicture(va_device_.display(), va_context_->id(), surface->id());
   VA_LOG_ASSERT(res, "vaBeginPicture");
 
-  res = vaRenderPicture(va_.display(), context_id_, buffers.data(),
+  res = vaRenderPicture(va_device_.display(), va_context_->id(), buffers.data(),
                         buffers.size());
   VA_LOG_ASSERT(res, "vaRenderPicture");
 
-  res = vaEndPicture(va_.display(), context_id_);
+  res = vaEndPicture(va_device_.display(), va_context_->id());
   VA_LOG_ASSERT(res, "vaEndPicture");
 
   last_decoded_surface_ = surface;
@@ -222,14 +278,10 @@ VideoDecoder::Result Vp9Decoder::DecodeNextFrame() {
   RefreshReferenceSlots(frame_hdr.refresh_frame_flags, surface);
 
   for (auto id : buffers)
-    vaDestroyBuffer(va_.display(), id);
+    vaDestroyBuffer(va_device_.display(), id);
   buffers.clear();
 
   return VideoDecoder::kOk;
-}
-
-void Vp9Decoder::LastDecodedFrameToPNG(const std::string& path) {
-  last_decoded_surface_->SaveAsPNG(path);
 }
 
 }  // namespace vaapi_test

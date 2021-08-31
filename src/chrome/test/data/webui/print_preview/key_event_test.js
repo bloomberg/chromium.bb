@@ -4,13 +4,16 @@
 
 import {NativeLayer, NativeLayerImpl, PluginProxyImpl} from 'chrome://print/print_preview.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
-import {isChromeOS, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
+import {isChromeOS, isLacros, isMac, isWindows} from 'chrome://resources/js/cr.m.js';
 import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertEquals, assertTrue} from '../chai_assert.js';
 import {eventToPromise, flushTasks} from '../test_util.m.js';
 
+// <if expr="chromeos or lacros">
+import {setNativeLayerCrosInstance} from './native_layer_cros_stub.js';
+// </if>
 import {NativeLayerStub} from './native_layer_stub.js';
 import {getCddTemplateWithAdvancedSettings, getDefaultInitialSettings} from './print_preview_test_utils.js';
 import {TestPluginProxy} from './test_plugin_proxy.js';
@@ -43,11 +46,16 @@ suite(key_event_test.suiteName, function() {
     const initialSettings = getDefaultInitialSettings();
     nativeLayer = new NativeLayerStub();
     nativeLayer.setInitialSettings(initialSettings);
+    nativeLayer.setLocalDestinations(
+        [{deviceName: initialSettings.printerName, printerName: 'FooName'}]);
     // Use advanced settings so that we can test with the cr-button.
     nativeLayer.setLocalDestinationCapabilities(
         getCddTemplateWithAdvancedSettings(1, initialSettings.printerName));
     nativeLayer.setPageCount(3);
     NativeLayerImpl.instance_ = nativeLayer;
+    // <if expr="chromeos or lacros">
+    setNativeLayerCrosInstance();
+    // </if>
     const pluginProxy = new TestPluginProxy();
     PluginProxyImpl.instance_ = pluginProxy;
 
@@ -173,7 +181,7 @@ suite(key_event_test.suiteName, function() {
   test(
       assert(key_event_test.TestNames.CtrlShiftPOpensSystemDialog), function() {
         let promise = null;
-        if (isChromeOS) {
+        if (isChromeOS || isLacros) {
           // Chrome OS doesn't have a system dialog. Just make sure the key
           // event does not trigger a crash.
           promise = Promise.resolve();

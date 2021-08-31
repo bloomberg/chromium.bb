@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/input_method/emoji_suggester.h"
 
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/files/file_util.h"
 #include "base/i18n/number_formatting.h"
 #include "base/metrics/field_trial_params.h"
@@ -19,16 +21,20 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/services/ime/constants.h"
+#include "chromeos/services/ime/public/cpp/suggestions.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace chromeos {
 
 namespace {
+
+using TextSuggestion = ::chromeos::ime::TextSuggestion;
+using TextSuggestionMode = ::chromeos::ime::TextSuggestionMode;
+using TextSuggestionType = ::chromeos::ime::TextSuggestionType;
 
 constexpr char kEmojiSuggesterShowSettingCount[] =
     "emoji_suggester.show_setting_count";
@@ -92,6 +98,12 @@ void RecordTimeToDismiss(base::TimeDelta delta) {
                              delta);
 }
 
+TextSuggestion MapToTextSuggestion(std::u16string candidate_string) {
+  return {.mode = TextSuggestionMode::kPrediction,
+          .type = TextSuggestionType::kAssistiveEmoji,
+          .text = base::UTF16ToUTF8(candidate_string)};
+}
+
 }  // namespace
 
 EmojiSuggester::EmojiSuggester(SuggestionHandlerInterface* suggestion_handler,
@@ -130,11 +142,10 @@ void EmojiSuggester::OnEmojiDataLoaded(const std::string& emoji_data) {
     const auto comma_pos = line.find_first_of(",");
     DCHECK(comma_pos != std::string::npos);
     std::string word = line.substr(0, comma_pos);
-    base::string16 emojis = base::UTF8ToUTF16(line.substr(comma_pos + 1));
+    std::u16string emojis = base::UTF8ToUTF16(line.substr(comma_pos + 1));
     // Build emoji_map_ from splitting the string of emojis.
-    emoji_map_[word] =
-        base::SplitString(emojis, base::UTF8ToUTF16(";"), base::TRIM_WHITESPACE,
-                          base::SPLIT_WANT_NONEMPTY);
+    emoji_map_[word] = base::SplitString(emojis, u";", base::TRIM_WHITESPACE,
+                                         base::SPLIT_WANT_NONEMPTY);
     // TODO(crbug/1093179): Implement arrow to indicate more emojis available.
     // Only loads 5 emojis for now until arrow is implemented.
     if (emoji_map_[word].size() > kMaxCandidateSize)
@@ -157,23 +168,30 @@ void EmojiSuggester::OnBlur() {
   context_id_ = -1;
 }
 
-SuggestionStatus EmojiSuggester::HandleKeyEvent(
-    const InputMethodEngineBase::KeyboardEvent& event) {
+void EmojiSuggester::OnExternalSuggestionsUpdated(
+    const std::vector<TextSuggestion>& suggestions) {
+  // EmojiSuggester doesn't utilize any suggestions produced externally, so
+  // ignore this call.
+}
+
+SuggestionStatus EmojiSuggester::HandleKeyEvent(const ui::KeyEvent& event) {
   if (!suggestion_shown_)
     return SuggestionStatus::kNotHandled;
 
-  if (event.key == "Esc") {
+  if (event.code() == ui::DomCode::ESCAPE) {
     DismissSuggestion();
     return SuggestionStatus::kDismiss;
   }
   if (highlighted_index_ == kNoneHighlighted && buttons_.size() > 0) {
-    if (event.key == "Down" || event.key == "Up") {
-      highlighted_index_ = event.key == "Down" ? 0 : buttons_.size() - 1;
+    if (event.code() == ui::DomCode::ARROW_DOWN ||
+        event.code() == ui::DomCode::ARROW_UP) {
+      highlighted_index_ =
+          event.code() == ui::DomCode::ARROW_DOWN ? 0 : buttons_.size() - 1;
       SetButtonHighlighted(buttons_[highlighted_index_], true);
       return SuggestionStatus::kBrowsing;
     }
   } else {
-    if (event.key == "Enter") {
+    if (event.code() == ui::DomCode::ENTER) {
       switch (buttons_[highlighted_index_].id) {
         case ui::ime::ButtonId::kSuggestion:
           AcceptSuggestion(highlighted_index_);
@@ -184,9 +202,10 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
         default:
           break;
       }
-    } else if (event.key == "Up" || event.key == "Down") {
+    } else if (event.code() == ui::DomCode::ARROW_UP ||
+               event.code() == ui::DomCode::ARROW_DOWN) {
       SetButtonHighlighted(buttons_[highlighted_index_], false);
-      if (event.key == "Up") {
+      if (event.code() == ui::DomCode::ARROW_UP) {
         highlighted_index_ =
             (highlighted_index_ + buttons_.size() - 1) % buttons_.size();
       } else {
@@ -200,7 +219,7 @@ SuggestionStatus EmojiSuggester::HandleKeyEvent(
   return SuggestionStatus::kNotHandled;
 }
 
-bool EmojiSuggester::ShouldShowSuggestion(const base::string16& text) {
+bool EmojiSuggester::ShouldShowSuggestion(const std::u16string& text) {
   if (text[text.length() - 1] != kSpaceChar)
     return false;
 
@@ -212,7 +231,7 @@ bool EmojiSuggester::ShouldShowSuggestion(const base::string16& text) {
   return false;
 }
 
-bool EmojiSuggester::Suggest(const base::string16& text) {
+bool EmojiSuggester::Suggest(const std::u16string& text) {
   if (emoji_map_.empty() || text[text.length() - 1] != kSpaceChar)
     return false;
   std::string last_word =
@@ -339,8 +358,18 @@ AssistiveType EmojiSuggester::GetProposeActionType() {
   return AssistiveType::kEmoji;
 }
 
-bool EmojiSuggester::GetSuggestionShownForTesting() const {
+bool EmojiSuggester::HasSuggestions() {
   return suggestion_shown_;
+}
+
+std::vector<TextSuggestion> EmojiSuggester::GetSuggestions() {
+  std::vector<TextSuggestion> suggestions;
+  if (HasSuggestions()) {
+    for (const auto& candidate : candidates_) {
+      suggestions.emplace_back(MapToTextSuggestion(candidate));
+    }
+  }
+  return suggestions;
 }
 
 size_t EmojiSuggester::GetCandidatesSizeForTesting() const {

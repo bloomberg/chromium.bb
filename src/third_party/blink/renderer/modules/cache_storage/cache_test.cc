@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_request_init.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_response_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_request_usvstring.h"
 #include "third_party/blink/renderer/core/dom/abort_controller.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -39,6 +40,7 @@
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
+#include "third_party/blink/renderer/modules/cache_storage/cache_storage_blob_client_list.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -59,16 +61,30 @@ class ScopedFetcherForTests final
   ScopedFetcherForTests() = default;
 
   ScriptPromise Fetch(ScriptState* script_state,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                      const V8RequestInfo* request_info,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                       const RequestInfo& request_info,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                       const RequestInit*,
                       ExceptionState& exception_state) override {
     ++fetch_count_;
     if (expected_url_) {
-      String fetched_url;
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+      switch (request_info->GetContentType()) {
+        case V8RequestInfo::ContentType::kRequest:
+          EXPECT_EQ(*expected_url_, request_info->GetAsRequest()->url());
+          break;
+        case V8RequestInfo::ContentType::kUSVString:
+          EXPECT_EQ(*expected_url_, request_info->GetAsUSVString());
+          break;
+      }
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
       if (request_info.IsRequest())
         EXPECT_EQ(*expected_url_, request_info.GetAsRequest()->url());
       else
         EXPECT_EQ(*expected_url_, request_info.GetAsUSVString());
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     }
 
     if (response_) {
@@ -162,6 +178,12 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
     result->set_status(error_);
     std::move(callback).Run(std::move(result));
   }
+  void GetAllMatchedEntries(mojom::blink::FetchAPIRequestPtr request,
+                            mojom::blink::CacheQueryOptionsPtr query_options,
+                            int64_t trace_id,
+                            GetAllMatchedEntriesCallback callback) override {
+    NOTREACHED();
+  }
   void Keys(mojom::blink::FetchAPIRequestPtr fetch_api_request,
             mojom::blink::CacheQueryOptionsPtr query_options,
             int64_t trace_id,
@@ -182,6 +204,13 @@ class ErrorCacheForTests : public mojom::blink::CacheStorageCache {
     last_error_web_cache_method_called_ = "dispatchBatch";
     CheckBatchOperationsIfProvided(batch_operations);
     std::move(callback).Run(CacheStorageVerboseError::New(error_, String()));
+  }
+  void WriteSideData(const blink::KURL& url,
+                     base::Time expected_response_time,
+                     mojo_base::BigBuffer data,
+                     int64_t trace_id,
+                     WriteSideDataCallback callback) override {
+    NOTREACHED();
   }
 
  protected:
@@ -264,7 +293,10 @@ class TestCache : public Cache {
       GlobalFetch::ScopedFetcher* fetcher,
       mojo::PendingAssociatedRemote<mojom::blink::CacheStorageCache> remote,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : Cache(fetcher, std::move(remote), std::move(task_runner)) {}
+      : Cache(fetcher,
+              MakeGarbageCollected<CacheStorageBlobClientList>(),
+              std::move(remote),
+              std::move(task_runner)) {}
 
   bool IsAborted() const {
     return abort_controller_ && abort_controller_->signal()->aborted();
@@ -357,6 +389,15 @@ class CacheStorageTest : public PageTestBase {
       receiver_;
 };
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+V8RequestInfo* RequestToRequestInfo(Request* value) {
+  return MakeGarbageCollected<V8RequestInfo>(value);
+}
+
+V8RequestInfo* StringToRequestInfo(const String& value) {
+  return MakeGarbageCollected<V8RequestInfo>(value);
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 RequestInfo StringToRequestInfo(const String& value) {
   RequestInfo info;
   info.SetUSVString(value);
@@ -368,6 +409,7 @@ RequestInfo RequestToRequestInfo(Request* value) {
   info.SetRequest(value);
   return info;
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 TEST_F(CacheStorageTest, Basics) {
   ScriptState::Scope scope(GetScriptState());
@@ -753,12 +795,13 @@ TEST_F(CacheStorageTest, Add) {
   fetcher->SetExpectedFetchUrl(&url);
 
   Request* request = NewRequestFromUrl(url);
-  Response* response = Response::Create(
-      GetScriptState(),
-      BodyStreamBuffer::Create(
-          GetScriptState(),
-          MakeGarbageCollected<FormDataBytesConsumer>(content), nullptr),
-      content_type, ResponseInit::Create(), exception_state);
+  Response* response =
+      Response::Create(GetScriptState(),
+                       BodyStreamBuffer::Create(
+                           GetScriptState(),
+                           MakeGarbageCollected<FormDataBytesConsumer>(content),
+                           nullptr, /*cached_metadata_handler=*/nullptr),
+                       content_type, ResponseInit::Create(), exception_state);
   fetcher->SetResponse(response);
 
   Vector<mojom::blink::BatchOperationPtr> expected_put_operations(size_t(1));
@@ -802,7 +845,11 @@ TEST_F(CacheStorageTest, AddAllAbortOne) {
   Response* response = Response::error(GetScriptState());
   fetcher->SetResponse(response);
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  HeapVector<Member<V8RequestInfo>> info_list;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   HeapVector<RequestInfo> info_list;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   info_list.push_back(RequestToRequestInfo(request));
 
   ScriptPromise promise =
@@ -831,7 +878,11 @@ TEST_F(CacheStorageTest, AddAllAbortMany) {
   Response* response = Response::error(GetScriptState());
   fetcher->SetResponse(response);
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  HeapVector<Member<V8RequestInfo>> info_list;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   HeapVector<RequestInfo> info_list;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   info_list.push_back(RequestToRequestInfo(request));
   info_list.push_back(RequestToRequestInfo(request));
 

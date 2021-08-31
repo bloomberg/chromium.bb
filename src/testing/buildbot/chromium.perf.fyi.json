@@ -32,6 +32,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -48,7 +51,7 @@
           "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "trigger_script": {
           "args": [
@@ -78,6 +81,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -128,6 +134,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -149,7 +158,8 @@
         "trigger_script": {
           "args": [
             "--multiple-dimension-script-verbose",
-            "True"
+            "True",
+            "--use-dynamic-shards"
           ],
           "requires_simultaneous_shard_dispatch": true,
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
@@ -192,6 +202,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -208,6 +221,68 @@
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 4
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "requires_simultaneous_shard_dispatch": true,
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
+  "fuchsia-builder-perf-fyi": {
+    "additional_compile_targets": [
+      "web_engine_shell_pkg",
+      "http_pkg",
+      "cast_runner_pkg",
+      "web_runner_pkg",
+      "chromedriver",
+      "chromium_builder_perf"
+    ]
+  },
+  "fuchsia-perf-fyi": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=web-engine-shell",
+          "--upload-results",
+          "--test-shard-map-filename=fuchsia-perf-fyi_map.json",
+          "--output-format=histograms",
+          "--experimental-tbmv3-metrics",
+          "--device=custom",
+          "--custom-device-target=internal.astro_target"
+        ],
+        "isolate_name": "performance_web_engine_test_suite",
+        "merge": {
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_web_engine_test_suite",
+        "override_compile_targets": [
+          "performance_web_engine_test_suite"
+        ],
+        "resultdb": {
+          "enable": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": null,
+              "device_type": "Astro",
+              "os": "Fuchsia",
+              "pool": "chrome.tests"
+            }
+          ],
+          "expiration": 7200,
+          "hard_timeout": 21600,
+          "ignore_task_failure": false,
+          "io_timeout": 21600,
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 7
         },
         "trigger_script": {
           "args": [
@@ -239,6 +314,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -286,6 +364,9 @@
         "override_compile_targets": [
           "performance_test_suite"
         ],
+        "resultdb": {
+          "enable": true
+        },
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

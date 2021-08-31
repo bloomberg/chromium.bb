@@ -1,4 +1,0 @@
-Name: libipp
-Description: The library for building and parsing IPP frames
-Version: 1.0
-Libs: -lipp

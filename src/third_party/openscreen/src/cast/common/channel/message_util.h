@@ -10,6 +10,10 @@
 #include "absl/strings/string_view.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 
+namespace Json {
+class Value;
+}
+
 namespace openscreen {
 namespace cast {
 
@@ -42,9 +46,6 @@ static constexpr ::cast::channel::CastMessage_ProtocolVersion
 
 // JSON message key strings.
 static constexpr char kMessageKeyType[] = "type";
-static constexpr char kMessageKeyConnType[] = "connType";
-static constexpr char kMessageKeyUserAgent[] = "userAgent";
-static constexpr char kMessageKeySenderInfo[] = "senderInfo";
 static constexpr char kMessageKeyProtocolVersion[] = "protocolVersion";
 static constexpr char kMessageKeyProtocolVersionList[] = "protocolVersionList";
 static constexpr char kMessageKeyReasonCode[] = "reasonCode";
@@ -60,6 +61,17 @@ static constexpr char kMessageTypeClose[] = "CLOSE";
 static constexpr char kMessageTypeConnected[] = "CONNECTED";
 static constexpr char kMessageValueAppAvailable[] = "APP_AVAILABLE";
 static constexpr char kMessageValueAppUnavailable[] = "APP_UNAVAILABLE";
+
+// JSON message key strings specific to CONNECT messages.
+static constexpr char kMessageKeyBrowserVersion[] = "browserVersion";
+static constexpr char kMessageKeyConnType[] = "connType";
+static constexpr char kMessageKeyConnectionType[] = "connectionType";
+static constexpr char kMessageKeyUserAgent[] = "userAgent";
+static constexpr char kMessageKeyOrigin[] = "origin";
+static constexpr char kMessageKeyPlatform[] = "platform";
+static constexpr char kMessageKeySdkType[] = "skdType";
+static constexpr char kMessageKeySenderInfo[] = "senderInfo";
+static constexpr char kMessageKeyVersion[] = "version";
 
 // JSON message key strings specific to application control messages.
 static constexpr char kMessageKeyAvailability[] = "availability";
@@ -234,6 +246,8 @@ inline bool IsTransportNamespace(absl::string_view namespace_) {
 // |prefix| of "sender" will result in a string like "sender-12345".
 std::string MakeUniqueSessionId(const char* prefix);
 
+// Returns true if the type field in |object| is set to the given |type|.
+bool HasType(const Json::Value& object, CastMessageType type);
 }  // namespace cast
 }  // namespace openscreen
 

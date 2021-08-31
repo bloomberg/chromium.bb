@@ -9,17 +9,19 @@
 
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/xproto.h"
 
-namespace ui {
-
+namespace x11 {
 class XScopedEventSelector;
+}
+
+namespace ui {
 
 // Listens for global workspace changes and notifies observers.
 class COMPONENT_EXPORT(UI_BASE_X) X11WorkspaceHandler
-    : public ui::XEventDispatcher {
+    : public x11::EventObserver {
  public:
   class Delegate {
    public:
@@ -39,8 +41,8 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WorkspaceHandler
   std::string GetCurrentWorkspace();
 
  private:
-  // ui::XEventDispatcher
-  bool DispatchXEvent(x11::Event* event) override;
+  // x11::EventObserver
+  void OnEvent(const x11::Event& event) override;
 
   void OnWorkspaceResponse(x11::GetPropertyResponse response);
 
@@ -48,7 +50,7 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WorkspaceHandler
   x11::Window x_root_window_;
 
   // Events selected on x_root_window_.
-  std::unique_ptr<ui::XScopedEventSelector> x_root_window_events_;
+  std::unique_ptr<x11::XScopedEventSelector> x_root_window_events_;
 
   std::string workspace_;
 

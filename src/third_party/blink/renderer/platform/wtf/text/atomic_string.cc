@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
 #include "third_party/blink/renderer/platform/wtf/text/case_map.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 
 namespace WTF {
 
@@ -72,7 +73,7 @@ AtomicString AtomicString::FromUTF8(const char* chars) {
 }
 
 AtomicString AtomicString::LowerASCII() const {
-  StringImpl* impl = this->Impl();
+  StringImpl* impl = Impl();
   if (UNLIKELY(!impl))
     return *this;
   scoped_refptr<StringImpl> new_impl = impl->LowerASCII();
@@ -82,7 +83,7 @@ AtomicString AtomicString::LowerASCII() const {
 }
 
 AtomicString AtomicString::UpperASCII() const {
-  StringImpl* impl = this->Impl();
+  StringImpl* impl = Impl();
   if (UNLIKELY(!impl))
     return *this;
   return AtomicString(impl->UpperASCII());
@@ -95,6 +96,10 @@ AtomicString AtomicString::Number(double number, unsigned precision) {
 
 std::ostream& operator<<(std::ostream& out, const AtomicString& s) {
   return out << s.GetString();
+}
+
+void AtomicString::WriteIntoTrace(perfetto::TracedValue context) const {
+  perfetto::WriteIntoTracedValue(std::move(context), GetString());
 }
 
 #ifndef NDEBUG

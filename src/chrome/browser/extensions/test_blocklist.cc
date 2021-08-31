@@ -7,8 +7,8 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/blocklist.h"
 #include "chrome/browser/extensions/blocklist_state_fetcher.h"
@@ -29,7 +29,7 @@ BlocklistStateFetcherMock::BlocklistStateFetcherMock() : request_count_(0) {}
 BlocklistStateFetcherMock::~BlocklistStateFetcherMock() {}
 
 void BlocklistStateFetcherMock::Request(const std::string& id,
-                                        const RequestCallback& callback) {
+                                        RequestCallback callback) {
   ++request_count_;
 
   BlocklistState result = NOT_BLOCKLISTED;
@@ -37,7 +37,7 @@ void BlocklistStateFetcherMock::Request(const std::string& id,
     result = states_[id];
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, result));
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void BlocklistStateFetcherMock::SetState(const std::string& id,
@@ -114,7 +114,7 @@ BlocklistState TestBlocklist::GetBlocklistState(
     const std::string& extension_id) {
   BlocklistState blocklist_state;
   blocklist_->IsBlocklisted(extension_id,
-                            base::Bind(&Assign, &blocklist_state));
+                            base::BindOnce(&Assign, &blocklist_state));
   base::RunLoop().RunUntilIdle();
   return blocklist_state;
 }

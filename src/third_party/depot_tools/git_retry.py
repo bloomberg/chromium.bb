@@ -7,7 +7,7 @@
 """Generic retry wrapper for Git operations. 
 
 This is largely DEPRECATED in favor of the Infra Git wrapper:
-https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/tools/git
+https://chromium.googlesource.com/infra/infra/+/HEAD/go/src/infra/tools/git
 """
 
 import logging
@@ -120,7 +120,7 @@ class GitRetry(object):
 
 def main(args):
   # If we're using the Infra Git wrapper, do nothing here.
-  # https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/tools/git
+  # https://chromium.googlesource.com/infra/infra/+/HEAD/go/src/infra/tools/git
   if 'INFRA_GIT_WRAPPER' in os.environ:
     # Remove Git's execution path from PATH so that our call-through re-invokes
     # the Git wrapper.

@@ -35,15 +35,23 @@ suite('nearby-onboarding-page', function() {
       deviceName: deviceName,
       dataUsage: nearbyShare.mojom.DataUsage.kOnline,
       visibility: nearbyShare.mojom.Visibility.kAllContacts,
+      isOnboardingComplete: false,
       allowedContacts: [],
     };
     document.body.appendChild(element);
+    element.fire('view-enter-start');
   });
 
   test('Renders onboarding page', async function() {
     assertEquals('NEARBY-ONBOARDING-PAGE', element.tagName);
     // Verify the device name is shown correctly.
     assertEquals(deviceName, element.$$('#deviceName').value);
+  });
+
+  test('Device name is focused', async () => {
+    const input = /** @type {!CrInputElement} */ (element.$$('#deviceName'));
+    await test_util.waitAfterNextRender(/** @type {!HTMLElement} */ (input));
+    assertEquals(input, element.shadowRoot.activeElement);
   });
 
   test('validate device name preference', async () => {

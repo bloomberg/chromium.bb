@@ -20,7 +20,6 @@
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "build/buildflag.h"
 #include "net/base/host_mapping_rules.h"
@@ -36,6 +35,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_client_session_cache.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class Value;
@@ -51,7 +51,6 @@ class CertVerifier;
 class ClientSocketFactory;
 class ClientSocketPool;
 class ClientSocketPoolManager;
-class CTVerifier;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpNetworkSessionPeer;
@@ -120,7 +119,7 @@ class NET_EXPORT HttpNetworkSession {
     // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
     // The same frame will be sent out on all connections to prevent the retry
     // logic from hiding broken servers.
-    base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;
+    absl::optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame;
     // If set, the HEADERS frame carrying a request without body will not have
     // the END_STREAM flag set.  The stream will be closed by a subsequent empty
     // DATA frame with END_STREAM.  Does not affect bidirectional or proxy
@@ -152,6 +151,13 @@ class NET_EXPORT HttpNetworkSession {
     bool disable_idle_sockets_close_on_memory_pressure;
 
     bool key_auth_cache_server_entries_by_network_isolation_key;
+
+    // If true, enable sending PRIORITY_UPDATE frames until SETTINGS frame
+    // arrives.  After SETTINGS frame arrives, do not send PRIORITY_UPDATE
+    // frames any longer if SETTINGS_DEPRECATE_HTTP2_PRIORITIES is missing or
+    // has zero 0, but continue and also stop sending HTTP/2-style priority
+    // information in HEADERS frames and PRIORITY frames if it has value 1.
+    bool enable_priority_update;
   };
 
   // Structure with pointers to the dependencies of the HttpNetworkSession.
@@ -165,7 +171,6 @@ class NET_EXPORT HttpNetworkSession {
     HostResolver* host_resolver;
     CertVerifier* cert_verifier;
     TransportSecurityState* transport_security_state;
-    CTVerifier* cert_transparency_verifier;
     CTPolicyEnforcer* ct_policy_enforcer;
     SCTAuditingDelegate* sct_auditing_delegate;
     ProxyResolutionService* proxy_resolution_service;
@@ -260,8 +265,14 @@ class NET_EXPORT HttpNetworkSession {
 
   void SetServerPushDelegate(std::unique_ptr<ServerPushDelegate> push_delegate);
 
-  // Populates |*alpn_protos| with protocols to be used with ALPN.
-  void GetAlpnProtos(NextProtoVector* alpn_protos) const;
+  // Returns protocols to be used with ALPN.
+  const NextProtoVector& GetAlpnProtos() const { return next_protos_; }
+
+  // Returns ALPS data to be sent to server for each NextProto.
+  // Data might be empty.
+  const SSLConfig::ApplicationSettings& GetApplicationSettings() const {
+    return application_settings_;
+  }
 
   // Populates |server_config| and |proxy_config| based on this session.
   void GetSSLConfig(SSLConfig* server_config, SSLConfig* proxy_config) const;
@@ -322,6 +333,7 @@ class NET_EXPORT HttpNetworkSession {
   std::map<HttpResponseBodyDrainer*, std::unique_ptr<HttpResponseBodyDrainer>>
       response_drainers_;
   NextProtoVector next_protos_;
+  SSLConfig::ApplicationSettings application_settings_;
 
   Params params_;
   Context context_;

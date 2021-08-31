@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(pthatcher): Use proper testing framework
+// TODO(jophba): Use proper testing framework
 
 package main
 
@@ -17,7 +17,7 @@ import (
 )
 
 func testMdns() {
-	// TODO(pthatcher): log error if it fails
+	// TODO(jophba): log error if it fails
 	ctx := context.Background()
 	instance := "TV"
 	port := 10000

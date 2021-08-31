@@ -62,6 +62,7 @@ namespace sw
 			bool stencilWriteMaskedCCW                : 1;
 
 			bool depthTestActive                      : 1;
+			bool depthBoundsTestActive                : 1;
 			bool fogActive                            : 1;
 			FogMode pixelFogMode                      : BITS(FOG_LAST);
 			bool specularAdd                          : 1;
@@ -190,6 +191,9 @@ namespace sw
 		PixelProcessor(Context *context);
 
 		virtual ~PixelProcessor();
+
+		void *operator new(size_t size);
+		void operator delete(void *mem);
 
 		void setFloatConstant(unsigned int index, const float value[4]);
 		void setIntegerConstant(unsigned int index, const int value[4]);

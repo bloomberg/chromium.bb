@@ -23,8 +23,6 @@
   freetype::GlyphVisitorTransform::
   run( Unique_FT_Glyph  glyph )
   {
-    FT_Error  error;
-
     FT_Matrix  matrix;
     FT_Vector  delta;
 

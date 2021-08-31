@@ -4,9 +4,9 @@
 
 #include "chromeos/services/secure_channel/pending_connection_manager_impl.h"
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "chromeos/services/secure_channel/authenticated_channel.h"
 #include "chromeos/services/secure_channel/ble_initiator_connection_attempt.h"
 #include "chromeos/services/secure_channel/ble_listener_connection_attempt.h"
@@ -186,8 +186,7 @@ void PendingConnectionManagerImpl::HandleBleInitiatorRequest(
   if (!success) {
     PA_LOG(ERROR) << "PendingConnectionManagerImpl::"
                   << "HandleBleInitiatorRequest(): Not able to handle request. "
-                  << "Details: " << connection_attempt_details
-                  << ", Client parameters: " << *client_connection_parameters;
+                  << "Details: " << connection_attempt_details;
     NOTREACHED();
   }
 }
@@ -219,8 +218,7 @@ void PendingConnectionManagerImpl::HandleBleListenerRequest(
   if (!success) {
     PA_LOG(ERROR) << "PendingConnectionManagerImpl::"
                   << "HandleBleListenerRequest(): Not able to handle request. "
-                  << "Details: " << connection_attempt_details
-                  << ", Client parameters: " << *client_connection_parameters;
+                  << "Details: " << connection_attempt_details;
     NOTREACHED();
   }
 }
@@ -270,8 +268,7 @@ void PendingConnectionManagerImpl::HandleNearbyInitiatorRequest(
     PA_LOG(ERROR)
         << "PendingConnectionManagerImpl::"
         << "HandleNearbyInitiatorRequest(): Not able to handle request. "
-        << "Details: " << connection_attempt_details
-        << ", Client parameters: " << *client_connection_parameters;
+        << "Details: " << connection_attempt_details;
     NOTREACHED();
   }
 }

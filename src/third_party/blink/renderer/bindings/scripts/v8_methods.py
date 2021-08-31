@@ -46,6 +46,10 @@ import v8_types
 import v8_utilities
 from v8_utilities import (has_extended_attribute_value, is_unforgeable)
 
+# TODO(crbug.com/1174969): Remove this once Python2 is obsoleted.
+if sys.version_info.major != 2:
+    basestring = str
+
 
 def method_is_visible(method, interface_is_partial):
     if 'overloads' in method:
@@ -59,6 +63,18 @@ def is_origin_trial_enabled(method):
     return bool(method['origin_trial_feature_name'])
 
 
+def is_cross_origin_isolated(method):
+    return bool(
+        method['overloads']['cross_origin_isolated_test_all'] if 'overloads' in
+        method else method['cross_origin_isolated_test'])
+
+
+def is_direct_socket_enabled(method):
+    return bool(
+        method['overloads']['direct_socket_enabled_test_all'] if 'overloads' in
+        method else method['direct_socket_enabled_test'])
+
+
 def is_secure_context(method):
     return bool(method['overloads']['secure_context_test_all'] if 'overloads'
                 in method else method['secure_context_test'])
@@ -67,7 +83,8 @@ def is_secure_context(method):
 def is_conditionally_enabled(method):
     exposed = method['overloads']['exposed_test_all'] \
         if 'overloads' in method else method['exposed_test']
-    return exposed or is_secure_context(method)
+    return exposed or is_secure_context(method) or is_cross_origin_isolated(
+        method) or is_direct_socket_enabled(method)
 
 
 def filter_conditionally_enabled(methods, interface_is_partial):
@@ -183,9 +200,6 @@ def method_context(interface, method, component_info, is_visible=True):
     is_ce_reactions = 'CEReactions' in extended_attributes
     if is_ce_reactions:
         includes.add('core/html/custom/ce_reactions_scope.h')
-    is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
-    if is_custom_element_callbacks:
-        includes.add('core/html/custom/v0_custom_element_processing_stack.h')
 
     is_raises_exception = 'RaisesException' in extended_attributes
 
@@ -217,7 +231,7 @@ def method_context(interface, method, component_info, is_visible=True):
         'camel_case_name':
         NameStyleConverter(name).to_upper_camel_case(),
         'cpp_type':
-        (v8_types.cpp_template_type('base::Optional', idl_type.cpp_type)
+        (v8_types.cpp_template_type('absl::optional', idl_type.cpp_type)
          if idl_type.is_explicit_nullable else v8_types.cpp_type(
              idl_type, extended_attributes=extended_attributes)),
         'cpp_value':
@@ -233,9 +247,9 @@ def method_context(interface, method, component_info, is_visible=True):
         'exposed_test':
         v8_utilities.exposed(method, interface),  # [Exposed]
         'has_exception_state':
-        is_raises_exception or is_check_security_for_receiver or any(
-            argument for argument in arguments
-            if argument_conversion_needs_exception_state(method, argument)),
+        is_raises_exception or is_check_security_for_receiver
+        or any(argument for argument in arguments
+               if argument_conversion_needs_exception_state(method, argument)),
         'has_optional_argument_without_default_value':
         any(True for argument_context in argument_contexts
             if argument_context['is_optional_without_default_value']),
@@ -257,8 +271,6 @@ def method_context(interface, method, component_info, is_visible=True):
         'CrossOrigin' in extended_attributes,
         'is_custom':
         'Custom' in extended_attributes,
-        'is_custom_element_callbacks':
-        is_custom_element_callbacks,
         'is_explicit_nullable':
         idl_type.is_explicit_nullable,
         'is_new_object':
@@ -306,6 +318,12 @@ def method_context(interface, method, component_info, is_visible=True):
         # [RuntimeEnabled] if not in origin trial
         'runtime_enabled_feature_name':
         v8_utilities.runtime_enabled_feature_name(method, runtime_features),
+        # [CrossOriginIsolated]
+        'cross_origin_isolated_test':
+        v8_utilities.cross_origin_isolated(method, interface),
+        # [DirectSocketEnabled]
+        'direct_socket_enabled_test':
+        v8_utilities.direct_socket_enabled(method, interface),
         # [SecureContext]
         'secure_context_test':
         v8_utilities.secure_context(method, interface),
@@ -321,8 +339,10 @@ def method_context(interface, method, component_info, is_visible=True):
         'v8_set_return_value':
         v8_set_return_value(interface.name, method, this_cpp_value),
         'v8_set_return_value_for_main_world':
-        v8_set_return_value(
-            interface.name, method, this_cpp_value, for_main_world=True),
+        v8_set_return_value(interface.name,
+                            method,
+                            this_cpp_value,
+                            for_main_world=True),
         'visible':
         is_visible,
         'world_suffixes':
@@ -353,7 +373,7 @@ def argument_context(interface, method, argument, index, is_visible=True):
     snake_case_name = NameStyleConverter(argument.name).to_snake_case()
     context = {
         'cpp_type': (v8_types.cpp_template_type(
-            'base::Optional', this_cpp_type) if idl_type.is_explicit_nullable
+            'absl::optional', this_cpp_type) if idl_type.is_explicit_nullable
                      and not argument.is_variadic else this_cpp_type),
         'cpp_value':
         this_cpp_value,
@@ -483,7 +503,7 @@ def v8_set_return_value(interface_name,
     # [CallWith=ScriptState], [RaisesException]
     if use_local_result(method):
         if idl_type.is_explicit_nullable:
-            # result is of type base::Optional<T>
+            # result is of type absl::optional<T>
             cpp_value = 'result.value()'
         else:
             cpp_value = 'result'

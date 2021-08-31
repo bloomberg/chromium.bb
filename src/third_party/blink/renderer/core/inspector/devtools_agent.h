@@ -30,6 +30,11 @@ class InspectorTaskRunner;
 class WorkerThread;
 struct WorkerDevToolsParams;
 
+// All public methods of this class are expected to be called on the same thread
+// that created the instance. That might be the main thread or a worker thread.
+// If used on a worker via BindReceiverForWorker() this class will delegate
+// internally to the IO thread to avoid blocking the worker thread. See
+// DevToolsAgent::IOAgent for more details.
 class CORE_EXPORT DevToolsAgent : public GarbageCollected<DevToolsAgent>,
                                   public mojom::blink::DevToolsAgent {
  public:
@@ -48,7 +53,7 @@ class CORE_EXPORT DevToolsAgent : public GarbageCollected<DevToolsAgent>,
       WorkerThread*,
       const KURL&,
       const String& global_scope_name,
-      const base::Optional<const DedicatedWorkerToken>& token);
+      const absl::optional<const DedicatedWorkerToken>& token);
   static void WorkerThreadTerminated(ExecutionContext* parent_context,
                                      WorkerThread*);
 
@@ -126,17 +131,12 @@ class CORE_EXPORT DevToolsAgent : public GarbageCollected<DevToolsAgent>,
 
   Client* client_;
   // DevToolsAgent is not tied to ExecutionContext
-  HeapMojoAssociatedReceiver<mojom::blink::DevToolsAgent,
-                             DevToolsAgent,
-                             HeapMojoWrapperMode::kWithoutContextObserver>
+  HeapMojoAssociatedReceiver<mojom::blink::DevToolsAgent, DevToolsAgent>
       associated_receiver_{this, nullptr};
   // DevToolsAgent is not tied to ExecutionContext
-  HeapMojoRemote<mojom::blink::DevToolsAgentHost,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      host_remote_{nullptr};
+  HeapMojoRemote<mojom::blink::DevToolsAgentHost> host_remote_{nullptr};
   // DevToolsAgent is not tied to ExecutionContext
-  HeapMojoAssociatedRemote<mojom::blink::DevToolsAgentHost,
-                           HeapMojoWrapperMode::kWithoutContextObserver>
+  HeapMojoAssociatedRemote<mojom::blink::DevToolsAgentHost>
       associated_host_remote_{nullptr};
   Member<InspectedFrames> inspected_frames_;
   Member<CoreProbeSink> probe_sink_;

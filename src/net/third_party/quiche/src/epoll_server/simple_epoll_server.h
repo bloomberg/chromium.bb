@@ -37,8 +37,8 @@
 
 #include <sys/epoll.h>
 
-#include "net/third_party/quiche/src/epoll_server/platform/api/epoll_export.h"
-#include "net/third_party/quiche/src/epoll_server/platform/api/epoll_logging.h"
+#include "epoll_server/platform/api/epoll_export.h"
+#include "epoll_server/platform/api/epoll_logging.h"
 
 namespace epoll_server {
 
@@ -487,6 +487,7 @@ class EPOLL_EXPORT_PRIVATE SimpleEpollServer {
   // Summary:
   // Returns true when the SimpleEpollServer() is being destroyed.
   bool in_shutdown() const { return in_shutdown_; }
+  bool ShutdownCalled() const { return in_shutdown(); }
 
   // Compatibility stub.
   void Shutdown() {}

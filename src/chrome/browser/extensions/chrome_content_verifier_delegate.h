@@ -11,8 +11,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "extensions/browser/content_verifier_delegate.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class BrowserContext;
@@ -65,7 +65,7 @@ class ChromeContentVerifierDelegate : public ContentVerifierDelegate {
   };
 
   static VerifyInfo::Mode GetDefaultMode();
-  static void SetDefaultModeForTesting(base::Optional<VerifyInfo::Mode> mode);
+  static void SetDefaultModeForTesting(absl::optional<VerifyInfo::Mode> mode);
 
   explicit ChromeContentVerifierDelegate(content::BrowserContext* context);
 
@@ -85,7 +85,7 @@ class ChromeContentVerifierDelegate : public ContentVerifierDelegate {
  private:
   // Returns true iff |extension| is considered extension from Chrome Web Store
   // (and therefore signed hashes may be used for its content verification).
-  static bool IsFromWebstore(const Extension& extension);
+  bool IsFromWebstore(const Extension& extension) const;
 
   // Returns information needed for content verification of |extension|.
   VerifyInfo GetVerifyInfo(const Extension& extension) const;

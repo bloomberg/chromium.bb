@@ -12,6 +12,7 @@
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
+#include "components/sync/protocol/workspace_desk_specifics.pb.h"
 
 // Keep this file in sync with the .proto files in this directory.
 //
@@ -94,6 +95,10 @@ const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::FlocIdComputed::EventTrigger trigger);
 
 const char* ProtoEnumToString(
+    sync_pb::WalletMaskedCreditCard::VirtualCardEnrollmentState
+        virtual_card_enrollment_state);
+
+const char* ProtoEnumToString(
     sync_pb::WalletMaskedCreditCard::WalletCardStatus wallet_card_status);
 
 const char* ProtoEnumToString(
@@ -103,6 +108,8 @@ const char* ProtoEnumToString(sync_pb::CardIssuer::Issuer issuer);
 
 const char* ProtoEnumToString(
     sync_pb::WalletMetadataSpecifics::Type wallet_metadata_type);
+
+const char* ProtoEnumToString(sync_pb::WebAppIconInfo::Purpose purpose);
 
 const char* ProtoEnumToString(
     sync_pb::WebAppSpecifics::UserDisplayMode user_display_mode);
@@ -127,6 +134,8 @@ const char* ProtoEnumToString(
     sync_pb::WifiConfigurationSpecifics::ProxyConfiguration::ProxyOption
         proxy_option);
 
+const char* ProtoEnumToString(
+    sync_pb::WorkspaceDeskSpecifics::WindowState window_state);
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_PROTOCOL_PROTO_ENUM_CONVERSIONS_H_

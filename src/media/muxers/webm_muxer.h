@@ -21,6 +21,7 @@
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/libwebm/source/mkvmuxer.hpp"
 #include "ui/gfx/geometry/size.h"
 
@@ -53,17 +54,17 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
   // Container for the parameters that muxer uses that is extracted from
   // media::VideoFrame.
   struct MEDIA_EXPORT VideoParameters {
-    VideoParameters(scoped_refptr<media::VideoFrame> frame);
+    explicit VideoParameters(scoped_refptr<media::VideoFrame> frame);
     VideoParameters(gfx::Size visible_rect_size,
                     double frame_rate,
                     VideoCodec codec,
-                    base::Optional<gfx::ColorSpace> color_space);
+                    absl::optional<gfx::ColorSpace> color_space);
     VideoParameters(const VideoParameters&);
     ~VideoParameters();
     gfx::Size visible_rect_size;
     double frame_rate;
     VideoCodec codec;
-    base::Optional<gfx::ColorSpace> color_space;
+    absl::optional<gfx::ColorSpace> color_space;
   };
 
   // |audio_codec| should coincide with whatever is sent in OnEncodedAudio(),
@@ -72,6 +73,16 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
             bool has_audio_,
             const WriteDataCB& write_data_callback);
   ~WebmMuxer() override;
+
+  // Sets the maximum duration interval to cause data output on
+  // |write_data_callback|, provided frames are delivered. The WebM muxer can
+  // hold on to audio frames almost indefinitely in the case video is recorded
+  // and video frames are temporarily not delivered. When this method is used, a
+  // new WebM cluster is forced when the next frame arrives |duration| after the
+  // last write.
+  // The maximum duration between forced clusters is internally limited to not
+  // go below 100 ms.
+  void SetMaximumDurationToForceDataOutput(base::TimeDelta interval);
 
   // Functions to add video and audio frames with |encoded_data.data()|
   // to WebM Segment. Either one returns true on success.
@@ -85,6 +96,12 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
   bool OnEncodedAudio(const media::AudioParameters& params,
                       std::string encoded_data,
                       base::TimeTicks timestamp);
+
+  // WebmMuxer may hold on to data. Make sure it gets out on the next frame.
+  void ForceDataOutputOnNextFrame();
+
+  // Call to handle mute and tracks getting disabled.
+  void SetLiveAndEnabled(bool track_live_and_enabled, bool is_video);
 
   void Pause();
   void Resume();
@@ -105,7 +122,7 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
   // frame size.
   void AddVideoTrack(const gfx::Size& frame_size,
                      double frame_rate,
-                     const base::Optional<gfx::ColorSpace>& color_space);
+                     const absl::optional<gfx::ColorSpace>& color_space);
   void AddAudioTrack(const media::AudioParameters& params);
 
   // IMkvWriter interface.
@@ -140,6 +157,10 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
   base::TimeTicks UpdateLastTimestampMonotonically(
       base::TimeTicks timestamp,
       base::TimeTicks* last_timestamp);
+  // Forces data output from |segment_| on the next frame if recording video,
+  // and |min_data_output_interval_| was configured and has passed since the
+  // last received video frame.
+  void MaybeForceNewCluster();
 
   // Audio codec configured on construction. Video codec is taken from first
   // received frame.
@@ -165,6 +186,19 @@ class MEDIA_EXPORT WebmMuxer : public mkvmuxer::IMkvWriter {
   // http://crbug.com/528523
   const bool has_video_;
   const bool has_audio_;
+
+  // Variables to track live and enabled state of audio and video.
+  bool video_track_live_and_enabled_ = true;
+  bool audio_track_live_and_enabled_ = true;
+
+  // Maximum interval between data output callbacks (given frames arriving)
+  base::TimeDelta max_data_output_interval_;
+
+  // Last time data was output from |segment_|.
+  base::TimeTicks last_data_output_timestamp_;
+
+  // Last timestamp written into the segment.
+  base::TimeDelta last_timestamp_written_;
 
   // Callback to dump written data as being called by libwebm.
   const WriteDataCB write_data_callback_;

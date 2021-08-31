@@ -9,38 +9,40 @@
 #define GrProgramInfo_DEFINED
 
 #include "include/gpu/GrTypes.h"
+#include "src/gpu/GrGeometryProcessor.h"
 #include "src/gpu/GrPipeline.h"
-#include "src/gpu/GrPrimitiveProcessor.h"
 
 class GrStencilSettings;
 
 class GrProgramInfo {
 public:
-    GrProgramInfo(int numSamples,
-                  int numStencilSamples,
-                  const GrBackendFormat& backendFormat,
-                  GrSurfaceOrigin origin,
+    GrProgramInfo(const GrSurfaceProxyView& targetView,
                   const GrPipeline* pipeline,
                   const GrUserStencilSettings* userStencilSettings,
-                  const GrPrimitiveProcessor* primProc,
+                  const GrGeometryProcessor* geomProc,
                   GrPrimitiveType primitiveType,
                   uint8_t tessellationPatchVertexCount,
-                  GrXferBarrierFlags renderPassXferBarriers)
-            : fNumSamples(numSamples)
-            , fNumStencilSamples(numStencilSamples)
-            , fBackendFormat(backendFormat)
-            , fOrigin(origin)
+                  GrXferBarrierFlags renderPassXferBarriers,
+                  GrLoadOp colorLoadOp)
+            : fNumSamples(targetView.asRenderTargetProxy()->numSamples())
+            , fNeedsStencil(targetView.asRenderTargetProxy()->needsStencil())
+            , fBackendFormat(targetView.proxy()->backendFormat())
+            , fOrigin(targetView.origin())
+            , fTargetSupportsVkResolveLoad(
+                      targetView.asRenderTargetProxy()->numSamples() > 1 &&
+                      targetView.asTextureProxy() &&
+                      targetView.asRenderTargetProxy()->supportsVkInputAttachment())
             , fPipeline(pipeline)
             , fUserStencilSettings(userStencilSettings)
-            , fPrimProc(primProc)
+            , fGeomProc(geomProc)
             , fPrimitiveType(primitiveType)
             , fTessellationPatchVertexCount(tessellationPatchVertexCount)
             , fRenderPassXferBarriers(renderPassXferBarriers)
-            , fIsMixedSampled(this->isStencilEnabled() && numStencilSamples > numSamples) {
-        SkASSERT(this->numRasterSamples() > 0);
+            , fColorLoadOp(colorLoadOp) {
+        SkASSERT(this->numSamples() > 0);
         SkASSERT((GrPrimitiveType::kPatches == fPrimitiveType) ==
                  (fTessellationPatchVertexCount > 0));
-        fRequestedFeatures = fPrimProc->requestedFeatures();
+        fRequestedFeatures = fGeomProc->requestedFeatures();
         for (int i = 0; i < fPipeline->numFragmentProcessors(); ++i) {
             fRequestedFeatures |= fPipeline->getFragmentProcessor(i).requestedFeatures();
         }
@@ -52,21 +54,17 @@ public:
     GrProcessor::CustomFeatures requestedFeatures() const { return fRequestedFeatures; }
 
     int numSamples() const { return fNumSamples; }
-    int numStencilSamples() const { return fNumStencilSamples; }
+    int needsStencil() const { return fNeedsStencil; }
     bool isStencilEnabled() const {
         return fUserStencilSettings != &GrUserStencilSettings::kUnused ||
                fPipeline->hasStencilClip();
     }
     const GrUserStencilSettings* userStencilSettings() const { return fUserStencilSettings; }
-    int numRasterSamples() const {
-        return this->isStencilEnabled() ? fNumStencilSamples : fNumSamples;
-    }
-    bool isMixedSampled() const { return fIsMixedSampled; }
     // The backend format of the destination render target [proxy]
     const GrBackendFormat& backendFormat() const { return fBackendFormat; }
     GrSurfaceOrigin origin() const { return fOrigin;  }
     const GrPipeline& pipeline() const { return *fPipeline; }
-    const GrPrimitiveProcessor& primProc() const { return *fPrimProc; }
+    const GrGeometryProcessor& geomProc() const { return *fGeomProc; }
 
     GrPrimitiveType primitiveType() const { return fPrimitiveType; }
     uint8_t tessellationPatchVertexCount() const {
@@ -74,7 +72,11 @@ public:
         return fTessellationPatchVertexCount;
     }
 
+    bool targetSupportsVkResolveLoad() const { return fTargetSupportsVkResolveLoad; }
+
     GrXferBarrierFlags renderPassBarriers() const { return fRenderPassXferBarriers; }
+
+    GrLoadOp colorLoadOp() const { return fColorLoadOp; }
 
     uint16_t primitiveTypeKey() const {
         return ((uint16_t)fPrimitiveType << 8) | fTessellationPatchVertexCount;
@@ -92,26 +94,22 @@ public:
     void validate(bool flushTime) const;
     void checkAllInstantiated() const;
     void checkMSAAAndMIPSAreResolved() const;
-
-    bool isNVPR() const {
-        return fPrimProc->isPathRendering() && !fPrimProc->willUseGeoShader() &&
-               !fPrimProc->numVertexAttributes() && !fPrimProc->numInstanceAttributes();
-    }
 #endif
 
 private:
     const int                             fNumSamples;
-    const int                             fNumStencilSamples;
+    const bool                            fNeedsStencil;
     const GrBackendFormat                 fBackendFormat;
     const GrSurfaceOrigin                 fOrigin;
+    const bool                            fTargetSupportsVkResolveLoad;
     const GrPipeline*                     fPipeline;
     const GrUserStencilSettings*          fUserStencilSettings;
-    const GrPrimitiveProcessor*           fPrimProc;
+    const GrGeometryProcessor*            fGeomProc;
     GrProcessor::CustomFeatures           fRequestedFeatures;
     GrPrimitiveType                       fPrimitiveType;
     uint8_t                               fTessellationPatchVertexCount;  // GrPrimType::kPatches.
     GrXferBarrierFlags                    fRenderPassXferBarriers;
-    const bool                            fIsMixedSampled;
+    GrLoadOp                              fColorLoadOp;
 };
 
 #endif

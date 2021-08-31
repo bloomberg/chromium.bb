@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
@@ -331,7 +332,7 @@ RemoteSuggestionsProviderImpl::RemoteSuggestionsProviderImpl(
   // TODO(treib): Rethink this.
   category_contents_.insert(
       std::make_pair(articles_category_,
-                     CategoryContent(BuildArticleCategoryInfo(base::nullopt))));
+                     CategoryContent(BuildArticleCategoryInfo(absl::nullopt))));
   // Tell the observer about all the categories.
   for (const auto& entry : category_contents_) {
     observer->OnCategoryStatusChanged(this, entry.first, entry.second.status);
@@ -506,7 +507,7 @@ void RemoteSuggestionsProviderImpl::FetchSuggestions(
 
   // |count_to_fetch| is actually ignored, because the server does not support
   // this functionality.
-  RequestParams params = BuildFetchParams(/*fetched_category=*/base::nullopt,
+  RequestParams params = BuildFetchParams(/*fetched_category=*/absl::nullopt,
                                           /*count_to_fetch=*/10);
   params.interactive_request = interactive_request;
   suggestions_fetcher_->FetchSnippets(
@@ -555,7 +556,7 @@ void RemoteSuggestionsProviderImpl::Fetch(
 
 // Builds default fetcher params.
 RequestParams RemoteSuggestionsProviderImpl::BuildFetchParams(
-    base::Optional<Category> fetched_category,
+    absl::optional<Category> fetched_category,
     int count_to_fetch) const {
   RequestParams result;
   result.language_code = application_language_code_;
@@ -1557,7 +1558,7 @@ void RemoteSuggestionsProviderImpl::RestoreCategoriesFromPrefs() {
 
   const base::ListValue* list =
       pref_service_->GetList(prefs::kRemoteSuggestionCategories);
-  for (const base::Value& entry : *list) {
+  for (const base::Value& entry : list->GetList()) {
     const base::DictionaryValue* dict = nullptr;
     if (!entry.GetAsDictionary(&dict)) {
       DLOG(WARNING) << "Invalid category pref value: " << entry;
@@ -1569,7 +1570,7 @@ void RemoteSuggestionsProviderImpl::RestoreCategoriesFromPrefs() {
                     << kCategoryContentId << "': " << entry;
       continue;
     }
-    base::string16 title;
+    std::u16string title;
     if (!dict->GetString(kCategoryContentTitle, &title)) {
       DLOG(WARNING) << "Invalid category pref value, missing '"
                     << kCategoryContentTitle << "': " << entry;
@@ -1598,7 +1599,7 @@ void RemoteSuggestionsProviderImpl::RestoreCategoriesFromPrefs() {
     // avoid using a title that was calculated for a stale locale.
     CategoryInfo info =
         category == articles_category_
-            ? BuildArticleCategoryInfo(base::nullopt)
+            ? BuildArticleCategoryInfo(absl::nullopt)
             : BuildRemoteCategoryInfo(title, allow_fetching_more_results);
     CategoryContent* content = UpdateCategoryInfo(category, info);
     content->included_in_last_server_response =

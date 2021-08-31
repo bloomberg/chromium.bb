@@ -7,12 +7,13 @@
 
 #include <memory>
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/browser_interface_broker.mojom-blink-forward.h"
@@ -45,16 +46,17 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       mojom::blink::ScriptType script_type,
       const String& global_scope_name,
       const String& user_agent,
-      const base::Optional<UserAgentMetadata>& ua_metadata,
+      const absl::optional<UserAgentMetadata>& ua_metadata,
       scoped_refptr<WebWorkerFetchContext>,
-      const Vector<CSPHeaderAndType>& outside_content_security_policy_headers,
+      Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+          outside_content_security_policies,
       network::mojom::ReferrerPolicy referrer_policy,
       const SecurityOrigin*,
       bool starter_secure_context,
       HttpsState starter_https_state,
       WorkerClients*,
       std::unique_ptr<WebContentSettingsClient>,
-      base::Optional<network::mojom::IPAddressSpace>,
+      absl::optional<network::mojom::IPAddressSpace>,
       const Vector<String>* origin_trial_tokens,
       const base::UnguessableToken& parent_devtools_token,
       std::unique_ptr<WorkerSettings>,
@@ -63,11 +65,13 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
       mojo::PendingRemote<mojom::blink::BrowserInterfaceBroker>
           browser_interface_broker = mojo::NullRemote(),
       BeginFrameProviderParams begin_frame_provider_params = {},
-      const FeaturePolicy* parent_feature_policy = nullptr,
+      const PermissionsPolicy* parent_permissions_policy = nullptr,
       base::UnguessableToken agent_cluster_id = {},
-      const base::Optional<ExecutionContextToken>& parent_context_token =
-          base::nullopt,
-      bool parent_cross_origin_isolated_capability = false);
+      ukm::SourceId ukm_source_id = ukm::kInvalidSourceId,
+      const absl::optional<ExecutionContextToken>& parent_context_token =
+          absl::nullopt,
+      bool parent_cross_origin_isolated_capability = false,
+      bool parent_direct_socket_capability = false);
 
   ~GlobalScopeCreationParams() = default;
 
@@ -96,7 +100,8 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // TODO(bashi): This contains "inside" CSP headers for on-the-main-thread
   // service/shared worker script fetch. Add a separate parameter for "inside"
   // CSP headers.
-  Vector<CSPHeaderAndType> outside_content_security_policy_headers;
+  Vector<network::mojom::blink::ContentSecurityPolicyPtr>
+      outside_content_security_policies;
 
   network::mojom::ReferrerPolicy referrer_policy;
   std::unique_ptr<Vector<String>> origin_trial_tokens;
@@ -142,7 +147,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // Worker script response's address space. This is valid only when the worker
   // script is fetched on the main thread (i.e., when
   // |off_main_thread_fetch_option| is kDisabled).
-  base::Optional<network::mojom::IPAddressSpace> response_address_space;
+  absl::optional<network::mojom::IPAddressSpace> response_address_space;
 
   base::UnguessableToken parent_devtools_token;
 
@@ -157,21 +162,30 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
 
   BeginFrameProviderParams begin_frame_provider_params;
 
-  std::unique_ptr<FeaturePolicy> worker_feature_policy;
+  std::unique_ptr<PermissionsPolicy> worker_permissions_policy;
 
   // Set when the worker/worklet has the same AgentClusterID as the execution
   // context that created it (e.g. for a dedicated worker).
   // See https://tc39.github.io/ecma262/#sec-agent-clusters
   base::UnguessableToken agent_cluster_id;
 
+  // Set to ukm::kInvalidSourceId when the global scope is not provided an ID.
+  ukm::SourceId ukm_source_id;
+
   // The identity of the parent ExecutionContext that is the sole owner of this
   // worker or worklet, which caused it to be created, and to whose lifetime
   // this worker/worklet is bound. This is used for resource usage attribution.
-  base::Optional<ExecutionContextToken> parent_context_token;
+  absl::optional<ExecutionContextToken> parent_context_token;
 
   // https://html.spec.whatwg.org/C/#concept-settings-object-cross-origin-isolated-capability
   // Used by dedicated workers, and set to false when there is no parent.
   const bool parent_cross_origin_isolated_capability;
+
+  // Governs whether Direct Sockets are available in a worker context, false
+  // when no parent exists.
+  //
+  // TODO(mkwst): We need a specification for this capability.
+  const bool parent_direct_socket_capability;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalScopeCreationParams);
 };

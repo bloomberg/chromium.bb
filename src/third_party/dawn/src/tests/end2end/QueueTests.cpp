@@ -26,10 +26,10 @@
 
 class QueueTests : public DawnTest {};
 
-// Test that GetDefaultQueue always returns the same object.
-TEST_P(QueueTests, GetDefaultQueueSameObject) {
-    wgpu::Queue q1 = device.GetDefaultQueue();
-    wgpu::Queue q2 = device.GetDefaultQueue();
+// Test that GetQueue always returns the same object.
+TEST_P(QueueTests, GetQueueSameObject) {
+    wgpu::Queue q1 = device.GetQueue();
+    wgpu::Queue q2 = device.GetQueue();
     EXPECT_EQ(q1.Get(), q2.Get());
 }
 
@@ -38,6 +38,7 @@ DAWN_INSTANTIATE_TEST(QueueTests,
                       MetalBackend(),
                       NullBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 class QueueWriteBufferTests : public DawnTest {};
@@ -111,11 +112,14 @@ TEST_P(QueueWriteBufferTests, ManyWriteBuffer) {
     // fails the test. Since GPUs may or may not complete by then, this test must be disabled OR
     // modified to be well-below the timeout limit.
 
-    // TODO (jiawei.shao@intel.com): find out why this test fails on Intel Vulkan Linux bots.
-    DAWN_SKIP_TEST_IF(IsIntel() && IsVulkan() && IsLinux());
     // TODO(https://bugs.chromium.org/p/dawn/issues/detail?id=228): Re-enable
     // once the issue with Metal on 10.14.6 is fixed.
     DAWN_SKIP_TEST_IF(IsMacOS() && IsIntel() && IsMetal());
+
+    // The Vulkan Validation Layers' memory barrier validation keeps track of every range written
+    // to independently which causes validation of each WriteBuffer to take increasing time, and
+    // this test to take forever. Skip it when VVLs are enabled.
+    DAWN_SKIP_TEST_IF(IsVulkan() && IsBackendValidationEnabled());
 
     constexpr uint64_t kSize = 4000 * 1000;
     constexpr uint32_t kElements = 250 * 250;
@@ -174,12 +178,6 @@ TEST_P(QueueWriteBufferTests, SuperLargeWriteBuffer) {
 // Test a special code path: writing when dynamic uploader already contatins some unaligned
 // data, it might be necessary to use a ring buffer with properly aligned offset.
 TEST_P(QueueWriteBufferTests, UnalignedDynamicUploader) {
-    // TODO(dawn:483): Skipping test because WriteTexture inside UnalignDynamicUploader
-    // is not implemented. Moreover when using UnalignDynamicUploader we are assuming
-    // that WriteTexture implementation uses a DynamicUploader which might be false in the
-    // case of a future OpenGL implementation.
-    DAWN_SKIP_TEST_IF(IsOpenGL());
-
     utils::UnalignDynamicUploader(device);
 
     wgpu::BufferDescriptor descriptor;
@@ -197,6 +195,7 @@ DAWN_INSTANTIATE_TEST(QueueWriteBufferTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 // For MinimumDataSpec bytesPerRow and rowsPerImage, compute a default from the copy extent.
@@ -278,18 +277,18 @@ class QueueWriteTextureTests : public DawnTest {
         wgpu::TextureDataLayout textureDataLayout = utils::CreateTextureDataLayout(
             dataSpec.offset, dataSpec.bytesPerRow, dataSpec.rowsPerImage);
 
-        wgpu::TextureCopyView textureCopyView =
-            utils::CreateTextureCopyView(texture, textureSpec.level, textureSpec.copyOrigin);
+        wgpu::ImageCopyTexture imageCopyTexture =
+            utils::CreateImageCopyTexture(texture, textureSpec.level, textureSpec.copyOrigin);
 
-        queue.WriteTexture(&textureCopyView, data.data(), dataSpec.size, &textureDataLayout,
+        queue.WriteTexture(&imageCopyTexture, data.data(), dataSpec.size, &textureDataLayout,
                            &copySize);
 
         const uint32_t bytesPerTexel = utils::GetTexelBlockSizeInBytes(kTextureFormat);
         wgpu::Extent3D mipSize = {textureSpec.textureSize.width >> textureSpec.level,
                                   textureSpec.textureSize.height >> textureSpec.level,
-                                  textureSpec.textureSize.depth};
+                                  textureSpec.textureSize.depthOrArrayLayers};
         uint32_t bytesPerRow = dataSpec.bytesPerRow;
-        if (bytesPerRow == wgpu::kStrideUndefined) {
+        if (bytesPerRow == wgpu::kCopyStrideUndefined) {
             bytesPerRow = mipSize.width * bytesPerTexel;
         }
         uint32_t alignedBytesPerRow = Align(bytesPerRow, bytesPerTexel);
@@ -297,7 +296,7 @@ class QueueWriteTextureTests : public DawnTest {
             dataSpec.rowsPerImage > 0 ? dataSpec.rowsPerImage : mipSize.height;
         uint32_t bytesPerImage = bytesPerRow * appliedRowsPerImage;
 
-        const uint32_t maxArrayLayer = textureSpec.copyOrigin.z + copySize.depth;
+        const uint32_t maxArrayLayer = textureSpec.copyOrigin.z + copySize.depthOrArrayLayers;
 
         uint64_t dataOffset = dataSpec.offset;
         const uint32_t texelCountLastLayer =
@@ -309,9 +308,9 @@ class QueueWriteTextureTests : public DawnTest {
             PackTextureData(data.data() + dataOffset, copySize.width, copySize.height,
                             dataSpec.bytesPerRow, expected.data(), copySize.width, bytesPerTexel);
 
-            EXPECT_TEXTURE_RGBA8_EQ(expected.data(), texture, textureSpec.copyOrigin.x,
-                                    textureSpec.copyOrigin.y, copySize.width, copySize.height,
-                                    textureSpec.level, slice)
+            EXPECT_TEXTURE_EQ(expected.data(), texture,
+                              {textureSpec.copyOrigin.x, textureSpec.copyOrigin.y, slice},
+                              {copySize.width, copySize.height}, textureSpec.level)
                 << "Write to texture failed copying " << dataSpec.size << "-byte data with offset "
                 << dataSpec.offset << " and bytes per row " << dataSpec.bytesPerRow << " to [("
                 << textureSpec.copyOrigin.x << ", " << textureSpec.copyOrigin.y << "), ("
@@ -322,6 +321,32 @@ class QueueWriteTextureTests : public DawnTest {
 
             dataOffset += bytesPerImage;
         }
+    }
+
+    void DoSimpleWriteTextureTest(uint32_t width, uint32_t height) {
+        constexpr wgpu::TextureFormat kFormat = wgpu::TextureFormat::RGBA8Unorm;
+        constexpr uint32_t kPixelSize = 4;
+
+        std::vector<uint32_t> data(width * height);
+        for (size_t i = 0; i < data.size(); i++) {
+            data[i] = 0xFFFFFFFF;
+        }
+
+        wgpu::TextureDescriptor descriptor = {};
+        descriptor.size = {width, height, 1};
+        descriptor.format = kFormat;
+        descriptor.usage = wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::CopySrc;
+        wgpu::Texture texture = device.CreateTexture(&descriptor);
+
+        wgpu::ImageCopyTexture imageCopyTexture =
+            utils::CreateImageCopyTexture(texture, 0, {0, 0, 0});
+        wgpu::TextureDataLayout textureDataLayout =
+            utils::CreateTextureDataLayout(0, width * kPixelSize);
+        wgpu::Extent3D copyExtent = {width, height, 1};
+        device.GetQueue().WriteTexture(&imageCopyTexture, data.data(), width * height * kPixelSize,
+                                       &textureDataLayout, &copyExtent);
+
+        EXPECT_TEXTURE_EQ(data.data(), texture, {0, 0}, {width, height});
     }
 };
 
@@ -523,7 +548,7 @@ TEST_P(QueueWriteTextureTests, BytesPerRowWithOneRowCopy) {
         EXPECT_DEPRECATION_WARNING(DoTest(textureSpec, dataSpec, copyExtent));
 
         // bytesPerRow undefined
-        dataSpec.bytesPerRow = wgpu::kStrideUndefined;
+        dataSpec.bytesPerRow = wgpu::kCopyStrideUndefined;
         DoTest(textureSpec, dataSpec, copyExtent);
     }
 
@@ -583,7 +608,7 @@ TEST_P(QueueWriteTextureTests, StrideSpecialCases) {
     // bytesPerRow undefined
     for (const wgpu::Extent3D copyExtent :
          {wgpu::Extent3D{2, 1, 1}, {2, 0, 1}, {2, 1, 0}, {2, 0, 0}}) {
-        DoTest(textureSpec, MinimumDataSpec(copyExtent, wgpu::kStrideUndefined, 2), copyExtent);
+        DoTest(textureSpec, MinimumDataSpec(copyExtent, wgpu::kCopyStrideUndefined, 2), copyExtent);
     }
 
     // rowsPerImage 0
@@ -594,7 +619,8 @@ TEST_P(QueueWriteTextureTests, StrideSpecialCases) {
 
     // rowsPerImage undefined
     for (const wgpu::Extent3D copyExtent : {wgpu::Extent3D{2, 2, 1}, {2, 2, 0}}) {
-        DoTest(textureSpec, MinimumDataSpec(copyExtent, 256, wgpu::kStrideUndefined), copyExtent);
+        DoTest(textureSpec, MinimumDataSpec(copyExtent, 256, wgpu::kCopyStrideUndefined),
+               copyExtent);
     }
 }
 
@@ -613,4 +639,22 @@ TEST_P(QueueWriteTextureTests, UnalignedDynamicUploader) {
     DoTest(textureSpec, MinimumDataSpec(size), size);
 }
 
-DAWN_INSTANTIATE_TEST(QueueWriteTextureTests, D3D12Backend(), MetalBackend(), VulkanBackend());
+// This tests for a bug that occurred within the D3D12 CopyTextureSplitter, which incorrectly copied
+// data when the internal offset was larger than 256, but less than 512 and the copy size was 64
+// width or less with a height of 1.
+TEST_P(QueueWriteTextureTests, WriteTo64x1TextureFromUnalignedDynamicUploader) {
+    // First, WriteTexture with 96 pixels, or 384 bytes to create an offset in the dynamic uploader.
+    DoSimpleWriteTextureTest(96, 1);
+
+    // Now test writing to a 64x1 texture. Because a 64x1 texture's row pitch is equal to its slice
+    // pitch, the texture copy offset could be calculated incorrectly inside the internal D3D12
+    // TextureCopySplitter.
+    DoSimpleWriteTextureTest(64, 1);
+}
+
+DAWN_INSTANTIATE_TEST(QueueWriteTextureTests,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      OpenGLESBackend(),
+                      VulkanBackend());

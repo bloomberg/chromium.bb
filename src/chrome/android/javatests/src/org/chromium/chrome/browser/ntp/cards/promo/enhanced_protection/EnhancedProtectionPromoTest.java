@@ -13,15 +13,14 @@ import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.instanceOf;
 
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.Intent;
+import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.filters.MediumTest;
@@ -41,6 +40,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.UserActionTester;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -67,10 +67,8 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@EnableFeatures({ChromeFeatureList.ENHANCED_PROTECTION_PROMO_CARD,
-        ChromeFeatureList.SAFE_BROWSING_ENHANCED_PROTECTION_ENABLED})
-@Features.
-DisableFeatures({ChromeFeatureList.QUERY_TILES, ChromeFeatureList.REPORT_FEED_USER_ACTIONS})
+@EnableFeatures({ChromeFeatureList.ENHANCED_PROTECTION_PROMO_CARD})
+@Features.DisableFeatures({ChromeFeatureList.QUERY_TILES})
 public class EnhancedProtectionPromoTest {
     private static final String METRICS_ENHANCED_PROTECTION_PROMO =
             "NewTabPage.Promo.EnhancedProtectionPromo";
@@ -113,7 +111,10 @@ public class EnhancedProtectionPromoTest {
      */
     @Test
     @SmallTest
-    public void testSetUp_Basic() {
+    @DisableIf.Build(message = "Flaky on Android Lollipop, see crbug.com/1199125",
+            sdk_is_less_than = Build.VERSION_CODES.M)
+    public void
+    testSetUp_Basic() {
         mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
 
         View enhancedProtectionPromo =
@@ -200,7 +201,7 @@ public class EnhancedProtectionPromoTest {
     }
 
     private void scrollToEnhancedProtectionPromo() {
-        onView(instanceOf(RecyclerView.class))
+        onView(withId(R.id.feed_stream_recycler_view))
                 .perform(RecyclerViewActions.scrollToPosition(NTP_HEADER_POSITION + 1));
         waitForView((ViewGroup) mActivityTestRule.getActivity().findViewById(
                             R.id.enhanced_protection_promo),

@@ -12,8 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace views {
 class Widget;
@@ -60,8 +59,8 @@ class ASH_EXPORT PinRequestWidget {
 
   // Toggles showing an error state and updates displayed strings.
   void UpdateState(PinRequestViewState state,
-                   const base::string16& title,
-                   const base::string16& description);
+                   const std::u16string& title,
+                   const std::u16string& description);
 
   // Enables or disables PIN input.
   void SetPinInputEnabled(bool enabled);

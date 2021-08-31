@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -75,13 +76,18 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   TracingAgent* tracing_agent() { return tracing_agent_; }
   void set_tracing_agent(TracingAgent* agent) { tracing_agent_ = agent; }
 
+  // Sets the callback which will be invoked when the session is closed.
+  // Marks as a const function so it can be called after the server is set up
+  // and used as a constant instance.
+  void SetOnSessionEnded(base::OnceClosure callback) const;
+
  private:
   UiDevToolsServer(int port, const net::NetworkTrafficAnnotationTag tag);
 
   void MakeServer(
       mojo::PendingRemote<network::mojom::TCPServerSocket> server_socket,
       int result,
-      const base::Optional<net::IPEndPoint>& local_addr);
+      const absl::optional<net::IPEndPoint>& local_addr);
 
   // HttpServer::Delegate
   void OnConnect(int connection_id) override;
@@ -107,6 +113,9 @@ class UI_DEVTOOLS_EXPORT UiDevToolsServer
   const net::NetworkTrafficAnnotationTag tag_;
 
   TracingAgent* tracing_agent_ = nullptr;
+
+  // Invoked when the server doesn't have any live connection.
+  mutable base::OnceClosure on_session_ended_;
 
   // The server (owned by Chrome for now)
   static UiDevToolsServer* devtools_server_;

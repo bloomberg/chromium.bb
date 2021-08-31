@@ -47,7 +47,7 @@ def _WarnIfGenerateGnTestsFail(input_api, output_api):
     errors += input_api.RunTests(
         input_api.canned_checks.GetUnitTests(
             input_api, output_api,
-            ['chromium/scripts/generate_gn_unittest.py']))
+            ['chromium/scripts/generate_gn_unittest_wrapper.py']))
 
   return errors
 

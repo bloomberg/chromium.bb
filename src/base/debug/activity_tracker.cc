@@ -10,6 +10,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/bits.h"
+#include "base/containers/contains.h"
 #include "base/debug/stack_trace.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -22,7 +23,7 @@
 #include "base/pickle.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
-#include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
@@ -401,8 +402,8 @@ bool ActivityUserData::CreateSnapshot(Snapshot* output_snapshot) const {
       case END_OF_VALUES:  // Included for completeness purposes.
         NOTREACHED();
     }
-    auto inserted = output_snapshot->insert(
-        std::make_pair(entry.second.name.as_string(), std::move(value)));
+    auto inserted = output_snapshot->emplace(std::string(entry.second.name),
+                                             std::move(value));
     DCHECK(inserted.second);  // True if inserted, false if existed.
   }
 
@@ -468,9 +469,9 @@ void* ActivityUserData::Set(StringPiece name,
     // following field will be aligned properly.
     size_t name_size = name.length();
     size_t name_extent =
-        bits::Align(sizeof(FieldHeader) + name_size, kMemoryAlignment) -
+        bits::AlignUp(sizeof(FieldHeader) + name_size, kMemoryAlignment) -
         sizeof(FieldHeader);
-    size_t value_extent = bits::Align(size, kMemoryAlignment);
+    size_t value_extent = bits::AlignUp(size, kMemoryAlignment);
 
     // The "base size" is the size of the header and (padded) string key. Stop
     // now if there's not room enough for even this.
@@ -566,8 +567,8 @@ void ActivityUserData::ImportExistingData() const {
     if (header->record_size > available_)
       return;
 
-    size_t value_offset =
-        bits::Align(sizeof(FieldHeader) + header->name_size, kMemoryAlignment);
+    size_t value_offset = bits::AlignUp(sizeof(FieldHeader) + header->name_size,
+                                        kMemoryAlignment);
     if (header->record_size == value_offset &&
         header->value_size.load(std::memory_order_relaxed) == 1) {
       value_offset -= 1;
@@ -1086,9 +1087,8 @@ ThreadActivityTracker::CreateUserDataForActivity(
 // but that's best since PersistentMemoryAllocator objects (that underlie
 // GlobalActivityTracker objects) are explicitly forbidden from doing anything
 // essential at exit anyway due to the fact that they depend on data managed
-// elsewhere and which could be destructed first. An AtomicWord is used instead
-// of std::atomic because the latter can create global ctors and dtors.
-subtle::AtomicWord GlobalActivityTracker::g_tracker_ = 0;
+// elsewhere and which could be destructed first.
+std::atomic<GlobalActivityTracker*> GlobalActivityTracker::g_tracker_{nullptr};
 
 GlobalActivityTracker::ModuleInfo::ModuleInfo() = default;
 GlobalActivityTracker::ModuleInfo::ModuleInfo(ModuleInfo&& rhs) = default;
@@ -1255,7 +1255,7 @@ GlobalActivityTracker::ManagedActivityTracker::~ManagedActivityTracker() {
   // The global |g_tracker_| must point to the owner of this class since all
   // objects of this type must be destructed before |g_tracker_| can be changed
   // (something that only occurs in tests).
-  DCHECK(g_tracker_);
+  DCHECK(g_tracker_.load(std::memory_order_relaxed));
   GlobalActivityTracker::Get()->ReturnTrackerMemory(this);
 }
 
@@ -1329,9 +1329,8 @@ bool GlobalActivityTracker::CreateWithSharedMemory(
 // static
 void GlobalActivityTracker::SetForTesting(
     std::unique_ptr<GlobalActivityTracker> tracker) {
-  CHECK(!subtle::NoBarrier_Load(&g_tracker_));
-  subtle::Release_Store(&g_tracker_,
-                        reinterpret_cast<uintptr_t>(tracker.release()));
+  CHECK(!g_tracker_.load(std::memory_order_relaxed));
+  g_tracker_.store(tracker.release(), std::memory_order_release);
 }
 
 // static
@@ -1346,7 +1345,7 @@ GlobalActivityTracker::ReleaseForTesting() {
   tracker->ReleaseTrackerForCurrentThreadForTesting();
   DCHECK_EQ(0, tracker->thread_tracker_count_.load(std::memory_order_relaxed));
 
-  subtle::Release_Store(&g_tracker_, 0);
+  g_tracker_.store(nullptr, std::memory_order_release);
   return WrapUnique(tracker);
 }
 
@@ -1655,8 +1654,8 @@ GlobalActivityTracker::GlobalActivityTracker(
   DCHECK_NE(0, process_id_);
 
   // Ensure that there is no other global object and then make this one such.
-  DCHECK(!g_tracker_);
-  subtle::Release_Store(&g_tracker_, reinterpret_cast<uintptr_t>(this));
+  DCHECK(!g_tracker_.load(std::memory_order_relaxed));
+  g_tracker_.store(this, std::memory_order_release);
 
   // The data records must be iterable in order to be found by an analyzer.
   allocator_->MakeIterable(allocator_->GetAsReference(
@@ -1669,7 +1668,7 @@ GlobalActivityTracker::GlobalActivityTracker(
 GlobalActivityTracker::~GlobalActivityTracker() {
   DCHECK(Get() == nullptr || Get() == this);
   DCHECK_EQ(0, thread_tracker_count_.load(std::memory_order_relaxed));
-  subtle::Release_Store(&g_tracker_, 0);
+  g_tracker_.store(nullptr, std::memory_order_release);
 }
 
 void GlobalActivityTracker::ReturnTrackerMemory(

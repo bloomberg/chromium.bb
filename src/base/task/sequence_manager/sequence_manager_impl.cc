@@ -16,7 +16,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/sequence_manager/real_time_domain.h"
@@ -31,6 +30,7 @@
 #include "base/time/tick_clock.h"
 #include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 namespace sequence_manager {
@@ -460,9 +460,18 @@ void SequenceManagerImpl::OnExitNestedRunLoop() {
     // While we were nested some non-nestable tasks may have been deferred.
     // We push them back onto the *front* of their original work queues,
     // that's why we iterate |non_nestable_task_queue| in FIFO order.
+    LazyNow exited_nested_now(controller_->GetClock());
     while (!main_thread_only().non_nestable_task_queue.empty()) {
       internal::TaskQueueImpl::DeferredNonNestableTask& non_nestable_task =
           main_thread_only().non_nestable_task_queue.back();
+      if (!non_nestable_task.task.queue_time.is_null()) {
+        // Adjust the deferred tasks' queue time to now so that intentionally
+        // deferred tasks are not unfairly considered as having been stuck in
+        // the queue for a while. Note: this does not affect task ordering as
+        // |enqueue_order| is untouched and deferred tasks will still be pushed
+        // back to the front of the queue.
+        non_nestable_task.task.queue_time = exited_nested_now.Now();
+      }
       auto* const task_queue = non_nestable_task.task_queue;
       task_queue->RequeueDeferredNonNestableTask(std::move(non_nestable_task));
       main_thread_only().non_nestable_task_queue.pop_back();
@@ -716,7 +725,7 @@ TimeDelta SequenceManagerImpl::GetDelayTillNextDelayedTask(
 
   TimeDelta delay_till_next_task = TimeDelta::Max();
   for (TimeDomain* time_domain : main_thread_only().time_domains) {
-    Optional<TimeDelta> delay = time_domain->DelayTillNextTask(lazy_now);
+    absl::optional<TimeDelta> delay = time_domain->DelayTillNextTask(lazy_now);
     if (!delay)
       continue;
 
@@ -765,7 +774,7 @@ TimeRecordingPolicy SequenceManagerImpl::ShouldRecordTaskTiming(
   if (task_queue->RequiresTaskTiming())
     return TimeRecordingPolicy::DoRecord;
   if (main_thread_only().nesting_depth == 0 &&
-      main_thread_only().task_time_observers.might_have_observers()) {
+      !main_thread_only().task_time_observers.empty()) {
     return TimeRecordingPolicy::DoRecord;
   }
   return TimeRecordingPolicy::DoNotRecord;
@@ -845,13 +854,17 @@ void SequenceManagerImpl::NotifyDidProcessTask(ExecutingTask* executing_task,
     }
   }
 
+  bool has_valid_start =
+      task_timing.state() != TaskQueue::TaskTiming::State::NotStarted;
   TimeRecordingPolicy recording_policy =
       ShouldRecordTaskTiming(executing_task->task_queue);
   // Record end time ASAP to avoid bias due to the overhead of observers.
-  if (recording_policy == TimeRecordingPolicy::DoRecord)
+  if (recording_policy == TimeRecordingPolicy::DoRecord && has_valid_start) {
     task_timing.RecordTaskEnd(time_after_task);
+  }
 
-  if (task_timing.has_wall_time() && main_thread_only().nesting_depth == 0) {
+  if (has_valid_start && task_timing.has_wall_time() &&
+      main_thread_only().nesting_depth == 0) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "SequenceManager.DidProcessTaskTimeObservers");
     for (auto& observer : main_thread_only().task_time_observers) {
@@ -1051,38 +1064,6 @@ SequenceManagerImpl::GetMetricRecordingSettings() const {
   return metric_recording_settings_;
 }
 
-// TODO(altimin): Ensure that this removes all pending tasks.
-void SequenceManagerImpl::DeletePendingTasks() {
-  DCHECK(main_thread_only().task_execution_stack.empty())
-      << "Tasks should be deleted outside RunLoop";
-
-  for (TaskQueueImpl* task_queue : main_thread_only().active_queues)
-    task_queue->DeletePendingTasks();
-  for (const auto& it : main_thread_only().queues_to_gracefully_shutdown)
-    it.first->DeletePendingTasks();
-  for (const auto& it : main_thread_only().queues_to_delete)
-    it.first->DeletePendingTasks();
-}
-
-bool SequenceManagerImpl::HasTasks() {
-  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
-  RemoveAllCanceledTasksFromFrontOfWorkQueues();
-
-  for (TaskQueueImpl* task_queue : main_thread_only().active_queues) {
-    if (task_queue->HasTasks())
-      return true;
-  }
-  for (const auto& it : main_thread_only().queues_to_gracefully_shutdown) {
-    if (it.first->HasTasks())
-      return true;
-  }
-  for (const auto& it : main_thread_only().queues_to_delete) {
-    if (it.first->HasTasks())
-      return true;
-  }
-  return false;
-}
-
 MessagePumpType SequenceManagerImpl::GetType() const {
   return settings_.message_loop_type;
 }
@@ -1130,6 +1111,11 @@ std::string SequenceManagerImpl::DescribeAllPendingTasks() const {
 std::unique_ptr<NativeWorkHandle> SequenceManagerImpl::OnNativeWorkPending(
     TaskQueue::QueuePriority priority) {
   return std::make_unique<NativeWorkHandleImpl>(this, priority);
+}
+
+void SequenceManagerImpl::PrioritizeYieldingToNative(
+    base::TimeTicks prioritize_until) {
+  controller_->PrioritizeYieldingToNative(prioritize_until);
 }
 
 void SequenceManagerImpl::AddDestructionObserver(
@@ -1193,7 +1179,7 @@ void SequenceManagerImpl::RecordCrashKeys(const PendingTask& pending_task) {
   // this.
   //
   // See
-  // https://chromium.googlesource.com/chromium/src/+/master/docs/debugging_with_crash_keys.md
+  // https://chromium.googlesource.com/chromium/src/+/main/docs/debugging_with_crash_keys.md
   // for instructions for symbolizing these crash keys.
   //
   // TODO(skyostil): Find a way to extract the destination function address

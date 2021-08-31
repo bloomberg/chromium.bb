@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/platform/fonts/skia/sktypeface_factory.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -257,8 +256,21 @@ std::unique_ptr<FontPlatformData> FontCache::CreateFontPlatformData(
 
   sk_sp<SkTypeface> typeface;
 #if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-  if (alternate_name == AlternateFontName::kLocalUniqueFace &&
-      RuntimeEnabledFeatures::FontSrcLocalMatchingEnabled()) {
+  bool noto_color_emoji_from_gmscore = false;
+#if defined(OS_ANDROID)
+  // Use the unique local matching pathway for fetching Noto Color Emoji Compat
+  // from GMS core if this family is requested, see font_cache_android.cc. Noto
+  // Color Emoji Compat is an up-to-date emoji font shipped with GMSCore which
+  // provides better emoji coverage and emoji sequence support than the firmware
+  // Noto Color Emoji font.
+  noto_color_emoji_from_gmscore =
+      (creation_params.CreationType() ==
+           FontFaceCreationType::kCreateFontByFamily &&
+       creation_params.Family() == kNotoColorEmojiCompat);
+#endif
+  if (RuntimeEnabledFeatures::FontSrcLocalMatchingEnabled() &&
+      (alternate_name == AlternateFontName::kLocalUniqueFace ||
+       noto_color_emoji_from_gmscore)) {
     typeface = CreateTypefaceFromUniqueName(creation_params);
   } else {
     typeface = CreateTypeface(font_description, creation_params, name);

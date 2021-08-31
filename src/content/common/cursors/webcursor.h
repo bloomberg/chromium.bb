@@ -5,8 +5,6 @@
 #ifndef CONTENT_COMMON_CURSORS_WEBCURSOR_H_
 #define CONTENT_COMMON_CURSORS_WEBCURSOR_H_
 
-#include <vector>
-
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "ui/base/cursor/cursor.h"
@@ -16,8 +14,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(USE_AURA)
-#include "base/optional.h"
-
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/cursor/cursor.h"
 #endif
 
@@ -32,7 +29,6 @@ class CONTENT_EXPORT WebCursor {
   WebCursor();
   explicit WebCursor(const ui::Cursor& info);
   explicit WebCursor(const WebCursor& other);
-  WebCursor& operator=(const WebCursor& other);
   ~WebCursor();
 
   const ui::Cursor& cursor() const { return cursor_; }
@@ -48,8 +44,6 @@ class CONTENT_EXPORT WebCursor {
   gfx::NativeCursor GetNativeCursor();
 
 #if defined(USE_AURA)
-  ui::PlatformCursor GetPlatformCursor(const ui::Cursor& cursor);
-
   // Updates |device_scale_factor_| and |rotation_| based on |display|.
   void SetDisplayInfo(const display::Display& display);
 
@@ -61,12 +55,6 @@ class CONTENT_EXPORT WebCursor {
 #endif
 
  private:
-  // Copies all data from |other| to this object.
-  void CopyAllData(const WebCursor& other);
-
-  // Copies platform specific data from the WebCursor instance passed in.
-  void CopyPlatformData(const WebCursor& other);
-
   // Platform specific cleanup.
   void CleanupPlatformData();
 
@@ -77,7 +65,6 @@ class CONTENT_EXPORT WebCursor {
 
 #if defined(USE_AURA) || defined(USE_OZONE)
   // Only used for custom cursors.
-  ui::PlatformCursor platform_cursor_ = 0;
   float device_scale_factor_ = 1.f;
   display::Display::Rotation rotation_ = display::Display::ROTATE_0;
 #endif
@@ -89,7 +76,7 @@ class CONTENT_EXPORT WebCursor {
 #endif
 
 #if defined(USE_AURA)
-  base::Optional<ui::Cursor> custom_cursor_;
+  absl::optional<ui::Cursor> custom_cursor_;
 #endif
 };
 

@@ -17,6 +17,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -133,18 +134,30 @@ const char* const kDisplayNamesBlockedForMediaFoundation[] = {
 const std::vector<
     std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>>&
 GetMFAttributes() {
+  if (base::FeatureList::IsEnabled(
+          media::kIncludeIRCamerasInDeviceEnumeration)) {
+    static const base::NoDestructor<std::vector<
+        std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>>>
+        mf_attributes({{{VideoCaptureApi::WIN_MEDIA_FOUNDATION,
+                         {
+                             {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                              MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
+                         }},
+                        {VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR,
+                         {{MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                           MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
+                          {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_CATEGORY,
+                           KSCATEGORY_SENSOR_CAMERA}}}}});
+    return *mf_attributes;
+  }
+
   static const base::NoDestructor<std::vector<
       std::pair<VideoCaptureApi, std::vector<std::pair<GUID, GUID>>>>>
-      mf_attributes({{{VideoCaptureApi::WIN_MEDIA_FOUNDATION,
-                       {
-                           {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-                            MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
-                       }},
-                      {VideoCaptureApi::WIN_MEDIA_FOUNDATION_SENSOR,
-                       {{MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
-                         MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
-                        {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_CATEGORY,
-                         KSCATEGORY_SENSOR_CAMERA}}}}});
+      mf_attributes({{VideoCaptureApi::WIN_MEDIA_FOUNDATION,
+                      {
+                          {MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE,
+                           MF_DEVSOURCE_ATTRIBUTE_SOURCE_TYPE_VIDCAP_GUID},
+                      }}});
   return *mf_attributes;
 }
 
@@ -305,20 +318,22 @@ void FindAndSetDefaultVideoCamera(
 // distributions such as Windows 7 N and Windows 7 KN.
 // static
 bool VideoCaptureDeviceFactoryWin::PlatformSupportsMediaFoundation() {
-  static bool g_dlls_available = LoadMediaFoundationDlls();
-  return g_dlls_available;
+  static const bool has_media_foundation =
+      LoadMediaFoundationDlls() && InitializeMediaFoundation();
+  return has_media_foundation;
 }
 
 VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin()
     : use_media_foundation_(
           base::FeatureList::IsEnabled(media::kMediaFoundationVideoCapture)),
+      use_d3d11_with_media_foundation_(base::FeatureList::IsEnabled(
+          media::kMediaFoundationD3D11VideoCapture)),
       com_thread_("Windows Video Capture COM Thread") {
   if (use_media_foundation_ && !PlatformSupportsMediaFoundation()) {
     use_media_foundation_ = false;
     LogVideoCaptureWinBackendUsed(
         VideoCaptureWinBackendUsed::kUsingDirectShowAsFallback);
   } else if (use_media_foundation_) {
-    session_ = InitializeMediaFoundation();
     LogVideoCaptureWinBackendUsed(
         VideoCaptureWinBackendUsed::kUsingMediaFoundationAsDefault);
   } else {
@@ -525,7 +540,7 @@ void VideoCaptureDeviceFactoryWin::GetDevicesInfo(
 
   std::vector<VideoCaptureDeviceInfo> devices_info;
 
-  if (use_media_foundation_ && session_) {
+  if (use_media_foundation_) {
     DCHECK(PlatformSupportsMediaFoundation());
     devices_info = GetDevicesInfoMediaFoundation();
     AugmentDevicesListWithDirectShowOnlyDevices(&devices_info);
@@ -705,7 +720,7 @@ DevicesInfo VideoCaptureDeviceFactoryWin::GetDevicesInfoMediaFoundation() {
   DevicesInfo devices_info;
 
   if (use_d3d11_with_media_foundation_ && !dxgi_device_manager_) {
-    dxgi_device_manager_ = VideoCaptureDXGIDeviceManager::Create();
+    dxgi_device_manager_ = DXGIDeviceManager::Create();
   }
 
   // Recent non-RGB (depth, IR) cameras could be marked as sensor cameras in
@@ -960,11 +975,6 @@ VideoCaptureDeviceFactoryWin::GetSupportedFormatsMediaFoundation(
     type.Reset();
     ++stream_index;
     if (capture_format.pixel_format == PIXEL_FORMAT_UNKNOWN)
-      continue;
-    // If we're using the hardware capture path, ignore non-NV12 pixel formats
-    // to prevent copies
-    if (dxgi_device_manager_available &&
-        capture_format.pixel_format != PIXEL_FORMAT_NV12)
       continue;
     formats.push_back(capture_format);
 

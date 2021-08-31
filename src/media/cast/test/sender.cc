@@ -231,10 +231,12 @@ int main(int argc, char** argv) {
   std::string audio_log_file_name("/tmp/audio_events.log.gz");
   LOG(INFO) << "Logging audio events to: " << audio_log_file_name;
   LOG(INFO) << "Logging video events to: " << video_log_file_name;
-  video_event_subscriber.reset(new media::cast::EncodingEventSubscriber(
-      media::cast::VIDEO_EVENT, 10000));
-  audio_event_subscriber.reset(new media::cast::EncodingEventSubscriber(
-      media::cast::AUDIO_EVENT, 10000));
+  video_event_subscriber =
+      std::make_unique<media::cast::EncodingEventSubscriber>(
+          media::cast::VIDEO_EVENT, 10000);
+  audio_event_subscriber =
+      std::make_unique<media::cast::EncodingEventSubscriber>(
+          media::cast::AUDIO_EVENT, 10000);
   cast_environment->logger()->Subscribe(video_event_subscriber.get());
   cast_environment->logger()->Subscribe(audio_event_subscriber.get());
 
@@ -291,8 +293,7 @@ int main(int argc, char** argv) {
                      base::Unretained(cast_sender.get()),
                      fake_media_source->get_video_config(),
                      base::BindRepeating(&QuitLoopOnInitializationResult),
-                     media::cast::CreateDefaultVideoEncodeAcceleratorCallback(),
-                     media::cast::CreateDefaultVideoEncodeMemoryCallback()));
+                     base::DoNothing()));
   base::RunLoop().Run();  // Wait for video initialization.
   io_task_executor.task_runner()->PostTask(
       FROM_HERE,

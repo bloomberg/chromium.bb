@@ -27,11 +27,13 @@ static constexpr float kInvDistTolerance = 1.f / kDistTolerance;
 
 // These rotate the points/edge values either clockwise or counterclockwise assuming tri strip
 // order.
-static AI V4f next_cw(const V4f& v) {
+template<typename T>
+static AI skvx::Vec<4, T> next_cw(const skvx::Vec<4, T>& v) {
     return skvx::shuffle<2, 0, 3, 1>(v);
 }
 
-static AI V4f next_ccw(const V4f& v) {
+template<typename T>
+static AI skvx::Vec<4, T> next_ccw(const skvx::Vec<4, T>& v) {
     return skvx::shuffle<1, 3, 0, 2>(v);
 }
 
@@ -572,24 +574,16 @@ bool CropToRect(const SkRect& cropRect, GrAA cropAA, DrawQuad* quad, bool comput
         return true;
     }
 
-    if (computeLocal) {
+    if (computeLocal || quad->fDevice.quadType() == GrQuad::Type::kPerspective) {
         // FIXME (michaelludwig) Calculate cropped local coordinates when not kAxisAligned
+        // FIXME (michaelludwig) crbug.com/1204347 and skbug.com/9906 - disable this when there's
+        // perspective; it does not prove numerical robust enough in the wild and should be
+        // revisited.
         return false;
     }
 
     V4f devX = quad->fDevice.x4f();
     V4f devY = quad->fDevice.y4f();
-    // Project the 3D coordinates to 2D
-    if (quad->fDevice.quadType() == GrQuad::Type::kPerspective) {
-        V4f devW = quad->fDevice.w4f();
-        if (any(devW < SkPathPriv::kW0PlaneDistance)) {
-            // The rest of this function assumes the quad is in front of w = 0
-            return false;
-        }
-        devW = 1.f / devW;
-        devX *= devW;
-        devY *= devW;
-    }
 
     V4f clipX = {cropRect.fLeft, cropRect.fLeft, cropRect.fRight, cropRect.fRight};
     V4f clipY = {cropRect.fTop, cropRect.fBottom, cropRect.fTop, cropRect.fBottom};
@@ -719,6 +713,15 @@ V4f TessellationHelper::EdgeEquations::estimateCoverage(const V4f& x2d, const V4
 int TessellationHelper::EdgeEquations::computeDegenerateQuad(const V4f& signedEdgeDistances,
                                                              V4f* x2d, V4f* y2d,
                                                              M4f* aaMask) const {
+    // If the original points form a line in the 2D projection then give up on antialiasing.
+    for (int i = 0; i < 4; ++i) {
+        V4f d = (*x2d)*fA[i] + (*y2d)*fB[i] + fC[i];
+        if (all(abs(d) < kDistTolerance)) {
+            *aaMask = M4f(0);
+            return 4;
+        }
+    }
+
     *aaMask = signedEdgeDistances != 0.f;
 
     // Move the edge by the signed edge adjustment.
@@ -767,6 +770,7 @@ int TessellationHelper::EdgeEquations::computeDegenerateQuad(const V4f& signedEd
                           0.25f * ((*y2d)[0] + (*y2d)[1] + (*y2d)[2] + (*y2d)[3])};
         *x2d = center.fX;
         *y2d = center.fY;
+        *aaMask = any(*aaMask);
         return 1;
     } else if (all(d1Or2)) {
         // Degenerates to a line. Compare p[2] and p[3] to edge 0. If they are on the wrong side,
@@ -775,15 +779,27 @@ int TessellationHelper::EdgeEquations::computeDegenerateQuad(const V4f& signedEd
             // Edges 0 and 3 have crossed over, so make the line from average of (p0,p2) and (p1,p3)
             *x2d = 0.5f * (skvx::shuffle<0, 1, 0, 1>(px) + skvx::shuffle<2, 3, 2, 3>(px));
             *y2d = 0.5f * (skvx::shuffle<0, 1, 0, 1>(py) + skvx::shuffle<2, 3, 2, 3>(py));
+            // If edges 0 and 3 crossed then one must have AA but we moved both 2D points on the
+            // edge so we need moveTo() to be able to move both 3D points along the shared edge. So
+            // ensure both have AA.
+            *aaMask = *aaMask | M4f({1, 0, 0, 1});
         } else {
             // Edges 1 and 2 have crossed over, so make the line from average of (p0,p1) and (p2,p3)
             *x2d = 0.5f * (skvx::shuffle<0, 0, 2, 2>(px) + skvx::shuffle<1, 1, 3, 3>(px));
             *y2d = 0.5f * (skvx::shuffle<0, 0, 2, 2>(py) + skvx::shuffle<1, 1, 3, 3>(py));
+            *aaMask = *aaMask | M4f({0, 1, 1, 0});
         }
         return 2;
     } else {
         // This turns into a triangle. Replace corners as needed with the intersections between
-        // (e0,e3) and (e1,e2), which must now be calculated
+        // (e0,e3) and (e1,e2), which must now be calculated. Because of kDistTolarance we can
+        // have cases where the intersection lies far outside the quad. For example, consider top
+        // and bottom edges that are nearly parallel and their intersections with the right edge are
+        // nearly but not quite swapped (top edge intersection is barely above bottom edge
+        // intersection). In this case we replace the point with the average of itself and the point
+        // calculated using the edge equation it failed (in the example case this would be the
+        // average of the points calculated by the top and bottom edges intersected with the right
+        // edge.)
         using V2f = skvx::Vec<2, float>;
         V2f eDenom = skvx::shuffle<0, 1>(fA) * skvx::shuffle<3, 2>(fB) -
                      skvx::shuffle<0, 1>(fB) * skvx::shuffle<3, 2>(fA);
@@ -792,24 +808,34 @@ int TessellationHelper::EdgeEquations::computeDegenerateQuad(const V4f& signedEd
         V2f ey = (skvx::shuffle<0, 1>(oc) * skvx::shuffle<3, 2>(fA) -
                   skvx::shuffle<0, 1>(fA) * skvx::shuffle<3, 2>(oc)) / eDenom;
 
-        if (SkScalarAbs(eDenom[0]) > kTolerance) {
-            px = if_then_else(d1v0, V4f(ex[0]), px);
-            py = if_then_else(d1v0, V4f(ey[0]), py);
-            // If we replace a vertex with an intersection then it will not fall along the
-            // edges that intersect at the original vertex. When we apply AA later to the
-            // original points we move along the original 3d edges to move towards the 2d
-            // points we're computing here. If we have an AA edge and a non-AA edge we
-            // can only move along 1 edge, but now the point we're moving toward isn't
-            // on that edge. Thus, we provide an additional degree of freedom by turning
-            // AA on for both edges if either edge is AA.
-            *aaMask = *aaMask | (d1v0 & skvx::shuffle<2, 0, 3, 1>(*aaMask));
-        }
-        if (SkScalarAbs(eDenom[1]) > kTolerance) {
-            px = if_then_else(d2v0, V4f(ex[1]), px);
-            py = if_then_else(d2v0, V4f(ey[1]), py);
-            *aaMask = *aaMask | (d2v0 & skvx::shuffle<2, 0, 3, 1>(*aaMask));
+        V4f avgX = 0.5f * (skvx::shuffle<0, 1, 0, 2>(px) + skvx::shuffle<2, 3, 1, 3>(px));
+        V4f avgY = 0.5f * (skvx::shuffle<0, 1, 0, 2>(py) + skvx::shuffle<2, 3, 1, 3>(py));
+        for (int i = 0; i < 4; ++i) {
+            // Note that we would not have taken this branch if any point failed both of its edges
+            // tests. That is, it can't be the case that d1v0[i] and d2v0[i] are both true.
+            if (dists1[i] < -kDistTolerance && abs(eDenom[0]) > kTolerance) {
+                px[i] = ex[0];
+                py[i] = ey[0];
+            } else if (d1v0[i]) {
+                px[i] = avgX[i % 2];
+                py[i] = avgY[i % 2];
+            } else if (dists2[i] < -kDistTolerance && abs(eDenom[1]) > kTolerance) {
+                px[i] = ex[1];
+                py[i] = ey[1];
+            } else if (d2v0[i]) {
+                px[i] = avgX[i / 2 + 2];
+                py[i] = avgY[i / 2 + 2];
+            }
         }
 
+        // If we replace a vertex with an intersection then it will not fall along the
+        // edges that intersect at the original vertex. When we apply AA later to the
+        // original points we move along the original 3d edges to move towards the 2d
+        // points we're computing here. If we have an AA edge and a non-AA edge we
+        // can only move along 1 edge, but now the point we're moving toward isn't
+        // on that edge. Thus, we provide an additional degree of freedom by turning
+        // AA on for both edges if either edge is AA at each point.
+        *aaMask = *aaMask | (d1Or2 & next_cw(*aaMask)) | (next_ccw(d1Or2) & next_ccw(*aaMask));
         *x2d = px;
         *y2d = py;
         return 3;

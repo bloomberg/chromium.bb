@@ -11,7 +11,8 @@
 #include <tuple>
 #include <utility>
 
-#include "base/optional.h"
+#include "base/check.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/views_export.h"
 
@@ -66,7 +67,7 @@ class VIEWS_EXPORT SizeBound {
   friend constexpr bool operator!=(const SizeBound& lhs, const SizeBound& rhs);
 
   // nullopt represents "unbounded".
-  base::Optional<int> bound_;
+  absl::optional<int> bound_;
 };
 constexpr SizeBound::SizeBound() = default;
 constexpr SizeBound::SizeBound(int bound) : bound_(bound) {}

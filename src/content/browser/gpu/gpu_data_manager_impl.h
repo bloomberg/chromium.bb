@@ -17,7 +17,6 @@
 #include "base/process/kill.h"
 #include "base/synchronization/lock.h"
 #include "base/thread_annotations.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -74,14 +73,18 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
   void AppendGpuCommandLine(base::CommandLine* command_line,
                             GpuProcessKind kind) override;
 
-  bool GpuProcessStartAllowed() const;
+  // Start a timer that occasionally reports UMA metrics. This is explicitly
+  // started because unit tests may create and use a GpuDataManager but they do
+  // not want surprise tasks being posted which can interfere with their ability
+  // to measure what tasks are in the queue or to move mock time forward.
+  void StartUmaTimer();
 
   bool IsDx12VulkanVersionAvailable() const;
   bool IsGpuFeatureInfoAvailable() const;
 
   void UpdateGpuInfo(
       const gpu::GPUInfo& gpu_info,
-      const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu);
+      const absl::optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu);
 #if defined(OS_WIN)
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
   void UpdateDx12Info(uint32_t d3d12_feature_level);
@@ -94,21 +97,28 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
   void UpdateVulkanRequestStatus(bool request_continues);
   bool Dx12Requested() const;
   bool VulkanRequested() const;
-  // Called from BrowserMainLoop::BrowserThreadsStarted().
-  void OnBrowserThreadsStarted();
+  // Called from BrowserMainLoop::PostCreateThreads().
+  // TODO(content/browser/gpu/OWNERS): This should probably use a
+  // BrowserMainParts override instead.
+  void PostCreateThreads();
   void TerminateInfoCollectionGpuProcess();
 #endif
   // Update the GPU feature info. This updates the blocklist and enabled status
   // of GPU rasterization. In the future this will be used for more features.
   void UpdateGpuFeatureInfo(const gpu::GpuFeatureInfo& gpu_feature_info,
-                            const base::Optional<gpu::GpuFeatureInfo>&
+                            const absl::optional<gpu::GpuFeatureInfo>&
                                 gpu_feature_info_for_hardware_gpu);
   void UpdateGpuExtraInfo(const gfx::GpuExtraInfo& gpu_extra_info);
 
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
 
+  // The following functions for cached GPUInfo and GpuFeatureInfo from the
+  // hardware GPU even if currently Chrome has fallen back to SwiftShader.
+  // Such info are displayed in about:gpu for diagostic purpose.
   gpu::GPUInfo GetGPUInfoForHardwareGpu() const;
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
+  bool GpuAccessAllowedForHardwareGpu(std::string* reason);
+  bool IsGpuCompositingDisabledForHardwareGpu() const;
 
   gfx::GpuExtraInfo GetGpuExtraInfo() const;
 
@@ -150,10 +160,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
 
   // Disables domain blocking for 3D APIs. For use only in tests.
   void DisableDomainBlockingFor3DAPIsForTesting();
-
-  // Set the active gpu.
-  // Return true if it's a different GPU from the previous active one.
-  bool UpdateActiveGpu(uint32_t vendor_id, uint32_t device_id);
 
   // Return mode describing what the GPU process will be launched to run.
   gpu::GpuMode GetGpuMode() const;

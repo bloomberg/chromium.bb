@@ -4,6 +4,7 @@
 
 #include "extensions/browser/api/sockets_tcp_server/sockets_tcp_server_api.h"
 
+#include <memory>
 #include <unordered_set>
 #include <vector>
 
@@ -33,7 +34,7 @@ SocketInfo CreateSocketInfo(int socket_id, ResumableTCPServerSocket* socket) {
   // to the system.
   socket_info.socket_id = socket_id;
   if (!socket->name().empty()) {
-    socket_info.name.reset(new std::string(socket->name()));
+    socket_info.name = std::make_unique<std::string>(socket->name());
   }
   socket_info.persistent = socket->persistent();
   socket_info.paused = socket->paused();
@@ -41,9 +42,9 @@ SocketInfo CreateSocketInfo(int socket_id, ResumableTCPServerSocket* socket) {
   // Grab the local address as known by the OS.
   net::IPEndPoint localAddress;
   if (socket->GetLocalAddress(&localAddress)) {
-    socket_info.local_address.reset(
-        new std::string(localAddress.ToStringWithoutPort()));
-    socket_info.local_port.reset(new int(localAddress.port()));
+    socket_info.local_address =
+        std::make_unique<std::string>(localAddress.ToStringWithoutPort());
+    socket_info.local_port = std::make_unique<int>(localAddress.port());
   }
 
   return socket_info;
@@ -83,13 +84,17 @@ SocketsTcpServerCreateFunction::~SocketsTcpServerCreateFunction() {}
 
 bool SocketsTcpServerCreateFunction::Prepare() {
   params_ = sockets_tcp_server::Create::Params::Create(*args_);
+  browser_context_ = browser_context();
   EXTENSION_FUNCTION_VALIDATE(params_.get());
   return true;
 }
 
 void SocketsTcpServerCreateFunction::Work() {
+  // TODO(crbug.com/1191472): |browser_context_| is unsafe to access when
+  // DestroyProfileOnBrowserClose is enabled, since it could've been deleted by
+  // now. Fix this by creating the TCPSocket on the UI thread instead.
   auto* socket =
-      new ResumableTCPServerSocket(browser_context(), extension_->id());
+      new ResumableTCPServerSocket(browser_context_, extension_->id());
 
   sockets_tcp_server::SocketProperties* properties = params_->properties.get();
   if (properties) {
@@ -98,7 +103,8 @@ void SocketsTcpServerCreateFunction::Work() {
 
   sockets_tcp_server::CreateInfo create_info;
   create_info.socket_id = AddSocket(socket);
-  results_ = sockets_tcp_server::Create::Results::Create(create_info);
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp_server::Create::Results::Create(create_info));
 }
 
 SocketsTcpServerUpdateFunction::SocketsTcpServerUpdateFunction() {}
@@ -119,7 +125,8 @@ void SocketsTcpServerUpdateFunction::Work() {
   }
 
   SetSocketProperties(socket, &params_->properties);
-  results_ = sockets_tcp_server::Update::Results::Create();
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp_server::Update::Results::Create());
 }
 
 SocketsTcpServerSetPausedFunction::SocketsTcpServerSetPausedFunction()
@@ -156,7 +163,8 @@ void SocketsTcpServerSetPausedFunction::Work() {
     }
   }
 
-  results_ = sockets_tcp_server::SetPaused::Results::Create();
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp_server::SetPaused::Results::Create());
 }
 
 SocketsTcpServerListenFunction::SocketsTcpServerListenFunction()
@@ -211,7 +219,8 @@ void SocketsTcpServerListenFunction::OnCompleted(
     AsyncWorkCompleted();
     return;
   }
-  results_ = sockets_tcp_server::Listen::Results::Create(net_result);
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp_server::Listen::Results::Create(net_result));
   if (net_result == net::OK) {
     socket_event_dispatcher_->OnServerSocketListen(extension_->id(),
                                                    params_->socket_id);
@@ -242,7 +251,8 @@ void SocketsTcpServerDisconnectFunction::Work() {
   }
 
   socket->Disconnect(false /* socket_destroying */);
-  results_ = sockets_tcp_server::Disconnect::Results::Create();
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp_server::Disconnect::Results::Create());
 }
 
 SocketsTcpServerCloseFunction::SocketsTcpServerCloseFunction() {}
@@ -263,7 +273,8 @@ void SocketsTcpServerCloseFunction::Work() {
   }
 
   RemoveSocket(params_->socket_id);
-  results_ = sockets_tcp_server::Close::Results::Create();
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp_server::Close::Results::Create());
 }
 
 SocketsTcpServerGetInfoFunction::SocketsTcpServerGetInfoFunction() {}
@@ -285,7 +296,8 @@ void SocketsTcpServerGetInfoFunction::Work() {
 
   sockets_tcp_server::SocketInfo socket_info =
       CreateSocketInfo(params_->socket_id, socket);
-  results_ = sockets_tcp_server::GetInfo::Results::Create(socket_info);
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp_server::GetInfo::Results::Create(socket_info));
 }
 
 SocketsTcpServerGetSocketsFunction::SocketsTcpServerGetSocketsFunction() {}
@@ -305,7 +317,8 @@ void SocketsTcpServerGetSocketsFunction::Work() {
       }
     }
   }
-  results_ = sockets_tcp_server::GetSockets::Results::Create(socket_infos);
+  results_ = std::make_unique<base::ListValue>(
+      sockets_tcp_server::GetSockets::Results::Create(socket_infos));
 }
 
 }  // namespace api

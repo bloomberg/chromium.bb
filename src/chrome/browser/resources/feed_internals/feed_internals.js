@@ -26,6 +26,9 @@ function updatePageWithProperties() {
     $('load-stream-status').textContent = properties.loadStreamStatus;
     $('feed-fetch-url').textContent = properties.feedFetchUrl.url;
     $('feed-actions-url').textContent = properties.feedActionsUrl.url;
+    $('enable-webfeed-follow-intro-debug').checked =
+        properties.isWebFeedFollowIntroDebugEnabled;
+    $('enable-webfeed-follow-intro-debug').disabled = false;
   });
 }
 
@@ -151,8 +154,8 @@ function setupEventListeners() {
     pageHandler.overrideFeedHost({url: $('feed-host-override').value});
   });
 
-  $('actions-endpoint-override-apply').addEventListener('click', function() {
-    pageHandler.overrideFeedHost({url: $('actions-endpoint-override').value});
+  $('discover-api-override-apply').addEventListener('click', function() {
+    pageHandler.overrideFeedHost({url: $('discover-api-override').value});
   });
 
   $('feed-stream-data-override').addEventListener('click', function() {
@@ -165,6 +168,12 @@ function setupEventListeners() {
         pageHandler.overrideFeedStreamData([...typedArray]);
       };
     }
+  });
+
+  $('enable-webfeed-follow-intro-debug').addEventListener('click', function() {
+    pageHandler.setWebFeedFollowIntroDebugEnabled(
+        $('enable-webfeed-follow-intro-debug').checked);
+    $('enable-webfeed-follow-intro-debug').disabled = true;
   });
 }
 

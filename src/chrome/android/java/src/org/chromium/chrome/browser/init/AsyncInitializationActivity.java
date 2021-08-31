@@ -71,7 +71,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
             new NativeInitializationController(this);
 
     private final ActivityLifecycleDispatcherImpl mLifecycleDispatcher =
-            new ActivityLifecycleDispatcherImpl();
+            new ActivityLifecycleDispatcherImpl(this);
     private final MultiWindowModeStateDispatcherImpl mMultiWindowModeStateDispatcher =
             new MultiWindowModeStateDispatcherImpl(this);
 
@@ -99,6 +99,9 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     private Runnable mOnInflationCompleteCallback;
     private boolean mInitialLayoutInflationComplete;
 
+    private static boolean sInterceptMoveTaskToBackForTesting;
+    private static boolean sBackInterceptedForTesting;
+
     public AsyncInitializationActivity() {
         mHandler = new Handler();
     }
@@ -107,6 +110,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     @Override
     protected void onDestroy() {
         mDestroyed = true;
+        mLifecycleDispatcher.onDestroyStarted();
 
         if (mWindowAndroid != null) {
             mWindowAndroid.destroy();
@@ -244,7 +248,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
             String url = IntentHandler.getUrlFromIntent(intent);
             if (url == null) return;
             // Blocking pre-connect for all off-the-record profiles.
-            if (!IncognitoUtils.hasAnyIncognitoExtra(intent)) {
+            if (!IncognitoUtils.hasAnyIncognitoExtra(intent.getExtras())) {
                 WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
                         Profile.getLastUsedRegularProfile(), url);
             }
@@ -310,7 +314,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
 
     private final void onCreateInternal(Bundle savedInstanceState) {
         initializeStartupMetrics();
-        setIntent(validateIntent(getIntent()));
+        setIntent(IntentHandler.rewriteFromHistoryIntent(getIntent()));
 
         @LaunchIntentDispatcher.Action
         int dispatchAction = maybeDispatchLaunchIntent(getIntent(), savedInstanceState);
@@ -328,7 +332,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         if (requiresFirstRunToBeCompleted(intent)
                 && FirstRunFlowSequencer.launch(this, intent, false /* requiresBroadcast */,
                         shouldPreferLightweightFre(intent))) {
-            abortLaunch(LaunchIntentDispatcher.Action.FINISH_ACTIVITY_REMOVE_TASK);
+            abortLaunch(LaunchIntentDispatcher.Action.FINISH_ACTIVITY);
             return;
         }
 
@@ -346,7 +350,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
         mModalDialogManagerSupplier.set(createModalDialogManager());
 
         mStartupDelayed = shouldDelayBrowserStartup();
-        ChromeBrowserInitializer.getInstance().handlePreNativeStartup(this);
+        ChromeBrowserInitializer.getInstance().handlePreNativeStartupAndLoadLibraries(this);
     }
 
     /**
@@ -446,14 +450,6 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     }
 
     /**
-     * Validates the intent that started this activity.
-     * @return The validated intent.
-     */
-    protected Intent validateIntent(final Intent intent) {
-        return intent;
-    }
-
-    /**
      * @return The uptime for the activity creation in ms.
      */
     protected long getOnCreateTimestampMs() {
@@ -479,6 +475,15 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     public void onStart() {
         super.onStart();
         mNativeInitializationController.onStart();
+
+        // Since this activity is being started, the FRE should have been handled somehow already.
+        Intent intent = getIntent();
+        if (FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
+                    shouldPreferLightweightFre(intent), intent)
+                && requiresFirstRunToBeCompleted(intent)) {
+            throw new IllegalStateException("The app has not completed the FRE yet "
+                    + getClass().getName() + " is trying to start.");
+        }
     }
 
     @CallSuper
@@ -887,5 +892,27 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
                 return true;
             }
         };
+    }
+
+    @Override
+    public boolean moveTaskToBack(boolean nonRoot) {
+        // On Android L moving the task to the background flakily stops the
+        // Activity from being finished, breaking tests. Trying to bring the
+        // task back to the foreground after also happens to be flaky, so just
+        // allow tests to prevent actually moving to the background.
+        if (sInterceptMoveTaskToBackForTesting) {
+            sBackInterceptedForTesting = true;
+            return false;
+        }
+        return super.moveTaskToBack(nonRoot);
+    }
+
+    public static void interceptMoveTaskToBackForTesting() {
+        sInterceptMoveTaskToBackForTesting = true;
+        sBackInterceptedForTesting = false;
+    }
+
+    public static boolean wasMoveTaskToBackInterceptedForTesting() {
+        return sBackInterceptedForTesting;
     }
 }

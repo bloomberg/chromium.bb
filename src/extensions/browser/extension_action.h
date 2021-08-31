@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/constants.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -165,10 +165,6 @@ class ExtensionAction {
   // - GetDNRActionCount(tab_id) if there is at least one action for this tab
   // - The default badge text, if set, otherwise: an empty string.
   std::string GetDisplayBadgeText(int tab_id) const;
-
-  // Returns whether this extension action is using the DNR action count as its
-  // badge text.
-  bool UseDNRActionCountAsBadgeText(int tab_id) const;
 
   // Set this action's badge visibility on a specific tab.  Returns true if
   // the visibility has changed.

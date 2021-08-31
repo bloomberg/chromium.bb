@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './sandboxed_load_time_data.js';
+
+import {assertCast, MessagePipe} from './message_pipe.m.js';
+import {FileContext, LoadFilesMessage, Message, OverwriteFileMessage, OverwriteViaFilePickerResponse, RenameFileResponse, RenameResult, RequestSaveFileMessage, RequestSaveFileResponse, SaveAsMessage, SaveAsResponse} from './message_types.m.js';
+import {loadPiex} from './piex_module_loader.js';
+
 /** A pipe through which we can send messages to the parent frame. */
 const parentMessagePipe = new MessagePipe('chrome://media-app', window.parent);
 
@@ -63,10 +69,10 @@ class ReceivedFile {
    * @return {!Promise<number>}
    */
   async deleteOriginalFileImpl() {
-    const deleteResponse =
-        /** @type {!DeleteFileResponse} */ (await parentMessagePipe.sendMessage(
-            Message.DELETE_FILE, {token: this.token}));
-    return deleteResponse.deleteResult;
+    await parentMessagePipe.sendMessage(
+        Message.DELETE_FILE, {token: this.token});
+    // TODO(b/156571159): Remove when app_main.js no longer needs this.
+    return 0; /* "SUCCESS" */
   }
 
   /**
@@ -107,38 +113,33 @@ class ReceivedFile {
 }
 
 /**
- * Source of truth for what files are loaded in the app and writable. This can
+ * Source of truth for what files are loaded in the app. This can
  * be appended to via `ReceivedFileList.addFiles()`.
  * @type {?ReceivedFileList}
  */
 let lastLoadedReceivedFileList = null;
 
 /**
- * A file list consisting of all files received from the parent. Exposes the
- * currently writable file and all other readable files in the current
- * directory.
+ * A file list consisting of all files received from the parent. Exposes all
+ * readable files in the directory, some of which may be writable.
  * @implements mediaApp.AbstractFileList
  */
-class ReceivedFileList {
+export class ReceivedFileList {
   /** @param {!LoadFilesMessage} filesMessage */
   constructor(filesMessage) {
-    // We make sure the 0th item in the list is the writable one so we
-    // don't break older versions of the media app which uses item(0) instead
-    // of getCurrentlyWritable()
-    // TODO(b/151880563): remove this.
-    let writableFileIndex = filesMessage.writableFileIndex;
-    const files = filesMessage.files;
-    while (writableFileIndex > 0) {
-      files.push(files.shift());
-      writableFileIndex--;
+    const {files, currentFileIndex} = filesMessage;
+    if (files.length) {
+      // If we were not provided with a currentFileIndex, default to making the
+      // first file the current file.
+      this.currentFileIndex = currentFileIndex >= 0 ? currentFileIndex : 0;
+    } else {
+      // If we are empty we have no current file.
+      this.currentFileIndex = -1;
     }
 
     this.length = files.length;
-    this.currentFileIndex = files.length ? 0 : -1;
     /** @type {!Array<!ReceivedFile>} */
     this.files = files.map(f => new ReceivedFile(f));
-    /** @type {number} */
-    this.writableFileIndex = 0;
     /** @type {!Array<function(!mediaApp.AbstractFileList): void>} */
     this.observers = [];
   }
@@ -146,15 +147,6 @@ class ReceivedFileList {
   /** @override */
   item(index) {
     return this.files[index] || null;
-  }
-
-  /**
-   * Returns the file which is currently writable or null if there isn't one.
-   * @override
-   * @return {?mediaApp.AbstractFile}
-   */
-  getCurrentlyWritable() {
-    return this.item(this.writableFileIndex);
   }
 
   /** @override */
@@ -251,9 +243,9 @@ const DELEGATE = {
    */
   async extractPreview(file) {
     try {
-      const [buffer] = /** @type {!Array<!ArrayBuffer>} */ (
-          await Promise.all([file.arrayBuffer(), loadPiex()]));
-      return await extractFromRawImageBuffer(buffer);
+      const bufferPromise = file.arrayBuffer();
+      const extractFromRawImageBuffer = await loadPiex();
+      return await extractFromRawImageBuffer(await bufferPromise);
     } catch (/** @type {!Error} */ e) {
       console.warn(e);
       if (e.name === 'Error') {
@@ -313,15 +305,6 @@ function mutationCallback(mutationsList, observer) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  // TODO(crbug/1138798): Reorder .js deps so this can be done at load time.
-  // Note: go/bbsrc/flags.ts processes this, `window.features` variable.
-  /** @type{{features: Object<string, boolean>}} */ (window).features = {
-    imageAnnotation: loadTimeData.getBoolean('imageAnnotation'),
-    pdfInInk: loadTimeData.getBoolean('pdfInInk'),
-    flagsMenu: loadTimeData.getBoolean('flagsMenu'),
-    isDevChannel: loadTimeData.getBoolean('isDevChannel'),
-  };
-
   const app = getApp();
   if (app) {
     initializeApp(app);
@@ -337,7 +320,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // empty file list available.
 window.customLaunchData = {
   delegate: DELEGATE,
-  files: new ReceivedFileList({files: [], writableFileIndex: 0})
+  files: new ReceivedFileList({files: [], currentFileIndex: -1})
 };
 
 // Attempting to show file pickers in the sandboxed <iframe> is guaranteed to
@@ -348,3 +331,23 @@ window['chooseFileSystemEntries'] = null;
 window['showOpenFilePicker'] = null;
 window['showSaveFilePicker'] = null;
 window['showDirectoryPicker'] = null;
+
+export const TEST_ONLY = {
+  RenameResult,
+  DELEGATE,
+  assertCast,
+  parentMessagePipe,
+  loadFiles,
+  setLoadFiles: spy => {
+    loadFiles = spy;
+  },
+};
+
+// Small, auxiliary file that adds hooks to support test cases relying on the
+// "real" app context (e.g. for stack traces).
+import './app_context_test_support.js';
+
+// Temporarily expose lastLoadedReceivedFileList on `window` for
+// MediaAppIntegrationWithFilesAppAllProfilesTest.RenameFile.
+// TODO(b/185957537): Convert the test case to a JS module.
+window['lastLoadedReceivedFileList'] = () => lastLoadedReceivedFileList;

@@ -14,14 +14,14 @@
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
-#include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_reference_counted.h"
+#include "quic/core/crypto/crypto_handshake.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/crypto/proof_source.h"
+#include "quic/core/crypto/transport_parameters.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_server_id.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_reference_counted.h"
 
 namespace quic {
 
@@ -175,18 +175,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
     void set_cert_sct(absl::string_view cert_sct);
 
-    // Adds the servernonce to the queue of server nonces.
-    void add_server_nonce(const std::string& server_nonce);
-
-    // If true, the crypto config contains at least one server nonce, and the
-    // client should use one of these nonces.
-    bool has_server_nonce() const;
-
-    // This function should only be called when has_server_nonce is true.
-    // Returns the next server_nonce specified by the server and removes it
-    // from the queue of nonces.
-    std::string GetNextServerNonce();
-
     // SetProofVerifyDetails takes ownership of |details|.
     void SetProofVerifyDetails(ProofVerifyDetails* details);
 
@@ -227,8 +215,6 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
     // scfg contains the cached, parsed value of |server_config|.
     mutable std::unique_ptr<CryptoHandshakeMessage> scfg_;
-
-    QuicQueue<std::string> server_nonces_;
   };
 
   // Used to filter server ids for partial config deletion.

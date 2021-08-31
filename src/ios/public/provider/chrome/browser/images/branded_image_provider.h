@@ -54,6 +54,18 @@ class BrandedImageProvider {
   // the omnibox popup and in the omnibox as the default search engine icon.
   virtual UIImage* GetOmniboxAnswerIcon();
 
+  // Returns the image used for the "Stay Safe" default browser promo.
+  virtual UIImage* GetStaySafePromoImage();
+
+  // Returns the image used for the "Made for iOS" default browser promo.
+  virtual UIImage* GetMadeForIOSPromoImage();
+
+  // Returns the image used for the "Made for iPadOS" default browser promo.
+  virtual UIImage* GetMadeForIPadOSPromoImage();
+
+  // Returns the image used for the non-modal default browser promo.
+  virtual UIImage* GetNonModalPromoImage();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrandedImageProvider);
 };

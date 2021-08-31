@@ -5,13 +5,13 @@
 #include <sys/types.h>
 #include <utility>
 
+#include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/values_test_util.h"
-#include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chrome/browser/ash/login/login_manager_test.h"
+#include "chrome/browser/ash/login/test/login_manager_mixin.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
@@ -133,8 +133,10 @@ class NetworkPolicyApplicationTest : public LoginManagerTest {
  protected:
   // InProcessBrowserTest:
   void SetUp() override {
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    ON_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillByDefault(testing::Return(true));
+    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
+        .WillByDefault(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
 
@@ -218,7 +220,7 @@ class NetworkPolicyApplicationTest : public LoginManagerTest {
   AccountId test_account_id_;
 
  private:
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
   policy::PolicyMap current_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkPolicyApplicationTest);
@@ -287,7 +289,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
               testing::ElementsAre(std::string() /* shill shared profile */));
   network_policy_application_observer.ResetEvents();
 
-  base::Optional<std::string> wifi_service =
+  absl::optional<std::string> wifi_service =
       shill_service_client_test_->FindServiceMatchingGUID(
           "{device-policy-for-Wifi1}");
   ASSERT_TRUE(wifi_service);
@@ -384,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(NetworkPolicyApplicationTest,
                                    base::Value(shill::kStateIdle)));
   }
 
-  base::Optional<std::string> wifi2_service =
+  absl::optional<std::string> wifi2_service =
       shill_service_client_test_->FindServiceMatchingGUID(
           "{user-policy-for-Wifi2}");
   ASSERT_TRUE(wifi2_service);

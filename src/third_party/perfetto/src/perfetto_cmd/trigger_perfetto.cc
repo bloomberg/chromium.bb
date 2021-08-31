@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-#include <getopt.h>
-
 #include <string>
 #include <vector>
 
 #include "perfetto/base/logging.h"
+#include "perfetto/ext/base/getopt.h"
 #include "perfetto/ext/base/unix_task_runner.h"
 #include "perfetto/ext/traced/traced.h"
+#include "src/android_stats/statsd_logging_helper.h"
 #include "src/perfetto_cmd/trigger_producer.h"
 
 namespace perfetto {
@@ -38,23 +38,44 @@ Usage: %s TRIGGER...
 
 }  // namespace
 
-int __attribute__((visibility("default")))
-TriggerPerfettoMain(int argc, char** argv) {
-  static const struct option long_options[] = {
-      {"help", no_argument, nullptr, 'h'}, {nullptr, 0, nullptr, 0}};
+int PERFETTO_EXPORT_ENTRYPOINT TriggerPerfettoMain(int argc, char** argv) {
+  static const option long_options[] = {{"help", no_argument, nullptr, 'h'},
+                                        {nullptr, 0, nullptr, 0}};
 
-  int option_index = 0;
+  // Set opterror to zero to disable |getopt_long| from printing an error and
+  // exiting when it encounters an unknown option. Instead, |getopt_long|
+  // will return '?' which we silently ignore.
+  //
+  // We prefer ths behaviour rather than erroring on unknown options because
+  // trigger_perfetto can be called by apps so it's command line API needs to
+  // be backward and forward compatible. If we introduce an option here which
+  // apps will use in the future, we don't want to cause errors on older
+  // platforms where the command line flag did not exist.
+  //
+  // This behaviour was introduced in Android S.
+  opterr = 0;
 
   std::vector<std::string> triggers_to_activate;
+  bool seen_unknown_arg = false;
 
   for (;;) {
-    int option = getopt_long(argc, argv, "h", long_options, &option_index);
+    int option = getopt_long(argc, argv, "h", long_options, nullptr);
 
     if (option == 'h')
       return PrintUsage(argv[0]);
 
+    if (option == '?') {
+      seen_unknown_arg = true;
+    }
+
     if (option == -1)
       break;  // EOF.
+  }
+
+  // See above for rationale on why we just ignore unknown args instead of
+  // exiting.
+  if (seen_unknown_arg) {
+    PERFETTO_ELOG("Ignoring unknown arguments. See --help for usage.");
   }
 
   for (int i = optind; i < argc; i++)
@@ -64,6 +85,9 @@ TriggerPerfettoMain(int argc, char** argv) {
     PERFETTO_ELOG("At least one trigger must the specified.");
     return PrintUsage(argv[0]);
   }
+
+  android_stats::MaybeLogTriggerEvents(
+      PerfettoTriggerAtom::kTriggerPerfettoTrigger, triggers_to_activate);
 
   bool finished_with_success = false;
   base::UnixTaskRunner task_runner;
@@ -76,7 +100,12 @@ TriggerPerfettoMain(int argc, char** argv) {
       &triggers_to_activate);
   task_runner.Run();
 
-  return finished_with_success ? 0 : 1;
+  if (!finished_with_success) {
+    android_stats::MaybeLogTriggerEvents(
+        PerfettoTriggerAtom::kTriggerPerfettoTriggerFail, triggers_to_activate);
+    return 1;
+  }
+  return 0;
 }
 
 }  // namespace perfetto

@@ -37,25 +37,30 @@ void SmsProvider::RemoveObserver(const Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void SmsProvider::NotifyReceive(const std::string& sms) {
+void SmsProvider::NotifyReceive(const std::string& sms,
+                                UserConsent consent_requirement) {
   SmsParser::Result result = SmsParser::Parse(sms);
   if (result.IsValid())
-    NotifyReceive(result.origin, result.one_time_code);
+    NotifyReceive(result.GetOriginList(), result.one_time_code,
+                  consent_requirement);
   RecordParsingStatus(result.parsing_status);
 }
 
-void SmsProvider::NotifyReceive(const url::Origin& origin,
-                                const std::string& one_time_code) {
+void SmsProvider::NotifyReceive(const OriginList& origin_list,
+                                const std::string& one_time_code,
+                                UserConsent consent_requirement) {
   for (Observer& obs : observers_) {
-    bool handled = obs.OnReceive(origin, one_time_code);
+    bool handled =
+        obs.OnReceive(origin_list, one_time_code, consent_requirement);
     if (handled) {
       break;
     }
   }
 }
 
-void SmsProvider::NotifyReceiveForTesting(const std::string& sms) {
-  NotifyReceive(sms);
+void SmsProvider::NotifyReceiveForTesting(const std::string& sms,
+                                          UserConsent requirement) {
+  NotifyReceive(sms, requirement);
 }
 
 void SmsProvider::NotifyFailure(FailureType failure_type) {
@@ -87,7 +92,7 @@ void SmsProvider::RecordParsingStatus(SmsParsingStatus status) {
 }
 
 bool SmsProvider::HasObservers() {
-  return observers_.might_have_observers();
+  return !observers_.empty();
 }
 
 }  // namespace content

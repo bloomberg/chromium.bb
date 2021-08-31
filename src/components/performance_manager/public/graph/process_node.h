@@ -21,6 +21,7 @@ class Process;
 namespace performance_manager {
 
 class FrameNode;
+class WorkerNode;
 class ProcessNodeObserver;
 class RenderProcessHostProxy;
 
@@ -68,7 +69,7 @@ class ProcessNode : public Node {
 
   // Returns the exit status of this process. This will be empty if the process
   // has not yet exited.
-  virtual base::Optional<int32_t> GetExitStatus() const = 0;
+  virtual absl::optional<int32_t> GetExitStatus() const = 0;
 
   // Visits the frame nodes that are hosted in this process. The iteration is
   // halted if the visitor returns false. Returns true if every call to the
@@ -79,6 +80,10 @@ class ProcessNode : public Node {
   // calling this causes the set of nodes to be generated.
   virtual base::flat_set<const FrameNode*> GetFrameNodes() const = 0;
 
+  // Returns the set of worker nodes that are hosted in this process. Note that
+  // calling this causes the set of nodes to be generated.
+  virtual base::flat_set<const WorkerNode*> GetWorkerNodes() const = 0;
+
   // Returns true if the main thread task load is low (below some threshold
   // of usage). See ProcessNodeObserver::OnMainThreadTaskLoadIsLow.
   virtual bool GetMainThreadTaskLoadIsLow() const = 0;
@@ -86,6 +91,10 @@ class ProcessNode : public Node {
   // Returns the most recently measured private memory footprint of the process.
   // This is roughly private, anonymous, non-discardable, resident or swapped
   // memory in kilobytes. For more details, see https://goo.gl/3kPb9S.
+  //
+  // Note: This is only valid if at least one component has expressed interest
+  // for process memory metrics by calling
+  // ProcessMetricsDecorator::RegisterInterestForProcessMetrics.
   virtual uint64_t GetPrivateFootprintKb() const = 0;
 
   // Returns the most recently measured resident set of the process, in
@@ -116,7 +125,9 @@ class ProcessNodeObserver {
 
   // Node lifetime notifications.
 
-  // Called when a |process_node| is added to the graph.
+  // Called when a |process_node| is added to the graph. Observers must not make
+  // any property changes or cause re-entrant notifications during the scope of
+  // this call.
   virtual void OnProcessNodeAdded(const ProcessNode* process_node) = 0;
 
   // The process associated with |process_node| has been started or has exited.
@@ -124,7 +135,9 @@ class ProcessNodeObserver {
   // exit status properties have changed.
   virtual void OnProcessLifetimeChange(const ProcessNode* process_node) = 0;
 
-  // Called before a |process_node| is removed from the graph.
+  // Called before a |process_node| is removed from the graph. Observers must
+  // not make any property changes or cause re-entrant notifications during the
+  // scope of this call.
   virtual void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) = 0;
 
   // Notifications of property changes.

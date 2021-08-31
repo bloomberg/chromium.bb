@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/supports_user_data.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/api/messaging/message.h"
@@ -280,8 +280,8 @@ bool OneTimeMessageHandler::DeliverMessageToReceiver(
   // listener return `true` if they intend to respond asynchronously; otherwise
   // we close the port.
   auto callback = std::make_unique<OneTimeMessageCallback>(
-      base::Bind(&OneTimeMessageHandler::OnOneTimeMessageResponse,
-                 weak_factory_.GetWeakPtr(), target_port_id));
+      base::BindOnce(&OneTimeMessageHandler::OnOneTimeMessageResponse,
+                     weak_factory_.GetWeakPtr(), target_port_id));
   v8::Local<v8::External> external = v8::External::New(isolate, callback.get());
   v8::Local<v8::Function> response_function;
 
@@ -291,17 +291,12 @@ bool OneTimeMessageHandler::DeliverMessageToReceiver(
     return handled;
   }
 
-  // We shouldn't need to monitor context invalidation here. We store the ports
-  // for the context in PerContextData (cleaned up on context destruction), and
-  // the browser watches for frame navigation or destruction, and cleans up
-  // orphaned channels.
-  base::Closure on_context_invalidated;
-
   new GCCallback(
       script_context, response_function,
-      base::Bind(&OneTimeMessageHandler::OnResponseCallbackCollected,
-                 weak_factory_.GetWeakPtr(), script_context, target_port_id),
-      base::Closure());
+      base::BindOnce(&OneTimeMessageHandler::OnResponseCallbackCollected,
+                     weak_factory_.GetWeakPtr(), script_context,
+                     target_port_id),
+      base::OnceClosure());
 
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Value> v8_message =

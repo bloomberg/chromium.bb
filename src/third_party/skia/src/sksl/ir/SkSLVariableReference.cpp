@@ -47,22 +47,4 @@ void VariableReference::setVariable(const Variable* variable) {
     fVariable = variable;
 }
 
-std::unique_ptr<Expression> VariableReference::constantPropagate(const IRGenerator& irGenerator,
-                                                                 const DefinitionMap& definitions) {
-    if (this->refKind() != RefKind::kRead) {
-        return nullptr;
-    }
-    const Expression* initialValue = this->variable()->initialValue();
-    if ((this->variable()->modifiers().fFlags & Modifiers::kConst_Flag) && initialValue &&
-        initialValue->isCompileTimeConstant() &&
-        this->type().typeKind() != Type::TypeKind::kArray) {
-        return initialValue->clone();
-    }
-    std::unique_ptr<Expression>** exprPPtr = definitions.find(this->variable());
-    if (exprPPtr && *exprPPtr && (**exprPPtr)->isCompileTimeConstant()) {
-        return (**exprPPtr)->clone();
-    }
-    return nullptr;
-}
-
 }  // namespace SkSL

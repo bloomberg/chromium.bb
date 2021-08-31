@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import contextlib
 import logging
 
@@ -111,7 +112,7 @@ class AndroidGoFooStory(story_module.Story):
         SharedAndroidStoryState, name='go:story:foo')
 
   def Run(self, state):
-    for _ in xrange(3):
+    for _ in range(3):
       state.LaunchBrowser(self.URL)
       with state.FindBrowser() as browser:
         action_runner = browser.foreground_tab.action_runner

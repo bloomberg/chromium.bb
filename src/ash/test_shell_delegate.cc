@@ -78,4 +78,20 @@ TestShellDelegate::CreateNearbyShareDelegate(
   return std::make_unique<TestNearbyShareDelegate>();
 }
 
+bool TestShellDelegate::IsSessionRestoreInProgress() const {
+  return session_restore_in_progress_;
+}
+
+void TestShellDelegate::SetSessionRestoreInProgress(bool in_progress) {
+  session_restore_in_progress_ = in_progress;
+}
+
+bool TestShellDelegate::IsLoggingRedirectDisabled() const {
+  return false;
+}
+
+base::FilePath TestShellDelegate::GetPrimaryUserDownloadsFolder() const {
+  return base::FilePath();
+}
+
 }  // namespace ash

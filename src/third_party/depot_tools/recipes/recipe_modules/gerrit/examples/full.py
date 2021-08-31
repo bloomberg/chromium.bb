@@ -54,7 +54,10 @@ def RunSteps(api):
 
   with api.step.defer_results():
     api.gerrit.get_change_description(
-        host, change=122, patchset=3)
+        host,
+        change=122,
+        patchset=3,
+        step_test_data=api.gerrit.test_api.get_empty_changes_response_data)
 
 
 def GenTests(api):

@@ -4,7 +4,9 @@
 
 #include "discovery/mdns/mdns_sender.h"
 
+#include <algorithm>
 #include <iostream>
+#include <vector>
 
 #include "discovery/mdns/mdns_writer.h"
 #include "platform/api/udp_socket.h"
@@ -19,9 +21,8 @@ MdnsSender::MdnsSender(UdpSocket* socket) : socket_(socket) {
 MdnsSender::~MdnsSender() = default;
 
 Error MdnsSender::SendMulticast(const MdnsMessage& message) {
-  const IPEndpoint& endpoint = socket_->IsIPv6()
-                                   ? kDefaultMulticastGroupIPv6Endpoint
-                                   : kDefaultMulticastGroupIPv4Endpoint;
+  const IPEndpoint& endpoint = socket_->IsIPv6() ? kMulticastSendIPv6Endpoint
+                                                 : kMulticastSendIPv4Endpoint;
   return SendMessage(message, endpoint);
 }
 

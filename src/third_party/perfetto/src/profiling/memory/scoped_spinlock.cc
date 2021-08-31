@@ -23,14 +23,24 @@
 #include "perfetto/ext/base/utils.h"
 
 namespace {
+constexpr bool IsPowerOfTwo(size_t v) {
+  return (v != 0 && ((v & (v - 1)) == 0));
+}
 // Wait for ~1s before timing out (+- spurious wakeups from the sleeps).
 constexpr unsigned kSleepAttempts = 1000;
-constexpr unsigned kLockAttemptsPerSleep = 1000;
+constexpr unsigned kLockAttemptsPerSleep = 1024;
 constexpr unsigned kSleepDurationUs = 1000;
+
+static_assert(IsPowerOfTwo(kLockAttemptsPerSleep),
+              "lock attempts of power of 2 produce faster code.");
 }  // namespace
 
 namespace perfetto {
 namespace profiling {
+
+void PoisonSpinlock(Spinlock* lock) {
+  lock->poisoned.store(true, std::memory_order_relaxed);
+}
 
 void ScopedSpinlock::LockSlow(Mode mode) {
   size_t sleeps = 0;
@@ -39,12 +49,13 @@ void ScopedSpinlock::LockSlow(Mode mode) {
   for (size_t attempt = 1; mode == Mode::Blocking ||
                            attempt < kLockAttemptsPerSleep * kSleepAttempts;
        attempt++) {
-    if (!lock_->load(std::memory_order_relaxed) &&
-        PERFETTO_LIKELY(!lock_->exchange(true, std::memory_order_acquire))) {
+    if (!lock_->locked.load(std::memory_order_relaxed) &&
+        PERFETTO_LIKELY(
+            !lock_->locked.exchange(true, std::memory_order_acquire))) {
       locked_ = true;
       break;
     }
-    if (attempt && attempt % kLockAttemptsPerSleep == 0) {
+    if (attempt % kLockAttemptsPerSleep == 0) {
       usleep(kSleepDurationUs);
       sleeps++;
     }

@@ -272,12 +272,12 @@ TEST_P(WienerTest, DISABLED_Speed) {
 
 INSTANTIATE_TEST_SUITE_P(C, WienerTest, ::testing::Values(compute_stats_opt_c));
 
-#if HAVE_SSE4_1
+#if HAVE_SSE4_1 && !CONFIG_EXCLUDE_SIMD_MISMATCH
 INSTANTIATE_TEST_SUITE_P(SSE4_1, WienerTest,
                          ::testing::Values(av1_compute_stats_sse4_1));
 #endif  // HAVE_SSE4_1
 
-#if HAVE_AVX2
+#if HAVE_AVX2 && !CONFIG_EXCLUDE_SIMD_MISMATCH
 
 INSTANTIATE_TEST_SUITE_P(AVX2, WienerTest,
                          ::testing::Values(av1_compute_stats_avx2));

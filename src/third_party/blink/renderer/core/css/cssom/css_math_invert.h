@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_INVERT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSSOM_CSS_MATH_INVERT_H_
 
+#include "third_party/blink/renderer/core/css/css_math_expression_node.h"
 #include "third_party/blink/renderer/core/css/cssom/css_math_value.h"
 
 namespace blink {
@@ -16,9 +17,15 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
 
  public:
   // The constructor defined in the IDL.
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  static CSSMathInvert* Create(V8CSSNumberish* arg) {
+    return Create(CSSNumericValue::FromNumberish(arg));
+  }
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   static CSSMathInvert* Create(const CSSNumberish& arg) {
     return Create(CSSNumericValue::FromNumberish(arg));
   }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   // Blink-internal constructor
   static CSSMathInvert* Create(CSSNumericValue* value) {
     return MakeGarbageCollected<CSSMathInvert>(
@@ -32,7 +39,11 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
 
   String getOperator() const final { return "invert"; }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8CSSNumberish* value();
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void value(CSSNumberish& value) { value.SetCSSNumericValue(value_); }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   // Blink-internal methods
   const CSSNumericValue& Value() const { return *value_; }
@@ -54,15 +65,12 @@ class CORE_EXPORT CSSMathInvert : public CSSMathValue {
     return value_->Equals(*other_invert.value_);
   }
 
-  CSSMathExpressionNode* ToCalcExpressionNode() const final {
-    // TODO(crbug.com/782103): Implement.
-    return nullptr;
-  }
+  CSSMathExpressionNode* ToCalcExpressionNode() const final;
 
  private:
   // From CSSNumericValue
   CSSNumericValue* Invert() final { return value_.Get(); }
-  base::Optional<CSSNumericSumValue> SumValue() const final;
+  absl::optional<CSSNumericSumValue> SumValue() const final;
 
   void BuildCSSText(Nested, ParenLess, StringBuilder&) const final;
 

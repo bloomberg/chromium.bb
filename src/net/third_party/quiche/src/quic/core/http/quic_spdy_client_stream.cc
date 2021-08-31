@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_stream.h"
+#include "quic/core/http/quic_spdy_client_stream.h"
 
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_client_promised_info.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_alarm.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "quic/core/http/quic_client_promised_info.h"
+#include "quic/core/http/quic_spdy_client_session.h"
+#include "quic/core/http/spdy_utils.h"
+#include "quic/core/http/web_transport_http3.h"
+#include "quic/core/quic_alarm.h"
+#include "quic/platform/api/quic_logging.h"
+#include "spdy/core/spdy_protocol.h"
 
 using spdy::SpdyHeaderBlock;
 
@@ -48,7 +49,7 @@ void QuicSpdyClientStream::OnInitialHeadersComplete(
     const QuicHeaderList& header_list) {
   QuicSpdyStream::OnInitialHeadersComplete(fin, frame_len, header_list);
 
-  DCHECK(headers_decompressed());
+  QUICHE_DCHECK(headers_decompressed());
   header_bytes_read_ += frame_len;
   if (!SpdyUtils::CopyAndValidateHeaders(header_list, &content_length_,
                                          &response_headers_)) {
@@ -56,6 +57,15 @@ void QuicSpdyClientStream::OnInitialHeadersComplete(
                      << header_list.DebugString() << " on stream " << id();
     Reset(QUIC_BAD_APPLICATION_PAYLOAD);
     return;
+  }
+
+  if (web_transport() != nullptr) {
+    web_transport()->HeadersReceived(response_headers_);
+    if (!web_transport()->ready()) {
+      // Rejected due to status not being 200, or other reason.
+      WriteOrBufferData("", /*fin=*/true, nullptr);
+      return;
+    }
   }
 
   if (!ParseHeaderStatusCode(response_headers_, &response_code_)) {

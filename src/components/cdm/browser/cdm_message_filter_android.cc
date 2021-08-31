@@ -17,6 +17,7 @@
 #include "components/cdm/common/cdm_messages_android.h"
 #include "content/public/browser/android/android_overlay_provider.h"
 #include "ipc/ipc_message_macros.h"
+#include "ipc/ipc_message_start.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/audio_codecs.h"
@@ -48,7 +49,7 @@ const CodecInfo<media::VideoCodec> kMP4VideoCodecsToQuery[] = {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {media::EME_CODEC_AVC1, media::kCodecH264},
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-    {media::EME_CODEC_HEVC, media::kCodecHEVC},
+    {media::EME_CODEC_HEVC_PROFILE_MAIN, media::kCodecHEVC},
 #endif
 #if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
     {media::EME_CODEC_DOLBY_VISION_AVC, media::kCodecDolbyVision},
@@ -131,6 +132,21 @@ static SupportedCodecs GetSupportedCodecs(
                      });
     if (iter != profiles.end()) {
       supported_codecs |= media::EME_CODEC_VP9_PROFILE2;
+    }
+  }
+  // Similar to VP9 profile 2 above, check for HEVC profile Main10.
+  if ((request.codecs & media::EME_CODEC_HEVC_PROFILE_MAIN10) &&
+      (supported_codecs & media::EME_CODEC_HEVC_PROFILE_MAIN)) {
+    std::vector<media::CodecProfileLevel> profiles;
+    media::MediaCodecUtil::AddSupportedCodecProfileLevels(&profiles);
+    auto iter =
+        std::find_if(profiles.begin(), profiles.end(),
+                     [](const media::CodecProfileLevel& profile) {
+                       return profile.codec == media::kCodecHEVC &&
+                              profile.profile == media::HEVCPROFILE_MAIN10;
+                     });
+    if (iter != profiles.end()) {
+      supported_codecs |= media::EME_CODEC_HEVC_PROFILE_MAIN10;
     }
   }
 

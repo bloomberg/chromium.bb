@@ -44,13 +44,18 @@ StreamSocketPosix::StreamSocketPosix(SocketAddressPosix local_address,
       version_(local_address.version()),
       local_address_(local_address),
       remote_address_(remote_address),
-      state_(SocketState::kConnected) {
+      state_(TcpSocketState::kConnected) {
   Initialize();
 }
 
+StreamSocketPosix::StreamSocketPosix(StreamSocketPosix&& other) noexcept =
+    default;
+StreamSocketPosix& StreamSocketPosix::operator=(StreamSocketPosix&& other) =
+    default;
+
 StreamSocketPosix::~StreamSocketPosix() {
   if (handle_.fd != kUnsetHandleFd) {
-    OSP_DCHECK(state_ != SocketState::kClosed);
+    OSP_DCHECK(state_ != TcpSocketState::kClosed);
     Close();
   }
 }
@@ -64,7 +69,7 @@ ErrorOr<std::unique_ptr<StreamSocket>> StreamSocketPosix::Accept() {
     return ReportSocketClosedError();
   }
 
-  if (!is_bound_ || state_ != SocketState::kListening) {
+  if (!is_bound_ || state_ != TcpSocketState::kListening) {
     return CloseOnError(Error::Code::kSocketInvalidState);
   }
 
@@ -119,8 +124,8 @@ Error StreamSocketPosix::Close() {
     return ReportSocketClosedError();
   }
 
-  OSP_DCHECK(state_ != SocketState::kClosed);
-  state_ = SocketState::kClosed;
+  OSP_DCHECK(state_ != TcpSocketState::kClosed);
+  state_ = TcpSocketState::kClosed;
 
   const int file_descriptor_to_close = handle_.fd;
   handle_.fd = kUnsetHandleFd;
@@ -160,7 +165,7 @@ Error StreamSocketPosix::Connect(const IPEndpoint& remote_endpoint) {
   }
 
   remote_address_ = remote_endpoint;
-  state_ = SocketState::kConnected;
+  state_ = TcpSocketState::kConnected;
   return Error::None();
 }
 
@@ -169,7 +174,7 @@ Error StreamSocketPosix::Listen() {
 }
 
 Error StreamSocketPosix::Listen(int max_backlog_size) {
-  OSP_DCHECK(state_ == SocketState::kNotConnected);
+  OSP_DCHECK(state_ == TcpSocketState::kNotConnected);
   if (!EnsureInitializedAndOpen()) {
     return ReportSocketClosedError();
   }
@@ -179,12 +184,12 @@ Error StreamSocketPosix::Listen(int max_backlog_size) {
         Error(Error::Code::kSocketListenFailure, strerror(errno)));
   }
 
-  state_ = SocketState::kListening;
+  state_ = TcpSocketState::kListening;
   return Error::None();
 }
 
 absl::optional<IPEndpoint> StreamSocketPosix::remote_address() const {
-  if ((state_ != SocketState::kConnected) || !remote_address_) {
+  if ((state_ != TcpSocketState::kConnected) || !remote_address_) {
     return absl::nullopt;
   }
   return remote_address_.value();
@@ -197,7 +202,7 @@ absl::optional<IPEndpoint> StreamSocketPosix::local_address() const {
   return local_address_.value().endpoint();
 }
 
-SocketState StreamSocketPosix::state() const {
+TcpSocketState StreamSocketPosix::state() const {
   return state_;
 }
 
@@ -206,7 +211,8 @@ IPAddress::Version StreamSocketPosix::version() const {
 }
 
 bool StreamSocketPosix::EnsureInitializedAndOpen() {
-  if (state_ == SocketState::kNotConnected && (handle_.fd == kUnsetHandleFd) &&
+  if (state_ == TcpSocketState::kNotConnected &&
+      (handle_.fd == kUnsetHandleFd) &&
       (last_error_code_ == Error::Code::kNone)) {
     return Initialize() == Error::None();
   }

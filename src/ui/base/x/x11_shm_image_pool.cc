@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "net/base/url_util.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
@@ -56,7 +57,7 @@ std::size_t MaxShmSegmentSize() {
   return max_size;
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 bool IsRemoteHost(const std::string& name) {
   if (name.empty())
     return false;
@@ -119,13 +120,13 @@ XShmImagePool::XShmImagePool(x11::Connection* connection,
       enable_multibuffering_(enable_multibuffering),
       frame_states_(frames_pending) {
   if (enable_multibuffering_)
-    X11EventSource::GetInstance()->AddXEventDispatcher(this);
+    connection_->AddEventObserver(this);
 }
 
 XShmImagePool::~XShmImagePool() {
   Cleanup();
   if (enable_multibuffering_)
-    X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
+    connection_->RemoveEventObserver(this);
 }
 
 bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
@@ -138,7 +139,7 @@ bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
   std::unique_ptr<XShmImagePool, decltype(cleanup_fn)> cleanup{this,
                                                                cleanup_fn};
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   if (!ShouldUseMitShm(connection_))
     return false;
 #endif
@@ -210,12 +211,15 @@ bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
     }
   }
 
+  const auto* visual_info = connection_->GetVisualInfoFromId(visual_);
+  if (!visual_info)
+    return false;
+  size_t row_bytes = RowBytesForVisualWidth(*visual_info, pixel_size.width());
+
   for (FrameState& state : frame_states_) {
     state.bitmap = SkBitmap();
-    if (!state.bitmap.installPixels(image_info, state.shmaddr,
-                                    image_info.minRowBytes())) {
+    if (!state.bitmap.installPixels(image_info, state.shmaddr, row_bytes))
       return false;
-    }
     state.canvas = std::make_unique<SkCanvas>(state.bitmap);
   }
 
@@ -276,16 +280,13 @@ void XShmImagePool::DispatchShmCompletionEvent(
   }
 }
 
-bool XShmImagePool::DispatchXEvent(x11::Event* xev) {
+void XShmImagePool::OnEvent(const x11::Event& xev) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(enable_multibuffering_);
 
-  auto* completion = xev->As<x11::Shm::CompletionEvent>();
-  if (!completion || completion->drawable.value != drawable_.value)
-    return false;
-
-  DispatchShmCompletionEvent(*completion);
-  return true;
+  auto* completion = xev.As<x11::Shm::CompletionEvent>();
+  if (completion && completion->drawable.value == drawable_.value)
+    DispatchShmCompletionEvent(*completion);
 }
 
 void XShmImagePool::Cleanup() {

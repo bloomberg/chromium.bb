@@ -44,7 +44,7 @@ std::unique_ptr<base::Value> ReadFileOnBlockingThread(
 std::vector<std::string> ConvertListValues(const base::ListValue* list_values) {
   std::vector<std::string> converted;
   if (list_values) {
-    for (const auto& entry : *list_values) {
+    for (const auto& entry : list_values->GetList()) {
       std::string entry_string;
       if (!entry.GetAsString(&entry_string)) {
         LOG(ERROR) << "Invalid allowlist entry";
@@ -85,7 +85,7 @@ size_t SupervisedUserSiteList::HostnameHash::hash() const {
 }
 
 void SupervisedUserSiteList::Load(const std::string& id,
-                                  const base::string16& title,
+                                  const std::u16string& title,
                                   const base::FilePath& large_icon_path,
                                   const base::FilePath& path,
                                   const LoadedCallback& callback) {
@@ -100,7 +100,7 @@ void SupervisedUserSiteList::Load(const std::string& id,
 
 SupervisedUserSiteList::SupervisedUserSiteList(
     const std::string& id,
-    const base::string16& title,
+    const std::u16string& title,
     const GURL& entry_point,
     const base::FilePath& large_icon_path,
     const base::ListValue* patterns,
@@ -114,7 +114,7 @@ SupervisedUserSiteList::SupervisedUserSiteList(
 
 SupervisedUserSiteList::SupervisedUserSiteList(
     const std::string& id,
-    const base::string16& title,
+    const std::u16string& title,
     const GURL& entry_point,
     const base::FilePath& large_icon_path,
     const std::vector<std::string>& patterns,
@@ -142,7 +142,7 @@ SupervisedUserSiteList::~SupervisedUserSiteList() {
 // static
 void SupervisedUserSiteList::OnJsonLoaded(
     const std::string& id,
-    const base::string16& title,
+    const std::u16string& title,
     const base::FilePath& large_icon_path,
     const base::FilePath& path,
     const SupervisedUserSiteList::LoadedCallback& callback,

@@ -19,7 +19,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-DECLARE_SKMESSAGEBUS_MESSAGE(SkResourceCache::PurgeSharedIDMessage)
+DECLARE_SKMESSAGEBUS_MESSAGE(SkResourceCache::PurgeSharedIDMessage, uint32_t, true)
 
 static inline bool SkShouldPostMessageToBus(
         const SkResourceCache::PurgeSharedIDMessage&, uint32_t) {
@@ -91,12 +91,14 @@ void SkResourceCache::init() {
     fDiscardableFactory = nullptr;
 }
 
-SkResourceCache::SkResourceCache(DiscardableFactory factory) {
+SkResourceCache::SkResourceCache(DiscardableFactory factory)
+        : fPurgeSharedIDInbox(SK_InvalidUniqueID) {
     this->init();
     fDiscardableFactory = factory;
 }
 
-SkResourceCache::SkResourceCache(size_t byteLimit) {
+SkResourceCache::SkResourceCache(size_t byteLimit)
+        : fPurgeSharedIDInbox(SK_InvalidUniqueID) {
     this->init();
     fTotalByteLimit = byteLimit;
 }
@@ -520,6 +522,11 @@ void SkResourceCache::PurgeAll() {
     return get_cache()->purgeAll();
 }
 
+void SkResourceCache::CheckMessages() {
+    SkAutoMutexExclusive am(resource_cache_mutex());
+    return get_cache()->checkMessages();
+}
+
 bool SkResourceCache::Find(const Key& key, FindVisitor visitor, void* context) {
     SkAutoMutexExclusive am(resource_cache_mutex());
     return get_cache()->find(key, visitor, context);
@@ -537,7 +544,7 @@ void SkResourceCache::VisitAll(Visitor visitor, void* context) {
 
 void SkResourceCache::PostPurgeSharedID(uint64_t sharedID) {
     if (sharedID) {
-        SkMessageBus<PurgeSharedIDMessage>::Post(PurgeSharedIDMessage(sharedID));
+        SkMessageBus<PurgeSharedIDMessage, uint32_t>::Post(PurgeSharedIDMessage(sharedID));
     }
 }
 

@@ -13,10 +13,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
 #include "base/test/multiprocess_test.h"
@@ -31,6 +31,7 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/system/invitation.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace mojo {
 namespace core {
@@ -97,7 +98,7 @@ void PrepareToPassRemoteEndpoint(PlatformChannel* channel,
 
   if (switch_name.empty())
     switch_name = PlatformChannel::kHandleSwitch;
-  command_line->AppendSwitchASCII(switch_name.as_string(), value);
+  command_line->AppendSwitchASCII(std::string(switch_name), value);
 }
 
 TEST_F(InvitationTest, Create) {
@@ -309,9 +310,9 @@ base::Process InvitationTest::LaunchChildTestClient(
 #endif
 
 #if !defined(OS_FUCHSIA)
-  base::Optional<NamedPlatformChannel> named_channel;
+  absl::optional<NamedPlatformChannel> named_channel;
 #endif
-  base::Optional<PlatformChannel> channel;
+  absl::optional<PlatformChannel> channel;
   PlatformHandle local_endpoint_handle;
   if (transport_type == TransportType::kChannel) {
     channel.emplace();

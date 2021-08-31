@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
@@ -21,6 +22,7 @@ static_library("exo") {
     "data_device.cc",
     "data_device.h",
     "data_device_delegate.h",
+    "data_exchange_delegate.h",
     "data_offer.cc",
     "data_offer.h",
     "data_offer_delegate.h",
@@ -33,10 +35,10 @@ static_library("exo") {
     "display.h",
     "drag_drop_operation.cc",
     "drag_drop_operation.h",
-    "file_helper.h",
     "frame_sink_resource_manager.cc",
     "frame_sink_resource_manager.h",
     "input_trace.h",
+    "key_state.h",
     "keyboard_delegate.h",
     "keyboard_device_configuration_delegate.h",
     "keyboard_observer.h",
@@ -76,6 +78,7 @@ static_library("exo") {
 
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
     "//cc",
     "//components/viz/host",
     "//device/gamepad",
@@ -90,6 +93,8 @@ static_library("exo") {
     "//ui/accessibility:ax_base",
     "//ui/aura",
     "//ui/base/cursor",
+    "//ui/base/dragdrop:types",
+    "//ui/base/dragdrop/mojom",
     "//ui/base/ime",
     "//ui/compositor",
     "//ui/compositor_extra",
@@ -119,15 +124,18 @@ static_library("exo") {
     "//ui/base/dragdrop/mojom:mojom_headers",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     deps += [
       "//ash",
+      "//ash/constants",
       "//ash/keyboard/ui",
       "//ash/public/cpp",
-      "//chromeos/constants",
       "//chromeos/crosapi/cpp",
       "//chromeos/ui/base",
       "//chromeos/ui/frame",
+      "//components/full_restore",
+      "//components/fullscreen_control",
+      "//components/strings",
       "//ui/base",
       "//ui/events/ozone/layout",
     ]
@@ -210,6 +218,7 @@ source_set("test_support") {
     "//gpu",
     "//skia",
     "//ui/aura",
+    "//ui/base/dragdrop/mojom",
     "//ui/base/ime/init",
     "//ui/compositor",
     "//ui/compositor:test_support",
@@ -221,14 +230,16 @@ source_set("test_support") {
     "//ui/wm",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     sources += [
       "test/exo_test_base.cc",
       "test/exo_test_base.h",
-      "test/exo_test_file_helper.cc",
-      "test/exo_test_file_helper.h",
+      "test/exo_test_data_exchange_delegate.cc",
+      "test/exo_test_data_exchange_delegate.h",
       "test/exo_test_helper.cc",
       "test/exo_test_helper.h",
+      "test/shell_surface_builder.cc",
+      "test/shell_surface_builder.h",
     ]
     deps += [
       "//ash:test_support",
@@ -275,7 +286,7 @@ source_set("unit_tests") {
     deps += [ "//ui/ozone" ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     sources += [
       "../../ui/events/ozone/gamepad/gamepad_event.cc",
       "buffer_unittest.cc",
@@ -296,6 +307,7 @@ source_set("unit_tests") {
       "seat_unittest.cc",
       "shared_memory_unittest.cc",
       "shell_surface_unittest.cc",
+      "shell_surface_util_unittest.cc",
       "sub_surface_unittest.cc",
       "surface_unittest.cc",
       "text_input_unittest.cc",
@@ -309,14 +321,20 @@ source_set("unit_tests") {
     deps += [
       "//ash",
       "//ash:test_support",
+      "//ash/constants",
       "//ash/keyboard/ui",
       "//ash/public/cpp",
-      "//chromeos/constants",
+      "//ash/public/cpp/external_arc",
+      "//build:chromeos_buildflags",
       "//chromeos/ui/base",
       "//chromeos/ui/frame",
+      "//components/fullscreen_control",
       "//ui/base:test_support",
       "//ui/base/cursor/mojom:cursor_type",
-      "//ui/base/dragdrop/mojom:mojom_shared",
+      "//ui/base/dragdrop:types",
+      "//ui/base/dragdrop/mojom",
+      "//ui/gfx:test_support",
+      "//ui/gfx/geometry",
     ]
   }
 
@@ -336,6 +354,7 @@ test("exo_unittests") {
     ":unit_tests",
     "//base",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//cc:test_support",
     "//components/viz/test:test_support",
     "//device/gamepad:test_helpers",
@@ -355,7 +374,7 @@ test("exo_unittests") {
     deps += [ "//components/exo/wayland:unit_tests" ]
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     sources += [
       "../../ash/test/ash_test_suite.cc",
       "../../ash/test/ash_test_suite.h",
@@ -364,6 +383,7 @@ test("exo_unittests") {
     deps += [
       "//ash:test_support",
       "//ash/public/cpp",
+      "//components/exo/server:unit_tests",
     ]
 
     data_deps += [

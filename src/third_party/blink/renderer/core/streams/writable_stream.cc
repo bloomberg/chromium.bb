@@ -11,18 +11,19 @@
 #include "third_party/blink/renderer/core/streams/miscellaneous_operations.h"
 #include "third_party/blink/renderer/core/streams/promise_handler.h"
 #include "third_party/blink/renderer/core/streams/readable_stream.h"
+#include "third_party/blink/renderer/core/streams/readable_stream_transferring_optimizer.h"
 #include "third_party/blink/renderer/core/streams/stream_promise_resolver.h"
 #include "third_party/blink/renderer/core/streams/transferable_streams.h"
 #include "third_party/blink/renderer/core/streams/underlying_sink_base.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_controller.h"
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
+#include "third_party/blink/renderer/core/streams/writable_stream_transferring_optimizer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 // Implementation of WritableStream for Blink.  See
 // https://streams.spec.whatwg.org/#ws. The implementation closely follows the
@@ -199,27 +200,49 @@ WritableStream* WritableStream::CreateWithCountQueueingStrategy(
     ScriptState* script_state,
     UnderlyingSinkBase* underlying_sink,
     size_t high_water_mark) {
-  // TODO(crbug.com/902633): This method of constructing a WritableStream
-  // introduces unnecessary trips through V8. Implement algorithms based on an
-  // UnderlyingSinkBase.
-  auto* init = QueuingStrategyInit::Create();
-  init->setHighWaterMark(static_cast<double>(high_water_mark));
-  auto* strategy = CountQueuingStrategy::Create(script_state, init);
-  ScriptValue strategy_value = ScriptValue::From(script_state, strategy);
-  if (strategy_value.IsEmpty())
+  return CreateWithCountQueueingStrategy(script_state, underlying_sink,
+                                         high_water_mark,
+                                         /*optimizer=*/nullptr);
+}
+
+WritableStream* WritableStream::CreateWithCountQueueingStrategy(
+    ScriptState* script_state,
+    UnderlyingSinkBase* underlying_sink,
+    size_t high_water_mark,
+    std::unique_ptr<WritableStreamTransferringOptimizer> optimizer) {
+  v8::Isolate* isolate = script_state->GetIsolate();
+  ExceptionState exception_state(isolate, ExceptionState::kConstructionContext,
+                                 "WritableStream");
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
+  auto* stream = MakeGarbageCollected<WritableStream>();
+  stream->InitWithCountQueueingStrategy(script_state, underlying_sink,
+                                        high_water_mark, std::move(optimizer),
+                                        exception_state);
+  if (exception_state.HadException())
     return nullptr;
+
+  return stream;
+}
+
+void WritableStream::InitWithCountQueueingStrategy(
+    ScriptState* script_state,
+    UnderlyingSinkBase* underlying_sink,
+    size_t high_water_mark,
+    std::unique_ptr<WritableStreamTransferringOptimizer> optimizer,
+    ExceptionState& exception_state) {
+  ScriptValue strategy_value =
+      CreateTrivialQueuingStrategy(script_state->GetIsolate(), high_water_mark);
 
   auto underlying_sink_value = ScriptValue::From(script_state, underlying_sink);
 
-  ExceptionState exception_state(script_state->GetIsolate(),
-                                 ExceptionState::kConstructionContext,
-                                 "WritableStream");
-  auto* stream = MakeGarbageCollected<WritableStream>();
-  stream->InitInternal(script_state, underlying_sink_value, strategy_value,
-                       exception_state);
-  if (exception_state.HadException())
-    return nullptr;
-  return stream;
+  // TODO(crbug.com/902633): This method of constructing a WritableStream
+  // introduces unnecessary trips through V8. Implement algorithms based on an
+  // UnderlyingSinkBase.
+  InitInternal(script_state, underlying_sink_value, strategy_value,
+               exception_state);
+
+  transferring_optimizer_ = std::move(optimizer);
 }
 
 void WritableStream::Serialize(ScriptState* script_state,
@@ -240,8 +263,8 @@ void WritableStream::Serialize(ScriptState* script_state,
 
   // 5. Let readable be a new ReadableStream in the current Realm.
   // 6. Perform ! SetUpCrossRealmTransformReadable(readable, port1).
-  auto* readable =
-      CreateCrossRealmTransformReadable(script_state, port, exception_state);
+  auto* readable = CreateCrossRealmTransformReadable(
+      script_state, port, /*optimizer=*/nullptr, exception_state);
   if (exception_state.HadException()) {
     return;
   }
@@ -260,9 +283,11 @@ void WritableStream::Serialize(ScriptState* script_state,
   //    port2 »).
 }
 
-WritableStream* WritableStream::Deserialize(ScriptState* script_state,
-                                            MessagePort* port,
-                                            ExceptionState& exception_state) {
+WritableStream* WritableStream::Deserialize(
+    ScriptState* script_state,
+    MessagePort* port,
+    std::unique_ptr<WritableStreamTransferringOptimizer> optimizer,
+    ExceptionState& exception_state) {
   // We need to execute JavaScript to call "Then" on v8::Promises. We will not
   // run author code.
   v8::Isolate::AllowJavascriptExecutionScope allow_js(
@@ -278,8 +303,9 @@ WritableStream* WritableStream::Deserialize(ScriptState* script_state,
   // 3. Perform ! SetUpCrossRealmTransformWritable(value, port).
   // In the standard |value| contains an unitialized WritableStream. In the
   // implementation, we create the stream here.
-  auto* writable =
-      CreateCrossRealmTransformWritable(script_state, port, exception_state);
+  auto* writable = CreateCrossRealmTransformWritable(
+      script_state, port, AllowPerChunkTransferring(false),
+      std::move(optimizer), exception_state);
   if (exception_state.HadException()) {
     return nullptr;
   }
@@ -814,6 +840,11 @@ void WritableStream::SetController(
 
 void WritableStream::SetWriter(WritableStreamDefaultWriter* writer) {
   writer_ = writer;
+}
+
+std::unique_ptr<WritableStreamTransferringOptimizer>
+WritableStream::TakeTransferringOptimizer() {
+  return std::move(transferring_optimizer_);
 }
 
 // static

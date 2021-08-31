@@ -32,11 +32,20 @@ void av1_nonrd_use_partition(AV1_COMP *cpi, ThreadData *td,
                              TileDataEnc *tile_data, MB_MODE_INFO **mib,
                              TokenExtra **tp, int mi_row, int mi_col,
                              BLOCK_SIZE bsize, PC_TREE *pc_tree);
+#if CONFIG_RT_ML_PARTITIONING
 void av1_nonrd_pick_partition(AV1_COMP *cpi, ThreadData *td,
                               TileDataEnc *tile_data, TokenExtra **tp,
                               int mi_row, int mi_col, BLOCK_SIZE bsize,
                               RD_STATS *rd_cost, int do_recon, int64_t best_rd,
                               PC_TREE *pc_tree);
+#endif
+void av1_reset_part_sf(PARTITION_SPEED_FEATURES *part_sf);
+
+bool av1_rd_partition_search(AV1_COMP *const cpi, ThreadData *td,
+                             TileDataEnc *tile_data, TokenExtra **tp,
+                             SIMPLE_MOTION_DATA_TREE *sms_root, int mi_row,
+                             int mi_col, BLOCK_SIZE bsize,
+                             RD_STATS *best_rd_cost);
 bool av1_rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
                            TileDataEnc *tile_data, TokenExtra **tp, int mi_row,
                            int mi_col, BLOCK_SIZE bsize, RD_STATS *rd_cost,
@@ -55,12 +64,14 @@ static AOM_INLINE void set_cb_offsets(uint16_t *cb_offset,
 static AOM_INLINE void update_cb_offsets(MACROBLOCK *x, const BLOCK_SIZE bsize,
                                          const int subsampling_x,
                                          const int subsampling_y) {
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(bsize, subsampling_x, subsampling_y);
   x->cb_offset[PLANE_TYPE_Y] += block_size_wide[bsize] * block_size_high[bsize];
-  if (x->e_mbd.is_chroma_ref)
+  if (x->e_mbd.is_chroma_ref) {
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(bsize, subsampling_x, subsampling_y);
+    assert(plane_bsize != BLOCK_INVALID);
     x->cb_offset[PLANE_TYPE_UV] +=
         block_size_wide[plane_bsize] * block_size_high[plane_bsize];
+  }
 }
 
 #endif  // AOM_AV1_ENCODER_PARTITION_SEARCH_H_

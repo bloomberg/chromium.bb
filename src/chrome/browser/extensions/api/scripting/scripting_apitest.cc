@@ -66,7 +66,8 @@ IN_PROC_BROWSER_TEST_F(ScriptingAPITest, MainFrameTests) {
   OpenURLInNewTab(
       embedded_test_server()->GetURL("chromium.org", "/title2.html"));
 
-  ASSERT_TRUE(RunExtensionTestIgnoreManifestWarnings("scripting/main_frame"))
+  ASSERT_TRUE(RunExtensionTest({.name = "scripting/main_frame"},
+                               {.ignore_manifest_warnings = true}))
       << message_;
 }
 
@@ -80,8 +81,7 @@ IN_PROC_BROWSER_TEST_F(ScriptingAPITest, SubFramesTests) {
       embedded_test_server()->GetURL("d.com", "/iframe_cross_site.html"));
 
   // From there, the test continues in the JS.
-  ASSERT_TRUE(RunExtensionTestIgnoreManifestWarnings("scripting/sub_frames"))
-      << message_;
+  ASSERT_TRUE(RunExtensionTest("scripting/sub_frames")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ScriptingAPITest, CSSInjection) {
@@ -92,8 +92,11 @@ IN_PROC_BROWSER_TEST_F(ScriptingAPITest, CSSInjection) {
   OpenURLInNewTab(embedded_test_server()->GetURL("subframes.example",
                                                  "/iframe_cross_site.html"));
 
-  ASSERT_TRUE(RunExtensionTestIgnoreManifestWarnings("scripting/css_injection"))
-      << message_;
+  ASSERT_TRUE(RunExtensionTest("scripting/css_injection")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(ScriptingAPITest, CSSRemoval) {
+  ASSERT_TRUE(RunExtensionTest("scripting/remove_css")) << message_;
 }
 
 }  // namespace extensions

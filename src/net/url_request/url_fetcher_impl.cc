@@ -75,13 +75,13 @@ int URLFetcherImpl::GetLoadFlags() const {
   return core_->GetLoadFlags();
 }
 
-void URLFetcherImpl::SetExtraRequestHeaders(
-    const std::string& extra_request_headers) {
-  core_->SetExtraRequestHeaders(extra_request_headers);
+void URLFetcherImpl::ClearExtraRequestHeaders() {
+  core_->ClearExtraRequestHeaders();
 }
 
-void URLFetcherImpl::AddExtraRequestHeader(const std::string& header_line) {
-  core_->AddExtraRequestHeader(header_line);
+void URLFetcherImpl::AddExtraRequestHeader(const std::string& name,
+                                           const std::string& value) {
+  core_->AddExtraRequestHeader(name, value);
 }
 
 void URLFetcherImpl::SetRequestContext(
@@ -90,7 +90,7 @@ void URLFetcherImpl::SetRequestContext(
 }
 
 void URLFetcherImpl::SetInitiator(
-    const base::Optional<url::Origin>& initiator) {
+    const absl::optional<url::Origin>& initiator) {
   core_->SetInitiator(initiator);
 }
 

@@ -15,9 +15,11 @@
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
+#include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
@@ -99,7 +101,11 @@ WorkletGlobalScope::WorkletGlobalScope(
       worker_thread_(worker_thread),
       // Worklets should always have a parent LocalFrameToken.
       frame_token_(
-          creation_params->parent_context_token->GetAs<LocalFrameToken>()) {
+          creation_params->parent_context_token->GetAs<LocalFrameToken>()),
+      parent_cross_origin_isolated_capability_(
+          creation_params->parent_cross_origin_isolated_capability),
+      parent_direct_socket_capability_(
+          creation_params->parent_direct_socket_capability) {
   DCHECK((thread_type_ == ThreadType::kMainThread && frame_) ||
          (thread_type_ == ThreadType::kOffMainThread && worker_thread_));
 
@@ -113,23 +119,27 @@ WorkletGlobalScope::WorkletGlobalScope(
   // Step 5: "Let inheritedReferrerPolicy be outsideSettings's referrer policy."
   SetReferrerPolicy(creation_params->referrer_policy);
 
-  SetOutsideContentSecurityPolicyHeaders(
-      creation_params->outside_content_security_policy_headers);
+  SetOutsideContentSecurityPolicies(
+      mojo::Clone(creation_params->outside_content_security_policies));
 
   // https://drafts.css-houdini.org/worklets/#creating-a-workletglobalscope
   // Step 6: "Invoke the initialize a global object's CSP list algorithm given
   // workletGlobalScope."
   InitContentSecurityPolicyFromVector(
-      creation_params->outside_content_security_policy_headers);
+      std::move(creation_params->outside_content_security_policies));
   BindContentSecurityPolicyToExecutionContext();
 
   OriginTrialContext::AddTokens(this,
                                 creation_params->origin_trial_tokens.get());
+
+  // WorkletGlobalScopes are not currently provided with UKM source IDs.
+  DCHECK_EQ(creation_params->ukm_source_id, ukm::kInvalidSourceId);
 }
 
 WorkletGlobalScope::~WorkletGlobalScope() = default;
 
-BrowserInterfaceBrokerProxy& WorkletGlobalScope::GetBrowserInterfaceBroker() {
+const BrowserInterfaceBrokerProxy&
+WorkletGlobalScope::GetBrowserInterfaceBroker() const {
   NOTIMPLEMENTED();
   return GetEmptyBrowserInterfaceBroker();
 }
@@ -172,6 +182,15 @@ void WorkletGlobalScope::AddInspectorIssue(
   } else {
     worker_thread_->GetInspectorIssueStorage()->AddInspectorIssue(
         this, std::move(info));
+  }
+}
+
+void WorkletGlobalScope::AddInspectorIssue(AuditsIssue issue) {
+  if (IsMainThreadWorkletGlobalScope()) {
+    frame_->DomWindow()->AddInspectorIssue(std::move(issue));
+  } else {
+    worker_thread_->GetInspectorIssueStorage()->AddInspectorIssue(
+        this, std::move(issue));
   }
 }
 
@@ -274,18 +293,12 @@ KURL WorkletGlobalScope::CompleteURL(const String& url) const {
   return KURL(BaseURL(), url);
 }
 
-void WorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
-  WorkerOrWorkletGlobalScope::BindContentSecurityPolicyToExecutionContext();
+bool WorkletGlobalScope::CrossOriginIsolatedCapability() const {
+  return parent_cross_origin_isolated_capability_;
+}
 
-  // CSP checks should resolve self based on the 'fetch client settings object'
-  // (i.e., the document's origin), not the 'module map settings object' (i.e.,
-  // the opaque origin of this worklet global scope). The current implementation
-  // doesn't have separate CSP objects for these two contexts. Therefore,
-  // we initialize the worklet global scope's CSP object (which would naively
-  // appear to be a CSP object for the 'module map settings object') entirely
-  // based on state from the document (the origin and CSP headers it passed
-  // here), and use the document's origin for 'self' CSP checks.
-  GetContentSecurityPolicy()->SetupSelf(*document_security_origin_);
+bool WorkletGlobalScope::DirectSocketCapability() const {
+  return parent_direct_socket_capability_;
 }
 
 ukm::UkmRecorder* WorkletGlobalScope::UkmRecorder() {

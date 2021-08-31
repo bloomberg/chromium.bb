@@ -9,9 +9,10 @@
 #include "base/files/file_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/strings/strcat.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
-#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_operation_runner.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "base/task/thread_pool.h"
+#include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root_map.h"
+#include "chrome/browser/ash/arc/fileapi/arc_file_system_operation_runner.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -29,6 +30,7 @@
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace extensions {
@@ -109,8 +111,8 @@ std::string ReadMojoHandleToDataUrl(mojo::PlatformHandle&& handle) {
 
 }  // namespace
 
-FileManagerPrivateGetThumbnailFunction::FileManagerPrivateGetThumbnailFunction()
-    : chrome_details_(this) {}
+FileManagerPrivateGetThumbnailFunction::
+    FileManagerPrivateGetThumbnailFunction() = default;
 
 void FileManagerPrivateGetThumbnailFunction::SendEncodedThumbnail(
     std::string thumbnail_data_url) {
@@ -133,9 +135,10 @@ FileManagerPrivateInternalGetDriveThumbnailFunction::Run() {
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
   scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
-          chrome_details_.GetProfile(), render_frame_host());
+          profile, render_frame_host());
   const GURL url = GURL(params->url);
   const storage::FileSystemURL file_system_url =
       file_system_context->CrackURL(url);
@@ -145,8 +148,7 @@ FileManagerPrivateInternalGetDriveThumbnailFunction::Run() {
   }
 
   auto* drive_integration_service =
-      drive::DriveIntegrationServiceFactory::FindForProfile(
-          chrome_details_.GetProfile());
+      drive::DriveIntegrationServiceFactory::FindForProfile(profile);
   if (!drive_integration_service) {
     return RespondNow(Error("Drive service not available"));
   }
@@ -168,12 +170,12 @@ FileManagerPrivateInternalGetDriveThumbnailFunction::Run() {
           base::BindOnce(&FileManagerPrivateInternalGetDriveThumbnailFunction::
                              GotThumbnail,
                          this),
-          base::nullopt));
+          absl::nullopt));
   return RespondLater();
 }
 
 void FileManagerPrivateInternalGetDriveThumbnailFunction::GotThumbnail(
-    const base::Optional<std::vector<uint8_t>>& data) {
+    const absl::optional<std::vector<uint8_t>>& data) {
   if (!data) {
     Respond(OneArgument(base::Value("")));
     return;
@@ -199,19 +201,20 @@ FileManagerPrivateInternalGetPdfThumbnailFunction::Run() {
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
   scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
-          chrome_details_.GetProfile(), render_frame_host());
+          profile, render_frame_host());
   const GURL url = GURL(params->url);
   const storage::FileSystemURL file_system_url =
       file_system_context->CrackURL(url);
 
-  if (file_system_url.type() != storage::kFileSystemTypeNativeLocal) {
+  if (file_system_url.type() != storage::kFileSystemTypeLocal) {
     return RespondNow(Error("Expected a native local URL"));
   }
 
   base::FilePath path = file_manager::util::GetLocalPathFromURL(
-      render_frame_host(), chrome_details_.GetProfile(), url);
+      render_frame_host(), profile, url);
   if (path.empty() ||
       base::FilePath::CompareIgnoreCase(path.Extension(), ".pdf") != 0) {
     return RespondNow(Error("Can only handle PDF files"));
@@ -290,13 +293,16 @@ FileManagerPrivateInternalGetArcDocumentsProviderThumbnailFunction::Run() {
 
   scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
-          chrome_details_.GetProfile(), render_frame_host());
+          Profile::FromBrowserContext(browser_context()), render_frame_host());
   const GURL url = GURL(params->url);
   const storage::FileSystemURL file_system_url =
       file_system_context->CrackURL(url);
 
-  auto* root_map = arc::ArcDocumentsProviderRootMap::GetForBrowserContext(
-      chrome_details_.GetProfile());
+  auto* root_map =
+      arc::ArcDocumentsProviderRootMap::GetForBrowserContext(browser_context());
+  if (!root_map) {
+    return RespondNow(Error("File not found"));
+  }
   base::FilePath path;
   auto* root = root_map->ParseAndLookup(file_system_url, &path);
   if (!root) {
@@ -330,7 +336,7 @@ void FileManagerPrivateInternalGetArcDocumentsProviderThumbnailFunction::
   }
 
   file_manager::util::ConvertToContentUrls(
-      chrome_details_.GetProfile(),
+      Profile::FromBrowserContext(browser_context()),
       std::vector<storage::FileSystemURL>{file_system_url},
       base::BindOnce(
           &FileManagerPrivateInternalGetArcDocumentsProviderThumbnailFunction::
@@ -339,15 +345,23 @@ void FileManagerPrivateInternalGetArcDocumentsProviderThumbnailFunction::
 }
 
 void FileManagerPrivateInternalGetArcDocumentsProviderThumbnailFunction::
-    GotContentUrls(const gfx::Size& size_hint, const std::vector<GURL>& urls) {
+    GotContentUrls(const gfx::Size& size_hint,
+                   const std::vector<GURL>& urls,
+                   const std::vector<base::FilePath>& paths_to_share) {
   if (urls.size() != 1 || urls[0] == GURL()) {
     Respond(Error("Failed to resolve to countent URL"));
+    return;
+  }
+  if (!paths_to_share.empty()) {
+    Respond(
+        Error("paths_to_share should be empty when getting "
+              "ArcDocumentsProviderThumbnail URL"));
     return;
   }
 
   const auto& url = urls[0];
   auto* runner = arc::ArcFileSystemOperationRunner::GetForBrowserContext(
-      chrome_details_.GetProfile());
+      browser_context());
   runner->OpenThumbnail(
       url, size_hint,
       mojo::WrapCallbackWithDefaultInvokeIfNotRun(

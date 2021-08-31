@@ -8,12 +8,13 @@
 #include <vector>
 
 #include "base/feature_list.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "url/origin.h"
 
 namespace blink {
@@ -34,29 +35,31 @@ const char* const kClientHintsHeaderMapping[] = {
     "sec-ch-ua-mobile",
     "sec-ch-ua-full-version",
     "sec-ch-ua-platform-version",
+    "sec-ch-prefers-color-scheme",
 };
 
 const unsigned kClientHintsNumberOfLegacyHints = 4;
 
-const mojom::FeaturePolicyFeature kClientHintsFeaturePolicyMapping[] = {
-    // Legacy Hints that are sent cross-origin regardless of FeaturePolicy when
-    // kAllowClientHintsToThirdParty is enabled
-    mojom::FeaturePolicyFeature::kClientHintDeviceMemory,
-    mojom::FeaturePolicyFeature::kClientHintDPR,
-    mojom::FeaturePolicyFeature::kClientHintWidth,
-    mojom::FeaturePolicyFeature::kClientHintViewportWidth,
+const mojom::PermissionsPolicyFeature kClientHintsPermissionsPolicyMapping[] = {
+    // Legacy Hints that are sent cross-origin regardless of Permissions Policy
+    // when kAllowClientHintsToThirdParty is enabled.
+    mojom::PermissionsPolicyFeature::kClientHintDeviceMemory,
+    mojom::PermissionsPolicyFeature::kClientHintDPR,
+    mojom::PermissionsPolicyFeature::kClientHintWidth,
+    mojom::PermissionsPolicyFeature::kClientHintViewportWidth,
     // End of legacy hints.
-    mojom::FeaturePolicyFeature::kClientHintRTT,
-    mojom::FeaturePolicyFeature::kClientHintDownlink,
-    mojom::FeaturePolicyFeature::kClientHintECT,
-    mojom::FeaturePolicyFeature::kClientHintLang,
-    mojom::FeaturePolicyFeature::kClientHintUA,
-    mojom::FeaturePolicyFeature::kClientHintUAArch,
-    mojom::FeaturePolicyFeature::kClientHintUAPlatform,
-    mojom::FeaturePolicyFeature::kClientHintUAModel,
-    mojom::FeaturePolicyFeature::kClientHintUAMobile,
-    mojom::FeaturePolicyFeature::kClientHintUAFullVersion,
-    mojom::FeaturePolicyFeature::kClientHintUAPlatformVersion,
+    mojom::PermissionsPolicyFeature::kClientHintRTT,
+    mojom::PermissionsPolicyFeature::kClientHintDownlink,
+    mojom::PermissionsPolicyFeature::kClientHintECT,
+    mojom::PermissionsPolicyFeature::kClientHintLang,
+    mojom::PermissionsPolicyFeature::kClientHintUA,
+    mojom::PermissionsPolicyFeature::kClientHintUAArch,
+    mojom::PermissionsPolicyFeature::kClientHintUAPlatform,
+    mojom::PermissionsPolicyFeature::kClientHintUAModel,
+    mojom::PermissionsPolicyFeature::kClientHintUAMobile,
+    mojom::PermissionsPolicyFeature::kClientHintUAFullVersion,
+    mojom::PermissionsPolicyFeature::kClientHintUAPlatformVersion,
+    mojom::PermissionsPolicyFeature::kClientHintPrefersColorScheme,
 };
 
 const size_t kClientHintsMappingsCount = base::size(kClientHintsHeaderMapping);
@@ -67,7 +70,7 @@ static_assert(
     "Client Hint name table size must match network::mojom::WebClientHintsType "
     "range");
 
-static_assert(base::size(kClientHintsFeaturePolicyMapping) ==
+static_assert(base::size(kClientHintsPermissionsPolicyMapping) ==
                   kClientHintsMappingsCount,
               "Client Hint table sizes must be identical between names and "
               "feature policies");
@@ -86,20 +89,18 @@ std::string SerializeLangClientHint(const std::string& raw_language_list) {
   while (t.GetNext()) {
     if (!result.empty())
       result.append(", ");
-
-    result.append("\"");
-    result.append(t.token().c_str());
-    result.append("\"");
+    base::StrAppend(&result, {"\"", t.token_piece(), "\""});
   }
   return result;
 }
 
-base::Optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
-    base::Optional<std::vector<network::mojom::WebClientHintsType>> in,
+absl::optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
+    absl::optional<std::vector<network::mojom::WebClientHintsType>> in,
     bool permit_lang_hints,
-    bool permit_ua_hints) {
+    bool permit_ua_hints,
+    bool permit_prefers_color_scheme_hints) {
   if (!in.has_value())
-    return base::nullopt;
+    return absl::nullopt;
 
   std::vector<network::mojom::WebClientHintsType> result;
   for (network::mojom::WebClientHintsType hint : in.value()) {
@@ -119,11 +120,15 @@ base::Optional<std::vector<network::mojom::WebClientHintsType>> FilterAcceptCH(
         if (permit_ua_hints)
           result.push_back(hint);
         break;
+      case network::mojom::WebClientHintsType::kPrefersColorScheme:
+        if (permit_prefers_color_scheme_hints)
+          result.push_back(hint);
+        break;
       default:
         result.push_back(hint);
     }
   }
-  return base::make_optional(std::move(result));
+  return absl::make_optional(std::move(result));
 }
 
 bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type) {
@@ -132,8 +137,8 @@ bool IsClientHintSentByDefault(network::mojom::WebClientHintsType type) {
 }
 
 // Add a list of Client Hints headers to be removed to the output vector, based
-// on FeaturePolicy and the url's origin.
-void FindClientHintsToRemove(const FeaturePolicy* feature_policy,
+// on PermissionsPolicy and the url's origin.
+void FindClientHintsToRemove(const PermissionsPolicy* permissions_policy,
                              const GURL& url,
                              std::vector<std::string>* removed_headers) {
   DCHECK(removed_headers);
@@ -145,15 +150,15 @@ void FindClientHintsToRemove(const FeaturePolicy* feature_policy,
   }
   for (size_t i = startHint; i < blink::kClientHintsMappingsCount; ++i) {
     // Remove the hint if any is true:
-    // * Feature policy is null (we're in a sync XHR case) and the hint is not
-    // sent by default.
-    // * Feature policy exists and doesn't allow for the hint.
-    if ((!feature_policy &&
+    // * Permissions policy is null (we're in a sync XHR case) and the hint is
+    // not sent by default.
+    // * Permissions policy exists and doesn't allow for the hint.
+    if ((!permissions_policy &&
          !IsClientHintSentByDefault(
              static_cast<network::mojom::WebClientHintsType>(i))) ||
-        (feature_policy &&
-         !feature_policy->IsFeatureEnabledForOrigin(
-             blink::kClientHintsFeaturePolicyMapping[i], origin))) {
+        (permissions_policy &&
+         !permissions_policy->IsFeatureEnabledForOrigin(
+             blink::kClientHintsPermissionsPolicyMapping[i], origin))) {
       removed_headers->push_back(blink::kClientHintsHeaderMapping[i]);
     }
   }

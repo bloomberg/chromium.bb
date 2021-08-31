@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "absl/algorithm/container.h"
+#include "util/stringprintf.h"
 
 namespace openscreen {
 
@@ -31,6 +32,9 @@ template <typename CharT, typename Traits, typename Allocator>
 CharT* data(std::basic_string<CharT, Traits, Allocator>& str) {
   return std::addressof(str[0]);
 }
+
+std::string Join(const std::vector<std::string>& strings,
+                 const char* delimiter);
 
 template <typename Key, typename Value>
 void RemoveValueFromMap(std::map<Key, Value*>* map, Value* value) {

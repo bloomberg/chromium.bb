@@ -11,11 +11,15 @@
 #import "base/ios/block_types.h"
 #include "base/macros.h"
 #import "ios/web/public/navigation/navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state_delegate.h"
+#import "ios/web/public/test/fakes/fake_web_state_delegate.h"
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_state.h"
 
 class GURL;
+
+namespace base {
+class Value;
+}  // namespace base
 
 namespace web {
 
@@ -42,7 +46,7 @@ class WebIntTest : public WebTest {
 
   // Synchronously executes |script| on |web_state|'s JS injection receiver and
   // returns the result.
-  id ExecuteJavaScript(NSString* script);
+  std::unique_ptr<base::Value> ExecuteJavaScript(NSString* script);
 
   // Executes |block| and waits until |url| is successfully loaded in
   // |web_state_|.
@@ -66,7 +70,7 @@ class WebIntTest : public WebTest {
   // or NSNotFound if it is not present.
   NSInteger GetIndexOfNavigationItem(const web::NavigationItem* item);
 
-  web::TestWebStateDelegate web_state_delegate_;
+  web::FakeWebStateDelegate web_state_delegate_;
 
  private:
   // WebState used to load pages.

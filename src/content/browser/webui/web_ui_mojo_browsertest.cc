@@ -34,6 +34,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/scoped_web_ui_controller_factory_registration.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -44,6 +45,7 @@
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 
 namespace content {
 namespace {
@@ -82,7 +84,7 @@ class TestWebUIController : public WebUIController {
   explicit TestWebUIController(WebUI* web_ui,
                                int bindings = BINDINGS_POLICY_MOJO_WEB_UI)
       : WebUIController(web_ui) {
-    const base::span<const GritResourceMap> kMojoWebUiResources =
+    const base::span<const webui::ResourcePath> kMojoWebUiResources =
         base::make_span(kWebUiMojoTestResources, kWebUiMojoTestResourcesSize);
 
     web_ui->SetBindings(bindings);
@@ -92,8 +94,7 @@ class TestWebUIController : public WebUIController {
           network::mojom::CSPDirectiveName::ScriptSrc,
           "script-src chrome://resources 'self' 'unsafe-eval';");
       data_source->DisableTrustedTypesCSP();
-      for (const GritResourceMap& resource : kMojoWebUiResources)
-        data_source->AddResourcePath(resource.name, resource.value);
+      data_source->AddResourcePaths(kMojoWebUiResources);
       data_source->AddResourcePath("", IDR_WEB_UI_MOJO_HTML);
       WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                            data_source);
@@ -173,10 +174,6 @@ class TestWebUIControllerFactory : public WebUIControllerFactory {
                       const GURL& url) override {
     return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
   }
-  bool UseWebUIBindingsForURL(BrowserContext* browser_context,
-                              const GURL& url) override {
-    return GetWebUIType(browser_context, url) != WebUI::kNoWebUI;
-  }
 
   void set_web_ui_enabled(bool enabled) { web_ui_enabled_ = enabled; }
 
@@ -231,13 +228,7 @@ class TestWebUIContentBrowserClient : public ContentBrowserClient {
 
 class WebUIMojoTest : public ContentBrowserTest {
  public:
-  WebUIMojoTest() {
-    WebUIControllerFactory::RegisterFactory(&factory_);
-  }
-
-  ~WebUIMojoTest() override {
-    WebUIControllerFactory::UnregisterFactoryForTesting(&factory_);
-  }
+  WebUIMojoTest() = default;
 
   TestWebUIControllerFactory* factory() { return &factory_; }
 
@@ -251,11 +242,7 @@ class WebUIMojoTest : public ContentBrowserTest {
 
   // Run |script| and return a boolean result.
   bool RunBoolFunction(const std::string& script) {
-    bool result = false;
-    EXPECT_TRUE(ExecuteScriptAndExtractBool(
-        shell()->web_contents(), "domAutomationController.send(" + script + ")",
-        &result));
-    return result;
+    return EvalJs(shell()->web_contents(), script).ExtractBool();
   }
 
  protected:
@@ -270,6 +257,8 @@ class WebUIMojoTest : public ContentBrowserTest {
 
  private:
   TestWebUIControllerFactory factory_;
+  content::ScopedWebUIControllerFactoryRegistration factory_registration_{
+      &factory_};
   ContentBrowserClient* original_client_ = nullptr;
   TestWebUIContentBrowserClient client_;
 
@@ -281,19 +270,15 @@ class WebUIMojoTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndCommunication) {
   GURL kTestUrl(GetWebUIURL(std::string(kMojoWebUiHost) + "/?cache"));
   const std::string kTestScript = "runTest();";
-  bool passed = false;
   EXPECT_TRUE(NavigateToURL(shell(), kTestUrl));
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(), kTestScript,
-                                          &passed));
-  EXPECT_TRUE(passed);
+  EXPECT_EQ(true, EvalJs(shell()->web_contents(), kTestScript,
+                         EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 
   // Check that a second shell works correctly.
-  passed = false;
   Shell* other_shell = CreateBrowser();
   EXPECT_TRUE(NavigateToURL(other_shell, kTestUrl));
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(other_shell->web_contents(),
-                                          kTestScript, &passed));
-  EXPECT_TRUE(passed);
+  EXPECT_EQ(true, EvalJs(other_shell->web_contents(), kTestScript,
+                         EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 
   // We expect two independent chrome://foo tabs/shells to use a separate
   // process.
@@ -313,13 +298,11 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndCommunication) {
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
   other_shell = CreateBrowser();
-  passed = false;
   EXPECT_TRUE(NavigateToURL(other_shell, kTestUrl));
   EXPECT_EQ(shell()->web_contents()->GetMainFrame()->GetProcess(),
             other_shell->web_contents()->GetMainFrame()->GetProcess());
-  EXPECT_TRUE(ExecuteScriptAndExtractBool(other_shell->web_contents(),
-                                          kTestScript, &passed));
-  EXPECT_TRUE(passed);
+  EXPECT_EQ(true, EvalJs(other_shell->web_contents(), kTestScript,
+                         EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 }
 
 // Disabled due to flakiness: crbug.com/860385.
@@ -395,7 +378,7 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, ChromeSendAvailable_AfterCrash) {
       shell()->web_contents(),
       RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   shell()->web_contents()->GetController().LoadURL(
-      GURL(content::kChromeUICrashURL), content::Referrer(),
+      GURL(blink::kChromeUICrashURL), content::Referrer(),
       ui::PAGE_TRANSITION_TYPED, std::string());
   crash_observer.Wait();
   EXPECT_FALSE(web_ui->GetRemoteForTest().is_bound());

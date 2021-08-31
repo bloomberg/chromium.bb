@@ -7,8 +7,8 @@
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
-#include "base/stl_util.h"
 #include "media/base/media_switches.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -23,7 +23,7 @@ namespace {
 bool IsSystemKey(ui::KeyboardCode key_code) {
   switch (key_code) {
     case ui::VKEY_ASSISTANT:
-    case ui::VKEY_MEDIA_LAUNCH_APP2:  // Fullscreen button.
+    case ui::VKEY_ZOOM:               // Fullscreen button.
     case ui::VKEY_MEDIA_LAUNCH_APP1:  // Overview button.
     case ui::VKEY_BRIGHTNESS_DOWN:
     case ui::VKEY_BRIGHTNESS_UP:

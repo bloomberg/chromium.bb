@@ -11,8 +11,9 @@
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/engine/forwarding_model_type_processor.h"
+#include "components/sync/engine/model_type_processor_metrics.h"
+#include "components/sync/model/processor_entity.h"
 #include "components/sync/model/type_entities_count.h"
-#include "components/sync/model_impl/processor_entity.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
 #include "components/sync/protocol/proto_value_conversions.h"
@@ -108,7 +109,7 @@ void NigoriModelTypeProcessor::OnCommitCompleted(
     entity_->ClearTransientSyncState();
   }
   // Ask the bridge to persist the new metadata.
-  bridge_->ApplySyncChanges(/*data=*/base::nullopt);
+  bridge_->ApplySyncChanges(/*data=*/absl::nullopt);
 }
 
 void NigoriModelTypeProcessor::OnUpdateReceived(
@@ -123,15 +124,18 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
     return;
   }
 
-  base::Optional<ModelError> error;
+  absl::optional<ModelError> error;
 
-  bool is_initial_sync = !model_type_state_.initial_sync_done();
+  const bool is_initial_sync = !model_type_state_.initial_sync_done();
+  LogUpdatesReceivedByProcessorHistogram(NIGORI, is_initial_sync,
+                                         updates.size());
+
   model_type_state_ = type_state;
 
   if (is_initial_sync) {
     DCHECK(!entity_);
     if (updates.empty()) {
-      error = bridge_->MergeSyncData(base::nullopt);
+      error = bridge_->MergeSyncData(absl::nullopt);
     } else {
       DCHECK(!updates[0].entity.is_deleted());
       entity_ = ProcessorEntity::CreateNew(
@@ -147,7 +151,7 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
   }
 
   if (updates.empty()) {
-    bridge_->ApplySyncChanges(/*data=*/base::nullopt);
+    bridge_->ApplySyncChanges(/*data=*/absl::nullopt);
     return;
   }
 
@@ -158,7 +162,7 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
 
   if (entity_->UpdateIsReflection(updates[0].response_version)) {
     // Seen this update before; just ignore it.
-    bridge_->ApplySyncChanges(/*data=*/base::nullopt);
+    bridge_->ApplySyncChanges(/*data=*/absl::nullopt);
     return;
   }
 

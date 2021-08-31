@@ -13,7 +13,6 @@
 #include "chromeos/components/tether/tether_host_fetcher.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 
 namespace chromeos {
 
@@ -55,9 +54,9 @@ class TetherHostFetcherImpl
 
   // TetherHostFetcher:
   bool HasSyncedTetherHosts() override;
-  void FetchAllTetherHosts(const TetherHostListCallback& callback) override;
+  void FetchAllTetherHosts(TetherHostListCallback callback) override;
   void FetchTetherHost(const std::string& device_id,
-                       const TetherHostCallback& callback) override;
+                       TetherHostCallback callback) override;
 
   // device_sync::DeviceSyncClient::Observer:
   void OnNewDevicesSynced() override;

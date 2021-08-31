@@ -8,17 +8,21 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
-#include "base/optional.h"
+#include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_source.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/log/net_log.h"
 #include "net/net_buildflags.h"
 #include "services/network/host_resolver_mdns_listener.h"
 #include "services/network/public/cpp/host_resolver_mojom_traits.h"
+#include "services/network/public/mojom/host_resolver.mojom-shared.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/resolve_host_request.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 namespace {
@@ -27,11 +31,11 @@ static base::LazyInstance<HostResolver::ResolveHostCallback>::Leaky
 }
 
 namespace {
-base::Optional<net::HostResolver::ResolveHostParameters>
+absl::optional<net::HostResolver::ResolveHostParameters>
 ConvertOptionalParameters(
     const mojom::ResolveHostParametersPtr& mojo_parameters) {
   if (!mojo_parameters)
-    return base::nullopt;
+    return absl::nullopt;
 
   net::HostResolver::ResolveHostParameters parameters;
   parameters.dns_query_type = mojo_parameters->dns_query_type;
@@ -54,8 +58,8 @@ ConvertOptionalParameters(
   parameters.include_canonical_name = mojo_parameters->include_canonical_name;
   parameters.loopback_only = mojo_parameters->loopback_only;
   parameters.is_speculative = mojo_parameters->is_speculative;
-  parameters.secure_dns_mode_override = mojo::FromOptionalSecureDnsMode(
-      mojo_parameters->secure_dns_mode_override);
+  mojo::EnumTraits<mojom::SecureDnsPolicy, net::SecureDnsPolicy>::FromMojom(
+      mojo_parameters->secure_dns_policy, &parameters.secure_dns_policy);
   return parameters;
 }
 }  // namespace

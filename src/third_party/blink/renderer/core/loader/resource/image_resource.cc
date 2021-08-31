@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -101,10 +100,10 @@ class ImageResource::ImageResourceInfoImpl final
   bool HasCacheControlNoStoreHeader() const override {
     return resource_->HasCacheControlNoStoreHeader();
   }
-  base::Optional<ResourceError> GetResourceError() const override {
+  absl::optional<ResourceError> GetResourceError() const override {
     if (resource_->LoadFailedOrCanceled())
       return resource_->GetResourceError();
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   void SetDecodedSize(size_t size) override { resource_->SetDecodedSize(size); }
@@ -166,14 +165,23 @@ ImageResource* ImageResource::Fetch(FetchParameters& params,
     params.SetRequestDestination(network::mojom::RequestDestination::kImage);
   }
 
-  ImageResource* resource = ToImageResource(
+  // If the fetch originated from user agent CSS we do not need to check CSP.
+  bool is_user_agent_resource = params.Options().initiator_info.name ==
+                                fetch_initiator_type_names::kUacss;
+  if (is_user_agent_resource) {
+    params.SetContentSecurityCheck(
+        network::mojom::CSPDisposition::DO_NOT_CHECK);
+  }
+
+  auto* resource = To<ImageResource>(
       fetcher->RequestResource(params, ImageResourceFactory(), nullptr));
 
   // If the fetch originated from user agent CSS we should mark it as a user
   // agent resource.
-  if (params.Options().initiator_info.name ==
-      fetch_initiator_type_names::kUacss)
+  if (is_user_agent_resource) {
     resource->FlagAsUserAgentResource();
+  }
+
   return resource;
 }
 

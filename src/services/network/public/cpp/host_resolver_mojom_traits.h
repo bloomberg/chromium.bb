@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/array_traits.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
@@ -22,25 +21,27 @@
 #include "net/dns/public/dns_config_overrides.h"
 #include "net/dns/public/dns_query_type.h"
 #include "net/dns/public/secure_dns_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "services/network/public/mojom/host_resolver.mojom-forward.h"
 #include "services/network/public/mojom/host_resolver.mojom-shared.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace mojo {
 
 // This is made visible for use by network::HostResolver. Not intended to be
 // used elsewhere.
-base::Optional<net::SecureDnsMode> FromOptionalSecureDnsMode(
+absl::optional<net::SecureDnsMode> FromOptionalSecureDnsMode(
     network::mojom::OptionalSecureDnsMode mode);
 
 template <>
 struct StructTraits<network::mojom::DnsConfigOverridesDataView,
                     net::DnsConfigOverrides> {
-  static const base::Optional<std::vector<net::IPEndPoint>>& nameservers(
+  static const absl::optional<std::vector<net::IPEndPoint>>& nameservers(
       const net::DnsConfigOverrides& overrides) {
     return overrides.nameservers;
   }
 
-  static const base::Optional<std::vector<std::string>>& search(
+  static const absl::optional<std::vector<std::string>>& search(
       const net::DnsConfigOverrides& overrides) {
     return overrides.search;
   }
@@ -52,7 +53,7 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
     return overrides.ndots.value_or(-1);
   }
 
-  static const base::Optional<base::TimeDelta>& fallback_period(
+  static const absl::optional<base::TimeDelta>& fallback_period(
       const net::DnsConfigOverrides& overrides) {
     return overrides.fallback_period;
   }
@@ -66,7 +67,7 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
   static network::mojom::DnsConfigOverrides_Tristate use_local_ipv6(
       const net::DnsConfigOverrides& overrides);
 
-  static base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
+  static absl::optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
   dns_over_https_servers(const net::DnsConfigOverrides& overrides);
 
   static network::mojom::OptionalSecureDnsMode secure_dns_mode(
@@ -75,7 +76,7 @@ struct StructTraits<network::mojom::DnsConfigOverridesDataView,
   static network::mojom::DnsConfigOverrides_Tristate
   allow_dns_over_https_upgrade(const net::DnsConfigOverrides& overrides);
 
-  static const base::Optional<std::vector<std::string>>&
+  static const absl::optional<std::vector<std::string>>&
   disabled_upgrade_providers(const net::DnsConfigOverrides& overrides) {
     return overrides.disabled_upgrade_providers;
   }
@@ -120,6 +121,14 @@ struct EnumTraits<network::mojom::SecureDnsMode, net::SecureDnsMode> {
       net::SecureDnsMode secure_dns_mode);
   static bool FromMojom(network::mojom::SecureDnsMode in,
                         net::SecureDnsMode* out);
+};
+
+template <>
+struct EnumTraits<network::mojom::SecureDnsPolicy, net::SecureDnsPolicy> {
+  static network::mojom::SecureDnsPolicy ToMojom(
+      net::SecureDnsPolicy secure_dns_mode);
+  static bool FromMojom(network::mojom::SecureDnsPolicy in,
+                        net::SecureDnsPolicy* out);
 };
 
 template <>

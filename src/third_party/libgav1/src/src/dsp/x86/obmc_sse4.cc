@@ -15,7 +15,7 @@
 #include "src/dsp/obmc.h"
 #include "src/utils/cpu.h"
 
-#if LIBGAV1_ENABLE_SSE4_1
+#if LIBGAV1_TARGETING_SSE4_1
 
 #include <xmmintrin.h>
 
@@ -31,6 +31,7 @@
 
 namespace libgav1 {
 namespace dsp {
+namespace low_bitdepth {
 namespace {
 
 #include "src/dsp/obmc.inc"
@@ -311,13 +312,295 @@ void Init8bpp() {
 }
 
 }  // namespace
+}  // namespace low_bitdepth
 
-void ObmcInit_SSE4_1() { Init8bpp(); }
+#if LIBGAV1_MAX_BITDEPTH >= 10
+namespace high_bitdepth {
+namespace {
+
+#include "src/dsp/obmc.inc"
+
+constexpr int kRoundBitsObmcBlend = 6;
+
+inline void OverlapBlendFromLeft2xH_SSE4_1(
+    uint16_t* const prediction, const ptrdiff_t pred_stride, const int height,
+    const uint16_t* const obmc_prediction, const ptrdiff_t obmc_pred_stride) {
+  uint16_t* pred = prediction;
+  const uint16_t* obmc_pred = obmc_prediction;
+  const ptrdiff_t pred_stride2 = pred_stride << 1;
+  const ptrdiff_t obmc_pred_stride2 = obmc_pred_stride << 1;
+  const __m128i mask_inverter = _mm_cvtsi32_si128(0x40404040);
+  const __m128i mask_val = _mm_shufflelo_epi16(Load2(kObmcMask), 0x00);
+  // 64 - mask.
+  const __m128i obmc_mask_val = _mm_sub_epi8(mask_inverter, mask_val);
+  const __m128i masks =
+      _mm_cvtepi8_epi16(_mm_unpacklo_epi8(mask_val, obmc_mask_val));
+  int y = height;
+  do {
+    const __m128i pred_val = Load4x2(pred, pred + pred_stride);
+    const __m128i obmc_pred_val =
+        Load4x2(obmc_pred, obmc_pred + obmc_pred_stride);
+    const __m128i terms = _mm_unpacklo_epi16(pred_val, obmc_pred_val);
+    const __m128i result = RightShiftWithRounding_U32(
+        _mm_madd_epi16(terms, masks), kRoundBitsObmcBlend);
+    const __m128i packed_result = _mm_packus_epi32(result, result);
+    Store4(pred, packed_result);
+    Store4(pred + pred_stride, _mm_srli_si128(packed_result, 4));
+    pred += pred_stride2;
+    obmc_pred += obmc_pred_stride2;
+    y -= 2;
+  } while (y != 0);
+}
+
+inline void OverlapBlendFromLeft4xH_SSE4_1(
+    uint16_t* const prediction, const ptrdiff_t pred_stride, const int height,
+    const uint16_t* const obmc_prediction, const ptrdiff_t obmc_pred_stride) {
+  uint16_t* pred = prediction;
+  const uint16_t* obmc_pred = obmc_prediction;
+  const ptrdiff_t pred_stride2 = pred_stride << 1;
+  const ptrdiff_t obmc_pred_stride2 = obmc_pred_stride << 1;
+  const __m128i mask_inverter = _mm_cvtsi32_si128(0x40404040);
+  const __m128i mask_val = Load4(kObmcMask + 2);
+  // 64 - mask.
+  const __m128i obmc_mask_val = _mm_sub_epi8(mask_inverter, mask_val);
+  const __m128i masks =
+      _mm_cvtepi8_epi16(_mm_unpacklo_epi8(mask_val, obmc_mask_val));
+  int y = height;
+  do {
+    const __m128i pred_val = LoadHi8(LoadLo8(pred), pred + pred_stride);
+    const __m128i obmc_pred_val =
+        LoadHi8(LoadLo8(obmc_pred), obmc_pred + obmc_pred_stride);
+    const __m128i terms_lo = _mm_unpacklo_epi16(pred_val, obmc_pred_val);
+    const __m128i terms_hi = _mm_unpackhi_epi16(pred_val, obmc_pred_val);
+    const __m128i result_lo = RightShiftWithRounding_U32(
+        _mm_madd_epi16(terms_lo, masks), kRoundBitsObmcBlend);
+    const __m128i result_hi = RightShiftWithRounding_U32(
+        _mm_madd_epi16(terms_hi, masks), kRoundBitsObmcBlend);
+    const __m128i packed_result = _mm_packus_epi32(result_lo, result_hi);
+    StoreLo8(pred, packed_result);
+    StoreHi8(pred + pred_stride, packed_result);
+    pred += pred_stride2;
+    obmc_pred += obmc_pred_stride2;
+    y -= 2;
+  } while (y != 0);
+}
+
+void OverlapBlendFromLeft10bpp_SSE4_1(void* const prediction,
+                                      const ptrdiff_t prediction_stride,
+                                      const int width, const int height,
+                                      const void* const obmc_prediction,
+                                      const ptrdiff_t obmc_prediction_stride) {
+  auto* pred = static_cast<uint16_t*>(prediction);
+  const auto* obmc_pred = static_cast<const uint16_t*>(obmc_prediction);
+  const ptrdiff_t pred_stride = prediction_stride / sizeof(pred[0]);
+  const ptrdiff_t obmc_pred_stride =
+      obmc_prediction_stride / sizeof(obmc_pred[0]);
+
+  if (width == 2) {
+    OverlapBlendFromLeft2xH_SSE4_1(pred, pred_stride, height, obmc_pred,
+                                   obmc_pred_stride);
+    return;
+  }
+  if (width == 4) {
+    OverlapBlendFromLeft4xH_SSE4_1(pred, pred_stride, height, obmc_pred,
+                                   obmc_pred_stride);
+    return;
+  }
+  const __m128i mask_inverter = _mm_set1_epi8(64);
+  const uint8_t* mask = kObmcMask + width - 2;
+  int x = 0;
+  do {
+    pred = static_cast<uint16_t*>(prediction) + x;
+    obmc_pred = static_cast<const uint16_t*>(obmc_prediction) + x;
+    const __m128i mask_val = LoadLo8(mask + x);
+    // 64 - mask
+    const __m128i obmc_mask_val = _mm_sub_epi8(mask_inverter, mask_val);
+    const __m128i masks = _mm_unpacklo_epi8(mask_val, obmc_mask_val);
+    const __m128i masks_lo = _mm_cvtepi8_epi16(masks);
+    const __m128i masks_hi = _mm_cvtepi8_epi16(_mm_srli_si128(masks, 8));
+    int y = height;
+    do {
+      const __m128i pred_val = LoadUnaligned16(pred);
+      const __m128i obmc_pred_val = LoadUnaligned16(obmc_pred);
+      const __m128i terms_lo = _mm_unpacklo_epi16(pred_val, obmc_pred_val);
+      const __m128i terms_hi = _mm_unpackhi_epi16(pred_val, obmc_pred_val);
+      const __m128i result_lo = RightShiftWithRounding_U32(
+          _mm_madd_epi16(terms_lo, masks_lo), kRoundBitsObmcBlend);
+      const __m128i result_hi = RightShiftWithRounding_U32(
+          _mm_madd_epi16(terms_hi, masks_hi), kRoundBitsObmcBlend);
+      StoreUnaligned16(pred, _mm_packus_epi32(result_lo, result_hi));
+
+      pred += pred_stride;
+      obmc_pred += obmc_pred_stride;
+    } while (--y != 0);
+    x += 8;
+  } while (x < width);
+}
+
+inline void OverlapBlendFromTop2xH_SSE4_1(uint16_t* const prediction,
+                                          const ptrdiff_t pred_stride,
+                                          const int height,
+                                          const uint16_t* const obmc_prediction,
+                                          const ptrdiff_t obmc_pred_stride) {
+  uint16_t* pred = prediction;
+  const uint16_t* obmc_pred = obmc_prediction;
+  const __m128i mask_inverter = _mm_set1_epi16(64);
+  const __m128i mask_shuffler = _mm_set_epi32(0x01010101, 0x01010101, 0, 0);
+  const __m128i mask_preinverter = _mm_set1_epi16(-256 | 1);
+  const uint8_t* mask = kObmcMask + height - 2;
+  const int compute_height =
+      height - (height >> 2);  // compute_height based on 8-bit opt
+  const ptrdiff_t pred_stride2 = pred_stride << 1;
+  const ptrdiff_t obmc_pred_stride2 = obmc_pred_stride << 1;
+  int y = 0;
+  do {
+    // First mask in the first half, second mask in the second half.
+    const __m128i mask_val = _mm_shuffle_epi8(Load4(mask + y), mask_shuffler);
+    const __m128i masks =
+        _mm_sub_epi8(mask_inverter, _mm_sign_epi8(mask_val, mask_preinverter));
+    const __m128i masks_lo = _mm_cvtepi8_epi16(masks);
+    const __m128i masks_hi = _mm_cvtepi8_epi16(_mm_srli_si128(masks, 8));
+
+    const __m128i pred_val = LoadHi8(LoadLo8(pred), pred + pred_stride);
+    const __m128i obmc_pred_val =
+        LoadHi8(LoadLo8(obmc_pred), obmc_pred + obmc_pred_stride);
+    const __m128i terms_lo = _mm_unpacklo_epi16(obmc_pred_val, pred_val);
+    const __m128i terms_hi = _mm_unpackhi_epi16(obmc_pred_val, pred_val);
+    const __m128i result_lo = RightShiftWithRounding_U32(
+        _mm_madd_epi16(terms_lo, masks_lo), kRoundBitsObmcBlend);
+    const __m128i result_hi = RightShiftWithRounding_U32(
+        _mm_madd_epi16(terms_hi, masks_hi), kRoundBitsObmcBlend);
+    const __m128i packed_result = _mm_packus_epi32(result_lo, result_hi);
+
+    Store4(pred, packed_result);
+    Store4(pred + pred_stride, _mm_srli_si128(packed_result, 8));
+    pred += pred_stride2;
+    obmc_pred += obmc_pred_stride2;
+    y += 2;
+  } while (y < compute_height);
+}
+
+inline void OverlapBlendFromTop4xH_SSE4_1(uint16_t* const prediction,
+                                          const ptrdiff_t pred_stride,
+                                          const int height,
+                                          const uint16_t* const obmc_prediction,
+                                          const ptrdiff_t obmc_pred_stride) {
+  uint16_t* pred = prediction;
+  const uint16_t* obmc_pred = obmc_prediction;
+  const __m128i mask_inverter = _mm_set1_epi16(64);
+  const __m128i mask_shuffler = _mm_set_epi32(0x01010101, 0x01010101, 0, 0);
+  const __m128i mask_preinverter = _mm_set1_epi16(-256 | 1);
+  const uint8_t* mask = kObmcMask + height - 2;
+  const int compute_height = height - (height >> 2);
+  const ptrdiff_t pred_stride2 = pred_stride << 1;
+  const ptrdiff_t obmc_pred_stride2 = obmc_pred_stride << 1;
+  int y = 0;
+  do {
+    // First mask in the first half, second mask in the second half.
+    const __m128i mask_val = _mm_shuffle_epi8(Load4(mask + y), mask_shuffler);
+    const __m128i masks =
+        _mm_sub_epi8(mask_inverter, _mm_sign_epi8(mask_val, mask_preinverter));
+    const __m128i masks_lo = _mm_cvtepi8_epi16(masks);
+    const __m128i masks_hi = _mm_cvtepi8_epi16(_mm_srli_si128(masks, 8));
+
+    const __m128i pred_val = LoadHi8(LoadLo8(pred), pred + pred_stride);
+    const __m128i obmc_pred_val =
+        LoadHi8(LoadLo8(obmc_pred), obmc_pred + obmc_pred_stride);
+    const __m128i terms_lo = _mm_unpacklo_epi16(obmc_pred_val, pred_val);
+    const __m128i terms_hi = _mm_unpackhi_epi16(obmc_pred_val, pred_val);
+    const __m128i result_lo = RightShiftWithRounding_U32(
+        _mm_madd_epi16(terms_lo, masks_lo), kRoundBitsObmcBlend);
+    const __m128i result_hi = RightShiftWithRounding_U32(
+        _mm_madd_epi16(terms_hi, masks_hi), kRoundBitsObmcBlend);
+    const __m128i packed_result = _mm_packus_epi32(result_lo, result_hi);
+
+    StoreLo8(pred, packed_result);
+    StoreHi8(pred + pred_stride, packed_result);
+    pred += pred_stride2;
+    obmc_pred += obmc_pred_stride2;
+    y += 2;
+  } while (y < compute_height);
+}
+
+void OverlapBlendFromTop10bpp_SSE4_1(void* const prediction,
+                                     const ptrdiff_t prediction_stride,
+                                     const int width, const int height,
+                                     const void* const obmc_prediction,
+                                     const ptrdiff_t obmc_prediction_stride) {
+  auto* pred = static_cast<uint16_t*>(prediction);
+  const auto* obmc_pred = static_cast<const uint16_t*>(obmc_prediction);
+  const ptrdiff_t pred_stride = prediction_stride / sizeof(pred[0]);
+  const ptrdiff_t obmc_pred_stride =
+      obmc_prediction_stride / sizeof(obmc_pred[0]);
+
+  if (width == 2) {
+    OverlapBlendFromTop2xH_SSE4_1(pred, pred_stride, height, obmc_pred,
+                                  obmc_pred_stride);
+    return;
+  }
+  if (width == 4) {
+    OverlapBlendFromTop4xH_SSE4_1(pred, pred_stride, height, obmc_pred,
+                                  obmc_pred_stride);
+    return;
+  }
+
+  const __m128i mask_inverter = _mm_set1_epi8(64);
+  const int compute_height = height - (height >> 2);
+  const uint8_t* mask = kObmcMask + height - 2;
+  pred = static_cast<uint16_t*>(prediction);
+  obmc_pred = static_cast<const uint16_t*>(obmc_prediction);
+  int y = 0;
+  do {
+    const __m128i mask_val = _mm_set1_epi8(mask[y]);
+    // 64 - mask
+    const __m128i obmc_mask_val = _mm_sub_epi8(mask_inverter, mask_val);
+    const __m128i masks = _mm_unpacklo_epi8(mask_val, obmc_mask_val);
+    const __m128i masks_lo = _mm_cvtepi8_epi16(masks);
+    const __m128i masks_hi = _mm_cvtepi8_epi16(_mm_srli_si128(masks, 8));
+    int x = 0;
+    do {
+      const __m128i pred_val = LoadUnaligned16(pred + x);
+      const __m128i obmc_pred_val = LoadUnaligned16(obmc_pred + x);
+      const __m128i terms_lo = _mm_unpacklo_epi16(pred_val, obmc_pred_val);
+      const __m128i terms_hi = _mm_unpackhi_epi16(pred_val, obmc_pred_val);
+      const __m128i result_lo = RightShiftWithRounding_U32(
+          _mm_madd_epi16(terms_lo, masks_lo), kRoundBitsObmcBlend);
+      const __m128i result_hi = RightShiftWithRounding_U32(
+          _mm_madd_epi16(terms_hi, masks_hi), kRoundBitsObmcBlend);
+      StoreUnaligned16(pred + x, _mm_packus_epi32(result_lo, result_hi));
+      x += 8;
+    } while (x < width);
+    pred += pred_stride;
+    obmc_pred += obmc_pred_stride;
+  } while (++y < compute_height);
+}
+
+void Init10bpp() {
+  Dsp* const dsp = dsp_internal::GetWritableDspTable(kBitdepth10);
+  assert(dsp != nullptr);
+#if DSP_ENABLED_10BPP_SSE4_1(ObmcVertical)
+  dsp->obmc_blend[kObmcDirectionVertical] = OverlapBlendFromTop10bpp_SSE4_1;
+#endif
+#if DSP_ENABLED_10BPP_SSE4_1(ObmcHorizontal)
+  dsp->obmc_blend[kObmcDirectionHorizontal] = OverlapBlendFromLeft10bpp_SSE4_1;
+#endif
+}
+
+}  // namespace
+}  // namespace high_bitdepth
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+
+void ObmcInit_SSE4_1() {
+  low_bitdepth::Init8bpp();
+#if LIBGAV1_MAX_BITDEPTH >= 10
+  high_bitdepth::Init10bpp();
+#endif  // LIBGAV1_MAX_BITDEPTH >= 10
+}
 
 }  // namespace dsp
 }  // namespace libgav1
 
-#else  // !LIBGAV1_ENABLE_SSE4_1
+#else   // !LIBGAV1_TARGETING_SSE4_1
 
 namespace libgav1 {
 namespace dsp {
@@ -326,4 +609,4 @@ void ObmcInit_SSE4_1() {}
 
 }  // namespace dsp
 }  // namespace libgav1
-#endif  // LIBGAV1_ENABLE_SSE4_1
+#endif  // LIBGAV1_TARGETING_SSE4_1

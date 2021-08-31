@@ -27,9 +27,10 @@ source_set("web") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/ui/alert_coordinator",
-    "//ios/chrome/browser/web",
+    "//ios/chrome/browser/web/image_fetch",
     "//ios/web",
     "//ui/base",
   ]
+  frameworks = [ "Photos.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

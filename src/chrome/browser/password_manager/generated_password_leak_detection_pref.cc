@@ -20,7 +20,7 @@ namespace {
 
 // Returns whether a primary account is present and syncing successfully.
 bool IsUserSignedInAndSyncing(Profile* profile) {
-  if (profile->IsGuestSession())
+  if (profile->IsGuestSession() || profile->IsEphemeralGuestProfile())
     return false;
 
   auto* identity_manager =
@@ -34,7 +34,10 @@ bool IsUserSignedInAndSyncing(Profile* profile) {
       status_labels.message_type == sync_ui_util::SYNC_ERROR ||
       status_labels.message_type == sync_ui_util::PASSWORDS_ONLY_SYNC_ERROR;
 
-  return identity_manager->HasPrimaryAccount() && !sync_error;
+  // Password leak detection only requires a signed in account and a functioning
+  // sync service, it does not require sync consent.
+  return identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin) &&
+         !sync_error;
 }
 
 // Returns whether the effective value of the Safe Browsing preferences for
@@ -72,13 +75,10 @@ GeneratedPasswordLeakDetectionPref::GeneratedPasswordLeakDetectionPref(
           base::Unretained(this)));
 
   if (auto* identity_manager = IdentityManagerFactory::GetForProfile(profile))
-    identity_manager_observer_.Add(identity_manager);
-
-  if (auto* identity_manager_factory = IdentityManagerFactory::GetInstance())
-    identity_manager_factory_observer_.Add(identity_manager_factory);
+    identity_manager_observer_.Observe(identity_manager);
 
   if (auto* sync_service = ProfileSyncServiceFactory::GetForProfile(profile))
-    sync_service_observer_.Add(sync_service);
+    sync_service_observer_.Observe(sync_service);
 }
 
 GeneratedPasswordLeakDetectionPref::~GeneratedPasswordLeakDetectionPref() =
@@ -136,19 +136,21 @@ void GeneratedPasswordLeakDetectionPref::OnSourcePreferencesChanged() {
   NotifyObservers(kGeneratedPasswordLeakDetectionPref);
 }
 
-void GeneratedPasswordLeakDetectionPref::IdentityManagerShutdown(
+void GeneratedPasswordLeakDetectionPref::OnIdentityManagerShutdown(
     signin::IdentityManager* identity_manager) {
-  identity_manager_observer_.RemoveAll();
+  identity_manager_observer_.Reset();
 }
 
-void GeneratedPasswordLeakDetectionPref::OnPrimaryAccountSet(
-    const CoreAccountInfo& primary_account_info) {
-  NotifyObservers(kGeneratedPasswordLeakDetectionPref);
-}
-
-void GeneratedPasswordLeakDetectionPref::OnPrimaryAccountCleared(
-    const CoreAccountInfo& previous_primary_account_info) {
-  NotifyObservers(kGeneratedPasswordLeakDetectionPref);
+void GeneratedPasswordLeakDetectionPref::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event_details) {
+  switch (event_details.GetEventTypeFor(signin::ConsentLevel::kSync)) {
+    case signin::PrimaryAccountChangeEvent::Type::kSet:
+    case signin::PrimaryAccountChangeEvent::Type::kCleared:
+      NotifyObservers(kGeneratedPasswordLeakDetectionPref);
+      break;
+    case signin::PrimaryAccountChangeEvent::Type::kNone:
+      break;
+  }
 }
 
 void GeneratedPasswordLeakDetectionPref::OnExtendedAccountInfoUpdated(
@@ -166,7 +168,14 @@ void GeneratedPasswordLeakDetectionPref::OnStateChanged(
   NotifyObservers(kGeneratedPasswordLeakDetectionPref);
 }
 
+void GeneratedPasswordLeakDetectionPref::OnSyncCycleCompleted(
+    syncer::SyncService* sync) {
+  // The base implementation of this calls OnStateChanged, however the pref will
+  // only change based on events reported directly to OnStateChanged, and so
+  // calling it here is unrequired and causes observer noise.
+}
+
 void GeneratedPasswordLeakDetectionPref::OnSyncShutdown(
     syncer::SyncService* sync) {
-  sync_service_observer_.RemoveAll();
+  sync_service_observer_.Reset();
 }

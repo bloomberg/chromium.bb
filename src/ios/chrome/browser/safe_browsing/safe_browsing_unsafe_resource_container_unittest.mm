@@ -7,8 +7,9 @@
 #include "base/bind.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #import "ios/web/public/navigation/navigation_item.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,8 +23,7 @@ class SafeBrowsingUnsafeResourceContainerTest : public PlatformTest {
  public:
   SafeBrowsingUnsafeResourceContainerTest()
       : item_(web::NavigationItem::Create()) {
-    std::unique_ptr<web::TestNavigationManager> navigation_manager =
-        std::make_unique<web::TestNavigationManager>();
+    auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
     navigation_manager->SetLastCommittedItem(item_.get());
     web_state_.SetNavigationManager(std::move(navigation_manager));
     SafeBrowsingUrlAllowList::CreateForWebState(&web_state_);
@@ -37,9 +37,9 @@ class SafeBrowsingUnsafeResourceContainerTest : public PlatformTest {
     resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
     resource.callback =
         base::BindRepeating([](bool proceed, bool showed_interstitial) {});
-    resource.resource_type = is_main_frame
-                                 ? safe_browsing::ResourceType::kMainFrame
-                                 : safe_browsing::ResourceType::kSubFrame;
+    resource.request_destination =
+        is_main_frame ? network::mojom::RequestDestination::kDocument
+                      : network::mojom::RequestDestination::kIframe;
     resource.web_state_getter = web_state_.CreateDefaultGetter();
     allow_list()->AddPendingUnsafeNavigationDecision(resource.url,
                                                      resource.threat_type);
@@ -55,7 +55,7 @@ class SafeBrowsingUnsafeResourceContainerTest : public PlatformTest {
 
  protected:
   std::unique_ptr<web::NavigationItem> item_;
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
 };
 
 // Tests that main frame resources are correctly stored in and released from the

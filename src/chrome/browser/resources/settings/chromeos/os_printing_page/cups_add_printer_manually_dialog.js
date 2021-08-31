@@ -14,8 +14,6 @@ function getEmptyPrinter_() {
     printerAddress: '',
     printerDescription: '',
     printerId: '',
-    printerManufacturer: '',
-    printerModel: '',
     printerMakeAndModel: '',
     printerName: '',
     printerPPDPath: '',
@@ -31,7 +29,21 @@ function getEmptyPrinter_() {
   };
 }
 
+import {afterNextRender, Polymer, html, flush, Templatizer, TemplateInstanceBase} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import '//resources/cr_elements/cr_button/cr_button.m.js';
+import '//resources/cr_elements/cr_input/cr_input.m.js';
+import '../localized_link/localized_link.js';
+import {loadTimeData} from '../../i18n_setup.js';
+import './cups_add_printer_dialog.js';
+import './cups_printer_dialog_error.js';
+import './cups_add_print_server_dialog.js';
+import {sortPrinters, matchesSearchTerm, getBaseName, getErrorText, isNetworkProtocol, isNameAndAddressValid, isPPDInfoValid, getPrintServerErrorText} from './cups_printer_dialog_util.js';
+import './cups_printer_shared_css.js';
+import {CupsPrintersBrowserProxy, CupsPrintersBrowserProxyImpl, CupsPrinterInfo, PrinterSetupResult, CupsPrintersList, PrinterPpdMakeModel, ManufacturersInfo, ModelsInfo, PrintServerResult, PrinterMakeModel} from './cups_printers_browser_proxy.js';
+
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'add-printer-manually-dialog',
 
   properties: {
@@ -87,7 +99,7 @@ Polymer({
    * @private
    */
   onAddPrinterFailed_(result) {
-    this.errorText_ = settings.printing.getErrorText(
+    this.errorText_ = getErrorText(
         /** @type {PrinterSetupResult} */ (result));
   },
 
@@ -100,8 +112,6 @@ Polymer({
     const newPrinter =
         /** @type {CupsPrinterInfo}  */ (Object.assign({}, this.newPrinter));
 
-    newPrinter.printerManufacturer = info.manufacturer;
-    newPrinter.printerModel = info.model;
     newPrinter.printerMakeAndModel = info.makeAndModel;
     newPrinter.printerPpdReference.userSuppliedPpdUrl =
         info.ppdRefUserSuppliedPpdUrl;
@@ -115,7 +125,7 @@ Polymer({
     // Add the printer if it's configurable. Otherwise, forward to the
     // manufacturer dialog.
     if (info.ppdReferenceResolved) {
-      settings.CupsPrintersBrowserProxyImpl.getInstance()
+      CupsPrintersBrowserProxyImpl.getInstance()
           .addCupsPrinter(this.newPrinter)
           .then(
               this.onAddPrinterSucceeded_.bind(this),
@@ -138,7 +148,7 @@ Polymer({
       this.$.printerAddressInput.invalid = true;
       return;
     }
-    this.errorText_ = settings.printing.getErrorText(
+    this.errorText_ = getErrorText(
         /** @type {PrinterSetupResult} */ (result));
   },
 
@@ -148,7 +158,7 @@ Polymer({
 
     if (this.newPrinter.printerProtocol === 'ipp' ||
         this.newPrinter.printerProtocol === 'ipps') {
-      settings.CupsPrintersBrowserProxyImpl.getInstance()
+      CupsPrintersBrowserProxyImpl.getInstance()
           .getPrinterInfo(this.newPrinter)
           .then(this.onPrinterFound_.bind(this), this.infoFailed_.bind(this));
     } else {
@@ -179,7 +189,7 @@ Polymer({
    */
   canAddPrinter_() {
     return !this.addPrinterInProgress_ &&
-        settings.printing.isNameAndAddressValid(this.newPrinter);
+        isNameAndAddressValid(this.newPrinter);
   },
 
   /** @private */

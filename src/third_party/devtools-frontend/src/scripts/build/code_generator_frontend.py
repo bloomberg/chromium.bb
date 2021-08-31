@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright (c) 2011 Google Inc. All rights reserved.
 # Copyright (c) 2012 Intel Corporation. All rights reserved.
 #
@@ -218,6 +218,14 @@ class Generator:
 
             if "events" in json_domain:
                 for json_event in json_domain["events"]:
+                    if "parameters" in json_event:
+                        for param in json_event["parameters"]:
+                            if "enum" in param:
+                                enum_name = "%s.%sEvent%s" % (
+                                    domain_name,
+                                    to_title_case(json_event["name"]),
+                                    to_title_case(param["name"]))
+                                Generator.process_enum(param, enum_name)
                     Generator.process_event(json_event, domain_name)
 
             if "commands" in json_domain:

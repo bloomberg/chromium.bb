@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/chacha_base_decrypter.h"
+#include "quic/core/crypto/chacha_base_decrypter.h"
 
 #include <cstdint>
 
 #include "absl/base/macros.h"
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/chacha.h"
-#include "net/third_party/quiche/src/quic/core/quic_data_reader.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/common/quiche_endian.h"
+#include "quic/core/quic_data_reader.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "common/quiche_endian.h"
 
 namespace quic {
 
 bool ChaChaBaseDecrypter::SetHeaderProtectionKey(absl::string_view key) {
   if (key.size() != GetKeySize()) {
-    QUIC_BUG << "Invalid key size for header protection";
+    QUIC_BUG(quic_bug_10620_1) << "Invalid key size for header protection";
     return false;
   }
   memcpy(pne_key_, key.data(), key.size());

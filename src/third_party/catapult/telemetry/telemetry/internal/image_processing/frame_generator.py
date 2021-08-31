@@ -2,20 +2,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import abc
+import six
 
 
 class FrameReadError(Exception):
   pass
 
 
-class FrameGenerator(object):
+class FrameGenerator(six.with_metaclass(abc.ABCMeta, object)):
   """ Defines an interface for reading input frames.
 
   Attributes:
     _generator: A reference to the created generator.
   """
-  __metaclass__ = abc.ABCMeta
 
   def __init__(self):
     """ Initializes the FrameGenerator object. """

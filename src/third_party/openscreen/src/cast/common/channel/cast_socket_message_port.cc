@@ -9,7 +9,6 @@
 #include "cast/common/channel/message_util.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "cast/common/channel/virtual_connection.h"
-#include "cast/common/channel/virtual_connection_manager.h"
 
 namespace openscreen {
 namespace cast {
@@ -51,8 +50,7 @@ void CastSocketMessagePort::ResetClient() {
 
   client_ = nullptr;
   router_->RemoveHandlerForLocalId(client_sender_id_);
-  router_->manager()->RemoveConnectionsByLocalId(
-      client_sender_id_, VirtualConnection::CloseReason::kClosedBySelf);
+  router_->RemoveConnectionsByLocalId(client_sender_id_);
   client_sender_id_.clear();
 }
 
@@ -72,9 +70,8 @@ void CastSocketMessagePort::PostMessage(
 
   VirtualConnection connection{client_sender_id_, destination_sender_id,
                                socket_->socket_id()};
-  if (!router_->manager()->GetConnectionData(connection)) {
-    router_->manager()->AddConnection(connection,
-                                      VirtualConnection::AssociatedData{});
+  if (!router_->GetConnectionData(connection)) {
+    router_->AddConnection(connection, VirtualConnection::AssociatedData{});
   }
 
   const Error send_error = router_->Send(
@@ -89,6 +86,13 @@ void CastSocketMessagePort::OnMessage(VirtualConnectionRouter* router,
                                       ::cast::channel::CastMessage message) {
   OSP_DCHECK(router == router_);
   OSP_DCHECK(!socket || socket_.get() == socket);
+
+  // Message ports are for specific virtual connections, and do not pass-through
+  // broadcasts.
+  if (message.destination_id() == kBroadcastId) {
+    return;
+  }
+
   OSP_DVLOG << "Received a cast socket message";
   if (!client_) {
     OSP_DLOG_WARN << "Dropping message due to nullptr client_";

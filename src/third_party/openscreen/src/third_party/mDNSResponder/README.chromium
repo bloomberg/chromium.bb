@@ -1,0 +1,10 @@
+Name: mDNSResponder
+URL: https://github.com/jevinskie/mDNSResponder
+License: Apache License, Version 2.0
+License File: src/LICENSE
+Security Critical: no
+
+Description:
+
+Pull from Apple Bonjour's MDNS/DNS-SD implementation. Will eventually be
+replaced with our custom implementation, currently only used in osp.

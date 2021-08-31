@@ -1,6 +1,7 @@
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import logging
 
 
@@ -27,7 +28,7 @@ class InspectorLog(object):
         logging.warning('DevTools console [%s]: %s %s',
                         entry['source'], text, entry.get('url', ''))
 
-  def _Enable(self, timeout=10):
+  def _Enable(self, timeout=60):
     try:
       self._inspector_websocket.SyncRequest({'method': 'Log.enable'}, timeout)
     except:

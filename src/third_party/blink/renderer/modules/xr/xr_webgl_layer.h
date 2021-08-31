@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_WEBGL_LAYER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_WEBGL_LAYER_H_
 
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_webgl_layer_init.h"
 #include "third_party/blink/renderer/modules/webgl/webgl2_rendering_context.h"
 #include "third_party/blink/renderer/modules/webgl/webgl_rendering_context.h"
@@ -15,10 +17,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_webgl_drawing_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-
-namespace viz {
-class SingleReleaseCallback;
-}
 
 namespace blink {
 
@@ -42,7 +40,11 @@ class XRWebGLLayer final : public XRLayer {
   ~XRWebGLLayer() override;
 
   static XRWebGLLayer* Create(XRSession*,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                              const V8XRWebGLRenderingContext*,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                               const XRWebGLRenderingContext&,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
                               const XRWebGLLayerInit*,
                               ExceptionState&);
 
@@ -59,17 +61,17 @@ class XRWebGLLayer final : public XRLayer {
 
   static double getNativeFramebufferScaleFactor(XRSession* session);
 
-  XRViewport* GetViewportForEye(XRView::XREye);
+  XRViewport* GetViewportForEye(device::mojom::blink::XREye);
 
   void UpdateViewports();
 
   HTMLCanvasElement* output_canvas() const;
   uint32_t CameraImageTextureId() const;
-  base::Optional<gpu::MailboxHolder> CameraImageMailboxHolder() const;
+  absl::optional<gpu::MailboxHolder> CameraImageMailboxHolder() const;
 
   void OnFrameStart(
-      const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder,
-      const base::Optional<gpu::MailboxHolder>& camera_image_mailbox_holder);
+      const absl::optional<gpu::MailboxHolder>& buffer_mailbox_holder,
+      const absl::optional<gpu::MailboxHolder>& camera_image_mailbox_holder);
   void OnFrameEnd();
   void OnResize();
 
@@ -83,10 +85,10 @@ class XRWebGLLayer final : public XRLayer {
 
  private:
   uint32_t GetBufferTextureId(
-      const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder);
+      const absl::optional<gpu::MailboxHolder>& buffer_mailbox_holder);
 
   void BindBufferTexture(
-      const base::Optional<gpu::MailboxHolder>& buffer_mailbox_holder);
+      const absl::optional<gpu::MailboxHolder>& buffer_mailbox_holder);
 
   Member<XRViewport> left_viewport_;
   Member<XRViewport> right_viewport_;
@@ -103,7 +105,7 @@ class XRWebGLLayer final : public XRLayer {
   uint32_t clean_frame_count = 0;
 
   uint32_t camera_image_texture_id_;
-  base::Optional<gpu::MailboxHolder> camera_image_mailbox_holder_;
+  absl::optional<gpu::MailboxHolder> camera_image_mailbox_holder_;
 };
 
 }  // namespace blink

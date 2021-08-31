@@ -6,6 +6,7 @@
 #include "chrome/browser/sharing/sharing_handler_registry_impl.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/sharing/ack_message_handler.h"
 #include "chrome/browser/sharing/ping_message_handler.h"
 #include "chrome/browser/sharing/sharing_device_registration.h"
@@ -13,9 +14,7 @@
 #include "chrome/browser/sharing/sharing_message_sender.h"
 
 #if defined(OS_ANDROID)
-#include "base/feature_list.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_message_handler_android.h"
-#include "chrome/browser/sharing/click_to_call/feature.h"
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_message_handler_android.h"
 #include "chrome/browser/sharing/sms/sms_fetch_request_handler.h"
 #else
@@ -25,8 +24,8 @@
 #if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_message_handler.h"
-#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
-        // defined(OS_CHROMEOS)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || (defined(OS_LINUX) ||
+        // BUILDFLAG(IS_CHROMEOS_LACROS)) defined(OS_CHROMEOS)
 
 SharingHandlerRegistryImpl::SharingHandlerRegistryImpl(
     Profile* profile,
@@ -42,11 +41,9 @@ SharingHandlerRegistryImpl::SharingHandlerRegistryImpl(
 
 #if defined(OS_ANDROID)
   // Note: IsClickToCallSupported() is not used as it requires JNI call.
-  if (base::FeatureList::IsEnabled(kClickToCallReceiver)) {
-    AddSharingHandler(
-        std::make_unique<ClickToCallMessageHandler>(),
-        {chrome_browser_sharing::SharingMessage::kClickToCallMessage});
-  }
+  AddSharingHandler(
+      std::make_unique<ClickToCallMessageHandler>(),
+      {chrome_browser_sharing::SharingMessage::kClickToCallMessage});
 
   if (sharing_device_registration->IsSmsFetcherSupported()) {
     AddSharingHandler(

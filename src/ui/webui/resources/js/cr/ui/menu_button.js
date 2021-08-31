@@ -63,7 +63,7 @@ cr.define('cr.ui', function() {
 
       // An event tracker for events we only connect to while the menu is
       // displayed.
-      this.showingEvents_ = new EventTracker();
+      this.showingEvents_ = new cr.EventTracker();
 
       this.anchorType = cr.ui.AnchorType.BELOW;
       this.invertLeftRight = false;
@@ -351,6 +351,7 @@ cr.define('cr.ui', function() {
 
   // Export
   // #cr_define_end
+  console.warn('crbug/1173575, non-JS module files deprecated.');
   return {
     HideType: HideType,
     MenuButton: MenuButton,

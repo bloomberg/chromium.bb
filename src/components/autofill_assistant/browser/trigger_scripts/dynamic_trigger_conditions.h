@@ -10,9 +10,9 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/web/web_controller.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 
@@ -34,7 +34,7 @@ class DynamicTriggerConditions {
   // Returns whether |selector| currently matches the DOM tree. |Update| must
   // be called prior to this method. Only selectors that have previously been
   // added via |AddSelectorsFromTriggerScript| can be queried.
-  virtual base::Optional<bool> GetSelectorMatches(
+  virtual absl::optional<bool> GetSelectorMatches(
       const Selector& selector) const;
 
   // Sets whether the keyboard is currently visible.
@@ -42,6 +42,15 @@ class DynamicTriggerConditions {
 
   // Returns whether the keyboard is currently visible.
   virtual bool GetKeyboardVisible() const;
+
+  // Updates the current URL of the page.
+  virtual void SetURL(const GURL& url);
+
+  // Returns whether the current URL matches the given path pattern.
+  virtual bool GetPathPatternMatches(const std::string& path_pattern) const;
+
+  // Returns whether the current URL belongs to the given domain.
+  virtual bool GetDomainAndSchemeMatches(const GURL& domain_with_scheme) const;
 
   // Matches all previously added selectors with the current DOM tree and caches
   // the results to be available via |GetSelectorMatches|. Invokes |callback|
@@ -69,6 +78,8 @@ class DynamicTriggerConditions {
 
   // Whether the keyboard is currently visible.
   bool keyboard_visible_ = false;
+  // The current URL of the page.
+  GURL url_;
   // Lookup cache for selector matches. Must be updated by invoking |Update|.
   std::map<Selector, bool> selector_matches_;
   // Temporary store for selector matches, used during |Update| as results

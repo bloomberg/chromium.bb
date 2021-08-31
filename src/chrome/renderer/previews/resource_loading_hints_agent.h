@@ -5,19 +5,17 @@
 #ifndef CHROME_RENDERER_PREVIEWS_RESOURCE_LOADING_HINTS_AGENT_H_
 #define CHROME_RENDERER_PREVIEWS_RESOURCE_LOADING_HINTS_AGENT_H_
 
-#include <memory>
-
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "chrome/common/previews_resource_loading_hints.mojom.h"
 #include "chrome/renderer/lite_video/lite_video_hint_agent.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
-#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom.h"
 #include "url/gurl.h"
 
 namespace previews {
@@ -27,7 +25,7 @@ namespace previews {
 // the document loader.
 class ResourceLoadingHintsAgent
     : public content::RenderFrameObserver,
-      public blink::mojom::PreviewsResourceLoadingHintsReceiver,
+      public previews::mojom::PreviewsResourceLoadingHintsReceiver,
       public base::SupportsWeakPtr<ResourceLoadingHintsAgent> {
  public:
   ResourceLoadingHintsAgent(
@@ -42,27 +40,21 @@ class ResourceLoadingHintsAgent
 
   GURL GetDocumentURL() const;
 
-  // blink::mojom::PreviewsResourceLoadingHintsReceiver:
-  void SetResourceLoadingHints(blink::mojom::PreviewsResourceLoadingHintsPtr
-                                   resource_loading_hints) override;
-  void SetCompressPublicImagesHints(
-      blink::mojom::CompressPublicImagesHintsPtr images_hints) override;
+  // previews::mojom::PreviewsResourceLoadingHintsReceiver:
   void SetLiteVideoHint(
-      blink::mojom::LiteVideoHintPtr lite_video_hint) override;
+      previews::mojom::LiteVideoHintPtr lite_video_hint) override;
   void SetBlinkOptimizationGuideHints(
       blink::mojom::BlinkOptimizationGuideHintsPtr hints) override;
   void StopThrottlingMediaRequests() override;
 
   void SetReceiver(
       mojo::PendingAssociatedReceiver<
-          blink::mojom::PreviewsResourceLoadingHintsReceiver> receiver);
+          previews::mojom::PreviewsResourceLoadingHintsReceiver> receiver);
 
   bool IsMainFrame() const;
 
-  std::vector<std::string> subresource_patterns_to_block_;
-  base::Optional<int64_t> ukm_source_id_;
-
-  mojo::AssociatedReceiver<blink::mojom::PreviewsResourceLoadingHintsReceiver>
+  mojo::AssociatedReceiver<
+      previews::mojom::PreviewsResourceLoadingHintsReceiver>
       receiver_{this};
 
   blink::mojom::BlinkOptimizationGuideHintsPtr blink_optimization_guide_hints_;

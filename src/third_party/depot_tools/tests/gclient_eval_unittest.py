@@ -14,9 +14,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from third_party import schema
 
-import metrics
+import metrics_utils
 # We have to disable monitoring before importing gclient.
-metrics.DISABLE_METRICS_COLLECTION = True
+metrics_utils.COLLECT_METRICS = False
 
 import gclient
 import gclient_eval

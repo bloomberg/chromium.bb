@@ -15,6 +15,7 @@
 #include "net/socket/connection_attempts.h"
 #include "net/socket/next_proto.h"
 #include "net/socket/socket.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -135,6 +136,11 @@ class NET_EXPORT StreamSocket : public Socket {
   // Returns the protocol negotiated via ALPN for this socket, or
   // kProtoUnknown will be returned if ALPN is not applicable.
   virtual NextProto GetNegotiatedProtocol() const = 0;
+
+  // Get data received from peer in ALPS TLS extension.
+  // Returns a (possibly empty) value if a TLS version supporting ALPS was used
+  // and ALPS was negotiated, nullopt otherwise.
+  virtual absl::optional<base::StringPiece> GetPeerApplicationSettings() const;
 
   // Gets the SSL connection information of the socket.  Returns false if
   // SSL was not used by this socket.

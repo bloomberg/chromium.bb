@@ -104,8 +104,8 @@ target(link_target_type, "gles2_sources") {
 
   sources = [
     "abstract_texture.h",
-    "abstract_texture_impl_shared_context_state.cc",
-    "abstract_texture_impl_shared_context_state.h",
+    "abstract_texture_impl.cc",
+    "abstract_texture_impl.h",
     "buffer_manager.cc",
     "buffer_manager.h",
     "client_service_map.h",
@@ -178,12 +178,12 @@ target(link_target_type, "gles2_sources") {
     "mailbox_manager_factory.h",
     "mailbox_manager_impl.cc",
     "mailbox_manager_impl.h",
-    "mailbox_manager_sync.cc",
-    "mailbox_manager_sync.h",
     "memory_program_cache.cc",
     "memory_program_cache.h",
     "multi_draw_manager.cc",
     "multi_draw_manager.h",
+    "native_image_buffer.cc",
+    "native_image_buffer.h",
     "passthrough_abstract_texture_impl.cc",
     "passthrough_abstract_texture_impl.h",
     "passthrough_discardable_manager.cc",
@@ -224,6 +224,7 @@ target(link_target_type, "gles2_sources") {
     "shared_context_state.h",
     "shared_image_backing.cc",
     "shared_image_backing.h",
+    "shared_image_backing_factory.cc",
     "shared_image_backing_factory.h",
     "shared_image_backing_factory_gl_texture.cc",
     "shared_image_backing_factory_gl_texture.h",
@@ -245,8 +246,6 @@ target(link_target_type, "gles2_sources") {
     "shared_memory_region_wrapper.h",
     "skia_utils.cc",
     "skia_utils.h",
-    "texture_definition.cc",
-    "texture_definition.h",
     "texture_manager.cc",
     "texture_manager.h",
     "transform_feedback_manager.cc",
@@ -317,7 +316,7 @@ target(link_target_type, "gles2_sources") {
     "//skia:buildflags",
     "//third_party/angle:angle_image_util",
     "//third_party/angle:commit_id",
-    "//third_party/angle:translator",
+    "//third_party/libyuv",
     "//third_party/protobuf:protobuf_lite",
     "//third_party/re2",
     "//third_party/zlib",
@@ -327,6 +326,13 @@ target(link_target_type, "gles2_sources") {
     "//ui/gl:buildflags",
     "//ui/gl/init",
   ]
+
+  # If statically linked against ANGLE, link against angle:translator which is already included with ANGLE.
+  if (use_static_angle) {
+    deps += [ "//third_party/angle:translator" ]
+  } else {
+    deps += [ "//third_party/angle:translator_gl_d3d_only" ]
+  }
 
   if (use_ozone) {
     deps += [
@@ -443,6 +449,8 @@ target(link_target_type, "gles2_sources") {
       "shared_image_batch_access_manager.h",
       "shared_image_representation_gl_texture_android.cc",
       "shared_image_representation_gl_texture_android.h",
+      "shared_image_representation_gl_texture_passthrough_android.cc",
+      "shared_image_representation_gl_texture_passthrough_android.h",
       "shared_image_representation_skia_vk_android.cc",
       "shared_image_representation_skia_vk_android.h",
       "shared_image_video.cc",

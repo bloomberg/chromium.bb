@@ -73,7 +73,7 @@ class ContentVerifierHashTest
 
   void TearDown() override {
     ExtensionBrowserTest::TearDown();
-    ChromeContentVerifierDelegate::SetDefaultModeForTesting(base::nullopt);
+    ChromeContentVerifierDelegate::SetDefaultModeForTesting(absl::nullopt);
   }
 
   void TearDownOnMainThread() override {
@@ -153,7 +153,7 @@ class ContentVerifierHashTest
     base::FilePath computed_hashes_path =
         file_util::GetComputedHashesPath(info_->extension_root);
     std::string extra = R"({hello:"world"})";
-    if (!base::AppendToFile(computed_hashes_path, extra.data(), extra.size())) {
+    if (!base::AppendToFile(computed_hashes_path, extra)) {
       return testing::AssertionFailure()
              << "Could not tamper computed_hashes.json";
     }
@@ -170,7 +170,7 @@ class ContentVerifierHashTest
     std::string extra = "some_extra_function_call();";
     base::FilePath real_path =
         info_->extension_root.AppendASCII(resource_to_tamper);
-    if (!base::AppendToFile(real_path, extra.data(), extra.size())) {
+    if (!base::AppendToFile(real_path, extra)) {
       return testing::AssertionFailure()
              << "Could not tamper " << resource_to_tamper << ".";
     }
@@ -243,7 +243,7 @@ class ContentVerifierHashTest
     ComputedHashes::Status computed_hashes_status;
     return ComputedHashes::CreateFromFile(
                file_util::GetComputedHashesPath(info_->extension_root),
-               &computed_hashes_status) != base::nullopt;
+               &computed_hashes_status) != absl::nullopt;
   }
 
   bool HasValidVerifiedContents() {

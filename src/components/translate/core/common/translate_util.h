@@ -14,6 +14,9 @@ namespace translate {
 // main frame.
 extern const base::Feature kTranslateSubFrames;
 
+// Controls whether the TFLite-based language detection is enabled.
+extern const base::Feature kTFLiteLanguageDetectionEnabled;
+
 // Isolated world sets following security-origin by default.
 extern const char kSecurityOrigin[];
 
@@ -26,6 +29,13 @@ bool IsSubFrameTranslationEnabled();
 
 // Return whether sub frame language detection is enabled.
 bool IsSubFrameLanguageDetectionEnabled();
+
+// Return whether TFLite-based language detection is enabled.
+bool IsTFLiteLanguageDetectionEnabled();
+
+// Return the threshold used to determine if TFLite language detection model's
+// prediction is reliable.
+float GetTFLiteLanguageDetectionThreshold();
 
 }  // namespace translate
 

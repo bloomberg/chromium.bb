@@ -5,40 +5,38 @@
 #import "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
 
 #include "base/check.h"
-#include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
-#include "chrome/browser/ui/cocoa/notifications/notification_operation.h"
+#include "chrome/services/mac_notifications/public/cpp/notification_constants_mac.h"
+#include "chrome/services/mac_notifications/public/cpp/notification_operation.h"
 
 @implementation NotificationResponseBuilder
 
 + (NSDictionary*)buildDictionary:(NSUserNotification*)notification
+                       fromAlert:(BOOL)fromAlert
                        dismissed:(BOOL)dismissed {
   NSString* origin =
-      [[notification userInfo]
-          objectForKey:notification_constants::kNotificationOrigin]
-          ? [[notification userInfo]
-                objectForKey:notification_constants::kNotificationOrigin]
+      [notification userInfo][notification_constants::kNotificationOrigin]
+          ? [notification userInfo][notification_constants::kNotificationOrigin]
           : @"";
-  DCHECK([[notification userInfo]
-      objectForKey:notification_constants::kNotificationId]);
-  NSString* notificationId = [[notification userInfo]
-      objectForKey:notification_constants::kNotificationId];
+  DCHECK([notification userInfo][notification_constants::kNotificationId]);
+  NSString* notificationId =
+      [notification userInfo][notification_constants::kNotificationId];
 
-  DCHECK([[notification userInfo]
-      objectForKey:notification_constants::kNotificationProfileId]);
-  NSString* profileId = [[notification userInfo]
-      objectForKey:notification_constants::kNotificationProfileId];
+  DCHECK(
+      [notification userInfo][notification_constants::kNotificationProfileId]);
+  NSString* profileId =
+      [notification userInfo][notification_constants::kNotificationProfileId];
 
-  NSNumber* creatorPid = [[notification userInfo]
-      objectForKey:notification_constants::kNotificationCreatorPid];
+  NSNumber* creatorPid =
+      [notification userInfo][notification_constants::kNotificationCreatorPid];
 
-  DCHECK([[notification userInfo]
-      objectForKey:notification_constants::kNotificationIncognito]);
-  NSNumber* incognito = [[notification userInfo]
-      objectForKey:notification_constants::kNotificationIncognito];
-  NSNumber* notificationType = [[notification userInfo]
-      objectForKey:notification_constants::kNotificationType];
-  NSNumber* hasSettingsButton = [[notification userInfo]
-      objectForKey:notification_constants::kNotificationHasSettingsButton];
+  DCHECK(
+      [notification userInfo][notification_constants::kNotificationIncognito]);
+  NSNumber* incognito =
+      [notification userInfo][notification_constants::kNotificationIncognito];
+  NSNumber* notificationType =
+      [notification userInfo][notification_constants::kNotificationType];
+  NSNumber* hasSettingsButton = [notification userInfo]
+      [notification_constants::kNotificationHasSettingsButton];
 
   // Closed notifications are not activated.
   NSUserNotificationActivationType activationType =
@@ -88,20 +86,24 @@
     notification_constants::kNotificationCreatorPid : creatorPid ? creatorPid
                                                                  : @0,
     notification_constants::kNotificationType : notificationType,
-    notification_constants::kNotificationOperation :
-        [NSNumber numberWithInt:static_cast<int>(operation)],
     notification_constants::
-    kNotificationButtonIndex : [NSNumber numberWithInt:buttonIndex],
+    kNotificationOperation : @(static_cast<int>(operation)),
+    notification_constants::kNotificationButtonIndex : @(buttonIndex),
+    notification_constants::kNotificationIsAlert : @(fromAlert),
   };
 }
 
-+ (NSDictionary*)buildActivatedDictionary:(NSUserNotification*)notification {
++ (NSDictionary*)buildActivatedDictionary:(NSUserNotification*)notification
+                                fromAlert:(BOOL)fromAlert {
   return [NotificationResponseBuilder buildDictionary:notification
+                                            fromAlert:fromAlert
                                             dismissed:NO];
 }
 
-+ (NSDictionary*)buildDismissedDictionary:(NSUserNotification*)notification {
++ (NSDictionary*)buildDismissedDictionary:(NSUserNotification*)notification
+                                fromAlert:(BOOL)fromAlert {
   return [NotificationResponseBuilder buildDictionary:notification
+                                            fromAlert:fromAlert
                                             dismissed:YES];
 }
 

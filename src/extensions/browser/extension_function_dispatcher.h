@@ -12,9 +12,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "extensions/browser/extension_function.h"
+#include "extensions/common/mojom/frame.mojom.h"
 #include "ipc/ipc_sender.h"
-
-struct ExtensionHostMsg_Request_Params;
 
 namespace content {
 class BrowserContext;
@@ -73,12 +72,18 @@ class ExtensionFunctionDispatcher
       content::BrowserContext* browser_context);
   ~ExtensionFunctionDispatcher();
 
-  // Message handlers.
-  // The response is sent to the corresponding render view in an
-  // ExtensionMsg_Response message.
-  void Dispatch(const ExtensionHostMsg_Request_Params& params,
+  // Dispatches a request and the response is sent in |callback| that is a reply
+  // of mojom::LocalFrameHost::Request.
+  void Dispatch(mojom::RequestParamsPtr params,
                 content::RenderFrameHost* render_frame_host,
-                int render_process_id);
+                int render_process_id,
+                mojom::LocalFrameHost::RequestCallback callback);
+
+  // Message handlers.
+  // Dispatches a request for service woker and the response is sent to the
+  // corresponding render process in an ExtensionMsg_ResponseWorker message.
+  void DispatchForServiceWorker(const mojom::RequestParams& params,
+                                int render_process_id);
 
   // Called when an ExtensionFunction is done executing, after it has sent
   // a response (if any) to the extension.
@@ -126,20 +131,20 @@ class ExtensionFunctionDispatcher
   // |params|. Can be called on any thread.
   // Does not set subclass properties, or include_incognito.
   static scoped_refptr<ExtensionFunction> CreateExtensionFunction(
-      const ExtensionHostMsg_Request_Params& params,
+      const mojom::RequestParams& params,
       const Extension* extension,
       int requesting_process_id,
       const GURL* rfh_url,
       const ProcessMap& process_map,
       ExtensionAPI* api,
       void* profile_id,
-      const ExtensionFunction::ResponseCallback& callback);
+      ExtensionFunction::ResponseCallback callback);
 
   void DispatchWithCallbackInternal(
-      const ExtensionHostMsg_Request_Params& params,
+      const mojom::RequestParams& params,
       content::RenderFrameHost* render_frame_host,
       int render_process_id,
-      const ExtensionFunction::ResponseCallback& callback);
+      ExtensionFunction::ResponseCallback callback);
 
   void RemoveWorkerCallbacksForProcess(int render_process_id);
 

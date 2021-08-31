@@ -7,11 +7,10 @@
 #include <atomic>
 
 #include "base/bind.h"
+#include "base/memory/page_size.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump_type.h"
-#include "base/optional.h"
 #include "base/process/process_handle.h"
-#include "base/process/process_metrics.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
@@ -23,6 +22,7 @@
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace mojo {
 namespace core {
@@ -87,7 +87,7 @@ class MockChannelDelegate : public Channel::Delegate {
 
 Channel::MessagePtr CreateDefaultMessage(bool legacy_message) {
   const size_t payload_size = 100;
-  Channel::MessagePtr message = std::make_unique<Channel::Message>(
+  Channel::MessagePtr message = Channel::Message::CreateMessage(
       payload_size, 0,
       legacy_message ? Channel::Message::MessageType::NORMAL_LEGACY
                      : Channel::Message::MessageType::NORMAL);
@@ -312,7 +312,7 @@ class RejectHandlesDelegate : public Channel::Delegate {
 
  private:
   size_t num_messages_ = 0;
-  base::Optional<base::RunLoop> wait_for_error_loop_;
+  absl::optional<base::RunLoop> wait_for_error_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(RejectHandlesDelegate);
 };
@@ -344,8 +344,8 @@ TEST(ChannelTest, RejectHandles) {
   PlatformChannel dummy_channel;
   std::vector<mojo::PlatformHandle> handles;
   handles.push_back(dummy_channel.TakeLocalEndpoint().TakePlatformHandle());
-  auto message = std::make_unique<Channel::Message>(0 /* payload_size */,
-                                                    1 /* max_handles */);
+  auto message = Channel::Message::CreateMessage(0 /* payload_size */,
+                                                 1 /* max_handles */);
   message->SetHandles(std::move(handles));
   sender->Write(std::move(message));
 
@@ -451,7 +451,7 @@ TEST(ChannelTest, PeerStressTest) {
   base::Thread::Options thread_options;
   thread_options.message_pump_type = base::MessagePumpType::IO;
   base::Thread peer_thread("peer_b_io");
-  peer_thread.StartWithOptions(thread_options);
+  peer_thread.StartWithOptions(std::move(thread_options));
 
   // Create two channels that run on separate threads.
   PlatformChannel platform_channel;
@@ -472,11 +472,11 @@ TEST(ChannelTest, PeerStressTest) {
   // Send a lot of messages, followed by a final terminating message.
   auto send_lots_of_messages = [](scoped_refptr<Channel> channel) {
     for (size_t i = 0; i < kLotsOfMessages; ++i) {
-      channel->Write(std::make_unique<Channel::Message>(0, 0));
+      channel->Write(Channel::Message::CreateMessage(0, 0));
     }
   };
   auto send_final_message = [](scoped_refptr<Channel> channel) {
-    auto message = std::make_unique<Channel::Message>(1, 0);
+    auto message = Channel::Message::CreateMessage(1, 0);
     auto* payload = static_cast<char*>(message->mutable_payload());
     payload[0] = '!';
     channel->Write(std::move(message));
@@ -572,7 +572,7 @@ TEST(ChannelTest, MessageSizeTest) {
   for (uint32_t i = 0; i < base::GetPageSize() * 4; ++i) {
     SCOPED_TRACE(base::StringPrintf("message size %d", i));
 
-    auto message = std::make_unique<Channel::Message>(i, 0);
+    auto message = Channel::Message::CreateMessage(i, 0);
     memset(message->mutable_payload(), 0xAB, i);
     sender->Write(std::move(message));
 
@@ -606,7 +606,7 @@ TEST(ChannelTest, SendToDeadMachPortName) {
   base::Thread::Options thread_options;
   thread_options.message_pump_type = base::MessagePumpType::IO;
   base::Thread peer_thread("channel_b_io");
-  peer_thread.StartWithOptions(thread_options);
+  peer_thread.StartWithOptions(std::move(thread_options));
 
   // Create a PlatformChannel send/receive right pair.
   PlatformChannel platform_channel;
@@ -654,7 +654,7 @@ TEST(ChannelTest, SendToDeadMachPortName) {
   channel_b->Start();
 
   // Ensure the channels have started and are talking.
-  channel_b->Write(std::make_unique<Channel::Message>(0, 0));
+  channel_b->Write(Channel::Message::CreateMessage(0, 0));
 
   {
     base::RunLoop loop;
@@ -665,8 +665,8 @@ TEST(ChannelTest, SendToDeadMachPortName) {
   // Queue two messages from B to A. Two are required so that channel A does
   // not immediately process the dead-name notification when channel B shuts
   // down.
-  channel_b->Write(std::make_unique<Channel::Message>(0, 0));
-  channel_b->Write(std::make_unique<Channel::Message>(0, 0));
+  channel_b->Write(Channel::Message::CreateMessage(0, 0));
+  channel_b->Write(Channel::Message::CreateMessage(0, 0));
 
   // Turn Channel A's send right into a dead name.
   channel_b->ShutDown();
@@ -681,7 +681,7 @@ TEST(ChannelTest, SendToDeadMachPortName) {
   event.Wait();
 
   // Force a send-to-dead-name on Channel A.
-  channel_a->Write(std::make_unique<Channel::Message>(0, 0));
+  channel_a->Write(Channel::Message::CreateMessage(0, 0));
 
   {
     base::RunLoop loop;

@@ -50,12 +50,12 @@ void FilterInitialMetadata(grpc_metadata_batch* b,
   if (b->idx.named.grpc_trace_bin != nullptr) {
     sml->tracing_slice =
         grpc_slice_ref_internal(GRPC_MDVALUE(b->idx.named.grpc_trace_bin->md));
-    grpc_metadata_batch_remove(b, b->idx.named.grpc_trace_bin);
+    grpc_metadata_batch_remove(b, GRPC_BATCH_GRPC_TRACE_BIN);
   }
   if (b->idx.named.grpc_tags_bin != nullptr) {
     sml->census_proto =
         grpc_slice_ref_internal(GRPC_MDVALUE(b->idx.named.grpc_tags_bin->md));
-    grpc_metadata_batch_remove(b, b->idx.named.grpc_tags_bin);
+    grpc_metadata_batch_remove(b, GRPC_BATCH_GRPC_TAGS_BIN);
   }
 }
 
@@ -74,7 +74,8 @@ void CensusServerCallData::OnDoneRecvMessageCb(void* user_data,
   if ((*calld->recv_message_) != nullptr) {
     ++calld->recv_message_count_;
   }
-  GRPC_CLOSURE_RUN(calld->initial_on_done_recv_message_, GRPC_ERROR_REF(error));
+  grpc_core::Closure::Run(DEBUG_LOCATION, calld->initial_on_done_recv_message_,
+                          GRPC_ERROR_REF(error));
 }
 
 void CensusServerCallData::OnDoneRecvInitialMetadataCb(void* user_data,
@@ -102,27 +103,17 @@ void CensusServerCallData::OnDoneRecvInitialMetadataCb(void* user_data,
     size_t tracing_str_len = GRPC_SLICE_IS_EMPTY(sml.tracing_slice)
                                  ? 0
                                  : GRPC_SLICE_LENGTH(sml.tracing_slice);
-    const char* census_str = GRPC_SLICE_IS_EMPTY(sml.census_proto)
-                                 ? ""
-                                 : reinterpret_cast<const char*>(
-                                       GRPC_SLICE_START_PTR(sml.census_proto));
-    size_t census_str_len = GRPC_SLICE_IS_EMPTY(sml.census_proto)
-                                ? 0
-                                : GRPC_SLICE_LENGTH(sml.census_proto);
-
     GenerateServerContext(absl::string_view(tracing_str, tracing_str_len),
-                          absl::string_view(census_str, census_str_len),
-                          /*primary_role*/ "", calld->qualified_method_,
-                          &calld->context_);
-
+                          calld->qualified_method_, &calld->context_);
     grpc_slice_unref_internal(sml.tracing_slice);
     grpc_slice_unref_internal(sml.census_proto);
     grpc_slice_unref_internal(sml.path);
     grpc_census_call_set_context(
         calld->gc_, reinterpret_cast<census_context*>(&calld->context_));
   }
-  GRPC_CLOSURE_RUN(calld->initial_on_done_recv_initial_metadata_,
-                   GRPC_ERROR_REF(error));
+  grpc_core::Closure::Run(DEBUG_LOCATION,
+                          calld->initial_on_done_recv_initial_metadata_,
+                          GRPC_ERROR_REF(error));
 }
 
 void CensusServerCallData::StartTransportStreamOpBatch(
@@ -155,7 +146,8 @@ void CensusServerCallData::StartTransportStreamOpBatch(
               op->send_trailing_metadata()->batch(), &census_bin_,
               grpc_mdelem_from_slices(
                   GRPC_MDSTR_GRPC_SERVER_STATS_BIN,
-                  grpc_slice_from_copied_buffer(stats_buf_, len))));
+                  grpc_core::UnmanagedMemorySlice(stats_buf_, len)),
+              GRPC_BATCH_GRPC_SERVER_STATS_BIN));
     }
   }
   // Call next op.
@@ -176,9 +168,9 @@ grpc_error* CensusServerCallData::Init(grpc_call_element* elem,
   return GRPC_ERROR_NONE;
 }
 
-void CensusServerCallData::Destroy(grpc_call_element* elem,
+void CensusServerCallData::Destroy(grpc_call_element* /*elem*/,
                                    const grpc_call_final_info* final_info,
-                                   grpc_closure* then_call_closure) {
+                                   grpc_closure* /*then_call_closure*/) {
   const uint64_t request_size = GetOutgoingDataSize(final_info);
   const uint64_t response_size = GetIncomingDataSize(final_info);
   double elapsed_time_ms = absl::ToDoubleMilliseconds(elapsed_time_);

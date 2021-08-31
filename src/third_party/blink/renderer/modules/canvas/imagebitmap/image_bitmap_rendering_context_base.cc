@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_rendering_context_base.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlcanvaselement_offscreencanvas.h"
 #include "third_party/blink/renderer/bindings/modules/v8/html_canvas_element_or_offscreen_canvas.h"
 #include "third_party/blink/renderer/bindings/modules/v8/rendering_context.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
@@ -26,6 +27,17 @@ ImageBitmapRenderingContextBase::ImageBitmapRenderingContextBase(
 
 ImageBitmapRenderingContextBase::~ImageBitmapRenderingContextBase() = default;
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+V8UnionHTMLCanvasElementOrOffscreenCanvas*
+ImageBitmapRenderingContextBase::getHTMLOrOffscreenCanvas() const {
+  if (Host()->IsOffscreenCanvas()) {
+    return MakeGarbageCollected<V8UnionHTMLCanvasElementOrOffscreenCanvas>(
+        static_cast<OffscreenCanvas*>(Host()));
+  }
+  return MakeGarbageCollected<V8UnionHTMLCanvasElementOrOffscreenCanvas>(
+      static_cast<HTMLCanvasElement*>(Host()));
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void ImageBitmapRenderingContextBase::getHTMLOrOffscreenCanvas(
     HTMLCanvasElementOrOffscreenCanvas& result) const {
   if (Host()->IsOffscreenCanvas()) {
@@ -34,16 +46,34 @@ void ImageBitmapRenderingContextBase::getHTMLOrOffscreenCanvas(
     result.SetHTMLCanvasElement(static_cast<HTMLCanvasElement*>(Host()));
   }
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void ImageBitmapRenderingContextBase::Stop() {
   image_layer_bridge_->Dispose();
 }
 
+void ImageBitmapRenderingContextBase::ResetInternalBitmapToBlackTransparent(
+    int width,
+    int height) {
+  SkBitmap black_bitmap;
+  black_bitmap.allocN32Pixels(width, height);
+  black_bitmap.eraseARGB(0, 0, 0, 0);
+  auto image = SkImage::MakeFromBitmap(black_bitmap);
+  if (image) {
+    image_layer_bridge_->SetImage(
+        UnacceleratedStaticBitmapImage::Create(image));
+  }
+}
+
 void ImageBitmapRenderingContextBase::SetImage(ImageBitmap* image_bitmap) {
   DCHECK(!image_bitmap || !image_bitmap->IsNeutered());
 
-  image_layer_bridge_->SetImage(image_bitmap ? image_bitmap->BitmapImage()
-                                             : nullptr);
+  // According to the standard TransferFromImageBitmap(null) has to reset the
+  // internal bitmap and create a black transparent one.
+  if (image_bitmap)
+    image_layer_bridge_->SetImage(image_bitmap->BitmapImage());
+  else
+    ResetInternalBitmapToBlackTransparent(Host()->width(), Host()->height());
 
   DidDraw();
 
@@ -61,11 +91,8 @@ ImageBitmapRenderingContextBase::GetImageAndResetInternal() {
     return nullptr;
   scoped_refptr<StaticBitmapImage> copy_image = image_layer_bridge_->GetImage();
 
-  SkBitmap black_bitmap;
-  black_bitmap.allocN32Pixels(copy_image->width(), copy_image->height());
-  black_bitmap.eraseARGB(0, 0, 0, 0);
-  image_layer_bridge_->SetImage(UnacceleratedStaticBitmapImage::Create(
-      SkImage::MakeFromBitmap(black_bitmap)));
+  ResetInternalBitmapToBlackTransparent(copy_image->width(),
+                                        copy_image->height());
 
   return copy_image;
 }
@@ -109,7 +136,8 @@ bool ImageBitmapRenderingContextBase::PushFrame() {
   cc::PaintFlags paint_flags;
   paint_flags.setBlendMode(SkBlendMode::kSrc);
   Host()->ResourceProvider()->Canvas()->drawImage(
-      image->PaintImageForCurrentFrame(), 0, 0, &paint_flags);
+      image->PaintImageForCurrentFrame(), 0, 0, SkSamplingOptions(),
+      &paint_flags);
   scoped_refptr<CanvasResource> resource =
       Host()->ResourceProvider()->ProduceCanvasResource();
   Host()->PushFrame(

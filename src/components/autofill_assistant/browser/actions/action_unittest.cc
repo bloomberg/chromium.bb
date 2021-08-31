@@ -6,6 +6,7 @@
 
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
+#include "base/time/time_override.h"
 #include "components/autofill_assistant/browser/actions/action_test_utils.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/selector.h"
@@ -39,7 +40,7 @@ class FakeAction : public Action {
  private:
   void InternalProcessAction(ProcessActionCallback callback) override {
     Selector selector;
-    delegate_->ShortWaitForElement(
+    delegate_->ShortWaitForElementWithSlowWarning(
         selector,
         base::BindOnce(
             &FakeAction::OnWaitForElementTimed, weak_ptr_factory_.GetWeakPtr(),
@@ -48,7 +49,8 @@ class FakeAction : public Action {
   }
 
   void OnWaitForElement(ProcessActionCallback callback,
-                        const ClientStatus& element_status) {
+                        const ClientStatus& status) {
+    UpdateProcessedAction(status);
     std::move(callback).Run(std::move(processed_action_proto_));
   }
 };
@@ -58,6 +60,12 @@ class FakeActionTest : public testing::Test {
   void SetUp() override {}
 
  protected:
+  ClientStatus ClientStatusWithWarning(SlowWarningStatus warning_status) {
+    ClientStatus status = OkClientStatus();
+    status.set_slow_warning_status(warning_status);
+    return status;
+  }
+
   void Run() {
     ActionProto action_proto;
     action_proto.set_action_delay_ms(1000);
@@ -90,6 +98,23 @@ TEST_F(FakeActionTest, WaitForDomActionTest) {
   EXPECT_EQ(processed_proto.timing_stats().delay_ms(), 1000);
   EXPECT_EQ(processed_proto.timing_stats().active_time_ms(), 1500);
   EXPECT_EQ(processed_proto.timing_stats().wait_time_ms(), 500);
+}
+
+TEST_F(FakeActionTest, SlowWarningShownTest) {
+  base::subtle::ScopedTimeClockOverrides overrides(
+      nullptr, &TimeTicksOverride::Now, nullptr);
+  InSequence sequence;
+
+  EXPECT_CALL(mock_action_delegate_, OnShortWaitForElement(_, _))
+      .WillOnce(DoAll(Delay(2), RunOnceCallback<1>(
+                                    ClientStatusWithWarning(WARNING_SHOWN),
+                                    base::TimeDelta::FromMilliseconds(500))));
+
+  ProcessedActionProto processed_proto;
+  EXPECT_CALL(callback_, Run(_)).WillOnce(SaveArgPointee<0>(&processed_proto));
+  Run();
+
+  EXPECT_EQ(processed_proto.slow_warning_status(), WARNING_SHOWN);
 }
 
 }  // namespace

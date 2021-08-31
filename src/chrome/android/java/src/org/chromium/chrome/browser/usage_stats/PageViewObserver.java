@@ -8,10 +8,12 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
-import android.net.Uri;
-import android.webkit.URLUtil;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
+import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -22,6 +24,8 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.url.GURL;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -42,23 +46,26 @@ public class PageViewObserver {
     private final EventTracker mEventTracker;
     private final TokenTracker mTokenTracker;
     private final SuspensionTracker mSuspensionTracker;
+    private final Supplier<TabContentManager> mTabContentManagerSupplier;
 
     private Tab mCurrentTab;
     private String mLastFqdn;
 
     public PageViewObserver(Activity activity, TabModelSelector tabModelSelector,
             EventTracker eventTracker, TokenTracker tokenTracker,
-            SuspensionTracker suspensionTracker) {
+            SuspensionTracker suspensionTracker,
+            Supplier<TabContentManager> tabContentManagerSupplier) {
         mActivity = activity;
         mTabModelSelector = tabModelSelector;
         mEventTracker = eventTracker;
         mTokenTracker = tokenTracker;
         mSuspensionTracker = suspensionTracker;
+        mTabContentManagerSupplier = tabContentManagerSupplier;
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onShown(Tab tab, @TabSelectionType int type) {
                 if (!tab.isLoading() && !tab.isBeingRestored()) {
-                    updateUrl(tab.getUrlString());
+                    updateUrl(tab.getUrl());
                 }
             }
 
@@ -68,7 +75,7 @@ public class PageViewObserver {
             }
 
             @Override
-            public void onUpdateUrl(Tab tab, String url) {
+            public void onUpdateUrl(Tab tab, GURL url) {
                 assert tab == mCurrentTab;
                 String newFqdn = getValidFqdnOrEmptyString(url);
                 // We don't call updateUrl() here to avoid reporting start events for domains
@@ -82,7 +89,7 @@ public class PageViewObserver {
             public void didFirstVisuallyNonEmptyPaint(Tab tab) {
                 assert tab == mCurrentTab;
 
-                updateUrl(tab.getUrlString());
+                updateUrl(tab.getUrl());
             }
 
             @Override
@@ -128,7 +135,7 @@ public class PageViewObserver {
     /** Notify PageViewObserver that {@code fqdn} was just suspended or un-suspended. */
     public void notifySiteSuspensionChanged(String fqdn, boolean isSuspended) {
         if (mCurrentTab == null || !mCurrentTab.isInitialized()) return;
-        SuspendedTab suspendedTab = SuspendedTab.from(mCurrentTab);
+        SuspendedTab suspendedTab = SuspendedTab.from(mCurrentTab, mTabContentManagerSupplier);
         if (fqdn.equals(mLastFqdn) || fqdn.equals(suspendedTab.getFqdn())) {
             if (checkSuspendedTabState(isSuspended, fqdn)) {
                 reportStop();
@@ -143,10 +150,10 @@ public class PageViewObserver {
      * 2. Reporting a stop event for mLastFqdn.
      * 3. Reporting a start event for the fqdn of {@code newUrl}.
      */
-    private void updateUrl(String newUrl) {
+    private void updateUrl(@Nullable GURL newUrl) {
         String newFqdn = getValidFqdnOrEmptyString(newUrl);
         boolean isSameDomain = newFqdn.equals(mLastFqdn);
-        boolean isValidProtocol = URLUtil.isHttpUrl(newUrl) || URLUtil.isHttpsUrl(newUrl);
+        boolean isValidProtocol = newUrl != null && UrlUtilities.isHttpOrHttps(newUrl);
 
         boolean isSuspended = mSuspensionTracker.isWebsiteSuspended(newFqdn);
         boolean didSuspend = checkSuspendedTabState(isSuspended, newFqdn);
@@ -172,7 +179,7 @@ public class PageViewObserver {
      * hidden, or it's hidden and should be shown.
      */
     private boolean checkSuspendedTabState(boolean isNewlySuspended, String fqdn) {
-        SuspendedTab suspendedTab = SuspendedTab.from(mCurrentTab);
+        SuspendedTab suspendedTab = SuspendedTab.from(mCurrentTab, mTabContentManagerSupplier);
         // We don't need to do anything in situations where the current state matches the desired;
         // i.e. either the suspended tab is already showing with the correct fqdn, or the suspended
         // tab is hidden and should be hidden.
@@ -205,7 +212,7 @@ public class PageViewObserver {
         // If the newly active tab is hidden, we don't want to check its URL yet; we'll wait until
         // the onShown event fires.
         if (mCurrentTab != null && !tab.isHidden()) {
-            updateUrl(tab.getUrlString());
+            updateUrl(tab.getUrl());
         }
     }
 
@@ -242,9 +249,8 @@ public class PageViewObserver {
         });
     }
 
-    private static String getValidFqdnOrEmptyString(String url) {
-        if (url == null) return "";
-        String host = Uri.parse(url).getHost();
-        return host == null ? "" : host;
+    private static String getValidFqdnOrEmptyString(GURL url) {
+        if (GURL.isEmptyOrInvalid(url)) return "";
+        return url.getHost();
     }
 }

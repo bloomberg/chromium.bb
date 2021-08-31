@@ -9,13 +9,15 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/strings/string16.h"
 #include "build/buildflag.h"
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/ui/signin_reauth_view_controller.h"
-#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
+#endif
 
 struct AccountInfo;
 class Browser;
@@ -32,7 +34,7 @@ const int kUpgradeWelcomeTutorialShowMax = 1;
 
 // Returns the username of the primary account or an empty string if there is
 // no primary account or the account has not consented to browser sync.
-base::string16 GetAuthenticatedUsername(Profile* profile);
+std::u16string GetAuthenticatedUsername(Profile* profile);
 
 // Initializes signin-related preferences.
 void InitializePrefsForProfile(Profile* profile);
@@ -78,7 +80,7 @@ AccountInfo GetSingleAccountForDicePromos(Profile* profile);
 // TODO(crbug.com/1012179): Move this logic into ProfileAttributesEntry once
 // AvatarToolbarButton becomes an observer of ProfileAttributesStorage and thus
 // ProfileAttributesEntry is up-to-date when AvatarToolbarButton needs it.
-base::string16 GetShortProfileIdentityToDisplay(
+std::u16string GetShortProfileIdentityToDisplay(
     const ProfileAttributesEntry& profile_attributes_entry,
     Profile* profile);
 

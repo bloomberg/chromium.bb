@@ -15,7 +15,7 @@
 namespace web {
 
 class WebState;
-class TestWebState;
+class FakeWebState;
 
 // Decides the navigation policy for a web state.
 class WebStatePolicyDecider {
@@ -84,15 +84,20 @@ class WebStatePolicyDecider {
   struct RequestInfo {
     RequestInfo(ui::PageTransition transition_type,
                 bool target_frame_is_main,
+                bool target_frame_is_cross_origin,
                 bool has_user_gesture)
         : transition_type(transition_type),
           target_frame_is_main(target_frame_is_main),
+          target_frame_is_cross_origin(target_frame_is_cross_origin),
           has_user_gesture(has_user_gesture) {}
     // The navigation page transition type.
     ui::PageTransition transition_type =
         ui::PageTransition::PAGE_TRANSITION_FIRST;
     // Indicates whether the navigation target frame is the main frame.
     bool target_frame_is_main = false;
+    // Indicates whether the navigation target frame is cross-origin with
+    // respect to the the navigation source frame.
+    bool target_frame_is_cross_origin = false;
     // Indicates if there was a recent user interaction with the request frame.
     bool has_user_gesture = false;
   };
@@ -113,6 +118,15 @@ class WebStatePolicyDecider {
   //  - same-document back-forward and state change navigations
   virtual PolicyDecision ShouldAllowRequest(NSURLRequest* request,
                                             const RequestInfo& request_info);
+
+  // Asks the decider whether the navigation corresponding to |response| should
+  // be allowed to display an error page if an error occurs. Defaults to
+  // true if not overridden. This can be used to suppress error pages in certain
+  // cases such as attempting to upgrade an omnibox navigation to HTTPS. In that
+  // scenario, failed upgrade attempts (e.g. due to SSL or DNS resolution
+  // errors) should immediately fall back to HTTP without showing an error page.
+  virtual bool ShouldAllowErrorPageToBeDisplayed(NSURLResponse* response,
+                                                 bool for_main_frame);
 
   // Asks the decider whether the navigation corresponding to |response| should
   // be allowed to continue. Defaults to PolicyDecision::Allow() if not
@@ -141,7 +155,7 @@ class WebStatePolicyDecider {
 
  private:
   friend class WebStateImpl;
-  friend class TestWebState;
+  friend class FakeWebState;
 
   // Resets the current web state.
   void ResetWebState();

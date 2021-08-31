@@ -24,6 +24,7 @@
 
 #if !defined(OS_ANDROID)
 #include "cc/paint/skottie_transfer_cache_entry.h"
+#include "cc/paint/skottie_wrapper.h"
 #endif
 
 namespace cc {
@@ -206,11 +207,11 @@ void PaintOpWriter::Write(const SkPath& path) {
   remaining_bytes_ -= bytes_written;
 }
 
-void PaintOpWriter::Write(const PaintFlags& flags) {
+void PaintOpWriter::Write(const PaintFlags& flags, const SkM44& current_ctm) {
   WriteSimple(flags.color_);
   Write(flags.width_);
   Write(flags.miter_limit_);
-  WriteSimple(flags.blend_mode_);
+  Write(flags.blend_mode_);
   WriteSimple(flags.bitfields_uint_);
 
   WriteFlattenable(flags.path_effect_.get());
@@ -222,8 +223,8 @@ void PaintOpWriter::Write(const PaintFlags& flags) {
   else
     WriteFlattenable(flags.draw_looper_.get());
 
-  Write(flags.image_filter_.get());
-  Write(flags.shader_.get(), flags.getFilterQuality());
+  Write(flags.image_filter_.get(), current_ctm);
+  Write(flags.shader_.get(), flags.getFilterQuality(), current_ctm);
 }
 
 void PaintOpWriter::Write(const DrawImage& draw_image,
@@ -307,7 +308,7 @@ void PaintOpWriter::WriteImage(const DecodedDrawImage& decoded_draw_image) {
     return;
   }
 
-  base::Optional<uint32_t> id = decoded_draw_image.transfer_cache_entry_id();
+  absl::optional<uint32_t> id = decoded_draw_image.transfer_cache_entry_id();
   // In the case of a decode failure, id may not be set. Send an invalid ID.
   WriteImage(id.value_or(kInvalidImageTransferCacheEntryId),
              decoded_draw_image.transfer_cache_entry_needs_mips());
@@ -349,6 +350,17 @@ void PaintOpWriter::Write(const sk_sp<SkData>& data) {
     // that this happens in practice, but seems better to be consistent.
     WriteSize(static_cast<size_t>(0));
     Write(!!data.get());
+  }
+}
+
+void PaintOpWriter::Write(const SkSamplingOptions& sampling) {
+  Write(sampling.useCubic);
+  if (sampling.useCubic) {
+    Write(sampling.cubic.B);
+    Write(sampling.cubic.C);
+  } else {
+    Write(sampling.filter);
+    Write(sampling.mipmap);
   }
 }
 
@@ -411,6 +423,7 @@ void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
 sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
     const PaintShader* original,
     SkFilterQuality quality,
+    const SkM44& current_ctm,
     uint32_t* paint_image_transfer_cache_entry_id,
     gfx::SizeF* paint_record_post_scale,
     bool* paint_image_needs_mips,
@@ -418,7 +431,7 @@ sk_sp<PaintShader> PaintOpWriter::TransformShaderIfNecessary(
   DCHECK(!enable_security_constraints_);
 
   const auto type = original->shader_type();
-  const auto& ctm = options_.canvas->getTotalMatrix();
+  const auto& ctm = current_ctm.asM33();
 
   if (type == PaintShader::Type::kImage) {
     if (!original->paint_image().IsPaintWorklet()) {
@@ -449,7 +462,13 @@ void PaintOpWriter::Write(SkMatrix matrix) {
   WriteSimple(matrix);
 }
 
-void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
+void PaintOpWriter::Write(const SkM44& matrix) {
+  WriteSimple(matrix);
+}
+
+void PaintOpWriter::Write(const PaintShader* shader,
+                          SkFilterQuality quality,
+                          const SkM44& current_ctm) {
   sk_sp<PaintShader> transformed_shader;
   uint32_t paint_image_transfer_cache_id = kInvalidImageTransferCacheEntryId;
   gfx::SizeF paint_record_post_scale(1.f, 1.f);
@@ -458,7 +477,7 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
 
   if (!enable_security_constraints_ && shader) {
     transformed_shader = TransformShaderIfNecessary(
-        shader, quality, &paint_image_transfer_cache_id,
+        shader, quality, current_ctm, &paint_image_transfer_cache_id,
         &paint_record_post_scale, &paint_image_needs_mips, &mailbox);
     shader = transformed_shader.get();
   }
@@ -476,10 +495,8 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   WriteSimple(shader->flags_);
   WriteSimple(shader->end_radius_);
   WriteSimple(shader->start_radius_);
-  // SkTileMode does not have an explicitly defined backing type, so
-  // write a consistently sized value.
-  Write(static_cast<int32_t>(shader->tx_));
-  Write(static_cast<int32_t>(shader->ty_));
+  Write(shader->tx_);
+  Write(shader->ty_);
   WriteSimple(shader->fallback_color_);
   WriteSimple(shader->scaling_behavior_);
   if (shader->local_matrix_) {
@@ -497,7 +514,7 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
 
   if (enable_security_constraints_) {
     DrawImage draw_image(shader->image_, false, MakeSrcRect(shader->image_),
-                         quality, SkMatrix::I());
+                         quality, SkM44());
     SkSize scale_adjustment = SkSize::Make(1.f, 1.f);
     Write(draw_image, &scale_adjustment);
     DCHECK_EQ(scale_adjustment.width(), 1.f);
@@ -534,12 +551,16 @@ void PaintOpWriter::Write(const PaintShader* shader, SkFilterQuality quality) {
   // using other fields.
 }
 
-void PaintOpWriter::Write(SkColorType color_type) {
-  WriteSimple(static_cast<uint32_t>(color_type));
-}
-
 void PaintOpWriter::Write(SkYUVColorSpace yuv_color_space) {
   WriteSimple(static_cast<uint32_t>(yuv_color_space));
+}
+
+void PaintOpWriter::Write(SkYUVAInfo::PlaneConfig plane_config) {
+  WriteSimple(static_cast<uint32_t>(plane_config));
+}
+
+void PaintOpWriter::Write(SkYUVAInfo::Subsampling subsampling) {
+  WriteSimple(static_cast<uint32_t>(subsampling));
 }
 
 void PaintOpWriter::WriteData(size_t bytes, const void* input) {
@@ -573,17 +594,16 @@ void PaintOpWriter::AlignMemory(size_t alignment) {
   remaining_bytes_ -= padding;
 }
 
-void PaintOpWriter::Write(const PaintFilter* filter) {
+void PaintOpWriter::Write(const PaintFilter* filter, const SkM44& current_ctm) {
   if (!filter) {
-    WriteSimple(static_cast<uint32_t>(PaintFilter::Type::kNullFilter));
+    WriteEnum(PaintFilter::Type::kNullFilter);
     return;
   }
-  WriteSimple(static_cast<uint32_t>(filter->type()));
+  WriteEnum(filter->type());
   auto* crop_rect = filter->crop_rect();
   WriteSimple(static_cast<uint32_t>(!!crop_rect));
   if (crop_rect) {
-    WriteSimple(crop_rect->flags());
-    WriteSimple(crop_rect->rect());
+    WriteSimple(*crop_rect);
   }
 
   if (!valid_)
@@ -595,131 +615,144 @@ void PaintOpWriter::Write(const PaintFilter* filter) {
       NOTREACHED();
       break;
     case PaintFilter::Type::kColorFilter:
-      Write(static_cast<const ColorFilterPaintFilter&>(*filter));
+      Write(static_cast<const ColorFilterPaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kBlur:
-      Write(static_cast<const BlurPaintFilter&>(*filter));
+      Write(static_cast<const BlurPaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kDropShadow:
-      Write(static_cast<const DropShadowPaintFilter&>(*filter));
+      Write(static_cast<const DropShadowPaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kMagnifier:
-      Write(static_cast<const MagnifierPaintFilter&>(*filter));
+      Write(static_cast<const MagnifierPaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kCompose:
-      Write(static_cast<const ComposePaintFilter&>(*filter));
+      Write(static_cast<const ComposePaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kAlphaThreshold:
-      Write(static_cast<const AlphaThresholdPaintFilter&>(*filter));
+      Write(static_cast<const AlphaThresholdPaintFilter&>(*filter),
+            current_ctm);
       break;
     case PaintFilter::Type::kXfermode:
-      Write(static_cast<const XfermodePaintFilter&>(*filter));
+      Write(static_cast<const XfermodePaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kArithmetic:
-      Write(static_cast<const ArithmeticPaintFilter&>(*filter));
+      Write(static_cast<const ArithmeticPaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kMatrixConvolution:
-      Write(static_cast<const MatrixConvolutionPaintFilter&>(*filter));
+      Write(static_cast<const MatrixConvolutionPaintFilter&>(*filter),
+            current_ctm);
       break;
     case PaintFilter::Type::kDisplacementMapEffect:
-      Write(static_cast<const DisplacementMapEffectPaintFilter&>(*filter));
+      Write(static_cast<const DisplacementMapEffectPaintFilter&>(*filter),
+            current_ctm);
       break;
     case PaintFilter::Type::kImage:
-      Write(static_cast<const ImagePaintFilter&>(*filter));
+      Write(static_cast<const ImagePaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kPaintRecord:
-      Write(static_cast<const RecordPaintFilter&>(*filter));
+      Write(static_cast<const RecordPaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kMerge:
-      Write(static_cast<const MergePaintFilter&>(*filter));
+      Write(static_cast<const MergePaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kMorphology:
-      Write(static_cast<const MorphologyPaintFilter&>(*filter));
+      Write(static_cast<const MorphologyPaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kOffset:
-      Write(static_cast<const OffsetPaintFilter&>(*filter));
+      Write(static_cast<const OffsetPaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kTile:
-      Write(static_cast<const TilePaintFilter&>(*filter));
+      Write(static_cast<const TilePaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kTurbulence:
-      Write(static_cast<const TurbulencePaintFilter&>(*filter));
+      Write(static_cast<const TurbulencePaintFilter&>(*filter), current_ctm);
       break;
-    case PaintFilter::Type::kPaintFlags:
-      Write(static_cast<const PaintFlagsPaintFilter&>(*filter));
+    case PaintFilter::Type::kShader:
+      Write(static_cast<const ShaderPaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kMatrix:
-      Write(static_cast<const MatrixPaintFilter&>(*filter));
+      Write(static_cast<const MatrixPaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kLightingDistant:
-      Write(static_cast<const LightingDistantPaintFilter&>(*filter));
+      Write(static_cast<const LightingDistantPaintFilter&>(*filter),
+            current_ctm);
       break;
     case PaintFilter::Type::kLightingPoint:
-      Write(static_cast<const LightingPointPaintFilter&>(*filter));
+      Write(static_cast<const LightingPointPaintFilter&>(*filter), current_ctm);
       break;
     case PaintFilter::Type::kLightingSpot:
-      Write(static_cast<const LightingSpotPaintFilter&>(*filter));
+      Write(static_cast<const LightingSpotPaintFilter&>(*filter), current_ctm);
       break;
   }
 }
 
-void PaintOpWriter::Write(const ColorFilterPaintFilter& filter) {
+void PaintOpWriter::Write(const ColorFilterPaintFilter& filter,
+                          const SkM44& current_ctm) {
   WriteFlattenable(filter.color_filter().get());
-  Write(filter.input().get());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const BlurPaintFilter& filter) {
+void PaintOpWriter::Write(const BlurPaintFilter& filter,
+                          const SkM44& current_ctm) {
   WriteSimple(filter.sigma_x());
   WriteSimple(filter.sigma_y());
-  WriteSimple(filter.tile_mode());
-  Write(filter.input().get());
+  Write(filter.tile_mode());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const DropShadowPaintFilter& filter) {
+void PaintOpWriter::Write(const DropShadowPaintFilter& filter,
+                          const SkM44& current_ctm) {
   WriteSimple(filter.dx());
   WriteSimple(filter.dy());
   WriteSimple(filter.sigma_x());
   WriteSimple(filter.sigma_y());
   WriteSimple(filter.color());
-  WriteSimple(filter.shadow_mode());
-  Write(filter.input().get());
+  WriteEnum(filter.shadow_mode());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const MagnifierPaintFilter& filter) {
+void PaintOpWriter::Write(const MagnifierPaintFilter& filter,
+                          const SkM44& current_ctm) {
   WriteSimple(filter.src_rect());
   WriteSimple(filter.inset());
-  Write(filter.input().get());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const ComposePaintFilter& filter) {
-  Write(filter.outer().get());
-  Write(filter.inner().get());
+void PaintOpWriter::Write(const ComposePaintFilter& filter,
+                          const SkM44& current_ctm) {
+  Write(filter.outer().get(), current_ctm);
+  Write(filter.inner().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const AlphaThresholdPaintFilter& filter) {
+void PaintOpWriter::Write(const AlphaThresholdPaintFilter& filter,
+                          const SkM44& current_ctm) {
   Write(filter.region());
   WriteSimple(filter.inner_min());
   WriteSimple(filter.outer_max());
-  Write(filter.input().get());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const XfermodePaintFilter& filter) {
-  WriteSimple(static_cast<uint32_t>(filter.blend_mode()));
-  Write(filter.background().get());
-  Write(filter.foreground().get());
+void PaintOpWriter::Write(const XfermodePaintFilter& filter,
+                          const SkM44& current_ctm) {
+  Write(filter.blend_mode());
+  Write(filter.background().get(), current_ctm);
+  Write(filter.foreground().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const ArithmeticPaintFilter& filter) {
+void PaintOpWriter::Write(const ArithmeticPaintFilter& filter,
+                          const SkM44& current_ctm) {
   WriteSimple(filter.k1());
   WriteSimple(filter.k2());
   WriteSimple(filter.k3());
   WriteSimple(filter.k4());
   WriteSimple(filter.enforce_pm_color());
-  Write(filter.background().get());
-  Write(filter.foreground().get());
+  Write(filter.background().get(), current_ctm);
+  Write(filter.foreground().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const MatrixConvolutionPaintFilter& filter) {
+void PaintOpWriter::Write(const MatrixConvolutionPaintFilter& filter,
+                          const SkM44& current_ctm) {
   WriteSimple(filter.kernel_size());
   auto size = static_cast<size_t>(
       sk_64_mul(filter.kernel_size().width(), filter.kernel_size().height()));
@@ -728,24 +761,26 @@ void PaintOpWriter::Write(const MatrixConvolutionPaintFilter& filter) {
   WriteSimple(filter.gain());
   WriteSimple(filter.bias());
   WriteSimple(filter.kernel_offset());
-  WriteSimple(static_cast<uint32_t>(filter.tile_mode()));
+  Write(filter.tile_mode());
   WriteSimple(filter.convolve_alpha());
-  Write(filter.input().get());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const DisplacementMapEffectPaintFilter& filter) {
-  WriteSimple(static_cast<uint32_t>(filter.channel_x()));
-  WriteSimple(static_cast<uint32_t>(filter.channel_y()));
+void PaintOpWriter::Write(const DisplacementMapEffectPaintFilter& filter,
+                          const SkM44& current_ctm) {
+  WriteEnum(filter.channel_x());
+  WriteEnum(filter.channel_y());
   WriteSimple(filter.scale());
-  Write(filter.displacement().get());
-  Write(filter.color().get());
+  Write(filter.displacement().get(), current_ctm);
+  Write(filter.color().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const ImagePaintFilter& filter) {
+void PaintOpWriter::Write(const ImagePaintFilter& filter,
+                          const SkM44& current_ctm) {
   DrawImage draw_image(
       filter.image(), false,
       SkIRect::MakeWH(filter.image().width(), filter.image().height()),
-      filter.filter_quality(), SkMatrix::I());
+      filter.filter_quality(), SkM44());
   SkSize scale_adjustment = SkSize::Make(1.f, 1.f);
   Write(draw_image, &scale_adjustment);
   DCHECK_EQ(scale_adjustment.width(), 1.f);
@@ -756,53 +791,54 @@ void PaintOpWriter::Write(const ImagePaintFilter& filter) {
   Write(filter.filter_quality());
 }
 
-void PaintOpWriter::Write(const RecordPaintFilter& filter) {
+void PaintOpWriter::Write(const RecordPaintFilter& filter,
+                          const SkM44& current_ctm) {
   WriteSimple(filter.record_bounds());
-  if (!options_.canvas) {
-    Write(filter.record().get(), gfx::Rect(), gfx::SizeF(1.f, 1.f),
-          SkMatrix::I());
-    return;
-  }
 
   // The logic here to only use the scale component of the matrix during
   // analysis is for consistency with the rasterization of the filter later in
   // pipeline in skia. For every draw with a filter, SkCanvas creates a layer
   // for the draw and modifies the scale for these filters.
   // See SkCanvas::internalSaveLayer.
-  SkMatrix mat = options_.canvas->getTotalMatrix();
+  SkMatrix mat = current_ctm.asM33();
   SkSize scale;
   if (!mat.isScaleTranslate() && mat.decomposeScale(&scale))
     mat = SkMatrix::Scale(scale.width(), scale.height());
   Write(filter.record().get(), gfx::Rect(), gfx::SizeF(1.f, 1.f), mat);
 }
 
-void PaintOpWriter::Write(const MergePaintFilter& filter) {
+void PaintOpWriter::Write(const MergePaintFilter& filter,
+                          const SkM44& current_ctm) {
   WriteSize(filter.input_count());
   for (size_t i = 0; i < filter.input_count(); ++i)
-    Write(filter.input_at(i));
+    Write(filter.input_at(i), current_ctm);
 }
 
-void PaintOpWriter::Write(const MorphologyPaintFilter& filter) {
-  WriteSimple(filter.morph_type());
+void PaintOpWriter::Write(const MorphologyPaintFilter& filter,
+                          const SkM44& current_ctm) {
+  WriteEnum(filter.morph_type());
   WriteSimple(filter.radius_x());
   WriteSimple(filter.radius_y());
-  Write(filter.input().get());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const OffsetPaintFilter& filter) {
+void PaintOpWriter::Write(const OffsetPaintFilter& filter,
+                          const SkM44& current_ctm) {
   WriteSimple(filter.dx());
   WriteSimple(filter.dy());
-  Write(filter.input().get());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const TilePaintFilter& filter) {
+void PaintOpWriter::Write(const TilePaintFilter& filter,
+                          const SkM44& current_ctm) {
   WriteSimple(filter.src());
   WriteSimple(filter.dst());
-  Write(filter.input().get());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const TurbulencePaintFilter& filter) {
-  WriteSimple(filter.turbulence_type());
+void PaintOpWriter::Write(const TurbulencePaintFilter& filter,
+                          const SkM44& current_ctm) {
+  WriteEnum(filter.turbulence_type());
   WriteSimple(filter.base_frequency_x());
   WriteSimple(filter.base_frequency_y());
   WriteSimple(filter.num_octaves());
@@ -810,38 +846,46 @@ void PaintOpWriter::Write(const TurbulencePaintFilter& filter) {
   WriteSimple(filter.tile_size());
 }
 
-void PaintOpWriter::Write(const PaintFlagsPaintFilter& filter) {
-  Write(filter.flags());
+void PaintOpWriter::Write(const ShaderPaintFilter& filter,
+                          const SkM44& current_ctm) {
+  Write(&filter.shader(), filter.filter_quality(), current_ctm);
+  Write(filter.alpha());
+  Write(filter.filter_quality());
+  WriteEnum(filter.dither());
 }
 
-void PaintOpWriter::Write(const MatrixPaintFilter& filter) {
+void PaintOpWriter::Write(const MatrixPaintFilter& filter,
+                          const SkM44& current_ctm) {
   Write(filter.matrix());
-  WriteSimple(filter.filter_quality());
-  Write(filter.input().get());
+  Write(filter.filter_quality());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const LightingDistantPaintFilter& filter) {
-  WriteSimple(filter.lighting_type());
+void PaintOpWriter::Write(const LightingDistantPaintFilter& filter,
+                          const SkM44& current_ctm) {
+  WriteEnum(filter.lighting_type());
   WriteSimple(filter.direction());
   WriteSimple(filter.light_color());
   WriteSimple(filter.surface_scale());
   WriteSimple(filter.kconstant());
   WriteSimple(filter.shininess());
-  Write(filter.input().get());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const LightingPointPaintFilter& filter) {
-  WriteSimple(filter.lighting_type());
+void PaintOpWriter::Write(const LightingPointPaintFilter& filter,
+                          const SkM44& current_ctm) {
+  WriteEnum(filter.lighting_type());
   WriteSimple(filter.location());
   WriteSimple(filter.light_color());
   WriteSimple(filter.surface_scale());
   WriteSimple(filter.kconstant());
   WriteSimple(filter.shininess());
-  Write(filter.input().get());
+  Write(filter.input().get(), current_ctm);
 }
 
-void PaintOpWriter::Write(const LightingSpotPaintFilter& filter) {
-  WriteSimple(filter.lighting_type());
+void PaintOpWriter::Write(const LightingSpotPaintFilter& filter,
+                          const SkM44& current_ctm) {
+  WriteEnum(filter.lighting_type());
   WriteSimple(filter.location());
   WriteSimple(filter.target());
   WriteSimple(filter.specular_exponent());
@@ -850,7 +894,7 @@ void PaintOpWriter::Write(const LightingSpotPaintFilter& filter) {
   WriteSimple(filter.surface_scale());
   WriteSimple(filter.kconstant());
   WriteSimple(filter.shininess());
-  Write(filter.input().get());
+  Write(filter.input().get(), current_ctm);
 }
 
 void PaintOpWriter::Write(const PaintRecord* record,
@@ -879,12 +923,13 @@ void PaintOpWriter::Write(const PaintRecord* record,
   // Nested records are used for picture shaders and filters which don't support
   // using lcd text. Make sure we disable it here to match this in the text
   // analysis canvas.
-  const bool can_use_lcd_text = false;
-  SimpleBufferSerializer serializer(
-      memory_, remaining_bytes_, options_.image_provider,
-      options_.transfer_cache, options_.paint_cache, options_.strike_server,
-      options_.color_space, can_use_lcd_text,
-      options_.context_supports_distance_field_text, options_.max_texture_size);
+  PaintOp::SerializeOptions lcd_disabled_options(
+      options_.image_provider, options_.transfer_cache, options_.paint_cache,
+      options_.strike_server, options_.color_space,
+      /*can_use_lcd_text=*/false, options_.context_supports_distance_field_text,
+      options_.max_texture_size);
+  SimpleBufferSerializer serializer(memory_, remaining_bytes_,
+                                    lcd_disabled_options);
   serializer.Serialize(record, playback_rect, post_scale,
                        post_matrix_for_analysis);
 

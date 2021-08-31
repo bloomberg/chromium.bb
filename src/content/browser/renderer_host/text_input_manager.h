@@ -5,14 +5,15 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_MANAGER_H__
 #define CONTENT_BROWSER_RENDERER_HOST_TEXT_INPUT_MANAGER_H__
 
+#include <string>
 #include <unordered_map>
 #include <utility>
 
 #include "base/i18n/rtl.h"
 #include "base/observer_list.h"
-#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "ui/base/ime/mojom/text_input_state.mojom.h"
+#include "ui/base/ime/text_input_client.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/selection_bound.h"
@@ -74,6 +75,9 @@ class CONTENT_EXPORT TextInputManager {
     // The end of the selection region (caret position).
     gfx::SelectionBound focus;
 
+    // The bounding box of the selection region.
+    gfx::Rect bounding_box;
+
     // The following variables are only used on Mac platform.
     // The current caret bounds.
     gfx::Rect caret_rect;
@@ -102,14 +106,14 @@ class CONTENT_EXPORT TextInputManager {
     TextSelection(const TextSelection& other);
     ~TextSelection();
 
-    void SetSelection(const base::string16& text,
+    void SetSelection(const std::u16string& text,
                       size_t offset,
                       const gfx::Range& range);
 
-    const base::string16& selected_text() const { return selected_text_; }
+    const std::u16string& selected_text() const { return selected_text_; }
     size_t offset() const { return offset_; }
     const gfx::Range& range() const { return range_; }
-    const base::string16& text() const { return text_; }
+    const std::u16string& text() const { return text_; }
 
    private:
     // The offset of the text stored in |text| relative to the start of the web
@@ -123,11 +127,11 @@ class CONTENT_EXPORT TextInputManager {
     // and |range_|. It will be an empty string if either |text_| or |range_|
     // are empty of this selection information is invalid (i.e., |range_| does
     // not cover any of |text_|.
-    base::string16 selected_text_;
+    std::u16string selected_text_;
 
     // Part of the text on the page which includes the highlighted text plus
     // possibly several characters before and after it.
-    base::string16 text_;
+    std::u16string text_;
   };
 
   explicit TextInputManager(bool should_do_learning);
@@ -148,6 +152,15 @@ class CONTENT_EXPORT TextInputManager {
   // nullptr can be interpreted as a ui::TextInputType of
   // ui::TEXT_INPUT_TYPE_NONE.
   const ui::mojom::TextInputState* GetTextInputState() const;
+
+  // Returns the current autocorrect range, or an empty range if no autocorrect
+  // range is currently present.
+  gfx::Range GetAutocorrectRange() const;
+
+  // Returns the grammar fragment which contains |range|. If non-existent,
+  // returns an empty Fragment.
+  absl::optional<ui::GrammarFragment> GetGrammarFragment(
+      gfx::Range range) const;
 
   // Returns the selection bounds information for |view|. If |view| == nullptr,
   // it will return the corresponding information for |active_view_| or nullptr
@@ -185,6 +198,7 @@ class CONTENT_EXPORT TextInputManager {
                               base::i18n::TextDirection anchor_dir,
                               const gfx::Rect& focus_rect,
                               base::i18n::TextDirection focus_dir,
+                              const gfx::Rect& bounding_box,
                               bool is_anchor_first);
 
   // Notify observers that the selection bounds have been updated. This is also
@@ -199,7 +213,7 @@ class CONTENT_EXPORT TextInputManager {
 
   // Updates the new text selection information for the |view|.
   void SelectionChanged(RenderWidgetHostViewBase* view,
-                        const base::string16& text,
+                        const std::u16string& text,
                         size_t offset,
                         const gfx::Range& range);
 

@@ -2,10 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 from gpu_tests import gpu_integration_test
 
 import os
 import sys
+
+import six
 
 
 class InfoCollectionTestArgs(object):
@@ -138,10 +142,8 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
 
   @staticmethod
   def _ValueToStr(value):
-    if isinstance(value, str):
+    if isinstance(value, six.string_types):
       return value
-    if isinstance(value, unicode):
-      return str(value)
     if isinstance(value, bool):
       return 'supported' if value else 'unsupported'
     assert False

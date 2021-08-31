@@ -25,8 +25,6 @@
   freetype::FaceVisitorVariants::
   run( Unique_FT_Face  face )
   {
-    FT_Error  error;
-
     FT_UInt32*              raw_selectors;
     std::vector<FT_UInt32>  selectors;
 

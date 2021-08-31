@@ -28,10 +28,25 @@ static const uint8_t ip_shuffle_f4f5[32] = { 4, 5, 6,  7,  6,  7,  8,  9,
                                              4, 5, 6,  7,  6,  7,  8,  9,
                                              8, 9, 10, 11, 10, 11, 12, 13 };
 
+void av1_highbd_convolve_x_sr_ssse3(const uint16_t *src, int src_stride,
+                                    uint16_t *dst, int dst_stride, int w, int h,
+                                    const InterpFilterParams *filter_params_x,
+                                    const int subpel_x_qn,
+                                    ConvolveParams *conv_params, int bd);
+void av1_highbd_convolve_y_sr_ssse3(const uint16_t *src, int src_stride,
+                                    uint16_t *dst, int dst_stride, int w, int h,
+                                    const InterpFilterParams *filter_params_y,
+                                    const int subpel_y_qn, int bd);
+
 void av1_highbd_convolve_y_sr_avx2(const uint16_t *src, int src_stride,
                                    uint16_t *dst, int dst_stride, int w, int h,
                                    const InterpFilterParams *filter_params_y,
                                    const int subpel_y_qn, int bd) {
+  if (filter_params_y->taps == 12) {
+    av1_highbd_convolve_y_sr_ssse3(src, src_stride, dst, dst_stride, w, h,
+                                   filter_params_y, subpel_y_qn, bd);
+    return;
+  }
   int i, j;
   const int fo_vert = filter_params_y->taps / 2 - 1;
   const uint16_t *const src_ptr = src - fo_vert * src_stride;
@@ -173,6 +188,12 @@ void av1_highbd_convolve_x_sr_avx2(const uint16_t *src, int src_stride,
                                    const InterpFilterParams *filter_params_x,
                                    const int subpel_x_qn,
                                    ConvolveParams *conv_params, int bd) {
+  if (filter_params_x->taps == 12) {
+    av1_highbd_convolve_x_sr_ssse3(src, src_stride, dst, dst_stride, w, h,
+                                   filter_params_x, subpel_x_qn, conv_params,
+                                   bd);
+    return;
+  }
   int i, j;
   const int fo_horiz = filter_params_x->taps / 2 - 1;
   const uint16_t *const src_ptr = src - fo_horiz;

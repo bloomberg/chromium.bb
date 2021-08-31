@@ -24,7 +24,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BOX_MODEL_OBJECT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_BOX_MODEL_OBJECT_H_
 
-#include <memory>
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
 #include "third_party/blink/renderer/core/layout/content_change_type.h"
@@ -149,7 +148,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   PhysicalRect ComputeStickyConstrainingRect() const;
   void UpdateStickyPositionConstraints() const;
   PhysicalOffset StickyPositionOffset() const;
-  bool IsSlowRepaintConstrainedObject() const;
+  virtual LayoutBlock* StickyContainer() const;
 
   PhysicalOffset OffsetForInFlowPosition() const;
 
@@ -451,13 +450,13 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     NOT_DESTROYED();
     return PhysicalMarginToLogical(other_style).End();
   }
-  LayoutUnit MarginLineLeft() const {
+  LayoutUnit MarginLineLeft(const ComputedStyle* other_style = nullptr) const {
     NOT_DESTROYED();
-    return PhysicalMarginToLogical(nullptr).LineLeft();
+    return PhysicalMarginToLogical(other_style).LineLeft();
   }
-  LayoutUnit MarginLineRight() const {
+  LayoutUnit MarginLineRight(const ComputedStyle* other_style = nullptr) const {
     NOT_DESTROYED();
-    return PhysicalMarginToLogical(nullptr).LineRight();
+    return PhysicalMarginToLogical(other_style).LineRight();
   }
   LayoutUnit MarginOver() const {
     NOT_DESTROYED();
@@ -511,10 +510,6 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
       LineDirectionMode,
       LinePositionMode = kPositionOnContainingLine) const = 0;
 
-  const LayoutObject* PushMappingToContainer(
-      const LayoutBoxModelObject* ancestor_to_stop_at,
-      LayoutGeometryMap&) const override;
-
   void ContentChanged(ContentChangeType);
 
   // Returns true if the background is painted opaque in the given rect.
@@ -541,8 +536,15 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   bool BackgroundTransfersToView(
       const ComputedStyle* document_element_style = nullptr) const;
 
+  // Same as AbsoluteQuads, but in the local border box coordinates of this
+  // object.
+  void LocalQuads(Vector<FloatQuad>& quads) const;
+
   void AbsoluteQuads(Vector<FloatQuad>& quads,
                      MapCoordinatesFlags mode = 0) const override;
+
+  // Returns the bounodiong box of all quads returned by LocalQuads.
+  FloatRect LocalBoundingBoxFloatRect() const;
 
   virtual LayoutUnit OverrideContainingBlockContentWidth() const {
     NOT_DESTROYED();
@@ -582,6 +584,8 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   // LayoutBlockFlow.
   virtual void AbsoluteQuadsForSelf(Vector<FloatQuad>& quads,
                                     MapCoordinatesFlags mode = 0) const;
+  // Same as AbsoluteQuadsForSelf, but in the local border box coordinates.
+  virtual void LocalQuadsForSelf(Vector<FloatQuad>& quads) const;
 
   void WillBeDestroyed() override;
 
@@ -670,6 +674,10 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
                               bool full_remove_insert = false);
 
  private:
+  void QuadsInternal(Vector<FloatQuad>& quads,
+                     MapCoordinatesFlags mode,
+                     bool map_to_absolute) const;
+
   void CreateLayerAfterStyleChange();
 
   LayoutUnit ComputedCSSPadding(const Length&) const;

@@ -28,7 +28,7 @@ class AddressProfileSaveManager;
 
 // Manages logic for importing address profiles and credit card information from
 // web forms into the user's Autofill profile via the PersonalDataManager.
-// Owned by AutofillManager.
+// Owned by BrowserAutofillManager.
 class FormDataImporter {
  public:
   // Record type of the credit card imported from the form, if one exists.
@@ -107,12 +107,13 @@ class FormDataImporter {
                       bool credit_card_autofill_enabled,
                       bool should_return_local_card,
                       std::unique_ptr<CreditCard>* imported_credit_card,
-                      base::Optional<std::string>* imported_upi_id);
+                      absl::optional<std::string>* imported_upi_id);
 
   // Go through the |form| fields and attempt to extract and import valid
   // address profiles. Returns true on extraction success of at least one
   // profile. There are many reasons that extraction may fail (see
-  // implementation).
+  // implementation). The function returns true if at least one complete address
+  // profile was found.
   bool ImportAddressProfiles(const FormStructure& form);
 
   // Helper method for ImportAddressProfiles which only considers the fields for
@@ -138,7 +139,7 @@ class FormDataImporter {
 
   // Go through the |form| fields and find a UPI ID to import. The return value
   // will be empty if no UPI ID was found.
-  base::Optional<std::string> ImportUpiId(const FormStructure& form);
+  absl::optional<std::string> ImportUpiId(const FormStructure& form);
 
   // Whether a dynamic change form is imported.
   bool from_dynamic_change_form_ = false;
@@ -165,7 +166,7 @@ class FormDataImporter {
 #endif  // #if !defined(OS_ANDROID) && !defined(OS_IOS)
 
   // The personal data manager, used to save and load personal data to/from the
-  // web database.  This is overridden by the AutofillManagerTest.
+  // web database.  This is overridden by the BrowserAutofillManagerTest.
   // Weak reference.
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_manager_;

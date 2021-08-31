@@ -212,10 +212,6 @@ class ContextGL : public ContextImpl
     // Device loss
     gl::GraphicsResetStatus getResetStatus() override;
 
-    // Vendor and description strings.
-    std::string getVendorString() const override;
-    std::string getRendererDescription() const override;
-
     // EXT_debug_marker
     angle::Result insertEventMarker(GLsizei length, const char *marker) override;
     angle::Result pushGroupMarker(GLsizei length, const char *marker) override;
@@ -239,6 +235,7 @@ class ContextGL : public ContextImpl
 
     // Context switching
     angle::Result onMakeCurrent(const gl::Context *context) override;
+    angle::Result onUnMakeCurrent(const gl::Context *context) override;
 
     // Caps queries
     gl::Caps getNativeCaps() const override;

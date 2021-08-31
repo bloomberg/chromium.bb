@@ -9,14 +9,16 @@
 
 #include <map>
 #include <memory>
+#include <sstream>
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
+#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
@@ -27,6 +29,7 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/angle_platform_impl.h"
 #include "ui/gl/egl_util.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_context_egl.h"
 #include "ui/gl/gl_display_egl_util.h"
@@ -181,6 +184,9 @@ class EGLGpuSwitchingObserver;
 EGLDisplay g_egl_display = EGL_NO_DISPLAY;
 EGLDisplayPlatform g_native_display(EGL_DEFAULT_DISPLAY);
 
+DisplayType g_display_type = DisplayType::DEFAULT;
+
+const char* g_egl_client_extensions = nullptr;
 const char* g_egl_extensions = nullptr;
 bool g_egl_create_context_robustness_supported = false;
 bool g_egl_robustness_video_memory_purge_supported = false;
@@ -204,6 +210,7 @@ bool g_egl_android_native_fence_sync_supported = false;
 bool g_egl_ext_pixel_format_float_supported = false;
 bool g_egl_angle_feature_control_supported = false;
 bool g_egl_angle_power_preference_supported = false;
+bool g_egl_angle_external_context_and_surface_supported = false;
 EGLGpuSwitchingObserver* g_egl_gpu_switching_observer = nullptr;
 
 constexpr const char kSwapEventTraceCategories[] = "gpu";
@@ -551,7 +558,7 @@ const char* DisplayTypeString(DisplayType display_type) {
     case ANGLE_D3D11on12:
       return "D3D11on12";
     case ANGLE_SWIFTSHADER:
-      return "SwiftShader";
+      return "SwANGLE";
     case ANGLE_OPENGL_EGL:
       return "OpenGLEGL";
     case ANGLE_OPENGLES_EGL:
@@ -787,19 +794,31 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
                         bool supports_angle_metal,
                         const base::CommandLine* command_line,
                         std::vector<DisplayType>* init_displays) {
+  bool usingSoftwareGLForTests =
+      command_line->HasSwitch(switches::kOverrideUseSoftwareGLForTests);
+  bool isSwANGLE = GetGLImplementationParts() == GetSoftwareGLImplementation();
+
   // SwiftShader does not use the platform extensions
+  // Note: Do not use SwiftShader if we've explicitly selected SwANGLE
   if (command_line->GetSwitchValueASCII(switches::kUseGL) ==
-      kGLImplementationSwiftShaderForWebGLName) {
+          kGLImplementationSwiftShaderForWebGLName &&
+      !(usingSoftwareGLForTests && isSwANGLE)) {
     AddInitDisplay(init_displays, SWIFT_SHADER);
     return;
   }
 
+  // If we're already requesting software GL, make sure we don't fallback to the
+  // GPU
+  bool forceSoftwareGL = IsSoftwareGLImplementation(GetGLImplementationParts());
+
   std::string requested_renderer =
-      command_line->GetSwitchValueASCII(switches::kUseANGLE);
+      forceSoftwareGL ? kANGLEImplementationSwiftShaderName
+                      : command_line->GetSwitchValueASCII(switches::kUseANGLE);
 
   bool use_angle_default =
-      !command_line->HasSwitch(switches::kUseANGLE) ||
-      requested_renderer == kANGLEImplementationDefaultName;
+      !forceSoftwareGL &&
+      (!command_line->HasSwitch(switches::kUseANGLE) ||
+       requested_renderer == kANGLEImplementationDefaultName);
 
   if (supports_angle_null &&
       requested_renderer == kANGLEImplementationNullName) {
@@ -820,6 +839,11 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
   if (supports_angle_metal && use_angle_default &&
       base::FeatureList::IsEnabled(features::kDefaultANGLEMetal)) {
     AddInitDisplay(init_displays, ANGLE_METAL);
+  }
+
+  if (supports_angle_vulkan && use_angle_default &&
+      features::IsDefaultANGLEVulkan()) {
+    AddInitDisplay(init_displays, ANGLE_VULKAN);
   }
 
   if (supports_angle_d3d) {
@@ -883,7 +907,8 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
   }
 
   if (supports_angle_swiftshader) {
-    if (requested_renderer == kANGLEImplementationSwiftShaderName) {
+    if (requested_renderer == kANGLEImplementationSwiftShaderName ||
+        requested_renderer == kANGLEImplementationSwiftShaderForWebGLName) {
       AddInitDisplay(init_displays, ANGLE_SWIFTSHADER);
     }
   }
@@ -952,6 +977,7 @@ bool GLSurfaceEGL::InitializeOneOffForTesting() {
 
 // static
 bool GLSurfaceEGL::InitializeOneOffCommon() {
+  g_egl_client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
   g_egl_extensions = eglQueryString(g_egl_display, EGL_EXTENSIONS);
 
   g_egl_create_context_robustness_supported =
@@ -1002,16 +1028,26 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
   g_egl_robust_resource_init_supported =
       HasEGLExtension("EGL_ANGLE_robust_resource_initialization");
 
-  // TODO(oetuaho@nvidia.com): Surfaceless is disabled on Android as a temporary
-  // workaround, since code written for Android WebView takes different paths
-  // based on whether GL surface objects have underlying EGL surface handles,
-  // conflicting with the use of surfaceless. See https://crbug.com/382349
-#if defined(OS_ANDROID)
-  DCHECK(!g_egl_surfaceless_context_supported);
-#else
   // Check if SurfacelessEGL is supported.
   g_egl_surfaceless_context_supported =
       HasEGLExtension("EGL_KHR_surfaceless_context");
+
+  // TODO(oetuaho@nvidia.com): Surfaceless is disabled on Android as a temporary
+  // workaround, since code written for Android WebView takes different paths
+  // based on whether GL surface objects have underlying EGL surface handles,
+  // conflicting with the use of surfaceless. ANGLE can still expose surfacelss
+  // because it is emulated with pbuffers if native support is not present. See
+  // https://crbug.com/382349.
+
+#if defined(OS_ANDROID)
+  // Use the WebGL compatibility extension for detecting ANGLE. ANGLE always
+  // exposes it.
+  bool is_angle = g_egl_create_context_webgl_compatability_supported;
+  if (!is_angle) {
+    g_egl_surfaceless_context_supported = false;
+  }
+#endif
+
   if (g_egl_surfaceless_context_supported) {
     // EGL_KHR_surfaceless_context is supported but ensure
     // GL_OES_surfaceless_context is also supported. We need a current context
@@ -1029,7 +1065,6 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
       context->ReleaseCurrent(surface.get());
     }
   }
-#endif
 
   // The native fence sync extension is a bit complicated. It's reported as
   // present for ChromeOS, but Android currently doesn't report this extension
@@ -1059,6 +1094,9 @@ bool GLSurfaceEGL::InitializeOneOffCommon() {
   g_egl_angle_power_preference_supported =
       HasEGLExtension("EGL_ANGLE_power_preference");
 
+  g_egl_angle_external_context_and_surface_supported =
+      HasEGLExtension("EGL_ANGLE_external_context_and_surface");
+
   if (g_egl_angle_power_preference_supported) {
     g_egl_gpu_switching_observer = new EGLGpuSwitchingObserver();
     ui::GpuSwitchingManager::GetInstance()->AddObserver(
@@ -1074,6 +1112,7 @@ bool GLSurfaceEGL::InitializeExtensionSettingsOneOff() {
   if (!initialized_)
     return false;
   g_driver_egl.UpdateConditionalExtensionBindings();
+  g_egl_client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
   g_egl_extensions = eglQueryString(g_egl_display, EGL_EXTENSIONS);
 
   return true;
@@ -1096,6 +1135,7 @@ void GLSurfaceEGL::ShutdownOneOff() {
   }
   g_egl_display = EGL_NO_DISPLAY;
 
+  g_egl_client_extensions = nullptr;
   g_egl_extensions = nullptr;
   g_egl_create_context_robustness_supported = false;
   g_egl_robustness_video_memory_purge_supported = false;
@@ -1125,8 +1165,23 @@ EGLNativeDisplayType GLSurfaceEGL::GetNativeDisplay() {
 }
 
 // static
+DisplayType GLSurfaceEGL::GetDisplayType() {
+  return g_display_type;
+}
+
+// static
+const char* GLSurfaceEGL::GetEGLClientExtensions() {
+  return g_egl_client_extensions ? g_egl_client_extensions : "";
+}
+
+// static
 const char* GLSurfaceEGL::GetEGLExtensions() {
   return g_egl_extensions;
+}
+
+// static
+bool GLSurfaceEGL::HasEGLClientExtension(const char* name) {
+  return ExtensionsContain(GetEGLClientExtensions(), name);
 }
 
 // static
@@ -1199,7 +1254,11 @@ bool GLSurfaceEGL::IsANGLEPowerPreferenceSupported() {
   return g_egl_angle_power_preference_supported;
 }
 
-GLSurfaceEGL::~GLSurfaceEGL() {}
+bool GLSurfaceEGL::IsANGLEExternalContextAndSurfaceSupported() {
+  return g_egl_angle_external_context_and_surface_supported;
+}
+
+GLSurfaceEGL::~GLSurfaceEGL() = default;
 
 // InitializeDisplay is necessary because the static binding code
 // needs a full Display init before it can query the Display extensions.
@@ -1213,12 +1272,9 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
 
   // If EGL_EXT_client_extensions not supported this call to eglQueryString
   // will return NULL.
-  const char* client_extensions =
-      eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+  g_egl_client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 
-  bool supports_egl_debug =
-      client_extensions &&
-      ExtensionsContain(client_extensions, "EGL_KHR_debug");
+  bool supports_egl_debug = HasEGLClientExtension("EGL_KHR_debug");
   if (supports_egl_debug) {
     EGLAttrib controls[] = {
         EGL_DEBUG_MSG_CRITICAL_KHR,
@@ -1244,32 +1300,28 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
   bool supports_angle_egl = false;
   bool supports_angle_metal = false;
   // Check for availability of ANGLE extensions.
-  if (client_extensions &&
-      ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle")) {
-    supports_angle_d3d =
-        ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_d3d");
+  if (HasEGLClientExtension("EGL_ANGLE_platform_angle")) {
+    supports_angle_d3d = HasEGLClientExtension("EGL_ANGLE_platform_angle_d3d");
     supports_angle_opengl =
-        ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_opengl");
+        HasEGLClientExtension("EGL_ANGLE_platform_angle_opengl");
     supports_angle_null =
-        ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_null");
+        HasEGLClientExtension("EGL_ANGLE_platform_angle_null");
     supports_angle_vulkan =
-        ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_vulkan");
-    supports_angle_swiftshader = ExtensionsContain(
-        client_extensions, "EGL_ANGLE_platform_angle_device_type_swiftshader");
-    supports_angle_egl = ExtensionsContain(
-        client_extensions, "EGL_ANGLE_platform_angle_device_type_egl_angle");
+        HasEGLClientExtension("EGL_ANGLE_platform_angle_vulkan");
+    supports_angle_swiftshader = HasEGLClientExtension(
+        "EGL_ANGLE_platform_angle_device_type_swiftshader");
+    supports_angle_egl =
+        HasEGLClientExtension("EGL_ANGLE_platform_angle_device_type_egl_angle");
     supports_angle_metal =
-        ExtensionsContain(client_extensions, "EGL_ANGLE_platform_angle_metal");
+        HasEGLClientExtension("EGL_ANGLE_platform_angle_metal");
   }
 
   bool supports_angle = supports_angle_d3d || supports_angle_opengl ||
                         supports_angle_null || supports_angle_vulkan ||
                         supports_angle_swiftshader || supports_angle_metal;
 
-  if (client_extensions) {
-    g_egl_angle_feature_control_supported =
-        ExtensionsContain(client_extensions, "EGL_ANGLE_feature_control");
-  }
+  g_egl_angle_feature_control_supported =
+      HasEGLClientExtension("EGL_ANGLE_feature_control");
 
   std::vector<DisplayType> init_displays;
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -1311,7 +1363,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
 #if defined(USE_X11)
     // Unset DISPLAY env, so the vulkan can be initialized successfully, if the
     // X server doesn't support Vulkan surface.
-    base::Optional<ui::ScopedUnsetDisplay> unset_display;
+    absl::optional<ui::ScopedUnsetDisplay> unset_display;
     if (display_type == ANGLE_VULKAN && !ui::IsVulkanSurfaceSupported())
       unset_display.emplace();
 #endif  // defined(USE_X11)
@@ -1322,12 +1374,26 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(EGLDisplayPlatform native_display) {
       LOG(ERROR) << "eglInitialize " << DisplayTypeString(display_type)
                  << " failed with error " << GetLastEGLErrorString()
                  << (is_last ? "" : ", trying next display type");
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("GPU.EGLDisplayType", display_type,
-                                DISPLAY_TYPE_MAX);
-      g_egl_display = display;
-      break;
+      continue;
     }
+
+    std::ostringstream display_type_string;
+    auto gl_implementation = GetGLImplementationParts();
+    display_type_string << GetGLImplementationGLName(gl_implementation);
+    if (gl_implementation.gl == kGLImplementationEGLANGLE) {
+      display_type_string << ":" << DisplayTypeString(display_type);
+    }
+
+    static auto* egl_display_type_key = base::debug::AllocateCrashKeyString(
+        "egl-display-type", base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(egl_display_type_key,
+                                   display_type_string.str());
+
+    UMA_HISTOGRAM_ENUMERATION("GPU.EGLDisplayType", display_type,
+                              DISPLAY_TYPE_MAX);
+    g_egl_display = display;
+    g_display_type = display_type;
+    break;
   }
 
   return g_egl_display;
@@ -1536,6 +1602,9 @@ void NativeViewGLSurfaceEGL::SetEnableSwapTimestamps() {
             static_cast<int>(supported_egl_timestamps_.size());
         presentation_flags_ = gfx::PresentationFeedback::kVSync |
                               gfx::PresentationFeedback::kHWCompletion;
+        break;
+      case EGL_RENDERING_COMPLETE_TIME_ANDROID:
+        writes_done_index_ = static_cast<int>(supported_egl_timestamps_.size());
         break;
     }
 
@@ -1814,6 +1883,7 @@ bool NativeViewGLSurfaceEGL::IsEGLTimestampSupported() const {
 bool NativeViewGLSurfaceEGL::GetFrameTimestampInfoIfAvailable(
     base::TimeTicks* presentation_time,
     base::TimeDelta* composite_interval,
+    base::TimeTicks* writes_done_time,
     uint32_t* presentation_flags,
     int frame_id) {
   DCHECK(presentation_time);
@@ -1896,6 +1966,17 @@ bool NativeViewGLSurfaceEGL::GetFrameTimestampInfoIfAvailable(
                          base::TimeDelta::FromNanoseconds(presentation_time_ns);
     *presentation_flags = presentation_flags_;
   }
+
+  // Get the WritesDone time if available, otherwise set to a null TimeTicks.
+  EGLnsecsANDROID writes_done_time_ns = egl_timestamps[writes_done_index_];
+  if (writes_done_time_ns == EGL_TIMESTAMP_INVALID_ANDROID ||
+      writes_done_time_ns == EGL_TIMESTAMP_PENDING_ANDROID) {
+    *writes_done_time = base::TimeTicks();
+  } else {
+    *writes_done_time = base::TimeTicks() +
+                        base::TimeDelta::FromNanoseconds(writes_done_time_ns);
+  }
+
   return true;
 }
 

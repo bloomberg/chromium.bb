@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/compiled_action.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/ui.gni")
 import("//build_overrides/build.gni")
@@ -22,14 +23,13 @@ static_library("test_config") {
   deps = [
     "//base",
     "//base:clang_profiling_buildflags",
+    "//build:chromeos_buildflags",
   ]
 }
 
 static_library("test_support") {
   testonly = true
   sources = [
-    "../power_monitor/test/fake_power_monitor_source.cc",
-    "../power_monitor/test/fake_power_monitor_source.h",
     "../task/sequence_manager/test/fake_task.cc",
     "../task/sequence_manager/test/fake_task.h",
     "../task/sequence_manager/test/mock_time_domain.cc",
@@ -86,8 +86,8 @@ static_library("test_support") {
     "perf_test_suite.h",
     "perf_time_logger.cc",
     "perf_time_logger.h",
-    "power_monitor_test_base.cc",
-    "power_monitor_test_base.h",
+    "power_monitor_test.cc",
+    "power_monitor_test.h",
     "scoped_command_line.cc",
     "scoped_command_line.h",
     "scoped_environment_variable_override.cc",
@@ -144,10 +144,10 @@ static_library("test_support") {
 
   configs += [ "//build/config:precompiled_headers" ]
 
-  data = [
+  data_deps = [
     # The isolate needs this script for setting up the test. It's not actually
     # needed to run this target locally.
-    "//testing/test_env.py",
+    "//testing:test_scripts_shared",
   ]
 
   public_deps = [
@@ -161,10 +161,15 @@ static_library("test_support") {
 
   deps = [
     "//base/third_party/dynamic_annotations",
+    "//build:chromeos_buildflags",
     "//third_party/icu:icuuc",
     "//third_party/libxml:libxml_utils",
     "//third_party/libxml:xml_reader",
   ]
+
+  if (enable_base_tracing) {
+    public_deps += [ "//third_party/perfetto:perfetto_test_support" ]
+  }
 
   if (is_win) {
     sources += [
@@ -180,10 +185,19 @@ static_library("test_support") {
     ]
   }
 
+  if (is_chromeos_ash || is_chromeos_lacros) {
+    sources += [
+      "scoped_chromeos_version_info.cc",
+      "scoped_chromeos_version_info.h",
+      "scoped_running_on_chromeos.cc",
+      "scoped_running_on_chromeos.h",
+    ]
+  }
+
   if (is_linux || is_chromeos) {
     sources += [ "test_file_util_linux.cc" ]
     public_deps += [ ":fontconfig_util_linux" ]
-    data_deps = [ "//third_party/test_fonts" ]
+    data_deps += [ "//third_party/test_fonts" ]
     if (current_toolchain == host_toolchain) {
       data_deps += [ ":do_generate_fontconfig_caches" ]
     }
@@ -249,6 +263,8 @@ static_library("test_support") {
     sources += [
       "../fuchsia/test_component_context_for_process.cc",
       "../fuchsia/test_component_context_for_process.h",
+      "../fuchsia/test_component_controller.cc",
+      "../fuchsia/test_component_controller.h",
     ]
   }
 
@@ -303,6 +319,8 @@ static_library("test_support") {
       "../trace_event/trace_config_memory_test_util.h",
       "trace_event_analyzer.cc",
       "trace_event_analyzer.h",
+      "trace_test_utils.cc",
+      "trace_test_utils.h",
     ]
     if (!is_nacl_nonsfi) {
       sources += [
@@ -392,15 +410,6 @@ shared_library("test_shared_library") {
   deps = [ ":native_library_test_utils" ]
 }
 
-static_library("run_all_base_unittests") {
-  # Only targets in base should depend on this, targets outside base
-  # should depend on run_all_unittests above.
-  visibility = [ "//base/*" ]
-  testonly = true
-  sources = [ "run_all_base_unittests.cc" ]
-  deps = [ ":test_support" ]
-}
-
 if (is_linux || is_chromeos) {
   source_set("fontconfig_util_linux") {
     sources = [
@@ -472,13 +481,13 @@ if (is_android) {
 
   android_library("test_support_java") {
     testonly = true
+
     deps = [
       "//base:base_java",
-      "//base:base_java_test_support",
       "//testing/android/native_test:native_main_runner_java",
-      "//third_party/android_deps:androidx_annotation_annotation_java",
       "//third_party/android_deps:com_google_code_findbugs_jsr305_java",
     ]
+
     srcjar_deps = [ ":test_support_java_aidl" ]
     sources = [
       "android/java/src/org/chromium/base/GarbageCollectionTestUtils.java",

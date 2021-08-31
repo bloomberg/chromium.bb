@@ -4,6 +4,7 @@
 
 """Finds android browsers that can be started and controlled by telemetry."""
 
+from __future__ import absolute_import
 import contextlib
 import logging
 import os
@@ -105,7 +106,8 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
                                      finder_options.modules_to_install)
 
     self._support_apk_list = []
-    if self._backend_settings.requires_embedder:
+    if (self._backend_settings.requires_embedder or
+        self._backend_settings.has_additional_apk):
       if finder_options.webview_embedder_apk:
         self._support_apk_list = finder_options.webview_embedder_apk
       else:
@@ -327,7 +329,8 @@ class PossibleAndroidBrowser(possible_browser.PossibleBrowser):
         package_name = apk_helper.GetPackageName(self._local_apk)
         logging.warn('Compiling %s.', package_name)
         self._platform_backend.device.RunShellCommand(
-            ['cmd', 'package', 'compile', '-m', 'speed', '-f', package_name],
+            ['cmd', 'package', 'compile', '-m', self._compile_apk, '-f',
+             package_name],
             check_return=True)
 
     sdk_version = self._platform_backend.device.build_version_sdk

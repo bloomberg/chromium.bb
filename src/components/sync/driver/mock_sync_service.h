@@ -52,8 +52,8 @@ class MockSyncService : public SyncService {
   MOCK_METHOD(bool, IsSetupInProgress, (), (const override));
   MOCK_METHOD(ModelTypeSet, GetPreferredDataTypes, (), (const override));
   MOCK_METHOD(ModelTypeSet, GetActiveDataTypes, (), (const override));
-  MOCK_METHOD(ModelTypeSet, GetBackedOffDataTypes, (), (const override));
   MOCK_METHOD(void, StopAndClear, (), (override));
+  MOCK_METHOD(void, SetSyncAllowedByPlatform, (bool), (override));
   MOCK_METHOD(void,
               OnDataTypeRequestsSyncStartup,
               (ModelType type),
@@ -77,6 +77,7 @@ class MockSyncService : public SyncService {
               AddTrustedVaultRecoveryMethodFromWeb,
               (const std::string& gaia_id,
                const std::vector<uint8_t>& public_key,
+               int method_type_hint,
                base::OnceClosure callback),
               (override));
   MOCK_METHOD(void, AddObserver, (SyncServiceObserver * observer), (override));

@@ -15,6 +15,7 @@
 #include "config/aom_config.h"
 
 #include "av1/common/av1_loopfilter.h"
+#include "av1/common/cdef.h"
 #include "aom_util/aom_thread.h"
 
 #ifdef __cplusplus
@@ -96,6 +97,55 @@ typedef struct AV1LrSyncData {
   int jobs_enqueued;
   int jobs_dequeued;
 } AV1LrSync;
+
+typedef struct AV1CdefWorker {
+  AV1_COMMON *cm;
+  MACROBLOCKD *xd;
+  uint16_t *colbuf[MAX_MB_PLANE];
+  uint16_t *srcbuf;
+  uint16_t *linebuf[MAX_MB_PLANE];
+  cdef_init_fb_row_t cdef_init_fb_row_fn;
+} AV1CdefWorkerData;
+
+typedef struct AV1CdefRowSync {
+#if CONFIG_MULTITHREAD
+  pthread_mutex_t *row_mutex_;
+  pthread_cond_t *row_cond_;
+#endif  // CONFIG_MULTITHREAD
+  int is_row_done;
+} AV1CdefRowSync;
+
+// Data related to CDEF search multi-thread synchronization.
+typedef struct AV1CdefSyncData {
+#if CONFIG_MULTITHREAD
+  // Mutex lock used while dispatching jobs.
+  pthread_mutex_t *mutex_;
+#endif  // CONFIG_MULTITHREAD
+  // Data related to CDEF row mt sync information
+  AV1CdefRowSync *cdef_row_mt;
+  // Flag to indicate all blocks are processed and end of frame is reached
+  int end_of_frame;
+  // Row index in units of 64x64 block
+  int fbr;
+  // Column index in units of 64x64 block
+  int fbc;
+} AV1CdefSync;
+
+void av1_cdef_frame_mt(AV1_COMMON *const cm, MACROBLOCKD *const xd,
+                       AV1CdefWorkerData *const cdef_worker,
+                       AVxWorker *const workers, AV1CdefSync *const cdef_sync,
+                       int num_workers, cdef_init_fb_row_t cdef_init_fb_row_fn);
+void av1_cdef_init_fb_row_mt(const AV1_COMMON *const cm,
+                             const MACROBLOCKD *const xd,
+                             CdefBlockInfo *const fb_info,
+                             uint16_t **const linebuf, uint16_t *const src,
+                             struct AV1CdefSyncData *const cdef_sync, int fbr);
+void av1_cdef_copy_sb8_16(const AV1_COMMON *const cm, uint16_t *const dst,
+                          int dstride, const uint8_t *src, int src_voffset,
+                          int src_hoffset, int sstride, int vsize, int hsize);
+void av1_alloc_cdef_sync(AV1_COMMON *const cm, AV1CdefSync *cdef_sync,
+                         int num_workers);
+void av1_free_cdef_sync(AV1CdefSync *cdef_sync);
 
 // Deallocate loopfilter synchronization related mutex and data.
 void av1_loop_filter_dealloc(AV1LfSync *lf_sync);

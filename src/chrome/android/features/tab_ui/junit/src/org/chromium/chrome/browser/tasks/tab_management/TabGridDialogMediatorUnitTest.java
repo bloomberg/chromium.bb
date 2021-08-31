@@ -40,6 +40,7 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -64,6 +65,7 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.JUnitTestGURLs;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -190,7 +192,8 @@ public class TabGridDialogMediatorUnitTest {
         doReturn(mEditable).when(mTitleTextView).getText();
         doReturn(CUSTOMIZED_DIALOG_TITLE).when(mEditable).toString();
 
-        if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
+        if (!TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(
+                    ContextUtils.getApplicationContext())) {
             mTabSelectionEditorController = null;
         }
         mModel = new PropertyModel(TabGridPanelProperties.ALL_KEYS);
@@ -216,7 +219,9 @@ public class TabGridDialogMediatorUnitTest {
     @Test
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void setupTabGroupsContinuation_flagEnabled() {
-        assertThat(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(), equalTo(true));
+        assertThat(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(
+                           ContextUtils.getApplicationContext()),
+                equalTo(true));
         // Setup editable title.
         assertThat(mMediator.getKeyboardVisibilityListenerForTesting(),
                 instanceOf(KeyboardVisibilityDelegate.KeyboardVisibilityListener.class));
@@ -235,7 +240,9 @@ public class TabGridDialogMediatorUnitTest {
 
     @Test
     public void setupTabGroupsContinuation_flagDisabled() {
-        assertThat(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(), equalTo(false));
+        assertThat(TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(
+                           ContextUtils.getApplicationContext()),
+                equalTo(false));
 
         assertThat(mMediator.getKeyboardVisibilityListenerForTesting(), equalTo(null));
         assertThat(mModel.get(TabGridPanelProperties.TITLE_TEXT_WATCHER), equalTo(null));
@@ -259,7 +266,7 @@ public class TabGridDialogMediatorUnitTest {
         verify(mDialogController).resetWithListOfTabs(null);
         verify(mTabCreator)
                 .createNewTab(
-                        isA(LoadUrlParams.class), eq(TabLaunchType.FROM_CHROME_UI), eq(mTab1));
+                        isA(LoadUrlParams.class), eq(TabLaunchType.FROM_TAB_GROUP_UI), eq(mTab1));
     }
 
     @Test
@@ -1019,22 +1026,23 @@ public class TabGridDialogMediatorUnitTest {
     @Features.EnableFeatures(ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID)
     public void testGetTabGroupStringForShare() {
         Tab newTab = prepareTab(TAB3_ID, TAB3_TITLE);
-        String url1 = "https://www.google.com";
-        String url2 = "http://example.com";
-        String url3 = "https://maps.google.com";
-        doReturn(url1).when(mTab1).getUrlString();
-        doReturn(url2).when(mTab2).getUrlString();
-        doReturn(url3).when(newTab).getUrlString();
+        String url1 = JUnitTestGURLs.SEARCH_URL;
+        String url2 = JUnitTestGURLs.EXAMPLE_URL;
+        String url3 = JUnitTestGURLs.MAPS_URL;
+
+        doReturn(JUnitTestGURLs.getGURL(url1)).when(mTab1).getUrl();
+        doReturn(JUnitTestGURLs.getGURL(url2)).when(mTab2).getUrl();
+        doReturn(JUnitTestGURLs.getGURL(url3)).when(newTab).getUrl();
         mMediator.setCurrentTabIdForTesting(TAB1_ID);
 
         // Setup two sets of tab group and share strings.
         List<Tab> tabgroup1 = new ArrayList<>(Arrays.asList(newTab, mTab1, mTab2));
         String shareString1 =
-                "1. https://maps.google.com\n2. https://www.google.com\n3. http://example.com\n";
+                "1. https://maps.google.com/\n2. https://www.google.com/search?q=test\n3. https://www.example.com/\n";
 
         List<Tab> tabgroup2 = new ArrayList<>(Arrays.asList(mTab2, newTab, mTab1));
         String shareString2 =
-                "1. http://example.com\n2. https://maps.google.com\n3. https://www.google.com\n";
+                "1. https://www.example.com/\n2. https://maps.google.com/\n3. https://www.google.com/search?q=test\n";
 
         doReturn(tabgroup1).when(mTabGroupModelFilter).getRelatedTabList(TAB1_ID);
         assertThat(shareString1, equalTo(mMediator.getTabGroupStringForSharingForTesting()));

@@ -15,15 +15,16 @@
 namespace mojo {
 
 template <>
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+struct COMPONENT_EXPORT(NETWORK_CPP_IP_ADDRESS)
     StructTraits<network::mojom::AddressListDataView, net::AddressList> {
   static const std::vector<net::IPEndPoint>& addresses(
       const net::AddressList& obj) {
     return obj.endpoints();
   }
 
-  static const std::string& canonical_name(const net::AddressList& obj) {
-    return obj.canonical_name();
+  static const std::vector<std::string>& dns_aliases(
+      const net::AddressList& obj) {
+    return obj.dns_aliases();
   }
 
   static bool Read(network::mojom::AddressListDataView data,

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
@@ -157,16 +156,14 @@ class SiteDataRecorderTest : public PerformanceManagerTestHarness {
       auto* page_node_impl = PageNodeImpl::FromNode(page_node.get());
       page_node_impl->SetIsAudible(false);
       page_node_impl->SetIsVisible(false);
-      page_node_impl->SetIsLoading(true);
+      page_node_impl->SetLoadingState(PageNode::LoadingState::kLoading);
     }));
   }
 
   void TearDown() override {
     DeleteContents();
     recorder_ = nullptr;
-    base::RunLoop run_loop;
-    cache_factory_.ResetWithCallbackAfterDestruction(run_loop.QuitClosure());
-    run_loop.Run();
+    cache_factory_.SynchronouslyResetForTest();
     PerformanceManagerTestHarness::TearDown();
   }
 
@@ -242,7 +239,7 @@ TEST_F(SiteDataRecorderTest, FeatureEventsGetForwardedWhenInBackground) {
 
     node_impl = PageNodeImpl::FromNode(page_node.get());
     EXPECT_CALL(*mock_writer, NotifySiteLoaded(TabVisibility::kBackground));
-    node_impl->SetIsLoading(false);
+    node_impl->SetLoadingState(PageNode::LoadingState::kLoadedIdle);
     ::testing::Mock::VerifyAndClear(mock_writer);
 
     EXPECT_CALL(*mock_writer, NotifySiteForegrounded(true));
@@ -373,11 +370,11 @@ TEST_F(SiteDataRecorderTest, LoadEvent) {
     // Test that the load/unload events get forwarded to the writer.
 
     EXPECT_CALL(*mock_writer, NotifySiteLoaded(TabVisibility::kBackground));
-    node_impl->SetIsLoading(false);
+    node_impl->SetLoadingState(PageNode::LoadingState::kLoadedIdle);
     ::testing::Mock::VerifyAndClear(mock_writer);
 
     EXPECT_CALL(*mock_writer, NotifySiteUnloaded(TabVisibility::kBackground));
-    node_impl->SetIsLoading(true);
+    node_impl->SetLoadingState(PageNode::LoadingState::kLoading);
     ::testing::Mock::VerifyAndClear(mock_writer);
   }));
 }

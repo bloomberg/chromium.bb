@@ -38,7 +38,7 @@ class SessionRestore {
 
   enum {
     // Indicates the active tab of the supplied browser should be closed.
-    CLOBBER_CURRENT_TAB          = 1 << 0,
+    CLOBBER_CURRENT_TAB = 1 << 0,
 
     // Indicates that if there is a problem restoring the last session then a
     // new tabbed browser should be created.
@@ -46,16 +46,14 @@ class SessionRestore {
 
     // Restore blocks until complete. This is intended for use during startup
     // when we want to block until restore is complete.
-    SYNCHRONOUS                  = 1 << 2,
+    SYNCHRONOUS = 1 << 2,
+
+    // Restore apps as well.
+    RESTORE_APPS = 1 << 3,
   };
 
   // Notification callback list.
   using CallbackList = base::RepeatingCallbackList<void(int)>;
-
-  // Used by objects calling RegisterOnSessionRestoredCallback() to de-register
-  // themselves when they are destroyed.
-  using CallbackSubscription =
-      std::unique_ptr<base::RepeatingCallbackList<void(int)>::Subscription>;
 
   // Restores the last session. |behavior| is a bitmask of Behaviors, see it
   // for details. If |browser| is non-null the tabs for the first window are
@@ -102,7 +100,7 @@ class SessionRestore {
   // Note that 'complete' means all the browsers and tabs have been created but
   // have not necessarily finished loading. The integer supplied to the callback
   // indicates the number of tabs that were created.
-  static CallbackSubscription RegisterOnSessionRestoredCallback(
+  static base::CallbackListSubscription RegisterOnSessionRestoredCallback(
       const base::RepeatingCallback<void(int)>& callback);
 
   // Add/remove an observer to/from this session restore.

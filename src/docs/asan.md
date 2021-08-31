@@ -32,6 +32,12 @@ tests including browser\_tests and content\_browsertests).
 
 You can grab fresh Chrome binaries built with ASan
 [here](https://commondatastorage.googleapis.com/chromium-browser-asan/index.html).
+The lists of ASan binaries are _very_ long, but you can filter down to more
+specific releases by specifying a prefix like
+[linux-debug/asan-linux-debug-83](https://commondatastorage.googleapis.com/chromium-browser-asan/index.html?prefix=linux-debug/asan-linux-debug-83).
+This is useful for finding a build for a specific revision, since filenames are of
+the form `asan-<platform>-<buildtype>-<revision>` (but not every revision has an
+archived ASan build).
 
 ## Build tests with ASan
 
@@ -92,7 +98,7 @@ Now, check that the tool works. Run the following:
 ```shell
 out/asan/base_unittests \
     --gtest_filter=ToolsSanityTest.DISABLED_AddressSanitizerLocalOOBCrashTest \
-    --gtest_also_run_disabled_tests 2>&1 | tools/valgrind/asan/asan_symbolize.py
+    --gtest_also_run_disabled_tests
 ```
 
 The test will crash with the following error report:
@@ -118,9 +124,9 @@ Congrats, you have a working ASan build! &#x1F64C;
 ## Run chrome under ASan
 
 And finally, have fun with the `out/Release/chrome` binary. The filter script
-`tools/valgrind/asan/asan_symbolize.py` should be used to symbolize the output.
-(Note that `asan_symbolize.py` is absolutely necessary if you need the symbols -
-there is no built-in symbolizer for ASan in Chrome).
+`tools/valgrind/asan/asan_symbolize.py` can be used to symbolize the output,
+although it shouldn't be necessary on Linux and Windows, where Chrome uses the
+llvm-symbolizer in its source tree by default.
 
 ASan should perfectly work with Chrome's sandbox. You should only need to run
 with `--no-sandbox` on Linux if you're debugging ASan.

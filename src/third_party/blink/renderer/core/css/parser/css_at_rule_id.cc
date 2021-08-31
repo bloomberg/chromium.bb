@@ -27,6 +27,11 @@ CSSAtRuleID CssAtRuleID(StringView name) {
     return kCSSAtRulePage;
   if (EqualIgnoringASCIICase(name, "property"))
     return kCSSAtRuleProperty;
+  if (EqualIgnoringASCIICase(name, "container")) {
+    if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled())
+      return kCSSAtRuleContainer;
+    return kCSSAtRuleInvalid;
+  }
   if (EqualIgnoringASCIICase(name, "counter-style")) {
     if (RuntimeEnabledFeatures::CSSAtRuleCounterStyleEnabled())
       return kCSSAtRuleCounterStyle;
@@ -74,9 +79,12 @@ void CountAtRule(const CSSParserContext* context, CSSAtRuleID rule_id) {
     case kCSSAtRuleProperty:
       feature = WebFeature::kCSSAtRuleProperty;
       break;
-    case kCSSAtRuleCounterStyle:
-      // TODO(crbug.com/687225): Add feature counter
+    case kCSSAtRuleContainer:
+      // TODO(crbug.com/1145970): Add use-counter.
       return;
+    case kCSSAtRuleCounterStyle:
+      feature = WebFeature::kCSSAtRuleCounterStyle;
+      break;
     case kCSSAtRuleScrollTimeline:
       feature = WebFeature::kCSSAtRuleScrollTimeline;
       break;

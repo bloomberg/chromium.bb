@@ -21,7 +21,7 @@ constexpr int kLaps = 5000;
 constexpr int kWarmupLaps = 5;
 constexpr char kMetricCallsPerSecondRunsPerS[] = "calls_per_second";
 
-class AXPositionPerfTest : public testing::Test, public TestAXTreeManager {
+class AXPositionPerfTest : public ::testing::Test, public TestAXTreeManager {
  public:
   AXPositionPerfTest() = default;
   ~AXPositionPerfTest() override = default;
@@ -68,7 +68,7 @@ void AXPositionPerfTest::SetUp() {
   constexpr int kStaticTextNodesStartIndex =
       kGroupNodesStartIndex + kNumberOfGroups;
 
-  AXNode::AXID current_id = 0;
+  AXNodeID current_id = 0;
   std::vector<AXNodeData> nodes;
   nodes.resize(1 + kNumberOfGroups + kNumberOfStaticTextNodes);
 

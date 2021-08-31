@@ -36,7 +36,7 @@ Handle<Name> NewNameWithHash(Isolate* isolate, const char* str, uint32_t hash,
   }
   Handle<Name> name = isolate->factory()->NewOneByteInternalizedString(
       OneByteVector(str), hash_field);
-  name->set_hash_field(hash_field);
+  name->set_raw_hash_field(hash_field);
   CHECK(name->IsUniqueName());
   return name;
 }
@@ -55,8 +55,8 @@ void CheckDescriptorArrayLookups(Isolate* isolate, Handle<Map> map,
                                  Handle<JSFunction> csa_lookup) {
   // Test C++ implementation.
   {
-    DisallowHeapAllocation no_gc;
-    DescriptorArray descriptors = map->instance_descriptors(kRelaxedLoad);
+    DisallowGarbageCollection no_gc;
+    DescriptorArray descriptors = map->instance_descriptors(isolate);
     DCHECK(descriptors.IsSortedNoDuplicates());
     int nof_descriptors = descriptors.number_of_descriptors();
 
@@ -86,13 +86,13 @@ void CheckTransitionArrayLookups(Isolate* isolate,
                                  Handle<JSFunction> csa_lookup) {
   // Test C++ implementation.
   {
-    DisallowHeapAllocation no_gc;
+    DisallowGarbageCollection no_gc;
     DCHECK(transitions->IsSortedNoDuplicates());
 
     for (size_t i = 0; i < maps.size(); ++i) {
       Map expected_map = *maps[i];
-      Name name = expected_map.instance_descriptors(kRelaxedLoad)
-                      .GetKey(expected_map.LastAdded());
+      Name name = expected_map.instance_descriptors(isolate).GetKey(
+          expected_map.LastAdded());
 
       Map map = transitions->SearchAndGetTargetForTesting(PropertyKind::kData,
                                                           name, NONE);
@@ -105,8 +105,8 @@ void CheckTransitionArrayLookups(Isolate* isolate,
   if (!FLAG_jitless) {
     for (size_t i = 0; i < maps.size(); ++i) {
       Handle<Map> expected_map = maps[i];
-      Handle<Name> name(expected_map->instance_descriptors(kRelaxedLoad)
-                            .GetKey(expected_map->LastAdded()),
+      Handle<Name> name(expected_map->instance_descriptors(isolate).GetKey(
+                            expected_map->LastAdded()),
                         isolate);
 
       Handle<Object> transition_map =
@@ -260,7 +260,7 @@ TEST(DescriptorArrayHashCollisionMassive) {
   CheckDescriptorArrayLookups(isolate, map, names, csa_lookup);
 
   // Sort descriptor array and check it again.
-  map->instance_descriptors(kRelaxedLoad).Sort();
+  map->instance_descriptors(isolate).Sort();
   CheckDescriptorArrayLookups(isolate, map, names, csa_lookup);
 }
 
@@ -309,7 +309,7 @@ TEST(DescriptorArrayHashCollision) {
   CheckDescriptorArrayLookups(isolate, map, names, csa_lookup);
 
   // Sort descriptor array and check it again.
-  map->instance_descriptors(kRelaxedLoad).Sort();
+  map->instance_descriptors(isolate).Sort();
   CheckDescriptorArrayLookups(isolate, map, names, csa_lookup);
 }
 

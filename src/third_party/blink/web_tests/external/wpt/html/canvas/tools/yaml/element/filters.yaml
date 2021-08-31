@@ -1,0 +1,125 @@
+- name: 2d.filter.value
+  desc: test if ctx.filter works correctly
+  code: |
+    @assert ctx.filter == 'none';
+    ctx.filter = 'blur(5px)';
+    @assert ctx.filter == 'blur(5px)';
+    ctx.save();
+    ctx.filter = 'none';
+    @assert ctx.filter == 'none';
+    ctx.restore();
+    @assert ctx.filter == 'blur(5px)';
+
+    ctx.filter = 'blur(10)';
+    @assert ctx.filter == 'blur(5px)';
+    ctx.filter = 'blur 10px';
+    @assert ctx.filter == 'blur(5px)';
+
+    ctx.filter = 'inherit';
+    @assert ctx.filter == 'blur(5px)';
+    ctx.filter = 'initial';
+    @assert ctx.filter == 'blur(5px)';
+    ctx.filter = 'unset';
+    @assert ctx.filter == 'blur(5px)';
+
+    ctx.filter = '';
+    @assert ctx.filter == 'blur(5px)';
+    ctx.filter = null;
+    @assert ctx.filter == 'blur(5px)';
+    ctx.filter = undefined;
+    @assert ctx.filter == 'blur(5px)';
+
+    ctx.filter = 'blur(  5px)';
+    assert_equals(ctx.filter, 'blur(  5px)');
+
+- name: 2d.filter.canvasFilterObject
+  desc: Test CanvasFilter() object
+  code: |
+    @assert ctx.filter == 'none';
+    ctx.filter = 'blur(5px)';
+    @assert ctx.filter == 'blur(5px)';
+    ctx.filter = new CanvasFilter({blur: {stdDeviation: 5}});
+    @assert ctx.filter.toString() == '[object CanvasFilter]';
+    ctx.filter = new CanvasFilter([{blur: {stdDeviation: 5}}, {blur: {stdDeviation: 10}}]);
+    @assert ctx.filter.toString() == '[object CanvasFilter]';
+    var canvas2 = document.createElement('canvas');
+    var ctx2 = canvas2.getContext('2d');
+    ctx2.filter = ctx.filter;
+    @assert ctx.filter.toString() == '[object CanvasFilter]';
+    ctx.filter = 'blur(5px)';
+    @assert ctx.filter == 'blur(5px)';
+    ctx.filter = 'none';
+    @assert ctx.filter == 'none';
+    ctx.filter = new CanvasFilter({blur: {stdDeviation: 5}});
+    ctx.filter = "this string is not a filter and should do nothing";
+    @assert ctx.filter.toString() == '[object CanvasFilter]';
+
+- name: 2d.filter.canvasFilterObject.blur.exceptions
+  desc: Test exceptions on CanvasFilter() blur.object
+  code: |
+    @assert throws TypeError ctx.filter = new CanvasFilter({blur: null});
+    @assert throws TypeError ctx.filter = new CanvasFilter({blur: {}});
+    @assert throws TypeError ctx.filter = new CanvasFilter({blur: {stdDevation: null}});
+    @assert throws TypeError ctx.filter = new CanvasFilter({blur: {stdDeviation: "foo"}});
+
+- name: 2d.filter.canvasFilterObject.colorMatrix
+  desc: Test the functionality of ColorMatrix filters in CanvasFilter objects
+  code: |
+    @assert throws TypeError new CanvasFilter({colorMatrix: {values: undefined}});
+    @assert throws TypeError new CanvasFilter({colorMatrix: {values: "foo"}});
+    @assert throws TypeError new CanvasFilter({colorMatrix: {values: null}});
+    @assert throws TypeError new CanvasFilter({colorMatrix: {values: [1, 2, 3]}});
+    @assert throws TypeError new CanvasFilter({colorMatrix: {values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, "a"]}});
+    @assert throws TypeError new CanvasFilter({colorMatrix: {values: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, Infinity]}});
+    ctx.fillStyle = "#f00";
+    ctx.filter = new CanvasFilter({colorMatrix: {type: "hueRotate", values: 0}});
+    ctx.fillRect(0, 0, 100, 50);
+    @assert pixel 10,10 ==~ 255,0,0,255;
+    ctx.filter = new CanvasFilter({colorMatrix: {type: "hueRotate", values: 90}});
+    ctx.fillRect(0, 0, 100, 50);
+    @assert pixel 10,10 ==~ 0,91,0,255;
+    ctx.filter = new CanvasFilter({colorMatrix: {type: "hueRotate", values: 180}});
+    ctx.fillRect(0, 0, 100, 50);
+    @assert pixel 10,10 ==~ 0,109,109,255;
+    ctx.filter = new CanvasFilter({colorMatrix: {type: "hueRotate", values: 270}});
+    ctx.fillRect(0, 0, 100, 50);
+    @assert pixel 10,10 ==~ 109,18,255,255;
+    ctx.filter = new CanvasFilter({colorMatrix: {type: "saturate", values: 0.5}});
+    ctx.fillRect(0, 0, 100, 50);
+    @assert pixel 10,10 ==~ 155,27,27,255;
+    ctx.clearRect(0, 0, 100, 50);
+    ctx.filter = new CanvasFilter({colorMatrix: {type: "luminanceToAlpha"}});
+    ctx.fillRect(0, 0, 100, 50);
+    @assert pixel 10,10 ==~ 0,0,0,54;
+    ctx.filter = new CanvasFilter({colorMatrix: {values: [
+            0, 0, 0, 0, 0,
+            1, 1, 1, 1, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 1, 0
+    ]}});
+    ctx.fillRect(0, 0, 50, 25);
+    ctx.fillStyle = "#0f0";
+    ctx.fillRect(50, 0, 50, 25);
+    ctx.fillStyle = "#00f";
+    ctx.fillRect(0, 25, 50, 25);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(50, 25, 50, 25);
+    @assert pixel 10,10 ==~ 0,255,0,255;
+    @assert pixel 60,10 ==~ 0,255,0,255;
+    @assert pixel 10,30 ==~ 0,255,0,255;
+    @assert pixel 60,30 ==~ 0,255,0,255;
+  expected: green
+
+- name: 2d.filter.canvasFilterObject.convolveMatrix.exceptions
+  desc: Test exceptions on CanvasFilter() convolveMatrix
+  code: |
+    @assert throws TypeError new CanvasFilter({convolveMatrix: {}});
+    @assert throws TypeError new CanvasFilter({convolveMatrix: null});
+    @assert throws TypeError new CanvasFilter({convolveMatrix: {divisor: 2}});
+    @assert throws TypeError new CanvasFilter({convolveMatrix: {kernelMatrix: null}});
+    @assert throws TypeError new CanvasFilter({convolveMatrix: {kernelMatrix: 1}});
+    @assert throws TypeError new CanvasFilter({convolveMatrix: {kernelMatrix: [[1, 0], [0]]}});
+    @assert throws TypeError new CanvasFilter({convolveMatrix: {kernelMatrix: [[1, "a"], [0]]}});
+    @assert throws TypeError new CanvasFilter({convolveMatrix: {kernelMatrix: [[1, 0], 0]}});
+    @assert throws TypeError new CanvasFilter({convolveMatrix: {kernelMatrix: [[1, 0], [0, Infinity]]}});
+

@@ -18,8 +18,10 @@
 
 #include "perfetto/base/logging.h"
 #include "src/trace_processor/importers/common/clock_tracker.h"
+#include "src/trace_processor/importers/common/event_tracker.h"
 #include "src/trace_processor/importers/common/process_tracker.h"
 #include "src/trace_processor/importers/proto/packet_sequence_state.h"
+#include "src/trace_processor/importers/proto/perf_sample_tracker.h"
 #include "src/trace_processor/importers/proto/profile_packet_utils.h"
 #include "src/trace_processor/importers/proto/stack_profile_tracker.h"
 #include "src/trace_processor/storage/trace_storage.h"
@@ -29,6 +31,7 @@
 #include "src/trace_processor/types/trace_processor_context.h"
 
 #include "protos/perfetto/common/builtin_clock.pbzero.h"
+#include "protos/perfetto/common/perf_events.pbzero.h"
 #include "protos/perfetto/trace/profiling/profile_packet.pbzero.h"
 
 namespace perfetto {
@@ -40,6 +43,7 @@ using protozero::ConstBytes;
 ProfileModule::ProfileModule(TraceProcessorContext* context)
     : context_(context) {
   RegisterForField(TracePacket::kStreamingProfilePacketFieldNumber, context);
+  RegisterForField(TracePacket::kPerfSampleFieldNumber, context);
 }
 
 ProfileModule::~ProfileModule() = default;
@@ -66,6 +70,11 @@ void ProfileModule::ParsePacket(const TracePacket::Decoder& decoder,
       ParseStreamingProfilePacket(ttp.timestamp,
                                   ttp.packet_data.sequence_state.get(),
                                   decoder.streaming_profile_packet());
+      return;
+    case TracePacket::kPerfSampleFieldNumber:
+      PERFETTO_DCHECK(ttp.type == TimestampedTracePiece::Type::kTracePacket);
+      ParsePerfSample(ttp.timestamp, ttp.packet_data.sequence_state.get(),
+                      decoder);
       return;
   }
 }
@@ -146,6 +155,99 @@ void ProfileModule::ParseStreamingProfilePacket(
         timestamp, *opt_cs_id, utid, packet.process_priority()};
     storage->mutable_cpu_profile_stack_sample_table()->Insert(sample_row);
   }
+}
+
+void ProfileModule::ParsePerfSample(
+    int64_t ts,
+    PacketSequenceStateGeneration* sequence_state,
+    const TracePacket::Decoder& decoder) {
+  using PerfSample = protos::pbzero::PerfSample;
+  const auto& sample_raw = decoder.perf_sample();
+  PerfSample::Decoder sample(sample_raw.data, sample_raw.size);
+
+  uint32_t seq_id = decoder.trusted_packet_sequence_id();
+  PerfSampleTracker::SamplingStreamInfo sampling_stream =
+      context_->perf_sample_tracker->GetSamplingStreamInfo(
+          seq_id, sample.cpu(), sequence_state->GetTracePacketDefaults());
+
+  // Not a sample, but an indication of data loss in the ring buffer shared with
+  // the kernel.
+  if (sample.kernel_records_lost() > 0) {
+    PERFETTO_DCHECK(sample.pid() == 0);
+
+    context_->storage->IncrementIndexedStats(
+        stats::perf_cpu_lost_records, static_cast<int>(sample.cpu()),
+        static_cast<int64_t>(sample.kernel_records_lost()));
+    return;
+  }
+
+  // Sample that looked relevant for the tracing session, but had to be skipped.
+  // Either we failed to look up the procfs file descriptors necessary for
+  // remote stack unwinding (not unexpected in most cases), or the unwind queue
+  // was out of capacity (producer lost data on its own).
+  if (sample.has_sample_skipped_reason()) {
+    context_->storage->IncrementStats(stats::perf_samples_skipped);
+
+    if (sample.sample_skipped_reason() ==
+        PerfSample::PROFILER_SKIP_UNWIND_ENQUEUE)
+      context_->storage->IncrementStats(stats::perf_samples_skipped_dataloss);
+
+    return;
+  }
+
+  // Not a sample, but an event from the producer.
+  // TODO(rsavitski): this stat is indexed by the session id, but the older
+  // stats (see above) aren't. The indexing is relevant if a trace contains more
+  // than one profiling data source. So the older stats should be changed to
+  // being indexed as well.
+  if (sample.has_producer_event()) {
+    PerfSample::ProducerEvent::Decoder producer_event(sample.producer_event());
+    if (producer_event.source_stop_reason() ==
+        PerfSample::ProducerEvent::PROFILER_STOP_GUARDRAIL) {
+      context_->storage->SetIndexedStats(
+          stats::perf_guardrail_stop_ts,
+          static_cast<int>(sampling_stream.perf_session_id), ts);
+    }
+    return;
+  }
+
+  // Proper sample, populate the |perf_sample| table with everything except the
+  // recorded counter values, which go to |counter|.
+  context_->event_tracker->PushCounter(
+      ts, static_cast<double>(sample.timebase_count()),
+      sampling_stream.timebase_track_id);
+
+  // TODO(rsavitski): empty callsite is not an error for counter-only samples.
+  // But consider identifying sequences which *should* have a callstack in every
+  // sample, as an invalid stack there is a bug.
+  SequenceStackProfileTracker& stack_tracker =
+      sequence_state->state()->sequence_stack_profile_tracker();
+  ProfilePacketInternLookup intern_lookup(sequence_state);
+  uint64_t callstack_iid = sample.callstack_iid();
+  base::Optional<CallsiteId> cs_id =
+      stack_tracker.FindOrInsertCallstack(callstack_iid, &intern_lookup);
+
+  UniqueTid utid =
+      context_->process_tracker->UpdateThread(sample.tid(), sample.pid());
+
+  using protos::pbzero::Profiling;
+  TraceStorage* storage = context_->storage.get();
+
+  auto cpu_mode = static_cast<Profiling::CpuMode>(sample.cpu_mode());
+  StringPool::Id cpu_mode_id =
+      storage->InternString(ProfilePacketUtils::StringifyCpuMode(cpu_mode));
+
+  base::Optional<StringPool::Id> unwind_error_id;
+  if (sample.has_unwind_error()) {
+    auto unwind_error =
+        static_cast<Profiling::StackUnwindError>(sample.unwind_error());
+    unwind_error_id = storage->InternString(
+        ProfilePacketUtils::StringifyStackUnwindError(unwind_error));
+  }
+  tables::PerfSampleTable::Row sample_row(ts, utid, sample.cpu(), cpu_mode_id,
+                                          cs_id, unwind_error_id,
+                                          sampling_stream.perf_session_id);
+  context_->storage->mutable_perf_sample_table()->Insert(sample_row);
 }
 
 }  // namespace trace_processor

@@ -80,13 +80,14 @@ AudioRendererImpl::AudioRendererImpl(
   // won't remove the observer until we're destructed on |task_runner_| so we
   // must post it here if we're on the wrong thread.
   if (task_runner_->BelongsToCurrentThread()) {
-    base::PowerMonitor::AddObserver(this);
+    base::PowerMonitor::AddPowerSuspendObserver(this);
   } else {
     // Safe to post this without a WeakPtr because this class must be destructed
     // on the same thread and construction has not completed yet.
     task_runner_->PostTask(
         FROM_HERE,
-        base::BindOnce(IgnoreResult(&base::PowerMonitor::AddObserver), this));
+        base::BindOnce(
+            IgnoreResult(&base::PowerMonitor::AddPowerSuspendObserver), this));
   }
 
   // Do not add anything below this line since the above actions are only safe
@@ -96,7 +97,7 @@ AudioRendererImpl::AudioRendererImpl(
 AudioRendererImpl::~AudioRendererImpl() {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
-  base::PowerMonitor::RemoveObserver(this);
+  base::PowerMonitor::RemovePowerSuspendObserver(this);
 
   // If Render() is in progress, this call will wait for Render() to finish.
   // After this call, the |sink_| will not call back into |this| anymore.
@@ -190,7 +191,8 @@ void AudioRendererImpl::SetMediaTime(base::TimeDelta time) {
   ended_timestamp_ = kInfiniteDuration;
   last_render_time_ = stop_rendering_time_ = base::TimeTicks();
   first_packet_timestamp_ = kNoTimestamp;
-  audio_clock_.reset(new AudioClock(time, audio_parameters_.sample_rate()));
+  audio_clock_ =
+      std::make_unique<AudioClock>(time, audio_parameters_.sample_rate());
 }
 
 base::TimeDelta AudioRendererImpl::CurrentMediaTime() {
@@ -589,8 +591,8 @@ void AudioRendererImpl::OnDeviceInfoReceived(
     // Set the |audio_clock_| under lock in case this is a reinitialize and some
     // external caller to GetWallClockTimes() exists.
     base::AutoLock lock(lock_);
-    audio_clock_.reset(
-        new AudioClock(base::TimeDelta(), audio_parameters_.sample_rate()));
+    audio_clock_ = std::make_unique<AudioClock>(
+        base::TimeDelta(), audio_parameters_.sample_rate());
   }
 
   audio_decoder_stream_->Initialize(
@@ -628,8 +630,10 @@ void AudioRendererImpl::OnAudioDecoderStreamInitialized(bool success) {
     return;
   }
 
-  if (expecting_config_changes_)
-    buffer_converter_.reset(new AudioBufferConverter(audio_parameters_));
+  if (expecting_config_changes_) {
+    buffer_converter_ =
+        std::make_unique<AudioBufferConverter>(audio_parameters_);
+  }
 
   // We're all good! Continue initializing the rest of the audio renderer
   // based on the decoder format.
@@ -637,7 +641,7 @@ void AudioRendererImpl::OnAudioDecoderStreamInitialized(bool success) {
   auto params =
       (media_client ? media_client->GetAudioRendererAlgorithmParameters(
                           audio_parameters_)
-                    : base::nullopt);
+                    : absl::nullopt);
   if (params && !client_->IsVideoStreamAvailable()) {
     algorithm_ =
         std::make_unique<AudioRendererAlgorithm>(media_log_, params.value());
@@ -727,6 +731,7 @@ void AudioRendererImpl::OnWaiting(WaitingReason reason) {
 
 void AudioRendererImpl::SetVolume(float volume) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  was_unmuted_ = was_unmuted_ || volume != 0;
   if (state_ == kUninitialized || state_ == kInitializing) {
     volume_ = volume;
     return;
@@ -772,7 +777,7 @@ void AudioRendererImpl::SetVolume(float volume) {
 }
 
 void AudioRendererImpl::SetLatencyHint(
-    base::Optional<base::TimeDelta> latency_hint) {
+    absl::optional<base::TimeDelta> latency_hint) {
   base::AutoLock auto_lock(lock_);
 
   latency_hint_ = latency_hint;
@@ -795,6 +800,12 @@ void AudioRendererImpl::SetPreservesPitch(bool preserves_pitch) {
     algorithm_->SetPreservesPitch(preserves_pitch);
 }
 
+void AudioRendererImpl::SetAutoplayInitiated(bool autoplay_initiated) {
+  base::AutoLock auto_lock(lock_);
+
+  autoplay_initiated_ = autoplay_initiated;
+}
+
 void AudioRendererImpl::OnSuspend() {
   base::AutoLock auto_lock(lock_);
   is_suspending_ = true;
@@ -810,9 +821,9 @@ void AudioRendererImpl::SetPlayDelayCBForTesting(PlayDelayCBForTesting cb) {
   play_delay_cb_for_testing_ = std::move(cb);
 }
 
-void AudioRendererImpl::DecodedAudioReady(AudioDecoderStream::ReadStatus status,
-                                          scoped_refptr<AudioBuffer> buffer) {
-  DVLOG(2) << __func__ << "(" << status << ")";
+void AudioRendererImpl::DecodedAudioReady(
+    AudioDecoderStream::ReadResult result) {
+  DVLOG(2) << __func__ << "(" << result.code() << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
@@ -821,18 +832,14 @@ void AudioRendererImpl::DecodedAudioReady(AudioDecoderStream::ReadStatus status,
   CHECK(pending_read_);
   pending_read_ = false;
 
-  if (status == AudioDecoderStream::ABORTED ||
-      status == AudioDecoderStream::DEMUXER_READ_ABORTED) {
-    HandleAbortedReadOrDecodeError(PIPELINE_OK);
+  if (result.has_error()) {
+    HandleAbortedReadOrDecodeError(result.code() == StatusCode::kAborted
+                                       ? PIPELINE_OK
+                                       : PIPELINE_ERROR_DECODE);
     return;
   }
 
-  if (status == AudioDecoderStream::DECODE_ERROR) {
-    HandleAbortedReadOrDecodeError(PIPELINE_ERROR_DECODE);
-    return;
-  }
-
-  DCHECK_EQ(status, AudioDecoderStream::OK);
+  scoped_refptr<AudioBuffer> buffer = std::move(result).value();
   DCHECK(buffer);
 
   if (state_ == kFlushing) {
@@ -929,8 +936,8 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
       if (buffer->timestamp() < start_timestamp_ &&
           (buffer->timestamp() + buffer->duration()) > start_timestamp_) {
         start_timestamp_ = buffer->timestamp();
-        audio_clock_.reset(new AudioClock(buffer->timestamp(),
-                                          audio_parameters_.sample_rate()));
+        audio_clock_ = std::make_unique<AudioClock>(
+            buffer->timestamp(), audio_parameters_.sample_rate());
       }
     } else if (state_ == kPlaying) {
       if (IsBeforeStartTime(*buffer))
@@ -959,8 +966,11 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
       first_packet_timestamp_ = buffer->timestamp();
 
 #if !defined(OS_ANDROID)
-    if (transcribe_audio_callback_ && volume_ > 0)
+    // Do not transcribe muted streams initiated by autoplay if the stream was
+    // never unmuted.
+    if (transcribe_audio_callback_ && !(autoplay_initiated_ && !was_unmuted_)) {
       transcribe_audio_callback_.Run(buffer);
+    }
 #endif
 
     if (state_ != kUninitialized)

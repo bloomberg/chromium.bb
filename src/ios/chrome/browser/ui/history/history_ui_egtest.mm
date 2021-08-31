@@ -36,6 +36,7 @@ using chrome_test_util::HistoryEntry;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::OpenLinkInNewWindowButton;
 using chrome_test_util::DeleteButton;
+using chrome_test_util::WindowWithNumber;
 
 namespace {
 char kURL1[] = "/firstURL";
@@ -66,10 +67,6 @@ id<GREYMatcher> SearchIconButton() {
 // Matcher for the cancel button.
 id<GREYMatcher> CancelButton() {
   return grey_accessibilityID(kHistoryToolbarCancelButtonIdentifier);
-}
-// Matcher for the empty TableView background
-id<GREYMatcher> EmptyTableViewBackground() {
-  return grey_accessibilityID(kTableViewEmptyViewID);
 }
 // Matcher for the empty TableView illustrated background
 id<GREYMatcher> EmptyIllustratedTableViewBackground() {
@@ -137,9 +134,6 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 }
 
 - (void)tearDown {
-  // No-op if only one window presents.
-  [ChromeEarlGrey closeAllExtraWindowsAndForceRelaunchWithAppConfig:
-                      [self appConfigurationForTestCase]];
   NSError* error = nil;
   // Dismiss search bar by pressing cancel, if present. Passing error prevents
   // failure if the element is not found.
@@ -404,24 +398,12 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [self loadTestURLs];
   [self openHistoryPanel];
 
-  [ChromeEarlGrey waitForForegroundWindowCount:1];
-
   // Long press on the history element.
   [[EarlGrey
       selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
       performAction:grey_longPress()];
 
-  // Select "Open in New Window" and confirm that new tab is opened with
-  // selected URL in the new window.
-  [[EarlGrey selectElementWithMatcher:OpenLinkInNewWindowButton()]
-      performAction:grey_tap()];
-  [ChromeEarlGrey waitForForegroundWindowCount:2];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          _URL1.GetContent())]
-      assertWithMatcher:grey_notNil()];
-
-  [ChromeEarlGrey closeAllExtraWindowsAndForceRelaunchWithAppConfig:
-                      [self appConfigurationForTestCase]];
+  [ChromeEarlGrey verifyOpenInNewWindowActionWithContent:kResponse1];
 }
 
 // Tests display and selection of 'Open in New Incognito Tab' in a context menu
@@ -479,7 +461,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_longPress()];
 
   [ChromeEarlGrey
-      verifyShareActionWithPageTitle:[NSString stringWithUTF8String:kTitle1]];
+      verifyShareActionWithURL:_URL1
+                     pageTitle:[NSString stringWithUTF8String:kTitle1]];
 }
 
 // Tests the Delete context menu action for a History entry.
@@ -610,27 +593,75 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   [ChromeEarlGreyUI openAndClearBrowsingDataFromHistory];
 
-  if ([ChromeEarlGrey isIllustratedEmptyStatesEnabled]) {
-    // Toolbar should only contain CBD button and the background should contain
-    // the Illustrated empty view
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                            HistoryClearBrowsingDataButton()]
-        assertWithMatcher:grey_notNil()];
-    [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
-        assertWithMatcher:grey_nil()];
-    [[EarlGrey selectElementWithMatcher:EmptyIllustratedTableViewBackground()]
-        assertWithMatcher:grey_notNil()];
-  } else {
-    // The toolbar should still contain the CBD and Edit buttons and the
-    // background should contain the empty view
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                            HistoryClearBrowsingDataButton()]
-        assertWithMatcher:grey_notNil()];
-    [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
-        assertWithMatcher:grey_notNil()];
-    [[EarlGrey selectElementWithMatcher:EmptyTableViewBackground()]
-        assertWithMatcher:grey_notNil()];
-  }
+  // Toolbar should only contain CBD button and the background should contain
+  // the Illustrated empty view
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          HistoryClearBrowsingDataButton()]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:NavigationEditButton()]
+      assertWithMatcher:grey_nil()];
+  [[EarlGrey selectElementWithMatcher:EmptyIllustratedTableViewBackground()]
+      assertWithMatcher:grey_notNil()];
+}
+
+#pragma mark Multiwindow
+
+- (void)testHistorySyncInMultiwindow {
+  if (![ChromeEarlGrey areMultipleWindowsSupported])
+    EARL_GREY_TEST_DISABLED(@"Multiple windows can't be opened.");
+
+  // Create history in first window.
+  [self loadTestURLs];
+
+  // Open history panel in a second window
+  [ChromeEarlGrey openNewWindow];
+  [ChromeEarlGrey waitForForegroundWindowCount:2];
+
+  [EarlGrey setRootMatcherForSubsequentInteractions:WindowWithNumber(1)];
+  [self openHistoryPanel];
+
+  // Assert that three history elements are present in second window.
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL2.GetOrigin().spec(), kTitle2)]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3.GetOrigin().spec(),
+                                                   _URL3.GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Open history panel in first window also.
+  [EarlGrey setRootMatcherForSubsequentInteractions:WindowWithNumber(0)];
+  [self openHistoryPanel];
+
+  // Assert that three history elements are present in first window.
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL2.GetOrigin().spec(), kTitle2)]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL3.GetOrigin().spec(),
+                                                   _URL3.GetContent())]
+      assertWithMatcher:grey_notNil()];
+
+  // Delete item 1 from first window.
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
+      performAction:grey_longPress()];
+
+  [[EarlGrey selectElementWithMatcher:DeleteButton()] performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
+      assertWithMatcher:grey_nil()];
+
+  // And make sure it has disappeared from second window.
+  [EarlGrey setRootMatcherForSubsequentInteractions:WindowWithNumber(1)];
+  [[EarlGrey
+      selectElementWithMatcher:HistoryEntry(_URL1.GetOrigin().spec(), kTitle1)]
+      assertWithMatcher:grey_nil()];
 }
 
 #pragma mark Helper Methods

@@ -12,7 +12,6 @@
 
 #include "cast/common/channel/cast_socket_message_port.h"
 #include "cast/common/channel/connection_namespace_handler.h"
-#include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/cast_socket.h"
 #include "cast/receiver/channel/device_auth_namespace_handler.h"
@@ -156,9 +155,8 @@ class ApplicationAgent final
 
   TaskRunner* const task_runner_;
   DeviceAuthNamespaceHandler auth_handler_;
-  VirtualConnectionManager connection_manager_;
-  ConnectionNamespaceHandler connection_handler_;
   VirtualConnectionRouter router_;
+  ConnectionNamespaceHandler connection_handler_;
 
   std::map<std::string, Application*> registered_applications_;
   Application* idle_screen_app_ = nullptr;

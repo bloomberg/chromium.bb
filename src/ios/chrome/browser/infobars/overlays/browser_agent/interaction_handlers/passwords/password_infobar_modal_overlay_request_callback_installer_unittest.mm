@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/passwords/password_infobar_modal_overlay_request_callback_installer.h"
 
-#include "base/test/scoped_feature_list.h"
-#include "components/infobars/core/infobar_feature.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/passwords/test/mock_password_infobar_modal_interaction_handler.h"
@@ -19,10 +17,9 @@
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
 #include "ios/chrome/browser/overlays/test/overlay_test_macros.h"
 #import "ios/chrome/browser/passwords/test/mock_ios_chrome_save_passwords_infobar_delegate.h"
-#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/test/fake_infobar_ui_delegate.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
 
@@ -42,11 +39,9 @@ class PasswordInfobarModalOverlayRequestCallbackInstallerTest
       : installer_(&mock_handler_, password_modal::PasswordAction::kSave),
         update_installer_(&mock_handler_,
                           password_modal::PasswordAction::kUpdate) {
-    scoped_feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
-                                          {kInfobarUIRebootOnlyiOS13});
     // Create the infobar and add it to the WebState's manager.
     web_state_.SetNavigationManager(
-        std::make_unique<web::TestNavigationManager>());
+        std::make_unique<web::FakeNavigationManager>());
     InfoBarManagerImpl::CreateForWebState(&web_state_);
     std::unique_ptr<InfoBarIOS> added_infobar = std::make_unique<InfoBarIOS>(
         [[FakeInfobarUIDelegate alloc] init],
@@ -73,8 +68,7 @@ class PasswordInfobarModalOverlayRequestCallbackInstallerTest
   }
 
  protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
   InfoBarIOS* infobar_ = nullptr;
   OverlayRequest* request_ = nullptr;
   MockPasswordInfobarModalInteractionHandler mock_handler_;

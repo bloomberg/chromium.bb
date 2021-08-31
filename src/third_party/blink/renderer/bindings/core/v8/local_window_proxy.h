@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "v8/include/v8.h"
@@ -71,6 +70,7 @@ class LocalWindowProxy final : public WindowProxy {
       v8::Context::AbortScriptExecutionCallback callback);
 
  private:
+  // LocalWindowProxy overrides:
   bool IsLocal() const override { return true; }
   void Initialize() override;
   void DisposeContext(Lifecycle next_status, FrameReuseStatus) override;
@@ -92,9 +92,10 @@ class LocalWindowProxy final : public WindowProxy {
 
   // Triggers updates of objects that are associated with a Document:
   // - the activity logger
-  // - the document DOM wrapper
+  // - the document DOM wrapper (performance optimization for accessing
+  //   window.document in the main world)
   // - the security origin
-  void UpdateDocumentInternal();
+  void UpdateDocumentForMainWorld();
 
   // The JavaScript wrapper for the document object is cached on the global
   // object for fast access. UpdateDocumentProperty sets the wrapper

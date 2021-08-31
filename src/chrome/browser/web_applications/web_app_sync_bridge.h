@@ -9,14 +9,14 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "components/sync/engine/entity_data.h"
 #include "components/sync/model/entity_change.h"
-#include "components/sync/model/entity_data.h"
 #include "components/sync/model/model_type_sync_bridge.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 namespace base {
@@ -74,8 +74,11 @@ class WebAppSyncBridge : public AppRegistryController,
                              DisplayMode user_display_mode,
                              bool is_user_action) override;
   void SetAppIsDisabled(const AppId& app_id, bool is_disabled) override;
+  void UpdateAppsDisableMode() override;
   void SetAppIsLocallyInstalled(const AppId& app_id,
                                 bool is_locally_installed) override;
+  void SetAppLastBadgingTime(const AppId& app_id,
+                             const base::Time& time) override;
   void SetAppLastLaunchTime(const AppId& app_id,
                             const base::Time& time) override;
   void SetAppInstallTime(const AppId& app_id, const base::Time& time) override;
@@ -96,16 +99,18 @@ class WebAppSyncBridge : public AppRegistryController,
   // syncer::ModelTypeSyncBridge:
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
       override;
-  base::Optional<syncer::ModelError> MergeSyncData(
+  absl::optional<syncer::ModelError> MergeSyncData(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList entity_data) override;
-  base::Optional<syncer::ModelError> ApplySyncChanges(
+  absl::optional<syncer::ModelError> ApplySyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList entity_changes) override;
   void GetData(StorageKeyList storage_keys, DataCallback callback) override;
   void GetAllDataForDebugging(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
+
+  const std::set<AppId>& GetAppsInSyncUninstallForTest();
 
  private:
   void CheckRegistryUpdateData(const RegistryUpdateData& update_data) const;
@@ -115,6 +120,9 @@ class WebAppSyncBridge : public AppRegistryController,
   std::vector<std::unique_ptr<WebApp>> UpdateRegistrar(
       std::unique_ptr<RegistryUpdateData> update_data);
 
+  // Useful for identifying apps that have not yet been fully uninstalled.
+  std::set<AppId> apps_in_sync_uninstall_;
+
   // Update the remote sync server.
   void UpdateSync(const RegistryUpdateData& update_data,
                   syncer::MetadataChangeList* metadata_change_list);
@@ -123,6 +131,7 @@ class WebAppSyncBridge : public AppRegistryController,
                         Registry registry,
                         std::unique_ptr<syncer::MetadataBatch> metadata_batch);
   void OnDataWritten(CommitCallback callback, bool success);
+  void WebAppUninstalled(const AppId& app, bool uninstalled);
 
   void ReportErrorToChangeProcessor(const syncer::ModelError& error);
 

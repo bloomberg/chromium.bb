@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <tuple>
 
 #include "base/bind.h"
@@ -68,15 +69,14 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
  private:
   // mojom::AutofillDriver:
   void SetFormToBeProbablySubmitted(
-      const base::Optional<FormData>& form) override {}
+      const absl::optional<FormData>& form) override {}
 
-  void FormsSeen(const std::vector<FormData>& forms,
-                 base::TimeTicks timestamp) override {
+  void FormsSeen(const std::vector<FormData>& forms) override {
     // FormsSeen() could be called multiple times and sometimes even with empty
     // forms array for main frame, but we're interested in only the first time
     // call.
     if (!forms_)
-      forms_.reset(new std::vector<FormData>(forms));
+      forms_ = std::make_unique<std::vector<FormData>>(forms);
   }
 
   void FormSubmitted(const FormData& form,
@@ -189,32 +189,32 @@ TEST_F(AutofillRendererTest, SendForms) {
 
   FormFieldData expected;
 
-  expected.id_attribute = ASCIIToUTF16("firstname");
+  expected.id_attribute = u"firstname";
   expected.name = expected.id_attribute;
-  expected.value = base::string16();
+  expected.value = std::u16string();
   expected.form_control_type = "text";
   expected.max_length = WebInputElement::DefaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[0]);
 
-  expected.id_attribute = ASCIIToUTF16("middlename");
+  expected.id_attribute = u"middlename";
   expected.name = expected.id_attribute;
-  expected.value = base::string16();
+  expected.value = std::u16string();
   expected.form_control_type = "text";
   expected.max_length = WebInputElement::DefaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[1]);
 
-  expected.id_attribute = ASCIIToUTF16("lastname");
+  expected.id_attribute = u"lastname";
   expected.name = expected.id_attribute;
-  expected.value = base::string16();
+  expected.value = std::u16string();
   expected.form_control_type = "text";
   expected.autocomplete_attribute = "off";
   expected.max_length = WebInputElement::DefaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[2]);
   expected.autocomplete_attribute = std::string();  // reset
 
-  expected.id_attribute = ASCIIToUTF16("state");
+  expected.id_attribute = u"state";
   expected.name = expected.id_attribute;
-  expected.value = ASCIIToUTF16("?");
+  expected.value = u"?";
   expected.form_control_type = "select-one";
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[3]);
@@ -254,19 +254,19 @@ TEST_F(AutofillRendererTest, SendForms) {
   expected.form_control_type = "text";
   expected.max_length = WebInputElement::DefaultMaxLength();
 
-  expected.id_attribute = ASCIIToUTF16("second_firstname");
+  expected.id_attribute = u"second_firstname";
   expected.name = expected.id_attribute;
-  expected.value = ASCIIToUTF16("Bob");
+  expected.value = u"Bob";
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[0]);
 
-  expected.id_attribute = ASCIIToUTF16("second_lastname");
+  expected.id_attribute = u"second_lastname";
   expected.name = expected.id_attribute;
-  expected.value = ASCIIToUTF16("Hope");
+  expected.value = u"Hope";
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[1]);
 
-  expected.id_attribute = ASCIIToUTF16("second_email");
+  expected.id_attribute = u"second_email";
   expected.name = expected.id_attribute;
-  expected.value = ASCIIToUTF16("bobhope@example.com");
+  expected.value = u"bobhope@example.com";
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[2]);
 }
 
@@ -313,14 +313,14 @@ TEST_F(AutofillRendererTest, DynamicallyAddedUnownedFormElements) {
 
   FormFieldData expected;
 
-  expected.id_attribute = ASCIIToUTF16("EMAIL_ADDRESS");
+  expected.id_attribute = u"EMAIL_ADDRESS";
   expected.name = expected.id_attribute;
   expected.value.clear();
   expected.form_control_type = "text";
   expected.max_length = WebInputElement::DefaultMaxLength();
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, forms[0].fields[7]);
 
-  expected.id_attribute = ASCIIToUTF16("PHONE_HOME_WHOLE_NUMBER");
+  expected.id_attribute = u"PHONE_HOME_WHOLE_NUMBER";
   expected.name = expected.id_attribute;
   expected.value.clear();
   expected.form_control_type = "text";

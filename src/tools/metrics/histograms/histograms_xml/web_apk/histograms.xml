@@ -21,8 +21,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histograms>
 
+<variants name="WebApkDistributorType">
+  <variant name=".Browser" summary="Installed by Chrome"/>
+  <variant name=".DevicePolicy" summary="Installed by device policy"/>
+  <variant name=".Other" summary="Installed by other sources"/>
+</variants>
+
 <histogram name="WebApk.Install.AvailableSpace.Fail" units="MB"
-    expires_after="2021-02-01">
+    expires_after="2022-02-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -37,7 +43,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Install.AvailableSpaceAfterFreeUpCache.Fail" units="MB"
-    expires_after="2021-02-01">
+    expires_after="2022-02-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -52,7 +58,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Install.GooglePlayErrorCode"
-    enum="WebApkInstallGooglePlayErrorCode" expires_after="2021-02-01">
+    enum="WebApkInstallGooglePlayErrorCode" expires_after="2022-02-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -64,7 +70,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Install.GooglePlayInstallResult"
-    enum="WebApkGooglePlayInstallResult" expires_after="2021-05-09">
+    enum="WebApkGooglePlayInstallResult" expires_after="2021-11-14">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -76,7 +82,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Install.InstallDuration" units="ms"
-    expires_after="2021-03-15">
+    expires_after="2021-09-19">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -89,7 +95,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Install.InstallEvent" enum="WebApkInstallEvent"
-    expires_after="2021-04-11">
+    expires_after="2021-10-17">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -101,8 +107,26 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="WebApk.Install.PathToInstall" enum="PwaInstallPath"
+    expires_after="2021-11-18">
+  <owner>finnur@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <owner>
+    src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
+  </owner>
+  <summary>
+    Records the path that the user took to reach install point for PWAs. This
+    can be via the Install Modal or the new BottomSheet and may involve the
+    in-product help (IPH) showing. Recorded once per install of a PWA, at the
+    time the PWA is installed.
+  </summary>
+</histogram>
+
 <histogram name="WebApk.Install.RequestTokenDuration" units="ms"
-    expires_after="2021-03-15">
+    expires_after="2021-07-18">
+  <obsolete>
+    Removed 03/2021
+  </obsolete>
   <owner>hartmanng@chromium.org</owner>
   <owner>rayankans@chromium.org</owner>
   <owner>
@@ -118,20 +142,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Install.RequestTokenDurationV2" units="ms"
-    expires_after="2021-03-15">
+    expires_after="2021-11-18">
   <owner>hartmanng@chromium.org</owner>
   <owner>rayankans@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
   </owner>
   <summary>
-    Same as WebApk.Install.RequestTokenDuration, but for WebAPKs minted using
-    the new architecture (v2).
+    Records the amount of time which has elapsed from the &quot;install infobar
+    showing&quot; to the &quot;install request being sent to Google Play&quot;.
+    This time includes the time that it takes to request the WebAPK token and
+    the time that it takes to compute the hashes for the launcher icon and the
+    badge icon.
   </summary>
 </histogram>
 
 <histogram name="WebApk.Launch.NetworkError" enum="NetErrorCodes"
-    expires_after="2021-02-01">
+    expires_after="2022-02-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -142,7 +169,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Navigation.InScope" enum="Boolean"
-    expires_after="2021-02-01">
+    expires_after="2021-09-19">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -155,7 +182,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Notification.Permission.Status"
-    enum="BooleanWebApkNotificationPermission" expires_after="2021-04-25">
+    enum="BooleanWebApkNotificationPermission" expires_after="2021-08-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -166,20 +193,21 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="WebApk.Session.TotalDuration2" units="ms"
-    expires_after="2021-03-15">
+<histogram name="WebApk.Session.TotalDuration2{WebApkDistributorType}"
+    units="ms" expires_after="2021-12-16">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
   </owner>
   <summary>
     The length of a WebAPK session (launch/foregrounding to backgrounding) in
-    milliseconds.
+    milliseconds. {WebApkDistributorType}
   </summary>
+  <token key="WebApkDistributorType" variants="WebApkDistributorType"/>
 </histogram>
 
-<histogram base="true" name="WebApk.ShellApkVersion2" units="units"
-    expires_after="2021-04-04">
+<histogram name="WebApk.ShellApkVersion2{WebApkDistributorType}" units="units"
+    expires_after="2022-06-06">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -187,11 +215,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records WebAPK &quot;Shell APK version&quot; when the WebAPK is launched.
     The &quot;Shell APK version&quot; is documented in shell_apk_version.gni
+    {WebApkDistributorType}
   </summary>
+  <token key="WebApkDistributorType" variants="WebApkDistributorType">
+    <variant name="">
+      <obsolete>
+        Base histogram. Use suffixes of this histogram instead.
+      </obsolete>
+    </variant>
+  </token>
 </histogram>
 
 <histogram name="WebApk.Startup.Cold.NewStyle.ShellLaunchToSplashscreenVisible"
-    units="ms" expires_after="2021-06-01">
+    units="ms" expires_after="2021-12-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -225,7 +261,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Startup.Cold.ShellLaunchToSplashscreenVisible"
-    units="ms" expires_after="2021-04-11">
+    units="ms" expires_after="2021-10-24">
   <owner>mheikal@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -240,17 +276,26 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram base="true" name="WebApk.Uninstall" enum="BooleanHit"
-    expires_after="2021-06-06">
+<histogram name="WebApk.Uninstall{WebApkDistributorType}" enum="BooleanHit"
+    expires_after="2022-06-06">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
   </owner>
-  <summary>Records that a WebAPK was uninstalled.</summary>
+  <summary>
+    Records that a WebAPK was uninstalled. {WebApkDistributorType}
+  </summary>
+  <token key="WebApkDistributorType" variants="WebApkDistributorType">
+    <variant name="">
+      <obsolete>
+        Base histogram. Use suffixes of this histogram instead.
+      </obsolete>
+    </variant>
+  </token>
 </histogram>
 
 <histogram name="WebApk.Update.GooglePlayUpdateResult"
-    enum="WebApkGooglePlayInstallResult" expires_after="2021-04-04">
+    enum="WebApkGooglePlayInstallResult" expires_after="2021-10-10">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -262,7 +307,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Update.NumStaleUpdateRequestFiles" units="files"
-    expires_after="2021-02-01">
+    expires_after="2022-02-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -275,7 +320,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Update.RequestQueued" enum="WebApkUpdateRequestQueued"
-    expires_after="2021-02-01">
+    expires_after="2022-02-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -287,7 +332,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.Update.RequestSent" enum="WebApkUpdateRequestSent"
-    expires_after="2021-02-01">
+    expires_after="2022-02-01">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -299,7 +344,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="WebApk.WebApkService.BindSuccess" enum="BooleanSuccess"
-    expires_after="2021-02-01">
+    expires_after="2021-09-19">
   <owner>hartmanng@chromium.org</owner>
   <owner>
     src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
@@ -307,6 +352,19 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   <summary>
     Records whether Chrome can bind to a WebAPK's &quot;WebAPK service&quot;.
     Recorded each time that Chrome attempts to bind to a WebAPK service.
+  </summary>
+</histogram>
+
+<histogram name="WebApk.WebappRegistry.NumberOfOrigins" units="count"
+    expires_after="2022-05-01">
+  <owner>eirage@chromium.org</owner>
+  <owner>
+    src/chrome/android/java/src/org/chromium/chrome/browser/webapps/OWNERS
+  </owner>
+  <summary>
+    Records number of unique origins for WebAPKs that have been added to
+    WebappRegistry. This is recorded each time on Chrome startup, after the
+    WebappRegistry is initialized.
   </summary>
 </histogram>
 

@@ -6,13 +6,15 @@
 
 #include <algorithm>
 #include <numeric>
+#include <string>
 
 #include "ash/hud_display/grid.h"
 #include "ash/hud_display/hud_constants.h"
-#include "base/strings/string16.h"
+#include "base/logging.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 namespace hud_display {
@@ -73,8 +75,8 @@ MemoryGraphPageView::MemoryGraphPageView(const base::TimeDelta refresh_interval)
   // seconds.
   grid_ = CreateGrid(
       static_cast<int>(/*left=*/-data_width * refresh_interval.InSecondsF()),
-      /*top=*/0, /*right=*/0, /*bottom=*/0, /*x_unit=*/base::ASCIIToUTF16("s"),
-      /*y_unit=*/base::ASCIIToUTF16("Gb"),
+      /*top=*/0, /*right=*/0, /*bottom=*/0, /*x_unit=*/u"s",
+      /*y_unit=*/u"Gb",
       /*horizontal_points_number=*/data_width,
       /*horizontal_ticks_interval=*/10 / refresh_interval.InSecondsF(),
       vertical_ticks_interval);
@@ -87,28 +89,23 @@ MemoryGraphPageView::MemoryGraphPageView(const base::TimeDelta refresh_interval)
   });
 
   const std::vector<Legend::Entry> legend({
-      {graph_gpu_kernel_, base::ASCIIToUTF16("GPU Driver"),
-       base::ASCIIToUTF16("Kernel GPU buffers as reported\nby "
-                          "base::SystemMemoryInfo::gem_size."),
+      {graph_gpu_kernel_, u"GPU Driver",
+       u"Kernel GPU buffers as reported\nby base::SystemMemoryInfo::gem_size.",
        formatter},
-      {graph_gpu_rss_private_, base::ASCIIToUTF16("Chrome GPU"),
-       base::ASCIIToUTF16(
-           "RSS private memory of\n --type=gpu-process Chrome process."),
+      {graph_gpu_rss_private_, u"Chrome GPU",
+       u"RSS private memory of\n --type=gpu-process Chrome process.",
        formatter},
       // ARC memory is not usually visible (skipped)
-      {graph_renderers_rss_private_, base::ASCIIToUTF16("Renderers"),
-       base::ASCIIToUTF16(
-           "Sum of RSS private memory of\n--type=renderer Chrome process."),
+      {graph_renderers_rss_private_, u"Renderers",
+       u"Sum of RSS private memory of\n--type=renderer Chrome process.",
        formatter},
-      {graph_mem_used_unknown_, base::ASCIIToUTF16("Other"),
-       base::ASCIIToUTF16(
-           "Amount of other used memory.\nEquals to total used minus known."),
+      {graph_mem_used_unknown_, u"Other",
+       u"Amount of other used memory.\nEquals to total used minus known.",
        formatter},
-      {graph_mem_free_, base::ASCIIToUTF16("Free"),
-       base::ASCIIToUTF16("Free memory as reported by kernel."), formatter},
-      {graph_chrome_rss_private_, base::ASCIIToUTF16("Browser"),
-       base::ASCIIToUTF16("RSS private memory of the\nmain Chrome process."),
-       formatter}
+      {graph_mem_free_, u"Free", u"Free memory as reported by kernel.",
+       formatter},
+      {graph_chrome_rss_private_, u"Browser",
+       u"RSS private memory of the\nmain Chrome process.", formatter}
       // Browser RSS hairline skipped.
   });
   CreateLegend(legend);

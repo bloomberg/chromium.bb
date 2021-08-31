@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
@@ -21,6 +20,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using ::testing::_;
 using ::testing::Invoke;
@@ -40,25 +40,26 @@ class CfmServiceConnectionTest : public testing::Test {
   void SetUp() override {
     CfmHotlineClient::InitializeFake();
     ServiceConnection::UseFakeServiceConnectionForTesting(
-        &fake_service_connection);
+        &fake_service_connection_);
   }
 
   void TearDown() override { CfmHotlineClient::Shutdown(); }
 
-  void SetCallback(FakeServiceConnectionImpl::FakeBootstrapCallback callback) {
-    fake_service_connection.SetCallback(std::move(callback));
+  void SetBootstrapCallback(
+      FakeServiceConnectionImpl::FakeBootstrapCallback callback) {
+    fake_service_connection_.SetCallback(std::move(callback));
   }
 
  private:
   base::test::TaskEnvironment task_environment_;
-  FakeServiceConnectionImpl fake_service_connection;
+  FakeServiceConnectionImpl fake_service_connection_;
 };
 
-TEST_F(CfmServiceConnectionTest, BindServiceContext) {
+TEST_F(CfmServiceConnectionTest, FakeBindServiceContext) {
   base::RunLoop run_loop;
 
   bool test_success = false;
-  SetCallback(base::BindLambdaForTesting(
+  SetBootstrapCallback(base::BindLambdaForTesting(
       [&](mojo::PendingReceiver<mojom::CfmServiceContext>, bool success) {
         test_success = success;
         run_loop.QuitClosure().Run();

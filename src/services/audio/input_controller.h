@@ -12,7 +12,6 @@
 #include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
@@ -24,6 +23,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/audio/snoopable.h"
 #include "services/audio/stream_monitor.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 class AudioBus;
@@ -59,6 +59,9 @@ class InputController final : public StreamMonitor {
     // Native input stream reports an error. Exact reason differs between
     // platforms.
     STREAM_ERROR,  // = 3
+
+    // Open failed due to lack of system permissions.
+    STREAM_OPEN_SYSTEM_PERMISSIONS_ERROR,  // = 4
   };
 
 #if defined(AUDIO_POWER_MONITORING)

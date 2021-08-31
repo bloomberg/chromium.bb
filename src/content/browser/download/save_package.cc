@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -16,9 +17,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
@@ -46,7 +47,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -257,8 +257,7 @@ void SavePackage::InternalInit() {
   DCHECK(file_manager_);
 
   download_manager_ = static_cast<DownloadManagerImpl*>(
-      BrowserContext::GetDownloadManager(
-          web_contents()->GetBrowserContext()));
+      web_contents()->GetBrowserContext()->GetDownloadManager());
   DCHECK(download_manager_);
 
   download::RecordSavePackageEvent(download::SAVE_PACKAGE_STARTED);
@@ -982,8 +981,7 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
   // those that the given frame had access to already (because it contained
   // the savable resources / subframes associated with save items).
   base::flat_map<GURL, base::FilePath> url_to_local_path;
-  base::flat_map<base::UnguessableToken, base::FilePath>
-      frame_token_to_local_path;
+  base::flat_map<blink::FrameToken, base::FilePath> frame_token_to_local_path;
 
   auto it = frame_tree_node_id_to_contained_save_items_.find(
       target_frame_tree_node_id);
@@ -1018,7 +1016,7 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
           continue;
         }
 
-        base::Optional<base::UnguessableToken> frame_token =
+        absl::optional<blink::FrameToken> frame_token =
             save_item_frame_tree_node->render_manager()
                 ->GetFrameTokenForSiteInstance(target->GetSiteInstance());
 
@@ -1319,7 +1317,7 @@ void SavePackage::GetSaveInfo() {
 
 // static
 base::FilePath SavePackage::CreateDirectoryOnFileThread(
-    const base::string16& title,
+    const std::u16string& title,
     const GURL& page_url,
     bool can_save_as_complete,
     const std::string& mime_type,

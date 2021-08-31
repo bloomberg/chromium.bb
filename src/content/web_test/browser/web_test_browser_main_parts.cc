@@ -4,6 +4,8 @@
 
 #include "content/web_test/browser/web_test_browser_main_parts.h"
 
+#include <memory>
+
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -37,7 +39,7 @@
 #if defined(USE_AURA) && defined(USE_X11)
 #include "ui/events/devices/x11/touch_factory_x11.h"  // nogncheck
 #endif
-#if !defined(OS_CHROMEOS) && defined(USE_AURA) && defined(OS_LINUX)
+#if defined(USE_AURA) && (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 #include "ui/base/ime/init/input_method_initializer.h"
 #endif
 
@@ -57,7 +59,7 @@ void WebTestBrowserMainParts::InitializeBrowserContexts() {
 void WebTestBrowserMainParts::InitializeMessageLoopContext() {
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginService* plugin_service = PluginService::GetInstance();
-  plugin_service_filter_.reset(new ShellPluginServiceFilter);
+  plugin_service_filter_ = std::make_unique<ShellPluginServiceFilter>();
   plugin_service->SetFilter(plugin_service_filter_.get());
 #endif
 }

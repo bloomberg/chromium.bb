@@ -7,23 +7,29 @@
 #include <string>
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_epoll.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_system_event_loop.h"
+#include "absl/strings/str_cat.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_epoll.h"
+#include "quic/platform/api/quic_system_event_loop.h"
 #include "net/quic/platform/impl/quic_epoll_clock.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_session_cache.h"
-#include "net/third_party/quiche/src/quic/tools/fake_proof_verifier.h"
-#include "net/third_party/quiche/src/quic/tools/quic_client.h"
-#include "net/third_party/quiche/src/quic/tools/quic_url.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_session_peer.h"
+#include "quic/test_tools/simple_session_cache.h"
+#include "quic/tools/fake_proof_verifier.h"
+#include "quic/tools/quic_client.h"
+#include "quic/tools/quic_url.h"
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(std::string,
                               host,
                               "",
                               "The IP or hostname to connect to.");
+
+DEFINE_QUIC_COMMAND_LINE_FLAG(
+    std::string,
+    quic_version,
+    "",
+    "The QUIC version to use. Defaults to most recent IETF QUIC version.");
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(int32_t, port, 0, "The port to connect to.");
 
@@ -366,30 +372,18 @@ void QuicClientInteropRunner::SendRequest(
 
 std::set<Feature> ServerSupport(std::string dns_host,
                                 std::string url_host,
-                                int port) {
-  // Enable IETF version support.
-  QuicVersionInitializeSupportForIetfDraft();
-  ParsedQuicVersion version = UnsupportedQuicVersion();
-  for (const ParsedQuicVersion& vers : AllSupportedVersions()) {
-    // Find the first version that supports IETF QUIC.
-    if (vers.HasIetfQuicFrames() &&
-        vers.handshake_protocol == quic::PROTOCOL_TLS1_3) {
-      version = vers;
-      break;
-    }
-  }
-  CHECK(version.IsKnown());
-  QuicEnableVersion(version);
+                                int port,
+                                ParsedQuicVersion version) {
+  std::cout << "Attempting interop with version " << version << std::endl;
 
   // Build the client, and try to connect.
-  QuicSocketAddress addr =
-      tools::LookupAddress(dns_host, quiche::QuicheStrCat(port));
+  QuicSocketAddress addr = tools::LookupAddress(dns_host, absl::StrCat(port));
   if (!addr.IsInitialized()) {
     QUIC_LOG(ERROR) << "Failed to resolve " << dns_host;
     return std::set<Feature>();
   }
   QuicServerId server_id(url_host, port, false);
-  std::string authority = quiche::QuicheStrCat(url_host, ":", port);
+  std::string authority = absl::StrCat(url_host, ":", port);
 
   QuicClientInteropRunner runner;
 
@@ -439,7 +433,26 @@ int main(int argc, char* argv[]) {
     url_host = dns_host;
   }
 
-  auto supported_features = quic::ServerSupport(dns_host, url_host, port);
+  // Pick QUIC version to use.
+  quic::QuicVersionInitializeSupportForIetfDraft();
+  quic::ParsedQuicVersion version = quic::UnsupportedQuicVersion();
+  std::string quic_version_string = GetQuicFlag(FLAGS_quic_version);
+  if (!quic_version_string.empty()) {
+    version = quic::ParseQuicVersionString(quic_version_string);
+  } else {
+    for (const quic::ParsedQuicVersion& vers : quic::AllSupportedVersions()) {
+      // Use the most recent IETF QUIC version.
+      if (vers.HasIetfQuicFrames() && vers.UsesHttp3() && vers.UsesTls()) {
+        version = vers;
+        break;
+      }
+    }
+  }
+  QUICHE_CHECK(version.IsKnown());
+  QuicEnableVersion(version);
+
+  auto supported_features =
+      quic::ServerSupport(dns_host, url_host, port, version);
   std::cout << "Results for " << url_host << ":" << port << std::endl;
   int current_row = 1;
   for (auto feature : supported_features) {

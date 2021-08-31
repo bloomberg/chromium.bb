@@ -12,8 +12,9 @@
 // values that the decoder should reject. For now, this is only intended for
 // use in tests, and thus has EXPECT* in the code. If desired to use it in an
 // encoder, it will need optimization work, especially w.r.t memory mgmt, and
-// the EXPECT* will need to be removed or replaced with DCHECKs. And of course
-// the support for very large varints will not be needed in production code.
+// the EXPECT* will need to be removed or replaced with QUICHE_DCHECKs. And of
+// course the support for very large varints will not be needed in production
+// code.
 
 #include <stddef.h>
 
@@ -21,8 +22,8 @@
 #include <string>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/http2/hpack/http2_hpack_constants.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
+#include "http2/hpack/http2_hpack_constants.h"
+#include "common/platform/api/quiche_test.h"
 
 namespace http2 {
 namespace test {

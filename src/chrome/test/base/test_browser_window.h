@@ -36,6 +36,11 @@ class SendTabToSelfBubbleController;
 class SendTabToSelfBubbleView;
 }  // namespace send_tab_to_self
 
+namespace sharing_hub {
+class SharingHubBubbleController;
+class SharingHubBubbleView;
+}  // namespace sharing_hub
+
 // An implementation of BrowserWindow used for testing. TestBrowserWindow only
 // contains a valid LocationBar, all other getters return NULL.
 // However, some of them can be preset to a specific value.
@@ -66,6 +71,7 @@ class TestBrowserWindow : public BrowserWindow {
                                 float ratio) override;
   bool DoBrowserControlsShrinkRendererSize(
       const content::WebContents* contents) const override;
+  ui::NativeTheme* GetNativeTheme() override;
   int GetTopControlsHeight() const override;
   void SetTopControlsGestureScrollInProgress(bool in_progress) override;
   StatusBubble* GetStatusBubble() override;
@@ -124,6 +130,7 @@ class TestBrowserWindow : public BrowserWindow {
   bool IsBookmarkBarVisible() const override;
   bool IsBookmarkBarAnimating() const override;
   bool IsTabStripEditable() const override;
+  void SetIsTabStripEditable(bool is_editable);
   bool IsToolbarVisible() const override;
   bool IsToolbarShowing() const override;
   SharingDialog* ShowSharingDialog(content::WebContents* contents,
@@ -140,12 +147,16 @@ class TestBrowserWindow : public BrowserWindow {
       bool show_stay_in_chrome,
       bool show_remember_selection,
       PageActionIconType icon_type,
-      const base::Optional<url::Origin>& initiating_origin,
+      const absl::optional<url::Origin>& initiating_origin,
       IntentPickerResponse callback) override {}
 #endif  //  !define(OS_ANDROID)
   send_tab_to_self::SendTabToSelfBubbleView* ShowSendTabToSelfBubble(
       content::WebContents* contents,
       send_tab_to_self::SendTabToSelfBubbleController* controller,
+      bool is_user_gesture) override;
+  sharing_hub::SharingHubBubbleView* ShowSharingHubBubble(
+      content::WebContents* contents,
+      sharing_hub::SharingHubBubbleController* controller,
       bool is_user_gesture) override;
   ShowTranslateBubbleResult ShowTranslateBubble(
       content::WebContents* contents,
@@ -156,7 +167,7 @@ class TestBrowserWindow : public BrowserWindow {
       bool is_user_gesture) override;
 #if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
   void ShowOneClickSigninConfirmation(
-      const base::string16& email,
+      const std::u16string& email,
       base::OnceCallback<void(bool)> confirmed_callback) override {}
 #endif
   bool IsDownloadShelfVisible() const override;
@@ -164,7 +175,7 @@ class TestBrowserWindow : public BrowserWindow {
   void ConfirmBrowserCloseWithPendingDownloads(
       int download_count,
       Browser::DownloadCloseType dialog_type,
-      const base::Callback<void(bool)>& callback) override {}
+      base::OnceCallback<void(bool)> callback) override {}
   void UserChangedTheme(BrowserThemeChangeType theme_change_type) override {}
   void CutCopyPaste(int command_id) override {}
   std::unique_ptr<FindBar> CreateFindBar() override;
@@ -174,12 +185,15 @@ class TestBrowserWindow : public BrowserWindow {
       AvatarBubbleMode mode,
       signin_metrics::AccessPoint access_point,
       bool is_source_keyboard) override {}
+  void MaybeShowProfileSwitchIPH() override {}
 
 #if defined(OS_CHROMEOS) || defined(OS_MAC) || defined(OS_WIN) || \
     defined(OS_LINUX)
-  void ShowHatsBubble(const std::string& site_id,
-                      base::OnceClosure success_callback,
-                      base::OnceClosure failure_callback) override {}
+  void ShowHatsDialog(
+      const std::string& site_id,
+      base::OnceClosure success_callback,
+      base::OnceClosure failure_callback,
+      const std::map<std::string, bool>& product_specific_data) override {}
 #endif
 
   ExclusiveAccessContext* GetExclusiveAccessContext() override;
@@ -208,6 +222,11 @@ class TestBrowserWindow : public BrowserWindow {
       std::unique_ptr<FeaturePromoController> feature_promo_controller);
 
   void set_workspace(std::string workspace) { workspace_ = workspace; }
+  void set_visible_on_all_workspaces(bool visible_on_all_workspaces) {
+    visible_on_all_workspaces_ = visible_on_all_workspaces;
+  }
+  void set_is_active(bool active) { is_active_ = active; }
+  void set_is_minimized(bool minimized) { is_minimized_ = minimized; }
 
  protected:
   void DestroyBrowser() override {}
@@ -222,6 +241,7 @@ class TestBrowserWindow : public BrowserWindow {
 
     // LocationBar:
     GURL GetDestinationURL() const override;
+    bool IsInputTypedUrlWithoutScheme() const override;
     WindowOpenDisposition GetWindowOpenDisposition() const override;
     ui::PageTransition GetPageTransition() const override;
     base::TimeTicks GetMatchSelectionTimestamp() const override;
@@ -243,6 +263,10 @@ class TestBrowserWindow : public BrowserWindow {
   gfx::NativeWindow native_window_ = nullptr;
 
   std::string workspace_;
+  bool visible_on_all_workspaces_ = false;
+  bool is_minimized_ = false;
+  bool is_active_ = false;
+  bool is_tab_strip_editable_ = true;
 
   std::unique_ptr<FeaturePromoController> feature_promo_controller_;
 

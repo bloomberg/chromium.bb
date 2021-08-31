@@ -81,20 +81,6 @@ typedef struct RD_OPT {
   double r0;
 } RD_OPT;
 
-typedef struct {
-  // Cost of transmitting the actual motion vector.
-  // mv_component[0][i] is the cost of motion vector with horizontal component
-  // (mv_row) equal to i - MV_MAX.
-  // mv_component[1][i] is the cost of motion vector with vertical component
-  // (mv_col) equal to i - MV_MAX.
-  int mv_component[2][MV_VALS];
-
-  // joint_mv[i] is the cost of transmitting joint mv(MV_JOINT_TYPE) of
-  // type i.
-  // TODO(huisu@google.com): we can update dv_joint_cost per SB.
-  int joint_mv[MV_JOINTS];
-} IntraBCMVCosts;
-
 static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
 #if CONFIG_RD_DEBUG
   int plane;
@@ -110,12 +96,6 @@ static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
   // encoded, as there will only be 1 plane
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats->txb_coeff_cost[plane] = 0;
-    {
-      int r, c;
-      for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
-        for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c)
-          rd_stats->txb_coeff_cost_map[plane][r][c] = 0;
-    }
   }
 #endif
 }
@@ -135,19 +115,18 @@ static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
   // encoded, as there will only be 1 plane
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats->txb_coeff_cost[plane] = INT_MAX;
-    {
-      int r, c;
-      for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
-        for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c)
-          rd_stats->txb_coeff_cost_map[plane][r][c] = INT16_MAX;
-    }
   }
 #endif
 }
 
 static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
                                       const RD_STATS *rd_stats_src) {
-  assert(rd_stats_dst->rate != INT_MAX && rd_stats_src->rate != INT_MAX);
+  if (rd_stats_dst->rate == INT_MAX || rd_stats_src->rate == INT_MAX) {
+    // If rd_stats_dst or rd_stats_src has invalid rate, we will make
+    // rd_stats_dst invalid.
+    av1_invalid_rd_stats(rd_stats_dst);
+    return;
+  }
   rd_stats_dst->rate = (int)AOMMIN(
       ((int64_t)rd_stats_dst->rate + (int64_t)rd_stats_src->rate), INT_MAX);
   if (!rd_stats_dst->zero_rate)
@@ -160,18 +139,6 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
   // encoded, as there will only be 1 plane
   for (int plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats_dst->txb_coeff_cost[plane] += rd_stats_src->txb_coeff_cost[plane];
-    {
-      // TODO(angiebird): optimize this part
-      int r, c;
-      int ref_txb_coeff_cost = 0;
-      for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
-        for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c) {
-          rd_stats_dst->txb_coeff_cost_map[plane][r][c] +=
-              rd_stats_src->txb_coeff_cost_map[plane][r][c];
-          ref_txb_coeff_cost += rd_stats_dst->txb_coeff_cost_map[plane][r][c];
-        }
-      assert(ref_txb_coeff_cost == rd_stats_dst->txb_coeff_cost[plane]);
-    }
   }
 #endif
 }
@@ -224,14 +191,14 @@ struct TileDataEnc;
 struct AV1_COMP;
 struct macroblock;
 
-int av1_compute_rd_mult_based_on_qindex(const struct AV1_COMP *cpi, int qindex);
+int av1_compute_rd_mult_based_on_qindex(aom_bit_depth_t bit_depth, int qindex);
 
 int av1_compute_rd_mult(const struct AV1_COMP *cpi, int qindex);
 
 void av1_initialize_rd_consts(struct AV1_COMP *cpi);
 
 // Sets the multiplier to convert mv cost to l1 error during motion search.
-void av1_set_sad_per_bit(const struct AV1_COMP *cpi, MvCosts *mv_costs,
+void av1_set_sad_per_bit(const struct AV1_COMP *cpi, int *sadperbit,
                          int qindex);
 
 void av1_model_rd_from_var_lapndz(int64_t var, unsigned int n,
@@ -243,7 +210,7 @@ void av1_model_rd_surffit(BLOCK_SIZE bsize, double sse_norm, double xm,
                           double yl, double *rate_f, double *distbysse_f);
 
 int av1_get_switchable_rate(const MACROBLOCK *x, const MACROBLOCKD *xd,
-                            InterpFilter interp_filter);
+                            InterpFilter interp_filter, int dual_filter);
 
 YV12_BUFFER_CONFIG *av1_get_scaled_ref_frame(const struct AV1_COMP *cpi,
                                              int ref_frame);
@@ -271,9 +238,9 @@ static INLINE void reset_thresh_freq_fact(MACROBLOCK *const x) {
   }
 }
 
-static INLINE int rd_less_than_thresh(int64_t best_rd, int thresh,
+static INLINE int rd_less_than_thresh(int64_t best_rd, int64_t thresh,
                                       int thresh_fact) {
-  return best_rd < ((int64_t)thresh * thresh_fact >> 5) || thresh == INT_MAX;
+  return best_rd < (thresh * thresh_fact >> 5) || thresh == INT_MAX;
 }
 
 void av1_mv_pred(const struct AV1_COMP *cpi, MACROBLOCK *x,
@@ -281,64 +248,77 @@ void av1_mv_pred(const struct AV1_COMP *cpi, MACROBLOCK *x,
                  BLOCK_SIZE block_size);
 
 // Sets the multiplier to convert mv cost to l2 error during motion search.
-static INLINE void av1_set_error_per_bit(MvCosts *mv_costs, int rdmult) {
-  mv_costs->errorperbit = AOMMAX(rdmult >> RD_EPB_SHIFT, 1);
+static INLINE void av1_set_error_per_bit(int *errorperbit, int rdmult) {
+  *errorperbit = AOMMAX(rdmult >> RD_EPB_SHIFT, 1);
 }
 
 // Get the threshold for R-D optimization of coefficients depending upon mode
 // decision/winner mode processing
-static INLINE uint32_t get_rd_opt_coeff_thresh(
-    const uint32_t *const coeff_opt_dist_threshold,
-    int enable_winner_mode_for_coeff_opt, int is_winner_mode) {
-  // Default initialization of threshold
-  uint32_t coeff_opt_thresh = coeff_opt_dist_threshold[DEFAULT_EVAL];
+static INLINE void get_rd_opt_coeff_thresh(
+    const uint32_t (*const coeff_opt_threshold)[2],
+    TxfmSearchParams *txfm_params, int enable_winner_mode_for_coeff_opt,
+    int is_winner_mode) {
+  if (!enable_winner_mode_for_coeff_opt) {
+    // Default initialization of threshold
+    txfm_params->coeff_opt_thresholds[0] = coeff_opt_threshold[DEFAULT_EVAL][0];
+    txfm_params->coeff_opt_thresholds[1] = coeff_opt_threshold[DEFAULT_EVAL][1];
+    return;
+  }
   // TODO(any): Experiment with coeff_opt_dist_threshold values when
   // enable_winner_mode_for_coeff_opt is ON
   // TODO(any): Skip the winner mode processing for blocks with lower residual
   // energy as R-D optimization of coefficients would have been enabled during
   // mode decision
-  if (enable_winner_mode_for_coeff_opt) {
-    // Use conservative threshold during mode decision and perform R-D
-    // optimization of coeffs always for winner modes
-    if (is_winner_mode)
-      coeff_opt_thresh = coeff_opt_dist_threshold[WINNER_MODE_EVAL];
-    else
-      coeff_opt_thresh = coeff_opt_dist_threshold[MODE_EVAL];
+
+  // Use conservative threshold during mode decision and perform R-D
+  // optimization of coeffs always for winner modes
+  if (is_winner_mode) {
+    txfm_params->coeff_opt_thresholds[0] =
+        coeff_opt_threshold[WINNER_MODE_EVAL][0];
+    txfm_params->coeff_opt_thresholds[1] =
+        coeff_opt_threshold[WINNER_MODE_EVAL][1];
+  } else {
+    txfm_params->coeff_opt_thresholds[0] = coeff_opt_threshold[MODE_EVAL][0];
+    txfm_params->coeff_opt_thresholds[1] = coeff_opt_threshold[MODE_EVAL][1];
   }
-  return coeff_opt_thresh;
 }
 
 // Used to reset the state of tx/mb rd hash information
 static INLINE void reset_hash_records(TxfmSearchInfo *const txfm_info,
                                       int use_inter_txb_hash) {
   int32_t record_idx;
-
+  if (!txfm_info->txb_rd_records) return;
   // Reset the state for use_inter_txb_hash
   if (use_inter_txb_hash) {
     for (record_idx = 0;
          record_idx < ((MAX_MIB_SIZE >> 1) * (MAX_MIB_SIZE >> 1)); record_idx++)
-      txfm_info->txb_rd_record_8X8[record_idx].num =
-          txfm_info->txb_rd_record_8X8[record_idx].index_start = 0;
+      txfm_info->txb_rd_records->txb_rd_record_8X8[record_idx].num =
+          txfm_info->txb_rd_records->txb_rd_record_8X8[record_idx].index_start =
+              0;
     for (record_idx = 0;
          record_idx < ((MAX_MIB_SIZE >> 2) * (MAX_MIB_SIZE >> 2)); record_idx++)
-      txfm_info->txb_rd_record_16X16[record_idx].num =
-          txfm_info->txb_rd_record_16X16[record_idx].index_start = 0;
+      txfm_info->txb_rd_records->txb_rd_record_16X16[record_idx].num =
+          txfm_info->txb_rd_records->txb_rd_record_16X16[record_idx]
+              .index_start = 0;
     for (record_idx = 0;
          record_idx < ((MAX_MIB_SIZE >> 3) * (MAX_MIB_SIZE >> 3)); record_idx++)
-      txfm_info->txb_rd_record_32X32[record_idx].num =
-          txfm_info->txb_rd_record_32X32[record_idx].index_start = 0;
+      txfm_info->txb_rd_records->txb_rd_record_32X32[record_idx].num =
+          txfm_info->txb_rd_records->txb_rd_record_32X32[record_idx]
+              .index_start = 0;
     for (record_idx = 0;
          record_idx < ((MAX_MIB_SIZE >> 4) * (MAX_MIB_SIZE >> 4)); record_idx++)
-      txfm_info->txb_rd_record_64X64[record_idx].num =
-          txfm_info->txb_rd_record_64X64[record_idx].index_start = 0;
+      txfm_info->txb_rd_records->txb_rd_record_64X64[record_idx].num =
+          txfm_info->txb_rd_records->txb_rd_record_64X64[record_idx]
+              .index_start = 0;
   }
 
   // Reset the state for use_intra_txb_hash
-  txfm_info->txb_rd_record_intra.num =
-      txfm_info->txb_rd_record_intra.index_start = 0;
+  txfm_info->txb_rd_records->txb_rd_record_intra.num =
+      txfm_info->txb_rd_records->txb_rd_record_intra.index_start = 0;
 
   // Reset the state for use_mb_rd_hash
-  txfm_info->mb_rd_record.num = txfm_info->mb_rd_record.index_start = 0;
+  txfm_info->txb_rd_records->mb_rd_record.num =
+      txfm_info->txb_rd_records->mb_rd_record.index_start = 0;
 }
 
 void av1_setup_pred_block(const MACROBLOCKD *xd,
@@ -359,8 +339,10 @@ void av1_fill_lr_rates(ModeCosts *mode_costs, FRAME_CONTEXT *fc);
 void av1_fill_coeff_costs(CoeffCosts *coeff_costs, FRAME_CONTEXT *fc,
                           const int num_planes);
 
-void av1_fill_mv_costs(const FRAME_CONTEXT *fc, int integer_mv, int usehp,
+void av1_fill_mv_costs(const nmv_context *nmvc, int integer_mv, int usehp,
                        MvCosts *mv_costs);
+
+void av1_fill_dv_costs(const nmv_context *ndvc, IntraBCMVCosts *dv_costs);
 
 int av1_get_adaptive_rdmult(const struct AV1_COMP *cpi, double beta);
 

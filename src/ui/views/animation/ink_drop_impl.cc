@@ -562,20 +562,15 @@ InkDropImpl::HighlightStateFactory::CreateVisibleState(
   return nullptr;
 }
 
-InkDropImpl::InkDropImpl(InkDropHostView* ink_drop_host,
-                         const gfx::Size& host_size)
+InkDropImpl::InkDropImpl(InkDropHost* ink_drop_host,
+                         const gfx::Size& host_size,
+                         AutoHighlightMode auto_highlight_mode)
     : ink_drop_host_(ink_drop_host),
-      root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)),
-      root_layer_added_to_host_(false),
-      show_highlight_on_hover_(true),
-      show_highlight_on_focus_(false),
-      is_hovered_(false),
-      is_focused_(false),
-      exiting_highlight_state_(false),
-      destroying_(false) {
+      highlight_state_factory_(auto_highlight_mode, this),
+      root_layer_(new ui::Layer(ui::LAYER_NOT_DRAWN)) {
   root_layer_->SetBounds(gfx::Rect(host_size));
-  SetAutoHighlightMode(AutoHighlightMode::NONE);
   root_layer_->SetName("InkDropImpl:RootLayer");
+  SetHighlightState(highlight_state_factory_.CreateStartState());
 }
 
 InkDropImpl::~InkDropImpl() {
@@ -588,15 +583,6 @@ InkDropImpl::~InkDropImpl() {
   // views::InkDropRippleObserver methods are called on this.
   DestroyInkDropRipple();
   DestroyInkDropHighlight();
-}
-
-void InkDropImpl::SetAutoHighlightMode(AutoHighlightMode auto_highlight_mode) {
-  // Exit the current state completely first in case state tear down accesses
-  // the current |highlight_state_factory_| instance.
-  ExitHighlightState();
-  highlight_state_factory_ =
-      std::make_unique<HighlightStateFactory>(auto_highlight_mode, this);
-  SetHighlightState(highlight_state_factory_->CreateStartState());
 }
 
 void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {
@@ -740,7 +726,7 @@ void InkDropImpl::CreateInkDropHighlight() {
 
   // If the platform provides HC colors, we need to show them fully on hover and
   // press.
-  if (views::UsingPlatformHighContrastInkDrop(ink_drop_host_))
+  if (views::UsingPlatformHighContrastInkDrop(ink_drop_host_->host_view()))
     highlight_->set_visible_opacity(1.0f);
 
   highlight_->set_observer(this);

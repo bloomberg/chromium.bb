@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_STARTUP_STARTUP_BROWSER_CREATOR_IMPL_H_
 
 #include <memory>
-#include <string>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -53,6 +52,10 @@ class StartupBrowserCreatorImpl {
       delete;
   ~StartupBrowserCreatorImpl() = default;
 
+  // If command line specifies kiosk mode, or full screen mode, switch
+  // to full screen.
+  static void MaybeToggleFullscreen(Browser* browser);
+
   // Creates the necessary windows for startup. Returns true on success,
   // false on failure. process_startup is true if Chrome is just
   // starting up. If process_startup is false, it indicates Chrome was
@@ -94,6 +97,7 @@ class StartupBrowserCreatorImpl {
                            DetermineBrowserOpenBehavior_NotStartup);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest,
                            DetermineStartupTabs_ExtensionCheckupPage);
+  FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorImplTest, ShouldLaunch);
 
   enum class WelcomeRunType {
     NONE,                // Do not inject the welcome page for this run.
@@ -121,27 +125,11 @@ class StartupBrowserCreatorImpl {
   // Creates a tab for each of the Tabs in |tabs|. If browser is non-null
   // and a tabbed browser, the tabs are added to it. Otherwise a new tabbed
   // browser is created and the tabs are added to it. The browser the tabs
-  // are added to is returned, which is either |browser| or the newly created
-  // browser.
+  // are added to is returned, which is either |browser|, the newly created
+  // browser, or nullptr if browser could not be created.
   Browser* OpenTabsInBrowser(Browser* browser,
                              bool process_startup,
                              const StartupTabs& tabs);
-
-  // If the process was launched with the web application command line flags,
-  // e.g. --app=http://www.google.com/ or --app_id=... return true.
-  // In this case |app_url| or |app_id| are populated if they're non-null.
-  bool IsAppLaunch(std::string* app_url, std::string* app_id) const;
-
-  // Opens an application window or tab if the process was launched with the web
-  // application command line switches. Returns true if launch succeeded (or is
-  // proceeding asynchronously); otherwise, returns false to indicate that
-  // normal browser startup should resume. Desktop web applications launch
-  // asynchronously, and fall back to launching a browser window.
-  // If the function returns true, |launch_mode_recorder| will be moved away,
-  // and the unique_ptr's value will be null.
-  bool MaybeLaunchApplication(
-      Profile* profile,
-      std::unique_ptr<LaunchModeRecorder>& launch_mode_recorder);
 
   // Determines the URLs to be shown at startup by way of various policies
   // (welcome, pinned tabs, etc.), determines whether a session restore
@@ -175,9 +163,11 @@ class StartupBrowserCreatorImpl {
   // this may attempt a session restore or create a new browser. May also allow
   // DOM Storage to begin cleanup once it's clear it is not needed anymore.
   Browser* RestoreOrCreateBrowser(
-    const StartupTabs& tabs, BrowserOpenBehavior behavior,
-    SessionRestore::BehaviorBitmask restore_options, bool process_startup,
-    bool is_post_crash_launch);
+      const StartupTabs& tabs,
+      BrowserOpenBehavior behavior,
+      SessionRestore::BehaviorBitmask restore_options,
+      bool process_startup,
+      bool is_post_crash_launch);
 
   // Adds any startup infobars to the selected tab of the given browser.
   void AddInfoBarsIfNecessary(
@@ -195,6 +185,9 @@ class StartupBrowserCreatorImpl {
       bool has_create_browser_default,
       bool has_create_browser_switch,
       bool was_mac_login_or_resume);
+
+  // Returns whether or not a browser window should be created/restored.
+  static bool ShouldLaunch(const base::CommandLine& command_line);
 
   const base::FilePath cur_dir_;
   const base::CommandLine& command_line_;

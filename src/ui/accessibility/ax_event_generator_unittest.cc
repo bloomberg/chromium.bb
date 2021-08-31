@@ -104,11 +104,14 @@ TEST(AXEventGeneratorTest, IterateThroughEmptyEventSets) {
   // Node3 contains IGNORED_CHANGED, SUBTREE_CREATED, NAME_CHANGED.
   std::set<AXEventGenerator::EventParams> node3_events;
   node3_events.emplace(AXEventGenerator::Event::IGNORED_CHANGED,
-                       ax::mojom::EventFrom::kNone, tree.event_intents());
+                       ax::mojom::EventFrom::kNone, ax::mojom::Action::kNone,
+                       tree.event_intents());
   node3_events.emplace(AXEventGenerator::Event::SUBTREE_CREATED,
-                       ax::mojom::EventFrom::kNone, tree.event_intents());
+                       ax::mojom::EventFrom::kNone, ax::mojom::Action::kNone,
+                       tree.event_intents());
   node3_events.emplace(AXEventGenerator::Event::NAME_CHANGED,
-                       ax::mojom::EventFrom::kNone, tree.event_intents());
+                       ax::mojom::EventFrom::kNone, ax::mojom::Action::kNone,
+                       tree.event_intents());
   // Node4 contains no event.
   std::set<AXEventGenerator::EventParams> node4_events;
   // Node5 contains no event.
@@ -118,7 +121,8 @@ TEST(AXEventGeneratorTest, IterateThroughEmptyEventSets) {
   // Node7 contains IGNORED_CHANGED.
   std::set<AXEventGenerator::EventParams> node7_events;
   node7_events.emplace(AXEventGenerator::Event::IGNORED_CHANGED,
-                       ax::mojom::EventFrom::kNone, tree.event_intents());
+                       ax::mojom::EventFrom::kNone, ax::mojom::Action::kNone,
+                       tree.event_intents());
   // Node8 contains no event.
   std::set<AXEventGenerator::EventParams> node8_events;
   // Node9 contains no event.
@@ -519,7 +523,6 @@ TEST(AXEventGeneratorTest, SelectionInTextFieldChanged) {
   text_field.role = ax::mojom::Role::kTextField;
   text_field.SetValue("Testing");
   text_field.AddState(ax::mojom::State::kEditable);
-  text_field.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
 
   root.child_ids = {text_field.id};
 
@@ -611,7 +614,6 @@ TEST(AXEventGeneratorTest, ValueInTextFieldChanged) {
   text_field.id = 1;
   text_field.role = ax::mojom::Role::kTextField;
   text_field.AddState(ax::mojom::State::kEditable);
-  text_field.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
   text_field.SetValue("Before");
 
   AXTreeUpdate initial_state;
@@ -661,7 +663,6 @@ TEST(AXEventGeneratorTest, InvalidStatusChanged) {
   text_field.id = 1;
   text_field.role = ax::mojom::Role::kTextField;
   text_field.AddState(ax::mojom::State::kEditable);
-  text_field.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
   text_field.AddStringAttribute(ax::mojom::StringAttribute::kValue, "Text");
 
   AXTreeUpdate initial_state;
@@ -2438,7 +2439,6 @@ TEST(AXEventGeneratorTest, RequiredStateChanged) {
   text_field.id = 1;
   text_field.role = ax::mojom::Role::kTextField;
   text_field.AddState(ax::mojom::State::kEditable);
-  text_field.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
 
   AXTreeUpdate initial_state;
   initial_state.root_id = text_field.id;
@@ -2650,7 +2650,6 @@ TEST(AXEventGeneratorTest, EditableTextChanged) {
   text_field.id = 2;
   text_field.role = ax::mojom::Role::kTextField;
   text_field.AddState(ax::mojom::State::kEditable);
-  text_field.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
   text_field.SetValue("Before");
   root.child_ids = {text_field.id};
 

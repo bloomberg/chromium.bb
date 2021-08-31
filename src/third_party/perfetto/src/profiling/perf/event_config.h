@@ -17,8 +17,11 @@
 #ifndef SRC_PROFILING_PERF_EVENT_CONFIG_H_
 #define SRC_PROFILING_PERF_EVENT_CONFIG_H_
 
+#include <functional>
 #include <string>
+#include <vector>
 
+#include <inttypes.h>
 #include <linux/perf_event.h>
 #include <stdint.h>
 #include <sys/types.h>
@@ -27,9 +30,15 @@
 #include "perfetto/ext/base/optional.h"
 #include "perfetto/tracing/core/data_source_config.h"
 
-#include "protos/perfetto/config/profiling/perf_event_config.pbzero.h"
+#include "protos/perfetto/common/perf_events.gen.h"
 
 namespace perfetto {
+namespace protos {
+namespace gen {
+class PerfEventConfig;
+}  // namespace gen
+}  // namespace protos
+
 namespace profiling {
 
 // Parsed allow/deny-list for filtering samples.
@@ -39,7 +48,30 @@ struct TargetFilter {
   base::FlatSet<std::string> exclude_cmdlines;
   base::FlatSet<pid_t> pids;
   base::FlatSet<pid_t> exclude_pids;
-  uint32_t additional_cmdline_count;
+  uint32_t additional_cmdline_count = 0;
+};
+
+struct PerfCounter {
+  // Either a predefined counter, or a tracepoint:
+  protos::gen::PerfEvents::Counter counter =
+      protos::gen::PerfEvents::PerfEvents::UNKNOWN_COUNTER;
+  protos::gen::PerfEvents::Tracepoint tracepoint;
+
+  // sycall-level description of the event:
+  uint32_t type = 0;    // perf_event_attr.type
+  uint32_t config = 0;  // perf_event_attr.config
+
+  bool is_counter() const {
+    return counter != protos::gen::PerfEvents::PerfEvents::UNKNOWN_COUNTER;
+  }
+  bool is_tracepoint() const { return type == PERF_TYPE_TRACEPOINT; }
+
+  static PerfCounter Counter(protos::gen::PerfEvents::Counter counter,
+                             uint32_t type,
+                             uint32_t config);
+
+  static PerfCounter Tracepoint(protos::gen::PerfEvents::Tracepoint tracepoint,
+                                uint32_t id);
 };
 
 // Describes a single profiling configuration. Bridges the gap between the data
@@ -47,59 +79,105 @@ struct TargetFilter {
 // perf_event_open syscall.
 class EventConfig {
  public:
-  static base::Optional<EventConfig> Create(const DataSourceConfig& ds_config);
+  using tracepoint_id_fn_t =
+      std::function<uint32_t(const std::string&, const std::string&)>;
 
-  uint32_t target_all_cpus() const { return target_all_cpus_; }
+  static base::Optional<EventConfig> Create(
+      const DataSourceConfig& ds_config,
+      tracepoint_id_fn_t tracepoint_id_lookup =
+          [](const std::string&, const std::string&) { return 0; });
+
+  static base::Optional<EventConfig> Create(
+      const protos::gen::PerfEventConfig& pb_config,
+      const DataSourceConfig& raw_ds_config,
+      tracepoint_id_fn_t tracepoint_id_lookup);
+
   uint32_t ring_buffer_pages() const { return ring_buffer_pages_; }
   uint32_t read_tick_period_ms() const { return read_tick_period_ms_; }
-  uint32_t samples_per_tick_limit() const { return samples_per_tick_limit_; }
+  uint64_t samples_per_tick_limit() const { return samples_per_tick_limit_; }
   uint32_t remote_descriptor_timeout_ms() const {
     return remote_descriptor_timeout_ms_;
   }
   uint32_t unwind_state_clear_period_ms() const {
     return unwind_state_clear_period_ms_;
   }
-
+  uint64_t max_enqueued_footprint_bytes() const {
+    return max_enqueued_footprint_bytes_;
+  }
+  bool sample_callstacks() const { return sample_callstacks_; }
   const TargetFilter& filter() const { return target_filter_; }
-
+  bool kernel_frames() const { return kernel_frames_; }
   perf_event_attr* perf_attr() const {
     return const_cast<perf_event_attr*>(&perf_event_attr_);
   }
+  const PerfCounter& timebase_event() const { return timebase_event_; }
+  const std::vector<std::string>& target_installed_by() const {
+    return target_installed_by_;
+  }
+  const DataSourceConfig& raw_ds_config() const { return raw_ds_config_; }
 
  private:
-  EventConfig(const protos::pbzero::PerfEventConfig::Decoder& cfg,
-              uint32_t sampling_frequency,
+  EventConfig(const DataSourceConfig& raw_ds_config,
+              const perf_event_attr& pe,
+              const PerfCounter& timebase_event,
+              bool sample_callstacks,
+              TargetFilter target_filter,
+              bool kernel_frames,
               uint32_t ring_buffer_pages,
               uint32_t read_tick_period_ms,
-              uint32_t samples_per_tick_limit,
+              uint64_t samples_per_tick_limit,
               uint32_t remote_descriptor_timeout_ms,
-              TargetFilter target_filter);
+              uint32_t unwind_state_clear_period_ms,
+              uint64_t max_enqueued_footprint_bytes,
+              std::vector<std::string> target_installed_by);
 
-  // If true, process all system-wide samples.
-  const bool target_all_cpus_;
+  // Parameter struct for the leader (timebase) perf_event_open syscall.
+  perf_event_attr perf_event_attr_ = {};
+
+  // Leader event, which is already described by |perf_event_attr_|. But this
+  // additionally carries a tracepoint filter if that needs to be set via an
+  // ioctl after creating the event.
+  const PerfCounter timebase_event_;
+
+  // TODO(rsavitski): consider adding an Optional<CallstackSampling> that
+  // contains the kernel_frames_ and target_filter, once the complexity warrants
+  // it.
+  const bool sample_callstacks_;
+
+  // Parsed allow/deny-list for filtering samples.
+  const TargetFilter target_filter_;
+
+  // If true, include kernel frames in the callstacks.
+  const bool kernel_frames_;
 
   // Size (in 4k pages) of each per-cpu ring buffer shared with the kernel.
   // Must be a power of two.
   const uint32_t ring_buffer_pages_;
-
-  // Parameter struct for |perf_event_open| calls.
-  struct perf_event_attr perf_event_attr_ = {};
 
   // How often the ring buffers should be read.
   const uint32_t read_tick_period_ms_;
 
   // Guardrail for the amount of samples a given read attempt will extract from
   // *each* per-cpu buffer.
-  const uint32_t samples_per_tick_limit_;
-
-  // Parsed allow/deny-list for filtering samples.
-  const TargetFilter target_filter_;
+  const uint64_t samples_per_tick_limit_;
 
   // Timeout for proc-fd lookup.
   const uint32_t remote_descriptor_timeout_ms_;
 
   // Optional period for clearing cached unwinder state. Skipped if zero.
   const uint32_t unwind_state_clear_period_ms_;
+
+  const uint64_t max_enqueued_footprint_bytes_;
+
+  // Only profile target if it was installed by one of the packages given.
+  // Special values are:
+  // * @system: installed on the system partition
+  // * @product: installed on the product partition
+  // * @null: sideloaded
+  const std::vector<std::string> target_installed_by_;
+
+  // The raw data source config, as a pbzero-generated C++ class.
+  const DataSourceConfig raw_ds_config_;
 };
 
 }  // namespace profiling

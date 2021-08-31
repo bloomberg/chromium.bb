@@ -7,8 +7,8 @@
 #include <sstream>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/public/notification_data.h"
@@ -20,10 +20,10 @@ ImpressionTestData::ImpressionTestData(
     SchedulerClientType type,
     size_t current_max_daily_show,
     std::vector<Impression> impressions,
-    base::Optional<SuppressionInfo> suppression_info,
+    absl::optional<SuppressionInfo> suppression_info,
     size_t negative_events_count,
-    base::Optional<base::Time> last_negative_event_ts,
-    base::Optional<base::Time> last_shown_ts)
+    absl::optional<base::Time> last_negative_event_ts,
+    absl::optional<base::Time> last_shown_ts)
     : type(type),
       current_max_daily_show(current_max_daily_show),
       impressions(std::move(impressions)),

@@ -786,6 +786,7 @@ static void PrintModulesMachineReadable(const CodeModules* modules) {
 
 void PrintProcessState(const ProcessState& process_state,
                        bool output_stack_contents,
+                       bool output_requesting_thread_only,
                        SourceLineResolverInterface* resolver) {
   // Print OS and CPU information.
   string cpu = process_state.system_info()->cpu;
@@ -856,17 +857,19 @@ void PrintProcessState(const ProcessState& process_state,
                process_state.modules(), resolver);
   }
 
-  // Print all of the threads in the dump.
-  int thread_count = process_state.threads()->size();
-  for (int thread_index = 0; thread_index < thread_count; ++thread_index) {
-    if (thread_index != requesting_thread) {
-      // Don't print the crash thread again, it was already printed.
-      printf("\n");
-      printf("Thread %d\n", thread_index);
-      PrintStack(process_state.threads()->at(thread_index), cpu,
-                 output_stack_contents,
-                 process_state.thread_memory_regions()->at(thread_index),
-                 process_state.modules(), resolver);
+  if (!output_requesting_thread_only) {
+    // Print all of the threads in the dump.
+    int thread_count = process_state.threads()->size();
+    for (int thread_index = 0; thread_index < thread_count; ++thread_index) {
+      if (thread_index != requesting_thread) {
+        // Don't print the crash thread again, it was already printed.
+        printf("\n");
+        printf("Thread %d\n", thread_index);
+        PrintStack(process_state.threads()->at(thread_index), cpu,
+                  output_stack_contents,
+                  process_state.thread_memory_regions()->at(thread_index),
+                  process_state.modules(), resolver);
+      }
     }
   }
 

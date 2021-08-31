@@ -26,7 +26,6 @@ public:
     GrUnrolledBinaryGradientColorizer(const GrUnrolledBinaryGradientColorizer& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "UnrolledBinaryGradientColorizer"; }
-    bool usesExplicitReturn() const override;
     int32_t intervalCount;
     SkPMColor4f scale0_1;
     SkPMColor4f scale2_3;
@@ -89,7 +88,7 @@ private:
             , thresholds9_13(thresholds9_13) {
         this->setUsesSampleCoordsDirectly();
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

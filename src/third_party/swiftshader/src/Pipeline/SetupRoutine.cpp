@@ -81,18 +81,13 @@ void SetupRoutine::generate()
 
 			Float A = (y0 - y2) * x1 + (y2 - y1) * x0 + (y1 - y0) * x2;  // Area
 
-			If(A == 0.0f)
-			{
-				Return(0);
-			}
-
 			Int w0w1w2 = *Pointer<Int>(v0 + OFFSET(Vertex, w)) ^
 			             *Pointer<Int>(v1 + OFFSET(Vertex, w)) ^
 			             *Pointer<Int>(v2 + OFFSET(Vertex, w));
 
 			A = IfThenElse(w0w1w2 < 0, -A, A);
 
-			Bool frontFacing = (state.frontFace == VK_FRONT_FACE_COUNTER_CLOCKWISE) ? A > 0.0f : A < 0.0f;
+			Bool frontFacing = (state.frontFace == VK_FRONT_FACE_COUNTER_CLOCKWISE) ? (A >= 0.0f) : (A <= 0.0f);
 
 			if(state.cullMode & VK_CULL_MODE_FRONT_BIT)
 			{
@@ -466,7 +461,7 @@ void SetupRoutine::generate()
 
 					Int e = Max(Max(e0, e1), e2);
 
-					r = As<Float>(e - (23 << 23));
+					r = As<Float>(e) * Float(1.0f / (1 << 23));
 				}
 
 				bias = r * *Pointer<Float>(data + OFFSET(DrawData, constantDepthBias));

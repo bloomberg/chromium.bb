@@ -12,11 +12,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/strcat.h"
+#include "components/autofill_assistant/browser/action_value.pb.h"
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_dom.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
 #include "components/autofill_assistant/browser/selector.h"
+#include "components/autofill_assistant/browser/web/element.h"
 #include "components/autofill_assistant/browser/web/js_snippets.h"
 #include "components/autofill_assistant/browser/web/web_controller_worker.h"
 
@@ -28,7 +30,10 @@ class RenderFrameHost;
 namespace autofill_assistant {
 class DevtoolsClient;
 
-// Worker class to find element(s) matching a selector.
+// Worker class to find element(s) matching a selector. This will keep entering
+// iFrames until the element is found in the last frame, then returns the
+// element together with the owning frame. All subsequent operations should
+// be performed on that frame.
 class ElementFinder : public WebControllerWorker {
  public:
   enum ResultType {
@@ -48,23 +53,29 @@ class ElementFinder : public WebControllerWorker {
     kMatchArray,
   };
 
+  // Result is the fully resolved element that can be used without limitations.
+  // This means that |container_frame_host| has been found and is not nullptr.
   struct Result {
     Result();
     ~Result();
     Result(const Result&);
 
+    DomObjectFrameStack dom_object;
+
     // The render frame host contains the element.
     content::RenderFrameHost* container_frame_host = nullptr;
 
-    // The object id of the element.
-    std::string object_id;
+    const std::string& object_id() const {
+      return dom_object.object_data.object_id;
+    }
 
-    // The frame id to use to execute devtools Javascript calls within the
-    // context of the frame. Might be empty if no frame id needs to be
-    // specified.
-    std::string node_frame_id;
+    const std::string& node_frame_id() const {
+      return dom_object.object_data.node_frame_id;
+    }
 
-    std::vector<Result> frame_stack;
+    const std::vector<JsObjectIdentifier>& frame_stack() const {
+      return dom_object.frame_stack;
+    }
   };
 
   // |web_contents| and |devtools_client| must be valid for the lifetime of the
@@ -79,7 +90,7 @@ class ElementFinder : public WebControllerWorker {
       base::OnceCallback<void(const ClientStatus&, std::unique_ptr<Result>)>;
 
   // Finds the element and calls the callback.
-  void Start(Callback callback_);
+  void Start(Callback callback);
 
  private:
   // Helper for building JavaScript functions.
@@ -111,12 +122,11 @@ class ElementFinder : public WebControllerWorker {
     int variable_counter_ = 0;
 
     // Adds a regexp filter.
-    void AddRegexpFilter(const SelectorProto::TextFilter& filter,
-                         const std::string& property);
+    void AddRegexpFilter(const TextFilter& filter, const std::string& property);
 
     // Declares and initializes a variable containing a RegExp object that
     // correspond to |filter| and returns the variable name.
-    std::string AddRegexpInstance(const SelectorProto::TextFilter& filter);
+    std::string AddRegexpInstance(const TextFilter& filter);
 
     // Returns the name of a new unique variable.
     std::string DeclareVariable();
@@ -294,19 +304,6 @@ class ElementFinder : public WebControllerWorker {
                               std::unique_ptr<dom::DescribeNodeResult> result);
   void OnResolveNode(const DevtoolsClient::ReplyStatus& reply_status,
                      std::unique_ptr<dom::ResolveNodeResult> result);
-  content::RenderFrameHost* FindCorrespondingRenderFrameHost(
-      std::string frame_id);
-
-  // Handle TaskType::PROXIMITY
-  void ApplyProximityFilter(int filter_index,
-                            const std::string& array_object_id);
-  void OnProximityFilterTarget(int filter_index,
-                               const std::string& array_object_id,
-                               const ClientStatus& status,
-                               std::unique_ptr<Result> result);
-  void OnProximityFilterJs(
-      const DevtoolsClient::ReplyStatus& reply_status,
-      std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Fill |current_matches_js_array_| with the values in |current_matches_|
   // starting from |index|, then clear |current_matches_| and call
@@ -354,7 +351,7 @@ class ElementFinder : public WebControllerWorker {
   // elements matched by task i, or nullptr if the task is still running.
   std::vector<std::unique_ptr<std::vector<std::string>>> tasks_results_;
 
-  std::vector<Result> frame_stack_;
+  std::vector<JsObjectIdentifier> frame_stack_;
 
   // Finder for the target of the current proximity filter.
   std::unique_ptr<ElementFinder> proximity_target_filter_;

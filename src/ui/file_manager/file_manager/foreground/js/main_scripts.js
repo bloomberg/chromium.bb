@@ -21,7 +21,7 @@
 // "whatever.js". You should rerun gyp to let the build files know.
 //
 // error_counter.js must be loaded before all other scripts of the Files app.
-// <include src="../../../base/js/error_counter.js">
+// <include src="../../../file_manager/common/js/error_counter.js">
 //
 // metrics_base.js and metrics.js initiates load performance tracking
 // so we want to parse it as early as possible.
@@ -34,7 +34,6 @@
 // <include src="../../../image_loader/image_loader_client.js">
 //
 // <include src="../../../../webui/resources/js/assert.js">
-// <include src="../../../../webui/resources/js/load_time_data.js">
 // <include src="../../../../webui/resources/js/action_link.js">
 // <include src="../../../../webui/resources/js/cr.js">
 // <include src="../../../../webui/resources/js/util.js">
@@ -82,15 +81,18 @@
 // <include src="../../common/js/async_util.js">
 // <include src="../../common/js/file_type.js">
 // <include src="../../common/js/files_app_entry_types.js">
-// <include src="../../../base/js/volume_manager_types.js">
-// <include src="../../../base/js/app_util.js">
+// <include src="../../../file_manager/common/js/volume_manager_types.js">
+// <include src="../../../file_manager/common/js/app_util.js">
 // <include src="../../common/js/util.js">
+// <include src="../../common/js/power.js">
 // <include src="../../common/js/progress_center_common.js">
+// <include src="../../common/js/storage_adapter.js">
 // <include src="../../common/js/importer_common.js">
+// <include src="../../common/js/trash.js">
+// <include src="../../common/js/xfm.js">
 //
 // <include src="constants.js">
 // <include src="crossover_search_utils.js">
-// <include src="web_store_utils.js">
 // <include src="ui/multi_menu.js">
 // <include src="ui/multi_menu_button.js">
 // <include src="ui/combobutton.js">
@@ -99,11 +101,6 @@
 // <include src="metadata/metadata_cache_set.js">
 // <include src="metadata/metadata_provider.js">
 // <include src="metadata/metadata_request.js">
-//
-// <include src="../../cws_widget/app_installer.js">
-// <include src="../../cws_widget/cws_webview_client.js">
-// <include src="../../cws_widget/cws_widget_container.js">
-// <include src="../../cws_widget/cws_widget_container_error_dialog.js">
 //
 // <include src="actions_controller.js">
 // <include src="actions_model.js">
@@ -116,6 +113,7 @@
 // <include src="directory_contents.js">
 // <include src="directory_model.js">
 // <include src="directory_tree_naming_controller.js">
+// <include src="drive_dialog_controller.js">
 // <include src="drop_effect_and_label.js">
 // <include src="empty_folder_controller.js">
 // <include src="file_manager.js">
@@ -129,6 +127,7 @@
 // <include src="folder_shortcuts_data_model.js">
 // <include src="sort_menu_controller.js">
 // <include src="gear_menu_controller.js">
+// <include src="holding_space_util.js">
 // <include src="import_controller.js">
 // <include src="last_modified_controller.js">
 // <include src="launch_param.js">
@@ -146,7 +145,6 @@
 // <include src="navigation_list_model.js">
 // <include src="navigation_uma.js">
 // <include src="path_component.js">
-// <include src="progress_center_item_group.js">
 // <include src="quick_view_controller.js">
 // <include src="quick_view_model.js">
 // <include src="quick_view_uma.js">
@@ -186,9 +184,8 @@
 // <include src="ui/progress_center_panel.js">
 // <include src="ui/providers_menu.js">
 // <include src="ui/search_box.js">
-// <include src="ui/suggest_apps_dialog.js">
 // <include src="main_window_component.js">
-// <include src="../../../base/js/filtered_volume_manager.js">
+// <include src="../../../file_manager/common/js/filtered_volume_manager.js">
 // <include src="webui_command_extender.js">
 
 // // For accurate load performance tracking place main.js should be

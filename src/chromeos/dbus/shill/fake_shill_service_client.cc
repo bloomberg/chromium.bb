@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -24,6 +25,7 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "dbus/object_path.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -159,13 +161,15 @@ void FakeShillServiceClient::RemovePropertyChangedObserver(
 void FakeShillServiceClient::GetProperties(
     const dbus::ObjectPath& service_path,
     DBusMethodCallback<base::Value> callback) {
-  base::Optional<base::Value> result_properties;
+  absl::optional<base::Value> result_properties;
   const base::Value* nested_dict = GetServiceProperties(service_path.value());
   if (nested_dict) {
     result_properties = nested_dict->Clone();
     // Remove credentials that Shill wouldn't send.
     result_properties->RemoveKey(shill::kPassphraseProperty);
   } else {
+    DCHECK(!require_service_to_get_properties_);
+
     // This may happen if we remove services from the list.
     VLOG(2) << "Properties not found for: " << service_path.value();
   }
@@ -254,6 +258,15 @@ void FakeShillServiceClient::Connect(const dbus::ObjectPath& service_path,
     return;
   }
 
+  if (connect_error_name_) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(error_callback), *connect_error_name_,
+                       /*error_message=*/std::string()));
+    connect_error_name_ = absl::nullopt;
+    return;
+  }
+
   // Set any other services of the same Type to 'offline' first, before setting
   // State to Association which will trigger sorting Manager.Services and
   // sending an update.
@@ -318,6 +331,7 @@ void FakeShillServiceClient::GetLoadableProfileEntries(
   profile_client->GetProfilePathsContainingService(service_path.value(),
                                                    &profiles);
 
+  DCHECK(profiles.size()) << "No profiles contain given service";
   // Provide a dictionary with  {profile_path: service_path} entries for
   // profile_paths that contain the service.
   base::Value result_properties(base::Value::Type::DICTIONARY);
@@ -556,7 +570,8 @@ bool FakeShillServiceClient::ClearConfiguredServiceProperties(
   const base::Value* service_type = service_dict->FindKeyOfType(
       shill::kTypeProperty, base::Value::Type::STRING);
   if (!visible_property || !visible_property->GetBool() || !service_type ||
-      (service_type->GetString() == shill::kTypeVPN)) {
+      (service_type->GetString() == shill::kTypeVPN) ||
+      (service_type->GetString() == shill::kTypeCellular)) {
     stub_services_.RemoveKey(service_path);
     RemoveService(service_path);
     return true;
@@ -633,6 +648,11 @@ void FakeShillServiceClient::SetConnectBehavior(
   connect_behavior_[service_path] = behavior;
 }
 
+void FakeShillServiceClient::SetErrorForNextConnectionAttempt(
+    const std::string& error_name) {
+  connect_error_name_ = error_name;
+}
+
 void FakeShillServiceClient::SetHoldBackServicePropertyUpdates(bool hold_back) {
   hold_back_service_property_updates_ = hold_back;
   std::vector<base::OnceClosure> property_updates;
@@ -644,6 +664,11 @@ void FakeShillServiceClient::SetHoldBackServicePropertyUpdates(bool hold_back) {
   for (auto& property_update : property_updates)
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   std::move(property_update));
+}
+
+void FakeShillServiceClient::SetRequireServiceToGetProperties(
+    bool require_service_to_get_properties) {
+  require_service_to_get_properties_ = require_service_to_get_properties;
 }
 
 void FakeShillServiceClient::NotifyObserversPropertyChanged(

@@ -12,10 +12,10 @@ from google.cloud import datastore
 import base64
 import collections
 import httplib2
-import re2
 import sheriff_pb2
 import validator
-from utils import LRUCacheWithTTL, Translate
+import matcher as matcher_module
+import utils
 
 # The path which we will look for in projects.
 SHERIFF_CONFIG_PATH = 'chromeperf-sheriffs.cfg'
@@ -144,48 +144,37 @@ def StoreConfigs(client, configs):
     })
     client.put_multi(list(entities.values()) + [subscription_index])
 
-
-def CompilePattern(pattern):
-  if pattern.HasField('glob'):
-    return re2.compile(Translate(pattern.glob))
-  elif pattern.HasField('regex'):
-    return re2.compile(pattern.regex)
-  else:
-    # TODO(dberris): this is the extension point for supporting new
-    # matchers; for now we'll skip the new patterns we don't handle yet.
-    return None
-
-
-def CompilePatterns(patterns):
-  compiled = []
-  for pattern in patterns:
-    c = CompilePattern(pattern)
-    if c:
-      compiled.append(c)
-  return lambda s: any(c.match(s) for c in compiled)
-
-
-def CompileRules(rules):
-  match = CompilePatterns(rules.match)
-  exclude = CompilePatterns(rules.exclude)
-  return lambda s: match(s) and not exclude(s)
-
-
 class Matcher(object):
 
   def __init__(self, subscription):
-    self._match_subscription = CompileRules(subscription.rules)
+    self._match_subscription = matcher_module.CompileRules(
+        subscription.rules, ignore_broken=True)
 
     if subscription.auto_triage.enable:
       self._match_auto_triage = lambda s: True
     else:
-      self._match_auto_triage = CompileRules(subscription.auto_triage.rules)
+      self._match_auto_triage = matcher_module.CompileRules(
+          subscription.auto_triage.rules, ignore_broken=True)
 
     if subscription.auto_bisection.enable:
       self._match_auto_bisection = lambda s: True
     else:
-      self._match_auto_bisection = CompileRules(
-          subscription.auto_bisection.rules)
+      self._match_auto_bisection = matcher_module.CompileRules(
+          subscription.auto_bisection.rules, ignore_broken=True)
+
+    def Reduced(config):
+      copied_config = sheriff_pb2.AnomalyConfig()
+      copied_config.CopyFrom(config)
+      copied_config.rules.Clear()
+      return copied_config
+
+    self._anomaly_config_matchers = [(
+        matcher_module.CompileRules(
+            config.rules,
+            ignore_broken=True,
+        ),
+        Reduced(config),
+    ) for config in subscription.anomaly_configs]
 
   def MatchSubscription(self, test):
     return self._match_subscription(test)
@@ -195,6 +184,12 @@ class Matcher(object):
 
   def MatchAutoBisection(self, test):
     return self._match_auto_bisection(test)
+
+  def GetAnomalyConfig(self, test):
+    for config_matcher, config in self._anomaly_config_matchers:
+      if config_matcher(test):
+        return config
+    return None
 
 
 def GetMatcher(revision, subscription):
@@ -211,7 +206,7 @@ def GetMatcher(revision, subscription):
   return matcher
 
 
-@LRUCacheWithTTL(ttl_seconds=60, maxsize=2)
+@utils.LRUCacheWithTTL(ttl_seconds=60, maxsize=2)
 def ListAllConfigs(client):
   """Yield tuples of (config_set, revision, subscription)."""
   with client.transaction(read_only=True):
@@ -260,6 +255,9 @@ def CopyNormalizedSubscription(src, dst):
   # We shouldn't use rules outside the sheriff-config in any case.
   # Maybe allow being explicitily requsted for debug usage later.
   dst.rules.Clear()
+
+  # We also should not provide any of the anomaly configs.
+  del dst.anomaly_configs[:]
 
   auto_triage_enable = dst.auto_triage.enable
   dst.auto_triage.Clear()

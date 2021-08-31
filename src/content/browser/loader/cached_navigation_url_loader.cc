@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/cached_navigation_url_loader.h"
 
+#include "content/browser/loader/navigation_early_hints_manager.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
@@ -40,7 +41,9 @@ void CachedNavigationURLLoader::OnResponseStarted() {
   delegate_->OnResponseStarted(
       /*url_loader_client_endpoints=*/nullptr, std::move(response_head),
       /*response_body=*/mojo::ScopedDataPipeConsumerHandle(), global_id,
-      /*is_download=*/false, NavigationDownloadPolicy(), base::nullopt);
+      /*is_download=*/false, blink::NavigationDownloadPolicy(),
+      request_info_->isolation_info.network_isolation_key(), absl::nullopt,
+      /*early_hints=*/{});
 }
 CachedNavigationURLLoader::~CachedNavigationURLLoader() {}
 
@@ -59,4 +62,5 @@ void CachedNavigationURLLoader::FollowRedirect(
     blink::PreviewsState new_previews_state) {
   NOTREACHED();
 }
+
 }  // namespace content

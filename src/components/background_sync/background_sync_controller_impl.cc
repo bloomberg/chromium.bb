@@ -78,9 +78,8 @@ void BackgroundSyncControllerImpl::OnContentSettingChanged(
     if (!IsContentSettingBlocked(origin))
       continue;
 
-    auto* storage_partition =
-        content::BrowserContext::GetStoragePartitionForSite(
-            browser_context_, origin.GetURL(), /* can_create= */ false);
+    auto* storage_partition = browser_context_->GetStoragePartitionForUrl(
+        origin.GetURL(), /* can_create= */ false);
     if (!storage_partition)
       continue;
 
@@ -366,25 +365,13 @@ base::TimeDelta BackgroundSyncControllerImpl::GetNextEventDelay(
 
 std::unique_ptr<content::BackgroundSyncController::BackgroundSyncEventKeepAlive>
 BackgroundSyncControllerImpl::CreateBackgroundSyncEventKeepAlive() {
-#if !defined(OS_ANDROID)
-  if (!KeepAliveRegistry::GetInstance()->IsShuttingDown())
-    return std::make_unique<BackgroundSyncEventKeepAliveImpl>();
-#endif
+#if defined(OS_ANDROID)
+  // Not needed on Android.
   return nullptr;
-}
-
-#if !defined(OS_ANDROID)
-BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
-    BackgroundSyncEventKeepAliveImpl() {
-  keepalive_ = std::unique_ptr<ScopedKeepAlive,
-                               content::BrowserThread::DeleteOnUIThread>(
-      new ScopedKeepAlive(KeepAliveOrigin::BACKGROUND_SYNC,
-                          KeepAliveRestartOption::DISABLED));
-}
-
-BackgroundSyncControllerImpl::BackgroundSyncEventKeepAliveImpl::
-    ~BackgroundSyncEventKeepAliveImpl() = default;
+#else
+  return delegate_->CreateBackgroundSyncEventKeepAlive();
 #endif
+}
 
 void BackgroundSyncControllerImpl::NoteSuspendedPeriodicSyncOrigins(
     std::set<url::Origin> suspended_origins) {

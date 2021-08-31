@@ -29,13 +29,12 @@ class NearOomMonitor {
   base::TimeDelta GetMonitoringInterval() const { return monitoring_interval_; }
   base::TimeDelta GetCooldownInterval() const { return cooldown_interval_; }
 
-  using CallbackList = base::CallbackList<void()>;
-  using Subscription = CallbackList::Subscription;
+  using CallbackList = base::RepeatingClosureList;
 
   // Registers a callback which is invoked when this monitor detects near-OOM
   // situation. The callback will be called on the task runner on which this
-  // monitor is running. Destroy the returned Subscription to unregister.
-  std::unique_ptr<Subscription> RegisterCallback(
+  // monitor is running. Destroy the returned subscription to unregister.
+  base::CallbackListSubscription RegisterCallback(
       base::RepeatingClosure callback);
 
   void OnLowMemory(JNIEnv* env,

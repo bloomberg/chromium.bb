@@ -33,6 +33,12 @@ class MultithreadingTest : public ANGLETest
         setConfigAlphaBits(8);
     }
 
+    bool hasFenceSyncExtension() const
+    {
+        return IsEGLDisplayExtensionEnabled(getEGLWindow()->getDisplay(), "EGL_KHR_fence_sync");
+    }
+    bool hasGLSyncExtension() const { return IsGLExtensionEnabled("GL_OES_EGL_sync"); }
+
     void runMultithreadedGLTest(
         std::function<void(EGLSurface surface, size_t threadIndex)> testBody,
         size_t threadCount)
@@ -187,6 +193,9 @@ TEST_P(MultithreadingTest, MultiContextClear)
 {
     ANGLE_SKIP_TEST_IF(!platformSupportsMultithreading());
 
+    // http://anglebug.com/5945: ES3_Vulkan_NoVirtual flaky on linux-clang-rel NVIDIA
+    ANGLE_SKIP_TEST_IF(IsVulkan() && IsLinux() && IsNVIDIA());
+
     auto testBody = [](EGLSurface surface, size_t thread) {
         constexpr size_t kIterationsPerThread = 32;
         for (size_t iteration = 0; iteration < kIterationsPerThread; iteration++)
@@ -207,6 +216,80 @@ TEST_P(MultithreadingTest, MultiContextClear)
         }
     };
     runMultithreadedGLTest(testBody, 72);
+}
+
+// Verify that threads can interleave eglDestroyContext and draw calls without
+// any crashes.
+TEST_P(MultithreadingTest, MultiContextDeleteDraw)
+{
+    // Skip this test on non-D3D11 backends, as it has the potential to time-out
+    // and this test was originally intended to catch a crash on the D3D11 backend.
+    ANGLE_SKIP_TEST_IF(!platformSupportsMultithreading());
+    ANGLE_SKIP_TEST_IF(!IsD3D11());
+
+    EGLWindow *window = getEGLWindow();
+    EGLDisplay dpy    = window->getDisplay();
+    EGLConfig config  = window->getConfig();
+
+    std::thread t1 = std::thread([&]() {
+        // 5000 is chosen here as it reliably reproduces the former crash.
+        for (int i = 0; i < 5000; i++)
+        {
+            EGLContext ctx1 = window->createContext(EGL_NO_CONTEXT);
+            EGLContext ctx2 = window->createContext(EGL_NO_CONTEXT);
+
+            EXPECT_EGL_TRUE(eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, ctx2));
+            EXPECT_EGL_TRUE(eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, ctx1));
+
+            EXPECT_EGL_TRUE(eglDestroyContext(dpy, ctx2));
+            EXPECT_EGL_TRUE(eglDestroyContext(dpy, ctx1));
+        }
+    });
+
+    std::thread t2 = std::thread([&]() {
+        EGLint pbufferAttributes[] = {
+            EGL_WIDTH, 256, EGL_HEIGHT, 256, EGL_NONE, EGL_NONE,
+        };
+
+        EGLSurface surface = eglCreatePbufferSurface(dpy, config, pbufferAttributes);
+        EXPECT_EGL_SUCCESS();
+
+        auto ctx = window->createContext(EGL_NO_CONTEXT);
+        EXPECT_EGL_TRUE(eglMakeCurrent(dpy, surface, surface, ctx));
+
+        constexpr size_t kIterationsPerThread = 512;
+        constexpr size_t kDrawsPerIteration   = 512;
+
+        ANGLE_GL_PROGRAM(program, essl1_shaders::vs::Simple(), essl1_shaders::fs::UniformColor());
+        glUseProgram(program);
+
+        GLint colorLocation = glGetUniformLocation(program, essl1_shaders::ColorUniform());
+
+        auto quadVertices = GetQuadVertices();
+
+        GLBuffer vertexBuffer;
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 3 * 6, quadVertices.data(), GL_STATIC_DRAW);
+
+        GLint positionLocation = glGetAttribLocation(program, essl1_shaders::PositionAttrib());
+        glEnableVertexAttribArray(positionLocation);
+        glVertexAttribPointer(positionLocation, 3, GL_FLOAT, GL_FALSE, 0, 0);
+        for (size_t iteration = 0; iteration < kIterationsPerThread; iteration++)
+        {
+            const GLColor color(static_cast<GLubyte>(15151 % 255),
+                                static_cast<GLubyte>(iteration % 255), 0, 255);
+            const angle::Vector4 floatColor = color.toNormalizedVector();
+            glUniform4fv(colorLocation, 1, floatColor.data());
+            for (size_t draw = 0; draw < kDrawsPerIteration; draw++)
+            {
+                EXPECT_EGL_TRUE(eglMakeCurrent(dpy, surface, surface, ctx));
+                glDrawArrays(GL_TRIANGLES, 0, 6);
+            }
+        }
+    });
+
+    t1.join();
+    t2.join();
 }
 
 // Test that multiple threads can draw and readback pixels successfully at the same time
@@ -263,6 +346,8 @@ TEST_P(MultithreadingTest, MultiContextDrawWithSwapBuffers)
 
     // http://anglebug.com/5099
     ANGLE_SKIP_TEST_IF(IsAndroid() && IsOpenGLES());
+    // http://anglebug.com/5099
+    ANGLE_SKIP_TEST_IF(IsWindows() && isSwiftshader());
 
     EGLWindow *window = getEGLWindow();
     EGLDisplay dpy    = window->getDisplay();
@@ -627,6 +712,9 @@ void MultithreadingTestES3::mainThreadDraw(bool useDraw)
 // application.
 TEST_P(MultithreadingTestES3, MultithreadFenceDraw)
 {
+    // http://anglebug.com/5418
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsIntel() && IsVulkan());
+
     // Have the secondary thread use glDrawArrays()
     mainThreadDraw(true);
 }
@@ -635,8 +723,51 @@ TEST_P(MultithreadingTestES3, MultithreadFenceDraw)
 // glDrawArrays.
 TEST_P(MultithreadingTestES3, MultithreadFenceTexImage)
 {
+    // http://anglebug.com/5418
+    ANGLE_SKIP_TEST_IF(IsLinux() && IsIntel() && IsVulkan());
+
+    // http://anglebug.com/5439
+    ANGLE_SKIP_TEST_IF(IsLinux() && isSwiftshader());
+
     // Have the secondary thread use glTexImage2D()
     mainThreadDraw(false);
+}
+
+// Test that waiting on a sync object that hasn't been flushed and without a current context returns
+// TIMEOUT_EXPIRED or CONDITION_SATISFIED, but doesn't generate an error or crash.
+TEST_P(MultithreadingTest, NoFlushNoContextReturnsTimeout)
+{
+    ANGLE_SKIP_TEST_IF(!platformSupportsMultithreading());
+    ANGLE_SKIP_TEST_IF(!hasFenceSyncExtension() || !hasGLSyncExtension());
+
+    std::mutex mutex;
+
+    EGLWindow *window = getEGLWindow();
+    EGLDisplay dpy    = window->getDisplay();
+
+    glClearColor(1.0f, 0.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    EGLSyncKHR sync = eglCreateSyncKHR(dpy, EGL_SYNC_FENCE_KHR, nullptr);
+    EXPECT_NE(sync, EGL_NO_SYNC_KHR);
+
+    std::thread thread = std::thread([&]() {
+        std::lock_guard<decltype(mutex)> lock(mutex);
+        // Make sure there is no active context on this thread.
+        EXPECT_EGL_TRUE(eglMakeCurrent(dpy, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
+        EXPECT_EGL_SUCCESS();
+        // Don't wait forever to make sure the test terminates
+        constexpr GLuint64 kTimeout = 1'000'000'000;  // 1 second
+        int result                  = eglClientWaitSyncKHR(dpy, sync, 0, kTimeout);
+        // We typically expect to get back TIMEOUT_EXPIRED since the sync object was never flushed.
+        // However, the OpenGL ES backend returns CONDITION_SATISFIED, which is also a passing
+        // result.
+        ASSERT_TRUE(result == EGL_TIMEOUT_EXPIRED_KHR || result == EGL_CONDITION_SATISFIED_KHR);
+    });
+
+    thread.join();
+
+    EXPECT_EGL_TRUE(eglDestroySyncKHR(dpy, sync));
 }
 
 // TODO(geofflang): Test sharing a program between multiple shared contexts on multiple threads
@@ -647,12 +778,16 @@ ANGLE_INSTANTIATE_TEST(MultithreadingTest,
                        WithNoVirtualContexts(ES2_OPENGLES()),
                        WithNoVirtualContexts(ES3_OPENGLES()),
                        WithNoVirtualContexts(ES3_VULKAN()),
-                       WithNoVirtualContexts(ES3_VULKAN_SWIFTSHADER()));
+                       WithNoVirtualContexts(ES3_VULKAN_SWIFTSHADER()),
+                       WithNoVirtualContexts(ES2_D3D11()),
+                       WithNoVirtualContexts(ES3_D3D11()));
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(MultithreadingTestES3);
 ANGLE_INSTANTIATE_TEST(MultithreadingTestES3,
                        WithNoVirtualContexts(ES3_OPENGL()),
                        WithNoVirtualContexts(ES3_OPENGLES()),
                        WithNoVirtualContexts(ES3_VULKAN()),
-                       WithNoVirtualContexts(ES3_VULKAN_SWIFTSHADER()));
+                       WithNoVirtualContexts(ES3_VULKAN_SWIFTSHADER()),
+                       WithNoVirtualContexts(ES3_D3D11()));
 
 }  // namespace angle

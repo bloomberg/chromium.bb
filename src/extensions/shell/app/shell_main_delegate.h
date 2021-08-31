@@ -44,7 +44,10 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   void ZygoteForked() override;
 #endif
 #if defined(OS_MAC)
-  void PreCreateMainMessageLoop() override;
+  void PreBrowserMain() override;
+#endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  void PostEarlyInitialization(bool is_running_tests) override;
 #endif
 
  private:

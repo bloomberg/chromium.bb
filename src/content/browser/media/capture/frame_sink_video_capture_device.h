@@ -12,8 +12,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "components/viz/host/client_frame_sink_video_capturer.h"
 #include "content/common/content_export.h"
@@ -26,6 +26,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
@@ -73,7 +74,7 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   void Resume() final;
   void StopAndDeAllocate() final;
   void OnUtilizationReport(int frame_feedback_id,
-                           media::VideoFrameFeedback feedback) final;
+                           media::VideoCaptureFeedback feedback) final;
 
   // FrameSinkVideoConsumer implementation.
   void OnFrameCaptured(
@@ -87,12 +88,16 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
 
   // These are called to notify when the capture target has changed or was
   // permanently lost.
-  void OnTargetChanged(const viz::FrameSinkId& frame_sink_id);
-  void OnTargetPermanentlyLost();
+  virtual void OnTargetChanged(const viz::FrameSinkId& frame_sink_id);
+  virtual void OnTargetPermanentlyLost();
 
  protected:
   MouseCursorOverlayController* cursor_controller() const {
+#if !defined(OS_ANDROID)
     return cursor_controller_.get();
+#else
+    return nullptr;
+#endif
   }
 
   // Subclasses override these to perform additional start/stop tasks.
@@ -159,14 +164,16 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
 
   // Set when OnFatalError() is called. This prevents any future
   // AllocateAndStartWithReceiver() calls from succeeding.
-  base::Optional<std::string> fatal_error_message_;
+  absl::optional<std::string> fatal_error_message_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
+#if !defined(OS_ANDROID)
   // Controls the overlay that renders the mouse cursor onto each video frame.
   const std::unique_ptr<MouseCursorOverlayController,
                         BrowserThread::DeleteOnUIThread>
       cursor_controller_;
+#endif
 
   // Prevent display sleeping while content capture is in progress.
   mojo::Remote<device::mojom::WakeLock> wake_lock_;

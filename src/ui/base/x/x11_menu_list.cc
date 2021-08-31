@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11_atom_cache.h"
+#include "ui/gfx/x/xproto_util.h"
 
 namespace ui {
 
@@ -18,16 +19,16 @@ XMenuList* XMenuList::GetInstance() {
 }
 
 XMenuList::XMenuList()
-    : menu_type_atom_(gfx::GetAtom("_NET_WM_WINDOW_TYPE_MENU")) {}
+    : menu_type_atom_(x11::GetAtom("_NET_WM_WINDOW_TYPE_MENU")) {}
 
 XMenuList::~XMenuList() {
   menus_.clear();
 }
 
 void XMenuList::MaybeRegisterMenu(x11::Window menu) {
-  int value = 0;
-  if (!GetIntProperty(menu, "_NET_WM_WINDOW_TYPE", &value) ||
-      static_cast<x11::Atom>(value) != menu_type_atom_) {
+  x11::Atom value;
+  if (!GetProperty(menu, x11::GetAtom("_NET_WM_WINDOW_TYPE"), &value) ||
+      value != menu_type_atom_) {
     return;
   }
   menus_.push_back(menu);

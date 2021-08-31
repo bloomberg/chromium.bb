@@ -85,7 +85,7 @@ def collect_forward_decls_and_include_headers(idl_types):
             ])
         elif idl_type.is_nullable:
             if not blink_type_info(idl_type.inner_type).has_null_value:
-                header_include_headers.add("base/optional.h")
+                header_include_headers.add("third_party/abseil-cpp/absl/types/optional.h")
         elif idl_type.is_promise:
             header_include_headers.add(
                 "third_party/blink/renderer/bindings/core/v8/script_promise.h")
@@ -114,6 +114,10 @@ def collect_forward_decls_and_include_headers(idl_types):
                 source_include_headers.add(
                     PathManager(type_def_obj).api_path(ext="h"))
         elif idl_type.union_definition_object:
+            union_def_obj = idl_type.new_union_definition_object
+            header_forward_decls.add(blink_class_name(union_def_obj))
+            source_include_headers.add(
+                PathManager(union_def_obj).api_path(ext="h"))
             union_def_obj = idl_type.union_definition_object
             header_include_headers.add(
                 PathManager(union_def_obj).api_path(ext="h"))
@@ -179,4 +183,5 @@ def write_code_node_to_file(code_node, filepath):
                                filename=format_result.filename,
                                stderr=format_result.error_message))
 
-    web_idl.file_io.write_to_file_if_changed(filepath, format_result.contents)
+    web_idl.file_io.write_to_file_if_changed(
+        filepath, format_result.contents.encode('utf-8'))

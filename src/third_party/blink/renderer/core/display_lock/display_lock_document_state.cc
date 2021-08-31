@@ -27,6 +27,7 @@ void DisplayLockDocumentState::Trace(Visitor* visitor) const {
 void DisplayLockDocumentState::AddDisplayLockContext(
     DisplayLockContext* context) {
   display_lock_contexts_.insert(context);
+  context->SetShouldUnlockAutoForPrint(printing_);
 }
 
 void DisplayLockDocumentState::RemoveDisplayLockContext(
@@ -43,11 +44,13 @@ void DisplayLockDocumentState::AddLockedDisplayLock() {
                     "LockedDisplayLockCount", TRACE_ID_LOCAL(this),
                     locked_display_lock_count_);
   ++locked_display_lock_count_;
+  last_lock_update_timestamp_ = base::TimeTicks::Now();
 }
 
 void DisplayLockDocumentState::RemoveLockedDisplayLock() {
   DCHECK(locked_display_lock_count_);
   --locked_display_lock_count_;
+  last_lock_update_timestamp_ = base::TimeTicks::Now();
   TRACE_COUNTER_ID1(TRACE_DISABLED_BY_DEFAULT("blink.debug.display_lock"),
                     "LockedDisplayLockCount", TRACE_ID_LOCAL(this),
                     locked_display_lock_count_);
@@ -70,6 +73,10 @@ int DisplayLockDocumentState::DisplayLockBlockingAllActivationCount() const {
   return display_lock_blocking_all_activation_count_;
 }
 
+base::TimeTicks DisplayLockDocumentState::GetLockUpdateTimestamp() {
+  return last_lock_update_timestamp_;
+}
+
 void DisplayLockDocumentState::RegisterDisplayLockActivationObservation(
     Element* element) {
   EnsureIntersectionObserver().observe(element);
@@ -90,6 +97,9 @@ IntersectionObserver& DisplayLockDocumentState::EnsureIntersectionObserver() {
     //
     // Note that we use 150% margin (on the viewport) so that we get the
     // observation before the element enters the viewport.
+    //
+    // Paint containment requires using the overflow clip edge. To do otherwise
+    // results in overflow-clip-margin not being painted in certain scenarios.
     intersection_observer_ = IntersectionObserver::Create(
         {Length::Percent(150.f)}, {std::numeric_limits<float>::min()},
         document_,
@@ -100,7 +110,8 @@ IntersectionObserver& DisplayLockDocumentState::EnsureIntersectionObserver() {
         IntersectionObserver::kDeliverDuringPostLayoutSteps,
         IntersectionObserver::kFractionOfTarget, 0 /* delay */,
         false /* track_visibility */, false /* always report_root_bounds */,
-        IntersectionObserver::kApplyMarginToTarget);
+        IntersectionObserver::kApplyMarginToTarget,
+        true /* use_overflow_clip_edge */);
   }
   return *intersection_observer_;
 }
@@ -237,6 +248,16 @@ DisplayLockDocumentState::ScopedForceActivatableDisplayLocks::
     return;
   DCHECK(state_->activatable_display_locks_forced_);
   --state_->activatable_display_locks_forced_;
+}
+
+void DisplayLockDocumentState::NotifyPrintingOrPreviewChanged() {
+  bool was_printing = printing_;
+  printing_ = document_->IsPrintingOrPaintingPreview();
+  if (printing_ == was_printing)
+    return;
+
+  for (auto& context : display_lock_contexts_)
+    context->SetShouldUnlockAutoForPrint(printing_);
 }
 
 }  // namespace blink

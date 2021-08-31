@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/strings/abseil_string_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -30,8 +31,8 @@ void NetLogInvalidHeader(const NetLogWithSource& net_log,
                      dict.SetKey("header_name", NetLogStringValue(header_name));
                      dict.SetKey("header_value",
                                  NetLogStringValue(ElideHeaderValueForNetLog(
-                                     capture_mode, header_name.as_string(),
-                                     header_value.as_string())));
+                                     capture_mode, std::string(header_name),
+                                     std::string(header_value))));
                      dict.SetString("error", error_message);
                      return dict;
                    });
@@ -59,10 +60,6 @@ spdy::Http2HeaderBlock HeaderCoalescer::release_headers() {
   DCHECK(headers_valid_);
   headers_valid_ = false;
   return std::move(headers_);
-}
-
-size_t HeaderCoalescer::EstimateMemoryUsage() const {
-  return base::trace_event::EstimateMemoryUsage(headers_);
 }
 
 bool HeaderCoalescer::AddHeader(base::StringPiece key,

@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/color_palette.h"
@@ -39,22 +41,29 @@ struct WidgetEventPair {
 
 WidgetEventPair GetParentWidgetAndEvent(views::View* this_view,
                                         const ui::MouseEvent* this_event) {
+  // Note that the floating results view is a top-level widget, so hop up a
+  // level before looking for the parent's top-level widget for event
+  // forwarding.
   views::Widget* this_widget = this_view->GetWidget();
-  views::Widget* parent_widget =
-      this_widget->GetTopLevelWidgetForNativeView(this_widget->GetNativeView());
-  DCHECK_NE(this_widget, parent_widget);
+  views::Widget* parent_widget = this_widget->parent();
   if (!parent_widget)
+    return {nullptr, *this_event};
+
+  views::Widget* top_level = parent_widget->GetTopLevelWidgetForNativeView(
+      parent_widget->GetNativeView());
+  DCHECK_NE(this_widget, top_level);
+  if (!top_level)
     return {nullptr, *this_event};
 
   gfx::Point event_location = this_event->location();
   views::View::ConvertPointToScreen(this_view, &event_location);
-  views::View::ConvertPointFromScreen(parent_widget->GetRootView(),
+  views::View::ConvertPointFromScreen(top_level->GetRootView(),
                                       &event_location);
 
-  ui::MouseEvent parent_event(*this_event);
-  parent_event.set_location(event_location);
+  ui::MouseEvent top_level_event(*this_event);
+  top_level_event.set_location(event_location);
 
-  return {parent_widget, parent_event};
+  return {top_level, top_level_event};
 }
 
 #endif  // !USE_AURA
@@ -63,6 +72,7 @@ WidgetEventPair GetParentWidgetAndEvent(views::View* this_view,
 // theme changes.
 class OmniboxResultsContentsView : public views::View {
  public:
+  METADATA_HEADER(OmniboxResultsContentsView);
   OmniboxResultsContentsView() = default;
   ~OmniboxResultsContentsView() override = default;
 
@@ -74,10 +84,14 @@ class OmniboxResultsContentsView : public views::View {
   }
 };
 
+BEGIN_METADATA(OmniboxResultsContentsView, views::View)
+END_METADATA
+
 // View at the top of the frame which paints transparent pixels to make a hole
 // so that the location bar shows through.
 class TopBackgroundView : public views::View {
  public:
+  METADATA_HEADER(TopBackgroundView);
   explicit TopBackgroundView(const LocationBarView* location_bar)
       : location_bar_(location_bar) {}
 
@@ -136,6 +150,9 @@ class TopBackgroundView : public views::View {
   const LocationBarView* location_bar_;
 };
 
+BEGIN_METADATA(TopBackgroundView, views::View)
+END_METADATA
+
 // Insets used to position |contents_| within |contents_host_|.
 gfx::Insets GetContentInsets() {
   return gfx::Insets(RoundedOmniboxResultsFrame::GetNonResultSectionHeight(), 0,
@@ -154,8 +171,8 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
   contents_host_->layer()->SetFillsBoundsOpaquely(false);
 
   // Use rounded corners.
-  int corner_radius =
-      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
+  int corner_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kHigh);
   contents_host_->layer()->SetRoundedCornerRadius(
       gfx::RoundedCornersF(corner_radius));
   contents_host_->layer()->SetIsFastRoundedCorner(true);
@@ -166,8 +183,8 @@ RoundedOmniboxResultsFrame::RoundedOmniboxResultsFrame(
 
   // Initialize the shadow.
   auto border = std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::Arrow::NONE, views::BubbleBorder::Shadow::BIG_SHADOW,
-      gfx::kPlaceholderColor);
+      views::BubbleBorder::Arrow::NONE,
+      views::BubbleBorder::Shadow::STANDARD_SHADOW, gfx::kPlaceholderColor);
   border->SetCornerRadius(corner_radius);
   border->set_md_shadow_elevation(kElevation);
   SetBorder(std::move(border));
@@ -213,10 +230,6 @@ gfx::Insets RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets() {
 // static
 gfx::Insets RoundedOmniboxResultsFrame::GetShadowInsets() {
   return views::BubbleBorder::GetBorderAndShadowInsets(kElevation);
-}
-
-const char* RoundedOmniboxResultsFrame::GetClassName() const {
-  return "RoundedOmniboxResultsFrame";
 }
 
 void RoundedOmniboxResultsFrame::Layout() {
@@ -271,16 +284,5 @@ void RoundedOmniboxResultsFrame::OnMouseEvent(ui::MouseEvent* event) {
 
 #endif  // !USE_AURA
 
-void RoundedOmniboxResultsFrame::OnThemeChanged() {
-  views::View::OnThemeChanged();
-  const SkColor background_color =
-      GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_BACKGROUND);
-
-  // Use a darker shadow that's more visible on darker tints.
-  views::BubbleBorder* border =
-      static_cast<views::BubbleBorder*>(this->border());
-  border->set_md_shadow_color(color_utils::IsDark(background_color)
-                                  ? SK_ColorBLACK
-                                  : gfx::kGoogleGrey800);
-  SchedulePaint();
-}
+BEGIN_METADATA(RoundedOmniboxResultsFrame, views::View)
+END_METADATA

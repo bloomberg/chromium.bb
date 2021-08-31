@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -249,7 +250,7 @@ std::unique_ptr<LastDownloadFinder> LastDownloadFinder::Create(
           std::move(download_details_getter), std::move(callback))));
   // Return NULL if there is no work to do.
   if (finder->profile_states_.empty())
-    return std::unique_ptr<LastDownloadFinder>();
+    return nullptr;
   return finder;
 }
 
@@ -326,7 +327,7 @@ void LastDownloadFinder::OnMetadataQuery(
                        weak_ptr_factory_.GetWeakPtr(), profile));
   } else {
     // else wait until history is loaded.
-    history_service_observer_.Add(history_service);
+    history_service_observations_.AddObservation(history_service);
   }
 }
 
@@ -378,21 +379,21 @@ void LastDownloadFinder::RemoveProfileAndReportIfDone(
 void LastDownloadFinder::ReportResults() {
   DCHECK(profile_states_.empty());
 
-  std::unique_ptr<ClientIncidentReport_DownloadDetails> binary_details =
-      nullptr;
+  std::unique_ptr<ClientIncidentReport_DownloadDetails> binary_details;
   std::unique_ptr<ClientIncidentReport_NonBinaryDownloadDetails>
-      non_binary_details = nullptr;
+      non_binary_details;
 
   if (details_) {
-    binary_details.reset(new ClientIncidentReport_DownloadDetails(*details_));
+    binary_details =
+        std::make_unique<ClientIncidentReport_DownloadDetails>(*details_);
   } else if (!most_recent_binary_row_.end_time.is_null()) {
-    binary_details.reset(new ClientIncidentReport_DownloadDetails());
+    binary_details = std::make_unique<ClientIncidentReport_DownloadDetails>();
     PopulateDetailsFromRow(most_recent_binary_row_, binary_details.get());
   }
 
   if (!most_recent_non_binary_row_.end_time.is_null()) {
-    non_binary_details.reset(
-        new ClientIncidentReport_NonBinaryDownloadDetails());
+    non_binary_details =
+        std::make_unique<ClientIncidentReport_NonBinaryDownloadDetails>();
     PopulateNonBinaryDetailsFromRow(most_recent_non_binary_row_,
                                     non_binary_details.get());
   }
@@ -435,7 +436,7 @@ void LastDownloadFinder::OnHistoryServiceLoaded(
 
 void LastDownloadFinder::HistoryServiceBeingDeleted(
     history::HistoryService* history_service) {
-  history_service_observer_.Remove(history_service);
+  history_service_observations_.RemoveObservation(history_service);
 }
 
 }  // namespace safe_browsing

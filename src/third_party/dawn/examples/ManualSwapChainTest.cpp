@@ -164,7 +164,7 @@ void DoRender(WindowData* data) {
 }
 
 std::ostream& operator<<(std::ostream& o, const wgpu::SwapChainDescriptor& desc) {
-    // For now only output attachment is possible.
+    // For now only render attachment is possible.
     ASSERT(desc.usage == wgpu::TextureUsage::RenderAttachment);
     o << "RenderAttachment ";
     o << desc.width << "x" << desc.height << " ";
@@ -308,28 +308,27 @@ int main(int argc, const char* argv[]) {
             dawn::ErrorLog() << errorTypeName << " error: " << message;
         },
         nullptr);
-    queue = device.GetDefaultQueue();
+    queue = device.GetQueue();
 
     // The hacky pipeline to render a triangle.
-    utils::ComboRenderPipelineDescriptor pipelineDesc(device);
-    pipelineDesc.vertexStage.module =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
-        #version 450
-        const vec2 pos[3] = vec2[3](vec2(0.0f, 0.5f), vec2(-0.5f, -0.5f), vec2(0.5f, -0.5f));
-        void main() {
-           gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
+    utils::ComboRenderPipelineDescriptor2 pipelineDesc;
+    pipelineDesc.vertex.module = utils::CreateShaderModule(device, R"(
+        let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+            vec2<f32>( 0.0,  0.5),
+            vec2<f32>(-0.5, -0.5),
+            vec2<f32>( 0.5, -0.5)
+        );
+        [[stage(vertex)]] fn main([[builtin(vertex_index)]] VertexIndex : u32)
+                               -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
         })");
-    pipelineDesc.cFragmentStage.module =
-        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
-        #version 450
-        layout(location = 0) out vec4 fragColor;
-        void main() {
-           fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    pipelineDesc.cFragment.module = utils::CreateShaderModule(device, R"(
+        [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+            return vec4<f32>(1.0, 0.0, 0.0, 1.0);
         })");
-    pipelineDesc.colorStateCount = 1;
     // BGRA shouldn't be hardcoded. Consider having a map[format -> pipeline].
-    pipelineDesc.cColorStates[0].format = wgpu::TextureFormat::BGRA8Unorm;
-    trianglePipeline = device.CreateRenderPipeline(&pipelineDesc);
+    pipelineDesc.cTargets[0].format = wgpu::TextureFormat::BGRA8Unorm;
+    trianglePipeline = device.CreateRenderPipeline2(&pipelineDesc);
 
     // Craete the first window, since the example exits when there are no windows.
     AddWindow();

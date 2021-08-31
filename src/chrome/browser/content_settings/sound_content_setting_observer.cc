@@ -17,7 +17,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/url_constants.h"
-#include "media/base/media_switches.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/autoplay/autoplay.mojom.h"
@@ -33,7 +32,7 @@ SoundContentSettingObserver::SoundContentSettingObserver(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   host_content_settings_map_ =
       HostContentSettingsMapFactory::GetForProfile(profile);
-  observer_.Add(host_content_settings_map_);
+  observation_.Observe(host_content_settings_map_);
 
 #if !defined(OS_ANDROID)
   // Listen to changes of the block autoplay pref.
@@ -50,9 +49,6 @@ SoundContentSettingObserver::~SoundContentSettingObserver() = default;
 void SoundContentSettingObserver::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsSameDocument())
-    return;
-
-  if (!base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings))
     return;
 
   GURL url = navigation_handle->IsInMainFrame()

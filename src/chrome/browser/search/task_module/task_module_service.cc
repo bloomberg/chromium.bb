@@ -4,6 +4,8 @@
 
 #include "chrome/browser/search/task_module/task_module_service.h"
 
+#include "base/containers/contains.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -188,6 +190,8 @@ void TaskModuleService::GetPrimaryTask(
                      weak_ptr_factory_.GetWeakPtr(), task_module_type,
                      loaders_.back().get(), std::move(callback)),
       network::SimpleURLLoader::kMaxBoundedStringDownloadSize);
+  base::UmaHistogramSparse("NewTabPage.Modules.DataRequest",
+                           base::PersistentHash(GetTasksKey(task_module_type)));
 }
 
 void TaskModuleService::DismissTask(
@@ -195,7 +199,9 @@ void TaskModuleService::DismissTask(
     const std::string& task_name) {
   ListPrefUpdate update(profile_->GetPrefs(),
                         GetDismissedTasksPrefName(task_module_type));
-  update->AppendIfNotPresent(std::make_unique<base::Value>(task_name));
+  base::Value task_name_value(task_name);
+  if (!base::Contains(update->GetList(), task_name_value))
+    update->Append(std::move(task_name_value));
 }
 
 void TaskModuleService::RestoreTask(
@@ -267,6 +273,7 @@ void TaskModuleService::OnJsonParsed(
       auto* image_url = task_item.FindStringPath("image_url");
       auto* price = task_item.FindStringPath("price");
       auto* info = task_item.FindStringPath("info");
+      auto* site_name = task_item.FindStringPath("site_name");
       auto* target_url = task_item.FindStringPath("target_url");
       if (!name || !image_url || !info || !target_url) {
         continue;
@@ -279,6 +286,10 @@ void TaskModuleService::OnJsonParsed(
       mojom_task_item->name = *name;
       mojom_task_item->image_url = GURL(*image_url);
       mojom_task_item->info = *info;
+      if (task_module_type == task_module::mojom::TaskModuleType::kRecipe &&
+          site_name) {
+        mojom_task_item->site_name = *site_name;
+      }
       mojom_task_item->target_url = GURL(*target_url);
       if (task_module_type == task_module::mojom::TaskModuleType::kShopping) {
         mojom_task_item->price = *price;
@@ -324,6 +335,5 @@ bool TaskModuleService::IsTaskDismissed(
   const base::ListValue* dismissed_tasks = profile_->GetPrefs()->GetList(
       GetDismissedTasksPrefName(task_module_type));
   DCHECK(dismissed_tasks);
-  return dismissed_tasks->Find(base::Value(task_name)) !=
-         dismissed_tasks->end();
+  return base::Contains(dismissed_tasks->GetList(), base::Value(task_name));
 }

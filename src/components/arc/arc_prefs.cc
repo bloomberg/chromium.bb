@@ -38,7 +38,7 @@ const char kArcDataRemoveRequested[] = "arc.data.remove_requested";
 // TODO(hidehiko): For historical reason, now the preference name does not
 // directly reflect "Google Play Store". We should get and set the values via
 // utility methods (IsArcPlayStoreEnabledForProfile() and
-// SetArcPlayStoreEnabledForProfile()) in chrome/browser/chromeos/arc/arc_util.
+// SetArcPlayStoreEnabledForProfile()) in chrome/browser/ash/arc/arc_util.h.
 const char kArcEnabled[] = "arc.enabled";
 // A preference to control if ARC can access removable media on the host side.
 // TODO(fukino): Remove this pref once "Play Store applications can't access
@@ -107,6 +107,9 @@ const char kArcCompatibleFilesystemChosen[] =
 // GuestOsEngagementMetrics.
 const char kEngagementPrefsPrefix[] = "arc.metrics";
 
+// A boolean preference that indicates ARC management state.
+const char kArcIsManaged[] = "arc.is_managed";
+
 // ======== LOCAL STATE PREFS ========
 
 // A boolean preference that indicates whether this device has run with the
@@ -160,6 +163,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       kArcSupervisionTransition,
       static_cast<int>(ArcSupervisionTransition::NO_TRANSITION));
+
+  registry->RegisterBooleanPref(kArcIsManaged, false);
 
   guest_os::prefs::RegisterEngagementProfilePrefs(registry,
                                                   kEngagementPrefsPrefix);

@@ -9,7 +9,6 @@
 
 #import "ios/web/public/js_messaging/web_frame.h"
 
-@class CRWJSInjectionReceiver;
 class GURL;
 
 namespace base {
@@ -32,14 +31,14 @@ bool IsContextSecureForWebState(web::WebState* web_state);
 std::unique_ptr<base::Value> ParseJson(NSString* json_string);
 
 // Processes the JSON form data extracted from the page into the format expected
-// by AutofillManager and fills it in |forms_data|.
+// by BrowserAutofillManager and fills it in |forms_data|.
 // |forms_data| cannot be nil.
 // |filtered| and |form_name| limit the field that will be returned in
 // |forms_data|.
 // Returns a bool indicating the success value and the vector of form data.
 bool ExtractFormsData(NSString* form_json,
                       bool filtered,
-                      const base::string16& form_name,
+                      const std::u16string& form_name,
                       const GURL& main_frame_url,
                       const GURL& frame_origin,
                       std::vector<FormData>* forms_data);
@@ -51,7 +50,7 @@ bool ExtractFormsData(NSString* form_json,
 // Returns true if the conversion succeeds.
 bool ExtractFormData(const base::Value& form,
                      bool filtered,
-                     const base::string16& form_name,
+                     const std::u16string& form_name,
                      const GURL& main_frame_url,
                      const GURL& form_frame_origin,
                      FormData* form_data);
@@ -67,9 +66,12 @@ typedef base::OnceCallback<void(const base::Value*)> JavaScriptResultCallback;
 // Creates a callback for a string JS function return type.
 JavaScriptResultCallback CreateStringCallback(
     void (^completionHandler)(NSString*));
+JavaScriptResultCallback CreateStringCallback(
+    base::OnceCallback<void(NSString*)> callback);
 
 // Creates a callback for a bool JS function return type.
 JavaScriptResultCallback CreateBoolCallback(void (^completionHandler)(BOOL));
+JavaScriptResultCallback CreateBoolCallback(base::OnceCallback<void(BOOL)>);
 
 // Executes the JavaScript function with the given name and argument.
 // If |callback| is not null, it will be called when the result of the
@@ -85,7 +87,7 @@ bool ExtractIDs(NSString* json_string, std::vector<uint32_t>* ids);
 // Extracts a map of filled renderer IDs and values from the JS returned json
 // string.
 bool ExtractFillingResults(NSString* json_string,
-                           std::map<uint32_t, base::string16>* filling_results);
+                           std::map<uint32_t, std::u16string>* filling_results);
 
 }  // namespace autofill
 

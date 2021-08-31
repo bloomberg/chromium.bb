@@ -16,8 +16,7 @@
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_driver.h"
-#include "components/autofill/core/browser/autofill_external_delegate.h"
-#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -30,7 +29,6 @@ class RenderFrameHost;
 namespace autofill {
 
 class AutofillClient;
-class AutofillProvider;
 class LogManager;
 
 // Use <Phone><WebOTP><OTC> as the bit pattern to identify the metrics state.
@@ -64,7 +62,8 @@ class ContentAutofillDriver : public AutofillDriver,
       AutofillClient* client,
       const std::string& app_locale,
       AutofillManager::AutofillDownloadManagerState enable_download_manager,
-      AutofillProvider* provider);
+      AutofillManager::AutofillManagerFactoryCallback
+          autofill_manager_factory_callback);
   ~ContentAutofillDriver() override;
 
   // Gets the driver for |render_frame_host|.
@@ -91,24 +90,29 @@ class ContentAutofillDriver : public AutofillDriver,
   void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) override;
   void RendererShouldAcceptDataListSuggestion(
-      const base::string16& value) override;
+      const FieldGlobalId& field_id,
+      const std::u16string& value) override;
   void RendererShouldClearFilledSection() override;
   void RendererShouldClearPreviewedForm() override;
-  void RendererShouldFillFieldWithValue(const base::string16& value) override;
+  void RendererShouldFillFieldWithValue(const FieldGlobalId& field_id,
+                                        const std::u16string& value) override;
   void RendererShouldPreviewFieldWithValue(
-      const base::string16& value) override;
+      const FieldGlobalId& field_id,
+      const std::u16string& value) override;
   void RendererShouldSetSuggestionAvailability(
+      const FieldGlobalId& field_id,
       const mojom::AutofillState state) override;
   void PopupHidden() override;
   gfx::RectF TransformBoundingBoxToViewportCoordinates(
       const gfx::RectF& bounding_box) override;
   net::IsolationInfo IsolationInfo() override;
+  void SendFieldsEligibleForManualFillingToRenderer(
+      const std::vector<FieldRendererId>& fields) override;
 
   // mojom::AutofillDriver:
   void SetFormToBeProbablySubmitted(
-      const base::Optional<FormData>& form) override;
-  void FormsSeen(const std::vector<FormData>& forms,
-                 base::TimeTicks timestamp) override;
+      const absl::optional<FormData>& form) override;
+  void FormsSeen(const std::vector<FormData>& forms) override;
   void FormSubmitted(const FormData& form,
                      bool known_success,
                      mojom::SubmissionSource source) override;
@@ -144,8 +148,10 @@ class ContentAutofillDriver : public AutofillDriver,
   // navigation occurs in that specific frame.
   void DidNavigateFrame(content::NavigationHandle* navigation_handle);
 
-  AutofillManager* autofill_manager() { return autofill_manager_; }
-  AutofillHandler* autofill_handler() { return autofill_handler_.get(); }
+  BrowserAutofillManager* browser_autofill_manager() {
+    return browser_autofill_manager_;
+  }
+  AutofillManager* autofill_manager() { return autofill_manager_.get(); }
   content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
 
   const mojo::AssociatedRemote<mojom::AutofillAgent>& GetAutofillAgent();
@@ -155,15 +161,14 @@ class ContentAutofillDriver : public AutofillDriver,
       const content::RenderWidgetHost::KeyPressEventCallback& handler);
   void RemoveKeyPressHandler();
 
-  void SetAutofillProviderForTesting(AutofillProvider* provider);
-
-  // Sets the manager to |manager| and sets |manager|'s external delegate
-  // to |autofill_external_delegate_|. Takes ownership of |manager|.
-  void SetAutofillManager(std::unique_ptr<AutofillManager> manager);
+  // Sets the manager to |manager|. Takes ownership of |manager|.
+  void SetBrowserAutofillManager(
+      std::unique_ptr<BrowserAutofillManager> manager);
 
   // Reports whether a document collects phone numbers, uses one time code, uses
   // WebOTP. There are cases that the reporting is not expected:
-  //   1. some unit tests do not set necessary members, |autofill_manager_|
+  //   1. some unit tests do not set necessary members,
+  //   |browser_autofill_manager_|
   //   2. there is no form and WebOTP is not used
   // |MaybeReportAutofillWebOTPMetrics| is to exclude the cases above.
   // |ReportAutofillWebOTPMetrics| is visible for unit tests where the
@@ -172,21 +177,38 @@ class ContentAutofillDriver : public AutofillDriver,
   void ReportAutofillWebOTPMetrics(bool document_used_webotp);
 
  protected:
-  // Constructor for tests.
+  // Constructor for TestAutofillDriver.
   ContentAutofillDriver();
 
  private:
+  friend class ContentAutofillDriverTestApi;
+
   // KeyPressHandlerManager::Delegate:
   void AddHandler(
       const content::RenderWidgetHost::KeyPressEventCallback& handler) override;
   void RemoveHandler(
       const content::RenderWidgetHost::KeyPressEventCallback& handler) override;
 
-  void SetAutofillProvider(AutofillProvider* provider);
+  // Sets parameters of |form| and |field| that can be extracted from
+  // |render_frame_host_|.
+  //
+  // These functions must be called for every FormData and FormFieldData
+  // received from the renderer.
+  void SetFrameAndFormMetaData(FormFieldData& field) const;
+  void SetFrameAndFormMetaData(FormData& form) const;
+  FormFieldData GetFieldWithFrameAndFormMetaData(FormFieldData field) const
+      WARN_UNUSED_RESULT;
+  FormData GetFormWithFrameAndFormMetaData(FormData form) const
+      WARN_UNUSED_RESULT;
 
   // Returns whether navigator.credentials.get({otp: {transport:"sms"}}) has
   // been used.
   bool DocumentUsedWebOTP() const;
+
+  // Show a bubble or infobar indicating that the current page has an eligible
+  // offer or reward, if the bubble/infobar is not currently being visible.
+  void ShowOfferNotificationIfApplicable(
+      content::NavigationHandle* navigation_handle);
 
   // Weak ref to the RenderFrameHost the driver is associated with. Should
   // always be non-NULL and valid for lifetime of |this|.
@@ -195,27 +217,23 @@ class ContentAutofillDriver : public AutofillDriver,
   // The form pushed from the AutofillAgent to the AutofillDriver. When the
   // ProbablyFormSubmitted() event is fired, this form is considered the
   // submitted one.
-  base::Optional<FormData> potentially_submitted_form_;
+  absl::optional<FormData> potentially_submitted_form_;
 
   // Keeps track of the forms for which FormSubmitted() event has been triggered
   // to avoid duplicates fired by AutofillAgent.
   std::set<FormRendererId> submitted_forms_;
 
-  // AutofillHandler instance via which this object drives the shared Autofill
+  // AutofillManager instance via which this object drives the shared Autofill
   // code.
-  std::unique_ptr<AutofillHandler> autofill_handler_;
+  std::unique_ptr<AutofillManager> autofill_manager_;
 
-  // The pointer to autofill_handler_ if it is AutofillManager instance.
-  // TODO: unify autofill_handler_ and autofill_manager_ to a single pointer to
-  // a common root.
-  AutofillManager* autofill_manager_;
+  // The pointer to autofill_manager_ if it is BrowserAutofillManager instance.
+  // TODO: unify autofill_manager_ and browser_autofill_manager_ to a single
+  // pointer to a common root.
+  BrowserAutofillManager* browser_autofill_manager_;
 
   // Pointer to an implementation of InternalAuthenticator.
   std::unique_ptr<InternalAuthenticator> authenticator_impl_;
-
-  // AutofillExternalDelegate instance that this object instantiates in the
-  // case where the Autofill native UI is enabled.
-  std::unique_ptr<AutofillExternalDelegate> autofill_external_delegate_;
 
   KeyPressHandlerManager key_press_handler_manager_;
 

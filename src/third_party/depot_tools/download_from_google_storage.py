@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -76,7 +76,8 @@ class Gsutil(object):
   MAX_TRIES = 5
   RETRY_BASE_DELAY = 5.0
   RETRY_DELAY_MULTIPLE = 1.3
-  VPYTHON = 'vpython.bat' if GetNormalizedPlatform() == 'win32' else 'vpython'
+  VPYTHON3 = ('vpython3.bat'
+              if GetNormalizedPlatform() == 'win32' else 'vpython3')
 
   def __init__(self, path, boto_path=None, version='4.28'):
     if not os.path.exists(path):
@@ -100,12 +101,12 @@ class Gsutil(object):
     return env
 
   def call(self, *args):
-    cmd = [self.VPYTHON, self.path, '--force-version', self.version]
+    cmd = [self.VPYTHON3, self.path, '--force-version', self.version]
     cmd.extend(args)
     return subprocess2.call(cmd, env=self.get_sub_env())
 
   def check_call(self, *args):
-    cmd = [self.VPYTHON, self.path, '--force-version', self.version]
+    cmd = [self.VPYTHON3, self.path, '--force-version', self.version]
     cmd.extend(args)
     ((out, err), code) = subprocess2.communicate(
         cmd,
@@ -254,9 +255,24 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
         continue
       extract_dir = output_filename[:-len('.tar.gz')]
     if os.path.exists(output_filename) and not force:
-      if not extract or os.path.exists(extract_dir):
-        if get_sha1(output_filename) == input_sha1_sum:
-          continue
+      skip = get_sha1(output_filename) == input_sha1_sum
+      if extract:
+        # Additional condition for extract:
+        # 1) extract_dir must exist
+        # 2) .tmp flag file mustn't exist
+        if not os.path.exists(extract_dir):
+          out_q.put('%d> Extract dir %s does not exist, re-downloading...' %
+                    (thread_num, extract_dir))
+          skip = False
+        # .tmp file is created just before extraction and removed just after
+        # extraction. If such file exists, it means the process was terminated
+        # mid-extraction and therefore needs to be extracted again.
+        elif os.path.exists(extract_dir + '.tmp'):
+          out_q.put('%d> Detected tmp flag file for %s, '
+                    're-downloading...' % (thread_num, output_filename))
+          skip = False
+      if skip:
+        continue
     # Check if file exists.
     file_url = '%s/%s' % (base_url, input_sha1_sum)
     (code, _, err) = gsutil.check_call('ls', file_url)
@@ -336,7 +352,9 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
         out_q.put('%d> Extracting %d entries from %s to %s' %
                   (thread_num, len(tar.getmembers()),output_filename,
                    extract_dir))
-        tar.extractall(path=dirname)
+        with open(extract_dir + '.tmp', 'a'):
+          tar.extractall(path=dirname)
+        os.remove(extract_dir + '.tmp')
     # Set executable bit.
     if sys.platform == 'cygwin':
       # Under cygwin, mark all files as executable. The executable flag in

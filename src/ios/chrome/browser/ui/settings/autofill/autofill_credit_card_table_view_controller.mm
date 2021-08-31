@@ -21,8 +21,7 @@
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/autofill/cells/autofill_data_item.h"
-#import "ios/chrome/browser/ui/settings/autofill/features.h"
+#import "ios/chrome/browser/ui/settings/autofill/cells/autofill_card_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
@@ -31,6 +30,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -95,10 +95,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (instancetype)initWithBrowser:(Browser*)browser {
   DCHECK(browser);
-  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                               ? UITableViewStylePlain
-                               : UITableViewStyleGrouped;
-  self = [super initWithStyle:style];
+
+  self = [super initWithStyle:ChromeTableViewStyle()];
   if (self) {
     self.title = l10n_util::GetNSString(IDS_AUTOFILL_PAYMENT_METHODS);
     self.shouldHideDoneButton = YES;
@@ -125,6 +123,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.navigationController.toolbar.accessibilityIdentifier =
       kAutofillPaymentMethodsToolbarId;
 
+  self.addPaymentMethodButton.enabled = [self isAutofillCreditCardEnabled];
   [self setToolbarItems:@[ [self flexibleSpace], self.addPaymentMethodButton ]
                animated:YES];
   [self updateUIForEditState];
@@ -245,7 +244,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSString* creditCardName = autofill::GetCreditCardName(
       creditCard, GetApplicationContext()->GetApplicationLocale());
 
-  AutofillDataItem* item = [[AutofillDataItem alloc] initWithType:ItemTypeCard];
+  AutofillCardItem* item = [[AutofillCardItem alloc] initWithType:ItemTypeCard];
   item.text = creditCardName;
   item.leadingDetailText = autofill::GetCreditCardIdentifierString(creditCard);
   item.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
@@ -350,6 +349,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)autofillCardSwitchChanged:(UISwitch*)switchView {
   [self setSwitchItemOn:[switchView isOn] itemType:ItemTypeAutofillCardSwitch];
   [self setAutofillCreditCardEnabled:[switchView isOn]];
+  self.addPaymentMethodButton.enabled = [self isAutofillCreditCardEnabled];
 }
 
 #pragma mark - Switch Helpers
@@ -430,11 +430,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)tableView:(UITableView*)tableView
     canEditRowAtIndexPath:(NSIndexPath*)indexPath {
-  // Only autofill data cells are editable.
+  // Only autofill card cells are editable.
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  if ([item isKindOfClass:[AutofillDataItem class]]) {
-    AutofillDataItem* autofillItem =
-        base::mac::ObjCCastStrict<AutofillDataItem>(item);
+  if ([item isKindOfClass:[AutofillCardItem class]]) {
+    AutofillCardItem* autofillItem =
+        base::mac::ObjCCastStrict<AutofillCardItem>(item);
     return [autofillItem isDeletable];
   }
   return NO;
@@ -453,7 +453,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)deleteItemAtIndexPaths:(NSArray<NSIndexPath*>*)indexPaths {
   self.deletionInProgress = YES;
   for (NSIndexPath* indexPath in indexPaths) {
-    AutofillDataItem* item = base::mac::ObjCCastStrict<AutofillDataItem>(
+    AutofillCardItem* item = base::mac::ObjCCastStrict<AutofillCardItem>(
         [self.tableViewModel itemAtIndexPath:indexPath]);
     _personalDataManager->RemoveByGUID(item.GUID);
   }
@@ -567,9 +567,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Adds delete button to the bottom toolbar.
 - (void)showDeleteButton {
-  NSArray* customToolbarItems =
-      @[ self.deleteButton, [self flexibleSpace], self.addPaymentMethodButton ];
-  [self setToolbarItems:customToolbarItems animated:YES];
+  if ([self isAutofillCreditCardEnabled]) {
+    [self setToolbarItems:@[
+      self.deleteButton, [self flexibleSpace], self.addPaymentMethodButton
+    ]
+                 animated:YES];
+  } else {
+    [self setToolbarItems:@[ self.deleteButton, [self flexibleSpace] ]
+                 animated:YES];
+  }
 }
 
 // Removes delete button from the bottom toolbar.

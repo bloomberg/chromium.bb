@@ -7,9 +7,6 @@
 
 #include <jni.h>
 
-#include <utility>
-#include <vector>
-
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
@@ -90,9 +87,7 @@ class TabModelObserverJniBridge {
   void AddObserver(TabModelObserver* observer);
   void RemoveObserver(TabModelObserver* observer);
 
-  bool might_have_observers() const {
-    return observers_.might_have_observers();
-  }
+  bool has_observers() const { return !observers_.empty(); }
 
  private:
   // This object's Java counterpart. This objects controls its lifetime.

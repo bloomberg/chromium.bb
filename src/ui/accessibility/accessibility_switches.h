@@ -13,6 +13,12 @@ namespace switches {
 
 AX_BASE_EXPORT extern const char kEnableExperimentalAccessibilityAutoclick[];
 AX_BASE_EXPORT extern const char
+    kEnableExperimentalAccessibilityDictationExtension[];
+AX_BASE_EXPORT extern const char
+    kEnableExperimentalAccessibilityDictationOffline[];
+AX_BASE_EXPORT extern const char
+    kEnableExperimentalAccessibilityDictationListening[];
+AX_BASE_EXPORT extern const char
     kEnableExperimentalAccessibilityLabelsDebugging[];
 AX_BASE_EXPORT extern const char
     kEnableExperimentalAccessibilityLanguageDetection[];
@@ -21,8 +27,13 @@ AX_BASE_EXPORT extern const char
 AX_BASE_EXPORT extern const char
     kEnableExperimentalAccessibilitySwitchAccessText[];
 AX_BASE_EXPORT extern const char
-    kEnableExperimentalAccessibilityChromeVoxAnnotations[];
-AX_BASE_EXPORT extern const char kEnableSwitchAccessPointScanning[];
+    kEnableExperimentalAccessibilitySwitchAccessSetupGuide[];
+
+// Returns true if experimental accessibility dictation extension is enabled.
+AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationExtensionEnabled();
+
+// Returns true if experimental accessibility offline dictation is enabled.
+AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationOfflineEnabled();
 
 // Returns true if experimental accessibility language detection is enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityLanguageDetectionEnabled();
@@ -43,7 +54,7 @@ AX_BASE_EXPORT extern const char kEnableExperimentalUIAutomation[];
 AX_BASE_EXPORT bool IsExperimentalAccessibilityPlatformUIAEnabled();
 
 // Returns true if Switch Access point scanning is enabled.
-AX_BASE_EXPORT bool IsSwitchAccessPointScanningEnabled();
+AX_BASE_EXPORT bool IsMagnifierDebugDrawRectEnabled();
 
 // Optionally disable AXMenuList, which makes the internal pop-up menu
 // UI for a select element directly accessible.

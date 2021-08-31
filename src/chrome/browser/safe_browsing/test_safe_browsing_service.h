@@ -69,7 +69,7 @@ class TestSafeBrowsingService : public SafeBrowsingService,
   // TestURLLoaderFactory for mocking network traffic.
   void SetUseTestUrlLoaderFactory(bool use_test_url_loader_factory);
 
-  std::unique_ptr<SafeBrowsingService::StateSubscription> RegisterStateCallback(
+  base::CallbackListSubscription RegisterStateCallback(
       const base::RepeatingClosure& callback) override;
   network::TestURLLoaderFactory* GetTestUrlLoaderFactory();
 
@@ -86,13 +86,11 @@ class TestSafeBrowsingService : public SafeBrowsingService,
   bool CanCreateDownloadProtectionService() override;
 #endif
   bool CanCreateIncidentReportingService() override;
-  bool CanCreateResourceRequestDetector() override;
   SafeBrowsingDatabaseManager* CreateDatabaseManager() override;
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   DownloadProtectionService* CreateDownloadProtectionService() override;
 #endif
   IncidentReportingService* CreateIncidentReportingService() override;
-  ResourceRequestDetector* CreateResourceRequestDetector() override;
 
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory(

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <memory>
 #include <set>
 
 #include "base/bind.h"
@@ -17,11 +18,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -33,7 +36,6 @@
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
-#include "chrome/browser/ui/views/toolbar/extension_toolbar_menu_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -46,8 +48,11 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -90,7 +95,7 @@ namespace {
 // Horizontal padding on the edges of the in-menu buttons.
 const int kHorizontalPadding = 15;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // Extra horizontal space to reserve for the fullscreen button.
 const int kFullscreenPadding = 74;
 // Padding to left and right of the XX% label.
@@ -110,30 +115,6 @@ bool IsRecentTabsCommand(int command_id) {
   return command_id >= AppMenuModel::kMinRecentTabsCommandId &&
          command_id <= AppMenuModel::kMaxRecentTabsCommandId;
 }
-
-// Subclass of ImageButton whose preferred size includes the size of the border.
-class FullscreenButton : public ImageButton {
- public:
-  explicit FullscreenButton(PressedCallback callback)
-      : ImageButton(std::move(callback)) {}
-  FullscreenButton(const FullscreenButton&) = delete;
-  FullscreenButton& operator=(const FullscreenButton&) = delete;
-
-  // Overridden from ImageButton.
-  gfx::Size CalculatePreferredSize() const override {
-    gfx::Size pref = ImageButton::CalculatePreferredSize();
-    if (border()) {
-      gfx::Insets insets = border()->GetInsets();
-      pref.Enlarge(insets.width(), insets.height());
-    }
-    return pref;
-  }
-
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    ImageButton::GetAccessibleNodeData(node_data);
-    node_data->role = ax::mojom::Role::kMenuItem;
-  }
-};
 
 // Combination border/background for the buttons contained in the menu. The
 // painting of the border/background is done here as LabelButton does not always
@@ -208,13 +189,13 @@ class InMenuButtonBackground : public views::Background {
   const ButtonType type_;
 };
 
-base::string16 GetAccessibleNameForAppMenuItem(ButtonMenuItemModel* model,
+std::u16string GetAccessibleNameForAppMenuItem(ButtonMenuItemModel* model,
                                                int item_index,
                                                int accessible_string_id,
                                                bool add_accelerator_text) {
-  base::string16 accessible_name =
+  std::u16string accessible_name =
       l10n_util::GetStringUTF16(accessible_string_id);
-  base::string16 accelerator_text;
+  std::u16string accelerator_text;
 
   ui::Accelerator menu_accelerator;
   if (add_accelerator_text &&
@@ -231,12 +212,12 @@ base::string16 GetAccessibleNameForAppMenuItem(ButtonMenuItemModel* model,
 // A button that lives inside a menu item.
 class InMenuButton : public LabelButton {
  public:
-  InMenuButton(PressedCallback callback, const base::string16& text)
+  METADATA_HEADER(InMenuButton);
+  InMenuButton(PressedCallback callback, const std::u16string& text)
       : LabelButton(std::move(callback), text) {}
   InMenuButton(const InMenuButton&) = delete;
   InMenuButton& operator=(const InMenuButton&) = delete;
-
-  ~InMenuButton() override {}
+  ~InMenuButton() override = default;
 
   void Init(InMenuButtonBackground::ButtonType type) {
     // An InMenuButton should always be focusable regardless of the platform.
@@ -279,14 +260,17 @@ class InMenuButton : public LabelButton {
   }
 };
 
+BEGIN_METADATA(InMenuButton, LabelButton)
+END_METADATA
+
 // AppMenuView is a view that can contain label buttons.
 class AppMenuView : public views::View {
  public:
+  METADATA_HEADER(AppMenuView);
   AppMenuView(AppMenu* menu, ButtonMenuItemModel* menu_model)
       : menu_(menu->AsWeakPtr()), menu_model_(menu_model) {}
   AppMenuView(const AppMenuView&) = delete;
   AppMenuView& operator=(const AppMenuView&) = delete;
-
   ~AppMenuView() override = default;
 
   // Overridden from views::View.
@@ -300,28 +284,34 @@ class AppMenuView : public views::View {
       int string_id,
       InMenuButtonBackground::ButtonType type,
       int index) {
-    return CreateButtonWithAccName(std::move(callback), string_id, type, index,
-                                   string_id,
-                                   /*add_accelerator_text*/ true);
+    return CreateButtonWithAccessibleName(
+        std::move(callback), string_id, type, index, string_id,
+        /*add_accelerator_text=*/true,
+        /*use_accessible_name_as_tooltip_text=*/false);
   }
 
-  InMenuButton* CreateButtonWithAccName(views::Button::PressedCallback callback,
-                                        int string_id,
-                                        InMenuButtonBackground::ButtonType type,
-                                        int index,
-                                        int acc_string_id,
-                                        bool add_accelerator_text) {
+  InMenuButton* CreateButtonWithAccessibleName(
+      views::Button::PressedCallback callback,
+      int string_id,
+      InMenuButtonBackground::ButtonType type,
+      int index,
+      int accessible_name_id,
+      bool add_accelerator_text,
+      bool use_accessible_name_as_tooltip_text) {
     // Should only be invoked during construction when |menu_| is valid.
     DCHECK(menu_);
+
     InMenuButton* button = new InMenuButton(
         std::move(callback),
-        gfx::RemoveAcceleratorChar(l10n_util::GetStringUTF16(string_id), '&',
-                                   nullptr, nullptr));
+        gfx::RemoveAccelerator(l10n_util::GetStringUTF16(string_id)));
     button->Init(type);
     button->SetAccessibleName(GetAccessibleNameForAppMenuItem(
-        menu_model_, index, acc_string_id, add_accelerator_text));
+        menu_model_, index, accessible_name_id, add_accelerator_text));
     button->set_tag(index);
     button->SetEnabled(menu_model_->IsEnabledAt(index));
+    if (use_accessible_name_as_tooltip_text) {
+      button->SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
+    }
 
     AddChildView(button);
     // all buttons on menu should must be a custom button in order for
@@ -342,6 +332,62 @@ class AppMenuView : public views::View {
   ButtonMenuItemModel* menu_model_;
 };
 
+BEGIN_METADATA(AppMenuView, views::View)
+END_METADATA
+
+// Subclass of ImageButton whose preferred size includes the size of the border.
+class FullscreenButton : public ImageButton {
+ public:
+  METADATA_HEADER(FullscreenButton);
+  explicit FullscreenButton(PressedCallback callback,
+                            ButtonMenuItemModel* menu_model,
+                            int fullscreen_index)
+      : ImageButton(std::move(callback)) {
+    // Since |fullscreen_button_| will reside in a menu, make it ALWAYS
+    // focusable regardless of the platform.
+    SetFocusBehavior(FocusBehavior::ALWAYS);
+    set_tag(fullscreen_index);
+    SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
+    SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
+    SetBackground(std::make_unique<InMenuButtonBackground>(
+        InMenuButtonBackground::LEADING_BORDER));
+    SetTooltipText(l10n_util::GetStringUTF16(IDS_ACCNAME_FULLSCREEN));
+    SetAccessibleName(GetAccessibleNameForAppMenuItem(
+        menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+        // ChromeOS uses a dedicated "fullscreen" media key for fullscreen
+        // mode on most ChromeOS devices which cannot be specified in the
+        // standard way here, so omit the accelerator to avoid providing
+        // misleading or confusing information to screen reader users.
+        // See crbug.com/1110468 for more context.
+        /*add_accelerator_text=*/false
+#else
+        /*add_accelerator_text=*/true
+#endif
+        ));
+  }
+  FullscreenButton(const FullscreenButton&) = delete;
+  FullscreenButton& operator=(const FullscreenButton&) = delete;
+
+  // Overridden from ImageButton.
+  gfx::Size CalculatePreferredSize() const override {
+    gfx::Size pref = ImageButton::CalculatePreferredSize();
+    if (border()) {
+      gfx::Insets insets = border()->GetInsets();
+      pref.Enlarge(insets.width(), insets.height());
+    }
+    return pref;
+  }
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    ImageButton::GetAccessibleNodeData(node_data);
+    node_data->role = ax::mojom::Role::kMenuItem;
+  }
+};
+
+BEGIN_METADATA(FullscreenButton, ImageButton)
+END_METADATA
+
 }  // namespace
 
 // CutCopyPasteView ------------------------------------------------------------
@@ -349,6 +395,7 @@ class AppMenuView : public views::View {
 // CutCopyPasteView is the view containing the cut/copy/paste buttons.
 class AppMenu::CutCopyPasteView : public AppMenuView {
  public:
+  METADATA_HEADER(CutCopyPasteView);
   CutCopyPasteView(AppMenu* menu,
                    ButtonMenuItemModel* menu_model,
                    int cut_index,
@@ -402,6 +449,10 @@ class AppMenu::CutCopyPasteView : public AppMenuView {
   }
 };
 
+BEGIN_METADATA(AppMenu, CutCopyPasteView, AppMenuView)
+ADD_READONLY_PROPERTY_METADATA(int, MaxChildViewPreferredWidth)
+END_METADATA
+
 // ZoomView --------------------------------------------------------------------
 
 // ZoomView contains the various zoom controls: two buttons to increase/decrease
@@ -409,6 +460,7 @@ class AppMenu::CutCopyPasteView : public AppMenuView {
 // full-screen.
 class AppMenu::ZoomView : public AppMenuView {
  public:
+  METADATA_HEADER(ZoomView);
   ZoomView(AppMenu* menu,
            ButtonMenuItemModel* menu_model,
            int decrement_index,
@@ -430,55 +482,52 @@ class AppMenu::ZoomView : public AppMenuView {
     const auto activate = [](ButtonMenuItemModel* menu_model, int index) {
       menu_model->ActivatedAt(index);
     };
-    decrement_button_ = CreateButtonWithAccName(
+    decrement_button_ = CreateButtonWithAccessibleName(
         base::BindRepeating(activate, menu_model, decrement_index),
         IDS_ZOOM_MINUS2, InMenuButtonBackground::LEADING_BORDER,
         decrement_index, IDS_ACCNAME_ZOOM_MINUS2,
-        /*add_accelerator_text*/ false);
+        /*add_accelerator_text=*/false,
+        /*use_accessible_name_as_tooltip_text=*/true);
 
     zoom_label_ = new Label(base::FormatPercent(100));
     zoom_label_->SetAutoColorReadabilityEnabled(false);
     zoom_label_->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
-
+    zoom_label_->SetBorder(views::CreateEmptyBorder(
+        0, kZoomLabelHorizontalPadding, 0, kZoomLabelHorizontalPadding));
     zoom_label_->SetBackground(std::make_unique<InMenuButtonBackground>(
         InMenuButtonBackground::NO_BORDER));
+
+    // Need to set a font list for the zoom label width calculations.
+    zoom_label_->SetFontList(MenuConfig::instance().font_list);
 
     // An accessibility role of kAlert will ensure that any updates to the zoom
     // level can be picked up by screen readers.
     zoom_label_->GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
 
     AddChildView(zoom_label_);
-    zoom_label_max_width_valid_ = false;
 
-    increment_button_ = CreateButtonWithAccName(
+    increment_button_ = CreateButtonWithAccessibleName(
         base::BindRepeating(activate, menu_model, increment_index),
         IDS_ZOOM_PLUS2, InMenuButtonBackground::NO_BORDER, increment_index,
-        IDS_ACCNAME_ZOOM_PLUS2, /*add_accelerator_text*/ false);
+        IDS_ACCNAME_ZOOM_PLUS2, /*add_accelerator_text=*/false,
+        /*use_accessible_name_as_tooltip_text=*/true);
 
-    fullscreen_button_ = new FullscreenButton(base::BindRepeating(
-        [](AppMenu* menu, ButtonMenuItemModel* menu_model, int index) {
-          menu->CancelAndEvaluate(menu_model, index);
-        },
-        menu, menu_model, fullscreen_index));
+    fullscreen_button_ = new FullscreenButton(
+        base::BindRepeating(
+            [](AppMenu* menu, ButtonMenuItemModel* menu_model, int index) {
+              menu->CancelAndEvaluate(menu_model, index);
+            },
+            menu, menu_model, fullscreen_index),
+        menu_model, fullscreen_index);
+
     // all buttons on menu should must be a custom button in order for
     // the keyboard navigation to work.
     DCHECK(Button::AsButton(fullscreen_button_));
-
-    // Since |fullscreen_button_| will reside in a menu, make it ALWAYS
-    // focusable regardless of the platform.
-    fullscreen_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
-    fullscreen_button_->set_tag(fullscreen_index);
-    fullscreen_button_->SetImageHorizontalAlignment(ImageButton::ALIGN_CENTER);
-    fullscreen_button_->SetImageVerticalAlignment(ImageButton::ALIGN_MIDDLE);
-    fullscreen_button_->SetBackground(std::make_unique<InMenuButtonBackground>(
-        InMenuButtonBackground::LEADING_BORDER));
-    fullscreen_button_->SetAccessibleName(GetAccessibleNameForAppMenuItem(
-        menu_model, fullscreen_index, IDS_ACCNAME_FULLSCREEN,
-        /*add_accelerator_text*/ true));
     AddChildView(fullscreen_button_);
 
-    // Need to set a font list for the zoom label width calculations.
-    OnThemeChanged();
+    // The max width for `zoom_label_` should not be valid until the calls into
+    // UpdateZoomControls().
+    DCHECK(!zoom_label_max_width_valid_);
     UpdateZoomControls();
   }
   ZoomView(const ZoomView&) = delete;
@@ -496,7 +545,7 @@ class AppMenu::ZoomView : public AppMenuView {
     // height of the menuitemview. Note that we have overridden the height when
     // constructing the menu.
     return gfx::Size(
-        button_width + ZoomLabelMaxWidth() + button_width + fullscreen_width,
+        button_width + GetZoomLabelMaxWidth() + button_width + fullscreen_width,
         0);
   }
 
@@ -510,7 +559,7 @@ class AppMenu::ZoomView : public AppMenuView {
 
     x += bounds.width();
     bounds.set_x(x);
-    bounds.set_width(ZoomLabelMaxWidth());
+    bounds.set_width(GetZoomLabelMaxWidth());
     zoom_label_->SetBoundsRect(bounds);
 
     x += bounds.width();
@@ -527,11 +576,6 @@ class AppMenu::ZoomView : public AppMenuView {
 
   void OnThemeChanged() override {
     AppMenuView::OnThemeChanged();
-
-    zoom_label_->SetBorder(views::CreateEmptyBorder(
-        0, kZoomLabelHorizontalPadding, 0, kZoomLabelHorizontalPadding));
-    zoom_label_->SetFontList(MenuConfig::instance().font_list);
-    zoom_label_max_width_valid_ = false;
 
     ui::NativeTheme* theme = GetNativeTheme();
     zoom_label_->SetEnabledColor(theme->GetSystemColor(
@@ -586,7 +630,7 @@ class AppMenu::ZoomView : public AppMenuView {
   }
 
   // Returns the max width the zoom string can be.
-  int ZoomLabelMaxWidth() const {
+  int GetZoomLabelMaxWidth() const {
     if (!zoom_label_max_width_valid_) {
       const gfx::FontList& font_list = zoom_label_->font_list();
       int border_width = zoom_label_->border()
@@ -619,8 +663,7 @@ class AppMenu::ZoomView : public AppMenuView {
     return zoom_label_max_width_;
   }
 
-  std::unique_ptr<content::HostZoomMap::Subscription>
-      browser_zoom_subscription_;
+  base::CallbackListSubscription browser_zoom_subscription_;
 
   // Button for incrementing the zoom.
   LabelButton* increment_button_;
@@ -634,15 +677,19 @@ class AppMenu::ZoomView : public AppMenuView {
   ImageButton* fullscreen_button_;
 
   // Cached width of how wide the zoom label string can be. This is the width at
-  // 100%. This should not be accessed directly, use ZoomLabelMaxWidth()
+  // 100%. This should not be accessed directly, use GetZoomLabelMaxWidth()
   // instead. This value is cached because is depends on multiple calls to
   // gfx::GetStringWidth(...) which are expensive.
   mutable int zoom_label_max_width_;
 
-  // Flag tracking whether calls to ZoomLabelMaxWidth() need to re-calculate
+  // Flag tracking whether calls to GetZoomLabelMaxWidth() need to re-calculate
   // the label width, because the cached value may no longer be correct.
   mutable bool zoom_label_max_width_valid_;
 };
+
+BEGIN_METADATA(AppMenu, ZoomView, AppMenuView)
+ADD_READONLY_PROPERTY_METADATA(int, ZoomLabelMaxWidth)
+END_METADATA
 
 // RecentTabsMenuModelDelegate  ------------------------------------------------
 
@@ -673,12 +720,7 @@ class AppMenu::RecentTabsMenuModelDelegate : public ui::MenuModelDelegate {
     int command_id = model_->GetCommandIdAt(index);
     views::MenuItemView* item = menu_item_->GetMenuItemByID(command_id);
     DCHECK(item);
-    ui::ImageModel image = model_->GetIconAt(index);
-    // TODO (kylixrd): Use a utility function to get this as an actual image.
-    if (image.IsImage())
-      item->SetIcon(*image.GetImage().ToImageSkia());
-    else if (image.IsVectorIcon())
-      item->SetIcon(ui::ThemedVectorIcon(image.GetVectorIcon()));
+    item->SetIcon(model_->GetIconAt(index));
   }
 
   void OnMenuStructureChanged() override {
@@ -719,7 +761,7 @@ AppMenu::AppMenu(Browser* browser, int run_types, bool alert_reopen_tab_items)
     : browser_(browser),
       run_types_(run_types),
       alert_reopen_tab_items_(alert_reopen_tab_items) {
-  global_error_observer_.Add(
+  global_error_observation_.Observe(
       GlobalErrorServiceFactory::GetForProfile(browser->profile()));
 }
 
@@ -786,11 +828,11 @@ void AppMenu::GetLabelStyle(int command_id, LabelStyle* style) const {
   }
 }
 
-base::string16 AppMenu::GetTooltipText(int command_id,
+std::u16string AppMenu::GetTooltipText(int command_id,
                                        const gfx::Point& p) const {
   return IsBookmarkCommand(command_id)
              ? bookmark_menu_delegate_->GetTooltipText(command_id, p)
-             : base::string16();
+             : std::u16string();
 }
 
 bool AppMenu::IsTriggerableEvent(views::MenuItemView* menu,
@@ -820,22 +862,23 @@ bool AppMenu::CanDrop(MenuItemView* menu, const ui::OSExchangeData& data) {
          bookmark_menu_delegate_->CanDrop(menu, data);
 }
 
-int AppMenu::GetDropOperation(MenuItemView* item,
-                              const ui::DropTargetEvent& event,
-                              DropPosition* position) {
+ui::mojom::DragOperation AppMenu::GetDropOperation(
+    MenuItemView* item,
+    const ui::DropTargetEvent& event,
+    DropPosition* position) {
   return IsBookmarkCommand(item->GetCommand())
              ? bookmark_menu_delegate_->GetDropOperation(item, event, position)
-             : ui::DragDropTypes::DRAG_NONE;
+             : ui::mojom::DragOperation::kNone;
 }
 
-int AppMenu::OnPerformDrop(MenuItemView* menu,
-                           DropPosition position,
-                           const ui::DropTargetEvent& event) {
+ui::mojom::DragOperation AppMenu::OnPerformDrop(
+    MenuItemView* menu,
+    DropPosition position,
+    const ui::DropTargetEvent& event) {
   if (!IsBookmarkCommand(menu->GetCommand()))
-    return ui::DragDropTypes::DRAG_NONE;
+    return ui::mojom::DragOperation::kNone;
 
-  int result = bookmark_menu_delegate_->OnPerformDrop(menu, position, event);
-  return result;
+  return bookmark_menu_delegate_->OnPerformDrop(menu, position, event);
 }
 
 bool AppMenu::ShowContextMenu(MenuItemView* source,
@@ -891,11 +934,16 @@ bool AppMenu::IsCommandEnabled(int command_id) const {
   if (command_id == IDC_MORE_TOOLS_MENU)
     return true;
 
+  if (command_id == IDC_SHARING_HUB_MENU) {
+    DCHECK(
+        base::FeatureList::IsEnabled(sharing_hub::kSharingHubDesktopAppMenu));
+    return true;
+  }
+
   // The items representing the cut menu (cut/copy/paste), zoom menu
   // (increment/decrement/reset) and extension toolbar view are always enabled.
   // The child views of these items enabled state updates appropriately.
-  if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU ||
-      command_id == IDC_EXTENSIONS_OVERFLOW_MENU)
+  if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU)
     return true;
 
   const Entry& entry = command_id_to_entry_.find(command_id)->second;
@@ -912,8 +960,7 @@ void AppMenu::ExecuteCommand(int command_id, int mouse_event_flags) {
     return;
   }
 
-  if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU ||
-      command_id == IDC_EXTENSIONS_OVERFLOW_MENU) {
+  if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU) {
     // These items are represented by child views. If ExecuteCommand is invoked
     // it means the user clicked on the area around the buttons and we should
     // not do anyting.
@@ -929,8 +976,7 @@ bool AppMenu::GetAccelerator(int command_id,
   if (IsBookmarkCommand(command_id))
     return false;
 
-  if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU ||
-      command_id == IDC_EXTENSIONS_OVERFLOW_MENU) {
+  if (command_id == IDC_EDIT_MENU || command_id == IDC_ZOOM_MENU) {
     // These have special child views; don't show the accelerator for them.
     return false;
   }
@@ -989,9 +1035,12 @@ void AppMenu::OnMenuClosed(views::MenuItemView* menu) {
 
 bool AppMenu::ShouldExecuteCommandWithoutClosingMenu(int command_id,
                                                      const ui::Event& event) {
-  return IsRecentTabsCommand(command_id) && event.IsMouseEvent() &&
-         (ui::DispositionFromEventFlags(event.flags()) ==
-          WindowOpenDisposition::NEW_BACKGROUND_TAB);
+  return (IsRecentTabsCommand(command_id) && event.IsMouseEvent() &&
+          (ui::DispositionFromEventFlags(event.flags()) ==
+           WindowOpenDisposition::NEW_BACKGROUND_TAB)) ||
+         (IsBookmarkCommand(command_id) &&
+          bookmark_menu_delegate_->ShouldExecuteCommandWithoutClosingMenu(
+              command_id, event));
 }
 
 void AppMenu::BookmarkModelChanged() {
@@ -1015,7 +1064,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
     MenuItemView* item =
         AddMenuItem(parent, menu_index, model, i, model->GetTypeAt(i));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
     if (model->GetCommandIdAt(i) == IDC_EDIT_MENU ||
         model->GetCommandIdAt(i) == IDC_ZOOM_MENU) {
       // ChromeOS adds extra vertical space for the menu buttons.
@@ -1032,12 +1081,6 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
       PopulateMenu(item, model->GetSubmenuModelAt(i));
 
     switch (model->GetCommandIdAt(i)) {
-      case IDC_EXTENSIONS_OVERFLOW_MENU: {
-        extension_toolbar_ = item->AddChildView(
-            std::make_unique<ExtensionToolbarMenuView>(browser_, item));
-        break;
-      }
-
       case IDC_EDIT_MENU: {
         ui::ButtonMenuItemModel* submodel = model->GetButtonMenuItemAt(i);
         DCHECK_EQ(IDC_CUT, submodel->GetCommandIdAt(0));
@@ -1071,7 +1114,7 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
         break;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       case IDC_TAKE_SCREENSHOT:
         DCHECK(!screenshot_menu_item_);
         screenshot_menu_item_ = item;
@@ -1080,8 +1123,9 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
 
       case IDC_RECENT_TABS_MENU:
         DCHECK(!recent_tabs_menu_model_delegate_.get());
-        recent_tabs_menu_model_delegate_.reset(new RecentTabsMenuModelDelegate(
-            this, model->GetSubmenuModelAt(i), item));
+        recent_tabs_menu_model_delegate_ =
+            std::make_unique<RecentTabsMenuModelDelegate>(
+                this, model->GetSubmenuModelAt(i), item);
         break;
 
       default:
@@ -1122,11 +1166,7 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
     menu_item->SetVisible(model->IsVisibleAt(model_index));
 
     if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {
-      ui::ImageModel icon = model->GetIconAt(model_index);
-      if (icon.IsImage())
-        menu_item->SetIcon(*icon.GetImage().ToImageSkia());
-      else if (icon.IsVectorIcon())
-        menu_item->SetIcon(ui::ThemedVectorIcon(icon.GetVectorIcon()));
+      menu_item->SetIcon(model->GetIconAt(model_index));
     }
 
     // If we want to show items relating to reopening the last-closed tab as
@@ -1161,8 +1201,12 @@ void AppMenu::CreateBookmarkMenu() {
   // TODO(oshima): Replace with views only API.
   views::Widget* parent = views::Widget::GetWidgetForNativeWindow(
       browser_->window()->GetNativeWindow());
-  bookmark_menu_delegate_.reset(
-      new BookmarkMenuDelegate(browser_, browser_, parent));
+  bookmark_menu_delegate_ = std::make_unique<BookmarkMenuDelegate>(
+      browser_,
+      base::BindRepeating(
+          [](content::PageNavigator* navigator) { return navigator; },
+          browser_),
+      parent);
   bookmark_menu_delegate_->Init(this, bookmark_menu_,
                                 model->bookmark_bar_node(), 0,
                                 BookmarkMenuDelegate::SHOW_PERMANENT_FOLDERS,

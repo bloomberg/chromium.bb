@@ -146,12 +146,12 @@ TEST_F(FormCacheBrowserTest, FillAndClear) {
 
   ASSERT_EQ(1u, forms.size());
   FormData values_to_fill = forms[0];
-  values_to_fill.fields[0].value = ASCIIToUTF16("test");
+  values_to_fill.fields[0].value = u"test";
   values_to_fill.fields[0].is_autofilled = true;
   values_to_fill.fields[1].check_status =
       FormFieldData::CheckStatus::kCheckableButUnchecked;
   values_to_fill.fields[1].is_autofilled = true;
-  values_to_fill.fields[2].value = ASCIIToUTF16("first");
+  values_to_fill.fields[2].value = u"first";
   values_to_fill.fields[2].is_autofilled = true;
 
   WebDocument doc = GetMainFrame()->GetDocument();
@@ -193,9 +193,9 @@ TEST_F(FormCacheBrowserTest,
 
   ASSERT_EQ(2u, forms.size());
   FormData values_to_fill = forms[0];
-  values_to_fill.fields[0].value = ASCIIToUTF16("John");
+  values_to_fill.fields[0].value = u"John";
   values_to_fill.fields[0].is_autofilled = true;
-  values_to_fill.fields[1].value = ASCIIToUTF16("Smith");
+  values_to_fill.fields[1].value = u"Smith";
   values_to_fill.fields[1].is_autofilled = true;
 
   auto fname = GetMainFrame()
@@ -280,11 +280,11 @@ TEST_F(FormCacheBrowserTest, ClearFormSelectElementEditedStateReset) {
 
   ASSERT_EQ(1u, forms.size());
   FormData values_to_fill = forms[0];
-  values_to_fill.fields[0].value = ASCIIToUTF16("test");
+  values_to_fill.fields[0].value = u"test";
   values_to_fill.fields[0].is_autofilled = true;
-  values_to_fill.fields[1].value = ASCIIToUTF16("first");
+  values_to_fill.fields[1].value = u"first";
   values_to_fill.fields[1].is_autofilled = true;
-  values_to_fill.fields[2].value = ASCIIToUTF16("january");
+  values_to_fill.fields[2].value = u"january";
   values_to_fill.fields[2].is_autofilled = true;
 
   WebDocument doc = GetMainFrame()->GetDocument();
@@ -311,9 +311,9 @@ TEST_F(FormCacheBrowserTest, ClearFormSelectElementEditedStateReset) {
 
   // Fill the form again, this time the select elements are being filled
   // with different values just for additional check.
-  values_to_fill.fields[1].value = ASCIIToUTF16("third");
+  values_to_fill.fields[1].value = u"third";
   values_to_fill.fields[1].is_autofilled = true;
-  values_to_fill.fields[2].value = ASCIIToUTF16("february");
+  values_to_fill.fields[2].value = u"february";
   values_to_fill.fields[2].is_autofilled = true;
   form_util::FillForm(values_to_fill, text);
 
@@ -325,6 +325,43 @@ TEST_F(FormCacheBrowserTest, ClearFormSelectElementEditedStateReset) {
   // Expect that the state is set again
   EXPECT_TRUE(select_date.UserHasEditedTheField());
   EXPECT_TRUE(select_month.UserHasEditedTheField());
+}
+
+TEST_F(FormCacheBrowserTest, IsFormElementEligibleForManualFilling) {
+  // Load a form.
+  LoadHTML(
+      "<html><form id='myForm'>"
+      "<label>First Name:</label><input id='fname' name='0'/><br/>"
+      "<label>Middle Name:</label> <input id='mname' name='1'/><br/>"
+      "<label>Last Name:</label> <input id='lname' name='2'/><br/>"
+      "</form></html>");
+
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto first_name_element = doc.GetElementById("fname").To<WebInputElement>();
+  auto middle_name_element = doc.GetElementById("mname").To<WebInputElement>();
+  auto last_name_element = doc.GetElementById("lname").To<WebInputElement>();
+
+  FormCache form_cache(GetMainFrame());
+  std::vector<FormData> forms =
+      form_cache.ExtractNewForms(/*field_data_manager=*/nullptr);
+  const FormData* form_data = GetFormByName(forms, "myForm");
+  EXPECT_EQ(3u, form_data->fields.size());
+
+  // Set the first_name and last_name fields as eligible for manual filling.
+  std::vector<FieldRendererId> fields_eligible_for_manual_filling;
+  fields_eligible_for_manual_filling.push_back(
+      form_data->fields[0].unique_renderer_id);
+  fields_eligible_for_manual_filling.push_back(
+      form_data->fields[2].unique_renderer_id);
+  form_cache.SetFieldsEligibleForManualFilling(
+      fields_eligible_for_manual_filling);
+
+  EXPECT_TRUE(
+      form_cache.IsFormElementEligibleForManualFilling(first_name_element));
+  EXPECT_FALSE(
+      form_cache.IsFormElementEligibleForManualFilling(middle_name_element));
+  EXPECT_TRUE(
+      form_cache.IsFormElementEligibleForManualFilling(last_name_element));
 }
 
 }  // namespace autofill

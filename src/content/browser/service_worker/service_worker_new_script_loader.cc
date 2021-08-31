@@ -13,17 +13,19 @@
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_loader_helpers.h"
-#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/url_loader_throttles.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_info.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/loader/throttling_url_loader.h"
 
 namespace content {
 
@@ -46,7 +48,6 @@ class ServiceWorkerNewScriptLoader::WrappedIOBuffer
 
 std::unique_ptr<ServiceWorkerNewScriptLoader>
 ServiceWorkerNewScriptLoader::CreateAndStart(
-    int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& original_request,
@@ -54,16 +55,17 @@ ServiceWorkerNewScriptLoader::CreateAndStart(
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    int64_t cache_resource_id) {
+    int64_t cache_resource_id,
+    bool is_throttle_needed) {
   return base::WrapUnique(new ServiceWorkerNewScriptLoader(
-      routing_id, request_id, options, original_request, std::move(client),
-      version, loader_factory, traffic_annotation, cache_resource_id));
+      request_id, options, original_request, std::move(client), version,
+      loader_factory, traffic_annotation, cache_resource_id,
+      is_throttle_needed));
 }
 
 // TODO(nhiroki): We're doing multiple things in the ctor. Consider factors out
 // some of them into a separate function.
 ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
-    int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& original_request,
@@ -71,9 +73,13 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     scoped_refptr<ServiceWorkerVersion> version,
     scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    int64_t cache_resource_id)
+    int64_t cache_resource_id,
+    bool is_throttle_needed)
     : request_url_(original_request.url),
-      resource_destination_(original_request.destination),
+      is_main_script_(original_request.destination ==
+                          network::mojom::RequestDestination::kServiceWorker &&
+                      original_request.mode ==
+                          network::mojom::RequestMode::kSameOrigin),
       original_options_(options),
       version_(version),
       network_watcher_(FROM_HERE,
@@ -86,7 +92,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   network::ResourceRequest resource_request(original_request);
 #if DCHECK_IS_ON()
   service_worker_loader_helpers::CheckVersionStatusBeforeWorkerScriptLoad(
-      version_->status(), resource_destination_);
+      version_->status(), is_main_script_, version_->script_type());
 #endif  // DCHECK_IS_ON()
 
   scoped_refptr<ServiceWorkerRegistration> registration =
@@ -94,15 +100,14 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   // ServiceWorkerVersion keeps the registration alive while the service
   // worker is starting up, and it must be starting up here.
   DCHECK(registration);
-  const bool is_main_script =
-      (resource_destination_ ==
-       network::mojom::RequestDestination::kServiceWorker);
-  if (is_main_script) {
+
+  // We need to filter on mode, since module imports use kServiceWorker as
+  // destination, but only top level module scripts are same-origin.
+  if (is_main_script_) {
     // Request SSLInfo. It will be persisted in service worker storage and
     // may be used by ServiceWorkerMainResourceLoader for navigations handled
     // by this service worker.
     options |= network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
-
     resource_request.headers.SetHeader("Service-Worker", "script");
   }
 
@@ -111,7 +116,7 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   base::TimeDelta time_since_last_check =
       base::Time::Now() - registration->last_update_check();
   if (service_worker_loader_helpers::ShouldValidateBrowserCacheForScript(
-          is_main_script, version_->force_bypass_cache_for_scripts(),
+          is_main_script_, version_->force_bypass_cache_for_scripts(),
           registration->update_via_cache(), time_since_last_check)) {
     resource_request.load_flags |= net::LOAD_VALIDATE_CACHE;
   }
@@ -133,10 +138,24 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
   // JavaScript MIME type. Therefore, no sniffing is needed.
   options &= ~network::mojom::kURLLoadOptionSniffMimeType;
 
-  loader_factory_->CreateLoaderAndStart(
-      network_loader_.BindNewPipeAndPassReceiver(), routing_id, request_id,
-      options, resource_request,
-      network_client_receiver_.BindNewPipeAndPassRemote(), traffic_annotation);
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
+  if (is_throttle_needed) {
+    // A service worker is independent from WebContents and FrameTreeNode.
+    // Return null or empty values when queried for either.
+    base::RepeatingCallback<WebContents*()> web_contents_getter =
+        base::BindRepeating([]() -> WebContents* { return nullptr; });
+    throttles = CreateContentBrowserURLLoaderThrottles(
+        resource_request, version_->context()->wrapper()->browser_context(),
+        std::move(web_contents_getter),
+        /*navigation_ui_data=*/nullptr, RenderFrameHost::kNoFrameTreeNodeId);
+  }
+
+  network_loader_ = blink::ThrottlingURLLoader::CreateLoaderAndStart(
+      std::move(loader_factory_), std::move(throttles), request_id, options,
+      &resource_request, this,
+      net::NetworkTrafficAnnotationTag(traffic_annotation),
+      base::ThreadTaskRunnerHandle::Get());
+
   DCHECK_EQ(LoaderState::kNotStarted, network_loader_state_);
   network_loader_state_ = LoaderState::kLoadingHeader;
 }
@@ -160,7 +179,7 @@ void ServiceWorkerNewScriptLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    const base::Optional<GURL>& new_url) {
+    const absl::optional<GURL>& new_url) {
   // Resource requests for service worker scripts should not follow redirects.
   // See comments in OnReceiveRedirect().
   NOTREACHED();
@@ -184,6 +203,9 @@ void ServiceWorkerNewScriptLoader::ResumeReadingBodyFromNet() {
 
 // URLLoaderClient for network loader ------------------------------------------
 
+void ServiceWorkerNewScriptLoader::OnReceiveEarlyHints(
+    network::mojom::EarlyHintsPtr early_hints) {}
+
 void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     network::mojom::URLResponseHeadPtr response_head) {
   DCHECK_EQ(LoaderState::kLoadingHeader, network_loader_state_);
@@ -205,8 +227,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     return;
   }
 
-  if (resource_destination_ ==
-      network::mojom::RequestDestination::kServiceWorker) {
+  if (is_main_script_) {
     // Check the path restriction defined in the spec:
     // https://w3c.github.io/ServiceWorker/#service-worker-script-response
     std::string service_worker_allowed;
@@ -285,7 +306,7 @@ void ServiceWorkerNewScriptLoader::OnStartLoadingResponseBody(
   DCHECK_EQ(LoaderState::kWaitingForBody, network_loader_state_);
   // Create a pair of the consumer and producer for responding to the client.
   mojo::ScopedDataPipeConsumerHandle client_consumer;
-  if (mojo::CreateDataPipe(nullptr, &client_producer_, &client_consumer) !=
+  if (mojo::CreateDataPipe(nullptr, client_producer_, client_consumer) !=
       MOJO_RESULT_OK) {
     CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED),
                     ServiceWorkerConsts::kServiceWorkerFetchScriptError);
@@ -534,7 +555,6 @@ void ServiceWorkerNewScriptLoader::CommitCompleted(
   client_producer_.reset();
 
   network_loader_.reset();
-  network_client_receiver_.reset();
   network_consumer_.reset();
   network_watcher_.Cancel();
   cache_writer_.reset();

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_suggestion_button_row_view.h"
 
+#include "base/bind.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -11,14 +12,16 @@
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
+#include "components/omnibox/browser/actions/omnibox_pedal.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
-#include "components/omnibox/browser/omnibox_pedal.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -34,13 +37,14 @@
 
 class OmniboxSuggestionRowButton : public views::MdTextButton {
  public:
+  METADATA_HEADER(OmniboxSuggestionRowButton);
   OmniboxSuggestionRowButton(PressedCallback callback,
-                             const base::string16& text,
+                             const std::u16string& text,
                              const gfx::VectorIcon& icon,
                              OmniboxPopupContentsView* popup_contents_view,
                              OmniboxPopupModel::Selection selection)
       : MdTextButton(std::move(callback), text, CONTEXT_OMNIBOX_PRIMARY),
-        icon_(icon),
+        icon_(&icon),
         popup_contents_view_(popup_contents_view),
         selection_(selection) {
     views::InstallPillHighlightPathGenerator(this);
@@ -51,8 +55,15 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
     SetCornerRadius(GetInsets().height() +
                     GetLayoutConstant(LOCATION_BAR_ICON_SIZE));
 
-    SetInkDropHighlightOpacity(
+    ink_drop()->SetHighlightOpacity(
         GetOmniboxStateOpacity(OmniboxPartState::HOVERED));
+    ink_drop()->SetBaseColorCallback(base::BindRepeating(
+        [](OmniboxSuggestionRowButton* host) {
+          return color_utils::GetColorWithMaxContrast(
+              host->omnibox_bg_color_.value());
+        },
+        this));
+
     focus_ring()->SetHasFocusPredicate([=](View* view) {
       return view->GetVisible() &&
              popup_contents_view_->model()->selection() == selection_;
@@ -65,10 +76,6 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
 
   ~OmniboxSuggestionRowButton() override = default;
 
-  SkColor GetInkDropBaseColor() const override {
-    return color_utils::GetColorWithMaxContrast(omnibox_bg_color_.value());
-  }
-
   void OnOmniboxBackgroundChange(SkColor omnibox_bg_color) {
     focus_ring()->SchedulePaint();
     omnibox_bg_color_ = omnibox_bg_color;
@@ -77,14 +84,6 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
 
   OmniboxPopupModel::Selection selection() { return selection_; }
 
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    // MdTextButton uses custom colors when creating ink drop highlight.
-    // We need the base implementation that uses GetInkDropBaseColor for
-    // highlight.
-    return views::InkDropHostView::CreateInkDropHighlight();
-  }
-
   void OnThemeChanged() override {
     MdTextButton::OnThemeChanged();
     // We can't use colors from NativeTheme as the omnibox theme might be
@@ -92,9 +91,10 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
     SkColor icon_color =
         GetOmniboxColor(GetThemeProvider(), OmniboxPart::RESULTS_ICON,
                         OmniboxPartState::NORMAL);
-    SetImage(views::Button::STATE_NORMAL,
-             gfx::CreateVectorIcon(
-                 icon_, GetLayoutConstant(LOCATION_BAR_ICON_SIZE), icon_color));
+    SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(*icon_, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
+                              icon_color));
     SetEnabledTextColors(GetOmniboxColor(GetThemeProvider(),
                                          OmniboxPart::RESULTS_TEXT_DEFAULT,
                                          OmniboxPartState::NORMAL));
@@ -119,12 +119,22 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
     node_data->role = ax::mojom::Role::kListBoxOption;
   }
 
+  void SetIcon(const gfx::VectorIcon& icon) {
+    if (icon_ != &icon) {
+      icon_ = &icon;
+      OnThemeChanged();
+    }
+  }
+
  private:
-  const gfx::VectorIcon& icon_;
+  const gfx::VectorIcon* icon_;
   OmniboxPopupContentsView* popup_contents_view_;
   OmniboxPopupModel::Selection selection_;
-  base::Optional<SkColor> omnibox_bg_color_;
+  absl::optional<SkColor> omnibox_bg_color_;
 };
+
+BEGIN_METADATA(OmniboxSuggestionRowButton, views::MdTextButton)
+END_METADATA
 
 OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
     OmniboxPopupContentsView* popup_contents_view,
@@ -152,7 +162,7 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
       base::BindRepeating(&OmniboxSuggestionButtonRowView::ButtonPressed,
                           base::Unretained(this),
                           OmniboxPopupModel::KEYWORD_MODE),
-      base::string16(), vector_icons::kSearchIcon, popup_contents_view_,
+      std::u16string(), vector_icons::kSearchIcon, popup_contents_view_,
       OmniboxPopupModel::Selection(model_index_,
                                    OmniboxPopupModel::KEYWORD_MODE)));
   tab_switch_button_ =
@@ -170,7 +180,8 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
       base::BindRepeating(&OmniboxSuggestionButtonRowView::ButtonPressed,
                           base::Unretained(this),
                           OmniboxPopupModel::FOCUSED_BUTTON_PEDAL),
-      base::string16(), omnibox::kProductIcon, popup_contents_view_,
+      std::u16string(), OmniboxPedal::GetDefaultVectorIcon(),
+      popup_contents_view_,
       OmniboxPopupModel::Selection(model_index_,
                                    OmniboxPopupModel::FOCUSED_BUTTON_PEDAL)));
 }
@@ -181,7 +192,7 @@ void OmniboxSuggestionButtonRowView::UpdateFromModel() {
   SetPillButtonVisibility(keyword_button_, OmniboxPopupModel::KEYWORD_MODE);
   if (keyword_button_->GetVisible()) {
     const OmniboxEditModel* edit_model = model()->edit_model();
-    base::string16 keyword;
+    std::u16string keyword;
     bool is_keyword_hint = false;
     match().GetKeywordUIState(edit_model->client()->GetTemplateURLService(),
                               &keyword, &is_keyword_hint);
@@ -203,6 +214,7 @@ void OmniboxSuggestionButtonRowView::UpdateFromModel() {
     pedal_button_->SetText(pedal_strings.hint);
     pedal_button_->SetTooltipText(pedal_strings.suggestion_contents);
     pedal_button_->SetAccessibleName(pedal_strings.accessibility_hint);
+    pedal_button_->SetIcon(match().pedal->GetVectorIcon());
   }
 
   bool is_any_button_visible = keyword_button_->GetVisible() ||
@@ -219,25 +231,15 @@ void OmniboxSuggestionButtonRowView::OnOmniboxBackgroundChange(
 }
 
 views::Button* OmniboxSuggestionButtonRowView::GetActiveButton() const {
-  std::vector<OmniboxSuggestionRowButton*> visible_buttons;
-  if (keyword_button_->GetVisible())
-    visible_buttons.push_back(keyword_button_);
-  if (tab_switch_button_->GetVisible())
-    visible_buttons.push_back(tab_switch_button_);
-  if (pedal_button_->GetVisible())
-    visible_buttons.push_back(pedal_button_);
+  std::vector<OmniboxSuggestionRowButton*> buttons{
+      keyword_button_, tab_switch_button_, pedal_button_};
 
-  if (visible_buttons.empty())
-    return nullptr;
-
-  // Find first visible button that matches model selection.
-  auto selected_button =
-      std::find_if(visible_buttons.begin(), visible_buttons.end(),
-                   [=](OmniboxSuggestionRowButton* button) {
-                     return model()->selection() == button->selection();
-                   });
-  return selected_button == visible_buttons.end() ? visible_buttons.front()
-                                                  : *selected_button;
+  // Find the button that matches model selection.
+  auto selected_button = std::find_if(
+      buttons.begin(), buttons.end(), [=](OmniboxSuggestionRowButton* button) {
+        return model()->selection() == button->selection();
+      });
+  return selected_button == buttons.end() ? nullptr : *selected_button;
 }
 
 const OmniboxPopupModel* OmniboxSuggestionButtonRowView::model() const {
@@ -286,3 +288,6 @@ void OmniboxSuggestionButtonRowView::ButtonPressed(
                                                           event.time_stamp());
   }
 }
+
+BEGIN_METADATA(OmniboxSuggestionButtonRowView, views::View)
+END_METADATA

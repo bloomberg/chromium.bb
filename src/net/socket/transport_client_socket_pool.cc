@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/containers/contains.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
@@ -92,7 +93,7 @@ class TransportClientSocketPool::ConnectJobFactoryImpl
   std::unique_ptr<ConnectJob> NewConnectJob(
       ClientSocketPool::GroupId group_id,
       scoped_refptr<ClientSocketPool::SocketParams> socket_params,
-      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       RequestPriority request_priority,
       SocketTag socket_tag,
       ConnectJob::Delegate* delegate) const override {
@@ -119,7 +120,7 @@ TransportClientSocketPool::Request::Request(
     RespectLimits respect_limits,
     Flags flags,
     scoped_refptr<SocketParams> socket_params,
-    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+    const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     const NetLogWithSource& net_log)
     : handle_(handle),
       callback_(std::move(callback)),
@@ -260,7 +261,7 @@ void TransportClientSocketPool::RemoveHigherLayeredPool(
 int TransportClientSocketPool::RequestSocket(
     const GroupId& group_id,
     scoped_refptr<SocketParams> params,
-    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+    const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     RequestPriority priority,
     const SocketTag& socket_tag,
     RespectLimits respect_limits,
@@ -312,7 +313,7 @@ int TransportClientSocketPool::RequestSocket(
 void TransportClientSocketPool::RequestSockets(
     const GroupId& group_id,
     scoped_refptr<SocketParams> params,
-    const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+    const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
     int num_sockets,
     const NetLogWithSource& net_log) {
   if (net_log.IsCapturing()) {
@@ -597,6 +598,9 @@ void TransportClientSocketPool::CancelRequest(const GroupId& group_id,
   CHECK(base::Contains(group_map_, group_id));
   Group* group = GetOrCreateGroup(group_id);
 
+  // TODO(crbug.com/1164929): Remove this CHECK once the investigation is done.
+  CHECK_EQ(group_id, group->group_id());
+
   std::unique_ptr<Request> request = group->FindAndRemoveBoundRequest(handle);
   if (request) {
     --connecting_socket_count_;
@@ -607,6 +611,9 @@ void TransportClientSocketPool::CancelRequest(const GroupId& group_id,
 
   // Search |unbound_requests_| for matching handle.
   request = group->FindAndRemoveUnboundRequest(handle);
+
+  // TODO(crbug.com/1164929): Remove this CHECK once the investigation is done.
+  CHECK(base::Contains(group_map_, group_id));
   if (request) {
     request->net_log().AddEvent(NetLogEventType::CANCELLED);
     request->net_log().EndEvent(NetLogEventType::SOCKET_POOL);
@@ -614,9 +621,23 @@ void TransportClientSocketPool::CancelRequest(const GroupId& group_id,
     // Let the job run, unless |cancel_connect_job| is true, or we're at the
     // socket limit and there are no other requests waiting on the job.
     bool reached_limit = ReachedMaxSocketsLimit();
+
+    // TODO(crbug.com/1164929): Remove this CHECK once the investigation is
+    // done.
+    CHECK(base::Contains(group_map_, group_id));
+
     if (group->jobs().size() > group->unbound_request_count() &&
         (cancel_connect_job || reached_limit)) {
+      // TODO(crbug.com/1164929): Remove this CHECK once the investigation is
+      // done.
+      CHECK(base::Contains(group_map_, group_id));
+
       RemoveConnectJob(group->jobs().begin()->get(), group);
+
+      // TODO(crbug.com/1164929): Remove this CHECK once the investigation is
+      // done.
+      CHECK(base::Contains(group_map_, group_id));
+
       if (group->IsEmpty())
         RemoveGroup(group->group_id());
       if (reached_limit)
@@ -1311,7 +1332,7 @@ void TransportClientSocketPool::OnConnectJobComplete(Group* group,
 
   // Check if the ConnectJob is already bound to a Request. If so, result is
   // returned to that specific request.
-  base::Optional<Group::BoundRequest> bound_request =
+  absl::optional<Group::BoundRequest> bound_request =
       group->FindAndRemoveBoundRequestForConnectJob(job);
   Request* request = nullptr;
   std::unique_ptr<Request> owned_request;
@@ -1834,7 +1855,7 @@ TransportClientSocketPool::Group::BindRequestToConnectJob(
   return request;
 }
 
-base::Optional<TransportClientSocketPool::Group::BoundRequest>
+absl::optional<TransportClientSocketPool::Group::BoundRequest>
 TransportClientSocketPool::Group::FindAndRemoveBoundRequestForConnectJob(
     ConnectJob* connect_job) {
   for (auto bound_pair = bound_requests_.begin();
@@ -1845,7 +1866,7 @@ TransportClientSocketPool::Group::FindAndRemoveBoundRequestForConnectJob(
     bound_requests_.erase(bound_pair);
     return std::move(ret);
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 std::unique_ptr<TransportClientSocketPool::Request>

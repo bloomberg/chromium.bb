@@ -83,16 +83,26 @@ aomdec_av1_ivf_error_resilient() {
   fi
 }
 
-aomdec_av1_ivf_multithread() {
+ivf_multithread() {
+  local row_mt="$1"
   if [ "$(aomdec_can_decode_av1)" = "yes" ]; then
     local file="${AV1_IVF_FILE}"
     if [ ! -e "${file}" ]; then
       encode_yuv_raw_input_av1 "${file}" --ivf || return 1
     fi
     for threads in 2 3 4 5 6 7 8; do
-      aomdec "${file}" --summary --noblit --threads=$threads || return 1
+      aomdec "${file}" --summary --noblit --threads=$threads --row-mt=$row_mt \
+        || return 1
     done
   fi
+}
+
+aomdec_av1_ivf_multithread() {
+  ivf_multithread 0  # --row-mt=0
+}
+
+aomdec_av1_ivf_multithread_row_mt() {
+  ivf_multithread 1  # --row-mt=1
 }
 
 aomdec_aom_ivf_pipe_input() {
@@ -137,11 +147,16 @@ aomdec_av1_webm() {
 }
 
 aomdec_tests="aomdec_av1_ivf
-              aomdec_av1_ivf_error_resilient
               aomdec_av1_ivf_multithread
-              aomdec_aom_ivf_pipe_input
-              aomdec_av1_obu_annexb
-              aomdec_av1_obu_section5
-              aomdec_av1_webm"
+              aomdec_av1_ivf_multithread_row_mt
+              aomdec_aom_ivf_pipe_input"
+
+if [ ! "$(realtime_only_build)" = "yes" ]; then
+  aomdec_tests="${aomdec_tests}
+                aomdec_av1_ivf_error_resilient
+                aomdec_av1_obu_annexb
+                aomdec_av1_obu_section5
+                aomdec_av1_webm"
+fi
 
 run_tests aomdec_verify_environment "${aomdec_tests}"

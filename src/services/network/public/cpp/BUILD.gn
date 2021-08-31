@@ -25,6 +25,8 @@ component("cpp") {
   output_name = "network_cpp"
 
   sources = [
+    "bfcache_opt_in_parser.cc",
+    "bfcache_opt_in_parser.h",
     "client_hints.cc",
     "client_hints.h",
     "constants.cc",
@@ -43,10 +45,6 @@ component("cpp") {
     "cors/origin_access_entry.h",
     "cors/origin_access_list.cc",
     "cors/origin_access_list.h",
-    "cors/preflight_cache.cc",
-    "cors/preflight_cache.h",
-    "cors/preflight_result.cc",
-    "cors/preflight_result.h",
     "cross_origin_embedder_policy_parser.cc",
     "cross_origin_embedder_policy_parser.h",
     "cross_origin_opener_policy_parser.cc",
@@ -71,6 +69,8 @@ component("cpp") {
     "ip_address_space_util.h",
     "is_potentially_trustworthy.cc",
     "is_potentially_trustworthy.h",
+    "link_header_parser.cc",
+    "link_header_parser.h",
     "load_info_util.cc",
     "load_info_util.h",
     "net_adapters.cc",
@@ -83,8 +83,10 @@ component("cpp") {
     "network_switches.h",
     "not_implemented_url_loader_factory.cc",
     "not_implemented_url_loader_factory.h",
-    "origin_isolation_parser.cc",
-    "origin_isolation_parser.h",
+    "opaque_response_blocking.cc",
+    "opaque_response_blocking.h",
+    "origin_agent_cluster_parser.cc",
+    "origin_agent_cluster_parser.h",
     "parsed_headers.cc",
     "parsed_headers.h",
     "request_destination.cc",
@@ -93,6 +95,8 @@ component("cpp") {
     "request_mode.h",
     "resolve_host_client_base.cc",
     "resolve_host_client_base.h",
+    "self_deleting_url_loader_factory.cc",
+    "self_deleting_url_loader_factory.h",
     "session_cookie_delete_predicate.h",
     "shared_url_loader_factory.cc",
     "shared_url_loader_factory.h",
@@ -105,15 +109,21 @@ component("cpp") {
     "spki_hash_set.h",
     "supports_loading_mode/supports_loading_mode_parser.cc",
     "supports_loading_mode/supports_loading_mode_parser.h",
+    "timing_allow_origin_parser.cc",
+    "timing_allow_origin_parser.h",
     "trust_token_http_headers.cc",
     "trust_token_http_headers.h",
     "trust_token_operation_authorization.h",
+    "url_util.cc",
+    "url_util.h",
     "weak_wrapper_shared_url_loader_factory.cc",
     "weak_wrapper_shared_url_loader_factory.h",
     "web_sandbox_flags.cc",
     "web_sandbox_flags.h",
     "wrapper_shared_url_loader_factory.cc",
     "wrapper_shared_url_loader_factory.h",
+    "x_frame_options_parser.cc",
+    "x_frame_options_parser.h",
   ]
 
   if (!is_ios) {
@@ -146,6 +156,7 @@ component("cpp") {
   deps = [
     "//base",
     "//build:chromeos_buildflags",
+    "//components/link_header_util",
     "//components/prefs",
     "//ipc",
     "//services/proxy_resolver/public/mojom",
@@ -169,7 +180,7 @@ component("ip_address_mojom_support") {
     "//net",
     "//services/network/public/mojom:mojom_ip_address_shared",
   ]
-  defines = [ "IS_NETWORK_CPP_BASE_IMPL" ]
+  defines = [ "IS_NETWORK_CPP_IP_ADDRESS_IMPL" ]
 }
 
 component("cookies_mojom_support") {
@@ -179,10 +190,29 @@ component("cookies_mojom_support") {
   ]
   deps = [
     ":crash_keys",
+    ":schemeful_site_mojom_support",
     "//net",
     "//services/network/public/mojom:cookies_mojom_shared",
   ]
-  defines = [ "IS_NETWORK_CPP_BASE_IMPL" ]
+  defines = [ "IS_NETWORK_CPP_COOKIES_IMPL" ]
+}
+
+component("network_param_mojom_support") {
+  sources = [
+    "net_ipc_param_traits.cc",
+    "net_ipc_param_traits.h",
+    "network_param_mojom_traits.cc",
+    "network_param_mojom_traits.h",
+  ]
+  deps = [
+    "//ipc",
+    "//mojo/public/cpp/base:shared_typemap_traits",
+    "//net",
+    "//services/network/public/mojom:mojom_network_param_shared",
+    "//url/ipc:url_ipc",
+    "//url/mojom:url_mojom_origin",
+  ]
+  defines = [ "IS_NETWORK_CPP_NETWORK_PARAM_IMPL" ]
 }
 
 # This component is separate from cpp_base as it is a dependency of
@@ -201,7 +231,7 @@ component("cross_origin_embedder_policy") {
     "//services/network/public/mojom:url_loader_base_shared",
   ]
 
-  defines = [ "IS_NETWORK_CPP_BASE_IMPL" ]
+  defines = [ "IS_NETWORK_CPP_CROSS_ORIGIN_IMPL" ]
 }
 
 # This component is separate from cpp_base as it is a dependency of
@@ -216,7 +246,7 @@ component("schemeful_site_mojom_support") {
     "//services/network/public/mojom:mojom_schemeful_site_shared",
     "//url/mojom:url_mojom_origin",
   ]
-  defines = [ "IS_NETWORK_CPP_BASE_IMPL" ]
+  defines = [ "IS_NETWORK_CPP_SCHEMEFUL_IMPL" ]
 }
 
 component("cpp_base") {
@@ -237,12 +267,10 @@ component("cpp_base") {
     "http_request_headers_mojom_traits.h",
     "isolation_info_mojom_traits.cc",
     "isolation_info_mojom_traits.h",
-    "isolation_opt_in_hints.cc",
-    "isolation_opt_in_hints.h",
+    "load_timing_info_mojom_traits.cc",
+    "load_timing_info_mojom_traits.h",
     "mutable_network_traffic_annotation_tag_mojom_traits.h",
     "mutable_partial_network_traffic_annotation_tag_mojom_traits.h",
-    "net_ipc_param_traits.cc",
-    "net_ipc_param_traits.h",
     "network_interface_mojom_traits.cc",
     "network_interface_mojom_traits.h",
     "network_ipc_param_traits.cc",
@@ -260,8 +288,6 @@ component("cpp_base") {
     "proxy_config_mojom_traits.h",
     "proxy_config_with_annotation_mojom_traits.cc",
     "proxy_config_with_annotation_mojom_traits.h",
-    "quic_transport_error_mojom_traits.cc",
-    "quic_transport_error_mojom_traits.h",
     "resource_request.cc",
     "resource_request.h",
     "resource_request_body.cc",
@@ -271,6 +297,8 @@ component("cpp_base") {
     "url_loader_completion_status.h",
     "url_request_mojom_traits.cc",
     "url_request_mojom_traits.h",
+    "web_transport_error_mojom_traits.cc",
+    "web_transport_error_mojom_traits.h",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -280,6 +308,7 @@ component("cpp_base") {
     ":crash_keys",
     ":cross_origin_embedder_policy",
     ":ip_address_mojom_support",
+    ":network_param_mojom_support",
     ":schemeful_site_mojom_support",
     "//services/network/public/mojom:url_loader_base",
     "//third_party/webrtc_overrides:webrtc_component",
@@ -293,9 +322,18 @@ component("cpp_base") {
     "//mojo/public/mojom/base",
     "//net",
     "//services/network/public/mojom:cookies_mojom",
-    "//services/network/public/mojom:mojom_shared",
+    "//services/network/public/mojom:url_loader_base",
   ]
   defines = [ "IS_NETWORK_CPP_BASE_IMPL" ]
+
+  # Since URLLoader is typedmapped in mojo and the class also uses the mojo
+  # interfaces a circular dependency exists. Allow this and ignore windows
+  # errors from it.
+  allow_circular_includes_from =
+      [ "//services/network/public/mojom:url_loader_base" ]
+  if (is_win && is_component_build) {
+    ldflags = [ "/IGNORE:4217" ]
+  }
 }
 
 mojom("test_interfaces") {
@@ -303,10 +341,26 @@ mojom("test_interfaces") {
   public_deps = [ "//services/network/public/mojom" ]
 }
 
+source_set("test_support") {
+  testonly = true
+
+  sources = [ "is_potentially_trustworthy_unittest.h" ]
+
+  public_deps = [
+    ":cpp",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//url:url_test_support",
+  ]
+}
+
 source_set("tests") {
   testonly = true
 
   sources = [
+    "bfcache_opt_in_parser_unittest.cc",
     "client_hints_unittest.cc",
     "content_security_policy/content_security_policy_unittest.cc",
     "content_security_policy/csp_context_unittest.cc",
@@ -316,8 +370,6 @@ source_set("tests") {
     "cors/cors_unittest.cc",
     "cors/origin_access_entry_unittest.cc",
     "cors/origin_access_list_unittest.cc",
-    "cors/preflight_cache_unittest.cc",
-    "cors/preflight_result_unittest.cc",
     "cross_origin_embedder_policy_parser_unittest.cc",
     "cross_origin_opener_policy_parser_unittest.cc",
     "cross_origin_read_blocking_unittest.cc",
@@ -326,6 +378,7 @@ source_set("tests") {
     "data_pipe_to_source_stream_unittest.cc",
     "default_credentials_mojom_traits_unittest.cc",
     "digitally_signed_mojom_traits_unittest.cc",
+    "empty_url_loader_client_unittest.cc",
     "header_util_unittest.cc",
     "host_resolver_mojom_traits_unittest.cc",
     "initiator_lock_compatibility_unittest.cc",
@@ -333,6 +386,7 @@ source_set("tests") {
     "ip_address_space_util_unittest.cc",
     "is_potentially_trustworthy_unittest.cc",
     "isolation_info_mojom_traits_unittest.cc",
+    "link_header_parser_unittest.cc",
     "mutable_network_traffic_annotation_tag_mojom_traits_unittest.cc",
     "mutable_partial_network_traffic_annotation_tag_mojom_traits_unittest.cc",
     "net_log_mojom_traits_unittest.cc",
@@ -340,16 +394,19 @@ source_set("tests") {
     "network_isolation_key_mojom_traits_unittest.cc",
     "network_mojom_traits_unittest.cc",
     "network_quality_tracker_unittest.cc",
+    "opaque_response_blocking_unittest.cc",
     "optional_trust_token_params_unittest.cc",
-    "origin_isolation_parser_unittest.cc",
+    "origin_agent_cluster_parser_unittest.cc",
     "proxy_config_mojom_traits_unittest.cc",
     "schemeful_site_mojom_traits_unittest.cc",
     "simple_url_loader_unittest.cc",
     "site_for_cookies_mojom_traits_unittest.cc",
     "source_stream_to_data_pipe_unittest.cc",
     "supports_loading_mode/supports_loading_mode_parser_unittest.cc",
+    "timing_allow_origin_parser_unittest.cc",
     "url_request_mojom_traits_unittest.cc",
     "web_sandbox_flags_unittests.cc",
+    "x_frame_options_parser_unittest.cc",
   ]
 
   if (!is_ios) {
@@ -359,6 +416,7 @@ source_set("tests") {
   deps = [
     ":cpp",
     ":test_interfaces",
+    ":test_support",
     "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/test_support:test_utils",
@@ -371,6 +429,12 @@ source_set("tests") {
   ]
 
   public_deps = [ ":buildflags" ]
+}
+
+fuzzer_test("xfo_fuzzer") {
+  sources = [ "x_frame_options_parser_fuzzer.cc" ]
+  dict = "x_frame_options.dict"
+  deps = [ ":cpp" ]
 }
 
 fuzzer_test("cors_fuzzer") {

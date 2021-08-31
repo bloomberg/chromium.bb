@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/mac_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
@@ -96,18 +95,18 @@ class TestWidgetDelegate : public test::TestDesktopWidgetDelegate {
  public:
   TestWidgetDelegate() = default;
 
-  static constexpr char kAccessibleWindowTitle[] = "My Accessible Window";
+  static constexpr char16_t kAccessibleWindowTitle[] = u"My Accessible Window";
 
   // WidgetDelegate:
-  base::string16 GetAccessibleWindowTitle() const override {
-    return base::ASCIIToUTF16(kAccessibleWindowTitle);
+  std::u16string GetAccessibleWindowTitle() const override {
+    return kAccessibleWindowTitle;
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestWidgetDelegate);
 };
 
-constexpr char TestWidgetDelegate::kAccessibleWindowTitle[];
+constexpr char16_t TestWidgetDelegate::kAccessibleWindowTitle[];
 
 // Widget-level tests for accessibility properties - these are actually mostly
 // tests of accessibility behavior for individual Views *as they appear* in
@@ -271,7 +270,7 @@ TEST_F(AXNativeWidgetMacTest, ChildrenAttribute) {
 
   // Check ignored children don't show up in the accessibility tree.
   widget()->GetContentsView()->AddChildView(
-      new FlexibleRoleTestView(ax::mojom::Role::kIgnored));
+      new FlexibleRoleTestView(ax::mojom::Role::kNone));
   EXPECT_EQ(kNumChildren, ax_node.accessibilityChildren.count);
 }
 
@@ -303,7 +302,7 @@ TEST_F(AXNativeWidgetMacTest, ParentAttribute) {
   EXPECT_NSEQ(NSAccessibilityGroupRole, ax_parent.accessibilityRole);
 
   // Test an ignored role parent is skipped in favor of the grandparent.
-  parent->set_role(ax::mojom::Role::kIgnored);
+  parent->set_role(ax::mojom::Role::kNone);
   ASSERT_NSNE(nil, AXParentOf(ax_child));
   EXPECT_NSEQ(NSAccessibilityGroupRole, AXParentOf(ax_child).accessibilityRole);
 }
@@ -348,7 +347,7 @@ TEST_F(AXNativeWidgetMacTest, NativeWindowProperties) {
   EXPECT_NSEQ(window, ax_view.accessibilityWindow);
   EXPECT_NSEQ(window, ax_view.accessibilityTopLevelUIElement);
   EXPECT_NSEQ(
-      base::SysUTF8ToNSString(TestWidgetDelegate::kAccessibleWindowTitle),
+      base::SysUTF16ToNSString(TestWidgetDelegate::kAccessibleWindowTitle),
       window.accessibilityTitle);
 }
 
@@ -550,10 +549,10 @@ TEST_F(AXNativeWidgetMacTest, TextfieldWritableAttributes) {
             textfield->GetSelectedRange());
 
   // Replace a middle section only (with a backwards selection range).
-  base::string16 front = base::ASCIIToUTF16("Front ");
-  base::string16 middle = base::ASCIIToUTF16("middle");
-  base::string16 back = base::ASCIIToUTF16(" back");
-  base::string16 replacement = base::ASCIIToUTF16("replaced");
+  std::u16string front = u"Front ";
+  std::u16string middle = u"middle";
+  std::u16string back = u" back";
+  std::u16string replacement = u"replaced";
   textfield->SetText(front + middle + back);
   test_range = gfx::Range(front.length() + middle.length(), front.length());
   new_string = base::SysUTF16ToNSString(front + replacement + back);
@@ -697,13 +696,13 @@ TEST_F(AXNativeWidgetMacTest, ProtectedTextfields) {
   EXPECT_EQ(0, ax_node.accessibilityInsertionPointLineNumber);
 
   // Test replacing text.
-  textfield->SetText(base::ASCIIToUTF16("123"));
+  textfield->SetText(u"123");
   EXPECT_NSEQ(@"•••", ax_node.accessibilityValue);
   EXPECT_EQ(3, ax_node.accessibilityNumberOfCharacters);
 
   textfield->SetSelectedRange(gfx::Range(2, 3));  // Selects "3".
   ax_node.accessibilitySelectedText = @"ab";
-  EXPECT_EQ(base::ASCIIToUTF16("12ab"), textfield->GetText());
+  EXPECT_EQ(u"12ab", textfield->GetText());
   EXPECT_NSEQ(@"••••", ax_node.accessibilityValue);
   EXPECT_EQ(4, ax_node.accessibilityNumberOfCharacters);
 }
@@ -772,9 +771,9 @@ class TestComboboxModel : public ui::ComboboxModel {
 
   // ui::ComboboxModel:
   int GetItemCount() const override { return 2; }
-  base::string16 GetItemAt(int index) const override {
+  std::u16string GetItemAt(int index) const override {
     return index == 0 ? base::SysNSStringToUTF16(kTestStringValue)
-                      : base::ASCIIToUTF16("Second Item");
+                      : u"Second Item";
   }
 
  private:

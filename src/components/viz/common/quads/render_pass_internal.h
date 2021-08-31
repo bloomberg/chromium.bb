@@ -10,10 +10,10 @@
 #include <memory>
 #include <vector>
 
-#include "base/optional.h"
 #include "cc/paint/filter_operations.h"
 #include "components/viz/common/quads/quad_list.h"
 #include "components/viz/common/viz_common_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/rrect_f.h"
@@ -31,9 +31,10 @@ class VIZ_COMMON_EXPORT RenderPassInternal {
  public:
   SharedQuadState* CreateAndAppendSharedQuadState();
 
-  // Replaces a quad in |quad_list| with a transparent black SolidColorQuad.
-  void ReplaceExistingQuadWithOpaqueTransparentSolidColor(
-      QuadList::Iterator at);
+  // Replaces a quad in |quad_list| with a |SolidColorDrawQuad|.
+  void ReplaceExistingQuadWithSolidColor(QuadList::Iterator at,
+                                         SkColor color,
+                                         SkBlendMode blend_mode);
 
   // These are in the space of the render pass' physical pixels.
   gfx::Rect output_rect;
@@ -51,7 +52,7 @@ class VIZ_COMMON_EXPORT RenderPassInternal {
   cc::FilterOperations backdrop_filters;
 
   // Clipping bounds for backdrop filter.
-  base::Optional<gfx::RRectF> backdrop_filter_bounds;
+  absl::optional<gfx::RRectF> backdrop_filter_bounds;
 
   // If false, the pixels in the render pass' texture are all opaque.
   bool has_transparent_background = true;

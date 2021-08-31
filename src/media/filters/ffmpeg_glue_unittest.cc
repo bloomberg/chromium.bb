@@ -50,7 +50,7 @@ class FFmpegGlueTest : public ::testing::Test {
       : protocol_(new StrictMock<MockProtocol>()) {
     // IsStreaming() is called when opening.
     EXPECT_CALL(*protocol_.get(), IsStreaming()).WillOnce(Return(true));
-    glue_.reset(new FFmpegGlue(protocol_.get()));
+    glue_ = std::make_unique<FFmpegGlue>(protocol_.get());
     CHECK(glue_->format_context());
     CHECK(glue_->format_context()->pb);
   }
@@ -87,9 +87,9 @@ class FFmpegGlueDestructionTest : public ::testing::Test {
 
   void Initialize(const char* filename) {
     data_ = ReadTestDataFile(filename);
-    protocol_.reset(new InMemoryUrlProtocol(
-        data_->data(), data_->data_size(), false));
-    glue_.reset(new FFmpegGlue(protocol_.get()));
+    protocol_ = std::make_unique<InMemoryUrlProtocol>(
+        data_->data(), data_->data_size(), false);
+    glue_ = std::make_unique<FFmpegGlue>(protocol_.get());
     CHECK(glue_->format_context());
     CHECK(glue_->format_context()->pb);
   }
@@ -316,7 +316,7 @@ TEST_F(FFmpegGlueContainerTest, AAC) {
   ExpectContainer(container_names::CONTAINER_AAC);
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(FFmpegGlueContainerTest, AVI) {
   InitializeAndOpen("bear.avi");
   ExpectContainer(container_names::CONTAINER_AVI);
@@ -326,7 +326,7 @@ TEST_F(FFmpegGlueContainerTest, AMR) {
   InitializeAndOpen("bear.amr");
   ExpectContainer(container_names::CONTAINER_AMR);
 }
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 // Probe something unsupported to ensure we fall back to the our internal guess.

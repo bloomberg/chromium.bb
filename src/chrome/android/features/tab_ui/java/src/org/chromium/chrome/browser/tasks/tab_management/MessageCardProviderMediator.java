@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.IPH;
-import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.PRICE_WELCOME;
+import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.PRICE_MESSAGE;
 import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.TAB_SUGGESTION;
 
 import android.content.Context;
@@ -93,6 +93,13 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
         return message;
     }
 
+    boolean isMessageShown(@MessageService.MessageType int messageType, int identifier) {
+        if (!mShownMessageItems.containsKey(messageType)) return false;
+        return mShownMessageItems.get(messageType)
+                       .model.get(MessageCardViewProperties.MESSAGE_IDENTIFIER)
+                == identifier;
+    }
+
     private PropertyModel buildModel(int messageType, MessageService.MessageData data) {
         switch (messageType) {
             case TAB_SUGGESTION:
@@ -104,11 +111,10 @@ public class MessageCardProviderMediator implements MessageService.MessageObserv
                 assert data instanceof IphMessageService.IphMessageData;
                 return IphMessageCardViewModel.create(mContext, this::invalidateShownMessage,
                         (IphMessageService.IphMessageData) data);
-            case PRICE_WELCOME:
-                assert data instanceof PriceWelcomeMessageService.PriceWelcomeMessageData;
-                return PriceWelcomeMessageCardViewModel.create(mContext,
-                        this::invalidateShownMessage,
-                        (PriceWelcomeMessageService.PriceWelcomeMessageData) data);
+            case PRICE_MESSAGE:
+                assert data instanceof PriceMessageService.PriceMessageData;
+                return PriceMessageCardViewModel.create(mContext, this::invalidateShownMessage,
+                        (PriceMessageService.PriceMessageData) data);
             default:
                 return new PropertyModel.Builder(MessageCardViewProperties.ALL_KEYS)
                         .with(MessageCardViewProperties.IS_INCOGNITO, false)

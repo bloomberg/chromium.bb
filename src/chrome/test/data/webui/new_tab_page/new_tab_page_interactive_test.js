@@ -13,14 +13,6 @@ class NewTabPageInteractiveTest extends PolymerInteractiveUITest {
   get browsePreload() {
     throw 'this is abstract and should be overriden by subclasses';
   }
-
-  /** @override */
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
 }
 
 // eslint-disable-next-line no-var

@@ -10,19 +10,18 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/time/default_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager_util.h"
+#include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/policy/weekly_time/time_utils.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace em = enterprise_management;
 
@@ -73,7 +72,7 @@ bool DeviceOffHoursController::IsCurrentSessionAllowedOnlyForOffHours() const {
   for (auto* user : logged_in_users) {
     if (user->GetType() == user_manager::USER_TYPE_REGULAR ||
         user->GetType() == user_manager::USER_TYPE_GUEST ||
-        user->GetType() == user_manager::USER_TYPE_SUPERVISED ||
+        user->GetType() == user_manager::USER_TYPE_SUPERVISED_DEPRECATED ||
         user->GetType() == user_manager::USER_TYPE_CHILD) {
       users_to_check.push_back(user);
     }
@@ -84,7 +83,7 @@ bool DeviceOffHoursController::IsCurrentSessionAllowedOnlyForOffHours() const {
 
   // If at least one logged in user won't be allowed after OffHours,
   // the session will be terminated.
-  return !chromeos::chrome_user_manager_util::AreAllUsersAllowed(
+  return !ash::chrome_user_manager_util::AreAllUsersAllowed(
       users_to_check, device_settings_proto_);
 }
 
@@ -95,7 +94,7 @@ void DeviceOffHoursController::UpdateOffHoursPolicy(
   if (device_settings_proto.has_device_off_hours()) {
     const em::DeviceOffHoursProto& container(
         device_settings_proto.device_off_hours());
-    base::Optional<std::string> timezone = ExtractTimezoneFromProto(container);
+    absl::optional<std::string> timezone = ExtractTimezoneFromProto(container);
     if (timezone) {
       off_hours_intervals = weekly_time_utils::ConvertIntervalsToGmt(
           ExtractWeeklyTimeIntervalsFromProto(container, *timezone, clock_));
@@ -113,36 +112,33 @@ void DeviceOffHoursController::NotifyOffHoursEndTimeChanged() const {
 
 void DeviceOffHoursController::OffHoursModeIsChanged() const {
   VLOG(1) << "OffHours mode is changed to " << off_hours_mode_;
-  chromeos::DeviceSettingsService::Get()->Load();
+  ash::DeviceSettingsService::Get()->Load();
 }
 
 void DeviceOffHoursController::UpdateOffHoursMode() {
-  // Assume that time is network synchronized if response from dbus call is not
-  // arrived.
-  bool is_time_network_synchronized = network_synchronized_.value_or(true);
-  if (off_hours_intervals_.empty() || !is_time_network_synchronized) {
-    if (!is_time_network_synchronized) {
-      VLOG(1) << "The system time isn't network synchronized. OffHours mode is "
-                 "unavailable.";
+  if (off_hours_intervals_.empty() || !is_clock_network_synchronized_) {
+    if (!is_clock_network_synchronized_) {
+      VLOG(1) << "The system clock isn't network synchronized. OffHours mode "
+                 "is unavailable.";
     }
+    SetOffHoursEndTime(base::Time{});
     StopOffHoursTimer();
     SetOffHoursMode(false);
     return;
   }
-  WeeklyTime current_time = WeeklyTime::GetCurrentGmtWeeklyTime(clock_);
-  for (const auto& interval : off_hours_intervals_) {
-    if (interval.Contains(current_time)) {
-      base::TimeDelta remaining_off_hours_duration =
-          current_time.GetDurationTo(interval.end());
-      SetOffHoursEndTime(base::Time::Now() + remaining_off_hours_duration);
-      StartOffHoursTimer(remaining_off_hours_duration);
-      SetOffHoursMode(true);
-      return;
-    }
-  }
-  StartOffHoursTimer(weekly_time_utils::GetDeltaTillNextTimeInterval(
-      current_time, off_hours_intervals_));
-  SetOffHoursMode(false);
+
+  namespace wtu = ::policy::weekly_time_utils;
+  const base::Time now = clock_->Now();
+  const bool in_interval = wtu::Contains(now, off_hours_intervals_);
+  const absl::optional<base::Time> update_time =
+      wtu::GetNextEventTime(now, off_hours_intervals_);
+
+  // weekly off_hours_intervals_ is not empty -> update_time has a value
+  DCHECK(update_time);
+
+  SetOffHoursEndTime(in_interval ? update_time.value() : base::Time{});
+  StartOffHoursTimer(update_time.value());
+  SetOffHoursMode(in_interval);
 }
 
 void DeviceOffHoursController::SetOffHoursEndTime(
@@ -163,10 +159,9 @@ void DeviceOffHoursController::SetOffHoursMode(bool off_hours_enabled) {
   OffHoursModeIsChanged();
 }
 
-void DeviceOffHoursController::StartOffHoursTimer(base::TimeDelta delay) {
-  DCHECK_GT(delay, base::TimeDelta());
-  DVLOG(1) << "OffHours mode timer starts for " << delay;
-  timer_->Start(FROM_HERE, clock_->Now() + delay,
+void DeviceOffHoursController::StartOffHoursTimer(base::Time update_time) {
+  DVLOG(1) << "OffHours mode timer starts with run time " << update_time;
+  timer_->Start(FROM_HERE, update_time,
                 base::BindOnce(&DeviceOffHoursController::UpdateOffHoursMode,
                                weak_ptr_factory_.GetWeakPtr()));
 }
@@ -199,7 +194,7 @@ void DeviceOffHoursController::NetworkSynchronizationUpdated(
     bool network_synchronized) {
   // Triggered when information about the system time synchronization with
   // network is received.
-  network_synchronized_ = network_synchronized;
+  is_clock_network_synchronized_ = network_synchronized;
   UpdateOffHoursMode();
 }
 

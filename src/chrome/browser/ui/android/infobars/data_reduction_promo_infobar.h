@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_promo_infobar_delegate_android.h"
-#include "chrome/browser/ui/android/infobars/chrome_confirm_infobar.h"
+#include "components/infobars/android/confirm_infobar.h"
 
-class DataReductionPromoInfoBar : public ChromeConfirmInfoBar {
+class DataReductionPromoInfoBar : public infobars::ConfirmInfoBar {
  public:
   explicit DataReductionPromoInfoBar(
       std::unique_ptr<DataReductionPromoInfoBarDelegateAndroid> delegate);
@@ -19,7 +19,8 @@ class DataReductionPromoInfoBar : public ChromeConfirmInfoBar {
  private:
   // ConfirmInfoBar:
   base::android::ScopedJavaLocalRef<jobject> CreateRenderInfoBar(
-      JNIEnv* env) override;
+      JNIEnv* env,
+      const ResourceIdMapper& resource_id_mapper) override;
 
   DataReductionPromoInfoBarDelegateAndroid* GetDelegate();
 

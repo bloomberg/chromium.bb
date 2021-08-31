@@ -40,6 +40,7 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
   void NewTab() override;
   void NewTabWithUrl(const GURL& url, bool from_user_interaction) override;
   void NewWindow(bool incognito) override;
+  void OpenCalculator() override;
   void OpenFileManager() override;
   void OpenDownloadsFolder() override;
   void OpenCrosh() override;
@@ -47,6 +48,7 @@ class ChromeNewWindowClient : public ash::NewWindowDelegate,
   void RestoreTab() override;
   void ShowKeyboardShortcutViewer() override;
   void ShowTaskManager() override;
+  void OpenDiagnostics() override;
   void OpenFeedbackPage(bool from_assistant) override;
 
   // arc::OpenUrlDelegate:

@@ -68,7 +68,6 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
       base::RepeatingCallback<std::unique_ptr<IntentGenerator>()>;
 
   QuickAnswersClient(network::mojom::URLLoaderFactory* url_loader_factory,
-                     ash::AssistantState* assistant_state,
                      QuickAnswersDelegate* delegate);
 
   QuickAnswersClient(const QuickAnswersClient&) = delete;
@@ -82,8 +81,6 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantContextEnabled(bool enabled) override;
   void OnLocaleChanged(const std::string& locale) override;
-  void OnAssistantQuickAnswersEnabled(bool enabled) override;
-  void OnAssistantStateDestroyed() override;
 
   // ResultLoaderDelegate:
   void OnNetworkError() override;
@@ -142,13 +139,11 @@ class QuickAnswersClient : public ash::AssistantStateObserver,
   base::TimeDelta GetImpressionDuration() const;
 
   network::mojom::URLLoaderFactory* url_loader_factory_ = nullptr;
-  ash::AssistantState* assistant_state_ = nullptr;
   QuickAnswersDelegate* delegate_ = nullptr;
   std::unique_ptr<ResultLoader> result_loader_;
   std::unique_ptr<IntentGenerator> intent_generator_;
   bool assistant_enabled_ = false;
   bool assistant_context_enabled_ = false;
-  bool quick_answers_settings_enabled_ = false;
   bool locale_supported_ = false;
   chromeos::assistant::AssistantAllowedState assistant_allowed_state_ =
       chromeos::assistant::AssistantAllowedState::ALLOWED;

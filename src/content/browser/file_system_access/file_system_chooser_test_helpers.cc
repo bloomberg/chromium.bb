@@ -20,7 +20,7 @@ class CancellingSelectFileDialog : public ui::SelectFileDialog {
 
  protected:
   void SelectFileImpl(Type type,
-                      const base::string16& title,
+                      const std::u16string& title,
                       const base::FilePath& default_path,
                       const FileTypeInfo* file_types,
                       int file_type_index,
@@ -32,9 +32,10 @@ class CancellingSelectFileDialog : public ui::SelectFileDialog {
       if (file_types)
         out_params_->file_types = *file_types;
       else
-        out_params_->file_types = base::nullopt;
+        out_params_->file_types = absl::nullopt;
       out_params_->owning_window = owning_window;
       out_params_->file_type_index = file_type_index;
+      out_params_->default_path = default_path;
     }
     listener_->FileSelectionCanceled(params);
   }
@@ -62,7 +63,7 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
 
  protected:
   void SelectFileImpl(Type type,
-                      const base::string16& title,
+                      const std::u16string& title,
                       const base::FilePath& default_path,
                       const FileTypeInfo* file_types,
                       int file_type_index,
@@ -74,9 +75,10 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
       if (file_types)
         out_params_->file_types = *file_types;
       else
-        out_params_->file_types = base::nullopt;
+        out_params_->file_types = absl::nullopt;
       out_params_->owning_window = owning_window;
       out_params_->file_type_index = file_type_index;
+      out_params_->default_path = default_path;
     }
     if (result_.size() == 1)
       listener_->FileSelectedWithExtraInfo(result_[0], 0, params);

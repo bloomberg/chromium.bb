@@ -51,8 +51,8 @@ std::unique_ptr<base::DictionaryValue> GetAllSettings(Profile* profile,
   extensions::StorageFrontend::Get(profile)->RunWithStorage(
       ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(id),
       extensions::settings_namespace::SYNC,
-      base::BindRepeating(&GetAllSettingsOnBackendSequence, settings.get(),
-                          &signal));
+      base::BindOnce(&GetAllSettingsOnBackendSequence, settings.get(),
+                     &signal));
   signal.Wait();
   return settings;
 }
@@ -75,7 +75,7 @@ bool AreSettingsSame(Profile* expected_profile, Profile* actual_profile) {
         GetAllSettings(expected_profile, id));
     std::unique_ptr<base::DictionaryValue> actual(
         GetAllSettings(actual_profile, id));
-    if (!expected->Equals(actual.get())) {
+    if (*expected != *actual) {
       ADD_FAILURE() <<
           "Expected " << ToJson(*expected) << " got " << ToJson(*actual);
       same = false;
@@ -103,7 +103,7 @@ void SetExtensionSettings(
   extensions::StorageFrontend::Get(profile)->RunWithStorage(
       ExtensionRegistry::Get(profile)->enabled_extensions().GetByID(id),
       extensions::settings_namespace::SYNC,
-      base::BindRepeating(&SetSettingsOnBackendSequence, &settings, &signal));
+      base::BindOnce(&SetSettingsOnBackendSequence, &settings, &signal));
   signal.Wait();
 }
 

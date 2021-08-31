@@ -12,13 +12,12 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
+#include "chrome/browser/sharesheet/sharesheet_metrics.h"
 #include "storage/browser/file_system/file_system_url.h"
 
-namespace base {
-class File;
-}
+class Profile;
 
 namespace extensions {
 
@@ -68,7 +67,7 @@ class FileManagerPrivateInternalSharesheetHasTargetsFunction
   std::unique_ptr<app_file_handler_util::IsDirectoryCollector>
       is_directory_collector_;
   std::vector<GURL> urls_;
-  const ChromeExtensionFunctionDetails chrome_details_;
+  Profile* profile_ = nullptr;
   std::vector<storage::FileSystemURL> file_system_urls_;
   bool contains_hosted_document_ = false;
 };
@@ -90,14 +89,17 @@ class FileManagerPrivateInternalInvokeSharesheetFunction
 
  private:
   void OnMimeTypesCollected(
+      sharesheet::SharesheetMetrics::LaunchSource launch_source,
       std::unique_ptr<std::vector<std::string>> mime_types);
 
   void OnDrivePropertyCollected(
+      sharesheet::SharesheetMetrics::LaunchSource launch_source,
       std::unique_ptr<std::vector<std::string>> mime_types,
       std::unique_ptr<api::file_manager_private::EntryProperties> properties,
       base::File::Error error);
 
   void OnIsDirectoryCollected(
+      sharesheet::SharesheetMetrics::LaunchSource launch_source,
       std::unique_ptr<std::vector<std::string>> mime_types,
       std::unique_ptr<api::file_manager_private::EntryProperties> properties,
       std::unique_ptr<std::set<base::FilePath>> path_directory_set);
@@ -107,7 +109,7 @@ class FileManagerPrivateInternalInvokeSharesheetFunction
   std::unique_ptr<app_file_handler_util::IsDirectoryCollector>
       is_directory_collector_;
   std::vector<GURL> urls_;
-  const ChromeExtensionFunctionDetails chrome_details_;
+  Profile* profile_ = nullptr;
   std::vector<storage::FileSystemURL> file_system_urls_;
   bool contains_hosted_document_ = false;
 };

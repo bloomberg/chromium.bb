@@ -9,8 +9,10 @@
 
 #include <algorithm>
 #include <map>
+#include <string>
 #include <vector>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -20,7 +22,6 @@
 #include "base/process/memory.h"
 #include "base/process/process_handle.h"  // kNullProcessHandle.
 #include "base/process/process_metrics.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,7 +37,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/memory/pressure/pressure.h"
 #include "chromeos/memory/pressure/system_memory_pressure_evaluator.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -219,12 +219,12 @@ class TabManagerDelegate::FocusedProcess {
 // Target memory to free is the amount which brings available
 // memory back to the margin.
 int TabManagerDelegate::MemoryStat::TargetMemoryToFreeKB() {
-  if (chromeos::memory::SystemMemoryPressureEvaluator::Get()) {
-    // The first output of GetMemoryMarginsKB() is the critical memory
-    // threshold. Low memory condition is reported if available memory is under
-    // the number.
-    return chromeos::memory::pressure::GetMemoryMarginsKB().first -
-           chromeos::memory::pressure::GetAvailableMemoryKB();
+  auto* monitor = chromeos::memory::SystemMemoryPressureEvaluator::Get();
+  if (monitor) {
+    // Low memory condition is reported if available memory is under the
+    // critical margin.
+    return monitor->GetMemoryMarginsKB().critical -
+           monitor->GetCachedAvailableMemoryKB();
   } else {
     // When TabManager::DiscardTab(LifecycleUnitDiscardReason::EXTERNAL) is
     // called by an integration test, TabManagerDelegate might be used without
@@ -293,7 +293,7 @@ void TabManagerDelegate::OnWindowActivated(
     wm::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
-  if (arc::IsArcAppWindow(gained_active)) {
+  if (ash::IsArcWindow(gained_active)) {
     // Currently there is no way to know which app is displayed in the ARC
     // window, so schedule an early adjustment for all processes to reflect
     // the change.
@@ -308,7 +308,7 @@ void TabManagerDelegate::OnWindowActivated(
         TimeDelta::FromMilliseconds(kFocusedProcessScoreAdjustIntervalMs), this,
         &TabManagerDelegate::ScheduleEarlyOomPrioritiesAdjustment);
   }
-  if (arc::IsArcAppWindow(lost_active)) {
+  if (ash::IsArcWindow(lost_active)) {
     // Do not bother adjusting OOM score if the ARC window is deactivated
     // shortly.
     if (focused_process_->ResetIfIsArcApp() &&
@@ -342,7 +342,7 @@ void TabManagerDelegate::LowMemoryKill(
         &TabManagerDelegate::LowMemoryKillImpl, weak_ptr_factory_.GetWeakPtr(),
         now, reason, std::move(tab_discard_done)));
   } else {
-    LowMemoryKillImpl(now, reason, std::move(tab_discard_done), base::nullopt);
+    LowMemoryKillImpl(now, reason, std::move(tab_discard_done), absl::nullopt);
   }
 }
 
@@ -485,7 +485,7 @@ void TabManagerDelegate::AdjustOomPriorities() {
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
     // Pass in nullopt if unable to get ARC processes.
-    AdjustOomPrioritiesImpl(base::nullopt);
+    AdjustOomPrioritiesImpl(absl::nullopt);
   }
 }
 

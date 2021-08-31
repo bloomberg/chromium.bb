@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/post_async_results.h"
 #include "components/device_event_log/device_event_log.h"
@@ -170,7 +170,7 @@ bool GetAsVector(IVectorView<T*>* view, std::vector<ComPtr<I>>* vector) {
 
 BluetoothGattDiscovererWinrt::BluetoothGattDiscovererWinrt(
     ComPtr<IBluetoothLEDevice> ble_device,
-    base::Optional<BluetoothUUID> service_uuid)
+    absl::optional<BluetoothUUID> service_uuid)
     : ble_device_(std::move(ble_device)),
       service_uuid_(std::move(service_uuid)) {}
 

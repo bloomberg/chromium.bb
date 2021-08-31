@@ -3,13 +3,13 @@
 <head>
   <script src="../../../resources/testharness.js"></script>
   <script src="../../../resources/testharnessreport.js"></script>
-  <script src="../../../fast/forms/resources/common.js"></script>
-  <script src="../../../fast/forms/resources/picker-common.js"></script>
+  <script src="../resources/common.js"></script>
+  <script src="../resources/picker-common.js"></script>
 </head>
 <body>
 <script>
 if (window.internals)
-    internals.settings.setLangAttributeAwareFormControlUIEnabled(true);
+    internals.runtimeFlags.langAttributeAwareFormControlUIEnabled = true;
 else
     debug('Require testRunner.');
 </script>

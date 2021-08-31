@@ -11,8 +11,9 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/sad_tab/sad_tab_view_controller.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -32,6 +33,7 @@ class SadTabCoordinatorTest : public PlatformTest {
     UILayoutGuide* guide = [[NamedGuide alloc] initWithName:kContentAreaGuide];
     [base_view_controller_.view addLayoutGuide:guide];
     AddSameConstraints(guide, base_view_controller_.view);
+    WebNavigationBrowserAgent::CreateForBrowser(browser_.get());
   }
   web::WebTaskEnvironment task_environment_;
   UIViewController* base_view_controller_;
@@ -101,7 +103,7 @@ TEST_F(SadTabCoordinatorTest, Hide) {
 
 // Tests SadTabViewController state for the first failure in non-incognito mode.
 TEST_F(SadTabCoordinatorTest, FirstFailureInNonIncognito) {
-  web::TestWebState web_state;
+  web::FakeWebState web_state;
   web_state.WasShown();
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
@@ -125,7 +127,7 @@ TEST_F(SadTabCoordinatorTest, FirstFailureInNonIncognito) {
 
 // Tests SadTabViewController state for the repeated failure in incognito mode.
 TEST_F(SadTabCoordinatorTest, FirstFailureInIncognito) {
-  web::TestWebState web_state;
+  web::FakeWebState web_state;
   web_state.WasShown();
   std::unique_ptr<Browser> otr_browser = std::make_unique<TestBrowser>(
       browser_->GetBrowserState()->GetOffTheRecordChromeBrowserState());
@@ -173,18 +175,11 @@ TEST_F(SadTabCoordinatorTest, ShowFirstFailureInIncognito) {
 
 // Tests action button tap for the first failure.
 TEST_F(SadTabCoordinatorTest, FirstFailureAction) {
-  web::TestWebState web_state;
+  web::FakeWebState web_state;
   web_state.WasShown();
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
                          browser:browser_.get()];
-
-  id mock_browser_commands_handler_ =
-      OCMStrictProtocolMock(@protocol(BrowserCommands));
-  [browser_->GetCommandDispatcher()
-      startDispatchingToTarget:mock_browser_commands_handler_
-                   forProtocol:@protocol(BrowserCommands)];
-  OCMExpect([mock_browser_commands_handler_ reload]);
 
   [coordinator sadTabTabHelper:nullptr
       presentSadTabForWebState:&web_state
@@ -196,16 +191,15 @@ TEST_F(SadTabCoordinatorTest, FirstFailureAction) {
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([SadTabViewController class], [view_controller class]);
 
-  // Verify dispatcher's message.
+  // Ensure that the action button can be pressed.
   [view_controller.actionButton
       sendActionsForControlEvents:UIControlEventTouchUpInside];
-  EXPECT_OCMOCK_VERIFY(mock_browser_commands_handler_);
   [coordinator stop];
 }
 
 // Tests action button tap for the repeated failure.
 TEST_F(SadTabCoordinatorTest, RepeatedFailureAction) {
-  web::TestWebState web_state;
+  web::FakeWebState web_state;
   web_state.WasShown();
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
@@ -239,7 +233,7 @@ TEST_F(SadTabCoordinatorTest, RepeatedFailureAction) {
 
 // Tests that view controller is not presented for the hidden web state.
 TEST_F(SadTabCoordinatorTest, IgnoreSadTabFromHiddenWebState) {
-  web::TestWebState web_state;
+  web::FakeWebState web_state;
   SadTabCoordinator* coordinator = [[SadTabCoordinator alloc]
       initWithBaseViewController:base_view_controller_
                          browser:browser_.get()];

@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">baner</translation>
 <translation id="145015347812617860">Stavki: <ph name="COUNT" /></translation>
 <translation id="1480676835519562650">više opcija za izbor, izabranih: <ph name="SELECTED" /> od <ph name="COUNT" />.</translation>
+<translation id="1588438908519853928">Normalan</translation>
 <translation id="1589122976691792535">region</translation>
 <translation id="1591562245178063882">Ovaj mesec</translation>
 <translation id="1637811476055996098">Izbor datoteka</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">tajmer</translation>
 <translation id="3199563858620722075">kombinovani okvir</translation>
 <translation id="3220661731597678625">aktuelni korak</translation>
+<translation id="3321030238473337787">Brzina reprodukcije</translation>
 <translation id="3329013043687509092">Zasićenost boja</translation>
 <translation id="3450233048674729344">Vrednost sme da bude najviše <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definicija</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">traka sa menijima</translation>
 <translation id="4293574643247337246">zaglavlje stranice</translation>
 <translation id="4360991593054037559">Unesite važeću vrednost. Dve najbliže važeće vrednosti su <ph name="VALID_VALUE_LOW" /> i <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4371899966896349864">onemogućite prikaz menija brzine reprodukcije</translation>
 <translation id="4384249794467006333">Ova slika nema oznaku. Otvorite meni Još opcija u gornjem desnom uglu da biste videli opise slika.</translation>
 <translation id="4384583879834880242">Pitanja i odgovori</translation>
 <translation id="4444765639179266822">Izgleda da piše: <ph name="OCR_TEXT" /></translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">zaglavlje reda</translation>
 <translation id="5143125788380636750">epilog</translation>
 <translation id="5164977714490026579">Vrednost sme da bude najmanje <ph name="MINIMUM" />.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Unesite neki deo pre „<ph name="ATSIGN" />“. Adresa „<ph name="INVALIDADDRESS" />“ je nepotpuna.</translation>
 <translation id="5334352251556557839">Puštanje medija nije uspelo.</translation>
 <translation id="537648784377940524">Minimalni datum (<ph name="MIN_DATE_OR_TIME" />) mora da bude pre maksimalnog datuma (<ph name="MAX_DATE_OR_TIME" />).</translation>
+<translation id="5378437566635403538">prošireno, otvoren je dijalog.</translation>
 <translation id="5406322316791861025">cifra</translation>
 <translation id="5425179576310518467">trenutni datum</translation>
 <translation id="5453733299334684579">stavka stabla</translation>
 <translation id="5466621249238537318">Izaberite jednu ili više datoteka.</translation>
 <translation id="5468998798572797635">izađite iz režima celog ekrana</translation>
+<translation id="5516235301412634559">0,75</translation>
 <translation id="5516424706154626233">birač datuma</translation>
 <translation id="5537725057119320332">Prebacuj</translation>
 <translation id="5546461542133609677">uključite zvuk</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">još opcija</translation>
 <translation id="576709008726043716">uvod</translation>
 <translation id="57838592816432529">Isključi zvuk</translation>
+<translation id="5786442179789148008">omogućite prikaz menija brzine reprodukcije</translation>
+<translation id="5787939484346677755">prošireno, dostupne su opcije za automatsko dovršavanje.</translation>
 <translation id="5860033963881614850">Isključeno</translation>
 <translation id="588258955323874662">Ceo ekran</translation>
 <translation id="5888666972993069672">Trenutno se prebacuje na <ph name="DEVICE_FRIENDLY_NAME" /></translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">Uključeno</translation>
 <translation id="5939518447894949180">Resetuj</translation>
 <translation id="5966707198760109579">Nedelja</translation>
+<translation id="5985507339671257014">0,5</translation>
 <translation id="5987525920412732405">dugme za promenu vrednosti</translation>
 <translation id="6011459053400940133">klizač za jačinu zvuka</translation>
 <translation id="6015796118275082299">Godina</translation>
 <translation id="6023896073578205740">okvir sa listom</translation>
 <translation id="6150588977291308318">bibliografija</translation>
 <translation id="6164829606128959761">merač</translation>
+<translation id="6165053282446038410">prošireno, dostupnih opcija za automatsko dovršavanje: <ph name="COUNT" />.</translation>
 <translation id="6166809985690652833">pogovor</translation>
 <translation id="6209276755895393898">Izgleda da je ovo: <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">aktuelna stranica</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">Obriši</translation>
 <translation id="668171684555832681">Drugo...</translation>
 <translation id="6692633176391053278">kontrola za promene u koracima</translation>
+<translation id="6696580792574109116">birač meseca</translation>
 <translation id="6709093583001123835">Vrednost mora da bude <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Loš kvalitet snimka</translation>
 <translation id="6755330956360078551">objašnjenje</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">isključi zvuk</translation>
 <translation id="6885760532393684712">katalog</translation>
 <translation id="689129560213475294">znak izdavača</translation>
+<translation id="6919891270253167948">1,5</translation>
 <translation id="6934078000481955284">izdvojeni citat</translation>
 <translation id="693476918119313863">zaglavlje</translation>
 <translation id="6941933287844615239">preuzmi medije</translation>
 <translation id="6981594929165378967">umetanje</translation>
+<translation id="698788488269350478">prošireno.</translation>
 <translation id="6989848892321993519">Produžite ovaj tekst na bar <ph name="MIN_CHARACTERS" /> znak(ov)a (trenutno koristite 1 znak).</translation>
 <translation id="7034405885550056553">predlog</translation>
 <translation id="709897737746224366">Izaberite zahtevani format.</translation>
 <translation id="7102274145889307184">trenutna lokacija</translation>
 <translation id="7118469954320184356">Opis nije dostupan.</translation>
 <translation id="7139483182332611405">predgovor</translation>
+<translation id="7198226213493847604">iskačuće dugme menija</translation>
 <translation id="7214187073215825913">informacije o sadržaju</translation>
 <translation id="7238347055216017155">naglašavanje</translation>
 <translation id="7263440858009898357">Izaberite stavku sa liste.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">Da biste dobili opise slika koji nedostaju, otvorite kontekstualni meni.</translation>
 <translation id="7750228210027921155">Slika u slici</translation>
 <translation id="775297008183122718">Nevažeći unos</translation>
+<translation id="7782515065589691344">1.25</translation>
 <translation id="7789962463072032349">pauziraj</translation>
 <translation id="7802800022689234070">trougao za otkrivanje</translation>
 <translation id="7852167693871241274">Klizač za nijansu</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">referenca napomene</translation>
 <translation id="811583516810654505">Preuzima se opis...</translation>
 <translation id="8117451130807776954">Ova nedelja</translation>
+<translation id="8131955114056917397">0,25</translation>
 <translation id="8199524924445686405">gggg</translation>
 <translation id="8208673686607688524">birač lokalnog datuma i vremena</translation>
 <translation id="8261464734335370856">Netačan pravopis</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">kontrolišite reprodukciju na udaljenom uređaju</translation>
 <translation id="862370744433916922">titl</translation>
 <translation id="8634971699417195529">Prikazuj birač meseca</translation>
+<translation id="8637593834423658414">1,75</translation>
+<translation id="8668988909814782445">Prelom reda</translation>
 <translation id="8711688047404765493">izlaz</translation>
 <translation id="8750798805984357768">Izaberite neku od ovih opcija.</translation>
 <translation id="8808573423886751634">poglavlje</translation>
 <translation id="8845239796550121995">Trenutno se prebacuje na TV</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8861621546968757188">iskačuće dugme za dijalog</translation>
 <translation id="8875657656876809964">Greška pri puštanju video snimka</translation>
 <translation id="8889402386540077796">Nijansa</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

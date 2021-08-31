@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_drain.h"
+#include "quic/core/congestion_control/bbr2_drain.h"
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/bbr2_sender.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/congestion_control/bbr2_sender.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -18,29 +18,28 @@ Bbr2Mode Bbr2DrainMode::OnCongestionEvent(
   model_->set_pacing_gain(Params().drain_pacing_gain);
 
   // Only STARTUP can transition to DRAIN, both of them use the same cwnd gain.
-  DCHECK_EQ(model_->cwnd_gain(), Params().drain_cwnd_gain);
+  QUICHE_DCHECK_EQ(model_->cwnd_gain(), Params().drain_cwnd_gain);
   model_->set_cwnd_gain(Params().drain_cwnd_gain);
 
   QuicByteCount drain_target = DrainTarget();
   if (congestion_event.bytes_in_flight <= drain_target) {
     QUIC_DVLOG(3) << sender_ << " Exiting DRAIN. bytes_in_flight:"
                   << congestion_event.bytes_in_flight
-                  << ", bdp:" << model_->BDP(model_->MaxBandwidth())
+                  << ", bdp:" << model_->BDP()
                   << ", drain_target:" << drain_target << "  @ "
                   << congestion_event.event_time;
     return Bbr2Mode::PROBE_BW;
   }
 
   QUIC_DVLOG(3) << sender_ << " Staying in DRAIN. bytes_in_flight:"
-                << congestion_event.bytes_in_flight
-                << ", bdp:" << model_->BDP(model_->MaxBandwidth())
+                << congestion_event.bytes_in_flight << ", bdp:" << model_->BDP()
                 << ", drain_target:" << drain_target << "  @ "
                 << congestion_event.event_time;
   return Bbr2Mode::DRAIN;
 }
 
 QuicByteCount Bbr2DrainMode::DrainTarget() const {
-  QuicByteCount bdp = model_->BDP(model_->MaxBandwidth());
+  QuicByteCount bdp = model_->BDP();
   return std::max<QuicByteCount>(bdp, sender_->GetMinimumCongestionWindow());
 }
 

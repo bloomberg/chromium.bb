@@ -31,16 +31,18 @@ using base::AutoLock;
 
 namespace gpu {
 
-GpuChannelHost::GpuChannelHost(int channel_id,
-                               const gpu::GPUInfo& gpu_info,
-                               const gpu::GpuFeatureInfo& gpu_feature_info,
-                               mojo::ScopedMessagePipeHandle handle)
-    : io_thread_(base::ThreadTaskRunnerHandle::Get()),
+GpuChannelHost::GpuChannelHost(
+    int channel_id,
+    const gpu::GPUInfo& gpu_info,
+    const gpu::GpuFeatureInfo& gpu_feature_info,
+    mojo::ScopedMessagePipeHandle handle,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    : io_thread_(io_task_runner ? io_task_runner
+                                : base::ThreadTaskRunnerHandle::Get()),
       channel_id_(channel_id),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
-      listener_(new Listener(std::move(handle), io_thread_),
-                base::OnTaskRunnerDeleter(io_thread_)),
+      listener_(new Listener(), base::OnTaskRunnerDeleter(io_thread_)),
       shared_image_interface_(
           this,
           static_cast<int32_t>(
@@ -49,6 +51,20 @@ GpuChannelHost::GpuChannelHost(int channel_id,
           this,
           static_cast<int32_t>(
               GpuChannelReservedRoutes::kImageDecodeAccelerator)) {
+  mojo::PendingAssociatedRemote<mojom::GpuChannel> channel;
+  auto receiver = channel.InitWithNewEndpointAndPassReceiver();
+  if (io_thread_->BelongsToCurrentThread()) {
+    listener_->Initialize(std::move(handle), std::move(receiver), io_thread_);
+  } else {
+    io_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&Listener::Initialize, base::Unretained(listener_.get()),
+                       std::move(handle), std::move(receiver), io_thread_));
+  }
+
+  gpu_channel_ = mojo::SharedAssociatedRemote<mojom::GpuChannel>(
+      std::move(channel), io_thread_);
+
   next_image_id_.GetNext();
   for (int32_t i = 0;
        i <= static_cast<int32_t>(GpuChannelReservedRoutes::kMaxValue); ++i)
@@ -57,6 +73,10 @@ GpuChannelHost::GpuChannelHost(int channel_id,
 #if defined(OS_MAC)
   gpu::SetMacOSSpecificTextureTarget(gpu_info.macos_specific_texture_target);
 #endif  // defined(OS_MAC)
+}
+
+mojom::GpuChannel& GpuChannelHost::GetGpuChannel() {
+  return *gpu_channel_.get();
 }
 
 bool GpuChannelHost::Send(IPC::Message* msg) {
@@ -90,30 +110,20 @@ bool GpuChannelHost::Send(IPC::Message* msg) {
       FROM_HERE,
       base::BindOnce(&Listener::SendMessage, base::Unretained(listener_.get()),
                      std::move(message), &pending_sync));
+  base::TimeTicks start_time = base::TimeTicks::Now();
 
   // http://crbug.com/125264
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_wait;
 
-  // TODO(magchen): crbug.com/949839. Remove this histogram and do only one
-  // done_event->Wait() after the GPU watchdog V2 is fully launched.
-  base::TimeTicks start_time = base::TimeTicks::Now();
+  pending_sync.done_event->Wait();
 
-  // The wait for event is split into two phases so we can still record the
-  // case in which the GPU hangs but not killed. Also all data should be
-  // recorded in the range of max_wait_sec seconds for easier comparison.
-  bool signaled =
-      pending_sync.done_event->TimedWait(kGpuChannelHostMaxWaitTime);
-
+  // Histogram to measure how long the browser UI thread spends blocked.
+  // Recorded only for users with high-resolution clocks.
   base::TimeDelta wait_duration = base::TimeTicks::Now() - start_time;
-
-  // Histogram of wait-for-sync time, used for monitoring the GPU watchdog.
-  UMA_HISTOGRAM_CUSTOM_TIMES("GPU.GPUChannelHostWaitTime2", wait_duration,
-                             base::TimeDelta::FromSeconds(1),
-                             kGpuChannelHostMaxWaitTime, 50);
-
-  // Continue waiting for the event if not signaled
-  if (!signaled)
-    pending_sync.done_event->Wait();
+  UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES("GPU.GPUChannelHostWaitTime3",
+                                          wait_duration,
+                                          base::TimeDelta::FromMicroseconds(5),
+                                          base::TimeDelta::FromSeconds(1), 50);
 
   return pending_sync.send_result;
 }
@@ -141,16 +151,14 @@ uint32_t GpuChannelHost::OrderingBarrier(
 }
 
 uint32_t GpuChannelHost::EnqueueDeferredMessage(
-    const IPC::Message& message,
+    mojom::DeferredRequestParamsPtr params,
     std::vector<SyncToken> sync_token_fences) {
   AutoLock lock(context_lock_);
 
   EnqueuePendingOrderingBarrier();
   enqueued_deferred_message_id_ = next_deferred_message_id_++;
-  GpuDeferredMessage deferred_message;
-  deferred_message.message = message;
-  deferred_message.sync_token_fences = std::move(sync_token_fences);
-  deferred_messages_.push_back(std::move(deferred_message));
+  deferred_messages_.push_back(mojom::DeferredRequest::New(
+      std::move(params), std::move(sync_token_fences)));
   return enqueued_deferred_message_id_;
 }
 
@@ -165,7 +173,8 @@ void GpuChannelHost::VerifyFlush(uint32_t deferred_message_id) {
   InternalFlush(deferred_message_id);
 
   if (deferred_message_id > verified_deferred_message_id_) {
-    Send(new GpuChannelMsg_Nop());
+    mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
+    GetGpuChannel().Flush();
     verified_deferred_message_id_ = flushed_deferred_message_id_;
   }
 }
@@ -178,15 +187,17 @@ void GpuChannelHost::EnqueuePendingOrderingBarrier() {
             pending_ordering_barrier_->deferred_message_id);
   enqueued_deferred_message_id_ =
       pending_ordering_barrier_->deferred_message_id;
-  GpuDeferredMessage deferred_message;
-  deferred_message.message = GpuCommandBufferMsg_AsyncFlush(
-      pending_ordering_barrier_->route_id,
+  auto params = mojom::AsyncFlushParams::New(
       pending_ordering_barrier_->put_offset,
       pending_ordering_barrier_->deferred_message_id,
       pending_ordering_barrier_->sync_token_fences);
-  deferred_message.sync_token_fences =
-      std::move(pending_ordering_barrier_->sync_token_fences);
-  deferred_messages_.push_back(std::move(deferred_message));
+  deferred_messages_.push_back(mojom::DeferredRequest::New(
+      mojom::DeferredRequestParams::NewCommandBufferRequest(
+          mojom::DeferredCommandBufferRequest::New(
+              pending_ordering_barrier_->route_id,
+              mojom::DeferredCommandBufferRequestParams::NewAsyncFlush(
+                  std::move(params)))),
+      std::move(pending_ordering_barrier_->sync_token_fences)));
   pending_ordering_barrier_.reset();
 }
 
@@ -198,9 +209,7 @@ void GpuChannelHost::InternalFlush(uint32_t deferred_message_id) {
       deferred_message_id > flushed_deferred_message_id_) {
     DCHECK_EQ(enqueued_deferred_message_id_, next_deferred_message_id_ - 1);
 
-    Send(
-        new GpuChannelMsg_FlushDeferredMessages(std::move(deferred_messages_)));
-
+    GetGpuChannel().FlushDeferredRequests(std::move(deferred_messages_));
     deferred_messages_.clear();
     flushed_deferred_message_id_ = next_deferred_message_id_ - 1;
   }
@@ -243,11 +252,11 @@ int32_t GpuChannelHost::GenerateRouteID() {
 }
 
 void GpuChannelHost::CrashGpuProcessForTesting() {
-  Send(new GpuChannelMsg_CrashForTesting());
+  GetGpuChannel().CrashForTesting();
 }
 
 void GpuChannelHost::TerminateGpuProcessForTesting() {
-  Send(new GpuChannelMsg_TerminateForTesting());
+  GetGpuChannel().TerminateForTesting();
 }
 
 std::unique_ptr<ClientSharedImageInterface>
@@ -280,20 +289,21 @@ GpuChannelHost::OrderingBarrierInfo::OrderingBarrierInfo(
 GpuChannelHost::OrderingBarrierInfo& GpuChannelHost::OrderingBarrierInfo::
 operator=(OrderingBarrierInfo&&) = default;
 
-GpuChannelHost::Listener::Listener(
+GpuChannelHost::Listener::Listener() = default;
+
+void GpuChannelHost::Listener::Initialize(
     mojo::ScopedMessagePipeHandle handle,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : channel_(IPC::ChannelMojo::Create(
-          std::move(handle),
-          IPC::Channel::MODE_CLIENT,
-          this,
-          io_task_runner,
-          base::ThreadTaskRunnerHandle::Get(),
-          mojo::internal::MessageQuotaChecker::MaybeCreate())) {
+    mojo::PendingAssociatedReceiver<mojom::GpuChannel> receiver,
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+  channel_ = IPC::ChannelMojo::Create(
+      std::move(handle), IPC::Channel::MODE_CLIENT, this, io_task_runner,
+      base::ThreadTaskRunnerHandle::Get(),
+      mojo::internal::MessageQuotaChecker::MaybeCreate());
   DCHECK(channel_);
-  DCHECK(io_task_runner->BelongsToCurrentThread());
   bool result = channel_->Connect();
   DCHECK(result);
+  channel_->GetAssociatedInterfaceSupport()->GetRemoteAssociatedInterface(
+      std::move(receiver));
 }
 
 GpuChannelHost::Listener::~Listener() {

@@ -61,17 +61,17 @@ def search_regexps(text, regexps):
   return [r for r in regexps if re.search(r, text)]
 
 def main(argv):
-  # What we're considering merging, and would like to check.  Normally, this is
-  # HEAD, but you might want to verify some previous merge.
+  # What we're considering merging, and would like to check.  Normally, this
+  # is HEAD, but you might want to verify some previous merge.
   if len(argv) > 1:
     new_commit = argv[1]
   else:
     new_commit = "HEAD"
 
-  print "Comparing %s to baseline %s..." % (new_commit, EXISTING_COMMIT)
+  print(f"Comparing {new_commit} to baseline {EXISTING_COMMIT}...")
 
   diff = subprocess.Popen(["git", "diff", "-U0", EXISTING_COMMIT, new_commit],
-          stdout=subprocess.PIPE).communicate()[0]
+          stdout=subprocess.PIPE).communicate()[0].decode(sys.stdout.encoding)
   filename=None
   skip = False
   files_encountered = 0
@@ -93,14 +93,14 @@ def main(argv):
         if tripwire:
           failures.add("Tripwire '%s' found in %s" % (tripwire, filename))
 
- # If we have failures, then print them and fail.
+  # If we have failures, then print them and fail.
   if failures:
     for failure in failures:
-      print "Failure: %s" % failure
+      print(f"Failure: {failure}")
     sys.exit(2)
 
-  print ("No problems found!  Checked %d files, skipped %d." %
-      (files_encountered - files_skipped, files_skipped))
+  checked = files_encountered - files_skipped
+  print(f"No problems found! Checked {checked}, skipped {files_skipped}.")
 
 if __name__ == '__main__':
   main(sys.argv)

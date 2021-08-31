@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "quic/core/quic_utils.h"
 
 #include <string>
 
 #include "absl/base/macros.h"
+#include "absl/numeric/int128.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_test_utils.h"
 
 namespace quic {
 namespace test {
@@ -78,17 +80,17 @@ TEST_F(QuicUtilsTest, DetermineAddressChangeType) {
             QuicUtils::DetermineAddressChangeType(old_address, new_address));
 }
 
-QuicUint128 IncrementalHashReference(const void* data, size_t len) {
+absl::uint128 IncrementalHashReference(const void* data, size_t len) {
   // The two constants are defined as part of the hash algorithm.
   // see http://www.isthe.com/chongo/tech/comp/fnv/
   // hash = 144066263297769815596495629667062367629
-  QuicUint128 hash = MakeQuicUint128(UINT64_C(7809847782465536322),
-                                     UINT64_C(7113472399480571277));
+  absl::uint128 hash = absl::MakeUint128(UINT64_C(7809847782465536322),
+                                         UINT64_C(7113472399480571277));
   // kPrime = 309485009821345068724781371
-  const QuicUint128 kPrime = MakeQuicUint128(16777216, 315);
+  const absl::uint128 kPrime = absl::MakeUint128(16777216, 315);
   const uint8_t* octets = reinterpret_cast<const uint8_t*>(data);
   for (size_t i = 0; i < len; ++i) {
-    hash = hash ^ MakeQuicUint128(0, octets[i]);
+    hash = hash ^ absl::MakeUint128(0, octets[i]);
     hash = hash * kPrime;
   }
   return hash;
@@ -135,8 +137,12 @@ TEST_F(QuicUtilsTest, RetransmissionTypeToPacketState) {
       EXPECT_EQ(PTO_RETRANSMITTED, state);
     } else if (i == PROBING_RETRANSMISSION) {
       EXPECT_EQ(PROBE_RETRANSMITTED, state);
+    } else if (i == PATH_RETRANSMISSION) {
+      EXPECT_EQ(NOT_CONTRIBUTING_RTT, state);
+    } else if (i == ALL_INITIAL_RETRANSMISSION) {
+      EXPECT_EQ(UNACKABLE, state);
     } else {
-      DCHECK(false)
+      QUICHE_DCHECK(false)
           << "No corresponding packet state according to transmission type: "
           << i;
     }
@@ -306,9 +312,12 @@ TEST_F(QuicUtilsTest, StatelessResetToken) {
   QuicConnectionId connection_id1a = test::TestConnectionId(1);
   QuicConnectionId connection_id1b = test::TestConnectionId(1);
   QuicConnectionId connection_id2 = test::TestConnectionId(2);
-  QuicUint128 token1a = QuicUtils::GenerateStatelessResetToken(connection_id1a);
-  QuicUint128 token1b = QuicUtils::GenerateStatelessResetToken(connection_id1b);
-  QuicUint128 token2 = QuicUtils::GenerateStatelessResetToken(connection_id2);
+  StatelessResetToken token1a =
+      QuicUtils::GenerateStatelessResetToken(connection_id1a);
+  StatelessResetToken token1b =
+      QuicUtils::GenerateStatelessResetToken(connection_id1b);
+  StatelessResetToken token2 =
+      QuicUtils::GenerateStatelessResetToken(connection_id2);
   EXPECT_EQ(token1a, token1b);
   EXPECT_NE(token1a, token2);
 }

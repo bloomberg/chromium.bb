@@ -57,7 +57,7 @@ TEST(WebAppProtoUtilsTest, M85SpecificsProtoParse) {
   EXPECT_EQ(sync_pb::WebAppSpecifics::BROWSER, sync_proto.user_display_mode());
 
   // Check the fields were parsed into the web app struct.
-  base::Optional<WebApp::SyncFallbackData> fallback_data =
+  absl::optional<WebApp::SyncFallbackData> fallback_data =
       ParseSyncFallbackDataStruct(sync_proto);
   ASSERT_TRUE(fallback_data.has_value());
   EXPECT_EQ(kAppName, fallback_data->name);
@@ -77,7 +77,7 @@ TEST(WebAppProtoUtilsTest, M85SpecificsProtoToWebApp_Minimal) {
   sync_proto.set_user_display_mode(sync_pb::WebAppSpecifics::BROWSER);
 
   // Parse the proto.
-  base::Optional<WebApp::SyncFallbackData> fallback_data =
+  absl::optional<WebApp::SyncFallbackData> fallback_data =
       ParseSyncFallbackDataStruct(sync_proto);
 
   // Check the fields were parsed.
@@ -108,7 +108,7 @@ TEST(WebAppProtoUtilsTest, M85SpecificsProtoToWebApp_FullyPopulated) {
   icon_info_2->set_purpose(sync_pb::WebAppIconInfo_Purpose_MASKABLE);
 
   // Parse the proto.
-  base::Optional<WebApp::SyncFallbackData> fallback_data =
+  absl::optional<WebApp::SyncFallbackData> fallback_data =
       ParseSyncFallbackDataStruct(sync_proto);
 
   // Check the fields were parsed.
@@ -132,9 +132,12 @@ TEST(WebAppProtoUtilsTest, RunOnOsLoginModes) {
   mode = ToRunOnOsLoginMode(WebAppProto::WINDOWED);
   EXPECT_EQ(RunOnOsLoginMode::kWindowed, mode);
 
-  // Any value other than Windowed and Minimized should return kUndefined,
+  mode = ToRunOnOsLoginMode(WebAppProto::NOT_RUN);
+  EXPECT_EQ(RunOnOsLoginMode::kNotRun, mode);
+
+  // Any other value should return kNotRun.
   mode = ToRunOnOsLoginMode(static_cast<WebAppProto::RunOnOsLoginMode>(0xCAFE));
-  EXPECT_EQ(RunOnOsLoginMode::kUndefined, mode);
+  EXPECT_EQ(RunOnOsLoginMode::kNotRun, mode);
 
   WebAppProto::RunOnOsLoginMode proto_mode =
       ToWebAppProtoRunOnOsLoginMode(RunOnOsLoginMode::kWindowed);
@@ -142,6 +145,9 @@ TEST(WebAppProtoUtilsTest, RunOnOsLoginModes) {
 
   proto_mode = ToWebAppProtoRunOnOsLoginMode(RunOnOsLoginMode::kMinimized);
   EXPECT_EQ(WebAppProto::MINIMIZED, proto_mode);
+
+  proto_mode = ToWebAppProtoRunOnOsLoginMode(RunOnOsLoginMode::kNotRun);
+  EXPECT_EQ(WebAppProto::NOT_RUN, proto_mode);
 }
 
 }  // namespace web_app

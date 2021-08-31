@@ -8,7 +8,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_edit_context_init.h"
-#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
 #include "third_party/blink/renderer/core/editing/ime/text_format_update_event.h"
@@ -160,13 +160,13 @@ void EditContext::DispatchTextFormatEvent(
     }
     TextFormatUpdateEvent* event = MakeGarbageCollected<TextFormatUpdateEvent>(
         format_range_start, format_range_end,
-        cssvalue::CSSColorValue::SerializeAsCSSComponentValue(
+        cssvalue::CSSColor::SerializeAsCSSComponentValue(
             ime_text_span.underline_color),
-        cssvalue::CSSColorValue::SerializeAsCSSComponentValue(
+        cssvalue::CSSColor::SerializeAsCSSComponentValue(
             ime_text_span.background_color),
-        cssvalue::CSSColorValue::SerializeAsCSSComponentValue(
+        cssvalue::CSSColor::SerializeAsCSSComponentValue(
             ime_text_span.suggestion_highlight_color),
-        cssvalue::CSSColorValue::SerializeAsCSSComponentValue(
+        cssvalue::CSSColor::SerializeAsCSSComponentValue(
             ime_text_span.text_color),
         underline_thickness, underline_style);
     DispatchEvent(*event);
@@ -190,7 +190,7 @@ void EditContext::blur() {
     return;
   // Clean up the state of the |this| EditContext.
   FinishComposingText(ConfirmCompositionBehavior::kKeepSelection);
-  GetInputMethodController().SetActiveEditContext(this);
+  GetInputMethodController().SetActiveEditContext(nullptr);
 }
 
 void EditContext::updateSelection(uint32_t start,
@@ -380,10 +380,10 @@ String EditContext::enterKeyHint() const {
   }
 }
 
-void EditContext::GetLayoutBounds(WebRect* web_control_bounds,
-                                  WebRect* web_selection_bounds) {
-  *web_control_bounds = control_bounds_;
-  *web_selection_bounds = selection_bounds_;
+void EditContext::GetLayoutBounds(gfx::Rect* control_bounds,
+                                  gfx::Rect* selection_bounds) {
+  *control_bounds = control_bounds_;
+  *selection_bounds = selection_bounds_;
 }
 
 bool EditContext::SetComposition(
@@ -417,7 +417,7 @@ bool EditContext::SetComposition(
   selection_end_ = composition_range_start_ + selection_end;
   DispatchTextUpdateEvent(update_text, update_range_start, update_range_end,
                           selection_start_, selection_end_);
-  composition_range_end_ = composition_range_start_ + selection_end;
+  composition_range_end_ = composition_range_start_ + text.length();
   DispatchTextFormatEvent(ime_text_spans);
   return true;
 }
@@ -454,6 +454,20 @@ bool EditContext::SetCompositionFromExistingText(
   // Update the selection range.
   selection_start_ = composition_start;
   selection_end_ = composition_start;
+  return true;
+}
+
+bool EditContext::InsertText(const WebString& text) {
+  String update_text(text);
+  text_ = text_.Substring(0, selection_start_) + update_text +
+          text_.Substring(selection_end_);
+  uint32_t update_range_start = selection_start_;
+  uint32_t update_range_end = selection_end_;
+  selection_start_ = selection_start_ + text.length();
+  selection_end_ = selection_start_;
+
+  DispatchTextUpdateEvent(update_text, update_range_start, update_range_end,
+                          selection_start_, selection_end_);
   return true;
 }
 
@@ -566,6 +580,9 @@ WebTextInputMode EditContext::GetInputModeOfEditContext() const {
 WebTextInputInfo EditContext::TextInputInfo() {
   WebTextInputInfo info;
   // Fetch all the text input info from edit context.
+  // TODO(crbug.com/1197325): Change this to refer to the "view" part of the
+  // EditContext once the EditContext spec adds this feature.
+  info.node_id = GetInputMethodController().NodeIdOfFocusedElement();
   info.action = GetEditContextEnterKeyHint();
   info.input_mode = GetInputModeOfEditContext();
   info.type = TextInputType();
@@ -596,16 +613,17 @@ int EditContext::TextInputFlags() const {
 }
 
 WebRange EditContext::CompositionRange() {
-  return WebRange(composition_range_start_, composition_range_end_);
+  return WebRange(composition_range_start_,
+                  composition_range_end_ - composition_range_start_);
 }
 
-bool EditContext::GetCompositionCharacterBounds(WebVector<WebRect>& bounds) {
+bool EditContext::GetCompositionCharacterBounds(WebVector<gfx::Rect>& bounds) {
   bounds[0] = selection_bounds_;
   return true;
 }
 
 WebRange EditContext::GetSelectionOffsets() const {
-  return WebRange(selection_start_, selection_end_);
+  return WebRange(selection_start_, selection_end_ - selection_start_);
 }
 
 void EditContext::Trace(Visitor* visitor) const {

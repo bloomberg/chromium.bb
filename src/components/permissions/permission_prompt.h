@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/strings/string16.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -67,7 +66,7 @@ class PermissionPrompt {
     virtual bool WasCurrentRequestAlreadyDisplayed() = 0;
   };
 
-  typedef base::Callback<
+  typedef base::RepeatingCallback<
       std::unique_ptr<PermissionPrompt>(content::WebContents*, Delegate*)>
       Factory;
 
@@ -78,7 +77,7 @@ class PermissionPrompt {
   virtual ~PermissionPrompt() {}
 
   // Updates where the prompt should be anchored. ex: fullscreen toggle.
-  virtual void UpdateAnchorPosition() = 0;
+  virtual void UpdateAnchor() = 0;
 
   // Get the behavior of this prompt when the user switches away from the
   // associated tab.

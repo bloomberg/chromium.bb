@@ -6,12 +6,14 @@
 
 #include <utility>
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -23,8 +25,8 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/url_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "chromeos/constants/chromeos_features.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #endif
 
 namespace sync_ui_util {
@@ -32,7 +34,7 @@ namespace sync_ui_util {
 namespace {
 
 StatusLabels GetStatusForUnrecoverableError(bool is_user_signout_allowed) {
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   int status_label_string_id =
       is_user_signout_allowed
           ? IDS_SYNC_STATUS_UNRECOVERABLE_ERROR
@@ -189,12 +191,12 @@ void OpenTabForSyncKeyRetrievalWithURL(Browser* browser, const GURL& url) {
 bool HasUserOptedInToSync(const syncer::SyncUserSettings* settings) {
   if (settings->IsFirstSetupComplete())
     return true;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos::features::IsSplitSettingsSyncEnabled() &&
       settings->IsOsSyncFeatureEnabled()) {
     return true;
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   return false;
 }
 
@@ -227,14 +229,14 @@ MessageType GetStatus(Profile* profile) {
   return GetStatusLabels(profile).message_type;
 }
 
-AvatarSyncErrorType GetAvatarSyncErrorType(Profile* profile) {
+absl::optional<AvatarSyncErrorType> GetAvatarSyncErrorType(Profile* profile) {
   const syncer::SyncService* service =
       ProfileSyncServiceFactory::GetForProfile(profile);
 
   // If there is no SyncService (probably because sync is disabled from the
   // command line), then there's no error to show.
   if (!service)
-    return NO_SYNC_ERROR;
+    return absl::nullopt;
 
   // The order or priority is going to be: 1. Unrecoverable errors.
   // 2. Auth errors. 3. Outdated client errors. 4. Passphrase errors.
@@ -288,7 +290,7 @@ AvatarSyncErrorType GetAvatarSyncErrorType(Profile* profile) {
   }
 
   // There is no error.
-  return NO_SYNC_ERROR;
+  return absl::nullopt;
 }
 
 bool ShouldRequestSyncConfirmation(const syncer::SyncService* service) {

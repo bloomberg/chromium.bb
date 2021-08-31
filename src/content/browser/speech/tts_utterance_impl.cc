@@ -4,7 +4,10 @@
 
 #include "content/browser/speech/tts_utterance_impl.h"
 
+#include <memory>
+
 #include "base/values.h"
+#include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 
 namespace content {
@@ -36,9 +39,23 @@ UtteranceContinuousParameters::UtteranceContinuousParameters()
 // static
 int TtsUtteranceImpl::next_utterance_id_ = 0;
 
+// static
+std::unique_ptr<TtsUtterance> TtsUtterance::Create(WebContents* web_contents) {
+  DCHECK(web_contents);
+  return std::make_unique<TtsUtteranceImpl>(web_contents->GetBrowserContext(),
+                                            web_contents);
+}
+
+// static
 std::unique_ptr<TtsUtterance> TtsUtterance::Create(
     BrowserContext* browser_context) {
+  DCHECK(browser_context);
   return std::make_unique<TtsUtteranceImpl>(browser_context, nullptr);
+}
+
+// static
+std::unique_ptr<TtsUtterance> TtsUtterance::Create() {
+  return std::make_unique<TtsUtteranceImpl>(nullptr, nullptr);
 }
 
 TtsUtteranceImpl::TtsUtteranceImpl(BrowserContext* browser_context,
@@ -48,10 +65,10 @@ TtsUtteranceImpl::TtsUtteranceImpl(BrowserContext* browser_context,
       was_created_with_web_contents_(web_contents != nullptr),
       id_(next_utterance_id_++),
       src_id_(-1),
-      can_enqueue_(false),
+      should_clear_queue_(true),
       char_index_(0),
       finished_(false) {
-  options_.reset(new base::DictionaryValue());
+  options_ = std::make_unique<base::DictionaryValue>();
 }
 
 TtsUtteranceImpl::~TtsUtteranceImpl() {
@@ -89,7 +106,7 @@ const std::string& TtsUtteranceImpl::GetText() {
 }
 
 void TtsUtteranceImpl::SetOptions(const base::Value* options) {
-  options_.reset(options->DeepCopy());
+  options_ = base::Value::ToUniquePtrValue(options->Clone());
 }
 
 const base::Value* TtsUtteranceImpl::GetOptions() {
@@ -140,12 +157,12 @@ TtsUtteranceImpl::GetContinuousParameters() {
   return continuous_parameters_;
 }
 
-void TtsUtteranceImpl::SetCanEnqueue(bool can_enqueue) {
-  can_enqueue_ = can_enqueue;
+void TtsUtteranceImpl::SetShouldClearQueue(bool value) {
+  should_clear_queue_ = value;
 }
 
-bool TtsUtteranceImpl::GetCanEnqueue() {
-  return can_enqueue_;
+bool TtsUtteranceImpl::GetShouldClearQueue() {
+  return should_clear_queue_;
 }
 
 void TtsUtteranceImpl::SetRequiredEventTypes(

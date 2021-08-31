@@ -11,9 +11,9 @@
 
 #include "include/core/SkTypeface.h"
 #include "include/core/SkTypes.h"
-#include "include/private/SkMutex.h"
 #include "src/core/SkGlyph.h"
 #include "src/core/SkScalerContext.h"
+#include "src/core/SkSharedMutex.h"
 #include "src/utils/SkCharToGlyphCache.h"
 
 #include "include/core/SkFontMgr.h"
@@ -77,7 +77,8 @@ public:
             AxisDefinitions axisDefinitions,
             const SkFontArguments::VariationPosition position,
             SkFixed* axisValues,
-            const SkString& name);
+            const SkString& name,
+            const SkFontArguments::VariationPosition::Coordinate* currentPosition = nullptr);
         static bool GetAxes(FT_Face face, AxisDefinitions* axes);
 
     private:
@@ -100,8 +101,8 @@ protected:
     {}
 
     std::unique_ptr<SkFontData> cloneFontData(const SkFontArguments&) const;
-    SkScalerContext* onCreateScalerContext(const SkScalerContextEffects&,
-                                           const SkDescriptor*) const override;
+    std::unique_ptr<SkScalerContext> onCreateScalerContext(const SkScalerContextEffects&,
+                                                           const SkDescriptor*) const override;
     void onFilterRec(SkScalerContextRec*) const override;
     void getGlyphToUnicodeMap(SkUnichar*) const override;
     std::unique_ptr<SkAdvancedTypefaceMetrics> onGetAdvancedMetrics() const override;
@@ -127,7 +128,7 @@ protected:
     virtual std::unique_ptr<SkFontData> onMakeFontData() const = 0;
 
 private:
-    mutable SkMutex fC2GCacheMutex;
+    mutable SkSharedMutex fC2GCacheMutex;
     mutable SkCharToGlyphCache fC2GCache;
 
     using INHERITED = SkTypeface;

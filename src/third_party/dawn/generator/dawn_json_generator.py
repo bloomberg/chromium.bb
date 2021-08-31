@@ -128,6 +128,12 @@ class CallbackType(Type):
         self.arguments = []
 
 
+class TypedefType(Type):
+    def __init__(self, name, json_data):
+        Type.__init__(self, name, json_data)
+        self.type = None
+
+
 class NativeType(Type):
     def __init__(self, name, json_data):
         Type.__init__(self, name, json_data, native=True)
@@ -271,6 +277,10 @@ def link_callback(callback, types):
                                                types)
 
 
+def link_typedef(typedef, types):
+    typedef.type = types[typedef.json_data['type']]
+
+
 # Sort structures so that if struct A has struct B as a member, then B is
 # listed before A.
 #
@@ -321,6 +331,7 @@ def parse_json(json):
         'callback': CallbackType,
         'object': ObjectType,
         'structure': StructureType,
+        'typedef': TypedefType,
     }
 
     types = {}
@@ -345,6 +356,9 @@ def parse_json(json):
 
     for callback in by_category['callback']:
         link_callback(callback, types)
+
+    for typedef in by_category['typedef']:
+        link_typedef(typedef, types)
 
     for category in by_category.keys():
         by_category[category] = sorted(
@@ -579,7 +593,7 @@ def as_frontendType(typ):
 def as_wireType(typ):
     if typ.category == 'object':
         return typ.name.CamelCase() + '*'
-    elif typ.category in ['bitmask', 'enum']:
+    elif typ.category in ['bitmask', 'enum', 'structure']:
         return 'WGPU' + typ.name.CamelCase()
     else:
         return as_cppType(typ.name)
@@ -751,6 +765,14 @@ class MultiGeneratorFromDawnJSON(Generator):
             renders.append(
                 FileRender('dawn_native/ProcTable.cpp',
                            'src/dawn_native/ProcTable.cpp', frontend_params))
+            renders.append(
+                FileRender('dawn_native/ChainUtils.h',
+                           'src/dawn_native/ChainUtils_autogen.h',
+                           frontend_params))
+            renders.append(
+                FileRender('dawn_native/ChainUtils.cpp',
+                           'src/dawn_native/ChainUtils_autogen.cpp',
+                           frontend_params))
 
         if 'dawn_wire' in targets:
             additional_params = compute_wire_params(api_params, wire_json)

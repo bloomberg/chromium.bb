@@ -13,7 +13,6 @@
 
 class SkSVGLinearGradient final : public SkSVGGradient {
 public:
-    ~SkSVGLinearGradient() override = default;
     static sk_sp<SkSVGLinearGradient> Make() {
         return sk_sp<SkSVGLinearGradient>(new SkSVGLinearGradient());
     }
@@ -27,7 +26,7 @@ protected:
     bool parseAndSetAttribute(const char*, const char*) override;
 
     sk_sp<SkShader> onMakeShader(const SkSVGRenderContext&,
-                                 const SkColor*, const SkScalar*, int count,
+                                 const SkColor4f*, const SkScalar*, int count,
                                  SkTileMode, const SkMatrix&) const override;
 private:
     SkSVGLinearGradient();

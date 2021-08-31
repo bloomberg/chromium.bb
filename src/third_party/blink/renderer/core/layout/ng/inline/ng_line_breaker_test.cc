@@ -9,12 +9,14 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_breaker.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_line_info.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_positioned_float.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_unpositioned_float.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
+#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -63,7 +65,7 @@ class NGLineBreakerTest : public NGLayoutTest {
     NGExclusionSpace exclusion_space;
     NGPositionedFloatVector leading_floats;
     NGLineLayoutOpportunity line_opportunity(available_width);
-    while (!break_token || !break_token->IsFinished()) {
+    do {
       NGLineInfo line_info;
       NGLineBreaker line_breaker(node, NGLineBreakerMode::kContent, space,
                                  line_opportunity, leading_floats, 0u,
@@ -85,9 +87,22 @@ class NGLineBreakerTest : public NGLayoutTest {
       }
       lines.push_back(std::make_pair(ToString(line_info.Results(), node),
                                      line_info.Results().back().item_index));
-    }
+    } while (break_token);
 
     return lines;
+  }
+
+  MinMaxSizes ComputeMinMaxSizes(NGInlineNode node) {
+    const auto space =
+        NGConstraintSpaceBuilder(node.Style().GetWritingMode(),
+                                 node.Style().GetWritingDirection(),
+                                 /* is_new_fc */ false)
+            .ToConstraintSpace();
+
+    return node
+        .ComputeMinMaxSizes(node.Style().GetWritingMode(), space,
+                            MinMaxSizesFloatInput())
+        .sizes;
   }
 
   Vector<NGLineBreaker::WhitespaceState> trailing_whitespaces_;
@@ -567,13 +582,8 @@ TEST_F(NGLineBreakerTest, MinMaxWithTrailingSpaces) {
     <div id=container>12345 6789 </div>
   )HTML");
 
-  auto sizes =
-      node.ComputeMinMaxSizes(
-              WritingMode::kHorizontalTb,
-              MinMaxSizesInput(/* percentage_resolution_block_size */
-                               LayoutUnit(), MinMaxSizesType::kContent))
-          .sizes;
-  EXPECT_EQ(sizes.min_size, LayoutUnit(60));
+  const auto sizes = ComputeMinMaxSizes(node);
+  EXPECT_EQ(sizes.min_size, LayoutUnit(50));
   EXPECT_EQ(sizes.max_size, LayoutUnit(110));
 }
 
@@ -605,6 +615,38 @@ TEST_F(NGLineBreakerTest, SplitTextZero) {
   EXPECT_EQ("ab", lines[1].first);
 }
 
+TEST_F(NGLineBreakerTest, ForcedBreakFollowedByCloseTag) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <div id="container">
+      <div><span>line<br></span></div>
+      <div>
+        <span>line<br></span>
+      </div>
+      <div>
+        <span>
+          line<br>
+        </span>
+      </div>
+      <div>
+        <span>line<br>  </span>
+      </div>
+      <div>
+        <span>line<br>  </span>&#32;&#32;
+      </div>
+    </div>
+  )HTML");
+  const LayoutObject* container = GetLayoutObjectByElementId("container");
+  for (const LayoutObject* child = container->SlowFirstChild(); child;
+       child = child->NextSibling()) {
+    NGInlineCursor cursor(*To<LayoutBlockFlow>(child));
+    wtf_size_t line_count = 0;
+    for (cursor.MoveToFirstLine(); cursor; cursor.MoveToNextLine())
+      ++line_count;
+    EXPECT_EQ(line_count, 1u);
+  }
+}
+
 TEST_F(NGLineBreakerTest, TableCellWidthCalculationQuirkOutOfFlow) {
   NGInlineNode node = CreateInlineNode(R"HTML(
     <style>
@@ -622,11 +664,15 @@ TEST_F(NGLineBreakerTest, TableCellWidthCalculationQuirkOutOfFlow) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   EXPECT_TRUE(node.GetDocument().InQuirksMode());
 
-  node.ComputeMinMaxSizes(
-      WritingMode::kHorizontalTb,
-      MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit(),
-                       MinMaxSizesType::kContent));
-  // Pass if |ComputeMinMaxSize| doesn't hit DCHECK failures.
+  ComputeMinMaxSizes(node);
+  // Pass if |ComputeMinMaxSizes| doesn't hit DCHECK failures.
+}
+
+TEST_F(NGLineBreakerTest, BoxDecorationBreakCloneWithoutBoxDecorations) {
+  SetBodyInnerHTML(R"HTML(
+    <span style="-webkit-box-decoration-break: clone"></span>
+  )HTML");
+  // Pass if it does not hit DCHECK.
 }
 
 TEST_F(NGLineBreakerTest, RewindPositionedFloat) {
@@ -663,13 +709,36 @@ B AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 </ruby>
   )HTML");
 
-  node.ComputeMinMaxSizes(
-      WritingMode::kHorizontalTb,
-      MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit(),
-                       MinMaxSizesType::kContent));
+  ComputeMinMaxSizes(node);
   // This test passes if no CHECK failures.
 }
 
-#undef MAYBE_OverflowAtomicInline
+TEST_F(NGLineBreakerTest, SplitTextByGlyphs) {
+  RuntimeEnabledFeaturesTestHelpers::ScopedSVGTextNG svg_text_ng(true);
+  NGInlineNode node = CreateInlineNode(
+      uR"HTML(
+      <!DOCTYPE html>
+      <svg viewBox="0 0 800 600">
+      <text id="container" style="font-family:Times">AV)HTML"
+      u"\U0001F197\u05E2\u05B4\u05D1\u05E8\u05B4\u05D9\u05EA</text></svg>)");
+  BreakLines(
+      node, LayoutUnit::Max(),
+      [](const NGLineBreaker& line_breaker, const NGLineInfo& line_info) {
+        EXPECT_EQ(8u, line_info.Results().size());
+        // "A" and "V" with Times font are typically overlapped. They should
+        // be split.
+        EXPECT_EQ(1u, line_info.Results()[0].Length());  // A
+        EXPECT_EQ(1u, line_info.Results()[1].Length());  // V
+        // Non-BMP characters should not be split.
+        EXPECT_EQ(2u, line_info.Results()[2].Length());  // U+1F197
+        // Connected characters should not be split.
+        EXPECT_EQ(2u, line_info.Results()[3].Length());  // U+05E2 U+05B4
+        EXPECT_EQ(1u, line_info.Results()[4].Length());  // U+05D1
+        EXPECT_EQ(2u, line_info.Results()[5].Length());  // U+05E8 U+05B4
+        EXPECT_EQ(1u, line_info.Results()[6].Length());  // U+05D9
+        EXPECT_EQ(1u, line_info.Results()[7].Length());  // U+05EA
+      });
+}
+
 }  // namespace
 }  // namespace blink

@@ -7,7 +7,7 @@
 #include "third_party/blink/renderer/core/css/basic_shape_functions.h"
 #include "third_party/blink/renderer/core/css/css_border_image.h"
 #include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
-#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_counter_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
@@ -35,11 +35,12 @@
 #include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unit_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
-#include "third_party/blink/renderer/core/css/cssom/css_unsupported_color_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unsupported_color.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
+#include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid_interface.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
@@ -121,7 +122,7 @@ CSSValue* ComputedStyleUtils::CurrentColorOrValidColor(
       RuntimeEnabledFeatures::CSSSystemColorComputeToSelfEnabled()) {
     return CSSIdentifierValue::Create(color.GetColorKeyword());
   }
-  return cssvalue::CSSColorValue::Create(
+  return cssvalue::CSSColor::Create(
       color.Resolve(style.GetCurrentColor(), style.UsedColorScheme()).Rgb());
 }
 
@@ -330,69 +331,42 @@ const CSSValue* ComputedStyleUtils::BackgroundPositionYOrWebkitMaskPositionY(
   return list;
 }
 
+static CSSNumericLiteralValue* ValueForImageSlice(const Length& slice) {
+  // TODO(alancutter): Make this code aware of calc lengths.
+  return CSSNumericLiteralValue::Create(
+      slice.Value(), slice.IsPercentOrCalc()
+                         ? CSSPrimitiveValue::UnitType::kPercentage
+                         : CSSPrimitiveValue::UnitType::kNumber);
+}
+
 cssvalue::CSSBorderImageSliceValue*
 ComputedStyleUtils::ValueForNinePieceImageSlice(const NinePieceImage& image) {
+  const LengthBox& slices = image.ImageSlices();
+
   // Create the slices.
-  CSSPrimitiveValue* top = nullptr;
+  CSSPrimitiveValue* top = ValueForImageSlice(slices.Top());
+
   CSSPrimitiveValue* right = nullptr;
   CSSPrimitiveValue* bottom = nullptr;
   CSSPrimitiveValue* left = nullptr;
-
-  // TODO(alancutter): Make this code aware of calc lengths.
-  if (image.ImageSlices().Top().IsPercentOrCalc()) {
-    top = CSSNumericLiteralValue::Create(
-        image.ImageSlices().Top().Value(),
-        CSSPrimitiveValue::UnitType::kPercentage);
-  } else {
-    top = CSSNumericLiteralValue::Create(image.ImageSlices().Top().Value(),
-                                         CSSPrimitiveValue::UnitType::kNumber);
-  }
-
-  if (image.ImageSlices().Right() == image.ImageSlices().Top() &&
-      image.ImageSlices().Bottom() == image.ImageSlices().Top() &&
-      image.ImageSlices().Left() == image.ImageSlices().Top()) {
+  if (slices.Right() == slices.Top() && slices.Bottom() == slices.Top() &&
+      slices.Left() == slices.Top()) {
     right = top;
     bottom = top;
     left = top;
   } else {
-    if (image.ImageSlices().Right().IsPercentOrCalc()) {
-      right = CSSNumericLiteralValue::Create(
-          image.ImageSlices().Right().Value(),
-          CSSPrimitiveValue::UnitType::kPercentage);
-    } else {
-      right =
-          CSSNumericLiteralValue::Create(image.ImageSlices().Right().Value(),
-                                         CSSPrimitiveValue::UnitType::kNumber);
-    }
+    right = ValueForImageSlice(slices.Right());
 
-    if (image.ImageSlices().Bottom() == image.ImageSlices().Top() &&
-        image.ImageSlices().Right() == image.ImageSlices().Left()) {
+    if (slices.Bottom() == slices.Top() && slices.Right() == slices.Left()) {
       bottom = top;
       left = right;
     } else {
-      if (image.ImageSlices().Bottom().IsPercentOrCalc()) {
-        bottom = CSSNumericLiteralValue::Create(
-            image.ImageSlices().Bottom().Value(),
-            CSSPrimitiveValue::UnitType::kPercentage);
-      } else {
-        bottom = CSSNumericLiteralValue::Create(
-            image.ImageSlices().Bottom().Value(),
-            CSSPrimitiveValue::UnitType::kNumber);
-      }
+      bottom = ValueForImageSlice(slices.Bottom());
 
-      if (image.ImageSlices().Left() == image.ImageSlices().Right()) {
+      if (slices.Left() == slices.Right())
         left = right;
-      } else {
-        if (image.ImageSlices().Left().IsPercentOrCalc()) {
-          left = CSSNumericLiteralValue::Create(
-              image.ImageSlices().Left().Value(),
-              CSSPrimitiveValue::UnitType::kPercentage);
-        } else {
-          left = CSSNumericLiteralValue::Create(
-              image.ImageSlices().Left().Value(),
-              CSSPrimitiveValue::UnitType::kNumber);
-        }
-      }
+      else
+        left = ValueForImageSlice(slices.Left());
     }
   }
 
@@ -590,12 +564,14 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
   if (offset.IsPercentOrCalc() && box && layout_object->IsPositioned()) {
     LayoutUnit containing_block_size;
     if (layout_object->IsStickyPositioned()) {
-      const LayoutBox& enclosing_scrollport_box = box->EnclosingScrollportBox();
-      bool use_inline_size = is_horizontal_property ==
-                             enclosing_scrollport_box.IsHorizontalWritingMode();
+      const LayoutBox* enclosing_scrollport_box = box->EnclosingScrollportBox();
+      DCHECK(enclosing_scrollport_box);
+      bool use_inline_size =
+          is_horizontal_property ==
+          enclosing_scrollport_box->IsHorizontalWritingMode();
       containing_block_size =
-          use_inline_size ? enclosing_scrollport_box.ContentLogicalWidth()
-                          : enclosing_scrollport_box.ContentLogicalHeight();
+          use_inline_size ? enclosing_scrollport_box->ContentLogicalWidth()
+                          : enclosing_scrollport_box->ContentLogicalHeight();
     } else {
       containing_block_size =
           is_horizontal_property ==
@@ -1365,7 +1341,9 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
                   : style.GridTemplateRows().LegacyTrackList();
   const Vector<GridTrackSize>& auto_repeat_track_sizes =
       is_row_axis ? style.GridAutoRepeatColumns() : style.GridAutoRepeatRows();
-  bool is_layout_grid = layout_object && layout_object->IsLayoutGrid();
+
+  bool is_layout_grid =
+      layout_object && layout_object->IsLayoutGridIncludingNG();
 
   // Handle the 'none' case.
   bool track_list_is_empty =
@@ -1373,9 +1351,11 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   if (is_layout_grid && track_list_is_empty) {
     // For grids we should consider every listed track, whether implicitly or
     // explicitly created. Empty grids have a sole grid line per axis.
-    auto& positions = is_row_axis
-                          ? ToLayoutGrid(layout_object)->ColumnPositions()
-                          : ToLayoutGrid(layout_object)->RowPositions();
+    const Vector<LayoutUnit> positions =
+        is_row_axis
+            ? ToInterface<LayoutNGGridInterface>(layout_object)
+                  ->ColumnPositions()
+            : ToInterface<LayoutNGGridInterface>(layout_object)->RowPositions();
     track_list_is_empty = positions.size() == 1;
   }
 
@@ -1387,7 +1367,7 @@ CSSValue* ComputedStyleUtils::ValueForGridTrackList(
   // If the element is a grid container, the resolved value is the used value,
   // specifying track sizes in pixels and expanding the repeat() notation.
   if (is_layout_grid) {
-    const auto* grid = ToLayoutGrid(layout_object);
+    const auto* grid = ToInterface<LayoutNGGridInterface>(layout_object);
     OrderedNamedLinesCollectorInGridLayout collector(
         style, is_row_axis, grid->AutoRepeatCountForDirection(direction),
         auto_repeat_track_sizes.size());
@@ -2048,22 +2028,13 @@ CSSValue* ComputedStyleUtils::ValueForContentData(const ComputedStyle& style,
   for (const ContentData* content_data = style.GetContentData(); content_data;
        content_data = content_data->Next()) {
     if (content_data->IsCounter()) {
-      const CounterContent* counter =
-          To<CounterContentData>(content_data)->Counter();
-      DCHECK(counter);
+      const CounterContentData& counter = To<CounterContentData>(*content_data);
       auto* identifier =
-          MakeGarbageCollected<CSSCustomIdentValue>(counter->Identifier());
+          MakeGarbageCollected<CSSCustomIdentValue>(counter.Identifier());
       auto* separator =
-          MakeGarbageCollected<CSSStringValue>(counter->Separator());
-      CSSValueID list_style_ident = CSSValueID::kNone;
-      if (counter->ListStyle() != EListStyleType::kNone) {
-        // TODO(sashab): Change this to use a converter instead of
-        // CSSPrimitiveValueMappings.
-        list_style_ident =
-            CSSIdentifierValue::Create(counter->ListStyle())->GetValueID();
-      }
-      CSSIdentifierValue* list_style =
-          CSSIdentifierValue::Create(list_style_ident);
+          MakeGarbageCollected<CSSStringValue>(counter.Separator());
+      auto* list_style =
+          MakeGarbageCollected<CSSCustomIdentValue>(counter.ListStyle());
       list->Append(*MakeGarbageCollected<cssvalue::CSSCounterValue>(
           identifier, list_style, separator));
     } else if (content_data->IsImage()) {
@@ -2747,7 +2718,7 @@ CSSValue* ComputedStyleUtils::ScrollCustomizationFlagsToCSSValue(
 }
 
 CSSValue* ComputedStyleUtils::ValueForGapLength(
-    const base::Optional<Length>& gap_length,
+    const absl::optional<Length>& gap_length,
     const ComputedStyle& style) {
   if (!gap_length)
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
@@ -2772,7 +2743,7 @@ const CSSValue* ComputedStyleUtils::ValueForStyleAutoColor(
     const StyleAutoColor& color,
     CSSValuePhase value_phase) {
   if (color.IsAutoColor()) {
-    return cssvalue::CSSColorValue::Create(
+    return cssvalue::CSSColor::Create(
         StyleColor::CurrentColor()
             .Resolve(style.GetCurrentColor(), style.UsedColorScheme())
             .Rgb());
@@ -2794,7 +2765,7 @@ ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
           To<CSSUnitValue>(style_value)->GetInternalUnit());
     case CSSStyleValue::StyleValueType::kUnsupportedColorType:
       return std::make_unique<CrossThreadColorValue>(
-          To<CSSUnsupportedColorValue>(style_value)->Value());
+          To<CSSUnsupportedColor>(style_value)->Value());
     case CSSStyleValue::StyleValueType::kUnparsedType:
       return std::make_unique<CrossThreadUnparsedValue>(
           To<CSSUnparsedValue>(style_value)->ToString().IsolatedCopy());
@@ -2853,6 +2824,18 @@ const CSSValue* ComputedStyleUtils::ComputedPropertyValue(
     case CSSPropertyID::kColor:
       return ComputedStyleUtils::CurrentColorOrValidColor(
           style, style.GetColor(), CSSValuePhase::kComputedValue);
+    case CSSPropertyID::kMinHeight: {
+      if (style.MinHeight().IsAuto())
+        return CSSIdentifierValue::Create(CSSValueID::kAuto);
+      return property.CSSValueFromComputedStyle(
+          style, /*layout_object=*/nullptr, false);
+    }
+    case CSSPropertyID::kMinWidth: {
+      if (style.MinWidth().IsAuto())
+        return CSSIdentifierValue::Create(CSSValueID::kAuto);
+      return property.CSSValueFromComputedStyle(
+          style, /*layout_object=*/nullptr, false);
+    }
     case CSSPropertyID::kOutlineColor:
       return ComputedStyleUtils::CurrentColorOrValidColor(
           style, style.OutlineColor(), CSSValuePhase::kComputedValue);

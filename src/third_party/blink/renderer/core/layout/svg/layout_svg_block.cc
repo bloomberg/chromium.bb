@@ -22,12 +22,11 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_block.h"
 
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
-#include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/paint/compositing/compositing_reason_finder.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
@@ -35,10 +34,12 @@
 
 namespace blink {
 
-LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
+LayoutSVGBlock::LayoutSVGBlock(Element* element)
     : LayoutBlockFlow(element),
       needs_transform_update_(true),
-      transform_uses_reference_box_(false) {}
+      transform_uses_reference_box_(false) {
+  DCHECK(IsA<SVGElement>(element));
+}
 
 SVGElement* LayoutSVGBlock::GetElement() const {
   NOT_DESTROYED();
@@ -47,7 +48,6 @@ SVGElement* LayoutSVGBlock::GetElement() const {
 
 void LayoutSVGBlock::WillBeDestroyed() {
   NOT_DESTROYED();
-  SVGResourcesCache::RemoveResources(*this);
   SVGResources::ClearClipPathFilterMask(*GetElement(), Style());
   LayoutBlockFlow::WillBeDestroyed();
 }
@@ -57,7 +57,7 @@ void LayoutSVGBlock::InsertedIntoTree() {
   LayoutBlockFlow::InsertedIntoTree();
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this,
                                                                          false);
-  if (SVGResourcesCache::AddResources(*this))
+  if (StyleRef().HasSVGEffect())
     SetNeedsPaintPropertyUpdate();
   if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
       CompositingReason::kNone) {
@@ -69,7 +69,7 @@ void LayoutSVGBlock::WillBeRemovedFromTree() {
   NOT_DESTROYED();
   LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(*this,
                                                                          false);
-  if (SVGResourcesCache::RemoveResources(*this))
+  if (StyleRef().HasSVGEffect())
     SetNeedsPaintPropertyUpdate();
   LayoutBlockFlow::WillBeRemovedFromTree();
   if (CompositingReasonFinder::DirectReasonsForSVGChildPaintProperties(*this) !=
@@ -120,6 +120,11 @@ void LayoutSVGBlock::StyleDidChange(StyleDifference diff,
   NOT_DESTROYED();
   LayoutBlock::StyleDidChange(diff, old_style);
 
+  // |HasTransformRelatedProperty| is used for compositing so ensure it was
+  // correctly set by the call to |StyleDidChange|.
+  DCHECK_EQ(HasTransformRelatedProperty(),
+            StyleRef().HasTransformRelatedProperty());
+
   transform_uses_reference_box_ =
       TransformHelper::DependsOnReferenceBox(StyleRef());
 
@@ -141,10 +146,8 @@ void LayoutSVGBlock::StyleDidChange(StyleDifference diff,
   }
   if (diff.CompositingReasonsChanged())
     SVGLayoutSupport::NotifySVGRootOfChangedCompositingReasons(this);
-  if (diff.HasDifference()) {
-    SVGResourcesCache::UpdateResources(*this);
-    LayoutSVGResourceContainer::StyleDidChange(*this, diff);
-  }
+  if (diff.HasDifference())
+    LayoutSVGResourceContainer::StyleChanged(*this, diff);
 }
 
 void LayoutSVGBlock::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
@@ -168,17 +171,6 @@ void LayoutSVGBlock::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   SVGLayoutSupport::MapAncestorToLocal(*this, ancestor, transform_state, flags);
   // Convert from local SVG coordinates to local HTML coordinates.
   transform_state.Move(PhysicalLocation());
-}
-
-const LayoutObject* LayoutSVGBlock::PushMappingToContainer(
-    const LayoutBoxModelObject* ancestor_to_stop_at,
-    LayoutGeometryMap& geometry_map) const {
-  NOT_DESTROYED();
-  // Convert from local HTML coordinates to local SVG coordinates.
-  geometry_map.Push(this, PhysicalLocation());
-  // Apply other mappings on local SVG coordinates.
-  return SVGLayoutSupport::PushMappingToContainer(this, ancestor_to_stop_at,
-                                                  geometry_map);
 }
 
 PhysicalRect LayoutSVGBlock::VisualRectInDocument(VisualRectFlags flags) const {

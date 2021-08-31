@@ -95,6 +95,27 @@
         color: var(--cr-secondary-text-color);
         padding: 16px;
       }
+
+      #clearingDataAlert {
+        clip: rect(0, 0, 0, 0);
+        position: fixed;
+      }
+
+      #searchHistoryTextBox {
+        background-color: var(--google-grey-50);
+        border: 1px solid var(--google-grey-200);
+        border-radius: 4px;
+        margin-top: 12px;
+        padding: 12px;
+      }
+
+      /* dark mode */
+      @media (prefers-color-scheme: dark) {
+        #searchHistoryTextBox {
+          background-color: rgba(0, 0, 0, .3);
+          border-color: transparent;
+        }
+      }
     </style>
 
     <cr-dialog id="clearBrowsingDataDialog"
@@ -132,9 +153,10 @@
                 pref="{{prefs.browser.clear_data.browsing_history_basic}}"
                 label="$i18n{clearBrowsingHistory}"
                 sub-label-html="[[browsingCheckboxLabel_(
-                    isSignedIn_, isSyncingHistory_, syncStatus.hasError,
+                    isSyncConsented_, isSyncingHistory_, syncStatus.hasError,
                     '$i18nPolymer{clearBrowsingHistorySummary}',
                     '$i18nPolymer{clearBrowsingHistorySummarySignedIn}',
+                    '$i18nPolymer{clearBrowsingHistorySummarySignedInNoLink}',
                     '$i18nPolymer{clearBrowsingHistorySummarySynced}')]]"
                 disabled="[[clearingInProgress_]]"
                 hidden="[[isSupervised_]]" no-set-pref>
@@ -156,6 +178,10 @@
                 sub-label="[[counters_.cache_basic]]"
                 disabled="[[clearingInProgress_]]" no-set-pref>
             </settings-checkbox>
+            <div id="searchHistoryTextBox"
+                hidden="[[!shouldShowSearchHistoryLabel_]]">
+              $i18nRaw{clearSearchHistorySummarySignedIn}
+            </div>
           </div>
           <div id="advanced-tab">
             <div class="row time-range-row">
@@ -235,6 +261,12 @@
                                                clearButtonDisabled_)]]">
             $i18n{clearData}
         </cr-button>
+
+        <!-- The alert must be inside the dialog for it to be read while the
+             dialog is open. -->
+        <div id="clearingDataAlert" role="alert">
+          [[clearingDataAlertString_]]
+        </div>
       </div>
       <template is="dom-if" if="[[shouldShowFooter_(syncStatus.signedIn)]]"
           restamp>
@@ -264,7 +296,7 @@
 
     <cr-dialog id="installedAppsDialog" close-text="$i18n{close}"
                ignore-popstate show-scroll-borders
-               on-close="hideInstalledApps_">
+               on-cancel="hideInstalledApps_">
       <div slot="title">
         $i18n{installedAppsTitle}
       </div>
@@ -282,7 +314,7 @@
         <paper-spinner-lite active="[[clearingInProgress_]]">
         </paper-spinner-lite>
         <cr-button class="cancel-button" disabled="[[clearingInProgress_]]"
-            on-click="hideInstalledApps_">
+            on-click="onCancelInstalledApps_">
           $i18n{cancel}
         </cr-button>
         <cr-button id="installedAppsConfirm" class="action-button"

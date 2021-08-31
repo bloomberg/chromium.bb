@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/i18n/rtl.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/current_thread.h"
@@ -21,13 +22,13 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -74,7 +75,7 @@ float GetNearestAllowedValue(const base::flat_set<float>& allowed_values,
 Slider::Slider(SliderListener* listener) : listener_(listener) {
   highlight_animation_.SetSlideDuration(base::TimeDelta::FromMilliseconds(150));
   SetFlipCanvasOnPaintForRTLUI(true);
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
   SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -358,10 +359,18 @@ void Slider::OnPaint(gfx::Canvas* canvas) {
   const int thumb_highlight_radius =
       HasFocus() ? kThumbHighlightRadius : thumb_highlight_radius_;
   if (thumb_highlight_radius > kThumbRadius) {
-    cc::PaintFlags highlight;
-    highlight.setColor(GetTroughColor());
-    highlight.setAntiAlias(true);
-    canvas->DrawCircle(thumb_center, thumb_highlight_radius, highlight);
+    cc::PaintFlags highlight_background;
+    highlight_background.setColor(GetTroughColor());
+    highlight_background.setAntiAlias(true);
+    canvas->DrawCircle(thumb_center, thumb_highlight_radius,
+                       highlight_background);
+
+    cc::PaintFlags highlight_border;
+    highlight_border.setColor(GetThumbColor());
+    highlight_border.setAntiAlias(true);
+    highlight_border.setStyle(cc::PaintFlags::kStroke_Style);
+    highlight_border.setStrokeWidth(kLineThickness);
+    canvas->DrawCircle(thumb_center, thumb_highlight_radius, highlight_border);
   }
 
   // Paint the thumb of the slider.

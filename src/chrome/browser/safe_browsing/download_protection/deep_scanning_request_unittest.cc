@@ -7,12 +7,13 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/enterprise/connectors/common.h"
-#include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
+#include "chrome/browser/enterprise/connectors/connectors_service.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/policy/dm_token_utils.h"
@@ -42,6 +43,10 @@
 #include "crypto/sha2.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/system/fake_statistics_provider.h"
+#endif
 
 namespace safe_browsing {
 
@@ -93,6 +98,8 @@ const std::set<std::string>* ExeMimeTypes() {
                                       "application/octet-stream"};
   return &set;
 }
+
+constexpr char kScanId[] = "scan_id";
 
 }  // namespace
 
@@ -183,14 +190,10 @@ class DeepScanningRequestTest : public testing::Test {
 
     SetDMTokenForTesting(
         policy::DMToken::CreateValidTokenForTesting("dm_token"));
-
-    enterprise_connectors::ConnectorsManager::GetInstance()->SetUpForTesting();
   }
 
   void TearDown() override {
     SetDMTokenForTesting(policy::DMToken::CreateEmptyTokenForTesting());
-    enterprise_connectors::ConnectorsManager::GetInstance()
-        ->TearDownForTesting();
   }
 
   void AddUrlToProfilePrefList(const char* pref_name, const GURL& url) {
@@ -217,7 +220,7 @@ class DeepScanningRequestTest : public testing::Test {
   }
 
   void ValidateDefaultSettings(
-      const base::Optional<enterprise_connectors::AnalysisSettings>& settings) {
+      const absl::optional<enterprise_connectors::AnalysisSettings>& settings) {
     ASSERT_TRUE(settings.has_value());
 
     enterprise_connectors::AnalysisSettings default_settings;
@@ -239,14 +242,11 @@ class DeepScanningRequestTest : public testing::Test {
 
   void SetLastResult(DownloadCheckResult result) { last_result_ = result; }
 
-  base::Optional<enterprise_connectors::AnalysisSettings> settings() {
-    // Clear the cache before getting settings so there's no race with the pref
-    // change and the cached values being updated.
-    enterprise_connectors::ConnectorsManager::GetInstance()
-        ->ClearCacheForTesting();
-
+  absl::optional<enterprise_connectors::AnalysisSettings> settings() {
     return DeepScanningRequest::ShouldUploadBinary(&item_);
   }
+
+  TestingProfile* profile() { return profile_; }
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
@@ -268,7 +268,8 @@ class DeepScanningRequestTest : public testing::Test {
 };
 
 TEST_F(DeepScanningRequestTest, ChecksFeatureFlags) {
-  SetAnalysisConnector(enterprise_connectors::FILE_DOWNLOADED,
+  SetAnalysisConnector(profile_->GetPrefs(),
+                       enterprise_connectors::FILE_DOWNLOADED,
                        kScanForDlpAndMalware);
 
   // Try each request with settings indicating both DLP and Malware requests
@@ -319,7 +320,8 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
   EnableAllFeatures();
 
   {
-    SetAnalysisConnector(enterprise_connectors::FILE_DOWNLOADED,
+    SetAnalysisConnector(profile_->GetPrefs(),
+                         enterprise_connectors::FILE_DOWNLOADED,
                          kScanForDlpAndMalware);
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
@@ -343,7 +345,8 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
   }
 
   {
-    SetAnalysisConnector(enterprise_connectors::FILE_DOWNLOADED,
+    SetAnalysisConnector(profile_->GetPrefs(),
+                         enterprise_connectors::FILE_DOWNLOADED,
                          kScanForMalware);
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
@@ -359,7 +362,8 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
   }
 
   {
-    SetAnalysisConnector(enterprise_connectors::FILE_DOWNLOADED, kScanForDlp);
+    SetAnalysisConnector(profile_->GetPrefs(),
+                         enterprise_connectors::FILE_DOWNLOADED, kScanForDlp);
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::DoNothing(), &download_protection_service_, settings().value());
@@ -373,7 +377,8 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
   }
 
   {
-    SetAnalysisConnector(enterprise_connectors::FILE_DOWNLOADED, kNoScan);
+    SetAnalysisConnector(profile_->GetPrefs(),
+                         enterprise_connectors::FILE_DOWNLOADED, kNoScan);
     EXPECT_FALSE(settings().has_value());
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
@@ -433,36 +438,42 @@ class DeepScanningReportingTest : public DeepScanningRequestTest {
             profile_,
             base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
-        ->SetCloudPolicyClientForTesting(client_.get());
-    extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
-        ->SetBinaryUploadServiceForTesting(
-            download_protection_service_.GetFakeBinaryUploadService());
+        ->SetBrowserCloudPolicyClientForTesting(client_.get());
     identity_test_environment_.MakePrimaryAccountAvailable(kUserName);
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->SetIdentityManagerForTesting(
             identity_test_environment_.identity_manager());
     download_protection_service_.GetFakeBinaryUploadService()
-        ->SetAuthForTesting(true);
+        ->SetAuthForTesting("dm_token", true);
 
-    SetOnSecurityEventReporting(true);
+    SetOnSecurityEventReporting(profile_->GetPrefs(), true);
     EnableAllFeatures();
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    fake_statistics_provider_.SetMachineStatistic(
+        chromeos::system::kSerialNumberKeyForTest, "fake_serial_number");
+#endif
+
+    SetAnalysisConnector(profile_->GetPrefs(),
+                         enterprise_connectors::FILE_DOWNLOADED,
+                         kScanForDlpAndMalware);
   }
 
   void TearDown() override {
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
-        ->SetCloudPolicyClientForTesting(nullptr);
+        ->SetBrowserCloudPolicyClientForTesting(nullptr);
     DeepScanningRequestTest::TearDown();
   }
 
  protected:
   std::unique_ptr<policy::MockCloudPolicyClient> client_;
   signin::IdentityTestEnvironment identity_test_environment_;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
+#endif
 };
 
 TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
-  SetAnalysisConnector(enterprise_connectors::FILE_DOWNLOADED,
-                       kScanForDlpAndMalware);
-
   {
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
@@ -471,6 +482,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         &download_protection_service_, settings().value());
 
     enterprise_connectors::ContentAnalysisResponse response;
+    response.set_request_token(kScanId);
 
     auto* malware_result = response.add_results();
     malware_result->set_tag("malware");
@@ -507,7 +519,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size(),
         /*result*/ EventResultToString(EventResult::WARNED),
-        /*username*/ kUserName);
+        /*username*/ kUserName,
+        /*scan_id*/ kScanId);
 
     request.Start();
 
@@ -522,6 +535,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         &download_protection_service_, settings().value());
 
     enterprise_connectors::ContentAnalysisResponse response;
+    response.set_request_token(kScanId);
 
     auto* malware_result = response.add_results();
     malware_result->set_tag("malware");
@@ -558,7 +572,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size(),
         /*result*/ EventResultToString(EventResult::WARNED),
-        /*username*/ kUserName);
+        /*username*/ kUserName,
+        /*scan_id*/ kScanId);
 
     request.Start();
 
@@ -573,6 +588,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         &download_protection_service_, settings().value());
 
     enterprise_connectors::ContentAnalysisResponse response;
+    response.set_request_token(kScanId);
 
     auto* dlp_result = response.add_results();
     dlp_result->set_tag("dlp");
@@ -599,7 +615,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size(),
         EventResultToString(EventResult::BLOCKED),
-        /*username*/ kUserName);
+        /*username*/ kUserName,
+        /*scan_id*/ kScanId);
 
     request.Start();
 
@@ -614,6 +631,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         &download_protection_service_, settings().value());
 
     enterprise_connectors::ContentAnalysisResponse response;
+    response.set_request_token(kScanId);
 
     auto* dlp_result = response.add_results();
     dlp_result->set_tag("dlp");
@@ -640,7 +658,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size(),
         EventResultToString(EventResult::WARNED),
-        /*username*/ kUserName);
+        /*username*/ kUserName,
+        /*scan_id*/ kScanId);
 
     request.Start();
 
@@ -655,6 +674,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         &download_protection_service_, settings().value());
 
     enterprise_connectors::ContentAnalysisResponse response;
+    response.set_request_token(kScanId);
 
     auto* dlp_result = response.add_results();
     dlp_result->set_tag("dlp");
@@ -685,7 +705,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size(),
         EventResultToString(EventResult::BLOCKED),
-        /*username*/ kUserName);
+        /*username*/ kUserName, /*scan_id*/ kScanId);
 
     request.Start();
 
@@ -769,6 +789,38 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
   }
 }
 
+TEST_F(DeepScanningReportingTest, Timeout) {
+  DeepScanningRequest request(
+      &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
+      base::BindRepeating(&DeepScanningRequestTest::SetLastResult,
+                          base::Unretained(this)),
+      &download_protection_service_, settings().value());
+
+  download_protection_service_.GetFakeBinaryUploadService()->SetResponse(
+      BinaryUploadService::Result::TIMEOUT,
+      enterprise_connectors::ContentAnalysisResponse());
+
+  EventReportValidator validator(client_.get());
+  validator.ExpectUnscannedFileEvent(
+      /*url*/ "https://example.com/download.exe",
+      /*filename*/ download_path_.AsUTF8Unsafe(),
+      // printf "download contents" | sha256sum |  tr '[:lower:]' '[:upper:]'
+      /*sha256*/
+      "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
+      /*trigger*/
+      extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+      /*reason*/ "TIMEOUT",
+      /*mimetypes*/ ExeMimeTypes(),
+      /*size*/ std::string("download contents").size(),
+      /*result*/
+      EventResultToString(EventResult::ALLOWED),
+      /*username*/ kUserName);
+
+  request.Start();
+
+  EXPECT_EQ(DownloadCheckResult::UNKNOWN, last_result_);
+}
+
 class DeepScanningDownloadRestrictionsTest
     : public DeepScanningReportingTest,
       public testing::WithParamInterface<DownloadPrefs::DownloadRestriction> {
@@ -807,7 +859,8 @@ INSTANTIATE_TEST_SUITE_P(
         DownloadPrefs::DownloadRestriction::MALICIOUS_FILES));
 
 TEST_P(DeepScanningDownloadRestrictionsTest, GeneratesCorrectReport) {
-  SetAnalysisConnector(enterprise_connectors::FILE_DOWNLOADED, kScanForMalware);
+  SetAnalysisConnector(profile_->GetPrefs(),
+                       enterprise_connectors::FILE_DOWNLOADED, kScanForMalware);
   {
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
@@ -816,6 +869,7 @@ TEST_P(DeepScanningDownloadRestrictionsTest, GeneratesCorrectReport) {
         &download_protection_service_, settings().value());
 
     enterprise_connectors::ContentAnalysisResponse response;
+    response.set_request_token(kScanId);
 
     auto* malware_result = response.add_results();
     malware_result->set_tag("malware");
@@ -842,7 +896,7 @@ TEST_P(DeepScanningDownloadRestrictionsTest, GeneratesCorrectReport) {
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size(),
         /*result*/ EventResultToString(expected_event_result_for_malware()),
-        /*username*/ kUserName);
+        /*username*/ kUserName, /*scan_id*/ kScanId);
 
     request.Start();
 
@@ -856,6 +910,7 @@ TEST_P(DeepScanningDownloadRestrictionsTest, GeneratesCorrectReport) {
         &download_protection_service_, settings().value());
 
     enterprise_connectors::ContentAnalysisResponse response;
+    response.set_request_token(kScanId);
 
     auto* malware_result = response.add_results();
     malware_result->set_tag("malware");
@@ -882,7 +937,7 @@ TEST_P(DeepScanningDownloadRestrictionsTest, GeneratesCorrectReport) {
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size(),
         /*result*/ EventResultToString(EventResult::WARNED),
-        /*username*/ kUserName);
+        /*username*/ kUserName, /*scan_id*/ kScanId);
 
     request.Start();
 
@@ -893,7 +948,8 @@ TEST_P(DeepScanningDownloadRestrictionsTest, GeneratesCorrectReport) {
 TEST_F(DeepScanningRequestTest, ShouldUploadBinary_MalwareListPolicy) {
   SetFeatures(/*enabled*/ {enterprise_connectors::kEnterpriseConnectorsEnabled},
               /*disabled*/ {});
-  SetAnalysisConnector(enterprise_connectors::FILE_DOWNLOADED, kScanForMalware);
+  SetAnalysisConnector(profile_->GetPrefs(),
+                       enterprise_connectors::FILE_DOWNLOADED, kScanForMalware);
 
   content::DownloadItemUtils::AttachInfo(&item_, profile_, nullptr);
   EXPECT_CALL(item_, GetURL()).WillRepeatedly(ReturnRef(download_url_));
@@ -903,12 +959,13 @@ TEST_F(DeepScanningRequestTest, ShouldUploadBinary_MalwareListPolicy) {
 
   // With the old malware policy list set, the item should be uploaded since
   // DeepScanningRequest ignores that policy.
-  AddUrlToProfilePrefList(prefs::kSafeBrowsingWhitelistDomains, download_url_);
+  AddUrlToProfilePrefList(prefs::kSafeBrowsingAllowlistDomains, download_url_);
   ValidateDefaultSettings(settings());
 
   // With the new malware policy list set, the item should not be uploaded since
   // DeepScanningRequest honours that policy.
-  SetAnalysisConnector(enterprise_connectors::FILE_DOWNLOADED,
+  SetAnalysisConnector(profile_->GetPrefs(),
+                       enterprise_connectors::FILE_DOWNLOADED,
                        base::StringPrintf(
                            R"({
                             "service_provider": "google",
@@ -924,7 +981,8 @@ TEST_F(DeepScanningRequestTest, ShouldUploadBinary_MalwareListPolicy) {
 }
 
 TEST_F(DeepScanningRequestTest, PopulatesRequest) {
-  SetAnalysisConnector(enterprise_connectors::FILE_DOWNLOADED,
+  SetAnalysisConnector(profile_->GetPrefs(),
+                       enterprise_connectors::FILE_DOWNLOADED,
                        kScanForDlpAndMalware);
 
   EnableAllFeatures();

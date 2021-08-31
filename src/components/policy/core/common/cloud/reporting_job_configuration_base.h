@@ -10,11 +10,11 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/values.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/policy_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace policy {
 
@@ -81,7 +81,7 @@ class POLICY_EXPORT ReportingJobConfigurationBase
     // Dictionary Key Name
     static const char kBrowserKey[];
 
-    static base::Value BuildBrowserDictionary();
+    static base::Value BuildBrowserDictionary(bool include_device_info);
 
     static std::string GetBrowserIdPath();
     static std::string GetUserAgentPath();
@@ -120,6 +120,7 @@ class POLICY_EXPORT ReportingJobConfigurationBase
       scoped_refptr<network::SharedURLLoaderFactory> factory,
       CloudPolicyClient* client,
       const std::string& server_url,
+      bool include_device_info,
       UploadCompleteCallback callback);
   ~ReportingJobConfigurationBase() override;
 
@@ -132,6 +133,10 @@ class POLICY_EXPORT ReportingJobConfigurationBase
   virtual void OnBeforeRetryInternal(int response_code,
                                      const std::string& response_body);
 
+  // Allows children to provide final mutations to |payload_| before completion
+  // of |GetPayload| call.
+  virtual void UpdatePayloadBeforeGetInternal();
+
   // Returns an identifying string for UMA.
   virtual std::string GetUmaString() const = 0;
 
@@ -141,13 +146,15 @@ class POLICY_EXPORT ReportingJobConfigurationBase
   // being generated can be seen with the ::reporting::GetContext function. Once
   // |GetPayload| is called, |context_| will be merged into the payload and
   // reset.
-  base::Optional<base::Value> context_;
+  absl::optional<base::Value> context_;
 
   UploadCompleteCallback callback_;
 
  private:
-  // Initializes request payload.
-  void InitializePayload(CloudPolicyClient* client);
+  // Initializes request payload. If |include_device_info| is false, the
+  // "device" and "browser.machineUser" fields (see comment at the top of the
+  // file) are excluded from the payload.
+  void InitializePayload(CloudPolicyClient* client, bool include_device_info);
 
   const std::string server_url_;
 

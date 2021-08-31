@@ -48,7 +48,6 @@ MaybeHandle<Object> CreateDynamicFunction(Isolate* isolate,
     builder.AppendCharacter('(');
     builder.AppendCString(token);
     builder.AppendCString(" anonymous(");
-    bool parenthesis_in_arg_string = false;
     if (argc > 1) {
       for (int i = 1; i < argc; ++i) {
         if (i > 1) builder.AppendCharacter(',');
@@ -70,14 +69,6 @@ MaybeHandle<Object> CreateDynamicFunction(Isolate* isolate,
     }
     builder.AppendCString("\n})");
     ASSIGN_RETURN_ON_EXCEPTION(isolate, source, builder.Finish(), Object);
-
-    // The SyntaxError must be thrown after all the (observable) ToString
-    // conversions are done.
-    if (parenthesis_in_arg_string) {
-      THROW_NEW_ERROR(isolate,
-                      NewSyntaxError(MessageTemplate::kParenthesisInArgString),
-                      Object);
-    }
   }
 
   bool is_code_like = true;
@@ -127,8 +118,10 @@ MaybeHandle<Object> CreateDynamicFunction(Isolate* isolate,
     Handle<Map> map = Map::AsLanguageMode(isolate, initial_map, shared_info);
 
     Handle<Context> context(function->context(), isolate);
-    function = isolate->factory()->NewFunctionFromSharedFunctionInfo(
-        map, shared_info, context, AllocationType::kYoung);
+    function = Factory::JSFunctionBuilder{isolate, shared_info, context}
+                   .set_map(map)
+                   .set_allocation_type(AllocationType::kYoung)
+                   .Build();
   }
   return function;
 }

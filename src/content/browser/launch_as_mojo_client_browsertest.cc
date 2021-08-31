@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test.h"
@@ -26,7 +27,7 @@
 #include "ui/ozone/public/ozone_switches.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ui/gl/gl_switches.h"
 #endif
 
@@ -84,8 +85,9 @@ class LaunchAsMojoClientBrowserTest : public ContentBrowserTest {
     command_line.CopySwitchesFrom(cmdline, kSwitchesToCopy,
                                   base::size(kSwitchesToCopy));
 
-#if defined(OS_CHROMEOS)
-    command_line.AppendSwitchASCII(switches::kUseGL, "swiftshader");
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    command_line.AppendSwitchASCII(switches::kUseGL,
+                                   gl::kGLImplementationSwiftShaderName);
 #endif
     return command_line;
   }
@@ -153,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(LaunchAsMojoClientBrowserTest, LaunchAndBindInterface) {
   base::RunLoop loop;
   shell_controller->GetSwitchValue(
       kExtraSwitchName,
-      base::BindLambdaForTesting([&](const base::Optional<std::string>& value) {
+      base::BindLambdaForTesting([&](const absl::optional<std::string>& value) {
         ASSERT_TRUE(value);
         EXPECT_EQ(kExtraSwitchValue, *value);
         loop.Quit();

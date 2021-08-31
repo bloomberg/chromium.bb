@@ -31,20 +31,16 @@ namespace rx
 //   have needed to invalidateGraphicsDriverUniforms().
 // - Set 1 contains uniform blocks created to encompass default uniforms.  1 binding is used per
 //   pipeline stage.  Additionally, transform feedback buffers are bound from binding 2 and up.
-// - Set 2 contains all textures.
+// - Set 2 contains all textures (including texture buffers).
 // - Set 3 contains all other shader resources, such as uniform and storage blocks, atomic counter
-//   buffers and images.
+//   buffers, images and image buffers.
 
-// ANGLE driver uniforms set index (binding is always 0):
-enum DescriptorSetIndex : uint32_t
+enum class DescriptorSetIndex : uint32_t
 {
-    // All internal shaders assume there is only one descriptor set, indexed at 0
-    InternalShader = 0,
-
-    DriverUniforms = 0,  // ANGLE driver uniforms set index
-    UniformsAndXfb,      // Uniforms set index
-    Texture,             // Textures set index
-    ShaderResource,      // Other shader resources set index
+    Internal,        // ANGLE driver uniforms or internal shaders
+    UniformsAndXfb,  // Uniforms set index
+    Texture,         // Textures set index
+    ShaderResource,  // Other shader resources set index
 
     InvalidEnum,
     EnumCount = InvalidEnum,
@@ -161,11 +157,13 @@ class alignas(4) RenderPassDesc final
     void packColorUnresolveAttachment(size_t colorIndexGL);
     void removeColorUnresolveAttachment(size_t colorIndexGL);
     // Indicate that a depth/stencil attachment should have a corresponding resolve attachment.
-    void packDepthStencilResolveAttachment(bool resolveDepth, bool resolveStencil);
+    void packDepthStencilResolveAttachment();
     // Indicate that a depth/stencil attachment should take its data from the resolve attachment
     // initially.
     void packDepthStencilUnresolveAttachment(bool unresolveDepth, bool unresolveStencil);
     void removeDepthStencilUnresolveAttachment();
+
+    void setWriteControlMode(gl::SrgbWriteControlMode mode);
 
     size_t hash() const;
 
@@ -174,7 +172,7 @@ class alignas(4) RenderPassDesc final
     size_t depthStencilAttachmentIndex() const { return colorAttachmentRange(); }
 
     bool isColorAttachmentEnabled(size_t colorIndexGL) const;
-    bool hasDepthStencilAttachment() const { return mHasDepthStencilAttachment; }
+    bool hasDepthStencilAttachment() const;
     bool hasColorResolveAttachment(size_t colorIndexGL) const
     {
         return mColorResolveAttachmentMask.test(colorIndexGL);
@@ -189,15 +187,7 @@ class alignas(4) RenderPassDesc final
     }
     bool hasDepthStencilResolveAttachment() const
     {
-        return (mAttachmentFormats.back() & (kResolveDepthFlag | kResolveStencilFlag)) != 0;
-    }
-    bool hasDepthResolveAttachment() const
-    {
-        return (mAttachmentFormats.back() & kResolveDepthFlag) != 0;
-    }
-    bool hasStencilResolveAttachment() const
-    {
-        return (mAttachmentFormats.back() & kResolveStencilFlag) != 0;
+        return (mAttachmentFormats.back() & kResolveDepthStencilFlag) != 0;
     }
     bool hasDepthStencilUnresolveAttachment() const
     {
@@ -211,6 +201,12 @@ class alignas(4) RenderPassDesc final
     {
         return (mAttachmentFormats.back() & kUnresolveStencilFlag) != 0;
     }
+    gl::SrgbWriteControlMode getSRGBWriteControlMode() const
+    {
+        return ((mAttachmentFormats.back() & kSrgbWriteControlFlag) != 0)
+                   ? gl::SrgbWriteControlMode::Linear
+                   : gl::SrgbWriteControlMode::Default;
+    }
 
     // Get the number of attachments in the Vulkan render pass, i.e. after removing disabled
     // color attachments.
@@ -219,6 +215,12 @@ class alignas(4) RenderPassDesc final
     void setSamples(GLint samples);
 
     uint8_t samples() const { return 1u << mLogSamples; }
+
+    void setFramebufferFetchMode(bool hasFramebufferFetch);
+    bool getFramebufferFetchMode() const { return mHasFramebufferFetch; }
+
+    void updateRenderToTexture(bool isRenderToTexture);
+    bool isRenderToTexture() const { return (mAttachmentFormats.back() & kIsRenderToTexture) != 0; }
 
     angle::FormatID operator[](size_t index) const
     {
@@ -236,22 +238,19 @@ class alignas(4) RenderPassDesc final
     // Store log(samples), to be able to store it in 3 bits.
     uint8_t mLogSamples : 3;
     uint8_t mColorAttachmentRange : 4;
-    uint8_t mHasDepthStencilAttachment : 1;
+    uint8_t mHasFramebufferFetch : 1;
 
     // Whether each color attachment has a corresponding resolve attachment.  Color resolve
     // attachments can be used to optimize resolve through glBlitFramebuffer() as well as support
     // GL_EXT_multisampled_render_to_texture and GL_EXT_multisampled_render_to_texture2.
-    //
-    // Note that depth/stencil resolve attachments require VK_KHR_depth_stencil_resolve which is
-    // currently not well supported, so ANGLE always takes a fallback path for them.  When a resolve
-    // path is implemented for depth/stencil attachments, another bit must be made free
-    // (mAttachmentFormats is one element too large, so there are 8 bits there to take).
     gl::DrawBufferMask mColorResolveAttachmentMask;
 
     // Whether each color attachment with a corresponding resolve attachment should be initialized
     // with said resolve attachment in an initial subpass.  This is an optimization to avoid
     // loadOp=LOAD on the implicit multisampled image used with multisampled-render-to-texture
     // render targets.  This operation is referred to as "unresolve".
+    //
+    // Unused when VK_EXT_multisampled_render_to_single_sampled is available.
     gl::DrawBufferMask mColorUnresolveAttachmentMask;
 
     // Color attachment formats are stored with their GL attachment indices.  The depth/stencil
@@ -286,10 +285,11 @@ class alignas(4) RenderPassDesc final
     static constexpr uint8_t kDepthStencilFormatStorageMask = 0x7;
 
     // Flags stored in the upper 5 bits of mAttachmentFormats.back().
-    static constexpr uint8_t kResolveDepthFlag     = 0x80;
-    static constexpr uint8_t kResolveStencilFlag   = 0x40;
-    static constexpr uint8_t kUnresolveDepthFlag   = 0x20;
-    static constexpr uint8_t kUnresolveStencilFlag = 0x10;
+    static constexpr uint8_t kIsRenderToTexture       = 0x80;
+    static constexpr uint8_t kResolveDepthStencilFlag = 0x40;
+    static constexpr uint8_t kUnresolveDepthFlag      = 0x20;
+    static constexpr uint8_t kUnresolveStencilFlag    = 0x10;
+    static constexpr uint8_t kSrgbWriteControlFlag    = 0x08;
 };
 
 bool operator==(const RenderPassDesc &lhs, const RenderPassDesc &rhs);
@@ -510,7 +510,8 @@ static_assert(kPackedColorBlendAttachmentStateSize == 4, "Size check failed");
 
 struct PrimitiveState final
 {
-    uint16_t topology : 15;
+    uint16_t topology : 9;
+    uint16_t patchVertices : 6;
     uint16_t restartEnable : 1;
 };
 
@@ -527,6 +528,22 @@ struct PackedInputAssemblyAndColorBlendStateInfo final
     PrimitiveState primitive;
 };
 
+struct PackedScissor final
+{
+    uint16_t x;
+    uint16_t y;
+    uint16_t width;
+    uint16_t height;
+};
+
+struct PackedExtent final
+{
+    uint16_t width;
+    uint16_t height;
+};
+// This is invalid value for PackedScissor.x. It is used to indicate scissor is a dynamic state
+constexpr int32_t kDynamicScissorSentinel = std::numeric_limits<decltype(PackedScissor::x)>::max();
+
 constexpr size_t kPackedInputAssemblyAndColorBlendStateSize =
     sizeof(PackedInputAssemblyAndColorBlendStateInfo);
 static_assert(kPackedInputAssemblyAndColorBlendStateSize == 56, "Size check failed");
@@ -534,7 +551,7 @@ static_assert(kPackedInputAssemblyAndColorBlendStateSize == 56, "Size check fail
 constexpr size_t kGraphicsPipelineDescSumOfSizes =
     kVertexInputAttributesSize + kRenderPassDescSize + kPackedRasterizationAndMultisampleStateSize +
     kPackedDepthStencilStateSize + kPackedInputAssemblyAndColorBlendStateSize + sizeof(VkViewport) +
-    sizeof(VkRect2D);
+    sizeof(PackedScissor) + sizeof(PackedExtent);
 
 // Number of dirty bits in the dirty bit set.
 constexpr size_t kGraphicsPipelineDirtyBitBytes = 4;
@@ -564,7 +581,7 @@ class GraphicsPipelineDesc final
     size_t hash() const;
     bool operator==(const GraphicsPipelineDesc &other) const;
 
-    void initDefaults();
+    void initDefaults(const ContextVk *contextVk);
 
     // For custom comparisons.
     template <typename T>
@@ -574,7 +591,7 @@ class GraphicsPipelineDesc final
     }
 
     angle::Result initializePipeline(ContextVk *contextVk,
-                                     const vk::PipelineCache &pipelineCacheVk,
+                                     const PipelineCache &pipelineCacheVk,
                                      const RenderPass &compatibleRenderPass,
                                      const PipelineLayout &pipelineLayout,
                                      const gl::AttributesMask &activeAttribLocationsMask,
@@ -582,7 +599,9 @@ class GraphicsPipelineDesc final
                                      const ShaderModule *vertexModule,
                                      const ShaderModule *fragmentModule,
                                      const ShaderModule *geometryModule,
-                                     const vk::SpecializationConstants specConsts,
+                                     const ShaderModule *tessControlModule,
+                                     const ShaderModule *tessEvaluationModule,
+                                     const SpecializationConstants &specConsts,
                                      Pipeline *pipelineOut) const;
 
     // Vertex input state. For ES 3.1 this should be separated into binding and attribute.
@@ -702,6 +721,9 @@ class GraphicsPipelineDesc final
     void setScissor(const VkRect2D &scissor);
     void updateScissor(GraphicsPipelineTransitionBits *transition, const VkRect2D &scissor);
 
+    // Tessellation
+    void updatePatchVertices(GraphicsPipelineTransitionBits *transition, GLuint value);
+
     // Subpass
     void resetSubpass(GraphicsPipelineTransitionBits *transition);
     void nextSubpass(GraphicsPipelineTransitionBits *transition);
@@ -716,6 +738,11 @@ class GraphicsPipelineDesc final
             mDepthStencilStateInfo.depthCompareOpAndSurfaceRotation.surfaceRotation);
     }
 
+    void updateDrawableSize(GraphicsPipelineTransitionBits *transition,
+                            uint32_t width,
+                            uint32_t height);
+    const PackedExtent &getDrawableSize() const { return mDrawableSize; }
+
   private:
     void updateSubpass(GraphicsPipelineTransitionBits *transition, uint32_t subpass);
 
@@ -727,7 +754,8 @@ class GraphicsPipelineDesc final
     VkViewport mViewport;
     // The special value of .offset.x == INT_MIN for scissor implies dynamic scissor that needs to
     // be set through vkCmdSetScissor.
-    VkRect2D mScissor;
+    PackedScissor mScissor;
+    PackedExtent mDrawableSize;
 };
 
 // Verify the packed pipeline description has no gaps in the packing.
@@ -762,7 +790,7 @@ class DescriptorSetLayoutDesc final
                 VkDescriptorType type,
                 uint32_t count,
                 VkShaderStageFlags stages,
-                const vk::Sampler *immutableSampler);
+                const Sampler *immutableSampler);
 
     void unpackBindings(DescriptorSetLayoutBindingVector *bindings,
                         std::vector<VkSampler> *immutableSamplers) const;
@@ -799,9 +827,8 @@ struct PackedPushConstantRange
 };
 
 template <typename T>
-using DescriptorSetLayoutArray = std::array<T, static_cast<size_t>(DescriptorSetIndex::EnumCount)>;
-using DescriptorSetLayoutPointerArray =
-    DescriptorSetLayoutArray<BindingPointer<DescriptorSetLayout>>;
+using DescriptorSetArray              = angle::PackedEnumMap<DescriptorSetIndex, T>;
+using DescriptorSetLayoutPointerArray = DescriptorSetArray<BindingPointer<DescriptorSetLayout>>;
 template <typename T>
 using PushConstantRangeArray = gl::ShaderMap<T>;
 
@@ -823,7 +850,7 @@ class PipelineLayoutDesc final
     const PushConstantRangeArray<PackedPushConstantRange> &getPushConstantRanges() const;
 
   private:
-    DescriptorSetLayoutArray<DescriptorSetLayoutDesc> mDescriptorSetLayouts;
+    DescriptorSetArray<DescriptorSetLayoutDesc> mDescriptorSetLayouts;
     PushConstantRangeArray<PackedPushConstantRange> mPushConstantRanges;
 
     // Verify the arrays are properly packed.
@@ -836,9 +863,8 @@ class PipelineLayoutDesc final
 };
 
 // Verify the structure is properly packed.
-static_assert(sizeof(PipelineLayoutDesc) ==
-                  (sizeof(DescriptorSetLayoutArray<DescriptorSetLayoutDesc>) +
-                   sizeof(gl::ShaderMap<PackedPushConstantRange>)),
+static_assert(sizeof(PipelineLayoutDesc) == (sizeof(DescriptorSetArray<DescriptorSetLayoutDesc>) +
+                                             sizeof(gl::ShaderMap<PackedPushConstantRange>)),
               "Unexpected Size");
 
 // Packed sampler description for the sampler cache.
@@ -860,7 +886,7 @@ class SamplerDesc final
                 bool stencilMode,
                 uint64_t externalFormat);
     void reset();
-    angle::Result init(ContextVk *contextVk, vk::Sampler *sampler) const;
+    angle::Result init(ContextVk *contextVk, Sampler *sampler) const;
 
     size_t hash() const;
     bool operator==(const SamplerDesc &other) const;
@@ -1021,16 +1047,16 @@ static_assert(sizeof(ImageSubresourceRange) == sizeof(uint32_t), "Size mismatch"
 
 constexpr ImageSubresourceRange kInvalidImageSubresourceRange = {0, 0, 0, 0, 0, 0};
 
-struct ImageViewSubresourceSerial
+struct ImageOrBufferViewSubresourceSerial
 {
-    ImageViewSerial imageViewSerial;
+    ImageOrBufferViewSerial viewSerial;
     ImageSubresourceRange subresource;
 };
 
-static_assert(sizeof(ImageViewSubresourceSerial) == sizeof(uint64_t), "Size mismatch");
+static_assert(sizeof(ImageOrBufferViewSubresourceSerial) == sizeof(uint64_t), "Size mismatch");
 
-constexpr ImageViewSubresourceSerial kInvalidImageViewSubresourceSerial = {
-    kInvalidImageViewSerial, kInvalidImageSubresourceRange};
+constexpr ImageOrBufferViewSubresourceSerial kInvalidImageOrBufferViewSubresourceSerial = {
+    kInvalidImageOrBufferViewSerial, kInvalidImageSubresourceRange};
 
 class TextureDescriptorDesc
 {
@@ -1042,7 +1068,7 @@ class TextureDescriptorDesc
     TextureDescriptorDesc &operator=(const TextureDescriptorDesc &other);
 
     void update(size_t index,
-                ImageViewSubresourceSerial imageViewSerial,
+                ImageOrBufferViewSubresourceSerial viewSerial,
                 SamplerSerial samplerSerial);
     size_t hash() const;
     void reset();
@@ -1058,21 +1084,21 @@ class TextureDescriptorDesc
     ANGLE_ENABLE_STRUCT_PADDING_WARNINGS
     struct TexUnitSerials
     {
-        ImageViewSubresourceSerial imageView;
+        ImageOrBufferViewSubresourceSerial view;
         SamplerSerial sampler;
     };
     gl::ActiveTextureArray<TexUnitSerials> mSerials;
     ANGLE_DISABLE_STRUCT_PADDING_WARNINGS
 };
 
-class UniformsAndXfbDesc
+class UniformsAndXfbDescriptorDesc
 {
   public:
-    UniformsAndXfbDesc();
-    ~UniformsAndXfbDesc();
+    UniformsAndXfbDescriptorDesc();
+    ~UniformsAndXfbDescriptorDesc();
 
-    UniformsAndXfbDesc(const UniformsAndXfbDesc &other);
-    UniformsAndXfbDesc &operator=(const UniformsAndXfbDesc &other);
+    UniformsAndXfbDescriptorDesc(const UniformsAndXfbDescriptorDesc &other);
+    UniformsAndXfbDescriptorDesc &operator=(const UniformsAndXfbDescriptorDesc &other);
 
     BufferSerial getDefaultUniformBufferSerial() const
     {
@@ -1092,7 +1118,7 @@ class UniformsAndXfbDesc
     size_t hash() const;
     void reset();
 
-    bool operator==(const UniformsAndXfbDesc &other) const;
+    bool operator==(const UniformsAndXfbDescriptorDesc &other) const;
 
   private:
     uint32_t mBufferCount;
@@ -1100,6 +1126,34 @@ class UniformsAndXfbDesc
     static constexpr size_t kDefaultUniformBufferIndex = 0;
     static constexpr size_t kMaxBufferCount = 1 + gl::IMPLEMENTATION_MAX_TRANSFORM_FEEDBACK_BUFFERS;
     std::array<BufferSerial, kMaxBufferCount> mBufferSerials;
+};
+
+class ShaderBuffersDescriptorDesc
+{
+  public:
+    ShaderBuffersDescriptorDesc();
+    ~ShaderBuffersDescriptorDesc();
+
+    ShaderBuffersDescriptorDesc(const ShaderBuffersDescriptorDesc &other);
+    ShaderBuffersDescriptorDesc &operator=(const ShaderBuffersDescriptorDesc &other);
+
+    size_t hash() const;
+    void reset();
+
+    bool operator==(const ShaderBuffersDescriptorDesc &other) const;
+
+    ANGLE_INLINE void appendBufferSerial(BufferSerial bufferSerial)
+    {
+        mPayload.push_back(bufferSerial.getValue());
+    }
+    ANGLE_INLINE void append32BitValue(uint32_t value) { mPayload.push_back(value); }
+
+    void append64BitValue(uint64_t value);
+
+  private:
+    // After a preliminary minimum size, use heap memory.
+    static constexpr size_t kFastBufferWordLimit = 32;
+    angle::FastVector<uint32_t, kFastBufferWordLimit> mPayload;
 };
 
 // In the FramebufferDesc object:
@@ -1127,39 +1181,69 @@ class FramebufferDesc
     FramebufferDesc(const FramebufferDesc &other);
     FramebufferDesc &operator=(const FramebufferDesc &other);
 
-    void updateColor(uint32_t index, ImageViewSubresourceSerial serial);
-    void updateColorResolve(uint32_t index, ImageViewSubresourceSerial serial);
+    void updateColor(uint32_t index, ImageOrBufferViewSubresourceSerial serial);
+    void updateColorResolve(uint32_t index, ImageOrBufferViewSubresourceSerial serial);
     void updateUnresolveMask(FramebufferNonResolveAttachmentMask unresolveMask);
-    void updateDepthStencil(ImageViewSubresourceSerial serial);
-    void updateDepthStencilResolve(ImageViewSubresourceSerial serial);
+    void updateDepthStencil(ImageOrBufferViewSubresourceSerial serial);
+    void updateDepthStencilResolve(ImageOrBufferViewSubresourceSerial serial);
+    ANGLE_INLINE void setWriteControlMode(gl::SrgbWriteControlMode mode)
+    {
+        mSrgbWriteControlMode = static_cast<uint16_t>(mode);
+    }
     size_t hash() const;
 
     bool operator==(const FramebufferDesc &other) const;
 
     uint32_t attachmentCount() const;
 
-    ImageViewSubresourceSerial getColorImageViewSerial(uint32_t index)
+    ImageOrBufferViewSubresourceSerial getColorImageViewSerial(uint32_t index)
     {
         ASSERT(kFramebufferDescColorIndexOffset + index < mSerials.size());
         return mSerials[kFramebufferDescColorIndexOffset + index];
     }
 
     FramebufferNonResolveAttachmentMask getUnresolveAttachmentMask() const;
+    ANGLE_INLINE gl::SrgbWriteControlMode getWriteControlMode() const
+    {
+        return (mSrgbWriteControlMode == 1) ? gl::SrgbWriteControlMode::Linear
+                                            : gl::SrgbWriteControlMode::Default;
+    }
+
+    void updateLayerCount(uint32_t layerCount);
+    uint32_t getLayerCount() const { return mLayerCount; }
+    void updateFramebufferFetchMode(bool hasFramebufferFetch);
+
+    void updateRenderToTexture(bool isRenderToTexture);
 
   private:
     void reset();
-    void update(uint32_t index, ImageViewSubresourceSerial serial);
+    void update(uint32_t index, ImageOrBufferViewSubresourceSerial serial);
 
     // Note: this is an exclusive index. If there is one index it will be "1".
-    uint16_t mMaxIndex;
+    // Maximum value is 18
+    uint16_t mMaxIndex : 5;
+    uint16_t mHasFramebufferFetch : 1;
+    static_assert(gl::IMPLEMENTATION_MAX_FRAMEBUFFER_LAYERS < (1 << 9) - 1,
+                  "Not enough bits for mLayerCount");
+
+    uint16_t mLayerCount : 9;
+
+    uint16_t mSrgbWriteControlMode : 1;
 
     // If the render pass contains an initial subpass to unresolve a number of attachments, the
     // subpass description is derived from the following mask, specifying which attachments need
     // to be unresolved.  Includes both color and depth/stencil attachments.
-    FramebufferNonResolveAttachmentMask mUnresolveAttachmentMask;
+    uint16_t mUnresolveAttachmentMask : kMaxFramebufferNonResolveAttachments;
 
-    FramebufferAttachmentArray<ImageViewSubresourceSerial> mSerials;
+    // Whether this is a multisampled-render-to-single-sampled framebuffer.  Only used when using
+    // VK_EXT_multisampled_render_to_single_sampled.  Only one bit is used and the rest is padding.
+    uint16_t mIsRenderToTexture : 16 - kMaxFramebufferNonResolveAttachments;
+
+    FramebufferAttachmentArray<ImageOrBufferViewSubresourceSerial> mSerials;
 };
+
+constexpr size_t kFramebufferDescSize = sizeof(FramebufferDesc);
+static_assert(kFramebufferDescSize == 148, "Size check failed");
 
 // Disable warnings about struct padding.
 ANGLE_DISABLE_STRUCT_PADDING_WARNINGS
@@ -1252,9 +1336,15 @@ struct hash<rx::vk::TextureDescriptorDesc>
 };
 
 template <>
-struct hash<rx::vk::UniformsAndXfbDesc>
+struct hash<rx::vk::UniformsAndXfbDescriptorDesc>
 {
-    size_t operator()(const rx::vk::UniformsAndXfbDesc &key) const { return key.hash(); }
+    size_t operator()(const rx::vk::UniformsAndXfbDescriptorDesc &key) const { return key.hash(); }
+};
+
+template <>
+struct hash<rx::vk::ShaderBuffersDescriptorDesc>
+{
+    size_t operator()(const rx::vk::ShaderBuffersDescriptorDesc &key) const { return key.hash(); }
 };
 
 template <>
@@ -1283,6 +1373,83 @@ ANGLE_VK_SERIAL_OP(ANGLE_HASH_VK_SERIAL)
 
 namespace rx
 {
+// Cache types for various Vulkan objects
+enum class VulkanCacheType
+{
+    CompatibleRenderPass,
+    RenderPassWithOps,
+    GraphicsPipeline,
+    PipelineLayout,
+    Sampler,
+    SamplerYcbcrConversion,
+    DescriptorSetLayout,
+    DriverUniformsDescriptors,
+    TextureDescriptors,
+    UniformsAndXfbDescriptors,
+    ShaderBuffersDescriptors,
+    Framebuffer,
+    EnumCount
+};
+
+// Base class for all caches. Provides cache hit and miss counters.
+class CacheStats final : angle::NonCopyable
+{
+  public:
+    CacheStats() { reset(); }
+    ~CacheStats() {}
+
+    ANGLE_INLINE void hit() { mHitCount++; }
+    ANGLE_INLINE void miss() { mMissCount++; }
+    ANGLE_INLINE void accumulate(const CacheStats &stats)
+    {
+        mHitCount += stats.mHitCount;
+        mMissCount += stats.mMissCount;
+    }
+
+    uint64_t getHitCount() const { return mHitCount; }
+    uint64_t getMissCount() const { return mMissCount; }
+
+    ANGLE_INLINE double getHitRatio() const
+    {
+        if (mHitCount + mMissCount == 0)
+        {
+            return 0;
+        }
+        else
+        {
+            return static_cast<double>(mHitCount) / (mHitCount + mMissCount);
+        }
+    }
+
+    void reset()
+    {
+        mHitCount  = 0;
+        mMissCount = 0;
+    }
+
+  private:
+    uint64_t mHitCount;
+    uint64_t mMissCount;
+};
+
+template <VulkanCacheType CacheType>
+class HasCacheStats : angle::NonCopyable
+{
+  public:
+    template <typename Accumulator>
+    void accumulateCacheStats(Accumulator *accum)
+    {
+        accum->accumulateCacheStats(CacheType, mCacheStats);
+        mCacheStats.reset();
+    }
+
+  protected:
+    HasCacheStats()          = default;
+    virtual ~HasCacheStats() = default;
+
+    CacheStats mCacheStats;
+};
+
 // TODO(jmadill): Add cache trimming/eviction.
 class RenderPassCache final : angle::NonCopyable
 {
@@ -1290,7 +1457,7 @@ class RenderPassCache final : angle::NonCopyable
     RenderPassCache();
     ~RenderPassCache();
 
-    void destroy(VkDevice device);
+    void destroy(RendererVk *rendererVk);
 
     ANGLE_INLINE angle::Result getCompatibleRenderPass(ContextVk *contextVk,
                                                        const vk::RenderPassDesc &desc,
@@ -1304,9 +1471,11 @@ class RenderPassCache final : angle::NonCopyable
 
             // Find the first element and return it.
             *renderPassOut = &innerCache.begin()->second.getRenderPass();
+            mCompatibleRenderPassCacheStats.hit();
             return angle::Result::Continue;
         }
 
+        mCompatibleRenderPassCacheStats.miss();
         return addRenderPass(contextVk, desc, renderPassOut);
     }
 
@@ -1328,20 +1497,22 @@ class RenderPassCache final : angle::NonCopyable
 
     // Use a two-layer caching scheme. The top level matches the "compatible" RenderPass elements.
     // The second layer caches the attachment load/store ops and initial/final layout.
-    using InnerCache = std::unordered_map<vk::AttachmentOpsArray, vk::RenderPassHelper>;
-    using OuterCache = std::unordered_map<vk::RenderPassDesc, InnerCache>;
+    using InnerCache = angle::HashMap<vk::AttachmentOpsArray, vk::RenderPassHelper>;
+    using OuterCache = angle::HashMap<vk::RenderPassDesc, InnerCache>;
 
     OuterCache mPayload;
+    CacheStats mCompatibleRenderPassCacheStats;
+    CacheStats mRenderPassWithOpsCacheStats;
 };
 
 // TODO(jmadill): Add cache trimming/eviction.
-class GraphicsPipelineCache final : angle::NonCopyable
+class GraphicsPipelineCache final : public HasCacheStats<VulkanCacheType::GraphicsPipeline>
 {
   public:
     GraphicsPipelineCache();
-    ~GraphicsPipelineCache();
+    ~GraphicsPipelineCache() override;
 
-    void destroy(VkDevice device);
+    void destroy(RendererVk *rendererVk);
     void release(ContextVk *context);
 
     void populate(const vk::GraphicsPipelineDesc &desc, vk::Pipeline &&pipeline);
@@ -1355,7 +1526,9 @@ class GraphicsPipelineCache final : angle::NonCopyable
                                            const vk::ShaderModule *vertexModule,
                                            const vk::ShaderModule *fragmentModule,
                                            const vk::ShaderModule *geometryModule,
-                                           const vk::SpecializationConstants specConsts,
+                                           const vk::ShaderModule *tessControlModule,
+                                           const vk::ShaderModule *tessEvaluationModule,
+                                           const vk::SpecializationConstants &specConsts,
                                            const vk::GraphicsPipelineDesc &desc,
                                            const vk::GraphicsPipelineDesc **descPtrOut,
                                            vk::PipelineHelper **pipelineOut)
@@ -1365,13 +1538,15 @@ class GraphicsPipelineCache final : angle::NonCopyable
         {
             *descPtrOut  = &item->first;
             *pipelineOut = &item->second;
+            mCacheStats.hit();
             return angle::Result::Continue;
         }
 
+        mCacheStats.miss();
         return insertPipeline(contextVk, pipelineCacheVk, compatibleRenderPass, pipelineLayout,
                               activeAttribLocationsMask, programAttribsTypeMask, vertexModule,
-                              fragmentModule, geometryModule, specConsts, desc, descPtrOut,
-                              pipelineOut);
+                              fragmentModule, geometryModule, tessControlModule,
+                              tessEvaluationModule, specConsts, desc, descPtrOut, pipelineOut);
     }
 
   private:
@@ -1384,7 +1559,9 @@ class GraphicsPipelineCache final : angle::NonCopyable
                                  const vk::ShaderModule *vertexModule,
                                  const vk::ShaderModule *fragmentModule,
                                  const vk::ShaderModule *geometryModule,
-                                 const vk::SpecializationConstants specConsts,
+                                 const vk::ShaderModule *tessControlModule,
+                                 const vk::ShaderModule *tessEvaluationModule,
+                                 const vk::SpecializationConstants &specConsts,
                                  const vk::GraphicsPipelineDesc &desc,
                                  const vk::GraphicsPipelineDesc **descPtrOut,
                                  vk::PipelineHelper **pipelineOut);
@@ -1398,7 +1575,7 @@ class DescriptorSetLayoutCache final : angle::NonCopyable
     DescriptorSetLayoutCache();
     ~DescriptorSetLayoutCache();
 
-    void destroy(VkDevice device);
+    void destroy(RendererVk *rendererVk);
 
     angle::Result getDescriptorSetLayout(
         vk::Context *context,
@@ -1407,15 +1584,16 @@ class DescriptorSetLayoutCache final : angle::NonCopyable
 
   private:
     std::unordered_map<vk::DescriptorSetLayoutDesc, vk::RefCountedDescriptorSetLayout> mPayload;
+    CacheStats mCacheStats;
 };
 
-class PipelineLayoutCache final : angle::NonCopyable
+class PipelineLayoutCache final : public HasCacheStats<VulkanCacheType::PipelineLayout>
 {
   public:
     PipelineLayoutCache();
-    ~PipelineLayoutCache();
+    ~PipelineLayoutCache() override;
 
-    void destroy(VkDevice device);
+    void destroy(RendererVk *rendererVk);
 
     angle::Result getPipelineLayout(vk::Context *context,
                                     const vk::PipelineLayoutDesc &desc,
@@ -1426,13 +1604,13 @@ class PipelineLayoutCache final : angle::NonCopyable
     std::unordered_map<vk::PipelineLayoutDesc, vk::RefCountedPipelineLayout> mPayload;
 };
 
-class SamplerCache final : angle::NonCopyable
+class SamplerCache final : public HasCacheStats<VulkanCacheType::Sampler>
 {
   public:
     SamplerCache();
-    ~SamplerCache();
+    ~SamplerCache() override;
 
-    void destroy(RendererVk *renderer);
+    void destroy(RendererVk *rendererVk);
 
     angle::Result getSampler(ContextVk *contextVk,
                              const vk::SamplerDesc &desc,
@@ -1443,13 +1621,14 @@ class SamplerCache final : angle::NonCopyable
 };
 
 // YuvConversion Cache
-class SamplerYcbcrConversionCache final : angle::NonCopyable
+class SamplerYcbcrConversionCache final
+    : public HasCacheStats<VulkanCacheType::SamplerYcbcrConversion>
 {
   public:
     SamplerYcbcrConversionCache();
-    ~SamplerYcbcrConversionCache();
+    ~SamplerYcbcrConversionCache() override;
 
-    void destroy(RendererVk *render);
+    void destroy(RendererVk *rendererVk);
 
     angle::Result getYuvConversion(
         vk::Context *context,
@@ -1460,6 +1639,70 @@ class SamplerYcbcrConversionCache final : angle::NonCopyable
 
   private:
     std::unordered_map<uint64_t, vk::RefCountedSamplerYcbcrConversion> mPayload;
+};
+
+// DescriptorSet Cache
+class DriverUniformsDescriptorSetCache final
+    : public HasCacheStats<VulkanCacheType::DriverUniformsDescriptors>
+{
+  public:
+    DriverUniformsDescriptorSetCache() = default;
+    ~DriverUniformsDescriptorSetCache() override { ASSERT(mPayload.empty()); }
+
+    void destroy(RendererVk *rendererVk);
+
+    ANGLE_INLINE bool get(uint32_t serial, VkDescriptorSet *descriptorSet)
+    {
+        if (mPayload.get(serial, descriptorSet))
+        {
+            mCacheStats.hit();
+            return true;
+        }
+        mCacheStats.miss();
+        return false;
+    }
+
+    ANGLE_INLINE void insert(uint32_t serial, VkDescriptorSet descriptorSet)
+    {
+        mPayload.insert(serial, descriptorSet);
+    }
+
+    ANGLE_INLINE void clear() { mPayload.clear(); }
+
+  private:
+    angle::FastIntegerMap<VkDescriptorSet> mPayload;
+};
+
+// Templated Descriptors Cache
+template <typename Key, VulkanCacheType CacheType>
+class DescriptorSetCache final : public HasCacheStats<CacheType>
+{
+  public:
+    DescriptorSetCache() = default;
+    ~DescriptorSetCache() override { ASSERT(mPayload.empty()); }
+
+    void destroy(RendererVk *rendererVk);
+
+    ANGLE_INLINE bool get(const Key &desc, VkDescriptorSet *descriptorSet)
+    {
+        auto iter = mPayload.find(desc);
+        if (iter != mPayload.end())
+        {
+            *descriptorSet = iter->second;
+            this->mCacheStats.hit();
+            return true;
+        }
+        this->mCacheStats.miss();
+        return false;
+    }
+
+    ANGLE_INLINE void insert(const Key &desc, VkDescriptorSet descriptorSet)
+    {
+        mPayload.emplace(desc, descriptorSet);
+    }
+
+  private:
+    angle::HashMap<Key, VkDescriptorSet> mPayload;
 };
 
 // Only 1 driver uniform binding is used.

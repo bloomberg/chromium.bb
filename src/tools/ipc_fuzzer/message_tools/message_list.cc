@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "build/build_config.h"
 
 // Include once to get the type definitions
@@ -58,7 +58,6 @@ static bool check_msgtable() {
 #if !defined(OS_ANDROID)
   exemptions.push_back(EncryptedMediaMsgStart);
   exemptions.push_back(GinJavaBridgeMsgStart);
-  exemptions.push_back(AndroidWebViewMsgStart);
   exemptions.push_back(ExtensionWorkerMsgStart);
 #endif  // !defined(OS_ANDROID)
 

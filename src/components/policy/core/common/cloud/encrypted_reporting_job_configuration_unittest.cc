@@ -4,24 +4,36 @@
 
 #include "components/policy/core/common/cloud/encrypted_reporting_job_configuration.h"
 
+#include "base/base64.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/task_environment.h"
+#include "base/values.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
-#include "components/policy/proto/record.pb.h"
-#include "components/policy/proto/record_constants.pb.h"
+#include "components/reporting/proto/record_constants.pb.h"
 #include "components/version_info/version_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/system/fake_statistics_provider.h"
 #endif
 
-using testing::StrictMock;
+using ::testing::_;
+using ::testing::ByRef;
+using ::testing::Eq;
+using ::testing::IsNull;
+using ::testing::MockFunction;
+using ::testing::NotNull;
+using ::testing::ReturnPointee;
+using ::testing::StrEq;
+using ::testing::StrictMock;
 
 namespace policy {
 
@@ -30,17 +42,27 @@ constexpr uint64_t kGenerationId = 4321;
 constexpr ::reporting::Priority kPriority = ::reporting::Priority::IMMEDIATE;
 
 // Default values for EncryptionInfo
-constexpr char kEncryptionKey[] = "abcdef";
-constexpr uint64_t kPublicKeyId = 9876;
+constexpr char kEncryptionKeyValue[] = "abcdef";
+constexpr uint64_t kPublicKeyIdValue = 9876;
 
-// Default context paths
-constexpr char kProfileStringPath[] = "profile.string";
-constexpr char kProfileIntPath[] = "profile.int";
-
-// Keys for ResponseValueBuilder
-// Keys for internal dictionaries
+// Keys for response internal dictionaries
 constexpr char kLastSucceedUploadedRecordKey[] = "lastSucceedUploadedRecord";
 constexpr char kFirstFailedUploadedRecordKey[] = "firstFailedUploadedRecord";
+
+// UploadEncryptedReportingRequest list key
+constexpr char kEncryptedRecordListKey[] = "encryptedRecord";
+
+// Encryption settings request key
+constexpr char kAttachEncryptionSettingsKey[] = "attachEncryptionSettings";
+
+// Keys for EncrypedRecord
+constexpr char kEncryptedWrappedRecordKey[] = "encryptedWrappedRecord";
+constexpr char kSequencingInformationKey[] = "sequencingInformation";
+constexpr char kEncryptionInfoKey[] = "encryptionInfo";
+
+// Keys for internal encryption information dictionaries.
+constexpr char kEncryptionKey[] = "encryptionKey";
+constexpr char kPublicKeyIdKey[] = "publicKeyId";
 
 // Keys for internal SequencingInformation dictionaries.
 constexpr char kSequencingIdKey[] = "sequencingId";
@@ -55,16 +77,64 @@ constexpr char kFailureStatus[] = "failureStatus";
 constexpr char kCodeKey[] = "code";
 constexpr char kMessageKey[] = "message";
 
-}  // namespace
+uint64_t GetNextSequenceId() {
+  static uint64_t kSequencingId = 0;
+  return kSequencingId++;
+}
+
+base::Value GenerateSingleRecord(base::StringPiece encrypted_wrapped_record) {
+  base::Value record_dictionary{base::Value::Type::DICTIONARY};
+  std::string base64_encode;
+  base::Base64Encode(encrypted_wrapped_record, &base64_encode);
+  record_dictionary.SetStringKey(kEncryptedWrappedRecordKey, base64_encode);
+
+  base::Value* const sequencing_dictionary = record_dictionary.SetKey(
+      kSequencingInformationKey, base::Value{base::Value::Type::DICTIONARY});
+  sequencing_dictionary->SetStringKey(
+      kSequencingIdKey, base::NumberToString(GetNextSequenceId()));
+  sequencing_dictionary->SetStringKey(kGenerationIdKey,
+                                      base::NumberToString(kGenerationId));
+  sequencing_dictionary->SetIntKey(kPriorityKey, kPriority);
+
+  base::Value* const encryption_info_dictionary = record_dictionary.SetKey(
+      kEncryptionInfoKey, base::Value{base::Value::Type::DICTIONARY});
+  encryption_info_dictionary->SetStringKey(kEncryptionKey, kEncryptionKeyValue);
+  encryption_info_dictionary->SetStringKey(
+      kPublicKeyIdKey, base::NumberToString(kPublicKeyIdValue));
+
+  return record_dictionary;
+}
+
+class RequestPayloadBuilder {
+ public:
+  explicit RequestPayloadBuilder(bool attach_encryption_settings = false) {
+    if (attach_encryption_settings) {
+      payload_.SetBoolKey(kAttachEncryptionSettingsKey, true);
+    }
+    payload_.SetKey(kEncryptedRecordListKey,
+                    base::Value{base::Value::Type::LIST});
+  }
+
+  RequestPayloadBuilder& AddRecord(const base::Value& record) {
+    base::Value* records_list = payload_.FindListKey(kEncryptedRecordListKey);
+    records_list->Append(record.Clone());
+    return *this;
+  }
+
+  base::Value Build() { return std::move(payload_); }
+
+ private:
+  base::Value payload_{base::Value::Type::DICTIONARY};
+};
 
 class ResponseValueBuilder {
  public:
-  static base::Optional<base::Value> CreateUploadFailure(
+  static absl::optional<base::Value> CreateUploadFailure(
       const ::reporting::SequencingInformation& sequencing_information) {
     if (!sequencing_information.has_sequencing_id() ||
         !sequencing_information.has_generation_id() ||
         !sequencing_information.has_priority()) {
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     base::Value upload_failure{base::Value::Type::DICTIONARY};
@@ -80,16 +150,12 @@ class ResponseValueBuilder {
   }
 
   static base::Value CreateResponse(
-      const ::reporting::SequencingInformation& sequencing_information,
-      base::Optional<base::Value> upload_failure) {
+      const base::Value& sequencing_information,
+      absl::optional<base::Value> upload_failure) {
     base::Value response{base::Value::Type::DICTIONARY};
 
-    if (sequencing_information.has_sequencing_id() &&
-        sequencing_information.has_generation_id() &&
-        sequencing_information.has_priority()) {
-      response.SetKey(kLastSucceedUploadedRecordKey,
-                      BuildSequencingInformationValue(sequencing_information));
-    }
+    response.SetKey(kLastSucceedUploadedRecordKey,
+                    sequencing_information.Clone());
 
     if (upload_failure.has_value()) {
       response.SetKey(kFirstFailedUploadedRecordKey,
@@ -161,80 +227,49 @@ class ResponseValueBuilder {
   }
 };
 
-class MockCallbackObserver {
- public:
-  MockCallbackObserver() = default;
-
-  MOCK_METHOD4(OnURLLoadComplete,
-               void(DeviceManagementService::Job* job,
-                    DeviceManagementStatus code,
-                    int net_error,
-                    const base::Value&));
-};
+}  // namespace
 
 class EncryptedReportingJobConfigurationTest : public testing::Test {
  public:
   EncryptedReportingJobConfigurationTest()
-      : client_(&service_),
-#if defined(OS_CHROMEOS)
+      :
+#if BUILDFLAG(IS_CHROMEOS_ASH)
         fake_serial_number_(&fake_statistics_provider_),
 #endif
-        configuration_(
-            &client_,
-            service_.configuration()->GetEncryptedReportingServerUrl(),
-            base::BindOnce(&MockCallbackObserver::OnURLLoadComplete,
-                           base::Unretained(&callback_observer_))) {
+        client_(&service_) {
   }
 
  protected:
-  static ::reporting::EncryptedRecord GenerateEncryptedRecord(
-      const std::string& encrypted_wrapped_record) {
-    ::reporting::EncryptedRecord record;
-    record.set_encrypted_wrapped_record(encrypted_wrapped_record);
-
-    auto* const sequencing_information =
-        record.mutable_sequencing_information();
-    sequencing_information->set_sequencing_id(GetNextSequenceId());
-    sequencing_information->set_generation_id(kGenerationId);
-    sequencing_information->set_priority(kPriority);
-
-    auto* const encryption_info = record.mutable_encryption_info();
-    encryption_info->set_encryption_key(kEncryptionKey);
-    encryption_info->set_public_key_id(kPublicKeyId);
-
-    return record;
-  }
-
-  static base::Optional<base::Value> GenerateEncryptedRecordDictionary(
-      const std::string& encrypted_wrapped_record) {
-    return EncryptedRecordDictionaryBuilder::ConvertEncryptedRecordProtoToValue(
-        GenerateEncryptedRecord(encrypted_wrapped_record));
-  }
-
-  static base::Optional<base::Value> GenerateEncryptedRecordDictionary(
-      const ::reporting::EncryptedRecord& record) {
-    return EncryptedRecordDictionaryBuilder::ConvertEncryptedRecordProtoToValue(
-        record);
-  }
-
-  static base::Value GenerateContext(base::StringPiece string, int int_val) {
+  using MockCompleteCb = MockFunction<void(DeviceManagementService::Job* job,
+                                           DeviceManagementStatus code,
+                                           int net_error,
+                                           const base::Value&)>;
+  static base::Value GenerateContext(base::StringPiece key,
+                                     base::StringPiece value) {
     base::Value context{base::Value::Type::DICTIONARY};
-    context.SetStringKey(kProfileStringPath, string);
-    context.SetIntKey(kProfileIntPath, int_val);
+    context.SetStringPath(key, value);
     return context;
   }
 
-  void GetRecordList(base::Value** record_list) {
-    base::Value* payload = GetPayload();
-
-    *record_list = payload->FindListKey(
-        EncryptedReportingJobConfiguration::GetEncryptedRecordListKey());
+  void GetRecordList(EncryptedReportingJobConfiguration* configuration,
+                     base::Value** record_list) {
+    base::Value* const payload = GetPayload(configuration);
+    *record_list = payload->FindListKey(kEncryptedRecordListKey);
     ASSERT_TRUE(*record_list);
   }
 
-  base::Value* GetPayload() {
-    base::Optional<base::Value> payload_result =
-        base::JSONReader::Read(configuration_.GetPayload());
+  bool GetAttachEncryptionSettings(
+      EncryptedReportingJobConfiguration* configuration) {
+    base::Value* const payload = GetPayload(configuration);
+    const auto attach_encryption_settings =
+        payload->FindBoolKey(kAttachEncryptionSettingsKey);
+    return attach_encryption_settings.has_value() &&
+           attach_encryption_settings.value();
+  }
+
+  base::Value* GetPayload(EncryptedReportingJobConfiguration* configuration) {
+    absl::optional<base::Value> payload_result =
+        base::JSONReader::Read(configuration->GetPayload());
 
     EXPECT_TRUE(payload_result.has_value());
     payload_ = std::move(payload_result.value());
@@ -243,18 +278,13 @@ class EncryptedReportingJobConfigurationTest : public testing::Test {
 
   base::test::SingleThreadTaskEnvironment task_environment_;
 
-  MockDeviceManagementService service_;
-  MockCloudPolicyClient client_;
-  StrictMock<MockCallbackObserver> callback_observer_;
-  DeviceManagementService::Job job_;
-
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   class ScopedFakeSerialNumber {
    public:
     ScopedFakeSerialNumber(chromeos::system::ScopedFakeStatisticsProvider*
                                fake_statistics_provider) {
-      // The fake serial number must be set before |configuration_| is
+      // The fake serial number must be set before |configuration| is
       // constructed below.
       fake_statistics_provider->SetMachineStatistic(
           chromeos::system::kSerialNumberKeyForTest, "fake_serial_number");
@@ -263,26 +293,25 @@ class EncryptedReportingJobConfigurationTest : public testing::Test {
   ScopedFakeSerialNumber fake_serial_number_;
 #endif
 
-  EncryptedReportingJobConfiguration configuration_;
+  MockDeviceManagementService service_;
+  MockCloudPolicyClient client_;
+  StrictMock<MockCompleteCb> complete_cb_;
+
+  DeviceManagementService::Job job_;
 
  private:
-  using EncryptedRecordDictionaryBuilder =
-      EncryptedReportingJobConfiguration::EncryptedRecordDictionaryBuilder;
-
-  static uint64_t GetNextSequenceId() {
-    static uint64_t kSequencingId = 0;
-    return kSequencingId++;
-  }
-
   base::Value payload_;
 };
 
 // Validates that the non-Record portions of the payload are generated
 // correctly.
 TEST_F(EncryptedReportingJobConfigurationTest, ValidatePayload) {
-  EXPECT_CALL(callback_observer_, OnURLLoadComplete).Times(1);
-  auto* payload = GetPayload();
-
+  EXPECT_CALL(complete_cb_, Call(_, _, _, _)).Times(1);
+  EncryptedReportingJobConfiguration configuration(
+      &client_, service_.configuration()->GetEncryptedReportingServerUrl(),
+      RequestPayloadBuilder().Build(),
+      base::BindOnce(&MockCompleteCb::Call, base::Unretained(&complete_cb_)));
+  auto* payload = GetPayload(&configuration);
   EXPECT_FALSE(GetDeviceName().empty());
   EXPECT_EQ(
       *payload->FindStringPath(ReportingJobConfigurationBase::
@@ -311,111 +340,177 @@ TEST_F(EncryptedReportingJobConfigurationTest, ValidatePayload) {
             version_info::GetVersionNumber());
 }
 
-// Ensures that records are added correctly.
+// Ensures that records are added correctly and that the payload is Base64
+// encoded.
 TEST_F(EncryptedReportingJobConfigurationTest, CorrectlyAddEncryptedRecord) {
-  EXPECT_CALL(callback_observer_, OnURLLoadComplete).Times(1);
   const std::string kEncryptedWrappedRecord = "TEST_INFO";
+  base::Value record_value = GenerateSingleRecord(kEncryptedWrappedRecord);
 
-  ::reporting::EncryptedRecord record =
-      GenerateEncryptedRecord(kEncryptedWrappedRecord);
-
-  configuration_.AddEncryptedRecord(record);
+  EXPECT_CALL(complete_cb_, Call(_, _, _, _)).Times(1);
+  EncryptedReportingJobConfiguration configuration(
+      &client_, service_.configuration()->GetEncryptedReportingServerUrl(),
+      RequestPayloadBuilder().AddRecord(record_value).Build(),
+      base::BindOnce(&MockCompleteCb::Call, base::Unretained(&complete_cb_)));
 
   base::Value* record_list = nullptr;
-  GetRecordList(&record_list);
-
+  GetRecordList(&configuration, &record_list);
   EXPECT_EQ(record_list->GetList().size(), 1u);
+  EXPECT_EQ(record_list->GetList()[0], record_value);
 
-  base::Optional<base::Value> record_value_result =
-      GenerateEncryptedRecordDictionary(record);
-  ASSERT_TRUE(record_value_result.has_value());
-  EXPECT_EQ(record_list->GetList()[0], record_value_result.value());
+  std::string* encrypted_wrapped_record =
+      record_list->GetList()[0].FindStringKey(kEncryptedWrappedRecordKey);
+  ASSERT_THAT(encrypted_wrapped_record, NotNull());
+
+  std::string decoded_record;
+  ASSERT_TRUE(base::Base64Decode(*encrypted_wrapped_record, &decoded_record));
+  EXPECT_THAT(decoded_record, StrEq(kEncryptedWrappedRecord));
 }
 
 // Ensures that multiple records can be added to the request.
 TEST_F(EncryptedReportingJobConfigurationTest, CorrectlyAddsMultipleRecords) {
-  EXPECT_CALL(callback_observer_, OnURLLoadComplete).Times(1);
   const std::vector<std::string> kEncryptedWrappedRecords{
       "T", "E", "S", "T", "_", "I", "N", "F", "O"};
-
-  std::vector<::reporting::EncryptedRecord> records;
+  std::vector<base::Value> records;
+  RequestPayloadBuilder builder;
   for (auto value : kEncryptedWrappedRecords) {
-    records.push_back(GenerateEncryptedRecord(value));
-    configuration_.AddEncryptedRecord(records.back());
+    records.push_back(GenerateSingleRecord(value));
+    builder.AddRecord(records.back());
   }
 
+  EXPECT_CALL(complete_cb_, Call(_, _, _, _)).Times(1);
+  EncryptedReportingJobConfiguration configuration(
+      &client_, service_.configuration()->GetEncryptedReportingServerUrl(),
+      builder.Build(),
+      base::BindOnce(&MockCompleteCb::Call, base::Unretained(&complete_cb_)));
+
   base::Value* record_list = nullptr;
-  GetRecordList(&record_list);
+  GetRecordList(&configuration, &record_list);
 
   EXPECT_EQ(record_list->GetList().size(), records.size());
 
   size_t counter = 0;
   for (const auto& record : records) {
-    base::Optional<base::Value> record_value_result =
-        GenerateEncryptedRecordDictionary(record);
-    ASSERT_TRUE(record_value_result.has_value());
-    EXPECT_EQ(record_list->GetList()[counter++], record_value_result.value());
+    EXPECT_EQ(record_list->GetList()[counter++], record);
   }
+
+  EXPECT_FALSE(GetAttachEncryptionSettings(&configuration));
+}
+
+// Ensures that attach encryption settings request is included when no records
+// are present.
+TEST_F(EncryptedReportingJobConfigurationTest,
+       AllowsAttachEncryptionSettingsAlone) {
+  RequestPayloadBuilder builder{/*attach_encryption_settings=*/true};
+  EXPECT_CALL(complete_cb_, Call(_, _, _, _)).Times(1);
+  EncryptedReportingJobConfiguration configuration(
+      &client_, service_.configuration()->GetEncryptedReportingServerUrl(),
+      builder.Build(),
+      base::BindOnce(&MockCompleteCb::Call, base::Unretained(&complete_cb_)));
+
+  base::Value* record_list = nullptr;
+  GetRecordList(&configuration, &record_list);
+
+  EXPECT_TRUE(record_list->GetList().empty());
+
+  EXPECT_TRUE(GetAttachEncryptionSettings(&configuration));
+}
+
+TEST_F(EncryptedReportingJobConfigurationTest,
+       CorrectlyAddsMultipleRecordsWithAttachEncryptionSettings) {
+  const std::vector<std::string> kEncryptedWrappedRecords{
+      "T", "E", "S", "T", "_", "I", "N", "F", "O"};
+  std::vector<base::Value> records;
+  RequestPayloadBuilder builder{/*attach_encryption_settings=*/true};
+  for (auto value : kEncryptedWrappedRecords) {
+    records.push_back(GenerateSingleRecord(value));
+    builder.AddRecord(records.back());
+  }
+
+  EXPECT_CALL(complete_cb_, Call(_, _, _, _)).Times(1);
+  EncryptedReportingJobConfiguration configuration(
+      &client_, service_.configuration()->GetEncryptedReportingServerUrl(),
+      builder.Build(),
+      base::BindOnce(&MockCompleteCb::Call, base::Unretained(&complete_cb_)));
+
+  base::Value* record_list = nullptr;
+  GetRecordList(&configuration, &record_list);
+
+  EXPECT_EQ(record_list->GetList().size(), records.size());
+
+  size_t counter = 0;
+  for (const auto& record : records) {
+    EXPECT_EQ(record_list->GetList()[counter++], record);
+  }
+
+  EXPECT_TRUE(GetAttachEncryptionSettings(&configuration));
 }
 
 // Ensures that the context can be updated.
-TEST_F(EncryptedReportingJobConfigurationTest, CorrectlyAddsContext) {
-  EXPECT_CALL(callback_observer_, OnURLLoadComplete).Times(1);
-  const std::string kTestString = "Frankenstein";
-  const int kTestInt = 1701;
+TEST_F(EncryptedReportingJobConfigurationTest, CorrectlyAddsAndUpdatesContext) {
+  EXPECT_CALL(complete_cb_, Call(_, _, _, _)).Times(1);
+  EncryptedReportingJobConfiguration configuration(
+      &client_, service_.configuration()->GetEncryptedReportingServerUrl(),
+      RequestPayloadBuilder().Build(),
+      base::BindOnce(&MockCompleteCb::Call, base::Unretained(&complete_cb_)));
 
-  base::Value context = GenerateContext(kTestString, kTestInt);
+  const std::string kTestKey = "device.name";
+  const std::string kTestValue = "1701-A";
+  base::Value context = GenerateContext(kTestKey, kTestValue);
+  configuration.UpdateContext(context);
 
-  configuration_.UpdateContext(context);
+  // Ensure the payload includes the path and value.
+  base::Value* payload = GetPayload(&configuration);
+  std::string* good_result = payload->FindStringPath(kTestKey);
+  ASSERT_THAT(good_result, NotNull());
+  EXPECT_EQ(*good_result, kTestValue);
 
-  base::Value* payload = GetPayload();
+  // Add a path that isn't in the allow list.
+  const std::string kBadTestKey = "profile.string";
+  context = GenerateContext(kBadTestKey, kTestValue);
+  configuration.UpdateContext(context);
 
-  EXPECT_EQ(*payload->FindStringKey(kProfileStringPath), kTestString);
-  EXPECT_EQ(*payload->FindIntKey(kProfileIntPath), kTestInt);
-}
+  // Ensure that the path is removed from the payload.
+  payload = GetPayload(&configuration);
+  const std::string* bad_result = payload->FindStringPath(kBadTestKey);
+  EXPECT_THAT(bad_result, IsNull());
 
-// Ensures that the last context added overrides previous values, without losing
-// unchanged values.
-TEST_F(EncryptedReportingJobConfigurationTest, CorrectlyOverwritesContext) {
-  EXPECT_CALL(callback_observer_, OnURLLoadComplete).Times(1);
-  const std::string kTestString = "Frankenstein";
-  const int kTestInt = 1701;
+  // Ensure that adding a bad path hasn't destroyed the good path.
+  good_result = payload->FindStringPath(kTestKey);
+  EXPECT_THAT(good_result, NotNull());
+  EXPECT_EQ(*good_result, kTestValue);
 
-  base::Value context = GenerateContext(kTestString, kTestInt);
-
-  configuration_.UpdateContext(context);
-
-  const std::string kTestString2 = "Wolverine";
-  base::Value context2 = GenerateContext(kTestString2, kTestInt);
-  configuration_.UpdateContext(context2);
-
-  base::Value* payload = GetPayload();
-
-  EXPECT_EQ(*payload->FindStringKey(kProfileStringPath), kTestString2);
-  EXPECT_EQ(*payload->FindIntKey(kProfileIntPath), kTestInt);
+  // Ensure that a good path can be overriden.
+  const std::string kUpdatedTestValue = "1701-B";
+  context = GenerateContext(kTestKey, kUpdatedTestValue);
+  configuration.UpdateContext(context);
+  payload = GetPayload(&configuration);
+  good_result = payload->FindStringPath(kTestKey);
+  ASSERT_THAT(good_result, NotNull());
+  EXPECT_EQ(*good_result, kUpdatedTestValue);
 }
 
 // Ensures that upload success is handled correctly.
 TEST_F(EncryptedReportingJobConfigurationTest, OnURLLoadComplete_Success) {
-  const std::string kTestString = "Frankenstein";
-  const int kTestInt = 1701;
-
-  base::Value context = GenerateContext(kTestString, kTestInt);
-  configuration_.UpdateContext(context);
-
   const std::string kEncryptedWrappedRecord = "TEST_INFO";
-
-  ::reporting::EncryptedRecord record =
-      GenerateEncryptedRecord(kEncryptedWrappedRecord);
-
-  configuration_.AddEncryptedRecord(record);
+  base::Value record_value = GenerateSingleRecord(kEncryptedWrappedRecord);
 
   base::Value response = ResponseValueBuilder::CreateResponse(
-      record.sequencing_information(), base::nullopt);
-  EXPECT_CALL(callback_observer_,
-              OnURLLoadComplete(&job_, DM_STATUS_SUCCESS, net::OK,
-                                testing::Eq(testing::ByRef(response))));
-  configuration_.OnURLLoadComplete(
+      *record_value.FindDictKey(kSequencingInformationKey), absl::nullopt);
+
+  EXPECT_CALL(complete_cb_,
+              Call(&job_, DM_STATUS_SUCCESS, net::OK, Eq(ByRef(response))))
+      .Times(1);
+  EncryptedReportingJobConfiguration configuration(
+      &client_, service_.configuration()->GetEncryptedReportingServerUrl(),
+      RequestPayloadBuilder().AddRecord(record_value).Build(),
+      base::BindOnce(&MockCompleteCb::Call, base::Unretained(&complete_cb_)));
+
+  const std::string kTestString = "device.clientId";
+  const std::string kTestInt = "1701-A";
+  base::Value context = GenerateContext(kTestString, kTestInt);
+  configuration.UpdateContext(context);
+
+  configuration.OnURLLoadComplete(
       &job_, net::OK, DeviceManagementService::kSuccess,
       ResponseValueBuilder::CreateResponseString(response));
 }
@@ -424,10 +519,14 @@ TEST_F(EncryptedReportingJobConfigurationTest, OnURLLoadComplete_Success) {
 TEST_F(EncryptedReportingJobConfigurationTest, OnURLLoadComplete_NetError) {
   base::Value empty_response;
   int net_error = net::ERR_CONNECTION_RESET;
-  EXPECT_CALL(callback_observer_,
-              OnURLLoadComplete(&job_, DM_STATUS_REQUEST_FAILED, net_error,
-                                testing::Eq(testing::ByRef(empty_response))));
-  configuration_.OnURLLoadComplete(&job_, net_error, 0, "");
+  EXPECT_CALL(complete_cb_, Call(&job_, DM_STATUS_REQUEST_FAILED, net_error,
+                                 testing::Eq(testing::ByRef(empty_response))))
+      .Times(1);
+  EncryptedReportingJobConfiguration configuration(
+      &client_, service_.configuration()->GetEncryptedReportingServerUrl(),
+      RequestPayloadBuilder().Build(),
+      base::BindOnce(&MockCompleteCb::Call, base::Unretained(&complete_cb_)));
+  configuration.OnURLLoadComplete(&job_, net_error, 0, "");
 }
 
 }  // namespace policy

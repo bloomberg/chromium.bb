@@ -88,16 +88,20 @@ ANDROID_WEB_TESTS_DIR = os.path.join(get_blink_dir(), 'web_tests', 'android')
 
 PRODUCTS_TO_EXPECTATION_FILE_PATHS = {
     ANDROID_WEBLAYER: os.path.join(
-        ANDROID_WEB_TESTS_DIR, 'WeblayerWPTExpectations'),
+        ANDROID_WEB_TESTS_DIR, 'WebLayerWPTOverrideExpectations'),
     ANDROID_WEBVIEW: os.path.join(
         ANDROID_WEB_TESTS_DIR, 'WebviewWPTExpectations'),
     CHROME_ANDROID: os.path.join(
-        ANDROID_WEB_TESTS_DIR, 'ChromiumWPTExpectations'),
+        ANDROID_WEB_TESTS_DIR, 'ChromeWPTOverrideExpectations'),
 }
 
 # Disabled WPT tests on Android
 ANDROID_DISABLED_TESTS = os.path.join(
     ANDROID_WEB_TESTS_DIR, 'AndroidWPTNeverFixTests')
+
+# List of test cases to be run by wptrunner
+WPT_SMOKE_TESTS_FILE = os.path.join(
+    ANDROID_WEB_TESTS_DIR, 'WPTSmokeTestCases')
 
 _friendly_browser_names = {
     'weblayershell': 'weblayer',
@@ -295,8 +299,9 @@ class AndroidPort(base.Port):
     SUPPORTED_VERSIONS = ('android')
 
     FALLBACK_PATHS = {
-        'kitkat':
-        ['android'] + linux.LinuxPort.latest_platform_fallback_path()
+        # Don't use the current android platform specific baselines since
+        # they are no longer maintained.
+        'pie': linux.LinuxPort.latest_platform_fallback_path()
     }
 
     BUILD_REQUIREMENTS_URL = 'https://www.chromium.org/developers/how-tos/android-build-instructions'
@@ -305,7 +310,7 @@ class AndroidPort(base.Port):
         super(AndroidPort, self).__init__(
             host, port_name, options=options, **kwargs)
         self._operating_system = 'android'
-        self._version = 'kitkat'
+        self._version = 'pie'
         fs = host.filesystem
         self._local_port = factory.PortFactory(host).get(**kwargs)
         if apk or product:

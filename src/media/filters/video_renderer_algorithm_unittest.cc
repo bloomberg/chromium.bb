@@ -1212,7 +1212,7 @@ TEST_F(VideoRendererAlgorithmTest, RemoveExpiredFramesWithoutRendering) {
   // as effective since we know the duration of it. It is not removed since we
   // only have one frame in the queue though.
   auto frame = CreateFrame(tg.interval(0));
-  frame->metadata()->frame_duration = tg.interval(1);
+  frame->metadata().frame_duration = tg.interval(1);
   algorithm_.EnqueueFrame(frame);
   ASSERT_EQ(0u, algorithm_.RemoveExpiredFrames(tg.current() + tg.interval(3)));
   EXPECT_EQ(0u, EffectiveFramesQueued());
@@ -1623,7 +1623,7 @@ TEST_F(VideoRendererAlgorithmTest, InfiniteDurationMetadata) {
   TickGenerator tg(tick_clock_->NowTicks(), 50);
 
   auto frame = CreateFrame(kInfiniteDuration);
-  frame->metadata()->frame_duration = tg.interval(1);
+  frame->metadata().frame_duration = tg.interval(1);
   algorithm_.EnqueueFrame(frame);
 
   // This should not crash or fail.
@@ -1636,7 +1636,7 @@ TEST_F(VideoRendererAlgorithmTest, UsesFrameDuration) {
   TickGenerator tg(tick_clock_->NowTicks(), 50);
 
   auto frame = CreateFrame(tg.interval(0));
-  frame->metadata()->frame_duration = tg.interval(1);
+  frame->metadata().frame_duration = tg.interval(1);
   algorithm_.EnqueueFrame(frame);
 
   // This should not crash or fail.
@@ -1648,7 +1648,7 @@ TEST_F(VideoRendererAlgorithmTest, UsesFrameDuration) {
   constexpr base::TimeDelta kLongDuration = base::TimeDelta::FromSeconds(3);
   for (int i = 1; i < 4; ++i) {
     frame = CreateFrame(tg.interval(i));
-    frame->metadata()->frame_duration = i == 3 ? kLongDuration : tg.interval(1);
+    frame->metadata().frame_duration = i == 3 ? kLongDuration : tg.interval(1);
     algorithm_.EnqueueFrame(frame);
   }
 
@@ -1670,7 +1670,7 @@ TEST_F(VideoRendererAlgorithmTest, WallClockDurationMetadataSet) {
 
   for (int i = 0; i < frame_count; i++) {
     auto frame = CreateFrame(tg.interval(i));
-    frame->metadata()->frame_duration = tg.interval(1);
+    frame->metadata().frame_duration = tg.interval(1);
     algorithm_.EnqueueFrame(frame);
   }
 
@@ -1680,7 +1680,7 @@ TEST_F(VideoRendererAlgorithmTest, WallClockDurationMetadataSet) {
 
     SCOPED_TRACE(base::StringPrintf("Frame #%d", i));
 
-    EXPECT_EQ(*frame->metadata()->wallclock_frame_duration, intended_duration);
+    EXPECT_EQ(*frame->metadata().wallclock_frame_duration, intended_duration);
     EXPECT_EQ(algorithm_.average_frame_duration(), intended_duration);
   }
 }

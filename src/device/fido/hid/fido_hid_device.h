@@ -17,13 +17,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "components/apdu/apdu_command.h"
 #include "components/apdu/apdu_response.h"
 #include "device/fido/fido_device.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -44,6 +44,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice final : public FidoDevice {
                              DeviceCallback callback) final;
   void TryWink(base::OnceClosure callback) final;
   void Cancel(CancelToken token) final;
+  std::string GetDisplayName() const final;
   std::string GetId() const final;
   FidoTransportProtocol DeviceTransport() const final;
   void DiscoverSupportedProtocolAndDeviceInfo(base::OnceClosure done) override;
@@ -97,7 +98,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice final : public FidoDevice {
   using RefCountedHidConnection =
       base::RefCountedData<mojo::Remote<mojom::HidConnection>>;
 
-  void Transition(base::Optional<State> next_state = base::nullopt);
+  void Transition(absl::optional<State> next_state = absl::nullopt);
 
   // Open a connection to this device.
   void Connect(device::mojom::HidManager::ConnectCallback callback);
@@ -105,13 +106,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice final : public FidoDevice {
   void OnInitWriteComplete(std::vector<uint8_t> nonce, bool success);
   // Ask device to allocate a unique channel id for this connection.
   void OnAllocateChannel(std::vector<uint8_t> nonce,
-                         base::Optional<FidoHidMessage> message);
-  base::Optional<uint32_t> ParseInitReply(const std::vector<uint8_t>& nonce,
+                         absl::optional<FidoHidMessage> message);
+  absl::optional<uint32_t> ParseInitReply(const std::vector<uint8_t>& nonce,
                                           const std::vector<uint8_t>& buf);
   void OnPotentialInitReply(std::vector<uint8_t> nonce,
                             bool success,
                             uint8_t report_id,
-                            const base::Optional<std::vector<uint8_t>>& buf);
+                            const absl::optional<std::vector<uint8_t>>& buf);
   // Write all message packets to device, and read response if expected.
   void WriteMessage(FidoHidMessage message);
   void PacketWritten(FidoHidMessage message, bool success);
@@ -119,12 +120,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice final : public FidoDevice {
   void ReadMessage();
   void OnRead(bool success,
               uint8_t report_id,
-              const base::Optional<std::vector<uint8_t>>& buf);
+              const absl::optional<std::vector<uint8_t>>& buf);
   void OnReadContinuation(FidoHidMessage message,
                           bool success,
                           uint8_t report_id,
-                          const base::Optional<std::vector<uint8_t>>& buf);
+                          const absl::optional<std::vector<uint8_t>>& buf);
   void MessageReceived(FidoHidMessage message);
+  void RetryAfterChannelBusy();
   void ArmTimeout();
   void OnTimeout();
   static void WriteCancelComplete(

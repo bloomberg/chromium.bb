@@ -22,11 +22,12 @@ cc_library(
     ],
     visibility = [
         "//googlemac/iPhone/Shared/Nearby/Connections_v2:__subpackages__",
+        "//location/nearby/connections/windows:__subpackages__",
     ],
     deps = [
         ":core_types",
         "//core/internal",
-        "//platform/public:comm",
+        "//platform/base",
         "//platform/public:logging",
         "//platform/public:types",
         "//absl/strings",
@@ -54,8 +55,6 @@ cc_library(
     deps = [
         "//platform/base",
         "//platform/base:util",
-        "//platform/public:comm",
-        "//platform/public:logging",
         "//platform/public:types",
         "//proto:connections_enums_portable_proto",
         "//absl/strings",
@@ -81,7 +80,6 @@ cc_test(
         "//core/internal:internal_test",
         "//platform/base",
         "//platform/impl/g3",  # build_cleaner: keep
-        "//platform/public:comm",
         "//platform/public:logging",
         "//platform/public:types",
         "//testing/base/public:gunit_main",

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_EMBEDDER_SUPPORT_ANDROID_VIEW_CONTENT_VIEW_RENDER_VIEW_H_
-#define COMPONENTS_EMBEDDER_SUPPORT_ANDROID_VIEW_CONTENT_VIEW_RENDER_VIEW_H_
+#ifndef WEBLAYER_BROWSER_CONTENT_VIEW_RENDER_VIEW_H_
+#define WEBLAYER_BROWSER_CONTENT_VIEW_RENDER_VIEW_H_
 
 #include <memory>
 
@@ -20,6 +20,7 @@ class Layer;
 
 namespace content {
 class Compositor;
+class WebContents;
 }  // namespace content
 
 namespace weblayer {
@@ -55,9 +56,9 @@ class ContentViewRenderView : public content::CompositorClient {
   void SurfaceDestroyed(JNIEnv* env, jboolean cache_back_buffer);
   void SurfaceChanged(JNIEnv* env,
                       jboolean can_be_used_with_surface_control,
-                      jint format,
                       jint width,
                       jint height,
+                      jboolean transparent_background,
                       const base::android::JavaParamRef<jobject>& surface);
   void SetNeedsRedraw(JNIEnv* env);
   void EvictCachedSurface(JNIEnv* env);
@@ -73,8 +74,11 @@ class ContentViewRenderView : public content::CompositorClient {
   ~ContentViewRenderView() override;
 
   void InitCompositor();
+  void UpdateWebContentsBaseBackgroundColor();
 
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
+  bool use_transparent_background_ = false;
+  content::WebContents* web_contents_ = nullptr;
 
   std::unique_ptr<content::Compositor> compositor_;
 
@@ -84,8 +88,6 @@ class ContentViewRenderView : public content::CompositorClient {
   scoped_refptr<cc::Layer> root_container_layer_;
   scoped_refptr<cc::Layer> web_contents_layer_;
 
-  int current_surface_format_ = 0;
-
   base::RepeatingClosure height_changed_listener_;
   int height_ = 0;
 
@@ -94,4 +96,4 @@ class ContentViewRenderView : public content::CompositorClient {
 
 }  // namespace weblayer
 
-#endif  // COMPONENTS_EMBEDDER_SUPPORT_ANDROID_VIEW_CONTENT_VIEW_RENDER_VIEW_H_
+#endif  // WEBLAYER_BROWSER_CONTENT_VIEW_RENDER_VIEW_H_

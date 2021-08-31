@@ -10,8 +10,8 @@
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/AutofillCreditCardFillingInfoBar_jni.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "components/autofill/core/browser/payments/autofill_credit_card_filling_infobar_delegate_mobile.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -21,12 +21,14 @@ using base::android::ScopedJavaLocalRef;
 AutofillCreditCardFillingInfoBar::AutofillCreditCardFillingInfoBar(
     std::unique_ptr<autofill::AutofillCreditCardFillingInfoBarDelegateMobile>
         delegate)
-    : ChromeConfirmInfoBar(std::move(delegate)) {}
+    : infobars::ConfirmInfoBar(std::move(delegate)) {}
 
 AutofillCreditCardFillingInfoBar::~AutofillCreditCardFillingInfoBar() {}
 
 base::android::ScopedJavaLocalRef<jobject>
-AutofillCreditCardFillingInfoBar::CreateRenderInfoBar(JNIEnv* env) {
+AutofillCreditCardFillingInfoBar::CreateRenderInfoBar(
+    JNIEnv* env,
+    const ResourceIdMapper& resource_id_mapper) {
   autofill::AutofillCreditCardFillingInfoBarDelegateMobile* delegate =
       static_cast<autofill::AutofillCreditCardFillingInfoBarDelegateMobile*>(
           GetDelegate());
@@ -38,7 +40,8 @@ AutofillCreditCardFillingInfoBar::CreateRenderInfoBar(JNIEnv* env) {
 
   base::android::ScopedJavaLocalRef<jobject> java_delegate =
       Java_AutofillCreditCardFillingInfoBar_create(
-          env, reinterpret_cast<intptr_t>(this), GetJavaIconId(), java_bitmap,
+          env, reinterpret_cast<intptr_t>(this),
+          resource_id_mapper.Run(delegate->GetIconId()), java_bitmap,
           base::android::ConvertUTF16ToJavaString(env,
                                                   delegate->GetMessageText()),
           base::android::ConvertUTF16ToJavaString(

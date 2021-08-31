@@ -124,6 +124,11 @@ proto_library(
     ],
 )
 
+java_proto_library(
+    name = "nearby_client_enums_java_proto",
+    deps = [":nearby_client_enums_proto"],
+)
+
 java_lite_proto_library(
     name = "nearby_client_enums_java_proto_lite",
     deps = [":nearby_client_enums_proto"],
@@ -198,4 +203,24 @@ java_lite_proto_library(
 go_proto_library(
     name = "nearby_event_codes_go_proto",
     deps = [":nearby_event_codes_proto"],
+)
+
+proto_library(
+    name = "uwb_enums_proto",
+    srcs = ["uwb_enums.proto"],
+    cc_api_version = 2,
+    compatible_with = ["//buildenv/target:appengine"],
+    deps = [
+        "//logs/proto/logs_annotations",
+    ],
+)
+
+java_lite_proto_library(
+    name = "uwb_enums_java_proto_lite",
+    deps = [":uwb_enums_proto"],
+)
+
+java_proto_library(
+    name = "uwb_enums_java_proto",
+    deps = [":uwb_enums_proto"],
 )

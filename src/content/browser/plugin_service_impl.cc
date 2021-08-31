@@ -16,6 +16,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -41,6 +42,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
@@ -119,7 +121,7 @@ void PluginServiceImpl::Init() {
 PpapiPluginProcessHost* PluginServiceImpl::FindPpapiPluginProcess(
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
-    const base::Optional<url::Origin>& origin_lock) {
+    const absl::optional<url::Origin>& origin_lock) {
   for (PpapiPluginProcessHostIterator iter; !iter.Done(); ++iter) {
     if (iter->plugin_path() == plugin_path &&
         iter->profile_data_directory() == profile_data_directory &&
@@ -148,8 +150,10 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     const url::Origin& embedder_origin,
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
-    const base::Optional<url::Origin>& origin_lock) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    const absl::optional<url::Origin>& origin_lock) {
+  DCHECK_CURRENTLY_ON(base::FeatureList::IsEnabled(features::kProcessHostOnUI)
+                          ? BrowserThread::UI
+                          : BrowserThread::IO);
 
   if (filter_ && !filter_->CanLoadPlugin(render_process_id, plugin_path)) {
     VLOG(1) << "Unable to load ppapi plugin: " << plugin_path.MaybeAsASCII();
@@ -170,37 +174,27 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
     return nullptr;
   }
 
-  if (info->permissions & ppapi::PERMISSION_FLASH) {
-    // Flash has its own flavour of CORS, so CORB needs to allow all responses
-    // and rely on Flash to enforce same-origin policy.  See also
-    // https://crbug.com/874515 and https://crbug.com/816318#c5.
-    //
-    // Note that ppapi::PERMISSION_FLASH is present not only in the Flash
-    // plugin. This permission is also present in plugins added from the cmdline
-    // and so will be also present for "PPAPI Tests" plugin used for
-    // OutOfProcessPPAPITest.URLLoaderTrusted and related tests.
-    //
-    // TODO(lukasza, laforge): https://crbug.com/702995: Remove the code below
-    // once Flash support is removed from Chromium (probably around 2020 - see
-    // https://www.chromium.org/flash-roadmap).
-    RenderProcessHostImpl::AddCorbExceptionForPlugin(render_process_id);
-  } else if (info->permissions & ppapi::PERMISSION_PDF) {
-    // We want to limit ability to bypass |request_initiator_origin_lock| to
-    // trustworthy renderers.  PDF plugin is okay, because it is always hosted
-    // by the PDF extension (mhjfbmdgcfjbbpaeojofohoefgiehjai) or
-    // chrome://print, both of which we assume are trustworthy (the extension
-    // process can also host other extensions, but this is okay).
-    //
-    // The CHECKs below help verify that |render_process_id| does not host
-    // web-controlled content.  This is a defense-in-depth for verifying that
-    // ShouldAllowPluginCreation called above is doing the right thing.
-    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-    ProcessLock renderer_lock = policy->GetProcessLock(render_process_id);
-    CHECK(!renderer_lock.matches_scheme(url::kHttpScheme) &&
-          !renderer_lock.matches_scheme(url::kHttpsScheme));
-    CHECK(embedder_origin.scheme() != url::kHttpScheme);
-    CHECK(embedder_origin.scheme() != url::kHttpsScheme);
-    CHECK(!embedder_origin.opaque());
+  if (info->permissions & ppapi::PERMISSION_PDF) {
+    // Extra assertions for the PDF plugin.  These assertions do not apply to
+    // the test plugin.
+    if (0 == (info->permissions & ppapi::PERMISSION_TESTING)) {
+      // We want to limit ability to bypass |request_initiator_origin_lock| to
+      // trustworthy renderers.  PDF plugin is okay, because it is always hosted
+      // by the PDF extension (mhjfbmdgcfjbbpaeojofohoefgiehjai) or
+      // chrome://print, both of which we assume are trustworthy (the extension
+      // process can also host other extensions, but this is okay).
+      //
+      // The CHECKs below help verify that |render_process_id| does not host
+      // web-controlled content.  This is a defense-in-depth for verifying that
+      // ShouldAllowPluginCreation called above is doing the right thing.
+      auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+      ProcessLock renderer_lock = policy->GetProcessLock(render_process_id);
+      CHECK(!renderer_lock.matches_scheme(url::kHttpScheme) &&
+            !renderer_lock.matches_scheme(url::kHttpsScheme));
+      CHECK(embedder_origin.scheme() != url::kHttpScheme);
+      CHECK(embedder_origin.scheme() != url::kHttpsScheme);
+      CHECK(!embedder_origin.opaque());
+    }
 
     // In some scenarios, the PDF plugin can issue fetch requests that will need
     // to be proxied by |render_process_id| - such proxying needs to bypass
@@ -250,7 +244,7 @@ void PluginServiceImpl::OpenChannelToPpapiPlugin(
     const url::Origin& embedder_origin,
     const base::FilePath& plugin_path,
     const base::FilePath& profile_data_directory,
-    const base::Optional<url::Origin>& origin_lock,
+    const absl::optional<url::Origin>& origin_lock,
     PpapiPluginProcessHost::PluginClient* client) {
   PpapiPluginProcessHost* plugin_host = FindOrStartPpapiPluginProcess(
       render_process_id, embedder_origin, plugin_path, profile_data_directory,
@@ -318,9 +312,9 @@ bool PluginServiceImpl::GetPluginInfoByPath(const base::FilePath& plugin_path,
   return false;
 }
 
-base::string16 PluginServiceImpl::GetPluginDisplayNameByPath(
+std::u16string PluginServiceImpl::GetPluginDisplayNameByPath(
     const base::FilePath& path) {
-  base::string16 plugin_name = path.LossyDisplayName();
+  std::u16string plugin_name = path.LossyDisplayName();
   WebPluginInfo info;
   if (PluginService::GetInstance()->GetPluginInfoByPath(path, &info) &&
       !info.name.empty()) {
@@ -328,10 +322,9 @@ base::string16 PluginServiceImpl::GetPluginDisplayNameByPath(
 #if defined(OS_MAC)
     // Many plugins on the Mac have .plugin in the actual name, which looks
     // terrible, so look for that and strip it off if present.
-    static const char kPluginExtension[] = ".plugin";
-    if (base::EndsWith(plugin_name, base::ASCIIToUTF16(kPluginExtension),
-                       base::CompareCase::SENSITIVE))
-      plugin_name.erase(plugin_name.length() - strlen(kPluginExtension));
+    static constexpr base::StringPiece16 kPluginExtension = u".plugin";
+    if (base::EndsWith(plugin_name, kPluginExtension))
+      plugin_name.erase(plugin_name.size() - kPluginExtension.size());
 #endif  // defined(OS_MAC)
   }
   return plugin_name;

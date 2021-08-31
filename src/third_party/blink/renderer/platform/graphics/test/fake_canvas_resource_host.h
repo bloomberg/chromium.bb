@@ -39,7 +39,7 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
       uint32_t shared_image_usage_flags =
           gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
       provider = CanvasResourceProvider::CreateSharedImageProvider(
-          size_, kMedium_SkFilterQuality, CanvasColorParams(),
+          size_, kMedium_SkFilterQuality, CanvasResourceParams(),
           CanvasResourceProvider::ShouldInitialize::kCallClear,
           SharedGpuContext::ContextProviderWrapper(),
           hint == RasterModeHint::kPreferGPU ? RasterMode::kGPU
@@ -48,13 +48,13 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
     }
     if (!provider) {
       provider = CanvasResourceProvider::CreateSharedBitmapProvider(
-          size_, kMedium_SkFilterQuality, CanvasColorParams(),
+          size_, kMedium_SkFilterQuality, CanvasResourceParams(),
           CanvasResourceProvider::ShouldInitialize::kCallClear,
           nullptr /* dispatcher_weakptr */);
     }
     if (!provider) {
       provider = CanvasResourceProvider::CreateBitmapProvider(
-          size_, kMedium_SkFilterQuality, CanvasColorParams(),
+          size_, kMedium_SkFilterQuality, CanvasResourceParams(),
           CanvasResourceProvider::ShouldInitialize::kCallClear);
     }
 
@@ -63,14 +63,10 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
     return ResourceProvider();
   }
 
-  SkFilterQuality FilterQuality() const override {
-    return kLow_SkFilterQuality;
-  }
-
  private:
   IntSize size_;
 };
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_FAKE_CANVAS_RESOURCE_HOST_H_

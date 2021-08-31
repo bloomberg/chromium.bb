@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_view_host.h"
 #include "chrome/browser/extensions/extension_view_host_factory.h"
@@ -17,8 +18,7 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/base_window.h"
@@ -28,7 +28,7 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/tablet_mode.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "ui/aura/window.h"
@@ -62,7 +62,7 @@ void ExtensionDialog::ObserverDestroyed() {
   observer_ = nullptr;
 }
 
-void ExtensionDialog::MaybeFocusRenderView() {
+void ExtensionDialog::MaybeFocusRenderer() {
   views::FocusManager* focus_manager = GetWidget()->GetFocusManager();
   DCHECK(focus_manager);
 
@@ -70,8 +70,7 @@ void ExtensionDialog::MaybeFocusRenderView() {
   if (focus_manager->GetFocusedView())
     return;
 
-  content::RenderWidgetHostView* view =
-      host()->render_view_host()->GetWidget()->GetView();
+  content::RenderWidgetHostView* view = host()->main_frame_host()->GetView();
   if (!view)
     return;
 
@@ -82,72 +81,38 @@ void ExtensionDialog::SetMinimumContentsSize(int width, int height) {
   extension_view_->SetPreferredSize(gfx::Size(width, height));
 }
 
-ui::ModalType ExtensionDialog::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
-}
-
-void ExtensionDialog::WindowClosing() {
+void ExtensionDialog::OnWindowClosing() {
   if (observer_)
     observer_->ExtensionDialogClosing(this);
 }
 
-void ExtensionDialog::DeleteDelegate() {
-  // The window has finished closing.  Allow ourself to be deleted.
-  Release();
+void ExtensionDialog::OnExtensionHostDidStopFirstLoad(
+    const extensions::ExtensionHost* host) {
+  DCHECK_EQ(host, host_.get());
+  // Avoid potential overdraw by removing the temporary background after
+  // the extension finishes loading.
+  extension_view_->SetBackground(nullptr);
+  // The render view is created during the LoadURL(), so we should
+  // set the focus to the view if nobody else takes the focus.
+  MaybeFocusRenderer();
 }
 
-// TODO(ellyjones): Are either of these overrides necessary? It seems like
-// extension_view_ is always this dialog's contents view, in which case
-// GetWidget will already behave this way.
-views::Widget* ExtensionDialog::GetWidget() {
-  return extension_view_ ? extension_view_->GetWidget() : nullptr;
+void ExtensionDialog::OnExtensionHostShouldClose(
+    extensions::ExtensionHost* host) {
+  DCHECK_EQ(host, host_.get());
+  GetWidget()->Close();
 }
 
-const views::Widget* ExtensionDialog::GetWidget() const {
-  return extension_view_ ? extension_view_->GetWidget() : nullptr;
+void ExtensionDialog::OnExtensionProcessTerminated(
+    const extensions::Extension* extension) {
+  if (extension == host_->extension() && observer_)
+    observer_->ExtensionTerminated(this);
 }
 
-views::View* ExtensionDialog::GetContentsView() {
-  if (!extension_view_) {
-    extension_view_ = new ExtensionViewViews(host_.get());  // Owned by caller.
-
-    // Show a white background while the extension loads.  This is prettier than
-    // flashing a black unfilled window frame.
-    extension_view_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
-  }
-
-  return extension_view_;
-}
-
-void ExtensionDialog::Observe(int type,
-                              const content::NotificationSource& source,
-                              const content::NotificationDetails& details) {
-  switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD:
-      // Avoid potential overdraw by removing the temporary background after
-      // the extension finishes loading.
-      extension_view_->SetBackground(nullptr);
-      // The render view is created during the LoadURL(), so we should
-      // set the focus to the view if nobody else takes the focus.
-      if (content::Details<extensions::ExtensionHost>(host()) == details)
-        MaybeFocusRenderView();
-      break;
-    case extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-      // If we aren't the host of the popup, then disregard the notification.
-      if (content::Details<extensions::ExtensionHost>(host()) != details)
-        return;
-      GetWidget()->Close();
-      break;
-    case extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED:
-      if (content::Details<extensions::ExtensionHost>(host()) != details)
-        return;
-      if (observer_)
-        observer_->ExtensionTerminated(this);
-      break;
-    default:
-      NOTREACHED() << "Received unexpected notification";
-      break;
-  }
+void ExtensionDialog::OnProcessManagerShutdown(
+    extensions::ProcessManager* manager) {
+  DCHECK(process_manager_observation_.IsObservingSource(manager));
+  process_manager_observation_.Reset();
 }
 
 ExtensionDialog::~ExtensionDialog() = default;
@@ -161,26 +126,34 @@ ExtensionDialog::ExtensionDialog(
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_use_custom_frame(false);
 
-  AddRef();  // Balanced in DeleteDelegate();
+  AddRef();
+  RegisterDeleteDelegateCallback(
+      base::BindOnce(&ExtensionDialog::Release, base::Unretained(this)));
+  RegisterWindowClosingCallback(base::BindOnce(
+      &ExtensionDialog::OnWindowClosing, base::Unretained(this)));
 
-  const content::Source<content::BrowserContext> source =
-      host_->browser_context();
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
-                 source);
-  // Listen for the containing view calling window.close();
-  registrar_.Add(
-      this, extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE, source);
-  // Listen for a crash or other termination of the extension process.
-  registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 source);
+  extension_host_observation_.Observe(host_.get());
+  process_manager_observation_.Observe(
+      extensions::ProcessManager::Get(host_->browser_context()));
+
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION);
 
+  SetModalType(ui::MODAL_TYPE_WINDOW);
   SetShowTitle(!init_params.title.empty());
   SetTitle(init_params.title);
 
+  extension_view_ =
+      SetContentsView(std::make_unique<ExtensionViewViews>(host_.get()));
+
+  // Show a white background while the extension loads.  This is prettier than
+  // flashing a black unfilled window frame.
+  extension_view_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+  extension_view_->SetPreferredSize(init_params.size);
+  extension_view_->SetMinimumSize(init_params.min_size);
+  extension_view_->SetVisible(true);
+
   bool can_resize = true;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Prevent dialog resize mouse cursor in tablet mode, crbug.com/453634.
   if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
     can_resize = false;
@@ -222,7 +195,7 @@ ExtensionDialog::ExtensionDialog(
   bounds.AdjustToFit(screen_rect);
   window->SetBounds(bounds);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   aura::Window* native_view = window->GetNativeWindow();
   if (init_params.title_color) {
     // Frame active color changes the title color when dialog is active.
@@ -239,13 +212,6 @@ ExtensionDialog::ExtensionDialog(
   window->Show();
   // TODO(jamescook): Remove redundant call to Activate()?
   window->Activate();
-
-  // Creating the Widget should have called GetContentsView() and created
-  // |extension_view_|.
-  DCHECK(extension_view_);
-  extension_view_->SetPreferredSize(init_params.size);
-  extension_view_->set_minimum_size(init_params.min_size);
-  extension_view_->SetVisible(true);
 
   // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
   host_->host_contents()->Focus();

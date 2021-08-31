@@ -4,7 +4,10 @@
 
 #include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 
+#include "third_party/blink/renderer/core/inspector/inspector_audits_issue.h"
 #include "third_party/blink/renderer/core/inspector/inspector_issue.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue_conversion.h"
+#include "third_party/blink/renderer/core/inspector/protocol/Audits.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 
 namespace blink {
@@ -12,21 +15,38 @@ namespace blink {
 static const unsigned kMaxIssueCount = 1000;
 
 InspectorIssueStorage::InspectorIssueStorage() = default;
+InspectorIssueStorage::~InspectorIssueStorage() = default;
 
-void InspectorIssueStorage::AddInspectorIssue(CoreProbeSink* sink,
-                                              InspectorIssue* issue) {
+void InspectorIssueStorage::AddInspectorIssue(
+    CoreProbeSink* sink,
+    std::unique_ptr<protocol::Audits::InspectorIssue> issue) {
   DCHECK(issues_.size() <= kMaxIssueCount);
-  probe::InspectorIssueAdded(sink, issue);
+  probe::InspectorIssueAdded(sink, issue.get());
   if (issues_.size() == kMaxIssueCount) {
     issues_.pop_front();
   }
-  issues_.push_back(issue);
+  issues_.push_back(std::move(issue));
+}
+
+void InspectorIssueStorage::AddInspectorIssue(CoreProbeSink* sink,
+                                              InspectorIssue* issue) {
+  AddInspectorIssue(sink, ConvertInspectorIssueToProtocolFormat(issue));
 }
 
 void InspectorIssueStorage::AddInspectorIssue(
     CoreProbeSink* sink,
     mojom::blink::InspectorIssueInfoPtr info) {
   AddInspectorIssue(sink, InspectorIssue::Create(std::move(info)));
+}
+
+void InspectorIssueStorage::AddInspectorIssue(CoreProbeSink* sink,
+                                              AuditsIssue issue) {
+  AddInspectorIssue(sink, issue.TakeIssue());
+}
+
+void InspectorIssueStorage::AddInspectorIssue(ExecutionContext* context,
+                                              AuditsIssue issue) {
+  AddInspectorIssue(probe::ToCoreProbeSink(context), issue.TakeIssue());
 }
 
 void InspectorIssueStorage::AddInspectorIssue(
@@ -40,16 +60,13 @@ void InspectorIssueStorage::Clear() {
   issues_.clear();
 }
 
-wtf_size_t InspectorIssueStorage::size() const {
+size_t InspectorIssueStorage::size() const {
   return issues_.size();
 }
 
-InspectorIssue* InspectorIssueStorage::at(wtf_size_t index) const {
-  return issues_[index].Get();
-}
-
-void InspectorIssueStorage::Trace(Visitor* visitor) const {
-  visitor->Trace(issues_);
+protocol::Audits::InspectorIssue* InspectorIssueStorage::at(
+    size_t index) const {
+  return issues_[index].get();
 }
 
 }  // namespace blink

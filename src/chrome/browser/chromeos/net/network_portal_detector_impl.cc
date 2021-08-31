@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/net/system_network_context_manager.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -89,7 +89,8 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
             ->GetSharedURLLoaderFactory();
     loader_factory = shared_url_loader_factory_.get();
   }
-  captive_portal_detector_.reset(new CaptivePortalDetector(loader_factory));
+  captive_portal_detector_ =
+      std::make_unique<CaptivePortalDetector>(loader_factory);
 
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
                  content::NotificationService::AllSources());
@@ -298,8 +299,8 @@ void NetworkPortalDetectorImpl::ScheduleAttempt(const base::TimeDelta& delay) {
   state_ = STATE_PORTAL_CHECK_PENDING;
 
   next_attempt_delay_ = std::max(delay, strategy_->GetDelayTillNextAttempt());
-  attempt_task_.Reset(base::Bind(&NetworkPortalDetectorImpl::StartAttempt,
-                                 weak_factory_.GetWeakPtr()));
+  attempt_task_.Reset(base::BindOnce(&NetworkPortalDetectorImpl::StartAttempt,
+                                     weak_factory_.GetWeakPtr()));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, attempt_task_.callback(), next_attempt_delay_);
 }
@@ -317,8 +318,8 @@ void NetworkPortalDetectorImpl::StartAttempt() {
                      weak_factory_.GetWeakPtr()),
       NO_TRAFFIC_ANNOTATION_YET);
   attempt_timeout_.Reset(
-      base::Bind(&NetworkPortalDetectorImpl::OnAttemptTimeout,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&NetworkPortalDetectorImpl::OnAttemptTimeout,
+                     weak_factory_.GetWeakPtr()));
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, attempt_timeout_.callback(),

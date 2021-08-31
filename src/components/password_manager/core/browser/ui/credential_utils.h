@@ -10,7 +10,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/strings/string16.h"
 #include "base/template_util.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
@@ -21,16 +20,16 @@ namespace password_manager {
 // Simple struct that stores a canonicalized credential. Allows implicit
 // constructon from PasswordForm and LeakCheckCredentail for convenience.
 struct CanonicalizedCredential {
-  CanonicalizedCredential(const PasswordForm& form)
+  CanonicalizedCredential(const PasswordForm& form)  // NOLINT
       : canonicalized_username(CanonicalizeUsername(form.username_value)),
         password(form.password_value) {}
 
-  CanonicalizedCredential(const LeakCheckCredential& credential)
+  CanonicalizedCredential(const LeakCheckCredential& credential)  // NOLINT
       : canonicalized_username(CanonicalizeUsername(credential.username())),
         password(credential.password()) {}
 
-  base::string16 canonicalized_username;
-  base::string16 password;
+  std::u16string canonicalized_username;
+  std::u16string password;
 };
 
 inline bool operator<(const CanonicalizedCredential& lhs,

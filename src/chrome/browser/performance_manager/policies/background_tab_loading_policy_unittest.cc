@@ -4,9 +4,11 @@
 
 #include "chrome/browser/performance_manager/policies/background_tab_loading_policy.h"
 
+#include <memory>
 #include <vector>
 
 #include "chrome/browser/performance_manager/mechanisms/page_loader.h"
+#include "components/performance_manager/graph/graph_impl.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/public/decorators/tab_properties_decorator.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
@@ -32,6 +34,8 @@ using MockPageLoader = ::testing::StrictMock<LenientMockPageLoader>;
 
 class BackgroundTabLoadingPolicyTest : public GraphTestHarness {
  public:
+  using Super = GraphTestHarness;
+
   BackgroundTabLoadingPolicyTest() = default;
   ~BackgroundTabLoadingPolicyTest() override = default;
   BackgroundTabLoadingPolicyTest(const BackgroundTabLoadingPolicyTest& other) =
@@ -40,6 +44,11 @@ class BackgroundTabLoadingPolicyTest : public GraphTestHarness {
       const BackgroundTabLoadingPolicyTest&) = delete;
 
   void SetUp() override {
+    Super::SetUp();
+
+    system_node_ = std::make_unique<TestNodeWrapper<SystemNodeImpl>>(
+        TestNodeWrapper<SystemNodeImpl>::Create(graph()));
+
     // Create the policy.
     auto policy = std::make_unique<BackgroundTabLoadingPolicy>();
     policy_ = policy.get();
@@ -55,13 +64,22 @@ class BackgroundTabLoadingPolicyTest : public GraphTestHarness {
     policy_->SetFreeMemoryForTesting(150);
   }
 
-  void TearDown() override { graph()->TakeFromGraph(policy_); }
+  void TearDown() override {
+    graph()->TakeFromGraph(policy_);
+    system_node_->reset();
+    Super::TearDown();
+  }
 
  protected:
   BackgroundTabLoadingPolicy* policy() { return policy_; }
   MockPageLoader* loader() { return mock_loader_; }
 
+  SystemNodeImpl* system_node() { return system_node_.get()->get(); }
+
  private:
+  std::unique_ptr<
+      performance_manager::TestNodeWrapper<performance_manager::SystemNodeImpl>>
+      system_node_;
   BackgroundTabLoadingPolicy* policy_;
   MockPageLoader* mock_loader_;
 };
@@ -117,14 +135,14 @@ TEST_F(BackgroundTabLoadingPolicyTest, AllLoadingSlotsUsed) {
   testing::Mock::VerifyAndClear(loader());
 
   // Simulate load start of a PageNode that initiated load.
-  page_node_impl->SetIsLoading(true);
+  page_node_impl->SetLoadingState(PageNode::LoadingState::kLoading);
 
   // The policy should allow one more PageNode to load after a PageNode finishes
   // loading.
   EXPECT_CALL(*loader(), LoadPageNode(raw_page_nodes[2]));
 
   // Simulate load finish of a PageNode.
-  page_node_impl->SetIsLoading(false);
+  page_node_impl->SetLoadingState(PageNode::LoadingState::kLoadedIdle);
 }
 
 TEST_F(BackgroundTabLoadingPolicyTest, ShouldLoad_MaxTabsToRestore) {
@@ -256,28 +274,28 @@ TEST_F(BackgroundTabLoadingPolicyTest, ScoreAndScheduleTabLoad) {
   PageNodeImpl* page_node_impl = page_nodes[1].get();
 
   // Simulate load start of a PageNode that initiated load.
-  page_node_impl->SetIsLoading(true);
+  page_node_impl->SetLoadingState(PageNode::LoadingState::kLoading);
 
   // The policy should allow one more PageNode to load after a PageNode finishes
   // loading.
   EXPECT_CALL(*loader(), LoadPageNode(raw_page_nodes[0]));
 
   // Simulate load finish of a PageNode.
-  page_node_impl->SetIsLoading(false);
+  page_node_impl->SetLoadingState(PageNode::LoadingState::kLoadedIdle);
 
   testing::Mock::VerifyAndClear(loader());
 
   page_node_impl = page_nodes[0].get();
 
   // Simulate load start of a PageNode that initiated load.
-  page_node_impl->SetIsLoading(true);
+  page_node_impl->SetLoadingState(PageNode::LoadingState::kLoading);
 
   // The policy should allow one more PageNode to load after a PageNode finishes
   // loading.
   EXPECT_CALL(*loader(), LoadPageNode(raw_page_nodes[2]));
 
   // Simulate load finish of a PageNode.
-  page_node_impl->SetIsLoading(false);
+  page_node_impl->SetLoadingState(PageNode::LoadingState::kLoadedIdle);
 }
 
 TEST_F(BackgroundTabLoadingPolicyTest, OnMemoryPressure) {
@@ -308,17 +326,17 @@ TEST_F(BackgroundTabLoadingPolicyTest, OnMemoryPressure) {
   testing::Mock::VerifyAndClear(loader());
 
   // Simulate memory pressure and expect the tab loader to disable loading.
-  policy()->OnMemoryPressure(
+  system_node()->OnMemoryPressureForTesting(
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
 
   PageNodeImpl* page_node_impl = page_nodes[0].get();
 
   // Simulate load start of a PageNode that initiated load.
-  page_node_impl->SetIsLoading(true);
+  page_node_impl->SetLoadingState(PageNode::LoadingState::kLoading);
 
   // Simulate load finish of a PageNode and expect the policy to not start
   // another load.
-  page_node_impl->SetIsLoading(false);
+  page_node_impl->SetLoadingState(PageNode::LoadingState::kLoadedIdle);
 }
 
 }  // namespace policies

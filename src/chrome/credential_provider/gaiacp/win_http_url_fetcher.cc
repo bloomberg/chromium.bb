@@ -11,6 +11,7 @@
 #include <process.h>
 
 #include <set>
+#include <string>
 
 #include "base/base64.h"
 #include "base/containers/span.h"
@@ -18,7 +19,6 @@
 #include "base/json/json_writer.h"
 #include "base/stl_util.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
@@ -68,9 +68,9 @@ class HttpServiceRequest {
   // within the given |request_timeout|. If the background thread returns before
   // the timeout expires, it is guaranteed that a result can be returned and the
   // requester will delete itself.
-  base::Optional<base::Value> WaitForResponseFromHttpService(
+  absl::optional<base::Value> WaitForResponseFromHttpService(
       const base::TimeDelta& request_timeout) {
-    base::Optional<base::Value> result;
+    absl::optional<base::Value> result;
 
     // Start the thread and wait on its handle until |request_timeout| expires
     // or the thread finishes.
@@ -347,7 +347,7 @@ HRESULT WinHttpUrlFetcher::Fetch(std::vector<char>* response) {
   for (const auto& kv : request_headers_) {
     const wchar_t* key = A2CW(kv.first.c_str());
     const wchar_t* value = A2CW(kv.second.c_str());
-    base::string16 header = base::StringPrintf(L"%ls: %ls", key, value);
+    std::wstring header = base::StringPrintf(L"%ls: %ls", key, value);
     if (!::WinHttpAddRequestHeaders(
             request_.Get(), header.c_str(), header.length(),
             WINHTTP_ADDREQ_FLAG_ADD | WINHTTP_ADDREQ_FLAG_REPLACE)) {
@@ -423,7 +423,7 @@ HRESULT WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
     const base::Value& request_dict,
     const base::TimeDelta& request_timeout,
     unsigned int request_retries,
-    base::Optional<base::Value>* request_result) {
+    absl::optional<base::Value>* request_result) {
   DCHECK(request_result);
   HRESULT hr = S_OK;
 
@@ -458,7 +458,7 @@ HRESULT WinHttpUrlFetcher::BuildRequestAndFetchResultFromHttpService(
       LOGFN(ERROR) << "error: " << *error_detail;
 
       // If error code is known, retry only on retryable server errors.
-      base::Optional<int> error_code =
+      absl::optional<int> error_code =
           error_detail->FindIntKey(kHttpErrorCodeKeyNameInResponse);
       if (error_code.has_value() &&
           kRetryableHttpErrorCodes.find(error_code.value()) ==

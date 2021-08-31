@@ -37,7 +37,7 @@ ServiceWorkerManager* MockExtensionSystem::service_worker_manager() {
   return nullptr;
 }
 
-SharedUserScriptManager* MockExtensionSystem::shared_user_script_manager() {
+UserScriptManager* MockExtensionSystem::user_script_manager() {
   return nullptr;
 }
 
@@ -79,7 +79,7 @@ ContentVerifier* MockExtensionSystem::content_verifier() {
 
 std::unique_ptr<ExtensionSet> MockExtensionSystem::GetDependentExtensions(
     const Extension* extension) {
-  return std::unique_ptr<ExtensionSet>();
+  return nullptr;
 }
 
 void MockExtensionSystem::InstallUpdate(

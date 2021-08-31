@@ -16,6 +16,7 @@ package cgen
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	a "github.com/google/wuffs/lang/ast"
@@ -57,6 +58,8 @@ func (g *gen) writeStatement(b *buffer, n *a.Node, depth uint32) error {
 	case a.KAssign:
 		n := n.AsAssign()
 		return g.writeStatementAssign(b, n.Operator(), n.LHS(), n.RHS(), depth)
+	case a.KChoose:
+		return g.writeStatementChoose(b, n.AsChoose(), depth)
 	case a.KIOBind:
 		return g.writeStatementIOBind(b, n.AsIOBind(), depth)
 	case a.KIf:
@@ -81,135 +84,107 @@ func (g *gen) writeStatementAssign(b *buffer, op t.ID, lhs *a.Expr, rhs *a.Expr,
 	}
 	depth++
 
-	hack, err := g.writeStatementAssign0(b, op, lhs, rhs)
-	if err != nil {
-		return err
-	}
-	if lhs != nil {
-		if err := g.writeStatementAssign1(b, op, lhs, rhs); err != nil {
-			return err
+	needWriteLoadExprDerivedVars := false
+	if (len(g.currFunk.derivedVars) > 0) &&
+		(rhs.Operator() == t.IDOpenParen) {
+		method := rhs.LHS().AsExpr()
+		recvTyp := method.LHS().MType().Pointee()
+		if (recvTyp.Decorator() == 0) && (recvTyp.QID()[0] != t.IDBase) {
+			n := len(*b)
+			if err := g.writeSaveExprDerivedVars(b, rhs); err != nil {
+				return err
+			}
+			needWriteLoadExprDerivedVars = n != len(*b)
 		}
 	}
-	if hack {
+
+	couldSuspend, skipRHS := false, false
+	if rhs.Effect().Coroutine() {
+		if err := g.writeBuiltinQuestionCall(b, rhs, 0); err == nil {
+			skipRHS = true
+		} else if err != errNoSuchBuiltin {
+			return err
+		} else if op != t.IDEqQuestion {
+			if err := g.writeCoroSuspPoint(b, false); err != nil {
+				return err
+			}
+			b.writes("status = ")
+			couldSuspend = true
+		}
+	}
+
+	if err := g.writeStatementAssign1(b, op, lhs, rhs, skipRHS); err != nil {
+		return err
+	}
+	if needWriteLoadExprDerivedVars {
 		if err := g.writeLoadExprDerivedVars(b, rhs); err != nil {
 			return err
 		}
 	}
+	if couldSuspend {
+		b.writes("if (status.repr) {\ngoto suspend;\n}\n")
+	}
 	return nil
 }
 
-func (g *gen) writeStatementAssign0(b *buffer, op t.ID, lhs *a.Expr, rhs *a.Expr) (bool, error) {
-	if err := g.writeBuiltinQuestionCall(b, rhs, 0); err != errNoSuchBuiltin {
-		return false, err
-	}
-
-	doWork, hack := (lhs == nil) || rhs.Effect().Coroutine(), false
-	if !doWork && (rhs.Operator() == t.IDOpenParen) && (len(g.currFunk.derivedVars) > 0) {
-		// TODO: tighten this heuristic for filtering out all but user-defined
-		// method receivers.
-		method := rhs.LHS().AsExpr()
-		if (method == nil) || !method.LHS().MType().IsPointerType() {
-			return false, nil
-		}
-		for _, arg := range rhs.Args() {
-			v := arg.AsArg().Value()
-			// TODO: walk v, not just check it for an exact match for
-			// "args.foo", for some foo in derivedVars?
-			if v.Operator() != t.IDDot {
-				continue
-			}
-			if vLHS := v.LHS().AsExpr(); vLHS.Operator() != 0 || vLHS.Ident() != t.IDArgs {
-				continue
-			}
-			if _, ok := g.currFunk.derivedVars[v.Ident()]; ok {
-				doWork, hack = true, true
-				break
-			}
-		}
-	}
-
-	if doWork {
-		if err := g.writeSaveExprDerivedVars(b, rhs); err != nil {
-			return false, err
-		}
-
-		if op == t.IDEqQuestion {
-			if g.currFunk.tempW > maxTemp {
-				return false, fmt.Errorf("too many temporary variables required")
-			}
-			temp := g.currFunk.tempW
-			g.currFunk.tempW++
-
-			b.printf("wuffs_base__status %s%d = ", tPrefix, temp)
-		} else if rhs.Effect().Coroutine() {
-			if err := g.writeCoroSuspPoint(b, false); err != nil {
-				return false, err
-			}
-			b.writes("status = ")
-		} else if rhs.Effect().Coroutine() {
-			b.writes("status = ")
-		}
-
-		if !hack {
-			if err := g.writeExpr(b, rhs, 0); err != nil {
-				return false, err
-			}
-			b.writes(";\n")
-
-			if err := g.writeLoadExprDerivedVars(b, rhs); err != nil {
-				return false, err
-			}
-		}
-
-		if op != t.IDEqQuestion && rhs.Effect().Coroutine() {
-			b.writes("if (status.repr) {\ngoto suspend;\n}\n")
-		}
-	}
-
-	return hack, nil
-}
-
-func (g *gen) writeStatementAssign1(b *buffer, op t.ID, lhs *a.Expr, rhs *a.Expr) error {
+func (g *gen) writeStatementAssign1(b *buffer, op t.ID, lhs *a.Expr, rhs *a.Expr, skipRHS bool) error {
 	lhsBuf := buffer(nil)
-	if err := g.writeExpr(&lhsBuf, lhs, 0); err != nil {
-		return err
-	}
-
 	opName, closer, disableWconversion := "", "", false
-	if lTyp := lhs.MType(); lTyp.IsArrayType() {
-		b.writes("memcpy(")
-		opName, closer = ",", fmt.Sprintf(", sizeof(%s))", lhsBuf)
 
-	} else {
-		switch op {
-		case t.IDTildeSatPlusEq, t.IDTildeSatMinusEq:
-			uBits := uintBits(lTyp.QID())
-			if uBits == 0 {
-				return fmt.Errorf("unsupported tilde-operator type %q", lTyp.Str(g.tm))
-			}
-			uOp := "add"
-			if op != t.IDTildeSatPlusEq {
-				uOp = "sub"
-			}
-			b.printf("wuffs_base__u%d__sat_%s_indirect(&", uBits, uOp)
-			opName, closer = ", ", ")"
+	if lhs != nil {
+		if err := g.writeExpr(&lhsBuf, lhs, false, 0); err != nil {
+			return err
+		}
 
-		case t.IDPlusEq, t.IDMinusEq:
-			if lTyp.IsNumType() {
-				if u := lTyp.QID()[1]; u == t.IDU8 || u == t.IDU16 {
-					disableWconversion = true
+		if lTyp := lhs.MType(); lTyp.IsArrayType() {
+			b.writes("memcpy(")
+			opName, closer = ",", fmt.Sprintf(", sizeof(%s))", lhsBuf)
+
+		} else {
+			switch op {
+			case t.IDEqQuestion:
+				opName = cOpName(t.IDEqQuestion)
+				if g.currFunk.tempW > maxTemp {
+					return fmt.Errorf("too many temporary variables required")
+				}
+				temp := g.currFunk.tempW
+				g.currFunk.tempW++
+
+				b.printf("wuffs_base__status %s%d = ", tPrefix, temp)
+
+				if err := g.writeExpr(b, rhs, false, 0); err != nil {
+					return err
+				}
+				b.writes(";\n")
+
+			case t.IDTildeSatPlusEq, t.IDTildeSatMinusEq:
+				uBits := uintBits(lTyp.QID())
+				if uBits == 0 {
+					return fmt.Errorf("unsupported tilde-operator type %q", lTyp.Str(g.tm))
+				}
+				uOp := "add"
+				if op != t.IDTildeSatPlusEq {
+					uOp = "sub"
+				}
+				b.printf("wuffs_base__u%d__sat_%s_indirect(&", uBits, uOp)
+				opName, closer = ", ", ")"
+
+			case t.IDPlusEq, t.IDMinusEq:
+				if lTyp.IsNumType() {
+					if u := lTyp.QID()[1]; u == t.IDU8 || u == t.IDU16 {
+						disableWconversion = true
+					}
+				}
+				fallthrough
+
+			default:
+				opName = cOpName(op)
+				if opName == "" {
+					return fmt.Errorf("unrecognized operator %q", op.AmbiguousForm().Str(g.tm))
 				}
 			}
-			fallthrough
-
-		default:
-			opName = cOpName(op)
-			if opName == "" {
-				return fmt.Errorf("unrecognized operator %q", op.AmbiguousForm().Str(g.tm))
-			}
 		}
 	}
-
 	// "x += 1" triggers -Wconversion, if x is smaller than an int (i.e. a
 	// uint8_t or a uint16_t). This is arguably a clang/gcc bug, but in any
 	// case, we work around it in Wuffs.
@@ -220,19 +195,24 @@ func (g *gen) writeStatementAssign1(b *buffer, op t.ID, lhs *a.Expr, rhs *a.Expr
 		b.writes("#endif\n")
 	}
 
+	n := len(*b)
 	b.writex(lhsBuf)
 	b.writes(opName)
-	if rhs.Effect().Coroutine() {
+	if g.currFunk.tempR != g.currFunk.tempW {
 		if g.currFunk.tempR != (g.currFunk.tempW - 1) {
 			return fmt.Errorf("internal error: temporary variable count out of sync")
 		}
 		b.printf("%s%d", tPrefix, g.currFunk.tempR)
 		g.currFunk.tempR++
-	} else if err := g.writeExpr(b, rhs, 0); err != nil {
+	} else if skipRHS {
+		// No-op.
+	} else if err := g.writeExpr(b, rhs, lhs == nil, 0); err != nil {
 		return err
 	}
 	b.writes(closer)
-	b.writes(";\n")
+	if n != len(*b) {
+		b.writes(";\n")
+	}
 
 	if disableWconversion {
 		b.writes("#if defined(__GNUC__)\n")
@@ -243,6 +223,68 @@ func (g *gen) writeStatementAssign1(b *buffer, op t.ID, lhs *a.Expr, rhs *a.Expr
 	return nil
 }
 
+func (g *gen) writeStatementChoose(b *buffer, n *a.Choose, depth uint32) error {
+	recv := g.currFunk.astFunc.Receiver()
+	args := n.Args()
+	if len(args) == 0 {
+		return nil
+	}
+	b.printf("self->private_impl.choosy_%s = (\n", n.Name().Str(g.tm))
+
+	conclusive := false
+	for _, o := range args {
+		id := o.AsExpr().Ident()
+		suffix := ""
+		if n.Name() == id {
+			suffix = "__choosy_default"
+		}
+		caMacro, caName, _, err := cpuArchCNames(g.findAstFunc(t.QQID{recv[0], recv[1], id}).Asserts())
+		if err != nil {
+			return err
+		}
+		if caMacro == "" {
+			b.printf("&%s%s__%s%s", g.pkgPrefix, recv.Str(g.tm), id.Str(g.tm), suffix)
+			conclusive = true
+			break
+		}
+		b.printf("#if defined(WUFFS_BASE__CPU_ARCH__%s)\n"+
+			"wuffs_base__cpu_arch__have_%s() ? &%s%s__%s%s :\n"+
+			"#endif\n",
+			caMacro, caName, g.pkgPrefix, recv.Str(g.tm), id.Str(g.tm), suffix)
+	}
+
+	if !conclusive {
+		b.printf("self->private_impl.choosy_%s", n.Name().Str(g.tm))
+	}
+	b.writes(");\n")
+	return nil
+}
+
+func cpuArchCNames(asserts []*a.Node) (caMacro string, caName string, caAttribute string, retErr error) {
+	match := false
+	for _, o := range asserts {
+		if o := o.AsAssert(); o.IsChooseCPUArch() {
+			if match {
+				// TODO: support multiple choose-cpu_arch preconditions?
+				return "", "", "", fmt.Errorf("too many choose-cpu_arch preconditions")
+			}
+			match = true
+
+			switch o.Condition().RHS().AsExpr().Ident() {
+			case t.IDARMCRC32:
+				caMacro, caName, caAttribute = "ARM_CRC32", "arm_crc32", ""
+			case t.IDARMNeon:
+				caMacro, caName, caAttribute = "ARM_NEON", "arm_neon", ""
+			case t.IDX86SSE42:
+				caMacro, caName, caAttribute =
+					"X86_64", "x86_sse42",
+					"WUFFS_BASE__MAYBE_ATTRIBUTE_TARGET(\"pclmul,popcnt,sse4.2\")"
+			}
+		}
+	}
+	return caMacro, caName, caAttribute, nil
+}
+
 func (g *gen) writeStatementIOBind(b *buffer, n *a.IOBind, depth uint32) error {
 	if g.currFunk.ioBinds > maxIOBinds {
 		return fmt.Errorf("too many temporary variables required")
@@ -250,51 +292,67 @@ func (g *gen) writeStatementIOBind(b *buffer, n *a.IOBind, depth uint32) error {
 	ioBindNum := g.currFunk.ioBinds
 	g.currFunk.ioBinds++
 
+	e := n.IO()
+	prefix := vPrefix
+	if e.Operator() != 0 {
+		prefix = aPrefix
+	}
+	cTyp, end, qualifier := "reader", "meta.wi", "const "
+	if e.MType().QID()[1] == t.IDIOWriter {
+		cTyp, end, qualifier = "writer", "data.len", ""
+	}
+	name := e.Ident().Str(g.tm)
+
 	// TODO: do these variables need to be func-scoped (bigger scope)
 	// instead of block-scoped (smaller scope) if the coro_susp_point
 	// switch can jump past this initialization??
 	b.writes("{\n")
 	{
-		e := n.IO()
-		// TODO: restrict (in the type checker or parser) that e is either a
-		// local variable or args.foo?
-		prefix := vPrefix
-		if e.Operator() != 0 {
-			prefix = aPrefix
-		}
-		cTyp, qualifier := "reader", "const "
-		if e.MType().QID()[1] == t.IDIOWriter {
-			cTyp, qualifier = "writer", ""
-		}
-		name := e.Ident().Str(g.tm)
-		b.printf("wuffs_base__io_buffer* %s%d_%s%s = %s%s;\n",
-			oPrefix, ioBindNum, prefix, name, prefix, name)
-
-		// TODO: save / restore all iop vars, not just for local IO vars? How
-		// does this work if the io_bind body advances these pointers, either
-		// directly or by calling other funcs?
-		if e.Operator() == 0 {
-			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
-				qualifier, oPrefix, ioBindNum, iopPrefix, prefix, name, iopPrefix, prefix, name)
-			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
-				qualifier, oPrefix, ioBindNum, io0Prefix, prefix, name, io0Prefix, prefix, name)
-			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
-				qualifier, oPrefix, ioBindNum, io1Prefix, prefix, name, io1Prefix, prefix, name)
-			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
-				qualifier, oPrefix, ioBindNum, io2Prefix, prefix, name, io2Prefix, prefix, name)
-		}
-
 		if n.Keyword() == t.IDIOBind {
-			b.printf("%s%s = wuffs_base__io_%s__set(\n&%s%s,\n&%s%s%s,\n&%s%s%s,\n&%s%s%s,\n&%s%s%s,\n",
-				prefix, name, cTyp, uPrefix, name, iopPrefix, prefix, name,
-				io0Prefix, prefix, name, io1Prefix, prefix, name, io2Prefix, prefix, name)
-			if err := g.writeExpr(b, n.Arg1(), 0); err != nil {
+			b.printf("wuffs_base__io_buffer* %s%d_%s%s = %s%s;\n",
+				oPrefix, ioBindNum, prefix, name,
+				prefix, name)
+			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
+				qualifier, oPrefix, ioBindNum, iopPrefix, prefix, name,
+				iopPrefix, prefix, name)
+			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
+				qualifier, oPrefix, ioBindNum, io0Prefix, prefix, name,
+				io0Prefix, prefix, name)
+			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
+				qualifier, oPrefix, ioBindNum, io1Prefix, prefix, name,
+				io1Prefix, prefix, name)
+			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
+				qualifier, oPrefix, ioBindNum, io2Prefix, prefix, name,
+				io2Prefix, prefix, name)
+			b.printf("%s%s = wuffs_base__io_%s__set("+
+				"\n&%s%s,\n&%s%s%s,\n&%s%s%s,\n&%s%s%s,\n&%s%s%s,\n",
+				prefix, name, cTyp,
+				uPrefix, name,
+				iopPrefix, prefix, name,
+				io0Prefix, prefix, name,
+				io1Prefix, prefix, name,
+				io2Prefix, prefix, name)
+			if err := g.writeExpr(b, n.Arg1(), false, 0); err != nil {
 				return err
 			}
 			b.writes(");\n")
 
 		} else {
-			return fmt.Errorf("TODO: implement io_limit (or remove it from the parser)")
+			b.printf("%suint8_t *%s%d_%s%s%s = %s%s%s;\n",
+				qualifier, oPrefix, ioBindNum, io2Prefix, prefix, name, io2Prefix, prefix, name)
+			b.printf("wuffs_base__io_%s__limit(&%s%s%s, %s%s%s,\n",
+				cTyp,
+				io2Prefix, prefix, name,
+				iopPrefix, prefix, name)
+			if err := g.writeExpr(b, n.Arg1(), false, 0); err != nil {
+				return err
+			}
+			b.writes(");\n")
+			b.printf("if (%s%s) {\n%s%s->%s = ((size_t)(%s%s%s - %s%s->data.ptr));\n}\n",
+				prefix, name,
+				prefix, name, end,
+				io2Prefix, prefix, name,
+				prefix, name)
 		}
 	}
 
@@ -305,23 +363,29 @@ func (g *gen) writeStatementIOBind(b *buffer, n *a.IOBind, depth uint32) error {
 	}
 
 	{
-		e := n.IO()
-		prefix := vPrefix
-		if e.Operator() != 0 {
-			prefix = aPrefix
+		if n.Keyword() == t.IDIOBind {
+			b.printf("%s%s = %s%d_%s%s;\n",
+				prefix, name,
+				oPrefix, ioBindNum, prefix, name)
+			b.printf("%s%s%s = %s%d_%s%s%s;\n",
+				iopPrefix, prefix, name,
+				oPrefix, ioBindNum, iopPrefix, prefix, name)
+			b.printf("%s%s%s = %s%d_%s%s%s;\n",
+				io0Prefix, prefix, name,
+				oPrefix, ioBindNum, io0Prefix, prefix, name)
+			b.printf("%s%s%s = %s%d_%s%s%s;\n",
+				io1Prefix, prefix, name,
+				oPrefix, ioBindNum, io1Prefix, prefix, name)
 		}
-		name := e.Ident().Str(g.tm)
-		b.printf("%s%s = %s%d_%s%s;\n",
-			prefix, name, oPrefix, ioBindNum, prefix, name)
-		if e.Operator() == 0 {
-			b.printf("%s%s%s = %s%d_%s%s%s;\n",
-				iopPrefix, prefix, name, oPrefix, ioBindNum, iopPrefix, prefix, name)
-			b.printf("%s%s%s = %s%d_%s%s%s;\n",
-				io0Prefix, prefix, name, oPrefix, ioBindNum, io0Prefix, prefix, name)
-			b.printf("%s%s%s = %s%d_%s%s%s;\n",
-				io1Prefix, prefix, name, oPrefix, ioBindNum, io1Prefix, prefix, name)
-			b.printf("%s%s%s = %s%d_%s%s%s;\n",
-				io2Prefix, prefix, name, oPrefix, ioBindNum, io2Prefix, prefix, name)
+		b.printf("%s%s%s = %s%d_%s%s%s;\n",
+			io2Prefix, prefix, name,
+			oPrefix, ioBindNum, io2Prefix, prefix, name)
+		if n.Keyword() == t.IDIOLimit {
+			b.printf("if (%s%s) {\n%s%s->%s = ((size_t)(%s%s%s - %s%s->data.ptr));\n}\n",
+				prefix, name,
+				prefix, name, end,
+				io2Prefix, prefix, name,
+				prefix, name)
 		}
 	}
 	b.writes("}\n")
@@ -343,7 +407,7 @@ func (g *gen) writeStatementIf(b *buffer, n *a.If, depth uint32) error {
 
 	for {
 		condition := buffer(nil)
-		if err := g.writeExpr(&condition, n.Condition(), 0); err != nil {
+		if err := g.writeExpr(&condition, n.Condition(), false, 0); err != nil {
 			return err
 		}
 		// Calling trimParens avoids clang's -Wparentheses-equality warning.
@@ -377,30 +441,44 @@ func (g *gen) writeStatementIterate(b *buffer, n *a.Iterate, depth uint32) error
 	if len(assigns) == 0 {
 		return nil
 	}
-	if len(assigns) != 1 {
-		return fmt.Errorf("TODO: iterate over more than one assign")
-	}
-	o := assigns[0].AsAssign()
-	name := o.LHS().Ident().Str(g.tm)
+	name0 := assigns[0].AsAssign().LHS().Ident().Str(g.tm)
 	b.writes("{\n")
 
 	// TODO: don't assume that the slice is a slice of base.u8. In
 	// particular, the code gen can be subtle if the slice element type has
 	// zero size, such as the empty struct.
-	b.printf("wuffs_base__slice_u8 %sslice_%s = ", iPrefix, name)
-	if err := g.writeExpr(b, o.RHS(), 0); err != nil {
-		return err
+	for i, o := range assigns {
+		o := o.AsAssign()
+		name := o.LHS().Ident().Str(g.tm)
+		b.printf("wuffs_base__slice_u8 %sslice_%s = ", iPrefix, name)
+		if err := g.writeExpr(b, o.RHS(), false, 0); err != nil {
+			return err
+		}
+		b.writes(";\n")
+		b.printf("%s%s.ptr = %sslice_%s.ptr;\n", vPrefix, name, iPrefix, name)
+		if i > 0 {
+			b.printf("%sslice_%s.len = ((size_t)(wuffs_base__u64__min(%sslice_%s.len, %sslice_%s.len)));\n",
+				iPrefix, name0, iPrefix, name0, iPrefix, name)
+		}
 	}
-	b.writes(";\n")
-	b.printf("%s%s = %sslice_%s;\n", vPrefix, name, iPrefix, name)
 	// TODO: look at n.HasContinue() and n.HasBreak().
 
 	round := uint32(0)
 	for ; n != nil; n = n.ElseIterate() {
-		length := n.Length().SmallPowerOf2Value()
-		unroll := n.Unroll().SmallPowerOf2Value()
+		length, err := strconv.Atoi(n.Length().Str(g.tm))
+		if err != nil {
+			return err
+		}
+		advance, err := strconv.Atoi(n.Advance().Str(g.tm))
+		if err != nil {
+			return err
+		}
+		unroll, err := strconv.Atoi(n.Unroll().Str(g.tm))
+		if err != nil {
+			return err
+		}
 		for {
-			if err := g.writeIterateRound(b, name, n.Body(), round, depth, length, unroll); err != nil {
+			if err := g.writeIterateRound(b, assigns, n.Body(), round, depth, length, advance, unroll); err != nil {
 				return err
 			}
 			round++
@@ -410,6 +488,10 @@ func (g *gen) writeStatementIterate(b *buffer, n *a.Iterate, depth uint32) error
 			}
 			unroll = 1
 		}
+	}
+	for _, o := range assigns {
+		name := o.AsAssign().LHS().Ident().Str(g.tm)
+		b.printf("%s%s.len = 0;\n", vPrefix, name)
 	}
 
 	b.writes("}\n")
@@ -445,8 +527,7 @@ func (g *gen) writeStatementRet(b *buffer, n *a.Ret, depth uint32) error {
 				msg, _ := t.Unescape(retExpr.Ident().Str(g.tm))
 				isComplete = statusMsgIsNote(msg)
 			}
-			if err := g.writeExpr(
-				b, retExpr, depth); err != nil {
+			if err := g.writeExpr(b, retExpr, false, depth); err != nil {
 				return err
 			}
 		}
@@ -474,8 +555,10 @@ func (g *gen) writeStatementRet(b *buffer, n *a.Ret, depth uint32) error {
 	if g.currFunk.derivedVars != nil {
 		for _, o := range g.currFunk.astFunc.In().Fields() {
 			o := o.AsField()
-			if err := g.writeSaveDerivedVar(b, "", aPrefix, o.Name(), o.XType()); err != nil {
-				return err
+			if _, ok := g.currFunk.derivedVars[o.Name()]; ok {
+				if err := g.writeFinalSaveDerivedVar(b, o); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -497,7 +580,7 @@ func (g *gen) writeStatementRet(b *buffer, n *a.Ret, depth uint32) error {
 		if couldBeSuspension {
 			b.writes("wuffs_base__status__ensure_not_a_suspension(")
 		}
-		if err := g.writeExpr(b, retExpr, depth); err != nil {
+		if err := g.writeExpr(b, retExpr, false, depth); err != nil {
 			return err
 		}
 		if couldBeSuspension {
@@ -518,7 +601,7 @@ func (g *gen) writeStatementWhile(b *buffer, n *a.While, depth uint32) error {
 		b.printf("label__%s__continue:;\n", jt)
 	}
 	condition := buffer(nil)
-	if err := g.writeExpr(&condition, n.Condition(), 0); err != nil {
+	if err := g.writeExpr(&condition, n.Condition(), false, 0); err != nil {
 		return err
 	}
 	// Calling trimParens avoids clang's -Wparentheses-equality warning.
@@ -539,18 +622,39 @@ func (g *gen) writeStatementWhile(b *buffer, n *a.While, depth uint32) error {
 	return nil
 }
 
-func (g *gen) writeIterateRound(b *buffer, name string, body []*a.Node, round uint32, depth uint32, length int, unroll int) error {
-	b.printf("%s%s.len = %d;\n", vPrefix, name, length)
-	b.printf("uint8_t* %send%d_%s = %sslice_%s.ptr + (%sslice_%s.len / %d) * %d;\n",
-		iPrefix, round, name, iPrefix, name, iPrefix, name, length*unroll, length*unroll)
-	b.printf("while (%s%s.ptr < %send%d_%s) {\n", vPrefix, name, iPrefix, round, name)
+func (g *gen) writeIterateRound(b *buffer, assigns []*a.Node, body []*a.Node, round uint32, depth uint32, length int, advance int, unroll int) error {
+	for _, o := range assigns {
+		name := o.AsAssign().LHS().Ident().Str(g.tm)
+		b.printf("%s%s.len = %d;\n", vPrefix, name, length)
+	}
+	name0 := assigns[0].AsAssign().LHS().Ident().Str(g.tm)
+	b.printf("uint8_t* %send%d_%s = ", iPrefix, round, name0)
+	if (length == 1) && (advance == 1) && (unroll == 1) {
+		b.printf("%sslice_%s.ptr + %sslice_%s.len;\n",
+			iPrefix, name0, iPrefix, name0)
+	} else if length == advance {
+		b.printf("%s%s.ptr + (((%sslice_%s.len - (size_t)(%s%s.ptr - %sslice_%s.ptr)) / %d) * %d);\n",
+			vPrefix, name0, iPrefix, name0,
+			vPrefix, name0, iPrefix, name0,
+			length*unroll, length*unroll)
+	} else {
+		b.printf("%s%s.ptr + wuffs_base__iterate_total_advance("+
+			"(%sslice_%s.len - (size_t)(%s%s.ptr - %sslice_%s.ptr)), %d, %d);\n",
+			vPrefix, name0, iPrefix, name0,
+			vPrefix, name0, iPrefix, name0,
+			length+(advance*(unroll-1)), advance*unroll)
+	}
+	b.printf("while (%s%s.ptr < %send%d_%s) {\n", vPrefix, name0, iPrefix, round, name0)
 	for i := 0; i < unroll; i++ {
 		for _, o := range body {
 			if err := g.writeStatement(b, o, depth); err != nil {
 				return err
 			}
 		}
-		b.printf("%s%s.ptr += %d;\n", vPrefix, name, length)
+		for _, o := range assigns {
+			name := o.AsAssign().LHS().Ident().Str(g.tm)
+			b.printf("%s%s.ptr += %d;\n", vPrefix, name, advance)
+		}
 	}
 	b.writes("}\n")
 	return nil

@@ -57,7 +57,7 @@ class WebUIIOSImpl : public web::WebUIIOS,
                    web::WebFrame* sender_frame);
 
   // Executes JavaScript asynchronously on the page.
-  void ExecuteJavascript(const base::string16& javascript);
+  void ExecuteJavascript(const std::u16string& javascript);
 
   // A map of message name -> message handling callback.
   typedef std::map<std::string, MessageCallback> MessageCallbackMap;
@@ -67,7 +67,7 @@ class WebUIIOSImpl : public web::WebUIIOS,
   std::vector<std::unique_ptr<WebUIIOSMessageHandler>> handlers_;
 
   // Subscription for JS message.
-  std::unique_ptr<web::WebState::ScriptCommandSubscription> subscription_;
+  base::CallbackListSubscription subscription_;
 
   // Non-owning pointer to the WebState this WebUIIOS is associated with.
   WebState* web_state_;

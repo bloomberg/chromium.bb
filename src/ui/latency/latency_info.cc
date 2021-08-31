@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
 #include "services/tracing/public/cpp/perfetto/macros.h"
@@ -274,7 +273,8 @@ void LatencyInfo::AddLatencyNumberWithTimestampImpl(
         ts = base::TimeTicks::Now();
       }
 
-      TRACE_EVENT_BEGIN(kTraceCategoriesForAsyncEvents, trace_name_str,
+      TRACE_EVENT_BEGIN(kTraceCategoriesForAsyncEvents,
+                        perfetto::StaticString{trace_name_str},
                         perfetto::Track::Global(trace_id_), ts);
     }
 
@@ -305,9 +305,14 @@ void LatencyInfo::Terminate() {
   terminated_ = true;
 
   if (*g_latency_info_enabled.Get().latency_info_enabled) {
+    base::TimeTicks gpu_swap_end_timestamp;
+    if (!this->FindLatency(INPUT_EVENT_LATENCY_FRAME_SWAP_COMPONENT,
+                           &gpu_swap_end_timestamp)) {
+      gpu_swap_end_timestamp = base::TimeTicks::Now();
+    }
     TRACE_EVENT_END(
         kTraceCategoriesForAsyncEvents, perfetto::Track::Global(trace_id_),
-        [this](perfetto::EventContext ctx) {
+        gpu_swap_end_timestamp, [this](perfetto::EventContext ctx) {
           ChromeLatencyInfo* info = ctx.event()->set_chrome_latency_info();
           for (const auto& lc : latency_components_) {
             ChromeLatencyInfo::ComponentInfo* component =

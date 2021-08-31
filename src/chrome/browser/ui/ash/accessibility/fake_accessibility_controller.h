@@ -28,19 +28,26 @@ class FakeAccessibilityController : ash::AccessibilityController {
   void SetSelectToSpeakState(ash::SelectToSpeakState state) override;
   void SetSelectToSpeakEventHandlerDelegate(
       ash::SelectToSpeakEventHandlerDelegate* delegate) override;
-  void ShowSelectToSpeakPanel(const gfx::Rect& anchor, bool is_paused) override;
+  void ShowSelectToSpeakPanel(const gfx::Rect& anchor,
+                              bool is_paused,
+                              double speed) override;
   void HideSelectToSpeakPanel() override;
+  void OnSelectToSpeakPanelAction(ash::SelectToSpeakPanelAction action,
+                                  double value) override;
   void HideSwitchAccessBackButton() override;
   void HideSwitchAccessMenu() override;
   void ShowSwitchAccessBackButton(const gfx::Rect& anchor) override;
   void ShowSwitchAccessMenu(const gfx::Rect& anchor,
                             std::vector<std::string> actions) override;
-  void ActivatePointScan() override;
+  void StartPointScan() override;
+  void StopPointScan() override;
   void SetDictationActive(bool is_active) override;
+  void SetPointScanSpeedDipsPerSecond(
+      int point_scan_speed_dips_per_second) override;
   void ToggleDictationFromSource(ash::DictationToggleSource source) override;
   void HandleAutoclickScrollableBoundsFound(
       gfx::Rect& bounds_in_screen) override;
-  base::string16 GetBatteryDescription() const override;
+  std::u16string GetBatteryDescription() const override;
   void SetVirtualKeyboardVisible(bool is_visible) override;
   void PerformAcceleratorAction(
       ash::AcceleratorAction accelerator_action) override;

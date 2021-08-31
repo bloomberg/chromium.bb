@@ -4,6 +4,7 @@
 
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -37,8 +38,7 @@ namespace {
 void WriteNumberAttribute(dbus::MessageWriter* writer,
                           const BluetoothServiceAttributeValueBlueZ& attribute,
                           bool is_signed) {
-  int value;
-  attribute.value().GetAsInteger(&value);
+  int value = attribute.value().GetInt();
 
   switch (attribute.size()) {
     case 1:
@@ -119,7 +119,7 @@ BluetoothAdapterClient::Error ErrorResponseToError(
 void OnResponseAdapter(
     base::OnceClosure callback,
     BluetoothAdapterClient::ErrorCallback error_callback,
-    const base::Optional<BluetoothAdapterClient::Error>& error) {
+    const absl::optional<BluetoothAdapterClient::Error>& error) {
   if (!error) {
     std::move(callback).Run();
     return;
@@ -137,22 +137,22 @@ BluetoothAdapterClient::DiscoveryFilter::~DiscoveryFilter() = default;
 void BluetoothAdapterClient::DiscoveryFilter::CopyFrom(
     const DiscoveryFilter& filter) {
   if (filter.rssi.get())
-    rssi.reset(new int16_t(*filter.rssi));
+    rssi = std::make_unique<int16_t>(*filter.rssi);
   else
     rssi.reset();
 
   if (filter.pathloss.get())
-    pathloss.reset(new uint16_t(*filter.pathloss));
+    pathloss = std::make_unique<uint16_t>(*filter.pathloss);
   else
     pathloss.reset();
 
   if (filter.transport.get())
-    transport.reset(new std::string(*filter.transport));
+    transport = std::make_unique<std::string>(*filter.transport);
   else
-    transport.reset(new std::string(kBluezAutoTransport));
+    transport = std::make_unique<std::string>(kBluezAutoTransport);
 
   if (filter.uuids.get())
-    uuids.reset(new std::vector<std::string>(*filter.uuids));
+    uuids = std::make_unique<std::vector<std::string>>(*filter.uuids);
   else
     uuids.reset();
 }
@@ -451,7 +451,7 @@ class BluetoothAdapterClientImpl : public BluetoothAdapterClient,
   // BluetoothAdapterClient override.
   void ConnectDevice(const dbus::ObjectPath& object_path,
                      const std::string& address,
-                     const base::Optional<AddressType>& address_type,
+                     const absl::optional<AddressType>& address_type,
                      ConnectDeviceCallback callback,
                      ErrorCallback error_callback) override {
     dbus::MethodCall method_call(bluetooth_adapter::kBluetoothAdapterInterface,
@@ -557,7 +557,7 @@ class BluetoothAdapterClientImpl : public BluetoothAdapterClient,
                   dbus::Response* response,
                   dbus::ErrorResponse* error_response) {
     if (response) {
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 

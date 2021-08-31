@@ -88,10 +88,8 @@ public:
                         IsHairline::kNo);
 
         DrawQuad extra;
-        // Only clip when there's anti-aliasing. When non-aa, the GPU clips just fine and there's
-        // no inset/outset math that requires w > 0.
-        int count = quad->fEdgeFlags != GrQuadAAFlags::kNone ? GrQuadUtils::ClipToW0(quad, &extra)
-                                                             : 1;
+        // Always crop to W>0 to remain consistent with GrQuad::bounds()
+        int count = GrQuadUtils::ClipToW0(quad, &extra);
         if (count == 0) {
             // We can't discard the op at this point, but disable AA flags so it won't go through
             // inset/outset processing
@@ -120,9 +118,8 @@ public:
         }
     }
 
-    GrProcessorSet::Analysis finalize(
-            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-            GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                      GrClampType clampType) override {
         // Initialize aggregate color analysis with the first quad's color (which always exists)
         auto iter = fQuads.metadata();
         SkAssertResult(iter.next());
@@ -142,8 +139,7 @@ public:
         auto coverage = fHelper.aaType() == GrAAType::kCoverage
                                                     ? GrProcessorAnalysisCoverage::kSingleChannel
                                                     : GrProcessorAnalysisCoverage::kNone;
-        auto result = fHelper.finalizeProcessors(
-                caps, clip, hasMixedSampledCoverage, clampType, coverage, &quadColors);
+        auto result = fHelper.finalizeProcessors(caps, clip, clampType, coverage, &quadColors);
         // If there is a constant color after analysis, that means all of the quads should be set
         // to the same color (even if they started out with different colors).
         iter = fQuads.metadata();
@@ -203,10 +199,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         const VertexSpec vertexSpec = this->vertexSpec();
 
         GrGeometryProcessor* gp = GrQuadPerEdgeAA::MakeProcessor(arena, vertexSpec);
@@ -216,20 +213,21 @@ private:
                                                             std::move(appliedClip),
                                                             dstProxyView, gp,
                                                             vertexSpec.primitiveType(),
-                                                            renderPassXferBarriers);
+                                                            renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrePrepareDraws(GrRecordingContext* rContext,
-                           const GrSurfaceProxyView* writeView,
+                           const GrSurfaceProxyView& writeView,
                            GrAppliedClip* clip,
                            const GrXferProcessor::DstProxyView& dstProxyView,
-                           GrXferBarrierFlags renderPassXferBarriers) override {
+                           GrXferBarrierFlags renderPassXferBarriers,
+                           GrLoadOp colorLoadOp) override {
         TRACE_EVENT0("skia.gpu", TRACE_FUNC);
 
         SkASSERT(!fPrePreparedVertices);
 
         INHERITED::onPrePrepareDraws(rContext, writeView, clip, dstProxyView,
-                                     renderPassXferBarriers);
+                                     renderPassXferBarriers, colorLoadOp);
 
         SkArenaAlloc* arena = rContext->priv().recordTimeAllocator();
 
@@ -313,7 +311,7 @@ private:
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
         flushState->bindBuffers(std::move(fIndexBuffer), nullptr, std::move(fVertexBuffer));
-        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
         GrQuadPerEdgeAA::IssueDraw(flushState->caps(), flushState->opsRenderPass(), vertexSpec, 0,
                                    fQuads.count(), totalNumVertices, fBaseVertex);
     }
@@ -480,7 +478,7 @@ GrOp::Owner GrFillRectOp::MakeOp(GrRecordingContext* context,
                                  GrPaint&& paint,
                                  GrAAType aaType,
                                  const SkMatrix& viewMatrix,
-                                 const GrRenderTargetContext::QuadSetEntry quads[],
+                                 const GrSurfaceDrawContext::QuadSetEntry quads[],
                                  int cnt,
                                  const GrUserStencilSettings* stencilSettings,
                                  int* numConsumed) {
@@ -516,13 +514,13 @@ GrOp::Owner GrFillRectOp::MakeOp(GrRecordingContext* context,
     return op;
 }
 
-void GrFillRectOp::AddFillRectOps(GrRenderTargetContext* rtc,
+void GrFillRectOp::AddFillRectOps(GrSurfaceDrawContext* rtc,
                                   const GrClip* clip,
                                   GrRecordingContext* context,
                                   GrPaint&& paint,
                                   GrAAType aaType,
                                   const SkMatrix& viewMatrix,
-                                  const GrRenderTargetContext::QuadSetEntry quads[],
+                                  const GrSurfaceDrawContext::QuadSetEntry quads[],
                                   int cnt,
                                   const GrUserStencilSettings* stencilSettings) {
 

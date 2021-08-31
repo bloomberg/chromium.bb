@@ -84,7 +84,10 @@ class MODULES_EXPORT ImageCapture final
   void GetMediaTrackSettings(MediaTrackSettings*) const;
 
   bool HasPanTiltZoomPermissionGranted() const;
-  bool HasZoomPermissionGranted() const;
+
+  // Called by MediaStreamTrack::clone() to get a clone with same capabilities,
+  // settings, and constraints.
+  ImageCapture* Clone() const;
 
   void Trace(Visitor*) const override;
 
@@ -133,9 +136,7 @@ class MODULES_EXPORT ImageCapture final
 
   Member<MediaStreamTrack> stream_track_;
   std::unique_ptr<ImageCaptureFrameGrabber> frame_grabber_;
-  HeapMojoRemote<media::mojom::blink::ImageCapture,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      service_;
+  HeapMojoRemote<media::mojom::blink::ImageCapture> service_;
 
   // Whether the user has granted permission for the user to control camera PTZ.
   mojom::blink::PermissionStatus pan_tilt_zoom_permission_;

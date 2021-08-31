@@ -27,7 +27,9 @@ namespace dawn_native {
         RenderPassEncoder(DeviceBase* device,
                           CommandEncoder* commandEncoder,
                           EncodingContext* encodingContext,
-                          PassResourceUsageTracker usageTracker,
+                          RenderPassResourceUsageTracker usageTracker,
+                          Ref<AttachmentState> attachmentState,
+                          QuerySetBase* occlusionQuerySet,
                           uint32_t renderTargetWidth,
                           uint32_t renderTargetHeight);
 
@@ -35,20 +37,24 @@ namespace dawn_native {
                                             CommandEncoder* commandEncoder,
                                             EncodingContext* encodingContext);
 
-        void EndPass();
+        void APIEndPass();
 
-        void SetStencilReference(uint32_t reference);
-        void SetBlendColor(const Color* color);
-        void SetViewport(float x,
-                         float y,
-                         float width,
-                         float height,
-                         float minDepth,
-                         float maxDepth);
-        void SetScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
-        void ExecuteBundles(uint32_t count, RenderBundleBase* const* renderBundles);
+        void APISetStencilReference(uint32_t reference);
+        void APISetBlendConstant(const Color* color);
+        void APISetBlendColor(const Color* color);  // Deprecated
+        void APISetViewport(float x,
+                            float y,
+                            float width,
+                            float height,
+                            float minDepth,
+                            float maxDepth);
+        void APISetScissorRect(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+        void APIExecuteBundles(uint32_t count, RenderBundleBase* const* renderBundles);
 
-        void WriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex);
+        void APIBeginOcclusionQuery(uint32_t queryIndex);
+        void APIEndOcclusionQuery();
+
+        void APIWriteTimestamp(QuerySetBase* querySet, uint32_t queryIndex);
 
       protected:
         RenderPassEncoder(DeviceBase* device,
@@ -57,12 +63,19 @@ namespace dawn_native {
                           ErrorTag errorTag);
 
       private:
+        void TrackQueryAvailability(QuerySetBase* querySet, uint32_t queryIndex);
+
         // For render and compute passes, the encoding context is borrowed from the command encoder.
         // Keep a reference to the encoder to make sure the context isn't freed.
         Ref<CommandEncoder> mCommandEncoder;
 
         uint32_t mRenderTargetWidth;
         uint32_t mRenderTargetHeight;
+
+        // The resources for occlusion query
+        Ref<QuerySetBase> mOcclusionQuerySet;
+        uint32_t mCurrentOcclusionQueryIndex = 0;
+        bool mOcclusionQueryActive = false;
     };
 
 }  // namespace dawn_native

@@ -19,26 +19,40 @@ namespace blink {
 NGConstraintSpace CreateConstraintSpaceForMathChild(
     const NGBlockNode& parent_node,
     const LogicalSize& child_available_size,
-    const NGConstraintSpace& parent_constraint_space,
+    const NGConstraintSpace& parent_space,
     const NGLayoutInputNode& child) {
   const ComputedStyle& parent_style = parent_node.Style();
   const ComputedStyle& child_style = child.Style();
   DCHECK(child.CreatesNewFormattingContext());
-  NGConstraintSpaceBuilder space_builder(parent_constraint_space,
-                                         child_style.GetWritingDirection(),
-                                         true /* is_new_fc */);
-  SetOrthogonalFallbackInlineSizeIfNeeded(parent_style, child, &space_builder);
-
-  space_builder.SetAvailableSize(child_available_size);
-  space_builder.SetPercentageResolutionSize(child_available_size);
-  space_builder.SetReplacedPercentageResolutionSize(child_available_size);
-
-  space_builder.SetIsShrinkToFit(child_style.LogicalWidth().IsAuto());
+  NGConstraintSpaceBuilder builder(
+      parent_space, child_style.GetWritingDirection(), true /* is_new_fc */);
+  SetOrthogonalFallbackInlineSizeIfNeeded(parent_style, child, &builder);
+  builder.SetAvailableSize(child_available_size);
+  builder.SetPercentageResolutionSize(child_available_size);
 
   // TODO(crbug.com/1124301): add target stretch sizes.
   // TODO(crbug.com/1125137): add ink metrics.
-  space_builder.SetNeedsBaseline(true);
-  return space_builder.ToConstraintSpace();
+  return builder.ToConstraintSpace();
+}
+
+MinMaxSizesResult ComputeMinAndMaxContentContributionForMathChild(
+    const ComputedStyle& parent_style,
+    const NGConstraintSpace& parent_space,
+    const NGBlockNode& child,
+    LayoutUnit child_available_block_size) {
+  DCHECK(child.CreatesNewFormattingContext());
+  NGMinMaxConstraintSpaceBuilder builder(parent_space, parent_style, child,
+                                         true /* is_new_fc */);
+  builder.SetAvailableBlockSize(child_available_block_size);
+  builder.SetPercentageResolutionBlockSize(child_available_block_size);
+  const auto space = builder.ToConstraintSpace();
+
+  auto result = ComputeMinAndMaxContentContribution(parent_style, child, space);
+
+  // Add margins directly here.
+  result.sizes += ComputeMinMaxMargins(parent_style, child).InlineSum();
+
+  return result;
 }
 
 NGLayoutInputNode FirstChildInFlow(const NGBlockNode& node) {
@@ -82,13 +96,15 @@ inline bool IsValidMultiscript(const NGBlockNode& node) {
   if (!child || IsPrescriptDelimiter(child))
     return false;
   bool number_of_scripts_is_even = true;
+  bool prescript_delimiter_found = false;
   while (child) {
     child = To<NGBlockNode>(NextSiblingInFlow(child));
     if (!child)
       continue;
     if (IsPrescriptDelimiter(child)) {
-      if (!number_of_scripts_is_even)
+      if (!number_of_scripts_is_even || prescript_delimiter_found)
         return false;
+      prescript_delimiter_found = true;
       continue;
     }
     number_of_scripts_is_even = !number_of_scripts_is_even;

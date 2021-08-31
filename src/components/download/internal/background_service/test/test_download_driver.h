@@ -47,7 +47,7 @@ class TestDownloadDriver : public DownloadDriver {
   void Remove(const std::string& guid, bool remove_file) override;
   void Pause(const std::string& guid) override;
   void Resume(const std::string& guid) override;
-  base::Optional<DriverEntry> Find(const std::string& guid) override;
+  absl::optional<DriverEntry> Find(const std::string& guid) override;
   std::set<std::string> GetActiveDownloads() override;
   size_t EstimateMemoryUsage() const override;
 
@@ -64,4 +64,4 @@ class TestDownloadDriver : public DownloadDriver {
 }  // namespace test
 }  // namespace download
 
-#endif  // COMPONENTS_DOWNLOAD_CONTENT_BACKGROUND_SERVICE_TEST_TEST_DOWNLOAD_DRIVER_H_
+#endif  // COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_TEST_TEST_DOWNLOAD_DRIVER_H_

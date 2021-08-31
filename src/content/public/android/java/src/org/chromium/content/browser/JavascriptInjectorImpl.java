@@ -8,6 +8,7 @@ import android.util.Pair;
 
 import org.chromium.base.UserData;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.DoNotInline;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content.browser.remoteobjects.RemoteObjectInjector;
@@ -32,6 +33,9 @@ public class JavascriptInjectorImpl implements JavascriptInjector, UserData {
                 JavascriptInjectorImpl::new;
     }
 
+    // The set is passed to native and stored in a weak reference, so ensure this
+    // strong reference is not optimized away by R8.
+    @DoNotInline
     private final Set<Object> mRetainedObjects = new HashSet<>();
     private final Map<String, Pair<Object, Class>> mInjectedObjects = new HashMap<>();
     private long mNativePtr;

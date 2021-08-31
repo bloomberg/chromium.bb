@@ -14,17 +14,18 @@
 
 #include "tools/render/trace_program.h"
 
-#include "gflags/gflags.h"
+#include "absl/flags/flag.h"
 #include "absl/time/clock.h"
 #include "tools/render/layout_constants.h"
 
-DEFINE_bool(show_fps, false, "Show the current framerate of the program");
-DEFINE_bool(vsync, true, "Enables vsync");
+ABSL_FLAG(bool, show_fps, false, "Show the current framerate of the program");
+ABSL_FLAG(bool, vsync, true, "Enables vsync");
 
-DEFINE_double(mouseover_threshold,
-              3.0,
-              "The minimum size of a single packet (in fractional pixels) that "
-              "causes the packet information box being showed");
+ABSL_FLAG(double,
+          mouseover_threshold,
+          3.0,
+          "The minimum size of a single packet (in fractional pixels) that "
+          "causes the packet information box being showed");
 
 namespace quic_trace {
 namespace render {
@@ -47,7 +48,7 @@ TraceProgram::TraceProgram()
   rectangle_renderer_ =
       absl::make_unique<RectangleRenderer>(state_buffer_.get());
 
-  SDL_GL_SetSwapInterval(FLAGS_vsync ? 1 : 0);
+  SDL_GL_SetSwapInterval(absl::GetFlag(FLAGS_vsync) ? 1 : 0);
   SDL_SetWindowMinimumSize(*window_, 640, 480);
 
   glEnable(GL_BLEND);
@@ -315,7 +316,7 @@ void TraceProgram::HandleMouseover(int x, int y) {
 
   float packet_size_in_pixels =
       kSentPacketDurationMs / state_.viewport.x * state_.window.x;
-  if (packet_size_in_pixels < FLAGS_mouseover_threshold) {
+  if (packet_size_in_pixels < absl::GetFlag(FLAGS_mouseover_threshold)) {
     renderer_->set_highlighted_packet(-1);
     return;
   }
@@ -393,7 +394,7 @@ Box TraceProgram::TraceBounds() {
 }
 
 void TraceProgram::MaybeShowFramerate() {
-  if (!FLAGS_show_fps) {
+  if (!absl::GetFlag(FLAGS_show_fps)) {
     return;
   }
 

@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/services/speech/cloud_speech_recognition_client.h"
+#include "components/soda/constants.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -27,14 +28,21 @@ class SpeechRecognitionRecognizerImpl
   using OnRecognitionEventCallback =
       base::RepeatingCallback<void(const std::string& result,
                                    const bool is_final)>;
+  using OnLanguageIdentificationEventCallback = base::RepeatingCallback<void(
+      const std::string& language,
+      const media::mojom::ConfidenceLevel confidence_level)>;
   SpeechRecognitionRecognizerImpl(
       mojo::PendingRemote<media::mojom::SpeechRecognitionRecognizerClient>
           remote,
       base::WeakPtr<SpeechRecognitionServiceImpl>
           speech_recognition_service_impl,
+      media::mojom::SpeechRecognitionOptionsPtr options,
       const base::FilePath& binary_path,
       const base::FilePath& config_path);
   ~SpeechRecognitionRecognizerImpl() override;
+
+  static const char kCaptionBubbleVisibleHistogramName[];
+  static const char kCaptionBubbleHiddenHistogramName[];
 
   static void Create(
       mojo::PendingReceiver<media::mojom::SpeechRecognitionRecognizer> receiver,
@@ -42,6 +50,7 @@ class SpeechRecognitionRecognizerImpl
           remote,
       base::WeakPtr<SpeechRecognitionServiceImpl>
           speech_recognition_service_impl,
+      media::mojom::SpeechRecognitionOptionsPtr options,
       const base::FilePath& binary_path,
       const base::FilePath& config_path);
 
@@ -51,21 +60,51 @@ class SpeechRecognitionRecognizerImpl
     return recognition_event_callback_;
   }
 
- private:
+  OnLanguageIdentificationEventCallback language_identification_event_callback()
+      const {
+    return language_identification_event_callback_;
+  }
+
   // Convert the audio buffer into the appropriate format and feed the raw audio
   // into the speech recognition instance.
   void SendAudioToSpeechRecognitionService(
       media::mojom::AudioDataS16Ptr buffer) final;
 
+  void OnSpeechRecognitionError();
+
+ protected:
+  virtual void SendAudioToSpeechRecognitionServiceInternal(
+      media::mojom::AudioDataS16Ptr buffer);
+
   // Return the transcribed audio from the recognition event back to the caller
   // via the recognition event client.
   void OnRecognitionEvent(const std::string& result, const bool is_final);
+  void OnLanguageIdentificationEvent(
+      const std::string& language,
+      const media::mojom::ConfidenceLevel confidence_level);
+
+  const bool enable_soda_;
+
+ private:
+  void OnLanguageChanged(const std::string& language) final;
+
+  void RecordDuration();
+
+  // Called as a response to sending a SpeechRecognitionEvent to the client
+  // remote.
+  void OnSpeechRecognitionRecognitionEventCallback(bool success);
+
+  // Called when the client host is disconnected. Halts future speech
+  // recognition.
+  void OnClientHostDisconnected();
+
+  // Reset and initialize the SODA client.
+  void ResetSoda();
 
   // The remote endpoint for the mojo pipe used to return transcribed audio from
-  // the speech recognition service back to the renderer.
+  // the speech recognition service to the browser process.
   mojo::Remote<media::mojom::SpeechRecognitionRecognizerClient> client_remote_;
 
-  bool enable_soda_ = false;
   std::unique_ptr<soda::SodaClient> soda_client_;
 
   std::unique_ptr<CloudSpeechRecognitionClient> cloud_client_;
@@ -75,7 +114,19 @@ class SpeechRecognitionRecognizerImpl
   // recognition event client remote.
   OnRecognitionEventCallback recognition_event_callback_;
 
+  OnLanguageIdentificationEventCallback language_identification_event_callback_;
+
   base::FilePath config_path_;
+  int sample_rate_ = 0;
+  int channel_count_ = 0;
+  LanguageCode language_ = LanguageCode::kNone;
+  media::mojom::SpeechRecognitionOptionsPtr options_;
+
+  base::TimeDelta caption_bubble_visible_duration_;
+  base::TimeDelta caption_bubble_hidden_duration_;
+
+  // Whether the client is still requesting speech recognition.
+  bool is_client_requesting_speech_recognition_ = true;
 
   base::WeakPtrFactory<SpeechRecognitionRecognizerImpl> weak_factory_{this};
 

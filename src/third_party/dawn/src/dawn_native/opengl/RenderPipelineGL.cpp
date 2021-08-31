@@ -62,17 +62,17 @@ namespace dawn_native { namespace opengl {
                     return GL_ZERO;
                 case wgpu::BlendFactor::One:
                     return GL_ONE;
-                case wgpu::BlendFactor::SrcColor:
+                case wgpu::BlendFactor::Src:
                     return GL_SRC_COLOR;
-                case wgpu::BlendFactor::OneMinusSrcColor:
+                case wgpu::BlendFactor::OneMinusSrc:
                     return GL_ONE_MINUS_SRC_COLOR;
                 case wgpu::BlendFactor::SrcAlpha:
                     return GL_SRC_ALPHA;
                 case wgpu::BlendFactor::OneMinusSrcAlpha:
                     return GL_ONE_MINUS_SRC_ALPHA;
-                case wgpu::BlendFactor::DstColor:
+                case wgpu::BlendFactor::Dst:
                     return GL_DST_COLOR;
-                case wgpu::BlendFactor::OneMinusDstColor:
+                case wgpu::BlendFactor::OneMinusDst:
                     return GL_ONE_MINUS_DST_COLOR;
                 case wgpu::BlendFactor::DstAlpha:
                     return GL_DST_ALPHA;
@@ -80,10 +80,19 @@ namespace dawn_native { namespace opengl {
                     return GL_ONE_MINUS_DST_ALPHA;
                 case wgpu::BlendFactor::SrcAlphaSaturated:
                     return GL_SRC_ALPHA_SATURATE;
-                case wgpu::BlendFactor::BlendColor:
+                case wgpu::BlendFactor::Constant:
                     return alpha ? GL_CONSTANT_ALPHA : GL_CONSTANT_COLOR;
-                case wgpu::BlendFactor::OneMinusBlendColor:
+                case wgpu::BlendFactor::OneMinusConstant:
                     return alpha ? GL_ONE_MINUS_CONSTANT_ALPHA : GL_ONE_MINUS_CONSTANT_COLOR;
+
+                // Deprecated blend factors should be normalized prior to this call.
+                case wgpu::BlendFactor::SrcColor:
+                case wgpu::BlendFactor::OneMinusSrcColor:
+                case wgpu::BlendFactor::DstColor:
+                case wgpu::BlendFactor::OneMinusDstColor:
+                case wgpu::BlendFactor::BlendColor:
+                case wgpu::BlendFactor::OneMinusBlendColor:
+                    UNREACHABLE();
             }
         }
 
@@ -104,25 +113,47 @@ namespace dawn_native { namespace opengl {
 
         void ApplyColorState(const OpenGLFunctions& gl,
                              ColorAttachmentIndex attachment,
-                             const ColorStateDescriptor* descriptor) {
+                             const ColorTargetState* state) {
             GLuint colorBuffer = static_cast<GLuint>(static_cast<uint8_t>(attachment));
-            if (BlendEnabled(descriptor)) {
+            if (state->blend != nullptr) {
                 gl.Enablei(GL_BLEND, colorBuffer);
-                gl.BlendEquationSeparatei(colorBuffer,
-                                          GLBlendMode(descriptor->colorBlend.operation),
-                                          GLBlendMode(descriptor->alphaBlend.operation));
+                gl.BlendEquationSeparatei(colorBuffer, GLBlendMode(state->blend->color.operation),
+                                          GLBlendMode(state->blend->alpha.operation));
                 gl.BlendFuncSeparatei(colorBuffer,
-                                      GLBlendFactor(descriptor->colorBlend.srcFactor, false),
-                                      GLBlendFactor(descriptor->colorBlend.dstFactor, false),
-                                      GLBlendFactor(descriptor->alphaBlend.srcFactor, true),
-                                      GLBlendFactor(descriptor->alphaBlend.dstFactor, true));
+                                      GLBlendFactor(state->blend->color.srcFactor, false),
+                                      GLBlendFactor(state->blend->color.dstFactor, false),
+                                      GLBlendFactor(state->blend->alpha.srcFactor, true),
+                                      GLBlendFactor(state->blend->alpha.dstFactor, true));
             } else {
                 gl.Disablei(GL_BLEND, colorBuffer);
             }
-            gl.ColorMaski(colorBuffer, descriptor->writeMask & wgpu::ColorWriteMask::Red,
-                          descriptor->writeMask & wgpu::ColorWriteMask::Green,
-                          descriptor->writeMask & wgpu::ColorWriteMask::Blue,
-                          descriptor->writeMask & wgpu::ColorWriteMask::Alpha);
+            gl.ColorMaski(colorBuffer, state->writeMask & wgpu::ColorWriteMask::Red,
+                          state->writeMask & wgpu::ColorWriteMask::Green,
+                          state->writeMask & wgpu::ColorWriteMask::Blue,
+                          state->writeMask & wgpu::ColorWriteMask::Alpha);
+        }
+
+        void ApplyColorState(const OpenGLFunctions& gl, const ColorTargetState* state) {
+            if (state->blend != nullptr) {
+                gl.Enable(GL_BLEND);
+                gl.BlendEquationSeparate(GLBlendMode(state->blend->color.operation),
+                                         GLBlendMode(state->blend->alpha.operation));
+                gl.BlendFuncSeparate(GLBlendFactor(state->blend->color.srcFactor, false),
+                                     GLBlendFactor(state->blend->color.dstFactor, false),
+                                     GLBlendFactor(state->blend->alpha.srcFactor, true),
+                                     GLBlendFactor(state->blend->alpha.dstFactor, true));
+            } else {
+                gl.Disable(GL_BLEND);
+            }
+            gl.ColorMask(state->writeMask & wgpu::ColorWriteMask::Red,
+                         state->writeMask & wgpu::ColorWriteMask::Green,
+                         state->writeMask & wgpu::ColorWriteMask::Blue,
+                         state->writeMask & wgpu::ColorWriteMask::Alpha);
+        }
+
+        bool Equal(const BlendDescriptor& lhs, const BlendDescriptor& rhs) {
+            return lhs.operation == rhs.operation && lhs.srcFactor == rhs.srcFactor &&
+                   lhs.dstFactor == rhs.dstFactor;
         }
 
         GLuint OpenGLStencilOperation(wgpu::StencilOperation stencilOperation) {
@@ -147,7 +178,7 @@ namespace dawn_native { namespace opengl {
         }
 
         void ApplyDepthStencilState(const OpenGLFunctions& gl,
-                                    const DepthStencilStateDescriptor* descriptor,
+                                    const DepthStencilState* descriptor,
                                     PersistentPipelineState* persistentPipelineState) {
             // Depth writes only occur if depth is enabled
             if (descriptor->depthCompare == wgpu::CompareFunction::Always &&
@@ -188,16 +219,16 @@ namespace dawn_native { namespace opengl {
 
     }  // anonymous namespace
 
-    RenderPipeline::RenderPipeline(Device* device, const RenderPipelineDescriptor* descriptor)
+    RenderPipeline::RenderPipeline(Device* device, const RenderPipelineDescriptor2* descriptor)
         : RenderPipelineBase(device, descriptor),
           mVertexArrayObject(0),
           mGlPrimitiveTopology(GLPrimitiveTopology(GetPrimitiveTopology())) {
         PerStage<const ShaderModule*> modules(nullptr);
-        modules[SingleShaderStage::Vertex] = ToBackend(descriptor->vertexStage.module);
-        modules[SingleShaderStage::Fragment] = ToBackend(descriptor->fragmentStage->module);
+        modules[SingleShaderStage::Vertex] = ToBackend(descriptor->vertex.module);
+        modules[SingleShaderStage::Fragment] = ToBackend(descriptor->fragment->module);
 
         PipelineGL::Initialize(device->gl, ToBackend(GetLayout()), GetAllStages());
-        CreateVAOForVertexState(descriptor->vertexState);
+        CreateVAOForVertexState();
     }
 
     RenderPipeline::~RenderPipeline() {
@@ -216,7 +247,7 @@ namespace dawn_native { namespace opengl {
         return mAttributesUsingVertexBuffer[slot];
     }
 
-    void RenderPipeline::CreateVAOForVertexState(const VertexStateDescriptor* vertexState) {
+    void RenderPipeline::CreateVAOForVertexState() {
         const OpenGLFunctions& gl = ToBackend(GetDevice())->gl;
 
         gl.GenVertexArrays(1, &mVertexArrayObject);
@@ -255,7 +286,7 @@ namespace dawn_native { namespace opengl {
 
         ApplyFrontFaceAndCulling(gl, GetFrontFace(), GetCullMode());
 
-        ApplyDepthStencilState(gl, GetDepthStencilStateDescriptor(), &persistentPipelineState);
+        ApplyDepthStencilState(gl, GetDepthStencilState(), &persistentPipelineState);
 
         gl.SampleMaski(0, GetSampleMask());
         if (IsAlphaToCoverageEnabled()) {
@@ -277,8 +308,30 @@ namespace dawn_native { namespace opengl {
             gl.Disable(GL_POLYGON_OFFSET_FILL);
         }
 
-        for (ColorAttachmentIndex attachmentSlot : IterateBitSet(GetColorAttachmentsMask())) {
-            ApplyColorState(gl, attachmentSlot, GetColorStateDescriptor(attachmentSlot));
+        if (!GetDevice()->IsToggleEnabled(Toggle::DisableIndexedDrawBuffers)) {
+            for (ColorAttachmentIndex attachmentSlot : IterateBitSet(GetColorAttachmentsMask())) {
+                ApplyColorState(gl, attachmentSlot, GetColorTargetState(attachmentSlot));
+            }
+        } else {
+            const ColorTargetState* prevDescriptor = nullptr;
+            for (ColorAttachmentIndex attachmentSlot : IterateBitSet(GetColorAttachmentsMask())) {
+                const ColorTargetState* descriptor = GetColorTargetState(attachmentSlot);
+                if (!prevDescriptor) {
+                    ApplyColorState(gl, descriptor);
+                    prevDescriptor = descriptor;
+                } else if ((descriptor->blend == nullptr) != (prevDescriptor->blend == nullptr)) {
+                    // TODO(crbug.com/dawn/582): GLES < 3.2 does not support different blend states
+                    // per color target. Add validation to prevent this as it is not.
+                    ASSERT(false);
+                } else if (descriptor->blend != nullptr) {
+                    if (!Equal(descriptor->blend->alpha, prevDescriptor->blend->alpha) ||
+                        !Equal(descriptor->blend->color, prevDescriptor->blend->color) ||
+                        descriptor->writeMask != prevDescriptor->writeMask) {
+                        // TODO(crbug.com/dawn/582)
+                        ASSERT(false);
+                    }
+                }
+            }
         }
     }
 

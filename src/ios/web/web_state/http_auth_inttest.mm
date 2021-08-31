@@ -5,7 +5,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "ios/web/public/test/fakes/test_web_state_delegate.h"
+#import "ios/web/public/test/fakes/fake_web_state_delegate.h"
 #import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -40,7 +40,7 @@ class HttpAuthTest : public WebTestWithWebState {
     });
   }
   net::EmbeddedTestServer server_;
-  TestWebStateDelegate delegate_;
+  FakeWebStateDelegate delegate_;
 };
 
 // Tests successful basic authentication.
@@ -73,7 +73,7 @@ TEST_F(HttpAuthTest, SuccessfullBasicAuth) {
   ASSERT_TRUE(auth_request);
   std::move(auth_request->auth_callback).Run(@"me", @"goodpass");
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return web_state()->GetTitle() == base::ASCIIToUTF16("me/goodpass");
+    return web_state()->GetTitle() == u"me/goodpass";
   }));
 }
 
@@ -110,8 +110,7 @@ TEST_F(HttpAuthTest, UnsucessfulBasicAuth) {
   std::move(auth_request->auth_callback)
       .Run(/*username=*/nil, /*password=*/nil);
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return web_state()->GetTitle() ==
-           base::ASCIIToUTF16("Denied: Missing Authorization Header");
+    return web_state()->GetTitle() == u"Denied: Missing Authorization Header";
   }));
 }
 

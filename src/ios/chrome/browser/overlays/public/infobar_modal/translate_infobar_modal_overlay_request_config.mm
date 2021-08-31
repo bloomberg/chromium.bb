@@ -27,14 +27,14 @@ TranslateModalRequestConfig::TranslateModalRequestConfig(InfoBarIOS* infobar)
   DCHECK(delegate);
 
   current_step_ = delegate->translate_step();
-  source_language_name_ = delegate->original_language_name();
+  source_language_name_ = delegate->source_language_name();
   target_language_name_ = delegate->target_language_name();
   for (size_t i = 0; i < delegate->num_languages(); ++i) {
     language_names_.push_back(delegate->language_name_at((int(i))));
   }
   is_always_translate_enabled_ = delegate->ShouldAlwaysTranslate();
   is_translatable_language_ = delegate->IsTranslatableLanguageByPrefs();
-  is_site_blacklisted_ = delegate->IsSiteBlacklisted();
+  is_site_on_never_prompt_list_ = delegate->IsSiteOnNeverPromptList();
 }
 
 TranslateModalRequestConfig::~TranslateModalRequestConfig() = default;

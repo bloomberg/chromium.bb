@@ -11,37 +11,37 @@
 namespace blink {
 
 DawnControlClientHolder::DawnControlClientHolder(
-    std::unique_ptr<WebGraphicsContext3DProvider> context_provider)
-    : context_provider_(std::move(context_provider)),
-      interface_(context_provider_->WebGPUInterface()) {}
+    std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : context_provider_(std::make_unique<WebGraphicsContext3DProviderWrapper>(
+          std::move(context_provider))),
+      interface_(GetContextProvider()->WebGPUInterface()),
+      procs_(interface_->GetProcs()),
+      recyclable_resource_cache_(interface_, task_runner) {}
 
 void DawnControlClientHolder::SetLostContextCallback() {
-  context_provider_->SetLostContextCallback(WTF::BindRepeating(
+  GetContextProvider()->SetLostContextCallback(WTF::BindRepeating(
       &DawnControlClientHolder::SetContextLost, base::WrapRefCounted(this)));
 }
 
 void DawnControlClientHolder::Destroy() {
-  interface_ = nullptr;
-  context_provider_.reset();
+  SetContextLost();
+  interface_->DisconnectContextAndDestroyServer();
 }
 
-bool DawnControlClientHolder::IsDestroyed() const {
-  return !interface_;
+base::WeakPtr<WebGraphicsContext3DProviderWrapper>
+DawnControlClientHolder::GetContextProviderWeakPtr() const {
+  return context_provider_->GetWeakPtr();
 }
 
 WebGraphicsContext3DProvider* DawnControlClientHolder::GetContextProvider()
     const {
-  return context_provider_.get();
+  return context_provider_->ContextProvider();
 }
 
 gpu::webgpu::WebGPUInterface* DawnControlClientHolder::GetInterface() const {
   DCHECK(interface_);
   return interface_;
-}
-
-const DawnProcTable& DawnControlClientHolder::GetProcs() const {
-  DCHECK(interface_);
-  return interface_->GetProcs();
 }
 
 void DawnControlClientHolder::SetContextLost() {
@@ -50,6 +50,15 @@ void DawnControlClientHolder::SetContextLost() {
 
 bool DawnControlClientHolder::IsContextLost() const {
   return lost_;
+}
+
+std::unique_ptr<RecyclableCanvasResource>
+DawnControlClientHolder::GetOrCreateCanvasResource(
+    const IntSize& size,
+    const CanvasResourceParams& params,
+    bool is_origin_top_left) {
+  return recyclable_resource_cache_.GetOrCreateCanvasResource(
+      size, params, is_origin_top_left);
 }
 
 }  // namespace blink

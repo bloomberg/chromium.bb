@@ -22,6 +22,7 @@
 #include "content/shell/browser/shell_web_contents_view_delegate_creator.h"
 #include "content/shell/common/shell_switches.h"
 #include "third_party/blink/public/common/context_menu_data/edit_flags.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 
 using blink::ContextMenuDataEditFlags;
 
@@ -109,7 +110,7 @@ void ShellWebContentsViewDelegate::ShowContextMenu(
   [menu setDelegate:delegate];
   [menu setAutoenablesItems:NO];
 
-  if (params.media_type == blink::ContextMenuDataMediaType::kNone &&
+  if (params.media_type == blink::mojom::ContextMenuDataMediaType::kNone &&
       !has_link && !has_selection && !params_.is_editable) {
     BOOL back_menu_enabled =
         web_contents_->GetController().CanGoBack() ? YES : NO;

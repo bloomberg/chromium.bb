@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/extensions/api/declarative_content/content_predicate_evaluator.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -83,6 +83,9 @@ class DeclarativeContentIsBookmarkedConditionTracker
   void OnWebContentsNavigation(
       content::WebContents* contents,
       content::NavigationHandle* navigation_handle) override;
+  void OnWatchedPageChanged(
+      content::WebContents* contents,
+      const std::vector<std::string>& css_selectors) override;
   bool EvaluatePredicate(const ContentPredicate* predicate,
                          content::WebContents* tab) const override;
 
@@ -90,14 +93,13 @@ class DeclarativeContentIsBookmarkedConditionTracker
   class PerWebContentsTracker : public content::WebContentsObserver {
    public:
     using RequestEvaluationCallback =
-        base::Callback<void(content::WebContents*)>;
+        base::RepeatingCallback<void(content::WebContents*)>;
     using WebContentsDestroyedCallback =
-        base::Callback<void(content::WebContents*)>;
+        base::OnceCallback<void(content::WebContents*)>;
 
-    PerWebContentsTracker(
-        content::WebContents* contents,
-        const RequestEvaluationCallback& request_evaluation,
-        const WebContentsDestroyedCallback& web_contents_destroyed);
+    PerWebContentsTracker(content::WebContents* contents,
+                          RequestEvaluationCallback request_evaluation,
+                          WebContentsDestroyedCallback web_contents_destroyed);
     ~PerWebContentsTracker() override;
 
     void BookmarkAddedForUrl(const GURL& url);
@@ -116,7 +118,7 @@ class DeclarativeContentIsBookmarkedConditionTracker
 
     bool is_url_bookmarked_;
     const RequestEvaluationCallback request_evaluation_;
-    const WebContentsDestroyedCallback web_contents_destroyed_;
+    WebContentsDestroyedCallback web_contents_destroyed_;
 
     DISALLOW_COPY_AND_ASSIGN(PerWebContentsTracker);
   };
@@ -158,8 +160,9 @@ class DeclarativeContentIsBookmarkedConditionTracker
   // are complete.
   int extensive_bookmark_changes_in_progress_;
 
-  ScopedObserver<bookmarks::BookmarkModel, bookmarks::BookmarkModelObserver>
-      scoped_bookmarks_observer_{this};
+  base::ScopedObservation<bookmarks::BookmarkModel,
+                          bookmarks::BookmarkModelObserver>
+      scoped_bookmarks_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeContentIsBookmarkedConditionTracker);
 };

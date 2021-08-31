@@ -17,7 +17,7 @@ NoopUserConsentHandler::~NoopUserConsentHandler() = default;
 void NoopUserConsentHandler::RequestUserConsent(
     const std::string& one_time_code,
     CompletionCallback on_complete) {
-  std::move(on_complete).Run(SmsStatus::kSuccess);
+  std::move(on_complete).Run(UserConsentResult::kApproved);
 }
 
 bool NoopUserConsentHandler::is_active() const {
@@ -29,8 +29,8 @@ bool NoopUserConsentHandler::is_async() const {
 
 PromptBasedUserConsentHandler::PromptBasedUserConsentHandler(
     RenderFrameHost* frame_host,
-    const url::Origin& origin)
-    : frame_host_{frame_host}, origin_{origin} {}
+    const OriginList& origin_list)
+    : frame_host_{frame_host}, origin_list_{origin_list} {}
 PromptBasedUserConsentHandler::~PromptBasedUserConsentHandler() = default;
 
 void PromptBasedUserConsentHandler::RequestUserConsent(
@@ -39,14 +39,14 @@ void PromptBasedUserConsentHandler::RequestUserConsent(
   WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(frame_host_);
   if (!web_contents->GetDelegate()) {
-    std::move(on_complete).Run(SmsStatus::kCancelled);
+    std::move(on_complete).Run(UserConsentResult::kNoDelegate);
     return;
   }
 
   on_complete_ = std::move(on_complete);
   is_prompt_open_ = true;
   web_contents->GetDelegate()->CreateSmsPrompt(
-      frame_host_, origin_, one_time_code,
+      frame_host_, origin_list_, one_time_code,
       base::BindOnce(&PromptBasedUserConsentHandler::OnConfirm,
                      weak_ptr_factory_.GetWeakPtr()),
       base::BindOnce(&PromptBasedUserConsentHandler::OnCancel,
@@ -61,17 +61,12 @@ bool PromptBasedUserConsentHandler::is_async() const {
 
 void PromptBasedUserConsentHandler::OnConfirm() {
   is_prompt_open_ = false;
-  std::move(on_complete_).Run(SmsStatus::kSuccess);
+  std::move(on_complete_).Run(UserConsentResult::kApproved);
 }
 
 void PromptBasedUserConsentHandler::OnCancel() {
   is_prompt_open_ = false;
-  // TODO(crbug.com/1138454): This should be SmsStatus::kUserCancelled. However,
-  // due to the limitation of the user consent API, we currently do not resolve
-  // the promise with kUserCancelled. Reuse the existing enum kCancelled to make
-  // sure that dismissing a prompt works with this backend. We should correct
-  // the enum once the limitation is fixed.
-  std::move(on_complete_).Run(SmsStatus::kCancelled);
+  std::move(on_complete_).Run(UserConsentResult::kDenied);
 }
 
 }  // namespace content

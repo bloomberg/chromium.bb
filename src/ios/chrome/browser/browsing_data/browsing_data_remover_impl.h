@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_IMPL_H_
 #define IOS_CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_REMOVER_IMPL_H_
 
-#include <memory>
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
@@ -128,7 +127,7 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   // Used if we need to clear history.
   base::CancelableTaskTracker history_task_tracker_;
 
-  std::unique_ptr<TemplateURLService::Subscription> template_url_subscription_;
+  base::CallbackListSubscription template_url_subscription_;
 
   base::WeakPtrFactory<BrowsingDataRemoverImpl> weak_ptr_factory_;
 

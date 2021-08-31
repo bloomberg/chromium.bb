@@ -29,16 +29,16 @@ public:
         (void)start;
         auto end = _outer.end;
         (void)end;
-        startVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag,
-                                                    kHalf4_GrSLType, "start");
-        endVar = args.fUniformHandler->addUniform(&_outer, kFragment_GrShaderFlag, kHalf4_GrSLType,
-                                                  "end");
+        startVar = args.fUniformHandler->addUniform(
+                &_outer, kFragment_GrShaderFlag, kHalf4_GrSLType, "start");
+        endVar = args.fUniformHandler->addUniform(
+                &_outer, kFragment_GrShaderFlag, kHalf4_GrSLType, "end");
         fragBuilder->codeAppendf(
-                R"SkSL(half t = half(%s.x);
-return mix(%s, %s, t);
+                R"SkSL(return mix(%s, %s, half(%s.x));
 )SkSL",
-                args.fSampleCoord, args.fUniformHandler->getUniformCStr(startVar),
-                args.fUniformHandler->getUniformCStr(endVar));
+                args.fUniformHandler->getUniformCStr(startVar),
+                args.fUniformHandler->getUniformCStr(endVar),
+                args.fSampleCoord);
     }
 
 private:
@@ -47,25 +47,16 @@ private:
         const GrSingleIntervalGradientColorizer& _outer =
                 _proc.cast<GrSingleIntervalGradientColorizer>();
         {
-            const SkPMColor4f& startValue = _outer.start;
-            if (startPrev != startValue) {
-                startPrev = startValue;
-                pdman.set4fv(startVar, 1, startValue.vec());
-            }
-            const SkPMColor4f& endValue = _outer.end;
-            if (endPrev != endValue) {
-                endPrev = endValue;
-                pdman.set4fv(endVar, 1, endValue.vec());
-            }
+            pdman.set4fv(startVar, 1, _outer.start.vec());
+            pdman.set4fv(endVar, 1, _outer.end.vec());
         }
     }
-    SkPMColor4f startPrev = {SK_FloatNaN, SK_FloatNaN, SK_FloatNaN, SK_FloatNaN};
-    SkPMColor4f endPrev = {SK_FloatNaN, SK_FloatNaN, SK_FloatNaN, SK_FloatNaN};
     UniformHandle startVar;
     UniformHandle endVar;
 };
-GrGLSLFragmentProcessor* GrSingleIntervalGradientColorizer::onCreateGLSLInstance() const {
-    return new GrGLSLSingleIntervalGradientColorizer();
+std::unique_ptr<GrGLSLFragmentProcessor> GrSingleIntervalGradientColorizer::onMakeProgramImpl()
+        const {
+    return std::make_unique<GrGLSLSingleIntervalGradientColorizer>();
 }
 void GrSingleIntervalGradientColorizer::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                               GrProcessorKeyBuilder* b) const {}
@@ -76,7 +67,6 @@ bool GrSingleIntervalGradientColorizer::onIsEqual(const GrFragmentProcessor& oth
     if (end != that.end) return false;
     return true;
 }
-bool GrSingleIntervalGradientColorizer::usesExplicitReturn() const { return true; }
 GrSingleIntervalGradientColorizer::GrSingleIntervalGradientColorizer(
         const GrSingleIntervalGradientColorizer& src)
         : INHERITED(kGrSingleIntervalGradientColorizer_ClassID, src.optimizationFlags())
@@ -90,7 +80,14 @@ std::unique_ptr<GrFragmentProcessor> GrSingleIntervalGradientColorizer::clone() 
 }
 #if GR_TEST_UTILS
 SkString GrSingleIntervalGradientColorizer::onDumpInfo() const {
-    return SkStringPrintf("(start=half4(%f, %f, %f, %f), end=half4(%f, %f, %f, %f))", start.fR,
-                          start.fG, start.fB, start.fA, end.fR, end.fG, end.fB, end.fA);
+    return SkStringPrintf("(start=half4(%f, %f, %f, %f), end=half4(%f, %f, %f, %f))",
+                          start.fR,
+                          start.fG,
+                          start.fB,
+                          start.fA,
+                          end.fR,
+                          end.fG,
+                          end.fB,
+                          end.fA);
 }
 #endif

@@ -55,8 +55,7 @@ SyncConfirmationHandler::~SyncConfirmationHandler() {
   // Abort signin and prevent sync from starting if none of the actions on the
   // sync confirmation dialog are taken by the user.
   if (!did_user_explicitly_interact_) {
-    HandleUndo(nullptr);
-    base::RecordAction(base::UserMetricsAction("Signin_Abort_Signin"));
+    CloseModalSigninWindow(LoginUIService::UI_CLOSED);
   }
 }
 
@@ -81,8 +80,8 @@ void SyncConfirmationHandler::RegisterMessages() {
       base::BindRepeating(&SyncConfirmationHandler::HandleInitializedWithSize,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "accountImageRequest",
-      base::BindRepeating(&SyncConfirmationHandler::HandleAccountImageRequest,
+      "accountInfoRequest",
+      base::BindRepeating(&SyncConfirmationHandler::HandleAccountInfoRequest,
                           base::Unretained(this)));
 }
 
@@ -101,22 +100,22 @@ void SyncConfirmationHandler::HandleGoToSettings(const base::ListValue* args) {
 
 void SyncConfirmationHandler::HandleUndo(const base::ListValue* args) {
   did_user_explicitly_interact_ = true;
-  CloseModalSigninWindow(LoginUIService::ABORT_SIGNIN);
+  CloseModalSigninWindow(LoginUIService::ABORT_SYNC);
 }
 
-void SyncConfirmationHandler::HandleAccountImageRequest(
+void SyncConfirmationHandler::HandleAccountInfoRequest(
     const base::ListValue* args) {
   DCHECK(ProfileSyncServiceFactory::IsSyncAllowed(profile_));
-  base::Optional<AccountInfo> primary_account_info =
+  absl::optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager_->GetPrimaryAccountInfo(ConsentLevel::kNotRequired));
+          identity_manager_->GetPrimaryAccountInfo(ConsentLevel::kSignin));
 
-  // Fire the "account-image-changed" listener from |SetUserImageURL()|.
+  // Fire the "account-info-changed" listener from |SetAccountInfo()|.
   // Note: If the account info is not available yet in the
   // IdentityManager, i.e. account_info is empty, the listener will be
   // fired again through |OnAccountUpdated()|.
-  if (primary_account_info)
-    SetUserImageURL(primary_account_info->picture_url);
+  if (primary_account_info && primary_account_info->IsValid())
+    SetAccountInfo(*primary_account_info);
 }
 
 void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
@@ -152,32 +151,28 @@ void SyncConfirmationHandler::RecordConsent(const base::ListValue* args) {
   consent_auditor::ConsentAuditor* consent_auditor =
       ConsentAuditorFactory::GetForProfile(profile_);
   consent_auditor->RecordSyncConsent(
-      identity_manager_->GetPrimaryAccountId(ConsentLevel::kNotRequired),
+      identity_manager_->GetPrimaryAccountId(ConsentLevel::kSignin),
       sync_consent);
 }
 
-void SyncConfirmationHandler::SetUserImageURL(const std::string& picture_url) {
+void SyncConfirmationHandler::SetAccountInfo(const AccountInfo& info) {
+  DCHECK(info.IsValid());
   if (!ProfileSyncServiceFactory::IsSyncAllowed(profile_)) {
     // The sync disabled confirmation handler does not present the user image.
     // Avoid updating the image URL in this case.
     return;
   }
 
-  std::string picture_url_to_load;
-  GURL picture_gurl(picture_url);
-  if (picture_gurl.is_valid()) {
-    picture_url_to_load =
-        signin::GetAvatarImageURLWithOptions(picture_gurl, kProfileImageSize,
-                                             false /* no_silhouette */)
-            .spec();
-  } else {
-    // Use the placeholder avatar icon until the account picture URL is fetched.
-    picture_url_to_load = profiles::GetPlaceholderAvatarIconUrl();
-  }
-  base::Value picture_url_value(picture_url_to_load);
+  GURL picture_gurl(info.picture_url);
+  GURL picture_gurl_with_options = signin::GetAvatarImageURLWithOptions(
+      picture_gurl, kProfileImageSize, false /* no_silhouette */);
+
+  base::Value value(base::Value::Type::DICTIONARY);
+  value.SetKey("src", base::Value(picture_gurl_with_options.spec()));
+  value.SetKey("showEnterpriseBadge", base::Value(info.IsManaged()));
 
   AllowJavascript();
-  FireWebUIListener("account-image-changed", picture_url_value);
+  FireWebUIListener("account-info-changed", value);
 }
 
 void SyncConfirmationHandler::OnExtendedAccountInfoUpdated(
@@ -186,12 +181,12 @@ void SyncConfirmationHandler::OnExtendedAccountInfoUpdated(
     return;
 
   if (info.account_id !=
-      identity_manager_->GetPrimaryAccountId(ConsentLevel::kNotRequired)) {
+      identity_manager_->GetPrimaryAccountId(ConsentLevel::kSignin)) {
     return;
   }
 
   identity_manager_->RemoveObserver(this);
-  SetUserImageURL(info.picture_url);
+  SetAccountInfo(info);
 }
 
 void SyncConfirmationHandler::CloseModalSigninWindow(
@@ -205,8 +200,11 @@ void SyncConfirmationHandler::CloseModalSigninWindow(
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_WithDefaultSyncSettings"));
       break;
-    case LoginUIService::ABORT_SIGNIN:
+    case LoginUIService::ABORT_SYNC:
       base::RecordAction(base::UserMetricsAction("Signin_Undo_Signin"));
+      break;
+    case LoginUIService::UI_CLOSED:
+      base::RecordAction(base::UserMetricsAction("Signin_Abort_Signin"));
       break;
   }
   LoginUIServiceFactory::GetForProfile(profile_)->SyncConfirmationUIClosed(
@@ -219,9 +217,9 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
     const base::ListValue* args) {
   AllowJavascript();
 
-  base::Optional<AccountInfo> primary_account_info =
+  absl::optional<AccountInfo> primary_account_info =
       identity_manager_->FindExtendedAccountInfoForAccountWithRefreshToken(
-          identity_manager_->GetPrimaryAccountInfo(ConsentLevel::kNotRequired));
+          identity_manager_->GetPrimaryAccountInfo(ConsentLevel::kSignin));
   if (!primary_account_info) {
     // No account is signed in, so there is nothing to be displayed in the sync
     // confirmation dialog.
@@ -229,10 +227,9 @@ void SyncConfirmationHandler::HandleInitializedWithSize(
   }
 
   if (!primary_account_info->IsValid()) {
-    SetUserImageURL(kNoPictureURLFound);
     identity_manager_->AddObserver(this);
   } else {
-    SetUserImageURL(primary_account_info->picture_url);
+    SetAccountInfo(*primary_account_info);
   }
 
   if (browser_)

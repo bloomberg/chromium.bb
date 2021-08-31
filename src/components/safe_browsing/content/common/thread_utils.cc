@@ -19,9 +19,6 @@ BrowserThread::ID BrowserThreadID(ThreadID thread_id) {
       return BrowserThread::UI;
     case ThreadID::IO:
       return BrowserThread::IO;
-    default:
-      NOTREACHED();
-      return BrowserThread::UI;
   }
 }
 
@@ -31,8 +28,8 @@ bool CurrentlyOnThread(ThreadID thread_id) {
   return BrowserThread::CurrentlyOn(BrowserThreadID(thread_id));
 }
 
-base::TaskTraits CreateTaskTraits(ThreadID thread_id) {
-  return {BrowserThreadID(thread_id)};
+scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(ThreadID thread_id) {
+  return BrowserThread::GetTaskRunnerForThread(BrowserThreadID(thread_id));
 }
 
 }  // namespace safe_browsing

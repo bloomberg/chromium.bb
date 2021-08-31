@@ -60,7 +60,7 @@ class BrowsingHistoryHandlerWithWebUIForTesting
     test_clock_.SetNow(PretendNow());
   }
 
-  void SendHistoryQuery(int count, const base::string16& query) override {
+  void SendHistoryQuery(int count, const std::u16string& query) override {
     if (postpone_query_results_) {
       return;
     }
@@ -113,9 +113,8 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
 
   void VerifyHistoryDeletedFired(content::TestWebUI::CallData& data) {
     EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
-    std::string event_fired;
-    ASSERT_TRUE(data.arg1()->GetAsString(&event_fired));
-    EXPECT_EQ("history-deleted", event_fired);
+    ASSERT_TRUE(data.arg1()->is_string());
+    EXPECT_EQ("history-deleted", data.arg1()->GetString());
   }
 
   void InitializeWebUI(BrowsingHistoryHandlerWithWebUIForTesting& handler) {
@@ -155,7 +154,7 @@ class BrowsingHistoryHandlerTest : public ChromeRenderViewHostTestHarness {
 // Tests that BrowsingHistoryHandler is informed about WebHistoryService
 // deletions.
 TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
-  base::Callback<void(bool)> callback = base::DoNothing();
+  base::RepeatingCallback<void(bool)> callback = base::DoNothing();
 
   // BrowsingHistoryHandler is informed about WebHistoryService history
   // deletions.
@@ -243,12 +242,10 @@ TEST_F(BrowsingHistoryHandlerTest, ObservingWebHistoryDeletions) {
     EXPECT_EQ(11U, web_ui()->call_data().size());
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
     EXPECT_EQ("cr.webUIResponse", data.function_name());
-    std::string callback_id;
-    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
-    EXPECT_EQ("remove-visits-callback-id", callback_id);
-    bool success = false;
-    ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
-    ASSERT_TRUE(success);
+    ASSERT_TRUE(data.arg1()->is_string());
+    EXPECT_EQ("remove-visits-callback-id", data.arg1()->GetString());
+    ASSERT_TRUE(data.arg2()->is_bool());
+    ASSERT_TRUE(data.arg2()->GetBool());
   }
 
   // When history sync is not active, we don't listen to WebHistoryService

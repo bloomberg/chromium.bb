@@ -16,7 +16,6 @@
 #include <linux/videodev2.h>
 #include <string.h>
 #include <sys/mman.h>
-#include <sstream>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -34,9 +33,6 @@
 #include "ui/gfx/generic_shared_memory_id.h"
 #include "ui/gfx/native_pixmap_handle.h"
 
-#if defined(ARCH_CPU_ARMEL)
-#include "media/gpu/v4l2/tegra_v4l2_device.h"
-#endif
 #if defined(AML_V4L2)
 #include "media/gpu/v4l2/aml_v4l2_device.h"
 #endif
@@ -68,6 +64,21 @@ struct v4l2_format BuildV4L2Format(const enum v4l2_buf_type type,
   format.fmt.pix_mp.plane_fmt[0].sizeimage = buffer_size;
 
   return format;
+}
+
+const char* V4L2BufferTypeToString(const enum v4l2_buf_type buf_type) {
+  switch (buf_type) {
+    case V4L2_BUF_TYPE_VIDEO_OUTPUT:
+      return "OUTPUT";
+    case V4L2_BUF_TYPE_VIDEO_CAPTURE:
+      return "CAPTURE";
+    case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
+      return "OUTPUT_MPLANE";
+    case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
+      return "CAPTURE_MPLANE";
+    default:
+      return "UNKNOWN";
+  }
 }
 
 }  // namespace
@@ -116,8 +127,8 @@ class V4L2Buffer {
   // V4L2 data as queried by QUERYBUF.
   struct v4l2_buffer v4l2_buffer_;
   // WARNING: do not change this to a vector or something smaller than
-  // VIDEO_MAX_PLANES, otherwise the Tegra libv4l2 will write data beyond
-  // the number of allocated planes, resulting in memory corruption.
+  // VIDEO_MAX_PLANES (the maximum number of planes V4L2 supports). The
+  // element overhead is small and may avoid memory corruption bugs.
   struct v4l2_plane v4l2_planes_[VIDEO_MAX_PLANES];
 
   struct v4l2_format format_;
@@ -235,18 +246,21 @@ scoped_refptr<VideoFrame> V4L2Buffer::CreateVideoFrame() {
     return nullptr;
   }
 
+  // DMA buffer fds should not be invalid
+  for (const auto& dmabuf_fd : dmabuf_fds) {
+    if (!dmabuf_fd.is_valid()) {
+      DLOG(ERROR) << "Fail to get DMABUFs of V4L2 buffer - invalid fd";
+      return nullptr;
+    }
+  }
+
   // Duplicate the fd of the last v4l2 plane until the number of fds are the
   // same as the number of color planes.
-  while (dmabuf_fds.size() != layout->planes().size()) {
-    int duped_fd = -1;
-    // Fd in dmabuf_fds is invalid with TegraV4L2Device. An invalid fd is added
-    // in the case.
-    if (dmabuf_fds.back().is_valid()) {
-      duped_fd = HANDLE_EINTR(dup(dmabuf_fds.back().get()));
-      if (duped_fd == -1) {
-        DLOG(ERROR) << "Failed duplicating dmabuf fd";
-        return nullptr;
-      }
+  while (dmabuf_fds.size() < layout->planes().size()) {
+    int duped_fd = HANDLE_EINTR(dup(dmabuf_fds.back().get()));
+    if (duped_fd == -1) {
+      DLOG(ERROR) << "Failed duplicating dmabuf fd";
+      return nullptr;
     }
 
     dmabuf_fds.emplace_back(duped_fd);
@@ -286,9 +300,9 @@ class V4L2BuffersList : public base::RefCountedThreadSafe<V4L2BuffersList> {
   // Note that it is illegal to return the same buffer twice.
   void ReturnBuffer(size_t buffer_id);
   // Get any of the buffers in the list. There is no order guarantee whatsoever.
-  base::Optional<size_t> GetFreeBuffer();
+  absl::optional<size_t> GetFreeBuffer();
   // Get the buffer with specified index.
-  base::Optional<size_t> GetFreeBuffer(size_t requested_buffer_id);
+  absl::optional<size_t> GetFreeBuffer(size_t requested_buffer_id);
   // Number of buffers currently in this list.
   size_t size() const;
 
@@ -308,13 +322,13 @@ void V4L2BuffersList::ReturnBuffer(size_t buffer_id) {
   DCHECK(inserted.second);
 }
 
-base::Optional<size_t> V4L2BuffersList::GetFreeBuffer() {
+absl::optional<size_t> V4L2BuffersList::GetFreeBuffer() {
   base::AutoLock auto_lock(lock_);
 
   auto iter = free_buffers_.begin();
   if (iter == free_buffers_.end()) {
     DVLOGF(4) << "No free buffer available!";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   size_t buffer_id = *iter;
@@ -323,13 +337,13 @@ base::Optional<size_t> V4L2BuffersList::GetFreeBuffer() {
   return buffer_id;
 }
 
-base::Optional<size_t> V4L2BuffersList::GetFreeBuffer(
+absl::optional<size_t> V4L2BuffersList::GetFreeBuffer(
     size_t requested_buffer_id) {
   base::AutoLock auto_lock(lock_);
 
   return (free_buffers_.erase(requested_buffer_id) > 0)
-             ? base::make_optional(requested_buffer_id)
-             : base::nullopt;
+             ? absl::make_optional(requested_buffer_id)
+             : absl::nullopt;
 }
 
 size_t V4L2BuffersList::size() const {
@@ -357,8 +371,8 @@ class V4L2BufferRefBase {
   // Data from the buffer, that users can query and/or write.
   struct v4l2_buffer v4l2_buffer_;
   // WARNING: do not change this to a vector or something smaller than
-  // VIDEO_MAX_PLANES, otherwise the Tegra libv4l2 will write data beyond
-  // the number of allocated planes, resulting in memory corruption.
+  // VIDEO_MAX_PLANES (the maximum number of planes V4L2 supports). The
+  // element overhead is small and may avoid memory corruption bugs.
   struct v4l2_plane v4l2_planes_[VIDEO_MAX_PLANES];
 
  private:
@@ -900,11 +914,11 @@ class V4L2BufferRefFactory {
 
 // Helper macros that print the queue type with logs.
 #define VPQLOGF(level) \
-  VPLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+  VPLOGF(level) << "(" << V4L2BufferTypeToString(type_) << ") "
 #define VQLOGF(level) \
-  VLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+  VLOGF(level) << "(" << V4L2BufferTypeToString(type_) << ") "
 #define DVQLOGF(level) \
-  DVLOGF(level) << "(" << V4L2Device::V4L2BufferTypeToString(type_) << ") "
+  DVLOGF(level) << "(" << V4L2BufferTypeToString(type_) << ") "
 
 V4L2Queue::V4L2Queue(scoped_refptr<V4L2Device> dev,
                      enum v4l2_buf_type type,
@@ -952,48 +966,46 @@ V4L2Queue::~V4L2Queue() {
   std::move(destroy_cb_).Run();
 }
 
-base::Optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
+absl::optional<struct v4l2_format> V4L2Queue::SetFormat(uint32_t fourcc,
                                                         const gfx::Size& size,
                                                         size_t buffer_size) {
   struct v4l2_format format = BuildV4L2Format(type_, fourcc, size, buffer_size);
   if (device_->Ioctl(VIDIOC_S_FMT, &format) != 0 ||
       format.fmt.pix_mp.pixelformat != fourcc) {
-    VPQLOGF(2) << "Failed to set format (format_fourcc=0x" << std::hex << fourcc
-               << ")";
-    return base::nullopt;
+    VPQLOGF(2) << "Failed to set format fourcc: " << FourccToString(fourcc);
+    return absl::nullopt;
   }
 
   current_format_ = format;
   return current_format_;
 }
 
-base::Optional<struct v4l2_format> V4L2Queue::TryFormat(uint32_t fourcc,
+absl::optional<struct v4l2_format> V4L2Queue::TryFormat(uint32_t fourcc,
                                                         const gfx::Size& size,
                                                         size_t buffer_size) {
   struct v4l2_format format = BuildV4L2Format(type_, fourcc, size, buffer_size);
   if (device_->Ioctl(VIDIOC_TRY_FMT, &format) != 0 ||
       format.fmt.pix_mp.pixelformat != fourcc) {
-    VPQLOGF(2) << "Tried format not supported (format_fourcc=0x" << std::hex
-               << fourcc << ")";
-    return base::nullopt;
+    VPQLOGF(2) << "Failed to try format fourcc: " << FourccToString(fourcc);
+    return absl::nullopt;
   }
 
   return format;
 }
 
-std::pair<base::Optional<struct v4l2_format>, int> V4L2Queue::GetFormat() {
+std::pair<absl::optional<struct v4l2_format>, int> V4L2Queue::GetFormat() {
   struct v4l2_format format;
   memset(&format, 0, sizeof(format));
   format.type = type_;
   if (device_->Ioctl(VIDIOC_G_FMT, &format) != 0) {
     VPQLOGF(2) << "Failed to get format";
-    return std::make_pair(base::nullopt, errno);
+    return std::make_pair(absl::nullopt, errno);
   }
 
   return std::make_pair(format, 0);
 }
 
-base::Optional<gfx::Rect> V4L2Queue::GetVisibleRect() {
+absl::optional<gfx::Rect> V4L2Queue::GetVisibleRect() {
   // Some drivers prior to 4.13 only accept the non-MPLANE variant when using
   // VIDIOC_G_SELECTION. This block can be removed once we stop supporting
   // kernels < 4.13.
@@ -1032,7 +1044,7 @@ base::Optional<gfx::Rect> V4L2Queue::GetVisibleRect() {
   }
 
   VQLOGF(1) << "Failed to get visible rect";
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
@@ -1057,10 +1069,7 @@ size_t V4L2Queue::AllocateBuffers(size_t count, enum v4l2_memory memory) {
   }
 
   // First query the number of planes in the buffers we are about to request.
-  // This should not be required, but Tegra's VIDIOC_QUERYBUF will fail on
-  // output buffers if the number of specified planes does not exactly match the
-  // format.
-  base::Optional<v4l2_format> format = GetFormat().first;
+  absl::optional<v4l2_format> format = GetFormat().first;
   if (!format) {
     VQLOGF(1) << "Cannot get format.";
     return 0;
@@ -1157,50 +1166,50 @@ v4l2_memory V4L2Queue::GetMemoryType() const {
   return memory_;
 }
 
-base::Optional<V4L2WritableBufferRef> V4L2Queue::GetFreeBuffer() {
+absl::optional<V4L2WritableBufferRef> V4L2Queue::GetFreeBuffer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // No buffers allocated at the moment?
   if (!free_buffers_)
-    return base::nullopt;
+    return absl::nullopt;
 
   auto buffer_id = free_buffers_->GetFreeBuffer();
   if (!buffer_id.has_value())
-    return base::nullopt;
+    return absl::nullopt;
 
   return V4L2BufferRefFactory::CreateWritableRef(
       buffers_[buffer_id.value()]->v4l2_buffer(),
       weak_this_factory_.GetWeakPtr());
 }
 
-base::Optional<V4L2WritableBufferRef> V4L2Queue::GetFreeBuffer(
+absl::optional<V4L2WritableBufferRef> V4L2Queue::GetFreeBuffer(
     size_t requested_buffer_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // No buffers allocated at the moment?
   if (!free_buffers_)
-    return base::nullopt;
+    return absl::nullopt;
 
   auto buffer_id = free_buffers_->GetFreeBuffer(requested_buffer_id);
   if (!buffer_id.has_value())
-    return base::nullopt;
+    return absl::nullopt;
 
   return V4L2BufferRefFactory::CreateWritableRef(
       buffers_[buffer_id.value()]->v4l2_buffer(),
       weak_this_factory_.GetWeakPtr());
 }
 
-base::Optional<V4L2WritableBufferRef> V4L2Queue::GetFreeBufferForFrame(
+absl::optional<V4L2WritableBufferRef> V4L2Queue::GetFreeBufferForFrame(
     const VideoFrame& frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // No buffers allocated at the moment?
   if (!free_buffers_)
-    return base::nullopt;
+    return absl::nullopt;
 
   if (memory_ != V4L2_MEMORY_DMABUF) {
     DVLOGF(1) << "Queue is not DMABUF";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   gfx::GenericSharedMemoryId id;
@@ -1210,12 +1219,12 @@ base::Optional<V4L2WritableBufferRef> V4L2Queue::GetFreeBufferForFrame(
     id = gfx::GenericSharedMemoryId(frame.DmabufFds()[0].get());
   } else {
     DVLOGF(1) << "Unsupported frame provided";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   const auto v4l2_id = affinity_tracker_.get_buffer_for_id(id);
   if (!v4l2_id) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return GetFreeBuffer(*v4l2_id);
@@ -1255,8 +1264,8 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
   struct v4l2_buffer v4l2_buffer;
   memset(&v4l2_buffer, 0, sizeof(v4l2_buffer));
   // WARNING: do not change this to a vector or something smaller than
-  // VIDEO_MAX_PLANES, otherwise the Tegra libv4l2 will write data beyond
-  // the number of allocated planes, resulting in memory corruption.
+  // VIDEO_MAX_PLANES (the maximum number of planes V4L2 supports). The
+  // element overhead is small and may avoid memory corruption bugs.
   struct v4l2_plane planes[VIDEO_MAX_PLANES];
   memset(planes, 0, sizeof(planes));
   v4l2_buffer.type = type_;
@@ -1372,7 +1381,7 @@ bool V4L2Queue::SupportsRequests() {
   return supports_requests_;
 }
 
-base::Optional<struct v4l2_format> V4L2Queue::SetModifierFormat(
+absl::optional<struct v4l2_format> V4L2Queue::SetModifierFormat(
     uint64_t modifier,
     const gfx::Size& size) {
   if (DRM_FORMAT_MOD_QCOM_COMPRESSED == modifier) {
@@ -1382,7 +1391,7 @@ base::Optional<struct v4l2_format> V4L2Queue::SetModifierFormat(
       VPLOGF(1) << "Failed to set magic modifier format.";
     return format;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 // This class is used to expose V4L2Queue's constructor to this module. This is
@@ -1442,12 +1451,6 @@ scoped_refptr<V4L2Device> V4L2Device::Create() {
 
   scoped_refptr<V4L2Device> device;
 
-#if defined(ARCH_CPU_ARMEL)
-  device = new TegraV4L2Device();
-  if (device->Initialize())
-    return device;
-#endif
-
 #if defined(AML_V4L2)
   device = new AmlV4L2Device();
   if (device->Initialize())
@@ -1481,17 +1484,20 @@ uint32_t V4L2Device::VideoCodecProfileToV4L2PixFmt(VideoCodecProfile profile,
     else
       return V4L2_PIX_FMT_VP9;
   } else {
-    LOG(ERROR) << "Unknown profile: " << GetProfileName(profile);
+    DVLOGF(1) << "Unsupported profile: " << GetProfileName(profile);
     return 0;
   }
 }
 
-// static
-VideoCodecProfile V4L2Device::V4L2ProfileToVideoCodecProfile(VideoCodec codec,
-                                                             uint32_t profile) {
+namespace {
+
+VideoCodecProfile V4L2ProfileToVideoCodecProfile(VideoCodec codec,
+                                                 uint32_t v4l2_profile) {
   switch (codec) {
     case kCodecH264:
-      switch (profile) {
+      switch (v4l2_profile) {
+        // H264 Stereo amd Multiview High are not tested and the use is
+        // minuscule, skip.
         case V4L2_MPEG_VIDEO_H264_PROFILE_BASELINE:
         case V4L2_MPEG_VIDEO_H264_PROFILE_CONSTRAINED_BASELINE:
           return H264PROFILE_BASELINE;
@@ -1501,14 +1507,10 @@ VideoCodecProfile V4L2Device::V4L2ProfileToVideoCodecProfile(VideoCodec codec,
           return H264PROFILE_EXTENDED;
         case V4L2_MPEG_VIDEO_H264_PROFILE_HIGH:
           return H264PROFILE_HIGH;
-        case V4L2_MPEG_VIDEO_H264_PROFILE_STEREO_HIGH:
-          return H264PROFILE_STEREOHIGH;
-        case V4L2_MPEG_VIDEO_H264_PROFILE_MULTIVIEW_HIGH:
-          return H264PROFILE_MULTIVIEWHIGH;
       }
       break;
     case kCodecVP8:
-      switch (profile) {
+      switch (v4l2_profile) {
         case V4L2_MPEG_VIDEO_VP8_PROFILE_0:
         case V4L2_MPEG_VIDEO_VP8_PROFILE_1:
         case V4L2_MPEG_VIDEO_VP8_PROFILE_2:
@@ -1517,27 +1519,25 @@ VideoCodecProfile V4L2Device::V4L2ProfileToVideoCodecProfile(VideoCodec codec,
       }
       break;
     case kCodecVP9:
-      switch (profile) {
+      switch (v4l2_profile) {
+        // VP9 Profile 1 and 3 are not tested and the use is minuscule, skip.
         case V4L2_MPEG_VIDEO_VP9_PROFILE_0:
           return VP9PROFILE_PROFILE0;
-        case V4L2_MPEG_VIDEO_VP9_PROFILE_1:
-          return VP9PROFILE_PROFILE1;
         case V4L2_MPEG_VIDEO_VP9_PROFILE_2:
           return VP9PROFILE_PROFILE2;
-        case V4L2_MPEG_VIDEO_VP9_PROFILE_3:
-          return VP9PROFILE_PROFILE3;
       }
       break;
     default:
-      VLOGF(2) << "Unknown codec: " << codec;
+      VLOGF(2) << "Unsupported codec: " << GetCodecName(codec);
   }
-  VLOGF(2) << "Unknown profile: " << profile;
+  VLOGF(2) << "Unsupported V4L2 profile: " << v4l2_profile;
   return VIDEO_CODEC_PROFILE_UNKNOWN;
 }
 
+}  // namespace
+
 std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
-    uint32_t pix_fmt,
-    bool is_encoder) {
+    uint32_t pix_fmt) {
   auto get_supported_profiles = [this](
                                     VideoCodec codec,
                                     std::vector<VideoCodecProfile>* profiles) {
@@ -1559,9 +1559,9 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
     v4l2_queryctrl query_ctrl;
     memset(&query_ctrl, 0, sizeof(query_ctrl));
     query_ctrl.id = query_id;
-    if (Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) != 0) {
+    if (Ioctl(VIDIOC_QUERYCTRL, &query_ctrl) != 0)
       return false;
-    }
+
     v4l2_querymenu query_menu;
     memset(&query_menu, 0, sizeof(query_menu));
     query_menu.id = query_ctrl.id;
@@ -1570,7 +1570,7 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
          query_menu.index++) {
       if (Ioctl(VIDIOC_QUERYMENU, &query_menu) == 0) {
         const VideoCodecProfile profile =
-            V4L2Device::V4L2ProfileToVideoCodecProfile(codec, query_menu.index);
+            V4L2ProfileToVideoCodecProfile(codec, query_menu.index);
         if (profile != VIDEO_CODEC_PROFILE_UNKNOWN)
           profiles->push_back(profile);
       }
@@ -1613,29 +1613,6 @@ std::vector<VideoCodecProfile> V4L2Device::V4L2PixFmtToVideoCodecProfiles(
   std::sort(profiles.begin(), profiles.end());
   profiles.erase(std::unique(profiles.begin(), profiles.end()), profiles.end());
   return profiles;
-}
-
-// static
-uint32_t V4L2Device::V4L2PixFmtToDrmFormat(uint32_t format) {
-  switch (format) {
-    case V4L2_PIX_FMT_NV12:
-    case V4L2_PIX_FMT_NV12M:
-      return DRM_FORMAT_NV12;
-
-    case V4L2_PIX_FMT_YUV420:
-    case V4L2_PIX_FMT_YUV420M:
-      return DRM_FORMAT_YUV420;
-
-    case V4L2_PIX_FMT_YVU420:
-      return DRM_FORMAT_YVU420;
-
-    case V4L2_PIX_FMT_RGB32:
-      return DRM_FORMAT_ARGB8888;
-
-    default:
-      DVLOGF(1) << "Unrecognized format " << FourccToString(format);
-      return 0;
-  }
 }
 
 // static
@@ -1800,114 +1777,12 @@ gfx::Size V4L2Device::AllocatedSizeFromV4L2Format(
 }
 
 // static
-const char* V4L2Device::V4L2MemoryToString(const v4l2_memory memory) {
-  switch (memory) {
-    case V4L2_MEMORY_MMAP:
-      return "V4L2_MEMORY_MMAP";
-    case V4L2_MEMORY_USERPTR:
-      return "V4L2_MEMORY_USERPTR";
-    case V4L2_MEMORY_DMABUF:
-      return "V4L2_MEMORY_DMABUF";
-    case V4L2_MEMORY_OVERLAY:
-      return "V4L2_MEMORY_OVERLAY";
-    default:
-      return "UNKNOWN";
-  }
-}
-
-// static
-const char* V4L2Device::V4L2BufferTypeToString(
-    const enum v4l2_buf_type buf_type) {
-  switch (buf_type) {
-    case V4L2_BUF_TYPE_VIDEO_OUTPUT:
-      return "OUTPUT";
-    case V4L2_BUF_TYPE_VIDEO_CAPTURE:
-      return "CAPTURE";
-    case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
-      return "OUTPUT_MPLANE";
-    case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
-      return "CAPTURE_MPLANE";
-    default:
-      return "UNKNOWN";
-  }
-}
-
-// static
-std::string V4L2Device::V4L2FormatToString(const struct v4l2_format& format) {
-  std::ostringstream s;
-  s << "v4l2_format type: " << format.type;
-  if (format.type == V4L2_BUF_TYPE_VIDEO_CAPTURE ||
-      format.type == V4L2_BUF_TYPE_VIDEO_OUTPUT) {
-    //  single-planar
-    const struct v4l2_pix_format& pix = format.fmt.pix;
-    s << ", width_height: " << gfx::Size(pix.width, pix.height).ToString()
-      << ", pixelformat: " << FourccToString(pix.pixelformat)
-      << ", field: " << pix.field << ", bytesperline: " << pix.bytesperline
-      << ", sizeimage: " << pix.sizeimage;
-  } else if (V4L2_TYPE_IS_MULTIPLANAR(format.type)) {
-    const struct v4l2_pix_format_mplane& pix_mp = format.fmt.pix_mp;
-    // As long as num_planes's type is uint8_t, ostringstream treats it as a
-    // char instead of an integer, which is not what we want. Casting
-    // pix_mp.num_planes unsigned int solves the issue.
-    s << ", width_height: " << gfx::Size(pix_mp.width, pix_mp.height).ToString()
-      << ", pixelformat: " << FourccToString(pix_mp.pixelformat)
-      << ", field: " << pix_mp.field
-      << ", num_planes: " << static_cast<unsigned int>(pix_mp.num_planes);
-    for (size_t i = 0; i < pix_mp.num_planes; ++i) {
-      const struct v4l2_plane_pix_format& plane_fmt = pix_mp.plane_fmt[i];
-      s << ", plane_fmt[" << i << "].sizeimage: " << plane_fmt.sizeimage
-        << ", plane_fmt[" << i << "].bytesperline: " << plane_fmt.bytesperline;
-    }
-  } else {
-    s << " unsupported yet.";
-  }
-  return s.str();
-}
-
-// static
-std::string V4L2Device::V4L2BufferToString(const struct v4l2_buffer& buffer) {
-  std::ostringstream s;
-  s << "v4l2_buffer type: " << buffer.type << ", memory: " << buffer.memory
-    << ", index: " << buffer.index << " bytesused: " << buffer.bytesused
-    << ", length: " << buffer.length;
-  if (buffer.type == V4L2_BUF_TYPE_VIDEO_CAPTURE ||
-      buffer.type == V4L2_BUF_TYPE_VIDEO_OUTPUT) {
-    //  single-planar
-    if (buffer.memory == V4L2_MEMORY_MMAP) {
-      s << ", m.offset: " << buffer.m.offset;
-    } else if (buffer.memory == V4L2_MEMORY_USERPTR) {
-      s << ", m.userptr: " << buffer.m.userptr;
-    } else if (buffer.memory == V4L2_MEMORY_DMABUF) {
-      s << ", m.fd: " << buffer.m.fd;
-    }
-  } else if (V4L2_TYPE_IS_MULTIPLANAR(buffer.type)) {
-    for (size_t i = 0; i < buffer.length; ++i) {
-      const struct v4l2_plane& plane = buffer.m.planes[i];
-      s << ", m.planes[" << i << "](bytesused: " << plane.bytesused
-        << ", length: " << plane.length
-        << ", data_offset: " << plane.data_offset;
-      if (buffer.memory == V4L2_MEMORY_MMAP) {
-        s << ", m.mem_offset: " << plane.m.mem_offset;
-      } else if (buffer.memory == V4L2_MEMORY_USERPTR) {
-        s << ", m.userptr: " << plane.m.userptr;
-      } else if (buffer.memory == V4L2_MEMORY_DMABUF) {
-        s << ", m.fd: " << plane.m.fd;
-      }
-      s << ")";
-    }
-  } else {
-    s << " unsupported yet.";
-  }
-  return s.str();
-}
-
-// static
-base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
+absl::optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
     const struct v4l2_format& format) {
   if (!V4L2_TYPE_IS_MULTIPLANAR(format.type)) {
     VLOGF(1) << "v4l2_buf_type is not multiplanar: " << std::hex << "0x"
              << format.type;
-    return base::nullopt;
+    return absl::nullopt;
   }
   const v4l2_pix_format_mplane& pix_mp = format.fmt.pix_mp;
   const uint32_t& pix_fmt = pix_mp.pixelformat;
@@ -1915,7 +1790,7 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
   if (!video_fourcc) {
     VLOGF(1) << "Failed to convert pixel format to VideoPixelFormat: "
              << FourccToString(pix_fmt);
-    return base::nullopt;
+    return absl::nullopt;
   }
   const VideoPixelFormat video_format = video_fourcc->ToVideoPixelFormat();
   const size_t num_buffers = pix_mp.num_planes;
@@ -1923,14 +1798,14 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
   if (num_color_planes == 0) {
     VLOGF(1) << "Unsupported video format for NumPlanes(): "
              << VideoPixelFormatToString(video_format);
-    return base::nullopt;
+    return absl::nullopt;
   }
   if (num_buffers > num_color_planes) {
     VLOGF(1) << "pix_mp.num_planes: " << num_buffers
              << " should not be larger than NumPlanes("
              << VideoPixelFormatToString(video_format)
              << "): " << num_color_planes;
-    return base::nullopt;
+    return absl::nullopt;
   }
   // Reserve capacity in advance to prevent unnecessary vector reallocation.
   std::vector<ColorPlaneLayout> planes;
@@ -1964,7 +1839,7 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
         if (y_stride % 2 != 0 || pix_mp.height % 2 != 0) {
           VLOGF(1) << "Plane-Y stride and height should be even; stride: "
                    << y_stride << ", height: " << pix_mp.height;
-          return base::nullopt;
+          return absl::nullopt;
         }
         const int32_t half_stride = y_stride / 2;
         const size_t plane_0_area = y_stride_abs * pix_mp.height;
@@ -1978,7 +1853,7 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
       default:
         VLOGF(1) << "Cannot derive stride for each plane for pixel format "
                  << FourccToString(pix_fmt);
-        return base::nullopt;
+        return absl::nullopt;
     }
   }
 
@@ -1998,7 +1873,7 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
 
 // static
 size_t V4L2Device::GetNumPlanesOfV4L2PixFmt(uint32_t pix_fmt) {
-  base::Optional<Fourcc> fourcc = Fourcc::FromV4L2PixFmt(pix_fmt);
+  absl::optional<Fourcc> fourcc = Fourcc::FromV4L2PixFmt(pix_fmt);
   if (fourcc && fourcc->IsMultiPlanar()) {
     return VideoFrame::NumPlanes(fourcc->ToVideoPixelFormat());
   }
@@ -2088,7 +1963,7 @@ V4L2Device::EnumerateSupportedDecodeProfiles(const size_t num_formats,
                            &profile.max_resolution);
 
     const auto video_codec_profiles =
-        V4L2PixFmtToVideoCodecProfiles(pixelformat, false);
+        V4L2PixFmtToVideoCodecProfiles(pixelformat);
 
     for (const auto& video_codec_profile : video_codec_profiles) {
       profile.profile = video_codec_profile;
@@ -2119,7 +1994,7 @@ V4L2Device::EnumerateSupportedEncodeProfiles() {
                            &profile.max_resolution);
 
     const auto video_codec_profiles =
-        V4L2PixFmtToVideoCodecProfiles(pixelformat, true);
+        V4L2PixFmtToVideoCodecProfiles(pixelformat);
 
     for (const auto& video_codec_profile : video_codec_profiles) {
       profile.profile = video_codec_profile;
@@ -2166,14 +2041,16 @@ void V4L2Device::SchedulePoll() {
   device_poller_->SchedulePoll();
 }
 
-base::Optional<struct v4l2_event> V4L2Device::DequeueEvent() {
+absl::optional<struct v4l2_event> V4L2Device::DequeueEvent() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   struct v4l2_event event;
   memset(&event, 0, sizeof(event));
 
   if (Ioctl(VIDIOC_DQEVENT, &event) != 0) {
-    VPLOGF(3) << "Failed to dequeue event";
-    return base::nullopt;
+    // The ioctl will fail if there are no pending events. This is part of the
+    // normal flow, so keep this log level low.
+    VPLOGF(4) << "Failed to dequeue event";
+    return absl::nullopt;
   }
 
   return event;
@@ -2227,10 +2104,22 @@ bool V4L2Device::SetExtCtrls(uint32_t ctrl_class,
   if (request_ref)
     request_ref->ApplyCtrls(&ext_ctrls);
 
-  return Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls) == 0;
+  const int result = Ioctl(VIDIOC_S_EXT_CTRLS, &ext_ctrls);
+  if (result < 0) {
+    if (ext_ctrls.error_idx == ext_ctrls.count)
+      VPLOGF(1) << "VIDIOC_S_EXT_CTRLS: validation failed while trying to set "
+                   "controls";
+    else
+      VPLOGF(1) << "VIDIOC_S_EXT_CTRLS: unable to set control (0x" << std::hex
+                << ctrls[ext_ctrls.error_idx].ctrl.id << ") at index ("
+                << ext_ctrls.error_idx << ")  to 0x"
+                << ctrls[ext_ctrls.error_idx].ctrl.value;
+  }
+
+  return result == 0;
 }
 
-base::Optional<struct v4l2_ext_control> V4L2Device::GetCtrl(uint32_t ctrl_id) {
+absl::optional<struct v4l2_ext_control> V4L2Device::GetCtrl(uint32_t ctrl_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   struct v4l2_ext_control ctrl;
   memset(&ctrl, 0, sizeof(ctrl));
@@ -2243,10 +2132,35 @@ base::Optional<struct v4l2_ext_control> V4L2Device::GetCtrl(uint32_t ctrl_id) {
 
   if (Ioctl(VIDIOC_G_EXT_CTRLS, &ext_ctrls) != 0) {
     VPLOGF(3) << "Failed to get control";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return ctrl;
+}
+
+bool V4L2Device::SetGOPLength(uint32_t gop_length) {
+  if (!SetExtCtrls(V4L2_CTRL_CLASS_MPEG,
+                   {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_GOP_SIZE, gop_length)})) {
+    // Some platforms allow setting the GOP length to 0 as
+    // a way of turning off keyframe placement.  If the platform
+    // does not support turning off periodic keyframe placement,
+    // set the GOP to the maximum supported value.
+    if (gop_length == 0) {
+      v4l2_query_ext_ctrl queryctrl;
+      memset(&queryctrl, 0, sizeof(queryctrl));
+
+      queryctrl.id = V4L2_CTRL_CLASS_MPEG | V4L2_CID_MPEG_VIDEO_GOP_SIZE;
+      if (Ioctl(VIDIOC_QUERY_EXT_CTRL, &queryctrl) == 0) {
+        VPLOGF(3) << "Unable to set GOP to 0, instead using max : "
+                  << queryctrl.maximum;
+        return SetExtCtrls(
+            V4L2_CTRL_CLASS_MPEG,
+            {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_GOP_SIZE, queryctrl.maximum)});
+      }
+    }
+    return false;
+  }
+  return true;
 }
 
 class V4L2Request {
@@ -2429,14 +2343,14 @@ bool V4L2RequestRef::ApplyQueueBuffer(struct v4l2_buffer* buffer) const {
   return request_->ApplyQueueBuffer(buffer);
 }
 
-base::Optional<V4L2SubmittedRequestRef> V4L2RequestRef::Submit() && {
+absl::optional<V4L2SubmittedRequestRef> V4L2RequestRef::Submit() && {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_NE(request_, nullptr);
 
   V4L2RequestRef self(std::move(*this));
 
   if (!self.request_->Submit())
-    return base::nullopt;
+    return absl::nullopt;
 
   return V4L2SubmittedRequestRef(self.request_);
 }
@@ -2461,7 +2375,7 @@ V4L2RequestsQueue::~V4L2RequestsQueue() {
   media_fd_.reset();
 }
 
-base::Optional<base::ScopedFD> V4L2RequestsQueue::CreateRequestFD() {
+absl::optional<base::ScopedFD> V4L2RequestsQueue::CreateRequestFD() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   int request_fd;
@@ -2469,13 +2383,13 @@ base::Optional<base::ScopedFD> V4L2RequestsQueue::CreateRequestFD() {
         ioctl(media_fd_.get(), MEDIA_IOC_REQUEST_ALLOC, &request_fd));
   if (ret < 0) {
     VPLOGF(1) << "Failed to create request";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return base::ScopedFD(request_fd);
 }
 
-base::Optional<V4L2RequestRef> V4L2RequestsQueue::GetFreeRequest() {
+absl::optional<V4L2RequestRef> V4L2RequestsQueue::GetFreeRequest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   V4L2Request* request_ptr =
@@ -2488,7 +2402,7 @@ base::Optional<V4L2RequestRef> V4L2RequestsQueue::GetFreeRequest() {
     auto request_fd = CreateRequestFD();
     if (!request_fd.has_value()) {
       VLOGF(1) << "Error while creating a new request FD!";
-      return base::nullopt;
+      return absl::nullopt;
     }
     // Not using std::make_unique because constructor is private.
     std::unique_ptr<V4L2Request> request(
@@ -2503,7 +2417,7 @@ base::Optional<V4L2RequestRef> V4L2RequestsQueue::GetFreeRequest() {
              << "request is blocking.";
     if (!request_ptr->WaitForCompletion()) {
       VLOG(1) << "Timeout while waiting for request to complete.";
-      return base::nullopt;
+      return absl::nullopt;
     }
     free_requests_.pop();
   }
@@ -2511,7 +2425,7 @@ base::Optional<V4L2RequestRef> V4L2RequestsQueue::GetFreeRequest() {
   DCHECK(request_ptr);
   if (!request_ptr->Reset()) {
     VPLOGF(1) << "Failed to reset request";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return V4L2RequestRef(request_ptr);

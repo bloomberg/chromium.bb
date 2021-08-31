@@ -13,6 +13,7 @@
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/ukm_demographic_metrics_provider.h"
 #include "components/sync/driver/sync_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 #include "third_party/metrics_proto/user_demographics.pb.h"
 
@@ -53,6 +54,8 @@ class DemographicMetricsProvider : public MetricsProvider,
     virtual PrefService* GetPrefService() = 0;
 
     // Gets the network time that represents now.
+    // TODO(crbug/1145655): Remove this function and replace with
+    // base::Time::Now().
     virtual base::Time GetNetworkTime() const = 0;
   };
 
@@ -70,7 +73,7 @@ class DemographicMetricsProvider : public MetricsProvider,
   void ProvideSyncedUserNoisedBirthYearAndGender(ReportType* report) {
     DCHECK(report);
 
-    base::Optional<UserDemographics> user_demographics =
+    absl::optional<UserDemographics> user_demographics =
         ProvideSyncedUserNoisedBirthYearAndGender();
     if (user_demographics.has_value()) {
       report->mutable_user_demographics()->set_birth_year(
@@ -93,7 +96,7 @@ class DemographicMetricsProvider : public MetricsProvider,
 
  private:
   // Provides the synced user's noised birth year and gender.
-  base::Optional<UserDemographics> ProvideSyncedUserNoisedBirthYearAndGender();
+  absl::optional<UserDemographics> ProvideSyncedUserNoisedBirthYearAndGender();
 
   void LogUserDemographicsStatusInHistogram(UserDemographicsStatus status);
 

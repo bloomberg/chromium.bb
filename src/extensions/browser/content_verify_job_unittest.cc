@@ -210,7 +210,7 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
   // extension resources in |extension_path|, including manifest.json.
   scoped_refptr<Extension> CreateAndLoadTestExtensionToTempDir(
       base::ScopedTempDir* temp_dir,
-      base::Optional<std::map<base::FilePath, std::string>>
+      absl::optional<std::map<base::FilePath, std::string>>
           resources_for_hashes) {
     if (!temp_dir->CreateUniqueTempDir()) {
       ADD_FAILURE() << "Failed to create temp dir.";
@@ -225,7 +225,8 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
 
     std::string error;
     scoped_refptr<Extension> extension = file_util::LoadExtension(
-        extension_root, Manifest::INTERNAL, /*flags=*/0, &error);
+        extension_root, mojom::ManifestLocation::kInternal, /*flags=*/0,
+        &error);
     EXPECT_NE(nullptr, extension.get()) << " error:'" << error << "'";
 
     content_verifier_->OnExtensionLoaded(&testing_context_, extension.get());
@@ -691,7 +692,7 @@ TEST_F(ContentVerifyJobWithoutSignedHashesUnittest, ExtensionWithoutHashes) {
   const base::FilePath kResourcePath(FILE_PATH_LITERAL("script-ok.js"));
 
   scoped_refptr<Extension> extension =
-      CreateAndLoadTestExtensionToTempDir(&temp_dir, base::nullopt);
+      CreateAndLoadTestExtensionToTempDir(&temp_dir, absl::nullopt);
   ASSERT_TRUE(extension);
   base::FilePath unzipped_path = temp_dir.GetPath();
   const std::string kContents = "console.log('Nothing special');";
@@ -836,7 +837,7 @@ class ContentVerifyJobWithHashFetchUnittest : public ContentVerifyJobUnittest {
   bool ready_to_respond_ = false;
 
   // Copy of the contents of verified_contents.json.
-  base::Optional<std::string> verified_contents_;
+  absl::optional<std::string> verified_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentVerifyJobWithHashFetchUnittest);
 };

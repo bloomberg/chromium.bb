@@ -12,20 +12,20 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
 #include "components/policy/core/common/cloud/mock_cloud_external_data_manager.h"
@@ -45,6 +45,7 @@
 #include "net/base/backoff_entry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace policy {
 
@@ -91,16 +92,15 @@ class MockUserCloudPolicyManagerChromeOS
 
 class UserCloudPolicyTokenForwarderTest : public testing::Test {
  protected:
-  static chromeos::FakeChromeUserManager* GetFakeUserManager() {
-    return static_cast<chromeos::FakeChromeUserManager*>(
+  static ash::FakeChromeUserManager* GetFakeUserManager() {
+    return static_cast<ash::FakeChromeUserManager*>(
         user_manager::UserManager::Get());
   }
 
   UserCloudPolicyTokenForwarderTest()
       : mock_time_task_runner_(
             base::MakeRefCounted<base::TestMockTimeTaskRunner>()),
-        user_manager_enabler_(
-            std::make_unique<chromeos::FakeChromeUserManager>()),
+        user_manager_enabler_(std::make_unique<ash::FakeChromeUserManager>()),
         profile_manager_(std::make_unique<TestingProfileManager>(
             TestingBrowserProcess::GetGlobal())),
         store_(std::make_unique<MockCloudPolicyStore>()) {}
@@ -109,6 +109,7 @@ class UserCloudPolicyTokenForwarderTest : public testing::Test {
 
   void SetUp() override {
     chromeos::DBusThreadManager::Initialize();
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
     ASSERT_TRUE(profile_manager_->SetUp());
     scoped_feature_list_.InitAndEnableFeature(
         features::kDMServerOAuthForChildUser);
@@ -118,6 +119,7 @@ class UserCloudPolicyTokenForwarderTest : public testing::Test {
     user_policy_manager_->core()->Disconnect();
     // Must be torn down before |profile_manager_|.
     user_policy_manager_.reset();
+    chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -140,7 +142,7 @@ class UserCloudPolicyTokenForwarderTest : public testing::Test {
     identity_test_env_profile_adaptor_->identity_test_env()
         ->MakeUnconsentedPrimaryAccountAvailable(kEmail);
 
-    chromeos::FakeChromeUserManager* user_manager = GetFakeUserManager();
+    auto* user_manager = GetFakeUserManager();
     user_manager->AddUser(account_id);
     user_manager->AddUserWithAffiliationAndTypeAndProfile(
         account_id, false /* is_affiliated */, user_type, profile);
@@ -175,7 +177,7 @@ class UserCloudPolicyTokenForwarderTest : public testing::Test {
   void IssueOAuthToken(const std::string& token, base::Time expiration) {
     signin::ScopeSet scopes;
     scopes.insert(GaiaConstants::kDeviceManagementServiceOAuth);
-    scopes.insert(GaiaConstants::kOAuthWrapBridgeUserInfoScope);
+    scopes.insert(GaiaConstants::kGoogleUserInfoEmail);
     identity_test_env_profile_adaptor_->identity_test_env()
         ->WaitForAccessTokenRequestIfNecessaryAndRespondWithTokenForScopes(
             token, expiration, std::string() /*id_token*/, scopes);

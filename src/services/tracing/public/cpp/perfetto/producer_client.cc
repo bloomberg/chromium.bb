@@ -11,6 +11,7 @@
 #include "base/no_destructor.h"
 #include "base/process/process.h"
 #include "base/task/post_task.h"
+#include "base/tracing/tracing_tls.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
@@ -31,7 +32,7 @@ constexpr char kSharedBufferIsValidMetricName[] = "Tracing.SharedBufferIsValid";
 
 namespace tracing {
 
-ProducerClient::ProducerClient(PerfettoTaskRunner* task_runner)
+ProducerClient::ProducerClient(base::tracing::PerfettoTaskRunner* task_runner)
     : PerfettoProducer(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
@@ -71,7 +72,7 @@ void ProducerClient::Connect(
 
 void ProducerClient::BindInProcessSharedMemoryArbiter(
     perfetto::TracingService::ProducerEndpoint* producer_endpoint,
-    PerfettoTaskRunner* task_runner) {
+    base::tracing::PerfettoTaskRunner* task_runner) {
   DCHECK(!in_process_arbiter_task_runner_);
   in_process_arbiter_task_runner_ = task_runner;
 
@@ -213,8 +214,8 @@ void ProducerClient::StartDataSource(
                 }
 
                 DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
-                data_source->StartTracingWithID(id, weak_ptr.get(),
-                                                data_source_config);
+                data_source->StartTracing(id, weak_ptr.get(),
+                                          data_source_config);
 
                 // TODO(eseckler): Consider plumbing this callback through
                 // |data_source|.
@@ -238,10 +239,16 @@ void ProducerClient::StopDataSource(uint64_t id,
       data_source->StopTracing(base::BindOnce(
           [](base::WeakPtr<ProducerClient> weak_ptr,
              StopDataSourceCallback callback, uint64_t id) {
-            std::move(callback).Run();
-            if (!weak_ptr)
+            if (!weak_ptr) {
+              std::move(callback).Run();
               return;
+            }
             DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
+            // Flush any commits that might have been batched by
+            // SharedMemoryArbiter.
+            weak_ptr->MaybeSharedMemoryArbiter()
+                ->FlushPendingCommitDataRequests();
+            std::move(callback).Run();
             base::AutoLock lock(weak_ptr->lock_);
             --weak_ptr->data_sources_tracing_;
           },
@@ -297,9 +304,9 @@ void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
   // We need to make sure the CommitData IPC is sent off without triggering any
   // trace events, as that could stall waiting for SMB chunks to be freed up
   // which requires the tracing service to receive the IPC.
-  if (!TraceEventDataSource::GetThreadIsInTraceEventTLS()->Get()) {
-    AutoThreadLocalBoolean thread_is_in_trace_event(
-        TraceEventDataSource::GetThreadIsInTraceEventTLS());
+  if (!base::tracing::GetThreadIsInTraceEventTLS()->Get()) {
+    base::tracing::AutoThreadLocalBoolean thread_is_in_trace_event(
+        base::tracing::GetThreadIsInTraceEventTLS());
 
     producer_host_->CommitData(commit, std::move(commit_callback));
     return;
@@ -404,6 +411,10 @@ bool ProducerClient::InitSharedMemoryIfNeeded() {
 
   shared_memory_arbiter_ = perfetto::SharedMemoryArbiter::CreateUnboundInstance(
       shared_memory_.get(), kSMBPageSizeBytes);
+  shared_memory_arbiter_->SetDirectSMBPatchingSupportedByService();
+  shared_memory_arbiter_->EnableDirectSMBPatching();
+  shared_memory_arbiter_->SetBatchCommitsDuration(
+      kShmArbiterBatchCommitDurationMs);
   return true;
 }
 

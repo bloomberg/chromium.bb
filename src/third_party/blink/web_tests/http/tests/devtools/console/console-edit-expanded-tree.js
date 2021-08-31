@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult('Tests that expanded tree element is editable in console.\n');
 
-  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadModule('console'); await TestRunner.loadTestModule('console_test_runner');
   await TestRunner.showPanel('console');
 
   await TestRunner.evaluateInPagePromise(`
@@ -29,8 +29,9 @@
       var node = message.contentElement();
 
       for (var node = message.contentElement(); node; node = node.traverseNextNode(message.contentElement())) {
-        if (node.treeElement) {
-          onTreeElement(node.treeElement.firstChild());
+        const treeElement = UI.TreeElement.getTreeElementBylistItemNode(node);
+        if (treeElement) {
+          onTreeElement(treeElement.firstChild());
           return;
         }
       }

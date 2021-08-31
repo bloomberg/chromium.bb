@@ -72,11 +72,14 @@ IsolateData* IsolateData::FromContext(v8::Local<v8::Context> context) {
 
 int IsolateData::CreateContextGroup() {
   int context_group_id = ++last_context_group_id_;
-  CreateContext(context_group_id, v8_inspector::StringView());
+  if (!CreateContext(context_group_id, v8_inspector::StringView())) {
+    DCHECK(isolate_->IsExecutionTerminating());
+    return -1;
+  }
   return context_group_id;
 }
 
-void IsolateData::CreateContext(int context_group_id,
+bool IsolateData::CreateContext(int context_group_id,
                                 v8_inspector::StringView name) {
   v8::HandleScope handle_scope(isolate_.get());
   v8::Local<v8::ObjectTemplate> global_template =
@@ -87,12 +90,14 @@ void IsolateData::CreateContext(int context_group_id,
   }
   v8::Local<v8::Context> context =
       v8::Context::New(isolate_.get(), nullptr, global_template);
+  if (context.IsEmpty()) return false;
   context->SetAlignedPointerInEmbedderData(kIsolateDataIndex, this);
   // Should be 2-byte aligned.
   context->SetAlignedPointerInEmbedderData(
       kContextGroupIdIndex, reinterpret_cast<void*>(context_group_id * 2));
   contexts_[context_group_id].emplace_back(isolate_.get(), context);
   if (inspector_) FireContextCreated(context, context_group_id, name);
+  return true;
 }
 
 v8::Local<v8::Context> IsolateData::GetDefaultContext(int context_group_id) {
@@ -129,11 +134,19 @@ void IsolateData::RegisterModule(v8::Local<v8::Context> context,
 // static
 v8::MaybeLocal<v8::Module> IsolateData::ModuleResolveCallback(
     v8::Local<v8::Context> context, v8::Local<v8::String> specifier,
+    v8::Local<v8::FixedArray> import_assertions,
     v8::Local<v8::Module> referrer) {
+  // TODO(v8:11189) Consider JSON modules support in the InspectorClient
   IsolateData* data = IsolateData::FromContext(context);
   std::string str = *v8::String::Utf8Value(data->isolate(), specifier);
-  return data->modules_[ToVector(data->isolate(), specifier)].Get(
-      data->isolate());
+  v8::MaybeLocal<v8::Module> maybe_module =
+      data->modules_[ToVector(data->isolate(), specifier)].Get(data->isolate());
+  if (maybe_module.IsEmpty()) {
+    data->isolate()->ThrowError(v8::String::Concat(
+        data->isolate(),
+        ToV8String(data->isolate(), "Failed to resolve module: "), specifier));
+  }
+  return maybe_module;
 }
 
 int IsolateData::ConnectSession(int context_group_id,
@@ -256,8 +269,7 @@ int IsolateData::HandleMessage(v8::Local<v8::Message> message,
       IsolateData::FromContext(context)->inspector_.get();
 
   v8::Local<v8::StackTrace> stack = message->GetStackTrace();
-  int script_id =
-      static_cast<int>(message->GetScriptOrigin().ScriptID()->Value());
+  int script_id = message->GetScriptOrigin().ScriptId();
   if (!stack.IsEmpty() && stack->GetFrameCount() > 0) {
     int top_script_id = stack->GetFrame(isolate, 0)->GetScriptId();
     if (top_script_id == script_id) script_id = 0;
@@ -428,8 +440,8 @@ void IsolateData::installAdditionalCommandLineAPI(
   CHECK(context->GetIsolate() == isolate());
   v8::HandleScope handle_scope(isolate());
   v8::Context::Scope context_scope(context);
-  v8::ScriptOrigin origin(
-      v8::String::NewFromUtf8Literal(isolate(), "internal-console-api"));
+  v8::ScriptOrigin origin(isolate(), v8::String::NewFromUtf8Literal(
+                                         isolate(), "internal-console-api"));
   v8::ScriptCompiler::Source scriptSource(
       additional_console_api_.Get(isolate()), origin);
   v8::MaybeLocal<v8::Script> script =
@@ -484,6 +496,12 @@ std::unique_ptr<v8_inspector::StringBuffer> IsolateData::resourceNameToUrl(
   v8::Local<v8::String> prefix = resource_name_prefix_.Get(isolate());
   v8::Local<v8::String> url = v8::String::Concat(isolate(), prefix, name);
   return std::make_unique<StringBufferImpl>(isolate(), url);
+}
+
+int64_t IsolateData::generateUniqueId() {
+  static int64_t last_unique_id = 0L;
+  // Keep it not too random for tests.
+  return ++last_unique_id;
 }
 
 }  // namespace internal

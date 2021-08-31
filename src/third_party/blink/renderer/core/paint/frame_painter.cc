@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/frame_painter.h"
 
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -64,9 +65,9 @@ void FramePainter::PaintContents(GraphicsContext& context,
          DocumentLifecycle::kCompositingAssignmentsClean);
 
   FramePaintTiming frame_paint_timing(context, &GetFrameView().GetFrame());
-  TRACE_EVENT1("devtools.timeline,rail", "Paint", "data",
-               inspector_paint_event::Data(
-                   layout_view, PhysicalRect(cull_rect.Rect()), nullptr));
+  DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT_WITH_CATEGORIES(
+      "devtools.timeline,rail", "Paint", inspector_paint_event::Data,
+      layout_view, PhysicalRect(cull_rect.Rect()), nullptr);
 
   bool is_top_level_painter = !in_paint_contents_;
   in_paint_contents_ = true;
@@ -74,9 +75,8 @@ void FramePainter::PaintContents(GraphicsContext& context,
   FontCachePurgePreventer font_cache_purge_preventer;
 
   PaintLayerFlags root_layer_paint_flags = 0;
-  // This will prevent clipping the root PaintLayer to its visible content
-  // rect when root layer scrolling is enabled.
-  if (document->IsCapturingLayout())
+  // This will prevent clipping the root PaintLayer to its visible content rect.
+  if (document->IsPrintingOrPaintingPreview())
     root_layer_paint_flags = kPaintLayerPaintingOverflowContents;
 
   PaintLayer* root_layer = layout_view->Layer();

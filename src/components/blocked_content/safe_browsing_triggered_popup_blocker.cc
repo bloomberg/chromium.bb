@@ -8,6 +8,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "components/blocked_content/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -20,8 +21,8 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 
 namespace blocked_content {
 namespace {
@@ -107,7 +108,7 @@ void SafeBrowsingTriggeredPopupBlocker::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
-  base::Optional<SubresourceFilterLevel> level;
+  absl::optional<SubresourceFilterLevel> level;
   level_for_next_committed_navigation_.swap(level);
 
   // Only care about main frame navigations that commit.
@@ -138,7 +139,9 @@ void SafeBrowsingTriggeredPopupBlocker::DidFinishNavigation(
     // cache.
     content::BackForwardCache::DisableForRenderFrameHost(
         navigation_handle->GetRenderFrameHost(),
-        "SafeBrowsingTriggeredPopupBlocker");
+        back_forward_cache::DisabledReason(
+            back_forward_cache::DisabledReasonId::
+                kSafeBrowsingTriggeredPopupBlocker));
   } else if (level == SubresourceFilterLevel::WARN) {
     web_contents()->GetMainFrame()->AddMessageToConsole(
         blink::mojom::ConsoleMessageLevel::kWarning, kAbusiveWarnMessage);
@@ -157,7 +160,7 @@ void SafeBrowsingTriggeredPopupBlocker::OnSafeBrowsingChecksComplete(
     const subresource_filter::SubresourceFilterSafeBrowsingClient::CheckResult&
         result) {
   DCHECK(navigation_handle->IsInMainFrame());
-  base::Optional<safe_browsing::SubresourceFilterLevel> match_level;
+  absl::optional<safe_browsing::SubresourceFilterLevel> match_level;
   if (result.threat_type ==
       safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER) {
     auto abusive = result.threat_metadata.subresource_filter_match.find(
@@ -172,7 +175,8 @@ void SafeBrowsingTriggeredPopupBlocker::OnSafeBrowsingChecksComplete(
 }
 
 void SafeBrowsingTriggeredPopupBlocker::OnSubresourceFilterGoingAway() {
-  scoped_observation_.RemoveObservation();
+  DCHECK(scoped_observation_.IsObserving());
+  scoped_observation_.Reset();
 }
 
 bool SafeBrowsingTriggeredPopupBlocker::IsEnabled(

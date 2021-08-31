@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "content/shell/renderer/shell_content_renderer_client.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 
 namespace content {
 
@@ -21,7 +22,7 @@ class WebTestContentRendererClient : public ShellContentRendererClient {
   // ShellContentRendererClient implementation.
   void RenderThreadStarted() override;
   void RenderFrameCreated(RenderFrame* render_frame) override;
-  std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+  std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
   CreateWebSocketHandshakeThrottleProvider() override;
   void DidInitializeWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context) override;
@@ -29,6 +30,7 @@ class WebTestContentRendererClient : public ShellContentRendererClient {
   bool IsIdleMediaSuspendEnabled() override;
 
  private:
+  blink::CreateWebFrameWidgetCallback create_widget_callback_;
   std::unique_ptr<WebTestRenderThreadObserver> render_thread_observer_;
 };
 

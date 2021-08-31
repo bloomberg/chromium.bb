@@ -9,23 +9,24 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
-#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/components/web_app_id_constants.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/api/file_handlers/directory_util.h"
@@ -74,50 +75,10 @@ std::set<std::string> GetUniqueMimeTypes(
   return mime_types;
 }
 
-// Intercepts usage of executeTask(..) that wants to invoke the new MediaApp and
-// switches it back to Gallery if MediaApp is not available.
-// TODO(crbug/1030935): Remove this when the gallery app is properly removed or
-// the camera app has a new API (not fileManagerPrivate) to invoke its
-// "Camera Roll" viewer.
-void MaybeAdjustTaskForGalleryAppRemoval(
-    file_manager::file_tasks::TaskDescriptor* task,
-    const std::vector<FileSystemURL>& urls,
-    Profile* profile) {
-  if (task->app_id != chromeos::default_web_apps::kMediaAppId)
-    return;
-
-  auto* provider = web_app::WebAppProvider::Get(profile);
-  DCHECK(provider);
-  base::Optional<web_app::AppId> optional_app_id =
-      provider->system_web_app_manager().GetAppIdForSystemApp(
-          web_app::SystemAppType::MEDIA);
-
-  // If the MediaApp is installed, then there's nothing to do.
-  if (optional_app_id) {
-    // Sanity check the app id when installed. The app id at runtime is
-    // determined by the origin and the "start_url" manifest property.
-    DCHECK_EQ(*optional_app_id, chromeos::default_web_apps::kMediaAppId);
-    return;
-  }
-
-  // In tests, the SystemWebAppManager constructor early-exits without
-  // configuring any apps to install. So even if the MediaApp is enabled, it
-  // might not be installed.
-  DCHECK(
-      !base::FeatureList::IsEnabled(chromeos::features::kMediaApp) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType))
-      << "When enabled, MediaApp should only be missing in tests.";
-
-  DCHECK_EQ(task->task_type, file_manager::file_tasks::TASK_TYPE_WEB_APP);
-  task->task_type = file_manager::file_tasks::TASK_TYPE_FILE_HANDLER;
-  task->app_id = file_manager::kGalleryAppId;
-}
-
 }  // namespace
 
 FileManagerPrivateInternalExecuteTaskFunction::
-    FileManagerPrivateInternalExecuteTaskFunction()
-    : chrome_details_(this) {}
+    FileManagerPrivateInternalExecuteTaskFunction() = default;
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateInternalExecuteTaskFunction::Run() {
@@ -137,9 +98,10 @@ FileManagerPrivateInternalExecuteTaskFunction::Run() {
         Create(extensions::api::file_manager_private::TASK_RESULT_EMPTY)));
   }
 
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
   const scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
-          chrome_details_.GetProfile(), render_frame_host());
+          profile, render_frame_host());
 
   std::vector<FileSystemURL> urls;
   for (size_t i = 0; i < params->urls.size(); i++) {
@@ -151,11 +113,8 @@ FileManagerPrivateInternalExecuteTaskFunction::Run() {
     urls.push_back(url);
   }
 
-  MaybeAdjustTaskForGalleryAppRemoval(&task, urls,
-                                      chrome_details_.GetProfile());
-
   const bool result = file_manager::file_tasks::ExecuteFileTask(
-      chrome_details_.GetProfile(), source_url(), task, urls,
+      profile, source_url(), task, urls,
       base::BindOnce(
           &FileManagerPrivateInternalExecuteTaskFunction::OnTaskExecuted,
           this));
@@ -178,8 +137,7 @@ void FileManagerPrivateInternalExecuteTaskFunction::OnTaskExecuted(
 }
 
 FileManagerPrivateInternalGetFileTasksFunction::
-    FileManagerPrivateInternalGetFileTasksFunction()
-    : chrome_details_(this) {}
+    FileManagerPrivateInternalGetFileTasksFunction() = default;
 
 FileManagerPrivateInternalGetFileTasksFunction::
     ~FileManagerPrivateInternalGetFileTasksFunction() = default;
@@ -193,9 +151,10 @@ FileManagerPrivateInternalGetFileTasksFunction::Run() {
   if (params->urls.empty())
     return RespondNow(Error("No URLs provided"));
 
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
   const scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
-          chrome_details_.GetProfile(), render_frame_host());
+          profile, render_frame_host());
 
   // Collect all the URLs, convert them to GURLs, and crack all the urls into
   // file paths.
@@ -209,8 +168,7 @@ FileManagerPrivateInternalGetFileTasksFunction::Run() {
   }
 
   mime_type_collector_ =
-      std::make_unique<app_file_handler_util::MimeTypeCollector>(
-          chrome_details_.GetProfile());
+      std::make_unique<app_file_handler_util::MimeTypeCollector>(profile);
   mime_type_collector_->CollectForLocalPaths(
       local_paths_,
       base::BindOnce(
@@ -224,12 +182,12 @@ void FileManagerPrivateInternalGetFileTasksFunction::OnMimeTypesCollected(
     std::unique_ptr<std::vector<std::string>> mime_types) {
   is_directory_collector_ =
       std::make_unique<app_file_handler_util::IsDirectoryCollector>(
-          chrome_details_.GetProfile());
+          Profile::FromBrowserContext(browser_context()));
   is_directory_collector_->CollectForEntriesPaths(
       local_paths_,
       base::BindOnce(&FileManagerPrivateInternalGetFileTasksFunction::
                          OnAreDirectoriesAndMimeTypesCollected,
-                     this, base::Passed(std::move(mime_types))));
+                     this, std::move(mime_types)));
 }
 
 void FileManagerPrivateInternalGetFileTasksFunction::
@@ -244,7 +202,7 @@ void FileManagerPrivateInternalGetFileTasksFunction::
   }
 
   file_manager::file_tasks::FindAllTypesOfTasks(
-      chrome_details_.GetProfile(), entries, urls_,
+      Profile::FromBrowserContext(browser_context()), entries, urls_,
       base::BindOnce(
           &FileManagerPrivateInternalGetFileTasksFunction::OnFileTasksListed,
           this));

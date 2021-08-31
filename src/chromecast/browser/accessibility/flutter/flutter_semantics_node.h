@@ -5,10 +5,10 @@
 #ifndef CHROMECAST_BROWSER_ACCESSIBILITY_FLUTTER_FLUTTER_SEMANTICS_NODE_H_
 #define CHROMECAST_BROWSER_ACCESSIBILITY_FLUTTER_FLUTTER_SEMANTICS_NODE_H_
 
-#include <ui/gfx/geometry/rect.h>
-
 #include <string>
 #include <vector>
+
+#include "ui/gfx/geometry/rect.h"
 
 namespace ui {
 struct AXNodeData;
@@ -44,6 +44,7 @@ class FlutterSemanticsNode {
   virtual std::string GetLabelHint() const = 0;
   virtual bool HasValue() const = 0;
   virtual std::string GetValue() const = 0;
+  virtual bool IsKeyboardNode() const = 0;
 };
 
 }  // namespace accessibility

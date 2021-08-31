@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/uber_received_packet_manager.h"
+#include "quic/core/uber_received_packet_manager.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
 
 namespace quic {
 
@@ -108,24 +108,23 @@ void UberReceivedPacketManager::ResetAckStates(
 void UberReceivedPacketManager::EnableMultiplePacketNumberSpacesSupport(
     Perspective perspective) {
   if (supports_multiple_packet_number_spaces_) {
-    QUIC_BUG << "Multiple packet number spaces has already been enabled";
+    QUIC_BUG(quic_bug_10495_1)
+        << "Multiple packet number spaces has already been enabled";
     return;
   }
   if (received_packet_managers_[0].GetLargestObserved().IsInitialized()) {
-    QUIC_BUG << "Try to enable multiple packet number spaces support after any "
-                "packet has been received.";
+    QUIC_BUG(quic_bug_10495_2)
+        << "Try to enable multiple packet number spaces support after any "
+           "packet has been received.";
     return;
   }
   // In IETF QUIC, the peer is expected to acknowledge packets in Initial and
   // Handshake packets with minimal delay.
-  if (!GetQuicReloadableFlag(quic_delay_initial_ack) ||
-      perspective == Perspective::IS_CLIENT) {
+  if (perspective == Perspective::IS_CLIENT) {
     // Delay the first server ACK, because server ACKs are padded to
     // full size and count towards the amplification limit.
     received_packet_managers_[INITIAL_DATA].set_local_max_ack_delay(
         kAlarmGranularity);
-  } else {
-    QUIC_RELOADABLE_FLAG_COUNT(quic_delay_initial_ack);
   }
   received_packet_managers_[HANDSHAKE_DATA].set_local_max_ack_delay(
       kAlarmGranularity);
@@ -189,7 +188,7 @@ bool UberReceivedPacketManager::IsAckFrameEmpty(
 
 QuicPacketNumber UberReceivedPacketManager::peer_least_packet_awaiting_ack()
     const {
-  DCHECK(!supports_multiple_packet_number_spaces_);
+  QUICHE_DCHECK(!supports_multiple_packet_number_spaces_);
   return received_packet_managers_[0].peer_least_packet_awaiting_ack();
 }
 
@@ -211,13 +210,13 @@ void UberReceivedPacketManager::set_ack_frequency(size_t new_value) {
 }
 
 const QuicAckFrame& UberReceivedPacketManager::ack_frame() const {
-  DCHECK(!supports_multiple_packet_number_spaces_);
+  QUICHE_DCHECK(!supports_multiple_packet_number_spaces_);
   return received_packet_managers_[0].ack_frame();
 }
 
 const QuicAckFrame& UberReceivedPacketManager::GetAckFrame(
     PacketNumberSpace packet_number_space) const {
-  DCHECK(supports_multiple_packet_number_spaces_);
+  QUICHE_DCHECK(supports_multiple_packet_number_spaces_);
   return received_packet_managers_[packet_number_space].ack_frame();
 }
 
@@ -236,8 +235,9 @@ void UberReceivedPacketManager::set_save_timestamps(bool save_timestamps) {
 void UberReceivedPacketManager::OnAckFrequencyFrame(
     const QuicAckFrequencyFrame& frame) {
   if (!supports_multiple_packet_number_spaces_) {
-    QUIC_BUG << "Received AckFrequencyFrame when multiple packet number spaces "
-                "is not supported";
+    QUIC_BUG(quic_bug_10495_3)
+        << "Received AckFrequencyFrame when multiple packet number spaces "
+           "is not supported";
     return;
   }
   received_packet_managers_[APPLICATION_DATA].OnAckFrequencyFrame(frame);

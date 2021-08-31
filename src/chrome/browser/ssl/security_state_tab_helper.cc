@@ -13,13 +13,13 @@
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/browser/ssl/known_interception_disclosure_infobar_delegate.h"
-#include "chrome/browser/ssl/tls_deprecation_config.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -49,10 +49,10 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/chromeos/policy/policy_cert_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
@@ -72,50 +72,6 @@ void RecordSecurityLevel(
                               security_level,
                               security_state::SECURITY_LEVEL_COUNT);
   }
-}
-
-// Writes the SSL protocol version represented by a string to |version|, if the
-// version string is recognized.
-void SSLProtocolVersionFromString(const std::string& version_str,
-                                  net::SSLVersion* version) {
-  if (version_str == switches::kSSLVersionTLSv1) {
-    *version = net::SSLVersion::SSL_CONNECTION_VERSION_TLS1;
-  } else if (version_str == switches::kSSLVersionTLSv11) {
-    *version = net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_1;
-  } else if (version_str == switches::kSSLVersionTLSv12) {
-    *version = net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_2;
-  } else if (version_str == switches::kSSLVersionTLSv13) {
-    *version = net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_3;
-  }
-  return;
-}
-
-bool IsLegacyTLS(GURL url, int connection_status) {
-  if (!url.SchemeIsCryptographic())
-    return false;
-
-  // Mark the connection as legacy TLS if it is under the minimum version. By
-  // default we treat TLS < 1.2 as Legacy, unless the "SSLVersionMin" policy is
-  // set.
-  std::string ssl_version_min_str = switches::kSSLVersionTLSv12;
-  PrefService* local_state = g_browser_process->local_state();
-  if (local_state && local_state->HasPrefPath(prefs::kSSLVersionMin)) {
-    ssl_version_min_str = local_state->GetString(prefs::kSSLVersionMin);
-  }
-
-  // Convert the pref string to an SSLVersion, if it is valid. Otherwise use the
-  // default of TLS1_2.
-  net::SSLVersion ssl_version_min =
-      net::SSLVersion::SSL_CONNECTION_VERSION_TLS1_2;
-  SSLProtocolVersionFromString(ssl_version_min_str, &ssl_version_min);
-
-  net::SSLVersion ssl_version =
-      net::SSLConnectionStatusToVersion(connection_status);
-
-  // Signed Exchanges do not have connection status set. Exclude unknown TLS
-  // versions from legacy TLS treatment. See https://crbug.com/1041773.
-  return ssl_version != net::SSL_CONNECTION_VERSION_UNKNOWN &&
-         ssl_version < ssl_version_min;
 }
 
 }  // namespace
@@ -140,28 +96,6 @@ security_state::SecurityLevel SecurityStateTabHelper::GetSecurityLevel() {
 std::unique_ptr<security_state::VisibleSecurityState>
 SecurityStateTabHelper::GetVisibleSecurityState() {
   auto state = security_state::GetVisibleSecurityState(web_contents());
-
-  if (state->connection_info_initialized) {
-    state->connection_used_legacy_tls =
-        IsLegacyTLS(state->url, state->connection_status);
-    if (state->connection_used_legacy_tls) {
-      // We cache the results of the lookup for the duration of a navigation
-      // entry.
-      int navigation_id =
-          web_contents()->GetController().GetVisibleEntry()->GetUniqueID();
-      if (cached_should_suppress_legacy_tls_warning_ &&
-          cached_should_suppress_legacy_tls_warning_.value().first ==
-              navigation_id) {
-        state->should_suppress_legacy_tls_warning =
-            cached_should_suppress_legacy_tls_warning_.value().second;
-      } else {
-        state->should_suppress_legacy_tls_warning =
-            ShouldSuppressLegacyTLSWarning(state->url);
-        cached_should_suppress_legacy_tls_warning_ = std::pair<int, bool>(
-            navigation_id, state->should_suppress_legacy_tls_warning);
-      }
-    }
-  }
 
   // Malware status might already be known even if connection security
   // information is still being initialized, thus no need to check for that.
@@ -203,9 +137,6 @@ void SecurityStateTabHelper::DidStartNavigation(
     UMA_HISTOGRAM_ENUMERATION(
         "Security.SafetyTips.FormSubmission",
         GetVisibleSecurityState()->safety_tip_info.status);
-    UMA_HISTOGRAM_BOOLEAN(
-        "Security.LegacyTLS.FormSubmission",
-        GetLegacyTLSWarningStatus(*GetVisibleSecurityState()));
     if (navigation_handle->IsInMainFrame() &&
         !security_state::IsSchemeCryptographic(
             GetVisibleSecurityState()->url)) {
@@ -224,16 +155,16 @@ void SecurityStateTabHelper::DidStartNavigation(
 
 void SecurityStateTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // Ignore subframe navigations, same-document navigations, and navigations
-  // that did not commit (e.g. HTTP/204 or file downloads).
-  if (!navigation_handle->IsInMainFrame() ||
+  // Ignore non-primary FrameTree navigations, subframe navigations,
+  // same-document navigations, and navigations that did not commit (e.g.
+  // HTTP/204 or file downloads).
+  if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument() ||
       !navigation_handle->HasCommitted()) {
     return;
   }
 
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
+  content::NavigationEntry* entry = navigation_handle->GetNavigationEntry();
   if (entry) {
     UMA_HISTOGRAM_ENUMERATION(
         "Security.CertificateTransparency.MainFrameNavigationCompliance",
@@ -262,7 +193,7 @@ void SecurityStateTabHelper::DidChangeVisibleSecurityState() {
 }
 
 bool SecurityStateTabHelper::UsedPolicyInstalledCertificate() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   policy::PolicyCertService* service =
       policy::PolicyCertServiceFactory::GetForProfile(
           Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
@@ -284,7 +215,7 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
     return security_state::MALICIOUS_CONTENT_STATUS_NONE;
   scoped_refptr<SafeBrowsingUIManager> sb_ui_manager = sb_service->ui_manager();
   safe_browsing::SBThreatType threat_type;
-  if (sb_ui_manager->IsUrlWhitelistedOrPendingForWebContents(
+  if (sb_ui_manager->IsUrlAllowlistedOrPendingForWebContents(
           entry->GetURL(), false, entry, web_contents(), false, &threat_type)) {
     switch (threat_type) {
       case safe_browsing::SB_THREAT_TYPE_UNUSED:
@@ -309,10 +240,8 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
           return security_state::
               MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE;
         }
-        // If user has already changed Gaia password, returns the regular
-        // social engineering content status.
-        return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
 #endif
+        FALLTHROUGH;
       case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
@@ -321,10 +250,8 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
           return security_state::
               MALICIOUS_CONTENT_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
         }
-        // If user has already changed Gaia password, returns the regular
-        // social engineering content status.
-        return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
 #endif
+        FALLTHROUGH;
       case safe_browsing::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
 #if BUILDFLAG(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
@@ -333,20 +260,20 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
           return security_state::
               MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE;
         }
-        // If user has already changed Gaia password, returns the regular
-        // social engineering content status.
-        return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
 #endif
+        // If user has already changed password or FULL_SAFE_BROWSING isn't
+        // enabled, returns the regular social engineering content status.
+        return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
       case safe_browsing::SB_THREAT_TYPE_BILLING:
         return security_state::MALICIOUS_CONTENT_STATUS_BILLING;
       case safe_browsing::
           DEPRECATED_SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
       case safe_browsing::SB_THREAT_TYPE_URL_BINARY_MALWARE:
       case safe_browsing::SB_THREAT_TYPE_EXTENSION:
-      case safe_browsing::SB_THREAT_TYPE_BLACKLISTED_RESOURCE:
+      case safe_browsing::SB_THREAT_TYPE_BLOCKLISTED_RESOURCE:
       case safe_browsing::SB_THREAT_TYPE_API_ABUSE:
       case safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER:
-      case safe_browsing::SB_THREAT_TYPE_CSD_WHITELIST:
+      case safe_browsing::SB_THREAT_TYPE_CSD_ALLOWLIST:
       case safe_browsing::SB_THREAT_TYPE_AD_SAMPLE:
       case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_POPUP:
       case safe_browsing::SB_THREAT_TYPE_BLOCKED_AD_REDIRECT:

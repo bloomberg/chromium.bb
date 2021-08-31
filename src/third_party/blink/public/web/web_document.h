@@ -53,6 +53,13 @@ struct WebDistillabilityFeatures;
 
 using WebStyleSheetKey = WebString;
 
+// An enumeration used to enumerate usage of APIs that may prevent a document
+// from entering the back forward cache. |kAllow| means usage of the API will
+// not restrict the back forward cache. |kPossiblyDisallow| means usage of the
+// API will be marked as such and the back forward cache may not allow the
+// document to enter at its discretion.
+enum class BackForwardCacheAware { kAllow, kPossiblyDisallow };
+
 // Provides readonly access to some properties of a DOM document.
 class WebDocument : public WebNode {
  public:
@@ -75,7 +82,7 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebString Encoding() const;
   BLINK_EXPORT WebString ContentLanguage() const;
   BLINK_EXPORT WebString GetReferrer() const;
-  BLINK_EXPORT base::Optional<SkColor> ThemeColor() const;
+  BLINK_EXPORT absl::optional<SkColor> ThemeColor() const;
   // The url of the OpenSearch Desription Document (if any).
   BLINK_EXPORT WebURL OpenSearchDescriptionURL() const;
 
@@ -106,10 +113,11 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebElement FocusedElement() const;
 
   // Inserts the given CSS source code as a style sheet in the document.
-  BLINK_EXPORT WebStyleSheetKey InsertStyleSheet(
-      const WebString& source_code,
-      const WebStyleSheetKey* = nullptr,
-      CSSOrigin = kAuthorOrigin);
+  BLINK_EXPORT WebStyleSheetKey
+  InsertStyleSheet(const WebString& source_code,
+                   const WebStyleSheetKey* = nullptr,
+                   CSSOrigin = kAuthorOrigin,
+                   BackForwardCacheAware = BackForwardCacheAware::kAllow);
 
   // Removes the CSS which was previously inserted by a call to
   // InsertStyleSheet().
@@ -145,4 +153,4 @@ DECLARE_WEB_NODE_TYPE_CASTS(WebDocument);
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_H_

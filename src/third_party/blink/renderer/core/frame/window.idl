@@ -63,6 +63,7 @@
     [CrossOrigin, Custom=Setter] attribute Window opener;
     [Replaceable, CrossOrigin] readonly attribute Window? parent;
     [CheckSecurity=ReturnValue, Custom=Getter] readonly attribute Element? frameElement;
+
     [CallWith=Isolate, RaisesException] Window? open(optional USVString url="", optional DOMString target = "_blank", optional [TreatNullAs=EmptyString] DOMString features = "");
 
     // indexed properties
@@ -76,10 +77,7 @@
     [Affects=Nothing, LogActivity=GetterOnly] readonly attribute Navigator navigator;
     [LogActivity=GetterOnly, SecureContext, RuntimeEnabled=AppCache] readonly attribute ApplicationCache applicationCache;
 
-    // TODO(https://crbug.com/1157917): we implement the change at
-    // https://github.com/whatwg/html/pull/6214 but should also rename the
-    // backing implementation.
-    [RuntimeEnabled=OriginIsolationHeader, ImplementedAs=originIsolated] readonly attribute boolean originAgentCluster;
+    [RuntimeEnabled=OriginIsolationHeader] readonly attribute boolean originAgentCluster;
 
     // user prompts
     [Measure, CallWith=ScriptState] void alert();
@@ -212,7 +210,7 @@
     readonly attribute boolean isSecureContext;
 
     // TrustedTypes API: http://github.com/wicg/trusted-types
-    [RuntimeEnabled=TrustedDOMTypes] readonly attribute TrustedTypePolicyFactory trustedTypes;
+    [RuntimeEnabled=TrustedDOMTypes, CallWith=ScriptState] readonly attribute TrustedTypePolicyFactory trustedTypes;
 };
 
 Window includes GlobalEventHandlers;

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # Copyright 2016 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -10,7 +10,7 @@ import os
 import re
 import sys
 import subprocess
-
+import shutil
 
 _RSP_RE = re.compile(r' (@(.+?\.rsp)) ')
 _CMD_LINE_RE = re.compile(
@@ -23,7 +23,14 @@ def _IsTargettingWindows(target_os):
   if target_os is not None:
     # Available choices are based on: gn help target_os
     assert target_os in [
-        'android', 'chromeos', 'ios', 'linux', 'nacl', 'mac', 'win'
+        'android',
+        'chromeos',
+        'fuchsia',
+        'ios',
+        'linux',
+        'mac',
+        'nacl',
+        'win',
     ]
     return target_os == 'win'
   return sys.platform == 'win32'
@@ -50,8 +57,7 @@ def _ProcessCommand(command, target_os):
   match = _CMD_LINE_RE.search(command)
   if match:
     match_dict = match.groupdict()
-    command = ' '.join(
-        [match_dict['clang'], driver_mode, match_dict['args']])
+    command = ' '.join([match_dict['clang'], driver_mode, match_dict['args']])
   elif _debugging:
     print('Compile command didn\'t match expected regex!')
     print('Command:', command)
@@ -62,7 +68,7 @@ def _ProcessCommand(command, target_os):
   # output anyway.
   blocklisted_arguments = ['/nologo', '/showIncludes']
   command_parts = filter(lambda arg: arg not in blocklisted_arguments,
-    command.split())
+                         command.split())
 
   return " ".join(command_parts)
 
@@ -79,9 +85,9 @@ def _ProcessEntry(entry, target_os):
       rsp_path = os.path.join(entry['directory'], match.group(2))
       rsp_contents = open(rsp_path).read()
       entry['command'] = ''.join([
-          entry['command'][:match.start(1)],
-          rsp_contents,
-          entry['command'][match.end(1):]])
+          entry['command'][:match.start(1)], rsp_contents,
+          entry['command'][match.end(1):]
+      ])
   except IOError:
     if _debugging:
       print('Couldn\'t read response file for %s' % entry['file'])
@@ -109,8 +115,10 @@ def ProcessCompileDatabaseIfNeeded(compile_db, target_os=None):
 
   # Filter out NaCl stuff. The clang tooling chokes on them.
   # TODO(dcheng): This doesn't appear to do anything anymore, remove?
-  compile_db = [e for e in compile_db if '_nacl.cc.pdb' not in e['command']
-      and '_nacl_win64.cc.pdb' not in e['command']]
+  compile_db = [
+      e for e in compile_db if '_nacl.cc.pdb' not in e['command']
+      and '_nacl_win64.cc.pdb' not in e['command']
+  ]
   if _debugging:
     print('Filtered out %d entries...' % (original_length - len(compile_db)))
 
@@ -121,9 +129,9 @@ def ProcessCompileDatabaseIfNeeded(compile_db, target_os=None):
 
 def GetNinjaPath():
   ninja_executable = 'ninja.exe' if sys.platform == 'win32' else 'ninja'
-  return os.path.join(
-      os.path.dirname(os.path.realpath(__file__)),
-        '..', '..', '..', '..', 'third_party', 'depot_tools', ninja_executable)
+  return os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', '..',
+                      '..', '..', 'third_party', 'depot_tools',
+                      ninja_executable)
 
 
 # FIXME: This really should be a build target, rather than generated at runtime.
@@ -140,8 +148,11 @@ def GenerateWithNinja(path, targets=[]):
   # TODO(dcheng): Ensure that clang is enabled somehow.
 
   # First, generate the compile database.
+  ninja_path = GetNinjaPath()
+  if not os.path.exists(ninja_path):
+    ninja_path = shutil.which("ninja")
   json_compile_db = subprocess.check_output(
-      [GetNinjaPath(), '-C', path] + targets +
+      [ninja_path, '-C', path] + targets +
       ['-t', 'compdb', 'cc', 'cxx', 'objc', 'objcxx'])
   return json.loads(json_compile_db)
 

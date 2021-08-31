@@ -3,9 +3,12 @@
  * found in the LICENSE file. */
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
+import 'chrome://resources/cr_elements/icons.m.js';
 import './strings.m.js';
 import './signin_shared_css.js';
+import './signin_vars_css.js';
 
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
@@ -31,6 +34,32 @@ Polymer({
         return loadTimeData.getString('accountPictureUrl');
       },
     },
+
+    /** @private */
+    isProfileCreationFlow_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isProfileCreationFlow');
+      }
+    },
+
+    /** @private */
+    highlightColor_: {
+      type: String,
+      value() {
+        if (!loadTimeData.valueExists('highlightColor')) {
+          return '';
+        }
+
+        return loadTimeData.getString('highlightColor');
+      }
+    },
+
+    /** @private */
+    showEnterpriseBadge_: {
+      type: Boolean,
+      value: false,
+    }
   },
 
   /** @private {?SyncConfirmationBrowserProxy} */
@@ -41,8 +70,8 @@ Polymer({
     this.syncConfirmationBrowserProxy_ =
         SyncConfirmationBrowserProxyImpl.getInstance();
     this.addWebUIListener(
-        'account-image-changed', this.handleAccountImageChanged_.bind(this));
-    this.syncConfirmationBrowserProxy_.requestAccountImage();
+        'account-info-changed', this.handleAccountInfoChanged_.bind(this));
+    this.syncConfirmationBrowserProxy_.requestAccountInfo();
   },
 
   /** @private */
@@ -85,17 +114,21 @@ Polymer({
         Array.from(this.shadowRoot.querySelectorAll('[consent-description]'))
             .filter(element => element.clientWidth * element.clientHeight > 0)
             .map(element => element.innerHTML.trim());
-    assert(consentDescription);
+    assert(consentDescription.length);
     return consentDescription;
   },
 
   /**
    * Called when the account image changes.
-   * @param {string} imageSrc
+   * @param {{
+   *   src: string,
+   *   showEnterpriseBadge: boolean,
+   * }} accountInfo
    * @private
    */
-  handleAccountImageChanged_(imageSrc) {
-    this.accountImageSrc_ = imageSrc;
+  handleAccountInfoChanged_(accountInfo) {
+    this.accountImageSrc_ = accountInfo.src;
+    this.showEnterpriseBadge_ = accountInfo.showEnterpriseBadge;
   },
 
 });

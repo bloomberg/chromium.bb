@@ -83,8 +83,13 @@ These suppressions files should only be used for temporarily ignoring warnings
 that are too hard (or not possible) to suppress locally, and permanently
 ignoring warnings only for this target. To permanently ignore a warning for all
 targets, add the warning to the `_DISABLED_ALWAYS` list in
-[build/android/gyp/lint.py](https://source.chromium.org/chromium/chromium/src/+/master:build/android/gyp/lint.py).
+[build/android/gyp/lint.py](https://source.chromium.org/chromium/chromium/src/+/main:build/android/gyp/lint.py).
 Disabling globally makes lint a bit faster.
+
+The exception to the above rule is for warnings that affect multiple languages.
+Feel free to suppress those in lint-suppressions.xml files since it is not
+practical to suppress them in each language file and it is a lot of extra bloat
+to list out every language for every violation in lint-baseline.xml files.
 
 Here is an example of how to structure a suppressions XML file:
 

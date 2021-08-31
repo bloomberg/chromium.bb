@@ -5,9 +5,13 @@
 #include <functional>
 #include <string>
 
+#include <TargetConditionals.h>
+
 #include "base/bind.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/testing/embedded_test_server_handlers.h"
@@ -26,6 +30,22 @@ namespace {
 std::string GetErrorMessage() {
   return net::ErrorToShortString(net::ERR_CONNECTION_CLOSED);
 }
+
+const std::string kRedirectPage = "/redirect-page.html";
+
+// Provides responses for the different pages.
+std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
+    const net::test_server::HttpRequest& request) {
+  if (request.GetURL().path() == kRedirectPage) {
+    auto result = std::make_unique<net::test_server::BasicHttpResponse>();
+    result->set_code(net::HTTP_MOVED_PERMANENTLY);
+    result->AddCustomHeader("Location", "data:text/plain,Hello World");
+    return std::move(result);
+  }
+
+  return nullptr;
+}
+
 }  // namespace
 
 // Tests critical user journeys reloated to page load errors.
@@ -61,8 +81,79 @@ std::string GetErrorMessage() {
       &net::test_server::HandlePrefixedRequest, "/echo-query",
       base::BindRepeating(&testing::HandleEchoQueryOrCloseSocket,
                           std::cref(_serverRespondsWithContent))));
+  self.testServer->RegisterDefaultHandler(
+      base::BindRepeating(&StandardResponse));
 
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+}
+
+// Tests that the error page is correctly displayed after navigating back to it
+// multiple times. See http://crbug.com/944037 .
+// TODO:(crbug.com/1185639): Re-enable this test on simulator.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testBackForwardErrorPage FLAKY_testBackForwardErrorPage
+#else
+#define MAYBE_testBackForwardErrorPage testBackForwardErrorPage
+#endif
+- (void)MAYBE_testBackForwardErrorPage {
+  // TODO(crbug.com/1153261): Going back/forward on the same host is failing.
+  // Use chrome:// to have a different hosts.
+  std::string errorText = net::ErrorToShortString(net::ERR_INVALID_URL);
+  self.serverRespondsWithContent = YES;
+
+  [ChromeEarlGrey loadURL:GURL("chrome://invalid")];
+  [ChromeEarlGrey waitForWebStateContainingText:errorText];
+  // Add some delay otherwise the back/forward navigations are occurring too
+  // fast.
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
+
+  // Navigate to a page which responds.
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo-query?bar")];
+  [ChromeEarlGrey waitForWebStateContainingText:"bar"];
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
+
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey waitForWebStateContainingText:errorText];
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
+
+  [ChromeEarlGrey goForward];
+  [ChromeEarlGrey waitForWebStateContainingText:"bar"];
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
+
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey waitForWebStateContainingText:errorText];
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.2));
+
+  [ChromeEarlGrey goForward];
+  [ChromeEarlGrey waitForWebStateContainingText:"bar"];
+}
+
+// Loads the URL which fails to load, then sucessfully navigates back/forward to
+// the page.
+// TODO:(crbug.com/1185639): Re-enable this test on simulator.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testNavigateForwardToErrorPage \
+  FLAKY_testNavigateForwardToErrorPage
+#else
+#define MAYBE_testNavigateForwardToErrorPage testNavigateForwardToErrorPage
+#endif
+- (void)MAYBE_testNavigateForwardToErrorPage {
+  self.serverRespondsWithContent = YES;
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo-query?bar")];
+  [ChromeEarlGrey waitForWebStateContainingText:"bar"];
+
+  // No response leads to ERR_CONNECTION_CLOSED error.
+  self.serverRespondsWithContent = NO;
+  [ChromeEarlGrey loadURL:self.testServer->GetURL("/echo-query?foo")];
+  [ChromeEarlGrey waitForWebStateContainingText:GetErrorMessage()];
+
+  self.serverRespondsWithContent = YES;
+  [ChromeEarlGrey goBack];
+  [ChromeEarlGrey waitForWebStateContainingText:"bar"];
+
+  // Navigate forward to the error page, which should load without errors.
+  [ChromeEarlGrey goForward];
+  [ChromeEarlGrey waitForWebStateContainingText:"foo"];
 }
 
 // Loads the URL which fails to load, then sucessfully reloads the page.
@@ -109,6 +200,18 @@ std::string GetErrorMessage() {
   GREYAssertEqual(1, [ChromeEarlGrey navigationBackListItemsCount],
                   @"The navigation back list should still have only 1 entries "
                   @"after the restoration.");
+}
+
+// Loads a URL which redirect to a data URL and check that the navigation is
+// blocked on the first URL.
+- (void)testRedirectToData {
+  self.serverRespondsWithContent = YES;
+  [ChromeEarlGrey loadURL:self.testServer->GetURL(kRedirectPage)];
+  [ChromeEarlGrey waitForWebStateContainingText:net::ErrorToShortString(
+                                                    net::ERR_UNSAFE_REDIRECT)];
+  [ChromeEarlGrey waitForWebStateContainingText:kRedirectPage];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
+      assertWithMatcher:chrome_test_util::OmniboxContainingText(kRedirectPage)];
 }
 
 @end

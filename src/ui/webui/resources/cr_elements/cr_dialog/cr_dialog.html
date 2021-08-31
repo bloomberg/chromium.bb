@@ -65,13 +65,14 @@
 
       :host ::slotted([slot=body]) {
         color: var(--cr-secondary-text-color);
-        padding: 0 20px;
+        padding: 0 var(--cr-dialog-body-padding-horizontal, 20px);
       }
 
       :host ::slotted([slot=title]) {
         color: var(--cr-primary-text-color);
         flex: 1;
-        font-size: calc(15 / 13 * 100%);
+        font-family: var(--cr-dialog-font-family, inherit);
+        font-size: var(--cr-dialog-title-font-size, calc(15 / 13 * 100%));
         line-height: 1;
         padding-bottom: var(--cr-dialog-title-slot-padding-bottom, 16px);
         padding-inline-end:  var(--cr-dialog-title-slot-padding-end, 20px);
@@ -82,9 +83,9 @@
       :host ::slotted([slot=button-container]) {
         display: flex;
         justify-content: flex-end;
-        padding-bottom: 16px;
-        padding-inline-end: 16px;
-        padding-inline-start: 16px;
+        padding-bottom: var(--cr-dialog-button-container-padding-bottom, 16px);
+        padding-inline-end: var(--cr-dialog-button-container-padding-horizontal, 16px);
+        padding-inline-start: var(--cr-dialog-button-container-padding-horizontal, 16px);
         padding-top: 24px;
       }
 

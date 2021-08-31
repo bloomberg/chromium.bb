@@ -7,9 +7,6 @@
 
 #include <stdint.h>
 
-#include <memory>
-#include <string>
-#include <vector>
 
 #include "build/build_config.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -24,7 +21,7 @@ namespace internal {
 class InputMethodDelegate;
 }  // namespace internal
 
-class InputMethodKeyboardController;
+class VirtualKeyboardController;
 class InputMethodObserver;
 class KeyEvent;
 class TextInputClient;
@@ -77,6 +74,17 @@ class InputMethod {
   // used only for IME functionalities specific to Windows.
   virtual bool OnUntranslatedIMEMessage(const MSG event,
                                         NativeEventResult* result) = 0;
+
+  // Called by the focused client whenever its input locale is changed.
+  // This method is currently used only on Windows.
+  // This method does not take a parameter of TextInputClient for historical
+  // reasons.
+  // TODO(ime): Consider to take a parameter of TextInputClient.
+  virtual void OnInputLocaleChanged() = 0;
+
+  // Returns whether the system input locale is in CJK languages.
+  // This is only used in Windows platforms.
+  virtual bool IsInputLocaleCJK() const = 0;
 #endif
 
   // Sets the text input client which receives text input events such as
@@ -117,17 +125,6 @@ class InputMethod {
   // focused client.
   virtual void CancelComposition(const TextInputClient* client) = 0;
 
-  // Called by the focused client whenever its input locale is changed.
-  // This method is currently used only on Windows.
-  // This method does not take a parameter of TextInputClient for historical
-  // reasons.
-  // TODO(ime): Consider to take a parameter of TextInputClient.
-  virtual void OnInputLocaleChanged() = 0;
-
-  // Returns whether the system input locale is in CJK languages.
-  // This is only used in Windows platforms.
-  virtual bool IsInputLocaleCJK() const = 0;
-
   // TODO(yoichio): Following 3 methods(GetTextInputType, GetTextInputMode and
   // CanComposeInline) calls client's same method and returns its value. It is
   // not InputMethod itself's infomation. So rename these to
@@ -167,7 +164,7 @@ class InputMethod {
   virtual void SetOnScreenKeyboardBounds(const gfx::Rect& new_bounds) {}
 
   // Return the keyboard controller; used only on Windows.
-  virtual InputMethodKeyboardController* GetInputMethodKeyboardController() = 0;
+  virtual VirtualKeyboardController* GetVirtualKeyboardController() = 0;
 };
 
 }  // namespace ui

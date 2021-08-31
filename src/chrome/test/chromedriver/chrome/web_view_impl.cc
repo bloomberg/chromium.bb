@@ -163,6 +163,29 @@ WebViewImpl::WebViewImpl(const std::string& id,
                          const bool w3c_compliant,
                          const WebViewImpl* parent,
                          const BrowserInfo* browser_info,
+                         std::unique_ptr<DevToolsClient> client)
+    : id_(id),
+      w3c_compliant_(w3c_compliant),
+      browser_info_(browser_info),
+      is_locked_(false),
+      is_detached_(false),
+      parent_(parent),
+      client_(std::move(client)),
+      dom_tracker_(nullptr),
+      frame_tracker_(nullptr),
+      dialog_manager_(nullptr),
+      mobile_emulation_override_manager_(nullptr),
+      geolocation_override_manager_(nullptr),
+      network_conditions_override_manager_(nullptr),
+      heap_snapshot_taker_(nullptr),
+      is_service_worker_(true) {
+  client_->SetOwner(this);
+}
+
+WebViewImpl::WebViewImpl(const std::string& id,
+                         const bool w3c_compliant,
+                         const WebViewImpl* parent,
+                         const BrowserInfo* browser_info,
                          std::unique_ptr<DevToolsClient> client,
                          const DeviceMetrics* device_metrics,
                          std::string page_load_strategy)
@@ -182,7 +205,8 @@ WebViewImpl::WebViewImpl(const std::string& id,
           new GeolocationOverrideManager(client_.get())),
       network_conditions_override_manager_(
           new NetworkConditionsOverrideManager(client_.get())),
-      heap_snapshot_taker_(new HeapSnapshotTaker(client_.get())) {
+      heap_snapshot_taker_(new HeapSnapshotTaker(client_.get())),
+      is_service_worker_(false) {
   // Downloading in headless mode requires the setting of
   // Browser.setDownloadBehavior. This is handled by the
   // DownloadDirectoryOverrideManager, which is only instantiated
@@ -201,6 +225,10 @@ WebViewImpl::WebViewImpl(const std::string& id,
 }
 
 WebViewImpl::~WebViewImpl() {}
+
+bool WebViewImpl::IsServiceWorker() const {
+  return is_service_worker_;
+}
 
 WebViewImpl* WebViewImpl::CreateChild(const std::string& session_id,
                                       const std::string& target_id) const {
@@ -467,8 +495,8 @@ Status WebViewImpl::CallUserSyncScript(const std::string& frame,
                                        std::unique_ptr<base::Value>* result) {
   base::ListValue sync_args;
   sync_args.AppendString(script);
-  // Deep-copy needed since ListValue only accepts unique_ptrs of Values.
-  sync_args.Append(args.CreateDeepCopy());
+  // Clone needed since Append only accepts Value as an rvalue.
+  sync_args.Append(args.Clone());
   return CallFunctionWithTimeout(frame, kExecuteScriptScript, sync_args,
                                  timeout, result);
 }
@@ -825,6 +853,8 @@ Status WebViewImpl::AddCookie(const std::string& name,
   std::unique_ptr<base::DictionaryValue> result;
   Status status =
       client_->SendCommandAndGetResult("Network.setCookie", params, &result);
+  if (status.IsError())
+    return Status(kUnableToSetCookie);
   bool success;
   if (!result->GetBoolean("success", &success) || !success)
     return Status(kUnableToSetCookie);
@@ -1054,7 +1084,7 @@ Status WebViewImpl::SetFileInputFiles(const std::string& frame,
       return Status(kUnknownError,
                     "path is not canonical: " + files[i].AsUTF8Unsafe());
     }
-    file_list.AppendString(files[i].value());
+    file_list.AppendString(files[i].AsUTF8Unsafe());
   }
 
   base::DictionaryValue setFilesParams;
@@ -1154,7 +1184,7 @@ Status WebViewImpl::CallAsyncFunctionInternal(
     std::unique_ptr<base::Value>* result) {
   base::ListValue async_args;
   async_args.AppendString("return (" + function + ").apply(null, arguments);");
-  async_args.Append(args.CreateDeepCopy());
+  async_args.Append(args.Clone());
   async_args.AppendBoolean(is_user_supplied);
   std::unique_ptr<base::Value> tmp;
   Timeout local_timeout(timeout);
@@ -1203,7 +1233,7 @@ Status WebViewImpl::CallAsyncFunctionInternal(
 
     base::Value* value = NULL;
     if (result_info->Get("value", &value)) {
-      result->reset(value->DeepCopy());
+      *result = base::Value::ToUniquePtrValue(value->Clone());
       return Status(kOk);
     }
 
@@ -1217,7 +1247,8 @@ Status WebViewImpl::CallAsyncFunctionInternal(
 }
 
 void WebViewImpl::SetFrame(const std::string& new_frame_id) {
-  navigation_tracker_->SetFrame(new_frame_id);
+  if (!is_service_worker_)
+    navigation_tracker_->SetFrame(new_frame_id);
 }
 
 Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
@@ -1293,14 +1324,14 @@ std::unique_ptr<base::Value> WebViewImpl::GetCastSinks() {
   if (!cast_tracker_)
     cast_tracker_ = std::make_unique<CastTracker>(client_.get());
   HandleReceivedEvents();
-  return std::unique_ptr<base::Value>(cast_tracker_->sinks().DeepCopy());
+  return base::Value::ToUniquePtrValue(cast_tracker_->sinks().Clone());
 }
 
 std::unique_ptr<base::Value> WebViewImpl::GetCastIssueMessage() {
   if (!cast_tracker_)
     cast_tracker_ = std::make_unique<CastTracker>(client_.get());
   HandleReceivedEvents();
-  return std::unique_ptr<base::Value>(cast_tracker_->issue().DeepCopy());
+  return base::Value::ToUniquePtrValue(cast_tracker_->issue().Clone());
 }
 
 WebViewImplHolder::WebViewImplHolder(WebViewImpl* web_view) {
@@ -1413,7 +1444,7 @@ Status EvaluateScriptAndGetValue(DevToolsClient* client,
     base::Value* value;
     if (!temp_result->Get("value", &value))
       return Status(kUnknownError, "Runtime.evaluate missing 'value'");
-    result->reset(value->DeepCopy());
+    *result = base::Value::ToUniquePtrValue(value->Clone());
   }
   return Status(kOk);
 }
@@ -1438,7 +1469,7 @@ Status ParseCallFunctionResult(const base::Value& temp_result,
     // Missing 'value' indicates the JavaScript code didn't return a value.
     return Status(kOk);
   }
-  result->reset(unscoped_value->DeepCopy());
+  *result = base::Value::ToUniquePtrValue(unscoped_value->Clone());
   return Status(kOk);
 }
 

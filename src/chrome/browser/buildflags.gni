@@ -3,12 +3,11 @@
 # found in the LICENSE file.
 
 import("//build/config/chrome_build.gni")
+import("//build/config/chromeos/ui_mode.gni")
+import("//build/toolchain/gcc_toolchain.gni")
+import("//chromecast/chromecast.gni")
 
 declare_args() {
-  # Enable Kaleidoscope if we are not Android and we have access to the internal
-  # code.
-  enable_kaleidoscope = !is_android && is_chrome_branded
-
   # Chromium Updater is a cross-platform updater for desktop clients built using
   # Chromium code and tools. Code is in //chrome/updater. The design doc is
   # located at http://bit.ly/chromium-updater. Chrome is currently installed and
@@ -17,5 +16,16 @@ declare_args() {
   # TODO(crbug.com/1054060)
   enable_chromium_updater = false
 
-  tpm_fallback = false
+  # TODO(stahon@microsoft.com) Remove this when app_session_service is enabled
+  # across the board. Until then, this buildflag allows some platforms to use
+  # app_session_service and some not.
+  enable_app_session_service =
+      !(is_chromeos_lacros || is_chromecast || is_android)
 }
+
+# If true, the resource .pak files will be hashed and the digest will be
+# embedded in the binary and checked at run-time. This is incompatible with
+# enable_resource_allowlist_generation on Windows because it creates a circular
+# dependency with chrome_dll.
+enable_pak_file_integrity_checks =
+    !(enable_resource_allowlist_generation && is_win) && !is_android

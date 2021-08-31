@@ -2,7 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import sys
+import six
 
 from telemetry.internal.actions import page_action
 
@@ -17,7 +19,9 @@ class WaitForElementAction(page_action.ElementPageAction):
                             timeout_in_seconds=self.timeout)
     except py_utils.TimeoutException as e:
       # Rethrow with the original stack trace for better debugging.
-      raise py_utils.TimeoutException, \
+      six.reraise(
+          py_utils.TimeoutException,
           py_utils.TimeoutException(
-              'Timeout while waiting for element.\n' + e.message), \
+              'Timeout while waiting for element.\n' + e.message),
           sys.exc_info()[2]
+      )

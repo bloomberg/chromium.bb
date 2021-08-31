@@ -14,10 +14,11 @@
 #include <memory>
 #include <string>
 
+#include "api/sequence_checker.h"
 #include "api/task_queue/task_queue_factory.h"
 #include "rtc_base/constructor_magic.h"
 #include "rtc_base/ignore_wundef.h"
-#include "rtc_base/synchronization/sequence_checker.h"
+#include "rtc_base/system/no_unique_address.h"
 #include "rtc_base/task_queue.h"
 
 #ifdef WEBRTC_NETWORK_TESTER_PROTO
@@ -49,7 +50,7 @@ class PacketSender {
   void UpdateTestSetting(size_t packet_size, int64_t send_interval_ms);
 
  private:
-  SequenceChecker worker_queue_checker_;
+  RTC_NO_UNIQUE_ADDRESS SequenceChecker worker_queue_checker_;
   size_t packet_size_ RTC_GUARDED_BY(worker_queue_checker_);
   int64_t send_interval_ms_ RTC_GUARDED_BY(worker_queue_checker_);
   int64_t sequence_number_ RTC_GUARDED_BY(worker_queue_checker_);

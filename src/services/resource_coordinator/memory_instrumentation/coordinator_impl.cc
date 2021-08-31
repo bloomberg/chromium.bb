@@ -12,11 +12,11 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -64,8 +64,8 @@ class StringWrapper : public base::trace_event::ConvertableToTraceFormat {
 CoordinatorImpl::CoordinatorImpl()
     : next_dump_id_(0),
       client_process_timeout_(base::TimeDelta::FromSeconds(15)),
-      use_proto_writer_(base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseMemoryTrackingProtoWriter)) {
+      use_proto_writer_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseMemoryTrackingJsonWriter)) {
   DCHECK(!g_coordinator_impl);
   g_coordinator_impl = this;
   base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
@@ -89,11 +89,6 @@ CoordinatorImpl* CoordinatorImpl::GetInstance() {
   return g_coordinator_impl;
 }
 
-void CoordinatorImpl::BindController(
-    mojo::PendingReceiver<mojom::CoordinatorController> receiver) {
-  controller_receiver_.Bind(std::move(receiver));
-}
-
 void CoordinatorImpl::RegisterHeapProfiler(
     mojo::PendingRemote<mojom::HeapProfiler> profiler,
     mojo::PendingReceiver<mojom::HeapProfilerHelper> helper_receiver) {
@@ -107,7 +102,7 @@ void CoordinatorImpl::RegisterClientProcess(
     mojo::PendingRemote<mojom::ClientProcess> client_process,
     mojom::ProcessType process_type,
     base::ProcessId process_id,
-    const base::Optional<std::string>& service_name) {
+    const absl::optional<std::string>& service_name) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   mojo::Remote<mojom::ClientProcess> process(std::move(client_process));
   coordinator_receivers_.Add(this, std::move(receiver), process_id);
@@ -253,6 +248,9 @@ void CoordinatorImpl::UnregisterClientProcess(base::ProcessId process_id) {
       if (current->process_id != process_id)
         continue;
       RemovePendingResponse(process_id, current->type);
+      DLOG(ERROR)
+          << "Memory dump request failed due to disconnected child process "
+          << process_id;
       request->failed_memory_dump_count++;
     }
     FinalizeGlobalMemoryDumpIfAllManagersReplied();
@@ -339,6 +337,10 @@ void CoordinatorImpl::OnQueuedRequestTimedOut(uint64_t dump_guid) {
     return;
 
   // Fail all remaining dumps being waited upon and clear the vector.
+  if (request->pending_responses.size() > 0) {
+    DLOG(ERROR) << "Global dump request timed out waiting for "
+                << request->pending_responses.size() << " requests";
+  }
   request->failed_memory_dump_count += request->pending_responses.size();
   request->pending_responses.clear();
 
@@ -451,8 +453,8 @@ void CoordinatorImpl::OnChromeMemoryDumpResponse(
   response->chrome_dump = std::move(chrome_memory_dump);
 
   if (!success) {
+    DLOG(ERROR) << "Memory dump request failed: NACK from client process";
     request->failed_memory_dump_count++;
-    VLOG(1) << "RequestGlobalMemoryDump() FAIL: NACK from client process";
   }
 
   FinalizeGlobalMemoryDumpIfAllManagersReplied();
@@ -479,8 +481,8 @@ void CoordinatorImpl::OnOSMemoryDumpResponse(uint64_t dump_guid,
   request->responses[process_id].os_dumps = std::move(os_dumps);
 
   if (!success) {
+    DLOG(ERROR) << "Memory dump request failed: NACK from client process";
     request->failed_memory_dump_count++;
-    VLOG(1) << "RequestGlobalMemoryDump() FAIL: NACK from client process";
   }
 
   FinalizeGlobalMemoryDumpIfAllManagersReplied();
@@ -593,7 +595,7 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
 CoordinatorImpl::ClientInfo::ClientInfo(
     mojo::Remote<mojom::ClientProcess> client,
     mojom::ProcessType process_type,
-    base::Optional<std::string> service_name)
+    absl::optional<std::string> service_name)
     : client(std::move(client)),
       process_type(process_type),
       service_name(std::move(service_name)) {}

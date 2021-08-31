@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace chromeos {
@@ -49,8 +49,6 @@ class MockAssistant : public Assistant {
   MOCK_METHOD1(OnAccessibilityStatusChanged, void(bool));
 
   MOCK_METHOD1(SendAssistantFeedback, void(const AssistantFeedback&));
-
-  MOCK_METHOD1(NotifyEntryIntoAssistantUi, void(AssistantEntryPoint));
 
   MOCK_METHOD0(StopAlarmTimerRinging, void());
   MOCK_METHOD1(CreateTimer, void(base::TimeDelta));

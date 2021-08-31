@@ -20,17 +20,18 @@
 
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 
-#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/content_security_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/events/current_input_event.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -54,6 +55,7 @@
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/renderer_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -84,7 +86,7 @@ bool DoesParentAllowLazyLoadingChildren(Document& document) {
   return containing_frame_owner->ShouldLazyLoadChildren();
 }
 
-bool IsFrameLazyLoadable(const ExecutionContext* context,
+bool IsFrameLazyLoadable(ExecutionContext* context,
                          const KURL& url,
                          bool is_loading_attr_lazy,
                          bool should_lazy_load_children) {
@@ -97,6 +99,11 @@ bool IsFrameLazyLoadable(const ExecutionContext* context,
   // URLs like invalid or empty URLs, "about:blank", local file URLs, etc.
   // that it doesn't make sense to lazily load.
   if (!url.ProtocolIsInHTTPFamily())
+    return false;
+
+  // Do not lazyload frames when JavaScript is disabled, regardless of the
+  // `loading` attribute.
+  if (!context->CanExecuteScripts(kNotAboutToExecuteScript))
     return false;
 
   if (is_loading_attr_lazy)
@@ -198,6 +205,12 @@ void HTMLFrameOwnerElement::SetContentFrame(Frame& frame) {
   DCHECK(!lazy_load_frame_observer_ ||
          !lazy_load_frame_observer_->IsLazyLoadPending());
 
+  DCHECK_NE(content_frame_, &frame);
+  auto* resource_coordinator = RendererResourceCoordinator::Get();
+  if (content_frame_)
+    resource_coordinator->OnBeforeContentFrameDetached(*content_frame_, *this);
+  resource_coordinator->OnBeforeContentFrameAttached(frame, *this);
+
   content_frame_ = &frame;
 
   // Invalidate compositing inputs, because a remote frame child can cause the
@@ -226,6 +239,9 @@ void HTMLFrameOwnerElement::ClearContentFrame() {
   CancelPendingLazyLoad();
 
   DCHECK_EQ(content_frame_->Owner(), this);
+  RendererResourceCoordinator::Get()->OnBeforeContentFrameDetached(
+      *content_frame_, *this);
+
   content_frame_ = nullptr;
 
   for (ContainerNode* node = this; node; node = node->ParentOrShadowHostNode())
@@ -374,41 +390,12 @@ void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
   properties->allow_payment_request = AllowPaymentRequest();
   properties->is_display_none = IsDisplayNone();
   properties->color_scheme = GetColorScheme();
-  properties->required_csp =
-      RequiredCsp().IsNull() ? WTF::g_empty_string : RequiredCsp();
 
   GetDocument()
       .GetFrame()
       ->GetLocalFrameHostRemote()
       .DidChangeFrameOwnerProperties(ContentFrame()->GetFrameToken(),
                                      std::move(properties));
-}
-
-void HTMLFrameOwnerElement::CSPAttributeChanged() {
-  if (!base::FeatureList::IsEnabled(network::features::kOutOfBlinkCSPEE))
-    return;
-
-  // Don't notify about updates if ContentFrame() is null, for example when
-  // the subframe hasn't been created yet; or if we are in the middle of
-  // swapping one frame for another, in which case the final state
-  // will be propagated at the end of the swapping operation.
-  if (is_swapping_frames_ || !ContentFrame())
-    return;
-
-  String fake_header =
-      "HTTP/1.1 200 OK\nContent-Security-Policy: " + RequiredCsp();
-  network::mojom::blink::ParsedHeadersPtr parsed_headers =
-      ParseHeaders(fake_header, GetDocument().Url());
-
-  DCHECK_LE(parsed_headers->content_security_policy.size(), 1u);
-
-  network::mojom::blink::ContentSecurityPolicyPtr csp =
-      parsed_headers->content_security_policy.IsEmpty()
-          ? nullptr
-          : std::move(parsed_headers->content_security_policy[0]);
-
-  GetDocument().GetFrame()->GetLocalFrameHostRemote().DidChangeCSPAttribute(
-      ContentFrame()->GetFrameToken(), std::move(csp));
 }
 
 void HTMLFrameOwnerElement::AddResourceTiming(const ResourceTimingInfo& info) {
@@ -502,6 +489,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
     const AtomicString& frame_name,
     bool replace_current_item) {
   TRACE_EVENT0("navigation", "HTMLFrameOwnerElement::LoadOrRedirectSubframe");
+
   // Update the |should_lazy_load_children_| value according to the "loading"
   // attribute immediately, so that it still gets respected even if the "src"
   // attribute gets parsed in ParseAttribute() before the "loading" attribute

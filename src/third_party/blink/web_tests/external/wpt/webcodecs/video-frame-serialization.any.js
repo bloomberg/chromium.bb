@@ -20,13 +20,13 @@ test(t => {
 
   assert_equals(frame.timestamp, clone.timestamp);
   assert_equals(frame.duration, clone.duration);
-  assert_equals(frame.cropWidth, clone.cropWidth);
-  assert_equals(frame.cropHeight, clone.cropHeight);
-  assert_equals(frame.cropWidth, clone.cropWidth);
-  assert_equals(frame.cropHeight, clone.cropHeight);
+  assert_equals(frame.visibleRegion.left, clone.visibleRegion.left);
+  assert_equals(frame.visibleRegion.top, clone.visibleRegion.top);
+  assert_equals(frame.visibleRegion.width, clone.visibleRegion.width);
+  assert_equals(frame.visibleRegion.height, clone.visibleRegion.height);
 
-  frame.destroy();
-  clone.destroy();
+  frame.close();
+  clone.close();
 }, 'Test we can clone a VideoFrame.');
 
 test(t => {
@@ -35,23 +35,23 @@ test(t => {
   let copy = frame;
   let clone = frame.clone();
 
-  frame.destroy();
+  frame.close();
 
   assert_not_equals(copy.timestamp, defaultInit.timestamp);
   assert_equals(clone.timestamp, defaultInit.timestamp);
 
-  clone.destroy();
-}, 'Verify destroying a frame doesn\'t affect its clones.');
+  clone.close();
+}, 'Verify closing a frame doesn\'t affect its clones.');
 
 test(t => {
   let frame = createDefaultVideoFrame();
 
-  frame.destroy();
+  frame.close();
 
   assert_throws_dom("InvalidStateError", () => {
     let clone = frame.clone();
   });
-}, 'Verify cloning a destroyed frame throws.');
+}, 'Verify cloning a closed frame throws.');
 
 async_test(t => {
   let localFrame = createDefaultVideoFrame();
@@ -62,39 +62,34 @@ async_test(t => {
 
   externalPort.onmessage = t.step_func((e) => {
     let externalFrame = e.data;
-    externalFrame.destroy();
-    externalPort.postMessage("Done");
-  })
-
-  localPort.onmessage = t.step_func_done((e) => {
-    assert_not_equals(localFrame.timestamp, defaultInit.timestamp);
-  })
-
-  localPort.postMessage(localFrame);
-
-}, 'Verify destroying frames propagates accross contexts.');
-
-async_test(t => {
-  let localFrame = createDefaultVideoFrame();
-
-  let channel = new MessageChannel();
-  let localPort = channel.port1;
-  let externalPort = channel.port2;
-
-  externalPort.onmessage = t.step_func((e) => {
-    let externalFrame = e.data;
-    externalFrame.destroy();
+    externalFrame.close();
     externalPort.postMessage("Done");
   })
 
   localPort.onmessage = t.step_func_done((e) => {
     assert_equals(localFrame.timestamp, defaultInit.timestamp);
-    localFrame.destroy();
+    localFrame.close();
   })
 
-  localPort.postMessage(localFrame.clone());
+  localPort.postMessage(localFrame);
+}, 'Verify closing frames does not propagate accross contexts.');
 
-}, 'Verify destroying cloned frames doesn\'t propagate accross contexts.');
+async_test(t => {
+  let localFrame = createDefaultVideoFrame();
+
+  let channel = new MessageChannel();
+  let localPort = channel.port1;
+  let externalPort = channel.port2;
+
+  externalPort.onmessage = t.step_func_done((e) => {
+    let externalFrame = e.data;
+    assert_equals(externalFrame.timestamp, defaultInit.timestamp);
+    externalFrame.close();
+  })
+
+  localPort.postMessage(localFrame, [localFrame]);
+  assert_not_equals(localFrame.timestamp, defaultInit.timestamp);
+}, 'Verify transferring frames closes them.');
 
 async_test(t => {
   let localFrame = createDefaultVideoFrame();
@@ -104,11 +99,11 @@ async_test(t => {
 
   localPort.onmessage = t.unreached_func();
 
-  localFrame.destroy();
+  localFrame.close();
 
   assert_throws_dom("DataCloneError", () => {
     localPort.postMessage(localFrame);
   });
 
   t.done();
-}, 'Verify posting destroyed frames throws.');
+}, 'Verify posting closed frames throws.');

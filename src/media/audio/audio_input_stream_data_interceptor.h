@@ -17,7 +17,7 @@ namespace media {
 
 class AudioDebugRecorder;
 
-// This class wraps an AudioInputStream to be able to intercerpt the data for
+// This class wraps an AudioInputStream to be able to intercept the data for
 // debug recording purposes.
 class MEDIA_EXPORT AudioInputStreamDataInterceptor
     : public AudioInputStream,
@@ -36,7 +36,7 @@ class MEDIA_EXPORT AudioInputStreamDataInterceptor
   ~AudioInputStreamDataInterceptor() override;
 
   // Implementation of AudioInputStream.
-  bool Open() override;
+  OpenOutcome Open() override;
   void Start(AudioInputStream::AudioInputCallback* callback) override;
   void Stop() override;
   void Close() override;

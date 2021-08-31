@@ -16,6 +16,7 @@
 #include "media/filters/chunk_demuxer.h"
 #include "media/filters/frame_processor.h"
 #include "media/filters/source_buffer_stream.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 
@@ -214,14 +215,39 @@ bool SourceBufferState::Append(const uint8_t* data,
   append_window_end_during_append_ = append_window_end;
   timestamp_offset_during_append_ = timestamp_offset;
 
-  // TODO(wolenetz/acolwell): Curry and pass a NewBuffersCB here bound with
-  // append window and timestamp offset pointer. See http://crbug.com/351454.
+  // TODO(wolenetz): Curry and pass a NewBuffersCB here bound with append window
+  // and timestamp offset pointer. See http://crbug.com/351454.
   bool result = stream_parser_->Parse(data, length);
   if (!result) {
     MEDIA_LOG(ERROR, media_log_)
         << __func__ << ": stream parsing failed. Data size=" << length
         << " append_window_start=" << append_window_start.InSecondsF()
         << " append_window_end=" << append_window_end.InSecondsF();
+  }
+
+  timestamp_offset_during_append_ = nullptr;
+  append_in_progress_ = false;
+  return result;
+}
+
+bool SourceBufferState::AppendChunks(
+    std::unique_ptr<StreamParser::BufferQueue> buffer_queue,
+    TimeDelta append_window_start,
+    TimeDelta append_window_end,
+    TimeDelta* timestamp_offset) {
+  append_in_progress_ = true;
+  DCHECK(timestamp_offset);
+  DCHECK(!timestamp_offset_during_append_);
+  append_window_start_during_append_ = append_window_start;
+  append_window_end_during_append_ = append_window_end;
+  timestamp_offset_during_append_ = timestamp_offset;
+
+  // TODO(wolenetz): Curry and pass a NewBuffersCB here bound with append window
+  // and timestamp offset pointer. See http://crbug.com/351454.
+  bool result = stream_parser_->ProcessChunks(std::move(buffer_queue));
+  if (!result) {
+    MEDIA_LOG(ERROR, media_log_)
+        << __func__ << ": Processing encoded chunks for buffering failed.";
   }
 
   timestamp_offset_during_append_ = nullptr;
@@ -688,6 +714,31 @@ bool SourceBufferState::OnNewConfigs(
       DVLOG(1) << "Video track_id=" << track_id
                << " config: " << video_config.AsHumanReadableString();
       DCHECK(video_config.IsValidConfig());
+
+      if (video_config.codec() == kCodecHEVC) {
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC)
+#if BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+        // On ChromeOS, HEVC is only supported through EME, so require the
+        // config to be for an encrypted track if on ChromeOS. Even so,
+        // conditionally allow clear HEVC on ChromeOS if cmdline has test
+        // override.
+        if (video_config.encryption_scheme() ==
+                EncryptionScheme::kUnencrypted &&
+            !base::CommandLine::ForCurrentProcess()->HasSwitch(
+                switches::kEnableClearHevcForTesting)) {
+          MEDIA_LOG(ERROR, media_log_)
+              << "MSE playback of HEVC on ChromeOS is only supported via "
+                 "platform decryptor, but the provided HEVC track is not "
+                 "encrypted.";
+          return false;
+        }
+#endif  // BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+#else
+        NOTREACHED()
+            << "MSE parser must not emit HEVC tracks on build configurations "
+               "that do not support HEVC playback via platform.";
+#endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
+      }
 
       const auto& it = std::find(expected_vcodecs.begin(),
                                  expected_vcodecs.end(), video_config.codec());

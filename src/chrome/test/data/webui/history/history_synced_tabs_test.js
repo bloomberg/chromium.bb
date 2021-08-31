@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 import {BrowserService, ensureLazyLoaded} from 'chrome://history/history.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {TestBrowserService} from 'chrome://test/history/test_browser_service.js';
 import {createSession, createWindow, polymerSelectAll} from 'chrome://test/history/test_util.js';
 import {flushTasks, waitBeforeNextRender} from 'chrome://test/test_util.m.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 function getCards(manager) {
   return polymerSelectAll(manager, 'history-synced-device-card');
@@ -34,7 +34,7 @@ suite('<history-synced-device-manager>', function() {
     document.body.innerHTML = '';
     window.history.replaceState({}, '', '/');
     testService = new TestBrowserService();
-    BrowserService.instance_ = testService;
+    BrowserService.setInstance(testService);
 
     // Need to ensure lazy_load.html has been imported so that the device
     // manager custom element is defined.
@@ -56,7 +56,8 @@ suite('<history-synced-device-manager>', function() {
     setForeignSessions(sessionList);
 
     return flushTasks().then(function() {
-      const card = element.$$('history-synced-device-card');
+      const card =
+          element.shadowRoot.querySelector('history-synced-device-card');
       assertEquals(
           'http://www.google.com',
           card.shadowRoot.querySelectorAll('.website-title')[0]
@@ -202,7 +203,7 @@ suite('<history-synced-device-manager>', function() {
           return flushTasks();
         })
         .then(function() {
-          element.$$('#menuDeleteButton').click();
+          element.shadowRoot.querySelector('#menuDeleteButton').click();
           return testService.whenCalled('deleteForeignSession');
         })
         .then(args => {
@@ -350,8 +351,7 @@ suite('<history-synced-device-manager>', function() {
     element.syncedDevices_ = [];
     // Should show no synced tabs message on initial load. Regression test for
     // https://crbug.com/915641.
-    return Promise
-        .all([flushTasks(), waitBeforeNextRender(element)])
+    return Promise.all([flushTasks(), waitBeforeNextRender(element)])
         .then(() => {
           assertNoSyncedTabsMessageShown(element, 'noSyncedResults');
           const cards = getCards(element);
