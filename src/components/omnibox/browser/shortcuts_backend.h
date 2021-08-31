@@ -17,9 +17,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/sequenced_task_runner.h"
-#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
-#include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/refcounted_keyed_service.h"
@@ -46,7 +44,7 @@ class ShortcutsDatabase;
 class ShortcutsBackend : public RefcountedKeyedService,
                          public history::HistoryServiceObserver {
  public:
-  typedef std::multimap<base::string16, const ShortcutsDatabase::Shortcut>
+  typedef std::multimap<std::u16string, const ShortcutsDatabase::Shortcut>
       ShortcutMap;
 
   // For unit testing, set |suppress_db| to true to prevent creation
@@ -93,7 +91,7 @@ class ShortcutsBackend : public RefcountedKeyedService,
 
   // Looks for an existing shortcut to match.destination_url that starts with
   // |text|.  Updates that shortcut if found, otherwise adds a new shortcut.
-  void AddOrUpdateShortcut(const base::string16& text,
+  void AddOrUpdateShortcut(const std::u16string& text,
                            const AutocompleteMatch& match);
 
  private:

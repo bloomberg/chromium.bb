@@ -6,7 +6,6 @@
 #define CHROME_TEST_CHROMEDRIVER_WINDOW_COMMANDS_H_
 
 #include <memory>
-#include <string>
 
 #include "base/callback_forward.h"
 #include "base/values.h"
@@ -22,12 +21,12 @@ class Status;
 class Timeout;
 class WebView;
 
-typedef base::Callback<Status(Session* session,
-                              WebView* web_view,
-                              const base::DictionaryValue&,
-                              std::unique_ptr<base::Value>*,
-                              Timeout*)>
-    WindowCommand;
+using WindowCommand =
+    base::RepeatingCallback<Status(Session* session,
+                                   WebView* web_view,
+                                   const base::DictionaryValue&,
+                                   std::unique_ptr<base::Value>*,
+                                   Timeout*)>;
 
 // Execute a Window Command on the target window.
 Status ExecuteWindowCommand(const WindowCommand& command,

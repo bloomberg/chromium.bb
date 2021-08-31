@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_USER_CREATION_SCREEN_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_USER_CREATION_SCREEN_HANDLER_H_
 
-#include <string>
-
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
-namespace chromeos {
-
+namespace ash {
 class UserCreationScreen;
+}
+
+namespace chromeos {
 
 // Interface for dependency injection between UserCreationScreen and its
 // WebUI representation.
@@ -25,7 +25,7 @@ class UserCreationView {
   virtual void Show() = 0;
 
   // Binds `screen` to the view.
-  virtual void Bind(UserCreationScreen* screen) = 0;
+  virtual void Bind(ash::UserCreationScreen* screen) = 0;
 
   // Unbinds the screen from the view.
   virtual void Unbind() = 0;
@@ -48,7 +48,7 @@ class UserCreationScreenHandler : public UserCreationView,
 
  private:
   void Show() override;
-  void Bind(UserCreationScreen* screen) override;
+  void Bind(ash::UserCreationScreen* screen) override;
   void Unbind() override;
   void SetIsBackButtonVisible(bool value) override;
 
@@ -57,9 +57,15 @@ class UserCreationScreenHandler : public UserCreationView,
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
-  UserCreationScreen* screen_ = nullptr;
+  ash::UserCreationScreen* screen_ = nullptr;
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+using ::chromeos::UserCreationView;
+}
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_USER_CREATION_SCREEN_HANDLER_H_

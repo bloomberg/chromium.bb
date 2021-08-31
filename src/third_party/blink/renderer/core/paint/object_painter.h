@@ -7,7 +7,6 @@
 
 #include "third_party/blink/renderer/core/paint/object_painter_base.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
 namespace blink {
@@ -48,4 +47,4 @@ class ObjectPainter : public ObjectPainterBase {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_OBJECT_PAINTER_H_

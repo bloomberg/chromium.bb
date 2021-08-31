@@ -6,17 +6,17 @@
 #define COMPONENTS_ZUCCHINI_REL32_UTILS_H_
 
 #include <algorithm>
+#include <deque>
 #include <memory>
-#include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "components/zucchini/address_translator.h"
 #include "components/zucchini/arm_utils.h"
 #include "components/zucchini/buffer_view.h"
 #include "components/zucchini/image_utils.h"
 #include "components/zucchini/io_utils.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace zucchini {
 
@@ -32,20 +32,20 @@ class Rel32ReaderX86 : public ReferenceReader {
   Rel32ReaderX86(ConstBufferView image,
                  offset_t lo,
                  offset_t hi,
-                 const std::vector<offset_t>* locations,
+                 const std::deque<offset_t>* locations,
                  const AddressTranslator& translator);
   ~Rel32ReaderX86() override;
 
-  // Returns the next reference, or base::nullopt if exhausted.
-  base::Optional<Reference> GetNext() override;
+  // Returns the next reference, or absl::nullopt if exhausted.
+  absl::optional<Reference> GetNext() override;
 
  private:
   ConstBufferView image_;
   AddressTranslator::RvaToOffsetCache target_rva_to_offset_;
   AddressTranslator::OffsetToRvaCache location_offset_to_rva_;
   const offset_t hi_;
-  const std::vector<offset_t>::const_iterator last_;
-  std::vector<offset_t>::const_iterator current_;
+  const std::deque<offset_t>::const_iterator last_;
+  std::deque<offset_t>::const_iterator current_;
 
   DISALLOW_COPY_AND_ASSIGN(Rel32ReaderX86);
 };
@@ -79,7 +79,7 @@ class Rel32ReaderArm : public ReferenceReader {
 
   Rel32ReaderArm(const AddressTranslator& translator,
                  ConstBufferView view,
-                 const std::vector<offset_t>& rel32_locations,
+                 const std::deque<offset_t>& rel32_locations,
                  offset_t lo,
                  offset_t hi)
       : view_(view),
@@ -91,7 +91,7 @@ class Rel32ReaderArm : public ReferenceReader {
     rel32_end_ = rel32_locations.end();
   }
 
-  base::Optional<Reference> GetNext() override {
+  absl::optional<Reference> GetNext() override {
     while (cur_it_ < rel32_end_ && *cur_it_ < hi_) {
       offset_t location = *(cur_it_++);
       CODE_T code = ADDR_TRAITS::Fetch(view_, location);
@@ -103,15 +103,15 @@ class Rel32ReaderArm : public ReferenceReader {
           return Reference{location, target};
       }
     }
-    return base::nullopt;
+    return absl::nullopt;
   }
 
  private:
   ConstBufferView view_;
   AddressTranslator::OffsetToRvaCache offset_to_rva_;
   AddressTranslator::RvaToOffsetCache rva_to_offset_;
-  std::vector<offset_t>::const_iterator cur_it_;
-  std::vector<offset_t>::const_iterator rel32_end_;
+  std::deque<offset_t>::const_iterator cur_it_;
+  std::deque<offset_t>::const_iterator rel32_end_;
   offset_t hi_;
 
   DISALLOW_COPY_AND_ASSIGN(Rel32ReaderArm);

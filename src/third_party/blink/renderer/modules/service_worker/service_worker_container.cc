@@ -33,7 +33,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_fetch_client_settings_object.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -219,8 +219,8 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // TODO(asamidoi): Remove this check after module loading for
-  // ServiceWorker is enabled by default (https://crbug.com/824647).
+  // TODO(crbug.com/824647): Remove this check after module loading for
+  // ServiceWorker is enabled by default.
   if (options->type() == "module" &&
       !RuntimeEnabledFeatures::ModuleServiceWorkerEnabled()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -342,7 +342,7 @@ ScriptPromise ServiceWorkerContainer::registerServiceWorker(
 
   mojom::ServiceWorkerUpdateViaCache update_via_cache =
       ParseUpdateViaCache(options->updateViaCache());
-  base::Optional<mojom::blink::ScriptType> script_type =
+  absl::optional<mojom::blink::ScriptType> script_type =
       Script::ParseScriptType(options->type());
   DCHECK(script_type);
 

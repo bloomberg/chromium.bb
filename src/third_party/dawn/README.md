@@ -28,8 +28,8 @@ Helpful links:
 Developer documentation:
 
  - [Dawn overview](docs/overview.md)
- - [Building Dawn](docs/buiding.md)
- - [Contributing to Dawn](CONTRIBUTING.md)
+ - [Building Dawn](docs/building.md)
+ - [Contributing to Dawn](docs/contributing.md)
  - [Testing Dawn](docs/testing.md)
  - [Debugging Dawn](docs/debugging.md)
  - [Dawn's infrastructure](docs/infra.md)

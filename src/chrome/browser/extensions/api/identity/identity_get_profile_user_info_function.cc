@@ -26,7 +26,7 @@ signin::ConsentLevel GetConsentLevelFromProfileDetails(
 
   switch (account_status) {
     case api::identity::ACCOUNT_STATUS_ANY:
-      return signin::ConsentLevel::kNotRequired;
+      return signin::ConsentLevel::kSignin;
     case api::identity::ACCOUNT_STATUS_NONE:
     case api::identity::ACCOUNT_STATUS_SYNC:
       return signin::ConsentLevel::kSync;
@@ -55,7 +55,7 @@ ExtensionFunction::ResponseAction IdentityGetProfileUserInfoFunction::Run() {
   api::identity::ProfileUserInfo profile_user_info;
 
   if (extension()->permissions_data()->HasAPIPermission(
-          APIPermission::kIdentityEmail)) {
+          mojom::APIPermissionID::kIdentityEmail)) {
     signin::ConsentLevel consent_level =
         GetConsentLevelFromProfileDetails(params->details.get());
     auto account_info = IdentityManagerFactory::GetForProfile(

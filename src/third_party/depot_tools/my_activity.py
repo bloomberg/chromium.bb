@@ -122,6 +122,7 @@ monorail_projects = {
     'short_url_protocol': 'https',
   },
   'skia': {},
+  'tint': {},
   'v8': {
     'shorturl': 'crbug.com/v8',
     'short_url_protocol': 'https',

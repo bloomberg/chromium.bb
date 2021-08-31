@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/indexeddb/idb_factory.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
@@ -88,12 +89,6 @@ class BackendFactoryWithMockedDatabaseInfo : public mojom::blink::IDBFactory {
 
   void AbortTransactionsForDatabase(
       AbortTransactionsForDatabaseCallback callback) override {
-    NOTREACHED();
-  }
-
-  void GetDatabaseNames(
-      mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>
-          pending_callbacks) override {
     NOTREACHED();
   }
 

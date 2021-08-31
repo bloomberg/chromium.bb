@@ -7,11 +7,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "media/base/cdm_promise.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/eme_constants.h"
 #include "media/base/subsample_entry.h"
+#include "media/cdm/cdm_context_ref_impl.h"
 
 namespace {
 
@@ -87,6 +90,10 @@ scoped_refptr<media::DecoderBuffer> CopyDecryptedDataToDecoderBuffer(
 void RejectPromiseConnectionLost(std::unique_ptr<media::CdmPromise> promise) {
   promise->reject(media::CdmPromise::Exception::INVALID_STATE_ERROR, 0,
                   "Mojo connection lost");
+}
+
+void ReportSystemCodeUMA(uint32_t system_code) {
+  base::UmaHistogramSparse("Media.EME.CrosPlatformCdm.SystemCode", system_code);
 }
 
 }  // namespace
@@ -243,6 +250,17 @@ media::CdmContext* ContentDecryptionModuleAdapter::GetCdmContext() {
   return this;
 }
 
+void ContentDecryptionModuleAdapter::DeleteOnCorrectThread() const {
+  DVLOG(1) << __func__;
+
+  if (!mojo_task_runner_->RunsTasksInCurrentSequence()) {
+    // When DeleteSoon returns false, |this| will be leaked, which is okay.
+    mojo_task_runner_->DeleteSoon(FROM_HERE, this);
+  } else {
+    delete this;
+  }
+}
+
 std::unique_ptr<media::CallbackRegistration>
 ContentDecryptionModuleAdapter::RegisterEventCB(EventCB event_cb) {
   return event_callbacks_.Register(std::move(event_cb));
@@ -260,13 +278,27 @@ void ContentDecryptionModuleAdapter::GetHwKeyData(
     const media::DecryptConfig* decrypt_config,
     const std::vector<uint8_t>& hw_identifier,
     GetHwKeyDataCB callback) {
+  // Take the fields we want out of the |decrypt_config| in case the pointer
+  // becomes invalid when we are re-posting the task.
+  GetHwKeyDataInternal(decrypt_config->key_id(), decrypt_config->iv(),
+                       decrypt_config->encryption_scheme(), hw_identifier,
+                       std::move(callback));
+}
+
+void ContentDecryptionModuleAdapter::GetHwKeyDataInternal(
+    const std::string& key_id,
+    const std::string& iv,
+    const media::EncryptionScheme encryption_scheme,
+    const std::vector<uint8_t>& hw_identifier,
+    GetHwKeyDataCB callback) {
   // This can get called from decoder threads or mojo threads, so we may need
   // to repost the task.
   if (!mojo_task_runner_->RunsTasksInCurrentSequence()) {
     mojo_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&ContentDecryptionModuleAdapter::GetHwKeyData,
-                                  weak_factory_.GetWeakPtr(), decrypt_config,
-                                  hw_identifier, std::move(callback)));
+        FROM_HERE,
+        base::BindOnce(&ContentDecryptionModuleAdapter::GetHwKeyDataInternal,
+                       weak_factory_.GetWeakPtr(), key_id, iv,
+                       encryption_scheme, hw_identifier, std::move(callback)));
     return;
   }
   if (!cros_cdm_remote_) {
@@ -275,12 +307,17 @@ void ContentDecryptionModuleAdapter::GetHwKeyData(
     return;
   }
   auto cros_decrypt_config = cdm::mojom::DecryptConfig::New();
-  cros_decrypt_config->key_id = decrypt_config->key_id();
-  cros_decrypt_config->iv = decrypt_config->iv();
-  cros_decrypt_config->encryption_scheme = decrypt_config->encryption_scheme();
+  cros_decrypt_config->key_id = key_id;
+  cros_decrypt_config->iv = iv;
+  cros_decrypt_config->encryption_scheme = encryption_scheme;
 
   cros_cdm_remote_->GetHwKeyData(std::move(cros_decrypt_config), hw_identifier,
                                  std::move(callback));
+}
+
+std::unique_ptr<media::CdmContextRef>
+ContentDecryptionModuleAdapter::GetCdmContextRef() {
+  return std::make_unique<media::CdmContextRefImpl>(base::WrapRefCounted(this));
 }
 
 void ContentDecryptionModuleAdapter::OnSessionMessage(
@@ -469,14 +506,14 @@ void ContentDecryptionModuleAdapter::InitializeVideoDecoder(
 
 void ContentDecryptionModuleAdapter::DecryptAndDecodeAudio(
     scoped_refptr<media::DecoderBuffer> encrypted,
-    const AudioDecodeCB& audio_decode_cb) {
+    AudioDecodeCB audio_decode_cb) {
   NOTREACHED()
       << "ContentDecryptionModuleAdapter does not support audio decoding";
 }
 
 void ContentDecryptionModuleAdapter::DecryptAndDecodeVideo(
     scoped_refptr<media::DecoderBuffer> encrypted,
-    const VideoDecodeCB& video_decode_cb) {
+    VideoDecodeCB video_decode_cb) {
   NOTREACHED()
       << "ContentDecryptionModuleAdapter does not support video decoding";
 }
@@ -514,13 +551,15 @@ void ContentDecryptionModuleAdapter::OnConnectionError() {
 
   // We've lost our communication, so reject all outstanding promises and close
   // any open sessions.
-  cdm_promise_adapter_.Clear();
+  cdm_promise_adapter_.Clear(
+      media::CdmPromiseAdapter::ClearReason::kConnectionError);
   cdm_session_tracker_.CloseRemainingSessions(session_closed_cb_);
 }
 
 void ContentDecryptionModuleAdapter::RejectTrackedPromise(
     uint32_t promise_id,
     cdm::mojom::CdmPromiseResultPtr promise_result) {
+  ReportSystemCodeUMA(promise_result->system_code);
   cdm_promise_adapter_.RejectPromise(promise_id, promise_result->exception,
                                      promise_result->system_code,
                                      promise_result->error_message);

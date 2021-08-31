@@ -104,6 +104,9 @@ class IdlTypeFactory(object):
     def frozen_array_type(self, *args, **kwargs):
         return self._create(FrozenArrayType, args, kwargs)
 
+    def observable_array_type(self, *args, **kwargs):
+        return self._create(ObservableArrayType, args, kwargs)
+
     def variadic_type(self, *args, **kwargs):
         return self._create(VariadicType, args, kwargs)
 
@@ -439,6 +442,11 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         return False
 
     @property
+    def is_observable_array(self):
+        """Returns True if this is an observable array type."""
+        return False
+
+    @property
     def is_record(self):
         """Returns True if this is a record type."""
         return False
@@ -559,6 +567,10 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
 
         Note that a returned object is not an IdlType.  It's of type Typedef.
         """
+        return None
+
+    @property
+    def new_union_definition_object(self):
         return None
 
     @property
@@ -990,6 +1002,36 @@ class FrozenArrayType(_ArrayLikeType):
         return True
 
 
+class ObservableArrayType(_ArrayLikeType):
+    """https://heycam.github.io/webidl/#idl-observable-array"""
+
+    def __init__(self,
+                 element_type,
+                 is_optional=False,
+                 extended_attributes=None,
+                 debug_info=None,
+                 pass_key=None):
+        _ArrayLikeType.__init__(self,
+                                element_type,
+                                is_optional=is_optional,
+                                extended_attributes=extended_attributes,
+                                debug_info=debug_info,
+                                pass_key=pass_key)
+
+    @property
+    def syntactic_form(self):
+        return self._format_syntactic_form('ObservableArray<{}>'.format(
+            self.element_type.syntactic_form))
+
+    @property
+    def type_name_without_extended_attributes(self):
+        return '{}ObservableArray'.format(self.element_type.type_name)
+
+    @property
+    def is_observable_array(self):
+        return True
+
+
 class VariadicType(_ArrayLikeType):
     """Represents a type used for variadic arguments."""
 
@@ -1149,6 +1191,7 @@ class UnionType(IdlType):
             debug_info=debug_info,
             pass_key=pass_key)
         self._member_types = tuple(member_types)
+        self._new_union_definition_object = None
         self._union_definition_object = None
 
     def __eq__(self, other):
@@ -1221,6 +1264,17 @@ class UnionType(IdlType):
                 return [idl_type]
 
         return set(flatten(self))
+
+    @property
+    def new_union_definition_object(self):
+        return self._new_union_definition_object
+
+    def set_new_union_definition_object(self, union_definition_object):
+        # In Python2, we need to avoid circular imports.
+        from .union import NewUnion
+        assert isinstance(union_definition_object, NewUnion)
+        assert self._new_union_definition_object is None
+        self._new_union_definition_object = union_definition_object
 
     @property
     def union_definition_object(self):

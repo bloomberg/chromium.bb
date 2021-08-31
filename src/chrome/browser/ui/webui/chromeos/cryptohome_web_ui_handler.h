@@ -9,10 +9,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "chromeos/dbus/tpm_manager/tpm_manager.pb.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 
@@ -38,16 +39,14 @@ class CryptohomeWebUIHandler : public content::WebUIMessageHandler {
 
   void DidGetNSSUtilInfoOnUIThread(bool is_tpm_token_ready);
 
-  // Returns a callback to handle Cryptohome property values.
-  DBusMethodCallback<bool> GetCryptohomeBoolCallback(
-      const std::string& destination_id);
+  void OnIsMounted(absl::optional<user_data_auth::IsMountedReply> reply);
+  void OnPkcs11IsTpmTokenReady(
+      absl::optional<user_data_auth::Pkcs11IsTpmTokenReadyReply> reply);
 
-  // This method is called when Cryptohome D-Bus method call completes.
-  void OnCryptohomeBoolProperty(const std::string& destination_id,
-                                base::Optional<bool> result);
-
-  // This method is called when Cryptohome D-Bus TpmStatus call complete.
-  void OnCryptohomeTpmStatus(base::Optional<cryptohome::BaseReply> reply);
+  // This method is called when TpmManager D-Bus GetTpmNonsensitiveStatus call
+  // completes.
+  void OnGetTpmStatus(
+      const ::tpm_manager::GetTpmNonsensitiveStatusReply& reply);
 
   // Sets textcontent of the element whose id is |destination_id| to |value|.
   void SetCryptohomeProperty(const std::string& destination_id,

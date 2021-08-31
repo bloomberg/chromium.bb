@@ -32,8 +32,6 @@ import logging
 import optparse
 import re
 
-from collections import defaultdict
-
 from blinkpy.common.path_finder import WEB_TESTS_LAST_COMPONENT
 from blinkpy.common.memoized import memoized
 from blinkpy.common.net.results_fetcher import Build
@@ -93,6 +91,16 @@ class AbstractRebaseliningCommand(Command):
         '--step-name',
         help=('Name of the step which ran the actual tests, and which '
               'should be used to retrieve results from.'))
+    flag_specific_option = optparse.make_option(
+        '--flag-specific',
+        default=None,
+        action='store',
+        help=(
+            'Name of a flag-specific configuration defined in '
+            'FlagSpecificConfig. This option will rebaseline '
+            'results for the given FlagSpecificConfig while ignoring results '
+            'from other builders. Highdpi is the only suported config '
+            'at this time.'))
 
     def __init__(self, options=None):
         super(AbstractRebaseliningCommand, self).__init__(options=options)
@@ -113,7 +121,14 @@ class AbstractRebaseliningCommand(Command):
         return self._host_port.output_filename(
             test_name, test_failures.FILENAME_SUFFIX_ACTUAL, '.' + suffix)
 
-    def _file_name_for_expected_result(self, test_name, suffix):
+    def _file_name_for_expected_result(self, test_name, suffix, is_wpt=False):
+        if is_wpt:
+            # *-actual.txt produced by wptrunner are actually manifest files
+            # that can make the test pass if renamed to *.ini.
+            file_name = self._host_port.get_file_path_for_wpt_test(test_name)
+            assert file_name, ('Cannot find %s in WPT' % test_name)
+            return file_name + '.ini'
+
         # output_filename takes extensions starting with '.'.
         return self._host_port.output_filename(
             test_name, test_failures.FILENAME_SUFFIX_EXPECTED, '.' + suffix)
@@ -169,10 +184,18 @@ class TestBaselineSet(object):
     about where to fetch the baselines from.
     """
 
-    def __init__(self, host):
+    def __init__(self, host, prefix_mode=True):
+        """Args:
+            host: A Host object.
+            prefix_mode: (Optional, default to True) Whether the collection
+                contains test prefixes or specific tests.
+        """
         self._host = host
-        self._port = self._host.port_factory.get()
+        # Set self._port to None to avoid accidentally calling port.tests when
+        # we are not in prefix mode.
+        self._port = self._host.port_factory.get() if prefix_mode else None
         self._builder_names = set()
+        self._prefix_mode = prefix_mode
         self._test_prefix_map = collections.defaultdict(list)
 
     def __iter__(self):
@@ -184,6 +207,11 @@ class TestBaselineSet(object):
     def _iter_combinations(self):
         """Iterates through (test, build, port) combinations."""
         for test_prefix, build_port_pairs in self._test_prefix_map.iteritems():
+            if not self._prefix_mode:
+                for build, port_name in build_port_pairs:
+                    yield (test_prefix, build, port_name)
+                continue
+
             for test in self._port.tests([test_prefix]):
                 for build, port_name in build_port_pairs:
                     yield (test, build, port_name)
@@ -191,18 +219,21 @@ class TestBaselineSet(object):
     def __str__(self):
         if not self._test_prefix_map:
             return '<Empty TestBaselineSet>'
-        return ('<TestBaselineSet with:\n  ' + '\n  '.join('%s: %s, %s' % \
-            triple for triple in self._iter_combinations()) + '>')
+        return '<TestBaselineSet with:\n  %s>' % '\n  '.join(
+            '%s: %s, %s' % triple for triple in self._iter_combinations())
 
     def test_prefixes(self):
-        """Returns a sorted list of test prefixes."""
+        """Returns a sorted list of test prefixes (or tests) added thus far."""
         return sorted(self._test_prefix_map)
 
     def all_tests(self):
         """Returns a sorted list of all tests without duplicates."""
         tests = set()
         for test_prefix in self._test_prefix_map:
-            tests.update(self._port.tests([test_prefix]))
+            if self._prefix_mode:
+                tests.update(self._port.tests([test_prefix]))
+            else:
+                tests.add(test_prefix)
         return sorted(tests)
 
     def build_port_pairs(self, test_prefix):
@@ -213,7 +244,9 @@ class TestBaselineSet(object):
         """Adds an entry for baselines to download for some set of tests.
 
         Args:
-            test_prefix: This can be a full test path, or directory of tests, or a path with globs.
+            test_prefix: This can be a full test path; if the instance was
+                constructed in prefix mode (the default), this can also be a
+                directory of tests or a path with globs.
             build: A Build object. This specifies where to fetch baselines from.
             port_name: This specifies what platform the baseline is for.
         """
@@ -273,13 +306,17 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 debug_builders.add(builder)
 
         builders_to_fallback_paths = {}
+        wpt_builders = set()
         for builder in list(release_builders) + list(debug_builders):
-            port = self._tool.port_factory.get_from_builder_name(builder)
-            fallback_path = port.baseline_search_path()
-            if fallback_path not in builders_to_fallback_paths.values():
-                builders_to_fallback_paths[builder] = fallback_path
+            if not self._tool.builders.is_wpt_builder(builder):
+                port = self._tool.port_factory.get_from_builder_name(builder)
+                fallback_path = port.baseline_search_path()
+                if fallback_path not in builders_to_fallback_paths.values():
+                    builders_to_fallback_paths[builder] = fallback_path
+            else:
+                wpt_builders.add(builder)
 
-        return set(builders_to_fallback_paths)
+        return set(builders_to_fallback_paths) | wpt_builders
 
     def _rebaseline_commands(self, test_baseline_set, options):
         path_to_blink_tool = self._tool.path()
@@ -320,18 +357,33 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
                 '--port-name',
                 port_name,
             ])
-
-            copy_command = [
-                self._tool.executable, path_to_blink_tool,
-                'copy-existing-baselines-internal'
-            ] + args
-            copy_baseline_commands.append(tuple([copy_command, cwd]))
+            # TODO(crbug.com/1154085): Undo this special case when we have WPT
+            # bots on more ports.
+            # We may be rebaselining only a subset of all platforms, in which
+            # case we need to copy any existing baselines first to avoid clobbering
+            # results from platforms that were not run. See
+            # https://chromium.googlesource.com/chromium/src/+/master/docs/testing/web_test_baseline_fallback.md#rebaseline
+            #
+            # However when running in modes that don't interact with the optimizer,
+            # we don't want to do this copying.
+            if (not self._tool.builders.is_wpt_builder(build.builder_name)
+                    and not self._tool.builders.is_flag_specific_builder(
+                        build.builder_name)):
+                copy_command = [
+                    self._tool.executable, path_to_blink_tool,
+                    'copy-existing-baselines-internal'
+                ] + args
+                copy_baseline_commands.append(tuple([copy_command, cwd]))
 
             args.extend(['--builder', build.builder_name])
             if build.build_number:
                 args.extend(['--build-number', str(build.build_number)])
             if options.results_directory:
                 args.extend(['--results-directory', options.results_directory])
+            if (options.flag_specific
+                    and self._tool.builders.is_flag_specific_builder(
+                        build.builder_name)):
+                args.extend(['--flag-specific', options.flag_specific])
 
             step_name = self._tool.results_fetcher.get_layout_test_step_name(
                 build)
@@ -372,6 +424,18 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         for test, build, _ in test_baseline_set:
             if build.builder_name not in builders_to_fetch_from:
                 continue
+
+            # TODO(crbug.com/1154085): Undo this special case when we have WPT
+            # bots on more ports.
+            if self._tool.builders.is_wpt_builder(build.builder_name):
+                continue
+
+            # For flag_specific(highdpi) we skip both 'copy existing baselines'
+            # and  optimizer.
+            if self._tool.builders.is_flag_specific_builder(
+                    build.builder_name):
+                continue
+
             tests_to_suffixes[test].update(
                 self._suffixes_for_actual_failures(test, build))
 
@@ -398,7 +462,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
     def _update_expectations_files(self, lines_to_remove):
         tests = lines_to_remove.keys()
-        to_remove = defaultdict(set)
+        to_remove = collections.defaultdict(set)
         all_versions = frozenset([
             config.version.lower() for config in self._tool.port_factory.get().
             all_test_configurations()
@@ -535,6 +599,11 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         test_result = self._result_for_test(test, build)
         if not test_result:
             return set()
+        # Regardless of the test type, we only need the text output (i.e. the
+        # INI manifest) on a WPT bot (a reftest produces both text and image
+        # output, but the image is only informative).
+        if self._tool.builders.is_wpt_builder(build.builder_name):
+            return {'txt'}
         return test_result.suffixes_for_test_result()
 
     def _test_passed_unexpectedly(self, test, build, port_name):

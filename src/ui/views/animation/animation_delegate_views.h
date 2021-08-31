@@ -5,9 +5,8 @@
 #ifndef UI_VIEWS_ANIMATION_ANIMATION_DELEGATE_VIEWS_H_
 #define UI_VIEWS_ANIMATION_ANIMATION_DELEGATE_VIEWS_H_
 
-#include <memory>
 
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "ui/gfx/animation/animation_container_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/view.h"
@@ -61,7 +60,7 @@ class VIEWS_EXPORT AnimationDelegateViews
   // The animation runner that |container_| uses.
   CompositorAnimationRunner* compositor_animation_runner_ = nullptr;
 
-  ScopedObserver<View, ViewObserver> scoped_observer_{this};
+  base::ScopedObservation<View, ViewObserver> scoped_observation_{this};
 };
 
 }  // namespace views

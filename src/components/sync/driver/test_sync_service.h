@@ -38,7 +38,6 @@ class TestSyncService : public SyncService {
   void SetFirstSetupComplete(bool first_setup_complete);
   void SetPreferredDataTypes(const ModelTypeSet& types);
   void SetActiveDataTypes(const ModelTypeSet& types);
-  void SetBackedOffDataTypes(const ModelTypeSet& types);
   void SetLastCycleSnapshot(const SyncCycleSnapshot& snapshot);
   // Convenience versions of the above, for when the caller doesn't care about
   // the particular values in the snapshot, just whether there is one.
@@ -50,7 +49,7 @@ class TestSyncService : public SyncService {
   void SetTrustedVaultKeyRequired(bool required);
   void SetTrustedVaultKeyRequiredForPreferredDataTypes(bool required);
   void SetTrustedVaultRecoverabilityDegraded(bool degraded);
-  void SetIsUsingSecondaryPassphrase(bool enabled);
+  void SetIsUsingExplicitPassphrase(bool enabled);
 
   void FireStateChanged();
   void FireSyncCycleCompleted();
@@ -73,9 +72,9 @@ class TestSyncService : public SyncService {
 
   ModelTypeSet GetPreferredDataTypes() const override;
   ModelTypeSet GetActiveDataTypes() const override;
-  ModelTypeSet GetBackedOffDataTypes() const override;
 
   void StopAndClear() override;
+  void SetSyncAllowedByPlatform(bool allowed) override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   void DataTypePreconditionChanged(syncer::ModelType type) override;
@@ -109,6 +108,7 @@ class TestSyncService : public SyncService {
   void AddTrustedVaultRecoveryMethodFromWeb(
       const std::string& gaia_id,
       const std::vector<uint8_t>& public_key,
+      int method_type_hint,
       base::OnceClosure callback) override;
 
   // KeyedService implementation.
@@ -127,7 +127,6 @@ class TestSyncService : public SyncService {
 
   ModelTypeSet preferred_data_types_;
   ModelTypeSet active_data_types_;
-  ModelTypeSet backed_off_data_types_;
 
   bool detailed_sync_status_engine_available_ = false;
   SyncStatus detailed_sync_status_;

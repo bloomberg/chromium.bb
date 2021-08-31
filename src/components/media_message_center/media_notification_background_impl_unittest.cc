@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/i18n/base_i18n_switches.h"
+#include "base/i18n/rtl.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_command_line.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,11 +38,13 @@ class TestDarkTheme : public ui::TestNativeTheme {
   ~TestDarkTheme() override = default;
 
   // ui::NativeTheme implementation.
-  SkColor GetSystemColor(ColorId color_id,
-                         ColorScheme color_scheme) const override {
-    if (color_id == kColorId_BubbleBackground)
-      return kDarkBackgroundColor;
-    return ui::TestNativeTheme::GetSystemColor(color_id, color_scheme);
+  SkColor GetSystemColorDeprecated(ColorId color_id,
+                                   ColorScheme color_scheme,
+                                   bool apply_processing) const override {
+    return (color_id == kColorId_BubbleBackground)
+               ? kDarkBackgroundColor
+               : ui::TestNativeTheme::GetSystemColorDeprecated(
+                     color_id, color_scheme, apply_processing);
   }
 };
 
@@ -102,11 +105,11 @@ class MediaNotificationBackgroundImplTest : public testing::Test {
     return background_.get();
   }
 
-  base::Optional<SkColor> GetBackgroundColor() const {
+  absl::optional<SkColor> GetBackgroundColor() const {
     return background_->background_color_;
   }
 
-  base::Optional<SkColor> GetForegroundColor() const {
+  absl::optional<SkColor> GetForegroundColor() const {
     return background_->foreground_color_;
   }
 

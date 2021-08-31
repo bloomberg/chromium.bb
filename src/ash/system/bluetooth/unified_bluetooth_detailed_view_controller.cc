@@ -15,6 +15,7 @@
 #include "ash/system/bluetooth/tray_bluetooth_helper.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "base/containers/contains.h"
 #include "base/stl_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -84,7 +85,7 @@ views::View* UnifiedBluetoothDetailedViewController::CreateView() {
   return view_;
 }
 
-base::string16 UnifiedBluetoothDetailedViewController::GetAccessibleName()
+std::u16string UnifiedBluetoothDetailedViewController::GetAccessibleName()
     const {
   return l10n_util::GetStringUTF16(
       IDS_ASH_QUICK_SETTINGS_BUBBLE_BLUETOOTH_SETTINGS_ACCESSIBLE_DESCRIPTION);

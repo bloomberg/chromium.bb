@@ -16,6 +16,7 @@
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/overlay_processor_interface.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkYUVAInfo.h"
 
 #if defined(OS_WIN)
 #include "components/viz/service/display/dc_layer_overlay.h"
@@ -89,19 +90,16 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
       ExternalUseClient::ImageContext* image_context) = 0;
 
   // Make a promise SkImage from the given |contexts| and |image_color_space|.
-  // For YUV format, at least three resource contexts should be provided.
-  // contexts[0] contains pixels from y panel, contexts[1] contains pixels
-  // from u panel, contexts[2] contains pixels from v panel. For NV12 format,
-  // at least two resource contexts should be provided. contexts[0] contains
-  // pixels from y panel, contexts[1] contains pixels from u and v panels. If
-  // has_alpha is true, the last item in contexts contains alpha panel.
+  // The number of contexts provided should match the number of planes indicated
+  // by plane_config.
   virtual sk_sp<SkImage> MakePromiseSkImageFromYUV(
       const std::vector<ExternalUseClient::ImageContext*>& contexts,
       sk_sp<SkColorSpace> image_color_space,
-      bool has_alpha) = 0;
+      SkYUVAInfo::PlaneConfig plane_config,
+      SkYUVAInfo::Subsampling subsampling) = 0;
 
   // Called if SwapBuffers() will be skipped.
-  virtual void SwapBuffersSkipped() = 0;
+  virtual void SwapBuffersSkipped(const gfx::Rect root_pass_damage_rect) = 0;
 
   // TODO(weiliangc): This API should move to OverlayProcessor.
   // Schedule |output_surface_plane| as an overlay plane to be displayed.
@@ -170,6 +168,11 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurface : public OutputSurface,
   virtual void ScheduleGpuTaskForTesting(
       base::OnceClosure callback,
       std::vector<gpu::SyncToken> sync_tokens) = 0;
+
+  // Android specific, asks GLSurfaceEGLSurfaceControl to not detach child
+  // surface controls during destruction. This is necessary for cases when we
+  // switch from chrome to other app, the OS will take care of the cleanup.
+  virtual void PreserveChildSurfaceControls() = 0;
 
   // Flush pending GPU tasks. This method returns a sync token which can be
   // waited on in a command buffer to ensure all pending tasks are executed on

@@ -48,8 +48,10 @@ class PrintingMetricsApiTest : public ExtensionApiTest {
  protected:
   void SetUpInProcessBrowserTestFixture() override {
     // Init the user policy provider.
-    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    ON_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillByDefault(testing::Return(true));
+    ON_CALL(policy_provider_, IsFirstPolicyLoadComplete(testing::_))
+        .WillByDefault(testing::Return(true));
     policy_provider_.SetAutoRefresh();
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
@@ -61,7 +63,7 @@ class PrintingMetricsApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 
-  policy::MockConfigurationPolicyProvider policy_provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 
  private:
   void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
@@ -69,9 +71,7 @@ class PrintingMetricsApiTest : public ExtensionApiTest {
         context, base::BindRepeating(&BuildTestCupsPrintJobManager));
   }
 
-  std::unique_ptr<
-      BrowserContextDependencyManager::CreateServicesCallbackList::Subscription>
-      create_services_subscription_;
+  base::CallbackListSubscription create_services_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingMetricsApiTest);
 };
@@ -122,8 +122,9 @@ IN_PROC_BROWSER_TEST_F(PrintingMetricsApiTest, GetPrintJobs) {
 // warning if they request the printingMetrics permission in the manifest and
 // that such extensions don't see the chrome.printingMetrics namespace.
 IN_PROC_BROWSER_TEST_F(PrintingMetricsApiTest, IsRestrictedToPolicyExtension) {
-  ASSERT_TRUE(RunExtensionSubtest("printing_metrics", "api_not_available.html",
-                                  kFlagIgnoreManifestWarnings, kFlagNone));
+  ASSERT_TRUE(RunExtensionTest(
+      {.name = "printing_metrics", .page_url = "api_not_available.html"},
+      {.ignore_manifest_warnings = true}));
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("printing_metrics");

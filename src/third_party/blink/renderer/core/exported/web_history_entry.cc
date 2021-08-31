@@ -54,9 +54,9 @@ namespace blink {
 
 namespace {
 
-WebVector<base::Optional<base::string16>> ToOptionalString16Vector(
+WebVector<absl::optional<std::u16string>> ToOptionalString16Vector(
     const WebVector<WebString>& input,
-    WebVector<base::Optional<base::string16>> output) {
+    WebVector<absl::optional<std::u16string>> output) {
   output.reserve(output.size() + input.size());
   for (const auto& i : input)
     output.emplace_back(WebString::ToOptionalString16(i));
@@ -100,6 +100,14 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
       WebString::ToOptionalString16(anchor.selector_);
   state->scroll_anchor_offset = anchor.offset_;
   state->scroll_anchor_simhash = anchor.simhash_;
+
+  state->app_history_key =
+      WebString::ToOptionalString16(item.GetAppHistoryKey());
+  state->app_history_id = WebString::ToOptionalString16(item.GetAppHistoryId());
+  if (!item.GetAppHistoryState().IsNull()) {
+    state->app_history_state =
+        WebString::ToOptionalString16(item.GetAppHistoryState().ToString());
+  }
 }
 
 void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
@@ -116,7 +124,7 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
   WebVector<WebString> document_state(state.document_state.size());
   std::transform(state.document_state.begin(), state.document_state.end(),
                  document_state.begin(),
-                 [](const base::Optional<base::string16>& s) {
+                 [](const absl::optional<std::u16string>& s) {
                    return WebString::FromUTF16(s);
                  });
   item.SetDocumentState(document_state);
@@ -135,6 +143,15 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
     item.SetItemSequenceNumber(state.item_sequence_number);
   if (state.document_sequence_number)
     item.SetDocumentSequenceNumber(state.document_sequence_number);
+  if (state.app_history_key)
+    item.SetAppHistoryKey(WebString::FromUTF16(state.app_history_key));
+  if (state.app_history_id)
+    item.SetAppHistoryId(WebString::FromUTF16(state.app_history_id));
+
+  if (state.app_history_state) {
+    item.SetAppHistoryState(WebSerializedScriptValue::FromString(
+        WebString::FromUTF16(*state.app_history_state)));
+  }
 
   item.SetHTTPContentType(
       WebString::FromUTF16(state.http_body.http_content_type));
@@ -146,6 +163,7 @@ void RecursivelyGenerateHistoryItem(const ExplodedFrameState& state,
   item.SetScrollAnchorData({WebString::FromUTF16(state.scroll_anchor_selector),
                             state.scroll_anchor_offset,
                             state.scroll_anchor_simhash});
+
   node->set_item(item);
 
   for (const auto& child : state.children)

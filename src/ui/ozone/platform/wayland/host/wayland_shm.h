@@ -5,7 +5,6 @@
 #ifndef UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_SHM_H_
 #define UI_OZONE_PLATFORM_WAYLAND_HOST_WAYLAND_SHM_H_
 
-#include <memory>
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
@@ -23,6 +22,8 @@ class WaylandShm {
  public:
   WaylandShm(wl_shm* shm, WaylandConnection* connection);
   ~WaylandShm();
+
+  wl_shm* get() const { return shm_.get(); }
 
   // Creates a wl_buffer based on shared memory handle for the specified
   // |widget|.

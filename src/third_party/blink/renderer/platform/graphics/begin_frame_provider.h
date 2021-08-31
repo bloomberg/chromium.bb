@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "components/power_scheduler/power_mode_voter.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -47,15 +48,18 @@ class PLATFORM_EXPORT BeginFrameProvider
 
   // viz::mojom::blink::CompositorFrameSinkClient implementation.
   void DidReceiveCompositorFrameAck(
-      const WTF::Vector<viz::ReturnedResource>& resources) final {
+      WTF::Vector<viz::ReturnedResource> resources) final {
     NOTIMPLEMENTED();
   }
   void OnBeginFrame(
       const viz::BeginFrameArgs&,
       const WTF::HashMap<uint32_t, viz::FrameTimingDetails>&) final;
   void OnBeginFramePausedChanged(bool paused) final {}
-  void ReclaimResources(
-      const WTF::Vector<viz::ReturnedResource>& resources) final {
+  void ReclaimResources(WTF::Vector<viz::ReturnedResource> resources) final {
+    NOTIMPLEMENTED();
+  }
+  void OnCompositorFrameTransitionDirectiveProcessed(
+      uint32_t sequence_id) final {
     NOTIMPLEMENTED();
   }
 
@@ -81,20 +85,17 @@ class PLATFORM_EXPORT BeginFrameProvider
   bool requested_needs_begin_frame_;
 
   HeapMojoReceiver<viz::mojom::blink::CompositorFrameSinkClient,
-                   BeginFrameProvider,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
+                   BeginFrameProvider>
       cfs_receiver_;
 
-  HeapMojoReceiver<mojom::blink::EmbeddedFrameSinkClient,
-                   BeginFrameProvider,
-                   HeapMojoWrapperMode::kWithoutContextObserver>
+  HeapMojoReceiver<mojom::blink::EmbeddedFrameSinkClient, BeginFrameProvider>
       efs_receiver_;
   viz::FrameSinkId frame_sink_id_;
   viz::FrameSinkId parent_frame_sink_id_;
-  HeapMojoRemote<viz::mojom::blink::CompositorFrameSink,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      compositor_frame_sink_;
+  HeapMojoRemote<viz::mojom::blink::CompositorFrameSink> compositor_frame_sink_;
   Member<BeginFrameProviderClient> begin_frame_client_;
+
+  std::unique_ptr<power_scheduler::PowerModeVoter> animation_power_mode_voter_;
 };
 
 }  // namespace blink

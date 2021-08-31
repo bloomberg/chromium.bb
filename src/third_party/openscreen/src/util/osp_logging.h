@@ -133,6 +133,13 @@ class Voidify {
     }                                                                 \
   }
 
-#define OSP_NOTREACHED() OSP_LOG_FATAL << __func__ << ": NOTREACHED() hit."
+// Since Break() is annotated as noreturn, this will properly signal to the
+// compiler that this code is truly not reached (and thus doesn't need a return
+// statement for non-void returning functions/methods).
+#define OSP_NOTREACHED()                                \
+  {                                                     \
+    OSP_LOG_FATAL << __func__ << ": NOTREACHED() hit."; \
+    Break();                                            \
+  }
 
 #endif  // UTIL_OSP_LOGGING_H_

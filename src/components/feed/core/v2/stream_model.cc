@@ -9,11 +9,14 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/check_op.h"
 #include "base/json/string_escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/wire/content_id.pb.h"
+#include "components/feed/core/v2/feedstore_util.h"
+#include "components/feed/core/v2/proto_util.h"
 #include "components/feed/core/v2/protocol_translator.h"
 
 namespace feed {
@@ -28,6 +31,24 @@ bool HasClearAll(const std::vector<feedstore::StreamStructure>& structures) {
   }
   return false;
 }
+
+void MergeSharedStateIds(const feedstore::StreamData& model_data,
+                         feedstore::StreamData& update_request_data) {
+  for (const auto& content_id : model_data.shared_state_ids()) {
+    bool found = false;
+    for (const auto& update_request_content_id :
+         update_request_data.shared_state_ids()) {
+      if (Equal(update_request_content_id, content_id)) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      *update_request_data.add_shared_state_ids() = content_id;
+    }
+  }
+}
+
 }  // namespace
 
 UiUpdate::UiUpdate() = default;
@@ -46,6 +67,10 @@ void StreamModel::SetStoreObserver(StoreObserver* store_observer) {
   DCHECK(!store_observer || !store_observer_)
       << "Attempting to set store_observer multiple times";
   store_observer_ = store_observer;
+}
+
+void StreamModel::SetStreamType(const StreamType& stream_type) {
+  stream_type_ = stream_type;
 }
 
 void StreamModel::AddObserver(Observer* observer) {
@@ -105,9 +130,12 @@ void StreamModel::Update(
       //    Save the new stream data with the next sequence number.
       if (has_clear_all) {
         next_structure_sequence_number_ = 0;
+      } else {
+        MergeSharedStateIds(stream_data_, update_request->stream_data);
       }
       // Note: We might be overwriting some shared-states unnecessarily.
       StoreUpdate store_update;
+      store_update.stream_type = stream_type_;
       store_update.overwrite_stream_data = has_clear_all;
       store_update.update_request =
           std::make_unique<StreamModelUpdateRequest>(*update_request);
@@ -169,6 +197,7 @@ void StreamModel::ExecuteOperations(
 
   if (store_observer_) {
     StoreUpdate store_update;
+    store_update.stream_type = stream_type_;
     store_update.operations = std::move(operations);
     store_update.sequence_number = next_structure_sequence_number_++;
     store_observer_->OnStoreChange(std::move(store_update));
@@ -238,6 +267,13 @@ const stream_model::FeatureTree* StreamModel::GetFinalFeatureTree() const {
 
 const std::string& StreamModel::GetNextPageToken() const {
   return stream_data_.next_page_token();
+}
+
+base::Time StreamModel::GetLastAddedTime() const {
+  return feedstore::GetLastAddedTime(stream_data_);
+}
+ContentIdSet StreamModel::GetContentIds() const {
+  return feedstore::GetContentIds(stream_data_);
 }
 
 std::string StreamModel::DumpStateForTesting() {

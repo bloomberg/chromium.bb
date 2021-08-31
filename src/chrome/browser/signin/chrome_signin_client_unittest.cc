@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/signin_util.h"
@@ -28,7 +29,7 @@
 #endif
 
 // ChromeOS has its own network delay logic.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
 
@@ -145,10 +146,9 @@ class MockChromeSigninClient : public ChromeSigninClient {
 
 class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
  public:
+  ChromeSigninClientSignoutTest() : forced_signin_setter_(true) {}
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-
-    signin_util::SetForceSigninForTesting(true);
     CreateClient(browser()->profile());
   }
 
@@ -169,6 +169,7 @@ class ChromeSigninClientSignoutTest : public BrowserWithTestWindowTest {
                         source_metric);
   }
 
+  signin_util::ScopedForceSigninSetterForTesting forced_signin_setter_;
   std::unique_ptr<MockChromeSigninClient> client_;
 };
 
@@ -176,7 +177,7 @@ TEST_F(ChromeSigninClientSignoutTest, SignOut) {
   signin_metrics::ProfileSignout source_metric =
       signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS;
   signin_metrics::SignoutDelete delete_metric =
-      signin_metrics::SignoutDelete::IGNORE_METRIC;
+      signin_metrics::SignoutDelete::kIgnoreMetric;
 
   EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
       .Times(1);
@@ -192,13 +193,13 @@ TEST_F(ChromeSigninClientSignoutTest, SignOut) {
 }
 
 TEST_F(ChromeSigninClientSignoutTest, SignOutWithoutForceSignin) {
-  signin_util::SetForceSigninForTesting(false);
+  signin_util::ScopedForceSigninSetterForTesting signin_setter(false);
   CreateClient(browser()->profile());
 
   signin_metrics::ProfileSignout source_metric =
       signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS;
   signin_metrics::SignoutDelete delete_metric =
-      signin_metrics::SignoutDelete::IGNORE_METRIC;
+      signin_metrics::SignoutDelete::kIgnoreMetric;
 
   EXPECT_CALL(*client_, ShowUserManager(browser()->profile()->GetPath()))
       .Times(0);
@@ -244,6 +245,9 @@ bool IsSignoutDisallowedByPolicy(
     case signin_metrics::ProfileSignout::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST:
       // Allow signout for tests that want to force it.
       return false;
+    case signin_metrics::ProfileSignout::ACCOUNT_ID_MIGRATION:
+      // Allowed to force finish the account id migration.
+      return false;
     case signin_metrics::ProfileSignout::USER_DELETED_ACCOUNT_COOKIES:
     case signin_metrics::ProfileSignout::MOBILE_IDENTITY_CONSISTENCY_ROLLBACK:
       // There's no special-casing for these in ChromeSigninClient, as they only
@@ -269,7 +273,7 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutAllowed) {
 
   // Verify IdentityManager gets callback indicating sign-out is always allowed.
   signin_metrics::SignoutDelete delete_metric =
-      signin_metrics::SignoutDelete::IGNORE_METRIC;
+      signin_metrics::SignoutDelete::kIgnoreMetric;
   EXPECT_CALL(
       *client_,
       SignOutCallback(signout_source, delete_metric,
@@ -301,7 +305,7 @@ TEST_P(ChromeSigninClientSignoutSourceTest, UserSignoutDisallowed) {
           ? SigninClient::SignoutDecision::DISALLOW_SIGNOUT
           : SigninClient::SignoutDecision::ALLOW_SIGNOUT;
   signin_metrics::SignoutDelete delete_metric =
-      signin_metrics::SignoutDelete::IGNORE_METRIC;
+      signin_metrics::SignoutDelete::kIgnoreMetric;
   EXPECT_CALL(*client_,
               SignOutCallback(signout_source, delete_metric, signout_decision))
       .Times(1);
@@ -325,6 +329,7 @@ const signin_metrics::ProfileSignout kSignoutSources[] = {
     signin_metrics::ProfileSignout::FORCE_SIGNOUT_ALWAYS_ALLOWED_FOR_TEST,
     signin_metrics::ProfileSignout::USER_DELETED_ACCOUNT_COOKIES,
     signin_metrics::ProfileSignout::MOBILE_IDENTITY_CONSISTENCY_ROLLBACK,
+    signin_metrics::ProfileSignout::ACCOUNT_ID_MIGRATION,
 };
 static_assert(base::size(kSignoutSources) ==
                   signin_metrics::ProfileSignout::NUM_PROFILE_SIGNOUT_METRICS,
@@ -335,4 +340,4 @@ INSTANTIATE_TEST_SUITE_P(AllSignoutSources,
                          testing::ValuesIn(kSignoutSources));
 
 #endif  // !defined(OS_ANDROID)
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)

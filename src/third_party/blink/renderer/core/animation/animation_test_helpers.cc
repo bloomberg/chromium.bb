@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/cssom/css_keyword_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_numeric_value.h"
 #include "third_party/blink/renderer/core/css/resolver/style_cascade.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -24,6 +25,8 @@ void SetV8ObjectPropertyAsString(v8::Isolate* isolate,
                                  v8::Local<v8::Object> object,
                                  const StringView& name,
                                  const StringView& value) {
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   object
       ->Set(isolate->GetCurrentContext(), V8String(isolate, name),
             V8String(isolate, value))
@@ -34,6 +37,8 @@ void SetV8ObjectPropertyAsNumber(v8::Isolate* isolate,
                                  v8::Local<v8::Object> object,
                                  const StringView& name,
                                  double value) {
+  v8::MicrotasksScope microtasks_scope(
+      isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   object
       ->Set(isolate->GetCurrentContext(), V8String(isolate, name),
             v8::Number::New(isolate, value))
@@ -69,11 +74,11 @@ void EnsureInterpolatedValueCached(ActiveInterpolations* interpolations,
                                    Document& document,
                                    Element* element) {
   // TODO(smcgruer): We should be able to use a saner API approach like
-  // document.GetStyleResolver().StyleForElement(element). However that would
+  // document.GetStyleResolver().ResolveStyle(element). However that would
   // require our callers to properly register every animation they pass in
   // here, which the current tests do not do.
-  auto style = ComputedStyle::Create();
-  StyleResolverState state(document, *element, style.get(), style.get());
+  auto style = document.GetStyleResolver().CreateComputedStyle();
+  StyleResolverState state(document, *element, StyleRequest(style.get()));
   state.SetStyle(style);
 
   ActiveInterpolationsMap map;

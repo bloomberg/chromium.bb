@@ -2,7 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import StringIO
+from __future__ import absolute_import
+try:
+  from StringIO import StringIO
+except ImportError:
+  from io import StringIO
 import unittest
 
 import mock
@@ -13,7 +17,7 @@ from telemetry.testing import test_stories
 
 class GTestProgressReporterTest(unittest.TestCase):
   def setUp(self):
-    self._output_stream = StringIO.StringIO()
+    self._output_stream = StringIO()
     self._mock_time = mock.patch('time.time').start()
     self._mock_time.return_value = 0.0
 

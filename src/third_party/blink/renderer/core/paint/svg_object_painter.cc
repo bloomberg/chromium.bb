@@ -7,28 +7,12 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
 
 namespace {
-
-Color ResolveColor(const ComputedStyle& style,
-                   const SVGPaint& paint,
-                   const SVGPaint& visited_paint) {
-  Color color = style.ResolvedColor(paint.GetColor());
-  if (style.InsideLink() != EInsideLink::kInsideVisitedLink)
-    return color;
-  // FIXME: This code doesn't support the uri component of the visited link
-  // paint, https://bugs.webkit.org/show_bug.cgi?id=70006
-  if (!visited_paint.HasColor())
-    return color;
-  const Color& visited_color = style.ResolvedColor(visited_paint.GetColor());
-  return Color(visited_color.Red(), visited_color.Green(), visited_color.Blue(),
-               color.Alpha());
-}
 
 void CopyStateFromGraphicsContext(GraphicsContext& context, PaintFlags& flags) {
   // TODO(fs): The color filter can be set when generating a picture for a mask
@@ -49,8 +33,7 @@ void CopyStateFromGraphicsContext(GraphicsContext& context, PaintFlags& flags) {
 void SVGObjectPainter::PaintResourceSubtree(GraphicsContext& context) {
   DCHECK(!layout_object_.NeedsLayout());
 
-  PaintInfo info(context, LayoutRect::InfiniteIntRect(),
-                 PaintPhase::kForeground,
+  PaintInfo info(context, CullRect::Infinite(), PaintPhase::kForeground,
                  kGlobalPaintNormalPhase | kGlobalPaintFlattenCompositingLayers,
                  kPaintLayerPaintingRenderingResourceSubtree,
                  &layout_object_.PaintingLayer()->GetLayoutObject());
@@ -58,20 +41,17 @@ void SVGObjectPainter::PaintResourceSubtree(GraphicsContext& context) {
 }
 
 bool SVGObjectPainter::ApplyPaintResource(
-    LayoutSVGResourceMode resource_mode,
-    PaintFlags& flags,
-    const AffineTransform* additional_paint_server_transform) {
-  SVGResources* resources =
-      SVGResourcesCache::CachedResourcesForLayoutObject(layout_object_);
-  if (!resources)
+    const SVGPaint& paint,
+    const AffineTransform* additional_paint_server_transform,
+    PaintFlags& flags) {
+  SVGElementResourceClient* client = SVGResources::GetClient(layout_object_);
+  auto* uri_resource = GetSVGResourceAsType<LayoutSVGResourcePaintServer>(
+      *client, paint.Resource());
+  if (!uri_resource)
     return false;
-  const bool apply_to_fill = resource_mode == kApplyToFillMode;
-  LayoutSVGResourcePaintServer* uri_resource =
-      apply_to_fill ? resources->Fill() : resources->Stroke();
-  if (!uri_resource || !uri_resource->ApplyShader(
-                           *SVGResources::GetClient(layout_object_),
-                           SVGResources::ReferenceBoxForEffects(layout_object_),
-                           additional_paint_server_transform, flags))
+  if (!uri_resource->ApplyShader(
+          *client, SVGResources::ReferenceBoxForEffects(layout_object_),
+          additional_paint_server_transform, flags))
     return false;
   return true;
 }
@@ -91,24 +71,21 @@ bool SVGObjectPainter::PreparePaint(
   }
 
   const bool apply_to_fill = resource_mode == kApplyToFillMode;
-  const SVGComputedStyle& svg_style = style.SvgStyle();
   const SVGPaint& paint =
-      apply_to_fill ? svg_style.FillPaint() : svg_style.StrokePaint();
+      apply_to_fill ? style.FillPaint() : style.StrokePaint();
   const float alpha =
-      apply_to_fill ? svg_style.FillOpacity() : svg_style.StrokeOpacity();
+      apply_to_fill ? style.FillOpacity() : style.StrokeOpacity();
   if (paint.HasUrl()) {
-    if (ApplyPaintResource(resource_mode, flags,
-                           additional_paint_server_transform)) {
+    if (ApplyPaintResource(paint, additional_paint_server_transform, flags)) {
       flags.setColor(ScaleAlpha(SK_ColorBLACK, alpha));
       CopyStateFromGraphicsContext(paint_info.context, flags);
       return true;
     }
   }
   if (paint.HasColor()) {
-    const SVGPaint& visited_paint =
-        apply_to_fill ? svg_style.InternalVisitedFillPaint()
-                      : svg_style.InternalVisitedStrokePaint();
-    const Color color = ResolveColor(style, paint, visited_paint);
+    const CSSProperty& property =
+        apply_to_fill ? GetCSSPropertyFill() : GetCSSPropertyStroke();
+    const Color color = style.VisitedDependentColor(property);
     flags.setColor(ScaleAlpha(color.Rgb(), alpha));
     flags.setShader(nullptr);
     CopyStateFromGraphicsContext(paint_info.context, flags);

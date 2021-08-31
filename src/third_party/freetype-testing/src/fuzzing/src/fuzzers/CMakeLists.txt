@@ -46,7 +46,9 @@ foreach(fuzz_target_index RANGE "${num_fuzz_targets}")
     "${LIBARCHIVE_STATIC_LIBRARY}"
     "${FREETYPE_STATIC_LIBRARY}"
     "${BZIP2_STATIC_LIBRARY}"
-    "${BROTLI_STATIC_LIBRARY}")
+    "${BROTLI_STATIC_LIBRARY}"
+    "${LIBPNG_STATIC_LIBRARY}"
+    "${ZLIB_STATIC_LIBRARY}")
 
   # `-fsanitize=fuzzer' or `-lFuzzingEngine' cannot be set earlier since CMake
   # defines a main function when testing the compiler.  Clang (obviously)

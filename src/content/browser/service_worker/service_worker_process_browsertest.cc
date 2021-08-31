@@ -47,8 +47,10 @@ class ServiceWorkerProcessBrowserTest
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
-        shell()->web_contents()->GetBrowserContext());
+    StoragePartition* partition = shell()
+                                      ->web_contents()
+                                      ->GetBrowserContext()
+                                      ->GetDefaultStoragePartition();
     wrapper_ = static_cast<ServiceWorkerContextWrapper*>(
         partition->GetServiceWorkerContext());
   }
@@ -208,10 +210,11 @@ IN_PROC_BROWSER_TEST_P(
                 worker_process_id = process_id;
                 loop.Quit();
               }),
-          base::BindLambdaForTesting([&loop]() {
-            ASSERT_FALSE(true) << "start worker failed";
-            loop.Quit();
-          })));
+          base::BindLambdaForTesting(
+              [&loop](blink::ServiceWorkerStatusCode status_code) {
+                ASSERT_FALSE(true) << "start worker failed";
+                loop.Quit();
+              })));
   loop.Run();
 
   // The page and service worker should be in the same process.

@@ -8,11 +8,11 @@
 // Decodes the payload of a SETTINGS frame; for the RFC, see:
 //     http://httpwg.org/specs/rfc7540.html#SETTINGS
 
-#include "net/third_party/quiche/src/http2/decoder/decode_buffer.h"
-#include "net/third_party/quiche/src/http2/decoder/decode_status.h"
-#include "net/third_party/quiche/src/http2/decoder/frame_decoder_state.h"
-#include "net/third_party/quiche/src/http2/http2_structures.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_export.h"
+#include "http2/decoder/decode_buffer.h"
+#include "http2/decoder/decode_status.h"
+#include "http2/decoder/frame_decoder_state.h"
+#include "http2/http2_structures.h"
+#include "common/platform/api/quiche_export.h"
 
 namespace http2 {
 namespace test {
@@ -41,7 +41,7 @@ class QUICHE_EXPORT_PRIVATE SettingsPayloadDecoder {
                                      DecodeBuffer* db);
 
   // Decoding a single SETTING returned a status other than kDecodeDone; this
-  // method just brings together the DCHECKs to reduce duplication.
+  // method just brings together the QUICHE_DCHECKs to reduce duplication.
   DecodeStatus HandleNotDone(FrameDecoderState* state,
                              DecodeBuffer* db,
                              DecodeStatus status);

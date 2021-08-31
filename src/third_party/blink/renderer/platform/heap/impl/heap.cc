@@ -54,13 +54,9 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
 
 namespace blink {
-
-HeapAllocHooks::AllocationHook* HeapAllocHooks::allocation_hook_ = nullptr;
-HeapAllocHooks::FreeHook* HeapAllocHooks::free_hook_ = nullptr;
 
 class ProcessHeapReporter final : public ThreadHeapStatsObserver {
  public:
@@ -129,7 +125,8 @@ Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
 
   if (BasePage* page = LookupPageForAddress(address)) {
 #if DCHECK_IS_ON()
-    DCHECK(page->Contains(address));
+    DCHECK(page->Contains(address))
+        << "address " << address << " not part of page " << page;
 #endif
     DCHECK(page_bloom_filter_->MayContain(address));
     DCHECK(&visitor->Heap() == &page->Arena()->GetThreadState()->Heap());
@@ -533,6 +530,7 @@ bool ThreadHeap::AdvanceConcurrentMarking(
     finished = DrainWorklist<kDefaultConcurrentDeadlineCheckInterval>(
         previously_not_fully_constructed_worklist_.get(),
         [visitor](NotFullyConstructedItem& item) {
+          PageFromObject(item)->SynchronizedLoad();
           visitor->DynamicallyMarkAddress(reinterpret_cast<ConstAddress>(item));
         },
         should_yield_callback, visitor->task_id());

@@ -20,8 +20,23 @@
 
 #include <algorithm>
 #include <map>
+#include <unordered_set>
 
 namespace dawn_wire { namespace server {
+
+    struct DeviceInfo {
+        std::unordered_set<uint64_t> childObjectTypesAndIds;
+        Server* server;
+        ObjectHandle self;
+    };
+
+    // Whether this object has been allocated, or reserved for async object creation.
+    // Used by the KnownObjects queries
+    enum class AllocationState : uint32_t {
+        Free,
+        Reserved,
+        Allocated,
+    };
 
     template <typename T>
     struct ObjectDataBase {
@@ -29,9 +44,10 @@ namespace dawn_wire { namespace server {
         T handle;
         uint32_t generation = 0;
 
-        // Whether this object has been allocated, used by the KnownObjects queries
-        // TODO(cwallez@chromium.org): make this an internal bit vector in KnownObjects.
-        bool allocated;
+        AllocationState state;
+
+        // This points to an allocation that is owned by the device.
+        DeviceInfo* deviceInfo = nullptr;
     };
 
     // Stores what the backend knows about the type.
@@ -48,6 +64,28 @@ namespace dawn_wire { namespace server {
         BufferMapWriteState mapWriteState = BufferMapWriteState::Unmapped;
     };
 
+    // Pack the ObjectType and ObjectId as a single value for storage in
+    // an std::unordered_set. This lets us avoid providing our own hash and
+    // equality comparison operators.
+    inline uint64_t PackObjectTypeAndId(ObjectType type, ObjectId id) {
+        static_assert(sizeof(ObjectType) * 8 <= 32, "");
+        static_assert(sizeof(ObjectId) * 8 <= 32, "");
+        return (static_cast<uint64_t>(type) << 32) + id;
+    }
+
+    inline std::pair<ObjectType, ObjectId> UnpackObjectTypeAndId(uint64_t payload) {
+        ObjectType type = static_cast<ObjectType>(payload >> 32);
+        ObjectId id = payload & 0xFFFFFFFF;
+        return std::make_pair(type, id);
+    }
+
+    template <>
+    struct ObjectData<WGPUDevice> : public ObjectDataBase<WGPUDevice> {
+        // Store |info| as a separate allocation so that its address does not move.
+        // The pointer to |info| is stored in device child objects.
+        std::unique_ptr<DeviceInfo> info = std::make_unique<DeviceInfo>();
+    };
+
     // Keeps track of the mapping between client IDs and backend objects.
     template <typename T>
     class KnownObjects {
@@ -60,33 +98,33 @@ namespace dawn_wire { namespace server {
             // KnownObjects for ID 0.
             Data reservation;
             reservation.handle = nullptr;
-            reservation.allocated = false;
+            reservation.state = AllocationState::Free;
             mKnown.push_back(std::move(reservation));
         }
 
         // Get a backend objects for a given client ID.
         // Returns nullptr if the ID hasn't previously been allocated.
-        const Data* Get(uint32_t id) const {
+        const Data* Get(uint32_t id, AllocationState expected = AllocationState::Allocated) const {
             if (id >= mKnown.size()) {
                 return nullptr;
             }
 
             const Data* data = &mKnown[id];
 
-            if (!data->allocated) {
+            if (data->state != expected) {
                 return nullptr;
             }
 
             return data;
         }
-        Data* Get(uint32_t id) {
+        Data* Get(uint32_t id, AllocationState expected = AllocationState::Allocated) {
             if (id >= mKnown.size()) {
                 return nullptr;
             }
 
             Data* data = &mKnown[id];
 
-            if (!data->allocated) {
+            if (data->state != expected) {
                 return nullptr;
             }
 
@@ -96,13 +134,13 @@ namespace dawn_wire { namespace server {
         // Allocates the data for a given ID and returns it.
         // Returns nullptr if the ID is already allocated, or too far ahead, or if ID is 0 (ID 0 is
         // reserved for nullptr). Invalidates all the Data*
-        Data* Allocate(uint32_t id) {
+        Data* Allocate(uint32_t id, AllocationState state = AllocationState::Allocated) {
             if (id == 0 || id > mKnown.size()) {
                 return nullptr;
             }
 
             Data data;
-            data.allocated = true;
+            data.state = state;
             data.handle = nullptr;
 
             if (id >= mKnown.size()) {
@@ -110,7 +148,7 @@ namespace dawn_wire { namespace server {
                 return &mKnown.back();
             }
 
-            if (mKnown[id].allocated) {
+            if (mKnown[id].state != AllocationState::Free) {
                 return nullptr;
             }
 
@@ -121,16 +159,27 @@ namespace dawn_wire { namespace server {
         // Marks an ID as deallocated
         void Free(uint32_t id) {
             ASSERT(id < mKnown.size());
-            mKnown[id].allocated = false;
+            mKnown[id].state = AllocationState::Free;
         }
 
         std::vector<T> AcquireAllHandles() {
             std::vector<T> objects;
             for (Data& data : mKnown) {
-                if (data.allocated && data.handle != nullptr) {
+                if (data.state == AllocationState::Allocated && data.handle != nullptr) {
                     objects.push_back(data.handle);
-                    data.allocated = false;
+                    data.state = AllocationState::Free;
                     data.handle = nullptr;
+                }
+            }
+
+            return objects;
+        }
+
+        std::vector<T> GetAllHandles() {
+            std::vector<T> objects;
+            for (Data& data : mKnown) {
+                if (data.state == AllocationState::Allocated && data.handle != nullptr) {
+                    objects.push_back(data.handle);
                 }
             }
 

@@ -16,55 +16,57 @@ On Mac OS 10.7 (Lion) and later, the easiest way to get this library is to insta
 Xcode 4.2 or later.  However if you want to install tip-of-trunk from here
 (getting the bleeding edge), read on.
 
-The basic steps needed to build libc++ are:
+The following instructions describe how to checkout, build, test and
+(optionally) install libc++ and libc++abi.
 
-#. Checkout and configure LLVM (including libc++ and libc++abi), according to the `LLVM
-   getting started <https://llvm.org/docs/GettingStarted.html>`_ documentation. Make sure
-   to include ``libcxx`` and ``libcxxabi`` in the ``LLVM_ENABLE_PROJECTS`` option passed
-   to CMake.
+If your system already provides a libc++ installation it is important to be
+careful not to replace it. Remember Use the CMake option
+``CMAKE_INSTALL_PREFIX`` to select a safe place to install libc++.
 
-   For more information about configuring libc++ see :ref:`CMake Options`.
+.. warning::
+  * Replacing your systems libc++ installation could render the system non-functional.
+  * macOS will not boot without a valid copy of ``libc++.1.dylib`` in ``/usr/lib``.
 
-   * ``make cxx`` --- will build libc++ and libc++abi.
-   * ``make check-cxx check-cxxabi`` --- will run the test suites.
+.. code-block:: bash
 
-   Shared libraries for libc++ and libc++ abi should now be present in llvm/build/lib.
-   See :ref:`using an alternate libc++ installation <alternate libcxx>`
+  $ git clone https://github.com/llvm/llvm-project.git
+  $ cd llvm-project
+  $ mkdir build && cd build
+  $ cmake -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+          ../llvm
+  $ make # Build
+  $ make check-cxx # Test
+  $ make install-cxx install-cxxabi # Install
 
-#. **Optional**: Install libc++ and libc++abi
+For more information about configuring libc++ see :ref:`CMake Options`. You may
+also want to read the `LLVM getting started
+<https://llvm.org/docs/GettingStarted.html>`_ documentation.
 
-   If your system already provides a libc++ installation it is important to be
-   careful not to replace it. Remember Use the CMake option ``CMAKE_INSTALL_PREFIX`` to
-   select a safe place to install libc++.
-
-   * ``make install-cxx install-cxxabi`` --- Will install the libraries and the headers
-
-   .. warning::
-     * Replacing your systems libc++ installation could render the system non-functional.
-     * macOS will not boot without a valid copy of ``libc++.1.dylib`` in ``/usr/lib``.
-
+Shared libraries for libc++ and libc++ abi should now be present in
+``build/lib``.  See :ref:`using an alternate libc++ installation <alternate
+libcxx>` for information on how to use this libc++.
 
 The instructions are for building libc++ on
 FreeBSD, Linux, or Mac using `libc++abi`_ as the C++ ABI library.
 On Linux, it is also possible to use :ref:`libsupc++ <libsupcxx>` or libcxxrt.
 
-It is sometimes beneficial to build separately from the full LLVM build. An
-out-of-tree build would look like this:
+It is possible to build libc++ standalone (i.e. without building other LLVM
+projects). A standalone build would look like this:
 
 .. code-block:: bash
 
-  $ cd where-you-want-libcxx-to-live
-  $ # Check out the sources (includes everything, but we'll only use libcxx)
-  $ ``git clone https://github.com/llvm/llvm-project.git``
-  $ cd where-you-want-to-build
+  $ git clone https://github.com/llvm/llvm-project.git llvm-project
+  $ cd llvm-project
   $ mkdir build && cd build
-  $ export CC=clang CXX=clang++
-  $ cmake -DLLVM_PATH=path/to/separate/llvm \
+  $ cmake -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
           -DLIBCXX_CXX_ABI=libcxxabi \
           -DLIBCXX_CXX_ABI_INCLUDE_PATHS=path/to/separate/libcxxabi/include \
-          path/to/llvm-project/libcxx
+          ../libcxx
   $ make
-  $ make check-libcxx # optional
+  $ make check-cxx # optional
 
 
 Experimental Support for Windows
@@ -162,7 +164,7 @@ libc++ specific options
 
 .. option:: LIBCXX_ENABLE_ASSERTIONS:BOOL
 
-  **Default**: ``ON``
+  **Default**: ``OFF``
 
   Build libc++ with assertions enabled.
 
@@ -374,20 +376,6 @@ The following options allow building libc++ for a different ABI version.
 
   A semicolon-separated list of ABI macros to persist in the site config header.
   See ``include/__config`` for the list of ABI macros.
-
-
-.. option:: LIBCXX_HAS_MERGED_TYPEINFO_NAMES_DEFAULT
-
-  **Default**: ``None``. When defined this option overrides the libraries default configuration
-  for whether merged type info names are present.
-
-
-  Build ``std::type_info`` with the assumption that type info names for a type have been fully
-  merged are unique across the entire program. This may not be the case for libraries built with
-  ``-Bsymbolic`` or due to compiler or linker bugs (Ex. llvm.org/PR37398).
-
-  When the value is ``ON`` typeinfo comparisons compare only the pointer value, otherwise ``strcmp``
-  is used as a fallback.
 
 
 .. _LLVM-specific variables:

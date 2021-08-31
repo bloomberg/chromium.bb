@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/send_algorithm_test_utils.h"
+#include "quic/test_tools/send_algorithm_test_utils.h"
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test_output.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/platform/api/quic_test_output.h"
 
 namespace quic {
 namespace test {
@@ -49,9 +49,8 @@ std::string GetFullSendAlgorithmTestName() {
       test_info->type_param() ? test_info->type_param() : "";
   const std::string value_param =
       test_info->value_param() ? test_info->value_param() : "";
-  return quiche::QuicheStrCat(test_info->test_suite_name(), ".",
-                              test_info->name(), "_", type_param, "_",
-                              value_param);
+  return absl::StrCat(test_info->test_suite_name(), ".", test_info->name(), "_",
+                      type_param, "_", value_param);
 }
 
 std::string GetSendAlgorithmTestResultFilename() {

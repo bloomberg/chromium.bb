@@ -30,7 +30,6 @@ DEPOT_TOOLS = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(DEPOT_TOOLS, 'metrics.cfg')
 UPLOAD_SCRIPT = os.path.join(DEPOT_TOOLS, 'upload_metrics.py')
 
-DISABLE_METRICS_COLLECTION = os.environ.get('DEPOT_TOOLS_METRICS') == '0'
 DEFAULT_COUNTDOWN = 10
 
 INVALID_CONFIG_WARNING = (
@@ -50,6 +49,28 @@ class _Config(object):
 
   def _ensure_initialized(self):
     if self._initialized:
+      return
+
+    # Metrics collection is disabled, so don't collect any metrics.
+    if not metrics_utils.COLLECT_METRICS:
+      self._config = {
+        'is-googler': False,
+        'countdown': 0,
+        'opt-in': False,
+        'version': metrics_utils.CURRENT_VERSION,
+      }
+      self._initialized = True
+      return
+
+    # We are running on a bot. Ignore config and collect metrics. 
+    if metrics_utils.REPORT_BUILD:
+      self._config = {
+        'is-googler': True,
+        'countdown': 0,
+        'opt-in': True,
+        'version': metrics_utils.CURRENT_VERSION,
+      }
+      self._initialized = True
       return
 
     try:
@@ -117,12 +138,13 @@ class _Config(object):
 
   @property
   def should_collect_metrics(self):
-    # Don't collect the metrics unless the user is a googler, the user has opted
-    # in, or the countdown has expired.
+    # Don't report metrics if user is not a Googler.
     if not self.is_googler:
       return False
+    # Don't report metrics if user has opted out.
     if self.opted_in is False:
       return False
+    # Don't report metrics if countdown hasn't reached 0.
     if self.opted_in is None and self.countdown > 0:
       return False
     return True
@@ -181,11 +203,14 @@ class MetricsCollector(object):
 
   def _upload_metrics_data(self):
     """Upload the metrics data to the AppEngine app."""
+    p = subprocess2.Popen(['vpython3', UPLOAD_SCRIPT], stdin=subprocess2.PIPE)
     # We invoke a subprocess, and use stdin.write instead of communicate(),
     # so that we are able to return immediately, leaving the upload running in
     # the background.
-    p = subprocess2.Popen(['vpython3', UPLOAD_SCRIPT], stdin=subprocess2.PIPE)
     p.stdin.write(json.dumps(self._reported_metrics).encode('utf-8'))
+    # ... but if we're running on a bot, wait until upload has completed.
+    if metrics_utils.REPORT_BUILD:
+      p.communicate()
 
   def _collect_metrics(self, func, command_name, *args, **kwargs):
     # If we're already collecting metrics, just execute the function.
@@ -227,6 +252,10 @@ class MetricsCollector(object):
     if git_version:
       self.add('git_version', git_version)
 
+    bot_metrics = metrics_utils.get_bot_metrics()
+    if bot_metrics:
+      self.add('bot_metrics', bot_metrics)
+
     self._upload_metrics_data()
     if exception:
       gclient_utils.reraise(exception[0], exception[1], exception[2])
@@ -239,13 +268,8 @@ class MetricsCollector(object):
     environment and the function performance.
     """
     def _decorator(func):
-      # Do this first so we don't have to read, and possibly create a config
-      # file.
-      if DISABLE_METRICS_COLLECTION:
-        return func
       if not self.config.should_collect_metrics:
         return func
-      # Otherwise, collect the metrics.
       # Needed to preserve the __name__ and __doc__ attributes of func.
       @functools.wraps(func)
       def _inner(*args, **kwargs):
@@ -279,15 +303,14 @@ class MetricsCollector(object):
         traceback.print_exception(*exception)
 
     # Check if the version has changed
-    if (not DISABLE_METRICS_COLLECTION and self.config.is_googler
+    if (self.config.is_googler
         and self.config.opted_in is not False
         and self.config.version != metrics_utils.CURRENT_VERSION):
       metrics_utils.print_version_change(self.config.version)
       self.config.reset_config()
 
     # Print the notice
-    if (not DISABLE_METRICS_COLLECTION and self.config.is_googler
-        and self.config.opted_in is None):
+    if self.config.is_googler and self.config.opted_in is None:
       metrics_utils.print_notice(self.config.countdown)
       self.config.decrease_countdown()
 

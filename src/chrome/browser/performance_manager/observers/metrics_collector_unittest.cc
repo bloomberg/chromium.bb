@@ -20,12 +20,6 @@ const base::TimeDelta kTestMetricsReportDelayTimeout =
     kMetricsReportDelayTimeout + base::TimeDelta::FromSeconds(1);
 const char kHtmlMimeType[] = "text/html";
 
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL DummyUrl() {
-  return GURL("http://www.example.org");
-}
-
 // TODO(crbug.com/759905) Enable on Windows once this bug is fixed.
 #if defined(OS_WIN)
 #define MAYBE_MetricsCollectorTest DISABLED_MetricsCollectorTest
@@ -34,9 +28,12 @@ GURL DummyUrl() {
 #endif
 class MAYBE_MetricsCollectorTest : public GraphTestHarness {
  public:
+  using Super = GraphTestHarness;
+
   MAYBE_MetricsCollectorTest() : GraphTestHarness() {}
 
   void SetUp() override {
+    Super::SetUp();
     metrics_collector_ = new MetricsCollector();
     graph()->PassToGraph(base::WrapUnique(metrics_collector_));
   }
@@ -44,7 +41,7 @@ class MAYBE_MetricsCollectorTest : public GraphTestHarness {
   void TearDown() override {
     graph()->TakeFromGraph(metrics_collector_);  // Destroy the observer.
     metrics_collector_ = nullptr;
-    GraphTestHarness::TearDown();
+    Super::TearDown();
   }
 
  protected:
@@ -63,7 +60,8 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstTitleUpdatedUMA) {
   auto page_node = CreateNode<PageNodeImpl>();
 
   page_node->OnMainFrameNavigationCommitted(
-      false, base::TimeTicks::Now(), kDummyID, DummyUrl(), kHtmlMimeType);
+      false, base::TimeTicks::Now(), kDummyID, GURL("http://www.example.org"),
+      kHtmlMimeType);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_node->SetIsVisible(true);
@@ -96,7 +94,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
   auto page_node = CreateNode<PageNodeImpl>();
 
   page_node->OnMainFrameNavigationCommitted(
-      false, base::TimeTicks::Now(), kDummyID, DummyUrl(), kHtmlMimeType);
+      false, base::TimeTicks::Now(), kDummyID, GURL("http://www.example.org"),
+      kHtmlMimeType);
   page_node->SetIsVisible(false);
   page_node->OnTitleUpdated();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -116,7 +115,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
   auto frame_node = CreateFrameNodeAutoId(process_node.get(), page_node.get());
 
   page_node->OnMainFrameNavigationCommitted(
-      false, base::TimeTicks::Now(), kDummyID, DummyUrl(), kHtmlMimeType);
+      false, base::TimeTicks::Now(), kDummyID, GURL("http://www.example.org"),
+      kHtmlMimeType);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_node->SetIsVisible(true);
@@ -152,7 +152,8 @@ TEST_F(
   auto frame_node = CreateFrameNodeAutoId(process_node.get(), page_node.get());
 
   page_node->OnMainFrameNavigationCommitted(
-      false, base::TimeTicks::Now(), kDummyID, DummyUrl(), kHtmlMimeType);
+      false, base::TimeTicks::Now(), kDummyID, GURL("http://www.example.org"),
+      kHtmlMimeType);
   page_node->SetIsVisible(false);
   frame_node->OnNonPersistentNotificationCreated();
   // The page is within 5 minutes after main frame navigation was committed,
@@ -169,7 +170,8 @@ TEST_F(MAYBE_MetricsCollectorTest, FromBackgroundedToFirstFaviconUpdatedUMA) {
   auto page_node = CreateNode<PageNodeImpl>();
 
   page_node->OnMainFrameNavigationCommitted(
-      false, base::TimeTicks::Now(), kDummyID, DummyUrl(), kHtmlMimeType);
+      false, base::TimeTicks::Now(), kDummyID, GURL("http://www.example.org"),
+      kHtmlMimeType);
   AdvanceClock(kTestMetricsReportDelayTimeout);
 
   page_node->SetIsVisible(true);
@@ -202,7 +204,8 @@ TEST_F(MAYBE_MetricsCollectorTest,
   auto page_node = CreateNode<PageNodeImpl>();
 
   page_node->OnMainFrameNavigationCommitted(
-      false, base::TimeTicks::Now(), kDummyID, DummyUrl(), kHtmlMimeType);
+      false, base::TimeTicks::Now(), kDummyID, GURL("http://www.example.org"),
+      kHtmlMimeType);
   page_node->SetIsVisible(false);
   page_node->OnFaviconUpdated();
   // The page is within 5 minutes after main frame navigation was committed,

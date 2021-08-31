@@ -20,7 +20,7 @@ class GoogleURLLoaderThrottle
  public:
 #if defined(OS_ANDROID)
   GoogleURLLoaderThrottle(const std::string& client_data_header,
-                          bool night_mode_enabled,
+                          bool is_tab_large_enough,
                           chrome::mojom::DynamicParams dynamic_params);
 #else
   explicit GoogleURLLoaderThrottle(chrome::mojom::DynamicParams dynamic_params);
@@ -51,7 +51,7 @@ class GoogleURLLoaderThrottle
  private:
 #if defined(OS_ANDROID)
   std::string client_data_header_;
-  bool night_mode_enabled_;
+  bool is_tab_large_enough_;
 #endif
   const chrome::mojom::DynamicParams dynamic_params_;
 };

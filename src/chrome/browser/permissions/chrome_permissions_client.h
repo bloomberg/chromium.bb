@@ -7,10 +7,14 @@
 
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/permissions/permissions_client.h"
 
 class ChromePermissionsClient : public permissions::PermissionsClient {
  public:
+  ChromePermissionsClient(const ChromePermissionsClient&) = delete;
+  ChromePermissionsClient& operator=(const ChromePermissionsClient&) = delete;
+
   static ChromePermissionsClient* GetInstance();
 
   // PermissionsClient:
@@ -24,7 +28,7 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
       content::BrowserContext* browser_context) override;
   permissions::PermissionManager* GetPermissionManager(
       content::BrowserContext* browser_context) override;
-  permissions::ChooserContextBase* GetChooserContext(
+  permissions::ObjectPermissionContextBase* GetChooserContext(
       content::BrowserContext* browser_context,
       ContentSettingsType type) override;
   double GetSiteEngagementScore(content::BrowserContext* browser_context,
@@ -32,7 +36,7 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
   void AreSitesImportant(
       content::BrowserContext* browser_context,
       std::vector<std::pair<url::Origin, bool>>* urls) override;
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
   bool IsCookieDeletionDisabled(content::BrowserContext* browser_context,
                                 const GURL& origin) override;
 #endif
@@ -40,26 +44,26 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
                       const content::WebContents* web_contents,
                       const GURL& requesting_origin,
                       GetUkmSourceIdCallback callback) override;
-  permissions::PermissionRequest::IconId GetOverrideIconId(
-      ContentSettingsType type) override;
-  std::vector<std::unique_ptr<permissions::NotificationPermissionUiSelector>>
-  CreateNotificationPermissionUiSelectors(
+  permissions::IconId GetOverrideIconId(
+      permissions::RequestType request_type) override;
+  std::vector<std::unique_ptr<permissions::PermissionUiSelector>>
+  CreatePermissionUiSelectors(
       content::BrowserContext* browser_context) override;
   void OnPromptResolved(content::BrowserContext* browser_context,
-                        permissions::PermissionRequestType request_type,
+                        permissions::RequestType request_type,
                         permissions::PermissionAction action,
                         const GURL& origin,
-                        base::Optional<QuietUiReason> quiet_ui_reason) override;
-  base::Optional<bool> HadThreeConsecutiveNotificationPermissionDenies(
+                        absl::optional<QuietUiReason> quiet_ui_reason) override;
+  absl::optional<bool> HadThreeConsecutiveNotificationPermissionDenies(
       content::BrowserContext* browser_context) override;
-  base::Optional<bool> HasPreviouslyAutoRevokedPermission(
+  absl::optional<bool> HasPreviouslyAutoRevokedPermission(
       content::BrowserContext* browser_context,
       const GURL& origin,
       ContentSettingsType permission) override;
-  base::Optional<url::Origin> GetAutoApprovalOrigin() override;
+  absl::optional<url::Origin> GetAutoApprovalOrigin() override;
   bool CanBypassEmbeddingOriginCheck(const GURL& requesting_origin,
                                      const GURL& embedding_origin) override;
-  base::Optional<GURL> OverrideCanonicalOrigin(
+  absl::optional<GURL> OverrideCanonicalOrigin(
       const GURL& requesting_origin,
       const GURL& embedding_origin) override;
 #if defined(OS_ANDROID)
@@ -91,9 +95,6 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
   friend base::NoDestructor<ChromePermissionsClient>;
 
   ChromePermissionsClient() = default;
-
-  ChromePermissionsClient(const ChromePermissionsClient&) = delete;
-  ChromePermissionsClient& operator=(const ChromePermissionsClient&) = delete;
 };
 
 #endif  // CHROME_BROWSER_PERMISSIONS_CHROME_PERMISSIONS_CLIENT_H_

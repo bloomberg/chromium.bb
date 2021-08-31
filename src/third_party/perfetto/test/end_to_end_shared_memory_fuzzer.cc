@@ -83,7 +83,7 @@ class FakeProducer : public Producer {
         static_cast<BufferID>(source_config.target_buffer()));
     {
       auto packet = trace_writer->NewTracePacket();
-      packet->stream_writer_for_testing()->WriteBytes(data_, size_);
+      packet->AppendRawProtoBytes(data_, size_);
     }
     trace_writer->Flush();
 
@@ -140,12 +140,20 @@ class FuzzerFakeProducerThread {
   std::function<void()> on_produced_and_committed_;
 };
 
+class FuzzTestHelper : public TestHelper {
+ public:
+  explicit FuzzTestHelper(base::TestTaskRunner* task_runner)
+      : TestHelper(task_runner) {}
+  // Do not verify the data, as it will most likely be corrupted.
+  void ReadTraceData(std::vector<TracePacket>) override {}
+};
+
 int FuzzSharedMemory(const uint8_t* data, size_t size);
 
 int FuzzSharedMemory(const uint8_t* data, size_t size) {
   base::TestTaskRunner task_runner;
 
-  TestHelper helper(&task_runner);
+  FuzzTestHelper helper(&task_runner);
   helper.StartServiceIfRequired();
 
   auto cp =

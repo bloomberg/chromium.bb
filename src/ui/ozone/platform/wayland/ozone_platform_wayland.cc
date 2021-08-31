@@ -16,9 +16,9 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/cursor/cursor_factory.h"
-#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
 #include "ui/gfx/linux/client_native_pixmap_dmabuf.h"
 #include "ui/gfx/native_widget_types.h"
@@ -58,8 +58,13 @@
 #endif
 
 #if BUILDFLAG(USE_GTK)
-#include "ui/gtk/gtk_ui_delegate.h"  // nogncheck
-#include "ui/ozone/platform/wayland/host/gtk_ui_delegate_wayland.h"  //nogncheck
+#include "ui/ozone/platform/wayland/host/linux_ui_delegate_wayland.h"  // nogncheck
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
+#else
+#include "ui/ozone/platform/wayland/host/wayland_cursor_factory.h"
 #endif
 
 namespace ui {
@@ -111,8 +116,7 @@ class OzonePlatformWayland : public OzonePlatform {
     // The WaylandConnection and the WaylandOutputManager must be created
     // before PlatformScreen.
     DCHECK(connection_ && connection_->wayland_output_manager());
-    return connection_->wayland_output_manager()->CreateWaylandScreen(
-        connection_.get());
+    return connection_->wayland_output_manager()->CreateWaylandScreen();
   }
 
   PlatformClipboard* GetPlatformClipboard() override {
@@ -157,6 +161,9 @@ class OzonePlatformWayland : public OzonePlatform {
   }
 
   void InitializeUI(const InitParams& args) override {
+    // Initialize DeviceDataManager early as devices are set during
+    // WaylandConnection::Initialize().
+    DeviceDataManager::CreateInstance();
 #if BUILDFLAG(USE_XKBCOMMON)
     keyboard_layout_engine_ =
         std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_);
@@ -171,17 +178,19 @@ class OzonePlatformWayland : public OzonePlatform {
 
     buffer_manager_connector_ = std::make_unique<WaylandBufferManagerConnector>(
         connection_->buffer_manager_host());
+#if defined(OS_CHROMEOS)
     cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
+#else
+    cursor_factory_ = std::make_unique<WaylandCursorFactory>(connection_.get());
+#endif
     input_controller_ = CreateStubInputController();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
     supported_buffer_formats_ =
         connection_->buffer_manager_host()->GetSupportedBufferFormats();
 #if BUILDFLAG(USE_GTK)
-    DCHECK(!GtkUiDelegate::instance());
-    gtk_ui_delegate_ =
-        std::make_unique<GtkUiDelegateWayland>(connection_.get());
-    GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
+    gtk_ui_platform_ =
+        std::make_unique<LinuxUiDelegateWayland>(connection_.get());
 #endif
 
     menu_utils_ = std::make_unique<WaylandMenuUtils>(connection_.get());
@@ -224,12 +233,22 @@ class OzonePlatformWayland : public OzonePlatform {
       // https://github.com/wayland-project/wayland-protocols/commit/76d1ae8c65739eff3434ef219c58a913ad34e988
       properties->custom_frame_pref_default = true;
 
+      properties->uses_external_vulkan_image_factory = true;
+
       // Wayland doesn't provide clients with global screen coordinates.
       // Instead, it forces clients to position windows relative to their top
       // level windows if the have child-parent relationship. In case of
       // toplevel windows, clients simply don't know their position on screens
       // and always assume they are located at some arbitrary position.
       properties->ignore_screen_bounds_for_menus = true;
+      // Wayland uses sub-surfaces to show tooltips, and sub-surfaces must be
+      // bound to their root surfaces always, but finding the correct root
+      // surface at the moment of creating the tooltip is not always possible
+      // due to how Wayland handles focus and activation.
+      // Therefore, the platform should be given a hint at the moment when the
+      // surface is initialised, where it is known for sure which root surface
+      // shows the tooltip.
+      properties->set_parent_for_non_top_level_windows = true;
       properties->app_modal_dialogs_use_event_blocker = true;
 
       // Primary planes can be transluscent due to underlay strategy. As a
@@ -250,7 +269,8 @@ class OzonePlatformWayland : public OzonePlatform {
         properties;
     static bool initialized = false;
     if (!initialized) {
-      properties->supports_overlays = ui::IsWaylandOverlayDelegationEnabled();
+      properties->supports_overlays =
+          ui::IsWaylandOverlayDelegationEnabled() && connection_->viewporter();
       initialized = true;
     }
     return *properties;
@@ -269,7 +289,7 @@ class OzonePlatformWayland : public OzonePlatform {
     buffer_manager_->AddBindingWaylandBufferManagerGpu(std::move(receiver));
   }
 
-  void PostMainMessageLoopStart(
+  void PostCreateMainMessageLoop(
       base::OnceCallback<void()> shutdown_cb) override {
     DCHECK(connection_);
     connection_->SetShutdownCb(std::move(shutdown_cb));
@@ -304,7 +324,7 @@ class OzonePlatformWayland : public OzonePlatform {
   DrmRenderNodePathFinder path_finder_;
 
 #if BUILDFLAG(USE_GTK)
-  std::unique_ptr<GtkUiDelegateWayland> gtk_ui_delegate_;
+  std::unique_ptr<LinuxUiDelegateWayland> gtk_ui_platform_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatformWayland);

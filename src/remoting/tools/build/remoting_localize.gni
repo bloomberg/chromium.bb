@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/python.gni")
-
 # Calls the remoting_localize script with a jinja2 template.
 #
 # Arguments
@@ -11,7 +9,7 @@ import("//build/config/python.gni")
 #   sources (required)
 #     List of jinja2 files to load. This is the template.
 #
-#   locales (required)
+#   locale_list (required)
 #     List of locales.
 #
 #   locale_dir (optional)
@@ -23,7 +21,7 @@ import("//build/config/python.gni")
 #   variables (optional)
 #     List of variables to pass to script.
 #
-#   output (optiona)
+#   output (optional)
 #     Substitution pattern for the output. Defaults to a file in the target
 #     gen dir with the extension stripped (normally the extension is ".jinja2"
 #     which then leaves the non-tempaltized file name).
@@ -35,8 +33,7 @@ import("//build/config/python.gni")
 #   deps (optional)
 #   visibility (optional)
 template("remoting_localize") {
-  # TODO(crbug.com/1112471): Get this to run cleanly under Python 3.
-  python2_action_foreach(target_name) {
+  action_foreach(target_name) {
     if (defined(invoker.visibility)) {
       visibility = invoker.visibility
     }
@@ -98,7 +95,7 @@ template("remoting_localize") {
       ]
     }
 
-    args += invoker.locales
+    args += invoker.locale_list
 
     if (defined(invoker.deps)) {
       deps = invoker.deps

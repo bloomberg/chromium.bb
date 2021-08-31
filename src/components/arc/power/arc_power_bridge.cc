@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -178,6 +177,7 @@ void ArcPowerBridge::OnConnectionClosed() {
 
 void ArcPowerBridge::SuspendImminent(
     power_manager::SuspendImminent::Reason reason) {
+  is_suspending_ = true;
   mojom::PowerInstance* power_instance =
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->power(), Suspend);
   if (!power_instance)
@@ -191,11 +191,16 @@ void ArcPowerBridge::SuspendImminent(
 }
 
 void ArcPowerBridge::OnAndroidSuspendReady(base::UnguessableToken token) {
-  if (arc::IsArcVmEnabled()) {
+  // For the ARCVM case, we only want to suspend the VM if a suspend is still
+  // underway ie. if SuspendImminent was observed without a subsequent
+  // SuspendDone. Otherwise, skip suspending the VM but still call
+  // UnblockSuspend to fulfill the contract and to align with ARC container's
+  // behavior.
+  if (arc::IsArcVmEnabled() && is_suspending_) {
     vm_tools::concierge::SuspendVmRequest request;
     request.set_name(kArcVmName);
     request.set_owner_id(user_id_hash_);
-    chromeos::DBusThreadManager::Get()->GetConciergeClient()->SuspendVm(
+    chromeos::ConciergeClient::Get()->SuspendVm(
         request, base::BindOnce(&ArcPowerBridge::OnConciergeSuspendVmResponse,
                                 weak_ptr_factory_.GetWeakPtr(), token));
     return;
@@ -206,7 +211,7 @@ void ArcPowerBridge::OnAndroidSuspendReady(base::UnguessableToken token) {
 
 void ArcPowerBridge::OnConciergeSuspendVmResponse(
     base::UnguessableToken token,
-    base::Optional<vm_tools::concierge::SuspendVmResponse> reply) {
+    absl::optional<vm_tools::concierge::SuspendVmResponse> reply) {
   if (!reply.has_value())
     LOG(ERROR) << "Failed to suspend arcvm, no reply received.";
   else if (!reply.value().success())
@@ -214,12 +219,13 @@ void ArcPowerBridge::OnConciergeSuspendVmResponse(
   chromeos::PowerManagerClient::Get()->UnblockSuspend(token);
 }
 
-void ArcPowerBridge::SuspendDone(const base::TimeDelta& sleep_duration) {
+void ArcPowerBridge::SuspendDone(base::TimeDelta sleep_duration) {
+  is_suspending_ = false;
   if (arc::IsArcVmEnabled()) {
     vm_tools::concierge::ResumeVmRequest request;
     request.set_name(kArcVmName);
     request.set_owner_id(user_id_hash_);
-    chromeos::DBusThreadManager::Get()->GetConciergeClient()->ResumeVm(
+    chromeos::ConciergeClient::Get()->ResumeVm(
         request, base::BindOnce(&ArcPowerBridge::OnConciergeResumeVmResponse,
                                 weak_ptr_factory_.GetWeakPtr()));
     return;
@@ -228,7 +234,7 @@ void ArcPowerBridge::SuspendDone(const base::TimeDelta& sleep_duration) {
 }
 
 void ArcPowerBridge::OnConciergeResumeVmResponse(
-    base::Optional<vm_tools::concierge::ResumeVmResponse> reply) {
+    absl::optional<vm_tools::concierge::ResumeVmResponse> reply) {
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to resume arcvm, no reply received.";
     return;
@@ -358,7 +364,7 @@ ArcPowerBridge::WakeLockRequestor* ArcPowerBridge::GetWakeLockRequestor(
 }
 
 void ArcPowerBridge::OnGetScreenBrightnessPercent(
-    base::Optional<double> percent) {
+    absl::optional<double> percent) {
   if (!percent.has_value()) {
     LOG(ERROR)
         << "PowerManagerClient::GetScreenBrightnessPercent reports an error";

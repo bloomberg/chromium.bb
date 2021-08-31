@@ -4,7 +4,10 @@
 
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 
+#include <memory>
+
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -26,7 +29,6 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -60,7 +62,7 @@ namespace extensions {
 namespace {
 
 // Returns true if the given |item| is of the given |type|.
-bool MenuItemMatchesAction(const base::Optional<ActionInfo::Type> action_type,
+bool MenuItemMatchesAction(const absl::optional<ActionInfo::Type> action_type,
                            const MenuItem* item) {
   if (!action_type)
     return false;
@@ -97,31 +99,11 @@ int GetVisibilityStringId(
     Profile* profile,
     const Extension* extension,
     ExtensionContextMenuModel::ButtonVisibility button_visibility) {
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    if (IsExtensionForcePinned(*extension, profile))
-      return IDS_EXTENSIONS_PINNED_BY_ADMIN;
-    if (button_visibility == ExtensionContextMenuModel::PINNED)
-      return IDS_EXTENSIONS_UNPIN_FROM_TOOLBAR;
-    return IDS_EXTENSIONS_PIN_TO_TOOLBAR;
-  }
-  DCHECK(profile);
-  int string_id = -1;
-  // We display "show" or "hide" based on the icon's visibility, and can have
-  // "transitively shown" buttons that are shown only while the button has a
-  // popup or menu visible.
-  switch (button_visibility) {
-    case (ExtensionContextMenuModel::PINNED):
-      string_id = IDS_EXTENSIONS_HIDE_BUTTON_IN_MENU;
-      break;
-    case (ExtensionContextMenuModel::TRANSITIVELY_VISIBLE):
-      string_id = IDS_EXTENSIONS_KEEP_BUTTON_IN_TOOLBAR;
-      break;
-    case (ExtensionContextMenuModel::UNPINNED):
-      string_id = IDS_EXTENSIONS_SHOW_BUTTON_IN_TOOLBAR;
-      break;
-  }
-
-  return string_id;
+  if (IsExtensionForcePinned(*extension, profile))
+    return IDS_EXTENSIONS_PINNED_BY_ADMIN;
+  if (button_visibility == ExtensionContextMenuModel::PINNED)
+    return IDS_EXTENSIONS_UNPIN_FROM_TOOLBAR;
+  return IDS_EXTENSIONS_PIN_TO_TOOLBAR;
 }
 
 // Returns true if the given |extension| is required to remain installed by
@@ -171,7 +153,7 @@ ExtensionContextMenuModel::ContextMenuAction CommandIdToContextMenuAction(
 
 // A stub for the uninstall dialog.
 // TODO(devlin): Ideally, we would just have the uninstall dialog take a
-// base::Callback, but that's a bunch of churn.
+// base::OnceCallback, but that's a bunch of churn.
 class UninstallDialogHelper : public ExtensionUninstallDialog::Delegate {
  public:
   // Kicks off the asynchronous process to confirm and uninstall the given
@@ -196,7 +178,7 @@ class UninstallDialogHelper : public ExtensionUninstallDialog::Delegate {
 
   // ExtensionUninstallDialog::Delegate:
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
-                                        const base::string16& error) override {
+                                        const std::u16string& error) override {
     delete this;
   }
 
@@ -306,9 +288,8 @@ bool ExtensionContextMenuModel::IsCommandIdEnabled(int command_id) const {
     // Extension pinning/unpinning is not available for Incognito as this leaves
     // a trace of user activity.
     case TOGGLE_VISIBILITY:
-      return (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu) &&
-              !browser_->profile()->IsOffTheRecord() &&
-              !IsExtensionForcePinned(*extension, profile_));
+      return !browser_->profile()->IsOffTheRecord() &&
+             !IsExtensionForcePinned(*extension, profile_);
     // Manage extensions is always enabled.
     case MANAGE_EXTENSIONS:
       return true;
@@ -385,7 +366,7 @@ void ExtensionContextMenuModel::MenuClosed(ui::SimpleMenuModel* menu) {
   if (action_taken_) {
     ContextMenuAction action = *action_taken_;
     UMA_HISTOGRAM_ENUMERATION("Extensions.ContextMenuAction", action);
-    action_taken_ = base::nullopt;
+    action_taken_ = absl::nullopt;
   }
 }
 
@@ -395,15 +376,15 @@ void ExtensionContextMenuModel::InitMenu(const Extension* extension,
                                          ButtonVisibility button_visibility) {
   DCHECK(extension);
 
-  base::Optional<ActionInfo::Type> action_type;
+  absl::optional<ActionInfo::Type> action_type;
   extension_action_ =
       ExtensionActionManager::Get(profile_)->GetExtensionAction(*extension);
   if (extension_action_)
     action_type = extension_action_->action_type();
 
-  extension_items_.reset(new ContextMenuMatcher(
+  extension_items_ = std::make_unique<ContextMenuMatcher>(
       profile_, this, this,
-      base::BindRepeating(MenuItemMatchesAction, action_type)));
+      base::BindRepeating(MenuItemMatchesAction, action_type));
 
   std::string extension_name = extension->name();
   // Ampersands need to be escaped to avoid being treated like
@@ -474,7 +455,7 @@ void ExtensionContextMenuModel::AppendExtensionItems() {
 
   int index = 0;
   extension_items_->AppendExtensionItems(MenuItem::ExtensionKey(extension_id_),
-                                         base::string16(), &index,
+                                         std::u16string(), &index,
                                          true);  // is_action_menu
 }
 
@@ -512,7 +493,7 @@ bool ExtensionContextMenuModel::IsPageAccessCommandEnabled(
   // commands should be shown.
   DCHECK(site_access.has_site_access || site_access.withheld_site_access ||
          extension.permissions_data()->HasAPIPermission(
-             APIPermission::kActiveTab));
+             mojom::APIPermissionID::kActiveTab));
 
   switch (command_id) {
     case PAGE_ACCESS_SUBMENU:
@@ -552,7 +533,7 @@ void ExtensionContextMenuModel::CreatePageAccessSubmenu(
       modifier.GetSiteAccess(url);
 
   bool has_active_tab = extension->permissions_data()->HasAPIPermission(
-      APIPermission::kActiveTab);
+      mojom::APIPermissionID::kActiveTab);
   bool wants_site_access =
       site_access.has_site_access || site_access.withheld_site_access;
   if (!wants_site_access && !has_active_tab) {

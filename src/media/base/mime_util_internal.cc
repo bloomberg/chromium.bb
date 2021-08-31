@@ -144,6 +144,10 @@ MimeUtil::MimeUtil() {
   // video decoders and MediaCodec; indicated by HasPlatformDecoderSupport().
   // When the Android pipeline is used, we only need access to MediaCodec.
   platform_info_.has_platform_decoders = HasPlatformDecoderSupport();
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
+  platform_info_.has_platform_dv_decoder =
+      MediaCodecUtil::IsDolbyVisionDecoderAvailable();
+#endif
   platform_info_.has_platform_vp8_decoder =
       MediaCodecUtil::IsVp8DecoderAvailable();
   platform_info_.has_platform_vp9_decoder =
@@ -565,13 +569,12 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
     case THEORA:
       return false;
 
-    // AV1 is not supported on Android yet.
-    case AV1:
-      return false;
-
     // ----------------------------------------------------------------------
     // The remaining codecs may be supported depending on platform abilities.
     // ----------------------------------------------------------------------
+    case AV1:
+      return BUILDFLAG(ENABLE_AV1_DECODER);
+
     case MPEG2_AAC:
       // MPEG2_AAC cannot be used in HLS (mpegurl suffix), but this is enforced
       // in the parsing step by excluding MPEG2_AAC from the list of
@@ -650,9 +653,11 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
     }
 
     case DOLBY_VISION:
-      // This function is only called on Android which doesn't support Dolby
-      // Vision.
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
+      return platform_info.has_platform_dv_decoder;
+#else
       return false;
+#endif
 
     case AC3:
     case EAC3:

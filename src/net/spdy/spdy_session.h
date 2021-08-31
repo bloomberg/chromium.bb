@@ -20,7 +20,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
@@ -51,7 +50,9 @@
 #include "net/third_party/quiche/src/spdy/core/spdy_header_block.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 #include "url/scheme_host_port.h"
 
 namespace net {
@@ -60,13 +61,14 @@ namespace test {
 class SpdyStreamTest;
 }
 
-// This is somewhat arbitrary and not really fixed, but it will always work
-// reasonably with ethernet. Chop the world into 2-packet chunks.  This is
-// somewhat arbitrary, but is reasonably small and ensures that we elicit
-// ACKs quickly from TCP (because TCP tries to only ACK every other packet).
-const int kMss = 1430;
-// The 8 is the size of the SPDY frame header.
-const int kMaxSpdyFrameChunkSize = (2 * kMss) - 8;
+// TLS and other layers will chunk data at 16KB. Making the max frame size too
+// small will lead to increased CPU/byte cost and overhead on both client/server
+// due to excessive frames to process. Making this larger has diminishing
+// returns as the data will be chunked elsewhere. We also want to ensure we are
+// >= 2860B (~2* MSS => 2 packets) to avoid delayed ACKs. We will also account
+// for the frame header size of 9B to prevent fragmentation when this is added.
+// As a result we will use a 16KB - 9B max data frame size.
+const int kMaxSpdyFrameChunkSize = (16 * 1024) - 9;
 
 // Default value of spdy::SETTINGS_INITIAL_WINDOW_SIZE per protocol
 // specification. A session is always created with this initial window size.
@@ -345,13 +347,13 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
               bool enable_ping_based_connection_checking,
               bool is_http_enabled,
               bool is_quic_enabled,
-              bool is_trusted_proxy,
               size_t session_max_recv_window_size,
               int session_max_queued_capped_frames,
               const spdy::SettingsMap& initial_settings,
-              const base::Optional<SpdySessionPool::GreasedHttp2Frame>&
+              const absl::optional<SpdySessionPool::GreasedHttp2Frame>&
                   greased_http2_frame,
               bool http2_end_stream_with_data_frame,
+              bool enable_priority_update,
               TimeFunc time_func,
               ServerPushDelegate* push_delegate,
               NetworkQualityEstimator* network_quality_estimator,
@@ -365,9 +367,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   const HostPortProxyPair& host_port_proxy_pair() const {
     return spdy_session_key_.host_port_proxy_pair();
   }
-  const SpdySessionKey& spdy_session_key() const {
-    return spdy_session_key_;
-  }
+  const SpdySessionKey& spdy_session_key() const { return spdy_session_key_; }
 
   // Get a pushed stream for a given |url| with stream ID |pushed_stream_id|.
   // The caller must have already claimed the stream from Http2PushPromiseIndex.
@@ -408,6 +408,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
                             const LoadTimingInfo::ConnectTiming& connect_timing,
                             SpdySessionPool* pool);
 
+  // Parse ALPS application_data from TLS handshake.
+  // Returns OK on success.  Return a net error code on failure, and closes the
+  // connection with the same error code.
+  int ParseAlps();
+
   // Check to see if this SPDY session can support an additional domain.
   // If the session is un-authenticated, then this call always returns true.
   // For SSL-based sessions, verifies that the server certificate in use by
@@ -442,6 +447,21 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Send greased frame, that is, a frame of reserved type.
   void EnqueueGreasedFrame(const base::WeakPtr<SpdyStream>& stream);
+
+  // Returns whether HTTP/2 style priority information (stream dependency and
+  // weight fields in HEADERS frames, and PRIORITY frames) should be sent.  True
+  // unless |enable_priority_update_| is true and
+  // SETTINGS_DEPRECATE_HTTP2_PRIORITIES with value 1 has been received from
+  // server.  In particular, if it returns false, it will always return false
+  // afterwards.
+  bool ShouldSendHttp2Priority() const;
+
+  // Returns whether PRIORITY_UPDATE frames should be sent.  False if
+  // |enable_priority_update_| is false.  Otherwise, true before SETTINGS frame
+  // is received from server, and true after SETTINGS frame is received if it
+  // contained SETTINGS_DEPRECATE_HTTP2_PRIORITIES with value 1.  In particular,
+  // if it returns false, it will always return false afterwards.
+  bool ShouldSendPriorityUpdate() const;
 
   // Runs the handshake to completion to confirm the handshake with the server.
   // If ERR_IO_PENDING is returned, then when the handshake is confirmed,
@@ -499,6 +519,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // MultiplexedSession methods:
   bool GetRemoteEndpoint(IPEndPoint* endpoint) override;
   bool GetSSLInfo(SSLInfo* ssl_info) const override;
+  base::StringPiece GetAcceptChViaAlpsForOrigin(
+      const url::Origin& origin) const override;
 
   // Returns true if ALPN was negotiated for the underlying socket.
   bool WasAlpnNegotiated() const;
@@ -905,7 +927,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   void OnSettings() override;
   void OnSettingsAck() override;
   void OnSetting(spdy::SpdySettingsId id, uint32_t value) override;
-  void OnSettingsEnd() override {}
+  void OnSettingsEnd() override;
   void OnWindowUpdate(spdy::SpdyStreamId stream_id,
                       int delta_window_size) override;
   void OnPushPromise(spdy::SpdyStreamId stream_id,
@@ -1123,7 +1145,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // If set, an HTTP/2 frame with a reserved frame type will be sent after
   // every HTTP/2 SETTINGS frame and before every HTTP/2 DATA frame. See
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
-  const base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame_;
+  const absl::optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame_;
 
   // If set, the HEADERS frame carrying a request without body will not have the
   // END_STREAM flag set.  The stream will be closed by a subsequent empty DATA
@@ -1131,7 +1153,21 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // If unset, the HEADERS frame will have the END_STREAM flag set on.
   // This is useful in conjuction with |greased_http2_frame_| so that a frame
   // of reserved type can be sent out even on requests without a body.
-  bool http2_end_stream_with_data_frame_;
+  const bool http2_end_stream_with_data_frame_;
+
+  // If true, enable sending PRIORITY_UPDATE frames until SETTINGS frame
+  // arrives.  After SETTINGS frame arrives, do not send PRIORITY_UPDATE frames
+  // any longer if SETTINGS_DEPRECATE_HTTP2_PRIORITIES is missing or has zero 0,
+  // but continue and also stop sending HTTP/2-style priority information in
+  // HEADERS frames and PRIORITY frames if it has value 1.
+  const bool enable_priority_update_;
+
+  // The value of the last received SETTINGS_DEPRECATE_HTTP2_PRIORITIES, with 0
+  // mapping to false and 1 to true.  Initial value is false.
+  bool deprecate_http2_priorities_;
+
+  // True if at least one SETTINGS frame has been received.
+  bool settings_frame_received_;
 
   // The callbacks to notify a request that the handshake has been confirmed.
   std::vector<CompletionOnceCallback> waiting_for_confirmation_callbacks_;
@@ -1225,10 +1261,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   const bool is_http2_enabled_;
   const bool is_quic_enabled_;
 
-  // If true, this session is being made to a trusted SPDY/HTTP2 proxy that is
-  // allowed to push cross-origin resources.
-  const bool is_trusted_proxy_;
-
   // If true, accept pushed streams from server.
   // If false, reset pushed streams immediately.
   const bool enable_push_;
@@ -1263,6 +1295,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   TimeFunc time_func_;
 
   Http2PriorityDependencies priority_dependency_state_;
+
+  // Map of origin to Accept-CH header field values received via ALPS.
+  base::flat_map<url::Origin, std::string> accept_ch_entries_received_via_alps_;
 
   // Network quality estimator to which the ping RTTs should be reported. May be
   // nullptr.

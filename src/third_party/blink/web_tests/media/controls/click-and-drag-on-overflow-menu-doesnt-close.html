@@ -41,7 +41,7 @@ async_test(t => {
     const downloadPosition = elementCoordinates(downloadBtn);
     const captionsPosition = elementCoordinates(captionsBtn);
 
-    // Click down on downloads but drag and release over captions.
+    // Click down on downloads but drag and release over captions and playback speed.
     chrome.gpuBenchmarking.pointerActionSequence([{
       source: 'mouse',
       actions: [
