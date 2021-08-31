@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+// #import {assertNotReached} from 'chrome://resources/js/assert.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {Route, Router} from '../../../router.js';
+// #import {routes} from '../../os_route.m.js';
+// #import {AppType, AppManagementUserAction, ArcPermissionType, OptionalBool, PermissionValueType, Bool, PwaPermissionType, TriState, PluginVmPermissionType} from "./constants.m.js";
+// clang-format on
+
 /**
  * @fileoverview Utility functions for the App Management page.
  */
@@ -10,10 +19,9 @@ cr.define('app_management.util', function() {
   /**
    * @return {!AppManagementPageState}
    */
-  function createEmptyState() {
+  /* #export */ function createEmptyState() {
     return {
       apps: {},
-      arcSupported: false,
       selectedAppId: null,
     };
   }
@@ -22,12 +30,8 @@ cr.define('app_management.util', function() {
    * @param {!Array<App>} apps
    * @return {!AppManagementPageState}
    */
-  function createInitialState(apps) {
+  /* #export */ function createInitialState(apps) {
     const initialState = createEmptyState();
-
-    initialState.arcSupported =
-        loadTimeData.valueExists('isSupportedArcVersion') &&
-        loadTimeData.getBoolean('isSupportedArcVersion');
 
     for (const app of apps) {
       initialState.apps[app.id] = app;
@@ -43,7 +47,8 @@ cr.define('app_management.util', function() {
    * @param {boolean} isManaged
    * @return {!Permission}
    */
-  function createPermission(permissionId, valueType, value, isManaged) {
+  /* #export */ function createPermission(
+      permissionId, valueType, value, isManaged) {
     return {
       permissionId,
       valueType,
@@ -56,7 +61,7 @@ cr.define('app_management.util', function() {
    * @param {App} app
    * @return {string}
    */
-  function getAppIcon(app) {
+  /* #export */ function getAppIcon(app) {
     return `chrome://app-icon/${app.id}/64`;
   }
 
@@ -68,7 +73,7 @@ cr.define('app_management.util', function() {
    * @param {T} value
    * @return {!Set<T>}
    */
-  function addIfNeeded(set, value) {
+  /* #export */ function addIfNeeded(set, value) {
     if (!set.has(value)) {
       set = new Set(set);
       set.add(value);
@@ -84,7 +89,7 @@ cr.define('app_management.util', function() {
    * @param {T} value
    * @return {!Set<T>}
    */
-  function removeIfNeeded(set, value) {
+  /* #export */ function removeIfNeeded(set, value) {
     if (set.has(value)) {
       set = new Set(set);
       set.delete(value);
@@ -97,7 +102,7 @@ cr.define('app_management.util', function() {
    * @param {string} permissionType
    * @return {boolean}
    */
-  function getPermissionValueBool(app, permissionType) {
+  /* #export */ function getPermissionValueBool(app, permissionType) {
     const permission = getPermission(app, permissionType);
     assert(permission);
 
@@ -118,7 +123,7 @@ cr.define('app_management.util', function() {
    * @param {string} permissionType
    * @return {Permission|undefined}
    */
-  function getPermission(app, permissionType) {
+  /* #export */ function getPermission(app, permissionType) {
     return app.permissions[permissionTypeHandle(app, permissionType)];
   }
 
@@ -127,7 +132,7 @@ cr.define('app_management.util', function() {
    * @param {string} permissionType
    * @return {number}
    */
-  function permissionTypeHandle(app, permissionType) {
+  /* #export */ function permissionTypeHandle(app, permissionType) {
     switch (app.type) {
       case AppType.kWeb:
         return PwaPermissionType[permissionType];
@@ -144,7 +149,7 @@ cr.define('app_management.util', function() {
    * @param {AppManagementPageState} state
    * @return {?App}
    */
-  function getSelectedApp(state) {
+  /* #export */ function getSelectedApp(state) {
     const selectedAppId = state.selectedAppId;
     return selectedAppId ? state.apps[selectedAppId] : null;
   }
@@ -155,7 +160,7 @@ cr.define('app_management.util', function() {
    * @param {string} a
    * @param {string} b
    */
-  function alphabeticalSort(a, b) {
+  /* #export */ function alphabeticalSort(a, b) {
     return a.localeCompare(b);
   }
 
@@ -165,7 +170,7 @@ cr.define('app_management.util', function() {
    * @param {OptionalBool} bool
    * @return {OptionalBool}
    */
-  function toggleOptionalBool(bool) {
+  /* #export */ function toggleOptionalBool(bool) {
     switch (bool) {
       case OptionalBool.kFalse:
         return OptionalBool.kTrue;
@@ -180,7 +185,7 @@ cr.define('app_management.util', function() {
    * @param {OptionalBool} optionalBool
    * @returns {boolean}
    */
-  function convertOptionalBoolToBool(optionalBool) {
+  /* #export */ function convertOptionalBoolToBool(optionalBool) {
     switch (optionalBool) {
       case OptionalBool.kTrue:
         return true;
@@ -196,7 +201,7 @@ cr.define('app_management.util', function() {
    *
    * @param {string} appId
    */
-  function openAppDetailPage(appId) {
+  /* #export */ function openAppDetailPage(appId) {
     const params = new URLSearchParams;
     params.append('id', appId);
     settings.Router.getInstance().navigateTo(
@@ -206,7 +211,7 @@ cr.define('app_management.util', function() {
   /**
    * Navigates to the main App Management list page.
    */
-  function openMainPage() {
+  /* #export */ function openMainPage() {
     settings.Router.getInstance().navigateTo(settings.routes.APP_MANAGEMENT);
   }
 
@@ -215,11 +220,12 @@ cr.define('app_management.util', function() {
    * @return {string}
    * @private
    */
-  function getUserActionHistogramNameForAppType_(appType) {
+  /* #export */ function getUserActionHistogramNameForAppType_(appType) {
     switch (appType) {
       case AppType.kArc:
         return 'AppManagement.AppDetailViews.ArcApp';
       case AppType.kExtension:
+      case AppType.kStandaloneBrowser:
         return 'AppManagement.AppDetailViews.ChromeApp';
       case AppType.kWeb:
         return 'AppManagement.AppDetailViews.WebApp';
@@ -234,7 +240,7 @@ cr.define('app_management.util', function() {
    * @param {AppType} appType
    * @param {AppManagementUserAction} userAction
    */
-  function recordAppManagementUserAction(appType, userAction) {
+  /* #export */ function recordAppManagementUserAction(appType, userAction) {
     const histogram = getUserActionHistogramNameForAppType_(appType);
     const enumLength = Object.keys(AppManagementUserAction).length;
     chrome.metricsPrivate.recordEnumerationValue(

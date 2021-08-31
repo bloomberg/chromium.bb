@@ -2,10 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {Navigator} from './navigator.js';
+import {SwitchAccess} from './switch_access.js';
+import {SAConstants} from './switch_access_constants.js';
+
 /**
  * Class to handle auto-scan behavior.
  */
-class AutoScanManager {
+export class AutoScanManager {
   /** @private */
   constructor() {
     /**
@@ -127,7 +131,7 @@ class AutoScanManager {
    */
   start_() {
     if (this.primaryScanTime_ === AutoScanManager.NOT_INITIALIZED ||
-        this.intervalID_) {
+        this.intervalID_ || SwitchAccess.mode === SAConstants.Mode.POINT_SCAN) {
       return;
     }
 
@@ -138,8 +142,13 @@ class AutoScanManager {
       currentScanTime = this.keyboardScanTime_;
     }
 
-    this.intervalID_ =
-        window.setInterval(NavigationManager.moveForward, currentScanTime);
+    this.intervalID_ = window.setInterval(() => {
+      if (SwitchAccess.mode === SAConstants.Mode.POINT_SCAN) {
+        AutoScanManager.instance.stop_();
+        return;
+      }
+      Navigator.byItem.moveForward();
+    }, currentScanTime);
   }
 
   /**

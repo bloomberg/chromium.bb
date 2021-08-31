@@ -22,9 +22,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ELEMENT_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_property_info.h"
 #include "third_party/blink/renderer/core/svg/svg_parsing_error.h"
 #include "third_party/blink/renderer/core/svg_names.h"
@@ -124,7 +126,18 @@ class CORE_EXPORT SVGElement : public Element {
   // For SVGTests
   virtual bool IsValid() const { return true; }
 
-  virtual void SvgAttributeChanged(const QualifiedName&);
+  struct SvgAttributeChangedParams {
+    STACK_ALLOCATED();
+
+   public:
+    SvgAttributeChangedParams(const QualifiedName& qname,
+                              AttributeModificationReason reason)
+        : name(qname), reason(reason) {}
+
+    const QualifiedName& name;
+    const AttributeModificationReason reason;
+  };
+  virtual void SvgAttributeChanged(const SvgAttributeChangedParams&);
 
   SVGAnimatedPropertyBase* PropertyFromAttribute(
       const QualifiedName& attribute_name) const;
@@ -149,10 +162,11 @@ class CORE_EXPORT SVGElement : public Element {
   SVGUseElement* GeneratingUseElement() const;
 
   void SynchronizeSVGAttribute(const QualifiedName&) const;
-  void CollectStyleForAnimatedPresentationAttributes(
-      MutableCSSPropertyValueSet*);
+  void CollectExtraStyleForPresentationAttribute(
+      MutableCSSPropertyValueSet*) override;
 
-  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() final;
+  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
+      const StyleRecalcContext&) final;
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
 
 #if DCHECK_IS_ON()
@@ -266,7 +280,7 @@ class CORE_EXPORT SVGElement : public Element {
   void RemovedEventListener(const AtomicString& event_type,
                             const RegisteredEventListener&) final;
 
-  void AccessKeyAction(bool send_mouse_events) override;
+  void AccessKeyAction(SimulatedClickCreationScope creation_scope) override;
 
  private:
   bool IsSVGElement() const =

@@ -6,12 +6,16 @@
 
 #include <openssl/asn1.h>
 #include <openssl/evp.h>
+#include <openssl/mem.h>
+#include <openssl/ossl_typ.h>
 #include <openssl/x509.h>
 #include <openssl/x509v3.h>
 #include <time.h>
 
 #include <chrono>
+#include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "cast/common/certificate/types.h"
@@ -23,6 +27,14 @@ namespace cast {
 namespace {
 
 constexpr static int32_t kMinRsaModulusLengthBits = 2048;
+
+// TODO(davidben): Switch this to bssl::UniquePtr after
+// https://boringssl-review.googlesource.com/c/boringssl/+/46105 lands.
+struct FreeNameConstraints {
+  void operator()(NAME_CONSTRAINTS* nc) { NAME_CONSTRAINTS_free(nc); }
+};
+using NameConstraintsPtr =
+    std::unique_ptr<NAME_CONSTRAINTS, FreeNameConstraints>;
 
 // Stores intermediate state while attempting to find a valid certificate chain
 // from a set of trusted certificates to a target certificate.  Together, a
@@ -59,23 +71,23 @@ bool CertInPath(X509_NAME* name,
   return false;
 }
 
-// Parse the data in |time| at |index| as a two-digit ascii number.
-uint8_t ParseAsn1TimeDoubleDigit(ASN1_GENERALIZEDTIME* time, int index) {
-  return (time->data[index] - '0') * 10 + (time->data[index + 1] - '0');
+// Parse the data in |time| at |index| as a two-digit ascii number. Note this
+// function assumes the caller already did a bounds check and checked the inputs
+// are digits.
+uint8_t ParseAsn1TimeDoubleDigit(absl::string_view time, size_t index) {
+  OSP_DCHECK_LT(index + 1, time.size());
+  OSP_DCHECK('0' <= time[index] && time[index] <= '9');
+  OSP_DCHECK('0' <= time[index + 1] && time[index + 1] <= '9');
+  return (time[index] - '0') * 10 + (time[index + 1] - '0');
 }
 
 bssl::UniquePtr<BASIC_CONSTRAINTS> GetConstraints(X509* issuer) {
-  const int basic_constraints_index =
-      X509_get_ext_by_NID(issuer, NID_basic_constraints, -1);
-  if (basic_constraints_index == -1) {
-    return nullptr;
-  }
-
-  X509_EXTENSION* const basic_constraints_extension =
-      X509_get_ext(issuer, basic_constraints_index);
+  // TODO(davidben): This and other |X509_get_ext_d2i| are missing
+  // error-handling for syntax errors in certificates. See BoringSSL
+  // documentation for the calling convention.
   return bssl::UniquePtr<BASIC_CONSTRAINTS>{
       reinterpret_cast<BASIC_CONSTRAINTS*>(
-          X509V3_EXT_d2i(basic_constraints_extension))};
+          X509_get_ext_d2i(issuer, NID_basic_constraints, nullptr, nullptr))};
 }
 
 Error::Code VerifyCertTime(X509* cert, const DateTime& time) {
@@ -96,18 +108,8 @@ bool VerifyPublicKeyLength(EVP_PKEY* public_key) {
 }
 
 bssl::UniquePtr<ASN1_BIT_STRING> GetKeyUsage(X509* cert) {
-  int pos = X509_get_ext_by_NID(cert, NID_key_usage, -1);
-  if (pos == -1) {
-    return nullptr;
-  }
-  X509_EXTENSION* key_usage = X509_get_ext(cert, pos);
-  const uint8_t* value = key_usage->value->data;
-  ASN1_BIT_STRING* key_usage_bit_string = nullptr;
-  if (!d2i_ASN1_BIT_STRING(&key_usage_bit_string, &value,
-                           key_usage->value->length)) {
-    return nullptr;
-  }
-  return bssl::UniquePtr<ASN1_BIT_STRING>{key_usage_bit_string};
+  return bssl::UniquePtr<ASN1_BIT_STRING>{reinterpret_cast<ASN1_BIT_STRING*>(
+      X509_get_ext_d2i(cert, NID_key_usage, nullptr, nullptr))};
 }
 
 Error::Code VerifyCertificateChain(const std::vector<CertPathStep>& path,
@@ -116,13 +118,14 @@ Error::Code VerifyCertificateChain(const std::vector<CertPathStep>& path,
   // Default max path length is the number of intermediate certificates.
   int max_pathlen = path.size() - 2;
 
-  std::vector<NAME_CONSTRAINTS*> path_name_constraints;
+  std::vector<NameConstraintsPtr> path_name_constraints;
   Error::Code error = Error::Code::kNone;
   uint32_t i = step_index;
   for (; i < path.size() - 1; ++i) {
     X509* subject = path[i + 1].cert;
     X509* issuer = path[i].cert;
     bool is_root = (i == step_index);
+    bool issuer_is_self_issued = false;
     if (!is_root) {
       if ((error = VerifyCertTime(issuer, time)) != Error::Code::kNone) {
         return error;
@@ -134,10 +137,10 @@ Error::Code VerifyCertificateChain(const std::vector<CertPathStep>& path,
         }
         --max_pathlen;
       } else {
-        issuer->ex_flags |= EXFLAG_SI;
+        issuer_is_self_issued = true;
       }
     } else {
-      issuer->ex_flags |= EXFLAG_SI;
+      issuer_is_self_issued = true;
     }
 
     bssl::UniquePtr<ASN1_BIT_STRING> key_usage = GetKeyUsage(issuer);
@@ -172,7 +175,9 @@ Error::Code VerifyCertificateChain(const std::vector<CertPathStep>& path,
       }
     }
 
-    if (X509_ALGOR_cmp(issuer->sig_alg, issuer->cert_info->signature) != 0) {
+    const X509_ALGOR* issuer_sig_alg;
+    X509_get0_signature(nullptr, &issuer_sig_alg, issuer);
+    if (X509_ALGOR_cmp(issuer_sig_alg, X509_get0_tbs_sigalg(issuer)) != 0) {
       return Error::Code::kErrCertsVerifyGeneric;
     }
 
@@ -183,47 +188,39 @@ Error::Code VerifyCertificateChain(const std::vector<CertPathStep>& path,
 
     // NOTE: (!self-issued || target) -> verify name constraints.  Target case
     // is after the loop.
-    const bool is_self_issued = issuer->ex_flags & EXFLAG_SI;
-    if (!is_self_issued) {
-      for (NAME_CONSTRAINTS* name_constraints : path_name_constraints) {
-        if (NAME_CONSTRAINTS_check(subject, name_constraints) != X509_V_OK) {
+    if (!issuer_is_self_issued) {
+      for (const auto& name_constraints : path_name_constraints) {
+        if (NAME_CONSTRAINTS_check(subject, name_constraints.get()) !=
+            X509_V_OK) {
           return Error::Code::kErrCertsVerifyGeneric;
         }
       }
     }
 
-    if (issuer->nc) {
-      path_name_constraints.push_back(issuer->nc);
-    } else {
-      const int index = X509_get_ext_by_NID(issuer, NID_name_constraints, -1);
-      if (index != -1) {
-        X509_EXTENSION* ext = X509_get_ext(issuer, index);
-        auto* nc = reinterpret_cast<NAME_CONSTRAINTS*>(X509V3_EXT_d2i(ext));
-        if (nc) {
-          issuer->nc = nc;
-          path_name_constraints.push_back(nc);
-        } else {
-          return Error::Code::kErrCertsVerifyGeneric;
-        }
-      }
+    int critical;
+    NameConstraintsPtr nc{reinterpret_cast<NAME_CONSTRAINTS*>(
+        X509_get_ext_d2i(issuer, NID_name_constraints, &critical, nullptr))};
+    if (!nc && critical != -1) {
+      // X509_get_ext_d2i's error handling is a little confusing. See
+      // https://boringssl.googlesource.com/boringssl/+/215f4a0287/include/openssl/x509.h#1384
+      // https://boringssl.googlesource.com/boringssl/+/215f4a0287/include/openssl/x509v3.h#651
+      return Error::Code::kErrCertsVerifyGeneric;
+    }
+    if (nc) {
+      path_name_constraints.push_back(std::move(nc));
     }
 
     // Check that any policy mappings present are _not_ the anyPolicy OID.  Even
     // though we don't otherwise handle policies, this is required by RFC 5280
     // 6.1.4(a).
-    const int policy_mappings_index =
-        X509_get_ext_by_NID(issuer, NID_policy_mappings, -1);
-    if (policy_mappings_index != -1) {
-      X509_EXTENSION* policy_mappings_extension =
-          X509_get_ext(issuer, policy_mappings_index);
-      auto* policy_mappings = reinterpret_cast<POLICY_MAPPINGS*>(
-          X509V3_EXT_d2i(policy_mappings_extension));
-      const uint32_t policy_mapping_count =
-          sk_POLICY_MAPPING_num(policy_mappings);
+    //
+    // TODO(davidben): Switch to bssl::UniquePtr once
+    // https://boringssl-review.googlesource.com/c/boringssl/+/46104 has landed.
+    auto* policy_mappings = reinterpret_cast<POLICY_MAPPINGS*>(
+        X509_get_ext_d2i(issuer, NID_policy_mappings, nullptr, nullptr));
+    if (policy_mappings) {
       const ASN1_OBJECT* any_policy = OBJ_nid2obj(NID_any_policy);
-      for (uint32_t i = 0; i < policy_mapping_count; ++i) {
-        POLICY_MAPPING* policy_mapping =
-            sk_POLICY_MAPPING_value(policy_mappings, i);
+      for (const POLICY_MAPPING* policy_mapping : policy_mappings) {
         const bool either_matches =
             ((OBJ_cmp(policy_mapping->issuerDomainPolicy, any_policy) == 0) ||
              (OBJ_cmp(policy_mapping->subjectDomainPolicy, any_policy) == 0));
@@ -242,8 +239,8 @@ Error::Code VerifyCertificateChain(const std::vector<CertPathStep>& path,
     int extension_count = X509_get_ext_count(issuer);
     for (int i = 0; i < extension_count; ++i) {
       X509_EXTENSION* extension = X509_get_ext(issuer, i);
-      if (extension->critical > 0) {
-        const int nid = OBJ_obj2nid(extension->object);
+      if (X509_EXTENSION_get_critical(extension)) {
+        const int nid = OBJ_obj2nid(X509_EXTENSION_get_object(extension));
         if (nid != NID_name_constraints && nid != NID_basic_constraints &&
             nid != NID_key_usage) {
           return Error::Code::kErrCertsVerifyGeneric;
@@ -251,7 +248,7 @@ Error::Code VerifyCertificateChain(const std::vector<CertPathStep>& path,
       }
     }
 
-    int nid = OBJ_obj2nid(subject->sig_alg->algorithm);
+    int nid = X509_get_signature_nid(subject);
     const EVP_MD* digest;
     switch (nid) {
       case NID_sha1WithRSAEncryption:
@@ -269,18 +266,24 @@ Error::Code VerifyCertificateChain(const std::vector<CertPathStep>& path,
       default:
         return Error::Code::kErrCertsVerifyGeneric;
     }
+    uint8_t* tbs = nullptr;
+    int tbs_len = i2d_X509_tbs(subject, &tbs);
+    if (tbs_len < 0) {
+      return Error::Code::kErrCertsVerifyGeneric;
+    }
+    bssl::UniquePtr<uint8_t> free_tbs{tbs};
+    const ASN1_BIT_STRING* signature;
+    X509_get0_signature(&signature, nullptr, subject);
     if (!VerifySignedData(
-            digest, public_key.get(),
-            {subject->cert_info->enc.enc,
-             static_cast<uint32_t>(subject->cert_info->enc.len)},
-            {subject->signature->data,
-             static_cast<uint32_t>(subject->signature->length)})) {
+            digest, public_key.get(), {tbs, static_cast<uint32_t>(tbs_len)},
+            {ASN1_STRING_get0_data(signature),
+             static_cast<uint32_t>(ASN1_STRING_length(signature))})) {
       return Error::Code::kErrCertsVerifyGeneric;
     }
   }
   // NOTE: Other half of ((!self-issued || target) -> check name constraints).
-  for (NAME_CONSTRAINTS* name_constraints : path_name_constraints) {
-    if (NAME_CONSTRAINTS_check(path.back().cert, name_constraints) !=
+  for (const auto& name_constraints : path_name_constraints) {
+    if (NAME_CONSTRAINTS_check(path.back().cert, name_constraints.get()) !=
         X509_V_OK) {
       return Error::Code::kErrCertsVerifyGeneric;
     }
@@ -302,24 +305,27 @@ bool ParseAsn1GeneralizedTime(ASN1_GENERALIZEDTIME* time, DateTime* out) {
       31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31,
   };
 
-  if (time->length != 15) {
+  absl::string_view time_str{
+      reinterpret_cast<const char*>(ASN1_STRING_get0_data(time)),
+      static_cast<size_t>(ASN1_STRING_length(time))};
+  if (time_str.size() != 15) {
     return false;
   }
-  if (time->data[14] != 'Z') {
+  if (time_str[14] != 'Z') {
     return false;
   }
-  for (int i = 0; i < 14; ++i) {
-    if (time->data[i] < '0' || time->data[i] > '9') {
+  for (size_t i = 0; i < 14; ++i) {
+    if (time_str[i] < '0' || time_str[i] > '9') {
       return false;
     }
   }
-  out->year = ParseAsn1TimeDoubleDigit(time, 0) * 100 +
-              ParseAsn1TimeDoubleDigit(time, 2);
-  out->month = ParseAsn1TimeDoubleDigit(time, 4);
-  out->day = ParseAsn1TimeDoubleDigit(time, 6);
-  out->hour = ParseAsn1TimeDoubleDigit(time, 8);
-  out->minute = ParseAsn1TimeDoubleDigit(time, 10);
-  out->second = ParseAsn1TimeDoubleDigit(time, 12);
+  out->year = ParseAsn1TimeDoubleDigit(time_str, 0) * 100 +
+              ParseAsn1TimeDoubleDigit(time_str, 2);
+  out->month = ParseAsn1TimeDoubleDigit(time_str, 4);
+  out->day = ParseAsn1TimeDoubleDigit(time_str, 6);
+  out->hour = ParseAsn1TimeDoubleDigit(time_str, 8);
+  out->minute = ParseAsn1TimeDoubleDigit(time_str, 10);
+  out->second = ParseAsn1TimeDoubleDigit(time_str, 12);
   if (out->month == 0 || out->month > 12) {
     return false;
   }
@@ -350,18 +356,15 @@ bool ParseAsn1GeneralizedTime(ASN1_GENERALIZEDTIME* time, DateTime* out) {
 bool GetCertValidTimeRange(X509* cert,
                            DateTime* not_before,
                            DateTime* not_after) {
-  ASN1_GENERALIZEDTIME* not_before_asn1 = ASN1_TIME_to_generalizedtime(
-      cert->cert_info->validity->notBefore, nullptr);
-  ASN1_GENERALIZEDTIME* not_after_asn1 = ASN1_TIME_to_generalizedtime(
-      cert->cert_info->validity->notAfter, nullptr);
+  bssl::UniquePtr<ASN1_GENERALIZEDTIME> not_before_asn1{
+      ASN1_TIME_to_generalizedtime(X509_get0_notBefore(cert), nullptr)};
+  bssl::UniquePtr<ASN1_GENERALIZEDTIME> not_after_asn1{
+      ASN1_TIME_to_generalizedtime(X509_get0_notAfter(cert), nullptr)};
   if (!not_before_asn1 || !not_after_asn1) {
     return false;
   }
-  bool times_valid = ParseAsn1GeneralizedTime(not_before_asn1, not_before) &&
-                     ParseAsn1GeneralizedTime(not_after_asn1, not_after);
-  ASN1_GENERALIZEDTIME_free(not_before_asn1);
-  ASN1_GENERALIZEDTIME_free(not_after_asn1);
-  return times_valid;
+  return ParseAsn1GeneralizedTime(not_before_asn1.get(), not_before) &&
+         ParseAsn1GeneralizedTime(not_after_asn1.get(), not_after);
 }
 
 // static
@@ -428,8 +431,9 @@ Error FindCertificatePath(const std::vector<std::string>& der_certs,
     OSP_DVLOG << "FindCertificatePath: Failed with invalid public key length";
     return Error::Code::kErrCertsVerifyGeneric;
   }
-  if (X509_ALGOR_cmp(target_cert.get()->sig_alg,
-                     target_cert.get()->cert_info->signature) != 0) {
+  const X509_ALGOR* sig_alg;
+  X509_get0_signature(nullptr, &sig_alg, target_cert.get());
+  if (X509_ALGOR_cmp(sig_alg, X509_get0_tbs_sigalg(target_cert.get())) != 0) {
     return Error::Code::kErrCertsVerifyGeneric;
   }
   bssl::UniquePtr<ASN1_BIT_STRING> key_usage = GetKeyUsage(target_cert.get());

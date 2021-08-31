@@ -4,6 +4,7 @@
 
 #include "chrome/test/base/test_browser_window_aura.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
@@ -18,8 +19,8 @@ std::unique_ptr<Browser> CreateBrowserWithAuraTestWindowForParams(
     std::unique_ptr<aura::Window> window,
     Browser::CreateParams* params) {
   if (window.get() == nullptr) {
-    window.reset(new aura::Window(nullptr));
-    window->set_id(0);
+    window = std::make_unique<aura::Window>(nullptr);
+    window->SetId(0);
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     window->Show();

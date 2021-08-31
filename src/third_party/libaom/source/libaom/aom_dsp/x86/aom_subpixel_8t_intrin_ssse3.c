@@ -16,6 +16,7 @@
 #include "aom_dsp/aom_filter.h"
 #include "aom_dsp/x86/convolve.h"
 #include "aom_dsp/x86/convolve_sse2.h"
+#include "aom_dsp/x86/convolve_ssse3.h"
 #include "aom_dsp/x86/mem_sse2.h"
 #include "aom_dsp/x86/transpose_sse2.h"
 #include "aom_mem/aom_mem.h"
@@ -826,19 +827,11 @@ static void filter_horiz_w4_ssse3(const uint8_t *const src,
                                   const ptrdiff_t src_stride,
                                   uint8_t *const dst,
                                   const int16_t *const filter) {
-  __m128i s[4], ss[2];
+  __m128i s[4];
   __m128i temp;
 
   load_8bit_8x4(src, src_stride, s);
-  transpose_16bit_4x4(s, ss);
-  // 00 01 10 11 20 21 30 31
-  s[0] = ss[0];
-  // 02 03 12 13 22 23 32 33
-  s[1] = _mm_srli_si128(ss[0], 8);
-  // 04 05 14 15 24 25 34 35
-  s[2] = ss[1];
-  // 06 07 16 17 26 27 36 37
-  s[3] = _mm_srli_si128(ss[1], 8);
+  transpose_16bit_4x4(s, s);
 
   temp = shuffle_filter_convolve8_8_ssse3(s, filter);
   // shrink to 8 bit each 16 bits

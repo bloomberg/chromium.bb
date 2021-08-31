@@ -6,7 +6,6 @@
 
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/ui/extensions/settings_overridden_dialog_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/search_test_utils.h"
@@ -37,7 +35,7 @@ namespace {
 class TestDialogController : public SettingsOverriddenDialogController {
  public:
   TestDialogController(ShowParams show_params,
-                       base::Optional<DialogResult>* dialog_result_out)
+                       absl::optional<DialogResult>* dialog_result_out)
       : show_params_(std::move(show_params)),
         dialog_result_out_(dialog_result_out) {
     DCHECK(dialog_result_out_);
@@ -58,7 +56,7 @@ class TestDialogController : public SettingsOverriddenDialogController {
   const ShowParams show_params_;
 
   // The result to populate. Must outlive this object.
-  base::Optional<DialogResult>* const dialog_result_out_;
+  absl::optional<DialogResult>* const dialog_result_out_;
 };
 
 }  // namespace
@@ -71,10 +69,7 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
     kUseNewSearch,
   };
 
-  SettingsOverriddenDialogViewBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kExtensionSettingsOverriddenDialogs);
-  }
+  SettingsOverriddenDialogViewBrowserTest() = default;
   ~SettingsOverriddenDialogViewBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -109,10 +104,9 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
   SettingsOverriddenDialogView* ShowSimpleDialog(bool show_icon,
                                                  Browser* browser) {
     SettingsOverriddenDialogController::ShowParams params{
-        base::ASCIIToUTF16("Settings overridden dialog title"),
-        base::ASCIIToUTF16(
-            "Settings overriden dialog body, which is quite a bit "
-            "longer than the title alone")};
+        u"Settings overridden dialog title",
+        u"Settings overriden dialog body, which is quite a bit "
+        u"longer than the title alone"};
     if (show_icon)
       params.icon = &kProductIcon;
     auto* dialog =
@@ -161,7 +155,7 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
     return true;
   }
 
-  base::Optional<SettingsOverriddenDialogController::DialogResult>
+  absl::optional<SettingsOverriddenDialogController::DialogResult>
   dialog_result() const {
     return dialog_result_;
   }
@@ -237,10 +231,8 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
 
   std::string test_name_;
 
-  base::Optional<SettingsOverriddenDialogController::DialogResult>
+  absl::optional<SettingsOverriddenDialogController::DialogResult>
       dialog_result_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

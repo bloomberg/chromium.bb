@@ -14,18 +14,35 @@
 
 #include "tests/unittests/validation/ValidationTest.h"
 
+#include "tests/MockCallback.h"
 #include "utils/ComboRenderBundleEncoderDescriptor.h"
 #include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/WGPUHelpers.h"
 
 class UnsafeAPIValidationTest : public ValidationTest {
   protected:
-    wgpu::Device CreateTestDevice() override {
+    WGPUDevice CreateTestDevice() override {
         dawn_native::DeviceDescriptor descriptor;
         descriptor.forceEnabledToggles.push_back("disallow_unsafe_apis");
-        return wgpu::Device::Acquire(adapter.CreateDevice(&descriptor));
+        return adapter.CreateDevice(&descriptor);
     }
 };
+
+// Check that 3D Texture creation is disallowed as part of unsafe APIs.
+TEST_F(UnsafeAPIValidationTest, 3DTextureCreationDisallowed) {
+    wgpu::TextureDescriptor baseDesc;
+    baseDesc.size = {32, 32, 6};
+    baseDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+    baseDesc.usage = wgpu::TextureUsage::Sampled;
+
+    // Control case: 2D (array) texture creation is allowed.
+    device.CreateTexture(&baseDesc);
+
+    // 3D texture creation is disallowed.
+    wgpu::TextureDescriptor texture3DDesc = baseDesc;
+    texture3DDesc.dimension = wgpu::TextureDimension::e3D;
+    ASSERT_DEVICE_ERROR(device.CreateTexture(&texture3DDesc));
+}
 
 // Check that DrawIndexedIndirect is disallowed as part of unsafe APIs.
 TEST_F(UnsafeAPIValidationTest, DrawIndexedIndirectDisallowed) {
@@ -47,12 +64,14 @@ TEST_F(UnsafeAPIValidationTest, DrawIndexedIndirectDisallowed) {
     bundleDesc.colorFormatsCount = 1;
     bundleDesc.cColorFormats[0] = renderPass.attachmentFormat;
 
-    utils::ComboRenderPipelineDescriptor desc(device);
-    desc.vertexStage.module = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex,
-                                                        "#version 450\nvoid main() {}");
-    desc.cFragmentStage.module = utils::CreateShaderModule(
-        device, utils::SingleShaderStage::Fragment, "#version 450\nvoid main() {}");
-    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline(&desc);
+    utils::ComboRenderPipelineDescriptor2 desc;
+    desc.vertex.module = utils::CreateShaderModule(
+        device,
+        R"([[stage(vertex)]] fn main() -> [[builtin(position)]] vec4<f32> {
+            return vec4<f32>();
+        })");
+    desc.cFragment.module = utils::CreateShaderModule(device, "[[stage(fragment)]] fn main() {}");
+    wgpu::RenderPipeline pipeline = device.CreateRenderPipeline2(&desc);
 
     // Control cases: DrawIndirect and DrawIndexed are allowed inside a render pass.
     {
@@ -60,7 +79,7 @@ TEST_F(UnsafeAPIValidationTest, DrawIndexedIndirectDisallowed) {
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
         pass.SetPipeline(pipeline);
 
-        pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
         pass.DrawIndexed(1);
 
         pass.DrawIndirect(indirectBuffer, 0);
@@ -73,7 +92,7 @@ TEST_F(UnsafeAPIValidationTest, DrawIndexedIndirectDisallowed) {
         wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&bundleDesc);
         encoder.SetPipeline(pipeline);
 
-        encoder.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32);
+        encoder.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
         encoder.DrawIndexed(1);
 
         encoder.DrawIndirect(indirectBuffer, 0);
@@ -86,7 +105,7 @@ TEST_F(UnsafeAPIValidationTest, DrawIndexedIndirectDisallowed) {
         wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
 
         pass.SetPipeline(pipeline);
-        pass.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32);
+        pass.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
         pass.DrawIndexedIndirect(indirectBuffer, 0);
 
         pass.EndPass();
@@ -98,7 +117,7 @@ TEST_F(UnsafeAPIValidationTest, DrawIndexedIndirectDisallowed) {
         wgpu::RenderBundleEncoder encoder = device.CreateRenderBundleEncoder(&bundleDesc);
 
         encoder.SetPipeline(pipeline);
-        encoder.SetIndexBufferWithFormat(indexBuffer, wgpu::IndexFormat::Uint32);
+        encoder.SetIndexBuffer(indexBuffer, wgpu::IndexFormat::Uint32);
         encoder.DrawIndexedIndirect(indirectBuffer, 0);
 
         ASSERT_DEVICE_ERROR(encoder.Finish());
@@ -116,8 +135,8 @@ TEST_F(UnsafeAPIValidationTest, DispatchIndirectDisallowed) {
     // Create the dummy compute pipeline.
     wgpu::ComputePipelineDescriptor pipelineDesc;
     pipelineDesc.computeStage.entryPoint = "main";
-    pipelineDesc.computeStage.module = utils::CreateShaderModule(
-        device, utils::SingleShaderStage::Compute, "#version 450\nvoid main() {}");
+    pipelineDesc.computeStage.module =
+        utils::CreateShaderModule(device, "[[stage(compute)]] fn main() {}");
     wgpu::ComputePipeline pipeline = device.CreateComputePipeline(&pipelineDesc);
 
     // Control case: dispatch is allowed.
@@ -148,7 +167,6 @@ TEST_F(UnsafeAPIValidationTest, DispatchIndirectDisallowed) {
 // Check that dynamic storage buffers are disallowed.
 TEST_F(UnsafeAPIValidationTest, DynamicStorageBuffer) {
     wgpu::BindGroupLayoutEntry entry;
-    entry.type = wgpu::BindingType::StorageBuffer;
     entry.visibility = wgpu::ShaderStage::Fragment;
 
     wgpu::BindGroupLayoutDescriptor desc;
@@ -157,13 +175,29 @@ TEST_F(UnsafeAPIValidationTest, DynamicStorageBuffer) {
 
     // Control case: storage buffer without a dynamic offset is allowed.
     {
-        entry.hasDynamicOffset = false;
+        entry.buffer.type = wgpu::BufferBindingType::Storage;
+        entry.buffer.hasDynamicOffset = false;
         device.CreateBindGroupLayout(&desc);
     }
 
-    // Control case: storage buffer with a dynamic offset is disallowed.
+    // Control case: readonly storage buffer without a dynamic offset is allowed.
     {
-        entry.hasDynamicOffset = true;
+        entry.buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
+        entry.buffer.hasDynamicOffset = false;
+        device.CreateBindGroupLayout(&desc);
+    }
+
+    // Storage buffer with a dynamic offset is disallowed.
+    {
+        entry.buffer.type = wgpu::BufferBindingType::Storage;
+        entry.buffer.hasDynamicOffset = true;
+        ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&desc));
+    }
+
+    // Readonly storage buffer with a dynamic offset is disallowed.
+    {
+        entry.buffer.type = wgpu::BufferBindingType::ReadOnlyStorage;
+        entry.buffer.hasDynamicOffset = true;
         ASSERT_DEVICE_ERROR(device.CreateBindGroupLayout(&desc));
     }
 }

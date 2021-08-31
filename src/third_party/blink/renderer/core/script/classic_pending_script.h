@@ -97,10 +97,6 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "PendingScript"; }
 
-  static void RecordStreamingHistogram(
-      ScriptSchedulingType type,
-      bool can_use_streamer,
-      ScriptStreamer::NotStreamingReason reason);
   void RecordThirdPartyRequestWithCookieIfNeeded(const ResourceResponse&) const;
 
   // MemoryPressureListener
@@ -134,4 +130,4 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
 
 }  // namespace blink
 
-#endif  // PendingScript_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_CLASSIC_PENDING_SCRIPT_H_

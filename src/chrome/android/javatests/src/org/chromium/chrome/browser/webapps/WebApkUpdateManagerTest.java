@@ -18,24 +18,30 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.app.ChromeActivity;
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.WebApkDistributor;
+import org.chromium.chrome.browser.browserservices.intents.WebApkExtras;
+import org.chromium.chrome.browser.browserservices.intents.WebDisplayMode;
+import org.chromium.chrome.browser.browserservices.intents.WebappIcon;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
+import org.chromium.components.webapps.WebappsIconUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.device.mojom.ScreenOrientationLockType;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.EmbeddedTestServerRule;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.webapk.lib.client.WebApkVersion;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,18 +87,31 @@ public class WebApkUpdateManagerTest {
     private Tab mTab;
     private EmbeddedTestServer mTestServer;
 
+    private List<Integer> mLastUpdateReasons;
+
+    // Whether the dialog, to warn about icon/names changing, should be shown.
+    private boolean mAllowIconOrNameUpdateDialog;
+
+    // Whether the dialog, to warn about icon/names changing, was shown.
+    private boolean mIconOrNameUpdateDialogShown;
+
+    // Whether an update was requested in the end.
+    private boolean mUpdateRequested;
+
     /**
      * Subclass of {@link WebApkUpdateManager} which notifies the {@link CallbackHelper} passed to
      * the constructor when it has been determined whether an update is needed.
      */
-    private static class TestWebApkUpdateManager extends WebApkUpdateManager {
+    private class TestWebApkUpdateManager extends WebApkUpdateManager {
         private CallbackHelper mWaiter;
-        private boolean mNeedsUpdate;
+        private boolean mAcceptDialogIfAppears;
 
-        public TestWebApkUpdateManager(CallbackHelper waiter, ChromeActivity activity,
-                ActivityLifecycleDispatcher lifecycleDispatcher) {
-            super(activity, lifecycleDispatcher);
+        public TestWebApkUpdateManager(CallbackHelper waiter, ActivityTabProvider tabProvider,
+                ActivityLifecycleDispatcher lifecycleDispatcher, boolean acceptDialogIfAppears) {
+            super(tabProvider, lifecycleDispatcher);
             mWaiter = waiter;
+            mLastUpdateReasons = new ArrayList<>();
+            mAcceptDialogIfAppears = acceptDialogIfAppears;
         }
 
         @Override
@@ -105,12 +124,31 @@ public class WebApkUpdateManagerTest {
         @Override
         protected void storeWebApkUpdateRequestToFile(String updateRequestPath, WebappInfo info,
                 String primaryIconUrl, String splashIconUrl, boolean isManifestStale,
-                @WebApkUpdateReason int updateReason, Callback<Boolean> callback) {
-            mNeedsUpdate = true;
+                List<Integer> updateReasons, Callback<Boolean> callback) {
+            mLastUpdateReasons = updateReasons;
         }
 
-        public boolean needsUpdate() {
-            return mNeedsUpdate;
+        @Override
+        protected boolean iconOrNameUpdateDialogEnabled() {
+            return mAllowIconOrNameUpdateDialog;
+        }
+
+        @Override
+        protected void showIconOrNameUpdateDialog(
+                boolean iconChanging, boolean shortNameChanging, boolean nameChanging) {
+            mIconOrNameUpdateDialogShown = true;
+            super.showIconOrNameUpdateDialog(iconChanging, shortNameChanging, nameChanging);
+            ModalDialogManager modalDialogManager =
+                    mActivityTestRule.getActivity().getModalDialogManager();
+            modalDialogManager.getCurrentPresenterForTest().dismissCurrentDialog(
+                    mAcceptDialogIfAppears ? DialogDismissalCause.POSITIVE_BUTTON_CLICKED
+                                           : DialogDismissalCause.NEGATIVE_BUTTON_CLICKED);
+        }
+
+        @Override
+        protected void onUserApprovedUpdate(int dismissalCause) {
+            mUpdateRequested = dismissalCause == DialogDismissalCause.POSITIVE_BUTTON_CLICKED;
+            super.onUserApprovedUpdate(dismissalCause);
         }
     }
 
@@ -163,10 +201,12 @@ public class WebApkUpdateManagerTest {
     }
 
      /** Checks whether a WebAPK update is needed. */
-    private boolean checkUpdateNeeded(final CreationData creationData) throws Exception {
+    private boolean checkUpdateNeeded(
+            final CreationData creationData, boolean acceptDialogIfAppears) throws Exception {
         CallbackHelper waiter = new CallbackHelper();
         final TestWebApkUpdateManager updateManager =
-                new TestWebApkUpdateManager(waiter, mActivity, mActivity.getLifecycleDispatcher());
+                new TestWebApkUpdateManager(waiter, mActivity.getActivityTabProvider(),
+                        mActivity.getLifecycleDispatcher(), acceptDialogIfAppears);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             WebappDataStorage storage =
@@ -187,7 +227,15 @@ public class WebApkUpdateManagerTest {
         });
         waiter.waitForCallback(0);
 
-        return updateManager.needsUpdate();
+        return !mLastUpdateReasons.isEmpty();
+    }
+
+    private void assertUpdateReasonsEqual(@WebApkUpdateReason Integer... reasons) {
+        Assert.assertEquals(Arrays.asList(reasons), mLastUpdateReasons);
+    }
+
+    private void enableIconOrNameUpdateDialog() {
+        mAllowIconOrNameUpdateDialog = true;
     }
 
     /**
@@ -207,7 +255,7 @@ public class WebApkUpdateManagerTest {
 
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServer, mTab, WEBAPK_MANIFEST_URL);
-        Assert.assertFalse(checkUpdateNeeded(creationData));
+        Assert.assertFalse(checkUpdateNeeded(creationData, /* acceptDialogIfAppears= */ false));
     }
 
     /**
@@ -224,7 +272,8 @@ public class WebApkUpdateManagerTest {
 
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServer, mTab, WEBAPK_MANIFEST_URL);
-        Assert.assertTrue(checkUpdateNeeded(creationData));
+        Assert.assertTrue(checkUpdateNeeded(creationData, /* acceptDialogIfAppears= */ false));
+        assertUpdateReasonsEqual(WebApkUpdateReason.START_URL_DIFFERS);
     }
 
     @Test
@@ -237,26 +286,13 @@ public class WebApkUpdateManagerTest {
 
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServer, mTab, WEBAPK_MANIFEST_URL);
-        Assert.assertFalse(checkUpdateNeeded(creationData));
+        Assert.assertFalse(checkUpdateNeeded(creationData, /* acceptDialogIfAppears= */ false));
     }
 
     @Test
     @MediumTest
     @Feature({"WebApk"})
-    @Features.EnableFeatures(ChromeFeatureList.WEBAPK_ADAPTIVE_ICON)
-    public void testNewMaskableIconShouldUpdateWhenFeatureEnabled() throws Exception {
-        testNewMaskableIconShouldUpdate();
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"WebApk"})
-    @Features.DisableFeatures(ChromeFeatureList.WEBAPK_ADAPTIVE_ICON)
-    public void testNewMaskableIconShouldUpdateWhenFeatureDisabled() throws Exception {
-        testNewMaskableIconShouldUpdate();
-    }
-
-    private void testNewMaskableIconShouldUpdate() throws Exception {
+    public void testMaskableIconShouldUpdate() throws Exception {
         final String maskableManifestUrl = "/chrome/test/data/banners/manifest_maskable.json";
 
         CreationData creationData = new CreationData();
@@ -284,8 +320,16 @@ public class WebApkUpdateManagerTest {
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServer, mTab, maskableManifestUrl);
 
-        Assert.assertEquals(
-                ShortcutHelper.doesAndroidSupportMaskableIcons(), checkUpdateNeeded(creationData));
+        // Icon changes should trigger the warning dialog, if the platform supports maskable icons.
+        enableIconOrNameUpdateDialog();
+        Assert.assertEquals(WebappsIconUtils.doesAndroidSupportMaskableIcons(),
+                checkUpdateNeeded(creationData, /* acceptDialogIfAppears= */ true));
+        boolean supportsMaskableIcons = WebappsIconUtils.doesAndroidSupportMaskableIcons();
+        if (supportsMaskableIcons) {
+            assertUpdateReasonsEqual(WebApkUpdateReason.PRIMARY_ICON_MASKABLE_DIFFERS);
+        }
+        Assert.assertEquals(supportsMaskableIcons, mUpdateRequested);
+        Assert.assertEquals(supportsMaskableIcons, mIconOrNameUpdateDialogShown);
     }
 
     @Test
@@ -306,6 +350,89 @@ public class WebApkUpdateManagerTest {
         // The fifth shortcut should be ignored.
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServer, mTab, WEBAPK_MANIFEST_TOO_MANY_SHORTCUTS_URL);
-        Assert.assertFalse(checkUpdateNeeded(creationData));
+        Assert.assertFalse(checkUpdateNeeded(creationData, /* acceptDialogIfAppears= */ false));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"WebApk"})
+    public void testMultipleUpdateReasons() throws Exception {
+        CreationData creationData = defaultCreationData();
+        creationData.startUrl =
+                mTestServer.getURL("/chrome/test/data/banners/manifest_test_page.html");
+
+        creationData.name += "!";
+        creationData.shortName += "!";
+        creationData.backgroundColor -= 1;
+        creationData.iconUrlToMurmur2HashMap.put(
+                mTestServer.getURL(WEBAPK_ICON_URL), WEBAPK_ICON_MURMUR2_HASH + "1");
+
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
+                mTestServer, mTab, WEBAPK_MANIFEST_URL);
+        Assert.assertTrue(checkUpdateNeeded(creationData, /* acceptDialogIfAppears= */ false));
+        assertUpdateReasonsEqual(WebApkUpdateReason.PRIMARY_ICON_HASH_DIFFERS,
+                WebApkUpdateReason.SPLASH_ICON_HASH_DIFFERS, WebApkUpdateReason.SHORT_NAME_DIFFERS,
+                WebApkUpdateReason.NAME_DIFFERS, WebApkUpdateReason.BACKGROUND_COLOR_DIFFERS);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"WebApk"})
+    public void testUpdateWarningOnNameChange() throws Exception {
+        CreationData creationData = defaultCreationData();
+        creationData.startUrl =
+                mTestServer.getURL("/chrome/test/data/banners/manifest_test_page.html");
+
+        creationData.name += "!";
+
+        enableIconOrNameUpdateDialog();
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
+                mTestServer, mTab, WEBAPK_MANIFEST_URL);
+        Assert.assertTrue(checkUpdateNeeded(creationData, /* acceptDialogIfAppears= */ true));
+        assertUpdateReasonsEqual(WebApkUpdateReason.NAME_DIFFERS);
+
+        Assert.assertTrue(mIconOrNameUpdateDialogShown);
+        Assert.assertTrue(mUpdateRequested);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"WebApk"})
+    public void testUpdateWarningOnShortNameChange() throws Exception {
+        CreationData creationData = defaultCreationData();
+        creationData.startUrl =
+                mTestServer.getURL("/chrome/test/data/banners/manifest_test_page.html");
+
+        creationData.shortName += "!";
+
+        enableIconOrNameUpdateDialog();
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
+                mTestServer, mTab, WEBAPK_MANIFEST_URL);
+        Assert.assertTrue(checkUpdateNeeded(creationData, /* acceptDialogIfAppears= */ true));
+        assertUpdateReasonsEqual(WebApkUpdateReason.SHORT_NAME_DIFFERS);
+
+        Assert.assertTrue(mIconOrNameUpdateDialogShown);
+        Assert.assertTrue(mUpdateRequested);
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"WebApk"})
+    public void testUpdateWarningNotShown() throws Exception {
+        CreationData creationData = defaultCreationData();
+        creationData.startUrl =
+                mTestServer.getURL("/chrome/test/data/banners/manifest_test_page.html");
+
+        // Make a trivial change, which should not trigger the dialog.
+        creationData.backgroundColor -= 1;
+
+        enableIconOrNameUpdateDialog();
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
+                mTestServer, mTab, WEBAPK_MANIFEST_URL);
+        Assert.assertTrue(checkUpdateNeeded(creationData, /* acceptDialogIfAppears= */ false));
+        assertUpdateReasonsEqual(WebApkUpdateReason.BACKGROUND_COLOR_DIFFERS);
+
+        Assert.assertFalse(mIconOrNameUpdateDialogShown);
+        Assert.assertTrue(mUpdateRequested);
     }
 }

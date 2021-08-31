@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_V8_SCRIPT_VALUE_DESERIALIZER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_V8_SCRIPT_VALUE_DESERIALIZER_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialization_tag.h"
@@ -119,7 +120,7 @@ class CORE_EXPORT V8ScriptValueDeserializer
   // Message ports which were transferred in.
   const MessagePortArray* transferred_message_ports_ = nullptr;
 
-  MessagePortArray* transferred_stream_ports_ = nullptr;
+  Vector<SerializedScriptValue::Stream> streams_;
 
   // Blob info for blobs stored by index.
   const WebBlobInfoArray* blob_info_array_ = nullptr;

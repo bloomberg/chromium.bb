@@ -6,6 +6,7 @@
 #define COMPONENTS_SYNC_BASE_PREF_NAMES_H_
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
 namespace syncer {
 
@@ -17,13 +18,13 @@ extern const char kSyncPollIntervalSeconds[];
 extern const char kSyncFirstSetupComplete[];
 extern const char kSyncKeepEverythingSynced[];
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kOsSyncPrefsMigrated[];
 extern const char kOsSyncFeatureEnabled[];
 extern const char kSyncAllOsTypes[];
 extern const char kSyncOsApps[];
 extern const char kSyncOsPreferences[];
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 extern const char kSyncApps[];
 extern const char kSyncAutofill[];
@@ -48,11 +49,9 @@ extern const char kSyncCacheGuid[];
 extern const char kSyncBirthday[];
 extern const char kSyncBagOfChips[];
 
-extern const char kSyncPassphrasePrompted[];
+extern const char kSyncPassphrasePromptMutedProductVersion[];
 
 extern const char kSyncInvalidationVersions[];
-
-extern const char kSyncLastRunVersion[];
 
 extern const char kEnableLocalSyncBackend[];
 extern const char kLocalSyncBackendDir[];

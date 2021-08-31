@@ -16,7 +16,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/window_factory.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -475,7 +474,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, ModalTransientChildEvents) {
   aura::test::EventCountDelegate control_delegate;
   control_delegate.set_window_component(HTCLIENT);
   std::unique_ptr<aura::Window> child =
-      window_factory::NewWindow(&control_delegate);
+      std::make_unique<aura::Window>(&control_delegate);
   child->SetType(aura::client::WINDOW_TYPE_CONTROL);
   child->Init(ui::LAYER_TEXTURED);
   modal1_transient->AddChild(child.get());
@@ -548,11 +547,12 @@ TEST_F(SystemModalContainerLayoutManagerTest, ShowModalWhileHidden) {
 TEST_F(SystemModalContainerLayoutManagerTest, ChangeCapture) {
   std::unique_ptr<aura::Window> widget_window(ShowToplevelTestWindow(false));
   views::test::CaptureTrackingView* view = new views::test::CaptureTrackingView;
-  views::View* contents_view =
+  views::View* client_view =
       views::Widget::GetWidgetForNativeView(widget_window.get())
-          ->GetContentsView();
-  contents_view->AddChildView(view);
-  view->SetBoundsRect(contents_view->bounds());
+          ->non_client_view()
+          ->client_view();
+  client_view->AddChildView(view);
+  view->SetBoundsRect(client_view->bounds());
 
   gfx::Point center(view->width() / 2, view->height() / 2);
   views::View::ConvertPointToScreen(view, &center);
@@ -869,7 +869,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, VisibilityChange) {
 
   // Make sure that a child visibility change should not cause
   // inconsistent state.
-  std::unique_ptr<aura::Window> child = window_factory::NewWindow();
+  std::unique_ptr<aura::Window> child = std::make_unique<aura::Window>(nullptr);
   child->SetType(aura::client::WINDOW_TYPE_CONTROL);
   child->Init(ui::LAYER_TEXTURED);
   modal_window->AddChild(child.get());

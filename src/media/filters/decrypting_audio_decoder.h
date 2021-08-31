@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/callback_registry.h"
 #include "media/base/cdm_context.h"
@@ -42,7 +41,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
 
   // Decoder implementation
   bool SupportsDecryption() const override;
-  std::string GetDisplayName() const override;
+  AudioDecoderType GetDecoderType() const override;
 
   // AudioDecoder implementation.
   void Initialize(const AudioDecoderConfig& config,

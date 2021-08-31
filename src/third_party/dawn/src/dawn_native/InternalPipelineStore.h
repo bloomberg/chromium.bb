@@ -25,9 +25,14 @@ namespace dawn_native {
     class ShaderModuleBase;
 
     struct InternalPipelineStore {
-        Ref<RenderPipelineBase> copyTextureForBrowserPipeline;
+        std::unordered_map<wgpu::TextureFormat, Ref<RenderPipelineBase>>
+            copyTextureForBrowserPipelines;
+
         Ref<ShaderModuleBase> copyTextureForBrowserVS;
         Ref<ShaderModuleBase> copyTextureForBrowserFS;
+
+        Ref<ComputePipelineBase> timestampComputePipeline;
+        Ref<ShaderModuleBase> timestampCS;
     };
 }  // namespace dawn_native
 

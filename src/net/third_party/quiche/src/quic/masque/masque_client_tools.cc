@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/masque/masque_client_tools.h"
-#include "net/third_party/quiche/src/quic/masque/masque_encapsulated_epoll_client.h"
-#include "net/third_party/quiche/src/quic/masque/masque_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h"
-#include "net/third_party/quiche/src/quic/tools/fake_proof_verifier.h"
-#include "net/third_party/quiche/src/quic/tools/quic_url.h"
+#include "quic/masque/masque_client_tools.h"
+#include "quic/masque/masque_encapsulated_epoll_client.h"
+#include "quic/masque/masque_utils.h"
+#include "quic/platform/api/quic_default_proof_providers.h"
+#include "quic/tools/fake_proof_verifier.h"
+#include "quic/tools/quic_url.h"
 
 namespace quic {
 namespace tools {
@@ -26,7 +26,7 @@ bool SendEncapsulatedMasqueRequest(MasqueEpollClient* masque_client,
 
   // Build the client, and try to connect.
   const QuicSocketAddress addr =
-      LookupAddress(url.host(), quiche::QuicheStrCat(url.port()));
+      LookupAddress(url.host(), absl::StrCat(url.port()));
   if (!addr.IsInitialized()) {
     QUIC_LOG(ERROR) << "Unable to resolve address: " << url.host();
     return false;

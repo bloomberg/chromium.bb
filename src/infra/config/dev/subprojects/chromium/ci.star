@@ -42,21 +42,26 @@ defaults.builderless.set(None)
 defaults.cpu.set(cpu.X86_64)
 defaults.executable.set(luci.recipe(name = "swarming/staging"))
 defaults.execution_timeout.set(3 * time.hour)
-defaults.os.set(os.LINUX_DEFAULT)
+defaults.os.set(os.LINUX_BIONIC_SWITCH_TO_DEFAULT)
 defaults.service_account.set(
     "chromium-ci-builder-dev@chops-service-accounts.iam.gserviceaccount.com",
 )
 defaults.swarming_tags.set(["vpython:native-python-wrapper"])
 
-def ci_builder(*, name, **kwargs):
+def ci_builder(*, name, resultdb_bigquery_exports = None, **kwargs):
+    resultdb_bigquery_exports = resultdb_bigquery_exports or []
+    resultdb_bigquery_exports.append(
+        resultdb.export_test_results(
+            bq_table = "luci-resultdb-dev.chromium.ci_test_results",
+        ),
+    )
     return builder(
         name = name,
         triggered_by = ["chromium-gitiles-trigger"],
-        resultdb_bigquery_exports = [resultdb.export_test_results(
-            bq_table = "luci-resultdb-dev.chromium.ci_test_results",
-        )],
+        resultdb_bigquery_exports = resultdb_bigquery_exports,
         isolated_server = "https://isolateserver-dev.appspot.com",
         goma_backend = goma.backend.RBE_PROD,
+        resultdb_index_by_timestamp = True,
         **kwargs
     )
 
@@ -71,6 +76,11 @@ ci_builder(
 ci_builder(
     name = "linux-rel-swarming",
     description_html = "Test description. <b>Test HTML</b>.",
+    resultdb_bigquery_exports = [
+        resultdb.export_text_artifacts(
+            bq_table = "luci-resultdb-dev.chromium.ci_text_artifacts",
+        ),
+    ],
 )
 
 ci_builder(
@@ -81,6 +91,7 @@ ci_builder(
 ci_builder(
     name = "win-rel-swarming",
     os = os.WINDOWS_DEFAULT,
+    goma_enable_ats = True,
 )
 
 ## builders using swarming staging instance
@@ -98,4 +109,5 @@ ci_builder_staging(
 ci_builder_staging(
     name = "win-rel-swarming-staging",
     os = os.WINDOWS_DEFAULT,
+    goma_enable_ats = True,
 )

@@ -7,11 +7,11 @@
 
 #include "include/core/SkColor.h"
 #include "include/core/SkFontStyle.h"
+#include "include/core/SkPictureRecorder.h"
 #include "include/core/SkString.h"
 
 #include "modules/skparagraph/include/DartTypes.h"
 #include "modules/skparagraph/include/Paragraph.h"
-#include "modules/skparagraph/include/ParagraphBuilder.h"
 #include "modules/skparagraph/include/TextStyle.h"
 #include "modules/skparagraph/include/TypefaceFontProvider.h"
 #include "modules/skparagraph/src/ParagraphBuilderImpl.h"
@@ -53,6 +53,7 @@ struct SimpleTextStyle {
     SkScalar letterSpacing;
     SkScalar wordSpacing;
     SkScalar heightMultiplier;
+    bool halfLeading;
     uintptr_t /* const char* */ localePtr;
     int localeLen;
     SimpleFontStyle fontStyle;
@@ -76,6 +77,7 @@ struct SimpleStrutStyle {
     SimpleFontStyle fontStyle;
     SkScalar fontSize;
     SkScalar heightMultiplier;
+    bool halfLeading;
     SkScalar leading;
     bool strutEnabled;
     bool forceStrutHeight;
@@ -103,6 +105,8 @@ para::StrutStyle toStrutStyle(const SimpleStrutStyle& s) {
         ss.setHeight(s.heightMultiplier);
         ss.setHeightOverride(true);
     }
+    ss.setHalfLeading(s.halfLeading);
+
     if (s.leading != 0) {
         ss.setLeading(s.leading);
     }
@@ -147,6 +151,8 @@ para::TextStyle toTextStyle(const SimpleTextStyle& s) {
         ts.setHeight(s.heightMultiplier);
         ts.setHeightOverride(true);
     }
+
+    ts.setHalfLeading(s.halfLeading);
 
     ts.setDecoration(para::TextDecoration(s.decoration));
     ts.setDecorationStyle(s.decorationStyle);
@@ -209,6 +215,7 @@ struct SimpleParagraphStyle {
     size_t maxLines;
     para::TextAlign textAlign;
     para::TextDirection textDirection;
+    para::TextHeightBehavior textHeightBehavior;
     SimpleTextStyle textStyle;
     SimpleStrutStyle strutStyle;
 };
@@ -236,6 +243,7 @@ para::ParagraphStyle toParagraphStyle(const SimpleParagraphStyle& s) {
     if (s.maxLines != 0) {
         ps.setMaxLines(s.maxLines);
     }
+    ps.setTextHeightBehavior(s.textHeightBehavior);
     return ps;
 }
 
@@ -304,6 +312,104 @@ JSArray GetLineMetrics(para::Paragraph& self) {
     return result;
 }
 
+/*
+ *  Returns Lines[]
+ */
+JSArray GetShapedLines(para::Paragraph& self) {
+    struct LineAccumulate {
+        int         lineNumber  = -1;   // deliberately -1 from starting value
+        uint32_t    minOffset   = 0xFFFFFFFF;
+        uint32_t    maxOffset   = 0;
+        float       minAscent   = 0;
+        float       maxDescent  = 0;
+        // not really accumulated, but definitely set
+        float       baseline    = 0;
+
+        void reset(int lineNumber) {
+            new (this) LineAccumulate;
+            this->lineNumber = lineNumber;
+        }
+    };
+
+    // where we accumulate our js output
+    JSArray  jlines = emscripten::val::array();
+    JSObject jline = emscripten::val::null();
+    JSArray  jruns = emscripten::val::null();
+    LineAccumulate accum;
+
+    self.visit([&](int lineNumber, const para::Paragraph::VisitorInfo* info) {
+        if (!info) {
+            if (!jline) return; // how???
+            // end of current line
+            JSObject range = emscripten::val::object();
+            range.set("first", accum.minOffset);
+            range.set("last",  accum.maxOffset);
+            jline.set("textRange", range);
+
+            jline.set("top", accum.baseline + accum.minAscent);
+            jline.set("bottom", accum.baseline + accum.maxDescent);
+            jline.set("baseline", accum.baseline);
+            return;
+        }
+
+        if (lineNumber != accum.lineNumber) {
+            SkASSERT(lineNumber == accum.lineNumber + 1);   // assume monotonic
+
+            accum.reset(lineNumber);
+            jruns = emscripten::val::array();
+
+            jline = emscripten::val::object();
+            jline.set("runs", jruns);
+            // will assign textRange and metrics on end-of-line signal
+
+            jlines.call<void>("push", jline);
+        }
+
+        // append the run
+        const int N = info->count;   // glyphs
+        const int N1 = N + 1;       // positions, offsets have 1 extra (trailing) slot
+
+        JSObject jrun = emscripten::val::object();
+
+        jrun.set("flags",    info->flags);
+
+// TODO: figure out how to set a wrapped sk_sp<SkTypeface>
+//        jrun.set("typeface", info->font.getTypeface());
+        jrun.set("typeface",    emscripten::val::null());
+        jrun.set("size",        info->font.getSize());
+        if (info->font.getScaleX()) {
+            jrun.set("scaleX",  info->font.getScaleX());
+        }
+
+        jrun.set("glyphs",   MakeTypedArray(N,  info->glyphs));
+        jrun.set("offsets",  MakeTypedArray(N1, info->utf8Starts));
+
+        // we need to modify the positions, so make a temp copy
+        SkAutoSTMalloc<32, SkPoint> positions(N1);
+        for (int i = 0; i < N; ++i) {
+            positions.get()[i] = info->positions[i] + info->origin;
+        }
+        positions.get()[N] = { info->advanceX, positions.get()[N - 1].fY };
+        jrun.set("positions", MakeTypedArray(N1*2, (const float*)positions.get()));
+
+        jruns.call<void>("push", jrun);
+
+        // update accum
+        {   SkFontMetrics fm;
+            info->font.getMetrics(&fm);
+
+            accum.minAscent  = std::min(accum.minAscent,  fm.fAscent);
+            accum.maxDescent = std::max(accum.maxDescent, fm.fDescent);
+            accum.baseline   = info->origin.fY;
+
+            accum.minOffset  = std::min(accum.minOffset,  info->utf8Starts[0]);
+            accum.maxOffset  = std::max(accum.maxOffset,  info->utf8Starts[N]);
+        }
+
+    });
+    return jlines;
+}
+
 EMSCRIPTEN_BINDINGS(Paragraph) {
 
     class_<para::Paragraph>("Paragraph")
@@ -319,6 +425,7 @@ EMSCRIPTEN_BINDINGS(Paragraph) {
         .function("getMinIntrinsicWidth", &para::Paragraph::getMinIntrinsicWidth)
         .function("_getRectsForPlaceholders", &GetRectsForPlaceholders)
         .function("_getRectsForRange", &GetRectsForRange)
+        .function("getShapedLines", &GetShapedLines)
         .function("getWordBoundary", &para::Paragraph::getWordBoundary)
         .function("layout", &para::Paragraph::layout);
 
@@ -350,6 +457,65 @@ EMSCRIPTEN_BINDINGS(Paragraph) {
                                 static_cast<para::ParagraphBuilderImpl*>(pb.release()));
                     }),
                     allow_raw_pointers())
+            .class_function(
+                    "_ShapeText",
+                    optional_override([](JSString jtext, JSArray jruns, float width) -> JSArray {
+                std::string textStorage = jtext.as<std::string>();
+                const char* text = textStorage.data();
+                size_t      textCount = textStorage.size();
+
+                auto fc = sk_make_sp<para::FontCollection>();
+                fc->setDefaultFontManager(SkFontMgr::RefDefault());
+                fc->enableFontFallback();
+
+                para::ParagraphStyle pstyle;
+                {
+                    // For the most part this is ignored, since we set an explicit TextStyle
+                    // for all of our text runs, but it is required by SkParagraph.
+                    para::TextStyle style;
+                    style.setFontFamilies({SkString("sans-serif")});
+                    style.setFontSize(32);
+                    pstyle.setTextStyle(style);
+                }
+
+                auto pb = para::ParagraphBuilder::make(pstyle, fc);
+
+                // tease apart the FontBlock runs
+                size_t runCount = jruns["length"].as<size_t>();
+                for (size_t i = 0; i < runCount; ++i) {
+                    emscripten::val r = jruns[i];
+
+                    para::TextStyle style;
+                    style.setTypeface(r["typeface"].as< sk_sp<SkTypeface> >());
+                    style.setFontSize(r["size"].as<float>());
+
+                    const size_t subTextCount = r["length"].as<size_t>();
+                    if (subTextCount > textCount) {
+                        return emscripten::val("block runs exceed text length!");
+                    }
+
+                    pb->pushStyle(style);
+                    pb->addText(text, subTextCount);
+                    pb->pop();
+
+                    text += subTextCount;
+                    textCount -= subTextCount;
+                }
+                if (textCount != 0) {
+                    return emscripten::val("Didn't have enough block runs to cover text");
+                }
+
+                auto pa = pb->Build();
+                pa->layout(width);
+
+                // workaround until this is fixed in SkParagraph
+                {
+                    SkPictureRecorder rec;
+                    pa->paint(rec.beginRecording({0,0,9999,9999}), 0, 0);
+                }
+                return GetShapedLines(*pa);
+            }),
+            allow_raw_pointers())
             .function("addText",
                       optional_override([](para::ParagraphBuilderImpl& self, std::string text) {
                           return self.addText(text.c_str(), text.length());
@@ -398,81 +564,6 @@ EMSCRIPTEN_BINDINGS(Paragraph) {
       }), allow_raw_pointers());
 
 
-    enum_<para::Affinity>("Affinity")
-        .value("Upstream",   para::Affinity::kUpstream)
-        .value("Downstream", para::Affinity::kDownstream);
-
-    enum_<para::TextDecorationStyle>("DecorationStyle")
-        .value("Solid",  para::TextDecorationStyle::kSolid)
-        .value("Double", para::TextDecorationStyle::kDouble)
-        .value("Dotted", para::TextDecorationStyle::kDotted)
-        .value("Dashed", para::TextDecorationStyle::kDashed)
-        .value("Wavy",   para::TextDecorationStyle::kWavy);
-
-    enum_<SkFontStyle::Slant>("FontSlant")
-        .value("Upright",              SkFontStyle::Slant::kUpright_Slant)
-        .value("Italic",               SkFontStyle::Slant::kItalic_Slant)
-        .value("Oblique",              SkFontStyle::Slant::kOblique_Slant);
-
-    enum_<SkFontStyle::Weight>("FontWeight")
-        .value("Invisible",            SkFontStyle::Weight::kInvisible_Weight)
-        .value("Thin",                 SkFontStyle::Weight::kThin_Weight)
-        .value("ExtraLight",           SkFontStyle::Weight::kExtraLight_Weight)
-        .value("Light",                SkFontStyle::Weight::kLight_Weight)
-        .value("Normal",               SkFontStyle::Weight::kNormal_Weight)
-        .value("Medium",               SkFontStyle::Weight::kMedium_Weight)
-        .value("SemiBold",             SkFontStyle::Weight::kSemiBold_Weight)
-        .value("Bold",                 SkFontStyle::Weight::kBold_Weight)
-        .value("ExtraBold",            SkFontStyle::Weight::kExtraBold_Weight)
-        .value("Black"    ,            SkFontStyle::Weight::kBlack_Weight)
-        .value("ExtraBlack",           SkFontStyle::Weight::kExtraBlack_Weight);
-
-    enum_<SkFontStyle::Width>("FontWidth")
-        .value("UltraCondensed",       SkFontStyle::Width::kUltraCondensed_Width)
-        .value("ExtraCondensed",       SkFontStyle::Width::kExtraCondensed_Width)
-        .value("Condensed",            SkFontStyle::Width::kCondensed_Width)
-        .value("SemiCondensed",        SkFontStyle::Width::kSemiCondensed_Width)
-        .value("Normal",               SkFontStyle::Width::kNormal_Width)
-        .value("SemiExpanded",         SkFontStyle::Width::kSemiExpanded_Width)
-        .value("Expanded",             SkFontStyle::Width::kExpanded_Width)
-        .value("ExtraExpanded",        SkFontStyle::Width::kExtraExpanded_Width)
-        .value("UltraExpanded",        SkFontStyle::Width::kUltraExpanded_Width);
-
-    enum_<para::PlaceholderAlignment>("PlaceholderAlignment")
-        .value("Baseline",      para::PlaceholderAlignment::kBaseline)
-        .value("AboveBaseline", para::PlaceholderAlignment::kAboveBaseline)
-        .value("BelowBaseline", para::PlaceholderAlignment::kBelowBaseline)
-        .value("Top",           para::PlaceholderAlignment::kTop)
-        .value("Bottom",        para::PlaceholderAlignment::kBottom)
-        .value("Middle",        para::PlaceholderAlignment::kMiddle);
-
-    enum_<para::RectHeightStyle>("RectHeightStyle")
-        .value("Tight",                     para::RectHeightStyle::kTight)
-        .value("Max",                       para::RectHeightStyle::kMax)
-        .value("IncludeLineSpacingMiddle",  para::RectHeightStyle::kIncludeLineSpacingMiddle)
-        .value("IncludeLineSpacingTop",     para::RectHeightStyle::kIncludeLineSpacingTop)
-        .value("IncludeLineSpacingBottom",  para::RectHeightStyle::kIncludeLineSpacingBottom);
-
-    enum_<para::RectWidthStyle>("RectWidthStyle")
-        .value("Tight",  para::RectWidthStyle::kTight)
-        .value("Max",    para::RectWidthStyle::kMax);
-
-    enum_<para::TextAlign>("TextAlign")
-        .value("Left",    para::TextAlign::kLeft)
-        .value("Right",   para::TextAlign::kRight)
-        .value("Center",  para::TextAlign::kCenter)
-        .value("Justify", para::TextAlign::kJustify)
-        .value("Start",   para::TextAlign::kStart)
-        .value("End",     para::TextAlign::kEnd);
-
-    enum_<para::TextBaseline>("TextBaseline")
-        .value("Alphabetic",  para::TextBaseline::kAlphabetic)
-        .value("Ideographic", para::TextBaseline::kIdeographic);
-
-    enum_<para::TextDirection>("TextDirection")
-        .value("LTR",    para::TextDirection::kLtr)
-        .value("RTL",    para::TextDirection::kRtl);
-
     // These value objects make it easier to send data across the wire.
     value_object<para::PositionWithAffinity>("PositionWithAffinity")
         .field("pos",      &para::PositionWithAffinity::position)
@@ -484,15 +575,16 @@ EMSCRIPTEN_BINDINGS(Paragraph) {
         .field("width",     &SimpleFontStyle::width);
 
     value_object<SimpleParagraphStyle>("ParagraphStyle")
-        .field("disableHinting",    &SimpleParagraphStyle::disableHinting)
-        .field("_ellipsisPtr",      &SimpleParagraphStyle::ellipsisPtr)
-        .field("_ellipsisLen",      &SimpleParagraphStyle::ellipsisLen)
-        .field("heightMultiplier",  &SimpleParagraphStyle::heightMultiplier)
-        .field("maxLines",          &SimpleParagraphStyle::maxLines)
-        .field("textAlign",         &SimpleParagraphStyle::textAlign)
-        .field("textDirection",     &SimpleParagraphStyle::textDirection)
-        .field("textStyle",         &SimpleParagraphStyle::textStyle)
-        .field("strutStyle",        &SimpleParagraphStyle::strutStyle);
+        .field("disableHinting",     &SimpleParagraphStyle::disableHinting)
+        .field("_ellipsisPtr",       &SimpleParagraphStyle::ellipsisPtr)
+        .field("_ellipsisLen",       &SimpleParagraphStyle::ellipsisLen)
+        .field("heightMultiplier",   &SimpleParagraphStyle::heightMultiplier)
+        .field("maxLines",           &SimpleParagraphStyle::maxLines)
+        .field("textAlign",          &SimpleParagraphStyle::textAlign)
+        .field("textDirection",      &SimpleParagraphStyle::textDirection)
+        .field("textHeightBehavior", &SimpleParagraphStyle::textHeightBehavior)
+        .field("textStyle",          &SimpleParagraphStyle::textStyle)
+        .field("strutStyle",         &SimpleParagraphStyle::strutStyle);
 
     value_object<SimpleStrutStyle>("StrutStyle")
         .field("_fontFamiliesPtr", &SimpleStrutStyle::fontFamiliesPtr)
@@ -501,6 +593,7 @@ EMSCRIPTEN_BINDINGS(Paragraph) {
         .field("fontSize",         &SimpleStrutStyle::fontSize)
         .field("fontStyle",        &SimpleStrutStyle::fontStyle)
         .field("heightMultiplier", &SimpleStrutStyle::heightMultiplier)
+        .field("halfLeading",      &SimpleStrutStyle::halfLeading)
         .field("leading",          &SimpleStrutStyle::leading)
         .field("forceStrutHeight", &SimpleStrutStyle::forceStrutHeight);
 
@@ -518,6 +611,7 @@ EMSCRIPTEN_BINDINGS(Paragraph) {
         .field("letterSpacing",         &SimpleTextStyle::letterSpacing)
         .field("wordSpacing",           &SimpleTextStyle::wordSpacing)
         .field("heightMultiplier",      &SimpleTextStyle::heightMultiplier)
+        .field("halfLeading",           &SimpleTextStyle::halfLeading)
         .field("_localePtr",            &SimpleTextStyle::localePtr)
         .field("_localeLen",            &SimpleTextStyle::localeLen)
         .field("fontStyle",             &SimpleTextStyle::fontStyle)

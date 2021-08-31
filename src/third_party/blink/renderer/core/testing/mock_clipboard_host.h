@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_MOCK_CLIPBOARD_HOST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_MOCK_CLIPBOARD_HOST_H_
 
-#include <map>
-
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/common/common_export.h"
@@ -43,6 +41,8 @@ class MockClipboardHost : public mojom::blink::ClipboardHost {
                ReadRtfCallback callback) override;
   void ReadImage(mojom::ClipboardBuffer clipboard_buffer,
                  ReadImageCallback callback) override;
+  void ReadFiles(mojom::ClipboardBuffer clipboard_buffer,
+                 ReadFilesCallback callback) override;
   void ReadCustomData(mojom::ClipboardBuffer clipboard_buffer,
                       const String& type,
                       ReadCustomDataCallback callback) override;

@@ -34,6 +34,10 @@ namespace blink {
 AXMenuListPopup::AXMenuListPopup(AXObjectCacheImpl& ax_object_cache)
     : AXMockObject(ax_object_cache), active_index_(-1) {}
 
+ax::mojom::blink::Role AXMenuListPopup::NativeRoleIgnoringAria() const {
+  return ax::mojom::blink::Role::kMenuListPopup;
+}
+
 bool AXMenuListPopup::IsVisible() const {
   return !IsOffScreen();
 }
@@ -61,17 +65,13 @@ bool AXMenuListPopup::ComputeAccessibilityIsIgnored(
 }
 
 AXMenuListOption* AXMenuListPopup::MenuListOptionAXObject(
-    HTMLElement* element) const {
+    HTMLElement* element) {
   DCHECK(element);
-  if (!IsA<HTMLOptionElement>(*element))
-    return nullptr;
+  DCHECK(IsA<HTMLOptionElement>(*element));
 
-  auto* ax_object =
-      DynamicTo<AXMenuListOption>(AXObjectCache().GetOrCreate(element));
-  if (!ax_object)
-    return nullptr;
+  AXObject* ax_object = AXObjectCache().GetOrCreate(element, this);
 
-  return ax_object;
+  return DynamicTo<AXMenuListOption>(ax_object);
 }
 
 int AXMenuListPopup::GetSelectedIndex() const {
@@ -93,7 +93,16 @@ bool AXMenuListPopup::OnNativeClickAction() {
 }
 
 void AXMenuListPopup::AddChildren() {
+#if DCHECK_IS_ON()
   DCHECK(!IsDetached());
+  DCHECK(!is_adding_children_) << " Reentering method on " << GetNode();
+  base::AutoReset<bool> reentrancy_protector(&is_adding_children_, true);
+  DCHECK_EQ(children_.size(), 0U)
+      << "Parent still has " << children_.size() << " children before adding:"
+      << "\nParent is " << ToString(true, true) << "\nFirst child is "
+      << children_[0]->ToString(true, true);
+#endif
+
   if (!parent_)
     return;
 
@@ -101,26 +110,32 @@ void AXMenuListPopup::AddChildren() {
   if (!html_select_element)
     return;
 
-  have_children_ = true;
+  DCHECK(children_.IsEmpty());
+  DCHECK(children_dirty_);
+  children_dirty_ = false;
 
   if (active_index_ == -1)
     active_index_ = GetSelectedIndex();
 
   for (auto* const option_element : html_select_element->GetOptionList()) {
+#if DCHECK_IS_ON()
+    AXObject* ax_preexisting = AXObjectCache().Get(option_element);
+    DCHECK(!ax_preexisting ||
+           !ax_preexisting->AccessibilityIsIncludedInTree() ||
+           !ax_preexisting->CachedParentObject() ||
+           ax_preexisting->CachedParentObject() == this)
+        << "\nChild = " << ax_preexisting->ToString(true, true)
+        << "\n  IsAXMenuListOption? " << IsA<AXMenuListOption>(ax_preexisting)
+        << "\nNew parent = " << ToString(true, true)
+        << "\nPreexisting parent = "
+        << ax_preexisting->CachedParentObject()->ToString(true, true);
+#endif
     AXMenuListOption* option = MenuListOptionAXObject(option_element);
-    if (option) {
+    if (option && option->AccessibilityIsIncludedInTree()) {
+      DCHECK(!option->IsDetached());
       children_.push_back(option);
-      option->SetParent(this);
     }
   }
-}
-
-void AXMenuListPopup::UpdateChildrenIfNecessary() {
-  if (have_children_ && parent_ && parent_->NeedsToUpdateChildren())
-    ClearChildren();
-
-  if (!have_children_)
-    AddChildren();
 }
 
 void AXMenuListPopup::DidUpdateActiveOption(int option_index,
@@ -137,14 +152,14 @@ void AXMenuListPopup::DidUpdateActiveOption(int option_index,
   if (old_index != option_index && old_index >= 0 &&
       old_index < static_cast<int>(children_.size())) {
     AXObject* previous_child = children_[old_index].Get();
-    cache.MarkAXObjectDirty(previous_child, false);
+    cache.MarkAXObjectDirtyWithCleanLayout(previous_child, false);
   }
 
   if (option_index >= 0 && option_index < static_cast<int>(children_.size())) {
     AXObject* child = children_[option_index].Get();
     cache.PostNotification(this, ax::mojom::Event::kChildrenChanged);
     cache.PostNotification(this, ax::mojom::Event::kActiveDescendantChanged);
-    cache.MarkAXObjectDirty(child, false);
+    cache.MarkAXObjectDirtyWithCleanLayout(child, false);
   }
 }
 
@@ -154,13 +169,12 @@ void AXMenuListPopup::DidHide() {
   cache.PostNotification(this, ax::mojom::Event::kHide);
   if (descendant) {
     cache.PostNotification(this, ax::mojom::Event::kChildrenChanged);
-    cache.MarkAXObjectDirty(descendant, false);
+    cache.MarkAXObjectDirtyWithCleanLayout(descendant, false);
   }
 }
 
 void AXMenuListPopup::DidShow() {
-  if (!have_children_)
-    AddChildren();
+  UpdateChildrenIfNecessary();
 
   AXObjectCacheImpl& cache = AXObjectCache();
   cache.PostNotification(this, ax::mojom::Event::kShow);

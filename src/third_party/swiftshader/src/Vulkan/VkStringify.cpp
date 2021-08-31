@@ -16,16 +16,10 @@
 
 #include "System/Debug.hpp"
 
-#include <vulkan/vk_ext_provoking_vertex.h>
 #include <vulkan/vk_google_filtering_precision.h>
 #define VULKAN_HPP_NO_EXCEPTIONS
 #define VULKAN_HPP_NAMESPACE vkhpp
 #include <vulkan/vulkan.hpp>
-
-#include <iostream>
-#include <map>
-#include <sstream>
-#include <string>
 
 namespace vk {
 
@@ -35,25 +29,24 @@ std::string Stringify(VkStructureType value)
 	std::string ret = "";
 	switch(static_cast<int>(value))
 	{
-		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT:
-			ret = "PhysicalDeviceProvokingVertexFeaturesEXT";
-			break;
-		case VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT:
-			ret = "PipelineRasterizationProvokingVertexStateCreateInfoEXT";
-			break;
-		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_PROPERTIES_EXT:
-			ret = "PhysicalDeviceProvokingVertexPropertiesEXT";
-			break;
-		case VK_STRUCTURE_TYPE_SAMPLER_FILTERING_PRECISION_GOOGLE:
-			ret = "SamplerFilteringPrecisionGOOGLE";
-			break;
-		default:
-			ret = vkhpp::to_string(static_cast<vkhpp::StructureType>(value));
-			break;
+	case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT:
+		ret = "PhysicalDeviceProvokingVertexFeaturesEXT";
+		break;
+	case VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_PROVOKING_VERTEX_STATE_CREATE_INFO_EXT:
+		ret = "PipelineRasterizationProvokingVertexStateCreateInfoEXT";
+		break;
+	case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_PROPERTIES_EXT:
+		ret = "PhysicalDeviceProvokingVertexPropertiesEXT";
+		break;
+	case VK_STRUCTURE_TYPE_SAMPLER_FILTERING_PRECISION_GOOGLE:
+		ret = "SamplerFilteringPrecisionGOOGLE";
+		break;
+	default:
+		ret = vkhpp::to_string(static_cast<vkhpp::StructureType>(value));
+		break;
 	}
-	std::ostringstream stringStream;
-	stringStream << ret << " (" << static_cast<int>(value) << ")";
-	return stringStream.str();
+
+	return ret;
 #else
 	return std::to_string(static_cast<int>(value));
 #endif

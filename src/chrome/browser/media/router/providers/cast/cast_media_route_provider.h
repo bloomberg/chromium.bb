@@ -87,9 +87,6 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
   void DetachRoute(const std::string& route_id) override;
   void EnableMdnsDiscovery() override;
   void UpdateMediaSinks(const std::string& media_source) override;
-  void ProvideSinks(
-      const std::string& provider_name,
-      const std::vector<media_router::MediaSinkInternal>& sinks) override;
   void CreateMediaRouteController(
       const std::string& route_id,
       mojo::PendingReceiver<mojom::MediaController> media_controller,
@@ -130,8 +127,7 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
   cast_channel::CastMessageHandler* const message_handler_;
 
   // Registered sink queries.
-  base::flat_map<MediaSource::Id, CastAppDiscoveryService::Subscription>
-      sink_queries_;
+  base::flat_map<MediaSource::Id, base::CallbackListSubscription> sink_queries_;
 
   std::unique_ptr<CastActivityManager> activity_manager_;
 

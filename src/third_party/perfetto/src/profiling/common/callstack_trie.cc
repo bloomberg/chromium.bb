@@ -28,9 +28,9 @@ namespace profiling {
 GlobalCallstackTrie::Node* GlobalCallstackTrie::GetOrCreateChild(
     Node* self,
     const Interned<Frame>& loc) {
-  Node* child = self->children_.Get(loc);
+  Node* child = self->GetChild(loc);
   if (!child)
-    child = self->children_.Emplace(loc, ++next_callstack_id_, self);
+    child = self->AddChild(loc, ++next_callstack_id_, self);
   return child;
 }
 
@@ -45,13 +45,19 @@ std::vector<Interned<Frame>> GlobalCallstackTrie::BuildInverseCallstack(
 }
 
 GlobalCallstackTrie::Node* GlobalCallstackTrie::CreateCallsite(
-    const std::vector<FrameData>& callstack) {
+    const std::vector<unwindstack::FrameData>& callstack,
+    const std::vector<std::string>& build_ids) {
+  PERFETTO_CHECK(callstack.size() == build_ids.size());
   Node* node = &root_;
   // libunwindstack gives the frames top-first, but we want to bookkeep and
   // emit as bottom first.
-  for (auto it = callstack.crbegin(); it != callstack.crend(); ++it) {
-    const FrameData& loc = *it;
-    node = GetOrCreateChild(node, InternCodeLocation(loc));
+  auto callstack_it = callstack.crbegin();
+  auto build_id_it = build_ids.crbegin();
+  for (; callstack_it != callstack.crend() && build_id_it != build_ids.crend();
+       ++callstack_it, ++build_id_it) {
+    const unwindstack::FrameData& loc = *callstack_it;
+    const std::string& build_id = *build_id_it;
+    node = GetOrCreateChild(node, InternCodeLocation(loc, build_id));
   }
   return node;
 }
@@ -82,7 +88,7 @@ void GlobalCallstackTrie::DecrementNode(Node* node) {
   Node* prev = nullptr;
   while (node != nullptr) {
     if (delete_prev)
-      node->children_.Remove(*prev);
+      node->RemoveChild(prev);
     node->ref_count_ -= 1;
     delete_prev = node->ref_count_ == 0;
     prev = node;
@@ -90,20 +96,21 @@ void GlobalCallstackTrie::DecrementNode(Node* node) {
   }
 }
 
-Interned<Frame> GlobalCallstackTrie::InternCodeLocation(const FrameData& loc) {
-  Mapping map(string_interner_.Intern(loc.build_id));
-  map.exact_offset = loc.frame.map_exact_offset;
-  map.start_offset = loc.frame.map_elf_start_offset;
-  map.start = loc.frame.map_start;
-  map.end = loc.frame.map_end;
-  map.load_bias = loc.frame.map_load_bias;
-  base::StringSplitter sp(loc.frame.map_name, '/');
+Interned<Frame> GlobalCallstackTrie::InternCodeLocation(
+    const unwindstack::FrameData& loc,
+    const std::string& build_id) {
+  Mapping map(string_interner_.Intern(build_id));
+  map.exact_offset = loc.map_exact_offset;
+  map.start_offset = loc.map_elf_start_offset;
+  map.start = loc.map_start;
+  map.end = loc.map_end;
+  map.load_bias = loc.map_load_bias;
+  base::StringSplitter sp(loc.map_name, '/');
   while (sp.Next())
     map.path_components.emplace_back(string_interner_.Intern(sp.cur_token()));
 
   Frame frame(mapping_interner_.Intern(std::move(map)),
-              string_interner_.Intern(loc.frame.function_name),
-              loc.frame.rel_pc);
+              string_interner_.Intern(loc.function_name), loc.rel_pc);
 
   return frame_interner_.Intern(frame);
 }
@@ -115,6 +122,31 @@ Interned<Frame> GlobalCallstackTrie::MakeRootFrame() {
               string_interner_.Intern(""), 0);
 
   return frame_interner_.Intern(frame);
+}
+
+GlobalCallstackTrie::Node* GlobalCallstackTrie::Node::AddChild(
+    const Interned<Frame>& loc,
+    uint64_t callstack_id,
+    Node* parent) {
+  auto it = children_.emplace(loc, callstack_id, parent);
+  return const_cast<Node*>(&(*it.first));
+}
+void GlobalCallstackTrie::Node::RemoveChild(Node* node) {
+  children_.erase(*node);
+}
+
+GlobalCallstackTrie::Node* GlobalCallstackTrie::Node::GetChild(
+    const Interned<Frame>& loc) {
+  // This will be nicer with C++14 transparent comparators.
+  // Then we will be able to look up by just the key using a sutiable
+  // comparator.
+  //
+  // For now we need to allow to construct Node from the key.
+  Node node(loc);
+  auto it = children_.find(node);
+  if (it == children_.end())
+    return nullptr;
+  return const_cast<Node*>(&(*it));
 }
 
 }  // namespace profiling

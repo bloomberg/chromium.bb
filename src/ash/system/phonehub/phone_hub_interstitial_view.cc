@@ -5,6 +5,7 @@
 #include "ash/system/phonehub/phone_hub_interstitial_view.h"
 
 #include <memory>
+#include <string>
 
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/shell.h"
@@ -14,10 +15,11 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/rounded_label_button.h"
-#include "base/strings/string16.h"
 #include "skia/ext/image_operations.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -27,7 +29,6 @@
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -148,13 +149,13 @@ void PhoneHubInterstitialView::SetImage(const gfx::ImageSkia& image) {
   image_->SetImage(image);
 }
 
-void PhoneHubInterstitialView::SetTitle(const base::string16& title) {
+void PhoneHubInterstitialView::SetTitle(const std::u16string& title) {
   // Expect a non-empty string for the title.
   DCHECK(!title.empty());
   title_->SetText(title);
 }
 
-void PhoneHubInterstitialView::SetDescription(const base::string16& desc) {
+void PhoneHubInterstitialView::SetDescription(const std::u16string& desc) {
   // Expect a non-empty string for the description.
   DCHECK(!desc.empty());
   description_->SetText(desc);

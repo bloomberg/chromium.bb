@@ -5,6 +5,7 @@
 template("build_closure") {
   assert(defined(invoker.sources))
   assert(defined(invoker.target))
+
   action(target_name) {
     script = "//third_party/google_input_tools/builder.py"
     sources = invoker.sources

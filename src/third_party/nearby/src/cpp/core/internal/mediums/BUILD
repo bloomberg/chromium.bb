@@ -45,12 +45,14 @@ cc_library(
         "//core/internal/mediums/webrtc",
         "//proto/connections:offline_wire_formats_portable_proto",
         "//platform/base",
+        "//platform/base:cancellation_flag",
         "//platform/public:comm",
         "//platform/public:logging",
         "//platform/public:types",
         "//location/nearby/mediums/proto:web_rtc_signaling_frames_cc_proto",
         "//absl/container:flat_hash_map",
         "//absl/container:flat_hash_set",
+        "//absl/functional:bind_front",
         "//absl/numeric:int128",
         "//absl/strings",
         "//absl/time",
@@ -67,7 +69,6 @@ cc_library(
     visibility = [
         "//core/internal:__pkg__",
         "//core/internal/mediums:__pkg__",
-        "//core/internal/mediums/ble_v2:__pkg__",
         "//core/internal/mediums/webrtc:__pkg__",
     ],
     deps = [
@@ -87,21 +88,37 @@ cc_test(
         "bluetooth_radio_test.cc",
         "lost_entity_tracker_test.cc",
         "uuid_test.cc",
-        "webrtc_test.cc",
         "wifi_lan_test.cc",
     ],
     shard_count = 16,
+    deps = [
+        ":mediums",
+        "//platform/base:test_util",
+        "//platform/impl/g3",  # build_cleaner: keep
+        "//platform/public:comm",
+        "//platform/public:types",
+        "//testing/base/public:gunit_main",
+        "//absl/strings",
+        "//absl/time",
+    ],
+)
+
+cc_test(
+    name = "core_internal_mediums_webrtc_test",
+    size = "small",
+    srcs = [
+        "webrtc_test.cc",
+    ],
+    shard_count = 16,
+    tags = ["notsan"],  # NOTE(b/139734036): known data race in usrsctplib.
     deps = [
         ":mediums",
         "//core/internal/mediums/webrtc",
         "//platform/base",
         "//platform/base:test_util",
         "//platform/impl/g3",  # build_cleaner: keep
-        "//platform/public:comm",
-        "//platform/public:logging",
         "//platform/public:types",
         "//testing/base/public:gunit_main",
         "//absl/strings",
-        "//absl/time",
     ],
 )

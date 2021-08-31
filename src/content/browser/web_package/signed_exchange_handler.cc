@@ -76,7 +76,7 @@ network::mojom::NetworkContext* g_network_context_for_testing = nullptr;
 bool g_should_ignore_cert_validity_period_error = false;
 
 bool IsSupportedSignedExchangeVersion(
-    const base::Optional<SignedExchangeVersion>& version) {
+    const absl::optional<SignedExchangeVersion>& version) {
   return version == SignedExchangeVersion::kB3;
 }
 
@@ -173,6 +173,7 @@ SignedExchangeHandler::SignedExchangeHandler(
     std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
     const net::NetworkIsolationKey& network_isolation_key,
     int load_flags,
+    const net::IPEndPoint& remote_endpoint,
     std::unique_ptr<blink::WebPackageRequestMatcher> request_matcher,
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     SignedExchangeReporter* reporter,
@@ -184,6 +185,7 @@ SignedExchangeHandler::SignedExchangeHandler(
       cert_fetcher_factory_(std::move(cert_fetcher_factory)),
       network_isolation_key_(network_isolation_key),
       load_flags_(load_flags),
+      remote_endpoint_(remote_endpoint),
       request_matcher_(std::move(request_matcher)),
       devtools_proxy_(std::move(devtools_proxy)),
       reporter_(reporter),
@@ -498,13 +500,13 @@ void SignedExchangeHandler::OnCertReceived(
   UMA_HISTOGRAM_ENUMERATION(kHistogramSignatureVerificationResult,
                             verify_result);
   if (verify_result != SignedExchangeSignatureVerifier::Result::kSuccess) {
-    base::Optional<SignedExchangeError::Field> error_field =
+    absl::optional<SignedExchangeError::Field> error_field =
         SignedExchangeError::GetFieldFromSignatureVerifierResult(verify_result);
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(), "Failed to verify the signed exchange header.",
-        error_field ? base::make_optional(
+        error_field ? absl::make_optional(
                           std::make_pair(0 /* signature_index */, *error_field))
-                    : base::nullopt);
+                    : absl::nullopt);
     RunErrorCallback(
         signed_exchange_utils::GetLoadResultFromSignatureVerifierResult(
             verify_result),
@@ -540,14 +542,10 @@ SignedExchangeLoadResult SignedExchangeHandler::CheckCertRequirements(
   if (!net::asn1::HasCanSignHttpExchangesDraftExtension(
           net::x509_util::CryptoBufferAsStringPiece(
               verified_cert->cert_buffer())) &&
-      !base::FeatureList::IsEnabled(
-          features::kAllowSignedHTTPExchangeCertsWithoutExtension) &&
       !unverified_cert_chain_->ShouldIgnoreErrors()) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(),
-        "Certificate must have CanSignHttpExchangesDraft extension. To ignore "
-        "this error for testing, enable "
-        "chrome://flags/#allow-sxg-certs-without-extension.",
+        "Certificate must have CanSignHttpExchangesDraft extension.",
         std::make_pair(0 /* signature_index */,
                        SignedExchangeError::Field::kSignatureCertUrl));
     return SignedExchangeLoadResult::kCertRequirementsNotMet;
@@ -675,6 +673,7 @@ void SignedExchangeHandler::OnVerifyCert(
   response_head->load_timing.send_end = now;
   response_head->load_timing.receive_headers_end = now;
   response_head->content_length = response_head->headers->GetContentLength();
+  response_head->remote_endpoint = remote_endpoint_;
 
   auto body_stream = CreateResponseBodyStream();
   if (!body_stream) {

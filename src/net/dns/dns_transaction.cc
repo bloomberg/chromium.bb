@@ -24,7 +24,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -39,6 +38,7 @@
 #include "net/base/backoff_entry.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
+#include "net/base/idempotency.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -48,13 +48,17 @@
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
+#include "net/dns/dns_response_result_extractor.h"
 #include "net/dns/dns_server_iterator.h"
 #include "net/dns/dns_session.h"
 #include "net/dns/dns_socket_allocator.h"
 #include "net/dns/dns_udp_tracker.h"
 #include "net/dns/dns_util.h"
+#include "net/dns/host_cache.h"
 #include "net/dns/public/dns_over_https_server_config.h"
 #include "net/dns/public/dns_protocol.h"
+#include "net/dns/public/dns_query_type.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/dns/resolve_context.h"
 #include "net/http/http_request_headers.h"
 #include "net/log/net_log.h"
@@ -71,6 +75,7 @@
 #include "net/url_request/url_fetcher_response_writer.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -364,6 +369,8 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     // Send minimal request headers where possible.
     extra_request_headers.SetHeader(HttpRequestHeaders::kAcceptLanguage, "*");
     extra_request_headers.SetHeader(HttpRequestHeaders::kUserAgent, "Chrome");
+    extra_request_headers.SetHeader(HttpRequestHeaders::kAcceptEncoding,
+                                    "identity");
 
     DCHECK(url_request_context);
     request_ = url_request_context->CreateRequest(
@@ -393,6 +400,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
 
     if (use_post) {
       request_->set_method("POST");
+      request_->SetIdempotency(IDEMPOTENT);
       std::unique_ptr<UploadElementReader> reader =
           std::make_unique<UploadBytesElementReader>(
               query_->io_buffer()->data(), query_->io_buffer()->size());
@@ -404,7 +412,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
 
     request_->SetExtraRequestHeaders(extra_request_headers);
     // Disable secure DNS for any DoH server hostname lookups to avoid deadlock.
-    request_->SetDisableSecureDns(true);
+    request_->SetSecureDnsPolicy(SecureDnsPolicy::kDisable);
     request_->SetLoadFlags(request_->load_flags() | LOAD_DISABLE_CACHE |
                            LOAD_BYPASS_PROXY);
     request_->set_allow_credentials(false);
@@ -758,7 +766,7 @@ class DnsTCPAttempt : public DnsAttempt {
     if (response_length_ < query_->io_buffer()->size())
       return ERR_DNS_MALFORMED_RESPONSE;
     // Allocate more space so that DnsResponse::InitParse sanity check passes.
-    response_.reset(new DnsResponse(response_length_ + 1));
+    response_ = std::make_unique<DnsResponse>(response_length_ + 1);
     buffer_ = base::MakeRefCounted<DrainableIOBuffer>(response_->io_buffer(),
                                                       response_length_);
     next_state_ = STATE_READ_RESPONSE;
@@ -975,26 +983,30 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
       const DnsAttempt* attempt =
           probe_stats->probe_attempts[attempt_number].get();
       const DnsResponse* response = attempt->GetResponse();
-      AddressList addresses;
-      base::Optional<base::TimeDelta> ttl;
-      if (response &&
-          attempt->GetResponse()->ParseToAddressList(&addresses, &ttl) ==
-              DnsResponse::DNS_PARSE_OK &&
-          !addresses.empty()) {
-        // The DoH probe queries don't go through the standard DnsAttempt path,
-        // so the ServerStats have not been updated yet.
-        context_->RecordServerSuccess(doh_server_index,
-                                      true /* is_doh_server */, session_.get());
-        context_->RecordRtt(doh_server_index, true /* is_doh_server */,
-                            base::TimeTicks::Now() - query_start_time, rv,
-                            session_.get());
-        success = true;
+      if (response) {
+        DnsResponseResultExtractor extractor(response);
+        HostCache::Entry results(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN);
+        DnsResponseResultExtractor::ExtractionError extraction_error =
+            extractor.ExtractDnsResults(DnsQueryType::A, &results);
 
-        // Do not delete the ProbeStats and cancel the probe sequence. It will
-        // cancel itself on the next scheduled ContinueProbe() call if the
-        // server is still available. This way, the backoff schedule will be
-        // maintained if a server quickly becomes unavailable again before that
-        // scheduled call.
+        if (extraction_error ==
+                DnsResponseResultExtractor::ExtractionError::kOk &&
+            results.addresses() && !results.addresses().value().empty()) {
+          // The DoH probe queries don't go through the standard DnsAttempt
+          // path, so the ServerStats have not been updated yet.
+          context_->RecordServerSuccess(
+              doh_server_index, true /* is_doh_server */, session_.get());
+          context_->RecordRtt(doh_server_index, true /* is_doh_server */,
+                              base::TimeTicks::Now() - query_start_time, rv,
+                              session_.get());
+          success = true;
+
+          // Do not delete the ProbeStats and cancel the probe sequence. It will
+          // cancel itself on the next scheduled ContinueProbe() call if the
+          // server is still available. This way, the backoff schedule will be
+          // maintained if a server quickly becomes unavailable again before
+          // that scheduled call.
+        }
       }
     }
 
@@ -1188,7 +1200,7 @@ class DnsTransactionImpl : public DnsTransaction,
     net_log_.EndEventWithNetErrorCode(NetLogEventType::DNS_TRANSACTION,
                                       result.rv);
 
-    base::Optional<std::string> doh_provider_id;
+    absl::optional<std::string> doh_provider_id;
     if (secure_ && result.attempt) {
       size_t server_index = result.attempt->server_index();
       doh_provider_id = GetDohProviderIdForHistogramFromDohConfig(
@@ -1221,7 +1233,8 @@ class DnsTransactionImpl : public DnsTransaction,
     uint16_t id = session_->NextQueryId();
     std::unique_ptr<DnsQuery> query;
     if (attempts_.empty()) {
-      query.reset(new DnsQuery(id, qnames_.front(), qtype_, opt_rdata_));
+      query =
+          std::make_unique<DnsQuery>(id, qnames_.front(), qtype_, opt_rdata_);
     } else {
       query = attempts_[0]->GetQuery()->CloneWithNewId(id);
     }
@@ -1368,7 +1381,7 @@ class DnsTransactionImpl : public DnsTransaction,
 
   // Begins query for the current name. Makes the first attempt.
   AttemptResult StartQuery() {
-    base::Optional<std::string> dotted_qname =
+    absl::optional<std::string> dotted_qname =
         DnsDomainToString(qnames_.front());
     net_log_.BeginEventWithStringParams(
         NetLogEventType::DNS_TRANSACTION_QUERY, "qname",

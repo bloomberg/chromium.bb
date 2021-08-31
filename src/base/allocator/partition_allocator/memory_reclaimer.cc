@@ -6,6 +6,8 @@
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
+#include "base/allocator/partition_allocator/partition_alloc_config.h"
+#include "base/allocator/partition_allocator/starscan/pcscan.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
@@ -95,23 +97,59 @@ void PartitionAllocMemoryReclaimer::Start(
   // singleton.
   timer_->Start(
       FROM_HERE, kInterval,
-      BindRepeating(&PartitionAllocMemoryReclaimer::Reclaim, Unretained(this)));
+      BindRepeating(&PartitionAllocMemoryReclaimer::ReclaimPeriodically,
+                    Unretained(this)));
 }
 
 PartitionAllocMemoryReclaimer::PartitionAllocMemoryReclaimer() = default;
 PartitionAllocMemoryReclaimer::~PartitionAllocMemoryReclaimer() = default;
 
-void PartitionAllocMemoryReclaimer::Reclaim() {
+void PartitionAllocMemoryReclaimer::ReclaimAll() {
+  constexpr int kFlags = PartitionPurgeDecommitEmptySlotSpans |
+                         PartitionPurgeDiscardUnusedSystemPages |
+                         PartitionPurgeAggressiveReclaim;
+  Reclaim(kFlags);
+}
+
+void PartitionAllocMemoryReclaimer::ReclaimPeriodically() {
+  constexpr int kFlags = PartitionPurgeDecommitEmptySlotSpans |
+                         PartitionPurgeDiscardUnusedSystemPages;
+  Reclaim(kFlags);
+}
+
+void PartitionAllocMemoryReclaimer::Reclaim(int flags) {
   AutoLock lock(lock_);  // Has to protect from concurrent (Un)Register calls.
   TRACE_EVENT0("base", "PartitionAllocMemoryReclaimer::Reclaim()");
 
-  constexpr int kFlags = PartitionPurgeDecommitEmptySlotSpans |
-                         PartitionPurgeDiscardUnusedSystemPages;
+  // PCScan quarantines freed slots. Trigger the scan first to let it call
+  // FreeNoHooksImmediate on slots that pass the quarantine.
+  //
+  // In turn, FreeNoHooksImmediate may add slots to thread cache. Purge it next
+  // so that the slots are actually freed. (This is done synchronously only for
+  // the current thread.)
+  //
+  // Lastly decommit empty slot spans and lastly try to discard unused pages at
+  // the end of the remaining active slots.
+  {
+    using PCScan = internal::PCScan;
+    const auto invocation_mode = flags & PartitionPurgeAggressiveReclaim
+                                     ? PCScan::InvocationMode::kForcedBlocking
+                                     : PCScan::InvocationMode::kBlocking;
+    PCScan::PerformScanIfNeeded(invocation_mode);
+  }
+
+#if defined(PA_THREAD_CACHE_SUPPORTED)
+  // Don't completely empty the thread cache outside of low memory situations,
+  // as there is periodic purge which makes sure that it doesn't take too much
+  // space.
+  if (flags & PartitionPurgeAggressiveReclaim)
+    internal::ThreadCacheRegistry::Instance().PurgeAll();
+#endif
 
   for (auto* partition : thread_safe_partitions_)
-    partition->PurgeMemory(kFlags);
+    partition->PurgeMemory(flags);
   for (auto* partition : thread_unsafe_partitions_)
-    partition->PurgeMemory(kFlags);
+    partition->PurgeMemory(flags);
 }
 
 void PartitionAllocMemoryReclaimer::ResetForTesting() {

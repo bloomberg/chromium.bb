@@ -5,9 +5,7 @@
 #include "gpu/command_buffer/service/external_semaphore.h"
 
 #include "base/bind.h"
-#include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
@@ -28,16 +26,6 @@ namespace {
 GLuint ImportSemaphoreHandleToGLSemaphore(SemaphoreHandle handle) {
   if (!handle.is_valid())
     return 0;
-
-  RecordImportingVKSemaphoreIntoGL();
-  base::ScopedClosureRunner uma_runner(base::BindOnce(
-      [](base::Time time) {
-        UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES(
-            "GPU.Vulkan.ImportVkSemaphoreIntoGL", base::Time::Now() - time,
-            base::TimeDelta::FromMicroseconds(1),
-            base::TimeDelta::FromMicroseconds(200), 50);
-      },
-      base::Time::Now()));
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
   if (handle.vk_handle_type() !=
@@ -106,7 +94,7 @@ ExternalSemaphore ExternalSemaphore::Create(
     return {};
   }
 
-  return ExternalSemaphore(util::PassKey<ExternalSemaphore>(), context_provider,
+  return ExternalSemaphore(base::PassKey<ExternalSemaphore>(), context_provider,
                            semaphore, std::move(handle));
 }
 
@@ -125,7 +113,7 @@ ExternalSemaphore ExternalSemaphore::CreateFromHandle(
   if (semaphore == VK_NULL_HANDLE)
     return {};
 
-  return ExternalSemaphore(util::PassKey<ExternalSemaphore>(), context_provider,
+  return ExternalSemaphore(base::PassKey<ExternalSemaphore>(), context_provider,
                            semaphore, std::move(handle));
 }
 
@@ -136,7 +124,7 @@ ExternalSemaphore::ExternalSemaphore(ExternalSemaphore&& other) {
 }
 
 ExternalSemaphore::ExternalSemaphore(
-    util::PassKey<ExternalSemaphore>,
+    base::PassKey<ExternalSemaphore>,
     viz::VulkanContextProvider* context_provider,
     VkSemaphore semaphore,
     SemaphoreHandle handle)

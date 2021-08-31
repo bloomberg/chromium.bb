@@ -8,9 +8,9 @@
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_util.h"
 #include "ui/gl/egl_util.h"
+#include "ui/gl/gl_bindings.h"
 
 using ui::GetLastEGLErrorString;
-using ui::X11EventSource;
 
 namespace gl {
 
@@ -20,7 +20,7 @@ NativeViewGLSurfaceEGLX11GLES2::NativeViewGLSurfaceEGLX11GLES2(
 
 bool NativeViewGLSurfaceEGLX11GLES2::InitializeNativeWindow() {
   auto* connection = GetXNativeConnection();
-  auto geometry = connection->GetGeometry({parent_window_}).Sync();
+  auto geometry = connection->GetGeometry(parent_window_).Sync();
   if (!geometry) {
     LOG(ERROR) << "GetGeometry failed for window "
                << static_cast<uint32_t>(parent_window_) << ".";
@@ -66,7 +66,7 @@ EGLConfig NativeViewGLSurfaceEGLX11GLES2::GetConfig() {
     // Get a config compatible with the window
     DCHECK(window_);
     auto* connection = GetXNativeConnection();
-    auto geometry = connection->GetGeometry({window()}).Sync();
+    auto geometry = connection->GetGeometry(window()).Sync();
     if (!geometry)
       return nullptr;
 
@@ -152,17 +152,16 @@ bool NativeViewGLSurfaceEGLX11GLES2::Resize(const gfx::Size& size,
   return true;
 }
 
-bool NativeViewGLSurfaceEGLX11GLES2::DispatchXEvent(x11::Event* x11_event) {
-  auto* expose = x11_event->As<x11::ExposeEvent>();
+void NativeViewGLSurfaceEGLX11GLES2::OnEvent(const x11::Event& x11_event) {
+  auto* expose = x11_event.As<x11::ExposeEvent>();
   auto window = static_cast<x11::Window>(window_);
   if (!expose || expose->window != window)
-    return false;
+    return;
 
   auto expose_copy = *expose;
   expose_copy.window = parent_window_;
   x11::SendEvent(expose_copy, parent_window_, x11::EventMask::Exposure);
   x11::Connection::Get()->Flush();
-  return true;
 }
 
 NativeViewGLSurfaceEGLX11GLES2::~NativeViewGLSurfaceEGLX11GLES2() {

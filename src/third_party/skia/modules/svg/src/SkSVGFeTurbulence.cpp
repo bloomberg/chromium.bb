@@ -28,13 +28,13 @@ template <>
 bool SkSVGAttributeParser::parse<SkSVGFeTurbulenceBaseFrequency>(
         SkSVGFeTurbulenceBaseFrequency* freq) {
     SkSVGNumberType freqX;
-    if (!this->parseNumber(&freqX)) {
+    if (!this->parse(&freqX)) {
         return false;
     }
 
     SkSVGNumberType freqY;
     this->parseCommaWspToken();
-    if (this->parseNumber(&freqY)) {
+    if (this->parse(&freqY)) {
         *freq = SkSVGFeTurbulenceBaseFrequency(freqX, freqY);
     } else {
         *freq = SkSVGFeTurbulenceBaseFrequency(freqX, freqX);
@@ -74,5 +74,5 @@ sk_sp<SkImageFilter> SkSVGFeTurbulence::onMakeImageFilter(const SkSVGRenderConte
             break;
     }
 
-    return SkImageFilters::Shader(shader, fctx.filterEffectsRegion());
+    return SkImageFilters::Shader(shader, this->resolveFilterSubregion(ctx, fctx));
 }

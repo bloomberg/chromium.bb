@@ -5,6 +5,7 @@
 #include "ash/accelerators/accelerator_controller_impl.h"
 
 #include "ash/app_list/test/app_list_test_helper.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "ash/shell_observer.h"
 #include "ash/system/network/network_observer.h"
@@ -136,6 +137,11 @@ TEST_F(AcceleratorTest, Basic) {
 
 // Tests full screenshot accelerators.
 TEST_F(AcceleratorTest, FullScreenshot) {
+  if (features::IsCaptureModeEnabled()) {
+    // Capture mode shortcuts and behavior are tested elsewhere.
+    return;
+  }
+
   TestScreenshotDelegate* screenshot_delegate = GetScreenshotDelegate();
   screenshot_delegate->set_can_take_screenshot(true);
   EXPECT_EQ(0, screenshot_delegate->handle_take_screenshot_count());
@@ -159,6 +165,11 @@ TEST_F(AcceleratorTest, FullScreenshot) {
 
 // Tests partial screenshot accelerators.
 TEST_F(AcceleratorTest, PartialScreenshot) {
+  if (features::IsCaptureModeEnabled()) {
+    // Capture mode shortcuts and behavior are tested elsewhere.
+    return;
+  }
+
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
   TestScreenshotDelegate* screenshot_delegate = GetScreenshotDelegate();
   screenshot_delegate->set_can_take_screenshot(true);
@@ -212,6 +223,11 @@ TEST_F(AcceleratorTest, PartialScreenshot) {
 
 // Tests window screenshot accelerators.
 TEST_F(AcceleratorTest, WindowScreenshot) {
+  if (features::IsCaptureModeEnabled()) {
+    // Capture mode shortcuts and behavior are tested elsewhere.
+    return;
+  }
+
   TestScreenshotDelegate* screenshot_delegate = GetScreenshotDelegate();
   screenshot_delegate->set_can_take_screenshot(true);
 
@@ -284,9 +300,9 @@ TEST_F(AcceleratorTest, NonRepeatableNeedingWindowActions) {
   // Test TOGGLE_FULLSCREEN.
   WindowState* active_window_state = WindowState::ForActiveWindow();
   EXPECT_FALSE(active_window_state->IsFullscreen());
-  SendKeyPressSync(ui::VKEY_MEDIA_LAUNCH_APP2, false, false, false);
+  SendKeyPressSync(ui::VKEY_ZOOM, false, false, false);
   EXPECT_TRUE(active_window_state->IsFullscreen());
-  SendKeyPressSync(ui::VKEY_MEDIA_LAUNCH_APP2, false, false, false);
+  SendKeyPressSync(ui::VKEY_ZOOM, false, false, false);
   EXPECT_FALSE(active_window_state->IsFullscreen());
 }
 

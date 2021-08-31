@@ -41,8 +41,9 @@ def _adb(api, title, *cmd, **kwargs):
 def skpbench_steps(api):
   """benchmark Skia using skpbench."""
   is_vulkan = 'Vulkan' in api.vars.builder_name
+  is_metal = 'Metal' in api.vars.builder_name
   is_android = 'Android' in api.vars.builder_name
-  is_ccpr = 'CCPR' in api.vars.builder_name
+  is_apple_m1 = 'AppleM1' in api.vars.builder_name
   is_all_paths_volatile = 'AllPathsVolatile' in api.vars.builder_name
   is_mskp = 'Mskp' in api.vars.builder_name
   is_ddl = 'DDL' in api.vars.builder_name
@@ -58,8 +59,16 @@ def skpbench_steps(api):
   skpbench_dir = api.vars.workdir.join('skia', 'tools', 'skpbench')
   table = api.path.join(api.vars.swarming_out_dir, 'table')
 
-  config = 'vk' if is_vulkan else 'gles' if is_android else 'gl'
-  internal_samples = 4 if is_android else 8
+  if is_vulkan:
+    config = 'vk'
+  elif is_metal:
+    config = 'mtl'
+  elif is_android:
+    config = 'gles'
+  else:
+    config = 'gl'
+
+  internal_samples = 4 if is_android or is_apple_m1 else 8
 
   if is_all_paths_volatile:
     config = "%smsaa%i" % (config, internal_samples)
@@ -89,24 +98,23 @@ def skpbench_steps(api):
     skpbench_args += [
         '--adb',
         '--adb_binary', ADB_BINARY]
-  if is_ccpr:
-    skpbench_args += [
-        '--pr', 'ccpr', '--cc', '--nocache',
-        api.path.join(api.flavor.device_dirs.skp_dir, 'desk_*svg.skp'),
-        api.path.join(api.flavor.device_dirs.skp_dir, 'desk_chalkboard.skp')]
-  elif is_mskp:
+  if is_mskp:
     skpbench_args += [api.flavor.device_dirs.mskp_dir]
   elif is_all_paths_volatile:
     skpbench_args += [
-        # nvpr takes every path when enabled, which isn't always the best choice
-        # for volatile paths.
-        '--pr', '~nvpr',
         '--allPathsVolatile',
         '--suffix', "_volatile",
         api.path.join(api.flavor.device_dirs.skp_dir, 'desk_*svg.skp'),
+        api.path.join(api.flavor.device_dirs.skp_dir, 'desk_motionmark*.skp'),
         api.path.join(api.flavor.device_dirs.skp_dir, 'desk_chalkboard.skp')]
   else:
     skpbench_args += [api.flavor.device_dirs.skp_dir]
+
+  if api.properties.get('dont_reduce_ops_task_splitting') == 'true':
+    skpbench_args += ['--dontReduceOpsTaskSplitting']
+
+  if api.properties.get('gpu_resource_cache_limit'):
+    skpbench_args += ['--gpuResourceCacheLimit', api.properties.get('gpu_resource_cache_limit')]
 
   api.run(api.python, 'skpbench',
       script=skpbench_dir.join('skpbench.py'),
@@ -166,21 +174,13 @@ def RunSteps(api):
 
 
 TEST_BUILDERS = [
-  ('Perf-Android-Clang-Pixel-GPU-Adreno530-arm64-Release-All-'
-   'Android_Skpbench_Mskp'),
-  ('Perf-Android-Clang-Pixel-GPU-Adreno530-arm64-Release-All-'
-   'Android_CCPR_Skpbench'),
-  ('Perf-Android-Clang-Pixel-GPU-Adreno530-arm64-Release-All-'
-   'Android_ReduceOpsTaskSplitting_Skpbench'),
-  ('Perf-Android-Clang-GalaxyS20-GPU-MaliG77-arm64-Release-All-'
-   'Android_AllPathsVolatile_Skpbench'),
-  ('Perf-Android-Clang-GalaxyS20-GPU-MaliG77-arm64-Release-All-'
-   'Android_Vulkan_AllPathsVolatile_Skpbench'),
+  'Perf-Android-Clang-Pixel-GPU-Adreno530-arm64-Release-All-Android_Skpbench_Mskp',
+  'Perf-Android-Clang-GalaxyS20-GPU-MaliG77-arm64-Release-All-Android_AllPathsVolatile_Skpbench',
+  'Perf-Android-Clang-GalaxyS20-GPU-MaliG77-arm64-Release-All-Android_Vulkan_AllPathsVolatile_Skpbench',
   'Perf-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-Vulkan_Skpbench',
-  ('Perf-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-'
-   'Vulkan_Skpbench_DDLTotal_9x9'),
-  ('Perf-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-'
-   'AllPathsVolatile_Skpbench'),
+  'Perf-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-Vulkan_Skpbench_DDLTotal_9x9',
+  'Perf-Win10-Clang-Golo-GPU-QuadroP400-x86_64-Release-All-AllPathsVolatile_Skpbench',
+  'Perf-Mac11-Clang-MacMini9.1-GPU-AppleM1-arm64-Release-All-Metal_AllPathsVolatile_Skpbench',
 ]
 
 
@@ -202,7 +202,7 @@ def GenTests(api):
       api.step_data('get swarming task id',
           stdout=api.raw_io.output('123456'))
     )
-    if 'Win' in builder and not 'LenovoYogaC630' in builder:
+    if 'Win' in builder:
       test += api.platform('win', 64)
     yield test
 
@@ -213,7 +213,9 @@ def GenTests(api):
     api.properties(buildername=b,
                    revision='abc123',
                    path_config='kitchen',
-                   swarm_out_dir='[SWARM_OUT_DIR]') +
+                   swarm_out_dir='[SWARM_OUT_DIR]',
+                   dont_reduce_ops_task_splitting='true',
+                   gpu_resource_cache_limit='16777216') +
     api.path.exists(
         api.path['start_dir'].join('skia'),
         api.path['start_dir'].join('skia', 'infra', 'bots', 'assets',

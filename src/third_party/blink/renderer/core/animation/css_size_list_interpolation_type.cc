@@ -12,13 +12,14 @@
 #include "third_party/blink/renderer/core/animation/size_interpolation_functions.h"
 #include "third_party/blink/renderer/core/animation/size_list_property_functions.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
-class UnderlyingSizeListChecker
+class UnderlyingSizeListChecker final
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   explicit UnderlyingSizeListChecker(const NonInterpolableList& underlying_list)
@@ -47,7 +48,7 @@ class UnderlyingSizeListChecker
   scoped_refptr<const NonInterpolableList> underlying_list_;
 };
 
-class InheritedSizeListChecker
+class InheritedSizeListChecker final
     : public CSSInterpolationType::CSSConversionChecker {
  public:
   InheritedSizeListChecker(const CSSProperty& property,
@@ -116,10 +117,12 @@ InterpolationValue CSSSizeListInterpolationType::MaybeConvertNeutral(
 }
 
 InterpolationValue CSSSizeListInterpolationType::MaybeConvertInitial(
-    const StyleResolverState&,
+    const StyleResolverState& state,
     ConversionCheckers&) const {
   return ConvertSizeList(
-      SizeListPropertyFunctions::GetInitialSizeList(CssProperty()), 1);
+      SizeListPropertyFunctions::GetInitialSizeList(
+          CssProperty(), state.GetDocument().GetStyleResolver().InitialStyle()),
+      1);
 }
 
 InterpolationValue CSSSizeListInterpolationType::MaybeConvertInherit(

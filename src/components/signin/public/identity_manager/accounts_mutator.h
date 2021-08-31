@@ -8,8 +8,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/optional.h"
+#include "build/chromeos_buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace signin_metrics {
 enum class SourceForRefreshTokenOperation;
@@ -38,8 +39,8 @@ class AccountsMutator {
   // Updates the information about account identified by |account_id|.
   virtual void UpdateAccountInfo(
       const CoreAccountId& account_id,
-      base::Optional<bool> is_child_account,
-      base::Optional<bool> is_under_advanced_protection) = 0;
+      absl::optional<bool> is_child_account,
+      absl::optional<bool> is_under_advanced_protection) = 0;
 
   // Removes the account given by |account_id|. Also revokes the token
   // server-side if needed.
@@ -66,6 +67,15 @@ class AccountsMutator {
   // target mutator.
   virtual void MoveAccount(AccountsMutator* target,
                            const CoreAccountId& account_id) = 0;
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Seeds account into AccountTrackerService. Used by UserSessionManager to
+  // manually seed the primary account before credentials are loaded.
+  // TODO(https://crbug.com/1195359): Remove after adding an account cache to
+  // AccountManagerFacade.
+  virtual CoreAccountId SeedAccountInfo(const std::string& gaia,
+                                        const std::string& email) = 0;
 #endif
 
  private:

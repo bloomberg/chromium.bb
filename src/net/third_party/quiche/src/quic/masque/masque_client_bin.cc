@@ -9,25 +9,30 @@
 
 #include <memory>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/masque/masque_client_tools.h"
-#include "net/third_party/quiche/src/quic/masque/masque_encapsulated_epoll_client.h"
-#include "net/third_party/quiche/src/quic/masque/masque_epoll_client.h"
-#include "net/third_party/quiche/src/quic/masque/masque_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_system_event_loop.h"
-#include "net/third_party/quiche/src/quic/tools/fake_proof_verifier.h"
-#include "net/third_party/quiche/src/quic/tools/quic_url.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/quic_server_id.h"
+#include "quic/masque/masque_client_tools.h"
+#include "quic/masque/masque_encapsulated_epoll_client.h"
+#include "quic/masque/masque_epoll_client.h"
+#include "quic/masque/masque_utils.h"
+#include "quic/platform/api/quic_default_proof_providers.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_system_event_loop.h"
+#include "quic/tools/fake_proof_verifier.h"
+#include "quic/tools/quic_url.h"
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(bool,
                               disable_certificate_verification,
                               false,
                               "If true, don't verify the server certificate.");
+
+DEFINE_QUIC_COMMAND_LINE_FLAG(std::string,
+                              masque_mode,
+                              "",
+                              "Allows setting MASQUE mode, valid values are "
+                              "open and legacy. Defaults to open.");
 
 namespace quic {
 
@@ -45,16 +50,19 @@ int RunMasqueClient(int argc, char* argv[]) {
     return 1;
   }
 
+  SetQuicReloadableFlag(quic_h3_datagram, true);
+
   const bool disable_certificate_verification =
       GetQuicFlag(FLAGS_disable_certificate_verification);
   QuicEpollServer epoll_server;
 
   QuicUrl masque_url(urls[0], "https");
   if (masque_url.host().empty()) {
-    masque_url = QuicUrl(quiche::QuicheStrCat("https://", urls[0]), "https");
+    masque_url = QuicUrl(absl::StrCat("https://", urls[0]), "https");
   }
   if (masque_url.host().empty()) {
-    QUIC_LOG(ERROR) << "Failed to parse MASQUE server address " << urls[0];
+    std::cerr << "Failed to parse MASQUE server address \"" << urls[0] << "\""
+              << std::endl;
     return 1;
   }
   std::unique_ptr<ProofVerifier> proof_verifier;
@@ -63,15 +71,23 @@ int RunMasqueClient(int argc, char* argv[]) {
   } else {
     proof_verifier = CreateDefaultProofVerifier(masque_url.host());
   }
-  std::unique_ptr<MasqueEpollClient> masque_client =
-      MasqueEpollClient::Create(masque_url.host(), masque_url.port(),
-                                &epoll_server, std::move(proof_verifier));
+  MasqueMode masque_mode = MasqueMode::kOpen;
+  std::string mode_string = GetQuicFlag(FLAGS_masque_mode);
+  if (mode_string == "legacy") {
+    masque_mode = MasqueMode::kLegacy;
+  } else if (!mode_string.empty() && mode_string != "open") {
+    std::cerr << "Invalid masque_mode \"" << mode_string << "\"" << std::endl;
+    return 1;
+  }
+  std::unique_ptr<MasqueEpollClient> masque_client = MasqueEpollClient::Create(
+      masque_url.host(), masque_url.port(), masque_mode, &epoll_server,
+      std::move(proof_verifier));
   if (masque_client == nullptr) {
     return 1;
   }
 
   std::cerr << "MASQUE is connected " << masque_client->connection_id()
-            << std::endl;
+            << " in " << masque_mode << " mode" << std::endl;
 
   for (size_t i = 1; i < urls.size(); ++i) {
     if (!tools::SendEncapsulatedMasqueRequest(

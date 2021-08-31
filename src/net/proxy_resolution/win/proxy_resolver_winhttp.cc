@@ -7,6 +7,8 @@
 #include <windows.h>
 #include <winhttp.h>
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -120,7 +122,7 @@ int ProxyResolverWinHttp::GetProxyForURL(
   WINHTTP_AUTOPROXY_OPTIONS options = {0};
   options.fAutoLogonIfChallenged = FALSE;
   options.dwFlags = WINHTTP_AUTOPROXY_CONFIG_URL;
-  base::string16 pac_url16 = base::ASCIIToUTF16(pac_url_.spec());
+  std::u16string pac_url16 = base::ASCIIToUTF16(pac_url_.spec());
   options.lpszAutoConfigUrl = base::as_wcstr(pac_url16);
 
   WINHTTP_PROXY_INFO info = {0};
@@ -223,7 +225,7 @@ int ProxyResolverFactoryWinHttp::CreateProxyResolver(
     std::unique_ptr<ProxyResolver>* resolver,
     CompletionOnceCallback callback,
     std::unique_ptr<Request>* request) {
-  resolver->reset(new ProxyResolverWinHttp(pac_script));
+  *resolver = std::make_unique<ProxyResolverWinHttp>(pac_script);
   return OK;
 }
 

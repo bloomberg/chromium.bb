@@ -16,6 +16,11 @@ namespace {
 const base::Feature* const kAllFeatures[] = {
     &kIPHDummyFeature,  // Ensures non-empty array for all platforms.
 #if defined(OS_ANDROID)
+    &kIPHAdaptiveButtonInTopToolbarCustomizationNewTabFeature,
+    &kIPHAdaptiveButtonInTopToolbarCustomizationShareFeature,
+    &kIPHAdaptiveButtonInTopToolbarCustomizationVoiceSearchFeature,
+    &kIPHAddToHomescreenMessageFeature,
+    &kIPHAddToHomescreenTextBubbleFeature,
     &kIPHDataSaverDetailFeature,
     &kIPHDataSaverMilestonePromoFeature,
     &kIPHDataSaverPreviewFeature,
@@ -34,6 +39,7 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHContextualSearchPromotePanelOpenFeature,
     &kIPHContextualSearchOptInFeature,
     &kIPHContextualSearchTappedButShouldLongpressFeature,
+    &kIPHContextualSearchInPanelHelpFeature,
     &kIPHDownloadSettingsFeature,
     &kIPHDownloadInfoBarDownloadContinuingFeature,
     &kIPHDownloadInfoBarDownloadsAreFasterFeature,
@@ -45,13 +51,17 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHKeyboardAccessoryBarSwipingFeature,
     &kIPHKeyboardAccessoryPasswordFillingFeature,
     &kIPHKeyboardAccessoryPaymentFillingFeature,
+    &kIPHKeyboardAccessoryPaymentOfferFeature,
+    &kIPHMicToolbarFeature,
     &kIPHNewTabPageHomeButtonFeature,
+    &kIPHPageInfoFeature,
     &kIPHPreviewsOmniboxUIFeature,
     &kIPHPwaInstallAvailableFeature,
     &kIPHQuietNotificationPromptsFeature,
     &kIPHReadLaterContextMenuFeature,
     &kIPHReadLaterAppMenuBookmarkThisPageFeature,
     &kIPHReadLaterAppMenuBookmarksFeature,
+    &kIPHReadLaterBottomSheetFeature,
     &kIPHTabGroupsQuicklyComparePagesFeature,
     &kIPHTabGroupsTapToSeeAnotherTabFeature,
     &kIPHTabGroupsYourTabsAreTogetherFeature,
@@ -65,6 +75,10 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHVideoTutorialNTPSummaryFeature,
     &kIPHExploreSitesTileFeature,
     &kIPHFeedHeaderMenuFeature,
+    &kIPHShareScreenshotFeature,
+    &kIPHWebFeedFollowFeature,
+    &kIPHWebFeedPostFollowDialogFeature,
+    &kIPHSharedHighlightingBuilder,
 #endif  // defined(OS_ANDROID)
 #if defined(OS_IOS)
     &kIPHBottomToolbarTipFeature,
@@ -82,9 +96,13 @@ const base::Feature* const kAllFeatures[] = {
     &kIPHGlobalMediaControlsFeature,
     &kIPHLiveCaptionFeature,
     &kIPHPasswordsAccountStorageFeature,
+    &kIPHReadingListDiscoveryFeature,
+    &kIPHReadingListEntryPointFeature,
     &kIPHReopenTabFeature,
     &kIPHWebUITabStripFeature,
     &kIPHDesktopPwaInstallFeature,
+    &kIPHProfileSwitchFeature,
+    &kIPHUpdatedConnectionSecurityIndicatorsFeature,
 #endif  // defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) ||
         // defined(OS_CHROMEOS)
 };

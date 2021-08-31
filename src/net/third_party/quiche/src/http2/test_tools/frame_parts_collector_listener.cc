@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/test_tools/frame_parts_collector_listener.h"
+#include "http2/test_tools/frame_parts_collector_listener.h"
 
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
+#include "http2/platform/api/http2_logging.h"
+#include "common/platform/api/quiche_test.h"
 
 namespace http2 {
 namespace test {
@@ -194,6 +194,25 @@ void FramePartsCollectorListener::OnAltSvcValueData(const char* data,
 void FramePartsCollectorListener::OnAltSvcEnd() {
   HTTP2_VLOG(1) << "OnAltSvcEnd";
   EndFrame()->OnAltSvcEnd();
+}
+
+void FramePartsCollectorListener::OnPriorityUpdateStart(
+    const Http2FrameHeader& header,
+    const Http2PriorityUpdateFields& priority_update) {
+  HTTP2_VLOG(1) << "OnPriorityUpdateStart header: " << header
+                << "; priority_update=" << priority_update;
+  StartFrame(header)->OnPriorityUpdateStart(header, priority_update);
+}
+
+void FramePartsCollectorListener::OnPriorityUpdatePayload(const char* data,
+                                                          size_t len) {
+  HTTP2_VLOG(1) << "OnPriorityUpdatePayload: len=" << len;
+  CurrentFrame()->OnPriorityUpdatePayload(data, len);
+}
+
+void FramePartsCollectorListener::OnPriorityUpdateEnd() {
+  HTTP2_VLOG(1) << "OnPriorityUpdateEnd";
+  EndFrame()->OnPriorityUpdateEnd();
 }
 
 void FramePartsCollectorListener::OnUnknownStart(

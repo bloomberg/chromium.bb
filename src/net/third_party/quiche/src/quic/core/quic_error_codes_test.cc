@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
+#include "quic/core/quic_error_codes.h"
 
 #include <cstdint>
 
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
+#include "quic/platform/api/quic_test.h"
 
 namespace quic {
 namespace test {
@@ -78,7 +78,17 @@ TEST_F(QuicErrorCodesTest, QuicErrorCodeToTransportErrorCode) {
     if (ietf_error_code.is_transport_close) {
       QuicIetfTransportErrorCodes transport_error_code =
           static_cast<QuicIetfTransportErrorCodes>(ietf_error_code.error_code);
-      bool is_valid_transport_error_code = transport_error_code <= 0x0f;
+      bool is_transport_crypto_error_code =
+          transport_error_code >= 0x100 && transport_error_code <= 0x1ff;
+      if (is_transport_crypto_error_code) {
+        // Ensure that every QuicErrorCode that maps to a CRYPTO_ERROR code has
+        // a corresponding reverse mapping in TlsAlertToQuicErrorCode:
+        EXPECT_EQ(
+            internal_error_code,
+            TlsAlertToQuicErrorCode(transport_error_code - CRYPTO_ERROR_FIRST));
+      }
+      bool is_valid_transport_error_code =
+          transport_error_code <= 0x0f || is_transport_crypto_error_code;
       EXPECT_TRUE(is_valid_transport_error_code) << internal_error_code_string;
     } else {
       // Non-transport errors are application errors, either HTTP/3 or QPACK.

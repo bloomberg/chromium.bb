@@ -1,0 +1,27 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_UI_VIEWS_WEB_APPS_FRAME_TOOLBAR_WEB_APP_FRAME_TOOLBAR_UTILS_H_
+#define CHROME_BROWSER_UI_VIEWS_WEB_APPS_FRAME_TOOLBAR_WEB_APP_FRAME_TOOLBAR_UTILS_H_
+
+#include "build/build_config.h"
+
+class ToolbarButton;
+class ToolbarButtonProvider;
+
+#if defined(OS_MAC)
+constexpr int kWebAppMenuMargin = 7;
+#endif
+
+// Makes adjustments to |toolbar_button| for display in a web app frame.
+void ConfigureWebAppToolbarButton(
+    ToolbarButton* toolbar_button,
+    ToolbarButtonProvider* toolbar_button_provider,
+    bool is_browser_focus_mode);
+
+int WebAppFrameRightMargin();
+
+int HorizontalPaddingBetweenPageActionsAndAppMenuButtons();
+
+#endif  // CHROME_BROWSER_UI_VIEWS_WEB_APPS_FRAME_TOOLBAR_WEB_APP_FRAME_TOOLBAR_UTILS_H_

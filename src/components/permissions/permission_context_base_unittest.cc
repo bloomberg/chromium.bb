@@ -5,6 +5,7 @@
 #include "components/permissions/permission_context_base.h"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -19,6 +20,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -53,9 +55,10 @@ class TestPermissionContext : public PermissionContextBase {
  public:
   TestPermissionContext(content::BrowserContext* browser_context,
                         const ContentSettingsType content_settings_type)
-      : PermissionContextBase(browser_context,
-                              content_settings_type,
-                              blink::mojom::FeaturePolicyFeature::kNotFound),
+      : PermissionContextBase(
+            browser_context,
+            content_settings_type,
+            blink::mojom::PermissionsPolicyFeature::kNotFound),
         tab_context_updated_(false) {}
 
   ~TestPermissionContext() override {}
@@ -71,8 +74,7 @@ class TestPermissionContext : public PermissionContextBase {
     // Null check required here as the quit_closure_ can also be run and reset
     // first from within DecidePermission.
     if (quit_closure_) {
-      quit_closure_.Run();
-      quit_closure_.Reset();
+      std::move(quit_closure_).Run();
     }
   }
 
@@ -106,21 +108,19 @@ class TestPermissionContext : public PermissionContextBase {
                                             embedding_origin, user_gesture,
                                             std::move(callback));
     if (respond_permission_) {
-      respond_permission_.Run();
-      respond_permission_.Reset();
+      std::move(respond_permission_).Run();
     } else {
       // Stop the run loop from spinning indefinitely if no response callback
       // has been set, as is the case with TestParallelRequests.
-      quit_closure_.Run();
-      quit_closure_.Reset();
+      std::move(quit_closure_).Run();
     }
   }
 
   // Set the callback to run if the permission is being responded to in the
   // test. This is left empty where no response is needed, such as in parallel
   // requests, invalid origin, and killswitch.
-  void SetRespondPermissionCallback(base::Closure callback) {
-    respond_permission_ = callback;
+  void SetRespondPermissionCallback(base::OnceClosure callback) {
+    respond_permission_ = std::move(callback);
   }
 
  protected:
@@ -135,10 +135,10 @@ class TestPermissionContext : public PermissionContextBase {
  private:
   std::vector<ContentSetting> decisions_;
   bool tab_context_updated_;
-  base::Closure quit_closure_;
+  base::OnceClosure quit_closure_;
   // Callback for responding to a permission once the request has been completed
   // (valid URL, kill switch disabled)
-  base::Closure respond_permission_;
+  base::OnceClosure respond_permission_;
   DISALLOW_COPY_AND_ASSIGN(TestPermissionContext);
 };
 
@@ -220,20 +220,21 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
 
     const PermissionRequestID id(
         web_contents()->GetMainFrame()->GetProcess()->GetID(),
-        web_contents()->GetMainFrame()->GetRoutingID(), -1);
-    permission_context.SetRespondPermissionCallback(base::Bind(
+        web_contents()->GetMainFrame()->GetRoutingID(),
+        PermissionRequestID::RequestLocalId());
+    permission_context.SetRespondPermissionCallback(base::BindOnce(
         &PermissionContextBaseTests::RespondToPermission,
         base::Unretained(this), &permission_context, id, url, decision));
     permission_context.RequestPermission(
         web_contents(), id, url, true /* user_gesture */,
-        base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                   base::Unretained(&permission_context)));
+        base::BindOnce(&TestPermissionContext::TrackPermissionDecision,
+                       base::Unretained(&permission_context)));
     ASSERT_EQ(1u, permission_context.decisions().size());
     EXPECT_EQ(decision, permission_context.decisions()[0]);
     EXPECT_TRUE(permission_context.tab_context_updated());
 
     std::string decision_string;
-    base::Optional<PermissionAction> action;
+    absl::optional<PermissionAction> action;
     if (decision == CONTENT_SETTING_ALLOW) {
       decision_string = "Accepted";
       action = PermissionAction::GRANTED;
@@ -319,17 +320,18 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
                                                content_settings_type);
       const PermissionRequestID id(
           web_contents()->GetMainFrame()->GetProcess()->GetID(),
-          web_contents()->GetMainFrame()->GetRoutingID(), i);
+          web_contents()->GetMainFrame()->GetRoutingID(),
+          PermissionRequestID::RequestLocalId());
 
       permission_context.SetRespondPermissionCallback(
-          base::Bind(&PermissionContextBaseTests::RespondToPermission,
-                     base::Unretained(this), &permission_context, id, url,
-                     CONTENT_SETTING_ASK));
+          base::BindOnce(&PermissionContextBaseTests::RespondToPermission,
+                         base::Unretained(this), &permission_context, id, url,
+                         CONTENT_SETTING_ASK));
 
       permission_context.RequestPermission(
           web_contents(), id, url, true /* user_gesture */,
-          base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                     base::Unretained(&permission_context)));
+          base::BindOnce(&TestPermissionContext::TrackPermissionDecision,
+                         base::Unretained(&permission_context)));
       histograms.ExpectTotalCount(
           "Permissions.Prompt.Dismissed.PriorDismissCount2." +
               PermissionUtil::GetPermissionString(content_settings_type),
@@ -371,17 +373,18 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
                                              content_settings_type);
     const PermissionRequestID id(
         web_contents()->GetMainFrame()->GetProcess()->GetID(),
-        web_contents()->GetMainFrame()->GetRoutingID(), -1);
+        web_contents()->GetMainFrame()->GetRoutingID(),
+        PermissionRequestID::RequestLocalId());
 
     permission_context.SetRespondPermissionCallback(
-        base::Bind(&PermissionContextBaseTests::RespondToPermission,
-                   base::Unretained(this), &permission_context, id, url,
-                   CONTENT_SETTING_ASK));
+        base::BindOnce(&PermissionContextBaseTests::RespondToPermission,
+                       base::Unretained(this), &permission_context, id, url,
+                       CONTENT_SETTING_ASK));
 
     permission_context.RequestPermission(
         web_contents(), id, url, true /* user_gesture */,
-        base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                   base::Unretained(&permission_context)));
+        base::BindOnce(&TestPermissionContext::TrackPermissionDecision,
+                       base::Unretained(&permission_context)));
 
     PermissionResult result = permission_context.GetPermissionStatus(
         nullptr /* render_frame_host */, url, url);
@@ -410,16 +413,17 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
 
         const PermissionRequestID id(
             web_contents()->GetMainFrame()->GetProcess()->GetID(),
-            web_contents()->GetMainFrame()->GetRoutingID(), i);
+            web_contents()->GetMainFrame()->GetRoutingID(),
+            PermissionRequestID::RequestLocalId(i + 1));
 
         permission_context.SetRespondPermissionCallback(
-            base::Bind(&PermissionContextBaseTests::RespondToPermission,
-                       base::Unretained(this), &permission_context, id, url,
-                       CONTENT_SETTING_ASK));
+            base::BindOnce(&PermissionContextBaseTests::RespondToPermission,
+                           base::Unretained(this), &permission_context, id, url,
+                           CONTENT_SETTING_ASK));
         permission_context.RequestPermission(
             web_contents(), id, url, true /* user_gesture */,
-            base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                       base::Unretained(&permission_context)));
+            base::BindOnce(&TestPermissionContext::TrackPermissionDecision,
+                           base::Unretained(&permission_context)));
         histograms.ExpectTotalCount(
             "Permissions.Prompt.Dismissed.PriorDismissCount2.Geolocation",
             i + 1);
@@ -487,15 +491,16 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
 
       const PermissionRequestID id(
           web_contents()->GetMainFrame()->GetProcess()->GetID(),
-          web_contents()->GetMainFrame()->GetRoutingID(), i);
+          web_contents()->GetMainFrame()->GetRoutingID(),
+          PermissionRequestID::RequestLocalId(i + 1));
       permission_context.SetRespondPermissionCallback(
-          base::Bind(&PermissionContextBaseTests::RespondToPermission,
-                     base::Unretained(this), &permission_context, id, url,
-                     CONTENT_SETTING_ASK));
+          base::BindOnce(&PermissionContextBaseTests::RespondToPermission,
+                         base::Unretained(this), &permission_context, id, url,
+                         CONTENT_SETTING_ASK));
       permission_context.RequestPermission(
           web_contents(), id, url, true /* user_gesture */,
-          base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                     base::Unretained(&permission_context)));
+          base::BindOnce(&TestPermissionContext::TrackPermissionDecision,
+                         base::Unretained(&permission_context)));
 
       EXPECT_EQ(1u, permission_context.decisions().size());
       ASSERT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
@@ -548,11 +553,12 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
 
     const PermissionRequestID id(
         web_contents()->GetMainFrame()->GetProcess()->GetID(),
-        web_contents()->GetMainFrame()->GetRoutingID(), -1);
+        web_contents()->GetMainFrame()->GetRoutingID(),
+        PermissionRequestID::RequestLocalId());
     permission_context.RequestPermission(
         web_contents(), id, url, true /* user_gesture */,
-        base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                   base::Unretained(&permission_context)));
+        base::BindOnce(&TestPermissionContext::TrackPermissionDecision,
+                       base::Unretained(&permission_context)));
 
     ASSERT_EQ(1u, permission_context.decisions().size());
     EXPECT_EQ(CONTENT_SETTING_BLOCK, permission_context.decisions()[0]);
@@ -572,16 +578,17 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
 
     const PermissionRequestID id(
         web_contents()->GetMainFrame()->GetProcess()->GetID(),
-        web_contents()->GetMainFrame()->GetRoutingID(), -1);
+        web_contents()->GetMainFrame()->GetRoutingID(),
+        PermissionRequestID::RequestLocalId());
     permission_context.SetRespondPermissionCallback(
-        base::Bind(&PermissionContextBaseTests::RespondToPermission,
-                   base::Unretained(this), &permission_context, id, url,
-                   CONTENT_SETTING_ALLOW));
+        base::BindOnce(&PermissionContextBaseTests::RespondToPermission,
+                       base::Unretained(this), &permission_context, id, url,
+                       CONTENT_SETTING_ALLOW));
 
     permission_context.RequestPermission(
         web_contents(), id, url, true /* user_gesture */,
-        base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                   base::Unretained(&permission_context)));
+        base::BindOnce(&TestPermissionContext::TrackPermissionDecision,
+                       base::Unretained(&permission_context)));
 
     ASSERT_EQ(1u, permission_context.decisions().size());
     EXPECT_EQ(CONTENT_SETTING_ALLOW, permission_context.decisions()[0]);
@@ -651,29 +658,31 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
     GURL url("http://www.google.com");
     SetUpUrl(url);
 
-    const PermissionRequestID id0(
-        web_contents()->GetMainFrame()->GetProcess()->GetID(),
-        web_contents()->GetMainFrame()->GetRoutingID(), 0);
     const PermissionRequestID id1(
         web_contents()->GetMainFrame()->GetProcess()->GetID(),
-        web_contents()->GetMainFrame()->GetRoutingID(), 1);
+        web_contents()->GetMainFrame()->GetRoutingID(),
+        PermissionRequestID::RequestLocalId(1));
+    const PermissionRequestID id2(
+        web_contents()->GetMainFrame()->GetProcess()->GetID(),
+        web_contents()->GetMainFrame()->GetRoutingID(),
+        PermissionRequestID::RequestLocalId(2));
 
     // Request a permission without setting the callback to DecidePermission.
     permission_context.RequestPermission(
-        web_contents(), id0, url, true /* user_gesture */,
-        base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                   base::Unretained(&permission_context)));
+        web_contents(), id1, url, true /* user_gesture */,
+        base::BindOnce(&TestPermissionContext::TrackPermissionDecision,
+                       base::Unretained(&permission_context)));
 
     EXPECT_EQ(0u, permission_context.decisions().size());
 
     // Set the callback, and make a second permission request.
-    permission_context.SetRespondPermissionCallback(base::Bind(
+    permission_context.SetRespondPermissionCallback(base::BindOnce(
         &PermissionContextBaseTests::RespondToPermission,
-        base::Unretained(this), &permission_context, id0, url, response));
+        base::Unretained(this), &permission_context, id1, url, response));
     permission_context.RequestPermission(
-        web_contents(), id1, url, true /* user_gesture */,
-        base::Bind(&TestPermissionContext::TrackPermissionDecision,
-                   base::Unretained(&permission_context)));
+        web_contents(), id2, url, true /* user_gesture */,
+        base::BindOnce(&TestPermissionContext::TrackPermissionDecision,
+                       base::Unretained(&permission_context)));
 
     ASSERT_EQ(2u, permission_context.decisions().size());
     EXPECT_EQ(response, permission_context.decisions()[0]);
@@ -702,7 +711,7 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
 
   void SetUpUrl(const GURL& url) {
     NavigateAndCommit(url);
-    prompt_factory_->DocumentOnLoadCompletedInMainFrame();
+    prompt_factory_->DocumentOnLoadCompletedInMainFrame(main_rfh());
   }
 
  private:
@@ -712,7 +721,7 @@ class PermissionContextBaseTests : public content::RenderViewHostTestHarness {
     PermissionRequestManager::CreateForWebContents(web_contents());
     PermissionRequestManager* manager =
         PermissionRequestManager::FromWebContents(web_contents());
-    prompt_factory_.reset(new MockPermissionPromptFactory(manager));
+    prompt_factory_ = std::make_unique<MockPermissionPromptFactory>(manager);
   }
 
   void TearDown() override {
@@ -765,10 +774,6 @@ TEST_F(PermissionContextBaseTests, TestNonValidRequestingUrl) {
   TestRequestPermissionInvalidUrl(ContentSettingsType::GEOLOCATION);
   TestRequestPermissionInvalidUrl(ContentSettingsType::NOTIFICATIONS);
   TestRequestPermissionInvalidUrl(ContentSettingsType::MIDI_SYSEX);
-#if defined(OS_CHROMEOS)
-  TestRequestPermissionInvalidUrl(
-      ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER);
-#endif
 }
 
 // Simulates granting and revoking of permissions.
@@ -795,7 +800,7 @@ TEST_F(PermissionContextBaseTests, TestGlobalKillSwitch) {
   TestGlobalPermissionsKillSwitch(ContentSettingsType::NOTIFICATIONS);
   TestGlobalPermissionsKillSwitch(ContentSettingsType::MIDI_SYSEX);
   TestGlobalPermissionsKillSwitch(ContentSettingsType::DURABLE_STORAGE);
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
   TestGlobalPermissionsKillSwitch(
       ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER);
 #endif

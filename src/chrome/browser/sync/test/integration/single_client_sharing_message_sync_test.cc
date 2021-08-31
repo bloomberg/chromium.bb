@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "base/test/mock_callback.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_message_bridge.h"
 #include "chrome/browser/sharing/sharing_message_bridge_factory.h"
@@ -163,7 +164,7 @@ class SharingMessageCallbackChecker : public SingleClientStatusChangeChecker {
   }
 
   const sync_pb::SharingMessageCommitError::ErrorCode expected_error_code_;
-  base::Optional<sync_pb::SharingMessageCommitError> last_error_code_;
+  absl::optional<sync_pb::SharingMessageCommitError> last_error_code_;
 
   base::WeakPtrFactory<SharingMessageCallbackChecker> weak_ptr_factory_{this};
 };
@@ -204,7 +205,7 @@ class SingleClientSharingMessageSyncTest : public SyncTest {
   SingleClientSharingMessageSyncTest() : SyncTest(SINGLE_CLIENT) {
     // Replace the default value (5 seconds) with 1 minute to reduce possibility
     // of test flakiness.
-    feature_list_.InitAndEnableFeatureWithParameters(
+    features_override_.InitAndEnableFeatureWithParameters(
         kSharingMessageBridgeTimeout,
         {{"SharingMessageBridgeTimeoutSeconds", "60"}});
   }
@@ -215,6 +216,9 @@ class SingleClientSharingMessageSyncTest : public SyncTest {
                                          std::move(expected_specifics))
         .Wait();
   }
+
+ private:
+  base::test::ScopedFeatureList features_override_;
 };
 
 IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest, ShouldSubmit) {
@@ -240,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest, ShouldSubmit) {
 
 // ChromeOS does not support late signin after profile creation, so the test
 // below does not apply, at least in the current form.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
                        ShouldSubmitInTransportMode) {
   // We avoid calling SetupSync(), because we don't want to turn on full sync,
@@ -270,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
   EXPECT_TRUE(WaitForSharingMessage({specifics}));
   EXPECT_TRUE(callback_checker.Wait());
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 IN_PROC_BROWSER_TEST_F(SingleClientSharingMessageSyncTest,
                        ShouldPropagateCommitFailure) {

@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_hid_collection_info.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_hid_report_info.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -34,6 +35,26 @@ const char kUnexpectedClose[] = "The device was closed unexpectedly.";
 const char kArrayBufferTooBig[] =
     "The provided ArrayBuffer exceeds the maximum allowed size.";
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+Vector<uint8_t> ConvertBufferSource(const V8BufferSource* buffer) {
+  DCHECK(buffer);
+  Vector<uint8_t> vector;
+  switch (buffer->GetContentType()) {
+    case V8BufferSource::ContentType::kArrayBuffer:
+      vector.Append(static_cast<uint8_t*>(buffer->GetAsArrayBuffer()->Data()),
+                    base::checked_cast<wtf_size_t>(
+                        buffer->GetAsArrayBuffer()->ByteLength()));
+      break;
+    case V8BufferSource::ContentType::kArrayBufferView:
+      vector.Append(
+          static_cast<uint8_t*>(buffer->GetAsArrayBufferView()->BaseAddress()),
+          base::checked_cast<wtf_size_t>(
+              buffer->GetAsArrayBufferView()->byteLength()));
+      break;
+  }
+  return vector;
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 Vector<uint8_t> ConvertBufferSource(
     const ArrayBufferOrArrayBufferView& buffer) {
   DCHECK(!buffer.IsNull());
@@ -43,13 +64,14 @@ Vector<uint8_t> ConvertBufferSource(
                   base::checked_cast<wtf_size_t>(
                       buffer.GetAsArrayBuffer()->ByteLength()));
   } else {
-    vector.Append(static_cast<uint8_t*>(
-                      buffer.GetAsArrayBufferView().View()->BaseAddress()),
-                  base::checked_cast<wtf_size_t>(
-                      buffer.GetAsArrayBufferView().View()->byteLength()));
+    vector.Append(
+        static_cast<uint8_t*>(buffer.GetAsArrayBufferView()->BaseAddress()),
+        base::checked_cast<wtf_size_t>(
+            buffer.GetAsArrayBufferView()->byteLength()));
   }
   return vector;
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 bool IsProtected(
     const device::mojom::blink::HidUsageAndPage& hid_usage_and_page) {
@@ -184,6 +206,7 @@ HIDCollectionInfo* ToHIDCollectionInfo(
   HIDCollectionInfo* result = HIDCollectionInfo::Create();
   result->setUsage(collection.usage->usage);
   result->setUsagePage(collection.usage->usage_page);
+  result->setType(collection.collection_type);
 
   HeapVector<Member<HIDReportInfo>> input_reports;
   for (const auto& report : collection.input_reports)
@@ -215,15 +238,9 @@ HIDDevice::HIDDevice(HID* parent,
                      ExecutionContext* context)
     : ExecutionContextLifecycleObserver(context),
       parent_(parent),
-      device_info_(std::move(info)),
       connection_(context),
       receiver_(this, context) {
-  DCHECK(device_info_);
-  for (const auto& collection : device_info_->collections) {
-    // Omit information about top-level collections with protected usages.
-    if (!IsProtected(*collection->usage))
-      collections_.push_back(ToHIDCollectionInfo(*collection));
-  }
+  UpdateDeviceInfo(std::move(info));
 }
 
 HIDDevice::~HIDDevice() {
@@ -304,7 +321,12 @@ ScriptPromise HIDDevice::close(ScriptState* script_state) {
 
 ScriptPromise HIDDevice::sendReport(ScriptState* script_state,
                                     uint8_t report_id,
-                                    const ArrayBufferOrArrayBufferView& data) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                    const V8BufferSource* data
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                    const ArrayBufferOrArrayBufferView& data
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+) {
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -317,9 +339,15 @@ ScriptPromise HIDDevice::sendReport(ScriptState* script_state,
     return promise;
   }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  size_t data_size = data->IsArrayBuffer()
+                         ? data->GetAsArrayBuffer()->ByteLength()
+                         : data->GetAsArrayBufferView()->byteLength();
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   size_t data_size = data.IsArrayBuffer()
                          ? data.GetAsArrayBuffer()->ByteLength()
-                         : data.GetAsArrayBufferView().View()->byteLength();
+                         : data.GetAsArrayBufferView()->byteLength();
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   if (!base::CheckedNumeric<wtf_size_t>(data_size).IsValid()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -334,10 +362,15 @@ ScriptPromise HIDDevice::sendReport(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise HIDDevice::sendFeatureReport(
-    ScriptState* script_state,
-    uint8_t report_id,
-    const ArrayBufferOrArrayBufferView& data) {
+ScriptPromise HIDDevice::sendFeatureReport(ScriptState* script_state,
+                                           uint8_t report_id,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                           const V8BufferSource* data
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                                           const ArrayBufferOrArrayBufferView&
+                                               data
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+) {
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -350,9 +383,15 @@ ScriptPromise HIDDevice::sendFeatureReport(
     return promise;
   }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  size_t data_size = data->IsArrayBuffer()
+                         ? data->GetAsArrayBuffer()->ByteLength()
+                         : data->GetAsArrayBufferView()->byteLength();
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   size_t data_size = data.IsArrayBuffer()
                          ? data.GetAsArrayBuffer()->ByteLength()
-                         : data.GetAsArrayBufferView().View()->byteLength();
+                         : data.GetAsArrayBufferView()->byteLength();
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   if (!base::CheckedNumeric<wtf_size_t>(data_size).IsValid()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -391,6 +430,22 @@ ScriptPromise HIDDevice::receiveFeatureReport(ScriptState* script_state,
 
 void HIDDevice::ContextDestroyed() {
   device_requests_.clear();
+}
+
+bool HIDDevice::HasPendingActivity() const {
+  // The object should be considered active if it is connected and has at least
+  // one event listener.
+  return connection_.is_bound() && HasEventListeners();
+}
+
+void HIDDevice::UpdateDeviceInfo(device::mojom::blink::HidDeviceInfoPtr info) {
+  device_info_ = std::move(info);
+  collections_.clear();
+  for (const auto& collection : device_info_->collections) {
+    // Omit information about top-level collections with protected usages.
+    if (!IsProtected(*collection->usage))
+      collections_.push_back(ToHIDCollectionInfo(*collection));
+  }
 }
 
 void HIDDevice::Trace(Visitor* visitor) const {
@@ -473,7 +528,7 @@ void HIDDevice::FinishSendFeatureReport(ScriptPromiseResolver* resolver,
 void HIDDevice::FinishReceiveFeatureReport(
     ScriptPromiseResolver* resolver,
     bool success,
-    const base::Optional<Vector<uint8_t>>& data) {
+    const absl::optional<Vector<uint8_t>>& data) {
   MarkRequestComplete(resolver);
   if (success && data) {
     DOMArrayBuffer* dom_buffer =
@@ -498,8 +553,14 @@ HIDReportItem* HIDDevice::ToHIDReportItem(
   HIDReportItem* result = HIDReportItem::Create();
   result->setIsAbsolute(!report_item.is_relative);
   result->setIsArray(!report_item.is_variable);
+  result->setIsBufferedBytes(report_item.is_buffered_bytes);
+  result->setIsConstant(report_item.is_constant);
+  result->setIsLinear(!report_item.is_non_linear);
   result->setIsRange(report_item.is_range);
+  result->setIsVolatile(report_item.is_volatile);
   result->setHasNull(report_item.has_null_position);
+  result->setHasPreferredState(!report_item.no_preferred_state);
+  result->setWrap(report_item.wrap);
   result->setReportSize(report_item.report_size);
   result->setReportCount(report_item.report_count);
   result->setUnitExponent(

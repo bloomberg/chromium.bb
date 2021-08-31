@@ -15,8 +15,8 @@ See the [Getting started](/docs/instrumentation/tracing-sdk#getting-started)
 section of the Tracing SDK page for instructions on how to check out and
 build the SDK.
 
-TIP: The code from this example is also available as a
-     [GitHub repository](https://github.com/skyostil/perfetto-sdk-example).
+TIP: The code from these examples is also available [in the
+repository](/examples/sdk/README.md).
 
 There are a few main types of track events:
 
@@ -126,9 +126,10 @@ int player_number = 1;
 TRACE_EVENT("rendering", "DrawPlayer", "player_number", player_number);
 ```
 
-For more complex arguments, you can define [your own protobuf
-messages](/protos/perfetto/trace/track_event/track_event.proto) and emit
-them as a parameter for the event.
+See [below](#track-event-arguments) for the other types of supported track
+event arguments. For more complex arguments, you can define [your own
+protobuf messages](/protos/perfetto/trace/track_event/track_event.proto) and
+emit them as a parameter for the event.
 
 NOTE: Currently custom protobuf messages need to be added directly to the
       Perfetto repository under `protos/perfetto/trace`, and Perfetto itself
@@ -320,6 +321,122 @@ figures:
 
 ## Advanced topics
 
+### Track event arguments
+
+The following optional arguments can be passed to `TRACE_EVENT` to add extra
+information to events:
+
+```C++
+TRACE_EVENT("cat", "name"[, track][, timestamp]
+    (, "debug_name", debug_value |, TrackEvent::kFieldName, value)*
+    [, lambda]);
+```
+
+Some examples of valid combinations:
+
+1. A lambda for writing custom TrackEvent fields:
+
+   ```C++
+     TRACE_EVENT("category", "Name", [&](perfetto::EventContext ctx) {
+       ctx.event()->set_custom_value(...);
+     });
+   ```
+
+2. A timestamp and a lambda:
+
+   ```C++
+     TRACE_EVENT("category", "Name", time_in_nanoseconds,
+         [&](perfetto::EventContext ctx) {
+       ctx.event()->set_custom_value(...);
+     });
+   ```
+
+   |time_in_nanoseconds| should be an uint64_t by default. To support custom
+   timestamp types,
+   |perfetto::TraceTimestampTraits<MyTimestamp>::ConvertTimestampToTraceTimeNs|
+   should be defined. See |ConvertTimestampToTraceTimeNs| for more details.
+
+3. Arbitrary number of debug annotations:
+
+   ```C++
+     TRACE_EVENT("category", "Name", "arg", value);
+     TRACE_EVENT("category", "Name", "arg", value, "arg2", value2);
+     TRACE_EVENT("category", "Name", "arg", value, "arg2", value2,
+                 "arg3", value3);
+   ```
+
+   See |TracedValue| for recording custom types as debug annotations.
+
+4. Arbitrary number of TrackEvent fields (including extensions):
+
+  ```C++
+    TRACE_EVENT("category", "Name",
+                perfetto::protos::pbzero::TrackEvent::kFieldName, value);
+  ```
+
+5. Arbitrary combination of debug annotations and TrackEvent fields:
+
+  ```C++
+    TRACE_EVENT("category", "Name",
+                perfetto::protos::pbzero::TrackEvent::kFieldName, value1,
+                "arg", value2);
+  ```
+
+6. Arbitrary combination of debug annotations / TrackEvent fields and a lambda:
+
+   ```C++
+     TRACE_EVENT("category", "Name", "arg", value1,
+                 pbzero::TrackEvent::kFieldName, value2,
+                 [&](perfetto::EventContext ctx) {
+                     ctx.event()->set_custom_value(...);
+                 });
+   ```
+
+7. An overridden track:
+
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234));
+   ```
+
+   See |Track| for other types of tracks which may be used.
+
+8. A track and a lambda:
+
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 [&](perfetto::EventContext ctx) {
+                     ctx.event()->set_custom_value(...);
+                 });
+   ```
+
+9. A track and a timestamp:
+
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 time_in_nanoseconds);
+   ```
+
+10. A track, a timestamp and a lambda:
+
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 time_in_nanoseconds, [&](perfetto::EventContext ctx) {
+                     ctx.event()->set_custom_value(...);
+                 });
+   ```
+
+11. A track and any combination of debug annotions and TrackEvent fields:
+
+   ```C++
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 "arg", value);
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 "arg", value, "arg2", value2);
+     TRACE_EVENT("category", "Name", perfetto::Track(1234),
+                 "arg", value, "arg2", value2,
+                 pbzero::TrackEvent::kFieldName, value3);
+   ```
+
 ### Tracks
 
 Every track event is associated with a track, which specifies the timeline
@@ -392,6 +509,54 @@ track, call EraseTrackDescriptor:
 perfetto::TrackEvent::EraseTrackDescriptor(track);
 ```
 
+### Counters
+
+Time-varying numeric data can be recorded with the `TRACE_COUNTER` macro:
+
+```C++
+TRACE_COUNTER("category", "MyCounter", 1234.5);
+```
+
+This data is displayed as a counter track in the Perfetto UI:
+
+![A counter track shown in the Perfetto UI](
+  /docs/images/counter-events.png "A counter track shown in the Perfetto UI")
+
+Both integer and floating point counter values are supported. Counters can
+also be annotated with additional information such as units, for example, for
+tracking the rendering framerate in terms of frames per second or "fps":
+
+```C++
+TRACE_COUNTER("category", perfetto::CounterTrack("Framerate", "fps"), 120);
+```
+
+As another example, a memory counter that records bytes but accepts samples
+as kilobytes (to reduce trace binary size) can be defined like this:
+
+```C++
+perfetto::CounterTrack memory_track = perfetto::CounterTrack("Memory")
+    .set_unit("bytes")
+    .set_multiplier(1024);
+TRACE_COUNTER("category", memory_track, 4 /* = 4096 bytes */);
+```
+
+See
+[counter_descriptor.proto](
+/protos/perfetto/trace/track_event/counter_descriptor.proto) for the full set
+of attributes for a counter track.
+
+To record a counter value at a specific point in time (instead of the current
+time), you can pass in a custom timestamp:
+
+```C++
+// First record the current time and counter value.
+uint64_t timestamp = perfetto::TrackEvent::GetTraceTimeNs();
+int64_t value = 1234;
+
+// Later, emit a sample at that point in time.
+TRACE_COUNTER("category", "MyCounter", timestamp, value);
+```
+
 ### Interning
 
 Interning can be used to avoid repeating the same constant data (e.g., event
@@ -436,5 +601,63 @@ TRACE_EVENT(
 
 Note that interned data is strongly typed, i.e., each class of interned data
 uses a separate namespace for identifiers.
+
+### Tracing session observers
+
+The session observer interface allows applications to be notified when track
+event tracing starts and stops:
+
+```C++
+class Observer : public perfetto::TrackEventSessionObserver {
+  public:
+  ~Observer() override = default;
+
+  void OnSetup(const perfetto::DataSourceBase::SetupArgs&) override {
+    // Called when tracing session is configured. Note tracing isn't active yet,
+    // so track events emitted here won't be recorded.
+  }
+
+  void OnStart(const perfetto::DataSourceBase::StartArgs&) override {
+    // Called when a tracing session is started. It is possible to emit track
+    // events from this callback.
+  }
+
+  void OnStop(const perfetto::DataSourceBase::StopArgs&) override {
+    // Called when a tracing session is stopped. It is still possible to emit
+    // track events from this callback.
+  }
+};
+```
+
+Note that all methods of the interface are called on an internal Perfetto
+thread.
+
+For example, here's how to wait for any tracing session to start:
+
+```C++
+class Observer : public perfetto::TrackEventSessionObserver {
+ public:
+  Observer() { perfetto::TrackEvent::AddSessionObserver(this); }
+  ~Observer() { perfetto::TrackEvent::RemoveSessionObserver(this); }
+
+  void OnStart(const perfetto::DataSourceBase::StartArgs&) override {
+    std::unique_lock<std::mutex> lock(mutex);
+    cv.notify_one();
+  }
+
+  void WaitForTracingStart() {
+    printf("Waiting for tracing to start...\n");
+    std::unique_lock<std::mutex> lock(mutex);
+    cv.wait(lock, [] { return perfetto::TrackEvent::IsEnabled(); });
+    printf("Tracing started\n");
+  }
+
+  std::mutex mutex;
+  std::condition_variable cv;
+};
+
+Observer observer;
+observer.WaitForTracingToStart();
+```
 
 [RAII]: https://en.cppreference.com/w/cpp/language/raii

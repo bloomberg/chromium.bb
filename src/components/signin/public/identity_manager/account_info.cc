@@ -113,6 +113,16 @@ bool AccountInfo::UpdateWith(const AccountInfo& other) {
 
   return modified;
 }
+
+// static
+bool AccountInfo::IsManaged(const std::string& hosted_domain) {
+  return !hosted_domain.empty() && hosted_domain != kNoHostedDomainFound;
+}
+
+bool AccountInfo::IsManaged() const {
+  return IsManaged(hosted_domain);
+}
+
 bool operator==(const CoreAccountInfo& l, const CoreAccountInfo& r) {
   return l.account_id == r.account_id && l.gaia == r.gaia &&
          gaia::AreEmailsSame(l.email, r.email) &&
@@ -147,6 +157,8 @@ base::android::ScopedJavaLocalRef<jobject> ConvertToJavaAccountInfo(
       env, ConvertToJavaCoreAccountId(env, account_info.account_id),
       base::android::ConvertUTF8ToJavaString(env, account_info.email),
       base::android::ConvertUTF8ToJavaString(env, account_info.gaia),
+      base::android::ConvertUTF8ToJavaString(env, account_info.full_name),
+      base::android::ConvertUTF8ToJavaString(env, account_info.given_name),
       avatar_image.IsEmpty()
           ? nullptr
           : gfx::ConvertToJavaBitmap(*avatar_image.AsImageSkia().bitmap()));

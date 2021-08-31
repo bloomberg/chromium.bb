@@ -720,15 +720,15 @@ void TargetARM32::genTargetHelperCallFor(Inst *Instr) {
     }
     llvm::report_fatal_error("Control flow should never have reached here.");
   }
-  case Inst::IntrinsicCall: {
+  case Inst::Intrinsic: {
     Variable *Dest = Instr->getDest();
-    auto *IntrinsicCall = llvm::cast<InstIntrinsicCall>(Instr);
-    Intrinsics::IntrinsicID ID = IntrinsicCall->getIntrinsicInfo().ID;
+    auto *Intrinsic = llvm::cast<InstIntrinsic>(Instr);
+    Intrinsics::IntrinsicID ID = Intrinsic->getIntrinsicID();
     switch (ID) {
     default:
       return;
     case Intrinsics::Ctpop: {
-      Operand *Src0 = IntrinsicCall->getArg(0);
+      Operand *Src0 = Intrinsic->getArg(0);
       Operand *TargetHelper =
           Ctx->getRuntimeHelperFunc(isInt32Asserting32Or64(Src0->getType())
                                         ? RuntimeHelper::H_call_ctpop_i32
@@ -750,8 +750,8 @@ void TargetARM32::genTargetHelperCallFor(Inst *Instr) {
           Ctx->getRuntimeHelperFunc(RuntimeHelper::H_call_longjmp);
       auto *Call = Context.insert<InstCall>(MaxArgs, NoDest, TargetHelper,
                                             NoTailCall, IsTargetHelperCall);
-      Call->addArg(IntrinsicCall->getArg(0));
-      Call->addArg(IntrinsicCall->getArg(1));
+      Call->addArg(Intrinsic->getArg(0));
+      Call->addArg(Intrinsic->getArg(1));
       Instr->setDeleted();
       return;
     }
@@ -764,9 +764,9 @@ void TargetARM32::genTargetHelperCallFor(Inst *Instr) {
           Ctx->getRuntimeHelperFunc(RuntimeHelper::H_call_memcpy);
       auto *Call = Context.insert<InstCall>(MaxArgs, NoDest, TargetHelper,
                                             NoTailCall, IsTargetHelperCall);
-      Call->addArg(IntrinsicCall->getArg(0));
-      Call->addArg(IntrinsicCall->getArg(1));
-      Call->addArg(IntrinsicCall->getArg(2));
+      Call->addArg(Intrinsic->getArg(0));
+      Call->addArg(Intrinsic->getArg(1));
+      Call->addArg(Intrinsic->getArg(2));
       Instr->setDeleted();
       return;
     }
@@ -777,16 +777,16 @@ void TargetARM32::genTargetHelperCallFor(Inst *Instr) {
           Ctx->getRuntimeHelperFunc(RuntimeHelper::H_call_memmove);
       auto *Call = Context.insert<InstCall>(MaxArgs, NoDest, TargetHelper,
                                             NoTailCall, IsTargetHelperCall);
-      Call->addArg(IntrinsicCall->getArg(0));
-      Call->addArg(IntrinsicCall->getArg(1));
-      Call->addArg(IntrinsicCall->getArg(2));
+      Call->addArg(Intrinsic->getArg(0));
+      Call->addArg(Intrinsic->getArg(1));
+      Call->addArg(Intrinsic->getArg(2));
       Instr->setDeleted();
       return;
     }
     case Intrinsics::Memset: {
       // The value operand needs to be extended to a stack slot size because the
       // PNaCl ABI requires arguments to be at least 32 bits wide.
-      Operand *ValOp = IntrinsicCall->getArg(1);
+      Operand *ValOp = Intrinsic->getArg(1);
       assert(ValOp->getType() == IceType_i8);
       Variable *ValExt = Func->makeVariable(stackSlotType());
       Context.insert<InstCast>(InstCast::Zext, ValExt, ValOp);
@@ -800,9 +800,9 @@ void TargetARM32::genTargetHelperCallFor(Inst *Instr) {
           Ctx->getRuntimeHelperFunc(RuntimeHelper::H_call_memset);
       auto *Call = Context.insert<InstCall>(MaxArgs, NoDest, TargetHelper,
                                             NoTailCall, IsTargetHelperCall);
-      Call->addArg(IntrinsicCall->getArg(0));
+      Call->addArg(Intrinsic->getArg(0));
       Call->addArg(ValExt);
-      Call->addArg(IntrinsicCall->getArg(2));
+      Call->addArg(Intrinsic->getArg(2));
       Instr->setDeleted();
       return;
     }
@@ -827,7 +827,7 @@ void TargetARM32::genTargetHelperCallFor(Inst *Instr) {
           Ctx->getRuntimeHelperFunc(RuntimeHelper::H_call_setjmp);
       auto *Call = Context.insert<InstCall>(MaxArgs, Dest, TargetHelper,
                                             NoTailCall, IsTargetHelperCall);
-      Call->addArg(IntrinsicCall->getArg(0));
+      Call->addArg(Intrinsic->getArg(0));
       Instr->setDeleted();
       return;
     }
@@ -1103,11 +1103,6 @@ void TargetARM32::translateO2() {
   // to reduce the amount of work needed for searching for opportunities.
   Func->doBranchOpt();
   Func->dump("After branch optimization");
-
-  // Nop insertion
-  if (getFlags().getShouldDoNopInsertion()) {
-    Func->doNopInsertion();
-  }
 }
 
 void TargetARM32::translateOm1() {
@@ -1165,11 +1160,6 @@ void TargetARM32::translateOm1() {
   if (Func->hasError())
     return;
   Func->dump("After postLowerLegalization");
-
-  // Nop insertion
-  if (getFlags().getShouldDoNopInsertion()) {
-    Func->doNopInsertion();
-  }
 }
 
 uint32_t TargetARM32::getStackAlignment() const {
@@ -5013,10 +5003,10 @@ void TargetARM32::postambleCtpop64(const InstCall *Instr) {
   _mov(DestHi, T);
 }
 
-void TargetARM32::lowerIntrinsicCall(const InstIntrinsicCall *Instr) {
+void TargetARM32::lowerIntrinsic(const InstIntrinsic *Instr) {
   Variable *Dest = Instr->getDest();
   Type DestTy = (Dest != nullptr) ? Dest->getType() : IceType_void;
-  Intrinsics::IntrinsicID ID = Instr->getIntrinsicInfo().ID;
+  Intrinsics::IntrinsicID ID = Instr->getIntrinsicID();
   switch (ID) {
   case Intrinsics::AtomicFence:
   case Intrinsics::AtomicFenceAll:
@@ -5483,7 +5473,7 @@ void TargetARM32::lowerLoad(const InstLoad *Load) {
   // A Load instruction can be treated the same as an Assign instruction, after
   // the source operand is transformed into an OperandARM32Mem operand.
   Type Ty = Load->getDest()->getType();
-  Operand *Src0 = formMemoryOperand(Load->getSourceAddress(), Ty);
+  Operand *Src0 = formMemoryOperand(Load->getLoadAddress(), Ty);
   Variable *DestLoad = Load->getDest();
 
   // TODO(jvoung): handled folding opportunities. Sign and zero extension can
@@ -5925,14 +5915,6 @@ void TargetARM32::doAddressOptLoad() {
   }
 }
 
-void TargetARM32::randomlyInsertNop(float Probability,
-                                    RandomNumberGenerator &RNG) {
-  RandomNumberGeneratorWrapper RNGW(RNG);
-  if (RNGW.getTrueWithProbability(Probability)) {
-    _nop();
-  }
-}
-
 void TargetARM32::lowerPhi(const InstPhi * /*Instr*/) {
   Func->setError("Phi found in regular instruction list");
 }
@@ -6168,7 +6150,7 @@ void TargetARM32::lowerSelect(const InstSelect *Instr) {
 
 void TargetARM32::lowerStore(const InstStore *Instr) {
   Operand *Value = Instr->getData();
-  Operand *Addr = Instr->getAddr();
+  Operand *Addr = Instr->getStoreAddress();
   OperandARM32Mem *NewAddr = formMemoryOperand(Addr, Value->getType());
   Type Ty = NewAddr->getType();
 
@@ -6648,15 +6630,6 @@ void TargetARM32::postLower() {
     return;
   markRedefinitions();
   Context.availabilityUpdate();
-}
-
-void TargetARM32::makeRandomRegisterPermutation(
-    llvm::SmallVectorImpl<RegNumT> &Permutation,
-    const SmallBitVector &ExcludeRegisters, uint64_t Salt) const {
-  (void)Permutation;
-  (void)ExcludeRegisters;
-  (void)Salt;
-  UnimplementedError(getFlags());
 }
 
 void TargetARM32::emit(const ConstantInteger32 *C) const {
@@ -7317,11 +7290,6 @@ template <typename T> void emitConstantPool(GlobalContext *Ctx) {
   Str << "\t.section\t.rodata.cst" << Align << ",\"aM\",%progbits," << Align
       << "\n"
       << "\t.align\t" << Align << "\n";
-
-  if (getFlags().getReorderPooledConstants()) {
-    // TODO(jpp): add constant pooling.
-    UnimplementedError(getFlags());
-  }
 
   for (Constant *C : Pool) {
     if (!C->getShouldBePooled()) {

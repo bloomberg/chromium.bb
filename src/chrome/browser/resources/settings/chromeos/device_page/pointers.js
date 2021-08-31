@@ -44,27 +44,15 @@ Polymer({
       },
     },
 
-    /**
-     * Interim property for use until we have a separate subsection for pointing
-     * sticks. (See crbug.com/1114828)
-     * @private
-     */
-    showMouseSection_: {
-      type: Boolean,
-      computed: 'computeShowMouseSection_(separatePointingStickSettings_, ' +
-          'hasMouse, hasPointingStick)',
-    },
-
     showHeadings_: {
       type: Boolean,
-      computed: 'computeShowHeadings_(separatePointingStickSettings_, ' +
-          'hasMouse, hasPointingStick, hasTouchpad)',
+      computed: 'computeShowHeadings_(hasMouse, hasPointingStick, hasTouchpad)',
     },
 
     subsectionClass_: {
       type: String,
-      computed: 'computeSubsectionClass_(separatePointingStickSettings_, ' +
-          'hasMouse, hasPointingStick, hasTouchpad)',
+      computed: 'computeSubsectionClass_(hasMouse, hasPointingStick, ' +
+          'hasTouchpad)',
     },
 
     /**
@@ -103,18 +91,6 @@ Polymer({
     },
 
     /**
-     * TODO(crbug.com/1114828): Remove this conditional once the feature is
-     * launched.
-     * @private
-     */
-    separatePointingStickSettings_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('separatePointingStickSettings');
-      },
-    },
-
-    /**
      * Used by DeepLinkingBehavior to focus this page's deep links.
      * @type {!Set<!chromeos.settings.mojom.Setting>}
      */
@@ -127,6 +103,9 @@ Polymer({
         chromeos.settings.mojom.Setting.kTouchpadAcceleration,
         chromeos.settings.mojom.Setting.kTouchpadScrollAcceleration,
         chromeos.settings.mojom.Setting.kTouchpadSpeed,
+        chromeos.settings.mojom.Setting.kPointingStickAcceleration,
+        chromeos.settings.mojom.Setting.kPointingStickSpeed,
+        chromeos.settings.mojom.Setting.kPointingStickSwapPrimaryButtons,
         chromeos.settings.mojom.Setting.kMouseSwapPrimaryButtons,
         chromeos.settings.mojom.Setting.kMouseReverseScrolling,
         chromeos.settings.mojom.Setting.kMouseAcceleration,
@@ -137,28 +116,14 @@ Polymer({
   },
 
   /**
-   * @param {boolean} separateSettings
-   * @param {boolean} hasMouse
-   * @param {boolean} hasPointingStick
-   */
-  computeShowMouseSection_(separateSettings, hasMouse, hasPointingStick) {
-    return separateSettings ? hasMouse : hasMouse || hasPointingStick;
-  },
-
-  /**
    * Headings should only be visible if more than one subsection is present.
-   * @param {boolean} separateSettings
    * @param {boolean} hasMouse
    * @param {boolean} hasPointingStick
    * @param {boolean} hasTouchpad
    * @return {boolean}
    * @private
    */
-  computeShowHeadings_(
-      separateSettings, hasMouse, hasPointingStick, hasTouchpad) {
-    if (!separateSettings) {
-      return (hasMouse || hasPointingStick) && hasTouchpad;
-    }
+  computeShowHeadings_(hasMouse, hasPointingStick, hasTouchpad) {
     const sectionVisibilities = [hasMouse, hasPointingStick, hasTouchpad];
     // Count the number of true values in sectionVisibilities.
     const numVisibleSections = sectionVisibilities.filter(x => x).length;
@@ -168,17 +133,15 @@ Polymer({
   /**
    * Mouse, pointing stick, and touchpad sections are only subsections if more
    * than one is present.
-   * @param {boolean} separateSettings
    * @param {boolean} hasMouse
    * @param {boolean} hasPointingStick
    * @param {boolean} hasTouchpad
    * @return {string}
    * @private
    */
-  computeSubsectionClass_(
-      separateSettings, hasMouse, hasPointingStick, hasTouchpad) {
-    const subsections = this.computeShowHeadings_(
-        separateSettings, hasMouse, hasPointingStick, hasTouchpad);
+  computeSubsectionClass_(hasMouse, hasPointingStick, hasTouchpad) {
+    const subsections =
+        this.computeShowHeadings_(hasMouse, hasPointingStick, hasTouchpad);
     return subsections ? 'subsection' : '';
   },
 

@@ -21,6 +21,11 @@ namespace chrome_test_util {
 // test will have consecutive numbers.
 id<GREYMatcher> WindowWithNumber(int window_number);
 
+// Shorthand matcher for creating a matcher that ensures the given matcher
+// matches elements under the given window.
+id<GREYMatcher> MatchInWindowWithNumber(int window_number,
+                                        id<GREYMatcher> matcher);
+
 // Matcher for element with accessibility label corresponding to |message_id|
 // and accessibility trait UIAccessibilityTraitButton.
 id<GREYMatcher> ButtonWithAccessibilityLabelId(int message_id);
@@ -82,6 +87,9 @@ id<GREYMatcher> NavigationBarCancelButton();
 // Returns matcher for a close button.
 id<GREYMatcher> CloseButton();
 
+// Returns matcher for close tab menu button.
+id<GREYMatcher> CloseTabMenuButton();
+
 // Matcher for the navigate forward button.
 id<GREYMatcher> ForwardButton();
 
@@ -127,6 +135,12 @@ id<GREYMatcher> TabShareButton();
 
 // Matcher for show tabs button.
 id<GREYMatcher> ShowTabsButton();
+
+// Matcher for Add to reading list button.
+id<GREYMatcher> AddToReadingListButton();
+
+// Matcher for Add to bookmarks button.
+id<GREYMatcher> AddToBookmarksButton();
 
 // Matcher for SettingsSwitchCell.
 id<GREYMatcher> SettingsSwitchCell(NSString* accessibility_identifier,
@@ -191,6 +205,9 @@ id<GREYMatcher> SettingsDoneButton();
 // settings' navigation bar.
 id<GREYMatcher> SyncSettingsConfirmButton();
 
+// Returns matcher for the Autofill Credit Card "Payment Methods" edit view.
+id<GREYMatcher> AutofillCreditCardEditTableView();
+
 // Returns matcher for the Autofill Credit Card "Payment Methods" view in the
 // settings menu.
 id<GREYMatcher> AutofillCreditCardTableView();
@@ -218,9 +235,6 @@ id<GREYMatcher> AddCreditCardButton();
 // Returns matcher for the "Cancel" button in the Payment Methods add credit
 // card view.
 id<GREYMatcher> AddCreditCardCancelButton();
-
-// Returns matcher for the "Credit Card Scanner" view.
-id<GREYMatcher> CreditCardScannerView();
 
 // Returns matcher for the tools menu table view.
 id<GREYMatcher> ToolsMenuView();
@@ -272,6 +286,10 @@ id<GREYMatcher> GoogleServicesSettingsView();
 // Returns matcher for the back button on a settings menu.
 id<GREYMatcher> SettingsMenuBackButton();
 
+// Returns matcher for the back button on a settings menu in given window
+// number.
+id<GREYMatcher> SettingsMenuBackButton(int window_number);
+
 // Returns matcher for the Privacy cell on the main Settings screen.
 id<GREYMatcher> SettingsMenuPrivacyButton();
 
@@ -312,7 +330,10 @@ id<GREYMatcher> ClearSavedPasswordsButton();
 id<GREYMatcher> ClearAutofillButton();
 
 // Returns matcher for the collection view of content suggestion.
-id<GREYMatcher> ContentSuggestionCollectionView();
+id<GREYMatcher> ContentSuggestionsCollectionView();
+
+// Returns matcher for the collection view of the NTP.
+id<GREYMatcher> NTPCollectionView();
 
 // Returns matcher for the warning message while filling in payment requests.
 id<GREYMatcher> WarningMessageView();
@@ -338,8 +359,16 @@ id<GREYMatcher> RecentTabsMenuButton();
 // Returns matcher for the system selection callout.
 id<GREYMatcher> SystemSelectionCallout();
 
+// Returns a matcher for the Link to text button in the edit menu.
+id<GREYMatcher> SystemSelectionCalloutLinkToTextButton();
+
 // Returns matcher for the copy button on the system selection callout.
 id<GREYMatcher> SystemSelectionCalloutCopyButton();
+
+// Matcher for a Copy button, such as the one in the Activity View. This matcher
+// is very broad and will look for any button with a matching string.
+// Only the iOS 13 Activity View is reachable by EarlGrey.
+id<GREYMatcher> CopyActivityButton() API_AVAILABLE(ios(13));
 
 // Matcher for the Copy Link option in the updated context menus when long
 // pressing on a link. |use_new_string| determines which string to use.
@@ -369,6 +398,12 @@ id<GREYMatcher> NewTabPageOmnibox();
 
 // Returns matcher for a fake omnibox on a new tab page.
 id<GREYMatcher> FakeOmnibox();
+
+// Returns matcher for a header label of the Discover feed.
+id<GREYMatcher> DiscoverHeaderLabel();
+
+// Returns matcher for a logo on a new tab page.
+id<GREYMatcher> NTPLogo();
 
 // Returns a matcher for the current WebView.
 id<GREYMatcher> WebViewMatcher();
@@ -421,6 +456,15 @@ id<GREYMatcher> TabGridIncognitoTabsPanelButton();
 // Returns the GREYMatcher for the button to go to the other devices panel in
 // the tab grid.
 id<GREYMatcher> TabGridOtherDevicesPanelButton();
+
+// Returns the GREYMatcher for the tab grid background.
+id<GREYMatcher> TabGridBackground();
+
+// Returns the GREYMatcher for the regular tab grid.
+id<GREYMatcher> RegularTabGrid();
+
+// Returns the GREYMatcher for the incognito tab grid.
+id<GREYMatcher> IncognitoTabGrid();
 
 // Returns the GREYMatcher for the button to close the cell at |index| in the
 // tab grid.
@@ -527,7 +571,14 @@ id<GREYMatcher> ManualFallbackAddCreditCardsMatcher();
 id<GREYMatcher> ManualFallbackCreditCardTableViewWindowMatcher();
 
 // Returns the matcher for the iOS 13+ Activity View header.
-id<GREYMatcher> ActivityViewHeader(NSString* page_title);
+id<GREYMatcher> ActivityViewHeader(NSString* url_host, NSString* page_title);
+
+// Returns a matcher for the button to trigger password generation on manual
+// fallback.
+id<GREYMatcher> ManualFallbackSuggestPasswordMatcher();
+
+// Returns a matcher for the button to accept the generated password.
+id<GREYMatcher> UseSuggestedPasswordMatcher();
 
 }  // namespace chrome_test_util
 

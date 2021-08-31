@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -847,17 +848,20 @@ void HttpStreamFactory::JobController::MaybeReportBrokenAlternativeService() {
     return;
   }
 
-  // Report brokenness if alternative job failed.
-  base::UmaHistogramSparse("Net.AlternateServiceFailed",
-                           -alternative_job_net_error_);
-
   if (alternative_job_net_error_ == ERR_NETWORK_CHANGED ||
-      alternative_job_net_error_ == ERR_INTERNET_DISCONNECTED) {
+      alternative_job_net_error_ == ERR_INTERNET_DISCONNECTED ||
+      (alternative_job_net_error_ == ERR_NAME_NOT_RESOLVED &&
+       request_info_.url.host() ==
+           alternative_service_info_.alternative_service().host)) {
     // No need to mark alternative service as broken.
     // Reset error status for Jobs.
     ResetErrorStatusForJobs();
     return;
   }
+
+  // Report brokenness if alternative job failed.
+  base::UmaHistogramSparse("Net.AlternateServiceFailed",
+                           -alternative_job_net_error_);
 
   HistogramBrokenAlternateProtocolLocation(
       BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_JOB_ALT);
@@ -1032,7 +1036,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
     ignore_result(ApplyHostMappingRules(original_url, &mapped_origin));
     QuicSessionKey session_key(
         mapped_origin, request_info.privacy_mode, request_info.socket_tag,
-        request_info.network_isolation_key, request_info.disable_secure_dns);
+        request_info.network_isolation_key, request_info.secure_dns_policy);
 
     HostPortPair destination(alternative_service_info.host_port_pair());
     if (session_key.host() != destination.host() &&

@@ -13,6 +13,7 @@
 # Comments, suggestions and bug reports welcome.
 
 
+from __future__ import absolute_import
 __all__ = (
     'Mock',
     'MagicMock',
@@ -35,6 +36,7 @@ __version__ = '1.0.1'
 
 import pprint
 import sys
+import six
 
 try:
     import inspect
@@ -65,7 +67,9 @@ else:
                 f.__wrapped__ = func
                 return f
             return inner
-
+      
+#2to3: modernize tried to convert unicode to six.text_type but the type should
+# be handled already. Leaving this untouched.
 try:
     unicode
 except NameError:
@@ -88,7 +92,7 @@ try:
     next
 except NameError:
     def next(obj):
-        return obj.next()
+        return next(obj)
 
 
 BaseExceptions = (BaseException,)
@@ -380,13 +384,11 @@ ClassTypes = (type,)
 if not inPy3k:
     ClassTypes = (type, ClassType)
 
-_allowed_names = set(
-    [
+_allowed_names = {
         'return_value', '_mock_return_value', 'side_effect',
         '_mock_side_effect', '_mock_parent', '_mock_new_parent',
         '_mock_name', '_mock_new_name'
-    ]
-)
+    }
 
 
 def _delegating_property(name):
@@ -637,7 +639,7 @@ class NonCallableMock(Base):
 
         >>> attrs = {'method.return_value': 3, 'other.side_effect': KeyError}
         >>> mock.configure_mock(**attrs)"""
-        for arg, val in sorted(kwargs.items(),
+        for arg, val in sorted(list(kwargs.items()),
                                # we sort on the number of dots so that
                                # attributes are set before we set attributes on
                                # attributes
@@ -1598,7 +1600,7 @@ class _patch_dict(object):
     """
 
     def __init__(self, in_dict, values=(), clear=False, **kwargs):
-        if isinstance(in_dict, basestring):
+        if isinstance(in_dict, six.string_types):
             in_dict = _importer(in_dict)
         self.in_dict = in_dict
         # support any argument supported by dict(...) constructor
@@ -1755,12 +1757,12 @@ _magics = set(
 
 _all_magics = _magics | _non_defaults
 
-_unsupported_magics = set([
+_unsupported_magics = {
     '__getattr__', '__setattr__',
     '__init__', '__new__', '__prepare__'
     '__instancecheck__', '__subclasscheck__',
     '__del__'
-])
+}
 
 _calculate_return_value = {
     '__hash__': lambda self: object.__hash__(self),
@@ -1995,7 +1997,7 @@ class _Call(tuple):
             name, args, kwargs = value
         elif _len == 2:
             first, second = value
-            if isinstance(first, basestring):
+            if isinstance(first, six.string_types):
                 name = first
                 if isinstance(second, tuple):
                     args = second
@@ -2005,7 +2007,7 @@ class _Call(tuple):
                 args, kwargs = first, second
         elif _len == 1:
             value, = value
-            if isinstance(value, basestring):
+            if isinstance(value, six.string_types):
                 name = value
             elif isinstance(value, tuple):
                 args = value
@@ -2049,7 +2051,7 @@ class _Call(tuple):
             if isinstance(value, tuple):
                 other_args = value
                 other_kwargs = {}
-            elif isinstance(value, basestring):
+            elif isinstance(value, six.string_types):
                 other_name = value
                 other_args, other_kwargs = (), {}
             else:
@@ -2059,7 +2061,7 @@ class _Call(tuple):
             # len 2
             # could be (name, args) or (name, kwargs) or (args, kwargs)
             first, second = other
-            if isinstance(first, basestring):
+            if isinstance(first, six.string_types):
                 other_name = first
                 if isinstance(second, tuple):
                     other_args, other_kwargs = second, {}
@@ -2302,7 +2304,7 @@ FunctionTypes = (
     type(_ANY.__eq__),
 )
 
-FunctionAttributes = set([
+FunctionAttributes = {
     'func_closure',
     'func_code',
     'func_defaults',
@@ -2310,7 +2312,7 @@ FunctionAttributes = set([
     'func_doc',
     'func_globals',
     'func_name',
-])
+}
 
 
 file_spec = None

@@ -10,13 +10,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -50,6 +50,7 @@
 #include "url/url_constants.h"
 
 using content::BrowserThread;
+using extensions::mojom::ManifestLocation;
 
 namespace keys = extension_management_api_constants;
 
@@ -107,11 +108,11 @@ management::ExtensionInfo CreateExtensionInfo(
   info.offline_enabled = OfflineEnabledInfo::IsOfflineEnabled(&extension);
   info.version = extension.VersionString();
   if (!extension.version_name().empty())
-    info.version_name.reset(new std::string(extension.version_name()));
+    info.version_name = std::make_unique<std::string>(extension.version_name());
   info.description = extension.description();
   info.options_url = OptionsPageInfo::GetOptionsPage(&extension).spec();
-  info.homepage_url.reset(
-      new std::string(ManifestURL::GetHomepageURL(&extension).spec()));
+  info.homepage_url = std::make_unique<std::string>(
+      ManifestURL::GetHomepageURL(&extension).spec());
   info.may_disable =
       !system->management_policy()->MustRemainEnabled(&extension, nullptr);
   info.is_app = extension.is_app();
@@ -147,21 +148,19 @@ management::ExtensionInfo CreateExtensionInfo(
         !system->management_policy()->MustRemainDisabled(&extension, nullptr,
                                                          nullptr));
   }
-
-  if (!ManifestURL::GetUpdateURL(&extension).is_empty()) {
-    info.update_url.reset(
-        new std::string(ManifestURL::GetUpdateURL(&extension).spec()));
-  }
+  const GURL update_url = delegate->GetEffectiveUpdateURL(extension, context);
+  if (!update_url.is_empty())
+    info.update_url = std::make_unique<std::string>(update_url.spec());
 
   if (extension.is_app()) {
-    info.app_launch_url.reset(
-        new std::string(delegate->GetFullLaunchURL(&extension).spec()));
+    info.app_launch_url = std::make_unique<std::string>(
+        delegate->GetFullLaunchURL(&extension).spec());
   }
 
   const ExtensionIconSet::IconMap& icons =
       IconsInfo::GetIcons(&extension).map();
   if (!icons.empty()) {
-    info.icons.reset(new IconInfoList());
+    info.icons = std::make_unique<IconInfoList>();
     ExtensionIconSet::IconMap::const_iterator icon_iter;
     for (icon_iter = icons.begin(); icon_iter != icons.end(); ++icon_iter) {
       management::IconInfo icon_info;
@@ -193,28 +192,25 @@ management::ExtensionInfo CreateExtensionInfo(
   }
 
   switch (extension.location()) {
-    case Manifest::INTERNAL:
+    case ManifestLocation::kInternal:
       info.install_type = management::EXTENSION_INSTALL_TYPE_NORMAL;
       break;
-    case Manifest::UNPACKED:
-    case Manifest::COMMAND_LINE:
+    case ManifestLocation::kUnpacked:
+    case ManifestLocation::kCommandLine:
       info.install_type = management::EXTENSION_INSTALL_TYPE_DEVELOPMENT;
       break;
-    case Manifest::EXTERNAL_PREF:
-    case Manifest::EXTERNAL_REGISTRY:
-    case Manifest::EXTERNAL_PREF_DOWNLOAD:
+    case ManifestLocation::kExternalPref:
+    case ManifestLocation::kExternalRegistry:
+    case ManifestLocation::kExternalPrefDownload:
       info.install_type = management::EXTENSION_INSTALL_TYPE_SIDELOAD;
       break;
-    case Manifest::EXTERNAL_POLICY:
-    case Manifest::EXTERNAL_POLICY_DOWNLOAD:
+    case ManifestLocation::kExternalPolicy:
+    case ManifestLocation::kExternalPolicyDownload:
       info.install_type = management::EXTENSION_INSTALL_TYPE_ADMIN;
       break;
-    case Manifest::NUM_LOCATIONS:
-      NOTREACHED();
-      FALLTHROUGH;
-    case Manifest::INVALID_LOCATION:
-    case Manifest::COMPONENT:
-    case Manifest::EXTERNAL_COMPONENT:
+    case ManifestLocation::kInvalidLocation:
+    case ManifestLocation::kComponent:
+    case ManifestLocation::kExternalComponent:
       info.install_type = management::EXTENSION_INSTALL_TYPE_OTHER;
       break;
   }
@@ -247,8 +243,9 @@ management::ExtensionInfo CreateExtensionInfo(
         NOTREACHED();
     }
 
-    info.available_launch_types.reset(new std::vector<management::LaunchType>(
-        GetAvailableLaunchTypes(extension, delegate)));
+    info.available_launch_types =
+        std::make_unique<std::vector<management::LaunchType>>(
+            GetAvailableLaunchTypes(extension, delegate));
   }
 
   return info;
@@ -367,7 +364,7 @@ void ManagementGetPermissionWarningsByManifestFunction::OnParse(
 
   std::string error;
   scoped_refptr<Extension> extension =
-      Extension::Create(base::FilePath(), Manifest::INVALID_LOCATION,
+      Extension::Create(base::FilePath(), ManifestLocation::kInvalidLocation,
                         *parsed_manifest, Extension::NO_FLAGS, &error);
   // TODO(lazyboy): Do we need to use |error|?
   if (!extension) {
@@ -484,7 +481,8 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
       AddRef();  // Matched in OnInstallPromptDone().
       install_prompt_ = delegate->SetEnabledFunctionDelegate(
           GetSenderWebContents(), browser_context(), target_extension,
-          base::Bind(&ManagementSetEnabledFunction::OnInstallPromptDone, this));
+          base::BindOnce(&ManagementSetEnabledFunction::OnInstallPromptDone,
+                         this));
       return RespondLater();
     }
     if (HasUnsupportedRequirements(extension_id_)) {
@@ -647,7 +645,7 @@ void ManagementUninstallFunctionBase::Finish(bool did_start_uninstall,
 
 void ManagementUninstallFunctionBase::OnExtensionUninstallDialogClosed(
     bool did_start_uninstall,
-    const base::string16& error) {
+    const std::u16string& error) {
   Finish(did_start_uninstall,
          ErrorUtils::FormatErrorMessage(keys::kUninstallCanceledError,
                                         target_extension_id_));
@@ -667,7 +665,7 @@ void ManagementUninstallFunctionBase::UninstallExtension() {
     const ManagementAPIDelegate* delegate = ManagementAPI::GetFactoryInstance()
                                                 ->Get(browser_context())
                                                 ->GetDelegate();
-    base::string16 utf16_error;
+    std::u16string utf16_error;
     success = delegate->UninstallExtension(
         browser_context(), target_extension_id_,
         extensions::UNINSTALL_REASON_MANAGEMENT_API, &utf16_error);
@@ -1053,7 +1051,8 @@ void ManagementInstallReplacementWebAppFunction::FinishResponse(
 
 ManagementEventRouter::ManagementEventRouter(content::BrowserContext* context)
     : browser_context_(context) {
-  extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
+  extension_registry_observation_.Observe(
+      ExtensionRegistry::Get(browser_context_));
 }
 
 ManagementEventRouter::~ManagementEventRouter() {}
@@ -1095,17 +1094,17 @@ void ManagementEventRouter::BroadcastEvent(
     const char* event_name) {
   if (!extension->ShouldExposeViaManagementAPI())
     return;
-  std::unique_ptr<base::ListValue> args(new base::ListValue());
+  std::vector<base::Value> args;
   if (event_name == management::OnUninstalled::kEventName) {
-    args->AppendString(extension->id());
+    args.push_back(base::Value(extension->id()));
   } else {
-    args->Append(
-        CreateExtensionInfo(nullptr, *extension, browser_context_).ToValue());
+    args.push_back(base::Value::FromUniquePtrValue(
+        CreateExtensionInfo(nullptr, *extension, browser_context_).ToValue()));
   }
 
   EventRouter::Get(browser_context_)
-      ->BroadcastEvent(std::unique_ptr<Event>(
-          new Event(histogram_value, event_name, std::move(args))));
+      ->BroadcastEvent(std::make_unique<Event>(histogram_value, event_name,
+                                               std::move(args)));
 }
 
 ManagementAPI::ManagementAPI(content::BrowserContext* context)
@@ -1139,7 +1138,8 @@ ManagementAPI::GetFactoryInstance() {
 }
 
 void ManagementAPI::OnListenerAdded(const EventListenerInfo& details) {
-  management_event_router_.reset(new ManagementEventRouter(browser_context_));
+  management_event_router_ =
+      std::make_unique<ManagementEventRouter>(browser_context_);
   EventRouter::Get(browser_context_)->UnregisterObserver(this);
 }
 

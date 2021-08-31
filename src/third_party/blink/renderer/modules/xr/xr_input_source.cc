@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/input/event_handling_util.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/modules/xr/xr_grip_space.h"
+#include "third_party/blink/renderer/modules/xr/xr_hand.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_session_event.h"
@@ -26,7 +27,7 @@ namespace blink {
 
 namespace {
 std::unique_ptr<TransformationMatrix> TryGetTransformationMatrix(
-    const base::Optional<gfx::Transform>& transform) {
+    const absl::optional<gfx::Transform>& transform) {
   if (transform) {
     return std::make_unique<TransformationMatrix>(transform->matrix());
   }
@@ -105,6 +106,13 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
         TryGetTransformationMatrix(state->mojo_from_input);
   }
 
+  if (updated_source->state_.is_visible) {
+    if (state->hand_tracking_data.get()) {
+      updated_source->hand_ = MakeGarbageCollected<XRHand>(
+          state->hand_tracking_data.get(), updated_source);
+    }
+  }
+
   updated_source->state_.emulated_position = state->emulated_position;
 
   return updated_source;
@@ -129,6 +137,7 @@ XRInputSource::XRInputSource(const XRInputSource& other)
           MakeGarbageCollected<XRTargetRaySpace>(other.session_, this)),
       grip_space_(MakeGarbageCollected<XRGripSpace>(other.session_, this)),
       gamepad_(other.gamepad_),
+      hand_(other.hand_),
       mojo_from_input_(
           TryGetTransformationMatrix(other.mojo_from_input_.get())),
       input_from_pointer_(
@@ -217,36 +226,40 @@ void XRInputSource::SetGamepadConnected(bool state) {
 }
 
 void XRInputSource::UpdateGamepad(
-    const base::Optional<device::Gamepad>& gamepad) {
+    const absl::optional<device::Gamepad>& gamepad) {
   if (gamepad) {
     if (!gamepad_) {
       gamepad_ = MakeGarbageCollected<Gamepad>(this, -1, state_.base_timestamp,
                                                base::TimeTicks::Now());
     }
 
-    gamepad_->UpdateFromDeviceState(*gamepad);
+    LocalDOMWindow* window = session_->xr()->DomWindow();
+    bool cross_origin_isolated_capability =
+        window ? window->CrossOriginIsolatedCapability() : false;
+    gamepad_->UpdateFromDeviceState(*gamepad, cross_origin_isolated_capability);
   } else {
     gamepad_ = nullptr;
   }
 }
 
-base::Optional<TransformationMatrix> XRInputSource::MojoFromInput() const {
+absl::optional<TransformationMatrix> XRInputSource::MojoFromInput() const {
   if (!mojo_from_input_.get()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return *(mojo_from_input_.get());
 }
 
-base::Optional<TransformationMatrix> XRInputSource::InputFromPointer() const {
+absl::optional<TransformationMatrix> XRInputSource::InputFromPointer() const {
   if (!input_from_pointer_.get()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return *(input_from_pointer_.get());
 }
 
-base::Optional<device::mojom::blink::XRNativeOriginInformation>
-XRInputSource::nativeOrigin() const {
-  return XRNativeOriginInformation::Create(this);
+device::mojom::blink::XRNativeOriginInformationPtr XRInputSource::nativeOrigin()
+    const {
+  return device::mojom::blink::XRNativeOriginInformation::NewInputSourceId(
+      this->source_id());
 }
 
 void XRInputSource::OnSelectStart() {
@@ -614,6 +627,7 @@ void XRInputSource::Trace(Visitor* visitor) const {
   visitor->Trace(target_ray_space_);
   visitor->Trace(grip_space_);
   visitor->Trace(gamepad_);
+  visitor->Trace(hand_);
   ScriptWrappable::Trace(visitor);
 }
 

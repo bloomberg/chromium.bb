@@ -479,9 +479,13 @@ bool ObuParser::ParseSequenceHeader(bool seen_frame_header) {
       LIBGAV1_DLOG(ERROR, "Sequence header changed in the middle of a frame.");
       return false;
     }
+    sequence_header_changed_ = true;
     decoder_state_.ClearReferenceFrames();
   }
   sequence_header_ = sequence_header;
+  if (!has_sequence_header_) {
+    sequence_header_changed_ = true;
+  }
   has_sequence_header_ = true;
   // Section 6.4.1: It is a requirement of bitstream conformance that if
   // OperatingPointIdc is equal to 0, then obu_extension_flag is equal to 0 for
@@ -509,12 +513,12 @@ void ObuParser::MarkInvalidReferenceFrames() {
     if (lower_bound_is_smaller) {
       if (reference_frame_id > decoder_state_.current_frame_id ||
           reference_frame_id < lower_bound) {
-        decoder_state_.reference_valid[i] = false;
+        decoder_state_.reference_frame[i] = nullptr;
       }
     } else {
       if (reference_frame_id > decoder_state_.current_frame_id &&
           reference_frame_id < lower_bound) {
-        decoder_state_.reference_valid[i] = false;
+        decoder_state_.reference_frame[i] = nullptr;
       }
     }
   }
@@ -621,7 +625,7 @@ bool ObuParser::ParseReferenceOrderHint() {
     frame_header_.reference_order_hint[i] = scratch;
     if (frame_header_.reference_order_hint[i] !=
         decoder_state_.reference_order_hint[i]) {
-      decoder_state_.reference_valid[i] = false;
+      decoder_state_.reference_frame[i] = nullptr;
     }
   }
   return true;
@@ -1787,10 +1791,11 @@ bool ObuParser::ParseFrameParameters() {
         // whenever display_frame_id is read, the value matches
         // RefFrameId[ frame_to_show_map_idx ] ..., and that
         // RefValid[ frame_to_show_map_idx ] is equal to 1.
+        //
+        // The current_frame_ == nullptr check below is equivalent to checking
+        // if RefValid[ frame_to_show_map_idx ] is equal to 1.
         if (frame_header_.display_frame_id !=
-                decoder_state_
-                    .reference_frame_id[frame_header_.frame_to_show] ||
-            !decoder_state_.reference_valid[frame_header_.frame_to_show]) {
+            decoder_state_.reference_frame_id[frame_header_.frame_to_show]) {
           LIBGAV1_DLOG(ERROR,
                        "Reference buffer %d has a frame id number mismatch.",
                        frame_header_.frame_to_show);
@@ -1868,7 +1873,6 @@ bool ObuParser::ParseFrameParameters() {
     }
   }
   if (frame_header_.frame_type == kFrameKey && frame_header_.show_frame) {
-    decoder_state_.reference_valid.fill(false);
     decoder_state_.reference_order_hint.fill(0);
     decoder_state_.reference_frame.fill(nullptr);
   }
@@ -2019,15 +2023,8 @@ bool ObuParser::ParseFrameParameters() {
       // Note if support for Annex C: Error resilience behavior is added this
       // check should be omitted per C.5 Decoder consequences of processable
       // frames.
-      if (!decoder_state_.reference_valid[reference_frame_index]) {
-        LIBGAV1_DLOG(ERROR, "ref_frame_idx[%d] (%d) is not valid.", i,
-                     reference_frame_index);
-        return false;
-      }
-      // Check if the inter frame requests a nonexistent reference, whether or
-      // not frame_refs_short_signaling is used.
       if (decoder_state_.reference_frame[reference_frame_index] == nullptr) {
-        LIBGAV1_DLOG(ERROR, "ref_frame_idx[%d] (%d) is not a decoded frame.", i,
+        LIBGAV1_DLOG(ERROR, "ref_frame_idx[%d] (%d) is not valid.", i,
                      reference_frame_index);
         return false;
       }
@@ -2043,12 +2040,8 @@ bool ObuParser::ParseFrameParameters() {
         // Section 6.8.2: It is a requirement of bitstream conformance that
         // whenever expectedFrameId[ i ] is calculated, the value matches
         // RefFrameId[ ref_frame_idx[ i ] ] ...
-        //
-        // Section 6.8.2: It is a requirement of bitstream conformance that
-        // RefValid[ ref_frame_idx[ i ] ] is equal to 1, ...
         if (frame_header_.expected_frame_id[i] !=
-                decoder_state_.reference_frame_id[reference_frame_index] ||
-            !decoder_state_.reference_valid[reference_frame_index]) {
+            decoder_state_.reference_frame_id[reference_frame_index]) {
           LIBGAV1_DLOG(ERROR,
                        "Reference buffer %d has a frame id number mismatch.",
                        reference_frame_index);
@@ -2665,6 +2658,7 @@ StatusCode ObuParser::ParseOneFrame(RefCountedBufferPtr* const current_frame) {
   metadata_ = {};
   tile_buffers_.clear();
   next_tile_group_start_ = 0;
+  sequence_header_changed_ = false;
 
   bool parsed_one_full_frame = false;
   bool seen_frame_header = false;

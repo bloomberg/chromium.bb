@@ -77,6 +77,7 @@ void InterfacePtrStateBase::OnQueryVersion(
 bool InterfacePtrStateBase::InitializeEndpointClient(
     bool passes_associated_kinds,
     bool has_sync_methods,
+    bool has_uninterruptable_methods,
     std::unique_ptr<MessageReceiver> payload_validator,
     const char* interface_name) {
   // The object hasn't been bound.
@@ -84,14 +85,13 @@ bool InterfacePtrStateBase::InitializeEndpointClient(
     return false;
 
   MultiplexRouter::Config config =
-      passes_associated_kinds
+      (passes_associated_kinds || has_uninterruptable_methods)
           ? MultiplexRouter::MULTI_INTERFACE
           : (has_sync_methods
                  ? MultiplexRouter::SINGLE_INTERFACE_WITH_SYNC_METHODS
                  : MultiplexRouter::SINGLE_INTERFACE);
-  DCHECK(runner_->RunsTasksInCurrentSequence());
-  router_ = new MultiplexRouter(std::move(handle_), config, true, runner_,
-                                interface_name);
+  router_ = MultiplexRouter::Create(std::move(handle_), config, true, runner_,
+                                    interface_name);
   endpoint_client_ = std::make_unique<InterfaceEndpointClient>(
       router_->CreateLocalEndpointHandle(kPrimaryInterfaceId), nullptr,
       std::move(payload_validator), false, std::move(runner_),

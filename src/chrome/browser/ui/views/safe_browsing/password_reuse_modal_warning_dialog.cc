@@ -15,11 +15,12 @@
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/safe_browsing/buildflags.h"
-#include "components/safe_browsing/content/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/password_protection/metrics_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
@@ -53,7 +54,7 @@ std::unique_ptr<NonAccessibleImageView> SafeBrowsingCreateIllustration(
 
 // Sets up the content containing the title and description for the dialog
 // rendered below the illustration.
-std::unique_ptr<views::View> SetupContent(const base::string16& title) {
+std::unique_ptr<views::View> SetupContent(const std::u16string& title) {
   auto content = std::make_unique<views::View>();
   content->SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -61,7 +62,8 @@ std::unique_ptr<views::View> SetupContent(const base::string16& title) {
           views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
   content->SetBorder(views::CreateEmptyBorder(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
-          views::CONTROL, views::CONTROL)));
+          views::DialogContentType::kControl,
+          views::DialogContentType::kControl)));
 
   auto title_label = std::make_unique<views::Label>(
       title, views::style::CONTEXT_DIALOG_TITLE, views::style::STYLE_PRIMARY);
@@ -73,7 +75,7 @@ std::unique_ptr<views::View> SetupContent(const base::string16& title) {
 }
 
 // Creates the description on the modal warning dialog.
-views::Label* CreateMessageBodyLabel(base::string16 text) {
+views::Label* CreateMessageBodyLabel(std::u16string text) {
   views::Label* message_body_label = new views::Label(text);
   message_body_label->SetMultiLine(true);
   message_body_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -81,7 +83,7 @@ views::Label* CreateMessageBodyLabel(base::string16 text) {
   return message_body_label;
 }
 
-base::string16 GetOkButtonLabel(
+std::u16string GetOkButtonLabel(
     safe_browsing::ReusedPasswordAccountType password_type) {
   switch (password_type.account_type()) {
     case safe_browsing::ReusedPasswordAccountType::NON_GAIA_ENTERPRISE:
@@ -124,6 +126,7 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
   show_check_passwords = password_type_.account_type() ==
                          ReusedPasswordAccountType::SAVED_PASSWORD;
 #endif
+  SetModalType(ui::MODAL_TYPE_WINDOW);
   SetShowIcon(true);
   if (password_type.account_type() !=
           ReusedPasswordAccountType::SAVED_PASSWORD ||
@@ -164,7 +167,7 @@ PasswordReuseModalWarningDialog::PasswordReuseModalWarningDialog(
 
   if (password_type.account_type() ==
       ReusedPasswordAccountType::SAVED_PASSWORD) {
-    const base::string16 message_body =
+    const std::u16string message_body =
         service_->GetWarningDetailText(password_type, &placeholder_offsets);
 
     CreateSavedPasswordReuseModalWarningDialog(
@@ -189,8 +192,8 @@ PasswordReuseModalWarningDialog::~PasswordReuseModalWarningDialog() {
 
 void PasswordReuseModalWarningDialog::
     CreateSavedPasswordReuseModalWarningDialog(
-        const base::string16 message_body,
-        std::vector<base::string16> placeholders,
+        const std::u16string message_body,
+        std::vector<std::u16string> placeholders,
         std::vector<size_t> placeholder_offsets) {
   SetLayoutManager(std::make_unique<BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -220,8 +223,8 @@ void PasswordReuseModalWarningDialog::
 void PasswordReuseModalWarningDialog::CreateGaiaPasswordReuseModalWarningDialog(
     views::Label* message_body_label) {
   const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  set_margins(
-      provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
+  set_margins(provider->GetDialogInsetsForContentType(
+      views::DialogContentType::kText, views::DialogContentType::kText));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   // Makes message label align with title label.
   const int horizontal_adjustment =
@@ -242,16 +245,12 @@ gfx::Size PasswordReuseModalWarningDialog::CalculatePreferredSize() const {
   return gfx::Size(kDialogWidth, GetHeightForWidth(kDialogWidth));
 }
 
-ui::ModalType PasswordReuseModalWarningDialog::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
-}
-
-base::string16 PasswordReuseModalWarningDialog::GetWindowTitle() const {
+std::u16string PasswordReuseModalWarningDialog::GetWindowTitle() const {
   // It's ok to return an empty string for the title as this method
   // is from views::DialogDelegateView class.
   return password_type_.account_type() ==
                  ReusedPasswordAccountType::SAVED_PASSWORD
-             ? base::string16()
+             ? std::u16string()
              : l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
 }
 
@@ -305,5 +304,8 @@ WarningUIType PasswordReuseModalWarningDialog::GetObserverType() {
 void PasswordReuseModalWarningDialog::WebContentsDestroyed() {
   GetWidget()->Close();
 }
+
+BEGIN_METADATA(PasswordReuseModalWarningDialog, views::DialogDelegateView)
+END_METADATA
 
 }  // namespace safe_browsing

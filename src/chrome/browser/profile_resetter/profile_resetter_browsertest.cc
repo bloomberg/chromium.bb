@@ -4,6 +4,8 @@
 
 #include "chrome/browser/profile_resetter/profile_resetter.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/macros.h"
 #include "chrome/browser/profile_resetter/profile_resetter_test_base.h"
@@ -62,8 +64,7 @@ RemoveCookieTester::RemoveCookieTester(Profile* profile)
     : waiting_callback_(false),
       profile_(profile) {
   network::mojom::NetworkContext* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
-          ->GetNetworkContext();
+      profile_->GetDefaultStoragePartition()->GetNetworkContext();
   network_context->GetCookieManager(
       cookie_manager_.BindNewPipeAndPassReceiver());
 }
@@ -97,13 +98,14 @@ void RemoveCookieTester::AddCookie(const std::string& host,
   waiting_callback_ = true;
   net::CookieOptions options;
   options.set_include_httponly();
-  net::CanonicalCookie cookie(
+  auto cookie = net::CanonicalCookie::CreateUnsafeCookieForTesting(
       name, value, host, "/", base::Time(), base::Time(), base::Time(),
       true /* secure*/, false /* http only*/,
       net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM,
       false /* same_party */);
   cookie_manager_->SetCanonicalCookie(
-      cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"), options,
+      *cookie, net::cookie_util::SimulatedCookieSource(*cookie, "https"),
+      options,
       base::BindOnce(&RemoveCookieTester::SetCanonicalCookieCallback,
                      base::Unretained(this)));
   BlockUntilNotified();
@@ -142,7 +144,7 @@ class ProfileResetTest : public InProcessBrowserTest,
                          public ProfileResetterTestBase {
  protected:
   void SetUpOnMainThread() override {
-    resetter_.reset(new ProfileResetter(browser()->profile()));
+    resetter_ = std::make_unique<ProfileResetter>(browser()->profile());
   }
 };
 
