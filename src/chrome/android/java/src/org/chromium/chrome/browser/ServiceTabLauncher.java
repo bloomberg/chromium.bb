@@ -4,28 +4,19 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ResolveInfo;
-import android.net.Uri;
-import android.provider.Browser;
 
 import androidx.annotation.Nullable;
-import androidx.browser.customtabs.CustomTabsIntent;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.notifications.WebPlatformNotificationMetrics;
-import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.AsyncTabCreationParams;
@@ -35,6 +26,7 @@ import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.components.payments.PaymentRequestService;
 import org.chromium.components.webapk.lib.client.WebApkValidator;
+import org.chromium.components.webapps.ShortcutSource;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
@@ -82,18 +74,11 @@ public class ServiceTabLauncher {
         // Open popup window in custom tab.
         // Note that this is used by PaymentRequestEvent.openWindow().
         if (disposition == WindowOpenDisposition.NEW_POPUP) {
-            boolean success = false;
-            if (PaymentHandlerCoordinator.isEnabled()) {
-                WebContents paymentHandlerWebContent =
-                        PaymentRequestService.openPaymentHandlerWindow(url);
-                if (paymentHandlerWebContent != null) {
-                    success = true;
-                    onWebContentsForRequestAvailable(requestId, paymentHandlerWebContent);
-                }
+            WebContents paymentHandlerWebContent =
+                    PaymentRequestService.openPaymentHandlerWindow(url);
+            if (paymentHandlerWebContent != null) {
+                onWebContentsForRequestAvailable(requestId, paymentHandlerWebContent);
             } else {
-                success = createPopupCustomTab(requestId, url.getSpec(), incognito);
-            }
-            if (!success) {
                 PostTask.postTask(UiThreadTaskTraits.DEFAULT,
                         () -> onWebContentsForRequestAvailable(requestId, null));
             }
@@ -190,39 +175,6 @@ public class ServiceTabLauncher {
     }
 
     /**
-     * Creates a popup custom tab to open the url. The popup tab is animated in from bottom to top
-     * and out from top to bottom.
-     * Note that this is used by PaymentRequestEvent.openWindow().
-     *
-     * @param requestId   The tab launch request ID from the {@link ServiceTabLauncher}.
-     * @param url         The url to open in the new tab.
-     */
-    private static boolean createPopupCustomTab(int requestId, String url, boolean incognito) {
-        // Do not open the popup custom tab if the chrome activity is not in the forground.
-        Activity lastTrackedActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (!(lastTrackedActivity instanceof ChromeActivity)) return false;
-
-        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-        builder.setShowTitle(true);
-        builder.setStartAnimations(lastTrackedActivity, R.anim.slide_in_up, 0);
-        builder.setExitAnimations(lastTrackedActivity, 0, R.anim.slide_out_down);
-        CustomTabsIntent customTabsIntent = builder.build();
-        customTabsIntent.intent.setPackage(ContextUtils.getApplicationContext().getPackageName());
-        customTabsIntent.intent.putExtra(ServiceTabLauncher.LAUNCH_REQUEST_ID_EXTRA, requestId);
-        customTabsIntent.intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, incognito);
-        customTabsIntent.intent.putExtra(Browser.EXTRA_APPLICATION_ID,
-                ContextUtils.getApplicationContext().getPackageName());
-
-        // Customize items on menu as payment request UI to show 'Find in page', 'Forward arrow',
-        // 'Info' and 'Refresh' only.
-        CustomTabIntentDataProvider.addPaymentRequestUIExtras(customTabsIntent.intent);
-
-        customTabsIntent.launchUrl(lastTrackedActivity, Uri.parse(url));
-
-        return true;
-    }
-
-    /**
      * To be called by the activity when the WebContents for |requestId| has been created, or has
      * been recycled from previous use. The |webContents| must not yet have started provisional
      * load for the main frame.
@@ -237,7 +189,7 @@ public class ServiceTabLauncher {
     }
 
     @NativeMethods
-    interface Natives {
+    public interface Natives {
         void onWebContentsForRequestAvailable(int requestId, WebContents webContents);
     }
 }

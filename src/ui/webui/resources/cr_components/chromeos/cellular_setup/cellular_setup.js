@@ -15,19 +15,31 @@ Polymer({
     /** @type {!cellular_setup.CellularSetupDelegate} */
     delegate: Object,
 
+    /**
+     * Title of the flow, shown at the top of the dialog. No title shown if the
+     * string is empty.
+     */
     flowTitle: {
       type: String,
       notify: true,
+      value: '',
+    },
+
+    /**
+     * Header for the flow, shown below the title. No header shown if the string
+     * is empty.
+     */
+    flowHeader: {
+      type: String,
+      notify: true,
+      value: '',
     },
 
     /**
      * Name of the currently displayed sub-page.
      * @private {!cellularSetup.CellularSetupPageName|null}
      */
-    currentPageName: {
-      type: String,
-      value: cellularSetup.CellularSetupPageName.SETUP_FLOW_SELECTION,
-    },
+    currentPageName: String,
 
     /**
      * Current user selected setup flow page name.
@@ -50,21 +62,37 @@ Polymer({
     /**
      * DOM Element corresponding to the visible page.
      *
-     * @private {!SetupSelectionFlowElement|!PsimFlowUiElement|
-     *           !EsimFlowUiElement}
+     * @private {!PsimFlowUiElement|!EsimFlowUiElement}
      */
     currentPage_: {
       type: Object,
       observer: 'onPageChange_',
     },
+
+    /**
+     * Text for the button_bar's 'Forward' button.
+     * @private {string}
+     */
+    forwardButtonLabel_: {
+      type: String,
+    }
   },
 
   listeners: {
     'backward-nav-requested': 'onBackwardNavRequested_',
     'retry-requested': 'onRetryRequested_',
-    'complete-flow-requested': 'onCompleteFlowRequested_',
     'forward-nav-requested': 'onForwardNavRequested_',
     'cancel-requested': 'onCancelRequested_',
+    'focus-default-button': 'onFocusDefaultButton_',
+  },
+
+
+  /** @override */
+  attached() {
+    // By default eSIM flow is selected.
+    if (!this.currentPageName) {
+      this.currentPageName = cellularSetup.CellularSetupPageName.ESIM_FLOW_UI;
+    }
   },
 
   /** @private */
@@ -77,15 +105,7 @@ Polymer({
 
   /** @private */
   onBackwardNavRequested_() {
-    const isNavHandled = this.currentPage_.attemptBackwardNavigation();
-
-    // Subflow returns false in a state where it cannot perform backward
-    // navigation any more. Switch back to the selection flow in this case so
-    // that the user can select a flow again.
-    if (!isNavHandled) {
-      this.currentPageName_ =
-          cellularSetup.CellularSetupPageName.SETUP_FLOW_SELECTION;
-    }
+    this.currentPage_.navigateBackward();
   },
 
   onCancelRequested_() {
@@ -98,27 +118,20 @@ Polymer({
   },
 
   /** @private */
-  onCompleteFlowRequested_() {
-    // TODO(crbug.com/1093185): Add completion logic.
+  onForwardNavRequested_() {
+    this.currentPage_.navigateForward();
   },
 
   /** @private */
-  onForwardNavRequested_() {
-    // Switch current page to user selected flow when navigating forward from
-    // setup selection.
-    if (this.currentPageName_ ===
-        cellularSetup.CellularSetupPageName.SETUP_FLOW_SELECTION) {
-      this.currentPageName_ = this.selectedFlow_;
-      return;
-    }
-    this.currentPage_.navigateForward();
+  onFocusDefaultButton_() {
+    this.$.buttonBar.focusDefaultButton();
   },
 
   /**
    * @param {string} currentPage
    * @private
    */
-  isPSimSelected_(currentPage) {
+  shouldShowPsimFlow_(currentPage) {
     return currentPage === cellularSetup.CellularSetupPageName.PSIM_FLOW_UI;
   },
 
@@ -126,7 +139,7 @@ Polymer({
    * @param {string} currentPage
    * @private
    */
-  isESimSelected_(currentPage) {
+  shouldShowEsimFlow_(currentPage) {
     return currentPage === cellularSetup.CellularSetupPageName.ESIM_FLOW_UI;
   }
 });

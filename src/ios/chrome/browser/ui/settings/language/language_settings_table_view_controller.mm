@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
@@ -93,10 +94,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
                         (id<LanguageSettingsCommands>)commandHandler {
   DCHECK(dataSource);
   DCHECK(commandHandler);
-  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                               ? UITableViewStylePlain
-                               : UITableViewStyleGrouped;
-  self = [super initWithStyle:style];
+
+  self = [super initWithStyle:ChromeTableViewStyle()];
   if (self) {
     _dataSource = dataSource;
     _commandHandler = commandHandler;

@@ -136,16 +136,11 @@ void HostDrmDevice::GpuConfigureNativeDisplays(
   if (IsConnected()) {
     drm_device_->ConfigureNativeDisplays(config_requests, std::move(callback));
   } else {
-    // If not connected, report failure to config.
-    base::flat_map<int64_t, bool> dummy_statuses;
-    for (const auto& config : config_requests)
-      dummy_statuses.insert(std::make_pair(config.id, false));
-
     // Post this task to protect the callstack from accumulating too many
     // recursive calls to ConfigureDisplaysTask::Run() in cases in which the GPU
     // process crashes repeatedly.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), dummy_statuses));
+        FROM_HERE, base::BindOnce(std::move(callback), false));
   }
 }
 
@@ -292,19 +287,20 @@ void HostDrmDevice::GpuSetHDCPStateCallback(int64_t display_id,
   display_manager_->GpuUpdatedHDCPState(display_id, success);
 }
 
-void HostDrmDevice::OnGpuServiceLaunchedOnIOThread(
+void HostDrmDevice::OnGpuServiceLaunchedOnProcessThread(
     mojo::PendingRemote<ui::ozone::mojom::DrmDevice> drm_device,
     scoped_refptr<base::SingleThreadTaskRunner> ui_runner) {
-  DCHECK_CALLED_ON_VALID_THREAD(on_io_thread_);
   // The observers might send IPC messages from the IO thread during the call to
   // OnGpuProcessLaunched.
   drm_device_on_io_thread_.Bind(std::move(drm_device));
   for (GpuThreadObserver& observer : gpu_thread_observers_)
     observer.OnGpuProcessLaunched();
-  // In the single-threaded mode, there won't be separate UI and IO threads.
+  // In the single-threaded mode or when GpuProcessHost lives on the UI thread,
+  // there won't be separate UI and IO threads.
   if (ui_runner->BelongsToCurrentThread()) {
     OnGpuServiceLaunchedOnUIThread(drm_device_on_io_thread_.Unbind());
   } else {
+    DCHECK_CALLED_ON_VALID_THREAD(on_io_thread_);
     ui_runner->PostTask(
         FROM_HERE,
         base::BindOnce(&HostDrmDevice::OnGpuServiceLaunchedOnUIThread, this,

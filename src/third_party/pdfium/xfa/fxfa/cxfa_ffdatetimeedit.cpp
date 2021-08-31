@@ -6,6 +6,7 @@
 
 #include "xfa/fxfa/cxfa_ffdatetimeedit.h"
 
+#include "core/fxcrt/cfx_datetime.h"
 #include "third_party/base/check.h"
 #include "xfa/fwl/cfwl_datetimepicker.h"
 #include "xfa/fwl/cfwl_eventselectchanged.h"
@@ -209,8 +210,8 @@ void CXFA_FFDateTimeEdit::OnSelectChanged(CFWL_Widget* pWidget,
 void CXFA_FFDateTimeEdit::OnProcessEvent(CFWL_Event* pEvent) {
   if (pEvent->GetType() == CFWL_Event::Type::SelectChanged) {
     auto* event = static_cast<CFWL_EventSelectChanged*>(pEvent);
-    OnSelectChanged(GetNormalWidget(), event->iYear, event->iMonth,
-                    event->iDay);
+    OnSelectChanged(GetNormalWidget(), event->GetYear(), event->GetMonth(),
+                    event->GetDay());
     return;
   }
   CXFA_FFTextEdit::OnProcessEvent(pEvent);

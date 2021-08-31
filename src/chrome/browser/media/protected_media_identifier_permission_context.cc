@@ -10,6 +10,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -21,44 +22,42 @@
 #include "content/public/browser/web_contents.h"
 #include "media/base/media_switches.h"
 #include "net/base/url_util.h"
-#if defined(OS_CHROMEOS)
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include <utility>
 
+#include "ash/constants/ash_switches.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/browser/chromeos/attestation/platform_verification_dialog.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chrome/browser/ash/attestation/platform_verification_dialog.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/permissions/permission_request_impl.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "ui/views/widget/widget.h"
-#elif !defined(OS_ANDROID)
-#error This file currently only supports Chrome OS and Android.
+#elif !defined(OS_ANDROID) && !defined(OS_WIN)
+#error This file currently only supports Chrome OS, Android and Windows.
 #endif
 
-#if defined(OS_CHROMEOS)
-using chromeos::attestation::PlatformVerificationDialog;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+using ash::attestation::PlatformVerificationDialog;
 #endif
 
 ProtectedMediaIdentifierPermissionContext::
     ProtectedMediaIdentifierPermissionContext(
         content::BrowserContext* browser_context)
-    : PermissionContextBase(browser_context,
-                            ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
-                            blink::mojom::FeaturePolicyFeature::kEncryptedMedia)
-#if defined(OS_CHROMEOS)
-
-#endif
-{
-}
+    : PermissionContextBase(
+          browser_context,
+          ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
+          blink::mojom::PermissionsPolicyFeature::kEncryptedMedia) {}
 
 ProtectedMediaIdentifierPermissionContext::
     ~ProtectedMediaIdentifierPermissionContext() {
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void ProtectedMediaIdentifierPermissionContext::DecidePermission(
     content::WebContents* web_contents,
     const permissions::PermissionRequestID& id,
@@ -77,8 +76,7 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
   }
 
   // ShowDialog doesn't use the callback if it returns null.
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
 
   // On ChromeOS, we don't use PermissionContextBase::RequestPermission() which
   // uses the standard permission infobar/bubble UI. See http://crbug.com/454847
@@ -90,19 +88,19 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
                          OnPlatformVerificationConsentResponse,
                      weak_factory_.GetWeakPtr(), web_contents, id,
                      requesting_origin, embedding_origin, user_gesture,
-                     repeating_callback));
+                     base::Time::Now(), std::move(split_callback.first)));
 
   // This could happen when the permission is requested from an extension. See
   // http://crbug.com/728534
   if (!widget) {
-    std::move(repeating_callback).Run(CONTENT_SETTING_ASK);
+    std::move(split_callback.second).Run(CONTENT_SETTING_ASK);
     return;
   }
 
   pending_requests_.insert(
       std::make_pair(web_contents, std::make_pair(widget, id)));
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 ContentSetting
 ProtectedMediaIdentifierPermissionContext::GetPermissionStatusInternal(
@@ -126,8 +124,8 @@ ProtectedMediaIdentifierPermissionContext::GetPermissionStatusInternal(
 
   // For automated testing of protected content - having a prompt that
   // requires user intervention is problematic. If the domain has been
-  // whitelisted as safe - suppress the request and allow.
-  if (content_setting == CONTENT_SETTING_ASK &&
+  // allowlisted as safe - suppress the request and allow.
+  if (content_setting != CONTENT_SETTING_ALLOW &&
       IsOriginAllowed(requesting_origin)) {
     content_setting = CONTENT_SETTING_ALLOW;
   }
@@ -172,7 +170,7 @@ void ProtectedMediaIdentifierPermissionContext::UpdateTabContext(
 bool ProtectedMediaIdentifierPermissionContext::IsRestrictedToSecureOrigins()
     const {
   // EME is not supported on insecure origins, see https://goo.gl/Ks5zf7
-  // Note that origins whitelisted by --unsafely-treat-insecure-origin-as-secure
+  // Note that origins allowlisted by --unsafely-treat-insecure-origin-as-secure
   // flag will be treated as "secure" so they will not be affected.
   return true;
 }
@@ -181,15 +179,16 @@ bool ProtectedMediaIdentifierPermissionContext::IsRestrictedToSecureOrigins()
 // across platforms.
 bool ProtectedMediaIdentifierPermissionContext::
     IsProtectedMediaIdentifierEnabled() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  // Platform verification is not allowed in incognito or guest mode.
+  // Identifier is not allowed in incognito or guest mode.
   if (profile->IsOffTheRecord() || profile->IsGuestSession()) {
     DVLOG(1) << "Protected media identifier disabled in incognito or guest "
                 "mode.";
     return false;
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(chromeos::switches::kSystemDevMode) &&
       !command_line->HasSwitch(chromeos::switches::kAllowRAInDevMode)) {
@@ -199,21 +198,21 @@ bool ProtectedMediaIdentifierPermissionContext::
 
   // This could be disabled by the device policy or by user's master switch.
   bool enabled_for_device = false;
-  if (!chromeos::CrosSettings::Get()->GetBoolean(
+  if (!ash::CrosSettings::Get()->GetBoolean(
           chromeos::kAttestationForContentProtectionEnabled,
           &enabled_for_device) ||
-      !enabled_for_device ||
-      !profile->GetPrefs()->GetBoolean(prefs::kEnableDRM)) {
+      !enabled_for_device) {
     DVLOG(1) << "Protected media identifier disabled by the user or by device "
                 "policy.";
     return false;
   }
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
 
   return true;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 void ProtectedMediaIdentifierPermissionContext::
     OnPlatformVerificationConsentResponse(
@@ -222,6 +221,7 @@ void ProtectedMediaIdentifierPermissionContext::
         const GURL& requesting_origin,
         const GURL& embedding_origin,
         bool user_gesture,
+        base::Time dialog_show_time,
         permissions::BrowserPermissionCallback callback,
         PlatformVerificationDialog::ConsentResponse response) {
   // Prepare function to report metrics.
@@ -237,9 +237,10 @@ void ProtectedMediaIdentifierPermissionContext::
 
     permissions::PermissionUmaUtil::PermissionPromptResolved(
         {permission_request.get()}, web_contents, permission_action,
+        base::Time::Now() - dialog_show_time,
         permissions::PermissionPromptDisposition::CUSTOM_MODAL_DIALOG,
-        /*ui_reason=*/base::nullopt,
-        /*predicted_grant_likelihood=*/base::nullopt);
+        /*ui_reason=*/absl::nullopt,
+        /*predicted_grant_likelihood=*/absl::nullopt);
   };
 
   // The request may have been canceled. Drop the callback in that case.

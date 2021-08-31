@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 from telemetry.internal.browser import extension_to_load
 
 
@@ -26,7 +27,7 @@ class ExtensionDict(object):
 
   def keys(self):
     # pylint: disable=invalid-name
-    return self._extension_backend.keys()
+    return list(self._extension_backend.keys())
 
   def GetByExtensionId(self, extension_id):
     """Returns a list of extensions given an extension id. This is useful for

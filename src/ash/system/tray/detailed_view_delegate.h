@@ -5,10 +5,11 @@
 #ifndef ASH_SYSTEM_TRAY_DETAILED_VIEW_DELEGATE_H_
 #define ASH_SYSTEM_TRAY_DETAILED_VIEW_DELEGATE_H_
 
+#include <string>
+
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/controls/button/button.h"
 
@@ -17,6 +18,7 @@ struct VectorIcon;
 }  // namespace gfx
 
 namespace views {
+class Label;
 class Separator;
 class View;
 }  // namespace views
@@ -44,7 +46,10 @@ class ASH_EXPORT DetailedViewDelegate {
   virtual void CloseBubble();
 
   // Get the background color of the detailed view.
-  virtual base::Optional<SkColor> GetBackgroundColor();
+  virtual absl::optional<SkColor> GetBackgroundColor();
+
+  // Get the padding of the detailed view.
+  virtual gfx::Insets GetInsetsForDetailedView() const;
 
   // Return true if overflow indicator of ScrollView is enabled.
   virtual bool IsOverflowIndicatorEnabled() const;
@@ -71,7 +76,7 @@ class ASH_EXPORT DetailedViewDelegate {
   // ownership of the returned view.
   virtual HoverHighlightView* CreateScrollListItem(ViewClickListener* listener,
                                                    const gfx::VectorIcon& icon,
-                                                   const base::string16& text);
+                                                   const std::u16string& text);
 
   // Return the back button used in the title row. Caller takes ownership of the
   // returned view.
@@ -95,8 +100,15 @@ class ASH_EXPORT DetailedViewDelegate {
   virtual views::Button* CreateHelpButton(
       views::Button::PressedCallback callback);
 
+  // Update the colors that need to be updated while switching between dark and
+  // light mode.
+  virtual void UpdateColors();
+
  private:
   UnifiedSystemTrayController* const tray_controller_;
+
+  views::Label* title_label_ = nullptr;
+  views::Separator* title_separator_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DetailedViewDelegate);
 };

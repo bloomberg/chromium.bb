@@ -8,6 +8,7 @@
 
 #include "base/strings/strcat.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api/declarative_net_request/request_action.h"
@@ -202,11 +203,11 @@ RulesetMatcherBase::RulesetMatcherBase(const ExtensionId& extension_id,
     : extension_id_(extension_id), ruleset_id_(ruleset_id) {}
 RulesetMatcherBase::~RulesetMatcherBase() = default;
 
-base::Optional<RequestAction> RulesetMatcherBase::GetBeforeRequestAction(
+absl::optional<RequestAction> RulesetMatcherBase::GetBeforeRequestAction(
     const RequestParams& params) const {
-  base::Optional<RequestAction> action =
+  absl::optional<RequestAction> action =
       GetBeforeRequestActionIgnoringAncestors(params);
-  base::Optional<RequestAction> parent_action =
+  absl::optional<RequestAction> parent_action =
       GetAllowlistedFrameAction(params.parent_routing_id);
 
   return GetMaxPriorityAction(std::move(action), std::move(parent_action));
@@ -225,7 +226,7 @@ void RulesetMatcherBase::OnRenderFrameCreated(content::RenderFrameHost* host) {
   // as well in OnRenderFrameCreated.
   content::GlobalFrameRoutingId parent_frame_id(parent->GetProcess()->GetID(),
                                                 parent->GetRoutingID());
-  base::Optional<RequestAction> parent_action =
+  absl::optional<RequestAction> parent_action =
       GetAllowlistedFrameAction(parent_frame_id);
   if (!parent_action)
     return;
@@ -245,21 +246,24 @@ void RulesetMatcherBase::OnRenderFrameDeleted(content::RenderFrameHost* host) {
       host->GetProcess()->GetID(), host->GetRoutingID()));
 }
 
-void RulesetMatcherBase::OnDidFinishNavigation(content::RenderFrameHost* host) {
+void RulesetMatcherBase::OnDidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  content::RenderFrameHost* host = navigation_handle->GetRenderFrameHost();
+
   // Note: we only start tracking frames on navigation, since a document only
   // issues network requests after the corresponding navigation is committed.
   // Hence we need not listen to OnRenderFrameCreated.
   DCHECK(host);
 
-  RequestParams params(host);
+  RequestParams params(host, navigation_handle->IsPost());
 
   // Find the highest priority allowAllRequests action corresponding to this
   // frame.
-  base::Optional<RequestAction> parent_action =
+  absl::optional<RequestAction> parent_action =
       GetAllowlistedFrameAction(params.parent_routing_id);
-  base::Optional<RequestAction> frame_action =
+  absl::optional<RequestAction> frame_action =
       GetAllowAllRequestsAction(params);
-  base::Optional<RequestAction> action =
+  absl::optional<RequestAction> action =
       GetMaxPriorityAction(std::move(parent_action), std::move(frame_action));
 
   content::GlobalFrameRoutingId frame_id(host->GetProcess()->GetID(),
@@ -271,7 +275,7 @@ void RulesetMatcherBase::OnDidFinishNavigation(content::RenderFrameHost* host) {
     allowlisted_frames_.insert(std::make_pair(frame_id, std::move(*action)));
 }
 
-base::Optional<RequestAction>
+absl::optional<RequestAction>
 RulesetMatcherBase::GetAllowlistedFrameActionForTesting(
     content::RenderFrameHost* host) const {
   DCHECK(host);
@@ -302,12 +306,12 @@ RequestAction RulesetMatcherBase::CreateAllowAllRequestsAction(
   return CreateRequestAction(RequestAction::Type::ALLOW_ALL_REQUESTS, rule);
 }
 
-base::Optional<RequestAction> RulesetMatcherBase::CreateUpgradeAction(
+absl::optional<RequestAction> RulesetMatcherBase::CreateUpgradeAction(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule) const {
   if (!IsUpgradeableUrl(*params.url)) {
     // TODO(crbug.com/1033780): this results in counterintuitive behavior.
-    return base::nullopt;
+    return absl::nullopt;
   }
   RequestAction upgrade_action =
       CreateRequestAction(RequestAction::Type::UPGRADE, rule);
@@ -315,7 +319,7 @@ base::Optional<RequestAction> RulesetMatcherBase::CreateUpgradeAction(
   return upgrade_action;
 }
 
-base::Optional<RequestAction>
+absl::optional<RequestAction>
 RulesetMatcherBase::CreateRedirectActionFromMetadata(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule,
@@ -345,18 +349,18 @@ RulesetMatcherBase::CreateRedirectActionFromMetadata(
   return CreateRedirectAction(params, rule, std::move(redirect_url));
 }
 
-base::Optional<RequestAction> RulesetMatcherBase::CreateRedirectAction(
+absl::optional<RequestAction> RulesetMatcherBase::CreateRedirectAction(
     const RequestParams& params,
     const url_pattern_index::flat::UrlRule& rule,
     GURL redirect_url) const {
   // Redirecting WebSocket handshake request is prohibited.
   // TODO(crbug.com/1033780): this results in counterintuitive behavior.
   if (params.element_type == flat_rule::ElementType_WEBSOCKET)
-    return base::nullopt;
+    return absl::nullopt;
 
   // Prevent a redirect loop where a URL continuously redirects to itself.
   if (!redirect_url.is_valid() || *params.url == redirect_url)
-    return base::nullopt;
+    return absl::nullopt;
 
   RequestAction redirect_action =
       CreateRequestAction(RequestAction::Type::REDIRECT, rule);
@@ -410,11 +414,11 @@ RequestAction RulesetMatcherBase::CreateRequestAction(
                        extension_id());
 }
 
-base::Optional<RequestAction> RulesetMatcherBase::GetAllowlistedFrameAction(
+absl::optional<RequestAction> RulesetMatcherBase::GetAllowlistedFrameAction(
     content::GlobalFrameRoutingId frame_id) const {
   auto it = allowlisted_frames_.find(frame_id);
   if (it == allowlisted_frames_.end())
-    return base::nullopt;
+    return absl::nullopt;
 
   return it->second.Clone();
 }

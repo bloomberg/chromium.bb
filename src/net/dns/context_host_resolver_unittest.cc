@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -18,6 +17,7 @@
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/base/schemeful_site.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_test_util.h"
@@ -35,8 +35,8 @@
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace net {
 
@@ -76,7 +76,9 @@ class ContextHostResolverTest : public ::testing::Test,
     dns_client->set_ignore_system_config_changes(true);
     dns_client_ = dns_client.get();
     manager_->SetDnsClientForTesting(std::move(dns_client));
-    manager_->SetInsecureDnsClientEnabled(true);
+    manager_->SetInsecureDnsClientEnabled(
+        /*enabled=*/true,
+        /*additional_dns_types_enabled=*/true);
 
     // Ensure DnsClient is fully usable.
     EXPECT_TRUE(dns_client_->CanUseInsecureDnsTransactions());
@@ -111,7 +113,7 @@ TEST_F(ContextHostResolverTest, Resolve) {
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetworkIsolationKey(), NetLogWithSource(),
-                              base::nullopt);
+                              absl::nullopt);
 
   TestCompletionCallback callback;
   int rv = request->Start(callback.callback());
@@ -141,7 +143,7 @@ TEST_F(ContextHostResolverTest, DestroyRequest) {
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetworkIsolationKey(), NetLogWithSource(),
-                              base::nullopt);
+                              absl::nullopt);
   EXPECT_EQ(1u, resolver->GetNumActiveRequestsForTesting());
 
   TestCompletionCallback callback;
@@ -244,7 +246,7 @@ TEST_F(ContextHostResolverTest, DestroyResolver) {
   std::unique_ptr<HostResolver::ResolveHostRequest> request1 =
       resolver1->CreateRequest(HostPortPair("example.com", 100),
                                NetworkIsolationKey(), NetLogWithSource(),
-                               base::nullopt);
+                               absl::nullopt);
   auto resolver2 = std::make_unique<ContextHostResolver>(
       manager_.get(),
       std::make_unique<ResolveContext>(nullptr /* url_request_context */,
@@ -252,7 +254,7 @@ TEST_F(ContextHostResolverTest, DestroyResolver) {
   std::unique_ptr<HostResolver::ResolveHostRequest> request2 =
       resolver2->CreateRequest(HostPortPair("google.com", 100),
                                NetworkIsolationKey(), NetLogWithSource(),
-                               base::nullopt);
+                               absl::nullopt);
 
   TestCompletionCallback callback1;
   int rv1 = request1->Start(callback1.callback());
@@ -293,7 +295,7 @@ TEST_F(ContextHostResolverTest, DestroyResolver_CompletedRequests) {
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetworkIsolationKey(), NetLogWithSource(),
-                              base::nullopt);
+                              absl::nullopt);
 
   // Complete request and then destroy the resolver.
   TestCompletionCallback callback;
@@ -348,7 +350,7 @@ TEST_F(ContextHostResolverTest, DestroyResolver_DelayedStartRequest) {
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetworkIsolationKey(), NetLogWithSource(),
-                              base::nullopt);
+                              absl::nullopt);
 
   resolver = nullptr;
 
@@ -400,7 +402,7 @@ TEST_F(ContextHostResolverTest, OnShutdown_PendingRequest) {
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetworkIsolationKey(), NetLogWithSource(),
-                              base::nullopt);
+                              absl::nullopt);
 
   TestCompletionCallback callback;
   int rv = request->Start(callback.callback());
@@ -456,7 +458,7 @@ TEST_F(ContextHostResolverTest, OnShutdown_CompletedRequests) {
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetworkIsolationKey(), NetLogWithSource(),
-                              base::nullopt);
+                              absl::nullopt);
 
   // Complete request and then shutdown the resolver.
   TestCompletionCallback callback;
@@ -481,11 +483,11 @@ TEST_F(ContextHostResolverTest, OnShutdown_SubsequentRequests) {
   std::unique_ptr<HostResolver::ResolveHostRequest> request1 =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetworkIsolationKey(), NetLogWithSource(),
-                              base::nullopt);
+                              absl::nullopt);
   std::unique_ptr<HostResolver::ResolveHostRequest> request2 =
       resolver->CreateRequest(HostPortPair("127.0.0.1", 100),
                               NetworkIsolationKey(), NetLogWithSource(),
-                              base::nullopt);
+                              absl::nullopt);
 
   TestCompletionCallback callback1;
   int rv1 = request1->Start(callback1.callback());
@@ -541,7 +543,7 @@ TEST_F(ContextHostResolverTest, OnShutdown_DelayedStartRequest) {
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
       resolver->CreateRequest(HostPortPair("example.com", 100),
                               NetworkIsolationKey(), NetLogWithSource(),
-                              base::nullopt);
+                              absl::nullopt);
 
   resolver->OnShutdown();
 
@@ -637,7 +639,7 @@ TEST_F(ContextHostResolverTest, ResultsAddedToCache) {
   std::unique_ptr<HostResolver::ResolveHostRequest> caching_request =
       resolver->CreateRequest(HostPortPair("example.com", 103),
                               NetworkIsolationKey(), NetLogWithSource(),
-                              base::nullopt);
+                              absl::nullopt);
   TestCompletionCallback caching_callback;
   int rv = caching_request->Start(caching_callback.callback());
   EXPECT_THAT(caching_callback.GetResult(rv), test::IsOk());
@@ -661,8 +663,8 @@ TEST_F(ContextHostResolverTest, ResultsAddedToCache) {
 // Do a lookup with a NetworkIsolationKey, and then make sure the entry added to
 // the cache is in fact using that NetworkIsolationKey.
 TEST_F(ContextHostResolverTest, ResultsAddedToCacheWithNetworkIsolationKey) {
-  const url::Origin kOrigin = url::Origin::Create(GURL("https://origin.test/"));
-  const NetworkIsolationKey kNetworkIsolationKey(kOrigin, kOrigin);
+  const SchemefulSite kSite(GURL("https://origin.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey(kSite, kSite);
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
@@ -686,7 +688,7 @@ TEST_F(ContextHostResolverTest, ResultsAddedToCacheWithNetworkIsolationKey) {
   std::unique_ptr<HostResolver::ResolveHostRequest> caching_request =
       resolver->CreateRequest(HostPortPair("example.com", 103),
                               kNetworkIsolationKey, NetLogWithSource(),
-                              base::nullopt);
+                              absl::nullopt);
   TestCompletionCallback caching_callback;
   int rv = caching_request->Start(caching_callback.callback());
   EXPECT_THAT(caching_callback.GetResult(rv), test::IsOk());

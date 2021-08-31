@@ -84,10 +84,10 @@ class MockDriveFs : public mojom::DriveFsInterceptorForTesting,
 
   MOCK_METHOD1(OnGetNextPage,
                drive::FileError(
-                   base::Optional<std::vector<mojom::QueryItemPtr>>* items));
+                   absl::optional<std::vector<mojom::QueryItemPtr>>* items));
 
   void GetNextPage(GetNextPageCallback callback) override {
-    base::Optional<std::vector<mojom::QueryItemPtr>> items;
+    absl::optional<std::vector<mojom::QueryItemPtr>> items;
     auto error = OnGetNextPage(&items);
     std::move(callback).Run(error, std::move(items));
   }
@@ -125,8 +125,8 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate,
   // DriveFsHost::MountObserver:
   MOCK_METHOD1(OnMounted, void(const base::FilePath&));
   MOCK_METHOD2(OnMountFailed,
-               void(MountFailure, base::Optional<base::TimeDelta>));
-  MOCK_METHOD1(OnUnmounted, void(base::Optional<base::TimeDelta>));
+               void(MountFailure, absl::optional<base::TimeDelta>));
+  MOCK_METHOD1(OnUnmounted, void(absl::optional<base::TimeDelta>));
 
   drive::DriveNotificationManager& GetDriveNotificationManager() override {
     return drive_notification_manager_;
@@ -264,11 +264,11 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
 
   void SendOnMounted() { delegate_->OnMounted(); }
 
-  void SendOnUnmounted(base::Optional<base::TimeDelta> delay) {
+  void SendOnUnmounted(absl::optional<base::TimeDelta> delay) {
     delegate_->OnUnmounted(std::move(delay));
   }
 
-  void SendMountFailed(base::Optional<base::TimeDelta> delay) {
+  void SendMountFailed(absl::optional<base::TimeDelta> delay) {
     delegate_->OnMountFailed(std::move(delay));
   }
 
@@ -333,7 +333,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   std::unique_ptr<TestingDriveFsHostDelegate> host_delegate_;
   std::unique_ptr<DriveFsHost> host_;
   base::MockOneShotTimer* timer_;
-  base::Optional<bool> verbose_logging_enabled_;
+  absl::optional<bool> verbose_logging_enabled_;
 
   mojo::Receiver<mojom::DriveFsBootstrap> bootstrap_receiver_{this};
   MockDriveFs mock_drivefs_;
@@ -341,7 +341,7 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
   mojo::Remote<mojom::DriveFsDelegate> delegate_;
   mojo::PendingReceiver<mojom::DriveFsDelegate> pending_delegate_receiver_;
   std::string token_;
-  base::Optional<std::string> init_access_token_;
+  absl::optional<std::string> init_access_token_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DriveFsHostTest);
@@ -560,6 +560,64 @@ TEST_F(DriveFsHostTest, OnError_IgnoreUnknownErrorTypes) {
   delegate_.FlushForTesting();
 }
 
+TEST_F(DriveFsHostTest, DisplayConfirmDialog_ForwardToHandler) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  auto reason = mojom::DialogReason::New(
+      mojom::DialogReason::Type::kEnableDocsOffline, base::FilePath());
+  mojom::DialogReasonPtr observed_reason;
+  host_->set_dialog_handler(base::BindLambdaForTesting(
+      [&](const mojom::DialogReason& reason,
+          base::OnceCallback<void(mojom::DialogResult)> callback) {
+        observed_reason = reason.Clone();
+        std::move(callback).Run(mojom::DialogResult::kAccept);
+      }));
+  bool called = false;
+  delegate_->DisplayConfirmDialog(
+      reason.Clone(),
+      base::BindLambdaForTesting([&](mojom::DialogResult result) {
+        EXPECT_EQ(mojom::DialogResult::kAccept, result);
+        called = true;
+      }));
+  delegate_.FlushForTesting();
+  EXPECT_EQ(reason, observed_reason);
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DriveFsHostTest, DisplayConfirmDialogImpl_IgnoreIfNoHandler) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  bool called = false;
+  delegate_->DisplayConfirmDialog(
+      mojom::DialogReason::New(mojom::DialogReason::Type::kEnableDocsOffline,
+                               base::FilePath()),
+      base::BindLambdaForTesting([&](mojom::DialogResult result) {
+        EXPECT_EQ(mojom::DialogResult::kNotDisplayed, result);
+        called = true;
+      }));
+  delegate_.FlushForTesting();
+  EXPECT_TRUE(called);
+}
+
+TEST_F(DriveFsHostTest, DisplayConfirmDialogImpl_IgnoreUnknownReasonTypes) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+  host_->set_dialog_handler(base::BindRepeating(
+      [](const mojom::DialogReason&,
+         base::OnceCallback<void(mojom::DialogResult)>) { NOTREACHED(); }));
+  bool called = false;
+  delegate_->DisplayConfirmDialog(
+      mojom::DialogReason::New(
+          static_cast<mojom::DialogReason::Type>(
+              static_cast<std::underlying_type_t<mojom::DialogReason::Type>>(
+                  mojom::DialogReason::Type::kMaxValue) +
+              1),
+          base::FilePath()),
+      base::BindLambdaForTesting([&](mojom::DialogResult result) {
+        EXPECT_EQ(mojom::DialogResult::kNotDisplayed, result);
+        called = true;
+      }));
+  delegate_.FlushForTesting();
+  EXPECT_TRUE(called);
+}
+
 TEST_F(DriveFsHostTest, TeamDriveTracking) {
   ASSERT_NO_FATAL_FAILURE(DoMount());
 
@@ -643,15 +701,15 @@ TEST_F(DriveFsHostTest, RemoveDriveNotificationObserver) {
 
   delegate_->OnTeamDrivesListReady({"a", "b"});
   delegate_.FlushForTesting();
-  EXPECT_TRUE(host_delegate_->GetDriveNotificationManager()
-                  .observers_for_test()
-                  .might_have_observers());
+  EXPECT_TRUE(!host_delegate_->GetDriveNotificationManager()
+                   .observers_for_test()
+                   .empty());
 
   host_.reset();
 
-  EXPECT_FALSE(host_delegate_->GetDriveNotificationManager()
-                   .observers_for_test()
-                   .might_have_observers());
+  EXPECT_FALSE(!host_delegate_->GetDriveNotificationManager()
+                    .observers_for_test()
+                    .empty());
 }
 
 TEST_F(DriveFsHostTest, Remount_CachedOnceOnly) {
@@ -673,7 +731,7 @@ TEST_F(DriveFsHostTest, Remount_CachedOnceOnly) {
       "auth token", clock_.Now() + kTokenLifetime);
   EXPECT_FALSE(identity_test_env_.IsAccessTokenRequestPending());
 
-  base::Optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
+  absl::optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
   EXPECT_CALL(*host_delegate_, OnUnmounted(delay));
   SendOnUnmounted(delay);
   base::RunLoop().RunUntilIdle();
@@ -709,7 +767,7 @@ TEST_F(DriveFsHostTest, Remount_RequestInflight) {
       base::BindLambdaForTesting([&](mojom::AccessTokenStatus status,
                                      const std::string& token) { FAIL(); }));
 
-  base::Optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
+  absl::optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
   EXPECT_CALL(*host_delegate_, OnUnmounted(delay));
   SendOnUnmounted(delay);
   base::RunLoop().RunUntilIdle();
@@ -734,7 +792,7 @@ TEST_F(DriveFsHostTest, Remount_RequestInflightCompleteAfterMount) {
       base::BindLambdaForTesting([&](mojom::AccessTokenStatus status,
                                      const std::string& token) { FAIL(); }));
 
-  base::Optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
+  absl::optional<base::TimeDelta> delay = base::TimeDelta::FromSeconds(5);
   EXPECT_CALL(*host_delegate_, OnUnmounted(delay));
   SendOnUnmounted(delay);
   base::RunLoop().RunUntilIdle();

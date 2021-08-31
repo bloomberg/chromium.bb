@@ -1,8 +1,8 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import {assert} from 'chrome://resources/js/assert.m.js';
 import {alphabeticalCompare} from 'chrome://scanning/scanning_app_util.js';
+import {assertTrue} from '../../chai_assert.js';
 import {flushTasks} from '../../test_util.m.js';
 
 /**
@@ -15,7 +15,7 @@ export function assertOrderedAlphabetically(arr, conversionFn = (val) => val) {
   for (let i = 0; i < arr.length - 1; i++) {
     // |alphabeticalCompare| will return -1 if the first argument is less than
     // the second and 0 if the two arguments are equal.
-    assert(
+    assertTrue(
         alphabeticalCompare(conversionFn(arr[i]), conversionFn(arr[i + 1])) <=
         0);
   }
@@ -24,7 +24,7 @@ export function assertOrderedAlphabetically(arr, conversionFn = (val) => val) {
 /**
  * @param {!mojoBase.mojom.UnguessableToken} id
  * @param {string} displayName
- * @return {!chromeos.scanning.mojom.Scanner}
+ * @return {!ash.scanning.mojom.Scanner}
  */
 export function createScanner(id, displayName) {
   return {id, 'displayName': strToMojoString16(displayName)};
@@ -33,11 +33,11 @@ export function createScanner(id, displayName) {
 /**
  * @param {number} type
  * @param {string} name
- * @param {!Array<chromeos.scanning.mojom.PageSize>} pageSizes
- * @return {!chromeos.scanning.mojom.ScanSource}
+ * @param {!Array<ash.scanning.mojom.PageSize>} pageSizes
+ * @return {!ash.scanning.mojom.ScanSource}
  */
 export function createScannerSource(type, name, pageSizes) {
-  return /** @type {!chromeos.scanning.mojom.ScanSource} */ (
+  return /** @type {!ash.scanning.mojom.ScanSource} */ (
       {type, name, pageSizes});
 }
 
@@ -64,10 +64,12 @@ function strToMojoString16(str) {
 export function changeSelect(select, value, selectedIndex) {
   if (value) {
     select.value = value;
-  }
-  if (selectedIndex) {
+  } else if (selectedIndex !== null) {
     select.selectedIndex = selectedIndex;
+  } else {
+    return Promise.reject();
   }
+
   select.dispatchEvent(new CustomEvent('change'));
   return flushTasks();
 }

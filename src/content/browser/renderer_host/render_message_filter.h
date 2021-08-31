@@ -12,11 +12,9 @@
 #include <string>
 #include <vector>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/browser/browser_associated_interface.h"
@@ -46,14 +44,12 @@ namespace content {
 class BrowserContext;
 class MediaInternals;
 class RenderWidgetHelper;
-class ResourceContext;
 
 // This class filters out incoming IPC messages for the renderer process on the
 // IPC thread.
 class CONTENT_EXPORT RenderMessageFilter
     : public BrowserMessageFilter,
-      public BrowserAssociatedInterface<mojom::RenderMessageFilter>,
-      public mojom::RenderMessageFilter {
+      public BrowserAssociatedInterface<mojom::RenderMessageFilter> {
  public:
   // Create the filter.
   RenderMessageFilter(int render_process_id,
@@ -96,9 +92,6 @@ class CONTENT_EXPORT RenderMessageFilter
 
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;
-
-  // The ResourceContext which is to be used on the IO thread.
-  ResourceContext* resource_context_;
 
   scoped_refptr<RenderWidgetHelper> render_widget_helper_;
 

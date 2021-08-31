@@ -350,7 +350,7 @@ static av_cold int read_specific_config(ALSDecContext *ctx)
         return AVERROR_INVALIDDATA;
 
     if (avctx->channels > FF_SANE_NB_CHANNELS) {
-        avpriv_request_sample(avctx, "Huge number of channels\n");
+        avpriv_request_sample(avctx, "Huge number of channels");
         return AVERROR_PATCHWELCOME;
     }
 
@@ -762,7 +762,7 @@ static int read_var_block_data(ALSDecContext *ctx, ALSBlockData *bd)
             }
 
             for (k = 2; k < opt_order; k++)
-                quant_cof[k] = (quant_cof[k] * (1 << 14)) + (add_base << 13);
+                quant_cof[k] = (quant_cof[k] * (1U << 14)) + (add_base << 13);
         }
     }
 
@@ -1016,6 +1016,10 @@ static int read_block(ALSDecContext *ctx, ALSBlockData *bd)
     ALSSpecificConfig *sconf = &ctx->sconf;
 
     *bd->shift_lsbs = 0;
+
+    if (get_bits_left(gb) < 1)
+        return AVERROR_INVALIDDATA;
+
     // read block type flag and read the samples accordingly
     if (get_bits1(gb)) {
         ret = read_var_block_data(ctx, bd);
@@ -2179,6 +2183,6 @@ AVCodec ff_als_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .flush          = flush,
-    .capabilities   = AV_CODEC_CAP_SUBFRAMES | AV_CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_SUBFRAMES | AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
     .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
 };

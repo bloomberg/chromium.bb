@@ -25,6 +25,8 @@
 
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
 
+#include "base/trace_event/trace_event.h"
+#include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_audio_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
@@ -67,6 +69,8 @@ AudioHandler::AudioHandler(NodeType node_type,
 #endif
   InstanceCounters::IncrementCounter(InstanceCounters::kAudioHandlerCounter);
 
+  SendLogMessage(
+      String::Format("%s({sample_rate=%0.f})", __func__, sample_rate));
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(
       stderr,
@@ -198,6 +202,7 @@ void AudioHandler::AddInput() {
 
 void AudioHandler::AddOutput(unsigned number_of_channels) {
   DCHECK(IsMainThread());
+
   outputs_.push_back(
       std::make_unique<AudioNodeOutput>(this, number_of_channels));
   GetNode()->DidAddOutput(NumberOfOutputs());
@@ -334,6 +339,10 @@ void AudioHandler::ProcessIfNecessary(uint32_t frames_to_process) {
   if (!IsInitialized())
     return;
 
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("webaudio.audionode"),
+               "AudioHandler::ProcessIfNecessary", "this",
+               static_cast<void*>(this), "node type", NodeTypeName().Ascii());
+
   // Ensure that we only process once per rendering quantum.
   // This handles the "fanout" problem where an output is connected to multiple
   // inputs.  The first time we're called during this time slice we process, but
@@ -370,6 +379,12 @@ void AudioHandler::ProcessIfNecessary(uint32_t frames_to_process) {
       last_non_silent_time_ =
           (Context()->CurrentSampleFrame() + frames_to_process) /
           static_cast<double>(Context()->sampleRate());
+    }
+
+    if (!is_processing_) {
+      SendLogMessage(String::Format("%s => (processing is alive [frames=%u])",
+                                    __func__, frames_to_process));
+      is_processing_ = true;
     }
   }
 }
@@ -582,6 +597,15 @@ unsigned AudioHandler::NumberOfOutputChannels() const {
             << GetNodeType();
   return 1;
 }
+
+void AudioHandler::SendLogMessage(const String& message) {
+  WebRtcLogMessage(String::Format("[WA]AH::%s [type=%s, this=0x%" PRIXPTR "]",
+                                  message.Utf8().c_str(),
+                                  NodeTypeName().Utf8().c_str(),
+                                  reinterpret_cast<uintptr_t>(this))
+                       .Utf8());
+}
+
 // ----------------------------------------------------------------
 
 AudioNode::AudioNode(BaseAudioContext& context)
@@ -609,13 +633,13 @@ void AudioNode::Dispose() {
   BaseAudioContext::GraphAutoLocker locker(context());
   Handler().Dispose();
 
-  // Add the handler to the orphan list if the context is pulling on the audio
-  // graph.  This keeps the handler alive until it can be deleted at a safe
-  // point (in pre/post handler task).  If graph isn't being pulled, we can
-  // delete the handler now since nothing on the audio thread will be touching
-  // it.
+  // Add the handler to the orphan list.  This keeps the handler alive until it
+  // can be deleted at a safe point (in pre/post handler task).  If the graph is
+  // being processed, the handler must be added.  If the context is suspended,
+  // the handler still needs to be added in case the context is resumed.
   DCHECK(context());
-  if (context()->IsPullingAudioGraph()) {
+  if (context()->IsPullingAudioGraph() ||
+      context()->ContextState() == BaseAudioContext::kSuspended) {
     context()->GetDeferredTaskHandler().AddRenderingOrphanHandler(
         std::move(handler_));
   }
@@ -727,6 +751,15 @@ AudioNode* AudioNode::connect(AudioNode* destination,
                                       "destination node.");
     return nullptr;
   }
+
+  SendLogMessage(String::Format(
+      "%s({output=[index:%u, type:%s, handler:0x%" PRIXPTR
+      "]} --> "
+      "{input=[index:%u, type:%s, handler:0x%" PRIXPTR "]})",
+      __func__, output_index, Handler().NodeTypeName().Utf8().c_str(),
+      reinterpret_cast<uintptr_t>(&Handler()), input_index,
+      destination->Handler().NodeTypeName().Utf8().c_str(),
+      reinterpret_cast<uintptr_t>(&destination->Handler())));
 
   AudioNodeWiring::Connect(Handler().Output(output_index),
                            destination->Handler().Input(input_index));
@@ -1075,6 +1108,10 @@ void AudioNode::DidAddOutput(unsigned number_of_outputs) {
   DCHECK_EQ(number_of_outputs, connected_nodes_.size());
   connected_params_.push_back(nullptr);
   DCHECK_EQ(number_of_outputs, connected_params_.size());
+}
+
+void AudioNode::SendLogMessage(const String& message) {
+  WebRtcLogMessage(String::Format("[WA]AN::%s", message.Utf8().c_str()).Utf8());
 }
 
 }  // namespace blink

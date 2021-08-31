@@ -4,11 +4,14 @@
 
 module blink.mojom;
 
+import "mojo/public/mojom/base/big_buffer.mojom";
 import "mojo/public/mojom/base/read_only_buffer.mojom";
+import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_response.mojom";
 import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
-import "mojo/public/mojom/base/string16.mojom";
+import "url/mojom/url.mojom";
 
 // This enum is used in histograms, so do not change the ordering and always
 // append new types to the end.
@@ -94,10 +97,21 @@ union MatchResult {
   EagerResponse eager_response;
 };
 
-// Result of MatchAll method |status| is only set if there is a failure.
+// Result of MatchAll. |status| is only set if there is a failure.
 union MatchAllResult {
   CacheStorageError status;
   array<blink.mojom.FetchAPIResponse> responses;
+};
+
+struct CacheEntry {
+  blink.mojom.FetchAPIRequest request;
+  blink.mojom.FetchAPIResponse response;
+};
+
+// Result of GetAllMatchedEntries. |status| is only set if there is a failure.
+union GetAllMatchedEntriesResult {
+  CacheStorageError status;
+  array<CacheEntry> entries;
 };
 
 // Result of CacheStorageCache's Keys method. |status| is only set if there is a
@@ -120,8 +134,17 @@ interface CacheStorageCache {
 
   // Returns all cached responses that match |request| according to options
   // specified on |query_options|.
-  MatchAll(blink.mojom.FetchAPIRequest? request, CacheQueryOptions query_options, int64 trace_id)
+  MatchAll(blink.mojom.FetchAPIRequest? request,
+           CacheQueryOptions query_options, int64 trace_id)
       => (MatchAllResult result);
+
+  // Returns all pairs of cached (request, response) entries that match
+  // |request| according to options specified on |query_options|.
+  // Only valid to call for internal browser usage cases, and not for general
+  // renderer cache storage web api.
+  GetAllMatchedEntries(blink.mojom.FetchAPIRequest? request,
+                      CacheQueryOptions query_options, int64 trace_id)
+      => (GetAllMatchedEntriesResult result);
 
   // Returns all keys (which are requests) of matching |request| and
   // |query_options|.
@@ -131,6 +154,14 @@ interface CacheStorageCache {
   // Perform a batch of operations, used for PUT and DELETE operations.
   Batch(array<BatchOperation> batch_operations, int64 trace_id)
       => (CacheStorageVerboseError result);
+
+  // Writes the side data (ex: V8 code cache) for the specified cache entry.
+  // If it doesn't exist, or the |expected_response_time| differs from the
+  // entry's, blink::mojom::CacheStorageError::kErrorNotFound is returned.
+  WriteSideData(url.mojom.Url url,
+                mojo_base.mojom.Time expected_response_time,
+                mojo_base.mojom.BigBuffer data,
+                int64 trace_id) => (CacheStorageError result);
 };
 
 // Handles global CacheStorage methods, directly relates to methods available on

@@ -27,6 +27,10 @@ bool MenuModel::IsNewFeatureAt(int index) const {
   return false;
 }
 
+ElementIdentifier MenuModel::GetElementIdentifierAt(int index) const {
+  return ElementIdentifier();
+}
+
 // static
 bool MenuModel::GetModelAndIndexForCommandId(int command_id,
                                              MenuModel** model,
@@ -56,16 +60,20 @@ bool MenuModel::GetModelAndIndexForCommandId(int command_id,
   return false;
 }
 
-base::string16 MenuModel::GetMinorTextAt(int index) const {
-  return base::string16();
+std::u16string MenuModel::GetMinorTextAt(int index) const {
+  return std::u16string();
 }
 
-base::string16 MenuModel::GetSecondaryLabelAt(int index) const {
-  return base::string16();
+std::u16string MenuModel::GetSecondaryLabelAt(int index) const {
+  return std::u16string();
 }
 
 ImageModel MenuModel::GetMinorIconAt(int index) const {
   return ImageModel();
+}
+
+bool MenuModel::MayHaveMnemonicsAt(int index) const {
+  return true;
 }
 
 const gfx::FontList* MenuModel::GetLabelFontListAt(int index) const {

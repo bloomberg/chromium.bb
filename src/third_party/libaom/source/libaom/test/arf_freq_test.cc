@@ -56,9 +56,13 @@ const TestVideoParam kTestVectors[] = {
 };
 
 const TestEncodeParam kEncodeVectors[] = {
-  { ::libaom_test::kOnePassGood, 2 }, { ::libaom_test::kOnePassGood, 5 },
-  { ::libaom_test::kTwoPassGood, 1 }, { ::libaom_test::kTwoPassGood, 2 },
-  { ::libaom_test::kTwoPassGood, 5 }, { ::libaom_test::kRealTime, 5 },
+#if CONFIG_REALTIME_ONLY
+  { ::libaom_test::kRealTime, 5 },
+#else
+  { ::libaom_test::kRealTime, 5 },    { ::libaom_test::kOnePassGood, 2 },
+  { ::libaom_test::kOnePassGood, 5 }, { ::libaom_test::kTwoPassGood, 1 },
+  { ::libaom_test::kTwoPassGood, 2 }, { ::libaom_test::kTwoPassGood, 5 },
+#endif
 };
 
 const int kMinArfVectors[] = {
@@ -87,14 +91,10 @@ class ArfFreqTestLarge
   virtual ~ArfFreqTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(test_encode_param_.mode);
+    InitializeConfig(test_encode_param_.mode);
     if (test_encode_param_.mode != ::libaom_test::kRealTime) {
       cfg_.g_lag_in_frames = 25;
-      cfg_.rc_end_usage = AOM_VBR;
     } else {
-      cfg_.g_lag_in_frames = 0;
-      cfg_.rc_end_usage = AOM_CBR;
       cfg_.rc_buf_sz = 1000;
       cfg_.rc_buf_initial_sz = 500;
       cfg_.rc_buf_optimal_sz = 600;

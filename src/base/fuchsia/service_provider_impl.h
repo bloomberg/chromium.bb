@@ -22,11 +22,11 @@ class OutgoingDirectory;
 }  // namespace sys
 
 namespace base {
-namespace fuchsia {
 
 // Implementation of the legacy sys.ServiceProvider interface which delegates
 // requests to an underlying fuchsia.io.Directory of services.
-// TODO(https://crbug.com/920920): Remove this when ServiceProvider is gone.
+// TODO(https://crbug.com/1065707): Remove this when it is no longer required
+// by the //fuchsia/base AgentImpl.
 class BASE_EXPORT ServiceProviderImpl : public ::fuchsia::sys::ServiceProvider {
  public:
   // Constructor that creates ServiceProvider for public services in the
@@ -63,7 +63,6 @@ class BASE_EXPORT ServiceProviderImpl : public ::fuchsia::sys::ServiceProvider {
   DISALLOW_COPY_AND_ASSIGN(ServiceProviderImpl);
 };
 
-}  // namespace fuchsia
 }  // namespace base
 
 #endif  // BASE_FUCHSIA_SERVICE_PROVIDER_IMPL_H_

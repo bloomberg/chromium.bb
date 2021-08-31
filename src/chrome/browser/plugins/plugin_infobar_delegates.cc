@@ -11,7 +11,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/infobars/confirm_infobar_creator.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_installer.h"
@@ -23,6 +23,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/google/core/common/google_util.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
@@ -40,7 +41,7 @@ using base::UserMetricsAction;
 
 namespace {
 
-base::string16 GetInfoBarMessage(const PluginMetadata& metadata) {
+std::u16string GetInfoBarMessage(const PluginMetadata& metadata) {
   return l10n_util::GetStringFUTF16(metadata.plugin_is_deprecated()
                                         ? IDS_PLUGIN_DEPRECATED
                                         : IDS_PLUGIN_OUTDATED_PROMPT,
@@ -52,20 +53,19 @@ base::string16 GetInfoBarMessage(const PluginMetadata& metadata) {
 // OutdatedPluginInfoBarDelegate ----------------------------------------------
 
 void OutdatedPluginInfoBarDelegate::Create(
-    InfoBarService* infobar_service,
+    infobars::ContentInfoBarManager* infobar_manager,
     PluginInstaller* installer,
     std::unique_ptr<PluginMetadata> plugin_metadata) {
   std::unique_ptr<ConfirmInfoBarDelegate> delegate_ptr;
   delegate_ptr.reset(
       new OutdatedPluginInfoBarDelegate(installer, std::move(plugin_metadata)));
-  infobar_service->AddInfoBar(
-      infobar_service->CreateConfirmInfoBar(std::move(delegate_ptr)));
+  infobar_manager->AddInfoBar(CreateConfirmInfoBar(std::move(delegate_ptr)));
 }
 
 OutdatedPluginInfoBarDelegate::OutdatedPluginInfoBarDelegate(
     PluginInstaller* installer,
     std::unique_ptr<PluginMetadata> plugin_metadata,
-    const base::string16& message)
+    const std::u16string& message)
     : ConfirmInfoBarDelegate(),
       WeakPluginInstallerObserver(installer),
       identifier_(plugin_metadata->identifier()),
@@ -106,7 +106,7 @@ const gfx::VectorIcon& OutdatedPluginInfoBarDelegate::GetVectorIcon() const {
   return vector_icons::kExtensionIcon;
 }
 
-base::string16 OutdatedPluginInfoBarDelegate::GetLinkText() const {
+std::u16string OutdatedPluginInfoBarDelegate::GetLinkText() const {
   return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
@@ -118,7 +118,7 @@ void OutdatedPluginInfoBarDelegate::InfoBarDismissed() {
   base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.Dismissed"));
 }
 
-base::string16 OutdatedPluginInfoBarDelegate::GetMessageText() const {
+std::u16string OutdatedPluginInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 
@@ -130,7 +130,7 @@ int OutdatedPluginInfoBarDelegate::GetButtons() const {
   return BUTTON_OK | BUTTON_CANCEL;
 }
 
-base::string16 OutdatedPluginInfoBarDelegate::GetButtonLabel(
+std::u16string OutdatedPluginInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ?
       IDS_PLUGIN_UPDATE : IDS_PLUGIN_ENABLE_TEMPORARILY);
@@ -143,7 +143,7 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
   // not pass a reference to an object that can go away.
   GURL plugin_url(plugin_metadata_->plugin_url());
   content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
+      infobars::ContentInfoBarManager::WebContentsFromInfoBar(infobar());
   if (web_contents) {
     DCHECK(plugin_metadata_->url_for_display());
     installer()->OpenDownloadURL(plugin_url, web_contents);
@@ -155,7 +155,7 @@ bool OutdatedPluginInfoBarDelegate::Cancel() {
   base::RecordAction(UserMetricsAction("OutdatedPluginInfobar.AllowThisTime"));
 
   content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(infobar());
+      infobars::ContentInfoBarManager::WebContentsFromInfoBar(infobar());
   if (web_contents) {
     ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
         web_contents, true, identifier_);
@@ -174,7 +174,7 @@ void OutdatedPluginInfoBarDelegate::OnlyWeakObserversLeft() {
 }
 
 void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
-    const base::string16& message) {
+    const std::u16string& message) {
   // Return early if the message doesn't change. This is important in case the
   // PluginInstaller is still iterating over its observers (otherwise we would
   // keep replacing infobar delegates infinitely).
@@ -185,6 +185,5 @@ void OutdatedPluginInfoBarDelegate::ReplaceWithInfoBar(
   delegate_ptr.reset(new OutdatedPluginInfoBarDelegate(
       installer(), std::move(plugin_metadata_), message));
   infobar()->owner()->ReplaceInfoBar(
-      infobar(),
-      infobar()->owner()->CreateConfirmInfoBar(std::move(delegate_ptr)));
+      infobar(), CreateConfirmInfoBar(std::move(delegate_ptr)));
 }

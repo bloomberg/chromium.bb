@@ -116,9 +116,10 @@ class EmptyUndoDelegate : public BookmarkUndoDelegate {
 
 BookmarkModel::BookmarkModel(std::unique_ptr<BookmarkClient> client)
     : client_(std::move(client)),
-      owned_root_(std::make_unique<BookmarkNode>(/*id=*/0,
-                                                 BookmarkNode::kRootNodeGuid,
-                                                 GURL())),
+      owned_root_(std::make_unique<BookmarkNode>(
+          /*id=*/0,
+          base::GUID::ParseLowercase(BookmarkNode::kRootNodeGuid),
+          GURL())),
       root_(owned_root_.get()),
       observers_(base::ObserverListPolicy::EXISTING_ONLY),
       empty_undo_delegate_(std::make_unique<EmptyUndoDelegate>()) {
@@ -236,6 +237,7 @@ void BookmarkModel::Remove(const BookmarkNode* node) {
 
 void BookmarkModel::RemoveAllUserBookmarks() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(loaded_);
   std::set<GURL> removed_urls;
   struct RemoveNodeData {
     const BookmarkNode* parent;
@@ -351,7 +353,7 @@ const gfx::Image& BookmarkModel::GetFavicon(const BookmarkNode* node) {
 }
 
 void BookmarkModel::SetTitle(const BookmarkNode* node,
-                             const base::string16& title) {
+                             const std::u16string& title) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(node);
 
@@ -576,23 +578,20 @@ void BookmarkModel::GetBookmarks(std::vector<UrlAndTitle>* bookmarks) {
 const BookmarkNode* BookmarkModel::AddFolder(
     const BookmarkNode* parent,
     size_t index,
-    const base::string16& title,
+    const std::u16string& title,
     const BookmarkNode::MetaInfoMap* meta_info,
-    base::Optional<std::string> guid) {
+    absl::optional<base::GUID> guid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
   DCHECK(parent);
   DCHECK(parent->is_folder());
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
+  DCHECK(!guid || guid->is_valid());
 
-  if (guid)
-    DCHECK(base::IsValidGUIDOutputString(*guid));
-  else
-    guid = base::GenerateGUID();
-
-  auto new_node =
-      std::make_unique<BookmarkNode>(generate_next_node_id(), *guid, GURL());
+  auto new_node = std::make_unique<BookmarkNode>(
+      generate_next_node_id(), guid ? *guid : base::GUID::GenerateRandomV4(),
+      GURL());
   new_node->set_date_folder_modified(Time::Now());
   // Folders shouldn't have line breaks in their titles.
   new_node->SetTitle(title);
@@ -605,11 +604,11 @@ const BookmarkNode* BookmarkModel::AddFolder(
 const BookmarkNode* BookmarkModel::AddURL(
     const BookmarkNode* parent,
     size_t index,
-    const base::string16& title,
+    const std::u16string& title,
     const GURL& url,
     const BookmarkNode::MetaInfoMap* meta_info,
-    base::Optional<base::Time> creation_time,
-    base::Optional<std::string> guid) {
+    absl::optional<base::Time> creation_time,
+    absl::optional<base::GUID> guid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
   DCHECK(url.is_valid());
@@ -617,11 +616,7 @@ const BookmarkNode* BookmarkModel::AddURL(
   DCHECK(parent->is_folder());
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
-
-  if (guid)
-    DCHECK(base::IsValidGUIDOutputString(*guid));
-  else
-    guid = base::GenerateGUID();
+  DCHECK(!guid || guid->is_valid());
 
   if (!creation_time)
     creation_time = Time::Now();
@@ -630,8 +625,9 @@ const BookmarkNode* BookmarkModel::AddURL(
   if (*creation_time > parent->date_folder_modified())
     SetDateFolderModified(parent, *creation_time);
 
-  auto new_node =
-      std::make_unique<BookmarkNode>(generate_next_node_id(), *guid, url);
+  auto new_node = std::make_unique<BookmarkNode>(
+      generate_next_node_id(), guid ? *guid : base::GUID::GenerateRandomV4(),
+      url);
   new_node->SetTitle(title);
   new_node->set_date_added(*creation_time);
   if (meta_info)
@@ -719,7 +715,7 @@ void BookmarkModel::ResetDateFolderModified(const BookmarkNode* node) {
 }
 
 std::vector<TitledUrlMatch> BookmarkModel::GetBookmarksMatching(
-    const base::string16& query,
+    const std::u16string& query,
     size_t max_count,
     query_parser::MatchingAlgorithm matching_algorithm,
     bool match_ancestor_titles) {

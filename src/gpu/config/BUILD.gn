@@ -57,7 +57,7 @@ python2_action("process_json") {
     args += [ "macosx" ]
   } else if (is_android) {
     args += [ "android" ]
-  } else if (is_ash) {
+  } else if (is_chromeos_ash) {
     args += [ "chromeos" ]
   } else if (is_fuchsia) {
     args += [ "fuchsia" ]
@@ -99,7 +99,7 @@ if (enable_vulkan) {
 
     deps = [ "//gpu/ipc/common:vulkan_interface" ]
     public_deps = [
-      "//third_party/vulkan_headers",
+      "//third_party/vulkan-deps/vulkan-headers/src:vulkan_headers",
       "//ui/gfx",
     ]
 
@@ -178,6 +178,7 @@ source_set("config_sources") {
   deps = [
     ":process_json",
     "//base",
+    "//base/util/values:values_util",
     "//build:branding_buildflags",
     "//build:chromecast_buildflags",
     "//build:chromeos_buildflags",
@@ -186,7 +187,7 @@ source_set("config_sources") {
     "//gpu/vulkan:buildflags",
     "//media:media_buildflags",
     "//third_party/re2",
-    "//third_party/vulkan_headers",
+    "//third_party/vulkan-deps/vulkan-headers/src:vulkan_headers",
     "//ui/gfx",
     "//ui/gl",
     "//ui/gl:buildflags",
@@ -236,6 +237,9 @@ source_set("config_sources") {
       "//ui/base:features",
       "//ui/gfx/linux:gpu_memory_buffer_support_x11",
     ]
+  }
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 }
 

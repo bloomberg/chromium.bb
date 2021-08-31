@@ -62,7 +62,7 @@ std::unique_ptr<base::Value> Mapper::MapPrimitive(
     const OncValueSignature& signature,
     const base::Value& onc_primitive,
     bool* error) {
-  return base::WrapUnique(onc_primitive.DeepCopy());
+  return base::Value::ToUniquePtrValue(onc_primitive.Clone());
 }
 
 void Mapper::MapFields(const OncValueSignature& object_signature,
@@ -80,7 +80,8 @@ void Mapper::MapFields(const OncValueSignature& object_signature,
     if (current_field_unknown)
       *found_unknown_field = true;
     else if (result_value.get() != NULL)
-      result->SetWithoutPathExpansion(it.first, std::move(result_value));
+      result->SetKey(it.first,
+                     base::Value::FromUniquePtrValue(std::move(result_value)));
     else
       DCHECK(*nested_error);
   }
@@ -100,11 +101,10 @@ std::unique_ptr<base::Value> Mapper::MapField(
         << "Found missing value signature at field '" << field_name << "'.";
 
     return MapValue(*field_signature->value_signature, onc_value, error);
-  } else {
-    DVLOG(1) << "Found unknown field name: '" << field_name << "'";
-    *found_unknown_field = true;
-    return std::unique_ptr<base::Value>();
   }
+  DVLOG(1) << "Found unknown field name: '" << field_name << "'";
+  *found_unknown_field = true;
+  return nullptr;
 }
 
 std::unique_ptr<base::ListValue> Mapper::MapArray(
@@ -116,7 +116,7 @@ std::unique_ptr<base::ListValue> Mapper::MapArray(
 
   std::unique_ptr<base::ListValue> result_array(new base::ListValue);
   int original_index = 0;
-  for (const auto& entry : onc_array) {
+  for (const auto& entry : onc_array.GetList()) {
     std::unique_ptr<base::Value> result_entry;
     result_entry =
         MapEntry(original_index, *array_signature.onc_array_entry_signature,

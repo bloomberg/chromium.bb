@@ -107,14 +107,15 @@ bool VerifyCRL(const Crl& crl,
   // (excluding trust anchor).  No intermediates are provided above, so this
   // just amounts to |signer_cert| vs. |not_after_seconds|.
   *overall_not_after = not_after;
-  ASN1_GENERALIZEDTIME* not_after_asn1 = ASN1_TIME_to_generalizedtime(
-      result_path.target_cert->cert_info->validity->notAfter, nullptr);
+  bssl::UniquePtr<ASN1_GENERALIZEDTIME> not_after_asn1{
+      ASN1_TIME_to_generalizedtime(
+          X509_get0_notAfter(result_path.target_cert.get()), nullptr)};
   if (!not_after_asn1) {
     return false;
   }
   DateTime cert_not_after;
-  bool time_valid = ParseAsn1GeneralizedTime(not_after_asn1, &cert_not_after);
-  ASN1_GENERALIZEDTIME_free(not_after_asn1);
+  bool time_valid =
+      ParseAsn1GeneralizedTime(not_after_asn1.get(), &cert_not_after);
   if (!time_valid) {
     return false;
   }
@@ -199,7 +200,7 @@ bool CastCRL::CheckRevocation(const std::vector<X509*>& trusted_chain,
         // Only Google generated device certificates will be revoked by range.
         // These will always be less than 64 bits in length.
         ErrorOr<uint64_t> maybe_serial =
-            ParseDerUint64(subordinate->cert_info->serialNumber);
+            ParseDerUint64(X509_get0_serialNumber(subordinate));
         if (!maybe_serial) {
           continue;
         }

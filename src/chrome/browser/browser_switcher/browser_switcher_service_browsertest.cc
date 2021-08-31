@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -98,8 +99,10 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
   ~BrowserSwitcherServiceTest() override = default;
 
   void SetUpInProcessBrowserTestFixture() override {
-    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
-        .WillRepeatedly(testing::Return(true));
+    ON_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillByDefault(testing::Return(true));
+    ON_CALL(provider_, IsFirstPolicyLoadComplete(testing::_))
+        .WillByDefault(testing::Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
     BrowserSwitcherService::SetRefreshDelayForTesting(base::TimeDelta());
   }
@@ -197,7 +200,7 @@ class BrowserSwitcherServiceTest : public InProcessBrowserTest {
 #endif
 
  private:
-  policy::MockConfigurationPolicyProvider provider_;
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
 
 #if defined(OS_WIN)
   base::FilePath fake_appdata_dir_;
@@ -735,15 +738,16 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
   // No policies configured.
 
   // LBS extension is installed.
-  auto extension = extensions::ExtensionBuilder()
-                       .SetLocation(extensions::Manifest::INTERNAL)
-                       .SetID(kLBSExtensionId)
-                       .SetManifest(extensions::DictionaryBuilder()
-                                        .Set("name", "Legacy Browser Support")
-                                        .Set("manifest_version", 2)
-                                        .Set("version", "5.9")
-                                        .Build())
-                       .Build();
+  auto extension =
+      extensions::ExtensionBuilder()
+          .SetLocation(extensions::mojom::ManifestLocation::kInternal)
+          .SetID(kLBSExtensionId)
+          .SetManifest(extensions::DictionaryBuilder()
+                           .Set("name", "Legacy Browser Support")
+                           .Set("manifest_version", 2)
+                           .Set("version", "5.9")
+                           .Build())
+          .Build();
   extensions::ExtensionSystem::Get(browser()->profile())
       ->extension_service()
       ->AddExtension(extension.get());

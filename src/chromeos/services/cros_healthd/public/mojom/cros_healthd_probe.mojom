@@ -36,6 +36,7 @@ enum ProbeCategoryEnum {
   kBluetooth,
   kSystem,
   kNetwork,
+  kAudio,
 };
 
 // An enumeration of the different categories of errors that can occur when
@@ -116,6 +117,25 @@ struct ProcessInfo {
   // Unused memory available to the process, in KiB. This will always be
   // |total_memory_kib| - |resident_memory_kib|.
   uint32 free_memory_kib;
+  // The sum of bytes passed to system read calls. This includes terminal
+  // I/O and is independent of whether the physical disk is accessed.
+  uint64 bytes_read;
+  // The sum of bytes passed to system write calls. This includes terminal
+  // I/O and is independent of whether the physical disk is accessed.
+  uint64 bytes_written;
+  // Attempted count of read syscalls.
+  uint64 read_system_calls;
+  // Attempted count of write syscalls.
+  uint64 write_system_calls;
+  // Attempt to count the number of bytes which this process really did cause
+  // to be fetched from the storage layer.
+  uint64 physical_bytes_read;
+  // Attempt to count the number of bytes which this process caused to be sent
+  // to the storage layer.
+  uint64 physical_bytes_written;
+  // Number of bytes which this process caused to not happen, by truncating
+  // pagecache.
+  uint64 cancelled_bytes_written;
 };
 
 // Battery probe result. Can either be populated with the BatteryInfo or an
@@ -417,6 +437,10 @@ struct StatefulPartitionInfo {
   uint64 available_space;
   // Total space for user data storage in the device in bytes.
   uint64 total_space;
+  // File system on stateful partition. e.g. ext4.
+  string filesystem;
+  // Source of stateful partition. e.g. /dev/mmcblk0p1.
+  string mount_source;
 };
 
 // Bluetooth probe result. Can either be populated with the BluetoothAdapterInfo
@@ -474,7 +498,9 @@ struct SystemInfo {
   // The product SKU number.
   string? product_sku_number;
   // The product serial number.
-  string product_serial_number;
+  string? product_serial_number;
+  // The product model name.
+  string? product_model_name;
   // Contents of CrosConfig in /arc/build-properties/marketing-name.
   string marketing_name;
   // The BIOS version.
@@ -500,6 +526,27 @@ union NetworkResult {
   chromeos.network_health.mojom.NetworkHealthState network_health;
   // The error that occurred attempting to retrieve the NetworkHealthSnapshot.
   ProbeError error;
+};
+
+// Audio probe result. Can either be populated with the AudioInfo or an
+// error retrieving the information.
+union AudioResult {
+  // Valid AudioInfo.
+  AudioInfo audio_info;
+  // The error that occurred attempting to retrieve the AudioInfo.
+  ProbeError error;
+};
+
+// Audio information.
+struct AudioInfo {
+  // Is active output device mute or not.
+  bool output_mute;
+  // Is active input device mute or not.
+  bool input_mute;
+  // Active output device's volume in [0, 100].
+  uint64 output_volume;
+  // Active output device's name.
+  string output_device_name;
 };
 
 // A collection of all the device's telemetry information that cros_healthd is
@@ -546,4 +593,7 @@ struct TelemetryInfo {
   // system. Only present when kNetwork was included in the categories input to
   // ProbeTelemetryInfo.
   NetworkResult? network_result;
+  // Information about the audio devices. Only present when kAudio was included
+  // in the categories input to ProbeTelemetryInfo.
+  AudioResult? audio_result;
 };

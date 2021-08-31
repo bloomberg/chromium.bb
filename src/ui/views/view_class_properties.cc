@@ -25,6 +25,7 @@ DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
                                        views::HighlightPathGenerator*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, views::FlexSpecification*)
 DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, views::LayoutAlignment*)
+DEFINE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, ui::ElementIdentifier)
 
 namespace views {
 
@@ -41,5 +42,9 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(FlexSpecification, kFlexBehaviorKey, nullptr)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(LayoutAlignment,
                                    kCrossAxisAlignmentKey,
                                    nullptr)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kViewIgnoredByLayoutKey, false)
+DEFINE_UI_CLASS_PROPERTY_KEY(ui::ElementIdentifier,
+                             kElementIdentifierKey,
+                             ui::ElementIdentifier())
 
 }  // namespace views

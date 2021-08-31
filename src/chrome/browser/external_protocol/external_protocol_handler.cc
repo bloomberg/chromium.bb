@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/external_protocol/auto_launch_protocols_policy_handler.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,21 +29,25 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #endif
 
 namespace {
 
-// Whether we accept requests for launching external protocols. This is set to
-// false every time an external protocol is requested, and set back to true on
-// each user gesture. This variable should only be accessed from the UI thread.
+// Anti-flood protection controls whether we accept requests for launching
+// external protocols. Set to false each time an external protocol is requested,
+// and set back to true on each user gesture, extension API call, and navigation
+// to an external handler via bookmarks or the omnibox. This variable should
+// only be accessed from the UI thread.
 bool g_accept_requests = true;
 
 ExternalProtocolHandler::Delegate* g_external_protocol_handler_delegate =
@@ -104,7 +109,7 @@ void RunExternalProtocolDialogWithDelegate(
     content::WebContents* web_contents,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    const base::Optional<url::Origin>& initiating_origin,
+    const absl::optional<url::Origin>& initiating_origin,
     ExternalProtocolHandler::Delegate* delegate) {
   DCHECK(web_contents);
   if (delegate) {
@@ -150,7 +155,7 @@ void LaunchUrlWithoutSecurityCheckWithDelegate(
   platform_util::OpenExternal(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()), url);
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // If the protocol navigation occurs in a new tab, close it.
   // Avoid calling CloseContents if the tab is not in this browser's tab strip
   // model; this can happen if the protocol was initiated by something
@@ -175,7 +180,7 @@ void OnDefaultProtocolClientWorkerFinished(
     bool prompt_user,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    const base::Optional<url::Origin>& initiating_origin,
+    const absl::optional<url::Origin>& initiating_origin,
     ExternalProtocolHandler::Delegate* delegate,
     shell_integration::DefaultWebClientState state) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -192,7 +197,7 @@ void OnDefaultProtocolClientWorkerFinished(
   bool chrome_is_default_handler = state == shell_integration::IS_DEFAULT;
 
   // On ChromeOS, Click to Call is integrated into the external protocol dialog.
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   if (web_contents && ShouldOfferClickToCallForURL(
                           web_contents->GetBrowserContext(), escaped_url)) {
     // Handle tel links by opening the Click to Call dialog. This will call back
@@ -327,7 +332,7 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
           allowed_origin_protocol_pairs->FindDictKey(
               initiating_origin->Serialize());
       if (allowed_protocols_for_origin) {
-        base::Optional<bool> allow =
+        absl::optional<bool> allow =
             allowed_protocols_for_origin->FindBoolKey(scheme);
         if (allow.has_value() && allow.value())
           return DONT_BLOCK;
@@ -390,8 +395,17 @@ void ExternalProtocolHandler::LaunchUrl(
     int render_view_routing_id,
     ui::PageTransition page_transition,
     bool has_user_gesture,
-    const base::Optional<url::Origin>& initiating_origin) {
+    const absl::optional<url::Origin>& initiating_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Disable anti-flood protection if the user is invoking a bookmark or
+  // navigating directly using the omnibox.
+  if (!g_accept_requests &&
+      (PageTransitionCoreTypeIs(page_transition,
+                                ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
+       PageTransitionCoreTypeIs(page_transition, ui::PAGE_TRANSITION_TYPED))) {
+    g_accept_requests = true;
+  }
 
   // Escape the input scheme to be sure that the command does not
   // have parameters unexpected by the external program.
@@ -423,7 +437,7 @@ void ExternalProtocolHandler::LaunchUrl(
 
   g_accept_requests = false;
 
-  base::Optional<url::Origin> initiating_origin_or_precursor;
+  absl::optional<url::Origin> initiating_origin_or_precursor;
   if (initiating_origin) {
     // Transform the initiating origin to its precursor origin if it is
     // opaque. |initiating_origin| is shown in the UI to attribute the external

@@ -36,9 +36,11 @@ class MockObserver : public SmsProvider::Observer {
   MockObserver() = default;
   ~MockObserver() override = default;
 
-  MOCK_METHOD2(OnReceive,
-               bool(const Origin&, const std::string& one_time_code));
-  MOCK_METHOD1(OnFailure, bool(SmsFetcher::FailureType));
+  MOCK_METHOD3(OnReceive,
+               bool(const OriginList&,
+                    const std::string& one_time_code,
+                    SmsFetcher::UserConsent));
+  MOCK_METHOD1(OnFailure, bool(SmsFetchFailureType));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockObserver);
@@ -110,23 +112,29 @@ class SmsProviderGmsBaseTest : public RenderViewHostTestHarness {
     }
   }
 
-  void TriggerUserDeniesPermission() {
+  void TriggerUserDeniesPermission(
+      SmsFetchType fetch_type = SmsFetchType::kLocal) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_FakeSmsRetrieverClient_triggerUserDeniesPermission(
-        env, j_fake_sms_retriever_client_, test_window_->GetJavaObject());
+        env, j_fake_sms_retriever_client_, test_window_->GetJavaObject(),
+        fetch_type == SmsFetchType::kLocal);
   }
 
-  void TriggerUserGrantsPermission() {
+  void TriggerUserGrantsPermission(
+      SmsFetchType fetch_type = SmsFetchType::kLocal) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_FakeSmsRetrieverClient_triggerUserGrantsPermission(
-        env, j_fake_sms_retriever_client_, test_window_->GetJavaObject());
+        env, j_fake_sms_retriever_client_, test_window_->GetJavaObject(),
+        fetch_type == SmsFetchType::kLocal);
   }
 
-  void TriggerAPIFailure(const std::string& failure_type) {
+  void TriggerAPIFailure(const std::string& failure_type,
+                         SmsFetchType fetch_type = SmsFetchType::kLocal) {
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_FakeSmsRetrieverClient_triggerFailure(
         env, j_fake_sms_retriever_client_,
-        base::android::ConvertUTF8ToJavaString(env, failure_type));
+        base::android::ConvertUTF8ToJavaString(env, failure_type),
+        fetch_type == SmsFetchType::kLocal);
   }
 
   SmsProviderGms* provider() { return provider_.get(); }
@@ -157,13 +165,22 @@ class SmsProviderGmsAutoTest : public SmsProviderGmsBaseTest {
   }
 };
 
+// Fixture to be used with tests that are only applicable to the verification
+// backend.
+class SmsProviderGmsVerificationTest : public SmsProviderGmsBaseTest {
+  std::string GetSwitch() const override {
+    return switches::kWebOtpBackendSmsVerification;
+  }
+};
+
 }  // namespace
 
 TEST_P(SmsProviderGmsTest, Retrieve) {
   std::string test_url = "https://google.com";
 
-  EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
-  provider()->Retrieve(main_rfh());
+  EXPECT_CALL(*observer(), OnReceive(OriginList{Origin::Create(GURL(test_url))},
+                                     "ABC123", _));
+  provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
   TriggerSms("Hi\n@google.com #ABC123");
 }
 
@@ -172,27 +189,29 @@ TEST_P(SmsProviderGmsTest, IgnoreBadSms) {
   std::string good_sms = "Hi\n@google.com #ABC123";
   std::string bad_sms = "Hi\n@b.com";
 
-  EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
+  EXPECT_CALL(*observer(), OnReceive(OriginList{Origin::Create(GURL(test_url))},
+                                     "ABC123", _));
 
-  provider()->Retrieve(main_rfh());
+  provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
   TriggerSms(bad_sms);
   TriggerSms(good_sms);
 }
 
 TEST_P(SmsProviderGmsTest, TaskTimedOut) {
-  EXPECT_CALL(*observer(), OnReceive(_, _)).Times(0);
-  provider()->Retrieve(main_rfh());
+  EXPECT_CALL(*observer(), OnReceive(_, _, _)).Times(0);
+  provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
   TriggerTimeout();
 }
 
 TEST_P(SmsProviderGmsTest, OneObserverTwoTasks) {
   std::string test_url = "https://google.com";
 
-  EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
+  EXPECT_CALL(*observer(), OnReceive(OriginList{Origin::Create(GURL(test_url))},
+                                     "ABC123", _));
 
   // Two tasks for when 1 request gets aborted but the task is still triggered.
-  provider()->Retrieve(main_rfh());
-  provider()->Retrieve(main_rfh());
+  provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
+  provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
 
   // First timeout should be ignored.
   TriggerTimeout();
@@ -213,7 +232,7 @@ INSTANTIATE_TEST_SUITE_P(
 TEST_F(SmsProviderGmsAutoTest, OneTimePermissionDeniedByUser) {
   EXPECT_CALL(*observer(), OnFailure(_)).Times(1);
 
-  provider()->Retrieve(main_rfh());
+  provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
 
   TriggerUserDeniesPermission();
 }
@@ -221,9 +240,10 @@ TEST_F(SmsProviderGmsAutoTest, OneTimePermissionDeniedByUser) {
 TEST_F(SmsProviderGmsAutoTest, OneTimePermissionGrantedByUser) {
   std::string test_url = "https://example.com";
   EXPECT_CALL(*observer(), OnFailure(_)).Times(0);
-  EXPECT_CALL(*observer(), OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
+  EXPECT_CALL(*observer(), OnReceive(OriginList{Origin::Create(GURL(test_url))},
+                                     "ABC123", _));
 
-  provider()->Retrieve(main_rfh());
+  provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
 
   TriggerUserGrantsPermission();
   TriggerSms("@example.com #ABC123 $50");
@@ -232,7 +252,7 @@ TEST_F(SmsProviderGmsAutoTest, OneTimePermissionGrantedByUser) {
 TEST_F(SmsProviderGmsAutoTest, OneTimePermissionNotGranted) {
   EXPECT_CALL(*observer(), OnFailure(_)).Times(1);
 
-  provider()->Retrieve(main_rfh());
+  provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
 
   TriggerAPIFailure("USER_PERMISSION_REQUIRED");
 }
@@ -245,8 +265,9 @@ TEST_F(SmsProviderGmsAutoTest, ExpectedFailuresShouldFallback) {
 
   {
     EXPECT_CALL(*observer(), OnFailure(_)).Times(0);
-    EXPECT_CALL(*observer(),
-                OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
+    EXPECT_CALL(
+        *observer(),
+        OnReceive(OriginList{Origin::Create(GURL(test_url))}, "ABC123", _));
 
     TriggerAPIFailure("API_NOT_CONNECTED");
     TriggerSmsForUserConsent("Hi\n@example.com #ABC123");
@@ -256,10 +277,11 @@ TEST_F(SmsProviderGmsAutoTest, ExpectedFailuresShouldFallback) {
 
   {
     EXPECT_CALL(*observer(), OnFailure(_)).Times(0);
-    EXPECT_CALL(*observer(),
-                OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
+    EXPECT_CALL(
+        *observer(),
+        OnReceive(OriginList{Origin::Create(GURL(test_url))}, "ABC123", _));
 
-    provider()->Retrieve(main_rfh());
+    provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
 
     TriggerAPIFailure("PLATFORM_NOT_SUPPORTED");
     TriggerSmsForUserConsent("Hi\n@example.com #ABC123");
@@ -269,13 +291,86 @@ TEST_F(SmsProviderGmsAutoTest, ExpectedFailuresShouldFallback) {
 
   {
     EXPECT_CALL(*observer(), OnFailure(_)).Times(0);
-    EXPECT_CALL(*observer(),
-                OnReceive(Origin::Create(GURL(test_url)), "ABC123"));
+    EXPECT_CALL(
+        *observer(),
+        OnReceive(OriginList{Origin::Create(GURL(test_url))}, "ABC123", _));
 
-    provider()->Retrieve(main_rfh());
+    provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
 
     TriggerAPIFailure("API_NOT_AVAILABLE");
     TriggerSmsForUserConsent("Hi\n@example.com #ABC123");
+
+    Mock::VerifyAndClearExpectations(observer());
+  }
+}
+
+TEST_F(SmsProviderGmsAutoTest, FailureOnRemoteRequestShouldNotFallback) {
+  {
+    EXPECT_CALL(*observer(),
+                OnFailure(SmsFetchFailureType::kBackendNotAvailable))
+        .Times(1);
+
+    provider()->Retrieve(main_rfh(), SmsFetchType::kRemote);
+    TriggerAPIFailure("API_NOT_CONNECTED", SmsFetchType::kRemote);
+
+    Mock::VerifyAndClearExpectations(observer());
+  }
+
+  {
+    EXPECT_CALL(*observer(),
+                OnFailure(SmsFetchFailureType::kBackendNotAvailable))
+        .Times(1);
+
+    provider()->Retrieve(main_rfh(), SmsFetchType::kRemote);
+    TriggerAPIFailure("PLATFORM_NOT_SUPPORTED", SmsFetchType::kRemote);
+
+    Mock::VerifyAndClearExpectations(observer());
+  }
+
+  {
+    EXPECT_CALL(*observer(),
+                OnFailure(SmsFetchFailureType::kBackendNotAvailable))
+        .Times(1);
+
+    provider()->Retrieve(main_rfh(), SmsFetchType::kRemote);
+    TriggerAPIFailure("API_NOT_AVAILABLE", SmsFetchType::kRemote);
+
+    Mock::VerifyAndClearExpectations(observer());
+  }
+}
+
+// These tests are only valid with verification backend.
+
+TEST_F(SmsProviderGmsVerificationTest, ExpectedFailuresShouldCancel) {
+  {
+    EXPECT_CALL(*observer(),
+                OnFailure(SmsFetchFailureType::kBackendNotAvailable))
+        .Times(1);
+
+    provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
+    TriggerAPIFailure("API_NOT_CONNECTED");
+
+    Mock::VerifyAndClearExpectations(observer());
+  }
+
+  {
+    EXPECT_CALL(*observer(),
+                OnFailure(SmsFetchFailureType::kBackendNotAvailable))
+        .Times(1);
+
+    provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
+    TriggerAPIFailure("PLATFORM_NOT_SUPPORTED");
+
+    Mock::VerifyAndClearExpectations(observer());
+  }
+
+  {
+    EXPECT_CALL(*observer(),
+                OnFailure(SmsFetchFailureType::kBackendNotAvailable))
+        .Times(1);
+
+    provider()->Retrieve(main_rfh(), SmsFetchType::kLocal);
+    TriggerAPIFailure("API_NOT_AVAILABLE");
 
     Mock::VerifyAndClearExpectations(observer());
   }

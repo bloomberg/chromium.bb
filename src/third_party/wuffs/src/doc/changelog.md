@@ -3,12 +3,16 @@
 
 ## Work In Progress
 
+- Added `0b` prefixed binary numbers.
 - Added `WUFFS_BASE__PIXEL_BLEND__SRC_OVER`.
 - Added `WUFFS_BASE__PIXEL_FORMAT__BGR_565`.
 - Added `WUFFS_CONFIG__MODULE__BASE__ETC` sub-modules.
 - Added `auxiliary` code.
 - Added `base` library support for UTF-8.
 - Added `base` library support for `atoi`-like string conversion.
+- Added `choose` and `choosy`.
+- Added `cpu_arch`.
+- Added `doc/logo`.
 - Added `endwhile` syntax.
 - Added `example/cbor-to-json`.
 - Added `example/convert-to-nia`.
@@ -16,18 +20,24 @@
 - Added `example/json-to-cbor`.
 - Added `example/jsonfindptrs`.
 - Added `example/jsonptr`.
+- Added `slice base.u8 peek/poke` methods.
 - Added `std/bmp`.
 - Added `std/cbor`.
 - Added `std/gif.config_decoder`.
 - Added `std/json`.
+- Added `std/nie`.
+- Added `std/png`.
 - Added `std/wbmp`.
 - Added `tell_me_more?` mechanism.
+- Added SIMD.
 - Added alloc functions.
 - Added colons to const syntax.
 - Added double-curly blocks.
 - Added interfaces.
+- Added iterate advance parameter.
 - Added preprocessor.
 - Added single-quoted strings.
+- Added slice `uintptr_low_12_bits` method.
 - Added tokens.
 - Changed `gif.decoder_workbuf_len_max_incl_worst_case` from 1 to 0.
 - Changed default C compilers from `clang-5.0,gcc` to `clang-9,gcc`.
@@ -41,7 +51,9 @@
 - Renamed I/O `available` methods to `length`.
 - Renamed `decode_io_writer?` methods to `transform_io?`.
 - Renamed `example/library` to `example/toy-genlib`.
+- Renamed `load` and `store` to `peek` and `poke`.
 - Renamed `{read,writ}er_io_position` to `{read,writ}er_position`.
+- Renamed `set_ignore_checksum!` as a quirk.
 - Renamed `swizzle_interleaved!` to `swizzle_interleaved_from_slice!`.
 - Renamed warnings to notes.
 

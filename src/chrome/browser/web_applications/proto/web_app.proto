@@ -6,6 +6,7 @@ syntax = "proto2";
 
 import "components/sync/protocol/web_app_specifics.proto";
 import "chrome/browser/web_applications/proto/web_app_share_target.proto";
+import "chrome/browser/web_applications/system_web_apps/system_web_app_data.proto";
 
 option optimize_for = LITE_RUNTIME;
 
@@ -34,6 +35,7 @@ message WebAppProtocolHandler {
 
 message WebAppUrlHandlerProto {
   required string origin = 1;
+  required bool has_origin_wildcard = 2;
 }
 
 // A set to track simultaneous installs and uninstalls from multiple install
@@ -52,6 +54,11 @@ message ChromeOSDataProto {
   required bool show_in_search = 2;
   required bool show_in_management = 3;
   required bool is_disabled = 4;
+  optional bool oem_installed = 5;
+}
+
+message ClientDataProto {
+  optional SystemWebAppDataProto system_web_app_data = 1;
 }
 
 // Properties for a WebApp's shortcuts menu item.
@@ -59,11 +66,15 @@ message WebAppShortcutsMenuItemInfoProto {
   required string name = 1;
   required string url = 2;
   repeated sync_pb.WebAppIconInfo shortcut_icon_infos = 3;
+  repeated sync_pb.WebAppIconInfo shortcut_icon_infos_maskable = 4;
+  repeated sync_pb.WebAppIconInfo shortcut_icon_infos_monochrome = 5;
 }
 
 // List of icon sizes downloaded to disk for a shortcuts menu item.
 message DownloadedShortcutsMenuIconSizesProto {
   repeated int32 icon_sizes = 1;
+  repeated int32 icon_sizes_maskable = 2;
+  repeated int32 icon_sizes_monochrome = 3;
 }
 
 // Full WebApp object data. See detailed comments in
@@ -104,7 +115,8 @@ message WebAppProto {
 
   // A list of icon sizes we successfully downloaded to store on disk, for icons
   // that are suitable for any purpose (ie. IconPurpose::ANY). See also:
-  // |downloaded_icon_sizes_purpose_maskable|.
+  // |downloaded_icon_sizes_purpose_maskable|,
+  // |downloaded_icon_sizes_purpose_monochrome|.
   repeated int32 downloaded_icon_sizes_purpose_any = 11;
 
   // A list of file handlers.
@@ -153,7 +165,8 @@ message WebAppProto {
   // for web_app::RunOnOsLoginMode definition, which this enum should be in sync
   // with.
   enum RunOnOsLoginMode {
-    // UNDEFINED if optional |user_run_on_os_login_mode| is absent.
+    // NOT_RUN if optional |user_run_on_os_login_mode| is absent.
+    NOT_RUN = 0;
     WINDOWED = 1;
     MINIMIZED = 2;
   }
@@ -166,4 +179,31 @@ message WebAppProto {
   optional string launch_query_params = 26;
 
   repeated WebAppUrlHandlerProto url_handlers = 27;
+
+  optional ClientDataProto client_data = 28;
+
+  // This enum should be synced with |ManifestCaptureLinks| in
+  // third_party/blink/public/mojom/manifest/manifest.mojom
+  enum CaptureLinks {
+    // UNDEFINED if optional |capture_links| is absent.
+    NONE = 1;
+    NEW_CLIENT = 2;
+    EXISTING_CLIENT_NAVIGATE = 3;
+  }
+
+  optional CaptureLinks capture_links = 29;
+
+  optional string manifest_url = 30;
+
+  // Last time the Badging API was used.
+  // ms since the Unix epoch. See sync/base/time.h.
+  optional int64 last_badging_time = 31;
+
+  optional bool file_handler_permission_blocked = 32;
+
+  // A list of icon sizes we successfully downloaded to store on disk for
+  // monochrome icons. (IconPurpose::MONOCHROME). See also:
+  // |downloaded_icon_sizes_purpose_any|,
+  // |downloaded_icon_sizes_purpose_maskable|.
+  repeated int32 downloaded_icon_sizes_purpose_monochrome = 33;
 }

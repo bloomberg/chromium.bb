@@ -48,19 +48,18 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
   metrics_util::CredentialSourceType GetCredentialSource() const override;
   PasswordFormMetricsRecorder* GetMetricsRecorder() override;
   base::span<const InteractionsStats> GetInteractionsStats() const override;
-  base::span<const CompromisedCredentials> GetCompromisedCredentials()
-      const override;
-  bool IsBlacklisted() const override;
-  bool WasUnblacklisted() const override;
+  base::span<const InsecureCredential> GetInsecureCredentials() const override;
+  bool IsBlocklisted() const override;
+  bool WasUnblocklisted() const override;
   bool IsMovableToAccountStore() const override;
   void Save() override;
   void Update(const PasswordForm& credentials_to_update) override;
-  void OnUpdateUsernameFromPrompt(const base::string16& new_username) override;
-  void OnUpdatePasswordFromPrompt(const base::string16& new_password) override;
+  void OnUpdateUsernameFromPrompt(const std::u16string& new_username) override;
+  void OnUpdatePasswordFromPrompt(const std::u16string& new_password) override;
   void OnNopeUpdateClicked() override;
   void OnNeverClicked() override;
   void OnNoInteraction(bool is_update) override;
-  void PermanentlyBlacklist() override;
+  void Blocklist() override;
   void OnPasswordsRevealed() override;
   void MoveCredentialsToAccountStore() override;
   void BlockMovingCredentialsToAccountStore() override;
@@ -127,17 +126,17 @@ base::span<const InteractionsStats> PasswordDataForUI::GetInteractionsStats()
   return {};
 }
 
-base::span<const CompromisedCredentials>
-PasswordDataForUI::GetCompromisedCredentials() const {
+base::span<const InsecureCredential> PasswordDataForUI::GetInsecureCredentials()
+    const {
   return {};
 }
 
-bool PasswordDataForUI::IsBlacklisted() const {
+bool PasswordDataForUI::IsBlocklisted() const {
   // 'true' would suppress the bubble.
   return false;
 }
 
-bool PasswordDataForUI::WasUnblacklisted() const {
+bool PasswordDataForUI::WasUnblocklisted() const {
   // This information should not be relevant hereconst.
   return false;
 }
@@ -157,12 +156,12 @@ void PasswordDataForUI::Update(const PasswordForm&) {
 }
 
 void PasswordDataForUI::OnUpdateUsernameFromPrompt(
-    const base::string16& new_username) {
+    const std::u16string& new_username) {
   pending_form_.username_value = new_username;
 }
 
 void PasswordDataForUI::OnUpdatePasswordFromPrompt(
-    const base::string16& new_password) {
+    const std::u16string& new_password) {
   // Ignore. The generated password can be edited in-place.
 }
 
@@ -178,7 +177,7 @@ void PasswordDataForUI::OnNoInteraction(bool is_update) {
   bubble_interaction_cb_.Run(false, pending_form_);
 }
 
-void PasswordDataForUI::PermanentlyBlacklist() {}
+void PasswordDataForUI::Blocklist() {}
 
 void PasswordDataForUI::OnPasswordsRevealed() {}
 
@@ -247,11 +246,11 @@ void PasswordGenerationManager::PresaveGeneratedPassword(
   generated.date_created = clock_->Now();
   if (presaved_) {
     form_saver->UpdateReplace(generated, {} /* matches */,
-                              base::string16() /* old_password */,
+                              std::u16string() /* old_password */,
                               presaved_.value() /* old_primary_key */);
   } else {
     form_saver->Save(generated, {} /* matches */,
-                     base::string16() /* old_password */);
+                     std::u16string() /* old_password */);
   }
   presaved_ = std::move(generated);
 }
@@ -266,7 +265,7 @@ void PasswordGenerationManager::PasswordNoLongerGenerated(
 void PasswordGenerationManager::CommitGeneratedPassword(
     PasswordForm generated,
     const std::vector<const PasswordForm*>& matches,
-    const base::string16& old_password,
+    const std::u16string& old_password,
     FormSaver* form_saver) {
   DCHECK(presaved_);
   generated.date_last_used = clock_->Now();
@@ -280,7 +279,9 @@ void PasswordGenerationManager::OnPresaveBubbleResult(
     bool accepted,
     const PasswordForm& pending) {
   weak_factory_.InvalidateWeakPtrs();
-  if (accepted) {
+  if (driver && accepted) {
+    // See https://crbug.com/1210341 for when `driver` might be null due to a
+    // compromised renderer.
     driver->GeneratedPasswordAccepted(pending.password_value);
   }
 }

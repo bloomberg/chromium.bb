@@ -19,6 +19,7 @@
 
 #include "tests/DawnTest.h"
 
+#include "utils/ComboRenderPipelineDescriptor.h"
 #include "utils/WGPUHelpers.h"
 
 class QueryTests : public DawnTest {
@@ -32,23 +33,413 @@ class QueryTests : public DawnTest {
     }
 };
 
-class OcclusionQueryTests : public QueryTests {};
+// Clear the content of the result buffer into 0xFFFFFFFF.
+constexpr static uint64_t kSentinelValue = ~uint64_t(0u);
+constexpr static uint64_t kZero = 0u;
+
+class OcclusionExpectation : public detail::Expectation {
+  public:
+    enum class Result { Zero, NonZero };
+
+    ~OcclusionExpectation() override = default;
+
+    OcclusionExpectation(Result expected) {
+        mExpected = expected;
+    }
+
+    testing::AssertionResult Check(const void* data, size_t size) override {
+        ASSERT(size % sizeof(uint64_t) == 0);
+        const uint64_t* actual = static_cast<const uint64_t*>(data);
+        for (size_t i = 0; i < size / sizeof(uint64_t); i++) {
+            if (actual[i] == kSentinelValue) {
+                return testing::AssertionFailure()
+                       << "Data[" << i << "] was not written (it kept the sentinel value of "
+                       << kSentinelValue << ")." << std::endl;
+            }
+            if (mExpected == Result::Zero && actual[i] != 0) {
+                return testing::AssertionFailure()
+                       << "Expected data[" << i << "] to be zero, actual: " << actual[i] << "."
+                       << std::endl;
+            }
+            if (mExpected == Result::NonZero && actual[i] == 0) {
+                return testing::AssertionFailure()
+                       << "Expected data[" << i << "] to be non-zero." << std::endl;
+            }
+        }
+
+        return testing::AssertionSuccess();
+    }
+
+  private:
+    Result mExpected;
+};
+
+class OcclusionQueryTests : public QueryTests {
+  protected:
+    void SetUp() override {
+        DawnTest::SetUp();
+
+        // Create basic render pipeline
+        vsModule = utils::CreateShaderModule(device, R"(
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                let pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+                    vec2<f32>( 1.0,  1.0),
+                    vec2<f32>(-1.0, -1.0),
+                    vec2<f32>( 1.0, -1.0));
+                return vec4<f32>(pos[VertexIndex], 0.0, 1.0);
+            })");
+
+        fsModule = utils::CreateShaderModule(device, R"(
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+                return vec4<f32>(0.0, 1.0, 0.0, 1.0);
+            })");
+
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+
+        pipeline = device.CreateRenderPipeline2(&descriptor);
+    }
+
+    struct ScissorRect {
+        uint32_t x;
+        uint32_t y;
+        uint32_t width;
+        uint32_t height;
+    };
+
+    wgpu::QuerySet CreateOcclusionQuerySet(uint32_t count) {
+        wgpu::QuerySetDescriptor descriptor;
+        descriptor.count = count;
+        descriptor.type = wgpu::QueryType::Occlusion;
+        return device.CreateQuerySet(&descriptor);
+    }
+
+    wgpu::Texture CreateRenderTexture(wgpu::TextureFormat format) {
+        wgpu::TextureDescriptor descriptor;
+        descriptor.size = {kRTSize, kRTSize, 1};
+        descriptor.format = format;
+        descriptor.usage = wgpu::TextureUsage::RenderAttachment;
+        return device.CreateTexture(&descriptor);
+    }
+
+    void TestOcclusionQueryWithDepthStencilTest(bool depthTestEnabled,
+                                                bool stencilTestEnabled,
+                                                OcclusionExpectation::Result expected) {
+        constexpr uint32_t kQueryCount = 1;
+
+        utils::ComboRenderPipelineDescriptor2 descriptor;
+        descriptor.vertex.module = vsModule;
+        descriptor.cFragment.module = fsModule;
+
+        // Enable depth and stencil tests and set comparison tests never pass.
+        wgpu::DepthStencilState* depthStencil =
+            descriptor.EnableDepthStencil(wgpu::TextureFormat::Depth24PlusStencil8);
+        depthStencil->depthCompare =
+            depthTestEnabled ? wgpu::CompareFunction::Never : wgpu::CompareFunction::Always;
+        depthStencil->stencilFront.compare =
+            stencilTestEnabled ? wgpu::CompareFunction::Never : wgpu::CompareFunction::Always;
+        depthStencil->stencilBack.compare =
+            stencilTestEnabled ? wgpu::CompareFunction::Never : wgpu::CompareFunction::Always;
+
+        wgpu::RenderPipeline renderPipeline = device.CreateRenderPipeline2(&descriptor);
+
+        wgpu::Texture renderTarget = CreateRenderTexture(wgpu::TextureFormat::RGBA8Unorm);
+        wgpu::TextureView renderTargetView = renderTarget.CreateView();
+
+        wgpu::Texture depthTexture = CreateRenderTexture(wgpu::TextureFormat::Depth24PlusStencil8);
+        wgpu::TextureView depthTextureView = depthTexture.CreateView();
+
+        wgpu::QuerySet querySet = CreateOcclusionQuerySet(kQueryCount);
+        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+        // Set all bits in buffer to check 0 is correctly written if there is no sample passed the
+        // occlusion testing
+        queue.WriteBuffer(destination, 0, &kSentinelValue, sizeof(kSentinelValue));
+
+        utils::ComboRenderPassDescriptor renderPass({renderTargetView}, depthTextureView);
+        renderPass.occlusionQuerySet = querySet;
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
+        pass.SetPipeline(renderPipeline);
+        pass.SetStencilReference(0);
+        pass.BeginOcclusionQuery(0);
+        pass.Draw(3);
+        pass.EndOcclusionQuery();
+        pass.EndPass();
+
+        encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
+
+        EXPECT_BUFFER(destination, 0, sizeof(uint64_t), new OcclusionExpectation(expected));
+    }
+
+    void TestOcclusionQueryWithScissorTest(ScissorRect rect,
+                                           OcclusionExpectation::Result expected) {
+        constexpr uint32_t kQueryCount = 1;
+
+        wgpu::QuerySet querySet = CreateOcclusionQuerySet(kQueryCount);
+        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+        // Set all bits in buffer to check 0 is correctly written if there is no sample passed the
+        // occlusion testing
+        queue.WriteBuffer(destination, 0, &kSentinelValue, sizeof(kSentinelValue));
+
+        utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
+        renderPass.renderPassInfo.occlusionQuerySet = querySet;
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+        pass.SetPipeline(pipeline);
+        pass.SetScissorRect(rect.x, rect.y, rect.width, rect.height);
+        pass.BeginOcclusionQuery(0);
+        pass.Draw(3);
+        pass.EndOcclusionQuery();
+        pass.EndPass();
+
+        encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
+
+        EXPECT_BUFFER(destination, 0, sizeof(uint64_t), new OcclusionExpectation(expected));
+    }
+
+    wgpu::ShaderModule vsModule;
+    wgpu::ShaderModule fsModule;
+
+    wgpu::RenderPipeline pipeline;
+
+    constexpr static unsigned int kRTSize = 4;
+};
 
 // Test creating query set with the type of Occlusion
 TEST_P(OcclusionQueryTests, QuerySetCreation) {
-    wgpu::QuerySetDescriptor descriptor;
-    descriptor.count = 1;
-    descriptor.type = wgpu::QueryType::Occlusion;
-    device.CreateQuerySet(&descriptor);
+    CreateOcclusionQuerySet(1);
 }
 
 // Test destroying query set
 TEST_P(OcclusionQueryTests, QuerySetDestroy) {
-    wgpu::QuerySetDescriptor descriptor;
-    descriptor.count = 1;
-    descriptor.type = wgpu::QueryType::Occlusion;
-    wgpu::QuerySet querySet = device.CreateQuerySet(&descriptor);
+    wgpu::QuerySet querySet = CreateOcclusionQuerySet(1);
     querySet.Destroy();
+}
+
+// Draw a bottom right triangle with depth/stencil testing enabled and check whether there is
+// sample passed the testing by non-precise occlusion query with the results:
+// zero indicates that no sample passed depth/stencil testing,
+// non-zero indicates that at least one sample passed depth/stencil testing.
+TEST_P(OcclusionQueryTests, QueryWithDepthStencilTest) {
+    // Disable depth/stencil testing, the samples always pass the testing, the expected occlusion
+    // result is non-zero.
+    TestOcclusionQueryWithDepthStencilTest(false, false, OcclusionExpectation::Result::NonZero);
+
+    // Only enable depth testing and set the samples never pass the testing, the expected occlusion
+    // result is zero.
+    TestOcclusionQueryWithDepthStencilTest(true, false, OcclusionExpectation::Result::Zero);
+
+    // Only enable stencil testing and set the samples never pass the testing, the expected
+    // occlusion result is zero.
+    TestOcclusionQueryWithDepthStencilTest(false, true, OcclusionExpectation::Result::Zero);
+}
+
+// Draw a bottom right triangle with scissor testing enabled and check whether there is
+// sample passed the testing by non-precise occlusion query with the results:
+// zero indicates that no sample passed scissor testing,
+// non-zero indicates that at least one sample passed scissor testing.
+TEST_P(OcclusionQueryTests, QueryWithScissorTest) {
+    // TODO(hao.x.li@intel.com): It's failed weirdly on Intel TGL（Window Vulkan) which says
+    // the destination buffer keep sentinel value in the second case, it cannot be reproduced with
+    // any debug actions including Vulkan validation layers enabled, and takes time to find out if
+    // the WriteBuffer and ResolveQuerySet are not executed in order or the ResolveQuerySet does not
+    // copy the result to the buffer. In order to integrate end2end tests to Intel driver CL without
+    // unknown issues, skip it until we find the root cause.
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
+
+    // Test there are samples passed scissor testing, the expected occlusion result is non-zero.
+    TestOcclusionQueryWithScissorTest({2, 1, 2, 1}, OcclusionExpectation::Result::NonZero);
+
+    // Test there is no sample passed scissor testing, the expected occlusion result is zero.
+    TestOcclusionQueryWithScissorTest({0, 0, 2, 1}, OcclusionExpectation::Result::Zero);
+}
+
+// Test begin occlusion query with same query index on different render pass
+TEST_P(OcclusionQueryTests, Rewrite) {
+    constexpr uint32_t kQueryCount = 1;
+
+    wgpu::QuerySet querySet = CreateOcclusionQuerySet(kQueryCount);
+    wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+    // Set all bits in buffer to check 0 is correctly written if there is no sample passed the
+    // occlusion testing
+    queue.WriteBuffer(destination, 0, &kSentinelValue, sizeof(kSentinelValue));
+
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
+    renderPass.renderPassInfo.occlusionQuerySet = querySet;
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+
+    // Begin occlusion without draw call
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    pass.BeginOcclusionQuery(0);
+    pass.EndOcclusionQuery();
+    pass.EndPass();
+
+    // Begin occlusion with same query index with draw call
+    wgpu::RenderPassEncoder rewritePass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    rewritePass.SetPipeline(pipeline);
+    rewritePass.BeginOcclusionQuery(0);
+    rewritePass.Draw(3);
+    rewritePass.EndOcclusionQuery();
+    rewritePass.EndPass();
+
+    encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    EXPECT_BUFFER(destination, 0, sizeof(uint64_t),
+                  new OcclusionExpectation(OcclusionExpectation::Result::NonZero));
+}
+
+// Test resolving occlusion query correctly if the queries are written sparsely, which also tests
+// the query resetting at the start of render passes on Vulkan backend.
+TEST_P(OcclusionQueryTests, ResolveSparseQueries) {
+    // TODO(hao.x.li@intel.com): Fails on Intel Windows Vulkan due to a driver issue that
+    // vkCmdFillBuffer and vkCmdCopyQueryPoolResults are not executed in order, skip it util
+    // the issue is fixed.
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
+
+    // TODO(hao.x.li@intel.com): Investigate why it's failed on D3D12 on Nvidia when running with
+    // the previous occlusion tests. Expect resolve to 0 for these unwritten queries but the
+    // occlusion result of the previous tests is got.
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() & IsNvidia());
+
+    constexpr uint32_t kQueryCount = 7;
+
+    wgpu::QuerySet querySet = CreateOcclusionQuerySet(kQueryCount);
+    wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+    // Set sentinel values to check the queries are resolved correctly if the queries are
+    // written sparsely.
+    std::vector<uint64_t> sentinelValues(kQueryCount, kSentinelValue);
+    queue.WriteBuffer(destination, 0, sentinelValues.data(), kQueryCount * sizeof(uint64_t));
+
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
+    renderPass.renderPassInfo.occlusionQuerySet = querySet;
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    pass.SetPipeline(pipeline);
+
+    // Write queries sparsely for testing the query resetting on Vulkan and resolving unwritten
+    // queries to 0.
+    // 0 - not written (tests starting with not written).
+    // 1 - written (tests combing multiple written, although other tests already do it).
+    // 2 - written.
+    // 3 - not written (tests skipping over not written in the middle).
+    // 4 - not written.
+    // 5 - written (tests another written query in the middle).
+    // 6 - not written (tests the last query not being written).
+    pass.BeginOcclusionQuery(1);
+    pass.Draw(3);
+    pass.EndOcclusionQuery();
+    pass.BeginOcclusionQuery(2);
+    pass.Draw(3);
+    pass.EndOcclusionQuery();
+    pass.BeginOcclusionQuery(5);
+    pass.Draw(3);
+    pass.EndOcclusionQuery();
+    pass.EndPass();
+
+    encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    // The query at index 0 should be resolved to 0.
+    EXPECT_BUFFER_U64_RANGE_EQ(&kZero, destination, 0, 1);
+    EXPECT_BUFFER(destination, sizeof(uint64_t), 2 * sizeof(uint64_t),
+                  new OcclusionExpectation(OcclusionExpectation::Result::NonZero));
+    // The queries at index 3 and 4 should be resolved to 0.
+    std::vector<uint64_t> zeros(2, kZero);
+    EXPECT_BUFFER_U64_RANGE_EQ(zeros.data(), destination, 3 * sizeof(uint64_t), 2);
+    EXPECT_BUFFER(destination, 5 * sizeof(uint64_t), sizeof(uint64_t),
+                  new OcclusionExpectation(OcclusionExpectation::Result::NonZero));
+    // The query at index 6 should be resolved to 0.
+    EXPECT_BUFFER_U64_RANGE_EQ(&kZero, destination, 6 * sizeof(uint64_t), 1);
+}
+
+// Test resolving occlusion query to 0 if all queries are not written
+TEST_P(OcclusionQueryTests, ResolveWithoutWritten) {
+    // TODO(hao.x.li@intel.com): Investigate why it's failed on D3D12 on Nvidia when running with
+    // the previous occlusion tests. Expect resolve to 0 but the occlusion result of the previous
+    // tests is got.
+    DAWN_SUPPRESS_TEST_IF(IsD3D12() & IsNvidia());
+
+    constexpr uint32_t kQueryCount = 1;
+
+    wgpu::QuerySet querySet = CreateOcclusionQuerySet(kQueryCount);
+    wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+    // Set sentinel values to check 0 is correctly written if resolving query set without
+    // any written.
+    queue.WriteBuffer(destination, 0, &kSentinelValue, sizeof(kSentinelValue));
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    EXPECT_BUFFER_U64_RANGE_EQ(&kZero, destination, 0, 1);
+}
+
+// Test resolving occlusion query to the destination buffer with offset
+TEST_P(OcclusionQueryTests, ResolveToBufferWithOffset) {
+    constexpr uint32_t kQueryCount = 2;
+
+    wgpu::QuerySet querySet = CreateOcclusionQuerySet(kQueryCount);
+
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
+    renderPass.renderPassInfo.occlusionQuerySet = querySet;
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+    pass.SetPipeline(pipeline);
+    pass.BeginOcclusionQuery(0);
+    pass.Draw(3);
+    pass.EndOcclusionQuery();
+    pass.EndPass();
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    // Resolve the query result to first slot in the buffer, other slots should not be written.
+    {
+        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+        // Set sentinel values to check the query is resolved to the correct slot of the buffer.
+        std::vector<uint64_t> sentinelValues(kQueryCount, kSentinelValue);
+        queue.WriteBuffer(destination, 0, sentinelValues.data(), kQueryCount * sizeof(uint64_t));
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        encoder.ResolveQuerySet(querySet, 0, 1, destination, 0);
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
+
+        EXPECT_BUFFER(destination, 0, sizeof(uint64_t),
+                      new OcclusionExpectation(OcclusionExpectation::Result::NonZero));
+        EXPECT_BUFFER_U64_RANGE_EQ(&kSentinelValue, destination, sizeof(uint64_t), 1);
+    }
+
+    // Resolve the query result to second slot in the buffer, the first one should not be written.
+    {
+        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+        // Set sentinel values to check the query is resolved to the correct slot of the buffer.
+        std::vector<uint64_t> sentinelValues(kQueryCount, kSentinelValue);
+        queue.WriteBuffer(destination, 0, sentinelValues.data(), kQueryCount * sizeof(uint64_t));
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        encoder.ResolveQuerySet(querySet, 0, 1, destination, sizeof(uint64_t));
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
+
+        EXPECT_BUFFER_U64_RANGE_EQ(&kSentinelValue, destination, 0, 1);
+        EXPECT_BUFFER(destination, sizeof(uint64_t), sizeof(uint64_t),
+                      new OcclusionExpectation(OcclusionExpectation::Result::NonZero));
+    }
 }
 
 DAWN_INSTANTIATE_TEST(OcclusionQueryTests, D3D12Backend(), MetalBackend(), VulkanBackend());
@@ -59,7 +450,7 @@ class PipelineStatisticsQueryTests : public QueryTests {
         DawnTest::SetUp();
 
         // Skip all tests if pipeline statistics extension is not supported
-        DAWN_SKIP_TEST_IF(!SupportsExtensions({"pipeline_statistics_query"}));
+        DAWN_TEST_UNSUPPORTED_IF(!SupportsExtensions({"pipeline_statistics_query"}));
     }
 
     std::vector<const char*> GetRequiredExtensions() override {
@@ -88,6 +479,8 @@ TEST_P(PipelineStatisticsQueryTests, QuerySetCreation) {
 DAWN_INSTANTIATE_TEST(PipelineStatisticsQueryTests,
                       D3D12Backend(),
                       MetalBackend(),
+                      OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 class TimestampExpectation : public detail::Expectation {
@@ -115,7 +508,7 @@ class TimestampQueryTests : public QueryTests {
         DawnTest::SetUp();
 
         // Skip all tests if timestamp extension is not supported
-        DAWN_SKIP_TEST_IF(!SupportsExtensions({"timestamp_query"}));
+        DAWN_TEST_UNSUPPORTED_IF(!SupportsExtensions({"timestamp_query"}));
     }
 
     std::vector<const char*> GetRequiredExtensions() override {
@@ -143,72 +536,233 @@ TEST_P(TimestampQueryTests, QuerySetCreation) {
 TEST_P(TimestampQueryTests, TimestampOnCommandEncoder) {
     // TODO(hao.x.li@intel.com): Crash occurs if we only call WriteTimestamp in a command encoder
     // without any copy commands on Metal on AMD GPU. See https://crbug.com/dawn/545.
-    DAWN_SKIP_TEST_IF(IsMetal() && IsAMD());
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsAMD());
 
     constexpr uint32_t kQueryCount = 2;
 
-    wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
-    wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+    // Write timestamp with different query indexes
+    {
+        wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
+        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
 
-    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    encoder.WriteTimestamp(querySet, 0);
-    encoder.WriteTimestamp(querySet, 1);
-    encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
-    wgpu::CommandBuffer commands = encoder.Finish();
-    queue.Submit(1, &commands);
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        encoder.WriteTimestamp(querySet, 0);
+        encoder.WriteTimestamp(querySet, 1);
+        encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
 
-    EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
+        EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
+    }
+
+    // Write timestamp with same query index outside pass on same encoder
+    {
+        wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
+        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        encoder.WriteTimestamp(querySet, 0);
+        encoder.WriteTimestamp(querySet, 1);
+        encoder.WriteTimestamp(querySet, 0);
+        encoder.WriteTimestamp(querySet, 1);
+        encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
+
+        EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
+    }
 }
 
 // Test calling timestamp query from render pass encoder
 TEST_P(TimestampQueryTests, TimestampOnRenderPass) {
     constexpr uint32_t kQueryCount = 2;
 
-    wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
-    wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+    // Write timestamp with different query indexes
+    {
+        wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
+        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
 
-    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
-    wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
-    pass.WriteTimestamp(querySet, 0);
-    pass.WriteTimestamp(querySet, 1);
-    pass.EndPass();
-    encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
-    wgpu::CommandBuffer commands = encoder.Finish();
-    queue.Submit(1, &commands);
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+        pass.WriteTimestamp(querySet, 0);
+        pass.WriteTimestamp(querySet, 1);
+        pass.EndPass();
+        encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
 
-    EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
+        EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
+    }
+
+    // Write timestamp with same query index, not need test rewrite inside render pass due to it's
+    // not allowed
+    {
+        wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
+        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        encoder.WriteTimestamp(querySet, 0);
+        encoder.WriteTimestamp(querySet, 1);
+
+        utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 1, 1);
+        wgpu::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+        pass.WriteTimestamp(querySet, 0);
+        pass.WriteTimestamp(querySet, 1);
+        pass.EndPass();
+        encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
+
+        EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
+    }
 }
 
 // Test calling timestamp query from compute pass encoder
 TEST_P(TimestampQueryTests, TimestampOnComputePass) {
     constexpr uint32_t kQueryCount = 2;
 
+    // Write timestamp with different query indexes
+    {
+        wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
+        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
+        pass.WriteTimestamp(querySet, 0);
+        pass.WriteTimestamp(querySet, 1);
+        pass.EndPass();
+        encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
+
+        EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
+    }
+
+    // Write timestamp with same query index on both the outside and the inside of the compute pass
+    {
+        wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
+        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        encoder.WriteTimestamp(querySet, 0);
+        encoder.WriteTimestamp(querySet, 1);
+
+        wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
+        pass.WriteTimestamp(querySet, 0);
+        pass.WriteTimestamp(querySet, 1);
+        pass.EndPass();
+
+        encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
+
+        EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
+    }
+
+    // Write timestamp with same query index inside compute pass
+    {
+        wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
+        wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+
+        wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+        wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
+        pass.WriteTimestamp(querySet, 0);
+        pass.WriteTimestamp(querySet, 1);
+        pass.WriteTimestamp(querySet, 0);
+        pass.WriteTimestamp(querySet, 1);
+        pass.EndPass();
+
+        encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+        wgpu::CommandBuffer commands = encoder.Finish();
+        queue.Submit(1, &commands);
+
+        EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
+    }
+}
+
+// Test resolving timestamp query from another different encoder
+TEST_P(TimestampQueryTests, ResolveFromAnotherEncoder) {
+    constexpr uint32_t kQueryCount = 2;
+
     wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
     wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
 
-    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
-    wgpu::ComputePassEncoder pass = encoder.BeginComputePass();
-    pass.WriteTimestamp(querySet, 0);
-    pass.WriteTimestamp(querySet, 1);
-    pass.EndPass();
-    encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
-    wgpu::CommandBuffer commands = encoder.Finish();
-    queue.Submit(1, &commands);
+    wgpu::CommandEncoder timestampEncoder = device.CreateCommandEncoder();
+    timestampEncoder.WriteTimestamp(querySet, 0);
+    timestampEncoder.WriteTimestamp(querySet, 1);
+    wgpu::CommandBuffer timestampCommands = timestampEncoder.Finish();
+    queue.Submit(1, &timestampCommands);
+
+    wgpu::CommandEncoder resolveEncoder = device.CreateCommandEncoder();
+    resolveEncoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+    wgpu::CommandBuffer resolveCommands = resolveEncoder.Finish();
+    queue.Submit(1, &resolveCommands);
 
     EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
 }
 
+// Test resolving timestamp query correctly if the queries are written sparsely
+TEST_P(TimestampQueryTests, ResolveSparseQueries) {
+    // TODO(hao.x.li@intel.com): Fails on Intel Windows Vulkan due to a driver issue that
+    // vkCmdFillBuffer and vkCmdCopyQueryPoolResults are not executed in order, skip it util
+    // the issue is fixed.
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
+
+    constexpr uint32_t kQueryCount = 4;
+
+    wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
+    wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+    // Set sentinel values to check the queries are resolved correctly if the queries are
+    // written sparsely
+    std::vector<uint64_t> sentinelValues{0, kSentinelValue, 0, kSentinelValue};
+    queue.WriteBuffer(destination, 0, sentinelValues.data(), kQueryCount * sizeof(uint64_t));
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.WriteTimestamp(querySet, 0);
+    encoder.WriteTimestamp(querySet, 2);
+    encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    EXPECT_BUFFER(destination, 0, sizeof(uint64_t), new TimestampExpectation);
+    // The query with no value written should be resolved to 0.
+    EXPECT_BUFFER_U64_RANGE_EQ(&kZero, destination, sizeof(uint64_t), 1);
+    EXPECT_BUFFER(destination, 2 * sizeof(uint64_t), sizeof(uint64_t), new TimestampExpectation);
+    // The query with no value written should be resolved to 0.
+    EXPECT_BUFFER_U64_RANGE_EQ(&kZero, destination, 3 * sizeof(uint64_t), 1);
+}
+
+// Test resolving timestamp query to 0 if all queries are not written
+TEST_P(TimestampQueryTests, ResolveWithoutWritten) {
+    constexpr uint32_t kQueryCount = 2;
+
+    wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
+    wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+    // Set sentinel values to check 0 is correctly written if resolving query set with no
+    // query is written
+    std::vector<uint64_t> sentinelValues(kQueryCount, kSentinelValue);
+    queue.WriteBuffer(destination, 0, sentinelValues.data(), kQueryCount * sizeof(uint64_t));
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.ResolveQuerySet(querySet, 0, kQueryCount, destination, 0);
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    std::vector<uint64_t> expectedZeros(kQueryCount);
+    EXPECT_BUFFER_U64_RANGE_EQ(expectedZeros.data(), destination, 0, kQueryCount);
+}
+
 // Test resolving timestamp query to one slot in the buffer
 TEST_P(TimestampQueryTests, ResolveToBufferWithOffset) {
-    // TODO(hao.x.li@intel.com): Fail to resolve query to buffer with offset on Windows Vulkan and
-    // Metal on Intel platforms, need investigation.
-    DAWN_SKIP_TEST_IF(IsWindows() && IsIntel() && IsVulkan());
-    DAWN_SKIP_TEST_IF(IsIntel() && IsMetal());
+    // TODO(hao.x.li@intel.com): Fails on Intel Windows Vulkan due to a driver issue that
+    // vkCmdFillBuffer and vkCmdCopyQueryPoolResults are not executed in order, skip it util
+    // the issue is fixed.
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
 
     // TODO(hao.x.li@intel.com): Crash occurs if we only call WriteTimestamp in a command encoder
     // without any copy commands on Metal on AMD GPU. See https://crbug.com/dawn/545.
-    DAWN_SKIP_TEST_IF(IsMetal() && IsAMD());
+    DAWN_SUPPRESS_TEST_IF(IsMetal() && IsAMD());
 
     constexpr uint32_t kQueryCount = 2;
     constexpr uint64_t kZero = 0;
@@ -220,7 +774,6 @@ TEST_P(TimestampQueryTests, ResolveToBufferWithOffset) {
         wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         encoder.WriteTimestamp(querySet, 0);
-        encoder.WriteTimestamp(querySet, 1);
         encoder.ResolveQuerySet(querySet, 0, 1, destination, 0);
         wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
@@ -235,7 +788,6 @@ TEST_P(TimestampQueryTests, ResolveToBufferWithOffset) {
         wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
         wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
         encoder.WriteTimestamp(querySet, 0);
-        encoder.WriteTimestamp(querySet, 1);
         encoder.ResolveQuerySet(querySet, 0, 1, destination, sizeof(uint64_t));
         wgpu::CommandBuffer commands = encoder.Finish();
         queue.Submit(1, &commands);
@@ -245,4 +797,34 @@ TEST_P(TimestampQueryTests, ResolveToBufferWithOffset) {
     }
 }
 
-DAWN_INSTANTIATE_TEST(TimestampQueryTests, D3D12Backend(), MetalBackend(), VulkanBackend());
+// Test resolving a query set twice into the same destination buffer with potentially overlapping
+// ranges
+TEST_P(TimestampQueryTests, ResolveTwiceToSameBuffer) {
+    // TODO(hao.x.li@intel.com): Fails on Intel Windows Vulkan due to a driver issue that
+    // vkCmdFillBuffer and vkCmdCopyQueryPoolResults are not executed in order, skip it util
+    // the issue is fixed.
+    DAWN_SUPPRESS_TEST_IF(IsWindows() && IsVulkan() && IsIntel());
+
+    constexpr uint32_t kQueryCount = 3;
+
+    wgpu::QuerySet querySet = CreateQuerySetForTimestamp(kQueryCount);
+    wgpu::Buffer destination = CreateResolveBuffer(kQueryCount * sizeof(uint64_t));
+
+    wgpu::CommandEncoder encoder = device.CreateCommandEncoder();
+    encoder.WriteTimestamp(querySet, 0);
+    encoder.WriteTimestamp(querySet, 1);
+    encoder.WriteTimestamp(querySet, 2);
+    encoder.ResolveQuerySet(querySet, 0, 2, destination, 0);
+    encoder.ResolveQuerySet(querySet, 1, 2, destination, sizeof(uint64_t));
+    wgpu::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    EXPECT_BUFFER(destination, 0, kQueryCount * sizeof(uint64_t), new TimestampExpectation);
+}
+
+DAWN_INSTANTIATE_TEST(TimestampQueryTests,
+                      D3D12Backend(),
+                      MetalBackend(),
+                      OpenGLBackend(),
+                      OpenGLESBackend(),
+                      VulkanBackend());

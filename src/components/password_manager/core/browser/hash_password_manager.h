@@ -5,17 +5,15 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_HASH_PASSWORD_MANAGER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_HASH_PASSWORD_MANAGER_H_
 
+#include <string>
+
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "components/password_manager/core/browser/password_hash_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
-
-using StateSubscription =
-    base::CallbackList<void(const std::string& username)>::Subscription;
 
 namespace password_manager {
 
@@ -29,7 +27,7 @@ class HashPasswordManager {
   ~HashPasswordManager();
 
   bool SavePasswordHash(const std::string username,
-                        const base::string16& password,
+                        const std::u16string& password,
                         bool is_gaia_password = true);
   bool SavePasswordHash(const PasswordHashData& password_hash_data);
   void ClearSavedPasswordHash();
@@ -47,7 +45,7 @@ class HashPasswordManager {
 
   // Returns empty if no hash matching |username| and |is_gaia_password| is
   // available.
-  base::Optional<PasswordHashData> RetrievePasswordHash(
+  absl::optional<PasswordHashData> RetrievePasswordHash(
       const std::string& username,
       bool is_gaia_password);
 
@@ -60,7 +58,7 @@ class HashPasswordManager {
   // Should only be called on the UI thread. The callback is only called when
   // the sign-in isn't the first change on the |kPasswordHashDataList| and
   // saving the password hash actually succeeded.
-  virtual std::unique_ptr<StateSubscription> RegisterStateCallback(
+  virtual base::CallbackListSubscription RegisterStateCallback(
       const base::RepeatingCallback<void(const std::string& username)>&
           callback);
 
@@ -74,7 +72,8 @@ class HashPasswordManager {
   // Should only be accessed on the UI thread. The callback is only called when
   // the sign-in isn't the first change on the |kPasswordHashDataList| and
   // saving the password hash actually succeeded.
-  base::CallbackList<void(const std::string& username)> state_callback_list_;
+  base::RepeatingCallbackList<void(const std::string& username)>
+      state_callback_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HashPasswordManager);
 };

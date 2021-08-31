@@ -88,8 +88,7 @@ class AVxEncoderParmsGetToDecoder
   virtual ~AVxEncoderParmsGetToDecoder() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(::libaom_test::kTwoPassGood);
+    InitializeConfig(::libaom_test::kTwoPassGood);
     cfg_.g_lag_in_frames = 25;
     test_video_ = kAV1ParamPassingTestVector;
     cfg_.rc_target_bitrate = test_video_.bitrate;

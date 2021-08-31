@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/packet_dropping_test_writer.h"
+#include "quic/test_tools/packet_dropping_test_writer.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_epoll_connection_helper.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/core/quic_epoll_connection_helper.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 namespace test {
@@ -118,7 +118,7 @@ WriteResult PacketDroppingTestWriter::WritePacket(
   if (fake_blocked_socket_percentage_ > 0 &&
       simple_random_.RandUint64() % 100 <
           static_cast<uint64_t>(fake_blocked_socket_percentage_)) {
-    CHECK(on_can_write_ != nullptr);
+    QUICHE_CHECK(on_can_write_ != nullptr);
     QUIC_DVLOG(1) << "Blocking socket for packet " << num_calls_to_write_;
     if (!write_unblocked_alarm_->IsSet()) {
       // Set the alarm to fire immediately.
@@ -206,7 +206,7 @@ QuicTime PacketDroppingTestWriter::ReleaseNextPacket() {
   QuicPacketWriterWrapper::WritePacket(
       iter->buffer.data(), iter->buffer.length(), iter->self_address,
       iter->peer_address, iter->options.get());
-  DCHECK_GE(cur_buffer_size_, iter->buffer.length());
+  QUICHE_DCHECK_GE(cur_buffer_size_, iter->buffer.length());
   cur_buffer_size_ -= iter->buffer.length();
   delayed_packets_.erase(iter);
 

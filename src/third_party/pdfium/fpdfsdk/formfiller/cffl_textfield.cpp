@@ -9,11 +9,12 @@
 #include <utility>
 
 #include "constants/form_flags.h"
-#include "core/fpdfdoc/cba_fontmap.h"
+#include "core/fpdfdoc/cpdf_bafontmap.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/pwl/cpwl_edit.h"
 #include "public/fpdf_fwlevent.h"
+#include "third_party/base/check.h"
 
 namespace {
 
@@ -112,7 +113,7 @@ bool CFFL_TextField::OnChar(CPDFSDK_Annot* pAnnot,
         break;
 
       CPDFSDK_PageView* pPageView = GetCurPageView();
-      ASSERT(pPageView);
+      DCHECK(pPageView);
       m_bValid = !m_bValid;
       m_pFormFillEnv->Invalidate(pAnnot->GetPage(),
                                  pAnnot->GetRect().GetOuterRect());
@@ -131,7 +132,7 @@ bool CFFL_TextField::OnChar(CPDFSDK_Annot* pAnnot,
     }
     case FWL_VKEY_Escape: {
       CPDFSDK_PageView* pPageView = GetCurPageView();
-      ASSERT(pPageView);
+      DCHECK(pPageView);
       EscapeFiller(pPageView, true);
       return true;
     }
@@ -154,7 +155,7 @@ void CFFL_TextField::SaveData(CPDFSDK_PageView* pPageView) {
   WideString sNewValue = pWnd->GetText();
   ObservedPtr<CPDFSDK_Widget> observed_widget(m_pWidget.Get());
   ObservedPtr<CFFL_TextField> observed_this(this);
-  m_pWidget->SetValue(sNewValue, NotificationOption::kDoNotNotify);
+  m_pWidget->SetValue(sNewValue);
   if (!observed_widget)
     return;
 

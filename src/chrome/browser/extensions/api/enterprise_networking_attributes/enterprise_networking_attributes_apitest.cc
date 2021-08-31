@@ -14,6 +14,7 @@
 #include "chromeos/dbus/shill/shill_profile_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "url/gurl.h"
 
 namespace {
@@ -24,8 +25,10 @@ const char kErrorNetworkNotConnected[] =
     "Device is not connected to a network.";
 
 constexpr char kTestExtensionID[] = "pkhdjpcjgonhlomdjmnddhbfpgkdhgle";
-constexpr char kUpdateManifestPath[] =
-    "/extensions/api_test/enterprise_networking_attributes/update_manifest.xml";
+constexpr char kExtensionPath[] =
+    "extensions/api_test/enterprise_networking_attributes/";
+constexpr char kExtensionPemPath[] =
+    "extensions/api_test/enterprise_networking_attributes.pem";
 
 constexpr char kMacAddress[] = "0123456789AB";
 constexpr char kFormattedMacAddress[] = "01:23:45:67:89:AB";
@@ -147,17 +150,17 @@ class EnterpriseNetworkingAttributesTest
 
 IN_PROC_BROWSER_TEST_P(EnterpriseNetworkingAttributesTest,
                        PRE_GetNetworkDetails) {
-  policy::AffiliationTestHelper::PreLoginUser(affiliated_account_id_);
+  policy::AffiliationTestHelper::PreLoginUser(affiliation_mixin_.account_id());
 }
 
 IN_PROC_BROWSER_TEST_P(EnterpriseNetworkingAttributesTest, GetNetworkDetails) {
   const bool is_affiliated = GetParam();
   EXPECT_EQ(is_affiliated, user_manager::UserManager::Get()
-                               ->FindUser(affiliated_account_id_)
+                               ->FindUser(affiliation_mixin_.account_id())
                                ->IsAffiliated());
 
   const Extension* extension =
-      ForceInstallExtension(kTestExtensionID, kUpdateManifestPath);
+      ForceInstallExtension(kExtensionPath, kExtensionPemPath);
   SetupDisconnectedNetwork();
   const GURL test_url = extension->GetResourceURL("test.html");
 
@@ -190,9 +193,9 @@ INSTANTIATE_TEST_SUITE_P(AffiliationCheck,
 IN_PROC_BROWSER_TEST_F(
     ExtensionApiTest,
     EnterpriseNetworkingAttributesIsRestrictedToPolicyExtension) {
-  ASSERT_TRUE(RunExtensionSubtest("enterprise_networking_attributes",
-                                  "api_not_available.html",
-                                  kFlagIgnoreManifestWarnings, kFlagNone));
+  ASSERT_TRUE(RunExtensionTest({.name = "enterprise_networking_attributes",
+                                .page_url = "api_not_available.html"},
+                               {.ignore_manifest_warnings = true}));
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("enterprise_networking_attributes");

@@ -10,11 +10,17 @@ to the browser_test_runner's sharding algorithm, to improve shard
 distribution.
 """
 
+from __future__ import print_function
+
 import argparse
 import json
 import logging
 import sys
-import urllib2
+
+if sys.version_info[0] == 2:
+  import urllib2 as ulib
+else:
+  import urllib.request as ulib
 
 
 def GetBuildData(method, request):
@@ -26,11 +32,15 @@ def GetBuildData(method, request):
   # The Python docs are wrong. It's fine for this payload to be just
   # a JSON string.
   headers = {'content-type': 'application/json', 'accept': 'application/json'}
-  url = urllib2.Request(
+  logging.debug('Making request:')
+  logging.debug('%s', request)
+  if not isinstance(request, bytes):
+    request = request.encode('utf-8')
+  url = ulib.Request(
       'https://cr-buildbucket.appspot.com/prpc/buildbucket.v2.Builds/' + method,
       request, headers)
-  conn = urllib2.urlopen(url)
-  result = conn.read()
+  conn = ulib.urlopen(url)
+  result = conn.read().decode('utf-8')
   conn.close()
   # Result is a multi-line string the first line of which is
   # deliberate garbage and the rest of which is a JSON payload.
@@ -76,34 +86,16 @@ def GetJsonForLatestGreenBuildSteps(bot):
   return builds[0]
 
 
-def JsonLoadStrippingUnicode(url):
-  def StripUnicode(obj):
-    if isinstance(obj, unicode):
-      try:
-        return obj.encode('ascii')
-      except UnicodeEncodeError:
-        return obj
-
-    if isinstance(obj, list):
-      return map(StripUnicode, obj)
-
-    if isinstance(obj, dict):
-      new_obj = type(obj)(
-          (StripUnicode(k), StripUnicode(v)) for k, v in obj.iteritems())
-      return new_obj
-
-    return obj
-
-  # The following fails with Python 2.7.6, but succeeds with Python 2.7.14.
-  conn = urllib2.urlopen(url + '?format=raw')
+def JsonLoadFromUrl(url):
+  conn = ulib.urlopen(url + '?format=raw')
   result = conn.read()
   conn.close()
-  return StripUnicode(json.loads(result))
+  return json.loads(result)
 
 
 def FindStepLogURL(steps, step_name, log_name):
   # The format of this JSON-encoded protobuf is defined here:
-  # https://chromium.googlesource.com/infra/luci/luci-go/+/master/
+  # https://chromium.googlesource.com/infra/luci/luci-go/+/main/
   #   buildbucket/proto/step.proto
   # It's easiest to just use the RPC explorer to fetch one and see
   # what's desired to extract.
@@ -121,7 +113,7 @@ def ExtractTestTimes(node, node_name, dest, delim):
   if 'times' in node:
     dest[node_name] = sum(node['times']) / len(node['times'])
   else:
-    for k in node.iterkeys():
+    for k in node.keys():
       if isinstance(node[k], dict):
         test_name = node_name + delim + k if node_name else k
         ExtractTestTimes(node[k], test_name, dest, delim)
@@ -145,7 +137,7 @@ def GatherResults(bot, build, step):
         'Unable to find json.output from step starting with %s' % step)
   logging.debug('json.output for step starting with %s: %s', step, json_output)
 
-  merged_json = JsonLoadStrippingUnicode(json_output)
+  merged_json = JsonLoadFromUrl(json_output)
   extracted_times = {'times': {}}
   ExtractTestTimes(merged_json['tests'], '', extracted_times['times'],
                    merged_json['path_delimiter'])
@@ -156,7 +148,22 @@ def GatherResults(bot, build, step):
 def main():
   rest_args = sys.argv[1:]
   parser = argparse.ArgumentParser(
-      description='Gather JSON results from a run of a Swarming test.',
+      description="""
+Gather JSON results from a run of a Swarming test.
+
+Example invocation to fetch the WebGL 1.0 test runtimes from Linux FYI
+Release (NVIDIA):
+
+gather_swarming_json_results.py \
+  --step webgl_conformance_gl_passthrough_tests \
+  --output=../data/gpu/webgl_conformance_tests_output.json
+
+Example invocation to fetch the WebGL 2.0 runtimes:
+gather_swarming_json_results.py \
+  --step webgl2_conformance_gl_passthrough_tests \
+  --output=../data/gpu/webgl2_conformance_tests_output.json
+
+""",
       formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument(
       '-v',
@@ -173,10 +180,9 @@ def main():
       type=int,
       help='Which build to fetch. If not specified, use '
       'the latest successful build.')
-  parser.add_argument(
-      '--step',
-      default='webgl2_conformance_tests',
-      help='Which step to fetch (treated as a prefix)')
+  parser.add_argument('--step',
+                      default='webgl2_conformance_gl_passthrough_tests',
+                      help='Which step to fetch (treated as a prefix)')
   parser.add_argument(
       '--output',
       metavar='FILE',

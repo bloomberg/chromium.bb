@@ -83,7 +83,7 @@ static int32_t GetVP9FrameBuffer(void* user_priv,
   FrameBufferPool* pool = static_cast<FrameBufferPool*>(user_priv);
   fb->data = pool->GetFrameBuffer(min_size, &fb->priv);
   fb->size = min_size;
-  return 0;
+  return fb->data ? 0 : VPX_CODEC_MEM_ERROR;
 }
 
 static int32_t ReleaseVP9FrameBuffer(void* user_priv,
@@ -98,6 +98,25 @@ static int32_t ReleaseVP9FrameBuffer(void* user_priv,
   return 0;
 }
 
+// static
+SupportedVideoDecoderConfigs VpxVideoDecoder::SupportedConfigs() {
+  SupportedVideoDecoderConfigs supported_configs;
+  supported_configs.emplace_back(/*profile_min=*/VP8PROFILE_ANY,
+                                 /*profile_max=*/VP8PROFILE_ANY,
+                                 /*coded_size_min=*/kDefaultSwDecodeSizeMin,
+                                 /*coded_size_max=*/kDefaultSwDecodeSizeMax,
+                                 /*allow_encrypted=*/false,
+                                 /*require_encrypted=*/false);
+
+  supported_configs.emplace_back(/*profile_min=*/VP9PROFILE_PROFILE0,
+                                 /*profile_max=*/VP9PROFILE_PROFILE2,
+                                 /*coded_size_min=*/kDefaultSwDecodeSizeMin,
+                                 /*coded_size_max=*/kDefaultSwDecodeSizeMax,
+                                 /*allow_encrypted=*/false,
+                                 /*require_encrypted=*/false);
+  return supported_configs;
+}
+
 VpxVideoDecoder::VpxVideoDecoder(OffloadState offload_state)
     : bind_callbacks_(offload_state == OffloadState::kNormal) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -108,8 +127,8 @@ VpxVideoDecoder::~VpxVideoDecoder() {
   CloseDecoder();
 }
 
-std::string VpxVideoDecoder::GetDisplayName() const {
-  return "VpxVideoDecoder";
+VideoDecoderType VpxVideoDecoder::GetDecoderType() const {
+  return VideoDecoderType::kVpx;
 }
 
 void VpxVideoDecoder::Initialize(const VideoDecoderConfig& config,
@@ -182,7 +201,7 @@ void VpxVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   // We might get a successful VpxDecode but not a frame if only a partial
   // decode happened.
   if (video_frame) {
-    video_frame->metadata()->power_efficient = false;
+    video_frame->metadata().power_efficient = false;
     output_cb_.Run(video_frame);
   }
 
@@ -338,6 +357,7 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
   }
 
   (*video_frame)->set_timestamp(buffer->timestamp());
+  (*video_frame)->set_hdr_metadata(config_.hdr_metadata());
 
   // Prefer the color space from the config if available. It generally comes
   // from the color tag which is more expressive than the vp8 and vp9 bitstream.
@@ -395,7 +415,6 @@ bool VpxVideoDecoder::VpxDecode(const DecoderBuffer* buffer,
     (*video_frame)
         ->set_color_space(gfx::ColorSpace(primaries, transfer, matrix, range));
   }
-  (*video_frame)->set_hdr_metadata(config_.hdr_metadata());
 
   return true;
 }
@@ -537,6 +556,8 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
           vpx_image_alpha->stride[VPX_PLANE_Y] * vpx_image_alpha->d_h;
       uint8_t* alpha_plane = memory_pool_->AllocateAlphaPlaneForFrameBuffer(
           alpha_plane_size, vpx_image->fb_priv);
+      if (!alpha_plane)  // In case of OOM, abort copy.
+        return false;
       libyuv::CopyPlane(vpx_image_alpha->planes[VPX_PLANE_Y],
                         vpx_image_alpha->stride[VPX_PLANE_Y], alpha_plane,
                         vpx_image_alpha->stride[VPX_PLANE_Y],

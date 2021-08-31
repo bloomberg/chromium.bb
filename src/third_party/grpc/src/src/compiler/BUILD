@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-licenses(["notice"])  # Apache v2
+licenses(["notice"])
 
 exports_files(["LICENSE"])
 
@@ -44,8 +44,8 @@ grpc_cc_library(
         "ruby_generator.cc",
     ],
     hdrs = [
-        "config_protobuf.h",
         "config.h",
+        "config_protobuf.h",
         "cpp_generator.h",
         "cpp_generator_helpers.h",
         "cpp_plugin.h",

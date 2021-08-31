@@ -17,6 +17,7 @@
 #include "test/fake_producer.h"
 
 #include <mutex>
+#include <thread>
 
 #include "perfetto/base/logging.h"
 #include "perfetto/base/time.h"
@@ -26,6 +27,8 @@
 #include "perfetto/ext/tracing/core/trace_packet.h"
 #include "perfetto/ext/tracing/core/trace_writer.h"
 #include "perfetto/tracing/core/data_source_config.h"
+#include "src/ipc/client_impl.h"
+#include "src/tracing/ipc/producer/producer_ipc_client_impl.h"
 
 #include "protos/perfetto/config/test_config.gen.h"
 #include "protos/perfetto/trace/test_event.pbzero.h"
@@ -159,6 +162,15 @@ void FakeProducer::Flush(FlushRequestID flush_request_id,
   endpoint_->NotifyFlushComplete(flush_request_id);
 }
 
+base::SocketHandle FakeProducer::unix_socket_fd() {
+  // Since FakeProducer is only used in tests we can include and assume the
+  // implementation.
+  auto* producer = static_cast<ProducerIPCClientImpl*>(endpoint_.get());
+  auto* ipc_client =
+      static_cast<ipc::ClientImpl*>(producer->GetClientForTesting());
+  return ipc_client->GetUnixSocketForTesting()->fd();
+}
+
 void FakeProducer::SetupFromConfig(const protos::gen::TestConfig& config) {
   rnd_engine_ = std::minstd_rand0(config.seed());
   message_count_ = config.message_count();
@@ -199,8 +211,8 @@ void FakeProducer::EmitEventBatchOnTaskRunner(std::function<void()> callback) {
       int64_t expected_time_taken = iterations * 1000;
       base::TimeMillis time_taken = base::GetWallTimeMs() - start;
       while (time_taken.count() < expected_time_taken) {
-        usleep(static_cast<useconds_t>(
-            (expected_time_taken - time_taken.count()) * 1000));
+        std::this_thread::sleep_for(
+            base::TimeMillis(expected_time_taken - time_taken.count()));
         time_taken = base::GetWallTimeMs() - start;
       }
     }

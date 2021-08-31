@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "base/strings/string16.h"
-
 class Browser;
 
 namespace commander {

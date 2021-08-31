@@ -16,7 +16,6 @@
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/font_pref_change_notifier_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/settings_utils.h"
 #include "chrome/common/extensions/api/font_settings.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
@@ -85,7 +83,7 @@ void MaybeUnlocalizeFontName(std::string* font_name) {
 #if defined(OS_WIN)
   // Try to get the 'us-en' font name. If it is failing, use the first name
   // available.
-  base::Optional<std::string> localized_font_name =
+  absl::optional<std::string> localized_font_name =
       gfx::win::RetrieveLocalizedFontName(*font_name, "us-en");
   if (!localized_font_name)
     localized_font_name = gfx::win::RetrieveLocalizedFontName(*font_name, "");
@@ -99,15 +97,15 @@ void MaybeUnlocalizeFontName(std::string* font_name) {
 
 FontSettingsEventRouter::FontSettingsEventRouter(Profile* profile)
     : profile_(profile) {
-  TRACE_EVENT0("browser,startup", "FontSettingsEventRouter::ctor")
+  TRACE_EVENT0("browser,startup", "FontSettingsEventRouter::ctor");
 
   registrar_.Init(profile_->GetPrefs());
 
   // Unretained is safe here because the registrar is owned by this class.
   font_change_registrar_.Register(
       FontPrefChangeNotifierFactory::GetForProfile(profile),
-      base::Bind(&FontSettingsEventRouter::OnFontFamilyMapPrefChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&FontSettingsEventRouter::OnFontFamilyMapPrefChanged,
+                          base::Unretained(this)));
 
   AddPrefToObserve(prefs::kWebKitDefaultFixedFontSize,
                    events::FONT_SETTINGS_ON_DEFAULT_FIXED_FONT_SIZE_CHANGED,
@@ -128,10 +126,10 @@ void FontSettingsEventRouter::AddPrefToObserve(
     events::HistogramValue histogram_value,
     const char* event_name,
     const char* key) {
-  registrar_.Add(
-      pref_name,
-      base::Bind(&FontSettingsEventRouter::OnFontPrefChanged,
-                 base::Unretained(this), histogram_value, event_name, key));
+  registrar_.Add(pref_name,
+                 base::BindRepeating(
+                     &FontSettingsEventRouter::OnFontPrefChanged,
+                     base::Unretained(this), histogram_value, event_name, key));
 }
 
 void FontSettingsEventRouter::OnFontFamilyMapPrefChanged(
@@ -170,8 +168,8 @@ void FontSettingsEventRouter::OnFontNamePrefChanged(
 
   extensions::preference_helpers::DispatchEventToExtensions(
       profile_, events::FONT_SETTINGS_ON_FONT_CHANGED,
-      fonts::OnFontChanged::kEventName, &args, APIPermission::kFontSettings,
-      false, pref_name);
+      fonts::OnFontChanged::kEventName, &args,
+      extensions::mojom::APIPermissionID::kFontSettings, false, pref_name);
 }
 
 void FontSettingsEventRouter::OnFontPrefChanged(
@@ -185,12 +183,12 @@ void FontSettingsEventRouter::OnFontPrefChanged(
 
   base::ListValue args;
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->Set(key, pref->GetValue()->CreateDeepCopy());
+  dict->Set(key, base::Value::ToUniquePtrValue(pref->GetValue()->Clone()));
   args.Append(std::move(dict));
 
   extensions::preference_helpers::DispatchEventToExtensions(
       profile_, histogram_value, event_name, &args,
-      APIPermission::kFontSettings, false, pref_name);
+      extensions::mojom::APIPermissionID::kFontSettings, false, pref_name);
 }
 
 FontSettingsAPI::FontSettingsAPI(content::BrowserContext* context)
@@ -301,9 +299,9 @@ void FontSettingsGetFontListFunction::FontListHasLoaded(
 ExtensionFunction::ResponseValue
 FontSettingsGetFontListFunction::CopyFontsToResult(base::ListValue* fonts) {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
-  for (auto it = fonts->begin(); it != fonts->end(); ++it) {
-    base::ListValue* font_list_value;
-    if (!it->GetAsList(&font_list_value)) {
+  for (const auto& entry : fonts->GetList()) {
+    const base::ListValue* font_list_value;
+    if (!entry.GetAsList(&font_list_value)) {
       NOTREACHED();
       return Error("");
     }
@@ -356,7 +354,8 @@ ExtensionFunction::ResponseAction GetFontPrefExtensionFunction::Run() {
           profile, extension_id(), GetPrefName(), kIncognito);
 
   std::unique_ptr<base::DictionaryValue> result(new base::DictionaryValue());
-  result->Set(GetKey(), pref->GetValue()->CreateDeepCopy());
+  result->Set(GetKey(),
+              base::Value::ToUniquePtrValue(pref->GetValue()->Clone()));
   result->SetString(kLevelOfControlKey, level_of_control);
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(result))));

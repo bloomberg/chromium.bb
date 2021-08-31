@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/views/toolbar/webui_tab_counter_button.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -29,6 +29,8 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/base/models/menu_separator_types.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -79,10 +81,10 @@ bool ShouldChangeStartThrobber(TabStripModel* tab_strip_model,
          tab_strip_model->GetActiveWebContents() != contents[0].contents;
 }
 
-base::string16 GetTabCounterLabelText(int num_tabs) {
+std::u16string GetTabCounterLabelText(int num_tabs) {
   // In the triple-digit case, fall back to ':D' to match Android.
   if (num_tabs >= 100)
-    return base::string16(base::ASCIIToUTF16(":D"));
+    return std::u16string(u":D");
   return base::FormatNumber(num_tabs);
 }
 
@@ -93,7 +95,8 @@ base::string16 GetTabCounterLabelText(int num_tabs) {
 // tab counter border, the font shrinks when the count is 10 or higher.
 class NumberLabel : public views::Label {
  public:
-  NumberLabel() : Label(base::string16(), CONTEXT_TAB_COUNTER) {
+  METADATA_HEADER(NumberLabel);
+  NumberLabel() : Label(std::u16string(), CONTEXT_TAB_COUNTER) {
     single_digit_font_ = font_list();
     double_digit_font_ = views::style::GetFont(CONTEXT_TAB_COUNTER,
                                                views::style::STYLE_SECONDARY);
@@ -101,7 +104,7 @@ class NumberLabel : public views::Label {
 
   ~NumberLabel() override = default;
 
-  void SetText(const base::string16& text) override {
+  void SetText(const std::u16string& text) override {
     SetFontList(text.length() > 1 ? double_digit_font_ : single_digit_font_);
     Label::SetText(text);
   }
@@ -110,6 +113,9 @@ class NumberLabel : public views::Label {
   gfx::FontList single_digit_font_;
   gfx::FontList double_digit_font_;
 };
+
+BEGIN_METADATA(NumberLabel, views::Label)
+END_METADATA
 
 ///////////////////////////////////////////////////////////////////////////////
 // InteractionTracker
@@ -125,7 +131,7 @@ class InteractionTracker : public ui::EventHandler,
       : native_window_(widget->GetNativeWindow()) {
     if (native_window_)
       native_window_->AddPreTargetHandler(this);
-    scoped_widget_observer_.Add(widget);
+    scoped_widget_observation_.Observe(widget);
   }
 
   InteractionTracker(const InteractionTracker& other) = delete;
@@ -136,7 +142,7 @@ class InteractionTracker : public ui::EventHandler,
       native_window_->RemovePreTargetHandler(this);
   }
 
-  const base::Optional<gfx::Point>& last_interaction_location() const {
+  const absl::optional<gfx::Point>& last_interaction_location() const {
     return last_interaction_location_;
   }
 
@@ -160,17 +166,18 @@ class InteractionTracker : public ui::EventHandler,
   void OnWidgetDestroying(views::Widget* widget) override {
     // Clean up all of our observers and event handlers before the native window
     // disappears.
-    scoped_widget_observer_.Remove(widget);
+    DCHECK(scoped_widget_observation_.IsObservingSource(widget));
+    scoped_widget_observation_.Reset();
     if (widget->GetNativeWindow()) {
       widget->GetNativeWindow()->RemovePreTargetHandler(this);
       native_window_ = nullptr;
     }
   }
 
-  base::Optional<gfx::Point> last_interaction_location_;
+  absl::optional<gfx::Point> last_interaction_location_;
   gfx::NativeWindow native_window_;
-  ScopedObserver<views::Widget, views::WidgetObserver> scoped_widget_observer_{
-      this};
+  base::ScopedObservation<views::Widget, views::WidgetObserver>
+      scoped_widget_observation_{this};
 };
 
 //------------------------------------------------------------------------
@@ -213,8 +220,8 @@ class TabCounterAnimator : public gfx::AnimationDelegate {
   int GetDisappearingLabelTargetPosition() const;
   int GetBorderStartingY() const;
 
-  base::Optional<int> last_num_tabs_;
-  base::Optional<int> pending_num_tabs_ = 0;
+  absl::optional<int> last_num_tabs_;
+  absl::optional<int> pending_num_tabs_ = 0;
   bool pending_throbber_ = false;
   TabCounterAnimationType current_animation_ = TabCounterAnimationType::kNone;
 
@@ -239,25 +246,20 @@ TabCounterAnimator::TabCounterAnimator(views::Label* appearing_label,
                                        views::Throbber* throbber)
     : appearing_label_(appearing_label),
       disappearing_label_(disappearing_label),
-      label_animation_(
-          std::vector<gfx::MultiAnimation::Part>{
-              // Stay in place.
-              gfx::MultiAnimation::Part(kFirstPartDuration,
-                                        gfx::Tween::Type::ZERO),
-              // Swap out to the new label.
-              gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(200),
-                                        gfx::Tween::Type::EASE_IN_OUT)},
-          gfx::MultiAnimation::kDefaultTimerInterval),
+      label_animation_(std::vector<gfx::MultiAnimation::Part>{
+          // Stay in place.
+          gfx::MultiAnimation::Part(kFirstPartDuration, gfx::Tween::Type::ZERO),
+          // Swap out to the new label.
+          gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(200),
+                                    gfx::Tween::Type::EASE_IN_OUT)}),
       border_view_(border_view),
-      border_animation_(
-          std::vector<gfx::MultiAnimation::Part>{
-              gfx::MultiAnimation::Part(kFirstPartDuration,
-                                        gfx::Tween::Type::EASE_OUT),
-              gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(150),
-                                        gfx::Tween::Type::EASE_IN_OUT),
-              gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(50),
-                                        gfx::Tween::Type::EASE_IN_OUT)},
-          gfx::MultiAnimation::kDefaultTimerInterval),
+      border_animation_(std::vector<gfx::MultiAnimation::Part>{
+          gfx::MultiAnimation::Part(kFirstPartDuration,
+                                    gfx::Tween::Type::EASE_OUT),
+          gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(150),
+                                    gfx::Tween::Type::EASE_IN_OUT),
+          gfx::MultiAnimation::Part(base::TimeDelta::FromMilliseconds(50),
+                                    gfx::Tween::Type::EASE_IN_OUT)}),
       throbber_(throbber) {
   label_animation_.set_delegate(this);
   label_animation_.set_continuous(false);
@@ -277,22 +279,19 @@ void TabCounterAnimator::MaybeStartPendingAnimation() {
     return;
 
   if (pending_throbber_) {
-    // If the throbber is already showing, just reset the timer so that the
-    // animation continues smoothly for tabs created in quick succession.
-    if (throbber_timer_.IsRunning()) {
-      throbber_timer_.Reset();
-    } else {
+    // Start the throbber if it is not already showing.
+    if (!throbber_timer_.IsRunning())
       throbber_->Start();
 
-      // Automatically stop the throbber after 1 second. Currently we do not
-      // check the real loading state of the new tab(s), as that adds
-      // unnecessary complexity. The purpose of the throbber is just to
-      // indicate to the user that some activity has happened in the
-      // background, which may not otherwise have been obvious because the tab
-      // strip is hidden in this mode.
-      throbber_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1000),
-                            throbber_, &views::Throbber::Stop);
-    }
+    // Automatically stop the throbber after 1 second. This will reset the timer
+    // if it is already running. Currently we do not check the real loading
+    // state of the new tab(s), as that adds unnecessary complexity. The purpose
+    // of the throbber is just to indicate to the user that some activity has
+    // happened in the background, which may not otherwise have been obvious
+    // because the tab strip is hidden in this mode.
+    throbber_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(1000),
+                          throbber_, &views::Throbber::Stop);
+
     pending_throbber_ = false;
   }
 
@@ -437,6 +436,8 @@ class WebUITabCounterButton : public views::Button,
                               public views::ContextMenuController,
                               public ui::SimpleMenuModel::Delegate {
  public:
+  METADATA_HEADER(WebUITabCounterButton);
+
   static constexpr int WEBUI_TAB_COUNTER_CXMENU_CLOSE_TAB = 13;
   static constexpr int WEBUI_TAB_COUNTER_CXMENU_NEW_TAB = 14;
 
@@ -486,8 +487,7 @@ class WebUITabCounterButton : public views::Button,
 
   TabStripModel* const tab_strip_model_;
   BrowserView* const browser_view_;
-  BrowserView::OnLinkOpeningFromGestureSubscription
-      link_opened_from_gesture_subscription_;
+  base::CallbackListSubscription link_opened_from_gesture_subscription_;
 };
 
 WebUITabCounterButton::WebUITabCounterButton(PressedCallback pressed_callback,
@@ -495,6 +495,7 @@ WebUITabCounterButton::WebUITabCounterButton(PressedCallback pressed_callback,
     : Button(std::move(pressed_callback)),
       tab_strip_model_(browser_view->browser()->tab_strip_model()),
       browser_view_(browser_view) {
+  ConfigureInkDropForToolbar(this);
   // Not focusable by default, only for accessibility.
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
@@ -529,7 +530,7 @@ void WebUITabCounterButton::UpdateColors() {
   border_view_->SetBorder(views::CreateRoundedRectBorder(
       2,
       views::LayoutProvider::Get()->GetCornerRadiusMetric(
-          views::EMPHASIS_MEDIUM),
+          views::Emphasis::kMedium),
       current_text_color));
 }
 
@@ -545,11 +546,12 @@ void WebUITabCounterButton::Init() {
 
   ink_drop_container_ =
       AddChildView(std::make_unique<views::InkDropContainerView>());
-  ink_drop_container_->SetBoundsRect(GetLocalBounds());
 
   throbber_ = AddChildView(std::make_unique<views::Throbber>());
+  throbber_->SetCanProcessEventsWithinSubtree(false);
 
   border_view_ = AddChildView(std::make_unique<views::View>());
+  border_view_->SetCanProcessEventsWithinSubtree(false);
 
   appearing_label_ =
       border_view_->AddChildView(std::make_unique<NumberLabel>());
@@ -594,6 +596,7 @@ void WebUITabCounterButton::AddedToWidget() {
 
 void WebUITabCounterButton::AfterPropertyChange(const void* key,
                                                 int64_t old_value) {
+  View::AfterPropertyChange(key, old_value);
   if (key != kHasInProductHelpPromoKey)
     return;
   UpdateColors();
@@ -610,13 +613,14 @@ void WebUITabCounterButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
 void WebUITabCounterButton::OnThemeChanged() {
   views::Button::OnThemeChanged();
   UpdateColors();
-  ConfigureInkDropForToolbar(this);
 }
 
 void WebUITabCounterButton::Layout() {
   const gfx::Rect view_bounds = GetLocalBounds();
 
-  // Position views from the outside in (beacuse it's easier).
+  ink_drop_container_->SetBoundsRect(view_bounds);
+
+  // Position views from the outside in (because it's easier).
   // Start with the throbber.
   const int throbber_height = GetLayoutConstant(LOCATION_BAR_HEIGHT);
   gfx::Rect throbber_rect = view_bounds;
@@ -683,6 +687,9 @@ void WebUITabCounterButton::ExecuteCommand(int command_id, int event_flags) {
       NOTREACHED();
   }
 }
+
+BEGIN_METADATA(WebUITabCounterButton, views::Button)
+END_METADATA
 
 }  // namespace
 

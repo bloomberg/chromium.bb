@@ -14,6 +14,7 @@
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "gpu/vulkan/vulkan_implementation.h"
+#include "ui/gfx/buffer_format_util.h"
 
 namespace gpu {
 
@@ -116,6 +117,7 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     int client_id,
     gfx::GpuMemoryBufferHandle handle,
     gfx::BufferFormat buffer_format,
+    gfx::BufferPlane plane,
     SurfaceHandle surface_handle,
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
@@ -123,6 +125,10 @@ std::unique_ptr<SharedImageBacking> ExternalVkImageFactory::CreateSharedImage(
     SkAlphaType alpha_type,
     uint32_t usage) {
   DCHECK(CanImportGpuMemoryBuffer(handle.type));
+  if (plane != gfx::BufferPlane::DEFAULT) {
+    LOG(ERROR) << "Invalid plane";
+    return nullptr;
+  }
   return ExternalVkImageBacking::CreateFromGMB(
       context_state_, command_pool_.get(), mailbox, std::move(handle),
       buffer_format, size, color_space, surface_origin, alpha_type, usage,

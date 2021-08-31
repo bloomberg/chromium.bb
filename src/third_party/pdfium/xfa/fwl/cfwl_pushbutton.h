@@ -12,9 +12,8 @@
 #define FWL_STATE_PSB_Hovered (1 << FWL_WGTSTATE_MAX)
 #define FWL_STATE_PSB_Pressed (1 << (FWL_WGTSTATE_MAX + 1))
 
+class CFWL_MessageKey;
 class CFWL_MessageMouse;
-class CFX_DIBitmap;
-class CFWL_Widget;
 
 class CFWL_PushButton final : public CFWL_Widget {
  public:
@@ -34,7 +33,7 @@ class CFWL_PushButton final : public CFWL_Widget {
  private:
   explicit CFWL_PushButton(CFWL_App* pApp);
 
-  void DrawBkground(CFGAS_GEGraphics* pGraphics, const CFX_Matrix* pMatrix);
+  void DrawBkground(CFGAS_GEGraphics* pGraphics, const CFX_Matrix& mtMatrix);
   uint32_t GetPartStates();
   void UpdateTextOutStyles();
   void OnFocusChanged(CFWL_Message* pMsg, bool bSet);

@@ -28,9 +28,10 @@ class Object;
 
 // Used for platforms with embedded constant pools to trigger deserialization
 // of objects found in code.
-#if defined(V8_TARGET_ARCH_MIPS) || defined(V8_TARGET_ARCH_MIPS64) || \
-    defined(V8_TARGET_ARCH_PPC) || defined(V8_TARGET_ARCH_S390) ||    \
-    defined(V8_TARGET_ARCH_PPC64) || V8_EMBEDDED_CONSTANT_POOL
+#if defined(V8_TARGET_ARCH_MIPS) || defined(V8_TARGET_ARCH_MIPS64) ||   \
+    defined(V8_TARGET_ARCH_PPC) || defined(V8_TARGET_ARCH_S390) ||      \
+    defined(V8_TARGET_ARCH_PPC64) || defined(V8_TARGET_ARCH_RISCV64) || \
+    V8_EMBEDDED_CONSTANT_POOL
 #define V8_CODE_EMBEDS_OBJECT_POINTER 1
 #else
 #define V8_CODE_EMBEDS_OBJECT_POINTER 0
@@ -269,16 +270,16 @@ class StringTableInsertionKey final : public StringTableKey {
  public:
   explicit StringTableInsertionKey(Handle<String> string);
 
-  bool IsMatch(String string) override;
+  bool IsMatch(Isolate* isolate, String string);
 
   V8_WARN_UNUSED_RESULT Handle<String> AsHandle(Isolate* isolate);
   V8_WARN_UNUSED_RESULT Handle<String> AsHandle(LocalIsolate* isolate);
 
  private:
-  uint32_t ComputeHashField(String string);
+  uint32_t ComputeRawHashField(String string);
 
   Handle<String> string_;
-  DISALLOW_HEAP_ALLOCATION(no_gc)
+  DISALLOW_GARBAGE_COLLECTION(no_gc)
 };
 
 }  // namespace internal

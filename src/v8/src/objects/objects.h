@@ -92,7 +92,6 @@
 //       - ByteArray
 //       - BytecodeArray
 //       - FixedArray
-//         - FrameArray
 //         - HashTable
 //           - Dictionary
 //           - StringTable
@@ -167,7 +166,6 @@
 //       - BreakPointInfo
 //       - CachedTemplateObject
 //       - StackFrameInfo
-//       - StackTraceFrame
 //       - CodeCache
 //       - PropertyDescriptorObject
 //       - PrototypeInfo
@@ -182,13 +180,13 @@
 //         - SourceTextModule
 //         - SyntheticModule
 //       - SourceTextModuleInfoEntry
-//       - WasmValue
 //     - FeedbackCell
 //     - FeedbackVector
 //     - PreparseData
 //     - UncompiledData
 //       - UncompiledDataWithoutPreparseData
 //       - UncompiledDataWithPreparseData
+//     - SwissNameDictionary
 //
 // Formats of Object::ptr_:
 //  Smi:        [31 bit signed int] 0
@@ -281,7 +279,7 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
 
 #define IS_TYPE_FUNCTION_DECL(Type) \
   V8_INLINE bool Is##Type() const;  \
-  V8_INLINE bool Is##Type(IsolateRoot isolate) const;
+  V8_INLINE bool Is##Type(PtrComprCageBase cage_base) const;
   OBJECT_TYPE_LIST(IS_TYPE_FUNCTION_DECL)
   HEAP_OBJECT_TYPE_LIST(IS_TYPE_FUNCTION_DECL)
   IS_TYPE_FUNCTION_DECL(HashTableBase)
@@ -309,7 +307,7 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
 
 #define DECL_STRUCT_PREDICATE(NAME, Name, name) \
   V8_INLINE bool Is##Name() const;              \
-  V8_INLINE bool Is##Name(IsolateRoot isolate) const;
+  V8_INLINE bool Is##Name(PtrComprCageBase cage_base) const;
   STRUCT_LIST(DECL_STRUCT_PREDICATE)
 #undef DECL_STRUCT_PREDICATE
 
@@ -324,9 +322,9 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
   V8_EXPORT_PRIVATE bool ToInt32(int32_t* value);
   inline bool ToUint32(uint32_t* value) const;
 
-  inline Representation OptimalRepresentation(IsolateRoot isolate) const;
+  inline Representation OptimalRepresentation(PtrComprCageBase cage_base) const;
 
-  inline ElementsKind OptimalElementsKind(IsolateRoot isolate) const;
+  inline ElementsKind OptimalElementsKind(PtrComprCageBase cage_base) const;
 
   inline bool FitsRepresentation(Representation representation);
 
@@ -604,7 +602,7 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
   // Prints this object without details to a message accumulator.
   V8_EXPORT_PRIVATE void ShortPrint(StringStream* accumulator) const;
 
-  V8_EXPORT_PRIVATE void ShortPrint(std::ostream& os) const;  // NOLINT
+  V8_EXPORT_PRIVATE void ShortPrint(std::ostream& os) const;
 
   inline static Object cast(Object object) { return object; }
   inline static Object unchecked_cast(Object object) { return object; }
@@ -617,10 +615,10 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
   V8_EXPORT_PRIVATE void Print() const;
 
   // Prints this object with details.
-  V8_EXPORT_PRIVATE void Print(std::ostream& os) const;  // NOLINT
+  V8_EXPORT_PRIVATE void Print(std::ostream& os) const;
 #else
   void Print() const { ShortPrint(); }
-  void Print(std::ostream& os) const { ShortPrint(os); }  // NOLINT
+  void Print(std::ostream& os) const { ShortPrint(os); }
 #endif
 
   // For use with std::unordered_set.
@@ -675,7 +673,7 @@ class Object : public TaggedImpl<HeapObjectReferenceType::STRONG, Address> {
   inline void InitExternalPointerField(size_t offset, Isolate* isolate);
   inline void InitExternalPointerField(size_t offset, Isolate* isolate,
                                        Address value, ExternalPointerTag tag);
-  inline Address ReadExternalPointerField(size_t offset, IsolateRoot isolate,
+  inline Address ReadExternalPointerField(size_t offset, Isolate* isolate,
                                           ExternalPointerTag tag) const;
   inline void WriteExternalPointerField(size_t offset, Isolate* isolate,
                                         Address value, ExternalPointerTag tag);
@@ -778,6 +776,23 @@ class MapWord {
   inline HeapObject ToForwardingAddress();
 
   inline Address ptr() { return value_; }
+
+#ifdef V8_MAP_PACKING
+  static constexpr Address Pack(Address map) {
+    return map ^ Internals::kMapWordXorMask;
+  }
+  static constexpr Address Unpack(Address mapword) {
+    // TODO(wenyuzhao): Clear header metadata.
+    return mapword ^ Internals::kMapWordXorMask;
+  }
+  static constexpr bool IsPacked(Address mapword) {
+    return (static_cast<intptr_t>(mapword) & Internals::kMapWordXorMask) ==
+               Internals::kMapWordSignature &&
+           (0xffffffff00000000 & static_cast<intptr_t>(mapword)) != 0;
+  }
+#else
+  static constexpr bool IsPacked(Address) { return false; }
+#endif
 
  private:
   // HeapObject calls the private constructor and directly reads the value.

@@ -21,11 +21,11 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
+#include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
@@ -157,8 +157,8 @@ class AvailabilityChecker {
   static void StartOnBackgroundThread(
       base::FilePathWatcher* watcher,
       base::FilePathWatcher::Callback watch_callback) {
-    watcher->Watch(GetUpdateLocationFilePath(), false /* recursive */,
-                   watch_callback);
+    watcher->Watch(GetUpdateLocationFilePath(),
+                   base::FilePathWatcher::Type::kNonRecursive, watch_callback);
     watch_callback.Run(base::FilePath(), false /* error */);
   }
 
@@ -217,15 +217,8 @@ class AvailabilityChecker {
 void GetAvailableUpdateModes(
     base::OnceCallback<void(const std::set<Mode>&)> completion,
     base::TimeDelta timeout) {
-  // Wrap |completion| in a RepeatingCallback. This is necessary to cater to the
-  // somewhat awkward PrepareTrustedValues interface, which for some return
-  // values invokes the callback passed to it, and for others requires the code
-  // here to do so.
-  base::RepeatingCallback<void(const std::set<Mode>&)> callback(
-      base::AdaptCallbackForRepeating(std::move(completion)));
-
   if (!base::FeatureList::IsEnabled(features::kTPMFirmwareUpdate)) {
-    callback.Run(std::set<Mode>());
+    std::move(completion).Run(std::set<Mode>());
     return;
   }
 
@@ -233,21 +226,30 @@ void GetAvailableUpdateModes(
   if (g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
           ->IsEnterpriseManaged()) {
+    // Split |completion| in two. This is necessary because of the
+    // PrepareTrustedValues API, which for some return values invokes the
+    // callback passed to it, and for others requires the code here to do so.
+    auto split_completion = base::SplitOnceCallback(std::move(completion));
+
     // For enterprise-managed devices, always honor the device setting.
     CrosSettings* const cros_settings = CrosSettings::Get();
     switch (cros_settings->PrepareTrustedValues(
-        base::BindOnce(&GetAvailableUpdateModes, callback, timeout))) {
+        base::BindOnce(&GetAvailableUpdateModes,
+                       std::move(split_completion.first), timeout))) {
       case CrosSettingsProvider::TEMPORARILY_UNTRUSTED:
         // Retry happens via the callback registered above.
         return;
       case CrosSettingsProvider::PERMANENTLY_UNTRUSTED:
         // No device settings? Default to disallow.
-        callback.Run(std::set<Mode>());
+        std::move(split_completion.second).Run(std::set<Mode>());
         return;
       case CrosSettingsProvider::TRUSTED:
         // Setting is present and trusted so respect its value.
         modes = GetModesFromSetting(
             cros_settings->GetPref(kTPMFirmwareUpdateSettings));
+
+        // Reset |completion| here so we can invoke it further down.
+        completion = std::move(split_completion.second);
         break;
     }
   } else {
@@ -259,7 +261,7 @@ void GetAvailableUpdateModes(
         AutoEnrollmentController::GetFRERequirement();
     if (requirement ==
         AutoEnrollmentController::FRERequirement::kExplicitlyRequired) {
-      callback.Run(std::set<Mode>());
+      std::move(completion).Run(std::set<Mode>());
       return;
     }
 
@@ -270,7 +272,7 @@ void GetAvailableUpdateModes(
 
   // No need to check for availability if no update modes are allowed.
   if (modes.empty()) {
-    callback.Run(std::set<Mode>());
+    std::move(completion).Run(std::set<Mode>());
     return;
   }
 
@@ -298,7 +300,7 @@ void GetAvailableUpdateModes(
 
             std::move(callback).Run(std::set<Mode>());
           },
-          std::move(modes), std::move(callback)),
+          std::move(modes), std::move(completion)),
       timeout);
 }
 

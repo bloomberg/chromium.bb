@@ -8,6 +8,7 @@
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/file_analysis_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
 
@@ -18,6 +19,7 @@ class DownloadItem;
 namespace safe_browsing {
 
 class DownloadProtectionService;
+class DownloadRequestMaker;
 
 // This class encapsulates the process of uploading a file to Safe Browsing for
 // deep scanning and reporting the result.
@@ -42,8 +44,8 @@ class DeepScanningRequest : public download::DownloadItem::Observer {
 
   // Checks the current policies to determine whether files must be uploaded by
   // policy. Returns the settings to apply to this analysis if it should happen
-  // or base::nullopt if no analysis should happen.
-  static base::Optional<enterprise_connectors::AnalysisSettings>
+  // or absl::nullopt if no analysis should happen.
+  static absl::optional<enterprise_connectors::AnalysisSettings>
   ShouldUploadBinary(download::DownloadItem* item);
 
   // Scan the given |item|, with the given |trigger|. The result of the scanning
@@ -61,6 +63,12 @@ class DeepScanningRequest : public download::DownloadItem::Observer {
   void Start();
 
  private:
+  // Callback when the |download_request_maker_| is finished assembling the
+  // download metadata request.
+  void OnDownloadRequestReady(
+      std::unique_ptr<FileAnalysisRequest> deep_scan_request,
+      std::unique_ptr<ClientDownloadRequest> download_request);
+
   // Callbacks for when |binary_upload_service_| finishes uploading.
   void OnScanComplete(BinaryUploadService::Result result,
                       enterprise_connectors::ContentAnalysisResponse response);
@@ -82,7 +90,8 @@ class DeepScanningRequest : public download::DownloadItem::Observer {
   void OpenDownload();
 
   // Populates a request with the appropriate data depending on the used proto.
-  void PrepareRequest(BinaryUploadService::Request* request, Profile* profile);
+  void PrepareRequest(std::unique_ptr<FileAnalysisRequest> deep_scan_request,
+                      Profile* profile);
 
   // The download item to scan. This is unowned, and could become nullptr if the
   // download is destroyed.
@@ -103,6 +112,9 @@ class DeepScanningRequest : public download::DownloadItem::Observer {
 
   // The settings to apply to this scan.
   enterprise_connectors::AnalysisSettings analysis_settings_;
+
+  // Used to assemble the download metadata.
+  std::unique_ptr<DownloadRequestMaker> download_request_maker_;
 
   base::WeakPtrFactory<DeepScanningRequest> weak_ptr_factory_;
 };

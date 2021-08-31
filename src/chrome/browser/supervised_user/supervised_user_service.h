@@ -16,8 +16,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/file_downloader.h"
 #include "chrome/browser/supervised_user/supervised_user_denylist.h"
@@ -29,7 +28,6 @@
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -45,14 +43,12 @@ class PrefService;
 class Profile;
 class SupervisedUserServiceObserver;
 class SupervisedUserSettingsService;
-class SupervisedUserSiteList;
 class SupervisedUserURLFilter;
-class SupervisedUserAllowlistService;
 
 namespace base {
 class FilePath;
 class Version;
-}
+}  // namespace base
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 namespace extensions {
@@ -69,8 +65,8 @@ class Browser;
 #endif  // !defined(OS_ANDROID)
 
 // This class handles all the information related to a given supervised profile
-// (e.g. the installed content packs, the default URL filtering behavior, or
-// manual allowlist/denylist overrides).
+// (e.g. the default URL filtering behavior, or manual allowlist/denylist
+// overrides).
 class SupervisedUserService : public KeyedService,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
                               public extensions::ExtensionRegistryObserver,
@@ -118,13 +114,6 @@ class SupervisedUserService : public KeyedService,
   // on the UI thread.
   SupervisedUserURLFilter* GetURLFilter();
 
-  // Returns the allowlist service.
-  SupervisedUserAllowlistService* GetAllowlistService();
-
-  const std::vector<scoped_refptr<SupervisedUserSiteList>>& allowlists() const {
-    return allowlists_;
-  }
-
   // Whether the user can request to get access to blocked URLs or to new
   // extensions.
   bool AccessRequestsEnabled();
@@ -161,9 +150,7 @@ class SupervisedUserService : public KeyedService,
 
   // Returns a message saying that extensions can only be modified by the
   // custodian.
-  base::string16 GetExtensionsLockedMessage() const;
-
-  bool IsSupervisedUserIframeFilterEnabled() const;
+  std::u16string GetExtensionsLockedMessage() const;
 
   static std::string GetEduCoexistenceLoginUrl();
 
@@ -187,7 +174,7 @@ class SupervisedUserService : public KeyedService,
   void Shutdown() override;
 
   // SyncTypePreferenceProvider implementation:
-  bool IsEncryptEverythingAllowed() const override;
+  bool IsCustomPassphraseAllowed() const override;
 
 #if !defined(OS_ANDROID)
   // BrowserListObserver implementation:
@@ -233,6 +220,10 @@ class SupervisedUserService : public KeyedService,
   void RecordExtensionEnablementUmaMetrics(bool enabled) const;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
+  // Returns true if prefs::kDefaultSupervisedUserFilteringBehavior is set to
+  // default value.
+  bool IsFilteringBehaviorPrefDefault() const;
+
  private:
   friend class SupervisedUserServiceExtensionTestBase;
   friend class SupervisedUserServiceFactory;
@@ -258,10 +249,10 @@ class SupervisedUserService : public KeyedService,
   // extensions::ManagementPolicy::Provider implementation:
   std::string GetDebugPolicyProviderName() const override;
   bool UserMayLoad(const extensions::Extension* extension,
-                   base::string16* error) const override;
+                   std::u16string* error) const override;
   bool MustRemainDisabled(const extensions::Extension* extension,
                           extensions::disable_reason::DisableReason* reason,
-                          base::string16* error) const override;
+                          std::u16string* error) const override;
 
   // extensions::ExtensionRegistryObserver overrides:
   void OnExtensionInstalled(content::BrowserContext* browser_context,
@@ -343,9 +334,6 @@ class SupervisedUserService : public KeyedService,
 
   void UpdateAsyncUrlChecker();
 
-  void OnSiteListsChanged(
-      const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
-
   // Asynchronously loads a denylist from a binary file at |path| and applies
   // it to the URL filters. If no file exists at |path| yet, downloads a file
   // from |url| and stores it at |path| first.
@@ -406,17 +394,13 @@ class SupervisedUserService : public KeyedService,
   SupervisedUserDenylist denylist_;
   std::unique_ptr<FileDownloader> denylist_downloader_;
 
-  std::unique_ptr<SupervisedUserAllowlistService> allowlist_service_;
-
-  std::vector<scoped_refptr<SupervisedUserSiteList>> allowlists_;
-
   // Used to create permission requests.
   std::vector<std::unique_ptr<PermissionRequestCreator>> permissions_creators_;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      registry_observer_{this};
+  base::ScopedObservation<extensions::ExtensionRegistry,
+                          extensions::ExtensionRegistryObserver>
+      registry_observation_{this};
 #endif
 
   base::ObserverList<SupervisedUserServiceObserver>::Unchecked observer_list_;

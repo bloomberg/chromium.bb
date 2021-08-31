@@ -110,12 +110,12 @@ class MigrationTest : public SyncTest  {
     // Supervised user data types will be "unready" during this test, so we
     // should not request that they be migrated.
     preferred_data_types.Remove(syncer::SUPERVISED_USER_SETTINGS);
-    preferred_data_types.Remove(syncer::SUPERVISED_USER_ALLOWLISTS);
 
     // Autofill wallet will be unready during this test, so we should not
     // request that it be migrated.
     preferred_data_types.Remove(syncer::AUTOFILL_WALLET_DATA);
     preferred_data_types.Remove(syncer::AUTOFILL_WALLET_METADATA);
+    preferred_data_types.Remove(syncer::AUTOFILL_WALLET_OFFER);
 
     // ARC package will be unready during this test, so we should not request
     // that it be migrated.
@@ -315,14 +315,13 @@ IN_PROC_BROWSER_TEST_F(MigrationSingleClientTest, AllTypesWithNigoriAtOnce) {
 class MigrationTwoClientTest : public MigrationTest {
  public:
   MigrationTwoClientTest() : MigrationTest(TWO_CLIENT) {}
-  ~MigrationTwoClientTest() override {}
+  ~MigrationTwoClientTest() override = default;
 
   // Helper function that verifies that preferences sync still works.
   void VerifyPrefSync() {
     ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
     ChangeBooleanPref(0, prefs::kShowHomeButton);
-    ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-    ASSERT_TRUE(BooleanPrefMatches(prefs::kShowHomeButton));
+    ASSERT_TRUE(BooleanPrefMatchChecker(prefs::kShowHomeButton).Wait());
   }
 
   void RunTwoClientMigrationTest(const MigrationList& migration_list,

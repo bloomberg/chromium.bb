@@ -6,6 +6,7 @@
 
 #import <MaterialComponents/MaterialSnackbar.h>
 
+#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -92,7 +93,7 @@ class FakeStoreConsumer : public password_manager::PasswordStoreConsumer {
   // Temporary cache of obtained store results.
   std::vector<std::unique_ptr<password_manager::PasswordForm>> obtained_;
 
-  // Combination of fillable and blacklisted credentials from the store.
+  // Combination of fillable and blocked credentials from the store.
   std::vector<password_manager::PasswordForm> results_;
 };
 

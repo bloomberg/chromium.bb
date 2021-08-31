@@ -8,7 +8,6 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "components/link_header_util/link_header_util.h"
 #include "content/browser/loader/cross_origin_read_blocking_checker.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
@@ -33,12 +32,12 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/mojo_blob_reader.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
 namespace content {
 
@@ -107,7 +106,7 @@ class RedirectResponseURLLoader : public network::mojom::URLLoader {
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      const base::Optional<GURL>& new_url) override {
+      const absl::optional<GURL>& new_url) override {
     NOTREACHED();
   }
   void SetPriority(net::RequestPriority priority,
@@ -150,10 +149,9 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     // or report_raw_headers is set. Users can inspect the certificate for the
     // main frame using the info bubble in Omnibox, and for the subresources in
     // DevTools' Security panel.
-    if ((request.resource_type !=
-         static_cast<int>(blink::mojom::ResourceType::kMainFrame)) &&
+    if (request.destination != network::mojom::RequestDestination::kDocument &&
         !request.report_raw_headers) {
-      response_->ssl_info = base::nullopt;
+      response_->ssl_info = absl::nullopt;
     }
     UpdateRequestResponseStartTime(response_.get());
     response_->encoded_data_length = 0;
@@ -189,13 +187,13 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
   ~InnerResponseURLLoader() override {}
 
  private:
-  static base::Optional<std::string> GetHeaderString(
+  static absl::optional<std::string> GetHeaderString(
       const network::mojom::URLResponseHead& response,
       const std::string& header_name) {
     DCHECK(response.headers);
     std::string header_value;
     if (!response.headers->GetNormalizedHeader(header_name, &header_value))
-      return base::nullopt;
+      return absl::nullopt;
     return header_value;
   }
 
@@ -223,8 +221,8 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     // Send an empty response's body.
     mojo::ScopedDataPipeProducerHandle pipe_producer_handle;
     mojo::ScopedDataPipeConsumerHandle pipe_consumer_handle;
-    MojoResult rv = mojo::CreateDataPipe(nullptr, &pipe_producer_handle,
-                                         &pipe_consumer_handle);
+    MojoResult rv = mojo::CreateDataPipe(nullptr, pipe_producer_handle,
+                                         pipe_consumer_handle);
     if (rv != MOJO_RESULT_OK) {
       client_->OnComplete(
           network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
@@ -245,7 +243,7 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      const base::Optional<GURL>& new_url) override {
+      const absl::optional<GURL>& new_url) override {
     NOTREACHED();
   }
   void SetPriority(net::RequestPriority priority,
@@ -270,8 +268,8 @@ class InnerResponseURLLoader : public network::mojom::URLLoader {
     options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
     options.element_num_bytes = 1;
     options.capacity_num_bytes = network::kDataPipeDefaultAllocationSize;
-    MojoResult rv = mojo::CreateDataPipe(&options, &pipe_producer_handle,
-                                         &pipe_consumer_handle);
+    MojoResult rv = mojo::CreateDataPipe(&options, pipe_producer_handle,
+                                         pipe_consumer_handle);
     if (rv != MOJO_RESULT_OK) {
       client_->OnComplete(
           network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
@@ -353,7 +351,6 @@ class SubresourceSignedExchangeURLLoaderFactory
   // network::mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
@@ -429,14 +426,14 @@ class PrefetchedNavigationLoaderInterceptor
     NOTREACHED();
   }
 
-  base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
+  absl::optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
       override {
     if (state_ != State::kInnerResponseRequested)
-      return base::nullopt;
+      return absl::nullopt;
 
     SubresourceLoaderParams params;
     params.prefetched_signed_exchanges = std::move(info_list_);
-    return base::make_optional(std::move(params));
+    return absl::make_optional(std::move(params));
   }
 
  private:
@@ -556,7 +553,7 @@ std::map<GURL, net::SHA256HashValue> GetAllowedAltSXG(
 
   for (const auto& value : link_header_util::SplitLinkHeader(link_header)) {
     std::string link_url;
-    std::unordered_map<std::string, base::Optional<std::string>> link_params;
+    std::unordered_map<std::string, absl::optional<std::string>> link_params;
     if (!link_header_util::ParseLinkHeaderValue(value.first, value.second,
                                                 &link_url, &link_params)) {
       continue;

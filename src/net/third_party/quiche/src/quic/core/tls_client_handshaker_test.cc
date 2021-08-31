@@ -7,25 +7,25 @@
 #include <utility>
 
 #include "absl/base/macros.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/quic_error_codes.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_expect_bug.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_framer_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_session_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simple_session_cache.h"
-#include "net/third_party/quiche/src/quic/tools/fake_proof_verifier.h"
-#include "net/third_party/quiche/src/common/test_tools/quiche_test_utils.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/quic_error_codes.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_server_id.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_expect_bug.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/crypto_test_utils.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_framer_peer.h"
+#include "quic/test_tools/quic_session_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/simple_session_cache.h"
+#include "quic/tools/fake_proof_verifier.h"
+#include "common/test_tools/quiche_test_utils.h"
 
 using testing::_;
 
@@ -178,7 +178,6 @@ class TlsClientHandshakerTest : public QuicTestWithParam<ParsedQuicVersion> {
         server_id_(kServerHostname, kServerPort, false),
         server_compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize) {
-    SetQuicRestartFlag(quic_enable_zero_rtt_for_tls_v2, true);
     crypto_config_ = std::make_unique<QuicCryptoClientConfig>(
         std::make_unique<TestProofVerifier>(),
         std::make_unique<test::SimpleSessionCache>());
@@ -280,7 +279,7 @@ TEST_P(TlsClientHandshakerTest, ConnectedAfterHandshake) {
 TEST_P(TlsClientHandshakerTest, ConnectionClosedOnTlsError) {
   // Have client send ClientHello.
   stream()->CryptoConnect();
-  EXPECT_CALL(*connection_, CloseConnection(QUIC_HANDSHAKE_FAILED, _, _));
+  EXPECT_CALL(*connection_, CloseConnection(QUIC_HANDSHAKE_FAILED, _, _, _));
 
   // Send a zero-length ServerHello from server to client.
   char bogus_handshake_message[] = {
@@ -418,6 +417,62 @@ TEST_P(TlsClientHandshakerTest, ZeroRttResumption) {
   EXPECT_TRUE(stream()->IsResumption());
   EXPECT_TRUE(stream()->EarlyDataAccepted());
   EXPECT_EQ(stream()->EarlyDataReason(), ssl_early_data_accepted);
+}
+
+// Regression test for b/186438140.
+TEST_P(TlsClientHandshakerTest, ZeroRttResumptionWithAyncProofVerifier) {
+  // Finish establishing the first connection, so the second connection can
+  // resume.
+  CompleteCryptoHandshake();
+
+  EXPECT_EQ(PROTOCOL_TLS1_3, stream()->handshake_protocol());
+  EXPECT_TRUE(stream()->encryption_established());
+  EXPECT_TRUE(stream()->one_rtt_keys_available());
+  EXPECT_FALSE(stream()->IsResumption());
+
+  // Create a second connection.
+  CreateConnection();
+  InitializeFakeServer();
+  EXPECT_CALL(*session_, OnConfigNegotiated());
+  EXPECT_CALL(*connection_, SendCryptoData(_, _, _))
+      .Times(testing::AnyNumber());
+  // Enable TestProofVerifier to capture the call to VerifyCertChain and run it
+  // asynchronously.
+  TestProofVerifier* proof_verifier =
+      static_cast<TestProofVerifier*>(crypto_config_->proof_verifier());
+  proof_verifier->Activate();
+  // Start the second handshake.
+  stream()->CryptoConnect();
+
+  ASSERT_EQ(proof_verifier->NumPendingCallbacks(), 1u);
+
+  // Advance the handshake with the server. Since cert verification has not
+  // finished yet, client cannot derive HANDSHAKE and 1-RTT keys.
+  crypto_test_utils::AdvanceHandshake(connection_, stream(), 0,
+                                      server_connection_, server_stream(), 0);
+
+  EXPECT_FALSE(stream()->one_rtt_keys_available());
+  EXPECT_FALSE(server_stream()->one_rtt_keys_available());
+
+  // Finish cert verification after receiving packets from server.
+  proof_verifier->InvokePendingCallback(0);
+
+  QuicFramer* framer = QuicConnectionPeer::GetFramer(connection_);
+  if (!GetQuicReloadableFlag(quic_tls_retry_handshake_on_early_data)) {
+    // Client does not have HANDSHAKE key due to b/186438140.
+    EXPECT_EQ(nullptr,
+              QuicFramerPeer::GetEncrypter(framer, ENCRYPTION_HANDSHAKE));
+    return;
+  }
+
+  // Verify client has derived HANDSHAKE key.
+  EXPECT_NE(nullptr,
+            QuicFramerPeer::GetEncrypter(framer, ENCRYPTION_HANDSHAKE));
+
+  // Ideally, we should also verify that the process_undecryptable_packets_alarm
+  // is set and processing the undecryptable packets can advance the handshake
+  // to completion. Unfortunately, the test facilities used in this test does
+  // not support queuing and processing undecryptable packets.
 }
 
 TEST_P(TlsClientHandshakerTest, ZeroRttRejection) {
@@ -562,8 +617,11 @@ TEST_P(TlsClientHandshakerTest, ServerRequiresCustomALPN) {
       .WillOnce([kTestAlpn](const std::vector<absl::string_view>& alpns) {
         return std::find(alpns.cbegin(), alpns.cend(), kTestAlpn);
       });
+
   EXPECT_CALL(*server_connection_,
               CloseConnection(QUIC_HANDSHAKE_FAILED,
+                              static_cast<QuicIetfTransportErrorCodes>(
+                                  CRYPTO_ERROR_FIRST + 120),
                               "TLS handshake failure (ENCRYPTION_INITIAL) 120: "
                               "no application protocol",
                               _));
