@@ -91,18 +91,24 @@ func Check(tm *t.Map, files []*a.File, resolveUse func(usePath string) ([]byte, 
 		funcs:     map[t.QQID]*a.Func{},
 		localVars: map[t.QQID]typeMap{},
 
-		builtInSliceFuncs: map[t.QQID]*a.Func{},
-		builtInTableFuncs: map[t.QQID]*a.Func{},
+		builtInSliceFuncs:   map[t.QQID]*a.Func{},
+		builtInSliceU8Funcs: map[t.QQID]*a.Func{},
+		builtInTableFuncs:   map[t.QQID]*a.Func{},
 
 		builtInInterfaces:     map[t.QID][]t.QQID{},
 		builtInInterfaceFuncs: map[t.QQID]*a.Func{},
 		unseenInterfaceImpls:  map[t.QQID]*a.Func{},
 	}
 
-	if err := c.parseBuiltInFuncs(nil, builtin.Funcs); err != nil {
-		return nil, err
+	for _, funcs := range builtin.Funcs {
+		if err := c.parseBuiltInFuncs(nil, funcs); err != nil {
+			return nil, err
+		}
 	}
 	if err := c.parseBuiltInFuncs(c.builtInSliceFuncs, builtin.SliceFuncs); err != nil {
+		return nil, err
+	}
+	if err := c.parseBuiltInFuncs(c.builtInSliceU8Funcs, builtin.SliceU8Funcs); err != nil {
 		return nil, err
 	}
 	if err := c.parseBuiltInFuncs(c.builtInTableFuncs, builtin.TableFuncs); err != nil {
@@ -221,8 +227,9 @@ type Checker struct {
 	funcs     map[t.QQID]*a.Func
 	localVars map[t.QQID]typeMap
 
-	builtInSliceFuncs map[t.QQID]*a.Func
-	builtInTableFuncs map[t.QQID]*a.Func
+	builtInSliceFuncs   map[t.QQID]*a.Func
+	builtInSliceU8Funcs map[t.QQID]*a.Func
+	builtInTableFuncs   map[t.QQID]*a.Func
 
 	builtInInterfaces     map[t.QID][]t.QQID
 	builtInInterfaceFuncs map[t.QQID]*a.Func
@@ -470,7 +477,7 @@ func (c *Checker) checkStructCycles(_ *a.Node) error {
 
 func (c *Checker) checkStructFields(node *a.Node) error {
 	n := node.AsStruct()
-	if err := c.checkFields(n.Fields(), true, true); err != nil {
+	if err := c.checkFields(n.Fields(), true, true, true); err != nil {
 		return &Error{
 			Err:      fmt.Errorf("%v in struct %s", err, n.QID().Str(c.tm)),
 			Filename: n.Filename(),
@@ -480,7 +487,7 @@ func (c *Checker) checkStructFields(node *a.Node) error {
 	return nil
 }
 
-func (c *Checker) checkFields(fields []*a.Node, banPtrTypes bool, checkDefaultZeroValue bool) error {
+func (c *Checker) checkFields(fields []*a.Node, banCPUArchTypes bool, banPtrTypes bool, checkDefaultZeroValue bool) error {
 	if len(fields) == 0 {
 		return nil
 	}
@@ -497,6 +504,10 @@ func (c *Checker) checkFields(fields []*a.Node, banPtrTypes bool, checkDefaultZe
 		}
 		if err := checkTypeExpr(q, f.XType()); err != nil {
 			return fmt.Errorf("%v for field %q", err, f.Name().Str(c.tm))
+		}
+		if banCPUArchTypes && f.XType().Innermost().IsCPUArchType() {
+			return fmt.Errorf("check: cpu_arch type %q not allowed for field %q",
+				f.XType().Str(c.tm), f.Name().Str(c.tm))
 		}
 		if banPtrTypes && f.XType().HasPointers() {
 			return fmt.Errorf("check: pointer-containing type %q not allowed for field %q",
@@ -529,10 +540,21 @@ func checkTypeExpr(q *checker, n *a.TypeExpr) error {
 }
 
 func (c *Checker) checkFuncSignature(node *a.Node) error {
+	return c.checkFuncSignature1(node, true)
+}
+
+func (c *Checker) checkFuncSignature1(node *a.Node, banCPUArchTypes bool) error {
 	n := node.AsFunc()
-	if err := c.checkFields(n.In().Fields(), false, false); err != nil {
+	if err := c.checkFields(n.In().Fields(), banCPUArchTypes, false, false); err != nil {
 		return &Error{
 			Err:      fmt.Errorf("%v in in-params for func %s", err, n.QQID().Str(c.tm)),
+			Filename: n.Filename(),
+			Line:     n.Line(),
+		}
+	}
+	if banCPUArchTypes && (n.Out() != nil) && n.Out().Innermost().IsCPUArchType() {
+		return &Error{
+			Err:      fmt.Errorf("check: cpu_arch type %q not allowed as return type", n.Out().Str(c.tm)),
 			Filename: n.Filename(),
 			Line:     n.Line(),
 		}
@@ -624,7 +646,11 @@ func (c *Checker) checkFuncContract(node *a.Node) error {
 		tm: c.tm,
 	}
 	for _, o := range n.Asserts() {
-		if err := q.tcheckAssert(o.AsAssert()); err != nil {
+		setPlaceholderMBoundsMType(o)
+		if err := q.tcheckFuncAssert(o.AsAssert()); err != nil {
+			return err
+		}
+		if err := q.bcheckFuncAssert(o.AsAssert()); err != nil {
 			return err
 		}
 	}
@@ -677,7 +703,7 @@ func (c *Checker) checkFuncBody(node *a.Node) error {
 	}
 
 	// Fill in the TypeMap with all local variables.
-	if err := q.tcheckVars(n.Body()); err != nil {
+	if err := q.tcheckVars(calcCPUArchBits(q.astFunc), n.Body()); err != nil {
 		return &Error{
 			Err:      err,
 			Filename: q.errFilename,

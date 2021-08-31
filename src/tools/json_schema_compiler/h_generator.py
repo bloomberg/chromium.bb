@@ -32,7 +32,8 @@ class _Generator(object):
     c = Code()
     (c.Append(cpp_util.CHROMIUM_LICENSE)
       .Append()
-      .Append(cpp_util.GENERATED_FILE_MESSAGE % self._namespace.source_file)
+      .Append(cpp_util.GENERATED_FILE_MESSAGE %
+              cpp_util.ToPosixPath(self._namespace.source_file))
       .Append()
     )
 
@@ -386,7 +387,7 @@ class _Generator(object):
       params = [
         'const base::DictionaryValue& root_dict',
         '%s* out' % classname,
-        'base::string16* error'
+        'std::u16string* error'
       ]
       comment = (
         'Parses manifest keys for this namespace. Any keys not available to the'
@@ -397,7 +398,7 @@ class _Generator(object):
         'const base::DictionaryValue& root_dict',
         'base::StringPiece key',
         '%s* out' % classname,
-        'base::string16* error',
+        'std::u16string* error',
         'std::vector<base::StringPiece>* error_path_reversed'
       ]
       comment = (
@@ -439,7 +440,7 @@ class _Generator(object):
         c.Comment(param.description)
       declaration_list.append(cpp_util.GetParameterDeclaration(
           param, self._type_helper.GetCppType(param.type_)))
-    c.Append('std::unique_ptr<base::ListValue> Create(%s);' %
+    c.Append('std::vector<base::Value> Create(%s);' %
              ', '.join(declaration_list))
     return c
 
@@ -476,5 +477,5 @@ class _Generator(object):
     if generate_error_messages is None:
       generate_error_messages = self._generate_error_messages
     if generate_error_messages:
-      params += ('base::string16* error',)
+      params += ('std::u16string* error',)
     return ', '.join(str(p) for p in params)

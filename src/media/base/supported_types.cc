@@ -4,6 +4,7 @@
 
 #include "media/base/supported_types.h"
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
@@ -50,6 +51,25 @@ bool IsSupportedHdrMetadata(const gfx::HdrMetadataType& hdr_metadata_type) {
   NOTREACHED();
   return false;
 }
+
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+bool IsHevcProfileSupported(VideoCodecProfile profile) {
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableClearHevcForTesting)) {
+    return false;
+  }
+  switch (profile) {
+    case HEVCPROFILE_MAIN:  // fallthrough
+    case HEVCPROFILE_MAIN10:
+      return true;
+    case HEVCPROFILE_MAIN_STILL_PICTURE:
+      return false;
+    default:
+      NOTREACHED();
+  }
+  return false;
+}
+#endif  // ENABLE_PLATFORM_HEVC && USE_CHROMEOS_PROTECTED_MEDIA
 
 }  // namespace
 
@@ -243,7 +263,7 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
     case kCodecAMR_NB:
     case kCodecAMR_WB:
     case kCodecGSM_MS:
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       return true;
 #else
       return false;
@@ -300,7 +320,8 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
       return IsColorSpaceSupported(type.color_space);
 #else
 #if defined(OS_ANDROID)
-      if (base::android::BuildInfo::GetInstance()->is_at_least_q() &&
+      if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+              base::android::SDK_VERSION_Q &&
           IsColorSpaceSupported(type.color_space)) {
         return true;
       }
@@ -317,15 +338,21 @@ bool IsDefaultSupportedVideoType(const VideoType& type) {
     case kCodecTheora:
       return true;
 
+    case kCodecHEVC:
+#if BUILDFLAG(ENABLE_PLATFORM_HEVC) && BUILDFLAG(USE_CHROMEOS_PROTECTED_MEDIA)
+      return IsColorSpaceSupported(type.color_space) &&
+             IsHevcProfileSupported(type.profile);
+#else
+      return false;
+#endif
     case kUnknownVideoCodec:
     case kCodecVC1:
     case kCodecMPEG2:
-    case kCodecHEVC:
     case kCodecDolbyVision:
       return false;
 
     case kCodecMPEG4:
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       return true;
 #else
       return false;

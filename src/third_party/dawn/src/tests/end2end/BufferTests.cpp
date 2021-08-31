@@ -154,7 +154,7 @@ TEST_P(BufferMappingTests, MapRead_InCallback) {
     wgpu::Buffer buffer = CreateMapReadBuffer(kBufferSize);
 
     uint32_t myData[3] = {0x01020304, 0x05060708, 0x090A0B0C};
-    constexpr size_t kSize = sizeof(myData);
+    static constexpr size_t kSize = sizeof(myData);
     queue.WriteBuffer(buffer, 0, &myData, kSize);
 
     struct UserData {
@@ -355,8 +355,8 @@ TEST_P(BufferMappingTests, OffsetNotUpdatedOnError) {
 TEST_P(BufferMappingTests, MapWrite_InCallbackDefault) {
     wgpu::Buffer buffer = CreateMapWriteBuffer(4);
 
-    constexpr uint32_t myData = 2934875;
-    constexpr size_t kSize = sizeof(myData);
+    static constexpr uint32_t myData = 2934875;
+    static constexpr size_t kSize = sizeof(myData);
 
     struct UserData {
         bool done;
@@ -396,8 +396,8 @@ TEST_P(BufferMappingTests, MapWrite_InCallbackDefault) {
 TEST_P(BufferMappingTests, MapWrite_InCallbackRange) {
     wgpu::Buffer buffer = CreateMapWriteBuffer(4);
 
-    constexpr uint32_t myData = 2934875;
-    constexpr size_t kSize = sizeof(myData);
+    static constexpr uint32_t myData = 2934875;
+    static constexpr size_t kSize = sizeof(myData);
 
     struct UserData {
         bool done;
@@ -437,6 +437,7 @@ DAWN_INSTANTIATE_TEST(BufferMappingTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 class BufferMappedAtCreationTests : public DawnTest {
@@ -648,7 +649,7 @@ TEST_P(BufferMappedAtCreationTests, ZeroSizedMappableBuffer) {
 
 // Test that creating a zero-sized error buffer mapped. (it is a different code path)
 TEST_P(BufferMappedAtCreationTests, ZeroSizedErrorBuffer) {
-    DAWN_SKIP_TEST_IF(IsDawnValidationSkipped());
+    DAWN_SKIP_TEST_IF(HasToggleEnabled("skip_validation"));
 
     wgpu::BufferDescriptor descriptor;
     descriptor.size = 0;
@@ -691,6 +692,7 @@ DAWN_INSTANTIATE_TEST(BufferMappedAtCreationTests,
                       D3D12Backend({}, {"use_d3d12_resource_heap_tier2"}),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());
 
 class BufferTests : public DawnTest {};
@@ -705,8 +707,9 @@ TEST_P(BufferTests, ZeroSizedBuffer) {
 
 // Test that creating a very large buffers fails gracefully.
 TEST_P(BufferTests, CreateBufferOOM) {
-    // TODO(http://crbug.com/dawn/27): Missing support.
+    // TODO(http://crbug.com/dawn/749): Missing support.
     DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
     DAWN_SKIP_TEST_IF(IsAsan());
 
     wgpu::BufferDescriptor descriptor;
@@ -722,8 +725,9 @@ TEST_P(BufferTests, CreateBufferOOM) {
 
 // Test that a very large buffer mappedAtCreation fails gracefully.
 TEST_P(BufferTests, BufferMappedAtCreationOOM) {
-    // TODO(http://crbug.com/dawn/27): Missing support.
+    // TODO(http://crbug.com/dawn/749): Missing support.
     DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
     DAWN_SKIP_TEST_IF(IsAsan());
 
     // Test non-mappable buffer
@@ -767,8 +771,9 @@ TEST_P(BufferTests, BufferMappedAtCreationOOM) {
 
 // Test that mapping an OOM buffer fails gracefully
 TEST_P(BufferTests, CreateBufferOOMMapAsync) {
-    // TODO(http://crbug.com/dawn/27): Missing support.
+    // TODO(http://crbug.com/dawn/749): Missing support.
     DAWN_SKIP_TEST_IF(IsOpenGL());
+    DAWN_SKIP_TEST_IF(IsOpenGLES());
     DAWN_SKIP_TEST_IF(IsAsan());
 
     auto RunTest = [this](const wgpu::BufferDescriptor& descriptor) {
@@ -805,4 +810,5 @@ DAWN_INSTANTIATE_TEST(BufferTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

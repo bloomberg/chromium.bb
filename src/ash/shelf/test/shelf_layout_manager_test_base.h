@@ -37,7 +37,6 @@ class ShelfLayoutManagerTestBase : public AshTestBase {
   views::Widget* CreateTestWidget();
 
   void RunGestureDragTests(const gfx::Point& shown, const gfx::Point& hidden);
-  void TestHomeLauncherGestureHandler(bool autohide_shelf);
 
   gfx::Rect GetVisibleShelfWidgetBoundsInScreen();
 
@@ -80,6 +79,10 @@ class ShelfLayoutManagerTestBase : public AshTestBase {
   void DoMouseWheelScrollAtLocation(gfx::Point location,
                                     int delta_y,
                                     bool reverse_scroll);
+
+  // Run the |visibility_update_for_tray_callback_| if set in
+  // ShelfLayoutManager and return true. Otherwise, return false.
+  bool RunVisibilityUpdateForTrayCallback();
 
  private:
   base::TimeTicks timestamp_;

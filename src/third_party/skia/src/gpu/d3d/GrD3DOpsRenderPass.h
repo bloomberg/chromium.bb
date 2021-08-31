@@ -31,6 +31,8 @@ public:
         const GrOpsRenderPass::StencilLoadAndStoreInfo&,
         const SkTArray<GrSurfaceProxy*, true>& sampledProxies);
 
+    void submit();
+
 private:
     GrGpu* gpu() override;
 
@@ -38,7 +40,8 @@ private:
 
     bool onBindPipeline(const GrProgramInfo&, const SkRect& drawBounds) override;
     void onSetScissorRect(const SkIRect&) override;
-    bool onBindTextures(const GrPrimitiveProcessor&, const GrSurfaceProxy* const primProcTextures[],
+    bool onBindTextures(const GrGeometryProcessor&,
+                        const GrSurfaceProxy* const geomProcTextures[],
                         const GrPipeline&) override;
     void onBindBuffers(sk_sp<const GrBuffer> indexBuffer, sk_sp<const GrBuffer> instanceBuffer,
                        sk_sp<const GrBuffer> vertexBuffer, GrPrimitiveRestart) override;
@@ -56,19 +59,19 @@ private:
     void onDrawIndirect(const GrBuffer*, size_t offset, int drawCount) override;
     void onDrawIndexedIndirect(const GrBuffer*, size_t offset, int drawCount) override;
 
-    void onClear(const GrScissorState& scissor, const SkPMColor4f& color) override;
+    void onClear(const GrScissorState& scissor, std::array<float, 4> color) override;
 
     void onClearStencilClip(const GrScissorState& scissor, bool insideStencilMask) override;
 
     GrD3DGpu* fGpu;
 
-    sk_sp<GrD3DPipelineState> fCurrentPipelineState;
+    GrD3DPipelineState* fCurrentPipelineState = nullptr;
 
     SkIRect fBounds;
     SkIRect fCurrentPipelineBounds;
 
     GrLoadOp fColorLoadOp;
-    SkPMColor4f fClearColor;
+    std::array<float, 4> fClearColor;
     GrLoadOp fStencilLoadOp;
 
     using INHERITED = GrOpsRenderPass;

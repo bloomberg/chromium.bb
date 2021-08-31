@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
+#include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "components/omnibox/browser/test_location_bar_model.h"
@@ -61,6 +63,8 @@ class LocationIconViewTest : public ChromeViewsTestBase {
   // ChromeViewsTestBase:
   void SetUp() override {
     ChromeViewsTestBase::SetUp();
+    profile_ = std::make_unique<TestingProfile>();
+
     gfx::FontList font_list;
 
     widget_ = CreateTestWidget();
@@ -69,8 +73,8 @@ class LocationIconViewTest : public ChromeViewsTestBase {
     delegate_ =
         std::make_unique<TestLocationIconDelegate>(location_bar_model());
 
-    auto view =
-        std::make_unique<LocationIconView>(font_list, delegate(), delegate());
+    auto view = std::make_unique<LocationIconView>(font_list, delegate(),
+                                                   delegate(), profile_.get());
     view->SetBoundsRect(gfx::Rect(0, 0, 24, 24));
     view_ = widget_->SetContentsView(std::move(view));
 
@@ -79,6 +83,7 @@ class LocationIconViewTest : public ChromeViewsTestBase {
 
   void TearDown() override {
     widget_.reset();
+    profile_.reset();
     ChromeViewsTestBase::TearDown();
   }
 
@@ -89,10 +94,10 @@ class LocationIconViewTest : public ChromeViewsTestBase {
   void SetSecurityLevel(security_state::SecurityLevel level) {
     location_bar_model()->set_security_level(level);
 
-    base::string16 secure_display_text = base::string16();
+    std::u16string secure_display_text = std::u16string();
     if (level == security_state::SecurityLevel::DANGEROUS ||
         level == security_state::SecurityLevel::WARNING)
-      secure_display_text = base::ASCIIToUTF16("Insecure");
+      secure_display_text = u"Insecure";
 
     location_bar_model()->set_secure_display_text(secure_display_text);
   }
@@ -105,6 +110,7 @@ class LocationIconViewTest : public ChromeViewsTestBase {
   std::unique_ptr<TestLocationIconDelegate> delegate_;
   LocationIconView* view_;
   std::unique_ptr<views::Widget> widget_;
+  std::unique_ptr<TestingProfile> profile_;
 };
 
 TEST_F(LocationIconViewTest, ShouldNotAnimateWhenSuppressingAnimations) {
@@ -146,40 +152,4 @@ TEST_F(LocationIconViewTest, ShouldNotAnimateWarningToDangerous) {
   SetSecurityLevel(security_state::SecurityLevel::DANGEROUS);
   view()->Update(/*suppress_animations=*/false);
   EXPECT_FALSE(view()->is_animating_label());
-}
-
-// Whenever InkDropMode is set a new InkDrop is created, which will reset any
-// animations on the drop, so we should only set the InkDropMode when it has
-// actually changed.
-TEST_F(LocationIconViewTest, ShouldNotRecreateInkDropNeedlessly) {
-  delegate()->set_is_editing_or_empty(false);
-  view()->Update(false);
-
-  const views::InkDrop* drop = view()->get_ink_drop_for_testing();
-  view()->Update(/*suppress_animations=*/false);
-
-  // The InkDropMode has not changed (is ON), so our InkDrop should remain the
-  // same.
-  EXPECT_EQ(drop, view()->get_ink_drop_for_testing());
-
-  delegate()->set_is_editing_or_empty(true);
-  view()->Update(/*suppress_animations=*/false);
-
-  // The InkDropMode has changed (ON --> OFF), so a new InkDrop will have been
-  // created.
-  EXPECT_NE(drop, view()->get_ink_drop_for_testing());
-
-  drop = view()->get_ink_drop_for_testing();
-  view()->Update(/*suppress_animations=*/false);
-
-  // The InkDropMode has not changed (is OFF), so the InkDrop should remain the
-  // same.
-  EXPECT_EQ(drop, view()->get_ink_drop_for_testing());
-
-  delegate()->set_is_editing_or_empty(false);
-  view()->Update(/*suppress_animations=*/false);
-
-  // The InkDrop mode has changed (OFF --> ON), so a new InkDrop will have been
-  // created.
-  EXPECT_NE(drop, view()->get_ink_drop_for_testing());
 }

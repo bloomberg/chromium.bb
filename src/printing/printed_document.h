@@ -7,10 +7,10 @@
 
 #include <map>
 #include <memory>
+#include <string>
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "printing/native_drawing_context.h"
@@ -32,13 +32,13 @@ class PrintingContext;
 // will have write access. Sensible functions are protected by a lock.
 // Warning: Once a page is loaded, it cannot be replaced. Pages may be discarded
 // under low memory conditions.
-class PRINTING_EXPORT PrintedDocument
+class COMPONENT_EXPORT(PRINTING) PrintedDocument
     : public base::RefCountedThreadSafe<PrintedDocument> {
  public:
   // The cookie shall be unique and has a specific relationship with its
   // originating source and settings.
   PrintedDocument(std::unique_ptr<PrintSettings> settings,
-                  const base::string16& name,
+                  const std::u16string& name,
                   int cookie);
   PrintedDocument(const PrintedDocument&) = delete;
   PrintedDocument& operator=(const PrintedDocument&) = delete;
@@ -108,21 +108,21 @@ class PRINTING_EXPORT PrintedDocument
 
   // Getters. All these items are immutable hence thread-safe.
   const PrintSettings& settings() const { return *immutable_.settings_; }
-  const base::string16& name() const { return immutable_.name_; }
+  const std::u16string& name() const { return immutable_.name_; }
   int cookie() const { return immutable_.cookie_; }
 
   // Sets a path where to dump printing output files for debugging. If never
-  // set, no files are generated. |debug_dump_path| must not be empty.
+  // set, no files are generated. `debug_dump_path` must not be empty.
   static void SetDebugDumpPath(const base::FilePath& debug_dump_path);
 
   // Returns true if SetDebugDumpPath() has been called.
   static bool HasDebugDumpPath();
 
-  // Creates debug file name from given |document_name| and |extension|.
-  // |extension| should include the leading dot. e.g. ".pdf"
+  // Creates debug file name from given `document_name` and `extension`.
+  // `extension` should include the leading dot. e.g. ".pdf"
   // Should only be called when debug dumps are enabled.
   static base::FilePath CreateDebugDumpPath(
-      const base::string16& document_name,
+      const std::u16string& document_name,
       const base::FilePath::StringType& extension);
 
 #if defined(OS_WIN)
@@ -179,7 +179,7 @@ class PRINTING_EXPORT PrintedDocument
   // construction.
   struct Immutable {
     Immutable(std::unique_ptr<PrintSettings> settings,
-              const base::string16& name,
+              const std::u16string& name,
               int cookie);
     ~Immutable();
 
@@ -187,7 +187,7 @@ class PRINTING_EXPORT PrintedDocument
     std::unique_ptr<PrintSettings> settings_;
 
     // Document name. Immutable.
-    base::string16 name_;
+    std::u16string name_;
 
     // Cookie to uniquely identify this document. It is used to make sure that a
     // PrintedPage is correctly belonging to the PrintedDocument. Since

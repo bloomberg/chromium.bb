@@ -167,6 +167,11 @@ void av1_find_cnn_output_size(int in_width, int in_height,
                               const CNN_CONFIG *cnn_config, int *out_width,
                               int *out_height, int *out_channels);
 
+// Function to return output width and output height of given layer.
+void av1_find_cnn_layer_output_size(int in_width, int in_height,
+                                    const CNN_LAYER_CONFIG *layer_config,
+                                    int *out_width, int *out_height);
+
 // Prediction functions from set of input image buffers. This function supports
 // CNN with multiple outputs.
 void av1_cnn_predict_img_multi_out(uint8_t **dgd, int width, int height,

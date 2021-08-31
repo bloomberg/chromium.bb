@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/qbone_client.h"
+#include "quic/qbone/qbone_client.h"
 
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_epoll_alarm_factory.h"
-#include "net/third_party/quiche/src/quic/core/quic_epoll_connection_helper.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_epoll.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_exported_stats.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_stream.h"
+#include "quic/core/quic_epoll_alarm_factory.h"
+#include "quic/core/quic_epoll_connection_helper.h"
+#include "quic/platform/api/quic_epoll.h"
+#include "quic/platform/api/quic_exported_stats.h"
+#include "quic/platform/api/quic_testvalue.h"
+#include "quic/qbone/qbone_stream.h"
 
 namespace quic {
 namespace {
@@ -20,7 +21,7 @@ std::unique_ptr<QuicClientBase::NetworkHelper> CreateNetworkHelper(
     QboneClient* client) {
   std::unique_ptr<QuicClientBase::NetworkHelper> helper =
       std::make_unique<QuicClientEpollNetworkHelper>(epoll_server, client);
-  testing::testvalue::Adjust("QboneClient/network_helper", &helper);
+  quic::AdjustTestValue("QboneClient/network_helper", &helper);
   return helper;
 }
 }  // namespace

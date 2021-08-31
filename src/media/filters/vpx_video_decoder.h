@@ -8,10 +8,12 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
+#include "media/base/supported_video_decoder_config.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_pool.h"
+#include "media/filters/frame_buffer_pool.h"
 #include "media/filters/offloading_video_decoder.h"
 
 struct vpx_codec_ctx;
@@ -29,11 +31,13 @@ class FrameBufferPool;
 // [1] http://wiki.webmproject.org/alpha-channel
 class MEDIA_EXPORT VpxVideoDecoder : public OffloadableVideoDecoder {
  public:
+  static SupportedVideoDecoderConfigs SupportedConfigs();
+
   explicit VpxVideoDecoder(OffloadState offload_state = OffloadState::kNormal);
   ~VpxVideoDecoder() override;
 
   // VideoDecoder implementation.
-  std::string GetDisplayName() const override;
+  VideoDecoderType GetDecoderType() const override;
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -45,6 +49,10 @@ class MEDIA_EXPORT VpxVideoDecoder : public OffloadableVideoDecoder {
 
   // OffloadableVideoDecoder implementation.
   void Detach() override;
+
+  void force_allocation_error_for_testing() {
+    memory_pool_->force_allocation_error_for_testing();
+  }
 
  private:
   enum DecoderState {

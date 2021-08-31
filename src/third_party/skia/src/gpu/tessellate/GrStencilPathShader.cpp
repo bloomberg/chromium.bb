@@ -7,66 +7,85 @@
 
 #include "src/gpu/tessellate/GrStencilPathShader.h"
 
+#include "src/gpu/geometry/GrWangsFormula.h"
 #include "src/gpu/glsl/GrGLSLGeometryProcessor.h"
 #include "src/gpu/glsl/GrGLSLVarying.h"
 #include "src/gpu/glsl/GrGLSLVertexGeoBuilder.h"
 
-// Wang's formula for cubics (1985) gives us the number of evenly spaced (in the
-// parametric sense) line segments that are guaranteed to be within a distance of
-// "MAX_LINEARIZATION_ERROR" from the actual curve.
-constexpr static char kWangsFormulaCubicFn[] = R"(
-        #define MAX_LINEARIZATION_ERROR 0.25  // 1/4 pixel
-        float length_pow2(vec2 v) {
-            return dot(v, v);
-        }
-        float wangs_formula_cubic(vec2 p0, vec2 p1, vec2 p2, vec2 p3) {
-            float k = (3.0 * 2.0) / (8.0 * MAX_LINEARIZATION_ERROR);
-            float m = max(length_pow2(-2.0*p1 + p2 + p0),
-                          length_pow2(-2.0*p2 + p3 + p1));
-            return max(1.0, ceil(sqrt(k * sqrt(m))));
-        })";
+constexpr static char kSkSLTypeDefs[] = R"(
+#define float4x3 mat4x3
+#define float2 vec2
+#define float3 vec3
+#define float4 vec4
+)";
 
-// Evaluate our point of interest using numerically stable mix() operations.
-constexpr static char kEvalCubicFn[] = R"(
-        vec2 eval_cubic(mat4x2 P, float T) {
-            vec2 ab = mix(P[0], P[1], T);
-            vec2 bc = mix(P[1], P[2], T);
-            vec2 cd = mix(P[2], P[3], T);
-            vec2 abc = mix(ab, bc, T);
-            vec2 bcd = mix(bc, cd, T);
-            return mix(abc, bcd, T);
-        })";
+// Converts a 4-point input patch into the rational cubic it intended to represent.
+constexpr static char kUnpackRationalCubicFn[] = R"(
+float4x3 unpack_rational_cubic(float2 p0, float2 p1, float2 p2, float2 p3) {
+    float4x3 P = float4x3(p0,1, p1,1, p2,1, p3,1);
+    if (isinf(P[3].y)) {
+        // This patch is actually a conic. Convert to a rational cubic.
+        float w = P[3].x;
+        float3 c = P[1] * ((2.0/3.0) * w);
+        P = float4x3(P[0], fma(P[0], float3(1.0/3.0), c), fma(P[2], float3(1.0/3.0), c), P[2]);
+    }
+    return P;
+})";
+
+// Evaluate our point of interest using numerically stable linear interpolations. We add our own
+// "safe_mix" method to guarantee we get exactly "b" when T=1. The builtin mix() function seems
+// spec'd to behave this way, but empirical results results have shown it does not always.
+constexpr static char kEvalRationalCubicFn[] = R"(
+float3 safe_mix(float3 a, float3 b, float T, float one_minus_T) {
+    return a*one_minus_T + b*T;
+}
+float2 eval_rational_cubic(float4x3 P, float T) {
+    float one_minus_T = 1.0 - T;
+    float3 ab = safe_mix(P[0], P[1], T, one_minus_T);
+    float3 bc = safe_mix(P[1], P[2], T, one_minus_T);
+    float3 cd = safe_mix(P[2], P[3], T, one_minus_T);
+    float3 abc = safe_mix(ab, bc, T, one_minus_T);
+    float3 bcd = safe_mix(bc, cd, T, one_minus_T);
+    float3 abcd = safe_mix(abc, bcd, T, one_minus_T);
+    return abcd.xy / abcd.z;
+})";
 
 class GrStencilPathShader::Impl : public GrGLSLGeometryProcessor {
 protected:
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-        const auto& shader = args.fGP.cast<GrStencilPathShader>();
+        const auto& shader = args.fGeomProc.cast<GrStencilPathShader>();
         args.fVaryingHandler->emitAttributes(shader);
+        auto v = args.fVertBuilder;
 
         GrShaderVar vertexPos = (*shader.vertexAttributes().begin()).asShaderVar();
         if (!shader.viewMatrix().isIdentity()) {
             const char* viewMatrix;
             fViewMatrixUniform = args.fUniformHandler->addUniform(
                     nullptr, kVertex_GrShaderFlag, kFloat3x3_GrSLType, "view_matrix", &viewMatrix);
-            args.fVertBuilder->codeAppendf(
-                    "float2 vertexpos = (%s * float3(inputPoint, 1)).xy;", viewMatrix);
+            v->codeAppendf("float2 vertexpos = (%s * float3(inputPoint, 1)).xy;", viewMatrix);
+            if (shader.willUseTessellationShaders()) {
+                // If y is infinity then x is a conic weight. Don't transform.
+                v->codeAppendf("vertexpos = (isinf(inputPoint.y)) ? inputPoint : vertexpos;");
+            }
             vertexPos.set(kFloat2_GrSLType, "vertexpos");
         }
 
-        if (!shader.willUseTessellationShaders()) {
+        if (!shader.willUseTessellationShaders()) {  // This is the case for the triangle shader.
             gpArgs->fPositionVar = vertexPos;
         } else {
-            args.fVertBuilder->declareGlobal(GrShaderVar(
-                    "P", kFloat2_GrSLType, GrShaderVar::TypeModifier::Out));
-            args.fVertBuilder->codeAppendf("P = %s;", vertexPos.c_str());
+            v->declareGlobal(GrShaderVar("P", kFloat2_GrSLType, GrShaderVar::TypeModifier::Out));
+            v->codeAppendf("P = %s;", vertexPos.c_str());
         }
 
-        // No fragment shader.
+        // The fragment shader is normally disabled, but output fully opaque white.
+        args.fFragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputColor);
+        args.fFragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
     }
 
     void setData(const GrGLSLProgramDataManager& pdman,
-                 const GrPrimitiveProcessor& primProc) override {
-        const auto& shader = primProc.cast<GrStencilPathShader>();
+                 const GrShaderCaps&,
+                 const GrGeometryProcessor& geomProc) override {
+        const auto& shader = geomProc.cast<GrStencilPathShader>();
         if (!shader.viewMatrix().isIdentity()) {
             pdman.setSkMatrix(fViewMatrixUniform, shader.viewMatrix());
         }
@@ -75,136 +94,209 @@ protected:
     GrGLSLUniformHandler::UniformHandle fViewMatrixUniform;
 };
 
-GrGLSLPrimitiveProcessor* GrStencilPathShader::createGLSLInstance(const GrShaderCaps&) const {
+GrGLSLGeometryProcessor* GrStencilPathShader::createGLSLInstance(const GrShaderCaps&) const {
     return new Impl;
 }
 
-SkString GrCubicTessellateShader::getTessControlShaderGLSL(const GrGLSLPrimitiveProcessor*,
-                                                           const char* versionAndExtensionDecls,
-                                                           const GrGLSLUniformHandler&,
-                                                           const GrShaderCaps&) const {
-    SkString code(versionAndExtensionDecls);
-    code.append(kWangsFormulaCubicFn);
-    code.append(R"(
+GrGLSLGeometryProcessor* GrCurveTessellateShader::createGLSLInstance(const GrShaderCaps&) const {
+    class Impl : public GrStencilPathShader::Impl {
+        SkString getTessControlShaderGLSL(const GrGeometryProcessor&,
+                                          const char* versionAndExtensionDecls,
+                                          const GrGLSLUniformHandler&,
+                                          const GrShaderCaps&) const override {
+            SkString code(versionAndExtensionDecls);
+            code.appendf(R"(
+            #define PRECISION %f)", GrTessellationPathRenderer::kLinearizationPrecision);
+            code.append(kSkSLTypeDefs);
+            code.append(GrWangsFormula::as_sksl(true/*hasConics*/));
+            code.append(kUnpackRationalCubicFn);
+            code.append(R"(
             layout(vertices = 1) out;
 
             in vec2 P[];
-            out vec4 X[];
-            out vec4 Y[];
+            patch out mat4x2 rationalCubicXY;
+            patch out float rationalCubicW;
 
             void main() {
+                float w = -1;  // w<0 means a cubic.
+                vec2 p1w = P[1];
+                if (isinf(P[3].y)) {
+                    // This patch is actually a conic. Project to homogeneous space.
+                    w = P[3].x;
+                    p1w *= w;
+                }
+
                 // Chop the curve at T=1/2.
-                vec2 ab = mix(P[0], P[1], .5);
-                vec2 bc = mix(P[1], P[2], .5);
-                vec2 cd = mix(P[2], P[3], .5);
-                vec2 abc = mix(ab, bc, .5);
-                vec2 bcd = mix(bc, cd, .5);
-                vec2 abcd = mix(abc, bcd, .5);
+                vec2 ab = (P[0] + p1w) * .5;
+                vec2 bc = (p1w + P[2]) * .5;
+                vec2 cd = (P[2] + P[3]) * .5;
+                vec2 abc = (ab + bc) * .5;
+                vec2 bcd = (bc + cd) * .5;
+                vec2 abcd = (abc + bcd) * .5;
 
-                // Calculate how many triangles we need to linearize each half of the curve.
-                float l0 = wangs_formula_cubic(P[0], ab, abc, abcd);
-                float l1 = wangs_formula_cubic(abcd, bcd, cd, P[3]);
+                float n0, n1;
+                if (w < 0 || isinf(w)) {
+                    if (w < 0) {
+                        // The patch is a cubic. Calculate how many segments are required to
+                        // linearize each half of the curve.
+                        n0 = wangs_formula(PRECISION, P[0], ab, abc, abcd, -1);  // w<0 means cubic.
+                        n1 = wangs_formula(PRECISION, abcd, bcd, cd, P[3], -1);
+                        rationalCubicW = 1;
+                    } else {
+                        // The patch is a triangle (a conic with infinite weight).
+                        n0 = n1 = 1;
+                        rationalCubicW = -1;  // In the next stage, rationalCubicW<0 means triangle.
+                    }
+                    rationalCubicXY = mat4x2(P[0], P[1], P[2], P[3]);
+                } else {
+                    // The patch is a conic. Unproject p0..5. w1 == w2 == w3 when chopping at .5.
+                    // (See SkConic::chopAt().)
+                    float r = 2.0 / (1.0 + w);
+                    ab *= r, bc *= r, abc *= r;
+                    // Put in "standard form" where w0 == w2 == w4 == 1.
+                    float w_ = inversesqrt(r);  // Both halves have the same w' when chopping at .5.
+                    // Calculate how many segments are needed to linearize each half of the curve.
+                    n0 = wangs_formula(PRECISION, P[0], ab, abc, float2(0), w_);
+                    n1 = wangs_formula(PRECISION, abc, bc, P[2], float2(0), w_);
+                    // Covert the conic to a rational cubic in projected form.
+                    rationalCubicXY = mat4x2(P[0],
+                                             mix(float4(P[0],P[2]), p1w.xyxy, 2.0/3.0),
+                                             P[2]);
+                    rationalCubicW = fma(w, 2.0/3.0, 1.0/3.0);
+                }
 
-                gl_TessLevelOuter[0] = l1;
+                gl_TessLevelOuter[0] = n1;
                 gl_TessLevelOuter[1] = 1.0;
-                gl_TessLevelOuter[2] = l0;
+                gl_TessLevelOuter[2] = n0;
 
-                // Changing the inner level to 1 when l0 == l1 == 1 collapses the entire patch to a
+                // Changing the inner level to 1 when n0 == n1 == 1 collapses the entire patch to a
                 // single triangle. Otherwise, we need an inner level of 2 so our curve triangles
                 // have an interior point to originate from.
-                gl_TessLevelInner[0] = min(max(l0, l1), 2.0);
-
-                X[gl_InvocationID /*== 0*/] = vec4(P[0].x, P[1].x, P[2].x, P[3].x);
-                Y[gl_InvocationID /*== 0*/] = vec4(P[0].y, P[1].y, P[2].y, P[3].y);
+                gl_TessLevelInner[0] = min(max(n0, n1), 2.0);
             })");
 
-    return code;
-}
+            return code;
+        }
 
-SkString GrCubicTessellateShader::getTessEvaluationShaderGLSL(
-        const GrGLSLPrimitiveProcessor*, const char* versionAndExtensionDecls,
-        const GrGLSLUniformHandler&, const GrShaderCaps&) const {
-    SkString code(versionAndExtensionDecls);
-    code.append(kEvalCubicFn);
-    code.append(R"(
+        SkString getTessEvaluationShaderGLSL(const GrGeometryProcessor&,
+                                             const char* versionAndExtensionDecls,
+                                             const GrGLSLUniformHandler&,
+                                             const GrShaderCaps&) const override {
+            SkString code(versionAndExtensionDecls);
+            code.append(kSkSLTypeDefs);
+            code.append(kEvalRationalCubicFn);
+            code.append(R"(
             layout(triangles, equal_spacing, ccw) in;
 
             uniform vec4 sk_RTAdjust;
 
-            in vec4 X[];
-            in vec4 Y[];
+            patch in mat4x2 rationalCubicXY;
+            patch in float rationalCubicW;
 
             void main() {
-                // Locate our parametric point of interest. T ramps from [0..1/2] on the left edge
-                // of the triangle, and [1/2..1] on the right. If we are the patch's interior
-                // vertex, then we want T=1/2. Since the barycentric coords are (1/3, 1/3, 1/3) at
-                // the interior vertex, the below fma() works in all 3 scenarios.
-                float T = fma(.5, gl_TessCoord.y, gl_TessCoord.z);
+                vec2 vertexpos;
+                if (rationalCubicW < 0) {  // rationalCubicW < 0 means a triangle now.
+                    vertexpos = (gl_TessCoord.x != 0) ? rationalCubicXY[0]
+                              : (gl_TessCoord.y != 0) ? rationalCubicXY[1]
+                                                      : rationalCubicXY[2];
+                } else {
+                    // Locate our parametric point of interest. T ramps from [0..1/2] on the left
+                    // edge of the triangle, and [1/2..1] on the right. If we are the patch's
+                    // interior vertex, then we want T=1/2. Since the barycentric coords are
+                    // (1/3, 1/3, 1/3) at the interior vertex, the below fma() works in all 3
+                    // scenarios.
+                    float T = fma(.5, gl_TessCoord.y, gl_TessCoord.z);
 
-                mat4x2 P = transpose(mat2x4(X[0], Y[0]));
-                vec2 vertexpos = eval_cubic(P, T);
-                if (all(notEqual(gl_TessCoord.xz, vec2(0)))) {
-                    // We are the interior point of the patch; center it inside [C(0), C(.5), C(1)].
-                    vertexpos = (P[0] + vertexpos + P[3]) / 3.0;
+                    mat4x3 P = mat4x3(rationalCubicXY[0], 1,
+                                      rationalCubicXY[1], rationalCubicW,
+                                      rationalCubicXY[2], rationalCubicW,
+                                      rationalCubicXY[3], 1);
+                    vertexpos = eval_rational_cubic(P, T);
+                    if (all(notEqual(gl_TessCoord.xz, vec2(0)))) {
+                        // We are the interior point of the patch; center it inside
+                        // [C(0), C(.5), C(1)].
+                        vertexpos = (P[0].xy + vertexpos + P[3].xy) / 3.0;
+                    }
                 }
 
                 gl_Position = vec4(vertexpos * sk_RTAdjust.xz + sk_RTAdjust.yw, 0.0, 1.0);
             })");
 
-    return code;
+            return code;
+        }
+    };
+
+    return new Impl;
 }
 
-SkString GrWedgeTessellateShader::getTessControlShaderGLSL(const GrGLSLPrimitiveProcessor*,
-                                                           const char* versionAndExtensionDecls,
-                                                           const GrGLSLUniformHandler&,
-                                                           const GrShaderCaps&) const {
-    SkString code(versionAndExtensionDecls);
-    code.append(kWangsFormulaCubicFn);
-    code.append(R"(
+GrGLSLGeometryProcessor* GrWedgeTessellateShader::createGLSLInstance(const GrShaderCaps&) const {
+    class Impl : public GrStencilPathShader::Impl {
+        SkString getTessControlShaderGLSL(const GrGeometryProcessor&,
+                                          const char* versionAndExtensionDecls,
+                                          const GrGLSLUniformHandler&,
+                                          const GrShaderCaps&) const override {
+            SkString code(versionAndExtensionDecls);
+            code.appendf(R"(
+            #define PRECISION %f)", GrTessellationPathRenderer::kLinearizationPrecision);
+            code.append(kSkSLTypeDefs);
+            code.append(GrWangsFormula::as_sksl(true/*hasConics*/));
+            code.append(kUnpackRationalCubicFn);
+            code.append(R"(
             layout(vertices = 1) out;
 
             in vec2 P[];
-            out vec4 X[];
-            out vec4 Y[];
-            out vec2 fanpoint[];
+            patch out mat4x2 rationalCubicXY;
+            patch out float rationalCubicW;
+            patch out vec2 fanpoint;
 
             void main() {
-                // Calculate how many triangles we need to linearize the curve.
-                float num_segments = wangs_formula_cubic(P[0], P[1], P[2], P[3]);
+                // Figure out how many segments to divide the curve into.
+                float w = isinf(P[3].y) ? P[3].x : -1;  // w<0 means cubic.
+                float n = wangs_formula(PRECISION, P[0], P[1], P[2], P[3], w);
 
-                // Tessellate the first side of the patch into num_segments triangles.
-                gl_TessLevelOuter[0] = num_segments;
+                // Tessellate the first side of the patch into n triangles.
+                gl_TessLevelOuter[0] = n;
 
                 // Leave the other two sides of the patch as single segments.
                 gl_TessLevelOuter[1] = 1.0;
                 gl_TessLevelOuter[2] = 1.0;
 
-                // Changing the inner level to 1 when num_segments == 1 collapses the entire
+                // Changing the inner level to 1 when n == 1 collapses the entire
                 // patch to a single triangle. Otherwise, we need an inner level of 2 so our curve
                 // triangles have an interior point to originate from.
-                gl_TessLevelInner[0] = min(num_segments, 2.0);
+                gl_TessLevelInner[0] = min(n, 2.0);
 
-                X[gl_InvocationID /*== 0*/] = vec4(P[0].x, P[1].x, P[2].x, P[3].x);
-                Y[gl_InvocationID /*== 0*/] = vec4(P[0].y, P[1].y, P[2].y, P[3].y);
-                fanpoint[gl_InvocationID /*== 0*/] = P[4];
+                if (w < 0) {
+                    rationalCubicXY = mat4x2(P[0], P[1], P[2], P[3]);
+                    rationalCubicW = 1;
+                } else {
+                    // Convert the conic to a rational cubic in projected form.
+                    rationalCubicXY = mat4x2(P[0],
+                                             mix(vec4(P[0], P[2]), (P[1] * w).xyxy, 2.0/3.0),
+                                             P[2]);
+                    rationalCubicW = fma(w, 2.0/3.0, 1.0/3.0);
+                }
+                fanpoint = P[4];
             })");
 
-    return code;
-}
+            return code;
+        }
 
-SkString GrWedgeTessellateShader::getTessEvaluationShaderGLSL(
-        const GrGLSLPrimitiveProcessor*, const char* versionAndExtensionDecls,
-        const GrGLSLUniformHandler&, const GrShaderCaps&) const {
-    SkString code(versionAndExtensionDecls);
-    code.append(kEvalCubicFn);
-    code.append(R"(
+        SkString getTessEvaluationShaderGLSL(const GrGeometryProcessor&,
+                                             const char* versionAndExtensionDecls,
+                                             const GrGLSLUniformHandler&,
+                                             const GrShaderCaps&) const override {
+            SkString code(versionAndExtensionDecls);
+            code.append(kSkSLTypeDefs);
+            code.append(kEvalRationalCubicFn);
+            code.append(R"(
             layout(triangles, equal_spacing, ccw) in;
 
             uniform vec4 sk_RTAdjust;
 
-            in vec4 X[];
-            in vec4 Y[];
-            in vec2 fanpoint[];
+            patch in mat4x2 rationalCubicXY;
+            patch in float rationalCubicW;
+            patch in vec2 fanpoint[];
 
             void main() {
                 // Locate our parametric point of interest. It is equal to the barycentric
@@ -213,121 +305,87 @@ SkString GrWedgeTessellateShader::getTessEvaluationShaderGLSL(
                 // NOTE: We are on the tessellated edge when the barycentric x-coordinate == 0.
                 float T = (gl_TessCoord.x == 0.0) ? gl_TessCoord.y : 0.5;
 
-                mat4x2 P = transpose(mat2x4(X[0], Y[0]));
-                vec2 vertexpos = eval_cubic(P, T);
+                mat4x3 P = mat4x3(rationalCubicXY[0], 1,
+                                  rationalCubicXY[1], rationalCubicW,
+                                  rationalCubicXY[2], rationalCubicW,
+                                  rationalCubicXY[3], 1);
+                vec2 vertexpos = eval_rational_cubic(P, T);
+
                 if (gl_TessCoord.x == 1.0) {
                     // We are the anchor point that fans from the center of the curve's contour.
                     vertexpos = fanpoint[0];
                 } else if (gl_TessCoord.x != 0.0) {
                     // We are the interior point of the patch; center it inside [C(0), C(.5), C(1)].
-                    vertexpos = (P[0] + vertexpos + P[3]) / 3.0;
+                    vertexpos = (P[0].xy + vertexpos + P[3].xy) / 3.0;
                 }
 
                 gl_Position = vec4(vertexpos * sk_RTAdjust.xz + sk_RTAdjust.yw, 0.0, 1.0);
             })");
 
-    return code;
+            return code;
+        }
+    };
+
+    return new Impl;
 }
 
-constexpr static int kMaxResolveLevel = GrTessellationPathRenderer::kMaxResolveLevel;
-
-GR_DECLARE_STATIC_UNIQUE_KEY(gMiddleOutIndexBufferKey);
-
-sk_sp<const GrGpuBuffer> GrMiddleOutCubicShader::FindOrMakeMiddleOutIndexBuffer(
-        GrResourceProvider* resourceProvider) {
-    GR_DEFINE_STATIC_UNIQUE_KEY(gMiddleOutIndexBufferKey);
-    if (auto buffer = resourceProvider->findByUniqueKey<GrGpuBuffer>(gMiddleOutIndexBufferKey)) {
-        return std::move(buffer);
-    }
-
-    // One explicit triangle at index 0, and one middle-out cubic with kMaxResolveLevel line
-    // segments beginning at index 3.
-    constexpr static int kIndexCount = 3 + NumVerticesAtResolveLevel(kMaxResolveLevel);
-    auto buffer = resourceProvider->createBuffer(
-            kIndexCount * sizeof(uint16_t), GrGpuBufferType::kIndex, kStatic_GrAccessPattern);
-    if (!buffer) {
-        return nullptr;
-    }
-
-    // We shouldn't bin and/or cache static buffers.
-    SkASSERT(buffer->size() == kIndexCount * sizeof(uint16_t));
-    SkASSERT(!buffer->resourcePriv().getScratchKey().isValid());
-    auto indexData = static_cast<uint16_t*>(buffer->map());
-    SkAutoTMalloc<uint16_t> stagingBuffer;
-    if (!indexData) {
-        SkASSERT(!buffer->isMapped());
-        indexData = stagingBuffer.reset(kIndexCount);
-    }
-
-    // Indices 0,1,2 contain special values that emit points P0, P1, and P2 respectively. (When the
-    // vertex shader is fed an index value larger than (1 << kMaxResolveLevel), it emits
-    // P[index % 4].)
-    int i = 0;
-    indexData[i++] = (1 << kMaxResolveLevel) + 4;  // % 4 == 0
-    indexData[i++] = (1 << kMaxResolveLevel) + 5;  // % 4 == 1
-    indexData[i++] = (1 << kMaxResolveLevel) + 6;  // % 4 == 2
-
-    // Starting at index 3, we triangulate a cubic with 2^kMaxResolveLevel line segments. Each
-    // index value corresponds to parametric value T=(index / 2^kMaxResolveLevel). Since the
-    // triangles are arranged in "middle-out" order, we will be able to conveniently control the
-    // resolveLevel by changing only the indexCount.
-    for (uint16_t advance = 1 << (kMaxResolveLevel - 1); advance; advance >>= 1) {
-        uint16_t T = 0;
-        do {
-            indexData[i++] = T;
-            indexData[i++] = (T += advance);
-            indexData[i++] = (T += advance);
-        } while (T != (1 << kMaxResolveLevel));
-    }
-    SkASSERT(i == kIndexCount);
-
-    if (buffer->isMapped()) {
-        buffer->unmap();
-    } else {
-        buffer->updateData(stagingBuffer, kIndexCount * sizeof(uint16_t));
-    }
-    buffer->resourcePriv().setUniqueKey(gMiddleOutIndexBufferKey);
-    return std::move(buffer);
-}
-
-class GrMiddleOutCubicShader::Impl : public GrStencilPathShader::Impl {
+class GrCurveMiddleOutShader::Impl : public GrStencilPathShader::Impl {
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-        const auto& shader = args.fGP.cast<GrMiddleOutCubicShader>();
+        const auto& shader = args.fGeomProc.cast<GrCurveMiddleOutShader>();
         args.fVaryingHandler->emitAttributes(shader);
-        args.fVertBuilder->defineConstantf("int", "kMaxVertexID", "%i", 1 << kMaxResolveLevel);
-        args.fVertBuilder->defineConstantf("float", "kInverseMaxVertexID", "exp2(-%i.0)",
-                                           kMaxResolveLevel);
+        args.fVertBuilder->insertFunction(kUnpackRationalCubicFn);
+        args.fVertBuilder->insertFunction(kEvalRationalCubicFn);
+        if (args.fShaderCaps->bitManipulationSupport()) {
+            // Determines the T value at which to place the given vertex in a "middle-out" topology.
+            args.fVertBuilder->insertFunction(R"(
+            float find_middle_out_T() {
+                int totalTriangleIdx = sk_VertexID/3 + 1;
+                int depth = findMSB(totalTriangleIdx);
+                int firstTriangleAtDepth = (1 << depth);
+                int triangleIdxWithinDepth = totalTriangleIdx - firstTriangleAtDepth;
+                int vertexIdxWithinDepth = triangleIdxWithinDepth * 2 + sk_VertexID % 3;
+                return ldexp(float(vertexIdxWithinDepth), -1 - depth);
+            })");
+        } else {
+            // Determines the T value at which to place the given vertex in a "middle-out" topology.
+            args.fVertBuilder->insertFunction(R"(
+            float find_middle_out_T() {
+                float totalTriangleIdx = float(sk_VertexID/3) + 1;
+                float depth = floor(log2(totalTriangleIdx));
+                float firstTriangleAtDepth = exp2(depth);
+                float triangleIdxWithinDepth = totalTriangleIdx - firstTriangleAtDepth;
+                float vertexIdxWithinDepth = triangleIdxWithinDepth * 2 + float(sk_VertexID % 3);
+                return vertexIdxWithinDepth * exp2(-1 - depth);
+            })");
+        }
         args.fVertBuilder->codeAppend(R"(
-                float4x2 P = float4x2(inputPoints_0_1, inputPoints_2_3);
-                float2 point;
-                if (sk_VertexID > kMaxVertexID) {
-                    // This is a special index value that wants us to emit a specific point.
-                    point = P[sk_VertexID & 3];
-                } else {
-                    // Evaluate the cubic at T = (sk_VertexID / 2^kMaxResolveLevel).
-                    float T = sk_VertexID * kInverseMaxVertexID;
-                    float2 ab = mix(P[0], P[1], T);
-                    float2 bc = mix(P[1], P[2], T);
-                    float2 cd = mix(P[2], P[3], T);
-                    float2 abc = mix(ab, bc, T);
-                    float2 bcd = mix(bc, cd, T);
-                    point = mix(abc, bcd, T);
-                })");
-
-        GrShaderVar vertexPos("point", kFloat2_GrSLType);
+        float2 pos;
+        if (isinf(inputPoints_2_3.z)) {
+            // A conic with w=Inf is an exact triangle.
+            pos = (sk_VertexID < 1)  ? inputPoints_0_1.xy
+                : (sk_VertexID == 1) ? inputPoints_0_1.zw
+                                     : inputPoints_2_3.xy;
+        } else {
+            float4x3 P = unpack_rational_cubic(inputPoints_0_1.xy, inputPoints_0_1.zw,
+                                               inputPoints_2_3.xy, inputPoints_2_3.zw);
+            float T = find_middle_out_T();
+            pos = eval_rational_cubic(P, T);
+        })");
         if (!shader.viewMatrix().isIdentity()) {
             const char* viewMatrix;
             fViewMatrixUniform = args.fUniformHandler->addUniform(
                     nullptr, kVertex_GrShaderFlag, kFloat3x3_GrSLType, "view_matrix", &viewMatrix);
             args.fVertBuilder->codeAppendf(R"(
-                    float2 transformedPoint = (%s * float3(point, 1)).xy;)", viewMatrix);
-            vertexPos.set(kFloat2_GrSLType, "transformedPoint");
+            pos = (%s * float3(pos, 1)).xy;)", viewMatrix);
         }
-        gpArgs->fPositionVar = vertexPos;
-        // No fragment shader.
+        gpArgs->fPositionVar.set(kFloat2_GrSLType, "pos");
+
+        // The fragment shader is normally disabled, but output fully opaque white.
+        args.fFragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputColor);
+        args.fFragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
     }
 };
 
-GrGLSLPrimitiveProcessor* GrMiddleOutCubicShader::createGLSLInstance(const GrShaderCaps&) const {
+GrGLSLGeometryProcessor* GrCurveMiddleOutShader::createGLSLInstance(const GrShaderCaps&) const {
     return new Impl;
 }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/epoll_server/simple_epoll_server.h"
+#include "epoll_server/simple_epoll_server.h"
 
 #include <errno.h>   // for errno and strerror_r
 #include <stdlib.h>  // for abort
@@ -11,8 +11,8 @@
 #include <algorithm>
 #include <utility>
 
-#include "net/third_party/quiche/src/epoll_server/platform/api/epoll_bug.h"
-#include "net/third_party/quiche/src/epoll_server/platform/api/epoll_time.h"
+#include "epoll_server/platform/api/epoll_bug.h"
+#include "epoll_server/platform/api/epoll_time.h"
 
 // Design notes: An efficient implementation of ready list has the following
 // desirable properties:
@@ -444,7 +444,7 @@ void SimpleEpollServer::RegisterAlarm(int64_t timeout_time_in_us, AlarmCB* ac) {
   EPOLL_VLOG(4) << "RegisteringAlarm " << ac << " at : " << timeout_time_in_us;
   CHECK(ac);
   if (all_alarms_.find(ac) != all_alarms_.end()) {
-    EPOLL_BUG << "Alarm already exists";
+    EPOLL_BUG(epoll_bug_1_1) << "Alarm already exists";
   }
 
   auto alarm_iter = alarm_map_.insert(std::make_pair(timeout_time_in_us, ac));

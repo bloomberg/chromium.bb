@@ -27,7 +27,7 @@ EphemeralRangeTemplate<Strategy>::EphemeralRangeTemplate(
     const PositionTemplate<Strategy>& start,
     const PositionTemplate<Strategy>& end)
     : start_position_(start),
-      end_position_(end)
+      end_position_(start.IsEquivalent(end) ? start : end)
 #if DCHECK_IS_ON()
       ,
       dom_tree_version_(start.IsNull() ? 0
@@ -212,16 +212,6 @@ std::ostream& operator<<(std::ostream& ostream,
 
 EphemeralRangeInFlatTree ToEphemeralRangeInFlatTree(
     const EphemeralRange& range) {
-  // We need to update the distribution before getting the position in the flat
-  // tree, since that operation requires us to navigate the flat tree.
-  if (range.StartPosition().AnchorNode()) {
-    range.StartPosition()
-        .AnchorNode()
-        ->UpdateDistributionForFlatTreeTraversal();
-  }
-  if (range.EndPosition().AnchorNode()) {
-    range.EndPosition().AnchorNode()->UpdateDistributionForFlatTreeTraversal();
-  }
   PositionInFlatTree start = ToPositionInFlatTree(range.StartPosition());
   PositionInFlatTree end = ToPositionInFlatTree(range.EndPosition());
   if (start.IsNull() || end.IsNull() ||

@@ -55,7 +55,12 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     initial_property_updates(GetTypeString(type))[path] += 1;
   }
 
-  void ProfileListChanged() override {}
+  void ProfileListChanged(const base::Value& profile_list) override {
+    if (!profile_list.is_list()) {
+      return;
+    }
+    profile_list_size_ = profile_list.GetList().size();
+  }
 
   void UpdateNetworkServiceProperty(const std::string& service_path,
                                     const std::string& key,
@@ -113,6 +118,7 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
   }
   std::string hostname() { return hostname_; }
   int errors() { return errors_; }
+  int profile_list_size() { return profile_list_size_; }
 
  private:
   std::string GetTypeString(ManagedState::ManagedType type) {
@@ -130,10 +136,9 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
     if (type.empty())
       return;
     entries_[type].clear();
-    for (base::ListValue::const_iterator iter = entries.begin();
-         iter != entries.end(); ++iter) {
+    for (const auto& entry : entries.GetList()) {
       std::string path;
-      if (iter->GetAsString(&path))
+      if (entry.GetAsString(&path))
         entries_[type].push_back(path);
     }
   }
@@ -159,6 +164,7 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
   int technology_list_updates_;
   std::string hostname_;
   int errors_;
+  int profile_list_size_;
 };
 
 }  // namespace
@@ -242,9 +248,9 @@ class ShillPropertyHandlerTest : public testing::Test {
   // Call this after any initial Shill client setup
   void SetupShillPropertyHandler() {
     SetupDefaultShillState();
-    listener_.reset(new TestListener);
-    shill_property_handler_.reset(
-        new internal::ShillPropertyHandler(listener_.get()));
+    listener_ = std::make_unique<TestListener>();
+    shill_property_handler_ =
+        std::make_unique<internal::ShillPropertyHandler>(listener_.get());
     shill_property_handler_->Init();
   }
 
@@ -290,6 +296,17 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerStub) {
             listener_->entries(shill::kServiceCompleteListProperty).size());
 
   EXPECT_EQ(0, listener_->errors());
+}
+
+TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerProfileListChanged) {
+  EXPECT_EQ(1, listener_->profile_list_size());
+
+  const char kMountedUserDirectory[] = "/profile/chronos/shill";
+  // Simulate a user logging in. When a user logs in the mounted user directory
+  // path is added to the list of profile paths.
+  profile_test_->AddProfile(kMountedUserDirectory, /*user_hash=*/"");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2, listener_->profile_list_size());
 }
 
 TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerHostnameChanged) {

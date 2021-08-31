@@ -24,7 +24,7 @@ namespace {
 constexpr base::TimeDelta kOneMinute = base::TimeDelta::FromMinutes(1);
 constexpr base::TimeDelta kOneSecond = base::TimeDelta::FromSeconds(1);
 
-base::string16 RemainingTimeString(base::TimeDelta remaining_time) {
+std::u16string RemainingTimeString(base::TimeDelta remaining_time) {
   if (remaining_time > kOneMinute) {
     return l10n_util::GetStringFUTF16Int(
         IDS_ASH_STATUS_TRAY_NEARBY_SHARE_REMAINING_MINUTES,
@@ -67,7 +67,7 @@ FeaturePodButton* NearbyShareFeaturePodController::CreateButton() {
   button_->SetVisible(nearby_share_delegate_->IsPodButtonVisible() &&
                       session_controller->IsActiveUserSessionStarted() &&
                       session_controller->IsUserPrimary() &&
-                      !session_controller->IsScreenLocked());
+                      !session_controller->IsUserSessionBlocked());
   button_->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NEARBY_SHARE_BUTTON_LABEL));
   button_->SetLabelTooltip(l10n_util::GetStringUTF16(

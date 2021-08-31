@@ -5,20 +5,27 @@
 #include "cast/common/public/testing/discovery_utils.h"
 
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "util/stringprintf.h"
 
 namespace openscreen {
 namespace cast {
 
+const IPAddress kAddressV4 = {192, 168, 0, 0};
+const IPAddress kAddressV6 = {1, 2, 3, 4, 5, 6, 7, 8};
+const IPEndpoint kEndpointV4 = {kAddressV4, kPort};
+const IPEndpoint kEndpointV6 = {kAddressV6, kPort};
+
 discovery::DnsSdTxtRecord CreateValidTxt() {
   discovery::DnsSdTxtRecord txt;
   txt.SetValue(kUniqueIdKey, kTestUniqueId);
-  txt.SetValue(kVersionId, kTestVersion);
-  txt.SetValue(kCapabilitiesId, kCapabilitiesStringLong);
-  txt.SetValue(kStatusId, kStatus);
-  txt.SetValue(kFriendlyNameId, kFriendlyName);
-  txt.SetValue(kModelNameId, kModelName);
+  txt.SetValue(kVersionKey, std::to_string(kTestVersion));
+  txt.SetValue(kCapabilitiesKey, kCapabilitiesStringLong);
+  txt.SetValue(kStatusKey, std::to_string(kStatus));
+  txt.SetValue(kFriendlyNameKey, kFriendlyName);
+  txt.SetValue(kModelNameKey, kModelName);
   return txt;
 }
 
@@ -37,18 +44,13 @@ void CompareTxtString(const discovery::DnsSdTxtRecord& txt,
 
 void CompareTxtInt(const discovery::DnsSdTxtRecord& txt,
                    const std::string& key,
-                   uint8_t expected) {
+                   int expected) {
   ErrorOr<discovery::DnsSdTxtRecord::ValueRef> value = txt.GetValue(key);
   ASSERT_FALSE(value.is_error())
       << "key: '" << key << "'' expected: '" << expected << "'";
   const std::vector<uint8_t>& data = value.value().get();
-  std::string parsed_value = HexEncode(data);
-  ASSERT_EQ(data.size(), size_t{1})
-      << "expected one byte value for key: '" << key << "' got size: '"
-      << data.size() << "' bytes";
-  EXPECT_EQ(data[0], expected)
-      << "expected :" << std::hex << expected << "for key: '" << key
-      << "', got value: '" << parsed_value << "'";
+  EXPECT_EQ(std::string(data.begin(), data.end()), std::to_string(expected))
+      << "for key: '" << key << "'";
 }
 
 }  // namespace cast

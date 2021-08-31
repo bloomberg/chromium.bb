@@ -4,7 +4,8 @@
 
 #include "cc/layers/ui_resource_layer_impl.h"
 
-#include "base/strings/stringprintf.h"
+#include <memory>
+
 #include "base/trace_event/traced_value.h"
 #include "cc/base/math_util.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -102,7 +103,7 @@ void UIResourceLayerImpl::AppendQuads(viz::CompositorRenderPass* render_pass,
   viz::ResourceId resource =
       ui_resource_id_
           ? layer_tree_impl()->ResourceIdForUIResource(ui_resource_id_)
-          : 0;
+          : viz::kInvalidResourceId;
   bool are_contents_opaque =
       resource ? (layer_tree_impl()->IsUIResourceOpaque(ui_resource_id_) ||
                   contents_opaque())

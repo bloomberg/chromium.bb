@@ -18,10 +18,12 @@
 #include <sys/system_properties.h>
 #include <sys/types.h>
 
+#include <string>
+
 #include "perfetto/base/logging.h"
 #include "perfetto/tracing/core/data_source_config.h"
 #include "src/base/test/test_task_runner.h"
-#include "test/cts/utils.h"
+#include "test/android_test_utils.h"
 #include "test/gtest_and_gmock.h"
 #include "test/test_helper.h"
 
@@ -41,6 +43,18 @@ bool HasPerfLsmHooks() {
   int ret = __system_property_get("sys.init.perf_lsm_hooks", buf);
   PERFETTO_CHECK(ret >= 0);
   return std::string(buf) == "1";
+}
+
+std::string RandomSessionName() {
+  std::random_device rd;
+  std::default_random_engine generator(rd());
+  std::uniform_int_distribution<char> distribution('a', 'z');
+
+  constexpr size_t kSessionNameLen = 20;
+  std::string result(kSessionNameLen, '\0');
+  for (size_t i = 0; i < kSessionNameLen; ++i)
+    result[i] = distribution(generator);
+  return result;
 }
 
 std::vector<protos::gen::TracePacket> ProfileSystemWide(std::string app_name) {
@@ -65,6 +79,7 @@ std::vector<protos::gen::TracePacket> ProfileSystemWide(std::string app_name) {
   trace_config.add_buffers()->set_size_kb(20 * 1024);
   trace_config.set_duration_ms(3000);
   trace_config.set_data_source_stop_timeout_ms(8000);
+  trace_config.set_unique_session_name(RandomSessionName().c_str());
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("linux.perf");
@@ -178,7 +193,7 @@ TEST(TracedPerfCtsTest, SystemWideReleaseApp) {
   int app_pid = PidForProcessName(app_name);
   ASSERT_GT(app_pid, 0) << "failed to find pid for target process";
 
-  if (IsDebuggableBuild())
+  if (!IsUserBuild())
     AssertHasSampledStacksForPid(packets, app_pid);
   else
     AssertNoStacksForPid(packets, app_pid);

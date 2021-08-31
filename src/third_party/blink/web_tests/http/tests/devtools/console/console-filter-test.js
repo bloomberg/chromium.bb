@@ -5,7 +5,7 @@
 (async function() {
   TestRunner.addResult(`Tests that console can filter messages by source.\n`);
 
-  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadModule('console'); await TestRunner.loadTestModule('console_test_runner');
   await TestRunner.showPanel('console');
   await TestRunner.addScriptTag('resources/log-source.js');
   await TestRunner.evaluateInPagePromise(`
@@ -52,10 +52,9 @@
 
   // Add Violation-source message.
   var violationMessage = new SDK.ConsoleMessage(
-      null, SDK.ConsoleMessage.MessageSource.Violation,
-      SDK.ConsoleMessage.MessageLevel.Verbose,
-      "Violation message text",
-      SDK.ConsoleMessage.MessageType.Log);
+      null, Protocol.Log.LogEntrySource.Violation,
+      Protocol.Log.LogEntryLevel.Verbose, 'Violation message text',
+      Protocol.Runtime.ConsoleAPICalledEventType.Log);
   SDK.consoleModel.addMessage(violationMessage);
 
   var messages = Console.ConsoleView.instance()._visibleViewMessages;

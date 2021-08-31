@@ -17,7 +17,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_path_override.h"
@@ -92,7 +91,7 @@ class CreateVisualElementsManifestTest
     base::FilePath visual_elements_dir =
         version_dir_.Append(installer::kVisualElements);
     ASSERT_TRUE(base::CreateDirectory(visual_elements_dir));
-    base::string16 light_logo_file_name = base::StringPrintf(
+    std::wstring light_logo_file_name = base::StringPrintf(
         L"Logo%ls.png", install_static::InstallDetails::Get().logo_suffix());
     ASSERT_NO_FATAL_FAILURE(
         CreateTestFile(visual_elements_dir.Append(light_logo_file_name)));
@@ -231,19 +230,19 @@ class InstallShortcutTest : public testing::Test {
     ASSERT_TRUE(fake_user_quick_launch_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_start_menu_.CreateUniqueTempDir());
     ASSERT_TRUE(fake_common_start_menu_.CreateUniqueTempDir());
-    user_desktop_override_.reset(new base::ScopedPathOverride(
-        base::DIR_USER_DESKTOP, fake_user_desktop_.GetPath()));
-    common_desktop_override_.reset(new base::ScopedPathOverride(
-        base::DIR_COMMON_DESKTOP, fake_common_desktop_.GetPath()));
-    user_quick_launch_override_.reset(new base::ScopedPathOverride(
-        base::DIR_USER_QUICK_LAUNCH, fake_user_quick_launch_.GetPath()));
-    start_menu_override_.reset(new base::ScopedPathOverride(
-        base::DIR_START_MENU, fake_start_menu_.GetPath()));
-    common_start_menu_override_.reset(new base::ScopedPathOverride(
-        base::DIR_COMMON_START_MENU, fake_common_start_menu_.GetPath()));
+    user_desktop_override_ = std::make_unique<base::ScopedPathOverride>(
+        base::DIR_USER_DESKTOP, fake_user_desktop_.GetPath());
+    common_desktop_override_ = std::make_unique<base::ScopedPathOverride>(
+        base::DIR_COMMON_DESKTOP, fake_common_desktop_.GetPath());
+    user_quick_launch_override_ = std::make_unique<base::ScopedPathOverride>(
+        base::DIR_USER_QUICK_LAUNCH, fake_user_quick_launch_.GetPath());
+    start_menu_override_ = std::make_unique<base::ScopedPathOverride>(
+        base::DIR_START_MENU, fake_start_menu_.GetPath());
+    common_start_menu_override_ = std::make_unique<base::ScopedPathOverride>(
+        base::DIR_COMMON_START_MENU, fake_common_start_menu_.GetPath());
 
-    base::string16 shortcut_name(InstallUtil::GetShortcutName() +
-                                 installer::kLnkExt);
+    std::wstring shortcut_name(InstallUtil::GetShortcutName() +
+                               installer::kLnkExt);
 
     user_desktop_shortcut_ = fake_user_desktop_.GetPath().Append(shortcut_name);
     user_quick_launch_shortcut_ =
@@ -286,16 +285,16 @@ class InstallShortcutTest : public testing::Test {
          do_not_create_quick_launch_shortcut},
     };
 
-    std::string master_prefs("{\"distribution\":{");
+    std::string initial_prefs("{\"distribution\":{");
     for (size_t i = 0; i < base::size(desired_prefs); ++i) {
-      master_prefs += (i == 0 ? "\"" : ",\"");
-      master_prefs += desired_prefs[i].pref_name;
-      master_prefs += "\":";
-      master_prefs += desired_prefs[i].is_desired ? "true" : "false";
+      initial_prefs += (i == 0 ? "\"" : ",\"");
+      initial_prefs += desired_prefs[i].pref_name;
+      initial_prefs += "\":";
+      initial_prefs += desired_prefs[i].is_desired ? "true" : "false";
     }
-    master_prefs += "}}";
+    initial_prefs += "}}";
 
-    return new installer::InitialPreferences(master_prefs);
+    return new installer::InitialPreferences(initial_prefs);
   }
 
   base::win::ScopedCOMInitializer com_initializer_;

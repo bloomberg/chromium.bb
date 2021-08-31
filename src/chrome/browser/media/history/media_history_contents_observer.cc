@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/history/media_history_contents_observer.h"
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,7 +32,7 @@ MediaHistoryContentsObserver::~MediaHistoryContentsObserver() = default;
 
 void MediaHistoryContentsObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
+  if (!navigation_handle->IsInPrimaryMainFrame())
     return;
 
   frozen_ = true;
@@ -40,7 +40,7 @@ void MediaHistoryContentsObserver::DidStartNavigation(
 
 void MediaHistoryContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->IsInMainFrame())
+  if (!navigation_handle->IsInPrimaryMainFrame())
     return;
 
   MaybeCommitMediaSession();
@@ -69,16 +69,16 @@ void MediaHistoryContentsObserver::MediaSessionInfoChanged(
     has_been_active_ = true;
   }
 
-  if (session_info->audio_video_state ==
-      media_session::mojom::MediaAudioVideoState::kAudioVideo) {
-    has_video_ = true;
+  if (base::Contains(*session_info->audio_video_states,
+                     media_session::mojom::MediaAudioVideoState::kAudioVideo)) {
+    has_audio_and_video_ = true;
   } else {
-    has_video_ = false;
+    has_audio_and_video_ = false;
   }
 }
 
 void MediaHistoryContentsObserver::MediaSessionMetadataChanged(
-    const base::Optional<media_session::MediaMetadata>& metadata) {
+    const absl::optional<media_session::MediaMetadata>& metadata) {
   if (!metadata.has_value() || frozen_)
     return;
 
@@ -101,7 +101,7 @@ void MediaHistoryContentsObserver::MediaSessionImagesChanged(
 }
 
 void MediaHistoryContentsObserver::MediaSessionPositionChanged(
-    const base::Optional<media_session::MediaPosition>& position) {
+    const absl::optional<media_session::MediaPosition>& position) {
   if (!position.has_value() || frozen_)
     return;
 
@@ -112,7 +112,7 @@ void MediaHistoryContentsObserver::MaybeCommitMediaSession() {
   // If the media session has never played anything, does not have any metadata
   // or does not have video then we should not commit the media session.
   if (!has_been_active_ || !cached_metadata_ || cached_metadata_->IsEmpty() ||
-      !service_ || !has_video_) {
+      !service_ || !has_audio_and_video_) {
     return;
   }
 

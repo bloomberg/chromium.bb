@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -42,8 +43,8 @@
 namespace base {
 namespace debug {
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS) || \
-    defined(OS_WIN) || defined(OS_ANDROID)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_WIN) || defined(OS_ANDROID)
 namespace {
 
 void BusyWork(std::vector<std::string>* vec) {
@@ -55,8 +56,9 @@ void BusyWork(std::vector<std::string>* vec) {
 }
 
 }  // namespace
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS) ||
-        // defined(OS_WIN) || defined(OS_ANDROID)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) ||
+        // BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_WIN) ||
+        // defined(OS_ANDROID)
 
 // Tests for SystemMetrics.
 // Exists as a class so it can be a friend of SystemMetrics.
@@ -199,7 +201,7 @@ TEST_F(SystemMetricsTest, ParseMeminfo) {
   EXPECT_EQ(meminfo.swap_free, 3672368);
   EXPECT_EQ(meminfo.dirty, 184);
   EXPECT_EQ(meminfo.reclaimable, 30936);
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   EXPECT_EQ(meminfo.shmem, 140204);
   EXPECT_EQ(meminfo.slab, 54212);
 #endif
@@ -340,8 +342,8 @@ TEST_F(SystemMetricsTest, ParseVmstat) {
 }
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS) || \
-    defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_WIN)
 
 // Test that ProcessMetrics::GetPlatformIndependentCPUUsage() doesn't return
 // negative values when the number of threads running on the process decreases
@@ -394,10 +396,10 @@ TEST_F(SystemMetricsTest, TestNoNegativeCpuUsage) {
   EXPECT_GE(metrics->GetPlatformIndependentCPUUsage(), 0.0);
 }
 
-#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS) ||
-        // defined(OS_WIN)
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS) ||
+        // BUILDFLAG(IS_CHROMEOS_LACROS) || defined(OS_WIN)
 
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 TEST_F(SystemMetricsTest, ParseZramMmStat) {
   SwapInfo swapinfo;
 
@@ -432,7 +434,7 @@ TEST_F(SystemMetricsTest, ParseZramStat) {
   EXPECT_EQ(299ULL, swapinfo.num_reads);
   EXPECT_EQ(1ULL, swapinfo.num_writes);
 }
-#endif  // defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if defined(OS_WIN) || defined(OS_APPLE) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS) || defined(OS_ANDROID)
@@ -472,7 +474,7 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   EXPECT_GT(info.file_backed, 0);
 #endif
 
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Chrome OS exposes shmem.
   EXPECT_GT(info.shmem, 0);
   EXPECT_LT(info.shmem, info.total);
@@ -602,7 +604,7 @@ TEST(ProcessMetricsTest, DISABLED_GetNumberOfThreads) {
   {
     std::unique_ptr<Thread> my_threads[kNumAdditionalThreads];
     for (int i = 0; i < kNumAdditionalThreads; ++i) {
-      my_threads[i].reset(new Thread("GetNumberOfThreadsTest"));
+      my_threads[i] = std::make_unique<Thread>("GetNumberOfThreadsTest");
       my_threads[i]->Start();
       ASSERT_EQ(GetNumberOfThreads(current), initial_threads + 1 + i);
     }
@@ -883,29 +885,6 @@ TEST(ProcessMetricsTestLinux, GetPerThreadCumulativeCPUTimeInState) {
 }
 
 #endif  // defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
-
-#if defined(OS_WIN)
-TEST(ProcessMetricsTest, GetDiskUsageBytesPerSecond) {
-  ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const FilePath temp_path = temp_dir.GetPath().AppendASCII("dummy");
-
-  ProcessHandle handle = GetCurrentProcessHandle();
-  std::unique_ptr<ProcessMetrics> metrics(
-      ProcessMetrics::CreateProcessMetrics(handle));
-
-  // First access is returning zero bytes.
-  EXPECT_EQ(metrics->GetDiskUsageBytesPerSecond(), 0U);
-
-  // Write a megabyte on disk.
-  const int kMegabyte = 1024 * 1014;
-  std::string data(kMegabyte, 'x');
-  ASSERT_TRUE(base::WriteFile(temp_path, data));
-
-  // Validate that the counters move up.
-  EXPECT_GT(metrics->GetDiskUsageBytesPerSecond(), 0U);
-}
-#endif  // defined(OS_WIN)
 
 }  // namespace debug
 }  // namespace base

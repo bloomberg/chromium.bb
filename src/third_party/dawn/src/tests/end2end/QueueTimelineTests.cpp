@@ -34,9 +34,19 @@ class MockFenceOnCompletionCallback {
 };
 
 static std::unique_ptr<MockFenceOnCompletionCallback> mockFenceOnCompletionCallback;
-static void ToMockFenceOnCompletionCallback(WGPUFenceCompletionStatus status, void* userdata) {
+static void ToMockFenceOnCompletion(WGPUFenceCompletionStatus status, void* userdata) {
     EXPECT_EQ(status, WGPUFenceCompletionStatus_Success);
     mockFenceOnCompletionCallback->Call(status, userdata);
+}
+
+class MockQueueWorkDoneCallback {
+  public:
+    MOCK_METHOD(void, Call, (WGPUQueueWorkDoneStatus status, void* userdata));
+};
+
+static std::unique_ptr<MockQueueWorkDoneCallback> mockQueueWorkDoneCallback;
+static void ToMockQueueWorkDone(WGPUQueueWorkDoneStatus status, void* userdata) {
+    mockQueueWorkDoneCallback->Call(status, userdata);
 }
 
 class QueueTimelineTests : public DawnTest {
@@ -46,6 +56,7 @@ class QueueTimelineTests : public DawnTest {
 
         mockMapCallback = std::make_unique<MockMapCallback>();
         mockFenceOnCompletionCallback = std::make_unique<MockFenceOnCompletionCallback>();
+        mockQueueWorkDoneCallback = std::make_unique<MockQueueWorkDoneCallback>();
 
         wgpu::BufferDescriptor descriptor;
         descriptor.size = 4;
@@ -54,8 +65,9 @@ class QueueTimelineTests : public DawnTest {
     }
 
     void TearDown() override {
-        mockFenceOnCompletionCallback = nullptr;
         mockMapCallback = nullptr;
+        mockFenceOnCompletionCallback = nullptr;
+        mockQueueWorkDoneCallback = nullptr;
         DawnTest::TearDown();
     }
 
@@ -73,17 +85,34 @@ TEST_P(QueueTimelineTests, MapReadSignalOnComplete) {
 
     mMapReadBuffer.MapAsync(wgpu::MapMode::Read, 0, 0, ToMockMapCallback, this);
 
-    wgpu::Fence fence = queue.CreateFence();
+    wgpu::Fence fence;
+    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
 
     queue.Signal(fence, 1);
-    fence.OnCompletion(1u, ToMockFenceOnCompletionCallback, this);
+    fence.OnCompletion(1u, ToMockFenceOnCompletion, this);
+
+    WaitForAllOperations();
+    mMapReadBuffer.Unmap();
+}
+
+// Test that mMapReadBuffer.MapAsync callback happens before queue.OnWorkDone callback
+// when queue.OnSubmittedWorkDone is called after mMapReadBuffer.MapAsync. The callback order should
+// happen in the order the functions are called.
+TEST_P(QueueTimelineTests, MapRead_OnWorkDone) {
+    testing::InSequence sequence;
+    EXPECT_CALL(*mockMapCallback, Call(WGPUBufferMapAsyncStatus_Success, this)).Times(1);
+    EXPECT_CALL(*mockQueueWorkDoneCallback, Call(WGPUQueueWorkDoneStatus_Success, this)).Times(1);
+
+    mMapReadBuffer.MapAsync(wgpu::MapMode::Read, 0, 0, ToMockMapCallback, this);
+
+    queue.OnSubmittedWorkDone(0u, ToMockQueueWorkDone, this);
 
     WaitForAllOperations();
     mMapReadBuffer.Unmap();
 }
 
 // Test that fence.OnCompletion callback happens before mMapReadBuffer.MapAsync callback when
-// queue.Signal is called before mMapReadBuffer.MapAsync. The callback order should
+// queue.OnSubmittedWorkDone  is called before mMapReadBuffer.MapAsync. The callback order should
 // happen in the order the functions are called.
 TEST_P(QueueTimelineTests, SignalMapReadOnComplete) {
     testing::InSequence sequence;
@@ -91,12 +120,29 @@ TEST_P(QueueTimelineTests, SignalMapReadOnComplete) {
         .Times(1);
     EXPECT_CALL(*mockMapCallback, Call(WGPUBufferMapAsyncStatus_Success, this)).Times(1);
 
-    wgpu::Fence fence = queue.CreateFence();
+    wgpu::Fence fence;
+    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
     queue.Signal(fence, 2);
 
     mMapReadBuffer.MapAsync(wgpu::MapMode::Read, 0, 0, ToMockMapCallback, this);
 
-    fence.OnCompletion(2u, ToMockFenceOnCompletionCallback, this);
+    fence.OnCompletion(2u, ToMockFenceOnCompletion, this);
+    WaitForAllOperations();
+    mMapReadBuffer.Unmap();
+}
+
+// Test that queue.OnWorkDone callback happens before mMapReadBuffer.MapAsync callback when
+// queue.Signal is called before mMapReadBuffer.MapAsync. The callback order should
+// happen in the order the functions are called.
+TEST_P(QueueTimelineTests, OnWorkDone_MapRead) {
+    testing::InSequence sequence;
+    EXPECT_CALL(*mockQueueWorkDoneCallback, Call(WGPUQueueWorkDoneStatus_Success, this)).Times(1);
+    EXPECT_CALL(*mockMapCallback, Call(WGPUBufferMapAsyncStatus_Success, this)).Times(1);
+
+    queue.OnSubmittedWorkDone(0u, ToMockQueueWorkDone, this);
+
+    mMapReadBuffer.MapAsync(wgpu::MapMode::Read, 0, 0, ToMockMapCallback, this);
+
     WaitForAllOperations();
     mMapReadBuffer.Unmap();
 }
@@ -110,10 +156,11 @@ TEST_P(QueueTimelineTests, SignalOnCompleteMapRead) {
         .Times(1);
     EXPECT_CALL(*mockMapCallback, Call(WGPUBufferMapAsyncStatus_Success, this)).Times(1);
 
-    wgpu::Fence fence = queue.CreateFence();
+    wgpu::Fence fence;
+    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
     queue.Signal(fence, 2);
 
-    fence.OnCompletion(2u, ToMockFenceOnCompletionCallback, this);
+    fence.OnCompletion(2u, ToMockFenceOnCompletion, this);
 
     mMapReadBuffer.MapAsync(wgpu::MapMode::Read, 0, 0, ToMockMapCallback, this);
 
@@ -121,6 +168,7 @@ TEST_P(QueueTimelineTests, SignalOnCompleteMapRead) {
     mMapReadBuffer.Unmap();
 }
 
+// Test a complicated case with many signals surrounding a buffer mapping.
 TEST_P(QueueTimelineTests, SurroundWithFenceSignals) {
     testing::InSequence sequence;
     EXPECT_CALL(*mockFenceOnCompletionCallback, Call(WGPUFenceCompletionStatus_Success, this + 0))
@@ -137,21 +185,22 @@ TEST_P(QueueTimelineTests, SurroundWithFenceSignals) {
     EXPECT_CALL(*mockFenceOnCompletionCallback, Call(WGPUFenceCompletionStatus_Success, this + 8))
         .Times(1);
 
-    wgpu::Fence fence = queue.CreateFence();
+    wgpu::Fence fence;
+    EXPECT_DEPRECATION_WARNING(fence = queue.CreateFence());
     queue.Signal(fence, 2);
     queue.Signal(fence, 4);
 
-    fence.OnCompletion(1u, ToMockFenceOnCompletionCallback, this + 0);
-    fence.OnCompletion(2u, ToMockFenceOnCompletionCallback, this + 2);
+    fence.OnCompletion(1u, ToMockFenceOnCompletion, this + 0);
+    fence.OnCompletion(2u, ToMockFenceOnCompletion, this + 2);
 
     mMapReadBuffer.MapAsync(wgpu::MapMode::Read, 0, 0, ToMockMapCallback, this);
     queue.Signal(fence, 6);
-    fence.OnCompletion(3u, ToMockFenceOnCompletionCallback, this + 3);
-    fence.OnCompletion(5u, ToMockFenceOnCompletionCallback, this + 5);
-    fence.OnCompletion(6u, ToMockFenceOnCompletionCallback, this + 6);
+    fence.OnCompletion(3u, ToMockFenceOnCompletion, this + 3);
+    fence.OnCompletion(5u, ToMockFenceOnCompletion, this + 5);
+    fence.OnCompletion(6u, ToMockFenceOnCompletion, this + 6);
 
     queue.Signal(fence, 8);
-    fence.OnCompletion(8u, ToMockFenceOnCompletionCallback, this + 8);
+    fence.OnCompletion(8u, ToMockFenceOnCompletion, this + 8);
 
     WaitForAllOperations();
     mMapReadBuffer.Unmap();
@@ -161,4 +210,5 @@ DAWN_INSTANTIATE_TEST(QueueTimelineTests,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

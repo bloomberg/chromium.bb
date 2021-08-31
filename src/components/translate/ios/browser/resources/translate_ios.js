@@ -10,7 +10,7 @@
  * @suppress {checkTypes, checkVars}
  */
 
-goog.require('__crWeb.base');
+// Requires __crWeb.base
 
 /**
  * Namespace for this module.
@@ -46,10 +46,11 @@ __gCrWeb.translate['installCallbacks'] = function() {
    */
   cr.googleTranslate.resultCallback = function() {
     __gCrWeb.message.invokeOnHost({
-        'command': 'translate.status',
-        'errorCode': cr.googleTranslate.errorCode,
-        'originalPageLanguage': cr.googleTranslate.sourceLang,
-        'translationTime': cr.googleTranslate.translationTime});
+      'command': 'translate.status',
+      'errorCode': cr.googleTranslate.errorCode,
+      'pageSourceLanguage': cr.googleTranslate.sourceLang,
+      'translationTime': cr.googleTranslate.translationTime
+    });
   };
 
   /**

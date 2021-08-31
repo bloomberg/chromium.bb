@@ -41,9 +41,10 @@ void SVGMaskPainter::Paint(GraphicsContext& context,
   DrawingRecorder recorder(context, display_item_client, DisplayItem::kSVGMask,
                            EnclosingIntRect(visual_rect));
 
-  const SVGComputedStyle& svg_style = layout_object.StyleRef().SvgStyle();
-  auto* masker =
-      GetSVGResourceAsType<LayoutSVGResourceMasker>(svg_style.MaskerResource());
+  SVGResourceClient* client = SVGResources::GetClient(layout_object);
+  const ComputedStyle& style = layout_object.StyleRef();
+  auto* masker = GetSVGResourceAsType<LayoutSVGResourceMasker>(
+      *client, style.MaskerResource());
   DCHECK(masker);
   SECURITY_DCHECK(!masker->NeedsLayout());
   masker->ClearInvalidationMask();
@@ -56,7 +57,7 @@ void SVGMaskPainter::Paint(GraphicsContext& context,
     content_transformation.ScaleNonUniform(reference_box.Width(),
                                            reference_box.Height());
   } else if (layout_object.IsSVGForeignObject()) {
-    content_transformation.Scale(layout_object.StyleRef().EffectiveZoom());
+    content_transformation.Scale(style.EffectiveZoom());
   }
 
   sk_sp<const PaintRecord> record =
@@ -64,7 +65,15 @@ void SVGMaskPainter::Paint(GraphicsContext& context,
 
   context.Save();
   context.ConcatCTM(content_transformation);
+  bool needs_luminance_layer =
+      masker->StyleRef().MaskType() == EMaskType::kLuminance;
+  if (needs_luminance_layer) {
+    context.BeginLayer(1.0f, SkBlendMode::kSrcOver, nullptr,
+                       kColorFilterLuminanceToAlpha);
+  }
   context.DrawRecord(std::move(record));
+  if (needs_luminance_layer)
+    context.EndLayer();
   context.Restore();
 }
 

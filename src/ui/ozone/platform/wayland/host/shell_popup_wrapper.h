@@ -7,13 +7,15 @@
 
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
 
 class WaylandConnection;
+class WaylandWindow;
 
-enum class MenuType {
-  TYPE_RIGHT_CLICK,
+enum class PopupType {
+  TYPE_NORMAL,
   TYPE_3DOT_PARENT_MENU,
   TYPE_3DOT_CHILD_MENU,
   TYPE_UNKNOWN,
@@ -73,11 +75,23 @@ class ShellPopupWrapper {
   // Initializes the popup surface.
   virtual bool Initialize(WaylandConnection* connection,
                           const gfx::Rect& bounds) = 0;
+
+  // Sends acknowledge configure event back to wayland.
+  virtual void AckConfigure(uint32_t serial) = 0;
+
+  // Returns popup type for |type|.
+  PopupType GetPopupTypeForPositioner(PlatformWindowType type,
+                                      int last_pointer_button_pressed,
+                                      WaylandWindow* parent_window) const;
+  bool CanGrabPopup(WaylandConnection* connection) const;
 };
 
-gfx::Rect GetAnchorRect(MenuType menu_type,
+gfx::Rect GetAnchorRect(PopupType menu_type,
                         const gfx::Rect& menu_bounds,
                         const gfx::Rect& parent_window_bounds);
+WlAnchor GetAnchor(PopupType menu_type, const gfx::Rect& bounds);
+WlGravity GetGravity(PopupType menu_type, const gfx::Rect& bounds);
+WlConstraintAdjustment GetConstraintAdjustment(PopupType menu_type);
 
 }  // namespace ui
 

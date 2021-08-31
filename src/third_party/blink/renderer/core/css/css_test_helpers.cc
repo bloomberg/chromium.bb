@@ -38,9 +38,7 @@ TestStyleSheet::~TestStyleSheet() = default;
 
 TestStyleSheet::TestStyleSheet() {
   document_ = Document::CreateForTest();
-  TextPosition position;
-  style_sheet_ = CSSStyleSheet::CreateInline(*document_, NullURL(), position,
-                                             UTF8Encoding());
+  style_sheet_ = CreateStyleSheet(*document_);
 }
 
 CSSRuleList* TestStyleSheet::CssRules() {
@@ -58,13 +56,17 @@ RuleSet& TestStyleSheet::GetRuleSet() {
 }
 
 void TestStyleSheet::AddCSSRules(const String& css_text, bool is_empty_sheet) {
-  TextPosition position;
   unsigned sheet_length = style_sheet_->length();
-  style_sheet_->Contents()->ParseStringAtPosition(css_text, position);
+  style_sheet_->Contents()->ParseString(css_text);
   if (!is_empty_sheet)
     ASSERT_GT(style_sheet_->length(), sheet_length);
   else
     ASSERT_EQ(style_sheet_->length(), sheet_length);
+}
+
+CSSStyleSheet* CreateStyleSheet(Document& document) {
+  return CSSStyleSheet::CreateInline(
+      document, NullURL(), TextPosition::MinimumPosition(), UTF8Encoding());
 }
 
 PropertyRegistration* CreatePropertyRegistration(const String& name) {
@@ -88,7 +90,7 @@ PropertyRegistration* CreateLengthRegistration(const String& name, int px) {
 void RegisterProperty(Document& document,
                       const String& name,
                       const String& syntax,
-                      const base::Optional<String>& initial_value,
+                      const absl::optional<String>& initial_value,
                       bool is_inherited) {
   DCHECK(!initial_value || !initial_value.value().IsNull());
   DummyExceptionStateForTesting exception_state;
@@ -142,9 +144,8 @@ const CSSPropertyValueSet* ParseDeclarationBlock(const String& block_text,
 }
 
 StyleRuleBase* ParseRule(Document& document, String text) {
-  TextPosition position;
-  auto* sheet = CSSStyleSheet::CreateInline(document, NullURL(), position,
-                                            UTF8Encoding());
+  auto* sheet = CSSStyleSheet::CreateInline(
+      document, NullURL(), TextPosition::MinimumPosition(), UTF8Encoding());
   const auto* context = MakeGarbageCollected<CSSParserContext>(document);
   return CSSParser::ParseRule(context, sheet->Contents(), text);
 }

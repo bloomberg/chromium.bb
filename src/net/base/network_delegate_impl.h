@@ -8,14 +8,14 @@
 #include <stdint.h>
 
 #include <set>
+#include <string>
 
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/base/network_delegate.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class GURL;
 
@@ -49,7 +49,7 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const IPEndPoint& endpoint,
-      base::Optional<GURL>* preserve_fragment_on_redirect_url) override;
+      absl::optional<GURL>* preserve_fragment_on_redirect_url) override;
 
   void OnBeforeRedirect(URLRequest* request, const GURL& new_location) override;
 
@@ -59,7 +59,7 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
 
   void OnURLRequestDestroyed(URLRequest* request) override;
 
-  void OnPACScriptError(int line_number, const base::string16& error) override;
+  void OnPACScriptError(int line_number, const std::u16string& error) override;
 
   bool OnCanGetCookies(const URLRequest& request,
                        bool allowed_from_caller) override;
@@ -72,7 +72,7 @@ class NET_EXPORT NetworkDelegateImpl : public NetworkDelegate {
   bool OnForcePrivacyMode(
       const GURL& url,
       const SiteForCookies& site_for_cookies,
-      const base::Optional<url::Origin>& top_frame_origin) const override;
+      const absl::optional<url::Origin>& top_frame_origin) const override;
 
   bool OnCancelURLRequestWithPolicyViolatingReferrerHeader(
       const URLRequest& request,

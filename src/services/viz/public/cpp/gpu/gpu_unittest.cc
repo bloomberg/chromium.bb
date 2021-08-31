@@ -4,6 +4,7 @@
 
 #include "services/viz/public/cpp/gpu/gpu.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -64,11 +65,11 @@ class TestGpuImpl : public mojom::Gpu {
                             gpu::GpuFeatureInfo());
   }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void CreateJpegDecodeAccelerator(
       mojo::PendingReceiver<chromeos_camera::mojom::MjpegDecodeAccelerator>
           jda_receiver) override {}
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   void CreateVideoEncodeAcceleratorProvider(
       mojo::PendingReceiver<media::mojom::VideoEncodeAcceleratorProvider>
@@ -92,7 +93,7 @@ class GpuTest : public testing::Test {
   GpuTest() : io_thread_("GPUIOThread") {
     base::Thread::Options thread_options(base::MessagePumpType::IO, 0);
     thread_options.priority = base::ThreadPriority::NORMAL;
-    CHECK(io_thread_.StartWithOptions(thread_options));
+    CHECK(io_thread_.StartWithOptions(std::move(thread_options)));
   }
   ~GpuTest() override = default;
 

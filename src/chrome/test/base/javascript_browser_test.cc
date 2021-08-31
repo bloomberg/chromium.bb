@@ -8,6 +8,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/js_test_api.h"
 #include "components/nacl/common/buildflags.h"
@@ -38,7 +39,7 @@ void JavaScriptBrowserTest::SetUpOnMainThread() {
 // js2gtest GN template.
 #if (!defined(MEMORY_SANITIZER) && !defined(ADDRESS_SANITIZER) && \
      !defined(LEAK_SANITIZER)) ||                                 \
-    BUILDFLAG(ENABLE_NACL) || defined(OS_CHROMEOS)
+    BUILDFLAG(ENABLE_NACL) || BUILDFLAG(IS_CHROMEOS_ASH)
   base::FilePath gen_test_data_directory;
   ASSERT_TRUE(base::PathService::Get(chrome::DIR_GEN_TEST_DATA,
                                      &gen_test_data_directory));
@@ -54,7 +55,7 @@ void JavaScriptBrowserTest::SetUpOnMainThread() {
 // TODO(dtseng): Make this return bool (success/failure) and remove ASSERt_TRUE
 // calls.
 void JavaScriptBrowserTest::BuildJavascriptLibraries(
-    std::vector<base::string16>* libraries) {
+    std::vector<std::u16string>* libraries) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   ASSERT_TRUE(libraries != NULL);
   std::vector<base::FilePath>::iterator user_libraries_iterator;
@@ -63,7 +64,19 @@ void JavaScriptBrowserTest::BuildJavascriptLibraries(
        ++user_libraries_iterator) {
     std::string library_content;
     base::FilePath library_absolute_path;
-    if (user_libraries_iterator->IsAbsolute()) {
+    std::vector<base::FilePath::StringType> components;
+    user_libraries_iterator->GetComponents(&components);
+    if (components[0] == FILE_PATH_LITERAL("ROOT_GEN_DIR")) {
+      base::FilePath exe_dir;
+      base::PathService::Get(base::DIR_EXE, &exe_dir);
+      library_absolute_path = exe_dir.AppendASCII("gen");
+      for (size_t i = 1; i < components.size(); i++)
+        library_absolute_path = library_absolute_path.Append(components[i]);
+      library_absolute_path = library_absolute_path.NormalizePathSeparators();
+      ASSERT_TRUE(
+          base::ReadFileToString(library_absolute_path, &library_content))
+          << user_libraries_iterator->value();
+    } else if (user_libraries_iterator->IsAbsolute()) {
       library_absolute_path = *user_libraries_iterator;
       ASSERT_TRUE(
           base::ReadFileToString(library_absolute_path, &library_content))
@@ -94,7 +107,7 @@ void JavaScriptBrowserTest::BuildJavascriptLibraries(
   }
 }
 
-base::string16 JavaScriptBrowserTest::BuildRunTestJSCall(
+std::u16string JavaScriptBrowserTest::BuildRunTestJSCall(
     bool is_async,
     const std::string& function_name,
     std::vector<base::Value> test_func_args) {

@@ -5,7 +5,6 @@
 #ifndef UI_DISPLAY_MOJOM_DISPLAY_SNAPSHOT_MOJOM_TRAITS_H_
 #define UI_DISPLAY_MOJOM_DISPLAY_SNAPSHOT_MOJOM_TRAITS_H_
 
-#include "ipc/ipc_message_utils.h"
 #include "ui/display/mojom/display_constants_mojom_traits.h"
 #include "ui/display/mojom/display_mode_mojom_traits.h"
 #include "ui/display/mojom/display_snapshot.mojom.h"
@@ -37,6 +36,16 @@ struct StructTraits<display::mojom::DisplaySnapshotDataView,
   static display::DisplayConnectionType type(
       const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
     return snapshot->type();
+  }
+
+  static uint64_t base_connector_id(
+      const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
+    return snapshot->base_connector_id();
+  }
+
+  static const std::vector<uint64_t>& path_topology(
+      const std::unique_ptr<display::DisplaySnapshot>& snapshot) {
+    return snapshot->path_topology();
   }
 
   static display::PanelOrientation panel_orientation(

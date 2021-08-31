@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "components/viz/common/switches.h"
@@ -21,7 +22,23 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
+#include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_surface.h"
+
+namespace {
+base::TimeTicks g_last_reshape_failure = base::TimeTicks();
+
+NOINLINE void CheckForLoopFailuresBufferQueue() {
+  const auto threshold = base::TimeDelta::FromSeconds(1);
+  auto now = base::TimeTicks::Now();
+  if (!g_last_reshape_failure.is_null() &&
+      now - g_last_reshape_failure < threshold) {
+    CHECK(false);
+  }
+  g_last_reshape_failure = now;
+}
+
+}  // namespace
 
 namespace viz {
 
@@ -77,6 +94,8 @@ class SkiaOutputDeviceBufferQueue::OverlayData {
     }
   }
 
+  void OnContextLost() { representation_->OnContextLost(); }
+
   bool unique() const { return ref_ == 1; }
   const gpu::Mailbox& mailbox() const { return representation_->mailbox(); }
   gpu::SharedImageRepresentationOverlay::ScopedReadAccess* scoped_read_access()
@@ -108,13 +127,18 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
                        memory_tracker,
                        did_swap_buffer_complete_callback),
       presenter_(std::move(presenter)),
-      dependency_(deps),
+      context_state_(deps->GetSharedContextState()),
       representation_factory_(representation_factory),
       needs_background_image_(needs_background_image) {
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.preserve_buffer_content = true;
   capabilities_.only_invalidates_damage_rect = false;
   capabilities_.number_of_buffers = 3;
+#if defined(OS_ANDROID)
+  if (::features::IncreaseBufferCountForHighFrameRate()) {
+    capabilities_.number_of_buffers = 5;
+  }
+#endif
   capabilities_.orientation_mode = OutputSurface::OrientationMode::kHardware;
 
   // Force the number of max pending frames to one when the switch
@@ -133,6 +157,18 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 }
 
 SkiaOutputDeviceBufferQueue::~SkiaOutputDeviceBufferQueue() {
+  // TODO(vasilyt): We should not need this when we stop using
+  // SharedImageBackingGLImage.
+  if (context_state_->context_lost()) {
+    for (auto& overlay : overlays_) {
+      overlay.OnContextLost();
+    }
+
+    for (auto& image : images_) {
+      image->OnContextLost();
+    }
+  }
+
   FreeAllSurfaces();
   // Clear and cancel swap_completion_callbacks_ to free all resource bind to
   // callbacks.
@@ -147,20 +183,23 @@ OutputPresenter::Image* SkiaOutputDeviceBufferQueue::GetNextImage() {
 }
 
 void SkiaOutputDeviceBufferQueue::PageFlipComplete(
-    OutputPresenter::Image* image) {
+    OutputPresenter::Image* image,
+    gfx::GpuFenceHandle release_fence) {
   if (displayed_image_) {
     DCHECK_EQ(displayed_image_->skia_representation()->size(), image_size_);
-    DCHECK_EQ(displayed_image_->present_count() > 1, displayed_image_ == image);
-    displayed_image_->EndPresent();
-    if (!displayed_image_->present_count()) {
+    DCHECK_EQ(displayed_image_->GetPresentCount() > 1,
+              displayed_image_ == image);
+    // MakeCurrent is necessary for inserting release fences and for
+    // BeginWriteSkia below.
+    context_state_->MakeCurrent(/*surface=*/nullptr);
+    displayed_image_->EndPresent(std::move(release_fence));
+    if (!displayed_image_->GetPresentCount()) {
       available_images_.push_back(displayed_image_);
       // Call BeginWriteSkia() for the next frame here to avoid some expensive
       // operations on the critical code path.
-      auto shared_context_state = dependency_->GetSharedContextState();
-      if (!available_images_.front()->sk_surface() &&
-          shared_context_state->MakeCurrent(nullptr)) {
+      if (!available_images_.front()->sk_surface()) {
         // BeginWriteSkia() may alter GL's state.
-        shared_context_state->set_need_context_state_reset(true);
+        context_state_->set_need_context_state_reset(true);
         available_images_.front()->BeginWriteSkia();
       }
     }
@@ -183,7 +222,7 @@ bool SkiaOutputDeviceBufferQueue::IsPrimaryPlaneOverlay() const {
 }
 
 void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
-    const base::Optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>&
+    const absl::optional<OverlayProcessorInterface::OutputSurfaceOverlayPlane>&
         plane) {
   if (background_image_ && !background_image_is_scheduled_) {
     background_image_->BeginPresent();
@@ -195,13 +234,33 @@ void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
     // If the current_image_ is nullptr, it means there is no change on the
     // primary plane. So we just need to schedule the last submitted image.
     auto* image = current_image_ ? current_image_ : submitted_image_;
+    // |image| can be null if there was a fullscreen overlay last frame (e.g.
+    // no primary plane). If the fullscreen quad suddenly fails the fullscreen
+    // overlay check this frame (e.g. TestPageFlip failing) and then gets
+    // promoted via a different strategy like single-on-top, the quad's damage
+    // is still removed from the primary plane's damage. With no damage, we
+    // never invoke |BeginPaint| which initializes a new image. Since there
+    // still really isn't any primary plane content, it's fine to early-exit.
+    if (!image && primary_plane_waiting_on_paint_)
+      return;
     DCHECK(image);
 
     image->BeginPresent();
     presenter_->SchedulePrimaryPlane(plane.value(), image,
                                      image == submitted_image_);
   } else {
+    primary_plane_waiting_on_paint_ =  true;
     current_frame_has_no_primary_plane_ = true;
+    // Even if there is no primary plane, |current_image_| may be non-null if
+    // an overlay just transitioned from an underlay strategy to a fullscreen
+    // strategy (e.g. a the media controls disappearing on a fullscreen video).
+    // In this case, there is still damage which triggers a render pass, but
+    // since we promote via fullscreen, we remove the primary plane in the end.
+    // We need to recycle |current_image_| to avoid a use-after-free error.
+    if (current_image_) {
+      available_images_.push_back(current_image_);
+      current_image_ = nullptr;
+    }
   }
 }
 
@@ -272,15 +331,20 @@ void SkiaOutputDeviceBufferQueue::ScheduleOverlays(
 void SkiaOutputDeviceBufferQueue::Submit(bool sync_cpu,
                                          base::OnceClosure callback) {
   // The current image may be missing, for example during WebXR presentation.
-  if (current_image_)
+  // The SkSurface may also be missing due to a rare edge case (seen at ~1CPM
+  // on CrOS)- if we end up skipping the swap for a frame and don't have
+  // damage in the next frame (e.g.fullscreen overlay),
+  // |current_image_->BeginWriteSkia| won't get called before |Submit|. In
+  // this case, we shouldn't call |PreGrContextSubmit| since there's no active
+  // surface to flush.
+  if (current_image_ && current_image_->sk_surface())
     current_image_->PreGrContextSubmit();
 
   SkiaOutputDevice::Submit(sync_cpu, std::move(callback));
 }
 
-void SkiaOutputDeviceBufferQueue::SwapBuffers(
-    BufferPresentedCallback feedback,
-    std::vector<ui::LatencyInfo> latency_info) {
+void SkiaOutputDeviceBufferQueue::SwapBuffers(BufferPresentedCallback feedback,
+                                              OutputSurfaceFrame frame) {
   StartSwapBuffers({});
 
   if (current_frame_has_no_primary_plane_) {
@@ -300,7 +364,7 @@ void SkiaOutputDeviceBufferQueue::SwapBuffers(
   swap_completion_callbacks_.emplace_back(
       std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
           &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
-          base::Unretained(this), GetSwapBuffersSize(), std::move(latency_info),
+          base::Unretained(this), GetSwapBuffersSize(), std::move(frame),
           submitted_image_ ? submitted_image_->GetWeakPtr() : nullptr,
           std::move(committed_overlay_mailboxes_))));
   committed_overlay_mailboxes_.clear();
@@ -313,7 +377,7 @@ void SkiaOutputDeviceBufferQueue::SwapBuffers(
 void SkiaOutputDeviceBufferQueue::PostSubBuffer(
     const gfx::Rect& rect,
     BufferPresentedCallback feedback,
-    std::vector<ui::LatencyInfo> latency_info) {
+    OutputSurfaceFrame frame) {
   StartSwapBuffers({});
 
   if (current_frame_has_no_primary_plane_) {
@@ -335,7 +399,7 @@ void SkiaOutputDeviceBufferQueue::PostSubBuffer(
   swap_completion_callbacks_.emplace_back(
       std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
           &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
-          base::Unretained(this), GetSwapBuffersSize(), std::move(latency_info),
+          base::Unretained(this), GetSwapBuffersSize(), std::move(frame),
           submitted_image_ ? submitted_image_->GetWeakPtr() : nullptr,
           std::move(committed_overlay_mailboxes_))));
   committed_overlay_mailboxes_.clear();
@@ -347,7 +411,7 @@ void SkiaOutputDeviceBufferQueue::PostSubBuffer(
 
 void SkiaOutputDeviceBufferQueue::CommitOverlayPlanes(
     BufferPresentedCallback feedback,
-    std::vector<ui::LatencyInfo> latency_info) {
+    OutputSurfaceFrame frame) {
   StartSwapBuffers({});
 
   // There is no drawing for this frame on the main buffer.
@@ -366,7 +430,7 @@ void SkiaOutputDeviceBufferQueue::CommitOverlayPlanes(
   swap_completion_callbacks_.emplace_back(
       std::make_unique<CancelableSwapCompletionCallback>(base::BindOnce(
           &SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers,
-          base::Unretained(this), GetSwapBuffersSize(), std::move(latency_info),
+          base::Unretained(this), GetSwapBuffersSize(), std::move(frame),
           submitted_image_ ? submitted_image_->GetWeakPtr() : nullptr,
           std::move(committed_overlay_mailboxes_))));
   committed_overlay_mailboxes_.clear();
@@ -378,7 +442,7 @@ void SkiaOutputDeviceBufferQueue::CommitOverlayPlanes(
 
 void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
     const gfx::Size& size,
-    std::vector<ui::LatencyInfo> latency_info,
+    OutputSurfaceFrame frame,
     const base::WeakPtr<OutputPresenter::Image>& image,
     std::vector<gpu::Mailbox> overlay_mailboxes,
     gfx::SwapCompletionResult result) {
@@ -387,8 +451,23 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
   for (const auto& mailbox : overlay_mailboxes) {
     auto it = overlays_.find(mailbox);
     DCHECK(it != overlays_.end());
+    if (!result.release_fence.is_null())
+      it->scoped_read_access()->SetReleaseFence(result.release_fence.Clone());
+
     it->Unref();
   }
+
+  // Code below can destroy last representation of the overlay shared image. On
+  // MacOS it needs context to be current.
+#if defined(OS_APPLE)
+  // TODO(vasilyt): We shouldn't need this after we stop using
+  // SharedImageBackingGLImage as backing.
+  if (!context_state_->MakeCurrent(nullptr)) {
+    for (auto& overlay : overlays_) {
+      overlay.OnContextLost();
+    }
+  }
+#endif
 
   // Go through backings of all overlays, and release overlay backings which are
   // not used.
@@ -409,11 +488,19 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
     return true;
   });
 
-  DCHECK(!result.gpu_fence);
-  FinishSwapBuffers(std::move(result), size, latency_info,
-                    /*damage_area=*/base::nullopt,
-                    std::move(released_overlays));
-  PageFlipComplete(image.get());
+  bool should_reallocate =
+      result.swap_result == gfx::SwapResult::SWAP_NAK_RECREATE_BUFFERS;
+
+  const auto& mailbox =
+      image ? image->skia_representation()->mailbox() : gpu::Mailbox();
+  auto release_fence = result.release_fence.Clone();
+  FinishSwapBuffers(std::move(result), size, std::move(frame),
+                    /*damage_area=*/absl::nullopt, std::move(released_overlays),
+                    mailbox);
+  PageFlipComplete(image.get(), std::move(release_fence));
+
+  if (should_reallocate)
+    RecreateImages();
 }
 
 gfx::Size SkiaOutputDeviceBufferQueue::GetSwapBuffersSize() {
@@ -438,35 +525,49 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
   DCHECK(pending_overlay_mailboxes_.empty());
   if (!presenter_->Reshape(size, device_scale_factor, color_space, format,
                            transform)) {
-    DLOG(ERROR) << "Failed to resize.";
+    LOG(ERROR) << "Failed to resize.";
+    CheckForLoopFailuresBufferQueue();
+    // To prevent tail call, so we can see the stack.
+    base::debug::Alias(nullptr);
     return false;
   }
 
-  color_space_ = color_space;
-  image_size_ = size;
   overlay_transform_ = transform;
-  FreeAllSurfaces();
 
   if (needs_background_image_ && !background_image_) {
     background_image_ =
-        presenter_->AllocateBackgroundImage(color_space_, gfx::Size(4, 4));
+        presenter_->AllocateBackgroundImage(color_space, gfx::Size(4, 4));
     background_image_is_scheduled_ = false;
   }
 
+  if (color_space_ == color_space && image_size_ == size)
+    return true;
+  color_space_ = color_space;
+  image_size_ = size;
+
+  bool success = RecreateImages();
+  if (!success) {
+    CheckForLoopFailuresBufferQueue();
+    // To prevent tail call, so we can see the stack.
+    base::debug::Alias(nullptr);
+  }
+  return success;
+}
+
+bool SkiaOutputDeviceBufferQueue::RecreateImages() {
+  FreeAllSurfaces();
   images_ = presenter_->AllocateImages(color_space_, image_size_,
                                        capabilities_.number_of_buffers);
-  if (images_.empty())
-    return false;
-
   for (auto& image : images_) {
     available_images_.push_back(image.get());
   }
 
-  return true;
+  return !images_.empty();
 }
 
 SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint(
     std::vector<GrBackendSemaphore>* end_semaphores) {
+  primary_plane_waiting_on_paint_ = false;
   if (!current_image_)
     current_image_ = GetNextImage();
   if (!current_image_->sk_surface())

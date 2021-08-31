@@ -19,7 +19,7 @@
 #include <ostream>
 #include <string>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_export.h"
 
 // TODO(vasilvv): replace with ABSL_MUST_USE_RESULT once we're using absl.
 #if defined(__clang__)
@@ -245,7 +245,7 @@ inline bool operator>=(QuicTime lhs, QuicTime rhs) {
   return !(lhs < rhs);
 }
 
-// Override stream output operator for gtest or CHECK macros.
+// Override stream output operator for gtest or QUICHE_CHECK macros.
 inline std::ostream& operator<<(std::ostream& output, const QuicTime t) {
   output << t.ToDebuggingValue();
   return output;

@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -24,6 +25,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "third_party/blink/public/common/switches.h"
 
 namespace {
 
@@ -112,7 +114,8 @@ void WebAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
     const GURL& target_url,
     WebAppNavigationBrowserTest::LinkTarget target,
     const std::string& rel,
-    int modifiers) {
+    int modifiers,
+    blink::WebMouseEvent::Button button) {
   auto observer = GetTestNavigationObserver(target_url);
   std::string script = base::StringPrintf(
       "(() => {"
@@ -134,8 +137,7 @@ void WebAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
       rel.c_str());
   ASSERT_TRUE(content::ExecuteScript(web_contents, script));
 
-  content::SimulateMouseClick(web_contents, modifiers,
-                              blink::WebMouseEvent::Button::kLeft);
+  content::SimulateMouseClick(web_contents, modifiers, button);
 
   observer->Wait();
 }
@@ -199,6 +201,10 @@ void WebAppNavigationBrowserTest::TearDownInProcessBrowserTestFixture() {
 
 void WebAppNavigationBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
+  // Allow pre-commit input because the content used in the test does not paint
+  // anything and relies on script execution to create links, and we do not want
+  // to wait for the commit timeout.
+  command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
   cert_verifier_.SetUpCommandLine(command_line);
 }
 
@@ -228,10 +234,10 @@ AppId WebAppNavigationBrowserTest::InstallTestWebApp(
   web_app_info->start_url = https_server_.GetURL(app_host, GetAppUrlPath());
   web_app_info->scope = https_server_.GetURL(app_host, app_scope);
   web_app_info->title = base::UTF8ToUTF16(GetAppName());
-  web_app_info->description = base::UTF8ToUTF16("Test description");
+  web_app_info->description = u"Test description";
   web_app_info->open_as_window = true;
 
-  return InstallWebApp(profile(), std::move(web_app_info));
+  return test::InstallWebApp(profile(), std::move(web_app_info));
 }
 
 Browser* WebAppNavigationBrowserTest::OpenTestWebApp() {

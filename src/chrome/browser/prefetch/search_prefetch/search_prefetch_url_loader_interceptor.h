@@ -10,18 +10,17 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
-#include "base/time/time.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace content {
 class BrowserContext;
 }  // namespace content
 
-class PrefetchedResponseContainer;
+class SearchPrefetchURLLoader;
 
 // Intercepts search navigations that were previously prefetched.
 class SearchPrefetchURLLoaderInterceptor
@@ -35,34 +34,24 @@ class SearchPrefetchURLLoaderInterceptor
   SearchPrefetchURLLoaderInterceptor& operator=(
       const SearchPrefetchURLLoaderInterceptor&) = delete;
 
+  // Creates a SearchPrefetchURLLoader if there is a prefetched response able to
+  // be served to |tentative_resource_request|,.
+  static std::unique_ptr<SearchPrefetchURLLoader> MaybeCreateLoaderForRequest(
+      const network::ResourceRequest& tentative_resource_request,
+      int frame_tree_node_id);
+
   // content::URLLaoderRequestInterceptor:
   void MaybeCreateLoader(
       const network::ResourceRequest& tentative_resource_request,
       content::BrowserContext* browser_context,
       content::URLLoaderRequestInterceptor::LoaderCallback callback) override;
 
- protected:
-  // Virtual for testing
-  virtual std::unique_ptr<PrefetchedResponseContainer> GetPrefetchedResponse(
-      const GURL& url);
-
  private:
-  void InterceptPrefetchedNavigation(
-      const network::ResourceRequest& tentative_resource_request,
-      std::unique_ptr<PrefetchedResponseContainer>);
-  void DoNotInterceptPrefetchedNavigation();
-
   bool MaybeInterceptNavigation(
       const network::ResourceRequest& tentative_resource_request);
 
   // Used to get the current WebContents/Profile.
   const int frame_tree_node_id_;
-
-  // The url that |MaybeCreateLoader| is called with.
-  GURL url_;
-
-  // Set in |MaybeCreateLoader| and used in |On[DoNot]InterceptRequest|.
-  content::URLLoaderRequestInterceptor::LoaderCallback loader_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 };

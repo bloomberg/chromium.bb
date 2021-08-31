@@ -31,7 +31,10 @@ void SuperResInit_NEON();
 
 #if LIBGAV1_ENABLE_NEON
 #define LIBGAV1_Dsp8bpp_SuperRes LIBGAV1_CPU_NEON
-#define LIBGAV1_Dsp8bpp_SuperResClip LIBGAV1_CPU_NEON
+#define LIBGAV1_Dsp8bpp_SuperResCoefficients LIBGAV1_CPU_NEON
+
+#define LIBGAV1_Dsp10bpp_SuperResCoefficients LIBGAV1_CPU_NEON
+#define LIBGAV1_Dsp10bpp_SuperRes LIBGAV1_CPU_NEON
 #endif  // LIBGAV1_ENABLE_NEON
 
 #endif  // LIBGAV1_SRC_DSP_ARM_SUPER_RES_NEON_H_

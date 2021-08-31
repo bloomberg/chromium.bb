@@ -18,6 +18,7 @@ import android.os.PowerManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.compat.ApiHelperForM;
 import org.chromium.net.ConnectionType;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -38,7 +39,9 @@ public class DeviceConditions {
 
     // If true, getCurrentNetConnectionType() will always return CONNECTION_NONE.
     @VisibleForTesting
-    public static boolean sForceNoConnectionForTesting;
+    public static boolean sForceConnectionTypeForTesting;
+    @VisibleForTesting
+    public static @ConnectionType int mConnectionTypeForTesting = ConnectionType.CONNECTION_NONE;
 
     /**
      * Creates a DeviceConditions instance that stores a snapshot of the current set of device
@@ -132,8 +135,8 @@ public class DeviceConditions {
 
     @TargetApi(Build.VERSION_CODES.M)
     private static boolean isCurrentlyInIdleModeM(Context context) {
-        PowerManager powerManager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        return powerManager.isDeviceIdleMode();
+        return ApiHelperForM.isDeviceIdleMode(
+                (PowerManager) context.getSystemService(Context.POWER_SERVICE));
     }
 
     /**
@@ -142,8 +145,8 @@ public class DeviceConditions {
      */
     public static int getCurrentNetConnectionType(Context context) {
         int connectionType = ConnectionType.CONNECTION_NONE;
-        if (sForceNoConnectionForTesting) {
-            return connectionType;
+        if (sForceConnectionTypeForTesting) {
+            return mConnectionTypeForTesting;
         }
 
         // If we are starting in the background, native portion might not be initialized.

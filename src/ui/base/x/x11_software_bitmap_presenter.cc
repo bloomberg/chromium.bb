@@ -24,8 +24,10 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_types.h"
+#include "ui/gfx/x/xproto_util.h"
 
 namespace ui {
 
@@ -104,7 +106,7 @@ bool X11SoftwareBitmapPresenter::CompositeBitmap(x11::Connection* connection,
                                  kPremul_SkAlphaType);
   if (!fg_bitmap.installPixels(image_info, const_cast<void*>(data), 4 * width))
     return false;
-  canvas.drawBitmap(fg_bitmap, 0, 0);
+  canvas.drawImage(fg_bitmap.asImage(), 0, 0);
   canvas.flush();
 
   connection->PutImage({x11::ImageFormat::ZPixmap, widget, gc, width, height, x,
@@ -140,7 +142,7 @@ X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
 
   // TODO(thomasanderson): Avoid going through the X11 server to plumb this
   // property in.
-  ui::GetIntProperty(widget_, "CHROMIUM_COMPOSITE_WINDOW", &composite_);
+  GetProperty(widget_, x11::GetAtom("CHROMIUM_COMPOSITE_WINDOW"), &composite_);
 }
 
 X11SoftwareBitmapPresenter::~X11SoftwareBitmapPresenter() {

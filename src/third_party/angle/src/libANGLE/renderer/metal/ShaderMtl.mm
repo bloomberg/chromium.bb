@@ -34,12 +34,15 @@ std::shared_ptr<WaitableCompileEvent> ShaderMtl::compile(const gl::Context *cont
 
     compileOptions |= SH_CLAMP_POINT_SIZE;
 
+    // Transform feedback is always emulated on Metal.
+    compileOptions |= SH_ADD_VULKAN_XFB_EMULATION_SUPPORT_CODE;
+
     return compileImpl(context, compilerInstance, mState.getSource(), compileOptions | options);
 }
 
 std::string ShaderMtl::getDebugInfo() const
 {
-    return mState.getTranslatedSource();
+    return mState.getCompiledBinary().empty() ? "" : "<binary blob>";
 }
 
 }  // namespace rx

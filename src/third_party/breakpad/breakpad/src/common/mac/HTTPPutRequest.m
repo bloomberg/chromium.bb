@@ -50,13 +50,7 @@
 
 //=============================================================================
 - (NSData*)bodyData {
-  NSMutableData* postBody = [NSMutableData data];
-
-  [HTTPRequest appendFileToBodyData:postBody
-                           withName:@"symbol_file"
-                     withFileOrData:file_];
-
-  return postBody;
+  return [NSData dataWithContentsOfFile:file_];
 }
 
 @end

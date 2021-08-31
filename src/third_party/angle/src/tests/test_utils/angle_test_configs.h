@@ -34,6 +34,7 @@ struct PlatformParameters
     EGLint getRenderer() const;
     EGLint getDeviceType() const;
     bool isSwiftshader() const;
+    EGLint getAllocateNonZeroMemoryFeature() const;
 
     void initDefaultParameters();
 
@@ -178,6 +179,9 @@ PlatformParameters ES3_VULKAN_SWIFTSHADER();
 PlatformParameters ES31_VULKAN();
 PlatformParameters ES31_VULKAN_NULL();
 PlatformParameters ES31_VULKAN_SWIFTSHADER();
+PlatformParameters ES32_VULKAN();
+PlatformParameters ES32_VULKAN_NULL();
+PlatformParameters ES32_VULKAN_SWIFTSHADER();
 
 PlatformParameters ES1_METAL();
 PlatformParameters ES2_METAL();
@@ -278,6 +282,21 @@ inline PlatformParameters WithAsyncCommandQueueFeatureVulkan(const PlatformParam
     withAsyncCommandQueue.eglParameters.asyncCommandQueueFeatureVulkan = EGL_TRUE;
     return withAsyncCommandQueue;
 }
+
+inline PlatformParameters WithNoVulkanViewportFlip(const PlatformParameters &params)
+{
+    PlatformParameters withoutVulkanViewportFlip                       = params;
+    withoutVulkanViewportFlip.eglParameters.supportsVulkanViewportFlip = EGL_FALSE;
+    return withoutVulkanViewportFlip;
+}
+
+inline PlatformParameters WithEmulatedVAOs(const PlatformParameters &params)
+{
+    PlatformParameters emualtedVAOParams         = params;
+    emualtedVAOParams.eglParameters.emulatedVAOs = EGL_TRUE;
+    return emualtedVAOParams;
+}
+
 }  // namespace angle
 
 #endif  // ANGLE_TEST_CONFIGS_H_

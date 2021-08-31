@@ -10,13 +10,13 @@
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log.h"
 #include "net/socket/tcp_server_socket.h"
 #include "services/network/tcp_connected_socket.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace network {
 
@@ -60,7 +60,7 @@ void TCPServerSocket::Accept(
     mojo::PendingRemote<mojom::SocketObserver> observer,
     AcceptCallback callback) {
   if (pending_accepts_queue_.size() >= static_cast<size_t>(backlog_)) {
-    std::move(callback).Run(net::ERR_INSUFFICIENT_RESOURCES, base::nullopt,
+    std::move(callback).Run(net::ERR_INSUFFICIENT_RESOURCES, absl::nullopt,
                             mojo::NullRemote(),
                             mojo::ScopedDataPipeConsumerHandle(),
                             mojo::ScopedDataPipeProducerHandle());
@@ -92,26 +92,42 @@ void TCPServerSocket::OnAcceptCompleted(int result) {
   auto pending_accept = std::move(pending_accepts_queue_.front());
   pending_accepts_queue_.erase(pending_accepts_queue_.begin());
 
+  mojo::ScopedDataPipeProducerHandle send_producer_handle;
+  mojo::ScopedDataPipeConsumerHandle send_consumer_handle;
   if (result == net::OK) {
     DCHECK(accepted_socket_);
-    mojo::DataPipe send_pipe;
-    mojo::DataPipe receive_pipe;
+    if (mojo::CreateDataPipe(nullptr, send_producer_handle,
+                             send_consumer_handle) != MOJO_RESULT_OK) {
+      result = net::ERR_FAILED;
+    }
+  }
+
+  mojo::ScopedDataPipeProducerHandle receive_producer_handle;
+  mojo::ScopedDataPipeConsumerHandle receive_consumer_handle;
+  if (result == net::OK) {
+    if (mojo::CreateDataPipe(nullptr, receive_producer_handle,
+                             receive_consumer_handle) != MOJO_RESULT_OK) {
+      result = net::ERR_FAILED;
+    }
+  }
+
+  if (result == net::OK) {
     mojo::PendingRemote<mojom::TCPConnectedSocket> socket;
     auto connected_socket = std::make_unique<TCPConnectedSocket>(
         std::move(pending_accept->observer),
         base::WrapUnique(static_cast<net::TransportClientSocket*>(
             accepted_socket_.release())),
-        std::move(receive_pipe.producer_handle),
-        std::move(send_pipe.consumer_handle), traffic_annotation_);
+        std::move(receive_producer_handle), std::move(send_consumer_handle),
+        traffic_annotation_);
     delegate_->OnAccept(std::move(connected_socket),
                         socket.InitWithNewPipeAndPassReceiver());
     std::move(pending_accept->callback)
         .Run(result, accepted_address_, std::move(socket),
-             std::move(receive_pipe.consumer_handle),
-             std::move(send_pipe.producer_handle));
+             std::move(receive_consumer_handle),
+             std::move(send_producer_handle));
   } else {
     std::move(pending_accept->callback)
-        .Run(result, base::nullopt, mojo::NullRemote(),
+        .Run(result, absl::nullopt, mojo::NullRemote(),
              mojo::ScopedDataPipeConsumerHandle(),
              mojo::ScopedDataPipeProducerHandle());
   }

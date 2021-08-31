@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_METRICS_COLLECTOR_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_OBSERVERS_METRICS_COLLECTOR_H_
 
-#include <map>
-
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -48,6 +46,9 @@ class MetricsCollector : public FrameNode::ObserverDefaultImpl,
   void OnUkmSourceIdChanged(const PageNode* page_node) override;
   void OnFaviconUpdated(const PageNode* page_node) override;
   void OnTitleUpdated(const PageNode* page_node) override;
+
+  // ProcessNodeObserver implementation:
+  void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) override;
 
  protected:
   friend class MetricsReportRecordHolder;

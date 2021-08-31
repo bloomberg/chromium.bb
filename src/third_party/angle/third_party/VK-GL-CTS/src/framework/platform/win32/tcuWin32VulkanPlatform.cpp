@@ -33,8 +33,6 @@
 #include "deUniquePtr.hpp"
 #include "deMemory.h"
 
-#pragma comment(lib, "version.lib")
-
 namespace tcu
 {
 namespace win32
@@ -58,6 +56,11 @@ public:
 	void setVisible(bool visible)
 	{
 		m_window->setVisible(visible);
+	}
+
+	void setForeground(void)
+	{
+		m_window->setForeground();
 	}
 
 	void resize (const UVec2& newSize)

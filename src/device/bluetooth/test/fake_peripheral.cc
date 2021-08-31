@@ -29,7 +29,7 @@ FakePeripheral::FakePeripheral(FakeCentral* fake_central,
 
 FakePeripheral::~FakePeripheral() = default;
 
-void FakePeripheral::SetName(base::Optional<std::string> name) {
+void FakePeripheral::SetName(absl::optional<std::string> name) {
   name_ = std::move(name);
 }
 
@@ -52,6 +52,11 @@ void FakePeripheral::SetServiceUUIDs(UUIDSet service_uuids) {
     DCHECK(inserted);
   }
   device_uuids_.ReplaceServiceUUIDs(gatt_services);
+}
+
+void FakePeripheral::SetManufacturerData(
+    ManufacturerDataMap manufacturer_data) {
+  manufacturer_data_ = std::move(manufacturer_data);
 }
 
 void FakePeripheral::SetNextGATTConnectionResponse(uint16_t code) {
@@ -167,12 +172,12 @@ uint16_t FakePeripheral::GetAppearance() const {
   return 0;
 }
 
-base::Optional<std::string> FakePeripheral::GetName() const {
+absl::optional<std::string> FakePeripheral::GetName() const {
   return name_;
 }
 
-base::string16 FakePeripheral::GetNameForDisplay() const {
-  return base::string16();
+std::u16string FakePeripheral::GetNameForDisplay() const {
+  return std::u16string();
 }
 
 bool FakePeripheral::IsPaired() const {
@@ -201,6 +206,13 @@ bool FakePeripheral::IsConnecting() const {
   NOTREACHED();
   return false;
 }
+
+#if defined(OS_CHROMEOS)
+bool FakePeripheral::IsBlockedByPolicy() const {
+  NOTREACHED();
+  return false;
+}
+#endif
 
 bool FakePeripheral::ExpectingPinCode() const {
   NOTREACHED();
@@ -280,7 +292,7 @@ void FakePeripheral::ConnectToServiceInsecurely(
 void FakePeripheral::CreateGattConnection(
     GattConnectionCallback callback,
     ConnectErrorCallback error_callback,
-    base::Optional<device::BluetoothUUID> service_uuid) {
+    absl::optional<device::BluetoothUUID> service_uuid) {
   create_gatt_connection_success_callbacks_.push_back(std::move(callback));
   create_gatt_connection_error_callbacks_.push_back(std::move(error_callback));
 
@@ -318,7 +330,7 @@ bool FakePeripheral::IsGattServicesDiscoveryComplete() const {
 }
 
 void FakePeripheral::CreateGattConnectionImpl(
-    base::Optional<device::BluetoothUUID>) {
+    absl::optional<device::BluetoothUUID>) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&FakePeripheral::DispatchConnectionResponse,
                                 weak_ptr_factory_.GetWeakPtr()));
@@ -359,7 +371,7 @@ void FakePeripheral::DispatchDiscoveryResponse() {
 void FakePeripheral::DisconnectGatt() {
 }
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void FakePeripheral::ExecuteWrite(base::OnceClosure callback,
                                   ExecuteWriteErrorCallback error_callback) {
   NOTIMPLEMENTED();

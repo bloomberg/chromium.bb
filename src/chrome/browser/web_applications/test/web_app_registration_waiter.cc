@@ -9,7 +9,8 @@
 
 namespace web_app {
 
-WebAppRegistrationWaiter::WebAppRegistrationWaiter(PendingAppManager* manager)
+WebAppRegistrationWaiter::WebAppRegistrationWaiter(
+    ExternallyManagedAppManager* manager)
     : manager_(manager) {
   manager_->SetRegistrationCallbackForTesting(base::BindLambdaForTesting(
       [this](const GURL& install_url, RegistrationResultCode code) {
@@ -39,7 +40,7 @@ void WebAppRegistrationWaiter::AwaitNextRegistration(
 void WebAppRegistrationWaiter::AwaitNextNonFailedRegistration(
     const GURL& install_url) {
   install_url_ = install_url;
-  code_ = base::nullopt;
+  code_ = absl::nullopt;
   run_loop_.Run();
 }
 

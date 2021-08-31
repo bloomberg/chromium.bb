@@ -2,26 +2,30 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import division
+from __future__ import absolute_import
 import math
 import random
 import unittest
 
 from telemetry.util import statistics
 
+# 2To3-division: the / operations here are not converted to // as the results
+# are expected floats.
 
 def Relax(samples, iterations=10):
   """Lloyd relaxation in 1D.
 
   Keeps the position of the first and last sample.
   """
-  for _ in xrange(0, iterations):
+  for _ in range(0, iterations):
     voronoi_boundaries = []
-    for i in xrange(1, len(samples)):
+    for i in range(1, len(samples)):
       voronoi_boundaries.append((samples[i] + samples[i-1]) * 0.5)
 
     relaxed_samples = []
     relaxed_samples.append(samples[0])
-    for i in xrange(1, len(samples)-1):
+    for i in range(1, len(samples)-1):
       relaxed_samples.append(
           (voronoi_boundaries[i-1] + voronoi_boundaries[i]) * 0.5)
     relaxed_samples.append(samples[-1])
@@ -32,7 +36,7 @@ def CreateRandomSamples(num_samples):
   samples = []
   position = 0.0
   samples.append(position)
-  for _ in xrange(1, num_samples):
+  for _ in range(1, num_samples):
     position += random.random()
     samples.append(position)
   return samples
@@ -50,12 +54,13 @@ class StatisticsUnitTest(unittest.TestCase):
     self.assertEquals(normalized_samples, [0.5, 0.5])
     self.assertEquals(scale, 1.0)
 
-    samples = [0.0, 1.0/3.0, 2.0/3.0, 1.0]
+    samples = [0.0, 1.0 / 3.0, 2.0 / 3.0, 1.0]
     normalized_samples, scale = statistics.NormalizeSamples(samples)
-    self.assertEquals(normalized_samples, [1.0/8.0, 3.0/8.0, 5.0/8.0, 7.0/8.0])
+    self.assertEquals(normalized_samples,
+                      [1.0 / 8.0, 3.0 / 8.0, 5.0 / 8.0, 7.0 / 8.0])
     self.assertEquals(scale, 0.75)
 
-    samples = [1.0/8.0, 3.0/8.0, 5.0/8.0, 7.0/8.0]
+    samples = [1.0 / 8.0, 3.0 / 8.0, 5.0 / 8.0, 7.0 / 8.0]
     normalized_samples, scale = statistics.NormalizeSamples(samples)
     self.assertEquals(normalized_samples, samples)
     self.assertEquals(scale, 1.0)
@@ -69,7 +74,7 @@ class StatisticsUnitTest(unittest.TestCase):
     must be less than or equal to the discrepancy of the original samples.
     """
     random.seed(1234567)
-    for _ in xrange(0, 10):
+    for _ in range(0, 10):
       samples = CreateRandomSamples(10)
       samples = statistics.NormalizeSamples(samples)[0]
       d = statistics.Discrepancy(samples)
@@ -95,19 +100,19 @@ class StatisticsUnitTest(unittest.TestCase):
     d = statistics.Discrepancy(samples)
     self.assertEquals(d, 1.0)
 
-    samples = [1.0/8.0, 3.0/8.0, 5.0/8.0, 7.0/8.0]
+    samples = [1.0 / 8.0, 3.0 / 8.0, 5.0 / 8.0, 7.0 / 8.0]
     d = statistics.Discrepancy(samples)
     self.assertEquals(d, 0.25)
 
-    samples = [1.0/8.0, 5.0/8.0, 5.0/8.0, 7.0/8.0]
+    samples = [1.0 / 8.0, 5.0 / 8.0, 5.0 / 8.0, 7.0 / 8.0]
     d = statistics.Discrepancy(samples)
     self.assertEquals(d, 0.5)
 
-    samples = [1.0/8.0, 3.0/8.0, 5.0/8.0, 5.0/8.0, 7.0/8.0]
+    samples = [1.0 / 8.0, 3.0 / 8.0, 5.0 / 8.0, 5.0 / 8.0, 7.0 / 8.0]
     d = statistics.Discrepancy(samples)
     self.assertEquals(d, 0.4)
 
-    samples = [0.0, 1.0/3.0, 2.0/3.0, 1.0]
+    samples = [0.0, 1.0 / 3.0, 2.0 / 3.0, 1.0]
     d = statistics.Discrepancy(samples)
     self.assertEquals(d, 0.5)
 
@@ -156,7 +161,7 @@ class StatisticsUnitTest(unittest.TestCase):
     solution.
     """
     random.seed(1234567)
-    for _ in xrange(0, 5):
+    for _ in range(0, 5):
       samples = CreateRandomSamples(10)
       samples = statistics.NormalizeSamples(samples)[0]
       d = statistics.Discrepancy(samples)
@@ -179,13 +184,13 @@ class StatisticsUnitTest(unittest.TestCase):
 
   def testArithmeticMean(self):
     # The ArithmeticMean function computes the simple average.
-    self.assertAlmostEquals(40/3.0, statistics.ArithmeticMean([10, 10, 20]))
+    self.assertAlmostEquals(40 / 3.0, statistics.ArithmeticMean([10, 10, 20]))
     self.assertAlmostEquals(15.0, statistics.ArithmeticMean([10, 20]))
     # If the 'count' is zero, then zero is returned.
     self.assertEquals(0, statistics.ArithmeticMean([]))
 
   def testStandardDeviation(self):
-    self.assertAlmostEquals(math.sqrt(2/3.0),
+    self.assertAlmostEquals(math.sqrt(2 / 3.0),
                             statistics.StandardDeviation([1, 2, 3]))
     self.assertEquals(0, statistics.StandardDeviation([1]))
     self.assertEquals(0, statistics.StandardDeviation([]))

@@ -5,10 +5,14 @@
 package org.chromium.base.compat;
 
 import android.annotation.TargetApi;
+import android.content.ClipboardManager;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.LinkProperties;
 import android.os.Build;
+import android.telephony.SignalStrength;
+import android.telephony.TelephonyManager;
 
 import org.chromium.base.annotations.VerifiesOnP;
 
@@ -40,5 +44,21 @@ public final class ApiHelperForP {
     /** See {@link LocationManager#isLocationEnabled() }. */
     public static boolean isLocationEnabled(LocationManager locationManager) {
         return locationManager.isLocationEnabled();
+    }
+
+    /** See {@link TelephonyManager#getSignalStrength() }. */
+    public static SignalStrength getSignalStrength(TelephonyManager telephonyManager) {
+        return telephonyManager.getSignalStrength();
+    }
+
+    /** See {@link ClipboardManager#clearPrimaryClip() }. */
+    public static void clearPrimaryClip(ClipboardManager clipboardManager) {
+        clipboardManager.clearPrimaryClip();
+    }
+
+    /** See {@link PackageManager#hasSigningCertificate(String, byte[], int) }. */
+    public static boolean hasSigningCertificate(
+            PackageManager pm, String packageName, byte[] certificate, int type) {
+        return pm.hasSigningCertificate(packageName, certificate, type);
     }
 }
