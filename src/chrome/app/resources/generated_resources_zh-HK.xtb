@@ -1559,6 +1559,7 @@
 <translation id="2606454609872547359">否，不啟動 ChromeVox 並繼續操作</translation>
 <translation id="2606568927909309675">自動建立英文音訊和影片字幕。音訊和字幕絕不會外洩。</translation>
 <translation id="2607101320794533334">主體公開金鑰資料</translation>
+<translation id="2607602101932365444">按住文字或在文字上按一下右鍵後，就能取得定義、翻譯或單位轉換結果。您可透過在<ph name="LINK_BEGIN" />網頁內容語言<ph name="LINK_END" />中設定偏好語言來自訂翻譯功能。</translation>
 <translation id="2609896558069604090">建立捷徑…</translation>
 <translation id="2609980095400624569">無法建立連線</translation>
 <translation id="2610157865375787051">休眠</translation>
@@ -1590,6 +1591,7 @@
 <translation id="2635276683026132559">登入</translation>
 <translation id="2636625531157955190">Chrome 無法存取這張圖片。</translation>
 <translation id="2637400434494156704">PIN 不正確。您還可再試 1 次。</translation>
+<translation id="2638286699381354126">更新…</translation>
 <translation id="2638662041295312666">登入圖片</translation>
 <translation id="2640549051766135490">揀咗相簿 <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="264083724974021997">連接去你部手機 - 對話框</translation>
@@ -3563,7 +3565,7 @@
 <translation id="4770119228883592393">要求咗權限，㩒 ⌘ + Option + 向下箭咀就可以回覆</translation>
 <translation id="4773112038801431077">升級 Linux</translation>
 <translation id="477647109558161443">建立桌面捷徑</translation>
-<translation id="4776594120007763294">如要儲存頁面以便稍後閱讀，請點選這個按鈕</translation>
+<translation id="4776594120007763294">如要新增頁面以便稍後閱讀，請按一下按鈕</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密碼</translation>
 <translation id="4777458362738635055">此裝置的其他使用者可使用此網絡</translation>
 <translation id="4777825441726637019">Play 商店</translation>
@@ -5676,6 +5678,7 @@
 <translation id="7088434364990739311">無法啟動更新檢查 (錯誤代碼 <ph name="ERROR" />)。</translation>
 <translation id="7088561041432335295">Zip Archiver - 在「檔案」應用程式開啟及封裝 ZIP 檔案。</translation>
 <translation id="7088674813905715446">管理員已將這部裝置設為取消佈建狀態。如要讓裝置符合註冊資格，請要求您的管理員將裝置設為等待處理狀態。</translation>
+<translation id="7093220653036489319">快速解答</translation>
 <translation id="7093416310351037609">為了保護資料和系統安全，您的機構要求將所有符合資格的下載項目儲存到機構的「<ph name="WEB_DRIVE" />」帳戶。</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">與名稱為「<ph name="HOSTNAMES" />」的裝置交換數據</translation>

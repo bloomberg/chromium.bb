@@ -41262,6 +41262,17 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="14" label="CLEAR_SERVER_NETWORK_STATS"/>
 </enum>
 
+<enum name="HttpsFirstModeNavigationEvent">
+  <int value="0" label="kUpgradeAttempted">Upgrade attempted</int>
+  <int value="1" label="kUpgradeSucceeded">Upgrade succeeded</int>
+  <int value="2" label="kUpgradeFailed">Upgrade failed (for any reason)</int>
+  <int value="3" label="kUpgradeCertError">
+    Upgrade failed due to cert error
+  </int>
+  <int value="4" label="kUpgradeNetError">Upgrade failed due to net error</int>
+  <int value="5" label="kUpgradeTimedOut">Upgrade failed due to timing out</int>
+</enum>
+
 <enum name="HttpsImageCompressionInfoBarAction">
   <int value="0" label="Infobar shown"/>
   <int value="1" label="Infobar dismissed by user"/>
@@ -74575,6 +74586,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="8" label="Brightness"/>
 </enum>
 
+<enum name="SettingsInputsShortcutReminderState">
+  <int value="0" label="No shortcuts"/>
+  <int value="1" label="Last used IME shortcut"/>
+  <int value="2" label="Next IME shortcut"/>
+  <int value="3" label="Last used IME shortcut and next IME shortcut"/>
+</enum>
+
 <enum name="SettingsInteractionConcludeReason">
   <int value="0" label="Registry watcher">
     A change to the protocol registry key was detected.
@@ -74600,6 +74618,8 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="2" label="Switch input method"/>
   <int value="3" label="Restart later"/>
   <int value="4" label="Open custom spell check"/>
+  <int value="5" label="Open 'Manage Google Account language'"/>
+  <int value="6" label="Open 'Learn more' link about web languages"/>
 </enum>
 
 <enum name="SettingsLanguagesSupportPage">

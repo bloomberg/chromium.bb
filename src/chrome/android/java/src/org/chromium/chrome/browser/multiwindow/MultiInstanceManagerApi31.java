@@ -19,6 +19,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -151,6 +152,7 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
         intent.putExtra(IntentHandler.EXTRA_PREFER_NEW, true);
+        IntentUtils.addTrustedIntentExtras(intent);
         if (mMultiWindowModeStateDispatcher.canEnterMultiWindowMode()
                 || mMultiWindowModeStateDispatcher.isInMultiWindowMode()
                 || mMultiWindowModeStateDispatcher.isInMultiDisplayMode()) {
@@ -179,7 +181,7 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
                 assert getTaskFromMap(i) == a.getTaskId();
                 if (a == mActivity) {
                     type = InstanceInfo.Type.CURRENT;
-                    currentItemPos = i;
+                    currentItemPos = result.size();
                 } else if (isRunningInAdjacentWindow(visibleTasks, a)) {
                     type = InstanceInfo.Type.ADJACENT;
                 }
@@ -192,7 +194,7 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
 
         // Move the current instance always to the top of the list.
         assert currentItemPos != -1;
-        if (currentItemPos != 0) result.add(0, result.remove(currentItemPos));
+        if (currentItemPos != 0 && result.size() > 1) result.add(0, result.remove(currentItemPos));
         return result;
     }
 
@@ -478,18 +480,16 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
     }
 
     private static String lastAccessedTimeKey(int index) {
-        return ChromePreferenceKeys.MULTI_INSTANCE_LAST_ACCESSED_TIME.createKey(
-                String.valueOf(index));
+        return MultiWindowUtils.lastAccessedTimeKey(index);
     }
 
     private static long readLastAccessedTime(int index) {
-        return SharedPreferencesManager.getInstance().readLong(lastAccessedTimeKey(index));
+        return MultiWindowUtils.readLastAccessedTime(index);
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     static void writeLastAccessedTime(int index) {
-        SharedPreferencesManager.getInstance().writeLong(
-                lastAccessedTimeKey(index), System.currentTimeMillis());
+        MultiWindowUtils.writeLastAccessedTime(index);
     }
 
     /**
@@ -548,6 +548,9 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
     @Override
     public void onDestroy() {
         if (mTabModelObserver != null) mTabModelObserver.destroy();
+        // This handles a case where an instance is deleted within Chrome but not through
+        // Window manager UI, and the task is removed by system. See https://crbug.com/1241719.
+        removeInvalidInstanceData();
         super.onDestroy();
     }
 

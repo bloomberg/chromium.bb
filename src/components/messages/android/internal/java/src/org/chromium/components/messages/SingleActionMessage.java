@@ -119,15 +119,15 @@ public class SingleActionMessage implements MessageStateHandler {
      */
     @Override
     public void dismiss(@DismissReason int dismissReason) {
-        if (mMessageBanner != null) mMessageBanner.dismiss();
         Callback<Integer> onDismissed = mModel.get(MessageBannerProperties.ON_DISMISSED);
         if (onDismissed != null) onDismissed.onResult(dismissReason);
         if (dismissReason == DismissReason.PRIMARY_ACTION
                 || dismissReason == DismissReason.SECONDARY_ACTION
                 || dismissReason == DismissReason.GESTURE) {
             // Only record time to dismiss when the user explicitly dismissed the message.
-            MessagesMetrics.recordTimeToAction(
-                    getMessageIdentifier(), MessagesMetrics.now() - mMessageShownTime);
+            MessagesMetrics.recordTimeToAction(getMessageIdentifier(),
+                    dismissReason == DismissReason.GESTURE,
+                    MessagesMetrics.now() - mMessageShownTime);
         }
     }
 

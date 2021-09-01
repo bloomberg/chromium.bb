@@ -627,6 +627,23 @@ suite('languages page', () => {
 
       assertTrue(await metricsProxy.whenCalled('recordToggleTranslate'));
     });
+
+    test('when clicking on Manage Google Account language', async () => {
+      // This test requires Language Settings V2 Update 2 to be enabled.
+      languagesPage.languageSettingsV2Update2Enabled_ = true;
+      loadTimeData.overrideValues({enableLanguageSettingsV2Update2: true});
+      Polymer.dom.flush();
+
+      // The below would normally create a new window using `window.open`, which
+      // would change the focus from this test to the new window.
+      // Prevent this from happening by overriding `window.open`.
+      window.open = () => {};
+      languagesPage.$$('#manageGoogleAccountLanguage').click();
+      Polymer.dom.flush();
+      assertEquals(
+          await metricsProxy.whenCalled('recordInteraction'),
+          LanguagesPageInteraction.OPEN_MANAGE_GOOGLE_ACCOUNT_LANGUAGE);
+    });
   });
 });
 

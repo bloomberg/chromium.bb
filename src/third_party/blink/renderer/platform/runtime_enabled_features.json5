@@ -1151,8 +1151,7 @@
     },
     {
       name: "IdleDetection",
-      origin_trial_feature_name: "IdleDetection",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ImplicitRootScroller",
@@ -2230,6 +2229,7 @@
     {
       name: "UserAgentReduction",
       origin_trial_feature_name: "UserAgentReduction",
+      status: "experimental",
     },
     {
       name: "UUID",

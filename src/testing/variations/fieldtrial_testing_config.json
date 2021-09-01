@@ -570,7 +570,7 @@
                 {
                     "name": "Enabled_2021-06-21",
                     "params": {
-                        "autodismiss_duration_ms": "10000"
+                        "save_password_message_dismiss_duration_ms": "10000"
                     },
                     "enable_features": [
                         "MessagesForAndroidInfrastructure",
@@ -5592,6 +5592,21 @@
             ]
         }
     ],
+    "OnDeviceGrammarCheck": [
+        {
+            "platforms": [
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OnDeviceGrammarCheck"
+                    ]
+                }
+            ]
+        }
+    ],
     "OneCopyRasterBufferPlaybackNormalThreadPriority": [
         {
             "platforms": [
@@ -5683,7 +5698,7 @@
                         "default_segment": "new-tab",
                         "disable_ui": "false",
                         "ignore_segmentation_results": "false",
-                        "min_version_adaptive": "1",
+                        "min_version_adaptive": "3",
                         "segment_selection_ttl_days": "14",
                         "show_ui_only_after_ready": "false"
                     },
@@ -5701,7 +5716,7 @@
                         "default_segment": "new-tab",
                         "disable_ui": "false",
                         "ignore_segmentation_results": "false",
-                        "min_version_adaptive": "1",
+                        "min_version_adaptive": "3",
                         "segment_selection_ttl_days": "14",
                         "show_ui_only_after_ready": "true"
                     },
@@ -5719,7 +5734,7 @@
                         "default_segment": "new-tab",
                         "disable_ui": "false",
                         "ignore_segmentation_results": "true",
-                        "min_version_adaptive": "1",
+                        "min_version_adaptive": "3",
                         "segment_selection_ttl_days": "14",
                         "show_ui_only_after_ready": "true"
                     },

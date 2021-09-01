@@ -1542,6 +1542,7 @@
 <translation id="2606454609872547359">否，不启用 ChromeVox 并继续操作</translation>
 <translation id="2606568927909309675">自动为英文版音频和视频创建字幕。音频和字幕绝不会从设备中泄露出去。</translation>
 <translation id="2607101320794533334">证书持有者的公共密钥信息</translation>
+<translation id="2607602101932365444">在您右键点击或轻触并按住文字时获取定义、翻译或单位换算结果。您可自定义所需的翻译，方法是在<ph name="LINK_BEGIN" />网页内容语言<ph name="LINK_END" />部分中设置您的首选语言。</translation>
 <translation id="2609896558069604090">创建快捷方式...</translation>
 <translation id="2609980095400624569">无法建立连接</translation>
 <translation id="2610157865375787051">休眠</translation>
@@ -1573,6 +1574,7 @@
 <translation id="2635276683026132559">签名</translation>
 <translation id="2636625531157955190">Chrome 无法访问这张图片。</translation>
 <translation id="2637400434494156704">PIN 码不正确。您还剩 1 次尝试机会。</translation>
+<translation id="2638286699381354126">更新...</translation>
 <translation id="2638662041295312666">登录帐号图片</translation>
 <translation id="2640549051766135490">已选择影集“<ph name="TITLE" />”，<ph name="DESC" /></translation>
 <translation id="264083724974021997">连接到您的手机 - 对话框</translation>
@@ -3543,6 +3545,7 @@
 <translation id="4770119228883592393">收到了权限请求，按 ⌘ + Option + 向下键即可回复</translation>
 <translation id="4773112038801431077">升级 Linux</translation>
 <translation id="477647109558161443">创建桌面快捷方式</translation>
+<translation id="4776594120007763294">如需添加某个页面以供日后阅读，请点击此按钮</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密码</translation>
 <translation id="4777458362738635055">此设备的其他用户可以使用该网络</translation>
 <translation id="4777825441726637019">Play 商店</translation>
@@ -5561,7 +5564,7 @@
 <translation id="6993000214273684335">此标签页已从未命名的组中移除 - 该组包含<ph name="GROUP_CONTENTS" /></translation>
 <translation id="6993050154661569036">正在更新 Chrome 浏览器</translation>
 <translation id="6994069045767983299">颜色反转</translation>
-<translation id="6995899638241819463">提醒我密码是否遭遇了数据泄露</translation>
+<translation id="6995899638241819463">若密码遭遇了数据泄露，发出警告</translation>
 <translation id="6997642619627518301"><ph name="NAME_PH" /> - 活动日志</translation>
 <translation id="6997707937646349884">在您的设备上：</translation>
 <translation id="6998793565256476099">注册设备以进行视频会议</translation>
@@ -5655,6 +5658,7 @@
 <translation id="7088434364990739311">无法启动更新检查（错误代码为 <ph name="ERROR" />）。</translation>
 <translation id="7088561041432335295">Zip Archiver - 在“文件”应用中打开和打包 ZIP 文件。</translation>
 <translation id="7088674813905715446">管理员已将该设备设置为已取消配置的状态。要让该设备能够注册，请让管理员将其设置为待处理状态。</translation>
+<translation id="7093220653036489319">快速解答</translation>
 <translation id="7093416310351037609">为保障数据安全，贵单位要求将所有符合条件的下载内容保存到贵单位的“<ph name="WEB_DRIVE" />”帐号。</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">与具有下列名称的设备交换数据：<ph name="HOSTNAMES" /></translation>

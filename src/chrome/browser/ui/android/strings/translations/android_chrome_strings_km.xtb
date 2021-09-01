@@ -54,7 +54,6 @@
 <translation id="1298077576058087471">សន្សំសំចៃទិន្នន័យបានរហូតដល់ 60%, អានព័ត៌មាននៅថ្ងៃនេះ</translation>
 <translation id="1303339473099049190">រកមិនឃើញពាក្យសម្ងាត់ទេ។ សូមពិនិត្យ​មើល​អក្ខរាវិរុទ្ធ​ រួចព្យាយាម​ម្ដង​ទៀត។</translation>
 <translation id="1303507811548703290"><ph name="DOMAIN" />៖ បាន​ផ្ញើពី <ph name="DEVICE_NAME" /></translation>
-<translation id="130581733275749598">ជ្រើសរើស​ទម្រង់គំរូ​សម្រាប់​ការរំលេច​របស់អ្នក</translation>
 <translation id="1310482092992808703">ដាក់ផ្ទាំងជាក្រុម</translation>
 <translation id="1311657260431405215">កូដ QR នេះ​មិនមែនជា URL ទេ៖ <ph name="QRCODEVALUE" /></translation>
 <translation id="1316212908214730110">chrome_stylized_highlight_</translation>
@@ -901,6 +900,7 @@ Privacy Sandbox កំពុងស្ថិតនៅក្នុងការអ�
 <translation id="6545017243486555795">ជម្រះទិន្នន័យទាំងអស់</translation>
 <translation id="6546511553472444032">ឯកសារនេះអាចមានគ្រោះថ្នាក់</translation>
 <translation id="6556542240154580383">{TAB_COUNT,plural, =1{<ph name="TAB_TITLE" /> និងផ្ទាំង <ph name="TAB_COUNT_ONE" /> ទៀតនឹង​ត្រូវបានបិទ}other{<ph name="TAB_TITLE" /> និងផ្ទាំង <ph name="TAB_COUNT_MANY" /> ទៀតនឹង​ត្រូវបានបិទ}}</translation>
+<translation id="6560066289487134861">ជ្រើសរើស​ទម្រង់គំរូ​សម្រាប់​ការរំលេច​របស់អ្នក។ ដើម្បីត្រឡប់ទៅប្រអប់ចម្បង សូមប្រើចលនា​ឡើងលើរួចចុះក្រោម បន្ទាប់មកចុច "បន្ទាប់"។</translation>
 <translation id="6560414384669816528">ស្វែងរកដោយប្រើ Sogou</translation>
 <translation id="656065428026159829">មើលច្រើនទៀត</translation>
 <translation id="6565959834589222080">ប្រើ Wi-Fi នៅពេលដែលអាចប្រើបាន</translation>

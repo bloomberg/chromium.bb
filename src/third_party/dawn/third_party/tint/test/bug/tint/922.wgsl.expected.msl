@@ -2,19 +2,19 @@
 
 using namespace metal;
 struct Mat4x4_ {
-  /* 0x0000 */ packed_float4 mx;
-  /* 0x0010 */ packed_float4 my;
-  /* 0x0020 */ packed_float4 mz;
-  /* 0x0030 */ packed_float4 mw;
+  /* 0x0000 */ float4 mx;
+  /* 0x0010 */ float4 my;
+  /* 0x0020 */ float4 mz;
+  /* 0x0030 */ float4 mw;
 };
 struct Mat4x3_ {
-  /* 0x0000 */ packed_float4 mx;
-  /* 0x0010 */ packed_float4 my;
-  /* 0x0020 */ packed_float4 mz;
+  /* 0x0000 */ float4 mx;
+  /* 0x0010 */ float4 my;
+  /* 0x0020 */ float4 mz;
 };
 struct Mat4x2_ {
-  /* 0x0000 */ packed_float4 mx;
-  /* 0x0010 */ packed_float4 my;
+  /* 0x0000 */ float4 mx;
+  /* 0x0010 */ float4 my;
 };
 struct ub_SceneParams {
   /* 0x0000 */ Mat4x4_ u_Projection;
@@ -24,7 +24,7 @@ struct tint_array_wrapper {
 };
 struct ub_MaterialParams {
   /* 0x0000 */ tint_array_wrapper u_TexMtx;
-  /* 0x0020 */ packed_float4 u_Misc0_;
+  /* 0x0020 */ float4 u_Misc0_;
 };
 struct tint_array_wrapper_1 {
   /* 0x0000 */ Mat4x3_ arr[32];
@@ -283,7 +283,7 @@ VertexOutput tint_symbol_inner(constant ub_PacketParams& global2, constant ub_Sc
   return tint_symbol_4;
 }
 
-vertex tint_symbol_3 tint_symbol(tint_symbol_2 tint_symbol_1 [[stage_in]], constant ub_PacketParams& global2 [[buffer(2)]], constant ub_SceneParams& global [[buffer(0)]], constant ub_MaterialParams& global1 [[buffer(1)]]) {
+vertex tint_symbol_3 tint_symbol(tint_symbol_2 tint_symbol_1 [[stage_in]], constant ub_PacketParams& global2 [[buffer(0)]], constant ub_SceneParams& global [[buffer(1)]], constant ub_MaterialParams& global1 [[buffer(2)]]) {
   thread float3 tint_symbol_21 = 0.0f;
   thread float2 tint_symbol_22 = 0.0f;
   thread float4 tint_symbol_23 = 0.0f;

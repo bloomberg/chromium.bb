@@ -42,6 +42,15 @@ using autofill::ContentAutofillDriver;
 
 namespace {
 
+// Get the visual viewport as a list of values to fill into RectF, that is:
+// left, top, right, bottom.
+const char* const kGetVisualViewport =
+    R"({ const v = window.visualViewport;
+         [v.pageLeft,
+          v.pageTop,
+          v.pageLeft + v.width,
+          v.pageTop + v.height] })";
+
 // Scrolls to the specified node with top padding. The top padding can
 // be specified through pixels or ratio. Pixels take precedence.
 const char* const kScrollIntoViewWithPaddingScript =
@@ -526,6 +535,7 @@ void WebController::ExecuteVoidJsWithoutArguments(
     const std::string& js_snippet,
     WebControllerErrorInfoProto::WebAction web_action,
     base::OnceCallback<void(const ClientStatus&)> callback) {
+  // Wrapping the callback to suppress and free the keyboard.
   auto wrapped_callback = GetAssistantActionRunningStateRetainingCallback(
       element, std::move(callback));
 
@@ -725,6 +735,7 @@ void WebController::ClickOrTapElement(
     return;
   }
 
+  // Wrapping the callback to suppress and free the keyboard.
   auto wrapped_callback = GetAssistantActionRunningStateRetainingCallback(
       element, std::move(callback));
 
@@ -1382,34 +1393,38 @@ void WebController::SendKeyboardInput(
     key_events.emplace_back(
         SendKeyboardInputWorker::KeyEventFromCodepoint(codepoint));
   }
-  auto worker =
-      std::make_unique<SendKeyboardInputWorker>(devtools_client_.get());
-  auto* ptr = worker.get();
-  pending_workers_.emplace_back(std::move(worker));
-  ptr->Start(
-      element.node_frame_id(), key_events, key_press_delay_in_millisecond,
-      base::BindOnce(&DecorateWebControllerStatus,
-                     WebControllerErrorInfoProto::SEND_KEYBOARD_INPUT,
-                     base::BindOnce(&WebController::OnSendKeyboardInputDone,
-                                    weak_ptr_factory_.GetWeakPtr(), ptr,
-                                    std::move(callback))));
+  SendKeyEvents(WebControllerErrorInfoProto::SEND_KEYBOARD_INPUT, key_events,
+                key_press_delay_in_millisecond, element, std::move(callback));
 }
 
 void WebController::SendKeyEvent(
     const KeyEvent& key_event,
     const ElementFinder::Result& element,
     base::OnceCallback<void(const ClientStatus&)> callback) {
+  SendKeyEvents(WebControllerErrorInfoProto::SEND_KEY_EVENT, {key_event}, 0,
+                element, std::move(callback));
+}
+
+void WebController::SendKeyEvents(
+    WebControllerErrorInfoProto::WebAction web_action,
+    const std::vector<KeyEvent>& key_events,
+    int key_press_delay,
+    const ElementFinder::Result& element,
+    base::OnceCallback<void(const ClientStatus&)> callback) {
+  // Wrapping the callback to suppress and free the keyboard.
+  auto wrapped_callback = GetAssistantActionRunningStateRetainingCallback(
+      element, std::move(callback));
+
   auto worker =
       std::make_unique<SendKeyboardInputWorker>(devtools_client_.get());
   auto* ptr = worker.get();
   pending_workers_.emplace_back(std::move(worker));
   ptr->Start(
-      element.node_frame_id(), {key_event}, 0,
-      base::BindOnce(&DecorateWebControllerStatus,
-                     WebControllerErrorInfoProto::SEND_KEY_EVENT,
+      element.node_frame_id(), key_events, key_press_delay,
+      base::BindOnce(&DecorateWebControllerStatus, web_action,
                      base::BindOnce(&WebController::OnSendKeyboardInputDone,
                                     weak_ptr_factory_.GetWeakPtr(), ptr,
-                                    std::move(callback))));
+                                    std::move(wrapped_callback))));
 }
 
 void WebController::OnSendKeyboardInputDone(
@@ -1436,6 +1451,51 @@ void WebController::BlurField(
   ExecuteVoidJsWithoutArguments(element, std::string(kBlurFieldScript),
                                 WebControllerErrorInfoProto::BLUR_FIELD,
                                 std::move(callback));
+}
+
+void WebController::GetVisualViewport(
+    base::OnceCallback<void(const ClientStatus&, const RectF&)> callback) {
+  devtools_client_->GetRuntime()->Evaluate(
+      runtime::EvaluateParams::Builder()
+          .SetExpression(std::string(kGetVisualViewport))
+          .SetReturnByValue(true)
+          .Build(),
+      /* node_frame_id= */ std::string(),
+      base::BindOnce(&WebController::OnGetVisualViewport,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void WebController::OnGetVisualViewport(
+    base::OnceCallback<void(const ClientStatus&, const RectF&)> callback,
+    const DevtoolsClient::ReplyStatus& reply_status,
+    std::unique_ptr<runtime::EvaluateResult> result) {
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
+  if (!status.ok() || !result->GetResult()->HasValue() ||
+      !result->GetResult()->GetValue()->is_list() ||
+      result->GetResult()->GetValue()->GetList().size() != 4u) {
+    VLOG(1) << __func__ << " Failed to get visual viewport: " << status;
+    std::move(callback).Run(
+        JavaScriptErrorStatus(reply_status, __FILE__, __LINE__, nullptr),
+        RectF());
+    return;
+  }
+  const auto& list = result->GetResult()->GetValue()->GetList();
+  // Value::GetDouble() is safe to call without checking the value type; it'll
+  // return 0.0 if the value has the wrong type.
+
+  float left = static_cast<float>(list[0].GetDouble());
+  float top = static_cast<float>(list[1].GetDouble());
+  float width = static_cast<float>(list[2].GetDouble());
+  float height = static_cast<float>(list[3].GetDouble());
+
+  RectF rect;
+  rect.left = left;
+  rect.top = top;
+  rect.right = left + width;
+  rect.bottom = top + height;
+
+  std::move(callback).Run(OkClientStatus(), rect);
 }
 
 void WebController::GetElementRect(
@@ -1618,6 +1678,9 @@ base::OnceCallback<void(const ClientStatus&)>
 WebController::GetAssistantActionRunningStateRetainingCallback(
     const ElementFinder::Result& element_result,
     base::OnceCallback<void(const ClientStatus&)> callback) {
+  if (element_result.container_frame_host == nullptr) {
+    return callback;
+  }
   ContentAutofillDriver* content_autofill_driver =
       ContentAutofillDriver::GetForRenderFrameHost(
           element_result.container_frame_host);

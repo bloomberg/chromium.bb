@@ -114,15 +114,8 @@ public class MultiWindowUtils implements ActivityStateListener {
         ComponentName comp = new ComponentName(packageName, className);
         try {
             int launchMode = context.getPackageManager().getActivityInfo(comp, 0).launchMode;
-            // ActivityInfo#LAUNCH_SINGLE_INSTANCE_PER_TASK is introduced in S.
-            Field launchSingleInstancePerTask =
-                    ActivityInfo.class.getField("LAUNCH_SINGLE_INSTANCE_PER_TASK");
-            return launchMode == launchSingleInstancePerTask.getInt(null);
+            return launchMode == ActivityInfo.LAUNCH_SINGLE_INSTANCE_PER_TASK;
         } catch (PackageManager.NameNotFoundException e) {
-            return false;
-        } catch (NoSuchFieldException e) {
-            return false;
-        } catch (IllegalAccessException e) {
             return false;
         }
     }
@@ -266,6 +259,7 @@ public class MultiWindowUtils implements ActivityStateListener {
         if (openAdjacently) intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, activity.getPackageName());
         intent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
+        IntentUtils.addTrustedIntentExtras(intent);
         return intent;
     }
 
@@ -559,6 +553,25 @@ public class MultiWindowUtils implements ActivityStateListener {
             if (activity instanceof ChromeTabbedActivity) ctaTasks.put(activity.getTaskId(), true);
         }
         return ctaTasks;
+    }
+
+    static String lastAccessedTimeKey(int index) {
+        return ChromePreferenceKeys.MULTI_INSTANCE_LAST_ACCESSED_TIME.createKey(
+                String.valueOf(index));
+    }
+
+    static long readLastAccessedTime(int index) {
+        return SharedPreferencesManager.getInstance().readLong(lastAccessedTimeKey(index));
+    }
+
+    /**
+     * Write the time this instance is accessed.
+     * @param index Instance ID
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+    public static void writeLastAccessedTime(int index) {
+        SharedPreferencesManager.getInstance().writeLong(
+                lastAccessedTimeKey(index), System.currentTimeMillis());
     }
 
     @VisibleForTesting

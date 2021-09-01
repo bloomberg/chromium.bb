@@ -150,6 +150,10 @@ const base::Feature kAssistPersonalInfoName{"AssistPersonalInfoName",
 const base::Feature kAssistPersonalInfoPhoneNumber{
     "AssistPersonalInfoPhoneNumber", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables the Audio URL that is designed to help user debug or troubleshoot
+// common issues on ChromeOS.
+const base::Feature kAudioUrl{"AudioUrl", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the Auto Night Light feature which sets the default schedule type to
 // sunset-to-sunrise until the user changes it to something else. This feature
 // is not exposed to the end user, and is enabled only via cros_config for
@@ -886,6 +890,10 @@ const base::Feature kQuickAnswersTranslationCloudAPI{
 const base::Feature kQuickAnswersV2{"QuickAnswersV2",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable quick answers V2 settings sub-toggles.
+const base::Feature kQuickAnswersV2SettingsSubToggle{
+    "QuickAnswersV2SettingsSubToggle", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables or disables fingerprint quick unlock.
 const base::Feature kQuickUnlockFingerprint{"QuickUnlockFingerprint",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1520,6 +1528,10 @@ bool IsQuickAnswersV2Enabled() {
 
 bool IsQuickAnswersV2TranslationDisabled() {
   return base::FeatureList::IsEnabled(kDisableQuickAnswersV2Translation);
+}
+
+bool IsQuickAnswersV2SettingsSubToggleEnabled() {
+  return base::FeatureList::IsEnabled(kQuickAnswersV2SettingsSubToggle);
 }
 
 bool IsReduceDisplayNotificationsEnabled() {
