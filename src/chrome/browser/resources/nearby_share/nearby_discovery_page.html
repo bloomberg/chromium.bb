@@ -6,28 +6,56 @@
   }
 
   #centerContent {
-    background: radial-gradient(160% 50% at 0 100%,
-        rgba(var(--google-blue-refresh-300-rgb), 0.25), rgba(255, 255, 255, 0));
+    background: linear-gradient(to top, var(--google-blue-50) 5%,
+                                rgba(255, 255, 255, 0) 50%);
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     overflow: hidden;
+    padding: 0 32px;
     position: relative;
   }
 
   #deviceList {
+    align-self: stretch;
     display: block;
     margin-top: 12px;
     overflow: auto;
-    padding-inline-end:  var(--nearby-page-space-large-inline);
-    padding-inline-start:  var(--nearby-page-space-large-inline);
-    width: 191px;
+    width: 200px;
   }
 
-  nearby-preview {
-    margin-inline-end:  var(--nearby-page-space-large-inline);
-    margin-inline-start:  var(--nearby-page-space-large-inline);
+  #errorSection {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: row;
+    padding: 8px;
+  }
+
+  #error {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+  }
+
+  #errorTitle {
+    color: var(--google-red-600);
+    font-weight: bold;
+    margin: 3px 0;
+  }
+
+  #errorDescription {
+    color: var(--google-grey-refresh-700);
+    line-height: 13px;
+  }
+
+  #errorIcon {
+    fill: var(--google-red-600);
+    flex-shrink: 0;
+    height: 20px;
+    margin-inline-end: 12px;
+    width: 20px;
   }
 
   #help {
@@ -37,9 +65,7 @@
     flex-direction: row;
     font-size: 9px;
     line-height: 12px;
-    margin-inline-end:  var(--nearby-page-space-inline);
-    margin-inline-start: var(--nearby-page-space-inline);
-    padding: 8px;
+    margin-block-end: 8px;
   }
 
   #helpText {
@@ -47,7 +73,7 @@
   }
 
   #helpText a {
-    color: var(--google-blue-600);
+    color: var(--google-blue-700);
     text-decoration: none;
   }
 
@@ -61,24 +87,43 @@
   #process-row {
     align-items: flex-start;
     display: flex;
+    flex-grow: 1;
     justify-content: space-between;
-    margin: auto 0;
-    margin-block-start: 48px;
+    margin-block-end: 24px;
+    margin-block-start: 24px;
     overflow: hidden;
   }
 
   cr-lottie {
     bottom: 0;
     height: 100px;
+    left: 0;
+    pointer-events: none;
     position: absolute;
+    right: 0;
   }
 
   #placeholder {
     align-self: center;
-    color: rgb(95, 99, 104);
+    color: var(--google-grey-refresh-700);
     font-size: 13px;
     line-height: 20px;
     margin-inline-end: var(--nearby-page-space-large-inline);
+  }
+
+  nearby-device {
+    animation: 200ms cubic-bezier(0.4, 0, 0.2, 1) slide-up;
+    animation: 200ms linear fade-in;
+  }
+
+  @keyframes fade-in {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes slide-up {
+    0% { transform: translateY(2px); }
+    100% { transform: translateY(0); }
   }
 </style>
 
@@ -88,41 +133,59 @@
         action-button-event-name="next"
         action-disabled="[[!selectedShareTarget]]"
         cancel-button-label="$i18n{nearbyShareActionsCancel}"
-        cancel-button-event-name="close">
+        cancel-button-event-name="close"
+        close-only="[[errorTitle_]]">
   <div id="centerContent" slot="content">
-    <div id="process-row">
-      <nearby-preview send-preview="[[sendPreview]]"></nearby-preview>
-      <div id="placeholder"
-          hidden="[[!isShareTargetsEmpty_(shareTargets_.*)]]">
-        $i18n{nearbyShareDiscoveryPagePlaceholder}
-      </div>
-      <template is="dom-if" if="[[!isShareTargetsEmpty_(shareTargets_.*)]]">
-        <iron-list items="[[shareTargets_]]" id="deviceList"
-            selected-item="{{selectedShareTarget}}"
-            on-selected-item-changed="onSelectedShareTargetChanged_"
-            preserve-focus selection-enabled
-            role="radiogroup" aria-live="polite"
-            aria-label="$i18n{nearbyShareDiscoveryPageSubtitle}">
-          <template>
-            <nearby-device tabindex$="[[tabIndex]]" share-target="[[item]]"
-                is-selected="[[selected]]"
-                role="radio"
-                aria-checked$="[[boolToString_(selected)]]">
-            </nearby-device>
-          </template>
-        </iron-list>
-      </template>
-    </div>
-    <div id="help">
-      <iron-icon id="infoIcon" icon="nearby20:info"></iron-icon>
-      <!-- TODO(vecore): add correct url for learn more link -->
-      <!-- TODO(crbug.com/1138445) link doesn't work -->
-      <div id="helpText"
-          inner-h-t-m-l="[[getAriaLabelledHelpText_('https://google.com')]]">
-      </div>
-    </div>
     <cr-lottie animation-url="nearby_share_pulse_animation.json"
         autoplay="true">
     </cr-lottie>
+    <div id="process-row">
+      <nearby-preview payload-preview="[[payloadPreview]]"
+          disabled="[[errorTitle_]]">
+      </nearby-preview>
+      <template is="dom-if" if="[[!errorTitle_]]" restamp>
+        <div id="placeholder"
+            hidden="[[!isShareTargetsEmpty_(shareTargets_.*)]]">
+          $i18n{nearbyShareDiscoveryPagePlaceholder}
+        </div>
+        <template is="dom-if" if="[[!isShareTargetsEmpty_(shareTargets_.*)]]">
+          <iron-list items="[[shareTargets_]]" id="deviceList"
+              selected-item="{{selectedShareTarget}}"
+              on-selected-item-changed="onSelectedShareTargetChanged_"
+              preserve-focus selection-enabled
+              role="radiogroup" aria-live="polite"
+              aria-label="$i18n{nearbyShareDiscoveryPageSubtitle}">
+            <template>
+              <nearby-device tabindex$="[[tabIndex]]" share-target="[[item]]"
+                  is-selected="[[selected]]"
+                  role="radio"
+                  aria-checked$="[[boolToString_(selected)]]">
+              </nearby-device>
+            </template>
+          </iron-list>
+        </template>
+      </template>
+    </div>
+    <!-- TODO(crbug.com/1149546) factor error section into its own component -->
+    <template is="dom-if" if="[[errorTitle_]]">
+      <div id="errorSection">
+        <iron-icon id="errorIcon" icon="nearby20:info"></iron-icon>
+        <div id="error" role="alert" aria-labelledby="errorTitle"
+            aria-describedby="errorDescription">
+          <div id="errorTitle" aria-hidden="true">[[errorTitle_]]</div>
+          <div id="errorDescription" aria-hidden="true">
+            [[errorDescription_]]
+          </div>
+        </div>
+      </div>
+    </template>
+    <template is="dom-if" if="[[!errorTitle_]]">
+      <div id="help">
+        <iron-icon id="infoIcon" icon="nearby20:info"></iron-icon>
+        <div id="helpText"
+            inner-h-t-m-l="[[getAriaLabelledHelpText_()]]">
+        </div>
+      </div>
+    </template>
   </div>
 </nearby-page-template>

@@ -15,10 +15,9 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/updater/updater_version.h"
+#include "chrome/updater/updater_branding.h"
 
 namespace updater {
 
@@ -79,7 +78,7 @@ bool LoadTokenFromFile(const base::FilePath& token_file_path,
     return false;
   }
 
-  *token = base::TrimWhitespaceASCII(token_value, base::TRIM_ALL).as_string();
+  *token = std::string(base::TrimWhitespaceASCII(token_value, base::TRIM_ALL));
   return true;
 }
 

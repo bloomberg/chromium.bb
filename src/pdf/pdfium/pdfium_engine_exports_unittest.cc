@@ -3,13 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/files/file_util.h"
-#include "base/optional.h"
 #include "base/path_service.h"
-#include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "gin/v8_initializer.h"
 #include "pdf/pdf.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -17,16 +14,6 @@
 namespace chrome_pdf {
 
 namespace {
-
-void LoadV8SnapshotData() {
-#if defined(V8_USE_EXTERNAL_STARTUP_DATA)
-  static bool loaded = false;
-  if (!loaded) {
-    loaded = true;
-    gin::V8Initializer::LoadV8Snapshot();
-  }
-#endif
-}
 
 class PDFiumEngineExportsTest : public testing::Test {
  public:
@@ -37,11 +24,6 @@ class PDFiumEngineExportsTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    LoadV8SnapshotData();
-
-    handle_ = std::make_unique<base::ThreadTaskRunnerHandle>(
-        base::MakeRefCounted<base::TestSimpleTaskRunner>());
-
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &pdf_data_dir_));
     pdf_data_dir_ = pdf_data_dir_.Append(FILE_PATH_LITERAL("pdf"))
                         .Append(FILE_PATH_LITERAL("test"))
@@ -51,7 +33,6 @@ class PDFiumEngineExportsTest : public testing::Test {
   const base::FilePath& pdf_data_dir() const { return pdf_data_dir_; }
 
  private:
-  std::unique_ptr<base::ThreadTaskRunnerHandle> handle_;
   base::FilePath pdf_data_dir_;
 };
 
@@ -86,7 +67,7 @@ TEST_F(PDFiumEngineExportsTest, GetPDFPageSizeByIndex) {
   ASSERT_TRUE(GetPDFDocInfo(pdf_span, &page_count, nullptr));
   ASSERT_EQ(2, page_count);
   for (int page_number = 0; page_number < page_count; ++page_number) {
-    base::Optional<gfx::SizeF> page_size =
+    absl::optional<gfx::SizeF> page_size =
         GetPDFPageSizeByIndex(pdf_span, page_number);
     ASSERT_TRUE(page_size.has_value());
     EXPECT_EQ(gfx::SizeF(200, 200), page_size.value());
@@ -128,7 +109,7 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfPagesToNupPdf) {
   ASSERT_TRUE(GetPDFDocInfo(output_pdf_span, &page_count, nullptr));
   ASSERT_EQ(1, page_count);
 
-  base::Optional<gfx::SizeF> page_size =
+  absl::optional<gfx::SizeF> page_size =
       GetPDFPageSizeByIndex(output_pdf_span, 0);
   ASSERT_TRUE(page_size.has_value());
   EXPECT_EQ(gfx::SizeF(792, 612), page_size.value());
@@ -156,7 +137,7 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfDocumentToNupPdf) {
   ASSERT_TRUE(GetPDFDocInfo(output_pdf_span, &page_count, nullptr));
   ASSERT_EQ(2, page_count);
   for (int page_number = 0; page_number < page_count; ++page_number) {
-    base::Optional<gfx::SizeF> page_size =
+    absl::optional<gfx::SizeF> page_size =
         GetPDFPageSizeByIndex(output_pdf_span, page_number);
     ASSERT_TRUE(page_size.has_value());
     EXPECT_EQ(gfx::SizeF(612, 792), page_size.value());

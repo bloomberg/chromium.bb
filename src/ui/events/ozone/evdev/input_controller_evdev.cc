@@ -7,21 +7,27 @@
 #include <linux/input.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/events/devices/device_data_manager.h"
+#include "ui/events/devices/stylus_state.h"
 #include "ui/events/ozone/evdev/input_device_factory_evdev_proxy.h"
 #include "ui/events/ozone/evdev/keyboard_evdev.h"
 #include "ui/events/ozone/evdev/mouse_button_map_evdev.h"
 
 namespace ui {
 
-InputControllerEvdev::InputControllerEvdev(KeyboardEvdev* keyboard,
-                                           MouseButtonMapEvdev* button_map)
-    : keyboard_(keyboard), button_map_(button_map) {}
+InputControllerEvdev::InputControllerEvdev(
+    KeyboardEvdev* keyboard,
+    MouseButtonMapEvdev* mouse_button_map,
+    MouseButtonMapEvdev* pointing_stick_button_map)
+    : keyboard_(keyboard),
+      mouse_button_map_(mouse_button_map),
+      pointing_stick_button_map_(pointing_stick_button_map) {}
 
 InputControllerEvdev::~InputControllerEvdev() {
 }
@@ -167,8 +173,26 @@ void InputControllerEvdev::SetMouseScrollSensitivity(int value) {
   ScheduleUpdateDeviceSettings();
 }
 
+void InputControllerEvdev::SetPointingStickSensitivity(int value) {
+  input_device_settings_.pointing_stick_sensitivity = value;
+  ScheduleUpdateDeviceSettings();
+}
+
+void InputControllerEvdev::SetPointingStickAcceleration(bool enabled) {
+  if (is_mouse_acceleration_suspended()) {
+    stored_acceleration_settings_->pointing_stick = enabled;
+    return;
+  }
+  input_device_settings_.pointing_stick_acceleration_enabled = enabled;
+  ScheduleUpdateDeviceSettings();
+}
+
 void InputControllerEvdev::SetPrimaryButtonRight(bool right) {
-  button_map_->SetPrimaryButtonRight(right);
+  mouse_button_map_->SetPrimaryButtonRight(right);
+}
+
+void InputControllerEvdev::SetPointingStickPrimaryButtonRight(bool right) {
+  pointing_stick_button_map_->SetPrimaryButtonRight(right);
 }
 
 void InputControllerEvdev::SetMouseReverseScroll(bool enabled) {
@@ -177,8 +201,8 @@ void InputControllerEvdev::SetMouseReverseScroll(bool enabled) {
 }
 
 void InputControllerEvdev::SetMouseAcceleration(bool enabled) {
-  if (mouse_acceleration_suspended_) {
-    stored_mouse_acceleration_setting_ = enabled;
+  if (is_mouse_acceleration_suspended()) {
+    stored_acceleration_settings_->mouse = enabled;
     return;
   }
   input_device_settings_.mouse_acceleration_enabled = enabled;
@@ -187,17 +211,22 @@ void InputControllerEvdev::SetMouseAcceleration(bool enabled) {
 
 void InputControllerEvdev::SuspendMouseAcceleration() {
   // multiple calls to suspend are currently not supported.
-  DCHECK(!mouse_acceleration_suspended_);
-  stored_mouse_acceleration_setting_ =
+  DCHECK(!is_mouse_acceleration_suspended());
+  stored_acceleration_settings_ =
+      std::make_unique<StoredAccelerationSettings>();
+  stored_acceleration_settings_->mouse =
       input_device_settings_.mouse_acceleration_enabled;
-  mouse_acceleration_suspended_ = true;
+  stored_acceleration_settings_->pointing_stick =
+      input_device_settings_.pointing_stick_acceleration_enabled;
   input_device_settings_.mouse_acceleration_enabled = false;
+  input_device_settings_.pointing_stick_acceleration_enabled = false;
   ScheduleUpdateDeviceSettings();
 }
 
 void InputControllerEvdev::EndMouseAccelerationSuspension() {
-  mouse_acceleration_suspended_ = false;
-  SetMouseAcceleration(stored_mouse_acceleration_setting_);
+  auto stored_settings = std::move(stored_acceleration_settings_);
+  SetMouseAcceleration(stored_settings->mouse);
+  SetPointingStickAcceleration(stored_settings->pointing_stick);
 }
 
 void InputControllerEvdev::SetMouseScrollAcceleration(bool enabled) {
@@ -218,6 +247,14 @@ void InputControllerEvdev::SetTouchpadScrollAcceleration(bool enabled) {
 void InputControllerEvdev::SetTapToClickPaused(bool state) {
   input_device_settings_.tap_to_click_paused = state;
   ScheduleUpdateDeviceSettings();
+}
+
+void InputControllerEvdev::GetStylusSwitchState(
+    GetStylusSwitchStateReply reply) {
+  if (input_device_factory_)
+    input_device_factory_->GetStylusSwitchState(std::move(reply));
+  else
+    std::move(reply).Run(ui::StylusState::REMOVED);
 }
 
 void InputControllerEvdev::GetTouchDeviceStatus(

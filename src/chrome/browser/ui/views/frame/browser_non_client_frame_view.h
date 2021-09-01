@@ -5,12 +5,13 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_types.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -32,11 +33,15 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
                                   public ProfileAttributesStorage::Observer,
                                   public TabStripObserver {
  public:
+  METADATA_HEADER(BrowserNonClientFrameView);
   // The minimum total height users should have to use as a drag handle to move
   // the window with.
   static constexpr int kMinimumDragHeight = 8;
 
   BrowserNonClientFrameView(BrowserFrame* frame, BrowserView* browser_view);
+  BrowserNonClientFrameView(const BrowserNonClientFrameView&) = delete;
+  BrowserNonClientFrameView& operator=(const BrowserNonClientFrameView&) =
+      delete;
   ~BrowserNonClientFrameView() override;
 
   BrowserView* browser_view() const { return browser_view_; }
@@ -115,7 +120,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // For non-transparent windows, returns the background tab image resource ID
   // if the image has been customized, directly or indirectly, by the theme.
-  base::Optional<int> GetCustomBackgroundId(
+  absl::optional<int> GetCustomBackgroundId(
       BrowserFrameActiveState active_state) const;
 
   // Updates the throbber.
@@ -152,13 +157,11 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // views::NonClientFrameView:
   void ChildPreferredSizeChanged(views::View* child) override;
-  bool DoesIntersectRect(const views::View* target,
-                         const gfx::Rect& rect) const override;
 
   // ProfileAttributesStorage::Observer:
   void OnProfileAdded(const base::FilePath& profile_path) override;
   void OnProfileWasRemoved(const base::FilePath& profile_path,
-                           const base::string16& profile_name) override;
+                           const std::u16string& profile_name) override;
   void OnProfileAvatarChanged(const base::FilePath& profile_path) override;
   void OnProfileHighResAvatarLoaded(
       const base::FilePath& profile_path) override;
@@ -193,15 +196,13 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Menu button and page status icons. Only used by web-app windows.
   WebAppFrameToolbarView* web_app_frame_toolbar_ = nullptr;
 
-  std::unique_ptr<views::Widget::PaintAsActiveCallbackList::Subscription>
-      paint_as_active_subscription_ =
-          frame_->RegisterPaintAsActiveChangedCallback(base::BindRepeating(
-              &BrowserNonClientFrameView::PaintAsActiveChanged,
-              base::Unretained(this)));
+  base::CallbackListSubscription paint_as_active_subscription_ =
+      frame_->RegisterPaintAsActiveChangedCallback(
+          base::BindRepeating(&BrowserNonClientFrameView::PaintAsActiveChanged,
+                              base::Unretained(this)));
 
-  ScopedObserver<TabStrip, TabStripObserver> tab_strip_observer_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameView);
+  base::ScopedObservation<TabStrip, TabStripObserver> tab_strip_observation_{
+      this};
 };
 
 namespace chrome {

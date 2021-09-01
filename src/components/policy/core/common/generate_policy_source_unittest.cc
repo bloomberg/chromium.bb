@@ -8,6 +8,7 @@
 
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/schema.h"
 #include "components/policy/policy_constants.h"
@@ -20,7 +21,7 @@ namespace policy {
 
 namespace {
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Checks if two schemas are the same or not. Note that this function doesn't
 // consider restrictions on integers and strings nor pattern properties.
 bool IsSameSchema(Schema a, Schema b) {
@@ -154,7 +155,7 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
   ASSERT_EQ(base::Value::Type::STRING, subschema.type());
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   subschema = schema.GetKnownProperty(key::kPowerManagementIdleSettings);
   ASSERT_TRUE(subschema.valid());
 
@@ -193,7 +194,7 @@ TEST(GeneratePolicySource, PolicyDetails) {
   EXPECT_EQ(0u, details->max_external_data_size);
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   details = GetChromePolicyDetails(key::kDevicePolicyRefreshRate);
   ASSERT_TRUE(details);
   EXPECT_FALSE(details->is_deprecated);
@@ -227,6 +228,60 @@ TEST(GeneratePolicySource, SetEnterpriseDefaults) {
       policy_map.GetValue(key::kChromeOsMultiProfileUserBehavior);
   expected = base::Value("test_value");
   EXPECT_TRUE(expected.Equals(multiprof_behavior));
+}
+
+TEST(GeneratePolicySource, SetEnterpriseSystemWideDefaults) {
+  PolicyMap policy_map;
+
+  // If policy not configured yet, set the enterprise system-wide default.
+  SetEnterpriseUsersSystemWideDefaults(&policy_map);
+
+  const base::Value* pin_unlock_autosubmit_enabled =
+      policy_map.GetValue(key::kPinUnlockAutosubmitEnabled);
+  ASSERT_TRUE(pin_unlock_autosubmit_enabled);
+  EXPECT_FALSE(pin_unlock_autosubmit_enabled->GetBool());
+  const base::Value* allow_dinosaur_easter_egg =
+      policy_map.GetValue(key::kAllowDinosaurEasterEgg);
+  EXPECT_EQ(nullptr, allow_dinosaur_easter_egg);
+
+  // If policy already configured, it's not changed to enterprise defaults.
+  policy_map.Set(key::kPinUnlockAutosubmitEnabled, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
+                 nullptr);
+  SetEnterpriseUsersSystemWideDefaults(&policy_map);
+  pin_unlock_autosubmit_enabled =
+      policy_map.GetValue(key::kPinUnlockAutosubmitEnabled);
+  ASSERT_TRUE(pin_unlock_autosubmit_enabled);
+  EXPECT_TRUE(pin_unlock_autosubmit_enabled->GetBool());
+  allow_dinosaur_easter_egg = policy_map.GetValue(key::kAllowDinosaurEasterEgg);
+  EXPECT_EQ(nullptr, allow_dinosaur_easter_egg);
+}
+
+TEST(GeneratePolicySource, SetEnterpriseProfileDefaults) {
+  PolicyMap policy_map;
+
+  // If policy not configured yet, set the enterprise profile default.
+  SetEnterpriseUsersProfileDefaults(&policy_map);
+
+  const base::Value* allow_dinosaur_easter_egg =
+      policy_map.GetValue(key::kAllowDinosaurEasterEgg);
+  ASSERT_TRUE(allow_dinosaur_easter_egg);
+  EXPECT_FALSE(allow_dinosaur_easter_egg->GetBool());
+  const base::Value* pin_unlock_autosubmit_enabled =
+      policy_map.GetValue(key::kPinUnlockAutosubmitEnabled);
+  EXPECT_EQ(nullptr, pin_unlock_autosubmit_enabled);
+
+  // If policy already configured, it's not changed to enterprise defaults.
+  policy_map.Set(key::kAllowDinosaurEasterEgg, POLICY_LEVEL_MANDATORY,
+                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, base::Value(true),
+                 nullptr);
+  SetEnterpriseUsersProfileDefaults(&policy_map);
+  allow_dinosaur_easter_egg = policy_map.GetValue(key::kAllowDinosaurEasterEgg);
+  ASSERT_TRUE(allow_dinosaur_easter_egg);
+  EXPECT_TRUE(allow_dinosaur_easter_egg->GetBool());
+  pin_unlock_autosubmit_enabled =
+      policy_map.GetValue(key::kPinUnlockAutosubmitEnabled);
+  EXPECT_EQ(nullptr, pin_unlock_autosubmit_enabled);
 }
 #endif
 

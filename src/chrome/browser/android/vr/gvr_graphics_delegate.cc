@@ -14,6 +14,7 @@
 #include "chrome/browser/android/vr/gvr_util.h"
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/vr_geometry_util.h"
+#include "device/vr/android/web_xr_presentation_state.h"
 #include "device/vr/vr_gl_util.h"
 #include "third_party/skia/include/core/SkImageEncoder.h"
 #include "third_party/skia/include/core/SkPixmap.h"
@@ -159,12 +160,20 @@ void GvrGraphicsDelegate::Init(
 
 void GvrGraphicsDelegate::InitializeGl(gfx::AcceleratedWidget window,
                                        bool start_in_webxr_mode) {
+  // We can only share native GL resources with GVR, and GVR doesn't support
+  // ANGLE, so disable it.
+  // TODO(crbug.com/1170580): support ANGLE with cardboard?
+  gl::init::DisableANGLE();
+
   if (gl::GetGLImplementation() == gl::kGLImplementationNone &&
       !gl::init::InitializeGLOneOff()) {
     LOG(ERROR) << "gl::init::InitializeGLOneOff failed";
     browser_->ForceExitVr();
     return;
   }
+
+  DCHECK(gl::GetGLImplementation() != gl::kGLImplementationEGLANGLE);
+
   scoped_refptr<gl::GLSurface> surface;
   if (window) {
     DCHECK(!surfaceless_rendering_);
@@ -655,7 +664,7 @@ void GvrGraphicsDelegate::GetContentQuadDrawParams(Transform* uv_transform,
 void GvrGraphicsDelegate::GetWebXrDrawParams(int* texture_id,
                                              Transform* uv_transform) {
   if (webxr_use_shared_buffer_draw_) {
-    WebXrSharedBuffer* buffer =
+    device::WebXrSharedBuffer* buffer =
         webxr_->GetProcessingFrame()->shared_buffer.get();
     CHECK(buffer);
     *texture_id = buffer->local_texture;

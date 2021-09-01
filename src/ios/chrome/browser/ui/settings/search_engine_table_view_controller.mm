@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/settings/cells/search_engine_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -81,10 +82,8 @@ const char kUmaSelectDefaultSearchEngine[] =
 
 - (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
   DCHECK(browserState);
-  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
-                               ? UITableViewStylePlain
-                               : UITableViewStyleGrouped;
-  self = [super initWithStyle:style];
+
+  self = [super initWithStyle:ChromeTableViewStyle()];
   if (self) {
     _templateURLService =
         ios::TemplateURLServiceFactory::GetForBrowserState(browserState);
@@ -162,6 +161,12 @@ const char kUmaSelectDefaultSearchEngine[] =
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  // With no header on first appearance, UITableView adds a 35 points space at
+  // the beginning of the table view. This space remains after this table view
+  // reloads with headers. Setting a small tableHeaderView avoids this.
+  self.tableView.tableHeaderView =
+      [[UIView alloc] initWithFrame:CGRectMake(0, 0, 0, CGFLOAT_MIN)];
 
   self.tableView.allowsMultipleSelectionDuringEditing = YES;
   self.tableView.separatorInset =
@@ -447,7 +452,7 @@ const char kUmaSelectDefaultSearchEngine[] =
     // favicons may be fetched from Google server which doesn't suppoprt
     // icon URL.
     std::string emptyPageUrl = templateURL->url_ref().ReplaceSearchTerms(
-        TemplateURLRef::SearchTermsArgs(base::string16()),
+        TemplateURLRef::SearchTermsArgs(std::u16string()),
         _templateURLService->search_terms_data());
     item.URL = GURL(emptyPageUrl);
   } else {

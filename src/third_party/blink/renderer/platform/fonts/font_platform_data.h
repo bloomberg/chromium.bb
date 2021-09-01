@@ -133,7 +133,7 @@ class PLATFORM_EXPORT FontPlatformData {
 
   void SetupSkFont(SkFont*,
                    float device_scale_factor = 1,
-                   const Font* = nullptr) const;
+                   const FontDescription* = nullptr) const;
 
   // Computes a digest from the typeface. The digest only depends on the
   // underlying font itself, and does not vary by the style (size, weight,
@@ -183,4 +183,4 @@ class PLATFORM_EXPORT FontPlatformData {
 
 }  // namespace blink
 
-#endif  // ifdef FontPlatformData_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_FONTS_FONT_PLATFORM_DATA_H_

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 
 import {$, getBrowserAndPages, step} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
@@ -68,18 +68,18 @@ describe('The Console Tab', async () => {
 
     await step('check that all console messages appear', async () => {
       assert.deepEqual(messages, [
-        'console-filter.html:9 1topGroup: log1()',
+        'console-filter.html:10 1topGroup: log1()',
         'log-source.js:6 2topGroup: log2()',
-        'console-filter.html:9 3topGroup: log1()',
-        'console-filter.html:16 outerGroup',
-        'console-filter.html:9 1outerGroup: log1()',
+        'console-filter.html:10 3topGroup: log1()',
+        'console-filter.html:17 outerGroup',
+        'console-filter.html:10 1outerGroup: log1()',
         'log-source.js:6 2outerGroup: log2()',
-        'console-filter.html:20 innerGroup',
-        'console-filter.html:9 1innerGroup: log1()',
+        'console-filter.html:21 innerGroup',
+        'console-filter.html:10 1innerGroup: log1()',
         'log-source.js:6 2innerGroup: log2()',
-        'console-filter.html:29 Hello 1',
-        'console-filter.html:30 Hello 2',
-        'console-filter.html:33 end',
+        'console-filter.html:30 Hello 1',
+        'console-filter.html:31 Hello 2',
+        'console-filter.html:34 end',
       ]);
     });
   });
@@ -98,19 +98,19 @@ describe('The Console Tab', async () => {
 
     await step('check that all console messages appear', async () => {
       assert.deepEqual(messages, [
-        'console-filter.html:9 1topGroup: log1()',
+        'console-filter.html:10 1topGroup: log1()',
         'log-source.js:6 2topGroup: log2()',
-        'console-filter.html:9 3topGroup: log1()',
-        'console-filter.html:16 outerGroup',
-        'console-filter.html:9 1outerGroup: log1()',
+        'console-filter.html:10 3topGroup: log1()',
+        'console-filter.html:17 outerGroup',
+        'console-filter.html:10 1outerGroup: log1()',
         'log-source.js:6 2outerGroup: log2()',
-        'console-filter.html:20 innerGroup',
-        'console-filter.html:9 1innerGroup: log1()',
+        'console-filter.html:21 innerGroup',
+        'console-filter.html:10 1innerGroup: log1()',
         'log-source.js:6 2innerGroup: log2()',
-        'console-filter.html:29 Hello 1',
-        'console-filter.html:30 Hello 2',
-        'console-filter.html:32 verbose debug message',
-        'console-filter.html:33 end',
+        'console-filter.html:30 Hello 1',
+        'console-filter.html:31 Hello 2',
+        'console-filter.html:33 verbose debug message',
+        'console-filter.html:34 end',
       ]);
     });
   });
@@ -118,7 +118,7 @@ describe('The Console Tab', async () => {
   it('can exclude messages from a source url', async () => {
     const {frontend} = getBrowserAndPages();
     let sourceUrls: string[];
-    let uniqueUrls: Set<string>;
+    let uniqueUrls: Set<string> = new Set();
 
     await step('navigate to console-filter.html and wait for console messages', async () => {
       await getConsoleMessages('console-filter');
@@ -133,7 +133,7 @@ describe('The Console Tab', async () => {
       assert.isNotEmpty(uniqueUrls);
     });
 
-    for (const urlToExclude of uniqueUrls!) {
+    for (const urlToExclude of uniqueUrls) {
       const filter = createUrlFilter(urlToExclude);
       const expectedMessageFilter: MessageCheck = msg => {
         return msg.indexOf(urlToExclude) === -1;
@@ -149,7 +149,7 @@ describe('The Console Tab', async () => {
   it('can include messages from a given source url', async () => {
     const {frontend} = getBrowserAndPages();
     let sourceUrls: string[];
-    let uniqueUrls: Set<string>;
+    let uniqueUrls: Set<string> = new Set();
 
     await step('navigate to console-filter.html and wait for console messages', async () => {
       await getConsoleMessages('console-filter');
@@ -164,7 +164,7 @@ describe('The Console Tab', async () => {
       assert.isNotEmpty(uniqueUrls);
     });
 
-    for (const urlToKeep of uniqueUrls!) {
+    for (const urlToKeep of uniqueUrls) {
       const filter = urlToKeep;
       const expectedMessageFilter: MessageCheck = msg => {
         return msg.indexOf(urlToKeep) !== -1;

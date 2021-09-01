@@ -9,6 +9,8 @@
 #include <set>
 #include <string>
 
+#include "base/containers/contains.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/trace_event/traced_value.h"
 #include "content/browser/renderer_host/frame_tree.h"
@@ -17,6 +19,7 @@
 #include "content/test/test_web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 
 namespace content {
@@ -99,11 +102,12 @@ class FrameTreeNodeBlameContextTest : public RenderViewHostImplTestHarness {
       int child_id = self_id * 10 + child_num;
       tree()->AddFrame(
           node->current_frame_host(), process_id(), child_id,
-          TestRenderFrameHost::CreateStubInterfaceProviderReceiver(),
+          TestRenderFrameHost::CreateStubFrameRemote(),
           TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver(),
+          TestRenderFrameHost::CreateStubPolicyContainerBindParams(),
           blink::mojom::TreeScopeType::kDocument, std::string(),
           base::StringPrintf("uniqueName%d", child_id), false,
-          base::UnguessableToken::Create(), base::UnguessableToken::Create(),
+          blink::LocalFrameToken(), base::UnguessableToken::Create(),
           blink::FramePolicy(), blink::mojom::FrameOwnerProperties(), false,
           blink::mojom::FrameOwnerElementType::kIframe);
       FrameTreeNode* child = node->child_at(child_num - 1);

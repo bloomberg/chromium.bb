@@ -5,10 +5,8 @@
 #include "components/policy/core/common/cloud/dmserver_job_configurations.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
-#include "components/policy/core/common/cloud/dm_auth.h"
 #include "net/base/url_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -101,8 +99,8 @@ DMServerJobConfiguration::DMServerJobConfiguration(
     JobType type,
     const std::string& client_id,
     bool critical,
-    std::unique_ptr<DMAuth> auth_data,
-    base::Optional<std::string> oauth_token,
+    DMAuth auth_data,
+    absl::optional<std::string> oauth_token,
     scoped_refptr<network::SharedURLLoaderFactory> factory,
     Callback callback)
     : JobConfigurationBase(type, std::move(auth_data), oauth_token, factory),
@@ -126,8 +124,8 @@ DMServerJobConfiguration::DMServerJobConfiguration(
     JobType type,
     CloudPolicyClient* client,
     bool critical,
-    std::unique_ptr<DMAuth> auth_data,
-    base::Optional<std::string> oauth_token,
+    DMAuth auth_data,
+    absl::optional<std::string> oauth_token,
     Callback callback)
     : DMServerJobConfiguration(client->service(),
                                type,
@@ -282,8 +280,8 @@ GURL DMServerJobConfiguration::GetURL(int last_error) const {
 RegistrationJobConfiguration::RegistrationJobConfiguration(
     JobType type,
     CloudPolicyClient* client,
-    std::unique_ptr<DMAuth> auth_data,
-    base::Optional<std::string> oauth_token,
+    DMAuth auth_data,
+    absl::optional<std::string> oauth_token,
     Callback callback)
     : DMServerJobConfiguration(type,
                                client,

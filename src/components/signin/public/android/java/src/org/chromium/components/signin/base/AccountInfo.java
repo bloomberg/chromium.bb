@@ -5,6 +5,7 @@
 package org.chromium.components.signin.base;
 
 import android.graphics.Bitmap;
+import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
@@ -17,14 +18,32 @@ import org.chromium.base.annotations.CalledByNative;
  * This class has a native counterpart called AccountInfo.
  */
 public class AccountInfo extends CoreAccountInfo {
+    private final String mFullName;
+    private final String mGivenName;
     private final @Nullable Bitmap mAccountImage;
 
     @VisibleForTesting
     @CalledByNative
-    public AccountInfo(
-            CoreAccountId id, String email, String gaiaId, @Nullable Bitmap accountImage) {
+    public AccountInfo(CoreAccountId id, String email, String gaiaId, String fullName,
+            String givenName, @Nullable Bitmap accountImage) {
         super(id, email, gaiaId);
+        mFullName = fullName;
+        mGivenName = givenName;
         mAccountImage = accountImage;
+    }
+
+    /**
+     * @return Full name of the account.
+     */
+    public String getFullName() {
+        return mFullName;
+    }
+
+    /**
+     * @return Given name of the account.
+     */
+    public String getGivenName() {
+        return mGivenName;
     }
 
     /**
@@ -33,5 +52,14 @@ public class AccountInfo extends CoreAccountInfo {
      */
     public @Nullable Bitmap getAccountImage() {
         return mAccountImage;
+    }
+
+    /**
+     * @return Whether the {@link AccountInfo} has any valid displayable information.
+     * The displayable information are full name, given name and avatar.
+     */
+    public boolean hasDisplayableInfo() {
+        return !TextUtils.isEmpty(mFullName) || !TextUtils.isEmpty(mGivenName)
+                || mAccountImage != null;
     }
 }

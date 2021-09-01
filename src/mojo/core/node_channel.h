@@ -12,6 +12,7 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
+#include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -20,11 +21,13 @@
 #include "mojo/core/connection_params.h"
 #include "mojo/core/embedder/process_error_callback.h"
 #include "mojo/core/ports/name.h"
-#include "mojo/core/scoped_process_handle.h"
 #include "mojo/core/system_impl_export.h"
 
 namespace mojo {
 namespace core {
+
+constexpr uint64_t kNodeCapabilityNone = 0;
+constexpr uint64_t kNodeCapabilitySupportsUpgrade = 1;
 
 // Wraps a Channel to send and receive Node control messages.
 class MOJO_SYSTEM_IMPL_EXPORT NodeChannel
@@ -48,7 +51,8 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeChannel
                                      PlatformHandle broker_channel) = 0;
     virtual void OnAcceptBrokerClient(const ports::NodeName& from_node,
                                       const ports::NodeName& broker_name,
-                                      PlatformHandle broker_channel) = 0;
+                                      PlatformHandle broker_channel,
+                                      const uint64_t broker_capabilities) = 0;
     virtual void OnEventMessage(const ports::NodeName& from_node,
                                 Channel::MessagePtr message) = 0;
     virtual void OnRequestPortMerge(const ports::NodeName& from_node,
@@ -58,7 +62,8 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeChannel
                                        const ports::NodeName& name) = 0;
     virtual void OnIntroduce(const ports::NodeName& from_node,
                              const ports::NodeName& name,
-                             PlatformHandle channel_handle) = 0;
+                             PlatformHandle channel_handle,
+                             const uint64_t remote_capabilities) = 0;
     virtual void OnBroadcast(const ports::NodeName& from_node,
                              Channel::MessagePtr message) = 0;
 #if defined(OS_WIN)
@@ -90,7 +95,9 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeChannel
                                                 void** payload,
                                                 size_t num_handles);
 
-  static void GetEventMessageData(Channel::Message* message,
+  // Retrieves address and size of an Event message's underlying message data.
+  // Returns `false` if the message is not a valid Event message.
+  static bool GetEventMessageData(Channel::Message& message,
                                   void** data,
                                   size_t* num_data_bytes);
 
@@ -111,9 +118,9 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeChannel
   // Returns whether the channel has a bad message handler.
   bool HasBadMessageHandler() { return !process_error_callback_.is_null(); }
 
-  void SetRemoteProcessHandle(ScopedProcessHandle process_handle);
+  void SetRemoteProcessHandle(base::Process process_handle);
   bool HasRemoteProcessHandle();
-  ScopedProcessHandle CloneRemoteProcessHandle();
+  base::Process CloneRemoteProcessHandle();
 
   // Used for context in Delegate calls (via |from_node| arguments.)
   void SetRemoteNodeName(const ports::NodeName& name);
@@ -126,18 +133,29 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeChannel
                   const ports::NodeName& token,
                   const ports::PortName& port_name);
   void AddBrokerClient(const ports::NodeName& client_name,
-                       ScopedProcessHandle process_handle);
+                       base::Process process_handle);
   void BrokerClientAdded(const ports::NodeName& client_name,
                          PlatformHandle broker_channel);
   void AcceptBrokerClient(const ports::NodeName& broker_name,
-                          PlatformHandle broker_channel);
+                          PlatformHandle broker_channel,
+                          const uint64_t broker_capabilities);
   void RequestPortMerge(const ports::PortName& connector_port_name,
                         const std::string& token);
   void RequestIntroduction(const ports::NodeName& name);
-  void Introduce(const ports::NodeName& name, PlatformHandle channel_handle);
+  void Introduce(const ports::NodeName& name,
+                 PlatformHandle channel_handle,
+                 uint64_t capabilities);
   void SendChannelMessage(Channel::MessagePtr message);
   void Broadcast(Channel::MessagePtr message);
   void BindBrokerHost(PlatformHandle broker_host_handle);
+
+  uint64_t RemoteCapabilities() const;
+  bool HasRemoteCapability(const uint64_t capability) const;
+  void SetRemoteCapabilities(const uint64_t capability);
+
+  uint64_t LocalCapabilities() const;
+  bool HasLocalCapability(const uint64_t capability) const;
+  void SetLocalCapabilities(const uint64_t capability);
 
 #if defined(OS_WIN)
   // Relay the message to the specified node via this channel.  This is used to
@@ -153,6 +171,8 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeChannel
   void EventMessageFromRelay(const ports::NodeName& source,
                              Channel::MessagePtr message);
 #endif
+
+  void OfferChannelUpgrade();
 
  private:
   friend class base::RefCountedDeleteOnSequence<NodeChannel>;
@@ -181,6 +201,10 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeChannel
 
   void WriteChannelMessage(Channel::MessagePtr message);
 
+  // This method is responsible for setting up the default set of capabilities
+  // for this channel.
+  void InitializeLocalCapabilities();
+
   Delegate* const delegate_;
   const ProcessErrorCallback process_error_callback_;
 
@@ -190,8 +214,11 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeChannel
   // Must only be accessed from the owning task runner's thread.
   ports::NodeName remote_node_name_;
 
+  uint64_t remote_capabilities_ = kNodeCapabilityNone;
+  uint64_t local_capabilities_ = kNodeCapabilityNone;
+
   base::Lock remote_process_handle_lock_;
-  ScopedProcessHandle remote_process_handle_;
+  base::Process remote_process_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(NodeChannel);
 };

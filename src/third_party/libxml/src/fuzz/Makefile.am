@@ -1,6 +1,8 @@
 AUTOMAKE_OPTIONS = -Wno-syntax
 EXTRA_PROGRAMS = genSeed html regexp schema uri xml xpath
 check_PROGRAMS = testFuzzer
+EXTRA_DIST = html.dict regexp.dict schema.dict xml.dict xpath.dict \
+	     seed/uri
 CLEANFILES = $(EXTRA_PROGRAMS)
 AM_CPPFLAGS = -I$(top_srcdir)/include
 DEPENDENCIES = $(top_builddir)/libxml2.la
@@ -72,7 +74,7 @@ fuzz-html: html$(EXEEXT) seed/html.stamp
 	./html$(EXEEXT) \
 	    -dict=html.dict \
 	    -max_len=1000000 \
-	    -timeout=20 \
+	    -timeout=10 \
 	    corpus/html seed/html
 
 # Regexp fuzzer
@@ -97,7 +99,7 @@ fuzz-uri: uri$(EXEEXT)
 	@mkdir -p corpus/uri
 	./uri$(EXEEXT) \
 	    -max_len=10000 \
-	    -timeout=5 \
+	    -timeout=2 \
 	    corpus/uri $(srcdir)/seed/uri
 
 # XML Schema fuzzer

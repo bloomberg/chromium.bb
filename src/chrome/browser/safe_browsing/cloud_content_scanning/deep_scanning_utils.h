@@ -124,8 +124,8 @@ bool FileTypeSupportedForDlp(const base::FilePath& path);
 
 // Helper function to make ContentAnalysisResponses for tests.
 enterprise_connectors::ContentAnalysisResponse
-SimpleContentAnalysisResponseForTesting(base::Optional<bool> dlp_success,
-                                        base::Optional<bool> malware_success);
+SimpleContentAnalysisResponseForTesting(absl::optional<bool> dlp_success,
+                                        absl::optional<bool> malware_success);
 
 // Helper function to convert a EventResult to a string that.  The format of
 // string returned is processed by the sever.
@@ -142,6 +142,19 @@ std::string BinaryUploadServiceResultToString(
 // |identity_manager| is null then the empty string is returned.
 std::string GetProfileEmail(Profile* profile);
 std::string GetProfileEmail(signin::IdentityManager* identity_manager);
+
+// Helper enum and function to manipulate crash keys relevant to scanning.
+// If a key would be set to 0, it is unset.
+enum class ScanningCrashKey {
+  PENDING_FILE_UPLOADS,
+  PENDING_TEXT_UPLOADS,
+  PENDING_FILE_DOWNLOADS,
+  TOTAL_FILE_UPLOADS,
+  TOTAL_TEXT_UPLOADS,
+  TOTAL_FILE_DOWNLOADS
+};
+void IncrementCrashKey(ScanningCrashKey key, int delta = 1);
+void DecrementCrashKey(ScanningCrashKey key, int delta = 1);
 
 }  // namespace safe_browsing
 

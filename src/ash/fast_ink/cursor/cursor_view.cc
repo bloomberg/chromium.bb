@@ -9,6 +9,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/paint/paint_canvas.h"
 #include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
@@ -205,8 +206,7 @@ void CursorView::OnTimerTick() {
 
     // Create directional blur filter for |sigma|.
     motion_blur_filter_ = sk_make_sp<cc::BlurPaintFilter>(
-        sigma, 0.f, SkBlurImageFilter::TileMode::kClampToBlack_TileMode,
-        nullptr);
+        sigma, 0.f, SkTileMode::kDecal, nullptr);
 
     // Compute blur offset.
     motion_blur_offset_ =

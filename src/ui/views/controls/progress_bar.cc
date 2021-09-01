@@ -17,11 +17,12 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -31,13 +32,20 @@ namespace {
 // In DP, the amount to round the corners of the progress bar (both bg and
 // fg, aka slice).
 constexpr int kCornerRadius = 3;
+constexpr int kSmallCornerRadius = 1;
 
-// Adds a rectangle to the path. The corners will be rounded if there is room.
+// Adds a rectangle to the path. The corners will be rounded with regular corner
+// radius if the progress bar height is larger than the regular corner radius.
+// Otherwise the corners will be rounded with the small corner radius if there
+// is room for it.
 void AddPossiblyRoundRectToPath(const gfx::Rect& rectangle,
                                 bool allow_round_corner,
                                 SkPath* path) {
-  if (!allow_round_corner || rectangle.height() < kCornerRadius) {
+  if (!allow_round_corner || rectangle.height() < kSmallCornerRadius) {
     path->addRect(gfx::RectToSkRect(rectangle));
+  } else if (rectangle.height() < kCornerRadius) {
+    path->addRoundRect(gfx::RectToSkRect(rectangle), kSmallCornerRadius,
+                       kSmallCornerRadius);
   } else {
     path->addRoundRect(gfx::RectToSkRect(rectangle), kCornerRadius,
                        kCornerRadius);
@@ -257,8 +265,8 @@ void ProgressBar::MaybeNotifyAccessibilityValueChanged() {
 }
 
 BEGIN_METADATA(ProgressBar, View)
-ADD_PROPERTY_METADATA(SkColor, ForegroundColor)
-ADD_PROPERTY_METADATA(SkColor, BackgroundColor)
+ADD_PROPERTY_METADATA(SkColor, ForegroundColor, ui::metadata::SkColorConverter)
+ADD_PROPERTY_METADATA(SkColor, BackgroundColor, ui::metadata::SkColorConverter)
 END_METADATA
 
 }  // namespace views

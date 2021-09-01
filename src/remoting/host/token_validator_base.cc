@@ -300,25 +300,22 @@ std::string TokenValidatorBase::ProcessResponse(int net_result) {
           ? data_.substr(sizeof(kJsonSafetyPrefix) - 1)
           : data_;
 
-  base::Optional<base::Value> value = base::JSONReader::Read(responseData);
-  base::DictionaryValue* dict;
-  if (!value || !value->GetAsDictionary(&dict)) {
+  absl::optional<base::Value> value = base::JSONReader::Read(responseData);
+  if (!value || !value->is_dict()) {
     LOG(ERROR) << "Invalid token validation response: '" << data_ << "'";
     return std::string();
   }
 
-  std::string token_scope;
-  dict->GetStringWithoutPathExpansion("scope", &token_scope);
-  if (!IsValidScope(token_scope)) {
-    LOG(ERROR) << "Invalid scope: '" << token_scope << "', expected: '"
+  std::string* token_scope = value->FindStringKey("scope");
+  if (!token_scope || !IsValidScope(*token_scope)) {
+    LOG(ERROR) << "Invalid scope: '" << *token_scope << "', expected: '"
                << token_scope_ << "'.";
     return std::string();
   }
 
-  std::string shared_secret;
   // Everything is valid, so return the shared secret to the caller.
-  dict->GetStringWithoutPathExpansion("access_token", &shared_secret);
-  return shared_secret;
+  std::string* shared_secret = value->FindStringKey("access_token");
+  return shared_secret ? *shared_secret : std::string();
 }
 
 }  // namespace remoting

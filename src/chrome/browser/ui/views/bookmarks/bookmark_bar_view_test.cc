@@ -3,12 +3,17 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
+
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/scoped_multi_source_observation.h"
+#include "base/scoped_observation.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -123,7 +128,7 @@ class DialogWaiter : public aura::EnvObserver,
 
   bool dialog_created_ = false;
   views::Widget* dialog_ = nullptr;
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogWaiter);
 };
@@ -158,7 +163,7 @@ class DialogCloseWaiter : public views::WidgetObserver {
   }
 
   bool dialog_closed_;
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogCloseWaiter);
 };
@@ -197,7 +202,7 @@ class TabKeyWaiter : public ui::EventHandler {
 
   views::Widget* widget_;
   bool received_tab_;
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(TabKeyWaiter);
 };
@@ -289,8 +294,8 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     BookmarkBarView::DisableAnimationsForTesting(true);
     SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 
-    local_state_.reset(
-        new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
+    local_state_ = std::make_unique<ScopedTestingLocalState>(
+        TestingBrowserProcess::GetGlobal());
     TestingProfile::Builder profile_builder;
     profile_builder.AddTestingFactory(
         BookmarkModelFactory::GetInstance(),
@@ -316,6 +321,9 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     // to the hierarchy.
     ViewEventTestBase::SetUp();
     ASSERT_TRUE(bb_view_);
+
+    static_cast<TestBrowserWindow*>(browser_->window())
+        ->SetNativeWindow(window()->GetNativeWindow());
 
     // Verify the layout triggered by the initial size preserves the overflow
     // state calculated in GetPreferredSizeForContents().
@@ -393,34 +401,32 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   void AddTestData(bool big_menu) {
     const BookmarkNode* bb_node = model_->bookmark_bar_node();
     std::string test_base = "file:///c:/tmp/";
-    const BookmarkNode* f1 = model_->AddFolder(bb_node, 0, ASCIIToUTF16("F1"));
-    model_->AddURL(f1, 0, ASCIIToUTF16("f1a"), GURL(test_base + "f1a"));
-    const BookmarkNode* f11 = model_->AddFolder(f1, 1, ASCIIToUTF16("F11"));
-    model_->AddURL(f11, 0, ASCIIToUTF16("f11a"), GURL(test_base + "f11a"));
-    model_->AddURL(f1, 2, ASCIIToUTF16("f1b"), GURL(test_base + "f1b"));
+    const BookmarkNode* f1 = model_->AddFolder(bb_node, 0, u"F1");
+    model_->AddURL(f1, 0, u"f1a", GURL(test_base + "f1a"));
+    const BookmarkNode* f11 = model_->AddFolder(f1, 1, u"F11");
+    model_->AddURL(f11, 0, u"f11a", GURL(test_base + "f11a"));
+    model_->AddURL(f1, 2, u"f1b", GURL(test_base + "f1b"));
     if (big_menu) {
       for (size_t i = 1; i <= 100; ++i) {
-        model_->AddURL(f1, i + 1, ASCIIToUTF16("f") + base::NumberToString16(i),
+        model_->AddURL(f1, i + 1, u"f" + base::NumberToString16(i),
                        GURL(test_base + "f" + base::NumberToString(i)));
       }
     }
-    model_->AddURL(bb_node, 1, ASCIIToUTF16("a"), GURL(test_base + "a"));
-    model_->AddURL(bb_node, 2, ASCIIToUTF16("b"), GURL(test_base + "b"));
-    model_->AddURL(bb_node, 3, ASCIIToUTF16("c"), GURL(test_base + "c"));
-    model_->AddURL(bb_node, 4, ASCIIToUTF16("d"), GURL(test_base + "d"));
-    model_->AddFolder(bb_node, 5, ASCIIToUTF16("F2"));
-    model_->AddURL(bb_node, 6, ASCIIToUTF16("d"), GURL(test_base + "d"));
+    model_->AddURL(bb_node, 1, u"a", GURL(test_base + "a"));
+    model_->AddURL(bb_node, 2, u"b", GURL(test_base + "b"));
+    model_->AddURL(bb_node, 3, u"c", GURL(test_base + "c"));
+    model_->AddURL(bb_node, 4, u"d", GURL(test_base + "d"));
+    model_->AddFolder(bb_node, 5, u"F2");
+    model_->AddURL(bb_node, 6, u"d", GURL(test_base + "d"));
 
-    model_->AddURL(model_->other_node(), 0, ASCIIToUTF16("oa"),
-                   GURL(test_base + "oa"));
-    const BookmarkNode* of = model_->AddFolder(model_->other_node(), 1,
-                                               ASCIIToUTF16("OF"));
-    model_->AddURL(of, 0, ASCIIToUTF16("ofa"), GURL(test_base + "ofa"));
-    model_->AddURL(of, 1, ASCIIToUTF16("ofb"), GURL(test_base + "ofb"));
-    const BookmarkNode* of2 = model_->AddFolder(model_->other_node(), 2,
-                                                ASCIIToUTF16("OF2"));
-    model_->AddURL(of2, 0, ASCIIToUTF16("of2a"), GURL(test_base + "of2a"));
-    model_->AddURL(of2, 1, ASCIIToUTF16("of2b"), GURL(test_base + "of2b"));
+    model_->AddURL(model_->other_node(), 0, u"oa", GURL(test_base + "oa"));
+    const BookmarkNode* of = model_->AddFolder(model_->other_node(), 1, u"OF");
+    model_->AddURL(of, 0, u"ofa", GURL(test_base + "ofa"));
+    model_->AddURL(of, 1, u"ofb", GURL(test_base + "ofb"));
+    const BookmarkNode* of2 =
+        model_->AddFolder(model_->other_node(), 2, u"OF2");
+    model_->AddURL(of2, 0, u"of2a", GURL(test_base + "of2a"));
+    model_->AddURL(of2, 1, u"of2b", GURL(test_base + "of2b"));
   }
 
   std::unique_ptr<ChromeContentClient> content_client_;
@@ -455,19 +461,21 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase,
   }
 
   void OnWidgetDestroying(views::Widget* widget) override {
-    if (widget == window())
-      bookmark_bar_observer_.RemoveAll();
+    if (widget == window()) {
+      DCHECK(bookmark_bar_observation_.IsObserving());
+      bookmark_bar_observation_.Reset();
+    }
   }
 
   void OnWidgetDestroyed(views::Widget* widget) override {
-    widget_observer_.Remove(widget);
+    widget_observations_.RemoveObservation(widget);
   }
 
  protected:
   // BookmarkBarViewEventTestBase:
   void DoTestOnMessageLoop() override {
-    widget_observer_.Add(window());
-    bookmark_bar_observer_.Add(bb_view_);
+    widget_observations_.AddObservation(window());
+    bookmark_bar_observation_.Observe(bb_view_);
 
     // Record the URL for node f1a.
     const auto& f1 = model_->bookmark_bar_node()->children().front();
@@ -489,7 +497,7 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase,
     ASSERT_TRUE(submenu->IsShowing());
 
     // The menu is showing, so it has a widget we can observe now.
-    widget_observer_.Add(submenu->GetWidget());
+    widget_observations_.AddObservation(submenu->GetWidget());
 
     // Move mouse to center of node f1a and press button.
     views::View* f1a = submenu->GetMenuItemAt(0);
@@ -533,9 +541,10 @@ class BookmarkBarViewDragTestBase : public BookmarkBarViewEventTestBase,
   }
 
   GURL f1a_url_;
-  ScopedObserver<BookmarkBarView, BookmarkBarViewObserver>
-      bookmark_bar_observer_{this};
-  ScopedObserver<views::Widget, views::WidgetObserver> widget_observer_{this};
+  base::ScopedObservation<BookmarkBarView, BookmarkBarViewObserver>
+      bookmark_bar_observation_{this};
+  base::ScopedMultiSourceObservation<views::Widget, views::WidgetObserver>
+      widget_observations_{this};
 };
 
 #if !defined(OS_MAC)
@@ -1629,7 +1638,7 @@ class BookmarkBarViewTest17 : public BookmarkBarViewEventTestBase {
     observer_ = std::make_unique<BookmarkContextMenuNotificationObserver>(
         CreateEventTask(this, &BookmarkBarViewTest17::Step4));
     MoveMouseAndPress(clickable_rect.CenterPoint(), ui_controls::RIGHT,
-        ui_controls::DOWN | ui_controls::UP, base::Closure());
+                      ui_controls::DOWN | ui_controls::UP, base::OnceClosure());
     // Step4 will be invoked by BookmarkContextMenuNotificationObserver.
   }
 
@@ -1938,7 +1947,7 @@ class BookmarkBarViewTest21 : public BookmarkBarViewEventTestBase {
   void Step4() {
     views::LabelButton* button = GetBookmarkButton(5);
     ASSERT_TRUE(button);
-    EXPECT_EQ(ASCIIToUTF16("d"), button->GetText());
+    EXPECT_EQ(u"d", button->GetText());
     EXPECT_TRUE(bb_view_->GetContextMenu() == NULL);
     EXPECT_TRUE(bb_view_->GetMenu() == NULL);
 
@@ -2142,13 +2151,9 @@ class BookmarkBarViewTest24 : public BookmarkBarViewEventTestBase {
   BookmarkContextMenuNotificationObserver observer_;
 };
 
-#if defined(OS_WIN)  // Fails on latest versions of Windows.
-                     // https://crbug.com/1108551.
-#define MAYBE_ContextMenusKeyboardEscape DISABLED_ContextMenusKeyboardEscape
-#else
-#define MAYBE_ContextMenusKeyboardEscape ContextMenusKeyboardEscape
-#endif
-VIEW_TEST(BookmarkBarViewTest24, MAYBE_ContextMenusKeyboardEscape)
+// Fails on latest versions of Windows. (https://crbug.com/1108551).
+// Flaky on Linux (https://crbug.com/1193137).
+VIEW_TEST(BookmarkBarViewTest24, DISABLED_ContextMenusKeyboardEscape)
 
 #if defined(OS_WIN)
 // Tests that pressing the key KEYCODE closes the menu.
@@ -2286,4 +2291,13 @@ class BookmarkBarViewTest28 : public BookmarkBarViewEventTestBase {
   }
 };
 
-VIEW_TEST(BookmarkBarViewTest28, ClickWithModifierOnFolderOpensAllBookmarks)
+// Flaky on Windows, see crbug.com/1156666
+#if defined(OS_WIN)
+#define MAYBE_ClickWithModifierOnFolderOpensAllBookmarks \
+  DISABLED_ClickWithModifierOnFolderOpensAllBookmarks
+#else
+#define MAYBE_ClickWithModifierOnFolderOpensAllBookmarks \
+  ClickWithModifierOnFolderOpensAllBookmarks
+#endif
+VIEW_TEST(BookmarkBarViewTest28,
+          MAYBE_ClickWithModifierOnFolderOpensAllBookmarks)

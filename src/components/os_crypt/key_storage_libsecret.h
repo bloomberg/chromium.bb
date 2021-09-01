@@ -9,22 +9,24 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "components/os_crypt/key_storage_linux.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // Specialisation of KeyStorageLinux that uses Libsecret.
 class COMPONENT_EXPORT(OS_CRYPT) KeyStorageLibsecret : public KeyStorageLinux {
  public:
-  KeyStorageLibsecret() = default;
+  explicit KeyStorageLibsecret(std::string application_name);
   ~KeyStorageLibsecret() override = default;
 
  protected:
   // KeyStorageLinux
   bool Init() override;
-  base::Optional<std::string> GetKeyImpl() override;
+  absl::optional<std::string> GetKeyImpl() override;
 
  private:
-  base::Optional<std::string> AddRandomPasswordInLibsecret();
+  absl::optional<std::string> AddRandomPasswordInLibsecret();
+
+  const std::string application_name_;
 
   DISALLOW_COPY_AND_ASSIGN(KeyStorageLibsecret);
 };

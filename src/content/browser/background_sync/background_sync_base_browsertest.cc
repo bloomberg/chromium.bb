@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -68,8 +69,7 @@ bool BackgroundSyncBaseBrowserTest::RegistrationPending(
 }
 
 bool BackgroundSyncBaseBrowserTest::CompleteDelayedSyncEvent() {
-  std::string script_result;
-  EXPECT_TRUE(RunScript("completeDelayedSyncEvent()", &script_result));
+  std::string script_result = RunScript("completeDelayedSyncEvent()");
   return script_result == BuildExpectedResult("delay", "completing");
 }
 
@@ -122,21 +122,11 @@ void BackgroundSyncBaseBrowserTest::RegistrationPendingOnCoreThread(
     const GURL& url,
     base::OnceCallback<void(bool)> callback) {
   sw_context->FindReadyRegistrationForClientUrl(
-      url, base::BindOnce(&BackgroundSyncBaseBrowserTest::
-                              RegistrationPendingDidGetSWRegistration,
-                          base::Unretained(this), sync_context, tag,
-                          std::move(callback)));
-}
-
-void BackgroundSyncBaseBrowserTest::SetTestClockOnCoreThread(
-    BackgroundSyncContextImpl* sync_context,
-    base::SimpleTestClock* clock) {
-  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(clock);
-
-  BackgroundSyncManager* background_sync_manager =
-      sync_context->background_sync_manager();
-  background_sync_manager->set_clock(clock);
+      url, storage::StorageKey(url::Origin::Create(url)),
+      base::BindOnce(&BackgroundSyncBaseBrowserTest::
+                         RegistrationPendingDidGetSWRegistration,
+                     base::Unretained(this), sync_context, tag,
+                     std::move(callback)));
 }
 
 void BackgroundSyncBaseBrowserTest::SetUp() {
@@ -168,8 +158,9 @@ void BackgroundSyncBaseBrowserTest::SetIncognitoMode(bool incognito) {
 
 StoragePartitionImpl* BackgroundSyncBaseBrowserTest::GetStorage() {
   WebContents* web_contents = shell_->web_contents();
-  return static_cast<StoragePartitionImpl*>(BrowserContext::GetStoragePartition(
-      web_contents->GetBrowserContext(), web_contents->GetSiteInstance()));
+  return static_cast<StoragePartitionImpl*>(
+      web_contents->GetBrowserContext()->GetStoragePartition(
+          web_contents->GetSiteInstance()));
 }
 
 WebContents* BackgroundSyncBaseBrowserTest::web_contents() {
@@ -197,30 +188,20 @@ bool BackgroundSyncBaseBrowserTest::LoadTestPage(const std::string& path) {
   return NavigateToURL(shell_, https_server_->GetURL(path));
 }
 
-bool BackgroundSyncBaseBrowserTest::RunScript(const std::string& script,
-                                              std::string* result) {
-  return content::ExecuteScriptAndExtractString(web_contents(), script, result);
+std::string BackgroundSyncBaseBrowserTest::RunScript(
+    const std::string& script) {
+  return EvalJs(web_contents(), script, EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+      .ExtractString();
 }
 
 void BackgroundSyncBaseBrowserTest::SetTestClock(base::SimpleTestClock* clock) {
+  DCHECK(clock);
   StoragePartitionImpl* storage = GetStorage();
   BackgroundSyncContextImpl* sync_context = storage->GetBackgroundSyncContext();
 
-  // TODO(crbug.com/824858): Remove the else branch after the feature is
-  // enabled. Also, try to make a RunOrPostTaskOnThreadAndReply() function so
-  // the if/else isn't needed.
-  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    SetTestClockOnCoreThread(sync_context, clock);
-  } else {
-    base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-        base::BindOnce(&BackgroundSyncBaseBrowserTest::SetTestClockOnCoreThread,
-                       base::Unretained(this), base::Unretained(sync_context),
-                       clock),
-        run_loop.QuitClosure());
-    run_loop.Run();
-  }
+  BackgroundSyncManager* background_sync_manager =
+      sync_context->background_sync_manager();
+  background_sync_manager->set_clock(clock);
 }
 
 void BackgroundSyncBaseBrowserTest::ClearStoragePartitionData() {
@@ -245,9 +226,7 @@ void BackgroundSyncBaseBrowserTest::ClearStoragePartitionData() {
 }
 
 std::string BackgroundSyncBaseBrowserTest::PopConsoleString() {
-  std::string script_result;
-  EXPECT_TRUE(RunScript("resultQueue.pop()", &script_result));
-  return script_result;
+  return RunScript("resultQueue.pop()");
 }
 
 bool BackgroundSyncBaseBrowserTest::PopConsole(
@@ -257,8 +236,7 @@ bool BackgroundSyncBaseBrowserTest::PopConsole(
 }
 
 bool BackgroundSyncBaseBrowserTest::RegisterServiceWorker() {
-  std::string script_result;
-  EXPECT_TRUE(RunScript("registerServiceWorker()", &script_result));
+  std::string script_result = RunScript("registerServiceWorker()");
   return script_result == BuildExpectedResult("service worker", "registered");
 }
 

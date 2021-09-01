@@ -7,22 +7,23 @@
 #include <memory>
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/multi_user_window_manager.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace chrome {
 namespace {
@@ -48,15 +49,18 @@ gfx::NativeWindow CreateWebDialogWidget(views::Widget::InitParams params,
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
 gfx::NativeWindow ShowWebDialog(gfx::NativeView parent,
                                 content::BrowserContext* context,
-                                ui::WebDialogDelegate* delegate) {
-  return ShowWebDialogWithParams(parent, context, delegate, base::nullopt);
+                                ui::WebDialogDelegate* delegate,
+                                bool show) {
+  return ShowWebDialogWithParams(parent, context, delegate, absl::nullopt,
+                                 show);
 }
 
 gfx::NativeWindow ShowWebDialogWithParams(
     gfx::NativeView parent,
     content::BrowserContext* context,
     ui::WebDialogDelegate* delegate,
-    base::Optional<views::Widget::InitParams> extra_params) {
+    absl::optional<views::Widget::InitParams> extra_params,
+    bool show) {
   views::WebDialogView* view = new views::WebDialogView(
       context, delegate, std::make_unique<ChromeWebContentsHandler>());
   views::Widget::InitParams params;
@@ -64,14 +68,15 @@ gfx::NativeWindow ShowWebDialogWithParams(
     params = std::move(*extra_params);
   params.delegate = view;
   params.parent = parent;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (!parent && delegate->GetDialogModalType() == ui::MODAL_TYPE_SYSTEM) {
     int container_id = ash_util::GetSystemModalDialogContainerId();
     ash_util::SetupWidgetInitParamsForContainer(&params, container_id);
   }
 #endif
-  gfx::NativeWindow window = CreateWebDialogWidget(std::move(params), view);
-#if defined(OS_CHROMEOS)
+  gfx::NativeWindow window =
+      CreateWebDialogWidget(std::move(params), view, show);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   const user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(
           Profile::FromBrowserContext(context));

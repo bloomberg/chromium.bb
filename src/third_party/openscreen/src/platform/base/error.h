@@ -182,6 +182,17 @@ class Error {
     kOperationInvalid,
     kOperationInProgress,
     kOperationCancelled,
+
+    // Cast streaming errors
+    kTypeError,
+    kUnknownCodec,
+    kSocketFailure,
+    kUnencryptedOffer,
+    kRemotingNotSupported,
+
+    // A negotiation failure means that the current negotiation must be
+    // restarted by the sender.
+    kNegotiationFailure,
   };
 
   Error();

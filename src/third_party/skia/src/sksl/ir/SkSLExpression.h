@@ -8,19 +8,18 @@
 #ifndef SKSL_EXPRESSION
 #define SKSL_EXPRESSION
 
+#include "include/private/SkSLStatement.h"
 #include "include/private/SkTHash.h"
-#include "src/sksl/ir/SkSLStatement.h"
 #include "src/sksl/ir/SkSLType.h"
 
 #include <unordered_map>
 
 namespace SkSL {
 
+class AnyConstructor;
 class Expression;
 class IRGenerator;
 class Variable;
-
-using DefinitionMap = SkTHashMap<const Variable*, std::unique_ptr<Expression>*>;
 
 /**
  * Abstract supertype of all expressions.
@@ -30,17 +29,23 @@ public:
     enum class Kind {
         kBinary = (int) Statement::Kind::kLast + 1,
         kBoolLiteral,
-        kConstructor,
-        kDefined,
+        kCodeString,
+        kConstructorArray,
+        kConstructorCompound,
+        kConstructorCompoundCast,
+        kConstructorDiagonalMatrix,
+        kConstructorMatrixResize,
+        kConstructorScalarCast,
+        kConstructorSplat,
+        kConstructorStruct,
         kExternalFunctionCall,
-        kExternalValue,
+        kExternalFunctionReference,
         kIntLiteral,
         kFieldAccess,
         kFloatLiteral,
         kFunctionReference,
         kFunctionCall,
         kIndex,
-        kNullLiteral,
         kPrefix,
         kPostfix,
         kSetting,
@@ -81,6 +86,12 @@ public:
         return this->kind() == T::kExpressionKind;
     }
 
+    bool isAnyConstructor() const {
+        static_assert((int)Kind::kConstructorArray - 1 == (int)Kind::kCodeString);
+        static_assert((int)Kind::kConstructorStruct + 1 == (int)Kind::kExternalFunctionCall);
+        return this->kind() >= Kind::kConstructorArray && this->kind() <= Kind::kConstructorStruct;
+    }
+
     /**
      *  Use as<T> to downcast expressions: e.g. replace `(IntLiteral&) i` with `i.as<IntLiteral>()`.
      */
@@ -96,6 +107,9 @@ public:
         return static_cast<T&>(*this);
     }
 
+    AnyConstructor& asAnyConstructor();
+    const AnyConstructor& asAnyConstructor() const;
+
     /**
      * Returns true if this expression is constant. compareConstant must be implemented for all
      * constants!
@@ -105,28 +119,17 @@ public:
     }
 
     /**
-     * Compares this constant expression against another constant expression of the same type. It is
-     * an error to call this on non-constant expressions, or if the types of the expressions do not
-     * match.
+     * Compares this constant expression against another constant expression. Returns kUnknown if
+     * we aren't able to deduce a result (an expression isn't actually constant, the types are
+     * mismatched, etc).
      */
-    virtual bool compareConstant(const Context& context, const Expression& other) const {
-        ABORT("cannot call compareConstant on this type");
-    }
-
-    /**
-     * For an expression which evaluates to a constant int, returns the value. Otherwise calls
-     * ABORT.
-     */
-    virtual int64_t getConstantInt() const {
-        ABORT("not a constant int");
-    }
-
-    /**
-     * For an expression which evaluates to a constant float, returns the value. Otherwise calls
-     * ABORT.
-     */
-    virtual SKSL_FLOAT getConstantFloat() const {
-        ABORT("not a constant float");
+    enum class ComparisonResult {
+        kUnknown = -1,
+        kNotEqual,
+        kEqual
+    };
+    virtual ComparisonResult compareConstant(const Expression& other) const {
+        return ComparisonResult::kUnknown;
     }
 
     /**
@@ -148,54 +151,20 @@ public:
         return this->hasProperty(Property::kContainsRTAdjust);
     }
 
-    /**
-     * Given a map of known constant variable values, substitute them in for references to those
-     * variables occurring in this expression and its subexpressions.  Similar simplifications, such
-     * as folding a constant binary expression down to a single value, may also be performed.
-     * Returns a new expression which replaces this expression, or null if no replacements were
-     * made. If a new expression is returned, this expression is no longer valid.
-     */
-    virtual std::unique_ptr<Expression> constantPropagate(const IRGenerator& irGenerator,
-                                                          const DefinitionMap& definitions) {
-        return nullptr;
-    }
-
     virtual CoercionCost coercionCost(const Type& target) const {
         return this->type().coercionCost(target);
     }
 
     /**
-     * For a vector of floating point values, return the value of the n'th vector component. It is
-     * an error to call this method on an expression which is not a vector of FloatLiterals.
+     * Returns the n'th compile-time constant expression within a literal or constructor.
+     * Use Type::slotCount to determine the number of subexpressions within an expression.
+     * Subexpressions which are not compile-time constants will return null.
+     * `vec4(1, vec2(2), 3)` contains four subexpressions: (1, 2, 2, 3)
+     * `mat2(f)` contains four subexpressions: (null, 0,
+     *                                          0, null)
      */
-    virtual SKSL_FLOAT getFVecComponent(int n) const {
-        SkASSERT(false);
-        return 0;
-    }
-
-    /**
-     * For a vector of integer values, return the value of the n'th vector component. It is an error
-     * to call this method on an expression which is not a vector of IntLiterals.
-     */
-    virtual SKSL_INT getIVecComponent(int n) const {
-        SkASSERT(false);
-        return 0;
-    }
-
-    /**
-     * For a vector of literals, return the value of the n'th vector component. It is an error to
-     * call this method on an expression which is not a vector of Literal<T>.
-     */
-    template <typename T> T getVecComponent(int index) const;
-
-    /**
-     * For a literal matrix expression, return the floating point value of the component at
-     * [col][row]. It is an error to call this method on an expression which is not a literal
-     * matrix.
-     */
-    virtual SKSL_FLOAT getMatComponent(int col, int row) const {
-        SkASSERT(false);
-        return 0;
+    virtual const Expression* getConstantSubexpression(int n) const {
+        return nullptr;
     }
 
     virtual std::unique_ptr<Expression> clone() const = 0;
@@ -205,14 +174,6 @@ private:
 
     using INHERITED = IRNode;
 };
-
-template <> inline SKSL_FLOAT Expression::getVecComponent<SKSL_FLOAT>(int index) const {
-    return this->getFVecComponent(index);
-}
-
-template <> inline SKSL_INT Expression::getVecComponent<SKSL_INT>(int index) const {
-    return this->getIVecComponent(index);
-}
 
 }  // namespace SkSL
 

@@ -27,7 +27,7 @@ uint32_t SharedFunctionInfo::Hash() {
 }
 
 void SharedFunctionInfo::Init(ReadOnlyRoots ro_roots, int unique_id) {
-  DisallowHeapAllocation no_allocation;
+  DisallowGarbageCollection no_gc;
 
   // Set the function data to the "illegal" builtin. Ideally we'd use some sort
   // of "uninitialized" marker here, but it's cheaper to use a valid buitin and
@@ -78,39 +78,55 @@ Code SharedFunctionInfo::GetCode() const {
     // Holding a Smi means we are a builtin.
     DCHECK(HasBuiltinId());
     return isolate->builtins()->builtin(builtin_id());
-  } else if (data.IsBytecodeArray()) {
+  }
+  if (data.IsBytecodeArray()) {
     // Having a bytecode array means we are a compiled, interpreted function.
     DCHECK(HasBytecodeArray());
     return isolate->builtins()->builtin(Builtins::kInterpreterEntryTrampoline);
-  } else if (data.IsAsmWasmData()) {
+  }
+  if (data.IsBaselineData()) {
+    // Having BaselineData means we are a compiled, baseline function.
+    DCHECK(HasBaselineData());
+    return baseline_data().baseline_code();
+  }
+#if V8_ENABLE_WEBASSEMBLY
+  if (data.IsAsmWasmData()) {
     // Having AsmWasmData means we are an asm.js/wasm function.
     DCHECK(HasAsmWasmData());
     return isolate->builtins()->builtin(Builtins::kInstantiateAsmJs);
-  } else if (data.IsUncompiledData()) {
-    // Having uncompiled data (with or without scope) means we need to compile.
-    DCHECK(HasUncompiledData());
-    return isolate->builtins()->builtin(Builtins::kCompileLazy);
-  } else if (data.IsFunctionTemplateInfo()) {
-    // Having a function template info means we are an API function.
-    DCHECK(IsApiFunction());
-    return isolate->builtins()->builtin(Builtins::kHandleApiCall);
-  } else if (data.IsWasmExportedFunctionData()) {
+  }
+  if (data.IsWasmExportedFunctionData()) {
     // Having a WasmExportedFunctionData means the code is in there.
     DCHECK(HasWasmExportedFunctionData());
     return wasm_exported_function_data().wrapper_code();
-  } else if (data.IsInterpreterData()) {
+  }
+  if (data.IsWasmJSFunctionData()) {
+    return wasm_js_function_data().wrapper_code();
+  }
+  if (data.IsWasmCapiFunctionData()) {
+    return wasm_capi_function_data().wrapper_code();
+  }
+#endif  // V8_ENABLE_WEBASSEMBLY
+  if (data.IsUncompiledData()) {
+    // Having uncompiled data (with or without scope) means we need to compile.
+    DCHECK(HasUncompiledData());
+    return isolate->builtins()->builtin(Builtins::kCompileLazy);
+  }
+  if (data.IsFunctionTemplateInfo()) {
+    // Having a function template info means we are an API function.
+    DCHECK(IsApiFunction());
+    return isolate->builtins()->builtin(Builtins::kHandleApiCall);
+  }
+  if (data.IsInterpreterData()) {
     Code code = InterpreterTrampoline();
     DCHECK(code.IsCode());
     DCHECK(code.is_interpreter_trampoline_builtin());
     return code;
-  } else if (data.IsWasmJSFunctionData()) {
-    return wasm_js_function_data().wrapper_code();
-  } else if (data.IsWasmCapiFunctionData()) {
-    return wasm_capi_function_data().wrapper_code();
   }
   UNREACHABLE();
 }
 
+#if V8_ENABLE_WEBASSEMBLY
 WasmExportedFunctionData SharedFunctionInfo::wasm_exported_function_data()
     const {
   DCHECK(HasWasmExportedFunctionData());
@@ -126,6 +142,7 @@ WasmCapiFunctionData SharedFunctionInfo::wasm_capi_function_data() const {
   DCHECK(HasWasmCapiFunctionData());
   return WasmCapiFunctionData::cast(function_data(kAcquireLoad));
 }
+#endif  // V8_ENABLE_WEBASSEMBLY
 
 SharedFunctionInfo::ScriptIterator::ScriptIterator(Isolate* isolate,
                                                    Script script)
@@ -157,7 +174,7 @@ void SharedFunctionInfo::SetScript(ReadOnlyRoots roots,
                                    HeapObject script_object,
                                    int function_literal_id,
                                    bool reset_preparsed_scope_data) {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
 
   if (script() == script_object) return;
 
@@ -233,17 +250,39 @@ CoverageInfo SharedFunctionInfo::GetCoverageInfo() const {
   return CoverageInfo::cast(GetDebugInfo().coverage_info());
 }
 
-String SharedFunctionInfo::DebugName() {
-  DisallowHeapAllocation no_gc;
+std::unique_ptr<char[]> SharedFunctionInfo::DebugNameCStr() {
+#if V8_ENABLE_WEBASSEMBLY
+  if (HasWasmExportedFunctionData()) {
+    return WasmExportedFunction::GetDebugName(
+        wasm_exported_function_data().sig());
+  }
+#endif  // V8_ENABLE_WEBASSEMBLY
+  DisallowGarbageCollection no_gc;
   String function_name = Name();
-  if (function_name.length() > 0) return function_name;
-  return inferred_name();
+  if (function_name.length() == 0) function_name = inferred_name();
+  return function_name.ToCString();
+}
+
+// static
+Handle<String> SharedFunctionInfo::DebugName(
+    Handle<SharedFunctionInfo> shared) {
+#if V8_ENABLE_WEBASSEMBLY
+  if (shared->HasWasmExportedFunctionData()) {
+    return shared->GetIsolate()
+        ->factory()
+        ->NewStringFromUtf8(CStrVector(shared->DebugNameCStr().get()))
+        .ToHandleChecked();
+  }
+#endif  // V8_ENABLE_WEBASSEMBLY
+  DisallowHeapAllocation no_gc;
+  String function_name = shared->Name();
+  if (function_name.length() == 0) function_name = shared->inferred_name();
+  return handle(function_name, shared->GetIsolate());
 }
 
 bool SharedFunctionInfo::PassesFilter(const char* raw_filter) {
   Vector<const char> filter = CStrVector(raw_filter);
-  std::unique_ptr<char[]> cstrname(DebugName().ToCString());
-  return v8::internal::PassesFilter(CStrVector(cstrname.get()), filter);
+  return v8::internal::PassesFilter(CStrVector(DebugNameCStr().get()), filter);
 }
 
 bool SharedFunctionInfo::HasSourceCode() const {
@@ -257,7 +296,7 @@ void SharedFunctionInfo::DiscardCompiledMetadata(
     Isolate* isolate,
     std::function<void(HeapObject object, ObjectSlot slot, HeapObject target)>
         gc_notify_updated_slot) {
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
   if (is_compiled()) {
     if (FLAG_trace_flush_bytecode) {
       CodeTracer::Scope scope(GetIsolate()->GetCodeTracer());
@@ -357,36 +396,6 @@ Handle<Object> SharedFunctionInfo::GetSourceCodeHarmony(
   return builder.Finish().ToHandleChecked();
 }
 
-SharedFunctionInfo::Inlineability SharedFunctionInfo::GetInlineability() const {
-  if (!script().IsScript()) return kHasNoScript;
-
-  if (GetIsolate()->is_precise_binary_code_coverage() &&
-      !has_reported_binary_coverage()) {
-    // We may miss invocations if this function is inlined.
-    return kNeedsBinaryCoverage;
-  }
-
-  if (optimization_disabled()) return kHasOptimizationDisabled;
-
-  // Built-in functions are handled by the JSCallReducer.
-  if (HasBuiltinId()) return kIsBuiltin;
-
-  if (!IsUserJavaScript()) return kIsNotUserCode;
-
-  // If there is no bytecode array, it is either not compiled or it is compiled
-  // with WebAssembly for the asm.js pipeline. In either case we don't want to
-  // inline.
-  if (!HasBytecodeArray()) return kHasNoBytecode;
-
-  if (GetBytecodeArray().length() > FLAG_max_inlined_bytecode_size) {
-    return kExceedsBytecodeLimit;
-  }
-
-  if (HasBreakInfo()) return kMayContainBreakPoints;
-
-  return kIsInlineable;
-}
-
 int SharedFunctionInfo::SourceSize() { return EndPosition() - StartPosition(); }
 
 // Output the source code without any allocation in the heap.
@@ -422,24 +431,18 @@ std::ostream& operator<<(std::ostream& os, const SourceCodeOf& v) {
   }
 }
 
-MaybeHandle<Code> SharedFunctionInfo::TryGetCachedCode(Isolate* isolate) {
-  if (!may_have_cached_code()) return {};
-  Handle<SharedFunctionInfo> zis(*this, isolate);
-  return isolate->compilation_cache()->LookupCode(zis);
-}
-
 void SharedFunctionInfo::DisableOptimization(BailoutReason reason) {
   DCHECK_NE(reason, BailoutReason::kNoReason);
 
   set_flags(DisabledOptimizationReasonBits::update(flags(), reason));
   // Code should be the lazy compilation stub or else interpreted.
-  DCHECK(abstract_code().kind() == CodeKind::INTERPRETED_FUNCTION ||
-         abstract_code().kind() == CodeKind::BUILTIN);
-  PROFILE(GetIsolate(),
-          CodeDisableOptEvent(handle(abstract_code(), GetIsolate()),
-                              handle(*this, GetIsolate())));
+  Isolate* isolate = GetIsolate();
+  DCHECK(abstract_code(isolate).kind() == CodeKind::INTERPRETED_FUNCTION ||
+         abstract_code(isolate).kind() == CodeKind::BUILTIN);
+  PROFILE(isolate, CodeDisableOptEvent(handle(abstract_code(isolate), isolate),
+                                       handle(*this, isolate)));
   if (FLAG_trace_opt) {
-    CodeTracer::Scope scope(GetIsolate()->GetCodeTracer());
+    CodeTracer::Scope scope(isolate->GetCodeTracer());
     PrintF(scope.file(), "[disabled optimization for ");
     ShortPrint(scope.file());
     PrintF(scope.file(), ", reason: %s]\n", GetBailoutReason(reason));
@@ -447,9 +450,9 @@ void SharedFunctionInfo::DisableOptimization(BailoutReason reason) {
 }
 
 // static
-template <typename LocalIsolate>
+template <typename IsolateT>
 void SharedFunctionInfo::InitFromFunctionLiteral(
-    LocalIsolate* isolate, Handle<SharedFunctionInfo> shared_info,
+    IsolateT* isolate, Handle<SharedFunctionInfo> shared_info,
     FunctionLiteral* lit, bool is_toplevel) {
   DCHECK(!shared_info->name_or_scope_info(kAcquireLoad).IsScopeInfo());
 
@@ -464,7 +467,6 @@ void SharedFunctionInfo::InitFromFunctionLiteral(
   shared_info->set_function_literal_id(lit->function_literal_id());
   // FunctionKind must have already been set.
   DCHECK(lit->kind() == shared_info->kind());
-  shared_info->set_needs_home_object(lit->scope()->NeedsHomeObject());
   DCHECK_IMPLIES(lit->requires_instance_members_initializer(),
                  IsClassConstructor(lit->kind()));
   shared_info->set_requires_instance_members_initializer(
@@ -606,12 +608,14 @@ int SharedFunctionInfo::StartPosition() const {
     DCHECK_IMPLIES(HasBuiltinId(), builtin_id() != Builtins::kCompileLazy);
     return 0;
   }
+#if V8_ENABLE_WEBASSEMBLY
   if (HasWasmExportedFunctionData()) {
     WasmInstanceObject instance = wasm_exported_function_data().instance();
     int func_index = wasm_exported_function_data().function_index();
     auto& function = instance.module()->functions[func_index];
     return static_cast<int>(function.code.offset());
   }
+#endif  // V8_ENABLE_WEBASSEMBLY
   return kNoSourcePosition;
 }
 
@@ -631,12 +635,14 @@ int SharedFunctionInfo::EndPosition() const {
     DCHECK_IMPLIES(HasBuiltinId(), builtin_id() != Builtins::kCompileLazy);
     return 0;
   }
+#if V8_ENABLE_WEBASSEMBLY
   if (HasWasmExportedFunctionData()) {
     WasmInstanceObject instance = wasm_exported_function_data().instance();
     int func_index = wasm_exported_function_data().function_index();
     auto& function = instance.module()->functions[func_index];
     return static_cast<int>(function.code.end_offset());
   }
+#endif  // V8_ENABLE_WEBASSEMBLY
   return kNoSourcePosition;
 }
 
@@ -660,20 +666,49 @@ void SharedFunctionInfo::SetPosition(int start_position, int end_position) {
   }
 }
 
-bool SharedFunctionInfo::AreSourcePositionsAvailable() const {
-  if (FLAG_enable_lazy_source_positions) {
-    return !HasBytecodeArray() || GetBytecodeArray().HasSourcePositionTable();
-  }
-  return true;
-}
-
 // static
 void SharedFunctionInfo::EnsureSourcePositionsAvailable(
     Isolate* isolate, Handle<SharedFunctionInfo> shared_info) {
   if (FLAG_enable_lazy_source_positions && shared_info->HasBytecodeArray() &&
-      !shared_info->GetBytecodeArray().HasSourcePositionTable()) {
+      !shared_info->GetBytecodeArray(isolate).HasSourcePositionTable()) {
     Compiler::CollectSourcePositions(isolate, shared_info);
   }
+}
+
+// static
+void SharedFunctionInfo::InstallDebugBytecode(Handle<SharedFunctionInfo> shared,
+                                              Isolate* isolate) {
+  DCHECK(shared->HasBytecodeArray());
+  Handle<BytecodeArray> original_bytecode_array(
+      shared->GetBytecodeArray(isolate), isolate);
+  Handle<BytecodeArray> debug_bytecode_array =
+      isolate->factory()->CopyBytecodeArray(original_bytecode_array);
+
+  {
+    DisallowGarbageCollection no_gc;
+    base::SharedMutexGuard<base::kExclusive> mutex_guard(
+        isolate->shared_function_info_access());
+    DebugInfo debug_info = shared->GetDebugInfo();
+    debug_info.set_original_bytecode_array(*original_bytecode_array,
+                                           kReleaseStore);
+    debug_info.set_debug_bytecode_array(*debug_bytecode_array, kReleaseStore);
+    shared->SetActiveBytecodeArray(*debug_bytecode_array);
+  }
+}
+
+// static
+void SharedFunctionInfo::UninstallDebugBytecode(SharedFunctionInfo shared,
+                                                Isolate* isolate) {
+  DisallowGarbageCollection no_gc;
+  base::SharedMutexGuard<base::kExclusive> mutex_guard(
+      isolate->shared_function_info_access());
+  DebugInfo debug_info = shared.GetDebugInfo();
+  BytecodeArray original_bytecode_array = debug_info.OriginalBytecodeArray();
+  shared.SetActiveBytecodeArray(original_bytecode_array);
+  debug_info.set_original_bytecode_array(
+      ReadOnlyRoots(isolate).undefined_value(), kReleaseStore);
+  debug_info.set_debug_bytecode_array(ReadOnlyRoots(isolate).undefined_value(),
+                                      kReleaseStore);
 }
 
 }  // namespace internal

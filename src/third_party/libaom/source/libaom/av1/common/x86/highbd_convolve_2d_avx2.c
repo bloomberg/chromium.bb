@@ -20,6 +20,12 @@
 #include "aom_dsp/aom_filter.h"
 #include "av1/common/convolve.h"
 
+void av1_highbd_convolve_2d_sr_ssse3(
+    const uint16_t *src, int src_stride, uint16_t *dst, int dst_stride, int w,
+    int h, const InterpFilterParams *filter_params_x,
+    const InterpFilterParams *filter_params_y, const int subpel_x_qn,
+    const int subpel_y_qn, ConvolveParams *conv_params, int bd);
+
 void av1_highbd_convolve_2d_sr_avx2(const uint16_t *src, int src_stride,
                                     uint16_t *dst, int dst_stride, int w, int h,
                                     const InterpFilterParams *filter_params_x,
@@ -27,6 +33,13 @@ void av1_highbd_convolve_2d_sr_avx2(const uint16_t *src, int src_stride,
                                     const int subpel_x_qn,
                                     const int subpel_y_qn,
                                     ConvolveParams *conv_params, int bd) {
+  if (filter_params_x->taps == 12) {
+    av1_highbd_convolve_2d_sr_ssse3(src, src_stride, dst, dst_stride, w, h,
+                                    filter_params_x, filter_params_y,
+                                    subpel_x_qn, subpel_y_qn, conv_params, bd);
+    return;
+  }
+
   DECLARE_ALIGNED(32, int16_t, im_block[(MAX_SB_SIZE + MAX_FILTER_TAP) * 8]);
   int im_h = h + filter_params_y->taps - 1;
   int im_stride = 8;

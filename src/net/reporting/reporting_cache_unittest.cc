@@ -18,6 +18,7 @@
 #include "base/values.h"
 #include "net/base/features.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/schemeful_site.h"
 #include "net/reporting/mock_persistent_reporting_store.h"
 #include "net/reporting/reporting_cache_impl.h"
 #include "net/reporting/reporting_cache_observer.h"
@@ -132,7 +133,6 @@ class ReportingCacheTest : public ReportingTestBase,
     for (const ReportingReport* report : after) {
       // If report isn't in before, we've found the new instance.
       if (std::find(before.begin(), before.end(), report) == before.end()) {
-        // Sanity check the result before we return it.
         EXPECT_EQ(network_isolation_key, report->network_isolation_key);
         EXPECT_EQ(url, report->url);
         EXPECT_EQ(user_agent, report->user_agent);
@@ -186,7 +186,7 @@ class ReportingCacheTest : public ReportingTestBase,
   const url::Origin kOrigin2_ = url::Origin::Create(GURL("https://origin2/"));
   const NetworkIsolationKey kNik_;
   const NetworkIsolationKey kOtherNik_ =
-      NetworkIsolationKey(kOrigin1_, kOrigin2_);
+      NetworkIsolationKey(SchemefulSite(kOrigin1_), SchemefulSite(kOrigin2_));
   const GURL kEndpoint1_ = GURL("https://endpoint1/");
   const GURL kEndpoint2_ = GURL("https://endpoint2/");
   const GURL kEndpoint3_ = GURL("https://endpoint3/");
@@ -897,9 +897,8 @@ TEST_P(ReportingCacheTest, GetClientsAsValue) {
                                        /* reports */ 1, /* succeeded */ false);
 
   base::Value actual = cache()->GetClientsAsValue();
-  std::unique_ptr<base::Value> expected =
-      base::test::ParseJsonDeprecated(base::StringPrintf(
-          R"json(
+  base::Value expected = base::test::ParseJson(base::StringPrintf(
+      R"json(
       [
         {
           "network_isolation_key": "%s",
@@ -935,10 +934,10 @@ TEST_P(ReportingCacheTest, GetClientsAsValue) {
         },
       ]
       )json",
-          kNik_.ToDebugString().c_str(), kOtherNik_.ToDebugString().c_str()));
+      kNik_.ToDebugString().c_str(), kOtherNik_.ToDebugString().c_str()));
 
   // Compare disregarding order.
-  auto expected_list = expected->TakeList();
+  auto expected_list = expected.TakeList();
   auto actual_list = actual.TakeList();
   std::sort(expected_list.begin(), expected_list.end());
   std::sort(actual_list.begin(), actual_list.end());

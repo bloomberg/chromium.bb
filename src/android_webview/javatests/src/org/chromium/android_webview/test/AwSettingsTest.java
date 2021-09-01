@@ -40,6 +40,7 @@ import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.Callback;
 import org.chromium.base.FileUtils;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -74,6 +75,7 @@ import java.util.regex.Pattern;
  */
 @RunWith(AwJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1"})
+@Batch(Batch.PER_CLASS)
 public class AwSettingsTest {
     @Rule
     public AwActivityTestRule mActivityTestRule =
@@ -1833,6 +1835,17 @@ public class AwSettingsTest {
         Assert.assertEquals(customUserAgentString, settings.getUserAgentString());
         settings.setUserAgentString(null);
         Assert.assertEquals(defaultUserAgentString, settings.getUserAgentString());
+
+        // Try to set invalid UAs and ensure they throw an exception.
+        final String[] invalids = {"null\u0000", "cr\r", "nl\n"};
+        for (String ua : invalids) {
+            try {
+                settings.setUserAgentString(ua);
+                Assert.fail("Invalid UA accepted: " + ua);
+            } catch (IllegalArgumentException e) {
+                // success
+            }
+        }
     }
 
     // Verify that the current UA override setting has a priority over UA
@@ -2646,7 +2659,6 @@ public class AwSettingsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest(message = "https://crbug.com/1147937")
     public void testTextZoomAutosizingWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -3204,7 +3216,6 @@ public class AwSettingsTest {
     @DisableHardwareAccelerationForTest
     @LargeTest
     @Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest(message = "https://crbug.com/1144945")
     public void testMediaPlaybackWithoutUserGesture() throws Throwable {
         Assert.assertTrue(VideoTestUtil.runVideoTest(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule, false, WAIT_TIMEOUT_MS));
@@ -3214,7 +3225,6 @@ public class AwSettingsTest {
     @DisableHardwareAccelerationForTest
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    @DisabledTest(message = "https://crbug.com/1144945")
     public void testMediaPlaybackWithUserGesture() throws Throwable {
         // Wait for 5 second to see if video played.
         Assert.assertFalse(VideoTestUtil.runVideoTest(

@@ -5,6 +5,7 @@
 #include "components/ui_devtools/tracing_agent.h"
 
 #include <algorithm>
+#include <memory>
 #include <unordered_set>
 #include <vector>
 
@@ -114,7 +115,8 @@ class TracingAgent::PerfettoTracingSession
     on_recording_enabled_callback_ = std::move(on_recording_enabled_callback);
     consumer_host_->EnableTracing(
         tracing_session_host_.BindNewPipeAndPassReceiver(),
-        std::move(tracing_session_client), std::move(perfetto_config));
+        std::move(tracing_session_client), std::move(perfetto_config),
+        base::File());
 
     tracing_session_host_.set_disconnect_handler(
         base::BindOnce(&PerfettoTracingSession::OnTracingSessionFailed,
@@ -151,7 +153,7 @@ class TracingAgent::PerfettoTracingSession
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
 
     MojoResult result =
-        mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+        mojo::CreateDataPipe(nullptr, producer_handle, consumer_handle);
     if (result != MOJO_RESULT_OK) {
       OnTracingSessionFailed();
       return;
@@ -462,7 +464,7 @@ void TracingAgent::SetupTimer(double usage_reporting_interval) {
 
   base::TimeDelta interval =
       base::TimeDelta::FromMilliseconds(std::ceil(usage_reporting_interval));
-  buffer_usage_poll_timer_.reset(new base::RepeatingTimer());
+  buffer_usage_poll_timer_ = std::make_unique<base::RepeatingTimer>();
   buffer_usage_poll_timer_->Start(
       FROM_HERE, interval,
       base::BindRepeating(&TracingAgent::UpdateBufferUsage,

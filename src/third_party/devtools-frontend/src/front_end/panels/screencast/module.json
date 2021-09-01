@@ -1,0 +1,9 @@
+{
+  "dependencies": [
+    "ui/legacy/components/utils",
+    "panels/emulation"
+  ],
+    "resources": [
+    "screencastView.css"
+  ]
+}

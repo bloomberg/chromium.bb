@@ -12,13 +12,15 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/timer/timer.h"
-#include "chrome/android/chrome_jni_headers/AuthenticatorImpl_jni.h"
+#include "chrome/android/chrome_jni_headers/InternalAuthenticator_jni.h"
 #include "components/payments/content/android/byte_buffer_helper.h"
-#include "content/browser/webauth/authenticator_mojom_traits.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/mojom/base/time.mojom.h"
+#include "third_party/blink/public/mojom/authenticator_mojom_traits.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom-blink.h"
+#include "url/origin.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -27,19 +29,18 @@ using base::android::ScopedJavaLocalRef;
 
 InternalAuthenticatorAndroid::InternalAuthenticatorAndroid(
     content::RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host) {
-  DCHECK(render_frame_host_);
+    : render_frame_host_id_(render_frame_host->GetGlobalFrameRoutingId()) {
   JNIEnv* env = AttachCurrentThread();
-  java_authenticator_impl_ref_ = Java_AuthenticatorImpl_create(
+  java_internal_authenticator_ref_ = Java_InternalAuthenticator_create(
       env, reinterpret_cast<intptr_t>(this),
-      render_frame_host_->GetJavaRenderFrameHost());
+      render_frame_host->GetJavaRenderFrameHost());
 }
 
 InternalAuthenticatorAndroid::~InternalAuthenticatorAndroid() {
-  // This call exists to assert that |render_frame_host_| outlives this object.
-  // If this is violated, ASAN should notice.
-  DCHECK(render_frame_host_);
-  render_frame_host_->GetRoutingID();
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(!java_internal_authenticator_ref_.is_null());
+  Java_InternalAuthenticator_clearNativePtr(env,
+                                            java_internal_authenticator_ref_);
 }
 
 void InternalAuthenticatorAndroid::SetEffectiveOrigin(
@@ -48,8 +49,8 @@ void InternalAuthenticatorAndroid::SetEffectiveOrigin(
   JavaRef<jobject>& obj = GetJavaObject();
   DCHECK(!obj.is_null());
 
-  Java_AuthenticatorImpl_setEffectiveOrigin(env, obj,
-                                            origin.CreateJavaObject());
+  Java_InternalAuthenticator_setEffectiveOrigin(env, obj,
+                                                origin.CreateJavaObject());
 }
 
 void InternalAuthenticatorAndroid::MakeCredential(
@@ -66,7 +67,7 @@ void InternalAuthenticatorAndroid::MakeCredential(
   ScopedJavaLocalRef<jobject> byte_buffer = ScopedJavaLocalRef<jobject>(
       env, env->NewDirectByteBuffer(byte_vector.data(), byte_vector.size()));
 
-  Java_AuthenticatorImpl_makeCredentialBridge(env, obj, byte_buffer);
+  Java_InternalAuthenticator_makeCredential(env, obj, byte_buffer);
 }
 
 void InternalAuthenticatorAndroid::GetAssertion(
@@ -83,7 +84,7 @@ void InternalAuthenticatorAndroid::GetAssertion(
   ScopedJavaLocalRef<jobject> byte_buffer = ScopedJavaLocalRef<jobject>(
       env, env->NewDirectByteBuffer(byte_vector.data(), byte_vector.size()));
 
-  Java_AuthenticatorImpl_getAssertionBridge(env, obj, byte_buffer);
+  Java_InternalAuthenticator_getAssertion(env, obj, byte_buffer);
 }
 
 void InternalAuthenticatorAndroid::
@@ -95,8 +96,8 @@ void InternalAuthenticatorAndroid::
   DCHECK(!obj.is_null());
 
   is_uvpaa_callback_ = std::move(callback);
-  Java_AuthenticatorImpl_isUserVerifyingPlatformAuthenticatorAvailableBridge(
-      env, obj);
+  Java_InternalAuthenticator_isUserVerifyingPlatformAuthenticatorAvailable(env,
+                                                                           obj);
 }
 
 void InternalAuthenticatorAndroid::Cancel() {
@@ -104,11 +105,11 @@ void InternalAuthenticatorAndroid::Cancel() {
   JavaRef<jobject>& obj = GetJavaObject();
   DCHECK(!obj.is_null());
 
-  Java_AuthenticatorImpl_cancel(env, obj);
+  Java_InternalAuthenticator_cancel(env, obj);
 }
 
 content::RenderFrameHost* InternalAuthenticatorAndroid::GetRenderFrameHost() {
-  return render_frame_host_;
+  return content::RenderFrameHost::FromID(render_frame_host_id_);
 }
 
 void InternalAuthenticatorAndroid::InvokeMakeCredentialResponse(
@@ -157,11 +158,11 @@ void InternalAuthenticatorAndroid::
 }
 
 JavaRef<jobject>& InternalAuthenticatorAndroid::GetJavaObject() {
-  if (java_authenticator_impl_ref_.is_null()) {
+  if (java_internal_authenticator_ref_.is_null()) {
     JNIEnv* env = AttachCurrentThread();
-    java_authenticator_impl_ref_ = Java_AuthenticatorImpl_create(
+    java_internal_authenticator_ref_ = Java_InternalAuthenticator_create(
         env, reinterpret_cast<intptr_t>(this),
-        render_frame_host_->GetJavaRenderFrameHost());
+        GetRenderFrameHost()->GetJavaRenderFrameHost());
   }
-  return java_authenticator_impl_ref_;
+  return java_internal_authenticator_ref_;
 }

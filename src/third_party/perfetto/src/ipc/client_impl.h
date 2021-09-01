@@ -46,7 +46,7 @@ class ServiceDescriptor;
 
 class ClientImpl : public Client, public base::UnixSocket::EventListener {
  public:
-  ClientImpl(const char* socket_name, bool socket_retry, base::TaskRunner*);
+  ClientImpl(ConnArgs, base::TaskRunner*);
   ~ClientImpl() override;
 
   // Client implementation.
@@ -66,6 +66,8 @@ class ClientImpl : public Client, public base::UnixSocket::EventListener {
                         bool drop_reply,
                         base::WeakPtr<ServiceProxy>,
                         int fd = -1);
+
+  base::UnixSocket* GetUnixSocketForTesting() { return sock_.get(); }
 
  private:
   struct QueuedRequest {

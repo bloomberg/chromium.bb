@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "chrome/browser/chromeos/input_method/ui/candidate_window_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
@@ -57,7 +58,7 @@ class InfolistBorder : public views::BubbleBorder {
 
 InfolistBorder::InfolistBorder()
     : views::BubbleBorder(views::BubbleBorder::LEFT_CENTER,
-                          views::BubbleBorder::BIG_SHADOW,
+                          views::BubbleBorder::STANDARD_SHADOW,
                           SK_ColorTRANSPARENT) {}
 
 InfolistBorder::~InfolistBorder() {}
@@ -87,9 +88,12 @@ gfx::Insets InfolistBorder::GetInsets() const {
 // InfolistRow renderes a row of a infolist.
 class InfolistEntryView : public views::View {
  public:
+  METADATA_HEADER(InfolistEntryView);
   InfolistEntryView(const ui::InfolistEntry& entry,
                     const gfx::FontList& title_font_list,
                     const gfx::FontList& description_font_list);
+  InfolistEntryView(const InfolistEntryView&) = delete;
+  InfolistEntryView& operator=(const InfolistEntryView&) = delete;
   ~InfolistEntryView() override;
 
   void SetEntry(const ui::InfolistEntry& entry);
@@ -107,9 +111,10 @@ class InfolistEntryView : public views::View {
 
   // The description label. Owned by views hierarchy.
   views::Label* description_label_;
-
-  DISALLOW_COPY_AND_ASSIGN(InfolistEntryView);
 };
+
+BEGIN_METADATA(InfolistEntryView, views::View)
+END_METADATA
 
 InfolistEntryView::InfolistEntryView(const ui::InfolistEntry& entry,
                                      const gfx::FontList& title_font_list,
@@ -268,13 +273,12 @@ void InfolistWindow::HideImmediately() {
   GetWidget()->Close();
 }
 
-const char* InfolistWindow::GetClassName() const {
-  return "InfolistWindow";
-}
-
 void InfolistWindow::WindowClosing() {
   show_hide_timer_.Stop();
 }
+
+BEGIN_METADATA(InfolistWindow, views::BubbleDialogDelegateView)
+END_METADATA
 
 }  // namespace ime
 }  // namespace ui

@@ -52,7 +52,7 @@ ErrorOr<bssl::UniquePtr<EVP_PKEY>> ImportRSAPrivateKey(
 
 std::string GetSpkiTlv(X509* cert);
 
-ErrorOr<uint64_t> ParseDerUint64(ASN1_INTEGER* asn1int);
+ErrorOr<uint64_t> ParseDerUint64(const ASN1_INTEGER* asn1int);
 
 }  // namespace openscreen
 

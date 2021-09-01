@@ -9,9 +9,11 @@ import string
 # third_party/
 from six.moves import urllib
 
-
+_STREAM_SEP = '/'
 _ALNUM_CHARS = string.ascii_letters + string.digits
+_VALID_SEG_CHARS = _ALNUM_CHARS + ':_-.'
 _SEGMENT_RE_BASE = r'[a-zA-Z0-9][a-zA-Z0-9:_\-.]*'
+_SEGMENT_RE = re.compile('^' + _SEGMENT_RE_BASE + '$')
 _STREAM_NAME_RE = re.compile('^(' + _SEGMENT_RE_BASE + ')(/' +
                              _SEGMENT_RE_BASE + ')*$')
 _MAX_STREAM_NAME_LENGTH = 4096
@@ -51,70 +53,68 @@ def validate_tag(key, value):
   validate_stream_name(value, maxlen=_MAX_TAG_VALUE_LENGTH)
 
 
+def normalize_segment(seg, prefix=None):
+  """Given a string (str|unicode), mutate it into a valid segment name (str).
+
+  This operates by replacing invalid segment name characters with underscores
+  (_) when encountered.
+
+  A special case is when "seg" begins with non-alphanumeric character. In this
+  case, we will prefix it with the "prefix", if one is supplied. Otherwise,
+  raises ValueError.
+
+  See _VALID_SEG_CHARS for all valid characters for a segment.
+
+  Raises:
+    ValueError: If normalization could not be successfully performed.
+  """
+  if not seg:
+    if prefix is None:
+      raise ValueError('Cannot normalize empty segment with no prefix.')
+    seg = prefix
+  else:
+
+    def replace_if_invalid(ch, first=False):
+      ret = ch if ch in _VALID_SEG_CHARS else '_'
+      if first and ch not in _ALNUM_CHARS:
+        if prefix is None:
+          raise ValueError('Segment has invalid beginning, and no prefix was '
+                           'provided.')
+        return prefix + ret
+      return ret
+
+    seg = ''.join(replace_if_invalid(ch, i == 0) for i, ch in enumerate(seg))
+
+  if _SEGMENT_RE.match(seg) is None:
+    raise AssertionError('Normalized segment is still invalid: %r' % seg)
+
+  # v could be of type unicode. As a valid stream name contains only ascii
+  # characters, it is safe to transcode v to ascii encoding (become str type).
+  if isinstance(seg, unicode):
+    return seg.encode('ascii')
+  return seg
+
+
 def normalize(v, prefix=None):
   """Given a string (str|unicode), mutate it into a valid stream name (str).
 
   This operates by replacing invalid stream name characters with underscores (_)
   when encountered.
 
-  A special case is when "v" begins with an invalid character. In this case, we
-  will replace it with the "prefix", if one is supplied.
+  A special case is when any segment of "v" begins with an non-alphanumeric
+  character. In this case, we will prefix the segment with the "prefix", if one
+  is supplied. Otherwise, raises ValueError.
 
   See _STREAM_NAME_RE for a description of a valid stream name.
 
   Raises:
     ValueError: If normalization could not be successfully performed.
   """
-  if not v:
-    if not prefix:
-      raise ValueError('Cannot normalize empty name with no prefix.')
-    v = prefix
-  else:
-    out = []
-    for i, ch in enumerate(v):
-      # Either the first character in v, or immediately after /
-      isFirst = i == 0 or out[-1][-1] == '/'
-      if isFirst and not _is_valid_stream_char(ch, first=True):
-        # The first letter is special, and must be alphanumeric.
-        # If we have a prefix, prepend that to the resulting string.
-        if prefix is None:
-          raise ValueError('Name has invalid beginning, and no prefix was '
-                           'provided.')
-        out.append(prefix)
-
-      if not _is_valid_stream_char(ch):
-        ch = '_'
-      out.append(ch)
-    v = ''.join(out)
-
+  normalized = _STREAM_SEP.join(
+      normalize_segment(seg, prefix=prefix) for seg in v.split(_STREAM_SEP))
   # Validate the resulting string.
-  validate_stream_name(v)
-  # v could be of type unicode. As a valid stream name contains only ascii
-  # characters, it is safe to transcode v to ascii encoding (become str type).
-  if isinstance(v, unicode):
-    return v.encode('ascii')
-  return v
-
-
-def _is_valid_stream_char(ch, first=False):
-  """Returns (bool): True if a character is alphanumeric.
-
-  The first character must be alphanumeric, matching [a-zA-Z0-9].
-  Additional characters must either be alphanumeric or one of: (: _ - .).
-
-  Args:
-    ch (str): the character to evaluate.
-    first (bool): if true, apply special first-character constraints.
-  """
-  # Alphanumeric check.
-  if ch in _ALNUM_CHARS:
-    return True
-  if first:
-    # The first character must be alphanumeric.
-    return False
-
-  # Check additional middle-name characters:
-  return ch in ':_-./'
+  validate_stream_name(normalized)
+  return normalized
 
 
 class StreamPath(collections.namedtuple('_StreamPath', ('prefix', 'name'))):

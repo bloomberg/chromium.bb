@@ -48,8 +48,8 @@ the first "./a.out" with "./a.out -bench". Combine these changes with the
 #define WUFFS_IMPLEMENTATION
 
 // Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
-// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
-// the entire Wuffs standard library, implementing a variety of codecs and file
+// release/c/etc.c choose which parts of Wuffs to build. That file contains the
+// entire Wuffs standard library, implementing a variety of codecs and file
 // formats. Without this macro definition, an optimizing compiler or linker may
 // very well discard Wuffs code for unused codecs, but listing the Wuffs
 // modules we use makes that process explicit. Preprocessing means that such
@@ -971,8 +971,10 @@ test_wuffs_strconv_parse_number_f64_regular() {
       {.want = 0x000FFFFFFFFFFFFF, .str = "2.2250738585072009E-308"},
       {.want = 0x0010000000000000, .str = "2.2250738585072014E-308"},
       {.want = 0x0031FA182C40C60D, .str = "1e-307"},
+      {.want = 0x369C2DF8DA5B6CA8, .str = "1.234e-45"},
       {.want = 0x369C314ABE948EB1,
        .str = "0.0000000000000000000000000000000000000000000012345678900000"},
+      {.want = 0x3E70000000000000, .str = "5.9604644775390625e-8"},
       {.want = 0x3F88000000000000, .str = "0.01171875"},
       {.want = 0x3FD0000000000000, .str = ".25"},
       {.want = 0x3FD3333333333333,
@@ -1024,8 +1026,10 @@ test_wuffs_strconv_parse_number_f64_regular() {
       {.want = 0x4340000000000002, .str = "9007199254740996"},
       {.want = 0x4340000000000002, .str = "9_007__199_254__740_996"},
       {.want = 0x4370000000000000, .str = "7.2057594037927933e+16"},
+      {.want = 0x43E158E460913D00, .str = "9999999999999999999"},
       {.want = 0x43F002F1776DDA67, .str = "18459999196907202592"},
       {.want = 0x4415AF1D78B58C40, .str = "1e20"},
+      {.want = 0x44B52D02C7E14AF6, .str = "1e+23"},
       {.want = 0x44B52D02C7E14AF6, .str = "1e23"},
       {.want = 0x46293E5939A08CEA, .str = "1e30"},
       {.want = 0x54B249AD2594C37D, .str = "+1E+100"},
@@ -1426,6 +1430,15 @@ test_wuffs_strconv_render_number_f64() {
           .want_4g = "1e-307",
       },
       {
+          .x = 0x369C2DF8DA5B6CA8,
+          .want__e = "1.234e-45",
+          .want__f = "0.000000000000000000000000000000000000000000001234",
+          .want_0g = "1e-45",
+          .want_2e = "1.23e-45",
+          .want_3f = "0.000",
+          .want_4g = "1.234e-45",
+      },
+      {
           .x = 0x369C314ABE948EB1,
           .want__e = "1.23456789e-45",
           .want__f = "0.000000000000000000000000000000000000000000001234"
@@ -1434,6 +1447,15 @@ test_wuffs_strconv_render_number_f64() {
           .want_2e = "1.23e-45",
           .want_3f = "0.000",
           .want_4g = "1.235e-45",
+      },
+      {
+          .x = 0x3E70000000000000,
+          .want__e = "5.960464477539063e-08",
+          .want__f = "0.00000005960464477539063",
+          .want_0g = "6e-08",
+          .want_2e = "5.96e-08",
+          .want_3f = "0.000",
+          .want_4g = "5.96e-08",
       },
       {
           .x = 0x3F88000000000000,
@@ -1794,6 +1816,15 @@ test_wuffs_strconv_render_number_f64() {
           .want_2e = "7.21e+16",
           .want_3f = "72057594037927936.000",
           .want_4g = "7.206e+16",
+      },
+      {
+          .x = 0x43E158E460913D00,
+          .want__e = "1e+19",
+          .want__f = "10000000000000000000",
+          .want_0g = "1e+19",
+          .want_2e = "1.00e+19",
+          .want_3f = "10000000000000000000.000",
+          .want_4g = "1e+19",
       },
       {
           .x = 0x43F002F1776DDA67,
@@ -2181,39 +2212,39 @@ test_wuffs_strconv_render_number_i64() {
     int64_t x;
     const char* want;
   } test_cases[] = {
-      {.x = +0x0000000000000000l, .want = "0"},
-      {.x = +0x0000000000000009l, .want = "9"},
-      {.x = +0x000000000000000Al, .want = "10"},
-      {.x = +0x000000000000004Al, .want = "74"},
-      {.x = +0x0000000000000063l, .want = "99"},
-      {.x = +0x0000000000000064l, .want = "100"},
-      {.x = +0x000000000000007Cl, .want = "124"},
-      {.x = +0x00000000000001F4l, .want = "500"},
-      {.x = +0x000000000000036Cl, .want = "876"},
-      {.x = +0x000000000000036Fl, .want = "879"},
-      {.x = +0x0000000000000929l, .want = "2345"},
-      {.x = +0x0000000000010932l, .want = "67890"},
-      {.x = +0x00000000FFFFFFFFl, .want = "4294967295"},
-      {.x = +0x0000000100000000l, .want = "4294967296"},
-      {.x = +0x0123456789ABCDEFl, .want = "81985529216486895"},
-      {.x = +0x7FFFFFFFFFFFFFFFl, .want = "9223372036854775807"},
+      {.x = +0x0000000000000000ll, .want = "0"},
+      {.x = +0x0000000000000009ll, .want = "9"},
+      {.x = +0x000000000000000All, .want = "10"},
+      {.x = +0x000000000000004All, .want = "74"},
+      {.x = +0x0000000000000063ll, .want = "99"},
+      {.x = +0x0000000000000064ll, .want = "100"},
+      {.x = +0x000000000000007Cll, .want = "124"},
+      {.x = +0x00000000000001F4ll, .want = "500"},
+      {.x = +0x000000000000036Cll, .want = "876"},
+      {.x = +0x000000000000036Fll, .want = "879"},
+      {.x = +0x0000000000000929ll, .want = "2345"},
+      {.x = +0x0000000000010932ll, .want = "67890"},
+      {.x = +0x00000000FFFFFFFFll, .want = "4294967295"},
+      {.x = +0x0000000100000000ll, .want = "4294967296"},
+      {.x = +0x0123456789ABCDEFll, .want = "81985529216486895"},
+      {.x = +0x7FFFFFFFFFFFFFFFll, .want = "9223372036854775807"},
 
-      {.x = -0x0000000000000009l, .want = "-9"},
-      {.x = -0x000000000000000Al, .want = "-10"},
-      {.x = -0x000000000000004Al, .want = "-74"},
-      {.x = -0x0000000000000063l, .want = "-99"},
-      {.x = -0x0000000000000064l, .want = "-100"},
-      {.x = -0x000000000000007Cl, .want = "-124"},
-      {.x = -0x00000000000001F4l, .want = "-500"},
-      {.x = -0x000000000000036Cl, .want = "-876"},
-      {.x = -0x000000000000036Fl, .want = "-879"},
-      {.x = -0x0000000000000929l, .want = "-2345"},
-      {.x = -0x0000000000010932l, .want = "-67890"},
-      {.x = -0x00000000FFFFFFFFl, .want = "-4294967295"},
-      {.x = -0x0000000100000000l, .want = "-4294967296"},
-      {.x = -0x0123456789ABCDEFl, .want = "-81985529216486895"},
-      {.x = -0x7FFFFFFFFFFFFFFFl, .want = "-9223372036854775807"},
-      {.x = -0x8000000000000000l, .want = "-9223372036854775808"},
+      {.x = -0x0000000000000009ll, .want = "-9"},
+      {.x = -0x000000000000000All, .want = "-10"},
+      {.x = -0x000000000000004All, .want = "-74"},
+      {.x = -0x0000000000000063ll, .want = "-99"},
+      {.x = -0x0000000000000064ll, .want = "-100"},
+      {.x = -0x000000000000007Cll, .want = "-124"},
+      {.x = -0x00000000000001F4ll, .want = "-500"},
+      {.x = -0x000000000000036Cll, .want = "-876"},
+      {.x = -0x000000000000036Fll, .want = "-879"},
+      {.x = -0x0000000000000929ll, .want = "-2345"},
+      {.x = -0x0000000000010932ll, .want = "-67890"},
+      {.x = -0x00000000FFFFFFFFll, .want = "-4294967295"},
+      {.x = -0x0000000100000000ll, .want = "-4294967296"},
+      {.x = -0x0123456789ABCDEFll, .want = "-81985529216486895"},
+      {.x = -0x7FFFFFFFFFFFFFFFll, .want = "-9223372036854775807"},
+      {.x = -0x8000000000000000ll, .want = "-9223372036854775808"},
   };
 
   if (g_have_slice_u8.len < WUFFS_BASE__I64__BYTE_LENGTH__MAX_INCL) {
@@ -2248,27 +2279,27 @@ test_wuffs_strconv_render_number_u64() {
     uint64_t x;
     const char* want;
   } test_cases[] = {
-      {.x = 0x0000000000000000l, .want = "0"},
-      {.x = 0x0000000000000009l, .want = "9"},
-      {.x = 0x000000000000000Al, .want = "10"},
-      {.x = 0x000000000000004Al, .want = "74"},
-      {.x = 0x0000000000000063l, .want = "99"},
-      {.x = 0x0000000000000064l, .want = "100"},
-      {.x = 0x000000000000007Cl, .want = "124"},
-      {.x = 0x00000000000001F4l, .want = "500"},
-      {.x = 0x000000000000036Cl, .want = "876"},
-      {.x = 0x000000000000036Fl, .want = "879"},
-      {.x = 0x0000000000000929l, .want = "2345"},
-      {.x = 0x0000000000010932l, .want = "67890"},
-      {.x = 0x00000000FFFFFFFFl, .want = "4294967295"},
-      {.x = 0x0000000100000000l, .want = "4294967296"},
-      {.x = 0x0123456789ABCDEFl, .want = "81985529216486895"},
-      {.x = 0x7FFFFFFFFFFFFFFFl, .want = "9223372036854775807"},
-      {.x = 0x8000000000000000l, .want = "9223372036854775808"},
-      {.x = 0xFFFFFFFFFFFFFFF9l, .want = "18446744073709551609"},
-      {.x = 0xFFFFFFFFFFFFFFFAl, .want = "18446744073709551610"},
-      {.x = 0xFFFFFFFFFFFFFFFEl, .want = "18446744073709551614"},
-      {.x = 0xFFFFFFFFFFFFFFFFl, .want = "18446744073709551615"},
+      {.x = 0x0000000000000000, .want = "0"},
+      {.x = 0x0000000000000009, .want = "9"},
+      {.x = 0x000000000000000A, .want = "10"},
+      {.x = 0x000000000000004A, .want = "74"},
+      {.x = 0x0000000000000063, .want = "99"},
+      {.x = 0x0000000000000064, .want = "100"},
+      {.x = 0x000000000000007C, .want = "124"},
+      {.x = 0x00000000000001F4, .want = "500"},
+      {.x = 0x000000000000036C, .want = "876"},
+      {.x = 0x000000000000036F, .want = "879"},
+      {.x = 0x0000000000000929, .want = "2345"},
+      {.x = 0x0000000000010932, .want = "67890"},
+      {.x = 0x00000000FFFFFFFF, .want = "4294967295"},
+      {.x = 0x0000000100000000, .want = "4294967296"},
+      {.x = 0x0123456789ABCDEF, .want = "81985529216486895"},
+      {.x = 0x7FFFFFFFFFFFFFFF, .want = "9223372036854775807"},
+      {.x = 0x8000000000000000, .want = "9223372036854775808"},
+      {.x = 0xFFFFFFFFFFFFFFF9, .want = "18446744073709551609"},
+      {.x = 0xFFFFFFFFFFFFFFFA, .want = "18446744073709551610"},
+      {.x = 0xFFFFFFFFFFFFFFFE, .want = "18446744073709551614"},
+      {.x = 0xFFFFFFFFFFFFFFFF, .want = "18446744073709551615"},
   };
 
   if (g_have_slice_u8.len < WUFFS_BASE__U64__BYTE_LENGTH__MAX_INCL) {
@@ -2314,7 +2345,7 @@ test_wuffs_strconv_render_number_u64() {
     if (n != 5) {
       RETURN_FAIL("ALIGN_RIGHT | LEADING_PLUS_SIGN: have %zu, want 5", n);
     }
-    uint64_t have = wuffs_base__load_u64be__no_bounds_check(&dst[0]);
+    uint64_t have = wuffs_base__peek_u64be__no_bounds_check(&dst[0]);
     uint64_t want = 0x41422B3132333400;  // "AB+1234\x00".
     if (have != want) {
       RETURN_FAIL("ALIGN_RIGHT | LEADING_PLUS_SIGN: have 0x%" PRIX64
@@ -3704,7 +3735,7 @@ test_wuffs_json_decode_quirk_replace_invalid_unicode() {
     }
 
     if (src_index != src.meta.ri) {
-      RETURN_FAIL("tc=%d: src_index: have %zu, want %zu", tc, src_index,
+      RETURN_FAIL("tc=%d: src_index: have %" PRIu64 ", want %zu", tc, src_index,
                   src.meta.ri);
     }
 
@@ -3820,7 +3851,7 @@ test_wuffs_json_decode_unicode4_escapes() {
     }
 
     if (total_length != src.meta.ri) {
-      RETURN_FAIL("%s: total length: have %" PRIu64 ", want %" PRIu64,
+      RETURN_FAIL("%s: total length: have %" PRIu64 ", want %zu",
                   test_cases[tc].str, total_length, src.meta.ri);
     }
   }
@@ -3994,7 +4025,7 @@ test_wuffs_json_decode_string() {
     }
 
     if (total_length != src.meta.ri) {
-      RETURN_FAIL("%s: total length: have %" PRIu64 ", want %" PRIu64,
+      RETURN_FAIL("%s: total length: have %" PRIu64 ", want %zu",
                   test_cases[tc].str, total_length, src.meta.ri);
     }
   }

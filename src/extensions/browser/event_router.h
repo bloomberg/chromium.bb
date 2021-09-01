@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -15,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -29,7 +30,10 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/features/feature.h"
+#include "extensions/common/mojom/event_router.mojom.h"
 #include "ipc/ipc_sender.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -39,6 +43,12 @@ namespace content {
 class BrowserContext;
 class RenderProcessHost;
 }
+
+namespace chromeos {
+namespace file_system_provider {
+class FileSystemProviderProvidedFileSystemTest;
+}
+}  // namespace chromeos
 
 namespace extensions {
 class Extension;
@@ -52,7 +62,8 @@ struct EventListenerInfo;
 class EventRouter : public KeyedService,
                     public ExtensionRegistryObserver,
                     public EventListenerMap::Delegate,
-                    public content::RenderProcessHostObserver {
+                    public content::RenderProcessHostObserver,
+                    public mojom::EventRouter {
  public:
   // These constants convey the state of our knowledge of whether we're in
   // a user-caused gesture as part of DispatchEvent.
@@ -73,7 +84,7 @@ class EventRouter : public KeyedService,
   // notified when a listener is added or removed. Observers are matched by
   // the base name of the event (e.g. adding an event listener for event name
   // "foo.onBar/123" will trigger observers registered for "foo.onBar").
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     // Called when a listener is added.
     virtual void OnListenerAdded(const EventListenerInfo& details) {}
@@ -81,7 +92,7 @@ class EventRouter : public KeyedService,
     virtual void OnListenerRemoved(const EventListenerInfo& details) {}
 
    protected:
-    virtual ~Observer() {}
+    ~Observer() override = default;
   };
 
   // A test observer to monitor event dispatching.
@@ -123,26 +134,40 @@ class EventRouter : public KeyedService,
                                                const Extension* extension,
                                                const Event& event);
 
+  static void BindForRenderer(
+      int process_id,
+      mojo::PendingAssociatedReceiver<mojom::EventRouter> receiver);
+
   // An EventRouter is shared between |browser_context| and its associated
   // incognito context. |extension_prefs| may be NULL in tests.
   EventRouter(content::BrowserContext* browser_context,
               ExtensionPrefs* extension_prefs);
   ~EventRouter() override;
 
-  // Add or remove an extension as an event listener for |event_name|.
+  // mojom::EventRouter:
+  void AddListenerForMainThread(mojom::EventListenerParamPtr param,
+                                const std::string& name) override;
+
+  void AddListenerForServiceWorker(const std::string& extension_id,
+                                   const GURL& worker_scope_url,
+                                   const std::string& name,
+                                   int64_t service_worker_version_id,
+                                   int32_t worker_thread_id) override;
+
+  void RemoveListenerForMainThread(mojom::EventListenerParamPtr param,
+                                   const std::string& name) override;
+
+  void RemoveListenerForServiceWorker(const std::string& extension_id,
+                                      const GURL& worker_scope_url,
+                                      const std::string& name,
+                                      int64_t service_worker_version_id,
+                                      int32_t worker_thread_id) override;
+
+  // Removes an extension as an event listener for |event_name|.
   //
   // Note that multiple extensions can share a process due to process
   // collapsing. Also, a single extension can have 2 processes if it is a split
   // mode extension.
-  void AddEventListener(const std::string& event_name,
-                        content::RenderProcessHost* process,
-                        const ExtensionId& extension_id);
-  void AddServiceWorkerEventListener(const std::string& event_name,
-                                     content::RenderProcessHost* process,
-                                     const ExtensionId& extension_id,
-                                     const GURL& service_worker_scope,
-                                     int64_t service_worker_version_id,
-                                     int worker_thread_id);
   void RemoveEventListener(const std::string& event_name,
                            content::RenderProcessHost* process,
                            const ExtensionId& extension_id);
@@ -164,8 +189,8 @@ class EventRouter : public KeyedService,
   EventListenerMap& listeners() { return listeners_; }
 
   // Registers an observer to be notified when an event listener for
-  // |event_name| is added or removed. There can currently be only one observer
-  // for each distinct |event_name|.
+  // |event_name| is added or removed. There can currently be multiple
+  // observers for each distinct |event_name|.
   void RegisterObserver(Observer* observer, const std::string& event_name);
 
   // Unregisters an observer from all events.
@@ -197,7 +222,7 @@ class EventRouter : public KeyedService,
       const std::string& event_name,
       content::RenderProcessHost* process,
       const std::string& extension_id,
-      base::Optional<ServiceWorkerIdentifier> sw_identifier,
+      absl::optional<ServiceWorkerIdentifier> sw_identifier,
       const base::DictionaryValue& filter,
       bool add_lazy_listener);
 
@@ -207,7 +232,7 @@ class EventRouter : public KeyedService,
       const std::string& event_name,
       content::RenderProcessHost* process,
       const std::string& extension_id,
-      base::Optional<ServiceWorkerIdentifier> sw_identifier,
+      absl::optional<ServiceWorkerIdentifier> sw_identifier,
       const base::DictionaryValue& filter,
       bool remove_lazy_listener);
 
@@ -267,6 +292,24 @@ class EventRouter : public KeyedService,
  private:
   friend class EventRouterFilterTest;
   friend class EventRouterTest;
+  friend class chromeos::file_system_provider::
+      FileSystemProviderProvidedFileSystemTest;
+  friend class UpdateInstallGateTest;
+  friend class DownloadExtensionTest;
+  friend class SystemInfoAPITest;
+  FRIEND_TEST_ALL_PREFIXES(EventRouterTest, MultipleEventRouterObserver);
+  FRIEND_TEST_ALL_PREFIXES(
+      DeveloperPrivateApiUnitTest,
+      UpdateHostAccess_UnrequestedHostsDispatchUpdateEvents);
+  FRIEND_TEST_ALL_PREFIXES(DeveloperPrivateApiUnitTest,
+                           ExtensionUpdatedEventOnPermissionsChange);
+  FRIEND_TEST_ALL_PREFIXES(DeveloperPrivateApiAllowlistUnitTest,
+                           ExtensionUpdatedEventOnAllowlistWarningChange);
+  FRIEND_TEST_ALL_PREFIXES(StorageApiUnittest, StorageAreaOnChanged);
+  FRIEND_TEST_ALL_PREFIXES(StorageApiUnittest,
+                           StorageAreaOnChangedOtherListener);
+  FRIEND_TEST_ALL_PREFIXES(StorageApiUnittest,
+                           StorageAreaOnChangedOnlyOneListener);
 
   enum class RegisteredEventType {
     kLazy,
@@ -284,6 +327,21 @@ class EventRouter : public KeyedService,
       base::ListValue* event_args,
       UserGestureState user_gesture,
       const extensions::EventFilteringInfo& info);
+
+  // Adds an extension as an event listener for |event_name|.
+  //
+  // Note that multiple extensions can share a process due to process
+  // collapsing. Also, a single extension can have 2 processes if it is a split
+  // mode extension.
+  void AddEventListener(const std::string& event_name,
+                        content::RenderProcessHost* process,
+                        const ExtensionId& extension_id);
+  void AddServiceWorkerEventListener(const std::string& event_name,
+                                     content::RenderProcessHost* process,
+                                     const ExtensionId& extension_id,
+                                     const GURL& service_worker_scope,
+                                     int64_t service_worker_version_id,
+                                     int worker_thread_id);
 
   // Returns or sets the list of events for which the given extension has
   // registered.
@@ -379,14 +437,16 @@ class EventRouter : public KeyedService,
   // tests.
   ExtensionPrefs* const extension_prefs_;
 
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_registry_observer_{this};
+  base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_registry_observation_{this};
 
   EventListenerMap listeners_{this};
 
   // Map from base event name to observer.
-  using ObserverMap = std::unordered_map<std::string, Observer*>;
-  ObserverMap observers_;
+  using Observers = base::ObserverList<Observer>;
+  using ObserverMap =
+      std::unordered_map<std::string, std::unique_ptr<Observers>>;
+  ObserverMap observer_map_;
 
   base::ObserverList<TestObserver>::Unchecked test_observers_;
 
@@ -395,6 +455,11 @@ class EventRouter : public KeyedService,
   LazyEventDispatchUtil lazy_event_dispatch_util_;
 
   EventAckData event_ack_data_;
+
+  // All the Mojo receivers for the EventRouter. Keeps track of the render
+  // process id.
+  mojo::AssociatedReceiverSet<mojom::EventRouter, int /*render_process_id*/>
+      receivers_;
 
   base::WeakPtrFactory<EventRouter> weak_factory_{this};
 
@@ -454,16 +519,16 @@ struct Event {
   // related browser_contexts. See https://crbug.com/726022.
   Event(events::HistogramValue histogram_value,
         const std::string& event_name,
-        std::unique_ptr<base::ListValue> event_args);
+        std::vector<base::Value> event_args);
 
   Event(events::HistogramValue histogram_value,
         const std::string& event_name,
-        std::unique_ptr<base::ListValue> event_args,
+        std::vector<base::Value> event_args,
         content::BrowserContext* restrict_to_browser_context);
 
   Event(events::HistogramValue histogram_value,
         const std::string& event_name,
-        std::unique_ptr<base::ListValue> event_args,
+        std::vector<base::Value> event_args,
         content::BrowserContext* restrict_to_browser_context,
         const GURL& event_url,
         EventRouter::UserGestureState user_gesture,

@@ -12,6 +12,7 @@
 #include "base/test/task_environment.h"
 #include "components/services/filesystem/directory_test_helper.h"
 #include "components/services/filesystem/public/mojom/directory.mojom.h"
+#include "components/services/filesystem/public/mojom/file.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -87,7 +88,7 @@ TEST_F(FileImplTest, CreateWriteCloseRenameOpenRead) {
     EXPECT_EQ(base::File::Error::FILE_OK, error);
 
     // Read from it.
-    base::Optional<std::vector<uint8_t>> bytes_read;
+    absl::optional<std::vector<uint8_t>> bytes_read;
     error = base::File::Error::FILE_ERROR_FAILED;
     handled = file->Read(3, 1, mojom::Whence::FROM_BEGIN, &error, &bytes_read);
     ASSERT_TRUE(handled);
@@ -248,7 +249,7 @@ TEST_F(FileImplTest, OpenInAppendMode) {
     EXPECT_EQ(base::File::Error::FILE_OK, error);
 
     // Read from it.
-    base::Optional<std::vector<uint8_t>> bytes_read;
+    absl::optional<std::vector<uint8_t>> bytes_read;
     error = base::File::Error::FILE_ERROR_FAILED;
     handled = file->Read(12, 0, mojom::Whence::FROM_BEGIN, &error, &bytes_read);
     ASSERT_TRUE(handled);
@@ -343,7 +344,7 @@ TEST_F(FileImplTest, OpenInTruncateMode) {
     EXPECT_EQ(base::File::Error::FILE_OK, error);
 
     // Read from it.
-    base::Optional<std::vector<uint8_t>> bytes_read;
+    absl::optional<std::vector<uint8_t>> bytes_read;
     error = base::File::Error::FILE_ERROR_FAILED;
     handled = file->Read(7, 0, mojom::Whence::FROM_BEGIN, &error, &bytes_read);
     ASSERT_TRUE(handled);
@@ -589,7 +590,7 @@ TEST_F(FileImplTest, Dup) {
   EXPECT_EQ(base::File::Error::FILE_OK, error);
 
   // Read everything using |file2|.
-  base::Optional<std::vector<uint8_t>> bytes_read;
+  absl::optional<std::vector<uint8_t>> bytes_read;
   error = base::File::Error::FILE_ERROR_FAILED;
   handled =
       file2->Read(1000, 0, mojom::Whence::FROM_BEGIN, &error, &bytes_read);
@@ -691,7 +692,7 @@ TEST_F(FileImplTest, AsHandle) {
     EXPECT_EQ(base::File::Error::FILE_OK, error);
 
     // Verify that we wrote data raw on the file descriptor.
-    base::Optional<std::vector<uint8_t>> bytes_read;
+    absl::optional<std::vector<uint8_t>> bytes_read;
     error = base::File::Error::FILE_ERROR_FAILED;
     handled = file2->Read(5, 0, mojom::Whence::FROM_BEGIN, &error, &bytes_read);
     ASSERT_TRUE(handled);

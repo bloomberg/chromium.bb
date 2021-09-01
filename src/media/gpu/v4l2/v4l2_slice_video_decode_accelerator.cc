@@ -43,9 +43,11 @@
 #include "media/gpu/v4l2/v4l2_h264_accelerator.h"
 #include "media/gpu/v4l2/v4l2_h264_accelerator_legacy.h"
 #include "media/gpu/v4l2/v4l2_image_processor_backend.h"
+#include "media/gpu/v4l2/v4l2_utils.h"
 #include "media/gpu/v4l2/v4l2_vda_helpers.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator.h"
 #include "media/gpu/v4l2/v4l2_vp8_accelerator_legacy.h"
+#include "media/gpu/v4l2/v4l2_vp9_accelerator_chromium.h"
 #include "media/gpu/v4l2/v4l2_vp9_accelerator_legacy.h"
 #include "ui/gfx/native_pixmap_handle.h"
 #include "ui/gl/gl_context.h"
@@ -313,9 +315,15 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
     }
   } else if (video_profile_ >= VP9PROFILE_MIN &&
              video_profile_ <= VP9PROFILE_MAX) {
-    decoder_ = std::make_unique<VP9Decoder>(
-        std::make_unique<V4L2LegacyVP9Accelerator>(this, device_.get()),
-        video_profile_);
+    if (supports_requests_) {
+      decoder_ = std::make_unique<VP9Decoder>(
+          std::make_unique<V4L2ChromiumVP9Accelerator>(this, device_.get()),
+          video_profile_);
+    } else {
+      decoder_ = std::make_unique<VP9Decoder>(
+          std::make_unique<V4L2LegacyVP9Accelerator>(this, device_.get()),
+          video_profile_);
+    }
   } else {
     NOTREACHED() << "Unsupported profile " << GetProfileName(video_profile_);
     return false;
@@ -505,7 +513,7 @@ bool V4L2SliceVideoDecodeAccelerator::SetupFormats() {
   // output format or not may depend on the input format.
   memset(&fmtdesc, 0, sizeof(fmtdesc));
   fmtdesc.type = V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE;
-  output_format_fourcc_ = base::nullopt;
+  output_format_fourcc_ = absl::nullopt;
   output_planes_count_ = 0;
   while (device_->Ioctl(VIDIOC_ENUM_FMT, &fmtdesc) == 0) {
     auto fourcc = Fourcc::FromV4L2PixFmt(fmtdesc.pixelformat);
@@ -1075,6 +1083,12 @@ void V4L2SliceVideoDecodeAccelerator::DecodeBufferTask() {
     TRACE_EVENT_END0("media,gpu", "V4L2SVDA::DecodeBufferTask AVD::Decode");
     switch (res) {
       case AcceleratedVideoDecoder::kConfigChange:
+        if (decoder_->GetBitDepth() != 8u) {
+          LOG(ERROR) << "Unsupported bit depth: "
+                     << base::strict_cast<int>(decoder_->GetBitDepth());
+          NOTIFY_ERROR(PLATFORM_FAILURE);
+          return;
+        }
         if (!IsSupportedProfile(decoder_->GetProfile())) {
           LOG(ERROR) << "Unsupported profile: " << decoder_->GetProfile();
           NOTIFY_ERROR(PLATFORM_FAILURE);
@@ -1458,9 +1472,18 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
   gl::ScopedTextureBinder bind_restore(gl_device->GetTextureTarget(),
                                        texture_id);
   bool ret = gl_image->BindTexImage(gl_device->GetTextureTarget());
-  DCHECK(ret);
-  bind_image_cb_.Run(client_texture_id, gl_device->GetTextureTarget(), gl_image,
-                     true);
+  if (!ret) {
+    LOG(ERROR) << "Error while binding tex image";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return;
+  }
+  ret = bind_image_cb_.Run(client_texture_id, gl_device->GetTextureTarget(),
+                           gl_image, true);
+  if (!ret) {
+    LOG(ERROR) << "Error while running bind image callback";
+    NOTIFY_ERROR(PLATFORM_FAILURE);
+    return;
+  }
 }
 
 void V4L2SliceVideoDecodeAccelerator::ImportBufferForPicture(
@@ -1492,7 +1515,9 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureForImportTask(
 
   if (pixel_format != gl_image_format_fourcc_->ToVideoPixelFormat()) {
     LOG(ERROR) << "Unsupported import format: "
-               << VideoPixelFormatToString(pixel_format);
+               << VideoPixelFormatToString(pixel_format) << ", expected "
+               << VideoPixelFormatToString(
+                      gl_image_format_fourcc_->ToVideoPixelFormat());
     NOTIFY_ERROR(INVALID_ARGUMENT);
     return;
   }
@@ -2073,7 +2098,7 @@ V4L2SliceVideoDecodeAccelerator::CreateSurface() {
 
   if (supports_requests_) {
     // Get a free request from the queue for a new surface.
-    base::Optional<V4L2RequestRef> request_ref =
+    absl::optional<V4L2RequestRef> request_ref =
         requests_queue_->GetFreeRequest();
     if (!request_ref) {
       LOG(ERROR) << "Failed getting a request";
@@ -2331,14 +2356,14 @@ bool V4L2SliceVideoDecodeAccelerator::OnMemoryDump(
       input_queue_->AllocatedBuffersCount();
   size_t input_queue_memory_usage = 0;
   std::string input_queue_buffers_memory_type =
-      V4L2Device::V4L2MemoryToString(input_queue_->GetMemoryType());
+      V4L2MemoryToString(input_queue_->GetMemoryType());
   input_queue_memory_usage += input_queue_->GetMemoryUsage();
 
   // VIDEO_CAPTURE queue's memory usage.
   const size_t output_queue_buffers_count = output_buffer_map_.size();
   size_t output_queue_memory_usage = 0;
   std::string output_queue_buffers_memory_type =
-      V4L2Device::V4L2MemoryToString(output_queue_->GetMemoryType());
+      V4L2MemoryToString(output_queue_->GetMemoryType());
   if (output_mode_ == Config::OutputMode::ALLOCATE) {
     // Call QUERY_BUF here because the length of buffers on VIDIOC_CATURE queue
     // are not recorded nowhere in V4L2VideoDecodeAccelerator.

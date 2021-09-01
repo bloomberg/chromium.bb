@@ -18,7 +18,6 @@
 #include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/window.h"
@@ -33,8 +32,6 @@ class WaitableEvent;
 namespace gfx {
 class Rect;
 }
-
-struct IVirtualDesktopManagerInternal;
 
 namespace aura {
 
@@ -65,7 +62,8 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin
 
  private:
   friend class NativeWindowOcclusionTrackerTest;
-
+  FRIEND_TEST_ALL_PREFIXES(NativeWindowOcclusionTrackerTest,
+                           DisplayOnOffHandling);
   // This class computes the occlusion state of the tracked windows.
   // It runs on a separate thread, and notifies the main thread of
   // the occlusion state of the tracked windows.
@@ -136,10 +134,6 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin
     // their occlusion status has changed.
     void ComputeNativeWindowOcclusionStatus();
 
-    // Computes if virtual desktops are used. This is used as an optimization
-    // since IsWindowOnCurrentVirtualDesktop is a slow call.
-    void ComputeVirtualDesktopUsed();
-
     // Schedules an occlusion calculation |update_occlusion_delay_| time in the
     // future, if one isn't already scheduled.
     void ScheduleOcclusionCalculationIfNeeded();
@@ -189,7 +183,7 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin
     // Returns true if |hwnd| is definitely on the current virtual desktop,
     // false if it's definitely not on the current virtual desktop, and nullopt
     // if we we can't tell for sure.
-    base::Optional<bool> IsWindowOnCurrentVirtualDesktop(HWND hwnd);
+    absl::optional<bool> IsWindowOnCurrentVirtualDesktop(HWND hwnd);
 
     static WindowOcclusionCalculator* instance_;
 
@@ -223,9 +217,6 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin
     // Timer to delay occlusion update.
     base::OneShotTimer occlusion_update_timer_;
 
-    // Timer to check how many virtual desktops are present.
-    base::OneShotTimer virtual_desktop_update_timer_;
-
     // Used to keep track of whether we're in the middle of getting window move
     // events, in order to wait until the window move is complete before
     // calculating window occlusion.
@@ -248,17 +239,13 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin
     // showing.
     bool showing_thumbnails_ = false;
 
-    // By caching if virtual desktops are in use or not we can avoid calling
-    // IsWindowOnCurrentVirtualDesktop which is slow. Start with an initial
-    // value of true so that we only optimize after we get confirmation that
-    // there are no virtual desktops.
-    bool virtual_desktops_used_ = true;
+    // Used to keep track of the window that's currently moving. That window
+    // is ignored for calculation occlusion so that tab dragging won't
+    // ignore windows occluded by the dragged window.
+    HWND moving_window_ = 0;
 
     // Only used on Win10+.
     Microsoft::WRL::ComPtr<IVirtualDesktopManager> virtual_desktop_manager_;
-
-    Microsoft::WRL::ComPtr<IVirtualDesktopManagerInternal>
-        virtual_desktop_manager_internal_;
 
     SEQUENCE_CHECKER(sequence_checker_);
 
@@ -272,8 +259,8 @@ class AURA_EXPORT NativeWindowOcclusionTrackerWin
 
   // Returns true if we are interested in |hwnd| for purposes of occlusion
   // calculation. We are interested in |hwnd| if it is a window that is
-  // visible, opaque, and bounded. If we are interested in |hwnd|, stores the
-  // window rectangle in |window_rect|.
+  // visible, opaque, bounded, and not a popup or floating window. If we are
+  // interested in |hwnd|, stores the window rectangle in |window_rect|.
   static bool IsWindowVisibleAndFullyOpaque(HWND hwnd, gfx::Rect* window_rect);
 
   // Updates root windows occclusion state. If |show_all_windows| is true,

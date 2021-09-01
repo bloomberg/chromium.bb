@@ -8,11 +8,17 @@
 #include <memory>
 #include <string>
 
+#include "build/build_config.h"
+#include "chrome/browser/enterprise/signals/client_certificate_fetcher.h"
+#include "chrome/browser/enterprise/signals/context_info_fetcher.h"
+#include "chrome/browser/enterprise/signals/device_info_fetcher.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
 #include "chrome/common/extensions/api/enterprise_reporting_private.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
+
+#if !defined(OS_CHROMEOS)
 namespace enterprise_reporting {
 
 extern const char kDeviceIdNotFound[];
@@ -124,6 +130,10 @@ class EnterpriseReportingPrivateGetDeviceInfoFunction
   EnterpriseReportingPrivateGetDeviceInfoFunction& operator=(
       const EnterpriseReportingPrivateGetDeviceInfoFunction&) = delete;
 
+  // Conversion function for this class to use a DeviceInfoFetcher result.
+  static api::enterprise_reporting_private::DeviceInfo ToDeviceInfo(
+      enterprise_signals::DeviceInfo device_signals);
+
  private:
   ~EnterpriseReportingPrivateGetDeviceInfoFunction() override;
 
@@ -131,8 +141,59 @@ class EnterpriseReportingPrivateGetDeviceInfoFunction
   ExtensionFunction::ResponseAction Run() override;
 
   // Callback once the data was retrieved.
-  void OnDeviceInfoRetrieved(
-      const api::enterprise_reporting_private::DeviceInfo& device_info);
+  void OnDeviceInfoRetrieved(::enterprise_signals::DeviceInfo device_info);
+};
+
+#endif  // !defined(OS_CHROMEOS)
+
+class EnterpriseReportingPrivateGetContextInfoFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("enterprise.reportingPrivate.getContextInfo",
+                             ENTERPRISEREPORTINGPRIVATE_GETCONTEXTINFO)
+
+  EnterpriseReportingPrivateGetContextInfoFunction();
+  EnterpriseReportingPrivateGetContextInfoFunction(
+      const EnterpriseReportingPrivateGetContextInfoFunction&) = delete;
+  EnterpriseReportingPrivateGetContextInfoFunction& operator=(
+      const EnterpriseReportingPrivateGetContextInfoFunction&) = delete;
+
+ private:
+  ~EnterpriseReportingPrivateGetContextInfoFunction() override;
+
+  // ExtensionFunction
+  ExtensionFunction::ResponseAction Run() override;
+
+  // Callback once the context data is retrieved.
+  void OnContextInfoRetrieved(enterprise_signals::ContextInfo context_info);
+
+  std::unique_ptr<enterprise_signals::ContextInfoFetcher> context_info_fetcher_;
+};
+
+class EnterpriseReportingPrivateGetCertificateFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("enterprise.reportingPrivate.getCertificate",
+                             ENTERPRISEREPORTINGPRIVATE_GETCERTIFICATE)
+
+  EnterpriseReportingPrivateGetCertificateFunction();
+  EnterpriseReportingPrivateGetCertificateFunction(
+      const EnterpriseReportingPrivateGetCertificateFunction&) = delete;
+  EnterpriseReportingPrivateGetCertificateFunction& operator=(
+      const EnterpriseReportingPrivateGetCertificateFunction&) = delete;
+
+ private:
+  ~EnterpriseReportingPrivateGetCertificateFunction() override;
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
+
+  // Callback invoked when |client_cert_fetcher_| is done fetching and selecting
+  // the client certificate.
+  void OnClientCertFetched(std::unique_ptr<net::ClientCertIdentity> cert);
+
+  std::unique_ptr<enterprise_signals::ClientCertificateFetcher>
+      client_cert_fetcher_;
 };
 
 }  // namespace extensions

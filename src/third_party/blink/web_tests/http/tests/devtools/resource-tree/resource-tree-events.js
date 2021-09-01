@@ -4,7 +4,7 @@
 
 (async function() {
   TestRunner.addResult(`Tests top frame navigation events.\n`);
-  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.loadModule('console'); await TestRunner.loadTestModule('application_test_runner');
   await TestRunner.showPanel('resources');
 
   // Reset resourceTreeModel.
@@ -20,8 +20,11 @@
   function eventHandler(eventName, event) {
     switch (eventName) {
       case 'FrameAdded':
-      case 'FrameDetached':
         var frame = event.data;
+        TestRunner.addResult(`    ${eventName} : ${frame.id}`);
+        break;
+      case 'FrameDetached':
+        var frame = event.data.frame;
         TestRunner.addResult(`    ${eventName} : ${frame.id}`);
         break;
       case 'FrameNavigated':

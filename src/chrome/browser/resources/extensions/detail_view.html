@@ -58,8 +58,11 @@
   }
 
   .inspectable-view {
+    display: inline;
     height: 20px;
+    overflow-wrap: anywhere;
     width: auto;  /* override the default button size of 24x24 */
+    word-break: normal;
   }
 
   @media (prefers-color-scheme: light) {
@@ -86,6 +89,14 @@
     width: 18px;
   }
 
+  #allowlist-warning {
+    flex: 1;
+  }
+
+  #allowlist-warning .warning-icon {
+    --iron-icon-fill-color: var(--warning-color);
+  }
+
   ul {
     margin: 0;
     padding-inline-start: 20px;
@@ -97,10 +108,7 @@
 
   extensions-toggle-row {
     box-sizing: border-box;
-    padding-inline-end: 0;
-    padding-inline-start: 0;
-    --toggle-row-label-horizontal-padding: var(--cr-section-padding);
-    --toggle-row-label-vertical-padding: var(--cr-section-vertical-padding);
+    padding: var(--cr-section-vertical-padding) var(--cr-section-padding);
   }
 
   #load-path {
@@ -127,11 +135,7 @@
       <cr-icon-button class="icon-arrow-back no-overlap" id="closeButton"
           aria-label="$i18n{back}" on-click="onCloseButtonTap_">
       </cr-icon-button>
-      <img id="icon" src="[[data.iconUrl]]"
-          alt$="[[appOrExtension(
-              data.type,
-              '$i18nPolymer{appIcon}',
-              '$i18nPolymer{extensionIcon}')]]">
+      <img id="icon" src="[[data.iconUrl]]" alt="">
       <span id="name" class="cr-title-text" role="heading" aria-level="1">
         [[data.name]]
       </span>
@@ -172,7 +176,7 @@
         </cr-toggle>
       </div>
     </div>
-    <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">
+    <div id="warnings" hidden$="[[!hasSevereWarnings_(data.*)]]">
       <div id="runtime-warnings" hidden$="[[!data.runtimeWarnings.length]]"
           class="cr-row continuation warning control-line">
         <iron-icon class="warning-icon" icon="cr:error"></iron-icon>
@@ -218,6 +222,18 @@
         <iron-icon class="warning-icon" icon="cr:warning"></iron-icon>
         <span>$i18n{updateRequiredByPolicy}</span>
       </div>
+    </div>
+    <div id="allowlist-warning" class="cr-row continuation"
+        hidden$="[[!showAllowlistWarning_(data.*)]]">
+      <iron-icon class="warning-icon"
+          icon="extensions-icons:safebrowsing_warning">
+      </iron-icon>
+      <span class="cr-secondary-text">
+        $i18n{itemAllowlistWarning}
+        <a href="$i18n{enhancedSafeBrowsingWarningHelpUrl}" target="_blank">
+          $i18n{learnMore}
+        </a>
+      </span>
     </div>
     <div class="section">
       <div class="section-title" role="heading" aria-level="2">

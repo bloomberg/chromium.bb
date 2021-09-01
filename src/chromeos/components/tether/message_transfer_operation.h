@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
+#include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
@@ -19,12 +19,12 @@
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
 namespace tether {
 
-class MessageWrapper;
 class TimerFactory;
 
 // Abstract base class used for operations which send and/or receive messages
@@ -172,7 +172,7 @@ class MessageTransferOperation {
                            uint32_t timeout_seconds);
   void StopTimerForDeviceIfRunning(multidevice::RemoteDeviceRef remote_device);
   void OnTimeout(multidevice::RemoteDeviceRef remote_device);
-  base::Optional<multidevice::RemoteDeviceRef> GetRemoteDevice(
+  absl::optional<multidevice::RemoteDeviceRef> GetRemoteDevice(
       const std::string& device_id);
 
   void SetTimerFactoryForTest(

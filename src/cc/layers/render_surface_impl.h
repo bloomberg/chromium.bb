@@ -12,12 +12,14 @@
 #include <vector>
 
 #include "cc/cc_export.h"
+#include "cc/document_transition/document_transition_shared_element_id.h"
 #include "cc/layers/draw_mode.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/trees/occlusion.h"
 #include "cc/trees/property_tree.h"
 #include "components/viz/common/quads/compositor_render_pass.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/mask_filter_info.h"
@@ -122,14 +124,10 @@ class CC_EXPORT RenderSurfaceImpl {
     return is_render_surface_list_member_;
   }
 
-  void set_can_use_cached_backdrop_filtered_result(
-      bool can_use_cached_backdrop_filtered_result) {
-    can_use_cached_backdrop_filtered_result_ =
-        can_use_cached_backdrop_filtered_result;
+  void set_intersects_damage_under(bool intersects_damage_under) {
+    intersects_damage_under_ = intersects_damage_under;
   }
-  bool can_use_cached_backdrop_filtered_result() const {
-    return can_use_cached_backdrop_filtered_result_;
-  }
+  bool intersects_damage_under() const { return intersects_damage_under_; }
 
   void CalculateContentRectFromAccumulatedContentRect(int max_texture_size);
   void SetContentRectToViewport();
@@ -170,7 +168,7 @@ class CC_EXPORT RenderSurfaceImpl {
 
   const FilterOperations& Filters() const;
   const FilterOperations& BackdropFilters() const;
-  base::Optional<gfx::RRectF> BackdropFilterBounds() const;
+  absl::optional<gfx::RRectF> BackdropFilterBounds() const;
   LayerImpl* BackdropMaskLayer() const;
   gfx::Transform SurfaceScale() const;
 
@@ -178,7 +176,14 @@ class CC_EXPORT RenderSurfaceImpl {
 
   bool HasCopyRequest() const;
 
+  viz::SubtreeCaptureId SubtreeCaptureId() const;
+
   bool ShouldCacheRenderSurface() const;
+
+  // Returns true if it's required to copy the output of this surface (i.e. when
+  // it has copy requests, should be cached, or has a valid subtree capture ID),
+  // and should be e.g. immune from occlusion, etc. Returns false otherise.
+  bool CopyOfOutputRequired() const;
 
   void ResetPropertyChangedFlags();
   bool SurfacePropertyChanged() const;
@@ -205,6 +210,9 @@ class CC_EXPORT RenderSurfaceImpl {
   int EffectTreeIndex() const;
 
   const EffectNode* OwningEffectNode() const;
+
+  const DocumentTransitionSharedElementId&
+  GetDocumentTransitionSharedElementId() const;
 
  private:
   void SetContentRect(const gfx::Rect& content_rect);
@@ -260,7 +268,7 @@ class CC_EXPORT RenderSurfaceImpl {
 
   bool contributes_to_drawn_surface_ : 1;
   bool is_render_surface_list_member_ : 1;
-  bool can_use_cached_backdrop_filtered_result_ : 1;
+  bool intersects_damage_under_ : 1;
 
   Occlusion occlusion_in_content_space_;
 

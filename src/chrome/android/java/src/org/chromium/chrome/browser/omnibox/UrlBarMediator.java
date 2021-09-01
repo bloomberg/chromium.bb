@@ -13,17 +13,14 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.format.DateUtils;
-import android.view.ActionMode;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.omnibox.UrlBar.ScrollType;
-import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
-import org.chromium.chrome.browser.omnibox.UrlBar.UrlDirectionListener;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlTextChangeListener;
 import org.chromium.chrome.browser.omnibox.UrlBarCoordinator.SelectionState;
 import org.chromium.chrome.browser.omnibox.UrlBarProperties.AutocompleteText;
@@ -62,8 +59,17 @@ class UrlBarMediator
     private final List<UrlTextChangeListener> mUrlTextChangeListeners = new ArrayList<>();
     private final List<TextWatcher> mTextChangedListeners = new ArrayList<>();
 
-    public UrlBarMediator(PropertyModel model) {
+    /**
+     * Creates a URLBarMediator.
+     *
+     * @param model MVC property model to write changes to.
+     * @param focusChangeCallback The callback that will be notified when focus changes on the
+     *         UrlBar.
+     */
+    public UrlBarMediator(
+            @NonNull PropertyModel model, @NonNull Callback<Boolean> focusChangeCallback) {
         mModel = model;
+        mOnFocusChangeCallback = focusChangeCallback;
 
         mModel.set(UrlBarProperties.FOCUS_CHANGE_CALLBACK, this::onUrlFocusChange);
         mModel.set(UrlBarProperties.SHOW_CURSOR, false);
@@ -73,14 +79,13 @@ class UrlBarMediator
         setUseDarkTextColors(true);
     }
 
-    /**
-     * Set the primary delegate for the UrlBar view.
-     */
-    public void setDelegate(UrlBarDelegate delegate) {
-        mModel.set(UrlBarProperties.DELEGATE, delegate);
+    public void destroy() {
+        mUrlTextChangeListeners.clear();
+        mTextChangedListeners.clear();
+        mOnFocusChangeCallback = (unused) -> {};
     }
 
-    /** @see UrlBarMediator#setDelegate(UrlBarDelegate) */
+    /** Adds a listener for url text changes. */
     public void addUrlTextChangeListener(UrlTextChangeListener listener) {
         mUrlTextChangeListeners.add(listener);
     }
@@ -205,15 +210,6 @@ class UrlBarMediator
                 new AutocompleteText(userText, autocompleteText));
     }
 
-    /**
-     * Updates the callback that will be notified when the focus changes on the UrlBar.
-     *
-     * @param callback The callback to be notified on focus changes.
-     */
-    public void setOnFocusChangedCallback(Callback<Boolean> callback) {
-        mOnFocusChangeCallback = callback;
-    }
-
     private void onUrlFocusChange(boolean focus) {
         mHasFocus = focus;
 
@@ -222,7 +218,7 @@ class UrlBarMediator
         }
 
         UrlBarTextState preCallbackState = mModel.get(UrlBarProperties.TEXT_STATE);
-        if (mOnFocusChangeCallback != null) mOnFocusChangeCallback.onResult(focus);
+        mOnFocusChangeCallback.onResult(focus);
         boolean textChangedInFocusCallback =
                 mModel.get(UrlBarProperties.TEXT_STATE) != preCallbackState;
         if (mUrlBarData != null && !textChangedInFocusCallback) {
@@ -255,22 +251,8 @@ class UrlBarMediator
     /**
      * Set the listener to be notified for URL direction changes.
      */
-    public void setUrlDirectionListener(UrlDirectionListener listener) {
+    public void setUrlDirectionListener(Callback<Integer> listener) {
         mModel.set(UrlBarProperties.URL_DIRECTION_LISTENER, listener);
-    }
-
-    /**
-     * Set the delegate that provides Window capabilities.
-     */
-    public void setWindowDelegate(WindowDelegate windowDelegate) {
-        mModel.set(UrlBarProperties.WINDOW_DELEGATE, windowDelegate);
-    }
-
-    /**
-     * Set the callback to handle contextual Action Modes.
-     */
-    public void setActionModeCallback(ActionMode.Callback callback) {
-        mModel.set(UrlBarProperties.ACTION_MODE_CALLBACK, callback);
     }
 
     @Override

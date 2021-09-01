@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include <stdint.h>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -23,7 +24,6 @@
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/rand_util.h"
-#include "base/strings/string16.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
@@ -205,6 +205,10 @@ IOSChromeMetricsServiceClient::GetChannel() {
   return metrics::AsProtobufChannel(::GetChannel());
 }
 
+bool IOSChromeMetricsServiceClient::IsExtendedStableChannel() {
+  return false;  // Not supported on iOS.
+}
+
 std::string IOSChromeMetricsServiceClient::GetVersionString() {
   return metrics::GetVersionString();
 }
@@ -281,7 +285,8 @@ void IOSChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
       std::move(stability_metrics_provider));
 
   metrics_service_->RegisterMetricsProvider(
-      std::make_unique<IOSChromeDefaultBrowserMetricsProvider>());
+      std::make_unique<IOSChromeDefaultBrowserMetricsProvider>(
+          metrics::MetricsLogUploader::MetricServiceType::UMA));
 
   // NOTE: metrics_state_manager_->IsMetricsReportingEnabled() returns false
   // during local testing. To test locally, modify
@@ -333,6 +338,10 @@ void IOSChromeMetricsServiceClient::RegisterUKMProviders() {
   ukm_service_->RegisterMetricsProvider(
       std::make_unique<variations::FieldTrialsProvider>(nullptr,
                                                         kUKMFieldTrialSuffix));
+
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<IOSChromeDefaultBrowserMetricsProvider>(
+          metrics::MetricsLogUploader::MetricServiceType::UKM));
 }
 
 void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
@@ -344,9 +353,6 @@ void IOSChromeMetricsServiceClient::CollectFinalHistograms() {
       task_info(mach_task_self(), TASK_VM_INFO,
                 reinterpret_cast<task_info_t>(&task_info_data), &count);
   if (kr == KERN_SUCCESS) {
-    base::UmaHistogramMemoryKB(
-        "Memory.Browser",
-        (task_info_data.resident_size - task_info_data.reusable) / 1024);
     mach_vm_size_t footprint_mb = task_info_data.phys_footprint / 1024 / 1024;
     base::UmaHistogramMemoryLargeMB("Memory.Browser.MemoryFootprint",
                                     footprint_mb);

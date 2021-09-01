@@ -5,9 +5,12 @@
 #ifndef CHROME_BROWSER_UI_ASH_HOLDING_SPACE_HOLDING_SPACE_KEYED_SERVICE_DELEGATE_H_
 #define CHROME_BROWSER_UI_ASH_HOLDING_SPACE_HOLDING_SPACE_KEYED_SERVICE_DELEGATE_H_
 
+#include <vector>
+
 #include "ash/public/cpp/holding_space/holding_space_model.h"
 #include "ash/public/cpp/holding_space/holding_space_model_observer.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
+#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
 
 class Profile;
 
@@ -19,27 +22,27 @@ class HoldingSpaceKeyedServiceDelegate : public HoldingSpaceModelObserver {
  public:
   ~HoldingSpaceKeyedServiceDelegate() override;
 
-  // Invoked by `HoldingSpaceKeyedService` to initialize the delegate
-  // immediately after its construction. Delegates accepting callbacks from
-  // the service should *not* invoke callbacks during construction but are free
-  // to do so during or anytime after initialization.
+  // Invoked by `HoldingSpaceKeyedService` to initialize the delegate.
+  // Called immediately after the delegate's construction. Delegates accepting
+  // callbacks from the service should *not* invoke callbacks during
+  // construction but are free to do so during or anytime after initialization.
   virtual void Init() = 0;
-
-  // Invoked by `HoldingSpaceKeyedService` when the service is shutting down.
-  // Delegates should perform any necessary clean up.
-  virtual void Shutdown();
 
   // Invoked by `HoldingSpaceKeyedService` to notify delegates when holding
   // space persistence has been restored.
   void NotifyPersistenceRestored();
 
  protected:
-  HoldingSpaceKeyedServiceDelegate(Profile* profile, HoldingSpaceModel* model);
+  HoldingSpaceKeyedServiceDelegate(HoldingSpaceKeyedService* service,
+                                   HoldingSpaceModel* model);
 
-  // Returns the `profile_` associated with the `HoldingSpaceKeyedService`.
-  Profile* profile() { return profile_; }
+  // Returns the `profile_` associated with the `service_`.
+  Profile* profile() { return service_->profile(); }
 
-  // Returns the holding space model owned by `HoldingSpaceKeyedService`.
+  // Returns the `service` which owns this delegate.
+  HoldingSpaceKeyedService* service() { return service_; }
+
+  // Returns the holding space model owned by `service_`.
   HoldingSpaceModel* model() { return model_; }
 
   // Returns if persistence is being restored.
@@ -47,21 +50,23 @@ class HoldingSpaceKeyedServiceDelegate : public HoldingSpaceModelObserver {
 
  private:
   // HoldingSpaceModelObserver:
-  void OnHoldingSpaceItemAdded(const HoldingSpaceItem* item) override;
-  void OnHoldingSpaceItemRemoved(const HoldingSpaceItem* item) override;
-  void OnHoldingSpaceItemFinalized(const HoldingSpaceItem* item) override;
+  void OnHoldingSpaceItemsAdded(
+      const std::vector<const HoldingSpaceItem*>& items) override;
+  void OnHoldingSpaceItemsRemoved(
+      const std::vector<const HoldingSpaceItem*>& items) override;
+  void OnHoldingSpaceItemInitialized(const HoldingSpaceItem* item) override;
 
   // Invoked when holding space persistence has been restored.
   virtual void OnPersistenceRestored();
 
-  Profile* const profile_;
+  HoldingSpaceKeyedService* const service_;
   HoldingSpaceModel* const model_;
 
   // If persistence is being restored.
   bool is_restoring_persistence_ = true;
 
-  ScopedObserver<HoldingSpaceModel, HoldingSpaceModelObserver>
-      holding_space_model_observer_{this};
+  base::ScopedObservation<HoldingSpaceModel, HoldingSpaceModelObserver>
+      holding_space_model_observation_{this};
 };
 
 }  // namespace ash

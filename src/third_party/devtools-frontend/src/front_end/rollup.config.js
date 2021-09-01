@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import * as path from 'path';
+import {terser} from 'rollup-plugin-terser';
 
 /**
  * `path.dirname` does not include trailing slashes. If we would always
@@ -36,27 +37,21 @@ function dirnameWithSeparator(file) {
   return path.dirname(file) + path.sep;
 }
 
-/**
- * @param {string} entrypointDirectory
- * @param {string} importedFilelocation
- * @return {boolean}
- */
-function importsCurrentDirectoryEntrypoint(entrypointDirectory, importedFilelocation) {
-  return path.join(entrypointDirectory, `${path.basename(entrypointDirectory)}.js`) === importedFilelocation;
-}
-
 // eslint-disable-next-line import/no-default-export
-export default {
-  treeshake: false,
-  context: 'self',
-  output: {
-    format: 'esm',
-  },
-  plugins:
-      [
+export default commandLineArgs =>
+    ({
+      treeshake: false,
+      context: 'self',
+      output: {
+        format: 'esm',
+      },
+      plugins: [
+        terser({
+          compress: {
+            pure_funcs: commandLineArgs.configDCHECK ? ['Platform.DCHECK'] : [],
+          },
+        }),
         (() => {
-          /** @type {string} */
-          let entrypointDirectory;
           return {
             name: 'devtools-plugin',
             buildStart(options) {
@@ -69,8 +64,6 @@ export default {
               } else {
                 throw new Error(`Invalid input file type specified: ${JSON.stringify(options.input)}`);
               }
-              const absoluteInputPath = path.normalize(path.join(process.cwd(), inputFile));
-              entrypointDirectory = dirnameWithSeparator(absoluteInputPath);
             },
             /**
              * @param {string} source
@@ -89,28 +82,40 @@ export default {
                 return null;
               }
 
-              // We currently still have to import third_party packages and put them in separate
-              // folders with the `module.json` files.
-              //
+              // An import is considered external (and therefore a separate
+              // bundle) if its filename matches its immediate parent's folder
+              // name (without the extension). For example:
+              // import * as Components from './components/components.js' = external
+              // import * as UI from '../ui/ui.js' = external
+              // import * as LitHtml from '../third_party/lit-html/lit-html.js' = external
+              // import {DataGrid} from './components/DataGrid.js' = not external
+              // import * as Components from './components/foo.js' = not external
+
               // Note that we can't do a simple check for only `third_party`, as in Chromium
               // our full path is `third_party/devtools-frontend/src/`, which thus *always*
               // includes third_party. It also not possible to use the current directory
               // as a check for the import, as the import will be different in Chromium and
               // would therefore not match the path of `__dirname`.
-              if (importedFileDirectory.includes(path.join('front_end', 'third_party')) &&
-                  !importedFileDirectory.includes(path.join('front_end', 'third_party', 'lit-html')) &&
-                  !importedFileDirectory.includes(path.join('front_end', 'third_party', 'marked')) &&
-                  // Note that we have to include the path.sep for `acorn`, as there are multiple packages
-                  // in `third_party` that start with `acorn-`
-                  !importedFileDirectory.includes(
-                      dirnameWithSeparator(path.join('front_end', 'third_party', 'acorn', 'acorn.js')))) {
+              // These should be removed because the new heuristic _should_ deal with these
+              // e.g. it'll pick up third_party/lit-html/lit-html.js is its own entrypoint
+
+              // Puppeteer has dynamic imports in its build gated on an ifNode
+              // flag, but our Rollup config doesn't know about that and tries
+              // to parse dynamic import('fs'). Let's ignore Puppeteer for now.
+              // The long term plan is probably for Puppeteer to ship a web
+              // bundle anyway. See go/pptr-agnostify for details.
+              if (importedFileDirectory.includes(path.join('front_end', 'third_party', 'puppeteer'))) {
                 return null;
               }
 
-              const isExternal = !importedFileDirectory.startsWith(entrypointDirectory)
-                  // -meta.ts and -legacy.js files import the entrypoint directly, but shouldn't
-                  // bundle as well, as that would duplicate all symbols
-                  || importsCurrentDirectoryEntrypoint(entrypointDirectory, importedFilelocation);
+              // The CodeMirror addons look like bundles (addon/comment/comment.js) but are not.
+              if (importedFileDirectory.includes(path.join('front_end', 'third_party', 'codemirror', 'package'))) {
+                return null;
+              }
+
+              const importedFileName = path.basename(importedFilelocation, '.js');
+              const importedFileParentDirectory = path.basename(path.dirname(importedFilelocation));
+              const isExternal = importedFileName === importedFileParentDirectory;
 
               return {
                 id: importedFilelocation,
@@ -120,4 +125,4 @@ export default {
           };
         })(),
       ]
-};
+    });

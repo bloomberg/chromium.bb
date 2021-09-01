@@ -6,7 +6,7 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -23,7 +23,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 
 namespace blink {
@@ -70,6 +69,12 @@ enum Milestone {
   kM89 = 89,
   kM90 = 90,
   kM91 = 91,
+  kM92 = 92,
+  kM93 = 93,
+  kM94 = 94,
+  kM95 = 95,
+  kM96 = 96,
+  kM97 = 97,
 };
 
 // Returns estimated milestone dates as milliseconds since January 1, 1970.
@@ -130,6 +135,18 @@ base::Time::Exploded MilestoneDate(Milestone milestone) {
       return {2021, 4, 0, 13, 4};
     case kM91:
       return {2021, 5, 0, 25, 4};
+    case kM92:
+      return {2021, 7, 0, 20, 4};
+    case kM93:
+      return {2021, 8, 0, 31, 4};
+    case kM94:
+      return {2021, 9, 0, 21, 4};
+    case kM95:
+      return {2021, 10, 0, 19, 4};
+    case kM96:
+      return {2022, 11, 0, 16, 4};
+    case kM97:
+      return {2022, 1, 0, 4, 4};
   }
 
   NOTREACHED();
@@ -348,16 +365,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "https://www.chromestatus.com/feature/6451284559265792 for more "
               "details."};
 
-    case WebFeature::kCSSDeepCombinator:
-      return {"CSSDeepCombinator", kM65,
-              "/deep/ combinator is no longer supported in CSS dynamic "
-              "profile. "
-              "It is now effectively no-op, acting as if it were a descendant "
-              "combinator. /deep/ combinator will be removed, and will be "
-              "invalid at M65. You should remove it. See "
-              "https://www.chromestatus.com/features/4964279606312960 for more "
-              "details."};
-
     case WebFeature::kCSSSelectorInternalMediaControlsOverlayCastButton:
       return {"CSSSelectorInternalMediaControlsOverlayCastButton", kUnknown,
               "The disableRemotePlayback attribute should be used in order to "
@@ -395,31 +402,6 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
           "load these resources. See "
           "https://www.chromestatus.com/feature/5735596811091968 for more "
           "details."};
-
-    case WebFeature::kHTMLImports:
-      return {"HTMLImports", kUnknown,
-              "The HTML Imports feature has been removed. See "
-              "https://www.chromestatus.com/feature/5144752345317376 for more "
-              "details."};
-
-    case WebFeature::kElementCreateShadowRoot:
-      return {"ElementCreateShadowRoot", kUnknown,
-              "The Shadow DOM v0 API has been removed. See "
-              "https://www.chromestatus.com/feature/4507242028072960 for more "
-              "details."};
-
-    case WebFeature::kDocumentRegisterElement:
-      return {"DocumentRegisterElement", kUnknown,
-              "The Custom Elements v0 API has been removed. See "
-              "https://www.chromestatus.com/feature/4642138092470272 for more "
-              "details."};
-
-    case WebFeature::kCSSSelectorPseudoUnresolved:
-      return {
-          "CSSSelectorPseudoUnresolved", kUnknown,
-          "The Custom Elements v0 API (:unresolved pseudo selector) has been "
-          "removed. See https://www.chromestatus.com/feature/4642138092470272 "
-          "for more details."};
 
     case WebFeature::kLocalCSSFileExtensionRejected:
       return {"LocalCSSFileExtensionRejected", kM64,
@@ -531,6 +513,16 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
               "details.",
               MilestoneString(kM84).Ascii().c_str())};
 
+    case WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation:
+      return {
+          "SharedArrayBufferConstructedWithoutIsolation", kM92,
+          String::Format(
+              "SharedArrayBuffer will require cross-origin isolation as of "
+              "%s. See "
+              "https://developer.chrome.com/blog/enabling-shared-array-buffer/"
+              " for more details.",
+              MilestoneString(kM92).Ascii().c_str())};
+
     case WebFeature::kV8RTCRtpSender_CreateEncodedAudioStreams_Method:
       return {"V8RTCRtpSender_CreateEncodedAudioStreams_Method", kM88,
               ReplacedWillBeRemoved("RTCRtpSender.createEncodedAudioStreams",
@@ -569,16 +561,62 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                   "RTCConfiguration.encodedInsertableStreams", kM88,
                   "6321945865879552")};
 
-    case WebFeature::kCommaSeparatorInAllowAttribute:
-      return {"CommaSeparatorInAllowAttribute", kM89,
-              ReplacedWillBeRemoved("Comma separator in iframe allow attribute",
-                                    "semicolons", kM89, "5740835259809792")};
-
+    case WebFeature::kRTCConstraintEnableRtpDataChannelsFalse:
     case WebFeature::kRTCConstraintEnableRtpDataChannelsTrue:
-      return {"RTP data channel", kM88,
-              ReplacedWillBeRemoved("RTP data channels",
-                                    "standard SCTP data channels", kM90,
-                                    "6485681910054912")};
+      return {
+          "RTP data channel", kM88,
+          "RTP data channels are no longer supported. "
+          "The \"RtpDataChannels\" constraint is currently ignored, and may "
+          "cause an error at a later date."};
+
+    case WebFeature::kRTCPeerConnectionSdpSemanticsPlanB:
+      return {"RTCPeerConnectionSdpSemanticsPlanB", kM93,
+              "Plan B SDP semantics, which is used when constructing an "
+              "RTCPeerConnection with {sdpSemantics:\"plan-b\"}, is a legacy "
+              "version of the Session Description Protocol that has severe "
+              "compatibility issues on modern browsers. The standardized SDP "
+              "format, \"unified-plan\", has been used by default since M72 "
+              "(January, 2019). Dropping support for Plan B is targeted for "
+              "M93. See https://www.chromestatus.com/feature/5823036655665152 "
+              "for more details."};
+
+    case WebFeature::kRTCPeerConnectionSdpSemanticsPlanBWithReverseOriginTrial:
+      return {"RTCPeerConnectionSdpSemanticsPlanBWithReverseOriginTrial", kM96,
+              "Plan B SDP semantics, which is used when constructing an "
+              "RTCPeerConnection with {sdpSemantics:\"plan-b\"}, is a legacy "
+              "version of the Session Description Protocol that has severe "
+              "compatibility issues on modern browsers. The standardized SDP "
+              "format, \"unified-plan\", has been used by default since M72 "
+              "(January, 2019). Dropping support for Plan B is targeted for "
+              "M93, but this page may extend the deadline until the End Date "
+              "of the 'RTCPeerConnection Plan B SDP Semantics' deprecation "
+              "trial."};
+
+    case WebFeature::kAddressSpaceUnknownNonSecureContextEmbeddedPrivate:
+    case WebFeature::kAddressSpaceUnknownNonSecureContextEmbeddedLocal:
+    case WebFeature::kAddressSpacePublicNonSecureContextEmbeddedPrivate:
+    case WebFeature::kAddressSpacePublicNonSecureContextEmbeddedLocal:
+    case WebFeature::kAddressSpacePrivateNonSecureContextEmbeddedLocal:
+      return {"InsecurePrivateNetworkSubresourceRequest", kM92,
+              "The website requested a subresource from a "
+              "network that it could only access because of its users' "
+              "privileged network position. These requests expose non-public "
+              "devices and servers to the internet, increasing the risk of a "
+              "cross-site request forgery (CSRF) attack, and/or information "
+              "leakage. To mitigate these risks, Chrome deprecates requests to "
+              "non-public subresources when initiated from non-secure "
+              "contexts, and will start blocking them in Chrome 92 (July "
+              "2021). See https://chromestatus.com/feature/5436853517811712 "
+              "for more details."};
+    case WebFeature::kRTCPeerConnectionOfferAllowExtmapMixedFalse:
+      return {"RTCPeerConnectionOfferExtmapAllowMixedFalse", kM93,
+              "The RTCPeerConnection offerAllowExtmapMixed option is a "
+              "non-standard feature. This feature will be removed in M93 "
+              "(Canary: July 15, 2021; Stable: August 24, 2021). For "
+              "interoperability with legacy WebRTC versions that throw "
+              "errors when attempting to parse the a=extmap-allow-mixed "
+              "line in the SDP remove the line from the SDP during "
+              "signalling."};
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};
@@ -587,7 +625,7 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
 
 Report* CreateReportInternal(const KURL& context_url,
                              const DeprecationInfo& info) {
-  base::Optional<base::Time> optional_removal_date;
+  absl::optional<base::Time> optional_removal_date;
   if (info.anticipated_removal != kUnknown) {
     base::Time removal_date;
     bool result = base::Time::FromUTCExploded(
@@ -619,12 +657,12 @@ void Deprecation::UnmuteForInspector() {
 }
 
 void Deprecation::Suppress(CSSPropertyID unresolved_property) {
-  DCHECK(isCSSPropertyIDWithName(unresolved_property));
+  DCHECK(IsCSSPropertyIDWithName(unresolved_property));
   css_property_deprecation_bits_.set(static_cast<size_t>(unresolved_property));
 }
 
 bool Deprecation::IsSuppressed(CSSPropertyID unresolved_property) {
-  DCHECK(isCSSPropertyIDWithName(unresolved_property));
+  DCHECK(IsCSSPropertyIDWithName(unresolved_property));
   return css_property_deprecation_bits_[static_cast<size_t>(
       unresolved_property)];
 }
@@ -686,6 +724,11 @@ void Deprecation::CountDeprecation(ExecutionContext* context,
     if (window->GetFrame())
       deprecation = &window->GetFrame()->GetPage()->GetDeprecation();
   } else if (auto* scope = DynamicTo<WorkerOrWorkletGlobalScope>(context)) {
+    // TODO(crbug.com/1146824): Remove this once PlzDedicatedWorker and
+    // PlzServiceWorker ship.
+    if (!scope->IsInitialized()) {
+      return;
+    }
     deprecation = &scope->GetDeprecation();
   }
 
@@ -694,19 +737,7 @@ void Deprecation::CountDeprecation(ExecutionContext* context,
     return;
   }
   deprecation->SetReported(feature);
-
-  // Don't count usage of WebComponentsV0 for chrome:// URLs, but still report
-  // the deprecation messages.
-  bool count_usage = true;
-  if (context->Url().ProtocolIs("chrome") &&
-      (feature == WebFeature::kHTMLImports ||
-       feature == WebFeature::kElementCreateShadowRoot ||
-       feature == WebFeature::kDocumentRegisterElement)) {
-    count_usage = false;
-  }
-  if (count_usage)
-    context->CountUse(feature);
-
+  context->CountUse(feature);
   const DeprecationInfo info = GetDeprecationInfo(feature);
 
   // Send the deprecation message to the console as a warning.

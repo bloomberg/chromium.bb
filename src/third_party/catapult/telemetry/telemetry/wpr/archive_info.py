@@ -2,12 +2,14 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import json
 import logging
 import os
 import shutil
 import tempfile
 import time
+import six
 
 from py_utils import cloud_storage  # pylint: disable=import-error
 
@@ -103,7 +105,7 @@ class WprArchiveInfo(object):
 
     try:
       story_archives = self._data['archives']
-      download_names = set(story_archives.iterkeys())
+      download_names = set(six.iterkeys(story_archives))
       if story_names is not None:
         download_names.intersection_update(story_names)
       for story_name in download_names:
@@ -169,7 +171,7 @@ class WprArchiveInfo(object):
       try:
         cloud_storage.Insert(self._bucket, target_wpr_file_hash,
                              target_wpr_file_path)
-      except cloud_storage.CloudStorageError, e:
+      except cloud_storage.CloudStorageError as e:
         logging.warning('Failed to upload wpr file %s to cloud storage. '
                         'Error:%s' % target_wpr_file_path, e)
 

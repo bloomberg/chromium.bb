@@ -47,7 +47,7 @@ public class MessageWrapperTest {
     @Test
     @SmallTest
     public void testMessageProperties() {
-        MessageWrapper message = MessageWrapper.create(1);
+        MessageWrapper message = MessageWrapper.create(1, MessageIdentifier.TEST_MESSAGE);
         PropertyModel messageProperties = message.getMessageProperties();
 
         message.setTitle("Title");
@@ -58,13 +58,17 @@ public class MessageWrapperTest {
         Assert.assertEquals("Description doesn't match provided value", "Description",
                 messageProperties.get(MessageBannerProperties.DESCRIPTION));
 
+        message.setDescriptionMaxLines(2);
+        Assert.assertEquals("Description max lines doesn't match provided value", 2,
+                messageProperties.get(MessageBannerProperties.DESCRIPTION_MAX_LINES));
+
         message.setPrimaryButtonText("Primary button");
         Assert.assertEquals("Button text doesn't match provided value", "Primary button",
                 messageProperties.get(MessageBannerProperties.PRIMARY_BUTTON_TEXT));
 
-        message.setSecondaryActionText("Primary button");
-        Assert.assertEquals("Button text doesn't match provided value", "Primary button",
-                messageProperties.get(MessageBannerProperties.SECONDARY_ACTION_TEXT));
+        message.setSecondaryButtonMenuText("Secondary button");
+        Assert.assertEquals("Button text doesn't match provided value", "Secondary button",
+                messageProperties.get(MessageBannerProperties.SECONDARY_BUTTON_MENU_TEXT));
 
         message.setIconResourceId(1);
         Assert.assertEquals("Icon resource id doesn't match provided value", 1,
@@ -82,14 +86,15 @@ public class MessageWrapperTest {
     @SmallTest
     public void testCallbacks() {
         final long nativePtr = 1;
-        MessageWrapper message = MessageWrapper.create(nativePtr);
+        MessageWrapper message = MessageWrapper.create(nativePtr, MessageIdentifier.TEST_MESSAGE);
         PropertyModel messageProperties = message.getMessageProperties();
         messageProperties.get(MessageBannerProperties.ON_PRIMARY_ACTION).run();
         Mockito.verify(mNativeMock).handleActionClick(nativePtr);
         messageProperties.get(MessageBannerProperties.ON_SECONDARY_ACTION).run();
         Mockito.verify(mNativeMock).handleSecondaryActionClick(nativePtr);
-        messageProperties.get(MessageBannerProperties.ON_DISMISSED).run();
-        Mockito.verify(mNativeMock).handleDismissCallback(nativePtr);
+        messageProperties.get(MessageBannerProperties.ON_DISMISSED)
+                .onResult(DismissReason.PRIMARY_ACTION);
+        Mockito.verify(mNativeMock).handleDismissCallback(nativePtr, DismissReason.PRIMARY_ACTION);
     }
 
     /**
@@ -99,7 +104,7 @@ public class MessageWrapperTest {
     @SmallTest
     public void testDestroyedMessageWrapperCallbacks() {
         final long nativePtr = 1;
-        MessageWrapper message = MessageWrapper.create(nativePtr);
+        MessageWrapper message = MessageWrapper.create(nativePtr, MessageIdentifier.TEST_MESSAGE);
         PropertyModel messageProperties = message.getMessageProperties();
 
         message.clearNativePtr();
@@ -107,7 +112,9 @@ public class MessageWrapperTest {
         Mockito.verify(mNativeMock, never()).handleActionClick(nativePtr);
         messageProperties.get(MessageBannerProperties.ON_SECONDARY_ACTION).run();
         Mockito.verify(mNativeMock, never()).handleSecondaryActionClick(nativePtr);
-        messageProperties.get(MessageBannerProperties.ON_DISMISSED).run();
-        Mockito.verify(mNativeMock, never()).handleDismissCallback(nativePtr);
+        messageProperties.get(MessageBannerProperties.ON_DISMISSED)
+                .onResult(DismissReason.PRIMARY_ACTION);
+        Mockito.verify(mNativeMock, never())
+                .handleDismissCallback(Mockito.anyLong(), Mockito.anyInt());
     }
 }

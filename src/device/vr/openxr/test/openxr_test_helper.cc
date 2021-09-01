@@ -174,6 +174,10 @@ XrSystemId OpenXrTestHelper::GetSystemId() {
   return system_id_;
 }
 
+XrSystemProperties OpenXrTestHelper::GetSystemProperties() {
+  return kSystemProperties;
+}
+
 XrResult OpenXrTestHelper::GetSession(XrSession* session) {
   RETURN_IF(session_state_ != XR_SESSION_STATE_UNKNOWN,
             XR_ERROR_VALIDATION_FAILURE,
@@ -647,7 +651,7 @@ void OpenXrTestHelper::UpdateEventQueue() {
   }
 }
 
-base::Optional<gfx::Transform> OpenXrTestHelper::GetPose() {
+absl::optional<gfx::Transform> OpenXrTestHelper::GetPose() {
   base::AutoLock lock(lock_);
   if (test_hook_) {
     device::PoseFrameData pose_data = test_hook_->WaitGetPresentingPose();
@@ -655,7 +659,7 @@ base::Optional<gfx::Transform> OpenXrTestHelper::GetPose() {
       return PoseFrameDataToTransform(pose_data);
     }
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 device::ControllerFrameData OpenXrTestHelper::GetControllerDataFromPath(
@@ -703,7 +707,7 @@ void OpenXrTestHelper::UpdateInteractionProfile(
 void OpenXrTestHelper::LocateSpace(XrSpace space, XrPosef* pose) {
   DCHECK(pose != nullptr);
   *pose = device::PoseIdentity();
-  base::Optional<gfx::Transform> transform = base::nullopt;
+  absl::optional<gfx::Transform> transform = absl::nullopt;
 
   if (reference_spaces_.count(space) == 1) {
     if (reference_spaces_.at(space).compare(kStageReferenceSpacePath) == 0) {

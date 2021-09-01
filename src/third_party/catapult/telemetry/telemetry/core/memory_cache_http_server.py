@@ -2,20 +2,27 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import BaseHTTPServer
+from __future__ import print_function
+from __future__ import absolute_import
 from collections import namedtuple
 import errno
 import gzip
 import logging
 import mimetypes
 import os
-import SimpleHTTPServer
 import socket
-import SocketServer
-import StringIO
 import sys
 import traceback
-import urlparse
+try:
+  from StringIO import StringIO
+except ImportError:
+  from io import StringIO
+
+import six.moves.BaseHTTPServer # pylint: disable=import-error
+import six.moves.SimpleHTTPServer # pylint: disable=import-error
+import six.moves.socketserver # pylint: disable=import-error
+import six.moves.urllib.parse # pylint: disable=import-error
+from six.moves import map # pylint: disable=redefined-builtin
 
 from telemetry.core import local_server
 
@@ -26,14 +33,15 @@ _MIME_TYPES_FILE = os.path.abspath(
     os.path.join(os.path.dirname(__file__), 'mime.types'))
 
 
-class MemoryCacheHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
+class MemoryCacheHTTPRequestHandler(
+    six.moves.SimpleHTTPServer.SimpleHTTPRequestHandler):
 
   protocol_version = 'HTTP/1.1'  # override BaseHTTPServer setting
   wbufsize = -1  # override StreamRequestHandler (a base class) setting
 
   def handle(self):
     try:
-      BaseHTTPServer.BaseHTTPRequestHandler.handle(self)
+      six.moves.BaseHTTPServer.BaseHTTPRequestHandler.handle(self)
     except socket.error as e:
       # Connection reset errors happen all the time due to the browser closing
       # without terminating the connection properly.  They can be safely
@@ -153,8 +161,8 @@ class MemoryCacheHTTPRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     return ByteRange(from_byte, to_byte)
 
 
-class _MemoryCacheHTTPServerImpl(SocketServer.ThreadingMixIn,
-                                 BaseHTTPServer.HTTPServer):
+class _MemoryCacheHTTPServerImpl(six.moves.socketserver.ThreadingMixIn,
+                                 six.moves.BaseHTTPServer.HTTPServer):
   # Increase the request queue size. The default value, 5, is set in
   # SocketServer.TCPServer (the parent of BaseHTTPServer.HTTPServer).
   # Since we're intercepting many domains through this single server,
@@ -165,7 +173,7 @@ class _MemoryCacheHTTPServerImpl(SocketServer.ThreadingMixIn,
   daemon_threads = True
 
   def __init__(self, host_port, handler, paths):
-    BaseHTTPServer.HTTPServer.__init__(self, host_port, handler)
+    six.moves.BaseHTTPServer.HTTPServer.__init__(self, host_port, handler)
     self.resource_map = {}
     # Use Telemetry's 'mime.types' file instead of relying on system files to
     # ensure the mime type inference is deterministic
@@ -204,7 +212,7 @@ class _MemoryCacheHTTPServerImpl(SocketServer.ThreadingMixIn,
     zipped = False
     if content_type in ['text/html', 'text/css', 'application/javascript']:
       zipped = True
-      sio = StringIO.StringIO()
+      sio = StringIO()
       gzf = gzip.GzipFile(fileobj=sio, compresslevel=9, mode='wb')
       gzf.write(response)
       gzf.close()
@@ -251,7 +259,7 @@ class MemoryCacheHTTPServerBackend(local_server.LocalServerBackend):
     paths = args['paths']
     for path in paths:
       if not os.path.realpath(path).startswith(os.path.realpath(os.getcwd())):
-        print >> sys.stderr, '"%s" is not under the cwd.' % path
+        print('"%s" is not under the cwd.' % path, file=sys.stderr)
         sys.exit(1)
 
     server_address = (args['host'], args['port'])
@@ -309,7 +317,8 @@ class MemoryCacheHTTPServer(local_server.LocalServer):
     # It doesn't matter in a file path, but it does matter in a URL.
     if path.endswith(os.sep) or (os.altsep and path.endswith(os.altsep)):
       relative_path += '/'
-    return urlparse.urljoin(self.url, relative_path.replace(os.sep, '/'))
+    return six.moves.urllib.parse.urljoin(
+        self.url, relative_path.replace(os.sep, '/'))
 
 
 class MemoryCacheDynamicHTTPRequestHandler(MemoryCacheHTTPRequestHandler):

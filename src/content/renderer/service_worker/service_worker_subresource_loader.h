@@ -7,9 +7,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/scoped_observation.h"
-#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -19,10 +17,14 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-forward.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom-forward.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_fetch_response_callback.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_stream_handle.mojom-forward.h"
 #include "third_party/blink/public/mojom/timing/worker_timing_container.mojom-forward.h"
 
@@ -48,7 +50,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // to see how each parameter is used.
   ServiceWorkerSubresourceLoader(
       mojo::PendingReceiver<network::mojom::URLLoader>,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& resource_request,
@@ -93,7 +94,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // Called when this loader no longer needs to restart dispatching the fetch
   // event on failure. Null |status| means the event dispatch was not attempted.
   void SettleFetchEventDispatch(
-      base::Optional<blink::ServiceWorkerStatusCode> status);
+      absl::optional<blink::ServiceWorkerStatusCode> status);
 
   // blink::mojom::ServiceWorkerFetchResponseCallback overrides:
   void OnResponse(
@@ -117,7 +118,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_headers,
-      const base::Optional<GURL>& new_url) override;
+      const absl::optional<GURL>& new_url) override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -125,7 +126,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   int StartBlobReading(mojo::ScopedDataPipeConsumerHandle* body_pipe);
   void OnSideDataReadingComplete(mojo::ScopedDataPipeConsumerHandle data_pipe,
-                                 base::Optional<mojo_base::BigBuffer> metadata);
+                                 absl::optional<mojo_base::BigBuffer> metadata);
   void OnBodyReadingComplete(int net_error);
 
   // Calls url_loader_client_->OnReceiveResponse() with |response_head_|.
@@ -152,7 +153,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   network::mojom::URLResponseHeadPtr response_head_ =
       network::mojom::URLResponseHead::New();
-  base::Optional<net::RedirectInfo> redirect_info_;
+  absl::optional<net::RedirectInfo> redirect_info_;
   int redirect_limit_;
 
   mojo::Remote<network::mojom::URLLoaderClient> url_loader_client_;
@@ -181,7 +182,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   // These are given by the constructor (as the params for
   // URLLoaderFactory::CreateLoaderAndStart).
-  const int routing_id_;
   const int request_id_;
   const uint32_t options_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
@@ -248,7 +248,6 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   // network::mojom::URLLoaderFactory overrides:
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> receiver,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& resource_request,

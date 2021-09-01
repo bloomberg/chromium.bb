@@ -95,7 +95,7 @@ TEST(TraceLoggingInternalTest, ValidateGettersValidOnEmptyStack) {
   EXPECT_EQ(ids.root, kEmptyTraceId);
 }
 
-TEST(TraceLoggingInternalTest, ValidateSetResultDoesntSegfaultOnEmptyStack) {
+TEST(TraceLoggingInternalTest, ValidateSetResultDoesNotSegfaultOnEmptyStack) {
   Error error = Error::Code::kNone;
   ScopedTraceOperation::set_result(error);
 

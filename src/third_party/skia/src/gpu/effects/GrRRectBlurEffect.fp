@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-in fragmentProcessor? inputFP;
+in fragmentProcessor inputFP;
 in float sigma;
 layout(ctype=SkRect) in float4 rect;
 in uniform half cornerRadius;
@@ -20,8 +20,7 @@ uniform half blurRadius;
 }
 
 @optimizationFlags {
-    (inputFP ? ProcessorOptimizationFlags(inputFP.get()) : kAll_OptimizationFlags) &
-            kCompatibleWithCoverageAsAlpha_OptimizationFlag
+    ProcessorOptimizationFlags(inputFP.get()) & kCompatibleWithCoverageAsAlpha_OptimizationFlag
 }
 
 @make {
@@ -39,15 +38,15 @@ uniform half blurRadius;
     #include "src/core/SkAutoMalloc.h"
     #include "src/core/SkGpuBlurUtils.h"
     #include "src/core/SkRRectPriv.h"
-    #include "src/gpu/GrBitmapTextureMaker.h"
     #include "src/gpu/GrCaps.h"
     #include "src/gpu/GrDirectContextPriv.h"
     #include "src/gpu/GrPaint.h"
     #include "src/gpu/GrProxyProvider.h"
     #include "src/gpu/GrRecordingContextPriv.h"
-    #include "src/gpu/GrRenderTargetContext.h"
     #include "src/gpu/GrStyle.h"
+    #include "src/gpu/GrSurfaceDrawContext.h"
     #include "src/gpu/GrThreadSafeCache.h"
+    #include "src/gpu/SkGr.h"
     #include "src/gpu/effects/GrTextureEffect.h"
 
     static constexpr auto kBlurredRRectMaskOrigin = kTopLeft_GrSurfaceOrigin;
@@ -81,9 +80,15 @@ uniform half blurRadius;
                             const SkISize& dimensions,
                             float xformedSigma) {
         SkASSERT(!SkGpuBlurUtils::IsEffectivelyZeroSigma(xformedSigma));
-        std::unique_ptr<GrRenderTargetContext> rtc = GrRenderTargetContext::MakeWithFallback(
-                dContext, GrColorType::kAlpha_8, nullptr, SkBackingFit::kExact, dimensions, 1,
-                GrMipmapped::kNo, GrProtected::kNo, kBlurredRRectMaskOrigin);
+
+        // We cache blur masks. Use default surface props here so we can use the same cached mask
+        // regardless of the final dst surface.
+        SkSurfaceProps defaultSurfaceProps;
+
+        std::unique_ptr<GrSurfaceDrawContext> rtc = GrSurfaceDrawContext::MakeWithFallback(
+                dContext, GrColorType::kAlpha_8, nullptr, SkBackingFit::kExact, dimensions,
+                defaultSurfaceProps, 1, GrMipmapped::kNo, GrProtected::kNo,
+                kBlurredRRectMaskOrigin);
         if (!rtc) {
             return false;
         }
@@ -95,9 +100,6 @@ uniform half blurRadius;
                        GrStyle::SimpleFill());
 
         GrSurfaceProxyView srcView = rtc->readSurfaceView();
-        if (!srcView) {
-            return false;
-        }
         SkASSERT(srcView.asTextureProxy());
         auto rtc2 = SkGpuBlurUtils::GaussianBlur(dContext,
                                                  std::move(srcView),
@@ -232,8 +234,7 @@ uniform half blurRadius;
 
         result.setImmutable();
 
-        GrBitmapTextureMaker maker(rContext, result, GrImageTexGenPolicy::kNew_Uncached_Budgeted);
-        auto view = maker.view(GrMipmapped::kNo);
+        auto view = std::get<0>(GrMakeUncachedBitmapProxyView(rContext, result));
         if (!view) {
             return {};
         }
@@ -371,7 +372,7 @@ uniform half blurRadius;
     return GrRRectBlurEffect::Make(d->inputFP(), d->context(), sigma, sigma, rrect, rrect);
 }
 
-void main() {
+half4 main() {
     // Warp the fragment position to the appropriate part of the 9-patch blur texture by snipping
     // out the middle section of the proxy rect.
     float2 translatedFragPosFloat = sk_FragCoord.xy - proxyRect.LT;
@@ -406,8 +407,7 @@ void main() {
     half2 proxyDims = half2(2.0 * edgeSize);
     half2 texCoord = translatedFragPosHalf / proxyDims;
 
-    half4 inputColor = sample(inputFP);
-    sk_OutColor = inputColor * sample(ninePatchFP, texCoord);
+    return sample(inputFP) * sample(ninePatchFP, texCoord).a;
 }
 
 @setData(pdman) {
