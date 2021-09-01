@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
+#include "quic/core/quic_bandwidth.h"
 
 #include <limits>
 
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
+#include "quic/core/quic_time.h"
+#include "quic/platform/api/quic_test.h"
 
 namespace quic {
 namespace test {
@@ -62,14 +62,9 @@ TEST_F(QuicBandwidthTest, TimeDelta) {
   EXPECT_EQ(QuicBandwidth::Zero(), QuicBandwidth::FromBytesAndTimeDelta(
                                        0, QuicTime::Delta::FromSeconds(9)));
 
-  if (GetQuicReloadableFlag(quic_round_up_tiny_bandwidth)) {
-    EXPECT_EQ(QuicBandwidth::FromBitsPerSecond(1),
-              QuicBandwidth::FromBytesAndTimeDelta(
-                  1, QuicTime::Delta::FromSeconds(9)));
-  } else {
-    EXPECT_EQ(QuicBandwidth::Zero(), QuicBandwidth::FromBytesAndTimeDelta(
-                                         1, QuicTime::Delta::FromSeconds(9)));
-  }
+  EXPECT_EQ(
+      QuicBandwidth::FromBitsPerSecond(1),
+      QuicBandwidth::FromBytesAndTimeDelta(1, QuicTime::Delta::FromSeconds(9)));
 }
 
 TEST_F(QuicBandwidthTest, Scale) {

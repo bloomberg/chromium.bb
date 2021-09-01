@@ -118,13 +118,14 @@ ParseEncodedImageData(const std::string& encoded_image_data) {
   size_t base64_end = content.find_first_of(',', base64_begin);
   if (base64_end == std::string::npos)
     return result;
-  base::StringPiece base64(content.begin() + base64_begin,
-                           content.begin() + base64_end);
+  auto base64 = base::MakeStringPiece(content.begin() + base64_begin,
+                                      content.begin() + base64_end);
   if (base64 != "base64")
     return result;
 
   size_t data_begin = base64_end + 1;
-  base::StringPiece data(content.begin() + data_begin, content.end());
+  auto data =
+      base::MakeStringPiece(content.begin() + data_begin, content.end());
 
   std::string decoded_data;
   if (!base::Base64Decode(data, &decoded_data))
@@ -168,7 +169,7 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
     return nullptr;
 
   // If there is no logo today, the "ddljson" dictionary will be empty.
-  if (ddljson->empty()) {
+  if (ddljson->DictEmpty()) {
     *parsing_failed = false;
     return nullptr;
   }

@@ -7,11 +7,12 @@
 
 #include <vector>
 
-#include "net/third_party/quiche/src/quic/core/frames/quic_stream_frame.h"
-#include "net/third_party/quiche/src/quic/core/quic_interval.h"
-#include "net/third_party/quiche/src/quic/core/quic_interval_set.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
+#include "absl/container/flat_hash_map.h"
+#include "quic/core/frames/quic_stream_frame.h"
+#include "quic/core/quic_interval.h"
+#include "quic/core/quic_interval_set.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_containers.h"
 
 namespace quic {
 
@@ -73,8 +74,9 @@ class QuicTcpLikeTraceConverter {
                                         StreamInfo* info);
 
   StreamInfo crypto_frames_info_[NUM_ENCRYPTION_LEVELS];
-  QuicHashMap<QuicStreamId, StreamInfo> streams_info_;
-  QuicHashMap<QuicControlFrameId, QuicInterval<uint64_t>> control_frames_info_;
+  absl::flat_hash_map<QuicStreamId, StreamInfo> streams_info_;
+  absl::flat_hash_map<QuicControlFrameId, QuicInterval<uint64_t>>
+      control_frames_info_;
 
   QuicControlFrameId largest_observed_control_frame_id_;
 

@@ -16,10 +16,10 @@
 
 #include "common/Assert.h"
 #include "common/BitSetIterator.h"
-#include "common/HashUtils.h"
 #include "common/ityp_stack_vec.h"
 #include "dawn_native/BindGroupLayout.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/ObjectContentHasher.h"
 #include "dawn_native/ShaderModule.h"
 
 namespace dawn_native {
@@ -75,7 +75,7 @@ namespace dawn_native {
     }
 
     // static
-    ResultOrError<PipelineLayoutBase*> PipelineLayoutBase::CreateDefault(
+    ResultOrError<Ref<PipelineLayoutBase>> PipelineLayoutBase::CreateDefault(
         DeviceBase* device,
         std::vector<StageAndDescriptor> stages) {
         using EntryMap = std::map<BindingNumber, BindGroupLayoutEntry>;
@@ -83,14 +83,34 @@ namespace dawn_native {
         // Merges two entries at the same location, if they are allowed to be merged.
         auto MergeEntries = [](BindGroupLayoutEntry* modifiedEntry,
                                const BindGroupLayoutEntry& mergedEntry) -> MaybeError {
-            // Minimum buffer binding size excluded because we take the maximum seen across stages.
             // Visibility is excluded because we take the OR across stages.
             bool compatible =
-                modifiedEntry->binding == mergedEntry.binding &&                    //
-                modifiedEntry->type == mergedEntry.type &&                          //
-                modifiedEntry->hasDynamicOffset == mergedEntry.hasDynamicOffset &&  //
-                modifiedEntry->viewDimension == mergedEntry.viewDimension &&        //
-                modifiedEntry->textureComponentType == mergedEntry.textureComponentType;
+                modifiedEntry->binding == mergedEntry.binding &&
+                modifiedEntry->buffer.type == mergedEntry.buffer.type &&
+                modifiedEntry->sampler.type == mergedEntry.sampler.type &&
+                modifiedEntry->texture.sampleType == mergedEntry.texture.sampleType &&
+                modifiedEntry->storageTexture.access == mergedEntry.storageTexture.access;
+
+            // Minimum buffer binding size excluded because we take the maximum seen across stages.
+            if (modifiedEntry->buffer.type != wgpu::BufferBindingType::Undefined) {
+                compatible = compatible && modifiedEntry->buffer.hasDynamicOffset ==
+                                               mergedEntry.buffer.hasDynamicOffset;
+            }
+
+            if (modifiedEntry->texture.sampleType != wgpu::TextureSampleType::Undefined) {
+                compatible =
+                    compatible &&
+                    modifiedEntry->texture.viewDimension == mergedEntry.texture.viewDimension &&
+                    modifiedEntry->texture.multisampled == mergedEntry.texture.multisampled;
+            }
+
+            if (modifiedEntry->storageTexture.access != wgpu::StorageTextureAccess::Undefined) {
+                compatible =
+                    compatible &&
+                    modifiedEntry->storageTexture.format == mergedEntry.storageTexture.format &&
+                    modifiedEntry->storageTexture.viewDimension ==
+                        mergedEntry.storageTexture.viewDimension;
+            }
 
             // Check if any properties are incompatible with existing entry
             // If compatible, we will merge some properties
@@ -101,8 +121,8 @@ namespace dawn_native {
             }
 
             // Use the max |minBufferBindingSize| we find.
-            modifiedEntry->minBufferBindingSize =
-                std::max(modifiedEntry->minBufferBindingSize, mergedEntry.minBufferBindingSize);
+            modifiedEntry->buffer.minBindingSize =
+                std::max(modifiedEntry->buffer.minBindingSize, mergedEntry.buffer.minBindingSize);
 
             // Use the OR of all the stages at which we find this binding.
             modifiedEntry->visibility |= mergedEntry.visibility;
@@ -114,12 +134,20 @@ namespace dawn_native {
         auto ConvertMetadataToEntry =
             [](const EntryPointMetadata::ShaderBindingInfo& shaderBinding) -> BindGroupLayoutEntry {
             BindGroupLayoutEntry entry = {};
-            entry.type = shaderBinding.type;
-            entry.hasDynamicOffset = false;
-            entry.viewDimension = shaderBinding.viewDimension;
-            entry.textureComponentType = shaderBinding.textureComponentType;
-            entry.storageTextureFormat = shaderBinding.storageTextureFormat;
-            entry.minBufferBindingSize = shaderBinding.minBufferBindingSize;
+            switch (shaderBinding.bindingType) {
+                case BindingInfoType::Buffer:
+                    entry.buffer = shaderBinding.buffer;
+                    break;
+                case BindingInfoType::Sampler:
+                    entry.sampler = shaderBinding.sampler;
+                    break;
+                case BindingInfoType::Texture:
+                    entry.texture = shaderBinding.texture;
+                    break;
+                case BindingInfoType::StorageTexture:
+                    entry.storageTexture = shaderBinding.storageTexture;
+                    break;
+            }
             return entry;
         };
 
@@ -148,8 +176,8 @@ namespace dawn_native {
 
         // Loops over all the reflected BindGroupLayoutEntries from shaders.
         for (const StageAndDescriptor& stage : stages) {
-            const EntryPointMetadata::BindingInfo& info =
-                stage.second->module->GetEntryPoint(stage.second->entryPoint).bindings;
+            const EntryPointMetadata::BindingInfoArray& info =
+                stage.module->GetEntryPoint(stage.entryPoint).bindings;
 
             for (BindGroupIndex group(0); group < info.size(); ++group) {
                 for (const auto& bindingIt : info[group]) {
@@ -159,7 +187,7 @@ namespace dawn_native {
                     // Create the BindGroupLayoutEntry
                     BindGroupLayoutEntry entry = ConvertMetadataToEntry(shaderBinding);
                     entry.binding = static_cast<uint32_t>(bindingNumber);
-                    entry.visibility = StageBit(stage.first);
+                    entry.visibility = StageBit(stage.shaderStage);
 
                     // Add it to our map of all entries, if there is an existing entry, then we
                     // need to merge, if we can.
@@ -185,32 +213,30 @@ namespace dawn_native {
         }
 
         // Create the deduced pipeline layout, validating if it is valid.
-        PipelineLayoutBase* pipelineLayout = nullptr;
-        {
-            ityp::array<BindGroupIndex, BindGroupLayoutBase*, kMaxBindGroups> bgls = {};
-            for (BindGroupIndex group(0); group < pipelineBGLCount; ++group) {
-                bgls[group] = bindGroupLayouts[group].Get();
-            }
-
-            PipelineLayoutDescriptor desc = {};
-            desc.bindGroupLayouts = bgls.data();
-            desc.bindGroupLayoutCount = static_cast<uint32_t>(pipelineBGLCount);
-
-            DAWN_TRY(ValidatePipelineLayoutDescriptor(device, &desc));
-            DAWN_TRY_ASSIGN(pipelineLayout, device->GetOrCreatePipelineLayout(&desc));
-
-            ASSERT(!pipelineLayout->IsError());
+        ityp::array<BindGroupIndex, BindGroupLayoutBase*, kMaxBindGroups> bgls = {};
+        for (BindGroupIndex group(0); group < pipelineBGLCount; ++group) {
+            bgls[group] = bindGroupLayouts[group].Get();
         }
 
-        // Sanity check in debug that the pipeline layout is compatible with the current pipeline.
+        PipelineLayoutDescriptor desc = {};
+        desc.bindGroupLayouts = bgls.data();
+        desc.bindGroupLayoutCount = static_cast<uint32_t>(pipelineBGLCount);
+
+        DAWN_TRY(ValidatePipelineLayoutDescriptor(device, &desc));
+
+        Ref<PipelineLayoutBase> result;
+        DAWN_TRY_ASSIGN(result, device->GetOrCreatePipelineLayout(&desc));
+        ASSERT(!result->IsError());
+
+        // Sanity check in debug that the pipeline layout is compatible with the current
+        // pipeline.
         for (const StageAndDescriptor& stage : stages) {
-            const EntryPointMetadata& metadata =
-                stage.second->module->GetEntryPoint(stage.second->entryPoint);
-            ASSERT(ValidateCompatibilityWithPipelineLayout(device, metadata, pipelineLayout)
+            const EntryPointMetadata& metadata = stage.module->GetEntryPoint(stage.entryPoint);
+            ASSERT(ValidateCompatibilityWithPipelineLayout(device, metadata, result.Get())
                        .IsSuccess());
         }
 
-        return pipelineLayout;
+        return std::move(result);
     }
 
     const BindGroupLayoutBase* PipelineLayoutBase::GetBindGroupLayout(BindGroupIndex group) const {
@@ -253,14 +279,15 @@ namespace dawn_native {
         return kMaxBindGroupsTyped;
     }
 
-    size_t PipelineLayoutBase::HashFunc::operator()(const PipelineLayoutBase* pl) const {
-        size_t hash = Hash(pl->mMask);
+    size_t PipelineLayoutBase::ComputeContentHash() {
+        ObjectContentHasher recorder;
+        recorder.Record(mMask);
 
-        for (BindGroupIndex group : IterateBitSet(pl->mMask)) {
-            HashCombine(&hash, pl->GetBindGroupLayout(group));
+        for (BindGroupIndex group : IterateBitSet(mMask)) {
+            recorder.Record(GetBindGroupLayout(group)->GetContentHash());
         }
 
-        return hash;
+        return recorder.GetContentHash();
     }
 
     bool PipelineLayoutBase::EqualityFunc::operator()(const PipelineLayoutBase* a,

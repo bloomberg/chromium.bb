@@ -1,3 +1,5 @@
+set noparent
+
 # Top-level owners for cases where there's nobody available with
 # specific context
 bratell.d@gmail.com
@@ -18,5 +20,3 @@ per-file PRESUBMIT*.py=foolip@chromium.org
 per-file PRESUBMIT*.py=qyearsley@chromium.org
 per-file PRESUBMIT*.py=thakis@chromium.org
 per-file PRESUBMIT*.py=tkent@chromium.org
-
-# COMPONENT: Blink

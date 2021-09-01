@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/password_dialog_prompts.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
-#include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
@@ -39,7 +39,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
-#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_utils.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/image_button.h"
@@ -59,39 +59,6 @@
 namespace {
 
 constexpr int kAccountStoragePromoWidth = 240;
-
-struct ComboboxItem {
-  base::string16 combobox_text;
-  base::string16 dropdown_text;
-  base::string16 dropdown_secondary_text;
-  ui::ImageModel icon;
-};
-
-class ComboboxModelWithIcons : public ui::ComboboxModel {
- public:
-  explicit ComboboxModelWithIcons(std::vector<ComboboxItem> items)
-      : items_(std::move(items)) {}
-
-  int GetItemCount() const override { return items_.size(); }
-  base::string16 GetItemAt(int index) const override {
-    return items_[index].combobox_text;
-  }
-  base::string16 GetDropDownTextAt(int index) const override {
-    return items_[index].dropdown_text;
-  }
-  base::string16 GetDropDownSecondaryTextAt(int index) const override {
-    return items_[index].dropdown_secondary_text;
-  }
-  ui::ImageModel GetIconAt(int index) const override {
-    return items_[index].icon;
-  }
-  ui::ImageModel GetDropDownIconAt(int index) const override {
-    return items_[index].icon;
-  }
-
- private:
-  const std::vector<ComboboxItem> items_;
-};
 
 int ComboboxIconSize() {
   // Use the line height of the body small text. This allows the icons to adapt
@@ -185,9 +152,9 @@ void BuildCredentialRows(
 }
 
 // Create a vector which contains only the values in |items| and no elements.
-std::vector<base::string16> ToValues(
+std::vector<std::u16string> ToValues(
     const password_manager::ValueElementVector& items) {
-  std::vector<base::string16> passwords;
+  std::vector<std::u16string> passwords;
   passwords.reserve(items.size());
   for (auto& pair : items)
     passwords.push_back(pair.first);
@@ -214,18 +181,20 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
 // even just |PasswordForm.username_value|.
 std::unique_ptr<views::EditableCombobox> CreateUsernameEditableCombobox(
     const password_manager::PasswordForm& form) {
-  std::vector<base::string16> usernames = {form.username_value};
+  std::vector<std::u16string> usernames = {form.username_value};
   for (const password_manager::ValueElementPair& other_possible_username_pair :
        form.all_possible_usernames) {
     if (other_possible_username_pair.first != form.username_value)
       usernames.push_back(other_possible_username_pair.first);
   }
-  base::EraseIf(usernames, [](const base::string16& username) {
+  base::EraseIf(usernames, [](const std::u16string& username) {
     return username.empty();
   });
   bool display_arrow = !usernames.empty();
   auto combobox = std::make_unique<views::EditableCombobox>(
-      std::make_unique<ui::SimpleComboboxModel>(std::move(usernames)),
+      std::make_unique<ui::SimpleComboboxModel>(
+          std::vector<ui::SimpleComboboxModel::Item>(usernames.begin(),
+                                                     usernames.end())),
       /*filter_on_edit=*/false, /*show_on_empty=*/true,
       views::EditableCombobox::Type::kRegular, views::style::CONTEXT_BUTTON,
       views::style::STYLE_PRIMARY, display_arrow);
@@ -243,16 +212,18 @@ std::unique_ptr<views::EditableCombobox> CreatePasswordEditableCombobox(
     const password_manager::PasswordForm& form,
     bool are_passwords_revealed) {
   DCHECK(!form.IsFederatedCredential());
-  std::vector<base::string16> passwords =
+  std::vector<std::u16string> passwords =
       form.all_possible_passwords.empty()
-          ? std::vector<base::string16>(/*n=*/1, form.password_value)
+          ? std::vector<std::u16string>(/*n=*/1, form.password_value)
           : ToValues(form.all_possible_passwords);
-  base::EraseIf(passwords, [](const base::string16& password) {
+  base::EraseIf(passwords, [](const std::u16string& password) {
     return password.empty();
   });
   bool display_arrow = !passwords.empty();
   auto combobox = std::make_unique<views::EditableCombobox>(
-      std::make_unique<ui::SimpleComboboxModel>(std::move(passwords)),
+      std::make_unique<ui::SimpleComboboxModel>(
+          std::vector<ui::SimpleComboboxModel::Item>(passwords.begin(),
+                                                     passwords.end())),
       /*filter_on_edit=*/false, /*show_on_empty=*/true,
       views::EditableCombobox::Type::kPassword, views::style::CONTEXT_BUTTON,
       STYLE_PRIMARY_MONOSPACED, display_arrow);
@@ -271,22 +242,23 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
       kComputerWithCircleBackgroundIcon,
       ui::NativeTheme::kColorId_DefaultIconColor, ComboboxIconSize());
 
-  std::vector<ComboboxItem> destinations = {
-      {.combobox_text = l10n_util::GetStringUTF16(
-           IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_SAVE_TO_ACCOUNT),
-       .dropdown_text = l10n_util::GetStringUTF16(
-           IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_SAVE_TO_ACCOUNT),
-       .dropdown_secondary_text = base::UTF8ToUTF16(primary_account_email),
-       .icon = primary_account_avatar},
-      {.combobox_text = l10n_util::GetStringUTF16(
-           IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_SAVE_TO_DEVICE),
-       .dropdown_text = l10n_util::GetStringUTF16(
-           IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_SAVE_TO_DEVICE),
-       .dropdown_secondary_text = base::string16(),
-       .icon = computer_image}};
+  ui::SimpleComboboxModel::Item account_destination(
+      /*text=*/l10n_util::GetStringUTF16(
+          IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_SAVE_TO_ACCOUNT),
+      /*dropdown_secondary_text=*/
+      base::UTF8ToUTF16(primary_account_email),
+      /*icon=*/primary_account_avatar);
+
+  ui::SimpleComboboxModel::Item device_destination(
+      /*text=*/l10n_util::GetStringUTF16(
+          IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_SAVE_TO_DEVICE),
+      /*dropdown_secondary_text=*/std::u16string(),
+      /*icon=*/computer_image);
 
   auto combobox = std::make_unique<views::Combobox>(
-      std::make_unique<ComboboxModelWithIcons>(std::move(destinations)));
+      std::make_unique<ui::SimpleComboboxModel>(
+          std::vector<ui::SimpleComboboxModel::Item>{
+              std::move(account_destination), std::move(device_destination)}));
   if (is_using_account_store)
     combobox->SetSelectedRow(0);
   else
@@ -295,22 +267,6 @@ std::unique_ptr<views::Combobox> CreateDestinationCombobox(
   combobox->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_PASSWORD_MANAGER_DESTINATION_DROPDOWN_ACCESSIBLE_NAME));
   return combobox;
-}
-
-std::unique_ptr<views::View> CreateHeaderImage(int image_id) {
-  auto image_view = std::make_unique<NonAccessibleImageView>();
-  image_view->SetImage(
-      *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(image_id));
-  gfx::Size preferred_size = image_view->GetPreferredSize();
-  if (preferred_size.width()) {
-    float scale =
-        static_cast<float>(ChromeLayoutProvider::Get()->GetDistanceMetric(
-            views::DISTANCE_BUBBLE_PREFERRED_WIDTH)) /
-        preferred_size.width();
-    preferred_size = gfx::ScaleToRoundedSize(preferred_size, scale);
-    image_view->SetImageSize(preferred_size);
-  }
-  return image_view;
 }
 
 base::TimeDelta GetRegularIPHTimeout() {
@@ -409,8 +365,8 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
     AddChildView(std::make_unique<CredentialsItemView>(
                      views::Button::PressedCallback(), titles.first,
                      titles.second, &password_form,
-                     content::BrowserContext::GetDefaultStoragePartition(
-                         controller_.GetProfile())
+                     controller_.GetProfile()
+                         ->GetDefaultStoragePartition()
                          ->GetURLLoaderFactoryForBrowserProcess()
                          .get()))
         ->SetEnabled(false);
@@ -464,12 +420,13 @@ PasswordSaveUpdateWithAccountStoreView::PasswordSaveUpdateWithAccountStoreView(
 
     // The |username_dropdown_| should observe the animating layout manager to
     // close the dropdown menu when the animation starts.
-    observed_animating_layout_for_username_dropdown_ = std::make_unique<
-        ScopedObserver<views::AnimatingLayoutManager,
-                       views::AnimatingLayoutManager::Observer>>(
+    animating_layout_for_username_dropdown_observation_ = std::make_unique<
+        base::ScopedObservation<views::AnimatingLayoutManager,
+                                views::AnimatingLayoutManager::Observer>>(
         username_dropdown_);
-    observed_animating_layout_for_username_dropdown_->Add(animating_layout);
-    observed_animating_layout_for_iph_.Add(animating_layout);
+    animating_layout_for_username_dropdown_observation_->Observe(
+        animating_layout);
+    animating_layout_for_iph_observation_.Observe(animating_layout);
 
     // The account picker is only visible in Save bubbble, not Update bubble.
     if (destination_dropdown_)
@@ -530,6 +487,9 @@ void PasswordSaveUpdateWithAccountStoreView::DestinationChanged() {
   controller_.OnToggleAccountStore(is_account_store_selected);
   // Saving in account and local stores have different header images.
   UpdateHeaderImage();
+  // Saving in account and local stores have action button text for non-opted-in
+  // users (Next vs. Save).
+  UpdateBubbleUIElements();
   // If the user explicitly switched to "save on this device only",
   // record this with the IPH tracker (so it can decide not to show the
   // IPH again). It may be null in tests, so handle that case.
@@ -570,7 +530,7 @@ gfx::ImageSkia PasswordSaveUpdateWithAccountStoreView::GetWindowIcon() {
 void PasswordSaveUpdateWithAccountStoreView::AddedToWidget() {
   static_cast<views::Label*>(GetBubbleFrameView()->title())
       ->SetAllowCharacterBreak(true);
-
+  UpdateHeaderImage();
   if (ShouldShowFailedReauthIPH())
     MaybeShowIPH(IPHType::kFailedReauth);
   else
@@ -579,7 +539,6 @@ void PasswordSaveUpdateWithAccountStoreView::AddedToWidget() {
 
 void PasswordSaveUpdateWithAccountStoreView::OnThemeChanged() {
   PasswordBubbleViewBase::OnThemeChanged();
-  UpdateHeaderImage();
   if (password_view_button_) {
     auto* theme = GetNativeTheme();
     const SkColor icon_color =
@@ -617,11 +576,11 @@ void PasswordSaveUpdateWithAccountStoreView::
     UpdateUsernameAndPasswordInModel() {
   if (!username_dropdown_ && !password_dropdown_)
     return;
-  base::string16 new_username = controller_.pending_password().username_value;
-  base::string16 new_password = controller_.pending_password().password_value;
+  std::u16string new_username = controller_.pending_password().username_value;
+  std::u16string new_password = controller_.pending_password().password_value;
   if (username_dropdown_) {
     new_username = username_dropdown_->GetText();
-    base::TrimString(new_username, base::ASCIIToUTF16(" "), &new_username);
+    base::TrimString(new_username, u" ", &new_username);
   }
   if (password_dropdown_)
     new_password = password_dropdown_->GetText();
@@ -631,7 +590,7 @@ void PasswordSaveUpdateWithAccountStoreView::
 
 void PasswordSaveUpdateWithAccountStoreView::UpdateBubbleUIElements() {
   SetButtons((ui::DIALOG_BUTTON_OK | ui::DIALOG_BUTTON_CANCEL));
-  base::string16 ok_button_text;
+  std::u16string ok_button_text;
   if (controller_.IsAccountStorageOptInRequired()) {
     ok_button_text = l10n_util::GetStringUTF16(
         IDS_PASSWORD_MANAGER_SAVE_BUBBLE_OPT_IN_BUTTON);
@@ -677,14 +636,19 @@ void PasswordSaveUpdateWithAccountStoreView::UpdateBubbleUIElements() {
 }
 
 void PasswordSaveUpdateWithAccountStoreView::UpdateHeaderImage() {
-  bool is_dark_mode =
-      color_utils::IsDark(GetBubbleFrameView()->GetBackgroundColor());
-  int id = controller_.IsCurrentStateAffectingTheAccountStore()
-               ? (is_dark_mode ? IDR_SAVE_PASSWORD_MULTI_DEVICE_DARK
-                               : IDR_SAVE_PASSWORD_MULTI_DEVICE)
-               : (is_dark_mode ? IDR_SAVE_PASSWORD_ONE_DEVICE_DARK
-                               : IDR_SAVE_PASSWORD_ONE_DEVICE);
-  GetBubbleFrameView()->SetHeaderView(CreateHeaderImage(id));
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::
+              kUseNewHeaderForSavePasswordWithAccountStoreBubble)) {
+    SetBubbleHeader(IDR_SAVE_PASSWORD, IDR_SAVE_PASSWORD_DARK);
+    return;
+  }
+  int light_image_id = controller_.IsCurrentStateAffectingTheAccountStore()
+                           ? IDR_SAVE_PASSWORD_MULTI_DEVICE
+                           : IDR_SAVE_PASSWORD_ONE_DEVICE;
+  int dark_image_id = controller_.IsCurrentStateAffectingTheAccountStore()
+                          ? IDR_SAVE_PASSWORD_MULTI_DEVICE_DARK
+                          : IDR_SAVE_PASSWORD_ONE_DEVICE_DARK;
+  SetBubbleHeader(light_image_id, dark_image_id);
 }
 
 bool PasswordSaveUpdateWithAccountStoreView::ShouldShowFailedReauthIPH() {
@@ -715,9 +679,9 @@ void PasswordSaveUpdateWithAccountStoreView::MaybeShowIPH(IPHType type) {
   FeaturePromoBubbleParams bubble_params;
   bubble_params.anchor_view = destination_dropdown_;
   bubble_params.arrow = views::BubbleBorder::RIGHT_CENTER;
-  bubble_params.preferred_width = kAccountStoragePromoWidth;
-  bubble_params.allow_focus = true;
+  bubble_params.focus_on_create = true;
   bubble_params.persist_on_blur = false;
+  bubble_params.preferred_width = kAccountStoragePromoWidth;
   bubble_params.timeout_default = GetRegularIPHTimeout();
   bubble_params.timeout_short = GetShortIPHTimeout();
 
@@ -733,7 +697,7 @@ void PasswordSaveUpdateWithAccountStoreView::MaybeShowIPH(IPHType type) {
       // If the regular promo was shown, the failed reauth promo is
       // definitely finished. If not, we can't be confident it hasn't
       // finished.
-      failed_reauth_promo_id_ = base::nullopt;
+      failed_reauth_promo_id_ = absl::nullopt;
     }
   } else {
     bubble_params.body_string_specifier =
@@ -762,7 +726,7 @@ void PasswordSaveUpdateWithAccountStoreView::CloseIPHBubbleIfOpen() {
   // IDs, and we reset ours when showing a normal IPH bubble.
   promo_controller_->CloseBubbleForCriticalPromo(
       failed_reauth_promo_id_.value());
-  failed_reauth_promo_id_ = base::nullopt;
+  failed_reauth_promo_id_ = absl::nullopt;
 }
 
 void PasswordSaveUpdateWithAccountStoreView::AnnounceSaveUpdateChange() {
@@ -771,7 +735,7 @@ void PasswordSaveUpdateWithAccountStoreView::AnnounceSaveUpdateChange() {
   if (!accessibility_alert_)
     return;
 
-  base::string16 accessibility_alert_text = GetWindowTitle();
+  std::u16string accessibility_alert_text = GetWindowTitle();
   if (destination_dropdown_ && !controller_.IsCurrentStateUpdate()) {
     // For Save bubbles, if the `destination_dropdown_` exists (for account
     // store users), we use the labels in the `destination_dropdown_` instead.

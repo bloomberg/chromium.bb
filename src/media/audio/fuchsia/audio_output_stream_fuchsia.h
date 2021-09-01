@@ -8,10 +8,10 @@
 #include <fuchsia/media/cpp/fidl.h>
 
 #include "base/memory/shared_memory_mapping.h"
-#include "base/optional.h"
 #include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -35,6 +35,8 @@ class AudioOutputStreamFuchsia : public AudioOutputStream {
  private:
   ~AudioOutputStreamFuchsia() override;
 
+  bool is_started() { return callback_ != nullptr; }
+
   // Returns minimum |payload_buffer_| size for the current |min_lead_time_|.
   size_t GetMinBufferSize();
 
@@ -51,6 +53,9 @@ class AudioOutputStreamFuchsia : public AudioOutputStream {
 
   // Resets internal state and reports an error to |callback_|.
   void ReportError();
+
+  // Callback for AudioRenderer::Pause().
+  void OnPauseComplete(int64_t reference_time, int64_t media_time);
 
   // Requests data from AudioSourceCallback, passes it to the mixer and
   // schedules |timer_| for the next call.
@@ -76,13 +81,18 @@ class AudioOutputStreamFuchsia : public AudioOutputStream {
 
   double volume_ = 1.0;
 
+  // Set to true when Pause() call is pending. AudioRenderer handles Pause()
+  // asynchronously, so Play() should not be called again until Pause() is
+  // complete.
+  bool pause_pending_ = false;
+
   base::TimeTicks reference_time_;
 
   int64_t stream_position_samples_;
 
   // Current min lead time for the stream. This value is not set until the first
   // AudioRenderer::OnMinLeadTimeChanged event.
-  base::Optional<base::TimeDelta> min_lead_time_;
+  absl::optional<base::TimeDelta> min_lead_time_;
 
   // Timer that's scheduled to call PumpSamples().
   base::OneShotTimer timer_;

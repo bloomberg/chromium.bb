@@ -18,7 +18,6 @@
 #include "extensions/browser/api/webcam_private/webcam.h"
 #include "extensions/common/api/serial.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/device/public/mojom/serial.mojom.h"
 
 namespace extensions {
 
@@ -26,7 +25,7 @@ class ViscaWebcam : public Webcam {
  public:
   ViscaWebcam();
 
-  using OpenCompleteCallback = base::Callback<void(bool)>;
+  using OpenCompleteCallback = base::RepeatingCallback<void(bool)>;
 
   // Open and initialize the web camera. This is done by the following three
   // steps (in order): 1. Open the serial port; 2. Request address; 3. Clear the
@@ -48,7 +47,7 @@ class ViscaWebcam : public Webcam {
   };
 
   using CommandCompleteCallback =
-      base::Callback<void(bool, const std::vector<char>&)>;
+      base::RepeatingCallback<void(bool, const std::vector<char>&)>;
 
   // Private because WebCam is base::RefCounted.
   ~ViscaWebcam() override;

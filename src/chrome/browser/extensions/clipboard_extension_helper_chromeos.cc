@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/clipboard_extension_helper_chromeos.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/macros.h"
@@ -38,7 +39,7 @@ class ClipboardExtensionHelper::ClipboardImageDataDecoder
     ImageDecoder::ImageCodec codec = ImageDecoder::DEFAULT_CODEC;
     switch (type) {
       case clipboard::IMAGE_TYPE_PNG:
-        codec = ImageDecoder::ROBUST_PNG_CODEC;
+        codec = ImageDecoder::PNG_CODEC;
         break;
       case clipboard::IMAGE_TYPE_JPEG:
         codec = ImageDecoder::DEFAULT_CODEC;
@@ -76,7 +77,8 @@ class ClipboardExtensionHelper::ClipboardImageDataDecoder
 };
 
 ClipboardExtensionHelper::ClipboardExtensionHelper() {
-  clipboard_image_data_decoder_.reset(new ClipboardImageDataDecoder(this));
+  clipboard_image_data_decoder_ =
+      std::make_unique<ClipboardImageDataDecoder>(this);
 }
 
 ClipboardExtensionHelper::~ClipboardExtensionHelper() {}

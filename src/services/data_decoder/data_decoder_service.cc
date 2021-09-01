@@ -21,9 +21,9 @@
 #include "services/data_decoder/web_bundler.h"
 #include "services/data_decoder/xml_parser.h"
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "services/data_decoder/ble_scan_parser_impl.h"
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !defined(OS_IOS)
 #include "services/data_decoder/image_decoder_impl.h"
@@ -98,12 +98,12 @@ void DataDecoderService::BindGzipper(
   mojo::MakeSelfOwnedReceiver(std::make_unique<Gzipper>(), std::move(receiver));
 }
 
-#ifdef OS_CHROMEOS
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void DataDecoderService::BindBleScanParser(
     mojo::PendingReceiver<mojom::BleScanParser> receiver) {
   mojo::MakeSelfOwnedReceiver(std::make_unique<BleScanParserImpl>(),
                               std::move(receiver));
 }
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace data_decoder

@@ -12,6 +12,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/views/media_router/cast_dialog_metrics.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "ui/views/bubble/bubble_border.h"
@@ -38,6 +39,8 @@ class CastDialogView : public views::BubbleDialogDelegateView,
                        public CastDialogController::Observer,
                        public ui::SimpleMenuModel::Delegate {
  public:
+  METADATA_HEADER(CastDialogView);
+
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnDialogModelUpdated(CastDialogView* dialog_view) = 0;
@@ -45,6 +48,9 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   };
 
   enum SourceType { kTab, kDesktop, kLocalFile };
+
+  CastDialogView(const CastDialogView&) = delete;
+  CastDialogView& operator=(const CastDialogView&) = delete;
 
   // Shows the singleton dialog anchored to the Cast toolbar icon. Requires that
   // BrowserActionsContainer exists for |browser|.
@@ -82,7 +88,7 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   static views::Widget* GetCurrentDialogWidget();
 
   // views::WidgetDelegate:
-  base::string16 GetWindowTitle() const override;
+  std::u16string GetWindowTitle() const override;
 
   // CastDialogController::Observer:
   void OnModelUpdated(const CastDialogModel& model) override;
@@ -170,7 +176,7 @@ class CastDialogView : public views::BubbleDialogDelegateView,
 
   // Returns the cast mode that is selected in the sources menu and supported by
   // |sink|. Returns nullopt if no such cast mode exists.
-  base::Optional<MediaCastMode> GetCastModeToUse(const UIMediaSink& sink) const;
+  absl::optional<MediaCastMode> GetCastModeToUse(const UIMediaSink& sink) const;
 
   // Disables sink buttons for sinks that do not support the currently selected
   // source.
@@ -191,7 +197,7 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   static CastDialogView* instance_;
 
   // Title shown at the top of the dialog.
-  base::string16 dialog_title_;
+  std::u16string dialog_title_;
 
   // The source selected in the sources menu. This defaults to "tab"
   // (presentation or tab mirroring). "Tab" is represented by a single item in
@@ -226,10 +232,10 @@ class CastDialogView : public views::BubbleDialogDelegateView,
 
   // The sink that the user has selected to cast to. If the user is using
   // multiple sinks at the same time, the last activated sink is used.
-  base::Optional<size_t> selected_sink_index_;
+  absl::optional<size_t> selected_sink_index_;
 
   // This value is set if the user has chosen a local file to cast.
-  base::Optional<base::string16> local_file_name_;
+  absl::optional<std::u16string> local_file_name_;
 
   base::ObserverList<Observer> observers_;
 
@@ -237,8 +243,6 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   bool keep_shown_for_testing_ = false;
 
   base::WeakPtrFactory<CastDialogView> weak_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(CastDialogView);
 };
 
 }  // namespace media_router

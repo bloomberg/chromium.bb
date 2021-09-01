@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.send_tab_to_self;
 
+import android.app.Activity;
+
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.ChromeAccessorActivity;
@@ -11,10 +13,11 @@ import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfAndroidBridge;
 import org.chromium.chrome.browser.share.send_tab_to_self.SendTabToSelfCoordinator;
-import org.chromium.chrome.browser.sync.AndroidSyncSettings;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
+import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -23,25 +26,29 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class SendTabToSelfShareActivity extends ChromeAccessorActivity {
     private static BottomSheetController sBottomSheetControllerForTesting;
-    private static AndroidSyncSettings sAndroidSyncSettings;
 
     @Override
-    public void handleAction(ChromeActivity triggeringActivity) {
-        Tab tab = triggeringActivity.getActivityTabProvider().get();
+    public void handleAction(Activity triggeringActivity,
+            MenuOrKeyboardActionController menuOrKeyboardActionController) {
+        // TODO(crbug.com/1175155): Remove ChromeActivity reference once the activity tab is
+        // available via UnownedUserData.
+        ChromeActivity chromeActivity = (ChromeActivity) triggeringActivity;
+        Tab tab = chromeActivity.getActivityTabProvider().get();
         if (tab == null) return;
         NavigationEntry entry = tab.getWebContents().getNavigationController().getVisibleEntry();
         if (entry == null) return;
         BottomSheetController controller =
-                getBottomSheetController(triggeringActivity.getWindowAndroid());
+                getBottomSheetController(chromeActivity.getWindowAndroid());
         if (controller == null) {
             return;
         }
 
-        boolean isSyncEnabled = getAndroidSyncSettings().isSyncEnabled();
+        boolean isSyncEnabled =
+                ProfileSyncService.get() != null && ProfileSyncService.get().isSyncRequested();
         controller.requestShowContent(
                 SendTabToSelfCoordinator.createBottomSheetContent(triggeringActivity,
-                        entry.getUrl(), entry.getTitle(), entry.getTimestamp(), controller,
-                        new SettingsLauncherImpl(), isSyncEnabled),
+                        entry.getUrl().getSpec(), entry.getTitle(), entry.getTimestamp(),
+                        controller, new SettingsLauncherImpl(), isSyncEnabled),
                 true);
         // TODO(crbug.com/968246): Remove the need to call this explicitly and instead have it
         // automatically show since PeekStateEnabled is set to false.
@@ -57,18 +64,8 @@ public class SendTabToSelfShareActivity extends ChromeAccessorActivity {
         return BottomSheetControllerProvider.from(window);
     }
 
-    private AndroidSyncSettings getAndroidSyncSettings() {
-        if (sAndroidSyncSettings != null) return sAndroidSyncSettings;
-        return AndroidSyncSettings.get();
-    }
-
     @VisibleForTesting
     public static void setBottomSheetControllerForTesting(BottomSheetController controller) {
         sBottomSheetControllerForTesting = controller;
-    }
-
-    @VisibleForTesting
-    public static void setAndroidSyncSettingsForTesting(AndroidSyncSettings syncSettings) {
-        sAndroidSyncSettings = syncSettings;
     }
 }

@@ -12,24 +12,38 @@
 #include "base/i18n/streaming_utf8_validator.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/tether_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 
 namespace {
 
+const char kTestCellularDevicePath[] = "cellular_path";
+const char kTestCellularDeviceName[] = "cellular_name";
+
 class NetworkStateTest : public testing::Test {
  public:
-  NetworkStateTest() : network_state_("test_path") {
-  }
+  NetworkStateTest() : network_state_("test_path") {}
+
+  // testing::Test:
+  void SetUp() override { AddCellularDevice(); }
 
  protected:
+  const DeviceState* GetCellularDevice() {
+    return helper_.network_state_handler()->GetDeviceState(
+        kTestCellularDevicePath);
+  }
+
   bool SetProperty(const std::string& key, std::unique_ptr<base::Value> value) {
     const bool result = network_state_.PropertyChanged(key, *value);
-    properties_.SetWithoutPathExpansion(key, std::move(value));
+    properties_.SetKey(key, base::Value::FromUniquePtrValue(std::move(value)));
     return result;
   }
 
@@ -44,6 +58,15 @@ class NetworkStateTest : public testing::Test {
   NetworkState network_state_;
 
  private:
+  void AddCellularDevice() {
+    helper_.device_test()->AddDevice(
+        kTestCellularDevicePath, shill::kTypeCellular, kTestCellularDeviceName);
+    base::RunLoop().RunUntilIdle();
+  }
+
+  base::test::SingleThreadTaskEnvironment task_environment_;
+  NetworkStateTestHelper helper_{/*use_default_devices_and_services=*/false};
+
   base::DictionaryValue properties_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkStateTest);
@@ -405,6 +428,43 @@ TEST_F(NetworkStateTest, CelularPaymentPortalGet) {
             network_state_.activation_state());
   EXPECT_EQ("http://test-portal.com", network_state_.payment_url());
   EXPECT_EQ("", network_state_.payment_post_data());
+}
+
+TEST_F(NetworkStateTest, CellularSpecifier) {
+  const char kTestCellularNetworkName[] = "cellular1";
+  const char kTestIccid1[] = "1234567890";
+  const char kTestIccid2[] = "0987654321";
+  EXPECT_TRUE(SetStringProperty(shill::kTypeProperty, shill::kTypeCellular));
+  EXPECT_TRUE(
+      SetStringProperty(shill::kNameProperty, kTestCellularNetworkName));
+  network_state_.set_update_received();
+
+  // Verify that cellular network state with same name but different iccid
+  // produce different specifier values.
+  EXPECT_TRUE(SetStringProperty(shill::kIccidProperty, kTestIccid1));
+  std::string specifier1 = network_state_.GetSpecifier();
+  EXPECT_TRUE(SetStringProperty(shill::kIccidProperty, kTestIccid2));
+  std::string specifier2 = network_state_.GetSpecifier();
+  EXPECT_NE(specifier1, specifier2);
+}
+
+TEST_F(NetworkStateTest, NonShillCellular) {
+  const char kTestIccid[] = "test_iccid";
+  const char kTestEid[] = "test_eid";
+  const char kTestGuid[] = "test_guid";
+
+  std::unique_ptr<NetworkState> non_shill_cellular =
+      NetworkState::CreateNonShillCellularNetwork(
+          kTestIccid, kTestEid, kTestGuid, GetCellularDevice());
+  EXPECT_EQ(kTestIccid, non_shill_cellular->iccid());
+  EXPECT_EQ(kTestEid, non_shill_cellular->eid());
+  EXPECT_EQ(kTestGuid, non_shill_cellular->guid());
+
+  base::Value dictionary(base::Value::Type::DICTIONARY);
+  non_shill_cellular->GetStateProperties(&dictionary);
+  EXPECT_EQ(kTestIccid, *dictionary.FindStringKey(shill::kIccidProperty));
+  EXPECT_EQ(kTestEid, *dictionary.FindStringKey(shill::kEidProperty));
+  EXPECT_EQ(kTestGuid, *dictionary.FindStringKey(shill::kGuidProperty));
 }
 
 }  // namespace chromeos

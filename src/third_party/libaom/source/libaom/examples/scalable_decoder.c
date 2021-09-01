@@ -142,7 +142,7 @@ int main(int argc, char **argv) {
 
   // open any enhancement layer output yuv files
   for (i = 1; i < si.number_spatial_layers; i++) {
-    snprintf(filename, sizeof(filename), "out_lyr%d.yuv", i);
+    snprintf(filename, sizeof(filename), "out_lyr%u.yuv", i);
     if (!(outfile[i] = fopen(filename, "wb")))
       die("Failed to open output for writing.");
   }

@@ -23,6 +23,9 @@ ChunkedDataPipeUploadDataStream::ChunkedDataPipeUploadDataStream(
       handle_watcher_(FROM_HERE,
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                       base::SequencedTaskRunnerHandle::Get()) {
+  // TODO(yhirano): Turn this to a DCHECK once we find the root cause of
+  // https://crbug.com/1156550.
+  CHECK(chunked_data_pipe_getter_.is_bound());
   chunked_data_pipe_getter_.set_disconnect_handler(
       base::BindOnce(&ChunkedDataPipeUploadDataStream::OnDataPipeGetterClosed,
                      base::Unretained(this)));
@@ -64,7 +67,7 @@ int ChunkedDataPipeUploadDataStream::InitInternal(
   mojo::ScopedDataPipeProducerHandle data_pipe_producer;
   mojo::ScopedDataPipeConsumerHandle data_pipe_consumer;
   MojoResult result =
-      mojo::CreateDataPipe(nullptr, &data_pipe_producer, &data_pipe_consumer);
+      mojo::CreateDataPipe(nullptr, data_pipe_producer, data_pipe_consumer);
   if (result != MOJO_RESULT_OK)
     return net::ERR_INSUFFICIENT_RESOURCES;
   chunked_data_pipe_getter_->StartReading(std::move(data_pipe_producer));

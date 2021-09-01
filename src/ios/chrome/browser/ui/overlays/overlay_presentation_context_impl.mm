@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
-#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/overlays/public/overlay_presentation_context_observer.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/ui/overlays/overlay_coordinator_factory.h"
@@ -28,6 +27,13 @@ OverlayPresentationContextImpl* OverlayPresentationContextImpl::FromBrowser(
                                                                browser);
   return OverlayPresentationContextImpl::Container::FromUserData(browser)
       ->PresentationContextForModality(modality);
+}
+
+// static
+OverlayPresentationContext* OverlayPresentationContext::FromBrowser(
+    Browser* browser,
+    OverlayModality modality) {
+  return OverlayPresentationContextImpl::FromBrowser(browser, modality);
 }
 
 #pragma mark - OverlayPresentationContextImpl::Container
@@ -127,6 +133,20 @@ void OverlayPresentationContextImpl::SetPresentationContextViewController(
   UpdatePresentationCapabilities();
 }
 
+void OverlayPresentationContextImpl::SetUIDisabled(bool disabled) {
+  if (ui_disabled_ == disabled) {
+    return;
+  }
+  ui_disabled_ = disabled;
+  UpdatePresentationCapabilities();
+
+  if (!disabled) {
+    for (auto& observer : observers_) {
+      observer.OverlayPresentationContextDidEnableUI(this);
+    }
+  }
+}
+
 #pragma mark OverlayPresentationContext
 
 void OverlayPresentationContextImpl::AddObserver(
@@ -219,7 +239,6 @@ void OverlayPresentationContextImpl::CancelOverlayUI(
     return;
   }
 
-  DCHECK(CanShowUIForRequest(request));
   DismissPresentedUI(OverlayDismissalReason::kCancellation);
 }
 
@@ -289,15 +308,7 @@ OverlayPresentationContextImpl::GetRequiredPresentationCapabilities(
 }
 
 void OverlayPresentationContextImpl::UpdatePresentationCapabilities() {
-  UIPresentationCapabilities capabilities = UIPresentationCapabilities::kNone;
-  if (container_view_controller_) {
-    capabilities = static_cast<UIPresentationCapabilities>(
-        capabilities | UIPresentationCapabilities::kContained);
-  }
-  if (presentation_context_view_controller_) {
-    capabilities = static_cast<UIPresentationCapabilities>(
-        capabilities | UIPresentationCapabilities::kPresented);
-  }
+  UIPresentationCapabilities capabilities = ConstructPresentationCapabilities();
   bool capabilities_changed = presentation_capabilities_ != capabilities;
 
   if (capabilities_changed) {
@@ -315,6 +326,24 @@ void OverlayPresentationContextImpl::UpdatePresentationCapabilities() {
           this);
     }
   }
+}
+
+OverlayPresentationContext::UIPresentationCapabilities
+OverlayPresentationContextImpl::ConstructPresentationCapabilities() {
+  if (ui_disabled_) {
+    return UIPresentationCapabilities::kNone;
+  }
+
+  UIPresentationCapabilities capabilities = UIPresentationCapabilities::kNone;
+  if (container_view_controller_) {
+    capabilities = static_cast<UIPresentationCapabilities>(
+        capabilities | UIPresentationCapabilities::kContained);
+  }
+  if (presentation_context_view_controller_) {
+    capabilities = static_cast<UIPresentationCapabilities>(
+        capabilities | UIPresentationCapabilities::kPresented);
+  }
+  return capabilities;
 }
 
 #pragma mark Presentation and Dismissal helpers
@@ -390,7 +419,7 @@ OverlayPresentationContextImpl::BrowserShutdownHelper::BrowserShutdownHelper(
     OverlayPresentationContextImpl* presentation_context)
     : presenter_(presenter), presentation_context_(presentation_context) {
   DCHECK(presenter_);
-  browser->AddObserver(this);
+  browser_observation_.Observe(browser);
 }
 
 OverlayPresentationContextImpl::BrowserShutdownHelper::
@@ -400,7 +429,7 @@ void OverlayPresentationContextImpl::BrowserShutdownHelper::BrowserDestroyed(
     Browser* browser) {
   presenter_->SetPresentationContext(nullptr);
   presentation_context_->BrowserDestroyed();
-  browser->RemoveObserver(this);
+  browser_observation_.Reset();
 }
 
 #pragma mark OverlayDismissalHelper

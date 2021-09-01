@@ -3,19 +3,16 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import * as puppeteer from 'puppeteer';
+import type * as puppeteer from 'puppeteer';
 
-import {getBrowserAndPages, goToResource} from '../../shared/helper.js';
+import {goToResource} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {editCSSProperty, getColorSwatch, getColorSwatchColor, getCSSPropertyInRule, getPropertyFromComputedPane, navigateToSidePane, shiftClickColorSwatch, waitForContentOfSelectedElementsNode, waitForCSSPropertyValue, waitForElementsComputedSection, waitForPropertyValueInComputedPane} from '../helpers/elements-helpers.js';
+import {clickNthChildOfSelectedElementNode, editCSSProperty, getColorSwatch, getColorSwatchColor, getCSSPropertyInRule, getPropertyFromComputedPane, navigateToSidePane, shiftClickColorSwatch, waitForContentOfSelectedElementsNode, waitForCSSPropertyValue, waitForElementsComputedSection, waitForPropertyValueInComputedPane} from '../helpers/elements-helpers.js';
 
 async function goToTestPageAndSelectTestElement(path: string = 'inline_editor/default.html') {
-  const {frontend} = getBrowserAndPages();
-
   await goToResource(path);
   await waitForContentOfSelectedElementsNode('<body>\u200B');
-
-  await frontend.keyboard.press('ArrowDown');
+  await clickNthChildOfSelectedElementNode(1);
   await waitForContentOfSelectedElementsNode('<div id=\u200B"inspected">\u200BInspected div\u200B</div>\u200B');
 }
 
@@ -24,7 +21,7 @@ async function assertColorSwatch(container: puppeteer.ElementHandle|undefined, e
     assert.fail('Container not found');
   }
   const swatch = await getColorSwatch(container, 0);
-  assert.isTrue(!!swatch, 'Color swatch found');
+  assert.isTrue(Boolean(swatch), 'Color swatch found');
 
   const color = await getColorSwatchColor(container, 0);
   assert.strictEqual(color, expectedColor, 'Color swatch has the right color');

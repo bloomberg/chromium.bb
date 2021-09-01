@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "content/common/content_export.h"
 
 namespace content {

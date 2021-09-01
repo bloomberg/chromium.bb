@@ -13,9 +13,9 @@
 #include "base/check_op.h"
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "components/exo/data_source.h"
 #include "components/exo/surface.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -32,6 +32,8 @@
 #include "ui/wm/public/window_move_client.h"
 
 namespace exo {
+
+using ::ui::mojom::DragOperation;
 
 // static
 ExtendedDragSource* ExtendedDragSource::instance_ = nullptr;
@@ -177,11 +179,11 @@ void ExtendedDragSource::OnToplevelWindowDragStarted(
     StartDrag(dragged_window_holder_->toplevel_window(), start_location);
 }
 
-int ExtendedDragSource::OnToplevelWindowDragDropped() {
+DragOperation ExtendedDragSource::OnToplevelWindowDragDropped() {
   DVLOG(1) << "OnDragDropped()";
   Cleanup();
-  return delegate_->ShouldAllowDropAnywhere() ? ui::DragDropTypes::DRAG_MOVE
-                                              : ui::DragDropTypes::DRAG_NONE;
+  return delegate_->ShouldAllowDropAnywhere() ? DragOperation::kMove
+                                              : DragOperation::kNone;
 }
 
 void ExtendedDragSource::OnToplevelWindowDragCancelled() {
@@ -295,11 +297,11 @@ aura::Window* ExtendedDragSource::GetDraggedWindowForTesting() {
                                 : nullptr;
 }
 
-base::Optional<gfx::Vector2d> ExtendedDragSource::GetDragOffsetForTesting()
+absl::optional<gfx::Vector2d> ExtendedDragSource::GetDragOffsetForTesting()
     const {
   return dragged_window_holder_
-             ? base::Optional<gfx::Vector2d>(dragged_window_holder_->offset())
-             : base::nullopt;
+             ? absl::optional<gfx::Vector2d>(dragged_window_holder_->offset())
+             : absl::nullopt;
 }
 
 }  // namespace exo

@@ -19,14 +19,7 @@
 
 static constexpr uint32_t kMaxBindGroups = 4u;
 static constexpr uint8_t kMaxVertexAttributes = 16u;
-// Vulkan has a standalone limit named maxVertexInputAttributeOffset (2047u at least) for vertex
-// attribute offset. The limit might be meaningless because Vulkan has another limit named
-// maxVertexInputBindingStride (2048u at least). We use maxVertexAttributeEnd (2048u) here to
-// verify vertex attribute offset, which equals to maxOffset + smallest size of vertex format
-// (char). We may use maxVertexInputBindingStride (maxVertexBufferStride below) instead to replace
-// maxVertexAttributeEnd in future.
-static constexpr uint32_t kMaxVertexAttributeEnd = 2048u;
-static constexpr uint8_t kMaxVertexBuffers = 16u;
+static constexpr uint8_t kMaxVertexBuffers = 8u;
 static constexpr uint32_t kMaxVertexBufferStride = 2048u;
 static constexpr uint32_t kNumStages = 3;
 static constexpr uint8_t kMaxColorAttachments = 4u;
@@ -58,14 +51,21 @@ static constexpr float kLodMin = 0.0;
 static constexpr float kLodMax = 1000.0;
 
 // Max texture size constants
-static constexpr uint32_t kMaxTextureSize = 8192u;
-static constexpr uint32_t kMaxTexture2DArrayLayers = 256u;
+static constexpr uint32_t kMaxTextureDimension1D = 8192u;
+static constexpr uint32_t kMaxTextureDimension2D = 8192u;
+static constexpr uint32_t kMaxTextureDimension3D = 2048u;
+static constexpr uint32_t kMaxTextureArrayLayers = 2048u;
 static constexpr uint32_t kMaxTexture2DMipLevels = 14u;
-static_assert(1 << (kMaxTexture2DMipLevels - 1) == kMaxTextureSize,
-              "kMaxTexture2DMipLevels and kMaxTextureSize size mismatch");
+static_assert(1 << (kMaxTexture2DMipLevels - 1) == kMaxTextureDimension2D,
+              "kMaxTexture2DMipLevels and kMaxTextureDimension2D size mismatch");
 
 // Offset alignment for CopyB2B. Strictly speaking this alignment is required only
 // on macOS, but we decide to do it on all platforms.
 static constexpr uint64_t kCopyBufferToBufferOffsetAlignment = 4u;
+
+// The maximum size of visibilityResultBuffer is 256KB on Metal, to fit the restriction, limit the
+// maximum size of query set to 64KB. The size of a query is 8-bytes, the maximum query count is 64
+// * 1024 / 8.
+static constexpr uint32_t kMaxQueryCount = 8192u;
 
 #endif  // COMMON_CONSTANTS_H_

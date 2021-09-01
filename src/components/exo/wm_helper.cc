@@ -48,4 +48,17 @@ bool WMHelper::HasInstance() {
   return !!g_instance;
 }
 
+void WMHelper::RegisterAppPropertyResolver(
+    std::unique_ptr<AppPropertyResolver> resolver) {
+  resolver_list_.push_back(std::move(resolver));
+}
+
+void WMHelper::PopulateAppProperties(
+    const AppPropertyResolver::Params& params,
+    ui::PropertyHandler& out_properties_container) {
+  for (auto& resolver : resolver_list_) {
+    resolver->PopulateProperties(params, out_properties_container);
+  }
+}
+
 }  // namespace exo

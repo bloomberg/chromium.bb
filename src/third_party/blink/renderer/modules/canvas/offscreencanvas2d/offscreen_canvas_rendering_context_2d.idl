@@ -5,8 +5,7 @@
 // https://html.spec.whatwg.org/C/#the-offscreen-2d-rendering-context
 
 [
-    Exposed=(Window,Worker),
-    RuntimeEnabled=SurfaceEmbeddingFeatures
+    Exposed=(Window,Worker)
 ] interface OffscreenCanvasRenderingContext2D {
     // back-reference to the canvas
     [ImplementedAs=offscreenCanvasForBinding] readonly attribute OffscreenCanvas canvas;
@@ -15,32 +14,43 @@
 
     // state
     void save(); // push state on state stack
-    void restore(); // pop state stack and restore state
+    [NoAllocDirectCall] void restore(); // pop state stack and restore state
     // Clear the canvas and reset the path
     [RuntimeEnabled=NewCanvas2DAPI] void reset();
 
     // transformations (default transform is the identity matrix)
     void scale(unrestricted double x, unrestricted double y);
-    void rotate(unrestricted double angle);
+    [RuntimeEnabled=NewCanvas2DAPI] void scale(unrestricted double x, unrestricted double y, unrestricted double z);
+    [NoAllocDirectCall] void rotate(unrestricted double angle);
+    [RuntimeEnabled=NewCanvas2DAPI, NoAllocDirectCall] void rotate3d(unrestricted double angleX, unrestricted double angleY, unrestricted double angleZ);
+    [RuntimeEnabled=NewCanvas2DAPI, NoAllocDirectCall] void rotateAxis(unrestricted double axisX, unrestricted double axisY, unrestricted double axisZ, unrestricted double angle);
     void translate(unrestricted double x, unrestricted double y);
+    [RuntimeEnabled=NewCanvas2DAPI] void translate(unrestricted double x, unrestricted double y, unrestricted double z);
+    [RuntimeEnabled=NewCanvas2DAPI, NoAllocDirectCall] void perspective(unrestricted double length);
     void transform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
+    [RuntimeEnabled=NewCanvas2DAPI] void transform(
+        unrestricted double m11, unrestricted double m12, unrestricted double m13, unrestricted double m14,
+        unrestricted double m21, unrestricted double m22, unrestricted double m23, unrestricted double m24,
+        unrestricted double m31, unrestricted double m32, unrestricted double m33, unrestricted double m34,
+        unrestricted double m41, unrestricted double m42, unrestricted double m43, unrestricted double m44
+    );
     void setTransform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
-    [RaisesException] void setTransform(optional DOMMatrix2DInit transform = {});
+    [RaisesException] void setTransform(optional DOMMatrixInit transform = {});
     DOMMatrix getTransform();
-    void resetTransform();
+    [NoAllocDirectCall] void resetTransform();
 
     // compositing
     attribute unrestricted double globalAlpha; // (default 1.0)
     attribute DOMString globalCompositeOperation; // (default source-over)
-    [MeasureAs=Canvas2DFilter, SetterCallWith=ExecutionContext] attribute DOMString filter;
+    [MeasureAs=Canvas2DFilter, SetterCallWith=ExecutionContext] attribute (DOMString or CanvasFilter)? filter; // (default 'none')
 
     // image smoothing
     attribute boolean imageSmoothingEnabled; // (default True)
     [MeasureAs=Canvas2DImageSmoothingQuality] attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
 
     // colors and styles
-    attribute (DOMString or CanvasGradient or CanvasPattern) strokeStyle; // (default black)
-    attribute (DOMString or CanvasGradient or CanvasPattern) fillStyle; // (default black)
+    attribute (DOMString or CanvasGradient or CanvasPattern or CSSColorValue) strokeStyle; // (default black)
+    attribute (DOMString or CanvasGradient or CanvasPattern or CSSColorValue) fillStyle; // (default black)
     CanvasGradient createLinearGradient(double x0, double y0, double x1, double y1);
     [RaisesException] CanvasGradient createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1);
     [RuntimeEnabled=NewCanvas2DAPI] CanvasGradient createConicGradient(double startAngle, double centerX, double centerY);
@@ -53,12 +63,12 @@
     attribute DOMString shadowColor;
 
     // CanvasRect interface
-    void clearRect(unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
-    void fillRect(unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
-    void strokeRect(unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
+    [NoAllocDirectCall] void clearRect(unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
+    [NoAllocDirectCall] void fillRect(unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
+    [NoAllocDirectCall] void strokeRect(unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
 
     // Path API (See BaseRenderingContext2D)
-    void beginPath();
+    [NoAllocDirectCall] void beginPath();
     void fill(optional CanvasFillRule winding);
     void fill(Path2D path, optional CanvasFillRule winding);
     void stroke();
@@ -82,14 +92,10 @@
 
     // pixel manipulation
     [RaisesException] ImageData createImageData(ImageData imagedata);
-    [RaisesException] ImageData createImageData(long sw, long sh);
-    [HighEntropy, MeasureAs=OffscreenCanvasGetImageData, RaisesException] ImageData getImageData(long sx, long sy, long sw, long sh);
+    [RaisesException] ImageData createImageData(long sw, long sh, optional ImageDataSettings imageDataSettings = {});
+    [HighEntropy, MeasureAs=OffscreenCanvasGetImageData, RaisesException] ImageData getImageData(long sx, long sy, long sw, long sh, optional ImageDataSettings imageDataSettings = {});
     [RaisesException] void putImageData(ImageData imagedata, long dx, long dy);
     [RaisesException] void putImageData(ImageData imagedata, long dx, long dy, long dirtyX, long dirtyY, long dirtyWidth, long dirtyHeight);
-
-    // If OffscreenCanva ships before color managed canvas, this method must remain behind flag.
-    // https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md
-    [RuntimeEnabled=CanvasColorManagement, RaisesException] ImageData createImageData(unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
 
     // Line caps/joins
     attribute unrestricted double lineWidth; // (default 1)
@@ -107,11 +113,12 @@
     attribute DOMString textAlign; // "start", "end", "left", "right", "center" (default: "start")
     attribute DOMString textBaseline; // "top", "hanging", "middle", "alphabetic", "ideographic", "bottom" (default: "alphabetic")
     attribute DOMString direction; // "inherit", "rtl", "ltr" (default: "inherit")
-    [RuntimeEnabled=NewCanvas2DAPI] attribute unrestricted double textLetterSpacing; // length in pixel (default: 0)
-    [RuntimeEnabled=NewCanvas2DAPI] attribute unrestricted double textWordSpacing; // length in pixel (default: 0)
     [RuntimeEnabled=NewCanvas2DAPI] attribute DOMString fontKerning; // "auto", "normal", "none" (default: "auto")
+    [RuntimeEnabled=NewCanvas2DAPI] attribute DOMString fontStretch; // "ultra-condensed", "extra-condensed", "condensed", "semi-condensed", "normal", "semi-expanded", "expanded", "extra-expanded", "ultra-expanded" (default: normal)
     [RuntimeEnabled=NewCanvas2DAPI] attribute DOMString fontVariantCaps; // "normal", "small-caps", "all-small-caps", "petite-caps", "all-petite-caps", "unicase", "titling-caps" (default: "normal")
+    [RuntimeEnabled=NewCanvas2DAPI] attribute unrestricted double textLetterSpacing; // length in pixel (default: 0)
     [RuntimeEnabled=NewCanvas2DAPI] attribute DOMString textRendering; // "auto", "optimizeSpeed", "optimizeLegibility", "geometricPrecision" (default: auto)
+    [RuntimeEnabled=NewCanvas2DAPI] attribute unrestricted double textWordSpacing; // length in pixel (default: 0)
 };
 
 OffscreenCanvasRenderingContext2D includes CanvasPath;

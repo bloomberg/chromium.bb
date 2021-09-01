@@ -10,7 +10,8 @@
 #include "base/macros.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
-#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom-forward.h"
+#include "chromeos/services/network_config/public/mojom/network_types.mojom-forward.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
@@ -33,20 +34,26 @@ class CrosNetworkConfigTestHelper {
 
   ~CrosNetworkConfigTestHelper();
 
+  mojom::NetworkStatePropertiesPtr CreateStandaloneNetworkProperties(
+      const std::string& id,
+      mojom::NetworkType type,
+      mojom::ConnectionStateType connection_state,
+      int signal_strength);
+
   NetworkStateTestHelper& network_state_helper() {
-    return *network_state_helper_;
+    return network_state_helper_;
   }
 
   NetworkDeviceHandler* network_device_handler() {
-    return network_device_handler_.get();
+    return network_state_helper_.network_device_handler();
   }
 
   void Initialize(
       ManagedNetworkConfigurationHandler* network_configuration_handler);
 
  protected:
-  std::unique_ptr<NetworkStateTestHelper> network_state_helper_;
-  std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
+  NetworkStateTestHelper network_state_helper_{
+      /*use_default_devices_and_services=*/false};
   std::unique_ptr<CrosNetworkConfig> cros_network_config_impl_;
 
  private:

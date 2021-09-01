@@ -5,12 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_REQUEST_H_
 
-#include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/fetch/body.h"
 #include "third_party/blink/renderer/core/fetch/fetch_request_data.h"
@@ -41,10 +42,17 @@ class CORE_EXPORT Request final : public ScriptWrappable,
   // These "create" function must be called with entering an appropriate
   // V8 context.
   // From Request.idl:
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  static Request* Create(ScriptState* script_state,
+                         const V8RequestInfo* input,
+                         const RequestInit* init,
+                         ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   static Request* Create(ScriptState*,
                          const RequestInfo&,
                          const RequestInit*,
                          ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   static Request* Create(ScriptState*, const String&, ExceptionState&);
   static Request* Create(ScriptState*,
@@ -64,7 +72,7 @@ class CORE_EXPORT Request final : public ScriptWrappable,
   Request(ScriptState*, FetchRequestData*, Headers*, AbortSignal*);
   Request(ScriptState*, FetchRequestData*);
 
-  static base::Optional<network::mojom::CredentialsMode> ParseCredentialsMode(
+  static absl::optional<network::mojom::CredentialsMode> ParseCredentialsMode(
       const String& credentials_mode);
 
   // From Request.idl:

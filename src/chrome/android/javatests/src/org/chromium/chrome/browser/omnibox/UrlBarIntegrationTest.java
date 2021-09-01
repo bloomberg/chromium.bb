@@ -27,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.test.params.ParameterizedCommandLineFlags;
 import org.chromium.base.test.params.ParameterizedCommandLineFlags.Switches;
 import org.chromium.base.test.util.CloseableOnMainThread;
@@ -34,16 +35,18 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
-import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.concurrent.Callable;
 
@@ -144,6 +147,22 @@ public class UrlBarIntegrationTest {
         }
     }
 
+    @Test
+    @SmallTest
+    @Feature({"Omnibox"})
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    public void testDarkThemeColor() throws Throwable {
+        mActivityTestRule.startMainActivityWithURL(UrlUtils.encodeHtmlDataUri(
+                "<html><meta name=\"theme-color\" content=\"#000000\" /></html>"));
+
+        CriteriaHelper.pollUiThread(() -> {
+            final int expectedTextColor =
+                    ApiCompatibilityUtils.getColor(mActivityTestRule.getActivity().getResources(),
+                            R.color.default_text_color_light);
+            Criteria.checkThat(getUrlBar().getCurrentTextColor(), Matchers.is(expectedTextColor));
+        });
+    }
+
     /**
      * Clears the clipboard, executes specified action on the omnibox and
      * returns clipboard's content. Action can be either android.R.id.copy
@@ -172,8 +191,6 @@ public class UrlBarIntegrationTest {
     @Test
     @SmallTest
     @Feature({"Omnibox"})
-    // TODO(crbug.com/1028469): Investigate and enable this test for the search engine logo feature.
-    @DisableFeatures("OmniboxSearchEngineLogo")
     public void testLongPress() {
         // This is a more realistic test than HUGE_URL because ita's full of separator characters
         // which have historically been known to trigger odd behavior with long-pressing.

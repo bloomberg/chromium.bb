@@ -45,6 +45,8 @@ const char* SKPBench::onGetUniqueName() {
 
 void SKPBench::onPerCanvasPreDraw(SkCanvas* canvas) {
     SkIRect bounds = canvas->getDeviceClipBounds();
+    bounds.intersect(fClip);
+    bounds.intersect(fPic->cullRect().roundOut());
     SkAssertResult(!bounds.isEmpty());
 
     const bool gpu = canvas->recordingContext() != nullptr;
@@ -74,7 +76,7 @@ void SKPBench::onPerCanvasPreDraw(SkCanvas* canvas) {
             clip.offset(-SkIntToScalar(tileRect.fLeft), -SkIntToScalar(tileRect.fTop));
             fSurfaces.back()->getCanvas()->clipRect(clip);
 
-            fSurfaces.back()->getCanvas()->setMatrix(canvas->getTotalMatrix());
+            fSurfaces.back()->getCanvas()->setMatrix(canvas->getLocalToDevice());
             fSurfaces.back()->getCanvas()->scale(fScale, fScale);
         }
     }
@@ -130,21 +132,24 @@ void SKPBench::drawPicture() {
     }
 
     for (int j = 0; j < fTileRects.count(); ++j) {
-        fSurfaces[j]->getCanvas()->flush();
+        fSurfaces[j]->flush();
     }
 }
 
 #include "src/gpu/GrGpu.h"
-static void draw_pic_for_stats(SkCanvas* canvas, GrDirectContext* context, const SkPicture* picture,
-                               SkTArray<SkString>* keys, SkTArray<double>* values) {
-    context->priv().resetGpuStats();
-    context->priv().resetContextStats();
+static void draw_pic_for_stats(SkCanvas* canvas,
+                               GrDirectContext* dContext,
+                               const SkPicture* picture,
+                               SkTArray<SkString>* keys,
+                               SkTArray<double>* values) {
+    dContext->priv().resetGpuStats();
+    dContext->priv().resetContextStats();
     canvas->drawPicture(picture);
-    canvas->flush();
+    dContext->flush();
 
-    context->priv().dumpGpuStatsKeyValuePairs(keys, values);
-    context->priv().dumpCacheStatsKeyValuePairs(keys, values);
-    context->priv().dumpContextStatsKeyValuePairs(keys, values);
+    dContext->priv().dumpGpuStatsKeyValuePairs(keys, values);
+    dContext->priv().dumpCacheStatsKeyValuePairs(keys, values);
+    dContext->priv().dumpContextStatsKeyValuePairs(keys, values);
 }
 
 void SKPBench::getGpuStats(SkCanvas* canvas, SkTArray<SkString>* keys, SkTArray<double>* values) {
@@ -161,4 +166,17 @@ void SKPBench::getGpuStats(SkCanvas* canvas, SkTArray<SkString>* keys, SkTArray<
     direct->resetContext();
     direct->priv().getGpu()->resetShaderCacheForTesting();
     draw_pic_for_stats(canvas, direct, fPic.get(), keys, values);
+}
+
+bool SKPBench::getDMSAAStats(GrRecordingContext* rContext) {
+    if (!rContext || !rContext->asDirectContext()) {
+        return false;
+    }
+    // Clear the current DMSAA stats then do a single tiled draw that resets them to the specific
+    // values for our SKP.
+    rContext->asDirectContext()->flushAndSubmit();
+    rContext->priv().dmsaaStats() = {};
+    this->drawPicture();  // Draw tiled for DMSAA stats.
+    rContext->asDirectContext()->flush();
+    return true;
 }

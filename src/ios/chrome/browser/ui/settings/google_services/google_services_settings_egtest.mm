@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "base/strings/sys_string_conversions.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
+#import "components/policy/core/common/policy_loader_ios_constants.h"
+#import "components/policy/policy_constants.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/signin/public/base/signin_pref_names.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_app_interface.h"
@@ -312,6 +317,41 @@ using chrome_test_util::SyncSettingsConfirmButton;
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 }
 
+// Tests that the sign-in button can't be used when sign-in is disabled.
+- (void)testSigninDisabledByPolicy {
+  // Disable browser sign-in.
+  [self setUpSigninDisabledEnterprisePolicy];
+  [ChromeEarlGrey setBoolValue:NO forUserPref:prefs::kSigninAllowedByPolicy];
+
+  // Open Google services settings and verify the sign-in cell shows the
+  // "sign-in disabled" text.
+  [self openGoogleServicesSettings];
+  id<GREYMatcher> signinMatcher =
+      [self cellMatcherWithTitleID:IDS_IOS_SIGN_IN_TO_CHROME_SETTING_TITLE
+                      detailTextID:IDS_IOS_SETTINGS_SIGNIN_DISABLED];
+  [[EarlGrey selectElementWithMatcher:signinMatcher]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Attempt to tap the sign-in cell.
+  FakeChromeIdentity* fakeIdentity = [SigninEarlGrey fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+
+  [[EarlGrey selectElementWithMatcher:signinMatcher] performAction:grey_tap()];
+
+  // Verify the sync view isn't showing.
+  id<GREYMatcher> syncTitleMatcher = grey_allOf(
+      grey_accessibilityLabel(
+          GetNSString(IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE)),
+      grey_kindOfClass([UILabel class]), grey_sufficientlyVisible(), nil);
+  [[EarlGrey selectElementWithMatcher:syncTitleMatcher]
+      assertWithMatcher:grey_nil()];
+
+  // Prefs clean-up.
+  [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kSigninAllowedByPolicy];
+  [[NSUserDefaults standardUserDefaults]
+      removeObjectForKey:kPolicyLoaderIOSConfigurationKey];
+}
+
 #pragma mark - Helpers
 
 // Opens the Google services settings.
@@ -329,6 +369,19 @@ using chrome_test_util::SyncSettingsConfirmButton;
   [[EarlGrey selectElementWithMatcher:self.scrollViewMatcher]
       performAction:grey_scrollToContentEdgeWithStartPoint(kGREYContentEdgeTop,
                                                            0.1f, 0.1f)];
+}
+
+// Enables the Enterprise policy that disables sign-in entry points across
+// Chrome.
+- (void)setUpSigninDisabledEnterprisePolicy {
+  NSDictionary* policy = @{
+    base::SysUTF8ToNSString(policy::key::kBrowserSignin) :
+        [NSNumber numberWithInt:(int)BrowserSigninMode::kDisabled]
+  };
+
+  [[NSUserDefaults standardUserDefaults]
+      setObject:policy
+         forKey:kPolicyLoaderIOSConfigurationKey];
 }
 
 // Returns grey matcher for a cell with |titleID| and |detailTextID|.

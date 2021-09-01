@@ -24,6 +24,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "cc/base/math_util.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -707,8 +708,7 @@ bool NightLightControllerImpl::GetEnabled() const {
          active_user_pref_service_->GetBoolean(prefs::kNightLightEnabled);
 }
 
-void NightLightControllerImpl::SuspendDone(
-    const base::TimeDelta& sleep_duration) {
+void NightLightControllerImpl::SuspendDone(base::TimeDelta sleep_duration) {
   // Time changes while the device is suspended. We need to refresh the schedule
   // upon device resume to know what the status should be now.
   Refresh(/*did_schedule_change=*/true,
@@ -724,8 +724,8 @@ void NightLightControllerImpl::Close(bool by_user) {
 }
 
 void NightLightControllerImpl::Click(
-    const base::Optional<int>& button_index,
-    const base::Optional<base::string16>& reply) {
+    const absl::optional<int>& button_index,
+    const absl::optional<std::u16string>& reply) {
   auto* shell = Shell::Get();
 
   DCHECK(!button_index.has_value());
@@ -825,7 +825,7 @@ void NightLightControllerImpl::ShowAutoNightLightNotification() {
           message_center::NOTIFICATION_TYPE_SIMPLE, kNotificationId,
           l10n_util::GetStringUTF16(IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_TITLE),
           l10n_util::GetStringUTF16(IDS_ASH_AUTO_NIGHT_LIGHT_NOTIFY_BODY),
-          base::string16(), GURL(),
+          std::u16string(), GURL(),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId),
           message_center::RichNotificationData{},

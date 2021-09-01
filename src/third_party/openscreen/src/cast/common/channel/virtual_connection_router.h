@@ -10,15 +10,16 @@
 #include <memory>
 #include <string>
 
+#include "absl/types/optional.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
+#include "cast/common/channel/virtual_connection.h"
 #include "cast/common/public/cast_socket.h"
 
 namespace openscreen {
 namespace cast {
 
 class CastMessageHandler;
-struct VirtualConnection;
-class VirtualConnectionManager;
+class ConnectionNamespaceHandler;
 
 // Handles CastSockets by routing received messages to appropriate message
 // handlers based on the VirtualConnection's local ID and sending messages over
@@ -37,8 +38,13 @@ class VirtualConnectionManager;
 //
 // 4. Anything Foo wants to send (launch, app availability, etc.) goes through
 //    VCRouter::Send via an appropriate VC.  The virtual connection is not
-//    created automatically, so Foo should either ensure its existence via logic
-//    or check with the VirtualConnectionManager first.
+//    created automatically, so AddConnection() must be called first.
+//
+// 5. Anything Foo wants to receive must be registered with a handler by calling
+//    AddHandlerForLocalId().
+//
+// 6. Foo is expected to clean-up after itself (#4 and #5) by calling
+//    RemoveConnection() and RemoveHandlerForLocalId().
 class VirtualConnectionRouter final : public CastSocket::Client {
  public:
   class SocketErrorHandler {
@@ -47,10 +53,39 @@ class VirtualConnectionRouter final : public CastSocket::Client {
     virtual void OnError(CastSocket* socket, Error error) = 0;
   };
 
-  explicit VirtualConnectionRouter(VirtualConnectionManager* vc_manager);
+  VirtualConnectionRouter();
   ~VirtualConnectionRouter() override;
 
-  // These return whether the given |local_id| was successfully added/removed.
+  // Adds a VirtualConnection, if one does not already exist, to enable routing
+  // of peer-to-peer messages.
+  void AddConnection(VirtualConnection virtual_connection,
+                     VirtualConnection::AssociatedData associated_data);
+
+  // Removes a VirtualConnection and returns true if a connection matching
+  // |virtual_connection| was found and removed.
+  bool RemoveConnection(const VirtualConnection& virtual_connection,
+                        VirtualConnection::CloseReason reason);
+
+  // Removes all VirtualConnections whose local endpoint matches the given
+  // |local_id|.
+  void RemoveConnectionsByLocalId(const std::string& local_id);
+
+  // Removes all VirtualConnections whose traffic passes over the socket
+  // referenced by |socket_id|.
+  void RemoveConnectionsBySocketId(int socket_id);
+
+  // Returns the AssociatedData for a |virtual_connection| if a connection
+  // exists, nullopt otherwise. The pointer isn't stable in the long term; so,
+  // if it actually needs to be stored for later, the caller should make a copy.
+  absl::optional<const VirtualConnection::AssociatedData*> GetConnectionData(
+      const VirtualConnection& virtual_connection) const;
+
+  // Adds/Removes a CastMessageHandler for all messages destined for the given
+  // |endpoint| referred to by |local_id|, and returns whether the given
+  // |local_id| was successfully added/removed.
+  //
+  // Note: Clients will need to separately call AddConnection(), and
+  // RemoveConnection() or RemoveConnectionsByLocalId().
   bool AddHandlerForLocalId(std::string local_id, CastMessageHandler* endpoint);
   bool RemoveHandlerForLocalId(const std::string& local_id);
 
@@ -70,15 +105,33 @@ class VirtualConnectionRouter final : public CastSocket::Client {
   void OnMessage(CastSocket* socket,
                  ::cast::channel::CastMessage message) override;
 
-  VirtualConnectionManager* manager() { return vc_manager_; }
+ protected:
+  friend class ConnectionNamespaceHandler;
+
+  void set_connection_namespace_handler(ConnectionNamespaceHandler* handler) {
+    connection_handler_ = handler;
+  }
 
  private:
+  // This struct simply stores the remainder of the data {VirtualConnection,
+  // VirtualConnection::AssociatedData} that is not broken up into map keys for
+  // |connections_|.
+  struct VCTail {
+    std::string peer_id;
+    VirtualConnection::AssociatedData data;
+  };
+
   struct SocketWithHandler {
     std::unique_ptr<CastSocket> socket;
     SocketErrorHandler* error_handler;
   };
 
-  VirtualConnectionManager* const vc_manager_;
+  ConnectionNamespaceHandler* connection_handler_ = nullptr;
+
+  std::map<int /* socket_id */,
+           std::multimap<std::string /* local_id */, VCTail>>
+      connections_;
+
   std::map<int, SocketWithHandler> sockets_;
   std::map<std::string /* local_id */, CastMessageHandler*> endpoints_;
 };

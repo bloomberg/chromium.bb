@@ -51,11 +51,11 @@ std::unique_ptr<base::Value> PopStringToStringDictionary(
 }  // namespace
 
 ValueMatcher::ValueMatcher(const base::Value& value)
-    : expected_value_(value.DeepCopy()) {}
+    : expected_value_(base::Value::ToUniquePtrValue(value.Clone())) {}
 
 bool ValueMatcher::MatchAndExplain(const base::Value& value,
                                    MatchResultListener* listener) const {
-  return expected_value_->Equals(&value);
+  return *expected_value_ == value;
 }
 
 void ValueMatcher::DescribeTo(::std::ostream* os) const {
@@ -181,7 +181,7 @@ void ShillClientUnittestBase::ExpectPropertyChanged(
     const std::string& name,
     const base::Value& value) {
   EXPECT_EQ(expected_name, name);
-  EXPECT_TRUE(expected_value->Equals(&value));
+  EXPECT_EQ(*expected_value, value);
 }
 
 // static
@@ -243,7 +243,7 @@ void ShillClientUnittestBase::ExpectStringAndValueArguments(
   EXPECT_EQ(expected_string, str);
   std::unique_ptr<base::Value> value(dbus::PopDataAsValue(reader));
   ASSERT_TRUE(value.get());
-  EXPECT_TRUE(value->Equals(expected_value));
+  EXPECT_EQ(*value, *expected_value);
   EXPECT_FALSE(reader->HasMoreData());
 }
 
@@ -289,7 +289,7 @@ void ShillClientUnittestBase::ExpectValueDictionaryArgument(
     ASSERT_TRUE(value.get());
     const base::Value* expected_value = expected_dictionary->FindKey(key);
     ASSERT_TRUE(expected_value);
-    EXPECT_TRUE(value->Equals(expected_value));
+    EXPECT_EQ(*value, *expected_value);
   }
 }
 
@@ -348,7 +348,7 @@ void ShillClientUnittestBase::ExpectValueResultWithoutStatus(
 // static
 void ShillClientUnittestBase::ExpectValueResult(
     const base::Value* expected_result,
-    base::Optional<base::Value> result) {
+    absl::optional<base::Value> result) {
   EXPECT_TRUE(result);
   ExpectValueResultWithoutStatus(expected_result,
                                  std::move(result).value_or(base::Value()));

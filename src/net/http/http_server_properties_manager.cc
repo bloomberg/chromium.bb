@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/tick_clock.h"
@@ -21,6 +20,7 @@
 #include "net/base/privacy_mode.h"
 #include "net/http/http_server_properties.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_hostname_utils.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
@@ -54,7 +54,7 @@ const char kProtocolKey[] = "protocol_str";
 const char kHostKey[] = "host";
 const char kPortKey[] = "port";
 const char kExpirationKey[] = "expiration";
-const char kAdvertisedVersionsKey[] = "advertised_versions";
+const char kAdvertisedAlpnsKey[] = "advertised_alpns";
 const char kNetworkStatsKey[] = "network_stats";
 const char kSrttKey[] = "srtt";
 const char kBrokenAlternativeServicesKey[] = "broken_alternative_services";
@@ -66,7 +66,7 @@ const char kBrokenCountKey[] = "broken_count";
 // services. Also checks if an alternative service for the same canonical suffix
 // has already been saved, and if so, returns an empty list.
 AlternativeServiceInfoVector GetAlternativeServiceToPersist(
-    const base::Optional<AlternativeServiceInfoVector>& alternative_services,
+    const absl::optional<AlternativeServiceInfoVector>& alternative_services,
     const HttpServerProperties::ServerInfoMapKey& server_info_key,
     base::Time now,
     const HttpServerPropertiesManager::GetCannonicalSuffix&
@@ -237,7 +237,7 @@ void HttpServerPropertiesManager::ReadPrefs(
 
   net_log_.AddEvent(NetLogEventType::HTTP_SERVER_PROPERTIES_UPDATE_CACHE,
                     [&] { return http_server_properties_dict->Clone(); });
-  base::Optional<int> maybe_version_number =
+  absl::optional<int> maybe_version_number =
       http_server_properties_dict->FindIntKey(kVersionKey);
   if (!maybe_version_number.has_value() ||
       *maybe_version_number != kVersionNumber) {
@@ -364,7 +364,7 @@ void HttpServerPropertiesManager::AddToBrokenAlternativeServices(
   // Read broken-count and add an entry for |alt_service| into
   // |recently_broken_alternative_services|.
   if (broken_alt_svc_entry_dict.FindKey(kBrokenCountKey)) {
-    base::Optional<int> broken_count =
+    absl::optional<int> broken_count =
         broken_alt_svc_entry_dict.FindIntKey(kBrokenCountKey);
     if (!broken_count.has_value()) {
       DVLOG(1) << "Recently broken alternative service has malformed "
@@ -488,7 +488,7 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceDict(
   alternative_service->host = host;
 
   // Port is mandatory.
-  base::Optional<int> maybe_port = dict.FindIntKey(kPortKey);
+  absl::optional<int> maybe_port = dict.FindIntKey(kPortKey);
   if (!maybe_port.has_value() || !IsPortValid(maybe_port.value())) {
     DVLOG(1) << "Malformed alternative service port under: " << parsing_under;
     return false;
@@ -532,9 +532,8 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfoDictOfServer(
   }
 
   // Advertised versions list is optional.
-  // It is only used for versions that use the legacy Google AltSvc format.
-  if (dict.FindKey(kAdvertisedVersionsKey)) {
-    const base::Value* versions_list = dict.FindListKey(kAdvertisedVersionsKey);
+  if (dict.FindKey(kAdvertisedAlpnsKey)) {
+    const base::Value* versions_list = dict.FindListKey(kAdvertisedAlpnsKey);
     if (!versions_list) {
       DVLOG(1) << "Malformed alternative service advertised versions list for "
                << "server: " << server_str;
@@ -542,20 +541,16 @@ bool HttpServerPropertiesManager::ParseAlternativeServiceInfoDictOfServer(
     }
     quic::ParsedQuicVersionVector advertised_versions;
     for (const auto& value : versions_list->GetList()) {
-      int version;
-      if (!value.GetAsInteger(&version)) {
+      std::string version_string;
+      if (!value.GetAsString(&version_string)) {
         DVLOG(1) << "Malformed alternative service version for server: "
                  << server_str;
         return false;
       }
-      for (const quic::ParsedQuicVersion& supported :
-           quic::AllSupportedVersions()) {
-        if (supported.UsesQuicCrypto() &&
-            supported.SupportsGoogleAltSvcFormat() &&
-            static_cast<int>(supported.transport_version) == version) {
-          advertised_versions.push_back(supported);
-          break;
-        }
+      quic::ParsedQuicVersion version =
+          quic::ParseQuicVersionString(version_string);
+      if (version != quic::ParsedQuicVersion::Unsupported()) {
+        advertised_versions.push_back(version);
       }
     }
     alternative_service_info->set_advertised_versions(advertised_versions);
@@ -635,7 +630,7 @@ void HttpServerPropertiesManager::ParseNetworkStats(
   if (!server_network_stats_dict) {
     return;
   }
-  base::Optional<int> maybe_srtt =
+  absl::optional<int> maybe_srtt =
       server_network_stats_dict->FindIntKey(kSrttKey);
   if (!maybe_srtt.has_value()) {
     DVLOG(1) << "Malformed ServerNetworkStats for server: "
@@ -806,9 +801,9 @@ void HttpServerPropertiesManager::SaveAlternativeServiceToServerPrefs(
             alternative_service_info.expiration().ToInternalValue()));
     base::Value advertised_versions_list(base::Value::Type::LIST);
     for (const auto& version : alternative_service_info.advertised_versions()) {
-      advertised_versions_list.Append(version.transport_version);
+      advertised_versions_list.Append(quic::AlpnForVersion(version));
     }
-    alternative_service_dict.SetKey(kAdvertisedVersionsKey,
+    alternative_service_dict.SetKey(kAdvertisedAlpnsKey,
                                     std::move(advertised_versions_list));
     alternative_service_list.Append(std::move(alternative_service_dict));
   }

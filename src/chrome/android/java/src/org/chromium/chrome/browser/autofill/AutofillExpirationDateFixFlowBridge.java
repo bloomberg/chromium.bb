@@ -10,7 +10,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.autofill.AutofillExpirationDateFixFlowPrompt.AutofillExpirationDateFixFlowPromptDelegate;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.base.WindowAndroid;
@@ -61,6 +60,13 @@ final class AutofillExpirationDateFixFlowBridge
                 AutofillExpirationDateFixFlowBridge.this, month, year);
     }
 
+    @Override
+    public void onUserDismiss() {
+        AutofillExpirationDateFixFlowBridgeJni.get().onUserDismiss(
+                mNativeCardExpirationDateFixFlowViewAndroid,
+                AutofillExpirationDateFixFlowBridge.this);
+    }
+
     /**
      * Shows a prompt for expiration date fix flow.
      */
@@ -76,7 +82,7 @@ final class AutofillExpirationDateFixFlowBridge
 
         mExpirationDateFixFlowPrompt = new AutofillExpirationDateFixFlowPrompt(
                 activity, this, mTitle, mConfirmButtonLabel, mIconId, mCardLabel);
-        mExpirationDateFixFlowPrompt.show((ChromeActivity) activity);
+        mExpirationDateFixFlowPrompt.show(activity, windowAndroid.getModalDialogManager());
     }
 
     /**
@@ -95,5 +101,7 @@ final class AutofillExpirationDateFixFlowBridge
                 AutofillExpirationDateFixFlowBridge caller);
         void onUserAccept(long nativeCardExpirationDateFixFlowViewAndroid,
                 AutofillExpirationDateFixFlowBridge caller, String month, String year);
+        void onUserDismiss(long nativeCardExpirationDateFixFlowViewAndroid,
+                AutofillExpirationDateFixFlowBridge caller);
     }
 }

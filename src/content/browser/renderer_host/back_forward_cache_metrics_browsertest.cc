@@ -24,6 +24,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -185,54 +186,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, UKM) {
   EXPECT_THAT(recorder.GetEntries("HistoryNavigation", {last_navigation_id}),
               testing::ElementsAre(UkmEntry{id6, {{last_navigation_id, id2}}},
                                    UkmEntry{id9, {{last_navigation_id, id1}}}));
-}
-
-IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
-                       NavigatedToTheMostRecentEntry) {
-  ukm::TestAutoSetUkmRecorder recorder;
-
-  const GURL url1(
-      embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
-  const GURL url2(embedded_test_server()->GetURL("/title1.html"));
-  const char kChildFrameId[] = "child0";
-
-  EXPECT_TRUE(NavigateToURL(shell(), url1));
-  EXPECT_TRUE(
-      NavigateIframeToURL(shell()->web_contents(), kChildFrameId, url2));
-  EXPECT_TRUE(NavigateToURL(shell(), url2));
-
-  {
-    // We are waiting for two navigations here: main frame and subframe.
-    TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
-    shell()->GoBackOrForward(-2);
-    navigation_observer.WaitForNavigationFinished();
-  }
-
-  {
-    TestNavigationObserver navigation_observer(shell()->web_contents());
-    shell()->GoBackOrForward(1);
-    navigation_observer.WaitForNavigationFinished();
-  }
-
-  {
-    TestNavigationObserver navigation_observer(shell()->web_contents());
-    shell()->GoBackOrForward(1);
-    navigation_observer.WaitForNavigationFinished();
-  }
-  // The navigation entries are:
-  // [url1(subframe), url1(url2), *url2].
-
-  std::string navigated_to_last_entry =
-      "NavigatedToTheMostRecentEntryForDocument";
-
-  // The first back navigation goes to the url1(subframe) entry, while the last
-  // active entry for that document was url1(url2).
-  // The second back/forward navigation is a subframe one and should be ignored.
-  // The last one navigates to the actual entry.
-  EXPECT_THAT(
-      recorder.GetMetrics("HistoryNavigation", {navigated_to_last_entry}),
-      testing::ElementsAre(UkmMetrics{{navigated_to_last_entry, false}},
-                           UkmMetrics{{navigated_to_last_entry, true}}));
 }
 
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, CloneAndGoBack) {
@@ -680,7 +633,12 @@ class RecordBackForwardCacheMetricsWithoutEnabling
     scoped_feature_list_.InitWithFeaturesAndParameters(
         {{kRecordBackForwardCacheMetricsWithoutEnabling,
           {{"allowed_websites", allowed_websites}}}},
-        {features::kBackForwardCache});
+        // Disable BackForwardCacheMemoryControl to only allow URLs passed via
+        // params for all devices irrespective of their memory. As when
+        // DeviceHasEnoughMemoryForBackForwardCache() is false, we allow all
+        // URLs as default.
+        {features::kBackForwardCache,
+         features::kBackForwardCacheMemoryControls});
   }
 
   ~RecordBackForwardCacheMetricsWithoutEnabling() override = default;
@@ -781,14 +739,14 @@ class BackForwardCacheEnabledMetricsBrowserTest
     : public BackForwardCacheMetricsBrowserTest {
  protected:
   BackForwardCacheEnabledMetricsBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        features::kBackForwardCache,
-        {
-            // Set a very long TTL before expiration (longer than the test
-            // timeout) so tests that are expecting deletion don't pass when
-            // they shouldn't.
-            {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
-        });
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache,
+          {// Set a very long TTL before expiration (longer than the test
+           // timeout) so tests that are expecting deletion don't pass when
+           // they shouldn't.
+           {"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
+        // Allow BackForwardCache for all devices regardless of their memory.
+        {features::kBackForwardCacheMemoryControls});
   }
 
   ~BackForwardCacheEnabledMetricsBrowserTest() override = default;
@@ -862,8 +820,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheEnabledMetricsBrowserTest,
 
   // Make url1 ineligible for caching so that when we navigate back it doesn't
   // fetch the RenderFrameHost from the back-forward cache.
-  content::BackForwardCache::DisableForRenderFrameHost(
-      rfh_url1, "BackForwardCacheMetricsBrowserTest");
+  DisableForRenderFrameHostForTesting(rfh_url1);
   EXPECT_TRUE(NavigateToURL(shell(), url3));
 
   // 6) Go back and reload.

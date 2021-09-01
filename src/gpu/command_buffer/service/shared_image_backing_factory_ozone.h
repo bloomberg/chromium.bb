@@ -52,6 +52,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryOzone
       int client_id,
       gfx::GpuMemoryBufferHandle handle,
       gfx::BufferFormat format,
+      gfx::BufferPlane plane,
       SurfaceHandle surface_handle,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
@@ -64,7 +65,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryOzone
 
  private:
   SharedContextState* const shared_context_state_;
-  scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs_ = nullptr;
+  scoped_refptr<base::RefCountedData<DawnProcTable>> dawn_procs_;
 };
 
 }  // namespace gpu

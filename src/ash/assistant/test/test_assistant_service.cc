@@ -10,6 +10,7 @@
 
 #include "base/unguessable_token.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -65,10 +66,9 @@ class LibassistantContractChecker : public AssistantInteractionSubscriber {
     CheckResponse();
   }
 
-  bool OnOpenAppResponse(
+  void OnOpenAppResponse(
       const chromeos::assistant::AndroidAppInfo& app_info) override {
     CheckResponse();
-    return false;
   }
 
  private:
@@ -109,16 +109,16 @@ class CurrentInteractionSubscriber : public AssistantInteractionSubscriber {
 
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override {
-    current_interaction_ = base::nullopt;
+    current_interaction_ = absl::nullopt;
   }
 
-  base::Optional<AssistantInteractionMetadata> current_interaction() {
+  absl::optional<AssistantInteractionMetadata> current_interaction() {
     return current_interaction_;
   }
 
  private:
-  base::Optional<AssistantInteractionMetadata> current_interaction_ =
-      base::nullopt;
+  absl::optional<AssistantInteractionMetadata> current_interaction_ =
+      absl::nullopt;
 };
 
 class InteractionResponse::Response {
@@ -202,7 +202,7 @@ void TestAssistantService::SetInteractionResponse(
   interaction_response_ = std::move(response);
 }
 
-base::Optional<AssistantInteractionMetadata>
+absl::optional<AssistantInteractionMetadata>
 TestAssistantService::current_interaction() {
   return current_interaction_subscriber_->current_interaction();
 }
@@ -250,6 +250,12 @@ void TestAssistantService::RemoveAssistantInteractionSubscriber(
   interaction_subscribers_.RemoveObserver(subscriber);
 }
 
+mojo::PendingReceiver<chromeos::libassistant::mojom::NotificationDelegate>
+TestAssistantService::GetPendingNotificationDelegate() {
+  return mojo::PendingReceiver<
+      chromeos::libassistant::mojom::NotificationDelegate>();
+}
+
 void TestAssistantService::RetrieveNotification(
     const chromeos::assistant::AssistantNotification& notification,
     int action_index) {}
@@ -262,9 +268,6 @@ void TestAssistantService::OnAccessibilityStatusChanged(
 
 void TestAssistantService::SendAssistantFeedback(
     const chromeos::assistant::AssistantFeedback& feedback) {}
-
-void TestAssistantService::NotifyEntryIntoAssistantUi(
-    chromeos::assistant::AssistantEntryPoint entry_point) {}
 
 void TestAssistantService::AddTimeToTimer(const std::string& id,
                                           base::TimeDelta duration) {}

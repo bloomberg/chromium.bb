@@ -22,17 +22,17 @@
 #include "ash/public/cpp/keyboard/keyboard_controller_observer.h"
 #include "ash/public/cpp/login_accelerators.h"
 #include "ash/public/cpp/login_types.h"
-#include "ash/public/cpp/system_tray_focus_observer.h"
+#include "ash/public/cpp/system_tray_observer.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace keyboard {
@@ -65,7 +65,7 @@ enum class TrayActionState;
 class ASH_EXPORT LockContentsView
     : public NonAccessibleView,
       public LoginDataDispatcher::Observer,
-      public SystemTrayFocusObserver,
+      public SystemTrayObserver,
       public display::DisplayObserver,
       public KeyboardControllerObserver,
       public chromeos::PowerManagerClient::Observer {
@@ -98,7 +98,6 @@ class ASH_EXPORT LockContentsView
     LoginErrorBubble* auth_error_bubble() const;
     LoginErrorBubble* detachable_base_error_bubble() const;
     LoginErrorBubble* warning_banner_bubble() const;
-    LoginErrorBubble* supervised_user_deprecation_bubble() const;
     views::View* user_adding_screen_indicator() const;
     views::View* system_info() const;
     views::View* bottom_status_indicator() const;
@@ -156,6 +155,9 @@ class ASH_EXPORT LockContentsView
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
+  // NonAccessibleView:
+  void OnThemeChanged() override;
+
   // LoginDataDispatcher::Observer:
   void OnUsersChanged(const std::vector<LoginUserInfo>& users) override;
   void OnUserAvatarChanged(const AccountId& account_id,
@@ -180,7 +182,7 @@ class ASH_EXPORT LockContentsView
   void OnForceOnlineSignInForUser(const AccountId& user) override;
   void OnShowEasyUnlockIcon(const AccountId& user,
                             const EasyUnlockIconOptions& icon) override;
-  void OnWarningMessageUpdated(const base::string16& message) override;
+  void OnWarningMessageUpdated(const std::u16string& message) override;
   void OnSystemInfoChanged(bool show,
                            bool enforced,
                            const std::string& os_version_label_text,
@@ -208,7 +210,7 @@ class ASH_EXPORT LockContentsView
   void MaybeUpdateExpandedView(const AccountId& account_id,
                                const LoginUserInfo& user_info);
 
-  // SystemTrayFocusObserver:
+  // SystemTrayObserver:
   void OnFocusLeavingSystemTray(bool reverse) override;
 
   // display::DisplayObserver:
@@ -246,10 +248,10 @@ class ASH_EXPORT LockContentsView
     bool disable_auth = false;
     bool show_pin_pad_for_password = false;
     size_t autosubmit_pin_length = 0;
-    base::Optional<EasyUnlockIconOptions> easy_unlock_state = base::nullopt;
+    absl::optional<EasyUnlockIconOptions> easy_unlock_state = absl::nullopt;
     FingerprintState fingerprint_state;
     // When present, indicates that the TPM is locked.
-    base::Optional<base::TimeDelta> time_until_tpm_unlock = base::nullopt;
+    absl::optional<base::TimeDelta> time_until_tpm_unlock = absl::nullopt;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(UserState);
@@ -390,11 +392,6 @@ class ASH_EXPORT LockContentsView
   // Returns the user view for |user|.
   LoginUserView* TryToFindUserView(const AccountId& user);
 
-  // Returns scrollable view with initialized size and rows for all |users|.
-  std::unique_ptr<ScrollableUsersListView> BuildScrollableUsersListView(
-      const std::vector<LoginUserInfo>& users,
-      LoginDisplayStyle display_style);
-
   // Change the visibility of child views based on the |style|.
   void SetDisplayStyle(DisplayStyle style);
 
@@ -407,6 +404,12 @@ class ASH_EXPORT LockContentsView
   // Check whether the view should display the system information based on all
   // factors including policy settings, channel and Alt-V accelerator.
   bool GetSystemInfoVisibility() const;
+
+  // Updates the colors of the system info view.
+  void UpdateSystemInfoColors();
+
+  // Updates the colors of the bottom status indicator.
+  void UpdateBottomStatusIndicatorColors();
 
   // Toggles the visibility of the |bottom_status_indicator_| based on its
   // content type and whether the extension UI window is opened.
@@ -451,8 +454,8 @@ class ASH_EXPORT LockContentsView
   // all actions are executed.
   std::vector<DisplayLayoutAction> layout_actions_;
 
-  ScopedObserver<display::Screen, display::DisplayObserver> display_observer_{
-      this};
+  base::ScopedObservation<display::Screen, display::DisplayObserver>
+      display_observation_{this};
 
   // All error bubbles and the tooltip view are child views of LockContentsView,
   // and will be torn down when LockContentsView is torn down.
@@ -469,8 +472,6 @@ class ASH_EXPORT LockContentsView
   views::View* user_adding_screen_indicator_ = nullptr;
   // Bubble for displaying warning banner message.
   LoginErrorBubble* warning_banner_bubble_;
-  // Bubble for displaying supervised user deprecation message.
-  LoginErrorBubble* supervised_user_deprecation_bubble_;
 
   // Bottom status indicator displaying entreprise domain or ADB enabled alert
   BottomStatusIndicator* bottom_status_indicator_;
@@ -493,7 +494,7 @@ class ASH_EXPORT LockContentsView
 
   // Whether the system information should be displayed or not be displayed
   // forcedly according to policy settings.
-  base::Optional<bool> enable_system_info_enforced_ = base::nullopt;
+  absl::optional<bool> enable_system_info_enforced_ = absl::nullopt;
 
   // Whether the system information is intended to be displayed if possible.
   // (e.g., Alt-V is pressed, particular OS channels)
@@ -514,7 +515,7 @@ class ASH_EXPORT LockContentsView
   std::unique_ptr<AutoLoginUserActivityHandler>
       auto_login_user_activity_handler_;
 
-  BottomIndicatorState bottom_status_indicator_status_ =
+  BottomIndicatorState bottom_status_indicator_state_ =
       BottomIndicatorState::kNone;
 
   base::WeakPtrFactory<LockContentsView> weak_ptr_factory_{this};

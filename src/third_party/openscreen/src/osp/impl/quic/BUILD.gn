@@ -33,8 +33,14 @@ source_set("test_support") {
     "testing/quic_test_support.h",
   ]
 
-  deps = [
+  public_deps = [
+    ":quic",
     "../../../platform",
+    "../../../platform:test",
+    "../../public",
+  ]
+
+  deps = [
     "../../../third_party/abseil",
     "../../../third_party/googletest:gmock",
     "../../../util",

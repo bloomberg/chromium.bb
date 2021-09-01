@@ -7,42 +7,28 @@
   <meta charset="utf-8">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <link rel="stylesheet" href="chrome://resources/css/roboto.css">
-  <script src="chrome://resources/js/assert.js"></script>
-  <script src="chrome://resources/js/util.js"></script>
-  <script src="chrome://resources/js/cr.js"></script>
-  <script src="chrome://resources/js/cr/ui.js"></script>
-  <script src="chrome://resources/js/cr/ui/tree.js"></script>
-
-  <script src="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js">
-  </script>
-  <script src="chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js"></script>
-  <script src="chrome://resources/mojo/url/mojom/url.mojom-lite.js"></script>
-  <script src="chrome://resources/mojo/url/mojom/origin.mojom-lite.js"></script>
 
   <link rel="stylesheet" href="conversion_internals.css">
-  <script src="conversion_internals.mojom-lite.js"></script>
-  <script src="conversion_internals.js"></script>
-  <title>Conversion Internals</title>
+  <script type="module" src="conversion_internals.js"></script>
+  <title>Conversion Measurement API Internals</title>
 </head>
 <body>
 
 <div id="page-heading">
-  Conversion Internals
+  Conversion Measurement API Internals
 </div>
+<div id="info">
+  <p>Learn more:
+    <a href="https://web.dev/using-conversion-measurement/" target="_blank">
+      Conversion Measurement API
+    </a>
+  <p>Conversion measurement is currently <span id="feature-status-content"></span>.
+</div>
+<hr>
 <div id="page-content">
-  <h2> General Info </h2>
-  <div class="content">
-    <div>
-      Conversion measurement is currently <span id="feature-status-content"></span>.
-      For a detailed explanation of the API and it's behavior, see
-      <a href="https://github.com/WICG/conversion-measurement-api/blob/master/README.md" target="_blank">
-        the explainer
-      </a>.
-    </div>
-    <div>
-      <button id="refresh">Refresh all page data</button>
-      <button id="clear-data">Clear all conversions data</button>
-    </div>
+  <div>
+    <button id="refresh">Refresh all page data</button>
+    <button id="clear-data">Clear all conversions data</button>
   </div>
   <h2> Active Impressions </h2>
   <div class="content">
@@ -51,22 +37,28 @@
         <thead>
           <tr class="header-row">
             <th>
-            Impression Data
+              Source Event Id
             </th>
             <th>
-              Impression origin
+              Source origin
             </th>
             <th>
-              Conversion Destination
+              Destination
             </th>
             <th>
-              Reporting Origin
+              Report To
             </th>
             <th>
-              Impression Time
+              Source Registration Time
             </th>
             <th>
               Expiry Time
+            </th>
+            <th>
+              Source Type
+            </th>
+            <th>
+              Priority
             </th>
           </tr>
         </thead>
@@ -75,29 +67,32 @@
       </table>
     </div>
   </div>
-  <h2> Pending Reports </h2>
+  <h2> Pending Conversion Reports </h2>
   <div class="content">
+    <div>
+      <span id="debug-mode-content"></span>
+    </div>
     <div class="table-wrapper">
       <table id="report-table">
         <thead>
           <tr class="header-row">
             <th>
-              Impression Data
+              Source Event Id
             </th>
             <th>
-              Conversion Data
+              Trigger Data
             </th>
             <th>
-              Conversion Origin
+              Destination
             </th>
             <th>
-              Reporting Origin
+              Report to
             </th>
             <th>
               Report Time
             </th>
             <th>
-              Attribution Credit
+              Source Type
             </th>
           </tr>
         </thead>
@@ -107,6 +102,28 @@
     </div>
     <div>
       <button id="send-reports">Send All Reports</button>
+    </div>
+  </div>
+  <h2> Sent Conversion Reports </h2>
+  <div class="content">
+    <div class="table-wrapper">
+      <table id="sent-report-table">
+        <thead>
+          <tr class="header-row">
+            <th>
+              Report URL
+            </th>
+            <th>
+              Report Body
+            </th>
+            <th>
+              HTTP Response Code
+            </th>
+          </tr>
+        </thead>
+        <tbody id="sent-report-table-body">
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
@@ -119,6 +136,8 @@
     <td class="reporting-origin-cell"></td>
     <td class="impression-time-cell"></td>
     <td class="expiry-time-cell"></td>
+    <td class="source-type-cell"></td>
+    <td class="priority-cell"></td>
   </tr>
 </template>
 
@@ -129,7 +148,15 @@
     <td class="conversion-origin-cell"></td>
     <td class="reporting-origin-cell"></td>
     <td class="report-time-cell"></td>
-    <td class="attibution-credit-cell"></td>
+    <td class="source-type-cell"></td>
+  </tr>
+</template>
+
+<template id="sentreportrow">
+  <tr>
+    <td class="report-url-data-cell"></td>
+    <td class="report-body-data-cell"></td>
+    <td class="http-response-code-data-cell"></td>
   </tr>
 </template>
 </body>
