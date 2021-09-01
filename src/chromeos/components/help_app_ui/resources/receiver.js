@@ -44,49 +44,23 @@ const DELEGATE = {
     return /** @type {!Promise<!helpApp.FindResponse>} */ (
         parentMessagePipe.sendMessage(Message.FIND_IN_SEARCH_INDEX, {query}));
   },
+  closeBackgroundPage() {
+    parentMessagePipe.sendMessage(Message.CLOSE_BACKGROUND_PAGE);
+  },
+  /**
+   * @override
+   * @param {!Array<!helpApp.LauncherSearchableItem>} data
+   */
+  async updateLauncherSearchIndex(data) {
+    await parentMessagePipe.sendMessage(
+        Message.UPDATE_LAUNCHER_SEARCH_INDEX, data);
+  },
+  async maybeShowDiscoverNotification() {
+    await parentMessagePipe.sendMessage(
+        Message.MAYBE_SHOW_DISCOVER_NOTIFICATION);
+  }
 };
 
-/**
- * Returns the help app if it can find it in the DOM.
- * @return {?helpApp.ClientApi}
- */
-function getApp() {
-  return /** @type {?helpApp.ClientApi} */ (
-      document.querySelector('showoff-app'));
-}
-
-/**
- * Runs any initialization code on the help app once it is in the dom.
- * @param {!helpApp.ClientApi} app
- */
-function initializeApp(app) {
-  app.setDelegate(DELEGATE);
-}
-
-/**
- * Called when a mutation occurs on document.body to check if the help app is
- * available.
- * @param {!Array<!MutationRecord>} mutationsList
- * @param {!MutationObserver} observer
- */
-function mutationCallback(mutationsList, observer) {
-  const app = getApp();
-  if (!app) {
-    return;
-  }
-  // The help app now exists so we can initialize it.
-  initializeApp(app);
-  observer.disconnect();
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-  const app = getApp();
-  if (app) {
-    initializeApp(app);
-    return;
-  }
-  // If translations need to be fetched, the app element may not be added yet.
-  // In that case, observe <body> until it is.
-  const observer = new MutationObserver(mutationCallback);
-  observer.observe(document.body, {childList: true});
-});
+window.customLaunchData = {
+  delegate: DELEGATE,
+};

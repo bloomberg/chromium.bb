@@ -6,8 +6,6 @@
  * @fileoverview
  * 'os-settings-page' is the settings page containing the actual OS settings.
  */
-(function() {
-'use strict';
 
 Polymer({
   is: 'os-settings-page',
@@ -32,6 +30,10 @@ Polymer({
     showPluginVm: Boolean,
 
     showReset: Boolean,
+
+    showStartup: Boolean,
+
+    showKerberosSection: Boolean,
 
     allowCrostini_: Boolean,
 
@@ -99,6 +101,18 @@ Polymer({
 
     /** @private {!settings.Route|undefined} */
     currentRoute_: Object,
+
+    /**
+     * True if redesign of account management flows is enabled.
+     * @private
+     */
+    isAccountManagementFlowsV2Enabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('isAccountManagementFlowsV2Enabled');
+      },
+      readOnly: true,
+    },
   },
 
   hostAttributes: {
@@ -355,4 +369,3 @@ Polymer({
     return bool.toString();
   },
 });
-})();

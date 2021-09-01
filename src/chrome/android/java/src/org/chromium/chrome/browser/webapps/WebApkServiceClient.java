@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -18,10 +19,11 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.browserservices.intents.WebApkExtras;
 import org.chromium.chrome.browser.metrics.WebApkUma;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
@@ -52,12 +54,6 @@ public class WebApkServiceClient {
             }
         }
     }
-
-    /**
-     * Keeps the value consistent with {@link
-     * org.chromium.webapk.shell_apk.WebApkServiceImplWrapper#DEFAULT_NOTIFICATION_CHANNEL_ID}.
-     */
-    public static final String CHANNEL_ID_WEBAPKS = "default_channel_id";
 
     private static final String CATEGORY_WEBAPK_API = "android.intent.category.WEBAPK_API";
     private static final String TAG = "WebApk";
@@ -97,7 +93,8 @@ public class WebApkServiceClient {
                 if (notificationPermissionEnabled) {
                     String channelName = null;
                     if (webApkTargetsAtLeastO(webApkPackage)) {
-                        notificationBuilder.setChannelId(CHANNEL_ID_WEBAPKS);
+                        notificationBuilder.setChannelId(
+                                ChromeChannelDefinitions.CHANNEL_ID_WEBAPKS);
                         channelName = ContextUtils.getApplicationContext().getString(
                                 org.chromium.chrome.R.string.webapk_notification_channel_name);
                     }
@@ -143,11 +140,11 @@ public class WebApkServiceClient {
 
     /** Finishes and removes the WebAPK's task. */
     @TargetApi(Build.VERSION_CODES.M)
-    public void finishAndRemoveTaskSdk23(final ChromeActivity activity, WebApkExtras webApkExtras) {
+    public void finishAndRemoveTaskSdk23(final Activity activity, WebApkExtras webApkExtras) {
         final ApiUseCallback connectionCallback = new ApiUseCallback() {
             @Override
             public void useApi(IWebApkApi api) throws RemoteException {
-                if (activity.isActivityFinishingOrDestroyed()) return;
+                if (activity.isFinishing() || activity.isDestroyed()) return;
 
                 if (!api.finishAndRemoveTaskSdk23()) {
                     // If |activity| is not the root of the task, hopefully the activities below

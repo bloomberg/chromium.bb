@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_clock.h"
+#include "quic/core/quic_clock.h"
 
 #include <limits>
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -38,7 +38,7 @@ QuicTime::Delta QuicClock::ComputeCalibrationOffset() const {
 }
 
 void QuicClock::SetCalibrationOffset(QuicTime::Delta offset) {
-  DCHECK(!is_calibrated_) << "A clock should only be calibrated once";
+  QUICHE_DCHECK(!is_calibrated_) << "A clock should only be calibrated once";
   calibration_offset_ = offset;
   is_calibrated_ = true;
 }

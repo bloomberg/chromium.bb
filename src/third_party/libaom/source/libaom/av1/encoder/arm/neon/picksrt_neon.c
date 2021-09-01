@@ -16,7 +16,6 @@
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
 #include "av1/common/restoration.h"
-#include "common/tools_common.h"
 #include "config/aom_config.h"
 #include "config/aom_dsp_rtcd.h"
 

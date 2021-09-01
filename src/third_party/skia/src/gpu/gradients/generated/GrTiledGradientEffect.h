@@ -24,37 +24,43 @@ public:
             bool mirror,
             bool makePremul,
             bool colorsAreOpaque) {
-        return std::unique_ptr<GrFragmentProcessor>(new GrTiledGradientEffect(
-                std::move(colorizer), std::move(gradLayout), mirror, makePremul, colorsAreOpaque));
+        bool layoutPreservesOpacity = gradLayout->preservesOpaqueInput();
+        return std::unique_ptr<GrFragmentProcessor>(
+                new GrTiledGradientEffect(std::move(colorizer),
+                                          std::move(gradLayout),
+                                          mirror,
+                                          makePremul,
+                                          colorsAreOpaque,
+                                          layoutPreservesOpacity));
     }
     GrTiledGradientEffect(const GrTiledGradientEffect& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "TiledGradientEffect"; }
-    bool usesExplicitReturn() const override;
     bool mirror;
     bool makePremul;
     bool colorsAreOpaque;
+    bool layoutPreservesOpacity;
 
 private:
     GrTiledGradientEffect(std::unique_ptr<GrFragmentProcessor> colorizer,
                           std::unique_ptr<GrFragmentProcessor> gradLayout,
                           bool mirror,
                           bool makePremul,
-                          bool colorsAreOpaque)
+                          bool colorsAreOpaque,
+                          bool layoutPreservesOpacity)
             : INHERITED(kGrTiledGradientEffect_ClassID,
                         (OptimizationFlags)kCompatibleWithCoverageAsAlpha_OptimizationFlag |
-                                (colorsAreOpaque && gradLayout->preservesOpaqueInput()
+                                (colorsAreOpaque && layoutPreservesOpacity
                                          ? kPreservesOpaqueInput_OptimizationFlag
                                          : kNone_OptimizationFlags))
             , mirror(mirror)
             , makePremul(makePremul)
-            , colorsAreOpaque(colorsAreOpaque) {
-        SkASSERT(colorizer);
+            , colorsAreOpaque(colorsAreOpaque)
+            , layoutPreservesOpacity(layoutPreservesOpacity) {
         this->registerChild(std::move(colorizer), SkSL::SampleUsage::Explicit());
-        SkASSERT(gradLayout);
         this->registerChild(std::move(gradLayout), SkSL::SampleUsage::PassThrough());
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

@@ -14,23 +14,29 @@
 
 add_library(dawn_common STATIC ${DAWN_DUMMY_FILE})
 target_sources(dawn_common PRIVATE
+    "Alloc.h"
     "Assert.cpp"
     "Assert.h"
     "BitSetIterator.h"
     "Compiler.h"
     "Constants.h"
+    "CoreFoundationRef.h"
     "DynamicLib.cpp"
     "DynamicLib.h"
     "GPUInfo.cpp"
     "GPUInfo.h"
     "HashUtils.h"
+    "IOKitRef.h"
     "LinkedList.h"
     "Log.cpp"
     "Log.h"
     "Math.cpp"
     "Math.h"
+    "NSRef.h"
+    "NonCopyable.h"
     "PlacementAllocated.h"
     "Platform.h"
+    "Preprocessor.h"
     "RefBase.h"
     "RefCounted.cpp"
     "RefCounted.h"
@@ -45,18 +51,29 @@ target_sources(dawn_common PRIVATE
     "SwapChainUtils.h"
     "SystemUtils.cpp"
     "SystemUtils.h"
+    "TypeTraits.h"
     "TypedInteger.h"
     "UnderlyingType.h"
+    "VertexFormatUtils.cpp"
+    "VertexFormatUtils.h"
     "ityp_array.h"
     "ityp_bitset.h"
     "ityp_span.h"
     "ityp_stack_vec.h"
     "ityp_vector.h"
     "vulkan_platform.h"
-    "windows_with_undefs.h"
     "xlib_with_undefs.h"
 )
-target_link_libraries(dawn_common PRIVATE dawn_internal_config)
+
+if (WIN32)
+    target_sources(dawn_common PRIVATE
+        "WindowsUtils.cpp"
+        "WindowsUtils.h"
+        "windows_with_undefs.h"
+    )
+endif()
+
+target_link_libraries(dawn_common PUBLIC dawncpp_headers PRIVATE dawn_internal_config)
 
 # TODO Android Log support
 # TODO Vulkan headers support

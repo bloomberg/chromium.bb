@@ -28,6 +28,7 @@
 #include "core/fxcrt/fx_stream.h"
 #include "core/fxge/dib/cfx_dibitmap.h"
 #include "core/fxge/dib/fx_dib.h"
+#include "third_party/base/check.h"
 #include "third_party/base/numerics/safe_conversions.h"
 
 // static
@@ -41,19 +42,19 @@ bool CPDF_Image::IsValidJpegBitsPerComponent(int32_t bpc) {
 }
 
 CPDF_Image::CPDF_Image(CPDF_Document* pDoc) : m_pDocument(pDoc) {
-  ASSERT(m_pDocument);
+  DCHECK(m_pDocument);
 }
 
 CPDF_Image::CPDF_Image(CPDF_Document* pDoc, RetainPtr<CPDF_Stream> pStream)
     : m_bIsInline(true), m_pDocument(pDoc), m_pStream(std::move(pStream)) {
-  ASSERT(m_pDocument);
+  DCHECK(m_pDocument);
   FinishInitialization(m_pStream->GetDict());
 }
 
 CPDF_Image::CPDF_Image(CPDF_Document* pDoc, uint32_t dwStreamObjNum)
     : m_pDocument(pDoc),
       m_pStream(ToStream(pDoc->GetIndirectObject(dwStreamObjNum))) {
-  ASSERT(m_pDocument);
+  DCHECK(m_pDocument);
   FinishInitialization(m_pStream->GetDict());
 }
 
@@ -181,7 +182,7 @@ void CPDF_Image::SetImage(const RetainPtr<CFX_DIBitmap>& pBitmap) {
     int32_t set_r = 0;
     int32_t set_g = 0;
     int32_t set_b = 0;
-    if (!pBitmap->IsMask()) {
+    if (!pBitmap->IsMaskFormat()) {
       std::tie(reset_a, reset_r, reset_g, reset_b) =
           ArgbDecode(pBitmap->GetPaletteArgb(0));
       std::tie(set_a, set_r, set_g, set_b) =
@@ -216,9 +217,9 @@ void CPDF_Image::SetImage(const RetainPtr<CFX_DIBitmap>& pBitmap) {
     pDict->SetNewFor<CPDF_Number>("BitsPerComponent", 1);
     dest_pitch = (BitmapWidth + 7) / 8;
   } else if (bpp == 8) {
-    size_t palette_size = pBitmap->GetPaletteSize();
+    size_t palette_size = pBitmap->GetRequiredPaletteSize();
     if (palette_size > 0) {
-      ASSERT(palette_size <= 256);
+      DCHECK(palette_size <= 256);
       CPDF_Array* pCS = m_pDocument->NewIndirect<CPDF_Array>();
       pCS->AppendNew<CPDF_Name>("Indexed");
       pCS->AppendNew<CPDF_Name>("DeviceRGB");
@@ -252,7 +253,7 @@ void CPDF_Image::SetImage(const RetainPtr<CFX_DIBitmap>& pBitmap) {
   }
 
   RetainPtr<CFX_DIBitmap> pMaskBitmap;
-  if (pBitmap->HasAlpha())
+  if (pBitmap->IsAlphaFormat())
     pMaskBitmap = pBitmap->CloneAlphaMask();
 
   if (pMaskBitmap) {
@@ -317,7 +318,7 @@ void CPDF_Image::SetImage(const RetainPtr<CFX_DIBitmap>& pBitmap) {
     m_pStream = pdfium::MakeRetain<CPDF_Stream>();
 
   m_pStream->InitStream(dest_span, std::move(pDict));
-  m_bIsMask = pBitmap->IsMask();
+  m_bIsMask = pBitmap->IsMaskFormat();
   m_Width = BitmapWidth;
   m_Height = BitmapHeight;
 }
@@ -352,7 +353,7 @@ RetainPtr<CFX_DIBBase> CPDF_Image::DetachMask() {
 bool CPDF_Image::StartLoadDIBBase(const CPDF_Dictionary* pFormResource,
                                   const CPDF_Dictionary* pPageResource,
                                   bool bStdCS,
-                                  uint32_t GroupFamily,
+                                  CPDF_ColorSpace::Family GroupFamily,
                                   bool bLoadMask) {
   auto source = pdfium::MakeRetain<CPDF_DIB>();
   CPDF_DIB::LoadState ret = source->StartLoadDIBBase(

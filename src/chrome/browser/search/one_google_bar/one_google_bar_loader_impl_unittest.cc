@@ -6,13 +6,13 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 #include "content/public/test/browser_task_environment.h"
@@ -24,8 +24,17 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/lacros/lacros_chrome_service_delegate.h"
+#include "chromeos/lacros/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/lacros_test_helper.h"
+#endif
 
 using testing::_;
+using testing::DoAll;
 using testing::Eq;
 using testing::IsEmpty;
 using testing::SaveArg;
@@ -62,6 +71,13 @@ class OneGoogleBarLoaderImplTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    if (!chromeos::LacrosChromeServiceImpl::Get()) {
+      scoped_lacros_test_helper_ =
+          std::make_unique<chromeos::ScopedLacrosServiceTestHelper>();
+    }
+#endif
 
     one_google_bar_loader_ = std::make_unique<OneGoogleBarLoaderImpl>(
         test_shared_loader_factory_, kApplicationLocale,
@@ -107,7 +123,10 @@ class OneGoogleBarLoaderImplTest : public testing::Test {
 
   GURL last_request_url_;
   net::HttpRequestHeaders last_request_headers_;
-
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  std::unique_ptr<chromeos::ScopedLacrosServiceTestHelper>
+      scoped_lacros_test_helper_;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   std::unique_ptr<OneGoogleBarLoaderImpl> one_google_bar_loader_;
 };
 
@@ -149,7 +168,7 @@ TEST_F(OneGoogleBarLoaderImplTest, RequestReturns) {
   base::MockCallback<OneGoogleBarLoader::OneGoogleCallback> callback;
   one_google_bar_loader()->Load(callback.Get());
 
-  base::Optional<OneGoogleBarData> data;
+  absl::optional<OneGoogleBarData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::OK, _))
       .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));
@@ -166,7 +185,7 @@ TEST_F(OneGoogleBarLoaderImplTest, HandlesResponsePreamble) {
   base::MockCallback<OneGoogleBarLoader::OneGoogleCallback> callback;
   one_google_bar_loader()->Load(callback.Get());
 
-  base::Optional<OneGoogleBarData> data;
+  absl::optional<OneGoogleBarData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::OK, _))
       .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));
@@ -207,7 +226,7 @@ TEST_F(OneGoogleBarLoaderImplTest, ParsesFullResponse) {
   base::MockCallback<OneGoogleBarLoader::OneGoogleCallback> callback;
   one_google_bar_loader()->Load(callback.Get());
 
-  base::Optional<OneGoogleBarData> data;
+  absl::optional<OneGoogleBarData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::OK, _))
       .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));
@@ -232,8 +251,8 @@ TEST_F(OneGoogleBarLoaderImplTest, CoalescesMultipleRequests) {
   one_google_bar_loader()->Load(second_callback.Get());
 
   // Make sure that a single response causes both callbacks to be called.
-  base::Optional<OneGoogleBarData> first_data;
-  base::Optional<OneGoogleBarData> second_data;
+  absl::optional<OneGoogleBarData> first_data;
+  absl::optional<OneGoogleBarData> second_data;
 
   base::RunLoop loop;
   EXPECT_CALL(first_callback, Run(OneGoogleBarLoader::Status::OK, _))
@@ -255,7 +274,7 @@ TEST_F(OneGoogleBarLoaderImplTest, NetworkErrorIsTransient) {
 
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::TRANSIENT_ERROR,
-                            Eq(base::nullopt)))
+                            Eq(absl::nullopt)))
       .WillOnce(Quit(&loop));
   loop.Run();
 }
@@ -268,7 +287,7 @@ TEST_F(OneGoogleBarLoaderImplTest, InvalidJsonErrorIsFatal) {
 
   base::RunLoop loop;
   EXPECT_CALL(callback,
-              Run(OneGoogleBarLoader::Status::FATAL_ERROR, Eq(base::nullopt)))
+              Run(OneGoogleBarLoader::Status::FATAL_ERROR, Eq(absl::nullopt)))
       .WillOnce(Quit(&loop));
   loop.Run();
 }
@@ -284,7 +303,7 @@ TEST_F(OneGoogleBarLoaderImplTest, IncompleteJsonErrorIsFatal) {
 
   base::RunLoop loop;
   EXPECT_CALL(callback,
-              Run(OneGoogleBarLoader::Status::FATAL_ERROR, Eq(base::nullopt)))
+              Run(OneGoogleBarLoader::Status::FATAL_ERROR, Eq(absl::nullopt)))
       .WillOnce(Quit(&loop));
   loop.Run();
 }
@@ -300,22 +319,33 @@ TEST_F(OneGoogleBarLoaderImplTest, MirrorAccountConsistencyNotRequired) {
   EXPECT_CALL(callback, Run(_, _)).WillOnce(Quit(&loop));
   loop.Run();
 
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, X-Chrome-Connected header is present, but
-  // enable_account_consistency is set to false.
-  std::string header_value;
-  EXPECT_TRUE(last_request_headers().GetHeader(signin::kChromeConnectedHeader,
-                                               &header_value));
-  // mode = PROFILE_MODE_DEFAULT
-  EXPECT_EQ(
-      "source=Chrome,mode=0,enable_account_consistency=false,"
-      "consistency_enabled_by_default=false",
-      header_value);
-#else
   // On not Chrome OS, the X-Chrome-Connected header must not be present.
-  EXPECT_FALSE(
-      last_request_headers().HasHeader(signin::kChromeConnectedHeader));
+  bool check_x_chrome_connected_header = false;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  check_x_chrome_connected_header = true;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  const crosapi::mojom::BrowserInitParams* init_params =
+      chromeos::LacrosChromeServiceImpl::Get()->init_params();
+  if (init_params->use_new_account_manager)
+    check_x_chrome_connected_header = true;
 #endif
+
+  if (check_x_chrome_connected_header) {
+    // On Chrome OS, X-Chrome-Connected header is present, but
+    // enable_account_consistency is set to false.
+    std::string header_value;
+    EXPECT_TRUE(last_request_headers().GetHeader(signin::kChromeConnectedHeader,
+                                                 &header_value));
+    // mode = PROFILE_MODE_DEFAULT
+    EXPECT_EQ(
+        "source=Chrome,mode=0,enable_account_consistency=false,"
+        "consistency_enabled_by_default=false",
+        header_value);
+  } else {
+    // On not Chrome OS, the X-Chrome-Connected header must not be present.
+    EXPECT_FALSE(
+        last_request_headers().HasHeader(signin::kChromeConnectedHeader));
+  }
 }
 
 class OneGoogleBarLoaderImplWithMirrorAccountConsistencyTest
@@ -337,24 +367,36 @@ TEST_F(OneGoogleBarLoaderImplWithMirrorAccountConsistencyTest,
   EXPECT_CALL(callback, Run(_, _)).WillOnce(Quit(&loop));
   loop.Run();
 
-  // Make sure mirror account consistency is requested.
-#if defined(OS_CHROMEOS)
-  // On Chrome OS, X-Chrome-Connected header is present, and
-  // enable_account_consistency is set to true.
-  std::string header_value;
-  EXPECT_TRUE(last_request_headers().GetHeader(signin::kChromeConnectedHeader,
-                                               &header_value));
-  // mode = PROFILE_MODE_INCOGNITO_DISABLED | PROFILE_MODE_ADD_ACCOUNT_DISABLED
-  EXPECT_EQ(
-      "source=Chrome,mode=3,enable_account_consistency=true,"
-      "consistency_enabled_by_default=false",
-      header_value);
-#else
-  // This is not a valid case (mirror account consistency can only be required
-  // on Chrome OS). This ensures in this case nothing happens.
-  EXPECT_FALSE(
-      last_request_headers().HasHeader(signin::kChromeConnectedHeader));
+  // On not Chrome OS, the X-Chrome-Connected header must not be present.
+  bool check_x_chrome_connected_header = false;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  check_x_chrome_connected_header = true;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  const crosapi::mojom::BrowserInitParams* init_params =
+      chromeos::LacrosChromeServiceImpl::Get()->init_params();
+  if (init_params->use_new_account_manager)
+    check_x_chrome_connected_header = true;
 #endif
+
+  // Make sure mirror account consistency is requested.
+  if (check_x_chrome_connected_header) {
+    // On Chrome OS, X-Chrome-Connected header is present, and
+    // enable_account_consistency is set to true.
+    std::string header_value;
+    EXPECT_TRUE(last_request_headers().GetHeader(signin::kChromeConnectedHeader,
+                                                 &header_value));
+    // mode = PROFILE_MODE_INCOGNITO_DISABLED |
+    // PROFILE_MODE_ADD_ACCOUNT_DISABLED
+    EXPECT_EQ(
+        "source=Chrome,mode=3,enable_account_consistency=true,"
+        "consistency_enabled_by_default=false",
+        header_value);
+  } else {
+    // This is not a valid case (mirror account consistency can only be required
+    // on Chrome OS). This ensures in this case nothing happens.
+    EXPECT_FALSE(
+        last_request_headers().HasHeader(signin::kChromeConnectedHeader));
+  }
 }
 
 TEST_F(OneGoogleBarLoaderImplTest, ParsesLanguageCode) {
@@ -366,7 +408,7 @@ TEST_F(OneGoogleBarLoaderImplTest, ParsesLanguageCode) {
   base::MockCallback<OneGoogleBarLoader::OneGoogleCallback> callback;
   one_google_bar_loader()->Load(callback.Get());
 
-  base::Optional<OneGoogleBarData> data;
+  absl::optional<OneGoogleBarData> data;
   base::RunLoop loop;
   EXPECT_CALL(callback, Run(OneGoogleBarLoader::Status::OK, _))
       .WillOnce(DoAll(SaveArg<1>(&data), Quit(&loop)));

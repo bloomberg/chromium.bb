@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "base/feature_list.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 
 namespace extensions {
@@ -19,13 +18,14 @@ namespace declarative_net_request {
 enum class ParseResult {
   NONE,
   SUCCESS,
+  ERROR_REQUEST_METHOD_DUPLICATED,
   ERROR_RESOURCE_TYPE_DUPLICATED,
   ERROR_INVALID_RULE_ID,
-  ERROR_EMPTY_RULE_PRIORITY,
   ERROR_INVALID_RULE_PRIORITY,
   ERROR_NO_APPLICABLE_RESOURCE_TYPES,
   ERROR_EMPTY_DOMAINS_LIST,
   ERROR_EMPTY_RESOURCE_TYPES_LIST,
+  ERROR_EMPTY_REQUEST_METHODS_LIST,
   ERROR_EMPTY_URL_FILTER,
   ERROR_INVALID_REDIRECT_URL,
   ERROR_DUPLICATE_IDS,
@@ -61,7 +61,11 @@ enum class ParseResult {
   ERROR_INVALID_HEADER_VALUE,
   ERROR_HEADER_VALUE_NOT_SPECIFIED,
   ERROR_HEADER_VALUE_PRESENT,
-  ERROR_APPEND_REQUEST_HEADER_UNSUPPORTED
+  ERROR_APPEND_REQUEST_HEADER_UNSUPPORTED,
+
+  ERROR_EMPTY_TAB_IDS_LIST,
+  ERROR_TAB_IDS_ON_NON_SESSION_RULE,
+  ERROR_TAB_ID_DUPLICATED,
 };
 
 // Describes the ways in which updating dynamic rules can fail.
@@ -127,9 +131,9 @@ enum class LoadRulesetResult {
 extern const char* const kAllowedTransformSchemes[4];
 
 // Rule parsing errors.
+extern const char kErrorRequestMethodDuplicated[];
 extern const char kErrorResourceTypeDuplicated[];
 extern const char kErrorInvalidRuleKey[];
-extern const char kErrorEmptyRulePriority[];
 extern const char kErrorNoApplicableResourceTypes[];
 extern const char kErrorEmptyList[];
 extern const char kErrorEmptyKey[];
@@ -152,6 +156,8 @@ extern const char kErrorInvalidHeaderValue[];
 extern const char kErrorNoHeaderValueSpecified[];
 extern const char kErrorHeaderValuePresent[];
 extern const char kErrorCannotAppendRequestHeader[];
+extern const char kErrorTabIdsOnNonSessionRule[];
+extern const char kErrorTabIdDuplicated[];
 
 extern const char kErrorListNotPassed[];
 
@@ -170,11 +176,19 @@ extern const char kInternalErrorGettingDynamicRules[];
 extern const char kDynamicRuleCountExceeded[];
 extern const char kDynamicRegexRuleCountExceeded[];
 
+// Session-scoped rules API errors.
+extern const char kSessionRuleCountExceeded[];
+extern const char kSessionRegexRuleCountExceeded[];
+
 // Static ruleset toggling API errors.
 extern const char kInvalidRulesetIDError[];
 extern const char kEnabledRulesetsRuleCountExceeded[];
 extern const char kEnabledRulesetsRegexRuleCountExceeded[];
 extern const char kInternalErrorUpdatingEnabledRulesets[];
+
+// setExtensionActionOptions API errors.
+extern const char kTabNotFoundError[];
+extern const char kIncrementActionCountWithoutUseAsBadgeTextError[];
 
 // Histogram names.
 extern const char kIndexAndPersistRulesTimeHistogram[];
@@ -197,9 +211,9 @@ extern const char kErrorGetMatchedRulesMissingPermissions[];
 // profile.
 constexpr int kMaxStaticRulesPerProfile = 300000;
 
-// Enables extensions to enable more rules than the per-extension static rule
-// count, up to a global limit shared between all extensions.
-extern const base::Feature kDeclarativeNetRequestGlobalRules;
+// Identifier for a Flatbuffer containing `flat::EmbedderConditions` as the
+// root.
+extern const char kEmbedderConditionsBufferIdentifier[];
 
 }  // namespace declarative_net_request
 }  // namespace extensions

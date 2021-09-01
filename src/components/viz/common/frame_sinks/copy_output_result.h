@@ -5,9 +5,8 @@
 #ifndef COMPONENTS_VIZ_COMMON_FRAME_SINKS_COPY_OUTPUT_RESULT_H_
 #define COMPONENTS_VIZ_COMMON_FRAME_SINKS_COPY_OUTPUT_RESULT_H_
 
-#include <memory>
-
-#include "components/viz/common/resources/single_release_callback.h"
+#include "base/threading/thread_checker.h"
+#include "components/viz/common/resources/release_callback.h"
 #include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
@@ -40,7 +39,8 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
     I420_PLANES,
   };
 
-  CopyOutputResult(Format format, const gfx::Rect& rect);
+  CopyOutputResult(
+      Format format, const gfx::Rect& rect, bool needs_lock_for_bitmap);
 
   virtual ~CopyOutputResult();
 
@@ -58,11 +58,12 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
   const gfx::Rect& rect() const { return rect_; }
   const gfx::Size& size() const { return rect_.size(); }
 
-  // Convenience to provide this result in SkBitmap form. Returns a
-  // !readyToDraw() bitmap if this result is empty or if a conversion is not
-  // possible in the current implementation. The returned SkBitmap also carries
-  // its color space information.
-  virtual const SkBitmap& AsSkBitmap() const;
+  class ScopedSkBitmap;
+  // Return a ScopedSkBitmap object. The scoped_sk_bitmap.bitmap() can be used
+  // to access the SkBitmap. The API user should not keep a copy of
+  // scoped_sk_bitmap.bitmap(), since the content SkBitmap could become invalid
+  // after ScopedSkBitmap is released.
+  ScopedSkBitmap ScopedAccessSkBitmap() const;
 
   // Returns a pointer with the gpu::Mailbox referencing a RGBA_TEXTURE result,
   // or null if this is not a RGBA_TEXTURE result. Clients can either:
@@ -79,13 +80,15 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
     gpu::SyncToken sync_token;
     gfx::ColorSpace color_space;
 
+    TextureResult() = default;
+
     TextureResult(const gpu::Mailbox& mailbox,
                   const gpu::SyncToken& sync_token,
                   const gfx::ColorSpace& color_space)
         : mailbox(mailbox), sync_token(sync_token), color_space(color_space) {}
   };
   virtual const TextureResult* GetTextureResult() const;
-  virtual std::unique_ptr<SingleReleaseCallback> TakeTextureOwnership();
+  virtual ReleaseCallback TakeTextureOwnership();
 
   // Copies the image planes of an I420_PLANES result to the caller-provided
   // memory. Returns true if successful, or false if: 1) this result is empty,
@@ -119,12 +122,27 @@ class VIZ_COMMON_EXPORT CopyOutputResult {
   virtual gfx::ColorSpace GetRGBAColorSpace() const;
 
  protected:
+  // Lock the content of SkBitmap returned from AsSkBitmap() call.
+  // Return true, if lock operation is successful, implementations should
+  // keep SkBitmap content validate until UnlockSkBitmap() is called.
+  virtual bool LockSkBitmap() const;
+
+  // Unlock the content of SkBitmap returned from AsSkBitmap() call.
+  virtual void UnlockSkBitmap() const;
+
+  // Convenience to provide this result in SkBitmap form. Returns a
+  // !readyToDraw() bitmap if this result is empty or if a conversion is not
+  // possible in the current implementation. The returned SkBitmap also carries
+  // its color space information.
+  virtual const SkBitmap& AsSkBitmap() const;
+
   // Accessor for subclasses to initialize the cached SkBitmap.
   SkBitmap* cached_bitmap() const { return &cached_bitmap_; }
 
  private:
   const Format format_;
   const gfx::Rect rect_;
+  const bool needs_lock_for_bitmap_;
 
   // Cached bitmap returned by the default implementation of AsSkBitmap().
   mutable SkBitmap cached_bitmap_;
@@ -138,8 +156,8 @@ class VIZ_COMMON_EXPORT CopyOutputSkBitmapResult : public CopyOutputResult {
  public:
   CopyOutputSkBitmapResult(Format format,
                            const gfx::Rect& rect,
-                           const SkBitmap& bitmap);
-  CopyOutputSkBitmapResult(const gfx::Rect& rect, const SkBitmap& bitmap);
+                           SkBitmap bitmap);
+  CopyOutputSkBitmapResult(const gfx::Rect& rect, SkBitmap bitmap);
   ~CopyOutputSkBitmapResult() override;
 
   const SkBitmap& AsSkBitmap() const override;
@@ -148,30 +166,59 @@ class VIZ_COMMON_EXPORT CopyOutputSkBitmapResult : public CopyOutputResult {
   DISALLOW_COPY_AND_ASSIGN(CopyOutputSkBitmapResult);
 };
 
-// Subclass of CopyOutputResult that holds a reference to a texture (via
-// a mailbox). The owner of the result must take ownership of the texture
-// if it wants to use it by calling TakeTextureOwnership(), and then call the
-// SingleReleaseCallback when the texture will no longer be used to release
-// ownership and allow the texture to be reused or destroyed. If ownership is
-// not claimed, it will be released when this class is destroyed.
+// Subclass of CopyOutputResult that holds a reference to a texture (via a
+// mailbox). The owner of the result must take ownership of the texture if it
+// wants to use it by calling TakeTextureOwnership(), and then call the
+// ReleaseCallback when the texture will no longer be used to release ownership
+// and allow the texture to be reused or destroyed. If ownership is not claimed,
+// it will be released when this class is destroyed.
 class VIZ_COMMON_EXPORT CopyOutputTextureResult : public CopyOutputResult {
  public:
-  CopyOutputTextureResult(
-      const gfx::Rect& rect,
-      const gpu::Mailbox& mailbox,
-      const gpu::SyncToken& sync_token,
-      const gfx::ColorSpace& color_space,
-      std::unique_ptr<SingleReleaseCallback> release_callback);
+  CopyOutputTextureResult(const gfx::Rect& rect,
+                          const gpu::Mailbox& mailbox,
+                          const gpu::SyncToken& sync_token,
+                          const gfx::ColorSpace& color_space,
+                          ReleaseCallback release_callback);
   ~CopyOutputTextureResult() override;
 
   const TextureResult* GetTextureResult() const override;
-  std::unique_ptr<SingleReleaseCallback> TakeTextureOwnership() override;
+  ReleaseCallback TakeTextureOwnership() override;
 
  private:
   TextureResult texture_result_;
-  std::unique_ptr<SingleReleaseCallback> release_callback_;
+  ReleaseCallback release_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyOutputTextureResult);
+};
+
+// Scoped class for accessing SkBitmap in CopyOutputRequest.
+// It cannot be used across threads.
+class VIZ_COMMON_EXPORT CopyOutputResult::ScopedSkBitmap {
+ public:
+  ScopedSkBitmap();
+  ScopedSkBitmap(ScopedSkBitmap&& other);
+  ~ScopedSkBitmap();
+  ScopedSkBitmap& operator=(ScopedSkBitmap&& other);
+
+  void reset();
+
+  // Accesses SkBitmap which can only be used in the scope of the
+  // ScopedSkBitmap.
+  const SkBitmap bitmap() const {
+    return result_ ? result_->AsSkBitmap() : SkBitmap();
+  }
+
+  // Returns a SkBitmap which can be used out the scope of the ScopedSkBitmap.
+  // It makes a copy of the content in CopyOutputResult if it is needed.
+  SkBitmap GetOutScopedBitmap() const;
+
+ private:
+  friend class CopyOutputResult;
+  explicit ScopedSkBitmap(const CopyOutputResult* result);
+
+  const CopyOutputResult* result_ = nullptr;
+
+  THREAD_CHECKER(thread_checker_);
 };
 
 }  // namespace viz

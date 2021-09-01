@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "osp/impl/discovery/mdns/mdns_responder_adapter.h"
@@ -37,6 +38,7 @@ class MdnsResponderAdapterImpl final : public MdnsResponderAdapter {
   void OnRead(UdpSocket* socket, ErrorOr<UdpPacket> packet) override;
   void OnSendError(UdpSocket* socket, Error error) override;
   void OnError(UdpSocket* socket, Error error) override;
+  void OnBound(UdpSocket* socket) override;
 
   Clock::duration RunTasks() override;
 

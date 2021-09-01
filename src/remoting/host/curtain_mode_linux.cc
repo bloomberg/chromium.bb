@@ -11,6 +11,7 @@
 #include "remoting/base/logging.h"
 #include "remoting/host/client_session_control.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/future.h"
 #include "ui/gfx/x/xinput.h"
 #include "ui/gfx/x/xproto_types.h"
 
@@ -49,14 +50,14 @@ bool CurtainModeLinux::IsVirtualSession() {
   // Try to identify a virtual session. Since there's no way to tell from the
   // vendor string, we check for known virtual input devices.
   // TODO(rmsousa): Find a similar way to determine that the *output* is secure.
-  x11::Connection connection;
-  if (!connection.xinput().present()) {
+  x11::Connection* connection = x11::Connection::Get();
+  if (!connection->xinput().present()) {
     // If XInput is not available, assume it is not a virtual session.
     LOG(ERROR) << "X Input extension not available";
     return false;
   }
 
-  auto devices = connection.xinput().ListInputDevices({}).Sync();
+  auto devices = connection->xinput().ListInputDevices().Sync();
   if (!devices) {
     LOG(ERROR) << "ListInputDevices failed";
     return false;

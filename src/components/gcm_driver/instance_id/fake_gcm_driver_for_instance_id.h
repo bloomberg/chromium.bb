@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_GCM_DRIVER_INSTANCE_ID_FAKE_GCM_DRIVER__FOR_INSTANCE_ID_H_
-#define COMPONENTS_GCM_DRIVER_INSTANCE_ID_FAKE_GCM_DRIVER__FOR_INSTANCE_ID_H_
+#ifndef COMPONENTS_GCM_DRIVER_INSTANCE_ID_FAKE_GCM_DRIVER_FOR_INSTANCE_ID_H_
+#define COMPONENTS_GCM_DRIVER_INSTANCE_ID_FAKE_GCM_DRIVER_FOR_INSTANCE_ID_H_
 
 #include <map>
 #include <string>
@@ -46,7 +46,6 @@ class FakeGCMDriverForInstanceID : public gcm::FakeGCMDriver,
                 const std::string& authorized_entity,
                 const std::string& scope,
                 base::TimeDelta time_to_live,
-                const std::map<std::string, std::string>& options,
                 GetTokenCallback callback) override;
   void ValidateToken(const std::string& app_id,
                      const std::string& authorized_entity,
@@ -76,4 +75,4 @@ class FakeGCMDriverForInstanceID : public gcm::FakeGCMDriver,
 
 }  // namespace instance_id
 
-#endif  // COMPONENTS_GCM_DRIVER_INSTANCE_ID_FAKE_GCM_DRIVER__FOR_INSTANCE_ID_H_
+#endif  // COMPONENTS_GCM_DRIVER_INSTANCE_ID_FAKE_GCM_DRIVER_FOR_INSTANCE_ID_H_

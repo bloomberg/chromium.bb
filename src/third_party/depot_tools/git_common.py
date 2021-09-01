@@ -75,7 +75,7 @@ FREEZE_MATCHER = re.compile(r'%s.(%s)' % (FREEZE, '|'.join(FREEZE_SECTIONS)))
 
 
 # NOTE: This list is DEPRECATED in favor of the Infra Git wrapper:
-# https://chromium.googlesource.com/infra/infra/+/master/go/src/infra/tools/git
+# https://chromium.googlesource.com/infra/infra/+/HEAD/go/src/infra/tools/git
 #
 # New entries should be added to the Git wrapper, NOT to this list. "git_retry"
 # is, similarly, being deprecated in favor of the Git wrapper.
@@ -629,7 +629,7 @@ def parse_commitrefs(*commitrefs):
 
   A commitref is anything which can resolve to a commit. Popular examples:
     * 'HEAD'
-    * 'origin/master'
+    * 'origin/main'
     * 'cool_branch~2'
   """
   try:
@@ -641,8 +641,11 @@ def parse_commitrefs(*commitrefs):
 RebaseRet = collections.namedtuple('RebaseRet', 'success stdout stderr')
 
 
-def rebase(parent, start, branch, abort=False):
+def rebase(parent, start, branch, abort=False, allow_gc=False):
   """Rebases |start|..|branch| onto the branch |parent|.
+
+  Sets 'gc.auto=0' for the duration of this call to prevent the rebase from
+  running a potentially slow garbage collection cycle.
 
   Args:
     parent - The new parent ref for the rebased commits.
@@ -650,6 +653,10 @@ def rebase(parent, start, branch, abort=False):
     branch - The branch to rebase
     abort  - If True, will call git-rebase --abort in the event that the rebase
              doesn't complete successfully.
+    allow_gc - If True, sets "-c gc.auto=1" on the rebase call, rather than
+               "-c gc.auto=0". Usually if you're doing a series of rebases,
+               you'll only want to run a single gc pass at the end of all the
+               rebase activity.
 
   Returns a namedtuple with fields:
     success - a boolean indicating that the rebase command completed
@@ -658,10 +665,16 @@ def rebase(parent, start, branch, abort=False):
               rebase.
   """
   try:
-    args = ['--onto', parent, start, branch]
+    args = [
+      '-c', 'gc.auto={}'.format('1' if allow_gc else '0'),
+      'rebase',
+    ]
     if TEST_MODE:
-      args.insert(0, '--committer-date-is-author-date')
-    run('rebase', *args)
+      args.append('--committer-date-is-author-date')
+    args += [
+      '--onto', parent, start, branch,
+    ]
+    run(*args)
     return RebaseRet(True, '', '')
   except subprocess2.CalledProcessError as cpe:
     if abort:
@@ -683,7 +696,16 @@ def repo_root():
 def upstream_default():
   """Returns the default branch name of the origin repository."""
   try:
-    return run('rev-parse', '--abbrev-ref', 'origin/HEAD')
+    ret = run('rev-parse', '--abbrev-ref', 'origin/HEAD')
+    # Detect if the repository migrated to main branch
+    if ret == 'origin/master':
+      try:
+        ret = run('rev-parse', '--abbrev-ref', 'origin/main')
+        run('remote', 'set-head', '-a', 'origin')
+        ret = run('rev-parse', '--abbrev-ref', 'origin/HEAD')
+      except subprocess2.CalledProcessError:
+        pass
+    return ret
   except subprocess2.CalledProcessError:
     return 'origin/master'
 
@@ -743,7 +765,7 @@ def run_stream(*cmd, **kwargs):
   stderr is dropped to avoid races if the process outputs to both stdout and
   stderr.
   """
-  kwargs.setdefault('stderr', subprocess2.VOID)
+  kwargs.setdefault('stderr', subprocess2.DEVNULL)
   kwargs.setdefault('stdout', subprocess2.PIPE)
   kwargs.setdefault('shell', False)
   cmd = (GIT_EXE, '-c', 'color.ui=never') + cmd
@@ -760,7 +782,7 @@ def run_stream_with_retcode(*cmd, **kwargs):
 
   Raises subprocess2.CalledProcessError on nonzero return code.
   """
-  kwargs.setdefault('stderr', subprocess2.VOID)
+  kwargs.setdefault('stderr', subprocess2.DEVNULL)
   kwargs.setdefault('stdout', subprocess2.PIPE)
   kwargs.setdefault('shell', False)
   cmd = (GIT_EXE, '-c', 'color.ui=never') + cmd
@@ -1045,16 +1067,17 @@ def get_branches_info(include_tracking_status):
     (branch, branch_hash, upstream_branch, tracking_status) = line.split(':')
 
     commits = None
-    base = get_or_create_merge_base(branch)
-    if base:
-      commits_list = run('rev-list', '--count', branch, '^%s' % base, '--')
-      commits = int(commits_list) or None
+    if include_tracking_status:
+      base = get_or_create_merge_base(branch)
+      if base:
+        commits_list = run('rev-list', '--count', branch, '^%s' % base, '--')
+        commits = int(commits_list) or None
 
     behind_match = re.search(r'behind (\d+)', tracking_status)
     behind = int(behind_match.group(1)) if behind_match else None
 
     info_map[branch] = BranchesInfo(
-        hash=branch_hash, upstream=upstream_branch, commits=commits, 
+        hash=branch_hash, upstream=upstream_branch, commits=commits,
         behind=behind)
 
   # Set None for upstreams which are not branches (e.g empty upstream, remotes

@@ -9,13 +9,14 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {Protocol} from './protocol_schema.js';
+import type {Protocol} from './protocol_schema.js';
 
 const PROTOCOL_JSON_PATH = path.resolve(
     __dirname, path.join('..', '..', 'third_party', 'blink', 'public', 'devtools_protocol', 'browser_protocol.json'));
 
 const protocolJson = require(PROTOCOL_JSON_PATH);
-const protocolDomains: Protocol.Domain[] = protocolJson.domains;
+const removedDomains = new Set(['Console']);
+const protocolDomains: Protocol.Domain[] = protocolJson.domains.filter(({domain}) => !removedDomains.has(domain));
 
 let numIndents = 0;
 let emitStr = '';
@@ -69,12 +70,14 @@ const emitModule = (moduleName: string, domains: Protocol.Domain[]) => {
   domains.forEach(emitDomain);
   emitCloseBlock();
   emitLine();
+  emitLine('export = Protocol;');
 };
 
 const emitGlobalTypeDefs = () => {
   emitLine();
-  emitLine('export type integer = number');
-  emitLine('export type binary = string');
+  emitLine('export type integer = number;');
+  emitLine('export type binary = string;');
+  emitLine('export type EnumerableEnum<T> = {[K in keyof T]: T[K]};');
   emitLine('export interface ProtocolResponseWithError {');
   numIndents++;
   emitLine('/** Returns an error message if the request failed. */');
@@ -165,7 +168,7 @@ const emitInterface = (interfaceName: string, props?: Protocol.PropertyType[], o
 };
 
 const emitEnum = (enumName: string, enumValues: string[]) => {
-  emitOpenBlock(`export enum ${enumName}`);
+  emitOpenBlock(`export const enum ${enumName}`);
   enumValues.forEach(value => {
     emitLine(`${fixCamelCase(value)} = '${value}',`);
   });
@@ -279,7 +282,7 @@ const getEventMapping =
     };
 
 const isWeakInterface = (params: Protocol.PropertyType[]): boolean => {
-  return params.every(p => !!p.optional);
+  return params.every(p => Boolean(p.optional));
 };
 
 const getCommandMapping = (command: Protocol.Command, domainName: string,
@@ -379,6 +382,8 @@ const emitApi = (moduleName: string, protocolModuleName: string, domains: Protoc
   moduleName = toTitleCase(moduleName);
   emitHeaderComments();
   emitLine();
+  emitLine('import type * as Protocol from \'./protocol.js\'');
+  emitLine();
   emitDescription('API generated from Protocol commands and events.');
   emitOpenBlock(`declare namespace ${moduleName}`);
 
@@ -395,6 +400,7 @@ const emitApi = (moduleName: string, protocolModuleName: string, domains: Protoc
   domains.forEach(d => emitDomainApi(d, protocolModulePrefix));
   emitCloseBlock();
   emitLine();
+  emitLine('export = ProtocolProxyApi;');
 };
 
 const flushEmitToFile = (path: string) => {

@@ -17,6 +17,8 @@ who're already familiar with it, and also keeps things consistent.
   static functions.
   - An exception is `//content/public/test`. We allow concrete classes that
     chrome test classes derive from or use in here.
+- Tests for files in `//content/public` should be inside implementation directories,
+e.g. `//content/browser`, `//content/renderer` etc...
 - While we don't allow old-style Chrome IPC `_messages.h` files in
   `//content/public`, we do allow `.mojom` files (see
   [discussion](https://groups.google.com/a/chromium.org/forum/#!searchin/chromium-mojo/cross-module/chromium-mojo/ZR2YlRV7Uxs/Ce-h_AaWCgAJ)).
@@ -62,10 +64,9 @@ who're already familiar with it, and also keeps things consistent.
   higher level.
 - We avoid single-method delegate interfaces, and in those case we use
   callbacks.
-- Don't add the `const` identifier to interfaces. For interfaces implemented by
-  the embedder, we can't make assumptions about what the embedder needs to
-  implement it. For interfaces implemented by content, the implementation
-  details doesn't have to be exposed.
+- The `const` identifier can be added to simple getter APIs implemented by
+  content. Don't add `const` to interfaces implemented by the embedder, where
+  we can't make assumptions about what the embedder needs to implement it.
 - Observer interfaces (i.e. `WebContentsObserver`, `RenderFrameObserver`,
   `RenderViewObserver`) should only have void methods. This is because otherwise
   the order that observers are registered would matter, and we don't want that.

@@ -7,11 +7,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MOUNT_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MOUNT_H_
 
-#include <vector>
-
-#include "base/files/file_path.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "components/drive/file_errors.h"
 
 namespace extensions {
@@ -30,9 +26,6 @@ class FileManagerPrivateAddMountFunction : public LoggedExtensionFunction {
 
   // ExtensionFunction overrides.
   ResponseAction Run() override;
-
- private:
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements chrome.fileManagerPrivate.removeMount method.

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/sensor/orientation_sensor.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_dommatrix_float32array_float64array.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
@@ -11,10 +12,10 @@ using device::mojom::blink::SensorType;
 
 namespace blink {
 
-base::Optional<Vector<double>> OrientationSensor::quaternion() {
+absl::optional<Vector<double>> OrientationSensor::quaternion() {
   reading_dirty_ = false;
   if (!hasReading())
-    return base::nullopt;
+    return absl::nullopt;
   const auto& quat = GetReading().orientation_quat;
   return Vector<double>({quat.x, quat.y, quat.z, quat.w});
 }
@@ -98,18 +99,38 @@ void OrientationSensor::PopulateMatrixInternal(
   DoPopulateMatrix(target_matrix, quat.x, quat.y, quat.z, quat.w);
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+void OrientationSensor::populateMatrix(
+    const V8RotationMatrixType* target_buffer,
+    ExceptionState& exception_state) {
+  switch (target_buffer->GetContentType()) {
+    case V8RotationMatrixType::ContentType::kDOMMatrix:
+      PopulateMatrixInternal(target_buffer->GetAsDOMMatrix(), exception_state);
+      break;
+    case V8RotationMatrixType::ContentType::kFloat32Array:
+      PopulateMatrixInternal(target_buffer->GetAsFloat32Array().Get(),
+                             exception_state);
+      break;
+    case V8RotationMatrixType::ContentType::kFloat64Array:
+      PopulateMatrixInternal(target_buffer->GetAsFloat64Array().Get(),
+                             exception_state);
+      break;
+  }
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 void OrientationSensor::populateMatrix(
     Float32ArrayOrFloat64ArrayOrDOMMatrix& matrix,
     ExceptionState& exception_state) {
   if (matrix.IsFloat32Array())
-    PopulateMatrixInternal(matrix.GetAsFloat32Array().View(), exception_state);
+    PopulateMatrixInternal(matrix.GetAsFloat32Array().Get(), exception_state);
   else if (matrix.IsFloat64Array())
-    PopulateMatrixInternal(matrix.GetAsFloat64Array().View(), exception_state);
+    PopulateMatrixInternal(matrix.GetAsFloat64Array().Get(), exception_state);
   else if (matrix.IsDOMMatrix())
     PopulateMatrixInternal(matrix.GetAsDOMMatrix(), exception_state);
   else
     NOTREACHED() << "Unexpected rotation matrix type.";
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 bool OrientationSensor::isReadingDirty() const {
   return reading_dirty_ || !hasReading();
@@ -120,7 +141,7 @@ OrientationSensor::OrientationSensor(
     const SpatialSensorOptions* options,
     ExceptionState& exception_state,
     device::mojom::blink::SensorType type,
-    const Vector<mojom::blink::FeaturePolicyFeature>& features)
+    const Vector<mojom::blink::PermissionsPolicyFeature>& features)
     : Sensor(execution_context, options, exception_state, type, features),
       reading_dirty_(true) {}
 

@@ -12,10 +12,10 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video_capture_types.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_types.h"
@@ -132,6 +132,9 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
 
   void UpdateCapturingLinkSecure(MediaStreamVideoTrack* track, bool is_secure);
 
+  // Indicate that the capturer can discard its alpha channel (if it has one).
+  virtual void SetCanDiscardAlpha(bool can_discard_alpha) {}
+
   // Request underlying source to capture a new frame.
   virtual void RequestRefreshFrame() {}
 
@@ -151,13 +154,13 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // Implementations must return the capture format if available.
   // Implementations supporting devices of type MEDIA_DEVICE_VIDEO_CAPTURE
   // must return a value.
-  virtual base::Optional<media::VideoCaptureFormat> GetCurrentFormat() const;
+  virtual absl::optional<media::VideoCaptureFormat> GetCurrentFormat() const;
 
   // Implementations must return the capture parameters if available.
   // Implementations supporting devices of type MEDIA_DEVICE_VIDEO_CAPTURE
   // must return a value. The format in the returned VideoCaptureParams must
   // coincide with the value returned by GetCurrentFormat().
-  virtual base::Optional<media::VideoCaptureParams> GetCurrentCaptureParams()
+  virtual absl::optional<media::VideoCaptureParams> GetCurrentCaptureParams()
       const;
 
   // Returns true if encoded output can be enabled in the source.
@@ -182,9 +185,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
     return tracks_.size();
   }
 
-  base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() {
-    return weak_factory_.GetWeakPtr();
-  }
+  virtual base::WeakPtr<MediaStreamVideoSource> GetWeakPtr() const = 0;
 
  protected:
   // MediaStreamSource implementation.
@@ -309,6 +310,7 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   void DidStopSource(RestartResult result);
   void NotifyCapturingLinkSecured(size_t num_encoded_sinks);
   size_t CountEncodedSinks() const;
+  scoped_refptr<VideoTrackAdapter> GetTrackAdapter();
 
   State state_;
 
@@ -363,9 +365,6 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
   // died before this callback is resolved, we still need to trigger the
   // callback to notify the caller that the request is canceled.
   base::OnceClosure remove_last_track_callback_;
-
-  // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaStreamVideoSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoSource);
 };

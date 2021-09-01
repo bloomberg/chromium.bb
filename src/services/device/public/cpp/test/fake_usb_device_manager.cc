@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/chromeos_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
@@ -51,21 +51,23 @@ void FakeUsbDeviceManager::GetDevices(mojom::UsbEnumerationOptionsPtr options,
 
 void FakeUsbDeviceManager::GetDevice(
     const std::string& guid,
+    const std::vector<uint8_t>& blocked_interface_classes,
     mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
     mojo::PendingRemote<mojom::UsbDeviceClient> device_client) {
   auto it = devices_.find(guid);
   if (it == devices_.end())
     return;
 
-  FakeUsbDevice::Create(it->second, std::move(device_receiver),
-                        std::move(device_client));
+  FakeUsbDevice::Create(it->second, blocked_interface_classes,
+                        std::move(device_receiver), std::move(device_client));
 }
 
 void FakeUsbDeviceManager::GetSecurityKeyDevice(
     const std::string& guid,
     mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
     mojo::PendingRemote<mojom::UsbDeviceClient> device_client) {
-  return GetDevice(guid, std::move(device_receiver), std::move(device_client));
+  return GetDevice(guid, /*blocked_interface_classes=*/{},
+                   std::move(device_receiver), std::move(device_client));
 }
 
 #if defined(OS_ANDROID)
@@ -82,7 +84,7 @@ void FakeUsbDeviceManager::RefreshDeviceInfo(
 }
 #endif
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void FakeUsbDeviceManager::CheckAccess(const std::string& guid,
                                        CheckAccessCallback callback) {
   std::move(callback).Run(true);
@@ -97,7 +99,7 @@ void FakeUsbDeviceManager::OpenFileDescriptor(
       base::FilePath(FILE_PATH_LITERAL("/dev/null")),
       base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_WRITE));
 }
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 void FakeUsbDeviceManager::SetClient(
     mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client) {

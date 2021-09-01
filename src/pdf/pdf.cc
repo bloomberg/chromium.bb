@@ -36,13 +36,13 @@ class ScopedSdkInitializer {
 
 }  // namespace
 
-#if BUILDFLAG(IS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 std::vector<uint8_t> CreateFlattenedPdf(
     base::span<const uint8_t> input_buffer) {
   ScopedSdkInitializer scoped_sdk_initializer(/*enable_v8=*/false);
   return PDFEngineExports::Get()->CreateFlattenedPdf(input_buffer);
 }
-#endif  // BUILDFLAG(IS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if defined(OS_WIN)
 bool RenderPDFPageToDC(base::span<const uint8_t> pdf_buffer,
@@ -93,7 +93,7 @@ bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
   return engine_exports->GetPDFDocInfo(pdf_buffer, page_count, max_page_width);
 }
 
-base::Optional<bool> IsPDFDocTagged(base::span<const uint8_t> pdf_buffer) {
+absl::optional<bool> IsPDFDocTagged(base::span<const uint8_t> pdf_buffer) {
   ScopedSdkInitializer scoped_sdk_initializer(/*enable_v8=*/true);
   PDFEngineExports* engine_exports = PDFEngineExports::Get();
   return engine_exports->IsPDFDocTagged(pdf_buffer);
@@ -106,7 +106,7 @@ base::Value GetPDFStructTreeForPage(base::span<const uint8_t> pdf_buffer,
   return engine_exports->GetPDFStructTreeForPage(pdf_buffer, page_index);
 }
 
-base::Optional<gfx::SizeF> GetPDFPageSizeByIndex(
+absl::optional<gfx::SizeF> GetPDFPageSizeByIndex(
     base::span<const uint8_t> pdf_buffer,
     int page_number) {
   ScopedSdkInitializer scoped_sdk_initializer(/*enable_v8=*/true);

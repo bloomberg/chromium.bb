@@ -36,6 +36,7 @@ class GitCommonTestBase(unittest.TestCase):
     import git_common
     cls.gc = git_common
     cls.gc.TEST_MODE = True
+    os.environ["GIT_EDITOR"] = ":" # Supress git editor during rebase.
 
 
 class Support(GitCommonTestBase):

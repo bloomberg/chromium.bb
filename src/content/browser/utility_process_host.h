@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/environment.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/process/launch.h"
 #include "build/build_config.h"
 #include "content/common/child_process.mojom.h"
@@ -24,9 +24,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "sandbox/policy/sandbox_type.h"
-#include "services/service_manager/public/cpp/identity.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class Thread;
@@ -81,8 +79,6 @@ class CONTENT_EXPORT UtilityProcessHost
   // SandboxType::kNoSandbox is specified.
   void SetSandboxType(sandbox::policy::SandboxType sandbox_type);
 
-  sandbox::policy::SandboxType sandbox_type() const { return sandbox_type_; }
-
   // Returns information about the utility child process.
   const ChildProcessData& GetData();
 #if defined(OS_POSIX)
@@ -93,14 +89,15 @@ class CONTENT_EXPORT UtilityProcessHost
   bool Start();
 
   // Instructs the utility process to run an instance of the named service,
-  // bound to |receiver|.
-  void RunService(
-      const std::string& service_name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver,
-      service_manager::Service::CreatePackagedServiceInstanceCallback callback);
+  // bound to |service_pipe|. This is DEPRECATED and should never be used.
+  using RunServiceDeprecatedCallback =
+      base::OnceCallback<void(absl::optional<base::ProcessId>)>;
+  void RunServiceDeprecated(const std::string& service_name,
+                            mojo::ScopedMessagePipeHandle service_pipe,
+                            RunServiceDeprecatedCallback callback);
 
   // Sets the name of the process to appear in the task manager.
-  void SetName(const base::string16& name);
+  void SetName(const std::u16string& name);
 
   // Sets the name used for metrics reporting. This should not be a localized
   // name. This is recorded to metrics, so update UtilityProcessNameHash enum in
@@ -108,10 +105,6 @@ class CONTENT_EXPORT UtilityProcessHost
   void SetMetricsName(const std::string& metrics_name);
 
   void set_child_flags(int flags) { child_flags_ = flags; }
-
-  // Used when the utility process is going to host a service. |identity| is
-  // the identity of the service being launched.
-  void SetServiceIdentity(const service_manager::Identity& identity);
 
   // Provides extra switches to append to the process's command line.
   void SetExtraCommandLineSwitches(std::vector<std::string> switches);
@@ -131,7 +124,7 @@ class CONTENT_EXPORT UtilityProcessHost
   void OnProcessLaunched() override;
   void OnProcessLaunchFailed(int error_code) override;
   void OnProcessCrashed(int exit_code) override;
-  base::Optional<std::string> GetServiceName() override;
+  absl::optional<std::string> GetServiceName() override;
   void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
 
   // Launch the child process with switches that will setup this sandbox type.
@@ -147,7 +140,7 @@ class CONTENT_EXPORT UtilityProcessHost
   bool started_;
 
   // The process name used to identify the process in task manager.
-  base::string16 name_;
+  std::u16string name_;
 
   // The non-localized name used for metrics reporting.
   std::string metrics_name_;
@@ -157,10 +150,6 @@ class CONTENT_EXPORT UtilityProcessHost
 
   // Used in single-process mode instead of |process_|.
   std::unique_ptr<base::Thread> in_process_thread_;
-
-  // If this has a value it indicates the process is going to host a mojo
-  // service.
-  base::Optional<service_manager::Identity> service_identity_;
 
   // Extra command line switches to append.
   std::vector<std::string> extra_switches_;
@@ -175,10 +164,8 @@ class CONTENT_EXPORT UtilityProcessHost
   LaunchState launch_state_ = LaunchState::kLaunchInProgress;
 
   // Collection of callbacks to be run once the process is actually started (or
-  // fails to start). These are used to notify the Service Manager about which
-  // process the corresponding services have been started within.
-  std::vector<service_manager::Service::CreatePackagedServiceInstanceCallback>
-      pending_run_service_callbacks_;
+  // fails to start).
+  std::vector<RunServiceDeprecatedCallback> pending_run_service_callbacks_;
 
   std::unique_ptr<Client> client_;
 

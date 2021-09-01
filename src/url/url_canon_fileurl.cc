@@ -25,29 +25,47 @@ template<typename CHAR>
 int FileDoDriveSpec(const CHAR* spec, int begin, int end,
                     CanonOutput* output) {
   // The path could be one of several things: /foo/bar, c:/foo/bar, /c:/foo,
-  // (with backslashes instead of slashes as well).
-  int num_slashes = CountConsecutiveSlashes(spec, begin, end);
-  int after_slashes = begin + num_slashes;
+  // /./c:/foo, (with backslashes instead of slashes as well). The code
+  // first guesses the beginning of the drive letter, then verifies that the
+  // path up to that point can be canonicalised as "/". If it can, then the
+  // found drive letter is indeed a drive letter, otherwise the path has no
+  // drive letter in it.
+  if (begin > end)  // Nothing to search in.
+    return begin;   // Found no letter, so didn't consum any characters.
 
-  if (!DoesBeginWindowsDriveSpec(spec, after_slashes, end))
-    return begin;  // Haven't consumed any characters
+  // If there is something that looks like a drive letter in the spec between
+  // being and end, store its position in drive_letter_pos.
+  int drive_letter_pos =
+      DoesContainWindowsDriveSpecUntil(spec, begin, end, end);
+  if (drive_letter_pos < begin)
+    return begin;  // Found no letter, so didn't consum any characters.
 
-  // A drive spec is the start of a path, so we need to add a slash for the
-  // authority terminator (typically the third slash).
-  output->push_back('/');
+  // Check if the path up to the drive letter candidate can be canonicalized as
+  // "/".
+  Component sub_path = MakeRange(begin, drive_letter_pos);
+  Component output_path;
+  const int initial_length = output->length();
+  bool success = CanonicalizePath(spec, sub_path, output, &output_path);
+  if (!success || output_path.len != 1 ||
+      output->at(output_path.begin) != '/') {
+    // Undo writing the canonicalized path.
+    output->set_length(initial_length);
+    return begin;  // Found no letter, so didn't consum any characters.
+  }
 
-  // DoesBeginWindowsDriveSpec will ensure that the drive letter is valid
-  // and that it is followed by a colon/pipe.
+  // By now, "/" has been written to the output and a valid drive letter is
+  // confirmed at position drive_letter_pos, followed by a valid drive letter
+  // separator (a colon or a pipe).
 
-  // Normalize Windows drive letters to uppercase
-  if (base::IsAsciiLower(spec[after_slashes]))
-    output->push_back(static_cast<char>(spec[after_slashes] - 'a' + 'A'));
+  // Normalize Windows drive letters to uppercase.
+  if (base::IsAsciiLower(spec[drive_letter_pos]))
+    output->push_back(static_cast<char>(spec[drive_letter_pos] - 'a' + 'A'));
   else
-    output->push_back(static_cast<char>(spec[after_slashes]));
+    output->push_back(static_cast<char>(spec[drive_letter_pos]));
 
   // Normalize the character following it to a colon rather than pipe.
   output->push_back(':');
-  return after_slashes + 2;
+  return drive_letter_pos + 2;
 }
 
 #endif  // WIN32
@@ -133,15 +151,15 @@ bool CanonicalizeFileURL(const char* spec,
       output, new_parsed);
 }
 
-bool CanonicalizeFileURL(const base::char16* spec,
+bool CanonicalizeFileURL(const char16_t* spec,
                          int spec_len,
                          const Parsed& parsed,
                          CharsetConverter* query_converter,
                          CanonOutput* output,
                          Parsed* new_parsed) {
-  return DoCanonicalizeFileURL<base::char16, base::char16>(
-      URLComponentSource<base::char16>(spec), parsed, query_converter,
-      output, new_parsed);
+  return DoCanonicalizeFileURL<char16_t, char16_t>(
+      URLComponentSource<char16_t>(spec), parsed, query_converter, output,
+      new_parsed);
 }
 
 bool FileCanonicalizePath(const char* spec,
@@ -152,12 +170,12 @@ bool FileCanonicalizePath(const char* spec,
                                                      output, out_path);
 }
 
-bool FileCanonicalizePath(const base::char16* spec,
+bool FileCanonicalizePath(const char16_t* spec,
                           const Component& path,
                           CanonOutput* output,
                           Component* out_path) {
-  return DoFileCanonicalizePath<base::char16, base::char16>(spec, path,
-                                                            output, out_path);
+  return DoFileCanonicalizePath<char16_t, char16_t>(spec, path, output,
+                                                    out_path);
 }
 
 bool ReplaceFileURL(const char* base,
@@ -175,7 +193,7 @@ bool ReplaceFileURL(const char* base,
 
 bool ReplaceFileURL(const char* base,
                     const Parsed& base_parsed,
-                    const Replacements<base::char16>& replacements,
+                    const Replacements<char16_t>& replacements,
                     CharsetConverter* query_converter,
                     CanonOutput* output,
                     Parsed* new_parsed) {

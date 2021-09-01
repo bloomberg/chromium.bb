@@ -7,21 +7,26 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/i18n/rtl.h"
+#include "base/numerics/safe_conversions.h"
 #include "cc/paint/paint_flags.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/themed_vector_icon.h"
+#include "ui/views/image_model_utils.h"
 
 namespace views {
 
 namespace {
 
 // Returns the pixels for the bitmap in |image| at scale |image_scale|.
-void* GetBitmapPixels(const gfx::ImageSkia& img, float image_scale) {
+void* GetBitmapPixels(const gfx::ImageSkia& image, float image_scale) {
   DCHECK_NE(0.0f, image_scale);
-  return img.GetRepresentation(image_scale).GetBitmap().getPixels();
+  return image.GetRepresentation(image_scale).GetBitmap().getPixels();
 }
 
 }  // namespace
@@ -30,26 +35,16 @@ ImageView::ImageView() = default;
 
 ImageView::~ImageView() = default;
 
-void ImageView::SetImage(const gfx::ImageSkia& img) {
-  if (IsImageEqual(img))
+void ImageView::SetImage(const ui::ImageModel& image_model) {
+  if (IsImageEqual(image_model))
     return;
 
-  last_painted_bitmap_pixels_ = nullptr;
-  gfx::Size pref_size(GetPreferredSize());
-  image_ = img;
+  const gfx::Size pref_size = GetPreferredSize();
+  image_model_ = image_model;
   scaled_image_ = gfx::ImageSkia();
   if (pref_size != GetPreferredSize())
     PreferredSizeChanged();
   SchedulePaint();
-}
-
-void ImageView::SetImage(const gfx::ImageSkia* image_skia) {
-  if (image_skia) {
-    SetImage(*image_skia);
-  } else {
-    gfx::ImageSkia t;
-    SetImage(t);
-  }
 }
 
 void ImageView::SetImageSize(const gfx::Size& image_size) {
@@ -66,8 +61,8 @@ gfx::Rect ImageView::GetImageBounds() const {
   return gfx::Rect(image_origin_, GetImageSize());
 }
 
-const gfx::ImageSkia& ImageView::GetImage() const {
-  return image_;
+gfx::ImageSkia ImageView::GetImage() const {
+  return views::GetImageSkiaFromImageModel(image_model_, GetNativeTheme());
 }
 
 void ImageView::SetHorizontalAlignment(Alignment alignment) {
@@ -94,7 +89,7 @@ ImageView::Alignment ImageView::GetVerticalAlignment() const {
   return vertical_alignment_;
 }
 
-void ImageView::SetAccessibleName(const base::string16& accessible_name) {
+void ImageView::SetAccessibleName(const std::u16string& accessible_name) {
   if (accessible_name_ == accessible_name)
     return;
 
@@ -103,26 +98,34 @@ void ImageView::SetAccessibleName(const base::string16& accessible_name) {
   NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
-const base::string16& ImageView::GetAccessibleName() const {
+const std::u16string& ImageView::GetAccessibleName() const {
   return accessible_name_.empty() ? tooltip_text_ : accessible_name_;
 }
 
-void ImageView::SetTooltipText(const base::string16& tooltip) {
+void ImageView::SetTooltipText(const std::u16string& tooltip) {
   tooltip_text_ = tooltip;
 }
 
-const base::string16& ImageView::GetTooltipText() const {
+const std::u16string& ImageView::GetTooltipText() const {
   return tooltip_text_;
 }
 
-bool ImageView::IsImageEqual(const gfx::ImageSkia& img) const {
-  // Even though we copy ImageSkia in SetImage() the backing store
-  // (ImageSkiaStorage) is not copied and may have changed since the last call
-  // to SetImage(). The expectation is that SetImage() with different pixels is
-  // treated as though the image changed. For this reason we compare not only
-  // the backing store but also the pixels of the last image we painted.
-  return image_.BackedBySameObjectAs(img) && last_paint_scale_ != 0.0f &&
-         last_painted_bitmap_pixels_ == GetBitmapPixels(img, last_paint_scale_);
+bool ImageView::IsImageEqual(const ui::ImageModel& image_model) const {
+  if (image_model != image_model_)
+    return false;
+
+  if (!image_model.IsImage())
+    return true;
+
+  // An ImageModel's Image holds a handle to a backing store, which may have
+  // changed since the last call to SetImage(). The expectation is that
+  // SetImage() with different pixels is treated as though the image changed.
+  // For this reason we compare not only the Image but also the pixels we last
+  // painted.
+  return last_paint_scale_ != 0.0f &&
+         last_painted_bitmap_pixels_ ==
+             GetBitmapPixels(image_model.GetImage().AsImageSkia(),
+                             last_paint_scale_);
 }
 
 void ImageView::UpdateImageOrigin() {
@@ -169,7 +172,7 @@ void ImageView::UpdateImageOrigin() {
 }
 
 gfx::Size ImageView::GetImageSize() const {
-  return image_size_.value_or(image_.size());
+  return image_size_.value_or(image_model_.Size());
 }
 
 void ImageView::OnPaint(gfx::Canvas* canvas) {
@@ -178,9 +181,9 @@ void ImageView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void ImageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  const base::string16& name = GetAccessibleName();
+  const std::u16string& name = GetAccessibleName();
   if (name.empty()) {
-    node_data->role = ax::mojom::Role::kIgnored;
+    node_data->role = ax::mojom::Role::kNone;
     return;
   }
 
@@ -188,7 +191,7 @@ void ImageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(name);
 }
 
-base::string16 ImageView::GetTooltipText(const gfx::Point& p) const {
+std::u16string ImageView::GetTooltipText(const gfx::Point& p) const {
   return tooltip_text_;
 }
 
@@ -220,6 +223,14 @@ void ImageView::PreferredSizeChanged() {
   UpdateImageOrigin();
 }
 
+void ImageView::OnThemeChanged() {
+  View::OnThemeChanged();
+  if (!image_model_.IsVectorIcon() || image_model_.GetVectorIcon().has_color())
+    return;  // Bitmaps don't need updating on theme changes.
+  scaled_image_ = gfx::ImageSkia();
+  SchedulePaint();
+}
+
 void ImageView::OnPaintImage(gfx::Canvas* canvas) {
   last_paint_scale_ = canvas->image_scale();
   last_painted_bitmap_pixels_ = nullptr;
@@ -247,40 +258,48 @@ void ImageView::OnPaintImage(gfx::Canvas* canvas) {
 }
 
 gfx::ImageSkia ImageView::GetPaintImage(float scale) {
-  if (image_.isNull())
-    return image_;
+  if (image_model_.IsEmpty())
+    return gfx::ImageSkia();
 
-  const gfx::ImageSkiaRep& rep = image_.GetRepresentation(scale);
-  if (rep.scale() == scale)
-    return image_;
+  if (image_model_.IsImage()) {
+    const gfx::ImageSkia& image = image_model_.GetImage().AsImageSkia();
+    if (image.isNull())
+      return image;
 
-  if (scaled_image_.HasRepresentation(scale))
-    return scaled_image_;
+    const gfx::ImageSkiaRep& rep = image.GetRepresentation(scale);
+    if (rep.scale() == scale)
+      return image;
 
-  // Only caches one image rep for the current scale.
-  scaled_image_ = gfx::ImageSkia();
+    if (scaled_image_.HasRepresentation(scale))
+      return scaled_image_;
 
-  gfx::Size scaled_size =
-      gfx::ScaleToCeiledSize(rep.pixel_size(), scale / rep.scale());
-  scaled_image_.AddRepresentation(gfx::ImageSkiaRep(
-      skia::ImageOperations::Resize(rep.GetBitmap(),
-                                    skia::ImageOperations::RESIZE_BEST,
-                                    scaled_size.width(), scaled_size.height()),
-      scale));
+    // Only caches one image rep for the current scale.
+    scaled_image_ = gfx::ImageSkia();
+
+    gfx::Size scaled_size =
+        gfx::ScaleToCeiledSize(rep.pixel_size(), scale / rep.scale());
+    scaled_image_.AddRepresentation(gfx::ImageSkiaRep(
+        skia::ImageOperations::Resize(
+            rep.GetBitmap(), skia::ImageOperations::RESIZE_BEST,
+            scaled_size.width(), scaled_size.height()),
+        scale));
+  } else if (scaled_image_.isNull()) {
+    scaled_image_ =
+        views::GetImageSkiaFromImageModel(image_model_, GetNativeTheme());
+  }
   return scaled_image_;
 }
-
-DEFINE_ENUM_CONVERTERS(
-    ImageView::Alignment,
-    {ImageView::Alignment::kLeading, base::ASCIIToUTF16("kLeading")},
-    {ImageView::Alignment::kCenter, base::ASCIIToUTF16("kCenter")},
-    {ImageView::Alignment::kTrailing, base::ASCIIToUTF16("kTrailing")})
 
 BEGIN_METADATA(ImageView, View)
 ADD_PROPERTY_METADATA(Alignment, HorizontalAlignment)
 ADD_PROPERTY_METADATA(Alignment, VerticalAlignment)
-ADD_PROPERTY_METADATA(base::string16, AccessibleName)
-ADD_PROPERTY_METADATA(base::string16, TooltipText)
+ADD_PROPERTY_METADATA(std::u16string, AccessibleName)
+ADD_PROPERTY_METADATA(std::u16string, TooltipText)
 END_METADATA
 
 }  // namespace views
+
+DEFINE_ENUM_CONVERTERS(views::ImageView::Alignment,
+                       {views::ImageView::Alignment::kLeading, u"kLeading"},
+                       {views::ImageView::Alignment::kCenter, u"kCenter"},
+                       {views::ImageView::Alignment::kTrailing, u"kTrailing"})

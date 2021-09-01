@@ -19,14 +19,13 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
 
-class SkPath;
-
 namespace aura {
 class ScopedWindowTargeter;
 }  // namespace aura
 
 namespace ui {
 class X11Extension;
+class WaylandExtension;
 }  // namespace ui
 
 namespace views {
@@ -52,6 +51,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // internal list of open windows.
   static void CleanUpWindowList(void (*func)(aura::Window* window));
 
+  // Casts from a base WindowTreeHost instance.
+  static DesktopWindowTreeHostLinux* From(WindowTreeHost* wth);
+
   // Returns the current bounds in terms of the X11 Root Window including the
   // borders provided by the window manager (if any). Not in use for Wayland.
   gfx::Rect GetXRootWindowOuterBounds() const;
@@ -67,6 +69,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
 
   // Disables event listening to make |dialog| modal.
   base::OnceClosure DisableEventListening();
+
+  ui::WaylandExtension* GetWaylandExtension();
+  const ui::WaylandExtension* GetWaylandExtension() const;
 
  protected:
   // Overridden from DesktopWindowTreeHost:
@@ -106,7 +111,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void DestroyNonClientEventFilter();
 
   // X11ExtensionDelegate overrides:
-  void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override;
   void OnLostMouseGrab() override;
 #if BUILDFLAG(USE_ATK)
   bool OnAtkKeyEvent(AtkKeyEventStruct* atk_key_event, bool transient) override;

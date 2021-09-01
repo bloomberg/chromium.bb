@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/new_window_delegate.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "extensions/common/constants.h"
@@ -66,13 +67,18 @@ void UrlHandlerServiceProvider::OpenUrl(
     return;
   }
 
+  VLOG(1) << "Got request to open url";
+
   const GURL gurl(url);
   if (!UrlAllowed(gurl)) {
+    VLOG(1) << "Url is not allowed";
     std::move(response_sender)
         .Run(dbus::ErrorResponse::FromMethodCall(method_call, DBUS_ERROR_FAILED,
                                                  "Invalid URL"));
     return;
   }
+
+  VLOG(1) << "Opening url now";
 
   NewWindowDelegate::GetInstance()->NewTabWithUrl(
       gurl, false /* from_user_interaction */);

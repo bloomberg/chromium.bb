@@ -10,14 +10,12 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
@@ -26,8 +24,8 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -167,17 +165,6 @@ class WebAppRegistrarTest : public WebAppTest {
   std::unique_ptr<TestWebAppRegistryController> test_registry_controller_;
 };
 
-class WebAppRegistrarTest_DisplayOverride : public WebAppRegistrarTest {
- public:
-  WebAppRegistrarTest_DisplayOverride() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kWebAppManifestDisplayOverride);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   controller().Init();
 
@@ -189,7 +176,7 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   const std::string name = "Name";
   const std::string description = "Description";
   const GURL scope = GURL("https://example.com/scope");
-  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
+  const absl::optional<SkColor> theme_color = 0xAABBCCDD;
 
   const GURL start_url2 = GURL("https://example.com/path2");
   const AppId app_id2 = GenerateAppIdFromURL(start_url2);
@@ -402,7 +389,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   const AppId app_id = GenerateAppIdFromURL(start_url);
   const std::string name = "Name";
   const std::string description = "Description";
-  const base::Optional<SkColor> theme_color = 0xAABBCCDD;
+  const absl::optional<SkColor> theme_color = 0xAABBCCDD;
   const auto display_mode = DisplayMode::kMinimalUi;
   const auto user_display_mode = DisplayMode::kStandalone;
   std::vector<DisplayMode> display_mode_override;
@@ -548,12 +535,12 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
   app1->SetScope(app1_scope);
   RegisterApp(std::move(app1));
 
-  base::Optional<AppId> app2_match =
+  absl::optional<AppId> app2_match =
       registrar().FindAppWithUrlInScope(app2_scope);
   DCHECK(app2_match);
   EXPECT_EQ(*app2_match, app1_id);
 
-  base::Optional<AppId> app3_match =
+  absl::optional<AppId> app3_match =
       registrar().FindAppWithUrlInScope(app3_scope);
   EXPECT_FALSE(app3_match);
 
@@ -565,11 +552,11 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
   app3->SetScope(app3_scope);
   RegisterApp(std::move(app3));
 
-  base::Optional<AppId> origin_match =
+  absl::optional<AppId> origin_match =
       registrar().FindAppWithUrlInScope(origin_scope);
   EXPECT_FALSE(origin_match);
 
-  base::Optional<AppId> app1_match =
+  absl::optional<AppId> app1_match =
       registrar().FindAppWithUrlInScope(app1_scope);
   DCHECK(app1_match);
   EXPECT_EQ(*app1_match, app1_id);
@@ -602,11 +589,11 @@ TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
   auto app1 = CreateWebApp(app1_launch.spec());
   RegisterApp(std::move(app1));
 
-  base::Optional<AppId> app2_match =
+  absl::optional<AppId> app2_match =
       registrar().FindAppWithUrlInScope(app2_page);
   EXPECT_FALSE(app2_match);
 
-  base::Optional<AppId> app3_match =
+  absl::optional<AppId> app3_match =
       registrar().FindAppWithUrlInScope(app3_page);
   EXPECT_FALSE(app3_match);
 
@@ -616,18 +603,18 @@ TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
   auto app3 = CreateWebApp(app3_launch.spec());
   RegisterApp(std::move(app3));
 
-  base::Optional<AppId> app1_match =
+  absl::optional<AppId> app1_match =
       registrar().FindAppWithUrlInScope(app1_page);
   DCHECK(app1_match);
-  EXPECT_EQ(app1_match, base::Optional<AppId>(app1_id));
+  EXPECT_EQ(app1_match, absl::optional<AppId>(app1_id));
 
   app2_match = registrar().FindAppWithUrlInScope(app2_page);
   DCHECK(app2_match);
-  EXPECT_EQ(app2_match, base::Optional<AppId>(app2_id));
+  EXPECT_EQ(app2_match, absl::optional<AppId>(app2_id));
 
   app3_match = registrar().FindAppWithUrlInScope(app3_page);
   DCHECK(app3_match);
-  EXPECT_EQ(app3_match, base::Optional<AppId>(app3_id));
+  EXPECT_EQ(app3_match, absl::optional<AppId>(app3_id));
 }
 
 TEST_F(WebAppRegistrarTest, FindPwaOverShortcut) {
@@ -651,10 +638,10 @@ TEST_F(WebAppRegistrarTest, FindPwaOverShortcut) {
   auto app3 = CreateWebApp(app3_launch.spec());
   RegisterApp(std::move(app3));
 
-  base::Optional<AppId> app2_match =
+  absl::optional<AppId> app2_match =
       registrar().FindAppWithUrlInScope(app2_page);
   DCHECK(app2_match);
-  EXPECT_EQ(app2_match, base::Optional<AppId>(app2_id));
+  EXPECT_EQ(app2_match, absl::optional<AppId>(app2_id));
 }
 
 TEST_F(WebAppRegistrarTest, BeginAndCommitUpdate) {
@@ -861,8 +848,7 @@ TEST_F(WebAppRegistrarTest, NotLocallyInstalledAppGetsDisplayModeBrowser) {
             registrar().GetAppEffectiveDisplayMode(app_id));
 }
 
-TEST_F(WebAppRegistrarTest_DisplayOverride,
-       NotLocallyInstalledAppGetsDisplayModeOverride) {
+TEST_F(WebAppRegistrarTest, NotLocallyInstalledAppGetsDisplayModeOverride) {
   controller().Init();
 
   auto web_app = CreateWebApp("https://example.com/path");
@@ -886,7 +872,7 @@ TEST_F(WebAppRegistrarTest_DisplayOverride,
             registrar().GetAppEffectiveDisplayMode(app_id));
 }
 
-TEST_F(WebAppRegistrarTest_DisplayOverride,
+TEST_F(WebAppRegistrarTest,
        CheckDisplayOverrideFromGetEffectiveDisplayModeFromManifest) {
   controller().Init();
 
@@ -917,7 +903,7 @@ TEST_F(WebAppRegistrarTest, RunOnOsLoginModes) {
   const AppId app_id = web_app->app_id();
   RegisterApp(std::move(web_app));
 
-  EXPECT_EQ(RunOnOsLoginMode::kUndefined,
+  EXPECT_EQ(RunOnOsLoginMode::kNotRun,
             registrar().GetAppRunOnOsLoginMode(app_id));
 
   sync_bridge().SetAppRunOnOsLoginMode(app_id, RunOnOsLoginMode::kWindowed);

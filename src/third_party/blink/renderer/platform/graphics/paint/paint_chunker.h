@@ -5,8 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_PAINT_CHUNKER_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "cc/input/layer_selection_bound.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/geometry/region.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
@@ -48,9 +50,13 @@ class PLATFORM_EXPORT PaintChunker final {
   // before and after the item to force a dedicated paint chunk.
   void SetWillForceNewChunk(bool force) {
     will_force_new_chunk_ = force;
-    next_chunk_id_ = base::nullopt;
+    next_chunk_id_ = absl::nullopt;
   }
   bool WillForceNewChunk() const { return will_force_new_chunk_; }
+
+  void SetShouldComputeContentsOpaque(bool should_compute_) {
+    should_compute_contents_opaque_ = should_compute_;
+  }
 
   void AppendByMoving(PaintChunk&&);
 
@@ -67,6 +73,11 @@ class PLATFORM_EXPORT PaintChunker final {
       const PaintChunk::Id&,
       const TransformPaintPropertyNode* scroll_translation,
       const IntRect&);
+
+  // The id will be used when we need to create a new current chunk.
+  // Otherwise it's ignored. Returns true if a new chunk is added.
+  void AddSelectionToCurrentChunk(absl::optional<PaintedSelectionBound> start,
+                                  absl::optional<PaintedSelectionBound> end);
 
   // Returns true if a new chunk is created.
   bool ProcessBackgroundColorCandidate(const PaintChunk::Id& id,
@@ -90,17 +101,20 @@ class PLATFORM_EXPORT PaintChunker final {
   // It's cleared when we create a new chunk with the id, or decide not to
   // create a chunk with it (e.g. when properties don't change and we are not
   // forced to create a new chunk).
-  base::Optional<PaintChunk::Id> next_chunk_id_;
+  absl::optional<PaintChunk::Id> next_chunk_id_;
 
   PropertyTreeStateOrAlias current_properties_ =
       PropertyTreeState::Uninitialized();
 
   Region last_chunk_known_to_be_opaque_region_;
+  bool last_chunk_text_known_to_be_on_opaque_background_ = true;
 
   // True when an item forces a new chunk (e.g., foreign display items), and for
   // the item following a forced chunk. PaintController also forces new chunks
   // before and after subsequences by calling ForceNewChunk().
   bool will_force_new_chunk_ = true;
+
+  bool should_compute_contents_opaque_ = true;
 
   Color candidate_background_color_ = Color::kTransparent;
   float candidate_background_area_ = 0;

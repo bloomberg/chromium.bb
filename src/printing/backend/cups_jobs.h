@@ -13,9 +13,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/version.h"
 #include "printing/printer_query_result.h"
-#include "printing/printing_export.h"
 
 // This file contains a collection of functions used to query IPP printers or
 // print servers and the related code to parse these responses.  All Get*
@@ -26,7 +26,7 @@ namespace printing {
 struct PrinterStatus;
 
 // Represents a print job sent to the queue.
-struct PRINTING_EXPORT CupsJob {
+struct COMPONENT_EXPORT(PRINT_BACKEND) CupsJob {
   // Corresponds to job-state from RFC2911.
   enum JobState {
     UNKNOWN,
@@ -58,8 +58,7 @@ struct PRINTING_EXPORT CupsJob {
   int processing_started = 0;
 };
 
-
-struct PRINTING_EXPORT PrinterInfo {
+struct COMPONENT_EXPORT(PRINT_BACKEND) PrinterInfo {
   PrinterInfo();
   PrinterInfo(const PrinterInfo& info);
 
@@ -86,41 +85,42 @@ enum JobCompletionState {
   PROCESSING  // only jobs that are being processed
 };
 
-// Returns the uri for printer with |id| as served by CUPS. Assumes that |id| is
+// Returns the uri for printer with `id` as served by CUPS. Assumes that `id` is
 // a valid CUPS printer name and performs no error checking or escaping.
-std::string PRINTING_EXPORT PrinterUriFromName(const std::string& id);
+std::string COMPONENT_EXPORT(PRINT_BACKEND)
+    PrinterUriFromName(const std::string& id);
 
-// Extracts structured job information from the |response| for |printer_id|.
-// Extracted jobs are added to |jobs|.
+// Extracts structured job information from the `response` for `printer_id`.
+// Extracted jobs are added to `jobs`.
 void ParseJobsResponse(ipp_t* response,
                        const std::string& printer_id,
                        std::vector<CupsJob>* jobs);
 
-// Attempts to extract a PrinterStatus object out of |response|.
+// Attempts to extract a PrinterStatus object out of `response`.
 void ParsePrinterStatus(ipp_t* response, PrinterStatus* printer_status);
 
-// Queries the printer at |address| on |port| with a Get-Printer-Attributes
-// request to populate |printer_info|. If |encrypted| is true, request is made
+// Queries the printer at `address` on `port` with a Get-Printer-Attributes
+// request to populate `printer_info`. If `encrypted` is true, request is made
 // using ipps, otherwise, ipp is used. Returns false if the request failed.
-PrinterQueryResult PRINTING_EXPORT
-GetPrinterInfo(const std::string& address,
-               int port,
-               const std::string& resource,
-               bool encrypted,
-               PrinterInfo* printer_info,
-               PrinterStatus* printer_status);
+PrinterQueryResult COMPONENT_EXPORT(PRINT_BACKEND)
+    GetPrinterInfo(const std::string& address,
+                   int port,
+                   const std::string& resource,
+                   bool encrypted,
+                   PrinterInfo* printer_info,
+                   PrinterStatus* printer_status);
 
-// Attempts to retrieve printer status using connection |http| for |printer_id|.
-// Returns true if succcssful and updates the fields in |printer_status| as
+// Attempts to retrieve printer status using connection `http` for `printer_id`.
+// Returns true if succcssful and updates the fields in `printer_status` as
 // appropriate.  Returns false if the request failed.
 bool GetPrinterStatus(http_t* http,
                       const std::string& printer_id,
                       PrinterStatus* printer_status);
 
-// Attempts to retrieve job information using connection |http| for the printer
-// named |printer_id|.  Retrieves at most |limit| jobs.  If |completed| then
+// Attempts to retrieve job information using connection `http` for the printer
+// named `printer_id`.  Retrieves at most `limit` jobs.  If `completed` then
 // completed jobs are retrieved.  Otherwise, jobs that are currently in progress
-// are retrieved.  Results are added to |jobs| if the operation was successful.
+// are retrieved.  Results are added to `jobs` if the operation was successful.
 bool GetCupsJobs(http_t* http,
                  const std::string& printer_id,
                  int limit,

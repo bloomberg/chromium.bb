@@ -68,12 +68,10 @@ bool GrSimpleMeshDrawOpHelper::isCompatible(const GrSimpleMeshDrawOpHelper& that
 }
 
 GrProcessorSet::Analysis GrSimpleMeshDrawOpHelper::finalizeProcessors(
-        const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-        GrClampType clampType, GrProcessorAnalysisCoverage geometryCoverage,
-        SkPMColor4f* geometryColor, bool* wideColor) {
+        const GrCaps& caps, const GrAppliedClip* clip, GrClampType clampType,
+        GrProcessorAnalysisCoverage geometryCoverage, SkPMColor4f* geometryColor, bool* wideColor) {
     GrProcessorAnalysisColor color = *geometryColor;
-    auto result = this->finalizeProcessors(
-            caps, clip, hasMixedSampledCoverage, clampType, geometryCoverage, &color);
+    auto result = this->finalizeProcessors(caps, clip, clampType, geometryCoverage, &color);
     color.isConstant(geometryColor);
     if (wideColor) {
         *wideColor = !geometryColor->fitsInBytes();
@@ -83,8 +81,8 @@ GrProcessorSet::Analysis GrSimpleMeshDrawOpHelper::finalizeProcessors(
 
 GrProcessorSet::Analysis GrSimpleMeshDrawOpHelper::finalizeProcessors(
         const GrCaps& caps, const GrAppliedClip* clip, const GrUserStencilSettings* userStencil,
-        bool hasMixedSampledCoverage, GrClampType clampType,
-        GrProcessorAnalysisCoverage geometryCoverage, GrProcessorAnalysisColor* geometryColor) {
+        GrClampType clampType, GrProcessorAnalysisCoverage geometryCoverage,
+        GrProcessorAnalysisColor* geometryColor) {
     SkDEBUGCODE(fDidAnalysis = true);
     GrProcessorSet::Analysis analysis;
     if (fProcessors) {
@@ -95,8 +93,8 @@ GrProcessorSet::Analysis GrSimpleMeshDrawOpHelper::finalizeProcessors(
                                : GrProcessorAnalysisCoverage::kNone;
         }
         SkPMColor4f overrideColor;
-        analysis = fProcessors->finalize(*geometryColor, coverage, clip, userStencil,
-                                         hasMixedSampledCoverage, caps, clampType, &overrideColor);
+        analysis = fProcessors->finalize(*geometryColor, coverage, clip, userStencil, caps,
+                                         clampType, &overrideColor);
         if (analysis.inputColorIsOverridden()) {
             *geometryColor = overrideColor;
         }
@@ -134,7 +132,7 @@ const GrPipeline* GrSimpleMeshDrawOpHelper::CreatePipeline(
                                                 GrPipeline::InputFlags pipelineFlags) {
     return CreatePipeline(&flushState->caps(),
                           flushState->allocator(),
-                          flushState->writeView()->swizzle(),
+                          flushState->writeView().swizzle(),
                           flushState->detachAppliedClip(),
                           flushState->dstProxyView(),
                           std::move(processorSet),
@@ -144,7 +142,7 @@ const GrPipeline* GrSimpleMeshDrawOpHelper::CreatePipeline(
 const GrPipeline* GrSimpleMeshDrawOpHelper::createPipeline(GrOpFlushState* flushState) {
     return CreatePipeline(&flushState->caps(),
                           flushState->allocator(),
-                          flushState->writeView()->swizzle(),
+                          flushState->writeView().swizzle(),
                           flushState->detachAppliedClip(),
                           flushState->dstProxyView(),
                           this->detachProcessorSet(),
@@ -169,58 +167,57 @@ const GrPipeline* GrSimpleMeshDrawOpHelper::createPipeline(
 GrProgramInfo* GrSimpleMeshDrawOpHelper::CreateProgramInfo(
             const GrCaps* caps,
             SkArenaAlloc* arena,
-            const GrSurfaceProxyView* writeView,
+            const GrSurfaceProxyView& writeView,
             GrAppliedClip&& appliedClip,
             const GrXferProcessor::DstProxyView& dstProxyView,
             GrGeometryProcessor* geometryProcessor,
             GrProcessorSet&& processorSet,
             GrPrimitiveType primitiveType,
             GrXferBarrierFlags renderPassXferBarriers,
+            GrLoadOp colorLoadOp,
             GrPipeline::InputFlags pipelineFlags,
             const GrUserStencilSettings* stencilSettings) {
     auto pipeline = CreatePipeline(caps,
                                    arena,
-                                   writeView->swizzle(),
+                                   writeView.swizzle(),
                                    std::move(appliedClip),
                                    dstProxyView,
                                    std::move(processorSet),
                                    pipelineFlags);
 
     return CreateProgramInfo(arena, pipeline, writeView, geometryProcessor, primitiveType,
-                             renderPassXferBarriers, stencilSettings);
+                             renderPassXferBarriers, colorLoadOp, stencilSettings);
 }
 
 GrProgramInfo* GrSimpleMeshDrawOpHelper::CreateProgramInfo(SkArenaAlloc* arena,
                                                            const GrPipeline* pipeline,
-                                                           const GrSurfaceProxyView* writeView,
+                                                           const GrSurfaceProxyView& writeView,
                                                            GrGeometryProcessor* geometryProcessor,
                                                            GrPrimitiveType primitiveType,
                                                            GrXferBarrierFlags xferBarrierFlags,
+                                                           GrLoadOp colorLoadOp,
                                                            const GrUserStencilSettings* stencilSettings) {
-    GrRenderTargetProxy* outputProxy = writeView->asRenderTargetProxy();
-
-    auto tmp = arena->make<GrProgramInfo>(outputProxy->numSamples(),
-                                          outputProxy->numStencilSamples(),
-                                          outputProxy->backendFormat(),
-                                          writeView->origin(),
+    auto tmp = arena->make<GrProgramInfo>(writeView,
                                           pipeline,
                                           stencilSettings,
                                           geometryProcessor,
                                           primitiveType,
                                           0,
-                                          xferBarrierFlags);
+                                          xferBarrierFlags,
+                                          colorLoadOp);
     return tmp;
 }
 
 GrProgramInfo* GrSimpleMeshDrawOpHelper::createProgramInfo(
                                             const GrCaps* caps,
                                             SkArenaAlloc* arena,
-                                            const GrSurfaceProxyView* writeView,
+                                            const GrSurfaceProxyView& writeView,
                                             GrAppliedClip&& appliedClip,
                                             const GrXferProcessor::DstProxyView& dstProxyView,
                                             GrGeometryProcessor* gp,
                                             GrPrimitiveType primType,
-                                            GrXferBarrierFlags renderPassXferBarriers) {
+                                            GrXferBarrierFlags renderPassXferBarriers,
+                                            GrLoadOp colorLoadOp) {
     return CreateProgramInfo(caps,
                              arena,
                              writeView,
@@ -230,6 +227,7 @@ GrProgramInfo* GrSimpleMeshDrawOpHelper::createProgramInfo(
                              this->detachProcessorSet(),
                              primType,
                              renderPassXferBarriers,
+                             colorLoadOp,
                              this->pipelineFlags());
 }
 

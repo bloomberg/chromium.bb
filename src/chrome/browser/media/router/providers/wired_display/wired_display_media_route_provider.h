@@ -18,6 +18,7 @@
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver.h"
 #include "components/media_router/common/media_route_provider_helper.h"
 #include "components/media_router/common/mojom/media_router.mojom.h"
+#include "components/media_router/common/mojom/media_status.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -88,9 +89,6 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   void DetachRoute(const std::string& route_id) override;
   void EnableMdnsDiscovery() override;
   void UpdateMediaSinks(const std::string& media_source) override;
-  void ProvideSinks(
-      const std::string& provider_name,
-      const std::vector<media_router::MediaSinkInternal>& sinks) override;
   void CreateMediaRouteController(
       const std::string& route_id,
       mojo::PendingReceiver<mojom::MediaController> media_controller,
@@ -177,7 +175,7 @@ class WiredDisplayMediaRouteProvider : public mojom::MediaRouteProvider,
   void TerminatePresentationsOnDisplay(const display::Display& display);
 
   // Returns a display associated with |sink_id|, or a nullopt if not found.
-  base::Optional<display::Display> GetDisplayBySinkId(
+  absl::optional<display::Display> GetDisplayBySinkId(
       const std::string& sink_id) const;
 
   // Returns a list of available sinks.

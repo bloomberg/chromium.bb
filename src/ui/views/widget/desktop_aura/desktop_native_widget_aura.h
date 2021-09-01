@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_piece.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/window_delegate.h"
@@ -134,7 +135,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   void CenterWindow(const gfx::Size& size) override;
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* maximized) const override;
-  bool SetWindowTitle(const base::string16& title) override;
+  bool SetWindowTitle(const std::u16string& title) override;
   void SetWindowIcons(const gfx::ImageSkia& window_icon,
                       const gfx::ImageSkia& app_icon) override;
   void InitModalType(ui::ModalType modal_type) override;
@@ -196,6 +197,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
       Widget::VisibilityTransition transition) override;
   bool IsTranslucentWindowOpacitySupported() const override;
   ui::GestureRecognizer* GetGestureRecognizer() override;
+  ui::GestureConsumer* GetGestureConsumer() override;
   void OnSizeConstraintsChanged() override;
   void OnNativeViewHierarchyWillChange() override;
   void OnNativeViewHierarchyChanged() override;
@@ -228,6 +230,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  base::StringPiece GetLogContext() const override;
 
   // wm::ActivationDelegate:
   bool ShouldActivate() const override;
@@ -243,10 +246,14 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
 
   // ura::client::DragDropDelegate:
   void OnDragEntered(const ui::DropTargetEvent& event) override;
-  int OnDragUpdated(const ui::DropTargetEvent& event) override;
+  aura::client::DragUpdateInfo OnDragUpdated(
+      const ui::DropTargetEvent& event) override;
   void OnDragExited() override;
-  int OnPerformDrop(const ui::DropTargetEvent& event,
-                    std::unique_ptr<ui::OSExchangeData> data) override;
+  ui::mojom::DragOperation OnPerformDrop(
+      const ui::DropTargetEvent& event,
+      std::unique_ptr<ui::OSExchangeData> data) override;
+  aura::client::DragDropDelegate::DropCallback GetDropCallback(
+      const ui::DropTargetEvent& event) override;
 
   // aura::WindowTreeHostObserver:
   void OnHostCloseRequested(aura::WindowTreeHost* host) override;

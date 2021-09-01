@@ -11,6 +11,7 @@
 #include "base/atomic_sequence_num.h"
 #include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/containers/contains.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -91,11 +92,12 @@ HttpNetworkSession::Params::Params()
       http2_end_stream_with_data_frame(false),
       time_func(&base::TimeTicks::Now),
       enable_http2_alternative_service(false),
-      enable_websocket_over_http2(false),
+      enable_websocket_over_http2(true),
       enable_quic(true),
       enable_quic_proxies_for_https_urls(false),
       disable_idle_sockets_close_on_memory_pressure(false),
-      key_auth_cache_server_entries_by_network_isolation_key(false) {
+      key_auth_cache_server_entries_by_network_isolation_key(false),
+      enable_priority_update(false) {
   enable_early_data =
       base::FeatureList::IsEnabled(features::kEnableTLS13EarlyData);
 }
@@ -109,7 +111,6 @@ HttpNetworkSession::Context::Context()
       host_resolver(nullptr),
       cert_verifier(nullptr),
       transport_security_state(nullptr),
-      cert_transparency_verifier(nullptr),
       ct_policy_enforcer(nullptr),
       sct_auditing_delegate(nullptr),
       proxy_resolution_service(nullptr),
@@ -153,7 +154,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
       ssl_client_context_(context.ssl_config_service,
                           context.cert_verifier,
                           context.transport_security_state,
-                          context.cert_transparency_verifier,
                           context.ct_policy_enforcer,
                           &ssl_client_session_cache_,
                           context.sct_auditing_delegate),
@@ -168,7 +168,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                            context.cert_verifier,
                            context.ct_policy_enforcer,
                            context.transport_security_state,
-                           context.cert_transparency_verifier,
                            context.sct_auditing_delegate,
                            context.socket_performance_watcher_factory,
                            context.quic_crypto_client_stream_factory,
@@ -186,6 +185,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
                          AddDefaultHttp2Settings(params.http2_settings),
                          params.greased_http2_frame,
                          params.http2_end_stream_with_data_frame,
+                         params.enable_priority_update,
                          params.time_func,
                          context.network_quality_estimator),
       http_stream_factory_(std::make_unique<HttpStreamFactory>(this)),
@@ -205,8 +205,13 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           CreateCommonConnectJobParams(true /* for_websockets */),
           WEBSOCKET_SOCKET_POOL);
 
-  if (params_.enable_http2)
+  if (params_.enable_http2) {
     next_protos_.push_back(kProtoHTTP2);
+    if (base::FeatureList::IsEnabled(features::kAlpsForHttp2)) {
+      // Enable ALPS for HTTP/2 with empty data.
+      application_settings_[kProtoHTTP2] = {};
+    }
+  }
 
   next_protos_.push_back(kProtoHTTP11);
 
@@ -358,13 +363,10 @@ void HttpNetworkSession::SetServerPushDelegate(
   quic_stream_factory_.set_server_push_delegate(push_delegate_.get());
 }
 
-void HttpNetworkSession::GetAlpnProtos(NextProtoVector* alpn_protos) const {
-  *alpn_protos = next_protos_;
-}
-
 void HttpNetworkSession::GetSSLConfig(SSLConfig* server_config,
                                       SSLConfig* proxy_config) const {
-  GetAlpnProtos(&server_config->alpn_protos);
+  server_config->alpn_protos = GetAlpnProtos();
+  server_config->application_settings = GetApplicationSettings();
   server_config->ignore_certificate_errors = params_.ignore_certificate_errors;
   *proxy_config = *server_config;
   server_config->early_data_enabled = params_.enable_early_data;

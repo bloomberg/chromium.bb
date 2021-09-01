@@ -12,11 +12,12 @@
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/win/conflicts/module_database_observer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "base/feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/win/conflicts/incompatible_applications_updater.h"
@@ -34,7 +35,7 @@ namespace {
 
 ModuleDatabase* g_module_database = nullptr;
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Callback for the pref change registrar. Is invoked when the
 // ThirdPartyBlockingEnabled policy is modified. Notifies the ModuleDatabase if
 // the policy was disabled.
@@ -67,7 +68,7 @@ void InitPrefChangeRegistrarOnUIThread(
       base::BindRepeating(&OnThirdPartyBlockingPolicyChanged,
                           pref_change_registrar));
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 }  // namespace
 
@@ -82,7 +83,7 @@ ModuleDatabase::ModuleDatabase(bool third_party_blocking_policy_enabled)
       has_started_processing_(false),
       shell_extensions_enumerated_(false),
       ime_enumerated_(false),
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
       pref_change_registrar_(nullptr, base::OnTaskRunnerDeleter(nullptr)),
 #endif
       // ModuleDatabase owns |module_inspector_|, so it is safe to use
@@ -92,7 +93,7 @@ ModuleDatabase::ModuleDatabase(bool third_party_blocking_policy_enabled)
   AddObserver(&module_inspector_);
   AddObserver(&third_party_metrics_);
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   MaybeInitializeThirdPartyConflictsManager(
       third_party_blocking_policy_enabled);
 #endif
@@ -130,13 +131,13 @@ void ModuleDatabase::SetInstance(
 }
 
 void ModuleDatabase::StartDrainingModuleLoadAttemptsLog() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // ModuleDatabase owns |module_load_attempt_log_listener_|, so it is safe to
   // use base::Unretained().
   module_load_attempt_log_listener_ =
       std::make_unique<ModuleLoadAttemptLogListener>(base::BindRepeating(
           &ModuleDatabase::OnModuleBlocked, base::Unretained(this)));
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 bool ModuleDatabase::IsIdle() {
@@ -197,7 +198,7 @@ void ModuleDatabase::OnModuleLoad(content::ProcessType process_type,
 
   DCHECK(process_type == content::PROCESS_TYPE_BROWSER ||
          process_type == content::PROCESS_TYPE_RENDERER)
-      << "The current logic in ModuleBlacklistCacheUpdater does not support "
+      << "The current logic in ModuleBlocklistCacheUpdater does not support "
          "other process types yet. See https://crbug.com/662084 for details.";
 
   ModuleInfo* module_info = nullptr;
@@ -256,7 +257,7 @@ void ModuleDatabase::OnModuleBlocked(const base::FilePath& module_path,
   module_info->second.module_properties |= ModuleInfoData::kPropertyBlocked;
 }
 
-void ModuleDatabase::OnModuleAddedToBlacklist(const base::FilePath& module_path,
+void ModuleDatabase::OnModuleAddedToBlocklist(const base::FilePath& module_path,
                                               uint32_t module_size,
                                               uint32_t module_time_date_stamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -264,10 +265,10 @@ void ModuleDatabase::OnModuleAddedToBlacklist(const base::FilePath& module_path,
   auto iter = modules_.find(
       ModuleInfoKey(module_path, module_size, module_time_date_stamp));
 
-  // Only known modules should be added to the blacklist.
+  // Only known modules should be added to the blocklist.
   DCHECK(iter != modules_.end());
 
-  iter->second.module_properties |= ModuleInfoData::kPropertyAddedToBlacklist;
+  iter->second.module_properties |= ModuleInfoData::kPropertyAddedToBlocklist;
 }
 
 void ModuleDatabase::AddObserver(ModuleDatabaseObserver* observer) {
@@ -296,7 +297,7 @@ void ModuleDatabase::IncreaseInspectionPriority() {
   module_inspector_.IncreaseInspectionPriority();
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // static
 void ModuleDatabase::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   // Register the pref used to disable the Incompatible Applications warning and
@@ -334,7 +335,7 @@ void ModuleDatabase::OnThirdPartyBlockingPolicyDisabled() {
   // point in keeping it around.
   pref_change_registrar_ = nullptr;
 }
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 bool ModuleDatabase::FindOrCreateModuleInfo(
     const base::FilePath& module_path,
@@ -410,7 +411,7 @@ void ModuleDatabase::NotifyLoadedModules(ModuleDatabaseObserver* observer) {
   }
 }
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void ModuleDatabase::OnThirdPartyBlockingDisabled() {
   third_party_metrics_.SetHookDisabled();
 
@@ -426,7 +427,7 @@ void ModuleDatabase::MaybeInitializeThirdPartyConflictsManager(
     return;
 
   if (IncompatibleApplicationsUpdater::IsWarningEnabled() ||
-      ModuleBlacklistCacheUpdater::IsBlockingEnabled()) {
+      ModuleBlocklistCacheUpdater::IsBlockingEnabled()) {
     DCHECK(base::FeatureList::IsEnabled(quarantine::kOutOfProcessQuarantine));
 
     third_party_conflicts_manager_ =

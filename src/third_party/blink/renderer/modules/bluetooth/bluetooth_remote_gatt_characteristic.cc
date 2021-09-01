@@ -50,7 +50,7 @@ void BluetoothRemoteGATTCharacteristic::RemoteCharacteristicValueChanged(
     const Vector<uint8_t>& value) {
   if (!GetGatt()->connected())
     return;
-  this->SetValue(BluetoothRemoteGATTUtils::ConvertWTFVectorToDataView(value));
+  SetValue(BluetoothRemoteGATTUtils::ConvertWTFVectorToDataView(value));
   DispatchEvent(*Event::Create(event_type_names::kCharacteristicvaluechanged));
 }
 
@@ -81,7 +81,7 @@ void BluetoothRemoteGATTCharacteristic::AddedEventListener(
 void BluetoothRemoteGATTCharacteristic::ReadValueCallback(
     ScriptPromiseResolver* resolver,
     mojom::blink::WebBluetoothResult result,
-    const base::Optional<Vector<uint8_t>>& value) {
+    const absl::optional<Vector<uint8_t>>& value) {
   if (!resolver->GetExecutionContext() ||
       resolver->GetExecutionContext()->IsContextDestroyed())
     return;
@@ -346,7 +346,11 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::stopNotifications(
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::getDescriptor(
     ScriptState* script_state,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const V8BluetoothDescriptorUUID* descriptor_uuid,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const StringOrUnsignedLong& descriptor_uuid,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
   String descriptor =
       BluetoothUUID::getDescriptor(descriptor_uuid, exception_state);
@@ -368,7 +372,11 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::getDescriptors(
 
 ScriptPromise BluetoothRemoteGATTCharacteristic::getDescriptors(
     ScriptState* script_state,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const V8BluetoothDescriptorUUID* descriptor_uuid,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const StringOrUnsignedLong& descriptor_uuid,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     ExceptionState& exception_state) {
   String descriptor =
       BluetoothUUID::getDescriptor(descriptor_uuid, exception_state);
@@ -425,7 +433,7 @@ void BluetoothRemoteGATTCharacteristic::GetDescriptorsCallback(
     mojom::blink::WebBluetoothGATTQueryQuantity quantity,
     ScriptPromiseResolver* resolver,
     mojom::blink::WebBluetoothResult result,
-    base::Optional<Vector<mojom::blink::WebBluetoothRemoteGATTDescriptorPtr>>
+    absl::optional<Vector<mojom::blink::WebBluetoothRemoteGATTDescriptorPtr>>
         descriptors) {
   if (!resolver->GetExecutionContext() ||
       resolver->GetExecutionContext()->IsContextDestroyed())

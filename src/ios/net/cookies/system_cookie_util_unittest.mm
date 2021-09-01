@@ -38,16 +38,17 @@ void CheckSystemCookie(const base::Time& expires, bool secure, bool httponly) {
     same_site = net::CookieSameSite::LAX_MODE;
   }
   // Generate a canonical cookie.
-  net::CanonicalCookie canonical_cookie(
-      kCookieName, kCookieValue, kCookieDomain, kCookiePath,
-      base::Time(),  // creation
-      expires,
-      base::Time(),  // last_access
-      secure, httponly, same_site, net::COOKIE_PRIORITY_DEFAULT,
-      false /* same_party */);
+  std::unique_ptr<net::CanonicalCookie> canonical_cookie =
+      net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          kCookieName, kCookieValue, kCookieDomain, kCookiePath,
+          base::Time(),  // creation
+          expires,
+          base::Time(),  // last_access
+          secure, httponly, same_site, net::COOKIE_PRIORITY_DEFAULT,
+          false /* same_party */);
   // Convert it to system cookie.
   NSHTTPCookie* system_cookie =
-      SystemCookieFromCanonicalCookie(canonical_cookie);
+      SystemCookieFromCanonicalCookie(*canonical_cookie);
 
   // Check the attributes.
   EXPECT_TRUE(system_cookie);
@@ -139,6 +140,16 @@ TEST_F(CookieUtil, CanonicalCookieFromSystemCookie) {
   chrome_cookie = CanonicalCookieFromSystemCookie(system_cookie, creation_time);
   EXPECT_FALSE(chrome_cookie->IsPersistent());
   EXPECT_TRUE(chrome_cookie->IsSecure());
+
+  // Test a non-Canonical cookie does not cause a crash.
+  system_cookie = [[NSHTTPCookie alloc] initWithProperties:@{
+    NSHTTPCookieDomain : @"foo",
+    // Malformed name will make the resulting cookie non-canonical.
+    NSHTTPCookieName : @"A=",
+    NSHTTPCookiePath : @"/",
+    NSHTTPCookieValue : @"b",
+  }];
+  EXPECT_FALSE(CanonicalCookieFromSystemCookie(system_cookie, creation_time));
 }
 
 // Tests that histogram is reported correctly based on the input.
@@ -185,42 +196,43 @@ TEST_F(CookieUtil, SystemCookieFromCanonicalCookie) {
 
 TEST_F(CookieUtil, SystemCookieFromBadCanonicalCookie) {
   // Generate a bad canonical cookie (value is invalid utf8).
-  net::CanonicalCookie bad_canonical_cookie(
-      kCookieName, kCookieValueInvalidUtf8, kCookieDomain, kCookiePath,
-      base::Time(),  // creation
-      base::Time(),  // expires
-      base::Time(),  // last_access
-      false,         // secure
-      false,         // httponly
-      net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
-      false /* same_party */);
+  std::unique_ptr<net::CanonicalCookie> bad_canonical_cookie =
+      net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          kCookieName, kCookieValueInvalidUtf8, kCookieDomain, kCookiePath,
+          base::Time(),  // creation
+          base::Time(),  // expires
+          base::Time(),  // last_access
+          false,         // secure
+          false,         // httponly
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT,
+          false /* same_party */);
   // Convert it to system cookie.
   NSHTTPCookie* system_cookie =
-      SystemCookieFromCanonicalCookie(bad_canonical_cookie);
+      SystemCookieFromCanonicalCookie(*bad_canonical_cookie);
   EXPECT_TRUE(system_cookie == nil);
 }
 
 TEST_F(CookieUtil, SystemCookiesFromCanonicalCookieList) {
   base::Time expire_date = base::Time::Now() + base::TimeDelta::FromHours(2);
   net::CookieList cookie_list = {
-      net::CanonicalCookie("name1", "value1", "domain1", "path1/",
-                           base::Time(),  // creation
-                           expire_date,
-                           base::Time(),  // last_access
-                           false,         // secure
-                           false,         // httponly
-                           net::CookieSameSite::UNSPECIFIED,
-                           net::COOKIE_PRIORITY_DEFAULT,
-                           false /* same_party */),
-      net::CanonicalCookie("name2", "value2", "domain2", "path2/",
-                           base::Time(),  // creation
-                           expire_date,
-                           base::Time(),  // last_access
-                           false,         // secure
-                           false,         // httponly
-                           net::CookieSameSite::UNSPECIFIED,
-                           net::COOKIE_PRIORITY_DEFAULT,
-                           false /* same_party */),
+      *net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          "name1", "value1", "domain1", "path1/",
+          base::Time(),  // creation
+          expire_date,
+          base::Time(),  // last_access
+          false,         // secure
+          false,         // httponly
+          net::CookieSameSite::UNSPECIFIED, net::COOKIE_PRIORITY_DEFAULT,
+          false /* same_party */),
+      *net::CanonicalCookie::CreateUnsafeCookieForTesting(
+          "name2", "value2", "domain2", "path2/",
+          base::Time(),  // creation
+          expire_date,
+          base::Time(),  // last_access
+          false,         // secure
+          false,         // httponly
+          net::CookieSameSite::UNSPECIFIED, net::COOKIE_PRIORITY_DEFAULT,
+          false /* same_party */),
   };
 
   NSArray<NSHTTPCookie*>* system_cookies =

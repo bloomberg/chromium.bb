@@ -5,8 +5,6 @@
 #ifndef CC_TEST_FAKE_LAYER_TREE_HOST_IMPL_CLIENT_H_
 #define CC_TEST_FAKE_LAYER_TREE_HOST_IMPL_CLIENT_H_
 
-#include <vector>
-
 #include "cc/trees/layer_tree_host_impl.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 
@@ -46,7 +44,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void NotifyImageDecodeRequestFinished() override {}
   void DidPresentCompositorFrameOnImplThread(
       uint32_t frame_token,
-      std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
+      PresentationTimeCallbackBuffer::PendingCallbacks activated,
       const viz::FrameTimingDetails& details) override {}
 
   void NotifyAnimationWorkletStateChange(AnimationWorkletMutationState state,
@@ -58,6 +56,8 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
       base::TimeDelta first_scroll_delay,
       base::TimeTicks first_scroll_timestamp) override {}
   bool IsInSynchronousComposite() const override;
+  void FrameSinksToThrottleUpdated(
+      const base::flat_set<viz::FrameSinkId>& ids) override {}
 
   void reset_did_request_impl_side_invalidation() {
     did_request_impl_side_invalidation_ = false;

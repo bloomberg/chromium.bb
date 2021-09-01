@@ -4,7 +4,7 @@
 
 // clang-format off
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {CrSettingsPrefs, Router, routes} from 'chrome://settings/settings.js';
+import {CrSettingsPrefs, CrToolbarElement, CrToolbarSearchFieldElement, Router, routes} from 'chrome://settings/settings.js';
 
 import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 import {eventToPromise} from '../test_util.m.js';
@@ -215,5 +215,23 @@ suite('SettingsUISearch', function() {
     searchField.setValue('   ');
     urlParams = Router.getInstance().getQueryParameters();
     assertFalse(urlParams.has('search'));
+  });
+
+  test('MaintainsFocusOnMenus', async () => {
+    // Start in non-narrow mode with focus in the left menu.
+    toolbar.narrow = false;
+    ui.$$('#leftMenu').focusFirstItem();
+    assertEquals(ui.$$('#leftMenu'), ui.shadowRoot.activeElement);
+
+    // Switch to narrow mode and test that focus moves to menu button.
+    toolbar.narrow = true;
+    flush();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    assertTrue(ui.$.toolbar.isMenuFocused());
+
+    // Switch back to non-narrow mode and test that focus moves to left menu.
+    toolbar.narrow = false;
+    flush();
+    assertEquals(ui.$$('#leftMenu'), ui.shadowRoot.activeElement);
   });
 });

@@ -9,10 +9,10 @@
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/optional.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -22,8 +22,9 @@
 #include "components/version_info/version_info.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/system/fake_statistics_provider.h"
 #endif
 
@@ -65,7 +66,7 @@ MATCHER_P(MatchDict, expected, "matches DictionaryValue") {
 class RealtimeReportingJobConfigurationTest : public testing::Test {
  public:
   RealtimeReportingJobConfigurationTest()
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       : client_(&service_),
         fake_serial_number_(&fake_statistics_provider_)
 #else
@@ -78,7 +79,7 @@ class RealtimeReportingJobConfigurationTest : public testing::Test {
     client_.SetDMToken(kDummyToken);
     configuration_ = std::make_unique<RealtimeReportingJobConfiguration>(
         &client_, service_.configuration()->GetRealtimeReportingServerUrl(),
-        /*add_connector_url_params=*/false,
+        /*include_device_info=*/true, /*add_connector_url_params=*/false,
         base::BindOnce(&MockCallbackObserver::OnURLLoadComplete,
                        base::Unretained(&callback_observer_)));
     base::Value context(base::Value::Type::DICTIONARY);
@@ -155,7 +156,7 @@ class RealtimeReportingJobConfigurationTest : public testing::Test {
   MockCloudPolicyClient client_;
   StrictMock<MockCallbackObserver> callback_observer_;
   DeviceManagementService::Job job_;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
   class ScopedFakeSerialNumber {
    public:
@@ -173,7 +174,7 @@ class RealtimeReportingJobConfigurationTest : public testing::Test {
 };
 
 TEST_F(RealtimeReportingJobConfigurationTest, ValidatePayload) {
-  base::Optional<base::Value> payload =
+  absl::optional<base::Value> payload =
       base::JSONReader::Read(configuration_->GetPayload());
   EXPECT_TRUE(payload.has_value());
   EXPECT_EQ(kDummyToken, *payload->FindStringPath(
@@ -319,7 +320,7 @@ TEST_F(RealtimeReportingJobConfigurationTest, OnBeforeRetry_PartialBatch) {
       CreateResponseString(CreateResponse({ids[0]}, {ids[1]}, {ids[2]}));
   configuration_->OnBeforeRetry(DeviceManagementService::kSuccess,
                                 response_string);
-  base::Optional<base::Value> payload =
+  absl::optional<base::Value> payload =
       base::JSONReader::Read(configuration_->GetPayload());
   base::Value* events =
       payload->FindListKey(RealtimeReportingJobConfiguration::kEventListKey);

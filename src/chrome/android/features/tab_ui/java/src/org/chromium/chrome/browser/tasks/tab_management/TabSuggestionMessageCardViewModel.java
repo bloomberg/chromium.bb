@@ -40,6 +40,7 @@ public class TabSuggestionMessageCardViewModel {
         return new PropertyModel.Builder(MessageCardViewProperties.ALL_KEYS)
                 .with(MessageCardViewProperties.MESSAGE_TYPE,
                         MessageService.MessageType.TAB_SUGGESTION)
+                .with(MessageCardViewProperties.MESSAGE_IDENTIFIER, data.getActionType())
                 .with(MessageCardViewProperties.ICON_PROVIDER,
                         TabSuggestionMessageCardViewModel::getIconDrawable)
                 .with(MessageCardViewProperties.UI_DISMISS_ACTION_PROVIDER, uiDismissActionProvider)
@@ -54,6 +55,7 @@ public class TabSuggestionMessageCardViewModel {
                         dismissButtonContextDescription)
                 .with(MessageCardViewProperties.IS_ICON_VISIBLE, true)
                 .with(MessageCardViewProperties.IS_INCOGNITO, false)
+                .with(MessageCardViewProperties.SHOULD_SHOW_IN_INCOGNITO, false)
                 .with(CARD_TYPE, MESSAGE)
                 .with(CARD_ALPHA, 1f)
                 .build();

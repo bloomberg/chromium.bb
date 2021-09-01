@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_legacy_version_encapsulator.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/quic_legacy_version_encapsulator.h"
+#include "quic/core/crypto/crypto_handshake_message.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
 
 namespace quic {
 
@@ -46,12 +45,12 @@ void QuicLegacyVersionEncapsulator::OnSerializedPacket(
     SerializedPacket serialized_packet) {
   if (encrypted_length_ != 0) {
     unrecoverable_failure_encountered_ = true;
-    QUIC_BUG << "OnSerializedPacket called twice";
+    QUIC_BUG(quic_bug_10615_1) << "OnSerializedPacket called twice";
     return;
   }
   if (serialized_packet.encrypted_length == 0) {
     unrecoverable_failure_encountered_ = true;
-    QUIC_BUG << "OnSerializedPacket called with empty packet";
+    QUIC_BUG(quic_bug_10615_2) << "OnSerializedPacket called with empty packet";
     return;
   }
   encrypted_length_ = serialized_packet.encrypted_length;
@@ -61,8 +60,8 @@ void QuicLegacyVersionEncapsulator::OnUnrecoverableError(
     QuicErrorCode error,
     const std::string& error_details) {
   unrecoverable_failure_encountered_ = true;
-  QUIC_BUG << "QuicLegacyVersionEncapsulator received error " << error << ": "
-           << error_details;
+  QUIC_BUG(quic_bug_10615_3) << "QuicLegacyVersionEncapsulator received error "
+                             << error << ": " << error_details;
 }
 
 bool QuicLegacyVersionEncapsulator::ShouldGeneratePacket(
@@ -99,8 +98,8 @@ QuicPacketLength QuicLegacyVersionEncapsulator::Encapsulate(
   outer_chlo.SetStringPiece(kSNI, sni);
   outer_chlo.SetStringPiece(kQLVE, inner_packet);
   const QuicData& serialized_outer_chlo = outer_chlo.GetSerialized();
-  DCHECK(!LegacyVersionForEncapsulation().UsesCryptoFrames());
-  DCHECK(LegacyVersionForEncapsulation().UsesQuicCrypto());
+  QUICHE_DCHECK(!LegacyVersionForEncapsulation().UsesCryptoFrames());
+  QUICHE_DCHECK(LegacyVersionForEncapsulation().UsesQuicCrypto());
   QuicStreamFrame outer_stream_frame(
       QuicUtils::GetCryptoStreamId(
           LegacyVersionForEncapsulation().transport_version),
@@ -120,23 +119,26 @@ QuicPacketLength QuicLegacyVersionEncapsulator::Encapsulate(
   outer_creator.SetTransmissionType(NOT_RETRANSMISSION);
   if (!outer_creator.AddPaddedSavedFrame(QuicFrame(outer_stream_frame),
                                          NOT_RETRANSMISSION)) {
-    QUIC_BUG << "Failed to add Legacy Version Encapsulation stream frame "
-                "(max packet length is "
-             << outer_creator.max_packet_length() << ") " << outer_stream_frame;
+    QUIC_BUG(quic_bug_10615_4)
+        << "Failed to add Legacy Version Encapsulation stream frame "
+           "(max packet length is "
+        << outer_creator.max_packet_length() << ") " << outer_stream_frame;
     return 0;
   }
   outer_creator.FlushCurrentPacket();
   const QuicPacketLength encrypted_length = creator_delegate.encrypted_length_;
   if (creator_delegate.unrecoverable_failure_encountered_ ||
       encrypted_length == 0) {
-    QUIC_BUG << "Failed to perform Legacy Version Encapsulation of "
-             << inner_packet.length() << " bytes";
+    QUIC_BUG(quic_bug_10615_5)
+        << "Failed to perform Legacy Version Encapsulation of "
+        << inner_packet.length() << " bytes";
     return 0;
   }
   if (encrypted_length > kMaxOutgoingPacketSize) {
-    QUIC_BUG << "Legacy Version Encapsulation outer creator generated a "
-                "packet with unexpected length "
-             << encrypted_length;
+    QUIC_BUG(quic_bug_10615_6)
+        << "Legacy Version Encapsulation outer creator generated a "
+           "packet with unexpected length "
+        << encrypted_length;
     return 0;
   }
 

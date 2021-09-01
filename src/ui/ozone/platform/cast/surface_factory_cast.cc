@@ -105,8 +105,9 @@ SurfaceFactoryCast::GetAllowedGLImplementations() {
   return impls;
 }
 
-GLOzone* SurfaceFactoryCast::GetGLOzone(gl::GLImplementation implementation) {
-  switch (implementation) {
+GLOzone* SurfaceFactoryCast::GetGLOzone(
+    const gl::GLImplementationParts& implementation) {
+  switch (implementation.gl) {
     case gl::kGLImplementationEGLGLES2:
       return egl_implementation_.get();
     default:
@@ -128,7 +129,7 @@ scoped_refptr<gfx::NativePixmap> SurfaceFactoryCast::CreateNativePixmap(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    base::Optional<gfx::Size> framebuffer_size) {
+    absl::optional<gfx::Size> framebuffer_size) {
   DCHECK(!framebuffer_size || framebuffer_size == size);
   return base::MakeRefCounted<CastPixmap>();
 }

@@ -127,7 +127,7 @@ void BroadcastChannel::OnMessage(BlinkCloneableMessage message) {
   // must be associated with the responsible document specified by that
   // target BroadcastChannel object's BroadcastChannel settings object.
   // </spec>
-  EnqueueEvent(*event, TaskType::kDOMManipulation);
+  DispatchEvent(*event);
 }
 
 void BroadcastChannel::OnError() {
@@ -142,7 +142,7 @@ BroadcastChannel::BroadcastChannel(ExecutionContext* execution_context,
       feature_handle_for_scheduler_(
           execution_context->GetScheduler()->RegisterFeature(
               SchedulingPolicy::Feature::kBroadcastChannel,
-              {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
+              {SchedulingPolicy::DisableBackForwardCache()})) {
   mojo::Remote<mojom::blink::BroadcastChannelProvider>& provider =
       GetThreadSpecificProvider();
 

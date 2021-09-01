@@ -98,9 +98,11 @@ class PresubmitApi(recipe_api.RecipeApi):
       '--issue', self.m.tryserver.gerrit_change.change,
       '--patchset', self.m.tryserver.gerrit_change.patchset,
       '--gerrit_url', 'https://%s' % self.m.tryserver.gerrit_change.host,
+      '--gerrit_project', self.m.tryserver.gerrit_change.project,
+      '--gerrit_branch', self.m.tryserver.gerrit_change_target_ref,
       '--gerrit_fetch',
     ]
-    if self.m.cq.state == self.m.cq.DRY:
+    if self.m.cq.active and self.m.cq.run_mode == self.m.cq.DRY_RUN:
       presubmit_args.append('--dry_run')
 
     presubmit_args.extend([
@@ -108,7 +110,6 @@ class PresubmitApi(recipe_api.RecipeApi):
       '--commit',
       '--verbose', '--verbose',
       '--skip_canned', 'CheckTreeIsOpen',
-      '--skip_canned', 'CheckBuildbotPendingBuilds',
       '--upstream', upstream,  # '' if not in bot_update mode.
     ])
 

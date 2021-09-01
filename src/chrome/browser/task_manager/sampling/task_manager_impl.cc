@@ -18,6 +18,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/task_manager/providers/browser_process_task_provider.h"
 #include "chrome/browser/task_manager/providers/child_process_task_provider.h"
 #include "chrome/browser/task_manager/providers/fallback_task_provider.h"
@@ -38,12 +39,14 @@
 #include "services/network/public/cpp/features.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/process/arc_process_service.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/arc/process/arc_process_service.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/task_manager/providers/arc/arc_process_task_provider.h"
+#include "chrome/browser/task_manager/providers/crosapi/crosapi_task_provider_ash.h"
 #include "chrome/browser/task_manager/providers/vm/vm_process_task_provider.h"
 #include "components/arc/arc_util.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace task_manager {
 
@@ -52,26 +55,7 @@ namespace {
 base::LazyInstance<TaskManagerImpl>::DestructorAtExit
     lazy_task_manager_instance = LAZY_INSTANCE_INITIALIZER;
 
-int64_t CalculateNewBytesTransferred(int64_t this_refresh_bytes,
-                                     int64_t last_refresh_bytes) {
-  // Network Service could have restarted between the refresh, causing the
-  // accumulator to be cleared.
-  if (this_refresh_bytes < last_refresh_bytes)
-    return this_refresh_bytes;
-
-  return this_refresh_bytes - last_refresh_bytes;
-}
-
 }  // namespace
-
-size_t BytesTransferredKey::Hasher::operator()(
-    const BytesTransferredKey& key) const {
-  return base::HashInts(key.child_id, key.route_id);
-}
-
-bool BytesTransferredKey::operator==(const BytesTransferredKey& other) const {
-  return child_id == other.child_id && route_id == other.route_id;
-}
 
 TaskManagerImpl::TaskManagerImpl()
     : on_background_data_ready_callback_(base::BindRepeating(
@@ -101,15 +85,23 @@ TaskManagerImpl::TaskManagerImpl()
       std::move(primary_subproviders),
       std::make_unique<RenderProcessHostTaskProvider>()));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (arc::IsArcAvailable())
     task_providers_.push_back(std::make_unique<ArcProcessTaskProvider>());
   task_providers_.push_back(std::make_unique<VmProcessTaskProvider>());
   arc_shared_sampler_ = std::make_unique<ArcSharedSampler>();
-#endif  // defined(OS_CHROMEOS)
+
+  if (crosapi::browser_util::IsLacrosEnabled()) {
+    std::unique_ptr<CrosapiTaskProviderAsh> task_provider =
+        std::make_unique<CrosapiTaskProviderAsh>();
+    crosapi_task_provider_ = task_provider.get();
+    task_providers_.push_back(std::move(task_provider));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 TaskManagerImpl::~TaskManagerImpl() {
+  StopUpdating();
 }
 
 // static
@@ -117,6 +109,11 @@ TaskManagerImpl* TaskManagerImpl::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   return lazy_task_manager_instance.Pointer();
+}
+
+bool TaskManagerImpl::IsCreated() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return lazy_task_manager_instance.IsCreated();
 }
 
 void TaskManagerImpl::ActivateTask(TaskId task_id) {
@@ -231,11 +228,11 @@ bool TaskManagerImpl::IsTaskOnBackgroundedProcess(TaskId task_id) const {
   return GetTaskGroupByTaskId(task_id)->is_backgrounded();
 }
 
-const base::string16& TaskManagerImpl::GetTitle(TaskId task_id) const {
+const std::u16string& TaskManagerImpl::GetTitle(TaskId task_id) const {
   return GetTaskByTaskId(task_id)->title();
 }
 
-base::string16 TaskManagerImpl::GetProfileName(TaskId task_id) const {
+std::u16string TaskManagerImpl::GetProfileName(TaskId task_id) const {
   return GetTaskByTaskId(task_id)->GetProfileName();
 }
 
@@ -271,11 +268,11 @@ void TaskManagerImpl::GetTerminationStatus(TaskId task_id,
 }
 
 int64_t TaskManagerImpl::GetNetworkUsage(TaskId task_id) const {
-  return GetTaskByTaskId(task_id)->network_usage_rate();
+  return GetTaskByTaskId(task_id)->GetNetworkUsageRate();
 }
 
 int64_t TaskManagerImpl::GetCumulativeNetworkUsage(TaskId task_id) const {
-  return GetTaskByTaskId(task_id)->cumulative_network_usage();
+  return GetTaskByTaskId(task_id)->GetCumulativeNetworkUsage();
 }
 
 int64_t TaskManagerImpl::GetProcessTotalNetworkUsage(TaskId task_id) const {
@@ -328,7 +325,7 @@ int TaskManagerImpl::GetKeepaliveCount(TaskId task_id) const {
 
 const TaskIdList& TaskManagerImpl::GetTaskIdsList() const {
   DCHECK(is_running_) << "Task manager is not running. You must observe the "
-      "task manager for it to start running";
+                         "task manager for it to start running";
 
   if (sorted_task_ids_.empty()) {
     // |comparator| groups and sorts by subtask-ness (to push all subtasks to be
@@ -424,6 +421,20 @@ const TaskIdList& TaskManagerImpl::GetTaskIdsList() const {
         }
       }
     }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    if (crosapi_task_provider_) {
+      // Lacros tasks have been pre-sorted in lacros. Place them at the
+      // end of |sorted_task_ids| in the same order they are returned from
+      // crosapi.
+      for (const auto& task_id : crosapi_task_provider_->GetSortedTaskIds()) {
+        Task* task = GetTaskByTaskId(task_id);
+        if (task)
+          sorted_task_ids_.push_back(task_id);
+      }
+    }
+#endif  //  BUILDFLAG(IS_CHROMEOS_ASH)
+
     DCHECK_EQ(num_tasks, sorted_task_ids_.size());
   }
 
@@ -433,7 +444,7 @@ const TaskIdList& TaskManagerImpl::GetTaskIdsList() const {
 TaskIdList TaskManagerImpl::GetIdsOfTasksSharingSameProcess(
     TaskId task_id) const {
   DCHECK(is_running_) << "Task manager is not running. You must observe the "
-      "task manager for it to start running";
+                         "task manager for it to start running";
 
   TaskIdList result;
   TaskGroup* group = GetTaskGroupByTaskId(task_id);
@@ -470,18 +481,22 @@ void TaskManagerImpl::TaskAdded(Task* task) {
   const base::ProcessId proc_id = task->process_id();
   const TaskId task_id = task->task_id();
   const bool is_running_in_vm = task->IsRunningInVM();
-
+  const bool is_running_in_lacros = task->GetType() == Task::LACROS;
   TaskManagerImpl::PidToTaskGroupMap& task_group_map =
       is_running_in_vm ? arc_vm_task_groups_by_proc_id_
-                       : task_groups_by_proc_id_;
+                       : is_running_in_lacros ? crosapi_task_groups_by_proc_id_
+                                              : task_groups_by_proc_id_;
 
   std::unique_ptr<TaskGroup>& task_group = task_group_map[proc_id];
   if (!task_group) {
-    task_group.reset(new TaskGroup(task->process_handle(), proc_id,
-                                   is_running_in_vm,
-                                   on_background_data_ready_callback_,
-                                   shared_sampler_, blocking_pool_runner_));
-#if defined(OS_CHROMEOS)
+    task_group = std::make_unique<TaskGroup>(
+        task->process_handle(), proc_id, is_running_in_vm,
+        on_background_data_ready_callback_, shared_sampler_,
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+        is_running_in_lacros ? crosapi_task_provider_ : nullptr,
+#endif
+        blocking_pool_runner_);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     if (task->GetType() == Task::ARC)
       task_group->SetArcSampler(arc_shared_sampler_.get());
 #endif
@@ -503,10 +518,12 @@ void TaskManagerImpl::TaskRemoved(Task* task) {
   const base::ProcessId proc_id = task->process_id();
   const TaskId task_id = task->task_id();
   const bool is_running_in_vm = task->IsRunningInVM();
+  const bool is_running_in_lacros = task->GetType() == Task::LACROS;
 
   TaskManagerImpl::PidToTaskGroupMap& task_group_map =
       is_running_in_vm ? arc_vm_task_groups_by_proc_id_
-                       : task_groups_by_proc_id_;
+                       : is_running_in_lacros ? crosapi_task_groups_by_proc_id_
+                                              : task_groups_by_proc_id_;
 
   DCHECK(task_group_map.count(proc_id));
 
@@ -528,41 +545,31 @@ void TaskManagerImpl::TaskUnresponsive(Task* task) {
   NotifyObserversOnTaskUnresponsive(task->task_id());
 }
 
-void TaskManagerImpl::OnTotalNetworkUsages(
-    std::vector<network::mojom::NetworkUsagePtr> total_network_usages) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void TaskManagerImpl::TaskIdsListToBeInvalidated() {
+  sorted_task_ids_.clear();
+  NotifyObserversOnRefresh(GetTaskIdsList());
+}
+#endif  //  BUILDFLAG(IS_CHROMEOS_ASH)
+
+void TaskManagerImpl::UpdateAccumulatedStatsNetworkForRoute(
+    int process_id,
+    int route_id,
+    int64_t recv_bytes,
+    int64_t sent_bytes) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  BytesTransferredMap new_total_network_usages_map;
-  for (const auto& entry : total_network_usages) {
-    BytesTransferredKey process_info = {entry->process_id, entry->routing_id};
-    BytesTransferredParam total_bytes_transferred = {
-        entry->total_bytes_received, entry->total_bytes_sent};
-    new_total_network_usages_map[process_info] = total_bytes_transferred;
-
-    auto last_refresh_usage =
-        last_refresh_total_network_usages_map_[process_info];
-    BytesTransferredParam new_bytes_transferred;
-    new_bytes_transferred.byte_read_count =
-        CalculateNewBytesTransferred(total_bytes_transferred.byte_read_count,
-                                     last_refresh_usage.byte_read_count);
-    new_bytes_transferred.byte_sent_count =
-        CalculateNewBytesTransferred(total_bytes_transferred.byte_sent_count,
-                                     last_refresh_usage.byte_sent_count);
-    DCHECK_GE(new_bytes_transferred.byte_read_count, 0);
-    DCHECK_GE(new_bytes_transferred.byte_sent_count, 0);
-
-    if (!UpdateTasksWithBytesTransferred(process_info, new_bytes_transferred)) {
-      // We can't match a task to the notification.  That might mean the
-      // tab that started a download was closed, or the request may have had
-      // no originating task associated with it in the first place.
-      //
-      // Orphaned/unaccounted activity is credited to the Browser process.
-      BytesTransferredKey browser_process_key = {
-          content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE};
-      UpdateTasksWithBytesTransferred(browser_process_key,
-                                      new_bytes_transferred);
-    }
+  if (!is_running_)
+    return;
+  Task* task = GetTaskByRoute(process_id, route_id);
+  if (!task) {
+    // Orphaned/unaccounted activity is credited to the Browser process.
+    task = GetTaskByRoute(content::ChildProcessHost::kInvalidUniqueID,
+                          MSG_ROUTING_NONE);
   }
-  last_refresh_total_network_usages_map_.swap(new_total_network_usages_map);
+  if (!task)
+    return;
+  task->OnNetworkBytesRead(recv_bytes);
+  task->OnNetworkBytesSent(sent_bytes);
 }
 
 void TaskManagerImpl::OnVideoMemoryUsageStatsUpdate(
@@ -608,17 +615,8 @@ void TaskManagerImpl::Refresh() {
         ->RequestPrivateMemoryFootprint(base::kNullProcessId,
                                         std::move(callback));
   }
-
-  if (TaskManagerObserver::IsResourceRefreshEnabled(
-          REFRESH_TYPE_NETWORK_USAGE, enabled_resources_flags())) {
-    content::GetNetworkService()->GetTotalNetworkUsages(
-        base::BindOnce(&TaskManagerImpl::OnTotalNetworkUsages,
-                       weak_ptr_factory_.GetWeakPtr()));
-  }
-
   for (auto& groups_itr : task_groups_by_proc_id_) {
-    groups_itr.second->Refresh(gpu_memory_stats_,
-                               GetCurrentRefreshTime(),
+    groups_itr.second->Refresh(gpu_memory_stats_, GetCurrentRefreshTime(),
                                enabled_resources_flags());
   }
 
@@ -627,12 +625,17 @@ void TaskManagerImpl::Refresh() {
                                enabled_resources_flags());
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  for (auto& groups_itr : crosapi_task_groups_by_proc_id_) {
+    groups_itr.second->Refresh(gpu_memory_stats_, GetCurrentRefreshTime(),
+                               enabled_resources_flags());
+  }
+
   if (TaskManagerObserver::IsResourceRefreshEnabled(
           REFRESH_TYPE_MEMORY_FOOTPRINT, enabled_resources_flags())) {
     arc_shared_sampler_->Refresh();
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   NotifyObserversOnRefresh(GetTaskIdsList());
 }
@@ -662,6 +665,7 @@ void TaskManagerImpl::StopUpdating() {
 
   task_groups_by_proc_id_.clear();
   arc_vm_task_groups_by_proc_id_.clear();
+  crosapi_task_groups_by_proc_id_.clear();
   task_groups_by_task_id_.clear();
   sorted_task_ids_.clear();
 }
@@ -673,22 +677,6 @@ Task* TaskManagerImpl::GetTaskByRoute(int child_id, int route_id) const {
       return task;
   }
   return nullptr;
-}
-
-bool TaskManagerImpl::UpdateTasksWithBytesTransferred(
-    const BytesTransferredKey& key,
-    const BytesTransferredParam& param) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  Task* task = GetTaskByRoute(key.child_id, key.route_id);
-  if (task) {
-    task->OnNetworkBytesRead(param.byte_read_count);
-    task->OnNetworkBytesSent(param.byte_sent_count);
-    return true;
-  }
-
-  // Couldn't match the bytes to any existing task.
-  return false;
 }
 
 TaskGroup* TaskManagerImpl::GetTaskGroupByTaskId(TaskId task_id) const {

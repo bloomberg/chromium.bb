@@ -36,6 +36,29 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Whether the new OOBE layout is enabled.
+     *
+     * @type {boolean}
+     */
+    newLayoutEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.valueExists('newLayoutEnabled') &&
+            loadTimeData.getBoolean('newLayoutEnabled');
+      },
+      readOnly: true,
+    },
+
+    /**
+     * Whether a verbose footer will be shown to the user containing some legal
+     *  information such as the Google address. Currently shown for Canada only.
+     */
+    hasLegalFooter_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
@@ -44,9 +67,7 @@ Polymer({
   // clang-format off
   EXTERNAL_API: [
     'updateA11ySettingsButtonVisibility',
-    'updateA11yNavigationButtonToggle',
-    'setOptInVisibility',
-    'setEmailToggleState'
+    'updateA11yNavigationButtonToggle'
   ],
   // clang-format on
 
@@ -57,13 +78,23 @@ Polymer({
 
   /** Shortcut method to control animation */
   setAnimationPlay_(played) {
-    this.$['marketingOptInOverviewDialog']
-        .querySelector('.marketing-animation')
-        .setPlay(played);
+    if (this.newLayoutEnabled_) {
+      this.$.newAnimation.setPlay(played);
+    } else {
+      this.$.oldAnimation.setPlay(played);
+    }
   },
 
   /** Called when dialog is shown */
-  onBeforeShow() {
+  onBeforeShow(data) {
+    this.marketingOptInVisible_ =
+        'optInVisibility' in data && data.optInVisibility;
+    this.$.chromebookUpdatesOption.checked =
+        'optInDefaultState' in data && data.optInDefaultState;
+    this.hasLegalFooter_ =
+        'legalFooterVisibility' in data && data.legalFooterVisibility;
+    this.hasNewLayoutOrLegalFooter =
+        this.newLayoutEnabled_ || this.hasLegalFooter_;
     this.isAccessibilitySettingsShown_ = false;
     this.setAnimationPlay_(true);
     this.$.marketingOptInOverviewDialog.show();
@@ -100,21 +131,6 @@ Polymer({
    */
   updateA11yNavigationButtonToggle(enabled) {
     this.$.a11yNavButtonToggle.checked = enabled;
-  },
-
-  /**
-   * @param {boolean} visible Whether the email opt-in toggle should be visible
-   */
-  setOptInVisibility(visible) {
-    this.marketingOptInVisible_ = visible;
-  },
-
-  /**
-   * @param {boolean} checked Whether the email opt-in toggle should be checked
-   * or unchecked.
-   */
-  setEmailToggleState(checked) {
-    this.$.chromebookUpdatesOption.checked = checked;
   },
 
   /**

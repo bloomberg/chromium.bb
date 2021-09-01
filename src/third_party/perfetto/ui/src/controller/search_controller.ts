@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {TRACE_MARGIN_TIME_S} from '../common/constants';
 import {Engine} from '../common/engine';
 import {slowlyCountRows} from '../common/query_iterator';
 import {CurrentSearchResults, SearchSummary} from '../common/search_data';
@@ -79,14 +80,14 @@ export class SearchController extends Controller<'main'> {
     }
     const newSpan = new TimeSpan(visibleState.startSec, visibleState.endSec);
     const newSearch = omniboxState.omnibox;
-    const newResolution = visibleState.resolution;
+    let newResolution = visibleState.resolution;
     if (this.previousSpan.contains(newSpan) &&
         this.previousResolution === newResolution &&
         newSearch === this.previousSearch) {
       return;
     }
     this.previousSpan = new TimeSpan(
-        Math.max(newSpan.start - newSpan.duration, 0),
+        Math.max(newSpan.start - newSpan.duration, -TRACE_MARGIN_TIME_S),
         newSpan.end + newSpan.duration);
     this.previousResolution = newResolution;
     this.previousSearch = newSearch;
@@ -107,8 +108,20 @@ export class SearchController extends Controller<'main'> {
       return;
     }
 
-    const startNs = Math.round(newSpan.start * 1e9);
-    const endNs = Math.round(newSpan.end * 1e9);
+    let startNs = Math.round(newSpan.start * 1e9);
+    let endNs = Math.round(newSpan.end * 1e9);
+
+    // TODO(hjd): We shouldn't need to be so defensive here:
+    if (!Number.isFinite(startNs)) {
+      startNs = 0;
+    }
+    if (!Number.isFinite(endNs)) {
+      endNs = 1;
+    }
+    if (!Number.isFinite(newResolution)) {
+      newResolution = 1;
+    }
+
     this.updateInProgress = true;
     const computeSummary =
         this.update(newSearch, startNs, endNs, newResolution).then(summary => {

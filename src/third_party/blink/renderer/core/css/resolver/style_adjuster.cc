@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -67,7 +66,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/transforms/transform_operations.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "ui/base/ui_base_features.h"
 
 namespace blink {
@@ -209,8 +207,9 @@ static bool OverridesTextDecorationColors(const Element* element) {
          (IsA<HTMLFontElement>(element) || IsA<HTMLAnchorElement>(element));
 }
 
-// FIXME: This helper is only needed because pseudoStyleForElement passes a null
-// element to adjustComputedStyle, so we can't just use element->isInTopLayer().
+// FIXME: This helper is only needed because ResolveStyle passes a null
+// element to AdjustComputedStyle for pseudo-element styles, so we can't just
+// use element->isInTopLayer().
 static bool IsInTopLayer(const Element* element, const ComputedStyle& style) {
   return (element && element->IsInTopLayer()) ||
          style.StyleType() == kPseudoIdBackdrop;
@@ -239,17 +238,6 @@ static void AdjustStyleForFirstLetter(ComputedStyle& style) {
 
   // Force inline display (except for floating first-letters).
   style.SetDisplay(style.IsFloating() ? EDisplay::kBlock : EDisplay::kInline);
-
-  // CSS2 says first-letter can't be positioned.
-  style.SetPosition(EPosition::kStatic);
-}
-
-static void AdjustStyleForFirstLine(ComputedStyle& style) {
-  if (style.StyleType() != kPseudoIdFirstLine)
-    return;
-
-  // Force inline display.
-  style.SetDisplay(EDisplay::kInline);
 }
 
 static void AdjustStyleForMarker(ComputedStyle& style,
@@ -264,7 +252,9 @@ static void AdjustStyleForMarker(ComputedStyle& style,
        !parent_style.IsInsideListElement());
 
   if (is_inside) {
-    auto margins = ListMarker::InlineMarginsForInside(style, parent_style);
+    Document& document = parent_element.GetDocument();
+    auto margins =
+        ListMarker::InlineMarginsForInside(document, style, parent_style);
     style.SetMarginStart(Length::Fixed(margins.first));
     style.SetMarginEnd(Length::Fixed(margins.second));
   } else {
@@ -394,17 +384,6 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsA<HTMLSummaryElement>(element)) {
-    // <summary> should be a list item by default, but currently it's a block
-    // and the disclosure symbol is not a ::marker (bug 590014). If an author
-    // specifies 'display: list-item', the <summary> would seem to have two
-    // markers (the real one and the disclosure symbol). To avoid this, compute
-    // to 'display: block'. This adjustment should go away with bug 590014.
-    if (style.Display() == EDisplay::kListItem)
-      style.SetDisplay(EDisplay::kBlock);
-    return;
-  }
-
   if (style.Display() == EDisplay::kContents) {
     // See https://drafts.csswg.org/css-display/#unbox-html
     // Some of these elements are handled with other adjustments above.
@@ -418,7 +397,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   }
 }
 
-void StyleAdjuster::AdjustOverflow(ComputedStyle& style) {
+void StyleAdjuster::AdjustOverflow(ComputedStyle& style, Element* element) {
   DCHECK(style.OverflowX() != EOverflow::kVisible ||
          style.OverflowY() != EOverflow::kVisible);
 
@@ -455,6 +434,11 @@ void StyleAdjuster::AdjustOverflow(ComputedStyle& style) {
     else if (style.OverflowY() == EOverflow::kClip)
       style.SetOverflowY(EOverflow::kHidden);
   }
+  if (element && (style.OverflowX() == EOverflow::kClip ||
+                  style.OverflowY() == EOverflow::kClip)) {
+    UseCounter::Count(element->GetDocument(),
+                      WebFeature::kOverflowClipAlongEitherAxis);
+  }
 }
 
 static void AdjustStyleForDisplay(ComputedStyle& style,
@@ -485,14 +469,6 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
       style.StyleType() == kPseudoIdNone &&
       style.GetWritingMode() != layout_parent_style.GetWritingMode())
     style.SetDisplay(EDisplay::kInlineBlock);
-
-  // Cannot support position: sticky for table columns and column groups because
-  // current code is only doing background painting through columns / column
-  // groups.
-  if ((style.Display() == EDisplay::kTableColumnGroup ||
-       style.Display() == EDisplay::kTableColumn) &&
-      style.GetPosition() == EPosition::kSticky)
-    style.SetPosition(EPosition::kStatic);
 
   // writing-mode does not apply to table row groups, table column groups, table
   // rows, and table columns.
@@ -636,6 +612,17 @@ static void AdjustStateForContentVisibility(ComputedStyle& style,
   context->AdjustElementStyle(&style);
 }
 
+void StyleAdjuster::AdjustForForcedColorsMode(ComputedStyle& style) {
+  if (!style.InForcedColorsMode() ||
+      style.ForcedColorAdjust() == EForcedColorAdjust::kNone)
+    return;
+
+  style.SetTextShadow(ComputedStyleInitialValues::InitialTextShadow());
+  style.SetBoxShadow(ComputedStyleInitialValues::InitialBoxShadow());
+  if (!style.HasUrlBackgroundImage())
+    style.ClearBackgroundImage();
+}
+
 void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
                                         Element* element) {
   DCHECK(state.LayoutParentStyle());
@@ -680,27 +667,12 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
 
     // We don't adjust the first letter style earlier because we may change the
-    // display setting in adjustStyeForTagName() above.
+    // display setting in AdjustStyleForHTMLElement() above.
     AdjustStyleForFirstLetter(style);
-    AdjustStyleForFirstLine(style);
     AdjustStyleForMarker(style, parent_style, state.GetElement());
 
     AdjustStyleForDisplay(style, layout_parent_style, element,
                           element ? &element->GetDocument() : nullptr);
-
-    // TOOD(crbug.com/1146925): Sticky content in a scrollable FIELDSET triggers
-    // a DHCECK failure in |StickyPositionScrollingConstraints::
-    // AncestorContainingBlockOffset()|. We disable it until the root cause is
-    // fixed.
-    if (style.GetPosition() == EPosition::kSticky && element) {
-      for (const Node& ancestor : FlatTreeTraversal::AncestorsOf(*element)) {
-        if (const auto* fieldset = DynamicTo<HTMLFieldSetElement>(ancestor)) {
-          if (!fieldset->ComputedStyleRef().IsOverflowVisibleAlongBothAxes())
-            style.SetPosition(EPosition::kStatic);
-          break;
-        }
-      }
-    }
 
     // If this is a child of a LayoutNGCustom, we need the name of the parent
     // layout function for invalidation purposes.
@@ -734,13 +706,14 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
   if (style.OverflowX() != EOverflow::kVisible ||
       style.OverflowY() != EOverflow::kVisible)
-    AdjustOverflow(style);
+    AdjustOverflow(style, element);
 
   // overflow-clip-margin only applies if 'overflow: clip' is set along both
-  // axis.
-  if (style.OverflowX() != EOverflow::kClip ||
-      style.OverflowY() != EOverflow::kClip) {
-    style.SetOverflowClipMargin(LayoutUnit());
+  // axis or 'contain: paint'.
+  if (!style.ContainsPaint() && !(style.OverflowX() == EOverflow::kClip &&
+                                  style.OverflowY() == EOverflow::kClip)) {
+    style.SetOverflowClipMargin(
+        ComputedStyleInitialValues::InitialOverflowClipMargin());
   }
 
   if (StopPropagateTextDecorations(style, element))
@@ -755,6 +728,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // layers.
   style.AdjustBackgroundLayers();
   style.AdjustMaskLayers();
+
+  // A subset of CSS properties should be forced at computed value time:
+  // https://drafts.csswg.org/css-color-adjust-1/#forced-colors-properties.
+  AdjustForForcedColorsMode(style);
 
   // Let the theme also have a crack at adjusting the style.
   LayoutTheme::GetTheme().AdjustStyle(element, style);

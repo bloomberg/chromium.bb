@@ -2,11 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+
+#include "components/viz/test/test_context_provider.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
-#include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_blob_htmlcanvaselement_htmlimageelement_htmlvideoelement_imagebitmap_imagedata_offscreencanvas_svgimageelement_videoframe.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_union_cssimagevalue_htmlcanvaselement_htmlimageelement_htmlvideoelement_imagebitmap_offscreencanvas_svgimageelement_videoframe.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_init.h"
+#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/modules/canvas/imagebitmap/image_bitmap_factories.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame_handle.h"
+#include "third_party/blink/renderer/modules/webcodecs/webcodecs_logger.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
+#include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
+#include "third_party/blink/renderer/platform/graphics/test/gpu_test_utils.h"
+#include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/heap/thread_state.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -14,11 +31,24 @@ namespace blink {
 
 namespace {
 
+ImageBitmap* ToImageBitmap(V8TestingScope* v8_scope, ScriptValue value) {
+  return NativeValueTraits<ImageBitmap>::NativeValue(
+      v8_scope->GetIsolate(), value.V8Value(), v8_scope->GetExceptionState());
+}
+
 class VideoFrameTest : public testing::Test {
  public:
+  void SetUp() override {
+    test_context_provider_ = viz::TestContextProvider::Create();
+    InitializeSharedGpuContext(test_context_provider_.get());
+  }
+
+  void TearDown() override { SharedGpuContext::ResetForTesting(); }
+
   VideoFrame* CreateBlinkVideoFrame(
-      scoped_refptr<media::VideoFrame> media_frame) {
-    return MakeGarbageCollected<VideoFrame>(std::move(media_frame));
+      scoped_refptr<media::VideoFrame> media_frame,
+      ExecutionContext* context) {
+    return MakeGarbageCollected<VideoFrame>(std::move(media_frame), context);
   }
   VideoFrame* CreateBlinkVideoFrameFromHandle(
       scoped_refptr<VideoFrameHandle> handle) {
@@ -44,36 +74,45 @@ class VideoFrameTest : public testing::Test {
     media_frame->set_timestamp(timestamp);
     return media_frame;
   }
+
+ private:
+  scoped_refptr<viz::TestContextProvider> test_context_provider_;
 };
 
 TEST_F(VideoFrameTest, ConstructorAndAttributes) {
+  V8TestingScope scope;
+
   scoped_refptr<media::VideoFrame> media_frame = CreateBlackMediaVideoFrame(
       base::TimeDelta::FromMicroseconds(1000), media::PIXEL_FORMAT_I420,
       gfx::Size(112, 208) /* coded_size */,
       gfx::Size(100, 200) /* visible_size */);
-  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+  VideoFrame* blink_frame =
+      CreateBlinkVideoFrame(media_frame, scope.GetExecutionContext());
 
   EXPECT_EQ(1000u, blink_frame->timestamp().value());
   EXPECT_EQ(112u, blink_frame->codedWidth());
   EXPECT_EQ(208u, blink_frame->codedHeight());
-  EXPECT_EQ(100u, blink_frame->cropWidth());
-  EXPECT_EQ(200u, blink_frame->cropHeight());
+  EXPECT_EQ(100u, blink_frame->visibleRegion()->width());
+  EXPECT_EQ(200u, blink_frame->visibleRegion()->height());
   EXPECT_EQ(media_frame, blink_frame->frame());
 
-  blink_frame->destroy();
+  blink_frame->close();
 
   EXPECT_FALSE(blink_frame->timestamp().has_value());
   EXPECT_EQ(0u, blink_frame->codedWidth());
   EXPECT_EQ(0u, blink_frame->codedHeight());
-  EXPECT_EQ(0u, blink_frame->cropWidth());
-  EXPECT_EQ(0u, blink_frame->cropHeight());
+  EXPECT_EQ(0u, blink_frame->visibleRegion()->width());
+  EXPECT_EQ(0u, blink_frame->visibleRegion()->height());
   EXPECT_EQ(nullptr, blink_frame->frame());
 }
 
-TEST_F(VideoFrameTest, FramesSharingHandleDestruction) {
+TEST_F(VideoFrameTest, FramesSharingHandleClose) {
+  V8TestingScope scope;
+
   scoped_refptr<media::VideoFrame> media_frame =
       CreateDefaultBlackMediaVideoFrame();
-  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+  VideoFrame* blink_frame =
+      CreateBlinkVideoFrame(media_frame, scope.GetExecutionContext());
 
   VideoFrame* frame_with_shared_handle =
       CreateBlinkVideoFrameFromHandle(blink_frame->handle());
@@ -82,18 +121,21 @@ TEST_F(VideoFrameTest, FramesSharingHandleDestruction) {
   // media::VideoFrame reference.
   EXPECT_EQ(media_frame, frame_with_shared_handle->frame());
 
-  // Destroying a frame should invalidate all frames sharing the same handle.
-  blink_frame->destroy();
+  // Closing a frame should invalidate all frames sharing the same handle.
+  blink_frame->close();
   EXPECT_EQ(nullptr, frame_with_shared_handle->frame());
 }
 
-TEST_F(VideoFrameTest, FramesNotSharingHandleDestruction) {
+TEST_F(VideoFrameTest, FramesNotSharingHandleClose) {
+  V8TestingScope scope;
+
   scoped_refptr<media::VideoFrame> media_frame =
       CreateDefaultBlackMediaVideoFrame();
-  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+  VideoFrame* blink_frame =
+      CreateBlinkVideoFrame(media_frame, scope.GetExecutionContext());
 
-  auto new_handle =
-      base::MakeRefCounted<VideoFrameHandle>(blink_frame->frame());
+  auto new_handle = base::MakeRefCounted<VideoFrameHandle>(
+      blink_frame->frame(), scope.GetExecutionContext());
 
   VideoFrame* frame_with_new_handle =
       CreateBlinkVideoFrameFromHandle(std::move(new_handle));
@@ -101,8 +143,8 @@ TEST_F(VideoFrameTest, FramesNotSharingHandleDestruction) {
   EXPECT_EQ(media_frame, frame_with_new_handle->frame());
 
   // If a frame was created a new handle reference the same media::VideoFrame,
-  // one frame's destruction should not affect the other.
-  blink_frame->destroy();
+  // one frame's closure should not affect the other.
+  blink_frame->close();
   EXPECT_EQ(media_frame, frame_with_new_handle->frame());
 }
 
@@ -111,7 +153,8 @@ TEST_F(VideoFrameTest, ClonedFrame) {
 
   scoped_refptr<media::VideoFrame> media_frame =
       CreateDefaultBlackMediaVideoFrame();
-  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+  VideoFrame* blink_frame =
+      CreateBlinkVideoFrame(media_frame, scope.GetExecutionContext());
 
   VideoFrame* cloned_frame = blink_frame->clone(scope.GetExceptionState());
 
@@ -120,26 +163,145 @@ TEST_F(VideoFrameTest, ClonedFrame) {
   EXPECT_EQ(media_frame, cloned_frame->frame());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
 
-  blink_frame->destroy();
+  blink_frame->close();
 
-  // Destroying the original frame should not affect the cloned frame.
+  // Closing the original frame should not affect the cloned frame.
   EXPECT_EQ(media_frame, cloned_frame->frame());
 }
 
-TEST_F(VideoFrameTest, CloningDestroyedFrame) {
+TEST_F(VideoFrameTest, CloningClosedFrame) {
   V8TestingScope scope;
 
   scoped_refptr<media::VideoFrame> media_frame =
       CreateDefaultBlackMediaVideoFrame();
-  VideoFrame* blink_frame = CreateBlinkVideoFrame(media_frame);
+  VideoFrame* blink_frame =
+      CreateBlinkVideoFrame(media_frame, scope.GetExecutionContext());
 
-  blink_frame->destroy();
+  blink_frame->close();
 
   VideoFrame* cloned_frame = blink_frame->clone(scope.GetExceptionState());
 
   // No frame should have been created, and there should be an exception.
   EXPECT_EQ(nullptr, cloned_frame);
   EXPECT_TRUE(scope.GetExceptionState().HadException());
+}
+
+TEST_F(VideoFrameTest, LeakedHandlesReportLeaks) {
+  V8TestingScope scope;
+
+  // Create a handle directly instead of a video frame, to avoid dealing with
+  // the GarbageCollector.
+  scoped_refptr<media::VideoFrame> media_frame =
+      CreateDefaultBlackMediaVideoFrame();
+  auto handle = base::MakeRefCounted<VideoFrameHandle>(
+      media_frame, scope.GetExecutionContext());
+
+  // Remove the last reference to the handle without calling Invalidate().
+  handle.reset();
+
+  auto& logger = WebCodecsLogger::From(*scope.GetExecutionContext());
+
+  EXPECT_TRUE(logger.GetCloseAuditor()->were_frames_not_closed());
+}
+
+TEST_F(VideoFrameTest, InvalidatedHandlesDontReportLeaks) {
+  V8TestingScope scope;
+
+  // Create a handle directly instead of a video frame, to avoid dealing with
+  // the GarbageCollector.
+  scoped_refptr<media::VideoFrame> media_frame =
+      CreateDefaultBlackMediaVideoFrame();
+  auto handle = base::MakeRefCounted<VideoFrameHandle>(
+      media_frame, scope.GetExecutionContext());
+
+  handle->Invalidate();
+  handle.reset();
+
+  auto& logger = WebCodecsLogger::From(*scope.GetExecutionContext());
+
+  EXPECT_FALSE(logger.GetCloseAuditor()->were_frames_not_closed());
+}
+
+TEST_F(VideoFrameTest, ImageBitmapCreationAndZeroCopyRoundTrip) {
+  V8TestingScope scope;
+
+  auto* init = VideoFrameInit::Create();
+  init->setTimestamp(0);
+
+  sk_sp<SkSurface> surface(SkSurface::MakeRaster(
+      SkImageInfo::MakeN32Premul(5, 5, SkColorSpace::MakeSRGB())));
+  sk_sp<SkImage> original_image = surface->makeImageSnapshot();
+
+  const auto* default_options = ImageBitmapOptions::Create();
+  auto* image_bitmap = MakeGarbageCollected<ImageBitmap>(
+      UnacceleratedStaticBitmapImage::Create(original_image), absl::nullopt,
+      default_options);
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  auto* source = MakeGarbageCollected<V8CanvasImageSource>(image_bitmap);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  CanvasImageSourceUnion source;
+  source.SetImageBitmap(image_bitmap);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  auto* video_frame = VideoFrame::Create(scope.GetScriptState(), source, init,
+                                         scope.GetExceptionState());
+
+  EXPECT_EQ(video_frame->handle()->sk_image(), original_image);
+
+  {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    auto* ibs_source = MakeGarbageCollected<V8ImageBitmapSource>(video_frame);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    ImageBitmapSourceUnion ibs_source;
+    ibs_source.SetVideoFrame(video_frame);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    auto promise = ImageBitmapFactories::CreateImageBitmap(
+        scope.GetScriptState(), ibs_source, default_options,
+        scope.GetExceptionState());
+    ScriptPromiseTester tester(scope.GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    ASSERT_TRUE(tester.IsFulfilled());
+    auto* new_bitmap = ToImageBitmap(&scope, tester.Value());
+    ASSERT_TRUE(new_bitmap);
+
+    auto bitmap_image =
+        new_bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSwSkImage();
+    EXPECT_EQ(bitmap_image, original_image);
+  }
+
+  auto* clone = video_frame->clone(scope.GetExceptionState());
+  EXPECT_EQ(clone->handle()->sk_image(), original_image);
+}
+
+TEST_F(VideoFrameTest, VideoFrameFromGPUImageBitmap) {
+  V8TestingScope scope;
+
+  auto context_provider_wrapper = SharedGpuContext::ContextProviderWrapper();
+  CanvasResourceParams resource_params;
+  auto resource_provider = CanvasResourceProvider::CreateSharedImageProvider(
+      IntSize(100, 100), kLow_SkFilterQuality, resource_params,
+      CanvasResourceProvider::ShouldInitialize::kNo, context_provider_wrapper,
+      RasterMode::kGPU, true /*is_origin_top_left*/,
+      0u /*shared_image_usage_flags*/);
+
+  scoped_refptr<StaticBitmapImage> bitmap = resource_provider->Snapshot();
+  ASSERT_TRUE(bitmap->IsTextureBacked());
+
+  auto* image_bitmap = MakeGarbageCollected<ImageBitmap>(bitmap);
+  EXPECT_TRUE(image_bitmap);
+  EXPECT_TRUE(image_bitmap->BitmapImage()->IsTextureBacked());
+
+  auto* init = VideoFrameInit::Create();
+  init->setTimestamp(0);
+
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  auto* source = MakeGarbageCollected<V8CanvasImageSource>(image_bitmap);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  CanvasImageSourceUnion source;
+  source.SetImageBitmap(image_bitmap);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  auto* video_frame = VideoFrame::Create(scope.GetScriptState(), source, init,
+                                         scope.GetExceptionState());
+  ASSERT_TRUE(video_frame);
 }
 
 }  // namespace

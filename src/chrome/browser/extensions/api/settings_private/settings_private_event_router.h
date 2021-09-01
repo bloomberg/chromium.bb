@@ -10,14 +10,15 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/settings_private/generated_pref.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/event_router.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/settings/cros_settings.h"
 #endif
 
 namespace content {
@@ -73,10 +74,8 @@ class SettingsPrivateEventRouter
 
   PrefChangeRegistrar* FindRegistrarForPref(const std::string& pref_name);
 
-#if defined(OS_CHROMEOS)
-  using SubscriptionMap =
-      std::map<std::string,
-               std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>>;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  using SubscriptionMap = std::map<std::string, base::CallbackListSubscription>;
   SubscriptionMap cros_settings_subscription_map_;
 #endif
 

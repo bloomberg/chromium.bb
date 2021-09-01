@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test;
 
+import android.os.SystemClock;
 import android.view.KeyEvent;
 
 import androidx.test.filters.SmallTest;
@@ -82,7 +83,7 @@ public class AwContentsClientOnUnhandledKeyEventTest {
      * work.
     */
     @Test
-    @DisabledTest
+    @DisabledTest(message = "https://crbug.com/538377")
     public void testTextboxConsumesKeyEvents() throws Throwable {
         AwActivityTestRule.enableJavaScriptOnUiThread(mTestContainerView.getAwContents());
         final String data = "<html><head></head><body><textarea id='textarea0'></textarea></body>"
@@ -143,8 +144,9 @@ public class AwContentsClientOnUnhandledKeyEventTest {
     }
 
     private void dispatchDownAndUpKeyEvents(final int code) throws Throwable {
-        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, code));
-        dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, code));
+        long eventTime = SystemClock.uptimeMillis();
+        dispatchKeyEvent(new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, code, 0));
+        dispatchKeyEvent(new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_UP, code, 0));
     }
 
     private void assertUnhandledDownAndUp(final int code) {

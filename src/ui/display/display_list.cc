@@ -4,24 +4,52 @@
 
 #include "ui/display/display_list.h"
 
+#include "base/containers/flat_set.h"
 #include "base/memory/ptr_util.h"
+#include "build/build_config.h"
 #include "ui/display/display_observer.h"
 
 namespace display {
 
-DisplayListObserverLock::~DisplayListObserverLock() {
-  display_list_->DecrementObserverSuspendLockCount();
+DisplayList::DisplayList() = default;
+
+DisplayList::~DisplayList() = default;
+
+DisplayList::DisplayList(const Displays& displays,
+                         int64_t primary_id,
+                         int64_t current_id)
+    : displays_(displays), primary_id_(primary_id), current_id_(current_id) {
+#if defined(OS_FUCHSIA)
+  // TODO(crbug.com/1207996): Resolve ScenicScreen's lack of primary display.
+  if (!displays_.empty() && primary_id_ == kInvalidDisplayId)
+    primary_id_ = displays_[0].id();
+#endif  // OS_FUCHSIA
+  DCHECK(observers_.empty());
+  DCHECK(IsValid());
 }
 
-DisplayListObserverLock::DisplayListObserverLock(DisplayList* display_list)
-    : display_list_(display_list) {
-  display_list_->IncrementObserverSuspendLockCount();
+DisplayList::DisplayList(const DisplayList& other)
+    : displays_(other.displays_),
+      primary_id_(other.primary_id_),
+      current_id_(other.current_id_) {
+  DCHECK(other.observers_.empty());
+  DCHECK(observers_.empty());
+  DCHECK(IsValid());
 }
 
-DisplayList::DisplayList() {}
+DisplayList& DisplayList::operator=(const DisplayList& other) {
+  displays_ = other.displays_;
+  primary_id_ = other.primary_id_;
+  current_id_ = other.current_id_;
+  DCHECK(other.observers_.empty());
+  DCHECK(observers_.empty());
+  DCHECK(IsValid());
+  return *this;
+}
 
-DisplayList::~DisplayList() {
-  DCHECK_EQ(0, observer_suspend_lock_count_);
+bool DisplayList::operator==(const DisplayList& other) const {
+  return displays_ == other.displays_ && primary_id_ == other.primary_id_ &&
+         current_id_ == other.current_id_;
 }
 
 void DisplayList::AddObserver(DisplayObserver* observer) {
@@ -34,22 +62,24 @@ void DisplayList::RemoveObserver(DisplayObserver* observer) {
 
 DisplayList::Displays::const_iterator DisplayList::FindDisplayById(
     int64_t id) const {
-  for (auto iter = displays_.begin(); iter != displays_.end(); ++iter) {
-    if (iter->id() == id)
-      return iter;
-  }
-  return displays_.end();
+  return base::ranges::find(displays_, id, &Display::id);
 }
 
 DisplayList::Displays::const_iterator DisplayList::GetPrimaryDisplayIterator()
     const {
-  return primary_display_index_ == -1
-             ? displays_.end()
-             : displays_.begin() + primary_display_index_;
+  return FindDisplayById(primary_id_);
 }
 
-std::unique_ptr<DisplayListObserverLock> DisplayList::SuspendObserverUpdates() {
-  return base::WrapUnique(new DisplayListObserverLock(this));
+const Display& DisplayList::GetPrimaryDisplay() const {
+  Displays::const_iterator primary_iter = GetPrimaryDisplayIterator();
+  CHECK(primary_iter != displays_.end());
+  return *primary_iter;
+}
+
+const Display& DisplayList::GetCurrentDisplay() const {
+  Displays::const_iterator current_iter = FindDisplayById(current_id_);
+  CHECK(current_iter != displays_.end());
+  return *current_iter;
 }
 
 void DisplayList::AddOrUpdateDisplay(const Display& display, Type type) {
@@ -69,10 +99,10 @@ uint32_t DisplayList::UpdateDisplay(const Display& display, Type type) {
 
   Display* local_display = &(*iter);
   uint32_t changed_values = 0;
-  if (type == Type::PRIMARY &&
-      static_cast<int>(iter - displays_.begin()) !=
-          static_cast<int>(GetPrimaryDisplayIterator() - displays_.begin())) {
-    primary_display_index_ = static_cast<int>(iter - displays_.begin());
+  // TODO(crbug.com/1207996): Guard against removal of the primary designation.
+  // DCHECK(type == Type::PRIMARY || local_display->id() != primary_id_);
+  if (type == Type::PRIMARY && local_display->id() != primary_id_) {
+    primary_id_ = local_display->id();
     // ash::DisplayManager only notifies for the Display gaining primary, not
     // the one losing it.
     changed_values |= DisplayObserver::DISPLAY_METRIC_PRIMARY;
@@ -108,68 +138,86 @@ uint32_t DisplayList::UpdateDisplay(const Display& display, Type type) {
   if (local_display->GetSizeInPixel() != display.GetSizeInPixel()) {
     local_display->set_size_in_pixels(display.GetSizeInPixel());
   }
-  if (should_notify_observers()) {
-    for (DisplayObserver& observer : observers_)
-      observer.OnDisplayMetricsChanged(*local_display, changed_values);
-  }
+  for (DisplayObserver& observer : observers_)
+    observer.OnDisplayMetricsChanged(*local_display, changed_values);
+  DCHECK(IsValid());
   return changed_values;
 }
 
 void DisplayList::AddDisplay(const Display& display, Type type) {
-  DCHECK(displays_.end() == FindDisplayByIdInternal(display.id()));
+  DCHECK(displays_.end() == FindDisplayById(display.id()));
   displays_.push_back(display);
-  if (type == Type::PRIMARY)
-    primary_display_index_ = static_cast<int>(displays_.size()) - 1;
-  if (should_notify_observers()) {
-    for (DisplayObserver& observer : observers_)
-      observer.OnDisplayAdded(display);
-  }
+  // The first display added should always be designated as the primary display.
+  // Displays added later can take on the primary designation as appropriate.
+  if (type == Type::PRIMARY || displays_.size() == 1)
+    primary_id_ = display.id();
+  for (DisplayObserver& observer : observers_)
+    observer.OnDisplayAdded(display);
+  DCHECK(IsValid());
 }
 
 void DisplayList::RemoveDisplay(int64_t id) {
   auto iter = FindDisplayByIdInternal(id);
   DCHECK(displays_.end() != iter);
-  if (primary_display_index_ == static_cast<int>(iter - displays_.begin())) {
+  if (id == primary_id_) {
     // The primary display can only be removed if it is the last display.
     // Users must choose a new primary before removing an old primary display.
     DCHECK_EQ(1u, displays_.size());
-    primary_display_index_ = -1;
-  } else if (primary_display_index_ >
-             static_cast<int>(iter - displays_.begin())) {
-    primary_display_index_--;
+    primary_id_ = kInvalidDisplayId;
+  }
+  if (id == current_id_) {
+    // The current display can only be removed if it is the last display.
+    // Users must choose a new current before removing an old current display.
+    DCHECK_EQ(1u, displays_.size());
+    current_id_ = kInvalidDisplayId;
   }
   const Display display = *iter;
   displays_.erase(iter);
-  if (should_notify_observers()) {
-    for (DisplayObserver& observer : observers_)
-      observer.OnDisplayRemoved(display);
+  for (DisplayObserver& observer : observers_) {
+    observer.OnDisplayRemoved(display);
+    observer.OnDidRemoveDisplays();
   }
+  DCHECK(IsValid());
 }
 
-void DisplayList::IncrementObserverSuspendLockCount() {
-  observer_suspend_lock_count_++;
+bool DisplayList::IsValid() const {
+  // The primary and current ids must be invalid when `displays_` is empty.
+  if (displays_.empty())
+    return primary_id_ == kInvalidDisplayId && current_id_ == kInvalidDisplayId;
+
+  // Ensure ids are unique.
+  base::flat_set<int64_t> display_ids;
+  display_ids.reserve(displays_.size());
+  for (const auto& display : displays_) {
+    if (!display_ids.insert(display.id()).second)
+      return false;
+  }
+
+  // The primary id must correspond to a `displays_` entry.
+  if (GetPrimaryDisplayIterator() == displays_.end())
+    return false;
+
+  // The current id may be invalid, or must correspond to a `displays_` entry.
+  if (current_id_ != kInvalidDisplayId &&
+      FindDisplayById(current_id_) == displays_.end()) {
+    return false;
+  }
+
+  return true;
 }
 
-void DisplayList::DecrementObserverSuspendLockCount() {
-  DCHECK_GT(observer_suspend_lock_count_, 0);
-  observer_suspend_lock_count_--;
+bool DisplayList::IsValidAndHasPrimaryAndCurrentDisplays() const {
+  return IsValid() && GetPrimaryDisplayIterator() != displays_.end() &&
+         FindDisplayById(current_id_) != displays_.end();
 }
 
 DisplayList::Type DisplayList::GetTypeByDisplayId(int64_t display_id) const {
-  if (primary_display_index_ == -1)
-    return Type::NOT_PRIMARY;
-  return (displays_[primary_display_index_].id() == display_id
-              ? Type::PRIMARY
-              : Type::NOT_PRIMARY);
+  return display_id == primary_id_ ? Type::PRIMARY : Type::NOT_PRIMARY;
 }
 
 DisplayList::Displays::iterator DisplayList::FindDisplayByIdInternal(
     int64_t id) {
-  for (auto iter = displays_.begin(); iter != displays_.end(); ++iter) {
-    if (iter->id() == id)
-      return iter;
-  }
-  return displays_.end();
+  return base::ranges::find(displays_, id, &Display::id);
 }
 
 }  // namespace display

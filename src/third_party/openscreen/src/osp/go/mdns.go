@@ -4,9 +4,9 @@
 
 package osp
 
-// TODO(pthatcher):
+// TODO(jophba):
 // - Make our own abstraction that has
-//   .InstanceName, .HostName, .MetadataVersion, .FingerPrint 
+//   .InstanceName, .HostName, .MetadataVersion, .FingerPrint
 //   rather than using mdns.ServiceEntry
 // - Advertise TXT (text below) with "fp" and "mv"
 
@@ -21,8 +21,9 @@ const (
 	MdnsDomain      = "local"
 )
 
-// Returns a channel of mDNS entries
-// The critical parts are entry.Target (name) entry.HostName (address)
+// Returns a channel of mDNS entries.  The critical parts are
+// entry.Target (service name) entry.HostName, entry.AddrIPv4, and
+// entry.AddrIPv6.
 func BrowseMdns(ctx context.Context) (<-chan *mdns.ServiceEntry, error) {
 	entries := make(chan *mdns.ServiceEntry)
 
@@ -32,6 +33,20 @@ func BrowseMdns(ctx context.Context) (<-chan *mdns.ServiceEntry, error) {
 	}
 
 	err = resolver.Browse(ctx, MdnsServiceType, MdnsDomain, entries)
+	return entries, err
+}
+
+// Returns a channel of mDNS entries. The critical parts are,
+// entry.HostName, entry.AddrIPv4, and entry.AddrIPv6.
+func LookupMdns(ctx context.Context, target string) (<-chan *mdns.ServiceEntry, error) {
+	entries := make(chan *mdns.ServiceEntry)
+
+	resolver, err := mdns.NewResolver(nil)
+	if err != nil {
+		return entries, err
+	}
+
+	err = resolver.Lookup(ctx, target, MdnsServiceType, MdnsDomain, entries)
 	return entries, err
 }
 

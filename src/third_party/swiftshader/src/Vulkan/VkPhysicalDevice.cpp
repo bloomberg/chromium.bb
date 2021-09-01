@@ -28,16 +28,6 @@
 
 namespace vk {
 
-#if VK_USE_PLATFORM_FUCHSIA
-if(handleType == VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA)
-{
-	properties->compatibleHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
-	properties->exportFromImportedHandleTypes = VK_EXTERNAL_MEMORY_HANDLE_TYPE_TEMP_ZIRCON_VMO_BIT_FUCHSIA;
-	properties->externalMemoryFeatures = VK_EXTERNAL_MEMORY_FEATURE_IMPORTABLE_BIT | VK_EXTERNAL_MEMORY_FEATURE_EXPORTABLE_BIT;
-	return;
-}
-#endif
-
 PhysicalDevice::PhysicalDevice(const void *, void *mem)
 {
 }
@@ -51,15 +41,15 @@ const VkPhysicalDeviceFeatures &PhysicalDevice::getFeatures() const
 		VK_TRUE,   // independentBlend
 		VK_FALSE,  // geometryShader
 		VK_FALSE,  // tessellationShader
-		VK_FALSE,  // sampleRateShading
+		VK_TRUE,   // sampleRateShading
 		VK_FALSE,  // dualSrcBlend
 		VK_FALSE,  // logicOp
 		VK_TRUE,   // multiDrawIndirect
 		VK_TRUE,   // drawIndirectFirstInstance
-		VK_FALSE,  // depthClamp
+		VK_TRUE,   // depthClamp
 		VK_TRUE,   // depthBiasClamp
 		VK_TRUE,   // fillModeNonSolid
-		VK_FALSE,  // depthBounds
+		VK_TRUE,   // depthBounds
 		VK_FALSE,  // wideLines
 		VK_TRUE,   // largePoints
 		VK_FALSE,  // alphaToOne
@@ -183,6 +173,12 @@ static void getPhysicalDeviceProvokingVertexFeaturesEXT(T *features)
 }
 
 template<typename T>
+static void getPhysicalDeviceHostQueryResetFeatures(T *features)
+{
+	features->hostQueryReset = VK_TRUE;
+}
+
+template<typename T>
 static void getPhysicalDeviceImageRobustnessFeaturesEXT(T *features)
 {
 	features->robustImageAccess = VK_TRUE;
@@ -218,19 +214,32 @@ static void getPhysicalDeviceShaderSubgroupExtendedTypesFeatures(T *features)
 }
 
 template<typename T>
-static void getPhysicalDeviceVulkan12Features(T *features)
+static void getPhysicalDeviceScalarBlockLayoutFeatures(T *features)
 {
-	features->samplerMirrorClampToEdge = VK_FALSE;
-	features->drawIndirectCount = VK_FALSE;
-	getPhysicalDevice8BitStorageFeaturesKHR(features);
-	features->shaderBufferInt64Atomics = VK_FALSE;
-	features->shaderSharedInt64Atomics = VK_FALSE;
-	features->shaderFloat16 = VK_FALSE;
-	features->shaderInt8 = VK_FALSE;
-	features->descriptorIndexing = VK_FALSE;
+	features->scalarBlockLayout = VK_TRUE;
+}
+
+#ifdef SWIFTSHADER_DEVICE_MEMORY_REPORT
+template<typename T>
+static void getPhysicalDeviceDeviceMemoryReportFeaturesEXT(T *features)
+{
+	features->deviceMemoryReport = VK_TRUE;
+}
+#endif  // SWIFTSHADER_DEVICE_MEMORY_REPORT
+
+template<typename T>
+static void getPhysicalDeviceUniformBufferStandardLayoutFeatures(T *features)
+{
+	features->uniformBufferStandardLayout = VK_TRUE;
+}
+
+template<typename T>
+static void getPhysicalDeviceDescriptorIndexingFeatures(T *features)
+{
 	features->shaderInputAttachmentArrayDynamicIndexing = VK_FALSE;
 	features->shaderUniformTexelBufferArrayDynamicIndexing = VK_FALSE;
 	features->shaderStorageTexelBufferArrayDynamicIndexing = VK_FALSE;
+	features->shaderUniformBufferArrayNonUniformIndexing = VK_FALSE;
 	features->shaderSampledImageArrayNonUniformIndexing = VK_FALSE;
 	features->shaderStorageBufferArrayNonUniformIndexing = VK_FALSE;
 	features->shaderStorageImageArrayNonUniformIndexing = VK_FALSE;
@@ -242,28 +251,78 @@ static void getPhysicalDeviceVulkan12Features(T *features)
 	features->descriptorBindingStorageImageUpdateAfterBind = VK_FALSE;
 	features->descriptorBindingStorageBufferUpdateAfterBind = VK_FALSE;
 	features->descriptorBindingUniformTexelBufferUpdateAfterBind = VK_FALSE;
-	features->descriptorBindingStorageBufferUpdateAfterBind = VK_FALSE;
+	features->descriptorBindingStorageTexelBufferUpdateAfterBind = VK_FALSE;
 	features->descriptorBindingUpdateUnusedWhilePending = VK_FALSE;
 	features->descriptorBindingPartiallyBound = VK_FALSE;
 	features->descriptorBindingVariableDescriptorCount = VK_FALSE;
 	features->runtimeDescriptorArray = VK_FALSE;
-	features->samplerFilterMinmax = VK_FALSE;
-	features->scalarBlockLayout = VK_FALSE;
-	getPhysicalDeviceImagelessFramebufferFeatures(features);
-	features->uniformBufferStandardLayout = VK_FALSE;
-	getPhysicalDeviceShaderSubgroupExtendedTypesFeatures(features);
-	getPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR(features);
-	features->hostQueryReset = VK_FALSE;
-	features->timelineSemaphore = VK_FALSE;
-	features->bufferDeviceAddress = VK_FALSE;
-	features->bufferDeviceAddressCaptureReplay = VK_FALSE;
-	features->bufferDeviceAddressMultiDevice = VK_FALSE;
+}
+
+template<typename T>
+static void getPhysicalDeviceVulkanMemoryModelFeatures(T *features)
+{
 	features->vulkanMemoryModel = VK_FALSE;
 	features->vulkanMemoryModelDeviceScope = VK_FALSE;
 	features->vulkanMemoryModelAvailabilityVisibilityChains = VK_FALSE;
+}
+
+template<typename T>
+static void getPhysicalDeviceTimelineSemaphoreFeatures(T *features)
+{
+	features->timelineSemaphore = VK_TRUE;
+}
+
+template<typename T>
+static void getPhysicalDeviceShaderAtomicInt64Features(T *features)
+{
+	features->shaderBufferInt64Atomics = VK_FALSE;
+	features->shaderSharedInt64Atomics = VK_FALSE;
+}
+
+template<typename T>
+static void getPhysicalDeviceShaderFloat16Int8Features(T *features)
+{
+	features->shaderFloat16 = VK_FALSE;
+	features->shaderInt8 = VK_FALSE;
+}
+
+template<typename T>
+static void getPhysicalDeviceBufferDeviceAddressFeatures(T *features)
+{
+	features->bufferDeviceAddress = VK_FALSE;
+	features->bufferDeviceAddressCaptureReplay = VK_FALSE;
+	features->bufferDeviceAddressMultiDevice = VK_FALSE;
+}
+
+template<typename T>
+static void getPhysicalDeviceVulkan12Features(T *features)
+{
+	features->samplerMirrorClampToEdge = VK_FALSE;
+	features->drawIndirectCount = VK_FALSE;
+	getPhysicalDevice8BitStorageFeaturesKHR(features);
+	getPhysicalDeviceShaderAtomicInt64Features(features);
+	getPhysicalDeviceShaderFloat16Int8Features(features);
+	features->descriptorIndexing = VK_FALSE;
+	getPhysicalDeviceDescriptorIndexingFeatures(features);
+	features->samplerFilterMinmax = VK_FALSE;
+	getPhysicalDeviceScalarBlockLayoutFeatures(features);
+	getPhysicalDeviceImagelessFramebufferFeatures(features);
+	getPhysicalDeviceUniformBufferStandardLayoutFeatures(features);
+	getPhysicalDeviceShaderSubgroupExtendedTypesFeatures(features);
+	getPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR(features);
+	getPhysicalDeviceHostQueryResetFeatures(features);
+	getPhysicalDeviceTimelineSemaphoreFeatures(features);
+	getPhysicalDeviceBufferDeviceAddressFeatures(features);
+	getPhysicalDeviceVulkanMemoryModelFeatures(features);
 	features->shaderOutputViewportIndex = VK_FALSE;
 	features->shaderOutputLayer = VK_FALSE;
-	features->subgroupBroadcastDynamicId = VK_FALSE;
+	features->subgroupBroadcastDynamicId = VK_TRUE;
+}
+
+template<typename T>
+static void getPhysicalDeviceDepthClipEnableFeaturesExt(T *features)
+{
+	features->depthClipEnable = VK_TRUE;
 }
 
 void PhysicalDevice::getFeatures2(VkPhysicalDeviceFeatures2 *features) const
@@ -275,54 +334,89 @@ void PhysicalDevice::getFeatures2(VkPhysicalDeviceFeatures2 *features) const
 		// Need to switch on an integer since Provoking Vertex isn't a part of the Vulkan spec.
 		switch((int)curExtension->sType)
 		{
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES:
-				getPhysicalDeviceVulkan11Features(reinterpret_cast<VkPhysicalDeviceVulkan11Features *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES:
-				getPhysicalDeviceVulkan12Features(reinterpret_cast<VkPhysicalDeviceVulkan12Features *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES:
-				getPhysicalDeviceMultiviewFeatures(reinterpret_cast<VkPhysicalDeviceMultiviewFeatures *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES:
-				getPhysicalDeviceVariablePointersFeatures(reinterpret_cast<VkPhysicalDeviceVariablePointersFeatures *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES:
-				getPhysicalDevice16BitStorageFeatures(reinterpret_cast<VkPhysicalDevice16BitStorageFeatures *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES:
-				getPhysicalDeviceSamplerYcbcrConversionFeatures(reinterpret_cast<VkPhysicalDeviceSamplerYcbcrConversionFeatures *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES:
-				getPhysicalDeviceProtectedMemoryFeatures(reinterpret_cast<VkPhysicalDeviceProtectedMemoryFeatures *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES:
-				getPhysicalDeviceShaderDrawParameterFeatures(reinterpret_cast<VkPhysicalDeviceShaderDrawParameterFeatures *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT:
-				getPhysicalDeviceImageRobustnessFeaturesEXT(reinterpret_cast<VkPhysicalDeviceImageRobustnessFeaturesEXT *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT:
-				getPhysicalDeviceLineRasterizationFeaturesEXT(reinterpret_cast<VkPhysicalDeviceLineRasterizationFeaturesEXT *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES:
-				getPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR(reinterpret_cast<VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES_KHR:
-				getPhysicalDevice8BitStorageFeaturesKHR(reinterpret_cast<VkPhysicalDevice8BitStorageFeaturesKHR *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT:
-				getPhysicalDeviceProvokingVertexFeaturesEXT(reinterpret_cast<VkPhysicalDeviceProvokingVertexFeaturesEXT *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES:
-				getPhysicalDeviceImagelessFramebufferFeatures(reinterpret_cast<VkPhysicalDeviceImagelessFramebufferFeatures *>(curExtension));
-				break;
-			case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES_KHR:
-				getPhysicalDeviceShaderSubgroupExtendedTypesFeatures(reinterpret_cast<VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures *>(curExtension));
-				break;
-			default:
-				LOG_TRAP("curExtension->pNext->sType = %s", vk::Stringify(curExtension->sType).c_str());
-				break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES:
+			getPhysicalDeviceVulkan11Features(reinterpret_cast<VkPhysicalDeviceVulkan11Features *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES:
+			getPhysicalDeviceVulkan12Features(reinterpret_cast<VkPhysicalDeviceVulkan12Features *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES:
+			getPhysicalDeviceMultiviewFeatures(reinterpret_cast<VkPhysicalDeviceMultiviewFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VARIABLE_POINTERS_FEATURES:
+			getPhysicalDeviceVariablePointersFeatures(reinterpret_cast<VkPhysicalDeviceVariablePointersFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES:
+			getPhysicalDevice16BitStorageFeatures(reinterpret_cast<VkPhysicalDevice16BitStorageFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES:
+			getPhysicalDeviceSamplerYcbcrConversionFeatures(reinterpret_cast<VkPhysicalDeviceSamplerYcbcrConversionFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES:
+			getPhysicalDeviceProtectedMemoryFeatures(reinterpret_cast<VkPhysicalDeviceProtectedMemoryFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_DRAW_PARAMETERS_FEATURES:
+			getPhysicalDeviceShaderDrawParameterFeatures(reinterpret_cast<VkPhysicalDeviceShaderDrawParameterFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES:
+			getPhysicalDeviceHostQueryResetFeatures(reinterpret_cast<VkPhysicalDeviceHostQueryResetFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_ROBUSTNESS_FEATURES_EXT:
+			getPhysicalDeviceImageRobustnessFeaturesEXT(reinterpret_cast<VkPhysicalDeviceImageRobustnessFeaturesEXT *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_LINE_RASTERIZATION_FEATURES_EXT:
+			getPhysicalDeviceLineRasterizationFeaturesEXT(reinterpret_cast<VkPhysicalDeviceLineRasterizationFeaturesEXT *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SEPARATE_DEPTH_STENCIL_LAYOUTS_FEATURES:
+			getPhysicalDeviceSeparateDepthStencilLayoutsFeaturesKHR(reinterpret_cast<VkPhysicalDeviceSeparateDepthStencilLayoutsFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_8BIT_STORAGE_FEATURES_KHR:
+			getPhysicalDevice8BitStorageFeaturesKHR(reinterpret_cast<VkPhysicalDevice8BitStorageFeaturesKHR *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROVOKING_VERTEX_FEATURES_EXT:
+			getPhysicalDeviceProvokingVertexFeaturesEXT(reinterpret_cast<VkPhysicalDeviceProvokingVertexFeaturesEXT *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGELESS_FRAMEBUFFER_FEATURES:
+			getPhysicalDeviceImagelessFramebufferFeatures(reinterpret_cast<VkPhysicalDeviceImagelessFramebufferFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_SUBGROUP_EXTENDED_TYPES_FEATURES_KHR:
+			getPhysicalDeviceShaderSubgroupExtendedTypesFeatures(reinterpret_cast<VkPhysicalDeviceShaderSubgroupExtendedTypesFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES:
+			getPhysicalDeviceScalarBlockLayoutFeatures(reinterpret_cast<VkPhysicalDeviceScalarBlockLayoutFeatures *>(curExtension));
+			break;
+#ifdef SWIFTSHADER_DEVICE_MEMORY_REPORT
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEVICE_MEMORY_REPORT_FEATURES_EXT:
+			getPhysicalDeviceDeviceMemoryReportFeaturesEXT(reinterpret_cast<VkPhysicalDeviceDeviceMemoryReportFeaturesEXT *>(curExtension));
+			break;
+#endif  // SWIFTSHADER_DEVICE_MEMORY_REPORT
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_UNIFORM_BUFFER_STANDARD_LAYOUT_FEATURES:
+			getPhysicalDeviceUniformBufferStandardLayoutFeatures(reinterpret_cast<VkPhysicalDeviceUniformBufferStandardLayoutFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_MEMORY_MODEL_FEATURES:
+			getPhysicalDeviceVulkanMemoryModelFeatures(reinterpret_cast<VkPhysicalDeviceVulkanMemoryModelFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES:
+			getPhysicalDeviceTimelineSemaphoreFeatures(reinterpret_cast<VkPhysicalDeviceTimelineSemaphoreFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_ATOMIC_INT64_FEATURES:
+			getPhysicalDeviceShaderAtomicInt64Features(reinterpret_cast<VkPhysicalDeviceShaderAtomicInt64Features *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES:
+			getPhysicalDeviceShaderFloat16Int8Features(reinterpret_cast<VkPhysicalDeviceShaderFloat16Int8Features *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES:
+			getPhysicalDeviceBufferDeviceAddressFeatures(reinterpret_cast<VkPhysicalDeviceBufferDeviceAddressFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES:
+			getPhysicalDeviceDescriptorIndexingFeatures(reinterpret_cast<VkPhysicalDeviceDescriptorIndexingFeatures *>(curExtension));
+			break;
+		case VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT:
+			getPhysicalDeviceDepthClipEnableFeaturesExt(reinterpret_cast<VkPhysicalDeviceDepthClipEnableFeaturesEXT *>(curExtension));
+			break;
+		default:
+			LOG_TRAP("curExtension->pNext->sType = %s", vk::Stringify(curExtension->sType).c_str());
+			break;
 		}
 		curExtension = reinterpret_cast<VkBaseOutStructure *>(curExtension->pNext);
 	}
@@ -357,7 +451,7 @@ const VkPhysicalDeviceLimits &PhysicalDevice::getLimits() const
 		16,                                               // maxPerStageDescriptorStorageBuffers
 		16,                                               // maxPerStageDescriptorSampledImages
 		4,                                                // maxPerStageDescriptorStorageImages
-		4,                                                // maxPerStageDescriptorInputAttachments
+		sw::RENDERTARGETS,                                // maxPerStageDescriptorInputAttachments
 		128,                                              // maxPerStageResources
 		96,                                               // maxDescriptorSetSamplers
 		72,                                               // maxDescriptorSetUniformBuffers
@@ -366,7 +460,7 @@ const VkPhysicalDeviceLimits &PhysicalDevice::getLimits() const
 		MAX_DESCRIPTOR_SET_STORAGE_BUFFERS_DYNAMIC,       // maxDescriptorSetStorageBuffersDynamic
 		96,                                               // maxDescriptorSetSampledImages
 		24,                                               // maxDescriptorSetStorageImages
-		4,                                                // maxDescriptorSetInputAttachments
+		sw::RENDERTARGETS,                                // maxDescriptorSetInputAttachments
 		16,                                               // maxVertexInputAttributes
 		vk::MAX_VERTEX_INPUT_BINDINGS,                    // maxVertexInputBindings
 		2047,                                             // maxVertexInputAttributeOffset
@@ -386,7 +480,7 @@ const VkPhysicalDeviceLimits &PhysicalDevice::getLimits() const
 		0,                                                // maxGeometryOutputVertices (unsupported)
 		0,                                                // maxGeometryTotalOutputComponents (unsupported)
 		sw::MAX_INTERFACE_COMPONENTS,                     // maxFragmentInputComponents
-		4,                                                // maxFragmentOutputAttachments
+		sw::RENDERTARGETS,                                // maxFragmentOutputAttachments
 		1,                                                // maxFragmentDualSrcAttachments
 		4,                                                // maxFragmentCombinedOutputResources
 		16384,                                            // maxComputeSharedMemorySize
@@ -422,15 +516,15 @@ const VkPhysicalDeviceLimits &PhysicalDevice::getLimits() const
 		sampleCounts,                                     // framebufferDepthSampleCounts
 		sampleCounts,                                     // framebufferStencilSampleCounts
 		sampleCounts,                                     // framebufferNoAttachmentsSampleCounts
-		4,                                                // maxColorAttachments
+		sw::RENDERTARGETS,                                // maxColorAttachments
 		sampleCounts,                                     // sampledImageColorSampleCounts
 		sampleCounts,                                     // sampledImageIntegerSampleCounts
 		sampleCounts,                                     // sampledImageDepthSampleCounts
 		sampleCounts,                                     // sampledImageStencilSampleCounts
 		sampleCounts,                                     // storageImageSampleCounts
 		1,                                                // maxSampleMaskWords
-		VK_FALSE,                                         // timestampComputeAndGraphics
-		60,                                               // timestampPeriod
+		VK_TRUE,                                          // timestampComputeAndGraphics
+		1,                                                // timestampPeriod
 		sw::MAX_CLIP_DISTANCES,                           // maxClipDistances
 		sw::MAX_CULL_DISTANCES,                           // maxCullDistances
 		sw::MAX_CLIP_DISTANCES + sw::MAX_CULL_DISTANCES,  // maxCombinedClipAndCullDistances
@@ -475,7 +569,8 @@ const VkPhysicalDeviceProperties &PhysicalDevice::getProperties() const
 	return properties;
 }
 
-void PhysicalDevice::getProperties(VkPhysicalDeviceIDProperties *properties) const
+template<typename T>
+static void getIdProperties(T *properties)
 {
 	memset(properties->deviceUUID, 0, VK_UUID_SIZE);
 	memset(properties->driverUUID, 0, VK_UUID_SIZE);
@@ -488,26 +583,55 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceIDProperties *properties) con
 	properties->deviceLUIDValid = VK_FALSE;
 }
 
-void PhysicalDevice::getProperties(VkPhysicalDeviceMaintenance3Properties *properties) const
+void PhysicalDevice::getProperties(VkPhysicalDeviceIDProperties *properties) const
+{
+	getIdProperties(properties);
+}
+
+template<typename T>
+static void getMaintenance3Properties(T *properties)
 {
 	properties->maxMemoryAllocationSize = MAX_MEMORY_ALLOCATION_SIZE;
 	properties->maxPerSetDescriptors = 1024;
 }
 
-void PhysicalDevice::getProperties(VkPhysicalDeviceMultiviewProperties *properties) const
+void PhysicalDevice::getProperties(VkPhysicalDeviceMaintenance3Properties *properties) const
+{
+	getMaintenance3Properties(properties);
+}
+
+template<typename T>
+static void getMultiviewProperties(T *properties)
 {
 	properties->maxMultiviewViewCount = 6;
 	properties->maxMultiviewInstanceIndex = 1u << 27;
 }
 
-void PhysicalDevice::getProperties(VkPhysicalDevicePointClippingProperties *properties) const
+void PhysicalDevice::getProperties(VkPhysicalDeviceMultiviewProperties *properties) const
+{
+	getMultiviewProperties(properties);
+}
+
+template<typename T>
+static void getPointClippingProperties(T *properties)
 {
 	properties->pointClippingBehavior = VK_POINT_CLIPPING_BEHAVIOR_ALL_CLIP_PLANES;
 }
 
-void PhysicalDevice::getProperties(VkPhysicalDeviceProtectedMemoryProperties *properties) const
+void PhysicalDevice::getProperties(VkPhysicalDevicePointClippingProperties *properties) const
+{
+	getPointClippingProperties(properties);
+}
+
+template<typename T>
+static void getProtectedMemoryProperties(T *properties)
 {
 	properties->protectedNoFault = VK_FALSE;
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceProtectedMemoryProperties *properties) const
+{
+	getProtectedMemoryProperties(properties);
 }
 
 void PhysicalDevice::getProperties(VkPhysicalDeviceSubgroupProperties *properties) const
@@ -522,6 +646,26 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceSubgroupProperties *propertie
 	    VK_SUBGROUP_FEATURE_SHUFFLE_BIT |
 	    VK_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT;
 	properties->quadOperationsInAllStages = VK_FALSE;
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceVulkan11Properties *properties) const
+{
+	getIdProperties(properties);
+
+	// We can't use templated functions for Vulkan11 & subgroup properties. The names of the
+	// variables in VkPhysicalDeviceSubgroupProperties differ from the names in the Vulkan11
+	// struct.
+	VkPhysicalDeviceSubgroupProperties subgroupProperties = {};
+	getProperties(&subgroupProperties);
+	properties->subgroupSize = subgroupProperties.subgroupSize;
+	properties->subgroupSupportedStages = subgroupProperties.supportedStages;
+	properties->subgroupSupportedOperations = subgroupProperties.supportedOperations;
+	properties->subgroupQuadOperationsInAllStages = subgroupProperties.quadOperationsInAllStages;
+
+	getPointClippingProperties(properties);
+	getMultiviewProperties(properties);
+	getProtectedMemoryProperties(properties);
+	getMaintenance3Properties(properties);
 }
 
 void PhysicalDevice::getProperties(const VkExternalMemoryHandleTypeFlagBits *handleType, VkExternalImageFormatProperties *properties) const
@@ -605,13 +749,40 @@ void PhysicalDevice::getProperties(VkPhysicalDevicePresentationPropertiesANDROID
 	properties->sharedImage = VK_FALSE;
 }
 
-void PhysicalDevice::getProperties(VkAndroidHardwareBufferUsageANDROID *properties) const
+void PhysicalDevice::getProperties(const VkPhysicalDeviceImageFormatInfo2 *pImageFormatInfo, VkAndroidHardwareBufferUsageANDROID *ahbProperties) const
 {
-	// TODO(b/169439421)
-	//   This AHB could be either a framebuffer, OR a sampled image
-	//     Here we just say it's both
-	//   Need to pass down info on the type of image in question
-	properties->androidHardwareBufferUsage |= AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE | AHARDWAREBUFFER_USAGE_GPU_COLOR_OUTPUT;
+	// Maps VkImageUsageFlags to AHB usage flags using this table from the Vulkan spec
+	// https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/vkspec.html#memory-external-android-hardware-buffer-usage
+
+	// VK_IMAGE_CREATE_PROTECTED_BIT not currently supported.
+	ASSERT((pImageFormatInfo->flags & VK_IMAGE_CREATE_PROTECTED_BIT) == 0);
+
+	// "It must include at least one GPU usage flag (AHARDWAREBUFFER_USAGE_GPU_*), even if none of the corresponding Vulkan usages or flags are requested."
+	uint64_t ahbUsage = AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
+
+	// Already covered by the default GPU usage flag above.
+	//
+	// if ((vkUsageFlags & VK_IMAGE_USAGE_SAMPLED_BIT) || (vkUsageFlags & VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT))
+	// {
+	// 	 ahbUsage |= AHARDWAREBUFFER_USAGE_GPU_SAMPLED_IMAGE;
+	// }
+
+	if((pImageFormatInfo->usage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) || (pImageFormatInfo->usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT))
+	{
+		ahbUsage |= AHARDWAREBUFFER_USAGE_GPU_FRAMEBUFFER;
+	}
+
+	if(pImageFormatInfo->flags & VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT)
+	{
+		ahbUsage |= AHARDWAREBUFFER_USAGE_GPU_CUBE_MAP;
+	}
+
+	if(pImageFormatInfo->flags & VK_IMAGE_CREATE_PROTECTED_BIT)
+	{
+		ahbUsage |= AHARDWAREBUFFER_USAGE_PROTECTED_CONTENT;
+	}
+
+	ahbProperties->androidHardwareBufferUsage = ahbUsage;
 }
 #endif
 
@@ -655,6 +826,30 @@ void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalFenceInfo *pExt
 
 void PhysicalDevice::getProperties(const VkPhysicalDeviceExternalSemaphoreInfo *pExternalSemaphoreInfo, VkExternalSemaphoreProperties *pExternalSemaphoreProperties) const
 {
+	for(const auto *nextInfo = reinterpret_cast<const VkBaseInStructure *>(pExternalSemaphoreInfo->pNext);
+	    nextInfo != nullptr; nextInfo = nextInfo->pNext)
+	{
+		switch(nextInfo->sType)
+		{
+		case VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO:
+			{
+				const auto *tlsInfo = reinterpret_cast<const VkSemaphoreTypeCreateInfo *>(nextInfo);
+				// Timeline Semaphore does not support external semaphore
+				if(tlsInfo->semaphoreType == VK_SEMAPHORE_TYPE_TIMELINE)
+				{
+					pExternalSemaphoreProperties->compatibleHandleTypes = 0;
+					pExternalSemaphoreProperties->exportFromImportedHandleTypes = 0;
+					pExternalSemaphoreProperties->externalSemaphoreFeatures = 0;
+					return;
+				}
+			}
+			break;
+		default:
+			WARN("nextInfo->sType = %s", vk::Stringify(nextInfo->sType).c_str());
+			break;
+		}
+	}
+
 #if SWIFTSHADER_EXTERNAL_SEMAPHORE_OPAQUE_FD
 	if(pExternalSemaphoreInfo->handleType == VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT)
 	{
@@ -683,12 +878,18 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceExternalMemoryHostPropertiesE
 	properties->minImportedHostPointerAlignment = REQUIRED_MEMORY_ALIGNMENT;
 }
 
-void PhysicalDevice::getProperties(VkPhysicalDeviceDriverPropertiesKHR *properties) const
+template<typename T>
+static void getDriverProperties(T *properties)
 {
 	properties->driverID = VK_DRIVER_ID_GOOGLE_SWIFTSHADER_KHR;
 	strcpy(properties->driverName, "SwiftShader driver");
 	strcpy(properties->driverInfo, "");
 	properties->conformanceVersion = { 1, 1, 3, 3 };
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceDriverPropertiesKHR *properties) const
+{
+	getDriverProperties(properties);
 }
 
 void PhysicalDevice::getProperties(VkPhysicalDeviceLineRasterizationPropertiesEXT *properties) const
@@ -701,7 +902,8 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceProvokingVertexPropertiesEXT 
 	properties->provokingVertexModePerPipeline = VK_TRUE;
 }
 
-void PhysicalDevice::getProperties(VkPhysicalDeviceFloatControlsProperties *properties) const
+template<typename T>
+static void getFloatControlsProperties(T *properties)
 {
 	// The spec states:
 	// shaderSignedZeroInfNanPreserveFloat32 is a boolean value indicating whether
@@ -733,6 +935,93 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceFloatControlsProperties *prop
 	properties->shaderRoundingModeRTEFloat64 = VK_FALSE;
 }
 
+void PhysicalDevice::getProperties(VkPhysicalDeviceFloatControlsProperties *properties) const
+{
+	getFloatControlsProperties(properties);
+}
+
+template<typename T>
+static void getDescriptorIndexingProperties(T *properties)
+{
+	properties->maxUpdateAfterBindDescriptorsInAllPools = 0;
+	properties->shaderUniformBufferArrayNonUniformIndexingNative = VK_FALSE;
+	properties->shaderSampledImageArrayNonUniformIndexingNative = VK_FALSE;
+	properties->shaderStorageBufferArrayNonUniformIndexingNative = VK_FALSE;
+	properties->shaderStorageImageArrayNonUniformIndexingNative = VK_FALSE;
+	properties->shaderInputAttachmentArrayNonUniformIndexingNative = VK_FALSE;
+	properties->robustBufferAccessUpdateAfterBind = VK_FALSE;
+	properties->quadDivergentImplicitLod = VK_FALSE;
+	properties->maxPerStageDescriptorUpdateAfterBindSamplers = 0;
+	properties->maxPerStageDescriptorUpdateAfterBindUniformBuffers = 0;
+	properties->maxPerStageDescriptorUpdateAfterBindStorageBuffers = 0;
+	properties->maxPerStageDescriptorUpdateAfterBindSampledImages = 0;
+	properties->maxPerStageDescriptorUpdateAfterBindStorageImages = 0;
+	properties->maxPerStageDescriptorUpdateAfterBindInputAttachments = 0;
+	properties->maxPerStageUpdateAfterBindResources = 0;
+	properties->maxDescriptorSetUpdateAfterBindSamplers = 0;
+	properties->maxDescriptorSetUpdateAfterBindUniformBuffers = 0;
+	properties->maxDescriptorSetUpdateAfterBindUniformBuffersDynamic = 0;
+	properties->maxDescriptorSetUpdateAfterBindStorageBuffers = 0;
+	properties->maxDescriptorSetUpdateAfterBindStorageBuffersDynamic = 0;
+	properties->maxDescriptorSetUpdateAfterBindSampledImages = 0;
+	properties->maxDescriptorSetUpdateAfterBindStorageImages = 0;
+	properties->maxDescriptorSetUpdateAfterBindInputAttachments = 0;
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceDescriptorIndexingProperties *properties) const
+{
+	getDescriptorIndexingProperties(properties);
+}
+
+template<typename T>
+static void getDepthStencilResolveProperties(T *properties)
+{
+	properties->supportedDepthResolveModes = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT | VK_RESOLVE_MODE_NONE;
+	properties->supportedStencilResolveModes = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT | VK_RESOLVE_MODE_NONE;
+	properties->independentResolveNone = VK_TRUE;
+	properties->independentResolve = VK_TRUE;
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceDepthStencilResolveProperties *properties) const
+{
+	getDepthStencilResolveProperties(properties);
+}
+
+template<typename T>
+static void getSamplerFilterMinmaxProperties(T *properties)
+{
+	properties->filterMinmaxSingleComponentFormats = VK_FALSE;
+	properties->filterMinmaxImageComponentMapping = VK_FALSE;
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceSamplerFilterMinmaxProperties *properties) const
+{
+	getSamplerFilterMinmaxProperties(properties);
+}
+
+template<typename T>
+static void getTimelineSemaphoreProperties(T *properties)
+{
+	// Our implementation of Timeline Semaphores allows the timeline to advance to any value from any value.
+	properties->maxTimelineSemaphoreValueDifference = (uint64_t)-1;
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceTimelineSemaphoreProperties *properties) const
+{
+	getTimelineSemaphoreProperties(properties);
+}
+
+void PhysicalDevice::getProperties(VkPhysicalDeviceVulkan12Properties *properties) const
+{
+	getDriverProperties(properties);
+	getFloatControlsProperties(properties);
+	getDescriptorIndexingProperties(properties);
+	getDepthStencilResolveProperties(properties);
+	getSamplerFilterMinmaxProperties(properties);
+	getTimelineSemaphoreProperties(properties);
+	properties->framebufferIntegerColorSampleCounts = VK_SAMPLE_COUNT_1_BIT;
+}
+
 bool PhysicalDevice::hasFeatures(const VkPhysicalDeviceFeatures &requestedFeatures) const
 {
 	const VkPhysicalDeviceFeatures &supportedFeatures = getFeatures();
@@ -759,259 +1048,265 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 
 	switch(format)
 	{
-		// Formats which can be sampled *and* filtered
-		case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
-		case VK_FORMAT_R5G6B5_UNORM_PACK16:
-		case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
-		case VK_FORMAT_R8_UNORM:
-		case VK_FORMAT_R8_SRGB:
-		case VK_FORMAT_R8_SNORM:
-		case VK_FORMAT_R8G8_UNORM:
-		case VK_FORMAT_R8G8_SRGB:
-		case VK_FORMAT_R8G8_SNORM:
-		case VK_FORMAT_R8G8B8A8_UNORM:
-		case VK_FORMAT_R8G8B8A8_SNORM:
-		case VK_FORMAT_R8G8B8A8_SRGB:
-		case VK_FORMAT_B8G8R8A8_UNORM:
-		case VK_FORMAT_B8G8R8A8_SRGB:
-		case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-		case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
-		case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
-		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-		case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-		case VK_FORMAT_R16_SFLOAT:
-		case VK_FORMAT_R16G16_SFLOAT:
-		case VK_FORMAT_R16G16B16A16_SFLOAT:
-		case VK_FORMAT_R32_SFLOAT:
-		case VK_FORMAT_R32G32_SFLOAT:
-		case VK_FORMAT_R32G32B32A32_SFLOAT:
-		case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
-		case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
-		case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
-		case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
-		case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
-		case VK_FORMAT_BC1_RGBA_SRGB_BLOCK:
-		case VK_FORMAT_BC2_UNORM_BLOCK:
-		case VK_FORMAT_BC2_SRGB_BLOCK:
-		case VK_FORMAT_BC3_UNORM_BLOCK:
-		case VK_FORMAT_BC3_SRGB_BLOCK:
-		case VK_FORMAT_BC4_UNORM_BLOCK:
-		case VK_FORMAT_BC4_SNORM_BLOCK:
-		case VK_FORMAT_BC5_UNORM_BLOCK:
-		case VK_FORMAT_BC5_SNORM_BLOCK:
-		case VK_FORMAT_BC6H_UFLOAT_BLOCK:
-		case VK_FORMAT_BC6H_SFLOAT_BLOCK:
-		case VK_FORMAT_BC7_UNORM_BLOCK:
-		case VK_FORMAT_BC7_SRGB_BLOCK:
-		case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
-		case VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
-		case VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
-		case VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
-		case VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
-		case VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
-		case VK_FORMAT_EAC_R11_UNORM_BLOCK:
-		case VK_FORMAT_EAC_R11_SNORM_BLOCK:
-		case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:
-		case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
+	// Formats which can be sampled *and* filtered
+	case VK_FORMAT_B4G4R4A4_UNORM_PACK16:
+	case VK_FORMAT_R5G6B5_UNORM_PACK16:
+	case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
+	case VK_FORMAT_R8_UNORM:
+	case VK_FORMAT_R8_SRGB:
+	case VK_FORMAT_R8_SNORM:
+	case VK_FORMAT_R8G8_UNORM:
+	case VK_FORMAT_R8G8_SRGB:
+	case VK_FORMAT_R8G8_SNORM:
+	case VK_FORMAT_R8G8B8A8_UNORM:
+	case VK_FORMAT_R8G8B8A8_SNORM:
+	case VK_FORMAT_R8G8B8A8_SRGB:
+	case VK_FORMAT_B8G8R8A8_UNORM:
+	case VK_FORMAT_B8G8R8A8_SRGB:
+	case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
+	case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+	case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
+	case VK_FORMAT_R16_UNORM:
+	case VK_FORMAT_R16_SNORM:
+	case VK_FORMAT_R16_SFLOAT:
+	case VK_FORMAT_R16G16_UNORM:
+	case VK_FORMAT_R16G16_SNORM:
+	case VK_FORMAT_R16G16_SFLOAT:
+	case VK_FORMAT_R16G16B16A16_UNORM:
+	case VK_FORMAT_R16G16B16A16_SNORM:
+	case VK_FORMAT_R16G16B16A16_SFLOAT:
+	case VK_FORMAT_R32_SFLOAT:
+	case VK_FORMAT_R32G32_SFLOAT:
+	case VK_FORMAT_R32G32B32A32_SFLOAT:
+	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
+	case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32:
+	case VK_FORMAT_BC1_RGB_UNORM_BLOCK:
+	case VK_FORMAT_BC1_RGB_SRGB_BLOCK:
+	case VK_FORMAT_BC1_RGBA_UNORM_BLOCK:
+	case VK_FORMAT_BC1_RGBA_SRGB_BLOCK:
+	case VK_FORMAT_BC2_UNORM_BLOCK:
+	case VK_FORMAT_BC2_SRGB_BLOCK:
+	case VK_FORMAT_BC3_UNORM_BLOCK:
+	case VK_FORMAT_BC3_SRGB_BLOCK:
+	case VK_FORMAT_BC4_UNORM_BLOCK:
+	case VK_FORMAT_BC4_SNORM_BLOCK:
+	case VK_FORMAT_BC5_UNORM_BLOCK:
+	case VK_FORMAT_BC5_SNORM_BLOCK:
+	case VK_FORMAT_BC6H_UFLOAT_BLOCK:
+	case VK_FORMAT_BC6H_SFLOAT_BLOCK:
+	case VK_FORMAT_BC7_UNORM_BLOCK:
+	case VK_FORMAT_BC7_SRGB_BLOCK:
+	case VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK:
+	case VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK:
+	case VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
+	case VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK:
+	case VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
+	case VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK:
+	case VK_FORMAT_EAC_R11_UNORM_BLOCK:
+	case VK_FORMAT_EAC_R11_SNORM_BLOCK:
+	case VK_FORMAT_EAC_R11G11_UNORM_BLOCK:
+	case VK_FORMAT_EAC_R11G11_SNORM_BLOCK:
 #ifdef SWIFTSHADER_ENABLE_ASTC
-		case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
-		case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
-		case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_4x4_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_5x4_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_5x5_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_6x5_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_6x6_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_8x5_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_8x6_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_8x8_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_10x5_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_10x6_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_10x8_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_10x10_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_12x10_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_12x12_UNORM_BLOCK:
+	case VK_FORMAT_ASTC_4x4_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_5x4_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_5x5_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_6x5_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_6x6_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_8x5_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_8x6_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_8x8_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_10x5_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_10x6_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_10x8_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_10x10_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_12x10_SRGB_BLOCK:
+	case VK_FORMAT_ASTC_12x12_SRGB_BLOCK:
 #endif
-		case VK_FORMAT_D16_UNORM:
-		case VK_FORMAT_D32_SFLOAT:
-		case VK_FORMAT_D32_SFLOAT_S8_UINT:
-			pFormatProperties->optimalTilingFeatures |=
-			    VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
-			// [[fallthrough]]
+	case VK_FORMAT_D16_UNORM:
+	case VK_FORMAT_D32_SFLOAT:
+	case VK_FORMAT_D32_SFLOAT_S8_UINT:
+		pFormatProperties->optimalTilingFeatures |=
+		    VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+		// [[fallthrough]]
 
-		// Formats which can be sampled, but don't support filtering
-		case VK_FORMAT_R8_UINT:
-		case VK_FORMAT_R8_SINT:
-		case VK_FORMAT_R8G8_UINT:
-		case VK_FORMAT_R8G8_SINT:
-		case VK_FORMAT_R8G8B8A8_UINT:
-		case VK_FORMAT_R8G8B8A8_SINT:
-		case VK_FORMAT_A8B8G8R8_UINT_PACK32:
-		case VK_FORMAT_A8B8G8R8_SINT_PACK32:
-		case VK_FORMAT_A2B10G10R10_UINT_PACK32:
-		case VK_FORMAT_A2R10G10B10_UINT_PACK32:
-		case VK_FORMAT_R16_UINT:
-		case VK_FORMAT_R16_SINT:
-		case VK_FORMAT_R16G16_UINT:
-		case VK_FORMAT_R16G16_SINT:
-		case VK_FORMAT_R16G16B16A16_UINT:
-		case VK_FORMAT_R16G16B16A16_SINT:
-		case VK_FORMAT_R32_UINT:
-		case VK_FORMAT_R32_SINT:
-		case VK_FORMAT_R32G32_UINT:
-		case VK_FORMAT_R32G32_SINT:
-		case VK_FORMAT_R32G32B32A32_UINT:
-		case VK_FORMAT_R32G32B32A32_SINT:
-		case VK_FORMAT_S8_UINT:
-			pFormatProperties->optimalTilingFeatures |=
-			    VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
-			    VK_FORMAT_FEATURE_BLIT_SRC_BIT |
-			    VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
-			    VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
-			break;
+	// Formats which can be sampled, but don't support filtering
+	case VK_FORMAT_R8_UINT:
+	case VK_FORMAT_R8_SINT:
+	case VK_FORMAT_R8G8_UINT:
+	case VK_FORMAT_R8G8_SINT:
+	case VK_FORMAT_R8G8B8A8_UINT:
+	case VK_FORMAT_R8G8B8A8_SINT:
+	case VK_FORMAT_A8B8G8R8_UINT_PACK32:
+	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
+	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+	case VK_FORMAT_A2R10G10B10_UINT_PACK32:
+	case VK_FORMAT_R16_UINT:
+	case VK_FORMAT_R16_SINT:
+	case VK_FORMAT_R16G16_UINT:
+	case VK_FORMAT_R16G16_SINT:
+	case VK_FORMAT_R16G16B16A16_UINT:
+	case VK_FORMAT_R16G16B16A16_SINT:
+	case VK_FORMAT_R32_UINT:
+	case VK_FORMAT_R32_SINT:
+	case VK_FORMAT_R32G32_UINT:
+	case VK_FORMAT_R32G32_SINT:
+	case VK_FORMAT_R32G32B32A32_UINT:
+	case VK_FORMAT_R32G32B32A32_SINT:
+	case VK_FORMAT_S8_UINT:
+		pFormatProperties->optimalTilingFeatures |=
+		    VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
+		    VK_FORMAT_FEATURE_BLIT_SRC_BIT |
+		    VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
+		    VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
+		break;
 
-		// YCbCr formats:
-		case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
-		case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
-			pFormatProperties->optimalTilingFeatures |=
-			    VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
-			    VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
-			    VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
-			    VK_FORMAT_FEATURE_TRANSFER_DST_BIT |
-			    VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT;
-			break;
-		default:
-			break;
+	// YCbCr formats:
+	case VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM:
+	case VK_FORMAT_G8_B8R8_2PLANE_420_UNORM:
+		pFormatProperties->optimalTilingFeatures |=
+		    VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT |
+		    VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT |
+		    VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
+		    VK_FORMAT_FEATURE_TRANSFER_DST_BIT |
+		    VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT;
+		break;
+	default:
+		break;
 	}
 
 	switch(format)
 	{
-		case VK_FORMAT_R32_UINT:
-		case VK_FORMAT_R32_SINT:
-			pFormatProperties->optimalTilingFeatures |=
-			    VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT;
-			pFormatProperties->bufferFeatures |=
-			    VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT;
-			// [[fallthrough]]
-		case VK_FORMAT_R8G8B8A8_UNORM:
-		case VK_FORMAT_R8G8B8A8_SNORM:
-		case VK_FORMAT_R8G8B8A8_UINT:
-		case VK_FORMAT_R8G8B8A8_SINT:
-		case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-		case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
-		case VK_FORMAT_A8B8G8R8_UINT_PACK32:
-		case VK_FORMAT_A8B8G8R8_SINT_PACK32:
-		case VK_FORMAT_R16G16B16A16_UINT:
-		case VK_FORMAT_R16G16B16A16_SINT:
-		case VK_FORMAT_R16G16B16A16_SFLOAT:
-		case VK_FORMAT_R32_SFLOAT:
-		case VK_FORMAT_R32G32_UINT:
-		case VK_FORMAT_R32G32_SINT:
-		case VK_FORMAT_R32G32_SFLOAT:
-		case VK_FORMAT_R32G32B32A32_UINT:
-		case VK_FORMAT_R32G32B32A32_SINT:
-		case VK_FORMAT_R32G32B32A32_SFLOAT:
-		// shaderStorageImageExtendedFormats
-		case VK_FORMAT_R16G16_SFLOAT:
-		case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
-		case VK_FORMAT_R16_SFLOAT:
-		case VK_FORMAT_R16G16B16A16_UNORM:
-		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-		case VK_FORMAT_R16G16_UNORM:
-		case VK_FORMAT_R8G8_UNORM:
-		case VK_FORMAT_R16_UNORM:
-		case VK_FORMAT_R8_UNORM:
-		case VK_FORMAT_R16G16B16A16_SNORM:
-		case VK_FORMAT_R16G16_SNORM:
-		case VK_FORMAT_R8G8_SNORM:
-		case VK_FORMAT_R16_SNORM:
-		case VK_FORMAT_R8_SNORM:
-		case VK_FORMAT_R16G16_SINT:
-		case VK_FORMAT_R8G8_SINT:
-		case VK_FORMAT_R16_SINT:
-		case VK_FORMAT_R8_SINT:
-		case VK_FORMAT_A2B10G10R10_UINT_PACK32:
-		case VK_FORMAT_R16G16_UINT:
-		case VK_FORMAT_R8G8_UINT:
-		case VK_FORMAT_R16_UINT:
-		case VK_FORMAT_R8_UINT:
-			pFormatProperties->optimalTilingFeatures |=
-			    VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT;
-			// [[fallthrough]]
-			pFormatProperties->bufferFeatures |=
-			    VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT;
-			break;
-		default:
-			break;
+	case VK_FORMAT_R32_UINT:
+	case VK_FORMAT_R32_SINT:
+		pFormatProperties->optimalTilingFeatures |=
+		    VK_FORMAT_FEATURE_STORAGE_IMAGE_ATOMIC_BIT;
+		pFormatProperties->bufferFeatures |=
+		    VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_ATOMIC_BIT;
+		// [[fallthrough]]
+	case VK_FORMAT_R8G8B8A8_UNORM:
+	case VK_FORMAT_R8G8B8A8_SNORM:
+	case VK_FORMAT_R8G8B8A8_UINT:
+	case VK_FORMAT_R8G8B8A8_SINT:
+	case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_UINT_PACK32:
+	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
+	case VK_FORMAT_R16G16B16A16_UINT:
+	case VK_FORMAT_R16G16B16A16_SINT:
+	case VK_FORMAT_R16G16B16A16_SFLOAT:
+	case VK_FORMAT_R32_SFLOAT:
+	case VK_FORMAT_R32G32_UINT:
+	case VK_FORMAT_R32G32_SINT:
+	case VK_FORMAT_R32G32_SFLOAT:
+	case VK_FORMAT_R32G32B32A32_UINT:
+	case VK_FORMAT_R32G32B32A32_SINT:
+	case VK_FORMAT_R32G32B32A32_SFLOAT:
+	// shaderStorageImageExtendedFormats
+	case VK_FORMAT_R16G16_SFLOAT:
+	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
+	case VK_FORMAT_R16_SFLOAT:
+	case VK_FORMAT_R16G16B16A16_UNORM:
+	case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+	case VK_FORMAT_R16G16_UNORM:
+	case VK_FORMAT_R8G8_UNORM:
+	case VK_FORMAT_R16_UNORM:
+	case VK_FORMAT_R8_UNORM:
+	case VK_FORMAT_R16G16B16A16_SNORM:
+	case VK_FORMAT_R16G16_SNORM:
+	case VK_FORMAT_R8G8_SNORM:
+	case VK_FORMAT_R16_SNORM:
+	case VK_FORMAT_R8_SNORM:
+	case VK_FORMAT_R16G16_SINT:
+	case VK_FORMAT_R8G8_SINT:
+	case VK_FORMAT_R16_SINT:
+	case VK_FORMAT_R8_SINT:
+	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+	case VK_FORMAT_R16G16_UINT:
+	case VK_FORMAT_R8G8_UINT:
+	case VK_FORMAT_R16_UINT:
+	case VK_FORMAT_R8_UINT:
+		pFormatProperties->optimalTilingFeatures |=
+		    VK_FORMAT_FEATURE_STORAGE_IMAGE_BIT;
+		// [[fallthrough]]
+		pFormatProperties->bufferFeatures |=
+		    VK_FORMAT_FEATURE_STORAGE_TEXEL_BUFFER_BIT;
+		break;
+	default:
+		break;
 	}
 
 	switch(format)
 	{
-		case VK_FORMAT_R5G6B5_UNORM_PACK16:
-		case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
-		case VK_FORMAT_R8_UNORM:
-		case VK_FORMAT_R8G8_UNORM:
-		case VK_FORMAT_R8G8B8A8_UNORM:
-		case VK_FORMAT_R8G8B8A8_SRGB:
-		case VK_FORMAT_B8G8R8A8_UNORM:
-		case VK_FORMAT_B8G8R8A8_SRGB:
-		case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-		case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
-		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-		case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-		case VK_FORMAT_R16_SFLOAT:
-		case VK_FORMAT_R16G16_SFLOAT:
-		case VK_FORMAT_R16G16B16A16_SFLOAT:
-		case VK_FORMAT_R32_SFLOAT:
-		case VK_FORMAT_R32G32_SFLOAT:
-		case VK_FORMAT_R32G32B32A32_SFLOAT:
-		case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
-		case VK_FORMAT_R8_UINT:
-		case VK_FORMAT_R8_SINT:
-		case VK_FORMAT_R8G8_UINT:
-		case VK_FORMAT_R8G8_SINT:
-		case VK_FORMAT_R8G8B8A8_UINT:
-		case VK_FORMAT_R8G8B8A8_SINT:
-		case VK_FORMAT_A8B8G8R8_UINT_PACK32:
-		case VK_FORMAT_A8B8G8R8_SINT_PACK32:
-		case VK_FORMAT_A2B10G10R10_UINT_PACK32:
-		case VK_FORMAT_A2R10G10B10_UINT_PACK32:
-		case VK_FORMAT_R16_UINT:
-		case VK_FORMAT_R16_SINT:
-		case VK_FORMAT_R16G16_UINT:
-		case VK_FORMAT_R16G16_SINT:
-		case VK_FORMAT_R16G16B16A16_UINT:
-		case VK_FORMAT_R16G16B16A16_SINT:
-		case VK_FORMAT_R32_UINT:
-		case VK_FORMAT_R32_SINT:
-		case VK_FORMAT_R32G32_UINT:
-		case VK_FORMAT_R32G32_SINT:
-		case VK_FORMAT_R32G32B32A32_UINT:
-		case VK_FORMAT_R32G32B32A32_SINT:
-			pFormatProperties->optimalTilingFeatures |=
-			    VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT |
-			    VK_FORMAT_FEATURE_BLIT_DST_BIT;
-			break;
-		case VK_FORMAT_S8_UINT:
-		case VK_FORMAT_D16_UNORM:
-		case VK_FORMAT_D32_SFLOAT:          // Note: either VK_FORMAT_D32_SFLOAT or VK_FORMAT_X8_D24_UNORM_PACK32 must be supported
-		case VK_FORMAT_D32_SFLOAT_S8_UINT:  // Note: either VK_FORMAT_D24_UNORM_S8_UINT or VK_FORMAT_D32_SFLOAT_S8_UINT must be supported
-			pFormatProperties->optimalTilingFeatures |=
-			    VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
-			break;
-		default:
-			break;
+	case VK_FORMAT_R5G6B5_UNORM_PACK16:
+	case VK_FORMAT_A1R5G5B5_UNORM_PACK16:
+	case VK_FORMAT_R8_UNORM:
+	case VK_FORMAT_R8G8_UNORM:
+	case VK_FORMAT_R8G8B8A8_UNORM:
+	case VK_FORMAT_R8G8B8A8_SRGB:
+	case VK_FORMAT_B8G8R8A8_UNORM:
+	case VK_FORMAT_B8G8R8A8_SRGB:
+	case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_SRGB_PACK32:
+	case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+	case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
+	case VK_FORMAT_R16_SFLOAT:
+	case VK_FORMAT_R16G16_SFLOAT:
+	case VK_FORMAT_R16G16B16A16_SFLOAT:
+	case VK_FORMAT_R32_SFLOAT:
+	case VK_FORMAT_R32G32_SFLOAT:
+	case VK_FORMAT_R32G32B32A32_SFLOAT:
+	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
+	case VK_FORMAT_R8_UINT:
+	case VK_FORMAT_R8_SINT:
+	case VK_FORMAT_R8G8_UINT:
+	case VK_FORMAT_R8G8_SINT:
+	case VK_FORMAT_R8G8B8A8_UINT:
+	case VK_FORMAT_R8G8B8A8_SINT:
+	case VK_FORMAT_A8B8G8R8_UINT_PACK32:
+	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
+	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+	case VK_FORMAT_A2R10G10B10_UINT_PACK32:
+	case VK_FORMAT_R16_UINT:
+	case VK_FORMAT_R16_SINT:
+	case VK_FORMAT_R16G16_UINT:
+	case VK_FORMAT_R16G16_SINT:
+	case VK_FORMAT_R16G16B16A16_UINT:
+	case VK_FORMAT_R16G16B16A16_SINT:
+	case VK_FORMAT_R32_UINT:
+	case VK_FORMAT_R32_SINT:
+	case VK_FORMAT_R32G32_UINT:
+	case VK_FORMAT_R32G32_SINT:
+	case VK_FORMAT_R32G32B32A32_UINT:
+	case VK_FORMAT_R32G32B32A32_SINT:
+		pFormatProperties->optimalTilingFeatures |=
+		    VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT |
+		    VK_FORMAT_FEATURE_BLIT_DST_BIT;
+		break;
+	case VK_FORMAT_S8_UINT:
+	case VK_FORMAT_D16_UNORM:
+	case VK_FORMAT_D32_SFLOAT:          // Note: either VK_FORMAT_D32_SFLOAT or VK_FORMAT_X8_D24_UNORM_PACK32 must be supported
+	case VK_FORMAT_D32_SFLOAT_S8_UINT:  // Note: either VK_FORMAT_D24_UNORM_S8_UINT or VK_FORMAT_D32_SFLOAT_S8_UINT must be supported
+		pFormatProperties->optimalTilingFeatures |=
+		    VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		break;
+	default:
+		break;
 	}
 
 	if(format.supportsColorAttachmentBlend())
@@ -1022,120 +1317,132 @@ void PhysicalDevice::GetFormatProperties(Format format, VkFormatProperties *pFor
 
 	switch(format)
 	{
-		case VK_FORMAT_R8_UNORM:
-		case VK_FORMAT_R8_SNORM:
-		case VK_FORMAT_R8_UINT:
-		case VK_FORMAT_R8_SINT:
-		case VK_FORMAT_R8G8_UNORM:
-		case VK_FORMAT_R8G8_SNORM:
-		case VK_FORMAT_R8G8_UINT:
-		case VK_FORMAT_R8G8_SINT:
-		case VK_FORMAT_R8G8B8A8_UNORM:
-		case VK_FORMAT_R8G8B8A8_SNORM:
-		case VK_FORMAT_R8G8B8A8_UINT:
-		case VK_FORMAT_R8G8B8A8_SINT:
-		case VK_FORMAT_B8G8R8A8_UNORM:
-		case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-		case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
-		case VK_FORMAT_A8B8G8R8_UINT_PACK32:
-		case VK_FORMAT_A8B8G8R8_SINT_PACK32:
-		case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-		case VK_FORMAT_A2R10G10B10_SNORM_PACK32:
-		case VK_FORMAT_A2R10G10B10_UINT_PACK32:
-		case VK_FORMAT_A2R10G10B10_SINT_PACK32:
-		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-		case VK_FORMAT_A2B10G10R10_SNORM_PACK32:
-		case VK_FORMAT_A2B10G10R10_UINT_PACK32:
-		case VK_FORMAT_A2B10G10R10_SINT_PACK32:
-		case VK_FORMAT_R16_UNORM:
-		case VK_FORMAT_R16_SNORM:
-		case VK_FORMAT_R16_UINT:
-		case VK_FORMAT_R16_SINT:
-		case VK_FORMAT_R16_SFLOAT:
-		case VK_FORMAT_R16G16_UNORM:
-		case VK_FORMAT_R16G16_SNORM:
-		case VK_FORMAT_R16G16_UINT:
-		case VK_FORMAT_R16G16_SINT:
-		case VK_FORMAT_R16G16_SFLOAT:
-		case VK_FORMAT_R16G16B16A16_UNORM:
-		case VK_FORMAT_R16G16B16A16_SNORM:
-		case VK_FORMAT_R16G16B16A16_UINT:
-		case VK_FORMAT_R16G16B16A16_SINT:
-		case VK_FORMAT_R16G16B16A16_SFLOAT:
-		case VK_FORMAT_R32_UINT:
-		case VK_FORMAT_R32_SINT:
-		case VK_FORMAT_R32_SFLOAT:
-		case VK_FORMAT_R32G32_UINT:
-		case VK_FORMAT_R32G32_SINT:
-		case VK_FORMAT_R32G32_SFLOAT:
-		case VK_FORMAT_R32G32B32_UINT:
-		case VK_FORMAT_R32G32B32_SINT:
-		case VK_FORMAT_R32G32B32_SFLOAT:
-		case VK_FORMAT_R32G32B32A32_UINT:
-		case VK_FORMAT_R32G32B32A32_SINT:
-		case VK_FORMAT_R32G32B32A32_SFLOAT:
-			pFormatProperties->bufferFeatures |=
-			    VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT;
-			break;
-		default:
-			break;
+	case VK_FORMAT_R8_UNORM:
+	case VK_FORMAT_R8_SNORM:
+	case VK_FORMAT_R8_UINT:
+	case VK_FORMAT_R8_SINT:
+	case VK_FORMAT_R8G8_UNORM:
+	case VK_FORMAT_R8G8_SNORM:
+	case VK_FORMAT_R8G8_UINT:
+	case VK_FORMAT_R8G8_SINT:
+	case VK_FORMAT_R8G8B8A8_UNORM:
+	case VK_FORMAT_R8G8B8A8_SNORM:
+	case VK_FORMAT_R8G8B8A8_UINT:
+	case VK_FORMAT_R8G8B8A8_SINT:
+	case VK_FORMAT_B8G8R8A8_UNORM:
+	case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_UINT_PACK32:
+	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
+	case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
+	case VK_FORMAT_A2R10G10B10_SNORM_PACK32:
+	case VK_FORMAT_A2R10G10B10_UINT_PACK32:
+	case VK_FORMAT_A2R10G10B10_SINT_PACK32:
+	case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+	case VK_FORMAT_A2B10G10R10_SNORM_PACK32:
+	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+	case VK_FORMAT_A2B10G10R10_SINT_PACK32:
+	case VK_FORMAT_R16_UNORM:
+	case VK_FORMAT_R16_SNORM:
+	case VK_FORMAT_R16_UINT:
+	case VK_FORMAT_R16_SINT:
+	case VK_FORMAT_R16_SFLOAT:
+	case VK_FORMAT_R16G16_UNORM:
+	case VK_FORMAT_R16G16_SNORM:
+	case VK_FORMAT_R16G16_UINT:
+	case VK_FORMAT_R16G16_SINT:
+	case VK_FORMAT_R16G16_SFLOAT:
+	case VK_FORMAT_R16G16B16A16_UNORM:
+	case VK_FORMAT_R16G16B16A16_SNORM:
+	case VK_FORMAT_R16G16B16A16_UINT:
+	case VK_FORMAT_R16G16B16A16_SINT:
+	case VK_FORMAT_R16G16B16A16_SFLOAT:
+	case VK_FORMAT_R32_UINT:
+	case VK_FORMAT_R32_SINT:
+	case VK_FORMAT_R32_SFLOAT:
+	case VK_FORMAT_R32G32_UINT:
+	case VK_FORMAT_R32G32_SINT:
+	case VK_FORMAT_R32G32_SFLOAT:
+	case VK_FORMAT_R32G32B32_UINT:
+	case VK_FORMAT_R32G32B32_SINT:
+	case VK_FORMAT_R32G32B32_SFLOAT:
+	case VK_FORMAT_R32G32B32A32_UINT:
+	case VK_FORMAT_R32G32B32A32_SINT:
+	case VK_FORMAT_R32G32B32A32_SFLOAT:
+		pFormatProperties->bufferFeatures |=
+		    VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT;
+		break;
+	default:
+		break;
 	}
 
 	switch(format)
 	{
-		// Vulkan 1.1 mandatory
-		case VK_FORMAT_R8_UNORM:
-		case VK_FORMAT_R8_SNORM:
-		case VK_FORMAT_R8_UINT:
-		case VK_FORMAT_R8_SINT:
-		case VK_FORMAT_R8G8_UNORM:
-		case VK_FORMAT_R8G8_SNORM:
-		case VK_FORMAT_R8G8_UINT:
-		case VK_FORMAT_R8G8_SINT:
-		case VK_FORMAT_R8G8B8A8_UNORM:
-		case VK_FORMAT_R8G8B8A8_SNORM:
-		case VK_FORMAT_R8G8B8A8_UINT:
-		case VK_FORMAT_R8G8B8A8_SINT:
-		case VK_FORMAT_B8G8R8A8_UNORM:
-		case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
-		case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
-		case VK_FORMAT_A8B8G8R8_UINT_PACK32:
-		case VK_FORMAT_A8B8G8R8_SINT_PACK32:
-		case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
-		case VK_FORMAT_A2B10G10R10_UINT_PACK32:
-		case VK_FORMAT_R16_UINT:
-		case VK_FORMAT_R16_SINT:
-		case VK_FORMAT_R16_SFLOAT:
-		case VK_FORMAT_R16G16_UINT:
-		case VK_FORMAT_R16G16_SINT:
-		case VK_FORMAT_R16G16_SFLOAT:
-		case VK_FORMAT_R16G16B16A16_UINT:
-		case VK_FORMAT_R16G16B16A16_SINT:
-		case VK_FORMAT_R16G16B16A16_SFLOAT:
-		case VK_FORMAT_R32_UINT:
-		case VK_FORMAT_R32_SINT:
-		case VK_FORMAT_R32_SFLOAT:
-		case VK_FORMAT_R32G32_UINT:
-		case VK_FORMAT_R32G32_SINT:
-		case VK_FORMAT_R32G32_SFLOAT:
-		case VK_FORMAT_R32G32B32A32_UINT:
-		case VK_FORMAT_R32G32B32A32_SINT:
-		case VK_FORMAT_R32G32B32A32_SFLOAT:
-		case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
-		// Optional
-		case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
-		case VK_FORMAT_A2R10G10B10_UINT_PACK32:
-			pFormatProperties->bufferFeatures |=
-			    VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT;
-			break;
-		default:
-			break;
+	// Vulkan 1.1 mandatory
+	case VK_FORMAT_R8_UNORM:
+	case VK_FORMAT_R8_SNORM:
+	case VK_FORMAT_R8_UINT:
+	case VK_FORMAT_R8_SINT:
+	case VK_FORMAT_R8G8_UNORM:
+	case VK_FORMAT_R8G8_SNORM:
+	case VK_FORMAT_R8G8_UINT:
+	case VK_FORMAT_R8G8_SINT:
+	case VK_FORMAT_R8G8B8A8_UNORM:
+	case VK_FORMAT_R8G8B8A8_SNORM:
+	case VK_FORMAT_R8G8B8A8_UINT:
+	case VK_FORMAT_R8G8B8A8_SINT:
+	case VK_FORMAT_B8G8R8A8_UNORM:
+	case VK_FORMAT_A8B8G8R8_UNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_SNORM_PACK32:
+	case VK_FORMAT_A8B8G8R8_UINT_PACK32:
+	case VK_FORMAT_A8B8G8R8_SINT_PACK32:
+	case VK_FORMAT_A2B10G10R10_UNORM_PACK32:
+	case VK_FORMAT_A2B10G10R10_UINT_PACK32:
+	case VK_FORMAT_R16_UINT:
+	case VK_FORMAT_R16_SINT:
+	case VK_FORMAT_R16_SFLOAT:
+	case VK_FORMAT_R16G16_UINT:
+	case VK_FORMAT_R16G16_SINT:
+	case VK_FORMAT_R16G16_SFLOAT:
+	case VK_FORMAT_R16G16B16A16_UINT:
+	case VK_FORMAT_R16G16B16A16_SINT:
+	case VK_FORMAT_R16G16B16A16_SFLOAT:
+	case VK_FORMAT_R32_UINT:
+	case VK_FORMAT_R32_SINT:
+	case VK_FORMAT_R32_SFLOAT:
+	case VK_FORMAT_R32G32_UINT:
+	case VK_FORMAT_R32G32_SINT:
+	case VK_FORMAT_R32G32_SFLOAT:
+	case VK_FORMAT_R32G32B32A32_UINT:
+	case VK_FORMAT_R32G32B32A32_SINT:
+	case VK_FORMAT_R32G32B32A32_SFLOAT:
+	case VK_FORMAT_B10G11R11_UFLOAT_PACK32:
+	// Optional
+	case VK_FORMAT_A2R10G10B10_UNORM_PACK32:
+	case VK_FORMAT_A2R10G10B10_UINT_PACK32:
+		pFormatProperties->bufferFeatures |=
+		    VK_FORMAT_FEATURE_UNIFORM_TEXEL_BUFFER_BIT;
+		break;
+	default:
+		break;
 	}
 
 	if(pFormatProperties->optimalTilingFeatures)
 	{
 		pFormatProperties->linearTilingFeatures = VK_FORMAT_FEATURE_TRANSFER_SRC_BIT |
 		                                          VK_FORMAT_FEATURE_TRANSFER_DST_BIT;
+
+		if(!format.isCompressed())
+		{
+			if(pFormatProperties->optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)
+			{
+				pFormatProperties->linearTilingFeatures |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT;
+			}
+			if(pFormatProperties->optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)
+			{
+				pFormatProperties->linearTilingFeatures |= VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+			}
+		}
 	}
 }
 
@@ -1149,44 +1456,44 @@ void PhysicalDevice::getImageFormatProperties(Format format, VkImageType type, V
 
 	switch(type)
 	{
-		case VK_IMAGE_TYPE_1D:
-			pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_1D;
-			pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_1D - 1);
-			pImageFormatProperties->maxExtent.height = 1;
-			break;
-		case VK_IMAGE_TYPE_2D:
-			if(flags & VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT)
-			{
-				pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_CUBE;
-				pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_CUBE - 1);
-				pImageFormatProperties->maxExtent.height = 1 << (vk::MAX_IMAGE_LEVELS_CUBE - 1);
-			}
-			else
-			{
-				pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_2D;
-				pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_2D - 1);
-				pImageFormatProperties->maxExtent.height = 1 << (vk::MAX_IMAGE_LEVELS_2D - 1);
+	case VK_IMAGE_TYPE_1D:
+		pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_1D;
+		pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_1D - 1);
+		pImageFormatProperties->maxExtent.height = 1;
+		break;
+	case VK_IMAGE_TYPE_2D:
+		if(flags & VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT)
+		{
+			pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_CUBE;
+			pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_CUBE - 1);
+			pImageFormatProperties->maxExtent.height = 1 << (vk::MAX_IMAGE_LEVELS_CUBE - 1);
+		}
+		else
+		{
+			pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_2D;
+			pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_2D - 1);
+			pImageFormatProperties->maxExtent.height = 1 << (vk::MAX_IMAGE_LEVELS_2D - 1);
 
-				VkFormatProperties props;
-				GetFormatProperties(format, &props);
-				auto features = tiling == VK_IMAGE_TILING_LINEAR ? props.linearTilingFeatures : props.optimalTilingFeatures;
-				if(features & (VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
-				{
-					// Only renderable formats make sense for multisample
-					pImageFormatProperties->sampleCounts = getSampleCounts();
-				}
+			VkFormatProperties props;
+			GetFormatProperties(format, &props);
+			auto features = tiling == VK_IMAGE_TILING_LINEAR ? props.linearTilingFeatures : props.optimalTilingFeatures;
+			if(features & (VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
+			{
+				// Only renderable formats make sense for multisample
+				pImageFormatProperties->sampleCounts = getSampleCounts();
 			}
-			break;
-		case VK_IMAGE_TYPE_3D:
-			pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_3D;
-			pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_3D - 1);
-			pImageFormatProperties->maxExtent.height = 1 << (vk::MAX_IMAGE_LEVELS_3D - 1);
-			pImageFormatProperties->maxExtent.depth = 1 << (vk::MAX_IMAGE_LEVELS_3D - 1);
-			pImageFormatProperties->maxArrayLayers = 1;  // no 3D + layers
-			break;
-		default:
-			UNREACHABLE("VkImageType: %d", int(type));
-			break;
+		}
+		break;
+	case VK_IMAGE_TYPE_3D:
+		pImageFormatProperties->maxMipLevels = vk::MAX_IMAGE_LEVELS_3D;
+		pImageFormatProperties->maxExtent.width = 1 << (vk::MAX_IMAGE_LEVELS_3D - 1);
+		pImageFormatProperties->maxExtent.height = 1 << (vk::MAX_IMAGE_LEVELS_3D - 1);
+		pImageFormatProperties->maxExtent.depth = 1 << (vk::MAX_IMAGE_LEVELS_3D - 1);
+		pImageFormatProperties->maxArrayLayers = 1;  // no 3D + layers
+		break;
+	default:
+		UNREACHABLE("VkImageType: %d", int(type));
+		break;
 	}
 
 	pImageFormatProperties->maxResourceSize = 1u << 31;  // Minimum value for maxResourceSize
@@ -1215,17 +1522,25 @@ uint32_t PhysicalDevice::getQueueFamilyPropertyCount() const
 	return 1;
 }
 
+VkQueueFamilyProperties PhysicalDevice::getQueueFamilyProperties() const
+{
+	VkQueueFamilyProperties properties = {};
+	properties.minImageTransferGranularity.width = 1;
+	properties.minImageTransferGranularity.height = 1;
+	properties.minImageTransferGranularity.depth = 1;
+	properties.queueCount = 1;
+	properties.queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+	properties.timestampValidBits = 64;
+
+	return properties;
+}
+
 void PhysicalDevice::getQueueFamilyProperties(uint32_t pQueueFamilyPropertyCount,
                                               VkQueueFamilyProperties *pQueueFamilyProperties) const
 {
 	for(uint32_t i = 0; i < pQueueFamilyPropertyCount; i++)
 	{
-		pQueueFamilyProperties[i].minImageTransferGranularity.width = 1;
-		pQueueFamilyProperties[i].minImageTransferGranularity.height = 1;
-		pQueueFamilyProperties[i].minImageTransferGranularity.depth = 1;
-		pQueueFamilyProperties[i].queueCount = 1;
-		pQueueFamilyProperties[i].queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
-		pQueueFamilyProperties[i].timestampValidBits = 0;  // No support for time stamps
+		pQueueFamilyProperties[i] = getQueueFamilyProperties();
 	}
 }
 
@@ -1234,12 +1549,7 @@ void PhysicalDevice::getQueueFamilyProperties(uint32_t pQueueFamilyPropertyCount
 {
 	for(uint32_t i = 0; i < pQueueFamilyPropertyCount; i++)
 	{
-		pQueueFamilyProperties[i].queueFamilyProperties.minImageTransferGranularity.width = 1;
-		pQueueFamilyProperties[i].queueFamilyProperties.minImageTransferGranularity.height = 1;
-		pQueueFamilyProperties[i].queueFamilyProperties.minImageTransferGranularity.depth = 1;
-		pQueueFamilyProperties[i].queueFamilyProperties.queueCount = 1;
-		pQueueFamilyProperties[i].queueFamilyProperties.queueFlags = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
-		pQueueFamilyProperties[i].queueFamilyProperties.timestampValidBits = 0;  // No support for time stamps
+		pQueueFamilyProperties[i].queueFamilyProperties = getQueueFamilyProperties();
 	}
 }
 

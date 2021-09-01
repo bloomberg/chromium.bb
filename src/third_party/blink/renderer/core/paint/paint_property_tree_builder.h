@@ -5,8 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_BUILDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_PROPERTY_TREE_BUILDER_H_
 
+#include "base/dcheck_is_on.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
@@ -28,7 +29,7 @@ class VisualViewport;
 // It's responsible for bookkeeping tree state in other order, for example, the
 // most recent position container seen.
 struct PaintPropertyTreeBuilderFragmentContext {
-  USING_FAST_MALLOC(PaintPropertyTreeBuilderFragmentContext);
+  DISALLOW_NEW();
 
  public:
   // Initializes all property tree nodes to the roots.
@@ -37,6 +38,9 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // State that propagates on the containing block chain (and so is adjusted
   // when an absolute or fixed position object is encountered).
   struct ContainingBlockContext {
+    DISALLOW_NEW();
+
+   public:
     // The combination of a transform and paint offset describes a linear space.
     // When a layout object recur to its children, the main context is expected
     // to refer the object's border box, then the callee will derive its own
@@ -49,14 +53,14 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // "Additional offset to layout shift root" is the accumulation of paint
     // offsets encoded in PaintOffsetTranslations between the local transform
     // space and the layout shift root. The layout shift root is the nearest
-    // transform node (not including the transform nodes for the current object)
-    // that is one of:
-    //   * The transform property tree state of the containing LayoutView
-    //   * A transform that is not identity or 2d translation
-    //   * A scroll translation
-    //   * A replaced contents transform
-    //   * A transform isolation node
-    //   * A sticky translation
+    // ancestor with
+    // - a transform node that is one of:
+    //   * the transform property tree state of the containing LayoutView
+    //   * a transform that is not identity or 2d translation
+    //   * a replaced contents transform
+    //   * a transform isolation node
+    //   * a paint offset translation for a sticky or fixed position element
+    // - or an overflow clip node.
     // The offset plus paint_offset is the offset for layout shift tracking.
     // It doesn't include transforms because we need to ignore transform changes
     // for layout shift tracking, see
@@ -64,6 +68,10 @@ struct PaintPropertyTreeBuilderFragmentContext {
     // This field is the diff between the new and the old additional offsets to
     // layout shift root.
     PhysicalOffset additional_offset_to_layout_shift_root_delta;
+
+    // Similar to additional_offset_to_layout_shift_root_delta but for scroll
+    // offsets.
+    FloatSize scroll_offset_to_layout_shift_root_delta;
 
     // For paint invalidation optimization for subpixel movement under
     // composited layer. It's reset to zero if subpixel can't be propagated
@@ -113,6 +121,8 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // containing block of corresponding positioned descendants.  Overflow clips
   // are also inherited by containing block tree instead of DOM tree, thus they
   // are included in the additional context too.
+  //
+  // Note that these contexts are not used in LayoutNGFragmentTraversal.
   ContainingBlockContext absolute_position;
 
   ContainingBlockContext fixed_position;
@@ -127,10 +137,11 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // Therefore, we don't need extra bookkeeping for effect nodes and can
   // generate the effect tree from a DOM-order traversal.
   const EffectPaintPropertyNodeOrAlias* current_effect;
+  bool this_or_ancestor_opacity_is_zero = false;
 
   // If the object is a flow thread, this records the clip rect for this
   // fragment.
-  base::Optional<PhysicalRect> fragment_clip;
+  absl::optional<PhysicalRect> fragment_clip;
 
   // If the object is fragmented, this records the logical top of this fragment
   // in the flow thread.
@@ -148,15 +159,23 @@ struct PaintPropertyTreeBuilderFragmentContext {
   // ContainingBlockContext is set, this value should be added to
   // ContainingBlockContext::additional_offset_to_layout_shift_root_delta.
   PhysicalOffset pending_additional_offset_to_layout_shift_root_delta;
+
+  // The delta between the old and new accumulated offsets of 2d translation
+  // transforms to the layout shift root.
+  FloatSize translation_2d_to_layout_shift_root_delta;
 };
 
-struct PaintPropertyTreeBuilderContext {
-  DISALLOW_NEW();
+struct PaintPropertyTreeBuilderContext final {
+  STACK_ALLOCATED();
 
  public:
   PaintPropertyTreeBuilderContext();
+  PaintPropertyTreeBuilderContext(const PaintPropertyTreeBuilderContext&) =
+      default;
 
   Vector<PaintPropertyTreeBuilderFragmentContext, 1> fragments;
+
+  // TODO(mstensho): Stop using these in LayoutNGFragmentTraversal.
   const LayoutObject* container_for_absolute_position = nullptr;
   const LayoutObject* container_for_fixed_position = nullptr;
 
@@ -200,7 +219,7 @@ struct PaintPropertyTreeBuilderContext {
   // its clip since this variable was last set to false. This is used
   // to find out whether a clip changed since the last transform update.
   // Code outside of this class resets clip_changed to false when transforms
-  // change.
+  // change. Used only when CullRectUpdate is not enabled.
   unsigned clip_changed : 1;
 
   // When printing, fixed-position objects and their descendants need to repeat
@@ -215,7 +234,11 @@ struct PaintPropertyTreeBuilderContext {
   // If not, subtree invalidations occur on every property tree change.
   unsigned supports_composited_raster_invalidation : 1;
 
-  unsigned is_affected_by_outer_viewport_bounds_delta : 1;
+  // Whether this object was a layout shift root during the previous render
+  // (not this one).
+  unsigned was_layout_shift_root : 1;
+
+  unsigned was_main_thread_scrolling : 1;
 
   // This is always recalculated in PaintPropertyTreeBuilder::UpdateForSelf()
   // which overrides the inherited value.
@@ -289,7 +312,7 @@ class PaintPropertyTreeBuilder {
   ALWAYS_INLINE bool ObjectTypeMightNeedPaintProperties() const;
   ALWAYS_INLINE void UpdateCompositedLayerPaginationOffset();
   ALWAYS_INLINE PaintPropertyTreeBuilderFragmentContext
-  ContextForFragment(const base::Optional<PhysicalRect>& fragment_clip,
+  ContextForFragment(const absl::optional<PhysicalRect>& fragment_clip,
                      LayoutUnit logical_top_in_flow_thread) const;
   ALWAYS_INLINE void CreateFragmentContextsInFlowThread(
       bool needs_paint_properties);

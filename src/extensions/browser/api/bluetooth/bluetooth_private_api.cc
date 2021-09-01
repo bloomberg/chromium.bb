@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -71,7 +72,7 @@ bool IsActualConnectionFailure(bt_private::ConnectResultType result) {
   }
 }
 
-base::Optional<device::ConnectionFailureReason> GetConnectionFailureReason(
+absl::optional<device::ConnectionFailureReason> GetConnectionFailureReason(
     bt_private::ConnectResultType result) {
   DCHECK(IsActualConnectionFailure(result));
 
@@ -252,20 +253,20 @@ void BluetoothPrivateSetAdapterStateFunction::DoWork(
     Respond(NoArguments());
 }
 
-base::Closure
+base::OnceClosure
 BluetoothPrivateSetAdapterStateFunction::CreatePropertySetCallback(
     const std::string& property_name) {
   BLUETOOTH_LOG(DEBUG) << "Set property succeeded: " << property_name;
-  return base::Bind(
+  return base::BindOnce(
       &BluetoothPrivateSetAdapterStateFunction::OnAdapterPropertySet, this,
       property_name);
 }
 
-base::Closure
+base::OnceClosure
 BluetoothPrivateSetAdapterStateFunction::CreatePropertyErrorCallback(
     const std::string& property_name) {
   BLUETOOTH_LOG(DEBUG) << "Set property failed: " << property_name;
-  return base::Bind(
+  return base::BindOnce(
       &BluetoothPrivateSetAdapterStateFunction::OnAdapterPropertyError, this,
       property_name);
 }
@@ -394,10 +395,10 @@ void BluetoothPrivateDisconnectAllFunction::DoWork(
   }
 
   device->Disconnect(
-      base::Bind(&BluetoothPrivateDisconnectAllFunction::OnSuccessCallback,
-                 this),
-      base::Bind(&BluetoothPrivateDisconnectAllFunction::OnErrorCallback, this,
-                 adapter, params_->device_address));
+      base::BindOnce(&BluetoothPrivateDisconnectAllFunction::OnSuccessCallback,
+                     this),
+      base::BindOnce(&BluetoothPrivateDisconnectAllFunction::OnErrorCallback,
+                     this, adapter, params_->device_address));
 }
 
 void BluetoothPrivateDisconnectAllFunction::OnSuccessCallback() {
@@ -437,10 +438,10 @@ void BluetoothPrivateForgetDeviceFunction::DoWork(
   }
 
   device->Forget(
-      base::Bind(&BluetoothPrivateForgetDeviceFunction::OnSuccessCallback,
-                 this),
-      base::Bind(&BluetoothPrivateForgetDeviceFunction::OnErrorCallback, this,
-                 adapter, params_->device_address));
+      base::BindOnce(&BluetoothPrivateForgetDeviceFunction::OnSuccessCallback,
+                     this),
+      base::BindOnce(&BluetoothPrivateForgetDeviceFunction::OnErrorCallback,
+                     this, adapter, params_->device_address));
 }
 
 void BluetoothPrivateForgetDeviceFunction::OnSuccessCallback() {
@@ -489,7 +490,8 @@ void BluetoothPrivateSetDiscoveryFilterFunction::DoWork(
         break;
     }
 
-    discovery_filter.reset(new device::BluetoothDiscoveryFilter(transport));
+    discovery_filter =
+        std::make_unique<device::BluetoothDiscoveryFilter>(transport);
 
     if (df_param.uuids.get()) {
       if (df_param.uuids->as_string.get()) {
@@ -517,10 +519,10 @@ void BluetoothPrivateSetDiscoveryFilterFunction::DoWork(
       ->event_router()
       ->SetDiscoveryFilter(
           std::move(discovery_filter), adapter.get(), GetExtensionId(),
-          base::Bind(
+          base::BindOnce(
               &BluetoothPrivateSetDiscoveryFilterFunction::OnSuccessCallback,
               this),
-          base::Bind(
+          base::BindOnce(
               &BluetoothPrivateSetDiscoveryFilterFunction::OnErrorCallback,
               this));
 }
@@ -677,7 +679,7 @@ void BluetoothPrivateRecordPairingFunction::DoWork(
   // Only emit metrics if this is a success or a true connection failure.
   if (success || IsActualConnectionFailure(result)) {
     device::RecordPairingResult(
-        success ? base::nullopt : GetConnectionFailureReason(result),
+        success ? absl::nullopt : GetConnectionFailureReason(result),
         GetBluetoothTransport(params_->transport),
         base::TimeDelta::FromMilliseconds(params_->pairing_duration_ms));
   }
@@ -708,7 +710,7 @@ void BluetoothPrivateRecordReconnectionFunction::DoWork(
   // Only emit metrics if this is a success or a true connection failure.
   if (success || IsActualConnectionFailure(result)) {
     device::RecordUserInitiatedReconnectionAttemptResult(
-        success ? base::nullopt : GetConnectionFailureReason(result),
+        success ? absl::nullopt : GetConnectionFailureReason(result),
         device::BluetoothUiSurface::kSettings);
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

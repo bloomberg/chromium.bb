@@ -36,7 +36,6 @@ void draw(SkCanvas* canvas) {
     SkPaint blrPaint;
     blrPaint.setAntiAlias(true);
     blrPaint.setMaskFilter(SkMaskFilter::MakeBlur(kNormal_SkBlurStyle, 12.047));
-    blrPaint.setFilterQuality(kLow_SkFilterQuality);
     blrPaint.setBlendMode(SkBlendMode::kSrc);
     blrPaint.setDither(dither);
 
@@ -57,6 +56,6 @@ void draw(SkCanvas* canvas) {
 
     SkPaint postPaint;
     postPaint.setDither(postDither);
-    surf->draw(canvas, 0, 0, &postPaint);
+    surf->draw(canvas, 0, 0, SkSamplingOptions(), &postPaint);
 }
 }  // END FIDDLE
