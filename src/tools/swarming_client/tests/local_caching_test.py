@@ -12,6 +12,7 @@ import subprocess
 import sys
 import tempfile
 import time
+import unittest
 
 import six
 
@@ -743,6 +744,7 @@ class NamedCacheTest(TestCase, CacheTestMixin):
         sorted([cache.NAMED_DIR, cache.STATE_FILE, cache._lru[u'1'][0]]),
         sorted(fs.listdir(cache.cache_dir)))
 
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_cleanup_missing(self):
     # cleanup() detects a missing item.
     cache = self.get_cache(_get_policies())

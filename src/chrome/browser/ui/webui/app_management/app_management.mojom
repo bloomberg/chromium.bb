@@ -24,6 +24,7 @@ struct App {
   apps.mojom.InstallSource install_source;
   bool hide_more_settings;
   bool hide_pin_to_shelf;
+  bool is_preferred_app;
 };
 
 // Extension-based apps primarily use install-time permissions that cannot be
@@ -56,7 +57,6 @@ interface Page {
   OnAppAdded(App app);
   OnAppChanged(App update);
   OnAppRemoved(string app_id);
-  OnArcSupportChanged(bool supported);
 };
 
 // Permission Type Enums for each App Publisher. The App Publishers are
@@ -78,10 +78,10 @@ enum ArcPermissionType {
 // This enum takes the important permission values from the
 // contents_settings_type.h ContentSettingsType enum.
 enum PwaPermissionType {
-  GEOLOCATION = 5,
-  NOTIFICATIONS = 6,
-  MEDIASTREAM_MIC = 9,
-  MEDIASTREAM_CAMERA = 10,
+  GEOLOCATION = 4,
+  NOTIFICATIONS = 5,
+  MEDIASTREAM_MIC = 8,
+  MEDIASTREAM_CAMERA = 9,
 };
 
 // The Plugin VM app publisher uses this enum directly.

@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/core/css/cssom/style_value_factory.h"
 
-#include "third_party/blink/renderer/core/css/css_color_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_cssstylevalue_string.h"
+#include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
@@ -20,7 +21,7 @@
 #include "third_party/blink/renderer/core/css/cssom/css_style_variable_reference_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_transform_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unparsed_value.h"
-#include "third_party/blink/renderer/core/css/cssom/css_unsupported_color_value.h"
+#include "third_party/blink/renderer/core/css/cssom/css_unsupported_color.h"
 #include "third_party/blink/renderer/core/css/cssom/css_unsupported_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_url_image_value.h"
 #include "third_party/blink/renderer/core/css/cssom/cssom_types.h"
@@ -55,8 +56,8 @@ CSSStyleValue* CreateStyleValue(const CSSValue& value) {
     return CSSKeywordValue::FromCSSValue(value);
   if (auto* primitive_value = DynamicTo<CSSPrimitiveValue>(value))
     return CSSNumericValue::FromCSSValue(*primitive_value);
-  if (auto* color_value = DynamicTo<cssvalue::CSSColorValue>(value))
-    return MakeGarbageCollected<CSSUnsupportedColorValue>(*color_value);
+  if (auto* color_value = DynamicTo<cssvalue::CSSColor>(value))
+    return MakeGarbageCollected<CSSUnsupportedColor>(*color_value);
   if (auto* image_value = DynamicTo<CSSImageValue>(value))
     return MakeGarbageCollected<CSSURLImageValue>(*image_value->Clone());
   return nullptr;
@@ -70,7 +71,11 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
     case CSSPropertyID::kBorderBottomLeftRadius:
     case CSSPropertyID::kBorderBottomRightRadius:
     case CSSPropertyID::kBorderTopLeftRadius:
-    case CSSPropertyID::kBorderTopRightRadius: {
+    case CSSPropertyID::kBorderTopRightRadius:
+    case CSSPropertyID::kBorderEndEndRadius:
+    case CSSPropertyID::kBorderEndStartRadius:
+    case CSSPropertyID::kBorderStartEndRadius:
+    case CSSPropertyID::kBorderStartStartRadius: {
       // border-radius-* are always stored as pairs, but when both values are
       // the same, we should reify as a single value.
       if (const auto* pair = DynamicTo<CSSValuePair>(value)) {
@@ -80,8 +85,9 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       }
       return nullptr;
     }
+    case CSSPropertyID::kAccentColor:
     case CSSPropertyID::kCaretColor: {
-      // caret-color also supports 'auto'
+      // caret-color and accent-color also support 'auto'
       auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
       if (identifier_value &&
           identifier_value->GetValueID() == CSSValueID::kAuto)
@@ -309,6 +315,42 @@ CSSStyleValue* StyleValueFactory::CssValueToStyleValue(
   return style_value;
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
+    const CSSProperty& property,
+    const AtomicString& custom_property_name,
+    const HeapVector<Member<V8UnionCSSStyleValueOrString>>& values,
+    const ExecutionContext& execution_context) {
+  const CSSParserContext* parser_context = nullptr;
+
+  CSSStyleValueVector style_values;
+  for (const auto& value : values) {
+    DCHECK(value);
+    switch (value->GetContentType()) {
+      case V8UnionCSSStyleValueOrString::ContentType::kCSSStyleValue:
+        style_values.push_back(*value->GetAsCSSStyleValue());
+        break;
+      case V8UnionCSSStyleValueOrString::ContentType::kString: {
+        if (!parser_context) {
+          parser_context =
+              MakeGarbageCollected<CSSParserContext>(execution_context);
+        }
+
+        const auto& subvalues = StyleValueFactory::FromString(
+            property.PropertyID(), custom_property_name, value->GetAsString(),
+            parser_context);
+        if (subvalues.IsEmpty())
+          return CSSStyleValueVector();
+
+        DCHECK(!subvalues.Contains(nullptr));
+        style_values.AppendVector(subvalues);
+        break;
+      }
+    }
+  }
+  return style_values;
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
     const CSSProperty& property,
     const AtomicString& custom_property_name,
@@ -341,6 +383,7 @@ CSSStyleValueVector StyleValueFactory::CoerceStyleValuesOrStrings(
   }
   return style_values;
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 CSSStyleValueVector StyleValueFactory::CssValueToStyleValueVector(
     const CSSPropertyName& name,

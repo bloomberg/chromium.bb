@@ -20,6 +20,7 @@
 #include "perfetto/base/thread_utils.h"
 #include "perfetto/base/time.h"
 #include "perfetto/tracing/core/data_source_config.h"
+#include "perfetto/tracing/internal/track_event_interned_fields.h"
 #include "perfetto/tracing/track_event.h"
 #include "perfetto/tracing/track_event_category_registry.h"
 #include "perfetto/tracing/track_event_interned_data_index.h"
@@ -31,6 +32,12 @@
 #include "protos/perfetto/trace/track_event/track_descriptor.pbzero.h"
 
 namespace perfetto {
+
+TrackEventSessionObserver::~TrackEventSessionObserver() = default;
+void TrackEventSessionObserver::OnSetup(const DataSourceBase::SetupArgs&) {}
+void TrackEventSessionObserver::OnStart(const DataSourceBase::StartArgs&) {}
+void TrackEventSessionObserver::OnStop(const DataSourceBase::StopArgs&) {}
+
 namespace internal {
 
 BaseTrackEventInternedDataIndex::~BaseTrackEventInternedDataIndex() = default;
@@ -42,52 +49,18 @@ static constexpr const char kLegacySlowPrefix[] = "disabled-by-default-";
 static constexpr const char kSlowTag[] = "slow";
 static constexpr const char kDebugTag[] = "debug";
 
-struct InternedEventCategory
-    : public TrackEventInternedDataIndex<
-          InternedEventCategory,
-          perfetto::protos::pbzero::InternedData::kEventCategoriesFieldNumber,
-          const char*,
-          SmallInternedDataTraits> {
-  static void Add(protos::pbzero::InternedData* interned_data,
-                  size_t iid,
-                  const char* value,
-                  size_t length) {
-    auto category = interned_data->add_event_categories();
-    category->set_iid(iid);
-    category->set_name(value, length);
+void ForEachObserver(
+    std::function<bool(TrackEventSessionObserver*&)> callback) {
+  // Session observers, shared by all track event data source instances.
+  static constexpr int kMaxObservers = 8;
+  static std::recursive_mutex* mutex = new std::recursive_mutex{};  // Leaked.
+  static std::array<TrackEventSessionObserver*, kMaxObservers> observers{};
+  std::unique_lock<std::recursive_mutex> lock(*mutex);
+  for (auto& o : observers) {
+    if (!callback(o))
+      break;
   }
-};
-
-struct InternedEventName
-    : public TrackEventInternedDataIndex<
-          InternedEventName,
-          perfetto::protos::pbzero::InternedData::kEventNamesFieldNumber,
-          const char*,
-          SmallInternedDataTraits> {
-  static void Add(protos::pbzero::InternedData* interned_data,
-                  size_t iid,
-                  const char* value) {
-    auto name = interned_data->add_event_names();
-    name->set_iid(iid);
-    name->set_name(value);
-  }
-};
-
-struct InternedDebugAnnotationName
-    : public TrackEventInternedDataIndex<
-          InternedDebugAnnotationName,
-          perfetto::protos::pbzero::InternedData::
-              kDebugAnnotationNamesFieldNumber,
-          const char*,
-          SmallInternedDataTraits> {
-  static void Add(protos::pbzero::InternedData* interned_data,
-                  size_t iid,
-                  const char* value) {
-    auto name = interned_data->add_debug_annotation_names();
-    name->set_iid(iid);
-    name->set_name(value);
-  }
-};
+}
 
 enum class MatchType { kExact, kPattern };
 
@@ -117,6 +90,12 @@ bool NameMatchesPatternList(const std::vector<std::string>& patterns,
 }
 
 }  // namespace
+
+// static
+const Track TrackEventInternal::kDefaultTrack{};
+
+// static
+std::atomic<int> TrackEventInternal::session_count_{};
 
 // static
 bool TrackEventInternal::Initialize(
@@ -152,22 +131,69 @@ bool TrackEventInternal::Initialize(
 }
 
 // static
+bool TrackEventInternal::AddSessionObserver(
+    TrackEventSessionObserver* observer) {
+  bool result = false;
+  ForEachObserver([&](TrackEventSessionObserver*& o) {
+    if (!o) {
+      o = observer;
+      result = true;
+      return false;
+    }
+    return true;
+  });
+  return result;
+}
+
+// static
+void TrackEventInternal::RemoveSessionObserver(
+    TrackEventSessionObserver* observer) {
+  ForEachObserver([&](TrackEventSessionObserver*& o) {
+    if (o == observer) {
+      o = nullptr;
+      return false;
+    }
+    return true;
+  });
+}
+
+// static
 void TrackEventInternal::EnableTracing(
     const TrackEventCategoryRegistry& registry,
     const protos::gen::TrackEventConfig& config,
-    uint32_t instance_index) {
+    const DataSourceBase::SetupArgs& args) {
   for (size_t i = 0; i < registry.category_count(); i++) {
     if (IsCategoryEnabled(registry, config, *registry.GetCategory(i)))
-      registry.EnableCategoryForInstance(i, instance_index);
+      registry.EnableCategoryForInstance(i, args.internal_instance_index);
   }
+  ForEachObserver([&](TrackEventSessionObserver*& o) {
+    if (o)
+      o->OnSetup(args);
+    return true;
+  });
+}
+
+// static
+void TrackEventInternal::OnStart(const DataSourceBase::StartArgs& args) {
+  session_count_.fetch_add(1);
+  ForEachObserver([&](TrackEventSessionObserver*& o) {
+    if (o)
+      o->OnStart(args);
+    return true;
+  });
 }
 
 // static
 void TrackEventInternal::DisableTracing(
     const TrackEventCategoryRegistry& registry,
-    uint32_t instance_index) {
+    const DataSourceBase::StopArgs& args) {
+  ForEachObserver([&](TrackEventSessionObserver*& o) {
+    if (o)
+      o->OnStop(args);
+    return true;
+  });
   for (size_t i = 0; i < registry.category_count(); i++)
-    registry.DisableCategoryForInstance(i, instance_index);
+    registry.DisableCategoryForInstance(i, args.internal_instance_index);
 }
 
 // static
@@ -196,6 +222,14 @@ bool TrackEventInternal::IsCategoryEnabled(
           return false;
         }
         break;
+      }
+      // No match? Must be a dynamic category.
+      DynamicCategory dyn_category(std::string(member_name, name_size));
+      Category ref_category{Category::FromDynamicCategory(dyn_category)};
+      if (IsCategoryEnabled(registry, config, ref_category)) {
+        result = true;
+        // Break ForEachGroupMember() loop.
+        return false;
       }
       // No match found => keep iterating.
       return true;
@@ -269,6 +303,11 @@ uint64_t TrackEventInternal::GetTimeNs() {
 }
 
 // static
+int TrackEventInternal::GetSessionCount() {
+  return session_count_.load();
+}
+
+// static
 void TrackEventInternal::ResetIncrementalState(TraceWriterBase* trace_writer,
                                                uint64_t timestamp) {
   auto default_track = ThreadTrack::Current();
@@ -319,11 +358,8 @@ EventContext TrackEventInternal::WriteEvent(
     perfetto::protos::pbzero::TrackEvent::Type type,
     uint64_t timestamp) {
   PERFETTO_DCHECK(g_main_thread);
+  PERFETTO_DCHECK(!incr_state->was_cleared);
 
-  if (incr_state->was_cleared) {
-    incr_state->was_cleared = false;
-    ResetIncrementalState(trace_writer, timestamp);
-  }
   auto packet = NewTracePacket(trace_writer, timestamp);
   EventContext ctx(std::move(packet), incr_state);
 
@@ -333,7 +369,9 @@ EventContext TrackEventInternal::WriteEvent(
 
   // We assume that |category| and |name| point to strings with static lifetime.
   // This means we can use their addresses as interning keys.
-  if (category && type != protos::pbzero::TrackEvent::TYPE_SLICE_END) {
+  // TODO(skyostil): Intern categories at compile time.
+  if (category && type != protos::pbzero::TrackEvent::TYPE_SLICE_END &&
+      type != protos::pbzero::TrackEvent::TYPE_COUNTER) {
     category->ForEachGroupMember(
         [&](const char* member_name, size_t name_size) {
           size_t category_iid =
@@ -342,7 +380,7 @@ EventContext TrackEventInternal::WriteEvent(
           return true;
         });
   }
-  if (name) {
+  if (name && type != protos::pbzero::TrackEvent::TYPE_SLICE_END) {
     size_t name_iid = InternedEventName::Get(&ctx, name);
     track_event->set_name_iid(name_iid);
   }

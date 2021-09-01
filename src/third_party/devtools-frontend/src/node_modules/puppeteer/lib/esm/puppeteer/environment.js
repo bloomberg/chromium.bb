@@ -13,6 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export const isNode = !!(typeof process !== 'undefined' &&
-    process.versions &&
-    process.versions.node);
+export const isNode = !!(typeof process !== 'undefined' && process.version);
+//# sourceMappingURL=environment.js.map

@@ -8,10 +8,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
 
@@ -80,6 +79,11 @@ void PlatformSensorChromeOS::OnSampleUpdated(
       OnErrorOccurred(chromeos::sensors::mojom::ObserverErrorType::READ_FAILED);
       return;
     }
+  }
+
+  if (num_failed_reads_ > 0 && ++num_recovery_reads_ == kNumRecoveryReads) {
+    num_recovery_reads_ = 0;
+    --num_failed_reads_;
   }
 
   SensorReading reading;
@@ -162,6 +166,7 @@ void PlatformSensorChromeOS::OnErrorOccurred(
 
     case chromeos::sensors::mojom::ObserverErrorType::READ_FAILED:
       LOG(ERROR) << "Sensor " << iio_device_id_ << ": Failed to read a sample";
+      OnReadFailure();
       break;
 
     case chromeos::sensors::mojom::ObserverErrorType::READ_TIMEOUT:
@@ -203,7 +208,6 @@ bool PlatformSensorChromeOS::StartSensor(
 void PlatformSensorChromeOS::StopSensor() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  sensor_device_remote_.reset();
   receiver_.reset();
 }
 
@@ -219,11 +223,18 @@ PlatformSensorConfiguration PlatformSensorChromeOS::GetDefaultConfiguration() {
   return default_configuration_;
 }
 
+void PlatformSensorChromeOS::SensorReplaced() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  VLOG(1) << "SensorReplaced with id: " << iio_device_id_;
+  ResetReadingBuffer();
+  ResetOnError();
+}
+
 void PlatformSensorChromeOS::ResetOnError() {
   LOG(ERROR) << "ResetOnError of sensor with id: " << iio_device_id_;
-  NotifySensorError();
   sensor_device_remote_.reset();
   receiver_.reset();
+  NotifySensorError();
 }
 
 void PlatformSensorChromeOS::StartReadingIfReady() {
@@ -248,7 +259,7 @@ mojo::PendingRemote<chromeos::sensors::mojom::SensorDeviceSamplesObserver>
 PlatformSensorChromeOS::BindNewPipeAndPassRemote() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!receiver_.is_bound());
-  auto pending_remote = receiver_.BindNewPipeAndPassRemote(task_runner_);
+  auto pending_remote = receiver_.BindNewPipeAndPassRemote(main_task_runner());
 
   receiver_.set_disconnect_handler(
       base::BindOnce(&PlatformSensorChromeOS::OnObserverDisconnect,
@@ -260,19 +271,17 @@ void PlatformSensorChromeOS::OnObserverDisconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(receiver_.is_bound());
 
-  LOG(ERROR) << "On Observer Disconnect";
-  receiver_.reset();
+  LOG(ERROR) << "OnObserverDisconnect";
 
-  // Try to restart reading.
-  if (sensor_device_remote_.is_bound())
-    StartReadingIfReady();
+  // Assumes IIO Service has crashed and waits for its relaunch.
+  ResetOnError();
 }
 
 void PlatformSensorChromeOS::SetRequiredChannels() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(required_channel_ids_.empty());  // Should only be called once.
 
-  base::Optional<std::string> axes_prefix = base::nullopt;
+  absl::optional<std::string> axes_prefix = absl::nullopt;
   switch (GetType()) {
     case mojom::SensorType::AMBIENT_LIGHT:
       required_channel_ids_.push_back(chromeos::sensors::mojom::kLightChannel);
@@ -382,6 +391,20 @@ void PlatformSensorChromeOS::SetChannelsEnabledCallback(
 
 double PlatformSensorChromeOS::GetScaledValue(int64_t value) const {
   return value * scale_;
+}
+
+void PlatformSensorChromeOS::OnReadFailure() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (++num_failed_reads_ < kNumFailedReadsBeforeGivingUp) {
+    LOG(ERROR) << "ReadSamples error #" << num_failed_reads_ << " occurred";
+    return;
+  }
+
+  num_failed_reads_ = num_recovery_reads_ = 0;
+
+  LOG(ERROR) << "Too many failed reads";
+  ResetOnError();
 }
 
 }  // namespace device

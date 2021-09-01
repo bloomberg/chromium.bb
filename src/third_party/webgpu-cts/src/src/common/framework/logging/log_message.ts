@@ -28,8 +28,16 @@ export class LogMessageWithStack extends Error {
       m += '\n' + extractImportantStackTrace(this);
     }
     if (this.timesSeen > 1) {
-      m += `\n(seen ${this.timesSeen} times with identical stack)`;
+      m += `\n(seen ${this.timesSeen} times with identical stack, not necessarily in a row; enable ?debug=1 to stop)`;
     }
     return m;
   }
+}
+
+/**
+ * Returns a string, nicely indented, for debug logs.
+ * This is used in the cmdline and wpt runtimes. In WPT, it shows up in the `*-actual.txt` file.
+ */
+export function prettyPrintLog(log: LogMessageWithStack): string {
+  return '  - ' + log.toJSON().replace(/\n/g, '\n    ');
 }

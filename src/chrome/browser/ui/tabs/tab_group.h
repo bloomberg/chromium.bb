@@ -10,11 +10,12 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "components/tab_groups/tab_group_visual_data.h"
+#include "ui/gfx/range/range.h"
 
 class TabGroupController;
 
@@ -46,7 +47,7 @@ class TabGroup {
   // "Google Search and 3 other tabs". Used for accessibly describing the group,
   // as well as for displaying in context menu items and tooltips when the group
   // is unnamed.
-  base::string16 GetContentString() const;
+  std::u16string GetContentString() const;
 
   // Updates internal bookkeeping for group contents, and notifies the
   // controller that contents changed when a tab is added.
@@ -56,16 +57,44 @@ class TabGroup {
   // controller that contents changed when a tab is removed.
   void RemoveTab();
 
+  // The number of tabs in this group, determined by AddTab() and
+  // RemoveTab() calls.
+  int tab_count() const { return tab_count_; }
+
   // Returns whether the group has no tabs.
   bool IsEmpty() const;
 
   // Returns whether the user has explicitly set the visual data themselves.
   bool IsCustomized() const;
 
-  // Returns the model indices of all tabs in this group. Notably does not rely
-  // on the TabGroup's internal metadata, but rather traverses directly through
-  // the tabs in TabStripModel.
-  std::vector<int> ListTabs() const;
+  // Gets the model index of this group's first tab, or nullopt if it is
+  // empty. Similar to ListTabs() it traverses through TabStripModel's
+  // tabs. Unlike ListTabs() this is always safe to call.
+  absl::optional<int> GetFirstTab() const;
+
+  // Gets the model index of this group's last tab, or nullopt if it is
+  // empty. Similar to ListTabs() it traverses through TabStripModel's
+  // tabs. Unlike ListTabs() this is always safe to call.
+  absl::optional<int> GetLastTab() const;
+
+  // Returns the range of tab model indices this group contains. Notably
+  // does not rely on the TabGroup's internal metadata, but rather
+  // traverses directly through the tabs in TabStripModel.
+  //
+  // The returned range will never be a reverse range. It will always be
+  // a forward range, or the empty range {0,0}.
+  //
+  // This method can only be called when a group is contiguous. A group
+  // may not be contiguous in some TabStripModel intermediate states.
+  // Notably, any operation that groups tabs then moves them into
+  // position exposes these states.
+  //
+  // This is only a concern for TabStripModelObservers who query
+  // TabStripModel after observer notifications. While each call to
+  // TabStripModel's public API leaves groups in a contiguous state,
+  // observers are notified of some changes in during intermediate
+  // steps.
+  gfx::Range ListTabs() const;
 
  private:
   TabGroupController* controller_;

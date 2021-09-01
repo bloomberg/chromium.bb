@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 from telemetry.core import exceptions
 from telemetry.testing import tab_test_case
 
@@ -84,8 +85,7 @@ class InspectorRuntimeTest(tab_test_case.TabTestCase):
       py_utils.WaitFor(lambda: TestVarReady(context_id), timeout=10)
       return self._tab.EvaluateJavaScript('testVar', context_id=context_id)
 
-    all_contexts_list = list(self._tab.EnableAllContexts())
-    all_contexts_list.sort()
+    all_contexts_list = sorted(self._tab.EnableAllContexts())
     # Access parent page using EvaluateJavaScriptInContext.
     host_context = all_contexts_list[0]
     self.assertEquals(TestVar(host_context), 'host')
@@ -94,8 +94,8 @@ class InspectorRuntimeTest(tab_test_case.TabTestCase):
     iframe1 = TestVar(context_id=all_contexts_list[1])
     iframe2 = TestVar(context_id=all_contexts_list[2])
     iframe3 = TestVar(context_id=all_contexts_list[3])
-    self.assertEqual(set([iframe1, iframe2, iframe3]),
-                     set(['iframe1', 'iframe2', 'iframe3']))
+    self.assertEqual({iframe1, iframe2, iframe3},
+                     {'iframe1', 'iframe2', 'iframe3'})
 
     # Accessing a non-existent iframe throws an exception.
     self.assertRaises(

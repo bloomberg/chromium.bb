@@ -8,11 +8,13 @@
 #include <drm_mode.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -90,10 +92,17 @@ class MockDrmDevice : public DrmDevice {
     legacy_gamma_ramp_expectation_ = state;
   }
   void set_commit_expectation(bool state) { commit_expectation_ = state; }
+  void set_overlay_modeset_expecation(bool state) {
+    modeset_with_overlays_expectation_ = state;
+  }
 
   uint32_t current_framebuffer() const { return current_framebuffer_; }
 
   const std::vector<sk_sp<SkSurface>> buffers() const { return buffers_; }
+
+  int last_planes_committed_count() const {
+    return last_planes_committed_count_;
+  }
 
   uint32_t get_cursor_handle_for_crtc(uint32_t crtc) const {
     const auto it = crtc_cursor_map_.find(crtc);
@@ -121,6 +130,9 @@ class MockDrmDevice : public DrmDevice {
   void RunCallbacks();
 
   void SetPropertyBlob(ScopedDrmPropertyBlobPtr blob);
+
+  void SetModifiersOverhead(base::flat_map<uint64_t, int> modifiers_overhead);
+  void SetSystemLimitOfModifiers(uint64_t limit);
 
   // DrmDevice:
   ScopedDrmResourcesPtr GetResources() override;
@@ -177,10 +189,6 @@ class MockDrmDevice : public DrmDevice {
   bool MapDumbBuffer(uint32_t handle, size_t size, void** pixels) override;
   bool UnmapDumbBuffer(void* pixels, size_t size) override;
   bool CloseBufferHandle(uint32_t handle) override;
-  bool CommitProperties(drmModeAtomicReq* request,
-                        uint32_t flags,
-                        uint32_t crtc_count,
-                        scoped_refptr<PageFlipRequest> callback) override;
   bool SetGammaRamp(
       uint32_t crtc_id,
       const std::vector<display::GammaRampRGBEntry>& lut) override;
@@ -188,7 +196,20 @@ class MockDrmDevice : public DrmDevice {
   uint32_t GetFramebufferForCrtc(uint32_t crtc_id) const;
 
  private:
+  // Properties of the plane associated with a fb.
+  struct FramebufferProps {
+    uint32_t width = 0;
+    uint32_t height = 0;
+    uint64_t modifier = 0;
+  };
+
   ~MockDrmDevice() override;
+
+  bool CommitPropertiesInternal(
+      drmModeAtomicReq* request,
+      uint32_t flags,
+      uint32_t crtc_count,
+      scoped_refptr<PageFlipRequest> callback) override;
 
   bool UpdateProperty(uint32_t id,
                       uint64_t value,
@@ -210,6 +231,7 @@ class MockDrmDevice : public DrmDevice {
   int commit_count_ = 0;
   int set_object_property_count_ = 0;
   int set_gamma_ramp_count_ = 0;
+  int last_planes_committed_count_ = 0;
 
   bool set_crtc_expectation_;
   bool add_framebuffer_expectation_;
@@ -217,8 +239,10 @@ class MockDrmDevice : public DrmDevice {
   bool create_dumb_buffer_expectation_;
   bool legacy_gamma_ramp_expectation_ = false;
   bool commit_expectation_ = true;
+  bool modeset_with_overlays_expectation_ = true;
 
   uint32_t current_framebuffer_;
+  uint32_t plane_crtc_id_prop_id_ = 0;
 
   std::vector<sk_sp<SkSurface>> buffers_;
 
@@ -237,11 +261,13 @@ class MockDrmDevice : public DrmDevice {
 
   std::map<uint32_t, std::string> property_names_;
 
-  // TODO(dnicoara): Generate all IDs internal to MockDrmDevice.
-  // For now generate something with a high enough ID to be unique in tests.
-  uint32_t property_id_generator_ = 0xff000000;
-
   std::set<uint32_t> allocated_property_blobs_;
+
+  // Props of the plane associated with the generated fb_id.
+  base::flat_map<uint32_t /*fb_id*/, FramebufferProps> fb_props_;
+
+  uint64_t system_watermark_limitations_ = std::numeric_limits<uint64_t>::max();
+  base::flat_map<uint64_t /*modifier*/, int /*overhead*/> modifiers_overhead_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDrmDevice);
 };

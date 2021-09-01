@@ -6,16 +6,16 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/android/android_theme_resources.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/ui/android/infobars/grouped_permission_infobar.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/permissions/android/permission_prompt_android.h"
-#include "components/permissions/notification_permission_ui_selector.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_manager.h"
+#include "components/permissions/permission_ui_selector.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -26,8 +26,7 @@
 
 namespace {
 
-using QuietUiReason =
-    permissions::NotificationPermissionUiSelector::QuietUiReason;
+using QuietUiReason = permissions::PermissionUiSelector::QuietUiReason;
 
 // The URL for when the user clicks the "Learn more" link.
 constexpr char kNotificationsHelpUrl[] =
@@ -44,11 +43,11 @@ GroupedPermissionInfoBarDelegate::~GroupedPermissionInfoBarDelegate() {
 infobars::InfoBar* GroupedPermissionInfoBarDelegate::Create(
     const base::WeakPtr<permissions::PermissionPromptAndroid>&
         permission_prompt,
-    InfoBarService* infobar_service) {
+    infobars::ContentInfoBarManager* infobar_manager) {
   // WrapUnique needs to be used because the constructor is private.
-  return infobar_service->AddInfoBar(std::make_unique<GroupedPermissionInfoBar>(
+  return infobar_manager->AddInfoBar(std::make_unique<GroupedPermissionInfoBar>(
       base::WrapUnique(new GroupedPermissionInfoBarDelegate(permission_prompt,
-                                                            infobar_service))));
+                                                            infobar_manager))));
 }
 
 size_t GroupedPermissionInfoBarDelegate::PermissionCount() const {
@@ -60,12 +59,12 @@ ContentSettingsType GroupedPermissionInfoBarDelegate::GetContentSettingType(
   return permission_prompt_->GetContentSettingType(position);
 }
 
-base::string16 GroupedPermissionInfoBarDelegate::GetCompactMessageText() const {
+std::u16string GroupedPermissionInfoBarDelegate::GetCompactMessageText() const {
   return l10n_util::GetStringUTF16(
       IDS_NOTIFICATION_QUIET_PERMISSION_MINI_INFOBAR_MESSAGE);
 }
 
-base::string16 GroupedPermissionInfoBarDelegate::GetCompactLinkText() const {
+std::u16string GroupedPermissionInfoBarDelegate::GetCompactLinkText() const {
   switch (QuietNotificationPermissionUiConfig::GetMiniInfobarExpandLinkText()) {
     case QuietNotificationPermissionUiConfig::InfobarLinkTextVariation::kManage:
       return l10n_util::GetStringUTF16(IDS_NOTIFICATION_BUTTON_MANAGE);
@@ -76,18 +75,20 @@ base::string16 GroupedPermissionInfoBarDelegate::GetCompactLinkText() const {
   }
 
   NOTREACHED();
-  return base::string16();
+  return std::u16string();
 }
 
 // TODO(crbug.com/1082737): Many methods of this class switches on the quiet UI
 // reason. Refactor this into separate subclasses instead.
-base::string16 GroupedPermissionInfoBarDelegate::GetDescriptionText() const {
+std::u16string GroupedPermissionInfoBarDelegate::GetDescriptionText() const {
   auto* manager = permissions::PermissionRequestManager::FromWebContents(
       permission_prompt_->web_contents());
 
-  switch (manager->ReasonForUsingQuietUi()) {
+  auto quiet_ui_reason = manager->ReasonForUsingQuietUi();
+  if (!quiet_ui_reason)
+    return std::u16string();
+  switch (*quiet_ui_reason) {
     case QuietUiReason::kEnabledInPrefs:
-    case QuietUiReason::kPredictedVeryUnlikelyGrant:
       return l10n_util::GetStringUTF16(
           IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_MESSAGE);
     case QuietUiReason::kTriggeredByCrowdDeny:
@@ -97,10 +98,13 @@ base::string16 GroupedPermissionInfoBarDelegate::GetDescriptionText() const {
     case QuietUiReason::kTriggeredDueToAbusiveContent:
       return l10n_util::GetStringUTF16(
           IDS_NOTIFICATION_QUIET_PERMISSION_INFOBAR_ABUSIVE_MESSAGE);
+    case QuietUiReason::kPredictedVeryUnlikelyGrant:
+      return l10n_util::GetStringUTF16(
+          IDS_NOTIFICATION_QUIET_PERMISSION_INFOBAR_PREDICTION_SERVICE_MESSAGE);
   }
 
   NOTREACHED();
-  return base::string16();
+  return std::u16string();
 }
 
 bool GroupedPermissionInfoBarDelegate::ShouldSecondaryButtonOpenSettings()
@@ -108,7 +112,10 @@ bool GroupedPermissionInfoBarDelegate::ShouldSecondaryButtonOpenSettings()
   auto* manager = permissions::PermissionRequestManager::FromWebContents(
       permission_prompt_->web_contents());
 
-  switch (manager->ReasonForUsingQuietUi()) {
+  auto quiet_ui_reason = manager->ReasonForUsingQuietUi();
+  if (!quiet_ui_reason)
+    return false;
+  switch (*quiet_ui_reason) {
     case QuietUiReason::kEnabledInPrefs:
     case QuietUiReason::kPredictedVeryUnlikelyGrant:
     case QuietUiReason::kTriggeredByCrowdDeny:
@@ -126,23 +133,26 @@ int GroupedPermissionInfoBarDelegate::GetIconId() const {
   return IDR_ANDROID_INFOBAR_NOTIFICATIONS_OFF;
 }
 
-base::string16 GroupedPermissionInfoBarDelegate::GetLinkText() const {
+std::u16string GroupedPermissionInfoBarDelegate::GetLinkText() const {
   auto* manager = permissions::PermissionRequestManager::FromWebContents(
       permission_prompt_->web_contents());
 
   // This will be used as the text of the link in the expanded state.
-  switch (manager->ReasonForUsingQuietUi()) {
+  auto quiet_ui_reason = manager->ReasonForUsingQuietUi();
+  if (!quiet_ui_reason)
+    return std::u16string();
+  switch (*quiet_ui_reason) {
     case QuietUiReason::kEnabledInPrefs:
     case QuietUiReason::kPredictedVeryUnlikelyGrant:
     case QuietUiReason::kTriggeredByCrowdDeny:
-      return base::string16();
+      return std::u16string();
     case QuietUiReason::kTriggeredDueToAbusiveRequests:
     case QuietUiReason::kTriggeredDueToAbusiveContent:
       return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
   }
 
   NOTREACHED();
-  return base::string16();
+  return std::u16string();
 }
 
 GURL GroupedPermissionInfoBarDelegate::GetLinkURL() const {
@@ -168,7 +178,7 @@ void GroupedPermissionInfoBarDelegate::InfoBarDismissed() {
     permission_prompt_->Closing();
 }
 
-base::string16 GroupedPermissionInfoBarDelegate::GetMessageText() const {
+std::u16string GroupedPermissionInfoBarDelegate::GetMessageText() const {
   return l10n_util::GetStringUTF16(
       IDS_NOTIFICATION_QUIET_PERMISSION_INFOBAR_TITLE);
 }
@@ -179,7 +189,10 @@ bool GroupedPermissionInfoBarDelegate::Accept() {
 
   auto* manager = permissions::PermissionRequestManager::FromWebContents(
       permission_prompt_->web_contents());
-  switch (manager->ReasonForUsingQuietUi()) {
+  auto quiet_ui_reason = manager->ReasonForUsingQuietUi();
+  if (!quiet_ui_reason)
+    return true;
+  switch (*quiet_ui_reason) {
     case QuietUiReason::kEnabledInPrefs:
     case QuietUiReason::kPredictedVeryUnlikelyGrant:
     case QuietUiReason::kTriggeredByCrowdDeny:
@@ -199,7 +212,10 @@ bool GroupedPermissionInfoBarDelegate::Cancel() {
 
   auto* manager = permissions::PermissionRequestManager::FromWebContents(
       permission_prompt_->web_contents());
-  switch (manager->ReasonForUsingQuietUi()) {
+  auto quiet_ui_reason = manager->ReasonForUsingQuietUi();
+  if (!quiet_ui_reason)
+    return true;
+  switch (*quiet_ui_reason) {
     case QuietUiReason::kEnabledInPrefs:
     case QuietUiReason::kPredictedVeryUnlikelyGrant:
     case QuietUiReason::kTriggeredByCrowdDeny:
@@ -227,12 +243,12 @@ bool GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
 GroupedPermissionInfoBarDelegate::GroupedPermissionInfoBarDelegate(
     const base::WeakPtr<permissions::PermissionPromptAndroid>&
         permission_prompt,
-    InfoBarService* infobar_service)
+    infobars::ContentInfoBarManager* infobar_manager)
     : permission_prompt_(permission_prompt),
-      infobar_service_(infobar_service),
+      infobar_manager_(infobar_manager),
       details_expanded_(false) {
   DCHECK(permission_prompt_);
-  DCHECK(infobar_service_);
+  DCHECK(infobar_manager_);
 
   // Infobars are only used for NOTIFICATIONS right now, therefore strings can
   // be hardcoded for that type.
@@ -249,12 +265,15 @@ int GroupedPermissionInfoBarDelegate::GetButtons() const {
   return BUTTON_OK | BUTTON_CANCEL;
 }
 
-base::string16 GroupedPermissionInfoBarDelegate::GetButtonLabel(
+std::u16string GroupedPermissionInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   auto* manager = permissions::PermissionRequestManager::FromWebContents(
       permission_prompt_->web_contents());
 
-  switch (manager->ReasonForUsingQuietUi()) {
+  auto quiet_ui_reason = manager->ReasonForUsingQuietUi();
+  if (!quiet_ui_reason)
+    return std::u16string();
+  switch (*quiet_ui_reason) {
     case QuietUiReason::kEnabledInPrefs:
     case QuietUiReason::kPredictedVeryUnlikelyGrant:
     case QuietUiReason::kTriggeredByCrowdDeny:
@@ -271,7 +290,7 @@ base::string16 GroupedPermissionInfoBarDelegate::GetButtonLabel(
   }
 
   NOTREACHED();
-  return base::string16();
+  return std::u16string();
 }
 
 bool GroupedPermissionInfoBarDelegate::EqualsDelegate(

@@ -217,6 +217,21 @@ Whether you should allow an interface to have constructor depends on the spec of
 Currently `[Constructor(...)]` does not yet support optional arguments w/o defaults. It just supports optional `[DefaultValue=Undefined]`.
 ***
 
+### [CrossOriginIsolated] _(a, i, m)_
+
+Standard: [CrossOriginIsolated](https://heycam.github.io/webidl/#CrossOriginIsolated)
+
+Summary: Interfaces and interface members with a `CrossOriginIsolated` attribute are exposed only inside contexts whose [cross-origin isolated capability](https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability) is enabled. 
+
+Usage: The `[CrossOriginIsolated]` attribute may be specified on interfaces, attributes, and members:
+
+```webidl
+[CrossOriginIsolated]
+interface HighResolutionTimer {
+  DOMHighResTimeStamp getHighResolutionTime();
+};
+```
+
 ### [EnforceRange] _(t)_
 
 Standard: [EnforceRange](https://heycam.github.io/webidl/#EnforceRange)
@@ -957,23 +972,6 @@ v8::Local<v8::Value> V8XXX::CallAsFunctionCallback(const v8::Arguments& args) {
 }
 ```
 
-### [CustomElementCallbacks] _(m, a)_
-
-Summary: Wraps the method/accessor with a Custom Elements "callback delivery scope" which will dispatch Custom Element callbacks (createdCallback, attributeChangedCallback, etc.) before returning to script.
-
-*** note
-This attribute is only for Custom Elements V0,
-and is superceded by `[CEReactions]` for V1.
-***
-
-If the method/accessor creates elements or modifies DOM nodes in any way, it should be tagged with this extended attribute. Even if you're not a Node, this may apply to you! For example [DOMTokenList.toggle](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/core/dom/dom_token_list.idl&l=34) can be reflected in the attribute of its associated element, so it needs to be tagged with CustomElementCallbacks. If the method/accessor only calls something that may modify the DOM (for example, it runs user script as a callback) you don't need to tag your method with `[CustomElementCallbacks]`; that is the responsibility of the binding that actually modifies the DOM. In general over-applying this extended attribute is safe, with one caveat:
-
-* This extended attribute MUST NOT be used on members that operate on non-main threads, because the callback delivery scope accesses statics.
-* Basically: Don't apply this extended attribute to anything that can be called from a worker.
-* This criterion (accessible by workers) depends on implementation and cannot easily be checked from the IDL or C++ headers (it includes obvious cases like `[Exposed=Worker]`, where there is a constructor on the (JS) global object, but also cases where the C++ creates or accesses methods internally), so please be careful.
-
-Usage: `[CustomElementCallbacks]` takes no arguments.
-
 ### [HighEntropy] _(m, a, c)_
 
 Summary: Denotes an API that exposes data that folks on the internet find useful for fingerprinting.
@@ -999,9 +997,9 @@ For now, this label is only supported for attribute getters, although the `[High
 
 ### [DeprecateAs] _(m, a, c)_
 
-Summary: Measures usage of a deprecated feature via UseCounter, and notifies developers about deprecation via a console warning.
+Summary: Measures usage of a deprecated feature via `UseCounter`, and notifies developers about deprecation via a console warning.
 
-`[DeprecateAs]` can be considered an extended form of `[MeasureAs]`: it both measures the feature's usage via the same UseCounter mechanism, and also sends out a warning to the console (optionally with a message) in order to inform developers that the code they've written will stop working at some point in the relatively near future.
+`[DeprecateAs]` can be considered an extended form of `[MeasureAs]`: it both measures the feature's usage via the same `UseCounter` mechanism, and also sends out a warning to the console (optionally with a message) in order to inform developers that the code they've written will stop working at some point in the relatively near future.
 
 Usage: `[DeprecateAs]` can be specified on methods, attributes, and constants.
 
@@ -1011,7 +1009,7 @@ Usage: `[DeprecateAs]` can be specified on methods, attributes, and constants.
     [DeprecateAs=DeprecatedPrefixedConstant] const short DEPRECATED_PREFIXED_CONSTANT = 1;
 ```
 
-The deprecation message show on the console can be specified via the [UseCounter::deprecationMessage](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/core/frame/use_counter.cc&q=UseCounter::deprecationMessage&l=615) method.
+The deprecation message shown on the console can be specified via the [Deprecation::GetDeprecationInfo](https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/renderer/core/frame/deprecation.cc;l=194) method.
 
 ### [DoNotTestNewObject] _(m)_
 
@@ -1021,7 +1019,7 @@ When specified, does not generate a test for `[NewObject]`. Some implementation 
 
 ### [Measure] _(i, m, a, c)_
 
-Summary: Measures usage of a specific feature via UseCounter.
+Summary: Measures usage of a specific feature via `UseCounter`.
 
 In order to measure usage of specific features, Chrome submits anonymous statistics through the Histogram recording system for users who opt-in to sharing usage statistics. This extended attribute hooks up a specific feature to this measurement system.
 
@@ -1029,7 +1027,7 @@ Usage: `[Measure]` can be specified on interfaces, methods, attributes, and cons
 
 (_deprecated_) When specified on an interface usage of the constructor will be measured. This behavior could be changed in the future. Specify `[Measure]` on constructor operations instead.
 
-The generated feature name must be added to [UseCounter::Feature](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/platform/instrumentation/use_counter.h&q=%22enum%20Feature%22&sq=package:chromium&type=cs&l=61) (in [platform/instrumentation/use_counter.h](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/platform/instrumentation/use_counter.h)).
+The generated feature name must be added to `WebFeature` (in [blink/public/mojom/web_feature/web_feature.mojom](https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/public/mojom/web_feature/web_feature.mojom)).
 
 ```webidl
 [Measure] attribute Node interestingAttribute;
@@ -1046,7 +1044,7 @@ Usage: `[MeasureAs]` can be specified on interfaces, methods, attributes, and co
 
 (_deprecated_) Specifying `[MeasureAs]` on interfaces is deprecated. Specify `[MeasureAs]` on constructor operations instead.
 
-The value must match one of the enumeration values in [UseCounter::Feature](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/platform/instrumentation/use_counter.h&q=%22enum%20Feature%22&sq=package:chromium&type=cs&l=61) (in [platform/instrumentation/use_counter.h](https://code.google.com/p/chromium/codesearch#chromium/src/third_party/blink/renderer/platform/instrumentation/use_counter.h)).
+The value must match one of the enumeration values in `WebFeature` (in [blink/public/mojom/web_feature/web_feature.mojom](https://source.chromium.org/chromium/chromium/src/+/master:third_party/blink/public/mojom/web_feature/web_feature.mojom)).
 
 ```webidl
 [MeasureAs=AttributeWeAreInterestedIn] attribute Node interestingAttribute;
@@ -1628,6 +1626,22 @@ The difference between `optional` and `[DefaultValue=Undefined]` optional is whe
 In case of `func1(...)`, if JavaScript calls `func1(100, 200)`, then `HTMLFoo::func1(int a, int b)` is called in Blink. If JavaScript calls `func1(100, 200, 300)`, then `HTMLFoo::func1(int a, int b, int c)` is called in Blink. If JavaScript calls `func1(100, 200, 300, 400)`, then `HTMLFoo::func1(int a, int b, int c, int d)` is called in Blink. In other words, if the Blink implementation has overloaded methods, you can use `optional` without `[DefaultValue=Undefined]`.
 
 In case of `func2(...)` which adds `[DefaultValue=Undefined]`, if JavaScript calls `func2(100, 200)`, then it behaves as if JavaScript called `func2(100, 200, undefined)`. Consequently, `HTMLFoo::func2(int a, int b, int c)` is called in Blink. 100 is passed to `a`, 200 is passed to `b`, and 0 is passed to `c`. (A JavaScript `undefined` is converted to 0, following the value conversion rule in the Web IDL spec; if it were a DOMString parameter, it would end up as the string `"undefined"`.) In this way, Blink needs to just implement `func2(int a, int b, int c)` and needs not to implement both `func2(int a, int b)` and `func2(int a, int b, int c)`.
+
+
+### [DirectSocketEnabled] _(a, i, m)_
+
+Summary: Interfaces and interface members with a `DirectSocketEnabled` extended attribute are exposed only inside contexts whose [cross-origin isolated capability](https://html.spec.whatwg.org/multipage/webappapis.html#concept-settings-object-cross-origin-isolated-capability) is enabled, and when the [kDirectSocket](https://source.chromium.org/chromium/chromium/src/+/main:content/public/common/content_features.cc;drc=25b97f298830b78a443fd7cdfd0b3e190817d1dd;l=556) feature flag is enabled.
+
+Note that it's likely for these requirements to shift over time: <https://crbug.com/1206150>.
+
+Usage: The `[DirectSocketEnabled]` extended attribute may be specified on interfaces, attributes, and operations:
+
+```webidl
+[DirectSocketEnabled]
+interface TCPSocket {
+  ...
+};
+```
 
 
 ### [NoAllocDirectCall]

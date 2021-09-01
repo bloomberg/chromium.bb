@@ -16,6 +16,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
@@ -74,11 +75,6 @@ constexpr int kPinRequestViewMinimumHeightDp =
     kAccessCodeToPinKeyboardDistanceDp + kPinKeyboardToFooterDistanceDp +
     kArrowButtonSizeDp + kPinRequestViewMainHorizontalInsetDp;  // = 266
 
-constexpr int kAlpha70Percent = 178;
-constexpr int kAlpha74Percent = 189;
-
-constexpr SkColor kErrorColor = gfx::kGoogleRed300;
-
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
@@ -93,7 +89,7 @@ PinRequest::~PinRequest() = default;
 // Label button that displays focus ring.
 class PinRequestView::FocusableLabelButton : public views::LabelButton {
  public:
-  FocusableLabelButton(PressedCallback callback, const base::string16& text)
+  FocusableLabelButton(PressedCallback callback, const std::u16string& text)
       : views::LabelButton(std::move(callback), text) {
     SetInstallFocusRingOnFocus(true);
     focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
@@ -151,21 +147,9 @@ PinRequestViewState PinRequestView::TestApi::state() const {
 
 // static
 SkColor PinRequestView::GetChildUserDialogColor(bool using_blur) {
-  SkColor color = AshColorProvider::Get()->GetBaseLayerColor(
-      AshColorProvider::BaseLayerType::kOpaque);
-
-  SkColor extracted_color =
-      Shell::Get()->wallpaper_controller()->GetProminentColor(
-          color_utils::ColorProfile(color_utils::LumaRange::DARK,
-                                    color_utils::SaturationRange::MUTED));
-
-  if (extracted_color != kInvalidWallpaperColor &&
-      extracted_color != SK_ColorTRANSPARENT) {
-    color = color_utils::GetResultingPaintColor(
-        SkColorSetA(SK_ColorBLACK, kAlpha70Percent), extracted_color);
-  }
-
-  return using_blur ? SkColorSetA(color, kAlpha74Percent) : color;
+  return AshColorProvider::Get()->GetBaseLayerColor(
+      using_blur ? AshColorProvider::BaseLayerType::kTransparent80
+                 : AshColorProvider::BaseLayerType::kOpaque);
 }
 
 // TODO(crbug.com/1061008): Make dialog look good on small screens with high
@@ -402,7 +386,7 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
 
   pin_keyboard_view_->SetVisible(PinKeyboardVisible());
 
-  tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
+  tablet_mode_observation_.Observe(Shell::Get()->tablet_mode_controller());
 
   SetPreferredSize(GetPinRequestViewSize());
 }
@@ -431,7 +415,7 @@ views::View* PinRequestView::GetInitiallyFocusedView() {
   return access_code_view_;
 }
 
-base::string16 PinRequestView::GetAccessibleWindowTitle() const {
+std::u16string PinRequestView::GetAccessibleWindowTitle() const {
   return default_accessible_title_;
 }
 
@@ -457,11 +441,11 @@ void PinRequestView::OnTabletModeEnded() {
 }
 
 void PinRequestView::OnTabletControllerDestroyed() {
-  tablet_mode_observer_.RemoveAll();
+  tablet_mode_observation_.Reset();
 }
 
 void PinRequestView::SubmitCode() {
-  base::Optional<std::string> code = access_code_view_->GetCode();
+  absl::optional<std::string> code = access_code_view_->GetCode();
   DCHECK(code.has_value());
 
   SubmissionResult result = delegate_->OnPinSubmitted(*code);
@@ -490,8 +474,8 @@ void PinRequestView::OnBack() {
 }
 
 void PinRequestView::UpdateState(PinRequestViewState state,
-                                 const base::string16& title,
-                                 const base::string16& description) {
+                                 const std::u16string& title,
+                                 const std::u16string& description) {
   state_ = state;
   title_label_->SetText(title);
   description_label_->SetText(description);
@@ -505,6 +489,8 @@ void PinRequestView::UpdateState(PinRequestViewState state,
       return;
     }
     case PinRequestViewState::kError: {
+      const SkColor kErrorColor = AshColorProvider::Get()->GetContentLayerColor(
+          AshColorProvider::ContentLayerType::kTextColorAlert);
       access_code_view_->SetInputColor(kErrorColor);
       title_label_->SetEnabledColor(kErrorColor);
       // Read out the error.

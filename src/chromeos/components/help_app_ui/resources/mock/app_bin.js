@@ -5,40 +5,49 @@
 /**
  * @fileoverview Placeholder js file for mock app. Runs in an isolated guest.
  */
+document.addEventListener('DOMContentLoaded', () => {
+  if (document.location.pathname === '/background') {
+    // In the background page, don't render the app.
+    doBackgroundTasks();
+    return;
+  }
+
+  // Note: This is intended to mimic how the real app initializes the search
+  // index once on startup. But the real app does this in firstUpdated, not
+  // setDelegate.
+  initInAppSearchIndex();
+});
 
 /**
- * A mock app used for testing when the real app is not available.
- * @implements helpApp.ClientApi
+ * Do the background processing and then close the page.
+ * Based on the internal version: go/help-app-internal-dobackgroundtasks. This
+ * function's implementation should be kept up to date with the internal
+ * version.
  */
-class ShowoffApp extends HTMLElement {
-  constructor() {
-    super();
-    /** @type {!helpApp.ClientApiDelegate} */
-    this.delegate;
+async function doBackgroundTasks() {
+  if (window.customLaunchData.delegate) {
+    await window.customLaunchData.delegate.updateLauncherSearchIndex([{
+      id: 'mock-app-test-id',
+      title: 'Title',
+      mainCategoryName: 'Help',
+      tags: ['verycomplicatedsearchquery'],
+      urlPathWithParameters: 'help/sub/3399763/',
+      locale: ''
+    }]);
+    window.customLaunchData.delegate.closeBackgroundPage();
   }
+}
 
-  /** @override */
-  setDelegate(delegate) {
-    this.delegate = delegate;
-
-    // Note: This is intended to mimic how the real app initializes the search
-    // index once on startup. But the real app does this in firstUpdated, not
-    // setDelegate.
-    this.initSearchIndex();
-  }
-
-  /** @override */
-  getDelegate() {
-    return /** @type {!helpApp.ClientApiDelegate} */ (this.delegate);
-  }
-
-  /**
-   * Mimics the way the real app initializes the search index. Adds one fake
-   * search result.
-   */
-  async initSearchIndex() {
-    await this.delegate.clearSearchIndex();
-    await this.delegate.addOrUpdateSearchIndex([
+/**
+ * Mimics the way the real app initializes the index for in-app search. Adds one
+ * fake search result. The implementation is based on
+ * go/help-app-internal-initInAppSearchIndex and should be kept up to date with
+ * the internal version.
+ */
+ async function initInAppSearchIndex() {
+  if (window.customLaunchData.delegate) {
+    await window.customLaunchData.delegate.clearSearchIndex();
+    await window.customLaunchData.delegate.addOrUpdateSearchIndex([
       {
         id: 'mock-app-test-id',
         title: 'Get help with Chrome',
@@ -47,14 +56,5 @@ class ShowoffApp extends HTMLElement {
         locale: 'en-US',
       }
     ]);
-    this.toggleAttribute('loaded', true);
   }
 }
-
-window.customElements.define('showoff-app', ShowoffApp);
-
-document.addEventListener('DOMContentLoaded', () => {
-  // The "real" app first loads translations for populating strings in the app
-  // for the initial load, then does this.
-  document.body.appendChild(new ShowoffApp());
-});

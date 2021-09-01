@@ -135,7 +135,8 @@ int aom_realloc_frame_buffer(YV12_BUFFER_CONFIG *ybf, int width, int height,
                              int ss_x, int ss_y, int use_highbitdepth,
                              int border, int byte_alignment,
                              aom_codec_frame_buffer_t *fb,
-                             aom_get_frame_buffer_cb_fn_t cb, void *cb_priv);
+                             aom_get_frame_buffer_cb_fn_t cb, void *cb_priv,
+                             int alloc_y_buffer_8bit);
 
 int aom_free_frame_buffer(YV12_BUFFER_CONFIG *ybf);
 

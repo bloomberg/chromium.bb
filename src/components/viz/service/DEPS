@@ -2,9 +2,11 @@
 
 include_rules = [
   "+cc",
+  "+components/power_scheduler",
   "-components/viz/common/features.h",
   "-components/viz/common/switches.h",
   "-components/viz/service",
+  "+components/viz/service/debugger/viz_debugger.h",
   "+components/viz/service/gl/gpu_service_impl.h",
   "+components/viz/service/viz_service_export.h",
   "+gpu/config/gpu_feature_info.h",
@@ -14,6 +16,7 @@ include_rules = [
   "+skia/ext",
   "+third_party/skia",
   "+ui/latency",
+  "+ui/ozone/buildflags.h",
   "+ui/ozone/public",
 ]
 

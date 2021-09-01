@@ -72,7 +72,8 @@ void DeleteAutofillProfileFromFakeSyncServer(std::string guid);
 // Clears the autofill profile for the given |guid|.
 void ClearAutofillProfile(std::string guid);
 
-// Clears fake sync server data.
+// Clears fake sync server data if the server is running, otherwise does
+// nothing.
 void ClearSyncServerData();
 
 // Returns true if the sync backend server is intialized.
@@ -81,6 +82,10 @@ bool IsSyncInitialized();
 // Returns the current sync cache guid. The sync server must be running when
 // calling this.
 std::string GetSyncCacheGuid();
+
+// Returns true if the DeviceInfo specifics on the fake server contains sync
+// invalidation fields.
+bool VerifySyncInvalidationFieldsPopulated();
 
 // Returns true if there is an autofilll profile with the corresponding |guid|
 // and |full_name|.

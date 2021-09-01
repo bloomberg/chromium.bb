@@ -280,7 +280,7 @@ static int flac_write_audio_packet(struct AVFormatContext *s, AVPacket *pkt)
 {
     FlacMuxerContext *c = s->priv_data;
     uint8_t *streaminfo;
-    int streaminfo_size;
+    buffer_size_t streaminfo_size;
 
     /* check for updated streaminfo */
     streaminfo = av_packet_get_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
@@ -347,6 +347,8 @@ static void flac_deinit(struct AVFormatContext *s)
     FlacMuxerContext *c = s->priv_data;
 
     avpriv_packet_list_free(&c->queue, &c->queue_end);
+    for (unsigned i = 0; i < s->nb_streams; i++)
+        av_packet_free((AVPacket **)&s->streams[i]->priv_data);
 }
 
 static int flac_write_packet(struct AVFormatContext *s, AVPacket *pkt)

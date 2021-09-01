@@ -48,18 +48,19 @@ import xvfb
 
 # Some harnesses understand the --isolated-script-test arguments
 # directly and prefer that they be passed through.
-KNOWN_ISOLATED_SCRIPT_TEST_RUNNERS = {'run_web_tests.py'}
+KNOWN_ISOLATED_SCRIPT_TEST_RUNNERS = {'run_web_tests.py', 'run_webgpu_cts.py'}
 
 
 # Known typ test runners this script wraps. They need a different argument name
 # when selecting which tests to run.
 # TODO(dpranke): Detect if the wrapped test suite uses typ better.
 KNOWN_TYP_TEST_RUNNERS = {
-    'run_blinkpy_tests.py',
     'metrics_python_tests.py',
-    'run_mac_signing_tests.py',
-    'run_polymer_tools_tests.py',
     'monochrome_python_tests.py',
+    'run_blinkpy_tests.py',
+    'run_mac_signing_tests.py',
+    'run_mini_installer_tests.py',
+    'run_polymer_tools_tests.py',
 }
 
 

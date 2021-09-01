@@ -22,13 +22,18 @@ const State = chrome.automation.StateType;
 /**
  * A helper to check if |node| or any descendant is actionable.
  * @param {!AutomationNode} node
+ * @param {boolean} sawClickAncestorAction A node during this search has a
+ *     default action verb involving click ancestor or none.
  * @return {boolean}
  */
-const isActionableOrHasActionableDescendant = function(node) {
-  // DefaultActionVerb does not have value 'none' even though it gets set.
+const isActionableOrHasActionableDescendant = function(
+    node, sawClickAncestorAction = false) {
   // Static text nodes are never actionable for the purposes of navigation even
   // if they have default action verb set.
-  if (node.role !== Role.STATIC_TEXT && node.defaultActionVerb !== 'none') {
+  if (node.role !== Role.STATIC_TEXT && node.defaultActionVerb &&
+      (node.defaultActionVerb !==
+           chrome.automation.DefaultActionVerb.CLICK_ANCESTOR ||
+       sawClickAncestorAction)) {
     return true;
   }
 
@@ -36,8 +41,12 @@ const isActionableOrHasActionableDescendant = function(node) {
     return true;
   }
 
+  sawClickAncestorAction = sawClickAncestorAction || !node.defaultActionVerb ||
+      node.defaultActionVerb ===
+          chrome.automation.DefaultActionVerb.CLICK_ANCESTOR;
   for (let i = 0; i < node.children.length; i++) {
-    if (isActionableOrHasActionableDescendant(node.children[i])) {
+    if (isActionableOrHasActionableDescendant(
+            node.children[i], sawClickAncestorAction)) {
       return true;
     }
   }
@@ -51,8 +60,12 @@ const isActionableOrHasActionableDescendant = function(node) {
  * @return {boolean}
  */
 const hasActionableDescendant = function(node) {
+  const sawClickAncestorAction = !node.defaultActionVerb ||
+      node.defaultActionVerb ===
+          chrome.automation.DefaultActionVerb.CLICK_ANCESTOR;
   for (let i = 0; i < node.children.length; i++) {
-    if (isActionableOrHasActionableDescendant(node.children[i])) {
+    if (isActionableOrHasActionableDescendant(
+            node.children[i], sawClickAncestorAction)) {
       return true;
     }
   }
@@ -185,6 +198,7 @@ AutomationPredicate = class {
         node.role === Role.PORTAL || node.role === Role.RADIO_BUTTON ||
         node.role === Role.SLIDER || node.role === Role.SWITCH ||
         node.role === Role.TEXT_FIELD ||
+        node.role === Role.TEXT_FIELD_WITH_COMBO_BOX ||
         (node.role === Role.MENU_ITEM && !hasActionableDescendant(node));
   }
 
@@ -457,16 +471,16 @@ AutomationPredicate = class {
       return true;
     }
 
-    // Ignore nodes acting as labels for another control, that don't
-    // have actionable descendants.
+    // Ignore nodes acting as labels for another control, that are unambiguously
+    // labels.
     if (node.labelFor && node.labelFor.length > 0 &&
-        !isActionableOrHasActionableDescendant(node)) {
+        node.role === Role.LABEL_TEXT) {
       return true;
     }
 
     // Similarly, ignore nodes acting as descriptions.
     if (node.descriptionFor && node.descriptionFor.length > 0 &&
-        !isActionableOrHasActionableDescendant(node)) {
+        node.role === Role.LABEL_TEXT) {
       return true;
     }
 
@@ -770,8 +784,7 @@ AutomationPredicate.structuralContainer = AutomationPredicate.roles([
   Role.ALERT_DIALOG, Role.CLIENT, Role.DIALOG, Role.LAYOUT_TABLE,
   Role.LAYOUT_TABLE_CELL, Role.LAYOUT_TABLE_ROW, Role.ROOT_WEB_AREA,
   Role.WEB_VIEW, Role.WINDOW, Role.EMBEDDED_OBJECT, Role.IFRAME,
-  Role.IFRAME_PRESENTATIONAL, Role.PLUGIN_OBJECT, Role.IGNORED, Role.UNKNOWN,
-  Role.PANE
+  Role.IFRAME_PRESENTATIONAL, Role.PLUGIN_OBJECT, Role.UNKNOWN, Role.PANE
 ]);
 
 

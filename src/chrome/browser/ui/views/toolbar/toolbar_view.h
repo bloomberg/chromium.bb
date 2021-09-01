@@ -8,10 +8,9 @@
 #include <memory>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
@@ -22,10 +21,12 @@
 #include "chrome/browser/ui/views/location_bar/custom_tab_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
-#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
+#include "chrome/browser/ui/views/toolbar/chrome_labs_bubble_view_model.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/prefs/pref_member.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/animation/animation_delegate_views.h"
@@ -33,11 +34,10 @@
 #include "ui/views/view.h"
 #include "url/origin.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/arc/intent_helper/arc_intent_picker_app_fetcher.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/mojom/intent_helper.mojom-forward.h"  // nogncheck https://crbug.com/784179
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class AppMenuButton;
 class AvatarToolbarButton;
@@ -45,11 +45,13 @@ class BrowserAppMenuButton;
 class Browser;
 class ExtensionsToolbarButton;
 class ExtensionsToolbarContainer;
+class ChromeLabsButton;
 class HomeButton;
 class MediaToolbarButtonView;
 class ReloadButton;
 class ToolbarButton;
 class ToolbarAccountIconContainerView;
+class AvatarToolbarButtonBrowserTest;
 
 namespace bookmarks {
 class BookmarkBubbleObserver;
@@ -57,6 +59,10 @@ class BookmarkBubbleObserver;
 
 namespace media_router {
 class CastToolbarButton;
+}
+
+namespace send_tab_to_self {
+class SendTabToSelfToolbarButtonView;
 }
 
 namespace views {
@@ -68,13 +74,14 @@ class ToolbarView : public views::AccessiblePaneView,
                     public ui::AcceleratorProvider,
                     public views::AnimationDelegateViews,
                     public LocationBarView::Delegate,
-                    public BrowserActionsContainer::Delegate,
                     public CommandObserver,
                     public AppMenuIconController::Delegate,
                     public UpgradeObserver,
                     public ToolbarButtonProvider,
                     public BrowserRootView::DropTarget {
  public:
+  METADATA_HEADER(ToolbarView);
+
   // Types of display mode this toolbar can have.
   enum class DisplayMode {
     NORMAL,     // Normal toolbar with buttons, etc.
@@ -84,10 +91,9 @@ class ToolbarView : public views::AccessiblePaneView,
                 // needs to be displayed.
   };
 
-  // The view class name.
-  static const char kViewClassName[];
-
-  explicit ToolbarView(Browser* browser, BrowserView* browser_view);
+  ToolbarView(Browser* browser, BrowserView* browser_view);
+  ToolbarView(const ToolbarView&) = delete;
+  ToolbarView& operator=(const ToolbarView&) = delete;
   ~ToolbarView() override;
 
   // Create the contents of the Browser Toolbar.
@@ -116,14 +122,14 @@ class ToolbarView : public views::AccessiblePaneView,
   void SetPaneFocusAndFocusAppMenu();
 
   // Returns true if the app menu is focused.
-  bool IsAppMenuFocused();
+  bool GetAppMenuFocused() const;
 
   void ShowIntentPickerBubble(
       std::vector<IntentPickerBubbleView::AppInfo> app_info,
       bool show_stay_in_chrome,
       bool show_remember_selection,
       PageActionIconType icon_type,
-      const base::Optional<url::Origin>& initiating_origin,
+      const absl::optional<url::Origin>& initiating_origin,
       IntentPickerResponse callback);
 
   // Shows a bookmark bubble and anchors it appropriately.
@@ -133,17 +139,25 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // Accessors.
   Browser* browser() const { return browser_; }
-  BrowserActionsContainer* browser_actions() const { return browser_actions_; }
+  ChromeLabsButton* chrome_labs_button() const { return chrome_labs_button_; }
+  ChromeLabsBubbleViewModel* chrome_labs_model() const {
+    return chrome_labs_model_.get();
+  }
   ExtensionsToolbarContainer* extensions_container() const {
     return extensions_container_;
   }
   ExtensionsToolbarButton* GetExtensionsButton() const;
-  ToolbarButton* back_button() const { return back_; }
   ReloadButton* reload_button() const { return reload_; }
+  ToolbarButton* left_side_panel_button() { return left_side_panel_button_; }
   LocationBarView* location_bar() const { return location_bar_; }
   CustomTabBarView* custom_tab_bar() { return custom_tab_bar_; }
   media_router::CastToolbarButton* cast_button() const { return cast_; }
+  ToolbarButton* read_later_button() const { return read_later_button_; }
   MediaToolbarButtonView* media_button() const { return media_button_; }
+  send_tab_to_self::SendTabToSelfToolbarButtonView* send_tab_to_self_button()
+      const {
+    return send_tab_to_self_button_;
+  }
   ToolbarAccountIconContainerView* toolbar_account_icon_container() const {
     return toolbar_account_icon_container_;
   }
@@ -159,14 +173,6 @@ class ToolbarView : public views::AccessiblePaneView,
   const LocationBarModel* GetLocationBarModel() const override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
-
-  // BrowserActionsContainer::Delegate:
-  views::LabelButton* GetOverflowReferenceView() override;
-  base::Optional<int> GetMaxBrowserActionsWidth() const override;
-  std::unique_ptr<ToolbarActionsBar> CreateToolbarActionsBar(
-      ToolbarActionsBarDelegate* delegate,
-      Browser* browser,
-      ToolbarActionsBar* main_bar) const override;
 
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;
@@ -185,20 +191,22 @@ class ToolbarView : public views::AccessiblePaneView,
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
   void OnThemeChanged() override;
-  const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& acc) override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
- protected:
-  // AccessiblePaneView:
-  bool SetPaneFocusAndFocusDefault() override;
+  friend class AvatarToolbarButtonBrowserTest;
 
+ protected:
   // This controls Toolbar, LocationBar and CustomTabBar visibility.
   // If we don't set all three, tab navigation from the app menu breaks
   // on Chrome OS.
   void SetToolbarVisibility(bool visible);
 
  private:
+  // AccessiblePaneView:
+  views::View* GetDefaultFocusableChild() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
   // AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
@@ -216,7 +224,6 @@ class ToolbarView : public views::AccessiblePaneView,
       AppMenuIconController::Severity severity) const override;
 
   // ToolbarButtonProvider:
-  BrowserActionsContainer* GetBrowserActionsContainer() override;
   ExtensionsToolbarContainer* GetExtensionsToolbarContainer() override;
   gfx::Size GetToolbarButtonSize() const override;
   views::View* GetDefaultExtensionDialogAnchorView() override;
@@ -236,6 +243,9 @@ class ToolbarView : public views::AccessiblePaneView,
       const ui::DropTargetEvent& event) override;
   views::View* GetViewForDrop() override;
 
+  // Changes the visibility of the Chrome Labs entry point based on prefs.
+  void OnChromeLabsPrefChanged();
+
   // Loads the images for all the child views.
   void LoadImages();
 
@@ -247,29 +257,30 @@ class ToolbarView : public views::AccessiblePaneView,
   void ShowOutdatedInstallNotification(bool auto_update_enabled);
 
   void OnShowHomeButtonChanged();
-  void UpdateHomeButtonVisibility();
 
   void OnTouchUiChanged();
-
-  void AppMenuButtonPressed(const ui::Event& event);
 
   gfx::SlideAnimation size_animation_{this};
 
   // Controls. Most of these can be null, e.g. in popup windows. Only
   // |location_bar_| is guaranteed to exist. These pointers are owned by the
   // view hierarchy.
+  ToolbarButton* left_side_panel_button_ = nullptr;
   ToolbarButton* back_ = nullptr;
   ToolbarButton* forward_ = nullptr;
   ReloadButton* reload_ = nullptr;
   HomeButton* home_ = nullptr;
   CustomTabBarView* custom_tab_bar_ = nullptr;
   LocationBarView* location_bar_ = nullptr;
-  BrowserActionsContainer* browser_actions_ = nullptr;
   ExtensionsToolbarContainer* extensions_container_ = nullptr;
+  ChromeLabsButton* chrome_labs_button_ = nullptr;
   media_router::CastToolbarButton* cast_ = nullptr;
+  ToolbarButton* read_later_button_ = nullptr;
   ToolbarAccountIconContainerView* toolbar_account_icon_container_ = nullptr;
   AvatarToolbarButton* avatar_ = nullptr;
   MediaToolbarButtonView* media_button_ = nullptr;
+  send_tab_to_self::SendTabToSelfToolbarButtonView* send_tab_to_self_button_ =
+      nullptr;
   BrowserAppMenuButton* app_menu_button_ = nullptr;
 
   Browser* const browser_;
@@ -279,21 +290,23 @@ class ToolbarView : public views::AccessiblePaneView,
 
   AppMenuIconController app_menu_icon_controller_;
 
+  std::unique_ptr<ChromeLabsBubbleViewModel> chrome_labs_model_;
+
   // Controls whether or not a home button should be shown on the toolbar.
   BooleanPrefMember show_home_button_;
+
+  BooleanPrefMember show_chrome_labs_button_;
 
   // The display mode used when laying out the toolbar.
   const DisplayMode display_mode_;
 
-  std::unique_ptr<ui::TouchUiController::Subscription> subscription_ =
+  base::CallbackListSubscription subscription_ =
       ui::TouchUiController::Get()->RegisterCallback(
           base::BindRepeating(&ToolbarView::OnTouchUiChanged,
                               base::Unretained(this)));
 
   // Whether this toolbar has been initialized.
   bool initialized_ = false;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ToolbarView);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_VIEW_H_

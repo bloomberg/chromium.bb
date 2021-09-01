@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-in fragmentProcessor? inputFP;
+in fragmentProcessor inputFP;
 layout(key) in GrClipEdgeType edgeType;
 in float2 center;
 in float radius;
@@ -30,8 +30,7 @@ uniform float4 circle;
 }
 
 @optimizationFlags {
-    (inputFP ? ProcessorOptimizationFlags(inputFP.get()) : kAll_OptimizationFlags) &
-    kCompatibleWithCoverageAsAlpha_OptimizationFlag
+    ProcessorOptimizationFlags(inputFP.get()) & kCompatibleWithCoverageAsAlpha_OptimizationFlag
 }
 
 @setData(pdman) {

@@ -40,6 +40,7 @@
 #include <limits>
 #include <memory>
 
+#include "base/logging.h"
 #include "base/numerics/checked_math.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -903,6 +904,9 @@ class JPEGImageReader final {
   JSAMPARRAY Samples() const { return samples_; }
   JPEGImageDecoder* Decoder() { return decoder_; }
   IntSize UvSize() const { return uv_size_; }
+  bool HasStartedDecompression() const {
+    return state_ > JPEG_START_DECOMPRESS;
+  }
 
  private:
 #if defined(USE_SYSTEM_LIBJPEG)
@@ -1040,8 +1044,16 @@ bool JPEGImageDecoder::SetSize(unsigned width, unsigned height) {
 }
 
 void JPEGImageDecoder::OnSetData(SegmentReader* data) {
-  if (reader_)
+  if (reader_) {
     reader_->SetData(data);
+
+    // Changing YUV decoding mode is not allowed after decompression starts.
+    if (reader_->HasStartedDecompression())
+      return;
+  }
+
+  if (allow_decode_to_yuv_)
+    return;
 
   allow_decode_to_yuv_ =
       // Incremental YUV decoding is not currently supported (crbug.com/943519).
@@ -1052,12 +1064,14 @@ void JPEGImageDecoder::OnSetData(SegmentReader* data) {
       // the color profile is known, and the subsampling is known.
       IsSizeAvailable() &&
       // YUV decoding to a smaller size is not supported.
-      reader_->Info()->scale_num == reader_->Info()->scale_denom &&
+      reader_ && reader_->Info()->scale_num == reader_->Info()->scale_denom &&
       // TODO(crbug.com/911246): Support color space transformations on planar
       // data.
       !ColorTransform() &&
-      // TODO(crbug.com/919627): Support 4:4:4 and 4:2:2 sub samplings.
-      GetYUVSubsampling() == cc::YUVSubsampling::k420;
+      // Only subsamplings 4:4:4, 4:2:2, and 4:2:0 are supported.
+      (GetYUVSubsampling() == cc::YUVSubsampling::k444 ||
+       GetYUVSubsampling() == cc::YUVSubsampling::k422 ||
+       GetYUVSubsampling() == cc::YUVSubsampling::k420);
 }
 
 void JPEGImageDecoder::SetDecodedSize(unsigned width, unsigned height) {
@@ -1293,6 +1307,7 @@ static bool OutputRawData(JPEGImageReader* reader, ImagePlanes* image_planes) {
   }
 
   info->output_scanline = std::min(info->output_scanline, info->output_height);
+  image_planes->SetHasCompleteScan();
   return true;
 }
 

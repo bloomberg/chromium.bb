@@ -21,7 +21,9 @@ class SpellcheckHostMetricsTest : public testing::Test {
   SpellcheckHostMetricsTest() {
   }
 
-  void SetUp() override { metrics_.reset(new SpellCheckHostMetrics); }
+  void SetUp() override {
+    metrics_ = std::make_unique<SpellCheckHostMetrics>();
+  }
 
   SpellCheckHostMetrics* metrics() { return metrics_.get(); }
   void RecordWordCountsForTesting() { metrics_->RecordWordCounts(); }
@@ -73,7 +75,7 @@ TEST_F(SpellcheckHostMetricsTest, RecordWordCountsDiscardsDuplicates) {
       "SpellCheck.ShownSuggestions"};
 
   // Ensure all histograms exist.
-  metrics()->RecordCheckedWordStats(base::ASCIIToUTF16("test"), false);
+  metrics()->RecordCheckedWordStats(u"test", false);
   RecordWordCountsForTesting();
 
   // Create the tester, taking a snapshot of current histogram samples.

@@ -32,14 +32,23 @@ const base::Feature kUseAAudioDriver{"UseAAudioDriver",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-#if BUILDFLAG(IS_ASH) || BUILDFLAG(IS_LACROS)
-const base::Feature kCrOSSystemAEC{"CrOSSystemAEC",
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+const base::Feature kCrOSSystemAEC{"CrOSSystemAECWithBoardTuningsAllowed",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kCrOSSystemAECDeactivatedGroups{
     "CrOSSystemAECDeactivatedGroups", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kCrOSEnforceSystemAecNsAgc{
+    "CrOSEnforceSystemAecNsAgc", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCrOSEnforceSystemAecNs{"CrOSEnforceSystemAecNs",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCrOSEnforceSystemAecAgc{"CrOSEnforceSystemAecAgc",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kCrOSEnforceSystemAec{"CrOSEnforceSystemAec",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif
 
-#if defined(OS_MAC) || BUILDFLAG(IS_ASH)
+#if defined(OS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kForceEnableSystemAec{"ForceEnableSystemAec",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif

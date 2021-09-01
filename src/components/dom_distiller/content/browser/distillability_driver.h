@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLIBILITY_DRIVER_H_
-#define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLIBILITY_DRIVER_H_
-
-#include <string>
+#ifndef COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLABILITY_DRIVER_H_
+#define COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLABILITY_DRIVER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "components/dom_distiller/content/browser/uma_helper.h"
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace dom_distiller {
 
@@ -29,7 +27,7 @@ class DistillabilityDriver
   base::ObserverList<DistillabilityObserver>* GetObserverList() {
     return &observers_;
   }
-  base::Optional<DistillabilityResult> GetLatestResult() const {
+  absl::optional<DistillabilityResult> GetLatestResult() const {
     return latest_result_;
   }
 
@@ -58,7 +56,7 @@ class DistillabilityDriver
   //
   // TODO(https://crbug.com/952042): Set this to nullopt when navigating to a
   // new page, accounting for same-document navigation.
-  base::Optional<DistillabilityResult> latest_result_;
+  absl::optional<DistillabilityResult> latest_result_;
 
   // For UMA metrics on durations spent in distilled or distillable pages.
   // Because each DistillabilityDriver is associated with just one WebContents,
@@ -77,4 +75,4 @@ class DistillabilityDriver
 
 }  // namespace dom_distiller
 
-#endif  // COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLIBILITY_DRIVER_H_
+#endif  // COMPONENTS_DOM_DISTILLER_CONTENT_BROWSER_DISTILLABILITY_DRIVER_H_

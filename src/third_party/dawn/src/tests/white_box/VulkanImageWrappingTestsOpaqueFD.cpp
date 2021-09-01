@@ -268,15 +268,6 @@ namespace dawn_native { namespace vulkan {
         IgnoreSignalSemaphore(texture);
     }
 
-    // Test an error occurs if the texture descriptor is missing
-    TEST_P(VulkanImageWrappingValidationTests, MissingTextureDescriptor) {
-        DAWN_SKIP_TEST_IF(UsesWire());
-        ASSERT_DEVICE_ERROR(wgpu::Texture texture =
-                                WrapVulkanImage(device, nullptr, defaultFd, defaultAllocationSize,
-                                                defaultMemoryTypeIndex, {}, true, false));
-        EXPECT_EQ(texture.Get(), nullptr);
-    }
-
     // Test an error occurs if the texture descriptor is invalid
     TEST_P(VulkanImageWrappingValidationTests, InvalidTextureDescriptor) {
         DAWN_SKIP_TEST_IF(UsesWire());
@@ -314,7 +305,7 @@ namespace dawn_native { namespace vulkan {
     // Test an error occurs if the descriptor depth isn't 1
     TEST_P(VulkanImageWrappingValidationTests, InvalidDepth) {
         DAWN_SKIP_TEST_IF(UsesWire());
-        defaultDescriptor.size.depth = 2;
+        defaultDescriptor.size.depthOrArrayLayers = 2;
 
         ASSERT_DEVICE_ERROR(wgpu::Texture texture = WrapVulkanImage(
                                 device, &defaultDescriptor, defaultFd, defaultAllocationSize,
@@ -446,7 +437,7 @@ namespace dawn_native { namespace vulkan {
 
             wgpu::CommandBuffer commands = encoder.Finish();
 
-            wgpu::Queue queue = dawnDevice.GetDefaultQueue();
+            wgpu::Queue queue = dawnDevice.GetQueue();
             queue.Submit(1, &commands);
         }
 
@@ -455,12 +446,12 @@ namespace dawn_native { namespace vulkan {
                                         wgpu::Queue dawnQueue,
                                         wgpu::Texture source,
                                         wgpu::Texture destination) {
-            wgpu::TextureCopyView copySrc;
+            wgpu::ImageCopyTexture copySrc;
             copySrc.texture = source;
             copySrc.mipLevel = 0;
             copySrc.origin = {0, 0, 0};
 
-            wgpu::TextureCopyView copyDst;
+            wgpu::ImageCopyTexture copyDst;
             copyDst.texture = destination;
             copyDst.mipLevel = 0;
             copyDst.origin = {0, 0, 0};
@@ -610,7 +601,7 @@ namespace dawn_native { namespace vulkan {
         ClearImage(secondDevice, copySrcTexture, {1 / 255.0f, 2 / 255.0f, 3 / 255.0f, 4 / 255.0f});
 
         // Copy color B on |secondDevice|
-        wgpu::Queue secondDeviceQueue = secondDevice.GetDefaultQueue();
+        wgpu::Queue secondDeviceQueue = secondDevice.GetQueue();
         SimpleCopyTextureToTexture(secondDevice, secondDeviceQueue, copySrcTexture,
                                    secondDeviceWrappedTexture);
 
@@ -665,9 +656,9 @@ namespace dawn_native { namespace vulkan {
         wgpu::Buffer copyDstBuffer = device.CreateBuffer(&bufferDesc);
 
         // Copy |deviceWrappedTexture| into |copyDstBuffer|
-        wgpu::TextureCopyView copySrc =
-            utils::CreateTextureCopyView(deviceWrappedTexture, 0, {0, 0, 0});
-        wgpu::BufferCopyView copyDst = utils::CreateBufferCopyView(copyDstBuffer, 0, 256);
+        wgpu::ImageCopyTexture copySrc =
+            utils::CreateImageCopyTexture(deviceWrappedTexture, 0, {0, 0, 0});
+        wgpu::ImageCopyBuffer copyDst = utils::CreateImageCopyBuffer(copyDstBuffer, 0, 256);
 
         wgpu::Extent3D copySize = {1, 1, 1};
 
@@ -714,16 +705,16 @@ namespace dawn_native { namespace vulkan {
                             exportInfo.releasedOldLayout, exportInfo.releasedNewLayout);
 
         // Copy color B on |secondDevice|
-        wgpu::Queue secondDeviceQueue = secondDevice.GetDefaultQueue();
+        wgpu::Queue secondDeviceQueue = secondDevice.GetQueue();
 
         // Create a buffer on |secondDevice|
         wgpu::Buffer copySrcBuffer =
             utils::CreateBufferFromData(secondDevice, wgpu::BufferUsage::CopySrc, {0x04030201});
 
         // Copy |copySrcBuffer| into |secondDeviceWrappedTexture|
-        wgpu::BufferCopyView copySrc = utils::CreateBufferCopyView(copySrcBuffer, 0, 256);
-        wgpu::TextureCopyView copyDst =
-            utils::CreateTextureCopyView(secondDeviceWrappedTexture, 0, {0, 0, 0});
+        wgpu::ImageCopyBuffer copySrc = utils::CreateImageCopyBuffer(copySrcBuffer, 0, 256);
+        wgpu::ImageCopyTexture copyDst =
+            utils::CreateImageCopyTexture(secondDeviceWrappedTexture, 0, {0, 0, 0});
 
         wgpu::Extent3D copySize = {1, 1, 1};
 
@@ -821,8 +812,8 @@ namespace dawn_native { namespace vulkan {
             wgpu::Device::Acquire(reinterpret_cast<WGPUDevice>(thirdDeviceVk));
 
         // Make queue for device 2 and 3
-        wgpu::Queue secondDeviceQueue = secondDevice.GetDefaultQueue();
-        wgpu::Queue thirdDeviceQueue = thirdDevice.GetDefaultQueue();
+        wgpu::Queue secondDeviceQueue = secondDevice.GetQueue();
+        wgpu::Queue thirdDeviceQueue = thirdDevice.GetQueue();
 
         // Allocate memory for A, B, C
         VkImage imageA;
@@ -929,7 +920,7 @@ namespace dawn_native { namespace vulkan {
         descriptor.dimension = wgpu::TextureDimension::e2D;
         descriptor.size.width = 640;
         descriptor.size.height = 480;
-        descriptor.size.depth = 1;
+        descriptor.size.depthOrArrayLayers = 1;
         descriptor.sampleCount = 1;
         descriptor.format = wgpu::TextureFormat::BGRA8Unorm;
         descriptor.mipLevelCount = 1;
@@ -941,7 +932,7 @@ namespace dawn_native { namespace vulkan {
             textures.push_back(device.CreateTexture(&descriptor));
         }
 
-        wgpu::Queue secondDeviceQueue = secondDevice.GetDefaultQueue();
+        wgpu::Queue secondDeviceQueue = secondDevice.GetQueue();
 
         // Make an image on |secondDevice|
         VkImage imageA;
@@ -979,10 +970,10 @@ namespace dawn_native { namespace vulkan {
         {
             wgpu::Buffer copySrcBuffer = utils::CreateBufferFromData(
                 secondDevice, data.data(), data.size(), wgpu::BufferUsage::CopySrc);
-            wgpu::BufferCopyView copySrc =
-                utils::CreateBufferCopyView(copySrcBuffer, 0, bytesPerRow);
-            wgpu::TextureCopyView copyDst =
-                utils::CreateTextureCopyView(wrappedTexture, 0, {0, 0, 0});
+            wgpu::ImageCopyBuffer copySrc =
+                utils::CreateImageCopyBuffer(copySrcBuffer, 0, bytesPerRow);
+            wgpu::ImageCopyTexture copyDst =
+                utils::CreateImageCopyTexture(wrappedTexture, 0, {0, 0, 0});
             wgpu::Extent3D copySize = {width, height, 1};
 
             wgpu::CommandEncoder encoder = secondDevice.CreateCommandEncoder();
@@ -1009,10 +1000,10 @@ namespace dawn_native { namespace vulkan {
         copyDesc.usage = wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
         wgpu::Buffer copyDstBuffer = device.CreateBuffer(&copyDesc);
         {
-            wgpu::TextureCopyView copySrc =
-                utils::CreateTextureCopyView(nextWrappedTexture, 0, {0, 0, 0});
-            wgpu::BufferCopyView copyDst =
-                utils::CreateBufferCopyView(copyDstBuffer, 0, bytesPerRow);
+            wgpu::ImageCopyTexture copySrc =
+                utils::CreateImageCopyTexture(nextWrappedTexture, 0, {0, 0, 0});
+            wgpu::ImageCopyBuffer copyDst =
+                utils::CreateImageCopyBuffer(copyDstBuffer, 0, bytesPerRow);
 
             wgpu::Extent3D copySize = {width, height, 1};
 

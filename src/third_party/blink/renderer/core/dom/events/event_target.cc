@@ -40,6 +40,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/js_based_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/js_event_listener.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_addeventlisteneroptions_boolean.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_boolean_eventlisteneroptions.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -208,14 +210,6 @@ void CountFiringEventListeners(const Event& event,
       {event_type_names::kPointerover, WebFeature::kPointerOverOutFired},
       {event_type_names::kPointerout, WebFeature::kPointerOverOutFired},
       {event_type_names::kSearch, WebFeature::kSearchEventFired},
-      {event_type_names::kWebkitprerenderstart,
-       WebFeature::kWebkitPrerenderStartEventFired},
-      {event_type_names::kWebkitprerenderstop,
-       WebFeature::kWebkitPrerenderStopEventFired},
-      {event_type_names::kWebkitprerenderload,
-       WebFeature::kWebkitPrerenderLoadEventFired},
-      {event_type_names::kWebkitprerenderdomcontentloaded,
-       WebFeature::kWebkitPrerenderDOMContentLoadedEventFired},
   };
   for (const auto& counted_event : counted_events) {
     if (CheckTypeThenUseCount(event, counted_event.event_type,
@@ -230,7 +224,7 @@ void RegisterWithScheduler(ExecutionContext* execution_context,
     return;
   // TODO(altimin): Ideally we would also support tracking unregistration of
   // event listeners, but we don't do this for performance reasons.
-  base::Optional<SchedulingPolicy::Feature> feature_for_scheduler;
+  absl::optional<SchedulingPolicy::Feature> feature_for_scheduler;
   if (event_type == event_type_names::kPageshow) {
     feature_for_scheduler = SchedulingPolicy::Feature::kPageShowEventListener;
   } else if (event_type == event_type_names::kPagehide) {
@@ -248,7 +242,7 @@ void RegisterWithScheduler(ExecutionContext* execution_context,
   if (feature_for_scheduler) {
     execution_context->GetScheduler()->RegisterStickyFeature(
         feature_for_scheduler.value(),
-        {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+        {SchedulingPolicy::DisableBackForwardCache()});
   }
 }
 
@@ -453,6 +447,41 @@ bool EventTarget::addEventListener(const AtomicString& event_type,
   return addEventListener(event_type, event_listener);
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+bool EventTarget::addEventListener(
+    const AtomicString& event_type,
+    V8EventListener* listener,
+    const V8UnionAddEventListenerOptionsOrBoolean* bool_or_options) {
+  DCHECK(bool_or_options);
+
+  EventListener* event_listener = JSEventListener::CreateOrNull(listener);
+
+  switch (bool_or_options->GetContentType()) {
+    case V8UnionAddEventListenerOptionsOrBoolean::ContentType::kBoolean:
+      return addEventListener(event_type, event_listener,
+                              bool_or_options->GetAsBoolean());
+    case V8UnionAddEventListenerOptionsOrBoolean::ContentType::
+        kAddEventListenerOptions: {
+      auto* options_resolved =
+          MakeGarbageCollected<AddEventListenerOptionsResolved>();
+      AddEventListenerOptions* options =
+          bool_or_options->GetAsAddEventListenerOptions();
+      if (options->hasPassive())
+        options_resolved->setPassive(options->passive());
+      if (options->hasOnce())
+        options_resolved->setOnce(options->once());
+      if (options->hasCapture())
+        options_resolved->setCapture(options->capture());
+      if (options->hasSignal())
+        options_resolved->setSignal(options->signal());
+      return addEventListener(event_type, event_listener, options_resolved);
+    }
+  }
+
+  NOTREACHED();
+  return false;
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 bool EventTarget::addEventListener(
     const AtomicString& event_type,
     V8EventListener* listener,
@@ -482,6 +511,7 @@ bool EventTarget::addEventListener(
 
   return addEventListener(event_type, event_listener);
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 bool EventTarget::addEventListener(const AtomicString& event_type,
                                    EventListener* listener,
@@ -504,6 +534,9 @@ bool EventTarget::AddEventListenerInternal(
     EventListener* listener,
     const AddEventListenerOptionsResolved* options) {
   if (!listener)
+    return false;
+
+  if (options->hasSignal() && options->signal()->aborted())
     return false;
 
   if (event_type == event_type_names::kTouchcancel ||
@@ -533,13 +566,19 @@ bool EventTarget::AddEventListenerInternal(
   bool added = EnsureEventTargetData().event_listener_map.Add(
       event_type, listener, options, &registered_listener);
   if (added) {
-    if (options->signal()) {
+    if (options->hasSignal()) {
+      // Instead of passing the entire |options| here, which could create a
+      // circular reference due to |options| holding a Member<AbortSignal>, just
+      // pass the |options->capture()| boolean, which is the only thing
+      // removeEventListener actually uses to find and remove the event
+      // listener.
       options->signal()->AddAlgorithm(WTF::Bind(
           [](EventTarget* event_target, const AtomicString& event_type,
-             const EventListener* listener) {
-            event_target->removeEventListener(event_type, listener);
+             const EventListener* listener, bool capture) {
+            event_target->removeEventListener(event_type, listener, capture);
           },
-          WrapWeakPersistent(this), event_type, WrapWeakPersistent(listener)));
+          WrapWeakPersistent(this), event_type, WrapWeakPersistent(listener),
+          options->capture()));
       if (const LocalDOMWindow* executing_window = ExecutingWindow()) {
         if (const Document* document = executing_window->document()) {
           document->CountUse(WebFeature::kAddEventListenerWithAbortSignal);
@@ -597,6 +636,31 @@ bool EventTarget::removeEventListener(const AtomicString& event_type,
   return removeEventListener(event_type, event_listener);
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+bool EventTarget::removeEventListener(
+    const AtomicString& event_type,
+    V8EventListener* listener,
+    const V8UnionBooleanOrEventListenerOptions* bool_or_options) {
+  DCHECK(bool_or_options);
+
+  EventListener* event_listener = JSEventListener::CreateOrNull(listener);
+
+  switch (bool_or_options->GetContentType()) {
+    case V8UnionBooleanOrEventListenerOptions::ContentType::kBoolean:
+      return removeEventListener(event_type, event_listener,
+                                 bool_or_options->GetAsBoolean());
+    case V8UnionBooleanOrEventListenerOptions::ContentType::
+        kEventListenerOptions: {
+      EventListenerOptions* options =
+          bool_or_options->GetAsEventListenerOptions();
+      return removeEventListener(event_type, event_listener, options);
+    }
+  }
+
+  NOTREACHED();
+  return false;
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 bool EventTarget::removeEventListener(
     const AtomicString& event_type,
     V8EventListener* listener,
@@ -615,6 +679,7 @@ bool EventTarget::removeEventListener(
 
   return removeEventListener(event_type, event_listener);
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 bool EventTarget::removeEventListener(const AtomicString& event_type,
                                       const EventListener* listener,
@@ -747,6 +812,8 @@ bool EventTarget::dispatchEventForBindings(Event* event,
 }
 
 DispatchEventResult EventTarget::DispatchEvent(Event& event) {
+  if (!GetExecutionContext())
+    return DispatchEventResult::kCanceledBeforeDispatch;
   event.SetTrusted(true);
   return DispatchEventInternal(event);
 }

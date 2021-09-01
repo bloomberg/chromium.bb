@@ -55,7 +55,7 @@ ifeq ($(shell uname),Darwin)
 SOEXT=dylib
 SOEXTVER=$(SONAME).$(SOEXT)
 SOEXTVER00=$(SONAME).0.0.$(SOEXT)
-MAKE_SHARED_LIBRARY=$(CXX) -dynamiclib -Wl,-install_name,$(libdir)/libre2.$(SOEXTVER),-exported_symbols_list,libre2.symbols.darwin $(RE2_LDFLAGS) $(LDFLAGS)
+MAKE_SHARED_LIBRARY=$(CXX) -dynamiclib -Wl,-compatibility_version,$(SONAME),-current_version,$(SONAME).0.0,-install_name,$(libdir)/libre2.$(SOEXTVER),-exported_symbols_list,libre2.symbols.darwin $(RE2_LDFLAGS) $(LDFLAGS)
 else ifeq ($(shell uname),SunOS)
 SOEXT=so
 SOEXTVER=$(SOEXT).$(SONAME)
@@ -203,7 +203,7 @@ obj/dbg/libre2.a: $(DOFILES)
 	$(AR) $(ARFLAGS) obj/dbg/libre2.a $(DOFILES)
 
 .PRECIOUS: obj/so/libre2.$(SOEXT)
-obj/so/libre2.$(SOEXT): $(SOFILES)
+obj/so/libre2.$(SOEXT): $(SOFILES) libre2.symbols libre2.symbols.darwin
 	@mkdir -p obj/so
 	$(MAKE_SHARED_LIBRARY) -o obj/so/libre2.$(SOEXTVER) $(SOFILES)
 	ln -sf libre2.$(SOEXTVER) $@

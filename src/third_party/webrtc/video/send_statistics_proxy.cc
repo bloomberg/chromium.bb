@@ -670,6 +670,7 @@ void SendStatisticsProxy::UmaSamplesContainer::UpdateHistograms(
 void SendStatisticsProxy::OnEncoderReconfigured(
     const VideoEncoderConfig& config,
     const std::vector<VideoStream>& streams) {
+  // Called on VideoStreamEncoder's encoder_queue_.
   MutexLock lock(&mutex_);
 
   if (content_type_ != config.content_type) {
@@ -737,6 +738,8 @@ VideoSendStream::Stats SendStatisticsProxy::GetStats() {
   PurgeOldStats();
   stats_.input_frame_rate =
       round(uma_container_->input_frame_rate_tracker_.ComputeRate());
+  stats_.frames =
+      uma_container_->input_frame_rate_tracker_.TotalSampleCount();
   stats_.content_type =
       content_type_ == VideoEncoderConfig::ContentType::kRealtimeVideo
           ? VideoContentType::UNSPECIFIED
@@ -1282,17 +1285,6 @@ void SendStatisticsProxy::RtcpPacketTypesCounterUpdated(
     uma_container_->first_rtcp_stats_time_ms_ = clock_->TimeInMilliseconds();
 }
 
-void SendStatisticsProxy::StatisticsUpdated(const RtcpStatistics& statistics,
-                                            uint32_t ssrc) {
-  MutexLock lock(&mutex_);
-  VideoSendStream::StreamStats* stats = GetStatsEntry(ssrc);
-  if (!stats)
-    return;
-
-  stats->rtcp_stats = statistics;
-  uma_container_->report_block_stats_.Store(ssrc, statistics);
-}
-
 void SendStatisticsProxy::OnReportBlockDataUpdated(
     ReportBlockData report_block_data) {
   MutexLock lock(&mutex_);
@@ -1300,6 +1292,13 @@ void SendStatisticsProxy::OnReportBlockDataUpdated(
       GetStatsEntry(report_block_data.report_block().source_ssrc);
   if (!stats)
     return;
+  const RTCPReportBlock& report_block = report_block_data.report_block();
+  uma_container_->report_block_stats_.Store(
+      /*ssrc=*/report_block.source_ssrc,
+      /*packets_lost=*/report_block.packets_lost,
+      /*extended_highest_sequence_number=*/
+      report_block.extended_highest_sequence_number);
+
   stats->report_block_data = std::move(report_block_data);
 }
 

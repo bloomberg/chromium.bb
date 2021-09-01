@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_entry_type_decoder.h"
+#include "http2/hpack/decoder/hpack_entry_type_decoder.h"
 
-#include "net/third_party/quiche/src/http2/platform/api/http2_bug_tracker.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_flags.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_logging.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "http2/platform/api/http2_bug_tracker.h"
+#include "http2/platform/api/http2_flag_utils.h"
+#include "http2/platform/api/http2_flags.h"
+#include "http2/platform/api/http2_logging.h"
 
 namespace http2 {
 
 std::string HpackEntryTypeDecoder::DebugString() const {
-  return quiche::QuicheStrCat(
+  return absl::StrCat(
       "HpackEntryTypeDecoder(varint_decoder=", varint_decoder_.DebugString(),
       ", entry_type=", entry_type_, ")");
 }
@@ -30,8 +30,8 @@ std::ostream& operator<<(std::ostream& out, const HpackEntryTypeDecoder& v) {
 // full HTTP/2 decoder level, but preferably still higher) to determine if the
 // alternatives that take less code/data space are preferable in that situation.
 DecodeStatus HpackEntryTypeDecoder::Start(DecodeBuffer* db) {
-  DCHECK(db != nullptr);
-  DCHECK(db->HasData());
+  QUICHE_DCHECK(db != nullptr);
+  QUICHE_DCHECK(db->HasData());
 
   // The high four bits (nibble) of first byte of the entry determine the type
   // of the entry, and may also be the initial bits of the varint that
@@ -353,7 +353,8 @@ DecodeStatus HpackEntryTypeDecoder::Start(DecodeBuffer* db) {
       // All of those bits are 1, so the varint extends into another byte.
       return varint_decoder_.StartExtended(7, db);
   }
-  HTTP2_BUG << "Unreachable, byte=" << std::hex << static_cast<uint32_t>(byte);
+  HTTP2_BUG(http2_bug_66_1)
+      << "Unreachable, byte=" << std::hex << static_cast<uint32_t>(byte);
   HTTP2_CODE_COUNT_N(decompress_failure_3, 17, 23);
   return DecodeStatus::kDecodeError;
 }

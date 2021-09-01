@@ -33,6 +33,8 @@ fuzzers=(
     "cidtype1-render"
     "cidtype1-render-ftengine"
 
+    "colrv1"
+
     "pcf"
     "pcf-render"
 

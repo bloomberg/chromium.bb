@@ -40,7 +40,7 @@ def need_to_update(branch):
   try:
     cmd = [sys.executable, GCLIENT, 'revinfo']
     subprocess.check_call(
-        cmd, cwd=os.path.join(TARGET_DIR), stdout=subprocess.VOID)
+        cmd, cwd=os.path.join(TARGET_DIR), stdout=subprocess.DEVNULL)
   except subprocess.CalledProcessError:
     return True  # Gclient failed, definitely need to update.
   except OSError:
@@ -53,7 +53,7 @@ def need_to_update(branch):
 
   subprocess.check_call(
       ['git', 'fetch', 'origin'], cwd=INFRA_DIR,
-      stdout=subprocess.VOID, stderr=subprocess.STDOUT)
+      stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
   origin_rev = get_git_rev(INFRA_DIR, 'origin/%s' % (branch,))
   return origin_rev != local_rev
 
@@ -70,11 +70,11 @@ def ensure_infra(branch):
     subprocess.check_call(
         [sys.executable, os.path.join(SCRIPT_DIR, 'fetch.py'), 'infra'],
         cwd=TARGET_DIR,
-        stdout=subprocess.VOID)
+        stdout=subprocess.DEVNULL)
   subprocess.check_call(
       [sys.executable, GCLIENT, 'sync', '--revision', 'origin/%s' % (branch,)],
       cwd=TARGET_DIR,
-      stdout=subprocess.VOID)
+      stdout=subprocess.DEVNULL)
   sys.stderr.write(' done.\n')
   sys.stderr.flush()
 

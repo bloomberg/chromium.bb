@@ -6,11 +6,10 @@
 
 #include <string>
 
-#include "base/strings/string16.h"
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
@@ -21,11 +20,10 @@
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
 #import "ios/chrome/browser/ui/autofill/chrome_autofill_client_ios.h"
 #import "ios/chrome/test/scoped_key_window.h"
-#import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #include "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/fake_web_frames_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -44,9 +42,11 @@ class FakeResultDelegate
   void OnFullCardRequestSucceeded(
       const autofill::payments::FullCardRequest& /* full_card_request */,
       const autofill::CreditCard& card,
-      const base::string16& cvc) override {}
+      const std::u16string& cvc) override {}
 
-  void OnFullCardRequestFailed() override {}
+  void OnFullCardRequestFailed(
+      autofill::payments::FullCardRequest::FailureType /* failure_type */)
+      override {}
 
   base::WeakPtr<FakeResultDelegate> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -72,13 +72,8 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
 
     AddCreditCard(autofill::test::GetCreditCard());  // Visa.
 
-    // Set up what is needed to have an instance of autofill::AutofillManager.
-    CRWTestJSInjectionReceiver* injectionReceiver =
-        [[CRWTestJSInjectionReceiver alloc] init];
-    web_state()->SetJSInjectionReceiver(injectionReceiver);
-
     auto frames_manager = std::make_unique<web::FakeWebFramesManager>();
-    auto main_frame = std::make_unique<web::FakeMainWebFrame>(
+    auto main_frame = web::FakeWebFrame::CreateMainWebFrame(
         /*security_origin=*/GURL());
     frames_manager->AddWebFrame(std::move(main_frame));
     web_state()->SetWebFramesManager(std::move(frames_manager));
@@ -101,7 +96,7 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
     std::string locale("en");
     autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
         web_state(), autofill_client_.get(), nil, locale,
-        autofill::AutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
+        autofill::BrowserAutofillManager::DISABLE_AUTOFILL_DOWNLOAD_MANAGER);
   }
 
   void TearDown() override {
@@ -113,7 +108,7 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
     personal_data_manager_.AddCreditCard(card);
   }
 
-  web::TestWebState* web_state() { return &web_state_; }
+  web::FakeWebState* web_state() { return &web_state_; }
 
   TestChromeBrowserState* browser_state() {
     return chrome_browser_state_.get();
@@ -126,7 +121,7 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
  private:
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
   autofill::TestPersonalDataManager personal_data_manager_;
 
   std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
@@ -146,7 +141,7 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismiss) {
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
   web::WebFrame* main_frame =
       web_state()->GetWebFramesManager()->GetMainWebFrame();
-  autofill::AutofillManager* autofill_manager =
+  autofill::BrowserAutofillManager* autofill_manager =
       autofill::AutofillDriverIOS::FromWebStateAndWebFrame(web_state(),
                                                            main_frame)
           ->autofill_manager();

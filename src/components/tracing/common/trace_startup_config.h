@@ -94,6 +94,14 @@ class TRACING_EXPORT TraceStartupConfig {
     kSystemTracing
   };
 
+  enum class OutputFormat {
+    kLegacyJSON,
+    kProto,
+  };
+
+  // Exposed for testing.
+  static const char kDefaultStartupCategories[];
+
   static TraceStartupConfig* GetInstance();
 
   // Default minimum startup trace config with enough events to debug issues.
@@ -118,22 +126,15 @@ class TRACING_EXPORT TraceStartupConfig {
   base::trace_event::TraceConfig GetTraceConfig() const;
   int GetStartupDuration() const;
 
-  // Returns true while startup tracing is not finished, if trace should be
-  // saved to result file.
-  bool ShouldTraceToResultFile() const;
+  // Returns the name of the file to write the trace result into.
   base::FilePath GetResultFile() const;
-  void OnTraceToResultFileFinished();
 
   // Set the background tracing config in preferences for the next session.
   void SetBackgroundStartupTracingEnabled(bool enabled);
 
-  // Returns when the startup tracing is finished and written to file, false on
-  // all other cases.
-  bool finished_writing_to_file_for_testing() const {
-    return finished_writing_to_file_;
-  }
-
   SessionOwner GetSessionOwner() const;
+
+  OutputFormat GetOutputFormat() const;
 
   // Called by a potential session owner to determine if it should take
   // ownership of the startup tracing session and begin tracing. Returns |true|
@@ -152,8 +153,6 @@ class TRACING_EXPORT TraceStartupConfig {
   TraceStartupConfig();
   ~TraceStartupConfig();
 
-  bool IsUsingPerfettoOutput() const;
-
   bool EnableFromCommandLine();
   bool EnableFromConfigFile();
   bool EnableFromBackgroundTracing();
@@ -165,11 +164,10 @@ class TRACING_EXPORT TraceStartupConfig {
   bool enable_background_tracing_for_testing_ = false;
   base::trace_event::TraceConfig trace_config_;
   int startup_duration_in_seconds_ = kDefaultStartupDurationInSeconds;
-  bool should_trace_to_result_file_ = false;
   base::FilePath result_file_;
-  bool finished_writing_to_file_ = false;
   SessionOwner session_owner_ = SessionOwner::kTracingController;
   bool session_adopted_ = false;
+  OutputFormat output_format_ = OutputFormat::kLegacyJSON;
 
   DISALLOW_COPY_AND_ASSIGN(TraceStartupConfig);
 };

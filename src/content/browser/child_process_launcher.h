@@ -13,7 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/process/kill.h"
 #include "base/process/process.h"
+#include "base/process/process_metrics.h"
 #include "base/sequence_checker.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/common/content_export.h"
@@ -57,7 +59,6 @@ struct ChildProcessLauncherPriority {
   ChildProcessLauncherPriority(bool visible,
                                bool has_media_stream,
                                bool has_foreground_service_worker,
-                               bool has_only_low_priority_frames,
                                unsigned int frame_depth,
                                bool intersects_viewport,
                                bool boost_for_pending_views
@@ -69,7 +70,6 @@ struct ChildProcessLauncherPriority {
       : visible(visible),
         has_media_stream(has_media_stream),
         has_foreground_service_worker(has_foreground_service_worker),
-        has_only_low_priority_frames(has_only_low_priority_frames),
         frame_depth(frame_depth),
         intersects_viewport(intersects_viewport),
         boost_for_pending_views(boost_for_pending_views)
@@ -105,10 +105,6 @@ struct ChildProcessLauncherPriority {
   // worker that may need to service timely events from other, possibly visible,
   // processes.
   bool has_foreground_service_worker;
-
-  // True if this ChildProcessLauncher has a non-zero number of frames attached
-  // to it and they're all low priority.
-  bool has_only_low_priority_frames;
 
   // |frame_depth| is the depth of the shallowest frame this process is
   // responsible for which has |visible| visibility. It only makes sense to
@@ -196,6 +192,10 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // more discussion of Linux implementation details.
   ChildProcessTerminationInfo GetChildTerminationInfo(bool known_dead);
 
+  // Gather the lifetime process metrics and save them to histograms. Call
+  // right before the process is about to go away.
+  void RecordProcessLifetimeMetrics();
+
   // Changes whether the process runs in the background or not.  Only call
   // this after the process has started.
   void SetProcessPriority(const ChildProcessLauncherPriority& priority);
@@ -231,6 +231,7 @@ class CONTENT_EXPORT ChildProcessLauncher {
   // The process associated with this ChildProcessLauncher. Set in Notify by
   // ChildProcessLauncherHelper once the process was started.
   internal::ChildProcessLauncherHelper::Process process_;
+  base::TimeTicks process_start_time_;
 
   ChildProcessTerminationInfo termination_info_;
   bool starting_;

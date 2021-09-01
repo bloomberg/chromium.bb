@@ -21,13 +21,13 @@ namespace ui {
 namespace {
 
 // A global map from AXNodes to TestAXNodeHelpers.
-std::map<AXNode::AXID, TestAXNodeHelper*> g_node_id_to_helper_map;
+std::map<AXNodeID, TestAXNodeHelper*> g_node_id_to_helper_map;
 
 // A simple implementation of AXTreeObserver to catch when AXNodes are
 // deleted so we can delete their helpers.
 class TestAXTreeObserver : public AXTreeObserver {
  private:
-  void OnNodeDeleted(AXTree* tree, int32_t node_id) override {
+  void OnNodeDeleted(AXTree* tree, AXNodeID node_id) override {
     const auto iter = g_node_id_to_helper_map.find(node_id);
     if (iter != g_node_id_to_helper_map.end()) {
       TestAXNodeHelper* helper = iter->second;
@@ -178,6 +178,17 @@ gfx::RectF TestAXNodeHelper::GetInlineTextRect(const int start_offset,
   return bounds;
 }
 
+bool TestAXNodeHelper::Intersects(gfx::RectF rect1, gfx::RectF rect2) const {
+  // The logic below is based on gfx::RectF::Intersects.
+  // gfx::RectF::Intersects returns false if either of the two rects is empty.
+  // This function is used in tests to determine offscreen status. We want to
+  // include empty rect in our logic since the bounding box of a degenerate text
+  // range is initially empty (width=0), and we do not want to mark it as
+  // offscreen.
+  return rect1.x() < rect2.right() && rect1.right() > rect2.x() &&
+         rect1.y() < rect2.bottom() && rect1.bottom() > rect2.y();
+}
+
 AXOffscreenResult TestAXNodeHelper::DetermineOffscreenResult(
     gfx::RectF bounds) const {
   if (!tree_ || !tree_->root())
@@ -192,13 +203,15 @@ AXOffscreenResult TestAXNodeHelper::DetermineOffscreenResult(
   // the bounds of the immediate parent of the node for determining offscreen
   // status.
   // We only determine offscreen result if the root web area bounds is actually
-  // set in the test. We default the offscreen result of every other situation
-  // to AXOffscreenResult::kOnscreen.
-  if (!root_web_area_bounds.IsEmpty()) {
-    bounds.Intersect(root_web_area_bounds);
-    if (bounds.IsEmpty())
-      return AXOffscreenResult::kOffscreen;
+  // set in the test, and we mark a node as offscreen only when |bounds| is
+  // completely outside of |root_web_area_bounds| (i.e. not contained by
+  // |root_web_area_bounds|). We default the offscreen result of every other
+  // situation to AXOffscreenResult::kOnscreen.
+  if (!root_web_area_bounds.IsEmpty() &&
+      !Intersects(bounds, root_web_area_bounds)) {
+    return AXOffscreenResult::kOffscreen;
   }
+
   return AXOffscreenResult::kOnscreen;
 }
 }  // namespace ui

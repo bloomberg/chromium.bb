@@ -28,15 +28,8 @@ namespace utils {
 
     enum Expectation { Success, Failure };
 
-    enum class SingleShaderStage { Vertex, Fragment, Compute };
-
-    wgpu::ShaderModule CreateShaderModule(const wgpu::Device& device,
-                                          SingleShaderStage stage,
-                                          const char* source);
     wgpu::ShaderModule CreateShaderModuleFromASM(const wgpu::Device& device, const char* source);
-    wgpu::ShaderModule CreateShaderModuleFromWGSL(const wgpu::Device& device, const char* source);
-
-    std::vector<uint32_t> CompileGLSLToSpirv(SingleShaderStage stage, const char* source);
+    wgpu::ShaderModule CreateShaderModule(const wgpu::Device& device, const char* source);
 
     wgpu::Buffer CreateBufferFromData(const wgpu::Device& device,
                                       const void* data,
@@ -50,18 +43,19 @@ namespace utils {
         return CreateBufferFromData(device, data.begin(), uint32_t(sizeof(T) * data.size()), usage);
     }
 
-    wgpu::BufferCopyView CreateBufferCopyView(wgpu::Buffer buffer,
-                                              uint64_t offset,
-                                              uint32_t bytesPerRow,
-                                              uint32_t rowsPerImage = wgpu::kStrideUndefined);
-    wgpu::TextureCopyView CreateTextureCopyView(
+    wgpu::ImageCopyBuffer CreateImageCopyBuffer(wgpu::Buffer buffer,
+                                                uint64_t offset,
+                                                uint32_t bytesPerRow,
+                                                uint32_t rowsPerImage = wgpu::kCopyStrideUndefined);
+    wgpu::ImageCopyTexture CreateImageCopyTexture(
         wgpu::Texture texture,
         uint32_t level,
         wgpu::Origin3D origin,
         wgpu::TextureAspect aspect = wgpu::TextureAspect::All);
-    wgpu::TextureDataLayout CreateTextureDataLayout(uint64_t offset,
-                                                    uint32_t bytesPerRow,
-                                                    uint32_t rowsPerImage = wgpu::kStrideUndefined);
+    wgpu::TextureDataLayout CreateTextureDataLayout(
+        uint64_t offset,
+        uint32_t bytesPerRow,
+        uint32_t rowsPerImage = wgpu::kCopyStrideUndefined);
 
     struct ComboRenderPassDescriptor : public wgpu::RenderPassDescriptor {
       public:
@@ -97,12 +91,58 @@ namespace utils {
                                           uint32_t width,
                                           uint32_t height);
 
-    wgpu::SamplerDescriptor GetDefaultSamplerDescriptor();
     wgpu::PipelineLayout MakeBasicPipelineLayout(const wgpu::Device& device,
                                                  const wgpu::BindGroupLayout* bindGroupLayout);
+
+    wgpu::PipelineLayout MakePipelineLayout(const wgpu::Device& device,
+                                            std::vector<wgpu::BindGroupLayout> bgls);
+
+    // Helpers to make creating bind group layouts look nicer:
+    //
+    //   utils::MakeBindGroupLayout(device, {
+    //       {0, wgpu::ShaderStage::Vertex, wgpu::BufferBindingType::Uniform},
+    //       {1, wgpu::ShaderStage::Fragment, wgpu::SamplerBindingType::Filtering},
+    //       {3, wgpu::ShaderStage::Fragment, wgpu::TextureSampleType::Float}
+    //   });
+
+    struct BindingLayoutEntryInitializationHelper : wgpu::BindGroupLayoutEntry {
+        BindingLayoutEntryInitializationHelper(uint32_t entryBinding,
+                                               wgpu::ShaderStage entryVisibility,
+                                               wgpu::BufferBindingType bufferType,
+                                               bool bufferHasDynamicOffset = false,
+                                               uint64_t bufferMinBindingSize = 0);
+        BindingLayoutEntryInitializationHelper(uint32_t entryBinding,
+                                               wgpu::ShaderStage entryVisibility,
+                                               wgpu::SamplerBindingType samplerType);
+        BindingLayoutEntryInitializationHelper(
+            uint32_t entryBinding,
+            wgpu::ShaderStage entryVisibility,
+            wgpu::TextureSampleType textureSampleType,
+            wgpu::TextureViewDimension viewDimension = wgpu::TextureViewDimension::e2D,
+            bool textureMultisampled = false);
+        BindingLayoutEntryInitializationHelper(
+            uint32_t entryBinding,
+            wgpu::ShaderStage entryVisibility,
+            wgpu::StorageTextureAccess storageTextureAccess,
+            wgpu::TextureFormat format,
+            wgpu::TextureViewDimension viewDimension = wgpu::TextureViewDimension::e2D);
+
+        // Backwards compat support for the deprecated path
+        BindingLayoutEntryInitializationHelper(
+            uint32_t entryBinding,
+            wgpu::ShaderStage entryVisibility,
+            wgpu::BindingType entryType,
+            bool bufferHasDynamicOffset = false,
+            uint64_t bufferMinBindingSize = 0,
+            wgpu::TextureViewDimension textureViewDimension = wgpu::TextureViewDimension::Undefined,
+            wgpu::TextureComponentType textureComponent = wgpu::TextureComponentType::Float,
+            wgpu::TextureFormat storageFormat = wgpu::TextureFormat::Undefined);
+        BindingLayoutEntryInitializationHelper(const wgpu::BindGroupLayoutEntry& entry);
+    };
+
     wgpu::BindGroupLayout MakeBindGroupLayout(
         const wgpu::Device& device,
-        std::initializer_list<wgpu::BindGroupLayoutEntry> entriesInitializer);
+        std::initializer_list<BindingLayoutEntryInitializationHelper> entriesInitializer);
 
     // Helpers to make creating bind groups look nicer:
     //

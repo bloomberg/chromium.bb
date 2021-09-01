@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_menu_button.h"
 
+#include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
@@ -15,45 +16,43 @@
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/style/typography.h"
 
-const char ExtensionsMenuButton::kClassName[] = "ExtensionsMenuButton";
-
 ExtensionsMenuButton::ExtensionsMenuButton(
     Browser* browser,
-    ExtensionsMenuItemView* parent,
     ToolbarActionViewController* controller,
     bool allow_pinning)
-    : views::LabelButton(
-          base::BindRepeating(&ExtensionsMenuButton::ButtonPressed,
-                              base::Unretained(this))),
+    : HoverButton(base::BindRepeating(&ExtensionsMenuButton::ButtonPressed,
+                                      base::Unretained(this)),
+                  std::u16string()),
       browser_(browser),
-      parent_(parent),
       controller_(controller),
       allow_pinning_(allow_pinning) {
-  ConfigureBubbleMenuItem(this, 0);
-  SetButtonController(std::make_unique<HoverButtonController>(
-      this,
-      base::BindRepeating(&ExtensionsMenuButton::ButtonPressed,
-                          base::Unretained(this)),
-      std::make_unique<views::Button::DefaultButtonControllerDelegate>(this)));
   controller_->SetDelegate(this);
-  UpdateState();
+  // TODO(pbos): This currently inherits HoverButton, is this not a no-op?
+  // Also see call in OnThemeChanged() to ink_drop()->SetBaseColor which
+  // tries to do the same thing.
+  ink_drop()->SetBaseColorCallback(base::BindRepeating(
+      [](views::View* host) { return HoverButton::GetInkDropColor(host); },
+      this));
 }
 
 ExtensionsMenuButton::~ExtensionsMenuButton() = default;
 
-const char* ExtensionsMenuButton::GetClassName() const {
-  return kClassName;
-}
-
-SkColor ExtensionsMenuButton::GetInkDropBaseColor() const {
-  return HoverButton::GetInkDropColor(this);
-}
-
 bool ExtensionsMenuButton::CanShowIconInToolbar() const {
   return allow_pinning_;
+}
+
+void ExtensionsMenuButton::AddedToWidget() {
+  ConfigureBubbleMenuItem(this, 0);
+  UpdateState();
+}
+
+void ExtensionsMenuButton::OnThemeChanged() {
+  HoverButton::OnThemeChanged();
+  ink_drop()->SetBaseColor(HoverButton::GetInkDropColor(this));
 }
 
 // ToolbarActionViewDelegateViews:
@@ -95,8 +94,11 @@ void ExtensionsMenuButton::UpdateState() {
   SetBorder(views::CreateEmptyBorder(kBorderInsets));
 }
 
-bool ExtensionsMenuButton::IsMenuRunning() const {
-  return parent_->IsContextMenuRunning();
+void ExtensionsMenuButton::ShowContextMenuAsFallback() {
+  // The items in the extensions menu are disabled and unclickable if the
+  // primary action cannot be taken; ShowContextMenuAsFallback() should never
+  // be called directly.
+  NOTREACHED();
 }
 
 void ExtensionsMenuButton::ButtonPressed() {
@@ -105,3 +107,6 @@ void ExtensionsMenuButton::ButtonPressed() {
   controller_->ExecuteAction(
       true, ToolbarActionViewController::InvocationSource::kMenuEntry);
 }
+
+BEGIN_METADATA(ExtensionsMenuButton, views::LabelButton)
+END_METADATA

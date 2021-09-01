@@ -4,7 +4,7 @@
 
 #include "components/exo/layer_tree_frame_sink_holder.h"
 
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/surface_tree_host.h"
@@ -99,26 +99,26 @@ void LayerTreeFrameSinkHolder::SubmitCompositorFrame(
 void LayerTreeFrameSinkHolder::DidNotProduceFrame(
     const viz::BeginFrameAck& ack) {
   DCHECK(!is_lost_);
-  frame_sink_->DidNotProduceFrame(ack);
+  frame_sink_->DidNotProduceFrame(ack, cc::FrameSkippedReason::kNoDamage);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // cc::LayerTreeFrameSinkClient overrides:
 
-base::Optional<viz::HitTestRegionList>
+absl::optional<viz::HitTestRegionList>
 LayerTreeFrameSinkHolder::BuildHitTestData() {
   return {};
 }
 
 void LayerTreeFrameSinkHolder::ReclaimResources(
-    const std::vector<viz::ReturnedResource>& resources) {
+    std::vector<viz::ReturnedResource> resources) {
   for (auto& resource : resources) {
     // Skip resources that are also in last frame. This can happen if
     // the frame sink id changed.
     if (base::Contains(last_frame_resources_, resource.id)) {
       continue;
     }
-    resource_manager_.ReclaimResource(resource);
+    resource_manager_.ReclaimResource(std::move(resource));
   }
 
   if (lifetime_manager_ && resource_manager_.HasNoCallbacks())

@@ -244,8 +244,8 @@ MockInstallerState* BuildChromeInstallerState(
 class InstallWorkerTest : public testing::Test {
  public:
   void SetUp() override {
-    current_version_.reset(new base::Version("1.0.0.0"));
-    new_version_.reset(new base::Version("42.0.0.0"));
+    current_version_ = std::make_unique<base::Version>("1.0.0.0");
+    new_version_ = std::make_unique<base::Version>("42.0.0.0");
 
     // Don't bother ensuring that these paths exist. Since we're just
     // building the work item lists and not running them, they shouldn't
@@ -359,7 +359,7 @@ class AddUpdateBrandCodeWorkItemTest
         HKEY_LOCAL_MACHINE, &registry_override_hklm_path_));
   }
 
-  void SetupExpectations(const base::string16& brand,
+  void SetupExpectations(const std::wstring& brand,
                          StrictMock<MockWorkItemList>* work_item_list) {
     if (!brand.empty()) {
       base::win::RegKey key(installer_state_->root_key(),
@@ -390,7 +390,7 @@ class AddUpdateBrandCodeWorkItemTest
   std::unique_ptr<InstallationState> installation_state_;
   std::unique_ptr<InstallerState> installer_state_;
   registry_util::RegistryOverrideManager registry_override_;
-  base::string16 registry_override_hklm_path_;
+  std::wstring registry_override_hklm_path_;
   base::win::ScopedDomainStateForTesting scoped_domain_state_;
   base::win::ScopedDeviceRegisteredWithManagementForTesting
       scoped_registration_state_;

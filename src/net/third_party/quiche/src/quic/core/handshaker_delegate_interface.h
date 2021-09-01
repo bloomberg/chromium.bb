@@ -5,8 +5,8 @@
 #ifndef QUICHE_QUIC_CORE_HANDSHAKER_DELEGATE_INTERFACE_H_
 #define QUICHE_QUIC_CORE_HANDSHAKER_DELEGATE_INTERFACE_H_
 
-#include "net/third_party/quiche/src/quic/core/crypto/transport_parameters.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "quic/core/crypto/transport_parameters.h"
+#include "quic/core/quic_types.h"
 
 namespace quic {
 
@@ -74,6 +74,9 @@ class QUIC_EXPORT_PRIVATE HandshakerDelegateInterface {
 
   // Called at the end of an handshake operation callback.
   virtual void OnHandshakeCallbackDone() = 0;
+
+  // Whether a packet flusher is currently attached.
+  virtual bool PacketFlusherAttached() const = 0;
 };
 
 }  // namespace quic

@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include <bitset>
+
 #include "base/single_thread_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/v8_cache_options.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message_storage.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -98,11 +100,13 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   void TestContentSecurityPolicy() {
     EXPECT_TRUE(IsCurrentThread());
     ContentSecurityPolicy* csp = GlobalScope()->GetContentSecurityPolicy();
+    KURL main_document_url = KURL("https://example.com/script.js");
 
-    // The "script-src 'self'" directive allows this.
+    // The "script-src 'self'" directive allows |main_document_url| since it is
+    // same-origin with the main document.
     EXPECT_TRUE(csp->AllowScriptFromSource(
-        GlobalScope()->Url(), String(), IntegrityMetadataSet(), kParserInserted,
-        GlobalScope()->Url(), RedirectStatus::kNoRedirect));
+        main_document_url, String(), IntegrityMetadataSet(), kParserInserted,
+        main_document_url, RedirectStatus::kNoRedirect));
 
     // The "script-src https://allowed.example.com" should allow this.
     EXPECT_TRUE(csp->AllowScriptFromSource(
@@ -125,11 +129,12 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     EXPECT_TRUE(IsCurrentThread());
 
     // At this point check that the CSP that was set is indeed invalid.
-    ContentSecurityPolicy* csp = GlobalScope()->GetContentSecurityPolicy();
-    EXPECT_EQ(1ul, csp->Headers().size());
-    EXPECT_EQ("invalid-csp", csp->Headers().at(0).first);
+    const Vector<network::mojom::blink::ContentSecurityPolicyPtr>& csp =
+        GlobalScope()->GetContentSecurityPolicy()->GetParsedPolicies();
+    EXPECT_EQ(1ul, csp.size());
+    EXPECT_EQ("invalid-csp", csp[0]->header->header_value);
     EXPECT_EQ(network::mojom::ContentSecurityPolicyType::kEnforce,
-              csp->Headers().at(0).second);
+              csp[0]->header->type);
 
     PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
                         CrossThreadBindOnce(&test::ExitRunLoop));
@@ -196,9 +201,9 @@ class ThreadedWorkletMessagingProxyForTest
   ~ThreadedWorkletMessagingProxyForTest() override = default;
 
   void Start() {
-    std::unique_ptr<Vector<char>> cached_meta_data = nullptr;
+    std::unique_ptr<Vector<char>> cached_meta_data;
     WorkerClients* worker_clients = nullptr;
-    std::unique_ptr<WorkerSettings> worker_settings = nullptr;
+    std::unique_ptr<WorkerSettings> worker_settings;
     InitializeWorkerThread(
         std::make_unique<GlobalScopeCreationParams>(
             GetExecutionContext()->Url(), mojom::blink::ScriptType::kModule,
@@ -208,7 +213,9 @@ class ThreadedWorkletMessagingProxyForTest
                 ->Loader()
                 .UserAgentMetadata(),
             nullptr /* web_worker_fetch_context */,
-            GetExecutionContext()->GetContentSecurityPolicy()->Headers(),
+            mojo::Clone(GetExecutionContext()
+                            ->GetContentSecurityPolicy()
+                            ->GetParsedPolicies()),
             GetExecutionContext()->GetReferrerPolicy(),
             GetExecutionContext()->GetSecurityOrigin(),
             GetExecutionContext()->IsSecureContext(),
@@ -220,10 +227,10 @@ class ThreadedWorkletMessagingProxyForTest
             mojom::blink::V8CacheOptions::kDefault,
             MakeGarbageCollected<WorkletModuleResponsesMap>(),
             mojo::NullRemote() /* browser_interface_broker */,
-            BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
-            GetExecutionContext()->GetAgentClusterID(),
+            BeginFrameProviderParams(), nullptr /* parent_permissions_policy */,
+            GetExecutionContext()->GetAgentClusterID(), ukm::kInvalidSourceId,
             GetExecutionContext()->GetExecutionContextToken()),
-        base::nullopt, base::nullopt);
+        absl::nullopt, absl::nullopt);
   }
 
  private:
@@ -240,7 +247,8 @@ class ThreadedWorkletTest : public testing::Test {
     page_ = std::make_unique<DummyPageHolder>();
     KURL url("https://example.com/");
     page_->GetFrame().Loader().CommitNavigation(
-        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(), url),
+        WebNavigationParams::CreateWithHTMLBufferForTesting(
+            SharedBuffer::Create(), url),
         nullptr /* extra_data */);
     blink::test::RunPendingTasks();
     ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
@@ -304,10 +312,12 @@ TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
   // Set up the CSP for Document before starting ThreadedWorklet because
   // ThreadedWorklet inherits the owner Document's CSP.
   auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-  csp->DidReceiveHeader("script-src 'self' https://allowed.example.com",
-                        network::mojom::ContentSecurityPolicyType::kEnforce,
-                        network::mojom::ContentSecurityPolicySource::kHTTP);
-  GetExecutionContext()->GetSecurityContext().SetContentSecurityPolicy(csp);
+  csp->AddPolicies(ParseContentSecurityPolicies(
+      "script-src 'self' https://allowed.example.com",
+      network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kHTTP,
+      *(GetExecutionContext()->GetSecurityOrigin())));
+  GetExecutionContext()->SetContentSecurityPolicy(csp);
 
   MessagingProxy()->Start();
 
@@ -321,10 +331,11 @@ TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
 
 TEST_F(ThreadedWorkletTest, InvalidContentSecurityPolicy) {
   auto* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-  csp->DidReceiveHeader("invalid-csp",
-                        network::mojom::ContentSecurityPolicyType::kEnforce,
-                        network::mojom::ContentSecurityPolicySource::kHTTP);
-  GetExecutionContext()->GetSecurityContext().SetContentSecurityPolicy(csp);
+  csp->AddPolicies(ParseContentSecurityPolicies(
+      "invalid-csp", network::mojom::ContentSecurityPolicyType::kEnforce,
+      network::mojom::ContentSecurityPolicySource::kHTTP,
+      *(GetExecutionContext()->GetSecurityOrigin())));
+  GetExecutionContext()->SetContentSecurityPolicy(csp);
 
   MessagingProxy()->Start();
 

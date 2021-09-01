@@ -17,15 +17,11 @@ class ScreenCaptureNotificationUIStub : public ScreenCaptureNotificationUI {
     NOTIMPLEMENTED();
     return 0;
   }
-
-  void SetStopCallback(base::OnceClosure stop_callback) override {
-    NOTIMPLEMENTED();
-  }
 };
 
 // static
 std::unique_ptr<ScreenCaptureNotificationUI>
-ScreenCaptureNotificationUI::Create(const base::string16& title) {
+ScreenCaptureNotificationUI::Create(const std::u16string& title) {
   return std::unique_ptr<ScreenCaptureNotificationUI>(
       new ScreenCaptureNotificationUIStub());
 }

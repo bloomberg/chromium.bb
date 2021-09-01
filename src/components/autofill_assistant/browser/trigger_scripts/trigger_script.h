@@ -33,6 +33,10 @@ class TriggerScript {
   bool waiting_for_precondition_no_longer_true() const;
   void waiting_for_precondition_no_longer_true(bool waiting);
 
+  TriggerScriptProto::TriggerUIType trigger_ui_type() const {
+    return proto_.trigger_ui_type();
+  }
+
  private:
   friend class TriggerScriptTest;
 

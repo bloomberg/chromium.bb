@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ui/compositor/layer.h"
 #include "ui/views/animation/slide_out_controller_delegate.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
@@ -40,10 +41,10 @@ class TestSlideOutControllerDelegate : public SlideOutControllerDelegate {
     slide_started_count_ = 0;
     slide_changed_count_ = 0;
     slide_out_count_ = 0;
-    slide_changed_last_value_ = base::nullopt;
+    slide_changed_last_value_ = absl::nullopt;
   }
 
-  base::Optional<bool> slide_changed_last_value_;
+  absl::optional<bool> slide_changed_last_value_;
   int slide_started_count_ = 0;
   int slide_changed_count_ = 0;
   int slide_out_count_ = 0;

@@ -390,6 +390,15 @@ HttpStream* WebSocketBasicHandshakeStream::RenewStreamForAuth() {
   return handshake_stream.release();
 }
 
+const std::vector<std::string>& WebSocketBasicHandshakeStream::GetDnsAliases()
+    const {
+  return state_.GetDnsAliases();
+}
+
+base::StringPiece WebSocketBasicHandshakeStream::GetAcceptChViaAlps() const {
+  return {};
+}
+
 std::unique_ptr<WebSocketStream> WebSocketBasicHandshakeStream::Upgrade() {
   // The HttpStreamParser object has a pointer to our ClientSocketHandle. Make
   // sure it does not touch it again before it is destroyed.
@@ -454,7 +463,7 @@ int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
         // helpful, so use a different error message.
         if (headers->GetHttpVersion() == HttpVersion(0, 9)) {
           OnFailure("Error during WebSocket handshake: Invalid status line",
-                    ERR_FAILED, base::nullopt);
+                    ERR_FAILED, absl::nullopt);
         } else {
           OnFailure(base::StringPrintf("Error during WebSocket handshake: "
                                        "Unexpected response code: %d",
@@ -467,13 +476,13 @@ int WebSocketBasicHandshakeStream::ValidateResponse(int rv) {
   } else {
     if (rv == ERR_EMPTY_RESPONSE) {
       OnFailure("Connection closed before receiving a handshake response", rv,
-                base::nullopt);
+                absl::nullopt);
       result_ = HandshakeResult::EMPTY_RESPONSE;
       return rv;
     }
     OnFailure(
         std::string("Error during WebSocket handshake: ") + ErrorToString(rv),
-        rv, base::nullopt);
+        rv, absl::nullopt);
     // Some error codes (for example ERR_CONNECTION_CLOSED) get changed to OK at
     // higher levels. To prevent an unvalidated connection getting erroneously
     // upgraded, don't pass through the status code unchanged if it is
@@ -513,14 +522,14 @@ int WebSocketBasicHandshakeStream::ValidateUpgradeResponse(
     return OK;
   }
   OnFailure("Error during WebSocket handshake: " + failure_message, ERR_FAILED,
-            base::nullopt);
+            absl::nullopt);
   return ERR_INVALID_RESPONSE;
 }
 
 void WebSocketBasicHandshakeStream::OnFailure(
     const std::string& message,
     int net_error,
-    base::Optional<int> response_code) {
+    absl::optional<int> response_code) {
   // Avoid connection reuse if auth did not happen.
   state_.connection()->socket()->Disconnect();
   stream_request_->OnFailure(message, net_error, response_code);

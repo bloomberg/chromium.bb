@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -40,7 +40,7 @@ if os.getcwd() != self_dir:
   java_path = fix_path(java_path)
 java_cmd = [java_path]
 # This is a simple argparser for jvm, jar, and classpath arguments.
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument('--jar-args')
 parser.add_argument('--jvm-args')
 parser.add_argument('--classpath')
@@ -66,7 +66,7 @@ else:
 if known_args.classpath:
   classpath += [known_args.classpath]
 
-{noverify_flag}
+{extra_flags}
 java_cmd.extend(
     ['-classpath', ':'.join(classpath), '-enableassertions', \"{main_class}\"])
 java_cmd.extend(extra_program_args)
@@ -84,13 +84,17 @@ def main(argv):
       help='Classpath for running the jar.')
   parser.add_option('--noverify', action='store_true',
       help='JVM flag: noverify.')
+  parser.add_option('--tiered-stop-at-level-one',
+                    action='store_true',
+                    help='JVM flag: -XX:TieredStopAtLevel=1.')
 
   options, extra_program_args = parser.parse_args(argv)
 
-  if (options.noverify):
-    noverify_flag = 'java_cmd.append("-noverify")'
-  else:
-    noverify_flag = ''
+  extra_flags = []
+  if options.noverify:
+    extra_flags.append('java_cmd.append("-noverify")')
+  if options.tiered_stop_at_level_one:
+    extra_flags.append('java_cmd.append("-XX:TieredStopAtLevel=1")')
 
   classpath = []
   for cp_arg in options.classpath:
@@ -101,15 +105,15 @@ def main(argv):
   java_path = os.path.relpath(
       os.path.join(build_utils.JAVA_HOME, 'bin', 'java'), run_dir)
 
-  with build_utils.AtomicOutput(options.output) as script:
+  with build_utils.AtomicOutput(options.output, mode='w') as script:
     script.write(
         script_template.format(classpath=('"%s"' % '", "'.join(classpath)),
                                java_path=repr(java_path),
                                main_class=options.main_class,
                                extra_program_args=repr(extra_program_args),
-                               noverify_flag=noverify_flag))
+                               extra_flags='\n'.join(extra_flags)))
 
-  os.chmod(options.output, 0750)
+  os.chmod(options.output, 0o750)
 
 
 if __name__ == '__main__':

@@ -2673,17 +2673,17 @@ class TestCommandBot(NetTestCase):
     base_url = 'https://localhost:1/_ah/api/swarming/v1/bots/list?'
     self.expected_requests([
         (
-            base_url + 'is_dead=FALSE&is_busy=NONE&is_mp=NONE',
+            base_url + 'is_dead=FALSE&is_busy=NONE',
             {},
             self.mock_swarming_api([self.bot_2], 'opaque'),
         ),
         (
-            base_url + 'is_dead=FALSE&is_busy=NONE&is_mp=NONE&cursor=opaque',
+            base_url + 'is_dead=FALSE&is_busy=NONE&cursor=opaque',
             {},
             self.mock_swarming_api([self.bot_3], 'opaque2'),
         ),
         (
-            base_url + 'is_dead=FALSE&is_busy=NONE&is_mp=NONE&cursor=opaque2',
+            base_url + 'is_dead=FALSE&is_busy=NONE&cursor=opaque2',
             {},
             self.mock_swarming_api([self.bot_4], None),
         ),
@@ -2709,17 +2709,17 @@ class TestCommandBot(NetTestCase):
     base_url = 'https://localhost:1/_ah/api/swarming/v1/bots/list?'
     self.expected_requests([
         (
-            base_url + 'is_dead=FALSE&is_busy=NONE&is_mp=NONE',
+            base_url + 'is_dead=FALSE&is_busy=NONE',
             {},
             self.mock_swarming_api([self.bot_2], 'opaque'),
         ),
         (
-            base_url + 'is_dead=FALSE&is_busy=NONE&is_mp=NONE&cursor=opaque',
+            base_url + 'is_dead=FALSE&is_busy=NONE&cursor=opaque',
             {},
             self.mock_swarming_api([self.bot_3], 'opaque2'),
         ),
         (
-            base_url + 'is_dead=FALSE&is_busy=NONE&is_mp=NONE&cursor=opaque2',
+            base_url + 'is_dead=FALSE&is_busy=NONE&cursor=opaque2',
             {},
             self.mock_swarming_api([self.bot_4], None),
         ),
@@ -2733,8 +2733,7 @@ class TestCommandBot(NetTestCase):
     base_url = 'https://localhost:1/_ah/api/swarming/v1/bots/list?'
     self.expected_requests([
         (
-            base_url +
-            'is_dead=FALSE&is_busy=TRUE&is_mp=NONE&dimensions=os%3AWindows',
+            base_url + 'is_dead=FALSE&is_busy=TRUE&dimensions=os%3AWindows',
             {},
             self.mock_swarming_api([self.bot_2], None),
         ),
@@ -2759,7 +2758,7 @@ class TestCommandBot(NetTestCase):
     base_url = 'https://localhost:1/_ah/api/swarming/v1/bots/list?'
     self.expected_requests([
         (
-            base_url + 'is_dead=NONE&is_busy=NONE&is_mp=NONE',
+            base_url + 'is_dead=NONE&is_busy=NONE',
             {},
             self.mock_swarming_api([self.bot_1, self.bot_4], None),
         ),
@@ -2784,8 +2783,7 @@ class TestCommandBot(NetTestCase):
     base_url = 'https://localhost:1/_ah/api/swarming/v1/bots/list?'
     self.expected_requests([
         (
-            base_url +
-            'is_dead=TRUE&is_busy=NONE&is_mp=NONE&dimensions=os%3AUbuntu',
+            base_url + 'is_dead=TRUE&is_busy=NONE&dimensions=os%3AUbuntu',
             {},
             self.mock_swarming_api([self.bot_1], None),
         ),

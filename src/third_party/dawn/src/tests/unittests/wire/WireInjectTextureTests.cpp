@@ -34,7 +34,8 @@ TEST_F(WireInjectTextureTests, CallAfterReserveInject) {
 
     WGPUTexture apiTexture = api.GetNewTexture();
     EXPECT_CALL(api, TextureReference(apiTexture));
-    ASSERT_TRUE(GetWireServer()->InjectTexture(apiTexture, reservation.id, reservation.generation));
+    ASSERT_TRUE(GetWireServer()->InjectTexture(apiTexture, reservation.id, reservation.generation,
+                                               reservation.deviceId, reservation.deviceGeneration));
 
     wgpuTextureCreateView(reservation.texture, nullptr);
     WGPUTextureView apiDummyView = api.GetNewTextureView();
@@ -57,11 +58,13 @@ TEST_F(WireInjectTextureTests, InjectExistingID) {
 
     WGPUTexture apiTexture = api.GetNewTexture();
     EXPECT_CALL(api, TextureReference(apiTexture));
-    ASSERT_TRUE(GetWireServer()->InjectTexture(apiTexture, reservation.id, reservation.generation));
+    ASSERT_TRUE(GetWireServer()->InjectTexture(apiTexture, reservation.id, reservation.generation,
+                                               reservation.deviceId, reservation.deviceGeneration));
 
     // ID already in use, call fails.
-    ASSERT_FALSE(
-        GetWireServer()->InjectTexture(apiTexture, reservation.id, reservation.generation));
+    ASSERT_FALSE(GetWireServer()->InjectTexture(apiTexture, reservation.id, reservation.generation,
+                                                reservation.deviceId,
+                                                reservation.deviceGeneration));
 }
 
 // Test that the server only borrows the texture and does a single reference-release
@@ -71,7 +74,8 @@ TEST_F(WireInjectTextureTests, InjectedTextureLifetime) {
     // Injecting the texture adds a reference
     WGPUTexture apiTexture = api.GetNewTexture();
     EXPECT_CALL(api, TextureReference(apiTexture));
-    ASSERT_TRUE(GetWireServer()->InjectTexture(apiTexture, reservation.id, reservation.generation));
+    ASSERT_TRUE(GetWireServer()->InjectTexture(apiTexture, reservation.id, reservation.generation,
+                                               reservation.deviceId, reservation.deviceGeneration));
 
     // Releasing the texture removes a single reference.
     wgpuTextureRelease(reservation.texture);
@@ -81,4 +85,30 @@ TEST_F(WireInjectTextureTests, InjectedTextureLifetime) {
     // Deleting the server doesn't release a second reference.
     DeleteServer();
     Mock::VerifyAndClearExpectations(&api);
+}
+
+// Test that a texture reservation can be reclaimed. This is necessary to
+// avoid leaking ObjectIDs for reservations that are never injected.
+TEST_F(WireInjectTextureTests, ReclaimTextureReservation) {
+    // Test that doing a reservation and full release is an error.
+    {
+        ReservedTexture reservation = GetWireClient()->ReserveTexture(device);
+        wgpuTextureRelease(reservation.texture);
+        FlushClient(false);
+    }
+
+    // Test that doing a reservation and then reclaiming it recycles the ID.
+    {
+        ReservedTexture reservation1 = GetWireClient()->ReserveTexture(device);
+        GetWireClient()->ReclaimTextureReservation(reservation1);
+
+        ReservedTexture reservation2 = GetWireClient()->ReserveTexture(device);
+
+        // The ID is the same, but the generation is still different.
+        ASSERT_EQ(reservation1.id, reservation2.id);
+        ASSERT_NE(reservation1.generation, reservation2.generation);
+
+        // No errors should occur.
+        FlushClient();
+    }
 }
