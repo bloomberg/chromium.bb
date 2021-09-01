@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include <getopt.h>
 #include <inttypes.h>
 #include <stdint.h>
 #include <unistd.h>
@@ -23,6 +22,8 @@
 
 #include "perfetto/base/logging.h"
 #include "perfetto/base/time.h"
+#include "perfetto/ext/base/file_utils.h"
+#include "perfetto/ext/base/getopt.h"
 #include "perfetto/ext/base/scoped_file.h"
 
 #define PERFETTO_HAVE_PTHREADS                \
@@ -100,7 +101,7 @@ int BusyThreadsMain(int argc, char** argv) {
   int64_t duty_cycle = -1;
   uint32_t thread_name_count = 0;
 
-  static struct option long_options[] = {
+  static option long_options[] = {
     {"background", no_argument, nullptr, 'd'},
     {"threads", required_argument, nullptr, 't'},
     {"period_us", required_argument, nullptr, 'p'},
@@ -110,9 +111,8 @@ int BusyThreadsMain(int argc, char** argv) {
 #endif
     {nullptr, 0, nullptr, 0}
   };
-  int option_index;
   int c;
-  while ((c = getopt_long(argc, argv, "", long_options, &option_index)) != -1) {
+  while ((c = getopt_long(argc, argv, "", long_options, nullptr)) != -1) {
     switch (c) {
       case 'd':
         background = true;

@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <algorithm>
 #include <cerrno>
 #include <cstring>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -55,9 +57,8 @@ BrailleControllerImpl* BrailleControllerImpl::GetInstance() {
 }
 
 BrailleControllerImpl::BrailleControllerImpl() {
-  create_brlapi_connection_function_ = base::Bind(
-      &BrailleControllerImpl::CreateBrlapiConnection,
-      base::Unretained(this));
+  create_brlapi_connection_function_ = base::BindOnce(
+      &BrailleControllerImpl::CreateBrlapiConnection, base::Unretained(this));
 }
 
 BrailleControllerImpl::~BrailleControllerImpl() = default;
@@ -89,12 +90,12 @@ std::unique_ptr<DisplayState> BrailleControllerImpl::GetDisplayState() {
     } else if (rows * columns > 0) {
       // rows * columns == 0 means no display present.
       display_state->available = true;
-      display_state->text_column_count.reset(new int(columns));
-      display_state->text_row_count.reset(new int(rows));
+      display_state->text_column_count = std::make_unique<int>(columns);
+      display_state->text_row_count = std::make_unique<int>(rows);
 
       unsigned int cell_size = 0;
       connection_->GetCellSize(&cell_size);
-      display_state->cell_size.reset(new int(cell_size));
+      display_state->cell_size = std::make_unique<int>(cell_size);
     }
   }
   return display_state;
@@ -141,13 +142,12 @@ void BrailleControllerImpl::RemoveObserver(BrailleObserver* observer) {
 }
 
 void BrailleControllerImpl::SetCreateBrlapiConnectionForTesting(
-    const CreateBrlapiConnectionFunction& function) {
+    CreateBrlapiConnectionFunction function) {
   if (function.is_null()) {
-    create_brlapi_connection_function_ = base::Bind(
-        &BrailleControllerImpl::CreateBrlapiConnection,
-        base::Unretained(this));
+    create_brlapi_connection_function_ = base::BindOnce(
+        &BrailleControllerImpl::CreateBrlapiConnection, base::Unretained(this));
   } else {
-    create_brlapi_connection_function_ = function;
+    create_brlapi_connection_function_ = std::move(function);
   }
 }
 
@@ -189,9 +189,10 @@ void BrailleControllerImpl::StartWatchingSocketDirOnTaskThread() {
                                                 base::BlockingType::MAY_BLOCK);
   base::FilePath brlapi_dir(BRLAPI_SOCKETPATH);
   if (!file_path_watcher_.Watch(
-          brlapi_dir, false,
-          base::Bind(&BrailleControllerImpl::OnSocketDirChangedOnTaskThread,
-                     base::Unretained(this)))) {
+          brlapi_dir, base::FilePathWatcher::Type::kNonRecursive,
+          base::BindRepeating(
+              &BrailleControllerImpl::OnSocketDirChangedOnTaskThread,
+              base::Unretained(this)))) {
     LOG(WARNING) << "Couldn't watch brlapi directory " << BRLAPI_SOCKETPATH;
   }
 }
@@ -225,13 +226,17 @@ void BrailleControllerImpl::TryToConnect() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(skip_libbrlapi_so_load_ || libbrlapi_loader_.loaded());
   connect_scheduled_ = false;
-  if (!connection_.get())
-    connection_ = create_brlapi_connection_function_.Run();
-  if (connection_.get() && !connection_->Connected()) {
+  if (!connection_.get()) {
+    DCHECK(!create_brlapi_connection_function_.is_null());
+    connection_ = std::move(create_brlapi_connection_function_).Run();
+  }
+
+  DCHECK(connection_);
+  if (!connection_->Connected()) {
     VLOG(1) << "Trying to connect to brlapi";
-    BrlapiConnection::ConnectResult result = connection_->Connect(base::Bind(
-        &BrailleControllerImpl::DispatchKeys,
-        base::Unretained(this)));
+    BrlapiConnection::ConnectResult result =
+        connection_->Connect(base::BindRepeating(
+            &BrailleControllerImpl::DispatchKeys, base::Unretained(this)));
     switch (result) {
       case BrlapiConnection::CONNECT_SUCCESS:
         DispatchOnDisplayStateChanged(GetDisplayState());
@@ -276,8 +281,7 @@ void BrailleControllerImpl::Disconnect() {
   if (!connection_ || !connection_->Connected())
     return;
   connection_->Disconnect();
-  DispatchOnDisplayStateChanged(
-      std::unique_ptr<DisplayState>(new DisplayState()));
+  DispatchOnDisplayStateChanged(std::make_unique<DisplayState>());
 }
 
 std::unique_ptr<BrlapiConnection>

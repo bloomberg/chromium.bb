@@ -184,8 +184,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
       performAction:grey_swipeSlowInDirectionWithStartPoint(kGREYDirectionLeft,
                                                             0.2, 0.5)];
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(@"Delete")]
-      performAction:grey_tap()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(@"Delete"),
+                                          grey_kindOfClassName(
+                                              @"UISwipeActionStandardButton"),
+                                          nil)] performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:customSearchEngineCell]
       assertWithMatcher:grey_nil()];
@@ -249,10 +252,11 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   [ChromeEarlGrey loadURL:pageURL];
 
+  __weak SearchEngineSettingsTestCase* weakSelf = self;
   GREYCondition* openSearchQuery =
       [GREYCondition conditionWithName:@"Wait for Open Search query"
                                  block:^BOOL {
-                                   return _openSearchCalled;
+                                   return [weakSelf wasOpenSearchCalled];
                                  }];
   // Wait for the
   GREYAssertTrue([openSearchQuery
@@ -265,6 +269,10 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::SettingsSearchEngineButton()]
       performAction:grey_tap()];
+}
+
+- (BOOL)wasOpenSearchCalled {
+  return _openSearchCalled;
 }
 
 @end

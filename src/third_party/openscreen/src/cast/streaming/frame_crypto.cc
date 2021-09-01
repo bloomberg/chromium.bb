@@ -23,7 +23,7 @@ EncryptedFrame::EncryptedFrame() {
 
 EncryptedFrame::~EncryptedFrame() = default;
 
-EncryptedFrame::EncryptedFrame(EncryptedFrame&& other)
+EncryptedFrame::EncryptedFrame(EncryptedFrame&& other) noexcept
     : EncodedFrame(static_cast<EncodedFrame&&>(other)),
       owned_data_(std::move(other.owned_data_)) {
   data = absl::Span<uint8_t>(owned_data_);

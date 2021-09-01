@@ -26,6 +26,7 @@
 #include "cast/streaming/sender_report_builder.h"
 #include "cast/streaming/session_config.h"
 #include "cast/streaming/ssrc.h"
+#include "cast/streaming/testing/simple_socket_subscriber.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/time.h"
@@ -249,7 +250,6 @@ class MockSender : public CompoundRtcpParser::Client {
   CompoundRtcpParser rtcp_parser_;
   FrameCrypto crypto_;
   RtpPacketizer rtp_packetizer_;
-
   FrameId max_feedback_frame_id_ = FrameId::first() + kMaxUnackedFrames;
 
   EncryptedFrame frame_being_sent_;
@@ -275,10 +275,10 @@ class ReceiverTest : public testing::Test {
                    /* .channels = */ 2,
                    /* .target_playout_delay = */ kTargetPlayoutDelay,
                    /* .aes_secret_key = */ kAesKey,
-                   /* .aes_iv_mask = */ kCastIvMask}),
+                   /* .aes_iv_mask = */ kCastIvMask,
+                   /* .is_pli_enabled = */ true}),
         sender_(&task_runner_, &env_) {
-    env_.set_socket_error_handler(
-        [](Error error) { ASSERT_TRUE(error.ok()) << error; });
+    env_.SetSocketSubscriber(&socket_subscriber_);
     ON_CALL(env_, SendPacket(_))
         .WillByDefault(Invoke([this](absl::Span<const uint8_t> packet) {
           task_runner_.PostTaskWithDelay(
@@ -359,6 +359,7 @@ class ReceiverTest : public testing::Test {
   Receiver receiver_;
   testing::NiceMock<MockSender> sender_;
   testing::NiceMock<MockConsumer> consumer_;
+  SimpleSubscriber socket_subscriber_;
 };
 
 // Tests that the Receiver processes RTCP packets correctly and sends RTCP
@@ -660,6 +661,19 @@ TEST_F(ReceiverTest, RequestsKeyFrameToRectifyPictureLoss) {
   receiver()->RequestKeyFrame();
   AdvanceClockAndRunTasks(kOneWayNetworkDelay);
   testing::Mock::VerifyAndClearExpectations(sender());
+}
+
+TEST_F(ReceiverTest, PLICanBeDisabled) {
+  receiver()->SetPliEnabledForTesting(false);
+
+#if OSP_DCHECK_IS_ON()
+  EXPECT_DEATH(receiver()->RequestKeyFrame(), ".*PLI is not enabled.*");
+#else
+  EXPECT_CALL(*sender(), OnReceiverIndicatesPictureLoss()).Times(0);
+  receiver()->RequestKeyFrame();
+  AdvanceClockAndRunTasks(kOneWayNetworkDelay);
+  testing::Mock::VerifyAndClearExpectations(sender());
+#endif
 }
 
 // Tests that the Receiver will start dropping packets once its frame queue is

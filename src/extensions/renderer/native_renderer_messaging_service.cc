@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/containers/contains.h"
 #include "base/supports_user_data.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/renderer/render_frame.h"
@@ -95,8 +96,9 @@ void NativeRendererMessagingService::ValidateMessagePort(
   // synchronous.
   context_set->ForEach(
       render_frame,
-      base::Bind(&NativeRendererMessagingService::ValidateMessagePortInContext,
-                 base::Unretained(this), port_id, &has_port));
+      base::BindRepeating(
+          &NativeRendererMessagingService::ValidateMessagePortInContext,
+          base::Unretained(this), port_id, &has_port));
 
   // A reply is only sent if the port is missing, because the port is assumed to
   // exist unless stated otherwise.
@@ -120,7 +122,7 @@ void NativeRendererMessagingService::DispatchOnConnect(
   bool port_created = false;
   context_set->ForEach(
       info.target_id, restrict_to_render_frame,
-      base::Bind(
+      base::BindRepeating(
           &NativeRendererMessagingService::DispatchOnConnectToScriptContext,
           base::Unretained(this), target_port_id, channel_name, &source, info,
           &port_created));
@@ -141,8 +143,9 @@ void NativeRendererMessagingService::DeliverMessage(
     content::RenderFrame* restrict_to_render_frame) {
   context_set->ForEach(
       restrict_to_render_frame,
-      base::Bind(&NativeRendererMessagingService::DeliverMessageToScriptContext,
-                 base::Unretained(this), message, target_port_id));
+      base::BindRepeating(
+          &NativeRendererMessagingService::DeliverMessageToScriptContext,
+          base::Unretained(this), message, target_port_id));
 }
 
 void NativeRendererMessagingService::DispatchOnDisconnect(
@@ -152,7 +155,7 @@ void NativeRendererMessagingService::DispatchOnDisconnect(
     content::RenderFrame* restrict_to_render_frame) {
   context_set->ForEach(
       restrict_to_render_frame,
-      base::Bind(
+      base::BindRepeating(
           &NativeRendererMessagingService::DispatchOnDisconnectToScriptContext,
           base::Unretained(this), port_id, error_message));
 }
@@ -400,7 +403,7 @@ void NativeRendererMessagingService::DispatchOnConnectToListeners(
 
   const Extension* extension = script_context->extension();
   if (extension) {
-    if (!source->tab.empty() && !extension->is_platform_app()) {
+    if (!source->tab.DictEmpty() && !extension->is_platform_app()) {
       sender_builder.Set("tab", content::V8ValueConverter::Create()->ToV8Value(
                                     &source->tab, v8_context));
     }

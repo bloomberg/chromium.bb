@@ -82,8 +82,7 @@ class GFPyrHeightTest
   virtual ~GFPyrHeightTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cpu_used_ = 4;

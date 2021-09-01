@@ -28,6 +28,14 @@ typedef struct {
   const unsigned int tile_cols;
 } uniformTileConfigParam;
 
+const libaom_test::TestMode kTestModeParams[] =
+#if CONFIG_REALTIME_ONLY
+    { ::libaom_test::kRealTime };
+#else
+    { ::libaom_test::kRealTime, ::libaom_test::kOnePassGood,
+      ::libaom_test::kTwoPassGood };
+#endif
+
 static const uniformTileConfigParam uniformTileConfigParams[] = {
   { 128, 0, 0 }, { 128, 0, 2 }, { 128, 2, 0 }, { 128, 1, 2 }, { 128, 2, 2 },
   { 128, 3, 2 }, { 64, 0, 0 },  { 64, 0, 2 },  { 64, 2, 0 },  { 64, 1, 2 },
@@ -77,8 +85,7 @@ class UniformTileConfigTestLarge
   virtual ~UniformTileConfigTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = end_usage_check_;
@@ -144,8 +151,7 @@ class NonUniformTileConfigTestLarge
   virtual ~NonUniformTileConfigTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = rc_end_usage_;
@@ -256,14 +262,12 @@ TEST_P(NonUniformTileConfigTestLarge, NonUniformTileConfigTest) {
 }
 
 AV1_INSTANTIATE_TEST_SUITE(UniformTileConfigTestLarge,
-                           ::testing::Values(::libaom_test::kOnePassGood,
-                                             ::libaom_test::kTwoPassGood),
+                           ::testing::ValuesIn(kTestModeParams),
                            ::testing::ValuesIn(uniformTileConfigParams),
                            ::testing::Values(AOM_Q, AOM_VBR, AOM_CBR, AOM_CQ));
 
 AV1_INSTANTIATE_TEST_SUITE(NonUniformTileConfigTestLarge,
-                           ::testing::Values(::libaom_test::kOnePassGood,
-                                             ::libaom_test::kTwoPassGood),
+                           ::testing::ValuesIn(kTestModeParams),
                            ::testing::ValuesIn(nonUniformTileConfigParams),
                            ::testing::Values(AOM_Q, AOM_VBR, AOM_CBR, AOM_CQ));
 
@@ -301,8 +305,7 @@ class TileGroupTestLarge
   virtual ~TileGroupTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = AOM_Q;
@@ -355,7 +358,6 @@ TEST_P(TileGroupTestLarge, TileGroupCountTest) {
 }
 
 AV1_INSTANTIATE_TEST_SUITE(TileGroupTestLarge,
-                           ::testing::Values(::libaom_test::kOnePassGood,
-                                             ::libaom_test::kTwoPassGood),
+                           ::testing::ValuesIn(kTestModeParams),
                            ::testing::ValuesIn(tileGroupTestParams));
 }  // namespace

@@ -12,22 +12,17 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
-#include "components/previews/content/previews_user_data.h"
 #include "net/nqe/effective_connection_type.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 
 namespace data_reduction_proxy {
 
 const char kDefaultTestUrl[] = "http://google.com";
-
-// Attaches a new |PreviewsUserData| to the given |navigation_handle|.
-previews::PreviewsUserData* PreviewsDataForNavigationHandle(
-    content::NavigationHandle* navigation_handle);
 
 page_load_metrics::mojom::ResourceDataUpdatePtr
 CreateDataReductionProxyResource(bool was_cached,
@@ -61,8 +56,8 @@ class DataReductionProxyMetricsObserverTestBase
 
   // Verify that, if expected and actual are set, their values are equal.
   // Otherwise, verify that both are unset.
-  void ExpectEqualOrUnset(const base::Optional<base::TimeDelta>& expected,
-                          const base::Optional<base::TimeDelta>& actual);
+  void ExpectEqualOrUnset(const absl::optional<base::TimeDelta>& expected,
+                          const absl::optional<base::TimeDelta>& actual);
 
   // Set ups test state.
   void SetUp() override;

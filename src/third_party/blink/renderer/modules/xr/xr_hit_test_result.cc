@@ -20,15 +20,15 @@ XRHitTestResult::XRHitTestResult(
     : session_(session),
       mojo_from_this_(hit_result.mojo_from_result),
       plane_id_(hit_result.plane_id != 0
-                    ? base::Optional<uint64_t>(hit_result.plane_id)
-                    : base::nullopt) {}
+                    ? absl::optional<uint64_t>(hit_result.plane_id)
+                    : absl::nullopt) {}
 
 XRPose* XRHitTestResult::getPose(XRSpace* other) {
   auto maybe_other_space_native_from_mojo = other->NativeFromMojo();
   DCHECK(maybe_other_space_native_from_mojo);
 
-  blink::TransformationMatrix mojo_from_this =
-      mojo_from_this_.ToTransform().matrix();
+  auto mojo_from_this =
+      TransformationMatrix(mojo_from_this_.ToTransform().matrix());
 
   auto other_native_from_mojo = *maybe_other_space_native_from_mojo;
   auto other_offset_from_other_native = other->OffsetFromNativeMatrix();
@@ -60,7 +60,7 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
   // (their poses may change dramatically on a frame-by-frame basis). Grab an
   // information about reference space that is well-suited for anchor creation
   // from session:
-  base::Optional<XRSession::ReferenceSpaceInformation>
+  absl::optional<XRSession::ReferenceSpaceInformation>
       reference_space_information = session_->GetStationaryReferenceSpace();
 
   if (!reference_space_information) {
@@ -77,26 +77,12 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
 
   auto space_from_mojo = mojo_from_space.Inverse();
   auto space_from_anchor =
-      space_from_mojo * (mojo_from_this_.ToTransform().matrix());
+      space_from_mojo *
+      TransformationMatrix(mojo_from_this_.ToTransform().matrix());
 
-  if (plane_id_) {
-    DVLOG(2) << __func__
-             << ": hit test result's entity is a plane, creating "
-                "plane-attached anchor";
-    return session_->CreatePlaneAnchorHelper(
-        script_state, space_from_anchor,
-        reference_space_information->native_origin, *plane_id_,
-        exception_state);
-  } else {
-    DVLOG(2) << __func__
-             << ": hit test result's entity is unavailable, creating "
-                "free-floating anchor ";
-
-    // Let's create free-floating anchor since plane is unavailable.
-    return session_->CreateAnchorHelper(
-        script_state, space_from_anchor,
-        reference_space_information->native_origin, exception_state);
-  }
+  return session_->CreateAnchorHelper(
+      script_state, space_from_anchor,
+      reference_space_information->native_origin, plane_id_, exception_state);
 }
 
 void XRHitTestResult::Trace(Visitor* visitor) const {

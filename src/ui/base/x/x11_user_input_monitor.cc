@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ui/events/devices/x11/xinput_util.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/gfx/x/future.h"
 
 namespace ui {
 
@@ -23,15 +24,11 @@ void XUserInputMonitor::WillDestroyCurrentMessageLoop() {
   StopMonitor();
 }
 
-bool XUserInputMonitor::ShouldContinueStream() const {
-  return true;
-}
-
-void XUserInputMonitor::DispatchXEvent(x11::Event* event) {
+void XUserInputMonitor::OnEvent(const x11::Event& event) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(write_key_press_callback_);
 
-  auto* raw = event->As<x11::Input::RawDeviceEvent>();
+  auto* raw = event.As<x11::Input::RawDeviceEvent>();
   if (!raw || (raw->opcode != x11::Input::RawDeviceEvent::RawKeyPress &&
                raw->opcode != x11::Input::RawDeviceEvent::RawKeyRelease)) {
     return;
@@ -72,6 +69,7 @@ void XUserInputMonitor::StartMonitor(WriteKeyPressCallback& callback) {
     }
   }
 
+  connection_->AddEventObserver(this);
   if (!connection_->xinput().present()) {
     LOG(ERROR) << "X Input extension not available.";
     StopMonitor();
@@ -81,7 +79,7 @@ void XUserInputMonitor::StartMonitor(WriteKeyPressCallback& callback) {
   connection_->xinput().XIQueryVersion(
       {x11::Input::major_version, x11::Input::minor_version});
 
-  x11::Input::XIEventMask mask;
+  x11::Input::XIEventMask mask{};
   SetXinputMask(&mask, x11::Input::RawDeviceEvent::RawKeyPress);
   SetXinputMask(&mask, x11::Input::RawDeviceEvent::RawKeyRelease);
   connection_->xinput().XISelectEvents(
@@ -125,7 +123,7 @@ void XUserInputMonitor::StopMonitor() {
 
 void XUserInputMonitor::OnConnectionData() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  connection_->Dispatch(this);
+  connection_->DispatchAll();
 }
 
 }  // namespace ui

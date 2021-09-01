@@ -13,16 +13,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/dbus/userdataauth/cryptohome_misc_client.h"
 #include "components/invalidation/impl/fake_invalidation_handler.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
@@ -31,12 +30,11 @@
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
@@ -57,7 +55,7 @@ CreateInvalidationServiceForSenderId(const std::string& fcm_sender_id) {
   std::unique_ptr<invalidation::FakeInvalidationService> invalidation_service(
       new invalidation::FakeInvalidationService);
   invalidation_service->SetInvalidatorState(
-      syncer::TRANSIENT_INVALIDATION_ERROR);
+      invalidation::TRANSIENT_INVALIDATION_ERROR);
   return invalidation_service;
 }
 
@@ -70,7 +68,7 @@ std::unique_ptr<KeyedService> BuildProfileInvalidationProvider(
 
 void SendInvalidatorStateChangeNotification(
     invalidation::InvalidationService* service,
-    syncer::InvalidatorState state) {
+    invalidation::InvalidatorState state) {
   static_cast<invalidation::FCMInvalidationService*>(service)
       ->OnInvalidatorStateChange(state);
 }
@@ -78,8 +76,8 @@ void SendInvalidatorStateChangeNotification(
 }  // namespace
 
 // A simple AffiliatedInvalidationServiceProvider::Consumer that registers a
-// syncer::FakeInvalidationHandler with the invalidation::InvalidationService
-// that is currently being made available.
+// invalidation::FakeInvalidationHandler with
+// the invalidation::InvalidationService that is currently being made available.
 class FakeConsumer : public AffiliatedInvalidationServiceProvider::Consumer {
  public:
   explicit FakeConsumer(AffiliatedInvalidationServiceProviderImpl* provider);
@@ -94,7 +92,7 @@ class FakeConsumer : public AffiliatedInvalidationServiceProvider::Consumer {
 
  private:
   AffiliatedInvalidationServiceProviderImpl* provider_;
-  syncer::FakeInvalidationHandler invalidation_handler_;
+  invalidation::FakeInvalidationHandler invalidation_handler_;
 
   int invalidation_service_set_count_ = 0;
   invalidation::InvalidationService* invalidation_service_ = nullptr;
@@ -151,11 +149,12 @@ class AffiliatedInvalidationServiceProviderImplTest : public testing::Test {
  private:
   content::BrowserTaskEnvironment task_environment_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
-  chromeos::FakeChromeUserManager* fake_user_manager_;
+  ash::FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   TestingProfileManager profile_manager_;
+  session_manager::SessionManager session_manager_;
 };
 
 FakeConsumer::FakeConsumer(AffiliatedInvalidationServiceProviderImpl* provider)
@@ -209,7 +208,7 @@ AffiliatedInvalidationServiceProviderImplTest::
     AffiliatedInvalidationServiceProviderImplTest()
     : device_invalidation_service_(nullptr),
       profile_invalidation_service_(nullptr),
-      fake_user_manager_(new chromeos::FakeChromeUserManager),
+      fake_user_manager_(new ash::FakeChromeUserManager),
       user_manager_enabler_(base::WrapUnique(fake_user_manager_)),
       profile_manager_(TestingBrowserProcess::GetGlobal()) {
   cros_settings_test_helper_.InstallAttributes()->SetCloudManaged("example.com",
@@ -217,8 +216,8 @@ AffiliatedInvalidationServiceProviderImplTest::
 }
 
 void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
+  chromeos::CryptohomeMiscClient::InitializeFake();
   chromeos::SystemSaltGetter::Initialize();
-  chromeos::CryptohomeClient::InitializeFake();
   ASSERT_TRUE(profile_manager_.SetUp());
 
   DeviceOAuth2TokenServiceFactory::Initialize(
@@ -241,8 +240,8 @@ void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
       ->RegisterTestingFactory(
           BrowserContextKeyedServiceFactory::TestingFactory());
   DeviceOAuth2TokenServiceFactory::Shutdown();
-  chromeos::CryptohomeClient::Shutdown();
   chromeos::SystemSaltGetter::Shutdown();
+  chromeos::CryptohomeMiscClient::Shutdown();
 }
 
 Profile*
@@ -259,13 +258,11 @@ Profile* AffiliatedInvalidationServiceProviderImplTest::
 Profile* AffiliatedInvalidationServiceProviderImplTest::LogInAndReturnProfile(
     const std::string& user_id,
     bool is_affiliated) {
-  fake_user_manager_->AddUserWithAffiliation(AccountId::FromUserEmail(user_id),
-                                             is_affiliated);
-  Profile* profile = profile_manager_.CreateTestingProfile(user_id);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-      content::NotificationService::AllSources(),
-      content::Details<Profile>(profile));
+  TestingProfile* profile = profile_manager_.CreateTestingProfile(user_id);
+  AccountId account_id = AccountId::FromUserEmail(user_id);
+  fake_user_manager_->AddUserWithAffiliationAndTypeAndProfile(
+      account_id, is_affiliated, user_manager::USER_TYPE_REGULAR, profile);
+  session_manager_.NotifyUserProfileLoaded(account_id);
   return profile;
 }
 
@@ -287,7 +284,7 @@ void AffiliatedInvalidationServiceProviderImplTest::
   // that the consumer is informed about this.
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
   profile_invalidation_service_->SetInvalidatorState(
-      syncer::INVALIDATIONS_ENABLED);
+      invalidation::INVALIDATIONS_ENABLED);
   EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
   EXPECT_EQ(profile_invalidation_service_, consumer_->GetInvalidationService());
 
@@ -312,7 +309,7 @@ void AffiliatedInvalidationServiceProviderImplTest::
   // Indicate that the per-profile invalidation service has connected. Verify
   // that the consumer is not called back.
   profile_invalidation_service_->SetInvalidatorState(
-      syncer::INVALIDATIONS_ENABLED);
+      invalidation::INVALIDATIONS_ENABLED);
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
 
   // Verify that the device-global invalidation service still exists.
@@ -330,7 +327,7 @@ void AffiliatedInvalidationServiceProviderImplTest::
   // that the consumer is informed about this.
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
   SendInvalidatorStateChangeNotification(device_invalidation_service_,
-                                         syncer::INVALIDATIONS_ENABLED);
+                                         invalidation::INVALIDATIONS_ENABLED);
   EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
   EXPECT_EQ(device_invalidation_service_, consumer_->GetInvalidationService());
 }
@@ -343,7 +340,7 @@ void AffiliatedInvalidationServiceProviderImplTest::
   // that the consumer is informed about this.
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
   profile_invalidation_service_->SetInvalidatorState(
-      syncer::INVALIDATION_CREDENTIALS_REJECTED);
+      invalidation::INVALIDATION_CREDENTIALS_REJECTED);
   EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
   EXPECT_EQ(nullptr, consumer_->GetInvalidationService());
 
@@ -388,7 +385,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        NoInvalidationServiceAvailable) {
   // Register a consumer. Verify that the consumer is not called back
   // immediately as no connected invalidation service exists yet.
-  consumer_.reset(new FakeConsumer(provider_.get()));
+  consumer_ = std::make_unique<FakeConsumer>(provider_.get());
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
 }
 
@@ -399,7 +396,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
 // connects, it is made available to the consumer.
 TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        UseDeviceInvalidationService) {
-  consumer_.reset(new FakeConsumer(provider_.get()));
+  consumer_ = std::make_unique<FakeConsumer>(provider_.get());
 
   // Indicate that the device-global invalidation service connected. Verify that
   // that the consumer is informed about this.
@@ -409,7 +406,8 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
   // Verify that the consumer is informed about this.
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
   SendInvalidatorStateChangeNotification(
-      device_invalidation_service_, syncer::INVALIDATION_CREDENTIALS_REJECTED);
+      device_invalidation_service_,
+      invalidation::INVALIDATION_CREDENTIALS_REJECTED);
   EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
   EXPECT_EQ(nullptr, consumer_->GetInvalidationService());
 
@@ -422,7 +420,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
 // affiliated user connects, it is made available to the consumer.
 TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        UseAffiliatedProfileInvalidationService) {
-  consumer_.reset(new FakeConsumer(provider_.get()));
+  consumer_ = std::make_unique<FakeConsumer>(provider_.get());
 
   // Verify that a device-global invalidation service has been created.
   EXPECT_TRUE(provider_->GetDeviceInvalidationServiceForTest());
@@ -444,7 +442,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
 // unaffiliated user connects, it is ignored.
 TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        DoNotUseUnaffiliatedProfileInvalidationService) {
-  consumer_.reset(new FakeConsumer(provider_.get()));
+  consumer_ = std::make_unique<FakeConsumer>(provider_.get());
 
   // Verify that a device-global invalidation service has been created.
   EXPECT_TRUE(provider_->GetDeviceInvalidationServiceForTest());
@@ -463,7 +461,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
 // consumer instead and the device-global invalidation service is destroyed.
 TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        SwitchToAffiliatedProfileInvalidationService) {
-  consumer_.reset(new FakeConsumer(provider_.get()));
+  consumer_ = std::make_unique<FakeConsumer>(provider_.get());
 
   // Indicate that the device-global invalidation service connected. Verify that
   // that the consumer is informed about this.
@@ -484,7 +482,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
 // consumer.
 TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        DoNotSwitchToUnaffiliatedProfileInvalidationService) {
-  consumer_.reset(new FakeConsumer(provider_.get()));
+  consumer_ = std::make_unique<FakeConsumer>(provider_.get());
 
   // Indicate that the device-global invalidation service connected. Verify that
   // that the consumer is informed about this.
@@ -505,7 +503,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
 // service connects, it is made available to the consumer.
 TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        SwitchToDeviceInvalidationService) {
-  consumer_.reset(new FakeConsumer(provider_.get()));
+  consumer_ = std::make_unique<FakeConsumer>(provider_.get());
 
   // Verify that a device-global invalidation service has been created.
   EXPECT_TRUE(provider_->GetDeviceInvalidationServiceForTest());
@@ -535,7 +533,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
 // to the second user is made available to the consumer instead.
 TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        SwitchBetweenAffiliatedProfileInvalidationServices) {
-  consumer_.reset(new FakeConsumer(provider_.get()));
+  consumer_ = std::make_unique<FakeConsumer>(provider_.get());
 
   // Verify that a device-global invalidation service has been created.
   EXPECT_TRUE(provider_->GetDeviceInvalidationServiceForTest());
@@ -562,7 +560,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
   // Indicate that the second user's per-profile invalidation service has
   // connected. Verify that the consumer is not called back.
   second_profile_invalidation_service->SetInvalidatorState(
-      syncer::INVALIDATIONS_ENABLED);
+      invalidation::INVALIDATIONS_ENABLED);
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
 
   // Indicate that the first user's per-profile invalidation service has
@@ -571,7 +569,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
   // user's.
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
   profile_invalidation_service_->SetInvalidatorState(
-      syncer::INVALIDATION_CREDENTIALS_REJECTED);
+      invalidation::INVALIDATION_CREDENTIALS_REJECTED);
   EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
   EXPECT_EQ(second_profile_invalidation_service,
             consumer_->GetInvalidationService());
@@ -589,7 +587,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest,
 // consumer. Further verifies that when the second consumer also unregisters,
 // the device-global invalidation service is destroyed.
 TEST_F(AffiliatedInvalidationServiceProviderImplTest, MultipleConsumers) {
-  consumer_.reset(new FakeConsumer(provider_.get()));
+  consumer_ = std::make_unique<FakeConsumer>(provider_.get());
 
   // Indicate that the device-global invalidation service connected. Verify that
   // that the consumer is informed about this.
@@ -625,7 +623,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest, MultipleConsumers) {
 // service belonging to a second affiliated user that subsequently connects is
 // ignored.
 TEST_F(AffiliatedInvalidationServiceProviderImplTest, NoServiceAfterShutdown) {
-  consumer_.reset(new FakeConsumer(provider_.get()));
+  consumer_ = std::make_unique<FakeConsumer>(provider_.get());
 
   // Verify that a device-global invalidation service has been created.
   EXPECT_TRUE(provider_->GetDeviceInvalidationServiceForTest());
@@ -661,7 +659,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest, NoServiceAfterShutdown) {
   // Indicate that the second user's per-profile invalidation service has
   // connected. Verify that the consumer is not called back.
   second_profile_invalidation_service->SetInvalidatorState(
-      syncer::INVALIDATIONS_ENABLED);
+      invalidation::INVALIDATIONS_ENABLED);
   EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
 
   // Verify that the device-global invalidation service still does not exist.
@@ -676,7 +674,7 @@ TEST_F(AffiliatedInvalidationServiceProviderImplTest, NoServiceAfterShutdown) {
 // This is a regression test for http://crbug.com/455504.
 TEST_F(AffiliatedInvalidationServiceProviderImplTest,
        ConnectedDeviceGlobalInvalidationServiceOnShutdown) {
-  consumer_.reset(new FakeConsumer(provider_.get()));
+  consumer_ = std::make_unique<FakeConsumer>(provider_.get());
 
   // Verify that a device-global invalidation service has been created.
   EXPECT_TRUE(provider_->GetDeviceInvalidationServiceForTest());

@@ -6,6 +6,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_STREAM_TEXTURE_SHARED_IMAGE_INTERFACE_H_
 
 #include "gpu/gpu_gles2_export.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image.h"
 
 namespace gpu {
@@ -17,7 +18,7 @@ class TextureBase;
 class GPU_GLES2_EXPORT StreamTextureSharedImageInterface : public gl::GLImage {
  public:
   enum class BindingsMode {
-    // Ensures that the TextureOwner's texture is bound to the latest image, if
+    // Ensures that the texture is bound to the latest image, if
     // it requires explicit binding.
     kEnsureTexImageBound,
 
@@ -38,9 +39,14 @@ class GPU_GLES2_EXPORT StreamTextureSharedImageInterface : public gl::GLImage {
   // or not.
   virtual bool IsUsingGpuMemory() const = 0;
 
-  // Update the texture image to the most recent frame and bind it to the
-  // texture.
-  virtual void UpdateAndBindTexImage() = 0;
+  // Update texture image to the most recent frame and bind it to the provided
+  // texture |service_id| if TextureOwner does not implicitly binds texture
+  // during the update.
+  // If TextureOwner() always binds texture implicitly during the update, then
+  // it will always bind it to TextureOwner's texture id and not to the
+  // |service_id|.
+  virtual void UpdateAndBindTexImage(GLuint service_id) = 0;
+
   virtual bool HasTextureOwner() const = 0;
   virtual TextureBase* GetTextureBase() const = 0;
 
@@ -52,8 +58,26 @@ class GPU_GLES2_EXPORT StreamTextureSharedImageInterface : public gl::GLImage {
   // the overlay promotion. Return true if it could render to overlay correctly.
   virtual bool RenderToOverlay() = 0;
 
+  // Whether TextureOwner's implementation binds texture to TextureOwner owned
+  // texture_id during the texture update.
+  virtual bool TextureOwnerBindsTextureOnUpdate() = 0;
+
  protected:
   ~StreamTextureSharedImageInterface() override = default;
+};
+
+// Used to restore texture binding to GL_TEXTURE_EXTERNAL_OES target.
+class ScopedRestoreTextureBinding {
+ public:
+  ScopedRestoreTextureBinding() {
+    glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &bound_service_id_);
+  }
+  ~ScopedRestoreTextureBinding() {
+    glBindTexture(GL_TEXTURE_EXTERNAL_OES, bound_service_id_);
+  }
+
+ private:
+  GLint bound_service_id_;
 };
 
 }  // namespace gpu

@@ -27,8 +27,10 @@ using TestCompletionCallback =
 class IndexedDBHelperTest : public content::ContentBrowserTest {
  public:
   content::StoragePartition* StoragePartition() {
-    return content::BrowserContext::GetDefaultStoragePartition(
-        shell()->web_contents()->GetBrowserContext());
+    return shell()
+        ->web_contents()
+        ->GetBrowserContext()
+        ->GetDefaultStoragePartition();
   }
 };
 
@@ -42,8 +44,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBHelperTest, CannedAddIndexedDB) {
   helper->Add(url::Origin::Create(origin2));
 
   TestCompletionCallback callback;
-  helper->StartFetching(base::Bind(&TestCompletionCallback::callback,
-                                   base::Unretained(&callback)));
+  helper->StartFetching(base::BindOnce(&TestCompletionCallback::callback,
+                                       base::Unretained(&callback)));
 
   std::list<content::StorageUsageInfo> result = callback.result();
 
@@ -63,8 +65,8 @@ IN_PROC_BROWSER_TEST_F(IndexedDBHelperTest, CannedUnique) {
   helper->Add(url::Origin::Create(origin));
 
   TestCompletionCallback callback;
-  helper->StartFetching(base::Bind(&TestCompletionCallback::callback,
-                                   base::Unretained(&callback)));
+  helper->StartFetching(base::BindOnce(&TestCompletionCallback::callback,
+                                       base::Unretained(&callback)));
 
   std::list<content::StorageUsageInfo> result = callback.result();
 

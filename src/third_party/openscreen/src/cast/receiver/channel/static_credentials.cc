@@ -143,7 +143,7 @@ StaticCredentialsProvider::StaticCredentialsProvider(
       tls_cert_der(std::move(tls_cert_der)) {}
 
 StaticCredentialsProvider::StaticCredentialsProvider(
-    StaticCredentialsProvider&&) = default;
+    StaticCredentialsProvider&&) noexcept = default;
 StaticCredentialsProvider& StaticCredentialsProvider::operator=(
     StaticCredentialsProvider&&) = default;
 StaticCredentialsProvider::~StaticCredentialsProvider() = default;

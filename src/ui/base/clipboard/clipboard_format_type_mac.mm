@@ -64,6 +64,12 @@ ClipboardFormatType ClipboardFormatType::GetType(
 }
 
 // static
+const ClipboardFormatType& ClipboardFormatType::GetFilenamesType() {
+  static base::NoDestructor<ClipboardFormatType> type(NSFilenamesPboardType);
+  return *type;
+}
+
+// static
 const ClipboardFormatType& ClipboardFormatType::GetUrlType() {
   static base::NoDestructor<ClipboardFormatType> type(NSURLPboardType);
   return *type;
@@ -89,6 +95,12 @@ const ClipboardFormatType& ClipboardFormatType::GetSvgType() {
 // static
 const ClipboardFormatType& ClipboardFormatType::GetRtfType() {
   static base::NoDestructor<ClipboardFormatType> type(NSRTFPboardType);
+  return *type;
+}
+
+// static
+const ClipboardFormatType& ClipboardFormatType::GetPngType() {
+  static base::NoDestructor<ClipboardFormatType> type(NSPasteboardTypePNG);
   return *type;
 }
 

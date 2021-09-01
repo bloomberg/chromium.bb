@@ -20,6 +20,10 @@ class ChromiumBrandedImageProvider : public BrandedImageProvider {
   UIImage* GetSigninConfirmationPersonalizeServicesImage() override;
   UIImage* GetWhatsNewIconImage(WhatsNewIcon type) override;
   UIImage* GetDownloadGoogleDriveImage() override;
+  UIImage* GetStaySafePromoImage() override;
+  UIImage* GetMadeForIOSPromoImage() override;
+  UIImage* GetMadeForIPadOSPromoImage() override;
+  UIImage* GetNonModalPromoImage() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromiumBrandedImageProvider);

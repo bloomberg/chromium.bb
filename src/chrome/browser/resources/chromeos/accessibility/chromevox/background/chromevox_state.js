@@ -110,9 +110,9 @@ ChromeVoxState.prototype = {
   navigateToRange: goog.abstractMethod,
 
   /**
-   * Save the current ChromeVox range.
+   * Restores the last valid ChromeVox range.
    */
-  markCurrentRange: goog.abstractMethod,
+  restoreLastValidRangeIfNeeded: goog.abstractMethod,
 
   /**
    * Handles a braille command.
@@ -169,6 +169,11 @@ ChromeVoxState.prototype = {
   destroyUserActionMonitor() {
     this.userActionMonitor_ = null;
   },
+
+  /**
+   * Forces the reading of the next change to the clipboard.
+   */
+  readNextClipboardDataChange: goog.abstractMethod,
 };
 
 /** @type {!Array<ChromeVoxStateObserver>} */

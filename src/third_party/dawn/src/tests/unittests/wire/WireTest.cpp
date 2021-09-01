@@ -50,7 +50,6 @@ void WireTest::SetUp() {
     mC2sBuf = std::make_unique<utils::TerribleCommandBuffer>(mWireServer.get());
 
     WireServerDescriptor serverDesc = {};
-    serverDesc.device = mockDevice;
     serverDesc.procs = &mockProcs;
     serverDesc.serializer = mS2cBuf.get();
     serverDesc.memoryTransferService = GetServerMemoryTransferService();
@@ -65,15 +64,19 @@ void WireTest::SetUp() {
     mWireClient.reset(new WireClient(clientDesc));
     mS2cBuf->SetHandler(mWireClient.get());
 
-    device = mWireClient->GetDevice();
     dawnProcSetProcs(&dawn_wire::client::GetProcs());
 
+    auto deviceReservation = mWireClient->ReserveDevice();
+    EXPECT_CALL(api, DeviceReference(mockDevice));
+    mWireServer->InjectDevice(mockDevice, deviceReservation.id, deviceReservation.generation);
+
+    device = deviceReservation.device;
     apiDevice = mockDevice;
 
-    // The GetDefaultQueue is done on WireClient startup so we expect it now.
-    queue = wgpuDeviceGetDefaultQueue(device);
+    // The GetQueue is done on WireClient startup so we expect it now.
+    queue = wgpuDeviceGetQueue(device);
     apiQueue = api.GetNewQueue();
-    EXPECT_CALL(api, DeviceGetDefaultQueue(apiDevice)).WillOnce(Return(apiQueue));
+    EXPECT_CALL(api, DeviceGetQueue(apiDevice)).WillOnce(Return(apiQueue));
     FlushClient();
 }
 
@@ -86,7 +89,22 @@ void WireTest::TearDown() {
     // cannot be null.
     api.IgnoreAllReleaseCalls();
     mWireClient = nullptr;
+
+    if (mWireServer && apiDevice) {
+        // These are called on server destruction to clear the callbacks. They must not be
+        // called after the server is destroyed.
+        EXPECT_CALL(api, OnDeviceSetUncapturedErrorCallback(apiDevice, nullptr, nullptr))
+            .Times(Exactly(1));
+        EXPECT_CALL(api, OnDeviceSetDeviceLostCallback(apiDevice, nullptr, nullptr))
+            .Times(Exactly(1));
+    }
     mWireServer = nullptr;
+}
+
+// This should be called if |apiDevice| is no longer exists on the wire.
+// This signals that expectations in |TearDowb| shouldn't be added.
+void WireTest::DefaultApiDeviceWasReleased() {
+    apiDevice = nullptr;
 }
 
 void WireTest::FlushClient(bool success) {
@@ -110,6 +128,16 @@ dawn_wire::WireClient* WireTest::GetWireClient() {
 
 void WireTest::DeleteServer() {
     EXPECT_CALL(api, QueueRelease(apiQueue)).Times(1);
+    EXPECT_CALL(api, DeviceRelease(apiDevice)).Times(1);
+
+    if (mWireServer) {
+        // These are called on server destruction to clear the callbacks. They must not be
+        // called after the server is destroyed.
+        EXPECT_CALL(api, OnDeviceSetUncapturedErrorCallback(apiDevice, nullptr, nullptr))
+            .Times(Exactly(1));
+        EXPECT_CALL(api, OnDeviceSetDeviceLostCallback(apiDevice, nullptr, nullptr))
+            .Times(Exactly(1));
+    }
     mWireServer = nullptr;
 }
 

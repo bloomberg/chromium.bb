@@ -5,10 +5,10 @@
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_proxy.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -45,8 +45,7 @@ KeyedService* CupsPrintersManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   // We do not need an instance of CupsPrintersManager on the lockscreen.
   auto* profile = Profile::FromBrowserContext(context);
-  if (ProfileHelper::IsLockScreenAppProfile(profile) ||
-      ProfileHelper::IsSigninProfile(profile)) {
+  if (!ProfileHelper::IsRegularProfile(profile)) {
     return nullptr;
   }
 

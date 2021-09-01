@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_CHROMEBOX_FOR_MEETINGS_BROWSER_CFM_BROWSER_SERVICE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "base/no_destructor.h"
 #include "chrome/browser/chromeos/chromebox_for_meetings/service_adaptor.h"
 #include "chromeos/dbus/chromebox_for_meetings/cfm_observer.h"
 #include "chromeos/services/chromebox_for_meetings/public/mojom/cfm_browser.mojom.h"
@@ -24,30 +23,38 @@ class CfmBrowserService : public CfmObserver,
  public:
   CfmBrowserService(const CfmBrowserService&) = delete;
   CfmBrowserService& operator=(const CfmBrowserService&) = delete;
-  ~CfmBrowserService() override;
 
-  // Returns the global instance
-  static CfmBrowserService* GetInstance();
+  // Manage singleton instance.
+  static void Initialize();
+  static void Shutdown();
+  static CfmBrowserService* Get();
+  static bool IsInitialized();
 
  protected:
-  friend class base::NoDestructor<CfmBrowserService>;
-  CfmBrowserService();
-
-  // Forward |CfmObserver| implementation
+  // CfmObserver:
   bool ServiceRequestReceived(const std::string& interface_name) override;
 
-  // Disconnect handler for |mojom::CfmServiceAdaptor|
+  // ServiceAdaptorDelegate:
   void OnAdaptorDisconnect() override;
-
-  // Forward |ServiceAdaptorDelegate| implementation
   void OnBindService(mojo::ScopedMessagePipeHandle receiver_pipe) override;
+
+  // mojom::CfmBrowser:
+  void GetVariationsData(GetVariationsDataCallback callback) override;
+  void GetMemoryDetails(GetMemoryDetailsCallback callback) override;
 
   // Disconnect handler for |mojom::CfmBrowser|
   virtual void OnMojoDisconnect();
 
  private:
+  CfmBrowserService();
+  ~CfmBrowserService() override;
+
   ServiceAdaptor service_adaptor_;
   mojo::ReceiverSet<mojom::CfmBrowser> receivers_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<CfmBrowserService> weak_ptr_factory_{this};
 };
 
 }  // namespace cfm

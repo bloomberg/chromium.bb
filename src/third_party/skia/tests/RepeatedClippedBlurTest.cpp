@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 
+#include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkSurface.h"
 #include "include/effects/SkImageFilters.h"
@@ -52,7 +53,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(RepeatedClippedBlurTest, reporter, ctxInfo) {
         bm.eraseColor(SK_ColorRED);
         bm.eraseArea(SkIRect::MakeXYWH(1, 2, 1277, 1274), SK_ColorGREEN);
 
-        sk_sp<SkImage> rasterImg = SkImage::MakeFromBitmap(bm);
+        sk_sp<SkImage> rasterImg = bm.asImage();
         bigImg = rasterImg->makeTextureImage(dContext);
     }
 
@@ -68,7 +69,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(RepeatedClippedBlurTest, reporter, ctxInfo) {
                                                          nullptr);
         SkCanvas* c = s->getCanvas();
 
-        c->drawImageRect(bigImg, SkRect::MakeWH(1024, 600), nullptr);
+        c->drawImageRect(bigImg, SkRect::MakeWH(1024, 600), SkSamplingOptions());
 
         smImg = s->makeImageSnapshot();
     }
@@ -98,7 +99,8 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(RepeatedClippedBlurTest, reporter, ctxInfo) {
 
         SkRect dstRect = SkRect::MakeXYWH(offset.fX, offset.fY,
                                           outSubset.width(), outSubset.height());
-        dstCanvas->drawImageRect(filteredImg, outSubset, dstRect, nullptr);
+        dstCanvas->drawImageRect(filteredImg, SkRect::Make(outSubset), dstRect, SkSamplingOptions(),
+                                 nullptr, SkCanvas::kStrict_SrcRectConstraint);
 
         // Flush here to mimic Chrome's SkiaHelper::ApplyImageFilter
         dContext->flushAndSubmit();

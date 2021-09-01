@@ -35,10 +35,10 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   if (!mapping)
     return;
 
-  const FragmentData& fragment_data = object.FirstFragment();
+  const FragmentData& fragment_data = object.PrimaryStitchingFragment();
   DCHECK(fragment_data.HasLocalBorderBoxProperties());
   // SPv1 compositing forces single fragment for directly composited elements.
-  DCHECK(!fragment_data.NextFragment() ||
+  DCHECK(object.IsLayoutNGObject() || !object.FirstFragment().NextFragment() ||
          // We create multiple fragments for composited repeating fixed-position
          // during printing.
          object.GetDocument().Printing() ||
@@ -64,7 +64,7 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
   }
 #endif
 
-  base::Optional<PropertyTreeStateOrAlias> container_layer_state;
+  absl::optional<PropertyTreeStateOrAlias> container_layer_state;
   auto SetContainerLayerState =
       [&fragment_data, &snapped_paint_offset,
        &container_layer_state](GraphicsLayer* graphics_layer) {

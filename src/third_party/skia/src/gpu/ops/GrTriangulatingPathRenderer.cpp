@@ -9,6 +9,7 @@
 
 #include "include/private/SkIDChangeListener.h"
 #include "src/core/SkGeometry.h"
+#include "src/gpu/GrAATriangulator.h"
 #include "src/gpu/GrAuditTrail.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDefaultGeoProcFactory.h"
@@ -17,11 +18,11 @@
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProgramInfo.h"
 #include "src/gpu/GrRecordingContextPriv.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrResourceCache.h"
 #include "src/gpu/GrResourceProvider.h"
 #include "src/gpu/GrSimpleMesh.h"
 #include "src/gpu/GrStyle.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrThreadSafeCache.h"
 #include "src/gpu/GrTriangulator.h"
 #include "src/gpu/geometry/GrPathUtils.h"
@@ -88,7 +89,7 @@ public:
 private:
     GrUniqueKeyInvalidatedMessage fMsg;
 
-    void changed() override { SkMessageBus<GrUniqueKeyInvalidatedMessage>::Post(fMsg); }
+    void changed() override { SkMessageBus<GrUniqueKeyInvalidatedMessage, uint32_t>::Post(fMsg); }
 };
 
 class StaticVertexAllocator : public GrEagerVertexAllocator {
@@ -116,8 +117,10 @@ public:
         }
         if (fCanMapVB) {
             fVertices = fVertexBuffer->map();
-        } else {
+        }
+        if (!fVertices) {
             fVertices = sk_malloc_throw(eagerCount * stride);
+            fCanMapVB = false;
         }
         fLockStride = stride;
         return fVertices;
@@ -155,59 +158,47 @@ private:
     size_t fLockStride = 0;
 };
 
-class CpuVertexAllocator : public GrEagerVertexAllocator {
-public:
-    CpuVertexAllocator() = default;
-
-#ifdef SK_DEBUG
-    ~CpuVertexAllocator() override {
-        SkASSERT(!fLockStride && !fVertices && !fVertexData);
-    }
-#endif
-
-    void* lock(size_t stride, int eagerCount) override {
-        SkASSERT(!fLockStride && !fVertices && !fVertexData);
-        SkASSERT(stride && eagerCount);
-
-        fVertices = sk_malloc_throw(eagerCount * stride);
-        fLockStride = stride;
-
-        return fVertices;
-    }
-
-    void unlock(int actualCount) override {
-        SkASSERT(fLockStride && fVertices && !fVertexData);
-
-        fVertices = sk_realloc_throw(fVertices, actualCount * fLockStride);
-
-        fVertexData = GrThreadSafeCache::MakeVertexData(fVertices, actualCount, fLockStride);
-
-        fVertices = nullptr;
-        fLockStride = 0;
-    }
-
-    sk_sp<GrThreadSafeCache::VertexData> detachVertexData() {
-        SkASSERT(!fLockStride && !fVertices && fVertexData);
-
-        return std::move(fVertexData);
-    }
-
-private:
-    sk_sp<GrThreadSafeCache::VertexData> fVertexData;
-
-    void*  fVertices = nullptr;
-    size_t fLockStride = 0;
-};
-
 }  // namespace
 
+//-------------------------------------------------------------------------------------------------
+void* GrCpuVertexAllocator::lock(size_t stride, int eagerCount) {
+    SkASSERT(!fLockStride && !fVertices && !fVertexData);
+    SkASSERT(stride && eagerCount);
 
+    fVertices = sk_malloc_throw(eagerCount * stride);
+    fLockStride = stride;
+
+    return fVertices;
+}
+
+void GrCpuVertexAllocator::unlock(int actualCount) {
+    SkASSERT(fLockStride && fVertices && !fVertexData);
+
+    fVertices = sk_realloc_throw(fVertices, actualCount * fLockStride);
+
+    fVertexData = GrThreadSafeCache::MakeVertexData(fVertices, actualCount, fLockStride);
+
+    fVertices = nullptr;
+    fLockStride = 0;
+}
+
+sk_sp<GrThreadSafeCache::VertexData> GrCpuVertexAllocator::detachVertexData() {
+    SkASSERT(!fLockStride && !fVertices && fVertexData);
+
+    return std::move(fVertexData);
+}
+
+//-------------------------------------------------------------------------------------------------
 GrTriangulatingPathRenderer::GrTriangulatingPathRenderer()
   : fMaxVerbCount(GR_AA_TESSELLATOR_MAX_VERB_COUNT) {
 }
 
 GrPathRenderer::CanDrawPath
 GrTriangulatingPathRenderer::onCanDrawPath(const CanDrawPathArgs& args) const {
+    // Don't use this path renderer with dynamic MSAA. DMSAA tries to not rely on caching.
+    if (args.fSurfaceProps->flags() & kDMSAA_SkSurfacePropsPrivateFlag) {
+        return CanDrawPath::kNo;
+    }
     // This path renderer can draw fill styles, and can do screenspace antialiasing via a
     // one-pixel coverage ramp. It can do convex and concave paths, but we'll leave the convex
     // ones to simpler algorithms. We pass on paths that have styles, though they may come back
@@ -295,15 +286,13 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(
-            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-            GrClampType clampType) override {
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                      GrClampType clampType) override {
         GrProcessorAnalysisCoverage coverage = fAntiAlias
                                                        ? GrProcessorAnalysisCoverage::kSingleChannel
                                                        : GrProcessorAnalysisCoverage::kNone;
         // This Op uses uniform (not vertex) color, so doesn't need to track wide color.
-        return fHelper.finalizeProcessors(
-                caps, clip, hasMixedSampledCoverage, clampType, coverage, &fColor, nullptr);
+        return fHelper.finalizeProcessors(caps, clip, clampType, coverage, &fColor, nullptr);
     }
 
 private:
@@ -356,8 +345,7 @@ private:
         SkPath path;
         shape.asPath(&path);
 
-        return GrTriangulator::PathToTriangles(path, tol, clipBounds, allocator,
-                                               GrTriangulator::Mode::kNormal, isLinear);
+        return GrTriangulator::PathToTriangles(path, tol, clipBounds, allocator, isLinear);
     }
 
     void createNonAAMesh(Target* target) {
@@ -439,11 +427,8 @@ private:
         SkScalar tol = GrPathUtils::kDefaultTolerance;
         sk_sp<const GrBuffer> vertexBuffer;
         int firstVertex;
-        bool isLinear;
         GrEagerDynamicVertexAllocator allocator(target, &vertexBuffer, &firstVertex);
-        int vertexCount = GrTriangulator::PathToTriangles(path, tol, clipBounds, &allocator,
-                                                          GrTriangulator::Mode::kEdgeAntialias,
-                                                          &isLinear);
+        int vertexCount = GrAATriangulator::PathToAATriangles(path, tol, clipBounds, &allocator);
         if (vertexCount == 0) {
             return;
         }
@@ -454,10 +439,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         GrGeometryProcessor* gp;
         {
             using namespace GrDefaultGeoProcFactory;
@@ -489,9 +475,11 @@ private:
         }
 
 #ifdef SK_DEBUG
-        auto mode = (fAntiAlias) ? GrTriangulator::Mode::kEdgeAntialias
-                                 : GrTriangulator::Mode::kNormal;
-        SkASSERT(GrTriangulator::GetVertexStride(mode) == gp->vertexStride());
+        auto vertexStride = sizeof(SkPoint);
+        if (fAntiAlias) {
+            vertexStride += sizeof(float);
+        }
+        SkASSERT(vertexStride == gp->vertexStride());
 #endif
 
         GrPrimitiveType primitiveType = TRIANGULATOR_WIREFRAME ? GrPrimitiveType::kLines
@@ -500,18 +488,19 @@ private:
         fProgramInfo =  fHelper.createProgramInfoWithStencil(caps, arena, writeView,
                                                              std::move(appliedClip), dstProxyView,
                                                              gp, primitiveType,
-                                                             renderPassXferBarriers);
+                                                             renderPassXferBarriers, colorLoadOp);
     }
 
     void onPrePrepareDraws(GrRecordingContext* rContext,
-                           const GrSurfaceProxyView* writeView,
+                           const GrSurfaceProxyView& writeView,
                            GrAppliedClip* clip,
                            const GrXferProcessor::DstProxyView& dstProxyView,
-                           GrXferBarrierFlags renderPassXferBarriers) override {
+                           GrXferBarrierFlags renderPassXferBarriers,
+                           GrLoadOp colorLoadOp) override {
         TRACE_EVENT0("skia.gpu", TRACE_FUNC);
 
         INHERITED::onPrePrepareDraws(rContext, writeView, clip, dstProxyView,
-                                     renderPassXferBarriers);
+                                     renderPassXferBarriers, colorLoadOp);
 
         if (fAntiAlias) {
             // TODO: pull the triangulation work forward to the recording thread for the AA case
@@ -533,7 +522,7 @@ private:
             return;
         }
 
-        CpuVertexAllocator allocator;
+        GrCpuVertexAllocator allocator;
 
         bool isLinear;
         int vertexCount = Triangulate(&allocator, fViewMatrix, fShape, fDevClipBounds, tol,
@@ -591,7 +580,7 @@ private:
         }
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
         flushState->drawMesh(*fMesh);
     }
 

@@ -33,12 +33,12 @@ class AccessibilityScriptsMacBrowserTest : public ContentBrowserTest {
         root_(nullptr),
         line_indexer_(nullptr),
         script_output_(),
-        formatter_(AccessibilityTreeFormatter::Create()),
+        formatter_(AXInspectFactory::CreatePlatformFormatter()),
         helper_("mac") {
     // Set property filters.
     std::vector<ui::AXPropertyFilter> property_filters;
-    formatter_->AddDefaultFilters(&property_filters);
-    formatter_->SetPropertyFilters(property_filters);
+    formatter_->SetPropertyFilters(property_filters,
+                                   ui::AXTreeFormatter::kFiltersDefaultSet);
   }
 
   void LoadFile(const std::string& file);
@@ -132,9 +132,7 @@ void AccessibilityScriptsMacBrowserTest::AssertOutputMatchesExpectations() {
   // Collect the tree dump and script output.
   std::ostringstream output;
   {
-    std::string contents;
-    formatter_->FormatAccessibilityTreeForTesting(root_, &contents);
-    output << contents;
+    output << formatter_->Format(root_);
     output << script_output_.str();
   }
   std::vector<std::string> lines = base::SplitString(
@@ -144,7 +142,7 @@ void AccessibilityScriptsMacBrowserTest::AssertOutputMatchesExpectations() {
   base::FilePath expectation_file =
       helper_.GetExpectationFilePath(test_file_path_);
   EXPECT_FALSE(expectation_file.empty());
-  base::Optional<std::vector<std::string>> expected_lines =
+  absl::optional<std::vector<std::string>> expected_lines =
       helper_.LoadExpectationFile(expectation_file);
   EXPECT_TRUE(expected_lines.has_value());
 
@@ -298,6 +296,40 @@ IN_PROC_BROWSER_TEST_F(AccessibilityScriptsMacBrowserTest,
 
     WaitForEvent(ax::mojom::Event::kTextSelectionChanged);
 
+    OptionalNSObject selected_text = textarea.GetValue("AXSelectedText");
+    Print(selected_text);
+  }
+
+  AssertOutputMatchesExpectations();
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityScriptsMacBrowserTest,
+                       SetSelectedTextRange_ContentEditable) {
+  LoadFile("set-selectedtextrange-contenteditable.html");
+
+  // AXValue='The quick brown foxes jumps over the lazy dog'
+  AttributeInvoker textarea = GetInvokerAndAssertRole(":2", "AXTextArea");
+  // select 1st word
+  {
+    OptionalNSObject range{[NSValue valueWithRange:NSMakeRange(0, 3)]};
+    textarea.SetValue("AXSelectedTextRange", range);
+    WaitForEvent(ax::mojom::Event::kTextSelectionChanged);
+    OptionalNSObject selected_text = textarea.GetValue("AXSelectedText");
+    Print(selected_text);
+  }
+  // select text inside span
+  {
+    OptionalNSObject range{[NSValue valueWithRange:NSMakeRange(22, 4)]};
+    textarea.SetValue("AXSelectedTextRange", range);
+    WaitForEvent(ax::mojom::Event::kTextSelectionChanged);
+    OptionalNSObject selected_text = textarea.GetValue("AXSelectedText");
+    Print(selected_text);
+  }
+  // select text across several elements
+  {
+    OptionalNSObject range{[NSValue valueWithRange:NSMakeRange(24, 15)]};
+    textarea.SetValue("AXSelectedTextRange", range);
+    WaitForEvent(ax::mojom::Event::kTextSelectionChanged);
     OptionalNSObject selected_text = textarea.GetValue("AXSelectedText");
     Print(selected_text);
   }

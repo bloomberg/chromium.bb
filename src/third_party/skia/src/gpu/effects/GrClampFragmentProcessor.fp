@@ -5,23 +5,22 @@
  * found in the LICENSE file.
  */
 
-in fragmentProcessor? inputFP;
+in fragmentProcessor inputFP;
 layout(key) in bool clampToPremul;
 
 @optimizationFlags {
-    (inputFP ? ProcessorOptimizationFlags(inputFP.get()) : kAll_OptimizationFlags) &
-    (kConstantOutputForConstantInput_OptimizationFlag |
-     kPreservesOpaqueInput_OptimizationFlag)
+    ProcessorOptimizationFlags(inputFP.get()) & (kConstantOutputForConstantInput_OptimizationFlag |
+                                                 kPreservesOpaqueInput_OptimizationFlag)
+}
+
+half4 clampedPM(half4 inputColor) {
+    half alpha = saturate(inputColor.a);
+    return half4(clamp(inputColor.rgb, 0, alpha), alpha);
 }
 
 half4 main() {
     half4 inputColor = sample(inputFP);
-    @if (clampToPremul) {
-        half alpha = saturate(inputColor.a);
-        return half4(clamp(inputColor.rgb, 0, alpha), alpha);
-    } else {
-        return saturate(inputColor);
-    }
+    return clampToPremul ? clampedPM(inputColor) : saturate(inputColor);
 }
 
 @class {

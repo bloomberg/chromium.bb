@@ -50,7 +50,8 @@ class IsolateData : public v8_inspector::V8InspectorClient {
 
   // Setting things up.
   int CreateContextGroup();
-  void CreateContext(int context_group_id, v8_inspector::StringView name);
+  V8_NODISCARD bool CreateContext(int context_group_id,
+                                  v8_inspector::StringView name);
   void ResetContextGroup(int context_group_id);
   v8::Local<v8::Context> GetDefaultContext(int context_group_id);
   int GetContextGroupId(v8::Local<v8::Context> context);
@@ -100,6 +101,7 @@ class IsolateData : public v8_inspector::V8InspectorClient {
  private:
   static v8::MaybeLocal<v8::Module> ModuleResolveCallback(
       v8::Local<v8::Context> context, v8::Local<v8::String> specifier,
+      v8::Local<v8::FixedArray> import_assertions,
       v8::Local<v8::Module> referrer);
   static void MessageHandler(v8::Local<v8::Message> message,
                              v8::Local<v8::Value> exception);
@@ -129,6 +131,7 @@ class IsolateData : public v8_inspector::V8InspectorClient {
   void maxAsyncCallStackDepthChanged(int depth) override;
   std::unique_ptr<v8_inspector::StringBuffer> resourceNameToUrl(
       const v8_inspector::StringView& resourceName) override;
+  int64_t generateUniqueId() override;
 
   // The isolate gets deleted by its {Dispose} method, not by the default
   // deleter. Therefore we have to define a custom deleter for the unique_ptr to

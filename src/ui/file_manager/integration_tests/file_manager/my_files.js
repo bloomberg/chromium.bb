@@ -29,6 +29,9 @@ async function selectMyFiles(appId) {
 testcase.showMyFiles = async () => {
   const expectedElementLabels = [
     'Recent: FakeItem',
+    'Audio: FakeItem',
+    'Images: FakeItem',
+    'Videos: FakeItem',
     'My files: EntryListItem',
     'Downloads: SubDirectoryItem',
     'Linux files: FakeItem',
@@ -37,7 +40,11 @@ testcase.showMyFiles = async () => {
     'My Drive: SubDirectoryItem',
     'Shared with me: SubDirectoryItem',
     'Offline: SubDirectoryItem',
+    'Trash: EntryListItem',
   ];
+  if (await sendTestMessage({name: 'isTrashEnabled'}) !== 'true') {
+    expectedElementLabels.pop();  // Remove 'Trash: ...'.
+  }
 
   // Open Files app on local Downloads.
   const appId =
@@ -62,15 +69,12 @@ testcase.showMyFiles = async () => {
   // Select Downloads folder.
   await remoteCall.callRemoteTestUtil('selectVolume', appId, ['downloads']);
 
-  // Get the breadcrumbs elements.
-  const breadcrumbsQuery = ['#location-breadcrumbs .breadcrumb-path'];
-  const breadcrumbs = await remoteCall.callRemoteTestUtil(
-      'queryAllElements', appId, breadcrumbsQuery);
+  // Get the breadcrumbs element.
+  const breadcrumbs = await remoteCall.waitForElement(appId, ['bread-crumb']);
 
   // Check that My Files is displayed on breadcrumbs.
-  const expectedBreadcrumbs = 'My files > Downloads';
-  const resultBreadscrubms = breadcrumbs.map(crumb => crumb.text).join(' > ');
-  chrome.test.assertEq(expectedBreadcrumbs, resultBreadscrubms);
+  const expectedBreadcrumbs = 'My files/Downloads';
+  chrome.test.assertEq(expectedBreadcrumbs, breadcrumbs['attributes']['path']);
 };
 
 /**
@@ -320,6 +324,7 @@ testcase.myFilesUpdatesWhenAndroidVolumeMounts = async () => {
   const downloadsRow = ['Downloads', '--', 'Folder'];
   const playFilesRow = ['Play files', '--', 'Folder'];
   const crostiniRow = ['Linux files', '--', 'Folder'];
+  const expectedRows = [downloadsRow, crostiniRow];
   await remoteCall.waitAndClickElement(appId, myFiles);
   await remoteCall.waitForFiles(
       appId, [downloadsRow, crostiniRow],
@@ -334,7 +339,7 @@ testcase.myFilesUpdatesWhenAndroidVolumeMounts = async () => {
   // Android volume should automatically appear on directory tree and file list.
   await remoteCall.waitForElement(appId, playFilesTreeItem);
   await remoteCall.waitForFiles(
-      appId, [downloadsRow, crostiniRow, playFilesRow],
+      appId, [downloadsRow, playFilesRow, crostiniRow],
       {ignoreFileSize: true, ignoreLastModifiedTime: true});
 
   // Un-mount Play files volume.

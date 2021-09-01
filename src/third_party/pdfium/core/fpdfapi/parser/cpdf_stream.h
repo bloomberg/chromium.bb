@@ -7,13 +7,14 @@
 #ifndef CORE_FPDFAPI_PARSER_CPDF_STREAM_H_
 #define CORE_FPDFAPI_PARSER_CPDF_STREAM_H_
 
+#include <iosfwd>
 #include <memory>
 #include <set>
-#include <sstream>
 
 #include "core/fpdfapi/parser/cpdf_object.h"
 #include "core/fxcrt/fx_memory_wrappers.h"
 #include "core/fxcrt/fx_stream.h"
+#include "core/fxcrt/retain_ptr.h"
 
 class CPDF_Stream final : public CPDF_Object {
  public:

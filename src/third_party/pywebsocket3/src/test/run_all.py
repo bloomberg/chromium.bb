@@ -65,7 +65,7 @@ def _list_test_modules(directory):
 def _suite():
     loader = unittest.TestLoader()
     return loader.loadTestsFromNames(
-        _list_test_modules(os.path.join(os.path.split(__file__)[0], '.')))
+        _list_test_modules(os.path.dirname(__file__)))
 
 
 if __name__ == '__main__':

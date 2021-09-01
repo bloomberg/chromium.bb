@@ -91,7 +91,7 @@ class CustomPassphraseSetter : public PendingLocalNigoriCommit {
                                       state.custom_passphrase_time);
     observer->OnCryptographerStateChanged(state.cryptographer.get(),
                                           /*has_pending_keys=*/false);
-    observer->OnEncryptedTypesChanged(EncryptableUserTypes(),
+    observer->OnEncryptedTypesChanged(state.GetEncryptedTypes(),
                                       /*encrypt_everything=*/true);
     observer->OnPassphraseAccepted();
 
@@ -121,10 +121,12 @@ class KeystoreInitializer : public PendingLocalNigoriCommit {
       return false;
     }
 
+    std::unique_ptr<CryptographerImpl> cryptographer =
+        state->keystore_keys_cryptographer->ToCryptographerImpl();
+    DCHECK(!cryptographer->GetDefaultEncryptionKeyName().empty());
+    state->cryptographer->EmplaceKeysAndSelectDefaultKeyFrom(*cryptographer);
     state->passphrase_type = NigoriSpecifics::KEYSTORE_PASSPHRASE;
     state->keystore_migration_time = base::Time::Now();
-    state->cryptographer =
-        state->keystore_keys_cryptographer->ToCryptographerImpl();
     return true;
   }
 

@@ -10,16 +10,17 @@
 namespace blink {
 
 class LocalDOMWindow;
-class NativeIOManager;
+class NativeIOFileManager;
 class WorkerGlobalScope;
 
-// The "nativeIO" attribute on the Window global and Worker global scope.
+// The "storageFoundation" attribute on the Window global and Worker global
+// scope.
 class GlobalNativeIO {
   STATIC_ONLY(GlobalNativeIO);
 
  public:
-  static NativeIOManager* nativeIO(LocalDOMWindow&);
-  static NativeIOManager* nativeIO(WorkerGlobalScope&);
+  static NativeIOFileManager* storageFoundation(LocalDOMWindow&);
+  static NativeIOFileManager* storageFoundation(WorkerGlobalScope&);
 };
 
 }  // namespace blink

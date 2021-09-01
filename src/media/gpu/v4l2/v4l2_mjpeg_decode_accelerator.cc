@@ -17,8 +17,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/scoped_file.h"
+#include "base/memory/page_size.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/process/process_metrics.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bitstream_buffer.h"
@@ -755,7 +755,7 @@ void V4L2MjpegDecodeAccelerator::DevicePollTask() {
 bool V4L2MjpegDecodeAccelerator::DequeueSourceChangeEvent() {
   DCHECK(decoder_task_runner_->BelongsToCurrentThread());
 
-  if (base::Optional<struct v4l2_event> event = device_->DequeueEvent()) {
+  if (absl::optional<struct v4l2_event> event = device_->DequeueEvent()) {
     if (event->type == V4L2_EVENT_SOURCE_CHANGE) {
       VLOGF(2) << ": got source change event: " << event->u.src_change.changes;
       if (event->u.src_change.changes & V4L2_EVENT_SRC_CH_RESOLUTION) {

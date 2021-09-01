@@ -30,6 +30,7 @@
 #include "cc/base/switches.h"
 #include "components/viz/common/switches.h"
 #include "content/public/app/content_main.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "headless/app/headless_shell.h"
@@ -58,6 +59,10 @@
 
 #if defined(OS_MAC)
 #include "components/os_crypt/os_crypt_switches.h"
+#endif
+
+#if defined(HEADLESS_USE_POLICY)
+#include "headless/lib/browser/policy/headless_mode_policy.h"
 #endif
 
 namespace headless {
@@ -104,7 +109,11 @@ bool ParseFontRenderHinting(
 }
 
 GURL ConvertArgumentToURL(const base::CommandLine::StringType& arg) {
+#if defined(OS_WIN)
+  GURL url(base::WideToUTF8(arg));
+#else
   GURL url(arg);
+#endif
   if (url.is_valid() && url.has_scheme())
     return url;
 
@@ -137,7 +146,7 @@ base::FilePath GetSSLKeyLogFile(const base::CommandLine* command_line) {
   env->GetVar("SSLKEYLOGFILE", &path_str);
 #if defined(OS_WIN)
   // base::Environment returns environment variables in UTF-8 on Windows.
-  return base::FilePath(base::UTF8ToUTF16(path_str));
+  return base::FilePath(base::UTF8ToWide(path_str));
 #else
   return base::FilePath(path_str);
 #endif
@@ -221,6 +230,18 @@ HeadlessShell::~HeadlessShell() = default;
 
 void HeadlessShell::OnStart(HeadlessBrowser* browser) {
   browser_ = browser;
+
+#if defined(HEADLESS_USE_POLICY)
+  if (policy::HeadlessModePolicy::IsHeadlessDisabled(
+          static_cast<HeadlessBrowserImpl*>(browser)->GetPrefs())) {
+    LOG(ERROR) << "Headless mode is disabled by policy.";
+    browser_->BrowserMainThread()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HeadlessShell::Shutdown, weak_factory_.GetWeakPtr()));
+    return;
+  }
+#endif
+
   devtools_client_ = HeadlessDevToolsClient::Create();
   file_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
@@ -298,15 +319,26 @@ void HeadlessShell::Detach() {
 }
 
 void HeadlessShell::Shutdown() {
+  DCHECK(browser_);
   if (web_contents_)
     Detach();
-  browser_context_->Close();
+  if (browser_context_)
+    browser_context_->Close();
   browser_->Shutdown();
 }
 
 void HeadlessShell::DevToolsTargetReady() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  web_contents_->GetDevToolsTarget()->AttachClient(devtools_client_.get());
+  HeadlessDevToolsTarget* target = web_contents_->GetDevToolsTarget();
+  target->AttachClient(devtools_client_.get());
+  if (!target->IsAttached()) {
+    LOG(ERROR) << "Could not attach DevTools target.";
+    browser_->BrowserMainThread()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HeadlessShell::Shutdown, weak_factory_.GetWeakPtr()));
+    return;
+  }
+
   devtools_client_->GetInspector()->GetExperimental()->AddObserver(this);
   devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
   devtools_client_->GetPage()->Enable();
@@ -753,6 +785,11 @@ int HeadlessShellMain(int argc, const char** argv) {
         command_line.GetSwitchValueASCII(switches::kUseGL));
   }
 
+  if (command_line.HasSwitch(switches::kUseANGLE)) {
+    builder.SetANGLEImplementation(
+        command_line.GetSwitchValueASCII(switches::kUseANGLE));
+  }
+
   if (command_line.HasSwitch(switches::kUserDataDir)) {
     builder.SetUserDataDir(
         command_line.GetSwitchValuePath(switches::kUserDataDir));
@@ -836,8 +873,14 @@ void RunChildProcessIfNeeded(int argc, const char** argv) {
       builder.SetUserAgent(ua);
   }
 
-  exit(RunContentMain(builder.Build(),
-                      base::OnceCallback<void(HeadlessBrowser*)>()));
+  int rc = RunContentMain(builder.Build(),
+                          base::OnceCallback<void(HeadlessBrowser*)>());
+
+  // Note that exiting from here means that base::AtExitManager objects will not
+  // have a chance to be destroyed (typically in main/WinMain).
+  // Use TerminateCurrentProcessImmediately instead of exit to avoid shutdown
+  // crashes and slowdowns on shutdown.
+  base::Process::TerminateCurrentProcessImmediately(rc);
 }
 
 int HeadlessBrowserMain(

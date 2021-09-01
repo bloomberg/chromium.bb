@@ -32,9 +32,9 @@ using testing::Eq;
 
 namespace {
 
-void PluginsLoaded(const base::Closure& callback,
+void PluginsLoaded(base::OnceClosure callback,
                    const std::vector<content::WebPluginInfo>& plugins) {
-  callback.Run();
+  std::move(callback).Run();
 }
 
 class FakePluginServiceFilter : public content::PluginServiceFilter {
@@ -91,19 +91,18 @@ class PluginInfoHostImplTest : public ::testing::Test {
             HostContentSettingsMapFactory::GetForProfile(&profile_)) {}
 
   void SetUp() override {
-    content::WebPluginInfo foo_plugin(base::ASCIIToUTF16("Foo Plugin"),
-                                      foo_plugin_path_, base::ASCIIToUTF16("1"),
-                                      base::ASCIIToUTF16("The Foo plugin."));
+    content::WebPluginInfo foo_plugin(u"Foo Plugin", foo_plugin_path_, u"1",
+                                      u"The Foo plugin.");
     content::WebPluginMimeType mime_type;
     mime_type.mime_type = "foo/bar";
     foo_plugin.mime_types.push_back(mime_type);
     foo_plugin.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
     PluginService::GetInstance()->Init();
     PluginService::GetInstance()->RegisterInternalPlugin(foo_plugin, false);
+    PluginService::GetInstance()->RefreshPlugins();
 
-    content::WebPluginInfo bar_plugin(base::ASCIIToUTF16("Bar Plugin"),
-                                      bar_plugin_path_, base::ASCIIToUTF16("1"),
-                                      base::ASCIIToUTF16("The Bar plugin."));
+    content::WebPluginInfo bar_plugin(u"Bar Plugin", bar_plugin_path_, u"1",
+                                      u"The Bar plugin.");
     mime_type.mime_type = "foo/bar";
     bar_plugin.mime_types.push_back(mime_type);
     bar_plugin.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
@@ -111,8 +110,7 @@ class PluginInfoHostImplTest : public ::testing::Test {
 
     content::WebPluginInfo fake_flash(
         base::ASCIIToUTF16(content::kFlashPluginName), fake_flash_path_,
-        base::ASCIIToUTF16("100.0"),
-        base::ASCIIToUTF16("Fake Flash Description."));
+        u"100.0", u"Fake Flash Description.");
     mime_type.mime_type = "application/x-shockwave-flash";
     fake_flash.mime_types.push_back(mime_type);
     fake_flash.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
@@ -140,30 +138,6 @@ class PluginInfoHostImplTest : public ::testing::Test {
 
   HostContentSettingsMap* host_content_settings_map() {
     return host_content_settings_map_;
-  }
-
-  void VerifyPluginContentSetting(const GURL& url,
-                                  const std::string& plugin,
-                                  ContentSetting expected_setting,
-                                  bool expected_is_default,
-                                  bool expected_is_managed) {
-    ContentSetting setting = expected_setting == CONTENT_SETTING_DEFAULT
-                                 ? CONTENT_SETTING_BLOCK
-                                 : CONTENT_SETTING_DEFAULT;
-    bool is_default = !expected_is_default;
-    bool is_managed = !expected_is_managed;
-
-    // Pass in a fake Flash plugin info.
-    content::WebPluginInfo plugin_info(
-        base::ASCIIToUTF16("Shockwave Flash"), base::FilePath(),
-        base::ASCIIToUTF16("1"), base::ASCIIToUTF16("Fake Flash"));
-
-    PluginUtils::GetPluginContentSetting(
-        host_content_settings_map_, plugin_info, url::Origin::Create(url), url,
-        plugin, &setting, &is_default, &is_managed);
-    EXPECT_EQ(expected_setting, setting);
-    EXPECT_EQ(expected_is_default, is_default);
-    EXPECT_EQ(expected_is_managed, is_managed);
   }
 
   base::FilePath foo_plugin_path_;
@@ -211,7 +185,7 @@ TEST_F(PluginInfoHostImplTest, FindEnabledPlugin) {
     content::WebPluginInfo plugin;
     std::string actual_mime_type;
     std::string identifier;
-    base::string16 plugin_name;
+    std::u16string plugin_name;
     EXPECT_FALSE(context()->FindEnabledPlugin(0, GURL(), url::Origin(),
                                               "foo/bar", &status, &plugin,
                                               &actual_mime_type, NULL));

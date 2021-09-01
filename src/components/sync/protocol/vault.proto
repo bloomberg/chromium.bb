@@ -2,30 +2,59 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-syntax = "proto2";
+// Trusted vault protos to communicate with backend written in proto3 to avoid
+// subtle differences between enum fields.
+syntax = "proto3";
 
 option optimize_for = LITE_RUNTIME;
 
 option java_package = "sync_pb";
 package sync_pb;
 
-message SharedKey {
-  optional int32 epoch = 1;
-  optional bytes wrapped_key = 2;
-  optional bytes member_proof = 3;
+message SharedMemberKey {
+  int32 epoch = 1;
+  bytes wrapped_key = 2;
+  bytes member_proof = 3;
+}
+
+message RotationProof {
+  int32 new_epoch = 1;
+  bytes rotation_proof = 2;
+}
+
+message SecurityDomainDetails {
+  message SyncDetails { bool degraded_recoverability = 1; }
+
+  SyncDetails sync_details = 1;
 }
 
 message SecurityDomain {
-  optional string name = 1;
+  string name = 1;
+  SecurityDomainDetails security_domain_details = 3;
+}
 
-  message Member {
-    optional bytes public_key = 1;
-    repeated SharedKey keys = 2;
+message SecurityDomainMember {
+  string name = 1;
+  bytes public_key = 2;
+
+  message SecurityDomainMembership {
+    string security_domain = 1;
+    repeated SharedMemberKey keys = 3;
+    repeated RotationProof rotation_proofs = 4;
   }
 
-  repeated Member members = 2;
+  repeated SecurityDomainMembership memberships = 3;
+
+  enum MemberType {
+    MEMBER_TYPE_UNSPECIFIED = 0;
+    MEMBER_TYPE_PHYSICAL_DEVICE = 1;
+  }
+
+  MemberType member_type = 4;
 }
 
 message JoinSecurityDomainsRequest {
-  repeated SecurityDomain security_domains = 1;
+  SecurityDomain security_domain = 1;
+  SecurityDomainMember security_domain_member = 2;
+  SharedMemberKey shared_member_key = 3;
 }

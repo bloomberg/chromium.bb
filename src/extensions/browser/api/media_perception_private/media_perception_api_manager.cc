@@ -137,7 +137,7 @@ MediaPerceptionAPIManager::MediaPerceptionAPIManager(
     content::BrowserContext* context)
     : browser_context_(context),
       analytics_process_state_(AnalyticsProcessState::IDLE) {
-  scoped_observer_.Add(chromeos::MediaAnalyticsClient::Get());
+  scoped_observation_.Observe(chromeos::MediaAnalyticsClient::Get());
 }
 
 MediaPerceptionAPIManager::~MediaPerceptionAPIManager() {
@@ -358,10 +358,10 @@ void MediaPerceptionAPIManager::SetStateInternal(APIStateCallback callback,
 }
 
 void MediaPerceptionAPIManager::GetDiagnostics(
-    const APIGetDiagnosticsCallback& callback) {
+    APIGetDiagnosticsCallback callback) {
   chromeos::MediaAnalyticsClient::Get()->GetDiagnostics(
       base::BindOnce(&MediaPerceptionAPIManager::GetDiagnosticsCallback,
-                     weak_ptr_factory_.GetWeakPtr(), callback));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void MediaPerceptionAPIManager::UpstartStartProcessCallback(
@@ -553,7 +553,7 @@ void MediaPerceptionAPIManager::UpstartRestartCallback(
 
 void MediaPerceptionAPIManager::StateCallback(
     APIStateCallback callback,
-    base::Optional<mri::State> result) {
+    absl::optional<mri::State> result) {
   if (!result.has_value()) {
     std::move(callback).Run(
         GetStateForServiceError(extensions::api::media_perception_private::
@@ -566,16 +566,17 @@ void MediaPerceptionAPIManager::StateCallback(
 }
 
 void MediaPerceptionAPIManager::GetDiagnosticsCallback(
-    const APIGetDiagnosticsCallback& callback,
-    base::Optional<mri::Diagnostics> result) {
+    APIGetDiagnosticsCallback callback,
+    absl::optional<mri::Diagnostics> result) {
   if (!result.has_value()) {
-    callback.Run(GetDiagnosticsForServiceError(
+    std::move(callback).Run(GetDiagnosticsForServiceError(
         extensions::api::media_perception_private::
             SERVICE_ERROR_SERVICE_UNREACHABLE));
     return;
   }
-  callback.Run(extensions::api::media_perception_private::DiagnosticsProtoToIdl(
-      result.value()));
+  std::move(callback).Run(
+      extensions::api::media_perception_private::DiagnosticsProtoToIdl(
+          result.value()));
 }
 
 void MediaPerceptionAPIManager::OnDetectionSignal(

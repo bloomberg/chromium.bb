@@ -120,12 +120,6 @@ body.files-ng .dialog-navigation-list {
   position: relative;
 }
 
-.dialog-navigation-list-footer {
-  display: flex;
-  flex: none;
-  flex-direction: column;
-}
-
 #directory-tree {
   bottom: 0;
   flex: none;
@@ -142,25 +136,12 @@ html.breadcrumb-elider-expanded #directory-tree {
   overflow-y: hidden;
 }
 
-#directory-tree:not([files-ng]) .tree-item[section-start] {
-  border-top: 1px solid rgba(0, 0, 0, 10%);
-}
-
 #directory-tree[files-ng] .tree-item[section-start]::before {
   border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
   content: '';
   display: block;
   margin: 8px 0;
   width: 100%;
-}
-
-#directory-tree:not([files-ng]) .tree-row {
-  align-items: center;
-  color: rgb(90, 90, 90);
-  cursor: pointer;
-  display: flex;
-  height: 40px;
-  padding: 0 3px;
 }
 
 #directory-tree[files-ng] .tree-row {
@@ -287,23 +268,6 @@ html[dir='rtl'] #directory-tree .tree-row > .file-row {
   display: block;
 }
 
-#directory-tree:not([files-ng]) .tree-row > paper-ripple {
-  color: rgb(51, 103, 214);
-}
-
-#directory-tree:not([files-ng]) [renaming] > .tree-row > paper-ripple {
-  display: none;
-}
-
-#directory-tree:not([files-ng]) .tree-item.accepts > .tree-row,
-#directory-tree:not([files-ng]) .tree-row[selected] {
-  color: rgb(51, 103, 214);
-}
-
-#directory-tree:not([files-ng]):focus .tree-row[selected] {
-  background-color: rgb(216, 223, 240);
-}
-
 html:not(.col-resize) #directory-tree
     .tree-row:not([active]):not([selected]):hover > .file-row {
   background-color: var(--google-grey-100);
@@ -420,15 +384,6 @@ html.col-resize #directory-tree .tree-row > .file-row > .root-eject:hover {
 
 /* A vertical splitter between the directory tree and the file list. It is
    a transparent area centered on the directory tree right border. */
-body:not(.files-ng) div.splitter {
-  cursor: col-resize;
-  flex: none;
-  margin: 0 -3px;
-  position: relative;
-  width: 6px;
-  z-index: 500;  /* Must be below the contextmenu (600). */
-}
-
 body.files-ng div.splitter {
   align-items: center;
   cursor: col-resize;
@@ -440,10 +395,6 @@ body.files-ng div.splitter {
   position: relative;
   width: 32px;
   z-index: 500;  /* Must be below the contextmenu (600). */
-}
-
-body:not(.files-ng) div.splitter .splitter-button {
-  display: none;
 }
 
 body.files-ng div.splitter .splitter-button {
@@ -533,10 +484,6 @@ body.check-select .dialog-header {
   border-top: 1px solid transparent;
 }
 
-body.check-select .dialog-header:not(.files-ng) {
-  color: rgb(90, 90, 90);
-}
-
 body.check-select .dialog-header.files-ng {
   color: var(--google-blue-600);
 }
@@ -564,14 +511,6 @@ body[type='open-multi-file'].check-select .dialog-header {
   position: relative;
   text-transform: uppercase;
   z-index: 1;
-}
-
-body:not(check-select) .dialog-header:not(.files-ng) cr-button {
-  --text-color: white;
-}
-
-body.check-select .dialog-header:not(.files-ng) cr-button {
-  --text-color: rgb(90, 90, 90);
 }
 
 .dialog-header.files-ng cr-button,
@@ -626,11 +565,6 @@ html.focus-outline-visible .dialog-header.files-ng button:not(:active):focus {
   display: none;
 }
 
-body:not(.check-select) .dialog-header:not(.files-ng) button,
-body:not(.check-select) .dialog-header:not(.files-ng) button:hover {
-  color: white;
-}
-
 body.check-select button,
 body.check-select button:hover {
   color: rgb(90, 90, 90);
@@ -647,11 +581,6 @@ body.check-select .dialog-header button paper-ripple {
 
 /** Avoid highlighting if element doesn't have focus by tab (tabindex=-1)
  *  or if focusing during mouse click event ":active" pseudo-selector. */
-html:not(.files-ng) .dialog-header
-    .menu-button:focus:not([tabindex='-1']):not(:active) {
-  background-color: rgba(255, 255, 255, 20%);
-}
-
 html.focus-outline-visible.files-ng .dialog-header
     .menu-button:focus:not([tabindex='-1']):not(:active) {
   background-color: rgba(255, 255, 255, 20%);
@@ -764,26 +693,8 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   width: 0;
 }
 
-.dialog-header:not(.files-ng) #search-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/search_white.png) 1x,
-      url(../images/files/ui/2x/search_white.png) 2x);
-}
-
 .dialog-header.files-ng #search-button > .icon {
   -webkit-mask-image: url(../images/files/ui/search.svg);
-}
-
-body.check-select .dialog-header #search-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/search.png) 1x,
-      url(../images/files/ui/2x/search.png) 2x);
-}
-
-.dialog-header:not(.files-ng) #share-menu-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/share_white.png) 1x,
-      url(../images/files/ui/2x/share_white.png) 2x);
 }
 
 .dialog-header.files-ng #share-menu-button > .icon {
@@ -796,28 +707,8 @@ body.check-select .dialog-header #search-button > .icon {
   width: 48px;
 }
 
-body.check-select .dialog-header #share-menu-button > .icon {
-  background-image: url(../images/files/ui/share.svg);
-}
-
-.dialog-header:not(.files-ng) #sharesheet-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/share_white.png) 1x,
-      url(../images/files/ui/2x/share_white.png) 2x);
-}
-
 .dialog-header.files-ng #sharesheet-button > .icon {
   -webkit-mask-image: url(../images/files/ui/share_ng.svg);
-}
-
-body.check-select .dialog-header #sharesheet-button > .icon {
-  background-image: url(../images/files/ui/share.svg);
-}
-
-.dialog-header:not(.files-ng) #delete-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/delete_white.png) 1x,
-      url(../images/files/ui/2x/delete_white.png) 2x);
 }
 
 .dialog-header.files-ng #delete-button > .icon {
@@ -828,20 +719,16 @@ body.check-select .dialog-header #delete-button > .icon {
   background-image: url(../images/files/ui/delete.svg);
 }
 
-.dialog-header:not(.files-ng) #refresh-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/refresh_white.png) 1x,
-      url(../images/files/ui/2x/refresh_white.png) 2x);
+.dialog-header #move-to-trash-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/delete_ng.svg);
+}
+
+.dialog-header #restore-from-trash-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/restore.svg);
 }
 
 .dialog-header.files-ng #refresh-button > .icon {
   -webkit-mask-image: url(../images/files/ui/refresh.svg);
-}
-
-.dialog-header:not(.files-ng) #view-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/view_list_white.png) 1x,
-      url(../images/files/ui/2x/view_list_white.png) 2x);
 }
 
 .dialog-header.files-ng #view-button > .icon {
@@ -852,22 +739,12 @@ body.check-select #view-button {
   display: none;
 }
 
-.dialog-header:not(.files-ng) #view-button.thumbnail > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/view_thumbnail_white.png) 1x,
-      url(../images/files/ui/2x/view_thumbnail_white.png) 2x);
-}
-
 .dialog-header.files-ng #view-button.thumbnail > .icon {
   -webkit-mask-image: url(../images/files/ui/view_thumbnail.svg);
 }
 
 body.check-select #view-button.thumbnail {
   display: none;
-}
-
-.dialog-header:not(.files-ng) #sort-button > .icon {
-  background-image: url(../images/files/ui/sorting_white.svg);
 }
 
 .dialog-header.files-ng #sort-button > .icon {
@@ -884,12 +761,6 @@ body.check-select #sort-button {
   display: none;
 }
 
-.dialog-header:not(.files-ng) #gear-button > .icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/menu_white.png) 1x,
-      url(../images/files/ui/2x/menu_white.png) 2x);
-}
-
 .dialog-header.files-ng #gear-button > .icon {
   -webkit-mask-image: url(../images/files/ui/menu_ng.svg);
   height: 48px;
@@ -899,13 +770,8 @@ body.check-select #sort-button {
   position: absolute;
   width: 48px;
 }
-
 body.check-select #gear-button {
   display: none;
-}
-
-.dialog-header:not(.files-ng) #selection-menu-button > .icon {
-  background-image: url(../images/files/ui/menu.svg);
 }
 
 .dialog-header.files-ng #selection-menu-button > .icon {
@@ -1066,10 +932,6 @@ html[dir='rtl'] #cloud-import-details {
   font-weight: 500;
 }
 
-body:not(.files-ng) #files-selected-label {
-  margin-inline-start: 20px;
-}
-
 body.files-ng #files-selected-label {
   margin-inline-start: 8px;
 }
@@ -1087,10 +949,6 @@ body.check-select #files-selected-label {
   text-transform: none;
 }
 
-body:not(.files-ng) #cancel-selection-button {
-  background-color: transparent;
-}
-
 /* TODO(adanilo) document the calc() reason. */
 body.files-ng #cancel-selection-button {
   border: 1px solid transparent;
@@ -1098,34 +956,12 @@ body.files-ng #cancel-selection-button {
   width: 36px;
 }
 
-body:not(.files-ng) #cancel-selection-button:focus:not([tabindex='-1']):not(:active) {
-  background-color: rgba(153, 153, 153, 20%);
-}
-
 html.focus-outline-visible body.files-ng #cancel-selection-button:focus:not([tabindex='-1']):not(:active) {
   border: 1px solid var(--google-blue-600);
 }
 
-body:not(.files-ng) #cancel-selection-button > span {
-  display: inline-block;
-  font-weight: 500;
-  vertical-align: middle;
-}
-
 body.files-ng #cancel-selection-button > span#cancel-selection-label {
   display: none;
-}
-
-body:not(.files-ng) #cancel-selection-button .icon-arrow-back {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/back.png) 1x,
-      url(../images/files/ui/2x/back.png) 2x);
-  background-position: center;
-  background-repeat: no-repeat;
-  flex: none;
-  height: 16px;
-  margin-inline-end: 8px;
-  width: 16px;
 }
 
 body.files-ng #cancel-selection-button .icon-arrow-back {
@@ -1136,10 +972,6 @@ body.files-ng #cancel-selection-button .icon-arrow-back {
   flex: none;
   height: 20px;
   width: 20px;
-}
-
-body:not(.files-ng) #cancel-selection-button-wrapper {
-  width: 240px;  /* initial value, same as .dialog-navigation-list's width. */
 }
 
 #cancel-selection-button-wrapper {
@@ -1175,13 +1007,6 @@ body.check-select #search-button {
   font-size: 14px;
 }
 
-.dialog-header:not(.files-ng) #search-box cr-input {
-  --cr-input-border-bottom: 1px solid rgba(255, 255, 255, 50%);
-  --cr-input-color: white;
-  --cr-input-focus-color: white;
-  --cr-input-placeholder-color: rgba(255, 255, 255, 50%);
-}
-
 .dialog-header.files-ng #search-box cr-input {
   --cr-input-border-bottom: transparent;
   --cr-input-color: var(--google-grey-800);
@@ -1197,22 +1022,10 @@ body.check-select #search-box {
   display: none;
 }
 
-.dialog-header:not(.files-ng) #search-box.has-cursor,
-.dialog-header:not(.files-ng) #search-box.has-text,
-.dialog-header:not(.files-ng) #search-box.hide-pending {
-  margin-inline-end: 12px;
-}
-
 .dialog-header.files-ng #search-box.has-cursor,
 .dialog-header.files-ng #search-box.has-text,
 .dialog-header.files-ng #search-box.hide-pending {
   margin-inline-end: 6px;
-}
-
-.dialog-header:not(.files-ng) #search-box.has-cursor cr-input,
-.dialog-header:not(.files-ng) #search-box.has-text cr-input,
-.dialog-header:not(.files-ng) #search-box.hide-pending cr-input {
-  width: 202px;
 }
 
 .dialog-header.files-ng #search-box.has-cursor cr-input,
@@ -1232,16 +1045,6 @@ body.check-select #search-box {
   visibility: hidden;
 }
 
-.dialog-header:not(.files-ng) #search-box .clear {
-  background: -webkit-image-set(
-      url(../images/files/ui/search_clear.png) 1x,
-      url(../images/files/ui/2x/search_clear.png) 2x)
-      no-repeat center;
-  border: 0;
-  height: 16px;
-  width: 16px;
-}
-
 .dialog-header.files-ng #search-box .clear {
   background: none;
   height: 36px;
@@ -1256,18 +1059,9 @@ html:not(.pointer-active) .dialog-header.files-ng #search-box .clear:hover {
   -webkit-mask-image: url(../images/files/ui/search_clear_filled.svg);
 }
 
-.dialog-header:not(.files-ng) #search-box .clear:focus {
-  background-color: rgba(255, 255, 255, 30%);
-}
-
 html[dir='rtl'] #search-box .clear {
   left: 0;
   right: auto;
-}
-
-.dialog-header:not(.files-ng) #search-box.has-cursor .clear,
-.dialog-header:not(.files-ng) #search-box.has-text .clear {
-  display: block;
 }
 
 .dialog-header.files-ng #search-box.has-cursor .clear,
@@ -1326,10 +1120,6 @@ html[dir='rtl'] #search-box .clear {
   outline: none;
 }
 
-body:not(.files-ng) .dialog-footer {
-  padding: 8px 4px;
-}
-
 body.files-ng .dialog-footer {
   padding: 16px 24px;
 }
@@ -1347,25 +1137,6 @@ body.files-ng .dialog-footer #filename-input-box {
 }
 
 /* Copy style from paper-button for buttons on the footer. */
-body:not(.files-ng) .dialog-footer button {
-  background: transparent;
-  border: 0;
-  border-image: none;
-  border-radius: 2px;
-  box-sizing: border-box;
-  cursor: pointer;
-  margin: 0 0.29em;
-  min-width: 5.14em;
-  outline: none;
-  padding: 1px 16px;
-  position: relative;
-  text-align: center;
-  text-transform: uppercase;
-  transition: box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1);
-  user-select: none;
-  z-index: 0;
-}
-
 body.files-ng .dialog-footer button {
   border: 0;
   border-image: none;
@@ -1424,20 +1195,10 @@ body.files-ng .dialog-footer button[disabled]:hover {
   color: var(--cros-button-label-color-primary-disabled);
 }
 
-body:not(.files-ng) .dialog-footer .primary,
-body:not(.files-ng) .dialog-footer .primary:hover {
-  background-color: rgb(51, 103, 214);
-  color: white;
-}
-
 body.files-ng .dialog-footer .primary,
 body.files-ng .dialog-footer .primary:hover {
   background-color: var(--cros-button-background-color-primary);
   color: var(--cros-button-label-color-primary);
-}
-
-body:not(.files-ng) .dialog-footer .secondary {
-  color: rgb(100, 100, 100);
 }
 
 body.files-ng .dialog-footer .secondary {
@@ -1447,29 +1208,8 @@ body.files-ng .dialog-footer .secondary {
   margin-inline-end: 8px;
 }
 
-body:not(.files-ng) .dialog-footer .secondary:hover {
-  color: rgb(51, 103, 214);
-}
-
 body.files-ng .dialog-footer .secondary:hover {
   background: var(--cros-button-background-color-secondary-hover);
-}
-
-body:not(.files-ng) .dialog-footer .select {
-  -webkit-appearance: none;
-  background: -webkit-image-set(
-     url(../images/common/disclosure_arrow_dk_grey_down.png) 1x,
-     url(../images/common/2x/disclosure_arrow_dk_grey_down.png) 2x) no-repeat
-     right transparent;
-  border: 0;
-  border-bottom: 1px solid rgb(207, 207, 207);
-  border-radius: 0;
-  color: rgb(51, 51, 51);
-  cursor: pointer;
-  margin-inline-start: 16px;
-  min-height: 21px;
-  outline: none;
-  padding: 0 12px 0 0;
 }
 
 body.files-ng .dialog-footer .select {
@@ -1657,12 +1397,6 @@ html[dir='rtl'] .breadcrumbs .breadcrumb-path:first-child {
   width: 8px;
 }
 
-.dialog-header:not(.files-ng) .breadcrumbs .separator {
-  background: -webkit-image-set(
-      url(../images/files/ui/arrow_right_white.png) 1x,
-      url(../images/files/ui/2x/arrow_right_white.png) 2x) center no-repeat;
-}
-
 .dialog-header.files-ng .breadcrumbs .separator {
   -webkit-mask-image: url(../images/files/ui/arrow_right.svg);
 }
@@ -1694,21 +1428,10 @@ body.check-select #read-only-indicator {
   display: none;
 }
 
-#read-only-icon {
-  background-image: url(../images/files/ui/visibility_white.svg);
-  flex: none;
-  margin-inline-end: 8px;
-}
-
-.dialog-header:not(.files-ng) #read-only-icon {
-  background-image: url(../images/files/ui/visibility_white.svg);
-  height: 16px;
-  width: 16px;
-}
-
 .dialog-header.files-ng #read-only-icon {
   -webkit-mask-image: url(../images/files/ui/visibility_ng.svg);
   height: 20px;
+  margin-inline-end: 8px;
   width: 20px;
 }
 
@@ -1768,14 +1491,6 @@ body.check-select #read-only-indicator {
   width: 16px;
 }
 
-body:not(.files-ng) .loading-indicator {
-  height: 3px;
-  left: 0;
-  position: absolute;
-  right: 0;
-  width: 100%;
-}
-
 body.files-ng .loading-indicator {
   left: calc(50% - 24px);
   position: absolute;
@@ -1783,28 +1498,8 @@ body.files-ng .loading-indicator {
   top: 64px;
 }
 
-body:not(.files-ng) .list-view .loading-indicator {
-  top: 40px;
-}
-
-body:not(.files-ng) .thumbnail-view .loading-indicator {
-  top: 0;
-}
-
-body:not(.files-ng) .downloads-warning {
-  align-items: center;
-  background-color: rgb(79, 129, 232);
-  color: white;
-  display: flex;
-  flex: none;
-  flex-direction: row;
-  font-size: 14px;
-  height: 64px;
-  overflow: hidden;
-  transition: height 70ms linear;
-}
-
-body.files-ng .downloads-warning {
+body.files-ng .downloads-warning,
+body.files-ng .trash-warning {
   align-items: center;
   border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
   display: flex;
@@ -1817,26 +1512,9 @@ body.files-ng .downloads-warning {
   visibility: visible;
 }
 
-body:not(.files-ng) .downloads-warning a:link,
-body:not(.files-ng) .volume-warning a:link {
-  color: white;
-  flex: none;
-}
-
 body.files-ng .downloads-warning a:link,
 body.files-ng .volume-warning a:link {
   color: var(--google-blue-600);
-}
-
-body:not(.files-ng) .downloads-warning .warning-icon {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/warning_white.png) 1x,
-      url(../images/files/ui/2x/warning_white.png) 2x);
-  background-size: 16px 16px;
-  flex: none;
-  height: 16px;
-  margin: 0 14px;
-  width: 16px;
 }
 
 body.files-ng .downloads-warning .warning-icon {
@@ -1850,10 +1528,6 @@ body.files-ng .downloads-warning .warning-icon {
   width: 20px;
 }
 
-body:not(.files-ng) .downloads-warning .warning-message {
-  margin-inline-end: 40px;
-}
-
 body.files-ng .warning-message .link-wrapper {
   display: inline;
 }
@@ -1863,11 +1537,6 @@ body.files-ng .warning-message .link-wrapper > a {
   outline-offset: -2px;
   padding: 0 4px;
   text-decoration: none;
-}
-
-body:not(.files-ng) .downloads-warning[hidden] {
-  display: flex !important;  /* Overrides [hidden] for animation. */
-  height: 0;
 }
 
 body.files-ng .downloads-warning[hidden] {
@@ -1885,20 +1554,6 @@ body.files-ng .downloads-warning[hidden] {
 }
 
 /* Drive space warning banner. */
-body:not(.files-ng) .volume-warning {
-  align-items: center;
-  animation: heightAnimation 70ms linear;
-  background-color: rgb(79, 129, 232);
-  color: white;
-  display: flex;
-  flex: none;
-  flex-direction: row;
-  font-size: 13px;
-  height: 64px;
-  overflow: hidden;
-  position: relative;
-}
-
 body.files-ng .volume-warning {
   align-items: center;
   border-bottom: 1px solid var(--cr-separator-color, rgb(224, 224, 224));
@@ -1916,29 +1571,12 @@ body.files-ng .volume-warning {
   visibility: visible;
 }
 
-body:not(.files-ng) .volume-warning[hidden] {
-  border-top-width: 0;
-  height: 0;
-}
-
 body.files-ng .volume-warning[hidden] {
   border-top-width: 0;
   display: flex !important;  /* Overrides [hidden] for animation. */
   height: 0;
   opacity: 0;
   visibility: hidden;
-}
-
-body:not(.files-ng) .volume-warning .drive-icon {
-  background: white -webkit-image-set(
-      url(../images/files/ui/drive_logo.png) 1x,
-      url(../images/files/ui/2x/drive_logo.png) 2x) no-repeat center;
-  background-size: 29px 29px;
-  border-radius: 2px;
-  flex: none;
-  height: 36px;
-  margin: 0 14px;
-  width: 36px;
 }
 
 body.files-ng .volume-warning .drive-icon {
@@ -1951,12 +1589,6 @@ body.files-ng .volume-warning .drive-icon {
   width: 20px;
 }
 
-body:not(.files-ng) .volume-warning .drive-text {
-  flex: none;
-  font-size: 16px;
-  margin-inline-end: 51px;
-}
-
 body.files-ng .button-group {
   display: flex;
   flex: 0 0 auto;
@@ -1967,15 +1599,6 @@ body.files-ng .button-group {
 
 body.files-ng .button-group > a {
   text-decoration-line: none;
-}
-
-body:not(.files-ng) .volume-warning .imitate-paper-button {
-  background-color: white;
-  border-radius: 2px;
-  color: rgb(79, 129, 232);
-  font-size: 13px;
-  font-weight: 500;
-  height: 2.5em;
 }
 
 body.files-ng .volume-warning .banner-button {
@@ -1997,19 +1620,6 @@ body.files-ng .volume-warning .info-icon {
   width: 20px;
 }
 
-body:not(.files-ng) .banner-close {
-  background: -webkit-image-set(
-      url(../images/files/ui/close_button_white.png) 1x,
-      url(../images/files/ui/2x/close_button_white.png) 2x) no-repeat center;
-  border: 0;
-  cursor: pointer;
-  display: inline-block;
-  height: 40px;
-  position: absolute;
-  top: 12px;
-  width: 40px;
-}
-
 body.files-ng .banner-close {
   border: 0;
   height: 32px;
@@ -2017,22 +1627,6 @@ body.files-ng .banner-close {
   padding-inline-end: 16px;
   padding-inline-start: 16px;
   position: relative;
-}
-
-html[dir='ltr'] body:not(.files-ng) .banner-close {
-  right: 0;
-}
-
-html[dir='rtl'] body:not(.files-ng) .banner-close {
-  left: 0;
-}
-
-body:not(.files-ng) .banner-cloud-bg {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/drive_banner_clouds.png) 1x,
-      url(../images/files/ui/2x/drive_banner_clouds.png) 2x);
-  background-position: bottom left;
-  background-repeat: repeat-x;
 }
 
 /* The cr.ui.Grid representing the detailed file list. */
@@ -2186,18 +1780,6 @@ body.files-ng grid .thumbnail-bottom .detail-icon:active {
   top: 2px;
   transition: opacity 220ms ease;
   width: 36px;
-}
-
-.thumbnail-grid .checkmark.inactive {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/grid_image_check.png) 1x,
-      url(../images/files/ui/2x/grid_image_check.png) 2x);
-}
-
-.thumbnail-grid .checkmark.active {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/grid_image_check_active.png) 1x,
-      url(../images/files/ui/2x/grid_image_check_active.png) 2x);
 }
 
 body.selecting .thumbnail-grid .checkmark.inactive,
@@ -2391,11 +1973,6 @@ html[dir='rtl'] .badge {
 /* Padding counterweights negative margins of items, thus eliminating scroll
    bar when it's not needed. Max height is set to fit 8 items before showing
    scroll bar. */
-body:not(.files-ng) #default-tasks-list {
-  max-height: 328px;
-  padding: 1px 0;
-}
-
 body.files-ng #default-tasks-list {
   border-top: solid 1px rgba(0, 0, 0, 14%);
   height: 240px;
@@ -2416,22 +1993,9 @@ body.files-ng #default-task-dialog.bottom-shadow::after {
   width: 100%
 }
 
-
-body:not(.files-ng) #default-tasks-list li {
-  height: 32px;
-  line-height: 32px;
-}
-
 body.files-ng #default-tasks-list li {
   height: 40px;
   line-height: 40px;
-}
-
-body:not(.files-ng) #default-tasks-list > li > * {
-  background-position: 5px center;
-  background-repeat: no-repeat;
-  background-size: 16px 16px;
-  padding-inline-start: 26px;
 }
 
 body.files-ng #default-tasks-list > li > * {
@@ -2470,12 +2034,6 @@ body.files-ng #list-container list:focus > li[selected],
 body.files-ng #list-container list:focus > li.accepts[selected],
 body.files-ng #list-container list:focus > li[lead] {
   background-color: var(--google-blue-50);
-}
-
-body:not(.files-ng) #default-tasks-list:focus > li[selected],
-body:not(.files-ng) #default-tasks-list > li[selected] {
-  background-color: rgb(216, 223, 240);
-  outline: none;
 }
 
 body.files-ng #default-tasks-list:focus > li[selected],
@@ -2626,17 +2184,6 @@ li[renaming=''] .badge {
 }
 
 /* Table splitter element */
-.table-header-splitter {
-  background-image: -webkit-image-set(
-    url(../images/files/ui/vertical_separator.png) 1x,
-    url(../images/files/ui/2x/vertical_separator.png) 2x);
-  background-position: center;
-  background-repeat: repeat-y;
-  height: 40px;
-  top: 0;
-  width: 5px;
-}
-
 .table-header-splitter:last-child {
   display: none;
 }
@@ -2647,32 +2194,6 @@ li[renaming=''] .badge {
   box-sizing: border-box;
   flex: none;
   height: 40px;
-}
-
-.table-header-sort-image-desc::after {
-  background-image: -webkit-image-set(
-    url(../images/files/ui/sort_desc.png) 1x,
-    url(../images/files/ui/2x/sort_desc.png) 2x);
-  background-position: center center;
-  background-repeat: no-repeat;
-  color: #888;
-  content: ' ';
-  padding-inline-start: 13px;
-  position: relative;
-  top: 1px;
-}
-
-.table-header-sort-image-asc::after {
-  background-image: -webkit-image-set(
-    url(../images/files/ui/sort_asc.png) 1x,
-    url(../images/files/ui/2x/sort_asc.png) 2x);
-  background-position: center center;
-  background-repeat: no-repeat;
-  color: #888;
-  content: ' ';
-  padding-inline-start: 13px;
-  position: relative;
-  top: -1px;
 }
 
 /* Text label in a table header. */
@@ -2723,12 +2244,6 @@ li[renaming=''] .badge {
   width: 24px;
 }
 
-body:not(.files-ng) #list-container li .detail-icon {
-  height: 28px;
-  margin-inline-end: 6px;
-  width: 28px;
-}
-
 body.files-ng #list-container list li .detail-icon {
   color: var(--google-grey-700);
   height: 40px;
@@ -2747,18 +2262,6 @@ body.files-ng #list-container list li .detail-icon {
   position: absolute;
   transition: opacity 220ms ease;
   width: 28px;
-}
-
-#list-container list li .detail-checkmark {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/list_check.png) 1x,
-      url(../images/files/ui/2x/list_check.png) 2x);
-}
-
-#list-container grid li .detail-checkmark {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/grid_folder_check.png) 1x,
-      url(../images/files/ui/2x/grid_folder_check.png) 2x);
 }
 
 body.check-select #list-container li[selected] .detail-checkmark {
@@ -2809,12 +2312,6 @@ html[dir='rtl'] #tasks-menu cr-menu-item:not(.change-default) {
       url(../images/files/ui/2x/person_add.png) 2x);
 }
 
-cr-menu-item[command='#install-new-extension'] .icon.start {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/store.png) 1x,
-      url(../images/files/ui/2x/store.png) 2x);
-}
-
 #action-bar {
   display: flex;
   flex: none;
@@ -2853,60 +2350,6 @@ body[block-hosted-docs] .file.dim-hosted {
 }
 
 /* Invisible container for elements representing files while dragging. */
-body:not(.files-ng) #drag-container {
-  left: 0;
-  position: fixed;
-  top: 0;
-  z-index: -1;  /* below .dialog-container */
-}
-
-body:not(.files-ng) #drag-container .drag-contents {
-  background-color: #fafafa;
-  border: 1px solid #bbb;
-  border-radius: 3px;
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 20%);
-  display: flex;
-  flex-direction: row;
-  line-height: 0;
-  margin-bottom: 5px;
-  padding: 6px;
-  transition: opacity 200ms ease-in;
-}
-
-body:not(.files-ng) #drop-label {
-  background-color: rgba(0, 0, 0, 80%);
-  border-radius: 2px;
-  color: white;
-  display: none;  /* hidden until activated */
-  font-size: 12px;
-  height: 24px;
-  line-height: 24px;
-  padding: 0 8px;
-  position: absolute;
-  z-index: 1000;  /* same height as files-tooltip */
-}
-
-body:not(.files-ng) #drag-container .drag-contents.for-image  {
-  flex: none;
-  padding: 2px;
-}
-
-body:not(.files-ng) #drag-container .thumbnail-item {
-  display: flex;
-  flex-direction: row;
-}
-
-body:not(.files-ng) #drag-container .label {
-  flex: auto;
-  font-weight: bold;
-  line-height: 24px;
-  max-width: 320px;
-  overflow: hidden;
-  padding: 0 5px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 body.files-ng #drag-container {
   background-color: transparent;
   height: calc(12px + 40px + 8px + 8px);
@@ -3084,35 +2527,8 @@ body[drive='error'] #unmounted-panel > .error,
   position: relative;
 }
 
-#empty-folder {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  justify-content: center;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 100%;
-}
-
-#empty-folder > .image {
-  background-image: -webkit-image-set(
-      url(../images/files/ui/empty_folder.png) 1x,
-      url(../images/files/ui/2x/empty_folder.png) 2x);
-  height: 145px;
-  margin: 50px auto 32px auto;
-  width: 120px;
-}
-
 body.files-ng #empty-folder {
   display: none;
-}
-
-#empty-folder > .label {
-  color: rgb(180, 180, 180);
-  font-size: 16px;
-  font-weight: bold;
-  text-align: center;
 }
 
 #volume-space-info-contents {
@@ -3329,22 +2745,8 @@ body.files-ng #list-container
   flex: none;
 }
 
-.cr-dialog-container:not(.files-ng) #default-task-dialog {
-  min-width: 300px;
-  width: auto;
-}
-
 .cr-dialog-container.files-ng #default-task-dialog {
   width: 352px;
-}
-
-.cr-dialog-container:not(.files-ng) #install-linux-package-dialog {
-  min-width: 300px;
-  width: 40%;
-}
-
-.cr-dialog-container:not(.files-ng) #install-linux-package-dialog .cr-dialog-text {
-  min-height: 30px;
 }
 
 .install-linux-package-details-frame {
@@ -3360,33 +2762,14 @@ body.files-ng #list-container
   margin-top: 16px;
 }
 
-.cr-dialog-container:not(.files-ng) .install-linux-package-details-label {
-  color: #5a5a5a;
-  font-weight: 500;
-  margin-bottom: 10px;
-}
-
 .cr-dialog-container.files-ng .install-linux-package-details-label {
   margin-bottom: 10px;
-}
-
-.cr-dialog-container:not(.files-ng) .install-linux-package-detail-label {
-  color: #5a5a5a;
-  display: inline;
-  font-weight: 500;
-  margin-inline-end: 5px;
 }
 
 .cr-dialog-container.files-ng .install-linux-package-detail-label {
   color: var(--cros-text-color-primary);
   display: inline;
   margin-inline-end: 5px;
-}
-
-.cr-dialog-container:not(.files-ng) .install-linux-package-detail-value {
-  display: inline;
-  margin-bottom: 5px;
-  white-space: pre-wrap;
 }
 
 .cr-dialog-container.files-ng .install-linux-package-detail-value {
@@ -3451,46 +2834,15 @@ list.autocomplete-suggestions > [lead] {
   background-color: rgba(0, 0, 0, 8%);
 }
 
-body:not(.files-ng) #gear-menu,
-body:not(.files-ng) #share-menu,
-body:not(.files-ng) #sort-menu,
-body:not(.files-ng) #tasks-menu {
-  margin-top: 2px;
-}
-
 #gear-menu > cr-menu-item:not(.menuitem-button),
 #sort-menu > cr-menu-item {
   margin-inline-end: 50px;
-}
-
-.cr-dialog-container:not(.files-ng) #suggest-app-dialog {
-  background-color: #fff;
-  border: 0;
-  padding: 0;
-  width: auto;
 }
 
 .cr-dialog-container.files-ng #suggest-app-dialog.cr-dialog-frame {
   max-width: unset !important;
   min-width: unset !important;
   width: 735px;
-}
-
-.cr-dialog-container:not(.files-ng) .suggest-apps-dialog-title.cr-dialog-title {
-  /* Entire height: 44px (content-box 22px + padding 11px * 2) */
-  font-size: 16px;
-  line-height: 22px;
-  margin: 0;
-  padding: 11px 18px;
-}
-
-.cr-dialog-container:not(.files-ng) .suggest-apps-dialog-text.cr-dialog-text {
-  margin: 0;
-  padding: 0 20px 10px;
-}
-
-.cr-dialog-container:not(.files-ng) .cr-dialog-frame.error-dialog-frame {
-  width: 300px;
 }
 
 .error-dialog-frame .error-dialog-img {
@@ -3529,203 +2881,6 @@ body:not(.files-ng) #tasks-menu {
 
 .signals-overscroll {
   min-height: calc(68px + 24px);
-}
-
-/* Progress center */
-
-@keyframes progress-center-toggle {
-  /* Height values of each frame are set by script.
-   * Keep the animation sync with JS. */
-  from {
-  }
-  to {
-  }
-}
-
-#progress-center {
-  background-color: transparent;
-  border-top: 1px solid rgb(214, 214, 214);
-  position: relative;
-  transition: background-color 300ms linear,
-              border 300ms linear;
-}
-
-#progress-center.animated {
-  animation: progress-center-toggle 300ms ease-out;
-}
-
-#progress-center-open-view {
-  max-height: 40vh;
-  opacity: 1;
-  overflow-y: auto;
-  padding-top: 10px;
-  transition: opacity 300ms linear;
-}
-
-#progress-center:not(.opened) #progress-center-open-view {
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-}
-
-#progress-center-close-view {
-  opacity: 1;
-  padding-top: 20px;
-  transition: opacity 300ms linear;
-}
-
-#progress-center.opened #progress-center-close-view {
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-}
-
-#progress-center.animated #progress-center-open-view,
-#progress-center.animated #progress-center-close-view {
-  left: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 0;
-  z-index: 1;
-}
-
-#progress-center li {
-  display: flex;
-  /* This must not be margin-bottom to calculate parent's height correctly. */
-  padding-bottom: 16px;
-  padding-inline-end: 12px;
-}
-
-#progress-center label {
-  color: rgb(76, 76, 76);
-  display: block;
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-#progress-center li.error.single label {
-  white-space: normal;
-}
-
-#progress-center .progress-frame {
-  flex: 1 0 0;
-  overflow: hidden;
-  padding-inline-end: 12px;
-  padding-inline-start: 16px;
-}
-
-#progress-center .progress-bar {
-  background: rgb(224, 224, 224);
-  border-radius: 2px;
-  display: inline-block;
-  height: 4px;
-  margin-bottom: 3px;
-  opacity: 1;
-  overflow: hidden;
-  width: 100%;
-}
-
-#progress-center li.error .progress-bar,
-#progress-center-close-view.quiet .progress-bar {
-  display: none;
-}
-
-#progress-center .progress-track {
-  background: rgb(26, 194, 34);
-  height: 100%;
-}
-
-#progress-center .progress-track.animated {
-  transition: width 300ms linear;
-}
-
-#progress-center .button-frame {
-  align-self: flex-start;
-  flex: none;
-}
-
-#progress-center button {
-  border: none;
-  cursor: pointer;
-  display: inline-block;
-  height: 16px;
-  min-height: 0;
-  min-width: 0;
-  outline: none;
-  padding: 0;
-  vertical-align: middle;
-  width: 16px;
-}
-
-#progress-center button.close {
-  background: -webkit-image-set(
-      url(../images/files/ui/expand_more_active.png) 1x,
-      url(../images/files/ui/2x/expand_more_active.png) 2x)
-      no-repeat;
-  display: block;
-  margin-bottom: 20px;
-  margin-inline-end: 12px;
-  margin-inline-start: auto;
-}
-
-#progress-center button.open {
-  background: -webkit-image-set(
-      url(../images/files/ui/expand_less.png) 1x,
-      url(../images/files/ui/2x/expand_less.png) 2x)
-      no-repeat;
-  /* If progress bar exists, show open button at slighly higher position. */
-  margin-bottom: 14px;
-}
-
-#progress-center button.dismiss,
-#progress-center button.cancel {
-  background: -webkit-image-set(
-      url(../images/files/ui/cancel.png) 1x,
-      url(../images/files/ui/2x/cancel.png) 2x)
-      no-repeat;
-}
-
-#progress-center li.error button.open,
-#progress-center li.quiet button.open {
-  margin-bottom: 0;
-}
-
-#progress-center button.dismiss {
-  display: none;
-}
-
-/*
- * Dismiss button is shown only when
- * - Single error in close view.
- * - Error items in open view.
- */
-li#progress-center-close-view.error.single button.dismiss,
-#progress-center-open-view li.error button.dismiss {
-  display: block;
-}
-
-#progress-center-close-view:not(.single) button.cancel {
-  display: none;
-}
-
-#progress-center-close-view.single:not(.quiet) button.open {
-  display: none;
-}
-
-#progress-center-close-view.quiet button.cancel,
-#progress-center li:not(.cancelable) button.cancel {
-  display: none;
-}
-
-.text-measure {
-  pointer-events: none;
-  position: absolute;
-  top: 0;
-  visibility: hidden;
-  z-index: -1;
 }
 
 files-toggle-ripple {

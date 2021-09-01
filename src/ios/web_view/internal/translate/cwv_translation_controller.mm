@@ -10,7 +10,6 @@
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
-#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -199,8 +198,8 @@ CWVTranslationError CWVConvertTranslateError(
   switch (policy.type) {
     case CWVTranslationPolicyAsk: {
       _translatePrefs->UnblockLanguage(languageCode);
-      _translatePrefs->RemoveLanguagePairFromWhitelist(languageCode,
-                                                       std::string());
+      _translatePrefs->RemoveLanguagePairFromAlwaysTranslateList(languageCode,
+                                                                 std::string());
       break;
     }
     case CWVTranslationPolicyNever: {
@@ -210,7 +209,7 @@ CWVTranslationError CWVConvertTranslateError(
     }
     case CWVTranslationPolicyAuto: {
       _translatePrefs->UnblockLanguage(languageCode);
-      _translatePrefs->WhitelistLanguagePair(
+      _translatePrefs->AddLanguagePairToAlwaysTranslateList(
           languageCode, base::SysNSStringToUTF8(policy.language.languageCode));
       break;
     }
@@ -242,12 +241,13 @@ CWVTranslationError CWVConvertTranslateError(
   DCHECK(pageHost.length);
   switch (policy.type) {
     case CWVTranslationPolicyAsk: {
-      _translatePrefs->RemoveSiteFromBlacklist(
+      _translatePrefs->RemoveSiteFromNeverPromptList(
           base::SysNSStringToUTF8(pageHost));
       break;
     }
     case CWVTranslationPolicyNever: {
-      _translatePrefs->BlacklistSite(base::SysNSStringToUTF8(pageHost));
+      _translatePrefs->AddSiteToNeverPromptList(
+          base::SysNSStringToUTF8(pageHost));
       break;
     }
     case CWVTranslationPolicyAuto: {
@@ -260,9 +260,9 @@ CWVTranslationError CWVConvertTranslateError(
 
 - (CWVTranslationPolicy*)translationPolicyForPageHost:(NSString*)pageHost {
   // TODO(crbug.com/706289): Return translationPolicyAuto when implemented.
-  bool isSiteBlackListed =
-      _translatePrefs->IsSiteBlacklisted(base::SysNSStringToUTF8(pageHost));
-  if (isSiteBlackListed) {
+  bool isSiteOnNeverPromptList = _translatePrefs->IsSiteOnNeverPromptList(
+      base::SysNSStringToUTF8(pageHost));
+  if (isSiteOnNeverPromptList) {
     return [CWVTranslationPolicy translationPolicyNever];
   }
   return [CWVTranslationPolicy translationPolicyAsk];
@@ -294,9 +294,9 @@ CWVTranslationError CWVConvertTranslateError(
     std::string locale = translate::TranslateDownloadManager::GetInstance()
                              ->application_locale();
     for (const std::string& languageCode : languageCodes) {
-      base::string16 localizedName =
+      std::u16string localizedName =
           l10n_util::GetDisplayNameForLocale(languageCode, locale, true);
-      base::string16 nativeName =
+      std::u16string nativeName =
           l10n_util::GetDisplayNameForLocale(languageCode, languageCode, true);
       CWVTranslationLanguage* language =
           [[CWVTranslationLanguage alloc] initWithLanguageCode:languageCode

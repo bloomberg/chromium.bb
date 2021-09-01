@@ -51,8 +51,10 @@
 #include "core/fpdfapi/render/cpdf_textrenderer.h"
 #include "core/fpdfapi/render/cpdf_type3cache.h"
 #include "core/fxcrt/autorestorer.h"
+#include "core/fxcrt/fx_memory.h"
 #include "core/fxcrt/fx_safe_types.h"
 #include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/cfx_defaultrenderdevice.h"
 #include "core/fxge/cfx_fillrenderoptions.h"
 #include "core/fxge/cfx_glyphbitmap.h"
@@ -62,6 +64,7 @@
 #include "core/fxge/renderdevicedriver_iface.h"
 #include "core/fxge/text_char_pos.h"
 #include "core/fxge/text_glyph_pos.h"
+#include "third_party/base/check.h"
 #include "third_party/base/notreached.h"
 #include "third_party/base/stl_util.h"
 
@@ -144,6 +147,8 @@ bool Type3CharMissingStrokeColor(const CPDF_Type3Char* pChar,
 #if defined(_SKIA_SUPPORT_) || defined(_SKIA_SUPPORT_PATHS_)
 class ScopedSkiaDeviceFlush {
  public:
+  FX_STACK_ALLOCATED();
+
   explicit ScopedSkiaDeviceFlush(CFX_RenderDevice* pDevice)
       : m_pDevice(pDevice) {}
 
@@ -153,7 +158,7 @@ class ScopedSkiaDeviceFlush {
   ~ScopedSkiaDeviceFlush() { m_pDevice->Flush(/*release=*/false); }
 
  private:
-  CFX_RenderDevice* const m_pDevice;
+  UnownedPtr<CFX_RenderDevice> const m_pDevice;
 };
 #endif
 
@@ -432,7 +437,7 @@ bool CPDF_RenderStatus::ProcessPath(CPDF_PathObject* path_obj,
 
 RetainPtr<CPDF_TransferFunc> CPDF_RenderStatus::GetTransferFunc(
     const CPDF_Object* pObj) const {
-  ASSERT(pObj);
+  DCHECK(pObj);
   auto* pDocCache = CPDF_DocRenderData::FromDocument(m_pContext->GetDocument());
   return pDocCache ? pDocCache->GetTransferFunc(pObj) : nullptr;
 }
@@ -698,7 +703,7 @@ bool CPDF_RenderStatus::ProcessTransparency(CPDF_PageObject* pPageObj,
     CFX_Matrix smask_matrix =
         *pPageObj->m_GeneralState.GetSMaskMatrix() * mtObj2Device;
     RetainPtr<CFX_DIBBase> pSMaskSource =
-        LoadSMask(pSMaskDict, &rect, &smask_matrix);
+        LoadSMask(pSMaskDict, &rect, smask_matrix);
     if (pSMaskSource)
       bitmap->MultiplyAlpha(pSMaskSource);
   }
@@ -708,7 +713,7 @@ bool CPDF_RenderStatus::ProcessTransparency(CPDF_PageObject* pPageObj,
   }
   int32_t blitAlpha = 255;
   if (group_alpha != 1.0f && transparency.IsGroup()) {
-    blitAlpha = (int32_t)(group_alpha * 255);
+    blitAlpha = static_cast<int32_t>(group_alpha * 255);
 #if !defined(_SKIA_SUPPORT_)
     bitmap->MultiplyAlpha(blitAlpha);
     blitAlpha = 255;
@@ -748,7 +753,7 @@ RetainPtr<CFX_DIBitmap> CPDF_RenderStatus::GetBackdrop(
     return nullptr;
 
   bool bNeedDraw;
-  if (pBackdrop->HasAlpha())
+  if (pBackdrop->IsAlphaFormat())
     bNeedDraw = !(m_pDevice->GetRenderCaps() & FXRC_ALPHA_OUTPUT);
   else
     bNeedDraw = !(m_pDevice->GetRenderCaps() & FXRC_GET_BITS);
@@ -759,7 +764,7 @@ RetainPtr<CFX_DIBitmap> CPDF_RenderStatus::GetBackdrop(
   }
   CFX_Matrix FinalMatrix = m_DeviceMatrix;
   FinalMatrix.Translate(-*left, -*top);
-  pBackdrop->Clear(pBackdrop->HasAlpha() ? 0 : 0xffffffff);
+  pBackdrop->Clear(pBackdrop->IsAlphaFormat() ? 0 : 0xffffffff);
 
   CFX_DefaultRenderDevice device;
   device.Attach(pBackdrop, false, nullptr, false);
@@ -868,7 +873,7 @@ bool CPDF_RenderStatus::ProcessText(CPDF_TextObject* textobj,
   float font_size = textobj->m_TextState.GetFontSize();
   if (bPattern) {
     DrawTextPathWithPattern(textobj, mtObj2Device, pFont.Get(), font_size,
-                            &text_matrix, is_fill, is_stroke);
+                            text_matrix, is_fill, is_stroke);
     return true;
   }
   if (is_clip || is_stroke) {
@@ -970,7 +975,7 @@ bool CPDF_RenderStatus::ProcessType3Text(CPDF_TextObject* textobj,
         status.SetFormResource(pFormResource);
         status.Initialize(this, pStates.get());
         status.m_Type3FontCache = m_Type3FontCache;
-        status.m_Type3FontCache.push_back(pType3Font);
+        status.m_Type3FontCache.emplace_back(pType3Font);
 
         CFX_RenderDevice::StateRestorer restorer(m_pDevice);
         status.RenderObjectList(pForm, matrix);
@@ -995,7 +1000,7 @@ bool CPDF_RenderStatus::ProcessType3Text(CPDF_TextObject* textobj,
         status.SetFormResource(pFormResource);
         status.Initialize(this, pStates.get());
         status.m_Type3FontCache = m_Type3FontCache;
-        status.m_Type3FontCache.push_back(pType3Font);
+        status.m_Type3FontCache.emplace_back(pType3Font);
         matrix.Translate(-rect.left, -rect.top);
         status.RenderObjectList(pForm, matrix);
         m_pDevice->SetDIBits(bitmap_device.GetBitmap(), rect.left, rect.top);
@@ -1015,7 +1020,7 @@ bool CPDF_RenderStatus::ProcessType3Text(CPDF_TextObject* textobj,
         RetainPtr<CPDF_Type3Cache> pCache =
             CPDF_DocRenderData::FromDocument(pDoc)->GetCachedType3(pType3Font);
 
-        const CFX_GlyphBitmap* pBitmap = pCache->LoadGlyph(charcode, &matrix);
+        const CFX_GlyphBitmap* pBitmap = pCache->LoadGlyph(charcode, matrix);
         if (!pBitmap)
           continue;
 
@@ -1073,12 +1078,12 @@ void CPDF_RenderStatus::DrawTextPathWithPattern(const CPDF_TextObject* textobj,
                                                 const CFX_Matrix& mtObj2Device,
                                                 CPDF_Font* pFont,
                                                 float font_size,
-                                                const CFX_Matrix* pTextMatrix,
+                                                const CFX_Matrix& mtTextMatrix,
                                                 bool fill,
                                                 bool stroke) {
   if (!stroke) {
     std::vector<std::unique_ptr<CPDF_TextObject>> pCopy;
-    pCopy.push_back(std::unique_ptr<CPDF_TextObject>(textobj->Clone()));
+    pCopy.push_back(textobj->Clone());
 
     CPDF_PathObject path;
     path.set_filltype(CFX_FillRenderOptions::FillType::kWinding);
@@ -1120,8 +1125,8 @@ void CPDF_RenderStatus::DrawTextPathWithPattern(const CPDF_TextObject* textobj,
     path.set_stroke(stroke);
     path.set_filltype(fill ? CFX_FillRenderOptions::FillType::kWinding
                            : CFX_FillRenderOptions::FillType::kNoFill);
-    path.path().Append(pPath, &matrix);
-    path.set_matrix(*pTextMatrix);
+    path.path().Append(*pPath, &matrix);
+    path.set_matrix(mtTextMatrix);
     path.CalcBoundingBox();
     ProcessPath(&path, mtObj2Device);
   }
@@ -1214,8 +1219,8 @@ void CPDF_RenderStatus::ProcessPathPattern(
     const CFX_Matrix& mtObj2Device,
     CFX_FillRenderOptions::FillType* fill_type,
     bool* stroke) {
-  ASSERT(fill_type);
-  ASSERT(stroke);
+  DCHECK(fill_type);
+  DCHECK(stroke);
 
   if (*fill_type != CFX_FillRenderOptions::FillType::kNoFill) {
     const CPDF_Color& FillColor = *path_obj->m_ColorState.GetFillColor();
@@ -1253,7 +1258,7 @@ void CPDF_RenderStatus::CompositeDIBitmap(
     return;
 
   if (blend_mode == BlendMode::kNormal) {
-    if (!pDIBitmap->IsMask()) {
+    if (!pDIBitmap->IsMaskFormat()) {
       if (bitmap_alpha < 255) {
 #if defined(_SKIA_SUPPORT_)
         std::unique_ptr<CFX_ImageRenderer> dummy;
@@ -1292,7 +1297,7 @@ void CPDF_RenderStatus::CompositeDIBitmap(
        (m_pDevice->GetRenderCaps() & FXRC_GET_BITS) && !bBackAlphaRequired);
   if (bGetBackGround) {
     if (bIsolated || !transparency.IsGroup()) {
-      if (!pDIBitmap->IsMask())
+      if (!pDIBitmap->IsMaskFormat())
         m_pDevice->SetDIBitsWithBlend(pDIBitmap, left, top, blend_mode);
       return;
     }
@@ -1312,7 +1317,7 @@ void CPDF_RenderStatus::CompositeDIBitmap(
                               BlendMode::kNormal, nullptr, false);
       left = std::min(left, 0);
       top = std::min(top, 0);
-      if (pDIBitmap->IsMask()) {
+      if (pDIBitmap->IsMaskFormat()) {
         pClone->CompositeMask(0, 0, pClone->GetWidth(), pClone->GetHeight(),
                               pDIBitmap, mask_argb, left, top, blend_mode,
                               nullptr, false);
@@ -1327,7 +1332,7 @@ void CPDF_RenderStatus::CompositeDIBitmap(
     if (m_pDevice->GetBackDrop()) {
       m_pDevice->SetDIBits(pClone, rect.left, rect.top);
     } else {
-      if (!pDIBitmap->IsMask()) {
+      if (!pDIBitmap->IsMaskFormat()) {
         m_pDevice->SetDIBitsWithBlend(pDIBitmap, rect.left, rect.top,
                                       blend_mode);
       }
@@ -1344,7 +1349,7 @@ void CPDF_RenderStatus::CompositeDIBitmap(
   if (!pBackdrop)
     return;
 
-  if (pDIBitmap->IsMask()) {
+  if (pDIBitmap->IsMaskFormat()) {
     pBackdrop->CompositeMask(left - back_left, top - back_top,
                              pDIBitmap->GetWidth(), pDIBitmap->GetHeight(),
                              pDIBitmap, mask_argb, 0, 0, blend_mode, nullptr,
@@ -1369,7 +1374,7 @@ void CPDF_RenderStatus::CompositeDIBitmap(
 RetainPtr<CFX_DIBitmap> CPDF_RenderStatus::LoadSMask(
     CPDF_Dictionary* pSMaskDict,
     FX_RECT* pClipRect,
-    const CFX_Matrix* pMatrix) {
+    const CFX_Matrix& mtMatrix) {
   if (!pSMaskDict)
     return nullptr;
 
@@ -1383,7 +1388,7 @@ RetainPtr<CFX_DIBitmap> CPDF_RenderStatus::LoadSMask(
   if (pFuncObj && (pFuncObj->IsDictionary() || pFuncObj->IsStream()))
     pFunc = CPDF_Function::Load(pFuncObj);
 
-  CFX_Matrix matrix = *pMatrix;
+  CFX_Matrix matrix = mtMatrix;
   matrix.Translate(-pClipRect->left, -pClipRect->top);
 
   CPDF_Form form(m_pContext->GetDocument(), m_pContext->GetPageResources(),
@@ -1407,7 +1412,7 @@ RetainPtr<CFX_DIBitmap> CPDF_RenderStatus::LoadSMask(
     return nullptr;
 
   RetainPtr<CFX_DIBitmap> bitmap = bitmap_device.GetBitmap();
-  int nCSFamily = 0;
+  CPDF_ColorSpace::Family nCSFamily = CPDF_ColorSpace::Family::kUnknown;
   if (bLuminosity) {
     FX_ARGB back_color =
         GetBackColor(pSMaskDict, pGroup->GetDict(), &nCSFamily);
@@ -1475,7 +1480,7 @@ RetainPtr<CFX_DIBitmap> CPDF_RenderStatus::LoadSMask(
 
 FX_ARGB CPDF_RenderStatus::GetBackColor(const CPDF_Dictionary* pSMaskDict,
                                         const CPDF_Dictionary* pGroupDict,
-                                        int* pCSFamily) {
+                                        CPDF_ColorSpace::Family* pCSFamily) {
   static constexpr FX_ARGB kDefaultColor = ArgbEncode(255, 0, 0, 0);
   const CPDF_Array* pBC = pSMaskDict->GetArrayFor(pdfium::transparency::kBC);
   if (!pBC)
@@ -1492,9 +1497,9 @@ FX_ARGB CPDF_RenderStatus::GetBackColor(const CPDF_Dictionary* pSMaskDict,
   if (!pCS)
     return kDefaultColor;
 
-  int family = pCS->GetFamily();
-  if (family == PDFCS_LAB || pCS->IsSpecial() ||
-      (family == PDFCS_ICCBASED && !pCS->IsNormal())) {
+  CPDF_ColorSpace::Family family = pCS->GetFamily();
+  if (family == CPDF_ColorSpace::Family::kLab || pCS->IsSpecial() ||
+      (family == CPDF_ColorSpace::Family::kICCBased && !pCS->IsNormal())) {
     return kDefaultColor;
   }
 

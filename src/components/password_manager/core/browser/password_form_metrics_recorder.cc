@@ -9,12 +9,12 @@
 #include <algorithm>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/form_data.h"
@@ -61,7 +61,7 @@ PasswordFormMetricsRecorder::BubbleDismissalReason GetBubbleDismissalReason(
     // These should not reach here:
     case metrics_util::CLICKED_DONE_OBSOLETE:
     case metrics_util::CLICKED_OK_OBSOLETE:
-    case metrics_util::CLICKED_UNBLACKLIST_OBSOLETE:
+    case metrics_util::CLICKED_UNBLOCKLIST_OBSOLETE:
     case metrics_util::CLICKED_CREDENTIAL_OBSOLETE:
     case metrics_util::AUTO_SIGNIN_TOAST_CLICKED_OBSOLETE:
     case metrics_util::CLICKED_BRAND_NAME_OBSOLETE:
@@ -73,7 +73,7 @@ PasswordFormMetricsRecorder::BubbleDismissalReason GetBubbleDismissalReason(
 }
 
 bool HasGeneratedPassword(
-    base::Optional<PasswordFormMetricsRecorder::GeneratedPasswordStatus>
+    absl::optional<PasswordFormMetricsRecorder::GeneratedPasswordStatus>
         status) {
   return status.has_value() &&
          (status == PasswordFormMetricsRecorder::GeneratedPasswordStatus::
@@ -104,15 +104,15 @@ struct UsernamePasswordsState {
 // |submitted_form|.
 UsernamePasswordsState CalculateUsernamePasswordsState(
     const FormData& submitted_form,
-    const std::set<std::pair<base::string16, PasswordForm::Store>>&
+    const std::set<std::pair<std::u16string, PasswordForm::Store>>&
         saved_usernames,
-    const std::set<std::pair<base::string16, PasswordForm::Store>>&
+    const std::set<std::pair<std::u16string, PasswordForm::Store>>&
         saved_passwords) {
   UsernamePasswordsState result;
 
   for (const FormFieldData& field : submitted_form.fields) {
-    const base::string16& value =
-        field.typed_value.empty() ? field.value : field.typed_value;
+    const std::u16string& value =
+        field.user_input.empty() ? field.value : field.user_input;
 
     bool user_typed = field.properties_mask & FieldPropertiesFlags::kUserTyped;
     bool manually_filled =
@@ -171,14 +171,14 @@ UsernamePasswordsState CalculateUsernamePasswordsState(
 // Returns whether any value of |submitted_form| is listed in the
 // |interactions_stats| has having been prompted to save as a credential and
 // being ignored too often.
-bool BlacklistedBySmartBubble(
+bool BlocklistedBySmartBubble(
     const FormData& submitted_form,
     const std::vector<InteractionsStats>& interactions_stats) {
   const int show_threshold =
       password_bubble_experiment::GetSmartBubbleDismissalThreshold();
   for (const FormFieldData& field : submitted_form.fields) {
-    const base::string16& value =
-        field.typed_value.empty() ? field.value : field.typed_value;
+    const std::u16string& value =
+        field.user_input.empty() ? field.value : field.user_input;
     for (const InteractionsStats& stat : interactions_stats) {
       if (stat.username_value == value &&
           stat.dismissal_count >= show_threshold)
@@ -512,11 +512,11 @@ void PasswordFormMetricsRecorder::RecordFirstWaitForUsernameReason(
 
 void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
     const FormData& submitted_form,
-    const std::set<std::pair<base::string16, PasswordForm::Store>>&
+    const std::set<std::pair<std::u16string, PasswordForm::Store>>&
         saved_usernames,
-    const std::set<std::pair<base::string16, PasswordForm::Store>>&
+    const std::set<std::pair<std::u16string, PasswordForm::Store>>&
         saved_passwords,
-    bool is_blacklisted,
+    bool is_blocklisted,
     const std::vector<InteractionsStats>& interactions_stats,
     metrics_util::PasswordAccountStorageUsageLevel
         account_storage_usage_level) {
@@ -532,15 +532,15 @@ void PasswordFormMetricsRecorder::CalculateFillingAssistanceMetric(
 #endif
   account_storage_usage_level_ = account_storage_usage_level;
 
-  if (saved_passwords.empty() && is_blacklisted) {
-    filling_assistance_ = FillingAssistance::kNoSavedCredentialsAndBlacklisted;
+  if (saved_passwords.empty() && is_blocklisted) {
+    filling_assistance_ = FillingAssistance::kNoSavedCredentialsAndBlocklisted;
     return;
   }
 
   if (saved_passwords.empty()) {
     filling_assistance_ =
-        BlacklistedBySmartBubble(submitted_form, interactions_stats)
-            ? FillingAssistance::kNoSavedCredentialsAndBlacklistedBySmartBubble
+        BlocklistedBySmartBubble(submitted_form, interactions_stats)
+            ? FillingAssistance::kNoSavedCredentialsAndBlocklistedBySmartBubble
             : FillingAssistance::kNoSavedCredentials;
     return;
   }
@@ -675,7 +675,7 @@ void PasswordFormMetricsRecorder::RecordPasswordBubbleShown(
       return;
 
     // Obsolte display dispositions:
-    case metrics_util::MANUAL_BLACKLISTED_OBSOLETE:
+    case metrics_util::MANUAL_BLOCKLISTED_OBSOLETE:
     case metrics_util::AUTOMATIC_CREDENTIAL_REQUEST_OBSOLETE:
     case metrics_util::NUM_DISPLAY_DISPOSITIONS:
       NOTREACHED();

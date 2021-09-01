@@ -13,14 +13,15 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
-#include "chrome/browser/ui/views/subtle_notification_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/fullscreen_control/subtle_notification_view.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -54,7 +55,7 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
   auto content_view = std::make_unique<SubtleNotificationView>();
   view_ = content_view.get();
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Technically the exit fullscreen key on ChromeOS is F11 and the
   // "Fullscreen" key on the keyboard is just translated to F11 or F4 (which
   // is also a toggle-fullscreen command on ChromeOS). However most Chromebooks
@@ -99,8 +100,9 @@ ExclusiveAccessBubbleViews::ExclusiveAccessBubbleViews(
   view_->SetBounds(0, 0, size.width(), size.height());
   popup_->AddObserver(this);
 
-  fullscreen_observer_.Add(bubble_view_context_->GetExclusiveAccessManager()
-                               ->fullscreen_controller());
+  fullscreen_observation_.Observe(
+      bubble_view_context_->GetExclusiveAccessManager()
+          ->fullscreen_controller());
 
   UpdateMouseWatcher();
 }
@@ -211,7 +213,7 @@ void ExclusiveAccessBubbleViews::UpdateViewContent(
     ExclusiveAccessBubbleType bubble_type) {
   DCHECK_NE(EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE, bubble_type);
 
-  base::string16 accelerator;
+  std::u16string accelerator;
   if (bubble_type ==
           EXCLUSIVE_ACCESS_BUBBLE_TYPE_BROWSER_FULLSCREEN_EXIT_INSTRUCTION ||
       bubble_type ==

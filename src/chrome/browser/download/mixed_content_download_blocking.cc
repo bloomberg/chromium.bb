@@ -8,7 +8,6 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,7 +19,8 @@
 #include "components/download/public/common/download_stats.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -49,11 +49,11 @@ namespace {
 const base::FeatureParam<bool> kTreatSilentBlockListAsAllowlist(
     &features::kTreatUnsafeDownloadsAsActive,
     "TreatSilentBlockListAsAllowlist",
-    false);
+    true);
 const base::FeatureParam<std::string> kSilentBlockExtensionList(
     &features::kTreatUnsafeDownloadsAsActive,
     "SilentBlockExtensionList",
-    "silently_blocked_for_testing");
+    "silently_unblocked_for_testing");
 
 const base::FeatureParam<bool> kTreatBlockListAsAllowlist(
     &features::kTreatUnsafeDownloadsAsActive,
@@ -62,17 +62,17 @@ const base::FeatureParam<bool> kTreatBlockListAsAllowlist(
 const base::FeatureParam<std::string> kBlockExtensionList(
     &features::kTreatUnsafeDownloadsAsActive,
     "BlockExtensionList",
-    "exe,scr,msi,vb,dmg,pkg,crx,gz,gzip,zip,bz2,rar,7z,tar");
+    "");
 
 // Note: this is an allowlist, so acts as a catch-all.
 const base::FeatureParam<bool> kTreatWarnListAsAllowlist(
     &features::kTreatUnsafeDownloadsAsActive,
     "TreatWarnListAsAllowlist",
-    true);
+    false);
 const base::FeatureParam<std::string> kWarnExtensionList(
     &features::kTreatUnsafeDownloadsAsActive,
     "WarnExtensionList",
-    "dont_warn_for_testing");
+    "");
 
 // Map the string file extension to the corresponding histogram enum.
 InsecureDownloadExtensions GetExtensionEnumFromString(
@@ -144,7 +144,7 @@ std::string GetDownloadBlockingExtensionMetricName(
 // for histogram reporting. |dl_secure| signifies whether the download was
 // a secure source. |inferred| is whether the initiator value is our best guess.
 InsecureDownloadSecurityStatus GetDownloadBlockingEnum(
-    base::Optional<url::Origin> initiator,
+    absl::optional<url::Origin> initiator,
     bool dl_secure,
     bool inferred) {
   if (inferred) {
@@ -207,15 +207,22 @@ struct MixedContentDownloadData {
 
     // Evaluate download security.
     is_redirect_chain_secure_ = true;
-    for (const auto& url : item->GetUrlChain()) {
-      if (!blink::network_utils::IsOriginSecure(url)) {
-        is_redirect_chain_secure_ = false;
-        break;
+    // Skip over the final URL so that we can investigate it separately below.
+    // The redirect chain always contains the final URL, so this is always safe
+    // in Chrome, but some tests don't plan for it, so we check here.
+    const auto& chain = item->GetUrlChain();
+    if (chain.size() > 1) {
+      for (unsigned i = 0; i < chain.size() - 1; ++i) {
+        const GURL& url = chain[i];
+        if (!network::IsUrlPotentiallyTrustworthy(url)) {
+          is_redirect_chain_secure_ = false;
+          break;
+        }
       }
     }
     const GURL& dl_url = item->GetURL();
     bool is_download_secure = is_redirect_chain_secure_ &&
-                              (blink::network_utils::IsOriginSecure(dl_url) ||
+                              (network::IsUrlPotentiallyTrustworthy(dl_url) ||
                                dl_url.SchemeIsBlob() || dl_url.SchemeIsFile());
 
     // Configure mixed content status.
@@ -271,7 +278,7 @@ struct MixedContentDownloadData {
     }
   }
 
-  base::Optional<url::Origin> initiator_;
+  absl::optional<url::Origin> initiator_;
   std::string extension_;
   const download::DownloadItem* item_;
   bool is_redirect_chain_secure_;
@@ -328,7 +335,7 @@ void PrintConsoleMessage(const MixedContentDownloadData& data,
 
 bool IsDownloadPermittedByContentSettings(
     Profile* profile,
-    const base::Optional<url::Origin>& initiator) {
+    const absl::optional<url::Origin>& initiator) {
   // TODO(crbug.com/1048957): Checking content settings crashes unit tests on
   // Android. It shouldn't.
 #if !defined(OS_ANDROID)

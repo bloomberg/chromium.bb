@@ -8,9 +8,10 @@
 Watchlists is a mechanism that allow a developer (a "watcher") to watch over
 portions of code that they are interested in. A "watcher" will be cc-ed to
 changes that modify that portion of code, thereby giving them an opportunity
-to make comments on codereview.chromium.org even before the change is
+to make comments on chromium-review.googlesource.com even before the change is
 committed.
-Refer: http://dev.chromium.org/developers/contributing-code/watchlists
+Refer:
+https://chromium.googlesource.com/chromium/src/+/HEAD/docs/infra/watchlists.md
 
 When invoked directly from the base of a repository, this script lists out
 the watchers for files given on the command line. This is useful to verify

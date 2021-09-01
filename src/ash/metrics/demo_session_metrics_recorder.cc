@@ -14,7 +14,7 @@
 #include "ash/shell.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_multi_source_observation.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "extensions/common/constants.h"
@@ -33,7 +33,7 @@ using DemoModeApp = DemoSessionMetricsRecorder::DemoModeApp;
 // How often to sample.
 constexpr auto kSamplePeriod = base::TimeDelta::FromSeconds(1);
 
-// Redefining chromeos::default_web_apps::kHelpAppId as ash can't depend on
+// Redefining chromeos::preinstalled_web_apps::kHelpAppId as ash can't depend on
 // chrome.
 constexpr char kHelpAppId[] = "nbljnnecbjbmifnoehiemkgefbnpoeak";
 
@@ -48,18 +48,14 @@ constexpr int kMaxPeriodsWithoutActivity =
 DemoModeApp GetAppFromAppId(const std::string& app_id) {
   // Each version of the Highlights app is bucketed into the same value.
   if (app_id == extension_misc::kHighlightsAppId ||
-      app_id == extension_misc::kHighlightsEveAppId ||
-      app_id == extension_misc::kHighlightsNocturneAppId ||
       app_id == extension_misc::kHighlightsAtlasAppId) {
     return DemoModeApp::kHighlights;
   }
 
   // Each version of the Screensaver app is bucketed into the same value.
   if (app_id == extension_misc::kScreensaverAppId ||
-      app_id == extension_misc::kScreensaverEveAppId ||
-      app_id == extension_misc::kScreensaverNocturneAppId ||
       app_id == extension_misc::kScreensaverAtlasAppId ||
-      app_id == extension_misc::kScreensaverKukuiAppId) {
+      app_id == extension_misc::kScreensaverKraneZdksAppId) {
     return DemoModeApp::kScreensaver;
   }
 
@@ -75,8 +71,14 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
     return DemoModeApp::kCalendar;
   if (app_id == extension_misc::kGoogleDocsDemoAppId)
     return DemoModeApp::kGoogleDocsChromeApp;
+  if (app_id == extension_misc::kGoogleDocsPwaAppId)
+    return DemoModeApp::kGoogleDocsPwa;
+  if (app_id == extension_misc::kGoogleMeetPwaAppId)
+    return DemoModeApp::kGoogleMeetPwa;
   if (app_id == extension_misc::kGoogleSheetsDemoAppId)
     return DemoModeApp::kGoogleSheetsChromeApp;
+  if (app_id == extension_misc::kGoogleSheetsPwaAppId)
+    return DemoModeApp::kGoogleSheetsPwa;
   if (app_id == extension_misc::kGoogleSlidesDemoAppId)
     return DemoModeApp::kGoogleSlidesChromeApp;
   if (app_id == kHelpAppId)
@@ -87,6 +89,19 @@ DemoModeApp GetAppFromAppId(const std::string& app_id) {
     return DemoModeApp::kWebStore;
   if (app_id == extension_misc::kYoutubeAppId)
     return DemoModeApp::kYouTube;
+  if (app_id == extension_misc::kYoutubePwaAppId)
+    return DemoModeApp::kYoutubePwa;
+  if (app_id == extension_misc::kSpotifyAppId)
+    return DemoModeApp::kSpotify;
+  if (app_id == extension_misc::kBeFunkyAppId)
+    return DemoModeApp::kBeFunky;
+  if (app_id == extension_misc::kClipchampAppId)
+    return DemoModeApp::kClipchamp;
+  if (app_id == extension_misc::kGeForceNowAppId)
+    return DemoModeApp::kGeForceNow;
+  if (app_id == extension_misc::kZoomAppId)
+    return DemoModeApp::kZoom;
+
   return DemoModeApp::kOtherChromeApp;
 }
 
@@ -116,9 +131,11 @@ DemoModeApp GetAppFromPackageName(const std::string& package_name) {
   if (package_name == "com.chucklefish.stardewvalley" ||
       package_name == "com.chucklefish.stardewvalleydemo")
     return DemoModeApp::kStardewValley;
-  if (package_name == "com.nexstreaming.app.kinemasterfree" ||
-      package_name == "com.nexstreaming.app.kinemasterfree.demo.chromebook")
-    return DemoModeApp::kKinemaster;
+  if (package_name == "com.nexstreaming.app.kinemasterfree" ||  // nocheck
+      package_name ==
+          "com.nexstreaming.app.kinemasterfree.demo.chromebook") {  // nocheck
+    return DemoModeApp::kKinemaster;                                // nocheck
+  }
   if (package_name == "com.pixlr.express" ||
       package_name == "com.pixlr.express.chromebook.demo")
     return DemoModeApp::kPixlr;
@@ -136,10 +153,6 @@ DemoModeApp GetAppFromPackageName(const std::string& package_name) {
 
 AppType GetAppType(const aura::Window* window) {
   return static_cast<AppType>(window->GetProperty(aura::client::kAppType));
-}
-
-bool IsArcWindow(const aura::Window* window) {
-  return (GetAppType(window) == AppType::ARC_APP);
 }
 
 const std::string* GetArcPackageName(const aura::Window* window) {
@@ -232,19 +245,22 @@ class DemoSessionMetricsRecorder::ActiveAppArcPackageNameObserver
       VLOG(1) << "Got null ARC package name";
     }
 
-    scoped_observer_.Remove(window);
+    scoped_observations_.RemoveObservation(window);
   }
 
   void OnWindowDestroyed(aura::Window* window) override {
-    if (scoped_observer_.IsObserving(window))
-      scoped_observer_.Remove(window);
+    if (scoped_observations_.IsObservingSource(window))
+      scoped_observations_.RemoveObservation(window);
   }
 
-  void ObserveWindow(aura::Window* window) { scoped_observer_.Add(window); }
+  void ObserveWindow(aura::Window* window) {
+    scoped_observations_.AddObservation(window);
+  }
 
  private:
   DemoSessionMetricsRecorder* metrics_recorder_;
-  ScopedObserver<aura::Window, aura::WindowObserver> scoped_observer_{this};
+  base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
+      scoped_observations_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ActiveAppArcPackageNameObserver);
 };
@@ -273,19 +289,23 @@ class DemoSessionMetricsRecorder::UniqueAppsLaunchedArcPackageNameObserver
       VLOG(1) << "Got null ARC package name";
     }
 
-    scoped_observer_.Remove(window);
+    DCHECK(scoped_observation_.IsObservingSource(window));
+    scoped_observation_.Reset();
   }
 
   void OnWindowDestroyed(aura::Window* window) override {
-    if (scoped_observer_.IsObserving(window))
-      scoped_observer_.Remove(window);
+    if (scoped_observation_.IsObservingSource(window))
+      scoped_observation_.Reset();
   }
 
-  void ObserveWindow(aura::Window* window) { scoped_observer_.Add(window); }
+  void ObserveWindow(aura::Window* window) {
+    scoped_observation_.Observe(window);
+  }
 
  private:
   DemoSessionMetricsRecorder* metrics_recorder_;
-  ScopedObserver<aura::Window, aura::WindowObserver> scoped_observer_{this};
+  base::ScopedObservation<aura::Window, aura::WindowObserver>
+      scoped_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UniqueAppsLaunchedArcPackageNameObserver);
 };
@@ -302,7 +322,7 @@ DemoSessionMetricsRecorder::DemoSessionMetricsRecorder(
     timer_ = std::make_unique<base::RepeatingTimer>();
 
   StartRecording();
-  observer_.Add(ui::UserActivityDetector::Get());
+  observation_.Observe(ui::UserActivityDetector::Get());
 
   // Subscribe to window activation updates.  Even though this gets us
   // notifications for all window activations, we ignore the ARC
@@ -367,7 +387,7 @@ void DemoSessionMetricsRecorder::OnWindowActivated(ActivationReason reason,
     return;
 
   // Don't count popup windows.
-  if (gained_active->type() != aura::client::WINDOW_TYPE_NORMAL)
+  if (gained_active->GetType() != aura::client::WINDOW_TYPE_NORMAL)
     return;
 
   AppType app_type = GetAppType(gained_active);
@@ -447,7 +467,7 @@ void DemoSessionMetricsRecorder::TakeSampleOrPause() {
     return;
   }
 
-  DemoModeApp app = window->type() == aura::client::WINDOW_TYPE_NORMAL
+  DemoModeApp app = window->GetType() == aura::client::WINDOW_TYPE_NORMAL
                         ? GetAppFromWindow(window)
                         : DemoModeApp::kOtherWindow;
   RecordActiveAppSample(app);

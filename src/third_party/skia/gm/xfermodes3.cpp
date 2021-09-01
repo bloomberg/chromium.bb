@@ -162,7 +162,7 @@ private:
         if (nullptr == surface) {
             canvas->restore();
         } else {
-            surface->draw(canvas, 0, 0, nullptr);
+            surface->draw(canvas, 0, 0);
         }
 
         r.inset(-SK_ScalarHalf, -SK_ScalarHalf);
@@ -186,7 +186,8 @@ private:
 
         SkMatrix lm;
         lm.setScale(SkIntToScalar(kCheckSize), SkIntToScalar(kCheckSize));
-        fBGShader = bg.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat, &lm);
+        fBGShader = bg.makeShader(SkTileMode::kRepeat, SkTileMode::kRepeat,
+                                  SkSamplingOptions(), lm);
 
         SkPaint bmpPaint;
         const SkPoint kCenter = { SkIntToScalar(kSize) / 2, SkIntToScalar(kSize) / 2 };
@@ -206,7 +207,7 @@ private:
                         7 * SkIntToScalar(kSize) / 8, 7 * SkIntToScalar(kSize) / 8};
         bmpCanvas.drawRect(rect, bmpPaint);
 
-        fBmpShader = bmp.makeShader();
+        fBmpShader = bmp.makeShader(SkSamplingOptions());
     }
 
     enum {

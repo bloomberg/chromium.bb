@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/update_client.h"
@@ -26,6 +25,9 @@
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "extensions/browser/updater/extension_installer.h"
 #include "extensions/common/extension_builder.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+using extensions::mojom::ManifestLocation;
 
 namespace extensions {
 
@@ -91,7 +93,7 @@ class UpdateDataProviderTest : public ExtensionsTest {
                     const std::string& version,
                     bool enabled,
                     int disable_reasons,
-                    Manifest::Location location) {
+                    ManifestLocation location) {
     AddExtension(extension_id, version, "", enabled, disable_reasons, location);
   }
 
@@ -100,7 +102,7 @@ class UpdateDataProviderTest : public ExtensionsTest {
                     const std::string& fingerprint,
                     bool enabled,
                     int disable_reasons,
-                    Manifest::Location location) {
+                    ManifestLocation location) {
     base::ScopedTempDir temp_dir;
     ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
     ASSERT_TRUE(base::PathExists(temp_dir.GetPath()));
@@ -162,9 +164,11 @@ TEST_F(UpdateDataProviderTest, GetData_Fingerprint) {
   const std::string version = "0.1.2.3";
   const std::string fingerprint = "1.0123456789abcdef";
   AddExtension(kExtensionId1, version, true,
-               disable_reason::DisableReason::DISABLE_NONE, Manifest::INTERNAL);
+               disable_reason::DisableReason::DISABLE_NONE,
+               ManifestLocation::kInternal);
   AddExtension(kExtensionId2, version, fingerprint, true,
-               disable_reason::DisableReason::DISABLE_NONE, Manifest::INTERNAL);
+               disable_reason::DisableReason::DISABLE_NONE,
+               ManifestLocation::kInternal);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -187,7 +191,8 @@ TEST_F(UpdateDataProviderTest, GetData_EnabledExtension) {
 
   const std::string version = "0.1.2.3";
   AddExtension(kExtensionId1, version, true,
-               disable_reason::DisableReason::DISABLE_NONE, Manifest::INTERNAL);
+               disable_reason::DisableReason::DISABLE_NONE,
+               ManifestLocation::kInternal);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -209,7 +214,7 @@ TEST_F(UpdateDataProviderTest, GetData_EnabledExtensionWithData) {
   const std::string version = "0.1.2.3";
   AddExtension(kExtensionId1, version, true,
                disable_reason::DisableReason::DISABLE_NONE,
-               Manifest::EXTERNAL_PREF);
+               ManifestLocation::kExternalPref);
 
   ExtensionUpdateDataMap update_data;
   auto& info = update_data[kExtensionId1];
@@ -234,7 +239,7 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithNoReason) {
   const std::string version = "0.1.2.3";
   AddExtension(kExtensionId1, version, false,
                disable_reason::DisableReason::DISABLE_NONE,
-               Manifest::EXTERNAL_REGISTRY);
+               ManifestLocation::kExternalRegistry);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -258,7 +263,7 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_UnknownReason) {
   const std::string version = "0.1.2.3";
   AddExtension(kExtensionId1, version, false,
                disable_reason::DisableReason::DISABLE_REASON_LAST,
-               Manifest::COMMAND_LINE);
+               ManifestLocation::kCommandLine);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -283,7 +288,7 @@ TEST_F(UpdateDataProviderTest, GetData_DisabledExtension_WithReasons) {
   AddExtension(kExtensionId1, version, false,
                disable_reason::DisableReason::DISABLE_USER_ACTION |
                    disable_reason::DisableReason::DISABLE_CORRUPTED,
-               Manifest::EXTERNAL_POLICY_DOWNLOAD);
+               ManifestLocation::kExternalPolicyDownload);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -312,7 +317,7 @@ TEST_F(UpdateDataProviderTest,
                disable_reason::DisableReason::DISABLE_USER_ACTION |
                    disable_reason::DisableReason::DISABLE_CORRUPTED |
                    disable_reason::DisableReason::DISABLE_REASON_LAST,
-               Manifest::EXTERNAL_PREF_DOWNLOAD);
+               ManifestLocation::kExternalPrefDownload);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -342,9 +347,10 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions) {
   const std::string version2 = "9.8.7.6";
   AddExtension(kExtensionId1, version1, true,
                disable_reason::DisableReason::DISABLE_NONE,
-               Manifest::EXTERNAL_REGISTRY);
+               ManifestLocation::kExternalRegistry);
   AddExtension(kExtensionId2, version2, true,
-               disable_reason::DisableReason::DISABLE_NONE, Manifest::UNPACKED);
+               disable_reason::DisableReason::DISABLE_NONE,
+               ManifestLocation::kUnpacked);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -374,10 +380,10 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_DisabledExtension) {
   const std::string version2 = "9.8.7.6";
   AddExtension(kExtensionId1, version1, false,
                disable_reason::DisableReason::DISABLE_CORRUPTED,
-               Manifest::INTERNAL);
+               ManifestLocation::kInternal);
   AddExtension(kExtensionId2, version2, true,
                disable_reason::DisableReason::DISABLE_NONE,
-               Manifest::EXTERNAL_PREF_DOWNLOAD);
+               ManifestLocation::kExternalPrefDownload);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -410,7 +416,7 @@ TEST_F(UpdateDataProviderTest,
   const std::string version = "0.1.2.3";
   AddExtension(kExtensionId1, version, true,
                disable_reason::DisableReason::DISABLE_NONE,
-               Manifest::COMPONENT);
+               ManifestLocation::kComponent);
 
   ExtensionUpdateDataMap update_data;
   update_data[kExtensionId1] = {};
@@ -421,13 +427,13 @@ TEST_F(UpdateDataProviderTest,
                              {kExtensionId1, kExtensionId2});
 
   ASSERT_EQ(2UL, data.size());
-  ASSERT_NE(base::nullopt, data[0]);
+  ASSERT_NE(absl::nullopt, data[0]);
   EXPECT_EQ(version, data[0]->version.GetString());
   EXPECT_NE(nullptr, data[0]->installer.get());
   EXPECT_EQ(0UL, data[0]->disabled_reasons.size());
   EXPECT_EQ("other", data[0]->install_location);
 
-  EXPECT_EQ(base::nullopt, data[1]);
+  EXPECT_EQ(absl::nullopt, data[1]);
 }
 
 TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_CorruptExtension) {
@@ -441,10 +447,10 @@ TEST_F(UpdateDataProviderTest, GetData_MultipleExtensions_CorruptExtension) {
   const std::string initial_version = "0.0.0.0";
   AddExtension(kExtensionId1, version1, true,
                disable_reason::DisableReason::DISABLE_NONE,
-               Manifest::EXTERNAL_COMPONENT);
+               ManifestLocation::kExternalComponent);
   AddExtension(kExtensionId2, version2, true,
                disable_reason::DisableReason::DISABLE_NONE,
-               Manifest::EXTERNAL_POLICY);
+               ManifestLocation::kExternalPolicy);
 
   ExtensionUpdateDataMap update_data;
   auto& info1 = update_data[kExtensionId1];
@@ -475,7 +481,8 @@ TEST_F(UpdateDataProviderTest, GetData_InstallImmediately) {
   // Verify that GetData propagtes install_immediately correctly to the crx
   // installer.
   AddExtension(kExtensionId1, "0.1.1.3", true,
-               disable_reason::DisableReason::DISABLE_NONE, Manifest::INTERNAL);
+               disable_reason::DisableReason::DISABLE_NONE,
+               ManifestLocation::kInternal);
 
   scoped_refptr<UpdateDataProvider> data_provider =
       base::MakeRefCounted<UpdateDataProvider>(browser_context());

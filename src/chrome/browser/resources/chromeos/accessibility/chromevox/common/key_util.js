@@ -83,7 +83,7 @@ KeyUtil = class {
         keySequence.equals(util.prevKeySequence)) {
       const prevTime = util.modeKeyPressTime;
       const delta = currTime - prevTime;
-      if (prevTime > 0 && delta > 100 && delta < 300) /* Double tap */ {
+      if (!keyEvent.repeat && prevTime > 0 && delta < 300) /* Double tap */ {
         keySequence = util.prevKeySequence;
         keySequence.doubleTap = true;
         util.prevKeySequence = null;
@@ -242,7 +242,7 @@ KeyUtil = class {
         return msg('forward_key');
       case KeyCode.BROWSER_REFRESH:
         return msg('refresh_key');
-      case KeyCode.MEDIA_LAUNCH_APP2:
+      case KeyCode.ZOOM:
         return msg('toggle_full_screen_key');
       case KeyCode.MEDIA_LAUNCH_APP1:
         return msg('window_overview_key');

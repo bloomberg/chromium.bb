@@ -5,6 +5,7 @@
 #ifndef SERVICES_NETWORK_PUBLIC_CPP_LOAD_TIMING_INFO_MOJOM_TRAITS_H_
 #define SERVICES_NETWORK_PUBLIC_CPP_LOAD_TIMING_INFO_MOJOM_TRAITS_H_
 
+#include "base/component_export.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "net/base/load_timing_info.h"
 #include "services/network/public/mojom/load_timing_info.mojom-shared.h"
@@ -12,8 +13,9 @@
 namespace mojo {
 
 template <>
-struct StructTraits<network::mojom::LoadTimingInfoConnectTimingDataView,
-                    net::LoadTimingInfo::ConnectTiming> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::LoadTimingInfoConnectTimingDataView,
+                 net::LoadTimingInfo::ConnectTiming> {
   static base::TimeTicks dns_start(
       const net::LoadTimingInfo::ConnectTiming& obj) {
     return obj.dns_start;
@@ -49,8 +51,8 @@ struct StructTraits<network::mojom::LoadTimingInfoConnectTimingDataView,
 };
 
 template <>
-struct StructTraits<network::mojom::LoadTimingInfoDataView,
-                    net::LoadTimingInfo> {
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::LoadTimingInfoDataView, net::LoadTimingInfo> {
   static bool socket_reused(const net::LoadTimingInfo& obj) {
     return obj.socket_reused;
   }
@@ -94,6 +96,11 @@ struct StructTraits<network::mojom::LoadTimingInfoDataView,
 
   static base::TimeTicks receive_headers_end(const net::LoadTimingInfo& obj) {
     return obj.receive_headers_end;
+  }
+
+  static base::TimeTicks receive_non_informational_headers_start(
+      const net::LoadTimingInfo& obj) {
+    return obj.receive_non_informational_headers_start;
   }
 
   static base::TimeTicks first_early_hints_time(

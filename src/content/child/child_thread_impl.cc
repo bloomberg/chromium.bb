@@ -24,6 +24,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_listener.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -43,6 +44,7 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/power_scheduler/power_mode_arbiter.h"
 #include "content/child/browser_exposed_child_interfaces.h"
 #include "content/child/child_process.h"
 #include "content/common/child_process.mojom.h"
@@ -80,7 +82,11 @@
 #if defined(OS_POSIX)
 #include "base/posix/global_descriptors.h"
 #include "content/public/common/content_descriptors.h"
-#endif
+#if !defined(OS_ANDROID)
+#include "services/tracing/public/cpp/system_tracing_service.h"
+#include "services/tracing/public/cpp/traced_process.h"
+#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_POSIX)
 
 #if defined(OS_MAC)
 #include "base/mac/mach_port_rendezvous.h"
@@ -233,6 +239,14 @@ mojo::IncomingInvitation InitializeMojoIPCChannel() {
       std::move(endpoint), MOJO_ACCEPT_INVITATION_FLAG_LEAK_TRANSPORT_ENDPOINT);
 }
 
+// Callback passed to variations::ChildProcessFieldTrialSyncer. Notifies the
+// browser process that a field trial group was activated in this process.
+void FieldTrialActivatedCallback(
+    mojo::SharedRemote<mojom::FieldTrialRecorder> recorder,
+    const std::string& trial_name) {
+  recorder->FieldTrialActivated(trial_name);
+}
+
 }  // namespace
 
 // Implements the mojom ChildProcess interface and lives on the IO thread.
@@ -316,6 +330,14 @@ class ChildThreadImpl::IOThreadState
                        weak_main_thread_, std::move(receiver)));
   }
 
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  void EnableSystemTracingService(
+      mojo::PendingRemote<tracing::mojom::SystemTracingService> remote)
+      override {
+    tracing::TracedProcess::EnableSystemTracingService(std::move(remote));
+  }
+#endif
+
   // Make sure this isn't inlined so it shows up in stack traces, and also make
   // the function body unique by adding a log line, so it doesn't get merged
   // with other functions by link time optimizations (ICF).
@@ -330,13 +352,13 @@ class ChildThreadImpl::IOThreadState
     mojo::FusePipes(std::move(receiver), std::move(legacy_ipc_bootstrap_));
   }
 
-  void RunService(const std::string& service_name,
-                  mojo::PendingReceiver<service_manager::mojom::Service>
-                      receiver) override {
+  void RunServiceDeprecated(
+      const std::string& service_name,
+      mojo::ScopedMessagePipeHandle service_pipe) override {
     main_thread_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ChildThreadImpl::RunService, weak_main_thread_,
-                       service_name, std::move(receiver)));
+        FROM_HERE, base::BindOnce(&ChildThreadImpl::RunServiceDeprecated,
+                                  weak_main_thread_, service_name,
+                                  std::move(service_pipe)));
   }
 
   void BindServiceInterface(mojo::GenericPendingReceiver receiver) override {
@@ -524,16 +546,10 @@ scoped_refptr<base::SingleThreadTaskRunner> ChildThreadImpl::GetIOTaskRunner() {
 
 void ChildThreadImpl::SetFieldTrialGroup(const std::string& trial_name,
                                          const std::string& group_name) {
-  if (field_trial_syncer_)
-    field_trial_syncer_->OnSetFieldTrialGroup(trial_name, group_name);
-}
+  if (!field_trial_syncer_)
+    return;
 
-void ChildThreadImpl::OnFieldTrialGroupFinalized(
-    const std::string& trial_name,
-    const std::string& group_name) {
-  mojo::Remote<mojom::FieldTrialRecorder> field_trial_recorder;
-  BindHostReceiver(field_trial_recorder.BindNewPipeAndPassReceiver());
-  field_trial_recorder->FieldTrialActivated(trial_name);
+  field_trial_syncer_->SetFieldTrialGroupFromBrowser(trial_name, group_name);
 }
 
 void ChildThreadImpl::Init(const Options& options) {
@@ -626,6 +642,9 @@ void ChildThreadImpl::Init(const Options& options) {
     source_ptr->Init(std::move(remote_power_monitor));
   }
 
+  // Requires base::PowerMonitor to be initialized first.
+  power_scheduler::PowerModeArbiter::GetInstance()->OnThreadPoolAvailable();
+
 #if defined(OS_POSIX)
   // Check that --process-type is specified so we don't do this in unit tests
   // and single-process mode.
@@ -676,10 +695,14 @@ void ChildThreadImpl::Init(const Options& options) {
   // In single-process mode, there is no need to synchronize trials to the
   // browser process (because it's the same process).
   if (!IsInBrowserProcess()) {
-    field_trial_syncer_.reset(
-        new variations::ChildProcessFieldTrialSyncer(this));
-    field_trial_syncer_->InitFieldTrialObserving(
-        *base::CommandLine::ForCurrentProcess());
+    mojo::PendingRemote<mojom::FieldTrialRecorder> pending_remote;
+    BindHostReceiver(pending_remote.InitWithNewPipeAndPassReceiver());
+    mojo::SharedRemote<mojom::FieldTrialRecorder> shared_remote(
+        std::move(pending_remote));
+    field_trial_syncer_ =
+        variations::ChildProcessFieldTrialSyncer::CreateInstance(
+            base::BindRepeating(&FieldTrialActivatedCallback,
+                                std::move(shared_remote)));
   }
 }
 
@@ -809,9 +832,9 @@ void ChildThreadImpl::GetBackgroundTracingAgentProvider(
   background_tracing_agent_provider_->AddBinding(std::move(receiver));
 }
 
-void ChildThreadImpl::RunService(
+void ChildThreadImpl::RunServiceDeprecated(
     const std::string& service_name,
-    mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
+    mojo::ScopedMessagePipeHandle service_pipe) {
   DLOG(ERROR) << "Ignoring unhandled request to run service: " << service_name;
 }
 

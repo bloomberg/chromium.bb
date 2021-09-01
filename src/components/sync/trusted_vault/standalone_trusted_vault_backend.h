@@ -19,6 +19,10 @@
 #include "components/sync/protocol/local_trusted_vault.pb.h"
 #include "components/sync/trusted_vault/trusted_vault_connection.h"
 
+namespace base {
+class Clock;
+}  // namespace base
+
 namespace syncer {
 
 // Provides interfaces to store/remove keys to/from file storage.
@@ -81,7 +85,7 @@ class StandaloneTrustedVaultBackend
 
   // Sets/resets |primary_account_|.
   void SetPrimaryAccount(
-      const base::Optional<CoreAccountInfo>& primary_account);
+      const absl::optional<CoreAccountInfo>& primary_account);
 
   // Returns whether recoverability of the keys is degraded and user action is
   // required to add a new method.
@@ -91,14 +95,19 @@ class StandaloneTrustedVaultBackend
   // Registers a new trusted recovery method that can be used to retrieve keys.
   void AddTrustedRecoveryMethod(const std::string& gaia_id,
                                 const std::vector<uint8_t>& public_key,
+                                int method_type_hint,
                                 base::OnceClosure cb);
 
-  base::Optional<CoreAccountInfo> GetPrimaryAccountForTesting() const;
+  absl::optional<CoreAccountInfo> GetPrimaryAccountForTesting() const;
 
   sync_pb::LocalDeviceRegistrationInfo GetDeviceRegistrationInfoForTesting(
       const std::string& gaia_id);
 
   void SetRecoverabilityDegradedForTesting();
+
+  std::vector<uint8_t> GetLastAddedRecoveryMethodPublicKeyForTesting() const;
+
+  void SetClockForTesting(base::Clock* clock);
 
  private:
   friend class base::RefCountedThreadSafe<StandaloneTrustedVaultBackend>;
@@ -114,18 +123,29 @@ class StandaloneTrustedVaultBackend
   void MaybeRegisterDevice(const std::string& gaia_id);
 
   // Called when device registration for |gaia_id| is completed (either
-  // successfully or not).
+  // successfully or not). |data_| must contain LocalTrustedVaultPerUser for
+  // given |gaia_id|.
   void OnDeviceRegistered(const std::string& gaia_id,
-                          TrustedVaultRequestStatus status);
+                          TrustedVaultRegistrationStatus status);
 
   void OnKeysDownloaded(const std::string& gaia_id,
-                        TrustedVaultRequestStatus status,
+                        TrustedVaultDownloadKeysStatus status,
                         const std::vector<std::vector<uint8_t>>& vault_keys,
                         int last_vault_key_version);
 
   void AbandonConnectionRequest();
 
   void FulfillOngoingFetchKeys();
+
+  // Returns true if the last failed request time imply that upcoming requests
+  // should be throttled now (certain amount of time should pass since the last
+  // failed request). Handles the situation, when last failed request time is
+  // set to the future.
+  bool AreConnectionRequestsThrottled(const std::string& gaia_id);
+
+  // Records request failure time, that will be used to determine whether new
+  // requests should be throttled.
+  void RecordFailedConnectionRequestForThrottling(const std::string& gaia_id);
 
   const base::FilePath file_path_;
 
@@ -142,18 +162,41 @@ class StandaloneTrustedVaultBackend
 
   // Only current |primary_account_| can be used for communication with trusted
   // vault server.
-  base::Optional<CoreAccountInfo> primary_account_;
+  absl::optional<CoreAccountInfo> primary_account_;
+
+  // If AddTrustedRecoveryMethod() gets invoked before SetPrimaryAccount(), the
+  // execution gets deferred until SetPrimaryAccount() is invoked.
+  struct PendingTrustedRecoveryMethod {
+    PendingTrustedRecoveryMethod();
+    PendingTrustedRecoveryMethod(PendingTrustedRecoveryMethod&) = delete;
+    PendingTrustedRecoveryMethod& operator=(PendingTrustedRecoveryMethod&) =
+        delete;
+    PendingTrustedRecoveryMethod(PendingTrustedRecoveryMethod&&);
+    PendingTrustedRecoveryMethod& operator=(PendingTrustedRecoveryMethod&&);
+    ~PendingTrustedRecoveryMethod();
+
+    std::string gaia_id;
+    std::vector<uint8_t> public_key;
+    int method_type_hint;
+    base::OnceClosure completion_callback;
+  };
+  absl::optional<PendingTrustedRecoveryMethod> pending_trusted_recovery_method_;
 
   // Used to plumb FetchKeys() result to the caller.
   FetchKeysCallback ongoing_fetch_keys_callback_;
 
   // Account used in last FetchKeys() call.
-  base::Optional<std::string> ongoing_fetch_keys_gaia_id_;
+  absl::optional<std::string> ongoing_fetch_keys_gaia_id_;
 
   // Destroying this will cancel the ongoing request.
   std::unique_ptr<TrustedVaultConnection::Request> ongoing_connection_request_;
 
+  // Used to determine current time, set to base::DefaultClock in prod and can
+  // be overridden in tests.
+  base::Clock* clock_;
+
   bool is_recoverability_degraded_for_testing_ = false;
+  std::vector<uint8_t> last_added_recovery_method_public_key_for_testing_;
 };
 
 }  // namespace syncer

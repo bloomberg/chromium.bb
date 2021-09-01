@@ -69,8 +69,10 @@ public:
             return nullptr;
         }
 
-        return arena->make<GrConicEffect>(color, viewMatrix, coverage, localMatrix,
-                                          usesLocalCoords);
+        return arena->make([&](void* ptr) {
+            return new (ptr) GrConicEffect(color, viewMatrix, coverage, localMatrix,
+                                           usesLocalCoords);
+        });
     }
 
     ~GrConicEffect() override;
@@ -89,11 +91,9 @@ public:
 
     void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override;
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override;
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override;
 
 private:
-    friend class ::SkArenaAlloc; // for access to ctor
-
     GrConicEffect(const SkPMColor4f&, const SkMatrix& viewMatrix, uint8_t coverage,
                   const SkMatrix& localMatrix, bool usesLocalCoords);
 
@@ -136,7 +136,10 @@ public:
             return nullptr;
         }
 
-        return arena->make<GrQuadEffect>(color, viewMatrix, coverage, localMatrix, usesLocalCoords);
+        return arena->make([&](void* ptr) {
+            return new (ptr) GrQuadEffect(color, viewMatrix, coverage, localMatrix,
+                                          usesLocalCoords);
+        });
     }
 
     ~GrQuadEffect() override;
@@ -155,11 +158,9 @@ public:
 
     void getGLSLProcessorKey(const GrShaderCaps& caps, GrProcessorKeyBuilder* b) const override;
 
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const override;
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const override;
 
 private:
-    friend class ::SkArenaAlloc; // for access to ctor
-
     GrQuadEffect(const SkPMColor4f&, const SkMatrix& viewMatrix, uint8_t coverage,
                  const SkMatrix& localMatrix, bool usesLocalCoords);
 

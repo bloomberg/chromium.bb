@@ -25,9 +25,11 @@
 
 #include <memory>
 
+#include "base/dcheck_is_on.h"
 #include "base/macros.h"
+#include "base/types/pass_key.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink-forward.h"
-#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/frame/text_autosizer_page_info.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
@@ -37,6 +39,7 @@
 #include "third_party/blink/renderer/core/css/vision_deficiency.h"
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/settings_delegate.h"
+#include "third_party/blink/renderer/core/inspector/inspector_issue_storage.h"
 #include "third_party/blink/renderer/core/page/page_animator.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
@@ -55,12 +58,10 @@ class AnimationHost;
 }
 
 namespace blink {
-class AgentMetricsCollector;
 class AutoscrollController;
 class BrowserControls;
 class ChromeClient;
 class ConsoleMessageStorage;
-class InspectorIssueStorage;
 class ContextMenuController;
 class Document;
 class DragCaret;
@@ -102,28 +103,21 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   friend class Settings;
 
  public:
-  // It is up to the platform to ensure that non-null clients are provided where
-  // required.
-  struct CORE_EXPORT PageClients final {
-    STACK_ALLOCATED();
-
-   public:
-    PageClients();
-
-    ChromeClient* chrome_client;
-    DISALLOW_COPY_AND_ASSIGN(PageClients);
-  };
-
   // Any pages not owned by a web view should be created using this method.
-  static Page* CreateNonOrdinary(PageClients& pages_clients);
+  static Page* CreateNonOrdinary(
+      ChromeClient& chrome_client,
+      scheduler::WebAgentGroupScheduler& agent_group_scheduler);
 
   // An "ordinary" page is a fully-featured page owned by a web view.
   static Page* CreateOrdinary(
-      PageClients&,
+      ChromeClient& chrome_client,
       Page* opener,
       scheduler::WebAgentGroupScheduler& agent_group_scheduler);
 
-  explicit Page(PageClients&);
+  Page(base::PassKey<Page>,
+       ChromeClient& chrome_client,
+       scheduler::WebAgentGroupScheduler& agent_group_scheduler,
+       bool is_ordinary);
   ~Page() override;
 
   void CloseSoon();
@@ -196,9 +190,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   }
   ValidationMessageClient& GetValidationMessageClient() const {
     return *validation_message_client_;
-  }
-  AgentMetricsCollector* GetAgentMetricsCollector() const {
-    return agent_metrics_collector_.Get();
   }
   void SetValidationMessageClientForTesting(ValidationMessageClient*);
 
@@ -320,6 +311,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   ScrollbarTheme& GetScrollbarTheme() const;
 
+  scheduler::WebAgentGroupScheduler& GetAgentGroupScheduler() const;
   PageScheduler* GetPageScheduler() const;
 
   // PageScheduler::Delegate implementation.
@@ -328,6 +320,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   bool RequestBeginMainFrameNotExpected(bool new_state) override;
   void OnSetPageFrozen(bool is_frozen) override;
   bool LocalMainFrameNetworkIsAlmostIdle() const override;
+  bool IsFocused() const override;
 
   void AddAutoplayFlags(int32_t flags);
   void ClearAutoplayFlags();
@@ -384,6 +377,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   static void PrepareForLeakDetection();
 
+  // Fully invalidate paint of all local frames in this page.
+  void InvalidatePaint();
+
  private:
   friend class ScopedPagePauser;
 
@@ -395,13 +391,8 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   // Notify |plugins_changed_observers_| that plugins have changed.
   void NotifyPluginsChanged() const;
 
-  void SetAgentGroupSchedulerForNonOrdinary(
-      std::unique_ptr<blink::scheduler::WebAgentGroupScheduler>
-          agent_group_scheduler);
-  void SetPageScheduler(std::unique_ptr<PageScheduler>);
-
   void InvalidateColorScheme();
-  void InvalidatePaint();
+
   // Typically, the main frame and Page should both be owned by the embedder,
   // which must call Page::willBeDestroyed() prior to destroying Page. This
   // call detaches the main frame and clears this pointer, thus ensuring that
@@ -416,6 +407,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   // longer needed.
   Member<Frame> main_frame_;
 
+  scheduler::WebAgentGroupScheduler& agent_group_scheduler_;
   Member<PageAnimator> animator_;
   const Member<AutoscrollController> autoscroll_controller_;
   Member<ChromeClient> chrome_client_;
@@ -429,7 +421,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   Member<ScrollingCoordinator> scrolling_coordinator_;
   const Member<BrowserControls> browser_controls_;
   const Member<ConsoleMessageStorage> console_message_storage_;
-  const Member<InspectorIssueStorage> inspector_issue_storage_;
   const Member<TopDocumentRootScrollerController>
       global_root_scroller_controller_;
   const Member<VisualViewport> visual_viewport_;
@@ -441,9 +432,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   Member<ValidationMessageClient> validation_message_client_;
 
-  // Stored only for ordinary pages to avoid adding metrics from things like
-  // overlays, popups and SVG.
-  Member<AgentMetricsCollector> agent_metrics_collector_;
+  InspectorIssueStorage inspector_issue_storage_;
 
   Deprecation deprecation_;
   WebWindowFeatures window_features_;
@@ -490,12 +479,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   // A handle to notify the scheduler whether this page has other related
   // pages or not.
   FrameScheduler::SchedulingAffectingFeatureHandle has_related_pages_;
-
-  // A non-ordinary Page has its own AgentGroupScheduler. This field
-  // needs to be declared before |page_scheduler_| to make sure it
-  // outlives it.
-  std::unique_ptr<blink::scheduler::WebAgentGroupScheduler>
-      agent_group_scheduler_for_non_ordinary_;
 
   std::unique_ptr<PageScheduler> page_scheduler_;
 

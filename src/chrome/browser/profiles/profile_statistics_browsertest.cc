@@ -6,12 +6,12 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -109,7 +109,7 @@ class ProfileStatisticsAggregatorState {
   void SetRequiredStatCountAndCreateRunLoop(size_t required_stat_count) {
     EXPECT_GE(num_of_stats_categories_, required_stat_count);
     required_stat_count_ = required_stat_count;
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   void WaitForStats() {
@@ -184,8 +184,8 @@ IN_PROC_BROWSER_TEST_F(ProfileStatisticsBrowserTest, GatherStatistics) {
 
   ProfileStatisticsAggregatorState state;
   profile_stat->GatherStatistics(
-      base::Bind(&ProfileStatisticsAggregatorState::StatsCallback,
-                 base::Unretained(&state)));
+      base::BindRepeating(&ProfileStatisticsAggregatorState::StatsCallback,
+                          base::Unretained(&state)));
   state.WaitForStats();
 
   profiles::ProfileCategoryStats stats = state.GetStats();
@@ -205,15 +205,15 @@ IN_PROC_BROWSER_TEST_F(ProfileStatisticsBrowserTest,
   ProfileStatisticsAggregatorState state2;
 
   profile_stat->GatherStatistics(
-      base::Bind(&ProfileStatisticsAggregatorState::StatsCallback,
-                 base::Unretained(&state1)));
+      base::BindRepeating(&ProfileStatisticsAggregatorState::StatsCallback,
+                          base::Unretained(&state1)));
   state1.WaitForStats();
 
   state1.SetRequiredStatCountAndCreateRunLoop(stats_categories().size());
 
   profile_stat->GatherStatistics(
-      base::Bind(&ProfileStatisticsAggregatorState::StatsCallback,
-                 base::Unretained(&state2)));
+      base::BindRepeating(&ProfileStatisticsAggregatorState::StatsCallback,
+                          base::Unretained(&state2)));
   state1.WaitForStats();
   state2.WaitForStats();
 

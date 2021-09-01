@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/keyboard/keyboard_types.h"
 #include "base/files/file_path.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -29,6 +30,14 @@ class PolicyMap;
 void GetTestDataDirectory(base::FilePath* test_data_directory);
 
 class PolicyTest : public InProcessBrowserTest {
+ public:
+  // The possibilities for a boolean policy.
+  enum class BooleanPolicy {
+    kNotConfigured,
+    kFalse,
+    kTrue,
+  };
+
  protected:
   PolicyTest();
   ~PolicyTest() override;
@@ -60,22 +69,22 @@ class PolicyTest : public InProcessBrowserTest {
   // Sends a mouse click at the given coordinates to the current renderer.
   void PerformClick(int x, int y);
 
-  void SetPolicy(PolicyMap* policies,
-                 const char* key,
-                 base::Optional<base::Value> value);
+  static void SetPolicy(PolicyMap* policies,
+                        const char* key,
+                        absl::optional<base::Value> value);
 
-  void ApplySafeSearchPolicy(base::Optional<base::Value> legacy_safe_search,
-                             base::Optional<base::Value> google_safe_search,
-                             base::Optional<base::Value> legacy_youtube,
-                             base::Optional<base::Value> youtube_restrict);
+  void ApplySafeSearchPolicy(absl::optional<base::Value> legacy_safe_search,
+                             absl::optional<base::Value> google_safe_search,
+                             absl::optional<base::Value> legacy_youtube,
+                             absl::optional<base::Value> youtube_restrict);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void TestScreenshotFile(bool enabled);
 
   void SetEnableFlag(const keyboard::KeyboardEnableFlag& flag);
 
   void ClearEnableFlag(const keyboard::KeyboardEnableFlag& flag);
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   static GURL GetExpectedSearchURL(bool expect_safe_search);
 
@@ -96,7 +105,7 @@ class PolicyTest : public InProcessBrowserTest {
 
   void WaitForInterstitial(content::WebContents* tab);
 
-  int IsExtendedReportingCheckboxVisibleOnInterstitial();
+  int IsEnhancedProtectionMessageVisibleOnInterstitial();
 
   void SendInterstitialCommand(
       content::WebContents* tab,

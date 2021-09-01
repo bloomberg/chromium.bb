@@ -353,6 +353,11 @@ Timecode type to include in the frame and video stream metadata. Must be
 @samp{rp188hfr}, @samp{rp188any}, @samp{vitc}, @samp{vitc2}, or @samp{serial}.
 Defaults to @samp{none} (not included).
 
+In order to properly support 50/60 fps timecodes, the ordering of the queried
+timecode types for @samp{rp188any} is HFR, VITC1, VITC2 and LTC for >30 fps
+content. Note that this is slightly different to the ordering used by the
+DeckLink API, which is HFR, VITC1, LTC, VITC2.
+
 @item video_input
 Sets the video input source. Must be @samp{unset}, @samp{sdi}, @samp{hdmi},
 @samp{optical_sdi}, @samp{component}, @samp{composite} or @samp{s_video}.
@@ -1503,6 +1508,14 @@ ffmpeg -f x11grab -framerate 25 -video_size cif -i :0.0+10,20 out.mpg
 @subsection Options
 
 @table @option
+@item select_region
+Specify whether to select the grabbing area graphically using the pointer.
+A value of @code{1} prompts the user to select the grabbing area graphically
+by clicking and dragging. A single click with no dragging will select the
+whole screen. A region with zero width or height will also select the whole
+screen. This option overwrites the @var{video_size}, @var{grab_x}, and
+@var{grab_y} options. Default value is @code{0}.
+
 @item draw_mouse
 Specify whether to draw the mouse pointer. A value of @code{0} specifies
 not to draw the pointer. Default value is @code{1}.

@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.javascript;
 import android.util.JsonReader;
 import android.util.JsonToken;
 
+import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.NativeMethods;
@@ -24,6 +27,27 @@ public class WebContextFetcher {
     private static final String TAG = "WebContextFetcher";
 
     /**
+     * Wrapper object to encapsulate response.
+     */
+    public static class WebContextFetchResponse {
+        /**
+         * The context returned from the page converted from a JSON object
+         */
+        public Map<String, String> context = new HashMap<>();
+
+        /**
+         * A descriptive error message set if web context fetching failed.
+         * Currently if this is set 'context' will necessarily be empty.
+         */
+        @Nullable
+        public String error;
+    }
+
+    // TODO(benwgold): Delete this temporary stub kept to avoid temporarily breaking compilation.
+    public static void fetchContextWithJavascript(String script,
+            Callback<Map<String, String>> callback, RenderFrameHost renderFrameHost) {}
+
+    /**
      * A utility method which allows Java code to extract content from the page using
      * a Javascript string. The script should be a self executing function returning
      * a javascript dictionary object. The return value must be flat (so no nested fields)
@@ -35,15 +59,16 @@ public class WebContextFetcher {
      * @param renderFrameHost The frame to execute the JS on.
      *
      */
-    public static void fetchContextWithJavascript(String script,
-            Callback<Map<String, String>> callback, RenderFrameHost renderFrameHost) {
+    public static void fetchContextWithJavascriptUpdated(String script,
+            Callback<WebContextFetchResponse> callback, RenderFrameHost renderFrameHost) {
         WebContextFetcherJni.get().fetchContextWithJavascript(script, (jsonString) -> {
-            callback.onResult(convertJsonToMap(jsonString));
+            callback.onResult(convertJsonToResponse(jsonString));
         }, renderFrameHost);
     }
 
-    private static Map<String, String> convertJsonToMap(String jsonString) {
-        Map<String, String> fetchedContext = new HashMap<>();
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static WebContextFetchResponse convertJsonToResponse(String jsonString) {
+        WebContextFetchResponse fetchResponse = new WebContextFetchResponse();
         try {
             JsonReader jsonReader = new JsonReader(new StringReader(jsonString));
             // The JSON should be an object and not an array.
@@ -62,13 +87,14 @@ public class WebContextFetcher {
                     throw new AssertionError("Error reading JSON string value.");
                 }
                 String value = jsonReader.nextString();
-                fetchedContext.put(key, value);
+                fetchResponse.context.put(key, value);
             }
             jsonReader.endObject();
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to read web context json");
+        } catch (IOException | AssertionError e) {
+            Log.e(TAG, "Web context json was malformed: %s", e.getMessage());
+            fetchResponse.error = e.getMessage();
         }
-        return fetchedContext;
+        return fetchResponse;
     }
 
     @NativeMethods

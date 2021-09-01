@@ -8,15 +8,7 @@
 
 namespace cc {
 
-CompositorCommitData::CompositorCommitData()
-    : page_scale_delta(1.f),
-      is_pinch_gesture_active(false),
-      top_controls_delta(0.f),
-      bottom_controls_delta(0.f),
-      browser_controls_constraint(BrowserControlsState::kBoth),
-      browser_controls_constraint_changed(false),
-      scroll_gesture_did_end(false),
-      manipulation_info(kManipulationInfoNone) {}
+CompositorCommitData::CompositorCommitData() = default;
 
 CompositorCommitData::~CompositorCommitData() = default;
 
@@ -25,7 +17,7 @@ CompositorCommitData::ScrollUpdateInfo::ScrollUpdateInfo() = default;
 CompositorCommitData::ScrollUpdateInfo::ScrollUpdateInfo(
     ElementId id,
     gfx::ScrollOffset delta,
-    base::Optional<TargetSnapAreaElementIds> snap_target_ids)
+    absl::optional<TargetSnapAreaElementIds> snap_target_ids)
     : element_id(id),
       scroll_delta(delta),
       snap_target_element_ids(snap_target_ids) {}
