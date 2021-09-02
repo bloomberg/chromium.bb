@@ -42,7 +42,6 @@ class OnDeviceHeadSuggestInstallerPolicy : public ComponentInstallerPolicy {
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
   update_client::InstallerAttributes GetInstallerAttributes() const override;
-  std::vector<std::string> GetMimeTypes() const override;
 
   // The application (normalized) locale when this policy is created. Models
   // which do not match this locale will be rejected.
@@ -57,4 +56,4 @@ void RegisterOnDeviceHeadSuggestComponent(ComponentUpdateService* cus,
 
 }  // namespace component_updater
 
-#endif  // CHROME_BROWSER_COMPONENT_UPDATER_ON_DEVICE_HEAD_SUGGEST_COMPONENT_INSTALLER_H_
+#endif  // COMPONENTS_COMPONENT_UPDATER_INSTALLER_POLICIES_ON_DEVICE_HEAD_SUGGEST_COMPONENT_INSTALLER_H_

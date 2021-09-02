@@ -5,6 +5,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
@@ -806,11 +807,11 @@ TEST_F(MapCoordinatesTest, MulticolWithText) {
     </div>
   )HTML");
 
+  auto* const multicol =
+      To<LayoutBlockFlow>(GetLayoutBoxByElementId("multicol"));
   LayoutObject* target = GetLayoutObjectByElementId("sibling")->NextSibling();
   ASSERT_TRUE(target->IsText());
-  auto* flow_thread = To<LayoutBox>(target->Parent());
-  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
-  auto* multicol = GetLayoutBoxByElementId("multicol");
+  auto* const flow_thread = multicol->MultiColumnFlowThread();
 
   PhysicalOffset mapped_point =
       MapLocalToAncestor(target, flow_thread, PhysicalOffset(10, 70));
@@ -833,10 +834,10 @@ TEST_F(MapCoordinatesTest, MulticolWithInline) {
     </div>
   )HTML");
 
+  auto* const multicol =
+      To<LayoutBlockFlow>(GetLayoutBoxByElementId("multicol"));
   LayoutObject* target = GetLayoutObjectByElementId("target");
-  auto* flow_thread = To<LayoutBox>(target->Parent());
-  ASSERT_TRUE(flow_thread->IsLayoutFlowThread());
-  auto* multicol = GetLayoutBoxByElementId("multicol");
+  auto* const flow_thread = multicol->MultiColumnFlowThread();
 
   PhysicalOffset mapped_point =
       MapLocalToAncestor(target, flow_thread, PhysicalOffset(10, 70));
@@ -1313,7 +1314,13 @@ TEST_F(MapCoordinatesTest, Table) {
   LayoutBox* tr = td->ParentBox();
   ASSERT_TRUE(tr->IsTableRow());
   mapped_point = MapLocalToAncestor(td, tr, PhysicalOffset(2, 47));
-  EXPECT_EQ(PhysicalOffset(126, 47), mapped_point);
+  // TablesNG and Legacy row inline starts differ:
+  // TablesNG inline start does not include border-spacing,
+  // Legacy does.
+  if (RuntimeEnabledFeatures::LayoutNGTableEnabled())
+    EXPECT_EQ(PhysicalOffset(116, 47), mapped_point);
+  else
+    EXPECT_EQ(PhysicalOffset(126, 47), mapped_point);
   mapped_point = MapAncestorToLocal(td, tr, mapped_point);
   EXPECT_EQ(PhysicalOffset(2, 47), mapped_point);
 
@@ -1327,7 +1334,11 @@ TEST_F(MapCoordinatesTest, Table) {
   LayoutBox* table = tbody->ParentBox();
   ASSERT_TRUE(table->IsTable());
   mapped_point = MapLocalToAncestor(tbody, table, PhysicalOffset(126, 161));
-  EXPECT_EQ(PhysicalOffset(131, 290), mapped_point);
+  // TablesNG and Legacy row inline starts differ.
+  if (RuntimeEnabledFeatures::LayoutNGTableEnabled())
+    EXPECT_EQ(PhysicalOffset(141, 290), mapped_point);
+  else
+    EXPECT_EQ(PhysicalOffset(131, 290), mapped_point);
   mapped_point = MapAncestorToLocal(tbody, table, mapped_point);
   EXPECT_EQ(PhysicalOffset(126, 161), mapped_point);
 

@@ -7,7 +7,6 @@
 
 #include <deque>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -85,6 +84,7 @@ class BleSynchronizer : public BleSynchronizerBase {
       std::unique_ptr<device::BluetoothDiscoverySession> discovery_session);
   void OnErrorStartingDiscoverySession();
   void OnDiscoverySessionStopped();
+  void OnDiscoverySessionStoppedError();
 
   void ScheduleCommandCompletion();
   void CompleteCurrentCommand();

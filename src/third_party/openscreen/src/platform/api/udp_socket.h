@@ -32,6 +32,10 @@ class UdpSocket {
    public:
     virtual ~Client() = default;
 
+    // Method called when the UDP socket is bound. Default implementation
+    // does nothing, as clients may not care about the socket bind state.
+    virtual void OnBound(UdpSocket* socket) {}
+
     // Method called on socket configuration operations when an error occurs.
     // These specific APIs are:
     //   UdpSocket::Bind()

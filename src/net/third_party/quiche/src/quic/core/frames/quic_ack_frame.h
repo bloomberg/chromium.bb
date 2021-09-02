@@ -7,12 +7,12 @@
 
 #include <ostream>
 
-#include "net/third_party/quiche/src/quic/core/quic_interval.h"
-#include "net/third_party/quiche/src/quic/core/quic_interval_set.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
+#include "quic/core/quic_interval.h"
+#include "quic/core/quic_interval_set.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_flags.h"
 
 namespace quic {
 
@@ -128,7 +128,8 @@ struct QUIC_EXPORT_PRIVATE QuicAckFrame {
 // have been observed, return 0.
 inline QUIC_EXPORT_PRIVATE QuicPacketNumber
 LargestAcked(const QuicAckFrame& frame) {
-  DCHECK(frame.packets.Empty() || frame.packets.Max() == frame.largest_acked);
+  QUICHE_DCHECK(frame.packets.Empty() ||
+                frame.packets.Max() == frame.largest_acked);
   return frame.largest_acked;
 }
 

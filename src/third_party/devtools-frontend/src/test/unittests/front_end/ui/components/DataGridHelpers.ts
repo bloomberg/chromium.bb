@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as Coordinator from '../../../../../front_end/ui/components/render_coordinator/render_coordinator.js';
 import {assertElement, assertElements, dispatchClickEvent, dispatchKeyDownEvent} from '../../helpers/DOMHelpers.js';
 
+const coordinator = Coordinator.RenderCoordinator.RenderCoordinator.instance();
 const {assert} = chai;
 
 export const getFocusableCell = (shadowRoot: ShadowRoot) => {
@@ -77,9 +79,10 @@ export const emulateUserKeyboardNavigation =
       dispatchKeyDownEvent(table, {key});
     };
 
-export const emulateUserFocusingCellAt = (shadowRoot: ShadowRoot, position: {column: number, row: number}) => {
+export const emulateUserFocusingCellAt = async (shadowRoot: ShadowRoot, position: {column: number, row: number}) => {
   const cellToFocus = getCellByIndexes(shadowRoot, position);
   dispatchClickEvent(cellToFocus);
+  await coordinator.done();
   assertCurrentFocusedCellIs(shadowRoot, position);
 };
 
@@ -88,11 +91,12 @@ export const getValuesOfAllBodyRows = (shadowRoot: ShadowRoot, options: {onlyVis
 }): string[][] => {
   const rows = getAllRows(shadowRoot);
   return rows
-      .map((row, index) => {
+      .map(row => {
         // now decide if the row should be included or not
         const rowIsHidden = row.classList.contains('hidden');
+        const rowIndex = window.parseInt(row.getAttribute('aria-rowindex') || '-1', 10);
         return {
-          rowValues: getValuesOfBodyRowByAriaIndex(shadowRoot, index + 1, options),
+          rowValues: getValuesOfBodyRowByAriaIndex(shadowRoot, rowIndex, options),
           hidden: options.onlyVisible && rowIsHidden,
         };
       })

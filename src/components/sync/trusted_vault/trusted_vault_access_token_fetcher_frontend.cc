@@ -40,7 +40,7 @@ void TrustedVaultAccessTokenFetcherFrontend::FetchAccessToken(
     // The requester is likely not aware of a recent change to the primary
     // account yet (this is possible because requests come from another
     // sequence). Run |callback| immediately without access token.
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
@@ -50,32 +50,21 @@ void TrustedVaultAccessTokenFetcherFrontend::FetchAccessToken(
   }
 }
 
-void TrustedVaultAccessTokenFetcherFrontend::OnPrimaryAccountSet(
-    const CoreAccountInfo& primary_account_info) {
-  UpdatePrimaryAccountIfNeeded();
-}
-
-void TrustedVaultAccessTokenFetcherFrontend::OnPrimaryAccountCleared(
-    const CoreAccountInfo& previous_primary_account_info) {
-  UpdatePrimaryAccountIfNeeded();
-}
-
-void TrustedVaultAccessTokenFetcherFrontend::OnUnconsentedPrimaryAccountChanged(
-    const CoreAccountInfo& unconsented_primary_account_info) {
+void TrustedVaultAccessTokenFetcherFrontend::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event) {
   UpdatePrimaryAccountIfNeeded();
 }
 
 void TrustedVaultAccessTokenFetcherFrontend::UpdatePrimaryAccountIfNeeded() {
   CoreAccountInfo primary_account_info =
-      identity_manager_->GetPrimaryAccountInfo(
-          signin::ConsentLevel::kNotRequired);
+      identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
   if (primary_account_info.account_id == primary_account_) {
     return;
   }
 
   // Fulfill |pending_requests_| since they belong to the previous
   // |primary_account_|.
-  FulfillPendingRequests(base::nullopt);
+  FulfillPendingRequests(absl::nullopt);
   ongoing_access_token_fetch_ = nullptr;
   primary_account_ = primary_account_info.account_id;
 }
@@ -90,7 +79,7 @@ void TrustedVaultAccessTokenFetcherFrontend::StartAccessTokenFetch() {
           &TrustedVaultAccessTokenFetcherFrontend::OnAccessTokenFetchCompleted,
           base::Unretained(this)),
       signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable,
-      signin::ConsentLevel::kNotRequired);
+      signin::ConsentLevel::kSignin);
 }
 
 void TrustedVaultAccessTokenFetcherFrontend::OnAccessTokenFetchCompleted(
@@ -100,12 +89,12 @@ void TrustedVaultAccessTokenFetcherFrontend::OnAccessTokenFetchCompleted(
   if (error.state() == GoogleServiceAuthError::NONE) {
     FulfillPendingRequests(access_token_info);
   } else {
-    FulfillPendingRequests(base::nullopt);
+    FulfillPendingRequests(absl::nullopt);
   }
 }
 
 void TrustedVaultAccessTokenFetcherFrontend::FulfillPendingRequests(
-    base::Optional<signin::AccessTokenInfo> access_token_info) {
+    absl::optional<signin::AccessTokenInfo> access_token_info) {
   for (auto& pending_request : pending_requests_) {
     std::move(pending_request).Run(access_token_info);
   }

@@ -21,13 +21,13 @@
 namespace mojo {
 namespace core {
 
-BrokerHost::BrokerHost(base::ProcessHandle client_process,
+BrokerHost::BrokerHost(base::Process client_process,
                        ConnectionParams connection_params,
                        const ProcessErrorCallback& process_error_callback)
     : process_error_callback_(process_error_callback)
 #if defined(OS_WIN)
       ,
-      client_process_(ScopedProcessHandle::CloneFrom(client_process))
+      client_process_(std::move(client_process))
 #endif
 {
   CHECK(connection_params.endpoint().is_valid() ||
@@ -54,7 +54,7 @@ bool BrokerHost::PrepareHandlesForClient(
 #if defined(OS_WIN)
   bool handles_ok = true;
   for (auto& handle : *handles) {
-    if (!handle.TransferToProcess(client_process_.Clone()))
+    if (!handle.TransferToProcess(client_process_.Duplicate()))
       handles_ok = false;
   }
   return handles_ok;
@@ -91,9 +91,9 @@ bool BrokerHost::SendChannel(PlatformHandle handle) {
 
 #if defined(OS_WIN)
 
-void BrokerHost::SendNamedChannel(const base::StringPiece16& pipe_name) {
+void BrokerHost::SendNamedChannel(base::WStringPiece pipe_name) {
   InitData* data;
-  base::char16* name_data;
+  wchar_t* name_data;
   Channel::MessagePtr message = CreateBrokerMessage(
       BrokerMessageType::INIT, 0, sizeof(*name_data) * pipe_name.length(),
       &data, reinterpret_cast<void**>(&name_data));

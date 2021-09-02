@@ -9,7 +9,7 @@ namespace chromeos {
 namespace input_method {
 
 MockComponentExtensionIMEManagerDelegate::
-    MockComponentExtensionIMEManagerDelegate() {}
+    MockComponentExtensionIMEManagerDelegate() = default;
 
 MockComponentExtensionIMEManagerDelegate::
     ~MockComponentExtensionIMEManagerDelegate() = default;
@@ -24,5 +24,11 @@ void MockComponentExtensionIMEManagerDelegate::Load(
     const std::string& extension_id,
     const std::string& manifest,
     const base::FilePath& path) {}
+
+bool MockComponentExtensionIMEManagerDelegate::IsInLoginLayoutAllowlist(
+    const std::string& layout) {
+  return login_layout_set_.find(layout) != login_layout_set_.end();
+}
+
 }  // namespace input_method
 }  // namespace chromeos

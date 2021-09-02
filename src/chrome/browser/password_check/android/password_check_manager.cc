@@ -27,7 +27,7 @@
 
 namespace {
 
-base::string16 GetDisplayUsername(const base::string16& username) {
+std::u16string GetDisplayUsername(const std::u16string& username) {
   return username.empty()
              ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN)
              : username;
@@ -62,12 +62,13 @@ CompromisedCredentialForUI::~CompromisedCredentialForUI() = default;
 
 PasswordCheckManager::PasswordCheckManager(Profile* profile, Observer* observer)
     : observer_(observer), profile_(profile) {
-  observed_saved_passwords_presenter_.Add(&saved_passwords_presenter_);
-  observed_insecure_credentials_manager_.Add(&insecure_credentials_manager_);
-  observed_bulk_leak_check_service_.Add(
+  observed_saved_passwords_presenter_.Observe(&saved_passwords_presenter_);
+  observed_insecure_credentials_manager_.Observe(
+      &insecure_credentials_manager_);
+  observed_bulk_leak_check_service_.Observe(
       BulkLeakCheckServiceFactory::GetForProfile(profile));
 
-  // Instructs the presenter and provider to initialize and built their caches.
+  // Instructs the presenter and provider to initialize and build their caches.
   // This will soon after invoke OnCompromisedCredentialsChanged(). Calls to
   // GetCompromisedCredentials() that might happen until then will return an
   // empty list.
@@ -109,7 +110,7 @@ base::Time PasswordCheckManager::GetLastCheckTimestamp() {
 }
 
 int PasswordCheckManager::GetCompromisedCredentialsCount() const {
-  return insecure_credentials_manager_.GetCompromisedCredentials().size();
+  return insecure_credentials_manager_.GetInsecureCredentials().size();
 }
 
 int PasswordCheckManager::GetSavedPasswordsCount() const {
@@ -119,7 +120,7 @@ int PasswordCheckManager::GetSavedPasswordsCount() const {
 std::vector<CompromisedCredentialForUI>
 PasswordCheckManager::GetCompromisedCredentials() const {
   std::vector<CredentialWithPassword> credentials =
-      insecure_credentials_manager_.GetCompromisedCredentials();
+      insecure_credentials_manager_.GetInsecureCredentials();
   std::vector<CompromisedCredentialForUI> ui_credentials;
   ui_credentials.reserve(credentials.size());
   for (const auto& credential : credentials) {
@@ -132,6 +133,28 @@ void PasswordCheckManager::UpdateCredential(
     const password_manager::CredentialView& credential,
     base::StringPiece new_password) {
   insecure_credentials_manager_.UpdateCredential(credential, new_password);
+}
+
+void PasswordCheckManager::OnEditCredential(
+    const password_manager::CredentialView& credential,
+    const base::android::JavaParamRef<jobject>& context,
+    const base::android::JavaParamRef<jobject>& settings_launcher) {
+  password_manager::SavedPasswordsPresenter::SavedPasswordsView forms =
+      insecure_credentials_manager_.GetSavedPasswordsFor(credential);
+  if (forms.empty() || credential_edit_bridge_)
+    return;
+
+  const PasswordForm form =
+      insecure_credentials_manager_.GetSavedPasswordsFor(credential)[0];
+
+  credential_edit_bridge_ = CredentialEditBridge::MaybeCreate(
+      std::move(form), CredentialEditBridge::IsInsecureCredential(true),
+      saved_passwords_presenter_.GetUsernamesForRealm(
+          credential.signon_realm, form.IsUsingAccountStore()),
+      &saved_passwords_presenter_, nullptr,
+      base::BindOnce(&PasswordCheckManager::OnEditUIDismissed,
+                     base::Unretained(this)),
+      context, settings_launcher);
 }
 
 void PasswordCheckManager::RemoveCredential(
@@ -175,7 +198,7 @@ void PasswordCheckManager::OnSavedPasswordsChanged(
   }
 }
 
-void PasswordCheckManager::OnCompromisedCredentialsChanged(
+void PasswordCheckManager::OnInsecureCredentialsChanged(
     password_manager::InsecureCredentialsManager::CredentialsView credentials) {
   if (AreScriptsRefreshed()) {
     FulfillPrecondition(kKnownCredentialsFetched);
@@ -191,6 +214,9 @@ void PasswordCheckManager::OnStateChanged(State state) {
     profile_->GetPrefs()->SetDouble(
         password_manager::prefs::kLastTimePasswordCheckCompleted,
         base::Time::Now().ToDoubleT());
+    profile_->GetPrefs()->SetTime(
+        password_manager::prefs::kSyncedLastTimePasswordCheckCompleted,
+        base::Time::Now());
   }
 
   if (state != State::kRunning) {
@@ -216,7 +242,7 @@ void PasswordCheckManager::OnCredentialDone(
   }
   if (is_leaked) {
     // TODO(crbug.com/1092444): Trigger single-credential update.
-    insecure_credentials_manager_.SaveCompromisedCredential(credential);
+    insecure_credentials_manager_.SaveInsecureCredential(credential);
   }
 }
 
@@ -278,8 +304,9 @@ CompromisedCredentialForUI PasswordCheckManager::MakeUICredential(
 }
 
 void PasswordCheckManager::OnBulkCheckServiceShutDown() {
-  observed_bulk_leak_check_service_.Remove(
-      BulkLeakCheckServiceFactory::GetForProfile(profile_));
+  DCHECK(observed_bulk_leak_check_service_.IsObservingSource(
+      BulkLeakCheckServiceFactory::GetForProfile(profile_)));
+  observed_bulk_leak_check_service_.Reset();
 }
 
 PasswordCheckUIStatus PasswordCheckManager::GetUIStatus(State state) const {
@@ -310,8 +337,17 @@ PasswordCheckUIStatus PasswordCheckManager::GetUIStatus(State state) const {
 bool PasswordCheckManager::CanUseAccountCheck() const {
   SyncState sync_state = password_manager_util::GetPasswordSyncState(
       ProfileSyncServiceFactory::GetForProfile(profile_));
-  return sync_state == SyncState::SYNCING_NORMAL_ENCRYPTION ||
-         sync_state == SyncState::ACCOUNT_PASSWORDS_ACTIVE_NORMAL_ENCRYPTION;
+  switch (sync_state) {
+    case SyncState::kNotSyncing:
+      ABSL_FALLTHROUGH_INTENDED;
+    case SyncState::kSyncingWithCustomPassphrase:
+      return false;
+
+    case SyncState::kSyncingNormalEncryption:
+      ABSL_FALLTHROUGH_INTENDED;
+    case SyncState::kAccountPasswordsActiveNormalEncryption:
+      return true;
+  }
 }
 
 bool PasswordCheckManager::AreScriptsRefreshed() const {
@@ -347,12 +383,18 @@ bool PasswordCheckManager::ShouldFetchPasswordScripts() const {
 
   // Password change scripts are using password generation, so automatic
   // password change should not be offered to non sync users.
-  if (sync_state == password_manager::NOT_SYNCING) {
-    return false;
-  }
+  switch (sync_state) {
+    case SyncState::kNotSyncing:
+      return false;
 
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kPasswordScriptsFetching);
+    case SyncState::kSyncingWithCustomPassphrase:
+      ABSL_FALLTHROUGH_INTENDED;
+    case SyncState::kSyncingNormalEncryption:
+      ABSL_FALLTHROUGH_INTENDED;
+    case SyncState::kAccountPasswordsActiveNormalEncryption:
+      return base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordScriptsFetching);
+  }
 }
 
 bool PasswordCheckManager::IsPreconditionFulfilled(
@@ -368,4 +410,8 @@ void PasswordCheckManager::FulfillPrecondition(CheckPreconditions condition) {
 
 void PasswordCheckManager::ResetPrecondition(CheckPreconditions condition) {
   fulfilled_preconditions_ &= ~condition;
+}
+
+void PasswordCheckManager::OnEditUIDismissed() {
+  credential_edit_bridge_.reset();
 }

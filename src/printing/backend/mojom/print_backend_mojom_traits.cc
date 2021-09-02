@@ -7,6 +7,7 @@
 #include <map>
 
 #include "base/logging.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/gfx/geometry/mojom/geometry.mojom-shared.h"
 #include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 
@@ -71,6 +72,39 @@ class DuplicateChecker {
 };
 
 }  // namespace
+
+// static
+bool StructTraits<printing::mojom::PrinterBasicInfoDataView,
+                  printing::PrinterBasicInfo>::
+    Read(printing::mojom::PrinterBasicInfoDataView data,
+         printing::PrinterBasicInfo* out) {
+  if (!data.ReadPrinterName(&out->printer_name) ||
+      !data.ReadDisplayName(&out->display_name) ||
+      !data.ReadPrinterDescription(&out->printer_description)) {
+    return false;
+  }
+  out->printer_status = data.printer_status();
+  out->is_default = data.is_default();
+  if (!data.ReadOptions(&out->options))
+    return false;
+
+  // There should be a non-empty value for `printer_name` since it needs to
+  // uniquely identify the printer with the operating system among multiple
+  // possible destinations.
+  if (out->printer_name.empty()) {
+    DLOG(ERROR) << "The printer name must not be empty.";
+    return false;
+  }
+  // There should be a non-empty value for `display_name` since it needs to
+  // uniquely identify the printer in user dialogs among multiple possible
+  // destinations.
+  if (out->display_name.empty()) {
+    DLOG(ERROR) << "The printer's display name must not be empty.";
+    return false;
+  }
+
+  return true;
+}
 
 // static
 bool StructTraits<printing::mojom::PaperDataView,

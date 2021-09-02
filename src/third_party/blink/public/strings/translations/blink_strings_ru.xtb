@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">баннер</translation>
 <translation id="145015347812617860">Закладок: <ph name="COUNT" /></translation>
 <translation id="1480676835519562650">можно выбрать несколько. Выбрано: <ph name="SELECTED" /> из <ph name="COUNT" /></translation>
+<translation id="1588438908519853928">Обычный</translation>
 <translation id="1589122976691792535">регион</translation>
 <translation id="1591562245178063882">В этом месяце</translation>
 <translation id="1637811476055996098">Выбрать файлы</translation>
@@ -84,9 +85,10 @@
 <translation id="3175736971608411871">таймер</translation>
 <translation id="3199563858620722075">поле со списком</translation>
 <translation id="3220661731597678625">текущий этап</translation>
+<translation id="3321030238473337787">Скорость воспроизведения</translation>
 <translation id="3329013043687509092">Насыщенность</translation>
 <translation id="3450233048674729344">Значение должно быть меньше или равно <ph name="MAXIMUM" />.</translation>
-<translation id="3486220673238053218">описание</translation>
+<translation id="3486220673238053218">узнать определение</translation>
 <translation id="3557673793733683882">заголовок <ph name="HEADING_LEVEL" /></translation>
 <translation id="3670698553867754311">выбор недели</translation>
 <translation id="3685101356851116974">Изображение без описания</translation>
@@ -111,11 +113,12 @@
 <translation id="4248100235867064564">панель меню</translation>
 <translation id="4293574643247337246">заголовок страницы</translation>
 <translation id="4360991593054037559">Введите допустимое значение. Ближайшие допустимые значения: <ph name="VALID_VALUE_LOW" /> и <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4371899966896349864">Скрыть меню скорости воспроизведения</translation>
 <translation id="4384249794467006333">У этого изображения нет ярлыка. Чтобы получить описания изображений, откройте меню "Ещё" в правом верхнем углу экрана.</translation>
 <translation id="4384583879834880242">Вопросы и ответы</translation>
 <translation id="4444765639179266822">Похоже, тут написано "<ph name="OCR_TEXT" />"</translation>
 <translation id="4446524499724042288">ссылка на словарную статью</translation>
-<translation id="4522570452068850558">Подробнее</translation>
+<translation id="4522570452068850558">Детали</translation>
 <translation id="4576178047100686001">У этого изображения нет ярлыка. Чтобы получить описания изображений, откройте меню "Ещё" в левом верхнем углу экрана.</translation>
 <translation id="4597532268155981612">форма</translation>
 <translation id="4661075872484491155">tree</translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">заголовок строки</translation>
 <translation id="5143125788380636750">эпилог</translation>
 <translation id="5164977714490026579">Значение должно быть больше или равно <ph name="MINIMUM" />.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> ПБ</translation>
 <translation id="5307600278924710095">Введите часть адреса до символа "<ph name="ATSIGN" />". Адрес "<ph name="INVALIDADDRESS" />" неполный.</translation>
 <translation id="5334352251556557839">Не удалось воспроизвести медиафайл.</translation>
 <translation id="537648784377940524">Минимальная дата (<ph name="MIN_DATE_OR_TIME" />) должна быть раньше максимальной даты (<ph name="MAX_DATE_OR_TIME" />)</translation>
+<translation id="5378437566635403538">развернуто, открыто диалоговое окно.</translation>
 <translation id="5406322316791861025">фигура</translation>
 <translation id="5425179576310518467">текущая дата</translation>
 <translation id="5453733299334684579">элемент дерева</translation>
 <translation id="5466621249238537318">Выберите один или несколько файлов.</translation>
 <translation id="5468998798572797635">выход из полноэкранного режима</translation>
+<translation id="5516235301412634559">0,75</translation>
 <translation id="5516424706154626233">окно выбора даты</translation>
 <translation id="5537725057119320332">Cast</translation>
 <translation id="5546461542133609677">включение звука</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">дополнительные параметры</translation>
 <translation id="576709008726043716">введение</translation>
 <translation id="57838592816432529">Отключить звук</translation>
+<translation id="5786442179789148008">Показать меню скорости воспроизведения</translation>
+<translation id="5787939484346677755">развернуто, доступны варианты автозаполнения.</translation>
 <translation id="5860033963881614850">ВЫКЛ</translation>
 <translation id="588258955323874662">Полноэкранный режим</translation>
 <translation id="5888666972993069672">Транслируется на устройство "<ph name="DEVICE_FRIENDLY_NAME" />"</translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">ВКЛ</translation>
 <translation id="5939518447894949180">Сбросить</translation>
 <translation id="5966707198760109579">Неделя</translation>
+<translation id="5985507339671257014">0,5</translation>
 <translation id="5987525920412732405">кнопка счетчика</translation>
 <translation id="6011459053400940133">регулятор громкости</translation>
 <translation id="6015796118275082299">Год</translation>
 <translation id="6023896073578205740">список</translation>
 <translation id="6150588977291308318">библиография</translation>
 <translation id="6164829606128959761">счетчик</translation>
+<translation id="6165053282446038410">развернуто, доступных вариантов автозаполнения: <ph name="COUNT" />.</translation>
 <translation id="6166809985690652833">послесловие</translation>
 <translation id="6209276755895393898">Кажется, это "<ph name="DESCRIPTION" />"</translation>
 <translation id="6212595056017402527">текущая страница</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="668171684555832681">Другой...</translation>
 <translation id="6692633176391053278">счетчик</translation>
+<translation id="6696580792574109116">поле для выбора месяца</translation>
 <translation id="6709093583001123835">Необходимое значение: <ph name="VALUE" /></translation>
 <translation id="6709570249143506788">Плохое качество воспроизведения</translation>
 <translation id="6755330956360078551">подсказка</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">отключить звук</translation>
 <translation id="6885760532393684712">каталог</translation>
 <translation id="689129560213475294">выпускные данные</translation>
+<translation id="6919891270253167948">1,5</translation>
 <translation id="6934078000481955284">цитата</translation>
 <translation id="693476918119313863">Заголовок</translation>
 <translation id="6941933287844615239">скачать файл</translation>
 <translation id="6981594929165378967">вставка</translation>
+<translation id="698788488269350478">развернуто.</translation>
 <translation id="6989848892321993519">Текст должен быть не короче <ph name="MIN_CHARACTERS" /> симв. Длина текста сейчас: 1 символ.</translation>
 <translation id="7034405885550056553">рекомендация</translation>
 <translation id="709897737746224366">Введите данные в указанном формате.</translation>
 <translation id="7102274145889307184">текущее местоположение</translation>
 <translation id="7118469954320184356">Нет описания.</translation>
 <translation id="7139483182332611405">вступление</translation>
+<translation id="7198226213493847604">всплывающая кнопка меню</translation>
 <translation id="7214187073215825913">информация о содержании</translation>
 <translation id="7238347055216017155">выделение</translation>
 <translation id="7263440858009898357">Выберите один из пунктов списка.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">Чтобы получить недостающие описания изображений, откройте контекстное меню.</translation>
 <translation id="7750228210027921155">Картинка в картинке</translation>
 <translation id="775297008183122718">Неверная запись</translation>
+<translation id="7782515065589691344">1,25</translation>
 <translation id="7789962463072032349">Пауза</translation>
 <translation id="7802800022689234070">треугольник развертывания</translation>
 <translation id="7852167693871241274">Ползунок для регулировки тона</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">ссылка на примечание</translation>
 <translation id="811583516810654505">Загружается описание...</translation>
 <translation id="8117451130807776954">На этой неделе</translation>
+<translation id="8131955114056917397">0,25</translation>
 <translation id="8199524924445686405">гггг</translation>
 <translation id="8208673686607688524">выбор местного времени и даты</translation>
 <translation id="8261464734335370856">Орфографическая ошибка</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">управлять воспроизведением на удаленных устройствах</translation>
 <translation id="862370744433916922">подзаголовок</translation>
 <translation id="8634971699417195529">Показать окно выбора месяца</translation>
+<translation id="8637593834423658414">1,75</translation>
+<translation id="8668988909814782445">Переносить строки</translation>
 <translation id="8711688047404765493">выход</translation>
 <translation id="8750798805984357768">Выберите один из вариантов.</translation>
 <translation id="8808573423886751634">глава</translation>
 <translation id="8845239796550121995">Транслируется на телевизор</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8861621546968757188">всплывающая кнопка диалогового окна</translation>
 <translation id="8875657656876809964">Ошибка при воспроизведении видео</translation>
 <translation id="8889402386540077796">Тон</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>

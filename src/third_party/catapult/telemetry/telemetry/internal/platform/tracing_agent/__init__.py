@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
+import six
 from py_trace_event import trace_event
 
 
-class TracingAgent(object):
+class TracingAgent(six.with_metaclass(trace_event.TracedMetaClass, object)):
   """A tracing agent provided by the platform.
 
   A tracing agent can gather data from StartAgentTracing() until
@@ -21,8 +23,6 @@ class TracingAgent(object):
   parameters so the agents can be dynamically constructed in
   tracing_controller_backend.
   """
-
-  __metaclass__ = trace_event.TracedMetaClass
 
   def __init__(self, platform_backend, config):
     del config  # unused

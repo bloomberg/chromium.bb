@@ -22,14 +22,6 @@ var GaiaActionButtonsTest = class extends PolymerTest {
     return gaia_action_buttons_test.suiteName;
   }
 
-  /** @override */
-  get extraLibraries() {
-    return [
-      '//third_party/mocha/mocha.js',
-      '//chrome/test/data/webui/mocha_adapter.js',
-    ];
-  }
-
   /** @param {string} testName The name of the test to run. */
   runMochaTest(testName) {
     runMochaTest(this.suiteName, testName);

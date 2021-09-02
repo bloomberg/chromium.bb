@@ -6,8 +6,8 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
-#include "chrome/browser/prefetch/no_state_prefetch/prerender_manager_factory.h"
-#include "components/no_state_prefetch/browser/prerender_manager.h"
+#include "chrome/browser/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/visibility.h"
@@ -193,12 +193,12 @@ bool PageLoadMetricsWebContentsObserver::IsExtension() const {
 }
 
 bool PageLoadMetricsWebContentsObserver::IsPrerender() const {
-  auto* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForBrowserContext(
+  auto* no_state_prefetch_manager =
+      prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
           web_contents()->GetBrowserContext());
-  if (!prerender_manager)
+  if (!no_state_prefetch_manager)
     return false;
-  return prerender_manager->IsWebContentsPrerendering(web_contents());
+  return no_state_prefetch_manager->IsWebContentsPrerendering(web_contents());
 }
 
 bool PageLoadMetricsWebContentsObserver::IsDevTools() const {
@@ -301,8 +301,12 @@ void PageLoadMetricsWebContentsObserver::DidStopLoading() {
 
 void PageLoadMetricsWebContentsObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (!navigation_handle->HasCommitted())
+  // TODO(https://crbug.com/1190112): Using IsCurrent as a proxy for "is in
+  // primary FrameTree". Add support for Prerender.
+  if (!navigation_handle->HasCommitted() ||
+      !navigation_handle->GetRenderFrameHost()->IsCurrent()) {
     return;
+  }
 
   DCHECK(is_loading_);
 

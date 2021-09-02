@@ -1,5 +1,8 @@
 export const description = `
 render pass descriptor validation tests.
+
+TODO: per-test descriptions, make test names more succinct
+TODO: review for completeness
 `;
 
 import { makeTestGroup } from '../../../common/framework/test_group.js';
@@ -25,11 +28,11 @@ class F extends ValidationTest {
       arrayLayerCount = 1,
       mipLevelCount = 1,
       sampleCount = 1,
-      usage = GPUTextureUsage.OUTPUT_ATTACHMENT,
+      usage = GPUTextureUsage.RENDER_ATTACHMENT,
     } = options;
 
     return this.device.createTexture({
-      size: { width, height, depth: arrayLayerCount },
+      size: { width, height, depthOrArrayLayers: arrayLayerCount },
       format,
       mipLevelCount,
       sampleCount,
@@ -40,23 +43,24 @@ class F extends ValidationTest {
   getColorAttachment(
     texture: GPUTexture,
     textureViewDescriptor?: GPUTextureViewDescriptor
-  ): GPURenderPassColorAttachmentDescriptor {
-    const attachment = texture.createView(textureViewDescriptor);
+  ): GPURenderPassColorAttachment {
+    const view = texture.createView(textureViewDescriptor);
 
     return {
-      attachment,
+      view,
       loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+      storeOp: 'store',
     };
   }
 
   getDepthStencilAttachment(
     texture: GPUTexture,
     textureViewDescriptor?: GPUTextureViewDescriptor
-  ): GPURenderPassDepthStencilAttachmentDescriptor {
-    const attachment = texture.createView(textureViewDescriptor);
+  ): GPURenderPassDepthStencilAttachment {
+    const view = texture.createView(textureViewDescriptor);
 
     return {
-      attachment,
+      view,
       depthLoadValue: 1.0,
       depthStoreOp: 'store',
       stencilLoadValue: 0,
@@ -334,9 +338,10 @@ g.test('it_is_invalid_to_set_resolve_target_if_color_attachment_is_non_multisamp
     const descriptor: GPURenderPassDescriptor = {
       colorAttachments: [
         {
-          attachment: colorTexture.createView(),
+          view: colorTexture.createView(),
           resolveTarget: resolveTargetTexture.createView(),
           loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
+          storeOp: 'store',
         },
       ],
     };
@@ -415,7 +420,7 @@ g.test('it_is_invalid_to_use_a_resolve_target_with_mipmap_level_count_greater_th
   }
 );
 
-g.test('it_is_invalid_to_use_a_resolve_target_whose_usage_is_not_output_attachment').fn(async t => {
+g.test('it_is_invalid_to_use_a_resolve_target_whose_usage_is_not_RENDER_ATTACHMENT').fn(async t => {
   const multisampledColorTexture = t.createTexture({ sampleCount: 4 });
   const resolveTargetTexture = t.createTexture({
     usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.COPY_DST,

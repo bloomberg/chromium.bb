@@ -13,14 +13,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "components/cloud_devices/common/printer_description.h"
 #include "printing/backend/print_backend.h"
 #include "printing/mojom/print.mojom.h"
-
-#if defined(OS_CHROMEOS)
-#include "base/feature_list.h"
-#include "printing/printing_features.h"
-#endif  // defined(OS_CHROMEOS)
 
 namespace printer = cloud_devices::printer;
 
@@ -240,9 +236,7 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
   pin.set_value(semantic_info.pin_supported);
   pin.SaveTo(&description);
 
-  if (base::FeatureList::IsEnabled(
-          printing::features::kAdvancedPpdAttributes) &&
-      !semantic_info.advanced_capabilities.empty()) {
+  if (!semantic_info.advanced_capabilities.empty()) {
     printer::VendorCapabilities vendor_capabilities =
         GetVendorCapabilities(semantic_info);
     vendor_capabilities.SaveTo(&description);

@@ -4,9 +4,11 @@
 
 #include "chrome/browser/safe_browsing/android/password_reuse_controller_android.h"
 
+#include <memory>
+
 #include "base/callback.h"
 #include "chrome/browser/ui/android/safe_browsing/password_reuse_dialog_view_android.h"
-#include "components/safe_browsing/content/password_protection/metrics_util.h"
+#include "components/safe_browsing/core/password_protection/metrics_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -33,7 +35,7 @@ PasswordReuseControllerAndroid::~PasswordReuseControllerAndroid() {
 }
 
 void PasswordReuseControllerAndroid::ShowDialog() {
-  dialog_view_.reset(new PasswordReuseDialogViewAndroid(this));
+  dialog_view_ = std::make_unique<PasswordReuseDialogViewAndroid>(this);
   DCHECK(window_android_);
   dialog_view_->Show(window_android_);
 }
@@ -44,20 +46,20 @@ void PasswordReuseControllerAndroid::CloseDialog() {
   delete this;
 }
 
-base::string16 PasswordReuseControllerAndroid::GetButtonText() const {
+std::u16string PasswordReuseControllerAndroid::GetButtonText() const {
   return l10n_util::GetStringUTF16(IDS_CLOSE);
 }
 
-base::string16 PasswordReuseControllerAndroid::GetWarningDetailText(
+std::u16string PasswordReuseControllerAndroid::GetWarningDetailText(
     std::vector<size_t>* placeholder_offsets) const {
   return service_->GetWarningDetailText(password_type_, placeholder_offsets);
 }
 
-base::string16 PasswordReuseControllerAndroid::GetTitle() const {
+std::u16string PasswordReuseControllerAndroid::GetTitle() const {
   return l10n_util::GetStringUTF16(IDS_PAGE_INFO_CHANGE_PASSWORD_SUMMARY);
 }
 
-const std::vector<base::string16>
+const std::vector<std::u16string>
 PasswordReuseControllerAndroid::GetPlaceholdersForSavedPasswordWarningText()
     const {
   return service_->GetPlaceholdersForSavedPasswordWarningText();

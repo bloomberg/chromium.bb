@@ -25,10 +25,6 @@ if(BUILD_SHARED_LIBS)
     target_compile_definitions(dawn_native PRIVATE "DAWN_NATIVE_SHARED_LIBRARY")
 endif()
 
-if(DAWN_ENABLE_WGSL)
-    target_link_libraries(dawn_native PRIVATE libtint)
-endif()
-
 target_sources(dawn_native PRIVATE
     "${DAWN_INCLUDE_DIR}/dawn_native/DawnNative.h"
     "${DAWN_INCLUDE_DIR}/dawn_native/dawn_native_export.h"
@@ -54,6 +50,8 @@ target_sources(dawn_native PRIVATE
     "Buffer.h"
     "CachedObject.cpp"
     "CachedObject.h"
+    "CallbackTaskManager.cpp"
+    "CallbackTaskManager.h"
     "CommandAllocator.cpp"
     "CommandAllocator.h"
     "CommandBuffer.cpp"
@@ -66,14 +64,16 @@ target_sources(dawn_native PRIVATE
     "CommandValidation.h"
     "Commands.cpp"
     "Commands.h"
+    "CompilationMessages.cpp"
+    "CompilationMessages.h"
     "ComputePassEncoder.cpp"
     "ComputePassEncoder.h"
     "ComputePipeline.cpp"
     "ComputePipeline.h"
     "CopyTextureForBrowserHelper.cpp"
     "CopyTextureForBrowserHelper.h"
-    "CreateReadyPipelineTracker.cpp"
-    "CreateReadyPipelineTracker.h"
+    "CreatePipelineAsyncTask.cpp"
+    "CreatePipelineAsyncTask.h"
     "Device.cpp"
     "Device.h"
     "DynamicUploader.cpp"
@@ -90,10 +90,12 @@ target_sources(dawn_native PRIVATE
     "ErrorInjector.h"
     "ErrorScope.cpp"
     "ErrorScope.h"
-    "ErrorScopeTracker.cpp"
-    "ErrorScopeTracker.h"
     "Extensions.cpp"
     "Extensions.h"
+    "ExternalTexture.cpp"
+    "ExternalTexture.h"
+    "ObjectContentHasher.cpp"
+    "ObjectContentHasher.h"
     "Fence.cpp"
     "Fence.h"
     "Format.cpp"
@@ -108,6 +110,8 @@ target_sources(dawn_native PRIVATE
     "PassResourceUsage.h"
     "PassResourceUsageTracker.cpp"
     "PassResourceUsageTracker.h"
+    "PersistentCache.cpp"
+    "PersistentCache.h"
     "PerStage.cpp"
     "PerStage.h"
     "Pipeline.cpp"
@@ -118,6 +122,8 @@ target_sources(dawn_native PRIVATE
     "PooledResourceMemoryAllocator.h"
     "ProgrammablePassEncoder.cpp"
     "ProgrammablePassEncoder.h"
+    "QueryHelper.cpp"
+    "QueryHelper.h"
     "QuerySet.cpp"
     "QuerySet.h"
     "Queue.cpp"
@@ -146,12 +152,17 @@ target_sources(dawn_native PRIVATE
     "SpirvUtils.h"
     "StagingBuffer.cpp"
     "StagingBuffer.h"
+    "Subresource.cpp"
+    "Subresource.h"
+    "SubresourceStorage.h"
     "Surface.cpp"
     "Surface.h"
     "SwapChain.cpp"
     "SwapChain.h"
     "Texture.cpp"
     "Texture.h"
+    "TintUtils.cpp"
+    "TintUtils.h"
     "ToBackend.h"
     "Toggles.cpp"
     "Toggles.h"
@@ -162,6 +173,7 @@ target_link_libraries(dawn_native
     PRIVATE dawn_common
             dawn_platform
             dawn_internal_config
+            libtint
             spirv-cross-core
             spirv-cross-glsl
             spirv-cross-hlsl
@@ -172,6 +184,11 @@ target_link_libraries(dawn_native
 if (DAWN_USE_X11)
     find_package(X11 REQUIRED)
     target_link_libraries(dawn_native PRIVATE ${X11_LIBRARIES})
+    target_include_directories(dawn_native PRIVATE ${X11_INCLUDE_DIR})
+    target_sources(dawn_native PRIVATE
+        "XlibXcbFunctions.cpp"
+        "XlibXcbFunctions.h"
+    )
 endif()
 
 if (WIN32)
@@ -356,6 +373,8 @@ if (DAWN_ENABLE_OPENGL)
         "opengl/NativeSwapChainImplGL.h"
         "opengl/OpenGLFunctions.cpp"
         "opengl/OpenGLFunctions.h"
+        "opengl/OpenGLVersion.cpp"
+        "opengl/OpenGLVersion.h"
         "opengl/PersistentPipelineStateGL.cpp"
         "opengl/PersistentPipelineStateGL.h"
         "opengl/PipelineGL.cpp"

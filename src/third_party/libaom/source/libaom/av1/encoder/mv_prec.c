@@ -230,7 +230,7 @@ static AOM_INLINE void collect_mv_stats_b(MV_STATS *mv_stats,
   const int y_stride = cpi->source->y_stride;
   const int px_row = 4 * mi_row, px_col = 4 * mi_col;
   const int buf_is_hbd = cpi->source->flags & YV12_FLAG_HIGHBITDEPTH;
-  const int bd = cm->seq_params.bit_depth;
+  const int bd = cm->seq_params->bit_depth;
   if (buf_is_hbd) {
     uint16_t *source_buf =
         CONVERT_TO_SHORTPTR(cpi->source->y_buffer) + px_row * y_stride + px_col;
@@ -339,8 +339,8 @@ static AOM_INLINE void collect_mv_stats_tile(MV_STATS *mv_stats,
   const int mi_row_end = tile_info->mi_row_end;
   const int mi_col_start = tile_info->mi_col_start;
   const int mi_col_end = tile_info->mi_col_end;
-  const int sb_size_mi = cm->seq_params.mib_size;
-  BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  const int sb_size_mi = cm->seq_params->mib_size;
+  BLOCK_SIZE sb_size = cm->seq_params->sb_size;
   for (int mi_row = mi_row_start; mi_row < mi_row_end; mi_row += sb_size_mi) {
     for (int mi_col = mi_col_start; mi_col < mi_col_end; mi_col += sb_size_mi) {
       collect_mv_stats_sb(mv_stats, cpi, mi_row, mi_col, sb_size);

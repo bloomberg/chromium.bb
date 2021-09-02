@@ -19,9 +19,30 @@ clock_sync.py clock_sync.sql clock_sync.out
 
 # Missed frames
 frame_missed.py frame_missed_event.sql frame_missed_event_frame_missed.out
+frame_missed.py android_surfaceflinger frame_missed_metrics.out
 
 # GPU metrics
 gpu_metric.py android_gpu gpu_metric.out
 
 # Android SysUI CUJs metrics
 android_sysui_cuj.py android_sysui_cuj android_sysui_cuj.out
+android_sysui_cuj.py android_sysui_cuj_event.sql android_sysui_cuj_event.out
+
+# Frame Timeline event trace tests
+frame_timeline_events.py expected_frame_timeline_events.sql expected_frame_timeline_events.out
+frame_timeline_events.py actual_frame_timeline_events.sql actual_frame_timeline_events.out
+
+# Composition layer
+composition_layer.py composition_layer_count.sql composition_layer_count.out
+
+# Android Jank metrics
+android_jank.py android_jank android_jank.out
+
+# G2D metrics
+g2d_metrics.textproto g2d g2d_metrics.out
+
+# Composer execution
+composer_execution.py composer_execution.sql composer_execution.out
+
+# Display metrics
+panel_fps.py display_metrics panel_fps.out

@@ -130,8 +130,8 @@ class DeviceManagementServiceIntegrationTest
   std::unique_ptr<DeviceManagementService::Job> StartJob(
       DeviceManagementService::JobConfiguration::JobType type,
       bool critical,
-      std::unique_ptr<DMAuth> auth_data,
-      base::Optional<std::string> oauth_token,
+      DMAuth auth_data,
+      absl::optional<std::string> oauth_token,
       const em::DeviceManagementRequest request) {
     std::string payload;
     request.SerializeToString(&payload);
@@ -139,8 +139,8 @@ class DeviceManagementServiceIntegrationTest
         std::make_unique<FakeJobConfiguration>(
             service_.get(), type, kClientID, critical, std::move(auth_data),
             oauth_token, GetFactory(),
-            base::Bind(&DeviceManagementServiceIntegrationTest::OnJobDone,
-                       base::Unretained(this)),
+            base::BindOnce(&DeviceManagementServiceIntegrationTest::OnJobDone,
+                           base::Unretained(this)),
             base::DoNothing(), base::DoNothing());
     config->SetRequestPayload(payload);
     return service_->CreateJob(std::move(config));
@@ -165,9 +165,9 @@ class DeviceManagementServiceIntegrationTest
 
   void SetUpOnMainThread() override {
     std::string service_url((this->*(GetParam()))());
-    service_.reset(new DeviceManagementService(
+    service_ = std::make_unique<DeviceManagementService>(
         std::unique_ptr<DeviceManagementService::Configuration>(
-            new MockDeviceManagementServiceConfiguration(service_url))));
+            new MockDeviceManagementServiceConfiguration(service_url)));
     service_->ScheduleInitialization(0);
   }
 
@@ -177,9 +177,9 @@ class DeviceManagementServiceIntegrationTest
   }
 
   void StartTestServer() {
-    test_server_.reset(new LocalPolicyTestServer(
+    test_server_ = std::make_unique<LocalPolicyTestServer>(
         "chrome/test/data/policy/"
-        "policy_device_management_service_browsertest.json"));
+        "policy_device_management_service_browsertest.json");
     ASSERT_TRUE(test_server_->Start());
   }
 

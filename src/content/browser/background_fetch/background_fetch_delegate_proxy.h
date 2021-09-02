@@ -14,12 +14,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/background_fetch_description.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
 class SkBitmap;
@@ -39,6 +39,9 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // these methods will be called on the service worker core thread.
   using DispatchClickEventCallback =
       base::RepeatingCallback<void(const std::string& unique_id)>;
+  using GetPermissionForOriginCallback =
+      base::OnceCallback<void(BackgroundFetchPermission)>;
+
   class Controller {
    public:
     // Called when the given |request| has started fetching.
@@ -84,10 +87,9 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
       BackgroundFetchDelegate::GetIconDisplaySizeCallback callback);
 
   // Checks if the provided origin has permission to start a Background Fetch.
-  void GetPermissionForOrigin(
-      const url::Origin& origin,
-      const WebContents::Getter& wc_getter,
-      BackgroundFetchDelegate::GetPermissionForOriginCallback callback);
+  void GetPermissionForOrigin(const url::Origin& origin,
+                              const WebContents::Getter& wc_getter,
+                              GetPermissionForOriginCallback callback);
 
   // Creates a new download grouping described by |fetch_description|. Further
   // downloads started by StartRequest will also use
@@ -114,8 +116,8 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // Called from the Controller (on the service worker core thread).
   void UpdateUI(
       const std::string& job_unique_id,
-      const base::Optional<std::string>& title,
-      const base::Optional<SkBitmap>& icon,
+      const absl::optional<std::string>& title,
+      const absl::optional<SkBitmap>& icon,
       blink::mojom::BackgroundFetchRegistrationService::UpdateUICallback
           update_ui_callback);
 

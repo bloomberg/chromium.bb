@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {Route} from '../router.m.js';
+// #import {Route} from '../router.js';
 
 /**
  * Specifies all possible os routes in settings.
@@ -26,6 +26,7 @@
  *   CROSTINI_DETAILS: !settings.Route,
  *   CROSTINI_DISK_RESIZE: !settings.Route,
  *   CROSTINI_EXPORT_IMPORT: !settings.Route,
+ *   CROSTINI_PORT_FORWARDING: !settings.Route,
  *   CROSTINI_SHARED_PATHS: !settings.Route,
  *   CROSTINI_SHARED_USB_DEVICES: !settings.Route,
  *   BASIC: !settings.Route,
@@ -44,7 +45,9 @@
  *   GOOGLE_ASSISTANT: !settings.Route,
  *   INTERNET: !settings.Route,
  *   INTERNET_NETWORKS: !settings.Route,
+ *   KERBEROS: !settings.Route,
  *   KERBEROS_ACCOUNTS: !settings.Route,
+ *   KERBEROS_ACCOUNTS_V2: !settings.Route,
  *   KEYBOARD: !settings.Route,
  *   KNOWN_NETWORKS: !settings.Route,
  *   LOCK_SCREEN: !settings.Route,
@@ -56,12 +59,11 @@
  *   MULTIDEVICE_FEATURES: !settings.Route,
  *   NEARBY_SHARE: !settings.Route,
  *   NETWORK_DETAIL: !settings.Route,
+ *   ON_STARTUP: !settings.Route,
  *   OS_ACCESSIBILITY: !settings.Route,
  *   OS_LANGUAGES: !settings.Route,
- *   OS_LANGUAGES_DETAILS: !settings.Route,
  *   OS_LANGUAGES_EDIT_DICTIONARY: !settings.Route,
  *   OS_LANGUAGES_INPUT: !settings.Route,
- *   OS_LANGUAGES_INPUT_METHODS: !settings.Route,
  *   OS_LANGUAGES_INPUT_METHOD_OPTIONS: !settings.Route,
  *   OS_LANGUAGES_LANGUAGES: !settings.Route,
  *   OS_LANGUAGES_SMART_INPUTS: !settings.Route,
@@ -77,6 +79,7 @@
  *   POWER: !settings.Route,
  *   PRIVACY: !settings.Route,
  *   SEARCH: !settings.Route,
+ *   SEARCH_SUBPAGE: !settings.Route,
  *   SMART_LOCK: !settings.Route,
  *   SMB_SHARES: !settings.Route,
  *   STORAGE: !settings.Route,

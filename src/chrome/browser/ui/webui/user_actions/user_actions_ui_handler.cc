@@ -10,8 +10,8 @@
 #include "content/public/browser/web_ui.h"
 
 UserActionsUIHandler::UserActionsUIHandler()
-    : action_callback_(base::Bind(&UserActionsUIHandler::OnUserAction,
-                                  base::Unretained(this))) {}
+    : action_callback_(base::BindRepeating(&UserActionsUIHandler::OnUserAction,
+                                           base::Unretained(this))) {}
 
 UserActionsUIHandler::~UserActionsUIHandler() {
   base::RemoveActionCallback(action_callback_);
@@ -40,6 +40,6 @@ void UserActionsUIHandler::OnUserAction(const std::string& action,
   if (!IsJavascriptAllowed())
     return;
   base::Value user_action_name(action);
-  web_ui()->CallJavascriptFunctionUnsafe("userActions.observeUserAction",
-                                         user_action_name);
+
+  FireWebUIListener("user-action", user_action_name);
 }

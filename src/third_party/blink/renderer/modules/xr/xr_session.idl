@@ -68,9 +68,6 @@ enum XRReflectionFormat {
   long requestAnimationFrame(XRFrameRequestCallback callback);
   void cancelAnimationFrame(long handle);
 
-  // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
-  [RuntimeEnabled=WebXRPlaneDetection] readonly attribute XRWorldTrackingState worldTrackingState;
-
   [CallWith=ScriptState, Measure, RaisesException] Promise<void> end();
 
   // https://github.com/immersive-web/hit-test/blob/master/hit-testing-explainer.md
@@ -82,6 +79,11 @@ enum XRReflectionFormat {
   [RuntimeEnabled=WebXRLightEstimation, CallWith=ScriptState, MeasureAs=XRSessionRequestLightProbe, RaisesException]
   Promise<XRLightProbe> requestLightProbe(optional XRLightProbeInit options = {});
 
-  [RuntimeEnabled=WebXRImageTracking, CallWith=ScriptState, RaisesException]
+  [RuntimeEnabled=WebXRImageTracking, CallWith=ScriptState, MeasureAs=XRSessionGetTrackedImageScores, RaisesException]
   Promise<FrozenArray<XRImageTrackingScore>> getTrackedImageScores();
+
+  [RuntimeEnabled=WebXRDepth, RaisesException]
+  readonly attribute XRDepthUsage? depthUsage;
+  [RuntimeEnabled=WebXRDepth, RaisesException]
+  readonly attribute XRDepthDataFormat? depthDataFormat;
 };

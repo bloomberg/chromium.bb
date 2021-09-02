@@ -126,7 +126,7 @@ void SetBoundsAnimated(aura::Window* window,
 void AutoPlaceSingleWindow(aura::Window* window, bool animated) {
   gfx::Rect work_area = screen_util::GetDisplayWorkAreaBoundsInParent(window);
   gfx::Rect bounds = window->bounds();
-  const base::Optional<gfx::Rect> user_defined_area =
+  const absl::optional<gfx::Rect> user_defined_area =
       WindowState::Get(window)->pre_auto_manage_window_bounds();
   if (user_defined_area) {
     bounds = *user_defined_area;
@@ -176,7 +176,7 @@ aura::Window* GetReferenceWindow(const aura::Window* root_window,
     while (::wm::GetTransientParent(window))
       window = ::wm::GetTransientParent(window);
     if (window != exclude &&
-        window->type() == aura::client::WINDOW_TYPE_NORMAL &&
+        window->GetType() == aura::client::WINDOW_TYPE_NORMAL &&
         window->GetRootWindow() == root_window && window->TargetVisibility() &&
         WindowState::Get(window)->GetWindowPositionManaged()) {
       if (found && found != window) {

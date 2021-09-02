@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/tools/quic_toy_server.h"
+#include "quic/tools/quic_toy_server.h"
 
 #include <utility>
 #include <vector>
 
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/tools/quic_memory_cache_backend.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_default_proof_providers.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/tools/quic_memory_cache_backend.h"
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(int32_t,
                               port,
@@ -46,6 +46,11 @@ DEFINE_QUIC_COMMAND_LINE_FLAG(
     "QUIC versions to enable, e.g. \"h3-25,h3-27\". If not set, then all "
     "available versions are enabled.");
 
+DEFINE_QUIC_COMMAND_LINE_FLAG(bool,
+                              enable_webtransport,
+                              false,
+                              "If true, WebTransport support is enabled.");
+
 namespace quic {
 
 std::unique_ptr<quic::QuicSimpleServerBackend>
@@ -57,6 +62,9 @@ QuicToyServer::MemoryCacheBackendFactory::CreateBackend() {
   if (!GetQuicFlag(FLAGS_quic_response_cache_dir).empty()) {
     memory_cache_backend->InitializeBackend(
         GetQuicFlag(FLAGS_quic_response_cache_dir));
+  }
+  if (GetQuicFlag(FLAGS_enable_webtransport)) {
+    memory_cache_backend->EnableWebTransport();
   }
   return memory_cache_backend;
 }

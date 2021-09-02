@@ -4,11 +4,12 @@
 
 #include "cast/common/channel/namespace_router.h"
 
+#include <utility>
+
 #include "cast/common/channel/cast_message_handler.h"
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "cast/common/channel/testing/fake_cast_socket.h"
 #include "cast/common/channel/testing/mock_cast_message_handler.h"
-#include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -27,8 +28,7 @@ class NamespaceRouterTest : public ::testing::Test {
   CastSocket* socket() { return &fake_socket_.socket; }
 
   FakeCastSocket fake_socket_;
-  VirtualConnectionManager vc_manager_;
-  VirtualConnectionRouter vc_router_{&vc_manager_};
+  VirtualConnectionRouter vc_router_;
   NamespaceRouter router_;
 };
 

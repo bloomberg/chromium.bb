@@ -19,6 +19,7 @@
 
 #include <stdint.h>
 
+#include "perfetto/protozero/proto_decoder.h"
 #include "src/trace_processor/importers/proto/proto_importer_module.h"
 #include "src/trace_processor/storage/trace_storage.h"
 
@@ -38,10 +39,12 @@ namespace trace_processor {
 class PacketSequenceState;
 class TraceProcessorContext;
 class TraceBlobView;
+class TrackEventTracker;
+struct TrackEventData;
 
 class TrackEventTokenizer {
  public:
-  explicit TrackEventTokenizer(TraceProcessorContext* context);
+  explicit TrackEventTokenizer(TraceProcessorContext*, TrackEventTracker*);
 
   ModuleResult TokenizeTrackDescriptorPacket(
       PacketSequenceState* state,
@@ -59,8 +62,17 @@ class TrackEventTokenizer {
   void TokenizeThreadDescriptor(
       PacketSequenceState* state,
       const protos::pbzero::ThreadDescriptor_Decoder&);
+  template <typename T>
+  base::Status AddExtraCounterValues(
+      TrackEventData& data,
+      size_t& index,
+      uint32_t trusted_packet_sequence_id,
+      protozero::RepeatedFieldIterator<T> value_it,
+      protozero::RepeatedFieldIterator<uint64_t> packet_track_uuid_it,
+      protozero::RepeatedFieldIterator<uint64_t> default_track_uuid_it);
 
   TraceProcessorContext* context_;
+  TrackEventTracker* track_event_tracker_;
 
   const StringId counter_name_thread_time_id_;
   const StringId counter_name_thread_instruction_count_id_;

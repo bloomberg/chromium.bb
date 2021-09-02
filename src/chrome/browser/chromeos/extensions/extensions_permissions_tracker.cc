@@ -7,7 +7,6 @@
 #include "base/stl_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -27,7 +26,7 @@ ExtensionsPermissionsTracker::ExtensionsPermissionsTracker(
     content::BrowserContext* browser_context)
     : registry_(registry),
       pref_service_(Profile::FromBrowserContext(browser_context)->GetPrefs()) {
-  observer_.Add(registry_);
+  observation_.Observe(registry_);
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
       pref_names::kInstallForceList,

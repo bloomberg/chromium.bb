@@ -32,6 +32,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/node_or_string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_get_root_node_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_node_string_trustedscript.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_trustedscript.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
@@ -59,6 +61,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_node_data.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/mutation_observer_registration.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -75,7 +78,6 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/tree_scope_adopter.h"
 #include "third_party/blink/renderer/core/dom/user_action_element_set.h"
-#include "third_party/blink/renderer/core/dom/v0_insertion_point.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/events/event_util.h"
@@ -101,6 +103,7 @@
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/html/html_popup_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -763,6 +766,17 @@ Node* Node::appendChild(Node* new_child) {
   return appendChild(new_child, ASSERT_NO_EXCEPTION);
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+static bool IsNodeInNodes(
+    const Node* const node,
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes) {
+  for (const V8UnionNodeOrStringOrTrustedScript* node_or_string : nodes) {
+    if (node_or_string->IsNode() && node_or_string->GetAsNode() == node)
+      return true;
+  }
+  return false;
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 static bool IsNodeInNodes(
     const Node* const node,
     const HeapVector<NodeOrStringOrTrustedScript>& nodes) {
@@ -772,10 +786,16 @@ static bool IsNodeInNodes(
   }
   return false;
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 static Node* FindViablePreviousSibling(
     const Node& node,
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+) {
   for (Node* sibling = node.previousSibling(); sibling;
        sibling = sibling->previousSibling()) {
     if (!IsNodeInNodes(sibling, nodes))
@@ -786,7 +806,12 @@ static Node* FindViablePreviousSibling(
 
 static Node* FindViableNextSibling(
     const Node& node,
-    const HeapVector<NodeOrStringOrTrustedScript>& nodes) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+) {
   for (Node* sibling = node.nextSibling(); sibling;
        sibling = sibling->nextSibling()) {
     if (!IsNodeInNodes(sibling, nodes))
@@ -795,6 +820,49 @@ static Node* FindViableNextSibling(
   return nullptr;
 }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+static Node* NodeOrStringToNode(
+    const V8UnionNodeOrStringOrTrustedScript* node_or_string,
+    Document& document,
+    bool needs_trusted_types_check,
+    ExceptionState& exception_state) {
+  if (!needs_trusted_types_check) {
+    // Without trusted type checks, we simply extract the string from whatever
+    // constituent type we find.
+    switch (node_or_string->GetContentType()) {
+      case V8UnionNodeOrStringOrTrustedScript::ContentType::kNode:
+        return node_or_string->GetAsNode();
+      case V8UnionNodeOrStringOrTrustedScript::ContentType::kString:
+        return Text::Create(document, node_or_string->GetAsString());
+      case V8UnionNodeOrStringOrTrustedScript::ContentType::kTrustedScript:
+        return Text::Create(document,
+                            node_or_string->GetAsTrustedScript()->toString());
+    }
+    NOTREACHED();
+    return nullptr;
+  }
+
+  // With trusted type checks, we can process trusted script or non-text nodes
+  // directly. Strings or text nodes need to be checked.
+  if (node_or_string->IsNode() && !node_or_string->GetAsNode()->IsTextNode())
+    return node_or_string->GetAsNode();
+
+  if (node_or_string->IsTrustedScript()) {
+    return Text::Create(document,
+                        node_or_string->GetAsTrustedScript()->toString());
+  }
+
+  String string_value = node_or_string->IsString()
+                            ? node_or_string->GetAsString()
+                            : node_or_string->GetAsNode()->textContent();
+
+  string_value = TrustedTypesCheckForScript(
+      string_value, document.GetExecutionContext(), exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  return Text::Create(document, string_value);
+}
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 static Node* NodeOrStringToNode(
     const NodeOrStringOrTrustedScript& node_or_string,
     Document& document,
@@ -832,11 +900,16 @@ static Node* NodeOrStringToNode(
     return nullptr;
   return Text::Create(document, string_value);
 }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 // Returns nullptr if an exception was thrown.
 static Node* ConvertNodesIntoNode(
     const Node* parent,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     const HeapVector<NodeOrStringOrTrustedScript>& nodes,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
     Document& document,
     ExceptionState& exception_state) {
   bool needs_check = IsA<HTMLScriptElement>(parent) &&
@@ -847,8 +920,7 @@ static Node* ConvertNodesIntoNode(
     return NodeOrStringToNode(nodes[0], document, needs_check, exception_state);
 
   Node* fragment = DocumentFragment::Create(document);
-  for (const NodeOrStringOrTrustedScript& node_or_string_or_trusted_script :
-       nodes) {
+  for (const auto& node_or_string_or_trusted_script : nodes) {
     Node* node = NodeOrStringToNode(node_or_string_or_trusted_script, document,
                                     needs_check, exception_state);
     if (node)
@@ -859,8 +931,13 @@ static Node* ConvertNodesIntoNode(
   return fragment;
 }
 
-void Node::Prepend(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-                   ExceptionState& exception_state) {
+void Node::Prepend(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    ExceptionState& exception_state) {
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (!this_node) {
     exception_state.ThrowDOMException(
@@ -874,8 +951,13 @@ void Node::Prepend(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
     this_node->InsertBefore(node, firstChild(), exception_state);
 }
 
-void Node::Append(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-                  ExceptionState& exception_state) {
+void Node::Append(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    ExceptionState& exception_state) {
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (!this_node) {
     exception_state.ThrowDOMException(
@@ -889,8 +971,13 @@ void Node::Append(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
     this_node->AppendChild(node, exception_state);
 }
 
-void Node::Before(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-                  ExceptionState& exception_state) {
+void Node::Before(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    ExceptionState& exception_state) {
   Node* parent = parentNode();
   if (!parent)
     return;
@@ -912,8 +999,13 @@ void Node::Before(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
   }
 }
 
-void Node::After(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-                 ExceptionState& exception_state) {
+void Node::After(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    ExceptionState& exception_state) {
   Node* parent = parentNode();
   if (!parent)
     return;
@@ -930,8 +1022,13 @@ void Node::After(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
     parent_node->InsertBefore(node, viable_next_sibling, exception_state);
 }
 
-void Node::ReplaceWith(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-                       ExceptionState& exception_state) {
+void Node::ReplaceWith(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    ExceptionState& exception_state) {
   Node* parent = parentNode();
   if (!parent)
     return;
@@ -955,8 +1052,13 @@ void Node::ReplaceWith(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
 }
 
 // https://dom.spec.whatwg.org/#dom-parentnode-replacechildren
-void Node::ReplaceChildren(const HeapVector<NodeOrStringOrTrustedScript>& nodes,
-                           ExceptionState& exception_state) {
+void Node::ReplaceChildren(
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<Member<V8UnionNodeOrStringOrTrustedScript>>& nodes,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    const HeapVector<NodeOrStringOrTrustedScript>& nodes,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    ExceptionState& exception_state) {
   auto* this_node = DynamicTo<ContainerNode>(this);
   if (!this_node) {
     exception_state.ThrowDOMException(
@@ -1025,8 +1127,6 @@ Node* Node::cloneNode(bool deep) const {
 }
 
 void Node::normalize() {
-  UpdateDistributionForFlatTreeTraversal();
-
   // Go through the subtree beneath us, normalizing all nodes. This means that
   // any two adjacent text nodes are merged and any empty text nodes are
   // removed.
@@ -1153,7 +1253,7 @@ bool Node::IsClosedShadowHiddenFrom(const Node& other) const {
   for (; scope->ParentTreeScope(); scope = scope->ParentTreeScope()) {
     const ContainerNode& root = scope->RootNode();
     auto* shadow_root = DynamicTo<ShadowRoot>(root);
-    if (shadow_root && !shadow_root->IsOpenOrV0())
+    if (shadow_root && !shadow_root->IsOpen())
       break;
   }
 
@@ -1165,60 +1265,9 @@ bool Node::IsClosedShadowHiddenFrom(const Node& other) const {
   return true;
 }
 
-bool Node::NeedsDistributionRecalc() const {
-  return ShadowIncludingRoot().ChildNeedsDistributionRecalc();
-}
-
-bool Node::MayContainLegacyNodeTreeWhereDistributionShouldBeSupported() const {
-  if (isConnected() && !GetDocument().MayContainV0Shadow()) {
-    // TODO(crbug.com/787717): Some built-in elements still use <content>
-    // elements in their user-agent shadow roots. DCHECK() fails if such an
-    // element is used.
-    DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
-    return false;
-  }
-  return true;
-}
-
 void Node::UpdateDistributionForUnknownReasons() {
-  UpdateDistributionInternal();
-  // For the sake of safety, call RecalcSlotAssignments as well as
-  // UpdateDistribution().
   if (isConnected())
     GetDocument().GetSlotAssignmentEngine().RecalcSlotAssignments();
-}
-
-void Node::UpdateDistributionInternal() {
-  if (!MayContainLegacyNodeTreeWhereDistributionShouldBeSupported())
-    return;
-  // Extra early out to avoid spamming traces.
-  if (isConnected() && !GetDocument().ChildNeedsDistributionRecalc())
-    return;
-  TRACE_EVENT0("blink", "Node::updateDistribution");
-  ScriptForbiddenScope forbid_script;
-  Node& root = ShadowIncludingRoot();
-  if (root.ChildNeedsDistributionRecalc())
-    root.RecalcDistribution();
-}
-
-void Node::RecalcDistribution() {
-  DCHECK(ChildNeedsDistributionRecalc());
-
-  if (GetShadowRoot())
-    GetShadowRoot()->DistributeIfNeeded();
-
-  DCHECK(ScriptForbiddenScope::IsScriptForbidden());
-  for (Node* child = firstChild(); child; child = child->nextSibling()) {
-    if (child->ChildNeedsDistributionRecalc())
-      child->RecalcDistribution();
-  }
-
-  if (ShadowRoot* root = GetShadowRoot()) {
-    if (root->ChildNeedsDistributionRecalc())
-      root->RecalcDistribution();
-  }
-
-  ClearChildNeedsDistributionRecalc();
 }
 
 void Node::SetIsLink(bool is_link) {
@@ -1253,15 +1302,6 @@ void Node::MarkAncestorsWithChildNeedsStyleInvalidation() {
   GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
 }
 
-void Node::MarkAncestorsWithChildNeedsDistributionRecalc() {
-  ScriptForbiddenScope forbid_script_during_raw_iteration;
-  for (Node* node = this; node && !node->ChildNeedsDistributionRecalc();
-       node = node->ParentOrShadowHostNode()) {
-    node->SetChildNeedsDistributionRecalc();
-  }
-  GetDocument().ScheduleLayoutTreeUpdateIfNeeded();
-}
-
 void Node::MarkSubtreeNeedsStyleRecalcForFontUpdates() {
   if (GetStyleChangeType() == kSubtreeStyleChange)
     return;
@@ -1291,45 +1331,14 @@ void Node::MarkSubtreeNeedsStyleRecalcForFontUpdates() {
     child->MarkSubtreeNeedsStyleRecalcForFontUpdates();
 }
 
-#if DCHECK_IS_ON()
-namespace {
-class AllowDirtyShadowV0TraversalScope {
-  STACK_ALLOCATED();
-
- public:
-  explicit AllowDirtyShadowV0TraversalScope(Document& document)
-      : document_(&document),
-        old_value_(document.AllowDirtyShadowV0Traversal()) {
-    document.SetAllowDirtyShadowV0Traversal(true);
-  }
-  ~AllowDirtyShadowV0TraversalScope() {
-    document_->SetAllowDirtyShadowV0Traversal(old_value_);
-  }
-
- private:
-  Document* document_;
-  bool old_value_;
-};
-}  // namespace
-#define ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(document) \
-  AllowDirtyShadowV0TraversalScope traversal_scope(document)
-#else  // DCHECK_IS_ON()
-#define ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(document)
-#endif  // DCHECK_IS_ON()
-
 bool Node::ShouldSkipMarkingStyleDirty() const {
   if (GetComputedStyle())
     return false;
 
-  ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(GetDocument());
-
   // If we don't have a computed style, and our parent element does not have a
   // computed style it's not necessary to mark this node for style recalc.
-  if (auto* parent = GetStyleRecalcParent()) {
-    while (parent && !parent->CanParticipateInFlatTree())
-      parent = parent->GetStyleRecalcParent();
+  if (Element* parent = GetStyleRecalcParent())
     return !parent || !parent->GetComputedStyle();
-  }
   // If this is the root element, and it does not have a computed style, we
   // still need to mark it for style recalc since it may change from
   // display:none. Otherwise, the node is not in the flat tree, and we can
@@ -1339,10 +1348,9 @@ bool Node::ShouldSkipMarkingStyleDirty() const {
 }
 
 void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
-  ALLOW_DIRTY_SHADOW_V0_TRAVERSAL_SCOPE(GetDocument());
-  ContainerNode* style_parent = GetStyleRecalcParent();
+  Element* style_parent = GetStyleRecalcParent();
   bool parent_dirty = style_parent && style_parent->IsDirtyForStyleRecalc();
-  ContainerNode* ancestor = style_parent;
+  Element* ancestor = style_parent;
   for (; ancestor && !ancestor->ChildNeedsStyleRecalc();
        ancestor = ancestor->GetStyleRecalcParent()) {
     if (!ancestor->isConnected())
@@ -1353,11 +1361,8 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
     // If we reach a locked ancestor, we should abort since the ancestor marking
     // will be done when the lock is committed.
     if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled()) {
-      auto* ancestor_element = DynamicTo<Element>(ancestor);
-      if (ancestor_element &&
-          ancestor_element->ChildStyleRecalcBlockedByDisplayLock()) {
+      if (ancestor->ChildStyleRecalcBlockedByDisplayLock())
         break;
-      }
     }
   }
   if (!isConnected())
@@ -1371,14 +1376,10 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   if (const ComputedStyle* current_style = GetComputedStyle()) {
     if (current_style->IsEnsuredOutsideFlatTree())
       return;
-  } else {
-    while (style_parent && !style_parent->CanParticipateInFlatTree())
-      style_parent = style_parent->GetStyleRecalcParent();
-    if (style_parent) {
-      if (const auto* parent_style = style_parent->GetComputedStyle()) {
-        if (parent_style->IsEnsuredOutsideFlatTree())
-          return;
-      }
+  } else if (style_parent) {
+    if (const auto* parent_style = style_parent->GetComputedStyle()) {
+      if (parent_style->IsEnsuredOutsideFlatTree())
+        return;
     }
   }
   // If we're in a locked subtree, then we should not update the style recalc
@@ -1388,13 +1389,10 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
   if (RuntimeEnabledFeatures::CSSContentVisibilityEnabled() &&
       GetDocument().GetDisplayLockDocumentState().LockedDisplayLockCount() >
           0) {
-    for (auto* ancestor_copy = ancestor; ancestor_copy;
+    for (Element* ancestor_copy = ancestor; ancestor_copy;
          ancestor_copy = ancestor_copy->GetStyleRecalcParent()) {
-      auto* ancestor_copy_element = DynamicTo<Element>(ancestor_copy);
-      if (ancestor_copy_element &&
-          ancestor_copy_element->ChildStyleRecalcBlockedByDisplayLock()) {
+      if (ancestor_copy->ChildStyleRecalcBlockedByDisplayLock())
         return;
-      }
     }
   }
 
@@ -1405,19 +1403,10 @@ void Node::MarkAncestorsWithChildNeedsStyleRecalc() {
 Element* Node::FlatTreeParentForChildDirty() const {
   if (IsPseudoElement())
     return ParentOrShadowHostElement();
-  if (IsChildOfV1ShadowHost()) {
+  if (IsChildOfShadowHost()) {
     if (auto* data = GetFlatTreeNodeData())
       return data->AssignedSlot();
     return nullptr;
-  }
-  if (IsInV0ShadowTree() || IsChildOfV0ShadowHost()) {
-    if (ShadowRootWhereNodeCanBeDistributedForV0(*this)) {
-      if (V0InsertionPoint* insertion_point =
-              const_cast<V0InsertionPoint*>(ResolveReprojection(this))) {
-        return insertion_point;
-      }
-      return nullptr;
-    }
   }
   return ParentOrShadowHostElement();
 }
@@ -1441,7 +1430,6 @@ void Node::MarkAncestorsWithChildNeedsReattachLayoutTree() {
 
 void Node::SetNeedsReattachLayoutTree() {
   DCHECK(GetDocument().InStyleRecalc());
-  DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
   DCHECK(IsElementNode() || IsTextNode());
   DCHECK(InActiveDocument());
   SetFlag(kNeedsReattachLayoutTree);
@@ -1459,11 +1447,11 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   if (ShouldSkipMarkingStyleDirty())
     return;
 
-  TRACE_EVENT_INSTANT1(
+  DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT_WITH_CATEGORIES(
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
-      "StyleRecalcInvalidationTracking", TRACE_EVENT_SCOPE_THREAD, "data",
-      inspector_style_recalc_invalidation_tracking_event::Data(
-          this, change_type, reason));
+      "StyleRecalcInvalidationTracking",
+      inspector_style_recalc_invalidation_tracking_event::Data, this,
+      change_type, reason);
 
   StyleChangeType existing_change_type = GetStyleChangeType();
   if (change_type > existing_change_type)
@@ -1499,10 +1487,9 @@ bool Node::ShouldHaveFocusAppearance() const {
 }
 
 bool Node::IsInert() const {
-  if (!isConnected() || !CanParticipateInFlatTree())
+  DCHECK(!IsShadowRoot());
+  if (!isConnected())
     return true;
-
-  DCHECK(!ChildNeedsDistributionRecalc());
 
   if (this != GetDocument() && this != GetDocument().documentElement()) {
     const Element* modal_element = GetDocument().ActiveModalDialog();
@@ -1526,6 +1513,19 @@ bool Node::IsInert() const {
     }
   }
   return GetDocument().GetFrame() && GetDocument().GetFrame()->IsInert();
+}
+
+LinkHighlightCandidate Node::IsLinkHighlightCandidate() const {
+  if (const LayoutObject* layout_object = GetLayoutObject()) {
+    const ECursor cursor = layout_object->StyleRef().Cursor();
+    if (cursor == ECursor::kPointer)
+      return LinkHighlightCandidate::kYes;
+    if (cursor != ECursor::kAuto)
+      return LinkHighlightCandidate::kNo;
+    if (EventHandler::UsesHandCursor(this))
+      return LinkHighlightCandidate::kYes;
+  }
+  return LinkHighlightCandidate::kMayBe;
 }
 
 unsigned Node::NodeIndex() const {
@@ -1580,6 +1580,17 @@ bool Node::IsDescendantOf(const Node* other) const {
     return !IsTreeScope();
   for (const ContainerNode* n = parentNode(); n; n = n->parentNode()) {
     if (n == other)
+      return true;
+  }
+  return false;
+}
+
+bool Node::IsDescendantOrShadowDescendantOf(const Node* other) const {
+  if (IsDescendantOf(other))
+    return true;
+
+  for (auto* host = OwnerShadowHost(); host; host = host->OwnerShadowHost()) {
+    if (other->contains(host))
       return true;
   }
   return false;
@@ -1702,7 +1713,8 @@ void Node::AttachLayoutTree(AttachContext& context) {
 }
 
 void Node::DetachLayoutTree(bool performing_reattach) {
-  DCHECK(GetDocument().Lifecycle().StateAllowsDetach());
+  DCHECK(GetDocument().Lifecycle().StateAllowsDetach() ||
+         GetDocument().GetStyleEngine().InContainerQueryStyleRecalc());
   DCHECK(!performing_reattach ||
          GetDocument().GetStyleEngine().InRebuildLayoutTree());
   DocumentLifecycle::DetachScope will_detach(GetDocument().Lifecycle());
@@ -1726,10 +1738,11 @@ void Node::DetachLayoutTree(bool performing_reattach) {
 }
 
 const ComputedStyle* Node::VirtualEnsureComputedStyle(
-    PseudoId pseudo_element_specifier) {
+    PseudoId pseudo_element_specifier,
+    const AtomicString& pseudo_argument) {
   return ParentOrShadowHostNode()
              ? ParentOrShadowHostNode()->EnsureComputedStyle(
-                   pseudo_element_specifier)
+                   pseudo_element_specifier, pseudo_argument)
              : nullptr;
 }
 
@@ -1806,14 +1819,8 @@ bool Node::IsStyledElement() const {
           this_element->namespaceURI() == mathml_names::kNamespaceURI);
 }
 
-bool Node::CanParticipateInFlatTree() const {
-  // TODO(hayato): Return false for pseudo elements.
-  return !IsShadowRoot() && !IsActiveV0InsertionPoint(*this);
-}
-
-bool Node::IsActiveSlotOrActiveV0InsertionPoint() const {
-  return ToHTMLSlotElementIfSupportsAssignmentOrNull(*this) ||
-         IsActiveV0InsertionPoint(*this);
+bool Node::IsActiveSlot() const {
+  return ToHTMLSlotElementIfSupportsAssignmentOrNull(*this);
 }
 
 AtomicString Node::SlotName() const {
@@ -1826,34 +1833,18 @@ AtomicString Node::SlotName() const {
   return g_empty_atom;
 }
 
-bool Node::IsInV1ShadowTree() const {
-  ShadowRoot* shadow_root = ContainingShadowRoot();
-  return shadow_root && shadow_root->IsV1();
-}
-
-bool Node::IsInV0ShadowTree() const {
-  ShadowRoot* shadow_root = ContainingShadowRoot();
-  return shadow_root && !shadow_root->IsV1();
-}
-
 ShadowRoot* Node::ParentElementShadowRoot() const {
   Element* parent = parentElement();
   return parent ? parent->GetShadowRoot() : nullptr;
 }
 
-bool Node::IsChildOfV1ShadowHost() const {
-  ShadowRoot* parent_shadow_root = ParentElementShadowRoot();
-  return parent_shadow_root && parent_shadow_root->IsV1();
+bool Node::IsChildOfShadowHost() const {
+  return ParentElementShadowRoot();
 }
 
-bool Node::IsChildOfV0ShadowHost() const {
-  ShadowRoot* parent_shadow_root = ParentElementShadowRoot();
-  return parent_shadow_root && !parent_shadow_root->IsV1();
-}
-
-ShadowRoot* Node::V1ShadowRootOfParent() const {
+ShadowRoot* Node::ShadowRootOfParent() const {
   if (Element* parent = parentElement())
-    return parent->ShadowRootIfV1();
+    return parent->GetShadowRoot();
   return nullptr;
 }
 
@@ -2129,8 +2120,41 @@ String Node::textContent(bool convert_brs_to_newlines) const {
   return content.ToString();
 }
 
-void Node::setTextContent(const StringOrTrustedScript& string_or_trusted_script,
-                          ExceptionState& exception_state) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+V8UnionStringOrTrustedScript* Node::textContentForBinding() const {
+  const String& value = textContent();
+  if (value.IsNull())
+    return nullptr;
+  return MakeGarbageCollected<V8UnionStringOrTrustedScript>(value);
+}
+
+void Node::setTextContentForBinding(const V8UnionStringOrTrustedScript* value,
+                                    ExceptionState& exception_state) {
+  if (!value)
+    return setTextContent(g_empty_string);
+
+  switch (value->GetContentType()) {
+    case V8UnionStringOrTrustedScript::ContentType::kString:
+      return setTextContent(value->GetAsString());
+    case V8UnionStringOrTrustedScript::ContentType::kTrustedScript:
+      return setTextContent(value->GetAsTrustedScript()->toString());
+  }
+
+  NOTREACHED();
+}
+
+#else  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+
+void Node::textContentForBinding(StringOrTrustedScript& result) {
+  String value = textContent();
+  if (!value.IsNull())
+    result.SetString(value);
+}
+
+void Node::setTextContentForBinding(
+    const StringOrTrustedScript& string_or_trusted_script,
+    ExceptionState& exception_state) {
   String value =
       string_or_trusted_script.IsString()
           ? string_or_trusted_script.GetAsString()
@@ -2140,11 +2164,7 @@ void Node::setTextContent(const StringOrTrustedScript& string_or_trusted_script,
   setTextContent(value);
 }
 
-void Node::textContent(StringOrTrustedScript& result) {
-  String value = textContent();
-  if (!value.IsNull())
-    result.SetString(value);
-}
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 void Node::setTextContent(const String& text) {
   switch (getNodeType()) {
@@ -2331,6 +2351,40 @@ void Node::InvalidateIfHasEffectiveAppearance() const {
     return;
 
   layout_object->SetSubtreeShouldDoFullPaintInvalidation();
+}
+
+Node::InsertionNotificationRequest Node::InsertedInto(
+    ContainerNode& insertion_point) {
+  DCHECK(!ChildNeedsStyleInvalidation());
+  DCHECK(!NeedsStyleInvalidation());
+  DCHECK(insertion_point.isConnected() || insertion_point.IsInShadowTree() ||
+         IsContainerNode());
+  if (insertion_point.isConnected()) {
+    SetFlag(kIsConnectedFlag);
+    insertion_point.GetDocument().IncrementNodeCount();
+  }
+  if (ParentOrShadowHostNode()->IsInShadowTree())
+    SetFlag(kIsInShadowTreeFlag);
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->ChildrenChanged(&insertion_point);
+  return kInsertionDone;
+}
+
+void Node::RemovedFrom(ContainerNode& insertion_point) {
+  DCHECK(insertion_point.isConnected() || IsContainerNode() ||
+         IsInShadowTree());
+  if (insertion_point.isConnected()) {
+    ClearNeedsStyleRecalc();
+    ClearChildNeedsStyleRecalc();
+    ClearNeedsStyleInvalidation();
+    ClearChildNeedsStyleInvalidation();
+    ClearFlag(kIsConnectedFlag);
+    insertion_point.GetDocument().DecrementNodeCount();
+  }
+  if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
+    ClearFlag(kIsInShadowTreeFlag);
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
+    cache->Remove(this);
 }
 
 String Node::DebugName() const {
@@ -2651,6 +2705,17 @@ ExecutionContext* Node::GetExecutionContext() const {
 
 void Node::WillMoveToNewDocument(Document& old_document,
                                  Document& new_document) {
+  // In rare situations, this node may be the focused element of the old
+  // document. In this case, we need to clear the focused element of the old
+  // document, and since we are currently in an event forbidden scope, we can't
+  // fire the blur event.
+  if (old_document.FocusedElement() == this) {
+    FocusParams params(SelectionBehaviorOnFocus::kNone,
+                       mojom::blink::FocusType::kNone, nullptr);
+    params.omit_blur_events = true;
+    old_document.SetFocusedElement(nullptr, params);
+  }
+
   if (!old_document.GetPage() ||
       old_document.GetPage() == new_document.GetPage())
     return;
@@ -2925,6 +2990,17 @@ void Node::NotifyMutationObserversNodeWillDetach() {
 }
 
 void Node::HandleLocalEvents(Event& event) {
+  if (UNLIKELY(IsDocumentNode())) {
+    if (GetDocument().PopupShowing() &&
+        (event.eventPhase() == Event::kCapturingPhase ||
+         event.eventPhase() == Event::kAtTarget)) {
+      DCHECK(RuntimeEnabledFeatures::HTMLPopupElementEnabled());
+      // There is a popup visible - check if this event should "light dismiss"
+      // one or more popups.
+      HTMLPopupElement::HandleLightDismiss(event);
+    }
+  }
+
   if (!HasEventTargetData())
     return;
 
@@ -2990,14 +3066,12 @@ DispatchEventResult Node::DispatchDOMActivateEvent(int detail,
 }
 
 void Node::DispatchSimulatedClick(const Event* underlying_event,
-                                  SimulatedClickMouseEventOptions event_options,
                                   SimulatedClickCreationScope scope) {
   if (auto* element = IsElementNode() ? To<Element>(this) : parentElement()) {
     element->ActivateDisplayLockIfNeeded(
         DisplayLockActivationReason::kSimulatedClick);
   }
-  EventDispatcher::DispatchSimulatedClick(*this, underlying_event,
-                                          event_options, scope);
+  EventDispatcher::DispatchSimulatedClick(*this, underlying_event, scope);
 }
 
 void Node::DefaultEventHandler(Event& event) {
@@ -3115,32 +3189,15 @@ void Node::DecrementConnectedSubframeCount() {
   RareData()->DecrementConnectedSubframeCount();
 }
 
-StaticNodeList* Node::getDestinationInsertionPoints() {
-  // TODO(crbug.com/937746): Anything caught by this DCHECK is using the
-  // now-removed Shadow DOM v0 API.
-  DCHECK(false)
-      << "Shadow DOM v0 has been removed (getDestinationInsertionPoints).";
-
-  UpdateDistributionForLegacyDistributedNodes();
-  HeapVector<Member<V0InsertionPoint>, 8> insertion_points;
-  CollectDestinationInsertionPoints(*this, insertion_points);
-  HeapVector<Member<Node>> filtered_insertion_points;
-  for (const auto& insertion_point : insertion_points) {
-    DCHECK(insertion_point->ContainingShadowRoot());
-    if (!insertion_point->ContainingShadowRoot()->IsOpenOrV0())
-      break;
-    filtered_insertion_points.push_back(insertion_point);
-  }
-  return StaticNodeList::Adopt(filtered_insertion_points);
+ShadowRoot* Node::GetSlotAssignmentRoot() const {
+  DCHECK(!IsPseudoElement());
+  ShadowRoot* root = ShadowRootOfParent();
+  return (root && root->HasSlotAssignment()) ? root : nullptr;
 }
 
 HTMLSlotElement* Node::AssignedSlot() const {
-  DCHECK(!IsPseudoElement());
-  ShadowRoot* root = V1ShadowRootOfParent();
+  ShadowRoot* root = GetSlotAssignmentRoot();
   if (!root)
-    return nullptr;
-
-  if (!root->HasSlotAssignment())
     return nullptr;
 
   // TODO(hayato): Node::AssignedSlot() shouldn't be called while
@@ -3165,15 +3222,28 @@ HTMLSlotElement* Node::AssignedSlot() const {
   // dirty. RecalcAssignment() is almost no-op if we don't need to recalc.
   root->GetSlotAssignment().RecalcAssignment();
   if (FlatTreeNodeData* data = GetFlatTreeNodeData()) {
-    DCHECK_EQ(root->AssignedSlotFor(*this), data->AssignedSlot());
+    DCHECK_EQ(root->AssignedSlotFor(*this), data->AssignedSlot())
+        << "Assigned slot mismatch for node " << this;
     return data->AssignedSlot();
   }
   return nullptr;
 }
 
+// Used when assignment recalc is forbidden, i.e., DetachLayoutTree().
+// Returned assignedSlot is not guaranteed up to date.
+HTMLSlotElement* Node::AssignedSlotWithoutRecalc() const {
+  if (!GetSlotAssignmentRoot())
+    return nullptr;
+
+  if (FlatTreeNodeData* data = GetFlatTreeNodeData())
+    return data->AssignedSlot();
+
+  return nullptr;
+}
+
 HTMLSlotElement* Node::assignedSlotForBinding() {
   // assignedSlot doesn't need to recalc slot assignment
-  if (ShadowRoot* root = V1ShadowRootOfParent()) {
+  if (ShadowRoot* root = ShadowRootOfParent()) {
     if (root->GetType() == ShadowRootType::kOpen)
       return AssignedSlot();
   }
@@ -3252,7 +3322,6 @@ void Node::SetCustomElementState(CustomElementState new_state) {
   }
 
   DCHECK(IsHTMLElement());
-  DCHECK_NE(kV0Upgraded, GetV0CustomElementState());
 
   auto* element = To<Element>(this);
   bool was_defined = element->IsDefined();
@@ -3261,45 +3330,15 @@ void Node::SetCustomElementState(CustomElementState new_state) {
                 static_cast<NodeFlags>(new_state);
   DCHECK(new_state == GetCustomElementState());
 
-  if (element->IsDefined() != was_defined) {
+  if (element->IsDefined() != was_defined)
     element->PseudoStateChanged(CSSSelector::kPseudoDefined);
-    if (RuntimeEnabledFeatures::CustomElementsV0Enabled())
-      element->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
-  }
-}
-
-void Node::SetV0CustomElementState(V0CustomElementState new_state) {
-  DCHECK(RuntimeEnabledFeatures::CustomElementsV0Enabled());
-  V0CustomElementState old_state = GetV0CustomElementState();
-
-  switch (new_state) {
-    case kV0NotCustomElement:
-      NOTREACHED();  // Everything starts in this state
-      return;
-
-    case kV0WaitingForUpgrade:
-      DCHECK_EQ(kV0NotCustomElement, old_state);
-      break;
-
-    case kV0Upgraded:
-      DCHECK_EQ(kV0WaitingForUpgrade, old_state);
-      break;
-  }
-
-  DCHECK(IsHTMLElement() || IsSVGElement());
-  DCHECK(CustomElementState::kCustom != GetCustomElementState());
-  SetFlag(kV0CustomElementFlag);
-  SetFlag(new_state == kV0Upgraded, kV0CustomElementUpgradedFlag);
-
-  if (old_state == kV0NotCustomElement || new_state == kV0Upgraded) {
-    To<Element>(this)->PseudoStateChanged(CSSSelector::kPseudoUnresolved);
-    To<Element>(this)->PseudoStateChanged(CSSSelector::kPseudoDefined);
-  }
 }
 
 void Node::CheckSlotChange(SlotChangeType slot_change_type) {
   // Common check logic is used in both cases, "after inserted" and "before
-  // removed".
+  // removed". This function calls DidSlotChange() on the appropriate nodes,
+  // e.g. the assigned slot for this node, or the parent slot for a slot's
+  // fallback content.
 
   // Relevant DOM Standard:
   // https://dom.spec.whatwg.org/#concept-node-insert
@@ -3313,7 +3352,7 @@ void Node::CheckSlotChange(SlotChangeType slot_change_type) {
   if (!IsSlotable())
     return;
 
-  if (ShadowRoot* root = V1ShadowRootOfParent()) {
+  if (ShadowRoot* root = ShadowRootOfParent()) {
     // A shadow host's child can be assigned to a slot in the host's shadow
     // tree.
 
@@ -3321,14 +3360,19 @@ void Node::CheckSlotChange(SlotChangeType slot_change_type) {
     // slotables" at this timing, we skip it as an optimization.
     if (HTMLSlotElement* slot = root->AssignedSlotFor(*this))
       slot->DidSlotChange(slot_change_type);
-  } else if (IsInV1ShadowTree()) {
-    // Checking for fallback content if the node is in a v1 shadow tree.
+  } else if (IsInShadowTree()) {
+    // Checking for fallback content if the node is in a shadow tree.
     if (auto* parent_slot = DynamicTo<HTMLSlotElement>(parentElement())) {
-      DCHECK(parent_slot->SupportsAssignment());
       // The parent_slot's assigned nodes might not be calculated because they
       // are lazy evaluated later at UpdateDistribution() so we have to check it
-      // here.
-      if (!parent_slot->HasAssignedNodesSlow())
+      // here. Also, parent_slot may have already been removed, if this was the
+      // removal of nested slots, e.g.
+      //   <slot name=parent-slot><slot name=this-slot>fallback</slot></slot>.
+      // In that case, parent-slot has already been removed, so parent_slot->
+      // SupportsAssignment() is false, but this-slot is still in the process
+      // of being removed, so IsInShadowTree() is still true.
+      if (parent_slot->SupportsAssignment() &&
+          !parent_slot->HasAssignedNodesSlow())
         parent_slot->DidSlotChange(slot_change_type);
     }
   }
@@ -3374,12 +3418,7 @@ bool Node::HasMediaControlAncestor() const {
 void Node::FlatTreeParentChanged() {
   if (!isConnected())
     return;
-  // TODO(futhark): Replace with DCHECK(IsSlotable()) when Shadow DOM V0 support
-  // is removed.
-  if (!IsElementNode() && !IsTextNode()) {
-    DCHECK(GetDocument().MayContainV0Shadow());
-    return;
-  }
+  DCHECK(IsSlotable());
   if (const ComputedStyle* style = GetComputedStyle()) {
     // We are moving a node with ensured computed style into the flat tree.
     // Clear ensured styles so that we can use IsEnsuredOutsideFlatTree() to
@@ -3404,6 +3443,16 @@ void Node::FlatTreeParentChanged() {
   // We also need to force a layout tree re-attach since the layout tree parent
   // box may have changed.
   SetForceReattachLayoutTree();
+
+  AddCandidateDirectionalityForSlot();
+}
+
+void Node::AddCandidateDirectionalityForSlot() {
+  ShadowRoot* root = ShadowRootOfParent();
+  if (!root || !root->HasSlotAssignment())
+    return;
+
+  root->GetSlotAssignment().GetCandidateDirectionality().insert(this);
 }
 
 void Node::RemovedFromFlatTree() {
@@ -3419,6 +3468,15 @@ void Node::RegisterScrollTimeline(ScrollTimeline* timeline) {
 }
 void Node::UnregisterScrollTimeline(ScrollTimeline* timeline) {
   EnsureRareData().UnregisterScrollTimeline(timeline);
+}
+
+void Node::SetManuallyAssignedSlot(HTMLSlotElement* slot) {
+  EnsureFlatTreeNodeData().SetManuallyAssignedSlot(slot);
+}
+HTMLSlotElement* Node::ManuallyAssignedSlot() {
+  if (FlatTreeNodeData* data = GetFlatTreeNodeData())
+    return data->ManuallyAssignedSlot();
+  return nullptr;
 }
 
 void Node::Trace(Visitor* visitor) const {

@@ -50,11 +50,11 @@ cc_library(
     deps = [
         ":font_data",
         "//third_party/glew",
-        "@com_github_gflags_gflags//:gflags",
         "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
         "@com_google_absl//absl/container:node_hash_map",
+        "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/memory",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/types:optional",
@@ -81,6 +81,7 @@ cc_library(
         "@com_google_absl//absl/algorithm:container",
         "@com_google_absl//absl/container:flat_hash_map",
         "@com_google_absl//absl/container:flat_hash_set",
+        "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/time",
         "@com_google_glog//:glog",
@@ -94,7 +95,7 @@ cc_binary(
     ],
     deps = [
         ":render_program",
-        "@com_github_gflags_gflags//:gflags",
+        "@com_google_absl//absl/flags:parse",
         "@com_google_glog//:glog",
     ],
 )

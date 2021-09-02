@@ -11,7 +11,6 @@
 #include "cast/common/channel/proto/cast_channel.pb.h"
 #include "cast/common/channel/testing/fake_cast_socket.h"
 #include "cast/common/channel/testing/mock_socket_error_handler.h"
-#include "cast/common/channel/virtual_connection_manager.h"
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/cast_socket.h"
 #include "cast/receiver/channel/static_credentials.h"
@@ -55,8 +54,7 @@ class DeviceAuthNamespaceHandlerTest : public ::testing::Test {
   CastSocket* socket_;
 
   StaticCredentialsProvider creds_;
-  VirtualConnectionManager manager_;
-  VirtualConnectionRouter router_{&manager_};
+  VirtualConnectionRouter router_;
   DeviceAuthNamespaceHandler auth_handler_{&creds_};
 };
 

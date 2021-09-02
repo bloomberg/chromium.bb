@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import sys
 import os
 
@@ -64,10 +66,11 @@ class HardwareAcceleratedFeatureIntegrationTest(
     feature = args[0]
     self._Navigate(test_path)
     tab = self.tab
+    tab.WaitForJavaScriptCondition('window.gpuPagePopulated', timeout=30)
     if not tab.EvaluateJavaScript(
         'VerifyHardwareAccelerated({{ feature }})', feature=feature):
-      print 'Test failed. Printing page contents:'
-      print tab.EvaluateJavaScript('document.body.innerHTML')
+      print('Test failed. Printing page contents:')
+      print(tab.EvaluateJavaScript('document.body.innerHTML'))
       self.fail('%s not hardware accelerated' % feature)
 
   @classmethod

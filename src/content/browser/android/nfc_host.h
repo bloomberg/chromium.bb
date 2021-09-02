@@ -31,11 +31,10 @@ class NFCHost : public WebContentsObserver {
   // WebContentsObserver implementation.
   void RenderFrameHostChanged(RenderFrameHost* old_host,
                               RenderFrameHost* new_host) override;
-
-  // WebContentsObserver implementation.
   void OnVisibilityChanged(Visibility visibility) override;
 
  private:
+  void MaybeResumeOrSuspendOperations(Visibility visibility);
   void OnPermissionStatusChange(blink::mojom::PermissionStatus status);
   void Close();
 
@@ -45,7 +44,7 @@ class NFCHost : public WebContentsObserver {
   mojo::Remote<device::mojom::NFCProvider> nfc_provider_;
 
   // Permission change subscription ID provided by |permission_controller_|.
-  int subscription_id_ = PermissionController::kNoPendingOperation;
+  PermissionController::SubscriptionId subscription_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NFCHost);
 };

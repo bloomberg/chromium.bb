@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <chrome/browser/android/contextualsearch/contextual_search_context.h>
+#include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 
 #include "base/android/jni_string.h"
 #include "chrome/android/chrome_jni_headers/ContextualSearchContext_jni.h"
@@ -59,17 +59,6 @@ void ContextualSearchContext::SetResolveProperties(
   previous_event_results_ = j_previous_event_results;
 }
 
-void ContextualSearchContext::SetContent(
-    JNIEnv* env,
-    jobject obj,
-    const base::android::JavaParamRef<jstring>& j_content,
-    jint j_selection_start,
-    jint j_selection_end) {
-  SetSelectionSurroundings(
-      j_selection_start, j_selection_end,
-      base::android::ConvertJavaStringToUTF16(env, j_content));
-}
-
 void ContextualSearchContext::AdjustSelection(JNIEnv* env,
                                               jobject obj,
                                               jint j_start_adjust,
@@ -124,13 +113,13 @@ int ContextualSearchContext::GetPreviousEventResults() const {
 void ContextualSearchContext::SetSelectionSurroundings(
     int start_offset,
     int end_offset,
-    const base::string16& surrounding_text) {
+    const std::u16string& surrounding_text) {
   this->start_offset_ = start_offset;
   this->end_offset_ = end_offset;
   this->surrounding_text_ = surrounding_text;
 }
 
-const base::string16 ContextualSearchContext::GetSurroundingText() const {
+const std::u16string ContextualSearchContext::GetSurroundingText() const {
   return surrounding_text_;
 }
 
@@ -189,20 +178,21 @@ ContextualSearchContext::GetTranslationLanguages() const {
 }
 
 std::string ContextualSearchContext::GetReliableLanguage(
-    const base::string16& contents) const {
-  std::string content_language;
-  std::string html_lang;
-  std::string cld_language;
-  bool is_cld_reliable;
+    const std::u16string& contents) const {
+  std::string model_detected_language;
+  bool is_model_reliable;
+  float model_reliability_score;
   std::string language = translate::DeterminePageLanguage(
-      content_language, html_lang, contents, &cld_language, &is_cld_reliable);
+      /*content_language=*/std::string(),
+      /*html_lang=*/std::string(), contents, &model_detected_language,
+      &is_model_reliable, model_reliability_score);
   // Make sure we return an empty string when unreliable or an unknown result.
-  if (!is_cld_reliable || language == translate::kUnknownLanguageCode)
+  if (!is_model_reliable || language == translate::kUnknownLanguageCode)
     language = "";
   return language;
 }
 
-base::string16 ContextualSearchContext::GetSelection() const {
+std::u16string ContextualSearchContext::GetSelection() const {
   int start = this->start_offset_;
   int end = this->end_offset_;
   DCHECK(start >= 0);

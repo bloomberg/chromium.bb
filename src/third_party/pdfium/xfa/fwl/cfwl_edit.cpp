@@ -148,7 +148,7 @@ void CFWL_Edit::DrawWidget(CFGAS_GEGraphics* pGraphics,
   if (m_ClientRect.IsEmpty())
     return;
 
-  DrawContent(pGraphics, &matrix);
+  DrawContent(pGraphics, matrix);
   if (HasBorder())
     DrawBorder(pGraphics, CFWL_Part::Border, matrix);
 }
@@ -283,19 +283,15 @@ void CFWL_Edit::OnCaretChanged() {
 }
 
 void CFWL_Edit::OnTextWillChange(CFDE_TextEditEngine::TextChange* change) {
-  CFWL_EventTextWillChange event(this);
-  event.previous_text = change->previous_text;
-  event.change_text = change->text;
-  event.selection_start = change->selection_start;
-  event.selection_end = change->selection_end;
-  event.cancelled = false;
-
+  CFWL_EventTextWillChange event(this, change->text, change->previous_text,
+                                 change->selection_start,
+                                 change->selection_end);
   DispatchEvent(&event);
 
-  change->text = event.change_text;
-  change->selection_start = event.selection_start;
-  change->selection_end = event.selection_end;
-  change->cancelled = event.cancelled;
+  change->text = event.GetChangeText();
+  change->selection_start = event.GetSelectionStart();
+  change->selection_end = event.GetSelectionEnd();
+  change->cancelled = event.GetCancelled();
 }
 
 void CFWL_Edit::OnTextChanged() {
@@ -311,11 +307,9 @@ void CFWL_Edit::OnSelChanged() {
 }
 
 bool CFWL_Edit::OnValidate(const WideString& wsText) {
-  CFWL_EventValidate event(this);
-  event.wsInsert = wsText;
-  event.bValidate = true;
+  CFWL_EventValidate event(this, wsText);
   DispatchEvent(&event);
-  return event.bValidate;
+  return event.GetValidate();
 }
 
 void CFWL_Edit::SetScrollOffset(float fScrollOffset) {
@@ -323,7 +317,7 @@ void CFWL_Edit::SetScrollOffset(float fScrollOffset) {
 }
 
 void CFWL_Edit::DrawContent(CFGAS_GEGraphics* pGraphics,
-                            const CFX_Matrix* pMatrix) {
+                            const CFX_Matrix& mtMatrix) {
   pGraphics->SaveGraphState();
   if (m_Properties.m_dwStyleExes & FWL_STYLEEXT_EDT_CombText)
     pGraphics->SaveGraphState();
@@ -333,10 +327,8 @@ void CFWL_Edit::DrawContent(CFGAS_GEGraphics* pGraphics,
   float fOffSetY = m_EngineRect.top - m_fScrollOffsetY + m_fVAlignOffset;
 
   CFX_Matrix mt(1, 0, 0, 1, fOffSetX, fOffSetY);
-  if (pMatrix) {
-    rtClip = pMatrix->TransformRect(rtClip);
-    mt.Concat(*pMatrix);
-  }
+  rtClip = mtMatrix.TransformRect(rtClip);
+  mt.Concat(mtMatrix);
 
   bool bShowSel = !!(m_Properties.m_dwStates & FWL_WGTSTATE_Focused);
   if (bShowSel && m_pEditEngine->HasSelection()) {
@@ -354,10 +346,8 @@ void CFWL_Edit::DrawContent(CFGAS_GEGraphics* pGraphics,
     }
     pGraphics->SetClipRect(rtClip);
 
-    CFWL_ThemeBackground param;
-    param.m_pGraphics = pGraphics;
-    param.m_matrix = *pMatrix;
-    param.m_pWidget = this;
+    CFWL_ThemeBackground param(this, pGraphics);
+    param.m_matrix = mtMatrix;
     param.m_iPart = CFWL_Part::Background;
     param.m_pPath = &path;
     GetThemeProvider()->DrawBackground(param);
@@ -379,10 +369,8 @@ void CFWL_Edit::DrawContent(CFGAS_GEGraphics* pGraphics,
                    CFX_PointF(fLeft, m_ClientRect.bottom()));
     }
 
-    CFWL_ThemeBackground param;
-    param.m_pGraphics = pGraphics;
-    param.m_matrix = *pMatrix;
-    param.m_pWidget = this;
+    CFWL_ThemeBackground param(this, pGraphics);
+    param.m_matrix = mtMatrix;
     param.m_iPart = CFWL_Part::CombTextLine;
     param.m_pPath = &path;
     GetThemeProvider()->DrawBackground(param);
@@ -482,8 +470,7 @@ void CFWL_Edit::UpdateEditParams() {
   m_pEditEngine->LimitHorizontalScroll(!auto_hscroll);
 
   IFWL_ThemeProvider* theme = GetThemeProvider();
-  CFWL_ThemePart part;
-  part.m_pWidget = this;
+  CFWL_ThemePart part(this);
   m_fFontSize = theme->GetFontSize(part);
 
   RetainPtr<CFGAS_GEFont> pFont = theme->GetFont(part);
@@ -554,16 +541,11 @@ bool CFWL_Edit::UpdateOffset(CFWL_ScrollBar* pScrollBar, float fPosChanged) {
 }
 
 void CFWL_Edit::UpdateVAlignment() {
-  float fSpaceAbove = 0.0f;
-  float fSpaceBelow = 0.0f;
   IFWL_ThemeProvider* theme = GetThemeProvider();
-  CFWL_ThemePart part;
-  part.m_pWidget = this;
-
-  CFX_SizeF pSpace = theme->GetSpaceAboveBelow(part);
-  fSpaceAbove = pSpace.width >= 0.1f ? pSpace.width : 0.0f;
-  fSpaceBelow = pSpace.height >= 0.1f ? pSpace.height : 0.0f;
-
+  CFWL_ThemePart part(this);
+  const CFX_SizeF pSpace = theme->GetSpaceAboveBelow(part);
+  const float fSpaceAbove = pSpace.width >= 0.1f ? pSpace.width : 0.0f;
+  const float fSpaceBelow = pSpace.height >= 0.1f ? pSpace.height : 0.0f;
   float fOffsetY = 0.0f;
   CFX_RectF contents_bounds = m_pEditEngine->GetContentsBoundingBox();
   if (m_Properties.m_dwStyleExes & FWL_STYLEEXT_EDT_VCenter) {
@@ -693,14 +675,13 @@ void CFWL_Edit::Layout() {
 
   IFWL_ThemeProvider* theme = GetThemeProvider();
   float fWidth = theme->GetScrollBarWidth();
-  CFWL_ThemePart part;
   if (!GetOuter()) {
-    part.m_pWidget = this;
+    CFWL_ThemePart part(this);
     CFX_RectF pUIMargin = theme->GetUIMargin(part);
     m_EngineRect.Deflate(pUIMargin.left, pUIMargin.top, pUIMargin.width,
                          pUIMargin.height);
   } else if (GetOuter()->GetClassID() == FWL_Type::DateTimePicker) {
-    part.m_pWidget = GetOuter();
+    CFWL_ThemePart part(GetOuter());
     CFX_RectF pUIMargin = theme->GetUIMargin(part);
     m_EngineRect.Deflate(pUIMargin.left, pUIMargin.top, pUIMargin.width,
                          pUIMargin.height);
@@ -974,7 +955,7 @@ void CFWL_Edit::OnProcessEvent(CFWL_Event* pEvent) {
       (pSrcTarget == m_pHorzScrollBar && m_pHorzScrollBar)) {
     CFWL_EventScroll* pScrollEvent = static_cast<CFWL_EventScroll*>(pEvent);
     OnScroll(static_cast<CFWL_ScrollBar*>(pSrcTarget),
-             pScrollEvent->m_iScrollCode, pScrollEvent->m_fPos);
+             pScrollEvent->GetScrollCode(), pScrollEvent->GetPos());
   }
 }
 

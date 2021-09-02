@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
@@ -58,8 +59,7 @@ AuraTestHelper* g_instance = nullptr;
 
 }  // namespace
 
-AuraTestHelper::AuraTestHelper(ui::ContextFactory* context_factory,
-                               bool disable_animations) {
+AuraTestHelper::AuraTestHelper(ui::ContextFactory* context_factory) {
   DCHECK(!g_instance);
   g_instance = this;
 
@@ -67,7 +67,7 @@ AuraTestHelper::AuraTestHelper(ui::ContextFactory* context_factory,
   ui::test::EnableTestConfigForPlatformWindows();
 #endif
 
-#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+#if defined(USE_OZONE) && BUILDFLAG(IS_CHROMEOS_ASH)
   ui::DisableNativeUiEventDispatchForTest();
 #endif
 
@@ -80,11 +80,8 @@ AuraTestHelper::AuraTestHelper(ui::ContextFactory* context_factory,
   ui::test::EventGeneratorDelegate::SetFactoryFunction(
       base::BindRepeating(&EventGeneratorDelegateAura::Create));
 
-  if (disable_animations) {
-    zero_duration_mode_ =
-        std::make_unique<ui::ScopedAnimationDurationScaleMode>(
-            ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-  }
+  zero_duration_mode_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
 
   // Some tests suites create Env globally.
   if (Env::HasInstance())

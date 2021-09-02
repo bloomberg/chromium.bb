@@ -44,6 +44,8 @@ enum {
   kMinQuantizer = 0,
   kMinLossyQuantizer = 1,
   kMaxQuantizer = 255,
+  // Quantizer matrix is used only when level < 15.
+  kNumQuantizerLevelsForQuantizerMatrix = 15,
   kFrameLfCount = 4,
   kMaxLoopFilterValue = 63,
   kNum4x4In64x64 = 256,
@@ -627,6 +629,52 @@ inline const char* ToString(const LoopRestorationType type) {
   abort();
 }
 
+inline const char* ToString(const TransformSize size) {
+  switch (size) {
+    case kTransformSize4x4:
+      return "kTransformSize4x4";
+    case kTransformSize4x8:
+      return "kTransformSize4x8";
+    case kTransformSize4x16:
+      return "kTransformSize4x16";
+    case kTransformSize8x4:
+      return "kTransformSize8x4";
+    case kTransformSize8x8:
+      return "kTransformSize8x8";
+    case kTransformSize8x16:
+      return "kTransformSize8x16";
+    case kTransformSize8x32:
+      return "kTransformSize8x32";
+    case kTransformSize16x4:
+      return "kTransformSize16x4";
+    case kTransformSize16x8:
+      return "kTransformSize16x8";
+    case kTransformSize16x16:
+      return "kTransformSize16x16";
+    case kTransformSize16x32:
+      return "kTransformSize16x32";
+    case kTransformSize16x64:
+      return "kTransformSize16x64";
+    case kTransformSize32x8:
+      return "kTransformSize32x8";
+    case kTransformSize32x16:
+      return "kTransformSize32x16";
+    case kTransformSize32x32:
+      return "kTransformSize32x32";
+    case kTransformSize32x64:
+      return "kTransformSize32x64";
+    case kTransformSize64x16:
+      return "kTransformSize64x16";
+    case kTransformSize64x32:
+      return "kTransformSize64x32";
+    case kTransformSize64x64:
+      return "kTransformSize64x64";
+    case kNumTransformSizes:
+      return "kNumTransformSizes";
+  }
+  abort();
+}
+
 inline const char* ToString(const TransformType type) {
   switch (type) {
     case kTransformTypeDctDct:
@@ -736,14 +784,6 @@ extern const uint8_t kAbsHalfSubPixelFilters[6][16][8];
 extern const int16_t kDirectionalIntraPredictorDerivative[44];
 
 extern const uint8_t kDeblockFilterLevelIndex[kMaxPlanes][kNumLoopFilterTypes];
-
-extern const int8_t kMaskIdLookup[4][kMaxBlockSizes];
-
-extern const int8_t kVerticalBorderMaskIdLookup[kMaxBlockSizes];
-
-extern const uint64_t kTopMaskLookup[67][4];
-
-extern const uint64_t kLeftMaskLookup[67][4];
 
 }  // namespace libgav1
 

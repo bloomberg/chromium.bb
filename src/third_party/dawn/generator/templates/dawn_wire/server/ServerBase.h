@@ -32,7 +32,7 @@ namespace dawn_wire { namespace server {
       protected:
         void DestroyAllObjects(const DawnProcTable& procs) {
             //* Free all objects when the server is destroyed
-            {% for type in by_category["object"] if type.name.canonical_case() != "device" %}
+            {% for type in by_category["object"] if type.name.get() != "device" %}
                 {
                     std::vector<{{as_cType(type.name)}}> handles = mKnown{{type.name.CamelCase()}}.AcquireAllHandles();
                     for ({{as_cType(type.name)}} handle : handles) {
@@ -40,6 +40,13 @@ namespace dawn_wire { namespace server {
                     }
                 }
             {% endfor %}
+            //* Release devices last because dawn_native requires this.
+            {
+                std::vector<WGPUDevice> handles = mKnownDevice.AcquireAllHandles();
+                for (WGPUDevice handle : handles) {
+                    procs.deviceRelease(handle);
+                }
+            }
         }
 
         {% for type in by_category["object"] %}
@@ -63,20 +70,20 @@ namespace dawn_wire { namespace server {
       private:
         // Implementation of the ObjectIdResolver interface
         {% for type in by_category["object"] %}
-            DeserializeResult GetFromId(ObjectId id, {{as_cType(type.name)}}* out) const final {
+            WireResult GetFromId(ObjectId id, {{as_cType(type.name)}}* out) const final {
                 auto data = mKnown{{type.name.CamelCase()}}.Get(id);
                 if (data == nullptr) {
-                    return DeserializeResult::FatalError;
+                    return WireResult::FatalError;
                 }
 
                 *out = data->handle;
-                return DeserializeResult::Success;
+                return WireResult::Success;
             }
 
-            DeserializeResult GetOptionalFromId(ObjectId id, {{as_cType(type.name)}}* out) const final {
+            WireResult GetOptionalFromId(ObjectId id, {{as_cType(type.name)}}* out) const final {
                 if (id == 0) {
                     *out = nullptr;
-                    return DeserializeResult::Success;
+                    return WireResult::Success;
                 }
 
                 return GetFromId(id, out);

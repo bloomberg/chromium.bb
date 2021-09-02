@@ -7,15 +7,17 @@
 #include "base/mac/foundation_util.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
-#import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/page_info/page_info_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_multi_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,7 +43,8 @@ float kPaddingSecurityHeader = 28.0f;
 
 }  // namespace
 
-@interface PageInfoViewController () <TableViewTextLinkCellDelegate>
+@interface PageInfoViewController () <TableViewLinkHeaderFooterItemDelegate,
+                                      TableViewTextLinkCellDelegate>
 
 @property(nonatomic, strong)
     PageInfoSiteSecurityDescription* pageInfoSecurityDescription;
@@ -54,7 +57,10 @@ float kPaddingSecurityHeader = 28.0f;
 
 - (instancetype)initWithSiteSecurityDescription:
     (PageInfoSiteSecurityDescription*)siteSecurityDescription {
-  self = [super initWithStyle:UITableViewStylePlain];
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? ChromeTableViewStyle()
+                               : UITableViewStylePlain;
+  self = [super initWithStyle:style];
   if (self) {
     _pageInfoSecurityDescription = siteSecurityDescription;
   }
@@ -64,9 +70,9 @@ float kPaddingSecurityHeader = 28.0f;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
+  self.navigationItem.titleView =
+      [self titleViewLabelForURL:self.pageInfoSecurityDescription.siteURL];
   self.title = l10n_util::GetNSString(IDS_IOS_PAGE_INFO_SITE_INFORMATION);
-  self.navigationItem.prompt = self.pageInfoSecurityDescription.siteURL;
-  self.navigationController.navigationBar.prefersLargeTitles = NO;
   self.tableView.accessibilityIdentifier = kPageInfoViewAccessibilityIdentifier;
 
   UIBarButtonItem* dismissButton = [[UIBarButtonItem alloc]
@@ -103,12 +109,22 @@ float kPaddingSecurityHeader = 28.0f;
   [self.tableViewModel addItem:securityHeader
        toSectionWithIdentifier:SectionIdentifierSecurityContent];
 
-  TableViewTextLinkItem* securityDescription =
-      [[TableViewTextLinkItem alloc] initWithType:ItemTypeSecurityDescription];
-  securityDescription.text = self.pageInfoSecurityDescription.message;
-  securityDescription.linkURL = GURL(kPageInfoHelpCenterURL);
-  [self.tableViewModel addItem:securityDescription
-       toSectionWithIdentifier:SectionIdentifierSecurityContent];
+  if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
+    TableViewLinkHeaderFooterItem* securityDescription =
+        [[TableViewLinkHeaderFooterItem alloc]
+            initWithType:ItemTypeSecurityDescription];
+    securityDescription.text = self.pageInfoSecurityDescription.message;
+    securityDescription.urls = std::vector<GURL>{GURL(kPageInfoHelpCenterURL)};
+    [self.tableViewModel setFooter:securityDescription
+          forSectionWithIdentifier:SectionIdentifierSecurityContent];
+  } else {
+    TableViewTextLinkItem* securityDescription = [[TableViewTextLinkItem alloc]
+        initWithType:ItemTypeSecurityDescription];
+    securityDescription.text = self.pageInfoSecurityDescription.message;
+    securityDescription.linkURL = GURL(kPageInfoHelpCenterURL);
+    [self.tableViewModel addItem:securityDescription
+         toSectionWithIdentifier:SectionIdentifierSecurityContent];
+  }
 }
 
 #pragma mark - UITableViewDelegate
@@ -127,6 +143,7 @@ float kPaddingSecurityHeader = 28.0f;
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
 
   if (item.type == ItemTypeSecurityDescription) {
+    DCHECK(!base::FeatureList::IsEnabled(kSettingsRefresh));
     TableViewTextLinkCell* tableViewTextLinkCell =
         base::mac::ObjCCastStrict<TableViewTextLinkCell>(cellToReturn);
     tableViewTextLinkCell.delegate = self;
@@ -135,12 +152,54 @@ float kPaddingSecurityHeader = 28.0f;
   return cellToReturn;
 }
 
+- (UIView*)tableView:(UITableView*)tableView
+    viewForFooterInSection:(NSInteger)section {
+  UIView* view = [super tableView:tableView viewForFooterInSection:section];
+  NSInteger sectionIdentifier =
+      [self.tableViewModel sectionIdentifierForSection:section];
+  switch (sectionIdentifier) {
+    case SectionIdentifierSecurityContent: {
+      if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
+        TableViewLinkHeaderFooterView* linkView =
+            base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
+        linkView.delegate = self;
+      }
+    } break;
+    default:
+      NOTREACHED();
+      break;
+  }
+  return view;
+}
+
 #pragma mark - TableViewTextLinkCellDelegate
 
 - (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
             didRequestOpenURL:(const GURL&)URL {
+  DCHECK(!base::FeatureList::IsEnabled(kSettingsRefresh));
   DCHECK(URL == GURL(kPageInfoHelpCenterURL));
   [self.handler showSecurityHelpPage];
+}
+
+#pragma mark - TableViewLinkHeaderFooterItemDelegate
+
+- (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(GURL)URL {
+  DCHECK(base::FeatureList::IsEnabled(kSettingsRefresh));
+  DCHECK(URL == GURL(kPageInfoHelpCenterURL));
+  [self.handler showSecurityHelpPage];
+}
+
+#pragma mark - Private
+
+// Returns the navigationItem titleView for |siteURL|.
+- (UILabel*)titleViewLabelForURL:(NSString*)siteURL {
+  UILabel* labelURL = [[UILabel alloc] init];
+  labelURL.lineBreakMode = NSLineBreakByTruncatingHead;
+  labelURL.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  labelURL.text = siteURL;
+  labelURL.adjustsFontSizeToFitWidth = YES;
+  labelURL.minimumScaleFactor = 0.7;
+  return labelURL;
 }
 
 @end

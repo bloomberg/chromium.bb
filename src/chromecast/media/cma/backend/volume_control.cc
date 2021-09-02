@@ -29,7 +29,6 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
-#include "chromecast/base/serializers.h"
 #include "chromecast/media/audio/mixer_service/control_connection.h"
 #include "chromecast/media/cma/backend/audio_buildflags.h"
 #include "chromecast/media/cma/backend/saved_volumes.h"
@@ -93,7 +92,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
 
     base::Thread::Options options;
     options.message_pump_type = base::MessagePumpType::IO;
-    thread_.StartWithOptions(options);
+    thread_.StartWithOptions(std::move(options));
 
     thread_.task_runner()->PostTask(
         FROM_HERE, base::BindOnce(&VolumeControlInternal::InitializeOnThread,
