@@ -40,7 +40,7 @@
 // After submitting changes to this file, you will need to follow the
 // instructions at go/quic_client_binary_update
 
-#include "net/third_party/quiche/src/quic/tools/quic_toy_client.h"
+#include "quic/tools/quic_toy_client.h"
 
 #include <iostream>
 #include <memory>
@@ -51,17 +51,18 @@
 #include "absl/strings/escaping.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_server_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_default_proof_providers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ip_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_system_event_loop.h"
-#include "net/third_party/quiche/src/quic/tools/fake_proof_verifier.h"
-#include "net/third_party/quiche/src/quic/tools/quic_url.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_server_id.h"
+#include "quic/core/quic_utils.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_default_proof_providers.h"
+#include "quic/platform/api/quic_ip_address.h"
+#include "quic/platform/api/quic_socket_address.h"
+#include "quic/platform/api/quic_system_event_loop.h"
+#include "quic/test_tools/simple_session_cache.h"
+#include "quic/tools/fake_proof_verifier.h"
+#include "quic/tools/quic_url.h"
+#include "common/quiche_text_utils.h"
 
 namespace {
 
@@ -154,6 +155,13 @@ DEFINE_QUIC_COMMAND_LINE_FLAG(
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(
     bool,
+    multi_packet_chlo,
+    false,
+    "If true, add a transport parameter to make the ClientHello span two "
+    "packets. Only works with QUIC+TLS.");
+
+DEFINE_QUIC_COMMAND_LINE_FLAG(
+    bool,
     redirect_is_success,
     true,
     "If true, an HTTP response code of 3xx is considered to be a "
@@ -186,6 +194,12 @@ DEFINE_QUIC_COMMAND_LINE_FLAG(
     disable_port_changes,
     false,
     "If true, do not change local port after each request.");
+
+DEFINE_QUIC_COMMAND_LINE_FLAG(bool,
+                              one_connection_per_request,
+                              false,
+                              "If true, close the connection after each "
+                              "request. This allows testing 0-RTT.");
 
 DEFINE_QUIC_COMMAND_LINE_FLAG(int32_t,
                               server_connection_id_length,
@@ -253,6 +267,10 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   } else {
     proof_verifier = quic::CreateDefaultProofVerifier(url.host());
   }
+  std::unique_ptr<quic::SessionCache> session_cache;
+  if (num_requests > 1 && GetQuicFlag(FLAGS_one_connection_per_request)) {
+    session_cache = std::make_unique<test::SimpleSessionCache>();
+  }
 
   QuicConfig config;
   std::string connection_options_string = GetQuicFlag(FLAGS_connection_options);
@@ -266,6 +284,15 @@ int QuicToyClient::SendRequestsAndPrintResponses(
     config.SetClientConnectionOptions(
         ParseQuicTagVector(client_connection_options_string));
   }
+  if (GetQuicFlag(FLAGS_multi_packet_chlo)) {
+    // Make the ClientHello span multiple packets by adding a custom transport
+    // parameter.
+    constexpr auto kCustomParameter =
+        static_cast<TransportParameters::TransportParameterId>(0x173E);
+    std::string custom_value(2000, '?');
+    config.custom_transport_parameters_to_send()[kCustomParameter] =
+        custom_value;
+  }
 
   int address_family_for_lookup = AF_UNSPEC;
   if (GetQuicFlag(FLAGS_ip_version_for_host_lookup) == "4") {
@@ -277,7 +304,7 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   // Build the client, and try to connect.
   std::unique_ptr<QuicSpdyClientBase> client = client_factory_->CreateClient(
       url.host(), host, address_family_for_lookup, port, versions, config,
-      std::move(proof_verifier));
+      std::move(proof_verifier), std::move(session_cache));
 
   if (client == nullptr) {
     std::cerr << "Failed to create client." << std::endl;
@@ -321,7 +348,7 @@ int QuicToyClient::SendRequestsAndPrintResponses(
   // Construct the string body from flags, if provided.
   std::string body = GetQuicFlag(FLAGS_body);
   if (!GetQuicFlag(FLAGS_body_hex).empty()) {
-    DCHECK(GetQuicFlag(FLAGS_body).empty())
+    QUICHE_DCHECK(GetQuicFlag(FLAGS_body).empty())
         << "Only set one of --body and --body_hex.";
     body = absl::HexStringToBytes(GetQuicFlag(FLAGS_body_hex));
   }
@@ -340,7 +367,8 @@ int QuicToyClient::SendRequestsAndPrintResponses(
     if (sp.empty()) {
       continue;
     }
-    std::vector<absl::string_view> kv = absl::StrSplit(sp, ':');
+    std::vector<absl::string_view> kv =
+        absl::StrSplit(sp, absl::MaxSplits(':', 1));
     QuicheTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[0]);
     QuicheTextUtils::RemoveLeadingAndTrailingWhitespace(&kv[1]);
     header_block[kv[0]] = kv[1];
@@ -413,11 +441,26 @@ int QuicToyClient::SendRequestsAndPrintResponses(
       return 1;
     }
 
-    // Change the ephemeral port if there are more requests to do.
-    if (!GetQuicFlag(FLAGS_disable_port_changes) && i + 1 < num_requests) {
-      if (!client->ChangeEphemeralPort()) {
-        std::cerr << "Failed to change ephemeral port." << std::endl;
-        return 1;
+    if (i + 1 < num_requests) {  // There are more requests to perform.
+      if (GetQuicFlag(FLAGS_one_connection_per_request)) {
+        std::cout << "Disconnecting client between requests." << std::endl;
+        client->Disconnect();
+        if (!client->Initialize()) {
+          std::cerr << "Failed to reinitialize client between requests."
+                    << std::endl;
+          return 1;
+        }
+        if (!client->Connect()) {
+          std::cerr << "Failed to reconnect client between requests."
+                    << std::endl;
+          return 1;
+        }
+      } else if (!GetQuicFlag(FLAGS_disable_port_changes)) {
+        // Change the ephemeral port.
+        if (!client->ChangeEphemeralPort()) {
+          std::cerr << "Failed to change ephemeral port." << std::endl;
+          return 1;
+        }
       }
     }
   }

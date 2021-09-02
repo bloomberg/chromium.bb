@@ -12,6 +12,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_shader.h"
+#include "cc/paint/skottie_wrapper.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -63,7 +64,7 @@ void Canvas::RecreateBackingCanvas(const Size& size,
 }
 
 // static
-void Canvas::SizeStringInt(const base::string16& text,
+void Canvas::SizeStringInt(const std::u16string& text,
                            const FontList& font_list,
                            int* width,
                            int* height,
@@ -78,7 +79,7 @@ void Canvas::SizeStringInt(const base::string16& text,
 }
 
 // static
-int Canvas::GetStringWidth(const base::string16& text,
+int Canvas::GetStringWidth(const std::u16string& text,
                            const FontList& font_list) {
   int width = 0, height = 0;
   SizeStringInt(text, font_list, &width, &height, 0, NO_ELLIPSIS);
@@ -86,7 +87,7 @@ int Canvas::GetStringWidth(const base::string16& text,
 }
 
 // static
-float Canvas::GetStringWidthF(const base::string16& text,
+float Canvas::GetStringWidthF(const std::u16string& text,
                               const FontList& font_list) {
   float width = 0, height = 0;
   SizeStringFloat(text, font_list, &width, &height, 0, NO_ELLIPSIS);
@@ -397,7 +398,7 @@ void Canvas::DrawSkottie(scoped_refptr<cc::SkottieWrapper> skottie,
   canvas_->drawSkottie(std::move(skottie), RectToSkRect(dst), t);
 }
 
-void Canvas::DrawStringRect(const base::string16& text,
+void Canvas::DrawStringRect(const std::u16string& text,
                             const FontList& font_list,
                             SkColor color,
                             const Rect& display_rect) {

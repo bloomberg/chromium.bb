@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/css_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_value_pool.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/longhand.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -65,7 +66,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::
         continue;
       need_to_expand_all_ = true;
     }
-    if (!isCSSPropertyIDWithName(property.Id()))
+    if (!IsCSSPropertyIDWithName(property.Id()))
       continue;
     longhand_property_used_.set(GetCSSPropertyIDIndex(property.Id()));
   }
@@ -93,7 +94,7 @@ StylePropertySerializer::CSSPropertyValueSetForSerializer::PropertyAt(
 
   CSSPropertyID property_id =
       static_cast<CSSPropertyID>(index + kIntFirstCSSProperty);
-  DCHECK(isCSSPropertyIDWithName(property_id));
+  DCHECK(IsCSSPropertyIDWithName(property_id));
   if (longhand_property_used_.test(index)) {
     int real_index = property_set_->FindPropertyIndex(property_id);
     DCHECK_NE(real_index, -1);
@@ -120,16 +121,16 @@ bool StylePropertySerializer::CSSPropertyValueSetForSerializer::
         property_set_->PropertyAt(index);
     if (property.Id() == CSSPropertyID::kAll || !property.IsAffectedByAll())
       return true;
-    if (!isCSSPropertyIDWithName(property.Id()))
+    if (!IsCSSPropertyIDWithName(property.Id()))
       return false;
     return longhand_property_used_.test(GetCSSPropertyIDIndex(property.Id()));
   }
 
   CSSPropertyID property_id =
       static_cast<CSSPropertyID>(index + kIntFirstCSSProperty);
-  DCHECK(isCSSPropertyIDWithName(property_id));
+  DCHECK(IsCSSPropertyIDWithName(property_id));
   const CSSProperty& property_class =
-      CSSProperty::Get(resolveCSSPropertyID(property_id));
+      CSSProperty::Get(ResolveCSSPropertyID(property_id));
 
   // Since "all" is expanded, we don't need to process "all".
   // We should not process expanded shorthands (e.g. font, background,
@@ -213,8 +214,8 @@ String StylePropertySerializer::GetPropertyText(const CSSProperty& property,
 String StylePropertySerializer::AsText() const {
   StringBuilder result;
 
-  std::bitset<numCSSProperties> longhand_serialized;
-  std::bitset<numCSSProperties> shorthand_appeared;
+  std::bitset<kNumCSSProperties> longhand_serialized;
+  std::bitset<kNumCSSProperties> shorthand_appeared;
 
   unsigned size = property_set_.PropertyCount();
   unsigned num_decls = 0;
@@ -330,7 +331,6 @@ static bool AllowInitialInShorthand(CSSPropertyID property_id) {
     case CSSPropertyID::kOutline:
     case CSSPropertyID::kColumnRule:
     case CSSPropertyID::kColumns:
-    case CSSPropertyID::kFlex:
     case CSSPropertyID::kFlexFlow:
     case CSSPropertyID::kGridColumn:
     case CSSPropertyID::kGridRow:
@@ -1108,10 +1108,29 @@ String StylePropertySerializer::BorderPropertyValue(
     const StylePropertyShorthand& width,
     const StylePropertyShorthand& style,
     const StylePropertyShorthand& color) const {
-  const StylePropertyShorthand properties[3] = {width, style, color};
+  const CSSProperty* border_image_properties[] = {
+      &GetCSSPropertyBorderImageSource(), &GetCSSPropertyBorderImageSlice(),
+      &GetCSSPropertyBorderImageWidth(), &GetCSSPropertyBorderImageOutset(),
+      &GetCSSPropertyBorderImageRepeat()};
+
+  // If any of the border-image longhands differ from their initial
+  // specified values, we should not serialize to a border shorthand
+  // declaration.
+  for (const auto* border_image_property : border_image_properties) {
+    const CSSValue* value =
+        property_set_.GetPropertyCSSValue(*border_image_property);
+    const CSSValue* initial_specified_value =
+        To<Longhand>(*border_image_property).InitialValue();
+    if (value && !value->IsInitialValue() &&
+        *value != *initial_specified_value) {
+      return String();
+    }
+  }
+
+  const StylePropertyShorthand shorthand_properties[3] = {width, style, color};
   StringBuilder result;
-  for (size_t i = 0; i < base::size(properties); ++i) {
-    String value = GetCommonValue(properties[i]);
+  for (const auto& shorthand_property : shorthand_properties) {
+    const String value = GetCommonValue(shorthand_property);
     if (value.IsNull())
       return String();
     if (value == "initial")

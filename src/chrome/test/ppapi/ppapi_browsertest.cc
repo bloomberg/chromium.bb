@@ -9,13 +9,13 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
@@ -69,6 +69,7 @@
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/test/test_dns_util.h"
 #include "services/network/test/test_network_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 
@@ -108,11 +109,14 @@ using content::RenderViewHost;
       RunTestWithSSLServer(STRIP_PREFIXES(test_name)); \
     }
 
-// Disable all NaCl tests for --disable-nacl flag and on Mac ASAN builds.
-// Flaky on Mac ASAN:
-//    http://crbug.com/428670
+// Disable all NaCl tests for --disable-nacl flag and on Mac ASAN and Windows
+// builds.
+//
+// Flaky on Mac ASAN: https://crbug.com/428670
+// Flaky on Win7: https://crbug.com/1003252
 
-#if !BUILDFLAG(ENABLE_NACL) || (defined(OS_MAC) && defined(ADDRESS_SANITIZER))
+#if !BUILDFLAG(ENABLE_NACL) || \
+    (defined(OS_MAC) && defined(ADDRESS_SANITIZER)) || defined(OS_WIN)
 
 #define MAYBE_PPAPI_NACL(test_name) DISABLED_##test_name
 #define MAYBE_PPAPI_PNACL(test_name) DISABLED_##test_name
@@ -127,8 +131,8 @@ using content::RenderViewHost;
 
 #define MAYBE_PPAPI_NACL(test_name) test_name
 #if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
-    defined(ADDRESS_SANITIZER)
-// http://crbug.com/633067, http://crbug.com/727989
+    defined(OS_MACOSX) || defined(ADDRESS_SANITIZER)
+// http://crbug.com/633067, http://crbug.com/727989, http://crbug.com/1076806
 #define MAYBE_PPAPI_PNACL(test_name) DISABLED_##test_name
 #else
 #define MAYBE_PPAPI_PNACL(test_name) test_name
@@ -386,8 +390,8 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
         receiver_(this, std::move(receiver)) {
     if (tcp_failure_type_ == TCPFailureType::kConnectError) {
       std::move(callback).Run(
-          net::ERR_FAILED, base::nullopt /* local_addr */,
-          base::nullopt /* peer_addr */,
+          net::ERR_FAILED, absl::nullopt /* local_addr */,
+          absl::nullopt /* peer_addr */,
           mojo::ScopedDataPipeConsumerHandle() /* receive_stream */,
           mojo::ScopedDataPipeProducerHandle() /* send_stream */);
       return;
@@ -398,15 +402,19 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
       return;
     }
 
-    mojo::DataPipe send_pipe;
-    mojo::DataPipe receive_pipe;
+    mojo::ScopedDataPipeProducerHandle send_producer_handle;
+    EXPECT_EQ(
+        mojo::CreateDataPipe(nullptr, send_producer_handle, send_pipe_handle_),
+        MOJO_RESULT_OK);
 
-    receive_pipe_handle_ = std::move(receive_pipe.producer_handle);
-    send_pipe_handle_ = std::move(send_pipe.consumer_handle);
+    mojo::ScopedDataPipeConsumerHandle receive_consumer_handle;
+    EXPECT_EQ(mojo::CreateDataPipe(nullptr, receive_pipe_handle_,
+                                   receive_consumer_handle),
+              MOJO_RESULT_OK);
 
     std::move(callback).Run(net::OK, LocalAddress(), RemoteAddress(),
-                            std::move(receive_pipe.consumer_handle),
-                            std::move(send_pipe.producer_handle));
+                            std::move(receive_consumer_handle),
+                            std::move(send_producer_handle));
     ClosePipeIfNeeded();
   }
 
@@ -419,7 +427,7 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
         receiver_(this) {
     if (tcp_failure_type_ == TCPFailureType::kAcceptError) {
       std::move(callback).Run(
-          net::ERR_FAILED, base::nullopt /* remote_addr */,
+          net::ERR_FAILED, absl::nullopt /* remote_addr */,
           mojo::NullRemote() /* connected_socket */,
           mojo::ScopedDataPipeConsumerHandle() /* receive_stream */,
           mojo::ScopedDataPipeProducerHandle() /* send_stream */);
@@ -431,16 +439,19 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
       return;
     }
 
-    mojo::DataPipe send_pipe;
-    mojo::DataPipe receive_pipe;
+    mojo::ScopedDataPipeProducerHandle send_producer_handle;
+    EXPECT_EQ(
+        mojo::CreateDataPipe(nullptr, send_producer_handle, send_pipe_handle_),
+        MOJO_RESULT_OK);
 
-    receive_pipe_handle_ = std::move(receive_pipe.producer_handle);
-    send_pipe_handle_ = std::move(send_pipe.consumer_handle);
+    mojo::ScopedDataPipeConsumerHandle receive_consumer_handle;
+    EXPECT_EQ(mojo::CreateDataPipe(nullptr, receive_pipe_handle_,
+                                   receive_consumer_handle),
+              MOJO_RESULT_OK);
 
-    std::move(callback).Run(net::OK, RemoteAddress(),
-                            receiver_.BindNewPipeAndPassRemote(),
-                            std::move(receive_pipe.consumer_handle),
-                            std::move(send_pipe.producer_handle));
+    std::move(callback).Run(
+        net::OK, RemoteAddress(), receiver_.BindNewPipeAndPassRemote(),
+        std::move(receive_consumer_handle), std::move(send_producer_handle));
     ClosePipeIfNeeded();
   }
 
@@ -470,7 +481,7 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
     if (tcp_failure_type_ == TCPFailureType::kUpgradeToTLSError) {
       std::move(callback).Run(
           net::ERR_FAILED, mojo::ScopedDataPipeConsumerHandle(),
-          mojo::ScopedDataPipeProducerHandle(), base::nullopt /* ssl_info */);
+          mojo::ScopedDataPipeProducerHandle(), absl::nullopt /* ssl_info */);
       return;
     }
 
@@ -483,14 +494,18 @@ class MockTCPConnectedSocket : public network::mojom::TCPConnectedSocket,
     // that use a real NetworkContext already make sure that the class correctly
     // closes the sockets when upgrading.
 
-    mojo::DataPipe send_pipe;
-    mojo::DataPipe receive_pipe;
-    receive_pipe_handle_ = std::move(receive_pipe.producer_handle);
-    send_pipe_handle_ = std::move(send_pipe.consumer_handle);
+    mojo::ScopedDataPipeProducerHandle send_producer_handle;
+    EXPECT_EQ(
+        mojo::CreateDataPipe(nullptr, send_producer_handle, send_pipe_handle_),
+        MOJO_RESULT_OK);
 
-    std::move(callback).Run(net::OK, std::move(receive_pipe.consumer_handle),
-                            std::move(send_pipe.producer_handle),
-                            net::SSLInfo());
+    mojo::ScopedDataPipeConsumerHandle receive_consumer_handle;
+    EXPECT_EQ(mojo::CreateDataPipe(nullptr, receive_pipe_handle_,
+                                   receive_consumer_handle),
+              MOJO_RESULT_OK);
+
+    std::move(callback).Run(net::OK, std::move(receive_consumer_handle),
+                            std::move(send_producer_handle), net::SSLInfo());
 
     if (tcp_failure_type_ == TCPFailureType::kSSLWriteClosePipe) {
       observer_.reset();
@@ -590,7 +605,7 @@ class MockTCPServerSocket : public network::mojom::TCPServerSocket {
       : tcp_failure_type_(tcp_failure_type),
         receiver_(this, std::move(receiver)) {
     if (tcp_failure_type_ == TCPFailureType::kCreateTCPServerSocketError) {
-      std::move(callback).Run(net::ERR_FAILED, base::nullopt /* local_addr */);
+      std::move(callback).Run(net::ERR_FAILED, absl::nullopt /* local_addr */);
       return;
     }
     if (tcp_failure_type_ == TCPFailureType::kCreateTCPServerSocketHangs) {
@@ -654,7 +669,7 @@ class MockTCPBoundSocket : public network::mojom::TCPBoundSocket {
       : tcp_failure_type_(tcp_failure_type),
         receiver_(this, std::move(receiver)) {
     if (tcp_failure_type_ == TCPFailureType::kBindError) {
-      std::move(callback).Run(net::ERR_FAILED, base::nullopt /* local_addr */);
+      std::move(callback).Run(net::ERR_FAILED, absl::nullopt /* local_addr */);
       return;
     }
     if (tcp_failure_type_ == TCPFailureType::kBindHangs) {
@@ -738,7 +753,7 @@ class MockNetworkContext : public network::TestNetworkContext {
   }
 
   void CreateTCPConnectedSocket(
-      const base::Optional<net::IPEndPoint>& local_addr,
+      const absl::optional<net::IPEndPoint>& local_addr,
       const net::AddressList& remote_addr_list,
       network::mojom::TCPConnectedSocketOptionsPtr tcp_connected_socket_options,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
@@ -972,18 +987,33 @@ PPAPI_SOCKET_TEST(UDPSocket_ReadWrite)
 PPAPI_SOCKET_TEST(UDPSocket_SetOption)
 PPAPI_SOCKET_TEST(UDPSocket_SetOption_1_0)
 PPAPI_SOCKET_TEST(UDPSocket_SetOption_1_1)
+
+// Fails on MacOS 11, crbug.com/1211138.
+#if !defined(OS_MAC)
 PPAPI_SOCKET_TEST(UDPSocket_Broadcast)
+#endif
+
 PPAPI_SOCKET_TEST(UDPSocket_ParallelSend)
 PPAPI_SOCKET_TEST(UDPSocket_Multicast)
 
 // UDPSocketPrivate tests.
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Connect)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_ConnectFailure)
+
+// Fails on MacOS 11, crbug.com/1211138.
+#if !defined(OS_MAC)
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_Broadcast)
+#endif
+
 TEST_PPAPI_OUT_OF_PROCESS_VIA_HTTP(UDPSocketPrivate_SetSocketFeatureErrors)
 TEST_PPAPI_NACL(UDPSocketPrivate_Connect)
 TEST_PPAPI_NACL(UDPSocketPrivate_ConnectFailure)
+
+// Fails on MacOS 11, crbug.com/1211138.
+#if !defined(OS_MAC)
 TEST_PPAPI_NACL(UDPSocketPrivate_Broadcast)
+#endif
+
 TEST_PPAPI_NACL(UDPSocketPrivate_SetSocketFeatureErrors)
 
 namespace {
@@ -1037,7 +1067,7 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
             network::mojom::UDPSocketOptionsPtr options,
             BindCallback callback) override {
     if (failure_type_ == FailureType::kBindError) {
-      std::move(callback).Run(net::ERR_FAILED, base::nullopt);
+      std::move(callback).Run(net::ERR_FAILED, absl::nullopt);
       return;
     }
     if (failure_type_ == FailureType::kBindDropPipe) {
@@ -1081,8 +1111,8 @@ class WrappedUDPSocket : public network::mojom::UDPSocket {
     }
     if (failure_type_ == FailureType::kReadError) {
       for (uint32_t i = 0; i < num_additional_datagrams; ++i) {
-        socket_listener_->OnReceived(net::ERR_FAILED, base::nullopt,
-                                     base::nullopt);
+        socket_listener_->OnReceived(net::ERR_FAILED, absl::nullopt,
+                                     absl::nullopt);
       }
       return;
     }
@@ -1223,8 +1253,7 @@ TEST_PPAPI_NACL_DISALLOWED_SOCKETS(UDPSocketPrivateDisallowed)
 // looked up across tabs with different first party origins.
 void CheckTestHostNameUsedWithCorrectNetworkIsolationKey(Browser* browser) {
   network::mojom::NetworkContext* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(browser->profile())
-          ->GetNetworkContext();
+      browser->profile()->GetDefaultStoragePartition()->GetNetworkContext();
   const net::HostPortPair kHostPortPair(
       net::HostPortPair("host_resolver.test", 80));
 
@@ -2118,7 +2147,7 @@ TEST_PPAPI_NACL(MouseCursor)
 TEST_PPAPI_NACL(NetworkProxy)
 
 // TODO(crbug.com/602875), TODO(crbug.com/602876) Flaky on Win and CrOS.
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
 #define MAYBE_VideoDecoder DISABLED_VideoDecoder
 #else
 #define MAYBE_VideoDecoder VideoDecoder

@@ -83,11 +83,16 @@ static const char *colorspace(unsigned int bit_depth,
 int y4m_write_file_header(char *buf, size_t len, int width, int height,
                           const struct AvxRational *framerate, int monochrome,
                           aom_chroma_sample_position_t csp, aom_img_fmt_t fmt,
-                          unsigned int bit_depth) {
+                          unsigned int bit_depth, aom_color_range_t range) {
   const char *color = monochrome ? monochrome_colorspace(bit_depth)
                                  : colorspace(bit_depth, csp, fmt);
-  return snprintf(buf, len, "YUV4MPEG2 W%u H%u F%u:%u I%c %s\n", width, height,
-                  framerate->numerator, framerate->denominator, 'p', color);
+  const char *color_range = "";  // Default assumption is studio range.
+  if (range == AOM_CR_FULL_RANGE) {
+    color_range = " XCOLORRANGE=FULL";
+  }
+  return snprintf(buf, len, "YUV4MPEG2 W%d H%d F%d:%d Ip %s%s\n", width, height,
+                  framerate->numerator, framerate->denominator, color,
+                  color_range);
 }
 
 int y4m_write_frame_header(char *buf, size_t len) {

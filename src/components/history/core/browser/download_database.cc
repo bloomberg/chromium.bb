@@ -11,11 +11,11 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -61,10 +61,10 @@ base::FilePath ColumnFilePath(sql::Statement& statement, int col) {
 void BindFilePath(sql::Statement& statement,
                   const base::FilePath& path,
                   int col) {
-  statement.BindString16(col, path.value());
+  statement.BindString(col, path.AsUTF8Unsafe());
 }
 base::FilePath ColumnFilePath(sql::Statement& statement, int col) {
-  return base::FilePath(statement.ColumnString16(col));
+  return base::FilePath::FromUTF8Unsafe(statement.ColumnString(col));
 }
 
 #endif
@@ -394,11 +394,11 @@ uint32_t DownloadDatabase::GetNextDownloadId() {
   // return 0 = kInvalidDownloadId, so GetNextDownloadId() will set
   // *id = kInvalidDownloadId + 1.
   //
-  // If there is at least one record but all of the |id|s are
+  // If there is at least one record but all of the `id`s are
   // <= kInvalidDownloadId, then max(id) will return <= kInvalidDownloadId,
   // so GetNextDownloadId() should return kInvalidDownloadId + 1.
   //
-  // Note that any records with |id <= kInvalidDownloadId| will be dropped in
+  // Note that any records with `id <= kInvalidDownloadId` will be dropped in
   // QueryDownloads().
   //
   // SQLITE doesn't have unsigned integers.
@@ -437,7 +437,7 @@ void DownloadDatabase::QueryDownloads(std::vector<DownloadRow>* results) {
     int column = 0;
 
     // SQLITE does not have unsigned integers, so explicitly handle negative
-    // |id|s instead of casting them to very large uint32s, which would break
+    // `id`s instead of casting them to very large uint32s, which would break
     // the max(id) logic in GetNextDownloadId().
     int64_t signed_id = statement_main.ColumnInt64(column++);
     bool valid = ConvertIntToDownloadId(signed_id, &(info->id));
@@ -791,8 +791,8 @@ size_t DownloadDatabase::CountDownloads() {
 bool DownloadDatabase::CreateOrUpdateDownloadSlice(
     const DownloadSliceInfo& info) {
   // If the slice has no data, there is no need to insert it into the db. Note
-  // that for each slice, |received_bytes| can only go up. So if a slice is
-  // already in the db, its |received_bytes| should always be larger than 0.
+  // that for each slice, `received_bytes` can only go up. So if a slice is
+  // already in the db, its `received_bytes` should always be larger than 0.
   if (info.received_bytes == 0)
     return true;
   sql::Statement statement_replace(GetDB().GetCachedStatement(

@@ -4,9 +4,17 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_shader_module.h"
 
+#include <dawn/webgpu.h>
+
+#include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_shader_module_descriptor.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/modules/webgpu/dawn_callback.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_compilation_info.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_compilation_message.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
 
@@ -36,7 +44,7 @@ GPUShaderModule* GPUShaderModule::Create(
     NotShared<DOMUint32Array> code = wgsl_or_spirv.GetAsUint32Array();
 
     uint32_t length_words = 0;
-    if (!base::CheckedNumeric<uint32_t>(code.View()->length())
+    if (!base::CheckedNumeric<uint32_t>(code->length())
              .AssignIfValid(&length_words)) {
       exception_state.ThrowRangeError(
           "The provided ArrayBuffer exceeds the maximum supported size "
@@ -45,7 +53,7 @@ GPUShaderModule* GPUShaderModule::Create(
     }
 
     spirv_desc.chain.sType = WGPUSType_ShaderModuleSPIRVDescriptor;
-    spirv_desc.code = code.View()->Data();
+    spirv_desc.code = code->Data();
     spirv_desc.codeSize = length_words;
     dawn_desc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&spirv_desc);
   }
@@ -55,20 +63,54 @@ GPUShaderModule* GPUShaderModule::Create(
     dawn_desc.label = label.c_str();
   }
 
-  return MakeGarbageCollected<GPUShaderModule>(
+  GPUShaderModule* shader = MakeGarbageCollected<GPUShaderModule>(
       device, device->GetProcs().deviceCreateShaderModule(device->GetHandle(),
                                                           &dawn_desc));
+  shader->setLabel(webgpu_desc->label());
+  return shader;
 }
 
 GPUShaderModule::GPUShaderModule(GPUDevice* device,
                                  WGPUShaderModule shader_module)
     : DawnObject<WGPUShaderModule>(device, shader_module) {}
 
-GPUShaderModule::~GPUShaderModule() {
-  if (IsDawnControlClientDestroyed()) {
+void GPUShaderModule::OnCompilationInfoCallback(
+    ScriptPromiseResolver* resolver,
+    WGPUCompilationInfoRequestStatus status,
+    const WGPUCompilationInfo* info) {
+  if (status != WGPUCompilationInfoRequestStatus_Success || !info) {
+    resolver->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kOperationError));
     return;
   }
-  GetProcs().shaderModuleRelease(GetHandle());
+
+  // Temporarily immediately create the CompilationInfo info and resolve the
+  // promise.
+  GPUCompilationInfo* result = MakeGarbageCollected<GPUCompilationInfo>();
+  for (uint32_t i = 0; i < info->messageCount; ++i) {
+    const WGPUCompilationMessage* message = &info->messages[i];
+    result->AppendMessage(MakeGarbageCollected<GPUCompilationMessage>(
+        message->message, message->type, message->lineNum, message->linePos,
+        message->offset, message->length));
+  }
+
+  resolver->Resolve(result);
+}
+
+ScriptPromise GPUShaderModule::compilationInfo(ScriptState* script_state) {
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+
+  auto* callback =
+      BindDawnCallback(&GPUShaderModule::OnCompilationInfoCallback,
+                       WrapPersistent(this), WrapPersistent(resolver));
+
+  GetProcs().shaderModuleGetCompilationInfo(
+      GetHandle(), callback->UnboundCallback(), callback->AsUserdata());
+  // WebGPU guarantees that promises are resolved in finite time so we
+  // need to ensure commands are flushed.
+  EnsureFlush();
+  return promise;
 }
 
 }  // namespace blink

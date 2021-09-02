@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/check_op.h"
@@ -16,12 +17,13 @@
 #include "base/metrics/field_trial.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "components/error_page/common/alt_game_images.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/error_page/common/net_error_info.h"
@@ -281,8 +283,8 @@ const LocalizedErrorMap net_error_options[] = {
   },
   {net::ERR_BLOCKED_BY_CLIENT,
    IDS_ERRORPAGES_HEADING_BLOCKED,
-   IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_EXTENSION,
-   SUGGEST_DISABLE_EXTENSION,
+   IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_CLIENT,
+   SUGGEST_NONE,
    SHOW_BUTTON_RELOAD,
   },
   {net::ERR_BLOCKED_BY_CSP,
@@ -559,10 +561,12 @@ void AddLinkedSuggestionToList(const int error_code,
                                base::ListValue* suggestions_summary_list,
                                bool standalone_suggestion) {
   GURL learn_more_url;
-  base::string16 suggestion_string = standalone_suggestion ?
-      l10n_util::GetStringUTF16(
-          IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY_STANDALONE) :
-      l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
+  std::u16string suggestion_string =
+      standalone_suggestion
+          ? l10n_util::GetStringUTF16(
+                IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY_STANDALONE)
+          : l10n_util::GetStringUTF16(
+                IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY);
 
   switch (error_code) {
     case net::ERR_TOO_MANY_REDIRECTS:
@@ -620,7 +624,7 @@ void GetSuggestionsSummaryList(int error_code,
     return;
 
   if (IsOnlySuggestion(suggestions, SUGGEST_CONTACT_ADMINISTRATOR)) {
-    DCHECK(suggestions_summary_list->empty());
+    DCHECK(suggestions_summary_list->GetList().empty());
     DCHECK(!(suggestions & ~SUGGEST_CONTACT_ADMINISTRATOR));
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY_STANDALONE, false);
@@ -632,7 +636,7 @@ void GetSuggestionsSummaryList(int error_code,
   }
 
   if (IsOnlySuggestion(suggestions, SUGGEST_COMPLETE_SETUP)) {
-    DCHECK(suggestions_summary_list->empty());
+    DCHECK(suggestions_summary_list->GetList().empty());
     DCHECK(!(suggestions & ~SUGGEST_COMPLETE_SETUP));
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_DIAGNOSE_CONNECTION_SUMMARY, false);
@@ -643,7 +647,7 @@ void GetSuggestionsSummaryList(int error_code,
   DCHECK(!IsSuggested(suggestions, SUGGEST_COMPLETE_SETUP));
 
   if (IsOnlySuggestion(suggestions,SUGGEST_REPOST_RELOAD)) {
-    DCHECK(suggestions_summary_list->empty());
+    DCHECK(suggestions_summary_list->GetList().empty());
     DCHECK(!(suggestions & ~SUGGEST_REPOST_RELOAD));
     // If the page was created by a post, it can't be reloaded in the same
     // way, so just add a suggestion instead.
@@ -656,7 +660,7 @@ void GetSuggestionsSummaryList(int error_code,
   DCHECK(!IsSuggested(suggestions, SUGGEST_REPOST_RELOAD));
 
   if (IsOnlySuggestion(suggestions, SUGGEST_NAVIGATE_TO_ORIGIN)) {
-    DCHECK(suggestions_summary_list->empty());
+    DCHECK(suggestions_summary_list->GetList().empty());
     DCHECK(!(suggestions & ~SUGGEST_NAVIGATE_TO_ORIGIN));
     url::Origin failed_origin = url::Origin::Create(failed_url);
     if (failed_origin.opaque())
@@ -673,7 +677,7 @@ void GetSuggestionsSummaryList(int error_code,
   DCHECK(!IsSuggested(suggestions, SUGGEST_NAVIGATE_TO_ORIGIN));
 
   if (IsOnlySuggestion(suggestions, SUGGEST_LEARNMORE)) {
-    DCHECK(suggestions_summary_list->empty());
+    DCHECK(suggestions_summary_list->GetList().empty());
     AddLinkedSuggestionToList(error_code, locale, suggestions_summary_list,
                               true);
     return;
@@ -684,7 +688,7 @@ void GetSuggestionsSummaryList(int error_code,
   }
 
   if (suggestions & SUGGEST_DISABLE_EXTENSION) {
-    DCHECK(suggestions_summary_list->empty());
+    DCHECK(suggestions_summary_list->GetList().empty());
     AddSingleEntryDictionaryToList(suggestions_summary_list, "summary",
         IDS_ERRORPAGES_SUGGESTION_DISABLE_EXTENSION_SUMMARY, false);
     return;
@@ -752,7 +756,7 @@ void GetSuggestionsSummaryList(int error_code,
 
 // If the current platform has a directly accesible network diagnostics tool and
 // the URL is valid add a suggestion.
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_MAC)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC)
   if (IsOnlySuggestion(suggestions, SUGGEST_DIAGNOSE_TOOL)) {
     int diagose_message_id =
         error_code == error_page::DNS_PROBE_FINISHED_NXDOMAIN
@@ -769,8 +773,7 @@ void GetSuggestionsSummaryList(int error_code,
   }
 #else
   DCHECK(!IsSuggested(suggestions, SUGGEST_DIAGNOSE_TOOL));
-#endif  // defined(OS_CHROMEOS) || defined(OS_WIN) ||
-        // defined(OS_MAC)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN) || defined(OS_MAC)
 
   // Add list prefix header.
   error_strings->SetString("suggestionsSummaryListHeader",
@@ -904,9 +907,47 @@ LocalizedError::PageState LocalizedError::GetPageState(
     bool offline_content_feature_enabled,
     bool auto_fetch_feature_enabled,
     bool is_kiosk_mode,
-    const std::string& locale) {
+    const std::string& locale,
+    bool is_blocked_by_extension) {
   LocalizedError::PageState result;
-  result.is_offline_error = IsOfflineError(error_domain, error_code);
+  if (IsOfflineError(error_domain, error_code)) {
+    result.is_offline_error = true;
+
+    // These strings are to be read by a screen reader during the dino game.
+    result.strings.SetString(
+        "dinoGameA11yAriaLabel",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_ARIA_LABEL));
+    result.strings.SetString(
+        "dinoGameA11yGameOver",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_GAME_OVER));
+    result.strings.SetString(
+        "dinoGameA11yHighScore",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_HIGH_SCORE));
+    result.strings.SetString(
+        "dinoGameA11yJump", l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_JUMP));
+    result.strings.SetString(
+        "dinoGameA11yStartGame",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_GAME_START));
+    result.strings.SetString(
+        "dinoGameA11ySpeedToggle",
+        l10n_util::GetStringUTF16(IDS_ERRORPAGE_DINO_SLOW_SPEED_TOGGLE));
+
+    if (EnableAltGameMode()) {
+      result.strings.SetBoolean("enableAltGameMode", true);
+      // We don't know yet which scale the page will use, so both 1x and 2x
+      // should be loaded.
+      result.strings.SetString("altGameCommonImage1x",
+                               GetAltGameImage(/*image_id=*/0, /*scale=*/1));
+      result.strings.SetString("altGameCommonImage2x",
+                               GetAltGameImage(/*image_id=*/0, /*scale=*/2));
+      int choice = ChooseAltGame();
+      result.strings.SetString("altGameType", base::NumberToString(choice));
+      result.strings.SetString("altGameSpecificImage1x",
+                               GetAltGameImage(choice, 1));
+      result.strings.SetString("altGameSpecificImage2x",
+                               GetAltGameImage(choice, 2));
+    }
+  }
 
   webui::SetLoadTimeDataDefaults(locale, &result.strings);
 
@@ -946,14 +987,14 @@ LocalizedError::PageState LocalizedError::GetPageState(
     options.suggestions &= ~SUGGEST_LEARNMORE;
   }
 
-  base::string16 failed_url_string(url_formatter::FormatUrl(
+  std::u16string failed_url_string(url_formatter::FormatUrl(
       failed_url, url_formatter::kFormatUrlOmitNothing,
       net::UnescapeRule::NORMAL, nullptr, nullptr, nullptr));
   // URLs are always LTR.
   if (base::i18n::IsRTL())
     base::i18n::WrapStringWithLTRFormatting(&failed_url_string);
 
-  base::string16 host_name(url_formatter::IDNToUnicode(failed_url.host()));
+  std::u16string host_name(url_formatter::IDNToUnicode(failed_url.host()));
   if (failed_url.SchemeIsHTTPOrHTTPS())
     result.strings.SetString("title", host_name);
   else
@@ -991,8 +1032,18 @@ LocalizedError::PageState LocalizedError::GetPageState(
   auto summary = std::make_unique<base::DictionaryValue>();
 
   // Set summary message under the heading.
-  summary->SetString("msg",
-                     l10n_util::GetStringUTF16(options.summary_resource_id));
+  std::u16string message;
+  if (is_blocked_by_extension) {
+    // Use a custom message if an extension blocked the request.
+    message =
+        l10n_util::GetStringUTF16(IDS_ERRORPAGES_SUMMARY_BLOCKED_BY_EXTENSION);
+    options.suggestions = SUGGEST_DISABLE_EXTENSION;
+  } else {
+    message = l10n_util::GetStringUTF16(options.summary_resource_id);
+  }
+
+  summary->SetString("msg", std::move(message));
+
   summary->SetString("failedUrl", failed_url_string);
   summary->SetString("hostName", host_name);
 
@@ -1003,7 +1054,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
       l10n_util::GetStringUTF16(IDS_ERRORPAGE_NET_BUTTON_HIDE_DETAILS));
   result.strings.Set("summary", std::move(summary));
 
-  base::string16 error_string;
+  std::u16string error_string;
   if (error_domain == Error::kNetErrorDomain) {
     // Non-internationalized error string, for debugging Chrome itself.
     error_string = base::ASCIIToUTF16(net::ErrorToShortString(error_code));
@@ -1033,11 +1084,11 @@ LocalizedError::PageState LocalizedError::GetPageState(
     result.strings.Set("reloadButton", std::move(reload_button));
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // ChromeOS has its own diagnostics extension, which doesn't rely on a
   // browser-initiated dialog.
   can_show_network_diagnostics_dialog = true;
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Add default suggestions and any relevant supporting details.
   GetSuggestionsSummaryList(error_code, &result.strings, options.suggestions,
@@ -1097,7 +1148,7 @@ LocalizedError::PageState LocalizedError::GetPageState(
   return result;
 }
 
-base::string16 LocalizedError::GetErrorDetails(const std::string& error_domain,
+std::u16string LocalizedError::GetErrorDetails(const std::string& error_domain,
                                                int error_code,
                                                bool is_secure_dns_network_error,
                                                bool is_post) {

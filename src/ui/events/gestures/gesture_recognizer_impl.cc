@@ -11,8 +11,8 @@
 
 #include "base/check.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -386,6 +386,21 @@ void GestureRecognizerImpl::RemoveGestureEventHelper(
   auto it = std::find(helpers_.begin(), helpers_.end(), helper);
   if (it != helpers_.end())
     helpers_.erase(it);
+}
+
+bool GestureRecognizerImpl::DoesConsumerHaveActiveTouch(
+    GestureConsumer* consumer) const {
+  for (const auto& id_consumer_pair : touch_id_target_) {
+    if (id_consumer_pair.second == consumer)
+      return true;
+  }
+
+  return false;
+}
+
+void GestureRecognizerImpl::SendSynthesizedEndEvents(
+    GestureConsumer* consumer) {
+  GetGestureProviderForConsumer(consumer)->SendSynthesizedEndEvents();
 }
 
 void GestureRecognizerImpl::OnGestureEvent(GestureConsumer* raw_input_consumer,

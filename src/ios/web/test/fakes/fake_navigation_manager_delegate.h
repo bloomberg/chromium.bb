@@ -13,11 +13,8 @@ namespace web {
 
 class FakeNavigationManagerDelegate : public NavigationManagerDelegate {
  public:
-  void ClearTransientContent() override;
   void ClearDialogs() override;
   void RecordPageStateInNavigationItem() override;
-  void OnGoToIndexSameDocumentNavigation(NavigationInitiationType type,
-                                         bool has_user_gesture) override;
   void LoadCurrentItem(NavigationInitiationType type) override;
   void LoadIfNecessary() override;
   void Reload() override;

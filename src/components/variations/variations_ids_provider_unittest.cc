@@ -7,10 +7,10 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/variations/entropy_provider.h"
@@ -163,7 +163,7 @@ TEST_P(VariationsIdsProviderTestWithRestrictedVisibility,
        LowEntropySourceValue_Valid) {
   VariationsIdsProvider provider;
 
-  base::Optional<int> valid_low_entropy_source_value = 5;
+  absl::optional<int> valid_low_entropy_source_value = 5;
   provider.SetLowEntropySourceValue(valid_low_entropy_source_value);
   provider.InitVariationIDsCacheIfNeeded();
   variations::mojom::VariationsHeadersPtr headers =
@@ -200,7 +200,7 @@ TEST_P(VariationsIdsProviderTestWithRestrictedVisibility,
        LowEntropySourceValue_Null) {
   VariationsIdsProvider provider;
 
-  base::Optional<int> null_low_entropy_source_value = base::nullopt;
+  absl::optional<int> null_low_entropy_source_value = absl::nullopt;
   provider.SetLowEntropySourceValue(null_low_entropy_source_value);
 
   // Valid experiment ids.

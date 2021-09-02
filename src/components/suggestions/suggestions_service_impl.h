@@ -15,8 +15,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -30,6 +29,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/backoff_entry.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace signin {
@@ -66,9 +66,9 @@ class SuggestionsServiceImpl : public SuggestionsService,
 
   // SuggestionsService implementation.
   bool FetchSuggestionsData() override;
-  base::Optional<SuggestionsProfile> GetSuggestionsDataFromCache()
+  absl::optional<SuggestionsProfile> GetSuggestionsDataFromCache()
       const override;
-  std::unique_ptr<ResponseCallbackList::Subscription> AddCallback(
+  base::CallbackListSubscription AddCallback(
       const ResponseCallback& callback) override WARN_UNUSED_RESULT;
   bool BlocklistURL(const GURL& candidate_url) override;
   bool UndoBlocklistURL(const GURL& url) override;
@@ -174,8 +174,8 @@ class SuggestionsServiceImpl : public SuggestionsService,
   signin::IdentityManager* identity_manager_;
 
   syncer::SyncService* sync_service_;
-  ScopedObserver<syncer::SyncService, syncer::SyncServiceObserver>
-      sync_service_observer_{this};
+  base::ScopedObservation<syncer::SyncService, syncer::SyncServiceObserver>
+      sync_service_observation_{this};
 
   // The state of history sync, i.e. are we uploading history data to Google?
   syncer::UploadState history_sync_state_;

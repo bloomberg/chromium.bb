@@ -143,6 +143,9 @@ PERFETTO_TP_TABLE(PERFETTO_TP_STACK_PROFILE_FRAME_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_STACK_PROFILE_CALLSITE_DEF);
 
+// TODO(rsavitski): rethink what to do with the root table now that only chrome
+// callstacks use it.
+
 // Root table for timestamped stack samples.
 // @param ts timestamp of the sample.
 // @param callsite_id unwound callstack.
@@ -168,33 +171,39 @@ PERFETTO_TP_TABLE(PERFETTO_TP_STACK_SAMPLE_DEF);
 
 PERFETTO_TP_TABLE(PERFETTO_TP_CPU_PROFILE_STACK_SAMPLE_DEF);
 
-// Stack samples from the traced_perf perf sampler.
+// Samples from the traced_perf perf sampler.
 //
 // The table currently provides no means of discriminating between multiple data
 // sources producing samples within a single trace.
 // @param ts timestamp of the sample.
-// @param callsite_id unwound callstack of the sampled thread.
 // @param utid sampled thread. {@joinable thread.utid}.
 // @param cpu the core the sampled thread was running on.
 // @param cpu_mode execution state (userspace/kernelspace) of the sampled
 //        thread.
+// @param callsite_id if set, unwound callstack of the sampled thread.
 // @param unwind_error if set, indicates that the unwinding for this sample
 //        encountered an error. Such samples still reference the best-effort
 //        result via the callsite_id (with a synthetic error frame at the point
 //        where unwinding stopped).
+// @param perf_session_id distinguishes samples from different profiling
+//        streams (i.e. multiple data sources).
+//        {@joinable perf_counter_track.perf_session_id}
 // @tablegroup Callstack profilers
-#define PERFETTO_TP_PERF_SAMPLE_DEF(NAME, PARENT, C) \
-  NAME(PerfSampleTable, "perf_sample")               \
-  PARENT(PERFETTO_TP_STACK_SAMPLE_DEF, C)            \
-  C(uint32_t, utid)                                  \
-  C(uint32_t, cpu)                                   \
-  C(StringPool::Id, cpu_mode)                        \
-  C(base::Optional<StringPool::Id>, unwind_error)
+#define PERFETTO_TP_PERF_SAMPLE_DEF(NAME, PARENT, C)            \
+  NAME(PerfSampleTable, "perf_sample")                          \
+  PERFETTO_TP_ROOT_TABLE(PARENT, C)                             \
+  C(int64_t, ts, Column::Flag::kSorted)                         \
+  C(uint32_t, utid)                                             \
+  C(uint32_t, cpu)                                              \
+  C(StringPool::Id, cpu_mode)                                   \
+  C(base::Optional<StackProfileCallsiteTable::Id>, callsite_id) \
+  C(base::Optional<StringPool::Id>, unwind_error)               \
+  C(uint32_t, perf_session_id)
 
 PERFETTO_TP_TABLE(PERFETTO_TP_PERF_SAMPLE_DEF);
 
 // Symbolization data for a frame. Rows with the same symbol_set_id describe
-// one frame, with the bottom-most inlined frame having id == symbol_set_id.
+// one callframe, with the most-inlined symbol having id == symbol_set_id.
 //
 // For instance, if the function foo has an inlined call to the function bar,
 // which has an inlined call to baz, the stack_profile_symbol table would look
@@ -203,9 +212,9 @@ PERFETTO_TP_TABLE(PERFETTO_TP_PERF_SAMPLE_DEF);
 // ```
 // |id|symbol_set_id|name         |source_file|line_number|
 // |--|-------------|-------------|-----------|-----------|
-// |1 |      1      |foo          |foo.cc     | 60        |
+// |1 |      1      |baz          |foo.cc     | 36        |
 // |2 |      1      |bar          |foo.cc     | 30        |
-// |3 |      1      |baz          |foo.cc     | 36        |
+// |3 |      1      |foo          |foo.cc     | 60        |
 // ```
 // @param name name of the function.
 // @param source_file name of the source file containing the function.
@@ -281,7 +290,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_EXPERIMENTAL_FLAMEGRAPH_NODES);
 // @param deobfuscated_name if class name was obfuscated and deobfuscation map
 // for it provided, the deobfuscated name.
 // @param location the APK / Dex / JAR file the class is contained in.
-// @tablegroup ART Heap Profiler
+// @tablegroup ART Heap Graphs
 //
 // classloader_id should really be HeapGraphObject::id, but that would
 // create a loop, which is currently not possible.
@@ -293,7 +302,8 @@ PERFETTO_TP_TABLE(PERFETTO_TP_EXPERIMENTAL_FLAMEGRAPH_NODES);
   C(base::Optional<StringPool::Id>, deobfuscated_name)      \
   C(base::Optional<StringPool::Id>, location)               \
   C(base::Optional<HeapGraphClassTable::Id>, superclass_id) \
-  C(base::Optional<uint32_t>, classloader_id)
+  C(base::Optional<uint32_t>, classloader_id)               \
+  C(StringPool::Id, kind)
 
 PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_CLASS_DEF);
 
@@ -310,7 +320,7 @@ PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_CLASS_DEF);
 // false, this object is uncollected garbage.
 // @param type_id class this object is an instance of.
 // @param root_type if not NULL, this object is a GC root.
-// @tablegroup ART Heap Profiler
+// @tablegroup ART Heap Graphs
 #define PERFETTO_TP_HEAP_GRAPH_OBJECT_DEF(NAME, PARENT, C)            \
   NAME(HeapGraphObjectTable, "heap_graph_object")                     \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                                   \
@@ -336,13 +346,13 @@ PERFETTO_TP_TABLE(PERFETTO_TP_HEAP_GRAPH_OBJECT_DEF);
 // @param field_type_name the static type of the field. E.g. java.lang.String.
 // @param deobfuscated_field_name if field_name was obfuscated and a
 // deobfuscation mapping was provided for it, the deobfuscated name.
-// @tablegroup ART Heap Profiler
+// @tablegroup ART Heap Graphs
 #define PERFETTO_TP_HEAP_GRAPH_REFERENCE_DEF(NAME, PARENT, C) \
   NAME(HeapGraphReferenceTable, "heap_graph_reference")       \
   PERFETTO_TP_ROOT_TABLE(PARENT, C)                           \
   C(uint32_t, reference_set_id, Column::Flag::kSorted)        \
   C(HeapGraphObjectTable::Id, owner_id)                       \
-  C(HeapGraphObjectTable::Id, owned_id)                       \
+  C(base::Optional<HeapGraphObjectTable::Id>, owned_id)       \
   C(StringPool::Id, field_name)                               \
   C(StringPool::Id, field_type_name)                          \
   C(base::Optional<StringPool::Id>, deobfuscated_field_name)

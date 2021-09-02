@@ -6,19 +6,20 @@ package org.chromium.chrome.browser.tabmodel.document;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;
-import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
+import org.chromium.chrome.browser.app.tabmodel.TabWindowManagerSingleton;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
@@ -32,6 +33,9 @@ import org.chromium.chrome.browser.tabmodel.AsyncTabCreator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.url.GURL;
+
+import java.nio.ByteBuffer;
 
 /**
  * Asynchronously creates Tabs by creating/starting up Activities.
@@ -53,13 +57,11 @@ public class TabDelegate extends AsyncTabCreator {
     private static Activity getActivityForTabId(int id) {
         if (id == Tab.INVALID_TAB_ID) return null;
 
-        for (Activity runningActivity : ApplicationStatus.getRunningActivities()) {
-            if (!(runningActivity instanceof ChromeActivity)) continue;
+        Tab tab = TabWindowManagerSingleton.getInstance().getTabById(id);
+        if (tab == null) return null;
 
-            ChromeActivity activity = (ChromeActivity) runningActivity;
-            if (activity.getTabModelSelector().getTabById(id) != null) return activity;
-        }
-        return null;
+        Context tabContext = tab.getContext();
+        return (tabContext instanceof Activity) ? (Activity) tabContext : null;
     }
 
     @Override
@@ -73,21 +75,20 @@ public class TabDelegate extends AsyncTabCreator {
      * The index is ignored in DocumentMode because Android handles the ordering of Tabs.
      */
     @Override
-    public Tab createFrozenTab(TabState state, byte[] criticalPersistedTabData, int id, int index) {
-        return TabBuilder.createFromFrozenState()
-                .setId(id)
-                .setIncognito(state.isIncognito())
-                .build();
+    public Tab createFrozenTab(TabState state, ByteBuffer criticalPersistedTabData, int id,
+            boolean isIncognito, int index) {
+        if (isIncognito != mIsIncognito) {
+            throw new IllegalStateException("Incognito state mismatch. isIncognito: " + isIncognito
+                    + ". TabDelegate: " + mIsIncognito);
+        }
+        return TabBuilder.createFromFrozenState().setId(id).setIncognito(isIncognito).build();
     }
 
     @Override
-    public boolean createTabWithWebContents(
-            @Nullable Tab parent, WebContents webContents, @TabLaunchType int type, String url) {
-        if (url == null) url = "";
-
-        AsyncTabCreationParams asyncParams =
-                new AsyncTabCreationParams(
-                        new LoadUrlParams(url, PageTransition.AUTO_TOPLEVEL), webContents);
+    public boolean createTabWithWebContents(@Nullable Tab parent, WebContents webContents,
+            @TabLaunchType int type, @NonNull GURL url) {
+        AsyncTabCreationParams asyncParams = new AsyncTabCreationParams(
+                new LoadUrlParams(url.getSpec(), PageTransition.AUTO_TOPLEVEL), webContents);
         createNewTab(asyncParams, type, parent != null ? parent.getId() : Tab.INVALID_TAB_ID);
         return true;
     }
@@ -159,7 +160,7 @@ public class TabDelegate extends AsyncTabCreator {
         IntentHandler.setIntentExtraHeaders(
                 asyncParams.getLoadUrlParams().getExtraHeaders(), intent);
 
-        intent.putExtra(IntentHandler.EXTRA_TAB_ID, assignedTabId);
+        IntentHandler.setTabId(intent, assignedTabId);
         intent.putExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, mIsIncognito);
         intent.putExtra(IntentHandler.EXTRA_PARENT_TAB_ID, parentId);
 

@@ -25,7 +25,16 @@ let DialogEnterOptions;
 let WarningEnterOptions;
 
 /**
- * @typedef {!DialogEnterOptions|!WarningEnterOptions}
+ * @typedef {{stream: !MediaStream, vidPid: ?string}}
+ */
+let PTZPanelOptions;
+
+/**
+ * @typedef {
+ *   !DialogEnterOptions|
+ *   !WarningEnterOptions|
+ *   !PTZPanelOptions
+ * }
  */
 let EnterOptions;
 

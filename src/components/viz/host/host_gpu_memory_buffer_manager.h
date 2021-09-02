@@ -6,11 +6,15 @@
 #define COMPONENTS_VIZ_HOST_HOST_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
+#include <unordered_map>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/memory/unsafe_shared_memory_pool.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/atomic_flag.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/viz/host/viz_host_export.h"
@@ -65,9 +69,9 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       gpu::SurfaceHandle surface_handle,
-      base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback);
+      base::OnceCallback<void(gfx::GpuMemoryBufferHandle)> callback,
+      bool call_sync = false);
 
-  // This method will block until the initial GPUInfo is received.
   bool IsNativeGpuMemoryBufferConfiguration(gfx::BufferFormat format,
                                             gfx::BufferUsage usage) const;
 
@@ -76,16 +80,23 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      gpu::SurfaceHandle surface_handle) override;
+      gpu::SurfaceHandle surface_handle,
+      base::WaitableEvent* shutdown_event) override;
   void SetDestructionSyncToken(gfx::GpuMemoryBuffer* buffer,
                                const gpu::SyncToken& sync_token) override;
+  void CopyGpuMemoryBufferAsync(
+      gfx::GpuMemoryBufferHandle buffer_handle,
+      base::UnsafeSharedMemoryRegion memory_region,
+      base::OnceCallback<void(bool)> callback) override;
+  bool CopyGpuMemoryBufferSync(
+      gfx::GpuMemoryBufferHandle buffer_handle,
+      base::UnsafeSharedMemoryRegion memory_region) override;
 
   // Overridden from base::trace_event::MemoryDumpProvider:
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
  protected:
-  // Must be called from a thread other than |task_runner_|'s thread.
   void SetNativeConfigurations(
       gpu::GpuMemoryBufferConfigurationSet native_configurations);
 
@@ -125,6 +136,9 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
                                   gfx::GpuMemoryBufferId id,
                                   gfx::GpuMemoryBufferHandle handle);
 
+  bool CreateBufferUsesGpuService(gfx::BufferFormat format,
+                                  gfx::BufferUsage usage);
+
   GpuServiceProvider gpu_service_provider_;
   mojom::GpuService* gpu_service_ = nullptr;
 
@@ -140,8 +154,12 @@ class VIZ_HOST_EXPORT HostGpuMemoryBufferManager
 
   std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;
 
+  scoped_refptr<base::UnsafeSharedMemoryPool> pool_;
+
   gpu::GpuMemoryBufferConfigurationSet native_configurations_;
-  mutable base::WaitableEvent native_configurations_initialized_;
+  base::AtomicFlag native_configurations_initialized_;
+
+  const bool runs_on_ui_thread_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtr<HostGpuMemoryBufferManager> weak_ptr_;

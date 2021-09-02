@@ -96,7 +96,8 @@ public class TabSelectionEditorTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
                     mActivityTestRule.getActivity(), mParentView, mTabModelSelector,
-                    mActivityTestRule.getActivity().getTabContentManager(), getMode());
+                    mActivityTestRule.getActivity().getTabContentManager(), getMode(),
+                    mActivityTestRule.getActivity().getCompositorViewHolder());
 
             mTabSelectionEditorController = mTabSelectionEditorCoordinator.getController();
             mTabSelectionEditorLayout =
@@ -114,7 +115,8 @@ public class TabSelectionEditorTest {
     }
 
     private @TabListCoordinator.TabListMode int getMode() {
-        return TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()
+        return TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(
+                       mActivityTestRule.getActivity())
                         && SysUtils.isLowEndDevice()
                 ? TabListCoordinator.TabListMode.LIST
                 : TabListCoordinator.TabListMode.GRID;
@@ -176,7 +178,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study"})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
         "force-fieldtrial-params=Study.Group:enable_launch_polish/true"})
     public void testToolbarNavigationButtonHideTabSelectionEditor() {
@@ -309,16 +311,16 @@ public class TabSelectionEditorTest {
     // clang-format off
     @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O_MR1, supported_abis_includes = "x86",
         message = "https://crbug.com/1075548")
-    public void testShowTabsWithPreSelectedTabs_10Tabs() {
+    public void testShowTabsWithPreSelectedTabs_6Tabs() {
         // clang-format on
-        prepareBlankTab(11, false);
-        int preSelectedTabCount = 10;
+        prepareBlankTab(7, false);
+        int preSelectedTabCount = 6;
         List<Tab> tabs = getTabsInCurrentTabModel();
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mTabSelectionEditorController.show(tabs, preSelectedTabCount));
 
-        mRobot.resultRobot.verifyToolbarSelectionText("10 selected")
+        mRobot.resultRobot.verifyToolbarSelectionText("6 selected")
                 .verifyHasItemViewTypeAtAdapterPosition(
                         preSelectedTabCount, TabProperties.UiType.DIVIDER)
                 .verifyDividerAlwaysStartsAtTheEdgeOfScreenAtPosition(preSelectedTabCount);
@@ -352,7 +354,7 @@ public class TabSelectionEditorTest {
         mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
 
         ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
-        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view");
+        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_0.85");
     }
 
     @Test
@@ -373,7 +375,7 @@ public class TabSelectionEditorTest {
         mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
 
         ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
-        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_one_selected_tab");
+        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_one_selected_tab_0.85");
     }
 
     @Test
@@ -394,7 +396,7 @@ public class TabSelectionEditorTest {
         mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
 
         ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
-        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_one_pre_selected_tab");
+        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_one_pre_selected_tab_0.85");
     }
 
     @Test
@@ -415,7 +417,7 @@ public class TabSelectionEditorTest {
         mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
 
         ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
-        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_two_pre_selected_tab");
+        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_two_pre_selected_tab_0.85");
     }
 
     @Test
@@ -436,7 +438,7 @@ public class TabSelectionEditorTest {
         mRobot.resultRobot.verifyTabSelectionEditorIsVisible();
 
         ChromeRenderTestRule.sanitize(mTabSelectionEditorLayout);
-        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_all_pre_selected_tab");
+        mRenderTestRule.render(mTabSelectionEditorLayout, "grid_view_all_pre_selected_tab_0.85");
     }
 
     @Test
@@ -571,7 +573,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     // clang-format off
-    @EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study"})
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
             "force-fieldtrial-params=Study.Group:enable_launch_polish/true"})
     public void testToolbarNavigationButtonContentDescription() {
@@ -606,7 +608,7 @@ public class TabSelectionEditorTest {
     @Test
     @MediumTest
     // clang-format off
-    @EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study"})
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
         "force-fieldtrial-params=Study.Group:enable_launch_polish/true"})
     public void testBackgroundViewAccessibilityImportance() {

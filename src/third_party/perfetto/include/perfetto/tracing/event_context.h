@@ -19,6 +19,7 @@
 
 #include "perfetto/protozero/message_handle.h"
 #include "perfetto/tracing/internal/track_event_internal.h"
+#include "perfetto/tracing/traced_proto.h"
 #include "protos/perfetto/trace/trace_packet.pbzero.h"
 
 namespace perfetto {
@@ -48,7 +49,31 @@ class PERFETTO_EXPORT EventContext {
 
   ~EventContext();
 
-  protos::pbzero::TrackEvent* event() const { return event_; }
+  // Get a TrackEvent message to write typed arguments to.
+  //
+  // event() is a template method to allow callers to specify a subclass of
+  // TrackEvent instead. Those subclasses correspond to TrackEvent message with
+  // application-specific extensions. More information in
+  // design-docs/extensions.md.
+  template <typename EventType = protos::pbzero::TrackEvent>
+  EventType* event() const {
+    // As the method does downcasting, we check that a target subclass does
+    // not add new fields.
+    static_assert(
+        sizeof(EventType) == sizeof(protos::pbzero::TrackEvent),
+        "Event type must be binary-compatible with protos::pbzero::TrackEvent");
+    return static_cast<EventType*>(event_);
+  }
+
+  // Convert a raw pointer to protozero message to TracedProto which captures
+  // the reference to this EventContext.
+  template <typename MessageType>
+  TracedProto<MessageType> Wrap(MessageType* message) {
+    static_assert(std::is_base_of<protozero::Message, MessageType>::value,
+                  "TracedProto can be used only with protozero messages");
+
+    return TracedProto<MessageType>(message, *this);
+  }
 
  private:
   template <typename, size_t, typename, typename>

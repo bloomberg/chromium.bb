@@ -40,18 +40,23 @@ https://skia-review.googlesource.com/c/skia/+/290618
 #define WUFFS_IMPLEMENTATION
 
 // Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
-// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
-// the entire Wuffs standard library, implementing a variety of codecs and file
+// release/c/etc.c choose which parts of Wuffs to build. That file contains the
+// entire Wuffs standard library, implementing a variety of codecs and file
 // formats. Without this macro definition, an optimizing compiler or linker may
 // very well discard Wuffs code for unused codecs, but listing the Wuffs
 // modules we use makes that process explicit. Preprocessing means that such
 // code simply isn't compiled.
 #define WUFFS_CONFIG__MODULES
+#define WUFFS_CONFIG__MODULE__ADLER32
 #define WUFFS_CONFIG__MODULE__BASE
 #define WUFFS_CONFIG__MODULE__BMP
+#define WUFFS_CONFIG__MODULE__CRC32
+#define WUFFS_CONFIG__MODULE__DEFLATE
 #define WUFFS_CONFIG__MODULE__GIF
 #define WUFFS_CONFIG__MODULE__LZW
+#define WUFFS_CONFIG__MODULE__PNG
 #define WUFFS_CONFIG__MODULE__WBMP
+#define WUFFS_CONFIG__MODULE__ZLIB
 
 // If building this program in an environment that doesn't easily accommodate
 // relative includes, you can use the script/inline-c-relative-includes.go
@@ -88,7 +93,7 @@ static const char* g_usage =
     "the -first-frame-only flag is given).\n"
     "\n"
     "NIA/NIE is a trivial animated/still image file format, specified at\n"
-    "https://github.com/google/wuffs/blob/master/doc/spec/nie-spec.md\n"
+    "https://github.com/google/wuffs/blob/main/doc/spec/nie-spec.md\n"
     "\n"
     "The -fail-if-unsandboxed flag causes the program to exit if it does not\n"
     "self-impose a sandbox. On Linux, it self-imposes a SECCOMP_MODE_STRICT\n"
@@ -110,6 +115,7 @@ wuffs_base__slice_u8 g_workbuf_slice = {0};
 
 wuffs_base__image_config g_image_config = {0};
 wuffs_base__frame_config g_frame_config = {0};
+int32_t g_fourcc = 0;
 uint32_t g_width = 0;
 uint32_t g_height = 0;
 
@@ -117,6 +123,7 @@ wuffs_base__image_decoder* g_image_decoder = NULL;
 union {
   wuffs_bmp__decoder bmp;
   wuffs_gif__decoder gif;
+  wuffs_png__decoder png;
   wuffs_wbmp__decoder wbmp;
 } g_potential_decoders;
 
@@ -222,23 +229,24 @@ read_more_src() {
 
 const char*  //
 load_image_type() {
-  while (g_src.meta.ri >= g_src.meta.wi) {
+  g_fourcc = 0;
+  while (true) {
+    g_fourcc = wuffs_base__magic_number_guess_fourcc(
+        wuffs_base__io_buffer__reader_slice(&g_src));
+    if ((g_fourcc >= 0) ||
+        (wuffs_base__io_buffer__reader_length(&g_src) == g_src.data.len)) {
+      break;
+    }
     TRY(read_more_src());
   }
+  return NULL;
+}
 
+const char*  //
+initialize_image_decoder() {
   wuffs_base__status status;
-  switch (g_src_buffer_array[0]) {
-    case '\x00':
-      status = wuffs_wbmp__decoder__initialize(
-          &g_potential_decoders.wbmp, sizeof g_potential_decoders.wbmp,
-          WUFFS_VERSION, WUFFS_INITIALIZE__DEFAULT_OPTIONS);
-      TRY(wuffs_base__status__message(&status));
-      g_image_decoder =
-          wuffs_wbmp__decoder__upcast_as__wuffs_base__image_decoder(
-              &g_potential_decoders.wbmp);
-      break;
-
-    case 'B':
+  switch (g_fourcc) {
+    case WUFFS_BASE__FOURCC__BMP:
       status = wuffs_bmp__decoder__initialize(
           &g_potential_decoders.bmp, sizeof g_potential_decoders.bmp,
           WUFFS_VERSION, WUFFS_INITIALIZE__DEFAULT_OPTIONS);
@@ -246,9 +254,9 @@ load_image_type() {
       g_image_decoder =
           wuffs_bmp__decoder__upcast_as__wuffs_base__image_decoder(
               &g_potential_decoders.bmp);
-      break;
+      return NULL;
 
-    case 'G':
+    case WUFFS_BASE__FOURCC__GIF:
       status = wuffs_gif__decoder__initialize(
           &g_potential_decoders.gif, sizeof g_potential_decoders.gif,
           WUFFS_VERSION, WUFFS_INITIALIZE__DEFAULT_OPTIONS);
@@ -256,22 +264,88 @@ load_image_type() {
       g_image_decoder =
           wuffs_gif__decoder__upcast_as__wuffs_base__image_decoder(
               &g_potential_decoders.gif);
-      break;
+      return NULL;
 
-    default:
-      return "main: unrecognized file format";
+    case WUFFS_BASE__FOURCC__PNG:
+      status = wuffs_png__decoder__initialize(
+          &g_potential_decoders.png, sizeof g_potential_decoders.png,
+          WUFFS_VERSION, WUFFS_INITIALIZE__DEFAULT_OPTIONS);
+      TRY(wuffs_base__status__message(&status));
+      g_image_decoder =
+          wuffs_png__decoder__upcast_as__wuffs_base__image_decoder(
+              &g_potential_decoders.png);
+      return NULL;
+
+    case WUFFS_BASE__FOURCC__WBMP:
+      status = wuffs_wbmp__decoder__initialize(
+          &g_potential_decoders.wbmp, sizeof g_potential_decoders.wbmp,
+          WUFFS_VERSION, WUFFS_INITIALIZE__DEFAULT_OPTIONS);
+      TRY(wuffs_base__status__message(&status));
+      g_image_decoder =
+          wuffs_wbmp__decoder__upcast_as__wuffs_base__image_decoder(
+              &g_potential_decoders.wbmp);
+      return NULL;
+  }
+  return "main: unsupported file format";
+}
+
+const char*  //
+advance_for_redirect() {
+  wuffs_base__io_buffer empty = wuffs_base__empty_io_buffer();
+  wuffs_base__more_information minfo = wuffs_base__empty_more_information();
+  wuffs_base__status status = wuffs_base__image_decoder__tell_me_more(
+      g_image_decoder, &empty, &minfo, &g_src);
+  if (status.repr != NULL) {
+    return wuffs_base__status__message(&status);
+  } else if (minfo.flavor !=
+             WUFFS_BASE__MORE_INFORMATION__FLAVOR__IO_REDIRECT) {
+    return "main: unsupported file format";
+  }
+  g_fourcc =
+      (int32_t)(wuffs_base__more_information__io_redirect__fourcc(&minfo));
+  if (g_fourcc <= 0) {
+    return "main: unsupported file format";
+  }
+
+  // Advance g_src's reader_position to pos.
+  uint64_t pos =
+      wuffs_base__more_information__io_redirect__range(&minfo).min_incl;
+  if (pos < wuffs_base__io_buffer__reader_position(&g_src)) {
+    // Redirects must go forward.
+    return "main: unsupported file format";
+  }
+  while (true) {
+    uint64_t relative_pos =
+        pos - wuffs_base__io_buffer__reader_position(&g_src);
+    if (relative_pos <= (g_src.meta.wi - g_src.meta.ri)) {
+      g_src.meta.ri += relative_pos;
+      break;
+    }
+    g_src.meta.ri = g_src.meta.wi;
+    TRY(read_more_src());
   }
   return NULL;
 }
 
 const char*  //
 load_image_config() {
+  bool redirected = false;
+redirect:
+  TRY(initialize_image_decoder());
+
   // Decode the wuffs_base__image_config.
   while (true) {
     wuffs_base__status status = wuffs_base__image_decoder__decode_image_config(
         g_image_decoder, &g_image_config, &g_src);
     if (status.repr == NULL) {
       break;
+    } else if (status.repr == wuffs_base__note__i_o_redirect) {
+      if (redirected) {
+        return "main: unsupported file format";
+      }
+      redirected = true;
+      TRY(advance_for_redirect());
+      goto redirect;
     } else if (status.repr != wuffs_base__suspension__short_read) {
       return wuffs_base__status__message(&status);
     }
@@ -346,7 +420,7 @@ fill_rectangle(wuffs_base__rect_ie_u32 rect,
         tab.ptr + (y * tab.stride) + (rect.min_incl_x * BYTES_PER_PIXEL);
     uint32_t x;
     for (x = rect.min_incl_x; x < rect.max_excl_x; x++) {
-      wuffs_base__store_u32le__no_bounds_check(p, nonpremul);
+      wuffs_base__poke_u32le__no_bounds_check(p, nonpremul);
       p += BYTES_PER_PIXEL;
     }
   }
@@ -356,17 +430,17 @@ void  //
 print_nix_header(uint32_t magic_u32le) {
   static const uint32_t version1_bn4_u32le = 0x346E62FF;
   uint8_t data[16];
-  wuffs_base__store_u32le__no_bounds_check(data + 0x00, magic_u32le);
-  wuffs_base__store_u32le__no_bounds_check(data + 0x04, version1_bn4_u32le);
-  wuffs_base__store_u32le__no_bounds_check(data + 0x08, g_width);
-  wuffs_base__store_u32le__no_bounds_check(data + 0x0C, g_height);
+  wuffs_base__poke_u32le__no_bounds_check(data + 0x00, magic_u32le);
+  wuffs_base__poke_u32le__no_bounds_check(data + 0x04, version1_bn4_u32le);
+  wuffs_base__poke_u32le__no_bounds_check(data + 0x08, g_width);
+  wuffs_base__poke_u32le__no_bounds_check(data + 0x0C, g_height);
   ignore_return_value(write(STDOUT_FD, &data[0], 16));
 }
 
 void  //
 print_nia_duration(wuffs_base__flicks duration) {
   uint8_t data[8];
-  wuffs_base__store_u64le__no_bounds_check(data + 0x00, duration);
+  wuffs_base__poke_u64le__no_bounds_check(data + 0x00, duration);
   ignore_return_value(write(STDOUT_FD, &data[0], 8));
 }
 
@@ -390,7 +464,7 @@ void  //
 print_nia_padding() {
   if (g_width & g_height & 1) {
     uint8_t data[4];
-    wuffs_base__store_u32le__no_bounds_check(data + 0x00, 0);
+    wuffs_base__poke_u32le__no_bounds_check(data + 0x00, 0);
     ignore_return_value(write(STDOUT_FD, &data[0], 4));
   }
 }
@@ -398,10 +472,10 @@ print_nia_padding() {
 void  //
 print_nia_footer() {
   uint8_t data[8];
-  wuffs_base__store_u32le__no_bounds_check(
+  wuffs_base__poke_u32le__no_bounds_check(
       data + 0x00,
       wuffs_base__image_decoder__num_animation_loops(g_image_decoder));
-  wuffs_base__store_u32le__no_bounds_check(data + 0x04, 0x80000000);
+  wuffs_base__poke_u32le__no_bounds_check(data + 0x04, 0x80000000);
   ignore_return_value(write(STDOUT_FD, &data[0], 8));
 }
 

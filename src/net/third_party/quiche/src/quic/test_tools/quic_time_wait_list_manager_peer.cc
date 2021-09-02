@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/quic_time_wait_list_manager_peer.h"
+#include "quic/test_tools/quic_time_wait_list_manager_peer.h"
 
 namespace quic {
 namespace test {
@@ -26,6 +26,14 @@ QuicAlarm* QuicTimeWaitListManagerPeer::expiration_alarm(
 void QuicTimeWaitListManagerPeer::set_clock(QuicTimeWaitListManager* manager,
                                             const QuicClock* clock) {
   manager->clock_ = clock;
+}
+
+// static
+bool QuicTimeWaitListManagerPeer::SendOrQueuePacket(
+    QuicTimeWaitListManager* manager,
+    std::unique_ptr<QuicTimeWaitListManager::QueuedPacket> packet,
+    const QuicPerPacketContext* packet_context) {
+  return manager->SendOrQueuePacket(std::move(packet), packet_context);
 }
 
 }  // namespace test

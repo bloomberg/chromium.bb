@@ -44,9 +44,9 @@ class SurfaceDelegate {
   // Called when surface was requested to set a specific application ID label.
   virtual void OnSetApplicationId(const char* application_id) = 0;
 
-  // Whether to hide the shelf when fullscreen. If true, shelf is inaccessible
-  // (plain fullscreen). If false, shelf auto-hides and can be shown with a
-  // mouse gesture (immersive fullscreen).
+  // Whether to show/hide the shelf when fullscreen. If true, the titlebar/shelf
+  // will show when the mouse moves to the top/bottom of the screen. If false
+  // (plain fullscreen), the titlebar and shelf are always hidden.
   virtual void SetUseImmersiveForFullscreen(bool value) = 0;
 
   // Called when the surface's application wants it to be activated.
@@ -54,6 +54,23 @@ class SurfaceDelegate {
 
   // Called when the new outoupt resource is created.
   virtual void OnNewOutputAdded() = 0;
+
+  // Called when surface was requested to start resize.
+  virtual void OnSetServerStartResize() = 0;
+
+  // Called to show the snap preview to the right or left, or to hide it.
+  virtual void ShowSnapPreviewToLeft() = 0;
+  virtual void ShowSnapPreviewToRight() = 0;
+  virtual void HideSnapPreview() = 0;
+
+  // Called when the client was snapped to right or left, and reset.
+  virtual void SetSnappedToLeft() = 0;
+  virtual void SetSnappedToRight() = 0;
+  virtual void UnsetSnap() = 0;
+
+  // Whether the current client window can go back, as per its navigation list.
+  virtual void SetCanGoBack() = 0;
+  virtual void UnsetCanGoBack() = 0;
 
  protected:
   virtual ~SurfaceDelegate() {}

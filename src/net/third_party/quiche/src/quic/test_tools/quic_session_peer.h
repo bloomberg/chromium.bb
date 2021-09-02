@@ -9,10 +9,11 @@
 #include <map>
 #include <memory>
 
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_write_blocked_list.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
+#include "absl/container/flat_hash_map.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_write_blocked_list.h"
+#include "quic/platform/api/quic_containers.h"
 
 namespace quic {
 
@@ -54,7 +55,7 @@ class QuicSessionPeer {
   static QuicWriteBlockedList* GetWriteBlockedStreams(QuicSession* session);
   static QuicStream* GetOrCreateStream(QuicSession* session,
                                        QuicStreamId stream_id);
-  static QuicHashMap<QuicStreamId, QuicStreamOffset>&
+  static absl::flat_hash_map<QuicStreamId, QuicStreamOffset>&
   GetLocallyClosedStreamsHighestOffset(QuicSession* session);
   static QuicSession::StreamMap& stream_map(QuicSession* session);
   static const QuicSession::ClosedStreams& closed_streams(QuicSession* session);

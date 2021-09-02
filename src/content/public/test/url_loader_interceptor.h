@@ -9,6 +9,7 @@
 #include <set>
 #include <string>
 
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -65,7 +66,6 @@ class URLLoaderInterceptor {
     int process_id;
     // The following are the parameters to CreateLoaderAndStart.
     mojo::PendingReceiver<network::mojom::URLLoader> receiver;
-    int32_t routing_id;
     int32_t request_id;
     uint32_t options;
     network::ResourceRequest url_request;
@@ -113,7 +113,7 @@ class URLLoaderInterceptor {
       base::StringPiece headers,
       base::StringPiece body,
       network::mojom::URLLoaderClient* client,
-      base::Optional<net::SSLInfo> ssl_info = base::nullopt);
+      absl::optional<net::SSLInfo> ssl_info = absl::nullopt);
 
   // Reads the given path, relative to the root source directory, and writes it
   // to |client|. For headers:
@@ -127,14 +127,14 @@ class URLLoaderInterceptor {
       const std::string& relative_path,
       network::mojom::URLLoaderClient* client,
       const std::string* headers = nullptr,
-      base::Optional<net::SSLInfo> ssl_info = base::nullopt);
+      absl::optional<net::SSLInfo> ssl_info = absl::nullopt);
 
   // Like above, but uses an absolute file path.
   static void WriteResponse(
       const base::FilePath& file_path,
       network::mojom::URLLoaderClient* client,
       const std::string* headers = nullptr,
-      base::Optional<net::SSLInfo> ssl_info = base::nullopt);
+      absl::optional<net::SSLInfo> ssl_info = absl::nullopt);
 
   // Attempts to write |body| to |client| and complete the load with status OK.
   // client->OnReceiveResponse() must have been called prior to this.

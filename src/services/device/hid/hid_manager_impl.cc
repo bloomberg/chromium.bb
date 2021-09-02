@@ -20,14 +20,14 @@ namespace device {
 base::LazyInstance<std::unique_ptr<HidService>>::Leaky g_hid_service =
     LAZY_INSTANCE_INITIALIZER;
 
-HidManagerImpl::HidManagerImpl() : hid_service_observer_(this) {
+HidManagerImpl::HidManagerImpl() {
   if (g_hid_service.Get())
     hid_service_ = std::move(g_hid_service.Get());
   else
     hid_service_ = HidService::Create();
 
   DCHECK(hid_service_);
-  hid_service_observer_.Add(hid_service_.get());
+  hid_service_observation_.Observe(hid_service_.get());
 }
 
 HidManagerImpl::~HidManagerImpl() {}
@@ -78,12 +78,13 @@ void HidManagerImpl::Connect(
     const std::string& device_guid,
     mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
     mojo::PendingRemote<mojom::HidConnectionWatcher> watcher,
+    bool allow_protected_reports,
     ConnectCallback callback) {
-  hid_service_->Connect(device_guid,
-                        base::AdaptCallbackForRepeating(base::BindOnce(
-                            &HidManagerImpl::CreateConnection,
-                            weak_factory_.GetWeakPtr(), std::move(callback),
-                            std::move(connection_client), std::move(watcher))));
+  hid_service_->Connect(
+      device_guid, allow_protected_reports,
+      base::BindOnce(&HidManagerImpl::CreateConnection,
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(connection_client), std::move(watcher)));
 }
 
 void HidManagerImpl::CreateConnection(
@@ -110,6 +111,11 @@ void HidManagerImpl::OnDeviceAdded(mojom::HidDeviceInfoPtr device) {
 void HidManagerImpl::OnDeviceRemoved(mojom::HidDeviceInfoPtr device) {
   for (auto& client : clients_)
     client->DeviceRemoved(device->Clone());
+}
+
+void HidManagerImpl::OnDeviceChanged(mojom::HidDeviceInfoPtr device) {
+  for (auto& client : clients_)
+    client->DeviceChanged(device->Clone());
 }
 
 }  // namespace device

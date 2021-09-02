@@ -65,7 +65,8 @@ export class Resolution {
    * @return {!Resolution}
    */
   static fromString(s) {
-    return new Resolution(...s.split('x').map(Number));
+    const [width, height] = s.split('x').map((x) => Number(x));
+    return new Resolution(width, height);
   }
 
   /**
@@ -95,6 +96,11 @@ export const Facing = {
   USER: 'user',
   ENVIRONMENT: 'environment',
   EXTERNAL: 'external',
+  // VIRTUAL_{facing} is for labeling video device for configuring extra stream
+  // from corresponding {facing} video device.
+  VIRTUAL_USER: 'virtual_user',
+  VIRTUAL_ENV: 'virtual_environment',
+  VIRTUAL_EXT: 'virtual_external',
   NOT_SET: '(not set)',
   UNKNOWN: 'unknown',
 };
@@ -108,6 +114,7 @@ export const ViewName = {
   GRID_SETTINGS: 'view-grid-settings',
   MESSAGE_DIALOG: 'view-message-dialog',
   PHOTO_RESOLUTION_SETTINGS: 'view-photo-resolution-settings',
+  PTZ_PANEL: 'view-ptz-panel',
   RESOLUTION_SETTINGS: 'view-resolution-settings',
   SETTINGS: 'view-settings',
   SPLASH: 'view-splash',
@@ -201,6 +208,7 @@ export let PerfEntry;
  *   level: !ErrorLevel,
  *   stack: string,
  *   time: number,
+ *   name: string,
  * }}
  */
 export let ErrorInfo;
@@ -211,7 +219,15 @@ export let ErrorInfo;
  */
 export const ErrorType = {
   BROKEN_THUMBNAIL: 'broken-thumbnail',
+  EMPTY_FILE: 'empty-file',
+  IDLE_DETECTOR_FAILURE: 'idle-detector-failure',
+  PRELOAD_IMAGE_FAILURE: 'preload-image-failure',
+  SET_FPS_RANGE_FAILURE: 'set-fps-range-failure',
+  START_CAMERA_FAILURE: 'start-camera-failure',
+  START_CAPTURE_FAILURE: 'start-capture-failure',
+  STOP_CAPTURE_FAILURE: 'stop-capture-failure',
   UNCAUGHT_PROMISE: 'uncaught-promise',
+  MULTIPLE_STREAMS_FAILURE: 'multiple-streams-failure',
 };
 
 /**
@@ -222,12 +238,6 @@ export const ErrorLevel = {
   WARNING: 'WARNING',
   ERROR: 'ERROR',
 };
-
-/**
- * Callback for reporting error in testing run.
- * @typedef {function(!ErrorInfo)}
- */
-export let TestingErrorCallback;
 
 /**
  * Throws when a method is not implemented.
@@ -244,10 +254,71 @@ export class NotImplementedError extends Error {
 }
 
 /**
- * The possible scheme to load untrusted context.
- * @enum {string}
+ * Throws when an action is canceled.
  */
-export const UntrustedOrigin = {
-  CHROME_EXTENSION: 'chrome-extension://hfhhnacclhffhdffklopdkcgdhifgngh',
-  CHROME_UNTRUSTED: 'chrome-untrusted://camera-app',
-};
+export class CanceledError extends Error {
+  /**
+   * @param {string=} message
+   * @public
+   */
+  constructor(message = 'The action is canceled') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Throws when an element fails to load a source.
+ */
+export class LoadError extends Error {
+  /**
+   * @param {string=} message
+   * @public
+   */
+  constructor(message = 'Source failed to load') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Throws when an media element fails to play.
+ */
+export class PlayError extends Error {
+  /**
+   * @param {string=} message
+   * @public
+   */
+  constructor(message = 'Media element failed to play') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Throws when an media element play a malformed file.
+ */
+export class PlayMalformedError extends Error {
+  /**
+   * @param {string=} message
+   * @public
+   */
+  constructor(message = 'Media element failed to play a malformed file') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Throws when the data to generate thumbnail is totally empty.
+ */
+export class EmptyThumbnailError extends Error {
+  /**
+   * @param {string=} message
+   * @public
+   */
+  constructor(message = 'The thumbnail is empty') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}

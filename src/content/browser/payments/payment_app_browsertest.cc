@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "build/chromeos_buildflags.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/installed_payment_apps_finder.h"
@@ -79,8 +82,8 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    https_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->ServeFilesFromSourceDirectory(GetTestDataFilePath());
     ASSERT_TRUE(https_server_->Start());
     ASSERT_TRUE(NavigateToURL(
@@ -89,21 +92,16 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     ContentBrowserTest::SetUpOnMainThread();
   }
 
-  bool RunScript(const std::string& script, std::string* result) {
-    return content::ExecuteScriptAndExtractString(shell()->web_contents(),
-                                                  script, result);
+  std::string RunScript(const std::string& script) {
+    return EvalJs(shell()->web_contents(), script,
+                  EXECUTE_SCRIPT_USE_MANUAL_REPLY)
+        .ExtractString();
   }
 
-  std::string PopConsoleString() {
-    std::string script_result;
-    EXPECT_TRUE(RunScript("resultQueue.pop()", &script_result));
-    return script_result;
-  }
+  std::string PopConsoleString() { return RunScript("resultQueue.pop()"); }
 
   void RegisterPaymentApp() {
-    std::string script_result;
-    ASSERT_TRUE(RunScript("registerPaymentApp()", &script_result));
-    ASSERT_EQ("registered", script_result);
+    ASSERT_EQ("registered", RunScript("registerPaymentApp()"));
   }
 
   url::Origin GetTestServerOrigin() {
@@ -185,9 +183,10 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
     // for service workers, for all origins, for an unbounded time range.
     base::RunLoop run_loop;
 
-    static_cast<StoragePartitionImpl*>(
-        content::BrowserContext::GetDefaultStoragePartition(
-            shell()->web_contents()->GetBrowserContext()))
+    static_cast<StoragePartitionImpl*>(shell()
+                                           ->web_contents()
+                                           ->GetBrowserContext()
+                                           ->GetDefaultStoragePartition())
         ->ClearData(StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS,
                     StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, GURL(),
                     base::Time(), base::Time::Max(), run_loop.QuitClosure());
@@ -257,7 +256,7 @@ class PaymentAppBrowserTest : public ContentBrowserTest {
 };
 
 // TODO(crbug.com/869790) Flakes on linux-chromeos-dbg
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(NDEBUG)
 #define MAYBE_AbortPaymentWithInvalidRegistrationId \
   DISABLED_AbortPaymentWithInvalidRegistrationId
 #else
@@ -280,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
 }
 
 // TODO(crbug.com/869790) Flakes on linux-chromeos-dbg
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(NDEBUG)
 #define MAYBE_AbortPayment DISABLED_AbortPayment
 #else
 #define MAYBE_AbortPayment AbortPayment
@@ -298,9 +297,8 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, MAYBE_AbortPayment) {
   ClearStoragePartitionData();
 }
 
-// TODO(https://crbug.com/1129411) Fix flake on all desktop platforms.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MAC) || \
-    defined(OS_WIN)
+// TODO(https://crbug.com/869790) Flakes on linux-chromeos-dbg
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_CanMakePayment DISABLED_CanMakePayment
 #else
 #define MAYBE_CanMakePayment CanMakePayment
@@ -315,8 +313,6 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, MAYBE_CanMakePayment) {
       registrationIds[0], GetTestServerOrigin(), "id", "basic-card");
   ASSERT_TRUE(can_make_payment);
 
-  ClearStoragePartitionData();
-
   EXPECT_EQ("https://example.com/", PopConsoleString() /* topOrigin */);
   EXPECT_EQ("https://example.com/",
             PopConsoleString() /* paymentRequestOrigin */);
@@ -328,10 +324,12 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, MAYBE_CanMakePayment) {
       "\"value\":\"55\"},\"label\":\"\",\"pending\":false}}"
       "]",
       PopConsoleString() /* modifiers */);
+
+  ClearStoragePartitionData();
 }
 
 // TODO(crbug.com/869790) Flakes on linux-chromeos-dbg
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+#if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(NDEBUG)
 #define MAYBE_PaymentAppInvocationAndFailed \
   DISABLED_PaymentAppInvocationAndFailed
 #else
@@ -355,9 +353,8 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
   ClearStoragePartitionData();
 }
 
-// TODO(https://crbug.com/1129411) Fix flake on all desktop platforms.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MAC) || \
-    defined(OS_WIN)
+// TODO(https://crbug.com/869790) Flakes on linux-chromeos-dbg
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_PaymentAppInvocation DISABLED_PaymentAppInvocation
 #else
 #define MAYBE_PaymentAppInvocation PaymentAppInvocation
@@ -372,11 +369,6 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, MAYBE_PaymentAppInvocation) {
       InvokePaymentAppWithTestData(registrationIds[0], GetTestServerOrigin(),
                                    "basic-card", "basic-card-payment-app-id"));
   ASSERT_EQ("test", response->method_name);
-
-  ClearStoragePartitionData();
-
-  registrationIds = GetAllPaymentAppRegistrationIDs();
-  ASSERT_EQ(0U, registrationIds.size());
 
   EXPECT_EQ("https://example.com/", PopConsoleString() /* topOrigin */);
   EXPECT_EQ("https://example.com/",
@@ -396,11 +388,15 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest, MAYBE_PaymentAppInvocation) {
       PopConsoleString() /* modifiers */);
   EXPECT_EQ("basic-card-payment-app-id",
             PopConsoleString() /* instrumentKey */);
+
+  ClearStoragePartitionData();
+
+  registrationIds = GetAllPaymentAppRegistrationIDs();
+  ASSERT_EQ(0U, registrationIds.size());
 }
 
-// TODO(https://crbug.com/1129411) Fix flake on all desktop platforms.
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MAC) || \
-    defined(OS_WIN)
+// TODO(https://crbug.com/869790) Flakes on linux-chromeos-dbg
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #define MAYBE_PaymentAppOpenWindowFailed DISABLED_PaymentAppOpenWindowFailed
 #else
 #define MAYBE_PaymentAppOpenWindowFailed PaymentAppOpenWindowFailed
@@ -419,11 +415,6 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
   // in PaymentRequestRespondWithObserver::OnResponseRejected.
   ASSERT_EQ("", response->method_name);
 
-  ClearStoragePartitionData();
-
-  registrationIds = GetAllPaymentAppRegistrationIDs();
-  ASSERT_EQ(0U, registrationIds.size());
-
   EXPECT_EQ("https://example.com/", PopConsoleString() /* topOrigin */);
   EXPECT_EQ("https://example.com/",
             PopConsoleString() /* paymentRequestOrigin */);
@@ -440,5 +431,10 @@ IN_PROC_BROWSER_TEST_F(PaymentAppBrowserTest,
       "]",
       PopConsoleString() /* modifiers */);
   EXPECT_EQ("bobpay-payment-app-id", PopConsoleString() /* instrumentKey */);
+
+  ClearStoragePartitionData();
+
+  registrationIds = GetAllPaymentAppRegistrationIDs();
+  ASSERT_EQ(0U, registrationIds.size());
 }
 }  // namespace content

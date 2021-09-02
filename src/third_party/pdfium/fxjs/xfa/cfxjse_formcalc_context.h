@@ -7,13 +7,14 @@
 #ifndef FXJS_XFA_CFXJSE_FORMCALC_CONTEXT_H_
 #define FXJS_XFA_CFXJSE_FORMCALC_CONTEXT_H_
 
+#include <functional>
 #include <memory>
 #include <vector>
 
+#include "core/fxcrt/fx_system.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fxjs/xfa/fxjse.h"
 #include "third_party/base/optional.h"
-#include "xfa/fxfa/parser/xfa_resolvenode_rs.h"
 
 class CFXJSE_Context;
 class CFX_WideTextBuf;
@@ -271,7 +272,7 @@ class CFXJSE_FormCalcContext final : public CFXJSE_HostObject {
   static Optional<CFX_WideTextBuf> Translate(cppgc::Heap* pHeap,
                                              WideStringView wsFormcalc);
 
-  void GlobalPropertyGetter(CFXJSE_Value* pValue);
+  v8::Local<v8::Value> GlobalPropertyGetter();
   v8::Isolate* GetIsolate() const { return m_pIsolate.Get(); }
   CXFA_Document* GetDocument() const { return m_pDocument.Get(); }
 
@@ -280,13 +281,26 @@ class CFXJSE_FormCalcContext final : public CFXJSE_HostObject {
                                 const v8::FunctionCallbackInfo<v8::Value>& info,
                                 bool bDotAccessor);
 
+  bool ApplyToExpansion(
+      std::function<void(v8::Isolate*, v8::Local<v8::Value>)> fn,
+      const v8::FunctionCallbackInfo<v8::Value>& info,
+      bool bStrict);
+
+  bool ApplyToArray(v8::Isolate* pIsolate,
+                    std::function<void(v8::Isolate*, v8::Local<v8::Value>)> fn,
+                    v8::Local<v8::Array> pArray);
+
+  void ApplyToObject(v8::Isolate* pIsolate,
+                     std::function<void(v8::Isolate*, v8::Local<v8::Value>)> fn,
+                     v8::Local<v8::Object> pObject);
+
+  void ThrowArgumentMismatchException() const;
   void ThrowNoDefaultPropertyException(ByteStringView name) const;
   void ThrowCompilerErrorException() const;
   void ThrowDivideByZeroException() const;
   void ThrowServerDeniedException() const;
   void ThrowPropertyNotInObjectException(const WideString& name,
                                          const WideString& exp) const;
-  void ThrowArgumentMismatchException() const;
   void ThrowParamCountMismatchException(const WideString& method) const;
   void ThrowException(const WideString& str) const;
 

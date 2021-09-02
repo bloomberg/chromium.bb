@@ -16,16 +16,11 @@ class MockVideoCaptureProvider : public VideoCaptureProvider {
   MockVideoCaptureProvider();
   ~MockVideoCaptureProvider() override;
 
-  void GetDeviceInfosAsync(GetDeviceInfosCallback result_callback) override {
-    DoGetDeviceInfosAsync(result_callback);
-  }
-
-  MOCK_METHOD0(Uninitialize, void());
-  MOCK_METHOD1(DoGetDeviceInfosAsync,
-               void(GetDeviceInfosCallback& result_callback));
-
-  MOCK_METHOD0(CreateDeviceLauncher,
-               std::unique_ptr<VideoCaptureDeviceLauncher>());
+  MOCK_METHOD(void, GetDeviceInfosAsync, (GetDeviceInfosCallback), (override));
+  MOCK_METHOD(std::unique_ptr<VideoCaptureDeviceLauncher>,
+              CreateDeviceLauncher,
+              (),
+              (override));
 };
 
 class MockVideoCaptureDeviceLauncher : public VideoCaptureDeviceLauncher {
@@ -76,7 +71,7 @@ class MockLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   MOCK_METHOD2(DoSetDesktopCaptureWindowId,
                void(gfx::NativeViewId window_id, base::OnceClosure* done_cb));
   MOCK_METHOD2(OnUtilizationReport,
-               void(int frame_feedback_id, media::VideoFrameFeedback));
+               void(int frame_feedback_id, media::VideoCaptureFeedback));
 
   void GetPhotoState(
       media::VideoCaptureDevice::GetPhotoStateCallback callback) override {

@@ -14,6 +14,7 @@
 #include "components/media_router/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/style/typography.h"
@@ -140,5 +141,8 @@ void MediaRemotingDialogView::ReportPermission(bool allowed) {
 
 // static
 MediaRemotingDialogView* MediaRemotingDialogView::instance_ = nullptr;
+
+BEGIN_METADATA(MediaRemotingDialogView, views::BubbleDialogDelegateView)
+END_METADATA
 
 }  // namespace media_router

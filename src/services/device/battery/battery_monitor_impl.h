@@ -5,8 +5,6 @@
 #ifndef SERVICES_DEVICE_BATTERY_BATTERY_MONITOR_IMPL_H_
 #define SERVICES_DEVICE_BATTERY_BATTERY_MONITOR_IMPL_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -31,8 +29,7 @@ class BatteryMonitorImpl : public mojom::BatteryMonitor {
   void ReportStatus();
 
   mojo::SelfOwnedReceiverRef<mojom::BatteryMonitor> receiver_;
-  std::unique_ptr<BatteryStatusService::BatteryUpdateSubscription>
-      subscription_;
+  base::CallbackListSubscription subscription_;
   QueryNextStatusCallback callback_;
   mojom::BatteryStatus status_;
   bool status_to_report_;

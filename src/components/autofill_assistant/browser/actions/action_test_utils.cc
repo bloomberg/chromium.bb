@@ -32,12 +32,14 @@ ElementFinder::Result MockFindElement(MockActionDelegate& delegate,
       .Times(times)
       .WillRepeatedly(WithArgs<1>([&selector](auto&& callback) {
         auto element_result = std::make_unique<ElementFinder::Result>();
-        element_result->object_id = selector.proto.filters(0).css_selector();
+        element_result->dom_object.object_data.object_id =
+            selector.proto.filters(0).css_selector();
         std::move(callback).Run(OkClientStatus(), std::move(element_result));
       }));
 
   ElementFinder::Result expected_result;
-  expected_result.object_id = selector.proto.filters(0).css_selector();
+  expected_result.dom_object.object_data.object_id =
+      selector.proto.filters(0).css_selector();
   return expected_result;
 }
 
@@ -56,13 +58,38 @@ ElementFinder::Result MockFindElement(MockWebController& web_controller,
       .Times(times)
       .WillRepeatedly(WithArgs<1>([&selector](auto&& callback) {
         auto element_result = std::make_unique<ElementFinder::Result>();
-        element_result->object_id = selector.proto.filters(0).css_selector();
+        element_result->dom_object.object_data.object_id =
+            selector.proto.filters(0).css_selector();
         std::move(callback).Run(OkClientStatus(), std::move(element_result));
       }));
 
   ElementFinder::Result expected_result;
-  expected_result.object_id = selector.proto.filters(0).css_selector();
+  expected_result.dom_object.object_data.object_id =
+      selector.proto.filters(0).css_selector();
   return expected_result;
+}
+
+ValueExpressionBuilder::ValueExpressionBuilder() = default;
+
+ValueExpressionBuilder& ValueExpressionBuilder::addChunk(
+    const std::string& text) {
+  value_expression.add_chunk()->set_text(text);
+  return *this;
+}
+
+ValueExpressionBuilder& ValueExpressionBuilder::addChunk(int key) {
+  value_expression.add_chunk()->set_key(key);
+  return *this;
+}
+
+ValueExpressionBuilder& ValueExpressionBuilder::addChunk(
+    autofill::ServerFieldType field) {
+  value_expression.add_chunk()->set_key(static_cast<int>(field));
+  return *this;
+}
+
+ValueExpression ValueExpressionBuilder::toProto() {
+  return value_expression;
 }
 
 }  // namespace test_util

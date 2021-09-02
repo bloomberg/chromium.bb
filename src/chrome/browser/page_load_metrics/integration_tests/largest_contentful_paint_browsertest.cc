@@ -24,11 +24,11 @@ void ValidateCandidate(int expected_size, const TraceEvent& event) {
   std::unique_ptr<base::Value> data;
   ASSERT_TRUE(event.GetArgAsValue("data", &data));
 
-  const base::Optional<int> traced_size = data->FindIntKey("size");
+  const absl::optional<int> traced_size = data->FindIntKey("size");
   ASSERT_TRUE(traced_size.has_value());
   EXPECT_EQ(traced_size.value(), expected_size);
 
-  const base::Optional<bool> traced_main_frame_flag =
+  const absl::optional<bool> traced_main_frame_flag =
       data->FindBoolKey("isMainFrame");
   ASSERT_TRUE(traced_main_frame_flag.has_value());
   EXPECT_TRUE(traced_main_frame_flag.value());
@@ -36,7 +36,7 @@ void ValidateCandidate(int expected_size, const TraceEvent& event) {
 
 int GetCandidateIndex(const TraceEvent& event) {
   std::unique_ptr<base::Value> data = event.GetKnownArgAsValue("data");
-  base::Optional<int> candidate_idx = data->FindIntKey("candidateIndex");
+  absl::optional<int> candidate_idx = data->FindIntKey("candidateIndex");
   DCHECK(candidate_idx.has_value()) << "couldn't find 'candidateIndex'";
 
   return candidate_idx.value();
@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LargestContentfulPaint) {
   const auto& list = result.value.GetList();
   const std::string expected_url[3] = {
       image_1_url_expected, image_2_url_expected, image_3_url_expected};
-  base::Optional<double> lcp_timestamps[3];
+  absl::optional<double> lcp_timestamps[3];
   for (size_t i = 0; i < 3; i++) {
     const std::string* url = list[i].FindStringPath("url");
     EXPECT_TRUE(url);
@@ -132,9 +132,8 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LargestContentfulPaint) {
       lcp_timestamps[2].value());
 }
 
-// TODO(crbug.com/1135527): Flaky.
 IN_PROC_BROWSER_TEST_F(MetricIntegrationTest,
-                       DISABLED_LargestContentfulPaint_SubframeInput) {
+                       LargestContentfulPaint_SubframeInput) {
   Start();
   Load("/lcp_subframe_input.html");
   auto* sub = ChildFrameAt(web_contents()->GetMainFrame(), 0);

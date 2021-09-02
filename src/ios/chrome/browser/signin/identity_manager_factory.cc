@@ -73,7 +73,7 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
   signin::IdentityManagerBuildParams params;
   params.account_consistency = signin::AccountConsistencyMethod::kMirror;
   params.device_accounts_provider =
-      std::make_unique<DeviceAccountsProviderImpl>();
+      std::make_unique<DeviceAccountsProviderImpl>(browser_state->GetPrefs());
   params.image_decoder = image_fetcher::CreateIOSImageDecoder();
   params.local_state = GetApplicationContext()->GetLocalState();
   params.pref_service = browser_state->GetPrefs();
@@ -87,14 +87,4 @@ std::unique_ptr<KeyedService> IdentityManagerFactory::BuildServiceInstanceFor(
     observer.IdentityManagerCreated(identity_manager.get());
 
   return identity_manager;
-}
-
-void IdentityManagerFactory::BrowserStateShutdown(web::BrowserState* context) {
-  auto* identity_manager = static_cast<signin::IdentityManager*>(
-      GetServiceForBrowserState(context, false));
-  if (identity_manager) {
-    for (auto& observer : observer_list_)
-      observer.IdentityManagerShutdown(identity_manager);
-  }
-  BrowserStateKeyedServiceFactory::BrowserStateShutdown(context);
 }

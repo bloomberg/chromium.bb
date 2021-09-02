@@ -37,7 +37,7 @@ constexpr std::array<uint8_t, kAaguidLength> kTestDeviceAaguid = {
 using TestMakeCredentialTaskCallback =
     ::device::test::StatusAndValueCallbackReceiver<
         CtapDeviceResponseCode,
-        base::Optional<AuthenticatorMakeCredentialResponse>>;
+        absl::optional<AuthenticatorMakeCredentialResponse>>;
 
 class FidoMakeCredentialTaskTest : public testing::Test {
  public:
@@ -95,9 +95,11 @@ TEST_F(FidoMakeCredentialTaskTest, TestRegisterSuccessWithFake) {
 
   // We don't verify the response from the fake, but do a quick sanity check.
   ASSERT_TRUE(make_credential_callback_receiver().value());
-  EXPECT_EQ(
-      32u,
-      make_credential_callback_receiver().value()->raw_credential_id().size());
+  EXPECT_EQ(32u, make_credential_callback_receiver()
+                     .value()
+                     ->attestation_object()
+                     .GetCredentialId()
+                     .size());
 }
 
 TEST_F(FidoMakeCredentialTaskTest, FallbackToU2fRegisterSuccess) {
@@ -148,7 +150,7 @@ TEST_F(FidoMakeCredentialTaskTest, EnforceClientPinWhenUserVerificationSet) {
 
   auto device = MockFidoDevice::MakeCtap(std::move(device_info));
   device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorMakeCredential, base::nullopt);
+      CtapRequestCommand::kAuthenticatorMakeCredential, absl::nullopt);
 
   PublicKeyCredentialRpEntity rp(test_data::kRelyingPartyId);
   PublicKeyCredentialUserEntity user(

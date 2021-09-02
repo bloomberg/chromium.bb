@@ -54,6 +54,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypePromo,
   ItemTypeLearnMore,
   ItemTypeDiscover,
+  ItemTypeReturnToRecentTab,
   ItemTypeUnknown,
 };
 
@@ -64,6 +65,7 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierReadingList,
   SectionIdentifierMostVisited,
   SectionIdentifierLogo,
+  SectionIdentifierReturnToRecentTab,
   SectionIdentifierPromo,
   SectionIdentifierLearnMore,
   SectionIdentifierDiscover,
@@ -78,6 +80,8 @@ ContentSuggestionType ContentSuggestionTypeForItemType(NSInteger type) {
     return ContentSuggestionTypeEmpty;
   if (type == ItemTypeReadingList)
     return ContentSuggestionTypeReadingList;
+  if (type == ItemTypeReturnToRecentTab)
+    return ContentSuggestionTypeReturnToRecentTab;
   if (type == ItemTypeMostVisited)
     return ContentSuggestionTypeMostVisited;
   if (type == ItemTypePromo)
@@ -99,6 +103,8 @@ ItemType ItemTypeForInfo(ContentSuggestionsSectionInformation* info) {
       return ItemTypeArticle;
     case ContentSuggestionsSectionReadingList:
       return ItemTypeReadingList;
+    case ContentSuggestionsSectionReturnToRecentTab:
+      return ItemTypeReturnToRecentTab;
     case ContentSuggestionsSectionMostVisited:
       return ItemTypeMostVisited;
     case ContentSuggestionsSectionPromo:
@@ -125,6 +131,8 @@ SectionIdentifier SectionIdentifierForInfo(
       return SectionIdentifierMostVisited;
     case ContentSuggestionsSectionLogo:
       return SectionIdentifierLogo;
+    case ContentSuggestionsSectionReturnToRecentTab:
+      return SectionIdentifierReturnToRecentTab;
     case ContentSuggestionsSectionPromo:
       return SectionIdentifierPromo;
     case ContentSuggestionsSectionLearnMore:
@@ -321,6 +329,35 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
               withSectionInfo:sectionInfo];
   }
   [self.collectionViewController.collectionView reloadData];
+}
+
+- (void)addSection:(ContentSuggestionsSectionInformation*)sectionInfo
+        completion:(void (^)(void))completion {
+  SectionIdentifier sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+  CSCollectionViewModel* model =
+      self.collectionViewController.collectionViewModel;
+
+  if ([model hasSectionForSectionIdentifier:sectionIdentifier])
+    return;
+
+  auto addSectionBlock = ^{
+    NSIndexSet* addedSection =
+        [self addSectionsForSectionInfoToModel:@[ sectionInfo ]];
+    [self.collectionViewController.collectionView insertSections:addedSection];
+    NSArray<NSIndexPath*>* addedItems = [self
+        addSuggestionsToModel:[self.dataSource itemsForSectionInfo:sectionInfo]
+              withSectionInfo:sectionInfo];
+    [self.collectionViewController.collectionView
+        insertItemsAtIndexPaths:addedItems];
+  };
+
+  [UIView performWithoutAnimation:^{
+    [self.collectionViewController.collectionView
+        performBatchUpdates:addSectionBlock
+                 completion:^(BOOL finished) {
+                   completion();
+                 }];
+  }];
 }
 
 - (void)clearSection:(ContentSuggestionsSectionInformation*)sectionInfo {
@@ -574,6 +611,12 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   return [self addItem:item toSectionWithIdentifier:sectionIdentifier];
 }
 
+- (BOOL)isReturnToRecentTabSection:(NSInteger)section {
+  return [self.collectionViewController.collectionViewModel
+             sectionIdentifierForSection:section] ==
+         SectionIdentifierReturnToRecentTab;
+}
+
 - (BOOL)isMostVisitedSection:(NSInteger)section {
   return
       [self.collectionViewController.collectionViewModel
@@ -619,8 +662,10 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
   NSString* footerTitle = sectionInfo.footerTitle;
 
   __weak ContentSuggestionsCollectionUpdater* weakSelf = self;
-  if (footerTitle && ![self.collectionViewController.collectionViewModel
-                         footerForSectionWithIdentifier:sectionIdentifier]) {
+  if (footerTitle &&
+      ![self.collectionViewController.collectionViewModel
+          footerForSectionWithIdentifier:sectionIdentifier] &&
+      !IsDiscoverFeedEnabled()) {
     ContentSuggestionsFooterItem* footer = [[ContentSuggestionsFooterItem alloc]
         initWithType:ItemTypeFooter
                title:sectionInfo.footerTitle
@@ -654,13 +699,18 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
 
   NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
   if ([self isDiscoverSection:section]) {
-    [model setHeader:[self headerForSectionInfo:sectionInfo]
-        forSectionWithIdentifier:sectionIdentifier];
+    CollectionViewItem* discoverSectionHeader =
+        [self headerForSectionInfo:sectionInfo];
+    // TODO(crbug.com/1145106): Potential fix for crash where cellClass is nil.
+    if ([discoverSectionHeader cellClass]) {
+      [model setHeader:discoverSectionHeader
+          forSectionWithIdentifier:sectionIdentifier];
+    }
     return;
   }
 
   if (![model headerForSectionWithIdentifier:sectionIdentifier] &&
-      sectionInfo.title) {
+      sectionInfo.title && !IsDiscoverFeedEnabled()) {
     DCHECK(IsFromContentSuggestionsService(sectionIdentifier));
     if ([self.sectionIdentifiersFromContentSuggestions
             containsObject:@(sectionIdentifier)]) {

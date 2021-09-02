@@ -8,9 +8,8 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification_handler.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -28,8 +27,8 @@ class SharingNotificationHandler : public NotificationHandler {
   void OnClick(Profile* profile,
                const GURL& origin,
                const std::string& notification_id,
-               const base::Optional<int>& action_index,
-               const base::Optional<base::string16>& reply,
+               const absl::optional<int>& action_index,
+               const absl::optional<std::u16string>& reply,
                base::OnceClosure completed_closure) override;
   void OnClose(Profile* profile,
                const GURL& origin,

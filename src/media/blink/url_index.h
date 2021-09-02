@@ -16,10 +16,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "media/blink/lru.h"
 #include "media/blink/media_blink_export.h"
 #include "media/blink/multibuffer.h"
-#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "url/gurl.h"
 
 namespace media {
@@ -216,7 +214,8 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   ResourceMultiBuffer multibuffer_;
   std::vector<RedirectCB> redirect_callbacks_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
+
   DISALLOW_COPY_AND_ASSIGN(UrlData);
 };
 
@@ -227,6 +226,8 @@ class MEDIA_BLINK_EXPORT UrlIndex {
   UrlIndex(ResourceFetchContext* fetch_context, int block_shift);
   virtual ~UrlIndex();
 
+  enum CacheMode { kNormal, kCacheDisabled };
+
   // Look up an UrlData in the index and return it. If none is found,
   // create a new one. Note that newly created UrlData entries are NOT
   // added to the index, instead you must call TryInsert on them after
@@ -235,7 +236,8 @@ class MEDIA_BLINK_EXPORT UrlIndex {
   // Because the returned UrlData has a raw reference to |this|, it must be
   // released before |this| is destroyed.
   scoped_refptr<UrlData> GetByUrl(const GURL& gurl,
-                                  UrlData::CorsMode cors_mode);
+                                  UrlData::CorsMode cors_mode,
+                                  CacheMode cache_mode);
 
   // Add the given UrlData to the index if possible. If a better UrlData
   // is already present in the index, return it instead. (If not, we just

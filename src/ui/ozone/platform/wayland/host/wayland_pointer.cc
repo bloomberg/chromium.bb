@@ -27,14 +27,15 @@ WaylandPointer::WaylandPointer(wl_pointer* pointer,
       &WaylandPointer::AxisSource,  &WaylandPointer::AxisStop,
       &WaylandPointer::AxisDiscrete};
 
-  DCHECK(delegate_);
-  delegate_->OnPointerCreated(this);
-
   wl_pointer_add_listener(obj_.get(), &listener, this);
 }
 
 WaylandPointer::~WaylandPointer() {
-  delegate_->OnPointerDestroyed(this);
+  // Even though, WaylandPointer::Leave is always called when Wayland destroys
+  // wl_pointer, it's better to be explicit as some Wayland compositors may have
+  // bugs.
+  delegate_->OnPointerFocusChanged(nullptr, {});
+  delegate_->OnResetPointerFlags();
 }
 
 // static
@@ -46,6 +47,8 @@ void WaylandPointer::Enter(void* data,
                            wl_fixed_t surface_y) {
   DCHECK(data);
   WaylandPointer* pointer = static_cast<WaylandPointer*>(data);
+  pointer->connection_->set_pointer_enter_serial(serial);
+
   WaylandWindow* window = wl::RootWindowFromWlSurface(surface);
   gfx::PointF location{wl_fixed_to_double(surface_x),
                        wl_fixed_to_double(surface_y)};
@@ -59,7 +62,8 @@ void WaylandPointer::Leave(void* data,
                            wl_surface* surface) {
   DCHECK(data);
   WaylandPointer* pointer = static_cast<WaylandPointer*>(data);
-  pointer->delegate_->OnPointerFocusChanged(nullptr, {});
+  pointer->delegate_->OnPointerFocusChanged(
+      nullptr, pointer->delegate_->GetPointerLocation());
 }
 
 // static
@@ -120,7 +124,7 @@ void WaylandPointer::Axis(void* data,
                           wl_fixed_t value) {
   static const double kAxisValueScale = 10.0;
   WaylandPointer* pointer = static_cast<WaylandPointer*>(data);
-  gfx::Vector2d offset;
+  gfx::Vector2dF offset;
   // Wayland compositors send axis events with values in the surface coordinate
   // space. They send a value of 10 per mouse wheel click by convention, so
   // clients (e.g. GTK+) typically scale down by this amount to convert to
@@ -130,7 +134,7 @@ void WaylandPointer::Axis(void* data,
     offset.set_y(-wl_fixed_to_double(value) / kAxisValueScale *
                  MouseWheelEvent::kWheelDelta);
   } else if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL) {
-    offset.set_x(wl_fixed_to_double(value) / kAxisValueScale *
+    offset.set_x(-wl_fixed_to_double(value) / kAxisValueScale *
                  MouseWheelEvent::kWheelDelta);
   } else {
     return;

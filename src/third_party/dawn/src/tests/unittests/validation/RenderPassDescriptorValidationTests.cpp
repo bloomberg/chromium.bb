@@ -55,7 +55,7 @@ namespace {
         descriptor.dimension = dimension;
         descriptor.size.width = width;
         descriptor.size.height = height;
-        descriptor.size.depth = arrayLayerCount;
+        descriptor.size.depthOrArrayLayers = arrayLayerCount;
         descriptor.sampleCount = sampleCount;
         descriptor.format = format;
         descriptor.mipLevelCount = mipLevelCount;
@@ -119,29 +119,52 @@ namespace {
             // We cannot use utils::ComboRenderPassDescriptor here because it only supports at most
             // kMaxColorAttachments(4) color attachments.
             std::array<wgpu::RenderPassColorAttachmentDescriptor, 5> colorAttachments;
-            colorAttachments[0].attachment = color0;
+            colorAttachments[0].view = color0;
             colorAttachments[0].resolveTarget = nullptr;
             colorAttachments[0].clearColor = {0.0f, 0.0f, 0.0f, 0.0f};
             colorAttachments[0].loadOp = wgpu::LoadOp::Clear;
             colorAttachments[0].storeOp = wgpu::StoreOp::Store;
 
             colorAttachments[1] = colorAttachments[0];
-            colorAttachments[1].attachment = color1;
+            colorAttachments[1].view = color1;
 
             colorAttachments[2] = colorAttachments[0];
-            colorAttachments[2].attachment = color2;
+            colorAttachments[2].view = color2;
 
             colorAttachments[3] = colorAttachments[0];
-            colorAttachments[3].attachment = color3;
+            colorAttachments[3].view = color3;
 
             colorAttachments[4] = colorAttachments[0];
-            colorAttachments[4].attachment =
+            colorAttachments[4].view =
                 Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
 
             wgpu::RenderPassDescriptor renderPass;
             renderPass.colorAttachmentCount = 5;
             renderPass.colorAttachments = colorAttachments.data();
             renderPass.depthStencilAttachment = nullptr;
+            AssertBeginRenderPassError(&renderPass);
+        }
+    }
+
+    // Check that the render pass color attachment must have the RenderAttachment usage.
+    TEST_F(RenderPassDescriptorValidationTest, ColorAttachmentInvalidUsage) {
+        // Control case: using a texture with RenderAttachment is valid.
+        {
+            wgpu::TextureView renderView =
+                Create2DAttachment(device, 1, 1, wgpu::TextureFormat::RGBA8Unorm);
+            utils::ComboRenderPassDescriptor renderPass({renderView});
+            AssertBeginRenderPassSuccess(&renderPass);
+        }
+
+        // Error case: using a texture with Sampled is invalid.
+        {
+            wgpu::TextureDescriptor texDesc;
+            texDesc.usage = wgpu::TextureUsage::Sampled;
+            texDesc.size = {1, 1, 1};
+            texDesc.format = wgpu::TextureFormat::RGBA8Unorm;
+            wgpu::Texture sampledTex = device.CreateTexture(&texDesc);
+
+            utils::ComboRenderPassDescriptor renderPass({sampledTex.CreateView()});
             AssertBeginRenderPassError(&renderPass);
         }
     }
@@ -341,6 +364,30 @@ namespace {
             wgpu::TextureView depthStencilView = depthStencilTexture.CreateView(&descriptor);
             utils::ComboRenderPassDescriptor renderPass({}, depthStencilView);
             AssertBeginRenderPassSuccess(&renderPass);
+        }
+    }
+
+    // Check that the render pass depth attachment must have the RenderAttachment usage.
+    TEST_F(RenderPassDescriptorValidationTest, DepthAttachmentInvalidUsage) {
+        // Control case: using a texture with RenderAttachment is valid.
+        {
+            wgpu::TextureView renderView =
+                Create2DAttachment(device, 1, 1, wgpu::TextureFormat::Depth32Float);
+            utils::ComboRenderPassDescriptor renderPass({}, renderView);
+            AssertBeginRenderPassSuccess(&renderPass);
+        }
+
+        // Error case: using a texture with Sampled is invalid.
+        {
+            wgpu::TextureDescriptor texDesc;
+            texDesc.usage = wgpu::TextureUsage::Sampled;
+            texDesc.size = {1, 1, 1};
+            texDesc.format = wgpu::TextureFormat::Depth32Float;
+            wgpu::Texture sampledTex = device.CreateTexture(&texDesc);
+            wgpu::TextureView sampledView = sampledTex.CreateView();
+
+            utils::ComboRenderPassDescriptor renderPass({}, sampledView);
+            AssertBeginRenderPassError(&renderPass);
         }
     }
 

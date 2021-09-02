@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// UNSUPPORTED: c++98, c++03, c++11, c++14, c++17
+// UNSUPPORTED: c++03, c++11, c++14, c++17
 // <chrono>
 
 // constexpr hours make12(const hours& h) noexcept;
@@ -27,7 +27,7 @@ int main(int, char**)
     static_assert( std::chrono::make12(hours(11)) == hours(11), "");
     static_assert( std::chrono::make12(hours(12)) == hours(12), "");
     static_assert( std::chrono::make12(hours(23)) == hours(11), "");
-    
+
     assert( std::chrono::make12(hours(0)) == hours(12));
     for (int i = 1; i < 13; ++i)
         assert( std::chrono::make12(hours(i)) == hours(i));

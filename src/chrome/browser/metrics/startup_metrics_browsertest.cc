@@ -4,9 +4,11 @@
 
 #include <set>
 
+#include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
+#include "base/test/bind.h"
 #include "build/build_config.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
@@ -17,9 +19,9 @@ using StartupMetricsTest = InProcessBrowserTest;
 namespace {
 
 constexpr const char* kStartupMetrics[] = {
+    "Startup.BrowserMessageLoopFirstIdle",
     "Startup.BrowserMessageLoopStartTime",
     "Startup.BrowserWindow.FirstPaint",
-    "Startup.BrowserWindow.FirstPaint.CompositingEnded",
     "Startup.BrowserWindowDisplay",
     "Startup.FirstWebContents.MainNavigationFinished",
     "Startup.FirstWebContents.MainNavigationStart",
@@ -42,10 +44,23 @@ IN_PROC_BROWSER_TEST_F(StartupMetricsTest, ReportsValues) {
   startup_metric_utils::RecordBrowserMainMessageLoopStart(
       base::TimeTicks::Now(), false /* is_first_run */);
 
-  // Wait for all histograms to be recorded. The test will hang if an histogram
-  // is not recorded.
+  // Wait for all histograms to be recorded. The test will hit a RunLoop timeout
+  // if a histogram is not recorded.
   for (auto* const histogram : kStartupMetrics) {
-    while (!base::StatisticsRecorder::FindHistogram(histogram))
-      base::RunLoop().RunUntilIdle();
+    SCOPED_TRACE(histogram);
+
+    // Continue if histograms was already recorded.
+    if (base::StatisticsRecorder::FindHistogram(histogram))
+      continue;
+
+    // Else, wait until the histogram is recorded.
+    base::RunLoop run_loop;
+    auto histogram_observer = std::make_unique<
+        base::StatisticsRecorder::ScopedHistogramSampleObserver>(
+        histogram,
+        base::BindLambdaForTesting(
+            [&](const char* histogram_name, uint64_t name_hash,
+                base::HistogramBase::Sample sample) { run_loop.Quit(); }));
+    run_loop.Run();
   }
 }

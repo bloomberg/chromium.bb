@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/capture/video/scoped_buffer_pool_reservation.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"
@@ -143,8 +144,10 @@ void SharedMemoryVirtualDeviceMojoAdapter::OnFrameReadyInBuffer(
             std::move(access_permission)),
         access_permission_proxy.InitWithNewPipeAndPassReceiver());
     video_frame_handler_->OnFrameReadyInBuffer(
-        buffer_id, 0 /* frame_feedback_id */,
-        std::move(access_permission_proxy), std::move(frame_info));
+        mojom::ReadyFrameInBuffer::New(buffer_id, 0 /* frame_feedback_id */,
+                                       std::move(access_permission_proxy),
+                                       std::move(frame_info)),
+        {});
   }
   buffer_pool_->RelinquishProducerReservation(buffer_id);
 }
@@ -191,6 +194,11 @@ void SharedMemoryVirtualDeviceMojoAdapter::SetPhotoOptions(
 
 void SharedMemoryVirtualDeviceMojoAdapter::TakePhoto(
     TakePhotoCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void SharedMemoryVirtualDeviceMojoAdapter::ProcessFeedback(
+    const media::VideoCaptureFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 

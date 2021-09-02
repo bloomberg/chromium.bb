@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -18,7 +17,6 @@
 #include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
-#include "base/test/test_timeouts.h"
 #include "base/threading/thread.h"
 #include "sandbox/linux/syscall_broker/broker_channel.h"
 #include "sandbox/linux/syscall_broker/broker_simple_message.h"
@@ -791,11 +789,6 @@ void ReceiveThreeFdsSendTwoBack(BrokerChannel::EndPoint* ipc_reader) {
 class BrokerSimpleMessageFdTest : public testing::Test {
  public:
   void SetUp() override {
-#if !defined(SANDBOX_USES_BASE_TEST_SUITE)
-    // TaskEnvironment requires initialized TestTimeouts, which are already
-    // enabled if using the base test suite.
-    TestTimeouts::Initialize();
-#endif
     task_environment_ = std::make_unique<base::test::TaskEnvironment>();
   }
 

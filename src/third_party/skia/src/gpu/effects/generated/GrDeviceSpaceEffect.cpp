@@ -27,17 +27,17 @@ public:
         SkString _coords0("sk_FragCoord.xy");
         SkString _sample0 = this->invokeChild(0, args, _coords0.c_str());
         fragBuilder->codeAppendf(
-                R"SkSL(%s = %s;
+                R"SkSL(return %s;
 )SkSL",
-                args.fOutputColor, _sample0.c_str());
+                _sample0.c_str());
     }
 
 private:
     void onSetData(const GrGLSLProgramDataManager& pdman,
                    const GrFragmentProcessor& _proc) override {}
 };
-GrGLSLFragmentProcessor* GrDeviceSpaceEffect::onCreateGLSLInstance() const {
-    return new GrGLSLDeviceSpaceEffect();
+std::unique_ptr<GrGLSLFragmentProcessor> GrDeviceSpaceEffect::onMakeProgramImpl() const {
+    return std::make_unique<GrGLSLDeviceSpaceEffect>();
 }
 void GrDeviceSpaceEffect::onGetGLSLProcessorKey(const GrShaderCaps& caps,
                                                 GrProcessorKeyBuilder* b) const {}
@@ -46,7 +46,6 @@ bool GrDeviceSpaceEffect::onIsEqual(const GrFragmentProcessor& other) const {
     (void)that;
     return true;
 }
-bool GrDeviceSpaceEffect::usesExplicitReturn() const { return false; }
 GrDeviceSpaceEffect::GrDeviceSpaceEffect(const GrDeviceSpaceEffect& src)
         : INHERITED(kGrDeviceSpaceEffect_ClassID, src.optimizationFlags()) {
     this->cloneAndRegisterAllChildProcessors(src);

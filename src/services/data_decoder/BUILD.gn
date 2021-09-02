@@ -13,13 +13,15 @@ source_set("lib") {
     "gzipper.h",
     "json_parser_impl.cc",
     "json_parser_impl.h",
+    "web_bundle_builder.cc",
+    "web_bundle_builder.h",
     "web_bundler.cc",
     "web_bundler.h",
     "xml_parser.cc",
     "xml_parser.h",
   ]
 
-  if (is_ash) {
+  if (is_chromeos_ash) {
     sources += [
       "ble_scan_parser_impl.cc",
       "ble_scan_parser_impl.h",
@@ -31,6 +33,7 @@ source_set("lib") {
   deps = [
     "//base",
     "//build:chromeos_buildflags",
+    "//components/cbor",
     "//components/web_package",
     "//mojo/public/cpp/bindings",
     "//net",
@@ -62,10 +65,11 @@ source_set("tests") {
     "public/cpp/json_sanitizer_unittest.cc",
     "public/cpp/safe_web_bundle_parser_unittest.cc",
     "public/cpp/safe_xml_parser_unittest.cc",
+    "web_bundle_builder_unittest.cc",
     "xml_parser_unittest.cc",
   ]
 
-  if (is_ash) {
+  if (is_chromeos_ash) {
     sources += [ "ble_scan_parser_impl_unittest.cc" ]
   }
 
@@ -109,7 +113,7 @@ fuzzer_test("xml_parser_fuzzer") {
   seed_corpus = "//third_party/libxml/fuzz/seed_corpus"
 }
 
-if (is_ash) {
+if (is_chromeos_ash) {
   fuzzer_test("ble_scan_parser_fuzzer") {
     sources = [ "ble_scan_parser_impl_fuzzer.cc" ]
     deps = [ ":lib" ]

@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -110,7 +111,7 @@ void RunMojoProcessErrorHandler(
 }  // namespace
 
 Core::Core() {
-  handles_.reset(new HandleTable);
+  handles_ = std::make_unique<HandleTable>();
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       handles_.get(), "MojoHandleTable", nullptr);
 }
@@ -168,13 +169,13 @@ MojoHandle Core::CreatePartialMessagePipe(const ports::PortRef& port) {
 }
 
 void Core::SendBrokerClientInvitation(
-    base::ProcessHandle target_process,
+    base::Process target_process,
     ConnectionParams connection_params,
     const std::vector<std::pair<std::string, ports::PortRef>>& attached_ports,
     const ProcessErrorCallback& process_error_callback) {
   RequestContext request_context;
   GetNodeController()->SendBrokerClientInvitation(
-      target_process, std::move(connection_params), attached_ports,
+      std::move(target_process), std::move(connection_params), attached_ports,
       process_error_callback);
 }
 
@@ -1235,7 +1236,7 @@ MojoResult Core::ExtractMessagePipeFromInvitation(
   }
 
   *message_pipe_handle =
-      ExtractMessagePipeFromInvitation(name_string.as_string());
+      ExtractMessagePipeFromInvitation(std::string(name_string));
   if (*message_pipe_handle == MOJO_HANDLE_INVALID)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   return MOJO_RESULT_OK;
@@ -1251,16 +1252,12 @@ MojoResult Core::SendInvitation(
   if (options && options->struct_size < sizeof(*options))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  base::ProcessHandle target_process = base::kNullProcessHandle;
+  base::Process target_process;
   if (process_handle) {
-    if (process_handle->struct_size < sizeof(*process_handle))
-      return MOJO_RESULT_INVALID_ARGUMENT;
-#if defined(OS_WIN)
-    target_process = reinterpret_cast<base::ProcessHandle>(
-        static_cast<uintptr_t>(process_handle->value));
-#else
-    target_process = static_cast<base::ProcessHandle>(process_handle->value);
-#endif
+    MojoResult result =
+        UnwrapAndClonePlatformProcessHandle(process_handle, target_process);
+    if (result != MOJO_RESULT_OK)
+      return result;
   }
 
   ProcessErrorCallback process_error_callback;
@@ -1355,7 +1352,7 @@ MojoResult Core::SendInvitation(
       connection_params.set_is_async(true);
     }
     GetNodeController()->SendBrokerClientInvitation(
-        target_process, std::move(connection_params), attached_ports,
+        std::move(target_process), std::move(connection_params), attached_ports,
         process_error_callback);
   }
 

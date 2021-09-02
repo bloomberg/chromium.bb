@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "content/public/common/webplugininfo.h"
@@ -27,11 +27,11 @@ const char PluginMetadata::kGoogleTalkGroupName[] = "Google Talk";
 const char PluginMetadata::kGoogleEarthGroupName[] = "Google Earth";
 
 PluginMetadata::PluginMetadata(const std::string& identifier,
-                               const base::string16& name,
+                               const std::u16string& name,
                                bool url_for_display,
                                const GURL& plugin_url,
                                const GURL& help_url,
-                               const base::string16& group_name_matcher,
+                               const std::u16string& group_name_matcher,
                                const std::string& language,
                                bool plugin_is_deprecated)
     : identifier_(identifier),

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_MOJO_COMMON_MOJO_DECODER_BUFFER_CONVERTER_
-#define MEDIA_MOJO_COMMON_MOJO_DECODER_BUFFER_CONVERTER_
+#ifndef MEDIA_MOJO_COMMON_MOJO_DECODER_BUFFER_CONVERTER_H_
+#define MEDIA_MOJO_COMMON_MOJO_DECODER_BUFFER_CONVERTER_H_
 
 #include <memory>
 
@@ -18,6 +18,12 @@
 namespace media {
 
 class DecoderBuffer;
+
+// Creates mojo::DataPipe and sets `producer_handle` and `consumer_handle`.
+// Returns true on success. Otherwise returns false and reset the handles.
+bool CreateDataPipe(uint32_t capacity,
+                    mojo::ScopedDataPipeProducerHandle* producer_handle,
+                    mojo::ScopedDataPipeConsumerHandle* consumer_handle);
 
 // Returns the default capacity to be used with MojoDecoderBufferReader and
 // MojoDecoderBufferWriter for |type|.
@@ -150,4 +156,4 @@ class MojoDecoderBufferWriter {
 
 }  // namespace media
 
-#endif  // MEDIA_MOJO_COMMON_MOJO_DECODER_BUFFER_CONVERTER_
+#endif  // MEDIA_MOJO_COMMON_MOJO_DECODER_BUFFER_CONVERTER_H_

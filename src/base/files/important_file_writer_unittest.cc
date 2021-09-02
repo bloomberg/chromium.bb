@@ -10,11 +10,12 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
-#include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/run_loop.h"
+#include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
@@ -41,17 +42,44 @@ class DataSerializer : public ImportantFileWriter::DataSerializer {
   }
 
   bool SerializeData(std::string* output) override {
+    EXPECT_TRUE(sequence_checker_.CalledOnValidSequence());
     output->assign(data_);
     return true;
   }
 
  private:
+  const base::SequenceChecker sequence_checker_;
   const std::string data_;
 };
 
 class FailingDataSerializer : public ImportantFileWriter::DataSerializer {
  public:
   bool SerializeData(std::string* output) override { return false; }
+};
+
+class BackgroundDataSerializer
+    : public ImportantFileWriter::BackgroundDataSerializer {
+ public:
+  explicit BackgroundDataSerializer(
+      ImportantFileWriter::BackgroundDataProducerCallback
+          data_producer_callback)
+      : data_producer_callback_(std::move(data_producer_callback)) {
+    DCHECK(data_producer_callback_);
+  }
+
+  ImportantFileWriter::BackgroundDataProducerCallback
+  GetSerializedDataProducerForBackgroundSequence() override {
+    EXPECT_TRUE(sequence_checker_.CalledOnValidSequence());
+    return std::move(data_producer_callback_);
+  }
+
+  bool producer_callback_obtained() const {
+    return data_producer_callback_.is_null();
+  }
+
+ private:
+  const base::SequenceChecker sequence_checker_;
+  ImportantFileWriter::BackgroundDataProducerCallback data_producer_callback_;
 };
 
 enum WriteCallbackObservationState {
@@ -63,6 +91,8 @@ enum WriteCallbackObservationState {
 class WriteCallbacksObserver {
  public:
   WriteCallbacksObserver() = default;
+  WriteCallbacksObserver(const WriteCallbacksObserver&) = delete;
+  WriteCallbacksObserver& operator=(const WriteCallbacksObserver&) = delete;
 
   // Register OnBeforeWrite() and OnAfterWrite() to be called on the next write
   // of |writer|.
@@ -86,8 +116,6 @@ class WriteCallbacksObserver {
 
   bool before_write_called_ = false;
   WriteCallbackObservationState after_write_observation_state_ = NOT_CALLED;
-
-  DISALLOW_COPY_AND_ASSIGN(WriteCallbacksObserver);
 };
 
 void WriteCallbacksObserver::ObserveNextWriteCallbacks(
@@ -234,6 +262,7 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite) {
   MockOneShotTimer timer;
   ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get(),
                              kCommitInterval);
+  EXPECT_EQ(0u, writer.previous_data_size());
   writer.SetTimerForTesting(&timer);
   EXPECT_FALSE(writer.HasPendingWrite());
   DataSerializer serializer("foo");
@@ -247,6 +276,7 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite) {
   RunLoop().RunUntilIdle();
   ASSERT_TRUE(PathExists(writer.path()));
   EXPECT_EQ("foo", GetFileContent(writer.path()));
+  EXPECT_EQ(3u, writer.previous_data_size());
 }
 
 TEST_F(ImportantFileWriterTest, DoScheduledWrite) {
@@ -312,6 +342,7 @@ TEST_F(ImportantFileWriterTest, ScheduleWrite_WriteNow) {
 }
 
 TEST_F(ImportantFileWriterTest, DoScheduledWrite_FailToSerialize) {
+  base::HistogramTester histogram_tester;
   MockOneShotTimer timer;
   ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
   writer.SetTimerForTesting(&timer);
@@ -325,6 +356,78 @@ TEST_F(ImportantFileWriterTest, DoScheduledWrite_FailToSerialize) {
   EXPECT_FALSE(writer.HasPendingWrite());
   RunLoop().RunUntilIdle();
   EXPECT_FALSE(PathExists(writer.path()));
+  // We don't record metrics in case the serialization fails.
+  histogram_tester.ExpectTotalCount("ImportantFile.SerializationDuration", 0);
+}
+
+TEST_F(ImportantFileWriterTest, ScheduleWriteWithBackgroundDataSerializer) {
+  base::HistogramTester histogram_tester;
+  base::Thread file_writer_thread("ImportantFileWriter test thread");
+  file_writer_thread.Start();
+  constexpr TimeDelta kCommitInterval = TimeDelta::FromSeconds(12345);
+  MockOneShotTimer timer;
+  ImportantFileWriter writer(file_, file_writer_thread.task_runner(),
+                             kCommitInterval);
+  EXPECT_EQ(0u, writer.previous_data_size());
+  writer.SetTimerForTesting(&timer);
+  EXPECT_FALSE(writer.HasPendingWrite());
+  ASSERT_FALSE(file_writer_thread.task_runner()->RunsTasksInCurrentSequence());
+  BackgroundDataSerializer serializer(
+      base::BindLambdaForTesting([&](std::string* data) {
+        EXPECT_TRUE(
+            file_writer_thread.task_runner()->RunsTasksInCurrentSequence());
+        *data = "foo";
+        return true;
+      }));
+  writer.ScheduleWriteWithBackgroundDataSerializer(&serializer);
+  EXPECT_TRUE(writer.HasPendingWrite());
+  EXPECT_FALSE(serializer.producer_callback_obtained());
+  ASSERT_TRUE(timer.IsRunning());
+  EXPECT_EQ(kCommitInterval, timer.GetCurrentDelay());
+
+  timer.Fire();
+  EXPECT_FALSE(writer.HasPendingWrite());
+  EXPECT_TRUE(serializer.producer_callback_obtained());
+  EXPECT_FALSE(timer.IsRunning());
+  file_writer_thread.FlushForTesting();
+  ASSERT_TRUE(PathExists(writer.path()));
+  EXPECT_EQ("foo", GetFileContent(writer.path()));
+  histogram_tester.ExpectTotalCount("ImportantFile.SerializationDuration", 1);
+}
+
+TEST_F(ImportantFileWriterTest,
+       ScheduleWriteWithBackgroundDataSerializer_FailToSerialize) {
+  base::HistogramTester histogram_tester;
+  base::Thread file_writer_thread("ImportantFileWriter test thread");
+  file_writer_thread.Start();
+  constexpr TimeDelta kCommitInterval = TimeDelta::FromSeconds(12345);
+  MockOneShotTimer timer;
+  ImportantFileWriter writer(file_, file_writer_thread.task_runner(),
+                             kCommitInterval);
+  EXPECT_EQ(0u, writer.previous_data_size());
+  writer.SetTimerForTesting(&timer);
+  EXPECT_FALSE(writer.HasPendingWrite());
+  ASSERT_FALSE(file_writer_thread.task_runner()->RunsTasksInCurrentSequence());
+  BackgroundDataSerializer serializer(
+      base::BindLambdaForTesting([&](std::string* data) {
+        EXPECT_TRUE(
+            file_writer_thread.task_runner()->RunsTasksInCurrentSequence());
+        return false;
+      }));
+  writer.ScheduleWriteWithBackgroundDataSerializer(&serializer);
+  EXPECT_TRUE(writer.HasPendingWrite());
+  EXPECT_FALSE(serializer.producer_callback_obtained());
+  EXPECT_TRUE(timer.IsRunning());
+
+  timer.Fire();
+  EXPECT_FALSE(timer.IsRunning());
+  EXPECT_TRUE(serializer.producer_callback_obtained());
+  EXPECT_FALSE(writer.HasPendingWrite());
+  file_writer_thread.FlushForTesting();
+  EXPECT_FALSE(PathExists(writer.path()));
+  // We record the foreground serialization metric despite later failure in
+  // background sequence.
+  histogram_tester.ExpectTotalCount("ImportantFile.SerializationDuration", 1);
 }
 
 TEST_F(ImportantFileWriterTest, WriteFileAtomicallyHistogramSuffixTest) {
@@ -356,6 +459,30 @@ TEST_F(ImportantFileWriterTest, WriteLargeFile) {
   std::string actual;
   EXPECT_TRUE(ReadFileToString(file_, &actual));
   EXPECT_EQ(large_data, actual);
+}
+
+// Verify that a UMA metric for the serialization duration is recorded.
+TEST_F(ImportantFileWriterTest, SerializationDuration) {
+  base::HistogramTester histogram_tester;
+  ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get());
+  DataSerializer serializer("foo");
+  writer.ScheduleWrite(&serializer);
+  writer.DoScheduledWrite();
+  RunLoop().RunUntilIdle();
+  histogram_tester.ExpectTotalCount("ImportantFile.SerializationDuration", 1);
+}
+
+// Verify that a UMA metric for the serialization duration is recorded if the
+// ImportantFileWriter has a custom histogram suffix.
+TEST_F(ImportantFileWriterTest, SerializationDurationWithCustomSuffix) {
+  base::HistogramTester histogram_tester;
+  ImportantFileWriter writer(file_, ThreadTaskRunnerHandle::Get(), "Foo");
+  DataSerializer serializer("foo");
+  writer.ScheduleWrite(&serializer);
+  writer.DoScheduledWrite();
+  RunLoop().RunUntilIdle();
+  histogram_tester.ExpectTotalCount("ImportantFile.SerializationDuration.Foo",
+                                    1);
 }
 
 }  // namespace base

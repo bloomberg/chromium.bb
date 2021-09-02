@@ -6,7 +6,6 @@
 #define COMPONENTS_ON_LOAD_SCRIPT_INJECTOR_BROWSER_ON_LOAD_SCRIPT_INJECTOR_HOST_H_
 
 #include <map>
-#include <string>
 #include <vector>
 
 #include "base/memory/read_only_shared_memory_region.h"
@@ -84,4 +83,4 @@ class ON_LOAD_SCRIPT_INJECTOR_EXPORT OnLoadScriptInjectorHost {
 
 }  // namespace on_load_script_injector
 
-#endif  // COMPONENTS_ON_LOAD_SCRIPT_INJECTOR_BROWSER_ON_LOAD_SCRIPT_INJECTOR_HOST_
+#endif  // COMPONENTS_ON_LOAD_SCRIPT_INJECTOR_BROWSER_ON_LOAD_SCRIPT_INJECTOR_HOST_H_

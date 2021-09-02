@@ -36,9 +36,8 @@ class IncognitoDefaultSearchEngineBrowserTest
   IncognitoDefaultSearchEngineBrowserTest() { SetShellStartsInIncognitoMode(); }
 };
 
-// Disabled on M88 only: http://crbug.com/1162363.
 IN_PROC_BROWSER_TEST_F(IncognitoDefaultSearchEngineBrowserTest,
-                       DISABLED_IncognitoDoesNotHaveGeolocationPermission) {
+                       IncognitoDoesNotHaveGeolocationPermission) {
   auto* settings_map = HostContentSettingsMapFactory::GetForBrowserContext(
       static_cast<TabImpl*>(shell()->tab())
           ->web_contents()

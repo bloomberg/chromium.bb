@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/platform/api/quic_hostname_utils.h"
+#include "quic/platform/api/quic_hostname_utils.h"
 
 #include <string>
 
 #include "absl/base/macros.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
+#include "quic/platform/api/quic_test.h"
 
 namespace quic {
 namespace test {
@@ -19,6 +19,9 @@ TEST_F(QuicHostnameUtilsTest, IsValidSNI) {
   // IP as SNI.
   EXPECT_FALSE(QuicHostnameUtils::IsValidSNI("192.168.0.1"));
   // SNI without any dot.
+  SetQuicReloadableFlag(quic_and_tls_allow_sni_without_dots, true);
+  EXPECT_TRUE(QuicHostnameUtils::IsValidSNI("somedomain"));
+  SetQuicReloadableFlag(quic_and_tls_allow_sni_without_dots, false);
   EXPECT_FALSE(QuicHostnameUtils::IsValidSNI("somedomain"));
   // Invalid by RFC2396 but unfortunately domains of this form exist.
   EXPECT_TRUE(QuicHostnameUtils::IsValidSNI("some_domain.com"));

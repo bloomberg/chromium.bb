@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//components/signin/features.gni")
 
 if (is_android) {
@@ -19,6 +20,8 @@ static_library("browser") {
     "account_reconcilor.h",
     "account_reconcilor_delegate.cc",
     "account_reconcilor_delegate.h",
+    "account_reconcilor_throttler.cc",
+    "account_reconcilor_throttler.h",
     "chrome_connected_header_helper.cc",
     "chrome_connected_header_helper.h",
     "cookie_reminter.cc",
@@ -65,6 +68,7 @@ static_library("browser") {
   ]
   deps = [
     "//base:i18n",
+    "//build:chromeos_buildflags",
     "//components/google/core/common",
     "//components/metrics",
     "//components/os_crypt",
@@ -77,15 +81,25 @@ static_library("browser") {
     "//third_party/icu",
   ]
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     sources += [
       "active_directory_account_reconcilor_delegate.cc",
       "active_directory_account_reconcilor_delegate.h",
     ]
-    deps += [ "//chromeos/tpm:tpm" ]
+    deps += [
+      "//chromeos/crosapi/mojom",
+      "//chromeos/tpm:tpm",
+    ]
     sources -= [
       "signin_status_metrics_provider.cc",
       "signin_status_metrics_provider_delegate.cc",
+    ]
+  }
+
+  if (is_chromeos_lacros) {
+    deps += [
+      "//chromeos/crosapi/mojom",
+      "//chromeos/lacros",
     ]
   }
 
@@ -116,6 +130,7 @@ source_set("unit_tests") {
     ":browser",
     "//base",
     "//base/test:test_support",
+    "//build:chromeos_buildflags",
     "//components/content_settings/core/browser",
     "//components/prefs",
     "//components/prefs:test_support",
@@ -134,11 +149,22 @@ source_set("unit_tests") {
     "//url",
   ]
 
-  if (is_chromeos) {
-    deps += [ "//chromeos/tpm:test_support" ]
+  if (is_chromeos_ash) {
+    deps += [
+      "//chromeos/crosapi/mojom",
+      "//chromeos/tpm:test_support",
+    ]
     sources -= [
       "account_investigator_unittest.cc",
       "signin_status_metrics_provider_unittest.cc",
+    ]
+  }
+
+  if (is_chromeos_lacros) {
+    deps += [
+      "//chromeos/crosapi/mojom",
+      "//chromeos/lacros",
+      "//chromeos/lacros:test_support",
     ]
   }
 
@@ -150,7 +176,7 @@ source_set("unit_tests") {
 if (is_android) {
   android_library("signin_enums_java") {
     srcjar_deps = [ ":signin_enums_javagen" ]
-    deps = [ "//third_party/android_deps:androidx_annotation_annotation_java" ]
+    deps = [ "//third_party/androidx:androidx_annotation_annotation_java" ]
   }
 
   java_cpp_enum("signin_enums_javagen") {

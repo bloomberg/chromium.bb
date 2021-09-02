@@ -405,13 +405,13 @@ bool GetForcedEffectiveConnectionTypeOnCellularOnly(
          kEffectiveConnectionTypeSlow2GOnCellular;
 }
 
-base::Optional<EffectiveConnectionType> GetInitForcedEffectiveConnectionType(
+absl::optional<EffectiveConnectionType> GetInitForcedEffectiveConnectionType(
     const std::map<std::string, std::string>& params) {
   if (GetForcedEffectiveConnectionTypeOnCellularOnly(params)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   std::string forced_value = GetForcedEffectiveConnectionTypeString(params);
-  base::Optional<EffectiveConnectionType> ect =
+  absl::optional<EffectiveConnectionType> ect =
       GetEffectiveConnectionTypeForName(forced_value);
   DCHECK(forced_value.empty() || ect);
   return ect;
@@ -522,6 +522,11 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
               params_,
               "wifi_signal_strength_query_interval_seconds",
               30 * 60))),
+      adjust_rtt_based_on_rtt_counts_(
+          GetStringValueForVariationParamWithDefaultValue(
+              params_,
+              "adjust_rtt_based_on_rtt_counts",
+              "false") == "true"),
       use_small_responses_(false) {
   DCHECK(hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ == -1 ||
          hanging_request_http_rtt_upper_bound_transport_rtt_multiplier_ > 0);
@@ -576,7 +581,7 @@ void NetworkQualityEstimatorParams::SetForcedEffectiveConnectionTypeForTesting(
   forced_effective_connection_type_ = type;
 }
 
-base::Optional<EffectiveConnectionType>
+absl::optional<EffectiveConnectionType>
 NetworkQualityEstimatorParams::GetForcedEffectiveConnectionType(
     NetworkChangeNotifier::ConnectionType connection_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -588,7 +593,7 @@ NetworkQualityEstimatorParams::GetForcedEffectiveConnectionType(
       net::NetworkChangeNotifier::IsConnectionCellular(connection_type)) {
     return EFFECTIVE_CONNECTION_TYPE_SLOW_2G;
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 size_t NetworkQualityEstimatorParams::throughput_min_requests_in_flight()

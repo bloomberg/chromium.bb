@@ -21,11 +21,17 @@ const char kQuickAnswerLoadingStatus[] = "QuickAnswers.Loading.Status";
 const char kQuickAnswerLoadingDuration[] = "QuickAnswers.Loading.Duration";
 const char kQuickAnswerSelectedContentLength[] =
     "QuickAnswers.SelectedContent.Length";
+const char kQuickAnswersRequestTextLength[] = "QuickAnswers.RequestTextLength";
+
 const char kDurationSuffix[] = ".Duration";
+const char kDefinitionSuffix[] = ".Definition";
+const char kTranslationSuffix[] = ".Translation";
+const char kUnitConversionSuffix[] = ".UnitConversion";
 
 const char kQuickAnswersNotice[] = "QuickAnswers.Consent";
 const char kQuickAnswersNoticeDuration[] = "QuickAnswers.Consent.Duration";
 const char kQuickAnswersNoticeImpression[] = "QuickAnswers.Consent.Impression";
+const char kQuickAnswersNetworkError[] = "QuickAnswers.NetworkError.IntentType";
 
 std::string ResultTypeToString(ResultType result_type) {
   switch (result_type) {
@@ -98,6 +104,25 @@ void RecordSelectedTextLength(int length) {
   base::UmaHistogramCounts1000(kQuickAnswerSelectedContentLength, length);
 }
 
+void RecordRequestTextLength(IntentType intent_type, int length) {
+  std::string histogram_name = kQuickAnswersRequestTextLength;
+  switch (intent_type) {
+    case IntentType::kDictionary:
+      histogram_name += kDefinitionSuffix;
+      break;
+    case IntentType::kTranslation:
+      histogram_name += kTranslationSuffix;
+      break;
+    case IntentType::kUnit:
+      histogram_name += kUnitConversionSuffix;
+      break;
+    case IntentType::kUnknown:
+      return;
+  }
+
+  base::UmaHistogramCounts1000(histogram_name, length);
+}
+
 void RecordActiveImpression(ResultType result_type,
                             const base::TimeDelta duration) {
   RecordTypeAndDuration(kQuickAnswerActiveImpression, result_type, duration,
@@ -127,5 +152,10 @@ void RecordNoticeImpression(int nth_impression) {
 void RecordIntentType(IntentType intent_type) {
   base::UmaHistogramEnumeration(kQuickAnswerIntent, intent_type);
 }
+
+void RecordNetworkError(IntentType intent_type) {
+  base::UmaHistogramEnumeration(kQuickAnswersNetworkError, intent_type);
+}
+
 }  // namespace quick_answers
 }  // namespace chromeos

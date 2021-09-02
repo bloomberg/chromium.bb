@@ -16,7 +16,7 @@ const base::Feature kContentCapture{"ContentCapture",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentCaptureTriggeringForExperiment{
-    "ContentCaptureTriggeringForExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
+    "ContentCaptureTriggeringForExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 #else
 const base::Feature kContentCapture{"ContentCapture",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -33,14 +33,9 @@ bool ShouldTriggerContentCaptureForExperiment() {
   return base::FeatureList::IsEnabled(kContentCaptureTriggeringForExperiment);
 }
 
-int TaskLongDelayInMilliseconds() {
+int TaskInitialDelayInMilliseconds() {
   return base::GetFieldTrialParamByFeatureAsInt(
-      kContentCapture, "task_long_delay_in_milliseconds", 5000);
-}
-
-int TaskShortDelayInMilliseconds() {
-  return base::GetFieldTrialParamByFeatureAsInt(
-      kContentCapture, "task_short_delay_in_milliseconds", 500);
+      kContentCapture, "task_initial_delay_in_milliseconds", 500);
 }
 
 }  // namespace features

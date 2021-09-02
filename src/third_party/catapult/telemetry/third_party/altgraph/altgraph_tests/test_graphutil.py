@@ -1,6 +1,11 @@
+from __future__ import division
+from __future__ import absolute_import
 import unittest
 from altgraph import GraphUtil
 from altgraph import Graph, GraphError
+
+# 2To3-division: the / operations here are not converted to // as the results
+# are expected floats.
 
 class TestGraphUtil (unittest.TestCase):
 
@@ -107,11 +112,10 @@ class TestGraphUtil (unittest.TestCase):
             lambda n: n != "N.1.1.1", lambda n: n != "N.1.1.2.3" ])
 
         self.assertEqual(v,
-            set(["1", "1.1", "1.1.1", "1.1.2", "1.1.3",
-                "1.1.1.1", "1.1.1.2", "1.1.2.1", "1.1.2.2",
-                "1.1.2.3"]))
-        self.assertEqual(r, set([
-                "1.1.1", "1.1.2.3"]))
+                         {"1", "1.1", "1.1.1", "1.1.2", "1.1.3", "1.1.1.1",
+                          "1.1.1.2", "1.1.2.1", "1.1.2.2", "1.1.2.3"}
+                         )
+        self.assertEqual(r, {"1.1.1", "1.1.2.3"})
 
         o.sort()
         self.assertEqual(o,
@@ -124,11 +128,10 @@ class TestGraphUtil (unittest.TestCase):
             lambda n: n != "N.1.1.1", lambda n: n != "N.1.1.1.2" ])
 
         self.assertEqual(v,
-            set(["1", "1.1", "1.1.1", "1.1.2", "1.1.3",
-                "1.1.1.1", "1.1.1.2", "1.1.2.1", "1.1.2.2",
-                "1.1.2.3"]))
-        self.assertEqual(r, set([
-                "1.1.1", "1.1.1.2"]))
+                         {"1", "1.1", "1.1.1", "1.1.2", "1.1.3", "1.1.1.1",
+                          "1.1.1.2", "1.1.2.1", "1.1.2.2", "1.1.2.3"}
+                         )
+        self.assertEqual(r, {"1.1.1", "1.1.1.2"})
 
         self.assertEqual(o,
             [

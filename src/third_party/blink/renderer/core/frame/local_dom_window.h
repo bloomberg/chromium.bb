@@ -27,6 +27,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_DOM_WINDOW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_LOCAL_DOM_WINDOW_H_
 
+#include <memory>
+
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
@@ -34,19 +36,20 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
+#include "third_party/blink/renderer/core/editing/ime/input_method_controller.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
+#include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-
-#include <memory>
 
 namespace blink {
 
@@ -64,6 +67,7 @@ class External;
 class FrameConsole;
 class History;
 class IdleRequestOptions;
+class LocalFrame;
 class MediaQueryList;
 class MessageEvent;
 class Modulator;
@@ -128,6 +132,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   void ResetWindowAgent(WindowAgent*);
 
+  mojom::blink::V8CacheOptions GetV8CacheOptions() const override;
+
   // Bind Content Security Policy to this window. This will cause the
   // CSP to resolve the 'self' attribute and all policies will then be
   // applied to this document.
@@ -146,28 +152,25 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   KURL CompleteURL(const String&) const final;
   void DisableEval(const String& error_message) final;
   String UserAgent() const final;
+  UserAgentMetadata GetUserAgentMetadata() const final;
   HttpsState GetHttpsState() const final;
   ResourceFetcher* Fetcher() const final;
   bool CanExecuteScripts(ReasonForCallingCanExecuteScripts) final;
   void ExceptionThrown(ErrorEvent*) final;
   void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr) final;
+  void AddInspectorIssue(AuditsIssue) final;
   EventTarget* ErrorEventTarget() final { return this; }
   String OutgoingReferrer() const final;
-  network::mojom::ReferrerPolicy GetReferrerPolicy() const final;
-  network::mojom::blink::ReferrerPolicy
-  ReferrerPolicyButForMetaTagsWithListsOfPolicies() const final;
   CoreProbeSink* GetProbeSink() final;
-  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() final;
+  const BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker() const final;
   FrameOrWorkerScheduler* GetScheduler() final;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) final;
   TrustedTypePolicyFactory* GetTrustedTypes() const final {
-    return trustedTypes();
+    return GetTrustedTypesForWorld(*GetCurrentWorld());
   }
   ScriptWrappable* ToScriptWrappable() final { return this; }
-  void CountPotentialFeaturePolicyViolation(
-      mojom::blink::FeaturePolicyFeature) const final;
-  void ReportFeaturePolicyViolation(
-      mojom::blink::FeaturePolicyFeature,
+  void ReportPermissionsPolicyViolation(
+      mojom::blink::PermissionsPolicyFeature,
       mojom::blink::PolicyDisposition,
       const String& message = g_empty_string) const final;
   void ReportDocumentPolicyViolation(
@@ -186,6 +189,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // Count |feature| only when this window is associated with a cross-origin
   // iframe.
   void CountUseOnlyInCrossOriginIframe(mojom::blink::WebFeature feature);
+
+  // Count |feature| only when this window is associated with a cross-site
+  // iframe. A "site" is a scheme and registrable domain.
+  void CountUseOnlyInCrossSiteIframe(mojom::blink::WebFeature feature);
 
   Document* InstallNewDocument(const DocumentInit&);
 
@@ -308,8 +315,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   const Vector<String>& originPolicyIds() const;
   void SetOriginPolicyIds(const Vector<String>&);
 
-  // https://github.com/whatwg/html/pull/5545
-  bool originIsolated() const;
+  // https://html.spec.whatwg.org/C/#dom-originagentcluster
+  bool originAgentCluster() const;
 
   // Idle callback extensions
   int requestIdleCallback(V8IdleRequestCallback*, const IdleRequestOptions*);
@@ -391,10 +398,16 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   Event* CurrentEvent() const;
   void SetCurrentEvent(Event*);
 
-  TrustedTypePolicyFactory* trustedTypes() const;
+  TrustedTypePolicyFactory* trustedTypes(ScriptState*) const;
+  TrustedTypePolicyFactory* GetTrustedTypesForWorld(
+      const DOMWrapperWorld&) const;
 
   // Returns true if this window is cross-site to the main frame. Defaults to
   // false in a detached window.
+  // Note: This uses an outdated definition of "site" which only includes the
+  // registrable domain and not the scheme. For recording metrics in 3rd party
+  // contexts, prefer CountUseOnlyInCrossSiteIframe() which uses HTML's
+  // definition of "site" as a registrable domain and scheme.
   bool IsCrossSiteSubframe() const;
 
   void DispatchPersistedPageshowEvent(base::TimeTicks navigation_start);
@@ -412,6 +425,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void ClearIsolatedWorldCSPForTesting(int32_t world_id);
 
   bool CrossOriginIsolatedCapability() const override;
+  bool DirectSocketCapability() const override;
 
   // These delegate to the document_.
   ukm::UkmRecorder* UkmRecorder() override;
@@ -443,6 +457,12 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // Return the viewport size including scrollbars.
   IntSize GetViewportSize() const;
+
+  // Count feature disabled by Permissions Policy through use counter.
+  // The method is marked const as its caller |ReportPermissionsPolicyViolation|
+  // is marked const.
+  void CountPermissionsPolicyViolation(
+      mojom::blink::PermissionsPolicyFeature feature) const;
 
   Member<ScriptController> script_controller_;
 
@@ -484,7 +504,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // We represent the "undefined" value as nullptr.
   Member<Event> current_event_;
 
-  mutable Member<TrustedTypePolicyFactory> trusted_types_;
+  // Store TrustedTypesPolicyFactory, per DOMWrapperWorld.
+  mutable HeapHashMap<scoped_refptr<const DOMWrapperWorld>,
+                      Member<TrustedTypePolicyFactory>>
+      trusted_types_map_;
 
   // A dummy scheduler to return when the window is detached.
   // All operations on it result in no-op, but due to this it's safe to
@@ -505,7 +528,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // Tracks which features have already been potentially violated in this
   // document. This helps to count them only once per page load.
-  // We don't use std::bitset to avoid to include feature_policy.mojom-blink.h.
+  // We don't use std::bitset to avoid to include
+  // permissions_policy.mojom-blink.h.
   mutable Vector<bool> potentially_violated_features_;
 
   // Token identifying the LocalFrame that this window was associated with at
@@ -517,6 +541,13 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   // this document, to avoid reporting duplicates. The value stored comes
   // from |DocumentPolicyViolationReport::MatchId()|.
   mutable HashSet<unsigned> document_policy_violation_reports_sent_;
+
+  // A list of the most recently recorded source frame UKM source IDs for the
+  // PostMessage.Incoming.Frame UKM event, in order to partially deduplicate
+  // logged events. Its size is limited to 20. See SchedulePostMessage() where
+  // this UKM is logged.
+  // TODO(crbug.com/1112491): Remove when no longer needed.
+  Deque<ukm::SourceId> post_message_ukm_recorded_source_ids_;
 };
 
 template <>

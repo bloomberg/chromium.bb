@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tab.state;
 
 import org.chromium.base.Callback;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.tab.Tab;
 
 import java.nio.ByteBuffer;
@@ -28,7 +29,8 @@ public class MockPersistedTabData extends PersistedTabData {
         mField = field;
     }
 
-    private MockPersistedTabData(Tab tab, byte[] data, PersistedTabDataStorage storage, String id) {
+    private MockPersistedTabData(
+            Tab tab, ByteBuffer data, PersistedTabDataStorage storage, String id) {
         super(tab, storage, id);
         deserializeAndLog(data);
     }
@@ -62,13 +64,17 @@ public class MockPersistedTabData extends PersistedTabData {
     }
 
     @Override
-    public byte[] serialize() {
-        return ByteBuffer.allocate(4).putInt(mField).array();
+    public Supplier<ByteBuffer> getSerializeSupplier() {
+        ByteBuffer byteBuffer = ByteBuffer.allocate(4).putInt(mField);
+        byteBuffer.rewind();
+        return () -> {
+            return byteBuffer;
+        };
     }
 
     @Override
-    public boolean deserialize(byte[] data) {
-        mField = ByteBuffer.wrap(data).getInt();
+    public boolean deserialize(ByteBuffer data) {
+        mField = data.getInt();
         return true;
     }
 

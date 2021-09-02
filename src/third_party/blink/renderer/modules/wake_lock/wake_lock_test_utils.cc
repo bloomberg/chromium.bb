@@ -16,9 +16,10 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_wake_lock_sentinel.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
-#include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
+#include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -30,7 +31,7 @@ using mojom::blink::PermissionStatus;
 namespace {
 
 void RunWithStack(base::RunLoop* run_loop) {
-  ThreadState::HeapPointersOnStackScope scan_stack(ThreadState::Current());
+  HeapPointersOnStackScope scan_stack(ThreadState::Current());
   run_loop->Run();
 }
 
@@ -324,21 +325,21 @@ void WakeLockTestingContext::WaitForPromiseRejection(ScriptPromise promise) {
 // static
 v8::Promise::PromiseState ScriptPromiseUtils::GetPromiseState(
     const ScriptPromise& promise) {
-  return promise.V8Value().As<v8::Promise>()->State();
+  return promise.V8Promise()->State();
 }
 
 // static
 DOMException* ScriptPromiseUtils::GetPromiseResolutionAsDOMException(
     const ScriptPromise& promise) {
-  return V8DOMException::ToImplWithTypeCheck(
-      promise.GetIsolate(), promise.V8Value().As<v8::Promise>()->Result());
+  return V8DOMException::ToImplWithTypeCheck(promise.GetIsolate(),
+                                             promise.V8Promise()->Result());
 }
 
 // static
 WakeLockSentinel* ScriptPromiseUtils::GetPromiseResolutionAsWakeLockSentinel(
     const ScriptPromise& promise) {
-  return V8WakeLockSentinel::ToImplWithTypeCheck(
-      promise.GetIsolate(), promise.V8Value().As<v8::Promise>()->Result());
+  return V8WakeLockSentinel::ToImplWithTypeCheck(promise.GetIsolate(),
+                                                 promise.V8Promise()->Result());
 }
 
 }  // namespace blink

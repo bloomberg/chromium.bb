@@ -4,6 +4,7 @@
 
 #include "fuchsia/engine/browser/theme_manager.h"
 
+#include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "third_party/blink/public/mojom/css/preferred_color_scheme.mojom.h"
@@ -154,7 +155,7 @@ void ThemeManager::OnWatchResultReceived(
        settings.theme().theme_type() == ThemeType::LIGHT)) {
     system_theme_ = settings.theme().theme_type();
   } else {
-    system_theme_ = base::nullopt;
+    system_theme_ = absl::nullopt;
   }
 
   ApplyTheme();

@@ -47,7 +47,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
       autofill_state_(WebAutofillState::kNotFilled),
       blocks_form_submission_(false) {
   SetHasCustomStyleCallbacks();
-  static unsigned next_free_unique_id = 0;
+  static unsigned next_free_unique_id = 1;
   unique_renderer_form_control_id_ = next_free_unique_id++;
 }
 
@@ -264,7 +264,7 @@ bool HTMLFormControlElement::IsKeyboardFocusable() const {
     return HTMLElement::IsKeyboardFocusable();
 
   // Skip tabIndex check in a parent class.
-  return IsFocusable();
+  return IsBaseElementFocusable();
 }
 
 bool HTMLFormControlElement::MayTriggerVirtualKeyboard() const {
@@ -328,7 +328,7 @@ int32_t HTMLFormControlElement::GetAxId() const {
     if (document.NeedsLayoutTreeUpdate() || document.View()->NeedsLayout() ||
         document.Lifecycle().GetState() <
             DocumentLifecycle::kCompositingAssignmentsClean) {
-      document.View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+      document.View()->UpdateAllLifecyclePhasesExceptPaint(
           DocumentUpdateReason::kAccessibility);
     }
     return cache->GetAXID(const_cast<HTMLFormControlElement*>(this));

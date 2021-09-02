@@ -19,8 +19,17 @@ source_set("symbolizer") {
   public_deps = [ "../../../include/perfetto/ext/base" ]
   deps = [ "../../../gn:default_deps" ]
   sources = [
+    "filesystem.h",
+    "filesystem_posix.cc",
+    "filesystem_windows.cc",
     "local_symbolizer.cc",
     "local_symbolizer.h",
+    "scoped_read_mmap.h",
+    "scoped_read_mmap_posix.cc",
+    "scoped_read_mmap_windows.cc",
+    "subprocess.h",
+    "subprocess_posix.cc",
+    "subprocess_windows.cc",
     "symbolizer.cc",
     "symbolizer.h",
   ]
@@ -50,6 +59,7 @@ perfetto_unittest_source_set("unittests") {
     ":symbolizer",
     "../../../gn:default_deps",
     "../../../gn:gtest_and_gmock",
+    "../../base:test_support",
   ]
   sources = [ "local_symbolizer_unittest.cc" ]
 }

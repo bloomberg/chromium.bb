@@ -236,15 +236,19 @@ Error FakeMdnsResponderAdapter::DeregisterInterface(UdpSocket* socket) {
 
 void FakeMdnsResponderAdapter::OnRead(UdpSocket* socket,
                                       ErrorOr<UdpPacket> packet) {
-  OSP_NOTREACHED() << "Tests should not drive this class with packets";
+  OSP_NOTREACHED();
 }
 
 void FakeMdnsResponderAdapter::OnSendError(UdpSocket* socket, Error error) {
-  OSP_NOTREACHED() << "Tests should not drive this class with packets";
+  OSP_NOTREACHED();
 }
 
 void FakeMdnsResponderAdapter::OnError(UdpSocket* socket, Error error) {
-  OSP_NOTREACHED() << "Tests should not drive this class with packets";
+  OSP_NOTREACHED();
+}
+
+void FakeMdnsResponderAdapter::OnBound(UdpSocket* socket) {
+  OSP_NOTREACHED();
 }
 
 Clock::duration FakeMdnsResponderAdapter::RunTasks() {

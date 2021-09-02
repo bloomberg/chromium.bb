@@ -6,15 +6,11 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_METRICS_H_
 
 #include <stddef.h>
-#include <map>
-#include <set>
 
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/public/browser/service_worker_context.h"
-#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
-#include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -157,9 +153,14 @@ class ServiceWorkerMetrics {
 
     // The browser received the worker started IPC.
     base::TimeTicks local_end;
+  };
 
-    // Counts the time overhead of UI/IO thread hops during startup.
-    base::TimeDelta thread_hop_time;
+  // Used for UMA. Append-only.
+  enum class OfflineCapableReason {
+    kTimeout = 0,
+    kSuccess = 1,
+    kRedirect = 2,
+    kMaxValue = kRedirect,
   };
 
   // Converts an event type to a string. Used for tracing.
@@ -245,7 +246,11 @@ class ServiceWorkerMetrics {
       blink::ServiceWorkerStatusCode status,
       base::TimeDelta duration);
 
-  static void RecordGetAllOriginsInfoTime(base::TimeDelta time);
+  // Records the reason a service worker was deemed to be offline capable. The
+  // reason may be that the service worker responded with 2xx..., 3xx..., or the
+  // check timed out.
+  static void RecordOfflineCapableReason(blink::ServiceWorkerStatusCode status,
+                                         int status_code);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);

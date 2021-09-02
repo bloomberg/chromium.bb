@@ -180,4 +180,17 @@ class COMPONENT_EXPORT(CHROMEOS_SYSTEM) StatisticsProvider {
 }  // namespace system
 }  // namespace chromeos
 
+// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
+// source migration is finished.
+namespace ash {
+namespace system {
+using ::chromeos::system::kActivateDateKey;
+using ::chromeos::system::kBlockDevModeKey;
+using ::chromeos::system::kCheckEnrollmentKey;
+using ::chromeos::system::kOemKeyboardDrivenOobeKey;
+using ::chromeos::system::kSerialNumberKeyForTest;
+using ::chromeos::system::StatisticsProvider;
+}  // namespace system
+}  // namespace ash
+
 #endif  // CHROMEOS_SYSTEM_STATISTICS_PROVIDER_H_

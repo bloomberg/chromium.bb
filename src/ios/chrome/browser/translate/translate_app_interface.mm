@@ -110,50 +110,44 @@ class TranslateAppInterfaceHelper {
 @implementation FakeJSTranslateManager
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
-  if ((self = [super init])) {
+  if ((self = [super initWithWebState:webState])) {
     _webState = webState;
   }
   return self;
-}
-
-- (void)setScript:(NSString*)script {
-  // No need to set the JavaScript since it will never be used by this fake
-  // object.
 }
 
 - (void)startTranslationFrom:(const std::string&)source
                           to:(const std::string&)target {
   // Add a button with the 'Translated' label to the web page.
   // The test can check it to determine if this method has been called.
-  _webState->ExecuteJavaScript(base::UTF8ToUTF16(
-      "myButton = document.createElement('button');"
-      "myButton.setAttribute('id', 'translated-button');"
-      "myButton.appendChild(document.createTextNode('Translated'));"
-      "document.body.prepend(myButton);"));
+  _webState->ExecuteJavaScript(
+      u"myButton = document.createElement('button');"
+      u"myButton.setAttribute('id', 'translated-button');"
+      u"myButton.appendChild(document.createTextNode('Translated'));"
+      u"document.body.prepend(myButton);");
 }
 
 - (void)revertTranslation {
   // Removes the button with 'translated-button' id from the web page, if any.
-  _webState->ExecuteJavaScript(base::UTF8ToUTF16(
-      "myButton = document.getElementById('translated-button');"
-      "myButton.remove();"));
+  _webState->ExecuteJavaScript(
+      u"myButton = document.getElementById('translated-button');"
+      u"myButton.remove();");
 }
 
-- (void)inject {
-  // Prevent the actual script from being injected and instead just invoke host
-  // with 'translate.ready' followed by 'translate.status'.
-  _webState->ExecuteJavaScript(
-      base::UTF8ToUTF16("__gCrWeb.message.invokeOnHost({"
-                        "  'command': 'translate.ready',"
-                        "  'errorCode': 0,"
-                        "  'loadTime': 0,"
-                        "  'readyTime': 0});"));
-  _webState->ExecuteJavaScript(
-      base::UTF8ToUTF16("__gCrWeb.message.invokeOnHost({"
-                        "  'command': 'translate.status',"
-                        "  'errorCode': 0,"
-                        "  'originalPageLanguage': 'fr',"
-                        "  'translationTime': 0});"));
+- (void)injectWithTranslateScript:(const std::string&)translate_script {
+  // No need to set the |translate_script| JavaScript since it will never be
+  // used by this fake object. Instead just invoke host with 'translate.ready'
+  // followed by 'translate.status'.
+  _webState->ExecuteJavaScript(u"__gCrWeb.message.invokeOnHost({"
+                               u"  'command': 'translate.ready',"
+                               u"  'errorCode': 0,"
+                               u"  'loadTime': 0,"
+                               u"  'readyTime': 0});");
+  _webState->ExecuteJavaScript(u"__gCrWeb.message.invokeOnHost({"
+                               u"  'command': 'translate.status',"
+                               u"  'errorCode': 0,"
+                               u"  'pageSourceLanguage': 'fr',"
+                               u"  'translationTime': 0});");
 }
 
 @end
@@ -252,8 +246,8 @@ class TranslateAppInterfaceHelper {
   std::unique_ptr<translate::TranslatePrefs> prefs(
       ChromeIOSTranslateClient::CreateTranslatePrefs(
           chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
-  return prefs->IsLanguagePairWhitelisted(base::SysNSStringToUTF8(source),
-                                          base::SysNSStringToUTF8(target));
+  return prefs->IsLanguagePairOnAlwaysTranslateList(
+      base::SysNSStringToUTF8(source), base::SysNSStringToUTF8(target));
 }
 
 + (BOOL)isBlockedLanguage:(NSString*)language {
@@ -267,7 +261,7 @@ class TranslateAppInterfaceHelper {
   std::unique_ptr<translate::TranslatePrefs> prefs(
       ChromeIOSTranslateClient::CreateTranslatePrefs(
           chrome_test_util::GetOriginalBrowserState()->GetPrefs()));
-  return prefs->IsSiteBlacklisted(base::SysNSStringToUTF8(hostName));
+  return prefs->IsSiteOnNeverPromptList(base::SysNSStringToUTF8(hostName));
 }
 
 + (int)infobarAutoAlwaysThreshold {

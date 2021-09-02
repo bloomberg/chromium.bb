@@ -6,12 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_USER_MODEL_H_
 
 #include "base/macros.h"
-#include "base/trace_event/trace_event.h"
-#include "base/trace_event/traced_value.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 
 namespace blink {
 namespace scheduler {
@@ -48,7 +47,7 @@ class PLATFORM_EXPORT UserModel {
       const base::TimeTicks now,
       base::TimeDelta* prediction_valid_duration) const;
 
-  void AsValueInto(base::trace_event::TracedValue* state) const;
+  void WriteIntoTrace(perfetto::TracedValue context) const;
 
   // The time we should stay in a priority-escalated mode after an input event.
   static const int kGestureEstimationLimitMillis = 100;

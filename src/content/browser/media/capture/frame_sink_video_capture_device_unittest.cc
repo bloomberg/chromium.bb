@@ -70,6 +70,9 @@ constexpr base::TimeDelta kMinCapturePeriod = base::TimeDelta::FromMicroseconds(
     base::Time::kMicrosecondsPerSecond / kMaxFrameRate);
 constexpr media::VideoPixelFormat kFormat = media::PIXEL_FORMAT_I420;
 
+// Video buffer parameters.
+constexpr bool kNotPremapped = false;
+
 // Helper to return the capture parameters packaged in a VideoCaptureParams.
 media::VideoCaptureParams GetCaptureParams() {
   media::VideoCaptureParams params;
@@ -101,8 +104,8 @@ class MockFrameSinkVideoCapturer : public viz::mojom::FrameSinkVideoCapturer {
                     const gfx::Size& max_size,
                     bool use_fixed_aspect_ratio));
   MOCK_METHOD1(SetAutoThrottlingEnabled, void(bool));
-  void ChangeTarget(
-      const base::Optional<viz::FrameSinkId>& frame_sink_id) final {
+  void ChangeTarget(const absl::optional<viz::FrameSinkId>& frame_sink_id,
+                    const viz::SubtreeCaptureId& subtree_capture_id) final {
     DCHECK_NOT_ON_DEVICE_THREAD();
     MockChangeTarget(frame_sink_id ? *frame_sink_id : viz::FrameSinkId());
   }
@@ -147,7 +150,7 @@ class MockFrameSinkVideoConsumerFrameCallbacks
   }
 
   MOCK_METHOD0(Done, void());
-  MOCK_METHOD1(ProvideFeedback, void(const media::VideoFrameFeedback&));
+  MOCK_METHOD1(ProvideFeedback, void(const media::VideoCaptureFeedback&));
 
  private:
   mojo::Receiver<viz::mojom::FrameSinkVideoConsumerFrameCallbacks> receiver_{
@@ -181,17 +184,16 @@ class MockVideoFrameReceiver : public media::VideoFrameReceiver {
                void(int buffer_id,
                     media::mojom::VideoBufferHandle* buffer_handle));
   void OnFrameReadyInBuffer(
-      int buffer_id,
-      int frame_feedback_id,
-      std::unique_ptr<Buffer::ScopedAccessPermission> buffer_read_permission,
-      media::mojom::VideoFrameInfoPtr frame_info) final {
+      media::ReadyFrameInBuffer frame,
+      std::vector<media::ReadyFrameInBuffer> scaled_frames) final {
     DCHECK_ON_DEVICE_THREAD();
-    feedback_ids_[buffer_id] = frame_feedback_id;
-    auto* const raw_pointer_to_permission = buffer_read_permission.get();
-    access_permissions_[buffer_id] = std::move(buffer_read_permission);
-    auto* const raw_pointer_to_info = frame_info.get();
-    frame_infos_[buffer_id] = std::move(frame_info);
-    MockOnFrameReadyInBuffer(buffer_id, frame_feedback_id,
+    feedback_ids_[frame.buffer_id] = frame.frame_feedback_id;
+    auto* const raw_pointer_to_permission = frame.buffer_read_permission.get();
+    access_permissions_[frame.buffer_id] =
+        std::move(frame.buffer_read_permission);
+    auto* const raw_pointer_to_info = frame.frame_info.get();
+    frame_infos_[frame.buffer_id] = std::move(frame.frame_info);
+    MockOnFrameReadyInBuffer(frame.buffer_id, frame.frame_feedback_id,
                              raw_pointer_to_permission, raw_pointer_to_info);
   }
   MOCK_METHOD4(MockOnFrameReadyInBuffer,
@@ -385,7 +387,7 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
               std::move(data),
               media::mojom::VideoFrameInfo::New(
                   kMinCapturePeriod * frame_number, media::VideoFrameMetadata(),
-                  kFormat, kResolution, gfx::Rect(kResolution),
+                  kFormat, kResolution, gfx::Rect(kResolution), kNotPremapped,
                   gfx::ColorSpace::CreateREC709(), nullptr),
               gfx::Rect(kResolution), std::move(callbacks_remote));
         },
@@ -493,9 +495,9 @@ TEST_F(FrameSinkVideoCaptureDeviceTest, CapturesAndDeliversFrames) {
         MockFrameSinkVideoConsumerFrameCallbacks& callbacks =
             callbackses[frame_number - first_frame_number];
 
-        const media::VideoFrameFeedback fake_feedback =
-            media::VideoFrameFeedback(static_cast<double>(frame_number) /
-                                      kNumFramesToDeliver);
+        const media::VideoCaptureFeedback fake_feedback =
+            media::VideoCaptureFeedback(static_cast<double>(frame_number) /
+                                        kNumFramesToDeliver);
         EXPECT_CALL(callbacks, ProvideFeedback(fake_feedback));
         EXPECT_CALL(callbacks, Done());
         EXPECT_CALL(*receiver, OnBufferRetired(buffer_id));
