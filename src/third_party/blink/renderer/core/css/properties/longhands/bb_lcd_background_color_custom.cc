@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/properties/longhands.h"
 
+#include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/cssom/css_color_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/properties/css_parsing_utils.h"
@@ -26,11 +27,10 @@ const CSSValue* BbLcdBackgroundColor::ParseSingleValue(
 
 const CSSValue* BbLcdBackgroundColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
-    const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
   blink::Color color = style.BbLcdBackgroundColor();
-  return cssvalue::CSSColorValue::Create(color.Rgb());
+  return cssvalue::CSSColor::Create(color.Rgb());
 }
 
 void BbLcdBackgroundColor::ApplyInitial(StyleResolverState& state) const {
