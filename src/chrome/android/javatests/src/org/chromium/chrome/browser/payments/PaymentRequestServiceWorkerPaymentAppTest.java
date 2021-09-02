@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -19,7 +20,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.ActivityUtils;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
@@ -44,8 +45,7 @@ import java.util.concurrent.TimeoutException;
         // payment apps instead of showing payment request UI.
         "enable-features=" + PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT,
         // Prevent crawling the web for real payment apps.
-        "disable-features=" + PaymentFeatureList.SERVICE_WORKER_PAYMENT_APPS + ","
-                + PaymentFeatureList.SCROLL_TO_EXPAND_PAYMENT_HANDLER})
+        "disable-features=" + PaymentFeatureList.SERVICE_WORKER_PAYMENT_APPS})
 public class PaymentRequestServiceWorkerPaymentAppTest {
     // Disable animations to reduce flakiness.
     @ClassRule
@@ -72,7 +72,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
             @Override
             public void create(PaymentAppFactoryDelegate delegate) {
                 WebContents webContents = delegate.getParams().getWebContents();
-                ChromeActivity activity = ChromeActivity.fromWebContents(webContents);
+                Activity activity = ActivityUtils.getActivityFromWebContents(webContents);
                 BitmapDrawable icon = withIcon
                         ? new BitmapDrawable(activity.getResources(),
                                 Bitmap.createBitmap(new int[] {Color.RED}, 1 /* width */,

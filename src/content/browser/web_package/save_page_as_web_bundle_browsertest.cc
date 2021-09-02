@@ -60,15 +60,15 @@ data_decoder::mojom::SerializedResourceInfoPtr GetResourceInfo(
   return info_out;
 }
 
-base::Optional<mojo_base::BigBuffer> GetResourceBody(
+absl::optional<mojo_base::BigBuffer> GetResourceBody(
     mojo::Remote<data_decoder::mojom::ResourceSnapshotForWebBundle>& snapshot,
     uint64_t index) {
-  base::Optional<mojo_base::BigBuffer> data_out;
+  absl::optional<mojo_base::BigBuffer> data_out;
   base::RunLoop run_loop;
   snapshot->GetResourceBody(
       index,
       base::BindLambdaForTesting(
-          [&run_loop, &data_out](base::Optional<mojo_base::BigBuffer> data) {
+          [&run_loop, &data_out](absl::optional<mojo_base::BigBuffer> data) {
             data_out = std::move(data);
             run_loop.Quit();
           }));
@@ -271,12 +271,9 @@ IN_PROC_BROWSER_TEST_F(SavePageAsWebBundleBrowserTest,
   ASSERT_TRUE(CreateSaveDir());
   const auto file_path =
       save_dir_.GetPath().Append(FILE_PATH_LITERAL("test.wbn"));
-  // Currently WebBundler in the data decoder service is not implemented yet,
-  // and just returns kNotImplemented.
-  // TODO(crbug.com/1040752): Implement WebBundler and update test.
-  EXPECT_EQ(
-      std::make_tuple(0, data_decoder::mojom::WebBundlerError::kNotImplemented),
-      GenerateWebBundle(file_path));
+  const auto result = GenerateWebBundle(file_path);
+  EXPECT_GT(std::get<0>(result), 0lu);
+  EXPECT_EQ(std::get<1>(result), data_decoder::mojom::WebBundlerError::kOK);
 }
 
 IN_PROC_BROWSER_TEST_F(SavePageAsWebBundleBrowserTest,

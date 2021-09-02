@@ -5,6 +5,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/chrome_typography_provider.h"
@@ -52,6 +53,9 @@ class LayoutProviderTest : public testing::Test {
     base::win::EnableHighDPISupport();
 #endif
     gfx::InitializeFonts();
+    // Some previous test may have left the default font description set to an
+    // unexpected state.
+    gfx::FontList::SetDefaultFontDescription(std::string());
   }
 
  private:
@@ -221,8 +225,9 @@ TEST_F(LayoutProviderTest, RequestFontBySize) {
   gfx::FontList title_font = rb.GetFontListWithDelta(kTitle - kBase);
   gfx::FontList body1_font = rb.GetFontListWithDelta(kBody1 - kBase);
   gfx::FontList body2_font = rb.GetFontListWithDelta(kBody2 - kBase);
-  gfx::FontList button_font = rb.GetFontListWithDelta(
-      kButton - kBase, gfx::Font::NORMAL, kButtonWeight);
+  gfx::FontList button_font =
+      rb.GetFontListForDetails(ui::ResourceBundle::FontDetails(
+          std::string(), kButton - kBase, kButtonWeight));
 
   // The following checks on leading don't need to match the spec. Instead, it
   // means Label::SetLineHeight() needs to be used to increase it. But what we
@@ -387,7 +392,7 @@ TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
     EXPECT_EQ(kHarmonyHeights[i].line_height,
               views::style::GetLineHeight(kHarmonyHeights[i].context, kStyle));
 
-    views::Label label(base::ASCIIToUTF16("test"), kHarmonyHeights[i].context);
+    views::Label label(u"test", kHarmonyHeights[i].context);
     label.SizeToPreferredSize();
     EXPECT_EQ(kHarmonyHeights[i].line_height, label.height());
   }
@@ -398,7 +403,7 @@ TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
   EXPECT_EQ(kBodyLineHeight,
             views::style::GetLineHeight(views::style::CONTEXT_LABEL, kStyle));
   views::StyledLabel styled_label;
-  styled_label.SetText(base::ASCIIToUTF16("test"));
+  styled_label.SetText(u"test");
   constexpr int kStyledLabelWidth = 200;  // Enough to avoid wrapping.
   styled_label.SizeToFit(kStyledLabelWidth);
   EXPECT_EQ(kBodyLineHeight, styled_label.height());
@@ -417,7 +422,7 @@ TEST_F(LayoutProviderTest, ExplicitTypographyLineHeight) {
 // versions, but on ChromeOS, there is only one OS version, so we can rely on
 // consistent behavior. Also ChromeOS is the only place where
 // IDS_UI_FONT_FAMILY_CROS works, which this test uses to control results.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Ensure the omnibox font is always 14pt, even in Hebrew. On ChromeOS, Hebrew
 // has a larger default font size applied from the resource bundle, but the
@@ -473,4 +478,4 @@ TEST_F(LayoutProviderTest, OmniboxFontAlways14) {
                                                      kDecorationRequestedSize));
 }
 
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

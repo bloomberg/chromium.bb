@@ -58,7 +58,7 @@ typedef struct aom_codec_frame_buffer {
  * must return 0. Any failure the callback must return a value less than 0.
  *
  * \param[in] priv         Callback's private data
- * \param[in] new_size     Size in bytes needed by the buffer
+ * \param[in] min_size     Size in bytes needed by the buffer
  * \param[in,out] fb       Pointer to aom_codec_frame_buffer_t
  */
 typedef int (*aom_get_frame_buffer_cb_fn_t)(void *priv, size_t min_size,

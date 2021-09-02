@@ -10,8 +10,6 @@
 #include "include/core/SkDeferredDisplayListRecorder.h"
 #include "include/core/SkPicture.h"
 #include "include/core/SkSerialProcs.h"
-#include "include/core/SkYUVAIndex.h"
-#include "include/core/SkYUVASizeInfo.h"
 #include "include/gpu/GrDirectContext.h"
 #include "include/gpu/GrYUVABackendTextures.h"
 #include "src/codec/SkCodecImageGenerator.h"
@@ -37,7 +35,7 @@ DDLPromiseImageHelper::PromiseImageInfo::PromiseImageInfo(PromiseImageInfo&& oth
         , fBaseLevel(other.fBaseLevel)
         , fMipLevels(std::move(other.fMipLevels))
         , fYUVAPixmaps(std::move(other.fYUVAPixmaps)) {
-    for (int i = 0; i < SkYUVASizeInfo::kMaxCount; ++i) {
+    for (int i = 0; i < SkYUVAInfo::kMaxPlanes; ++i) {
         fCallbackContexts[i] = std::move(other.fCallbackContexts[i]);
     }
 }
@@ -96,7 +94,8 @@ void PromiseImageCallbackContext::destroyBackendTexture() {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-sk_sp<SkData> DDLPromiseImageHelper::deflateSKP(const SkPicture* inputPicture) {
+sk_sp<SkPicture> DDLPromiseImageHelper::recreateSKP(GrDirectContext* dContext,
+                                                    SkPicture* inputPicture) {
     SkSerialProcs procs;
 
     procs.fImageCtx = this;
@@ -109,7 +108,14 @@ sk_sp<SkData> DDLPromiseImageHelper::deflateSKP(const SkPicture* inputPicture) {
         return SkData::MakeWithCopy(&id, sizeof(id));
     };
 
-    return inputPicture->serialize(&procs);
+    sk_sp<SkData> compressedPictureData = inputPicture->serialize(&procs);
+    if (!compressedPictureData) {
+        return nullptr;
+    }
+
+    this->createCallbackContexts(dContext);
+
+    return this->reinflateSKP(dContext->threadSafeProxy(), compressedPictureData.get());
 }
 
 static GrBackendTexture create_yuva_texture(GrDirectContext* direct,
@@ -121,8 +127,12 @@ static GrBackendTexture create_yuva_texture(GrDirectContext* direct,
     auto markFinished = [](void* context) {
         *(bool*)context = true;
     };
-    auto beTex = direct->createBackendTexture(&pm, 1, GrRenderable::kNo, GrProtected::kNo,
-                                              markFinished, &finishedBECreate);
+    auto beTex = direct->createBackendTexture(pm,
+                                              kTopLeft_GrSurfaceOrigin,
+                                              GrRenderable::kNo,
+                                              GrProtected::kNo,
+                                              markFinished,
+                                              &finishedBECreate);
     if (beTex.isValid()) {
         direct->submit();
         while (!finishedBECreate) {
@@ -164,9 +174,13 @@ void DDLPromiseImageHelper::CreateBETexturesForPromiseImage(GrDirectContext* dir
         auto markFinished = [](void* context) {
             *(bool*)context = true;
         };
-        auto backendTex = direct->createBackendTexture(mipLevels.get(), info->numMipLevels(),
-                                                       GrRenderable::kNo, GrProtected::kNo,
-                                                       markFinished, &finishedBECreate);
+        auto backendTex = direct->createBackendTexture(mipLevels.get(),
+                                                       info->numMipLevels(),
+                                                       kTopLeft_GrSurfaceOrigin,
+                                                       GrRenderable::kNo,
+                                                       GrProtected::kNo,
+                                                       markFinished,
+                                                       &finishedBECreate);
         SkASSERT(backendTex.isValid());
         direct->submit();
         while (!finishedBECreate) {
@@ -272,26 +286,23 @@ void DDLPromiseImageHelper::deleteAllFromGPU(SkTaskGroup* taskGroup, GrDirectCon
 }
 
 sk_sp<SkPicture> DDLPromiseImageHelper::reinflateSKP(
-                                                   SkDeferredDisplayListRecorder* recorder,
-                                                   SkData* compressedPictureData,
-                                                   SkTArray<sk_sp<SkImage>>* promiseImages) const {
-    PerRecorderContext perRecorderContext { recorder, this, promiseImages };
+                                                   sk_sp<GrContextThreadSafeProxy> threadSafeProxy,
+                                                   SkData* compressedPictureData) {
+    DeserialImageProcContext procContext { std::move(threadSafeProxy), this };
 
     SkDeserialProcs procs;
-    procs.fImageCtx = (void*) &perRecorderContext;
+    procs.fImageCtx = (void*) &procContext;
     procs.fImageProc = CreatePromiseImages;
 
     return SkPicture::MakeFromData(compressedPictureData, &procs);
 }
 
-// This generates promise images to replace the indices in the compressed picture. This
-// reconstitution is performed separately in each thread so we end up with multiple
-// promise images referring to the same GrBackendTexture.
+// This generates promise images to replace the indices in the compressed picture.
 sk_sp<SkImage> DDLPromiseImageHelper::CreatePromiseImages(const void* rawData,
-                                                          size_t length, void* ctxIn) {
-    PerRecorderContext* perRecorderContext = static_cast<PerRecorderContext*>(ctxIn);
-    const DDLPromiseImageHelper* helper = perRecorderContext->fHelper;
-    SkDeferredDisplayListRecorder* recorder = perRecorderContext->fRecorder;
+                                                          size_t length,
+                                                          void* ctxIn) {
+    DeserialImageProcContext* procContext = static_cast<DeserialImageProcContext*>(ctxIn);
+    DDLPromiseImageHelper* helper = procContext->fHelper;
 
     SkASSERT(length == sizeof(int));
 
@@ -303,19 +314,19 @@ sk_sp<SkImage> DDLPromiseImageHelper::CreatePromiseImages(const void* rawData,
     const DDLPromiseImageHelper::PromiseImageInfo& curImage = helper->getInfo(*indexPtr);
 
     // If there is no callback context that means 'createCallbackContexts' determined the
-    // texture wouldn't fit on the GPU. Create a separate bitmap-backed image for each thread.
+    // texture wouldn't fit on the GPU. Create a bitmap-backed image.
     if (!curImage.isYUV() && !curImage.callbackContext(0)) {
         SkASSERT(curImage.baseLevel().isImmutable());
-        return SkImage::MakeFromBitmap(curImage.baseLevel());
+        return curImage.baseLevel().asImage();
     }
 
     SkASSERT(curImage.index() == *indexPtr);
 
     sk_sp<SkImage> image;
     if (curImage.isYUV()) {
-        GrBackendFormat backendFormats[SkYUVASizeInfo::kMaxCount];
+        GrBackendFormat backendFormats[SkYUVAInfo::kMaxPlanes];
         const SkYUVAInfo& yuvaInfo = curImage.yuvaInfo();
-        void* contexts[SkYUVASizeInfo::kMaxCount] = { nullptr, nullptr, nullptr, nullptr };
+        void* contexts[SkYUVAInfo::kMaxPlanes] = {nullptr, nullptr, nullptr, nullptr};
         int textureCount = yuvaInfo.numPlanes();
         for (int i = 0; i < textureCount; ++i) {
             backendFormats[i] = curImage.backendFormat(i);
@@ -325,46 +336,38 @@ sk_sp<SkImage> DDLPromiseImageHelper::CreatePromiseImages(const void* rawData,
                                                      backendFormats,
                                                      GrMipmapped::kNo,
                                                      kTopLeft_GrSurfaceOrigin);
-
-        image = recorder->makeYUVAPromiseTexture(
-                yuvaBackendTextures,
-                curImage.refOverallColorSpace(),
-                PromiseImageCallbackContext::PromiseImageFulfillProc,
-                PromiseImageCallbackContext::PromiseImageReleaseProc,
-                contexts);
+        image = SkImage::MakePromiseYUVATexture(
+                                            procContext->fThreadSafeProxy,
+                                            yuvaBackendTextures,
+                                            curImage.refOverallColorSpace(),
+                                            PromiseImageCallbackContext::PromiseImageFulfillProc,
+                                            PromiseImageCallbackContext::PromiseImageReleaseProc,
+                                            contexts);
+        if (!image) {
+            return nullptr;
+        }
         for (int i = 0; i < textureCount; ++i) {
             curImage.callbackContext(i)->wasAddedToImage();
         }
 
-#ifdef SK_DEBUG
-        {
-            // By the peekProxy contract this image should not have a single backing proxy so
-            // should return null. The call should also not trigger the conversion to RGBA.
-            SkImage_GpuYUVA* yuva = reinterpret_cast<SkImage_GpuYUVA*>(image.get());
-            SkASSERT(!yuva->peekProxy());
-            SkASSERT(!yuva->peekProxy());  // the first call didn't force a conversion to RGBA
-        }
-#endif
     } else {
         const GrBackendFormat& backendFormat = curImage.backendFormat(0);
         SkASSERT(backendFormat.isValid());
 
-        // Each DDL recorder gets its own ref on the promise callback context for the
-        // promise images it creates.
-        image = recorder->makePromiseTexture(backendFormat,
-                                             curImage.overallWidth(),
-                                             curImage.overallHeight(),
-                                             curImage.mipMapped(0),
-                                             GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin,
-                                             curImage.overallColorType(),
-                                             curImage.overallAlphaType(),
-                                             curImage.refOverallColorSpace(),
-                                             PromiseImageCallbackContext::PromiseImageFulfillProc,
-                                             PromiseImageCallbackContext::PromiseImageReleaseProc,
-                                             (void*)curImage.refCallbackContext(0).release());
+        image = SkImage::MakePromiseTexture(procContext->fThreadSafeProxy,
+                                            backendFormat,
+                                            curImage.overallDimensions(),
+                                            curImage.mipMapped(0),
+                                            GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin,
+                                            curImage.overallColorType(),
+                                            curImage.overallAlphaType(),
+                                            curImage.refOverallColorSpace(),
+                                            PromiseImageCallbackContext::PromiseImageFulfillProc,
+                                            PromiseImageCallbackContext::PromiseImageReleaseProc,
+                                            (void*)curImage.refCallbackContext(0).release());
         curImage.callbackContext(0)->wasAddedToImage();
     }
-    perRecorderContext->fPromiseImages->push_back(image);
+    helper->fPromiseImages.push_back(image);
     SkASSERT(image);
     return image;
 }
@@ -398,7 +401,9 @@ int DDLPromiseImageHelper::addImage(SkImage* image) {
     SkYUVAPixmapInfo yuvaInfo;
     if (codec && codec->queryYUVAInfo(fSupportedYUVADataTypes, &yuvaInfo)) {
         auto yuvaPixmaps = SkYUVAPixmaps::Allocate(yuvaInfo);
-        SkAssertResult(codec->getYUVAPlanes(yuvaPixmaps));
+        if (!codec->getYUVAPlanes(yuvaPixmaps)) {
+            return -1;
+        }
         SkASSERT(yuvaPixmaps.isValid());
         newImageInfo.setYUVPlanes(std::move(yuvaPixmaps));
     } else {

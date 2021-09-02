@@ -4,15 +4,19 @@
 
 #include "chrome/browser/ui/views/tabs/tab_group_editor_bubble_view.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/tab_groups/tab_group_id.h"
 #include "content/public/test/browser_test.h"
@@ -25,6 +29,7 @@ class TabGroupEditorBubbleViewDialogBrowserTest : public DialogBrowserTest {
   void ShowUi(const std::string& name) override {
     tab_groups::TabGroupId group =
         browser()->tab_strip_model()->AddToNewGroup({0});
+    browser()->tab_strip_model()->OpenTabGroupEditor(group);
 
     BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
     TabGroupHeader* header = browser_view->tabstrip()->group_header(group);
@@ -39,8 +44,13 @@ class TabGroupEditorBubbleViewDialogBrowserTest : public DialogBrowserTest {
   }
 };
 
+#if defined(OS_WIN)
+#define MAYBE_InvokeUi_default DISABLED_InvokeUi_default
+#else
+#define MAYBE_InvokeUi_default InvokeUi_default
+#endif
 IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
-                       InvokeUi_default) {
+                       MAYBE_InvokeUi_default) {
   ShowAndVerifyUi();
 }
 
@@ -51,7 +61,7 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
   TabGroupModel* group_model = browser()->tab_strip_model()->group_model();
   std::vector<tab_groups::TabGroupId> group_list = group_model->ListTabGroups();
   ASSERT_EQ(1u, group_list.size());
-  ASSERT_EQ(1u, group_model->GetTabGroup(group_list[0])->ListTabs().size());
+  ASSERT_EQ(1u, group_model->GetTabGroup(group_list[0])->ListTabs().length());
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   TabGroupHeader* header =
@@ -68,7 +78,7 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
                                 gfx::PointF(), base::TimeTicks(), 0, 0);
   views::test::ButtonTestApi(new_tab_button).NotifyClick(released_event);
 
-  EXPECT_EQ(2u, group_model->GetTabGroup(group_list[0])->ListTabs().size());
+  EXPECT_EQ(2u, group_model->GetTabGroup(group_list[0])->ListTabs().length());
 }
 
 IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest, Ungroup) {
@@ -79,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest, Ungroup) {
   TabGroupModel* group_model = tsm->group_model();
   std::vector<tab_groups::TabGroupId> group_list = group_model->ListTabGroups();
   ASSERT_EQ(1u, group_list.size());
-  ASSERT_EQ(1u, group_model->GetTabGroup(group_list[0])->ListTabs().size());
+  ASSERT_EQ(1u, group_model->GetTabGroup(group_list[0])->ListTabs().length());
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   TabGroupHeader* header =
@@ -108,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
   TabGroupModel* group_model = browser()->tab_strip_model()->group_model();
   std::vector<tab_groups::TabGroupId> group_list = group_model->ListTabGroups();
   ASSERT_EQ(1u, group_list.size());
-  ASSERT_EQ(1u, group_model->GetTabGroup(group_list[0])->ListTabs().size());
+  ASSERT_EQ(1u, group_model->GetTabGroup(group_list[0])->ListTabs().length());
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   TabGroupHeader* header =
@@ -138,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
   TabGroupModel* group_model = browser()->tab_strip_model()->group_model();
   std::vector<tab_groups::TabGroupId> group_list = group_model->ListTabGroups();
   ASSERT_EQ(1u, group_list.size());
-  ASSERT_EQ(1u, group_model->GetTabGroup(group_list[0])->ListTabs().size());
+  ASSERT_EQ(1u, group_model->GetTabGroup(group_list[0])->ListTabs().length());
 
   BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
   TabGroupHeader* header =
@@ -167,4 +177,38 @@ IN_PROC_BROWSER_TEST_F(TabGroupEditorBubbleViewDialogBrowserTest,
   EXPECT_EQ(
       1u,
       active_browser->tab_strip_model()->group_model()->ListTabGroups().size());
+}
+
+class TabGroupEditorBubbleViewDialogBrowserTestWithFreezingEnabled
+    : public TabGroupEditorBubbleViewDialogBrowserTest {
+ public:
+  TabGroupEditorBubbleViewDialogBrowserTestWithFreezingEnabled() {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kTabGroupsCollapseFreezing}, {});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    TabGroupEditorBubbleViewDialogBrowserTestWithFreezingEnabled,
+    CollapsingGroupFreezesAllTabs) {
+  BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
+  InProcessBrowserTest::AddBlankTabAndShow(browser());
+  InProcessBrowserTest::AddBlankTabAndShow(browser());
+
+  TabStripModel* tsm = browser()->tab_strip_model();
+  ASSERT_EQ(3, tsm->count());
+  tab_groups::TabGroupId group = tsm->AddToNewGroup({0, 1});
+
+  ASSERT_FALSE(browser_view->tabstrip()->tab_at(0)->HasFreezingVoteToken());
+  ASSERT_FALSE(browser_view->tabstrip()->tab_at(1)->HasFreezingVoteToken());
+  ASSERT_FALSE(browser_view->tabstrip()->tab_at(2)->HasFreezingVoteToken());
+  ASSERT_TRUE(
+      browser_view->tabstrip()->controller()->ToggleTabGroupCollapsedState(
+          group));
+  EXPECT_TRUE(browser_view->tabstrip()->tab_at(0)->HasFreezingVoteToken());
+  EXPECT_TRUE(browser_view->tabstrip()->tab_at(1)->HasFreezingVoteToken());
+  EXPECT_FALSE(browser_view->tabstrip()->tab_at(2)->HasFreezingVoteToken());
 }

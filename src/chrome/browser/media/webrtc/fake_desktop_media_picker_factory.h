@@ -8,21 +8,23 @@
 #include <memory>
 #include <vector>
 
-#include "base/optional.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_factory.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class FakeDesktopMediaPicker;
 
 // Used in tests to supply fake picker.
 class FakeDesktopMediaPickerFactory : public DesktopMediaPickerFactory {
  public:
+  // TODO(crbug.com/1179665): Make this less error prone - use WithX() methods.
   struct TestFlags {
     bool expect_screens = false;
     bool expect_windows = false;
     bool expect_tabs = false;
+    bool expect_current_tab = false;
     bool expect_audio = false;
     content::DesktopMediaID selected_source;
     bool cancelled = false;
@@ -40,9 +42,11 @@ class FakeDesktopMediaPickerFactory : public DesktopMediaPickerFactory {
   void SetTestFlags(TestFlags* test_flags, int tests_count);
   FakeDesktopMediaPicker* picker() const { return picker_; }
   // DesktopMediaPickerFactory implementation
-  std::unique_ptr<DesktopMediaPicker> CreatePicker() override;
+  std::unique_ptr<DesktopMediaPicker> CreatePicker(
+      const content::MediaStreamRequest* request) override;
   std::vector<std::unique_ptr<DesktopMediaList>> CreateMediaList(
-      const std::vector<content::DesktopMediaID::Type>& types) override;
+      const std::vector<DesktopMediaList::Type>& types,
+      content::WebContents* web_contents) override;
 
  private:
   FakeDesktopMediaPicker* picker_;

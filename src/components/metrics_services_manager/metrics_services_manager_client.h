@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
 
 namespace metrics {
@@ -17,10 +16,6 @@ class MetricsStateManager;
 
 namespace network {
 class SharedURLLoaderFactory;
-}
-
-namespace rappor {
-class RapporServiceImpl;
 }
 
 namespace variations {
@@ -36,8 +31,6 @@ class MetricsServicesManagerClient {
   virtual ~MetricsServicesManagerClient() {}
 
   // Methods that create the various services in the context of the embedder.
-  virtual std::unique_ptr<rappor::RapporServiceImpl>
-  CreateRapporServiceImpl() = 0;
   virtual std::unique_ptr<variations::VariationsService>
   CreateVariationsService() = 0;
   virtual std::unique_ptr<metrics::MetricsServiceClient>

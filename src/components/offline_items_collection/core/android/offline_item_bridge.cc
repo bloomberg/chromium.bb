@@ -38,15 +38,15 @@ JNI_OfflineItemBridge_createOfflineItemAndMaybeAddToList(
       item.completion_time.ToJavaTime(), item.last_accessed_time.ToJavaTime(),
       item.is_openable, ConvertUTF8ToJavaString(env, item.file_path.value()),
       ConvertUTF8ToJavaString(env, item.mime_type),
-      ConvertUTF8ToJavaString(env, item.page_url.spec()),
+      ConvertUTF8ToJavaString(env, item.url.spec()),
       ConvertUTF8ToJavaString(env, item.original_url.spec()),
-      item.is_off_the_record, static_cast<jint>(item.state),
-      static_cast<jint>(item.fail_state), static_cast<jint>(item.pending_state),
-      item.is_resumable, item.allow_metered, item.received_bytes,
-      item.progress.value, item.progress.max.value_or(-1),
-      static_cast<jint>(item.progress.unit), item.time_remaining_ms,
-      item.is_dangerous, item.can_rename, item.ignore_visuals,
-      item.content_quality_score,
+      item.is_off_the_record, ConvertUTF8ToJavaString(env, item.otr_profile_id),
+      static_cast<jint>(item.state), static_cast<jint>(item.fail_state),
+      static_cast<jint>(item.pending_state), item.is_resumable,
+      item.allow_metered, item.received_bytes, item.progress.value,
+      item.progress.max.value_or(-1), static_cast<jint>(item.progress.unit),
+      item.time_remaining_ms, item.is_dangerous, item.can_rename,
+      item.ignore_visuals, item.content_quality_score,
       OfflineItemBridge::CreateOfflineItemSchedule(env, item.schedule));
 }
 
@@ -74,7 +74,7 @@ ScopedJavaLocalRef<jobject> OfflineItemBridge::CreateOfflineItemList(
 // static
 ScopedJavaLocalRef<jobject> OfflineItemBridge::CreateUpdateDelta(
     JNIEnv* env,
-    const base::Optional<UpdateDelta>& update_delta) {
+    const absl::optional<UpdateDelta>& update_delta) {
   if (!update_delta.has_value())
     return ScopedJavaLocalRef<jobject>();
 
@@ -86,7 +86,7 @@ ScopedJavaLocalRef<jobject> OfflineItemBridge::CreateUpdateDelta(
 // static
 ScopedJavaLocalRef<jobject> OfflineItemBridge::CreateOfflineItemSchedule(
     JNIEnv* env,
-    const base::Optional<OfflineItemSchedule>& schedule) {
+    const absl::optional<OfflineItemSchedule>& schedule) {
   if (!schedule.has_value())
     return ScopedJavaLocalRef<jobject>();
 

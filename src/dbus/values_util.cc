@@ -60,7 +60,8 @@ bool PopDictionaryEntries(MessageReader* reader,
     std::unique_ptr<base::Value> value = PopDataAsValue(&entry_reader);
     if (!value)
       return false;
-    dictionary_value->SetWithoutPathExpansion(key_string, std::move(value));
+    dictionary_value->SetKey(key_string,
+                             base::Value::FromUniquePtrValue(std::move(value)));
   }
   return true;
 }
@@ -218,31 +219,19 @@ std::unique_ptr<base::Value> PopDataAsValue(MessageReader* reader) {
 void AppendBasicTypeValueData(MessageWriter* writer, const base::Value& value) {
   switch (value.type()) {
     case base::Value::Type::BOOLEAN: {
-      bool bool_value = false;
-      bool success = value.GetAsBoolean(&bool_value);
-      DCHECK(success);
-      writer->AppendBool(bool_value);
+      writer->AppendBool(value.GetBool());
       break;
     }
     case base::Value::Type::INTEGER: {
-      int int_value = 0;
-      bool success = value.GetAsInteger(&int_value);
-      DCHECK(success);
-      writer->AppendInt32(int_value);
+      writer->AppendInt32(value.GetInt());
       break;
     }
     case base::Value::Type::DOUBLE: {
-      double double_value = 0;
-      bool success = value.GetAsDouble(&double_value);
-      DCHECK(success);
-      writer->AppendDouble(double_value);
+      writer->AppendDouble(value.GetDouble());
       break;
     }
     case base::Value::Type::STRING: {
-      std::string string_value;
-      bool success = value.GetAsString(&string_value);
-      DCHECK(success);
-      writer->AppendString(string_value);
+      writer->AppendString(value.GetString());
       break;
     }
     default:
@@ -282,7 +271,7 @@ void AppendValueData(MessageWriter* writer, const base::Value& value) {
       value.GetAsList(&list);
       dbus::MessageWriter array_writer(nullptr);
       writer->OpenArray("v", &array_writer);
-      for (const auto& value_in_list : *list) {
+      for (const auto& value_in_list : list->GetList()) {
         AppendValueDataAsVariant(&array_writer, value_in_list);
       }
       writer->CloseContainer(&array_writer);

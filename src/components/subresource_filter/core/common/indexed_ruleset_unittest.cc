@@ -72,14 +72,14 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
 
   bool AddSimpleAllowlistRule(base::StringPiece url_pattern) {
     auto rule = MakeUrlRule(UrlPattern(url_pattern, testing::kSubstring));
-    rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
+    rule.set_semantics(proto::RULE_SEMANTICS_ALLOWLIST);
     return AddUrlRule(rule);
   }
 
   bool AddSimpleAllowlistRule(base::StringPiece url_pattern,
                               int32_t activation_types) {
     auto rule = MakeUrlRule(UrlPattern(url_pattern, testing::kSubstring));
-    rule.set_semantics(proto::RULE_SEMANTICS_WHITELIST);
+    rule.set_semantics(proto::RULE_SEMANTICS_ALLOWLIST);
     rule.clear_element_types();
     rule.set_activation_types(activation_types);
     return AddUrlRule(rule);
@@ -87,13 +87,13 @@ class SubresourceFilterIndexedRulesetTest : public ::testing::Test {
 
   void Finish() {
     indexer_->Finish();
-    matcher_.reset(
-        new IndexedRulesetMatcher(indexer_->data(), indexer_->size()));
+    matcher_ = std::make_unique<IndexedRulesetMatcher>(indexer_->data(),
+                                                       indexer_->size());
   }
 
   void Reset() {
     matcher_.reset(nullptr);
-    indexer_.reset(new RulesetIndexer);
+    indexer_ = std::make_unique<RulesetIndexer>();
   }
 
   std::unique_ptr<RulesetIndexer> indexer_;

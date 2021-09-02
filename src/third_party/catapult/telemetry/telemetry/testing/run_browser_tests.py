@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
 import os
 import sys
 import json
@@ -23,7 +26,7 @@ def PrintTelemetryHelp():
   options = browser_options.BrowserFinderOptions()
   options.browser_type = 'any'
   parser = options.CreateParser()
-  print '\n\nCommand line arguments handled by Telemetry:'
+  print('\n\nCommand line arguments handled by Telemetry:')
   parser.print_help()
 
 
@@ -62,14 +65,13 @@ def _TestIndicesForShard(total_shards, shard_index, num_tests):
   groups of related tests, which can skew runtimes. See
   https://crbug.com/1028298.
   """
-  return range(shard_index, num_tests, total_shards)
+  return list(range(shard_index, num_tests, total_shards))
 
 def _MedianTestTime(test_times):
-  times = test_times.values()
-  times.sort()
+  times = sorted(test_times.values())
   if len(times) == 0:
     return 0
-  halfLen = len(times) / 2
+  halfLen = len(times) // 2
   if len(times) % 2:
     return times[halfLen]
   else:
@@ -88,16 +90,16 @@ def _DebugShardDistributions(shards, test_times):
       shard_time = 0.0
       for t in s:
         shard_time += _TestTime(t, test_times, median)
-      print 'shard %d: %d seconds (%d tests)' % (i, shard_time, num_tests)
+      print('shard %d: %d seconds (%d tests)' % (i, shard_time, num_tests))
     else:
-      print 'shard %d: %d tests (unknown duration)' % (i, num_tests)
+      print('shard %d: %d tests (unknown duration)' % (i, num_tests))
 
 
 def _SplitShardsByTime(test_cases, total_shards, test_times,
                        debug_shard_distributions):
   median = _MedianTestTime(test_times)
   shards = []
-  for i in xrange(total_shards):
+  for i in range(total_shards):
     shards.append({'total_time': 0.0, 'tests': []})
   test_cases.sort(key=lambda t: _TestTime(t, test_times, median),
                   reverse=True)
@@ -114,7 +116,7 @@ def _SplitShardsByTime(test_cases, total_shards, test_times,
   for t in test_cases:
     min_shard_index = 0
     min_shard_time = None
-    for i in xrange(total_shards):
+    for i in range(total_shards):
       if min_shard_time is None or shards[i]['total_time'] < min_shard_time:
         min_shard_index = i
         min_shard_time = shards[i]['total_time']
@@ -154,12 +156,12 @@ def LoadTestCasesToBeRun(
             if post_test_filter_matcher(t)]
   else:
     test_cases.sort(key=lambda t: t.shortName())
-    test_cases = filter(post_test_filter_matcher, test_cases)
+    test_cases = [t for t in test_cases if post_test_filter_matcher(t)]
     test_indices = _TestIndicesForShard(
         total_shards, shard_index, len(test_cases))
     if debug_shard_distributions:
       tmp_shards = []
-      for i in xrange(total_shards):
+      for i in range(total_shards):
         tmp_indices = _TestIndicesForShard(
             total_shards, i, len(test_cases))
         tmp_tests = [test_cases[index] for index in tmp_indices]
@@ -230,7 +232,7 @@ def RunTests(args):
         options.top_level_dir,
         base_class=serially_executed_browser_test_case.
         SeriallyExecutedBrowserTestCase)
-    browser_test_classes = modules_to_classes.values()
+    browser_test_classes = list(modules_to_classes.values())
 
   _ValidateDistinctNames(browser_test_classes)
 
@@ -241,9 +243,9 @@ def RunTests(args):
       break
 
   if not test_class:
-    print 'Cannot find test class with name matching %s' % options.test
-    print 'Available tests: %s' % '\n'.join(
-        cl.Name() for cl in browser_test_classes)
+    print('Cannot find test class with name matching %s' % options.test)
+    print('Available tests: %s' % '\n'.join(
+        cl.Name() for cl in browser_test_classes))
     return 1
 
   test_class._typ_runner = typ_runner = typ.Runner()
@@ -330,7 +332,7 @@ def RunTests(args):
   try:
     ret, _, _ = typ_runner.run()
   except KeyboardInterrupt:
-    print >> sys.stderr, "interrupted, exiting"
+    print("interrupted, exiting", file=sys.stderr)
     ret = 130
   return ret
 

@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
@@ -20,6 +19,7 @@
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 using autofill::FieldSignature;
 using autofill::FormSignature;
@@ -111,7 +111,7 @@ bool PasswordGenerationFrameHelper::IsGenerationEnabled(
   return false;
 }
 
-base::string16 PasswordGenerationFrameHelper::GeneratePassword(
+std::u16string PasswordGenerationFrameHelper::GeneratePassword(
     const GURL& last_committed_url,
     autofill::FormSignature form_signature,
     autofill::FieldSignature field_signature,

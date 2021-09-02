@@ -19,7 +19,11 @@ DownloadShelfContextMenuView::DownloadShelfContextMenuView(
     : DownloadShelfContextMenu(download_item_view->model()),
       download_item_view_(download_item_view) {}
 
-DownloadShelfContextMenuView::~DownloadShelfContextMenuView() {}
+DownloadShelfContextMenuView::DownloadShelfContextMenuView(
+    DownloadUIModel* download_ui_model)
+    : DownloadShelfContextMenu(download_ui_model) {}
+
+DownloadShelfContextMenuView::~DownloadShelfContextMenuView() = default;
 
 void DownloadShelfContextMenuView::Run(
     views::Widget* parent_widget,
@@ -48,6 +52,11 @@ void DownloadShelfContextMenuView::Run(
   menu_runner_->RunMenuAt(parent_widget, nullptr, rect, position, source_type);
 }
 
+void DownloadShelfContextMenuView::SetOnMenuWillShowCallback(
+    base::OnceClosure on_menu_will_show_callback) {
+  on_menu_will_show_callback_ = std::move(on_menu_will_show_callback);
+}
+
 void DownloadShelfContextMenuView::OnMenuClosed(
     base::RepeatingClosure on_menu_closed_callback) {
   close_time_ = base::TimeTicks::Now();
@@ -59,12 +68,20 @@ void DownloadShelfContextMenuView::OnMenuClosed(
   menu_runner_.reset();
 }
 
+void DownloadShelfContextMenuView::OnMenuWillShow(ui::SimpleMenuModel* source) {
+  if (on_menu_will_show_callback_)
+    std::move(on_menu_will_show_callback_).Run();
+}
+
 void DownloadShelfContextMenuView::ExecuteCommand(int command_id,
                                                   int event_flags) {
   DownloadCommands::Command command =
       static_cast<DownloadCommands::Command>(command_id);
 
-  if (command == DownloadCommands::KEEP) {
+  if (command == DownloadCommands::KEEP && download_item_view_) {
+    // TODO(kerenzhu): We will need SBER in WebUI download shelf.
+    // Refactor this feature out of DownloadItemView so that it can be used in
+    // WebUI.
     download_item_view_->MaybeSubmitDownloadToFeedbackService(
         DownloadCommands::KEEP);
   } else {

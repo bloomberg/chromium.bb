@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/time/tick_clock.h"
-#include "components/sync/base/passphrase_enums.h"
 
 namespace crypto {
 class SymmetricKey;
@@ -19,47 +18,10 @@ class SymmetricKey;
 
 namespace syncer {
 
-class Nigori;
+class KeyDerivationParams;
 
 // TODO(crbug.com/922900): inline kNigoriKeyName into Nigori::Permute().
 extern const char kNigoriKeyName[];
-
-class KeyDerivationParams {
- public:
-  static KeyDerivationParams CreateForPbkdf2();
-  static KeyDerivationParams CreateForScrypt(const std::string& salt);
-  static KeyDerivationParams CreateWithUnsupportedMethod();
-
-  KeyDerivationMethod method() const { return method_; }
-  const std::string& scrypt_salt() const;
-
-  KeyDerivationParams(const KeyDerivationParams& other);
-  KeyDerivationParams(KeyDerivationParams&& other);
-  KeyDerivationParams& operator=(const KeyDerivationParams& other);
-  bool operator==(const KeyDerivationParams& other) const;
-  bool operator!=(const KeyDerivationParams& other) const;
-
- private:
-  KeyDerivationParams(KeyDerivationMethod method,
-                      const std::string& scrypt_salt);
-
-  KeyDerivationMethod method_;
-
-  std::string scrypt_salt_;
-};
-
-// Enumeration of possible values for a key derivation method (including a
-// special value of "not set"). Used in UMA metrics. Do not re-order or delete
-// these entries; they are used in a UMA histogram.  Please edit
-// SyncCustomPassphraseKeyDerivationMethodState in enums.xml if a value is
-// added.
-enum class KeyDerivationMethodStateForMetrics {
-  NOT_SET = 0,
-  UNSUPPORTED = 1,
-  PBKDF2_HMAC_SHA1_1003 = 2,
-  SCRYPT_8192_8_11 = 3,
-  kMaxValue = SCRYPT_8192_8_11
-};
 
 // A (partial) implementation of Nigori, a protocol to securely store secrets in
 // the cloud. This implementation does not support server authentication or

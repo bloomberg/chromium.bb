@@ -39,7 +39,7 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
                                       base::OnceClosure done_cb) override;
 
   void OnUtilizationReport(int frame_feedback_id,
-                           media::VideoFrameFeedback feedback) override;
+                           media::VideoCaptureFeedback feedback) override;
 
  private:
   void OnLostConnectionToSourceOrSubscription();
@@ -57,6 +57,8 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   mojo::Remote<video_capture::mojom::PushVideoStreamSubscription> subscription_;
   base::OnceClosure connection_lost_cb_;
   base::SequenceChecker sequence_checker_;
+
+  media::VideoCaptureFeedback last_feedback_;
 };
 
 }  // namespace content

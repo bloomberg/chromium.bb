@@ -236,6 +236,21 @@ TEST_F(DnsDataGraphTests, DeleteFailsForNonExistingRecord) {
   EXPECT_EQ(graph_->GetTrackedDomainCount(), size_t{2});
 }
 
+TEST_F(DnsDataGraphTests, DeleteSucceedsForRecordWithDifferentTtl) {
+  const MdnsRecord ptr = GetFakePtrRecord(primary_domain_);
+  TriggerRecordCreationWithCallback(ptr, primary_domain_);
+
+  EXPECT_CALL(callbacks_, OnStopTracking(primary_domain_));
+  const MdnsRecord new_ptr(ptr.name(), ptr.dns_type(), ptr.dns_class(),
+                           ptr.record_type(),
+                           ptr.ttl() + std::chrono::seconds(10), ptr.rdata());
+  const auto result =
+      ApplyDataRecordChange(new_ptr, RecordChangedEvent::kExpired);
+
+  EXPECT_TRUE(result.ok());
+  EXPECT_EQ(graph_->GetTrackedDomainCount(), size_t{1});
+}
+
 TEST_F(DnsDataGraphTests, UpdateEndpointsWorksAsExpected) {
   auto ptr = GetFakePtrRecord(primary_domain_);
   auto srv = GetFakeSrvRecord(primary_domain_, secondary_domain_);

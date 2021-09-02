@@ -24,16 +24,17 @@
  * Winnov WNV1 codec.
  */
 
+#include "libavutil/thread.h"
+
 #define BITSTREAM_READER_LE
 #include "avcodec.h"
 #include "get_bits.h"
 #include "internal.h"
 
-
-static const uint16_t code_tab[16][2] = {
-    { 0x17F, 9 }, { 0xBF, 8 }, { 0x5F, 7 }, { 0x2F, 6 }, { 0x17, 5 }, { 0x0B, 4 }, { 0x005, 3 },
-    { 0x000, 1 },
-    { 0x01, 3 }, { 0x03, 4 }, { 0x07, 5 }, { 0x0F, 6 }, { 0x1F, 7 }, { 0x3F, 8 }, { 0x07F, 9 }, { 0xFF, 8 }
+static const uint8_t code_tab[16][2] = {
+    {  7, 1 }, {  8, 3 }, {  6, 3 }, { 9, 4 }, {  5, 4 }, { 10, 5 }, {  4, 5 },
+    { 11, 6 }, {  3, 6 }, { 12, 7 }, { 2, 7 }, { 13, 8 }, {  1, 8 }, { 14, 9 },
+    {  0, 9 }, { 15, 8 }
 };
 
 #define CODE_VLC_BITS 9
@@ -44,10 +45,10 @@ static inline int wnv1_get_code(GetBitContext *gb, int shift, int base_value)
 {
     int v = get_vlc2(gb, code_vlc.table, CODE_VLC_BITS, 1);
 
-    if (v == 15)
+    if (v == 8)
         return get_bits(gb, 8 - shift) << shift;
     else
-        return base_value + ((v - 7U) << shift);
+        return base_value + v * (1 << shift);
 }
 
 static int decode_frame(AVCodecContext *avctx,
@@ -113,17 +114,21 @@ static int decode_frame(AVCodecContext *avctx,
     return buf_size;
 }
 
+static av_cold void wnv1_init_static(void)
+{
+    INIT_VLC_STATIC_FROM_LENGTHS(&code_vlc, CODE_VLC_BITS, 16,
+                                 &code_tab[0][1], 2,
+                                 &code_tab[0][0], 2, 1,
+                                 -7, INIT_VLC_OUTPUT_LE, 1 << CODE_VLC_BITS);
+}
+
 static av_cold int decode_init(AVCodecContext *avctx)
 {
-    static VLC_TYPE code_table[1 << CODE_VLC_BITS][2];
+    static AVOnce init_static_once = AV_ONCE_INIT;
 
     avctx->pix_fmt = AV_PIX_FMT_YUV422P;
 
-    code_vlc.table           = code_table;
-    code_vlc.table_allocated = 1 << CODE_VLC_BITS;
-    init_vlc(&code_vlc, CODE_VLC_BITS, 16,
-             &code_tab[0][1], 4, 2,
-             &code_tab[0][0], 4, 2, INIT_VLC_USE_NEW_STATIC | INIT_VLC_LE);
+    ff_thread_once(&init_static_once, wnv1_init_static);
 
     return 0;
 }
@@ -136,4 +141,5 @@ AVCodec ff_wnv1_decoder = {
     .init           = decode_init,
     .decode         = decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

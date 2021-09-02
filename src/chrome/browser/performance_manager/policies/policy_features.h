@@ -6,8 +6,9 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/allocator/buildflags.h"
 #endif
 
@@ -22,7 +23,7 @@ namespace features {
 extern const base::Feature kEmptyWorkingSet;
 #endif  // defined(OS_WIN)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 // The trim on Memory Pressure feature will trim a process nodes working set
 // according to the parameters below.
@@ -112,55 +113,7 @@ extern const base::FeatureParam<int> kDynamicTuningTimeSec;
 extern const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec;
 #endif  // BUILDFLAG(USE_TCMALLOC)
 
-#endif  // defined(OS_CHROMEOS)
-
-#if !defined(OS_ANDROID)
-// Enables freezing pages directly from PerformanceManager rather than via
-// TabManager.
-extern const base::Feature kPageFreezingFromPerformanceManager;
-
-// Enables urgent discarding of pages directly from PerformanceManager rather
-// than via TabManager.
-extern const base::Feature kUrgentDiscardingFromPerformanceManager;
-
-// The discard strategy to use.
-// Integer values are specified to allow conversion from the integer value in
-// the DiscardStrategy feature param.
-enum class DiscardStrategy : int {
-  // Discards the least recently used tab among the eligible ones. This is the
-  // default strategy.
-  LRU = 0,
-  // Discard the tab with the biggest resident set among the eligible ones.
-  BIGGEST_RSS = 1,
-};
-
-class UrgentDiscardingParams {
- public:
-  ~UrgentDiscardingParams();
-
-  static UrgentDiscardingParams GetParams();
-
-  DiscardStrategy discard_strategy() const { return discard_strategy_; }
-
-  static constexpr base::FeatureParam<int> kDiscardStrategy{
-      &features::kUrgentDiscardingFromPerformanceManager, "DiscardStrategy",
-      static_cast<int>(DiscardStrategy::LRU)};
-
- private:
-  UrgentDiscardingParams();
-  UrgentDiscardingParams(const UrgentDiscardingParams& rhs);
-
-  DiscardStrategy discard_strategy_;
-};
-
-// Enable background tab loading of pages (restored via session restore)
-// directly from Performance Manager rather than via TabLoader.
-extern const base::Feature kBackgroundTabLoadingFromPerformanceManager;
-
-// Feature that controls whether or not tabs should be automatically discarded
-// when the total PMF is too high.
-extern const base::Feature kHighPMFDiscardPolicy;
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace features
 }  // namespace performance_manager

@@ -89,6 +89,9 @@ void GrGpuResource::dumpMemoryStatisticsPriv(SkTraceMemoryDump* traceMemoryDump,
     if (this->isPurgeable()) {
         traceMemoryDump->dumpNumericValue(resourceName.c_str(), "purgeable_size", "bytes", size);
     }
+    if (traceMemoryDump->shouldDumpWrappedObjects()) {
+        traceMemoryDump->dumpWrappedState(resourceName.c_str(), fRefsWrappedObjects);
+    }
 
     this->setMemoryBacking(traceMemoryDump, resourceName);
 }
@@ -158,21 +161,18 @@ void GrGpuResource::setUniqueKey(const GrUniqueKey& key) {
     get_resource_cache(fGpu)->resourceAccess().changeUniqueKey(this, key);
 }
 
-void GrGpuResource::notifyRefCntWillBeZero() const {
-    GrGpuResource* mutableThis = const_cast<GrGpuResource*>(this);
-    mutableThis->willRemoveLastRef();
-}
-
-void GrGpuResource::notifyRefCntIsZero() const {
+void GrGpuResource::notifyARefCntIsZero(LastRemovedRef removedRef) const {
     if (this->wasDestroyed()) {
-        // We've already been removed from the cache. Goodbye cruel world!
-        delete this;
+        if (this->hasNoCommandBufferUsages() && !this->hasRef()) {
+            // We've already been removed from the cache. Goodbye cruel world!
+            delete this;
+        }
         return;
     }
 
     GrGpuResource* mutableThis = const_cast<GrGpuResource*>(this);
 
-    get_resource_cache(fGpu)->resourceAccess().notifyRefCntReachedZero(mutableThis);
+    get_resource_cache(fGpu)->resourceAccess().notifyARefCntReachedZero(mutableThis, removedRef);
 }
 
 void GrGpuResource::removeScratchKey() {

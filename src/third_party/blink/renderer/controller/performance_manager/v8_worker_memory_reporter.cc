@@ -9,7 +9,6 @@
 
 #include "base/check.h"
 #include "base/time/time.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory_breakdown.h"
 #include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_controller.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
@@ -40,6 +39,14 @@ const base::TimeDelta V8WorkerMemoryReporter::kTimeout =
     base::TimeDelta::FromSeconds(60);
 
 namespace {
+
+// TODO(906991): Remove this once PlzDedicatedWorker ships. Until then
+// the browser does not know URLs of dedicated workers, so we pass them
+// together with the measurement result. We limit the max length of the
+// URLs to reduce memory allocations and the traffic between the renderer
+// and the browser processes.
+constexpr size_t kMaxReportedUrlLength = 2000;
+
 // This delegate is provided to v8::Isolate::MeasureMemory API.
 // V8 calls MeasurementComplete with the measurement result.
 //
@@ -65,7 +72,7 @@ class WorkerMeasurementDelegate : public v8::MeasureMemoryDelegate {
 
  private:
   void NotifyMeasurementSuccess(
-      V8WorkerMemoryReporter::WorkerMemoryUsage memory_usage);
+      std::unique_ptr<V8WorkerMemoryReporter::WorkerMemoryUsage> memory_usage);
   void NotifyMeasurementFailure();
   base::WeakPtr<V8WorkerMemoryReporter> worker_memory_reporter_;
   WorkerThread* worker_thread_;
@@ -92,8 +99,17 @@ void WorkerMeasurementDelegate::MeasurementComplete(
   for (auto& context_size : context_sizes) {
     bytes += context_size.second;
   }
-  NotifyMeasurementSuccess(V8WorkerMemoryReporter::WorkerMemoryUsage{
-      To<WorkerGlobalScope>(global_scope)->GetWorkerToken(), bytes});
+  auto* worker_global_scope = To<WorkerGlobalScope>(global_scope);
+  auto memory_usage =
+      std::make_unique<V8WorkerMemoryReporter::WorkerMemoryUsage>();
+  memory_usage->token = worker_global_scope->GetWorkerToken();
+  memory_usage->bytes = bytes;
+  if (worker_global_scope->IsUrlValid() &&
+      worker_global_scope->Url().GetString().length() < kMaxReportedUrlLength) {
+    // Copy the URL to send it over to the main thread.
+    memory_usage->url = worker_global_scope->Url().Copy();
+  }
+  NotifyMeasurementSuccess(std::move(memory_usage));
 }
 
 void WorkerMeasurementDelegate::NotifyMeasurementFailure() {
@@ -105,11 +121,11 @@ void WorkerMeasurementDelegate::NotifyMeasurementFailure() {
 }
 
 void WorkerMeasurementDelegate::NotifyMeasurementSuccess(
-    V8WorkerMemoryReporter::WorkerMemoryUsage memory_usage) {
+    std::unique_ptr<V8WorkerMemoryReporter::WorkerMemoryUsage> memory_usage) {
   DCHECK(worker_thread_->IsCurrentThread());
   DCHECK(!did_notify_);
   V8WorkerMemoryReporter::NotifyMeasurementSuccess(
-      worker_thread_, worker_memory_reporter_, memory_usage);
+      worker_thread_, worker_memory_reporter_, std::move(memory_usage));
   did_notify_ = true;
 }
 
@@ -170,12 +186,12 @@ void V8WorkerMemoryReporter::StartMeasurement(
 void V8WorkerMemoryReporter::NotifyMeasurementSuccess(
     WorkerThread* worker_thread,
     base::WeakPtr<V8WorkerMemoryReporter> worker_memory_reporter,
-    WorkerMemoryUsage memory_usage) {
+    std::unique_ptr<WorkerMemoryUsage> memory_usage) {
   DCHECK(worker_thread->IsCurrentThread());
   PostCrossThreadTask(
       *Thread::MainThread()->GetTaskRunner(), FROM_HERE,
       CrossThreadBindOnce(&V8WorkerMemoryReporter::OnMeasurementSuccess,
-                          worker_memory_reporter, memory_usage));
+                          worker_memory_reporter, std::move(memory_usage)));
 }
 
 // static
@@ -201,11 +217,11 @@ void V8WorkerMemoryReporter::OnMeasurementFailure() {
 }
 
 void V8WorkerMemoryReporter::OnMeasurementSuccess(
-    WorkerMemoryUsage memory_usage) {
+    std::unique_ptr<WorkerMemoryUsage> memory_usage) {
   DCHECK(IsMainThread());
   if (state_ == State::kDone)
     return;
-  result_.workers.emplace_back(memory_usage);
+  result_.workers.emplace_back(*memory_usage);
   ++success_count_;
   if (success_count_ + failure_count_ == worker_count_) {
     InvokeCallback();
@@ -232,52 +248,6 @@ void V8WorkerMemoryReporter::InvokeCallback() {
   DCHECK_EQ(state_, State::kWaiting);
   std::move(callback_).Run(std::move(result_));
   state_ = State::kDone;
-}
-
-namespace {
-
-// Used by the performance.measureMemory Web API. It forwards the incoming
-// memory measurement request to V8WorkerMemoryReporter and adapts the result
-// to match the format of the Web API.
-//
-// It will be removed in the future when performance.measureMemory switches
-// to a mojo-based implementation that queries PerformanceManager in the
-// browser process.
-class WebMemoryReporter : public MeasureMemoryController::V8MemoryReporter {
-  void GetMemoryUsage(MeasureMemoryController::ResultCallback callback,
-                      v8::MeasureMemoryExecution execution) override {
-    V8WorkerMemoryReporter::GetMemoryUsage(
-        WTF::Bind(&WebMemoryReporter::ForwardResults, std::move(callback)),
-        execution);
-  }
-
-  // Adapts the result to match the format expected by MeasureMemoryController.
-  static void ForwardResults(MeasureMemoryController::ResultCallback callback,
-                             const V8WorkerMemoryReporter::Result& result) {
-    HeapVector<Member<MeasureMemoryBreakdown>> new_result;
-    const String kDedicatedWorkerGlobalScope("DedicatedWorkerGlobalScope");
-    const String kJS("JS");
-    const Vector<String> kWorkerMemoryTypes = {kDedicatedWorkerGlobalScope,
-                                               kJS};
-    const Vector<String> kEmptyAttribution = {};
-    for (const auto& worker : result.workers) {
-      if (worker.token.Is<DedicatedWorkerToken>()) {
-        MeasureMemoryBreakdown* entry = MeasureMemoryBreakdown::Create();
-        entry->setBytes(worker.bytes);
-        entry->setUserAgentSpecificTypes(kWorkerMemoryTypes);
-        entry->setAttribution(kEmptyAttribution);
-        new_result.push_back(entry);
-      }
-    }
-    std::move(callback).Run(new_result);
-  }
-};
-
-}  // anonymous namespace
-
-void V8WorkerMemoryReporter::RegisterWebMemoryReporter() {
-  MeasureMemoryController::SetDedicatedWorkerMemoryReporter(
-      new WebMemoryReporter());
 }
 
 }  // namespace blink

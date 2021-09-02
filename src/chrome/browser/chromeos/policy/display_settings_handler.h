@@ -11,7 +11,7 @@
 #include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -99,8 +99,7 @@ class DisplaySettingsHandler : public ash::mojom::CrosDisplayConfigObserver {
   std::vector<std::unique_ptr<DisplaySettingsPolicyHandler>> handlers_;
   mojo::AssociatedReceiver<ash::mojom::CrosDisplayConfigObserver>
       cros_display_config_observer_receiver_{this};
-  std::vector<std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>>
-      settings_observers_;
+  std::vector<base::CallbackListSubscription> settings_subscriptions_;
   bool started_ = false;
 
   // Must be the last member.

@@ -13,11 +13,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_frame_host.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
+#include "extensions/common/extension_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -31,6 +32,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -52,7 +54,8 @@ class WebRequestProxyingURLLoaderFactory
     InProgressRequest(
         WebRequestProxyingURLLoaderFactory* factory,
         uint64_t request_id,
-        int32_t routing_id,
+        int32_t view_routing_id,
+        int32_t frame_routing_id,
         int32_t network_service_request_id,
         uint32_t options,
         ukm::SourceIdObj ukm_source_id,
@@ -63,6 +66,7 @@ class WebRequestProxyingURLLoaderFactory
     // For CORS preflights
     InProgressRequest(WebRequestProxyingURLLoaderFactory* factory,
                       uint64_t request_id,
+                      int32_t frame_routing_id,
                       const network::ResourceRequest& request);
     ~InProgressRequest() override;
 
@@ -73,13 +77,15 @@ class WebRequestProxyingURLLoaderFactory
         const std::vector<std::string>& removed_headers,
         const net::HttpRequestHeaders& modified_headers,
         const net::HttpRequestHeaders& modified_cors_exempt_headers,
-        const base::Optional<GURL>& new_url) override;
+        const absl::optional<GURL>& new_url) override;
     void SetPriority(net::RequestPriority priority,
                      int32_t intra_priority_value) override;
     void PauseReadingBodyFromNet() override;
     void ResumeReadingBodyFromNet() override;
 
     // network::mojom::URLLoaderClient:
+    void OnReceiveEarlyHints(
+        network::mojom::EarlyHintsPtr early_hints) override;
     void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
     void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                            network::mojom::URLResponseHeadPtr head) override;
@@ -166,19 +172,24 @@ class WebRequestProxyingURLLoaderFactory
                         bool is_navigation_request);
     void HandleBeforeRequestRedirect();
 
+    network::URLLoaderCompletionStatus CreateURLLoaderCompletionStatus(
+        int error_code,
+        bool collapse_initiator = false);
+
     WebRequestProxyingURLLoaderFactory* const factory_;
     network::ResourceRequest request_;
-    const base::Optional<url::Origin> original_initiator_;
+    const absl::optional<url::Origin> original_initiator_;
     const uint64_t request_id_ = 0;
     const int32_t network_service_request_id_ = 0;
-    const int32_t routing_id_ = 0;
+    const int32_t view_routing_id_ = MSG_ROUTING_NONE;
+    const int32_t frame_routing_id_ = MSG_ROUTING_NONE;
     const uint32_t options_ = 0;
     const ukm::SourceIdObj ukm_source_id_;
     const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
     mojo::Receiver<network::mojom::URLLoader> proxied_loader_receiver_;
     mojo::Remote<network::mojom::URLLoaderClient> target_client_;
 
-    base::Optional<WebRequestInfo> info_;
+    absl::optional<WebRequestInfo> info_;
 
     mojo::Receiver<network::mojom::URLLoaderClient> proxied_client_receiver_{
         this};
@@ -195,7 +206,7 @@ class WebRequestProxyingURLLoaderFactory
 
     // Holds any provided auth credentials through the extent of the request's
     // lifetime.
-    base::Optional<net::AuthCredentials> auth_credentials_;
+    absl::optional<net::AuthCredentials> auth_credentials_;
 
     int num_redirects_ = 0;
 
@@ -207,7 +218,7 @@ class WebRequestProxyingURLLoaderFactory
     // network::mojom::TrustedURLLoaderHeaderClient binding on the factory. This
     // is only set to true if there is a listener that needs to view or modify
     // headers set in the network process.
-    bool has_any_extra_headers_listeners_ = false;
+    const bool has_any_extra_headers_listeners_ = false;
     bool current_request_uses_header_client_ = false;
     OnBeforeSendHeadersCallback on_before_send_headers_callback_;
     OnHeadersReceivedCallback on_headers_received_callback_;
@@ -225,7 +236,7 @@ class WebRequestProxyingURLLoaderFactory
       std::vector<std::string> removed_headers;
       net::HttpRequestHeaders modified_headers;
       net::HttpRequestHeaders modified_cors_exempt_headers;
-      base::Optional<GURL> new_url;
+      absl::optional<GURL> new_url;
 
       DISALLOW_COPY_AND_ASSIGN(FollowRedirectParams);
     };
@@ -240,9 +251,11 @@ class WebRequestProxyingURLLoaderFactory
   WebRequestProxyingURLLoaderFactory(
       content::BrowserContext* browser_context,
       int render_process_id,
+      int frame_routing_id,
+      int view_routing_id,
       WebRequestAPI::RequestIDGenerator* request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
-      base::Optional<int64_t> navigation_id,
+      absl::optional<int64_t> navigation_id,
       ukm::SourceIdObj ukm_source_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -257,9 +270,11 @@ class WebRequestProxyingURLLoaderFactory
   static void StartProxying(
       content::BrowserContext* browser_context,
       int render_process_id,
+      int frame_routing_id,
+      int view_routing_id,
       WebRequestAPI::RequestIDGenerator* request_id_generator,
       std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data,
-      base::Optional<int64_t> navigation_id,
+      absl::optional<int64_t> navigation_id,
       ukm::SourceIdObj ukm_source_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -272,7 +287,6 @@ class WebRequestProxyingURLLoaderFactory
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
@@ -315,9 +329,11 @@ class WebRequestProxyingURLLoaderFactory
 
   content::BrowserContext* const browser_context_;
   const int render_process_id_;
+  const int frame_routing_id_;
+  const int view_routing_id_;
   WebRequestAPI::RequestIDGenerator* const request_id_generator_;
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data_;
-  base::Optional<int64_t> navigation_id_;
+  absl::optional<int64_t> navigation_id_;
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> proxy_receivers_;
   mojo::Remote<network::mojom::URLLoaderFactory> target_factory_;
   mojo::Receiver<network::mojom::TrustedURLLoaderHeaderClient>
@@ -339,8 +355,7 @@ class WebRequestProxyingURLLoaderFactory
   std::map<int32_t, uint64_t> network_request_id_to_web_request_id_;
 
   // Notifies the proxy that the browser context has been shutdown.
-  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
-      shutdown_notifier_;
+  base::CallbackListSubscription shutdown_notifier_subscription_;
 
   base::WeakPtrFactory<WebRequestProxyingURLLoaderFactory> weak_factory_{this};
 

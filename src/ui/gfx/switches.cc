@@ -16,10 +16,6 @@ const char kAnimationDurationScale[] = "animation-duration-scale";
 const char kDisableFontSubpixelPositioning[] =
     "disable-font-subpixel-positioning";
 
-// Disable a NV12 format buffer allocation with
-// gfx::BufferUsage::SCANOUT_CPU_READ_WRITE usage.
-const char kDisableYuv420Biplanar[] = "disable-yuv420-biplanar";
-
 // Enable native CPU-mappable GPU memory buffer support on Linux.
 const char kEnableNativeGpuMemoryBuffers[] = "enable-native-gpu-memory-buffers";
 
@@ -31,3 +27,16 @@ const char kForcePrefersReducedMotion[] = "force-prefers-reduced-motion";
 const char kHeadless[] = "headless";
 
 }  // namespace switches
+
+namespace features {
+
+const base::Feature kOddHeightMultiPlanarBuffers {
+  "OddHeightMultiPlanarBuffers",
+#if defined(OS_MAC)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+}  // namespace features

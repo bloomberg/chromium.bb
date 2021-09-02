@@ -16,9 +16,10 @@
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "chromeos/ui/frame/default_frame_header.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/compositor/layer.h"
 #include "ui/views/controls/image_view.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
@@ -76,7 +77,7 @@ HeaderView::HeaderView(views::Widget* target_widget,
   UpdateBackButton();
 
   frame_header_->UpdateFrameColors();
-  window_observer_.Add(window);
+  window_observation_.Observe(window);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
 
@@ -213,7 +214,8 @@ void HeaderView::OnWindowPropertyChanged(aura::Window* window,
 }
 
 void HeaderView::OnWindowDestroying(aura::Window* window) {
-  window_observer_.Remove(window);
+  DCHECK(window_observation_.IsObservingSource(window));
+  window_observation_.Reset();
   // A HeaderView may outlive the target widget.
   target_widget_ = nullptr;
 }

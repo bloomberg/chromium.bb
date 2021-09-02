@@ -22,7 +22,7 @@ const std::vector<PermissionType>& GetAllPermissionTypes() {
         std::vector<PermissionType> all_types;
         all_types.reserve(NUM_TYPES - 4);
         for (int i = 1; i < NUM_TYPES; ++i) {
-          if (i == 2 || i == 14 || i == 15)  // Skip removed entries.
+          if (i == 2 || i == 11 || i == 14 || i == 15)  // Skip removed entries.
             continue;
           all_types.push_back(static_cast<PermissionType>(i));
         }
@@ -31,7 +31,7 @@ const std::vector<PermissionType>& GetAllPermissionTypes() {
   return *kAllPermissionTypes;
 }
 
-base::Optional<PermissionType> PermissionDescriptorToPermissionType(
+absl::optional<PermissionType> PermissionDescriptorToPermissionType(
     const PermissionDescriptorPtr& descriptor) {
   switch (descriptor->name) {
     case PermissionName::GEOLOCATION:
@@ -50,7 +50,7 @@ base::Optional<PermissionType> PermissionDescriptorToPermissionType(
       return PermissionType::PROTECTED_MEDIA_IDENTIFIER;
 #else
       NOTIMPLEMENTED();
-      return base::nullopt;
+      return absl::nullopt;
 #endif  // defined(ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION)
     case PermissionName::DURABLE_STORAGE:
       return PermissionType::DURABLE_STORAGE;
@@ -99,10 +99,14 @@ base::Optional<PermissionType> PermissionDescriptorToPermissionType(
       return PermissionType::WINDOW_PLACEMENT;
     case PermissionName::FONT_ACCESS:
       return PermissionType::FONT_ACCESS;
+    case PermissionName::DISPLAY_CAPTURE:
+      return PermissionType::DISPLAY_CAPTURE;
+    case PermissionName::FILE_HANDLING:
+      return PermissionType::FILE_HANDLING;
   }
 
   NOTREACHED();
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 }  // namespace content

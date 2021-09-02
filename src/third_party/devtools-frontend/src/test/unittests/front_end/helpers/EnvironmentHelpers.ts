@@ -2,34 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import * as Common from '../../../../front_end/common/common.js';
-import * as i18n from '../../../../front_end/i18n/i18n.js';
-import * as Root from '../../../../front_end/root/root.js';
-import * as SDK from '../../../../front_end/sdk/sdk.js';
+import * as Common from '../../../../front_end/core/common/common.js';
+import * as Host from '../../../../front_end/core/host/host.js';
+import * as i18n from '../../../../front_end/core/i18n/i18n.js';
+import * as Root from '../../../../front_end/core/root/root.js';
+import * as SDK from '../../../../front_end/core/sdk/sdk.js';
 
-function exposeLSIfNecessary() {
-  // SDK.ResourceTree model has to exist to avoid a circular dependency, thus it
-  // needs to be placed on the global if it is not already there.
-  const globalObject = (globalThis as unknown as {ls: Function});
-  globalObject.ls = globalObject.ls || Common.ls;
-}
+import type * as UIModule from '../../../../front_end/ui/legacy/legacy.js';
 
-// Initially expose the ls function so that imports that assume its existence
-// don't fail. This side-effect will be undone as part of the deinitialize.
-exposeLSIfNecessary();
+// Don't import UI at this stage because it will fail without
+// the environment. Instead we do the import at the end of the
+// initialization phase.
+let UI: typeof UIModule;
 
 // Expose the locale.
-i18n.i18n.registerLocale('en-US');
+i18n.DevToolsLocale.DevToolsLocale.instance({
+  create: true,
+  data: {
+    navigatorLanguage: 'en-US',
+    settingLanguage: 'en-US',
+    lookupClosestDevToolsLocale: () => 'en-US',
+  },
+});
+
+// Load the strings from the resource file.
+const locale = i18n.DevToolsLocale.DevToolsLocale.instance().locale;
+// proxied call.
+try {
+  await i18n.i18n.fetchAndRegisterLocaleData(locale);
+} catch (error) {
+  // eslint-disable-next-line no-console
+  console.warn('EnvironmentHelper: Loading en-US locale failed', error.message);
+}
 
 let targetManager: SDK.SDKModel.TargetManager;
 
 function initializeTargetManagerIfNecessary() {
-  // SDK.ResourceTree model has to exist to avoid a circular dependency, thus it
-  // needs to be placed on the global if it is not already there.
-  const globalObject = (globalThis as unknown as {SDK: {ResourceTreeModel: SDK.ResourceTreeModel.ResourceTreeModel}});
-  globalObject.SDK = globalObject.SDK || {};
-  globalObject.SDK.ResourceTreeModel = globalObject.SDK.ResourceTreeModel || SDK.ResourceTreeModel.ResourceTreeModel;
-
   // Create the target manager.
   targetManager = targetManager || SDK.SDKModel.TargetManager.instance({forceNew: true});
 }
@@ -39,59 +47,74 @@ export function createTarget({id = 'test', name = 'test', type = SDK.SDKModel.Ty
   return targetManager.createTarget(id, name, type, null);
 }
 
-function createSettingValue(category: string, settingName: string, defaultValue: unknown, settingType = 'boolean') {
-  return {type: 'setting', category, settingName, defaultValue, settingType} as Root.Runtime.RuntimeExtensionDescriptor;
+function createSettingValue(
+    category: Common.Settings.SettingCategory, settingName: string, defaultValue: unknown,
+    settingType = Common.Settings.SettingType.BOOLEAN): Common.Settings.SettingRegistration {
+  return {category, settingName, defaultValue, settingType};
 }
 
-export function initializeGlobalVars({reset = true} = {}) {
-  exposeLSIfNecessary();
+export async function initializeGlobalVars({reset = true} = {}) {
 
   // Create the appropriate settings needed to boot.
-  const extensions = [
-    createSettingValue('Appearance', 'disablePausedStateOverlay', false),
-    createSettingValue('Console', 'customFormatters', false),
-    createSettingValue('Debugger', 'pauseOnCaughtException', false),
-    createSettingValue('Debugger', 'pauseOnExceptionEnabled', false),
-    createSettingValue('Debugger', 'disableAsyncStackTraces', false),
-    createSettingValue('Debugger', 'breakpointsActive', true),
-    createSettingValue('Debugger', 'javaScriptDisabled', false),
-    createSettingValue('Elements', 'showDetailedInspectTooltip', true),
-    createSettingValue('Network', 'cacheDisabled', false),
-    createSettingValue('Rendering', 'avifFormatDisabled', false),
-    createSettingValue('Rendering', 'emulatedCSSMedia', '', 'enum'),
-    createSettingValue('Rendering', 'emulatedCSSMediaFeaturePrefersColorScheme', '', 'enum'),
-    createSettingValue('Rendering', 'emulatedCSSMediaFeaturePrefersReducedMotion', '', 'enum'),
-    createSettingValue('Rendering', 'emulatedCSSMediaFeaturePrefersReducedData', '', 'enum'),
-    createSettingValue('Rendering', 'emulatedVisionDeficiency', '', 'enum'),
-    createSettingValue('Rendering', 'localFontsDisabled', false),
-    createSettingValue('Rendering', 'showPaintRects', false),
-    createSettingValue('Rendering', 'showLayoutShiftRegions', false),
-    createSettingValue('Rendering', 'showAdHighlights', false),
-    createSettingValue('Rendering', 'showDebugBorders', false),
-    createSettingValue('Rendering', 'showFPSCounter', false),
-    createSettingValue('Rendering', 'showScrollBottleneckRects', false),
-    createSettingValue('Rendering', 'showHitTestBorders', false),
-    createSettingValue('Rendering', 'webpFormatDisabled', false),
-    createSettingValue('Sources', 'cssSourceMapsEnabled', true),
-    createSettingValue('Sources', 'jsSourceMapsEnabled', true),
-    createSettingValue('Emulation', 'emulation.touch', '', 'enum'),
-    createSettingValue('Emulation', 'emulation.idleDetection', '', 'enum'),
+  const settings = [
+    createSettingValue(Common.Settings.SettingCategory.APPEARANCE, 'disablePausedStateOverlay', false),
+    createSettingValue(Common.Settings.SettingCategory.CONSOLE, 'customFormatters', false),
+    createSettingValue(Common.Settings.SettingCategory.DEBUGGER, 'pauseOnCaughtException', false),
+    createSettingValue(Common.Settings.SettingCategory.DEBUGGER, 'pauseOnExceptionEnabled', false),
+    createSettingValue(Common.Settings.SettingCategory.DEBUGGER, 'disableAsyncStackTraces', false),
+    createSettingValue(Common.Settings.SettingCategory.DEBUGGER, 'breakpointsActive', true),
+    createSettingValue(Common.Settings.SettingCategory.DEBUGGER, 'javaScriptDisabled', false),
+    createSettingValue(Common.Settings.SettingCategory.DEBUGGER, 'skipContentScripts', false),
+    createSettingValue(
+        Common.Settings.SettingCategory.DEBUGGER, 'skipStackFramesPattern', '', Common.Settings.SettingType.REGEX),
+    createSettingValue(Common.Settings.SettingCategory.ELEMENTS, 'showDetailedInspectTooltip', true),
+    createSettingValue(Common.Settings.SettingCategory.NETWORK, 'cacheDisabled', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'avifFormatDisabled', false),
+    createSettingValue(
+        Common.Settings.SettingCategory.RENDERING, 'emulatedCSSMedia', '', Common.Settings.SettingType.ENUM),
+    createSettingValue(
+        Common.Settings.SettingCategory.RENDERING, 'emulatedCSSMediaFeaturePrefersColorScheme', '',
+        Common.Settings.SettingType.ENUM),
+    createSettingValue(
+        Common.Settings.SettingCategory.RENDERING, 'emulatedCSSMediaFeaturePrefersReducedMotion', '',
+        Common.Settings.SettingType.ENUM),
+    createSettingValue(
+        Common.Settings.SettingCategory.RENDERING, 'emulatedCSSMediaFeaturePrefersReducedData', '',
+        Common.Settings.SettingType.ENUM),
+    createSettingValue(
+        Common.Settings.SettingCategory.RENDERING, 'emulatedCSSMediaFeatureColorGamut', '',
+        Common.Settings.SettingType.ENUM),
+    createSettingValue(
+        Common.Settings.SettingCategory.RENDERING, 'emulatedVisionDeficiency', '', Common.Settings.SettingType.ENUM),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'localFontsDisabled', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showPaintRects', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showLayoutShiftRegions', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showAdHighlights', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showDebugBorders', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showFPSCounter', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showScrollBottleneckRects', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showHitTestBorders', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'showWebVitals', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'webpFormatDisabled', false),
+    createSettingValue(Common.Settings.SettingCategory.RENDERING, 'jpegXlFormatDisabled', false),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'cssSourceMapsEnabled', true),
+    createSettingValue(Common.Settings.SettingCategory.SOURCES, 'jsSourceMapsEnabled', true),
+    createSettingValue(
+        Common.Settings.SettingCategory.EMULATION, 'emulation.touch', '', Common.Settings.SettingType.ENUM),
+    createSettingValue(
+        Common.Settings.SettingCategory.EMULATION, 'emulation.idleDetection', '', Common.Settings.SettingType.ENUM),
+    createSettingValue(Common.Settings.SettingCategory.GRID, 'showGridLineLabels', true),
+    createSettingValue(Common.Settings.SettingCategory.GRID, 'extendGridLines', true),
+    createSettingValue(Common.Settings.SettingCategory.GRID, 'showGridAreas', true),
+    createSettingValue(Common.Settings.SettingCategory.GRID, 'showGridTrackSizes', true),
+    createSettingValue(Common.Settings.SettingCategory.NONE, 'activeKeybindSet', '', Common.Settings.SettingType.ENUM),
+    createSettingValue(Common.Settings.SettingCategory.NONE, 'userShortcuts', [], Common.Settings.SettingType.ARRAY),
+    createSettingValue(
+        Common.Settings.SettingCategory.APPEARANCE, 'help.show-release-note', true,
+        Common.Settings.SettingType.BOOLEAN),
   ];
 
-  // Instantiate the runtime.
-  Root.Runtime.Runtime.instance({
-    forceNew: reset,
-    moduleDescriptors: [{
-      name: 'Test',
-      extensions,
-      dependencies: [],
-      modules: [],
-      scripts: [],
-      resources: [],
-      condition: '',
-      experiment: '',
-    }],
-  });
+  Common.Settings.registerSettingsForTest(settings, reset);
 
   // Instantiate the storage.
   const storageVals = new Map<string, string>();
@@ -99,10 +122,20 @@ export function initializeGlobalVars({reset = true} = {}) {
       {}, (key, value) => storageVals.set(key, value), key => storageVals.delete(key), () => storageVals.clear(),
       'test');
   Common.Settings.Settings.instance({forceNew: reset, globalStorage: storage, localStorage: storage});
+
+  // Dynamically import UI after the rest of the environment is set up, otherwise it will fail.
+  UI = await import('../../../../front_end/ui/legacy/legacy.js');
+  UI.ZoomManager.ZoomManager.instance(
+      {forceNew: true, win: window, frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance});
+
+  // Needed for any context menus which may be created - either in a test or via
+  // rendering a component in the component docs server.
+  UI.GlassPane.GlassPane.setContainer(document.body);
 }
 
-export function deinitializeGlobalVars() {
+export async function deinitializeGlobalVars() {
   // Remove the global SDK.
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   const globalObject = (globalThis as unknown as {SDK?: {}, ls?: {}});
   delete globalObject.SDK;
   delete globalObject.ls;
@@ -111,14 +144,29 @@ export function deinitializeGlobalVars() {
   SDK.SDKModel.TargetManager.removeInstance();
   Root.Runtime.Runtime.removeInstance();
   Common.Settings.Settings.removeInstance();
+  Common.Settings.resetSettings();
+
+  // Protect against the dynamic import not having happened.
+  if (UI) {
+    UI.ZoomManager.ZoomManager.removeInstance();
+    UI.ViewManager.ViewManager.removeInstance();
+  }
 }
 
 export function describeWithEnvironment(title: string, fn: (this: Mocha.Suite) => void, opts: {reset: boolean} = {
   reset: true,
 }) {
   return describe(`env-${title}`, () => {
-    before(() => initializeGlobalVars(opts));
-    after(deinitializeGlobalVars);
+    before(async () => await initializeGlobalVars(opts));
+    after(async () => await deinitializeGlobalVars());
     describe(title, fn);
   });
+}
+
+export function createFakeSetting<T>(name: string, defaultValue: T): Common.Settings.Setting<T> {
+  const storageVals = new Map<string, string>();
+  const storage = new Common.Settings.SettingsStorage(
+      {}, (key, value) => storageVals.set(key, value), key => storageVals.delete(key), () => storageVals.clear(),
+      'test');
+  return new Common.Settings.Setting(name, defaultValue, new Common.ObjectWrapper.ObjectWrapper(), storage);
 }

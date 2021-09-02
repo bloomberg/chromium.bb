@@ -9,8 +9,9 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/view_factory.h"
 #include "ui/views/view.h"
 #include "ui/views/views_export.h"
@@ -41,12 +42,20 @@ class VIEWS_EXPORT ImageView : public View {
   ~ImageView() override;
 
   // Set the image that should be displayed.
-  void SetImage(const gfx::ImageSkia& img);
+  // TODO(pkasting): Change callers to pass an ImageModel and eliminate this.
+  void SetImage(const gfx::ImageSkia& image) {
+    SetImage(ui::ImageModel::FromImageSkia(image));
+  }
 
   // Set the image that should be displayed from a pointer. Reset the image
-  // if the pointer is NULL. The pointer contents is copied in the receiver's
-  // image.
-  void SetImage(const gfx::ImageSkia* image_skia);
+  // if the pointer is NULL.
+  // TODO(pkasting): Change callers to pass an ImageModel and eliminate this.
+  void SetImage(const gfx::ImageSkia* image_skia) {
+    SetImage(image_skia ? *image_skia : gfx::ImageSkia());
+  }
+
+  // Sets the image that should be displayed.
+  void SetImage(const ui::ImageModel& image_model);
 
   // Sets the desired size of the image to be displayed.
   void SetImageSize(const gfx::Size& size);
@@ -58,8 +67,8 @@ class VIEWS_EXPORT ImageView : public View {
   gfx::Rect GetImageBounds() const;
 
   // Returns the image currently displayed, which can be empty if not set.
-  // The returned image is still owned by the ImageView.
-  const gfx::ImageSkia& GetImage() const;
+  // TODO(pkasting): Convert to an ImageModel getter.
+  gfx::ImageSkia GetImage() const;
 
   // Set / Get the horizontal alignment.
   void SetHorizontalAlignment(Alignment ha);
@@ -70,34 +79,39 @@ class VIEWS_EXPORT ImageView : public View {
   Alignment GetVerticalAlignment() const;
 
   // Set / Get the accessible name text.
-  void SetAccessibleName(const base::string16& name);
-  const base::string16& GetAccessibleName() const;
+  void SetAccessibleName(const std::u16string& name);
+  const std::u16string& GetAccessibleName() const;
 
   // Set the tooltip text.
-  void SetTooltipText(const base::string16& tooltip);
-  const base::string16& GetTooltipText() const;
+  void SetTooltipText(const std::u16string& tooltip);
+  const std::u16string& GetTooltipText() const;
 
   // Overridden from View:
   void OnPaint(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  base::string16 GetTooltipText(const gfx::Point& p) const override;
+  std::u16string GetTooltipText(const gfx::Point& p) const override;
   gfx::Size CalculatePreferredSize() const override;
   views::PaintInfo::ScaleType GetPaintScaleType() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void PreferredSizeChanged() override;
+
+ protected:
+  void OnThemeChanged() override;
 
  private:
   friend class ImageViewTest;
 
   void OnPaintImage(gfx::Canvas* canvas);
 
-  // Gets an ImageSkia to paint that has proper rep for |scale|.
+  // Gets an ImageSkia to paint that has proper rep for |scale|. Note that if
+  // there is no existing rep of `scale`, we will utilize the image resize
+  // operation to create one. The resize may be time consuming for a big image.
   gfx::ImageSkia GetPaintImage(float scale);
 
-  // Returns true if |img| is the same as the last image we painted. This is
-  // intended to be a quick check, not exhaustive. In other words it's possible
-  // for this to return false even though the images are in fact equal.
-  bool IsImageEqual(const gfx::ImageSkia& img) const;
+  // Returns true if |image_model| is the same as the last image we painted.
+  // This is intended to be a quick check, not exhaustive. In other words it's
+  // possible for this to return false even though the images are in fact equal.
+  bool IsImageEqual(const ui::ImageModel& image_model) const;
 
   // Recomputes and updates the |image_origin_|.
   void UpdateImageOrigin();
@@ -108,10 +122,10 @@ class VIEWS_EXPORT ImageView : public View {
   gfx::Point image_origin_;
 
   // The current tooltip text.
-  base::string16 tooltip_text_;
+  std::u16string tooltip_text_;
 
   // The current accessible name text.
-  base::string16 accessible_name_;
+  std::u16string accessible_name_;
 
   // Horizontal alignment.
   Alignment horizontal_alignment_ = Alignment::kCenter;
@@ -120,7 +134,7 @@ class VIEWS_EXPORT ImageView : public View {
   Alignment vertical_alignment_ = Alignment::kCenter;
 
   // The underlying image.
-  gfx::ImageSkia image_;
+  ui::ImageModel image_model_;
 
   // Caches the scaled image reps.
   gfx::ImageSkia scaled_image_;
@@ -133,7 +147,7 @@ class VIEWS_EXPORT ImageView : public View {
   void* last_painted_bitmap_pixels_ = nullptr;
 
   // The requested image size.
-  base::Optional<gfx::Size> image_size_;
+  absl::optional<gfx::Size> image_size_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageView);
 };
@@ -162,8 +176,8 @@ BuilderT& SetImage(const gfx::ImageSkia* value) {
 VIEW_BUILDER_PROPERTY(gfx::Size, ImageSize)
 VIEW_BUILDER_PROPERTY(ImageView::Alignment, HorizontalAlignment)
 VIEW_BUILDER_PROPERTY(ImageView::Alignment, VerticalAlignment)
-VIEW_BUILDER_PROPERTY(base::string16, AccessibleName)
-VIEW_BUILDER_PROPERTY(base::string16, TooltipText)
+VIEW_BUILDER_PROPERTY(std::u16string, AccessibleName)
+VIEW_BUILDER_PROPERTY(std::u16string, TooltipText)
 END_VIEW_BUILDER
 
 }  // namespace views

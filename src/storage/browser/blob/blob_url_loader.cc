@@ -155,7 +155,7 @@ void BlobURLLoader::Start(const std::string& method,
   options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
   options.element_num_bytes = 1;
   options.capacity_num_bytes = network::kDataPipeDefaultAllocationSize;
-  if (mojo::CreateDataPipe(&options, &producer_handle, &consumer_handle) !=
+  if (mojo::CreateDataPipe(&options, producer_handle, consumer_handle) !=
       MOJO_RESULT_OK) {
     OnComplete(net::ERR_INSUFFICIENT_RESOURCES, 0);
     delete this;
@@ -171,7 +171,7 @@ void BlobURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    const base::Optional<GURL>& new_url) {
+    const absl::optional<GURL>& new_url) {
   NOTREACHED();
 }
 
@@ -192,11 +192,11 @@ MojoBlobReader::Delegate::RequestSideData BlobURLLoader::DidCalculateSize(
     return REQUEST_SIDE_DATA;
   }
 
-  HeadersCompleted(status_code, content_size, base::nullopt);
+  HeadersCompleted(status_code, content_size, absl::nullopt);
   return DONT_REQUEST_SIDE_DATA;
 }
 
-void BlobURLLoader::DidReadSideData(base::Optional<mojo_base::BigBuffer> data) {
+void BlobURLLoader::DidReadSideData(absl::optional<mojo_base::BigBuffer> data) {
   HeadersCompleted(net::HTTP_OK, total_size_, std::move(data));
 }
 
@@ -213,7 +213,7 @@ void BlobURLLoader::OnComplete(net::Error error_code,
 void BlobURLLoader::HeadersCompleted(
     net::HttpStatusCode status_code,
     uint64_t content_size,
-    base::Optional<mojo_base::BigBuffer> metadata) {
+    absl::optional<mojo_base::BigBuffer> metadata) {
   auto response = network::mojom::URLResponseHead::New();
   response->content_length = 0;
   if (status_code == net::HTTP_OK || status_code == net::HTTP_PARTIAL_CONTENT)

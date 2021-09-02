@@ -13,6 +13,8 @@ on Windows:
   https://www.microsoft.com/en-us/download/details.aspx?id=14632
 
 Install selenium via pip: `pip install selenium`
+Selenium 4 is required for Edge. Selenium 4.00-alpha5 or later is recommended:
+  `pip install selenium==4.0.0a5`
 
 And finally install the web drivers for Chrome (and Edge if needed):
   http://chromedriver.chromium.org/downloads
@@ -23,6 +25,10 @@ Sample runs:
 python measure_power_intel.py --browser=canary --duration=10 --delay=5
   --verbose --url="https://www.youtube.com/watch?v=0XdS37Re1XQ"
   --extra-browser-args="--no-sandbox"
+
+Supported browsers (--browser=xxx): 'stable', 'beta', 'dev', 'canary',
+  'chromium', 'edge', and path_to_exe_file.
+For Edge from insider channels (beta, dev, can), use path_to_exe_file.
 
 It is recommended to test with optimized builds of Chromium e.g. these GN args:
 
@@ -39,16 +45,16 @@ power source some time before measuring.  See "Computer setup" section here:
   https://microsoftedge.github.io/videotest/2017-04/WebdriverMethodology.html
 """
 
+from __future__ import print_function
+
 import csv
 import datetime
 import logging
 import optparse
 import os
 import shutil
-import subprocess
 import sys
 import tempfile
-import time
 
 try:
   from selenium import webdriver
@@ -146,8 +152,17 @@ def LocateBrowser(options_browser):
 
 def CreateWebDriver(browser, user_data_dir, url, fullscreen,
                     extra_browser_args):
-  if browser == 'edge':
-    driver = webdriver.Edge()
+  if browser == 'edge' or browser.endswith('msedge.exe'):
+    options = webdriver.EdgeOptions()
+    # Set use_chromium to true or an error will be triggered that the latest
+    # MSEdgeDriver doesn't support an older version (non-chrome based) of
+    # MSEdge.
+    options.use_chromium = True
+    options.binary_location = browser
+    for arg in extra_browser_args:
+      options.add_argument(arg)
+    logging.debug(" ".join(options.arguments))
+    driver = webdriver.Edge(options=options)
   else:
     options = webdriver.ChromeOptions()
     options.binary_location = browser
@@ -290,11 +305,11 @@ def main(argv):
   for run in range(1, options.repeat + 1):
     logfile = ipg_utils.GenerateIPGLogFilename(log_prefix, options.logdir, run,
                                                options.repeat, True)
-    print "Iteration #%d out of %d" % (run, options.repeat)
+    print("Iteration #%d out of %d" % (run, options.repeat))
     results = MeasurePowerOnce(browser, logfile, options.duration,
                                options.delay, options.resolution, options.url,
                                options.fullscreen, extra_browser_args)
-    print results
+    print(results)
     all_results.append(results)
 
   now = datetime.datetime.now()

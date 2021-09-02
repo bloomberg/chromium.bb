@@ -9,25 +9,25 @@
 
 #include <vector>
 
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
 namespace mojo {
 namespace internal {
 
-inline base::StringPiece16 TruncateString16(const base::string16& string) {
+inline base::StringPiece16 TruncateString16(const std::u16string& string) {
   // We restrict the maximum length for all the strings inside the Manifest
   // when it is sent over Mojo. The renderer process truncates the strings
   // before sending the Manifest and the browser process validates that.
   return base::StringPiece16(string).substr(0, 4 * 1024);
 }
 
-inline base::Optional<base::StringPiece16> TruncateOptionalString16(
-    const base::Optional<base::string16>& string) {
+inline absl::optional<base::StringPiece16> TruncateOptionalString16(
+    const absl::optional<std::u16string>& string) {
   if (!string)
-    return base::nullopt;
+    return absl::nullopt;
 
   return TruncateString16(*string);
 }
@@ -45,27 +45,22 @@ struct BLINK_COMMON_EXPORT
     *manifest = ::blink::Manifest();
   }
 
-  static base::Optional<base::StringPiece16> name(
+  static absl::optional<base::StringPiece16> name(
       const ::blink::Manifest& manifest) {
     return internal::TruncateOptionalString16(manifest.name);
   }
 
-  static base::Optional<base::StringPiece16> short_name(
+  static absl::optional<base::StringPiece16> short_name(
       const ::blink::Manifest& manifest) {
     return internal::TruncateOptionalString16(manifest.short_name);
   }
 
-  static base::Optional<base::StringPiece16> description(
+  static absl::optional<base::StringPiece16> description(
       const ::blink::Manifest& manifest) {
     return internal::TruncateOptionalString16(manifest.description);
   }
 
-  static const std::vector<base::string16>& categories(
-      const ::blink::Manifest& manifest) {
-    return manifest.categories;
-  }
-
-  static base::Optional<base::StringPiece16> gcm_sender_id(
+  static absl::optional<base::StringPiece16> gcm_sender_id(
       const ::blink::Manifest& manifest) {
     return internal::TruncateOptionalString16(manifest.gcm_sender_id);
   }
@@ -123,7 +118,7 @@ struct BLINK_COMMON_EXPORT
     return manifest.shortcuts;
   }
 
-  static const base::Optional<::blink::Manifest::ShareTarget>& share_target(
+  static const absl::optional<::blink::Manifest::ShareTarget>& share_target(
       const ::blink::Manifest& manifest) {
     return manifest.share_target;
   }
@@ -143,6 +138,11 @@ struct BLINK_COMMON_EXPORT
     return manifest.url_handlers;
   }
 
+  static const absl::optional<::blink::Manifest::NoteTaking>& note_taking(
+      const ::blink::Manifest& manifest) {
+    return manifest.note_taking;
+  }
+
   static const std::vector<::blink::Manifest::RelatedApplication>&
   related_applications(const ::blink::Manifest& manifest) {
     return manifest.related_applications;
@@ -150,6 +150,11 @@ struct BLINK_COMMON_EXPORT
 
   static bool prefer_related_applications(const ::blink::Manifest& manifest) {
     return manifest.prefer_related_applications;
+  }
+
+  static blink::mojom::CaptureLinks capture_links(
+      const ::blink::Manifest& manifest) {
+    return manifest.capture_links;
   }
 
   static bool Read(blink::mojom::ManifestDataView data, ::blink::Manifest* out);
@@ -190,12 +195,12 @@ struct BLINK_COMMON_EXPORT
     return internal::TruncateString16(shortcut.name);
   }
 
-  static base::Optional<base::StringPiece16> short_name(
+  static absl::optional<base::StringPiece16> short_name(
       const ::blink::Manifest::ShortcutItem& shortcut) {
     return internal::TruncateOptionalString16(shortcut.short_name);
   }
 
-  static base::Optional<base::StringPiece16> description(
+  static absl::optional<base::StringPiece16> description(
       const ::blink::Manifest::ShortcutItem& shortcut) {
     return internal::TruncateOptionalString16(shortcut.description);
   }
@@ -217,7 +222,7 @@ template <>
 struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::ManifestRelatedApplicationDataView,
                  ::blink::Manifest::RelatedApplication> {
-  static base::Optional<base::StringPiece16> platform(
+  static absl::optional<base::StringPiece16> platform(
       const ::blink::Manifest::RelatedApplication& related_application) {
     return internal::TruncateOptionalString16(related_application.platform);
   }
@@ -227,7 +232,7 @@ struct BLINK_COMMON_EXPORT
     return related_application.url;
   }
 
-  static base::Optional<base::StringPiece16> id(
+  static absl::optional<base::StringPiece16> id(
       const ::blink::Manifest::RelatedApplication& related_application) {
     return internal::TruncateOptionalString16(related_application.id);
   }
@@ -249,7 +254,7 @@ struct BLINK_COMMON_EXPORT
       const ::blink::Manifest::FileFilter& share_target_file) {
     std::vector<base::StringPiece16> accept_types;
 
-    for (const base::string16& accept_type : share_target_file.accept)
+    for (const std::u16string& accept_type : share_target_file.accept)
       accept_types.push_back(internal::TruncateString16(accept_type));
 
     return accept_types;
@@ -268,6 +273,11 @@ struct BLINK_COMMON_EXPORT
     return url_handler.origin;
   }
 
+  static bool has_origin_wildcard(
+      const ::blink::Manifest::UrlHandler& url_handler) {
+    return url_handler.has_origin_wildcard;
+  }
+
   static bool Read(blink::mojom::ManifestUrlHandlerDataView data,
                    ::blink::Manifest::UrlHandler* out);
 };
@@ -276,15 +286,15 @@ template <>
 struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::ManifestShareTargetParamsDataView,
                  ::blink::Manifest::ShareTargetParams> {
-  static const base::Optional<base::StringPiece16> text(
+  static const absl::optional<base::StringPiece16> text(
       const ::blink::Manifest::ShareTargetParams& share_target_params) {
     return internal::TruncateOptionalString16(share_target_params.text);
   }
-  static const base::Optional<base::StringPiece16> title(
+  static const absl::optional<base::StringPiece16> title(
       const ::blink::Manifest::ShareTargetParams& share_target_params) {
     return internal::TruncateOptionalString16(share_target_params.title);
   }
-  static const base::Optional<base::StringPiece16> url(
+  static const absl::optional<base::StringPiece16> url(
       const ::blink::Manifest::ShareTargetParams& share_target_params) {
     return internal::TruncateOptionalString16(share_target_params.url);
   }
@@ -329,12 +339,12 @@ struct BLINK_COMMON_EXPORT
     return entry.action;
   }
 
-  static const base::string16& name(
+  static const std::u16string& name(
       const ::blink::Manifest::FileHandler& entry) {
     return entry.name;
   }
 
-  static const std::map<base::string16, std::vector<base::string16>>& accept(
+  static const std::map<std::u16string, std::vector<std::u16string>>& accept(
       const ::blink::Manifest::FileHandler& entry) {
     return entry.accept;
   }
@@ -356,6 +366,19 @@ struct BLINK_COMMON_EXPORT
   }
   static bool Read(blink::mojom::ManifestProtocolHandlerDataView data,
                    ::blink::Manifest::ProtocolHandler* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::ManifestNoteTakingDataView,
+                 ::blink::Manifest::NoteTaking> {
+  static const GURL new_note_url(
+      const ::blink::Manifest::NoteTaking& note_taking) {
+    return note_taking.new_note_url;
+  }
+
+  static bool Read(blink::mojom::ManifestNoteTakingDataView data,
+                   ::blink::Manifest::NoteTaking* out);
 };
 
 }  // namespace mojo

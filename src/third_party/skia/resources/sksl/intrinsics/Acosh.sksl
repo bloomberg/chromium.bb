@@ -1,0 +1,1 @@
+uniform half a; void main() { sk_FragColor.x = acosh(a); }

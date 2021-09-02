@@ -14,12 +14,12 @@
 
 namespace cr_fuchsia {
 
-// TODO(crbug.com/1156780): Replace bool returns with base::Optional.
+// TODO(crbug.com/1156780): Replace bool returns with absl::optional.
 
 // Reads the contents of |buffer|, encoded in UTF-8, to a UTF-16 string.
 // Returns |false| if |buffer| is not valid UTF-8.
 bool ReadUTF8FromVMOAsUTF16(const fuchsia::mem::Buffer& buffer,
-                            base::string16* output);
+                            std::u16string* output);
 
 // Creates a Fuchsia memory buffer from |data|.
 fuchsia::mem::Buffer MemBufferFromString(base::StringPiece data,

@@ -151,7 +151,7 @@ CastDeviceProvider::CastDeviceProvider() {}
 
 CastDeviceProvider::~CastDeviceProvider() {}
 
-void CastDeviceProvider::QueryDevices(const SerialsCallback& callback) {
+void CastDeviceProvider::QueryDevices(SerialsCallback callback) {
   if (!lister_delegate_) {
     lister_delegate_.reset(new DeviceListerDelegate(
         weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
@@ -163,21 +163,21 @@ void CastDeviceProvider::QueryDevices(const SerialsCallback& callback) {
   for (const auto& device_entry : device_info_map_)
     targets.insert(net::HostPortPair(device_entry.first, kCastInspectPort));
   tcp_provider_ = new TCPDeviceProvider(targets);
-  tcp_provider_->QueryDevices(callback);
+  tcp_provider_->QueryDevices(std::move(callback));
 }
 
 void CastDeviceProvider::QueryDeviceInfo(const std::string& serial,
-                                         const DeviceInfoCallback& callback) {
+                                         DeviceInfoCallback callback) {
   auto it_device = device_info_map_.find(serial);
   if (it_device == device_info_map_.end())
     return;
-  callback.Run(it_device->second);
+  std::move(callback).Run(it_device->second);
 }
 
 void CastDeviceProvider::OpenSocket(const std::string& serial,
                                     const std::string& socket_name,
-                                    const SocketCallback& callback) {
-  tcp_provider_->OpenSocket(serial, socket_name, callback);
+                                    SocketCallback callback) {
+  tcp_provider_->OpenSocket(serial, socket_name, std::move(callback));
 }
 
 void CastDeviceProvider::OnDeviceChanged(

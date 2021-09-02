@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -11,24 +12,22 @@
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/drive/drivefs_test_support.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/drive/drive_integration_service.h"
-#include "chrome/browser/chromeos/drive/drivefs_test_support.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/cast_config_controller_media_router.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/media_router/browser/test/mock_media_router.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_context.h"
@@ -96,7 +95,7 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
         drivefs_root_(drivefs_root) {}
 
   void SelectFileImpl(Type type,
-                      const base::string16& title,
+                      const std::u16string& title,
                       const base::FilePath& default_path,
                       const FileTypeInfo* file_types,
                       int file_type_index,
@@ -349,6 +348,12 @@ class FileSystemExtensionApiTestBase : public extensions::ExtensionApiTest {
         return false;
       }
 
+      if (flags & FLAGS_LAZY_FILE_HANDLER) {
+        // Ensures the file handler extension's background page closes in a
+        // timely manner to avoid test timeouts.
+        extensions::ProcessManager::SetEventPageIdleTimeForTesting(1);
+      }
+
       BackgroundObserver page_complete;
       const Extension* file_handler =
           LoadExtension(test_data_dir_.AppendASCII(filehandler_path));
@@ -420,10 +425,9 @@ class LocalFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
 
   // FileSystemExtensionApiTestBase override.
   void AddTestMountPoint() override {
-    EXPECT_TRUE(
-        content::BrowserContext::GetMountPoints(profile())->RegisterFileSystem(
-            kLocalMountPointName, storage::kFileSystemTypeNativeLocal,
-            storage::FileSystemMountOption(), mount_point_dir_));
+    EXPECT_TRUE(profile()->GetMountPoints()->RegisterFileSystem(
+        kLocalMountPointName, storage::kFileSystemTypeLocal,
+        storage::FileSystemMountOption(), mount_point_dir_));
     VolumeManager::Get(profile())->AddVolumeForTesting(
         mount_point_dir_, VOLUME_TYPE_TESTING, chromeos::DEVICE_TYPE_UNKNOWN,
         false /* read_only */);
@@ -451,11 +455,9 @@ class RestrictedFileSystemExtensionApiTest
 
   // FileSystemExtensionApiTestBase override.
   void AddTestMountPoint() override {
-    EXPECT_TRUE(
-        content::BrowserContext::GetMountPoints(profile())->RegisterFileSystem(
-            kRestrictedMountPointName,
-            storage::kFileSystemTypeRestrictedNativeLocal,
-            storage::FileSystemMountOption(), mount_point_dir_));
+    EXPECT_TRUE(profile()->GetMountPoints()->RegisterFileSystem(
+        kRestrictedMountPointName, storage::kFileSystemTypeRestrictedLocal,
+        storage::FileSystemMountOption(), mount_point_dir_));
     VolumeManager::Get(profile())->AddVolumeForTesting(
         mount_point_dir_, VOLUME_TYPE_TESTING, chromeos::DEVICE_TYPE_UNKNOWN,
         true /* read_only */);
@@ -480,7 +482,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDir());
 
     // This callback will get called during Profile creation.
-    create_drive_integration_service_ = base::Bind(
+    create_drive_integration_service_ = base::BindRepeating(
         &DriveFileSystemExtensionApiTest::CreateDriveIntegrationService,
         base::Unretained(this));
     service_factory_for_test_ =
@@ -568,10 +570,10 @@ class MultiProfileDriveFileSystemExtensionApiTest :
     ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
 
     // This callback will get called during Profile creation.
-    create_drive_integration_service_ = base::Bind(
-        &MultiProfileDriveFileSystemExtensionApiTest::
-            CreateDriveIntegrationService,
-        base::Unretained(this));
+    create_drive_integration_service_ =
+        base::BindRepeating(&MultiProfileDriveFileSystemExtensionApiTest::
+                                CreateDriveIntegrationService,
+                            base::Unretained(this));
     service_factory_for_test_ =
         std::make_unique<DriveIntegrationServiceFactory::ScopedFactoryForTest>(
             &create_drive_integration_service_);
@@ -600,7 +602,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
     base::FilePath drivefs_dir;
     base::CreateTemporaryDirInDir(tmp_dir_.GetPath(),
                                   base::FilePath::StringType(), &drivefs_dir);
-    auto profile_name_storage = profile->GetPath().BaseName().value();
+    auto profile_name_storage = profile->GetBaseName().value();
     base::StringPiece profile_name = profile_name_storage;
     if (base::StartsWith(profile_name, "u-")) {
       profile_name = profile_name.substr(2);
@@ -649,7 +651,7 @@ class LocalAndDriveFileSystemExtensionApiTest
     ASSERT_TRUE(test_cache_root_.CreateUniqueTempDir());
 
     // This callback will get called during Profile creation.
-    create_drive_integration_service_ = base::Bind(
+    create_drive_integration_service_ = base::BindRepeating(
         &LocalAndDriveFileSystemExtensionApiTest::CreateDriveIntegrationService,
         base::Unretained(this));
     service_factory_for_test_ =
@@ -659,10 +661,9 @@ class LocalAndDriveFileSystemExtensionApiTest
 
   // FileSystemExtensionApiTestBase override.
   void AddTestMountPoint() override {
-    EXPECT_TRUE(
-        content::BrowserContext::GetMountPoints(profile())->RegisterFileSystem(
-            kLocalMountPointName, storage::kFileSystemTypeNativeLocal,
-            storage::FileSystemMountOption(), local_mount_point_dir_));
+    EXPECT_TRUE(profile()->GetMountPoints()->RegisterFileSystem(
+        kLocalMountPointName, storage::kFileSystemTypeLocal,
+        storage::FileSystemMountOption(), local_mount_point_dir_));
     VolumeManager::Get(profile())->AddVolumeForTesting(
         local_mount_point_dir_, VOLUME_TYPE_TESTING,
         chromeos::DEVICE_TYPE_UNKNOWN, false /* read_only */);
@@ -709,21 +710,11 @@ class LocalAndDriveFileSystemExtensionApiTest
 
 // Mixin for starting one of the FileSystem test fixures with a specific app
 // configuration, which may include default-installed apps. Currently set up
-// to run with the chrome://media-app flag explicitly flipped (or not).
+// to run with the chrome://media-app.
 class FileSystemExtensionApiTestWithApps
-    : public LocalFileSystemExtensionApiTest,
-      public ::testing::WithParamInterface<bool> {
+    : public LocalFileSystemExtensionApiTest {
  public:
-  FileSystemExtensionApiTestWithApps() {
-    if (MediaAppEnabled()) {
-      scoped_feature_list_.InitAndEnableFeature(chromeos::features::kMediaApp);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(chromeos::features::kMediaApp);
-    }
-  }
-
-  // A more readable accessor to determine if the MediaApp is enabled.
-  bool MediaAppEnabled() const { return GetParam(); }
+  FileSystemExtensionApiTestWithApps() {}
 
   // FileManagerPrivateApiTest:
   void SetUpOnMainThread() override {
@@ -739,9 +730,6 @@ class FileSystemExtensionApiTestWithApps
     return {{kArbitraryTime, kArbitraryTime, "test_file.png"},
             {kArbitraryTime, kArbitraryTime, "test_file.arw"}};
   }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 namespace {
@@ -753,31 +741,18 @@ constexpr int kMediaAppUmaBucket = 19;
 // Metric recorded as the result of the call to apps::RecordAppLaunch().
 constexpr char kAppLaunchMetric[] = "Apps.DefaultAppLaunch.FromFileManager";
 
-std::string MediaAppBoolString(const testing::TestParamInfo<bool> info) {
-  return info.param ? "MediaApp" : "Gallery";
-}
-
 }  // namespace
 
 // Check the interception of ExecuteTask calls to replace Gallery for PNGs. The
-// MediaApp should be used only if it is enabled, otherwise fall back to
-// gallery.
-IN_PROC_BROWSER_TEST_P(FileSystemExtensionApiTestWithApps, OpenGalleryForPng) {
+// Media App should always be used in this case.
+IN_PROC_BROWSER_TEST_F(FileSystemExtensionApiTestWithApps, OpenGalleryForPng) {
   base::HistogramTester histogram_tester;
-  EXPECT_TRUE(RunBackgroundPageTestCase(
-      "open_gallery", MediaAppEnabled() ? "testPngOpensGalleryReturnsOpened"
-                                        : "testPngOpensGalleryReturnsMsgSent"))
+  EXPECT_TRUE(RunBackgroundPageTestCase("open_gallery",
+                                        "testPngOpensGalleryReturnsOpened"))
       << message_;
-  histogram_tester.ExpectBucketCount(kAppLaunchMetric, kGalleryUmaBucket,
-                                     MediaAppEnabled() ? 0 : 1);
-  histogram_tester.ExpectBucketCount(kAppLaunchMetric, kMediaAppUmaBucket,
-                                     MediaAppEnabled() ? 1 : 0);
+  histogram_tester.ExpectBucketCount(kAppLaunchMetric, kGalleryUmaBucket, 0);
+  histogram_tester.ExpectBucketCount(kAppLaunchMetric, kMediaAppUmaBucket, 1);
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         FileSystemExtensionApiTestWithApps,
-                         testing::Bool(),
-                         MediaAppBoolString);
 
 //
 // LocalFileSystemExtensionApiTests.

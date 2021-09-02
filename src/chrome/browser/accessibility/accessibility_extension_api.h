@@ -5,8 +5,7 @@
 #ifndef CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_
 #define CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_
 
-#include <string>
-
+#include "build/chromeos_buildflags.h"
 #include "extensions/browser/extension_function.h"
 
 // API function that enables or disables web content accessibility support.
@@ -61,7 +60,7 @@ class AccessibilityPrivateOpenSettingsSubpageFunction
                              ACCESSIBILITY_PRIVATE_OPENSETTINGSSUBPAGE)
 };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // API function that sets native ChromeVox ARC support.
 class AccessibilityPrivateSetNativeChromeVoxArcSupportForCurrentAppFunction
     : public ExtensionFunction {
@@ -83,12 +82,11 @@ class AccessibilityPrivateSendSyntheticKeyEventFunction
 };
 
 // API function that enables or disables mouse events in ChromeVox.
-class AccessibilityPrivateEnableChromeVoxMouseEventsFunction
-    : public ExtensionFunction {
-  ~AccessibilityPrivateEnableChromeVoxMouseEventsFunction() override {}
+class AccessibilityPrivateEnableMouseEventsFunction : public ExtensionFunction {
+  ~AccessibilityPrivateEnableMouseEventsFunction() override {}
   ResponseAction Run() override;
-  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.enableChromeVoxMouseEvents",
-                             ACCESSIBILITY_PRIVATE_ENABLECHROMEVOXMOUSEEVENTS)
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.enableMouseEvents",
+                             ACCESSIBILITY_PRIVATE_ENABLEMOUSEEVENTS)
 };
 
 // API function that injects mouse events.
@@ -161,11 +159,11 @@ class AccessibilityPrivateUpdateSwitchAccessBubbleFunction
 
 // API function that is called to start or end point scanning of the
 // Switch Access extension.
-class AccessibilityPrivateActivatePointScanFunction : public ExtensionFunction {
-  ~AccessibilityPrivateActivatePointScanFunction() override {}
+class AccessibilityPrivateSetPointScanStateFunction : public ExtensionFunction {
+  ~AccessibilityPrivateSetPointScanStateFunction() override {}
   ResponseAction Run() override;
-  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.activatePointScan",
-                             ACCESSIBILITY_PRIVATE_ACTIVATEPOINTSCAN)
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setPointScanState",
+                             ACCESSIBILITY_PRIVATE_SETPOINTSCANSTATE)
 };
 
 // API function that is called to get the device's battery status as a string.
@@ -214,6 +212,17 @@ class AccessibilityPrivateUpdateSelectToSpeakPanelFunction
   ResponseAction Run() override;
   DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.updateSelectToSpeakPanel",
                              ACCESSIBILITY_PRIVATE_UPDATESELECTTOSPEAKPANEL)
+};
+
+// API function that shows a confirmation dialog, with callbacks for
+// confirm/cancel.
+class AccessibilityPrivateShowConfirmationDialogFunction
+    : public ExtensionFunction {
+  ~AccessibilityPrivateShowConfirmationDialogFunction() override = default;
+  ResponseAction Run() override;
+  void OnDialogResult(bool confirmed);
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.showConfirmationDialog",
+                             ACCESSIBILITY_PRIVATE_SHOWCONFIRMATIONDIALOG)
 };
 #endif  // defined (OS_CHROMEOS)
 

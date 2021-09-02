@@ -119,6 +119,20 @@ void SystemProbesParser::ParseSysStats(int64_t ts, ConstBytes blob) {
         ts, static_cast<double>(mi.value()) * 1024., track);
   }
 
+  for (auto it = sys_stats.devfreq(); it; ++it) {
+    protos::pbzero::SysStats::DevfreqValue::Decoder vm(*it);
+    auto key = static_cast<base::StringView>(vm.key());
+    // Append " Frequency" to align names with FtraceParser::ParseClockSetRate
+    base::StringView devfreq_subtitle("Frequency");
+    char counter_name[255];
+    snprintf(counter_name, sizeof(counter_name), "%.*s %.*s", int(key.size()),
+             key.data(), int(devfreq_subtitle.size()), devfreq_subtitle.data());
+    StringId name = context_->storage->InternString(counter_name);
+    TrackId track = context_->track_tracker->InternGlobalCounterTrack(name);
+    context_->event_tracker->PushCounter(ts, static_cast<double>(vm.value()),
+                                         track);
+  }
+
   for (auto it = sys_stats.vmstat(); it; ++it) {
     protos::pbzero::SysStats::VmstatValue::Decoder vm(*it);
     auto key = static_cast<size_t>(vm.key());
@@ -270,6 +284,7 @@ void SystemProbesParser::ParseProcessTree(ConstBytes blob) {
 }
 
 void SystemProbesParser::ParseProcessStats(int64_t ts, ConstBytes blob) {
+  using Process = protos::pbzero::ProcessStats::Process;
   protos::pbzero::ProcessStats::Decoder stats(blob.data, blob.size);
   const auto kOomScoreAdjFieldNumber =
       protos::pbzero::ProcessStats::Process::kOomScoreAdjFieldNumber;
@@ -307,22 +322,31 @@ void SystemProbesParser::ParseProcessStats(int64_t ts, ConstBytes blob) {
                                        : fld.as_int64() * 1024;
         has_counter[fld.id()] = true;
       } else {
+        // Chrome fields are processed by ChromeSystemProbesParser.
+        if (fld.id() == Process::kIsPeakRssResettableFieldNumber ||
+            fld.id() == Process::kChromePrivateFootprintKbFieldNumber ||
+            fld.id() == Process::kChromePrivateFootprintKbFieldNumber) {
+          continue;
+        }
         context_->storage->IncrementStats(stats::proc_stat_unknown_counters);
       }
     }
 
     // Skip field_id 0 (invalid) and 1 (pid).
     for (size_t field_id = 2; field_id < counter_values.size(); field_id++) {
-      if (!has_counter[field_id])
+      if (!has_counter[field_id] || field_id ==
+                                        protos::pbzero::ProcessStats::Process::
+                                            kIsPeakRssResettableFieldNumber) {
         continue;
+      }
 
       // Lookup the interned string id from the field name using the
       // pre-cached |proc_stats_process_names_| map.
-      StringId name = proc_stats_process_names_[field_id];
-      int64_t value = counter_values[field_id];
+      const StringId& name = proc_stats_process_names_[field_id];
       UniquePid upid = context_->process_tracker->GetOrCreateProcess(pid);
       TrackId track =
           context_->track_tracker->InternProcessCounterTrack(name, upid);
+      int64_t value = counter_values[field_id];
       context_->event_tracker->PushCounter(ts, static_cast<double>(value),
                                            track);
     }

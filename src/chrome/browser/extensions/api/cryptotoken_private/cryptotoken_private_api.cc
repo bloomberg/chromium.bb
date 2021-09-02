@@ -23,13 +23,14 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "crypto/sha2.h"
-#include "device/fido/features.h"
+#include "device/fido/filter.h"
 #include "extensions/browser/extension_api_frame_id_map.h"
 #include "extensions/common/error_utils.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/origin.h"
 
 #if defined(OS_WIN)
+#include "device/fido/features.h"
 #include "device/fido/win/webauthn_api.h"
 #endif  // defined(OS_WIN)
 
@@ -38,25 +39,6 @@ namespace extensions {
 namespace api {
 
 namespace {
-
-// U2FAttestationPromptResult enumerates events related to attestation prompts.
-// These values are recorded in an UMA histogram and so should not be
-// reassigned.
-enum class U2FAttestationPromptResult {
-  // kQueried indicates that the embedder was queried in order to determine
-  // whether attestation information should be returned to the origin.
-  kQueried = 0,
-  // kAllowed indicates that the query to the embedder was resolved positively.
-  // (E.g. the user clicked to allow, or the embedder allowed immediately by
-  // policy.) Note that this may still be recorded if the user clicks to allow
-  // attestation after the request has timed out.
-  kAllowed = 1,
-  // kBlocked indicates that the query to the embedder was resolved negatively.
-  // (E.g. the user clicked to block, or closed the dialog.) Navigating away or
-  // closing the tab also fall into this bucket.
-  kBlocked = 2,
-  kMaxValue = kBlocked,
-};
 
 const char kGoogleDotCom[] = "google.com";
 constexpr const char* kGoogleGstaticAppIds[] = {
@@ -71,7 +53,7 @@ bool ContainsAppIdByHash(const base::ListValue& list,
     return false;
   }
 
-  for (const auto& i : list) {
+  for (const auto& i : list.GetList()) {
     const std::string& s = i.GetString();
     if (s.find('/') == std::string::npos) {
       // No slashes mean that this is a webauthn RP ID, not a U2F AppID.
@@ -87,11 +69,6 @@ bool ContainsAppIdByHash(const base::ListValue& list,
   }
 
   return false;
-}
-
-void RecordAttestationEvent(U2FAttestationPromptResult event) {
-  UMA_HISTOGRAM_ENUMERATION("WebAuthentication.U2FAttestationPromptResult",
-                            event);
 }
 
 content::RenderFrameHost* RenderFrameHostForTabAndFrameId(
@@ -216,16 +193,16 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
   const base::ListValue* const permit_attestation =
       prefs->GetList(prefs::kSecurityKeyPermitAttestation);
 
-  if (std::find_if(permit_attestation->begin(), permit_attestation->end(),
-                   [&app_id](const base::Value& v) -> bool {
-                     return v.GetString() == app_id;
-                   }) != permit_attestation->end()) {
-    return RespondNow(OneArgument(base::Value(true)));
+  for (const auto& entry : permit_attestation->GetList()) {
+    if (entry.GetString() == app_id)
+      return RespondNow(OneArgument(base::Value(true)));
   }
 
   // If the origin is blocked, reject attestation.
-  if (device::DoesMatchWebAuthAttestationBlockedDomains(
-          url::Origin::Create(origin_url))) {
+  if (device::fido_filter::Evaluate(
+          device::fido_filter::Operation::MAKE_CREDENTIAL, origin.Serialize(),
+          /*device=*/absl::nullopt, /*id=*/absl::nullopt) ==
+      device::fido_filter::Action::NO_ATTESTATION) {
     return RespondNow(OneArgument(base::Value(false)));
   }
 
@@ -270,7 +247,6 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
     return RespondNow(Error("no PermissionRequestManager"));
   }
 
-  RecordAttestationEvent(U2FAttestationPromptResult::kQueried);
   // The created AttestationPermissionRequest deletes itself once complete.
   permission_request_manager->AddRequest(
       web_contents->GetMainFrame(),  // Extension API targets a particular tab,
@@ -285,8 +261,6 @@ CryptotokenPrivateCanAppIdGetAttestationFunction::Run() {
 }
 
 void CryptotokenPrivateCanAppIdGetAttestationFunction::Complete(bool result) {
-  RecordAttestationEvent(result ? U2FAttestationPromptResult::kAllowed
-                                : U2FAttestationPromptResult::kBlocked);
   Respond(OneArgument(base::Value(result)));
 }
 
@@ -303,8 +277,7 @@ CryptotokenPrivateRecordRegisterRequestFunction::Run() {
   }
 
   page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
-      frame, page_load_metrics::mojom::PageLoadFeatures(
-                 {blink::mojom::WebFeature::kU2FCryptotokenRegister}, {}, {}));
+      frame, blink::mojom::WebFeature::kU2FCryptotokenRegister);
   return RespondNow(NoArguments());
 }
 
@@ -320,8 +293,7 @@ CryptotokenPrivateRecordSignRequestFunction::Run() {
   }
 
   page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
-      frame, page_load_metrics::mojom::PageLoadFeatures(
-                 {blink::mojom::WebFeature::kU2FCryptotokenSign}, {}, {}));
+      frame, blink::mojom::WebFeature::kU2FCryptotokenSign);
   return RespondNow(NoArguments());
 }
 

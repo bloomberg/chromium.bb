@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 
 #include "base/base64url.h"
@@ -13,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
@@ -38,9 +40,9 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chromeos/constants/chromeos_switches.h"
 #else
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -100,7 +102,7 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // ExtensionBrowserTest sets the login users to a non-managed value;
     // replace it. This is the default username sent in policy blobs from the
     // testserver.
@@ -134,7 +136,8 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
 
     // Install the initial extension.
     ExtensionTestMessageListener ready_listener("ready", false);
-    event_listener_.reset(new ExtensionTestMessageListener("event", true));
+    event_listener_ =
+        std::make_unique<ExtensionTestMessageListener>("event", true);
     extension_ = LoadExtension(kTestExtensionPath);
     ASSERT_TRUE(extension_.get());
     ASSERT_EQ(kTestExtension, extension_->id());
@@ -174,7 +177,7 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
         g_browser_process->browser_policy_connector();
     connector->ScheduleServiceInitialization(0);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     UserCloudPolicyManagerChromeOS* policy_manager =
         browser()->profile()->GetUserCloudPolicyManagerChromeOS();
     ASSERT_TRUE(policy_manager);
@@ -183,7 +186,7 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
     // the account id to the UserCloudPolicyValidator.
     signin::SetPrimaryAccount(
         IdentityManagerFactory::GetForProfile(browser()->profile()),
-        PolicyBuilder::kFakeUsername);
+        PolicyBuilder::kFakeUsername, signin::ConsentLevel::kSync);
 
     UserCloudPolicyManager* policy_manager =
         browser()->profile()->GetUserCloudPolicyManager();
@@ -196,7 +199,7 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
             connector->device_management_service(),
             g_browser_process->shared_url_loader_factory()));
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     // Register the cloud policy client.
     client_ = policy_manager->core()->client();
@@ -214,15 +217,14 @@ class ComponentCloudPolicyTest : public extensions::ExtensionBrowserTest {
     client_->RemoveObserver(&observer);
   }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   void SignOut() {
     auto* primary_account_mutator =
         IdentityManagerFactory::GetForProfile(browser()->profile())
             ->GetPrimaryAccountMutator();
     primary_account_mutator->ClearPrimaryAccount(
-        signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
         signin_metrics::SIGNOUT_TEST,
-        signin_metrics::SignoutDelete::IGNORE_METRIC);
+        signin_metrics::SignoutDelete::kIgnoreMetric);
   }
 #endif
 
@@ -255,7 +257,8 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, UpdateExtensionPolicy) {
   EXPECT_TRUE(policy_listener.WaitUntilSatisfied());
 
   // Update the policy at the server and reload policy.
-  event_listener_.reset(new ExtensionTestMessageListener("event", true));
+  event_listener_ =
+      std::make_unique<ExtensionTestMessageListener>("event", true);
   policy_listener.Reply("idle");
   EXPECT_TRUE(test_server_.UpdatePolicyData(
       dm_protocol::kChromeExtensionPolicyType, kTestExtension, kTestPolicy2));
@@ -307,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, InstallNewExtension) {
 // This test verifies that when the user signs out then any existing component
 // policy caches are dropped, and that it's still possible to sign back in and
 // get policy for components working again.
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, SignOutAndBackIn) {
   // Read the initial policy.
   ExtensionTestMessageListener initial_policy_listener(kTestPolicyJSON, true);
@@ -394,7 +397,8 @@ IN_PROC_BROWSER_TEST_F(KeyRotationComponentCloudPolicyTest, Basic) {
 
   // Update the policy at the server and reload the policy, causing also the key
   // rotation to be performed by the policy test server.
-  event_listener_.reset(new ExtensionTestMessageListener("event", true));
+  event_listener_ =
+      std::make_unique<ExtensionTestMessageListener>("event", true);
   policy_listener.Reply("idle");
   EXPECT_TRUE(test_server_.UpdatePolicyData(
       dm_protocol::kChromeExtensionPolicyType, kTestExtension, kTestPolicy2));

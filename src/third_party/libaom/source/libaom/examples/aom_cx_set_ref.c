@@ -108,7 +108,7 @@ static void testing_decode(aom_codec_ctx_t *encoder, aom_codec_ctx_t *decoder,
     }
 
     printf(
-        "Encode/decode mismatch on frame %d at"
+        "Encode/decode mismatch on frame %u at"
         " Y[%d, %d] {%d/%d},"
         " U[%d, %d] {%d/%d},"
         " V[%d, %d] {%d/%d}",
@@ -271,7 +271,11 @@ int main(int argc, char **argv) {
 
   printf("Using %s\n", aom_codec_iface_name(encoder));
 
+#if CONFIG_REALTIME_ONLY
+  res = aom_codec_enc_config_default(encoder, &cfg, 1);
+#else
   res = aom_codec_enc_config_default(encoder, &cfg, 0);
+#endif
   if (res) die_codec(&ecodec, "Failed to get default codec config.");
 
   cfg.g_w = info.frame_width;
@@ -334,6 +338,12 @@ int main(int argc, char **argv) {
         die_codec(&ecodec, "Failed to set encoder reference frame");
       printf(" <SET_REF>");
 
+#if CONFIG_REALTIME_ONLY
+      // Set cpu speed in encoder.
+      if (aom_codec_control(&ecodec, AOME_SET_CPUUSED, 7))
+        die_codec(&ecodec, "Failed to set cpu speed");
+#endif
+
       // If set_reference in decoder is commented out, the enc/dec mismatch
       // would be seen.
       if (test_decode) {
@@ -357,7 +367,7 @@ int main(int argc, char **argv) {
 
   printf("\n");
   fclose(infile);
-  printf("Processed %d frames.\n", frame_out);
+  printf("Processed %u frames.\n", frame_out);
 
   if (test_decode) {
     if (!mismatch_seen)

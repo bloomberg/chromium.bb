@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
-#include "base/ranges/algorithm.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
@@ -181,7 +181,7 @@ class RSAPrivateKey : public EVPBackedPrivateKey {
     map.emplace(static_cast<int64_t>(CoseKeyKey::kRSAPublicExponent),
                 std::move(public_exponent));
 
-    base::Optional<std::vector<uint8_t>> cbor_bytes(
+    absl::optional<std::vector<uint8_t>> cbor_bytes(
         cbor::Writer::Write(cbor::Value(std::move(map))));
 
     std::vector<uint8_t> der_bytes(
@@ -224,7 +224,7 @@ class Ed25519PrivateKey : public EVPBackedPrivateKey {
     map.emplace(static_cast<int64_t>(CoseKeyKey::kEllipticX),
                 base::span<const uint8_t>(public_key, sizeof(public_key)));
 
-    base::Optional<std::vector<uint8_t>> cbor_bytes(
+    absl::optional<std::vector<uint8_t>> cbor_bytes(
         cbor::Writer::Write(cbor::Value(std::move(map))));
 
     std::vector<uint8_t> der_bytes(
@@ -261,12 +261,12 @@ class InvalidForTestingPrivateKey : public VirtualFidoDevice::PrivateKey {
     map.emplace(static_cast<int64_t>(CoseKeyKey::kKty),
                 static_cast<int64_t>(CoseKeyTypes::kInvalidForTesting));
 
-    base::Optional<std::vector<uint8_t>> cbor_bytes(
+    absl::optional<std::vector<uint8_t>> cbor_bytes(
         cbor::Writer::Write(cbor::Value(std::move(map))));
 
     return std::make_unique<PublicKey>(
         static_cast<int32_t>(CoseAlgorithmIdentifier::kInvalidForTesting),
-        *cbor_bytes, base::nullopt);
+        *cbor_bytes, absl::nullopt);
   }
 };
 
@@ -284,7 +284,7 @@ std::vector<uint8_t> VirtualFidoDevice::PrivateKey::GetX962PublicKey() const {
 }
 
 // static
-base::Optional<std::unique_ptr<VirtualFidoDevice::PrivateKey>>
+absl::optional<std::unique_ptr<VirtualFidoDevice::PrivateKey>>
 VirtualFidoDevice::PrivateKey::FromPKCS8(
     base::span<const uint8_t> pkcs8_private_key) {
   crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
@@ -293,14 +293,14 @@ VirtualFidoDevice::PrivateKey::FromPKCS8(
   CBS_init(&cbs, pkcs8_private_key.data(), pkcs8_private_key.size());
   bssl::UniquePtr<EVP_PKEY> pkey(EVP_parse_private_key(&cbs));
   if (!pkey || CBS_len(&cbs) != 0) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   switch (EVP_PKEY_id(pkey.get())) {
     case EVP_PKEY_EC:
       if (EC_GROUP_get_curve_name(EC_KEY_get0_group(
               EVP_PKEY_get0_EC_KEY(pkey.get()))) != NID_X9_62_prime256v1) {
-        return base::nullopt;
+        return absl::nullopt;
       }
       return std::unique_ptr<PrivateKey>(new P256PrivateKey(std::move(pkey)));
 
@@ -312,7 +312,7 @@ VirtualFidoDevice::PrivateKey::FromPKCS8(
           new Ed25519PrivateKey(std::move(pkey)));
 
     default:
-      return base::nullopt;
+      return absl::nullopt;
   }
 }
 
@@ -343,6 +343,8 @@ VirtualFidoDevice::PrivateKey::FreshInvalidForTestingKey() {
 // VirtualFidoDevice::RegistrationData ----------------------------------------
 
 VirtualFidoDevice::RegistrationData::RegistrationData() = default;
+VirtualFidoDevice::RegistrationData::RegistrationData(const std::string& rp_id)
+    : application_parameter(fido_parsing_utils::CreateSHA256Hash(rp_id)) {}
 VirtualFidoDevice::RegistrationData::RegistrationData(
     std::unique_ptr<PrivateKey> private_key,
     base::span<const uint8_t, kRpIdHashLength> application_parameter,
@@ -371,18 +373,17 @@ VirtualFidoDevice::State::~State() = default;
 
 bool VirtualFidoDevice::State::InjectRegistration(
     base::span<const uint8_t> credential_id,
-    const std::string& relying_party_id) {
-  auto application_parameter =
-      fido_parsing_utils::CreateSHA256Hash(relying_party_id);
-
-  RegistrationData registration(PrivateKey::FreshP256Key(),
-                                std::move(application_parameter),
-                                0 /* signature counter */);
-
+    RegistrationData registration) {
   bool was_inserted;
   std::tie(std::ignore, was_inserted) = registrations.emplace(
       fido_parsing_utils::Materialize(credential_id), std::move(registration));
   return was_inserted;
+}
+
+bool VirtualFidoDevice::State::InjectRegistration(
+    base::span<const uint8_t> credential_id,
+    const std::string& relying_party_id) {
+  return InjectRegistration(credential_id, RegistrationData(relying_party_id));
 }
 
 bool VirtualFidoDevice::State::InjectResidentKey(
@@ -428,36 +429,36 @@ bool VirtualFidoDevice::State::InjectResidentKey(
     base::span<const uint8_t> credential_id,
     const std::string& relying_party_id,
     base::span<const uint8_t> user_id,
-    base::Optional<std::string> user_name,
-    base::Optional<std::string> user_display_name) {
+    absl::optional<std::string> user_name,
+    absl::optional<std::string> user_display_name) {
   return InjectResidentKey(
       credential_id, PublicKeyCredentialRpEntity(std::move(relying_party_id)),
       PublicKeyCredentialUserEntity(fido_parsing_utils::Materialize(user_id),
                                     std::move(user_name),
                                     std::move(user_display_name),
-                                    /*icon_url=*/base::nullopt));
+                                    /*icon_url=*/absl::nullopt));
 }
 
-base::Optional<std::vector<uint8_t>> VirtualFidoDevice::State::GetLargeBlob(
+absl::optional<std::vector<uint8_t>> VirtualFidoDevice::State::GetLargeBlob(
     const RegistrationData& credential) {
   if (!credential.large_blob_key) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   LargeBlobArrayReader reader;
   reader.Append(large_blob);
-  base::Optional<std::vector<LargeBlobData>> large_blob_array =
+  absl::optional<std::vector<LargeBlobData>> large_blob_array =
       reader.Materialize();
   if (!large_blob_array) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   for (const auto& data : *large_blob_array) {
-    base::Optional<std::vector<uint8_t>> blob =
+    absl::optional<std::vector<uint8_t>> blob =
         data.Decrypt(*credential.large_blob_key);
     if (blob) {
       return blob;
     }
   }
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 void VirtualFidoDevice::State::InjectLargeBlob(RegistrationData* credential,
@@ -468,10 +469,9 @@ void VirtualFidoDevice::State::InjectLargeBlob(RegistrationData* credential,
       reader.Materialize().value_or(std::vector<LargeBlobData>());
 
   if (credential->large_blob_key) {
-    large_blob_array.erase(base::ranges::remove_if(
-        large_blob_array, [&credential](const LargeBlobData& blob) {
-          return blob.Decrypt(*credential->large_blob_key).has_value();
-        }));
+    base::EraseIf(large_blob_array, [&credential](const LargeBlobData& blob) {
+      return blob.Decrypt(*credential->large_blob_key).has_value();
+    });
   } else {
     credential->large_blob_key.emplace();
     base::RandBytes(credential->large_blob_key->data(),
@@ -510,7 +510,7 @@ bool VirtualFidoDevice::Sign(crypto::ECPrivateKey* private_key,
   return signer->Sign(sign_buffer.data(), sign_buffer.size(), signature);
 }
 
-base::Optional<std::vector<uint8_t>>
+absl::optional<std::vector<uint8_t>>
 VirtualFidoDevice::GenerateAttestationCertificate(
     bool individual_attestation_requested) const {
   std::unique_ptr<crypto::ECPrivateKey> attestation_private_key =
@@ -546,15 +546,14 @@ VirtualFidoDevice::GenerateAttestationCertificate(
       0b10000000 >> transport_bit,  // transport
   };
 
-  // https://www.w3.org/TR/webauthn/#packed-attestation-cert-requirements
+  // https://www.w3.org/TR/webauthn/#sctn-packed-attestation-cert-requirements
   // The Basic Constraints extension MUST have the CA component set to false.
+  // Since that is the default value, DER requires omitting it. Simply include
+  // an empty sequence.
   static constexpr uint8_t kBasicContraintsOID[] = {0x55, 0x1d, 0x13};
   static constexpr uint8_t kBasicContraintsContents[] = {
       0x30,  // SEQUENCE
-      0x03,  // three bytes long
-      0x01,  // BOOLEAN
-      0x01,  // one byte long
-      0x00,  // false
+      0x00,  // zero bytes long
   };
 
   const std::vector<net::x509_util::Extension> extensions = {
@@ -576,7 +575,7 @@ VirtualFidoDevice::GenerateAttestationCertificate(
           kAttestationCertSerialNumber, base::Time::FromTimeT(1500000000),
           expiry_date, extensions, &attestation_cert)) {
     DVLOG(2) << "Failed to create attestation certificate";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return std::vector<uint8_t>(attestation_cert.begin(), attestation_cert.end());

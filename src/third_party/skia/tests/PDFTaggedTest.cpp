@@ -6,6 +6,7 @@
  */
 #include "tests/Test.h"
 
+#include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkFont.h"
 #include "include/core/SkStream.h"
@@ -162,7 +163,7 @@ DEF_TEST(SkPDF_tagged_doc, r) {
     testBitmap.allocN32Pixels(72, 72);
     testBitmap.eraseColor(SK_ColorRED);
     canvas->translate(72, 72);
-    canvas->drawBitmap(testBitmap, 0, 0);
+    canvas->drawImage(testBitmap.asImage(), 0, 0);
 
     // This has a node ID but never shows up in the tag tree so it
     // won't be tagged.

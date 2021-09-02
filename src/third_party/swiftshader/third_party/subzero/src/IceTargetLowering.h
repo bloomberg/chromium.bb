@@ -215,8 +215,6 @@ public:
   void genTargetHelperCalls();
   /// Tries to do address mode optimization on a single instruction.
   void doAddressOpt();
-  /// Randomly insert NOPs.
-  void doNopInsertion(RandomNumberGenerator &RNG);
   /// Lowers a single non-Phi instruction.
   void lower();
   /// Inserts and lowers a single high-level instruction at a specific insertion
@@ -306,11 +304,6 @@ public:
 
   void regAlloc(RegAllocKind Kind);
   void postRegallocSplitting(const SmallBitVector &RegMask);
-
-  virtual void
-  makeRandomRegisterPermutation(llvm::SmallVectorImpl<RegNumT> &Permutation,
-                                const SmallBitVector &ExcludeRegisters,
-                                uint64_t Salt) const = 0;
 
   /// Get the minimum number of clusters required for a jump table to be
   /// considered.
@@ -408,7 +401,7 @@ protected:
   virtual void lowerExtractElement(const InstExtractElement *Instr) = 0;
   virtual void lowerIcmp(const InstIcmp *Instr) = 0;
   virtual void lowerInsertElement(const InstInsertElement *Instr) = 0;
-  virtual void lowerIntrinsicCall(const InstIntrinsicCall *Instr) = 0;
+  virtual void lowerIntrinsic(const InstIntrinsic *Instr) = 0;
   virtual void lowerLoad(const InstLoad *Instr) = 0;
   virtual void lowerPhi(const InstPhi *Instr) = 0;
   virtual void lowerRet(const InstRet *Instr) = 0;
@@ -429,8 +422,6 @@ protected:
   virtual void doAddressOptLoadSubVector() {}
   virtual void doAddressOptStoreSubVector() {}
   virtual void doMockBoundsCheck(Operand *) {}
-  virtual void randomlyInsertNop(float Probability,
-                                 RandomNumberGenerator &RNG) = 0;
   /// This gives the target an opportunity to post-process the lowered expansion
   /// before returning.
   virtual void postLower() {}

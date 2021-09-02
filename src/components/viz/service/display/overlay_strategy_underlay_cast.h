@@ -8,12 +8,10 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "build/chromecast_buildflags.h"
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 #include "components/viz/service/viz_service_export.h"
-#include "ui/gfx/overlay_transform.h"
 
 #if BUILDFLAG(IS_CHROMECAST)
 #include "chromecast/media/service/mojom/video_geometry_setter.mojom.h"
@@ -39,12 +37,27 @@ class VIZ_SERVICE_EXPORT OverlayStrategyUnderlayCast
                OverlayCandidateList* candidate_list,
                std::vector<gfx::Rect>* content_bounds) override;
 
-  // Callback that's made whenever an overlay quad is processed in the
-  // compositor. Used to allow hardware video plane to be positioned to match
-  // compositor hole.
-  using OverlayCompositedCallback =
-      base::RepeatingCallback<void(const gfx::RectF&, gfx::OverlayTransform)>;
-  static void SetOverlayCompositedCallback(const OverlayCompositedCallback& cb);
+  void ProposePrioritized(const SkMatrix44& output_color_matrix,
+                          const OverlayProcessorInterface::FilterOperationsMap&
+                              render_pass_backdrop_filters,
+                          DisplayResourceProvider* resource_provider,
+                          AggregatedRenderPassList* render_pass_list,
+                          SurfaceDamageRectList* surface_damage_rect_list,
+                          const PrimaryPlane* primary_plane,
+                          OverlayProposedCandidateList* candidates,
+                          std::vector<gfx::Rect>* content_bounds) override;
+
+  bool AttemptPrioritized(
+      const SkMatrix44& output_color_matrix,
+      const OverlayProcessorInterface::FilterOperationsMap&
+          render_pass_backdrop_filters,
+      DisplayResourceProvider* resource_provider,
+      AggregatedRenderPassList* render_pass_list,
+      SurfaceDamageRectList* surface_damage_rect_list,
+      const PrimaryPlane* primary_plane,
+      OverlayCandidateList* candidates,
+      std::vector<gfx::Rect>* content_bounds,
+      OverlayProposedCandidate* proposed_candidate) override;
 
 #if BUILDFLAG(IS_CHROMECAST)
   // In Chromecast build, OverlayStrategyUnderlayCast needs a valid mojo

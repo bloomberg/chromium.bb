@@ -61,10 +61,8 @@ void LayoutEmbeddedContent::Release() {
 
 void LayoutEmbeddedContent::WillBeDestroyed() {
   NOT_DESTROYED();
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
-    cache->ChildrenChanged(Parent());
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
     cache->Remove(this);
-  }
 
   if (auto* frame_owner = GetFrameOwnerElement())
     frame_owner->SetEmbeddedContentView(nullptr);
@@ -142,7 +140,7 @@ PaintLayerType LayoutEmbeddedContent::LayerTypeRequired() const {
   return kForcedPaintLayer;
 }
 
-bool LayoutEmbeddedContent::ContentDocumentIsCompositing() const {
+bool LayoutEmbeddedContent::ContentDocumentContainsGraphicsLayer() const {
   NOT_DESTROYED();
   if (PaintLayerCompositor* inner_compositor =
           PaintLayerCompositor::FrameContentsCompositor(*this)) {
@@ -316,14 +314,6 @@ void LayoutEmbeddedContent::PaintReplaced(
   if (ChildPaintBlockedByDisplayLock())
     return;
   EmbeddedContentPainter(*this).PaintReplaced(paint_info, paint_offset);
-}
-
-void LayoutEmbeddedContent::InvalidatePaint(
-    const PaintInvalidatorContext& context) const {
-  NOT_DESTROYED();
-  LayoutReplaced::InvalidatePaint(context);
-  if (auto* plugin = Plugin())
-    plugin->InvalidatePaint();
 }
 
 CursorDirective LayoutEmbeddedContent::GetCursor(const PhysicalOffset& point,

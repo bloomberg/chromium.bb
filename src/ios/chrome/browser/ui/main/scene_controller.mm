@@ -4,18 +4,29 @@
 
 #import "ios/chrome/browser/ui/main/scene_controller.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
+
 #include "base/callback_helpers.h"
 #include "base/i18n/message_formatter.h"
+#import "base/ios/ios_util.h"
 #import "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
+#include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
+#include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
+#include "components/breadcrumbs/core/features.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/prefs/pref_service.h"
 #import "components/previous_session_info/previous_session_info.h"
+#include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/url_formatter/url_formatter.h"
+#include "components/version_info/version_info.h"
 #include "components/web_resource/web_resource_pref_names.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
@@ -26,6 +37,7 @@
 #include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
+#import "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_remove_mask.h"
@@ -34,10 +46,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/chrome_url_util.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_browser_agent.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_manager.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #import "ios/chrome/browser/crash_report/crash_restore_helper.h"
@@ -50,7 +59,13 @@
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/main/browser_util.h"
 #include "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/policy/policy_util.h"
+#import "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
+#include "ios/chrome/browser/policy/policy_watcher_browser_agent.h"
+#import "ios/chrome/browser/policy/policy_watcher_browser_agent_observer_bridge.h"
 #include "ios/chrome/browser/screenshot/screenshot_delegate.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/constants.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -65,7 +80,12 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/policy_signout_commands.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
+#import "ios/chrome/browser/ui/first_run/first_run_coordinator.h"
+#import "ios/chrome/browser/ui/first_run/first_run_screen_provider.h"
 #import "ios/chrome/browser/ui/first_run/first_run_util.h"
 #import "ios/chrome/browser/ui/first_run/location_permissions_commands.h"
 #import "ios/chrome/browser/ui/first_run/location_permissions_coordinator.h"
@@ -73,21 +93,24 @@
 #import "ios/chrome/browser/ui/first_run/orientation_limiting_navigation_controller.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #include "ios/chrome/browser/ui/history/history_coordinator.h"
+#import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/main/incognito_blocker_scene_agent.h"
+#import "ios/chrome/browser/ui/main/policy_signout_scene_agent.h"
 #import "ios/chrome/browser/ui/main/ui_blocker_scene_agent.h"
 #import "ios/chrome/browser/ui/scoped_ui_blocker/scoped_ui_blocker.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_browser_agent.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_scene_agent.h"
+#import "ios/chrome/browser/ui/start_surface/start_surface_util.h"
 #include "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator.h"
 #include "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_feature.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/browser/ui/whats_new/default_browser_utils.h"
 #import "ios/chrome/browser/url_loading/scene_url_loading_service.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -96,6 +119,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/window_activities/window_activity_helpers.h"
+#import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
@@ -161,13 +185,17 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }  // namespace
 
 @interface SceneController () <AppStateObserver,
-                               UserFeedbackDataSource,
+                               FirstRunCoordinatorDelegate,
+                               LocationPermissionsCommands,
+                               PolicyWatcherBrowserAgentObserving,
                                SettingsNavigationControllerDelegate,
                                SceneURLLoadingServiceDelegate,
                                TabGridCoordinatorDelegate,
-                               WebStateListObserving,
-                               LocationPermissionsCommands> {
+                               UserFeedbackDataSource,
+                               WebStateListObserving> {
   std::unique_ptr<WebStateListObserverBridge> _webStateListForwardingObserver;
+  std::unique_ptr<PolicyWatcherBrowserAgentObserverBridge>
+      _policyWatcherObserverBridge;
 }
 
 // Navigation View controller for the settings.
@@ -216,11 +244,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // the main view controller. This property should not be accessed before the
 // browser has started up to the FOREGROUND stage.
 @property(nonatomic, strong) TabGridCoordinator* mainCoordinator;
-// If YES, the tab switcher is currently active.
-@property(nonatomic, assign, getter=isTabSwitcherActive)
-    BOOL tabSwitcherIsActive;
-// YES while animating the dismissal of tab switcher.
-@property(nonatomic, assign) BOOL dismissingTabSwitcher;
+
+// YES while activating a new browser (often leading to dismissing the tab
+// switcher.
+@property(nonatomic, assign) BOOL activatingBrowser;
 
 // Wrangler to handle BVC and tab model creation, access, and related logic.
 // Implements features exposed from this object through the
@@ -238,6 +265,12 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 @property(nonatomic, strong)
     NSDictionary<NSString*, NSString*>* specificProductData;
 
+@property(nonatomic, weak)
+    WelcomeToChromeViewController* welcomeToChromeController;
+
+// Coordinator of the new first run UI.
+@property(nonatomic, strong) FirstRunCoordinator* firstRunCoordinator;
+
 @end
 
 @implementation SceneController {
@@ -245,6 +278,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   std::unique_ptr<ScopedUIBlocker> _firstRunUIBlocker;
 }
 @synthesize startupParameters = _startupParameters;
+@synthesize startupParametersAreBeingHandled =
+    _startupParametersAreBeingHandled;
 
 - (instancetype)initWithSceneState:(SceneState*)sceneState {
   self = [super init];
@@ -257,9 +292,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     // should be created right away.
     // When multiwindow is supported, the window is created by SceneDelegate,
     // and fetched by SceneState from UIScene's windows.
-    if (!IsSceneStartupSupported() && !self.sceneState.window) {
+    if (!base::ios::IsSceneStartupSupported() && !self.sceneState.window) {
       self.sceneState.window = [[ChromeOverlayWindow alloc]
           initWithFrame:[[UIScreen mainScreen] bounds]];
+      // Assign an a11y identifier for using in EGTest.
+      self.sceneState.window.accessibilityIdentifier = @"0";
       CustomizeUIWindowAppearance(self.sceneState.window);
     }
     _sceneURLLoadingService = new SceneUrlLoadingService();
@@ -268,9 +305,17 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     _webStateListForwardingObserver =
         std::make_unique<WebStateListObserverBridge>(self);
 
+    _policyWatcherObserverBridge =
+        std::make_unique<PolicyWatcherBrowserAgentObserverBridge>(self);
+
     // Add agents.
     [_sceneState addAgent:[[UIBlockerSceneAgent alloc] init]];
     [_sceneState addAgent:[[IncognitoBlockerSceneAgent alloc] init]];
+    [_sceneState
+        addAgent:[[IncognitoReauthSceneAgent alloc]
+                     initWithReauthModule:[[ReauthenticationModule alloc]
+                                              init]]];
+    [_sceneState addAgent:[[StartSurfaceSceneAgent alloc] init]];
   }
   return self;
 }
@@ -291,9 +336,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
         browsingDataCommandEndpoint:self.browsingDataCommandsHandler
                      regularBrowser:self.mainInterface.browser
                    incognitoBrowser:self.incognitoInterface.browser];
+    tabGridCoordinator.delegate = self;
     _mainCoordinator = tabGridCoordinator;
-    tabGridCoordinator.regularThumbStripAttacher = self.mainInterface.bvc;
-    tabGridCoordinator.incognitoThumbStripAttacher =
+    tabGridCoordinator.regularThumbStripSupporting = self.mainInterface.bvc;
+    tabGridCoordinator.incognitoThumbStripSupporting =
         self.incognitoInterface.bvc;
   }
   return _mainCoordinator;
@@ -317,7 +363,23 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 - (BOOL)isSettingsViewPresented {
   return self.settingsNavigationController ||
-         self.signinCoordinator.isSettingsViewPresented;
+         self.signinCoordinator.isSettingsViewPresented ||
+         self.welcomeToChromeController;
+}
+
+- (void)setStartupParameters:(AppStartupParameters*)parameters {
+  _startupParameters = parameters;
+  self.startupParametersAreBeingHandled = NO;
+  BOOL shouldShowPromo =
+      self.sceneState.appState.shouldShowDefaultBrowserPromo &&
+      (parameters.postOpeningAction == NO_ACTION);
+  self.sceneState.appState.shouldShowDefaultBrowserPromo = shouldShowPromo;
+
+  if (parameters.openedViaFirstPartyScheme) {
+    DefaultBrowserSceneAgent* sceneAgent =
+        [DefaultBrowserSceneAgent agentFromScene:self.sceneState];
+    [sceneAgent.nonModalScheduler logUserEnteredAppViaFirstPartyScheme];
+  }
 }
 
 #pragma mark - SceneStateObserver
@@ -325,175 +387,178 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 - (void)sceneState:(SceneState*)sceneState
     transitionedToActivationLevel:(SceneActivationLevel)level {
   AppState* appState = self.sceneState.appState;
-  if (appState.isInSafeMode) {
-    // Nothing at all should happen in safe mode. Code in
-    // appStateDidExitSafeMode will ensure the updates happen once safe mode
-    // ends.
-    return;
-  }
-  BOOL initializingUIInColdStart = level > SceneActivationLevelBackground &&
-                                   !self.sceneState.hasInitializedUI;
-  if (initializingUIInColdStart) {
-    [self initializeUI];
-    if (IsMultiwindowSupported()) {
-      if (@available(iOS 13, *)) {
-        // Add the scene to the list of connected scene, to restore in case of
-        // crashes.
-        [[PreviousSessionInfo sharedInstance]
-            addSceneSessionID:sceneState.scene.session.persistentIdentifier];
-      }
-    }
-  }
-
-  // When the scene transitions to inactive (such as when it's being shown in
-  // the OS app-switcher), update the title for display on iPadOS.
-  if (@available(iOS 13, *)) {
-    if (level == SceneActivationLevelForegroundInactive) {
-      sceneState.scene.title = [self displayTitleForAppSwitcher];
-    }
-  }
-
-  if (level == SceneActivationLevelForegroundActive) {
-    if (![self presentSigninUpgradePromoIfPossible]) {
-      [self presentSignInAccountsViewControllerIfNecessary];
-    }
-
-    [self handleExternalIntents];
-
-    if (!initializingUIInColdStart && self.tabSwitcherIsActive &&
-        [self shouldOpenNTPTabOnActivationOfBrowser:self.currentInterface
-                                                        .browser]) {
-      DCHECK(!self.dismissingTabSwitcher);
-      [self beginDismissingTabSwitcherWithCurrentBrowser:self.mainInterface
-                                                             .browser
-                                            focusOmnibox:NO];
-
-      OpenNewTabCommand* command = [OpenNewTabCommand commandWithIncognito:NO];
-      command.userInitiated = NO;
-      Browser* browser = self.currentInterface.browser;
-      id<ApplicationCommands> applicationHandler = HandlerForProtocol(
-          browser->GetCommandDispatcher(), ApplicationCommands);
-      [applicationHandler openURLInNewTab:command];
-      [self finishDismissingTabSwitcher];
-    }
-  }
-
-  if (sceneState.currentOrigin != WindowActivityRestoredOrigin) {
-    if (IsMultiwindowSupported()) {
-      if (@available(iOS 13, *)) {
-        base::UmaHistogramEnumeration(kMultiWindowOpenInNewWindowHistogram,
-                                      sceneState.currentOrigin);
-      }
-    }
-  }
-
-  if (self.sceneState.hasInitializedUI &&
-      level == SceneActivationLevelUnattached) {
-    if (IsMultiwindowSupported()) {
-      if (@available(iOS 13, *)) {
-        if (IsMultipleScenesSupported()) {
-          // If Multiple scenes are not supported, the session shouldn't be
-          // removed as it can be used for normal restoration.
-          [[PreviousSessionInfo sharedInstance]
-              removeSceneSessionID:sceneState.scene.session
-                                       .persistentIdentifier];
-        }
-      }
-    }
-    [self teardownUI];
-  }
+  [self transitionToSceneActivationLevel:level appInitStage:appState.initStage];
 }
 
 - (void)handleExternalIntents {
-  if (self.sceneState.appState.startupInformation.isPresentingFirstRunUI ||
+  if (self.sceneState.appState.initStage <= InitStageFirstRun ||
       self.sceneState.presentingModalOverlay) {
     return;
   }
-  if (IsSceneStartupSupported()) {
-    if (@available(iOS 13, *)) {
-      // Handle URL opening from
-      // |UIWindowSceneDelegate scene:willConnectToSession:options:|.
-      for (UIOpenURLContext* context in self.sceneState.connectionOptions
-               .URLContexts) {
-        URLOpenerParams* params =
-            [[URLOpenerParams alloc] initWithUIOpenURLContext:context];
-        [self openTabFromLaunchWithParams:params
-                       startupInformation:self.sceneState.appState
-                                              .startupInformation
-                                 appState:self.sceneState.appState];
-      }
-      if (self.sceneState.connectionOptions.shortcutItem) {
-        [UserActivityHandler
-            performActionForShortcutItem:self.sceneState.connectionOptions
-                                             .shortcutItem
-                       completionHandler:nil
-                               tabOpener:self
-                   connectionInformation:self
-                      startupInformation:self.sceneState.appState
-                                             .startupInformation
-                       interfaceProvider:self.interfaceProvider];
-      }
 
-      // See if this scene launched as part of a multiwindow URL opening.
-      // If so, load that URL (this also creates a new tab to load the URL
-      // in). No other UI will show in this case.
-      NSUserActivity* activityWithCompletion;
-      for (NSUserActivity* activity in self.sceneState.connectionOptions
-               .userActivities) {
-        if (ActivityIsURLLoad(activity)) {
-          UrlLoadParams params = LoadParamsFromActivity(activity);
-          ApplicationMode mode = params.in_incognito
-                                     ? ApplicationMode::INCOGNITO
-                                     : ApplicationMode::NORMAL;
-          [self openOrReuseTabInMode:mode
-                   withUrlLoadParams:params
-                 tabOpenedCompletion:nil];
-        } else if (ActivityIsTabMove(activity)) {
-          NSString* tabID = GetTabIDFromActivity(activity);
-          MoveTabToBrowser(tabID, self.mainInterface.browser,
-                           /*destination_tab_index=*/0);
-        } else if (!activityWithCompletion) {
-          // Completion involves user interaction.
-          // Only one can be triggered.
-          activityWithCompletion = activity;
-        }
-      }
-      if (activityWithCompletion) {
-        // This function is called when the scene is activated (or unblocked).
-        // Consider the scene as still not active at this point as the handling
-        // of startup parameters is not yet done (and will be later in this
-        // function).
-        [UserActivityHandler
-             continueUserActivity:activityWithCompletion
-              applicationIsActive:NO
-                        tabOpener:self
-            connectionInformation:self
-               startupInformation:self.sceneState.appState.startupInformation
-                     browserState:self.currentInterface.browserState];
-      }
-      self.sceneState.connectionOptions = nil;
-    }
-
-    if (self.startupParameters) {
-      [UserActivityHandler
-          handleStartupParametersWithTabOpener:self
-                         connectionInformation:self
-                            startupInformation:self.sceneState.appState
-                                                   .startupInformation
-                                  browserState:self.currentInterface
-                                                   .browserState];
-    }
-
-  } else {
-    NSDictionary* launchOptions =
-        self.sceneState.appState.startupInformation.launchOptions;
-    URLOpenerParams* params =
-        [[URLOpenerParams alloc] initWithLaunchOptions:launchOptions];
-    [self
-        openTabFromLaunchWithParams:params
-                 startupInformation:self.sceneState.appState.startupInformation
-                           appState:self.sceneState.appState];
+  if (!base::ios::IsSceneStartupSupported()) {
+    return;
   }
+
+  if (@available(iOS 13, *)) {
+    // Handle URL opening from
+    // |UIWindowSceneDelegate scene:willConnectToSession:options:|.
+    for (UIOpenURLContext* context in self.sceneState.connectionOptions
+             .URLContexts) {
+      URLOpenerParams* params =
+          [[URLOpenerParams alloc] initWithUIOpenURLContext:context];
+      [self openTabFromLaunchWithParams:params
+                     startupInformation:self.sceneState.appState
+                                            .startupInformation
+                               appState:self.sceneState.appState];
+    }
+    if (self.sceneState.connectionOptions.shortcutItem) {
+      [UserActivityHandler
+          performActionForShortcutItem:self.sceneState.connectionOptions
+                                           .shortcutItem
+                     completionHandler:nil
+                             tabOpener:self
+                 connectionInformation:self
+                    startupInformation:self.sceneState.appState
+                                           .startupInformation
+                     interfaceProvider:self.interfaceProvider
+                             initStage:self.sceneState.appState.initStage];
+    }
+
+    // See if this scene launched as part of a multiwindow URL opening.
+    // If so, load that URL (this also creates a new tab to load the URL
+    // in). No other UI will show in this case.
+    NSUserActivity* activityWithCompletion;
+    for (NSUserActivity* activity in self.sceneState.connectionOptions
+             .userActivities) {
+      if (ActivityIsURLLoad(activity)) {
+        UrlLoadParams params = LoadParamsFromActivity(activity);
+        ApplicationMode mode = params.in_incognito ? ApplicationMode::INCOGNITO
+                                                   : ApplicationMode::NORMAL;
+        [self openOrReuseTabInMode:mode
+                 withUrlLoadParams:params
+               tabOpenedCompletion:nil];
+      } else if (ActivityIsTabMove(activity)) {
+        NSString* tabID = GetTabIDFromActivity(activity);
+        MoveTabToBrowser(tabID, self.mainInterface.browser,
+                         /*destination_tab_index=*/0);
+      } else if (!activityWithCompletion) {
+        // Completion involves user interaction.
+        // Only one can be triggered.
+        activityWithCompletion = activity;
+      }
+    }
+    if (activityWithCompletion) {
+      // This function is called when the scene is activated (or unblocked).
+      // Consider the scene as still not active at this point as the handling
+      // of startup parameters is not yet done (and will be later in this
+      // function).
+      [UserActivityHandler
+           continueUserActivity:activityWithCompletion
+            applicationIsActive:NO
+                      tabOpener:self
+          connectionInformation:self
+             startupInformation:self.sceneState.appState.startupInformation
+                   browserState:self.currentInterface.browserState
+                      initStage:self.sceneState.appState.initStage];
+    }
+    self.sceneState.connectionOptions = nil;
+  }
+
+  if (self.startupParameters) {
+    if ([self isIncognitoForced]) {
+      [self.startupParameters
+          setUnexpectedMode:!self.startupParameters.launchInIncognito];
+      // When only incognito mode is available.
+      [self.startupParameters setLaunchInIncognito:YES];
+    } else if ([self isIncognitoDisabled]) {
+      [self.startupParameters
+          setUnexpectedMode:self.startupParameters.launchInIncognito];
+      // When incognito mode is disabled.
+      [self.startupParameters setLaunchInIncognito:NO];
+    }
+
+    [UserActivityHandler
+        handleStartupParametersWithTabOpener:self
+                       connectionInformation:self
+                          startupInformation:self.sceneState.appState
+                                                 .startupInformation
+                                browserState:self.currentInterface.browserState
+                                   initStage:self.sceneState.appState
+                                                 .initStage];
+
+    // Show a toast if the browser is opened in an unexpected mode.
+    if (self.startupParameters.isUnexpectedMode) {
+      [self showToastWhenOpenExternalIntentInUnexpectedMode];
+    }
+  }
+}
+
+// TODO(crbug.com/1173160): Split and move to the StartSurfaceSceneAgent after
+// refactoring the scene states.
+- (void)handleShowStartSurfaceIfNecessary {
+  if (!ShouldShowStartSurfaceForSceneState(self.sceneState)) {
+    return;
+  }
+
+  // Do not show the Start Surface no matter whether it is enabled or not when
+  // the Tab grid is active by design.
+  if (self.mainCoordinator.isTabGridActive) {
+    return;
+  }
+
+  // If there is no active tab, a NTP will be added, and since there is no
+  // recent tab, there is not need to mark |modifytVisibleNTPForStartSurface|.
+  // Keep showing the last active NTP tab no matter whether the Start Surface is
+  // enabled or not by design.
+  // Note that currentWebState could only be nullptr when the Tab grid is active
+  // for now.
+  web::WebState* currentWebState =
+      self.mainInterface.browser->GetWebStateList()->GetActiveWebState();
+  if (!currentWebState || IsURLNtp(currentWebState->GetVisibleURL())) {
+    return;
+  }
+
+  base::RecordAction(base::UserMetricsAction("IOS.StartSurface.Show"));
+  self.sceneState.modifytVisibleNTPForStartSurface = YES;
+  Browser* browser = self.currentInterface.browser;
+  StartSurfaceRecentTabBrowserAgent::FromBrowser(browser)->SaveMostRecentTab();
+
+  // Activate the existing NTP tab for the Start surface.
+  WebStateList* webStateList = browser->GetWebStateList();
+  for (int i = 0; i < webStateList->count(); i++) {
+    if (IsURLNtp(webStateList->GetWebStateAt(i)->GetVisibleURL())) {
+      webStateList->ActivateWebStateAt(i);
+      return;
+    }
+  }
+
+  // Open a new NTP tab if there is no existing NTP tab for the Start Surface.
+  OpenNewTabCommand* command =
+      [OpenNewTabCommand commandWithIncognito:self.currentInterface.incognito];
+  command.userInitiated = NO;
+  id<ApplicationCommands> applicationHandler =
+      HandlerForProtocol(browser->GetCommandDispatcher(), ApplicationCommands);
+  [applicationHandler openURLInNewTab:command];
+}
+
+- (void)recordWindowCreationForSceneState:(SceneState*)sceneState {
+  // Don't record window creation for single-window environments
+  if (!base::ios::IsMultipleScenesSupported())
+    return;
+
+  // Don't record restored window creation.
+  if (sceneState.currentOrigin == WindowActivityRestoredOrigin)
+    return;
+
+  // If there's only one connected scene, and it isn't being restored, this
+  // must be the initial app launch with scenes, so don't record the window
+  // creation.
+  if (sceneState.appState.connectedScenes.count <= 1)
+    return;
+
+  base::UmaHistogramEnumeration(kMultiWindowOpenInNewWindowHistogram,
+                                sceneState.currentOrigin);
 }
 
 - (BOOL)presentSignInAccountsViewControllerIfNecessary {
@@ -523,35 +588,72 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 - (void)performActionForShortcutItem:(UIApplicationShortcutItem*)shortcutItem
                    completionHandler:(void (^)(BOOL succeeded))completionHandler
     API_AVAILABLE(ios(13)) {
+  if (self.sceneState.appState.initStage <= InitStageSafeMode ||
+      !self.currentInterface.browserState) {
+    // Don't handle the intent if the browser UI objects aren't yet initialized.
+    // This is the case when the app is in safe mode or may be the case when the
+    // app is going through an odd sequence of lifecyle events (shouldn't happen
+    // but happens somehow), see crbug.com/1211006 for more details.
+    return;
+  }
+
   self.sceneState.startupHadExternalIntent = YES;
+
+  // Perform the action in incognito when only incognito mode is available.
+  [self.startupParameters setLaunchInIncognito:[self isIncognitoForced]];
+
   [UserActivityHandler
       performActionForShortcutItem:shortcutItem
                  completionHandler:completionHandler
                          tabOpener:self
              connectionInformation:self
                 startupInformation:self.sceneState.appState.startupInformation
-                 interfaceProvider:self.interfaceProvider];
+                 interfaceProvider:self.interfaceProvider
+                         initStage:self.sceneState.appState.initStage];
 }
 
 - (void)sceneState:(SceneState*)sceneState
     receivedUserActivity:(NSUserActivity*)userActivity {
-  if (self.sceneState.appState.isInSafeMode || !userActivity) {
+  if (!userActivity) {
     return;
   }
+
+  if (self.sceneState.appState.initStage <= InitStageSafeMode ||
+      !self.currentInterface.browserState) {
+    // Don't handle the intent if the browser UI objects aren't yet initialized.
+    // This is the case when the app is in safe mode or may be the case when the
+    // app is going through an odd sequence of lifecyle events (shouldn't happen
+    // but happens somehow), see crbug.com/1211006 for more details.
+    return;
+  }
+
   BOOL sceneIsActive =
       self.sceneState.activationLevel >= SceneActivationLevelForegroundActive;
-  if (self.sceneState.appState.startupInformation.isPresentingFirstRunUI ||
+  // TODO(crbug.com/1210542): Review this stage threshold; works for now.
+  if (self.sceneState.appState.initStage <= InitStageFirstRun ||
       self.sceneState.presentingModalOverlay) {
     sceneIsActive = NO;
   }
   self.sceneState.startupHadExternalIntent = YES;
-  [UserActivityHandler
-       continueUserActivity:userActivity
-        applicationIsActive:sceneIsActive
-                  tabOpener:self
-      connectionInformation:self
-         startupInformation:self.sceneState.appState.startupInformation
-               browserState:self.currentInterface.browserState];
+
+  PrefService* prefs = self.currentInterface.browserState->GetPrefs();
+  if (IsIncognitoPolicyApplied(prefs) &&
+      ![UserActivityHandler canProceedWithUserActivity:userActivity
+                                           prefService:prefs]) {
+    // If users request opening url in a unavailable mode, don't open the url
+    // but show a toast.
+    [self showToastWhenOpenExternalIntentInUnexpectedMode];
+  } else {
+    [UserActivityHandler
+         continueUserActivity:userActivity
+          applicationIsActive:sceneIsActive
+                    tabOpener:self
+        connectionInformation:self
+           startupInformation:self.sceneState.appState.startupInformation
+                 browserState:self.currentInterface.browserState
+                    initStage:self.sceneState.appState.initStage];
+  }
+
   if (sceneIsActive) {
     // It is necessary to reset the pendingUserActivity after handling it.
     // Handle the reset asynchronously to avoid interfering with other
@@ -570,13 +672,94 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 #pragma mark - AppStateObserver
 
-- (void)appStateDidExitSafeMode:(AppState*)appState {
-  // All events were postponed in safe mode. Resend them.
-  [self sceneState:self.sceneState
-      transitionedToActivationLevel:self.sceneState.activationLevel];
+- (void)appState:(AppState*)appState
+    didTransitionFromInitStage:(InitStage)previousInitStage {
+  [self transitionToSceneActivationLevel:self.sceneState.activationLevel
+                            appInitStage:appState.initStage];
 }
 
 #pragma mark - private
+
+// A sink for appState:didTransitionFromInitStage: and
+// sceneState:transitionedToActivationLevel: events. Discussion: the scene
+// controller cares both about the app and the scene init stages. This method is
+// called from both observer callbacks and allows to handle all the transitions
+// in one place.
+- (void)transitionToSceneActivationLevel:(SceneActivationLevel)level
+                            appInitStage:(InitStage)appInitStage {
+  if (appInitStage < InitStageFirstRun) {
+    // Nothing per-scene should happen before the app completes the global
+    // setup, like executing Safe mode, or creating the main BrowserState.
+    return;
+  }
+
+  BOOL initializingUIInColdStart = level > SceneActivationLevelBackground &&
+                                   !self.sceneState.hasInitializedUI;
+  if (initializingUIInColdStart) {
+    [self initializeUI];
+    if (base::ios::IsMultiwindowSupported()) {
+      if (@available(iOS 13, *)) {
+        // Add the scene to the list of connected scene, to restore in case of
+        // crashes.
+        [[PreviousSessionInfo sharedInstance]
+            addSceneSessionID:self.sceneState.sceneSessionID];
+      }
+    }
+  }
+
+  // When the scene transitions to inactive (such as when it's being shown in
+  // the OS app-switcher), update the title for display on iPadOS.
+  if (@available(iOS 13, *)) {
+    if (level == SceneActivationLevelForegroundInactive) {
+      self.sceneState.scene.title = [self displayTitleForAppSwitcher];
+    }
+  }
+
+  if (level == SceneActivationLevelForegroundActive &&
+      appInitStage == InitStageFinal) {
+    if (![self presentSigninUpgradePromoIfPossible]) {
+      [self presentSignInAccountsViewControllerIfNecessary];
+    }
+
+    [self handleExternalIntents];
+
+    if (!initializingUIInColdStart && self.mainCoordinator.isTabGridActive &&
+        [self shouldOpenNTPTabOnActivationOfBrowser:self.currentInterface
+                                                        .browser]) {
+      DCHECK(!self.activatingBrowser);
+      [self beginActivatingBrowser:self.mainInterface.browser
+                dismissTabSwitcher:YES
+                      focusOmnibox:NO];
+
+      OpenNewTabCommand* command = [OpenNewTabCommand commandWithIncognito:NO];
+      command.userInitiated = NO;
+      Browser* browser = self.currentInterface.browser;
+      id<ApplicationCommands> applicationHandler = HandlerForProtocol(
+          browser->GetCommandDispatcher(), ApplicationCommands);
+      [applicationHandler openURLInNewTab:command];
+      [self finishActivatingBrowserDismissingTabSwitcher:YES];
+    }
+
+    [self handleShowStartSurfaceIfNecessary];
+  }
+
+  [self recordWindowCreationForSceneState:self.sceneState];
+
+  if (self.sceneState.hasInitializedUI &&
+      level == SceneActivationLevelUnattached) {
+    if (base::ios::IsMultiwindowSupported()) {
+      if (@available(iOS 13, *)) {
+        if (base::ios::IsMultipleScenesSupported()) {
+          // If Multiple scenes are not supported, the session shouldn't be
+          // removed as it can be used for normal restoration.
+          [[PreviousSessionInfo sharedInstance]
+              removeSceneSessionID:self.sceneState.sceneSessionID];
+        }
+      }
+    }
+    [self teardownUI];
+  }
+}
 
 - (void)initializeUI {
   if (self.sceneState.hasInitializedUI) {
@@ -594,11 +777,12 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 //   1- New tab / Navigation startup parameters are specified.
 //   2- Load URL User activity is queud.
 //   3- Move tab user activity is queued.
+//   4- Only incognito mode is available.
 // In these cases if a restore prompt was shown, it may be dismissed immediately
 // and the user will not have a chance to restore the session.
 - (BOOL)shouldShowRestorePrompt {
-  BOOL shouldShow = !self.startupParameters;
-  if (shouldShow && IsSceneStartupSupported()) {
+  BOOL shouldShow = !self.startupParameters && ![self isIncognitoForced];
+  if (shouldShow && base::ios::IsSceneStartupSupported()) {
     if (@available(iOS 13, *)) {
       for (NSUserActivity* activity in self.sceneState.connectionOptions
                .userActivities) {
@@ -624,18 +808,42 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
        applicationCommandEndpoint:self
       browsingDataCommandEndpoint:self.browsingDataCommandsHandler];
 
-  // Ensure the main browser is created. This also creates the BVC.
-  [self.browserViewWrangler createMainBrowser];
+  // Ensure the main browser is created.
+  Browser* mainBrowser = [self.browserViewWrangler createMainBrowser];
+  CommandDispatcher* mainCommandDispatcher =
+      mainBrowser->GetCommandDispatcher();
 
-  // Add Scene Agent that requires CommandDispatcher.
+  // Add scene agents that require CommandDispatcher.
+  DefaultBrowserSceneAgent* defaultBrowserAgent =
+      [[DefaultBrowserSceneAgent alloc]
+          initWithCommandDispatcher:mainCommandDispatcher];
+  defaultBrowserAgent.nonModalScheduler.browser = mainBrowser;
+  [self.sceneState addAgent:defaultBrowserAgent];
+  if (defaultBrowserAgent.nonModalScheduler) {
+    [self.sceneState addObserver:defaultBrowserAgent.nonModalScheduler];
+  }
+
   [self.sceneState
-      addAgent:[[DefaultBrowserSceneAgent alloc]
-                   initWithCommandDispatcher:self.mainInterface.browser
-                                                 ->GetCommandDispatcher()]];
+      addAgent:[[PolicySignoutSceneAgent alloc]
+                   initWithCommandDispatcher:mainCommandDispatcher]];
 
-  if (IsSceneStartupSupported() &&
-      base::FeatureList::IsEnabled(kEnableFullPageScreenshot)) {
-    if (@available(iOS 13, *)) {
+  // Create and start the BVC.
+  [self.browserViewWrangler createMainCoordinatorAndInterface];
+
+  // Now that the main browser's command dispatcher is created and the newly
+  // started UI coordinators have registered with it, inject it into the
+  // PolicyWatcherBrowserAgent so it can start monitoring UI-impacting policy
+  // changes.
+  PolicyWatcherBrowserAgent* policyWatcherAgent =
+      PolicyWatcherBrowserAgent::FromBrowser(self.mainInterface.browser);
+  id<PolicySignoutPromptCommands> handler =
+      HandlerForProtocol(mainCommandDispatcher, PolicySignoutPromptCommands);
+  policyWatcherAgent->AddObserver(_policyWatcherObserverBridge.get());
+  policyWatcherAgent->Initialize(handler);
+
+  if (@available(iOS 14, *)) {
+    if (base::ios::IsSceneStartupSupported() &&
+        base::FeatureList::IsEnabled(kEnableFullPageScreenshot)) {
       self.screenshotDelegate = [[ScreenshotDelegate alloc]
           initWithBrowserInterfaceProvider:self.browserViewWrangler];
       [self.sceneState.scene.screenshotService
@@ -646,25 +854,35 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // Only create the restoration helper if the session with the current session
   // id was backed up successfully.
   if (self.sceneState.appState.sessionRestorationRequired) {
-    if (!IsMultiwindowSupported() ||
+    Browser* mainBrowser = self.mainInterface.browser;
+    if (!base::ios::IsMultiwindowSupported() ||
         [CrashRestoreHelper
-            isBackedUpSessionID:self.sceneState.sceneSessionID]) {
+            isBackedUpSessionID:self.sceneState.sceneSessionID
+                   browserState:mainBrowser->GetBrowserState()]) {
       self.sceneState.appState.startupInformation.restoreHelper =
-          [[CrashRestoreHelper alloc]
-              initWithBrowser:self.mainInterface.browser];
+          [[CrashRestoreHelper alloc] initWithBrowser:mainBrowser];
     }
   }
 
-  // Make sure the launch mode is correct and consistent with the mode used
-  // when the application was terminated. It is possible for the incognito
-  // UI to have been presented but with no tabs (e.g. the tab switcher was
-  // active and user closed the last tab). In that case, switch to regular
-  // UI. Also, if the app crashed, always switch back to regular UI.
-  const BOOL startInIncognito =
-      self.sceneState.incognitoContentVisible &&
-      !self.sceneState.appState.postCrashLaunch &&
-      !self.interfaceProvider.incognitoInterface.browser->GetWebStateList()
-           ->empty();
+  BOOL startInIncognito;
+  if ([self isIncognitoForced]) {
+    // When only incognito mode is available.
+    startInIncognito = YES;
+  } else if ([self isIncognitoDisabled]) {
+    // When incognito mode is disabled.
+    startInIncognito = NO;
+  } else {
+    // Make sure the launch mode is correct and consistent with the mode used
+    // when the application was terminated. It is possible for the incognito
+    // UI to have been presented but with no tabs (e.g. the tab switcher was
+    // active and user closed the last tab). In that case, switch to regular
+    // UI. Also, if the app crashed, always switch back to regular UI.
+    startInIncognito =
+        self.sceneState.incognitoContentVisible &&
+        !self.sceneState.appState.postCrashLaunch &&
+        !self.interfaceProvider.incognitoInterface.browser->GetWebStateList()
+             ->empty();
+  }
 
   // If the application crashed, clear incognito state.
   if (self.sceneState.appState.postCrashLaunch)
@@ -686,6 +904,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
             .restoreHelper showRestorePrompt];
     self.sceneState.appState.startupInformation.restoreHelper = nil;
   }
+
+  // Make sure the geolocation controller is created to observe permission
+  // events.
+  [OmniboxGeolocationController sharedInstance];
 }
 
 // Determines which UI should be shown on startup, and shows it.
@@ -716,6 +938,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // Decide if the First Run UI needs to run.
   const bool firstRun = ShouldPresentFirstRunExperience();
 
+  if (!firstRun) {
+    [self reconcileEulaAsAccepted];
+  }
+
   Browser* browser;
   if (launchMode == ApplicationMode::INCOGNITO) {
     browser = self.incognitoInterface.browser;
@@ -725,14 +951,20 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
   }
 
+  // Call this right after |setCurrentInterfaceForMode:| to ensure the
+  // currentInterface is set in case a new tab needs to be opened. Since this is
+  // synchronous with |setActivePage:| above, then the user should not see the
+  // last tab if the Start Surface is opened.
+  [self handleShowStartSurfaceIfNecessary];
+
   // Figure out what UI to show initially.
 
-  if (self.tabSwitcherIsActive) {
-    DCHECK(!self.dismissingTabSwitcher);
-    [self
-        beginDismissingTabSwitcherWithCurrentBrowser:self.mainInterface.browser
-                                        focusOmnibox:NO];
-    [self finishDismissingTabSwitcher];
+  if (self.mainCoordinator.isTabGridActive) {
+    DCHECK(!self.activatingBrowser);
+    [self beginActivatingBrowser:self.mainInterface.browser
+              dismissTabSwitcher:YES
+                    focusOmnibox:NO];
+    [self finishActivatingBrowserDismissingTabSwitcher:YES];
   }
 
   // If this is first run, or if this web state list should have an NTP created
@@ -749,28 +981,75 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   // If this is first run, show the first run UI on top of the new tab.
   // If this isn't first run, check if the sign-in promo needs to display.
-  if (firstRun && launchMode != ApplicationMode::INCOGNITO &&
+  if (firstRun &&
       !self.sceneState.appState.startupInformation.isPresentingFirstRunUI) {
-    [self showFirstRunUI];
+    if (base::FeatureList::IsEnabled(kEnableFREUIModuleIOS)) {
+      [self showFirstRunUI];
+    } else {
+      [self showLegacyFirstRunUI];
+    }
     // Do not ever show the 'restore' infobar during first run.
     self.sceneState.appState.startupInformation.restoreHelper = nil;
   }
 
-  // If skipping first run, not in Safe Mode, and the launch is not after a
-  // crash, consider showing the default browser promo.
-  if (!firstRun && !self.sceneState.appState.isInSafeMode &&
-      !self.sceneState.appState.postCrashLaunch) {
+  // If skipping first run, not in Safe Mode, no post opening action and the
+  // launch is not after a crash, consider showing the default browser promo.
+  NTPTabOpeningPostOpeningAction postOpeningAction =
+      self.NTPActionAfterTabSwitcherDismissal;
+  if (self.startupParameters) {
+    postOpeningAction = self.startupParameters.postOpeningAction;
+  }
+  if (!firstRun && self.sceneState.appState.initStage > InitStageSafeMode &&
+      postOpeningAction == NO_ACTION &&
+      !self.sceneState.appState.postCrashLaunch &&
+      !IsChromeLikelyDefaultBrowser()) {
     // Show the Default Browser promo UI if the user's past behavior fits
     // the categorization of potentially interested users or if the user is
     // signed in. Do not show if it is determined that Chrome is already the
-    // default browser or if the user has already seen the promo UI.
-    BOOL isEligibleUser = IsLikelyInterestedDefaultBrowserUser() ||
-                          ios::GetChromeBrowserProvider()
-                              ->GetChromeIdentityService()
-                              ->HasIdentities();
-    if (!IsChromeLikelyDefaultBrowser() &&
-        !HasUserInteractedWithFullscreenPromoBefore() && isEligibleUser) {
+    // default browser (checked in the if enclosing this comment) or if the user
+    // has already seen the promo UI. If the user was in the experiment group
+    // that showed the Remind Me Later button and tapped on it, then show the
+    // promo again if now is the right time.
+
+    AuthenticationService* authenticationService =
+        AuthenticationServiceFactory::GetForBrowserState(
+            self.sceneState.appState.mainBrowserState);
+    DCHECK(authenticationService);
+    DCHECK(authenticationService->initialized());
+    BOOL isSignedIn = authenticationService->IsAuthenticated();
+
+    // Tailored promos take priority over general promo.
+    BOOL isMadeForIOSPromoEligible =
+        IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeMadeForIOS);
+    BOOL isAllTabsPromoEligible =
+        IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeAllTabs) &&
+        isSignedIn;
+    BOOL isStaySafePromoEligible =
+        IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeStaySafe);
+
+    BOOL isTailoredPromoEligibleUser =
+        !HasUserInteractedWithTailoredFullscreenPromoBefore() &&
+        (isMadeForIOSPromoEligible || isAllTabsPromoEligible ||
+         isStaySafePromoEligible);
+    if (isTailoredPromoEligibleUser && !UserInPromoCooldown()) {
       self.sceneState.appState.shouldShowDefaultBrowserPromo = YES;
+      self.sceneState.appState.defaultBrowserPromoTypeToShow =
+          MostRecentInterestDefaultPromoType(!isSignedIn);
+      DCHECK(self.sceneState.appState.defaultBrowserPromoTypeToShow !=
+             DefaultPromoTypeGeneral);
+      return;
+    }
+
+    BOOL isGeneralPromoEligibleUser =
+        !HasUserInteractedWithFullscreenPromoBefore() &&
+        (IsLikelyInterestedDefaultBrowserUser(DefaultPromoTypeGeneral) ||
+         isSignedIn) &&
+        !UserInPromoCooldown();
+    if (isGeneralPromoEligibleUser ||
+        ShouldShowRemindMeLaterDefaultBrowserFullscreenPromo()) {
+      self.sceneState.appState.shouldShowDefaultBrowserPromo = YES;
+      self.sceneState.appState.defaultBrowserPromoTypeToShow =
+          DefaultPromoTypeGeneral;
     }
   }
 }
@@ -783,10 +1062,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
 
   // The UI should be stopped before the models they observe are stopped.
+  // SigninCoordinator teardown is performed by the |signinCompletion| on
+  // termination of async events, do not add additional teardown here.
   [self.signinCoordinator
       interruptWithAction:SigninCoordinatorInterruptActionNoDismiss
                completion:nil];
-  self.signinCoordinator = nil;
 
   [self.historyCoordinator stop];
   self.historyCoordinator = nil;
@@ -805,6 +1085,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       _webStateListForwardingObserver.get());
   self.incognitoInterface.browser->GetWebStateList()->RemoveObserver(
       _webStateListForwardingObserver.get());
+
+  PolicyWatcherBrowserAgent::FromBrowser(self.mainInterface.browser)
+      ->RemoveObserver(_policyWatcherObserverBridge.get());
 
   [self.browserViewWrangler shutdown];
   self.browserViewWrangler = nil;
@@ -828,16 +1111,16 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   int numberOfTabs = self.currentInterface.browser->GetWebStateList()->count();
   DCHECK(numberOfTabs > 0);
   GURL url = webState->GetVisibleURL();
-  base::string16 urlText = url_formatter::FormatUrl(
+  std::u16string urlText = url_formatter::FormatUrl(
       url,
       url_formatter::kFormatUrlOmitDefaults |
           url_formatter::kFormatUrlOmitTrivialSubdomains |
           url_formatter::kFormatUrlOmitHTTPS |
           url_formatter::kFormatUrlTrimAfterHost,
       net::UnescapeRule::SPACES, nullptr, nullptr, nullptr);
-  base::string16 pattern =
+  std::u16string pattern =
       l10n_util::GetStringUTF16(IDS_IOS_APP_SWITCHER_SCENE_TITLE);
-  base::string16 formattedTitle =
+  std::u16string formattedTitle =
       base::i18n::MessageFormatter::FormatWithNamedArgs(
           pattern, "domain", urlText, "count", numberOfTabs - 1);
   return base::SysUTF16ToNSString(formattedTitle);
@@ -848,10 +1131,64 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   UMA_HISTOGRAM_ENUMERATION("IOS.LocationPermissionsUI", experimentGroup);
 }
 
+// If users request to open tab or search and Chrome is not opened in the mode
+// they expected, show a toast to clarify that the expected mode is not
+// available.
+- (void)showToastWhenOpenExternalIntentInUnexpectedMode {
+  id<SnackbarCommands> handler = HandlerForProtocol(
+      self.mainInterface.browser->GetCommandDispatcher(), SnackbarCommands);
+  BOOL inIncognitoMode = [self isIncognitoForced];
+
+  UrlLoadParams params = UrlLoadParams::InNewTab(GURL(kChromeUIManagementURL));
+  params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  ProceduralBlock moreAction = ^{
+    [self dismissModalsAndOpenSelectedTabInMode:
+              inIncognitoMode ? ApplicationModeForTabOpening::INCOGNITO
+                              : ApplicationModeForTabOpening::NORMAL
+                              withUrlLoadParams:params
+                                 dismissOmnibox:YES
+                                     completion:nil];
+  };
+
+  MDCSnackbarMessageAction* action = [[MDCSnackbarMessageAction alloc] init];
+  action.handler = moreAction;
+  action.title = l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_MORE_BUTTON);
+  action.accessibilityIdentifier =
+      l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_MORE_BUTTON);
+
+  NSString* text =
+      inIncognitoMode
+          ? l10n_util::GetNSString(IDS_IOS_SNACKBAR_MESSAGE_ICOGNITO_FORCED)
+          : l10n_util::GetNSString(IDS_IOS_SNACKBAR_MESSAGE_ICOGNITO_DISABLED);
+
+  MDCSnackbarMessage* message = [MDCSnackbarMessage messageWithText:text];
+  message.action = action;
+
+  [handler showSnackbarMessage:message
+                withHapticType:UINotificationFeedbackTypeError];
+}
+
+- (BOOL)isIncognitoDisabled {
+  return IsIncognitoModeDisabled(
+      self.mainInterface.browser->GetBrowserState()->GetPrefs());
+}
+
+- (BOOL)isIncognitoForced {
+  // TODO(crbug.com/1182280):remove the decision only for testing and set up a
+  // proper scene controller in unittests.
+  if (!self.incognitoInterface) {
+    // ONLY for testing.
+    return NO;
+  }
+
+  return IsIncognitoModeForced(
+      self.incognitoInterface.browser->GetBrowserState()->GetPrefs());
+}
+
 #pragma mark - First Run
 
 // Initializes the first run UI and presents it to the user.
-- (void)showFirstRunUI {
+- (void)showLegacyFirstRunUI {
   DCHECK(!self.signinCoordinator);
   DCHECK(!_firstRunUIBlocker);
   _firstRunUIBlocker = std::make_unique<ScopedUIBlocker>(self.sceneState);
@@ -868,16 +1205,18 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
              name:kChromeFirstRunUIDidFinishNotification
            object:nil];
 
-  Browser* browser = self.mainInterface.browser;
+  Browser* mainBrowser = self.mainInterface.browser;
   id<ApplicationCommands, BrowsingDataCommands> welcomeHandler =
       static_cast<id<ApplicationCommands, BrowsingDataCommands>>(
-          browser->GetCommandDispatcher());
+          mainBrowser->GetCommandDispatcher());
 
   WelcomeToChromeViewController* welcomeToChrome =
       [[WelcomeToChromeViewController alloc]
-          initWithBrowser:browser
-                presenter:self.mainInterface.bvc
+          initWithBrowser:self.currentInterface.browser
+              mainBrowser:mainBrowser
+                presenter:self.currentInterface.bvc
                dispatcher:welcomeHandler];
+  self.welcomeToChromeController = welcomeToChrome;
   UINavigationController* navController =
       [[OrientationLimitingNavigationController alloc]
           initWithRootViewController:welcomeToChrome];
@@ -886,22 +1225,51 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   CGRect appFrame = [[UIScreen mainScreen] bounds];
   [[navController view] setFrame:appFrame];
   self.sceneState.presentingFirstRunUI = YES;
-  [self.mainInterface.viewController presentViewController:navController
-                                                  animated:NO
-                                                completion:nil];
+  [self.currentInterface.viewController presentViewController:navController
+                                                     animated:NO
+                                                   completion:nil];
+}
+
+// Shows the first run UI.
+- (void)showFirstRunUI {
+  DCHECK(!_firstRunUIBlocker);
+  _firstRunUIBlocker = std::make_unique<ScopedUIBlocker>(self.sceneState);
+
+  FirstRunScreenProvider* provider = [[FirstRunScreenProvider alloc] init];
+
+  self.firstRunCoordinator = [[FirstRunCoordinator alloc]
+      initWithBaseViewController:self.currentInterface.bvc
+                         browser:self.currentInterface.browser
+                     mainBrowser:self.mainInterface.browser
+                   syncPresenter:self.mainInterface.bvc
+                  screenProvider:provider];
+  self.firstRunCoordinator.delegate = self;
+  self.sceneState.presentingFirstRunUI = YES;
+  [self.firstRunCoordinator start];
 }
 
 // Sets a LocalState pref marking the TOS EULA as accepted.
-- (void)markEulaAsAccepted {
-  PrefService* prefs = GetApplicationContext()->GetLocalState();
-  if (!prefs->GetBoolean(prefs::kEulaAccepted))
-    prefs->SetBoolean(prefs::kEulaAccepted, true);
-  prefs->CommitPendingWrite();
+// If this function is called, the EULA flag is not set but the FRE was not
+// displayed.
+// This can only happen if the EULA flag has not been set correctly on a
+// previous
+- (void)reconcileEulaAsAccepted {
+  static dispatch_once_t once_token = 0;
+  dispatch_once(&once_token, ^{
+    PrefService* prefs = GetApplicationContext()->GetLocalState();
+    if (!FirstRun::IsChromeFirstRun() &&
+        !prefs->GetBoolean(prefs::kEulaAccepted)) {
+      prefs->SetBoolean(prefs::kEulaAccepted, true);
+      prefs->CommitPendingWrite();
+      base::UmaHistogramBoolean("IOS.ReconcileEULAPref", true);
+    }
+  });
 }
 
 - (void)handleFirstRunUIWillFinish {
-  [self markEulaAsAccepted];
-
+  if (![self ignoreFirstRunStageForTesting]) {
+    DCHECK(self.sceneState.appState.initStage == InitStageFirstRun);
+  }
   DCHECK(self.sceneState.presentingFirstRunUI);
   _firstRunUIBlocker.reset();
   self.sceneState.presentingFirstRunUI = NO;
@@ -909,9 +1277,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       removeObserver:self
                 name:kChromeFirstRunUIWillFinishNotification
               object:nil];
-  if (self.sceneState.activationLevel >= SceneActivationLevelForegroundActive) {
-    [self handleExternalIntents];
-  }
 }
 
 // Handles the notification that first run modal dialog UI completed.
@@ -921,14 +1286,15 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                 name:kChromeFirstRunUIDidFinishNotification
               object:nil];
 
+  self.welcomeToChromeController = nil;
+
   if (!location_permissions_field_trial::IsInRemoveFirstRunPromptGroup() &&
       !location_permissions_field_trial::IsInFirstRunModalGroup()) {
     [self logLocationPermissionsExperimentForGroupShown:
               LocationPermissionsUI::kFirstRunPromptNotShown];
     // As soon as First Run has finished, give OmniboxGeolocationController an
     // opportunity to present the iOS system location alert.
-    [[OmniboxGeolocationController sharedInstance]
-        triggerSystemPromptForNewUser:YES];
+    [[OmniboxGeolocationController sharedInstance] triggerSystemPrompt];
   } else if (location_permissions_field_trial::
                  IsInRemoveFirstRunPromptGroup()) {
     // If in RemoveFirstRunPrompt group, the system prompt will be delayed until
@@ -936,14 +1302,19 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     [[OmniboxGeolocationController sharedInstance]
         systemPromptSkippedForNewUser];
   }
+  if (![self ignoreFirstRunStageForTesting]) {
+    [self.sceneState.appState queueTransitionToNextInitStage];
+  }
 }
 
 // Presents the sign-in upgrade promo if is relevant and possible.
 // Returns YES if the promo is shown.
 - (BOOL)presentSigninUpgradePromoIfPossible {
-  if (!SigninShouldPresentUserSigninUpgrade(
-          self.sceneState.appState.mainBrowserState))
+  if (!signin::ShouldPresentUserSigninUpgrade(
+          self.sceneState.appState.mainBrowserState,
+          version_info::GetVersion())) {
     return NO;
+  }
   // Don't show promos if first run is shown in any scene.  (Note:  This flag
   // is only YES while the first run UI is visible.  However, as this function
   // is called immediately after the UI is shown, it's a safe check.)
@@ -996,7 +1367,19 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 // Opens an url from a link in the settings UI.
 - (void)closeSettingsUIAndOpenURL:(OpenNewTabCommand*)command {
-  [self openUrlFromSettings:command];
+  DCHECK([command fromChrome]);
+  UrlLoadParams params = UrlLoadParams::InNewTab([command URL]);
+  params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
+  ProceduralBlock completion = ^{
+    ApplicationModeForTabOpening mode =
+        [self isIncognitoForced] ? ApplicationModeForTabOpening::INCOGNITO
+                                 : ApplicationModeForTabOpening::NORMAL;
+    [self dismissModalsAndOpenSelectedTabInMode:mode
+                              withUrlLoadParams:params
+                                 dismissOmnibox:YES
+                                     completion:nil];
+  };
+  [self closeSettingsAnimated:YES completion:completion];
 }
 
 - (void)closeSettingsUI {
@@ -1032,17 +1415,23 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   [self.mainCoordinator prepareToShowTabGrid];
 }
 
+- (void)displayRegularTabSwitcherInGridLayout {
+  [self displayTabSwitcherForcingRegularTabs:YES];
+}
+
 - (void)displayTabSwitcherInGridLayout {
-  if (!IsThumbStripEnabled()) {
-    // When the thumb strip feature is enabled, |self.tabSwitcherIsActive| could
-    // be YES if the tab switcher button is tapped while the thumb strip is
-    // visible, or it could be NO if tapped while thumb strip is hidden.
-    // Otherwise, when the thumb strip feature is disabled,
-    // |self.tabSwitcherIsActive| should always be NO at this point in code.
-    DCHECK(!self.tabSwitcherIsActive);
-  }
+  [self displayTabSwitcherForcingRegularTabs:NO];
+}
+
+- (void)displayTabSwitcherForcingRegularTabs:(BOOL)forcing {
+  DCHECK(!self.mainCoordinator.isTabGridActive);
   if (!self.isProcessingVoiceSearchCommand) {
     [self.currentInterface.bvc userEnteredTabSwitcher];
+
+    if (forcing && self.currentInterface.incognito) {
+      [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
+    }
+
     [self showTabSwitcher];
     self.isProcessingTabSwitcherCommand = YES;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
@@ -1104,6 +1493,20 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 - (void)openURLInNewTab:(OpenNewTabCommand*)command {
+  if (base::FeatureList::IsEnabled(kIncognitoAuthentication) &&
+      command.inIncognito) {
+    IncognitoReauthSceneAgent* reauthAgent =
+        [IncognitoReauthSceneAgent agentFromScene:self.sceneState];
+    if (reauthAgent.authenticationRequired) {
+      __weak SceneController* weakSelf = self;
+      [reauthAgent
+          authenticateIncognitoContentWithCompletionBlock:^(BOOL success) {
+            [weakSelf openURLInNewTab:command];
+          }];
+      return;
+    }
+  }
+
   UrlLoadParams params =
       UrlLoadParams::InNewTab(command.URL, command.virtualURL);
   params.SetInBackground(command.inBackground);
@@ -1114,6 +1517,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   params.from_chrome = command.fromChrome;
   params.user_initiated = command.userInitiated;
   params.should_focus_omnibox = command.shouldFocusOmnibox;
+  params.inherit_opener = !command.inBackground;
   self.sceneURLLoadingService->LoadUrlInNewTab(params);
 }
 
@@ -1197,26 +1601,37 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   [self startSigninCoordinatorWithCompletion:nil];
 }
 
-// TODO(crbug.com/779791) : Remove settings commands from MainController.
-- (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
-  DCHECK(!self.signinCoordinator);
-  self.signinCoordinator = [SigninCoordinator
-      addAccountCoordinatorWithBaseViewController:baseViewController
-                                          browser:self.mainInterface.browser
-                                      accessPoint:signin_metrics::AccessPoint::
-                                                      ACCESS_POINT_UNKNOWN];
-
-  [self startSigninCoordinatorWithCompletion:nil];
-}
-
 - (void)showConsistencyPromoFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(!self.signinCoordinator);
+            (UIViewController*)baseViewController
+                                           URL:(const GURL&)url {
+  // Do not display the web sign-in promo if there are no identities on the
+  // device or if a sign-in is in progress.
+  if (self.signinCoordinator != nil || !ios::GetChromeBrowserProvider()
+                                            ->GetChromeIdentityService()
+                                            ->HasIdentities()) {
+    return;
+  }
+
+  // Suppress iPad web sign-in.
+  // TODO(crbug.com/1211794): Remove iPad suppression once the UI is adapted.
+  if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+    return;
+  }
+
   self.signinCoordinator = [SigninCoordinator
       consistencyPromoSigninCoordinatorWithBaseViewController:baseViewController
                                                       browser:self.mainInterface
                                                                   .browser];
-  [self startSigninCoordinatorWithCompletion:nil];
+  __weak SceneController* weakSelf = self;
+  [self startSigninCoordinatorWithCompletion:^(BOOL success) {
+    // If the sign-in is not successful or the scene controller is shut down do
+    // not load the continuation URL.
+    if (!success || !weakSelf) {
+      return;
+    }
+    UrlLoadingBrowserAgent::FromBrowser(weakSelf.mainInterface.browser)
+        ->Load(UrlLoadParams::InCurrentTab(url));
+  }];
 }
 
 - (void)showSigninAccountNotificationFromViewController:
@@ -1266,13 +1681,22 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 - (void)openNewWindowWithActivity:(NSUserActivity*)userActivity {
-  if (!IsMultipleScenesSupported())
+  if (!base::ios::IsMultipleScenesSupported())
     return;  // silent no-op.
 
   if (@available(iOS 13, *)) {
     UISceneActivationRequestOptions* options =
         [[UISceneActivationRequestOptions alloc] init];
     options.requestingScene = self.sceneState.scene;
+
+    if (self.mainInterface) {
+      PrefService* prefs = self.mainInterface.browserState->GetPrefs();
+      if (IsIncognitoModeForced(prefs)) {
+        userActivity = AdaptUserActivityToIncognito(userActivity, true);
+      } else if (IsIncognitoModeDisabled(prefs)) {
+        userActivity = AdaptUserActivityToIncognito(userActivity, false);
+      }
+    }
 
     [UIApplication.sharedApplication
         requestSceneSessionActivation:nil /* make a new scene */
@@ -1336,6 +1760,25 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
       [SettingsNavigationController googleServicesControllerForBrowser:browser
                                                               delegate:self];
 
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
+}
+
+// TODO(crbug.com/779791) : Remove show settings commands from MainController.
+- (void)showSyncSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  DCHECK(!self.signinCoordinator);
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController
+        showSyncSettingsFromViewController:baseViewController];
+    return;
+  }
+
+  Browser* browser = self.mainInterface.browser;
+  self.settingsNavigationController =
+      [SettingsNavigationController syncSettingsControllerForBrowser:browser
+                                                            delegate:self];
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -1442,20 +1885,24 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                                  completion:nil];
 }
 
-#pragma mark - ApplicationCommandsHelpers
+- (void)showDefaultBrowserSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  if (!baseViewController) {
+    baseViewController = self.currentInterface.viewController;
+  }
+  if (self.settingsNavigationController) {
+    [self.settingsNavigationController
+        showDefaultBrowserSettingsFromViewController:baseViewController];
+    return;
+  }
+  Browser* browser = self.mainInterface.browser;
 
-- (void)openUrlFromSettings:(OpenNewTabCommand*)command {
-  DCHECK([command fromChrome]);
-  UrlLoadParams params = UrlLoadParams::InNewTab([command URL]);
-  params.web_params.transition_type = ui::PAGE_TRANSITION_TYPED;
-  ProceduralBlock completion = ^{
-    [self dismissModalsAndOpenSelectedTabInMode:ApplicationModeForTabOpening::
-                                                    NORMAL
-                              withUrlLoadParams:params
-                                 dismissOmnibox:YES
-                                     completion:nil];
-  };
-  [self closeSettingsAnimated:YES completion:completion];
+  self.settingsNavigationController =
+      [SettingsNavigationController defaultBrowserControllerForBrowser:browser
+                                                              delegate:self];
+  [baseViewController presentViewController:self.settingsNavigationController
+                                   animated:YES
+                                 completion:nil];
 }
 
 #pragma mark - UserFeedbackDataSource
@@ -1465,7 +1912,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 - (NSString*)currentPageDisplayURL {
-  if (self.tabSwitcherIsActive)
+  if (self.mainCoordinator.isTabGridActive)
     return nil;
   web::WebState* webState =
       self.currentInterface.browser->GetWebStateList()->GetActiveWebState();
@@ -1473,7 +1920,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     return nil;
   // Returns URL of browser tab that is currently showing.
   GURL url = webState->GetVisibleURL();
-  base::string16 urlText = url_formatter::FormatUrl(url);
+  std::u16string urlText = url_formatter::FormatUrl(url);
   return base::SysUTF16ToNSString(urlText);
 }
 
@@ -1483,7 +1930,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   CGFloat scale = 0.0;
   // For screenshots of the tab switcher we need to use a scale of 1.0 to avoid
   // spending too much time since the tab switcher can have lots of subviews.
-  if (self.tabSwitcherIsActive)
+  if (self.mainCoordinator.isTabGridActive)
     scale = 1.0;
   return CaptureView(lastView, scale);
 }
@@ -1494,7 +1941,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     return nil;
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForBrowserState(browserState);
-  std::string username = identity_manager->GetPrimaryAccountInfo().email;
+  std::string username =
+      identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+          .email;
   return username.empty() ? nil : base::SysUTF8ToNSString(username);
 }
 
@@ -1522,39 +1971,64 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 #pragma mark - TabGridCoordinatorDelegate
 
 - (void)tabGrid:(TabGridCoordinator*)tabGrid
-    shouldFinishWithBrowser:(Browser*)browser
-               focusOmnibox:(BOOL)focusOmnibox {
-  [self beginDismissingTabSwitcherWithCurrentBrowser:browser
-                                        focusOmnibox:focusOmnibox];
+    shouldActivateBrowser:(Browser*)browser
+           dismissTabGrid:(BOOL)dismissTabGrid
+             focusOmnibox:(BOOL)focusOmnibox {
+  DCHECK(dismissTabGrid ||
+         ShowThumbStripInTraitCollection(
+             self.mainCoordinator.baseViewController.traitCollection));
+  [self beginActivatingBrowser:browser
+            dismissTabSwitcher:dismissTabGrid
+                  focusOmnibox:focusOmnibox];
 }
 
 - (void)tabGridDismissTransitionDidEnd:(TabGridCoordinator*)tabGrid {
-  [self finishDismissingTabSwitcher];
+  if (!self.sceneState.hasInitializedUI) {
+    return;
+  }
+  [self finishActivatingBrowserDismissingTabSwitcher:YES];
 }
 
-// Begins the process of dismissing the tab switcher with the given current
-// model, switching which BVC is suspended if necessary, but not updating the
-// UI.  The omnibox will be focused after the tab switcher dismissal is
-// completed if |focusOmnibox| is YES.
-- (void)beginDismissingTabSwitcherWithCurrentBrowser:(Browser*)browser
-                                        focusOmnibox:(BOOL)focusOmnibox {
+- (TabGridPage)activePageForTabGrid:(TabGridCoordinator*)tabGrid {
+  return self.activePage;
+}
+
+// Begins the process of activating the given current model, switching which BVC
+// is suspended if necessary. If |dismissTabSwitcher| is set, the tab switcher
+// will also be dismissed. Note that this means that a browser can be activated
+// without closing the tab switcher (e.g. thumb strip), but dismissing the tab
+// switcher requires activating a browser. The omnibox will be focused after the
+// tab switcher dismissal is completed if |focusOmnibox| is YES.
+- (void)beginActivatingBrowser:(Browser*)browser
+            dismissTabSwitcher:(BOOL)dismissTabSwitcher
+                  focusOmnibox:(BOOL)focusOmnibox {
   DCHECK(browser == self.mainInterface.browser ||
          browser == self.incognitoInterface.browser);
+  DCHECK(dismissTabSwitcher ||
+         ShowThumbStripInTraitCollection(
+             self.mainCoordinator.baseViewController.traitCollection));
 
-  self.dismissingTabSwitcher = YES;
+  self.activatingBrowser = YES;
   ApplicationMode mode = (browser == self.mainInterface.browser)
                              ? ApplicationMode::NORMAL
                              : ApplicationMode::INCOGNITO;
   [self setCurrentInterfaceForMode:mode];
 
   // The call to set currentBVC above does not actually display the BVC, because
-  // _dismissingTabSwitcher is YES.  So: Force the BVC transition to start.
-  [self displayCurrentBVCAndFocusOmnibox:focusOmnibox];
+  // _activatingBrowser is YES.  So: Force the BVC transition to start.
+  [self displayCurrentBVCAndFocusOmnibox:focusOmnibox
+                      dismissTabSwitcher:dismissTabSwitcher];
+  // If the tab switcher was not dismissed, finish the activation process now.
+  if (!dismissTabSwitcher) {
+    [self finishActivatingBrowserDismissingTabSwitcher:NO];
+  }
 }
 
-// Completes the process of dismissing the tab switcher, removing it from the
+// Completes the process of activating the given browser. If necessary, also
+// finishes dismissing the tab switcher, removing it from the
 // screen and showing the appropriate BVC.
-- (void)finishDismissingTabSwitcher {
+- (void)finishActivatingBrowserDismissingTabSwitcher:
+    (BOOL)dismissingTabSwitcher {
   // In real world devices, it is possible to have an empty tab model at the
   // finishing block of a BVC presentation animation. This can happen when the
   // following occur: a) There is JS that closes the last incognito tab, b) that
@@ -1566,19 +2040,14 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   if (self.currentInterface.browser &&
       self.currentInterface.browser->GetWebStateList() &&
       self.currentInterface.browser->GetWebStateList()->count() == 0U) {
-    self.tabSwitcherIsActive = NO;
-    self.dismissingTabSwitcher = NO;
-    self.modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
-    self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
-    [self showTabSwitcher];
+    self.activatingBrowser = NO;
+    if (dismissingTabSwitcher) {
+      self.modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
+      self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
+      [self showTabSwitcher];
+    }
     return;
   }
-
-  // The tab switcher dismissal animation runs
-  // as part of the BVC presentation process.  The BVC is presented before the
-  // animations begin, so it should be the current active VC at this point.
-  DCHECK_EQ(self.mainCoordinator.activeViewController,
-            self.currentInterface.viewController);
 
   if (self.modeToDisplayOnTabSwitcherDismissal ==
       TabSwitcherDismissalMode::NORMAL) {
@@ -1587,18 +2056,18 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
              TabSwitcherDismissalMode::INCOGNITO) {
     [self setCurrentInterfaceForMode:ApplicationMode::INCOGNITO];
   }
+  self.activatingBrowser = NO;
 
-  self.modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
+  if (dismissingTabSwitcher) {
+    self.modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
 
-  ProceduralBlock action = [self completionBlockForTriggeringAction:
-                                     self.NTPActionAfterTabSwitcherDismissal];
-  self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
-  if (action) {
-    action();
+    ProceduralBlock action = [self completionBlockForTriggeringAction:
+                                       self.NTPActionAfterTabSwitcherDismissal];
+    self.NTPActionAfterTabSwitcherDismissal = NO_ACTION;
+    if (action) {
+      action();
+    }
   }
-
-  self.tabSwitcherIsActive = NO;
-  self.dismissingTabSwitcher = NO;
 }
 
 #pragma mark Tab opening utility methods.
@@ -1672,13 +2141,37 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                                dismissOmnibox:(BOOL)dismissOmnibox
                                    completion:(ProceduralBlock)completion {
   UrlLoadParams copyOfUrlLoadParams = urlLoadParams;
-  [self
-      dismissModalDialogsWithCompletion:^{
-        [self openSelectedTabInMode:targetMode
+
+  __weak SceneController* weakSelf = self;
+  void (^dismissModalsCompletion)() = ^{
+    [weakSelf openSelectedTabInMode:targetMode
                   withUrlLoadParams:copyOfUrlLoadParams
                          completion:completion];
-      }
-                         dismissOmnibox:dismissOmnibox];
+  };
+
+  // Wrap the post-dismiss-modals action with the incognito auth check.
+  if (base::FeatureList::IsEnabled(kIncognitoAuthentication) &&
+      targetMode == ApplicationModeForTabOpening::INCOGNITO) {
+    IncognitoReauthSceneAgent* reauthAgent =
+        [IncognitoReauthSceneAgent agentFromScene:self.sceneState];
+    if (reauthAgent.authenticationRequired) {
+      void (^wrappedDismissModalCompletion)() = dismissModalsCompletion;
+      dismissModalsCompletion = ^{
+        [reauthAgent
+            authenticateIncognitoContentWithCompletionBlock:^(BOOL success) {
+              if (success) {
+                wrappedDismissModalCompletion();
+              } else {
+                // Do not open the tab, but still call completion.
+                completion();
+              }
+            }];
+      };
+    }
+  }
+
+  [self dismissModalDialogsWithCompletion:dismissModalsCompletion
+                           dismissOmnibox:dismissOmnibox];
 }
 
 - (void)dismissModalsAndOpenMultipleTabsInMode:
@@ -1734,11 +2227,13 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                  startupInformation:(id<StartupInformation>)startupInformation
                            appState:(AppState*)appState {
   if (params) {
-    [URLOpener handleLaunchOptions:params
-                         tabOpener:self
-             connectionInformation:self
-                startupInformation:startupInformation
-                          appState:appState];
+    [URLOpener
+          handleLaunchOptions:params
+                    tabOpener:self
+        connectionInformation:self
+           startupInformation:startupInformation
+                     appState:appState
+                  prefService:self.currentInterface.browserState->GetPrefs()];
   }
 }
 
@@ -1751,7 +2246,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 - (BOOL)shouldOpenNTPTabOnActivationOfBrowser:(Browser*)browser {
   // Check if there are pending actions that would result in opening a new tab.
   // In that case, it is not useful to open another tab.
-  if (IsSceneStartupSupported()) {
+  if (base::ios::IsSceneStartupSupported()) {
     if (@available(iOS 13, *)) {
       for (NSUserActivity* activity in self.sceneState.connectionOptions
                .userActivities) {
@@ -1766,7 +2261,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     return NO;
   }
 
-  if (self.tabSwitcherIsActive) {
+  if (self.mainCoordinator.isTabGridActive) {
     Browser* mainBrowser = self.mainInterface.browser;
     Browser* otrBrowser = self.incognitoInterface.browser;
     // Only attempt to dismiss the tab switcher and open a new tab if:
@@ -1819,8 +2314,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
   self.interfaceProvider.currentInterface = newInterface;
 
-  if (!self.dismissingTabSwitcher)
-    [self displayCurrentBVCAndFocusOmnibox:NO];
+  if (!self.activatingBrowser)
+    [self displayCurrentBVCAndFocusOmnibox:NO dismissTabSwitcher:YES];
 
   // Tell the BVC that was made current that it can use the web.
   [self activateBVCAndMakeCurrentBVCPrimary];
@@ -1847,7 +2342,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // it.
   ProceduralBlock completionWithBVC = ^{
     DCHECK(self.currentInterface.viewController);
-    DCHECK(!self.tabSwitcherIsActive);
+    DCHECK(!self.mainCoordinator.isTabGridActive);
     DCHECK(!self.signinCoordinator);
     // This will dismiss the SSO view controller.
     [self.interfaceProvider.currentInterface
@@ -1857,7 +2352,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   ProceduralBlock completionWithoutBVC = ^{
     // |self.currentInterface.bvc| may exist but tab switcher should be
     // active.
-    DCHECK(self.tabSwitcherIsActive);
+    DCHECK(self.mainCoordinator.isTabGridActive);
     DCHECK(!self.signinCoordinator);
     // History coordinator can be started on top of the tab grid.
     // This is not true of the other tab switchers.
@@ -1866,8 +2361,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   };
 
   // Select a completion based on whether the BVC is shown.
-  ProceduralBlock chosenCompletion =
-      self.tabSwitcherIsActive ? completionWithoutBVC : completionWithBVC;
+  ProceduralBlock chosenCompletion = self.mainCoordinator.isTabGridActive
+                                         ? completionWithoutBVC
+                                         : completionWithBVC;
 
   if (self.isSettingsViewPresented) {
     // In this case, the settings are up and the BVC is showing. Close the
@@ -1994,11 +2490,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     tabOpenedCompletion = completion;
   }
 
-  if (self.tabSwitcherIsActive) {
+  if (self.mainCoordinator.isTabGridActive) {
     // If the tab switcher is already being dismissed, simply add the tab and
     // note that when the tab switcher finishes dismissing, the current BVC
     // should be switched to be the main BVC if necessary.
-    if (self.dismissingTabSwitcher) {
+    if (self.activatingBrowser) {
       self.modeToDisplayOnTabSwitcherDismissal =
           targetMode == ApplicationMode::NORMAL
               ? TabSwitcherDismissalMode::NORMAL
@@ -2046,10 +2542,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
 }
 
-- (void)openURLInNewTabWithCommand:(OpenNewTabCommand*)command {
-  [self openURLInNewTab:command];
-}
-
 - (void)expectNewForegroundTabForMode:(ApplicationMode)targetMode {
   id<BrowserInterface> interface =
       targetMode == ApplicationMode::INCOGNITO
@@ -2060,9 +2552,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 - (void)openNewTabFromOriginPoint:(CGPoint)originPoint
-                     focusOmnibox:(BOOL)focusOmnibox {
+                     focusOmnibox:(BOOL)focusOmnibox
+                    inheritOpener:(BOOL)inheritOpener {
   [self.currentInterface.bvc openNewTabFromOriginPoint:originPoint
-                                          focusOmnibox:focusOmnibox];
+                                          focusOmnibox:focusOmnibox
+                                         inheritOpener:inheritOpener];
 }
 
 - (Browser*)currentBrowserForURLLoading {
@@ -2139,7 +2633,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 // Displays current (incognito/normal) BVC and optionally focuses the omnibox.
-- (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox {
+// If |dismissTabSwitcher| is NO, then the tab switcher is not dismissed,
+// although the BVC will be visible. |dismissTabSwitcher| is only used in the
+// thumb strip feature.
+- (void)displayCurrentBVCAndFocusOmnibox:(BOOL)focusOmnibox
+                      dismissTabSwitcher:(BOOL)dismissTabSwitcher {
   ProceduralBlock completion = nil;
   if (focusOmnibox) {
     id<OmniboxCommands> omniboxHandler = HandlerForProtocol(
@@ -2150,6 +2648,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
   [self.mainCoordinator
       showTabViewController:self.currentInterface.viewController
+         shouldCloseTabGrid:dismissTabSwitcher
                  completion:completion];
   [HandlerForProtocol(self.currentInterface.browser->GetCommandDispatcher(),
                       ApplicationCommands)
@@ -2174,9 +2673,12 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                  completion:nil];
 }
 
+// TODO(crbug.com/1192019): Rename this method in -[SceneController
+// closeUIAnimated:completion:].
 - (void)closeSettingsAnimated:(BOOL)animated
                    completion:(ProceduralBlock)completion {
   if (self.settingsNavigationController) {
+    DCHECK(!self.welcomeToChromeController);
     ProceduralBlock dismissSettings = ^() {
       [self.settingsNavigationController cleanUpSettings];
       UIViewController* presentingViewController =
@@ -2197,20 +2699,30 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     } else if (dismissSettings) {
       dismissSettings();
     }
-    return;
+  } else if (self.welcomeToChromeController) {
+    DCHECK(!self.signinCoordinator);
+    // If kSSOAccountCreationInChromeTab is set, the FRE has to be interrupted,
+    // to open the account creation URL.
+    [self.welcomeToChromeController
+        interruptSigninCoordinatorWithCompletion:completion];
+  } else if (self.signinCoordinator) {
+    // |self.signinCoordinator| can also present settings, like
+    // the advanced sign-in settings navigation controller. If the settings has
+    // to be closed, it is thus the responsibility of the main controller to
+    // dismiss the advanced sign-in settings by dismssing the settings
+    // presented by |self.signinCoordinator|.
+    // To reproduce this case:
+    //  - open Bookmark view
+    //  - start sign-in
+    //  - tap on "Settings" to open the advanced sign-in settings
+    //  - tap on "Manage Your Google Account"
+    [self interruptSigninCoordinatorAnimated:animated completion:completion];
+  } else {
+    // This can happens when starting a reauth coordinator and the user choose
+    // "Create account". The coordinator dismisses itself, calls its completion
+    // block and then open the create account URL.
+    completion();
   }
-  // |self.signinCoordinator| can also present settings, like
-  // the advanced sign-in settings navigation controller. If the settings has
-  // to be closed, it is thus the responsibility of the main controller to
-  // dismiss the advanced sign-in settings by dismssing the settings
-  // presented by |self.signinCoordinator|.
-  // To reproduce this case:
-  //  - open Bookmark view
-  //  - start sign-in
-  //  - tap on "Settings" to open the advanced sign-in settings
-  //  - tap on "Manage Your Google Account"
-  DCHECK(self.signinCoordinator);
-  [self interruptSigninCoordinatorAnimated:animated completion:completion];
 }
 
 - (UIViewController*)topPresentedViewController {
@@ -2224,6 +2736,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // with or without animation.
 - (void)interruptSigninCoordinatorAnimated:(BOOL)animated
                                 completion:(ProceduralBlock)completion {
+  DCHECK(self.signinCoordinator);
   SigninCoordinatorInterruptAction action =
       animated ? SigninCoordinatorInterruptActionDismissWithAnimation
                : SigninCoordinatorInterruptActionDismissWithoutAnimation;
@@ -2233,18 +2746,52 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // Starts the sign-in coordinator with a default cleanup completion.
 - (void)startSigninCoordinatorWithCompletion:
     (signin_ui::CompletionCallback)completion {
+  DCHECK(self.signinCoordinator);
+  if (!signin::IsSigninAllowedByPolicy(
+          self.signinCoordinator.browser->GetBrowserState()->GetPrefs())) {
+    completion(/*success=*/NO);
+    [self.signinCoordinator stop];
+    id<PolicySignoutPromptCommands> handler = HandlerForProtocol(
+        self.signinCoordinator.browser->GetCommandDispatcher(),
+        PolicySignoutPromptCommands);
+    [handler showPolicySignoutPrompt];
+    self.signinCoordinator = nil;
+  }
+
   __block std::unique_ptr<ScopedUIBlocker> uiBlocker =
       std::make_unique<ScopedUIBlocker>(self.sceneState);
-  DCHECK(self.signinCoordinator);
   __weak SceneController* weakSelf = self;
   self.signinCoordinator.signinCompletion =
-      ^(SigninCoordinatorResult result, SigninCompletionInfo*) {
-        [weakSelf.signinCoordinator stop];
-        weakSelf.signinCoordinator = nil;
+      ^(SigninCoordinatorResult result, SigninCompletionInfo* info) {
+        if (!weakSelf)
+          return;
+        __typeof(self) strongSelf = weakSelf;
+        [strongSelf.signinCoordinator stop];
+        strongSelf.signinCoordinator = nil;
         uiBlocker.reset();
 
         if (completion) {
           completion(result == SigninCoordinatorResultSuccess);
+        }
+
+        switch (info.signinCompletionAction) {
+          case SigninCompletionActionNone:
+            DCHECK(!info.completionURL.is_valid());
+            break;
+          case SigninCompletionActionShowAdvancedSettingsSignin:
+            // Case only for first run.
+            NOTREACHED();
+            break;
+          case SigninCompletionActionOpenCompletionURL: {
+            DCHECK(info.completionURL.is_valid());
+            id<ApplicationCommands> handler = HandlerForProtocol(
+                strongSelf.currentInterface.browser->GetCommandDispatcher(),
+                ApplicationCommands);
+            OpenNewTabCommand* command =
+                [OpenNewTabCommand commandWithURLFromChrome:info.completionURL];
+            [handler closeSettingsUIAndOpenURL:command];
+            break;
+          }
         }
       };
 
@@ -2294,17 +2841,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // Nothing to do here. The next user action (like clicking on an existing
   // regular tab or creating a new incognito tab from the settings menu) will
   // take care of the logic to mode switch.
-  if (self.tabSwitcherIsActive || !self.currentInterface.incognito) {
+  if (self.mainCoordinator.isTabGridActive ||
+      !self.currentInterface.incognito) {
     return;
   }
-
-  WebStateList* currentWebStateList =
-      self.currentInterface.browser->GetWebStateList();
-  if (currentWebStateList->empty()) {
-    [self showTabSwitcher];
-  } else {
-    [self setCurrentInterfaceForMode:ApplicationMode::NORMAL];
-  }
+  [self showTabSwitcher];
 }
 
 // Called when the last regular tab was closed.
@@ -2315,7 +2856,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // closure of tabs from the main tab model when the main tab model is not
   // current.
   // Nothing to do here.
-  if (self.tabSwitcherIsActive || self.currentInterface.incognito) {
+  if (self.mainCoordinator.isTabGridActive || self.currentInterface.incognito) {
     return;
   }
 
@@ -2356,16 +2897,18 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // Shows the tab switcher UI.
 - (void)showTabSwitcher {
   DCHECK(self.mainCoordinator);
-  [self.mainCoordinator setActivePage:[self activePage]];
-  self.tabSwitcherIsActive = YES;
-  self.mainCoordinator.delegate = self;
-
+  [self.mainCoordinator setActivePage:self.activePage];
   [self.mainCoordinator showTabGrid];
 }
 
 - (void)openURLContexts:(NSSet<UIOpenURLContext*>*)URLContexts
     API_AVAILABLE(ios(13)) {
-  if (self.sceneState.appState.isInSafeMode) {
+  if (self.sceneState.appState.initStage <= InitStageSafeMode ||
+      !self.currentInterface.browserState) {
+    // Don't handle the intent if the browser UI objects aren't yet initialized.
+    // This is the case when the app is in safe mode or may be the case when the
+    // app is going through an odd sequence of lifecyle events (shouldn't happen
+    // but happens somehow), see crbug.com/1211006 for more details.
     return;
   }
 
@@ -2386,7 +2929,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   DCHECK(URLsToOpen.count == URLContexts.count || URLContexts.count == 1);
   BOOL active =
       _sceneState.activationLevel >= SceneActivationLevelForegroundActive;
-  if (self.sceneState.appState.startupInformation.isPresentingFirstRunUI ||
+  // TODO(crbug.com/1210542): Review this stage threshold; works for now.
+  if (self.sceneState.appState.initStage <= InitStageFirstRun ||
       self.sceneState.presentingModalOverlay) {
     active = NO;
   }
@@ -2396,7 +2940,9 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
             applicationActive:active
                     tabOpener:self
         connectionInformation:self
-           startupInformation:self.sceneState.appState.startupInformation];
+           startupInformation:self.sceneState.appState.startupInformation
+                  prefService:self.currentInterface.browserState->GetPrefs()
+                    initStage:self.sceneState.appState.initStage];
   }
 }
 
@@ -2437,8 +2983,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                   withURLLoadParams:(const UrlLoadParams&)urlLoadParams {
   TabInsertionBrowserAgent::FromBrowser(browser)->InsertWebState(
       urlLoadParams.web_params, nil, false, browser->GetWebStateList()->count(),
-      false);
-  [self beginDismissingTabSwitcherWithCurrentBrowser:browser focusOmnibox:NO];
+      /*in_background=*/false, /*inherit_opener=*/false);
+  [self beginActivatingBrowser:browser dismissTabSwitcher:YES focusOmnibox:NO];
 }
 
 #pragma mark - Handling of destroying the incognito BrowserState
@@ -2498,9 +3044,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     [sceneController willDestroyIncognitoBrowserState];
   }
 
-  BreadcrumbPersistentStorageManager* persistentStorageManager = nullptr;
-  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
-    BreadcrumbManagerKeyedService* service =
+  breadcrumbs::BreadcrumbPersistentStorageManager* persistentStorageManager =
+      nullptr;
+  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+    breadcrumbs::BreadcrumbManagerKeyedService* service =
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
             mainBrowserState->GetOffTheRecordChromeBrowserState());
     persistentStorageManager = service->GetPersistentStorageManager();
@@ -2525,8 +3072,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     [sceneController incognitoBrowserStateCreated];
   }
 
-  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
-    BreadcrumbManagerKeyedService* service =
+  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
+    breadcrumbs::BreadcrumbManagerKeyedService* service =
         BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
             mainBrowserState->GetOffTheRecordChromeBrowserState());
 
@@ -2547,7 +3094,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // will be destroyed.
   self.mainCoordinator.incognitoBrowser = nil;
 
-  if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
+  if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
     BreadcrumbManagerBrowserAgent::FromBrowser(self.incognitoInterface.browser)
         ->SetLoggingEnabled(false);
   }
@@ -2574,5 +3121,82 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // Always set the new otr Browser for the tablet or grid switcher.
   // Notify the TabGrid with the new Incognito Browser.
   self.mainCoordinator.incognitoBrowser = self.incognitoInterface.browser;
+  self.mainCoordinator.incognitoThumbStripSupporting =
+      self.incognitoInterface.bvc;
 }
+
+#pragma mark - FirstRunCoordinatorDelegate
+
+- (void)willFinishPresentingScreens {
+  // Reset |sceneState.presentingFirstRunUI| flag.
+  [self handleFirstRunUIWillFinish];
+
+  [self.firstRunCoordinator stop];
+}
+
+- (void)didFinishPresentingScreensWithSubsequentActionsTriggered:
+    (BOOL)actionsTriggered {
+  // Triggers all the events after the first run is dismissed. Note that the
+  // below logic should be removed after the new first run UI supports location
+  // permission page.
+  if (!location_permissions_field_trial::IsInRemoveFirstRunPromptGroup() &&
+      !location_permissions_field_trial::IsInFirstRunModalGroup()) {
+    [self logLocationPermissionsExperimentForGroupShown:
+              LocationPermissionsUI::kFirstRunPromptNotShown];
+    // As soon as First Run has finished, give OmniboxGeolocationController an
+    // opportunity to present the iOS system location alert.
+    [[OmniboxGeolocationController sharedInstance] triggerSystemPrompt];
+  } else if (location_permissions_field_trial::
+                 IsInRemoveFirstRunPromptGroup()) {
+    // If in RemoveFirstRunPrompt group, the system prompt will be delayed until
+    // the site requests location information.
+    [[OmniboxGeolocationController sharedInstance]
+        systemPromptSkippedForNewUser];
+  }
+
+  // Only show the location permission if no additional actions were taken.
+  if (!actionsTriggered &&
+      location_permissions_field_trial::IsInFirstRunModalGroup()) {
+    id<ApplicationCommands> handler = static_cast<id<ApplicationCommands>>(
+        self.mainInterface.browser->GetCommandDispatcher());
+    [handler showLocationPermissionsFromViewController:self.mainInterface.bvc];
+  }
+
+  if (![self ignoreFirstRunStageForTesting]) {
+    [self.sceneState.appState queueTransitionToNextInitStage];
+  }
+}
+
+#pragma mark - Test hooks
+
+// TODO(crbug.com/1178821): Move this to the FRE agent.
+// Determines whether the First Run stage has to be ignored because of
+// testing. When testing with first_run_egtest.mm, the First Run UI is
+// manually triggered after the browser is fully initialized, in which
+// case the code that assumes that the app is in the First Run stage when
+// showing the FRE has to be ignored to avoid unexepted failures (e.g., DCHECKs,
+// unexpected init stage transition).
+- (BOOL)ignoreFirstRunStageForTesting {
+  return tests_hook::DisableFirstRun();
+}
+
+#pragma mark - PolicyWatcherBrowserAgentObserving
+
+- (void)policyWatcherBrowserAgentNotifySignInDisabled:
+    (PolicyWatcherBrowserAgent*)policyWatcher {
+  auto signinInterrupted = ^{
+    policyWatcher->SignInUIDismissed();
+  };
+
+  if (self.signinCoordinator) {
+    [self interruptSigninCoordinatorAnimated:YES completion:signinInterrupted];
+    UMA_HISTOGRAM_BOOLEAN(
+        "Enterprise.BrowserSigninIOS.SignInInterruptedByPolicy", true);
+  } else if (self.sceneState.presentingFirstRunUI &&
+             self.welcomeToChromeController) {
+    [self.welcomeToChromeController
+        interruptSigninCoordinatorWithCompletion:signinInterrupted];
+  }
+}
+
 @end

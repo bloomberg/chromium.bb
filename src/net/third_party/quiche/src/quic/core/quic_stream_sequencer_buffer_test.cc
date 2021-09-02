@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_stream_sequencer_buffer.h"
+#include "quic/core/quic_stream_sequencer_buffer.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -11,12 +11,12 @@
 #include <string>
 #include <utility>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_stream_sequencer_buffer_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_stream_sequencer_buffer_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
 
 namespace quic {
 
@@ -163,7 +163,7 @@ TEST_F(QuicStreamSequencerBufferTest, OnStreamDataInvalidSource) {
   source = absl::string_view(nullptr, 1024);
   EXPECT_THAT(buffer_->OnStreamData(800, source, &written_, &error_details_),
               IsError(QUIC_STREAM_SEQUENCER_INVALID_STATE));
-  EXPECT_EQ(0u, error_details_.find(quiche::QuicheStrCat(
+  EXPECT_EQ(0u, error_details_.find(absl::StrCat(
                     "QuicStreamSequencerBuffer error: OnStreamData() "
                     "dest == nullptr: ",
                     false, " source == nullptr: ", true)));
@@ -900,7 +900,7 @@ class QuicStreamSequencerBufferRandomIOTest
       start_chopping_offset += chunk_size;
       ++iterations;
     }
-    DCHECK(start_chopping_offset == bytes_to_buffer_);
+    QUICHE_DCHECK(start_chopping_offset == bytes_to_buffer_);
     size_t chunk_num = iterations;
 
     // Randomly change the sequence of in-ordered OffsetSizePairs to make a

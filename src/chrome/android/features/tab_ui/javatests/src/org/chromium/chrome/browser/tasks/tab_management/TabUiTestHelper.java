@@ -25,12 +25,9 @@ import static org.junit.Assert.assertTrue;
 import static org.chromium.base.test.util.CallbackHelper.WAIT_TIMEOUT_SECONDS;
 import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.base.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
-import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.components.browser_ui.widget.RecyclerViewTestUtils.waitForStableRecyclerView;
 
 import android.app.Activity;
-import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
@@ -100,7 +97,9 @@ public class TabUiTestHelper {
     public static void enterTabSwitcher(ChromeTabbedActivity cta) {
         OverviewModeBehaviorWatcher showWatcher = createOverviewShowWatcher(cta);
         assertFalse(cta.getLayoutManager().overviewVisible());
-        onViewWaiting(allOf(withId(R.id.tab_switcher_button), isDisplayed())).perform(click());
+        // TODO(crbug.com/1145271): Replace this with clicking tab switcher button via espresso.
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { cta.findViewById(R.id.tab_switcher_button).performClick(); });
         showWatcher.waitForBehavior();
     }
 
@@ -390,24 +389,6 @@ public class TabUiTestHelper {
      */
     public static OverviewModeBehaviorWatcher createOverviewHideWatcher(ChromeTabbedActivity cta) {
         return new OverviewModeBehaviorWatcher(cta.getLayoutManager(), false, true);
-    }
-
-    /**
-     * Rotate device to the target orientation. Do nothing if the screen is already in that
-     * orientation.
-     * @param cta             The current running activity.
-     * @param orientation     The target orientation we want the screen to rotate to.
-     */
-    public static void rotateDeviceToOrientation(ChromeTabbedActivity cta, int orientation) {
-        if (cta.getResources().getConfiguration().orientation == orientation) return;
-        assertTrue(orientation == Configuration.ORIENTATION_LANDSCAPE
-                || orientation == Configuration.ORIENTATION_PORTRAIT);
-        cta.setRequestedOrientation(orientation == Configuration.ORIENTATION_LANDSCAPE
-                        ? ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
-                        : ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        CriteriaHelper.pollUiThread(() -> {
-            Criteria.checkThat(cta.getResources().getConfiguration().orientation, is(orientation));
-        });
     }
 
     /**

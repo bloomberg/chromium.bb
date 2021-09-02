@@ -30,7 +30,6 @@
 #include <cassert>
 #include <cstddef>
 #include <cstdint>
-#include <cstdlib>
 #include <cstring>
 #include <type_traits>
 
@@ -131,7 +130,7 @@ inline int CountLeadingZeros(uint64_t n) {
 #if defined(HAVE_BITSCANREVERSE64)
   const unsigned char bit_set =
       _BitScanReverse64(&first_set_bit, static_cast<unsigned __int64>(n));
-#else  // !defined(HAVE_BITSCANREVERSE64)
+#else   // !defined(HAVE_BITSCANREVERSE64)
   const auto n_hi = static_cast<unsigned long>(n >> 32);  // NOLINT(runtime/int)
   if (n_hi != 0) {
     const unsigned char bit_set = _BitScanReverse(&first_set_bit, n_hi);
@@ -376,7 +375,7 @@ constexpr bool IsDirectionalMode(PredictionMode mode) {
 // behavior and result apply to other CPUs' SIMD instructions.
 inline int GetRelativeDistance(const unsigned int a, const unsigned int b,
                                const unsigned int order_hint_shift_bits) {
-  const int diff = a - b;
+  const int diff = static_cast<int>(a) - static_cast<int>(b);
   assert(order_hint_shift_bits <= 31);
   if (order_hint_shift_bits == 0) {
     assert(a == 0);

@@ -11,7 +11,7 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,7 +75,7 @@ class NetworkSmsHandlerTest : public testing::Test {
     // first test message until RequestUpdate has been called.
     network_sms_handler_.reset(new NetworkSmsHandler());
     network_sms_handler_->Init();
-    test_observer_.reset(new TestObserver());
+    test_observer_ = std::make_unique<TestObserver>();
     network_sms_handler_->AddObserver(test_observer_.get());
     network_sms_handler_->RequestUpdate(true);
     base::RunLoop().RunUntilIdle();

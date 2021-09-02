@@ -277,11 +277,13 @@ void WebContentsTaskProvider::WebContentsEntry::CreateTaskForFrame(
   if (!render_frame_host->IsRenderFrameLive())
     return;
 
-  // Exclude frames in the same SiteInstance as their parent;
+  // Exclude frames in the same SiteInstance or same process as their parent;
   // |site_instance_by_frames_| only contains local roots.
   content::SiteInstance* site_instance = render_frame_host->GetSiteInstance();
-  if (render_frame_host->GetParent() &&
-      site_instance == render_frame_host->GetParent()->GetSiteInstance()) {
+  auto* parent = render_frame_host->GetParent();
+  if (parent && (site_instance == parent->GetSiteInstance() ||
+                 site_instance->GetProcess() ==
+                     parent->GetSiteInstance()->GetProcess())) {
     return;
   }
 
@@ -302,8 +304,7 @@ void WebContentsTaskProvider::WebContentsEntry::CreateTaskForFrame(
       main_frame_site_instance_ = site_instance;
     } else {
       new_task = std::make_unique<SubframeTask>(
-          render_frame_host, web_contents(),
-          GetTaskForFrame(web_contents()->GetMainFrame()));
+          render_frame_host, GetTaskForFrame(web_contents()->GetMainFrame()));
     }
   }
 

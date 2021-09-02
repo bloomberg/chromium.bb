@@ -36,6 +36,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/rejected_promises.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
@@ -55,6 +56,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_metrics.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_trusted_script.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_string_trustedscript.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_wasm_response_extensions.h"
 #include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
@@ -81,7 +83,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/reporting_disposition.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/sanitizers.h"
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -92,8 +93,7 @@ namespace blink {
 
 static void ReportFatalErrorInMainThread(const char* location,
                                          const char* message) {
-  DVLOG(1) << "V8 error: " << message << " (" << location << ").";
-  LOG(FATAL);
+  LOG(FATAL)  << "V8 error: " << message << " (" << location << ").";
 }
 
 static void ReportOOMErrorInMainThread(const char* location, bool is_js_heap) {
@@ -391,10 +391,16 @@ TrustedTypesCodeGenerationCheck(v8::Local<v8::Context> context,
     return {true, v8::MaybeLocal<v8::String>()};
   }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8UnionStringOrTrustedScript* string_or_trusted_script =
+      NativeValueTraits<V8UnionStringOrTrustedScript>::NativeValue(
+          context->GetIsolate(), source, exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   StringOrTrustedScript string_or_trusted_script;
   V8StringOrTrustedScript::ToImpl(
       context->GetIsolate(), source, string_or_trusted_script,
       UnionTypeConversionMode::kNotNullable, exception_state);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   if (exception_state.HadException()) {
     exception_state.ClearException();
     // The input was a string or TrustedScript but the conversion failed.
@@ -402,11 +408,18 @@ TrustedTypesCodeGenerationCheck(v8::Local<v8::Context> context,
     return {false, v8::MaybeLocal<v8::String>()};
   }
 
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  if (is_code_like && string_or_trusted_script->IsString()) {
+    string_or_trusted_script->Set(MakeGarbageCollected<TrustedScript>(
+        string_or_trusted_script->GetAsString()));
+  }
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   if (is_code_like && string_or_trusted_script.IsString()) {
     string_or_trusted_script = StringOrTrustedScript::FromTrustedScript(
         MakeGarbageCollected<TrustedScript>(
             string_or_trusted_script.GetAsString()));
   }
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   String stringified_source = TrustedTypesCheckForScript(
       string_or_trusted_script, ToExecutionContext(context), exception_state);
@@ -463,18 +476,29 @@ static bool WasmCodeGenerationCheckCallbackInMainThread(
                             static_cast<size_t>(source_str.length()));
       memcpy(snippet, *source_str, len * sizeof(UChar));
       snippet[len] = 0;
-      // Wasm code generation is allowed if we have either the wasm-eval
-      // directive or the unsafe-eval directive. However, we only recognize
-      // wasm-eval for certain schemes
-      return policy->AllowWasmEval(ReportingDisposition::kReport,
-                                   ContentSecurityPolicy::kWillThrowException,
-                                   snippet) ||
-             policy->AllowEval(ReportingDisposition::kReport,
-                               ContentSecurityPolicy::kWillThrowException,
-                               snippet);
+      return policy->AllowWasmCodeGeneration(
+          ReportingDisposition::kReport,
+          ContentSecurityPolicy::kWillThrowException, snippet);
     }
   }
   return false;
+}
+
+static bool SharedArrayBufferConstructorEnabledCallback(
+    v8::Local<v8::Context> context) {
+  ExecutionContext* execution_context = ToExecutionContext(context);
+  if (!execution_context)
+    return false;
+  return execution_context->SharedArrayBufferTransferAllowed();
+}
+
+static bool WasmExceptionsEnabledCallback(v8::Local<v8::Context> context) {
+  ExecutionContext* execution_context = ToExecutionContext(context);
+  if (!execution_context)
+    return false;
+
+  return RuntimeEnabledFeatures::WebAssemblyExceptionsEnabled(
+      execution_context);
 }
 
 static bool WasmSimdEnabledCallback(v8::Local<v8::Context> context) {
@@ -483,14 +507,6 @@ static bool WasmSimdEnabledCallback(v8::Local<v8::Context> context) {
     return false;
 
   return RuntimeEnabledFeatures::WebAssemblySimdEnabled(execution_context);
-}
-
-static bool WasmThreadsEnabledCallback(v8::Local<v8::Context> context) {
-  ExecutionContext* execution_context = ToExecutionContext(context);
-  if (!execution_context)
-    return false;
-
-  return RuntimeEnabledFeatures::WebAssemblyThreadsEnabled(execution_context);
 }
 
 v8::Local<v8::Value> NewRangeException(v8::Isolate* isolate,
@@ -554,7 +570,8 @@ static bool WasmInstanceOverride(
 static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
     v8::Local<v8::Context> context,
     v8::Local<v8::ScriptOrModule> v8_referrer,
-    v8::Local<v8::String> v8_specifier) {
+    v8::Local<v8::String> v8_specifier,
+    v8::Local<v8::FixedArray> v8_import_assertions) {
   ScriptState* script_state = ScriptState::From(context);
 
   Modulator* modulator = Modulator::From(script_state);
@@ -599,14 +616,20 @@ static v8::MaybeLocal<v8::Promise> HostImportModuleDynamically(
       referrer_resource_url = KURL(NullURL(), referrer_resource_url_str);
   }
 
+  ModuleRequest module_request(
+      specifier, TextPosition::MinimumPosition(),
+      ModuleRecord::ToBlinkImportAssertions(
+          script_state->GetContext(), v8::Local<v8::Module>(),
+          v8_import_assertions, /*v8_import_assertions_has_positions=*/false));
+
   ReferrerScriptInfo referrer_info =
       ReferrerScriptInfo::FromV8HostDefinedOptions(
           context, v8_referrer->GetHostDefinedOptions());
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  modulator->ResolveDynamically(specifier, referrer_resource_url, referrer_info,
-                                resolver);
+  modulator->ResolveDynamically(module_request, referrer_resource_url,
+                                referrer_info, resolver);
   return v8::Local<v8::Promise>::Cast(promise.V8Value());
 }
 
@@ -644,8 +667,10 @@ static void InitializeV8Common(v8::Isolate* isolate) {
   isolate->SetUseCounterCallback(&UseCounterCallback);
   isolate->SetWasmModuleCallback(WasmModuleOverride);
   isolate->SetWasmInstanceCallback(WasmInstanceOverride);
+  isolate->SetSharedArrayBufferConstructorEnabledCallback(
+      SharedArrayBufferConstructorEnabledCallback);
+  isolate->SetWasmExceptionsEnabledCallback(WasmExceptionsEnabledCallback);
   isolate->SetWasmSimdEnabledCallback(WasmSimdEnabledCallback);
-  isolate->SetWasmThreadsEnabledCallback(WasmThreadsEnabledCallback);
   isolate->SetHostImportModuleDynamicallyCallback(HostImportModuleDynamically);
   isolate->SetHostInitializeImportMetaObjectCallback(
       HostGetImportMetaProperties);

@@ -80,8 +80,8 @@ void CXFA_FFField::RenderWidget(CFGAS_GEGraphics* pGS,
 
   CXFA_FFWidget::RenderWidget(pGS, mtRotate, highlight);
   DrawBorder(pGS, m_pNode->GetUIBorder(), m_UIRect, mtRotate);
-  RenderCaption(pGS, &mtRotate);
-  DrawHighlight(pGS, &mtRotate, highlight, kSquareShape);
+  RenderCaption(pGS, mtRotate);
+  DrawHighlight(pGS, mtRotate, highlight, kSquareShape);
 
   CFX_RectF rtWidget = GetNormalWidget()->GetWidgetRect();
   CFX_Matrix mt(1, 0, 0, 1, rtWidget.left, rtWidget.top);
@@ -90,7 +90,7 @@ void CXFA_FFField::RenderWidget(CFGAS_GEGraphics* pGS,
 }
 
 void CXFA_FFField::DrawHighlight(CFGAS_GEGraphics* pGS,
-                                 CFX_Matrix* pMatrix,
+                                 const CFX_Matrix& pMatrix,
                                  HighlightOption highlight,
                                  ShapeOption shape) {
   if (highlight == kNoHighlight)
@@ -108,23 +108,7 @@ void CXFA_FFField::DrawHighlight(CFGAS_GEGraphics* pGS,
     path.AddRectangle(m_UIRect.left, m_UIRect.top, m_UIRect.width,
                       m_UIRect.height);
 
-  pGS->FillPath(&path, CFX_FillRenderOptions::FillType::kWinding, pMatrix);
-}
-
-void CXFA_FFField::DrawFocus(CFGAS_GEGraphics* pGS, CFX_Matrix* pMatrix) {
-  if (!GetLayoutItem()->TestStatusBits(XFA_WidgetStatus_Focused))
-    return;
-
-  pGS->SetStrokeColor(CFGAS_GEColor(0xFF000000));
-
-  static constexpr float kDashPattern[2] = {1, 1};
-  pGS->SetLineDash(0.0f, kDashPattern);
-  pGS->SetLineWidth(0);
-
-  CFGAS_GEPath path;
-  path.AddRectangle(m_UIRect.left, m_UIRect.top, m_UIRect.width,
-                    m_UIRect.height);
-  pGS->StrokePath(&path, pMatrix);
+  pGS->FillPath(path, CFX_FillRenderOptions::FillType::kWinding, pMatrix);
 }
 
 CFWL_Widget* CXFA_FFField::GetNormalWidget() {
@@ -582,7 +566,8 @@ void CXFA_FFField::LayoutCaption() {
   m_CaptionRect.height = std::max(m_CaptionRect.height, fHeight);
 }
 
-void CXFA_FFField::RenderCaption(CFGAS_GEGraphics* pGS, CFX_Matrix* pMatrix) {
+void CXFA_FFField::RenderCaption(CFGAS_GEGraphics* pGS,
+                                 const CFX_Matrix& pMatrix) {
   CXFA_TextLayout* pCapTextLayout = m_pNode->GetCaptionTextLayout();
   if (!pCapTextLayout)
     return;
@@ -598,10 +583,8 @@ void CXFA_FFField::RenderCaption(CFGAS_GEGraphics* pGS, CFX_Matrix* pMatrix) {
   rtClip.Intersect(GetRectWithoutRotate());
   CFX_RenderDevice* pRenderDevice = pGS->GetRenderDevice();
   CFX_Matrix mt(1, 0, 0, 1, m_CaptionRect.left, m_CaptionRect.top);
-  if (pMatrix) {
-    rtClip = pMatrix->TransformRect(rtClip);
-    mt.Concat(*pMatrix);
-  }
+  rtClip = pMatrix.TransformRect(rtClip);
+  mt.Concat(pMatrix);
   pCapTextLayout->DrawString(pRenderDevice, mt, rtClip, 0);
 }
 
@@ -721,25 +704,26 @@ void CXFA_FFField::OnProcessEvent(CFWL_Event* pEvent) {
   switch (pEvent->GetType()) {
     case CFWL_Event::Type::Mouse: {
       CFWL_EventMouse* event = static_cast<CFWL_EventMouse*>(pEvent);
-      if (event->m_dwCmd == FWL_MouseCommand::Enter) {
+      FWL_MouseCommand cmd = event->GetCommand();
+      if (cmd == FWL_MouseCommand::Enter) {
         CXFA_EventParam eParam;
         eParam.m_eType = XFA_EVENT_MouseEnter;
         eParam.m_pTarget = m_pNode.Get();
         m_pNode->ProcessEvent(GetDocView(), XFA_AttributeValue::MouseEnter,
                               &eParam);
-      } else if (event->m_dwCmd == FWL_MouseCommand::Leave) {
+      } else if (cmd == FWL_MouseCommand::Leave) {
         CXFA_EventParam eParam;
         eParam.m_eType = XFA_EVENT_MouseExit;
         eParam.m_pTarget = m_pNode.Get();
         m_pNode->ProcessEvent(GetDocView(), XFA_AttributeValue::MouseExit,
                               &eParam);
-      } else if (event->m_dwCmd == FWL_MouseCommand::LeftButtonDown) {
+      } else if (cmd == FWL_MouseCommand::LeftButtonDown) {
         CXFA_EventParam eParam;
         eParam.m_eType = XFA_EVENT_MouseDown;
         eParam.m_pTarget = m_pNode.Get();
         m_pNode->ProcessEvent(GetDocView(), XFA_AttributeValue::MouseDown,
                               &eParam);
-      } else if (event->m_dwCmd == FWL_MouseCommand::LeftButtonUp) {
+      } else if (cmd == FWL_MouseCommand::LeftButtonUp) {
         CXFA_EventParam eParam;
         eParam.m_eType = XFA_EVENT_MouseUp;
         eParam.m_pTarget = m_pNode.Get();

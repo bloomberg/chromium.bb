@@ -4,22 +4,18 @@
 
 #import "ios/chrome/browser/ui/main/ui_blocker_scene_agent.h"
 
+#import "base/ios/ios_util.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/blocking_scene_commands.h"
 #import "ios/chrome/browser/ui/blocking_overlay/blocking_overlay_view_controller.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
-#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface UIBlockerSceneAgent () <SceneStateObserver>
-
-// Scene to which this agent is attached.
-// Implements the setter from SceneAgent protocol.
-@property(nonatomic, weak) SceneState* sceneState;
+@interface UIBlockerSceneAgent ()
 
 // TODO(crbug.com/1107873): Create a coordinator to own this view controller.
 // The view controller that blocks all interactions with the scene.
@@ -29,14 +25,6 @@
 @end
 
 @implementation UIBlockerSceneAgent
-
-#pragma mark - SceneAgent
-
-- (void)setSceneState:(SceneState*)sceneState {
-  DCHECK(!_sceneState);
-  _sceneState = sceneState;
-  [sceneState addObserver:self];
-}
 
 #pragma mark - SceneStateObserver
 
@@ -57,7 +45,7 @@
   // it, and therefore needs updating.
   if (sceneState.activationLevel < SceneActivationLevelForegroundInactive) {
     if (@available(iOS 13, *)) {
-      if (IsMultiwindowSupported()) {
+      if (base::ios::IsMultiwindowSupported()) {
         DCHECK(sceneState.scene.session);
         [[UIApplication sharedApplication]
             requestSceneSessionRefresh:sceneState.scene.session];

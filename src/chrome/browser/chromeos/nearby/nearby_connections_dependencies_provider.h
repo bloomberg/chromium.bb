@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_NEARBY_NEARBY_CONNECTIONS_DEPENDENCIES_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_NEARBY_NEARBY_CONNECTIONS_DEPENDENCIES_PROVIDER_H_
 
-#include <memory>
-
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/nearby/public/mojom/sharing.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 class Profile;
 
@@ -20,6 +20,8 @@ class IdentityManager;
 
 namespace chromeos {
 namespace nearby {
+
+class BluetoothAdapterManager;
 
 // Provides dependencies required to initialize Nearby Connections. Implemented
 // as a KeyedService because WebRTC dependencies are linked to the user's
@@ -35,6 +37,8 @@ class NearbyConnectionsDependenciesProvider : public KeyedService {
   virtual location::nearby::connections::mojom::NearbyConnectionsDependenciesPtr
   GetDependencies();
 
+  virtual void PrepareForShutdown();
+
  private:
   friend class NearbyProcessManagerImplTest;
 
@@ -49,6 +53,8 @@ class NearbyConnectionsDependenciesProvider : public KeyedService {
 
   location::nearby::connections::mojom::WebRtcDependenciesPtr
   GetWebRtcDependencies();
+
+  std::unique_ptr<BluetoothAdapterManager> bluetooth_manager_;
 
   bool shut_down_ = false;
 

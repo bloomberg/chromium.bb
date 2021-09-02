@@ -7,8 +7,6 @@
 
 #include <stddef.h>
 
-#include <string>
-
 #include "base/time/time.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -22,18 +20,18 @@ struct Config {
   size_t max_bytes;
 
   // Number of simultaneous prerender pages from link elements allowed. Enforced
-  // by PrerenderLinkManager.
+  // by NoStatePrefetchLinkManager.
   size_t max_link_concurrency;
 
   // Number of simultaneous prerender pages from link elements allowed per
-  // launching page. Enforced by PrerenderLinkManager.
+  // launching page. Enforced by NoStatePrefetchLinkManager.
   size_t max_link_concurrency_per_launcher;
 
   // Is rate limiting enabled?
   bool rate_limit_enabled;
 
   // The maximum time that a prerender can wait for launch in the
-  // PrerenderLinkManager.
+  // NoStatePrefetchLinkManager.
   base::TimeDelta max_wait_to_launch;
 
   // The default time to live of a newly created prerender. May be shortened to

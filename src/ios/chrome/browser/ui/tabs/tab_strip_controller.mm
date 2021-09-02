@@ -17,10 +17,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
-#import "ios/chrome/browser/drag_and_drop/drop_and_navigate_delegate.h"
-#import "ios/chrome/browser/drag_and_drop/drop_and_navigate_interaction.h"
 #import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #include "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
@@ -33,9 +30,11 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/commands/popup_menu_commands.h"
 #include "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
+#include "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #include "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
+#import "ios/chrome/browser/ui/main/scene_state.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
@@ -125,9 +124,7 @@ UIColor* BackgroundColor() {
     // However, when using the fullscreen provider, the WKWebView extends behind
     // the tab strip. In this case, a clear background would lead to seeing the
     // WKWebView instead of the thumb strip.
-    return ios::GetChromeBrowserProvider()
-                   ->GetFullscreenProvider()
-                   ->IsInitialized()
+    return fullscreen::features::ShouldUseSmoothScrolling()
                ? UIColor.blackColor
                : UIColor.clearColor;
   }
@@ -154,13 +151,9 @@ UIColor* BackgroundColor() {
     self.titleLabel.minimumScaleFactor = 0.1;
     self.titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
 
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
         self.pointerInteractionEnabled = YES;
-      }
     }
-#endif  // defined(__IPHONE_13_4)
   }
   return self;
 }
@@ -176,8 +169,7 @@ UIColor* BackgroundColor() {
 
 @end
 
-@interface TabStripController () <DropAndNavigateDelegate,
-                                  CRWWebStateObserver,
+@interface TabStripController () <CRWWebStateObserver,
                                   TabStripViewLayoutDelegate,
                                   TabViewDelegate,
                                   ViewRevealingAnimatee,
@@ -269,8 +261,6 @@ UIColor* BackgroundColor() {
   // by the TabStripController.
   std::unique_ptr<AllWebStateObservationForwarder>
       _allWebStateObservationForwarder;
-
-  DropAndNavigateInteraction* _buttonNewTabInteraction;
 }
 
 @property(nonatomic, readonly, retain) TabStripView* tabStripView;
@@ -291,6 +281,13 @@ UIColor* BackgroundColor() {
 
 // Pan gesture recognizer for the view revealing pan gesture handler.
 @property(nonatomic, weak) UIPanGestureRecognizer* panGestureRecognizer;
+
+// The tab strip view can be hidden for multiple reasons, which should be
+// tracked independently.
+// Tracks view hiding from external sources.
+@property(nonatomic, assign) BOOL viewHidden;
+// Tracks view hiding from thumb strip revealing.
+@property(nonatomic, assign) BOOL viewHiddenForThumbStrip;
 
 // Initializes the tab array based on the the entries in the |_webStateList|'s.
 // Creates one TabView per Tab and adds it to the tabstrip.  A later call to
@@ -454,7 +451,9 @@ UIColor* BackgroundColor() {
 
     // |self.view| setup.
     _useTabStacking = [self shouldUseTabStacking];
-    CGRect tabStripFrame = [UIApplication sharedApplication].keyWindow.bounds;
+    CGRect tabStripFrame = SceneStateBrowserAgent::FromBrowser(browser)
+                               ->GetSceneState()
+                               .window.bounds;
     tabStripFrame.size.height = kTabStripHeight;
     _view = [[TabStripContainerView alloc] initWithFrame:tabStripFrame];
     _view.autoresizingMask = (UIViewAutoresizingFlexibleWidth |
@@ -506,13 +505,9 @@ UIColor* BackgroundColor() {
                       action:@selector(recordUserMetrics:)
             forControlEvents:UIControlEventTouchUpInside];
 
-#if defined(__IPHONE_13_4)
     if (@available(iOS 13.4, *)) {
-      if (base::FeatureList::IsEnabled(kPointerSupport)) {
         _buttonNewTab.pointerInteractionEnabled = YES;
-      }
     }
-#endif  // defined(__IPHONE_13_4)
 
     [_tabStripView addSubview:_buttonNewTab];
 
@@ -535,18 +530,10 @@ UIColor* BackgroundColor() {
                object:nil];
     }
 
-    if (DragAndDropIsEnabled()) {
       self.dragDropHandler = [[URLDragDropHandler alloc] init];
       self.dragDropHandler.dropDelegate = self;
       [_view addInteraction:[[UIDropInteraction alloc]
                                 initWithDelegate:self.dragDropHandler]];
-    } else {
-      // TODO(crbug.com/1101363): Remove old codepath once new DragAndDrop is
-      // fully launched.
-      _buttonNewTabInteraction =
-          [[DropAndNavigateInteraction alloc] initWithDelegate:self];
-      [_buttonNewTab addInteraction:_buttonNewTabInteraction];
-    }
   }
   return self;
 }
@@ -566,7 +553,13 @@ UIColor* BackgroundColor() {
 }
 
 - (void)hideTabStrip:(BOOL)hidden {
-  self.view.hidden = hidden;
+  self.viewHidden = hidden;
+  [self updateViewHidden];
+}
+
+// Updates the view's hidden property using all sources of visibility.
+- (void)updateViewHidden {
+  self.view.hidden = self.viewHidden || self.viewHiddenForThumbStrip;
 }
 
 - (void)tabStripSizeDidChange {
@@ -584,6 +577,7 @@ UIColor* BackgroundColor() {
   UIPanGestureRecognizer* panGestureRecognizer = [[UIPanGestureRecognizer alloc]
       initWithTarget:panGestureHandler
               action:@selector(handlePanGesture:)];
+  panGestureRecognizer.delegate = panGestureHandler;
   panGestureRecognizer.maximumNumberOfTouches = 1;
   [self.view addGestureRecognizer:panGestureRecognizer];
 
@@ -676,29 +670,40 @@ UIColor* BackgroundColor() {
   [_tabStripView addSubview:_dimmingView];
 
   CGFloat duration = animate ? kTabStripFadeAnimationDuration : 0;
+  __weak TabStripController* weakSelf = self;
   [UIView animateWithDuration:duration
                    animations:^{
-                     [_dimmingView
-                         setBackgroundColor:[BackgroundColor()
-                                                colorWithAlphaComponent:0.6]];
+                     [weakSelf animateDimmingViewBackgroundColorWithAlpha:0.6];
                    }];
+}
+
+// Animation helper function to set the _dimmingView background color with
+// alpha.
+- (void)animateDimmingViewBackgroundColorWithAlpha:(CGFloat)alphaComponent {
+  [_dimmingView setBackgroundColor:[BackgroundColor()
+                                       colorWithAlphaComponent:alphaComponent]];
 }
 
 - (void)removeDimmingViewWithAnimation:(BOOL)animate {
   if (_dimmingView) {
+    __weak TabStripController* weakSelf = self;
     CGFloat duration = animate ? kTabStripFadeAnimationDuration : 0;
     [UIView animateWithDuration:duration
         animations:^{
-          [_dimmingView
-              setBackgroundColor:[BackgroundColor() colorWithAlphaComponent:0]];
+          [weakSelf animateDimmingViewBackgroundColorWithAlpha:0];
         }
         completion:^(BOOL finished) {
-          // Do not remove the dimming view if the animation was aborted.
-          if (finished) {
-            [_dimmingView removeFromSuperview];
-            _dimmingView = nil;
-          }
+          [weakSelf onDimmingViewAnimationFinished:finished];
         }];
+  }
+}
+
+// Completion function/helper for -removeDimmingViewWithAnimation
+- (void)onDimmingViewAnimationFinished:(BOOL)finished {
+  // Do not remove the dimming view if the animation was aborted.
+  if (finished) {
+    [_dimmingView removeFromSuperview];
+    _dimmingView = nil;
   }
 }
 
@@ -851,13 +856,8 @@ UIColor* BackgroundColor() {
     [self removeAutoscrollTimer];
 
   // Disable fullscreen during drags.
-  if (fullscreen::features::ShouldScopeFullscreenControllerToBrowser()) {
-    _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
-        FullscreenController::FromBrowser(_browser));
-  } else {
-    _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
-        FullscreenController::FromBrowserState(_browser->GetBrowserState()));
-  }
+  _fullscreenDisabler = std::make_unique<ScopedFullscreenDisabler>(
+      FullscreenController::FromBrowser(_browser));
 }
 
 - (void)continueDrag:(UILongPressGestureRecognizer*)gesture {
@@ -1174,17 +1174,22 @@ UIColor* BackgroundColor() {
   // sight.
   CGRect frame = [view frame];
   frame = CGRectOffset(frame, 0, CGRectGetHeight(frame));
+  __weak TabStripController* weakSelf = self;
   [UIView animateWithDuration:kTabAnimationDuration
       animations:^{
         [view setFrame:frame];
       }
       completion:^(BOOL finished) {
-        [view removeFromSuperview];
-        [_tabArray removeObject:view];
-        [_closingTabs removeObject:view];
+        [weakSelf tabViewAnimationCompletion:view];
       }];
 
   [self setNeedsLayoutWithAnimation];
+}
+
+- (void)tabViewAnimationCompletion:(UIView*)view {
+  [view removeFromSuperview];
+  [_tabArray removeObject:view];
+  [_closingTabs removeObject:view];
 }
 
 // Observer method. |webState| inserted on |webStateList|.
@@ -1696,37 +1701,33 @@ UIColor* BackgroundColor() {
                         object:nil];
     }
 
+    __weak TabStripController* weakSelf = self;
     [UIView animateWithDuration:kTabAnimationDuration
                           delay:delay
                         options:UIViewAnimationOptionAllowUserInteraction
                      animations:^{
-                       for (TabView* view in tabsNeedingAnimation) {
-                         DCHECK(_targetFrames.HasFrame(view));
-                         [view setFrame:_targetFrames.GetFrame(view)];
-                       }
-                       if (moveNewTab)
-                         [_buttonNewTab setFrame:newTabFrame];
+                       [weakSelf animateTabStripSubviews:tabsNeedingAnimation
+                                             newTabFrame:newTabFrame
+                                              moveNewTab:moveNewTab];
                      }
                      completion:nil];
   }
 }
 
+- (void)animateTabStripSubviews:(NSMutableArray*)tabsNeedingAnimation
+                    newTabFrame:(CGRect)newTabFrame
+                     moveNewTab:(BOOL)moveNewTab {
+  for (TabView* view in tabsNeedingAnimation) {
+    DCHECK(_targetFrames.HasFrame(view));
+    [view setFrame:_targetFrames.GetFrame(view)];
+  }
+  if (moveNewTab)
+    [_buttonNewTab setFrame:newTabFrame];
+}
+
 - (void)setNeedsLayoutWithAnimation {
   _animateLayout = YES;
   [_tabStripView setNeedsLayout];
-}
-
-#pragma mark - DropAndNavigateDelegate
-
-- (void)URLWasDropped:(GURL const&)url {
-  // Called when a URL is dropped on the new tab button.
-  OpenNewTabCommand* command =
-      [[OpenNewTabCommand alloc] initWithURL:url
-                                    referrer:web::Referrer()
-                                 inIncognito:_isIncognito
-                                inBackground:NO
-                                    appendTo:kLastTab];
-  [[self applicationCommandsHandler] openURLInNewTab:command];
 }
 
 #pragma mark - TabViewDelegate
@@ -1815,13 +1816,16 @@ UIColor* BackgroundColor() {
 }
 
 #pragma mark - ViewRevealingAnimatee
-- (void)willAnimateViewReveal:(ViewRevealState)currentViewRevealState {
-  // Specifically when using the FullscreenProvider, the background of the view
+- (void)willAnimateViewRevealFromState:(ViewRevealState)currentViewRevealState
+                               toState:(ViewRevealState)nextViewRevealState {
+  // Specifically when Smooth Scrolling is on, the background of the view
   // is non-clear to cover the WKWebView. In this case, make the tab strip
   // background clear as soon as view revealing begins so any animations that
   // should be visible behind the tab strip are visible. See the comment on
   // |BackgroundColor()| for more details.
   self.view.backgroundColor = UIColor.clearColor;
+  self.viewHiddenForThumbStrip = YES;
+  [self updateViewHidden];
 }
 
 - (void)animateViewReveal:(ViewRevealState)nextViewRevealState {
@@ -1834,6 +1838,8 @@ UIColor* BackgroundColor() {
     // the tab strip.
     self.view.backgroundColor = BackgroundColor();
   }
+  self.viewHiddenForThumbStrip = viewRevealState != ViewRevealState::Hidden;
+  [self updateViewHidden];
 }
 
 @end

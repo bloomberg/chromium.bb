@@ -8,8 +8,10 @@
 #include <cstdint>
 #include <map>
 
+#include "include/v8.h"
 #include "src/api/api-inl.h"
 #include "src/base/compiler-specific.h"
+#include "src/base/sanitizer/asan.h"
 #include "src/execution/vm-state-inl.h"
 #include "src/heap/embedder-tracing.h"
 #include "src/heap/heap-write-barrier-inl.h"
@@ -18,7 +20,6 @@
 #include "src/objects/objects-inl.h"
 #include "src/objects/slots.h"
 #include "src/objects/visitors.h"
-#include "src/sanitizer/asan.h"
 #include "src/tasks/cancelable-task.h"
 #include "src/tasks/task-utils.h"
 #include "src/utils/utils.h"
@@ -51,6 +52,9 @@ class GlobalHandles::NodeBlock final {
                                            global_handles_(global_handles),
                                            space_(space) {}
 
+  NodeBlock(const NodeBlock&) = delete;
+  NodeBlock& operator=(const NodeBlock&) = delete;
+
   NodeType* at(size_t index) { return &nodes_[index]; }
   const NodeType* at(size_t index) const { return &nodes_[index]; }
   GlobalHandles::NodeSpace<NodeType>* space() const { return space_; }
@@ -73,8 +77,6 @@ class GlobalHandles::NodeBlock final {
   NodeBlock* next_used_ = nullptr;
   NodeBlock* prev_used_ = nullptr;
   uint32_t used_nodes_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(NodeBlock);
 };
 
 template <class NodeType>
@@ -143,6 +145,9 @@ class GlobalHandles::NodeIterator final {
   NodeIterator(NodeIterator&& other) V8_NOEXCEPT : block_(other.block_),
                                                    index_(other.index_) {}
 
+  NodeIterator(const NodeIterator&) = delete;
+  NodeIterator& operator=(const NodeIterator&) = delete;
+
   bool operator==(const NodeIterator& other) const {
     return block_ == other.block_;
   }
@@ -163,8 +168,6 @@ class GlobalHandles::NodeIterator final {
  private:
   BlockType* block_ = nullptr;
   size_t index_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(NodeIterator);
 };
 
 template <class NodeType>
@@ -380,7 +383,7 @@ namespace {
 
 void ExtractInternalFields(JSObject jsobject, void** embedder_fields, int len) {
   int field_count = jsobject.GetEmbedderFieldCount();
-  IsolateRoot isolate = GetIsolateForPtrCompr(jsobject);
+  Isolate* isolate = GetIsolateForHeapSandbox(jsobject);
   for (int i = 0; i < len; ++i) {
     if (field_count == i) break;
     void* pointer;
@@ -412,6 +415,9 @@ class GlobalHandles::Node final : public NodeBase<GlobalHandles::Node> {
     STATIC_ASSERT(PENDING == Internals::kNodeStateIsPendingValue);
     set_in_young_list(false);
   }
+
+  Node(const Node&) = delete;
+  Node& operator=(const Node&) = delete;
 
   void Zap() {
     DCHECK(IsInUse());
@@ -619,8 +625,6 @@ class GlobalHandles::Node final : public NodeBase<GlobalHandles::Node> {
   WeakCallbackInfo<void>::Callback weak_callback_;
 
   friend class NodeBase<Node>;
-
-  DISALLOW_COPY_AND_ASSIGN(Node);
 };
 
 class GlobalHandles::TracedNode final
@@ -1249,18 +1253,21 @@ void GlobalHandles::IdentifyWeakUnmodifiedObjects(
     WeakSlotCallback is_unmodified) {
   if (!FLAG_reclaim_unmodified_wrappers) return;
 
-  LocalEmbedderHeapTracer* const tracer =
-      isolate()->heap()->local_embedder_heap_tracer();
+  // Treat all objects as roots during incremental marking to avoid corrupting
+  // marking worklists.
+  if (isolate()->heap()->incremental_marking()->IsMarking()) return;
+
+  auto* const handler = isolate()->heap()->GetEmbedderRootsHandler();
   for (TracedNode* node : traced_young_nodes_) {
     if (node->IsInUse()) {
       DCHECK(node->is_root());
       if (is_unmodified(node->location())) {
         v8::Value* value = ToApi<v8::Value>(node->handle());
         if (node->has_destructor()) {
-          node->set_root(tracer->IsRootForNonTracingGC(
+          node->set_root(handler->IsRoot(
               *reinterpret_cast<v8::TracedGlobal<v8::Value>*>(&value)));
         } else {
-          node->set_root(tracer->IsRootForNonTracingGC(
+          node->set_root(handler->IsRoot(
               *reinterpret_cast<v8::TracedReference<v8::Value>*>(&value)));
         }
       }
@@ -1334,8 +1341,7 @@ void GlobalHandles::IterateYoungWeakObjectsForPhantomHandles(
 
   if (!FLAG_reclaim_unmodified_wrappers) return;
 
-  LocalEmbedderHeapTracer* const tracer =
-      isolate()->heap()->local_embedder_heap_tracer();
+  auto* const handler = isolate()->heap()->GetEmbedderRootsHandler();
   for (TracedNode* node : traced_young_nodes_) {
     if (!node->IsInUse()) continue;
 
@@ -1350,7 +1356,7 @@ void GlobalHandles::IterateYoungWeakObjectsForPhantomHandles(
           node->ResetPhantomHandle(HandleHolder::kLive);
         } else {
           v8::Value* value = ToApi<v8::Value>(node->handle());
-          tracer->ResetHandleInNonTracingGC(
+          handler->ResetRoot(
               *reinterpret_cast<v8::TracedReference<v8::Value>*>(&value));
           DCHECK(!node->IsInUse());
         }
@@ -1738,9 +1744,9 @@ void EternalHandles::IterateAllRoots(RootVisitor* visitor) {
   int limit = size_;
   for (Address* block : blocks_) {
     DCHECK_GT(limit, 0);
-    visitor->VisitRootPointers(Root::kEternalHandles, nullptr,
-                               FullObjectSlot(block),
-                               FullObjectSlot(block + Min(limit, kSize)));
+    visitor->VisitRootPointers(
+        Root::kEternalHandles, nullptr, FullObjectSlot(block),
+        FullObjectSlot(block + std::min({limit, kSize})));
     limit -= kSize;
   }
 }

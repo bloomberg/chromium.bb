@@ -14,12 +14,9 @@ bool IsInsecureFormAction(const GURL& action_url) {
   // to same-origin contexts, so they are not blocked. Some forms use
   // javascript URLs to handle submissions in JS, those don't count as mixed
   // content either.
-  // The data scheme is explicitly allowed in order to match blink's equivalent
-  // check, since IsUrlPotentiallyTrustworthy excludes it.
   if (action_url.SchemeIs(url::kJavaScriptScheme) ||
       action_url.SchemeIs(url::kBlobScheme) ||
-      action_url.SchemeIs(url::kFileSystemScheme) ||
-      action_url.SchemeIs(url::kDataScheme)) {
+      action_url.SchemeIs(url::kFileSystemScheme)) {
     return false;
   }
   return !network::IsUrlPotentiallyTrustworthy(action_url);
@@ -28,17 +25,18 @@ bool IsInsecureFormAction(const GURL& action_url) {
 
 namespace autofill {
 
-bool IsFormOrClientNonSecure(AutofillClient* client, const FormData& form) {
+bool IsFormOrClientNonSecure(const AutofillClient* client,
+                             const FormData& form) {
   return !client->IsContextSecure() ||
          (form.action.is_valid() && form.action.SchemeIs("http"));
 }
 
-bool IsFormMixedContent(AutofillClient* client, const FormData& form) {
+bool IsFormMixedContent(const AutofillClient* client, const FormData& form) {
   return client->IsContextSecure() &&
          (form.action.is_valid() && IsInsecureFormAction(form.action));
 }
 
-bool ShouldAllowCreditCardFallbacks(AutofillClient* client,
+bool ShouldAllowCreditCardFallbacks(const AutofillClient* client,
                                     const FormData& form) {
   // Skip the form check if there wasn't a form yet:
   if (form.unique_renderer_id.is_null())

@@ -8,6 +8,8 @@ DEPS = [
   'checkout',
   'docker',
   'env',
+  'flavor',
+  'gold_upload',
   'infra',
   'recipe_engine/file',
   'recipe_engine/path',
@@ -24,6 +26,7 @@ LOTTIECAP_SCRIPT = 'skia/infra/lottiecap/docker/lottiecap_gold.sh'
 
 def RunSteps(api):
   api.vars.setup()
+  api.flavor.setup("dm")
   checkout_root = api.path['start_dir']
   out_dir = api.vars.swarming_out_dir
   lottie_files_src = api.vars.workdir.join('lottie-samples')
@@ -34,7 +37,7 @@ def RunSteps(api):
   lottie_build = checkout_root.join('lottie', 'build', 'player')
 
   # Make sure this exists, otherwise Docker will make it with root permissions.
-  api.file.ensure_directory('mkdirs out_dir', out_dir, mode=0777)
+  api.file.ensure_directory('mkdirs out_dir', out_dir, mode=0o777)
   # When lottie files are brought in via isolate or CIPD, they are just
   # symlinks, which does not work well with Docker because we can't mount
   # the folder as a volume.
@@ -83,6 +86,8 @@ def RunSteps(api):
       attempts=3,
   )
 
+  api.gold_upload.upload()
+
 
 def GenTests(api):
   yield (
@@ -91,6 +96,7 @@ def GenTests(api):
                                   '-x86_64-Debug-All-LottieWeb'),
                      repository='https://skia.googlesource.com/skia.git',
                      revision='abc123',
+                     gs_bucket='skia-infra-gm',
                      path_config='kitchen',
                      swarm_out_dir='[SWARM_OUT_DIR]')
   )
@@ -101,6 +107,7 @@ def GenTests(api):
                                   '-x86_64-Debug-All-LottieWeb'),
                      repository='https://skia.googlesource.com/skia.git',
                      revision='abc123',
+                     gs_bucket='skia-infra-gm',
                      path_config='kitchen',
                      swarm_out_dir='[SWARM_OUT_DIR]',
                      patch_ref='89/456789/12',

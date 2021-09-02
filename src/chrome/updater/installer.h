@@ -12,10 +12,11 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
-#include "base/values.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "chrome/updater/persisted_data.h"
 #include "components/update_client/update_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 
@@ -85,15 +86,15 @@ class Installer final : public update_client::CrxInstaller {
   // creating processes, mounting images, running scripts, and collecting
   // exit codes. The install progress, if it can be collected, is reported by
   // invoking the |progress_callback|.
-  int RunApplicationInstaller(const base::FilePath& app_installer,
-                              const std::string& arguments,
-                              ProgressCallback progress_callback);
+  Result RunApplicationInstaller(const base::FilePath& app_installer,
+                                 const std::string& arguments,
+                                 ProgressCallback progress_callback);
 
   // Deletes recursively the install paths not matching the |pv_| version.
   void DeleteOlderInstallPaths();
 
   // Returns an install directory matching the |pv_| version.
-  base::FilePath GetCurrentInstallDir() const;
+  absl::optional<base::FilePath> GetCurrentInstallDir() const;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

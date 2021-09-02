@@ -4,12 +4,18 @@
 
 #include "chromeos/components/phonehub/fake_phone_hub_manager.h"
 
+#include "ash/constants/ash_features.h"
+
 namespace chromeos {
 namespace phonehub {
 
 FakePhoneHubManager::FakePhoneHubManager() = default;
 
 FakePhoneHubManager::~FakePhoneHubManager() = default;
+
+BrowserTabsModelProvider* FakePhoneHubManager::GetBrowserTabsModelProvider() {
+  return &fake_browser_tabs_model_provider_;
+}
 
 DoNotDisturbController* FakePhoneHubManager::GetDoNotDisturbController() {
   return &fake_do_not_disturb_controller_;
@@ -25,6 +31,12 @@ FindMyDeviceController* FakePhoneHubManager::GetFindMyDeviceController() {
 
 NotificationAccessManager* FakePhoneHubManager::GetNotificationAccessManager() {
   return &fake_notification_access_manager_;
+}
+
+NotificationInteractionHandler*
+FakePhoneHubManager::GetNotificationInteractionHandler() {
+  return features::IsEcheSWAEnabled() ? &fake_notification_interaction_handler_
+                                      : nullptr;
 }
 
 NotificationManager* FakePhoneHubManager::GetNotificationManager() {

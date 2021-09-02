@@ -27,7 +27,7 @@ namespace tracing {
 // implement the remaining methods of the ProducerEndpoint interface.
 class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer {
  public:
-  PerfettoProducer(PerfettoTaskRunner* task_runner);
+  explicit PerfettoProducer(base::tracing::PerfettoTaskRunner*);
 
   virtual ~PerfettoProducer();
 
@@ -122,7 +122,23 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer {
   // TODO(crbug.com/839071): Figure out a good buffer size.
   static constexpr size_t kSMBSizeBytes = 4 * 1024 * 1024;
 
-  PerfettoTaskRunner* task_runner();
+  // TODO(lri): replace this constant with its version in the client library,
+  // when we move over.
+  //
+  // This value for SharedMemoryArbiter's batch_commits_duration_ms was
+  // determined by load testing, using the script at
+  // https://chromium-review.googlesource.com/c/chromium/src/+/1835498. The
+  // effects of various delays on the overhead of tracing in Chrome
+  // can be seen at https://screenshot.googleplex.com/KgsJshNCFKq. See commit
+  // 2fc0474d9 and crbug.com/1029298 for more context.
+  //
+  // Note that since this value is non-zero, it could lead to loss of batched
+  // data at the end of a tracing session. The producer should enable
+  // asynchronous stopping of datasources and should flush the accumulated
+  // commits while a datasource is being stopped.
+  static constexpr uint32_t kShmArbiterBatchCommitDurationMs = 1000;
+
+  base::tracing::PerfettoTaskRunner* task_runner();
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -138,7 +154,7 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer {
   // subprocess to start tracing after it connects).
   base::TimeDelta startup_tracing_timeout_ = base::TimeDelta::FromSeconds(60);
 
-  PerfettoTaskRunner* const task_runner_;
+  base::tracing::PerfettoTaskRunner* const task_runner_;
 
   std::atomic<bool> startup_tracing_active_{false};
 

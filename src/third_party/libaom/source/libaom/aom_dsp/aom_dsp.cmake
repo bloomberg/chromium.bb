@@ -89,6 +89,7 @@ list(APPEND AOM_DSP_COMMON_ASM_SSSE3
 
 list(APPEND AOM_DSP_COMMON_INTRIN_SSSE3
             "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_ssse3.c"
+            "${AOM_ROOT}/aom_dsp/x86/convolve_ssse3.h"
             "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_ssse3.c"
             "${AOM_ROOT}/aom_dsp/x86/intrapred_ssse3.c")
 
@@ -225,6 +226,9 @@ if(CONFIG_AV1_ENCODER)
                      "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c"
                      "${AOM_ROOT}/aom_dsp/x86/highbd_subtract_sse2.c"
                      "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse2.c")
+    list(REMOVE_ITEM AOM_DSP_ENCODER_ASM_SSE2
+                     "${AOM_ROOT}/aom_dsp/x86/highbd_sad4d_sse2.asm"
+                     "${AOM_ROOT}/aom_dsp/x86/highbd_sad_sse2.asm")
   endif()
 
   list(APPEND AOM_DSP_ENCODER_ASM_SSSE3_X86_64
@@ -314,6 +318,11 @@ if(CONFIG_AV1_ENCODER)
   if(CONFIG_TUNE_VMAF)
     list(APPEND AOM_DSP_ENCODER_SOURCES "${AOM_ROOT}/aom_dsp/vmaf.c"
                 "${AOM_ROOT}/aom_dsp/vmaf.h")
+  endif()
+
+  if(CONFIG_TUNE_BUTTERAUGLI)
+    list(APPEND AOM_DSP_ENCODER_SOURCES "${AOM_ROOT}/aom_dsp/butteraugli.c"
+                "${AOM_ROOT}/aom_dsp/butteraugli.h")
   endif()
 endif()
 
