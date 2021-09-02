@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/bind.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
@@ -173,9 +172,9 @@ class SecureChannelBleScannerImplTest : public testing::Test {
       const std::string& service_data,
       multidevice::RemoteDeviceRef expected_remote_device,
       bool is_background_advertisement,
-      const base::Optional<
+      const absl::optional<
           std::vector<std::pair<ConnectionMedium, ConnectionRole>>>&
-          expected_scan_results = base::nullopt) {
+          expected_scan_results = absl::nullopt) {
     std::vector<std::pair<ConnectionMedium, ConnectionRole>>
         new_expected_results =
             expected_scan_results.has_value()

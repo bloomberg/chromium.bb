@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/qbone_control_stream.h"
+#include "quic/qbone/qbone_control_stream.h"
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
+#include "quic/core/quic_session.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/qbone/qbone_constants.h"
 
 namespace quic {
 
@@ -48,12 +48,13 @@ void QboneControlStreamBase::OnDataAvailable() {
 bool QboneControlStreamBase::SendMessage(const proto2::Message& proto) {
   std::string tmp;
   if (!proto.SerializeToString(&tmp)) {
-    QUIC_BUG << "Failed to serialize QboneControlRequest";
+    QUIC_BUG(quic_bug_11023_1) << "Failed to serialize QboneControlRequest";
     return false;
   }
   if (tmp.size() > kuint16max) {
-    QUIC_BUG << "QboneControlRequest too large: " << tmp.size() << " > "
-             << kuint16max;
+    QUIC_BUG(quic_bug_11023_2)
+        << "QboneControlRequest too large: " << tmp.size() << " > "
+        << kuint16max;
     return false;
   }
   uint16_t size = tmp.size();

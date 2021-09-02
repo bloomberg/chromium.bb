@@ -63,7 +63,7 @@ HTMLPortalElement::HTMLPortalElement(
       feature_handle_for_scheduler_(
           document.GetExecutionContext()->GetScheduler()->RegisterFeature(
               SchedulingPolicy::Feature::kPortal,
-              {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {
+              {SchedulingPolicy::DisableBackForwardCache()})) {
   if (remote_portal) {
     DCHECK(portal_token);
     was_just_adopted_ = true;
@@ -335,19 +335,7 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
 
 void HTMLPortalElement::postMessage(ScriptState* script_state,
                                     const ScriptValue& message,
-                                    const String& target_origin,
-                                    const HeapVector<ScriptValue>& transfer,
-                                    ExceptionState& exception_state) {
-  WindowPostMessageOptions* options = WindowPostMessageOptions::Create();
-  options->setTargetOrigin(target_origin);
-  if (!transfer.IsEmpty())
-    options->setTransfer(transfer);
-  postMessage(script_state, message, options, exception_state);
-}
-
-void HTMLPortalElement::postMessage(ScriptState* script_state,
-                                    const ScriptValue& message,
-                                    const WindowPostMessageOptions* options,
+                                    const PostMessageOptions* options,
                                     ExceptionState& exception_state) {
   if (!CheckPortalsEnabledOrThrow(exception_state) || !GetExecutionContext())
     return;

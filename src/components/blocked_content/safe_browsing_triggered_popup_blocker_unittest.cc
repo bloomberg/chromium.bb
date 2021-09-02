@@ -22,7 +22,6 @@
 #include "components/content_settings/browser/test_page_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/subresource_filter/content/browser/fake_safe_browsing_database_manager.h"
-#include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_activation_throttle.h"
 #include "components/subresource_filter/content/browser/subresource_filter_safe_browsing_client.h"
@@ -37,7 +36,7 @@
 #include "content/public/test/test_navigation_throttle_inserter.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/navigation/triggering_event_info.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -48,30 +47,12 @@ const char kNumBlockedHistogram[] =
     "ContentSettings.Popups.StrongBlocker.NumBlocked";
 
 class SafeBrowsingTriggeredPopupBlockerTest
-    : public content::RenderViewHostTestHarness,
-      public subresource_filter::SubresourceFilterClient {
+    : public content::RenderViewHostTestHarness {
  public:
   SafeBrowsingTriggeredPopupBlockerTest() = default;
   ~SafeBrowsingTriggeredPopupBlockerTest() override {
     settings_map_->ShutdownOnUIThread();
   }
-
-  // subresource_filter::SubresourceFilterClient:
-  void ShowNotification() override {}
-  subresource_filter::mojom::ActivationLevel OnPageActivationComputed(
-      content::NavigationHandle* navigation_handle,
-      subresource_filter::mojom::ActivationLevel initial_activation_level,
-      subresource_filter::ActivationDecision* decision) override {
-    return initial_activation_level;
-  }
-  void OnAdsViolationTriggered(
-      content::RenderFrameHost*,
-      subresource_filter::mojom::AdsViolation) override {}
-  const scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
-  GetSafeBrowsingDatabaseManager() override {
-    return nullptr;
-  }
-  void OnReloadRequested() override {}
 
   // content::RenderViewHostTestHarness:
   void SetUp() override {
@@ -161,7 +142,7 @@ class SafeBrowsingTriggeredPopupBlockerTest
       content::NavigationHandle* handle) {
     return std::make_unique<
         subresource_filter::SubresourceFilterSafeBrowsingActivationThrottle>(
-        handle, this, content::GetIOThreadTaskRunner({}),
+        handle, /*delegate=*/nullptr, content::GetIOThreadTaskRunner({}),
         fake_safe_browsing_database_);
   }
 
@@ -234,7 +215,7 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
       ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
   params.user_gesture = true;
   params.triggering_event_info =
-      blink::TriggeringEventInfo::kFromUntrustedEvent;
+      blink::mojom::TriggeringEventInfo::kFromUntrustedEvent;
 
   MaybeBlockPopup(web_contents(), nullptr,
                   std::make_unique<TestPopupNavigationDelegate>(
@@ -259,7 +240,8 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
       popup_url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK, true /* is_renderer_initiated */);
   params.user_gesture = true;
-  params.triggering_event_info = blink::TriggeringEventInfo::kFromTrustedEvent;
+  params.triggering_event_info =
+      blink::mojom::TriggeringEventInfo::kFromTrustedEvent;
 
   MaybeBlockPopup(web_contents(), nullptr,
                   std::make_unique<TestPopupNavigationDelegate>(

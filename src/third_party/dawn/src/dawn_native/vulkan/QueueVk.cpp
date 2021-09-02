@@ -41,7 +41,7 @@ namespace dawn_native { namespace vulkan {
     MaybeError Queue::SubmitImpl(uint32_t commandCount, CommandBufferBase* const* commands) {
         Device* device = ToBackend(GetDevice());
 
-        device->Tick();
+        DAWN_TRY(device->Tick());
 
         TRACE_EVENT_BEGIN0(GetDevice()->GetPlatform(), Recording,
                            "CommandBufferVk::RecordCommands");

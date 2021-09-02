@@ -17,8 +17,8 @@
 #include "src/gpu/GrOpFlushState.h"
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrProgramInfo.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrStyle.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "src/gpu/GrVertexWriter.h"
 #include "src/gpu/geometry/GrPathUtils.h"
 #include "src/gpu/geometry/GrStyledShape.h"
@@ -189,12 +189,11 @@ public:
 
     FixedFunctionFlags fixedFunctionFlags() const override { return fHelper.fixedFunctionFlags(); }
 
-    GrProcessorSet::Analysis finalize(
-            const GrCaps& caps, const GrAppliedClip* clip, bool hasMixedSampledCoverage,
-            GrClampType clampType) override {
-        return fHelper.finalizeProcessors(
-                caps, clip, hasMixedSampledCoverage, clampType,
-                GrProcessorAnalysisCoverage::kSingleChannel, &fPaths.back().fColor, &fWideColor);
+    GrProcessorSet::Analysis finalize(const GrCaps& caps, const GrAppliedClip* clip,
+                                      GrClampType clampType) override {
+        return fHelper.finalizeProcessors(caps, clip, clampType,
+                                          GrProcessorAnalysisCoverage::kSingleChannel,
+                                          &fPaths.back().fColor, &fWideColor);
     }
 
 private:
@@ -202,10 +201,11 @@ private:
 
     void onCreateProgramInfo(const GrCaps* caps,
                              SkArenaAlloc* arena,
-                             const GrSurfaceProxyView* writeView,
+                             const GrSurfaceProxyView& writeView,
                              GrAppliedClip&& appliedClip,
                              const GrXferProcessor::DstProxyView& dstProxyView,
-                             GrXferBarrierFlags renderPassXferBarriers) override {
+                             GrXferBarrierFlags renderPassXferBarriers,
+                             GrLoadOp colorLoadOp) override {
         GrGeometryProcessor* gp = create_lines_only_gp(arena,
                                                        fHelper.compatibleWithCoverageAsAlpha(),
                                                        fHelper.usesLocalCoords(),
@@ -218,7 +218,7 @@ private:
         fProgramInfo = fHelper.createProgramInfoWithStencil(caps, arena, writeView,
                                                             std::move(appliedClip), dstProxyView,
                                                             gp, GrPrimitiveType::kTriangles,
-                                                            renderPassXferBarriers);
+                                                            renderPassXferBarriers, colorLoadOp);
     }
 
     void recordDraw(Target* target,
@@ -259,7 +259,7 @@ private:
             }
         }
 
-        size_t vertexStride =  fProgramInfo->primProc().vertexStride();
+        size_t vertexStride =  fProgramInfo->geomProc().vertexStride();
         int instanceCount = fPaths.count();
 
         int64_t vertexCount = 0;
@@ -333,7 +333,7 @@ private:
         }
 
         flushState->bindPipelineAndScissorClip(*fProgramInfo, chainBounds);
-        flushState->bindTextures(fProgramInfo->primProc(), nullptr, fProgramInfo->pipeline());
+        flushState->bindTextures(fProgramInfo->geomProc(), nullptr, fProgramInfo->pipeline());
         for (int i = 0; i < fMeshes.count(); ++i) {
             flushState->drawMesh(*fMeshes[i]);
         }

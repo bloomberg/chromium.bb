@@ -13,6 +13,11 @@ void StreamSocket::SetBeforeConnectCallback(
   NOTREACHED();
 }
 
+absl::optional<base::StringPiece> StreamSocket::GetPeerApplicationSettings()
+    const {
+  return absl::nullopt;
+}
+
 void StreamSocket::GetSSLCertRequestInfo(
     SSLCertRequestInfo* cert_request_info) const {
   NOTREACHED();

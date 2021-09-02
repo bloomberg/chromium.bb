@@ -21,6 +21,7 @@
 #include <memory>
 
 #include "perfetto/ext/base/scoped_file.h"
+#include "perfetto/ext/base/unix_socket.h"
 #include "perfetto/ext/base/weak_ptr.h"
 #include "perfetto/ext/ipc/basic_types.h"
 
@@ -44,9 +45,26 @@ class ServiceProxy;
 // });
 class Client {
  public:
-  static std::unique_ptr<Client> CreateInstance(const char* socket_name,
-                                                bool socket_retry,
-                                                base::TaskRunner*);
+  // struct ConnArgs is used for creating a client in 2 connection modes:
+  // 1. Connect using a socket name with the option to retry the connection on
+  //    connection failure.
+  // 2. Adopt a connected socket.
+  struct ConnArgs {
+    ConnArgs(const char* sock_name, bool sock_retry)
+        : socket_name(sock_name), retry(sock_retry) {}
+    explicit ConnArgs(base::ScopedSocketHandle sock_fd)
+        : socket_fd(std::move(sock_fd)) {}
+
+    // Disallow copy. Only supports move.
+    ConnArgs(const ConnArgs& other) = delete;
+    ConnArgs(ConnArgs&& other) = default;
+
+    base::ScopedSocketHandle socket_fd;
+    const char* socket_name = nullptr;
+    bool retry = false;  // Only for connecting with |socket_name|.
+  };
+
+  static std::unique_ptr<Client> CreateInstance(ConnArgs, base::TaskRunner*);
   virtual ~Client();
 
   virtual void BindService(base::WeakPtr<ServiceProxy>) = 0;

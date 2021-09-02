@@ -35,7 +35,6 @@ class AndroidSmsAppHelperDelegate;
 class AndroidSmsAppInstallingStatusObserver;
 class AndroidSmsPairingStateTracker;
 class AuthTokenValidator;
-class DeviceReenroller;
 class EligibleHostDevicesProvider;
 class GrandfatheredEasyUnlockHostDisabler;
 class HostBackendDelegate;
@@ -58,7 +57,8 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
         OobeCompletionTracker* oobe_completion_tracker,
         AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
         AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
-        const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider);
+        const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
+        bool is_secondary_user);
     static void SetFactoryForTesting(Factory* test_factory);
 
    protected:
@@ -70,7 +70,8 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
         OobeCompletionTracker* oobe_completion_tracker,
         AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
         AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
-        const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider) = 0;
+        const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
+        bool is_secondary_user) = 0;
 
    private:
     static Factory* test_factory_;
@@ -88,7 +89,8 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
       OobeCompletionTracker* oobe_completion_tracker,
       AndroidSmsAppHelperDelegate* android_sms_app_helper_delegate,
       AndroidSmsPairingStateTracker* android_sms_pairing_state_tracker,
-      const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider);
+      const device_sync::GcmDeviceInfoProvider* gcm_device_info_provider,
+      bool is_secondary_user);
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
@@ -108,7 +110,7 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
   void GetHostStatus(GetHostStatusCallback callback) override;
   void SetFeatureEnabledState(mojom::Feature feature,
                               bool enabled,
-                              const base::Optional<std::string>& auth_token,
+                              const absl::optional<std::string>& auth_token,
                               SetFeatureEnabledStateCallback callback) override;
   void GetFeatureStates(GetFeatureStatesCallback callback) override;
   void RetrySetHostNow(RetrySetHostNowCallback callback) override;
@@ -144,11 +146,10 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
   std::unique_ptr<HostStatusProvider> host_status_provider_;
   std::unique_ptr<GrandfatheredEasyUnlockHostDisabler>
       grandfathered_easy_unlock_host_disabler_;
-  std::unique_ptr<WifiSyncFeatureManager> wifi_sync_feature_manager_;
-  std::unique_ptr<FeatureStateManager> feature_state_manager_;
   std::unique_ptr<HostDeviceTimestampManager> host_device_timestamp_manager_;
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
-  std::unique_ptr<DeviceReenroller> device_reenroller_;
+  std::unique_ptr<WifiSyncFeatureManager> wifi_sync_feature_manager_;
+  std::unique_ptr<FeatureStateManager> feature_state_manager_;
   std::unique_ptr<AndroidSmsAppInstallingStatusObserver>
       android_sms_app_installing_host_observer_;
   AuthTokenValidator* auth_token_validator_;

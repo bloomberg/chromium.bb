@@ -7,13 +7,18 @@
 
 #import <UIKit/UIKit.h>
 
-class ChromeBrowserState;
-@class FirstRunConfiguration;
-@protocol SyncPresenter;
+#include "ios/chrome/browser/first_run/first_run_metrics.h"
 
+namespace signin {
+class IdentityManager;
+}
 namespace web {
 class WebState;
 }
+
+class ChromeBrowserState;
+@class FirstRunConfiguration;
+@protocol SyncPresenter;
 
 // Notification sent when the first run ends, right before dimissing the Terms
 // of Service modal view.
@@ -23,17 +28,18 @@ extern NSString* const kChromeFirstRunUIWillFinishNotification;
 // of Service modal view.
 extern NSString* const kChromeFirstRunUIDidFinishNotification;
 
-// Creates the First Run sentinel file so that the user will not be shown First
-// Run on subsequent cold starts. The user is considered done with First Run
-// only after a successful sign-in or explicitly skipping signing in. First Run
-// metrics are recorded iff the sentinel file didn't previous exist and was
-// successfully created.
-void WriteFirstRunSentinelAndRecordMetrics(ChromeBrowserState* browserState,
-                                           BOOL sign_in_attempted,
-                                           BOOL has_sso_account);
+// Records the result of the sign in steps for the First Run.
+void RecordFirstRunSignInMetrics(
+    signin::IdentityManager* identity_manager,
+    first_run::SignInAttemptStatus sign_in_attempt_status,
+    BOOL has_sso_accounts);
+
+// Records the completion of the first run.
+void WriteFirstRunSentinel();
 
 // Methods for writing sentinel and recording metrics and posting notifications
 void FinishFirstRun(ChromeBrowserState* browserState,
+                    ChromeBrowserState* mainBrowserState,
                     web::WebState* web_state,
                     FirstRunConfiguration* config,
                     id<SyncPresenter> presenter);

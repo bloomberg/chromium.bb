@@ -136,7 +136,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
     uint64_t origin_type_mask;
     std::unique_ptr<BrowsingDataFilterBuilder> filter_builder;
     std::vector<Observer*> observers;
-    base::Time task_started;
+    base::TimeTicks task_started;
   };
 
   // Setter for |is_removing_|; DCHECKs that we can only start removing if we're
@@ -230,7 +230,7 @@ class CONTENT_EXPORT BrowsingDataRemoverImpl
 
   // Fires after some time to track slow tasks. Cancelled when all tasks
   // are finished.
-  base::CancelableClosure slow_pending_tasks_closure_;
+  base::CancelableOnceClosure slow_pending_tasks_closure_;
 
   // Observers of the global state and individual tasks.
   base::ObserverList<Observer, true>::Unchecked observer_list_;

@@ -25,10 +25,10 @@ import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.TraceEvent;
+import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
-import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
@@ -46,7 +46,7 @@ import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetT
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AddressAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.CreditCardAccessorySheetCoordinator;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetCoordinator;
-import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.TouchToFillSheetCoordinator;
+import org.chromium.chrome.browser.password_manager.ConfirmationDialogHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
@@ -92,6 +92,8 @@ class ManualFillingMediator extends EmptyTabObserver
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private DropdownPopupWindow mPopup;
     private BottomSheetController mBottomSheetController;
+    private ManualFillingComponent.SoftKeyboardDelegate mSoftKeyboardDelegate;
+    private ConfirmationDialogHelper mConfirmationHelper;
 
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
@@ -129,13 +131,16 @@ class ManualFillingMediator extends EmptyTabObserver
 
     void initialize(KeyboardAccessoryCoordinator keyboardAccessory,
             AccessorySheetCoordinator accessorySheet, WindowAndroid windowAndroid,
-            BottomSheetController sheetController) {
+            BottomSheetController sheetController,
+            ManualFillingComponent.SoftKeyboardDelegate keyboardDelegate,
+            ConfirmationDialogHelper confirmationHelper) {
         mActivity = (ChromeActivity) windowAndroid.getActivity().get();
         assert mActivity != null;
         mWindowAndroid = windowAndroid;
-        mWindowAndroid.getApplicationBottomInsetProvider().addSupplier(mViewportInsetSupplier);
         mKeyboardAccessory = keyboardAccessory;
         mBottomSheetController = sheetController;
+        mSoftKeyboardDelegate = keyboardDelegate;
+        mConfirmationHelper = confirmationHelper;
         mModel.set(PORTRAIT_ORIENTATION, hasPortraitOrientation());
         mModel.addObserver(this::onPropertyChanged);
         mAccessorySheet = accessorySheet;
@@ -174,6 +179,10 @@ class ManualFillingMediator extends EmptyTabObserver
         return isInitialized() && !isSoftKeyboardShowing(view) && mKeyboardAccessory.hasActiveTab();
     }
 
+    ObservableSupplier<Integer> getBottomInsetSupplier() {
+        return mViewportInsetSupplier;
+    }
+
     @Override
     public void onLayoutChange(View view, int left, int top, int right, int bottom, int oldLeft,
             int oldTop, int oldRight, int oldBottom) {
@@ -207,13 +216,19 @@ class ManualFillingMediator extends EmptyTabObserver
                 || mWindowAndroid.getDisplay().getRotation() == Surface.ROTATION_180;
     }
 
-    void registerSheetDataProvider(@AccessoryTabType int tabType,
+    public void registerSheetUpdateDelegate(
+            WebContents webContents, ManualFillingComponent.UpdateAccessorySheetDelegate delegate) {
+        // TODO(crbug.com/1169167): Associate the delegate with the ManualFillingState to allow
+        // requesting sheets if tabs change.
+    }
+
+    void registerSheetDataProvider(WebContents webContents, @AccessoryTabType int tabType,
             PropertyProvider<KeyboardAccessoryData.AccessorySheetData> dataProvider) {
         if (!isInitialized()) return;
-        ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
+        ManualFillingState state = mStateCache.getStateFor(webContents);
 
         state.wrapSheetDataProvider(tabType, dataProvider);
-        AccessorySheetTabCoordinator accessorySheet = getOrCreateSheet(tabType);
+        AccessorySheetTabCoordinator accessorySheet = getOrCreateSheet(webContents, tabType);
         if (accessorySheet == null) return; // Not available or initialized yet.
         accessorySheet.registerDataProvider(state.getSheetDataProvider(tabType));
     }
@@ -225,9 +240,10 @@ class ManualFillingMediator extends EmptyTabObserver
         mKeyboardAccessory.registerAutofillProvider(autofillProvider, delegate);
     }
 
-    void registerActionProvider(PropertyProvider<Action[]> actionProvider) {
+    void registerActionProvider(
+            WebContents webContents, PropertyProvider<Action[]> actionProvider) {
         if (!isInitialized()) return;
-        ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
+        ManualFillingState state = mStateCache.getStateFor(webContents);
 
         state.wrapActionsProvider(actionProvider, new Action[0]);
         mKeyboardAccessory.registerActionProvider(state.getActionsProvider());
@@ -236,7 +252,6 @@ class ManualFillingMediator extends EmptyTabObserver
     void destroy() {
         if (!isInitialized()) return;
         pause();
-        mWindowAndroid.getApplicationBottomInsetProvider().removeSupplier(mViewportInsetSupplier);
         mActivity.findViewById(android.R.id.content).removeOnLayoutChangeListener(this);
         mTabModelObserver.destroy();
         mStateCache.destroy();
@@ -261,7 +276,7 @@ class ManualFillingMediator extends EmptyTabObserver
         if (!isInitialized()) return;
         pause();
         ViewGroup contentView = getContentView();
-        if (contentView != null) getKeyboard().hideSoftKeyboardOnly(contentView);
+        if (contentView != null) mSoftKeyboardDelegate.hideSoftKeyboardOnly(contentView);
     }
 
     void notifyPopupOpened(DropdownPopupWindow popup) {
@@ -282,6 +297,7 @@ class ManualFillingMediator extends EmptyTabObserver
 
     void pause() {
         if (!isInitialized()) return;
+        mConfirmationHelper.dismiss();
         // When pause is called, the accessory needs to disappear fast since some UI forced it to
         // close (e.g. a scene changed or the screen was turned off).
         mKeyboardAccessory.skipClosingAnimationOnce();
@@ -325,6 +341,8 @@ class ManualFillingMediator extends EmptyTabObserver
             onOrientationChange();
             return;
         } else if (property == KEYBOARD_EXTENSION_STATE) {
+            TraceEvent.instant("ManualFillingMediator$KeyboardExtensionState",
+                    getNameForState(mModel.get(KEYBOARD_EXTENSION_STATE)));
             transitionIntoState(mModel.get(KEYBOARD_EXTENSION_STATE));
             return;
         } else if (property == SUPPRESSED_BY_BOTTOM_SHEET) {
@@ -342,9 +360,11 @@ class ManualFillingMediator extends EmptyTabObserver
      */
     private void transitionIntoState(@KeyboardExtensionState int extensionState) {
         if (!meetsStatePreconditions(extensionState)) return;
+        TraceEvent.begin("ManualFillingMediator#transitionIntoState");
         enforceStateProperties(extensionState);
         changeBottomControlSpaceForState(extensionState);
         updateKeyboard(extensionState);
+        TraceEvent.end("ManualFillingMediator#transitionIntoState");
     }
 
     /**
@@ -422,7 +442,7 @@ class ManualFillingMediator extends EmptyTabObserver
             // the REPLACING state transitions into FLOATING_SHEET which triggers the keyboard which
             // transitions into the EXTENDING state as soon as the keyboard appeared.
             ViewGroup contentView = getContentView();
-            if (contentView != null) getKeyboard().showKeyboard(contentView);
+            if (contentView != null) mSoftKeyboardDelegate.showSoftKeyboard(contentView);
         } else if (extensionState == WAITING_TO_REPLACE) {
             // In order to give the keyboard time to disappear, hide the keyboard and enter the
             // REPLACING state.
@@ -437,7 +457,7 @@ class ManualFillingMediator extends EmptyTabObserver
         View rootView = contentView.getRootView();
         if (rootView == null) return;
         mAccessorySheet.setHeight(calculateAccessorySheetHeight(rootView));
-        getKeyboard().hideSoftKeyboardOnly(rootView);
+        mSoftKeyboardDelegate.hideSoftKeyboardOnly(rootView);
     }
 
     /**
@@ -486,6 +506,10 @@ class ManualFillingMediator extends EmptyTabObserver
      */
     void swapSheetWithKeyboard() {
         if (isInitialized() && mAccessorySheet.isShown()) onCloseAccessorySheet();
+    }
+
+    void confirmOperation(String title, String message, Runnable confirmedCallback) {
+        mConfirmationHelper.showConfirmation(title, message, R.string.ok, confirmedCallback);
     }
 
     private void changeBottomControlSpaceForState(int extensionState) {
@@ -539,14 +563,8 @@ class ManualFillingMediator extends EmptyTabObserver
         tab.addObserver(mTabObserver);
     }
 
-    private ChromeKeyboardVisibilityDelegate getKeyboard() {
-        assert mWindowAndroid instanceof ChromeWindow;
-        assert mWindowAndroid.getKeyboardDelegate() instanceof ChromeKeyboardVisibilityDelegate;
-        return (ChromeKeyboardVisibilityDelegate) mWindowAndroid.getKeyboardDelegate();
-    }
-
     private boolean isSoftKeyboardShowing(@Nullable View view) {
-        return view != null && getKeyboard().isSoftKeyboardShowing(mActivity, view);
+        return view != null && mSoftKeyboardDelegate.isSoftKeyboardShowing(mActivity, view);
     }
 
     /**
@@ -562,7 +580,7 @@ class ManualFillingMediator extends EmptyTabObserver
                         R.dimen.keyboard_accessory_suggestion_height);
         int newSheetHeight = insetObserver != null
                 ? insetObserver.getSystemWindowInsetsBottom()
-                : getKeyboard().calculateKeyboardHeight(rootView);
+                : mSoftKeyboardDelegate.calculateSoftKeyboardHeight(rootView);
         newSheetHeight = Math.max(minimalSheetHeight, newSheetHeight);
         return newSheetHeight;
     }
@@ -595,15 +613,11 @@ class ManualFillingMediator extends EmptyTabObserver
     }
 
     @VisibleForTesting
-    AccessorySheetTabCoordinator getOrCreateSheet(@AccessoryTabType int tabType) {
+    AccessorySheetTabCoordinator getOrCreateSheet(
+            WebContents webContents, @AccessoryTabType int tabType) {
         if (!canCreateSheet(tabType)) return null;
-        WebContents webContents = mActivity.getCurrentWebContents();
-        if (webContents == null) return null; // There is no active tab or it's being destroyed.
         ManualFillingState state = mStateCache.getStateFor(webContents);
-        if (state.getAccessorySheet(tabType) != null) return state.getAccessorySheet(tabType);
-
         AccessorySheetTabCoordinator sheet = createNewSheet(tabType);
-        assert sheet != null : "Cannot create sheet for type " + tabType;
 
         state.setAccessorySheet(tabType, sheet);
         if (state.getSheetDataProvider(tabType) != null) {
@@ -616,18 +630,19 @@ class ManualFillingMediator extends EmptyTabObserver
     private boolean canCreateSheet(@AccessoryTabType int tabType) {
         if (!isInitialized()) return false;
         switch (tabType) {
-            case AccessoryTabType.ALL: // Intentional fallthrough.
-            case AccessoryTabType.COUNT:
-                return false;
             case AccessoryTabType.CREDIT_CARDS: // Intentional fallthrough.
             case AccessoryTabType.ADDRESSES:
                 return ChromeFeatureList.isEnabled(AUTOFILL_MANUAL_FALLBACK_ANDROID);
             case AccessoryTabType.PASSWORDS:
                 return true;
-            case AccessoryTabType.TOUCH_TO_FILL:
-                return true;
+            case AccessoryTabType.OBSOLETE_TOUCH_TO_FILL:
+                assert false : "Obsolete sheet type: " + tabType;
+                return false;
+            case AccessoryTabType.ALL: // Intentional fallthrough.
+            case AccessoryTabType.COUNT: // Intentional fallthrough.
         }
-        return true;
+        assert false : "Unhandled sheet type: " + tabType;
+        return false;
     }
 
     private AccessorySheetTabCoordinator createNewSheet(@AccessoryTabType int tabType) {
@@ -641,12 +656,11 @@ class ManualFillingMediator extends EmptyTabObserver
             case AccessoryTabType.PASSWORDS:
                 return new PasswordAccessorySheetCoordinator(
                         mActivity, mAccessorySheet.getScrollListener());
-            case AccessoryTabType.TOUCH_TO_FILL:
-                return new TouchToFillSheetCoordinator(
-                        mActivity, mAccessorySheet.getScrollListener());
+            case AccessoryTabType.OBSOLETE_TOUCH_TO_FILL:
             case AccessoryTabType.ALL: // Intentional fallthrough.
             case AccessoryTabType.COUNT: // Intentional fallthrough.
         }
+        assert false : "Cannot create sheet for type " + tabType;
         return null;
     }
 
@@ -668,6 +682,24 @@ class ManualFillingMediator extends EmptyTabObserver
 
     private boolean is(@KeyboardExtensionState int state) {
         return mModel.get(KEYBOARD_EXTENSION_STATE) == state;
+    }
+
+    private static String getNameForState(@KeyboardExtensionState int state) {
+        switch (state) {
+            case HIDDEN:
+                return "HIDDEN";
+            case EXTENDING_KEYBOARD:
+                return "EXTENDING_KEYBOARD";
+            case REPLACING_KEYBOARD:
+                return "REPLACING_KEYBOARD";
+            case WAITING_TO_REPLACE:
+                return "WAITING_TO_REPLACE";
+            case FLOATING_BAR:
+                return "FLOATING_BAR";
+            case FLOATING_SHEET:
+                return "FLOATING_SHEET";
+        }
+        return null;
     }
 
     @VisibleForTesting

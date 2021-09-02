@@ -38,6 +38,9 @@ BrailleCommandHandler.onBrailleKeyEvent = function(evt, content) {
 
   EventSourceState.set(EventSourceType.BRAILLE_KEYBOARD);
 
+  // Try to restore to the last valid range.
+  ChromeVoxState.instance.restoreLastValidRangeIfNeeded();
+
   // Note: panning within content occurs earlier in event dispatch.
   Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
   switch (evt.command) {
@@ -91,8 +94,8 @@ BrailleCommandHandler.onBrailleKeyEvent = function(evt, content) {
 BrailleCommandHandler.onRoutingCommand_ = function(text, position) {
   let actionNodeSpan = null;
   let selectionSpan = null;
-  const selSpans = text.getSpansInstanceOf(Output.SelectionSpan);
-  const nodeSpans = text.getSpansInstanceOf(Output.NodeSpan);
+  const selSpans = text.getSpansInstanceOf(OutputSelectionSpan);
+  const nodeSpans = text.getSpansInstanceOf(OutputNodeSpan);
   for (let i = 0, selSpan; selSpan = selSpans[i]; i++) {
     if (text.getSpanStart(selSpan) <= position &&
         position < text.getSpanEnd(selSpan)) {

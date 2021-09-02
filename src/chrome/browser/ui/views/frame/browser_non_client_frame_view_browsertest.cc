@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -49,17 +51,19 @@ class BrowserNonClientFrameViewBrowserTest
   // TODO: Add tests for non-bookmark hosted apps, as bookmark apps will no
   // longer be hosted apps when BMO ships.
   void InstallAndLaunchBookmarkApp(
-      base::Optional<GURL> app_url = base::nullopt) {
+      absl::optional<GURL> app_url = absl::nullopt) {
     blink::Manifest manifest;
     manifest.start_url = app_url.value_or(GetAppURL());
     manifest.scope = manifest.start_url.GetWithoutFilename();
     manifest.theme_color = app_theme_color_;
 
     auto web_app_info = std::make_unique<WebApplicationInfo>();
-    web_app::UpdateWebAppInfoFromManifest(manifest, web_app_info.get());
+    GURL manifest_url = embedded_test_server()->GetURL("/manifest");
+    web_app::UpdateWebAppInfoFromManifest(manifest, manifest_url,
+                                          web_app_info.get());
 
     web_app::AppId app_id =
-        web_app::InstallWebApp(profile(), std::move(web_app_info));
+        web_app::test::InstallWebApp(profile(), std::move(web_app_info));
     app_browser_ = web_app::LaunchWebAppBrowser(profile(), app_id);
     web_contents_ = app_browser_->tab_strip_model()->GetActiveWebContents();
     // Ensure the main page has loaded and is ready for ExecJs DOM manipulation.
@@ -70,7 +74,7 @@ class BrowserNonClientFrameViewBrowserTest
   }
 
  protected:
-  base::Optional<SkColor> app_theme_color_ = SK_ColorBLUE;
+  absl::optional<SkColor> app_theme_color_ = SK_ColorBLUE;
   Browser* app_browser_ = nullptr;
   BrowserView* app_browser_view_ = nullptr;
   content::WebContents* web_contents_ = nullptr;
@@ -155,7 +159,9 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   ASSERT_TRUE(theme_service->UsingSystemTheme());
 
   InstallAndLaunchBookmarkApp();
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // On Linux, the system theme is the GTK theme and should change the frame
   // color to the system color (not the app theme color); otherwise the title
   // and border would clash horribly with the GTK title bar.
@@ -231,7 +237,7 @@ class SaveCardOfferObserver
   explicit SaveCardOfferObserver(content::WebContents* web_contents) {
     manager_ = autofill::ContentAutofillDriver::GetForRenderFrameHost(
                    web_contents->GetMainFrame())
-                   ->autofill_manager()
+                   ->browser_autofill_manager()
                    ->client()
                    ->GetFormDataImporter()
                    ->credit_card_save_manager_.get();
@@ -270,3 +276,19 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest, SaveCardIcon) {
   EXPECT_TRUE(app_frame_view_->Contains(icon));
   EXPECT_TRUE(icon->GetVisible());
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+// Tests that GetWindowMask is supported for lacros in chromeos.
+IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
+                       BrowserFrameWindowMask) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  BrowserNonClientFrameView* frame_view = browser_view->frame()->GetFrameView();
+  SkPath path;
+  frame_view->GetWindowMask(frame_view->bounds().size(), &path);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  EXPECT_FALSE(path.isEmpty());
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
+  EXPECT_TRUE(path.isEmpty());
+#endif
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)

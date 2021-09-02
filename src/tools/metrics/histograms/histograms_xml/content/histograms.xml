@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="ContentCapture.CaptureContentDelayTime" units="ms"
-    expires_after="2021-02-01">
+    expires_after="2022-01-12">
   <owner>michaelbai@chromium.org</owner>
   <owner>src/third_party/blink/renderer/core/content_capture/OWNERS</owner>
   <summary>
@@ -53,7 +53,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentCapture.CaptureContentTime2" units="microseconds"
-    expires_after="2021-04-04">
+    expires_after="2022-01-12">
   <owner>michaelbai@chromium.org</owner>
   <owner>src/third_party/blink/renderer/core/content_capture/OWNERS</owner>
   <summary>
@@ -65,7 +65,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentCapture.GetBoundingBox" units="microseconds"
-    expires_after="2021-04-04">
+    expires_after="2022-01-12">
   <owner>michaelbai@chromium.org</owner>
   <owner>src/third_party/blink/renderer/core/content_capture/OWNERS</owner>
   <summary>
@@ -77,7 +77,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentCapture.SendContentTime" units="microseconds"
-    expires_after="2021-04-04">
+    expires_after="2022-01-12">
   <owner>michaelbai@chromium.org</owner>
   <owner>src/third_party/blink/renderer/core/content_capture/OWNERS</owner>
   <summary>
@@ -90,13 +90,24 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ContentCapture.SentContentCount" units="count"
     expires_after="2021-04-04">
+  <obsolete>
+    Replaced by ContentCapture.SentContentCount2 in M89, which uses standard
+    buckets for 10k counts rather than exact linear buckets.
+  </obsolete>
+  <owner>michaelbai@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/core/content_capture/OWNERS</owner>
+  <summary>The total number of content captures sent for a document.</summary>
+</histogram>
+
+<histogram name="ContentCapture.SentContentCount2" units="count"
+    expires_after="2022-01-12">
   <owner>michaelbai@chromium.org</owner>
   <owner>src/third_party/blink/renderer/core/content_capture/OWNERS</owner>
   <summary>The total number of content captures sent for a document.</summary>
 </histogram>
 
 <histogram name="ContentCapture.TaskDelayTimeInMs" units="ms"
-    expires_after="2021-04-04">
+    expires_after="2022-01-12">
   <owner>michaelbai@chromium.org</owner>
   <owner>src/third_party/blink/renderer/core/content_capture/OWNERS</owner>
   <summary>
@@ -108,7 +119,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentCapture.TaskRunsPerCapture" units="runs"
-    expires_after="2021-04-04">
+    expires_after="2022-01-12">
   <owner>michaelbai@chromium.org</owner>
   <owner>src/third_party/blink/renderer/core/content_capture/OWNERS</owner>
   <summary>
@@ -120,14 +131,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentIndex.ContentAdded" enum="ContentIndexCategory"
-    expires_after="M89">
+    expires_after="M95">
   <owner>rayankans@chromium.org</owner>
   <owner>platform-capabilities@chromium.org</owner>
   <summary>Records the category of the content when registered.</summary>
 </histogram>
 
 <histogram base="true" name="ContentIndex.ContentDeleteEvent"
-    enum="ServiceWorkerStatusCode" expires_after="M89">
+    enum="ServiceWorkerStatusCode" expires_after="M95">
 <!-- Name completed by histogram_suffixes name="ContentIndexDispatchPhase" -->
 
   <owner>rayankans@chromium.org</owner>
@@ -139,14 +150,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentIndex.ContentOpened" enum="ContentIndexCategory"
-    expires_after="M89">
+    expires_after="M95">
   <owner>rayankans@chromium.org</owner>
   <owner>platform-capabilities@chromium.org</owner>
   <summary>Records the category of the entry clicked on by a user.</summary>
 </histogram>
 
 <histogram base="true" name="ContentIndex.Database"
-    enum="ServiceWorkerStatusCode" expires_after="M89">
+    enum="ServiceWorkerStatusCode" expires_after="M95">
 <!-- Name completed by histogram_suffixes name="ContentIndexDatabaseTask" -->
 
   <owner>rayankans@chromium.org</owner>
@@ -155,7 +166,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentIndex.NumEntriesAvailable" units="entries"
-    expires_after="M89">
+    expires_after="M95">
   <owner>rayankans@chromium.org</owner>
   <owner>platform-capabilities@chromium.org</owner>
   <summary>
@@ -164,7 +175,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentIndex.RegistrationBlocked" enum="ContentIndexCategory"
-    expires_after="M89">
+    expires_after="M95">
   <owner>rayankans@chromium.org</owner>
   <owner>platform-capabilities@chromium.org</owner>
   <summary>
@@ -172,15 +183,25 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.AllowStorageAccessSync" units="ms"
+    expires_after="2021-12-29">
+  <owner>cduvall@chromium.org</owner>
+  <owner>jam@chromium.org</owner>
+  <summary>
+    Measures how long a sync call to ContentSettingsManager::AllowStorageAccess
+    takes. Logged each time a sync call is made that is not cached.
+  </summary>
+</histogram>
+
 <histogram name="ContentSettings.DefaultAutoplaySetting" enum="ContentSetting"
-    expires_after="2021-06-19">
+    expires_after="2021-10-24">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default autoplay setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultCookiesSetting" enum="ContentSetting"
-    expires_after="2021-06-19">
+    expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default cookies setting at profile open.</summary>
@@ -203,14 +224,14 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.DefaultJavaScriptSetting"
-    enum="ContentSetting" expires_after="2021-06-19">
+    enum="ContentSetting" expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default JavaScript setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultLocationSetting" enum="ContentSetting"
-    expires_after="2021-06-19">
+    expires_after="2021-10-25">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default location setting at profile open.</summary>
@@ -272,7 +293,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.DefaultSubresourceFilterSetting"
-    enum="ContentSetting" expires_after="2021-06-19">
+    enum="ContentSetting" expires_after="2021-08-22">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default subresource filter setting at profile open</summary>
@@ -296,6 +317,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="ContentSettings.EphemeralFlashPermission"
     enum="ContentSettings.EphemeralFlashPermission" expires_after="M89">
+  <obsolete>
+    Flash / Plugins is deprecated since M87 and removed in M89.
+  </obsolete>
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -397,7 +421,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.NumberOfExceptions" units="units"
-    expires_after="M90">
+    expires_after="2021-09-19">
   <owner>battre@chromium.org</owner>
   <summary>
     The number of user defined hostname patterns for content settings at browser
@@ -484,8 +508,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups" enum="ContentSettingPopupAction"
-    expires_after="2020-08-16">
+    expires_after="2021-10-31">
   <owner>charleszhao@chromium.org</owner>
+  <owner>lazzzis@google.com</owner>
+  <owner>src/components/blocked_content/OWNERS</owner>
   <summary>
     Tracks whether the popup content blocked puzzle piece was shown in the
     Omnibox, and how the user interacted with it.
@@ -493,8 +519,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups.BlockerActions"
-    enum="PopupBlockerAction" expires_after="2020-08-30">
+    enum="PopupBlockerAction" expires_after="2021-10-31">
   <owner>csharrison@chromium.org</owner>
+  <owner>lazzzis@google.com</owner>
+  <owner>src/components/blocked_content/OWNERS</owner>
   <summary>
     Counts of various events related to the popup blocker. Including blocked
     popups and overridden (clicked through) popups. This is similar to the
@@ -557,7 +585,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSettings.Popups.StrongBlockerActions"
-    enum="StrongPopupBlockerAction" expires_after="2021-04-11">
+    enum="StrongPopupBlockerAction" expires_after="2021-10-17">
   <owner>csharrison@chromium.org</owner>
   <summary>
     Counts of various events related to the strong popup blocker (aka abusive
@@ -566,7 +594,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ActivityLoggingEnabled" enum="Boolean"
-    expires_after="2021-06-01">
+    expires_after="2022-03-01">
   <owner>rogerm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -576,7 +604,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.AppLifecycle.Events"
-    enum="AppLifecycleEvent" expires_after="M90">
+    enum="AppLifecycleEvent" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -588,7 +619,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.AppLifecycle.NumRowsForDeletion"
-    units="count" expires_after="2020-10-01">
+    units="count" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -600,8 +634,23 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ContentSuggestions.Feed.AutoplayEvent"
+    enum="FeedAutoplayEvent" expires_after="M95">
+  <obsolete>
+    Removed as of 05/2021. Replaced by ContentSuggestions.Feed.VideoPlayEvent.
+  </obsolete>
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: records events triggered during the video autoplay.
+  </summary>
+</histogram>
+
 <histogram name="ContentSuggestions.Feed.AvailableOffline.Opened"
-    enum="Boolean" expires_after="2021-04-04">
+    enum="Boolean" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -616,7 +665,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.AvailableOffline.Shown" enum="Boolean"
-    expires_after="2021-04-04">
+    expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -642,6 +694,34 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ContentSuggestions.Feed.ContentAgeOnLoad.BlockingRefresh"
+    units="ms" expires_after="2022-03-01">
+  <owner>carlosk@chromium.org</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The time since locally stored content was fetched from the server.
+    Reported when the feed surface is shown, and content is refreshed from the
+    network. This typically only happens when content is stale, so this is a
+    measurement of how stale content is before it's replaced by a blocking
+    refresh. Feed v2 only.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.ContentAgeOnLoad.NotRefreshed"
+    units="ms" expires_after="2022-03-01">
+  <owner>carlosk@chromium.org</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The time since locally stored content was fetched from the server.
+    Reported when the feed surface is shown, and the local persisted feed
+    content is loaded instead of a direct network refresh. This provides a
+    measure of how stale feed content is when the feed loads without a blocking
+    network request. Feed v2 only.
+  </summary>
+</histogram>
+
 <histogram name="ContentSuggestions.Feed.Controls.Actions"
     enum="FeedControlsActions" expires_after="never">
 <!-- expires-never: tracked as an important feed metric. -->
@@ -653,7 +733,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Count" units="entries"
-    expires_after="M90">
+    expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -664,7 +747,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.DisplayStatusOnOpen"
-    enum="ContentSuggestionsDisplayStatus" expires_after="2021-04-18">
+    enum="ContentSuggestionsDisplayStatus" expires_after="2021-10-25">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -676,29 +759,11 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
-<histogram name="ContentSuggestions.Feed.EngagementType"
-    enum="FeedEngagementType" expires_after="2021-03-01">
-  <owner>petewil@chromium.org</owner>
-  <owner>harringtond@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Tracks each instance of user engagement with the feed, by scrolling or
-    interacting with a card (opening the URL or using the menu). Note that each
-    event type reports samples very differently and buckets can't be directly
-    compared. We're mostly interested in unique user counts. We track every
-    interaction, and we report ENGAGED and ENGAGED_SIMPLE once per user visit. A
-    user visit is when the user scrolls or interacts with the NTP more than 5
-    minutes after the previous visit. The SCROLLED engagement type represents a
-    single instance of the user scrolling, and is reported once per Feed visit.
-    The INTERACTED engagement type represents one instance of using the menu or
-    opening a feed article into its own tab. SCROLLED and INTERACTED are
-    reported for every occurrence, thus we could end up with more scrolled and
-    interected than ENGAGED or ENGAGED_SIMPLE samples.
-  </summary>
-</histogram>
-
 <histogram name="ContentSuggestions.Feed.FetchPendingSpinner.Shown"
-    enum="FeedSpinnerType" expires_after="M90">
+    enum="FeedSpinnerType" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -710,7 +775,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.FetchPendingSpinner.VisibleDuration"
-    units="ms" expires_after="M90">
+    units="ms" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -723,7 +791,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="ContentSuggestions.Feed.FetchPendingSpinner.VisibleDurationWithoutCompleting"
-    units="ms" expires_after="M90">
+    units="ms" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -735,7 +806,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ImageFetchStatus"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-06-01">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -746,7 +817,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.InterestHeader.NotInterestedInSource"
-    units="index" expires_after="2021-02-14">
+    units="index" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -757,7 +831,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.InterestHeader.NotInterestedInTopic"
-    units="index" expires_after="2021-02-14">
+    units="index" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -768,7 +845,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.InternalError"
-    enum="FeedInternalError" expires_after="M90">
+    enum="FeedInternalError" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -776,7 +856,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.LoadKeysTime" units="ms"
-    expires_after="M90">
+    expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -786,7 +869,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram base="true" name="ContentSuggestions.Feed.LoadStepLatency"
-    units="ms" expires_after="2021-06-01">
+    units="ms" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -800,7 +883,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.LoadStreamStatus.BackgroundRefresh"
-    enum="FeedLoadStreamStatus" expires_after="2021-05-01">
+    enum="FeedLoadStreamStatus" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -810,7 +893,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.LoadStreamStatus.Initial"
-    enum="FeedLoadStreamStatus" expires_after="2021-05-01">
+    enum="FeedLoadStreamStatus" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -821,7 +904,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.LoadStreamStatus.InitialFromStore"
-    enum="FeedLoadStreamStatus" expires_after="2021-05-01">
+    enum="FeedLoadStreamStatus" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -834,7 +917,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.LoadStreamStatus.LoadMore"
-    enum="FeedLoadStreamStatus" expires_after="2021-05-01">
+    enum="FeedLoadStreamStatus" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -845,7 +928,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.LoadTime" units="ms"
-    expires_after="M90">
+    expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -855,7 +941,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.Duration" units="ms"
-    expires_after="M90">
+    expires_after="2022-03-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -866,7 +952,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.Duration.{NetworkEvent}"
-    units="ms" expires_after="M90">
+    units="ms" expires_after="2022-03-01">
   <owner>sczs@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -893,7 +979,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.RequestStatusCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-04-18">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2022-03-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -905,7 +991,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.ResponseSizeKB" units="KB"
-    expires_after="2021-04-04">
+    expires_after="2022-03-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -916,7 +1002,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.ResponseStatus"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-05-01">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2022-03-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -926,7 +1012,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.TokenDuration" units="ms"
-    expires_after="M90">
+    expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -936,7 +1025,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Network.TokenFetchStatus"
-    enum="GoogleServiceAuthError" expires_after="2021-05-02">
+    enum="GoogleServiceAuthError" expires_after="2022-03-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -947,7 +1036,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.NoticeCardFulfilled" enum="Boolean"
-    expires_after="2021-05-09">
+    expires_after="2022-03-01">
   <owner>vincb@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -958,7 +1047,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.NoticeCardFulfilled2" enum="Boolean"
-    expires_after="2021-06-16">
+    expires_after="2021-10-17">
   <owner>vincb@google.com</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -1063,7 +1152,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.Scheduler.RefreshTrigger"
-    enum="RefreshTrigger" expires_after="2021-03-21">
+    enum="RefreshTrigger" expires_after="2021-05-23">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1112,7 +1201,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.SendFeedback"
-    enum="FeedSendFeedbackType" expires_after="2021-02-01">
+    enum="FeedSendFeedbackType" expires_after="2022-02-01">
   <owner>carlosk@chromium.org</owner>
   <owner>petewil@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1151,7 +1240,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.TimeSpentInFeed" units="ms"
-    expires_after="2021-05-01">
+    expires_after="2022-03-01">
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1199,7 +1288,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UploadActionsBatchStatus"
-    enum="FeedUploadActionsBatchStatus" expires_after="2021-04-18">
+    enum="FeedUploadActionsBatchStatus" expires_after="2021-12-01">
   <owner>iwells@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1209,7 +1298,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UploadActionsStatus"
-    enum="FeedUploadActionsStatus" expires_after="2020-12-01">
+    enum="FeedUploadActionsStatus" expires_after="2021-12-01">
   <owner>iwells@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1221,7 +1310,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserActions" enum="FeedUserActionType"
-    expires_after="2021-05-01">
+    expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1233,7 +1322,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserActions.Commands"
-    enum="FeedUserCommandType" expires_after="2021-09-01">
+    enum="FeedUserCommandType" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1245,7 +1334,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.GetMore.FailureDuration"
-    units="ms" expires_after="2021-05-01">
+    units="ms" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1256,7 +1345,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.GetMore.SuccessDuration"
-    units="ms" expires_after="2021-05-01">
+    units="ms" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1267,7 +1356,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.OpenCard.Failure"
-    enum="Boolean" expires_after="2021-05-01">
+    enum="Boolean" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1278,7 +1367,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.OpenCard.SuccessDuration"
-    units="ms" expires_after="2021-05-01">
+    units="ms" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1289,7 +1378,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.OpenFeed.FailureDuration"
-    units="ms" expires_after="2021-05-01">
+    units="ms" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1301,7 +1390,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.UserJourney.OpenFeed.SuccessDuration"
-    units="ms" expires_after="2021-05-01">
+    units="ms" expires_after="2022-03-01">
   <owner>harringtond@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1314,7 +1403,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.VisitDuration" units="ms"
-    expires_after="2021-07-01">
+    expires_after="2021-11-07">
   <owner>harringtond@chromium.org</owner>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1331,7 +1420,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.VisualElement.Clicked" units="index"
-    expires_after="M90">
+    expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1346,7 +1438,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="ContentSuggestions.Feed.VisualElement.Clicked.TimeSinceElementFetched"
-    units="ms" expires_after="M90">
+    units="ms" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1359,7 +1454,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.VisualElement.Viewed" units="index"
-    expires_after="M90">
+    expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1375,7 +1473,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="ContentSuggestions.Feed.VisualElement.Viewed.TimeSinceElementFetched"
-    units="ms" expires_after="M90">
+    units="ms" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1387,9 +1488,49 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
   </summary>
 </histogram>
 
+<histogram name="ContentSuggestions.Feed.WebFeed.Opened" units="index"
+    expires_after="never">
+<!-- expires-never: key feature metric.  We will need the Opened
+     metric as long as we have a feed, and it will be removed with the
+     feed code if the feed is ever removed. -->
+
+  <owner>freedjm@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The position of the WebFeed card on the NTP, that is clicked
+    through to the host website of the content. We track the position the card
+    had in the list when it was first seen by the user. This tracked position
+    can be different from the position observed by the user, e.g. when the user
+    dismissed some suggestions from the list or requested more that got inserted
+    in the middle of the feed.
+  </summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.WebFeed.Shown" units="index"
+    expires_after="never">
+<!-- expires-never: key feature metric.  We will need the Shown
+       metric as long as we have a feed, and it will be removed with
+       the feed code if the feed is ever removed. -->
+
+  <owner>freedjm@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: The position of a WebFeed card that was shown on the NTP. A card is
+    considered shown when at least 2/3 of its height is visible on the screen.
+    For each card, at most one impression is recorded per NTP instance. We track
+    the position the card had in the list when it was first seen by the user.
+    This tracked position can be different from the position observed by the
+    user, e.g. when the user dismissed some suggestions from the list or
+    requested more that got inserted in the middle of the feed.
+  </summary>
+</histogram>
+
 <histogram
     name="ContentSuggestions.Feed.ZeroStateRefreshCompleted.ContentCount"
-    units="count" expires_after="M90">
+    units="count" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1401,7 +1542,10 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ZeroStateRefreshCompleted.TokenCount"
-    units="count" expires_after="M90">
+    units="count" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
@@ -1413,11 +1557,90 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="ContentSuggestions.Feed.ZeroStateShown.Reason"
-    enum="FeedZeroStateShowReason" expires_after="M90">
+    enum="FeedZeroStateShowReason" expires_after="M89">
+  <obsolete>
+    Removed along with FeedV1 in M89
+  </obsolete>
   <owner>carlosk@chromium.org</owner>
   <owner>harringtond@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>The reason the zero state (no articles) is shown to a user.</summary>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.{PlayType}Video.InitializationError"
+    enum="FeedVideoInitializationError" expires_after="M96">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: records errors occurred during the video player initialization. The
+    embedded video player needs to be initialized before it can be used to play
+    a video in {PlayType} mode. In autoplay muted mode, the initialization may
+    kick off even before the video view is scrolled to become visible. In normal
+    unmuted mode, this happens when the user taps the video to launch the video
+    in fullscreen playing mode.
+  </summary>
+  <token key="PlayType">
+    <variant name="AutoplayMuted"/>
+    <variant name="NormalUnmuted"/>
+  </token>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.{PlayType}Video.PlayError"
+    enum="FeedVideoPlayError" expires_after="M96">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: records errors occurred during the video playing, in {PlayType}
+    mode. Upon the successful initialization of the embedded player, the video
+    starts to play and any error occurs since then is reported here.
+  </summary>
+  <token key="PlayType">
+    <variant name="AutoplayMuted"/>
+    <variant name="NormalUnmuted"/>
+  </token>
+</histogram>
+
+<histogram name="ContentSuggestions.Feed.{PlayType}Video.PlayEvent"
+    enum="FeedVideoPlayEvent" expires_after="M96">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Android: records events triggered during the video playing, in {PlayType}
+    mode.
+  </summary>
+  <token key="PlayType">
+    <variant name="AutoplayMuted"/>
+    <variant name="NormalUnmuted"/>
+  </token>
+</histogram>
+
+<histogram name="ContentSuggestions.{FeedType}.EngagementType"
+    enum="FeedEngagementType" expires_after="never">
+<!-- expires-never: key feature metric.  We will need the Engagement
+       type as long as we have a feed, and it will be removed with the
+       feed code if the feed is ever removed. -->
+
+  <owner>petewil@chromium.org</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Tracks each instance of user engagement with the {FeedType}, by scrolling or
+    interacting with a card (opening the URL or using the menu). Note that each
+    event type reports samples very differently and buckets can't be directly
+    compared. We're mostly interested in unique user counts. We track every
+    interaction, and we report ENGAGED and ENGAGED_SIMPLE once per user visit. A
+    user visit is when the user scrolls or interacts with the NTP more than 5
+    minutes after the previous visit. The SCROLLED engagement type represents a
+    single instance of the user scrolling, and is reported once per Feed visit.
+    The INTERACTED engagement type represents one instance of using the menu or
+    opening a feed article into its own tab. SCROLLED and INTERACTED are
+    reported for every occurrence, thus we could end up with more scrolled and
+    interected than ENGAGED or ENGAGED_SIMPLE samples.
+  </summary>
+  <token key="FeedType">
+    <variant name="Feed" summary="For-You Feed"/>
+    <variant name="Feed.WebFeed" summary="Web Feed"/>
+  </token>
 </histogram>
 
 </histograms>

@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views_aura_ash.h"
 
+#include "ash/public/cpp/split_view_test_api.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/apps/platform_apps/app_window_interactive_uitest_base.h"
@@ -40,7 +42,9 @@ class ViewBoundsChangeWaiter : public views::ViewObserver {
   }
 
  private:
-  explicit ViewBoundsChangeWaiter(views::View* view) { observed_.Add(view); }
+  explicit ViewBoundsChangeWaiter(views::View* view) {
+    observation_.Observe(view);
+  }
   ~ViewBoundsChangeWaiter() override = default;
 
   // ViewObserver:
@@ -48,7 +52,7 @@ class ViewBoundsChangeWaiter : public views::ViewObserver {
 
   base::RunLoop run_loop_;
 
-  ScopedObserver<views::View, views::ViewObserver> observed_{this};
+  base::ScopedObservation<views::View, views::ViewObserver> observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ViewBoundsChangeWaiter);
 };
@@ -197,12 +201,12 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   ASSERT_TRUE(window());
 
   app_window_->OSFullscreen();
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT, window()->GetRestoredState());
   ash::ShellTestApi().SetTabletModeEnabledForTest(true);
   EXPECT_TRUE(window()->IsFullscreen());
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT, window()->GetRestoredState());
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT, window()->GetRestoredState());
 
   CloseAppWindow(app_window_);
 }
@@ -249,12 +253,12 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   // fullscreen.
   EXPECT_FALSE(window()->IsFullscreen());
   app_window_->OSFullscreen();
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT, window()->GetRestoredState());
   EXPECT_TRUE(window()->IsFullscreen());
   EXPECT_TRUE(IsImmersiveActive());
   ash::ShellTestApi().SetTabletModeEnabledForTest(true);
   EXPECT_TRUE(window()->IsFullscreen());
-  EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
+  EXPECT_EQ(ui::SHOW_STATE_DEFAULT, window()->GetRestoredState());
 
   window()->Restore();
   // Restoring a window inside tablet mode should deactivate fullscreen, but not
@@ -266,6 +270,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
   // clamshell mode.
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
   app_window_->OSFullscreen();
+  // Note that windows that are fullscreened before entering tablet mode are
+  // maximized when leaving it.
   EXPECT_EQ(ui::SHOW_STATE_MAXIMIZED, window()->GetRestoredState());
   EXPECT_TRUE(window()->IsFullscreen());
 
@@ -386,4 +392,32 @@ IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
               app_window->GetNativeWindow()->GetBoundsInScreen());
   }
   CloseAppWindow(app_window);
+}
+
+// Tests that opening a chrome app window when a window is already snapped will
+// snap it as well, even if the window is meant to be created maximized.
+IN_PROC_BROWSER_TEST_F(ChromeNativeAppWindowViewsAuraAshBrowserTest,
+                       OpeningDefaultMaximizedWindowInSplitview) {
+  ash::TabletMode::Get()->SetEnabledForTest(true);
+
+  const extensions::Extension* extension =
+      LoadAndLaunchPlatformApp("launch", "Launched");
+
+  extensions::AppWindow::CreateParams params;
+  extensions::AppWindow* app1_window =
+      CreateAppWindowFromParams(browser()->profile(), extension, params);
+
+  ash::SplitViewTestApi split_view_test_api;
+  split_view_test_api.SnapWindow(app1_window->GetNativeWindow(),
+                                 ash::SplitViewTestApi::SnapPosition::LEFT);
+  ASSERT_EQ(app1_window->GetNativeWindow(),
+            split_view_test_api.GetLeftWindow());
+
+  // Open a second app window that should be created maximized. It should be
+  // snapped.
+  params.state = ui::SHOW_STATE_MAXIMIZED;
+  extensions::AppWindow* app2_window =
+      CreateAppWindowFromParams(browser()->profile(), extension, params);
+  ASSERT_EQ(app2_window->GetNativeWindow(),
+            split_view_test_api.GetRightWindow());
 }

@@ -8,8 +8,9 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/optional.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
+#include "build/chromeos_buildflags.h"
 #include "components/exo/input_trace.h"
 #include "components/exo/pointer_constraint_delegate.h"
 #include "components/exo/pointer_delegate.h"
@@ -22,6 +23,7 @@
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -32,6 +34,7 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/scale_factor.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -41,10 +44,10 @@
 #include "ui/gfx/transform_util.h"
 #include "ui/views/widget/widget.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/wm/window_util.h"
-#include "chromeos/constants/chromeos_features.h"
 #endif
 
 namespace exo {
@@ -95,7 +98,7 @@ display::ManagedDisplayInfo GetCaptureDisplayInfo() {
 }
 
 int GetContainerIdForMouseCursor() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return ash::kShellWindowId_MouseCursorContainer;
 #else
   NOTIMPLEMENTED();
@@ -126,6 +129,8 @@ Pointer::Pointer(PointerDelegate* delegate, Seat* seat)
 }
 
 Pointer::~Pointer() {
+  WMHelper* helper = WMHelper::GetInstance();
+  helper->RemovePreTargetHandler(this);
   delegate_->OnPointerDestroying(this);
   if (focus_surface_)
     focus_surface_->RemoveSurfaceObserver(this);
@@ -141,8 +146,6 @@ Pointer::~Pointer() {
   }
   if (stylus_delegate_)
     stylus_delegate_->OnPointerDestroying(this);
-  WMHelper* helper = WMHelper::GetInstance();
-  helper->RemovePreTargetHandler(this);
   // TODO(sky): CursorClient does not exist in mash
   // yet. https://crbug.com/631103.
   aura::client::CursorClient* cursor_client = helper->GetCursorClient();
@@ -154,8 +157,7 @@ Pointer::~Pointer() {
 }
 
 void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
-  // Early out if the pointer doesn't have a surface in focus.
-  if (!focus_surface_)
+  if (!focus_surface_ && !capture_window_)
     return;
 
   // This is used to avoid unnecessary cursor changes.
@@ -239,12 +241,14 @@ bool Pointer::ConstrainPointer(PointerConstraintDelegate* delegate) {
   // Pointer lock is a chromeos-only feature (i.e. the chromeos::features
   // namespace only exists in chromeos builds). So we do not compile pointer
   // lock support unless we are on chromeos.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   Surface* constrained_surface = delegate->GetConstrainedSurface();
+  if (!constrained_surface)
+    return false;
   // Pointer lock should be enabled for ARC by default. The kExoPointerLock
   // should only apply to Crostini windows.
-  bool is_arc_window = ash::window_util::IsArcWindow(
-      constrained_surface->window()->GetToplevelWindow());
+  bool is_arc_window =
+      ash::IsArcWindow(constrained_surface->window()->GetToplevelWindow());
   if (!is_arc_window &&
       !base::FeatureList::IsEnabled(chromeos::features::kExoPointerLock))
     return false;
@@ -271,17 +275,17 @@ bool Pointer::EnablePointerCapture(Surface* capture_surface) {
     return false;
   }
 
-  if (capture_surface->window() !=
-      WMHelper::GetInstance()->GetFocusedWindow()) {
-    LOG(ERROR)
-        << "Cannot enable pointer capture on a window that is not focused.";
+  aura::Window* window = capture_surface->window();
+  aura::Window* active_window = WMHelper::GetInstance()->GetActiveWindow();
+  if (!active_window || !active_window->Contains(window)) {
+    LOG(ERROR) << "Cannot enable pointer capture on an inactive window.";
     return false;
   }
 
   if (!capture_surface->HasSurfaceObserver(this))
     capture_surface->AddSurfaceObserver(this);
 
-  capture_window_ = capture_surface->window();
+  capture_window_ = window;
 
   // Add a pre-target handler that can consume all mouse events before it gets
   // sent to other targets.
@@ -367,6 +371,9 @@ void Pointer::OnSurfaceDestroying(Surface* surface) {
 // ui::EventHandler overrides:
 
 void Pointer::OnMouseEvent(ui::MouseEvent* event) {
+  if (seat_->was_shutdown())
+    return;
+
   // Nothing to report to a client nor have to update the pointer when capture
   // changes.
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
@@ -418,8 +425,8 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
     //
     // TODO(b/161755250): the ifdef is only necessary because of the feature
     // flag. This code should work fine on non-cros.
-    base::Optional<gfx::Vector2dF> ordinal_motion = base::nullopt;
-#if defined(OS_CHROMEOS)
+    absl::optional<gfx::Vector2dF> ordinal_motion = absl::nullopt;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     if (event->flags() & ui::EF_UNADJUSTED_MOUSE &&
         base::FeatureList::IsEnabled(chromeos::features::kExoOrdinalMotion)) {
       ordinal_motion = event->movement();
@@ -729,7 +736,8 @@ void Pointer::OnCursorCaptured(const gfx::Point& hotspot,
   if (result->IsEmpty())
     return;
 
-  cursor_bitmap_ = result->AsSkBitmap();
+  auto scoped_bitmap = result->ScopedAccessSkBitmap();
+  cursor_bitmap_ = scoped_bitmap.GetOutScopedBitmap();
   DCHECK(cursor_bitmap_.readyToDraw());
   cursor_hotspot_ = hotspot;
   UpdateCursor();
@@ -763,16 +771,14 @@ void Pointer::UpdateCursor() {
     ui::ScaleAndRotateCursorBitmapAndHotpoint(scale, display.panel_rotation(),
                                               &bitmap, &hotspot);
 
-    ui::PlatformCursor platform_cursor;
     // TODO(reveman): Add interface for creating cursors from GpuMemoryBuffers
     // and use that here instead of the current bitmap API.
     // https://crbug.com/686600
-    platform_cursor = ui::CursorFactory::GetInstance()->CreateImageCursor(
-        cursor_.type(), bitmap, hotspot);
-    cursor_.SetPlatformCursor(platform_cursor);
+    cursor_.SetPlatformCursor(
+        ui::CursorFactory::GetInstance()->CreateImageCursor(cursor_.type(),
+                                                            bitmap, hotspot));
     cursor_.set_custom_bitmap(bitmap);
     cursor_.set_custom_hotspot(hotspot);
-    ui::CursorFactory::GetInstance()->UnrefImageCursor(platform_cursor);
   }
 
   // If there is a focused surface, update its widget as the views framework
@@ -824,7 +830,7 @@ void Pointer::MoveCursorToCenterOfActiveDisplay() {
 bool Pointer::HandleRelativePointerMotion(
     base::TimeTicks time_stamp,
     gfx::PointF location_in_root,
-    const base::Optional<gfx::Vector2dF>& ordinal_motion) {
+    const absl::optional<gfx::Vector2dF>& ordinal_motion) {
   if (!relative_pointer_delegate_)
     return false;
 

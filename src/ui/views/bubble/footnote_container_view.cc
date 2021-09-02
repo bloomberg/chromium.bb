@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "cc/paint/paint_flags.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -15,7 +16,6 @@
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace views {
 
@@ -54,10 +54,10 @@ class HalfRoundedRectBackground : public Background {
 
 FootnoteContainerView::FootnoteContainerView(const gfx::Insets& margins,
                                              std::unique_ptr<View> child_view,
-                                             float corner_radius) {
+                                             float corner_radius)
+    : corner_radius_(corner_radius) {
   SetLayoutManager(std::make_unique<BoxLayout>(
       BoxLayout::Orientation::kVertical, margins, 0));
-  SetCornerRadius(corner_radius);
   auto* child_view_ptr = AddChildView(std::move(child_view));
   SetVisible(child_view_ptr->GetVisible());
 }
@@ -66,7 +66,8 @@ FootnoteContainerView::~FootnoteContainerView() = default;
 
 void FootnoteContainerView::SetCornerRadius(float corner_radius) {
   corner_radius_ = corner_radius;
-  ResetBackground();
+  if (GetWidget())
+    ResetBackground();
 }
 
 void FootnoteContainerView::OnThemeChanged() {
@@ -81,6 +82,8 @@ void FootnoteContainerView::ChildVisibilityChanged(View* child) {
 }
 
 void FootnoteContainerView::ResetBackground() {
+  if (!GetWidget())
+    return;
   SkColor background_color = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_BubbleFooterBackground);
   SetBackground(std::make_unique<HalfRoundedRectBackground>(background_color,
@@ -88,6 +91,8 @@ void FootnoteContainerView::ResetBackground() {
 }
 
 void FootnoteContainerView::ResetBorder() {
+  if (!GetWidget())
+    return;
   SetBorder(CreateSolidSidedBorder(
       1, 0, 0, 0, GetNativeTheme()->GetSystemColor(
                 ui::NativeTheme::kColorId_FootnoteContainerBorder)));

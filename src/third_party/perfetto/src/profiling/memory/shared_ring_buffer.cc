@@ -20,6 +20,7 @@
 #include <type_traits>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <inttypes.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -174,7 +175,7 @@ void SharedRingBuffer::Initialize(base::ScopedFile mem_fd) {
     munmap(region, outer_size);
     return;
   }
-  size_ = size;
+  set_size(size);
   meta_ = reinterpret_cast<MetadataPage*>(region);
   mem_ = region + kMetaPageSize;
   mem_fd_ = std::move(mem_fd);
@@ -310,11 +311,13 @@ SharedRingBuffer::SharedRingBuffer(SharedRingBuffer&& other) noexcept {
   *this = std::move(other);
 }
 
-SharedRingBuffer& SharedRingBuffer::operator=(SharedRingBuffer&& other) {
+SharedRingBuffer& SharedRingBuffer::operator=(
+    SharedRingBuffer&& other) noexcept {
   mem_fd_ = std::move(other.mem_fd_);
-  std::tie(meta_, mem_, size_) = std::tie(other.meta_, other.mem_, other.size_);
-  std::tie(other.meta_, other.mem_, other.size_) =
-      std::make_tuple(nullptr, nullptr, 0);
+  std::tie(meta_, mem_, size_, size_mask_) =
+      std::tie(other.meta_, other.mem_, other.size_, other.size_mask_);
+  std::tie(other.meta_, other.mem_, other.size_, other.size_mask_) =
+      std::make_tuple(nullptr, nullptr, 0, 0);
   return *this;
 }
 

@@ -7,6 +7,7 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
@@ -22,7 +23,6 @@ char kIdSwitch[] =
     "pid";
 #endif
 char kFiltersSwitch[] = "filters";
-char kJsonSwitch[] = "json";
 char kHelpSwitch[] = "help";
 
 // Convert from string to int, whether in 0x hex format or decimal format.
@@ -68,7 +68,6 @@ void PrintHelp() {
   printf(
       "  --filters\tfile containing property filters used to filter out\n"
       "  \t\taccessible tree, see example-tree-filters.txt as an example\n");
-  printf("  --json\toutputs tree in JSON format\n");
 }
 
 int main(int argc, char** argv) {
@@ -88,8 +87,6 @@ int main(int argc, char** argv) {
   base::FilePath filters_path =
       command_line->GetSwitchValuePath(kFiltersSwitch);
 
-  bool use_json = command_line->HasSwitch(kJsonSwitch);
-
   std::string id_str = command_line->GetSwitchValueASCII(kIdSwitch);
   if (!id_str.empty()) {
     unsigned hwnd_or_pid;
@@ -100,14 +97,14 @@ int main(int argc, char** argv) {
     gfx::AcceleratedWidget widget(CastToAcceleratedWidget(hwnd_or_pid));
 
     std::unique_ptr<content::AXTreeServer> server(
-        new content::AXTreeServer(widget, filters_path, use_json));
+        new content::AXTreeServer(widget, filters_path));
     return 0;
   }
 
   AXTreeSelector selector = tools::TreeSelectorFromCommandLine(command_line);
   if (!selector.empty()) {
     std::unique_ptr<content::AXTreeServer> server(
-        new content::AXTreeServer(selector, filters_path, use_json));
+        new content::AXTreeServer(selector, filters_path));
     return 0;
   }
 

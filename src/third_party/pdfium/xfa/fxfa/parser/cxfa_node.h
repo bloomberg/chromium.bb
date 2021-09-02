@@ -11,6 +11,8 @@
 #include <vector>
 
 #include "core/fxcrt/fx_string.h"
+#include "core/fxcrt/fx_system.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "core/fxge/dib/fx_dib.h"
 #include "fxjs/gc/gced_tree_node_mixin.h"
@@ -37,6 +39,7 @@ class CXFA_FFDocView;
 class CXFA_Font;
 class CXFA_Keep;
 class CXFA_Margin;
+class CXFA_Measurement;
 class CXFA_Occur;
 class CXFA_Para;
 class CXFA_Script;
@@ -327,10 +330,10 @@ class CXFA_Node : public CXFA_Object, public GCedTreeNodeMixin<CXFA_Node> {
   float GetCheckButtonSize();
 
   XFA_CHECKSTATE GetCheckState();
-  void SetCheckState(XFA_CHECKSTATE eCheckState, bool bNotify);
+  void SetCheckState(XFA_CHECKSTATE eCheckState);
 
   CXFA_Node* GetSelectedMember();
-  CXFA_Node* SetSelectedMember(WideStringView wsName, bool bNotify);
+  CXFA_Node* SetSelectedMember(WideStringView wsName);
   void SetSelectedMemberByValue(WideStringView wsValue,
                                 bool bNotify,
                                 bool bScriptModify,

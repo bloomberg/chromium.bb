@@ -21,9 +21,9 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks_notifier_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
@@ -43,10 +43,6 @@ using file_manager::file_tasks::FileTasksObserver;
 
 // Limits how frequently models are queried for ranking results.
 constexpr TimeDelta kMinSecondsBetweenFetches = TimeDelta::FromSeconds(1);
-
-// Limits how frequently results are logged, due to the possibility of multiple
-// ranking events occurring for each user action.
-constexpr TimeDelta kMinTimeBetweenLogs = TimeDelta::FromSeconds(2);
 
 constexpr char kLogFileOpenType[] = "RecurrenceRanker.LogFileOpenType";
 
@@ -181,7 +177,7 @@ void SearchResultRanker::InitializeRankers(
         base::BindOnce(
             [](SearchResultRanker* ranker,
                const RecurrenceRankerConfigProto& default_config,
-               base::Optional<RecurrenceRankerConfigProto> parsed_config) {
+               absl::optional<RecurrenceRankerConfigProto> parsed_config) {
               ranker->zero_state_config_converter_.reset();
               if (ranker->json_config_parsed_for_testing_)
                 std::move(ranker->json_config_parsed_for_testing_).Run();
@@ -196,9 +192,6 @@ void SearchResultRanker::InitializeRankers(
             },
             base::Unretained(this), default_config));
   }
-
-  search_ranking_event_logger_ =
-      std::make_unique<SearchRankingEventLogger>(profile_, search_controller);
 
   app_launch_event_logger_ = std::make_unique<app_list::AppLaunchEventLogger>();
 
@@ -216,7 +209,7 @@ void SearchResultRanker::InitializeRankers(
       chromeos::ProfileHelper::IsEphemeralUserProfile(profile_));
 }
 
-void SearchResultRanker::FetchRankings(const base::string16& query) {
+void SearchResultRanker::FetchRankings(const std::u16string& query) {
   last_query_ = query;
 
   // The search controller potentially calls SearchController::FetchResults
@@ -267,7 +260,6 @@ void SearchResultRanker::Rank(Mixer::SortedResults* results) {
 
     if (model == Model::MIXED_TYPES) {
       if (last_query_.empty() && zero_state_group_ranker_) {
-        LogZeroStateResultScore(type, result.score);
         ScoreZeroStateItem(&result, type, &zero_state_type_counts);
       }
     } else if (model == Model::APPS) {
@@ -311,46 +303,37 @@ void SearchResultRanker::ScoreZeroStateItem(
   ++(*type_counts)[type];
 }
 
-void SearchResultRanker::Train(const AppLaunchData& app_launch_data) {
-  if (app_launch_data.launched_from ==
+void SearchResultRanker::Train(const LaunchData& launch_data) {
+  if (launch_data.launched_from ==
           ash::AppListLaunchedFrom::kLaunchedFromGrid &&
       app_launch_event_logger_) {
     // Log the AppResult from the grid to the UKM system.
-    app_launch_event_logger_->OnGridClicked(app_launch_data.id);
-  } else if (app_launch_data.launch_type ==
+    app_launch_event_logger_->OnGridClicked(launch_data.id);
+  } else if (launch_data.launch_type ==
                  ash::AppListLaunchType::kAppSearchResult &&
              app_launch_event_logger_) {
     // Log the AppResult (either in the search result page, or in chip form in
     // AppsGridView) to the UKM system.
     app_launch_event_logger_->OnSuggestionChipOrSearchBoxClicked(
-        app_launch_data.id, app_launch_data.suggestion_index,
-        static_cast<int>(app_launch_data.launched_from));
+        launch_data.id, launch_data.suggestion_index,
+        static_cast<int>(launch_data.launched_from));
   }
 
-  auto model = ModelForType(app_launch_data.ranking_item_type);
+  auto model = ModelForType(launch_data.ranking_item_type);
   if (model == Model::MIXED_TYPES) {
     // We currently only have a mixed types model for zero-state, so stop if
     // the launch has a query attached.
-    if (!app_launch_data.query.empty())
+    if (!launch_data.query.empty())
       return;
 
-    LogZeroStateLaunchType(app_launch_data.ranking_item_type);
+    LogZeroStateLaunchType(launch_data.ranking_item_type);
     if (zero_state_group_ranker_) {
       zero_state_group_ranker_->Record(base::NumberToString(
-          static_cast<int>(app_launch_data.ranking_item_type)));
+          static_cast<int>(launch_data.ranking_item_type)));
     }
   } else if (model == Model::APPS && app_ranker_) {
-    app_ranker_->Record(NormalizeAppId(app_launch_data.id));
+    app_ranker_->Record(NormalizeAppId(launch_data.id));
   }
-
-  LogChipUsageMetrics(app_launch_data);
-}
-
-void SearchResultRanker::LogSearchResults(
-    const base::string16& trimmed_query,
-    const ash::SearchResultIdWithPositionIndices& results,
-    int launched_index) {
-  search_ranking_event_logger_->Log(trimmed_query, results, launched_index);
 }
 
 void SearchResultRanker::ZeroStateResultsDisplayed(
@@ -433,27 +416,6 @@ void SearchResultRanker::OnFilesOpened(
     CrOSActionRecorder::GetCrosActionRecorder()->RecordAction(
         {base::StrCat({"FileOpened-", file_open.path.value()})},
         {{"open_type", static_cast<int>(file_open.open_type)}});
-  }
-}
-
-void SearchResultRanker::LogZeroStateResultScore(RankingItemType type,
-                                                 float score) {
-  const auto& now = Time::Now();
-  if (type == RankingItemType::kOmniboxGeneric) {
-    if (now - time_of_last_omnibox_log_ < kMinTimeBetweenLogs)
-      return;
-    time_of_last_omnibox_log_ = now;
-    LogZeroStateReceivedScore("OmniboxSearch", score, 0.0f, 1.0f);
-  } else if (type == RankingItemType::kZeroStateFile) {
-    if (now - time_of_last_local_file_log_ < kMinTimeBetweenLogs)
-      return;
-    time_of_last_local_file_log_ = now;
-    LogZeroStateReceivedScore("ZeroStateFile", score, 0.0f, 1.0f);
-  } else if (type == RankingItemType::kDriveQuickAccess) {
-    if (now - time_of_last_drive_log_ < kMinTimeBetweenLogs)
-      return;
-    time_of_last_drive_log_ = now;
-    LogZeroStateReceivedScore("DriveQuickAccess", score, -10.0f, 10.0f);
   }
 }
 

@@ -16,10 +16,10 @@
 
 #include <cstdint>
 
-#include "net/third_party/quiche/src/http2/decoder/http2_frame_decoder_listener.h"
-#include "net/third_party/quiche/src/http2/http2_constants.h"
-#include "net/third_party/quiche/src/http2/http2_structures.h"
-#include "net/third_party/quiche/src/http2/test_tools/frame_parts_collector.h"
+#include "http2/decoder/http2_frame_decoder_listener.h"
+#include "http2/http2_constants.h"
+#include "http2/http2_structures.h"
+#include "http2/test_tools/frame_parts_collector.h"
 
 namespace http2 {
 namespace test {
@@ -71,6 +71,11 @@ class FramePartsCollectorListener : public FramePartsCollector {
   void OnAltSvcOriginData(const char* data, size_t len) override;
   void OnAltSvcValueData(const char* data, size_t len) override;
   void OnAltSvcEnd() override;
+  void OnPriorityUpdateStart(
+      const Http2FrameHeader& header,
+      const Http2PriorityUpdateFields& priority_update) override;
+  void OnPriorityUpdatePayload(const char* data, size_t len) override;
+  void OnPriorityUpdateEnd() override;
   void OnUnknownStart(const Http2FrameHeader& header) override;
   void OnUnknownPayload(const char* data, size_t len) override;
   void OnUnknownEnd() override;

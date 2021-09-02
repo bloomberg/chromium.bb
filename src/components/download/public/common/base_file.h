@@ -19,7 +19,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -30,6 +29,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace download {
@@ -146,8 +146,15 @@ class COMPONENTS_DOWNLOAD_EXPORT BaseFile {
   // will cause |secure_hash_| to get calculated.
   std::unique_ptr<crypto::SecureHash> Finish();
 
-  // Informs the OS that this file came from the internet. Returns a
-  // DownloadInterruptReason indicating the result of the operation.
+  // Callback used with AnnotateWithSourceInformation.
+  // Created by DownloadFileImpl::RenameWithRetryInternal
+  // to bind DownloadFileImpl::OnRenameComplete.
+  using OnAnnotationDoneCallback =
+      base::OnceCallback<void(DownloadInterruptReason)>;
+
+  // Informs the OS that this file came from the internet. Calls
+  // |on_annotation_done_callback| with DownloadInterruptReason indicating the
+  // result of the operation.
   //
   // |client_guid|: The client GUID which will be used to identify the caller to
   //     the system AV scanning function.
@@ -156,21 +163,6 @@ class COMPONENTS_DOWNLOAD_EXPORT BaseFile {
   //     that originated this download. Will be used to annotate source
   //     information and also to determine the relative danger level of the
   //     file.
-  DownloadInterruptReason AnnotateWithSourceInformationSync(
-      const std::string& client_guid,
-      const GURL& source_url,
-      const GURL& referrer_url);
-
-  // Callback used with AnnotateWithSourceInformation.
-  // Created by DownloadFileImpl::RenameWithRetryInternal
-  // to bind DownloadFileImpl::OnRenameComplete.
-  using OnAnnotationDoneCallback =
-      base::OnceCallback<void(DownloadInterruptReason)>;
-
-  // Called when a quarantine service is used.
-  // and the callback will be called from the service.
-  // TODO (crbug.com/973497): Remove non-service version when
-  // kPreventDownloadsWithSamePath feature is removed.
   void AnnotateWithSourceInformation(
       const std::string& client_guid,
       const GURL& source_url,

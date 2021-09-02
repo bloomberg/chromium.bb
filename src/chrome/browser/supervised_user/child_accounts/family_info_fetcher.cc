@@ -89,8 +89,8 @@ FamilyInfoFetcher::FamilyInfoFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : consumer_(consumer),
       // This feature doesn't care about browser sync consent.
-      primary_account_id_(identity_manager->GetPrimaryAccountId(
-          signin::ConsentLevel::kNotRequired)),
+      primary_account_id_(
+          identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin)),
       identity_manager_(identity_manager),
       url_loader_factory_(std::move(url_loader_factory)),
       access_token_expired_(false) {}
@@ -134,7 +134,7 @@ void FamilyInfoFetcher::StartFetchingAccessToken() {
                          base::Unretained(this)),
           signin::PrimaryAccountAccessTokenFetcher::Mode::kWaitUntilAvailable,
           // This feature doesn't care about browser sync consent.
-          signin::ConsentLevel::kNotRequired);
+          signin::ConsentLevel::kSignin);
 }
 
 void FamilyInfoFetcher::OnAccessTokenFetchComplete(
@@ -252,10 +252,10 @@ void FamilyInfoFetcher::OnSimpleLoaderCompleteInternal(
 // static
 bool FamilyInfoFetcher::ParseMembers(const base::ListValue* list,
                                      std::vector<FamilyMember>* members) {
-  for (auto it = list->begin(); it != list->end(); ++it) {
+  for (const auto& entry : list->GetList()) {
     FamilyMember member;
     const base::DictionaryValue* dict = NULL;
-    if (!it->GetAsDictionary(&dict) || !ParseMember(dict, &member)) {
+    if (!entry.GetAsDictionary(&dict) || !ParseMember(dict, &member)) {
       return false;
     }
     members->push_back(member);

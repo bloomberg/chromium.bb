@@ -25,7 +25,8 @@
 
 #include <memory>
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -39,7 +40,6 @@ class BufferingBytesConsumer;
 class FetchParameters;
 class RawResourceClient;
 class ResourceFetcher;
-class SingleCachedMetadataHandler;
 
 class PLATFORM_EXPORT RawResource final : public Resource {
  public:
@@ -49,9 +49,6 @@ class PLATFORM_EXPORT RawResource final : public Resource {
   static RawResource* Fetch(FetchParameters&,
                             ResourceFetcher*,
                             RawResourceClient*);
-  static RawResource* FetchImport(FetchParameters&,
-                                  ResourceFetcher*,
-                                  RawResourceClient*);
   static RawResource* FetchMedia(FetchParameters&,
                                  ResourceFetcher*,
                                  RawResourceClient*);
@@ -87,18 +84,9 @@ class PLATFORM_EXPORT RawResource final : public Resource {
 
   void SetSerializedCachedMetadata(mojo_base::BigBuffer data) override;
 
-  // Used for code caching of fetched code resources. Returns a cache handler
-  // which can only store a single cache metadata entry. This is valid only if
-  // type is kRaw.
-  SingleCachedMetadataHandler* ScriptCacheHandler();
-
   scoped_refptr<BlobDataHandle> DownloadedBlob() const;
 
   void Trace(Visitor* visitor) const override;
-
- protected:
-  CachedMetadataHandler* CreateCachedMetadataHandler(
-      std::unique_ptr<CachedMetadataSender> send_callback) override;
 
  private:
   class RawResourceFactory : public NonTextResourceFactory {
@@ -144,8 +132,7 @@ class PLATFORM_EXPORT RawResource final : public Resource {
 inline bool IsRawResource(ResourceType type) {
   return type == ResourceType::kRaw || type == ResourceType::kTextTrack ||
          type == ResourceType::kAudio || type == ResourceType::kVideo ||
-         type == ResourceType::kManifest ||
-         type == ResourceType::kImportResource;
+         type == ResourceType::kManifest;
 }
 inline bool IsRawResource(const Resource& resource) {
   return IsRawResource(resource.GetType());
@@ -184,7 +171,7 @@ class PLATFORM_EXPORT RawResourceClient : public ResourceClient {
                         uint64_t /* totalBytesToBeSent */) {}
   virtual void ResponseBodyReceived(Resource*, BytesConsumer&) {}
   virtual void ResponseReceived(Resource*, const ResourceResponse&) {}
-  virtual void SetSerializedCachedMetadata(Resource*, const uint8_t*, size_t) {}
+  virtual void CachedMetadataReceived(Resource*, mojo_base::BigBuffer) {}
   virtual bool RedirectReceived(Resource*,
                                 const ResourceRequest&,
                                 const ResourceResponse&) {

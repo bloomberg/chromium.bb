@@ -62,6 +62,8 @@ struct Format : public FormatBase
 {
     Format() = default;
 
+    static angle::FormatID MetalToAngleFormatID(MTLPixelFormat formatMtl);
+
     const gl::InternalFormat &intendedInternalFormat() const;
     const gl::InternalFormat &actualInternalFormat() const;
 
@@ -162,7 +164,7 @@ class FormatTable final : angle::NonCopyable
     void setCompressedFormatCaps(MTLPixelFormat formatId, bool filterable);
 
     std::array<Format, angle::kNumANGLEFormats> mPixelFormatTable;
-    std::unordered_map<MTLPixelFormat, FormatCaps> mNativePixelFormatCapsTable;
+    angle::HashMap<MTLPixelFormat, FormatCaps> mNativePixelFormatCapsTable;
     // One for tightly packed buffers, one for general cases.
     std::array<VertexFormat, angle::kNumANGLEFormats> mVertexFormatTables[2];
 

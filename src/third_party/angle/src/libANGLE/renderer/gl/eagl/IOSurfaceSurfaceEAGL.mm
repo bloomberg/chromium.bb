@@ -83,8 +83,8 @@ IOSurfaceSurfaceEAGL::IOSurfaceSurfaceEAGL(const egl::SurfaceState &state,
       mWidth(0),
       mHeight(0),
       mPlane(0),
-      mRowStrideInPixels(0),
       mFormatIndex(-1),
+      mRowStrideInPixels(0),
       mAlphaInitialized(false)
 {
     // Keep reference to the IOSurface so it doesn't get deleted while the pbuffer exists.
@@ -113,6 +113,7 @@ IOSurfaceSurfaceEAGL::IOSurfaceSurfaceEAGL(const egl::SurfaceState &state,
     mAlphaInitialized = !hasEmulatedAlphaChannel();
 
 #    if defined(ANGLE_PLATFORM_IOS_SIMULATOR)
+    ANGLE_UNUSED_VARIABLE(mEAGLContext);
     mBoundTextureID = 0;
     EGLAttrib usageHint =
         attribs.get(EGL_IOSURFACE_USAGE_HINT_ANGLE,
@@ -206,7 +207,10 @@ egl::Error IOSurfaceSurfaceEAGL::bindTexImage(const gl::Context *context,
         // TODO(kbr): possibly more state to be set here, including setting any
         // pixel unpack buffer to 0 when using ES 3.0 contexts.
         gl::PixelUnpackState defaultUnpackState;
-        stateManager->setPixelUnpackState(defaultUnpackState);
+        if (IsError(stateManager->setPixelUnpackState(context, defaultUnpackState)))
+        {
+            return egl::EglBadState() << "Failed to set pixel unpack state.";
+        }
         textureData = IOSurfaceGetBaseAddress(mIOSurface);
     }
 
@@ -238,7 +242,10 @@ egl::Error IOSurfaceSurfaceEAGL::releaseTexImage(const gl::Context *context, EGL
         gl::PixelPackState state;
         state.rowLength = mRowStrideInPixels;
         state.alignment = 1;
-        stateManager->setPixelPackState(state);
+        if (IsError(stateManager->setPixelPackState(context, state)))
+        {
+            return egl::EglBadState() << "Failed to set pixel pack state.";
+        }
         // TODO(kbr): possibly more state to be set here, including setting any
         // pixel pack buffer to 0 when using ES 3.0 contexts.
         const auto &format = kIOSurfaceFormats[mFormatIndex];

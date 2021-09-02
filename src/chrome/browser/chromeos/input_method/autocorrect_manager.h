@@ -8,53 +8,79 @@
 #include <string>
 
 #include "chrome/browser/chromeos/input_method/assistive_window_controller.h"
-#include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/diacritics_insensitive_string_comparator.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
+#include "chrome/browser/chromeos/input_method/suggestion_handler_interface.h"
 
 namespace chromeos {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. Needs to match ImeAutocorrectActions
+// in enums.xml.
+enum class AutocorrectActions {
+  kWindowShown = 0,
+  kUnderlined = 1,
+  kReverted = 2,
+  kUserAcceptedAutocorrect = 3,
+  kUserActionClearedUnderline = 4,
+  kUserExitedTextFieldWithUnderline = 5,
+  kMaxValue = kUserExitedTextFieldWithUnderline,
+};
 
 // Implements functionality for chrome.input.ime.autocorrect() extension API.
 // This function shows UI to indicate that autocorrect has happened and allows
 // it to be undone easily.
-// TODO(b/171920749): Add unit tests.
 class AutocorrectManager {
  public:
-  // Engine is used to interact with the text field, and is assumed to be
-  // valid for the entire lifetime of the autocorrect manager.
-  explicit AutocorrectManager(InputMethodEngine* engine);
+  // `suggestion_handler_` must be alive for the duration of the lifetime of
+  // this instance.
+  explicit AutocorrectManager(SuggestionHandlerInterface* suggestion_handler);
 
   AutocorrectManager(const AutocorrectManager&) = delete;
   AutocorrectManager& operator=(const AutocorrectManager&) = delete;
 
-  // Called by input method engine on autocorrect to initially show underline.
-  // Needs to be called after the autocorrected text (corrected_word, offset by
-  // start_index code points in SurroundingInfo) has been committed.
-  void MarkAutocorrectRange(const std::string& corrected_word,
-                            const std::string& typed_word,
-                            int start_index);
+  // Mark `autocorrect_range` with an underline. `autocorrect_range` is based on
+  // the `current_text` contents.
+  // NOTE: Technically redundant to require client to supply `current_text` as
+  // AutocorrectManager can retrieve it from current text editing state known to
+  // IMF. However, due to async situation between browser-process IMF and
+  // render-process TextInputClient, it may just get a stale value that way.
+  // TODO(crbug/1194424): Remove technically redundant `current_text` param
+  // to avoid situation with multiple conflicting sources of truth.
+  void HandleAutocorrect(gfx::Range autocorrect_range,
+                         const std::u16string& original_text,
+                         const std::u16string& current_text);
+
   // To hide the underline after enough keypresses, this class intercepts
   // keystrokes. Returns whether the keypress has now been handled.
-  bool OnKeyEvent(const InputMethodEngineBase::KeyboardEvent& event);
+  bool OnKeyEvent(const ui::KeyEvent& event);
+
   // Indicates a new text field is focused, used to save context ID.
   void OnFocus(int context_id);
+
   // To show the undo window when cursor is in an autocorrected word, this class
   // is notified of surrounding text changes.
-  void OnSurroundingTextChanged(const base::string16& text,
+  void OnSurroundingTextChanged(const std::u16string& text,
                                 int cursor_pos,
                                 int anchor_pos);
+
   void UndoAutocorrect();
 
  private:
   void ClearUnderline();
+  void LogAssistiveAutocorrectAction(AutocorrectActions action);
 
+  SuggestionHandlerInterface* suggestion_handler_;
+  int context_id_ = 0;
   int key_presses_until_underline_hide_ = 0;
-  int context_id_ = -1;
-  InputMethodEngine* const engine_;
-  std::string last_typed_word_;
-  std::string last_corrected_word_;
-  bool window_visible = false;
-  bool button_highlighted = false;
+  std::u16string original_text_;
+  bool window_visible_ = false;
+  bool button_highlighted_ = false;
   base::TimeTicks autocorrect_time_;
+
+  DiacriticsInsensitiveStringComparator
+      diacritics_insensitive_string_comparator_;
+  bool in_diacritical_autocorrect_session_ = false;
 };
 
 }  // namespace chromeos

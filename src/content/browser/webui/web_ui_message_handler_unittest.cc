@@ -4,7 +4,8 @@
 
 #include "content/public/browser/web_ui_message_handler.h"
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/test/test_web_ui.h"
@@ -62,17 +63,17 @@ TEST(WebUIMessageHandlerTest, ExtractDoubleValue) {
   static const char neg_string[] = "-1234.5";
   static const char pos_string[] = "1234.5";
 
-  list.AppendDouble(zero_value);
+  list.Append(zero_value);
   EXPECT_TRUE(WebUIMessageHandler::ExtractDoubleValue(&list, &value));
   EXPECT_DOUBLE_EQ(value, zero_value);
   list.Clear();
 
-  list.AppendDouble(neg_value);
+  list.Append(neg_value);
   EXPECT_TRUE(WebUIMessageHandler::ExtractDoubleValue(&list, &value));
   EXPECT_DOUBLE_EQ(value, neg_value);
   list.Clear();
 
-  list.AppendDouble(pos_value);
+  list.Append(pos_value);
   EXPECT_TRUE(WebUIMessageHandler::ExtractDoubleValue(&list, &value));
   EXPECT_DOUBLE_EQ(value, pos_value);
   list.Clear();
@@ -94,11 +95,11 @@ TEST(WebUIMessageHandlerTest, ExtractDoubleValue) {
 
 TEST(WebUIMessageHandlerTest, ExtractStringValue) {
   base::ListValue list;
-  static const char in_string[] =
-      "The facts, though interesting, are irrelevant.";
-  list.AppendString(in_string);
-  base::string16 out_string = WebUIMessageHandler::ExtractStringValue(&list);
-  EXPECT_EQ(base::ASCIIToUTF16(in_string), out_string);
+  static constexpr char16_t kInString[] =
+      u"The facts, though interesting, are irrelevant.";
+  list.AppendString(kInString);
+  std::u16string out_string = WebUIMessageHandler::ExtractStringValue(&list);
+  EXPECT_EQ(kInString, out_string);
 }
 
 class TestWebUIMessageHandler : public WebUIMessageHandler {

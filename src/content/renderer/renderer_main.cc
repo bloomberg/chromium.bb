@@ -13,7 +13,6 @@
 #include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/pending_task.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,8 +22,10 @@
 #include "base/timer/hi_res_timer_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/partition_alloc_support.h"
 #include "content/common/skia_utils.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
@@ -38,8 +39,11 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "sandbox/policy/switches.h"
 #include "services/tracing/public/cpp/trace_startup.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
+#include "third_party/icu/source/common/unicode/unistr.h"
+#include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/webrtc_overrides/init_webrtc.h"  // nogncheck
 #include "ui/base/ui_base_switches.h"
 
@@ -57,10 +61,10 @@
 #include "third_party/blink/public/web/web_view.h"
 #endif  // OS_MAC
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/memory/userspace_swap/userspace_swap_renderer_initialization_impl.h"
 #include "chromeos/system/core_scheduling.h"
-#include "content/renderer/performance_manager/mechanisms/userspace_swap_renderer_initialization_impl.h"
-#endif  // OS_CHROMEOS
+#endif  // IS_CHROMEOS_ASH
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/pepper/pepper_plugin_registry.h"
@@ -75,8 +79,7 @@ namespace {
 
 // This function provides some ways to test crash and assertion handling
 // behavior of the renderer.
-static void HandleRendererErrorTestParameters(
-    const base::CommandLine& command_line) {
+void HandleRendererErrorTestParameters(const base::CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kWaitForDebugger))
     base::debug::WaitForDebugger(60, true);
 
@@ -116,11 +119,11 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::mac::ScopedNSAutoreleasePool* pool = parameters.autorelease_pool;
 #endif  // OS_MAC
 
-#if defined(OS_CHROMEOS)
-  // As Zygote process starts up earlier than browser process gets its own
-  // locale (at login time for Chrome OS), we have to set the ICU default
-  // locale for renderer process here.
-  // ICU locale will be used for fallback font selection etc.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // As the Zygote process starts up earlier than the browser process, it gets
+  // its own locale (at login time for Chrome OS). So we have to set the ICU
+  // default locale for the renderer process here.
+  // ICU locale will be used for fallback font selection, etc.
   if (command_line.HasSwitch(switches::kLang)) {
     const std::string locale =
         command_line.GetSwitchValueASCII(switches::kLang);
@@ -131,17 +134,23 @@ int RendererMain(const MainFunctionParams& parameters) {
   // available we want to turn it on.
   chromeos::system::EnableCoreSchedulingIfAvailable();
 
-  base::Optional<
-      performance_manager::mechanism::UserspaceSwapRendererInitializationImpl>
-      swap_init;
-  if (performance_manager::mechanism::UserspaceSwapRendererInitializationImpl::
-          UserspaceSwapSupportedAndEnabled()) {
+  using UserspaceSwapInit =
+      chromeos::memory::userspace_swap::UserspaceSwapRendererInitializationImpl;
+  absl::optional<UserspaceSwapInit> swap_init;
+  if (UserspaceSwapInit::UserspaceSwapSupportedAndEnabled()) {
     swap_init.emplace();
 
     PLOG_IF(ERROR, !swap_init->PreSandboxSetup())
         << "Unable to complete presandbox userspace swap initialization";
   }
 #endif
+
+  if (command_line.HasSwitch(switches::kTimeZoneForTesting)) {
+    std::string time_zone =
+        command_line.GetSwitchValueASCII(switches::kTimeZoneForTesting);
+    icu::TimeZone::adoptDefault(
+        icu::TimeZone::createTimeZone(icu::UnicodeString(time_zone.c_str())));
+  }
 
   InitializeSkia();
 
@@ -164,20 +173,10 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::android::RecordLibraryLoaderRendererHistograms();
 #endif
 
-  base::Optional<base::Time> initial_virtual_time;
-  if (command_line.HasSwitch(switches::kInitialVirtualTime)) {
-    double initial_time;
-    if (base::StringToDouble(
-            command_line.GetSwitchValueASCII(switches::kInitialVirtualTime),
-            &initial_time)) {
-      initial_virtual_time = base::Time::FromDoubleT(initial_time);
-    }
-  }
-
   blink::Platform::InitializeBlink();
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler =
       blink::scheduler::WebThreadScheduler::CreateMainThreadScheduler(
-          CreateMainThreadMessagePump(), initial_virtual_time);
+          CreateMainThreadMessagePump());
 
   platform.PlatformInitialize();
 
@@ -213,13 +212,16 @@ int RendererMain(const MainFunctionParams& parameters) {
     new RenderThreadImpl(run_loop.QuitClosure(),
                          std::move(main_thread_scheduler));
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     // Once the sandbox has been entered and initialization of render threads
     // complete we will transfer FDs to the browser, or close them on failure.
     // This should always be called because it will also transfer the errno that
     // prevented the creation of the userfaultfd if applicable.
     if (swap_init) {
-      swap_init->TransferFDsOrCleanup();
+      swap_init->TransferFDsOrCleanup(base::BindOnce(
+          &RenderThread::BindHostReceiver,
+          // Unretained is safe because TransferFDsOrCleanup is synchronous.
+          base::Unretained(RenderThread::Get())));
 
       // No need to leave this around any further.
       swap_init.reset();
@@ -244,6 +246,9 @@ int RendererMain(const MainFunctionParams& parameters) {
 #if BUILDFLAG(MOJO_RANDOM_DELAYS_ENABLED)
     mojo::BeginRandomMojoDelays();
 #endif
+
+    internal::PartitionAllocSupport::Get()->ReconfigureAfterTaskRunnerInit(
+        switches::kRendererProcess);
 
     base::HighResolutionTimerManager hi_res_timer_manager;
 

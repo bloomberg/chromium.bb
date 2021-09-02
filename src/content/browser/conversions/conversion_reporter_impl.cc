@@ -28,7 +28,8 @@ ConversionReporterImpl::~ConversionReporterImpl() = default;
 
 void ConversionReporterImpl::AddReportsToQueue(
     std::vector<ConversionReport> reports,
-    base::RepeatingCallback<void(int64_t)> report_sent_callback) {
+    base::RepeatingCallback<void(int64_t, absl::optional<SentReportInfo>)>
+        report_sent_callback) {
   DCHECK(!reports.empty());
 
   std::vector<std::unique_ptr<ConversionReport>> swappable_reports;
@@ -64,19 +65,23 @@ void ConversionReporterImpl::SendNextReport() {
   // Send the next report and remove it from the queue. Bind the conversion id
   // to the sent callback so we know which conversion report has finished
   // sending.
-  if (GetContentClient()->browser()->AllowConversionMeasurement(
-          partition_->browser_context())) {
+  ConversionReport* report = report_queue_.top().get();
+  if (GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
+          partition_->browser_context(),
+          ContentBrowserClient::ConversionMeasurementOperation::kReport,
+          &report->impression.impression_origin(),
+          &report->impression.conversion_origin(),
+          &report->impression.reporting_origin())) {
     network_sender_->SendReport(
         report_queue_.top().get(),
-        base::BindOnce(&ConversionReporterImpl::OnReportSent,
-                       base::Unretained(this),
-                       *report_queue_.top()->conversion_id));
+        base::BindOnce(&ConversionReporterImpl::OnReportSentWithInfo,
+                       base::Unretained(this), report->conversion_id.value()));
   } else {
     // If measurement is disallowed, just drop the report on the floor. We need
     // to make sure we forward that the report was "sent" to ensure it is
-    // deleted from storage, etc. This simulate sending the report through a
+    // deleted from storage, etc. This simulates sending the report through a
     // null channel.
-    OnReportSent(*report_queue_.top()->conversion_id);
+    OnReportSent(*report_queue_.top()->conversion_id, /*info=*/absl::nullopt);
   }
   report_queue_.pop();
   MaybeScheduleNextReport();
@@ -102,11 +107,17 @@ void ConversionReporterImpl::MaybeScheduleNextReport() {
                      base::Unretained(this)));
 }
 
-void ConversionReporterImpl::OnReportSent(int64_t conversion_id) {
+void ConversionReporterImpl::OnReportSent(int64_t conversion_id,
+                                          absl::optional<SentReportInfo> info) {
   auto it = conversion_report_callbacks_.find(conversion_id);
   DCHECK(it != conversion_report_callbacks_.end());
-  std::move(it->second).Run(conversion_id);
+  std::move(it->second).Run(conversion_id, std::move(info));
   conversion_report_callbacks_.erase(it);
+}
+
+void ConversionReporterImpl::OnReportSentWithInfo(int64_t conversion_id,
+                                                  SentReportInfo info) {
+  OnReportSent(conversion_id, std::move(info));
 }
 
 bool ConversionReporterImpl::ReportComparator::operator()(

@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/extensions/api/file_browser_handlers/file_browser_handler.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
@@ -98,7 +98,7 @@ const FileBrowserHandler* FindFileBrowserHandlerForActionId(
 }
 
 std::string EscapedUtf8ToLower(const std::string& str) {
-  base::string16 utf16 = base::UTF8ToUTF16(
+  std::u16string utf16 = base::UTF8ToUTF16(
       net::UnescapeURLComponent(str, net::UnescapeRule::NORMAL));
   return net::EscapeUrlEncodedData(
       base::UTF16ToUTF8(base::i18n::ToLower(utf16)),
@@ -228,8 +228,8 @@ FileBrowserHandlerExecutor::SetupFileAccessPermissions(
     base::FilePath virtual_path = url.virtual_path();
 
     const bool is_native_file =
-        url.type() == storage::kFileSystemTypeNativeLocal ||
-        url.type() == storage::kFileSystemTypeRestrictedNativeLocal;
+        url.type() == storage::kFileSystemTypeLocal ||
+        url.type() == storage::kFileSystemTypeRestrictedLocal;
 
     // If the file is from a physical volume, actual file must be found.
     if (is_native_file) {
@@ -273,7 +273,7 @@ void FileBrowserHandlerExecutor::Execute(
   // sent. The file access permissions will be granted to the extension in the
   // file system context for the files in |file_urls|.
   scoped_refptr<storage::FileSystemContext> file_system_context(
-      util::GetFileSystemContextForExtensionId(profile_, extension_->id()));
+      util::GetFileSystemContextForSourceURL(profile_, extension_->url()));
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
@@ -289,7 +289,9 @@ void FileBrowserHandlerExecutor::ExecuteAfterSetupFileAccess(
   const FileDefinitionList& file_definition_list_ref =
       *file_definition_list.get();
   file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
-      profile_, extension_->id(), file_definition_list_ref,
+      file_manager::util::GetFileSystemContextForSourceURL(profile_,
+                                                           extension_->url()),
+      url::Origin::Create(extension_->url()), file_definition_list_ref,
       base::BindOnce(&FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(file_definition_list)));
@@ -386,7 +388,7 @@ void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
   event_args->Append(std::move(details));
   auto event = std::make_unique<extensions::Event>(
       extensions::events::FILE_BROWSER_HANDLER_ON_EXECUTE,
-      "fileBrowserHandler.onExecute", std::move(event_args), profile_);
+      "fileBrowserHandler.onExecute", event_args->TakeList(), profile_);
   router->DispatchEventToExtension(extension_->id(), std::move(event));
 
   ExecuteDoneOnUIThread(true, "");

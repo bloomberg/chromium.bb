@@ -3,9 +3,9 @@
 <head>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
-<script src="../../../fast/forms/resources/common.js"></script>
-<script src="../../../fast/forms/resources/picker-common.js"></script>
-<script src="../../../fast/forms/calendar-picker/resources/calendar-picker-common.js"></script>
+<script src="../resources/common.js"></script>
+<script src="../resources/picker-common.js"></script>
+<script src="../calendar-picker/resources/calendar-picker-common.js"></script>
 </head>
 <body>
 <input type="time" id="time" value="14:15:02" oninput="inputEventCount++;" onchange="changeEventCount++">
@@ -41,7 +41,7 @@ promise_test(() => {
             window.setTimeout(() => {
                 assert_equals(changeEventCount, 1, 'Change event should have fired (once) asynchronously after closing popup.');
                 resolve();
-            }, 0);
+            }, 1);
         });
     });
 }, "Test input and change event firing when popup value is modified");
@@ -76,7 +76,7 @@ promise_test(() => {
             window.setTimeout(() => {
                 assert_equals(changeEventCount, 0, 'No change event should fire if popup was submitted with value still matching the original.');
                 resolve();
-            }, 0);
+            }, 1);
         });
     });
 }, "Test that change does not fire if popup value is modified and then restored to original value.");

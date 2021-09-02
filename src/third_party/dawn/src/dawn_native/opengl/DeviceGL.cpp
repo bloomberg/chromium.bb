@@ -65,6 +65,18 @@ namespace dawn_native { namespace opengl {
 
         bool supportsBaseInstance = gl.IsAtLeastGLES(3, 2) || gl.IsAtLeastGL(4, 2);
 
+        // TODO(crbug.com/dawn/582): Use OES_draw_buffers_indexed where available.
+        bool supportsIndexedDrawBuffers = gl.IsAtLeastGLES(3, 2) || gl.IsAtLeastGL(3, 0);
+
+        bool supportsSnormRead =
+            gl.IsAtLeastGL(4, 4) || gl.IsGLExtensionSupported("GL_EXT_render_snorm");
+
+        bool supportsDepthStencilRead =
+            gl.IsAtLeastGL(3, 0) || gl.IsGLExtensionSupported("GL_NV_read_depth_stencil");
+
+        bool supportsSampleVariables = gl.IsAtLeastGL(4, 0) || gl.IsAtLeastGLES(3, 2) ||
+                                       gl.IsGLExtensionSupported("GL_OES_sample_variables");
+
         // TODO(crbug.com/dawn/343): We can support the extension variants, but need to load the EXT
         // procs without the extension suffix.
         // We'll also need emulation of shader builtins gl_BaseVertex and gl_BaseInstance.
@@ -82,6 +94,11 @@ namespace dawn_native { namespace opengl {
         // TODO(crbug.com/dawn/343): Investigate emulation.
         SetToggle(Toggle::DisableBaseVertex, !supportsBaseVertex);
         SetToggle(Toggle::DisableBaseInstance, !supportsBaseInstance);
+        SetToggle(Toggle::DisableIndexedDrawBuffers, !supportsIndexedDrawBuffers);
+        SetToggle(Toggle::DisableSnormRead, !supportsSnormRead);
+        SetToggle(Toggle::DisableDepthStencilRead, !supportsDepthStencilRead);
+        SetToggle(Toggle::DisableSampleVariables, !supportsSampleVariables);
+        SetToggle(Toggle::FlushBeforeClientWaitSync, gl.GetVersion().IsES());
     }
 
     const GLFormat& Device::GetGLFormat(const Format& format) {
@@ -93,49 +110,52 @@ namespace dawn_native { namespace opengl {
         return result;
     }
 
-    ResultOrError<BindGroupBase*> Device::CreateBindGroupImpl(
+    ResultOrError<Ref<BindGroupBase>> Device::CreateBindGroupImpl(
         const BindGroupDescriptor* descriptor) {
         DAWN_TRY(ValidateGLBindGroupDescriptor(descriptor));
         return BindGroup::Create(this, descriptor);
     }
-    ResultOrError<BindGroupLayoutBase*> Device::CreateBindGroupLayoutImpl(
+    ResultOrError<Ref<BindGroupLayoutBase>> Device::CreateBindGroupLayoutImpl(
         const BindGroupLayoutDescriptor* descriptor) {
-        return new BindGroupLayout(this, descriptor);
+        return AcquireRef(new BindGroupLayout(this, descriptor));
     }
     ResultOrError<Ref<BufferBase>> Device::CreateBufferImpl(const BufferDescriptor* descriptor) {
         return AcquireRef(new Buffer(this, descriptor));
     }
-    CommandBufferBase* Device::CreateCommandBuffer(CommandEncoder* encoder,
-                                                   const CommandBufferDescriptor* descriptor) {
-        return new CommandBuffer(encoder, descriptor);
+    ResultOrError<Ref<CommandBufferBase>> Device::CreateCommandBuffer(
+        CommandEncoder* encoder,
+        const CommandBufferDescriptor* descriptor) {
+        return AcquireRef(new CommandBuffer(encoder, descriptor));
     }
-    ResultOrError<ComputePipelineBase*> Device::CreateComputePipelineImpl(
+    ResultOrError<Ref<ComputePipelineBase>> Device::CreateComputePipelineImpl(
         const ComputePipelineDescriptor* descriptor) {
-        return new ComputePipeline(this, descriptor);
+        return AcquireRef(new ComputePipeline(this, descriptor));
     }
-    ResultOrError<PipelineLayoutBase*> Device::CreatePipelineLayoutImpl(
+    ResultOrError<Ref<PipelineLayoutBase>> Device::CreatePipelineLayoutImpl(
         const PipelineLayoutDescriptor* descriptor) {
-        return new PipelineLayout(this, descriptor);
+        return AcquireRef(new PipelineLayout(this, descriptor));
     }
-    ResultOrError<QuerySetBase*> Device::CreateQuerySetImpl(const QuerySetDescriptor* descriptor) {
-        return new QuerySet(this, descriptor);
+    ResultOrError<Ref<QuerySetBase>> Device::CreateQuerySetImpl(
+        const QuerySetDescriptor* descriptor) {
+        return AcquireRef(new QuerySet(this, descriptor));
     }
-    ResultOrError<RenderPipelineBase*> Device::CreateRenderPipelineImpl(
-        const RenderPipelineDescriptor* descriptor) {
-        return new RenderPipeline(this, descriptor);
+    ResultOrError<Ref<RenderPipelineBase>> Device::CreateRenderPipelineImpl(
+        const RenderPipelineDescriptor2* descriptor) {
+        return AcquireRef(new RenderPipeline(this, descriptor));
     }
-    ResultOrError<SamplerBase*> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
-        return new Sampler(this, descriptor);
+    ResultOrError<Ref<SamplerBase>> Device::CreateSamplerImpl(const SamplerDescriptor* descriptor) {
+        return AcquireRef(new Sampler(this, descriptor));
     }
-    ResultOrError<ShaderModuleBase*> Device::CreateShaderModuleImpl(
-        const ShaderModuleDescriptor* descriptor) {
-        return ShaderModule::Create(this, descriptor);
+    ResultOrError<Ref<ShaderModuleBase>> Device::CreateShaderModuleImpl(
+        const ShaderModuleDescriptor* descriptor,
+        ShaderModuleParseResult* parseResult) {
+        return ShaderModule::Create(this, descriptor, parseResult);
     }
-    ResultOrError<SwapChainBase*> Device::CreateSwapChainImpl(
+    ResultOrError<Ref<SwapChainBase>> Device::CreateSwapChainImpl(
         const SwapChainDescriptor* descriptor) {
-        return new SwapChain(this, descriptor);
+        return AcquireRef(new SwapChain(this, descriptor));
     }
-    ResultOrError<NewSwapChainBase*> Device::CreateSwapChainImpl(
+    ResultOrError<Ref<NewSwapChainBase>> Device::CreateSwapChainImpl(
         Surface* surface,
         NewSwapChainBase* previousSwapChain,
         const SwapChainDescriptor* descriptor) {
@@ -144,10 +164,10 @@ namespace dawn_native { namespace opengl {
     ResultOrError<Ref<TextureBase>> Device::CreateTextureImpl(const TextureDescriptor* descriptor) {
         return AcquireRef(new Texture(this, descriptor));
     }
-    ResultOrError<TextureViewBase*> Device::CreateTextureViewImpl(
+    ResultOrError<Ref<TextureViewBase>> Device::CreateTextureViewImpl(
         TextureBase* texture,
         const TextureViewDescriptor* descriptor) {
-        return new TextureView(texture, descriptor);
+        return AcquireRef(new TextureView(texture, descriptor));
     }
 
     void Device::SubmitFenceSync() {
@@ -160,7 +180,7 @@ namespace dawn_native { namespace opengl {
         return {};
     }
 
-    ExecutionSerial Device::CheckAndUpdateCompletedSerials() {
+    ResultOrError<ExecutionSerial> Device::CheckAndUpdateCompletedSerials() {
         ExecutionSerial fenceSerial{0};
         while (!mFencesInFlight.empty()) {
             GLsync sync = mFencesInFlight.front().first;
@@ -168,6 +188,11 @@ namespace dawn_native { namespace opengl {
 
             // Fence are added in order, so we can stop searching as soon
             // as we see one that's not ready.
+
+            // TODO(crbug.com/dawn/633): Remove this workaround after the deadlock issue is fixed.
+            if (IsToggleEnabled(Toggle::FlushBeforeClientWaitSync)) {
+                gl.Flush();
+            }
             GLenum result = gl.ClientWaitSync(sync, GL_SYNC_FLUSH_COMMANDS_BIT, 0);
             if (result == GL_TIMEOUT_EXPIRED) {
                 return fenceSerial;
@@ -209,7 +234,7 @@ namespace dawn_native { namespace opengl {
 
     MaybeError Device::WaitForIdleForDestruction() {
         gl.Finish();
-        CheckPassedSerials();
+        DAWN_TRY(CheckPassedSerials());
         ASSERT(mFencesInFlight.empty());
 
         return {};
@@ -221,6 +246,10 @@ namespace dawn_native { namespace opengl {
 
     uint64_t Device::GetOptimalBufferToTextureCopyOffsetAlignment() const {
         return 1;
+    }
+
+    float Device::GetTimestampPeriodInNS() const {
+        return 1.0f;
     }
 
 }}  // namespace dawn_native::opengl

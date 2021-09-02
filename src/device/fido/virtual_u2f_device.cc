@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -35,7 +36,7 @@ namespace {
 constexpr uint8_t kU2fRegistrationResponseHeader = 0x05;
 
 // Returns an error response with the given status.
-base::Optional<std::vector<uint8_t>> ErrorStatus(
+absl::optional<std::vector<uint8_t>> ErrorStatus(
     apdu::ApduResponse::Status status) {
   return apdu::ApduResponse(std::vector<uint8_t>(), status)
       .GetEncodedResponse();
@@ -92,7 +93,7 @@ FidoDevice::CancelToken VirtualU2fDevice::DeviceTransact(
     return 0;
   }
 
-  base::Optional<std::vector<uint8_t>> response;
+  absl::optional<std::vector<uint8_t>> response;
 
   switch (parsed_command->ins()) {
     // Version request is defined by the U2F spec, but is never used in
@@ -124,7 +125,7 @@ base::WeakPtr<FidoDevice> VirtualU2fDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
+absl::optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
     uint8_t ins,
     uint8_t p1,
     uint8_t p2,
@@ -134,7 +135,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   }
 
   if (!SimulatePress()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   auto challenge_param = data.first<32>();
@@ -144,7 +145,12 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
   // Note: Non-deterministic, you need to mock this out if you rely on
   // deterministic behavior.
   std::unique_ptr<PrivateKey> private_key(PrivateKey::FreshP256Key());
-  const std::vector<uint8_t> x962 = private_key->GetX962PublicKey();
+  std::vector<uint8_t> x962 = private_key->GetX962PublicKey();
+
+  if (mutable_state()->u2f_invalid_public_key) {
+    // Flip a bit in the x-coordinate, which will push the point off the curve.
+    x962[10] ^= 1;
+  }
 
   // Our key handles are simple hashes of the public key.
   const auto key_handle = crypto::SHA256Hash(x962);
@@ -196,7 +202,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
       .GetEncodedResponse();
 }
 
-base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
+absl::optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
     uint8_t ins,
     uint8_t p1,
     uint8_t p2,
@@ -208,7 +214,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
   }
 
   if (!SimulatePress()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   if (data.size() < 32 + 32 + 1)
@@ -244,6 +250,12 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
 
   // Sign with credential key.
   std::vector<uint8_t> sig = registration->private_key->Sign(sign_buffer);
+
+  if (mutable_state()->u2f_invalid_signature) {
+    // Flip a bit in the ASN.1 header to make the signature structurally
+    // invalid.
+    sig[0] ^= 1;
+  }
 
   // Add signature for full response.
   Append(&response, sig);

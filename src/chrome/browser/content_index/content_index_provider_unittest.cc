@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/time/time.h"
-#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -20,6 +19,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/test_history_database.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
+#include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_index_provider.h"
 #include "content/public/test/browser_task_environment.h"
@@ -42,14 +42,7 @@ using testing::_;
 
 constexpr int64_t kServiceWorkerRegistrationId = 42;
 constexpr double kEngagementScore = 42.0;
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL LaunchURL() {
-  return GURL("https://example.com/foo");
-}
-url::Origin Origin() {
-  return url::Origin::Create(LaunchURL().GetOrigin());
-}
+constexpr char kLaunchUrl[] = "https://example.com/foo";
 
 // Hosts the test profile. Global to be accessible from
 // |BuildTestHistoryService|.
@@ -57,18 +50,16 @@ base::FilePath profile_path;
 
 std::unique_ptr<KeyedService> BuildTestHistoryService(
     content::BrowserContext* context) {
-  std::unique_ptr<history::HistoryService> service(
-      std::make_unique<history::HistoryService>());
+  auto service = std::make_unique<history::HistoryService>();
   service->Init(history::TestHistoryDatabaseParamsForPath(profile_path));
   return std::move(service);
 }
 
 std::unique_ptr<KeyedService> BuildTestSiteEngagementService(
     content::BrowserContext* context) {
-  Profile* profile = static_cast<Profile*>(context);
-  std::unique_ptr<SiteEngagementService> service(
-      std::make_unique<SiteEngagementService>(profile));
-  service->ResetBaseScoreForURL(Origin().GetURL(), kEngagementScore);
+  auto service = std::make_unique<site_engagement::SiteEngagementService>(
+      static_cast<Profile*>(context));
+  service->ResetBaseScoreForURL(GURL(kLaunchUrl).GetOrigin(), kEngagementScore);
   return std::move(service);
 }
 
@@ -82,7 +73,7 @@ class ContentIndexProviderImplTest : public testing::Test,
     builder.AddTestingFactory(HistoryServiceFactory::GetInstance(),
                               base::BindRepeating(&BuildTestHistoryService));
     builder.AddTestingFactory(
-        SiteEngagementServiceFactory::GetInstance(),
+        site_engagement::SiteEngagementServiceFactory::GetInstance(),
         base::BindRepeating(&BuildTestSiteEngagementService));
 
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
@@ -102,16 +93,17 @@ class ContentIndexProviderImplTest : public testing::Test,
                void(const OfflineContentProvider::OfflineItemList& items));
   MOCK_METHOD1(OnItemRemoved, void(const ContentId& id));
   void OnItemUpdated(const OfflineItem& item,
-                     const base::Optional<UpdateDelta>& update_delta) override {
+                     const absl::optional<UpdateDelta>& update_delta) override {
     NOTREACHED();
   }
+  void OnContentProviderGoingDown() override {}
 
   content::ContentIndexEntry CreateEntry(const std::string& id) {
     auto description = blink::mojom::ContentDescription::New(
         id, "title", "description", blink::mojom::ContentCategory::ARTICLE,
         std::vector<blink::mojom::ContentIconDefinitionPtr>(), "launch_url");
     return content::ContentIndexEntry(kServiceWorkerRegistrationId,
-                                      std::move(description), LaunchURL(),
+                                      std::move(description), GURL(kLaunchUrl),
                                       base::Time::Now());
   }
 
@@ -138,7 +130,7 @@ TEST_F(ContentIndexProviderImplTest, OfflineItemCreation) {
   EXPECT_FALSE(item.is_transient);
   EXPECT_TRUE(item.is_suggested);
   EXPECT_TRUE(item.is_openable);
-  EXPECT_EQ(item.page_url, LaunchURL());
+  EXPECT_EQ(item.url, GURL(kLaunchUrl));
   EXPECT_EQ(item.content_quality_score, kEngagementScore / 100.0);
 }
 
@@ -157,6 +149,7 @@ TEST_F(ContentIndexProviderImplTest, ObserverUpdates) {
 
   {
     EXPECT_CALL(*this, OnItemRemoved(_));
-    provider_->OnContentDeleted(kServiceWorkerRegistrationId, Origin(), "id");
+    provider_->OnContentDeleted(kServiceWorkerRegistrationId,
+                                url::Origin::Create(GURL(kLaunchUrl)), "id");
   }
 }

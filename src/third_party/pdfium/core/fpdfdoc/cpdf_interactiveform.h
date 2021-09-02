@@ -58,9 +58,9 @@ class CPDF_InteractiveForm {
   CPDF_FormField* GetField(uint32_t index, const WideString& csFieldName) const;
   CPDF_FormField* GetFieldByDict(CPDF_Dictionary* pFieldDict) const;
 
-  CPDF_FormControl* GetControlAtPoint(CPDF_Page* pPage,
-                                      const CFX_PointF& point,
-                                      int* z_order) const;
+  const CPDF_FormControl* GetControlAtPoint(const CPDF_Page* pPage,
+                                            const CFX_PointF& point,
+                                            int* z_order) const;
   CPDF_FormControl* GetControlByDict(const CPDF_Dictionary* pWidgetDict) const;
 
   bool NeedConstructAP() const;
@@ -84,12 +84,11 @@ class CPDF_InteractiveForm {
       bool bIncludeOrExclude,
       bool bSimpleFileSpec) const;
 
-  void ResetForm(NotificationOption notify);
+  void ResetForm();
 
   // TODO(tsepez): Use a span.
   void ResetForm(const std::vector<CPDF_FormField*>& fields,
-                 bool bIncludeOrExclude,
-                 NotificationOption notify);
+                 bool bIncludeOrExclude);
 
   void SetNotifierIface(NotifierIface* pNotify);
   void FixPageFields(CPDF_Page* pPage);

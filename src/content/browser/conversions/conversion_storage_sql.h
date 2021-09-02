@@ -14,8 +14,10 @@
 #include "base/time/clock.h"
 #include "content/browser/conversions/conversion_report.h"
 #include "content/browser/conversions/conversion_storage.h"
+#include "content/browser/conversions/rate_limit_table.h"
 #include "content/common/content_export.h"
 #include "sql/database.h"
+#include "sql/meta_table.h"
 
 namespace base {
 class Clock;
@@ -41,7 +43,20 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
     ignore_errors_for_testing_ = ignore_for_testing;
   }
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class InitStatus {
+    kSuccess = 0,
+    kFailedToOpenDbInMemory = 1,
+    kFailedToOpenDbFile = 2,
+    kFailedToCreateDir = 3,
+    kFailedToInitializeSchema = 4,
+    kMaxValue = kFailedToInitializeSchema,
+  };
+
  private:
+  friend class ConversionStorageSqlMigrations;
+
   enum class DbStatus {
     // The database has never been created, i.e. there is no database file at
     // all.
@@ -63,11 +78,11 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
 
   // ConversionStorage
   void StoreImpression(const StorableImpression& impression) override;
-  int MaybeCreateAndStoreConversionReports(
+  bool MaybeCreateAndStoreConversionReport(
       const StorableConversion& conversion) override;
-  std::vector<ConversionReport> GetConversionsToReport(
-      base::Time expiry_time) override;
-  std::vector<StorableImpression> GetActiveImpressions() override;
+  std::vector<ConversionReport> GetConversionsToReport(base::Time expiry_time,
+                                                       int limit = -1) override;
+  std::vector<StorableImpression> GetActiveImpressions(int limit = -1) override;
   int DeleteExpiredImpressions() override;
   bool DeleteConversion(int64_t conversion_id) override;
   void ClearData(
@@ -80,13 +95,15 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   void ClearAllDataAllTime();
 
   bool HasCapacityForStoringImpression(const std::string& serialized_origin);
-  bool HasCapacityForStoringConversion(const std::string& serialized_origin);
+  int GetCapacityForStoringConversion(const std::string& serialized_origin);
 
   // Initializes the database if necessary, and returns whether the database is
   // open. |should_create| indicates whether the database should be created if
   // it is not already.
   bool LazyInit(DbCreationPolicy creation_policy);
-  bool InitializeSchema();
+  bool InitializeSchema(bool db_empty);
+  bool CreateSchema();
+  void HandleInitializationFailure(const InitStatus status);
 
   void DatabaseErrorCallback(int extended_error, sql::Statement* stmt);
 
@@ -101,12 +118,19 @@ class CONTENT_EXPORT ConversionStorageSql : public ConversionStorage {
   // at for lazy initialization, and used as a signal for if the database is
   // closed. This is initialized in the first call to LazyInit() to avoid doing
   // additional work in the constructor, see https://crbug.com/1121307.
-  base::Optional<DbStatus> db_init_status_;
+  absl::optional<DbStatus> db_init_status_;
 
   // May be null if the database:
   //  - could not be opened
   //  - table/index initialization failed
   std::unique_ptr<sql::Database> db_;
+
+  // Table which stores timestamps of sent reports, and checks if new reports
+  // can be created given API rate limits. The underlying table is created in
+  // |db_|, but only accessed within |RateLimitTable|.
+  RateLimitTable rate_limit_table_;
+
+  sql::MetaTable meta_table_;
 
   // Must outlive |this|.
   const base::Clock* clock_;

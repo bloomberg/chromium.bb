@@ -12,17 +12,20 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/json/json_writer.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/task/current_thread.h"
+#include "base/task/thread_pool.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/features.h"
 #include "net/base/network_isolation_key.h"
+#include "net/base/schemeful_site.h"
 #include "net/http/transport_security_state.h"
 #include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace net {
 
@@ -85,7 +88,6 @@ TEST_P(TransportSecurityPersisterTest, LoadEntriesClearsExistingState) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       TransportSecurityState::kDynamicExpectCTFeature);
-  bool data_in_old_format;
 
   TransportSecurityState::STSState sts_state;
   TransportSecurityState::ExpectCTState expect_ct_state;
@@ -103,21 +105,24 @@ TEST_P(TransportSecurityPersisterTest, LoadEntriesClearsExistingState) {
   EXPECT_TRUE(state_->GetDynamicExpectCTState(
       kYahooDomain, NetworkIsolationKey(), &expect_ct_state));
 
-  EXPECT_TRUE(persister_->LoadEntries("{\"version\":2}", &data_in_old_format));
-  EXPECT_FALSE(data_in_old_format);
+  persister_->LoadEntries("{\"version\":2}");
 
   EXPECT_FALSE(state_->GetDynamicSTSState(kYahooDomain, &sts_state));
   EXPECT_FALSE(state_->GetDynamicExpectCTState(
       kYahooDomain, NetworkIsolationKey(), &expect_ct_state));
 }
 
+// Tests that serializing -> deserializing -> reserializing results in the same
+// output.
 TEST_P(TransportSecurityPersisterTest, SerializeData1) {
   std::string output;
-  bool data_in_old_format;
 
   EXPECT_TRUE(persister_->SerializeData(&output));
-  EXPECT_TRUE(persister_->LoadEntries(output, &data_in_old_format));
-  EXPECT_FALSE(data_in_old_format);
+  persister_->LoadEntries(output);
+
+  std::string output2;
+  EXPECT_TRUE(persister_->SerializeData(&output2));
+  EXPECT_EQ(output, output2);
 }
 
 TEST_P(TransportSecurityPersisterTest, SerializeData2) {
@@ -132,10 +137,8 @@ TEST_P(TransportSecurityPersisterTest, SerializeData2) {
   state_->AddHSTS(kYahooDomain, expiry, include_subdomains);
 
   std::string output;
-  bool data_in_old_format;
   EXPECT_TRUE(persister_->SerializeData(&output));
-  EXPECT_TRUE(persister_->LoadEntries(output, &data_in_old_format));
-  EXPECT_FALSE(data_in_old_format);
+  persister_->LoadEntries(output);
 
   EXPECT_TRUE(state_->GetDynamicSTSState(kYahooDomain, &sts_state));
   EXPECT_EQ(sts_state.upgrade_mode,
@@ -199,9 +202,7 @@ TEST_P(TransportSecurityPersisterTest, SerializeData3) {
   std::string persisted;
   EXPECT_TRUE(base::ReadFileToString(path, &persisted));
   EXPECT_EQ(persisted, serialized);
-  bool data_in_old_format;
-  EXPECT_TRUE(persister_->LoadEntries(persisted, &data_in_old_format));
-  EXPECT_FALSE(data_in_old_format);
+  persister_->LoadEntries(persisted);
 
   // Check that states are the same as saved.
   size_t count = 0;
@@ -221,18 +222,31 @@ TEST_P(TransportSecurityPersisterTest, SerializeData3) {
   EXPECT_EQ(count, expect_ct_saved.size());
 }
 
+// Tests that deserializing bad data shouldn't result in any ExpectCT or STS
+// entries being added to the transport security state.
 TEST_P(TransportSecurityPersisterTest, DeserializeBadData) {
-  bool data_in_old_format;
-  EXPECT_FALSE(persister_->LoadEntries("", &data_in_old_format));
-  EXPECT_FALSE(persister_->LoadEntries("Foopy", &data_in_old_format));
-  EXPECT_FALSE(persister_->LoadEntries("15", &data_in_old_format));
-  EXPECT_FALSE(persister_->LoadEntries("[15]", &data_in_old_format));
-  EXPECT_FALSE(persister_->LoadEntries("{\"version\":1}", &data_in_old_format));
+  persister_->LoadEntries("");
+  EXPECT_EQ(0u, state_->num_expect_ct_entries());
+  EXPECT_EQ(0u, state_->num_sts_entries());
+
+  persister_->LoadEntries("Foopy");
+  EXPECT_EQ(0u, state_->num_expect_ct_entries());
+  EXPECT_EQ(0u, state_->num_sts_entries());
+
+  persister_->LoadEntries("15");
+  EXPECT_EQ(0u, state_->num_expect_ct_entries());
+  EXPECT_EQ(0u, state_->num_sts_entries());
+
+  persister_->LoadEntries("[15]");
+  EXPECT_EQ(0u, state_->num_expect_ct_entries());
+  EXPECT_EQ(0u, state_->num_sts_entries());
+
+  persister_->LoadEntries("{\"version\":1}");
+  EXPECT_EQ(0u, state_->num_expect_ct_entries());
+  EXPECT_EQ(0u, state_->num_sts_entries());
 }
 
 TEST_P(TransportSecurityPersisterTest, DeserializeDataOldWithoutCreationDate) {
-  const char kDomain[] = "example.test";
-
   // This is an old-style piece of transport state JSON, which has no creation
   // date.
   const std::string kInput =
@@ -243,24 +257,12 @@ TEST_P(TransportSecurityPersisterTest, DeserializeDataOldWithoutCreationDate) {
       "\"mode\": \"strict\" "
       "}"
       "}";
-  bool data_in_old_format;
-  EXPECT_TRUE(persister_->LoadEntries(kInput, &data_in_old_format));
-  EXPECT_TRUE(data_in_old_format);
-
-  TransportSecurityState::STSState sts_state;
-  EXPECT_TRUE(state_->GetDynamicSTSState(kDomain, &sts_state));
-  EXPECT_EQ(kDomain, sts_state.domain);
-  EXPECT_FALSE(sts_state.include_subdomains);
-  EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
-            sts_state.upgrade_mode);
+  persister_->LoadEntries(kInput);
+  EXPECT_EQ(0u, state_->num_expect_ct_entries());
+  EXPECT_EQ(0u, state_->num_sts_entries());
 }
 
 TEST_P(TransportSecurityPersisterTest, DeserializeDataOldMergedDictionary) {
-  const char kStsDomain[] = "sts.test";
-  const char kExpectCTDomain[] = "expect_ct.test";
-  const GURL kExpectCTReportUri = GURL("https://expect_ct.test/report_uri");
-  const char kBothDomain[] = "both.test";
-
   // This is an old-style piece of transport state JSON, which uses a single
   // unversioned host-keyed dictionary of merged ExpectCT and HSTS data.
   const std::string kInput =
@@ -297,50 +299,9 @@ TEST_P(TransportSecurityPersisterTest, DeserializeDataOldMergedDictionary) {
       "   }"
       "}";
 
-  bool data_in_old_format;
-  EXPECT_TRUE(persister_->LoadEntries(kInput, &data_in_old_format));
-  EXPECT_TRUE(data_in_old_format);
-
-  // kStsDomain should only have HSTS information.
-  TransportSecurityState::STSState sts_state;
-  EXPECT_TRUE(state_->GetDynamicSTSState(kStsDomain, &sts_state));
-  EXPECT_EQ(kStsDomain, sts_state.domain);
-  EXPECT_FALSE(sts_state.include_subdomains);
-  EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
-            sts_state.upgrade_mode);
-  EXPECT_LT(base::Time::Now(), sts_state.last_observed);
-  EXPECT_LT(sts_state.last_observed, sts_state.expiry);
-  TransportSecurityState::ExpectCTState expect_ct_state;
-  EXPECT_FALSE(state_->GetDynamicExpectCTState(
-      kStsDomain, NetworkIsolationKey(), &expect_ct_state));
-
-  // kExpectCTDomain should only have HSTS information.
-  sts_state = TransportSecurityState::STSState();
-  EXPECT_FALSE(state_->GetDynamicSTSState(kExpectCTDomain, &sts_state));
-  expect_ct_state = TransportSecurityState::ExpectCTState();
-  EXPECT_TRUE(state_->GetDynamicExpectCTState(
-      kExpectCTDomain, NetworkIsolationKey(), &expect_ct_state));
-  EXPECT_EQ(kExpectCTReportUri, expect_ct_state.report_uri);
-  EXPECT_TRUE(expect_ct_state.enforce);
-  EXPECT_LT(base::Time::Now(), expect_ct_state.last_observed);
-  EXPECT_LT(expect_ct_state.last_observed, expect_ct_state.expiry);
-
-  // kBothDomain should have HSTS and ExpectCT information.
-  sts_state = TransportSecurityState::STSState();
-  EXPECT_TRUE(state_->GetDynamicSTSState(kBothDomain, &sts_state));
-  EXPECT_EQ(kBothDomain, sts_state.domain);
-  EXPECT_TRUE(sts_state.include_subdomains);
-  EXPECT_EQ(TransportSecurityState::STSState::MODE_FORCE_HTTPS,
-            sts_state.upgrade_mode);
-  EXPECT_LT(base::Time::Now(), sts_state.last_observed);
-  EXPECT_LT(sts_state.last_observed, sts_state.expiry);
-  expect_ct_state = TransportSecurityState::ExpectCTState();
-  EXPECT_TRUE(state_->GetDynamicExpectCTState(
-      kBothDomain, NetworkIsolationKey(), &expect_ct_state));
-  EXPECT_TRUE(expect_ct_state.report_uri.is_empty());
-  EXPECT_TRUE(expect_ct_state.enforce);
-  EXPECT_LT(base::Time::Now(), expect_ct_state.last_observed);
-  EXPECT_LT(expect_ct_state.last_observed, expect_ct_state.expiry);
+  persister_->LoadEntries(kInput);
+  EXPECT_EQ(0u, state_->num_expect_ct_entries());
+  EXPECT_EQ(0u, state_->num_sts_entries());
 }
 
 // Tests that dynamic Expect-CT state is serialized and deserialized correctly.
@@ -361,10 +322,9 @@ TEST_P(TransportSecurityPersisterTest, ExpectCT) {
                       NetworkIsolationKey());
   std::string serialized;
   EXPECT_TRUE(persister_->SerializeData(&serialized));
-  bool data_in_old_format;
   // LoadEntries() clears existing dynamic data before loading entries from
   // |serialized|.
-  EXPECT_TRUE(persister_->LoadEntries(serialized, &data_in_old_format));
+  persister_->LoadEntries(serialized);
 
   TransportSecurityState::ExpectCTState new_expect_ct_state;
   EXPECT_TRUE(state_->GetDynamicExpectCTState(
@@ -378,7 +338,7 @@ TEST_P(TransportSecurityPersisterTest, ExpectCT) {
   state_->AddExpectCT(kTestDomain, expiry, false /* enforce */, report_uri,
                       NetworkIsolationKey());
   EXPECT_TRUE(persister_->SerializeData(&serialized));
-  EXPECT_TRUE(persister_->LoadEntries(serialized, &data_in_old_format));
+  persister_->LoadEntries(serialized);
   EXPECT_TRUE(state_->GetDynamicExpectCTState(
       kTestDomain, NetworkIsolationKey(), &new_expect_ct_state));
   EXPECT_FALSE(new_expect_ct_state.enforce);
@@ -407,10 +367,9 @@ TEST_P(TransportSecurityPersisterTest, ExpectCTWithSTSDataPresent) {
 
   std::string serialized;
   EXPECT_TRUE(persister_->SerializeData(&serialized));
-  bool data_in_old_format;
   // LoadEntries() clears existing dynamic data before loading entries from
   // |serialized|.
-  EXPECT_TRUE(persister_->LoadEntries(serialized, &data_in_old_format));
+  persister_->LoadEntries(serialized);
 
   TransportSecurityState::ExpectCTState new_expect_ct_state;
   EXPECT_TRUE(state_->GetDynamicExpectCTState(
@@ -444,8 +403,7 @@ TEST_P(TransportSecurityPersisterTest, ExpectCTDisabled) {
                       NetworkIsolationKey());
   std::string serialized;
   EXPECT_TRUE(persister_->SerializeData(&serialized));
-  bool data_in_old_format;
-  EXPECT_TRUE(persister_->LoadEntries(serialized, &data_in_old_format));
+  persister_->LoadEntries(serialized);
 
   TransportSecurityState::ExpectCTState new_expect_ct_state;
   EXPECT_FALSE(state_->GetDynamicExpectCTState(
@@ -462,11 +420,10 @@ TEST_P(TransportSecurityPersisterTest, ExpectCTWithNetworkIsolationKey) {
 
   const GURL report_uri(kReportUri);
   static const char kTestDomain[] = "example.test";
-  const url::Origin kOrigin =
-      url::Origin::Create(GURL("https://somewhere.else.test"));
+  const SchemefulSite kSite(GURL("https://somewhere.else.test"));
   const NetworkIsolationKey empty_network_isolation_key;
-  const NetworkIsolationKey network_isolation_key(kOrigin /* top_frame_origin*/,
-                                                  kOrigin /* frame_origin*/);
+  const NetworkIsolationKey network_isolation_key(kSite /* top_frame_site */,
+                                                  kSite /* frame_site */);
   const NetworkIsolationKey transient_network_isolation_key =
       NetworkIsolationKey::CreateTransient();
 
@@ -505,10 +462,8 @@ TEST_P(TransportSecurityPersisterTest, ExpectCTWithNetworkIsolationKey) {
         kTestDomain, transient_network_isolation_key, &expect_ct_state));
   }
 
-  bool data_in_old_format;
   // Load entries into the other persister.
-  EXPECT_TRUE(persister_->LoadEntries(serialized, &data_in_old_format));
-  EXPECT_FALSE(data_in_old_format);
+  persister_->LoadEntries(serialized);
 
   if (partition_expect_ct_state()) {
     TransportSecurityState::ExpectCTState new_expect_ct_state;
@@ -541,69 +496,61 @@ TEST_P(TransportSecurityPersisterTest, ExpectCTWithNetworkIsolationKey) {
   }
 }
 
-// Test the case when deserializing a NetworkIsolationKey fails. This happens
-// when data is persisted with kAppendFrameOriginToNetworkIsolationKey, but
-// loaded without it, or vice-versa.
+// Test the case when deserializing a NetworkIsolationKey fails.
 TEST_P(TransportSecurityPersisterTest,
        ExpectCTNetworkIsolationKeyDeserializationFails) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      TransportSecurityState::kDynamicExpectCTFeature);
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {TransportSecurityState::kDynamicExpectCTFeature,
+       features::kPartitionExpectCTStateByNetworkIsolationKey},
+      // disabled_features
+      {});
 
   const GURL report_uri(kReportUri);
   static const char kTestDomain[] = "example.test";
-  const url::Origin kOrigin =
-      url::Origin::Create(GURL("https://somewhere.else.test"));
+  const SchemefulSite kSite(GURL("https://somewhere.else.test"));
   const NetworkIsolationKey empty_network_isolation_key;
-  const NetworkIsolationKey network_isolation_key(kOrigin /* top_frame_origin*/,
-                                                  kOrigin /* frame_origin*/);
+  const NetworkIsolationKey network_isolation_key(kSite /* top_frame_site */,
+                                                  kSite /* frame_site */);
   const base::Time current_time(base::Time::Now());
   const base::Time expiry1 = current_time + base::TimeDelta::FromSeconds(1000);
   const base::Time expiry2 = current_time + base::TimeDelta::FromSeconds(2000);
 
-  // Serialize data with kPartitionExpectCTStateByNetworkIsolationKey and
-  // kAppendFrameOriginToNetworkIsolationKey enabled, and then revert the
-  // features to their previous values.
+  // Serialize data.
   std::string serialized;
-  {
-    base::test::ScopedFeatureList feature_list2;
-    feature_list2.InitWithFeatures(
-        // enabled_features
-        {features::kPartitionExpectCTStateByNetworkIsolationKey,
-         features::kAppendFrameOriginToNetworkIsolationKey},
-        // disabled_features
-        {});
-    TransportSecurityState state2;
-    TransportSecurityPersister persister2(
-        &state2, temp_dir_.GetPath(),
-        std::move(base::ThreadPool::CreateSequencedTaskRunner(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-             base::TaskShutdownBehavior::BLOCK_SHUTDOWN})));
-    TransportSecurityState::ExpectCTState expect_ct_state;
-    state2.AddExpectCT(kTestDomain, expiry1, true /* enforce */, GURL(),
-                       empty_network_isolation_key);
-    state2.AddExpectCT(kTestDomain, expiry2, true /* enforce */, GURL(),
-                       network_isolation_key);
-    EXPECT_TRUE(persister2.SerializeData(&serialized));
+  TransportSecurityState state2;
+  TransportSecurityPersister persister2(
+      &state2, temp_dir_.GetPath(),
+      std::move(base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})));
+  TransportSecurityState::ExpectCTState expect_ct_state;
+  state2.AddExpectCT(kTestDomain, expiry1, true /* enforce */, GURL(),
+                     empty_network_isolation_key);
+  state2.AddExpectCT(kTestDomain, expiry2, true /* enforce */, GURL(),
+                     network_isolation_key);
+  EXPECT_TRUE(persister2.SerializeData(&serialized));
 
-    EXPECT_TRUE(state2.GetDynamicExpectCTState(
-        kTestDomain, empty_network_isolation_key, &expect_ct_state));
-    EXPECT_TRUE(state2.GetDynamicExpectCTState(
-        kTestDomain, network_isolation_key, &expect_ct_state));
-  }
+  EXPECT_TRUE(state2.GetDynamicExpectCTState(
+      kTestDomain, empty_network_isolation_key, &expect_ct_state));
+  EXPECT_TRUE(state2.GetDynamicExpectCTState(kTestDomain, network_isolation_key,
+                                             &expect_ct_state));
 
-  base::test::ScopedFeatureList feature_list3;
-  feature_list3.InitAndDisableFeature(
-      features::kAppendFrameOriginToNetworkIsolationKey);
+  // Replace reference to |network_isolation_key|'s value with an invalid NIK
+  // value.
+  base::Value nik_value;
+  ASSERT_TRUE(network_isolation_key.ToValue(&nik_value));
+  std::string nik_string;
+  ASSERT_TRUE(base::JSONWriter::Write(nik_value, &nik_string));
+  base::ReplaceFirstSubstringAfterOffset(&serialized, 0, nik_string,
+                                         "\"Not a valid NIK\"");
 
-  bool data_in_old_format;
   // Load entries into the other persister.
-  EXPECT_TRUE(persister_->LoadEntries(serialized, &data_in_old_format));
-  EXPECT_FALSE(data_in_old_format);
+  persister_->LoadEntries(serialized);
 
-  // Regardless of whether kPartitionExpectCTStateByNetworkIsolationKey is
-  // enabled or not, the different kAppendFrameOriginToNetworkIsolationKey state
-  // will cause the entry with a non-empty NetworkIsolationKey to be dropped.
+  // The entry with the non-empty NetworkIsolationKey should be dropped, since
+  // its NIK is now invalid. The other entry should be preserved.
   std::set<std::string> expect_ct_saved;
   TransportSecurityState::ExpectCTStateIterator expect_ct_iter(*state_);
   ASSERT_TRUE(expect_ct_iter.HasNext());

@@ -83,13 +83,13 @@ bool RLZTrackerDelegateImpl::ShouldEnableZeroDelayForTesting() {
   return false;
 }
 
-bool RLZTrackerDelegateImpl::GetLanguage(base::string16* language) {
+bool RLZTrackerDelegateImpl::GetLanguage(std::u16string* language) {
   // TODO(thakis): Implement.
   NOTIMPLEMENTED();
   return false;
 }
 
-bool RLZTrackerDelegateImpl::GetReferral(base::string16* referral) {
+bool RLZTrackerDelegateImpl::GetReferral(std::u16string* referral) {
   // The referral program is defunct and not used. No need to implement this
   // function on non-Win platforms.
   return true;
@@ -129,7 +129,7 @@ void RLZTrackerDelegateImpl::OnURLOpenedFromOmnibox(OmniboxLog* log) {
   if (!log->is_popup_open)
     return;
 
-  on_omnibox_url_opened_subscription_.reset();
+  on_omnibox_url_opened_subscription_ = {};
 
   if (!on_omnibox_search_callback_.is_null())
     std::move(on_omnibox_search_callback_).Run();

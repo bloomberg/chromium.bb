@@ -16,10 +16,9 @@
     android:layout_marginTop="0dp"
     android:layout_marginBottom="1dp"
     android:gravity="center_vertical"
-    android:addStatesFromChildren="true"
     android:background="@drawable/ntp_search_box"
     android:orientation="horizontal"
-    android:paddingStart="@dimen/location_bar_lateral_padding" >
+    android:paddingStart="@dimen/fake_search_box_lateral_padding" >
 
     <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
     <RelativeLayout
@@ -51,16 +50,24 @@
             style="@style/InputChipWithRemoveIcon" />
     </RelativeLayout>
 
-    <!-- Padding start is applied so that microphone icon appears in the same location as it
-        does in the main url bar. The microphone button in the url bar is 48dp wide with 4dp
-        start padding. -->
+    <!-- This is a short term solution to have 2 Lens buttons in this xml to
+         support different position variants in experiment.
+         TODO(b/182195615): only keep one Lens button after the experiment. -->
+    <org.chromium.ui.widget.ChromeImageView
+        android:id="@+id/lens_camera_button_start"
+        style="@style/LocationBarActionButton"
+        android:contentDescription="@string/accessibility_btn_lens_camera"
+        android:src="@drawable/lens_camera_icon"
+        android:visibility="gone" />
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/voice_search_button"
-        android:layout_width="48dp"
-        android:layout_height="match_parent"
-        android:paddingStart="4dp"
+        style="@style/LocationBarActionButton"
         android:contentDescription="@string/accessibility_toolbar_btn_mic"
-        android:src="@drawable/btn_mic"
-        android:scaleType="centerInside"
-        app:tint="@color/default_icon_color_tint_list" />
+        android:src="@drawable/btn_mic" />
+    <org.chromium.ui.widget.ChromeImageView
+        android:id="@+id/lens_camera_button_end"
+        style="@style/LocationBarActionButton"
+        android:contentDescription="@string/accessibility_btn_lens_camera"
+        android:src="@drawable/lens_camera_icon"
+        android:visibility="gone" />
 </view>

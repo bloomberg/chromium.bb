@@ -10,6 +10,7 @@
 
 #include "common/bitset_utils.h"
 #include "common/debug.h"
+#include "libANGLE/ErrorStrings.h"
 #include "libANGLE/FramebufferAttachment.h"
 #include "libANGLE/State.h"
 #include "libANGLE/angletypes.h"
@@ -86,7 +87,8 @@ void BindFramebufferAttachment(const FunctionsGL *functions,
 
             if (texture->getType() == TextureType::_2D ||
                 texture->getType() == TextureType::_2DMultisample ||
-                texture->getType() == TextureType::Rectangle)
+                texture->getType() == TextureType::Rectangle ||
+                texture->getType() == TextureType::External)
             {
                 functions->framebufferTexture2D(GL_FRAMEBUFFER, attachmentPoint,
                                                 ToGLenum(texture->getType()),
@@ -649,7 +651,9 @@ angle::Result FramebufferGL::readPixels(const gl::Context *context,
                     GL_INVALID_OPERATION);
     }
 
-    stateManager->bindFramebuffer(GL_READ_FRAMEBUFFER, mFramebufferID);
+    GLenum framebufferTarget =
+        stateManager->getHasSeparateFramebufferBindings() ? GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+    stateManager->bindFramebuffer(framebufferTarget, mFramebufferID);
 
     bool useOverlappingRowsWorkaround = features.packOverlappingRowsSeparatelyPackBuffer.enabled &&
                                         packBuffer && packState.rowLength != 0 &&
@@ -805,8 +809,8 @@ angle::Result FramebufferGL::blit(const gl::Context *context,
 
     if (features.adjustSrcDstRegionBlitFramebuffer.enabled)
     {
-        angle::Result result =
-            adjustSrcDstRegion(context, sourceArea, destArea, &finalSourceArea, &finalDestArea);
+        angle::Result result = adjustSrcDstRegion(context, finalSourceArea, finalDestArea,
+                                                  &finalSourceArea, &finalDestArea);
         if (result != angle::Result::Continue)
         {
             return result;
@@ -814,8 +818,8 @@ angle::Result FramebufferGL::blit(const gl::Context *context,
     }
     if (features.clipSrcRegionBlitFramebuffer.enabled)
     {
-        angle::Result result =
-            clipSrcRegion(context, sourceArea, destArea, &finalSourceArea, &finalDestArea);
+        angle::Result result = clipSrcRegion(context, finalSourceArea, finalDestArea,
+                                             &finalSourceArea, &finalDestArea);
         if (result != angle::Result::Continue)
         {
             return result;
@@ -1117,7 +1121,10 @@ angle::Result FramebufferGL::clipSrcRegion(const gl::Context *context,
         // If pixels lying outside the read framebuffer, adjust src region
         // and dst region to appropriate in-bounds regions respectively.
         gl::Rectangle realSourceRegion;
-        ClipRectangle(bounds.sourceRegion, bounds.sourceBounds, &realSourceRegion);
+        if (!ClipRectangle(bounds.sourceRegion, bounds.sourceBounds, &realSourceRegion))
+        {
+            return angle::Result::Stop;
+        }
         GLuint xOffset = realSourceRegion.x - bounds.sourceRegion.x;
         GLuint yOffset = realSourceRegion.y - bounds.sourceRegion.y;
 
@@ -1182,7 +1189,7 @@ bool FramebufferGL::shouldSyncStateBeforeCheckStatus() const
     return true;
 }
 
-bool FramebufferGL::checkStatus(const gl::Context *context) const
+gl::FramebufferStatus FramebufferGL::checkStatus(const gl::Context *context) const
 {
     const FunctionsGL *functions = GetFunctionsGL(context);
     StateManagerGL *stateManager = GetStateManagerGL(context);
@@ -1191,9 +1198,12 @@ bool FramebufferGL::checkStatus(const gl::Context *context) const
     GLenum status = functions->checkFramebufferStatus(GL_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE)
     {
-        WARN() << "GL framebuffer returned incomplete.";
+        WARN() << "GL framebuffer returned incomplete: " << gl::FmtHex(status);
+        return gl::FramebufferStatus::Incomplete(GL_FRAMEBUFFER_UNSUPPORTED,
+                                                 gl::err::kFramebufferIncompleteDriverUnsupported);
     }
-    return (status == GL_FRAMEBUFFER_COMPLETE);
+
+    return gl::FramebufferStatus::Complete();
 }
 
 angle::Result FramebufferGL::syncState(const gl::Context *context,
@@ -1314,6 +1324,14 @@ angle::Result FramebufferGL::syncState(const gl::Context *context,
 GLuint FramebufferGL::getFramebufferID() const
 {
     return mFramebufferID;
+}
+
+void FramebufferGL::updateDefaultFramebufferID(GLuint framebufferID)
+{
+    // We only update framebufferID for a default frambuffer, and the framebufferID is created
+    // externally. ANGLE doesn't owne it.
+    ASSERT(isDefault());
+    mFramebufferID = framebufferID;
 }
 
 bool FramebufferGL::isDefault() const

@@ -23,6 +23,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.content_public.browser.LoadCommittedDetails;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -44,8 +45,8 @@ public class ConnectionInfoView implements OnClickListener {
     private ConnectionInfoDelegate mDelegate;
     private final LinearLayout mContainer;
     private final WebContents mWebContents;
-    private final int mPaddingWide;
-    private final int mPaddingThin;
+    private final int mPaddingSides;
+    private final int mPaddingVertical;
     private final long mNativeConnectionInfoView;
     private final CertificateViewer mCertificateViewer;
     private TextView mCertificateViewerTextView;
@@ -55,7 +56,6 @@ public class ConnectionInfoView implements OnClickListener {
     private Button mResetCertDecisionsButton;
     private String mLinkUrl;
     private VrHandler mVrHandler;
-    private final boolean mIsV2Enabled;
 
     /**
      * Delegate that embeds the ConnectionInfoView. Must call ConnectionInfoView::onDismiss when
@@ -75,7 +75,6 @@ public class ConnectionInfoView implements OnClickListener {
 
     private ConnectionInfoView(Context context, WebContents webContents,
             ConnectionInfoDelegate delegate, VrHandler vrHandler) {
-        mIsV2Enabled = PageInfoFeatureList.isEnabled(PageInfoFeatureList.PAGE_INFO_V2);
         mContext = context;
         mDelegate = delegate;
         mWebContents = webContents;
@@ -85,23 +84,11 @@ public class ConnectionInfoView implements OnClickListener {
 
         mContainer = new LinearLayout(mContext);
         mContainer.setOrientation(LinearLayout.VERTICAL);
-        // TODO(crbug.com/1077766): Rename mPaddingWide and mPaddingThin to mPaddingSides and
-        // mPaddingVertical respectively when cleaning up V2 enabled tags
-        if (mIsV2Enabled) {
-            mPaddingWide = context.getResources().getDimensionPixelSize(
-                    R.dimen.page_info_popup_padding_sides);
-            mPaddingThin = context.getResources().getDimensionPixelSize(
-                    R.dimen.page_info_popup_padding_vertical);
-            mContainer.setPadding(mPaddingWide, mPaddingThin, mPaddingWide, 0);
-
-        } else {
-            mPaddingWide =
-                    (int) context.getResources().getDimension(R.dimen.connection_info_padding_wide);
-            mPaddingThin =
-                    (int) context.getResources().getDimension(R.dimen.connection_info_padding_thin);
-            mContainer.setPadding(
-                    mPaddingWide, mPaddingWide, mPaddingWide, mPaddingWide - mPaddingThin);
-        }
+        mPaddingSides =
+                context.getResources().getDimensionPixelSize(R.dimen.page_info_popup_padding_sides);
+        mPaddingVertical = context.getResources().getDimensionPixelSize(
+                R.dimen.page_info_popup_padding_vertical);
+        mContainer.setPadding(mPaddingSides, mPaddingVertical, mPaddingSides, 0);
 
         // This needs to come after other member initialization.
         mNativeConnectionInfoView = ConnectionInfoViewJni.get().init(this, mWebContents);
@@ -135,21 +122,11 @@ public class ConnectionInfoView implements OnClickListener {
     }
 
     private View addSection(int iconId, String headline, String description, int iconColorId) {
-        View section = mIsV2Enabled
-                ? LayoutInflater.from(mContext).inflate(R.layout.connection_info_v2, null)
-                : LayoutInflater.from(mContext).inflate(R.layout.connection_info, null);
+        View section = LayoutInflater.from(mContext).inflate(R.layout.connection_info, null);
         ImageView i = section.findViewById(R.id.connection_info_icon);
         i.setImageResource(iconId);
-        if (mIsV2Enabled) {
-            ApiCompatibilityUtils.setImageTintList(
-                    i, ColorStateList.valueOf(mContext.getResources().getColor(iconColorId)));
-        }
-
-        if (!mIsV2Enabled) {
-            TextView h = section.findViewById(R.id.connection_info_headline);
-            h.setText(headline);
-            if (TextUtils.isEmpty(headline)) h.setVisibility(View.GONE);
-        }
+        ApiCompatibilityUtils.setImageTintList(
+                i, ColorStateList.valueOf(mContext.getResources().getColor(iconColorId)));
 
         TextView d = section.findViewById(R.id.connection_info_description);
         d.setText(description);
@@ -166,7 +143,7 @@ public class ConnectionInfoView implements OnClickListener {
         ApiCompatibilityUtils.setTextAppearance(
                 mCertificateViewerTextView, R.style.TextAppearance_TextSmall_Blue);
         mCertificateViewerTextView.setOnClickListener(this);
-        mCertificateViewerTextView.setPadding(0, mPaddingThin, 0, 0);
+        mCertificateViewerTextView.setPadding(0, mPaddingVertical, 0, 0);
         mCertificateLayout.addView(mCertificateViewerTextView);
     }
 
@@ -181,7 +158,7 @@ public class ConnectionInfoView implements OnClickListener {
         LinearLayout container = new LinearLayout(mContext);
         container.setOrientation(LinearLayout.VERTICAL);
         container.addView(mResetCertDecisionsButton);
-        container.setPadding(0, 0, 0, mPaddingWide);
+        container.setPadding(0, 0, 0, mPaddingSides);
         mContainer.addView(container);
     }
 
@@ -192,7 +169,7 @@ public class ConnectionInfoView implements OnClickListener {
         mMoreInfoLink.setText(linkText);
         ApiCompatibilityUtils.setTextAppearance(
                 mMoreInfoLink, R.style.TextAppearance_TextSmall_Blue);
-        mMoreInfoLink.setPadding(0, mPaddingThin, 0, 0);
+        mMoreInfoLink.setPadding(0, mPaddingVertical, 0, 0);
         mMoreInfoLink.setOnClickListener(this);
         mDescriptionLayout.addView(mMoreInfoLink);
     }
@@ -277,7 +254,7 @@ public class ConnectionInfoView implements OnClickListener {
             mWebContents = webContents;
             mWebContentsObserver = new WebContentsObserver(mWebContents) {
                 @Override
-                public void navigationEntryCommitted() {
+                public void navigationEntryCommitted(LoadCommittedDetails details) {
                     // If a navigation is committed (e.g. from in-page redirect), the data we're
                     // showing is stale so dismiss the dialog.
                     dismiss(DialogDismissalCause.UNKNOWN);

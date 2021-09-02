@@ -3,13 +3,15 @@ Tests that deal with pep420 namespace packages.
 
 PEP 420 is new in Python 3.3
 """
+from __future__ import print_function
+from __future__ import absolute_import
 import os
 import shutil
 import sys
 import subprocess
 import textwrap
 
-if sys.version_info[:2] <= (2,6):
+if sys.version_info[:2] <= (2, 6):
     import unittest2 as unittest
 else:
     import unittest
@@ -19,7 +21,7 @@ from modulegraph import modulegraph
 gRootDir = os.path.dirname(os.path.abspath(__file__))
 gSrcDir = os.path.join(gRootDir, 'testpkg-pep420-namespace')
 
-if sys.version_info[:2] >= (3,3):
+if sys.version_info[:2] >= (3, 3):
 
     class TestPythonBehaviour (unittest.TestCase):
         def importModule(self, name):

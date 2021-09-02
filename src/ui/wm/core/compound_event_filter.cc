@@ -7,6 +7,8 @@
 #include "base/check.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/env.h"
@@ -25,7 +27,7 @@ namespace {
 // Returns true if the cursor should be hidden on touch events.
 // TODO(tdanderson|rsadam): Move this function into CursorClient.
 bool ShouldHideCursorOnTouch(const ui::TouchEvent& event) {
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
   return true;
 #else
   // Linux Aura does not hide the cursor on touch by default.
@@ -74,6 +76,30 @@ gfx::NativeCursor CompoundEventFilter::CursorForWindowComponent(
   }
 }
 
+gfx::NativeCursor CompoundEventFilter::NoResizeCursorForWindowComponent(
+    int window_component) {
+  switch (window_component) {
+    case HTBOTTOM:
+      return ui::mojom::CursorType::kNorthSouthNoResize;
+    case HTBOTTOMLEFT:
+      return ui::mojom::CursorType::kNorthEastSouthWestNoResize;
+    case HTBOTTOMRIGHT:
+      return ui::mojom::CursorType::kNorthWestSouthEastNoResize;
+    case HTLEFT:
+      return ui::mojom::CursorType::kEastWestNoResize;
+    case HTRIGHT:
+      return ui::mojom::CursorType::kEastWestNoResize;
+    case HTTOP:
+      return ui::mojom::CursorType::kNorthSouthNoResize;
+    case HTTOPLEFT:
+      return ui::mojom::CursorType::kNorthWestSouthEastNoResize;
+    case HTTOPRIGHT:
+      return ui::mojom::CursorType::kNorthEastSouthWestNoResize;
+    default:
+      return ui::mojom::CursorType::kNull;
+  }
+}
+
 void CompoundEventFilter::AddHandler(ui::EventHandler* handler) {
   handlers_.AddObserver(handler);
 }
@@ -103,7 +129,13 @@ void CompoundEventFilter::UpdateCursor(aura::Window* target,
       if (target->delegate()) {
         int window_component =
             target->delegate()->GetNonClientComponent(event->location());
-        cursor = CursorForWindowComponent(window_component);
+
+        if ((target->GetProperty(aura::client::kResizeBehaviorKey) &
+             aura::client::kResizeBehaviorCanResize) != 0) {
+          cursor = CursorForWindowComponent(window_component);
+        } else {
+          cursor = NoResizeCursorForWindowComponent(window_component);
+        }
       } else {
         // Allow the OS to handle non client cursors if we don't have a
         // a delegate to handle the non client hittest.
@@ -247,6 +279,10 @@ void CompoundEventFilter::OnGestureEvent(ui::GestureEvent* event) {
       break;
     handler.OnGestureEvent(event);
   }
+}
+
+base::StringPiece CompoundEventFilter::GetLogContext() const {
+  return "CompoundEventFilter";
 }
 
 }  // namespace wm

@@ -7,8 +7,8 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/files/file_path.h"
-#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -16,10 +16,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/print_view_manager_base.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/printing/print_view_manager_common.h"
 #include "chrome/browser/printing/printer_query.h"
-#include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -34,7 +33,6 @@
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print.mojom-test-utils.h"
 #include "components/printing/common/print.mojom.h"
-#include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,6 +48,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "printing/mojom/print.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
 
@@ -180,7 +179,7 @@ class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
     }
   }
 
-  base::Optional<content::DOMMessageQueue> queue_;
+  absl::optional<content::DOMMessageQueue> queue_;
   uint32_t total_page_count_ = 1;
   uint32_t rendered_page_count_ = 0;
   content::WebContents* preview_dialog_ = nullptr;
@@ -209,13 +208,24 @@ class TestPrintRenderFrame
     EXPECT_EQ(document_cookie, document_cookie_);
     ASSERT_TRUE(param->metafile_data_region.IsValid());
     EXPECT_GT(param->metafile_data_region.GetSize(), 0U);
-    task_runner_->PostTask(FROM_HERE, msg_callback_);
     std::move(callback).Run(document_cookie, std::move(param));
+    task_runner_->PostTask(FROM_HERE, msg_callback_);
   }
 
   void Bind(mojo::ScopedInterfaceEndpointHandle handle) {
     receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::PrintRenderFrame>(
         std::move(handle)));
+  }
+
+  static mojom::DidPrintContentParamsPtr GetDefaultDidPrintContentParams() {
+    auto printed_frame_params = mojom::DidPrintContentParams::New();
+    // Creates a small amount of region to avoid passing empty data to mojo.
+    constexpr size_t kSize = 10;
+    base::MappedReadOnlyRegion region_mapping =
+        base::ReadOnlySharedMemoryRegion::Create(kSize);
+    printed_frame_params->metafile_data_region =
+        std::move(region_mapping.region);
+    return printed_frame_params;
   }
 
   // mojom::PrintRenderFrameInterceptorForTesting
@@ -226,16 +236,8 @@ class TestPrintRenderFrame
   void PrintFrameContent(mojom::PrintFrameContentParamsPtr params,
                          PrintFrameContentCallback callback) override {
     // Sends the printed result back.
-    mojom::DidPrintContentParamsPtr printed_frame_params =
-        mojom::DidPrintContentParams::New();
-    // Creates a small amount of region to avoid passing empty data to mojo.
-    constexpr size_t kSize = 10;
-    base::MappedReadOnlyRegion region_mapping =
-        base::ReadOnlySharedMemoryRegion::Create(kSize);
-    printed_frame_params->metafile_data_region =
-        std::move(region_mapping.region);
     OnDidPrintFrameContent(params->document_cookie,
-                           std::move(printed_frame_params),
+                           GetDefaultDidPrintContentParams(),
                            std::move(callback));
 
     auto* client = PrintCompositeClient::FromWebContents(web_contents_);
@@ -314,10 +316,10 @@ class KillPrintRenderFrame
 
 }  // namespace
 
-class TestPrintViewManager : public PrintViewManagerBase {
+class TestPrintViewManager : public PrintViewManager {
  public:
   explicit TestPrintViewManager(content::WebContents* web_contents)
-      : PrintViewManagerBase(web_contents) {}
+      : PrintViewManager(web_contents) {}
   TestPrintViewManager(const TestPrintViewManager&) = delete;
   TestPrintViewManager& operator=(const TestPrintViewManager&) = delete;
   ~TestPrintViewManager() override = default;
@@ -477,14 +479,14 @@ class BackForwardCachePrintBrowserTest : public PrintBrowserTest {
   ~BackForwardCachePrintBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        ::features::kBackForwardCache,
-        {
-            // Set a very long TTL before expiration (longer than the test
-            // timeout) so tests that are expecting deletion don't pass when
-            // they shouldn't.
-            {"TimeToLiveInBackForwardCacheInSeconds", "3600"},
-        });
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache,
+          // Set a very long TTL before expiration (longer than the test
+          // timeout) so tests that are expecting deletion don't pass when
+          // they shouldn't.
+          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"}}}},
+        // Allow BackForwardCache for all devices regardless of their memory.
+        {features::kBackForwardCacheMemoryControls});
 
     PrintBrowserTest::SetUpCommandLine(command_line);
   }
@@ -814,6 +816,70 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PrintSubframeABA) {
   WaitUntilCallbackReceived();
 }
 
+// Printing frame content with a cross-site iframe before creating
+// PrintCompositor by the main frame.
+// This test passes if PrintCompositeClient queues subframes when
+// it doesn't have PrintCompositor and clears them after PrintCompositor is
+// created.
+IN_PROC_BROWSER_TEST_F(PrintBrowserTest,
+                       PrintSubframeContentBeforeCompositeClientCreation) {
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(
+      embedded_test_server()->GetURL("/printing/content_with_iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // When OOPIF is not enabled, CompositorClient is not used.
+  if (!IsOopifEnabled())
+    return;
+
+  content::WebContents* original_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(2u, original_contents->GetAllFrames().size());
+  content::RenderFrameHost* main_frame = original_contents->GetMainFrame();
+  ASSERT_TRUE(main_frame);
+  content::RenderFrameHost* test_frame = original_contents->GetAllFrames()[1];
+  ASSERT_TRUE(test_frame);
+  ASSERT_NE(main_frame->GetProcess(), test_frame->GetProcess());
+
+  CreateTestPrintRenderFrame(main_frame, original_contents);
+  CreateTestPrintRenderFrame(test_frame, original_contents);
+  SetNumExpectedMessages(2);
+
+  // Print on the main frame.
+  GetPrintRenderFrame(main_frame)
+      ->PrintFrameContent(GetDefaultPrintFrameParams(), base::DoNothing());
+
+  // The printed result will be received and checked in TestPrintRenderFrame.
+  WaitUntilCallbackReceived();
+
+  // As PrintFrameContent() with the main frame doesn't call
+  // PrintCompositeClient::DoCompositeDocumentToPdf() on this test, when
+  // PrintCompositeClient::OnDidPrintFrameContent() is called with the sub
+  // frame, it doesn't have mojom::PrintCompositor.
+  auto* client = PrintCompositeClient::FromWebContents(original_contents);
+  ASSERT_FALSE(client->compositor_);
+
+  // When there is no mojom::PrintCompositor, PrintCompositeClient queues
+  // subframes and handles them when mojom::PrintCompositor is created.
+  // |requested_subframes_| should have the requested subframes.
+  ASSERT_EQ(1u, client->requested_subframes_.size());
+  PrintCompositeClient::RequestedSubFrame* subframe_in_queue =
+      client->requested_subframes_.begin()->get();
+  ASSERT_EQ(kDefaultDocumentCookie, subframe_in_queue->document_cookie_);
+  ASSERT_EQ(test_frame->GetProcess()->GetID(),
+            subframe_in_queue->render_process_id_);
+  ASSERT_EQ(test_frame->GetRoutingID(), subframe_in_queue->render_frame_id_);
+
+  // Creates mojom::PrintCompositor.
+  client->DoCompositeDocumentToPdf(
+      kDefaultDocumentCookie, main_frame,
+      *TestPrintRenderFrame::GetDefaultDidPrintContentParams(),
+      base::DoNothing());
+  ASSERT_TRUE(client->GetCompositeRequest(kDefaultDocumentCookie));
+  // |requested_subframes_| should be empty.
+  ASSERT_TRUE(client->requested_subframes_.empty());
+}
+
 // Printing preview a simple webpage when site per process is enabled.
 // Test that the basic oopif printing should succeed. The test should not crash
 // or timed out. There could be other reasons that cause the test fail, but the
@@ -916,13 +982,14 @@ IN_PROC_BROWSER_TEST_F(IsolateOriginsPrintBrowserTest,
 }
 
 // Printing preview a webpage.
-// Test that we use oopif printing by default.
+// Test that we use oopif printing by default when full site isolation is
+// enabled.
 IN_PROC_BROWSER_TEST_F(PrintBrowserTest, RegularPrinting) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  EXPECT_TRUE(IsOopifEnabled());
+  EXPECT_EQ(content::AreAllSitesIsolatedForTesting(), IsOopifEnabled());
 }
 
 // Printing preview a webpage with isolate-origins enabled.

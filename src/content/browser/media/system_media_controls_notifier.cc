@@ -14,6 +14,7 @@
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
+#include "ui/gfx/image/image_skia.h"
 
 #if defined(OS_WIN)
 #include "base/bind.h"
@@ -111,7 +112,7 @@ void SystemMediaControlsNotifier::MediaSessionInfoChanged(
 }
 
 void SystemMediaControlsNotifier::MediaSessionMetadataChanged(
-    const base::Optional<media_session::MediaMetadata>& metadata) {
+    const absl::optional<media_session::MediaMetadata>& metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (metadata.has_value()) {
@@ -132,6 +133,22 @@ void SystemMediaControlsNotifier::MediaSessionMetadataChanged(
   }
 }
 
+void SystemMediaControlsNotifier::MediaSessionActionsChanged(
+    const std::vector<media_session::mojom::MediaSessionAction>& actions) {
+  // SeekTo is not often supported so we will emulate "seekto" using
+  // "seekforward" and "seekbackward" if they exist.
+  bool seek_available = false;
+  for (const media_session::mojom::MediaSessionAction& action : actions) {
+    if (action == media_session::mojom::MediaSessionAction::kSeekTo ||
+        action == media_session::mojom::MediaSessionAction::kSeekBackward ||
+        action == media_session::mojom::MediaSessionAction::kSeekForward) {
+      seek_available = true;
+      break;
+    }
+  }
+  system_media_controls_->SetIsSeekToEnabled(seek_available);
+}
+
 void SystemMediaControlsNotifier::MediaControllerImageChanged(
     media_session::mojom::MediaSessionImageType type,
     const SkBitmap& bitmap) {
@@ -147,12 +164,23 @@ void SystemMediaControlsNotifier::MediaControllerImageChanged(
     // If no images are fetched in the fetch image algorithm, the user agent
     // may have fallback behavior such as displaying a default image as artwork.
     // We display the application icon if no artwork is provided.
-    base::Optional<gfx::ImageSkia> icon =
+    absl::optional<gfx::ImageSkia> icon =
         GetContentClient()->browser()->GetProductLogo();
     if (icon.has_value())
       system_media_controls_->SetThumbnail(*icon->bitmap());
     else
       system_media_controls_->ClearThumbnail();
+  }
+}
+
+void SystemMediaControlsNotifier::MediaSessionPositionChanged(
+    const absl::optional<media_session::MediaPosition>& position) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (position) {
+    system_media_controls_->SetPosition(*position);
+  } else {
+    system_media_controls_->ClearMetadata();
   }
 }
 

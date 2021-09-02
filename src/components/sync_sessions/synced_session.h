@@ -17,6 +17,7 @@
 #include "components/sessions/core/session_types.h"
 #include "components/sync/protocol/session_specifics.pb.h"
 #include "components/sync/protocol/sync_enums.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace sync_sessions {
 
@@ -46,7 +47,11 @@ void SetSessionTabFromSyncData(const sync_pb::SessionTab& sync_data,
 // SerializedNavigationEntry::ToSyncData to convert |navigations|. Note that the
 // protocol buffer doesn't contain all SerializedNavigationEntry fields, and
 // that the returned protocol buffer doesn't have any favicon data.
-sync_pb::SessionTab SessionTabToSyncData(const sessions::SessionTab& tab);
+// |browser_type| needs to be provided separately because its (in local terms) a
+// property of the window.
+sync_pb::SessionTab SessionTabToSyncData(
+    const sessions::SessionTab& tab,
+    absl::optional<sync_pb::SessionWindow::BrowserType> browser_type);
 
 // A Sync wrapper for a SessionWindow.
 struct SyncedSessionWindow {
