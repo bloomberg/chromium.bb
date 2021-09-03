@@ -13,12 +13,50 @@
 
 namespace chromeos {
 
+FakeArcDataSnapshotdClient::FakeArcDataSnapshotdClient() = default;
+FakeArcDataSnapshotdClient::~FakeArcDataSnapshotdClient() = default;
+
 void FakeArcDataSnapshotdClient::Init(dbus::Bus* bus) {}
 
 void FakeArcDataSnapshotdClient::GenerateKeyPair(
     VoidDBusMethodCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeArcDataSnapshotdClient::ClearSnapshot(
+    bool last,
+    VoidDBusMethodCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeArcDataSnapshotdClient::TakeSnapshot(const std::string& account_id,
+                                              VoidDBusMethodCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeArcDataSnapshotdClient::LoadSnapshot(
+    const std::string& account_id,
+    LoadSnapshotMethodCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true, true));
+}
+
+void FakeArcDataSnapshotdClient::Update(int percent,
+                                        VoidDBusMethodCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeArcDataSnapshotdClient::ConnectToUiCancelledSignal(
+    base::RepeatingClosure signal_callback,
+    base::OnceCallback<void(bool)> on_connected_callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(on_connected_callback), is_available_));
+  signal_callback_ = std::move(signal_callback);
 }
 
 void FakeArcDataSnapshotdClient::WaitForServiceToBeAvailable(

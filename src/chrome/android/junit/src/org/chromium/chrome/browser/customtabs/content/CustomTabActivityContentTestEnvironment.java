@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -25,14 +24,15 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.Callback;
 import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabObserver;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.app.tab_activity_glue.ReparentingTask;
+import org.chromium.chrome.browser.app.tabmodel.CustomTabsTabModelOrchestrator;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
@@ -59,15 +59,17 @@ import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.GURL;
+import org.chromium.url.JUnitTestGURLs;
 
 /**
  * A TestRule that sets up the mocks and contains helper methods for JUnit/Robolectric tests scoped
  * to the content layer of Custom Tabs code.
  */
 public class CustomTabActivityContentTestEnvironment extends TestWatcher {
-    public static final String INITIAL_URL = "https://initial.com";
-    public static final String SPECULATED_URL = "https://speculated.com";
-    public static final String OTHER_URL = "https://other.com";
+    public static final String INITIAL_URL = JUnitTestGURLs.INITIAL_URL;
+    public static final String SPECULATED_URL = JUnitTestGURLs.SPECULATED_URL;
+    public static final String OTHER_URL = JUnitTestGURLs.EXAMPLE_URL;
 
     public final Intent intent = new Intent();
 
@@ -81,6 +83,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Mock public WarmupManager warmupManager;
     @Mock public CustomTabTabPersistencePolicy tabPersistencePolicy;
     @Mock public CustomTabActivityTabFactory tabFactory;
+    @Mock public CustomTabsTabModelOrchestrator tabModelOrchestrator;
     @Mock public CustomTabObserver customTabObserver;
     @Mock public WebContentsFactory webContentsFactory;
     @Mock public ActivityTabProvider activityTabProvider;
@@ -104,7 +107,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     public final CustomTabActivityTabProvider tabProvider = new CustomTabActivityTabProvider();
 
     @Captor
-    public ArgumentCaptor<ActivityTabObserver> activityTabObserverCaptor;
+    public ArgumentCaptor<Callback<Tab>> activityTabObserverCaptor;
 
     // Captures the WebContents with which tabFromFactory is initialized
     @Captor public ArgumentCaptor<WebContents> webContentsCaptor;
@@ -128,7 +131,9 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
         when(intentDataProvider.getUrlToLoad()).thenReturn(INITIAL_URL);
         when(tabFactory.createTab(webContentsCaptor.capture(), any(), any()))
                 .thenReturn(tabFromFactory);
+        when(tabFactory.getTabModelOrchestrator()).thenReturn(tabModelOrchestrator);
         when(tabFactory.getTabModelSelector()).thenReturn(tabModelSelector);
+        when(tabModelOrchestrator.getTabModelSelector()).thenReturn(tabModelSelector);
         when(tabModelSelector.getModel(anyBoolean())).thenReturn(tabModel);
         when(connection.getSpeculatedUrl(any())).thenReturn(SPECULATED_URL);
         when(browserInitializer.isFullBrowserInitialized()).thenReturn(true);
@@ -137,9 +142,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
         when(startupTabPreloader.takeTabIfMatchingOrDestroy(any(), anyInt())).thenReturn(null);
         when(reparentingTaskProvider.get(any())).thenReturn(reparentingTask);
-        doNothing()
-                .when(activityTabProvider)
-                .addObserverAndTrigger(activityTabObserverCaptor.capture());
+        when(activityTabProvider.addObserver(activityTabObserverCaptor.capture())).thenReturn(null);
     }
 
     @Override
@@ -149,13 +152,14 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     }
 
     // clang-format off
-    public CustomTabActivityTabController createTabController(ProfileProvider profileProvider) {
+    public CustomTabActivityTabController createTabController() {
         return new CustomTabActivityTabController(activity, () -> customTabDelegateFactory,
                 connection, intentDataProvider, activityTabProvider, tabObserverRegistrar,
                 () -> compositorViewHolder, lifecycleDispatcher, warmupManager,
                 tabPersistencePolicy, tabFactory, () -> customTabObserver, webContentsFactory,
                 navigationEventObserver, tabProvider, startupTabPreloader, reparentingTaskProvider,
-                () -> customTabIncognitoManager, profileProvider, () -> realAsyncTabParamsManager);
+                () -> customTabIncognitoManager, () -> realAsyncTabParamsManager,
+                () -> activity.getSavedInstanceState());
     }
     // clang-format on
 
@@ -174,9 +178,14 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     public CustomTabIntentHandler createIntentHandler(
             CustomTabActivityNavigationController navigationController) {
-        CustomTabIntentHandlingStrategy strategy = new DefaultCustomTabIntentHandlingStrategy(
-                tabProvider, navigationController, navigationEventObserver,
-                () -> customTabObserver);
+        CustomTabIntentHandlingStrategy strategy =
+                new DefaultCustomTabIntentHandlingStrategy(tabProvider, navigationController,
+                        navigationEventObserver, () -> customTabObserver) {
+                    @Override
+                    public GURL getGurlForUrl(String url) {
+                        return JUnitTestGURLs.getGURL(url);
+                    }
+                };
         return new CustomTabIntentHandler(tabProvider,
                 intentDataProvider, strategy, (intent) -> false, activity);
     }
@@ -188,8 +197,8 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     public void changeTab(Tab newTab) {
         when(activityTabProvider.get()).thenReturn(newTab);
-        for (ActivityTabObserver observer : activityTabObserverCaptor.getAllValues()) {
-            observer.onActivityTabChanged(newTab, false);
+        for (Callback<Tab> observer : activityTabObserverCaptor.getAllValues()) {
+            observer.onResult(newTab);
         }
     }
 
@@ -210,7 +219,8 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
         WebContents webContents = mock(WebContents.class);
         realAsyncTabParamsManager.add(
                 tabId, new AsyncTabCreationParams(mock(LoadUrlParams.class), webContents));
-        intent.putExtra(IntentHandler.EXTRA_TAB_ID, tabId);
+        IntentHandler.setTabId(intent, tabId);
+        IntentHandler.setForceIntentSenderChromeToTrue(true);
         return webContents;
     }
 

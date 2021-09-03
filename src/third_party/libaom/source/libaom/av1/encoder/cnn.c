@@ -13,8 +13,8 @@
 #include <math.h>
 
 #include "aom_dsp/aom_dsp_common.h"
-#include "av1/encoder/cnn.h"
 #include "av1/common/av1_common_int.h"
+#include "av1/encoder/cnn.h"
 
 #define CLAMPINDEX(a, hi) ((a) < 0 ? 0 : ((a) >= (hi) ? ((hi)-1) : (a)))
 
@@ -147,9 +147,9 @@ int check_tensor_equal_size(TENSOR *t1, TENSOR *t2) {
           t1->height == t2->height);
 }
 
-static void find_layer_output_size(int in_width, int in_height,
-                                   const CNN_LAYER_CONFIG *layer_config,
-                                   int *out_width, int *out_height) {
+void av1_find_cnn_layer_output_size(int in_width, int in_height,
+                                    const CNN_LAYER_CONFIG *layer_config,
+                                    int *out_width, int *out_height) {
   if (!layer_config->deconvolve) {
     switch (layer_config->pad) {
       case PADDING_SAME_ZERO:
@@ -260,8 +260,8 @@ void av1_find_cnn_output_size(int in_width, int in_height,
       }
     }
 
-    find_layer_output_size(i_width[branch], i_height[branch], layer_config,
-                           &o_width, &o_height);
+    av1_find_cnn_layer_output_size(i_width[branch], i_height[branch],
+                                   layer_config, &o_width, &o_height);
     i_width[branch] = o_width;
     i_height[branch] = o_height;
 
@@ -343,6 +343,365 @@ static void copy_active_tensor_to_branches(const TENSOR *layer_active_tensor,
   }
 }
 
+// CNNConvolve specific to maxpool set as 1, either skip_width or skip_height
+// greater than 1 and padding equal to PADDING_SAME_ZERO.
+static void convolve_maxpool_padding_zero(
+    const float **input, int in_width, int in_height, int in_stride,
+    const CNN_LAYER_CONFIG *const layer_config, float **output, int out_stride,
+    const int cstep, const int filter_width_half,
+    const int filter_height_half) {
+  for (int i = 0; i < layer_config->out_channels; ++i) {
+    for (int h = 0, u = 0; h < in_height; h += layer_config->skip_height, ++u) {
+      for (int w = 0, v = 0; w < in_width; w += layer_config->skip_width, ++v) {
+        for (int hh = h; hh < AOMMIN(in_height, h + layer_config->skip_height);
+             ++hh) {
+          for (int ww = w; ww < AOMMIN(in_width, w + layer_config->skip_width);
+               ++ww) {
+            float sum = layer_config->bias[i];
+            for (int k = 0; k < layer_config->in_channels; ++k) {
+              int off = k * layer_config->out_channels + i;
+              for (int l = 0; l < layer_config->filter_height; ++l) {
+                const int ii = hh + l - filter_height_half;
+                for (int m = 0; m < layer_config->filter_width;
+                     ++m, off += cstep) {
+                  const int jj = ww + m - filter_width_half;
+                  if (ii < 0 || ii >= in_height || jj < 0 || jj >= in_width)
+                    continue;
+                  sum += layer_config->weights[off] *
+                         input[k][ii * in_stride + jj];
+                }
+              }
+            }
+            const float a = sum;
+            if (h == hh && w == ww)
+              output[i][u * out_stride + v] = a;
+            else
+              output[i][u * out_stride + v] =
+                  AOMMAX(output[i][u * out_stride + v], a);
+          }
+        }
+      }
+    }
+  }
+}
+
+// CNNConvolve specific to maxpool set as 1, either skip_width or skip_height
+// greater than 1 and padding equal to PADDING_SAME_REPLICATE.
+static void convolve_maxpool_padding_replicate(
+    const float **input, int in_width, int in_height, int in_stride,
+    const CNN_LAYER_CONFIG *const layer_config, float **output, int out_stride,
+    const int cstep, const int filter_width_half,
+    const int filter_height_half) {
+  for (int i = 0; i < layer_config->out_channels; ++i) {
+    for (int h = 0, u = 0; h < in_height; h += layer_config->skip_height, ++u) {
+      for (int w = 0, v = 0; w < in_width; w += layer_config->skip_width, ++v) {
+        for (int hh = h; hh < AOMMIN(in_height, h + layer_config->skip_height);
+             ++hh) {
+          for (int ww = w; ww < AOMMIN(in_width, w + layer_config->skip_width);
+               ++ww) {
+            float sum = layer_config->bias[i];
+            for (int k = 0; k < layer_config->in_channels; ++k) {
+              int off = k * layer_config->out_channels + i;
+              for (int l = 0; l < layer_config->filter_height; ++l) {
+                const int ii =
+                    CLAMPINDEX(hh + l - filter_height_half, in_height);
+                for (int m = 0; m < layer_config->filter_width;
+                     ++m, off += cstep) {
+                  const int jj =
+                      CLAMPINDEX(ww + m - filter_width_half, in_width);
+                  assert(ii >= 0 && ii < in_height && jj >= 0 && jj < in_width);
+                  sum += layer_config->weights[off] *
+                         input[k][ii * in_stride + jj];
+                }
+              }
+            }
+            const float a = sum;
+            if (h == hh && w == ww)
+              output[i][u * out_stride + v] = a;
+            else
+              output[i][u * out_stride + v] =
+                  AOMMAX(output[i][u * out_stride + v], a);
+          }
+        }
+      }
+    }
+  }
+}
+
+// CNNConvolve specific to maxpool set as 1, either skip_width or skip_height
+// greater than 1 and padding equal to PADDING_VALID.
+static void convolve_maxpool_padding_valid(
+    const float **input, int in_width, int in_height, int in_stride,
+    const CNN_LAYER_CONFIG *const layer_config, float **output, int out_stride,
+    const int cstep) {
+  for (int i = 0; i < layer_config->out_channels; ++i) {
+    for (int h = 0, u = 0; h < in_height - layer_config->filter_height + 1;
+         h += layer_config->skip_height, ++u) {
+      for (int w = 0, v = 0; w < in_width - layer_config->filter_width + 1;
+           w += layer_config->skip_width, ++v) {
+        for (int hh = h; hh < AOMMIN(in_height, h + layer_config->skip_height);
+             ++hh) {
+          for (int ww = w; ww < AOMMIN(in_width, w + layer_config->skip_width);
+               ++ww) {
+            float sum = layer_config->bias[i];
+            for (int k = 0; k < layer_config->in_channels; ++k) {
+              int off = k * layer_config->out_channels + i;
+              for (int l = 0; l < layer_config->filter_height; ++l) {
+                const int ii = hh + l;
+                for (int m = 0; m < layer_config->filter_width;
+                     ++m, off += cstep) {
+                  const int jj = ww + m;
+                  assert(ii >= 0 && ii < in_height && jj >= 0 && jj < in_width);
+                  sum += layer_config->weights[off] *
+                         input[k][ii * in_stride + jj];
+                }
+              }
+            }
+            const float a = sum;
+            if (h == hh && w == ww)
+              output[i][u * out_stride + v] = a;
+            else
+              output[i][u * out_stride + v] =
+                  AOMMAX(output[i][u * out_stride + v], a);
+          }
+        }
+      }
+    }
+  }
+}
+
+// CNNConvolve specific to maxpool set as 0 with filter_height and filter_width
+// equal to 1.
+static void convolve_element_wise(const float **input, int in_width,
+                                  int in_height, int in_stride,
+                                  const CNN_LAYER_CONFIG *const layer_config,
+                                  float **output, int out_stride, int start_idx,
+                                  int step) {
+  const int start_h = get_start_shift_convolve(
+      in_height, layer_config->filter_height, layer_config->skip_height);
+  const int start_w =
+      get_start_shift_convolve(in_width, layer_config->filter_width,
+                               layer_config->skip_width) +
+      start_idx * layer_config->skip_width;
+  const int out_w_step = AOMMAX(step, 1);
+  const int in_w_step = layer_config->skip_width * out_w_step;
+  for (int i = 0; i < layer_config->out_channels; ++i) {
+    for (int h = start_h, u = 0; h < in_height;
+         h += layer_config->skip_height, ++u) {
+      const int in_h = h * in_stride;
+      const int out_h = u * out_stride + start_idx;
+      for (int w = start_w, out_index = out_h; w < in_width;
+           w += in_w_step, out_index += out_w_step) {
+        float sum = layer_config->bias[i];
+        for (int k = 0; k < layer_config->in_channels; ++k) {
+          sum += layer_config->weights[k * layer_config->out_channels + i] *
+                 input[k][in_h + w];
+        }
+        output[i][out_index] = sum;
+      }
+    }
+  }
+}
+
+// CNNConvolve specific to maxpool set as 0 and padding equal to
+// PADDING_SAME_ZERO.
+static void convolve_no_maxpool_padding_zero(
+    const float **input, int in_width, int in_height, int in_stride,
+    const CNN_LAYER_CONFIG *const layer_config, float **output, int out_stride,
+    int start_idx, const int cstep, const int filter_width_half,
+    const int filter_height_half, const int ii_shift, const int jj_shift,
+    const int channel_step) {
+  const int start_h = get_start_shift_convolve(
+      in_height, layer_config->filter_height, layer_config->skip_height);
+  const int start_w = get_start_shift_convolve(
+      in_width, layer_config->filter_width, layer_config->skip_width);
+  const int end_ii_shift = filter_height_half + 1;
+  const int end_jj_shift = filter_width_half + 1;
+  // *_filter_margin stores the number of pixels along a dimension in the
+  // intersection of the complement of the image in the extended image
+  // and the filter.
+  const int top_filter_margin = layer_config->filter_width * ii_shift;
+  const int right_filter_margin = end_jj_shift - in_width;
+  for (int i = start_idx; i < layer_config->out_channels; i += channel_step) {
+    for (int h = start_h, u = 0; h < in_height;
+         h += layer_config->skip_height, ++u) {
+      const int out_h = u * out_stride;
+      const int top_cstep =
+          AOMMAX(0, top_filter_margin - h * layer_config->filter_width) *
+              cstep +
+          i;
+      const int start_ii = AOMMAX(0, h - ii_shift);
+      const int end_ii = AOMMIN(in_height, h + end_ii_shift);
+      for (int w = start_w, out_index = out_h; w < in_width;
+           w += layer_config->skip_width, ++out_index) {
+        const int left_cstep = AOMMAX(0, jj_shift - w) * cstep;
+        const int right_cstep = AOMMAX(0, right_filter_margin + w) * cstep;
+        const int start_jj = AOMMAX(0, w - jj_shift);
+        const int end_jj = AOMMIN(in_width, w + end_jj_shift);
+        float sum = layer_config->bias[i];
+        for (int k = 0; k < layer_config->in_channels; ++k) {
+          int off = k * layer_config->out_channels + top_cstep;
+          for (int ii = start_ii; ii < end_ii; ++ii) {
+            off += left_cstep;
+            for (int jj = start_jj; jj < end_jj; ++jj, off += cstep) {
+              sum += layer_config->weights[off] * input[k][ii * in_stride + jj];
+            }
+            off += right_cstep;
+          }
+        }
+        output[i][out_index] = sum;
+      }
+    }
+  }
+}
+
+// CNNConvolve specific to maxpool set as 0 and padding equal to
+// PADDING_SAME_REPLICATE.
+static void convolve_no_maxpool_padding_replicate(
+    const float **input, int in_width, int in_height, int in_stride,
+    const CNN_LAYER_CONFIG *const layer_config, float **output, int out_stride,
+    int start_idx, const int cstep, const int ii_shift, const int jj_shift,
+    const int channel_step) {
+  // h and w are shifted to an offset coordinate system to reduce in-loop
+  // computation.
+  const int start_h =
+      get_start_shift_convolve(in_height, layer_config->filter_height,
+                               layer_config->skip_height) -
+      ii_shift;
+  const int start_w =
+      get_start_shift_convolve(in_width, layer_config->filter_width,
+                               layer_config->skip_width) -
+      jj_shift;
+  const int end_h = in_height - ii_shift;
+  const int end_w = in_width - jj_shift;
+  for (int i = start_idx; i < layer_config->out_channels; i += channel_step) {
+    for (int h = start_h, u = 0; h < end_h;
+         h += layer_config->skip_height, ++u) {
+      const int out_h = u * out_stride;
+      const int upper_ii_index = layer_config->filter_height + h;
+      for (int w = start_w, out_index = out_h; w < end_w;
+           w += layer_config->skip_width, ++out_index) {
+        const int upper_jj_index = layer_config->filter_width + w;
+        float sum = layer_config->bias[i];
+        for (int k = 0; k < layer_config->in_channels; ++k) {
+          int off = k * layer_config->out_channels + i;
+          for (int ii = h; ii < upper_ii_index; ++ii) {
+            const int clamped_ii = CLAMPINDEX(ii, in_height);
+            for (int jj = w; jj < upper_jj_index; ++jj) {
+              const int clamped_jj = CLAMPINDEX(jj, in_width);
+              assert(clamped_ii >= 0 && clamped_ii < in_height &&
+                     clamped_jj >= 0 && clamped_jj < in_width);
+              sum += layer_config->weights[off] *
+                     input[k][clamped_ii * in_stride + clamped_jj];
+              off += cstep;
+            }
+          }
+        }
+        output[i][out_index] = sum;
+      }
+    }
+  }
+}
+
+// CNNConvolve specific to maxpool set as 0 and padding equal to
+// PADDING_VALID.
+void av1_cnn_convolve_no_maxpool_padding_valid_c(
+    const float **input, int in_width, int in_height, int in_stride,
+    const CNN_LAYER_CONFIG *layer_config, float **output, int out_stride,
+    int start_idx, int cstep, int channel_step) {
+  assert((layer_config->skip_height == 1 && layer_config->skip_width == 1) ||
+         !layer_config->maxpool);
+  assert(layer_config->filter_height > 1 || layer_config->filter_width > 1);
+  assert(layer_config->pad == PADDING_VALID);
+  for (int i = start_idx; i < layer_config->out_channels; i += channel_step) {
+    for (int h = 0, u = 0; h < in_height - layer_config->filter_height + 1;
+         h += layer_config->skip_height, ++u) {
+      const int out_h = u * out_stride;
+      const int upper_ii_index = layer_config->filter_height + h;
+      for (int w = 0, out_index = out_h;
+           w < in_width - layer_config->filter_width + 1;
+           w += layer_config->skip_width, ++out_index) {
+        const int upper_jj_index = layer_config->filter_width + w;
+        float sum = layer_config->bias[i];
+        for (int k = 0; k < layer_config->in_channels; ++k) {
+          int off = k * layer_config->out_channels + i;
+          for (int ii = h; ii < upper_ii_index; ++ii) {
+            for (int jj = w; jj < upper_jj_index; ++jj) {
+              assert(ii >= 0 && ii < in_height && jj >= 0 && jj < in_width);
+              sum += layer_config->weights[off] * input[k][ii * in_stride + jj];
+              off += cstep;
+            }
+          }
+        }
+        output[i][out_index] = sum;
+      }
+    }
+  }
+}
+
+static void av1_cnn_convolve(const float **input, int in_width, int in_height,
+                             int in_stride,
+                             const CNN_LAYER_CONFIG *layer_config,
+                             float **output, int out_stride, int start_idx,
+                             int step) {
+  assert(!layer_config->deconvolve);
+  const int cstep = layer_config->in_channels * layer_config->out_channels;
+  const int filter_height_half = layer_config->filter_height >> 1;
+  const int filter_width_half = layer_config->filter_width >> 1;
+  const int channel_step = AOMMAX(step, 1);
+
+  if (layer_config->maxpool &&
+      (layer_config->skip_height > 1 || layer_config->skip_width > 1)) {
+    switch (layer_config->pad) {
+      case PADDING_SAME_ZERO:
+        convolve_maxpool_padding_zero(input, in_width, in_height, in_stride,
+                                      layer_config, output, out_stride, cstep,
+                                      filter_width_half, filter_height_half);
+        break;
+      case PADDING_SAME_REPLICATE:
+        convolve_maxpool_padding_replicate(
+            input, in_width, in_height, in_stride, layer_config, output,
+            out_stride, cstep, filter_width_half, filter_height_half);
+        break;
+      case PADDING_VALID:
+        convolve_maxpool_padding_valid(input, in_width, in_height, in_stride,
+                                       layer_config, output, out_stride, cstep);
+        break;
+      default: assert(0 && "Unknown padding type");
+    }
+  } else {
+    // Results in element-wise matrix multiplication.
+    if (layer_config->filter_height == 1 && layer_config->filter_width == 1) {
+      convolve_element_wise(input, in_width, in_height, in_stride, layer_config,
+                            output, out_stride, start_idx, step);
+      return;
+    }
+    const int ii_shift =
+        filter_height_half - (layer_config->filter_height - 1) % 2;
+    const int jj_shift =
+        filter_width_half - (layer_config->filter_width - 1) % 2;
+    switch (layer_config->pad) {
+      case PADDING_SAME_ZERO:
+        convolve_no_maxpool_padding_zero(
+            input, in_width, in_height, in_stride, layer_config, output,
+            out_stride, start_idx, cstep, filter_width_half, filter_height_half,
+            ii_shift, jj_shift, channel_step);
+        break;
+      case PADDING_SAME_REPLICATE:
+        convolve_no_maxpool_padding_replicate(
+            input, in_width, in_height, in_stride, layer_config, output,
+            out_stride, start_idx, cstep, ii_shift, jj_shift, channel_step);
+        break;
+      case PADDING_VALID:
+        av1_cnn_convolve_no_maxpool_padding_valid(
+            input, in_width, in_height, in_stride, layer_config, output,
+            out_stride, start_idx, cstep, channel_step);
+        break;
+      default: assert(0 && "Unknown padding type");
+    }
+  }
+}
+
 static int convolve_layer(void *arg1, void *arg2) {
   const CONVOLVE_OPS *convolve_ops = arg1;
   (void)arg2;
@@ -388,304 +747,6 @@ static void convolve_layer_mt(const float **input, int in_width, int in_height,
   }
 }
 
-void av1_cnn_convolve_c(const float **input, int in_width, int in_height,
-                        int in_stride, const CNN_LAYER_CONFIG *layer_config,
-                        float **output, int out_stride, int start_idx,
-                        int step) {
-  assert(!layer_config->deconvolve);
-  const int cstep = layer_config->in_channels * layer_config->out_channels;
-  const int filter_height_half = layer_config->filter_height >> 1;
-  const int filter_width_half = layer_config->filter_width >> 1;
-  const int channel_step = AOMMAX(step, 1);
-
-  if (layer_config->maxpool &&
-      (layer_config->skip_height > 1 || layer_config->skip_width > 1)) {
-    switch (layer_config->pad) {
-      case PADDING_SAME_ZERO:
-        for (int i = 0; i < layer_config->out_channels; ++i) {
-          for (int h = 0, u = 0; h < in_height;
-               h += layer_config->skip_height, ++u) {
-            for (int w = 0, v = 0; w < in_width;
-                 w += layer_config->skip_width, ++v) {
-              for (int hh = h;
-                   hh < AOMMIN(in_height, h + layer_config->skip_height);
-                   ++hh) {
-                for (int ww = w;
-                     ww < AOMMIN(in_width, w + layer_config->skip_width);
-                     ++ww) {
-                  float sum = layer_config->bias[i];
-                  for (int k = 0; k < layer_config->in_channels; ++k) {
-                    int off = k * layer_config->out_channels + i;
-                    for (int l = 0; l < layer_config->filter_height; ++l) {
-                      const int ii = hh + l - filter_height_half;
-                      for (int m = 0; m < layer_config->filter_width;
-                           ++m, off += cstep) {
-                        const int jj = ww + m - filter_width_half;
-                        if (ii < 0 || ii >= in_height || jj < 0 ||
-                            jj >= in_width)
-                          continue;
-                        sum += layer_config->weights[off] *
-                               input[k][ii * in_stride + jj];
-                      }
-                    }
-                  }
-                  const float a = sum;
-                  if (h == hh && w == ww)
-                    output[i][u * out_stride + v] = a;
-                  else
-                    output[i][u * out_stride + v] =
-                        AOMMAX(output[i][u * out_stride + v], a);
-                }
-              }
-            }
-          }
-        }
-        break;
-      case PADDING_SAME_REPLICATE:
-        for (int i = 0; i < layer_config->out_channels; ++i) {
-          for (int h = 0, u = 0; h < in_height;
-               h += layer_config->skip_height, ++u) {
-            for (int w = 0, v = 0; w < in_width;
-                 w += layer_config->skip_width, ++v) {
-              for (int hh = h;
-                   hh < AOMMIN(in_height, h + layer_config->skip_height);
-                   ++hh) {
-                for (int ww = w;
-                     ww < AOMMIN(in_width, w + layer_config->skip_width);
-                     ++ww) {
-                  float sum = layer_config->bias[i];
-                  for (int k = 0; k < layer_config->in_channels; ++k) {
-                    int off = k * layer_config->out_channels + i;
-                    for (int l = 0; l < layer_config->filter_height; ++l) {
-                      const int ii =
-                          CLAMPINDEX(hh + l - filter_height_half, in_height);
-                      for (int m = 0; m < layer_config->filter_width;
-                           ++m, off += cstep) {
-                        const int jj =
-                            CLAMPINDEX(ww + m - filter_width_half, in_width);
-                        assert(ii >= 0 && ii < in_height && jj >= 0 &&
-                               jj < in_width);
-                        sum += layer_config->weights[off] *
-                               input[k][ii * in_stride + jj];
-                      }
-                    }
-                  }
-                  const float a = sum;
-                  if (h == hh && w == ww)
-                    output[i][u * out_stride + v] = a;
-                  else
-                    output[i][u * out_stride + v] =
-                        AOMMAX(output[i][u * out_stride + v], a);
-                }
-              }
-            }
-          }
-        }
-        break;
-      case PADDING_VALID:
-        for (int i = 0; i < layer_config->out_channels; ++i) {
-          for (int h = 0, u = 0;
-               h < in_height - layer_config->filter_height + 1;
-               h += layer_config->skip_height, ++u) {
-            for (int w = 0, v = 0;
-                 w < in_width - layer_config->filter_width + 1;
-                 w += layer_config->skip_width, ++v) {
-              for (int hh = h;
-                   hh < AOMMIN(in_height, h + layer_config->skip_height);
-                   ++hh) {
-                for (int ww = w;
-                     ww < AOMMIN(in_width, w + layer_config->skip_width);
-                     ++ww) {
-                  float sum = layer_config->bias[i];
-                  for (int k = 0; k < layer_config->in_channels; ++k) {
-                    int off = k * layer_config->out_channels + i;
-                    for (int l = 0; l < layer_config->filter_height; ++l) {
-                      const int ii = hh + l;
-                      for (int m = 0; m < layer_config->filter_width;
-                           ++m, off += cstep) {
-                        const int jj = ww + m;
-                        assert(ii >= 0 && ii < in_height && jj >= 0 &&
-                               jj < in_width);
-                        sum += layer_config->weights[off] *
-                               input[k][ii * in_stride + jj];
-                      }
-                    }
-                  }
-                  const float a = sum;
-                  if (h == hh && w == ww)
-                    output[i][u * out_stride + v] = a;
-                  else
-                    output[i][u * out_stride + v] =
-                        AOMMAX(output[i][u * out_stride + v], a);
-                }
-              }
-            }
-          }
-        }
-        break;
-      default: assert(0 && "Unknown padding type");
-    }
-  } else {
-    // Results in element-wise matrix multiplication.
-    if (layer_config->filter_height == 1 && layer_config->filter_width == 1) {
-      const int start_h = get_start_shift_convolve(
-          in_height, layer_config->filter_height, layer_config->skip_height);
-      const int start_w =
-          get_start_shift_convolve(in_width, layer_config->filter_width,
-                                   layer_config->skip_width) +
-          start_idx * layer_config->skip_width;
-      const int out_w_step = AOMMAX(step, 1);
-      const int in_w_step = layer_config->skip_width * out_w_step;
-      for (int i = 0; i < layer_config->out_channels; ++i) {
-        for (int h = start_h, u = 0; h < in_height;
-             h += layer_config->skip_height, ++u) {
-          const int in_h = h * in_stride;
-          const int out_h = u * out_stride + start_idx;
-          for (int w = start_w, out_index = out_h; w < in_width;
-               w += in_w_step, out_index += out_w_step) {
-            float sum = layer_config->bias[i];
-            for (int k = 0; k < layer_config->in_channels; ++k) {
-              sum += layer_config->weights[k * layer_config->out_channels + i] *
-                     input[k][in_h + w];
-            }
-            output[i][out_index] = sum;
-          }
-        }
-      }
-      return;
-    }
-    const int ii_shift =
-        filter_height_half - (layer_config->filter_height - 1) % 2;
-    const int jj_shift =
-        filter_width_half - (layer_config->filter_width - 1) % 2;
-    switch (layer_config->pad) {
-      case PADDING_SAME_ZERO: {
-        const int start_h = get_start_shift_convolve(
-            in_height, layer_config->filter_height, layer_config->skip_height);
-        const int start_w = get_start_shift_convolve(
-            in_width, layer_config->filter_width, layer_config->skip_width);
-        const int end_ii_shift = filter_height_half + 1;
-        const int end_jj_shift = filter_width_half + 1;
-        // *_filter_margin stores the number of pixels along a dimension in the
-        // intersection of the complement of the image in the extended image
-        // and the filter.
-        const int top_filter_margin = layer_config->filter_width * ii_shift;
-        const int right_filter_margin = end_jj_shift - in_width;
-        for (int i = start_idx; i < layer_config->out_channels;
-             i += channel_step) {
-          for (int h = start_h, u = 0; h < in_height;
-               h += layer_config->skip_height, ++u) {
-            const int out_h = u * out_stride;
-            const int top_cstep =
-                AOMMAX(0, top_filter_margin - h * layer_config->filter_width) *
-                    cstep +
-                i;
-            const int start_ii = AOMMAX(0, h - ii_shift);
-            const int end_ii = AOMMIN(in_height, h + end_ii_shift);
-            for (int w = start_w, out_index = out_h; w < in_width;
-                 w += layer_config->skip_width, ++out_index) {
-              const int left_cstep = AOMMAX(0, jj_shift - w) * cstep;
-              const int right_cstep =
-                  AOMMAX(0, right_filter_margin + w) * cstep;
-              const int start_jj = AOMMAX(0, w - jj_shift);
-              const int end_jj = AOMMIN(in_width, w + end_jj_shift);
-              float sum = layer_config->bias[i];
-              for (int k = 0; k < layer_config->in_channels; ++k) {
-                int off = k * layer_config->out_channels + top_cstep;
-                for (int ii = start_ii; ii < end_ii; ++ii) {
-                  off += left_cstep;
-                  for (int jj = start_jj; jj < end_jj; ++jj, off += cstep) {
-                    sum += layer_config->weights[off] *
-                           input[k][ii * in_stride + jj];
-                  }
-                  off += right_cstep;
-                }
-              }
-              output[i][out_index] = sum;
-            }
-          }
-        }
-        break;
-      }
-      case PADDING_SAME_REPLICATE: {
-        // h and w are shifted to an offset coordinate system to reduce in-loop
-        // computation.
-        const int start_h =
-            get_start_shift_convolve(in_height, layer_config->filter_height,
-                                     layer_config->skip_height) -
-            ii_shift;
-        const int start_w =
-            get_start_shift_convolve(in_width, layer_config->filter_width,
-                                     layer_config->skip_width) -
-            jj_shift;
-        const int end_h = in_height - ii_shift;
-        const int end_w = in_width - jj_shift;
-        for (int i = start_idx; i < layer_config->out_channels;
-             i += channel_step) {
-          for (int h = start_h, u = 0; h < end_h;
-               h += layer_config->skip_height, ++u) {
-            const int out_h = u * out_stride;
-            const int upper_ii_index = layer_config->filter_height + h;
-            for (int w = start_w, out_index = out_h; w < end_w;
-                 w += layer_config->skip_width, ++out_index) {
-              const int upper_jj_index = layer_config->filter_width + w;
-              float sum = layer_config->bias[i];
-              for (int k = 0; k < layer_config->in_channels; ++k) {
-                int off = k * layer_config->out_channels + i;
-                for (int ii = h; ii < upper_ii_index; ++ii) {
-                  const int clamped_ii = CLAMPINDEX(ii, in_height);
-                  for (int jj = w; jj < upper_jj_index; ++jj) {
-                    const int clamped_jj = CLAMPINDEX(jj, in_width);
-                    assert(clamped_ii >= 0 && clamped_ii < in_height &&
-                           clamped_jj >= 0 && clamped_jj < in_width);
-                    sum += layer_config->weights[off] *
-                           input[k][clamped_ii * in_stride + clamped_jj];
-                    off += cstep;
-                  }
-                }
-              }
-              output[i][out_index] = sum;
-            }
-          }
-        }
-        break;
-      }
-      case PADDING_VALID: {
-        for (int i = start_idx; i < layer_config->out_channels;
-             i += channel_step) {
-          for (int h = 0, u = 0;
-               h < in_height - layer_config->filter_height + 1;
-               h += layer_config->skip_height, ++u) {
-            const int out_h = u * out_stride;
-            const int upper_ii_index = layer_config->filter_height + h;
-            for (int w = 0, out_index = out_h;
-                 w < in_width - layer_config->filter_width + 1;
-                 w += layer_config->skip_width, ++out_index) {
-              const int upper_jj_index = layer_config->filter_width + w;
-              float sum = layer_config->bias[i];
-              for (int k = 0; k < layer_config->in_channels; ++k) {
-                int off = k * layer_config->out_channels + i;
-                for (int ii = h; ii < upper_ii_index; ++ii) {
-                  for (int jj = w; jj < upper_jj_index; ++jj) {
-                    assert(ii >= 0 && ii < in_height && jj >= 0 &&
-                           jj < in_width);
-                    sum += layer_config->weights[off] *
-                           input[k][ii * in_stride + jj];
-                    off += cstep;
-                  }
-                }
-              }
-              output[i][out_index] = sum;
-            }
-          }
-        }
-        break;
-      }
-      default: assert(0 && "Unknown padding type");
-    }
-  }
-}
-
 static INLINE int get_start_shift_deconvolve(int filt_width, int stride) {
   const int dif = AOMMAX(filt_width - stride, 0);
   return dif / 2;
@@ -721,8 +782,8 @@ void av1_cnn_deconvolve_c(const float **input, int in_width, int in_height,
 
   int out_width = 0;
   int out_height = 0;
-  find_layer_output_size(in_width, in_height, layer_config, &out_width,
-                         &out_height);
+  av1_find_cnn_layer_output_size(in_width, in_height, layer_config, &out_width,
+                                 &out_height);
   switch (layer_config->pad) {
     case PADDING_SAME_ZERO:
       for (int i = 0; i < layer_config->out_channels; ++i) {
@@ -832,8 +893,8 @@ void av1_cnn_predict_c(const float **input, int in_width, int in_height,
                        int in_stride, const CNN_CONFIG *cnn_config,
                        const CNN_THREAD_DATA *thread_data,
                        CNN_MULTI_OUT *output_struct) {
-  TENSOR tensor1[CNN_MAX_BRANCHES] = { 0 };
-  TENSOR tensor2[CNN_MAX_BRANCHES] = { 0 };
+  TENSOR tensor1[CNN_MAX_BRANCHES] = { { 0 } };
+  TENSOR tensor2[CNN_MAX_BRANCHES] = { { 0 } };
 
   float **output[CNN_MAX_BRANCHES];
   const int *out_chs = output_struct->output_channels;
@@ -870,8 +931,8 @@ void av1_cnn_predict_c(const float **input, int in_width, int in_height,
     }
 
     // Allocate output tensor
-    find_layer_output_size(i_width, i_height, layer_config, &o_width,
-                           &o_height);
+    av1_find_cnn_layer_output_size(i_width, i_height, layer_config, &o_width,
+                                   &o_height);
     const int output_num = layer_config->output_num;
     if (output_num == -1) {  // Non-output layer
       realloc_tensor(&tensor2[branch], layer_config->out_channels, o_width,

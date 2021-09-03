@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/optional.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/chromeos/printing/printers_map.h"
 #include "chrome/browser/chromeos/printing/test_printer_configurer.h"
 #include "chrome/browser/chromeos/printing/usb_printer_notification_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace {
@@ -104,8 +104,17 @@ class FakePrinterInstallationManager : public PrinterInstallationManager {
     return installed_printers_.contains(printer.id());
   }
 
+  void PrinterIsNotAutoconfigurable(const Printer& printer) override {
+    printers_marked_as_not_autoconf_.insert(printer.id());
+  }
+
+  bool IsMarkedAsNotAutoconfigurable(const Printer& printer) {
+    return printers_marked_as_not_autoconf_.contains(printer.id());
+  }
+
  private:
   base::flat_set<std::string> installed_printers_;
+  base::flat_set<std::string> printers_marked_as_not_autoconf_;
 };
 
 class FakeUsbPrinterNotificationController
@@ -324,6 +333,24 @@ TEST_F(AutomaticUsbPrinterConfigurerTest, NotificationOpenedForNewDiscovered) {
 
   EXPECT_TRUE(
       fake_notification_controller_->IsNotificationDisplayed(printer_id));
+}
+
+TEST_F(AutomaticUsbPrinterConfigurerTest, RegisterAutoconfFailureForIppUsb) {
+  const std::string printer1_id = "id1";
+  const std::string printer2_id = "id2";
+  const Printer printer1 = CreateIppUsbPrinter(printer1_id);
+  const Printer printer2 = CreateIppUsbPrinter(printer2_id);
+
+  fake_printer_configurer_->AssignPrinterSetupResult(
+      printer1_id, PrinterSetupResult::kPrinterIsNotAutoconfigurable);
+
+  fake_observable_printers_manager_.AddNearbyAutomaticPrinter(printer1);
+  fake_observable_printers_manager_.AddNearbyAutomaticPrinter(printer2);
+
+  EXPECT_TRUE(
+      fake_installation_manager_->IsMarkedAsNotAutoconfigurable(printer1));
+  EXPECT_FALSE(
+      fake_installation_manager_->IsMarkedAsNotAutoconfigurable(printer2));
 }
 
 }  // namespace chromeos

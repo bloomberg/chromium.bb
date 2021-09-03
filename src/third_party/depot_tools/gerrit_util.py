@@ -75,6 +75,9 @@ class GerritError(Exception):
     self.http_status = http_status
     self.message = '(%d) %s' % (self.http_status, message)
 
+  def __str__(self):
+    return self.message
+
 
 def _QueryString(params, first_param=None):
   """Encodes query parameters in the key:val[+key:val...] format specified here:
@@ -82,7 +85,7 @@ def _QueryString(params, first_param=None):
   https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
   """
   q = [urllib.parse.quote(first_param)] if first_param else []
-  q.extend(['%s:%s' % (key, val) for key, val in params])
+  q.extend(['%s:%s' % (key, val.replace(" ", "+")) for key, val in params])
   return '+'.join(q)
 
 
@@ -711,7 +714,8 @@ def AbandonChange(host, change, msg=''):
 def MoveChange(host, change, destination_branch):
   """Move a Gerrit change to different destination branch."""
   path = 'changes/%s/move' % change
-  body = {'destination_branch': destination_branch}
+  body = {'destination_branch': destination_branch,
+          'keep_all_votes': True}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   return ReadHttpJsonResponse(conn)
 
@@ -731,6 +735,25 @@ def SubmitChange(host, change, wait_for_merge=True):
   body = {'wait_for_merge': wait_for_merge}
   conn = CreateHttpConn(host, path, reqtype='POST', body=body)
   return ReadHttpJsonResponse(conn)
+
+
+def PublishChangeEdit(host, change, notify=True):
+  """Publish a Gerrit change edit."""
+  path = 'changes/%s/edit:publish' % change
+  body = {'notify': 'ALL' if notify else 'NONE'}
+  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
+  return ReadHttpJsonResponse(conn, accept_statuses=(204, ))
+
+
+def ChangeEdit(host, change, path, data):
+  """Puts content of a file into a change edit."""
+  path = 'changes/%s/edit/%s' % (change, urllib.parse.quote(path, ''))
+  body = {
+      'binary_content':
+      'data:text/plain;base64,%s' % base64.b64encode(data.encode('utf-8'))
+  }
+  conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
+  return ReadHttpJsonResponse(conn, accept_statuses=(204, 409))
 
 
 def HasPendingChangeEdit(host, change):
@@ -765,6 +788,40 @@ def SetCommitMessage(host, change, description, notify='ALL'):
         e.http_status,
         'Received unexpected http status while editing message '
         'in change %s' % change)
+
+
+def IsCodeOwnersEnabledOnHost(host):
+  """Check if the code-owners plugin is enabled for the host."""
+  path = 'config/server/capabilities'
+  capabilities = ReadHttpJsonResponse(CreateHttpConn(host, path))
+  return 'code-owners-checkCodeOwner' in capabilities
+
+
+def IsCodeOwnersEnabledOnRepo(host, repo):
+  """Check if the code-owners plugin is enabled for the repo."""
+  repo = PercentEncodeForGitRef(repo)
+  path = '/projects/%s/code_owners.project_config' % repo
+  config = ReadHttpJsonResponse(CreateHttpConn(host, path))
+  return not config['status'].get('disabled', False)
+
+
+def GetOwnersForFile(host, project, branch, path, limit=100,
+                     resolve_all_users=True, seed=None, o_params=('DETAILS',)):
+  """Gets information about owners attached to a file."""
+  path = 'projects/%s/branches/%s/code_owners/%s' % (
+      urllib.parse.quote(project, ''),
+      urllib.parse.quote(branch, ''),
+      urllib.parse.quote(path, ''))
+  q = ['resolve-all-users=%s' % json.dumps(resolve_all_users)]
+  if seed:
+    q.append('seed=%d' % seed)
+  if limit:
+    q.append('n=%d' % limit)
+  if o_params:
+    q.extend(['o=%s' % p for p in o_params])
+  if q:
+    path = '%s?%s' % (path, '&'.join(q))
+  return ReadHttpJsonResponse(CreateHttpConn(host, path))
 
 
 def GetReviewers(host, change):
@@ -892,6 +949,29 @@ def ResetReviewLabels(host, change, label, value='0', message=None,
                    'a new patchset was uploaded.' % change)
 
 
+def CreateChange(host, project, branch='main', subject='', params=()):
+  """
+  Creates a new change.
+
+  Args:
+    params: A list of additional ChangeInput specifiers, as documented here:
+        (e.g. ('is_private', 'true') to mark the change private.
+        https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#change-input
+
+  Returns:
+    ChangeInfo for the new change.
+  """
+  path = 'changes/'
+  body = {'project': project, 'branch': branch, 'subject': subject}
+  body.update({k: v for k, v in params})
+  for key in 'project', 'branch', 'subject':
+    if not body[key]:
+      raise GerritError(200, '%s is required' % key.title())
+
+  conn = CreateHttpConn(host, path, reqtype='POST', body=body)
+  return ReadHttpJsonResponse(conn, accept_statuses=[201])
+
+
 def CreateGerritBranch(host, project, branch, commit):
   """Creates a new branch from given project and commit
 
@@ -907,6 +987,39 @@ def CreateGerritBranch(host, project, branch, commit):
   if response:
     return response
   raise GerritError(200, 'Unable to create gerrit branch')
+
+
+def GetHead(host, project):
+  """Retrieves current HEAD of Gerrit project
+
+  https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#get-head
+
+  Returns:
+    A JSON object with 'ref' key.
+  """
+  path = 'projects/%s/HEAD' % (project)
+  conn = CreateHttpConn(host, path, reqtype='GET')
+  response = ReadHttpJsonResponse(conn, accept_statuses=[200])
+  if response:
+    return response
+  raise GerritError(200, 'Unable to update gerrit HEAD')
+
+
+def UpdateHead(host, project, branch):
+  """Updates Gerrit HEAD to point to branch
+
+  https://gerrit-review.googlesource.com/Documentation/rest-api-projects.html#set-head
+
+  Returns:
+    A JSON object with 'ref' key.
+  """
+  path = 'projects/%s/HEAD' % (project)
+  body = {'ref': branch}
+  conn = CreateHttpConn(host, path, reqtype='PUT', body=body)
+  response = ReadHttpJsonResponse(conn, accept_statuses=[200])
+  if response:
+    return response
+  raise GerritError(200, 'Unable to update gerrit HEAD')
 
 
 def GetGerritBranch(host, project, branch):

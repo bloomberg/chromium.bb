@@ -14,9 +14,8 @@ toolchain("clang") {
     command = "$c_command -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_c}} -c {{source}} -o {{output}}"
     depsformat = "gcc"
     description = "CC {{output}}"
-    outputs = [
-      "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o",
-    ]
+    outputs =
+        [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
   }
 
   tool("cxx") {
@@ -24,9 +23,8 @@ toolchain("clang") {
     command = "$cpp_command -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_cc}} -c {{source}} -o {{output}}"
     depsformat = "gcc"
     description = "CXX {{output}}"
-    outputs = [
-      "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o",
-    ]
+    outputs =
+        [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
   }
 
   tool("asm") {
@@ -34,9 +32,8 @@ toolchain("clang") {
     command = "$c_command -MMD -MF $depfile {{defines}} {{include_dirs}} {{asmflags}} -c {{source}} -o {{output}}"
     depsformat = "gcc"
     description = "ASM {{output}}"
-    outputs = [
-      "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o",
-    ]
+    outputs =
+        [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
   }
 
   tool("objc") {
@@ -45,9 +42,8 @@ toolchain("clang") {
     command = "$c_command -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objc}} -c {{source}} -o {{output}}"
     depsformat = "gcc"
     description = "OBJC {{output}}"
-    outputs = [
-      "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o",
-    ]
+    outputs =
+        [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
   }
 
   tool("objcxx") {
@@ -56,9 +52,8 @@ toolchain("clang") {
     command = "$cpp_command -MMD -MF $depfile {{defines}} {{include_dirs}} {{cflags}} {{cflags_objcc}} -c {{source}} -o {{output}}"
     depsformat = "gcc"
     description = "OBJCXX {{output}}"
-    outputs = [
-      "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o",
-    ]
+    outputs =
+        [ "{{source_out_dir}}/{{target_output_name}}.{{source_name_part}}.o" ]
   }
 
   tool("alink") {
@@ -74,9 +69,7 @@ toolchain("clang") {
     rspfile_content = "{{inputs_newline}}"
     command = "rm -f {{output}} && libtool -static {{arflags}} -o {{output}} -filelist $rspfile"
     description = "LIBTOOL-STATIC {{output}}"
-    outputs = [
-      "{{output_dir}}/{{target_output_name}}{{output_extension}}",
-    ]
+    outputs = [ "{{output_dir}}/{{target_output_name}}{{output_extension}}" ]
     default_output_dir = "{{target_out_dir}}"
     default_output_extension = ".a"
     output_prefix = "lib"
@@ -99,7 +92,7 @@ toolchain("clang") {
     temporary_tocname = dylib + ".tmp"
 
     does_reexport_command = "[ ! -e \"$dylib\" -o ! -e \"$tocname\" ] || otool -l \"$dylib\" | grep -q LC_REEXPORT_DYLIB"
-    link_command = "$cpp_command -shared -Wl,-install_name,@rpath/\"$soname\" {{ldflags}} -o \"$dylib\" -Wl,-filelist,\"$rspfile\" {{libs}} {{solibs}}"
+    link_command = "$cpp_command -shared -Wl,-install_name,@rpath/\"$soname\" {{ldflags}} -o \"$dylib\" -Wl,-filelist,\"$rspfile\" {{libs}} {{solibs}} {{frameworks}}"
     replace_command = "if ! cmp -s \"$temporary_tocname\" \"$tocname\"; then mv \"$temporary_tocname\" \"$tocname\""
     extract_toc_command = "{ otool -l \"$dylib\" | grep LC_ID_DYLIB -A 5; nm -gP \"$dylib\" | cut -f1-2 -d' ' | grep -v U\$\$; true; }"
     command = "if $does_reexport_command ; then $link_command && $extract_toc_command > \"$tocname\"; else $link_command && $extract_toc_command > \"$temporary_tocname\" && $replace_command; fi; fi"
@@ -142,13 +135,11 @@ toolchain("clang") {
     # These extra ldflags allow an executable to search for shared libraries in
     # the current working directory.
     additional_executable_ldflags = "-Wl,-rpath,@loader_path/."
-    command = "$cpp_command {{ldflags}} $additional_executable_ldflags -o \"$outfile\" -Wl,-filelist,\"$rspfile\" {{solibs}} {{libs}}"
+    command = "$cpp_command {{ldflags}} $additional_executable_ldflags -o \"$outfile\" -Wl,-filelist,\"$rspfile\" {{solibs}} {{libs}} {{frameworks}}"
     description = "LINK $outfile"
     default_output_dir = "{{root_out_dir}}"
     rspfile_content = "{{inputs_newline}}"
-    outputs = [
-      outfile,
-    ]
+    outputs = [ outfile ]
   }
 
   tool("stamp") {

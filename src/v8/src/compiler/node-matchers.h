@@ -8,10 +8,12 @@
 #include <cmath>
 #include <limits>
 
+#include "src/base/bounds.h"
 #include "src/base/compiler-specific.h"
 #include "src/codegen/external-reference.h"
 #include "src/common/globals.h"
 #include "src/compiler/common-operator.h"
+#include "src/compiler/machine-operator.h"
 #include "src/compiler/node.h"
 #include "src/compiler/operator.h"
 #include "src/numbers/double.h"
@@ -144,8 +146,8 @@ struct IntMatcher final : public ValueMatcher<T, kOpcode> {
     return this->HasResolvedValue() && this->ResolvedValue() == value;
   }
   bool IsInRange(const T& low, const T& high) const {
-    return this->HasResolvedValue() && low <= this->ResolvedValue() &&
-           this->ResolvedValue() <= high;
+    return this->HasResolvedValue() &&
+           base::IsInRange(this->ResolvedValue(), low, high);
   }
   bool IsMultipleOf(T n) const {
     return this->HasResolvedValue() && (this->ResolvedValue() % n) == 0;
@@ -168,6 +170,8 @@ using Int32Matcher = IntMatcher<int32_t, IrOpcode::kInt32Constant>;
 using Uint32Matcher = IntMatcher<uint32_t, IrOpcode::kInt32Constant>;
 using Int64Matcher = IntMatcher<int64_t, IrOpcode::kInt64Constant>;
 using Uint64Matcher = IntMatcher<uint64_t, IrOpcode::kInt64Constant>;
+using V128ConstMatcher =
+    ValueMatcher<S128ImmediateParameter, IrOpcode::kS128Const>;
 #if V8_HOST_ARCH_32_BIT
 using IntPtrMatcher = Int32Matcher;
 using UintPtrMatcher = Uint32Matcher;
@@ -234,7 +238,14 @@ struct HeapObjectMatcherImpl final
   }
 
   HeapObjectRef Ref(JSHeapBroker* broker) const {
-    return HeapObjectRef(broker, this->ResolvedValue());
+    // TODO(jgruber,chromium:1209798): Using kAssumeMemoryFence works around
+    // the fact that the graph stores handles (and not refs). The assumption is
+    // that any handle inserted into the graph is safe to read; but we don't
+    // preserve the reason why it is safe to read. Thus we must over-approximate
+    // here and assume the existence of a memory fence. In the future, we should
+    // consider having the graph store ObjectRefs or ObjectData pointer instead,
+    // which would make new ref construction here unnecessary.
+    return MakeRefAssumeMemoryFence(broker, this->ResolvedValue());
   }
 };
 
@@ -308,7 +319,7 @@ struct BinopMatcher : public NodeMatcher {
  protected:
   void SwapInputs() {
     std::swap(left_, right_);
-    // TODO(tebbi): This modification should notify the reducers using
+    // TODO(turbofan): This modification should notify the reducers using
     // BinopMatcher. Alternatively, all reducers (especially value numbering)
     // could ignore the ordering for commutative binops.
     node()->ReplaceInput(0, left().node());
@@ -731,6 +742,7 @@ struct BaseWithIndexAndDisplacementMatcher {
       Node* from = use.from();
       switch (from->opcode()) {
         case IrOpcode::kLoad:
+        case IrOpcode::kLoadImmutable:
         case IrOpcode::kPoisonedLoad:
         case IrOpcode::kProtectedLoad:
         case IrOpcode::kInt32Add:

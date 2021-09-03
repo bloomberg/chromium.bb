@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
+#include "base/thread_annotations.h"
 #include "url/origin.h"
 
 namespace storage {
@@ -30,7 +31,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaOverrideHandle {
   QuotaOverrideHandle(const QuotaOverrideHandle&) = delete;
 
   void OverrideQuotaForOrigin(url::Origin origin,
-                              base::Optional<int64_t> quota_size,
+                              absl::optional<int64_t> quota_size,
                               base::OnceClosure callback);
 
  private:
@@ -38,14 +39,18 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaOverrideHandle {
   void DidGetUniqueId();
   void DidGetOverrideHandleId(int id);
 
-  base::Optional<int> id_;
-  std::vector<base::OnceClosure> override_callback_queue_;
-  scoped_refptr<QuotaManagerProxy> quota_manager_;
-
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<QuotaOverrideHandle> weak_ptr_factory_{this};
+
+  const scoped_refptr<QuotaManagerProxy> quota_manager_proxy_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+  absl::optional<int> id_ GUARDED_BY_CONTEXT(sequence_checker_);
+  std::vector<base::OnceClosure> override_callback_queue_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  base::WeakPtrFactory<QuotaOverrideHandle> weak_ptr_factory_
+      GUARDED_BY_CONTEXT(sequence_checker_){this};
 };
 
 }  // namespace storage
 
-#endif  // STORAGE_BROWSER_QUOTA_QUOTA_OVERRIDE_HANDLE_
+#endif  // STORAGE_BROWSER_QUOTA_QUOTA_OVERRIDE_HANDLE_H_

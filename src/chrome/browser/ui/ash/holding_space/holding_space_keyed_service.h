@@ -9,15 +9,17 @@
 #include <vector>
 
 #include "ash/public/cpp/holding_space/holding_space_model.h"
-#include "base/scoped_observer.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_client_impl.h"
-#include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_delegate.h"
-#include "chrome/browser/ui/ash/holding_space/holding_space_thumbnail_loader.h"
+#include "chrome/browser/ui/ash/thumbnail_loader.h"
+#include "chromeos/crosapi/mojom/holding_space_service.mojom.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "components/account_id/account_id.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "url/gurl.h"
 
 class GURL;
@@ -36,11 +38,15 @@ class FileSystemURL;
 
 namespace ash {
 
+class HoldingSpaceKeyedServiceDelegate;
+
 // Browser context keyed service that:
 // *   Manages the temporary holding space per-profile data model.
 // *   Serves as an entry point to add holding space items from Chrome.
-class HoldingSpaceKeyedService : public KeyedService,
-                                 public ProfileManagerObserver {
+class HoldingSpaceKeyedService : public crosapi::mojom::HoldingSpaceService,
+                                 public KeyedService,
+                                 public ProfileManagerObserver,
+                                 public chromeos::PowerManagerClient::Observer {
  public:
   HoldingSpaceKeyedService(Profile* profile, const AccountId& account_id);
   HoldingSpaceKeyedService(const HoldingSpaceKeyedService& other) = delete;
@@ -51,12 +57,23 @@ class HoldingSpaceKeyedService : public KeyedService,
   // Registers profile preferences for holding space.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Adds a pinned file item identified by the provided file system URL.
-  void AddPinnedFile(const storage::FileSystemURL& file_system_url);
+  // Binds the holding space service to the specified pending `receiver`.
+  void BindReceiver(
+      mojo::PendingReceiver<crosapi::mojom::HoldingSpaceService> receiver);
 
-  // Removes a pinned file item identified by the provided file system URL.
-  // No-op if the file is not present in the holding space.
-  void RemovePinnedFile(const storage::FileSystemURL& file_system_url);
+  // crosapi::mojom::HoldingSpaceKeyedService:
+  void AddPrintedPdf(const base::FilePath& printed_pdf_path,
+                     bool from_incognito_profile) override;
+
+  // Adds multiple pinned file items identified by the provided file system
+  // URLs.
+  void AddPinnedFiles(
+      const std::vector<storage::FileSystemURL>& file_system_urls);
+
+  // Removes multiple pinned file items identified by the provided file system
+  // URLs. No-ops for files that are not present in the holding space.
+  void RemovePinnedFiles(
+      const std::vector<storage::FileSystemURL>& file_system_urls);
 
   // Returns whether the holding space contains a pinned file identified by a
   // file system URL.
@@ -66,13 +83,16 @@ class HoldingSpaceKeyedService : public KeyedService,
   // files system URLs as GURLs.
   std::vector<GURL> GetPinnedFiles() const;
 
-  // Adds a screenshot item backed by the provided absolute file path.
-  // The path is expected to be under a mount point path recognized by the file
-  // manager app (otherwise, the item will be dropped silently).
-  void AddScreenshot(const base::FilePath& screenshot_path);
+  // Adds a diagnostics log item backed by the provided absolute file path.
+  void AddDiagnosticsLog(const base::FilePath& diagnostics_log_path);
 
-  // Adds a download item backed by the provided absolute file path.
-  void AddDownload(const base::FilePath& download_path);
+  // Adds a download item of the specified `type` backed by the provided
+  // absolute file path.
+  // NOTE: `type` must refer to a download type.
+  // NOTE: If present, `progress` must be >= `0.f` and <= `1.f`.
+  void AddDownload(HoldingSpaceItem::Type type,
+                   const base::FilePath& download_path,
+                   const absl::optional<float>& progress = 1.f);
 
   // Adds a nearby share item backed by the provided absolute file path.
   void AddNearbyShare(const base::FilePath& nearby_share_path);
@@ -80,8 +100,24 @@ class HoldingSpaceKeyedService : public KeyedService,
   // Adds a screen recording item backed by the provided absolute file path.
   void AddScreenRecording(const base::FilePath& screen_recording_path);
 
+  // Adds a screenshot item backed by the provided absolute file path.
+  void AddScreenshot(const base::FilePath& screenshot_path);
+
   // Adds the specified `item` to the holding space model.
   void AddItem(std::unique_ptr<HoldingSpaceItem> item);
+
+  // Adds multiple `items` to the holding space model.
+  void AddItems(std::vector<std::unique_ptr<HoldingSpaceItem>> items);
+
+  // Adds an item of the specified `type` backed by the provided absolute
+  // `file_path` to the holding space model.
+  // NOTE: If present, `progress` must be >= `0.f` and <= `1.f`.
+  void AddItemOfType(HoldingSpaceItem::Type type,
+                     const base::FilePath& file_path,
+                     const absl::optional<float>& progress = 1.f);
+
+  // Returns the `profile_` associated with this service.
+  Profile* profile() { return profile_; }
 
   const HoldingSpaceClient* client_for_testing() const {
     return &holding_space_client_;
@@ -91,9 +127,7 @@ class HoldingSpaceKeyedService : public KeyedService,
     return &holding_space_model_;
   }
 
-  HoldingSpaceThumbnailLoader* thumbnail_loader_for_testing() {
-    return &thumbnail_loader_;
-  }
+  ThumbnailLoader* thumbnail_loader_for_testing() { return &thumbnail_loader_; }
 
  private:
   // KeyedService:
@@ -102,11 +136,28 @@ class HoldingSpaceKeyedService : public KeyedService,
   // ProfileManagerObserver:
   void OnProfileAdded(Profile* profile) override;
 
+  // PowerManagerClient::Observer
+  void SuspendImminent(power_manager::SuspendImminent::Reason reason) override;
+  void SuspendDone(base::TimeDelta sleep_duration) override;
+
   // Invoked when the associated profile is ready.
   void OnProfileReady();
 
+  // Creates and initializes holding space delegates. Called when the associated
+  // profile finishes initialization, or when device suspend ends (the delegates
+  // are shutdown during suspend).
+  void InitializeDelegates();
+
+  // Shuts down and destroys existing holding space delegates. Called on
+  // profile shutdown, or when device suspend starts.
+  void ShutdownDelegates();
+
   // Invoked when holding space persistence has been restored.
   void OnPersistenceRestored();
+
+  // Pin a drive file for offline access.
+  void MakeDriveItemAvailableOffline(
+      const storage::FileSystemURL& file_system_url);
 
   Profile* const profile_;
   const AccountId account_id_;
@@ -114,14 +165,18 @@ class HoldingSpaceKeyedService : public KeyedService,
   HoldingSpaceClientImpl holding_space_client_;
   HoldingSpaceModel holding_space_model_;
 
-  HoldingSpaceThumbnailLoader thumbnail_loader_;
+  ThumbnailLoader thumbnail_loader_;
 
   // The `HoldingSpaceKeyedService` owns a collection of `delegates_` which are
   // each tasked with an independent area of responsibility on behalf of the
   // service. They operate autonomously of one another.
   std::vector<std::unique_ptr<HoldingSpaceKeyedServiceDelegate>> delegates_;
 
-  ScopedObserver<ProfileManager, ProfileManagerObserver>
+  // This class supports any number of connections. This allows the client to
+  // have multiple, potentially thread-affine, remotes.
+  mojo::ReceiverSet<crosapi::mojom::HoldingSpaceService> receivers_;
+
+  base::ScopedObservation<ProfileManager, ProfileManagerObserver>
       profile_manager_observer_{this};
 
   base::WeakPtrFactory<HoldingSpaceKeyedService> weak_factory_{this};

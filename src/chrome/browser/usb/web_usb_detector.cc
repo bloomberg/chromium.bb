@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
@@ -30,7 +29,8 @@
 #include "content/public/browser/web_contents.h"
 #include "device/base/features.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -103,7 +103,7 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
         landing_page_(landing_page),
         notification_id_(notification_id),
         disposition_(WEBUSB_NOTIFICATION_CLOSED),
-        browser_tab_strip_tracker_(base::in_place_t(), this, nullptr) {
+        browser_tab_strip_tracker_(absl::in_place, this, nullptr) {
     browser_tab_strip_tracker_->Init();
   }
 
@@ -124,8 +124,8 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
     }
   }
 
-  void Click(const base::Optional<int>& button_index,
-             const base::Optional<base::string16>& reply) override {
+  void Click(const absl::optional<int>& button_index,
+             const absl::optional<std::u16string>& reply) override {
     disposition_ = WEBUSB_NOTIFICATION_CLOSED_CLICKED;
 
     // If the URL is already open, activate that tab.
@@ -170,7 +170,7 @@ class WebUsbNotificationDelegate : public TabStripModelObserver,
   GURL landing_page_;
   std::string notification_id_;
   WebUsbNotificationClosed disposition_;
-  base::Optional<BrowserTabStripTracker> browser_tab_strip_tracker_;
+  absl::optional<BrowserTabStripTracker> browser_tab_strip_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbNotificationDelegate);
 };
@@ -210,13 +210,13 @@ void WebUsbDetector::OnDeviceAdded(
   if (!device_info->product_name || !device_info->webusb_landing_page)
     return;
 
-  const base::string16& product_name = *device_info->product_name;
+  const std::u16string& product_name = *device_info->product_name;
   if (product_name.empty())
     return;
 
   const GURL& landing_page = *device_info->webusb_landing_page;
   if (!landing_page.is_valid() ||
-      !blink::network_utils::IsOriginSecure(landing_page))
+      !network::IsUrlPotentiallyTrustworthy(landing_page))
     return;
 
   if (base::StartsWith(GetActiveTabURL().spec(), landing_page.spec(),
@@ -240,7 +240,7 @@ void WebUsbDetector::OnDeviceAdded(
               landing_page, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC)),
       gfx::Image(gfx::CreateVectorIcon(vector_icons::kUsbIcon, 64,
                                        gfx::kChromeIconGrey)),
-      base::string16(), GURL(),
+      std::u16string(), GURL(),
       message_center::NotifierId(message_center::NotifierType::SYSTEM_COMPONENT,
                                  kNotifierWebUsb),
       rich_notification_data,

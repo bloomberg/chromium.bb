@@ -4,6 +4,7 @@
 
 #include "extensions/shell/browser/shell_extensions_browser_client.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -30,7 +31,6 @@
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
-#include "extensions/shell/browser/shell_extensions_browser_api_provider.h"
 #include "extensions/shell/browser/shell_navigation_ui_data.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
@@ -51,7 +51,6 @@ ShellExtensionsBrowserClient::ShellExtensionsBrowserClient()
   SetCurrentChannel(version_info::Channel::UNKNOWN);
 
   AddAPIProvider(std::make_unique<CoreExtensionsBrowserAPIProvider>());
-  AddAPIProvider(std::make_unique<ShellExtensionsBrowserAPIProvider>());
 }
 
 ShellExtensionsBrowserClient::~ShellExtensionsBrowserClient() {
@@ -139,8 +138,8 @@ void ShellExtensionsBrowserClient::LoadResourceFromResourceBundle(
 }
 
 bool ShellExtensionsBrowserClient::AllowCrossRendererResourceLoad(
-    const GURL& url,
-    blink::mojom::ResourceType resource_type,
+    const network::ResourceRequest& request,
+    network::mojom::RequestDestination destination,
     ui::PageTransition page_transition,
     int child_id,
     bool is_incognito,
@@ -149,7 +148,7 @@ bool ShellExtensionsBrowserClient::AllowCrossRendererResourceLoad(
     const ProcessMap& process_map) {
   bool allowed = false;
   if (url_request_util::AllowCrossRendererResourceLoad(
-          url, resource_type, page_transition, child_id, is_incognito,
+          request, destination, page_transition, child_id, is_incognito,
           extension, extensions, process_map, &allowed)) {
     return allowed;
   }
@@ -246,7 +245,7 @@ void ShellExtensionsBrowserClient::BroadcastEventToRenderers(
   }
 
   std::unique_ptr<Event> event(
-      new Event(histogram_value, event_name, std::move(args)));
+      new Event(histogram_value, event_name, args->TakeList()));
   EventRouter::Get(browser_context_)->BroadcastEvent(std::move(event));
 }
 
@@ -276,7 +275,7 @@ ShellExtensionsBrowserClient::GetExtensionWebContentsObserver(
 
 KioskDelegate* ShellExtensionsBrowserClient::GetKioskDelegate() {
   if (!kiosk_delegate_)
-    kiosk_delegate_.reset(new ShellKioskDelegate());
+    kiosk_delegate_ = std::make_unique<ShellKioskDelegate>();
   return kiosk_delegate_.get();
 }
 

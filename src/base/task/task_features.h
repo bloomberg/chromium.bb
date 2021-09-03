@@ -13,12 +13,6 @@ namespace base {
 
 struct Feature;
 
-extern const BASE_EXPORT Feature kAllTasksUserBlocking;
-
-// Under this feature, unused threads in ThreadGroup are only detached
-// if the total number of threads in the pool is above the initial capacity.
-extern const BASE_EXPORT Feature kNoDetachBelowInitialCapacity;
-
 // Under this feature, workers blocked with MayBlock are replaced immediately
 // instead of waiting for a threshold in the foreground thread group.
 extern const BASE_EXPORT Feature kMayBlockWithoutDelay;
@@ -44,6 +38,9 @@ enum class WakeUpStrategy {
   // Each thread signals at most 2 threads, either when scheduling new
   // work or picking up pending work.
   kExponentialWakeUps,
+  // Each thread signals as many threads as necessary, either when scheduling
+  // new work or picking up pending work.
+  kGreedyWakeUps,
 };
 
 // Under this feature, a given WakeUpStrategy param is used.
@@ -58,10 +55,13 @@ extern const BASE_EXPORT base::FeatureParam<WakeUpStrategy>
 #endif
 
 #if HAS_NATIVE_THREAD_POOL()
-// Under this feature, ThreadPoolImpl will use a ThreadGroup backed by a
-// native thread pool implementation. The Windows Thread Pool API and
+// Under this feature, ThreadPoolImpl will use a foreground ThreadGroup backed
+// by a native thread pool implementation. The Windows Thread Pool API and
 // libdispatch are used on Windows and macOS/iOS respectively.
 extern const BASE_EXPORT Feature kUseNativeThreadPool;
+// Under this feature, ThreadPoolImpl will use a background ThreadGroup backed
+// by a native thread pool implementation.
+extern const BASE_EXPORT Feature kUseBackgroundNativeThreadPool;
 #endif
 
 // Whether threads in the ThreadPool should be reclaimed after being idle for 5

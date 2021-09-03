@@ -26,6 +26,7 @@
 #include "net/base/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
@@ -123,3 +124,6 @@ bool AppInfoHeaderPanel::CanShowAppInWebStore() const {
   return app_->from_webstore() && !app_->was_installed_by_default() &&
       !app_->is_shared_module();
 }
+
+BEGIN_METADATA(AppInfoHeaderPanel, AppInfoPanel)
+END_METADATA

@@ -28,6 +28,7 @@ namespace blink {
 
 class LocalFrame;
 class MediaStreamAudioProcessor;
+class PeerConnectionDependencyFactory;
 
 // Represents a local source of audio data that is routed through the WebRTC
 // audio pipeline for post-processing (e.g., for echo cancellation during a
@@ -43,10 +44,11 @@ class MODULES_EXPORT ProcessedLocalAudioSource final
   // audio session ID are derived from |device_info|. |factory| must outlive
   // this instance.
   ProcessedLocalAudioSource(
-      LocalFrame* frame,
+      LocalFrame& frame,
       const MediaStreamDevice& device,
       bool disable_local_echo,
       const AudioProcessingProperties& audio_processing_properties,
+      int num_requested_channels,
       ConstraintsOnceCallback started_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
@@ -67,7 +69,7 @@ class MODULES_EXPORT ProcessedLocalAudioSource final
     return audio_processing_properties_;
   }
 
-  base::Optional<blink::AudioProcessingProperties>
+  absl::optional<blink::AudioProcessingProperties>
   GetAudioProcessingProperties() const final;
 
   // The following accessors are valid after the source is started (when the
@@ -75,6 +77,11 @@ class MODULES_EXPORT ProcessedLocalAudioSource final
   scoped_refptr<webrtc::AudioProcessorInterface> GetAudioProcessor() const;
 
   bool HasAudioProcessing() const;
+
+  // Instructs the Audio Processing Module (APM) to reduce its complexity when
+  // |muted| is true. This mode is triggered when all audio tracks are disabled.
+  // The default APM complexity mode is restored when |muted| is set to false.
+  void SetOutputWillBeMuted(bool muted);
 
   const scoped_refptr<blink::MediaStreamAudioLevelCalculator::Level>&
   audio_level() const {
@@ -101,7 +108,8 @@ class MODULES_EXPORT ProcessedLocalAudioSource final
                base::TimeTicks audio_capture_time,
                double volume,
                bool key_pressed) override;
-  void OnCaptureError(const std::string& message) override;
+  void OnCaptureError(media::AudioCapturerSource::ErrorCode code,
+                      const std::string& message) override;
   void OnCaptureMuted(bool is_muted) override;
   void OnCaptureProcessorCreated(
       media::AudioProcessorControls* controls) override;
@@ -128,8 +136,10 @@ class MODULES_EXPORT ProcessedLocalAudioSource final
   // TODO(crbug.com/704136): Consider moving ProcessedLocalAudioSource to
   // Oilpan and use Member<> here.
   WeakPersistent<LocalFrame> consumer_frame_;
+  WeakPersistent<PeerConnectionDependencyFactory> dependency_factory_;
 
   blink::AudioProcessingProperties audio_processing_properties_;
+  int num_requested_channels_;
 
   // Callback that's called when the audio source has been initialized.
   ConstraintsOnceCallback started_callback_;

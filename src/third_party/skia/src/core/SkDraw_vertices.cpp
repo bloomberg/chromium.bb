@@ -16,6 +16,7 @@
 #include "src/core/SkRasterClip.h"
 #include "src/core/SkRasterPipeline.h"
 #include "src/core/SkScan.h"
+#include "src/core/SkVM.h"
 #include "src/core/SkVertState.h"
 #include "src/core/SkVerticesPriv.h"
 #include "src/shaders/SkComposeShader.h"
@@ -147,6 +148,14 @@ protected:
         return true;
     }
 
+    skvm::Color onProgram(skvm::Builder*,
+                          skvm::Coord, skvm::Coord, skvm::Color,
+                          const SkMatrixProvider&, const SkMatrix*, const SkColorInfo&,
+                          skvm::Uniforms*, SkArenaAlloc*) const override {
+        // TODO?
+        return {};
+    }
+
 private:
     bool isOpaque() const override { return fIsOpaque; }
     // For serialization.  This will never be called.
@@ -210,7 +219,7 @@ static SkPMColor4f* convert_colors(const SkColor src[], int count, SkColorSpace*
                                             kUnpremul_SkAlphaType, SkColorSpace::MakeSRGB());
     SkImageInfo dstInfo = SkImageInfo::Make(count, 1, kRGBA_F32_SkColorType,
                                             kPremul_SkAlphaType, sk_ref_sp(deviceCS));
-    SkConvertPixels(dstInfo, dst, 0, srcInfo, src, 0);
+    SkAssertResult(SkConvertPixels(dstInfo, dst, 0, srcInfo, src, 0));
     return dst;
 }
 
@@ -259,7 +268,6 @@ void SkDraw::draw_fixed_vertices(const SkVertices* vertices, SkBlendMode bmode,
                                  const SkPoint dev2[], const SkPoint3 dev3[],
                                  SkArenaAlloc* outerAlloc) const {
     SkVerticesPriv info(vertices->priv());
-    SkASSERT(!info.hasCustomData());
 
     const int vertexCount = info.vertexCount();
     const int indexCount = info.indexCount();
@@ -407,13 +415,6 @@ void SkDraw::draw_fixed_vertices(const SkVertices* vertices, SkBlendMode bmode,
     }
 }
 
-void SkDraw::draw_vdata_vertices(const SkVertices* vt, const SkPaint& paint,
-                                 const SkMatrix& ctmInv,
-                                 const SkPoint dev2[], const SkPoint3 dev3[],
-                                 SkArenaAlloc* outerAlloc) const {
-    // TODO: Handle custom attributes
-}
-
 void SkDraw::drawVertices(const SkVertices* vertices, SkBlendMode bmode,
                           const SkPaint& paint) const {
     SkVerticesPriv info(vertices->priv());
@@ -458,9 +459,5 @@ void SkDraw::drawVertices(const SkVertices* vertices, SkBlendMode bmode,
         }
     }
 
-    if (!info.hasCustomData()) {
-        this->draw_fixed_vertices(vertices, bmode, paint, ctmInv, dev2, dev3, &outerAlloc);
-    } else {
-        this->draw_vdata_vertices(vertices, paint, ctmInv, dev2, dev3, &outerAlloc);
-    }
+    this->draw_fixed_vertices(vertices, bmode, paint, ctmInv, dev2, dev3, &outerAlloc);
 }

@@ -19,10 +19,10 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/task_runner_util.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/internal/identity_manager/account_info_util.h"
@@ -32,7 +32,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_array.h"
-#include "components/signin/core/browser/android/jni_headers/AccountTrackerService_jni.h"
+#include "components/signin/public/android/jni_headers/AccountTrackerService_jni.h"
 #endif
 
 namespace {
@@ -104,13 +104,16 @@ AccountTrackerService::AccountTrackerService() {
 #if defined(OS_ANDROID)
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> java_ref =
-      Java_AccountTrackerService_create(env, reinterpret_cast<intptr_t>(this));
+      signin::Java_AccountTrackerService_Constructor(
+          env, reinterpret_cast<intptr_t>(this));
   java_ref_.Reset(env, java_ref.obj());
 #endif
 }
 
 AccountTrackerService::~AccountTrackerService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pref_service_ = nullptr;
+  accounts_.clear();
 }
 
 // static
@@ -135,11 +138,6 @@ void AccountTrackerService::Initialize(PrefService* pref_service,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     LoadAccountImagesFromDisk();
   }
-}
-
-void AccountTrackerService::Shutdown() {
-  pref_service_ = nullptr;
-  accounts_.clear();
 }
 
 std::vector<AccountInfo> AccountTrackerService::GetAccounts() const {
@@ -184,15 +182,6 @@ AccountInfo AccountTrackerService::FindAccountInfoByEmail(
   }
 
   return AccountInfo();
-}
-
-// static
-bool AccountTrackerService::IsMigrationSupported() {
-#if defined(OS_CHROMEOS)
-  return base::FeatureList::IsEnabled(switches::kAccountIdMigration);
-#else
-  return true;
-#endif
 }
 
 AccountTrackerService::AccountIdMigrationState
@@ -249,7 +238,7 @@ void AccountTrackerService::SetAccountInfoFromUserInfo(
   DCHECK(base::Contains(accounts_, account_id));
   AccountInfo& account_info = accounts_[account_id];
 
-  base::Optional<AccountInfo> maybe_account_info =
+  absl::optional<AccountInfo> maybe_account_info =
       AccountInfoFromUserInfo(*user_info);
   if (maybe_account_info) {
     // Should we DCHECK that the account stored in |accounts_| has the same
@@ -321,6 +310,13 @@ void AccountTrackerService::CommitPendingAccountChanges() {
   pref_service_->CommitPendingWrite();
 }
 
+void AccountTrackerService::ResetForTesting() {
+  PrefService* prefs = pref_service_;
+  pref_service_ = nullptr;
+  accounts_.clear();
+  Initialize(prefs, base::FilePath());
+}
+
 void AccountTrackerService::MigrateToGaiaId() {
   DCHECK_EQ(GetMigrationState(), MIGRATION_IN_PROGRESS);
 
@@ -366,10 +362,7 @@ void AccountTrackerService::MigrateToGaiaId() {
   }
 }
 
-bool AccountTrackerService::IsMigrationDone() const {
-  if (!IsMigrationSupported())
-    return false;
-
+bool AccountTrackerService::AreAllAccountsMigrated() const {
   for (const auto& pair : accounts_) {
     if (pair.first.ToString() != pair.second.gaia)
       return false;
@@ -380,9 +373,21 @@ bool AccountTrackerService::IsMigrationDone() const {
 
 AccountTrackerService::AccountIdMigrationState
 AccountTrackerService::ComputeNewMigrationState() const {
-  // If migration is not supported, skip migration.
-  if (!IsMigrationSupported())
+  if (accounts_.empty()) {
+    // If there are no accounts in the account tracker service, then we expect
+    // that this is profile that was never signed in to Chrome. Consider the
+    // migration done as there are no accounts to migrate..
+    return MIGRATION_DONE;
+  }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Migration on ChromeOS is not started by default due to the following risks:
+  // * a lot more data than on desktop is keyed by the account id
+  // * bugs in the migration flow can lead to user not being able to sign in
+  //   to their device which makes the device unusable.
+  if (!base::FeatureList::IsEnabled(switches::kAccountIdMigration))
     return MIGRATION_NOT_STARTED;
+#endif
 
   bool migration_required = false;
   for (const auto& pair : accounts_) {
@@ -399,7 +404,7 @@ AccountTrackerService::ComputeNewMigrationState() const {
 }
 
 void AccountTrackerService::SetMigrationState(AccountIdMigrationState state) {
-  DCHECK(state != MIGRATION_DONE || IsMigrationDone());
+  DCHECK(state != MIGRATION_DONE || AreAllAccountsMigrated());
   pref_service_->SetInteger(prefs::kAccountIdMigrationState, state);
 }
 
@@ -437,9 +442,8 @@ void AccountTrackerService::LoadAccountImagesFromDisk() {
     return;
   for (const auto& pair : accounts_) {
     const CoreAccountId& account_id = pair.second.account_id;
-    PostTaskAndReplyWithResult(
-        image_storage_task_runner_.get(), FROM_HERE,
-        base::BindOnce(&ReadImage, GetImagePathFor(account_id)),
+    image_storage_task_runner_->PostTaskAndReplyWithResult(
+        FROM_HERE, base::BindOnce(&ReadImage, GetImagePathFor(account_id)),
         base::BindOnce(&AccountTrackerService::OnAccountImageLoaded,
                        weak_factory_.GetWeakPtr(), account_id));
   }
@@ -452,8 +456,8 @@ void AccountTrackerService::SaveAccountImageToDisk(
   if (!image_storage_task_runner_)
     return;
 
-  PostTaskAndReplyWithResult(
-      image_storage_task_runner_.get(), FROM_HERE,
+  image_storage_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&SaveImage, image.As1xPNGBytes(),
                      GetImagePathFor(account_id)),
       base::BindOnce(&AccountTrackerService::OnAccountImageUpdated,
@@ -554,24 +558,16 @@ void AccountTrackerService::LoadFromPrefs() {
     RemoveAccountImageFromDisk(account_id);
   }
 
-  if (IsMigrationSupported()) {
-    if (GetMigrationState() != MIGRATION_DONE) {
-      const AccountIdMigrationState new_state = ComputeNewMigrationState();
-      SetMigrationState(new_state);
+  if (GetMigrationState() != MIGRATION_DONE) {
+    const AccountIdMigrationState new_state = ComputeNewMigrationState();
+    SetMigrationState(new_state);
 
-      if (new_state == MIGRATION_IN_PROGRESS) {
-        MigrateToGaiaId();
-      }
+    if (new_state == MIGRATION_IN_PROGRESS) {
+      MigrateToGaiaId();
     }
-  } else {
-    // ChromeOS running on Linux and Linux share the preferences, so the
-    // migration may have been performed on Linux. Reset the migration
-    // state to ensure that the same code path is used whether ChromeOS
-    // is running on Linux on a dev build or on real ChromeOS device.
-    SetMigrationState(MIGRATION_NOT_STARTED);
   }
 
-  DCHECK(GetMigrationState() != MIGRATION_DONE || IsMigrationDone());
+  DCHECK(GetMigrationState() != MIGRATION_DONE || AreAllAccountsMigrated());
   UMA_HISTOGRAM_ENUMERATION("Signin.AccountTracker.GaiaIdMigrationState",
                             GetMigrationState(), NUM_MIGRATION_STATES);
 
@@ -725,30 +721,19 @@ void AccountTrackerService::SeedAccountsInfo(
 
   DVLOG(1) << "AccountTrackerService.SeedAccountsInfo: "
            << " number of accounts " << gaia_ids.size();
+
+  std::vector<CoreAccountId> curr_ids;
+  for (const auto& gaia_id : gaia_ids) {
+    curr_ids.push_back(CoreAccountId::FromGaiaId(gaia_id));
+  }
+  // Remove the accounts deleted from device
+  for (const AccountInfo& info : GetAccounts()) {
+    if (!base::Contains(curr_ids, info.account_id)) {
+      RemoveAccount(info.account_id);
+    }
+  }
   for (size_t i = 0; i < gaia_ids.size(); ++i) {
     SeedAccountInfo(gaia_ids[i], account_names[i]);
   }
-}
-
-jboolean AccountTrackerService::AreAccountsSeeded(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobjectArray>& accountNames) const {
-  std::vector<std::string> account_names;
-  base::android::AppendJavaStringArrayToStringVector(env, accountNames,
-                                                     &account_names);
-
-  const bool migrated =
-      GetMigrationState() == AccountIdMigrationState::MIGRATION_DONE;
-
-  for (const auto& account_name : account_names) {
-    AccountInfo info = FindAccountInfoByEmail(account_name);
-    if (info.account_id.empty()) {
-      return false;
-    }
-    if (migrated && info.gaia.empty()) {
-      return false;
-    }
-  }
-  return true;
 }
 #endif

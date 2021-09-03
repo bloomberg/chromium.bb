@@ -7,12 +7,13 @@
 
 #include <windows.h>
 
+#include <string>
+
 #include "base/component_export.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/fido_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/microsoft_webauthn/webauthn.h"
 
 namespace device {
@@ -21,12 +22,12 @@ enum class GetAssertionStatus;
 enum class MakeCredentialStatus;
 
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<AuthenticatorMakeCredentialResponse>
+absl::optional<AuthenticatorMakeCredentialResponse>
 ToAuthenticatorMakeCredentialResponse(
     const WEBAUTHN_CREDENTIAL_ATTESTATION& credential_attestation);
 
 COMPONENT_EXPORT(DEVICE_FIDO)
-base::Optional<AuthenticatorGetAssertionResponse>
+absl::optional<AuthenticatorGetAssertionResponse>
 ToAuthenticatorGetAssertionResponse(
     const WEBAUTHN_ASSERTION& credential_attestation,
     const std::vector<PublicKeyCredentialDescriptor>& allow_list);
@@ -58,7 +59,7 @@ std::vector<WEBAUTHN_CREDENTIAL_EX> ToWinCredentialExVector(
 // WinCtapDeviceResponseCodeTo{MakeCredential,GetAssertion}Status().
 COMPONENT_EXPORT(DEVICE_FIDO)
 CtapDeviceResponseCode WinErrorNameToCtapDeviceResponseCode(
-    const base::string16& error_name);
+    const std::u16string& error_name);
 
 // WinCtapDeviceResponseCodeToMakeCredentialStatus returns the
 // MakeCredentialStatus that corresponds to a synthetic CtapDeviceResponseCode

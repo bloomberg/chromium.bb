@@ -10,7 +10,7 @@
 namespace ui {
 
 DialogModel::Builder::Builder(std::unique_ptr<DialogModelDelegate> delegate)
-    : model_(std::make_unique<DialogModel>(util::PassKey<Builder>(),
+    : model_(std::make_unique<DialogModel>(base::PassKey<Builder>(),
                                            std::move(delegate))) {}
 
 DialogModel::Builder::Builder() : Builder(nullptr) {}
@@ -26,7 +26,7 @@ std::unique_ptr<DialogModel> DialogModel::Builder::Build() {
 
 DialogModel::Builder& DialogModel::Builder::AddOkButton(
     base::OnceClosure callback,
-    base::string16 label,
+    std::u16string label,
     const DialogModelButton::Params& params) {
   DCHECK(!model_->accept_callback_);
   model_->accept_callback_ = std::move(callback);
@@ -42,7 +42,7 @@ DialogModel::Builder& DialogModel::Builder::AddOkButton(
 
 DialogModel::Builder& DialogModel::Builder::AddCancelButton(
     base::OnceClosure callback,
-    base::string16 label,
+    std::u16string label,
     const DialogModelButton::Params& params) {
   DCHECK(!model_->cancel_callback_);
   model_->cancel_callback_ = std::move(callback);
@@ -58,7 +58,7 @@ DialogModel::Builder& DialogModel::Builder::AddCancelButton(
 
 DialogModel::Builder& DialogModel::Builder::AddDialogExtraButton(
     base::RepeatingCallback<void(const Event&)> callback,
-    base::string16 label,
+    std::u16string label,
     const DialogModelButton::Params& params) {
   model_->extra_button_.emplace(model_->GetPassKey(), model_.get(),
                                 std::move(callback), std::move(label), params);
@@ -75,7 +75,7 @@ DialogModel::Builder& DialogModel::Builder::SetInitiallyFocusedField(
   return *this;
 }
 
-DialogModel::DialogModel(util::PassKey<Builder>,
+DialogModel::DialogModel(base::PassKey<Builder>,
                          std::unique_ptr<DialogModelDelegate> delegate)
     : delegate_(std::move(delegate)) {
   if (delegate_)
@@ -88,20 +88,22 @@ void DialogModel::AddBodyText(const DialogModelLabel& label) {
   AddField(std::make_unique<DialogModelBodyText>(GetPassKey(), this, label));
 }
 
-void DialogModel::AddCheckbox(int unique_id, const DialogModelLabel& label) {
+void DialogModel::AddCheckbox(int unique_id,
+                              const DialogModelLabel& label,
+                              const DialogModelCheckbox::Params& params) {
   AddField(std::make_unique<DialogModelCheckbox>(GetPassKey(), this, unique_id,
-                                                 label));
+                                                 label, params));
 }
 
-void DialogModel::AddCombobox(base::string16 label,
+void DialogModel::AddCombobox(std::u16string label,
                               std::unique_ptr<ui::ComboboxModel> combobox_model,
                               const DialogModelCombobox::Params& params) {
   AddField(std::make_unique<DialogModelCombobox>(
       GetPassKey(), this, std::move(label), std::move(combobox_model), params));
 }
 
-void DialogModel::AddTextfield(base::string16 label,
-                               base::string16 text,
+void DialogModel::AddTextfield(std::u16string label,
+                               std::u16string text,
                                const DialogModelTextfield::Params& params) {
   AddField(std::make_unique<DialogModelTextfield>(
       GetPassKey(), this, std::move(label), std::move(text), params));
@@ -118,7 +120,7 @@ DialogModelField* DialogModel::GetFieldByUniqueId(int unique_id) {
     if (field->unique_id_ == unique_id)
       return field.get();
   }
-  NOTREACHED();
+  NOTREACHED() << "No field with unique_id: " << unique_id;
   return nullptr;
 }
 
@@ -134,22 +136,22 @@ DialogModelTextfield* DialogModel::GetTextfieldByUniqueId(int unique_id) {
   return GetFieldByUniqueId(unique_id)->AsTextfield();
 }
 
-void DialogModel::OnDialogAccepted(util::PassKey<DialogModelHost>) {
+void DialogModel::OnDialogAccepted(base::PassKey<DialogModelHost>) {
   if (accept_callback_)
     std::move(accept_callback_).Run();
 }
 
-void DialogModel::OnDialogCancelled(util::PassKey<DialogModelHost>) {
+void DialogModel::OnDialogCancelled(base::PassKey<DialogModelHost>) {
   if (cancel_callback_)
     std::move(cancel_callback_).Run();
 }
 
-void DialogModel::OnDialogClosed(util::PassKey<DialogModelHost>) {
+void DialogModel::OnDialogClosed(base::PassKey<DialogModelHost>) {
   if (close_callback_)
     std::move(close_callback_).Run();
 }
 
-void DialogModel::OnWindowClosing(util::PassKey<DialogModelHost>) {
+void DialogModel::OnWindowClosing(base::PassKey<DialogModelHost>) {
   if (window_closing_callback_)
     std::move(window_closing_callback_).Run();
 }

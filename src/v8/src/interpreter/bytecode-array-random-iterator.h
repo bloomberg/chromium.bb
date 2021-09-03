@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "src/interpreter/bytecode-array-accessor.h"
+#include "src/interpreter/bytecode-array-iterator.h"
 #include "src/zone/zone-containers.h"
 #include "src/zone/zone.h"
 
@@ -16,11 +16,8 @@ namespace internal {
 namespace interpreter {
 
 class V8_EXPORT_PRIVATE BytecodeArrayRandomIterator final
-    : public BytecodeArrayAccessor {
+    : public BytecodeArrayIterator {
  public:
-  BytecodeArrayRandomIterator(
-      std::unique_ptr<AbstractBytecodeArray> bytecode_array, Zone* zone);
-
   BytecodeArrayRandomIterator(Handle<BytecodeArray> bytecode_array, Zone* zone);
 
   BytecodeArrayRandomIterator(const BytecodeArrayRandomIterator&) = delete;

@@ -6,12 +6,8 @@
 # ask for informal reviews.
 
 # display / resources / quads / passes
-danakj@chromium.org
 vmpstr@chromium.org
 weiliangc@chromium.org
-
-# CopyOutputRequests/Results and FrameSinkVideoCapture
-miu@chromium.org
 
 # renderers (GL/Skia/Software)
 weiliangc@chromium.org
@@ -21,6 +17,10 @@ penghuang@chromium.org
 backer@chromium.org
 vasilyt@chromium.org
 
+# Skia renderer
+per-file skia_*=michaelludwig@google.com
+per-file skia_*=bsalomon@google.com
+
 # display_embedder / ozone
 rjkroege@chromium.org
 sadrul@chromium.org
@@ -29,8 +29,10 @@ sadrul@chromium.org
 kylechar@chromium.org
 jonross@chromium.org
 
+# frame sink video capturer
+per-file client_frame_sink_video_capturer*=ilnik@chromium.org
+
 # gpu
-danakj@chromium.org
 sadrul@chromium.org
 kylechar@chromium.org
 
@@ -43,17 +45,17 @@ flackr@chromium.org
 
 # overlays
 ccameron@chromium.org
-dcastagna@chromium.org
-khushalsagar@chromium.org
+vasilyt@chromium.org
 magchen@chromium.org
+petermcneeley@chromium.org
+
+# viz debugger
+petermcneeley@chromium.org
+sadrul@chromium.org
 
 # scheduling / begin frames
 sunnyps@chromium.org
 
 # general
-danakj@chromium.org
 vmpstr@chromium.org
 kylechar@chromium.org
-
-# TEAM: graphics-dev@chromium.org
-# COMPONENT: Internals>Compositing

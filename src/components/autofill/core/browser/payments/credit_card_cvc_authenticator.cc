@@ -4,7 +4,9 @@
 
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 
-#include "base/strings/string16.h"
+#include <memory>
+#include <string>
+
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -28,11 +30,13 @@ void CreditCardCVCAuthenticator::Authenticate(
     PersonalDataManager* personal_data_manager,
     const base::TimeTicks& form_parsed_timestamp) {
   requester_ = requester;
-  if (!card)
-    return OnFullCardRequestFailed();
-  full_card_request_.reset(new payments::FullCardRequest(
+  if (!card) {
+    return OnFullCardRequestFailed(
+        payments::FullCardRequest::FailureType::GENERIC_FAILURE);
+  }
+  full_card_request_ = std::make_unique<payments::FullCardRequest>(
       client_, client_->GetPaymentsClient(), personal_data_manager,
-      form_parsed_timestamp));
+      form_parsed_timestamp);
   full_card_request_->GetFullCard(*card, AutofillClient::UNMASK_FOR_AUTOFILL,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   weak_ptr_factory_.GetWeakPtr());
@@ -41,7 +45,7 @@ void CreditCardCVCAuthenticator::Authenticate(
 void CreditCardCVCAuthenticator::OnFullCardRequestSucceeded(
     const payments::FullCardRequest& full_card_request,
     const CreditCard& card,
-    const base::string16& cvc) {
+    const std::u16string& cvc) {
   payments::PaymentsClient::UnmaskResponseDetails response =
       full_card_request.unmask_response_details();
   requester_->OnCVCAuthenticationComplete(
@@ -54,7 +58,8 @@ void CreditCardCVCAuthenticator::OnFullCardRequestSucceeded(
           .with_card_authorization_token(response.card_authorization_token));
 }
 
-void CreditCardCVCAuthenticator::OnFullCardRequestFailed() {
+void CreditCardCVCAuthenticator::OnFullCardRequestFailed(
+    payments::FullCardRequest::FailureType failure_type) {
   requester_->OnCVCAuthenticationComplete(
       CVCAuthenticationResponse().with_did_succeed(false));
 }
@@ -87,9 +92,9 @@ payments::FullCardRequest* CreditCardCVCAuthenticator::GetFullCardRequest() {
   // CreditCardAccessManager to retrieve cards from payments instead of calling
   // this function directly.
   if (!full_card_request_) {
-    full_card_request_.reset(
-        new payments::FullCardRequest(client_, client_->GetPaymentsClient(),
-                                      client_->GetPersonalDataManager()));
+    full_card_request_ = std::make_unique<payments::FullCardRequest>(
+        client_, client_->GetPaymentsClient(),
+        client_->GetPersonalDataManager());
   }
   return full_card_request_.get();
 }

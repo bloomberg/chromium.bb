@@ -9,19 +9,18 @@
 #include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/timing/task_attribution_timing.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 PerformanceLongTaskTiming::PerformanceLongTaskTiming(
     double start_time,
-    double end_time,
+    int duration,
     const AtomicString& name,
     const AtomicString& culprit_type,
-    const String& culprit_src,
-    const String& culprit_id,
-    const String& culprit_name)
-    : PerformanceEntry(name, start_time, end_time) {
+    const AtomicString& culprit_src,
+    const AtomicString& culprit_id,
+    const AtomicString& culprit_name)
+    : PerformanceEntry(duration, name, start_time) {
   auto* attribution_entry = MakeGarbageCollected<TaskAttributionTiming>(
       "unknown", culprit_type, culprit_src, culprit_id, culprit_name);
   attribution_.push_back(*attribution_entry);

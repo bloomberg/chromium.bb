@@ -52,12 +52,10 @@ class WebrtcDummyVideoEncoder : public webrtc::VideoEncoder {
       const std::vector<webrtc::VideoFrameType>* frame_types) override;
   void SetRates(const RateControlParameters& parameters) override;
   webrtc::VideoEncoder::EncoderInfo GetEncoderInfo() const override;
+  void OnRttUpdate(int64_t rtt_ms) override;
 
   webrtc::EncodedImageCallback::Result SendEncodedFrame(
-      const WebrtcVideoEncoder::EncodedFrame& frame,
-      base::TimeTicks capture_time,
-      base::TimeTicks encode_started_time,
-      base::TimeTicks encode_finished_time);
+      const WebrtcVideoEncoder::EncodedFrame& frame);
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
@@ -90,10 +88,7 @@ class WebrtcDummyVideoEncoderFactory : public webrtc::VideoEncoderFactory {
       const webrtc::SdpVideoFormat& format) const override;
 
   webrtc::EncodedImageCallback::Result SendEncodedFrame(
-      const WebrtcVideoEncoder::EncodedFrame& packet,
-      base::TimeTicks capture_time,
-      base::TimeTicks encode_started_time,
-      base::TimeTicks encode_finished_time);
+      const WebrtcVideoEncoder::EncodedFrame& packet);
 
   // Callback will be called once the dummy encoder has been created on
   // |main_task_runner_|.
@@ -104,10 +99,6 @@ class WebrtcDummyVideoEncoderFactory : public webrtc::VideoEncoderFactory {
 
   void SetVideoChannelStateObserver(
       base::WeakPtr<VideoChannelStateObserver> video_channel_state_observer);
-  base::WeakPtr<VideoChannelStateObserver>
-  get_video_channel_state_observer_for_tests() {
-    return video_channel_state_observer_;
-  }
 
   void EncoderDestroyed(WebrtcDummyVideoEncoder* encoder);
 

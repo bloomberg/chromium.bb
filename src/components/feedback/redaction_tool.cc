@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
-#include "content/public/browser/browser_thread.h"
+#include "build/chromeos_buildflags.h"
 #include "net/base/ip_address.h"
 #include "third_party/re2/src/re2/re2.h"
 
@@ -252,7 +252,7 @@ std::string MaybeScrubIPAddress(const std::string& addr) {
 #define PORT DIGIT "*"
 
 // This is a diversion of RFC 3987
-#define SCHEME NCG("http|https|ftp|chrome|chrome-extension|android|rtsp")
+#define SCHEME NCG("http|https|ftp|chrome|chrome-extension|android|rtsp|file")
 
 #define IPRIVATE            \
   "["                       \
@@ -484,9 +484,9 @@ std::string RedactionTool::RedactMACAddresses(const std::string& input) {
   while (FindAndConsumeAndGetSkipped(&text, *mac_re, &skipped, &oui, &nic)) {
     // Look up the MAC address in the hash. Force the separator to be a colon
     // so that the same MAC with a different format will match in all cases.
-    std::string oui_string = base::ToLowerASCII(oui.as_string());
+    std::string oui_string = base::ToLowerASCII(std::string(oui));
     base::ReplaceChars(oui_string, kMacSeparatorChars, ":", &oui_string);
-    std::string nic_string = base::ToLowerASCII(nic.as_string());
+    std::string nic_string = base::ToLowerASCII(std::string(nic));
     base::ReplaceChars(nic_string, kMacSeparatorChars, ":", &nic_string);
     std::string mac = oui_string + ":" + nic_string;
     std::string replacement_mac = mac_addresses_[mac];
@@ -541,9 +541,9 @@ std::string RedactionTool::RedactHashes(const std::string& input) {
 
     // Look up the hash value address in the map of replacements.
     std::string hash_prefix_string =
-        base::ToLowerASCII(hash_prefix.as_string());
+        base::ToLowerASCII(std::string(hash_prefix));
     std::string hash =
-        hash_prefix_string + base::ToLowerASCII(hash_suffix.as_string());
+        hash_prefix_string + base::ToLowerASCII(std::string(hash_suffix));
     std::string replacement_hash = hashes_[hash];
     if (replacement_hash.empty()) {
       // If not found, build up a replacement value.
@@ -564,7 +564,7 @@ std::string RedactionTool::RedactAndroidAppStoragePaths(
   // We only use this on Chrome OS and there's differences in the API for
   // FilePath on Windows which prevents this from compiling, so only enable this
   // code for Chrome OS.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   std::string result;
   result.reserve(input.size());
 
@@ -612,7 +612,7 @@ std::string RedactionTool::RedactAndroidAppStoragePaths(
   return result;
 #else
   return input;
-#endif  //  defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 std::string RedactionTool::RedactCustomPatterns(std::string input) {
@@ -644,7 +644,7 @@ std::string RedactionTool::RedactCustomPatternWithContext(
   re2::StringPiece pre_match, pre_matched_id, matched_id, post_matched_id;
   while (FindAndConsumeAndGetSkipped(&text, *re, &skipped, &pre_matched_id,
                                      &matched_id, &post_matched_id)) {
-    std::string matched_id_as_string = matched_id.as_string();
+    std::string matched_id_as_string(matched_id);
     std::string replacement_id;
     if (identifier_space->count(matched_id_as_string) == 0) {
       // The weird NumberToString trick is because Windows does not like
@@ -732,7 +732,7 @@ std::string RedactionTool::RedactCustomPatternWithoutContext(
       matched_id.AppendToString(&result);
       continue;
     }
-    std::string matched_id_as_string = matched_id.as_string();
+    std::string matched_id_as_string(matched_id);
     std::string replacement_id;
     if (identifier_space->count(matched_id_as_string) == 0) {
       replacement_id = MaybeScrubIPAddress(matched_id_as_string);

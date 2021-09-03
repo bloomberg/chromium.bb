@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/label.h"
@@ -102,7 +103,7 @@ void AuthenticatorClientPinEntryView::RequestFocus() {
 
 void AuthenticatorClientPinEntryView::ContentsChanged(
     views::Textfield* sender,
-    const base::string16& new_contents) {
+    const std::u16string& new_contents) {
   DCHECK(sender == pin_text_field_ || sender == confirmation_text_field_);
 
   if (sender == pin_text_field_) {
@@ -119,3 +120,6 @@ bool AuthenticatorClientPinEntryView::HandleKeyEvent(
   // be further processed.
   return false;
 }
+
+BEGIN_METADATA(AuthenticatorClientPinEntryView, views::View)
+END_METADATA

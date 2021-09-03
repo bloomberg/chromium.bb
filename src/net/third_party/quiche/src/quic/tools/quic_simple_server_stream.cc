@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/tools/quic_simple_server_stream.h"
+#include "quic/tools/quic_simple_server_stream.h"
 
 #include <list>
 #include <utility>
 
+#include "absl/strings/match.h"
 #include "absl/strings/numbers.h"
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_stream.h"
-#include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/quic/tools/quic_simple_server_session.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_text_utils.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "quic/core/http/quic_spdy_stream.h"
+#include "quic/core/http/spdy_utils.h"
+#include "quic/core/http/web_transport_http3.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_map_util.h"
+#include "quic/tools/quic_simple_server_session.h"
+#include "spdy/core/spdy_protocol.h"
 
 using spdy::Http2HeaderBlock;
 
@@ -33,7 +35,7 @@ QuicSimpleServerStream::QuicSimpleServerStream(
       content_length_(-1),
       generate_bytes_length_(0),
       quic_simple_server_backend_(quic_simple_server_backend) {
-  DCHECK(quic_simple_server_backend_);
+  QUICHE_DCHECK(quic_simple_server_backend_);
 }
 
 QuicSimpleServerStream::QuicSimpleServerStream(
@@ -45,7 +47,7 @@ QuicSimpleServerStream::QuicSimpleServerStream(
       content_length_(-1),
       generate_bytes_length_(0),
       quic_simple_server_backend_(quic_simple_server_backend) {
-  DCHECK(quic_simple_server_backend_);
+  QUICHE_DCHECK(quic_simple_server_backend_);
 }
 
 QuicSimpleServerStream::~QuicSimpleServerStream() {
@@ -63,13 +65,23 @@ void QuicSimpleServerStream::OnInitialHeadersComplete(
     SendErrorResponse();
   }
   ConsumeHeaderList();
+  if (!fin && !response_sent_) {
+    // CONNECT and other CONNECT-like methods (such as CONNECT-UDP) require
+    // sending the response right after parsing the headers even though the FIN
+    // bit has not been received on the request stream.
+    auto it = request_headers_.find(":method");
+    if (it != request_headers_.end() &&
+        absl::StartsWith(it->second, "CONNECT")) {
+      SendResponse();
+    }
+  }
 }
 
 void QuicSimpleServerStream::OnTrailingHeadersComplete(
     bool /*fin*/,
     size_t /*frame_len*/,
     const QuicHeaderList& /*header_list*/) {
-  QUIC_BUG << "Server does not support receiving Trailers.";
+  QUIC_BUG(quic_bug_10962_1) << "Server does not support receiving Trailers.";
   SendErrorResponse();
 }
 
@@ -113,7 +125,8 @@ void QuicSimpleServerStream::PushResponse(
     Http2HeaderBlock push_request_headers) {
   if (QuicUtils::IsClientInitiatedStreamId(session()->transport_version(),
                                            id())) {
-    QUIC_BUG << "Client initiated stream shouldn't be used as promised stream.";
+    QUIC_BUG(quic_bug_10962_2)
+        << "Client initiated stream shouldn't be used as promised stream.";
     return;
   }
   // Change the stream state to emulate a client request.
@@ -121,7 +134,7 @@ void QuicSimpleServerStream::PushResponse(
   content_length_ = 0;
   QUIC_DVLOG(1) << "Stream " << id()
                 << " ready to receive server push response.";
-  DCHECK(reading_stopped());
+  QUICHE_DCHECK(reading_stopped());
 
   // Directly send response based on the emulated request_headers_.
   SendResponse();
@@ -142,16 +155,43 @@ void QuicSimpleServerStream::SendResponse() {
     return;
   }
 
-  if (!QuicContainsKey(request_headers_, ":authority") ||
-      !QuicContainsKey(request_headers_, ":path")) {
-    QUIC_DVLOG(1) << "Request headers do not contain :authority or :path.";
+  if (!QuicContainsKey(request_headers_, ":authority")) {
+    QUIC_DVLOG(1) << "Request headers do not contain :authority.";
     SendErrorResponse();
     return;
+  }
+
+  if (!QuicContainsKey(request_headers_, ":path")) {
+    // CONNECT and other CONNECT-like methods (such as CONNECT-UDP) do not all
+    // require :path to be present.
+    auto it = request_headers_.find(":method");
+    if (it == request_headers_.end() ||
+        !absl::StartsWith(it->second, "CONNECT")) {
+      QUIC_DVLOG(1) << "Request headers do not contain :path.";
+      SendErrorResponse();
+      return;
+    }
   }
 
   if (quic_simple_server_backend_ == nullptr) {
     QUIC_DVLOG(1) << "Backend is missing.";
     SendErrorResponse();
+    return;
+  }
+
+  if (web_transport() != nullptr) {
+    QuicSimpleServerBackend::WebTransportResponse response =
+        quic_simple_server_backend_->ProcessWebTransportRequest(
+            request_headers_, web_transport());
+    if (response.response_headers[":status"] == "200") {
+      WriteHeaders(std::move(response.response_headers), false, nullptr);
+      if (response.visitor != nullptr) {
+        web_transport()->SetVisitor(std::move(response.visitor));
+      }
+      web_transport()->HeadersReceived(request_headers_);
+    } else {
+      WriteHeaders(std::move(response.response_headers), true, nullptr);
+    }
     return;
   }
 
@@ -174,12 +214,18 @@ std::string QuicSimpleServerStream::peer_host() const {
 }
 
 void QuicSimpleServerStream::OnResponseBackendComplete(
-    const QuicBackendResponse* response,
-    std::list<QuicBackendResponse::ServerPushInfo> resources) {
+    const QuicBackendResponse* response) {
   if (response == nullptr) {
     QUIC_DVLOG(1) << "Response not found in cache.";
     SendNotFoundResponse();
     return;
+  }
+
+  // Send Early Hints first.
+  for (const auto& headers : response->early_hints()) {
+    QUIC_DVLOG(1) << "Stream " << id() << " sending an Early Hints response: "
+                  << headers.DebugString();
+    WriteHeaders(headers.Clone(), false, nullptr);
   }
 
   if (response->response_type() == QuicBackendResponse::CLOSE_CONNECTION) {
@@ -238,15 +284,6 @@ void QuicSimpleServerStream::OnResponseBackendComplete(
     }
   }
 
-  if (!resources.empty()) {
-    QUIC_DVLOG(1) << "Stream " << id() << " found " << resources.size()
-                  << " push resources.";
-    QuicSimpleServerSession* session =
-        static_cast<QuicSimpleServerSession*>(spdy_session());
-    session->PromisePushResources(request_url, resources, id(), precedence(),
-                                  request_headers_);
-  }
-
   if (response->response_type() == QuicBackendResponse::INCOMPLETE_RESPONSE) {
     QUIC_DVLOG(1)
         << "Stream " << id()
@@ -264,10 +301,11 @@ void QuicSimpleServerStream::OnResponseBackendComplete(
       return;
     }
     Http2HeaderBlock headers = response->headers().Clone();
-    headers["content-length"] =
-        quiche::QuicheTextUtils::Uint64ToString(generate_bytes_length_);
+    headers["content-length"] = absl::StrCat(generate_bytes_length_);
 
     WriteHeaders(std::move(headers), false, nullptr);
+    QUICHE_DCHECK(!response_sent_);
+    response_sent_ = true;
 
     WriteGeneratedBytes();
 
@@ -299,8 +337,7 @@ void QuicSimpleServerStream::SendNotFoundResponse() {
   QUIC_DVLOG(1) << "Stream " << id() << " sending not found response.";
   Http2HeaderBlock headers;
   headers[":status"] = "404";
-  headers["content-length"] =
-      quiche::QuicheTextUtils::Uint64ToString(strlen(kNotFoundResponseBody));
+  headers["content-length"] = absl::StrCat(strlen(kNotFoundResponseBody));
   SendHeadersAndBody(std::move(headers), kNotFoundResponseBody);
 }
 
@@ -314,10 +351,9 @@ void QuicSimpleServerStream::SendErrorResponse(int resp_code) {
   if (resp_code <= 0) {
     headers[":status"] = "500";
   } else {
-    headers[":status"] = quiche::QuicheTextUtils::Uint64ToString(resp_code);
+    headers[":status"] = absl::StrCat(resp_code);
   }
-  headers["content-length"] =
-      quiche::QuicheTextUtils::Uint64ToString(strlen(kErrorResponseBody));
+  headers["content-length"] = absl::StrCat(strlen(kErrorResponseBody));
   SendHeadersAndBody(std::move(headers), kErrorResponseBody);
 }
 
@@ -327,6 +363,8 @@ void QuicSimpleServerStream::SendIncompleteResponse(
   QUIC_DLOG(INFO) << "Stream " << id() << " writing headers (fin = false) : "
                   << response_headers.DebugString();
   WriteHeaders(std::move(response_headers), /*fin=*/false, nullptr);
+  QUICHE_DCHECK(!response_sent_);
+  response_sent_ = true;
 
   QUIC_DLOG(INFO) << "Stream " << id()
                   << " writing body (fin = false) with size: " << body.size();
@@ -351,6 +389,8 @@ void QuicSimpleServerStream::SendHeadersAndBodyAndTrailers(
   QUIC_DLOG(INFO) << "Stream " << id() << " writing headers (fin = " << send_fin
                   << ") : " << response_headers.DebugString();
   WriteHeaders(std::move(response_headers), send_fin, nullptr);
+  QUICHE_DCHECK(!response_sent_);
+  response_sent_ = true;
   if (send_fin) {
     // Nothing else to send.
     return;

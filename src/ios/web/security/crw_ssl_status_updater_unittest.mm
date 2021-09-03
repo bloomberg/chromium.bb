@@ -9,7 +9,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#import "ios/web/navigation/wk_based_navigation_manager_impl.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/security/ssl_status.h"
 #include "ios/web/public/test/web_test.h"
@@ -123,7 +122,9 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
     [fake_wk_list_ setCurrentURL:base::SysUTF8ToNSString(item_url_spec)];
     nav_manager_.AddPendingItem(
         GURL(item_url_spec), Referrer(), ui::PAGE_TRANSITION_LINK,
-        web::NavigationInitiationType::BROWSER_INITIATED);
+        web::NavigationInitiationType::BROWSER_INITIATED,
+        /*is_post_navigation=*/false,
+        /*is_using_https_as_default_scheme=*/false);
     nav_manager_.CommitPendingItem();
   }
 
@@ -131,7 +132,7 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
   id delegate_;
   id fake_web_view_;
   CRWFakeBackForwardList* fake_wk_list_;
-  WKBasedNavigationManagerImpl nav_manager_;
+  NavigationManagerImpl nav_manager_;
   FakeNavigationManagerDelegate fake_nav_delegate_;
   CRWSSLStatusUpdater* ssl_status_updater_;
   base::ScopedCFTypeRef<SecTrustRef> trust_;

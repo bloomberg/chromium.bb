@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
@@ -38,7 +36,6 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
   virtual void OnAbort(const IndexedDBTransaction& transaction,
                        const IndexedDBDatabaseError& error);
   virtual void OnComplete(const IndexedDBTransaction& transaction);
-  virtual void OnDatabaseChange(blink::mojom::IDBObserverChangesPtr changes);
 
   void OnConnectionError();
 

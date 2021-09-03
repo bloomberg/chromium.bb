@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_metrics.h"
+#include "ash/app_list/app_list_presenter_event_filter.h"
 #include "ash/app_list/app_list_view_delegate.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/apps_container_view.h"
@@ -18,11 +20,14 @@
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/pagination/pagination_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
+#include "ash/wm/container_finder.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/animation_throughput_reporter.h"
@@ -40,12 +45,6 @@
 namespace ash {
 namespace {
 
-constexpr std::array<int, 6> kIdsOfContainersThatWontHideAppList = {
-    kShellWindowId_AppListContainer,     kShellWindowId_HomeScreenContainer,
-    kShellWindowId_MenuContainer,        kShellWindowId_SettingBubbleContainer,
-    kShellWindowId_ShelfBubbleContainer, kShellWindowId_ShelfContainer,
-};
-
 inline ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
@@ -62,9 +61,41 @@ void DidPresentCompositorFrame(base::TimeTicks event_time_stamp,
   }
   const base::TimeDelta input_latency = present_time - event_time_stamp;
   if (is_showing) {
-    UMA_HISTOGRAM_TIMES(kAppListShowInputLatencyHistogram, input_latency);
+    UMA_HISTOGRAM_TIMES("Apps.AppListShow.InputLatency", input_latency);
   } else {
-    UMA_HISTOGRAM_TIMES(kAppListHideInputLatencyHistogram, input_latency);
+    UMA_HISTOGRAM_TIMES("Apps.AppListHide.InputLatency", input_latency);
+  }
+}
+
+// Whether the shelf is oriented on the side, not on the bottom.
+bool IsSideShelf(Shelf* shelf) {
+  switch (shelf->alignment()) {
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
+      return false;
+    case ShelfAlignment::kLeft:
+    case ShelfAlignment::kRight:
+      return true;
+  }
+  return false;
+}
+
+// Whether the shelf background type indicates that shelf has rounded corners.
+bool IsShelfBackgroundTypeWithRoundedCorners(
+    ShelfBackgroundType background_type) {
+  switch (background_type) {
+    case ShelfBackgroundType::kDefaultBg:
+    case ShelfBackgroundType::kAppList:
+    case ShelfBackgroundType::kOverview:
+      return true;
+    case ShelfBackgroundType::kMaximized:
+    case ShelfBackgroundType::kMaximizedWithAppList:
+    case ShelfBackgroundType::kOobe:
+    case ShelfBackgroundType::kHomeLauncher:
+    case ShelfBackgroundType::kLogin:
+    case ShelfBackgroundType::kLoginNonBlurredWallpaper:
+    case ShelfBackgroundType::kInApp:
+      return false;
   }
 }
 
@@ -90,11 +121,13 @@ class CallbackRunnerLayerAnimationObserver
 
 }  // namespace
 
-AppListPresenterImpl::AppListPresenterImpl(
-    std::unique_ptr<AppListPresenterDelegate> delegate)
-    : delegate_(std::move(delegate)) {
-  DCHECK(delegate_);
-  delegate_->SetPresenter(this);
+constexpr std::array<int, 7>
+    AppListPresenterImpl::kIdsOfContainersThatWontHideAppList;
+
+AppListPresenterImpl::AppListPresenterImpl(AppListControllerImpl* controller)
+    : controller_(controller) {
+  DCHECK(controller_);
+  display_observation_.Observe(display::Screen::GetScreen());
 }
 
 AppListPresenterImpl::~AppListPresenterImpl() {
@@ -106,7 +139,7 @@ AppListPresenterImpl::~AppListPresenterImpl() {
     if (view_->GetWidget())
       view_->GetWidget()->CloseNow();
   }
-  CHECK(!IsInObserverList());
+  CHECK(!views::WidgetObserver::IsInObserverList());
 }
 
 aura::Window* AppListPresenterImpl::GetWindow() const {
@@ -115,18 +148,19 @@ aura::Window* AppListPresenterImpl::GetWindow() const {
              : nullptr;
 }
 
-void AppListPresenterImpl::Show(int64_t display_id,
+void AppListPresenterImpl::Show(AppListViewState preferred_state,
+                                int64_t display_id,
                                 base::TimeTicks event_time_stamp) {
   if (is_target_visibility_show_) {
     // Launcher is always visible on the internal display when home launcher is
     // enabled in tablet mode.
-    if (delegate_->IsTabletMode() || display_id == GetDisplayId())
+    if (Shell::Get()->IsInTabletMode() || display_id == GetDisplayId())
       return;
 
     Dismiss(event_time_stamp);
   }
 
-  if (!delegate_->GetRootWindowForDisplayId(display_id)) {
+  if (!Shell::Get()->GetRootWindowForDisplayId(display_id)) {
     LOG(ERROR) << "Root window does not exist for display: " << display_id;
     return;
   }
@@ -136,13 +170,39 @@ void AppListPresenterImpl::Show(int64_t display_id,
   RequestPresentationTime(display_id, event_time_stamp);
 
   if (!view_) {
-    // Note |delegate_| outlives the AppListView.
-    AppListView* view = new AppListView(delegate_->GetAppListViewDelegate());
-    delegate_->Init(view, display_id);
+    AppListView* view = new AppListView(controller_);
+    view->InitView(controller_->GetContainerForDisplayId(display_id));
     SetView(view);
     view_->GetWidget()->GetNativeWindow()->TrackOcclusionState();
   }
-  delegate_->ShowForDisplay(display_id);
+
+  controller_->UpdateLauncherContainer(display_id);
+
+  // App list needs to know the new shelf layout in order to calculate its
+  // UI layout when AppListView visibility changes.
+  Shelf* shelf =
+      Shelf::ForWindow(view_->GetWidget()->GetNativeView()->GetRootWindow());
+  shelf->shelf_layout_manager()->UpdateAutoHideState();
+
+  // Observe the shelf for changes to rounded corners.
+  if (!shelf_observation_.IsObservingSource(shelf))
+    shelf_observation_.AddObservation(shelf);
+
+  // By setting us as a drag-and-drop recipient, the app list knows that we can
+  // handle items. Do this on every show because |view_| can be reused after a
+  // monitor is disconnected but that monitor's ShelfView and
+  // ScrollableShelfView are deleted. https://crbug.com/1163332
+  view_->SetDragAndDropHostOfCurrentAppList(
+      shelf->shelf_widget()->GetDragAndDropHostForAppList());
+  view_->SetShelfHasRoundedCorners(
+      IsShelfBackgroundTypeWithRoundedCorners(shelf->GetBackgroundType()));
+  view_->Show(preferred_state, IsSideShelf(shelf));
+
+  SnapAppListBoundsToDisplayEdge();
+
+  event_filter_ =
+      std::make_unique<AppListPresenterEventFilter>(controller_, this, view_);
+  controller_->ViewShown(display_id);
 
   OnVisibilityChanged(GetTargetVisibility(), display_id);
 }
@@ -186,7 +246,8 @@ void AppListPresenterImpl::Dismiss(base::TimeTicks event_time_stamp) {
   if (view_->GetWidget()->IsActive())
     view_->GetWidget()->Deactivate();
 
-  delegate_->OnClosing();
+  event_filter_.reset();
+  controller_->ViewClosing();
 
   OnVisibilityWillChange(GetTargetVisibility(), GetDisplayId());
   view_->SetState(AppListViewState::kClosed);
@@ -225,20 +286,20 @@ ShelfAction AppListPresenterImpl::ToggleAppList(
     Dismiss(event_time_stamp);
     return SHELF_ACTION_APP_LIST_DISMISSED;
   }
-  Show(display_id, event_time_stamp);
-  if (request_fullscreen)
-    view_->SetState(AppListViewState::kFullscreenAllApps);
+  Show(request_fullscreen ? AppListViewState::kFullscreenAllApps
+                          : AppListViewState::kPeeking,
+       display_id, event_time_stamp);
   return SHELF_ACTION_APP_LIST_SHOWN;
 }
 
 bool AppListPresenterImpl::IsVisibleDeprecated() const {
-  return delegate_->IsVisible(GetDisplayId());
+  return controller_->IsVisible(GetDisplayId());
 }
 
 bool AppListPresenterImpl::IsAtLeastPartiallyVisible() const {
   const auto* window = GetWindow();
   return window &&
-         window->occlusion_state() == aura::Window::OcclusionState::VISIBLE;
+         window->GetOcclusionState() == aura::Window::OcclusionState::VISIBLE;
 }
 
 bool AppListPresenterImpl::GetTargetVisibility() const {
@@ -259,22 +320,30 @@ void AppListPresenterImpl::EndDragFromShelf(AppListViewState app_list_state) {
     view_->EndDragFromShelf(app_list_state);
 }
 
-void AppListPresenterImpl::ProcessMouseWheelOffset(
+void AppListPresenterImpl::ProcessScrollOffset(
+    const gfx::Point& location,
     const gfx::Vector2d& scroll_offset_vector) {
   if (view_)
-    view_->HandleScroll(scroll_offset_vector, ui::ET_MOUSEWHEEL);
+    view_->HandleScroll(location, scroll_offset_vector, ui::ET_SCROLL);
+}
+
+void AppListPresenterImpl::ProcessMouseWheelOffset(
+    const gfx::Point& location,
+    const gfx::Vector2d& scroll_offset_vector) {
+  if (view_)
+    view_->HandleScroll(location, scroll_offset_vector, ui::ET_MOUSEWHEEL);
 }
 
 void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
     float scale,
     float opacity,
-    base::Optional<TabletModeAnimationTransition> transition,
+    absl::optional<TabletModeAnimationTransition> transition,
     UpdateHomeLauncherAnimationSettingsCallback callback) {
   if (!view_)
     return;
 
   ui::Layer* layer = view_->GetWidget()->GetNativeWindow()->layer();
-  if (!delegate_->IsTabletMode()) {
+  if (!Shell::Get()->IsInTabletMode()) {
     // In clamshell mode, set the opacity of the AppList immediately to
     // instantly hide it. Opacity of the AppList is reset when it is shown
     // again.
@@ -289,7 +358,7 @@ void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
     view_->ResetTransitionMetricsReporter();
   }
 
-  base::Optional<ui::ScopedLayerAnimationSettings> settings;
+  absl::optional<ui::ScopedLayerAnimationSettings> settings;
   if (!callback.is_null()) {
     settings.emplace(layer->GetAnimator());
     callback.Run(&settings.value());
@@ -310,7 +379,7 @@ void AppListPresenterImpl::UpdateScaleAndOpacityForHomeLauncher(
   // reported for transform animation only.
   layer->SetOpacity(opacity);
 
-  base::Optional<ui::AnimationThroughputReporter> reporter;
+  absl::optional<ui::AnimationThroughputReporter> reporter;
   if (settings.has_value() && transition.has_value()) {
     view_->OnTabletModeAnimationTransitionNotified(*transition);
     reporter.emplace(settings->GetAnimator(),
@@ -338,13 +407,6 @@ bool AppListPresenterImpl::IsShowingEmbeddedAssistantUI() const {
   return false;
 }
 
-void AppListPresenterImpl::SetExpandArrowViewVisibility(bool show) {
-  if (view_) {
-    view_->app_list_main_view()->contents_view()->SetExpandArrowViewVisibility(
-        show);
-  }
-}
-
 void AppListPresenterImpl::OnTabletModeChanged(bool started) {
   if (started) {
     if (GetTargetVisibility())
@@ -370,7 +432,7 @@ void AppListPresenterImpl::SetView(AppListView* view) {
 
   // Sync the |onscreen_keyboard_shown_| in case |view_| is not initiated when
   // the on-screen is shown.
-  view_->set_onscreen_keyboard_shown(delegate_->GetOnScreenKeyboardShown());
+  view_->set_onscreen_keyboard_shown(controller_->onscreen_keyboard_shown());
 }
 
 void AppListPresenterImpl::ResetView() {
@@ -398,12 +460,18 @@ int64_t AppListPresenterImpl::GetDisplayId() const {
 
 void AppListPresenterImpl::OnVisibilityChanged(bool visible,
                                                int64_t display_id) {
-  delegate_->OnVisibilityChanged(visible, display_id);
+  controller_->OnVisibilityChanged(visible, display_id);
 }
 
 void AppListPresenterImpl::OnVisibilityWillChange(bool visible,
                                                   int64_t display_id) {
-  delegate_->OnVisibilityWillChange(visible, display_id);
+  controller_->OnVisibilityWillChange(visible, display_id);
+}
+
+void AppListPresenterImpl::OnClosed() {
+  if (!is_target_visibility_show_)
+    shelf_observation_.RemoveAllObservations();
+  controller_->ViewClosed();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -416,11 +484,10 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
 
   int gained_focus_container_id = kShellWindowId_Invalid;
   if (gained_focus) {
-    gained_focus_container_id = gained_focus->id();
-    const aura::Window* container =
-        delegate_->GetContainerForWindow(gained_focus);
+    gained_focus_container_id = gained_focus->GetId();
+    const aura::Window* container = ash::GetContainerForWindow(gained_focus);
     if (container)
-      gained_focus_container_id = container->id();
+      gained_focus_container_id = container->GetId();
   }
   aura::Window* applist_window = view_->GetWidget()->GetNativeView();
   const aura::Window* applist_container = applist_window->parent();
@@ -444,22 +511,25 @@ void AppListPresenterImpl::OnWindowFocused(aura::Window* gained_focus,
   const bool visible = app_list_gained_focus ||
                        (IsAtLeastPartiallyVisible() && !app_list_lost_focus);
 
-  if (delegate_->IsTabletMode()) {
-    if (visible != delegate_->IsVisible(GetDisplayId())) {
+  if (Shell::Get()->IsInTabletMode()) {
+    if (visible != controller_->IsVisible(GetDisplayId())) {
       if (app_list_gained_focus)
         view_->OnHomeLauncherGainingFocusWithoutAnimation();
 
       OnVisibilityChanged(visible, GetDisplayId());
+    } else {
+      // In tablet mode, when Assistant UI lost focus after other new App window
+      // opened, we should reset the view.
+      if (app_list_lost_focus && IsShowingEmbeddedAssistantUI())
+        view_->Back();
     }
   }
 
   if (app_list_gained_focus)
     base::RecordAction(base::UserMetricsAction("AppList_WindowFocused"));
 
-  if (app_list_lost_focus && !switches::ShouldNotDismissOnBlur() &&
-      !delegate_->IsTabletMode()) {
+  if (app_list_lost_focus && !Shell::Get()->IsInTabletMode())
     Dismiss(base::TimeTicks());
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -476,7 +546,7 @@ void AppListPresenterImpl::OnImplicitAnimationsCompleted() {
   } else {
     // Hide the widget so it can be re-shown without re-creating it.
     view_->GetWidget()->Hide();
-    delegate_->OnClosed();
+    OnClosed();
   }
 }
 
@@ -491,7 +561,7 @@ void AppListPresenterImpl::OnWidgetDestroying(views::Widget* widget) {
 }
 
 void AppListPresenterImpl::OnWidgetDestroyed(views::Widget* widget) {
-  delegate_->OnClosed();
+  OnClosed();
 }
 
 void AppListPresenterImpl::OnWidgetVisibilityChanged(views::Widget* widget,
@@ -516,7 +586,8 @@ void AppListPresenterImpl::RequestPresentationTime(
     base::TimeTicks event_time_stamp) {
   if (event_time_stamp.is_null())
     return;
-  aura::Window* root_window = delegate_->GetRootWindowForDisplayId(display_id);
+  aura::Window* root_window =
+      Shell::Get()->GetRootWindowForDisplayId(display_id);
   if (!root_window)
     return;
   ui::Compositor* compositor = root_window->layer()->GetCompositor();
@@ -525,6 +596,34 @@ void AppListPresenterImpl::RequestPresentationTime(
   compositor->RequestPresentationTimeForNextFrame(
       base::BindOnce(&DidPresentCompositorFrame, event_time_stamp,
                      is_target_visibility_show_));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// display::DisplayObserver implementation:
+
+void AppListPresenterImpl::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  if (!GetWindow())
+    return;
+
+  view_->OnParentWindowBoundsChanged();
+  SnapAppListBoundsToDisplayEdge();
+}
+
+void AppListPresenterImpl::OnBackgroundTypeChanged(
+    ShelfBackgroundType background_type,
+    AnimationChangeType change_type) {
+  view_->SetShelfHasRoundedCorners(
+      IsShelfBackgroundTypeWithRoundedCorners(background_type));
+}
+
+void AppListPresenterImpl::SnapAppListBoundsToDisplayEdge() {
+  CHECK(view_ && view_->GetWidget());
+  aura::Window* window = view_->GetWidget()->GetNativeView();
+  const gfx::Rect bounds =
+      controller_->SnapBoundsToDisplayEdge(window->bounds());
+  window->SetBounds(bounds);
 }
 
 }  // namespace ash

@@ -56,6 +56,7 @@ class NearbyShareDelegateImpl
   // ash::NearbyShareDelegate
   bool IsPodButtonVisible() override;
   bool IsHighVisibilityOn() override;
+  bool IsEnableHighVisibilityRequestActive() const override;
   base::TimeTicks HighVisibilityShutoffTime() const override;
   void EnableHighVisibility() override;
   void DisableHighVisibility() override;
@@ -75,6 +76,7 @@ class NearbyShareDelegateImpl
       const std::vector<std::string>& visible_contact_ids) override {}
 
   // NearbyShareService::Observer
+  void OnHighVisibilityChangeRequested() override;
   void OnHighVisibilityChanged(bool high_visibility_on) override;
   void OnShutdown() override;
 
@@ -91,6 +93,10 @@ class NearbyShareDelegateImpl
   ash::NearbyShareController* const nearby_share_controller_;
   NearbySharingService* nearby_share_service_ = nullptr;
   std::unique_ptr<SettingsOpener> settings_opener_;
+
+  // Track if there is an outstanding request to enable high visibility. Reset
+  // to false once the request finishes (via OnHighVisibilityChanged());
+  bool is_enable_high_visibility_request_active_ = false;
 
   // This timer is used to automatically turn off high visibility after a
   // timeout.

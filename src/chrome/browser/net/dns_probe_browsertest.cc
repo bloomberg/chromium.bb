@@ -49,7 +49,6 @@
 #include "base/win/win_util.h"
 #endif
 
-using base::Bind;
 using base::BindOnce;
 using base::BindRepeating;
 using base::FilePath;
@@ -307,25 +306,17 @@ std::string DnsProbeBrowserTest::Title() {
   WebContents* contents =
       active_browser_->tab_strip_model()->GetActiveWebContents();
 
-  bool rv = content::ExecuteScriptAndExtractString(
-      contents, "domAutomationController.send(document.title);", &title);
-  if (!rv)
-    return "";
-
-  return title;
+  return content::EvalJs(contents, "document.title;").ExtractString();
 }
 
 // Check text by roundtripping to renderer, to make sure any probe results
 // sent before this have been applied.
 bool DnsProbeBrowserTest::PageContains(const std::string& expected) {
-  std::string text_content;
-
-  bool rv = content::ExecuteScriptAndExtractString(
-      active_browser_->tab_strip_model()->GetActiveWebContents(),
-      "domAutomationController.send(document.body.textContent);",
-      &text_content);
-  if (!rv)
-    return false;
+  std::string text_content =
+      content::EvalJs(
+          active_browser_->tab_strip_model()->GetActiveWebContents(),
+          "document.body.textContent;")
+          .ExtractString();
 
   return text_content.find(expected) != std::string::npos;
 }

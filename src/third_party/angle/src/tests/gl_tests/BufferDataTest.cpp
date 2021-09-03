@@ -616,7 +616,11 @@ TEST_P(BufferDataTestES3, MapBufferRangeUnsynchronizedBit)
     EXPECT_GL_NO_ERROR();
     for (size_t i = 0; i < numElements; ++i)
     {
-        EXPECT_EQ(dstData[i], data[i]);
+        // Allow for the possibility that data matches either "dstData" or "srcData"
+        if (dstData[i] != data[i])
+        {
+            EXPECT_EQ(srcData[i], data[i]);
+        }
     }
     glUnmapBuffer(GL_COPY_WRITE_BUFFER);
     EXPECT_GL_NO_ERROR();
@@ -823,6 +827,34 @@ TEST_P(BufferDataTestES3, BufferDataUnmap)
 class BufferStorageTestES3 : public BufferDataTest
 {};
 
+// Tests that proper error value is returned when bad size is passed in
+TEST_P(BufferStorageTestES3, BufferStorageInvalidSize)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_buffer_storage"));
+
+    std::vector<GLfloat> data(6, 1.0f);
+
+    GLBuffer buffer;
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferStorageEXT(GL_ARRAY_BUFFER, 0, data.data(), 0);
+    EXPECT_GL_ERROR(GL_INVALID_VALUE);
+}
+
+// Tests that buffer storage can be allocated with the GL_MAP_PERSISTENT_BIT_EXT and
+// GL_MAP_COHERENT_BIT_EXT flags
+TEST_P(BufferStorageTestES3, BufferStorageFlagsPersistentCoherentWrite)
+{
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_EXT_buffer_storage"));
+
+    std::vector<GLfloat> data(6, 1.0f);
+
+    GLBuffer buffer;
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferStorageEXT(GL_ARRAY_BUFFER, data.size(), data.data(),
+                       GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT_EXT | GL_MAP_COHERENT_BIT_EXT);
+    ASSERT_GL_NO_ERROR();
+}
+
 // Verify that glBufferStorage makes a buffer immutable
 TEST_P(BufferStorageTestES3, StorageBufferBufferData)
 {
@@ -929,11 +961,15 @@ TEST_P(BufferStorageTestES3, StorageBufferMapBufferOES)
     EXPECT_EQ(data, actualData);
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these
-// tests should be run against.
 ANGLE_INSTANTIATE_TEST_ES2(BufferDataTest);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BufferDataTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(BufferDataTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(BufferStorageTestES3);
 ANGLE_INSTANTIATE_TEST_ES3(BufferStorageTestES3);
+
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(IndexedBufferCopyTest);
 ANGLE_INSTANTIATE_TEST_ES3(IndexedBufferCopyTest);
 
 #ifdef _WIN64

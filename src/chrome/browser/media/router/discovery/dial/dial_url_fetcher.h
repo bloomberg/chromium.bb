@@ -10,10 +10,8 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/optional.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -33,14 +31,17 @@ namespace media_router {
 // This class is not sequence safe.
 class DialURLFetcher {
  public:
-  using SuccessCallback = base::OnceCallback<void(const std::string&)>;
-  using ErrorCallback = base::OnceCallback<void(int, const std::string&)>;
+  using SuccessCallback =
+      base::OnceCallback<void(const std::string& app_info_xml)>;
+  // |http_response_code| is set when one was received from the DIAL device.
+  // It may be in the 200s if the error was with the content of the response,
+  // e.g. if it was unexpectedly empty.
+  using ErrorCallback =
+      base::OnceCallback<void(const std::string& error_message,
+                              absl::optional<int> http_response_code)>;
 
-  // |success_cb|: Invoked when HTTP request to |url| succeeds
-  //   |arg 0|: response text of the HTTP request
-  // |error_cb|: Invoked when HTTP request to |url| fails
-  //   |arg 0|: HTTP response code
-  //   |arg 1|: error message
+  // |success_cb|: Invoked when HTTP request to |url| succeeds.
+  // |error_cb|: Invoked when HTTP request to |url| fails.
   DialURLFetcher(SuccessCallback success_cb, ErrorCallback error_cb);
 
   virtual ~DialURLFetcher();
@@ -52,7 +53,7 @@ class DialURLFetcher {
   void Delete(const GURL& url);
 
   // Starts a HTTP POST request.
-  void Post(const GURL& url, const base::Optional<std::string>& post_data);
+  void Post(const GURL& url, const absl::optional<std::string>& post_data);
 
   // Returns the response header of an HTTP request. The response header is
   // owned by underlying |loader_| object and is reset per HTTP request. Returns
@@ -79,7 +80,7 @@ class DialURLFetcher {
   // |set_origin_header|: whether to set an Origin: header on the request.
   virtual void Start(const GURL& url,
                      const std::string& method,
-                     const base::Optional<std::string>& post_data,
+                     const absl::optional<std::string>& post_data,
                      int max_retries,
                      bool set_origin_header);
 
@@ -95,7 +96,10 @@ class DialURLFetcher {
                            std::vector<std::string>* to_be_removed_headers);
 
   // Runs |error_cb_| with |message| and clears it.
-  void ReportError(int response_code, const std::string& message);
+  void ReportError(const std::string& message);
+
+  // Returns the HTTP code in the response header, if exists.
+  virtual absl::optional<int> GetHttpResponseCode() const;
 
   SuccessCallback success_cb_;
   ErrorCallback error_cb_;

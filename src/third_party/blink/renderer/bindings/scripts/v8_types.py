@@ -200,14 +200,14 @@ def cpp_type(idl_type,
         if inner_type.is_dictionary or inner_type.is_sequence or inner_type.is_record_type:
             # TODO(jbroman, bashi): Implement this if needed.
             # This is non-trivial to support because HeapVector refuses to hold
-            # base::Optional<>, and IDLDictionaryBase (and subclasses) have no
+            # absl::optional<>, and IDLDictionaryBase (and subclasses) have no
             # integrated null state that can be distinguished from a present but
             # empty dictionary. It's unclear whether this will ever come up in
             # real spec WebIDL.
             raise NotImplementedError(
                 'Sequences of nullable dictionary, sequence or record types are not yet supported.'
             )
-        return 'base::Optional<%s>' % inner_type.cpp_type_args(
+        return 'absl::optional<%s>' % inner_type.cpp_type_args(
             extended_attributes, raw_type, used_as_rvalue_type,
             used_as_variadic_argument, used_in_cpp_sequence)
 
@@ -415,7 +415,10 @@ IdlNullableType.is_traceable = property(
 
 INCLUDES_FOR_TYPE = {
     'object':
-    set(['bindings/core/v8/script_value.h']),
+    set([
+        'bindings/core/v8/script_value.h', 'bindings/core/v8/idl_types.h',
+        'bindings/core/v8/native_value_traits_impl.h'
+    ]),
     'ArrayBufferView':
     set([
         'bindings/core/v8/v8_array_buffer_view.h',
@@ -864,11 +867,11 @@ def v8_value_to_local_cpp_value(idl_type,
 
     if (idl_type.is_explicit_nullable
             and code_generation_target == 'attribute_set'):
-        this_cpp_type = cpp_template_type('base::Optional', this_cpp_type)
+        this_cpp_type = cpp_template_type('absl::optional', this_cpp_type)
         expr = '{cpp_type}({expr})'.format(
             cpp_type=this_cpp_type, expr=assign_expression)
         assign_expression = ("is_null "
-                             "? base::nullopt "
+                             "? absl::nullopt "
                              ": {expr}".format(expr=expr))
 
     return {
@@ -1326,7 +1329,7 @@ def is_implicit_nullable(idl_type):
 
 def is_explicit_nullable(idl_type):
     # Nullable type that isn't implicit nullable (see above.) For such types,
-    # we use base::Optional<T> or similar explicit ways to represent a null value.
+    # we use absl::optional<T> or similar explicit ways to represent a null value.
     return idl_type.is_nullable and not idl_type.is_implicit_nullable
 
 

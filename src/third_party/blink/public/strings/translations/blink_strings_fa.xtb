@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">برنما</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> مورد</translation>
 <translation id="1480676835519562650">قابلیت چند انتخابی، <ph name="SELECTED" /> مورد از <ph name="COUNT" /> مورد انتخاب شده است.</translation>
+<translation id="1588438908519853928">معمولی</translation>
 <translation id="1589122976691792535">منطقه</translation>
 <translation id="1591562245178063882">این ماه</translation>
 <translation id="1637811476055996098">انتخاب فایل‌ها</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">تایمر</translation>
 <translation id="3199563858620722075">کادر ترکیبی</translation>
 <translation id="3220661731597678625">مرحله کنونی</translation>
+<translation id="3321030238473337787">سرعت بازپخش</translation>
 <translation id="3329013043687509092">اشباع رنگ</translation>
 <translation id="3450233048674729344">مقدار باید کمتر یا برابر با <ph name="MAXIMUM" /> باشد.</translation>
 <translation id="3486220673238053218">معنی</translation>
@@ -103,7 +105,7 @@
 <translation id="3944740393230681990">گفتار آغازین</translation>
 <translation id="3960700977367013758">نوار پیمایش</translation>
 <translation id="4103419683916926126">میلی‌ ثانیه</translation>
-<translation id="4151657705144244502">گرافیک</translation>
+<translation id="4151657705144244502">ترسیمی</translation>
 <translation id="4160057747563657758">تلفن</translation>
 <translation id="4193965531860883258">پیش‌گفتار</translation>
 <translation id="4201051445878709314">نمایش ماه قبلی</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">نوار منو</translation>
 <translation id="4293574643247337246">سرصفحه</translation>
 <translation id="4360991593054037559">لطفاً یک مقدار معتبر وارد کنید. نزدیک‌ترین مقادیر معتبر <ph name="VALID_VALUE_LOW" /> و <ph name="VALID_VALUE_HIGHER" /> هستند.</translation>
+<translation id="4371899966896349864">پنهان کردن منوی سرعت بازپخش</translation>
 <translation id="4384249794467006333">این تصویر برچسب ندارد. برای دریافت شرح تصویر، منوی «گزینه‌های بیشتر» را در بالا سمت چپ باز کنید.</translation>
 <translation id="4384583879834880242">پرسش و پاسخ</translation>
 <translation id="4444765639179266822">ظاهراً <ph name="OCR_TEXT" /> را نشان می‌دهد</translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">عنوان ردیف</translation>
 <translation id="5143125788380636750">گفتار پایانی</translation>
 <translation id="5164977714490026579">مقدار باید بیشتر یا مساوی با <ph name="MINIMUM" /> باشد.</translation>
+<translation id="5196716972587102051">۲</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> پتابایت</translation>
 <translation id="5307600278924710095">لطفاً قسمت قبل از «<ph name="ATSIGN" />» را وارد کنید. «<ph name="INVALIDADDRESS" />» ناقص است.</translation>
 <translation id="5334352251556557839">رسانه پخش نشد.</translation>
 <translation id="537648784377940524">حداقل تاریخ (<ph name="MIN_DATE_OR_TIME" />) باید قبل از حداکثر تاریخ باشد (<ph name="MAX_DATE_OR_TIME" />).</translation>
+<translation id="5378437566635403538">گسترده شد، کادر گفتگو باز شد.</translation>
 <translation id="5406322316791861025">شکل</translation>
 <translation id="5425179576310518467">تاریخ کنونی</translation>
 <translation id="5453733299334684579">مورد درختی</translation>
 <translation id="5466621249238537318">لطفاً یک یا چند فایل را انتخاب کنید.</translation>
 <translation id="5468998798572797635">خروج از حالت تمام صفحه</translation>
+<translation id="5516235301412634559">۰٫۷۵</translation>
 <translation id="5516424706154626233">انتخابگر تاریخ</translation>
 <translation id="5537725057119320332">فرستادن</translation>
 <translation id="5546461542133609677">صدادارکردن</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">گزینه‌های بیشتر</translation>
 <translation id="576709008726043716">مقدمه</translation>
 <translation id="57838592816432529">بی‌صدا کردن</translation>
+<translation id="5786442179789148008">نمایش دادن منوی سرعت بازپخش</translation>
+<translation id="5787939484346677755">گسترده شد، گزینه‌های تکمیل خودکار دردسترس است.</translation>
 <translation id="5860033963881614850">خاموش</translation>
 <translation id="588258955323874662">تمام صفحه</translation>
 <translation id="5888666972993069672">درحال ارسال محتوا به <ph name="DEVICE_FRIENDLY_NAME" /></translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">روشن</translation>
 <translation id="5939518447894949180">بازنشانی</translation>
 <translation id="5966707198760109579">هفته</translation>
+<translation id="5985507339671257014">۰٫۵</translation>
 <translation id="5987525920412732405">دکمه چرخش</translation>
 <translation id="6011459053400940133">لغزنده میزان صدا</translation>
 <translation id="6015796118275082299">سال</translation>
 <translation id="6023896073578205740">کادر فهرست</translation>
 <translation id="6150588977291308318">فهرست منابع</translation>
 <translation id="6164829606128959761">متر</translation>
+<translation id="6165053282446038410">گسترده شد، <ph name="COUNT" /> گزینه تکمیل خودکار دردسترس است.</translation>
 <translation id="6166809985690652833">سخن پایانی</translation>
 <translation id="6209276755895393898">به‌نظر می‌رسد <ph name="DESCRIPTION" /> باشد</translation>
 <translation id="6212595056017402527">صفحه کنونی</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">پاک کردن</translation>
 <translation id="668171684555832681">دیگر...</translation>
 <translation id="6692633176391053278">گام به گام</translation>
+<translation id="6696580792574109116">انتخاب‌گر ماه</translation>
 <translation id="6709093583001123835">مقدار باید <ph name="VALUE" /> باشد.</translation>
 <translation id="6709570249143506788">کیفیت پخش ضعیف</translation>
 <translation id="6755330956360078551">نکته ابزار</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">بیصداکردن</translation>
 <translation id="6885760532393684712">فهرست راهنما</translation>
 <translation id="689129560213475294">انجامه</translation>
+<translation id="6919891270253167948">۱٫۵</translation>
 <translation id="6934078000481955284">نقل‌قول</translation>
 <translation id="693476918119313863">سرصفحه</translation>
 <translation id="6941933287844615239">بارگیری رسانه</translation>
 <translation id="6981594929165378967">درج</translation>
+<translation id="698788488269350478">گسترده شد.</translation>
 <translation id="6989848892321993519">لطفاً این نوشتار را به <ph name="MIN_CHARACTERS" /> نویسه یا بیشتر افزایش دهید (درحال‌حاضر از ۱ نویسه استفاده می‌کنید).</translation>
 <translation id="7034405885550056553">پیشنهاد</translation>
 <translation id="709897737746224366">لطفاً با قالب درخواستی مطابقت دهید.</translation>
 <translation id="7102274145889307184">مکان کنونی</translation>
 <translation id="7118469954320184356">توضیحی دردسترس نیست.</translation>
 <translation id="7139483182332611405">پیش‌گفتار</translation>
+<translation id="7198226213493847604">دکمه بالاپر منو</translation>
 <translation id="7214187073215825913">اطلاعات محتوا</translation>
 <translation id="7238347055216017155">تأکید</translation>
 <translation id="7263440858009898357">لطفاً یک مورد را در فهرست انتخاب کنید.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">برای دریافت توضیحات تصویر جاافتاده، منوی بافت را باز کنید.</translation>
 <translation id="7750228210027921155">تصویردرتصویر</translation>
 <translation id="775297008183122718">ورودی نامعتبر</translation>
+<translation id="7782515065589691344">۱.۲۵</translation>
 <translation id="7789962463072032349">مکث</translation>
 <translation id="7802800022689234070">مثلث افشا</translation>
 <translation id="7852167693871241274">لغزنده فام</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">مرجع یادداشت</translation>
 <translation id="811583516810654505">درحال دریافت توضیح…</translation>
 <translation id="8117451130807776954">این هفته</translation>
+<translation id="8131955114056917397">۰٫۲۵</translation>
 <translation id="8199524924445686405">yyyy</translation>
 <translation id="8208673686607688524">انتخابگر تاریخ و زمان محلی</translation>
 <translation id="8261464734335370856">املای نامعتبر</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">کنترل بازپخش راه دور</translation>
 <translation id="862370744433916922">زیرنویس</translation>
 <translation id="8634971699417195529">نمایش انتخابگر ماه</translation>
+<translation id="8637593834423658414">۱٫۷۵</translation>
+<translation id="8668988909814782445">شکست خط</translation>
 <translation id="8711688047404765493">خروجی</translation>
 <translation id="8750798805984357768">لطفاً یکی از این گزینه‌ها را انتخاب کنید.</translation>
 <translation id="8808573423886751634">فصل</translation>
 <translation id="8845239796550121995">درحال ارسال محتوا به تلویزیون</translation>
 <translation id="8851136666856101339">اصلی</translation>
+<translation id="8861621546968757188">دکمه بالاپر کادر گفتگو</translation>
 <translation id="8875657656876809964">خطا در بازپخش ویدئو</translation>
 <translation id="8889402386540077796">رنگ‌مایه</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> کیلوبایت</translation>

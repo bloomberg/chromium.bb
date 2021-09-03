@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_PREFS_H_
 #define COMPONENTS_OMNIBOX_BROWSER_OMNIBOX_PREFS_H_
 
-#include <vector>
-
 class PrefRegistrySimple;
 class PrefService;
 
@@ -35,6 +33,7 @@ extern const char kToggleSuggestionGroupIdOnHistogram[];
 // Keep alphabetized, and document each in the .cc file.
 extern const char kDocumentSuggestEnabled[];
 extern const char kIntranetRedirectBehavior[];
+extern const char kKeywordSpaceTriggeringEnabled[];
 extern const char kSuggestionGroupVisibility[];
 extern const char kPreventUrlElisionsInOmnibox[];
 extern const char kZeroSuggestCachedResults[];

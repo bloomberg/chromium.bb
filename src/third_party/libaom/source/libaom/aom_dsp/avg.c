@@ -88,6 +88,44 @@ void aom_highbd_minmax_8x8_c(const uint8_t *s8, int p, const uint8_t *d8,
 }
 #endif  // CONFIG_AV1_HIGHBITDEPTH
 
+static void hadamard_col4(const int16_t *src_diff, ptrdiff_t src_stride,
+                          int16_t *coeff) {
+  int16_t b0 = (src_diff[0 * src_stride] + src_diff[1 * src_stride]) >> 1;
+  int16_t b1 = (src_diff[0 * src_stride] - src_diff[1 * src_stride]) >> 1;
+  int16_t b2 = (src_diff[2 * src_stride] + src_diff[3 * src_stride]) >> 1;
+  int16_t b3 = (src_diff[2 * src_stride] - src_diff[3 * src_stride]) >> 1;
+
+  coeff[0] = b0 + b2;
+  coeff[1] = b1 + b3;
+  coeff[2] = b0 - b2;
+  coeff[3] = b1 - b3;
+}
+
+void aom_hadamard_4x4_c(const int16_t *src_diff, ptrdiff_t src_stride,
+                        tran_low_t *coeff) {
+  int idx;
+  int16_t buffer[16];
+  int16_t buffer2[16];
+  int16_t *tmp_buf = &buffer[0];
+  for (idx = 0; idx < 4; ++idx) {
+    hadamard_col4(src_diff, src_stride, tmp_buf);  // src_diff: 9 bit
+                                                   // dynamic range [-255, 255]
+    tmp_buf += 4;
+    ++src_diff;
+  }
+
+  tmp_buf = &buffer[0];
+  for (idx = 0; idx < 4; ++idx) {
+    hadamard_col4(tmp_buf, 4, buffer2 + 4 * idx);  // tmp_buf: 12 bit
+    // dynamic range [-2040, 2040]
+    // buffer2: 15 bit
+    // dynamic range [-16320, 16320]
+    ++tmp_buf;
+  }
+
+  for (idx = 0; idx < 16; ++idx) coeff[idx] = (tran_low_t)buffer2[idx];
+}
+
 // src_diff: first pass, 9 bit, dynamic range [-255, 255]
 //           second pass, 12 bit, dynamic range [-2040, 2040]
 static void hadamard_col8(const int16_t *src_diff, ptrdiff_t src_stride,

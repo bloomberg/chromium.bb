@@ -21,7 +21,7 @@ squashed, preceded by a header message indicating that it's the result of a
 squash (or the message you pass on the command line.).
 
 Squashing branches is useful when trying to rebase-update over branches which
-were pushed to their upsteram (or committed by the 'Commit Queue'), and then
+were pushed to their upstream (or committed by the 'Commit Queue'), and then
 conflicting changes landed in upstream on top of the push/commit. If you know
 that your branch was committed but linkgit:git-rebase-update[1] isn't able to
 automatically clean it, you can squash the troublesome branch before `git

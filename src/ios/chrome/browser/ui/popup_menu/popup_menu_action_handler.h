@@ -13,8 +13,9 @@
 @protocol BrowserCommands;
 @protocol FindInPageCommands;
 @protocol LoadQueryCommands;
-@protocol PopupMenuActionHandlerCommands;
+@protocol PopupMenuActionHandlerDelegate;
 @protocol TextZoomCommands;
+class WebNavigationBrowserAgent;
 
 // Handles user interactions with the popup menu.
 @interface PopupMenuActionHandler
@@ -24,7 +25,7 @@
 @property(nonatomic, weak) UIViewController* baseViewController;
 
 // Command handler.
-@property(nonatomic, weak) id<PopupMenuActionHandlerCommands> commandHandler;
+@property(nonatomic, weak) id<PopupMenuActionHandlerDelegate> delegate;
 
 // Dispatcher.
 @property(nonatomic, weak) id<ApplicationCommands,
@@ -33,6 +34,8 @@
                               LoadQueryCommands,
                               TextZoomCommands>
     dispatcher;
+
+@property(nonatomic, assign) WebNavigationBrowserAgent* navigationAgent;
 
 @end
 

@@ -10,7 +10,7 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 import {ClearBrowsingDataBrowserProxyImpl} from 'chrome://settings/lazy_load.js';
 import {Router, routes, StatusAction, SyncBrowserProxyImpl} from 'chrome://settings/settings.js';
 import {TestClearBrowsingDataBrowserProxy} from 'chrome://test/settings/test_clear_browsing_data_browser_proxy.js';
-import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.m.js';
+import {TestSyncBrowserProxy} from 'chrome://test/settings/test_sync_browser_proxy.js';
 import {eventToPromise, isChildVisible, isVisible, whenAttributeIs} from 'chrome://test/test_util.m.js';
 
 // clang-format on
@@ -227,6 +227,22 @@ suite('ClearBrowsingDataDesktop', function() {
     assertTrue(!!passphraseLink);
     passphraseLink.click();
     assertEquals(routes.SYNC, Router.getInstance().getCurrentRoute());
+  });
+
+  test('ClearBrowsingDataSearchHistorySignedOut', function() {
+    webUIListenerCallback('update-sync-state', {
+      signedIn: false,
+    });
+    flush();
+    assertFalse(isVisible(element.$$('#searchHistoryTextBox')));
+  });
+
+  test('ClearBrowsingDataSearchHistorySignedIn', function() {
+    webUIListenerCallback('update-sync-state', {
+      signedIn: true,
+    });
+    flush();
+    assertTrue(isVisible(element.$$('#searchHistoryTextBox')));
   });
 });
 

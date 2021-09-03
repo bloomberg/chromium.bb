@@ -9,6 +9,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "components/blocked_content/list_item_position.h"
 #include "components/blocked_content/popup_navigation_delegate.h"
 #include "components/blocked_content/popup_tracker.h"
@@ -65,12 +66,10 @@ void PopupBlockerTabHelper::DidFinishNavigation(
     // With back-forward cache we can restore the page, but |blocked_popups_|
     // are lost here and can't be restored at the moment.
     // Disable bfcache here to avoid potential loss of the page state.
-    web_contents()
-        ->GetController()
-        .GetBackForwardCache()
-        .DisableForRenderFrameHost(
-            navigation_handle->GetPreviousRenderFrameHostId(),
-            "PopupBlockerTabHelper");
+    content::BackForwardCache::DisableForRenderFrameHost(
+        navigation_handle->GetPreviousRenderFrameHostId(),
+        back_forward_cache::DisabledReason(
+            back_forward_cache::DisabledReasonId::kPopupBlockerTabHelper));
   }
 }
 
@@ -123,7 +122,7 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
 
   BlockedRequest* popup = it->second.get();
 
-  base::Optional<WindowOpenDisposition> updated_disposition;
+  absl::optional<WindowOpenDisposition> updated_disposition;
   if (disposition != WindowOpenDisposition::CURRENT_TAB)
     updated_disposition = disposition;
 
@@ -152,6 +151,13 @@ void PopupBlockerTabHelper::ShowBlockedPopup(
   blocked_popups_.erase(id);
   if (blocked_popups_.empty())
     HidePopupNotification();
+}
+
+void PopupBlockerTabHelper::ShowAllBlockedPopups() {
+  PopupIdMap blocked_popups = GetBlockedPopupRequests();
+  for (const auto& elem : blocked_popups) {
+    ShowBlockedPopup(elem.first, WindowOpenDisposition::CURRENT_TAB);
+  }
 }
 
 size_t PopupBlockerTabHelper::GetBlockedPopupsCount() const {

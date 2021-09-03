@@ -51,11 +51,6 @@ namespace features {
 // the currently running stack is ad related.
 const base::Feature kAsyncStackAdTagging{"AsyncStackAdTagging",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Controls whether the AdTracker analyzes the bottom and top of the stack or
-// just the top of the stack when detecting ads.
-const base::Feature kTopOfStackAdTagging{"TopOfStackAdTagging",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace features
 
 // static
@@ -82,9 +77,7 @@ bool AdTracker::IsAdScriptExecutingInDocument(Document* document,
 AdTracker::AdTracker(LocalFrame* local_root)
     : local_root_(local_root),
       async_stack_enabled_(
-          base::FeatureList::IsEnabled(features::kAsyncStackAdTagging)),
-      top_of_stack_only_(
-          base::FeatureList::IsEnabled(features::kTopOfStackAdTagging)) {
+          base::FeatureList::IsEnabled(features::kAsyncStackAdTagging)) {
   local_root_->GetProbeSink()->AddAdTracker(this);
 }
 
@@ -112,7 +105,7 @@ String AdTracker::ScriptAtTopOfStack() {
     return String();
 
   v8::Local<v8::StackFrame> frame = stack_trace->GetFrame(isolate, 0);
-  v8::Local<v8::String> script_name = frame->GetScriptNameOrSourceURL();
+  v8::Local<v8::String> script_name = frame->GetScriptName();
   if (script_name.IsEmpty() || !script_name->Length())
     return GenerateFakeUrlFromScriptId(frame->GetScriptId());
 
@@ -149,9 +142,6 @@ void AdTracker::WillExecuteScript(ExecutionContext* execution_context,
     }
   }
 
-  if (top_of_stack_only_)
-    return;
-
   if (!should_track_with_id)
     is_ad = IsKnownAdScript(execution_context, script_url);
 
@@ -161,9 +151,6 @@ void AdTracker::WillExecuteScript(ExecutionContext* execution_context,
 }
 
 void AdTracker::DidExecuteScript() {
-  if (top_of_stack_only_)
-    return;
-
   if (stack_frame_is_ad_.back()) {
     DCHECK_LT(0u, num_ads_in_stack_);
     num_ads_in_stack_ -= 1;
@@ -208,12 +195,14 @@ void AdTracker::Did(const probe::CallFunction& probe) {
 
 bool AdTracker::CalculateIfAdSubresource(
     ExecutionContext* execution_context,
-    const ResourceRequest& request,
+    const KURL& request_url,
     ResourceType resource_type,
     const FetchInitiatorInfo& initiator_info,
     bool known_ad) {
   // Check if the document loading the resource is an ad.
-  known_ad = known_ad || IsKnownAdExecutionContext(execution_context);
+  const bool is_ad_execution_context =
+      IsKnownAdExecutionContext(execution_context);
+  known_ad = known_ad || is_ad_execution_context;
 
   // We skip script checking for stylesheet-initiated resource requests as the
   // stack may represent the cause of a style recalculation rather than the
@@ -232,8 +221,8 @@ bool AdTracker::CalculateIfAdSubresource(
   // contexts, because any script executed inside an ad context is considered an
   // ad script by IsKnownAdScript.
   if (resource_type == ResourceType::kScript && known_ad &&
-      !IsKnownAdExecutionContext(execution_context)) {
-    AppendToKnownAdScripts(*execution_context, request.Url().GetString());
+      !is_ad_execution_context) {
+    AppendToKnownAdScripts(*execution_context, request_url.GetString());
   }
 
   return known_ad;
@@ -286,7 +275,7 @@ bool AdTracker::IsAdScriptInStack(StackType stack_type) {
   // (e.g., when v8 is executed) but not the entire stack. For a small cost we
   // can also check the top of the stack (this is much cheaper than getting the
   // full stack from v8).
-  return IsKnownAdScript(execution_context, ScriptAtTopOfStack());
+  return IsKnownAdScriptForCheckedContext(*execution_context, String());
 }
 
 bool AdTracker::IsKnownAdScript(ExecutionContext* execution_context,
@@ -297,13 +286,25 @@ bool AdTracker::IsKnownAdScript(ExecutionContext* execution_context,
   if (IsKnownAdExecutionContext(execution_context))
     return true;
 
-  if (url.IsEmpty())
-    return false;
+  return IsKnownAdScriptForCheckedContext(*execution_context, url);
+}
 
-  auto it = known_ad_scripts_.find(execution_context);
+bool AdTracker::IsKnownAdScriptForCheckedContext(
+    ExecutionContext& execution_context,
+    const String& url) {
+  DCHECK(!IsKnownAdExecutionContext(&execution_context));
+  auto it = known_ad_scripts_.find(&execution_context);
   if (it == known_ad_scripts_.end())
     return false;
-  return it->value.Contains(url);
+
+  if (it->value.IsEmpty())
+    return false;
+
+  // Delay calling ScriptAtTopOfStack() as much as possible due to its cost.
+  String script_url = url.IsNull() ? ScriptAtTopOfStack() : url;
+  if (script_url.IsEmpty())
+    return false;
+  return it->value.Contains(script_url);
 }
 
 // This is a separate function for testing purposes.

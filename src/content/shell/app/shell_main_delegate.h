@@ -36,7 +36,7 @@ class ShellMainDelegate : public ContentMainDelegate {
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   void ZygoteForked() override;
 #endif
-  void PreCreateMainMessageLoop() override;
+  void PreBrowserMain() override;
   ContentClient* CreateContentClient() override;
   ContentBrowserClient* CreateContentBrowserClient() override;
   ContentGpuClient* CreateContentGpuClient() override;
@@ -45,7 +45,7 @@ class ShellMainDelegate : public ContentMainDelegate {
 
   static void InitializeResourceBundle();
 
- private:
+ protected:
   // Only present when running content_browsertests, which run inside Content
   // Shell.
   //
@@ -66,6 +66,7 @@ class ShellMainDelegate : public ContentMainDelegate {
   std::unique_ptr<ShellContentUtilityClient> utility_client_;
   std::unique_ptr<ShellContentClient> content_client_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(ShellMainDelegate);
 };
 

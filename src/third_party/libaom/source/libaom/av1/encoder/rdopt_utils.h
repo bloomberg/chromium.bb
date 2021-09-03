@@ -86,132 +86,132 @@ static const MODE_DEFINITION av1_mode_defs[MAX_MODES] = {
   { NEAREST_NEARESTMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEAREST_NEARESTMV, { BWDREF_FRAME, ALTREF_FRAME } },
 
-  { NEAR_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
-  { NEW_NEARESTMV, { LAST_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
-  { NEW_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
-  { NEAR_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
-  { GLOBAL_GLOBALMV, { LAST_FRAME, ALTREF_FRAME } },
-
-  { NEAR_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { NEW_NEARESTMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { NEW_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { NEAR_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { NEW_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
-  { GLOBAL_GLOBALMV, { LAST2_FRAME, ALTREF_FRAME } },
-
-  { NEAR_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { NEW_NEARESTMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { NEW_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { NEAR_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { NEW_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
-  { GLOBAL_GLOBALMV, { LAST3_FRAME, ALTREF_FRAME } },
-
-  { NEAR_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { NEW_NEARESTMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { NEAREST_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { NEW_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { NEAR_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { NEW_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-  { GLOBAL_GLOBALMV, { GOLDEN_FRAME, ALTREF_FRAME } },
-
   { NEAR_NEARMV, { LAST_FRAME, BWDREF_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEW_NEARMV, { LAST_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, BWDREF_FRAME } },
   { GLOBAL_GLOBALMV, { LAST_FRAME, BWDREF_FRAME } },
 
+  { NEAR_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
+  { NEW_NEARESTMV, { LAST_FRAME, ALTREF_FRAME } },
+  { NEAREST_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
+  { NEW_NEARMV, { LAST_FRAME, ALTREF_FRAME } },
+  { NEAR_NEWMV, { LAST_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST_FRAME, ALTREF_FRAME } },
+
+  { NEAR_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { NEW_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { NEW_NEARESTMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { NEAREST_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { NEW_NEARMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { NEAR_NEWMV, { LAST2_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST2_FRAME, ALTREF_FRAME } },
+
+  { NEAR_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { NEW_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { NEW_NEARESTMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { NEAREST_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { NEW_NEARMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { NEAR_NEWMV, { LAST3_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { LAST3_FRAME, ALTREF_FRAME } },
+
+  { NEAR_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { NEW_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { NEW_NEARESTMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { NEAREST_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { NEW_NEARMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { NEAR_NEWMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+  { GLOBAL_GLOBALMV, { GOLDEN_FRAME, ALTREF_FRAME } },
+
   { NEAR_NEARMV, { LAST2_FRAME, BWDREF_FRAME } },
+  { NEW_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEW_NEARMV, { LAST2_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
-  { NEW_NEWMV, { LAST2_FRAME, BWDREF_FRAME } },
   { GLOBAL_GLOBALMV, { LAST2_FRAME, BWDREF_FRAME } },
 
   { NEAR_NEARMV, { LAST3_FRAME, BWDREF_FRAME } },
+  { NEW_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEW_NEARMV, { LAST3_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
-  { NEW_NEWMV, { LAST3_FRAME, BWDREF_FRAME } },
   { GLOBAL_GLOBALMV, { LAST3_FRAME, BWDREF_FRAME } },
 
   { NEAR_NEARMV, { GOLDEN_FRAME, BWDREF_FRAME } },
+  { NEW_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEW_NEARESTMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEAREST_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEW_NEARMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { NEAR_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
-  { NEW_NEWMV, { GOLDEN_FRAME, BWDREF_FRAME } },
   { GLOBAL_GLOBALMV, { GOLDEN_FRAME, BWDREF_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, ALTREF2_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, ALTREF2_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, ALTREF2_FRAME } },
   { NEW_NEARMV, { LAST_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, ALTREF2_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, ALTREF2_FRAME } },
   { GLOBAL_GLOBALMV, { LAST_FRAME, ALTREF2_FRAME } },
 
   { NEAR_NEARMV, { LAST2_FRAME, ALTREF2_FRAME } },
+  { NEW_NEWMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { NEAREST_NEWMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { NEW_NEARMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { LAST2_FRAME, ALTREF2_FRAME } },
-  { NEW_NEWMV, { LAST2_FRAME, ALTREF2_FRAME } },
   { GLOBAL_GLOBALMV, { LAST2_FRAME, ALTREF2_FRAME } },
 
   { NEAR_NEARMV, { LAST3_FRAME, ALTREF2_FRAME } },
+  { NEW_NEWMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEAREST_NEWMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEW_NEARMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { LAST3_FRAME, ALTREF2_FRAME } },
-  { NEW_NEWMV, { LAST3_FRAME, ALTREF2_FRAME } },
   { GLOBAL_GLOBALMV, { LAST3_FRAME, ALTREF2_FRAME } },
 
   { NEAR_NEARMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
+  { NEW_NEWMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { NEW_NEARESTMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { NEAREST_NEWMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { NEW_NEARMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { NEAR_NEWMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
-  { NEW_NEWMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
   { GLOBAL_GLOBALMV, { GOLDEN_FRAME, ALTREF2_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, LAST2_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, LAST2_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, LAST2_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, LAST2_FRAME } },
   { NEW_NEARMV, { LAST_FRAME, LAST2_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, LAST2_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, LAST2_FRAME } },
   { GLOBAL_GLOBALMV, { LAST_FRAME, LAST2_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, LAST3_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, LAST3_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, LAST3_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, LAST3_FRAME } },
   { NEW_NEARMV, { LAST_FRAME, LAST3_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, LAST3_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, LAST3_FRAME } },
   { GLOBAL_GLOBALMV, { LAST_FRAME, LAST3_FRAME } },
 
   { NEAR_NEARMV, { LAST_FRAME, GOLDEN_FRAME } },
+  { NEW_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEW_NEARESTMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEAREST_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEW_NEARMV, { LAST_FRAME, GOLDEN_FRAME } },
   { NEAR_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
-  { NEW_NEWMV, { LAST_FRAME, GOLDEN_FRAME } },
   { GLOBAL_GLOBALMV, { LAST_FRAME, GOLDEN_FRAME } },
 
   { NEAR_NEARMV, { BWDREF_FRAME, ALTREF_FRAME } },
+  { NEW_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEW_NEARESTMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEAREST_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEW_NEARMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { NEAR_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
-  { NEW_NEWMV, { BWDREF_FRAME, ALTREF_FRAME } },
   { GLOBAL_GLOBALMV, { BWDREF_FRAME, ALTREF_FRAME } },
 
   // intra modes
@@ -334,14 +334,14 @@ static INLINE int check_txfm_eval(MACROBLOCK *const x, BLOCK_SIZE bsize,
   // Derive aggressiveness factor for gating the transform search
   // Lower value indicates more aggressiveness. Be more conservative (high
   // value) for (i) low quantizers (ii) regions where prediction is poor
-  const int scale[6] = { INT_MAX, 4, 3, 3, 2, 2 };
+  const int scale[5] = { INT_MAX, 4, 3, 2, 2 };
   const int qslope = 2 * (!is_luma_only);
-  const int level_to_qindex_map[6] = { 0, 0, 0, 0, 80, 100 };
-  int aggr_factor = 1;
+  const int level_to_qindex_map[5] = { 0, 0, 0, 80, 100 };
+  int aggr_factor = 4;
   const int pred_qindex_thresh = level_to_qindex_map[level];
-  if (!is_luma_only && level <= 3) {
-    aggr_factor = AOMMAX(
-        1, ((MAXQ - x->qindex) * qslope + QINDEX_RANGE / 2) >> QINDEX_BITS);
+  if (!is_luma_only && level <= 2) {
+    aggr_factor = 4 * AOMMAX(1, ROUND_POWER_OF_TWO((MAXQ - x->qindex) * qslope,
+                                                   QINDEX_BITS));
   }
   if ((best_skip_rd >
        (x->source_variance << (num_pels_log2_lookup[bsize] + RDDIV_BITS))) &&
@@ -350,18 +350,18 @@ static INLINE int check_txfm_eval(MACROBLOCK *const x, BLOCK_SIZE bsize,
   // For level setting 1, be more conservative for non-luma-only case even when
   // prediction is good.
   else if ((level <= 1) && !is_luma_only)
-    aggr_factor *= 2;
+    aggr_factor = (aggr_factor >> 2) * 6;
 
   // Be more conservative for luma only cases (called from compound type rd)
   // since best_skip_rd is computed after and skip_rd is computed (with 8-bit
   // prediction signals blended for WEDGE/DIFFWTD rather than 16-bit) before
   // interpolation filter search
-  const int luma_mul[6] = { INT_MAX, 32, 29, 20, 17, 17 };
+  const int luma_mul[5] = { INT_MAX, 32, 29, 17, 17 };
   int mul_factor = is_luma_only ? luma_mul[level] : 16;
   int64_t rd_thresh =
       (best_skip_rd == INT64_MAX)
           ? best_skip_rd
-          : (int64_t)(best_skip_rd * aggr_factor * mul_factor >> 4);
+          : (int64_t)(best_skip_rd * aggr_factor * mul_factor >> 6);
   if (skip_rd > rd_thresh) eval_txfm = 0;
   return eval_txfm;
 }
@@ -485,10 +485,8 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
       set_tx_domain_dist_params(winner_mode_params, txfm_params, 0, 0);
 
       // Get default threshold for R-D optimization of coefficients
-      txfm_params->coeff_opt_dist_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_dist_threshold, 0, 0);
-      txfm_params->coeff_opt_satd_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_satd_threshold, 0, 0);
+      get_rd_opt_coeff_thresh(winner_mode_params->coeff_opt_thresholds,
+                              txfm_params, 0, 0);
 
       // Set default transform size search method
       set_tx_size_search_method(cm, winner_mode_params, txfm_params, 0, 0);
@@ -512,11 +510,8 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
 
       // Get threshold for R-D optimization of coefficients during mode
       // evaluation
-      txfm_params->coeff_opt_dist_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_dist_threshold,
-          sf->winner_mode_sf.enable_winner_mode_for_coeff_opt, 0);
-      txfm_params->coeff_opt_satd_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_satd_threshold,
+      get_rd_opt_coeff_thresh(
+          winner_mode_params->coeff_opt_thresholds, txfm_params,
           sf->winner_mode_sf.enable_winner_mode_for_coeff_opt, 0);
 
       // Set the transform size search method for mode evaluation
@@ -543,11 +538,8 @@ static INLINE void set_mode_eval_params(const struct AV1_COMP *cpi,
 
       // Get threshold for R-D optimization of coefficients for winner mode
       // evaluation
-      txfm_params->coeff_opt_dist_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_dist_threshold,
-          sf->winner_mode_sf.enable_winner_mode_for_coeff_opt, 1);
-      txfm_params->coeff_opt_satd_threshold = get_rd_opt_coeff_thresh(
-          winner_mode_params->coeff_opt_satd_threshold,
+      get_rd_opt_coeff_thresh(
+          winner_mode_params->coeff_opt_thresholds, txfm_params,
           sf->winner_mode_sf.enable_winner_mode_for_coeff_opt, 1);
 
       // Set the transform size search method for winner mode evaluation
@@ -577,7 +569,7 @@ static INLINE CFL_ALLOWED_TYPE store_cfl_required_rdo(const AV1_COMMON *cm,
                                                       const MACROBLOCK *x) {
   const MACROBLOCKD *xd = &x->e_mbd;
 
-  if (cm->seq_params.monochrome || !xd->is_chroma_ref) return CFL_DISALLOWED;
+  if (cm->seq_params->monochrome || !xd->is_chroma_ref) return CFL_DISALLOWED;
 
   if (!xd->is_chroma_ref) {
     // For non-chroma-reference blocks, we should always store the luma pixels,

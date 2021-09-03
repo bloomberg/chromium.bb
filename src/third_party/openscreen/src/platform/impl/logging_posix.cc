@@ -22,7 +22,6 @@ namespace {
 int g_log_fd = STDERR_FILENO;
 LogLevel g_log_level = LogLevel::kWarning;
 std::vector<std::string>* g_log_messages_for_test = nullptr;
-bool* g_break_was_called_for_test = nullptr;
 
 std::ostream& operator<<(std::ostream& os, const LogLevel& level) {
   const char* level_string = "";
@@ -110,11 +109,10 @@ void LogWithLevel(LogLevel level,
   }
 }
 
-void Break() {
-  if (g_break_was_called_for_test) {
-    *g_break_was_called_for_test = true;
-    return;
-  }
+[[noreturn]] void Break() {
+// Generally this will just resolve to an abort anyways, but gives the
+// compiler a chance to peform a more appropriate, target specific trap
+// as appropriate.
 #if defined(_DEBUG)
   __builtin_trap();
 #else
@@ -124,10 +122,6 @@ void Break() {
 
 void SetLogBufferForTest(std::vector<std::string>* messages) {
   g_log_messages_for_test = messages;
-}
-
-void DisableBreakForTest(bool* break_was_called) {
-  g_break_was_called_for_test = break_was_called;
 }
 
 }  // namespace openscreen

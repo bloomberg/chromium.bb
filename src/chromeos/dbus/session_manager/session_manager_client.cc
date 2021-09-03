@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/span.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -23,14 +24,12 @@
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/unguessable_token.h"
 #include "chromeos/dbus/blocking_method_caller.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/login_manager/login_screen_storage.pb.h"
@@ -42,6 +41,7 @@
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/scoped_dbus_error.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -75,32 +75,6 @@ RetrievePolicyResponseType GetPolicyResponseTypeByError(
     return RetrievePolicyResponseType::POLICY_ENCODE_ERROR;
   }
   return RetrievePolicyResponseType::OTHER_ERROR;
-}
-
-// Logs UMA stat for retrieve policy request, corresponding to D-Bus method name
-// used.
-void LogPolicyResponseUma(login_manager::PolicyAccountType account_type,
-                          RetrievePolicyResponseType response) {
-  switch (account_type) {
-    case login_manager::ACCOUNT_TYPE_DEVICE:
-      UMA_HISTOGRAM_ENUMERATION("Enterprise.RetrievePolicyResponse.Device",
-                                response, RetrievePolicyResponseType::COUNT);
-      break;
-    case login_manager::ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Enterprise.RetrievePolicyResponse.DeviceLocalAccount", response,
-          RetrievePolicyResponseType::COUNT);
-      break;
-    case login_manager::ACCOUNT_TYPE_USER:
-      UMA_HISTOGRAM_ENUMERATION("Enterprise.RetrievePolicyResponse.User",
-                                response, RetrievePolicyResponseType::COUNT);
-      break;
-    case login_manager::ACCOUNT_TYPE_SESSIONLESS_USER:
-      UMA_HISTOGRAM_ENUMERATION(
-          "Enterprise.RetrievePolicyResponse.UserDuringLogin", response,
-          RetrievePolicyResponseType::COUNT);
-      break;
-  }
 }
 
 // Creates a PolicyDescriptor object to store/retrieve Chrome policy.
@@ -137,9 +111,8 @@ base::ScopedFD CreatePasswordPipe(const std::string& data) {
   const size_t data_size = data.size();
 
   base::WriteFileDescriptor(pipe_write_end.get(),
-                            reinterpret_cast<const char*>(&data_size),
-                            sizeof(data_size));
-  base::WriteFileDescriptor(pipe_write_end.get(), data.c_str(), data.size());
+                            base::as_bytes(base::make_span(&data_size, 1)));
+  base::WriteFileDescriptor(pipe_write_end.get(), data);
 
   return pipe_read_end;
 }
@@ -234,12 +207,14 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void RestartJob(int socket_fd,
                   const std::vector<std::string>& argv,
+                  RestartJobReason reason,
                   VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(login_manager::kSessionManagerInterface,
                                  login_manager::kSessionManagerRestartJob);
     dbus::MessageWriter writer(&method_call);
     writer.AppendFileDescriptor(socket_fd);
     writer.AppendArrayOfStrings(argv);
+    writer.AppendUint32(static_cast<uint32_t>(reason));
     session_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
@@ -355,6 +330,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
                                        base::DoNothing());
   }
 
+  void LoadShillProfile(
+      const cryptohome::AccountIdentifier& cryptohome_id) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerLoadShillProfile);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(cryptohome_id.account_id());
+    session_manager_proxy_->CallMethod(&method_call,
+                                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                       base::DoNothing());
+  }
+
   void StartDeviceWipe() override {
     SimpleMethodCallToSessionManager(
         login_manager::kSessionManagerStartDeviceWipe);
@@ -449,15 +436,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     return BlockingRetrievePolicy(descriptor, policy_out);
   }
 
-  void RetrievePolicyForUserWithoutSession(
-      const cryptohome::AccountIdentifier& cryptohome_id,
-      RetrievePolicyCallback callback) override {
-    login_manager::PolicyDescriptor descriptor =
-        MakeChromePolicyDescriptor(login_manager::ACCOUNT_TYPE_SESSIONLESS_USER,
-                                   cryptohome_id.account_id());
-    CallRetrievePolicy(descriptor, std::move(callback));
-  }
-
   void RetrieveDeviceLocalAccountPolicy(
       const std::string& account_name,
       RetrievePolicyCallback callback) override {
@@ -523,6 +501,20 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(cryptohome_id.account_id());
     writer.AppendArrayOfStrings(flags);
+    session_manager_proxy_->CallMethod(&method_call,
+                                       dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                                       base::DoNothing());
+  }
+
+  void SetFeatureFlagsForUser(
+      const cryptohome::AccountIdentifier& cryptohome_id,
+      const std::vector<std::string>& feature_flags) override {
+    dbus::MethodCall method_call(
+        login_manager::kSessionManagerInterface,
+        login_manager::kSessionManagerSetFeatureFlagsForUser);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(cryptohome_id.account_id());
+    writer.AppendArrayOfStrings(feature_flags);
     session_manager_proxy_->CallMethod(&method_call,
                                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                        base::DoNothing());
@@ -658,8 +650,8 @@ class SessionManagerClientImpl : public SessionManagerClient {
     session_manager_proxy_ = bus->GetObjectProxy(
         login_manager::kSessionManagerServiceName,
         dbus::ObjectPath(login_manager::kSessionManagerServicePath));
-    blocking_method_caller_.reset(
-        new BlockingMethodCaller(bus, session_manager_proxy_));
+    blocking_method_caller_ =
+        std::make_unique<BlockingMethodCaller>(bus, session_manager_proxy_);
 
     // Signals emitted on the session manager's interface.
     session_manager_proxy_->ConnectToSignal(
@@ -717,6 +709,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::move(callback).Run(response);
   }
 
+  // Called when `StorePolicyEx()` finishes.
+  void OnStorePolicyEx(base::TimeTicks store_policy_ex_start_time,
+                       VoidDBusMethodCallback callback,
+                       dbus::Response* response) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    DCHECK(!store_policy_ex_start_time.is_null());
+    base::TimeDelta delta = now - store_policy_ex_start_time;
+    base::UmaHistogramMediumTimes("Enterprise.StorePolicy.Duration", delta);
+
+    OnVoidMethod(std::move(callback), response);
+  }
+
   // Non-blocking call to Session Manager to retrieve policy.
   void CallRetrievePolicy(const login_manager::PolicyDescriptor& descriptor,
                           RetrievePolicyCallback callback) {
@@ -763,7 +767,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     } else {
       policy_out->clear();
     }
-    LogPolicyResponseUma(descriptor.account_type(), result);
     return result;
   }
 
@@ -783,12 +786,15 @@ class SessionManagerClientImpl : public SessionManagerClient {
         policy_blob.size());
     // TODO(crbug/1155533) On grunt devices, initially storing device policy may
     // take about 45s, which is longer than the default timeout for dbus calls.
-    // We need to investiage why this is happening. In the meantime, increase
+    // We need to investigate why this is happening. In the meantime, increase
     // the timeout to make sure enrollment does not fail.
+    // Record the timing to find a reasonable timeout value.
+    base::TimeTicks store_policy_ex_start_time = base::TimeTicks::Now();
     session_manager_proxy_->CallMethod(
         &method_call, /*timeout_ms=*/90000,
-        base::BindOnce(&SessionManagerClientImpl::OnVoidMethod,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+        base::BindOnce(&SessionManagerClientImpl::OnStorePolicyEx,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       store_policy_ex_start_time, std::move(callback)));
   }
 
   // Called when kSessionManagerRetrieveActiveSessions method is complete.
@@ -796,7 +802,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
                                 ActiveSessionsCallback callback,
                                 dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -805,7 +811,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     if (!reader.PopArray(&array_reader)) {
       LOG(ERROR) << method_name
                  << " response is incorrect: " << response->ToString();
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -828,13 +834,13 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void OnLoginScreenStorageStore(LoginScreenStorageStoreCallback callback,
                                  dbus::Response* response) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
   }
 
   void OnLoginScreenStorageRetrieve(LoginScreenStorageRetrieveCallback callback,
                                     dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(base::nullopt /* data */,
+      std::move(callback).Run(absl::nullopt /* data */,
                               "LoginScreenStorageRetrieve() D-Bus method "
                               "returned an empty response");
       return;
@@ -846,18 +852,18 @@ class SessionManagerClientImpl : public SessionManagerClient {
     if (!reader.PopUint64(&result_size) ||
         !reader.PopFileDescriptor(&result_fd)) {
       std::string error = "Invalid response: " + response->ToString();
-      std::move(callback).Run(base::nullopt /* data */, error);
+      std::move(callback).Run(absl::nullopt /* data */, error);
       return;
     }
     std::vector<uint8_t> result_data;
     if (!ReadSecretFromSharedMemory(std::move(result_fd), result_size,
                                     &result_data)) {
       std::string error = "Couldn't read retrieved data from shared memory.";
-      std::move(callback).Run(base::nullopt /* data */, error);
+      std::move(callback).Run(absl::nullopt /* data */, error);
       return;
     }
     std::move(callback).Run(std::string(result_data.begin(), result_data.end()),
-                            base::nullopt /* error */);
+                            absl::nullopt /* error */);
   }
 
   void OnLoginScreenStorageListKeys(LoginScreenStorageListKeysCallback callback,
@@ -877,7 +883,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
       std::move(callback).Run({} /* keys */, error);
       return;
     }
-    std::move(callback).Run(std::move(keys), base::nullopt /* error */);
+    std::move(callback).Run(std::move(keys), absl::nullopt /* error */);
   }
 
   // Reads an array of policy data bytes data as std::string.
@@ -910,7 +916,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     if (!response) {
       RetrievePolicyResponseType response_type =
           GetPolicyResponseTypeByError(error ? error->GetErrorName() : "");
-      LogPolicyResponseUma(account_type, response_type);
       std::move(callback).Run(response_type, std::string());
       return;
     }
@@ -918,7 +923,6 @@ class SessionManagerClientImpl : public SessionManagerClient {
     dbus::MessageReader reader(response);
     std::string proto_blob;
     ExtractPolicyResponseString(account_type, response, &proto_blob);
-    LogPolicyResponseUma(account_type, RetrievePolicyResponseType::SUCCESS);
     std::move(callback).Run(RetrievePolicyResponseType::SUCCESS, proto_blob);
   }
 
@@ -952,15 +956,27 @@ class SessionManagerClientImpl : public SessionManagerClient {
 
   void ScreenIsLockedReceived(dbus::Signal* signal) {
     screen_is_locked_ = true;
+    for (auto& observer : observers_)
+      observer.ScreenLockedStateUpdated();
   }
 
   void ScreenIsUnlockedReceived(dbus::Signal* signal) {
     screen_is_locked_ = false;
+    for (auto& observer : observers_)
+      observer.ScreenLockedStateUpdated();
   }
 
   void ArcInstanceStoppedReceived(dbus::Signal* signal) {
-    for (auto& observer : observers_)
-      observer.ArcInstanceStopped();
+    dbus::MessageReader reader(signal);
+    uint32_t reason = 0;
+    if (!reader.PopUint32(&reason)) {
+      LOG(ERROR) << "Invalid signal: " << signal->ToString();
+      return;
+    }
+    for (auto& observer : observers_) {
+      observer.ArcInstanceStopped(
+          static_cast<login_manager::ArcContainerStopReason>(reason));
+    }
   }
 
   // Called when the object is connected to the signal.
@@ -1000,7 +1016,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void OnGetArcStartTime(DBusMethodCallback<base::TimeTicks> callback,
                          dbus::Response* response) {
     if (!response) {
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -1008,7 +1024,7 @@ class SessionManagerClientImpl : public SessionManagerClient {
     int64_t ticks = 0;
     if (!reader.PopInt64(&ticks)) {
       LOG(ERROR) << "Invalid response: " << response->ToString();
-      std::move(callback).Run(base::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 

@@ -4,7 +4,7 @@
 
 import {assert} from 'chai';
 
-import {getHostedModeServerPort} from '../../shared/helper.js';
+import {getTestServerPort} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
 import {getConsoleMessages, showVerboseMessages, waitForConsoleMessagesToBeNonEmpty} from '../helpers/console-helpers.js';
 
@@ -30,9 +30,9 @@ describe('The Console Tab', async () => {
       `Uncaught (in promise) Error: err2
     at uncaught-promise.html:25`,
       `Uncaught (in promise) DOMException: Failed to execute 'removeChild' on 'Node': The node to be removed is not a child of this node.
-    at throwDOMException (http://localhost:${
-          getHostedModeServerPort()}/test/e2e/resources/console/uncaught-promise.html:40:7)
-    at catcher (http://localhost:${getHostedModeServerPort()}/test/e2e/resources/console/uncaught-promise.html:33:5)`,
+    at throwDOMException (https://localhost:${
+          getTestServerPort()}/test/e2e/resources/console/uncaught-promise.html:40:7)
+    at catcher (https://localhost:${getTestServerPort()}/test/e2e/resources/console/uncaught-promise.html:33:5)`,
     ]);
   });
 
@@ -174,6 +174,23 @@ describe('The Console Tab', async () => {
       `Uncaught ReferenceError: FAIL is not defined
     at foo (foo2.js:1)
     at source-url-exceptions.html:9`,
+    ]);
+  });
+
+  it('can handle repeated messages from data URLs in exceptions', async () => {
+    const messages =
+        await getConsoleMessages('data-url-exceptions', false, () => waitForConsoleMessagesToBeNonEmpty(1));
+
+    assert.deepEqual(messages, [
+      'msg',  // 5 times from eval script, collapsed
+      'msg',  // 5 times from data url script, collapsed
+      `Uncaught Error: Failed
+    at fail (data-url-exceptions.html:12)
+    at foo1 (data:text/javascript…pIHsgZm9vMSgpOyB9:1)
+    at foo2 (data:text/javascript…pIHsgZm9vMSgpOyB9:2)
+    at bar1 (data:text/javascript…9IAogYmFyMigpOw==:1)
+    at bar2 (data:text/javascript…9IAogYmFyMigpOw==:2)
+    at data:text/javascript…9IAogYmFyMigpOw==:3`,
     ]);
   });
 

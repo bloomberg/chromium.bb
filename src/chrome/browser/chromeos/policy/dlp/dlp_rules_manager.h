@@ -5,42 +5,26 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_RULES_MANAGER_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_DLP_DLP_RULES_MANAGER_H_
 
-#include <map>
-#include <memory>
-#include <set>
+#include <string>
 
-#include "components/prefs/pref_change_registrar.h"
-#include "components/url_matcher/url_matcher.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class GURL;
-class PrefRegistrySimple;
 
 namespace policy {
 
-// The following const strings are used to parse the policy pref value.
-namespace dlp {
-
-extern const char kClipboardRestriction[];
-extern const char kScreenshotRestriction[];
-extern const char kPrintingRestriction[];
-extern const char kPrivacyScreenRestriction[];
-extern const char kScreenShareRestriction[];
-
-extern const char kArc[];
-extern const char kCrostini[];
-extern const char kPluginVm[];
-
-extern const char kAllowLevel[];
-extern const char kBlockLevel[];
-
-}  // namespace dlp
+class DlpReportingManager;
 
 // DlpRulesManager parses the rules set by DataLeakPreventionRulesList policy
 // and serves as an available service which can be queried anytime about the
 // restrictions set by the policy.
-class DlpRulesManager {
+class DlpRulesManager : public KeyedService {
  public:
   // A restriction that can be set by DataLeakPreventionRulesList policy.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  // When new entries are added, EnterpriseDlpPolicyRestriction enum in
+  // histograms/enums.xml should be updated.
   enum class Restriction {
     kUnknownRestriction = 0,
     kClipboard = 1,      // Restricts sharing the data via clipboard and
@@ -53,7 +37,9 @@ class DlpRulesManager {
                          // confidential content on the screen.
     kScreenShare = 5,    // Restricts screen sharing of confidential content
                          // through 3P extensions/websites.
-    kMaxValue = kScreenShare
+    kFiles = 6,          // Restricts file operations, like copying, uploading
+                         // or opening in an app.
+    kMaxValue = kFiles
   };
 
   // A representation of destinations to which sharing confidential data is
@@ -67,103 +53,66 @@ class DlpRulesManager {
   };
 
   // The enforcement level of the restriction set by DataLeakPreventionRulesList
-  // policy.
+  // policy. Should be listed in the order of increased priority.
   enum class Level {
-    kNotSet,  // Restriction level is not set.
-    kBlock,   // Sets the restriction level to block the user on every action.
-    kAllow,   // Sets the restriction level to allow (no restriction).
+    kNotSet = 0,  // Restriction level is not set.
+    kReport = 1,  // Restriction level to only report on every action.
+    kWarn = 2,    // Restriction level to warn the user on every action.
+    kBlock = 3,   // Restriction level to block the user on every action.
+    kAllow = 4,   // Restriction level to allow (no restriction).
     kMaxValue = kAllow
   };
 
-  using RuleId = int;
-  using UrlConditionId = url_matcher::URLMatcherConditionSet::ID;
-
-  // Creates a singleton instance of the class.
-  static void Init();
-
-  // Returns whether DlpRulesManager was already created after user policy stack
-  // is initialized.
-  static bool IsInitialized();
-
-  // Returns a pointer to the existing instance of the class.
-  static DlpRulesManager* Get();
-
-  // Registers the policy pref.
-  static void RegisterPrefs(PrefRegistrySimple* registry);
+  ~DlpRulesManager() override = default;
 
   // Returns the enforcement level for `restriction` given that data comes
-  // from `source`. ALLOW is returned if no restrictions should be applied.
-  // Requires `restriction` to be one of the following: screenshot, printing,
+  // from `source`. ALLOW is returned if there is no matching rule. Requires
+  // `restriction` to be one of the following: screenshot, printing,
   // privacy screen, screenshare.
-  Level IsRestricted(const GURL& source, Restriction restriction) const;
+  virtual Level IsRestricted(const GURL& source,
+                             Restriction restriction) const = 0;
 
   // Returns the enforcement level for `restriction` given that data comes
   // from `source` and requested to be shared to `destination`. ALLOW is
-  // returned if no restrictions should be applied. Requires `restriction` to be
-  // clipboard.
-  Level IsRestrictedDestination(const GURL& source,
-                                const GURL& destination,
-                                Restriction restriction) const;
+  // returned if there is no matching rule. Requires `restriction` to be
+  // clipboard or files.
+  // If there's a rule matching, `out_source_pattern` and
+  // `out_destination_pattern` will be changed to the original rule URL
+  // patterns.
+  virtual Level IsRestrictedDestination(
+      const GURL& source,
+      const GURL& destination,
+      Restriction restriction,
+      std::string* out_source_pattern,
+      std::string* out_destination_pattern) const = 0;
 
   // Returns the enforcement level for `restriction` given that data comes
   // from `source` and requested to be shared to `destination`. ALLOW is
-  // returned if no restrictions should be applied. Requires `restriction` to be
+  // returned if there is no matching rule. Requires `restriction` to be
   // clipboard.
-  Level IsRestrictedComponent(const GURL& source,
-                              const Component& destination,
-                              Restriction restriction) const;
+  // If there's a rule matching, `out_source_pattern` will be changed to the
+  // original rule URL patterns.
+  virtual Level IsRestrictedComponent(
+      const GURL& source,
+      const Component& destination,
+      Restriction restriction,
+      std::string* out_source_pattern) const = 0;
 
-  // Returns the enforcement level for `restriction` given that data comes
-  // from `source` and requested to be shared to `destinations`. ALLOW is
-  // returned if there is not any restriction should be applied on any of the
-  // `destinations`. Requires `restriction` to be clipboard.
-  Level IsRestrictedAnyOfComponents(const GURL& source,
-                                    const std::vector<Component>& destinations,
-                                    Restriction restriction) const;
+  // Returns true if the general dlp reporting policy is enabled otherwise
+  // false.
+  virtual bool IsReportingEnabled() const = 0;
 
- private:
-  friend class DlpRulesManagerTest;
+  // Returns the reporting manager that is used to report DLPPolicyEvents to the
+  // serverside. Should always return a nullptr if reporting is disabled (see
+  // IsReportingEnabled).
+  virtual DlpReportingManager* GetReportingManager() const = 0;
 
-  DlpRulesManager();
-  ~DlpRulesManager();
-
-  void OnPolicyUpdate();
-
-  // Returns the maximum level of the rules of given `restriction` joined with
-  // the `selected_rules`.
-  Level GetMaxJoinRestrictionLevel(
-      const Restriction restriction,
-      const std::set<RuleId>& selected_rules) const;
-
-  // Returns the maximum level of the rules of given `restriction` joined with
-  // the `source_rules` and `destination_rules`.
-  Level GetMaxJoinRestrictionLevel(
-      const Restriction restriction,
-      const std::set<RuleId>& source_rules,
-      const std::set<RuleId>& destination_rules) const;
-
-  // Used to track kDlpRulesList local state pref.
-  PrefChangeRegistrar pref_change_registrar_;
-
-  // Used to match the URLs of the sources.
-  std::unique_ptr<url_matcher::URLMatcher> src_url_matcher_;
-
-  // Used to match the URLs of the destinations.
-  std::unique_ptr<url_matcher::URLMatcher> dst_url_matcher_;
-
-  // Map from the components to their configured rules IDs.
-  std::map<Component, std::set<RuleId>> components_rules_;
-
-  // Map from the restrictions to their configured rules IDs and levels.
-  std::map<Restriction, std::map<RuleId, Level>> restrictions_map_;
-
-  // Map from the URL matching conditions IDs of the sources to their configured
-  // rules IDs.
-  std::map<UrlConditionId, RuleId> src_url_rules_mapping_;
-
-  // Map from the URL matching conditions IDs of the destinations to their
-  // configured rules IDs.
-  std::map<UrlConditionId, RuleId> dst_url_rules_mapping_;
+  // Returns the URL pattern that `source_url` is matched against. The returned
+  // URL pattern should be configured in a policy rule with the same
+  // `restriction` and `level`.
+  virtual std::string GetSourceUrlPattern(const GURL& source_url,
+                                          Restriction restriction,
+                                          Level level) const = 0;
 };
 
 }  // namespace policy

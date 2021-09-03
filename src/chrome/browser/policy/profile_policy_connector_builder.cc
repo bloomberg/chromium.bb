@@ -9,16 +9,17 @@
 
 #include "base/no_destructor.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/core/common/policy_service_impl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/policy/active_directory_policy_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #else  // Non-ChromeOS.
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
@@ -45,10 +46,9 @@ CreateProfilePolicyConnectorForBrowserContext(
   ConfigurationPolicyProvider* policy_provider = nullptr;
   const CloudPolicyStore* policy_store = nullptr;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   Profile* const profile = Profile::FromBrowserContext(context);
-  if (!chromeos::ProfileHelper::IsSigninProfile(profile) &&
-      !chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+  if (chromeos::ProfileHelper::IsRegularProfile(profile)) {
     user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
     CHECK(user);
   }
@@ -73,7 +73,7 @@ CreateProfilePolicyConnectorForBrowserContext(
     policy_provider = user_cloud_policy_manager;
     policy_store = user_cloud_policy_manager->core()->store();
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   return CreateAndInitProfilePolicyConnector(
       schema_registry, browser_policy_connector, policy_provider, policy_store,

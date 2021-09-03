@@ -22,7 +22,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/display/types/display_constants.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/message_center/public/cpp/notification.h"
 
@@ -64,12 +63,12 @@ ExtensionInstalledNotification::ExtensionInstalledNotification(
 ExtensionInstalledNotification::~ExtensionInstalledNotification() {}
 
 void ExtensionInstalledNotification::Click(
-    const base::Optional<int>& button_index,
-    const base::Optional<base::string16>& reply) {
+    const absl::optional<int>& button_index,
+    const absl::optional<std::u16string>& reply) {
   if (!extensions::util::IsAppLaunchable(extension_id_, profile_))
     return;
 
-  apps::AppServiceProxy* proxy =
+  apps::AppServiceProxyChromeOs* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);
   if (proxy->AppRegistryCache().GetAppType(extension_id_) ==
       apps::mojom::AppType::kUnknown) {
@@ -81,6 +80,5 @@ void ExtensionInstalledNotification::Click(
       apps::GetEventFlags(apps::mojom::LaunchContainer::kLaunchContainerNone,
                           WindowOpenDisposition::NEW_FOREGROUND_TAB,
                           true /* preferred_containner */),
-      apps::mojom::LaunchSource::kFromInstalledNotification,
-      display::kInvalidDisplayId);
+      apps::mojom::LaunchSource::kFromInstalledNotification);
 }

@@ -16,7 +16,6 @@
 #include "v8/include/cppgc/macros.h"
 #include "xfa/fxfa/fxfa_basic.h"
 #include "xfa/fxfa/parser/xfa_basic_data.h"
-#include "xfa/fxfa/parser/xfa_resolvenode_rs.h"
 
 class CFXJSE_NodeHelper;
 
@@ -34,9 +33,7 @@ class CFXJSE_ResolveNodeData {
   XFA_HashCode m_uHashName = XFA_HASHCODE_None;
   int32_t m_nLevel = 0;
   uint32_t m_dwStyles = XFA_RESOLVENODE_Children;
-  XFA_ResolveNodeRS::Type m_dwFlag = XFA_ResolveNodeRS::Type::kNodes;
-  std::vector<UnownedPtr<CXFA_Object>> m_Objects;  // Ok, stack-only.
-  XFA_SCRIPTATTRIBUTEINFO m_ScriptAttribute;
+  CFXJSE_Engine::ResolveResult m_Result;
 };
 
 class CFXJSE_ResolveProcessor {
@@ -48,16 +45,14 @@ class CFXJSE_ResolveProcessor {
   int32_t GetFilter(WideStringView wsExpression,
                     int32_t nStart,
                     CFXJSE_ResolveNodeData& rnd);
-  void SetIndexDataBind(WideString& wsNextCondition,
-                        int32_t& iIndex,
-                        int32_t iCount);
+  int32_t IndexForDataBind(WideString& wsNextCondition, int32_t iCount);
   void SetCurStart(int32_t start) { m_iCurStart = start; }
 
   CFXJSE_NodeHelper* GetNodeHelper() { return m_pNodeHelper.get(); }
 
  private:
   bool ResolveForAttributeRs(CXFA_Object* curNode,
-                             CFXJSE_ResolveNodeData& rnd,
+                             CFXJSE_Engine::ResolveResult* rnd,
                              WideStringView strAttr);
   bool ResolveAnyChild(v8::Isolate* pIsolate, CFXJSE_ResolveNodeData& rnd);
   bool ResolveDollar(v8::Isolate* pIsolate, CFXJSE_ResolveNodeData& rnd);

@@ -117,21 +117,6 @@ class OffscreenSurfaceVk : public SurfaceVk
 // Data structures used in WindowSurfaceVk
 namespace impl
 {
-// The submission fence of the context used to throttle the CPU.
-struct SwapHistory : angle::NonCopyable
-{
-    SwapHistory();
-    SwapHistory(SwapHistory &&other) = delete;
-    SwapHistory &operator=(SwapHistory &&other) = delete;
-    ~SwapHistory();
-
-    void destroy(RendererVk *renderer);
-
-    angle::Result waitFence(ContextVk *contextVk);
-
-    // Fence associated with the last submitted work to render to this swapchain image.
-    vk::Shared<vk::Fence> sharedFence;
-};
 static constexpr size_t kSwapHistorySize = 2;
 
 // Old swapchain and associated present semaphores that need to be scheduled for destruction when
@@ -183,6 +168,7 @@ struct SwapchainImage : angle::NonCopyable
     static constexpr size_t kPresentHistorySize = kSwapHistorySize + 1;
     std::array<ImagePresentHistory, kPresentHistorySize> presentHistory;
     size_t currentPresentHistoryIndex = 0;
+    uint64_t mFrameNumber             = 0;
 };
 }  // namespace impl
 
@@ -203,7 +189,9 @@ class WindowSurfaceVk : public SurfaceVk
     FramebufferImpl *createDefaultFramebuffer(const gl::Context *context,
                                               const gl::FramebufferState &state) override;
     egl::Error swap(const gl::Context *context) override;
-    egl::Error swapWithDamage(const gl::Context *context, EGLint *rects, EGLint n_rects) override;
+    egl::Error swapWithDamage(const gl::Context *context,
+                              const EGLint *rects,
+                              EGLint n_rects) override;
     egl::Error postSubBuffer(const gl::Context *context,
                              EGLint x,
                              EGLint y,
@@ -221,6 +209,8 @@ class WindowSurfaceVk : public SurfaceVk
     // width and height can change with client window resizing
     EGLint getWidth() const override;
     EGLint getHeight() const override;
+    EGLint getRotatedWidth() const;
+    EGLint getRotatedHeight() const;
     // Note: windows cannot be resized on Android.  The approach requires
     // calling vkGetPhysicalDeviceSurfaceCapabilitiesKHR.  However, that is
     // expensive; and there are troublesome timing issues for other parts of
@@ -245,7 +235,7 @@ class WindowSurfaceVk : public SurfaceVk
 
     vk::Semaphore getAcquireImageSemaphore();
 
-    VkSurfaceTransformFlagBitsKHR getPreTransform()
+    VkSurfaceTransformFlagBitsKHR getPreTransform() const
     {
         if (mEmulatedPreTransform != VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
         {
@@ -254,9 +244,11 @@ class WindowSurfaceVk : public SurfaceVk
         return mPreTransform;
     }
 
+    egl::Error getBufferAge(const gl::Context *context, EGLint *age) override;
+
   protected:
     angle::Result swapImpl(const gl::Context *context,
-                           EGLint *rects,
+                           const EGLint *rects,
                            EGLint n_rects,
                            const void *pNextChain);
 
@@ -293,7 +285,7 @@ class WindowSurfaceVk : public SurfaceVk
                                           VkResult result,
                                           bool *presentOutOfDate);
     angle::Result present(ContextVk *contextVk,
-                          EGLint *rects,
+                          const EGLint *rects,
                           EGLint n_rects,
                           const void *pNextChain,
                           bool *presentOutOfDate);
@@ -317,9 +309,9 @@ class WindowSurfaceVk : public SurfaceVk
     VkSurfaceTransformFlagBitsKHR mEmulatedPreTransform;
     VkCompositeAlphaFlagBitsKHR mCompositeAlpha;
 
-    // A circular buffer that stores the submission fence of the context on every swap.  The CPU is
-    // throttled by waiting for the 2nd previous serial to finish.
-    std::array<impl::SwapHistory, impl::kSwapHistorySize> mSwapHistory;
+    // A circular buffer that stores the serial of the submission fence of the context on every
+    // swap. The CPU is throttled by waiting for the 2nd previous serial to finish.
+    std::array<Serial, impl::kSwapHistorySize> mSwapHistory;
     size_t mCurrentSwapHistoryIndex;
 
     // The previous swapchain which needs to be scheduled for destruction when appropriate.  This
@@ -351,6 +343,9 @@ class WindowSurfaceVk : public SurfaceVk
 
     // True when acquiring the next image is deferred.
     bool mNeedToAcquireNextSwapchainImage;
+
+    // EGL_EXT_buffer_age: Track frame count.
+    uint64_t mFrameCount;
 };
 
 }  // namespace rx

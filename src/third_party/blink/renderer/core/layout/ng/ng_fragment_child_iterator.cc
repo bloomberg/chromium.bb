@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -18,7 +17,6 @@ NGFragmentChildIterator::NGFragmentChildIterator(
     : parent_fragment_(&parent),
       parent_break_token_(parent_break_token),
       is_fragmentation_context_root_(parent.IsFragmentationContextRoot()) {
-  DCHECK(RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled());
   current_.link_.fragment = nullptr;
   if (parent_break_token)
     child_break_tokens_ = parent_break_token->ChildBreakTokens();
@@ -101,29 +99,55 @@ void NGFragmentChildIterator::UpdateSelfFromFragment(
         layout_object !=
             current_.block_break_token_->InputNode().GetLayoutBox()) {
       DCHECK(current_.link_.fragment->IsColumnSpanAll() ||
-             current_.block_break_token_->InputNode().IsOutOfFlowPositioned());
+             // List markers are |IsMonolithic| that the flag doesn't matter.
+             current_.link_.fragment->IsListMarker());
       current_.break_token_for_fragmentainer_only_ = true;
     } else {
       current_.break_token_for_fragmentainer_only_ = false;
     }
   } else if (is_fragmentation_context_root_ && previous_fragment) {
+    // The outgoing break token from one fragmentainer is the incoming break
+    // token to the next one. This is also true when there are column spanners
+    // (and other types of non-fragmentainers) between two columns
+    // (fragmentainers); the outgoing break token from the former column will be
+    // ignored by any intervening spanners (and other non-fragmentainers), and
+    // then fed into the first column that comes after them, as an incoming
+    // break token.
+    //
+    // A multicol container may contain other kinds of children than
+    // fragmentainers, such as a column spanner, a list item marker (if the
+    // multicol container is a list item), a rendered legend (if the parent
+    // fieldset also establishes a multicol container), or an out-of-flow
+    // positioned fragment whose containing block is the multicol container
+    // itself (in which case the OOF doesn't participate in the fragmentation
+    // context established by the multicol container). We'll leave
+    // |current_.block_break_token_| alone then, as it will be used as an
+    // incoming break token when we get to the next column.
     if (previous_fragment->IsFragmentainerBox()) {
-      // The outgoing break token from one fragmentainer is the incoming break
-      // token to the next one. This is also true when there are column spanners
-      // between two columns (fragmentainers); the outgoing break token from the
-      // former column will be ignored by any intervening spanners, and then fed
-      // into the first column that comes after them, as an incoming break
-      // token.
       current_.block_break_token_ =
           To<NGBlockBreakToken>(previous_fragment->BreakToken());
       current_.break_token_for_fragmentainer_only_ = true;
-    } else {
-      // This is a column spanner, or in the case of a fieldset, this could be a
-      // rendered legend. We'll leave |current_block_break_token_| alone here,
-      // as it will be used as in incoming break token when we get to the next
-      // column.
-      DCHECK(previous_fragment->IsRenderedLegend() ||
-             previous_fragment->IsColumnSpanAll());
+    }
+  } else if (current_.link_.fragment->IsOutOfFlowPositioned() &&
+             !To<NGPhysicalBoxFragment>(current_.link_.fragment)
+                  ->IsFirstForNode()) {
+    // If an out-of-flow positioned element fragments beyond the last existing
+    // fragmentainer in a nested fragmentation context, instead of creating a
+    // new fragmentainer to hold it, we add it to the last existing
+    // fragmentainer at the correct inline offset. Therefore, in order to find
+    // the corrcet incoming break token in such cases, we must look for any
+    // previous fragments inside |children| that were created by the same node.
+    current_.block_break_token_ = nullptr;
+    const auto* layout_object = current_.link_.fragment->GetLayoutObject();
+    DCHECK(layout_object);
+    for (wtf_size_t index = child_fragment_idx_; index > 0; index--) {
+      const auto* child_fragment = children[index - 1].fragment;
+      if (layout_object == child_fragment->GetLayoutObject()) {
+        current_.block_break_token_ = To<NGBlockBreakToken>(
+            To<NGPhysicalBoxFragment>(child_fragment)->BreakToken());
+        current_.break_token_for_fragmentainer_only_ = false;
+        break;
+      }
     }
   } else {
     current_.block_break_token_ = nullptr;
@@ -156,7 +180,7 @@ void NGFragmentChildIterator::UpdateSelfFromCursor() {
     current_.link_.fragment = nullptr;
     return;
   }
-  current_.link_ = {item->BoxFragment(), item->OffsetInContainerBlock()};
+  current_.link_ = {item->BoxFragment(), item->OffsetInContainerFragment()};
 }
 
 void NGFragmentChildIterator::SkipToBoxFragment() {
@@ -169,9 +193,17 @@ void NGFragmentChildIterator::SkipToBoxFragment() {
 
 void NGFragmentChildIterator::SkipToBlockBreakToken() {
   // There may be inline break tokens here. Ignore them.
-  while (child_break_token_idx_ < child_break_tokens_.size() &&
-         !child_break_tokens_[child_break_token_idx_]->IsBlockType())
+  while (child_break_token_idx_ < child_break_tokens_.size()) {
+    const auto* current_break_token = DynamicTo<NGBlockBreakToken>(
+        child_break_tokens_[child_break_token_idx_]);
+    // Skip over any out-of-flow positioned break tokens that are the result of
+    // a break before.
+    if (current_break_token &&
+        (!current_break_token->InputNode().IsOutOfFlowPositioned() ||
+         !current_break_token->IsBreakBefore()))
+      return;
     child_break_token_idx_++;
+  }
 }
 
 }  // namespace blink

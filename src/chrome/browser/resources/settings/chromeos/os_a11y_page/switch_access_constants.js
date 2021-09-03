@@ -3,26 +3,22 @@
 // found in the LICENSE file.
 
 /**
- * Available switch assignment values.
- * @enum {number}
- */
-const SwitchAccessAssignmentValue = {
-  NONE: 0,
-  ONE: 1,
-  TWO: 2,
-  THREE: 3,
-  FOUR: 4,
-  FIVE: 5,
-  SPACE: 6,
-  ENTER: 7,
-};
-
-/**
  * Available commands.
  * @enum {string}
  */
-const SwitchAccessCommand = {
+/* #export */ const SwitchAccessCommand = {
   NEXT: 'next',
   PREVIOUS: 'previous',
   SELECT: 'select'
+};
+
+/**
+ * Possible device types for Switch Access.
+ * @enum {string}
+ */
+/* #export */ const SwitchAccessDeviceType = {
+  INTERNAL: 'internal',
+  USB: 'usb',
+  BLUETOOTH: 'bluetooth',
+  UNKNOWN: 'unknown'
 };

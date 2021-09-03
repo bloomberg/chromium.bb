@@ -105,7 +105,7 @@ AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     std::unique_ptr<ResponseDelegate> response_delegate,
-    base::Optional<SecurityOptions> security_options)
+    absl::optional<SecurityOptions> security_options)
     : resource_request_(resource_request),
       response_head_(network::mojom::URLResponseHead::New()),
       reject_cors_request_(false),
@@ -142,7 +142,7 @@ void AndroidStreamReaderURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const net::HttpRequestHeaders& modified_cors_exempt_headers,
-    const base::Optional<GURL>& new_url) {}
+    const absl::optional<GURL>& new_url) {}
 void AndroidStreamReaderURLLoader::SetPriority(net::RequestPriority priority,
                                                int intra_priority_value) {}
 void AndroidStreamReaderURLLoader::PauseReadingBodyFromNet() {}
@@ -285,8 +285,8 @@ void AndroidStreamReaderURLLoader::HeadersComplete(
 void AndroidStreamReaderURLLoader::SendBody() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (CreateDataPipe(nullptr /*options*/, &producer_handle_,
-                     &consumer_handle_) != MOJO_RESULT_OK) {
+  if (CreateDataPipe(nullptr /*options*/, producer_handle_, consumer_handle_) !=
+      MOJO_RESULT_OK) {
     RequestComplete(net::ERR_FAILED);
     return;
   }

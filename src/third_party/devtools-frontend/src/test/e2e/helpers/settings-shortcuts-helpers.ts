@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import {assert} from 'chai';
-import {ElementHandle} from 'puppeteer';
+import type {ElementHandle} from 'puppeteer';
 import {$$, $$textContent, click, platform, selectOption, waitFor, waitForElementsWithTextContent, waitForElementWithTextContent, waitForFunction} from '../../shared/helper.js';
 
 const CANCEL_BUTTON_SELECTOR = '[aria-label="Discard changes"]';
@@ -28,6 +28,7 @@ export let CONTROL_1_CONTROL_2_CHORD_DISPLAY_TEXT = ['Ctrl1Ctrl2'];
 export let CONTROL_2_SHORTCUT_DISPLAY_TEXT = ['Ctrl2'];
 export let CONSOLE_SHORTCUT_INPUT_TEXT = ['Ctrl + `'];
 export let CONSOLE_SHORTCUT_DISPLAY_TEXT = ['Ctrl`'];
+export let CONTROL_ALT_C_SHORTCUT_INPUT_TEXT = ['Ctrl + Alt + C'];
 if (platform === 'mac') {
   VS_CODE_SHORTCUTS_SHORTCUTS = ['⌘ K⌘ S'];
   VS_CODE_SETTINGS_SHORTCUTS = ['⇧ ?', '⌘ ,'];
@@ -41,6 +42,7 @@ if (platform === 'mac') {
   CONTROL_2_SHORTCUT_DISPLAY_TEXT = CONTROL_2_SHORTCUT_INPUT_TEXT;
   CONSOLE_SHORTCUT_INPUT_TEXT = ['Ctrl `'];
   CONSOLE_SHORTCUT_DISPLAY_TEXT = CONSOLE_SHORTCUT_INPUT_TEXT;
+  CONTROL_ALT_C_SHORTCUT_INPUT_TEXT = ['Ctrl ⌥ C'];
 }
 
 export const selectKeyboardShortcutPreset = async (option: string) => {
@@ -77,10 +79,13 @@ export const editShortcutListItem = async (shortcutText: string) => {
 
 export const shortcutsForAction = async (shortcutText: string) => {
   const listItemElement = await getShortcutListItemElement(shortcutText);
-  const shortcutElements = await ((listItemElement as ElementHandle).$$(SHORTCUT_DISPLAY_SELECTOR));
+  if (!listItemElement) {
+    assert.fail(`Could not find shortcut item with text ${shortcutText}`);
+  }
+  const shortcutElements = await listItemElement.$$(SHORTCUT_DISPLAY_SELECTOR);
   const shortcutElementsTextContent =
       await Promise.all(shortcutElements.map(element => element.getProperty('textContent')));
-  return Promise.all(shortcutElementsTextContent.map(textContent => textContent.jsonValue()));
+  return Promise.all(shortcutElementsTextContent.map(async textContent => textContent ? await textContent.jsonValue<string>() : []));
 };
 
 export const shortcutInputValues = async () => {
@@ -89,7 +94,7 @@ export const shortcutInputValues = async () => {
     assert.fail('shortcut input not found');
   }
   const shortcutValues = await Promise.all(shortcutInputs.map(async input => input.getProperty('value')));
-  return Promise.all(shortcutValues.map(async value => value.jsonValue()));
+  return Promise.all(shortcutValues.map(async value => value ? await value.jsonValue<string>() : []));
 };
 
 export const clickAddShortcutLink = async () => {
@@ -133,7 +138,8 @@ export const waitForEmptyShortcutInput = async () => {
   await waitForFunction(async () => {
     const shortcutInputs = await $$(SHORTCUT_INPUT_SELECTOR);
     const shortcutInputValues = await Promise.all(shortcutInputs.map(input => input.getProperty('value')));
-    const shortcutInputValueStrings = await Promise.all(shortcutInputValues.map(value => value.jsonValue()));
+    const shortcutInputValueStrings =
+        await Promise.all(shortcutInputValues.map(value => value ? value.jsonValue() : {}));
     return shortcutInputValueStrings.includes('');
   });
 };

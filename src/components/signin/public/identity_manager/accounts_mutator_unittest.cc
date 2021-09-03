@@ -5,9 +5,9 @@
 #include "components/signin/internal/identity_manager/accounts_mutator_impl.h"
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
+#include "build/chromeos_buildflags.h"
 #include "components/signin/public/base/device_id_helper.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -17,11 +17,12 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
 const char kTestEmail[] = "test_user@test.com";
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 const char kTestGaiaId[] = "gaia-id-test_user-test.com";
 const char kTestGaiaId2[] = "gaia-id-test_user-2-test.com";
 const char kTestEmail2[] = "test_user@test-2.com";
@@ -156,7 +157,7 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
   accounts_mutator()->UpdateAccountInfo(
       account_id,
       /*is_child_account=*/true,
-      /*is_under_advanced_protection=*/base::nullopt);
+      /*is_under_advanced_protection=*/absl::nullopt);
   AccountInfo updated_account_info_1 =
       identity_manager()
           ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
@@ -174,7 +175,7 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
             original_account_info.is_under_advanced_protection);
 
   accounts_mutator()->UpdateAccountInfo(account_id,
-                                        /*is_child_account=*/base::nullopt,
+                                        /*is_child_account=*/absl::nullopt,
                                         /*is_under_advanced_protection=*/true);
   AccountInfo updated_account_info_2 =
       identity_manager()
@@ -212,7 +213,7 @@ TEST_F(AccountsMutatorTest, UpdateAccountInfo) {
   EXPECT_FALSE(reset_account_info.is_under_advanced_protection);
 }
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // Test that a new account gets added to the AccountTrackerService when calling
 // AddOrUpdateAccount() and that a new refresh token becomes available for the
 // passed account_id when adding an account for the first time.
@@ -333,8 +334,8 @@ TEST_F(AccountsMutatorTest,
 
   // Set up the primary account.
   std::string primary_account_email("primary.account@example.com");
-  AccountInfo primary_account_info =
-      MakePrimaryAccountAvailable(identity_manager(), primary_account_email);
+  AccountInfo primary_account_info = MakePrimaryAccountAvailable(
+      identity_manager(), primary_account_email, signin::ConsentLevel::kSync);
 
   // Now try invalidating the primary account, and check that it gets updated.
   base::RunLoop run_loop;
@@ -371,8 +372,8 @@ TEST_F(
 
   // Set up the primary account.
   std::string primary_account_email("primary.account@example.com");
-  AccountInfo primary_account_info =
-      MakePrimaryAccountAvailable(identity_manager(), primary_account_email);
+  AccountInfo primary_account_info = MakePrimaryAccountAvailable(
+      identity_manager(), primary_account_email, signin::ConsentLevel::kSync);
 
   // Next, add a secondary account.
   base::RunLoop run_loop;
@@ -435,7 +436,8 @@ TEST_F(AccountsMutatorTest,
   if (!accounts_mutator())
     return;
 
-  EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+  EXPECT_FALSE(
+      identity_manager()->HasPrimaryAccount(signin::ConsentLevel::kSync));
 
   // Now try invalidating the primary account, and make sure the test
   // expectedly fails, since the primary account is not set.
@@ -617,7 +619,7 @@ TEST_F(AccountsMutatorTest, RemoveRefreshTokenFromSource) {
   EXPECT_EQ("Settings::Signout",
             identity_manager_diagnostics_observer()->token_remover_source());
 }
-#endif  // !defined(OS_CHROMEOS)
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 TEST_F(AccountsMutatorTest, MoveAccount) {

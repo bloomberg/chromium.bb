@@ -5,14 +5,10 @@
 #ifndef BASE_TASK_THREAD_POOL_DELAYED_TASK_MANAGER_H_
 #define BASE_TASK_THREAD_POOL_DELAYED_TASK_MANAGER_H_
 
-#include <memory>
-#include <utility>
-
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/common/checked_lock.h"
 #include "base/task/common/intrusive_heap.h"
@@ -20,6 +16,7 @@
 #include "base/thread_annotations.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 
@@ -59,7 +56,7 @@ class BASE_EXPORT DelayedTaskManager {
   void ProcessRipeTasks();
 
   // Returns the |delayed_run_time| of the next scheduled task, if any.
-  Optional<TimeTicks> NextScheduledRunTime() const;
+  absl::optional<TimeTicks> NextScheduledRunTime() const;
 
  private:
   struct DelayedTask {

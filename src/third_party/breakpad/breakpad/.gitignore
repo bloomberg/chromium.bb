@@ -44,8 +44,10 @@ lib*.a
 /src/processor/minidump_dump
 /src/processor/minidump_stackwalk
 /src/tools/linux/core2md/core2md
+/src/tools/linux/core_handler/core_handler
 /src/tools/linux/dump_syms/dump_syms
 /src/tools/linux/md2core/minidump-2-core
+/src/tools/linux/pid2md/pid2md
 /src/tools/linux/symupload/minidump_upload
 /src/tools/linux/symupload/sym_upload
 /src/tools/mac/dump_syms/dump_syms

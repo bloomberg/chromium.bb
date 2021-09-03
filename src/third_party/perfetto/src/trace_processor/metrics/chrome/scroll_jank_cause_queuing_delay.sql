@@ -16,6 +16,19 @@
 SELECT RUN_METRIC('chrome/chrome_thread_slice_with_cpu_time.sql');
 SELECT RUN_METRIC('chrome/scroll_flow_event_queuing_delay.sql');
 
+-- See b/184134310 why we remove ThreadController active.
+DROP VIEW IF EXISTS blocking_tasks_no_threadcontroller_active;
+CREATE VIEW blocking_tasks_no_threadcontroller_active AS
+ SELECT
+    slice.*,
+    ancestor.id AS task_ancestor_id,
+    ancestor.name AS task_ancestor_name
+  FROM
+    chrome_thread_slice_with_cpu_time AS slice LEFT JOIN
+    ancestor_slice(slice.id) as ancestor ON ancestor.id = slice.parent_id
+  WHERE
+    slice.name != "ThreadController active" AND
+    (slice.depth = 0 OR ancestor.name = "ThreadController active");
 
 -- This view grabs any slice that could have prevented any GestureScrollUpdate
 -- flow event from being run (queuing delays). For RunTask we know that its
@@ -25,12 +38,15 @@ SELECT RUN_METRIC('chrome/scroll_flow_event_queuing_delay.sql');
 -- See b/166441398 & crbug/1094361 for why we remove the -to-End step. In
 -- essence -to-End is often reported on the ThreadPool after the fact with
 -- explicit timestamps so it being blocked isn't noteworthy.
+--
+-- See b/184134310 for why we allow depth == 1 and ancestor.id is null (which
+-- implies its a "ThreadController active" slice because we removed it
+-- previously).
 DROP TABLE IF EXISTS blocking_tasks_queuing_delay;
-
 CREATE TABLE blocking_tasks_queuing_delay AS
   SELECT
-    EXTRACT_ARG(arg_set_id, "task.posted_from.file_name") as file,
-    EXTRACT_ARG(arg_set_id, "task.posted_from.function_name") as function,
+    EXTRACT_ARG(slice.arg_set_id, "task.posted_from.file_name") as file,
+    EXTRACT_ARG(slice.arg_set_id, "task.posted_from.function_name") as function,
     trace_id,
     queuing_time_ns,
     next_track_id,
@@ -56,13 +72,14 @@ CREATE TABLE blocking_tasks_queuing_delay AS
     slice.*
   FROM
     scroll_flow_event_queuing_delay queuing JOIN
-    chrome_thread_slice_with_cpu_time slice ON
+    blocking_tasks_no_threadcontroller_active AS slice ON
         slice.ts + slice.dur > queuing.ancestor_end AND
         queuing.maybe_next_ancestor_ts > slice.ts AND
         slice.track_id = queuing.next_track_id AND
-        slice.depth = 0 AND
         queuing.description NOT LIKE
-            "InputLatency.LatencyInfo.%ank.STEP_DRAW_AND_SWAP-to-End"
+            "InputLatency.LatencyInfo.%ank.STEP_DRAW_AND_SWAP-to-End" AND
+        queuing.description NOT LIKE
+            "InputLatency.LatencyInfo.%ank.STEP_FINISHED_SWAP_BUFFERS-to-End"
   WHERE
     queuing_time_ns IS NOT NULL AND
     queuing_time_ns > 0;
@@ -73,14 +90,20 @@ CREATE TABLE blocking_tasks_queuing_delay AS
 -- descendant slice. So all fields in base.* will be repeated ONCE for each
 -- child, but if it has no slice it will occur only once but all the
 -- |descendant_.*| fields will be NULL because of the LEFT JOIN.
+-- Additionally for mojo events, append "(interface_name)" to the end of the
+-- descendant name.
 DROP VIEW IF EXISTS all_descendant_blocking_tasks_queuing_delay;
-
 CREATE VIEW all_descendant_blocking_tasks_queuing_delay AS
   SELECT
     descendant.id AS descendant_id,
     descendant.ts AS descendant_ts,
     descendant.dur AS descendant_dur,
-    descendant.name AS descendant_name,
+    COALESCE(descendant.name || "(" ||
+      IIF(descendant.arg_set_id IS NOT NULL,
+          EXTRACT_ARG(descendant.arg_set_id,
+              "chrome_mojo_event_info.watcher_notify_interface_tag"),
+          NULL) || ")",
+      descendant.name) AS descendant_name,
     descendant.parent_id As descendant_parent_id,
     descendant.depth AS descendant_depth,
     base.*
@@ -89,7 +112,6 @@ CREATE VIEW all_descendant_blocking_tasks_queuing_delay AS
     descendant_slice(base.id) AS descendant;
 
 DROP TABLE IF EXISTS all_descendant_blocking_tasks_queuing_delay_with_cpu_time;
-
 CREATE TABLE all_descendant_blocking_tasks_queuing_delay_with_cpu_time AS
   SELECT
     cpu.slice_cpu_time AS descendant_slice_cpu_time,
@@ -118,7 +140,6 @@ CREATE TABLE all_descendant_blocking_tasks_queuing_delay_with_cpu_time AS
 -- compute the siblings as the count of all slices with the same parent minus
 -- the current slice.
 DROP VIEW IF EXISTS counted_descendant_blocking_tasks_queuing_delay;
-
 CREATE VIEW counted_descendant_blocking_tasks_queuing_delay AS
   SELECT
     base.*,
@@ -139,7 +160,6 @@ CREATE VIEW counted_descendant_blocking_tasks_queuing_delay AS
 -- to include single descendant slices in our metric name to keep it easy to
 -- reason about what that code is doing.
 DROP VIEW IF EXISTS blocking_tasks_queuing_delay_with_invalid_depth;
-
 CREATE VIEW blocking_tasks_queuing_delay_with_invalid_depth AS
   SELECT
     base.*,
@@ -170,7 +190,6 @@ CREATE VIEW blocking_tasks_queuing_delay_with_invalid_depth AS
 -- descendant if their depth is less than the first depth with siblings (the
 -- |invalid_depth|).
 DROP VIEW IF EXISTS descendant_blocking_tasks_queuing_delay;
-
 CREATE VIEW descendant_blocking_tasks_queuing_delay AS
   SELECT
     id,
@@ -237,7 +256,6 @@ CREATE VIEW descendant_blocking_tasks_queuing_delay AS
 
 -- Create a common name for each "cause" based on the slice stack we found.
 DROP VIEW IF EXISTS scroll_jank_cause_queuing_delay_temp;
-
 CREATE VIEW scroll_jank_cause_queuing_delay_temp AS
   SELECT
     CASE WHEN name = "ThreadControllerImpl::RunTask" THEN
@@ -251,8 +269,7 @@ CREATE VIEW scroll_jank_cause_queuing_delay_temp AS
 
 -- Figure out the average time taken during non-janky scrolls updates for each
 -- TraceEvent (metric_name) stack.
-DROP VIEW IF EXISTS scroll_jank_cause_queuing_delay_average_time;
-
+DROP VIEW IF EXISTS scroll_jank_cause_queuing_delay_average_no_jank_time;
 CREATE VIEW scroll_jank_cause_queuing_delay_average_no_jank_time AS
   SELECT
     location,
@@ -263,9 +280,8 @@ CREATE VIEW scroll_jank_cause_queuing_delay_average_no_jank_time AS
 
 -- Join every row (jank and non-jank with the average non-jank time for the
 -- given metric_name).
-DROP VIEW IF EXISTS scroll_jank_cause_queuing_delay;
-
-CREATE VIEW scroll_jank_cause_queuing_delay AS
+DROP VIEW IF EXISTS scroll_jank_cause_queuing_delay_unannotated;
+CREATE VIEW scroll_jank_cause_queuing_delay_unannotated AS
   SELECT
     base.*,
     'InputLatency.LatencyInfo.Flow.QueuingDelay.' ||
@@ -277,3 +293,14 @@ CREATE VIEW scroll_jank_cause_queuing_delay AS
     scroll_jank_cause_queuing_delay_temp base LEFT JOIN
     scroll_jank_cause_queuing_delay_average_no_jank_time avg_no_jank ON
         base.location = avg_no_jank.location;
+
+-- Annotate with process and thread names.
+DROP VIEW IF EXISTS scroll_jank_cause_queuing_delay;
+CREATE VIEW scroll_jank_cause_queuing_delay AS
+SELECT p.process_type AS process_name, ct.canonical_name AS thread_name, s.*
+FROM scroll_jank_cause_queuing_delay_unannotated s,
+  thread_track tt, chrome_thread ct,
+  chrome_process p
+WHERE s.track_id = tt.id
+  AND tt.utid = ct.utid
+  AND ct.upid = p.upid;

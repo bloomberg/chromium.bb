@@ -6,10 +6,13 @@ package org.chromium.chrome.browser.password_manager.settings;
 
 import android.content.Context;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.Callback;
 import org.chromium.base.IntStringCallback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 
 /**
  * Production implementation of PasswordManagerHandler, making calls to native C++ code to retrieve
@@ -47,6 +50,13 @@ public final class PasswordUIView implements PasswordManagerHandler {
     @CalledByNative
     private void passwordExceptionListAvailable(int count) {
         mObserver.passwordExceptionListAvailable(count);
+    }
+
+    @Override
+    @VisibleForTesting
+    public void insertPasswordEntryForTesting(String origin, String username, String password) {
+        PasswordUIViewJni.get().insertPasswordEntryForTesting(
+                mNativePasswordUIViewAndroid, origin, username, password);
     }
 
     // Calls native to refresh password and exception lists. The native code calls back into
@@ -89,9 +99,15 @@ public final class PasswordUIView implements PasswordManagerHandler {
     }
 
     @Override
-    public void showPasswordEntryEditingView(Context context, int index) {
-        PasswordUIViewJni.get().handleShowPasswordEntryEditingView(
-                mNativePasswordUIViewAndroid, PasswordUIView.this, context, index);
+    public void showPasswordEntryEditingView(Context context, SettingsLauncher settingsLauncher,
+            int index, boolean isBlockedCredential) {
+        if (isBlockedCredential) {
+            PasswordUIViewJni.get().handleShowBlockedCredentialView(mNativePasswordUIViewAndroid,
+                    context, settingsLauncher, index, PasswordUIView.this);
+            return;
+        }
+        PasswordUIViewJni.get().handleShowPasswordEntryEditingView(mNativePasswordUIViewAndroid,
+                context, settingsLauncher, index, PasswordUIView.this);
     }
 
     /**
@@ -121,6 +137,8 @@ public final class PasswordUIView implements PasswordManagerHandler {
     @NativeMethods
     interface Natives {
         long init(PasswordUIView caller);
+        void insertPasswordEntryForTesting(
+                long nativePasswordUIViewAndroid, String origin, String username, String password);
         void updatePasswordLists(long nativePasswordUIViewAndroid, PasswordUIView caller);
         SavedPasswordEntry getSavedPasswordEntry(
                 long nativePasswordUIViewAndroid, PasswordUIView caller, int index);
@@ -136,7 +154,9 @@ public final class PasswordUIView implements PasswordManagerHandler {
         void handleSerializePasswords(long nativePasswordUIViewAndroid, PasswordUIView caller,
                 String targetPath, IntStringCallback successCallback,
                 Callback<String> errorCallback);
-        void handleShowPasswordEntryEditingView(long nativePasswordUIViewAndroid,
-                PasswordUIView caller, Context context, int index);
+        void handleShowPasswordEntryEditingView(long nativePasswordUIViewAndroid, Context context,
+                SettingsLauncher launcher, int index, PasswordUIView caller);
+        void handleShowBlockedCredentialView(long nativePasswordUIViewAndroid, Context context,
+                SettingsLauncher launcher, int index, PasswordUIView caller);
     }
 }

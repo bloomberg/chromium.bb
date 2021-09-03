@@ -14,7 +14,6 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_suite.h"
 #include "base/trace_event/process_memory_dump.h"
@@ -22,7 +21,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
-#include "third_party/leveldatabase/leveldb_features.h"
 #include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
@@ -114,6 +112,8 @@ bool GetFirstLDBFile(const base::FilePath& dir, base::FilePath* ldb_file) {
 }
 
 TEST(ChromiumEnv, RemoveBackupTables) {
+  base::test::TaskEnvironment env(
+      base::test::TaskEnvironment::MainThreadType::UI);
   Options options;
   options.create_if_missing = true;
   options.env = Env::Default();
@@ -594,8 +594,11 @@ TEST(ChromiumLevelDB, DeleteInMemoryDB) {
   ASSERT_TRUE(scoped_temp_dir.CreateUniqueTempDir());
 
   // First create an on-disk db with an extra file.
-  const base::FilePath db_path = scoped_temp_dir.GetPath().AppendASCII("db");
-  base::FilePath temp_path = db_path.Append(FILE_PATH_LITERAL("Test file.txt"));
+  const base::FilePath db_path =
+      scoped_temp_dir.GetPath().AppendASCII("db").NormalizePathSeparatorsTo(
+          '/');
+  base::FilePath temp_path = db_path.Append(FILE_PATH_LITERAL("Test file.txt"))
+                                 .NormalizePathSeparatorsTo('/');
   leveldb_env::Options on_disk_options;
   on_disk_options.create_if_missing = true;
 
@@ -653,9 +656,7 @@ TEST(ChromiumLevelDB, DeleteInMemoryDB) {
 
 class ChromiumLevelDBRebuildTest : public ::testing::Test {
  protected:
-  ChromiumLevelDBRebuildTest() {
-    feature_list_.InitAndEnableFeature(leveldb::kLevelDBRewriteFeature);
-  }
+  ChromiumLevelDBRebuildTest() = default;
 
   void SetUp() override {
     testing::Test::SetUp();
@@ -665,7 +666,6 @@ class ChromiumLevelDBRebuildTest : public ::testing::Test {
   const base::FilePath& temp_path() const { return scoped_temp_dir_.GetPath(); }
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   base::ScopedAllowBlockingForTesting allow_blocking_;
   base::ScopedTempDir scoped_temp_dir_;
 };

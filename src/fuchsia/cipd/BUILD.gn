@@ -8,6 +8,8 @@ assert(is_fuchsia)
 
 import("//build/cipd/cipd.gni")
 import("//build/util/process_version.gni")
+import("//third_party/fuchsia-sdk/sdk/build/build_id_dir.gni")
+import("//third_party/fuchsia-sdk/sdk/build/cipd.gni")
 
 # gn binary location.
 if (host_os == "mac") {
@@ -29,24 +31,49 @@ process_version("build_id") {
   process_only = true
 }
 
-# Prepares a CIPD archive and generates a manifest file.
+if (target_cpu == "x64") {
+  targetarch = "amd64"
+} else {
+  targetarch = "arm64"
+}
+
+# Prepares a CIPD archive, produces a corresponding LICENSE file and generates
+# a manifest file.
 #
 # Parameters:
-#   package_definition_yaml: The filename to use for the generated CIPD YAML
-#                            file.
-#   package: The path where the package will be located inside the CIPD
-#            repository.
-#   description: Sets the "description" field in CIPD metadata.
-#   install_mode: String, should be either "symlink" or "copy".
-#   deps: A list of targets to build prior to copying files.
-#   sources: A list of files to copy into the staging root.
+#   package_basename: Determines the package basename in CIPD. Only required if
+#                     |package_relative_path| is not specified
+#   package_relative_path: Specify the package location relative to the fuchsia/
+#                          CIPD subdirectory. Defaults to a package name
+#                          based on |package_basename|.
+#   description: Sets the "description" field in CIPD package definition.
+#
+# Optional parameters used directly by fuchsia_cipd_package template:
+#   "install_mode",
+#   "sources",
+#   "data",
+#   "data_deps"
+#   "deps",
+#   "testonly",
+
 template("cipd_archive") {
   forward_variables_from(invoker,
                          [
-                           "deps",
+                           "package_basename",
+                           "package_relative_path",
+                           "description",
+                           "install_mode",
                            "sources",
+                           "data",
+                           "data_deps",
+                           "deps",
                            "testonly",
                          ])
+
+  assert(
+      (defined(package_basename) && !defined(package_relative_path)) ||
+          (!defined(package_basename) && defined(package_relative_path)),
+      "only one of \"package_basename\" and \"package_relative_path\" should be set")
 
   # Produces a consolidated license file.
   action("${target_name}_license") {
@@ -69,30 +96,53 @@ template("cipd_archive") {
   if (!defined(deps)) {
     deps = []
   }
-  deps += [
-    ":${target_name}_license",
-    ":build_id",
-  ]
+  deps += [ ":${target_name}_license" ]
 
   if (!defined(sources)) {
     sources = []
   }
   sources += get_target_outputs(":${target_name}_license")
 
-  cipd_package_definition(target_name) {
-    forward_variables_from(invoker,
-                           [
-                             "description",
-                             "install_mode",
-                             "package",
-                             "package_definition_yaml",
-                           ])
+  fuchsia_cipd_package(target_name) {
+    if (!defined(package_relative_path)) {
+      package_relative_path = "${package_basename}-$targetarch"
+    }
+
+    package = "chromium/fuchsia/${package_relative_path}"
+
+    if (!defined(package_definition_name)) {
+      package_definition_name = "${target_name}.yaml"
+    }
+
+    # Always use absolute path.
+    use_absolute_root_path = true
+  }
+
+  # TODO (crbug.com/1169400): Remove this target when Fuchsia side is ready to
+  # transition.
+  fuchsia_cipd_package("${target_name}_google") {
+    if (!defined(package_relative_path)) {
+      if (target_cpu == "x64") {
+        targetarch = "amd64"
+      } else {
+        targetarch = "arm64"
+      }
+      package_relative_path = "${package_basename}-$targetarch"
+    }
+
+    package = "chrome_internal/fuchsia/${package_relative_path}"
+
+    if (!defined(package_definition_name)) {
+      package_definition_name = "${target_name}.yaml"
+    }
+
+    # Always use absolute path.
+    use_absolute_root_path = true
   }
 }
 
 cipd_archive("webrunner") {
-  package_definition_yaml = "webrunner.yaml"
-  package = "chromium/fuchsia/webrunner-\${targetarch}"
+  package_basename = "webrunner"
   description = "Prebuilt Chrome and Web Runner binaries for Fuchsia."
 
   deps = [
@@ -100,7 +150,6 @@ cipd_archive("webrunner") {
     "//fuchsia/engine:web_engine_with_webui",
     "//fuchsia/runners:web_runner_pkg",
   ]
-
   sources = [
     "${root_gen_dir}/fuchsia/engine/web_engine/web_engine.far",
     "${root_gen_dir}/fuchsia/engine/web_engine_with_webui/web_engine_with_webui.far",
@@ -109,8 +158,7 @@ cipd_archive("webrunner") {
 }
 
 cipd_archive("castrunner") {
-  package_definition_yaml = "castrunner.yaml"
-  package = "chromium/fuchsia/castrunner-\${targetarch}"
+  package_basename = "castrunner"
   description = "Prebuilt Cast application Runner binaries for Fuchsia."
 
   deps = [ "//fuchsia/runners:cast_runner_pkg" ]
@@ -119,8 +167,7 @@ cipd_archive("castrunner") {
 }
 
 cipd_archive("http") {
-  package_definition_yaml = "http.yaml"
-  package = "chromium/fuchsia/http-\${targetarch}"
+  package_basename = "http"
   description = "Prebuilt HTTP service binary for Fuchsia."
 
   deps = [ "//fuchsia/http:http_pkg" ]
@@ -129,8 +176,7 @@ cipd_archive("http") {
 }
 
 cipd_archive("web_engine_shell") {
-  package_definition_yaml = "web_engine_shell.yaml"
-  package = "chromium/fuchsia/web_engine_shell-\${targetarch}"
+  package_basename = "web_engine_shell"
   description = "Simple command-line embedder for WebEngine."
   testonly = true
 
@@ -166,24 +212,18 @@ action("strip_chromedriver_binary") {
 }
 
 cipd_archive("chromedriver") {
-  package_definition_yaml = "chromedriver.yaml"
-  package = "chromium/fuchsia/chromedriver/\${os}-\${arch}"
+  package_relative_path = "chromedriver/\${os}-\${arch}"
   description = "Prebuilt Chromedriver binary for Fuchsia host."
-  testonly = true
   install_mode = "copy"
   deps = [ ":strip_chromedriver_binary" ]
+  testonly = true
 
   sources = [ _stripped_chromedriver_file ]
 }
 
-cipd_archive("tests") {
-  _manifest_path = "${target_gen_dir}/test_manifest.json"
-  package_definition_yaml = "tests.yaml"
-  package = "chromium/fuchsia/tests-\${targetarch}"
-  description = "Prebuilt Chromium tests for Fuchsia."
+group("test_packages_for_deps") {
   testonly = true
-
-  deps = [
+  public_deps = [
     "//base:base_unittests_pkg",
     "//fuchsia/runners:cast_runner_integration_tests_pkg",
     "//fuchsia/runners:web_runner_integration_tests_pkg",
@@ -193,6 +233,15 @@ cipd_archive("tests") {
     "//skia:skia_unittests_pkg",
     "//third_party/blink/common:blink_common_unittests_pkg",
   ]
+}
+
+cipd_archive("tests") {
+  _manifest_path = "${target_gen_dir}/test_manifest.json"
+  package_basename = "tests"
+  description = "Prebuilt Chromium tests for Fuchsia."
+  testonly = true
+
+  deps = [ ":test_packages_for_deps" ]
 
   far_sources = [
     "${root_gen_dir}/base/base_unittests/base_unittests.far",
@@ -222,36 +271,60 @@ cipd_archive("tests") {
   sources = far_sources + [ _manifest_path ]
 }
 
-cipd_archive("debug_symbols") {
-  package_definition_yaml = "debug_symbols.yaml"
-  package = "chromium/fuchsia/debug-symbols-\${targetarch}"
-  description = "Debugging symbols for prebuilt binaries from Chromium."
+# Construct a consolidated directory of debugging symbols using the GNU
+# .build_id structure for CIPD archival.
+_build_ids_target = "debug_symbol_directory"
+_debug_symbols_archive_name = "debug_symbols"
+_debug_symbols_outdir =
+    "${target_gen_dir}/${_debug_symbols_archive_name}/${_build_ids_target}"
 
-  _symbol_tarballs = [
-    "${root_gen_dir}/fuchsia/engine/web_engine/web_engine.symbols.tar.bz2",
-    "${root_gen_dir}/fuchsia/runners/cast_runner/cast_runner.symbols.tar.bz2",
-    "${root_gen_dir}/fuchsia/runners/web_runner/web_runner.symbols.tar.bz2",
+build_id_dir(_build_ids_target) {
+  testonly = true
+  build_id_dirs = [
+    "${root_gen_dir}/fuchsia/engine/web_engine",
+    "${root_gen_dir}/fuchsia/runners/cast_runner",
+    "${root_gen_dir}/fuchsia/runners/web_runner",
   ]
-  _symbol_manifest = "$target_gen_dir/debug_symbols.json"
-  write_file(_symbol_manifest, _symbol_tarballs, "json")
-  _symbol_manifest_contents = []
-  foreach(_symbol_file, _symbol_tarballs) {
-    _symbol_manifest_contents += [ get_path_info(_symbol_file, "file") ]
-  }
-  write_file(_symbol_manifest, _symbol_manifest_contents, "json")
 
+  output_path = _debug_symbols_outdir
   deps = [
-    "//fuchsia/engine:symbol_archive",
-    "//fuchsia/runners:cast_runner_symbol_archive",
-    "//fuchsia/runners:web_runner_symbol_archive",
+    ":test_packages_for_deps",
+    "//fuchsia/engine:web_engine",
+    "//fuchsia/runners:cast_runner_pkg",
+    "//fuchsia/runners:web_runner_pkg",
   ]
-  sources = [ _symbol_manifest ] + _symbol_tarballs
+}
+
+fuchsia_cipd_package(_debug_symbols_archive_name) {
+  testonly = true
+  package = "chromium/fuchsia/debug-symbols-${targetarch}"
+  package_root = _debug_symbols_outdir
+  package_definition_name = "${target_name}.yaml"
+  package_definition_dir = "${target_gen_dir}/${target_name}"
+  description = "Debugging symbols for prebuilt binaries from Chromium."
+  use_absolute_root_path = true
+
+  directories = [ "." ]
+  deps = [ ":${_build_ids_target}" ]
+}
+
+fuchsia_cipd_package("${_debug_symbols_archive_name}_google") {
+  testonly = true
+  package = "chrome_internal/fuchsia/debug-symbols-${targetarch}"
+  package_root = _debug_symbols_outdir
+  package_definition_name = "${target_name}.yaml"
+  package_definition_dir = "${target_gen_dir}/${_debug_symbols_archive_name}"
+  description = "Debugging symbols for prebuilt binaries from Chromium."
+  use_absolute_root_path = true
+
+  directories = [ "." ]
+  deps = [ ":${_build_ids_target}" ]
 }
 
 cipd_archive("clear_key_cdm") {
-  package_definition_yaml = "clear_key_cdm.yaml"
-  package = "chromium/fuchsia/libclearkeycdm-\${targetarch}"
+  package_basename = "libclearkeycdm"
   description = "Prebuilt libclearkeycdm.so binary for Fuchsia."
+
   testonly = true
 
   deps = [ "//media/cdm/library_cdm/clear_key_cdm:clear_key_cdm" ]
@@ -260,15 +333,24 @@ cipd_archive("clear_key_cdm") {
 }
 
 group("cipd") {
+  # Must be testonly because debug symbols depends on test package symbols.
   testonly = true
   deps = [
     ":castrunner",
+    ":castrunner_google",
     ":chromedriver",
+    ":chromedriver_google",
     ":clear_key_cdm",
+    ":clear_key_cdm_google",
     ":debug_symbols",
+    ":debug_symbols_google",
     ":http",
+    ":http_google",
     ":tests",
+    ":tests_google",
     ":web_engine_shell",
+    ":web_engine_shell_google",
     ":webrunner",
+    ":webrunner_google",
   ]
 }

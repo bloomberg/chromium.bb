@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -108,13 +109,10 @@ void WindowManager::OnDisplaysAcquired(
   }
 }
 
-void WindowManager::OnDisplayConfigured(
-    const int64_t display_id,
-    const gfx::Rect& bounds,
-    const base::flat_map<int64_t, bool>& statuses) {
-  DCHECK_EQ(statuses.size(), 1UL);
-
-  if (statuses.at(display_id)) {
+void WindowManager::OnDisplayConfigured(const int64_t display_id,
+                                        const gfx::Rect& bounds,
+                                        bool config_success) {
+  if (config_success) {
     std::unique_ptr<DemoWindow> window(
         new DemoWindow(this, renderer_factory_.get(), bounds));
     window->Start();

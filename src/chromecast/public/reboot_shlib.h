@@ -89,6 +89,20 @@ class CHROMECAST_EXPORT RebootShlib {
     // a crash.. Device has not rebooted. This only makes sense on platforms
     // that allow a component restart without a full device reboot.
     UNGRACEFUL_RESTART = 16,
+
+    // A dirty reboot is triggered due to multiple services are affected by
+    // bugs. In that case, business logic can't proceed and busy references
+    // can't be trusted, so a dirty reboot will be executed.
+    MULTI_SERVICE_BUG = 17,
+
+    // Intentional shutdown by power manager of battery powered devices.
+    POWER_MANAGER_SHUTDOWN = 18,
+
+    // Restart of the Cast component to apply changes due to an experiment flag
+    // value change. This is only used to handle flag changes that would be more
+    // risky to attempt without a full process restart. Very few experiments
+    // trigger this path.
+    EXPERIMENT_CHANGE = 19,
   };
 
   // Initializes any platform-specific reboot systems.

@@ -3,6 +3,7 @@ altgraph.GraphUtil - Utility classes and functions
 ==================================================
 '''
 
+from __future__ import absolute_import
 import random
 from collections import deque
 from altgraph import Graph
@@ -24,12 +25,12 @@ def generate_random_graph(node_num, edge_num, self_loops=False, multi_edges=Fals
         if edge_num > max_edges:
             raise GraphError("inconsistent arguments to 'generate_random_graph'")
 
-    nodes = range(node_num)
+    nodes = list(range(node_num))
 
     for node in nodes:
         g.add_node(node)
 
-    while 1:
+    while True:
         head = random.choice(nodes)
         tail = random.choice(nodes)
 
@@ -38,7 +39,7 @@ def generate_random_graph(node_num, edge_num, self_loops=False, multi_edges=Fals
             continue
 
         # multiple edge defense
-        if g.edge_by_node(head,tail) is not None and not multi_edges:
+        if g.edge_by_node(head, tail) is not None and not multi_edges:
             continue
 
         # add the edge
@@ -65,7 +66,7 @@ def generate_scale_free_graph(steps, growth_num, self_loops=False, multi_edges=F
         for j in range(i + 1, growth_num):
             store.append(i)
             store.append(j)
-            graph.add_edge(i,j)
+            graph.add_edge(i, j)
 
     # generate
     for node in range(growth_num, steps * growth_num):
@@ -107,7 +108,7 @@ def filter_stack(graph, head, filters):
       in *removes*.
     """
 
-    visited, removes, orphans = set([head]), set(), set()
+    visited, removes, orphans = {head}, set(), set()
     stack = deque([(head, head)])
     get_data = graph.node_data
     get_edges = graph.out_edges

@@ -8,11 +8,11 @@
 #include <cstdint>
 #include <ostream>
 
-#include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_time.h"
-#include "net/third_party/quiche/src/quic/core/quic_time_accumulator.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/quic_bandwidth.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_time.h"
+#include "quic/core/quic_time_accumulator.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -103,8 +103,14 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   int64_t min_rtt_us = 0;  // Minimum RTT in microseconds.
   int64_t srtt_us = 0;     // Smoothed RTT in microseconds.
   int64_t cwnd_bootstrapping_rtt_us = 0;  // RTT used in cwnd_bootstrapping.
-  QuicByteCount max_packet_size = 0;
-  QuicByteCount max_received_packet_size = 0;
+  // The connection's |long_term_mtu_| used for sending packets, populated by
+  // QuicConnection::GetStats().
+  QuicByteCount egress_mtu = 0;
+  // The maximum |long_term_mtu_| the connection ever used.
+  QuicByteCount max_egress_mtu = 0;
+  // Size of the largest packet received from the peer, populated by
+  // QuicConnection::GetStats().
+  QuicByteCount ingress_mtu = 0;
   QuicBandwidth estimated_bandwidth = QuicBandwidth::Zero();
 
   // Reordering stats for received packets.
@@ -178,6 +184,56 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionStats {
   // Counts the number of undecryptable packets received across all keys. Does
   // not include packets where a decryption key for that level was absent.
   QuicPacketCount num_failed_authentication_packets_received = 0;
+
+  // Counts the number of QUIC+TLS 0-RTT packets received after 0-RTT decrypter
+  // was discarded, only on server connections.
+  QuicPacketCount
+      num_tls_server_zero_rtt_packets_received_after_discarding_decrypter = 0;
+
+  // True if address is validated via decrypting HANDSHAKE or 1-RTT packet.
+  bool address_validated_via_decrypting_packet = false;
+
+  // True if address is validated via validating token received in INITIAL
+  // packet.
+  bool address_validated_via_token = false;
+
+  size_t ping_frames_sent = 0;
+
+  // Number of detected peer address changes which changes to a peer address
+  // validated by earlier path validation.
+  size_t num_peer_migration_to_proactively_validated_address = 0;
+  // Number of detected peer address changes which triggers reverse path
+  // validation.
+  size_t num_reverse_path_validtion_upon_migration = 0;
+  // Number of detected peer migrations which either succeed reverse path
+  // validation or no need to be validated.
+  size_t num_validated_peer_migration = 0;
+  // Number of detected peer migrations which triggered reverse path validation
+  // and failed and fell back to the old path.
+  size_t num_invalid_peer_migration = 0;
+  // Number of detected peer migrations which triggered reverse path validation
+  // which was canceled because the peer migrated again. Such migration is also
+  // counted as invalid peer migration.
+  size_t num_peer_migration_while_validating_default_path = 0;
+  // Number of NEW_CONNECTION_ID frames sent.
+  size_t num_new_connection_id_sent = 0;
+  // Number of RETIRE_CONNECTION_ID frames sent.
+  size_t num_retire_connection_id_sent = 0;
+
+  struct QUIC_NO_EXPORT TlsServerOperationStats {
+    bool success = false;
+    // If the operation is performed asynchronously, how long did it take.
+    // Zero() for synchronous operations.
+    QuicTime::Delta async_latency = QuicTime::Delta::Zero();
+  };
+
+  // The TLS server op stats only have values when the corresponding operation
+  // is performed by TlsServerHandshaker. If an operation is done within
+  // BoringSSL, e.g. ticket decrypted without using
+  // TlsServerHandshaker::SessionTicketOpen, it will not be recorded here.
+  absl::optional<TlsServerOperationStats> tls_server_select_cert_stats;
+  absl::optional<TlsServerOperationStats> tls_server_compute_signature_stats;
+  absl::optional<TlsServerOperationStats> tls_server_decrypt_ticket_stats;
 };
 
 }  // namespace quic

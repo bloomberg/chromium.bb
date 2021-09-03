@@ -17,7 +17,7 @@
 #include "ash/wm/splitview/split_view_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/window_observer.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
@@ -140,6 +140,10 @@ class ASH_EXPORT ScreenOrientationController
   // Gets current screen orientation type.
   OrientationLockType GetCurrentOrientation() const;
 
+  // Returns true if auto-rotation is allowed. It happens when the device is in
+  // a physical tablet state or kSupportsClamshellAutoRotation is set.
+  bool IsAutoRotationAllowed() const;
+
   // wm::ActivationChangeObserver:
   void OnWindowActivated(
       ::wm::ActivationChangeObserver::ActivationReason reason,
@@ -152,8 +156,8 @@ class ASH_EXPORT ScreenOrientationController
   void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
 
   // AccelerometerReader::Observer:
-  void OnAccelerometerUpdated(
-      scoped_refptr<const AccelerometerUpdate> update) override;
+  void OnECLidAngleDriverStatusChanged(bool is_supported) override {}
+  void OnAccelerometerUpdated(const AccelerometerUpdate& update) override;
 
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanged() override;
@@ -279,8 +283,8 @@ class ASH_EXPORT ScreenOrientationController
   OrientationLockType user_locked_orientation_ = OrientationLockType::kAny;
 
   // The currently applied orientation lock that was requested by an app if any.
-  base::Optional<OrientationLockType> current_app_requested_orientation_lock_ =
-      base::nullopt;
+  absl::optional<OrientationLockType> current_app_requested_orientation_lock_ =
+      absl::nullopt;
 
   // The current rotation set by ScreenOrientationController for the internal
   // display.

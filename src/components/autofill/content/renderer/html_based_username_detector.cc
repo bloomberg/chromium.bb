@@ -9,6 +9,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
@@ -29,7 +30,8 @@ namespace autofill {
 namespace {
 
 // List of separators that can appear in HTML attribute values.
-constexpr char kDelimiters[] = "$\"\'?%*@!\\/&^#:+~`;,>|<.[](){}-_ 0123456789";
+constexpr char16_t kDelimiters[] =
+    u"$\"\'?%*@!\\/&^#:+~`;,>|<.[](){}-_ 0123456789";
 
 // Minimum length of a word, in order not to be considered short word. Short
 // words will not be searched in attribute values (especially after delimiters
@@ -45,10 +47,10 @@ constexpr int kMinimumWordLength = 4;
 // |kMinimumWordLength|) is computed as well.
 struct UsernameFieldData {
   WebInputElement input_element;
-  base::string16 developer_value;
-  base::flat_set<base::string16> developer_short_tokens;
-  base::string16 user_value;
-  base::flat_set<base::string16> user_short_tokens;
+  std::u16string developer_value;
+  base::flat_set<std::u16string> developer_short_tokens;
+  std::u16string user_value;
+  base::flat_set<std::u16string> user_short_tokens;
 };
 
 // Words that the algorithm looks for are split into multiple categories based
@@ -84,14 +86,13 @@ bool AllElementsBelongsToSameForm(
 // 2. Tokenizes and appends short tokens (shorter than |kMinimumWordLength|)
 // from |raw_value| to |*field_data_short_tokens|, if any.
 void AppendValueAndShortTokens(
-    const base::string16& raw_value,
-    base::string16* field_data_value,
-    base::flat_set<base::string16>* field_data_short_tokens) {
-  const base::string16 lowercase_value = base::i18n::ToLower(raw_value);
-  const base::string16 delimiters = base::ASCIIToUTF16(kDelimiters);
+    const std::u16string& raw_value,
+    std::u16string* field_data_value,
+    base::flat_set<std::u16string>* field_data_short_tokens) {
+  const std::u16string lowercase_value = base::i18n::ToLower(raw_value);
   std::vector<base::StringPiece16> tokens =
-      base::SplitStringPiece(lowercase_value, delimiters, base::TRIM_WHITESPACE,
-                             base::SPLIT_WANT_NONEMPTY);
+      base::SplitStringPiece(lowercase_value, kDelimiters,
+                             base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   // When computing the developer value, '$' safety guard is being added
   // between field name and id, so that forming of accidental words is
@@ -100,7 +101,7 @@ void AppendValueAndShortTokens(
     field_data_value->push_back('$');
 
   field_data_value->reserve(field_data_value->size() + lowercase_value.size());
-  std::vector<base::string16> short_tokens;
+  std::vector<std::u16string> short_tokens;
   for (const base::StringPiece16& token : tokens) {
     if (token.size() < kMinimumWordLength)
       short_tokens.emplace_back(token);
@@ -144,7 +145,7 @@ void InferUsernameFieldData(
         ToWebInputElement(&control_element);
     if (!input_element || input_element->IsPasswordFieldForAutofill())
       continue;
-    const base::string16 element_name =
+    const std::u16string element_name =
         input_element->NameForAutofill().Utf16();
     for (size_t i = next_element_range_begin; i < form_data.fields.size();
          ++i) {
@@ -166,12 +167,12 @@ void InferUsernameFieldData(
 // Check if any word from |dictionary| is encountered in computed field
 // information (i.e. |value|, |tokens|).
 bool CheckFieldWithDictionary(
-    const base::string16& value,
-    const base::flat_set<base::string16>& short_tokens,
+    const std::u16string& value,
+    const base::flat_set<std::u16string>& short_tokens,
     const char* const* dictionary,
     const size_t& dictionary_size) {
   for (size_t i = 0; i < dictionary_size; ++i) {
-    const base::string16 word = base::UTF8ToUTF16(dictionary[i]);
+    const std::u16string word = base::UTF8ToUTF16(dictionary[i]);
     if (word.length() < kMinimumWordLength) {
       // Treat short words by looking them up in the tokens set.
       if (short_tokens.find(word) != short_tokens.end())

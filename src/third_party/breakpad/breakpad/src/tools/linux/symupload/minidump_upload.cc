@@ -41,6 +41,7 @@
 #include <string>
 
 #include "common/linux/http_upload.h"
+#include "common/path_helper.h"
 #include "common/using_std_string.h"
 
 using google_breakpad::HTTPUpload;
@@ -91,8 +92,10 @@ static void Start(Options *options) {
 static void
 Usage(int argc, const char *argv[]) {
   fprintf(stderr, "Submit minidump information.\n");
-  fprintf(stderr, "Usage: %s [options...] -p <product> -v <version> <minidump> "
-          "<upload-URL>\n", argv[0]);
+  fprintf(stderr,
+          "Usage: %s [options...] -p <product> -v <version> <minidump> "
+          "<upload-URL>\n",
+          google_breakpad::BaseName(argv[0]).c_str());
   fprintf(stderr, "Options:\n");
   fprintf(stderr, "<minidump> should be a minidump.\n");
   fprintf(stderr, "<upload-URL> is the destination for the upload\n");

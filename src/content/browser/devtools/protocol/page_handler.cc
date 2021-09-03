@@ -17,7 +17,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -31,6 +30,9 @@
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/devtools/protocol/handler_helpers.h"
 #include "content/browser/manifest/manifest_manager_host.h"
+#include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
+#include "content/browser/renderer_host/back_forward_cache_metrics.h"
+#include "content/browser/renderer_host/navigation_entry_impl.h"
 #include "content/browser/renderer_host/navigation_request.h"
 #include "content/browser/renderer_host/navigator.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -51,6 +53,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "net/base/filename_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/gfx/codec/jpeg_codec.h"
@@ -162,11 +165,11 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
                           gfx::Vector2dF* root_scroll_offset,
                           double* top_controls_visible_height) {
   // Get metadata from |frame|. This will CHECK if metadata is missing.
-  *device_scale_factor = *frame.metadata()->device_scale_factor;
-  *page_scale_factor = *frame.metadata()->page_scale_factor;
-  root_scroll_offset->set_x(*frame.metadata()->root_scroll_offset_x);
-  root_scroll_offset->set_y(*frame.metadata()->root_scroll_offset_y);
-  *top_controls_visible_height = *frame.metadata()->top_controls_visible_height;
+  *device_scale_factor = *frame.metadata().device_scale_factor;
+  *page_scale_factor = *frame.metadata().page_scale_factor;
+  root_scroll_offset->set_x(*frame.metadata().root_scroll_offset_x);
+  root_scroll_offset->set_y(*frame.metadata().root_scroll_offset_y);
+  *top_controls_visible_height = *frame.metadata().top_controls_visible_height;
 }
 
 template <typename ProtocolCallback>
@@ -203,14 +206,19 @@ PageHandler::PageHandler(EmulationHandler* emulation_handler,
       browser_handler_(browser_handler) {
   bool create_video_consumer = true;
 #ifdef OS_ANDROID
+  constexpr auto kScreencastPixelFormat = media::PIXEL_FORMAT_I420;
   // Video capture doesn't work on Android WebView. Use CopyFromSurface instead.
   if (!CompositorImpl::IsInitialized())
     create_video_consumer = false;
+#else
+  constexpr auto kScreencastPixelFormat = media::PIXEL_FORMAT_ARGB;
 #endif
   if (create_video_consumer) {
     video_consumer_ = std::make_unique<DevToolsVideoConsumer>(
         base::BindRepeating(&PageHandler::OnFrameFromVideoConsumer,
                             weak_factory_.GetWeakPtr()));
+    video_consumer_->SetFormat(kScreencastPixelFormat,
+                               gfx::ColorSpace::CreateREC709());
   }
   DCHECK(emulation_handler_);
 }
@@ -246,7 +254,7 @@ void PageHandler::SetRenderer(int process_host_id,
   RenderWidgetHostImpl* widget_host =
       host_ ? host_->GetRenderWidgetHost() : nullptr;
   if (widget_host && observation_.IsObservingSource(widget_host))
-    observation_.RemoveObservation();
+    observation_.Reset();
 
   host_ = frame_host;
   widget_host = host_ ? host_->GetRenderWidgetHost() : nullptr;
@@ -261,7 +269,7 @@ void PageHandler::SetRenderer(int process_host_id,
 }
 
 void PageHandler::Wire(UberDispatcher* dispatcher) {
-  frontend_.reset(new Page::Frontend(dispatcher->channel()));
+  frontend_ = std::make_unique<Page::Frontend>(dispatcher->channel());
   Page::Dispatcher::wire(dispatcher, this);
 }
 
@@ -284,7 +292,7 @@ void PageHandler::RenderWidgetHostVisibilityChanged(
 
 void PageHandler::RenderWidgetHostDestroyed(RenderWidgetHost* widget_host) {
   DCHECK(observation_.IsObservingSource(widget_host));
-  observation_.RemoveObservation();
+  observation_.Reset();
 }
 
 void PageHandler::DidAttachInterstitialPage() {
@@ -300,8 +308,8 @@ void PageHandler::DidDetachInterstitialPage() {
 }
 
 void PageHandler::DidRunJavaScriptDialog(const GURL& url,
-                                         const base::string16& message,
-                                         const base::string16& default_prompt,
+                                         const std::u16string& message,
+                                         const std::u16string& default_prompt,
                                          JavaScriptDialogType dialog_type,
                                          bool has_non_devtools_handlers,
                                          JavaScriptDialogCallback callback) {
@@ -332,7 +340,7 @@ void PageHandler::DidRunBeforeUnloadConfirm(const GURL& url,
 }
 
 void PageHandler::DidCloseJavaScriptDialog(bool success,
-                                           const base::string16& user_input) {
+                                           const std::u16string& user_input) {
   if (!enabled_)
     return;
   pending_dialog_.Reset();
@@ -347,6 +355,7 @@ Response PageHandler::Enable() {
 Response PageHandler::Disable() {
   enabled_ = false;
   screencast_enabled_ = false;
+  bypass_csp_ = false;
 
   if (video_consumer_)
     video_consumer_->StopCapture();
@@ -359,12 +368,13 @@ Response PageHandler::Disable() {
         web_contents && web_contents->GetDelegate() &&
         web_contents->GetDelegate()->GetJavaScriptDialogManager(web_contents);
     if (!has_dialog_manager)
-      std::move(pending_dialog_).Run(false, base::string16());
+      std::move(pending_dialog_).Run(false, std::u16string());
     pending_dialog_.Reset();
   }
 
   for (auto* item : pending_downloads_)
     item->RemoveObserver(this);
+  pending_downloads_.clear();
   navigate_callbacks_.clear();
   return Response::FallThrough();
 }
@@ -501,17 +511,16 @@ void PageHandler::Navigate(const std::string& url,
   params.referrer = Referrer(GURL(referrer.fromMaybe("")), policy);
   params.transition_type = type;
   params.frame_tree_node_id = frame_tree_node->frame_tree_node_id();
-  frame_tree_node->navigator().GetController()->LoadURLWithParams(params);
-
-  base::UnguessableToken frame_token = frame_tree_node->devtools_frame_token();
-  auto navigate_callback = navigate_callbacks_.find(frame_token);
-  if (navigate_callback != navigate_callbacks_.end()) {
-    std::string error_string = net::ErrorToString(net::ERR_ABORTED);
-    navigate_callback->second->sendSuccess(out_frame_id, Maybe<std::string>(),
-                                           Maybe<std::string>(error_string));
-  }
+  // Handler may be destroyed while navigating if the session
+  // gets disconnected as a result of access checks.
+  base::WeakPtr<PageHandler> weak_self = weak_factory_.GetWeakPtr();
+  frame_tree_node->navigator().controller().LoadURLWithParams(params);
+  if (!weak_self)
+    return;
   if (frame_tree_node->navigation_request()) {
-    navigate_callbacks_[frame_token] = std::move(callback);
+    navigate_callbacks_[frame_tree_node->navigation_request()
+                            ->devtools_navigation_token()] =
+        std::move(callback);
   } else {
     callback->sendSuccess(out_frame_id, Maybe<std::string>(),
                           Maybe<std::string>());
@@ -519,20 +528,29 @@ void PageHandler::Navigate(const std::string& url,
 }
 
 void PageHandler::NavigationReset(NavigationRequest* navigation_request) {
-  auto navigate_callback = navigate_callbacks_.find(
-      navigation_request->frame_tree_node()->devtools_frame_token());
+  auto navigate_callback =
+      navigate_callbacks_.find(navigation_request->devtools_navigation_token());
   if (navigate_callback == navigate_callbacks_.end())
     return;
   std::string frame_id =
       navigation_request->frame_tree_node()->devtools_frame_token().ToString();
-  bool success = navigation_request->GetNetErrorCode() == net::OK;
-  std::string error_string =
-      net::ErrorToString(navigation_request->GetNetErrorCode());
-  navigate_callback->second->sendSuccess(
-      frame_id,
-      Maybe<std::string>(
-          navigation_request->devtools_navigation_token().ToString()),
-      success ? Maybe<std::string>() : Maybe<std::string>(error_string));
+  // A new NavigationRequest may have been created before |navigation_request|
+  // started, in which case it is not marked as aborted. We report this as an
+  // abort to DevTools anyway.
+  if (!navigation_request->IsNavigationStarted()) {
+    navigate_callback->second->sendSuccess(
+        frame_id, Maybe<std::string>(),
+        Maybe<std::string>(net::ErrorToString(net::ERR_ABORTED)));
+  } else {
+    bool success = navigation_request->GetNetErrorCode() == net::OK;
+    std::string error_string =
+        net::ErrorToString(navigation_request->GetNetErrorCode());
+    navigate_callback->second->sendSuccess(
+        frame_id,
+        Maybe<std::string>(
+            navigation_request->devtools_navigation_token().ToString()),
+        success ? Maybe<std::string>() : Maybe<std::string>(error_string));
+  }
   navigate_callbacks_.erase(navigate_callback);
 }
 
@@ -547,7 +565,7 @@ void PageHandler::DownloadWillBegin(FrameTreeNode* ftn,
   // and DownloadTargetDeterminer::GenerateFileName in
   // chrome/browser/download/download_target_determiner.cc
   // for the more comprehensive logic.
-  const base::string16 likely_filename = net::GetSuggestedFilename(
+  const std::u16string likely_filename = net::GetSuggestedFilename(
       item->GetURL(), item->GetContentDisposition(), std::string(),
       item->GetSuggestedFilename(), item->GetMimeType(), "download");
 
@@ -566,11 +584,21 @@ void PageHandler::OnDownloadDestroyed(download::DownloadItem* item) {
 void PageHandler::OnDownloadUpdated(download::DownloadItem* item) {
   if (!enabled_)
     return;
-  std::string state = Page::DownloadProgress::StateEnum::InProgress;
-  if (item->GetState() == download::DownloadItem::COMPLETE)
-    state = Page::DownloadProgress::StateEnum::Completed;
-  else if (item->GetState() == download::DownloadItem::CANCELLED)
-    state = Page::DownloadProgress::StateEnum::Canceled;
+  std::string state;
+  switch (item->GetState()) {
+    case download::DownloadItem::IN_PROGRESS:
+      state = Page::DownloadProgress::StateEnum::InProgress;
+      break;
+    case download::DownloadItem::COMPLETE:
+      state = Page::DownloadProgress::StateEnum::Completed;
+      break;
+    case download::DownloadItem::CANCELLED:
+    case download::DownloadItem::INTERRUPTED:
+      state = Page::DownloadProgress::StateEnum::Canceled;
+      break;
+    case download::DownloadItem::MAX_DOWNLOAD_STATE:
+      NOTREACHED();
+  }
   frontend_->DownloadProgress(item->GetGuid(), item->GetTotalBytes(),
                               item->GetReceivedBytes(), state);
   if (state != Page::DownloadProgress::StateEnum::InProgress) {
@@ -681,6 +709,7 @@ void PageHandler::CaptureScreenshot(
     Maybe<int> quality,
     Maybe<Page::Viewport> clip,
     Maybe<bool> from_surface,
+    Maybe<bool> capture_beyond_viewport,
     std::unique_ptr<CaptureScreenshotCallback> callback) {
   if (!host_ || !host_->GetRenderWidgetHost() ||
       !host_->GetRenderWidgetHost()->GetView()) {
@@ -712,7 +741,8 @@ void PageHandler::CaptureScreenshot(
         base::BindOnce(&PageHandler::ScreenshotCaptured,
                        weak_factory_.GetWeakPtr(), std::move(callback),
                        screenshot_format, screenshot_quality, gfx::Size(),
-                       gfx::Size(), blink::DeviceEmulationParams()),
+                       gfx::Size(), blink::DeviceEmulationParams(),
+                       absl::nullopt),
         false);
     return;
   }
@@ -775,6 +805,30 @@ void PageHandler::CaptureScreenshot(
     }
   }
 
+  absl::optional<blink::web_pref::WebPreferences> maybe_original_web_prefs;
+  if (capture_beyond_viewport.fromMaybe(false)) {
+    blink::web_pref::WebPreferences original_web_prefs =
+        host_->GetRenderViewHost()->GetDelegate()->GetOrCreateWebPreferences();
+    maybe_original_web_prefs = original_web_prefs;
+
+    blink::web_pref::WebPreferences modified_web_prefs = original_web_prefs;
+    // Hiding scrollbar is needed to avoid scrollbar artefacts on the
+    // screenshot. Details: https://crbug.com/1003629.
+    modified_web_prefs.hide_scrollbars = true;
+    modified_web_prefs.record_whole_document = true;
+    host_->GetRenderViewHost()->GetDelegate()->SetWebPreferences(
+        modified_web_prefs);
+
+    {
+      // TODO(crbug.com/1141835): Remove the bug is fixed.
+      // Walkaround for the bug. Emulated `view_size` has to be set twice,
+      // otherwise the scrollbar will be on the screenshot present.
+      blink::DeviceEmulationParams tmp_params = modified_params;
+      tmp_params.view_size = gfx::Size(1, 1);
+      emulation_handler_->SetDeviceEmulationParams(tmp_params);
+    }
+  }
+
   // We use DeviceEmulationParams to either emulate, set viewport or both.
   emulation_handler_->SetDeviceEmulationParams(modified_params);
 
@@ -796,8 +850,7 @@ void PageHandler::CaptureScreenshot(
     } else {
       requested_image_size = emulated_view_size;
     }
-    double scale = emulation_enabled ? original_params.device_scale_factor
-                                     : widget_host_device_scale_factor;
+    double scale = widget_host_device_scale_factor * dpfactor;
     if (clip.isJust())
       scale *= clip.fromJust()->GetScale();
     requested_image_size = gfx::ScaleToRoundedSize(requested_image_size, scale);
@@ -807,7 +860,8 @@ void PageHandler::CaptureScreenshot(
       base::BindOnce(&PageHandler::ScreenshotCaptured,
                      weak_factory_.GetWeakPtr(), std::move(callback),
                      screenshot_format, screenshot_quality, original_view_size,
-                     requested_image_size, original_params),
+                     requested_image_size, original_params,
+                     maybe_original_web_prefs),
       true);
 }
 
@@ -910,7 +964,7 @@ Response PageHandler::HandleJavaScriptDialog(bool accept,
   if (pending_dialog_.is_null())
     return Response::InvalidParams("No dialog is showing");
 
-  base::string16 prompt_override;
+  std::u16string prompt_override;
   if (prompt_text.isJust())
     prompt_override = base::UTF8ToUTF16(prompt_text.fromJust());
   std::move(pending_dialog_).Run(accept, prompt_override);
@@ -1110,11 +1164,18 @@ void PageHandler::ScreenshotCaptured(
     const gfx::Size& original_view_size,
     const gfx::Size& requested_image_size,
     const blink::DeviceEmulationParams& original_emulation_params,
+    const absl::optional<blink::web_pref::WebPreferences>&
+        maybe_original_web_prefs,
     const gfx::Image& image) {
   if (original_view_size.width()) {
     RenderWidgetHostImpl* widget_host = host_->GetRenderWidgetHost();
     widget_host->GetView()->SetSize(original_view_size);
     emulation_handler_->SetDeviceEmulationParams(original_emulation_params);
+  }
+
+  if (maybe_original_web_prefs) {
+    host_->GetRenderViewHost()->GetDelegate()->SetWebPreferences(
+        maybe_original_web_prefs.value());
   }
 
   if (image.IsEmpty()) {
@@ -1210,6 +1271,27 @@ void PageHandler::GetManifestIcons(
   // TODO: Use InstallableManager once it moves into content/.
   // Until then, this code is only used to return no image data in the tests.
   callback->sendSuccess(Maybe<Binary>());
+}
+
+Response PageHandler::SetBypassCSP(bool enabled) {
+  bypass_csp_ = enabled;
+  return Response::FallThrough();
+}
+
+void PageHandler::BackForwardCacheNotUsed(const NavigationRequest* navigation) {
+  if (!enabled_)
+    return;
+
+  FrameTreeNode* ftn = navigation->frame_tree_node();
+  std::string devtools_navigation_token =
+      navigation->devtools_navigation_token().ToString();
+  std::string frame_id = ftn->devtools_frame_token().ToString();
+
+  frontend_->BackForwardCacheNotUsed(devtools_navigation_token, frame_id);
+}
+
+bool PageHandler::ShouldBypassCSP() {
+  return enabled_ && bypass_csp_;
 }
 
 }  // namespace protocol

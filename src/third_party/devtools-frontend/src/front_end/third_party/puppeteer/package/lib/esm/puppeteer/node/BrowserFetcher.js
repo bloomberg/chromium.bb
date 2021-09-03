@@ -18,7 +18,7 @@ import extractZip from 'extract-zip';
 import * as fs from 'fs';
 import * as http from 'http';
 import * as https from 'https';
-import ProxyAgent from 'https-proxy-agent';
+import createHttpsProxyAgent from 'https-proxy-agent';
 import * as os from 'os';
 import * as path from 'path';
 import { getProxyForUrl } from 'proxy-from-env';
@@ -83,10 +83,15 @@ function downloadURL(product, platform, host, revision) {
 function handleArm64() {
     fs.stat('/usr/bin/chromium-browser', function (err, stats) {
         if (stats === undefined) {
-            console.error(`The chromium binary is not available for arm64: `);
-            console.error(`If you are on Ubuntu, you can install with: `);
-            console.error(`\n apt-get install chromium-browser\n`);
-            throw new Error();
+            fs.stat('/usr/bin/chromium', function (err, stats) {
+                if (stats === undefined) {
+                    console.error(`The chromium binary is not available for arm64.`);
+                    console.error(`If you are on Ubuntu, you can install with: `);
+                    console.error(`\n sudo apt install chromium\n`);
+                    console.error(`\n sudo apt install chromium-browser\n`);
+                    throw new Error();
+                }
+            });
         }
     });
 }
@@ -208,7 +213,9 @@ export class BrowserFetcher {
             return this.revisionInfo(revision);
         if (!(await existsAsync(this._downloadsFolder)))
             await mkdirAsync(this._downloadsFolder);
-        if (os.arch() === 'arm64') {
+        // Use Intel x86 builds on Apple M1 until native macOS arm64
+        // Chromium builds are available.
+        if (os.platform() !== 'darwin' && os.arch() === 'arm64') {
             handleArm64();
             return;
         }
@@ -450,7 +457,7 @@ function httpRequest(url, method, response) {
                 ...parsedProxyURL,
                 secureProxy: parsedProxyURL.protocol === 'https:',
             };
-            options.agent = new ProxyAgent(proxyOptions);
+            options.agent = createHttpsProxyAgent(proxyOptions);
             options.rejectUnauthorized = false;
         }
     }
@@ -466,3 +473,4 @@ function httpRequest(url, method, response) {
     request.end();
     return request;
 }
+//# sourceMappingURL=BrowserFetcher.js.map

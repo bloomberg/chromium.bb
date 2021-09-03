@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_PERMISSIONS_ANDROID_PERMISSION_DIALOG_DELEGATE_H_
 #define COMPONENTS_PERMISSIONS_ANDROID_PERMISSION_DIALOG_DELEGATE_H_
 
-#include <memory>
-
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/macros.h"
@@ -28,9 +26,6 @@ namespace permissions {
 // decision.
 class PermissionDialogDelegate : public content::WebContentsObserver {
  public:
-  using PermissionSetCallback =
-      base::Callback<void(bool, permissions::PermissionAction)>;
-
   // The interface for creating a modal dialog when the PermissionRequestManager
   // is enabled.
   static void Create(content::WebContents* web_contents,

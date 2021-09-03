@@ -25,6 +25,7 @@ set(AOM_DOXYGEN_SOURCES
     "${AOM_ROOT}/aom/aom_codec.h"
     "${AOM_ROOT}/aom/aom_decoder.h"
     "${AOM_ROOT}/aom/aom_encoder.h"
+    "${AOM_ROOT}/aom/aom_external_partition.h"
     "${AOM_ROOT}/aom/aom_frame_buffer.h"
     "${AOM_ROOT}/aom/aom_image.h"
     "${AOM_ROOT}/aom/aom_integer.h"
@@ -150,6 +151,7 @@ if(CONFIG_AV1_ENCODER)
       "${AOM_ROOT}/av1/encoder/temporal_filter.c"
       "${AOM_ROOT}/av1/encoder/tpl_model.h"
       "${AOM_ROOT}/av1/encoder/tx_search.h"
+      "${AOM_ROOT}/av1/encoder/txb_rdopt.h"
       "${AOM_ROOT}/av1/encoder/var_based_part.h"
       "${AOM_ROOT}/av1/encoder/nonrd_pickmode.c")
 endif()

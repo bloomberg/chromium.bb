@@ -10,12 +10,12 @@
 #include "base/unguessable_token.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
-#include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_audio_focus_id_map.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/site_instance.h"
@@ -35,7 +35,7 @@ WebAppTabHelper::WebAppTabHelper(content::WebContents* web_contents)
       provider_(WebAppProviderBase::GetProviderBase(
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
   DCHECK(provider_);
-  observer_.Add(&provider_->registrar());
+  observation_.Observe(&provider_->registrar());
   SetAppId(
       FindAppIdWithUrlInScope(web_contents->GetSiteInstance()->GetSiteURL()));
 }
@@ -148,7 +148,8 @@ void WebAppTabHelper::OnWebAppInstalled(const AppId& installed_app_id) {
       web_contents(), installed_app_id);
 }
 
-void WebAppTabHelper::OnWebAppUninstalled(const AppId& uninstalled_app_id) {
+void WebAppTabHelper::OnWebAppWillBeUninstalled(
+    const AppId& uninstalled_app_id) {
   if (GetAppId() == uninstalled_app_id)
     ResetAppId();
 }
@@ -158,7 +159,7 @@ void WebAppTabHelper::OnAppRegistrarShutdown() {
 }
 
 void WebAppTabHelper::OnAppRegistrarDestroyed() {
-  observer_.RemoveAll();
+  observation_.Reset();
 }
 
 void WebAppTabHelper::ResetAppId() {

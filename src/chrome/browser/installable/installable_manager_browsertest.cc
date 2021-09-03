@@ -2,35 +2,36 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/installable/installable_manager.h"
+#include "components/webapps/browser/installable/installable_manager.h"
 
+#include <memory>
+#include <string>
 #include <tuple>
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
-#include "chrome/browser/installable/installable_logging.h"
-#include "chrome/browser/installable/installable_manager.h"
-#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/test/service_worker_registration_waiter.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/common/content_features.h"
+#include "components/webapps/browser/installable/installable_logging.h"
+#include "components/webapps/browser/installable/installable_manager.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+
+namespace webapps {
 
 namespace {
 
@@ -137,15 +138,14 @@ class CallbackTester {
   void OnDidFinishInstallableCheck(const InstallableData& data) {
     errors_ = data.errors;
     manifest_url_ = data.manifest_url;
-    if (data.manifest)
-      manifest_ = *data.manifest;
+    manifest_ = data.manifest;
     primary_icon_url_ = data.primary_icon_url;
     if (data.primary_icon)
-      primary_icon_.reset(new SkBitmap(*data.primary_icon));
+      primary_icon_ = std::make_unique<SkBitmap>(*data.primary_icon);
     has_maskable_primary_icon_ = data.has_maskable_primary_icon;
     splash_icon_url_ = data.splash_icon_url;
     if (data.splash_icon)
-      splash_icon_.reset(new SkBitmap(*data.splash_icon));
+      splash_icon_ = std::make_unique<SkBitmap>(*data.splash_icon);
     valid_manifest_ = data.valid_manifest;
     has_worker_ = data.has_worker;
     base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure_);
@@ -194,10 +194,10 @@ class NestedCallbackTester {
   void OnDidFinishFirstCheck(const InstallableData& data) {
     errors_ = data.errors;
     manifest_url_ = data.manifest_url;
-    manifest_ = *data.manifest;
+    manifest_ = data.manifest;
     primary_icon_url_ = data.primary_icon_url;
     if (data.primary_icon)
-      primary_icon_.reset(new SkBitmap(*data.primary_icon));
+      primary_icon_ = std::make_unique<SkBitmap>(*data.primary_icon);
     valid_manifest_ = data.valid_manifest;
     has_worker_ = data.has_worker;
 
@@ -213,12 +213,12 @@ class NestedCallbackTester {
     EXPECT_EQ(primary_icon_.get(), data.primary_icon);
     EXPECT_EQ(valid_manifest_, data.valid_manifest);
     EXPECT_EQ(has_worker_, data.has_worker);
-    EXPECT_EQ(manifest_.IsEmpty(), data.manifest->IsEmpty());
-    EXPECT_EQ(manifest_.start_url, data.manifest->start_url);
-    EXPECT_EQ(manifest_.display, data.manifest->display);
-    EXPECT_EQ(manifest_.name, data.manifest->name);
-    EXPECT_EQ(manifest_.short_name, data.manifest->short_name);
-    EXPECT_EQ(manifest_.display_override, data.manifest->display_override);
+    EXPECT_EQ(manifest_.IsEmpty(), data.manifest.IsEmpty());
+    EXPECT_EQ(manifest_.start_url, data.manifest.start_url);
+    EXPECT_EQ(manifest_.display, data.manifest.display);
+    EXPECT_EQ(manifest_.name, data.manifest.name);
+    EXPECT_EQ(manifest_.short_name, data.manifest.short_name);
+    EXPECT_EQ(manifest_.display_override, data.manifest.display_override);
 
     std::move(quit_closure_).Run();
   }
@@ -243,7 +243,7 @@ class InstallableManagerBrowserTest : public InProcessBrowserTest {
 
     // Make sure app banners are disabled in the browser so they do not
     // interfere with the test.
-    banners::AppBannerManagerDesktop::DisableTriggeringForTesting();
+    AppBannerManagerDesktop::DisableTriggeringForTesting();
   }
 
   // Returns a test server URL to a page controlled by a service worker with
@@ -310,53 +310,102 @@ class InstallableManagerAllowlistOriginBrowserTest
   }
 };
 
+enum class CheckOfflineCapabilityMode { NONE = 0, WARN_ONLY = 1, ENFORCE = 2 };
+
 class InstallableManagerOfflineCapabilityBrowserTest
     : public InstallableManagerBrowserTest,
-      public testing::WithParamInterface<std::tuple<bool, bool>> {
-  public:
-    InstallableManagerOfflineCapabilityBrowserTest()
-        : is_offline_check_feature_enabled_(std::get<0>(GetParam())),
-          is_service_worker_offline_supported_(std::get<1>(GetParam())) {
-      if (is_offline_check_feature_enabled_) {
+      public testing::WithParamInterface<
+          std::tuple<CheckOfflineCapabilityMode, bool>> {
+ public:
+  InstallableManagerOfflineCapabilityBrowserTest()
+      : offline_capability_type_(std::get<0>(GetParam())),
+        is_service_worker_offline_supported_(std::get<1>(GetParam())) {
+    switch (offline_capability_type_) {
+      case CheckOfflineCapabilityMode::NONE:
+        scoped_feature_list_.InitAndDisableFeature(
+            blink::features::kCheckOfflineCapability);
+        break;
+      case CheckOfflineCapabilityMode::WARN_ONLY:
+        scoped_feature_list_.InitAndEnableFeatureWithParameters(
+            blink::features::kCheckOfflineCapability,
+            {{"check_mode", "warn_only"}});
+        break;
+      case CheckOfflineCapabilityMode::ENFORCE:
         scoped_feature_list_.InitAndEnableFeatureWithParameters(
             blink::features::kCheckOfflineCapability,
             {{"check_mode", "enforce"}});
-      } else {
-        scoped_feature_list_.InitAndDisableFeature(
-            blink::features::kCheckOfflineCapability);
-      }
+        break;
     }
-    ~InstallableManagerOfflineCapabilityBrowserTest() override = default;
+  }
+  ~InstallableManagerOfflineCapabilityBrowserTest() override = default;
 
-    bool IsServiceWorkerOfflineSupported() {
-      return is_service_worker_offline_supported_;
+  bool IsServiceWorkerOfflineSupported() {
+    return is_service_worker_offline_supported_;
+  }
+
+  bool IsCheckOfflineCapableFeatureEnabled() {
+    return offline_capability_type_ == CheckOfflineCapabilityMode::WARN_ONLY ||
+           offline_capability_type_ == CheckOfflineCapabilityMode::ENFORCE;
+  }
+
+  // Check the result of `tester` depending on whether or not a service worker
+  // supports offline pages and the CheckOfflineCapability feature.
+  void CheckServiceWorkerForTester(CallbackTester* tester) {
+    if (is_service_worker_offline_supported_ ||
+        offline_capability_type_ == CheckOfflineCapabilityMode::NONE) {
+      EXPECT_TRUE(tester->has_worker());
+      EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
+    } else if (offline_capability_type_ ==
+               CheckOfflineCapabilityMode::WARN_ONLY) {
+      EXPECT_TRUE(tester->has_worker());
+      EXPECT_EQ(std::vector<InstallableStatusCode>{WARN_NOT_OFFLINE_CAPABLE},
+                tester->errors());
+    } else {
+      EXPECT_FALSE(tester->has_worker());
+      EXPECT_EQ(std::vector<InstallableStatusCode>{NOT_OFFLINE_CAPABLE},
+                tester->errors());
     }
+  }
 
-    // The page supports the offline environment if a service worker has a fetch
-    // event handler that returns a response or the feature flag
-    // |kCheckOfflineCapability| is disabled.
-    bool OfflineSupported() {
-      return (!is_offline_check_feature_enabled_)
-          || is_service_worker_offline_supported_;
+  // Check the result of `manager` depending on whether or not a service worker
+  // supports offline pages and the CheckOfflineCapability feature.
+  void CheckServiceWorkerForInstallableManager(InstallableManager* manager) {
+    if (is_service_worker_offline_supported_ ||
+        offline_capability_type_ == CheckOfflineCapabilityMode::NONE) {
+      EXPECT_TRUE(manager->has_worker());
+      EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
+    } else if (offline_capability_type_ ==
+               CheckOfflineCapabilityMode::WARN_ONLY) {
+      EXPECT_TRUE(manager->has_worker());
+      EXPECT_EQ(WARN_NOT_OFFLINE_CAPABLE, manager->worker_error());
+    } else {
+      EXPECT_FALSE(manager->has_worker());
+      EXPECT_EQ(NOT_OFFLINE_CAPABLE, manager->worker_error());
     }
+  }
 
-    // Assume that the name of HTML files using a service worker with an empty
-    // fetch event handler includes "_empty_fetch_handler" suffix.
-    const std::string GetPath(std::string base) {
-      if (is_service_worker_offline_supported_)
-        return base + ".html";
-      return base + "_empty_fetch_handler.html";
-    }
+  // Assume that the name of HTML files using a service worker with an empty
+  // fetch event handler includes "_empty_fetch_handler" suffix.
+  const std::string GetPath(std::string base) {
+    if (is_service_worker_offline_supported_)
+      return base + ".html";
+    return base + "_empty_fetch_handler.html";
+  }
 
-  private:
-    base::test::ScopedFeatureList scoped_feature_list_;
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 
-    const bool is_offline_check_feature_enabled_;
-    const bool is_service_worker_offline_supported_;
+  const CheckOfflineCapabilityMode offline_capability_type_;
+  const bool is_service_worker_offline_supported_;
 };
 
-INSTANTIATE_TEST_SUITE_P(All, InstallableManagerOfflineCapabilityBrowserTest,
-                         testing::Combine(testing::Bool(), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    InstallableManagerOfflineCapabilityBrowserTest,
+    testing::Combine(testing::Values(CheckOfflineCapabilityMode::NONE,
+                                     CheckOfflineCapabilityMode::WARN_ONLY,
+                                     CheckOfflineCapabilityMode::ENFORCE),
+                     testing::Bool()));
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                        ManagerBeginsInEmptyState) {
@@ -787,16 +836,9 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
     EXPECT_FALSE(tester->primary_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->primary_icon());
     EXPECT_TRUE(tester->valid_manifest());
-    if (OfflineSupported()) {
-      EXPECT_TRUE(tester->has_worker());
-      EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
-    } else {
-      EXPECT_FALSE(tester->has_worker());
-      EXPECT_EQ(std::vector<InstallableStatusCode>{NOT_OFFLINE_CAPABLE},
-                tester->errors());
-    }
     EXPECT_TRUE(tester->splash_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->splash_icon());
+    CheckServiceWorkerForTester(tester.get());
 
     // Verify that the returned state matches manager internal state.
     InstallableManager* manager = GetManager(browser());
@@ -804,13 +846,6 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
     EXPECT_FALSE(manager->manifest().IsEmpty());
     EXPECT_FALSE(manager->manifest_url().is_empty());
     EXPECT_TRUE(manager->valid_manifest());
-    if (OfflineSupported()) {
-      EXPECT_TRUE(manager->has_worker());
-      EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-    } else {
-      EXPECT_FALSE(manager->has_worker());
-      EXPECT_EQ(NOT_OFFLINE_CAPABLE, manager->worker_error());
-    }
     EXPECT_EQ(1u, manager->icons_.size());
     EXPECT_FALSE((
         manager->icon_url(InstallableManager::IconUsage::kPrimary).is_empty()));
@@ -821,6 +856,7 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
     EXPECT_EQ(NO_ERROR_DETECTED,
               (manager->icon_error(InstallableManager::IconUsage::kPrimary)));
     EXPECT_TRUE(!manager->task_queue_.HasCurrent());
+    CheckServiceWorkerForInstallableManager(manager);
   }
 
   // Request everything except splash icon again without navigating away. This
@@ -838,16 +874,9 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
     EXPECT_FALSE(tester->primary_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->primary_icon());
     EXPECT_TRUE(tester->valid_manifest());
-    if (OfflineSupported()) {
-      EXPECT_TRUE(tester->has_worker());
-      EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
-    } else {
-      EXPECT_FALSE(tester->has_worker());
-      EXPECT_EQ(std::vector<InstallableStatusCode>{NOT_OFFLINE_CAPABLE},
-                tester->errors());
-    }
     EXPECT_TRUE(tester->splash_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->splash_icon());
+    CheckServiceWorkerForTester(tester.get());
 
     // Verify that the returned state matches manager internal state.
     InstallableManager* manager = GetManager(browser());
@@ -855,13 +884,6 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
     EXPECT_FALSE(manager->manifest().IsEmpty());
     EXPECT_FALSE(manager->manifest_url().is_empty());
     EXPECT_TRUE(manager->valid_manifest());
-    if (OfflineSupported()) {
-      EXPECT_TRUE(manager->has_worker());
-      EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-    } else {
-      EXPECT_FALSE(manager->has_worker());
-      EXPECT_EQ(NOT_OFFLINE_CAPABLE, manager->worker_error());
-    }
     EXPECT_EQ(1u, manager->icons_.size());
     EXPECT_FALSE((
         manager->icon_url(InstallableManager::IconUsage::kPrimary).is_empty()));
@@ -872,6 +894,7 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
     EXPECT_EQ(NO_ERROR_DETECTED,
               (manager->icon_error(InstallableManager::IconUsage::kPrimary)));
     EXPECT_TRUE(!manager->task_queue_.HasCurrent());
+    CheckServiceWorkerForInstallableManager(manager);
   }
 
   {
@@ -1216,28 +1239,14 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
   EXPECT_FALSE(tester->primary_icon_url().is_empty());
   EXPECT_NE(nullptr, tester->primary_icon());
   EXPECT_TRUE(tester->valid_manifest());
-  if (OfflineSupported()) {
-    EXPECT_TRUE(tester->has_worker());
-    EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
-  } else {
-    EXPECT_FALSE(tester->has_worker());
-    EXPECT_EQ(std::vector<InstallableStatusCode>{NOT_OFFLINE_CAPABLE},
-              tester->errors());
-  }
   EXPECT_TRUE(tester->splash_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->splash_icon());
+  CheckServiceWorkerForTester(tester.get());
 
   // Verify internal state.
   EXPECT_FALSE(manager->manifest().IsEmpty());
   EXPECT_FALSE(manager->manifest_url().is_empty());
   EXPECT_TRUE(manager->valid_manifest());
-  if (OfflineSupported()) {
-    EXPECT_TRUE(manager->has_worker());
-    EXPECT_EQ(NO_ERROR_DETECTED, manager->worker_error());
-  } else {
-    EXPECT_FALSE(manager->has_worker());
-    EXPECT_EQ(NOT_OFFLINE_CAPABLE, manager->worker_error());
-  }
   EXPECT_EQ(1u, manager->icons_.size());
   EXPECT_FALSE(
       (manager->icon_url(InstallableManager::IconUsage::kPrimary).is_empty()));
@@ -1248,6 +1257,7 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
             (manager->icon_error(InstallableManager::IconUsage::kPrimary)));
   EXPECT_TRUE(!manager->task_queue_.HasCurrent());
   EXPECT_FALSE(!manager->task_queue_.paused_tasks_.empty());
+  CheckServiceWorkerForInstallableManager(manager.get());
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
@@ -1354,14 +1364,7 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
     // The callback result will depend on the state of offline support.
     EXPECT_FALSE(tester->manifest().IsEmpty());
     EXPECT_TRUE(tester->valid_manifest());
-    if (OfflineSupported()) {
-      EXPECT_TRUE(tester->has_worker());
-      EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
-    } else {
-      EXPECT_FALSE(tester->has_worker());
-      EXPECT_EQ(std::vector<InstallableStatusCode>{NOT_OFFLINE_CAPABLE},
-                tester->errors());
-    }
+    CheckServiceWorkerForTester(tester.get());
   }
 }
 
@@ -1409,16 +1412,9 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
   EXPECT_FALSE(tester->primary_icon_url().is_empty());
   EXPECT_NE(nullptr, tester->primary_icon());
   EXPECT_TRUE(tester->valid_manifest());
-  if (OfflineSupported()) {
-    EXPECT_TRUE(tester->has_worker());
-    EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
-  } else {
-    EXPECT_FALSE(tester->has_worker());
-    EXPECT_EQ(std::vector<InstallableStatusCode>{NOT_OFFLINE_CAPABLE},
-              tester->errors());
-  }
   EXPECT_TRUE(tester->splash_icon_url().is_empty());
   EXPECT_EQ(nullptr, tester->splash_icon());
+  CheckServiceWorkerForTester(tester.get());
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckDataUrlIcon) {
@@ -1431,7 +1427,6 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckDataUrlIcon) {
                                    GetURLOfPageWithServiceWorkerAndManifest(
                                        "/banners/manifest_data_url_icon.json"));
   run_loop.Run();
-
 
   EXPECT_FALSE(tester->manifest().IsEmpty());
   EXPECT_FALSE(tester->manifest_url().is_empty());
@@ -1490,16 +1485,9 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
     EXPECT_FALSE(tester->primary_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->primary_icon());
     EXPECT_TRUE(tester->valid_manifest());
-    if (OfflineSupported()) {
-      EXPECT_TRUE(tester->has_worker());
-      EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
-    } else {
-      EXPECT_FALSE(tester->has_worker());
-      EXPECT_EQ(std::vector<InstallableStatusCode>{NOT_OFFLINE_CAPABLE},
-                tester->errors());
-    }
     EXPECT_TRUE(tester->splash_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->splash_icon());
+    CheckServiceWorkerForTester(tester.get());
   }
 
   {
@@ -1516,17 +1504,60 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
     EXPECT_FALSE(tester->primary_icon_url().is_empty());
     EXPECT_NE(nullptr, tester->primary_icon());
     EXPECT_TRUE(tester->valid_manifest());
-    if (OfflineSupported()) {
-      EXPECT_TRUE(tester->has_worker());
-      EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
-    } else {
-      EXPECT_FALSE(tester->has_worker());
-      EXPECT_EQ(std::vector<InstallableStatusCode>{NOT_OFFLINE_CAPABLE},
-                tester->errors());
-    }
     EXPECT_TRUE(tester->splash_icon_url().is_empty());
     EXPECT_EQ(nullptr, tester->splash_icon());
+    CheckServiceWorkerForTester(tester.get());
   }
+}
+
+// The case that a service worker doesn't return an offline response for the
+// start_url, but does for the manifest scope.
+// - manifest's scope: /banners/
+// - manifest's start_url: /banners/manifest_test_page.html?ignore
+// - service worker's scope: /banners/
+IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
+                       CheckNotOfflineCapableStartUrl) {
+  // This test wants to check the service worker that doesn't support offline
+  // pages, so ignore the cases when `is_service_worker_offline_supported_` is
+  // true.
+  if (IsServiceWorkerOfflineSupported())
+    return;
+
+  base::RunLoop run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(run_loop.QuitClosure()));
+
+  NavigateAndRunInstallableManager(
+      browser(), tester.get(), GetWebAppParams(),
+      GetURLOfPageWithServiceWorkerAndManifest(
+          "/banners/manifest_not_offline_capable_url.json"));
+
+  run_loop.Run();
+
+  EXPECT_FALSE(tester->manifest().IsEmpty());
+  EXPECT_FALSE(tester->manifest_url().is_empty());
+  EXPECT_FALSE(tester->primary_icon_url().is_empty());
+  EXPECT_NE(nullptr, tester->primary_icon());
+  EXPECT_TRUE(tester->valid_manifest());
+  EXPECT_TRUE(tester->splash_icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->splash_icon());
+  CheckServiceWorkerForTester(tester.get());
+
+  InstallableManager* manager = GetManager(browser());
+
+  EXPECT_FALSE(manager->manifest().IsEmpty());
+  EXPECT_FALSE(manager->manifest_url().is_empty());
+  EXPECT_TRUE(manager->valid_manifest());
+  EXPECT_EQ(1u, manager->icons_.size());
+  EXPECT_FALSE(
+      (manager->icon_url(InstallableManager::IconUsage::kPrimary).is_empty()));
+  EXPECT_NE(nullptr, (manager->icon(InstallableManager::IconUsage::kPrimary)));
+  EXPECT_EQ(NO_ERROR_DETECTED, manager->manifest_error());
+  EXPECT_EQ(NO_ERROR_DETECTED, manager->valid_manifest_error());
+  EXPECT_EQ(NO_ERROR_DETECTED,
+            (manager->icon_error(InstallableManager::IconUsage::kPrimary)));
+  EXPECT_TRUE(!manager->task_queue_.HasCurrent());
+  CheckServiceWorkerForInstallableManager(manager);
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
@@ -1595,9 +1626,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
 
     EXPECT_FALSE(tester->manifest().IsEmpty());
     EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
-    EXPECT_EQ(base::ASCIIToUTF16("Manifest test app"), tester->manifest().name);
-    EXPECT_EQ(base::string16(),
-              tester->manifest().short_name.value_or(base::string16()));
+    EXPECT_EQ(u"Manifest test app", tester->manifest().name);
+    EXPECT_EQ(std::u16string(),
+              tester->manifest().short_name.value_or(std::u16string()));
   }
 
   {
@@ -1627,9 +1658,9 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
     run_loop.Run();
 
     EXPECT_FALSE(tester->manifest().IsEmpty());
-    EXPECT_EQ(base::string16(),
-              tester->manifest().name.value_or(base::string16()));
-    EXPECT_EQ(base::ASCIIToUTF16("Manifest"), tester->manifest().short_name);
+    EXPECT_EQ(std::u16string(),
+              tester->manifest().name.value_or(std::u16string()));
+    EXPECT_EQ(u"Manifest", tester->manifest().short_name);
     EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
   }
 }
@@ -1652,7 +1683,7 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, DebugModeWithNoManifest) {
             tester->errors());
 }
 
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
                        DebugModeAccumulatesErrorsWithManifest) {
   base::RunLoop run_loop;
   std::unique_ptr<CallbackTester> tester(
@@ -1665,11 +1696,20 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                                        "/banners/play_app_manifest.json"));
   run_loop.Run();
 
-  EXPECT_EQ(std::vector<InstallableStatusCode>(
-                {START_URL_NOT_VALID, MANIFEST_MISSING_NAME_OR_SHORT_NAME,
-                 MANIFEST_DISPLAY_NOT_SUPPORTED, MANIFEST_MISSING_SUITABLE_ICON,
-                 NO_ACCEPTABLE_ICON}),
-            tester->errors());
+  if (IsCheckOfflineCapableFeatureEnabled()) {
+    EXPECT_EQ(
+        std::vector<InstallableStatusCode>(
+            {START_URL_NOT_VALID, MANIFEST_MISSING_NAME_OR_SHORT_NAME,
+             MANIFEST_DISPLAY_NOT_SUPPORTED, MANIFEST_MISSING_SUITABLE_ICON,
+             NO_URL_FOR_SERVICE_WORKER, NO_ACCEPTABLE_ICON}),
+        tester->errors());
+  } else {
+    EXPECT_EQ(std::vector<InstallableStatusCode>(
+                  {START_URL_NOT_VALID, MANIFEST_MISSING_NAME_OR_SHORT_NAME,
+                   MANIFEST_DISPLAY_NOT_SUPPORTED,
+                   MANIFEST_MISSING_SUITABLE_ICON, NO_ACCEPTABLE_ICON}),
+              tester->errors());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
@@ -1718,17 +1758,30 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                 browser(), "/banners/no_manifest_test_page.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
-                       GetAllInatallabilityErrorsWithPlayAppManifest) {
-  EXPECT_EQ(std::vector<content::InstallabilityError>(
-                {GetInstallabilityError(START_URL_NOT_VALID),
-                 GetInstallabilityError(MANIFEST_MISSING_NAME_OR_SHORT_NAME),
-                 GetInstallabilityError(MANIFEST_DISPLAY_NOT_SUPPORTED),
-                 GetInstallabilityError(MANIFEST_MISSING_SUITABLE_ICON),
-                 GetInstallabilityError(NO_ACCEPTABLE_ICON)}),
-            NavigateAndGetAllInstallabilityErrors(
-                browser(), GetURLOfPageWithServiceWorkerAndManifest(
-                               "/banners/play_app_manifest.json")));
+IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
+                       GetAllInstallabilityErrorsWithPlayAppManifest) {
+  if (IsCheckOfflineCapableFeatureEnabled()) {
+    EXPECT_EQ(std::vector<content::InstallabilityError>(
+                  {GetInstallabilityError(START_URL_NOT_VALID),
+                   GetInstallabilityError(MANIFEST_MISSING_NAME_OR_SHORT_NAME),
+                   GetInstallabilityError(MANIFEST_DISPLAY_NOT_SUPPORTED),
+                   GetInstallabilityError(MANIFEST_MISSING_SUITABLE_ICON),
+                   GetInstallabilityError(NO_URL_FOR_SERVICE_WORKER),
+                   GetInstallabilityError(NO_ACCEPTABLE_ICON)}),
+              NavigateAndGetAllInstallabilityErrors(
+                  browser(), GetURLOfPageWithServiceWorkerAndManifest(
+                                 "/banners/play_app_manifest.json")));
+  } else {
+    EXPECT_EQ(std::vector<content::InstallabilityError>(
+                  {GetInstallabilityError(START_URL_NOT_VALID),
+                   GetInstallabilityError(MANIFEST_MISSING_NAME_OR_SHORT_NAME),
+                   GetInstallabilityError(MANIFEST_DISPLAY_NOT_SUPPORTED),
+                   GetInstallabilityError(MANIFEST_MISSING_SUITABLE_ICON),
+                   GetInstallabilityError(NO_ACCEPTABLE_ICON)}),
+              NavigateAndGetAllInstallabilityErrors(
+                  browser(), GetURLOfPageWithServiceWorkerAndManifest(
+                                 "/banners/play_app_manifest.json")));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerAllowlistOriginBrowserTest,
@@ -1839,30 +1892,15 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
                                    "/banners/manifest_test_page.html");
   // Simulate a manifest URL update by just calling the observer function.
   static_cast<content::WebContentsObserver*>(manager)->DidUpdateWebManifestURL(
-      nullptr, base::nullopt);
+      nullptr, absl::nullopt);
   run_loop.Run();
 
   ASSERT_EQ(tester->errors().size(), 1u);
   EXPECT_EQ(tester->errors()[0], MANIFEST_URL_CHANGED);
 }
 
-// A dedicated test fixture for DisplayOverride, which is supported
-// only for the new web apps mode, and requires a command line switch
-// to enable manifest parsing.
-class InstallableManagerBrowserTest_DisplayOverride
-    : public InstallableManagerBrowserTest {
- public:
-  InstallableManagerBrowserTest_DisplayOverride() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kWebAppManifestDisplayOverride);
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
-                       CheckManifestOnly) {
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       CheckManifestOnly_DisplayOverride) {
   base::RunLoop run_loop;
   std::unique_ptr<CallbackTester> tester(
       new CallbackTester(run_loop.QuitClosure()));
@@ -1891,8 +1929,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
   EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
 }
 
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
-                       ManifestDisplayOverrideReportsError) {
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       ManifestDisplayOverrideReportsError_DisplayOverride) {
   base::RunLoop run_loop;
   std::unique_ptr<CallbackTester> tester(
       new CallbackTester(run_loop.QuitClosure()));
@@ -1918,8 +1956,8 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
       tester->errors());
 }
 
-IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
-                       FallbackToDisplayBrowser) {
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       FallbackToDisplayBrowser_DisplayOverride) {
   base::RunLoop run_loop;
   std::unique_ptr<CallbackTester> tester(
       new CallbackTester(run_loop.QuitClosure()));
@@ -1945,3 +1983,5 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest_DisplayOverride,
   EXPECT_EQ(nullptr, tester->splash_icon());
   EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
 }
+
+}  // namespace webapps

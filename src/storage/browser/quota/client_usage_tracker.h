@@ -74,7 +74,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer {
   void DidGetOriginsForGlobalUsage(GlobalUsageCallback callback,
                                    const std::vector<url::Origin>& origins);
   void AccumulateHostUsage(AccumulateInfo* info,
-                           GlobalUsageCallback callback,
+                           GlobalUsageCallback* callback,
                            int64_t limited_usage,
                            int64_t unlimited_usage);
 
@@ -85,7 +85,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer {
                           const std::vector<url::Origin>& origins);
   void AccumulateOriginUsage(AccumulateInfo* info,
                              const std::string& host,
-                             const base::Optional<url::Origin>& origin,
+                             const absl::optional<url::Origin>& origin,
                              int64_t usage);
 
   // Methods used by our GatherUsage tasks, as a task makes progress

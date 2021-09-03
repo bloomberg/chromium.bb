@@ -2,10 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "components/shared_highlighting/core/common/shared_highlighting_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/public/public_buildflags.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_font_face_descriptors.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_mouse_event_init.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview_string.h"
+#include "third_party/blink/renderer/core/css/font_face_set_document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/range.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -14,13 +26,23 @@
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/empty_clients.h"
+#include "third_party/blink/renderer/core/page/context_menu_controller.h"
+#include "third_party/blink/renderer/core/page/scrolling/text_fragment_finder.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+
+#if BUILDFLAG(ENABLE_UNHANDLED_TAP)
+#include "third_party/blink/public/mojom/unhandled_tap_notifier/unhandled_tap_notifier.mojom-blink.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
 namespace blink {
 
@@ -83,6 +105,29 @@ class TextFragmentAnchorTest : public SimTest {
     event.SetPositionInScreen(gfx::PointF(x, y));
     event.SetFrameScale(1);
     GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(event);
+  }
+
+  void LoadAhem() {
+    scoped_refptr<SharedBuffer> shared_buffer =
+        test::ReadFromFile(test::CoreTestDataPath("Ahem.ttf"));
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    auto* buffer =
+        MakeGarbageCollected<V8UnionArrayBufferOrArrayBufferViewOrString>(
+            DOMArrayBuffer::Create(shared_buffer));
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    StringOrArrayBufferOrArrayBufferView buffer =
+        StringOrArrayBufferOrArrayBufferView::FromArrayBuffer(
+            DOMArrayBuffer::Create(shared_buffer));
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+    FontFace* ahem =
+        FontFace::Create(GetDocument().GetFrame()->DomWindow(), "Ahem", buffer,
+                         FontFaceDescriptors::Create());
+
+    ScriptState* script_state =
+        ToScriptStateForMainWorld(GetDocument().GetFrame());
+    DummyExceptionStateForTesting exception_state;
+    FontFaceSetDocument::From(GetDocument())
+        ->addForBinding(script_state, ahem, exception_state);
   }
 };
 
@@ -625,8 +670,6 @@ TEST_F(TextFragmentAnchorTest, TextRangeWithContext) {
   )HTML");
   RunAsyncMatchingTasks();
 
-  // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
   Compositor().BeginFrame();
 
   EXPECT_EQ(*GetDocument().getElementById("text"), *GetDocument().CssTarget());
@@ -700,8 +743,6 @@ TEST_F(TextFragmentAnchorTest, TextRangeWithCrossElementContext) {
   )HTML");
   RunAsyncMatchingTasks();
 
-  // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
   Compositor().BeginFrame();
 
   EXPECT_EQ(*GetDocument().getElementById("expected"),
@@ -746,8 +787,6 @@ TEST_F(TextFragmentAnchorTest, CrossElementAndWhitespaceContext) {
   )HTML");
   RunAsyncMatchingTasks();
 
-  // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
   Compositor().BeginFrame();
 
   EXPECT_EQ(*GetDocument().getElementById("expected"),
@@ -786,8 +825,6 @@ TEST_F(TextFragmentAnchorTest, CrossEmptySiblingAndParentElementContext) {
   )HTML");
   RunAsyncMatchingTasks();
 
-  // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
   Compositor().BeginFrame();
 
   EXPECT_EQ(*GetDocument().getElementById("expected"),
@@ -850,8 +887,6 @@ TEST_F(TextFragmentAnchorTest, OneContextTerm) {
   )HTML");
   RunAsyncMatchingTasks();
 
-  // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
   Compositor().BeginFrame();
 
   EXPECT_EQ(*GetDocument().getElementById("text1"), *GetDocument().CssTarget());
@@ -920,41 +955,15 @@ TEST_P(TextFragmentAnchorScrollTest, ScrollCancelled) {
   GetDocument().View()->UpdateAllLifecyclePhasesForTest();
   mojom::blink::ScrollType scroll_type = GetParam();
 
-  if (!RuntimeEnabledFeatures::BlockHTMLParserOnStyleSheetsEnabled()) {
-    GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 100),
-                                                     scroll_type);
-    // Set the target text to visible and change its position to cause a layout
-    // and invoke the fragment anchor in the next begin frame.
-    css_request.Complete("p { visibility: visible; top: 1001px; }");
-    img_request.Complete("");
-  } else {
-    // Set the target text to visible and change its position to cause a layout
-    // and invoke the fragment anchor in the next begin frame.
-    css_request.Complete("p { visibility: visible; top: 1001px; }");
-    RunPendingTasks();
-    Compositor().BeginFrame();
-    Element& p = *GetDocument().getElementById("text");
-
-    // We should have invoked the fragment and scrolled the <p> into view, but
-    // load should not yet be complete due to the image.
-    EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)));
-    ASSERT_FALSE(GetDocument().IsLoadCompleted());
-
-    // Before invoking again, perform a user scroll. This should abort future
-    // scrolls during fragment invocation.
-    GetDocument().View()->LayoutViewport()->SetScrollOffset(ScrollOffset(0, 0),
-                                                            scroll_type);
-    ASSERT_FALSE(ViewportRect().Contains(BoundingRectInFrame(p)));
-
-    img_request.Complete("");
-    RunPendingTasks();
-    ASSERT_TRUE(GetDocument().IsLoadCompleted());
-  }
-
+  GetDocument().View()->LayoutViewport()->ScrollBy(ScrollOffset(0, 100),
+                                                   scroll_type);
+  // Set the target text to visible and change its position to cause a layout
+  // and invoke the fragment anchor in the next begin frame.
+  css_request.Complete("p { visibility: visible; top: 1001px; }");
+  img_request.Complete("");
   RunAsyncMatchingTasks();
 
   // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
   Compositor().BeginFrame();
 
   Element& p = *GetDocument().getElementById("text");
@@ -981,6 +990,9 @@ TEST_P(TextFragmentAnchorScrollTest, ScrollCancelled) {
 
 // Test that user scrolling dismisses the highlight.
 TEST_P(TextFragmentAnchorScrollTest, DismissTextHighlightOnUserScroll) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndDisableFeature(
+      shared_highlighting::kSharedHighlightingV2);
   SimRequest request(
       "https://example.com/"
       "test.html#:~:text=test%20page&text=more%20text",
@@ -1026,6 +1038,54 @@ TEST_P(TextFragmentAnchorScrollTest, DismissTextHighlightOnUserScroll) {
     EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
     EXPECT_TRUE(GetDocument().View()->GetFragmentAnchor());
   }
+}
+
+// Test that user scrolling doesn't dismiss the highlight, when the
+// SharedHighlightingV2 flag is enabled.
+TEST_P(TextFragmentAnchorScrollTest, DontDismissTextHighlightOnUserScroll) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(
+      shared_highlighting::kSharedHighlightingV2);
+  SimRequest request(
+      "https://example.com/"
+      "test.html#:~:text=test%20page&text=more%20text",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#:~:text=test%20page&text=more%20text");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      #first {
+        position: absolute;
+        top: 1000px;
+      }
+      #second {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="first">This is a test page</p>
+    <p id="second">With some more text</p>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  // Render two frames to handle the async step added by the beforematch event.
+  Compositor().BeginFrame();
+  Compositor().BeginFrame();
+
+  ASSERT_EQ(2u, GetDocument().Markers().Markers().size());
+
+  mojom::blink::ScrollType scroll_type = GetParam();
+  LayoutViewport()->ScrollBy(ScrollOffset(0, -10), scroll_type);
+
+  Compositor().BeginFrame();
+
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
+  EXPECT_TRUE(GetDocument().View()->GetFragmentAnchor());
 }
 
 // Ensure that the text fragment anchor has no effect in an iframe. This is
@@ -1360,8 +1420,6 @@ TEST_F(TextFragmentAnchorTest, NoMatchFoundFallsBackToElementFragment) {
   )HTML");
   RunAsyncMatchingTasks();
 
-  // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
   Compositor().BeginFrame();
 
   // The TextFragmentAnchor needs another frame to invoke the element anchor
@@ -1480,6 +1538,72 @@ TEST_F(TextFragmentAnchorTest, CheckForWordBoundaryWithPartialWord) {
 
 // Test dismissing the text highlight with a click
 TEST_F(TextFragmentAnchorTest, DismissTextHighlightWithClick) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndDisableFeature(
+      shared_highlighting::kSharedHighlightingV2);
+  SimRequest request(
+      "https://example.com/"
+      "test.html#:~:text=test%20page&text=more%20text",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#:~:text=test%20page&text=more%20text");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      #first {
+        position: absolute;
+        top: 1000px;
+      }
+      #second {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="first">This is a test page</p>
+    <p id="second">With some more text</p>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  // Render two frames to handle the async step added by the beforematch event.
+  Compositor().BeginFrame();
+  Compositor().BeginFrame();
+
+  KURL url = GetDocument()
+                 .GetFrame()
+                 ->Loader()
+                 .GetDocumentLoader()
+                 ->GetHistoryItem()
+                 ->Url();
+  EXPECT_EQ(
+      "https://example.com/test.html#:~:text=test%20page&text=more%20text",
+      url.GetString());
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
+
+  SimulateClick(100, 100);
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Ensure the fragment is uninstalled
+  EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
+  url = GetDocument()
+            .GetFrame()
+            ->Loader()
+            .GetDocumentLoader()
+            ->GetHistoryItem()
+            ->Url();
+  EXPECT_EQ("https://example.com/test.html", url.GetString());
+}
+
+// Test not dismissing the text highlight with a click, if the
+// SharedHighlightingV2 flag is enabled.
+TEST_F(TextFragmentAnchorTest, DontDismissTextHighlightWithClick) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(
+      shared_highlighting::kSharedHighlightingV2);
   SimRequest request(
       "https://example.com/"
       "test.html#:~:text=test%20page&text=more%20text",
@@ -1515,14 +1639,80 @@ TEST_F(TextFragmentAnchorTest, DismissTextHighlightWithClick) {
 
   SimulateClick(100, 100);
 
-  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
 
-  // Ensure the fragment is uninstalled
-  EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
+  // Ensure the fragment is still installed
+  EXPECT_TRUE(GetDocument().View()->GetFragmentAnchor());
 }
 
 // Test dismissing the text highlight with a tap
 TEST_F(TextFragmentAnchorTest, DismissTextHighlightWithTap) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndDisableFeature(
+      shared_highlighting::kSharedHighlightingV2);
+  SimRequest request(
+      "https://example.com/"
+      "test.html#:~:text=test%20page&text=more%20text",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#:~:text=test%20page&text=more%20text");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      #first {
+        position: absolute;
+        top: 1000px;
+      }
+      #second {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="first">This is a test page</p>
+    <p id="second">With some more text</p>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  // Render two frames to handle the async step added by the beforematch event.
+  Compositor().BeginFrame();
+  Compositor().BeginFrame();
+
+  KURL url = GetDocument()
+                 .GetFrame()
+                 ->Loader()
+                 .GetDocumentLoader()
+                 ->GetHistoryItem()
+                 ->Url();
+  EXPECT_EQ(
+      "https://example.com/test.html#:~:text=test%20page&text=more%20text",
+      url.GetString());
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
+
+  SimulateTap(100, 100);
+
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+
+  // Ensure the fragment is uninstalled
+  EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
+  url = GetDocument()
+            .GetFrame()
+            ->Loader()
+            .GetDocumentLoader()
+            ->GetHistoryItem()
+            ->Url();
+  EXPECT_EQ("https://example.com/test.html", url.GetString());
+}
+
+// Test not dismissing the text highlight with a tap, if the
+// SharedHighlightingV2 flag is enabled.
+TEST_F(TextFragmentAnchorTest, DontDismissTextHighlightWithTap) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(
+      shared_highlighting::kSharedHighlightingV2);
   SimRequest request(
       "https://example.com/"
       "test.html#:~:text=test%20page&text=more%20text",
@@ -1558,14 +1748,17 @@ TEST_F(TextFragmentAnchorTest, DismissTextHighlightWithTap) {
 
   SimulateTap(100, 100);
 
-  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
 
-  // Ensure the fragment is uninstalled
-  EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
+  // Ensure the fragment is installed
+  EXPECT_TRUE(GetDocument().View()->GetFragmentAnchor());
 }
 
 // Test that we don't dismiss a text highlight before it's scrolled into view
 TEST_F(TextFragmentAnchorTest, DismissTextHighlightOutOfView) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndDisableFeature(
+      shared_highlighting::kSharedHighlightingV2);
   SimRequest request("https://example.com/test.html#:~:text=test", "text/html");
   SimSubresourceRequest css_request("https://example.com/test.css", "text/css");
   LoadURL("https://example.com/test.html#:~:text=test");
@@ -1607,6 +1800,9 @@ TEST_F(TextFragmentAnchorTest, DismissTextHighlightOutOfView) {
 
 // Test dismissing a text highlight that didn't require a scroll into view
 TEST_F(TextFragmentAnchorTest, DismissTextHighlightInView) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndDisableFeature(
+      shared_highlighting::kSharedHighlightingV2);
   SimRequest request(
       "https://example.com/"
       "test.html#:~:text=test%20page&text=more%20text",
@@ -1629,8 +1825,6 @@ TEST_F(TextFragmentAnchorTest, DismissTextHighlightInView) {
   )HTML");
   RunAsyncMatchingTasks();
 
-  // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
   Compositor().BeginFrame();
 
   EXPECT_EQ(ScrollOffset(), LayoutViewport()->GetScrollOffset());
@@ -1738,8 +1932,6 @@ TEST_F(TextFragmentAnchorTest, IdFragmentWithFragmentDirective) {
   )HTML");
   RunAsyncMatchingTasks();
 
-  // Render two frames to handle the async step added by the beforematch event.
-  Compositor().BeginFrame();
   Compositor().BeginFrame();
 
   Element& p = *GetDocument().getElementById("element");
@@ -2039,6 +2231,337 @@ TEST_F(TextFragmentAnchorTest, MatchAcrossCommentNode) {
   EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)));
   EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
 }
+
+// Test that selection is successful for same prefix and text start.
+TEST_F(TextFragmentAnchorTest, SamePrefixAndText) {
+  SimRequest request("https://example.com/test.html#:~:text=foo-,foo,-bar",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:text=foo-,foo,-bar");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      div {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <div id="text">foo foo foo bar bar bar</div>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  // Render two frames to handle the async step added by the beforematch event.
+  Compositor().BeginFrame();
+  Compositor().BeginFrame();
+
+  Element& div = *GetDocument().getElementById("text");
+
+  EXPECT_EQ(div, *GetDocument().CssTarget());
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)));
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+}
+// Checks that selection in the same text node is considerered uninterrupted.
+TEST_F(TextFragmentAnchorTest, IsInSameUninterruptedBlock_OneTextNode) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div id='first'>First paragraph text</div>
+  )HTML");
+  Node* first_paragraph = GetDocument().getElementById("first")->firstChild();
+  const auto& start = PositionInFlatTree(first_paragraph, 0);
+  const auto& end = PositionInFlatTree(first_paragraph, 15);
+  ASSERT_EQ("First paragraph", PlainText(EphemeralRangeInFlatTree(start, end)));
+
+  EXPECT_TRUE(TextFragmentFinder::IsInSameUninterruptedBlock(start, end));
+}
+
+// Checks that selection in the same text node with nested non-block element is
+// considerered uninterrupted.
+TEST_F(TextFragmentAnchorTest,
+       IsInSameUninterruptedBlock_NonBlockInterruption) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div id='first'>First <i>styled text</i> paragraph text</div>
+  )HTML");
+  Node* first_paragraph = GetDocument().getElementById("first")->firstChild();
+  const auto& start = PositionInFlatTree(first_paragraph, 0);
+  const auto& end =
+      PositionInFlatTree(first_paragraph->nextSibling()->nextSibling(), 10);
+  ASSERT_EQ("First styled text paragraph",
+            PlainText(EphemeralRangeInFlatTree(start, end)));
+
+  EXPECT_TRUE(TextFragmentFinder::IsInSameUninterruptedBlock(start, end));
+}
+
+// Checks that selection in the same text node with nested block element is
+// considerered interrupted.
+TEST_F(TextFragmentAnchorTest, IsInSameUninterruptedBlock_BlockInterruption) {
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div id='first'>First <div>block text</div> paragraph text</div>
+  )HTML");
+  Node* first_paragraph = GetDocument().getElementById("first")->firstChild();
+  const auto& start = PositionInFlatTree(first_paragraph, 0);
+  const auto& end =
+      PositionInFlatTree(first_paragraph->nextSibling()->nextSibling(), 10);
+  ASSERT_EQ("First\nblock text\nparagraph",
+            PlainText(EphemeralRangeInFlatTree(start, end)));
+
+  EXPECT_FALSE(TextFragmentFinder::IsInSameUninterruptedBlock(start, end));
+}
+
+TEST_F(TextFragmentAnchorTest, OpenedFromHighlightDoesNotSelectAdditionalText) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(
+      shared_highlighting::kSharedHighlightingV2);
+  SimRequest request("https://www.test.com/#:~:text=First%20test,page%20three",
+                     "text/html");
+  LoadURL("https://www.test.com/#:~:text=First%20test,page%20three");
+  request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <style>
+      p {
+        font-size: 12px;
+      }
+      </style>
+      <p id="one">First test page one</p>
+      <p id="two">Second test page two</p>
+      <p id="three">Third test page three</p>
+      <p id="four">Fourth test page four</p>
+      </html>)HTML");
+  RunAsyncMatchingTasks();
+
+  Compositor().BeginFrame();
+
+  Element* middle_element = GetDocument().getElementById("two");
+  Element* last_element = GetDocument().getElementById("four");
+
+  WebView().GetSettings()->SetEditingBehavior(
+      mojom::EditingBehavior::kEditingMacBehavior);
+
+  // Create a mouse event in the middle of <p> two.
+  WebMouseEvent mouse_down_event(WebInputEvent::Type::kMouseDown,
+                                 WebInputEvent::kNoModifiers,
+                                 WebInputEvent::GetStaticTimeStampForTests());
+  const DOMRect* middle_rect = middle_element->getBoundingClientRect();
+  gfx::PointF middle_elem_point(((middle_rect->left() + 1)),
+                                ((middle_rect->top() + 1)));
+  mouse_down_event.SetPositionInWidget(middle_elem_point.x(),
+                                       middle_elem_point.y());
+  mouse_down_event.SetPositionInScreen(middle_elem_point.x(),
+                                       middle_elem_point.y());
+  mouse_down_event.click_count = 1;
+  mouse_down_event.button = WebMouseEvent::Button::kRight;
+
+  // Corresponding release event (Windows shows context menu on release).
+  WebMouseEvent mouse_up_event(mouse_down_event);
+  mouse_up_event.SetType(WebInputEvent::Type::kMouseUp);
+
+  WebView().MainFrameViewWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_down_event, ui::LatencyInfo()));
+  WebView().MainFrameViewWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_up_event, ui::LatencyInfo()));
+
+  // No additional text should be selected.
+  FrameSelection& selection = GetDocument().GetFrame()->Selection();
+  EXPECT_TRUE(selection.SelectedText().IsEmpty());
+
+  // Create a mouse event at the center of <p> four.
+  const DOMRect* last_rect = last_element->getBoundingClientRect();
+  gfx::PointF last_elem_point(((last_rect->left() + 1)),
+                              ((last_rect->top() + 1)));
+  mouse_down_event.SetPositionInWidget(last_elem_point.x(),
+                                       last_elem_point.y());
+  mouse_down_event.SetPositionInScreen(last_elem_point.x(),
+                                       last_elem_point.y());
+
+  // Corresponding release event (Windows shows context menu on release).
+  WebMouseEvent last_mouse_up_event(mouse_down_event);
+  last_mouse_up_event.SetType(WebInputEvent::Type::kMouseUp);
+
+  WebView().MainFrameViewWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(mouse_down_event, ui::LatencyInfo()));
+  WebView().MainFrameViewWidget()->HandleInputEvent(
+      WebCoalescedInputEvent(last_mouse_up_event, ui::LatencyInfo()));
+
+  // The text underneath the cursor should be selected.
+  EXPECT_FALSE(selection.SelectedText().IsEmpty());
+}
+
+// Test that on Android, a user can display a context menu by tapping on
+// a text fragment, when the TextFragmentTapOpensContextMenu
+// RuntimeEnabledFeature is enabled.
+TEST_F(TextFragmentAnchorTest, ShouldOpenContextMenuOnTap) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(
+      shared_highlighting::kSharedHighlightingV2);
+  LoadAhem();
+  SimRequest request(
+      "https://example.com/"
+      "test.html#:~:text=this%20is%20a%20test%20page",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#:~:text=this%20is%20a%20test%20page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>p { font: 10px/1 Ahem; }</style>
+    <p id="first">This is a test page</p>
+    <p id="two">Second test page two</p>
+  )HTML");
+  RunAsyncMatchingTasks();
+  ContextMenuAllowedScope context_menu_allowed_scope;
+
+  Compositor().BeginFrame();
+
+  EXPECT_FALSE(GetDocument()
+                   .GetPage()
+                   ->GetContextMenuController()
+                   .ContextMenuNodeForFrame(GetDocument().GetFrame()));
+
+  Range* range = Range::Create(GetDocument());
+  range->setStart(GetDocument().getElementById("first"), 0,
+                  IGNORE_EXCEPTION_FOR_TESTING);
+  range->setEnd(GetDocument().getElementById("first"), 1,
+                IGNORE_EXCEPTION_FOR_TESTING);
+  ASSERT_EQ("This is a test page", range->GetText());
+
+  IntPoint tap_point = range->BoundingBox().Center();
+  SimulateTap(tap_point.X(), tap_point.Y());
+
+  if (RuntimeEnabledFeatures::TextFragmentTapOpensContextMenuEnabled()) {
+    EXPECT_TRUE(GetDocument()
+                    .GetPage()
+                    ->GetContextMenuController()
+                    .ContextMenuNodeForFrame(GetDocument().GetFrame()));
+  } else {
+    EXPECT_FALSE(GetDocument()
+                     .GetPage()
+                     ->GetContextMenuController()
+                     .ContextMenuNodeForFrame(GetDocument().GetFrame()));
+  }
+
+  GetDocument().GetPage()->GetContextMenuController().ClearContextMenu();
+
+  range->setStart(GetDocument().getElementById("two"), 0,
+                  IGNORE_EXCEPTION_FOR_TESTING);
+  range->setEndAfter(GetDocument().getElementById("two"),
+                     IGNORE_EXCEPTION_FOR_TESTING);
+  ASSERT_EQ("Second test page two", range->GetText());
+
+  tap_point = range->BoundingBox().Center();
+  SimulateTap(tap_point.X(), tap_point.Y());
+
+  EXPECT_FALSE(GetDocument()
+                   .GetPage()
+                   ->GetContextMenuController()
+                   .ContextMenuNodeForFrame(GetDocument().GetFrame()));
+}
+
+#if BUILDFLAG(ENABLE_UNHANDLED_TAP)
+// Mock implementation of the UnhandledTapNotifier Mojo receiver, for testing
+// the ShowUnhandledTapUIIfNeeded notification.
+class MockUnhandledTapNotifierImpl : public mojom::blink::UnhandledTapNotifier {
+ public:
+  MockUnhandledTapNotifierImpl() = default;
+
+  void Bind(mojo::ScopedMessagePipeHandle handle) {
+    receiver_.Bind(mojo::PendingReceiver<mojom::blink::UnhandledTapNotifier>(
+        std::move(handle)));
+  }
+
+  void ShowUnhandledTapUIIfNeeded(
+      mojom::blink::UnhandledTapInfoPtr unhandled_tap_info) override {
+    was_unhandled_tap_ = true;
+  }
+  bool WasUnhandledTap() const { return was_unhandled_tap_; }
+  bool ReceiverIsBound() const { return receiver_.is_bound(); }
+  void Reset() {
+    was_unhandled_tap_ = false;
+    receiver_.reset();
+  }
+
+ private:
+  bool was_unhandled_tap_ = false;
+
+  mojo::Receiver<mojom::blink::UnhandledTapNotifier> receiver_{this};
+};
+#endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
+
+#if BUILDFLAG(ENABLE_UNHANDLED_TAP)
+// Test that on Android, when a user taps on a text, ShouldNotRequestUnhandled
+// does not get triggered. When a user taps on a highlight, no text should be
+// selected. RuntimeEnabledFeature is enabled.
+TEST_F(TextFragmentAnchorTest,
+       ShouldNotRequestUnhandledTapNotifierWhenTapOnTextFragment) {
+  base::test::ScopedFeatureList feature_list_;
+  feature_list_.InitAndEnableFeature(
+      shared_highlighting::kSharedHighlightingV2);
+  LoadAhem();
+  SimRequest request(
+      "https://example.com/"
+      "test.html#:~:text=this%20is%20a%20test%20page",
+      "text/html");
+  LoadURL(
+      "https://example.com/"
+      "test.html#:~:text=this%20is%20a%20test%20page");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>p { font: 10px/1 Ahem; }</style>
+    <p id="first">This is a test page</p>
+    <p id="two">Second test page two</p>
+  )HTML");
+  RunAsyncMatchingTasks();
+  MockUnhandledTapNotifierImpl mock_notifier;
+  GetDocument().GetFrame()->GetBrowserInterfaceBroker().SetBinderForTesting(
+      mojom::blink::UnhandledTapNotifier::Name_,
+      WTF::BindRepeating(&MockUnhandledTapNotifierImpl::Bind,
+                         WTF::Unretained(&mock_notifier)));
+
+  Compositor().BeginFrame();
+
+  Range* range = Range::Create(GetDocument());
+  range->setStart(GetDocument().getElementById("first"), 0,
+                  IGNORE_EXCEPTION_FOR_TESTING);
+  range->setEnd(GetDocument().getElementById("first"), 1,
+                IGNORE_EXCEPTION_FOR_TESTING);
+  ASSERT_EQ("This is a test page", range->GetText());
+
+  mock_notifier.Reset();
+  IntPoint tap_point = range->BoundingBox().Center();
+  SimulateTap(tap_point.X(), tap_point.Y());
+
+  base::RunLoop().RunUntilIdle();
+  if (RuntimeEnabledFeatures::TextFragmentTapOpensContextMenuEnabled()) {
+    EXPECT_FALSE(mock_notifier.WasUnhandledTap());
+    EXPECT_FALSE(mock_notifier.ReceiverIsBound());
+  } else {
+    EXPECT_TRUE(mock_notifier.WasUnhandledTap());
+    EXPECT_TRUE(mock_notifier.ReceiverIsBound());
+  }
+
+  range->setStart(GetDocument().getElementById("two"), 0,
+                  IGNORE_EXCEPTION_FOR_TESTING);
+  range->setEndAfter(GetDocument().getElementById("two"),
+                     IGNORE_EXCEPTION_FOR_TESTING);
+  ASSERT_EQ("Second test page two", range->GetText());
+
+  mock_notifier.Reset();
+  tap_point = range->BoundingBox().Center();
+  SimulateTap(tap_point.X(), tap_point.Y());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(mock_notifier.WasUnhandledTap());
+  EXPECT_TRUE(mock_notifier.ReceiverIsBound());
+}
+#endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
 }  // namespace
 

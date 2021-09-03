@@ -11,11 +11,11 @@
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/smb_client/smb_url.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/components/smbfs/smbfs_host.h"
@@ -458,7 +458,7 @@ TEST_F(SmbFsShareTest, GenerateStableMountIdInput) {
 
   smbfs::SmbFsMounter::MountOptions options2;
   options2.kerberos_options =
-      base::make_optional<smbfs::SmbFsMounter::KerberosOptions>(
+      absl::make_optional<smbfs::SmbFsMounter::KerberosOptions>(
           smbfs::SmbFsMounter::KerberosOptions::Source::kKerberos,
           kKerberosIdentity);
   SmbFsShare share2(&profile_, SmbUrl(kSharePath2), kDisplayName, options2);

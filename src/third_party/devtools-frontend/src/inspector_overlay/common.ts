@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+export type PathCommands = Array<string|number>;
+
+export interface Quad {
+  p1: Position;
+  p2: Position;
+  p3: Position;
+  p4: Position;
+}
+
 export interface Position {
   x: number;
   y: number;
@@ -53,9 +62,13 @@ export class Overlay {
   protected canvasWidth: number = 0;
   protected canvasHeight: number = 0;
   protected platform?: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private _window?: Window;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private _document?: Document;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private _context?: CanvasRenderingContext2D|null;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   private _installed = false;
 
   constructor(window: Window, style: CSSStyleSheet[] = []) {
@@ -208,6 +221,7 @@ export function constrainNumber(num: number, min: number, max: number): number {
 }
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface Document {
     adoptedStyleSheets: CSSStyleSheet[];
   }

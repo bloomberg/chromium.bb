@@ -27,6 +27,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_rep.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -48,7 +49,7 @@ gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
   paint.setBlendMode(SkBlendMode::kSrcOver);
   canvas.drawRoundRect(gfx::RectToSkRect(gfx::Rect(image_size)), 100.f, 100.f,
                        paint);
-  return gfx::ImageSkia(gfx::ImageSkiaRep(std::move(bitmap), 1.f));
+  return gfx::ImageSkia::CreateFromBitmap(std::move(bitmap), 1.f);
 }
 
 void HandleToggleWallpaperMode() {
@@ -161,11 +162,7 @@ void PerformDebugActionIfEnabled(AcceleratorAction action) {
       break;
     case DEBUG_SHOW_TOAST:
       Shell::Get()->toast_manager()->Show(
-          ToastData("id", base::ASCIIToUTF16("Toast"), 5000 /* duration_ms */,
-                    base::ASCIIToUTF16("Dismiss")));
-      break;
-    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
-      Shell::Get()->display_manager()->ToggleDisplayScaleFactor();
+          ToastData("id", u"Toast", 5000 /* duration_ms */, u"Dismiss"));
       break;
     case DEBUG_TOGGLE_TOUCH_PAD:
       HandleToggleTouchpad();

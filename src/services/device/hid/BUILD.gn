@@ -45,7 +45,7 @@ source_set("hid") {
     deps += [ "//device/udev_linux" ]
   }
 
-  if (is_ash) {
+  if (is_chromeos_ash) {
     deps += [ "//chromeos/dbus/permission_broker" ]
   }
 
@@ -53,6 +53,8 @@ source_set("hid") {
     sources += [
       "hid_connection_win.cc",
       "hid_connection_win.h",
+      "hid_preparsed_data.cc",
+      "hid_preparsed_data.h",
       "hid_service_win.cc",
       "hid_service_win.h",
     ]
@@ -72,7 +74,7 @@ source_set("hid") {
   }
 }
 
-source_set("mocks") {
+source_set("test_support") {
   testonly = true
 
   sources = [
@@ -80,6 +82,8 @@ source_set("mocks") {
     "mock_hid_connection.h",
     "mock_hid_service.cc",
     "mock_hid_service.h",
+    "test_report_descriptors.cc",
+    "test_report_descriptors.h",
   ]
 
   public_deps = [

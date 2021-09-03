@@ -37,9 +37,9 @@ class MediaHistoryImagesTable : public MediaHistoryTableBase {
   sql::InitStatus CreateTableIfNonExistent() override;
 
   // Saves the image or gets the image ID if it is already in the database.
-  base::Optional<int64_t> SaveOrGetImage(const GURL& url,
+  absl::optional<int64_t> SaveOrGetImage(const GURL& url,
                                          const url::Origin& playback_origin,
-                                         const base::string16& mime_type);
+                                         const std::u16string& mime_type);
 };
 
 }  // namespace media_history

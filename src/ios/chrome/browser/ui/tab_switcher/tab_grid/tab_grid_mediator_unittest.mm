@@ -10,6 +10,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/sessions/core/live_tab.h"
+#include "components/sessions/core/session_id.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/sessions/core/tab_restore_service_helper.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
@@ -25,21 +26,23 @@
 #import "ios/chrome/browser/tabs/closing_web_state_observer_browser_agent.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_item.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_switcher_item.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
+#import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #include "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_usage_enabler_browser_agent.h"
 #include "ios/web/common/features.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/web_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
@@ -65,7 +68,8 @@ class FakeTabRestoreService : public sessions::TabRestoreService {
     NOTREACHED();
   }
 
-  void CreateHistoricalTab(sessions::LiveTab* live_tab, int index) override {
+  absl::optional<SessionID> CreateHistoricalTab(sessions::LiveTab* live_tab,
+                                                int index) override {
     auto tab = std::make_unique<Tab>();
     int entry_count =
         live_tab->IsInitialBlankNavigation() ? 0 : live_tab->GetEntryCount();
@@ -75,6 +79,7 @@ class FakeTabRestoreService : public sessions::TabRestoreService {
       tab->navigations[i] = entry;
     }
     entries_.push_front(std::move(tab));
+    return absl::nullopt;
   }
 
   void BrowserClosing(sessions::LiveTabContext* context) override {
@@ -82,6 +87,19 @@ class FakeTabRestoreService : public sessions::TabRestoreService {
   }
 
   void BrowserClosed(sessions::LiveTabContext* context) override {
+    NOTREACHED();
+  }
+
+  void CreateHistoricalGroup(sessions::LiveTabContext* context,
+                             const tab_groups::TabGroupId& group) override {
+    NOTREACHED();
+  }
+
+  void GroupClosed(const tab_groups::TabGroupId& group) override {
+    NOTREACHED();
+  }
+
+  void GroupCloseStopped(const tab_groups::TabGroupId& group) override {
     NOTREACHED();
   }
 
@@ -161,16 +179,20 @@ std::unique_ptr<KeyedService> BuildFakeTabRestoreService(
 @synthesize items = _items;
 @synthesize selectedItemID = _selectedItemID;
 
-- (void)populateItems:(NSArray<GridItem*>*)items
+- (void)setItemsRequireAuthentication:(BOOL)require {
+  // No-op.
+}
+
+- (void)populateItems:(NSArray<TabSwitcherItem*>*)items
        selectedItemID:(NSString*)selectedItemID {
   self.selectedItemID = selectedItemID;
   self.items = [NSMutableArray array];
-  for (GridItem* item in items) {
+  for (TabSwitcherItem* item in items) {
     [self.items addObject:item.identifier];
   }
 }
 
-- (void)insertItem:(GridItem*)item
+- (void)insertItem:(TabSwitcherItem*)item
            atIndex:(NSUInteger)index
     selectedItemID:(NSString*)selectedItemID {
   [self.items insertObject:item.identifier atIndex:index];
@@ -187,7 +209,7 @@ std::unique_ptr<KeyedService> BuildFakeTabRestoreService(
   self.selectedItemID = selectedItemID;
 }
 
-- (void)replaceItemID:(NSString*)itemID withItem:(GridItem*)item {
+- (void)replaceItemID:(NSString*)itemID withItem:(TabSwitcherItem*)item {
   NSUInteger index = [self.items indexOfObject:itemID];
   self.items[index] = item.identifier;
 }
@@ -195,6 +217,10 @@ std::unique_ptr<KeyedService> BuildFakeTabRestoreService(
 - (void)moveItemWithID:(NSString*)itemID toIndex:(NSUInteger)toIndex {
   [self.items removeObject:itemID];
   [self.items insertObject:itemID atIndex:toIndex];
+}
+
+- (void)dismissModals {
+  // No-op.
 }
 
 @end
@@ -215,6 +241,7 @@ class TabHelperFakeWebStateListDelegate : public FakeWebStateListDelegate {
     PagePlaceholderTabHelper::CreateForWebState(web_state);
     NSString* identifier = TabIdTabHelper::FromWebState(web_state)->tab_id();
     SnapshotTabHelper::CreateForWebState(web_state, identifier);
+    WebSessionStateTabHelper::CreateForWebState(web_state);
   }
 };
 
@@ -244,11 +271,11 @@ class TabGridMediatorTest : public PlatformTest {
     ClosingWebStateObserverBrowserAgent::CreateForBrowser(browser_.get());
     SnapshotBrowserAgent::CreateForBrowser(browser_.get());
     SnapshotBrowserAgent::FromBrowser(browser_.get())
-        ->SetSessionID(base::SysNSStringToUTF8([[NSUUID UUID] UUIDString]));
+        ->SetSessionID([[NSUUID UUID] UUIDString]);
 
     // Insert some web states.
     for (int i = 0; i < 3; i++) {
-      auto web_state = CreateTestWebStateWithURL(GURL("https://foo/bar"));
+      auto web_state = CreateFakeWebStateWithURL(GURL("https://foo/bar"));
       NSString* identifier =
           TabIdTabHelper::FromWebState(web_state.get())->tab_id();
       // Tab IDs should be unique.
@@ -269,12 +296,12 @@ class TabGridMediatorTest : public PlatformTest {
     mediator_.tabRestoreService = tab_restore_service_;
   }
 
-  // Creates a TestWebState with a navigation history containing exactly only
+  // Creates a FakeWebState with a navigation history containing exactly only
   // the given |url|.
-  std::unique_ptr<web::TestWebState> CreateTestWebStateWithURL(
+  std::unique_ptr<web::FakeWebState> CreateFakeWebStateWithURL(
       const GURL& url) {
-    auto web_state = std::make_unique<web::TestWebState>();
-    auto navigation_manager = std::make_unique<web::TestNavigationManager>();
+    auto web_state = std::make_unique<web::FakeWebState>();
+    auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
     navigation_manager->AddItem(url, ui::PAGE_TRANSITION_LINK);
     navigation_manager->SetLastCommittedItem(
         navigation_manager->GetItemAtIndex(0));
@@ -294,6 +321,8 @@ class TabGridMediatorTest : public PlatformTest {
         [[TestSessionService alloc] init];
     SessionRestorationBrowserAgent::CreateForBrowser(browser_.get(),
                                                      test_session_service);
+    SessionRestorationBrowserAgent::FromBrowser(browser_.get())
+        ->SetSessionID([[NSUUID UUID] UUIDString]);
   }
 
  protected:
@@ -322,7 +351,7 @@ TEST_F(TabGridMediatorTest, ConsumerPopulateItems) {
 // Tests that the consumer is notified when a web state is inserted.
 TEST_F(TabGridMediatorTest, ConsumerInsertItem) {
   ASSERT_EQ(3UL, consumer_.items.count);
-  auto web_state = std::make_unique<web::TestWebState>();
+  auto web_state = std::make_unique<web::FakeWebState>();
   TabIdTabHelper::CreateForWebState(web_state.get());
   NSString* item_identifier =
       TabIdTabHelper::FromWebState(web_state.get())->tab_id();
@@ -360,11 +389,13 @@ TEST_F(TabGridMediatorTest, ConsumerUpdateSelectedItem) {
 // The selected item is replaced, so the new selected item id should be the
 // id of the new item.
 TEST_F(TabGridMediatorTest, ConsumerReplaceItem) {
-  auto new_web_state = std::make_unique<web::TestWebState>();
+  auto new_web_state = std::make_unique<web::FakeWebState>();
   TabIdTabHelper::CreateForWebState(new_web_state.get());
   NSString* new_item_identifier =
       TabIdTabHelper::FromWebState(new_web_state.get())->tab_id();
-  web_state_list_->ReplaceWebStateAt(1, std::move(new_web_state));
+  @autoreleasepool {
+    web_state_list_->ReplaceWebStateAt(1, std::move(new_web_state));
+  }
   EXPECT_EQ(3UL, consumer_.items.count);
   EXPECT_NSEQ(new_item_identifier, consumer_.selectedItemID);
   EXPECT_NSEQ(new_item_identifier, consumer_.items[1]);
@@ -471,16 +502,16 @@ TEST_F(TabGridMediatorTest, UndoCloseAllItemsCommandWithNTP) {
   EXPECT_EQ(0UL, consumer_.items.count);
 
   // Add three new tabs.
-  auto web_state1 = CreateTestWebStateWithURL(GURL("https://test/url1"));
+  auto web_state1 = CreateFakeWebStateWithURL(GURL("https://test/url1"));
   web_state_list_->InsertWebState(0, std::move(web_state1),
                                   WebStateList::INSERT_FORCE_INDEX,
                                   WebStateOpener());
   // Second tab is a NTP.
-  auto web_state2 = CreateTestWebStateWithURL(GURL(kChromeUINewTabURL));
+  auto web_state2 = CreateFakeWebStateWithURL(GURL(kChromeUINewTabURL));
   web_state_list_->InsertWebState(1, std::move(web_state2),
                                   WebStateList::INSERT_FORCE_INDEX,
                                   WebStateOpener());
-  auto web_state3 = CreateTestWebStateWithURL(GURL("https://test/url2"));
+  auto web_state3 = CreateFakeWebStateWithURL(GURL("https://test/url2"));
   web_state_list_->InsertWebState(2, std::move(web_state3),
                                   WebStateList::INSERT_FORCE_INDEX,
                                   WebStateOpener());

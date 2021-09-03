@@ -179,7 +179,7 @@ TEST_F(DownloadFeedbackServiceTest, MaybeStorePingsForDownload) {
     // SAFE will never upload
     EXPECT_FALSE(
         WillStorePings(DownloadCheckResult::SAFE, upload_requested, ok_size));
-    EXPECT_FALSE(WillStorePings(DownloadCheckResult::WHITELISTED_BY_POLICY,
+    EXPECT_FALSE(WillStorePings(DownloadCheckResult::ALLOWLISTED_BY_POLICY,
                                 upload_requested, ok_size));
     // Others will upload if requested.
     EXPECT_EQ(upload_requested, WillStorePings(DownloadCheckResult::UNKNOWN,
@@ -193,6 +193,9 @@ TEST_F(DownloadFeedbackServiceTest, MaybeStorePingsForDownload) {
                              upload_requested, ok_size));
     EXPECT_EQ(upload_requested,
               WillStorePings(DownloadCheckResult::POTENTIALLY_UNWANTED,
+                             upload_requested, ok_size));
+    EXPECT_EQ(upload_requested,
+              WillStorePings(DownloadCheckResult::DANGEROUS_ACCOUNT_COMPROMISE,
                              upload_requested, ok_size));
 
     // Bad sizes never upload
@@ -208,6 +211,9 @@ TEST_F(DownloadFeedbackServiceTest, MaybeStorePingsForDownload) {
                                 upload_requested, bad_size));
     EXPECT_FALSE(WillStorePings(DownloadCheckResult::POTENTIALLY_UNWANTED,
                                 upload_requested, bad_size));
+    EXPECT_FALSE(
+        WillStorePings(DownloadCheckResult::DANGEROUS_ACCOUNT_COMPROMISE,
+                       upload_requested, bad_size));
   }
 }
 
@@ -373,7 +379,8 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
   EXPECT_TRUE(base::PathExists(file_path[2]));
 }
 
-TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
+// TODO(https://crbug.com/1179266): Deflake this test.
+TEST_F(DownloadFeedbackServiceTest, DISABLED_MultiFeedbackWithIncomplete) {
   const std::string ping_request = "ping";
   const std::string ping_response = "resp";
   const size_t kNumDownloads = 3;
