@@ -30,6 +30,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   const GURL& GetScriptURL() override;
   Service* GetService() override;
   WebController* GetWebController() override;
+  ElementStore* GetElementStore() const override;
   TriggerContext* GetTriggerContext() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   WebsiteLoginManager* GetWebsiteLoginManager() override;
@@ -42,7 +43,10 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   std::string GetStatusMessage() const override;
   void SetBubbleMessage(const std::string& message) override;
   std::string GetBubbleMessage() const override;
-  void SetDetails(std::unique_ptr<Details> details) override;
+  void SetDetails(std::unique_ptr<Details> details,
+                  base::TimeDelta delay) override;
+  void AppendDetails(std::unique_ptr<Details> details,
+                     base::TimeDelta delay) override;
   void SetInfoBox(const InfoBox& info_box) override;
   void ClearInfoBox() override;
   void SetProgress(int progress) override;
@@ -92,11 +96,18 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
       base::OnceCallback<void(const ClientStatus&)> end_action_callback,
       base::OnceCallback<void(const ClientStatus&)>
           view_inflation_finished_callback) override;
+  void SetPersistentGenericUi(
+      std::unique_ptr<GenericUserInterfaceProto> generic_ui,
+      base::OnceCallback<void(const ClientStatus&)>
+          view_inflation_finished_callback) override;
   void ClearGenericUi() override;
+  void ClearPersistentGenericUi() override;
   void SetOverlayBehavior(
       ConfigureUiStateProto::OverlayBehavior overlay_behavior) override;
   void SetBrowseModeInvisible(bool invisible) override;
   void SetShowFeedbackChip(bool show_feedback_chip) override;
+
+  bool ShouldShowWarning() override;
 
   ClientSettings* GetMutableSettings() { return &client_settings_; }
 
@@ -108,21 +119,29 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
     web_controller_ = web_controller;
   }
 
+  void SetElementStore(ElementStore* element_store) {
+    element_store_ = element_store;
+  }
+
   void SetTriggerContext(std::unique_ptr<TriggerContext> trigger_context) {
     trigger_context_ = std::move(trigger_context);
   }
 
   void SetUserModel(UserModel* user_model) { user_model_ = user_model; }
-
   std::vector<AutofillAssistantState> GetStateHistory() {
     return state_history_;
   }
+
   AutofillAssistantState GetState() const {
     return state_history_.empty() ? AutofillAssistantState::INACTIVE
                                   : state_history_.back();
   }
 
-  Details* GetDetails() { return details_.get(); }
+  const std::vector<Details>& GetDetails() { return details_; }
+
+  const GenericUserInterfaceProto* GetPersistentGenericUi() {
+    return persistent_generic_ui_.get();
+  }
 
   InfoBox* GetInfoBox() { return info_box_.get(); }
 
@@ -150,10 +169,12 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   GURL current_url_;
   Service* service_ = nullptr;
   WebController* web_controller_ = nullptr;
+  ElementStore* element_store_ = nullptr;
   std::unique_ptr<TriggerContext> trigger_context_;
   std::vector<AutofillAssistantState> state_history_;
   std::string status_message_;
-  std::unique_ptr<Details> details_;
+  std::string bubble_message_;
+  std::vector<Details> details_;
   std::unique_ptr<InfoBox> info_box_;
   std::unique_ptr<std::vector<UserAction>> user_actions_;
   std::unique_ptr<CollectUserDataOptions> last_payment_request_options_;
@@ -171,6 +192,7 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   bool expand_sheet_for_prompt_ = true;
   std::vector<std::string> browse_domains_;
   UserModel* user_model_ = nullptr;
+  std::unique_ptr<GenericUserInterfaceProto> persistent_generic_ui_;
 
   bool require_ui_ = false;
 

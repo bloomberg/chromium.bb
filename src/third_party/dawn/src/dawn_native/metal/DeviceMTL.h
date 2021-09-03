@@ -35,14 +35,11 @@ namespace dawn_native { namespace metal {
     class Device : public DeviceBase {
       public:
         static ResultOrError<Device*> Create(AdapterBase* adapter,
-                                             id<MTLDevice> mtlDevice,
+                                             NSPRef<id<MTLDevice>> mtlDevice,
                                              const DeviceDescriptor* descriptor);
         ~Device() override;
 
         MaybeError Initialize();
-
-        CommandBufferBase* CreateCommandBuffer(CommandEncoder* encoder,
-                                               const CommandBufferDescriptor* descriptor) override;
 
         MaybeError TickImpl() override;
 
@@ -71,45 +68,54 @@ namespace dawn_native { namespace metal {
         uint32_t GetOptimalBytesPerRowAlignment() const override;
         uint64_t GetOptimalBufferToTextureCopyOffsetAlignment() const override;
 
-      private:
-        Device(AdapterBase* adapter, id<MTLDevice> mtlDevice, const DeviceDescriptor* descriptor);
+        float GetTimestampPeriodInNS() const override;
 
-        ResultOrError<BindGroupBase*> CreateBindGroupImpl(
+      private:
+        Device(AdapterBase* adapter,
+               NSPRef<id<MTLDevice>> mtlDevice,
+               const DeviceDescriptor* descriptor);
+
+        ResultOrError<Ref<BindGroupBase>> CreateBindGroupImpl(
             const BindGroupDescriptor* descriptor) override;
-        ResultOrError<BindGroupLayoutBase*> CreateBindGroupLayoutImpl(
+        ResultOrError<Ref<BindGroupLayoutBase>> CreateBindGroupLayoutImpl(
             const BindGroupLayoutDescriptor* descriptor) override;
         ResultOrError<Ref<BufferBase>> CreateBufferImpl(
             const BufferDescriptor* descriptor) override;
-        ResultOrError<ComputePipelineBase*> CreateComputePipelineImpl(
+        ResultOrError<Ref<CommandBufferBase>> CreateCommandBuffer(
+            CommandEncoder* encoder,
+            const CommandBufferDescriptor* descriptor) override;
+        ResultOrError<Ref<ComputePipelineBase>> CreateComputePipelineImpl(
             const ComputePipelineDescriptor* descriptor) override;
-        ResultOrError<PipelineLayoutBase*> CreatePipelineLayoutImpl(
+        ResultOrError<Ref<PipelineLayoutBase>> CreatePipelineLayoutImpl(
             const PipelineLayoutDescriptor* descriptor) override;
-        ResultOrError<QuerySetBase*> CreateQuerySetImpl(
+        ResultOrError<Ref<QuerySetBase>> CreateQuerySetImpl(
             const QuerySetDescriptor* descriptor) override;
-        ResultOrError<RenderPipelineBase*> CreateRenderPipelineImpl(
-            const RenderPipelineDescriptor* descriptor) override;
-        ResultOrError<SamplerBase*> CreateSamplerImpl(const SamplerDescriptor* descriptor) override;
-        ResultOrError<ShaderModuleBase*> CreateShaderModuleImpl(
-            const ShaderModuleDescriptor* descriptor) override;
-        ResultOrError<SwapChainBase*> CreateSwapChainImpl(
+        ResultOrError<Ref<RenderPipelineBase>> CreateRenderPipelineImpl(
+            const RenderPipelineDescriptor2* descriptor) override;
+        ResultOrError<Ref<SamplerBase>> CreateSamplerImpl(
+            const SamplerDescriptor* descriptor) override;
+        ResultOrError<Ref<ShaderModuleBase>> CreateShaderModuleImpl(
+            const ShaderModuleDescriptor* descriptor,
+            ShaderModuleParseResult* parseResult) override;
+        ResultOrError<Ref<SwapChainBase>> CreateSwapChainImpl(
             const SwapChainDescriptor* descriptor) override;
-        ResultOrError<NewSwapChainBase*> CreateSwapChainImpl(
+        ResultOrError<Ref<NewSwapChainBase>> CreateSwapChainImpl(
             Surface* surface,
             NewSwapChainBase* previousSwapChain,
             const SwapChainDescriptor* descriptor) override;
         ResultOrError<Ref<TextureBase>> CreateTextureImpl(
             const TextureDescriptor* descriptor) override;
-        ResultOrError<TextureViewBase*> CreateTextureViewImpl(
+        ResultOrError<Ref<TextureViewBase>> CreateTextureViewImpl(
             TextureBase* texture,
             const TextureViewDescriptor* descriptor) override;
 
         void InitTogglesFromDriver();
         void ShutDownImpl() override;
         MaybeError WaitForIdleForDestruction() override;
-        ExecutionSerial CheckAndUpdateCompletedSerials() override;
+        ResultOrError<ExecutionSerial> CheckAndUpdateCompletedSerials() override;
 
-        id<MTLDevice> mMtlDevice = nil;
-        id<MTLCommandQueue> mCommandQueue = nil;
+        NSPRef<id<MTLDevice>> mMtlDevice;
+        NSPRef<id<MTLCommandQueue>> mCommandQueue;
 
         CommandRecordingContext mCommandContext;
 
@@ -120,7 +126,7 @@ namespace dawn_native { namespace metal {
         // mLastSubmittedCommands will be accessed in a Metal schedule handler that can be fired on
         // a different thread so we guard access to it with a mutex.
         std::mutex mLastSubmittedCommandsMutex;
-        id<MTLCommandBuffer> mLastSubmittedCommands = nil;
+        NSPRef<id<MTLCommandBuffer>> mLastSubmittedCommands;
     };
 
 }}  // namespace dawn_native::metal

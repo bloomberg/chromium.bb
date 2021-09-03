@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/tls_server_connection.h"
+#include "quic/core/crypto/tls_server_connection.h"
 
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_source.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
+#include "quic/core/crypto/proof_source.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
 
 namespace quic {
 
@@ -21,25 +22,23 @@ bssl::UniquePtr<SSL_CTX> TlsServerConnection::CreateSslCtx(
   bssl::UniquePtr<SSL_CTX> ssl_ctx =
       TlsConnection::CreateSslCtx(SSL_VERIFY_NONE);
   SSL_CTX_set_tlsext_servername_callback(ssl_ctx.get(),
-                                         &SelectCertificateCallback);
+                                         &TlsExtServernameCallback);
   SSL_CTX_set_alpn_select_cb(ssl_ctx.get(), &SelectAlpnCallback, nullptr);
   // We don't actually need the TicketCrypter here, but we need to know
   // whether it's set.
   if (proof_source->GetTicketCrypter()) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_session_tickets_always_enabled, 1, 3);
+    QUIC_CODE_COUNT(quic_session_tickets_enabled);
     SSL_CTX_set_ticket_aead_method(ssl_ctx.get(),
                                    &TlsServerConnection::kSessionTicketMethod);
-  } else if (!GetQuicRestartFlag(quic_session_tickets_always_enabled)) {
-    QUIC_RESTART_FLAG_COUNT_N(quic_session_tickets_always_enabled, 2, 3);
-    SSL_CTX_set_options(ssl_ctx.get(), SSL_OP_NO_TICKET);
   } else {
-    QUIC_RESTART_FLAG_COUNT_N(quic_session_tickets_always_enabled, 3, 3);
+    QUIC_CODE_COUNT(quic_session_tickets_disabled);
   }
-  if (GetQuicRestartFlag(quic_enable_zero_rtt_for_tls_v2) &&
-      (proof_source->GetTicketCrypter() ||
-       GetQuicRestartFlag(quic_session_tickets_always_enabled))) {
-    SSL_CTX_set_early_data_enabled(ssl_ctx.get(), 1);
-  }
+
+  SSL_CTX_set_early_data_enabled(ssl_ctx.get(), 1);
+
+  SSL_CTX_set_select_certificate_cb(
+      ssl_ctx.get(), &TlsServerConnection::EarlySelectCertCallback);
+  SSL_CTX_set_options(ssl_ctx.get(), SSL_OP_CIPHER_SERVER_PREFERENCE);
   return ssl_ctx;
 }
 
@@ -62,10 +61,17 @@ TlsServerConnection* TlsServerConnection::ConnectionFromSsl(SSL* ssl) {
 }
 
 // static
-int TlsServerConnection::SelectCertificateCallback(SSL* ssl,
-                                                   int* out_alert,
-                                                   void* /*arg*/) {
-  return ConnectionFromSsl(ssl)->delegate_->SelectCertificate(out_alert);
+ssl_select_cert_result_t TlsServerConnection::EarlySelectCertCallback(
+    const SSL_CLIENT_HELLO* client_hello) {
+  return ConnectionFromSsl(client_hello->ssl)
+      ->delegate_->EarlySelectCertCallback(client_hello);
+}
+
+// static
+int TlsServerConnection::TlsExtServernameCallback(SSL* ssl,
+                                                  int* out_alert,
+                                                  void* /*arg*/) {
+  return ConnectionFromSsl(ssl)->delegate_->TlsExtServernameCallback(out_alert);
 }
 
 // static

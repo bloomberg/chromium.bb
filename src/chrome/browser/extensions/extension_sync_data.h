@@ -9,11 +9,11 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/optional.h"
 #include "base/version.h"
 #include "components/sync/model/string_ordinal.h"
 #include "components/sync/model/sync_change.h"
 #include "extensions/common/constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
@@ -48,13 +48,15 @@ class ExtensionSyncData {
                     bool enabled,
                     int disable_reasons,
                     bool incognito_enabled,
-                    bool remote_install);
+                    bool remote_install,
+                    const GURL& update_url);
   // App constructor.
   ExtensionSyncData(const Extension& extension,
                     bool enabled,
                     int disable_reasons,
                     bool incognito_enabled,
                     bool remote_install,
+                    const GURL& update_url,
                     const syncer::StringOrdinal& app_launch_ordinal,
                     const syncer::StringOrdinal& page_ordinal,
                     extensions::LaunchType launch_type);
@@ -112,7 +114,7 @@ class ExtensionSyncData {
   const std::string& bookmark_app_icon_color() const {
     return bookmark_app_icon_color_;
   }
-  base::Optional<SkColor> bookmark_app_theme_color() const {
+  absl::optional<SkColor> bookmark_app_theme_color() const {
     return bookmark_app_theme_color_;
   }
   const std::vector<LinkedAppIconInfo>& linked_icons() const {
@@ -162,7 +164,7 @@ class ExtensionSyncData {
   std::string bookmark_app_description_;
   std::string bookmark_app_scope_;
   std::string bookmark_app_icon_color_;
-  base::Optional<SkColor> bookmark_app_theme_color_;
+  absl::optional<SkColor> bookmark_app_theme_color_;
   std::vector<LinkedAppIconInfo> linked_icons_;
 };
 

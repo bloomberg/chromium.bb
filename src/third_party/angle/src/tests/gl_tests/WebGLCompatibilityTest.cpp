@@ -2156,39 +2156,27 @@ void main()
     for (char invalidChar : invalidSet)
     {
         std::string invalidAttribName = validAttribName + invalidChar;
-        const char *invalidVert[]     = {
-            "attribute float ",
-            invalidAttribName.c_str(),
-            R"(;,
+        std::string invalidVert       = "attribute float ";
+        invalidVert += invalidAttribName;
+        invalidVert += R"(;,
 void main(),
 {,
     gl_Position = vec4(1.0);,
-})",
-        };
-
-        GLuint shader = glCreateShader(GL_VERTEX_SHADER);
-        glShaderSource(shader, static_cast<GLsizei>(ArraySize(invalidVert)), invalidVert, nullptr);
-        EXPECT_GL_ERROR(GL_INVALID_VALUE);
-        glDeleteShader(shader);
+})";
+        GLuint program = CompileProgram(invalidVert.c_str(), essl1_shaders::fs::Red());
+        EXPECT_EQ(0u, program);
     }
 }
 
-// Test that line continuation is handled correctly when valdiating shader source
+// Test that line continuation is handled correctly when validating shader source
 TEST_P(WebGLCompatibilityTest, ShaderSourceLineContinuation)
 {
-    // Verify that a line continuation character (i.e. backslash) cannot be used
-    // within a preprocessor directive in a ES2 context.
-    ANGLE_SKIP_TEST_IF(getClientMajorVersion() >= 3);
+    // With recent changes to WebGL's shader source validation in
+    // https://github.com/KhronosGroup/WebGL/pull/3206 and follow-ons,
+    // the backslash character can be used in both WebGL 1.0 and 2.0
+    // contexts.
 
     const char *validVert =
-        R"(#define foo this is a test
-precision mediump float;
-void main()
-{
-    gl_Position = vec4(1.0);
-})";
-
-    const char *invalidVert =
         R"(#define foo this \
     is a test
 precision mediump float;
@@ -2197,13 +2185,9 @@ void main()
     gl_Position = vec4(1.0);
 })";
 
-    GLuint shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(shader, 1, &validVert, nullptr);
-    EXPECT_GL_NO_ERROR();
-
-    glShaderSource(shader, 1, &invalidVert, nullptr);
-    EXPECT_GL_ERROR(GL_INVALID_VALUE);
-    glDeleteShader(shader);
+    GLuint program = CompileProgram(validVert, essl1_shaders::fs::Red());
+    EXPECT_NE(0u, program);
+    glDeleteProgram(program);
 }
 
 // Test that line continuation is handled correctly when valdiating shader source
@@ -2231,12 +2215,12 @@ oo = 1.0;
     gl_Position = vec4(foo);
 })";
 
-    GLuint shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(shader, 1, &validVert, nullptr);
-    EXPECT_GL_NO_ERROR();
-    glShaderSource(shader, 1, &invalidVert, nullptr);
-    EXPECT_GL_ERROR(GL_INVALID_VALUE);
-    glDeleteShader(shader);
+    GLuint program = CompileProgram(validVert, essl3_shaders::fs::Red());
+    EXPECT_NE(0u, program);
+    glDeleteProgram(program);
+
+    program = CompileProgram(invalidVert, essl3_shaders::fs::Red());
+    EXPECT_EQ(0u, program);
 }
 
 // Tests bindAttribLocations for reserved prefixes and length limits
@@ -2724,7 +2708,7 @@ void main() {
 // Based on the WebGL test conformance/textures/misc/texture-copying-feedback-loops.html
 TEST_P(WebGLCompatibilityTest, TextureCopyingFeedbackLoops)
 {
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
 
     GLTexture texture;
@@ -2795,7 +2779,7 @@ TEST_P(WebGL2CompatibilityTest, CopyMip1ToMip0)
     // http://anglebug.com/4805
     ANGLE_SKIP_TEST_IF(IsOpenGL() && IsIntel() && (IsWindows() || IsOSX()));
 
-    // TODO(crbug.com/1132295): Failing on ARM64-based Apple DTKs.
+    // TODO(anglebug.com/5360): Failing on ARM64-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
 
     GLFramebuffer framebuffer;
@@ -2968,7 +2952,7 @@ void main()
 })";
 
     GLuint program = CompileProgram(kVS, kFS);
-    EXPECT_EQ(0u, program);
+    EXPECT_NE(0u, program);
 }
 
 // Test dimension and image size validation of compressed textures
@@ -3234,9 +3218,6 @@ TEST_P(WebGLCompatibilityTest, RG32FTextures)
 
 TEST_P(WebGLCompatibilityTest, RGB32FTextures)
 {
-    // TODO(syoussefi): Missing format support.  http://anglebug.com/2898
-    ANGLE_SKIP_TEST_IF(IsVulkan());
-
     constexpr float data[] = {1000.0f, -500.0f, 10.0f, 1.0f};
 
     for (auto extension : FloatingPointTextureExtensions)
@@ -3271,8 +3252,8 @@ TEST_P(WebGLCompatibilityTest, RGB32FTextures)
 
 TEST_P(WebGLCompatibilityTest, RGBA32FTextures)
 {
-    // TODO(syoussefi): Missing format support.  http://anglebug.com/2898
-    ANGLE_SKIP_TEST_IF(IsVulkan());
+    // http://anglebug.com/5357
+    ANGLE_SKIP_TEST_IF(IsOpenGL() && IsOSX());
 
     constexpr float data[] = {7000.0f, 100.0f, 33.0f, -1.0f};
 
@@ -3591,6 +3572,9 @@ TEST_P(WebGLCompatibilityTest, HalfFloatBlend)
 
 TEST_P(WebGLCompatibilityTest, R16FTextures)
 {
+    // http://anglebug.com/5357
+    ANGLE_SKIP_TEST_IF(IsOpenGL() && IsOSX());
+
     constexpr float readPixelsData[] = {-5000.0f, 0.0f, 0.0f, 1.0f};
     const GLushort textureData[]     = {
         gl::float32ToFloat16(readPixelsData[0]), gl::float32ToFloat16(readPixelsData[1]),
@@ -3648,6 +3632,9 @@ TEST_P(WebGLCompatibilityTest, R16FTextures)
 
 TEST_P(WebGLCompatibilityTest, RG16FTextures)
 {
+    // http://anglebug.com/5357
+    ANGLE_SKIP_TEST_IF(IsOpenGL() && IsOSX());
+
     constexpr float readPixelsData[] = {7108.0f, -10.0f, 0.0f, 1.0f};
     const GLushort textureData[]     = {
         gl::float32ToFloat16(readPixelsData[0]), gl::float32ToFloat16(readPixelsData[1]),
@@ -3705,8 +3692,8 @@ TEST_P(WebGLCompatibilityTest, RG16FTextures)
 
 TEST_P(WebGLCompatibilityTest, RGB16FTextures)
 {
-    // TODO(syoussefi): Missing format support.  http://anglebug.com/2898
-    ANGLE_SKIP_TEST_IF(IsVulkan());
+    // http://anglebug.com/5357
+    ANGLE_SKIP_TEST_IF(IsOpenGL() && IsOSX());
 
     ANGLE_SKIP_TEST_IF(IsOzone() && IsIntel());
 
@@ -3767,6 +3754,9 @@ TEST_P(WebGLCompatibilityTest, RGB16FTextures)
 
 TEST_P(WebGLCompatibilityTest, RGBA16FTextures)
 {
+    // http://anglebug.com/5357
+    ANGLE_SKIP_TEST_IF(IsOpenGL() && IsOSX());
+
     ANGLE_SKIP_TEST_IF(IsOzone() && IsIntel());
 
     constexpr float readPixelsData[] = {7000.0f, 100.0f, 33.0f, -1.0f};
@@ -3999,6 +3989,72 @@ void main() {
                             GL_INVALID_OPERATION);
     // A feedback loop is formed regardless of drawBuffers settings.
     drawBuffersFeedbackLoop(program.get(), {{GL_COLOR_ATTACHMENT0, GL_NONE}}, GL_INVALID_OPERATION);
+}
+
+// This tests that texture base level for immutable textures is clamped to the valid range, unlike
+// for non-immutable textures, for purposes of validation. Related to WebGL test
+// conformance2/textures/misc/immutable-tex-render-feedback.html
+TEST_P(WebGL2CompatibilityTest, RenderingFeedbackLoopWithImmutableTextureWithOutOfRangeBaseLevel)
+{
+    constexpr char kVS[] =
+        R"(#version 300 es
+in vec4 aPosition;
+out vec2 texCoord;
+void main() {
+    gl_Position = aPosition;
+    texCoord = (aPosition.xy * 0.5) + 0.5;
+})";
+
+    constexpr char kFS[] =
+        R"(#version 300 es
+precision mediump float;
+uniform sampler2D tex;
+in vec2 texCoord;
+out vec4 oColor;
+void main() {
+    oColor = texture(tex, texCoord);
+})";
+
+    GLTexture texture;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 4, 4);
+    std::vector<GLColor> texData(4 * 4, GLColor::green);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 4, 4, GL_RGBA, GL_UNSIGNED_BYTE, texData.data());
+    // Set a base level greater than the max level. It should be clamped to the actual max level.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 1);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
+
+    ASSERT_GL_NO_ERROR();
+
+    GLFramebuffer framebuffer;
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.get());
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.get(), 0);
+
+    ASSERT_GLENUM_EQ(GL_FRAMEBUFFER_COMPLETE, glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+    ANGLE_GL_PROGRAM(program, kVS, kFS);
+
+    GLint uniformLoc = glGetUniformLocation(program.get(), "tex");
+    ASSERT_NE(-1, uniformLoc);
+
+    glUseProgram(program.get());
+    glUniform1i(uniformLoc, 0);
+    glDisable(GL_BLEND);
+    glDisable(GL_DEPTH_TEST);
+    ASSERT_GL_NO_ERROR();
+
+    // Ensure that the texture can be used for rendering.
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, texture.get());
+    drawQuad(program.get(), "aPosition", 0.5f, 1.0f, true);
+    ASSERT_GL_NO_ERROR();
+    EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
+
+    // Ensure that the texture can't be used to create a feedback loop.
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.get());
+    glBindTexture(GL_TEXTURE_2D, texture.get());
+    drawQuad(program.get(), "aPosition", 0.5f, 1.0f, true);
+    EXPECT_GL_ERROR(GL_INVALID_OPERATION);
 }
 
 // This test covers detection of rendering feedback loops between the FBO and a depth Texture.
@@ -4717,11 +4773,10 @@ void main()
 // extensions have been enabled
 TEST_P(WebGLCompatibilityTest, GenerateMipmapUnsizedFloatingPointTexture)
 {
-    if (IsGLExtensionRequestable("GL_OES_texture_float"))
-    {
-        glRequestExtensionANGLE("GL_OES_texture_float");
-    }
+    glRequestExtensionANGLE("GL_OES_texture_float");
+    glRequestExtensionANGLE("GL_CHROMIUM_color_buffer_float_rgba");
     ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_OES_texture_float"));
+    ANGLE_SKIP_TEST_IF(!IsGLExtensionEnabled("GL_CHROMIUM_color_buffer_float_rgba"));
 
     GLTexture texture;
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -5134,9 +5189,8 @@ TEST_P(WebGL2CompatibilityTest, RenderToLevelsOfSampledTexture)
     EXPECT_PIXEL_COLOR_EQ(0, 0, GLColor::green);
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these
-// tests should be run against.
 ANGLE_INSTANTIATE_TEST_ES2_AND_ES3(WebGLCompatibilityTest);
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(WebGL2CompatibilityTest);
 ANGLE_INSTANTIATE_TEST_ES3(WebGL2CompatibilityTest);
 }  // namespace angle

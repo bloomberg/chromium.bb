@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -38,6 +39,11 @@
 #else
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_pref_names.h"
+#include "chromeos/dbus/constants/dbus_switches.h"
 #endif
 
 namespace {
@@ -93,9 +99,8 @@ ChromeTracingDelegate::~ChromeTracingDelegate() {
 
 #if defined(OS_ANDROID)
 void ChromeTracingDelegate::OnTabModelAdded() {
-  for (TabModelList::const_iterator i = TabModelList::begin();
-       i != TabModelList::end(); i++) {
-    if ((*i)->GetProfile()->IsOffTheRecord())
+  for (const TabModel* model : TabModelList::models()) {
+    if (model->GetProfile()->IsOffTheRecord())
       incognito_launched_ = true;
   }
 }
@@ -125,12 +130,12 @@ Profile* GetProfile() {
   if (!profile_manager)
     return nullptr;
 
-  return profile_manager->GetProfileByPath(
-      profile_manager->GetLastUsedProfileDir(profile_manager->user_data_dir()));
+  return profile_manager->GetLastUsedProfileIfLoaded();
 }
 
 bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
-                           PermitMissingProfile profile_permission) {
+                           PermitMissingProfile profile_permission,
+                           bool is_crash_scenario) {
   // If the background tracing is specified on the command-line, we allow
   // any scenario to be traced.
   auto* command_line = base::CommandLine::ForCurrentProcess();
@@ -148,6 +153,27 @@ bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
           TracingFinalizationDisallowedReason::kProfileNotLoaded);
     }
     return profile_permission != PROFILE_REQUIRED;
+  }
+
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH) && defined(OFFICIAL_BUILD)
+  if (!local_state->GetBoolean(metrics::prefs::kMetricsReportingEnabled)) {
+    RecordDisallowedMetric(
+        TracingFinalizationDisallowedReason::kMetricsReportingDisabled);
+    return false;
+  }
+#endif  // !OS_CHROMEOS && OFFICIAL_BUILD
+
+  // Skip the rest of the checks, we know that the scenario does not have
+  // incognito profile and metrics reporting is enabled. Skip the upload limit
+  // checks.
+  if (is_crash_scenario) {
+    // Maybe we shouldn't skip the browser crash test when session begins (when
+    // PROFILE_NOT_REQUIRED).
+    DCHECK_EQ(PROFILE_REQUIRED, profile_permission);
+    return true;
   }
 
 // Safeguard, in case background tracing is responsible for a crash on
@@ -176,17 +202,6 @@ bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
   }
 #endif
 
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-
-#if !defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD)
-  if (!local_state->GetBoolean(metrics::prefs::kMetricsReportingEnabled)) {
-    RecordDisallowedMetric(
-        TracingFinalizationDisallowedReason::kMetricsReportingDisabled);
-    return false;
-  }
-#endif // !OS_CHROMEOS && OFFICIAL_BUILD
-
   if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE) {
     const base::Time last_upload_time = base::Time::FromInternalValue(
         local_state->GetInt64(prefs::kBackgroundTracingLastUpload));
@@ -209,8 +224,14 @@ bool ProfileAllowsScenario(const content::BackgroundTracingConfig& config,
 bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
     const content::BackgroundTracingConfig& config,
     bool requires_anonymized_data) {
-  if (!ProfileAllowsScenario(config, PROFILE_NOT_REQUIRED))
+  // For crash-triggered traces, we can only support preemptive tracing. For
+  // such preemptive traces, the profile will not be loaded yet, and calling
+  // ProfileAllowsScenario() will return true to allow the trace to start,
+  // regardless of the value of is_crash_scenario.
+  if (!ProfileAllowsScenario(config, PROFILE_NOT_REQUIRED,
+                             /*is_crash_scenario=*/false)) {
     return false;
+  }
 
   if (requires_anonymized_data && chrome::IsOffTheRecordSessionActive())
     return false;
@@ -220,7 +241,8 @@ bool ChromeTracingDelegate::IsAllowedToBeginBackgroundScenario(
 
 bool ChromeTracingDelegate::IsAllowedToEndBackgroundScenario(
     const content::BackgroundTracingConfig& config,
-    bool requires_anonymized_data) {
+    bool requires_anonymized_data,
+    bool is_crash_scenario) {
   if (requires_anonymized_data &&
       (incognito_launched_ || chrome::IsOffTheRecordSessionActive())) {
     RecordDisallowedMetric(
@@ -228,7 +250,7 @@ bool ChromeTracingDelegate::IsAllowedToEndBackgroundScenario(
     return false;
   }
 
-  if (!ProfileAllowsScenario(config, PROFILE_REQUIRED))
+  if (!ProfileAllowsScenario(config, PROFILE_REQUIRED, is_crash_scenario))
     return false;
 
   if (config.tracing_mode() == content::BackgroundTracingConfig::PREEMPTIVE) {
@@ -247,6 +269,26 @@ bool ChromeTracingDelegate::IsAllowedToEndBackgroundScenario(
 
 bool ChromeTracingDelegate::IsProfileLoaded() {
   return GetProfile() != nullptr;
+}
+
+bool ChromeTracingDelegate::IsSystemWideTracingEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Always allow system tracing in dev mode images.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kSystemDevMode)) {
+    return true;
+  }
+  // In non-dev images, honor the pref for system-wide tracing.
+  PrefService* local_state = g_browser_process->local_state();
+  DCHECK(local_state);
+  return local_state->GetBoolean(
+      chromeos::prefs::kDeviceSystemWideTracingEnabled);
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(crbug.com/1173395): Enable for Lacros-Chrome.
+  return false;
+#else
+  return false;
+#endif
 }
 
 std::unique_ptr<base::DictionaryValue>

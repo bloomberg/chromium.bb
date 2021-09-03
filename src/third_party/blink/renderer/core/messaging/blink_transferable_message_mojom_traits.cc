@@ -19,7 +19,7 @@ StructTraits<blink::mojom::blink::TransferableMessage::DataView,
   out.ReserveInitialCapacity(
       input.message->GetImageBitmapContentsArray().size());
   for (auto& bitmap_contents : input.message->GetImageBitmapContentsArray()) {
-    base::Optional<SkBitmap> bitmap = blink::ToSkBitmap(bitmap_contents);
+    absl::optional<SkBitmap> bitmap = blink::ToSkBitmap(bitmap_contents);
     if (!bitmap) {
       return Vector<SkBitmap>();
     }
@@ -52,6 +52,8 @@ bool StructTraits<blink::mojom::blink::TransferableMessage::DataView,
     out->message->GetStreams().push_back(
         blink::SerializedScriptValue::Stream(std::move(channel)));
   }
+
+  out->delegate_payment_request = data.delegate_payment_request();
 
   out->message->SetArrayBufferContentsArray(
       std::move(array_buffer_contents_array));

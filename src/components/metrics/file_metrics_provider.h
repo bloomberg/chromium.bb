@@ -7,7 +7,6 @@
 
 #include <list>
 #include <memory>
-#include <string>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
@@ -239,6 +238,9 @@ class FileMetricsProvider : public MetricsProvider,
 
     // The file had internal data corruption.
     ACCESS_RESULT_DATA_CORRUPTION,
+
+    // The file is not writable when it should be.
+    ACCESS_RESULT_NOT_WRITABLE,
 
     ACCESS_RESULT_MAX
   };

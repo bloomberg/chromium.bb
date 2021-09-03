@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "build/chromeos_buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 
@@ -41,8 +42,8 @@ class AccountsMutatorImpl : public AccountsMutator {
       signin_metrics::SourceForRefreshTokenOperation source) override;
   void UpdateAccountInfo(
       const CoreAccountId& account_id,
-      base::Optional<bool> is_child_account,
-      base::Optional<bool> is_under_advanced_protection) override;
+      absl::optional<bool> is_child_account,
+      absl::optional<bool> is_under_advanced_protection) override;
   void RemoveAccount(
       const CoreAccountId& account_id,
       signin_metrics::SourceForRefreshTokenOperation source) override;
@@ -54,6 +55,11 @@ class AccountsMutatorImpl : public AccountsMutator {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   void MoveAccount(AccountsMutator* target,
                    const CoreAccountId& account_id) override;
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  CoreAccountId SeedAccountInfo(const std::string& gaia,
+                                const std::string& email) override;
 #endif
 
  private:

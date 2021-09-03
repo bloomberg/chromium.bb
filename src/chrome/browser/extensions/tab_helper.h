@@ -9,12 +9,11 @@
 #include <set>
 #include <string>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/extensions/active_tab_permission_granter.h"
 #include "chrome/common/extensions/webstore_install_result.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -89,6 +88,8 @@ class TabHelper : public content::WebContentsObserver,
     return active_tab_permission_granter_.get();
   }
 
+  void OnWatchedPageChanged(const std::vector<std::string>& css_selectors);
+
  private:
   // Utility function to invoke member functions on all relevant
   // ContentRulesRegistries.
@@ -108,21 +109,20 @@ class TabHelper : public content::WebContentsObserver,
   void DidCloneToNewWebContents(
       content::WebContents* old_web_contents,
       content::WebContents* new_web_contents) override;
+  void WebContentsDestroyed() override;
 
   // ExtensionFunctionDispatcher::Delegate overrides.
   WindowController* GetExtensionWindowController() const override;
   content::WebContents* GetAssociatedWebContents() const override;
 
   // ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const Extension* extension) override;
   void OnExtensionUnloaded(content::BrowserContext* browser_context,
                            const Extension* extension,
                            UnloadedExtensionReason reason) override;
 
   // Message handlers.
-  void OnGetAppInstallState(content::RenderFrameHost* host,
-                            const GURL& requestor_url,
-                            int return_route_id,
-                            int callback_id);
   void OnContentScriptsExecuting(content::RenderFrameHost* host,
                                  const ExecutingScriptsMap& extension_ids,
                                  const GURL& on_url);
@@ -158,8 +158,8 @@ class TabHelper : public content::WebContentsObserver,
 
   std::unique_ptr<ActiveTabPermissionGranter> active_tab_permission_granter_;
 
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      registry_observer_{this};
+  base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
+      registry_observation_{this};
 
   // Vend weak pointers that can be invalidated to stop in-progress loads.
   base::WeakPtrFactory<TabHelper> image_loader_ptr_factory_{this};

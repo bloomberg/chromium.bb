@@ -42,9 +42,11 @@ export class FakeConfirmationManagerRemote extends TestBrowserProxy {
 export class FakeDiscoveryManagerRemote extends TestBrowserProxy {
   constructor() {
     super([
-      'getSendPreview',
+      'getPayloadPreview',
       'selectShareTarget',
       'startDiscovery',
+      'stopDiscovery',
+      'addDiscoveryObserver',
     ]);
 
     this.selectShareTargetResult = {
@@ -53,15 +55,18 @@ export class FakeDiscoveryManagerRemote extends TestBrowserProxy {
       confirmationManager: null,
     };
     this.shareDescription = 'Test is a test share';
+    this.startDiscoveryResult = nearbyShare.mojom.StartDiscoveryResult.kSuccess;
+    /** @private {!nearbyShare.mojom.DiscoveryObserverInterface} */
+    this.observer_;
   }
 
   /**
-   * @return {!Promise<{sendPreview: !nearbyShare.mojom.SendPreview}>}
+   * @return {!Promise<{payloadPreview: !nearbyShare.mojom.PayloadPreview}>}
    */
-  async getSendPreview() {
-    this.methodCalled('getSendPreview');
+  async getPayloadPreview() {
+    this.methodCalled('getPayloadPreview');
     return {
-      sendPreview: /** @type {!nearbyShare.mojom.SendPreview} */ ({
+      payloadPreview: /** @type {!nearbyShare.mojom.PayloadPreview} */ ({
         description: this.shareDescription,
         fileCount: 0,
         shareType: 0,
@@ -79,9 +84,24 @@ export class FakeDiscoveryManagerRemote extends TestBrowserProxy {
     return this.selectShareTargetResult;
   }
 
+  /**
+   * @param {nearbyShare.mojom.ShareTargetListenerRemote} listener
+   */
   async startDiscovery(listener) {
     this.methodCalled('startDiscovery', listener);
-    return {success: true};
+    return {result: this.startDiscoveryResult};
+  }
+
+  async stopDiscovery() {
+    this.methodCalled('stopDiscovery');
+  }
+
+  /**
+   * @param {!nearbyShare.mojom.DiscoveryObserverRemote} observer
+   */
+  addDiscoveryObserver(observer) {
+    this.methodCalled('addDiscoveryObserver');
+    this.observer_ = observer;
   }
 }
 

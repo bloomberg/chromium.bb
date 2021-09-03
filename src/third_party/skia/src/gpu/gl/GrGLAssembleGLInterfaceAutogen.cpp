@@ -158,9 +158,19 @@ sk_sp<const GrGLInterface> GrGLMakeAssembledGLInterface(void *ctx, GrGLGetProc g
         GET_PROC(MemoryBarrier);
     }
 
-    GET_PROC(BindVertexArray);
-    GET_PROC(DeleteVertexArrays);
-    GET_PROC(GenVertexArrays);
+    if (glVer >= GR_GL_VER(3,0)) {
+        GET_PROC(BindVertexArray);
+        GET_PROC(DeleteVertexArrays);
+        GET_PROC(GenVertexArrays);
+    } else if (extensions.has("GL_ARB_vertex_array_object")) {
+        GET_PROC(BindVertexArray);
+        GET_PROC(DeleteVertexArrays);
+        GET_PROC(GenVertexArrays);
+    } else if (extensions.has("GL_APPLE_vertex_array_object")) {
+        GET_PROC_SUFFIX(BindVertexArray, APPLE);
+        GET_PROC_SUFFIX(DeleteVertexArrays, APPLE);
+        GET_PROC_SUFFIX(GenVertexArrays, APPLE);
+    }
 
     if (glVer >= GR_GL_VER(4,0)) {
         GET_PROC(PatchParameteri);
@@ -350,40 +360,6 @@ sk_sp<const GrGLInterface> GrGLMakeAssembledGLInterface(void *ctx, GrGLGetProc g
         GET_PROC_SUFFIX(InsertEventMarker, EXT);
         GET_PROC_SUFFIX(PopGroupMarker, EXT);
         GET_PROC_SUFFIX(PushGroupMarker, EXT);
-    }
-
-    if (glVer >= GR_GL_VER(4,3)) {
-        GET_PROC(GetProgramResourceLocation);
-    } else if (extensions.has("GL_ARB_program_interface_query")) {
-        GET_PROC(GetProgramResourceLocation);
-    }
-
-    if (extensions.has("GL_NV_path_rendering")) {
-        GET_PROC_SUFFIX(MatrixLoadIdentity, EXT);
-        GET_PROC_SUFFIX(MatrixLoadf, EXT);
-    }
-
-    if (extensions.has("GL_NV_path_rendering")) {
-        GET_PROC_SUFFIX(CoverFillPath, NV);
-        GET_PROC_SUFFIX(CoverFillPathInstanced, NV);
-        GET_PROC_SUFFIX(CoverStrokePath, NV);
-        GET_PROC_SUFFIX(CoverStrokePathInstanced, NV);
-        GET_PROC_SUFFIX(DeletePaths, NV);
-        GET_PROC_SUFFIX(GenPaths, NV);
-        GET_PROC_SUFFIX(IsPath, NV);
-        GET_PROC_SUFFIX(PathCommands, NV);
-        GET_PROC_SUFFIX(PathParameterf, NV);
-        GET_PROC_SUFFIX(PathParameteri, NV);
-        GET_PROC_SUFFIX(PathStencilFunc, NV);
-        GET_PROC_SUFFIX(ProgramPathFragmentInputGen, NV);
-        GET_PROC_SUFFIX(StencilFillPath, NV);
-        GET_PROC_SUFFIX(StencilFillPathInstanced, NV);
-        GET_PROC_SUFFIX(StencilStrokePath, NV);
-        GET_PROC_SUFFIX(StencilStrokePathInstanced, NV);
-        GET_PROC_SUFFIX(StencilThenCoverFillPath, NV);
-        GET_PROC_SUFFIX(StencilThenCoverFillPathInstanced, NV);
-        GET_PROC_SUFFIX(StencilThenCoverStrokePath, NV);
-        GET_PROC_SUFFIX(StencilThenCoverStrokePathInstanced, NV);
     }
 
     if (extensions.has("GL_NV_framebuffer_mixed_samples")) {

@@ -13,6 +13,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/common/surfaces/subtree_capture_id.h"
 #include "components/viz/host/viz_host_export.h"
 #include "media/base/video_types.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -83,7 +84,8 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
                                 const gfx::Size& max_size,
                                 bool use_fixed_aspect_ratio);
   void SetAutoThrottlingEnabled(bool enabled);
-  void ChangeTarget(const base::Optional<FrameSinkId>& frame_sink_id);
+  void ChangeTarget(const absl::optional<FrameSinkId>& frame_sink_id,
+                    SubtreeCaptureId subtree_capture_id);
   void Stop();
   void RequestRefreshFrame();
 
@@ -145,12 +147,13 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
   // corresponding method in mojom::FrameSinkVideoCapturer. The arguments are
   // saved so we can resend them if viz crashes and a new FrameSinkVideoCapturer
   // has to be created.
-  base::Optional<Format> format_;
-  base::Optional<base::TimeDelta> min_capture_period_;
-  base::Optional<base::TimeDelta> min_size_change_period_;
-  base::Optional<ResolutionConstraints> resolution_constraints_;
-  base::Optional<bool> auto_throttling_enabled_;
-  base::Optional<FrameSinkId> target_;
+  absl::optional<Format> format_;
+  absl::optional<base::TimeDelta> min_capture_period_;
+  absl::optional<base::TimeDelta> min_size_change_period_;
+  absl::optional<ResolutionConstraints> resolution_constraints_;
+  absl::optional<bool> auto_throttling_enabled_;
+  absl::optional<FrameSinkId> target_;
+  SubtreeCaptureId subtree_capture_id_;
   // Overlays are owned by the callers of CreateOverlay().
   std::vector<Overlay*> overlays_;
   bool is_started_ = false;

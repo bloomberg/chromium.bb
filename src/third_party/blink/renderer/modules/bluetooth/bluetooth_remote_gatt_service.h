@@ -5,9 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_H_
 
-#include <memory>
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/modules/v8/string_or_unsigned_long.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_device.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -44,12 +44,23 @@ class BluetoothRemoteGATTService final : public ScriptWrappable {
   String uuid() { return service_->uuid; }
   bool isPrimary() { return is_primary_; }
   BluetoothDevice* device() { return device_; }
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  ScriptPromise getCharacteristic(
+      ScriptState* script_state,
+      const V8BluetoothCharacteristicUUID* characteristic,
+      ExceptionState& exception_state);
+  ScriptPromise getCharacteristics(
+      ScriptState* script_state,
+      const V8BluetoothCharacteristicUUID* characteristic,
+      ExceptionState& exception_state);
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptPromise getCharacteristic(ScriptState*,
                                   const StringOrUnsignedLong& characteristic,
                                   ExceptionState&);
   ScriptPromise getCharacteristics(ScriptState*,
                                    const StringOrUnsignedLong& characteristic,
                                    ExceptionState&);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   ScriptPromise getCharacteristics(ScriptState*, ExceptionState&);
 
  private:
@@ -59,7 +70,7 @@ class BluetoothRemoteGATTService final : public ScriptWrappable {
       mojom::blink::WebBluetoothGATTQueryQuantity,
       ScriptPromiseResolver*,
       mojom::blink::WebBluetoothResult,
-      base::Optional<
+      absl::optional<
           Vector<mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr>>
           characteristics);
 

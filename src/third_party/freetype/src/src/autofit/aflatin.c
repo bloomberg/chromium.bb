@@ -4,7 +4,7 @@
  *
  *   Auto-fitter hinting routines for latin writing system (body).
  *
- * Copyright (C) 2003-2020 by
+ * Copyright (C) 2003-2021 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -63,11 +63,11 @@
     AF_GlyphHintsRec  hints[1];
 
 
-    FT_TRACE5(( "\n"
-                "latin standard widths computation (style `%s')\n"
-                "=====================================================\n"
-                "\n",
+    FT_TRACE5(( "\n" ));
+    FT_TRACE5(( "latin standard widths computation (style `%s')\n",
                 af_style_names[metrics->root.style_class->style] ));
+    FT_TRACE5(( "=====================================================\n" ));
+    FT_TRACE5(( "\n" ));
 
     af_glyph_hints_init( hints, face->memory );
 
@@ -350,9 +350,9 @@
     /* we walk over the blue character strings as specified in the */
     /* style's entry in the `af_blue_stringset' array              */
 
-    FT_TRACE5(( "latin blue zones computation\n"
-                "============================\n"
-                "\n" ));
+    FT_TRACE5(( "latin blue zones computation\n" ));
+    FT_TRACE5(( "============================\n" ));
+    FT_TRACE5(( "\n" ));
 
 #ifdef FT_CONFIG_OPTION_USE_HARFBUZZ
     shaper_buf = af_shaper_buf_create( face );
@@ -976,9 +976,8 @@
       if ( AF_LATIN_IS_X_HEIGHT_BLUE( bs ) )
         blue->flags |= AF_LATIN_BLUE_ADJUSTMENT;
 
-      FT_TRACE5(( "    -> reference = %ld\n"
-                  "       overshoot = %ld\n",
-                  *blue_ref, *blue_shoot ));
+      FT_TRACE5(( "    -> reference = %ld\n", *blue_ref ));
+      FT_TRACE5(( "       overshoot = %ld\n", *blue_shoot ));
 
     } /* end for loop */
 
@@ -1275,29 +1274,28 @@
 
             if ( dist == 0 )
             {
-              FT_TRACE5((
-                "af_latin_metrics_scale_dim:"
-                " x height alignment (style `%s'):\n"
-                "                           "
-                " vertical scaling changed from %.5f to %.5f (by %ld%%)\n"
-                "\n",
-                af_style_names[metrics->root.style_class->style],
-                scale / 65536.0,
-                new_scale / 65536.0,
-                ( fitted - scaled ) * 100 / scaled ));
+              FT_TRACE5(( "af_latin_metrics_scale_dim:"
+                          " x height alignment (style `%s'):\n",
+                          af_style_names[metrics->root.style_class->style] ));
+              FT_TRACE5(( "                           "
+                          " vertical scaling changed"
+                          " from %.5f to %.5f (by %ld%%)\n",
+                          scale / 65536.0,
+                          new_scale / 65536.0,
+                          ( fitted - scaled ) * 100 / scaled ));
+              FT_TRACE5(( "\n" ));
 
               scale = new_scale;
             }
 #ifdef FT_DEBUG_LEVEL_TRACE
             else
             {
-              FT_TRACE5((
-                "af_latin_metrics_scale_dim:"
-                " x height alignment (style `%s'):\n"
-                "                           "
-                " excessive vertical scaling abandoned\n"
-                "\n",
-                af_style_names[metrics->root.style_class->style] ));
+              FT_TRACE5(( "af_latin_metrics_scale_dim:"
+                          " x height alignment (style `%s'):\n",
+                          af_style_names[metrics->root.style_class->style] ));
+              FT_TRACE5(( "                           "
+                          " excessive vertical scaling abandoned\n" ));
+              FT_TRACE5(( "\n" ));
             }
 #endif
           }
@@ -1346,9 +1344,9 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
     if ( axis->extra_light )
-      FT_TRACE5(( "`%s' style is extra light (at current resolution)\n"
-                  "\n",
+      FT_TRACE5(( "`%s' style is extra light (at current resolution)\n",
                   af_style_names[metrics->root.style_class->style] ));
+      FT_TRACE5(( "\n" ));
 #endif
 
     if ( dim == AF_DIMENSION_VERT )
@@ -1473,13 +1471,13 @@
         AF_LatinBlue  blue = &axis->blues[nn];
 
 
-        FT_TRACE5(( "  reference %d: %ld scaled to %.2f%s\n"
-                    "  overshoot %d: %ld scaled to %.2f%s\n",
+        FT_TRACE5(( "  reference %d: %ld scaled to %.2f%s\n",
                     nn,
                     blue->ref.org,
                     blue->ref.fit / 64.0,
                     ( blue->flags & AF_LATIN_BLUE_ACTIVE ) ? ""
-                                                           : " (inactive)",
+                                                           : " (inactive)" ));
+        FT_TRACE5(( "  overshoot %d: %ld scaled to %.2f%s\n",
                     nn,
                     blue->shoot.org,
                     blue->shoot.fit / 64.0,

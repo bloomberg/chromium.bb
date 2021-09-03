@@ -11,19 +11,19 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/native_theme/native_theme.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/style/platform_style.h"
 
 namespace views {
 
-Link::Link(const base::string16& title, int text_context, int text_style)
+Link::Link(const std::u16string& title, int text_context, int text_style)
     : Label(title, text_context, text_style) {
   RecalculateFont();
 
@@ -149,7 +149,7 @@ void Link::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Label::GetAccessibleNodeData(node_data);
   // Prevent invisible links from being announced by screen reader.
   node_data->role =
-      GetText().empty() ? ax::mojom::Role::kIgnored : ax::mojom::Role::kLink;
+      GetText().empty() ? ax::mojom::Role::kNone : ax::mojom::Role::kLink;
 }
 
 void Link::OnFocus() {
@@ -171,7 +171,7 @@ void Link::SetFontList(const gfx::FontList& font_list) {
   RecalculateFont();
 }
 
-void Link::SetText(const base::string16& text) {
+void Link::SetText(const std::u16string& text) {
   Label::SetText(text);
   ConfigureFocus();
 }
@@ -183,7 +183,8 @@ void Link::OnThemeChanged() {
 
 void Link::SetEnabledColor(SkColor color) {
   requested_enabled_color_ = color;
-  Label::SetEnabledColor(GetColor());
+  if (GetWidget())
+    Label::SetEnabledColor(GetColor());
 }
 
 bool Link::IsSelectionSupported() const {
@@ -221,7 +222,7 @@ void Link::ConfigureFocus() {
   if (GetText().empty()) {
     SetFocusBehavior(FocusBehavior::NEVER);
   } else {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
     SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 #else
     SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -230,7 +231,7 @@ void Link::ConfigureFocus() {
 }
 
 BEGIN_METADATA(Link, Label)
-ADD_READONLY_PROPERTY_METADATA(SkColor, Color)
+ADD_READONLY_PROPERTY_METADATA(SkColor, Color, ui::metadata::SkColorConverter)
 END_METADATA
 
 }  // namespace views

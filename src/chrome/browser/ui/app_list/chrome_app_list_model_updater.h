@@ -40,7 +40,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
                         const std::string& folder_id) override;
   void SetStatus(ash::AppListModelStatus status) override;
   void SetSearchEngineIsGoogle(bool is_google) override;
-  void UpdateSearchBox(const base::string16& text,
+  void UpdateSearchBox(const std::u16string& text,
                        bool initiated_by_user) override;
   void PublishSearchResults(
       const std::vector<ChromeSearchResult*>& results) override;
@@ -52,11 +52,14 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void SetItemNameAndShortName(const std::string& id,
                                const std::string& name,
                                const std::string& short_name) override;
+  void SetAppStatus(const std::string& id, ash::AppStatus app_status) override;
   void SetItemPosition(const std::string& id,
                        const syncer::StringOrdinal& new_position) override;
   void SetItemIsPersistent(const std::string& id, bool is_persistent) override;
   void SetItemFolderId(const std::string& id,
                        const std::string& folder_id) override;
+  void SetNotificationBadgeColor(const std::string& id,
+                                 const SkColor color) override;
 
   // Methods only used by ChromeSearchResult that talk to ash directly.
   void SetSearchResultMetadata(
@@ -82,6 +85,7 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void GetContextMenuModel(const std::string& id,
                            GetMenuModelCallback callback) override;
   syncer::StringOrdinal GetFirstAvailablePosition() const override;
+  syncer::StringOrdinal GetPositionBeforeFirstItem() const override;
 
   // Methods for AppListSyncableService:
   void AddItemToOemFolder(
@@ -108,6 +112,8 @@ class ChromeAppListModelUpdater : public AppListModelUpdater {
   void RemoveObserver(AppListModelUpdaterObserver* observer) override;
 
  private:
+  std::vector<ChromeAppListItem*> GetTopLevelItems() const;
+
   // A map from a ChromeAppListItem's id to its unique pointer. This item set
   // matches the one in AppListModel.
   std::map<std::string, std::unique_ptr<ChromeAppListItem>> items_;

@@ -8,11 +8,11 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/resources/resource_id.h"
@@ -22,10 +22,17 @@
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/ipc/in_process_command_buffer.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkDeferredDisplayListRecorder.h"
 #include "third_party/skia/include/core/SkOverdrawCanvas.h"
 #include "third_party/skia/include/core/SkSurfaceCharacterization.h"
-#include "third_party/skia/include/core/SkYUVAIndex.h"
+
+namespace gfx {
+namespace mojom {
+class DelegatedInkPointRenderer;
+}  // namespace mojom
+}  // namespace gfx
 
 namespace viz {
 
@@ -51,7 +58,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       const DebugRendererSettings* debug_settings);
 
   SkiaOutputSurfaceImpl(
-      util::PassKey<SkiaOutputSurfaceImpl> pass_key,
+      base::PassKey<SkiaOutputSurfaceImpl> pass_key,
       DisplayCompositorMemoryAndTaskController* display_controller,
       const RendererSettings& renderer_settings,
       const DebugRendererSettings* debug_settings);
@@ -80,6 +87,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   uint32_t GetFramebufferCopyTextureFormat() override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
+  gpu::Mailbox GetOverlayMailbox() const override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
   unsigned UpdateGpuFence() override;
@@ -95,8 +103,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   sk_sp<SkImage> MakePromiseSkImageFromYUV(
       const std::vector<ImageContext*>& contexts,
       sk_sp<SkColorSpace> image_color_space,
-      bool has_alpha) override;
-  void SwapBuffersSkipped() override;
+      SkYUVAInfo::PlaneConfig plane_config,
+      SkYUVAInfo::Subsampling subsampling) override;
+  void SwapBuffersSkipped(const gfx::Rect root_pass_damage_rect) override;
   void ScheduleOutputSurfaceAsOverlay(
       OverlayProcessorInterface::OutputSurfaceOverlayPlane output_surface_plane)
       override;
@@ -127,6 +136,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                   std::unique_ptr<CopyOutputRequest> request) override;
   void AddContextLostObserver(ContextLostObserver* observer) override;
   void RemoveContextLostObserver(ContextLostObserver* observer) override;
+  void PreserveChildSurfaceControls() override;
   gpu::SyncToken Flush() override;
 
 #if defined(OS_APPLE)
@@ -145,8 +155,13 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       const gpu::MailboxHolder& holder,
       const gfx::Size& size,
       ResourceFormat format,
-      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
+      bool maybe_concurrent_reads,
+      const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
       sk_sp<SkColorSpace> color_space) override;
+
+  void InitDelegatedInkPointRendererReceiver(
+      mojo::PendingReceiver<gfx::mojom::DelegatedInkPointRenderer>
+          pending_receiver) override;
 
   // Set the fields of |capabilities_| and propagates to |impl_on_gpu_|. Should
   // be called after BindToClient().
@@ -168,7 +183,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       sk_sp<SkColorSpace> color_space,
       bool is_root_render_pass);
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params,
-                              const gfx::Size& pixel_size);
+                              const gfx::Size& pixel_size,
+                              gfx::GpuFenceHandle release_fence);
   void BufferPresented(const gfx::PresentationFeedback& feedback);
 
   // Provided as a callback for the GPU thread.
@@ -179,14 +195,12 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                       std::vector<gpu::SyncToken> sync_tokens,
                       bool make_current,
                       bool need_framebuffer);
+
   void FlushGpuTasks(bool wait_for_finish);
   GrBackendFormat GetGrBackendFormatForTexture(
       ResourceFormat resource_format,
       uint32_t gl_texture_target,
-      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info);
-  void PrepareYUVATextureIndices(const std::vector<ImageContext*>& contexts,
-                                 bool has_alpha,
-                                 SkYUVAIndex indices[4]);
+      const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info);
   void ContextLost();
 
   void RecreateRootRecorder();
@@ -207,13 +221,14 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   UpdateVSyncParametersCallback update_vsync_parameters_callback_;
   GpuVSyncCallback gpu_vsync_callback_;
   bool is_displayed_as_overlay_ = false;
+  gpu::Mailbox last_swapped_mailbox_;
 
   gfx::Size size_;
   gfx::ColorSpace color_space_;
   gfx::BufferFormat format_;
   bool is_hdr_ = false;
   SkSurfaceCharacterization characterization_;
-  base::Optional<SkDeferredDisplayListRecorder> root_recorder_;
+  absl::optional<SkDeferredDisplayListRecorder> root_recorder_;
 
   class ScopedPaint {
    public:
@@ -231,23 +246,23 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
     SkDeferredDisplayListRecorder* recorder_;
     // If we need new recorder for this Paint (i.e it's not root render pass),
     // it's stored here
-    base::Optional<SkDeferredDisplayListRecorder> recorder_storage_;
+    absl::optional<SkDeferredDisplayListRecorder> recorder_storage_;
     const AggregatedRenderPassId render_pass_id_;
   };
 
   // This holds current paint info
-  base::Optional<ScopedPaint> current_paint_;
+  absl::optional<ScopedPaint> current_paint_;
 
   // The SkDDL recorder is used for overdraw feedback. It is created by
   // BeginPaintOverdraw, and FinishPaintCurrentFrame will turn it into a SkDDL
   // and play the SkDDL back on the GPU thread.
-  base::Optional<SkDeferredDisplayListRecorder> overdraw_surface_recorder_;
+  absl::optional<SkDeferredDisplayListRecorder> overdraw_surface_recorder_;
 
   // |overdraw_canvas_| is used to record draw counts.
-  base::Optional<SkOverdrawCanvas> overdraw_canvas_;
+  absl::optional<SkOverdrawCanvas> overdraw_canvas_;
 
   // |nway_canvas_| contains |overdraw_canvas_| and root canvas.
-  base::Optional<SkNWayCanvas> nway_canvas_;
+  absl::optional<SkNWayCanvas> nway_canvas_;
 
   // The cache for promise image created from render passes.
   base::flat_map<AggregatedRenderPassId, std::unique_ptr<ImageContextImpl>>
@@ -281,13 +296,16 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   // increments or flips.
   gfx::OverlayTransform display_transform_ = gfx::OVERLAY_TRANSFORM_NONE;
 
-  // |impl_on_gpu| is created and destroyed on the GPU thread.
+  // |impl_on_gpu| is created and destroyed on the GPU thread by a posted task
+  // from SkiaOutputSurfaceImpl::Initialize and SkiaOutputSurfaceImpl::dtor. So
+  // it's safe to use base::Unretained for posting tasks during life time of
+  // SkiaOutputSurfaceImpl.
   std::unique_ptr<SkiaOutputSurfaceImplOnGpu> impl_on_gpu_;
 
   sk_sp<GrContextThreadSafeProxy> gr_context_thread_safe_;
 
   bool has_set_draw_rectangle_for_frame_ = false;
-  base::Optional<gfx::Rect> draw_rectangle_;
+  absl::optional<gfx::Rect> draw_rectangle_;
 
   bool should_measure_next_post_task_ = false;
 
@@ -302,11 +320,12 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 
   bool use_damage_area_from_skia_output_device_ = false;
   // Damage area of the current buffer. Differ to the last submit buffer.
-  base::Optional<gfx::Rect> damage_of_current_buffer_;
+  absl::optional<gfx::Rect> damage_of_current_buffer_;
   // Current buffer index.
   size_t current_buffer_ = 0;
-  // Damage area of the buffer. Differ to the last submit buffer.
-  std::vector<gfx::Rect> damage_of_buffers_;
+  // Accumulates framebuffer damage since last drawing to a particular buffer.
+  // There is one gfx::Rect per framebuffer.
+  std::vector<gfx::Rect> accumulated_buffer_damage_;
   // Track if the current buffer content is changed.
   bool current_buffer_modified_ = false;
 

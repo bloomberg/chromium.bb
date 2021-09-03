@@ -88,7 +88,7 @@ XFA_Element CXFA_Fill::GetType() const {
 }
 
 void CXFA_Fill::Draw(CFGAS_GEGraphics* pGS,
-                     CFGAS_GEPath* fillPath,
+                     const CFGAS_GEPath& fillPath,
                      const CFX_RectF& rtWidget,
                      const CFX_Matrix& matrix) {
   pGS->SaveGraphState();
@@ -109,7 +109,7 @@ void CXFA_Fill::Draw(CFGAS_GEGraphics* pGS,
     default:
       pGS->SetFillColor(CFGAS_GEColor(GetColor(false)));
       pGS->FillPath(fillPath, CFX_FillRenderOptions::FillType::kWinding,
-                    &matrix);
+                    matrix);
       break;
   }
 
@@ -117,7 +117,7 @@ void CXFA_Fill::Draw(CFGAS_GEGraphics* pGS,
 }
 
 void CXFA_Fill::DrawStipple(CFGAS_GEGraphics* pGS,
-                            CFGAS_GEPath* fillPath,
+                            const CFGAS_GEPath& fillPath,
                             const CFX_RectF& rtWidget,
                             const CFX_Matrix& matrix) {
   CXFA_Stipple* stipple =
@@ -127,7 +127,7 @@ void CXFA_Fill::DrawStipple(CFGAS_GEGraphics* pGS,
 }
 
 void CXFA_Fill::DrawRadial(CFGAS_GEGraphics* pGS,
-                           CFGAS_GEPath* fillPath,
+                           const CFGAS_GEPath& fillPath,
                            const CFX_RectF& rtWidget,
                            const CFX_Matrix& matrix) {
   CXFA_Radial* radial =
@@ -137,7 +137,7 @@ void CXFA_Fill::DrawRadial(CFGAS_GEGraphics* pGS,
 }
 
 void CXFA_Fill::DrawLinear(CFGAS_GEGraphics* pGS,
-                           CFGAS_GEPath* fillPath,
+                           const CFGAS_GEPath& fillPath,
                            const CFX_RectF& rtWidget,
                            const CFX_Matrix& matrix) {
   CXFA_Linear* linear =
@@ -147,7 +147,7 @@ void CXFA_Fill::DrawLinear(CFGAS_GEGraphics* pGS,
 }
 
 void CXFA_Fill::DrawPattern(CFGAS_GEGraphics* pGS,
-                            CFGAS_GEPath* fillPath,
+                            const CFGAS_GEPath& fillPath,
                             const CFX_RectF& rtWidget,
                             const CFX_Matrix& matrix) {
   CXFA_Pattern* pattern =

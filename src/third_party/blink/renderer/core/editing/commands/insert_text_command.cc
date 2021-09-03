@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/editing/commands/editing_commands_utilities.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
+#include "third_party/blink/renderer/core/editing/relocatable_position.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
@@ -104,37 +105,30 @@ bool InsertTextCommand::PerformTrivialReplace(const String& text) {
   if (text.Contains('\t') || text.Contains(' ') || text.Contains('\n'))
     return false;
 
+  // Also if the text is surrounded by a hyperlink and all the contents of the
+  // link are selected, then we shouldn't be retaining the link with just one
+  // character because the user wouldn't be able to edit the link if it has only
+  // one character.
   Position start = EndingVisibleSelection().Start();
+  Element* enclosing_anchor = EnclosingAnchorElement(start);
+  if (enclosing_anchor && text.length() <= 1) {
+    VisiblePosition first_in_anchor =
+        VisiblePosition::FirstPositionInNode(*enclosing_anchor);
+    VisiblePosition last_in_anchor =
+        VisiblePosition::LastPositionInNode(*enclosing_anchor);
+    Position end = EndingVisibleSelection().End();
+    if (first_in_anchor.DeepEquivalent() == start &&
+        last_in_anchor.DeepEquivalent() == end)
+      return false;
+  }
+
+  RelocatablePosition relocatable_start(start);
   Position end_position = ReplaceSelectedTextInNode(text);
   if (end_position.IsNull())
     return false;
 
-  SetEndingSelectionWithoutValidation(start, end_position);
-  SetEndingSelection(SelectionForUndoStep::From(
-      SelectionInDOMTree::Builder()
-          .Collapse(EndingVisibleSelection().End())
-          .Build()));
-  return true;
-}
-
-bool InsertTextCommand::PerformOverwrite(const String& text) {
-  Position start = EndingVisibleSelection().Start();
-  auto* text_node = DynamicTo<Text>(start.ComputeContainerNode());
-  if (start.IsNull() || !start.IsOffsetInAnchor() || !text_node)
-    return false;
-
-  unsigned count = std::min(
-      text.length(), text_node->length() - start.OffsetInContainerNode());
-  if (!count)
-    return false;
-
-  ReplaceTextInNode(text_node, start.OffsetInContainerNode(), count, text);
-
-  Position end_position =
-      Position(text_node, start.OffsetInContainerNode() + text.length());
-  SetEndingSelectionWithoutValidation(start, end_position);
-  if (EndingSelection().IsNone())
-    return true;
+  SetEndingSelectionWithoutValidation(relocatable_start.GetPosition(),
+                                      end_position);
   SetEndingSelection(SelectionForUndoStep::From(
       SelectionInDOMTree::Builder()
           .Collapse(EndingVisibleSelection().End())
@@ -178,9 +172,6 @@ void InsertTextCommand::DoApply(EditingState* editing_state) {
             GetDocument().GetExecutionContext());
       }
     }
-  } else if (GetDocument().GetFrame()->GetEditor().IsOverwriteModeEnabled()) {
-    if (PerformOverwrite(text_))
-      return;
   }
 
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kEditing);

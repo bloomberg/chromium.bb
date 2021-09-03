@@ -4,11 +4,23 @@
 
 #include "extensions/browser/api/declarative_net_request/request_params.h"
 
+#include <algorithm>
+
+#include "base/bind.h"
+#include "base/check.h"
+#include "base/containers/flat_map.h"
+#include "base/dcheck_is_on.h"
+#include "base/no_destructor.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/api/web_request/web_request_resource_type.h"
+#include "extensions/browser/extensions_browser_client.h"
+#include "extensions/common/constants.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/http/http_request_headers.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
@@ -52,6 +64,38 @@ flat_rule::ElementType GetElementType(WebRequestResourceType web_request_type) {
   return flat_rule::ElementType_OTHER;
 }
 
+// Maps an HTTP request method string to flat_rule::RequestMethod.
+// TODO(kzar): Return `flat_rule::RequestMethod_NONE` for non-HTTP requests.
+flat_rule::RequestMethod GetRequestMethod(const std::string& method) {
+  using net::HttpRequestHeaders;
+  static const base::NoDestructor<
+      base::flat_map<base::StringPiece, flat_rule::RequestMethod>>
+      kRequestMethods(
+          {{HttpRequestHeaders::kDeleteMethod, flat_rule::RequestMethod_DELETE},
+           {HttpRequestHeaders::kGetMethod, flat_rule::RequestMethod_GET},
+           {HttpRequestHeaders::kHeadMethod, flat_rule::RequestMethod_HEAD},
+           {HttpRequestHeaders::kOptionsMethod,
+            flat_rule::RequestMethod_OPTIONS},
+           {HttpRequestHeaders::kPatchMethod, flat_rule::RequestMethod_PATCH},
+           {HttpRequestHeaders::kPostMethod, flat_rule::RequestMethod_POST},
+           {HttpRequestHeaders::kPutMethod, flat_rule::RequestMethod_PUT}});
+
+  DCHECK(std::all_of(kRequestMethods->begin(), kRequestMethods->end(),
+                     [](const auto& key_value) {
+                       auto method = key_value.first;
+                       return std::none_of(method.begin(), method.end(),
+                                           base::IsAsciiLower<char>);
+                     }));
+
+  std::string normalized_method = base::ToUpperASCII(method);
+  auto it = kRequestMethods->find(normalized_method);
+  if (it == kRequestMethods->end()) {
+    NOTREACHED() << "Request method " << normalized_method << " not handled.";
+    return flat_rule::RequestMethod_GET;
+  }
+  return it->second;
+}
+
 // Returns whether the request to |url| is third party to its |document_origin|.
 // TODO(crbug.com/696822): Look into caching this.
 bool IsThirdPartyRequest(const GURL& url, const url::Origin& document_origin) {
@@ -78,8 +122,49 @@ content::GlobalFrameRoutingId GetFrameRoutingId(
   if (!host)
     return content::GlobalFrameRoutingId();
 
-  return content::GlobalFrameRoutingId(host->GetProcess()->GetID(),
-                                       host->GetRoutingID());
+  return host->GetGlobalFrameRoutingId();
+}
+
+bool DoEmbedderConditionsMatch(
+    int tab_id,
+    const flatbuffers::Vector<uint8_t>& conditions_buffer) {
+#if DCHECK_IS_ON()
+  // Verify that `conditions_buffer` corresponds to a valid Flatbuffer with
+  // `flat::EmbedderConditions` as the root. Note: this is a sanity check and
+  // not a security check. Consider the two cases:
+  //  - For a file backed ruleset, we already verify the file checksum on
+  //    ruleset load. So the nested flatbuffer shouldn't be corrupted. On-disk
+  //    modification of stored artifacts is outside Chrome's security model
+  //    anyway.
+  //  - For a non-file backed (session-scoped) ruleset, the ruleset is only
+  //    maintained in memory. Hence there shouldn't be corruption risk.
+  flatbuffers::Verifier verifier(conditions_buffer.Data(),
+                                 conditions_buffer.size());
+  CHECK(verifier.VerifyBuffer<flat::EmbedderConditions>(
+      kEmbedderConditionsBufferIdentifier));
+#endif  // DCHECK_IS_ON()
+
+  auto* embedder_conditions =
+      flatbuffers::GetRoot<flat::EmbedderConditions>(conditions_buffer.Data());
+  DCHECK(embedder_conditions);
+
+  auto matches = [tab_id](const flatbuffers::Vector<int32_t>& sorted_tab_ids) {
+    DCHECK(std::is_sorted(sorted_tab_ids.begin(), sorted_tab_ids.end()));
+    return std::binary_search(sorted_tab_ids.begin(), sorted_tab_ids.end(),
+                              tab_id);
+  };
+
+  if (embedder_conditions->tab_ids_included() &&
+      !matches(*embedder_conditions->tab_ids_included())) {
+    return false;
+  }
+
+  if (embedder_conditions->tab_ids_excluded() &&
+      matches(*embedder_conditions->tab_ids_excluded())) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace
@@ -88,12 +173,18 @@ RequestParams::RequestParams(const WebRequestInfo& info)
     : url(&info.url),
       first_party_origin(info.initiator.value_or(url::Origin())),
       element_type(GetElementType(info.web_request_type)),
-      parent_routing_id(info.parent_routing_id) {
+      method(GetRequestMethod(info.method)),
+      parent_routing_id(info.parent_routing_id),
+      embedder_conditions_matcher(base::BindRepeating(DoEmbedderConditionsMatch,
+                                                      info.frame_data.tab_id)) {
   is_third_party = IsThirdPartyRequest(*url, first_party_origin);
 }
 
-RequestParams::RequestParams(content::RenderFrameHost* host)
+RequestParams::RequestParams(content::RenderFrameHost* host,
+                             bool is_post_navigation)
     : url(&host->GetLastCommittedURL()),
+      method(is_post_navigation ? flat_rule::RequestMethod_POST
+                                : flat_rule::RequestMethod_GET),
       parent_routing_id(GetFrameRoutingId(host->GetParent())) {
   if (host->GetParent()) {
     // Note the discrepancy with the WebRequestInfo constructor. For a
@@ -108,6 +199,14 @@ RequestParams::RequestParams(content::RenderFrameHost* host)
   }
   is_third_party =
       IsThirdPartyRequest(host->GetLastCommittedOrigin(), first_party_origin);
+
+  int window_id_unused = extension_misc::kUnknownWindowId;
+  int tab_id = extension_misc::kUnknownTabId;
+  ExtensionsBrowserClient::Get()->GetTabAndWindowIdForWebContents(
+      content::WebContents::FromRenderFrameHost(host), &tab_id,
+      &window_id_unused);
+  embedder_conditions_matcher =
+      base::BindRepeating(DoEmbedderConditionsMatch, tab_id);
 }
 
 RequestParams::RequestParams() = default;

@@ -11,7 +11,9 @@
 
 #include "base/macros.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/views/metadata/view_factory.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -55,7 +57,7 @@ class VIEWS_EXPORT WidgetDelegate {
     // The accessible title for the window, often more descriptive than the
     // plain title. If no accessible title is present the result of
     // GetWindowTitle() will be used.
-    base::string16 accessible_title;
+    std::u16string accessible_title;
 
     // Whether the window should display controls for the user to minimize,
     // maximize, or resize it.
@@ -82,9 +84,12 @@ class VIEWS_EXPORT WidgetDelegate {
     // The widget's icon, if any.
     gfx::ImageSkia icon;
 
+    // The widget's app icon, a larger icon used for task bar and Alt-Tab.
+    gfx::ImageSkia app_icon;
+
     // The widget's initially focused view, if any. This can only be set before
     // this WidgetDelegate is used to initialize a Widget.
-    base::Optional<View*> initially_focused_view;
+    absl::optional<View*> initially_focused_view;
 
     // The widget's internal name, used to identify it in window-state
     // restoration (if this widget participates in that) and in debugging
@@ -112,10 +117,12 @@ class VIEWS_EXPORT WidgetDelegate {
 
     // The widget's title, if any.
     // TODO(ellyjones): Should it be illegal to have show_title && !title?
-    base::string16 title;
+    std::u16string title;
   };
 
   WidgetDelegate();
+  WidgetDelegate(const WidgetDelegate&) = delete;
+  WidgetDelegate& operator=(const WidgetDelegate&) = delete;
   virtual ~WidgetDelegate();
 
   // Sets the return value of CanActivate(). Default is true.
@@ -174,10 +181,10 @@ class VIEWS_EXPORT WidgetDelegate {
   virtual ax::mojom::Role GetAccessibleWindowRole();
 
   // Returns the title to be read with screen readers.
-  virtual base::string16 GetAccessibleWindowTitle() const;
+  virtual std::u16string GetAccessibleWindowTitle() const;
 
   // Returns the text to be displayed in the window title.
-  virtual base::string16 GetWindowTitle() const;
+  virtual std::u16string GetWindowTitle() const;
 
   // Returns true if the window should show a title in the title bar.
   virtual bool ShouldShowWindowTitle() const;
@@ -319,20 +326,21 @@ class VIEWS_EXPORT WidgetDelegate {
   // Setters for data parameters of the WidgetDelegate. If you use these
   // setters, there is no need to override the corresponding virtual getters.
   void SetAccessibleRole(ax::mojom::Role role);
-  void SetAccessibleTitle(base::string16 title);
+  void SetAccessibleTitle(std::u16string title);
   void SetCanMaximize(bool can_maximize);
   void SetCanMinimize(bool can_minimize);
   void SetCanResize(bool can_resize);
   void SetFocusTraversesOut(bool focus_traverses_out);
   void SetEnableArrowKeyTraversal(bool enable_arrow_key_traversal);
   void SetIcon(const gfx::ImageSkia& icon);
+  void SetAppIcon(const gfx::ImageSkia& icon);
   void SetInitiallyFocusedView(View* initially_focused_view);
   void SetModalType(ui::ModalType modal_type);
   void SetOwnedByWidget(bool delete_self);
   void SetShowCloseButton(bool show_close_button);
   void SetShowIcon(bool show_icon);
   void SetShowTitle(bool show_title);
-  void SetTitle(const base::string16& title);
+  void SetTitle(const std::u16string& title);
   void SetTitle(int title_message_id);
 #if defined(USE_AURA)
   void SetCenterTitle(bool center_title);
@@ -411,6 +419,10 @@ class VIEWS_EXPORT WidgetDelegate {
   // Managed by Widget. Ensures |this| outlives its Widget.
   bool can_delete_this_ = true;
 
+  // Used to ensure that a client Delete callback doesn't actually destruct the
+  // WidgetDelegate if the client has given ownership to the Widget.
+  bool* destructor_ran_ = nullptr;
+
   // The first two are stored as unique_ptrs to make it easier to check in the
   // registration methods whether a callback is being registered too late in the
   // WidgetDelegate's lifecycle.
@@ -423,8 +435,6 @@ class VIEWS_EXPORT WidgetDelegate {
   ClientViewFactory client_view_factory_;
   NonClientFrameViewFactory non_client_frame_view_factory_;
   OverlayViewFactory overlay_view_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(WidgetDelegate);
 };
 
 // A WidgetDelegate implementation that is-a View. Used to override GetWidget()
@@ -436,17 +446,21 @@ class VIEWS_EXPORT WidgetDelegateView : public WidgetDelegate, public View {
   METADATA_HEADER(WidgetDelegateView);
 
   WidgetDelegateView();
+  WidgetDelegateView(const WidgetDelegateView&) = delete;
+  WidgetDelegateView& operator=(const WidgetDelegateView&) = delete;
   ~WidgetDelegateView() override;
 
   // WidgetDelegate:
   Widget* GetWidget() override;
   const Widget* GetWidget() const override;
   View* GetContentsView() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WidgetDelegateView);
 };
 
+BEGIN_VIEW_BUILDER(VIEWS_EXPORT, WidgetDelegateView, View)
+END_VIEW_BUILDER
+
 }  // namespace views
+
+DEFINE_VIEW_BUILDER(VIEWS_EXPORT, WidgetDelegateView)
 
 #endif  // UI_VIEWS_WIDGET_WIDGET_DELEGATE_H_

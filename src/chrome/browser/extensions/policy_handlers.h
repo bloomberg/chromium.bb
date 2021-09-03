@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_POLICY_HANDLERS_H_
 #define CHROME_BROWSER_EXTENSIONS_POLICY_HANDLERS_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/policy/core/browser/configuration_policy_handler.h"
@@ -43,53 +41,28 @@ class ExtensionListPolicyHandler : public policy::ListPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(ExtensionListPolicyHandler);
 };
 
-// Base class for parsing the list of extensions to force install.
-class ExtensionInstallListPolicyHandler
+// Class for parsing the list of extensions to force install.
+class ExtensionInstallForceListPolicyHandler
     : public policy::TypeCheckingPolicyHandler {
  public:
+  ExtensionInstallForceListPolicyHandler();
+  ExtensionInstallForceListPolicyHandler(
+      const ExtensionInstallForceListPolicyHandler&) = delete;
+  ExtensionInstallForceListPolicyHandler& operator=(
+      const ExtensionInstallForceListPolicyHandler&) = delete;
+  ~ExtensionInstallForceListPolicyHandler() override = default;
+
   // ConfigurationPolicyHandler methods:
   bool CheckPolicySettings(const policy::PolicyMap& policies,
                            policy::PolicyErrorMap* errors) override;
   void ApplyPolicySettings(const policy::PolicyMap& policies,
                            PrefValueMap* prefs) override;
 
- protected:
-  ExtensionInstallListPolicyHandler(const char* policy_name,
-                                    const char* pref_name);
-
-  ~ExtensionInstallListPolicyHandler() override = default;
-
  private:
   // Parses the data in |policy_value| and writes them to |extension_dict|.
   bool ParseList(const base::Value* policy_value,
                  base::DictionaryValue* extension_dict,
                  policy::PolicyErrorMap* errors);
-
-  const char* const pref_name_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallListPolicyHandler);
-};
-
-// Parses the extension force install list for user sessions.
-class ExtensionInstallForcelistPolicyHandler
-    : public ExtensionInstallListPolicyHandler {
- public:
-  ExtensionInstallForcelistPolicyHandler();
-  ~ExtensionInstallForcelistPolicyHandler() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallForcelistPolicyHandler);
-};
-
-// Parses the extension force install list for the login profile.
-class ExtensionInstallLoginScreenExtensionsPolicyHandler
-    : public ExtensionInstallListPolicyHandler {
- public:
-  ExtensionInstallLoginScreenExtensionsPolicyHandler();
-  ~ExtensionInstallLoginScreenExtensionsPolicyHandler() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ExtensionInstallLoginScreenExtensionsPolicyHandler);
 };
 
 // Implements additional checks for policies that are lists of extension
@@ -126,6 +99,12 @@ class ExtensionSettingsPolicyHandler
                            PrefValueMap* prefs) override;
 
  private:
+  // Performs sanitization for both Check/ApplyPolicySettings(). If an entry
+  // in |dict_value| doesn't pass validation, that entry is removed from the
+  // dictionary. Validation errors are stored in |errors| if non-null.
+  void SanitizePolicySettings(base::Value* dict_value,
+                              policy::PolicyErrorMap* errors);
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionSettingsPolicyHandler);
 };
 

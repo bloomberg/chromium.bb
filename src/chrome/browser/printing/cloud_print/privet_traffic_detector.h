@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_TRAFFIC_DETECTOR_H_
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_TRAFFIC_DETECTOR_H_
 
-#include <memory>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -52,8 +50,8 @@ class PrivetTrafficDetector
 
     // network::mojom::UDPSocketListener:
     void OnReceived(int32_t result,
-                    const base::Optional<net::IPEndPoint>& src_addr,
-                    base::Optional<base::span<const uint8_t>> data) override;
+                    const absl::optional<net::IPEndPoint>& src_addr,
+                    absl::optional<base::span<const uint8_t>> data) override;
 
     void HandleConnectionChanged(network::mojom::ConnectionType type);
     void ScheduleRestart();
@@ -63,7 +61,7 @@ class PrivetTrafficDetector
     void Bind();
     void OnBindComplete(net::IPEndPoint multicast_addr,
                         int rv,
-                        const base::Optional<net::IPEndPoint>& ip_address);
+                        const absl::optional<net::IPEndPoint>& ip_address);
     bool IsSourceAcceptable() const;
     bool IsPrivetPacket(base::span<const uint8_t> data) const;
     void OnJoinGroupComplete(int rv);

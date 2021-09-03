@@ -4,6 +4,7 @@
 
 #include "weblayer/browser/new_tab_callback_proxy.h"
 
+#include "base/trace_event/trace_event.h"
 #include "url/gurl.h"
 #include "weblayer/browser/java/jni/NewTabCallbackProxy_jni.h"
 #include "weblayer/browser/tab_impl.h"
@@ -25,7 +26,6 @@ NewTabCallbackProxy::~NewTabCallbackProxy() {
 
 void NewTabCallbackProxy::OnNewTab(Tab* tab, NewTabType type) {
   JNIEnv* env = AttachCurrentThread();
-  // The Java side takes ownership of Tab.
   TRACE_EVENT0("weblayer", "Java_NewTabCallbackProxy_onNewTab");
   Java_NewTabCallbackProxy_onNewTab(env, java_impl_,
                                     static_cast<TabImpl*>(tab)->GetJavaTab(),

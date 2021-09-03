@@ -16,6 +16,7 @@ goog.require('CustomAutomationEvent');
 goog.require('editing.TextEditHandler');
 
 goog.scope(function() {
+const ActionType = chrome.automation.ActionType;
 const AutomationNode = chrome.automation.AutomationNode;
 const Dir = constants.Dir;
 const EventType = chrome.automation.EventType;
@@ -46,6 +47,16 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     /** @private {AutomationNode} */
     this.lastValueTarget_ = null;
 
+    /**
+     * The last time we handled an alert event.
+     * @type {!Date}
+     * @private
+     */
+    this.lastAlertTime_ = new Date(0);
+
+    /** @private {string} */
+    this.lastAlertText_ = '';
+
     /** @private {string} */
     this.lastRootUrl_ = '';
 
@@ -73,7 +84,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
     this.addListener_(EventType.LOAD_COMPLETE, this.onLoadComplete);
     this.addListener_(EventType.MENU_END, this.onMenuEnd);
-    this.addListener_(EventType.MENU_START, this.onMenuStart);
+    this.addListener_(EventType.MENU_START, this.onEventDefault);
     this.addListener_(EventType.RANGE_VALUE_CHANGED, this.onValueChanged);
     this.addListener_(
         EventType.SCROLL_POSITION_CHANGED, this.onScrollPositionChanged);
@@ -96,7 +107,10 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       chrome.automation.getFocus((function(focus) {
                                    if (focus) {
                                      const event = new CustomAutomationEvent(
-                                         EventType.FOCUS, focus, 'page', []);
+                                         EventType.FOCUS, focus, {
+                                           eventFrom: 'page',
+                                           eventFromAction: ActionType.FOCUS
+                                         });
                                      this.onFocus(event);
                                    }
                                  }).bind(this));
@@ -149,7 +163,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       // results should generate output.
       const range = cursors.Range.fromNode(focus);
       ChromeVoxState.instance.setCurrentRange(range);
-      output.withRichSpeechAndBraille(range, null, Output.EventType.NAVIGATE)
+      output.withRichSpeechAndBraille(range, null, OutputEventType.NAVIGATE)
           .go();
     });
   }
@@ -160,14 +174,34 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
    */
   onAlert(evt) {
     const node = evt.target;
-    const range = cursors.Range.fromNode(node);
 
+    if (node.role === RoleType.ALERT && node.root.role === RoleType.DESKTOP) {
+      // Exclude alerts in the desktop tree that are inside of menus.
+      let ancestor = node;
+      while (ancestor) {
+        if (ancestor.role === RoleType.MENU) {
+          return;
+        }
+        ancestor = ancestor.parent;
+      }
+    }
+
+    const range = cursors.Range.fromNode(node);
     const output = new Output()
                        .withSpeechCategory(TtsCategory.LIVE)
                        .withSpeechAndBraille(range, null, evt.type);
 
+    const alertDelayMet = new Date() - this.lastAlertTime_ >
+        DesktopAutomationHandler.MIN_ALERT_DELAY_MS;
+    if (!alertDelayMet && output.toString() === this.lastAlertText_) {
+      return;
+    }
+
+    this.lastAlertTime_ = new Date();
+    this.lastAlertText_ = output.toString();
+
     // A workaround for alert nodes that contain no actual content.
-    if (output.toString() !== (Msgs.getMsg('role_alert'))) {
+    if (output.toString()) {
       output.go();
     }
   }
@@ -202,8 +236,12 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     if (selectionStart.state[StateType.EDITABLE]) {
       selectionStart =
           AutomationUtil.getEditableRoot(selectionStart) || selectionStart;
-      this.onEditableChanged_(new CustomAutomationEvent(
-          evt.type, selectionStart, evt.eventFrom, evt.intents));
+      this.onEditableChanged_(
+          new CustomAutomationEvent(evt.type, selectionStart, {
+            eventFrom: evt.eventFrom,
+            eventFromAction: evt.eventFromAction,
+            intents: evt.intents
+          }));
     }
 
     // Non-editable selections are handled in |Background|.
@@ -259,8 +297,11 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     // category flush here or the focus events will all queue up.
     Output.forceModeForNextSpeechUtterance(QueueMode.CATEGORY_FLUSH);
 
-    const event = new CustomAutomationEvent(
-        EventType.FOCUS, node, evt.eventFrom, evt.intents);
+    const event = new CustomAutomationEvent(EventType.FOCUS, node, {
+      eventFrom: evt.eventFrom,
+      eventFromAction: evt.eventFromAction,
+      intents: evt.intents
+    });
     this.onEventDefault(event);
 
     // Refresh the handler, if needed, now that ChromeVox focus is up to date.
@@ -462,11 +503,20 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
     const t = evt.target;
     const fromDesktop = t.root.role === RoleType.DESKTOP;
+    const onDesktop =
+        ChromeVoxState.instance.currentRange.start.node.root.role ===
+        RoleType.DESKTOP;
+    if (fromDesktop && !onDesktop && t.role !== RoleType.SLIDER) {
+      // Only respond to value changes from the desktop if it's coming from a
+      // slider e.g. the volume slider. Do this to avoid responding to frequent
+      // updates from UI e.g. download progress bars.
+      return;
+    }
     if (t.state.focused || fromDesktop ||
         AutomationUtil.isDescendantOf(
             ChromeVoxState.instance.currentRange.start.node, t)) {
       if (new Date() - this.lastValueChanged_ <=
-          DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS) {
+          DesktopAutomationHandler.MIN_VALUE_CHANGE_DELAY_MS) {
         return;
       }
 
@@ -478,8 +528,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
       if (fromDesktop &&
           (!this.lastValueTarget_ || this.lastValueTarget_ !== t)) {
         const range = cursors.Range.fromNode(t);
-        output.withRichSpeechAndBraille(
-            range, range, Output.EventType.NAVIGATE);
+        output.withRichSpeechAndBraille(range, range, OutputEventType.NAVIGATE);
         this.lastValueTarget_ = t;
       } else {
         output.format(
@@ -547,25 +596,36 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
         return;
       }
 
-      // Some cases (e.g. in overview mode), require overriding the assumption
-      // that focus is an ancestor of a selection target.
-      const override = AutomationPredicate.menuItem(evt.target) ||
+      let override = false;
+      const isDesktop =
           (evt.target.root === focus.root &&
-           focus.root.role === RoleType.DESKTOP) ||
-          evt.target.role === RoleType.IME_CANDIDATE;
+           focus.root.role === RoleType.DESKTOP);
+
+      // Menu items and IME candidates always announce on selection events,
+      // independent of focus.
+      if (AutomationPredicate.menuItem(evt.target) ||
+          evt.target.role === RoleType.IME_CANDIDATE) {
+        override = true;
+      }
+
+      // Selection events that happen in native UI (the desktop tree) should
+      // generally announce as long as focus isn't in some other tree; this is
+      // all first-party code that's firing the event for a good reason.
+      if (isDesktop) {
+        // TableView is an exception; it fires selection events on rows/cells
+        // and we want to ignore those because it also fires focus events.
+        if (evt.target.role === RoleType.CELL ||
+            evt.target.role === RoleType.ROW) {
+          return;
+        }
+
+        override = true;
+      }
+
       if (override || AutomationUtil.isDescendantOf(evt.target, focus)) {
         this.onEventDefault(evt);
       }
     });
-  }
-
-  /**
-   * Provides all feedback once a menu start event fires.
-   * @param {!ChromeVoxEvent} evt
-   */
-  onMenuStart(evt) {
-    ChromeVoxState.instance.markCurrentRange();
-    this.onEventDefault(evt);
   }
 
   /**
@@ -579,8 +639,9 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     // after you close them.
     chrome.automation.getFocus(function(focus) {
       if (focus) {
-        const event =
-            new CustomAutomationEvent(EventType.FOCUS, focus, 'page', []);
+        const event = new CustomAutomationEvent(
+            EventType.FOCUS, focus,
+            {eventFrom: 'page', eventFromAction: ActionType.FOCUS});
         this.onFocus(event);
       }
     }.bind(this));
@@ -727,7 +788,13 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
  * Time to wait until processing more value changed events.
  * @const {number}
  */
-DesktopAutomationHandler.VMIN_VALUE_CHANGE_DELAY_MS = 50;
+DesktopAutomationHandler.MIN_VALUE_CHANGE_DELAY_MS = 50;
+
+/**
+ * Time to wait until processing more alert events with the same text content.
+ * @const {number}
+ */
+DesktopAutomationHandler.MIN_ALERT_DELAY_MS = 50;
 
 /**
  * Time to wait before announcing attribute changes that are otherwise too
@@ -747,5 +814,4 @@ DesktopAutomationHandler.announceActions = false;
  * @type {DesktopAutomationHandler}
  */
 DesktopAutomationHandler.instance;
-
 });  // goog.scope

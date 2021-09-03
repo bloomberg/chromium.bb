@@ -51,14 +51,11 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
-#include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_name_and_version.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_tracing.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_database_callbacks_impl.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_database_callbacks.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction_impl.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -73,7 +70,8 @@ namespace {
 
 class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
  public:
-  WebIDBGetDBNamesCallbacksImpl(ScriptPromiseResolver* promise_resolver)
+  explicit WebIDBGetDBNamesCallbacksImpl(
+      ScriptPromiseResolver* promise_resolver)
       : promise_resolver_(promise_resolver) {
     probe::AsyncTaskScheduled(
         ExecutionContext::From(promise_resolver_->GetScriptState()),
@@ -137,13 +135,11 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
     // completed in the destructor.
   }
 
-  void SuccessStringList(const Vector<String>&) override { NOTREACHED(); }
-
   void SuccessCursor(
       mojo::PendingAssociatedRemote<mojom::blink::IDBCursor> cursor_info,
       std::unique_ptr<IDBKey> key,
       std::unique_ptr<IDBKey> primary_key,
-      base::Optional<std::unique_ptr<IDBValue>> optional_value) override {
+      absl::optional<std::unique_ptr<IDBValue>> optional_value) override {
     NOTREACHED();
   }
 
@@ -177,7 +173,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
   void SuccessCursorContinue(
       std::unique_ptr<IDBKey> key,
       std::unique_ptr<IDBKey> primary_key,
-      base::Optional<std::unique_ptr<IDBValue>> value) override {
+      absl::optional<std::unique_ptr<IDBValue>> value) override {
     NOTREACHED();
   }
 
@@ -203,7 +199,7 @@ class WebIDBGetDBNamesCallbacksImpl : public WebIDBCallbacks {
 
  private:
   probe::AsyncTaskId async_task_id_;
-  base::Optional<probe::AsyncTask> async_task_;
+  absl::optional<probe::AsyncTask> async_task_;
   Persistent<ScriptPromiseResolver> promise_resolver_;
 };
 
@@ -282,39 +278,35 @@ ScriptPromise IDBFactory::GetDatabaseInfo(ScriptState* script_state,
   return resolver->Promise();
 }
 
-IDBRequest* IDBFactory::GetDatabaseNames(ScriptState* script_state,
-                                         ExceptionState& exception_state) {
-  IDB_TRACE("IDBFactory::getDatabaseNamesRequestSetup");
-  IDBRequest::AsyncTraceState metrics("IDBFactory::getDatabaseNames");
-  IDBRequest* request = IDBRequest::Create(script_state, IDBRequest::Source(),
-                                           nullptr, std::move(metrics));
+void IDBFactory::GetDatabaseInfo(
+    ScriptState* script_state,
+    std::unique_ptr<mojom::blink::IDBCallbacks> callbacks) {
   // TODO(jsbell): Used only by inspector; remove unneeded checks/exceptions?
-  if (!IsContextValid(ExecutionContext::From(script_state)))
-    return nullptr;
+  if (!IsContextValid(ExecutionContext::From(script_state))) {
+    return;
+  }
+
   if (!ExecutionContext::From(script_state)
            ->GetSecurityOrigin()
            ->CanAccessDatabase()) {
-    exception_state.ThrowSecurityError(
-        "access to the Indexed Database API is denied in this context.");
-    return nullptr;
-  }
-
-  if (ExecutionContext::From(script_state)->GetSecurityOrigin()->IsLocal()) {
-    UseCounter::Count(ExecutionContext::From(script_state),
-                      WebFeature::kFileAccessedDatabase);
+    callbacks->Error(mojom::blink::IDBException::kAbortError,
+                     "Access to the IndexedDB API is denied in this context.");
+    return;
   }
 
   if (!AllowIndexedDB(script_state)) {
-    request->HandleResponse(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
-    return request;
+    callbacks->Error(mojom::blink::IDBException::kUnknownError,
+                     kPermissionDeniedErrorMessage);
+    return;
   }
 
-  auto callbacks = request->CreateWebCallbacks();
-  callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
+  mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> pending_callbacks;
+  mojo::MakeSelfOwnedAssociatedReceiver(
+      std::move(callbacks),
+      pending_callbacks.InitWithNewEndpointAndPassReceiver());
+
   GetFactory(ExecutionContext::From(script_state))
-      ->GetDatabaseNames(GetCallbacksProxy(std::move(callbacks)));
-  return request;
+      ->GetDatabaseInfo(std::move(pending_callbacks));
 }
 
 IDBOpenDBRequest* IDBFactory::open(ScriptState* script_state,
@@ -350,7 +342,6 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
                       WebFeature::kFileAccessedDatabase);
   }
 
-  auto* database_callbacks = MakeGarbageCollected<IDBDatabaseCallbacks>();
   int64_t transaction_id = IDBDatabase::NextTransactionId();
 
   auto& factory = GetFactory(ExecutionContext::From(script_state));
@@ -361,9 +352,12 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
       transaction_id);
   mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
       transaction_receiver = transaction_backend->CreateReceiver();
+  mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks>
+      callbacks_remote;
   auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
-      script_state, database_callbacks, std::move(transaction_backend),
-      transaction_id, version, std::move(metrics), GetObservedFeature());
+      script_state, callbacks_remote.InitWithNewEndpointAndPassReceiver(),
+      std::move(transaction_backend), transaction_id, version,
+      std::move(metrics), GetObservedFeature());
 
   if (!AllowIndexedDB(script_state)) {
     request->HandleResponse(MakeGarbageCollected<DOMException>(
@@ -374,13 +368,9 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
   auto callbacks = request->CreateWebCallbacks();
   callbacks->SetState(nullptr, WebIDBCallbacksImpl::kNoTransaction);
 
-  auto database_callbacks_impl =
-      std::make_unique<IndexedDBDatabaseCallbacksImpl>(
-          database_callbacks->CreateWebCallbacks());
-
   factory->Open(GetCallbacksProxy(std::move(callbacks)),
-                GetDatabaseCallbacksProxy(std::move(database_callbacks_impl)),
-                name, version, std::move(transaction_receiver), transaction_id);
+                std::move(callbacks_remote), name, version,
+                std::move(transaction_receiver), transaction_id);
   return request;
 }
 
@@ -432,7 +422,9 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
   auto& factory = GetFactory(ExecutionContext::From(script_state));
 
   auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
-      script_state, nullptr, /*IDBTransactionAssociatedPtr=*/nullptr, 0,
+      script_state,
+      /*callbacks_receiver=*/mojo::NullAssociatedReceiver(),
+      /*IDBTransactionAssociatedPtr=*/nullptr, 0,
       IDBDatabaseMetadata::kDefaultVersion, std::move(metrics),
       GetObservedFeature());
 
@@ -513,16 +505,6 @@ IDBFactory::GetCallbacksProxy(std::unique_ptr<WebIDBCallbacks> callbacks_impl) {
       std::move(callbacks_impl),
       pending_callbacks.InitWithNewEndpointAndPassReceiver(), task_runner_);
   return pending_callbacks;
-}
-
-mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks>
-IDBFactory::GetDatabaseCallbacksProxy(
-    std::unique_ptr<IndexedDBDatabaseCallbacksImpl> callbacks) {
-  mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks> remote;
-  mojo::MakeSelfOwnedAssociatedReceiver(
-      std::move(callbacks), remote.InitWithNewEndpointAndPassReceiver(),
-      task_runner_);
-  return remote;
 }
 
 mojo::PendingRemote<mojom::blink::ObservedFeature>

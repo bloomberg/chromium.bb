@@ -10,8 +10,10 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
+#include "chrome/browser/ui/views/read_later/read_later_button.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
@@ -28,10 +31,14 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/prefs/pref_service.h"
+#include "components/reading_list/features/reading_list_switches.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "ui/base/dragdrop/drag_drop_types.h"
+#include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
 
@@ -43,6 +50,8 @@ namespace {
 class BookmarkBarViewBaseTest : public ChromeViewsTestBase {
  public:
   BookmarkBarViewBaseTest() {
+    feature_list_.InitAndEnableFeature(reading_list::switches::kReadLater);
+
     TestingProfile::Builder profile_builder;
     profile_builder.AddTestingFactory(
         TemplateURLServiceFactory::GetInstance(),
@@ -124,6 +133,7 @@ class BookmarkBarViewBaseTest : public ChromeViewsTestBase {
     return bookmark_bar_view;
   }
 
+  base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<TestingProfile> profile_;
   TestBrowserWindow browser_window_;
   std::unique_ptr<Browser> browser_;
@@ -136,7 +146,7 @@ class BookmarkBarViewBaseTest : public ChromeViewsTestBase {
         static_cast<Profile*>(profile)->GetPrefs(),
         std::make_unique<SearchTermsData>(),
         nullptr /* KeywordWebDataService */,
-        nullptr /* TemplateURLServiceClient */, base::Closure());
+        nullptr /* TemplateURLServiceClient */, base::RepeatingClosure());
   }
 };
 
@@ -222,6 +232,25 @@ TEST_F(BookmarkBarViewTest, AppsShortcutVisibility) {
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
   EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
+}
+
+// Verify that in instant extended mode the visibility of the reading list
+// button properly follows the pref value.
+TEST_F(BookmarkBarViewTest, ReadingListVisibility) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      bookmarks::prefs::kShowReadingListInBookmarkBar, false);
+  EXPECT_FALSE(bookmark_bar_view()->read_later_button()->GetVisible());
+
+  // Try to make the Apps shortcut visible. Its visibility depends on whether
+  // the app launcher is enabled.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      bookmarks::prefs::kShowReadingListInBookmarkBar, true);
+  EXPECT_TRUE(bookmark_bar_view()->read_later_button()->GetVisible());
+
+  // Make sure we can also properly transition from true to false.
+  browser()->profile()->GetPrefs()->SetBoolean(
+      bookmarks::prefs::kShowReadingListInBookmarkBar, false);
+  EXPECT_FALSE(bookmark_bar_view()->read_later_button()->GetVisible());
 }
 
 // Various assertions around visibility of the overflow_button.
@@ -362,38 +391,33 @@ TEST_F(BookmarkBarViewTest, ChangeTitle) {
   AddNodesToBookmarkBarFromModelString("a b c d e f ");
   EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
-  model->SetTitle(bookmark_bar_node->children()[0].get(),
-                  base::ASCIIToUTF16("a1"));
+  model->SetTitle(bookmark_bar_node->children()[0].get(), u"a1");
   EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
 
   // Make enough room for 1 node.
   SizeUntilButtonsVisible(1);
   EXPECT_EQ("a1", GetStringForVisibleButtons());
 
-  model->SetTitle(bookmark_bar_node->children()[1].get(),
-                  base::ASCIIToUTF16("b1"));
+  model->SetTitle(bookmark_bar_node->children()[1].get(), u"b1");
   EXPECT_EQ("a1", GetStringForVisibleButtons());
 
-  model->SetTitle(bookmark_bar_node->children()[5].get(),
-                  base::ASCIIToUTF16("f1"));
+  model->SetTitle(bookmark_bar_node->children()[5].get(), u"f1");
   EXPECT_EQ("a1", GetStringForVisibleButtons());
 
-  model->SetTitle(bookmark_bar_node->children()[3].get(),
-                  base::ASCIIToUTF16("d1"));
+  model->SetTitle(bookmark_bar_node->children()[3].get(), u"d1");
 
   // Make the second button visible, changes the title of the first to something
   // really long and make sure the second button hides.
   SizeUntilButtonsVisible(2);
   EXPECT_EQ("a1 b1", GetStringForVisibleButtons());
   model->SetTitle(bookmark_bar_node->children()[0].get(),
-                  base::ASCIIToUTF16("a_really_long_title"));
+                  u"a_really_long_title");
   EXPECT_LE(1u, test_helper_->GetBookmarkButtonCount());
 
   // Change the title back and make sure the 2nd button is visible again. Don't
   // use GetStringForVisibleButtons() here as more buttons may have been
   // created.
-  model->SetTitle(bookmark_bar_node->children()[0].get(),
-                  base::ASCIIToUTF16("a1"));
+  model->SetTitle(bookmark_bar_node->children()[0].get(), u"a1");
   ASSERT_LE(2u, test_helper_->GetBookmarkButtonCount());
   EXPECT_TRUE(test_helper_->GetBookmarkButton(0)->GetVisible());
   EXPECT_TRUE(test_helper_->GetBookmarkButton(1)->GetVisible());
@@ -404,7 +428,59 @@ TEST_F(BookmarkBarViewTest, ChangeTitle) {
   EXPECT_EQ("a1 b1 c d1 e f1", GetStringForVisibleButtons());
 }
 
-#if !defined(OS_CHROMEOS)
+TEST_F(BookmarkBarViewTest, DropCallbackTest) {
+  EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile())->loaded());
+  AddNodesToBookmarkBarFromModelString("a b c d e f ");
+  EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
+
+  SizeUntilButtonsVisible(7);
+  EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
+
+  gfx::Point bar_loc;
+  views::View::ConvertPointToScreen(bookmark_bar_view(), &bar_loc);
+  ui::OSExchangeData drop_data;
+  drop_data.SetURL(GURL("http://www.chromium.org/"), std::u16string(u"z"));
+  ui::DropTargetEvent target_event(drop_data, gfx::PointF(bar_loc),
+                                   gfx::PointF(bar_loc),
+                                   ui::DragDropTypes::DRAG_COPY);
+  EXPECT_TRUE(bookmark_bar_view()->CanDrop(drop_data));
+  bookmark_bar_view()->OnDragUpdated(target_event);
+  auto cb = bookmark_bar_view()->GetDropCallback(target_event);
+  EXPECT_EQ("a b c d e f", GetStringForVisibleButtons());
+
+  ui::mojom::DragOperation output_drag_op;
+  std::move(cb).Run(target_event, output_drag_op);
+  EXPECT_EQ("z a b c d e f", GetStringForVisibleButtons());
+  EXPECT_EQ(output_drag_op, ui::mojom::DragOperation::kCopy);
+}
+
+TEST_F(BookmarkBarViewTest, DropCallback_InvalidatePtrTest) {
+  EXPECT_TRUE(BookmarkModelFactory::GetForBrowserContext(profile())->loaded());
+
+  SizeUntilButtonsVisible(7);
+  EXPECT_EQ(0u, test_helper_->GetBookmarkButtonCount());
+
+  gfx::Point bar_loc;
+  views::View::ConvertPointToScreen(bookmark_bar_view(), &bar_loc);
+  ui::OSExchangeData drop_data;
+  drop_data.SetURL(GURL("http://www.chromium.org/"), std::u16string(u"z"));
+  ui::DropTargetEvent target_event(drop_data, gfx::PointF(bar_loc),
+                                   gfx::PointF(bar_loc),
+                                   ui::DragDropTypes::DRAG_COPY);
+  EXPECT_TRUE(bookmark_bar_view()->CanDrop(drop_data));
+  bookmark_bar_view()->OnDragUpdated(target_event);
+  auto cb = bookmark_bar_view()->GetDropCallback(target_event);
+
+  AddNodesToBookmarkBarFromModelString("a b c d e f ");
+  EXPECT_EQ(6u, test_helper_->GetBookmarkButtonCount());
+
+  ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
+  std::move(cb).Run(target_event, output_drag_op);
+  EXPECT_EQ("a b c d e f", GetStringForVisibleButtons());
+  EXPECT_EQ(output_drag_op, ui::mojom::DragOperation::kNone);
+}
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 // Verifies that the apps shortcut is shown or hidden following the policy
 // value. This policy (and the apps shortcut) isn't present on ChromeOS.
 TEST_F(BookmarkBarViewTest, ManagedShowAppsShortcutInBookmarksBar) {
@@ -439,9 +515,9 @@ TEST_F(BookmarkBarViewInWidgetTest, UpdateTooltipText) {
   views::LabelButton* button = test_helper_->GetBookmarkButton(0);
   ASSERT_TRUE(button);
   gfx::Point p;
-  EXPECT_EQ(base::ASCIIToUTF16("a\na.com"), button->GetTooltipText(p));
-  button->SetText(base::ASCIIToUTF16("new title"));
-  EXPECT_EQ(base::ASCIIToUTF16("new title\na.com"), button->GetTooltipText(p));
+  EXPECT_EQ(u"a\na.com", button->GetTooltipText(p));
+  button->SetText(u"new title");
+  EXPECT_EQ(u"new title\na.com", button->GetTooltipText(p));
 }
 
 }  // namespace

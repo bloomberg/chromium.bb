@@ -7,6 +7,7 @@
 #include <memory>
 #include <set>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -62,7 +63,7 @@ class ExampleMenuModel : public ui::SimpleMenuModel,
 
 class ExampleMenuButton : public MenuButton {
  public:
-  explicit ExampleMenuButton(const base::string16& test);
+  explicit ExampleMenuButton(const std::u16string& test);
   ~ExampleMenuButton() override;
 
  private:
@@ -170,7 +171,7 @@ void ExampleMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
 // ExampleMenuButton -----------------------------------------------------------
 
-ExampleMenuButton::ExampleMenuButton(const base::string16& test)
+ExampleMenuButton::ExampleMenuButton(const std::u16string& test)
     : MenuButton(base::BindRepeating(&ExampleMenuButton::ButtonPressed,
                                      base::Unretained(this)),
                  test) {}

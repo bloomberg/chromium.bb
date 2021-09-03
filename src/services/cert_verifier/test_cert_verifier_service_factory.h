@@ -16,7 +16,6 @@
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/public/mojom/cert_verifier_service.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace cert_verifier {
 
@@ -38,13 +37,13 @@ class TestCertVerifierServiceFactoryImpl
     ~GetNewCertVerifierParams();
 
     mojo::PendingReceiver<mojom::CertVerifierService> receiver;
-    network::mojom::CertVerifierCreationParamsPtr creation_params;
+    mojom::CertVerifierCreationParamsPtr creation_params;
   };
 
   // mojom::CertVerifierServiceFactory implementation:
   void GetNewCertVerifier(
       mojo::PendingReceiver<mojom::CertVerifierService> receiver,
-      network::mojom::CertVerifierCreationParamsPtr creation_params) override;
+      mojom::CertVerifierCreationParamsPtr creation_params) override;
 
   // Pops the first request off the back of the list and forwards it to the
   // delegate CertVerifierServiceFactory.

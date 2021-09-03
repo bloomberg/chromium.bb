@@ -4,6 +4,199 @@ This file includes a list of high level updates for each milestone release.
 
 * * *
 
+Milestone 92
+------------
+  * Hides SkPathEffect::computeFastBounds() from public API; external subclasses of SkPathEffect
+    must implement onComputeFastBounds() but can return false to signal it's not computable.
+    https://review.skia.org/406140
+
+  * Add SkM44::RectToRect constructor (SkM44's equivalent to SkMatrix::RectToRect)
+    https://review.skia.org/402957
+
+  * Metal support has been removed for versions of iOS older than 10.0 and MacOS older than 10.14.
+    https://review.skia.org/401816
+
+  * Removed custom attributes from SkVertices and the corresponding `varying` feature from
+    SkRuntimeEffect.
+    https://review.skia.org/398222
+
+  * Dropped support for mixed samples. Mixed samples is no longer relevant for Ganesh. DMSAA and the
+    new Ganesh architecture both rely on full MSAA, and any platform where mixed samples is
+    supported will ultimately not use the old architecture.
+
+  * SkRuntimeEffect::Make has been removed. It is replaced by MakeForShader and MakeForColorFilter.
+    These functions do stricter error checking on the SkSL, to ensure it is valid for a particular
+    stage of the Skia pipeline.
+    https://review.skia.org/402156
+
+* * *
+
+Milestone 91
+------------
+  * The SkSL DSL API has been moved into public headers, although it is still under active
+    development and isn't quite ready for prime time yet.
+    https://review.skia.org/378496
+
+  * Skia's GPU backend no longer supports NVPR. Our more recent path renderers are more
+    performant and are not limited to nVidia hardware.
+
+  * SkRuntimeEffect now supports uniforms of type int, int2, int3, and int4. Per the OpenGL ES
+    Shading Language Version 1.00 specification, there are few guarantees about the representation
+    or range of integral types, and operations that assume integral representation (eg, bitwise),
+    are not supported.
+    https://review.skia.org/391856
+
+  * SkRuntimeEffect requires that 'shader' variables be declared as 'uniform'. The deprecated
+    syntax of 'in shader' is no longer supported.
+    https://review.skia.org/393081
+
+* * *
+
+Milestone 90
+------------
+  * Renamed use of sk_cf_obj in external Metal types to sk_cfp.
+    https://review.skia.org/372556
+
+  * GrDirectContext::ComputeImageSize() is removed. Use SkImage::textureSize() instead.
+    https://review.skia.org/368621
+    https://review.skia.org/369317
+    https://review.skia.org/371958
+
+  * Remove SkImageFilter::MakeMatrixFilter as it was unused and replaced with
+    SkImageFilters::MatrixTransform.
+    https://review.skia.org/366318
+
+  * Refactored particle system to use a single code string containing both Effect and Particle code.
+    Uniform APIs are now shared for all program entry points, and no longer prefixed with 'Effect'
+    or 'Particle'. For example, instead of `SkParticleEffect::effectUniformInfo` and
+    `SkParticleEffect::particleUniformInfo`, there is just `SkParticleEffect::uniformInfo`.
+
+  * Remove SkImageFilter::CropRect from the public API as it's no longer usable. All factories
+    work with 'SkRect', 'SkIRect', or nullable pointers to 'Sk[I]Rect'.
+    https://review.skia.org/361496
+
+  * Remove deprecated SkImageFilter factory functions and supporting types. All default-provided
+    SkImageFilters are now only constructed via 'include/effects/SkImageFilters.h'
+    https://review.skia.org/357285
+
+  * Added SkRuntimeEffect::makeImage() to capture the output of an SkRuntimeEffect in an SkImage.
+    https://review.skia.org/357284
+
+  * Updated SkRuntimeEffect::Make() to take an Options struct. It also now returns a Results struct
+    instead of a tuple.
+    https://review.skia.org/363785
+    https://review.skia.org/367060
+
+  * Changed SkRuntimeEffect::Varying to have lower-case member names, with no 'f' prefix.
+    https://review.skia.org/365656
+
+  * Changed SkRuntimeEffect::Uniform to have lower-case member names, with no 'f' prefix.
+    https://review.skia.org/365696
+
+  * Deprecate (and ignore) SkAndroidCodec::ExifOrientation
+    https://review.skia.org/344763
+
+  * Fix several minor issues in lighting image filters:
+    - The spotlight falloff exponent is no longer clamped to [1, 128]. SVG 1.1 requires the specular
+      lighting effect's exponent (shininess) to be clamped; not the spotlight's falloff. Any such
+      parameter clamping is the client's responisibility, which makes Skia's lighting effect easily
+      adaptable to SVG 1.1 (clamp exponent) or SVG 2 (no clamp).
+    - Fix spotlight incorrectly scaling light within the cone angle.
+    - Move saturation of RGBA to after multiplying lighting intensity with the lighting color, which
+      improves rendering when diffuse and specular constants are greater than 1.
+    https://review.skia.org/355496
+
+  * SkDeferredDisplayListRecorder::makePromiseTexture has moved to SkImage::MakePromiseTexture.
+    New code should use the new entry point – migration CLs will be coming soon.
+    https://review.skia.org/373716
+
+Milestone 89
+------------
+  * Removed SkYUVAIndex and SkYUVASizeInfo. These were no longer used in any
+    public APIs.
+    https://review.skia.org/352497
+
+  * Numerous changes to SkRuntimeEffect, aligning the capabilities and restrictions with
+    The OpenGL ES Shading Language 1.00 (aka, the shading language of OpenGL ES2 and WebGL 1.0).
+    All built-in functions from sections 8.1 through 8.6 implemented & tested on all backends.
+    Removed types and features that require newer versions of GLSL:
+      https://review.skia.org/346657  [Non-square matrices]
+      https://review.skia.org/347046  [uint, short, ushort, byte, ubyte]
+      https://review.skia.org/349056  [while and do-while loops]
+      https://review.skia.org/350030  [Bitwise operators and integer remainder]
+
+  * Add SkShadowUtils::GetLocalBounds. Generates bounding box for shadows
+    relative to path.
+    https://review.skia.org/351922
+
+  * Removed SkPerlinNoiseShader::MakeImprovedNoise.
+    https://review.skia.org/352057
+
+  * Removed deprecated version of MakeFromYUVATextures. Use the version
+    that takes GrYUVABackendTextures instead.
+    https://review.skia.org/345174
+
+  * SkAnimatedImage: Always respect exif orientation
+    Replace SkPixmapPriv::ShouldSwapWidthHeight with
+    SkEncodedOriginSwapsWidthHeight.
+    https://review.skia.org/344762
+
+  * Add kDirectionalLight_ShadowFlag support. If enabled, light position represents
+    a vector pointing towards the light, and light radius is blur radius at elevation 1.
+    https://review.skia.org/321792
+
+  * Support GL_LUMINANCE8_ALPHA8 textures. These can be used with GrBackendTexture APIs
+    on GrDirectContext and as planes of YUVA images via GrYUVABackendTextures.
+    https://review.skia.org/344761
+
+  * Removed previously deprecated SkImage::MakeFromYUVATexturesCopyToExternal.
+    https://review.skia.org/342077
+
+  * Add versions of GrDirectContext::createBackendTexture and updateBackendTexture
+    that take a GrSurfaceOrigin. The previous versions are deprecated.
+    https://review.skia.org/341005
+
+  * Remove support for deprecated kDontClipToLayer_SaveLayerFlag in SkCanvas::SaveLayerRec
+    https://review.skia.org/339988
+
+  * Expose more info in SkCodec::FrameInfo
+    https://review.skia.org/339857
+
+  * Added dither control to the SkImageFilters::Shader factory.
+    https://review.skia.org/338156
+
+  * Add MTLBinaryArchive parameter to GrMtlBackendContext. This allows
+    Skia to cache PipelineStates in the given archive for faster
+    shader compiles on future runs. The client must handle loading and
+    saving of the archive.
+    https://review.skia.org/333758
+
+  * Deprecated enum SkYUVAInfo::PlanarConfig has been removed.
+    https://review.skia.org/334161
+
+  * Deprecated SkImage factories have been removed from
+    SkDeferredDisplayListRecorder.
+
+  * The following YUV image factories have been removed:
+    SkImage::MakeFromYUVTexturesCopyWithExternalBackend
+    SkImage::MakeFromNV12TexturesCopyWithExternalBackend
+    Replacement pattern outlined below.
+        1) Make image using MakeFromYUVATextures
+        2) Make a SkSurface around result texture using SkSurface::MakeFromBackendTexture
+        3) surface->getCanvas()->drawImage(image, 0, 0);
+        4) surface->flushAndSubmit()
+        5) Optional: SkImage::MakeFromBackendTexture() to use as SkImage.
+    https://review.skia.org/334596
+
+  * Added a new interface for GrDirectContext creation in Metal, using
+    a new struct called GrMtlBackendContext. The previous interface taking
+    a MTLDevice and MTLCommandQueue is deprecated.
+    https://review.skia.org/334426
+
+  * SkCanvas::flush has been deprecated.
+
+* * *
+
 Milestone 88
 ------------
 

@@ -15,6 +15,7 @@
 #include "base/check_op.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/grit/content_resources.h"
@@ -24,6 +25,7 @@
 #include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/template_expressions.h"
 #include "ui/base/webui/jstemplate_builder.h"
+#include "ui/base/webui/resource_path.h"
 #include "ui/base/webui/web_ui_util.h"
 
 namespace content {
@@ -101,6 +103,15 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
 
     return URLDataSource::GetContentSecurityPolicy(directive);
   }
+  std::string GetCrossOriginOpenerPolicy() override {
+    return parent_->coop_value_;
+  }
+  std::string GetCrossOriginEmbedderPolicy() override {
+    return parent_->coep_value_;
+  }
+  std::string GetCrossOriginResourcePolicy() override {
+    return parent_->corp_value_;
+  }
   bool ShouldDenyXFrameOptions() override {
     return parent_->deny_xframe_options_;
   }
@@ -125,23 +136,29 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
 WebUIDataSourceImpl::~WebUIDataSourceImpl() = default;
 
 void WebUIDataSourceImpl::AddString(base::StringPiece name,
-                                    const base::string16& value) {
+                                    const std::u16string& value) {
   // TODO(dschuyler): Share only one copy of these strings.
   localized_strings_.SetKey(name, base::Value(value));
-  replacements_[name.as_string()] = base::UTF16ToUTF8(value);
+  replacements_[std::string(name)] = base::UTF16ToUTF8(value);
 }
 
 void WebUIDataSourceImpl::AddString(base::StringPiece name,
                                     const std::string& value) {
   localized_strings_.SetKey(name, base::Value(value));
-  replacements_[name.as_string()] = value;
+  replacements_[std::string(name)] = value;
 }
 
 void WebUIDataSourceImpl::AddLocalizedString(base::StringPiece name, int ids) {
   std::string utf8_str =
       base::UTF16ToUTF8(GetContentClient()->GetLocalizedString(ids));
   localized_strings_.SetKey(name, base::Value(utf8_str));
-  replacements_[name.as_string()] = utf8_str;
+  replacements_[std::string(name)] = utf8_str;
+}
+
+void WebUIDataSourceImpl::AddLocalizedStrings(
+    base::span<const webui::LocalizedString> strings) {
+  for (const auto& str : strings)
+    AddLocalizedString(str.name, str.id);
 }
 
 void WebUIDataSourceImpl::AddLocalizedStrings(
@@ -174,7 +191,13 @@ void WebUIDataSourceImpl::UseStringsJs() {
 
 void WebUIDataSourceImpl::AddResourcePath(base::StringPiece path,
                                           int resource_id) {
-  path_to_idr_map_[path.as_string()] = resource_id;
+  path_to_idr_map_[std::string(path)] = resource_id;
+}
+
+void WebUIDataSourceImpl::AddResourcePaths(
+    base::span<const webui::ResourcePath> paths) {
+  for (const auto& path : paths)
+    AddResourcePath(path.path, path.id);
 }
 
 void WebUIDataSourceImpl::SetDefaultResource(int resource_id) {
@@ -206,6 +229,21 @@ void WebUIDataSourceImpl::OverrideContentSecurityPolicy(
     network::mojom::CSPDirectiveName directive,
     const std::string& value) {
   csp_overrides_.insert_or_assign(directive, value);
+}
+
+void WebUIDataSourceImpl::OverrideCrossOriginOpenerPolicy(
+    const std::string& value) {
+  coop_value_ = value;
+}
+
+void WebUIDataSourceImpl::OverrideCrossOriginEmbedderPolicy(
+    const std::string& value) {
+  coep_value_ = value;
+}
+
+void WebUIDataSourceImpl::OverrideCrossOriginResourcePolicy(
+    const std::string& value) {
+  corp_value_ = value;
 }
 
 void WebUIDataSourceImpl::DisableTrustedTypesCSP() {
@@ -279,6 +317,9 @@ std::string WebUIDataSourceImpl::GetMimeType(const std::string& path) const {
 
   if (base::EndsWith(file_path, ".wasm", base::CompareCase::INSENSITIVE_ASCII))
     return "application/wasm";
+
+  if (base::EndsWith(file_path, ".woff2", base::CompareCase::INSENSITIVE_ASCII))
+    return "application/font-woff2";
 
   return "text/html";
 }

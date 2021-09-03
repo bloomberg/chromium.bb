@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "base/optional.h"
 #include "components/safe_browsing/core/proto/client_model.pb.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace safe_browsing {
@@ -44,10 +44,16 @@ std::unique_ptr<SkBitmap> BlockMeanAverage(const SkBitmap& image,
 // Returns the hash used to compare blurred images.
 std::string GetHashFromBlurredImage(VisualFeatures::BlurredImage blurred_image);
 
-// Returns whether the given |image| is a match for the |target|. Returns
-// nullopt in the case of no match, and the VisionMatchResult if it is a match.
-base::Optional<VisionMatchResult> IsVisualMatch(const SkBitmap& image,
-                                                const VisualTarget& target);
+// Returns whether the given |image| is a match for the |target|.
+// |blurred_image_hash| should be obtained by applying GetBlurredImage()
+// and then GetHashFromBlurredImage() to |image|. |histogram| should be obtained
+// by applying GetHistogramForImage() to |image|. Returns nullopt in the case of
+// no match, and the VisionMatchResult if it is a match.
+absl::optional<VisionMatchResult> IsVisualMatch(
+    const SkBitmap& image,
+    const std::string& blurred_image_hash,
+    const VisualFeatures::ColorHistogram& histogram,
+    const VisualTarget& target);
 
 }  // namespace visual_utils
 }  // namespace safe_browsing

@@ -13,23 +13,18 @@
 # limitations under the License.
 """Client of the Python example of customizing authentication mechanism."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 import argparse
 import contextlib
 import logging
 
 import grpc
-from examples import helloworld_pb2
-from examples import helloworld_pb2_grpc
-from examples.python.auth import _credentials
+import _credentials
+
+helloworld_pb2, helloworld_pb2_grpc = grpc.protos_and_services(
+    "helloworld.proto")
 
 _LOGGER = logging.getLogger(__name__)
 _LOGGER.setLevel(logging.INFO)
-
-_ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 _SERVER_ADDR_TEMPLATE = 'localhost:%d'
 _SIGNATURE_HEADER_KEY = 'x-signature'
@@ -59,8 +54,8 @@ class AuthGateway(grpc.AuthMetadataPlugin):
 @contextlib.contextmanager
 def create_client_channel(addr):
     # Call credential object will be invoked for every single RPC
-    call_credentials = grpc.metadata_call_credentials(
-        AuthGateway(), name='auth gateway')
+    call_credentials = grpc.metadata_call_credentials(AuthGateway(),
+                                                      name='auth gateway')
     # Channel credential will be valid for the entire channel
     channel_credential = grpc.ssl_channel_credentials(
         _credentials.ROOT_CERTIFICATE)
@@ -88,12 +83,11 @@ def send_rpc(channel):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--port',
-        nargs='?',
-        type=int,
-        default=50051,
-        help='the address of server')
+    parser.add_argument('--port',
+                        nargs='?',
+                        type=int,
+                        default=50051,
+                        help='the address of server')
     args = parser.parse_args()
 
     with create_client_channel(_SERVER_ADDR_TEMPLATE % args.port) as channel:

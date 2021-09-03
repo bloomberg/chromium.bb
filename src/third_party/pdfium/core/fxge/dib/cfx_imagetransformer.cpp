@@ -237,17 +237,15 @@ void CFX_ImageTransformer::ContinueOther(PauseIndicatorIface* pPause) {
     return;
 
   auto pTransformed = pdfium::MakeRetain<CFX_DIBitmap>();
-  FXDIB_Format format = m_Stretcher->source()->IsMask()
+  FXDIB_Format format = m_Stretcher->source()->IsMaskFormat()
                             ? FXDIB_Format::k8bppMask
                             : FXDIB_Format::kArgb;
   if (!pTransformed->Create(m_result.Width(), m_result.Height(), format))
     return;
 
-  const auto& pSrcMask = m_Storer.GetBitmap()->m_pAlphaMask;
-  const uint8_t* pSrcMaskBuf = pSrcMask ? pSrcMask->GetBuffer() : nullptr;
-
+  const uint8_t* pSrcMaskBuf = m_Storer.GetBitmap()->GetAlphaMaskBuffer();
   pTransformed->Clear(0);
-  auto& pDestMask = pTransformed->m_pAlphaMask;
+  RetainPtr<CFX_DIBitmap> pDestMask = pTransformed->GetAlphaMask();
   if (pDestMask)
     pDestMask->Clear(0);
 
@@ -262,7 +260,7 @@ void CFX_ImageTransformer::ContinueOther(PauseIndicatorIface* pPause) {
         pDestMask.Get(),
         result2stretch,
         pSrcMaskBuf,
-        m_Storer.GetBitmap()->m_pAlphaMask->GetPitch(),
+        m_Storer.GetBitmap()->GetAlphaMaskPitch(),
     };
     CalcMask(calc_data);
   }
@@ -270,7 +268,7 @@ void CFX_ImageTransformer::ContinueOther(PauseIndicatorIface* pPause) {
   CalcData calc_data = {pTransformed.Get(), result2stretch,
                         m_Storer.GetBitmap()->GetBuffer(),
                         m_Storer.GetBitmap()->GetPitch()};
-  if (m_Storer.GetBitmap()->IsMask()) {
+  if (m_Storer.GetBitmap()->IsMaskFormat()) {
     CalcAlpha(calc_data);
   } else {
     int Bpp = m_Storer.GetBitmap()->GetBPP() / 8;
@@ -324,7 +322,7 @@ void CFX_ImageTransformer::CalcColor(const CalcData& calc_data,
                                      int Bpp) {
   DCHECK(format == FXDIB_Format::k8bppMask || format == FXDIB_Format::kArgb);
   const int destBpp = calc_data.bitmap->GetBPP() / 8;
-  if (!m_Storer.GetBitmap()->HasAlpha()) {
+  if (!m_Storer.GetBitmap()->IsAlphaFormat()) {
     auto func = [&calc_data, Bpp](const BilinearData& data, uint8_t* dest) {
       uint8_t b = BilinearInterpolate(calc_data.buf, data, Bpp, 0);
       uint8_t g = BilinearInterpolate(calc_data.buf, data, Bpp, 1);

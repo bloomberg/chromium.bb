@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -26,7 +27,6 @@
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_main_frame_observer.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -42,10 +42,10 @@ namespace content {
 const WebUI::TypeID WebUI::kNoWebUI = nullptr;
 
 // static
-base::string16 WebUI::GetJavascriptCall(
+std::u16string WebUI::GetJavascriptCall(
     const std::string& function_name,
     const std::vector<const base::Value*>& arg_list) {
-  base::string16 result(base::ASCIIToUTF16(function_name));
+  std::u16string result(base::ASCIIToUTF16(function_name));
   result.push_back('(');
 
   std::string json;
@@ -62,13 +62,19 @@ base::string16 WebUI::GetJavascriptCall(
   return result;
 }
 
-WebUIImpl::WebUIImpl(WebContentsImpl* contents, RenderFrameHost* frame_host)
+WebUIImpl::WebUIImpl(WebContentsImpl* contents, RenderFrameHostImpl* frame_host)
     : bindings_(BINDINGS_POLICY_WEB_UI),
       requestable_schemes_({kChromeUIScheme, url::kFileScheme}),
       frame_host_(frame_host),
       web_contents_(contents),
       web_contents_observer_(new WebUIMainFrameObserver(this, contents)) {
   DCHECK(contents);
+
+  // Assert that we can only open webui for the active or speculative pages.
+  DCHECK(frame_host->lifecycle_state() ==
+             RenderFrameHostImpl::LifecycleStateImpl::kActive ||
+         frame_host->lifecycle_state() ==
+             RenderFrameHostImpl::LifecycleStateImpl::kSpeculative);
 }
 
 WebUIImpl::~WebUIImpl() {
@@ -121,16 +127,19 @@ void WebUIImpl::RenderFrameHostUnloading() {
   DisallowJavascriptOnAllHandlers();
 }
 
+void WebUIImpl::RenderFrameDeleted() {
+  DisallowJavascriptOnAllHandlers();
+}
+
 void WebUIImpl::SetupMojoConnection() {
   // TODO(nasko): WebUI mojo might be useful to be registered for
   // subframes as well, though at this time there is no such usage.
   if (frame_host_->GetParent())
     return;
 
-  static_cast<RenderFrameHostImpl*>(frame_host_)
-      ->GetFrameBindingsControl()
-      ->BindWebUI(remote_.BindNewPipeAndPassReceiver(),
-                  receiver_.BindNewPipeAndPassRemote());
+  frame_host_->GetFrameBindingsControl()->BindWebUI(
+      remote_.BindNewEndpointAndPassReceiver(),
+      receiver_.BindNewEndpointAndPassRemote());
 }
 
 void WebUIImpl::InvalidateMojoConnection() {
@@ -149,11 +158,11 @@ float WebUIImpl::GetDeviceScaleFactor() {
   return GetScaleFactorForView(web_contents_->GetRenderWidgetHostView());
 }
 
-const base::string16& WebUIImpl::GetOverriddenTitle() {
+const std::u16string& WebUIImpl::GetOverriddenTitle() {
   return overridden_title_;
 }
 
-void WebUIImpl::OverrideTitle(const base::string16& title) {
+void WebUIImpl::OverrideTitle(const std::u16string& title) {
   overridden_title_ = title;
 }
 
@@ -192,7 +201,7 @@ bool WebUIImpl::CanCallJavascript() {
 
 void WebUIImpl::CallJavascriptFunctionUnsafe(const std::string& function_name) {
   DCHECK(base::IsStringASCII(function_name));
-  base::string16 javascript = base::ASCIIToUTF16(function_name + "();");
+  std::u16string javascript = base::ASCIIToUTF16(function_name + "();");
   ExecuteJavascript(javascript);
 }
 
@@ -249,7 +258,7 @@ void WebUIImpl::CallJavascriptFunctionUnsafe(
 
 void WebUIImpl::RegisterMessageCallback(base::StringPiece message,
                                         const MessageCallback& callback) {
-  message_callbacks_.emplace(message.as_string(), callback);
+  message_callbacks_.emplace(std::string(message), callback);
 }
 
 void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
@@ -283,7 +292,7 @@ void WebUIImpl::AddMessageHandler(
   handlers_.push_back(std::move(handler));
 }
 
-void WebUIImpl::ExecuteJavascript(const base::string16& javascript) {
+void WebUIImpl::ExecuteJavascript(const std::u16string& javascript) {
   // Silently ignore the request. Would be nice to clean-up WebUI so we
   // could turn this into a CHECK(). http://crbug.com/516690.
   if (!CanCallJavascript())

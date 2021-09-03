@@ -10,8 +10,10 @@
 #include <vector>
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "components/safe_browsing/buildflags.h"
+#include "components/variations/variations_associated_data.h"
 
 #include "base/macros.h"
 #include "base/values.h"
@@ -30,11 +32,33 @@ const base::Feature kAdRedirectTriggerFeature{
 const base::Feature kAdSamplerTriggerFeature{"SafeBrowsingAdSamplerTrigger",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kBetterTelemetryAcrossReports{
+    "SafeBrowsingBetterTelemetryAcrossReports",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kCaptureInlineJavascriptForGoogleAds{
     "CaptureInlineJavascriptForGoogleAds", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kClientSideDetectionForAndroid{
     "ClientSideDetectionModelOnAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kClientSideDetectionModelIsFlatBuffer{
+    "ClientSideDetectionModelIsFlatBuffer", base::FEATURE_DISABLED_BY_DEFAULT};
+
+extern const base::Feature kClientSideDetectionModelVersion{
+    "ClientSideDetectionModel", base::FEATURE_ENABLED_BY_DEFAULT};
+
+extern const base::Feature kClientSideDetectionModelTag{
+    "ClientSideDetectionTag", base::FEATURE_DISABLED_BY_DEFAULT};
+
+extern const base::Feature kClientSideDetectionModelHighMemoryTag{
+    "ClientSideDetectionHighMemoryTag", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kClientSideDetectionReferrerChain{
+    "ClientSideDetectionReferrerChain", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kClientSideDetectionWithToken{
+    "SafeBrowsingCSDRequestWithToken", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDelayedWarnings{"SafeBrowsingDelayedWarnings",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
@@ -52,31 +76,10 @@ const base::Feature kSimplifiedUrlDisplay{"SimplifiedUrlDisplay",
 const base::Feature kDownloadRequestWithToken{
     "SafeBrowsingDownloadRequestWithToken", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kEnhancedProtection {
-  "SafeBrowsingEnhancedProtection",
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
-const base::Feature kEnhancedProtectionMessageInInterstitials{
-    "SafeBrowsingEnhancedProtectionMessageInInterstitials",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kLimitedListSizeForIOS{"SafeBrowsingLimitedListSizeForIOS",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kPasswordProtectionForSavedPasswords{
-    "SafeBrowsingPasswordProtectionForSavedPasswords",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kPasswordProtectionShowDomainsForSavedPasswords{
-    "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kPasswordProtectionForSignedInUsers{
+const base::Feature kPasswordProtectionForSignedInUsers {
   "SafeBrowsingPasswordProtectionForSignedInUsers",
 #if BUILDFLAG(FULL_SAFE_BROWSING)
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -85,46 +88,33 @@ const base::Feature kPasswordProtectionForSignedInUsers{
 #endif
 };
 
-const base::Feature kPromptAppForDeepScanning{
-    "SafeBrowsingPromptAppForDeepScanning", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kPasswordProtectionWithToken{
+    "SafeBrowsingPasswordProtectionRequestWithToken",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kPromptEsbForDeepScanning{
+    "SafeBrowsingPromptEsbForDeepScanning", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSafeBrowsingCTDownloadWarning{
+    "SafeBrowsingCTDownloadWarning", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSafeBrowsingEnterpriseCsd{
+    "SafeBrowsingEnterpriseCsd", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kSafeBrowsingDisableConsumerCsdForEnterprise{
+    "SafeBrowsingDisableConsumerCsdForEnterprise",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kRealTimeUrlLookupEnabled{
-  "SafeBrowsingRealTimeUrlLookupEnabled",
-#if defined(OS_IOS)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
-
-const base::Feature kRealTimeUrlLookupEnabledForAllAndroidDevices{
-    "SafeBrowsingRealTimeUrlLookupEnabledForAllAndroidDevices",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kRealTimeUrlLookupEnabledForEnterprise{
-    "SafeBrowsingRealTimeUrlLookupEnabledForEnterprise",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kRealTimeUrlLookupEnabledForEP{
-    "SafeBrowsingRealTimeUrlLookupEnabledForEP",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kRealTimeUrlLookupEnabledForEPWithToken{
-    "SafeBrowsingRealTimeUrlLookupEnabledForEPWithToken",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    "SafeBrowsingRealTimeUrlLookupEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRealTimeUrlLookupEnabledWithToken{
-  "SafeBrowsingRealTimeUrlLookupEnabledWithToken",
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
-const base::Feature kRealTimeUrlLookupNonMainframeEnabledForEP{
-    "SafeBrowsingRealTimeUrlLookupNonMainframeEnabledForEP",
+    "SafeBrowsingRealTimeUrlLookupEnabledWithToken",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kRealTimeUrlLookupReferrerChain{
+    "SafeBrowsingRealTimeUrlLookupReferrerChain",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSafeBrowsingSeparateNetworkContexts{
     "SafeBrowsingSeparateNetworkContexts", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -134,9 +124,6 @@ const base::Feature kSafeBrowsingRemoveCookies{
 
 constexpr base::FeatureParam<bool> kShouldFillOldPhishGuardProto{
     &kPasswordProtectionForSignedInUsers, "DeprecateOldProto", false};
-
-const base::Feature kSafeBrowsingSectionUIAndroid{
-    "SafeBrowsingSecuritySectionUIAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSuspiciousSiteTriggerQuotaFeature{
     "SafeBrowsingSuspiciousSiteTriggerQuota", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -150,6 +137,13 @@ const base::Feature kTriggerThrottlerDailyQuotaFeature{
 const base::Feature kUseNewDownloadWarnings{"UseNewDownloadWarnings",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kVisualFeaturesInPasswordProtectionAndroid{
+    "VisualFeaturesInPasswordProtectionAndroid",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kVisualFeaturesSizes{"VisualFeaturesSizes",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 namespace {
 // List of Safe Browsing features. Boolean value for each list member should be
 // set to true if the experiment state should be listed on
@@ -162,26 +156,20 @@ constexpr struct {
     {&kAdPopupTriggerFeature, true},
     {&kAdRedirectTriggerFeature, true},
     {&kAdSamplerTriggerFeature, false},
+    {&kBetterTelemetryAcrossReports, true},
     {&kCaptureInlineJavascriptForGoogleAds, true},
     {&kClientSideDetectionForAndroid, true},
+    {&kClientSideDetectionWithToken, true},
     {&kDelayedWarnings, true},
     {&kDownloadRequestWithToken, true},
-    {&kEnhancedProtection, true},
-    {&kEnhancedProtectionMessageInInterstitials, true},
     {&kLimitedListSizeForIOS, true},
-    {&kPasswordProtectionForSavedPasswords, true},
-    {&kPasswordProtectionShowDomainsForSavedPasswords, true},
     {&kPasswordProtectionForSignedInUsers, true},
-    {&kPromptAppForDeepScanning, true},
+    {&kPasswordProtectionWithToken, true},
+    {&kPromptEsbForDeepScanning, true},
     {&kRealTimeUrlLookupEnabled, true},
-    {&kRealTimeUrlLookupEnabledForAllAndroidDevices, true},
-    {&kRealTimeUrlLookupEnabledForEP, true},
-    {&kRealTimeUrlLookupEnabledForEnterprise, true},
-    {&kRealTimeUrlLookupEnabledForEPWithToken, true},
     {&kRealTimeUrlLookupEnabledWithToken, true},
-    {&kRealTimeUrlLookupNonMainframeEnabledForEP, true},
+    {&kRealTimeUrlLookupReferrerChain, true},
     {&kSafeBrowsingSeparateNetworkContexts, true},
-    {&kSafeBrowsingSectionUIAndroid, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},
     {&kTriggerThrottlerDailyQuotaFeature, false},
@@ -207,11 +195,45 @@ base::ListValue GetFeatureStatusList() {
     if (feature_status.show_state)
       AddFeatureAndAvailability(feature_status.feature, &param_list);
   }
+
+  // Manually add experimental features that we want param values for.
+  param_list.Append(base::Value(variations::GetVariationParamValueByFeature(
+      safe_browsing::kClientSideDetectionModelTag,
+      kClientSideDetectionTagParamName)));
+  param_list.Append(base::Value(kClientSideDetectionModelTag.name));
+  param_list.Append(base::Value(variations::GetVariationParamValueByFeature(
+      safe_browsing::kClientSideDetectionModelHighMemoryTag,
+      kClientSideDetectionTagParamName)));
+  param_list.Append(base::Value(kClientSideDetectionModelHighMemoryTag.name));
+
   return param_list;
 }
 
 bool GetShouldFillOldPhishGuardProto() {
   return kShouldFillOldPhishGuardProto.Get();
+}
+
+std::string GetClientSideDetectionTag() {
+  constexpr char kMemoryThresholdParamName[] = "memory_threshold_mb";
+  const int kDefaultMemoryThresholdMB = 4096;
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kClientSideDetectionModelTag)) {
+    return variations::GetVariationParamValueByFeature(
+        safe_browsing::kClientSideDetectionModelTag,
+        kClientSideDetectionTagParamName);
+  } else if (base::FeatureList::IsEnabled(
+                 safe_browsing::kClientSideDetectionModelHighMemoryTag)) {
+    int memory_threshold_mb = base::GetFieldTrialParamByFeatureAsInt(
+        safe_browsing::kClientSideDetectionModelHighMemoryTag,
+        kMemoryThresholdParamName, kDefaultMemoryThresholdMB);
+    if (base::SysInfo::AmountOfPhysicalMemoryMB() >= memory_threshold_mb) {
+      return variations::GetVariationParamValueByFeature(
+          safe_browsing::kClientSideDetectionModelHighMemoryTag,
+          kClientSideDetectionTagParamName);
+    }
+  }
+
+  return "default";
 }
 
 }  // namespace safe_browsing

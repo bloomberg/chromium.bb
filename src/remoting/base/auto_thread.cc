@@ -36,10 +36,10 @@ std::unique_ptr<base::win::ScopedCOMInitializer> CreateComInitializer(
     AutoThread::ComInitType type) {
   std::unique_ptr<base::win::ScopedCOMInitializer> initializer;
   if (type == AutoThread::COM_INIT_MTA) {
-    initializer.reset(new base::win::ScopedCOMInitializer(
-        base::win::ScopedCOMInitializer::kMTA));
+    initializer = std::make_unique<base::win::ScopedCOMInitializer>(
+        base::win::ScopedCOMInitializer::kMTA);
   } else if (type == AutoThread::COM_INIT_STA) {
-    initializer.reset(new base::win::ScopedCOMInitializer());
+    initializer = std::make_unique<base::win::ScopedCOMInitializer>();
   }
   return initializer;
 }
@@ -217,8 +217,8 @@ void AutoThread::ThreadMain() {
   // Allow threads running a MessageLoopForIO to use FileDescriptorWatcher.
   std::unique_ptr<base::FileDescriptorWatcher> file_descriptor_watcher;
   if (single_thread_task_executor.type() == base::MessagePumpType::IO) {
-    file_descriptor_watcher.reset(new base::FileDescriptorWatcher(
-        single_thread_task_executor.task_runner()));
+    file_descriptor_watcher = std::make_unique<base::FileDescriptorWatcher>(
+        single_thread_task_executor.task_runner());
   }
 #elif defined(OS_WIN)
   // Initialize COM on the thread, if requested.

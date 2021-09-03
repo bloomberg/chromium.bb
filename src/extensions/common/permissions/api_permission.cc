@@ -11,6 +11,7 @@ namespace {
 
 using extensions::APIPermission;
 using extensions::APIPermissionInfo;
+using extensions::mojom::APIPermissionID;
 
 class SimpleAPIPermission : public APIPermission {
  public:
@@ -46,9 +47,7 @@ class SimpleAPIPermission : public APIPermission {
     return (value == NULL);
   }
 
-  std::unique_ptr<base::Value> ToValue() const override {
-    return std::unique_ptr<base::Value>();
-  }
+  std::unique_ptr<base::Value> ToValue() const override { return nullptr; }
 
   std::unique_ptr<APIPermission> Clone() const override {
     return std::make_unique<SimpleAPIPermission>(info());
@@ -91,7 +90,7 @@ APIPermission::APIPermission(const APIPermissionInfo* info)
 
 APIPermission::~APIPermission() { }
 
-APIPermission::ID APIPermission::id() const {
+mojom::APIPermissionID APIPermission::id() const {
   return info()->id();
 }
 

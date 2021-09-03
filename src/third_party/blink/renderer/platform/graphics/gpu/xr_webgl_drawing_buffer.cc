@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/gpu/xr_webgl_drawing_buffer.h"
 
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -610,11 +611,8 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage() {
 
   // This holds a ref on the XRWebGLDrawingBuffer that will keep it alive
   // until the mailbox is released (and while the callback is running).
-  auto func =
+  viz::ReleaseCallback release_callback =
       base::BindOnce(&XRWebGLDrawingBuffer::NotifyMailboxReleased, buffer);
-
-  std::unique_ptr<viz::SingleReleaseCallback> release_callback =
-      viz::SingleReleaseCallback::Create(std::move(func));
   const SkImageInfo sk_image_info =
       SkImageInfo::MakeN32Premul(size_.Width(), size_.Height());
 

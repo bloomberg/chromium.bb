@@ -235,8 +235,8 @@ class FetcherTestURLRequestContextGetter : public URLRequestContextGetter {
       return nullptr;
 
     if (!context_) {
-      context_.reset(new FetcherTestURLRequestContext(
-          hanging_domain_, std::move(proxy_resolution_service_)));
+      context_ = std::make_unique<FetcherTestURLRequestContext>(
+          hanging_domain_, std::move(proxy_resolution_service_));
     }
 
     return context_.get();
@@ -362,10 +362,11 @@ class URLFetcherTest : public TestWithTaskEnvironment {
   scoped_refptr<FetcherTestURLRequestContextGetter>
   CreateCrossThreadContextGetter() {
     if (!network_thread_) {
-      network_thread_.reset(new base::Thread("network thread"));
+      network_thread_ = std::make_unique<base::Thread>("network thread");
       base::Thread::Options network_thread_options;
       network_thread_options.message_pump_type = base::MessagePumpType::IO;
-      bool result = network_thread_->StartWithOptions(network_thread_options);
+      bool result =
+          network_thread_->StartWithOptions(std::move(network_thread_options));
       CHECK(result);
     }
 
@@ -465,7 +466,7 @@ class URLFetcherTest : public TestWithTaskEnvironment {
   // Initializes |test_server_| without starting it.  Allows subclasses to use
   // their own server configuration.
   virtual void SetUpServer() {
-    test_server_.reset(new EmbeddedTestServer);
+    test_server_ = std::make_unique<EmbeddedTestServer>();
     test_server_->AddDefaultHandlers(base::FilePath(kDocRoot));
   }
 
@@ -488,8 +489,8 @@ class URLFetcherBadHTTPSTest : public URLFetcherTest {
 
   // URLFetcherTest:
   void SetUpServer() override {
-    test_server_.reset(
-        new EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    test_server_ = std::make_unique<EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     test_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
     test_server_->ServeFilesFromSourceDirectory("net/data/ssl");
   }
@@ -1431,7 +1432,8 @@ class ReuseFetcherDelegate : public WaitingURLFetcherDelegate {
       EXPECT_EQ("request1", data);
 
       fetcher()->SetRequestContext(second_request_context_getter_.get());
-      fetcher()->SetExtraRequestHeaders("test: request2");
+      fetcher()->ClearExtraRequestHeaders();
+      fetcher()->AddExtraRequestHeader("test", "request2");
       fetcher()->Start();
       return;
     }
@@ -1454,7 +1456,8 @@ TEST_F(URLFetcherTest, ReuseFetcherForSameURL) {
   ReuseFetcherDelegate delegate(context_getter);
   delegate.CreateFetcher(test_server_->GetURL("/echoheader?test"),
                          URLFetcher::GET, context_getter);
-  delegate.fetcher()->SetExtraRequestHeaders("test: request1");
+  delegate.fetcher()->ClearExtraRequestHeaders();
+  delegate.fetcher()->AddExtraRequestHeader("test", "request1");
   delegate.StartFetcherAndWait();
 
   EXPECT_EQ(OK, delegate.fetcher()->GetError());

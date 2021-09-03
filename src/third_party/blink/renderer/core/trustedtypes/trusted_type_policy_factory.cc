@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -24,6 +25,14 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
 namespace blink {
+
+TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
+    const String& policy_name,
+    ExceptionState& exception_state) {
+  return createPolicy(policy_name,
+                      MakeGarbageCollected<TrustedTypePolicyOptions>(),
+                      exception_state);
+}
 
 TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
     const String& policy_name,
@@ -46,27 +55,39 @@ TrustedTypePolicy* TrustedTypePolicyFactory::createPolicy(
   }
   UseCounter::Count(GetExecutionContext(),
                     WebFeature::kTrustedTypesCreatePolicy);
+
   if (RuntimeEnabledFeatures::TrustedDOMTypesEnabled(GetExecutionContext()) &&
-      GetExecutionContext()->GetContentSecurityPolicy() &&
-      !GetExecutionContext()
-           ->GetContentSecurityPolicy()
-           ->AllowTrustedTypePolicy(policy_name,
-                                    policy_map_.Contains(policy_name))) {
-    // For a better error message, we'd like to disambiguate between
-    // "disallowed" and "disallowed because of a duplicate name". Instead of
-    // piping the reason through all the layers, we'll just check whether it
-    // had also been disallowed as a non-duplicate name.
-    bool disallowed_because_of_duplicate_name =
-        policy_map_.Contains(policy_name) &&
-        GetExecutionContext()
-            ->GetContentSecurityPolicy()
-            ->AllowTrustedTypePolicy(policy_name, false);
-    const String message =
-        disallowed_because_of_duplicate_name
-            ? "Policy with name \"" + policy_name + "\" already exists."
-            : "Policy \"" + policy_name + "\" disallowed.";
-    exception_state.ThrowTypeError(message);
-    return nullptr;
+      GetExecutionContext()->GetContentSecurityPolicy()) {
+    ContentSecurityPolicy::AllowTrustedTypePolicyDetails violation_details =
+        ContentSecurityPolicy::AllowTrustedTypePolicyDetails::kAllowed;
+    bool disallowed = !GetExecutionContext()
+                           ->GetContentSecurityPolicy()
+                           ->AllowTrustedTypePolicy(
+                               policy_name, policy_map_.Contains(policy_name),
+                               violation_details);
+    if (violation_details != ContentSecurityPolicy::ContentSecurityPolicy::
+                                 AllowTrustedTypePolicyDetails::kAllowed) {
+      // We may report a violation here even when disallowed is false
+      // in case policy is a report-only one.
+      probe::OnContentSecurityPolicyViolation(
+          GetExecutionContext(),
+          ContentSecurityPolicy::ContentSecurityPolicyViolationType::
+              kTrustedTypesPolicyViolation);
+    }
+    if (disallowed) {
+      // For a better error message, we'd like to disambiguate between
+      // "disallowed" and "disallowed because of a duplicate name".
+      bool disallowed_because_of_duplicate_name =
+          violation_details ==
+          ContentSecurityPolicy::AllowTrustedTypePolicyDetails::
+              kDisallowedDuplicateName;
+      const String message =
+          disallowed_because_of_duplicate_name
+              ? "Policy with name \"" + policy_name + "\" already exists."
+              : "Policy \"" + policy_name + "\" disallowed.";
+      exception_state.ThrowTypeError(message);
+      return nullptr;
+    }
   }
   UseCounter::Count(GetExecutionContext(),
                     WebFeature::kTrustedTypesPolicyCreated);

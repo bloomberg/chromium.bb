@@ -26,6 +26,7 @@
 #include "src/core/SkOpts.h"
 #include "src/core/SkPaintDefaults.h"
 #include "src/core/SkPaintPriv.h"
+#include "src/core/SkPathEffectPriv.h"
 #include "src/core/SkReadBuffer.h"
 #include "src/core/SkSafeRange.h"
 #include "src/core/SkStringUtils.h"
@@ -94,10 +95,6 @@ DEFINE_REF_FOO(Shader)
 #undef DEFINE_REF_FOO
 
 void SkPaint::reset() { *this = SkPaint(); }
-
-void SkPaint::setFilterQuality(SkFilterQuality quality) {
-    fBitfields.fFilterQuality = quality;
-}
 
 void SkPaint::setStyle(Style style) {
     if ((unsigned)style < kStyleCount) {
@@ -235,7 +232,9 @@ static uint32_t pack_v68(const SkPaint& paint, unsigned flatFlags) {
     packed |= shift_bits(paint.getStrokeCap(),     16, 2);
     packed |= shift_bits(paint.getStrokeJoin(),    18, 2);
     packed |= shift_bits(paint.getStyle(),         20, 2);
+#ifdef SK_SUPPORT_LEGACY_SETFILTERQUALITY
     packed |= shift_bits(paint.getFilterQuality(), 22, 2);
+#endif
     packed |= shift_bits(flatFlags,                24, 8);
     return packed;
 }
@@ -252,7 +251,9 @@ static uint32_t unpack_v68(SkPaint* paint, uint32_t packed, SkSafeRange& safe) {
     packed >>= 2;
     paint->setStyle(safe.checkLE(packed & 0x3, SkPaint::kStrokeAndFill_Style));
     packed >>= 2;
+#ifdef SK_SUPPORT_LEGACY_SETFILTERQUALITY
     paint->setFilterQuality(safe.checkLE(packed & 0x3, kLast_SkFilterQuality));
+#endif
     packed >>= 2;
     return packed;
 }
@@ -305,7 +306,7 @@ SkReadPaintResult SkPaintPriv::Unflatten(SkPaint* paint, SkReadBuffer& buffer, S
         paint->setShader(buffer.readShader());
         paint->setMaskFilter(buffer.readMaskFilter());
         paint->setColorFilter(buffer.readColorFilter());
-        (void)buffer.readDrawLooper();
+        (void)buffer.read32();  // was drawLooper (zero)
         paint->setImageFilter(buffer.readImageFilter());
     } else {
         paint->setPathEffect(nullptr);
@@ -370,6 +371,11 @@ bool SkPaint::canComputeFastBounds() const {
     if (this->getImageFilter() && !this->getImageFilter()->canComputeFastBounds()) {
         return false;
     }
+    // Pass nullptr for the bounds to determine if they can be computed
+    if (this->getPathEffect() &&
+        !SkPathEffectPriv::ComputeFastBounds(this->getPathEffect(), nullptr)) {
+        return false;
+    }
     return true;
 }
 
@@ -382,7 +388,8 @@ const SkRect& SkPaint::doComputeFastBounds(const SkRect& origSrc,
 
     SkRect tmpSrc;
     if (this->getPathEffect()) {
-        this->getPathEffect()->computeFastBounds(&tmpSrc, origSrc);
+        tmpSrc = origSrc;
+        SkAssertResult(SkPathEffectPriv::ComputeFastBounds(this->getPathEffect(), &tmpSrc));
         src = &tmpSrc;
     }
 

@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/google/google_logo_service_factory.h"
+#include "ios/chrome/browser/history/domain_diversity_reporter_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/history/web_history_service_factory.h"
@@ -39,6 +40,7 @@
 #import "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/policy_url_blocking/policy_url_blocking_service.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
+#import "ios/chrome/browser/safe_browsing/chrome_password_protection_service_factory.h"
 #import "ios/chrome/browser/safe_browsing/real_time_url_lookup_service_factory.h"
 #import "ios/chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
 #include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
@@ -112,9 +114,11 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   BreadcrumbManagerKeyedServiceFactory::GetInstance();
   BrowserDownloadServiceFactory::GetInstance();
   BrowsingDataRemoverFactory::GetInstance();
+  ChromePasswordProtectionServiceFactory::GetInstance();
   ConsentAuditorFactory::GetInstance();
   DeviceSharingManagerFactory::GetInstance();
   DiscoverFeedServiceFactory::GetInstance();
+  DomainDiversityReporterFactory::GetInstance();
   GoogleLogoServiceFactory::GetInstance();
   IdentityManagerFactory::GetInstance();
   IOSChromeContentSuggestionsServiceFactory::GetInstance();

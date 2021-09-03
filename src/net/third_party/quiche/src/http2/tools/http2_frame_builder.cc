@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/tools/http2_frame_builder.h"
+#include "http2/tools/http2_frame_builder.h"
 
 #ifdef WIN32
 #include <winsock2.h>  // for htonl() functions
@@ -11,8 +11,8 @@
 #include <netinet/in.h>  // for htonl, htons
 #endif
 
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
+#include "absl/strings/str_cat.h"
+#include "common/platform/api/quiche_test.h"
 
 namespace http2 {
 namespace test {
@@ -31,7 +31,7 @@ Http2FrameBuilder::Http2FrameBuilder(const Http2FrameHeader& v) {
 }
 
 void Http2FrameBuilder::Append(absl::string_view s) {
-  Http2StrAppend(&buffer_, s);
+  absl::StrAppend(&buffer_, s);
 }
 
 void Http2FrameBuilder::AppendBytes(const void* data, uint32_t num_bytes) {
@@ -139,6 +139,10 @@ void Http2FrameBuilder::Append(const Http2WindowUpdateFields& v) {
 
 void Http2FrameBuilder::Append(const Http2AltSvcFields& v) {
   AppendUInt16(v.origin_length);
+}
+
+void Http2FrameBuilder::Append(const Http2PriorityUpdateFields& v) {
+  AppendUInt31(v.prioritized_stream_id);
 }
 
 // Methods for changing existing buffer contents.

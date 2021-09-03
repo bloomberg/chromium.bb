@@ -151,6 +151,7 @@ const DecodeParam kAV1InvalidFileTests[] = {
   { 1, "invalid-oss-fuzz-10779.ivf", NULL },
   { 1, "invalid-oss-fuzz-11477.ivf", NULL },
   { 1, "invalid-oss-fuzz-11479.ivf", "invalid-oss-fuzz-11479.ivf.res.2" },
+  { 1, "invalid-oss-fuzz-33030.ivf", NULL },
 #endif
 };
 

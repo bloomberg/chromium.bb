@@ -38,6 +38,8 @@ export function scanToSelectTest() {
     scanToSelect = null;
   });
 
+  // Verifies the 'Scan To' dropdown is initialized enabled with the 'My files'
+  // and 'Select folder' option.
   test('initializeScanToSelect', () => {
     const select = scanToSelect.$$('select');
     assertTrue(!!select);
@@ -62,6 +64,7 @@ export function scanToSelectTest() {
         /** @type {!HTMLSelectElement} */ (scanToSelect.$$('select'));
     return changeSelect(select, /* value */ null, /* selectedIndex */ 1)
         .then(() => {
+          assertEquals(myDownloads, scanToSelect.selectedFolder);
           assertEquals(myDownloadsPath, scanToSelect.selectedFilePath);
           assertEquals(
               myDownloads,
@@ -73,6 +76,7 @@ export function scanToSelectTest() {
           return changeSelect(select, /* value */ null, /* selectedIndex */ 1);
         })
         .then(() => {
+          assertEquals(googleDrive, scanToSelect.selectedFolder);
           assertEquals(googleDrivePath, scanToSelect.selectedFilePath);
           assertEquals(
               googleDrive,
@@ -94,6 +98,7 @@ export function scanToSelectTest() {
         /** @type {!HTMLSelectElement} */ (scanToSelect.$$('select'));
     return changeSelect(select, /* value */ null, /* selectedIndex */ 1)
         .then(() => {
+          assertEquals(myDownloads, scanToSelect.selectedFolder);
           assertEquals(myDownloadsPath, scanToSelect.selectedFilePath);
           assertEquals(
               myDownloads,
@@ -105,6 +110,7 @@ export function scanToSelectTest() {
           return changeSelect(select, /* value */ null, /* selectedIndex */ 1);
         })
         .then(() => {
+          assertEquals(myDownloads, scanToSelect.selectedFolder);
           assertEquals(myDownloadsPath, scanToSelect.selectedFilePath);
           assertEquals(
               myDownloads,

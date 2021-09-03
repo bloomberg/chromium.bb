@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromecast/base/bitstream_audio_codecs.h"
 #include "chromecast/base/cast_features.h"
@@ -18,7 +17,8 @@
 #include "chromecast/public/media/media_capabilities_shlib.h"
 #include "chromecast/renderer/cast_url_loader_throttle_provider.h"
 #include "chromecast/renderer/cast_websocket_handshake_throttle_provider.h"
-#include "chromecast/renderer/identification_settings_manager.h"
+#include "chromecast/renderer/feature_manager_on_associated_interface.h"
+#include "chromecast/renderer/identification_settings_manager_renderer.h"
 #include "chromecast/renderer/js_channel_bindings.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
@@ -37,6 +37,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
@@ -74,15 +75,18 @@ bool IsSupportedBitstreamAudioCodecHelper(::media::AudioCodec codec, int mask) {
 }  // namespace
 
 #if defined(OS_ANDROID)
-// Audio renderer algorithm maximum capacity.
+// Audio renderer algorithm maximum capacity. 5s buffer is already large enough,
+// we don't need a larger capacity. Otherwise audio renderer will double the
+// buffer size when underrun happens, which will cause the playback paused to
+// wait long time for enough buffers.
 constexpr base::TimeDelta kAudioRendererMaxCapacity =
-    base::TimeDelta::FromSeconds(10);
+    base::TimeDelta::FromSeconds(5);
 // Audio renderer algorithm starting capacity.  Configure large enough to
 // prevent underrun.
 constexpr base::TimeDelta kAudioRendererStartingCapacity =
-    base::TimeDelta::FromMilliseconds(5000);
+    base::TimeDelta::FromSeconds(5);
 constexpr base::TimeDelta kAudioRendererStartingCapacityEncrypted =
-    base::TimeDelta::FromMilliseconds(5500);
+    base::TimeDelta::FromSeconds(5);
 #endif  // defined(OS_ANDROID)
 
 CastContentRendererClient::CastContentRendererClient()
@@ -156,12 +160,6 @@ void CastContentRendererClient::RenderThreadStarted() {
       std::make_unique<extensions::ExtensionsGuestViewContainerDispatcher>();
   thread->AddObserver(guest_view_container_dispatcher_.get());
 #endif
-
-  for (auto& origin_or_hostname_pattern :
-       network::SecureOriginAllowlist::GetInstance().GetCurrentAllowlist()) {
-    blink::WebSecurityPolicy::AddOriginToTrustworthySafelist(
-        blink::WebString::FromUTF8(origin_or_hostname_pattern));
-  }
 }
 
 void CastContentRendererClient::RenderViewCreated(
@@ -179,6 +177,7 @@ void CastContentRendererClient::RenderFrameCreated(
   DCHECK(render_frame);
 
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
+  new FeatureManagerOnAssociatedInterface(render_frame);
   new media_control::MediaPlaybackOptions(render_frame);
 
   // Add script injection support to the RenderFrame, used by Cast platform
@@ -214,7 +213,7 @@ void CastContentRendererClient::RenderFrameCreated(
   // CastContentRendererClient should be alive.
   settings_managers_.emplace(
       render_frame->GetRoutingID(),
-      std::make_unique<IdentificationSettingsManager>(
+      std::make_unique<IdentificationSettingsManagerRenderer>(
           render_frame,
           base::BindOnce(&CastContentRendererClient::OnRenderFrameRemoved,
                          base::Unretained(this),
@@ -384,20 +383,20 @@ void CastContentRendererClient::OnSupportedBitstreamAudioCodecsChanged(
   supported_bitstream_audio_codecs_info_ = info;
 }
 
-std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
 CastContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return std::make_unique<CastWebSocketHandshakeThrottleProvider>(
       activity_url_filter_manager_.get());
 }
 
-std::unique_ptr<content::URLLoaderThrottleProvider>
+std::unique_ptr<blink::URLLoaderThrottleProvider>
 CastContentRendererClient::CreateURLLoaderThrottleProvider(
-    content::URLLoaderThrottleProviderType type) {
+    blink::URLLoaderThrottleProviderType type) {
   return std::make_unique<CastURLLoaderThrottleProvider>(
       type, activity_url_filter_manager(), this);
 }
 
-base::Optional<::media::AudioRendererAlgorithmParameters>
+absl::optional<::media::AudioRendererAlgorithmParameters>
 CastContentRendererClient::GetAudioRendererAlgorithmParameters(
     ::media::AudioParameters audio_parameters) {
 #if defined(OS_ANDROID)
@@ -406,9 +405,9 @@ CastContentRendererClient::GetAudioRendererAlgorithmParameters(
   parameters.starting_capacity = kAudioRendererStartingCapacity;
   parameters.starting_capacity_for_encrypted =
       kAudioRendererStartingCapacityEncrypted;
-  return base::Optional<::media::AudioRendererAlgorithmParameters>(parameters);
+  return absl::optional<::media::AudioRendererAlgorithmParameters>(parameters);
 #else
-  return base::nullopt;
+  return absl::nullopt;
 #endif
 }
 

@@ -35,7 +35,8 @@ SELECT RUN_METRIC('chrome/chrome_processes.sql');
 -- citation needed) of what we want.
 --
 -- See b/151077536 for historical context.
-CREATE VIEW IF NOT EXISTS sufficient_chrome_processes AS
+DROP VIEW IF EXISTS sufficient_chrome_processes;
+CREATE VIEW sufficient_chrome_processes AS
   SELECT
     CASE WHEN (
       SELECT COUNT(*) FROM chrome_process) = 0
@@ -65,7 +66,8 @@ CREATE VIEW IF NOT EXISTS sufficient_chrome_processes AS
 --
 -- Note: Must be a TABLE because it uses a window function which can behave
 --       strangely in views.
-CREATE TABLE IF NOT EXISTS vsync_intervals AS
+DROP TABLE IF EXISTS vsync_intervals;
+CREATE TABLE vsync_intervals AS
   SELECT
     slice_id,
     ts,
@@ -79,7 +81,8 @@ CREATE TABLE IF NOT EXISTS vsync_intervals AS
 -- Get all the GestureScrollBegin and GestureScrollEnd events. We take their
 -- IDs to group them together into scrolls later and the timestamp and duration
 -- to compute the duration of the scroll.
-CREATE VIEW IF NOT EXISTS scroll_begin_and_end AS
+DROP VIEW IF EXISTS scroll_begin_and_end;
+CREATE VIEW scroll_begin_and_end AS
   SELECT
     slice.name,
     slice.id,
@@ -104,7 +107,8 @@ CREATE VIEW IF NOT EXISTS scroll_begin_and_end AS
 -- whole scroll or 90 FPS but that isn't always the case). If the trace doesn't
 -- contain the VSync TraceEvent we just fall back on assuming its 60 FPS (this
 -- is the 1.6e+7 in the COALESCE which corresponds to 16 ms or 60 FPS).
-CREATE VIEW IF NOT EXISTS joined_scroll_begin_and_end AS
+DROP VIEW IF EXISTS joined_scroll_begin_and_end;
+CREATE VIEW joined_scroll_begin_and_end AS
   SELECT
     begin.id AS begin_id,
     begin.ts AS begin_ts,
@@ -156,7 +160,8 @@ CREATE VIEW IF NOT EXISTS joined_scroll_begin_and_end AS
 --
 -- Note: Must be a TABLE because it uses a window function which can behave
 --       strangely in views.
-CREATE TABLE IF NOT EXISTS gesture_scroll_update AS
+DROP TABLE IF EXISTS gesture_scroll_update;
+CREATE TABLE gesture_scroll_update AS
   SELECT
     ROW_NUMBER() OVER (
       ORDER BY gesture_scroll_id ASC, ts ASC) AS row_number,
@@ -213,7 +218,8 @@ CREATE TABLE IF NOT EXISTS gesture_scroll_update AS
 --
 -- Note: Must be a TABLE because it uses a window function which can behave
 --       strangely in views.
-CREATE TABLE IF NOT EXISTS scroll_jank_maybe_null_prev_and_next AS
+DROP TABLE IF EXISTS scroll_jank_maybe_null_prev_and_next;
+CREATE TABLE scroll_jank_maybe_null_prev_and_next AS
   SELECT
     currprev.*,
     CASE WHEN
@@ -253,11 +259,45 @@ CREATE TABLE IF NOT EXISTS scroll_jank_maybe_null_prev_and_next AS
 
 -- This just uses prev_jank and next_jank to see if each GestureScrollUpdate
 -- event is a jank.
-CREATE VIEW IF NOT EXISTS scroll_jank AS
+DROP VIEW IF EXISTS scroll_jank;
+CREATE VIEW scroll_jank AS
   SELECT
-    *,
+    id AS slice_id,
     (next_jank IS NOT NULL AND next_jank) OR
     (prev_jank IS NOT NULL AND prev_jank)
-    AS jank
+    AS jank,
+    *
   FROM scroll_jank_maybe_null_prev_and_next
   ORDER BY gesture_scroll_id ASC, ts ASC;
+
+DROP VIEW IF EXISTS scroll_jank_ms;
+
+DROP VIEW IF EXISTS scroll_jank_output;
+CREATE VIEW scroll_jank_output AS
+  SELECT
+    ScrollJank(
+      'scroll_jank_percentage', (
+        SELECT
+          (
+            SUM(CASE WHEN jank THEN dur ELSE 0 END)/CAST(SUM(dur) AS REAL)
+          ) * 100.0
+        FROM scroll_jank
+      ),
+      'scroll_ms', (
+        SELECT
+          CAST(SUM(scroll_dur)/1e6 AS REAL)
+        FROM (
+          SELECT
+            MAX(scroll_dur) AS scroll_dur
+          FROM scroll_jank
+          GROUP BY gesture_scroll_id
+        )
+      ),
+      'scroll_processing_ms', CAST(SUM(dur)/1e6 AS REAL),
+      'scroll_jank_processing_ms', (
+        SELECT CAST(SUM(dur)/1e6 AS REAL) FROM scroll_jank WHERE jank
+      ),
+      'num_scroll_update_count', COUNT(*),
+      'num_scroll_update_jank_count', SUM(jank)
+    )
+  FROM scroll_jank;

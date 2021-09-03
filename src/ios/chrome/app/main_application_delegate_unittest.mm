@@ -6,9 +6,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
-#import "ios/chrome/app/chrome_overlay_window_testing.h"
-#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -25,7 +24,7 @@ using MainApplicationDelegateTest = PlatformTest;
 TEST_F(MainApplicationDelegateTest, CrashIfNotInitialized) {
   // Skip for scene API for now.
   // TODO(crbug.com/1093755) : Support this test in with the scene API.
-  if (IsSceneStartupSupported())
+  if (base::ios::IsSceneStartupSupported())
     return;
 
   // Save both ChromeBrowserProvider as MainController register new instance.
@@ -40,13 +39,6 @@ TEST_F(MainApplicationDelegateTest, CrashIfNotInitialized) {
   MainApplicationDelegate* delegate = [[MainApplicationDelegate alloc] init];
   [delegate application:application didFinishLaunchingWithOptions:nil];
   [delegate applicationDidEnterBackground:application];
-
-  // Clean up the size class recorder, which is created by the main window via
-  // a previous call to |application:didFinishLaunchingWithOptions:|, to prevent
-  // it from interfering with subsequent tests.
-  ChromeOverlayWindow* mainWindow =
-      base::mac::ObjCCastStrict<ChromeOverlayWindow>([delegate window]);
-  [mainWindow unsetSizeClassRecorder];
 
   // Restore both ChromeBrowserProvider to its original value and destroy
   // instances created by MainController.

@@ -14,13 +14,13 @@ const char* const kAllowedTransformSchemes[4] = {
     url::kHttpScheme, url::kHttpsScheme, url::kFtpScheme,
     extensions::kExtensionScheme};
 
+const char kErrorRequestMethodDuplicated[] =
+    "Rule with id * includes and excludes the same request method.";
 const char kErrorResourceTypeDuplicated[] =
     "Rule with id * includes and excludes the same resource.";
 const char kErrorInvalidRuleKey[] =
     "Rule with id * has an invalid value for * key. This should be greater "
     "than or equal to *.";
-const char kErrorEmptyRulePriority[] =
-    "Rule with id * does not specify the value for priority key.";
 const char kErrorNoApplicableResourceTypes[] =
     "Rule with id * is not applicable to any resource type.";
 const char kErrorEmptyList[] =
@@ -74,6 +74,12 @@ const char kErrorHeaderValuePresent[] =
     "removed.";
 const char kErrorCannotAppendRequestHeader[] =
     "Rule with id * must not specify a request header to be appended.";
+const char kErrorTabIdsOnNonSessionRule[] =
+    "Rule with id * specifies a value for \"*\" or \"*\" key. These are only "
+    "supported for session-scoped rules.";
+const char kErrorTabIdDuplicated[] =
+    "Rule with id * includes and excludes the same tab ID.";
+
 const char kErrorListNotPassed[] = "Rules file must contain a list.";
 
 const char kRuleCountExceeded[] =
@@ -100,6 +106,10 @@ const char kDynamicRuleCountExceeded[] = "Dynamic rule count exceeded.";
 const char kDynamicRegexRuleCountExceeded[] =
     "Dynamic rule count for regex rules exceeded.";
 
+const char kSessionRuleCountExceeded[] = "Session rule count exceeded.";
+const char kSessionRegexRuleCountExceeded[] =
+    "Session rule count for regex rules exceeded.";
+
 const char kInvalidRulesetIDError[] = "Invalid ruleset id: *.";
 const char kEnabledRulesetsRuleCountExceeded[] =
     "The set of enabled rulesets exceeds the rule count limit.";
@@ -107,6 +117,11 @@ const char kEnabledRulesetsRegexRuleCountExceeded[] =
     "The set of enabled rulesets exceeds the regular expression rule count "
     "limit.";
 const char kInternalErrorUpdatingEnabledRulesets[] = "Internal error.";
+
+const char kTabNotFoundError[] = "No tab with id: *.";
+const char kIncrementActionCountWithoutUseAsBadgeTextError[] =
+    "Cannot increment action count unless displaying action count as badge "
+    "text.";
 
 const char kIndexAndPersistRulesTimeHistogram[] =
     "Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime";
@@ -131,8 +146,7 @@ const char kErrorGetMatchedRulesMissingPermissions[] =
     "have activeTab granted for the specified tab ID in order to call this "
     "function.";
 
-const base::Feature kDeclarativeNetRequestGlobalRules{
-    "DeclarativeNetRequestGlobalRules", base::FEATURE_DISABLED_BY_DEFAULT};
+const char kEmbedderConditionsBufferIdentifier[] = "EMBR";
 
 }  // namespace declarative_net_request
 }  // namespace extensions

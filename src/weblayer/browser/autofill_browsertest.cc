@@ -4,7 +4,6 @@
 
 #include "weblayer/test/weblayer_browser_test.h"
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -81,15 +80,15 @@ IN_PROC_BROWSER_TEST_F(AutofillBrowserTest, TestPasswordFormDetection) {
   run_loop.Run();
 
   // Verify that that the form data matches that of the document.
-  EXPECT_EQ(base::ASCIIToUTF16("testform"), observed_form.name);
+  EXPECT_EQ(u"testform", observed_form.name);
   EXPECT_EQ(password_form_url.spec(), observed_form.url);
 
   auto fields = observed_form.fields;
   EXPECT_EQ(2u, fields.size());
   autofill::FormFieldData username_field = fields[0];
-  EXPECT_EQ(base::ASCIIToUTF16("username_field"), username_field.name);
+  EXPECT_EQ(u"username_field", username_field.name);
   autofill::FormFieldData password_field = fields[1];
-  EXPECT_EQ(base::ASCIIToUTF16("password_field"), password_field.name);
+  EXPECT_EQ(u"password_field", password_field.name);
 }
 
 }  // namespace weblayer

@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -113,7 +114,7 @@ bool RequestIsSafeToServe(const net::HttpServerRequestInfo& info) {
   if (header.empty())
     return true;
   GURL url = GURL("https://" + header);
-  return url.HostIsIPAddress() || net::IsLocalHostname(url.host(), nullptr);
+  return url.HostIsIPAddress() || net::IsLocalHostname(url.host());
 }
 
 }  // namespace
@@ -263,9 +264,9 @@ void StartServerOnHandlerThread(
       socket_factory->CreateForHttpServer();
   std::unique_ptr<net::IPEndPoint> ip_address(new net::IPEndPoint);
   if (server_socket) {
-    server_wrapper.reset(new ServerWrapper(handler, std::move(server_socket),
-                                           debug_frontend_dir,
-                                           bundles_resources));
+    server_wrapper =
+        std::make_unique<ServerWrapper>(handler, std::move(server_socket),
+                                        debug_frontend_dir, bundles_resources);
     if (server_wrapper->GetLocalAddress(ip_address.get()) != net::OK)
       ip_address.reset();
   } else {
@@ -402,7 +403,7 @@ static std::string GetMimeType(const std::string& filename) {
     return "text/css";
   } else if (base::EndsWith(filename, ".js",
                             base::CompareCase::INSENSITIVE_ASCII)) {
-    return "application/javascript";
+    return "text/javascript";
   } else if (base::EndsWith(filename, ".png",
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "image/png";
@@ -415,6 +416,9 @@ static std::string GetMimeType(const std::string& filename) {
   } else if (base::EndsWith(filename, ".svg",
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "image/svg+xml";
+  } else if (base::EndsWith(filename, ".avif",
+                            base::CompareCase::INSENSITIVE_ASCII)) {
+    return "image/avif";
   }
   LOG(ERROR) << "GetMimeType doesn't know mime type for: "
              << filename
@@ -606,8 +610,8 @@ void DevToolsHttpHandler::OnJsonRequest(
     GURL url(net::UnescapeBinaryURLComponent(query));
     if (!url.is_valid())
       url = GURL(url::kAboutBlankURL);
-    scoped_refptr<DevToolsAgentHost> agent_host = nullptr;
-    agent_host = delegate_->CreateNewTarget(url);
+    scoped_refptr<DevToolsAgentHost> agent_host =
+        delegate_->CreateNewTarget(url);
     if (!agent_host) {
       SendJson(connection_id, net::HTTP_INTERNAL_SERVER_ERROR, nullptr,
                "Could not create new page");
@@ -713,9 +717,10 @@ void DevToolsHttpHandler::OnWebSocketRequest(
             thread_->task_runner(),
             base::BindRepeating(&DevToolsSocketFactory::CreateForTethering,
                                 base::Unretained(socket_factory_.get())));
-    connection_to_client_[connection_id].reset(new DevToolsAgentHostClientImpl(
-        thread_->task_runner(), server_wrapper_.get(), connection_id,
-        browser_agent));
+    connection_to_client_[connection_id] =
+        std::make_unique<DevToolsAgentHostClientImpl>(
+            thread_->task_runner(), server_wrapper_.get(), connection_id,
+            browser_agent);
     AcceptWebSocket(connection_id, request);
     return;
   }
@@ -734,8 +739,9 @@ void DevToolsHttpHandler::OnWebSocketRequest(
     return;
   }
 
-  connection_to_client_[connection_id].reset(new DevToolsAgentHostClientImpl(
-      thread_->task_runner(), server_wrapper_.get(), connection_id, agent));
+  connection_to_client_[connection_id] =
+      std::make_unique<DevToolsAgentHostClientImpl>(
+          thread_->task_runner(), server_wrapper_.get(), connection_id, agent);
 
   AcceptWebSocket(connection_id, request);
 }
@@ -766,7 +772,7 @@ DevToolsHttpHandler::DevToolsHttpHandler(
       new base::Thread(kDevToolsHandlerThreadName));
   base::Thread::Options options;
   options.message_pump_type = base::MessagePumpType::IO;
-  if (thread->StartWithOptions(options)) {
+  if (thread->StartWithOptions(std::move(options))) {
     auto task_runner = thread->task_runner();
     task_runner->PostTask(
         FROM_HERE,

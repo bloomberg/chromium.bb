@@ -5,6 +5,7 @@
 // Contains holistic tests of the bindings infrastructure
 
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/ui/browser.h"
@@ -29,6 +30,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/switches.h"
 
 namespace extensions {
 namespace {
@@ -71,6 +73,13 @@ class ExtensionBindingsApiTest : public ExtensionApiTest {
     ASSERT_TRUE(StartEmbeddedTestServer());
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionApiTest::SetUpCommandLine(command_line);
+    // Some bots are flaky due to slower loading interacting with
+    // deferred commits.
+    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionBindingsApiTest);
 };
@@ -85,9 +94,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
                        ExceptionInHandlerShouldNotCrash) {
-  ASSERT_TRUE(RunExtensionSubtest(
-      "bindings/exception_in_handler_should_not_crash",
-      "page.html")) << message_;
+  ASSERT_TRUE(RunExtensionTest(
+      {.name = "bindings/exception_in_handler_should_not_crash",
+       .page_url = "page.html"}))
+      << message_;
 }
 
 // Tests that an error raised during an async function still fires
@@ -132,21 +142,17 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, AboutBlankIframe) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
                        InternalAPIsNotOnChromeObject) {
-  ASSERT_TRUE(RunExtensionSubtest(
-      "bindings/internal_apis_not_on_chrome_object",
-      "page.html")) << message_;
+  ASSERT_TRUE(
+      RunExtensionTest({.name = "bindings/internal_apis_not_on_chrome_object",
+                        .page_url = "page.html"}))
+      << message_;
 }
 
 // Tests that we don't override events when bindings are re-injected.
 // Regression test for http://crbug.com/269149.
 // Regression test for http://crbug.com/436593.
-// Flaky on Mac. http://crbug.com/733064.
-#if defined(OS_MAC)
-#define MAYBE_EventOverriding DISABLED_EventOverriding
-#else
-#define MAYBE_EventOverriding EventOverriding
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, MAYBE_EventOverriding) {
+// Flaky http://crbug.com/733064.
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, DISABLED_EventOverriding) {
   ASSERT_TRUE(RunExtensionTest("bindings/event_overriding")) << message_;
   // The extension test removes a window and, during window removal, sends the
   // success message. Make sure we flush all pending tasks.
@@ -156,7 +162,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, MAYBE_EventOverriding) {
 // Tests the effectiveness of the 'nocompile' feature file property.
 // Regression test for http://crbug.com/356133.
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, Nocompile) {
-  ASSERT_TRUE(RunExtensionSubtest("bindings/nocompile", "page.html"))
+  ASSERT_TRUE(
+      RunExtensionTest({.name = "bindings/nocompile", .page_url = "page.html"}))
       << message_;
 }
 

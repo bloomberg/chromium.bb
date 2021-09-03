@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
-#include "base/stl_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,8 +50,8 @@ void GetUsageInfoCallback(LocalStorageHelper::FetchCallback callback,
 }  // namespace
 
 LocalStorageHelper::LocalStorageHelper(BrowserContext* context)
-    : dom_storage_context_(BrowserContext::GetDefaultStoragePartition(context)
-                               ->GetDOMStorageContext()) {
+    : dom_storage_context_(
+          context->GetDefaultStoragePartition()->GetDOMStorageContext()) {
   DCHECK(dom_storage_context_);
 }
 

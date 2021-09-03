@@ -10,6 +10,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "build/chromeos_buildflags.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_value_store.h"
@@ -43,8 +44,20 @@ class SyncPrefsTest : public testing::Test {
   std::unique_ptr<SyncPrefs> sync_prefs_;
 };
 
+class SyncTransportDataPrefsTest : public testing::Test {
+ protected:
+  SyncTransportDataPrefsTest() {
+    SyncPrefs::RegisterProfilePrefs(pref_service_.registry());
+    sync_prefs_ = std::make_unique<SyncTransportDataPrefs>(&pref_service_);
+  }
+
+  base::test::SingleThreadTaskEnvironment task_environment_;
+  TestingPrefServiceSimple pref_service_;
+  std::unique_ptr<SyncTransportDataPrefs> sync_prefs_;
+};
+
 // Verify that invalidation versions are persisted and loaded correctly.
-TEST_F(SyncPrefsTest, InvalidationVersions) {
+TEST_F(SyncTransportDataPrefsTest, InvalidationVersions) {
   std::map<ModelType, int64_t> versions;
   versions[BOOKMARKS] = 10;
   versions[SESSIONS] = 20;
@@ -61,13 +74,26 @@ TEST_F(SyncPrefsTest, InvalidationVersions) {
   }
 }
 
-TEST_F(SyncPrefsTest, PollInterval) {
+TEST_F(SyncTransportDataPrefsTest, PollInterval) {
   EXPECT_TRUE(sync_prefs_->GetPollInterval().is_zero());
-
   sync_prefs_->SetPollInterval(base::TimeDelta::FromMinutes(30));
-
   EXPECT_FALSE(sync_prefs_->GetPollInterval().is_zero());
   EXPECT_EQ(sync_prefs_->GetPollInterval().InMinutes(), 30);
+}
+
+TEST_F(SyncTransportDataPrefsTest, LastSyncTime) {
+  EXPECT_EQ(base::Time(), sync_prefs_->GetLastSyncedTime());
+  const base::Time now = base::Time::Now();
+  sync_prefs_->SetLastSyncedTime(now);
+  EXPECT_EQ(now, sync_prefs_->GetLastSyncedTime());
+}
+
+TEST_F(SyncPrefsTest, EncryptionBootstrapToken) {
+  EXPECT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
+  sync_prefs_->SetEncryptionBootstrapToken("token");
+  EXPECT_EQ("token", sync_prefs_->GetEncryptionBootstrapToken());
+  sync_prefs_->ClearEncryptionBootstrapToken();
+  EXPECT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
 }
 
 class MockSyncPrefObserver : public SyncPrefObserver {
@@ -112,7 +138,7 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(SyncPrefsTest, SetSelectedOsTypesTriggersPreferredDataTypesPrefChange) {
   StrictMock<MockSyncPrefObserver> mock_sync_pref_observer;
   EXPECT_CALL(mock_sync_pref_observer, OnPreferredDataTypesPrefChange());
@@ -125,32 +151,18 @@ TEST_F(SyncPrefsTest, SetSelectedOsTypesTriggersPreferredDataTypesPrefChange) {
 }
 #endif
 
-TEST_F(SyncPrefsTest, ClearLocalSyncTransportData) {
-  ASSERT_FALSE(sync_prefs_->IsFirstSetupComplete());
-  ASSERT_EQ(base::Time(), sync_prefs_->GetLastSyncedTime());
-  ASSERT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
-
-  sync_prefs_->SetFirstSetupComplete();
+TEST_F(SyncTransportDataPrefsTest, ClearAll) {
   sync_prefs_->SetLastSyncedTime(base::Time::Now());
-  sync_prefs_->SetEncryptionBootstrapToken("explicit_passphrase_token");
   sync_prefs_->SetKeystoreEncryptionBootstrapToken("keystore_token");
 
-  ASSERT_TRUE(sync_prefs_->IsFirstSetupComplete());
   ASSERT_NE(base::Time(), sync_prefs_->GetLastSyncedTime());
-  ASSERT_EQ("explicit_passphrase_token",
-            sync_prefs_->GetEncryptionBootstrapToken());
   ASSERT_EQ("keystore_token",
             sync_prefs_->GetKeystoreEncryptionBootstrapToken());
 
-  sync_prefs_->ClearLocalSyncTransportData();
+  sync_prefs_->ClearAll();
 
   EXPECT_EQ(base::Time(), sync_prefs_->GetLastSyncedTime());
   EXPECT_TRUE(sync_prefs_->GetKeystoreEncryptionBootstrapToken().empty());
-
-  // User-entered field should not have been cleared.
-  EXPECT_TRUE(sync_prefs_->IsFirstSetupComplete());
-  EXPECT_EQ("explicit_passphrase_token",
-            sync_prefs_->GetEncryptionBootstrapToken());
 }
 
 TEST_F(SyncPrefsTest, Basic) {
@@ -164,11 +176,6 @@ TEST_F(SyncPrefsTest, Basic) {
   sync_prefs_->SetSyncRequested(false);
   EXPECT_FALSE(sync_prefs_->IsSyncRequested());
 
-  EXPECT_EQ(base::Time(), sync_prefs_->GetLastSyncedTime());
-  const base::Time& now = base::Time::Now();
-  sync_prefs_->SetLastSyncedTime(now);
-  EXPECT_EQ(now, sync_prefs_->GetLastSyncedTime());
-
   EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
   sync_prefs_->SetSelectedTypes(
       /*keep_everything_synced=*/false,
@@ -180,10 +187,6 @@ TEST_F(SyncPrefsTest, Basic) {
       /*registered_types=*/UserSelectableTypeSet::All(),
       /*selected_types=*/UserSelectableTypeSet());
   EXPECT_TRUE(sync_prefs_->HasKeepEverythingSynced());
-
-  EXPECT_TRUE(sync_prefs_->GetEncryptionBootstrapToken().empty());
-  sync_prefs_->SetEncryptionBootstrapToken("token");
-  EXPECT_EQ("token", sync_prefs_->GetEncryptionBootstrapToken());
 }
 
 TEST_F(SyncPrefsTest, SelectedTypesKeepEverythingSynced) {
@@ -246,7 +249,7 @@ TEST_F(SyncPrefsTest, SelectedTypesNotKeepEverythingSyncedAndPolicyRestricted) {
   }
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_F(SyncPrefsTest, IsSyncAllOsTypesEnabled) {
   EXPECT_TRUE(sync_prefs_->IsSyncAllOsTypesEnabled());
 
@@ -299,7 +302,17 @@ TEST_F(SyncPrefsTest, GetSelectedOsTypesNotAllOsTypesSelected) {
     EXPECT_EQ(browser_types, sync_prefs_->GetSelectedTypes());
   }
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+TEST_F(SyncPrefsTest, PassphrasePromptMutedProductVersion) {
+  EXPECT_EQ(0, sync_prefs_->GetPassphrasePromptMutedProductVersion());
+
+  sync_prefs_->SetPassphrasePromptMutedProductVersion(83);
+  EXPECT_EQ(83, sync_prefs_->GetPassphrasePromptMutedProductVersion());
+
+  sync_prefs_->ClearPassphrasePromptMutedProductVersion();
+  EXPECT_EQ(0, sync_prefs_->GetPassphrasePromptMutedProductVersion());
+}
 
 // Similar to SyncPrefsTest, but does not create a SyncPrefs instance. This lets
 // individual tests set up the "before" state of the PrefService before

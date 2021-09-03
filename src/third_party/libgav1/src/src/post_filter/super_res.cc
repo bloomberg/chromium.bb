@@ -19,7 +19,8 @@ namespace libgav1 {
 void PostFilter::ApplySuperRes(const std::array<uint8_t*, kMaxPlanes>& src,
                                const std::array<int, kMaxPlanes>& rows,
                                const int line_buffer_row,
-                               const std::array<uint8_t*, kMaxPlanes>& dst) {
+                               const std::array<uint8_t*, kMaxPlanes>& dst,
+                               bool dst_is_loop_restoration_border /*=false*/) {
   int plane = kPlaneY;
   do {
     const int plane_width =
@@ -28,13 +29,19 @@ void PostFilter::ApplySuperRes(const std::array<uint8_t*, kMaxPlanes>& src,
     if (bitdepth_ >= 10) {
       auto* input = reinterpret_cast<uint16_t*>(src[plane]);
       auto* output = reinterpret_cast<uint16_t*>(dst[plane]);
-      const ptrdiff_t stride = frame_buffer_.stride(plane) / sizeof(uint16_t);
+      const ptrdiff_t input_stride =
+          frame_buffer_.stride(plane) / sizeof(uint16_t);
+      const ptrdiff_t output_stride =
+          (dst_is_loop_restoration_border
+               ? loop_restoration_border_.stride(plane)
+               : frame_buffer_.stride(plane)) /
+          sizeof(uint16_t);
       if (rows[plane] > 0) {
         dsp_.super_res(superres_coefficients_[static_cast<int>(plane != 0)],
-                       input, stride, rows[plane], plane_width,
+                       input, input_stride, rows[plane], plane_width,
                        super_res_info_[plane].upscaled_width,
                        super_res_info_[plane].initial_subpixel_x,
-                       super_res_info_[plane].step, output);
+                       super_res_info_[plane].step, output, output_stride);
       }
       // In the multi-threaded case, the |superres_line_buffer_| holds the last
       // input row. Apply SuperRes for that row.
@@ -44,24 +51,29 @@ void PostFilter::ApplySuperRes(const std::array<uint8_t*, kMaxPlanes>& src,
             line_buffer_row * superres_line_buffer_.stride(plane) /
                 sizeof(uint16_t) +
             kSuperResHorizontalBorder;
-        dsp_.super_res(
-            superres_coefficients_[static_cast<int>(plane != 0)],
-            line_buffer_start, /*stride=*/0,
-            /*height=*/1, plane_width, super_res_info_[plane].upscaled_width,
-            super_res_info_[plane].initial_subpixel_x,
-            super_res_info_[plane].step, output + rows[plane] * stride);
+        dsp_.super_res(superres_coefficients_[static_cast<int>(plane != 0)],
+                       line_buffer_start, /*source_stride=*/0,
+                       /*height=*/1, plane_width,
+                       super_res_info_[plane].upscaled_width,
+                       super_res_info_[plane].initial_subpixel_x,
+                       super_res_info_[plane].step,
+                       output + rows[plane] * output_stride, /*dest_stride=*/0);
       }
       continue;
     }
 #endif  // LIBGAV1_MAX_BITDEPTH >= 10
     uint8_t* input = src[plane];
     uint8_t* output = dst[plane];
+    const ptrdiff_t input_stride = frame_buffer_.stride(plane);
+    const ptrdiff_t output_stride = dst_is_loop_restoration_border
+                                        ? loop_restoration_border_.stride(plane)
+                                        : frame_buffer_.stride(plane);
     if (rows[plane] > 0) {
       dsp_.super_res(superres_coefficients_[static_cast<int>(plane != 0)],
-                     input, frame_buffer_.stride(plane), rows[plane],
-                     plane_width, super_res_info_[plane].upscaled_width,
+                     input, input_stride, rows[plane], plane_width,
+                     super_res_info_[plane].upscaled_width,
                      super_res_info_[plane].initial_subpixel_x,
-                     super_res_info_[plane].step, output);
+                     super_res_info_[plane].step, output, output_stride);
     }
     // In the multi-threaded case, the |superres_line_buffer_| holds the last
     // input row. Apply SuperRes for that row.
@@ -70,13 +82,13 @@ void PostFilter::ApplySuperRes(const std::array<uint8_t*, kMaxPlanes>& src,
           superres_line_buffer_.data(plane) +
           line_buffer_row * superres_line_buffer_.stride(plane) +
           kSuperResHorizontalBorder;
-      dsp_.super_res(superres_coefficients_[static_cast<int>(plane != 0)],
-                     line_buffer_start, /*stride=*/0,
-                     /*height=*/1, plane_width,
-                     super_res_info_[plane].upscaled_width,
-                     super_res_info_[plane].initial_subpixel_x,
-                     super_res_info_[plane].step,
-                     output + rows[plane] * frame_buffer_.stride(plane));
+      dsp_.super_res(
+          superres_coefficients_[static_cast<int>(plane != 0)],
+          line_buffer_start, /*source_stride=*/0,
+          /*height=*/1, plane_width, super_res_info_[plane].upscaled_width,
+          super_res_info_[plane].initial_subpixel_x,
+          super_res_info_[plane].step, output + rows[plane] * output_stride,
+          /*dest_stride=*/0);
     }
   } while (++plane < planes_);
 }
@@ -159,6 +171,7 @@ void PostFilter::ApplySuperResThreaded() {
     std::array<uint8_t*, kMaxPlanes> dst;
     std::array<int, kMaxPlanes> rows;
     int plane = kPlaneY;
+    const int pixel_size_log2 = pixel_size_log2_;
     do {
       src[plane] =
           GetBufferOffset(cdef_buffer_[plane], frame_buffer_.stride(plane),
@@ -178,8 +191,8 @@ void PostFilter::ApplySuperResThreaded() {
       uint8_t* const line_buffer_start =
           superres_line_buffer_.data(plane) +
           line_buffer_row * superres_line_buffer_.stride(plane) +
-          kSuperResHorizontalBorder * pixel_size_;
-      memcpy(line_buffer_start, input, plane_width * pixel_size_);
+          (kSuperResHorizontalBorder << pixel_size_log2);
+      memcpy(line_buffer_start, input, plane_width << pixel_size_log2);
     } while (++plane < planes_);
     if (line_buffer_row < num_threads - 1) {
       thread_pool_->Schedule(

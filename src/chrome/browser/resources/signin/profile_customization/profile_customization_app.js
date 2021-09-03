@@ -31,13 +31,7 @@ Polymer({
     /** Whether the account is managed (Enterprise) */
     isManaged_: {
       type: Boolean,
-      value: () => loadTimeData.getBoolean('isManaged'),
-    },
-
-    /** Initial local profile name, non-editable */
-    initialProfileName_: {
-      type: String,
-      value: () => loadTimeData.getString('profileName'),
+      value: false,
     },
 
     /** Local profile name, editable by user input */
@@ -50,6 +44,11 @@ Polymer({
     pictureUrl_: {
       type: String,
     },
+
+    /** Welcome title for the bubble */
+    welcomeTitle_: {
+      type: String,
+    },
   },
 
   /** @private {?ProfileCustomizationBrowserProxy} */
@@ -59,7 +58,7 @@ Polymer({
   ready() {
     // profileName_ is only set now, because it triggers a validation of the
     // input which crashes if it's done too early.
-    this.profileName_ = this.initialProfileName_;
+    this.profileName_ = loadTimeData.getString('profileName');
     this.profileCustomizationBrowserProxy_ =
         ProfileCustomizationBrowserProxyImpl.getInstance();
     this.addWebUIListener(
@@ -92,9 +91,10 @@ Polymer({
    * @private
    */
   setProfileInfo_(profileInfo) {
-    this.style.setProperty('--header-text-color', profileInfo.textColor);
     this.style.setProperty(
         '--header-background-color', profileInfo.backgroundColor);
     this.pictureUrl_ = profileInfo.pictureUrl;
+    this.isManaged_ = profileInfo.isManaged;
+    this.welcomeTitle_ = profileInfo.welcomeTitle;
   },
 });

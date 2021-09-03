@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/notreached.h"
 #include "extensions/browser/api/file_system/saved_files_service_interface.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
@@ -39,7 +40,7 @@ bool ShellFileSystemDelegate::ShowSelectFileDialog(
 
 void ShellFileSystemDelegate::ConfirmSensitiveDirectoryAccess(
     bool has_write_permission,
-    const base::string16& app_name,
+    const std::u16string& app_name,
     content::WebContents* web_contents,
     base::OnceClosure on_accept,
     base::OnceClosure on_cancel) {

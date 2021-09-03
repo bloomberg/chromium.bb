@@ -83,7 +83,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(
   std::unique_ptr<base::DictionaryValue> settings(new base::DictionaryValue());
 
   for (const std::string& key : keys) {
-    base::Optional<base::Value> setting;
+    absl::optional<base::Value> setting;
     status.Merge(Read(key, &setting));
     if (!status.ok())
       return ReadResult(std::move(status));
@@ -104,7 +104,7 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
   std::unique_ptr<leveldb::Iterator> it(db()->NewIterator(read_options()));
   for (it->SeekToFirst(); it->Valid(); it->Next()) {
     std::string key = it->key().ToString();
-    base::Optional<base::Value> value = base::JSONReader::Read(
+    absl::optional<base::Value> value = base::JSONReader::Read(
         StringPiece(it->value().data(), it->value().size()));
     if (!value) {
       return ReadResult(Status(CORRUPTION,
@@ -131,8 +131,8 @@ ValueStore::WriteResult LeveldbValueStore::Set(WriteOptions options,
     return WriteResult(std::move(status));
 
   leveldb::WriteBatch batch;
-  std::unique_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
-  status.Merge(AddToBatch(options, key, value, &batch, changes.get()));
+  ValueStoreChangeList changes;
+  status.Merge(AddToBatch(options, key, value, &batch, &changes));
   if (!status.ok())
     return WriteResult(std::move(status));
 
@@ -149,12 +149,11 @@ ValueStore::WriteResult LeveldbValueStore::Set(
     return WriteResult(std::move(status));
 
   leveldb::WriteBatch batch;
-  std::unique_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
+  ValueStoreChangeList changes;
 
   for (base::DictionaryValue::Iterator it(settings);
        !it.IsAtEnd(); it.Advance()) {
-    status.Merge(
-        AddToBatch(options, it.key(), it.value(), &batch, changes.get()));
+    status.Merge(AddToBatch(options, it.key(), it.value(), &batch, &changes));
     if (!status.ok())
       return WriteResult(std::move(status));
   }
@@ -175,17 +174,16 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
     return WriteResult(std::move(status));
 
   leveldb::WriteBatch batch;
-  std::unique_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
+  ValueStoreChangeList changes;
 
   for (const std::string& key : keys) {
-    base::Optional<base::Value> old_value;
+    absl::optional<base::Value> old_value;
     status.Merge(Read(key, &old_value));
     if (!status.ok())
       return WriteResult(std::move(status));
 
     if (old_value) {
-      changes->push_back(
-          ValueStoreChange(key, std::move(old_value), base::nullopt));
+      changes.emplace_back(key, std::move(old_value), absl::nullopt);
       batch.Delete(key);
     }
   }
@@ -199,19 +197,18 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
 }
 
 ValueStore::WriteResult LeveldbValueStore::Clear() {
-  std::unique_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
+  ValueStoreChangeList changes;
 
   ReadResult read_result = Get();
   if (!read_result.status().ok())
     return WriteResult(read_result.PassStatus());
 
   base::DictionaryValue& whole_db = read_result.settings();
-  while (!whole_db.empty()) {
+  while (!whole_db.DictEmpty()) {
     std::string next_key = base::DictionaryValue::Iterator(whole_db).key();
     std::unique_ptr<base::Value> next_value;
     whole_db.RemoveWithoutPathExpansion(next_key, &next_value);
-    changes->push_back(
-        ValueStoreChange(next_key, std::move(*next_value), base::nullopt));
+    changes.emplace_back(next_key, std::move(*next_value), absl::nullopt);
   }
 
   DeleteDbFile();
@@ -259,7 +256,7 @@ ValueStore::Status LeveldbValueStore::AddToBatch(
   bool write_new_value = true;
 
   if (!(options & NO_GENERATE_CHANGES)) {
-    base::Optional<base::Value> old_value;
+    absl::optional<base::Value> old_value;
     Status status = Read(key, &old_value);
     if (!status.ok())
       return status;

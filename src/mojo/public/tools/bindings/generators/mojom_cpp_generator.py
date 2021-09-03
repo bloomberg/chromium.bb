@@ -8,7 +8,6 @@ import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 import mojom.generate.pack as pack
 from generators.cpp_util import IsNativeOnlyKind
-from generators.cpp_tracing_support import WriteInputParamForTracing
 from mojom.generate.template_expander import UseJinja, UseJinjaForImportedTemplate
 
 
@@ -295,6 +294,15 @@ class Generator(generator.Generator):
     return any(map(mojom.ContainsHandlesOrInterfaces,
                    self.module.structs + self.module.unions))
 
+  def _ContainsOnlyEnums(self):
+    """Returns whether this module contains only enums.
+
+    When true, the generated headers can skip many includes.
+    """
+    m = self.module
+    return (len(m.enums) > 0 and len(m.structs) == 0 and len(m.interfaces) == 0
+            and len(m.unions) == 0 and len(m.constants) == 0)
+
   def _ReferencesAnyNativeType(self):
     """Returns whether this module uses native types directly or indirectly.
 
@@ -324,28 +332,29 @@ class Generator(generator.Generator):
       all_enums.extend(interface.enums)
 
     return {
-      "all_enums": all_enums,
-      "disallow_interfaces": self.disallow_interfaces,
-      "disallow_native_types": self.disallow_native_types,
-      "enable_kythe_annotations": self.enable_kythe_annotations,
-      "enums": self.module.enums,
-      "export_attribute": self.export_attribute,
-      "export_header": self.export_header,
-      "extra_public_headers": self._GetExtraPublicHeaders(),
-      "extra_traits_headers": self._GetExtraTraitsHeaders(),
-      "for_blink": self.for_blink,
-      "imports": self.module.imports,
-      "interfaces": self.module.interfaces,
-      "kinds": self.module.kinds,
-      "module": self.module,
-      "module_namespace": self.module.namespace,
-      "namespaces_as_array": NamespaceToArray(self.module.namespace),
-      "structs": self.module.structs,
-      "support_lazy_serialization": self.support_lazy_serialization,
-      "unions": self.module.unions,
-      "uses_interfaces": self._ReferencesAnyHandleOrInterfaceType(),
-      "uses_native_types": self._ReferencesAnyNativeType(),
-      "variant": self.variant,
+        "all_enums": all_enums,
+        "contains_only_enums": self._ContainsOnlyEnums(),
+        "disallow_interfaces": self.disallow_interfaces,
+        "disallow_native_types": self.disallow_native_types,
+        "enable_kythe_annotations": self.enable_kythe_annotations,
+        "enums": self.module.enums,
+        "export_attribute": self.export_attribute,
+        "export_header": self.export_header,
+        "extra_public_headers": self._GetExtraPublicHeaders(),
+        "extra_traits_headers": self._GetExtraTraitsHeaders(),
+        "for_blink": self.for_blink,
+        "imports": self.module.imports,
+        "interfaces": self.module.interfaces,
+        "kinds": self.module.kinds,
+        "module": self.module,
+        "module_namespace": self.module.namespace,
+        "namespaces_as_array": NamespaceToArray(self.module.namespace),
+        "structs": self.module.structs,
+        "support_lazy_serialization": self.support_lazy_serialization,
+        "unions": self.module.unions,
+        "uses_interfaces": self._ReferencesAnyHandleOrInterfaceType(),
+        "uses_native_types": self._ReferencesAnyNativeType(),
+        "variant": self.variant,
     }
 
   @staticmethod
@@ -367,7 +376,6 @@ class Generator(generator.Generator):
         self._GetUnionTraitGetterReturnType,
         "cpp_wrapper_call_type": self._GetCppWrapperCallType,
         "cpp_wrapper_param_type": self._GetCppWrapperParamType,
-        "write_input_param_for_tracing": self._WriteInputParamForTracing,
         "cpp_wrapper_param_type_new": self._GetCppWrapperParamTypeNew,
         "cpp_wrapper_type": self._GetCppWrapperType,
         "cpp_enum_without_namespace": GetEnumNameWithoutNamespace,
@@ -383,6 +391,7 @@ class Generator(generator.Generator):
         "has_callbacks": mojom.HasCallbacks,
         "has_packed_method_ordinals": HasPackedMethodOrdinals,
         "has_sync_methods": mojom.HasSyncMethods,
+        "has_uninterruptable_methods": mojom.HasUninterruptableMethods,
         "method_supports_lazy_serialization":
         self._MethodSupportsLazySerialization,
         "requires_context_for_data_view": RequiresContextForDataView,
@@ -614,28 +623,6 @@ class Generator(generator.Generator):
         GetCppPodType(constant.kind), constant.name,
         self._ConstantValue(constant))
 
-  def _WriteInputParamForTracing(self, kind, parameter_name, cpp_parameter_name,
-                                 value):
-    """Generates lines of C++ to log parameter |parameter_name| into TracedValue
-    |value|.
-
-    Args:
-      kind: {Kind} The kind of the parameter (corresponds to its C++ type).
-      cpp_parameter_name: {string} The actual C++ variable name corresponding to
-        the mojom parameter |parameter_name|. Can be a valid C++ expression
-        (e.g., dereferenced variable |"(*var)"|).
-      value: {string} The C++ |TracedValue*| variable name to be logged into.
-
-    Yields:
-      {string} C++ lines of code that trace |parameter_name| into |value|.
-    """
-    for line in WriteInputParamForTracing(generator=self,
-                                          kind=kind,
-                                          parameter_name=parameter_name,
-                                          cpp_parameter_name=cpp_parameter_name,
-                                          value=value):
-      yield line
-
   def _GetCppWrapperType(self,
                          kind,
                          add_same_module_namespaces=False,
@@ -643,7 +630,7 @@ class Generator(generator.Generator):
     def _AddOptional(type_name):
       if ignore_nullable:
         return type_name
-      return "base::Optional<%s>" % type_name
+      return "absl::optional<%s>" % type_name
 
     if self._IsTypemappedKind(kind):
       type_name = self._GetNativeTypeName(kind)
@@ -741,14 +728,15 @@ class Generator(generator.Generator):
   def _IsFullHeaderRequiredForImport(self, imported_module):
     """Determines whether a given import module requires a full header include,
     or if the forward header is sufficient. The full header is required if any
-    imported structs, unions, interfaces, or typemapped types are referenced by
+    imported structs, unions, or typemapped types are referenced by
     the module we're generating bindings for; or if an imported enum is used as
     a map key."""
 
     def requires_full_header(kind):
       if (mojom.IsUnionKind(kind) or mojom.IsStructKind(kind)
-          or mojom.IsInterfaceKind(kind) or self._IsTypemappedKind(kind)):
+          or self._IsTypemappedKind(kind)):
         return True
+
       if mojom.IsEnumKind(kind):
         # Blink bindings need the full header for an enum used as a map key.
         # This is uncommon enough that we set the requirement generically for
@@ -759,6 +747,10 @@ class Generator(generator.Generator):
       return False
 
     for spec, kind in imported_module.kinds.items():
+      if kind.module != imported_module:
+        # If it wasn't defined directly in the imported module, it doesn't
+        # affect whether we need the module or not.
+        continue
       if spec in self.module.imported_kinds and requires_full_header(kind):
         return True
     return False

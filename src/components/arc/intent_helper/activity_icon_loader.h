@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -44,12 +43,10 @@ class ActivityIconLoader {
   struct ActivityName {
     ActivityName(const std::string& package_name,
                  const std::string& activity_name);
+    ~ActivityName();
     bool operator<(const ActivityName& other) const;
 
-    // TODO(yusukes): Add const to these variables later. At this point,
-    // doing so seems to confuse g++ 4.6 on builders.
     std::string package_name;
-
     // Can be empty. When |activity_name| is empty, the loader tries to fetch
     // the package's default icon.
     std::string activity_name;
@@ -73,6 +70,8 @@ class ActivityIconLoader {
       base::OnceCallback<void(std::unique_ptr<ActivityToIconsMap>)>;
 
   ActivityIconLoader();
+  ActivityIconLoader(const ActivityIconLoader&) = delete;
+  ActivityIconLoader& operator=(const ActivityIconLoader&) = delete;
   ~ActivityIconLoader();
 
   void SetAdaptiveIconDelegate(AdaptiveIconDelegate* delegate);
@@ -133,8 +132,6 @@ class ActivityIconLoader {
 
   // This must come last to make sure weak pointers are invalidated first.
   base::WeakPtrFactory<ActivityIconLoader> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ActivityIconLoader);
 };
 
 }  // namespace internal

@@ -14,8 +14,6 @@
 namespace v8 {
 namespace internal {
 
-using compiler::Node;
-
 namespace {
 
 class AsyncGeneratorBuiltinsAssembler : public AsyncBuiltinsAssembler {
@@ -242,10 +240,10 @@ void AsyncGeneratorBuiltinsAssembler::AsyncGeneratorAwait(bool is_catchable) {
   TNode<JSPromise> outer_promise = LoadObjectField<JSPromise>(
       request, AsyncGeneratorRequest::kPromiseOffset);
 
-  SetGeneratorAwaiting(async_generator_object);
   Await(context, async_generator_object, value, outer_promise,
         AsyncGeneratorAwaitResolveSharedFunConstant(),
         AsyncGeneratorAwaitRejectSharedFunConstant(), is_catchable);
+  SetGeneratorAwaiting(async_generator_object);
   Return(UndefinedConstant());
 }
 
@@ -520,7 +518,7 @@ TF_BUILTIN(AsyncGeneratorResolve, AsyncGeneratorBuiltinsAssembler) {
   // the "promiseResolve" hook would not be fired otherwise.
   Label if_fast(this), if_slow(this, Label::kDeferred), return_promise(this);
   GotoIfForceSlowPath(&if_slow);
-  GotoIf(IsPromiseHookEnabled(), &if_slow);
+  GotoIf(IsIsolatePromiseHookEnabledOrHasAsyncEventDelegate(), &if_slow);
   Branch(IsPromiseThenProtectorCellInvalid(), &if_slow, &if_fast);
 
   BIND(&if_fast);
@@ -570,10 +568,10 @@ TF_BUILTIN(AsyncGeneratorYield, AsyncGeneratorBuiltinsAssembler) {
   const TNode<JSPromise> outer_promise =
       LoadPromiseFromAsyncGeneratorRequest(request);
 
-  SetGeneratorAwaiting(generator);
   Await(context, generator, value, outer_promise,
         AsyncGeneratorYieldResolveSharedFunConstant(),
         AsyncGeneratorAwaitRejectSharedFunConstant(), is_caught);
+  SetGeneratorAwaiting(generator);
   Return(UndefinedConstant());
 }
 

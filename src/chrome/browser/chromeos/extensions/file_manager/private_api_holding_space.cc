@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
@@ -34,17 +33,15 @@ FileManagerPrivateInternalToggleAddedToHoldingSpaceFunction::Run() {
   const std::unique_ptr<Params> params(Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  const ChromeExtensionFunctionDetails chrome_details(this);
-
   ash::HoldingSpaceKeyedService* const holding_space =
       ash::HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(
-          chrome_details.GetProfile());
+          browser_context());
   if (!holding_space)
     return RespondNow(Error("Not enabled"));
 
   scoped_refptr<storage::FileSystemContext> file_system_context =
       file_manager::util::GetFileSystemContextForRenderFrameHost(
-          chrome_details.GetProfile(), render_frame_host());
+          Profile::FromBrowserContext(browser_context()), render_frame_host());
 
   std::vector<storage::FileSystemURL> file_system_urls;
   for (const auto& item_url : params->urls) {
@@ -55,14 +52,20 @@ FileManagerPrivateInternalToggleAddedToHoldingSpaceFunction::Run() {
     file_system_urls.push_back(file_system_url);
   }
 
-  for (const auto& file_system_url : file_system_urls) {
-    const bool in_holding_space =
-        holding_space->ContainsPinnedFile(file_system_url);
-    if (params->add && !in_holding_space) {
-      holding_space->AddPinnedFile(file_system_url);
-    } else if (!params->add && in_holding_space) {
-      holding_space->RemovePinnedFile(file_system_url);
-    }
+  if (params->add) {
+    base::EraseIf(
+        file_system_urls,
+        [holding_space](const storage::FileSystemURL& file_system_url) {
+          return holding_space->ContainsPinnedFile(file_system_url);
+        });
+    holding_space->AddPinnedFiles(file_system_urls);
+  } else {
+    base::EraseIf(
+        file_system_urls,
+        [holding_space](const storage::FileSystemURL& file_system_url) {
+          return !holding_space->ContainsPinnedFile(file_system_url);
+        });
+    holding_space->RemovePinnedFiles(file_system_urls);
   }
 
   return RespondNow(NoArguments());
@@ -76,10 +79,9 @@ FileManagerPrivateGetHoldingSpaceStateFunction::
 
 ExtensionFunction::ResponseAction
 FileManagerPrivateGetHoldingSpaceStateFunction::Run() {
-  const ChromeExtensionFunctionDetails chrome_details(this);
   ash::HoldingSpaceKeyedService* const holding_space =
       ash::HoldingSpaceKeyedServiceFactory::GetInstance()->GetService(
-          chrome_details.GetProfile());
+          browser_context());
   if (!holding_space)
     return RespondNow(Error("Not enabled"));
 

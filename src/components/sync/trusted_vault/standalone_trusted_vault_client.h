@@ -67,14 +67,17 @@ class StandaloneTrustedVaultClient : public TrustedVaultClient {
                                    base::OnceCallback<void(bool)> cb) override;
   void AddTrustedRecoveryMethod(const std::string& gaia_id,
                                 const std::vector<uint8_t>& public_key,
+                                int method_type_hint,
                                 base::OnceClosure cb) override;
 
   // Runs |cb| when all requests have completed.
   void WaitForFlushForTesting(base::OnceClosure cb) const;
   void FetchBackendPrimaryAccountForTesting(
-      base::OnceCallback<void(const base::Optional<CoreAccountInfo>&)> callback)
+      base::OnceCallback<void(const absl::optional<CoreAccountInfo>&)> callback)
       const;
   void SetRecoverabilityDegradedForTesting();
+  void GetLastAddedRecoveryMethodPublicKeyForTesting(
+      base::OnceCallback<void(const std::vector<uint8_t>&)> callback);
 
  private:
   void NotifyRecoverabilityDegradedChanged();
@@ -89,8 +92,8 @@ class StandaloneTrustedVaultClient : public TrustedVaultClient {
   // as WeakPtr to TrustedVaultAccessTokenFetcherImpl.
   TrustedVaultAccessTokenFetcherFrontend access_token_fetcher_frontend_;
 
-  // |backend_| constructed in the UI thread, used in |backend_task_runner_|
-  // and destroyed (refcounted) on any thread.
+  // |backend_| constructed in the UI thread, used and destroyed in
+  // |backend_task_runner_|.
   scoped_refptr<StandaloneTrustedVaultBackend> backend_;
 
   // Observes changes of primary account and populates them into |backend_|.

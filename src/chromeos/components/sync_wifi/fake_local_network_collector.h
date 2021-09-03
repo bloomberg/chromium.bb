@@ -8,9 +8,9 @@
 #include <map>
 
 #include "base/containers/flat_map.h"
-#include "base/optional.h"
 #include "chromeos/components/sync_wifi/local_network_collector.h"
 #include "chromeos/components/sync_wifi/network_identifier.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -27,17 +27,24 @@ class FakeLocalNetworkCollector : public LocalNetworkCollector {
   // For test purposes, |guid| == serialized NetworkIdentifier.
   void GetSyncableNetwork(const std::string& guid,
                           ProtoCallback callback) override;
+  void RecordZeroNetworksEligibleForSync() override {}
   // For test purposes, |guid| == serialized NetworkIdentifier.
-  base::Optional<NetworkIdentifier> GetNetworkIdentifierFromGuid(
+  absl::optional<NetworkIdentifier> GetNetworkIdentifierFromGuid(
       const std::string& guid) override;
 
   void AddNetwork(sync_pb::WifiConfigurationSpecifics proto);
   void ClearNetworks();
   void SetNetworkMetadataStore(
       base::WeakPtr<NetworkMetadataStore> network_metadata_store) override;
+  void FixAutoconnect(std::vector<sync_pb::WifiConfigurationSpecifics> protos,
+                      base::OnceCallback<void()> success_callback) override;
+  void ExecuteAfterNetworksLoaded(base::OnceCallback<void()> callback) override;
+
+  bool has_fixed_autoconnect() { return has_fixed_autoconnect_; }
 
  private:
   std::vector<sync_pb::WifiConfigurationSpecifics> networks_;
+  bool has_fixed_autoconnect_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeLocalNetworkCollector);
 };

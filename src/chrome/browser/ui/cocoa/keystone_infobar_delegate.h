@@ -17,8 +17,8 @@ class WebContents;
 
 class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  // Creates a keystone promotion delegate and adds it to the InfoBarService
-  // associated with |webContents|.
+  // Creates a keystone promotion delegate and adds it to the
+  // infobars::ContentInfoBarManager associated with |webContents|.
   static void Create(content::WebContents* webContents);
 
  private:
@@ -33,8 +33,8 @@ class KeystonePromotionInfoBarDelegate : public ConfirmInfoBarDelegate {
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
-  base::string16 GetMessageText() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  std::u16string GetMessageText() const override;
+  std::u16string GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
 

@@ -4,10 +4,13 @@
 
 #include "chrome/browser/extensions/extension_web_ui.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -25,10 +28,12 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #endif
+
+using extensions::mojom::ManifestLocation;
 
 namespace extensions {
 
@@ -47,7 +52,7 @@ class ExtensionWebUITest : public testing::Test {
 
  protected:
   void SetUp() override {
-    profile_.reset(new TestingProfile());
+    profile_ = std::make_unique<TestingProfile>();
     TestExtensionSystem* system =
         static_cast<TestExtensionSystem*>(ExtensionSystem::Get(profile_.get()));
     extension_service_ = system->CreateExtensionService(
@@ -66,9 +71,9 @@ class ExtensionWebUITest : public testing::Test {
   ExtensionService* extension_service_;
   content::BrowserTaskEnvironment task_environment_;
 
-#if defined OS_CHROMEOS
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  ash::ScopedTestUserManager test_user_manager_;
 #endif
 };
 
@@ -86,7 +91,7 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
   scoped_refptr<const Extension> ext_unpacked(
       ExtensionBuilder()
           .SetManifest(manifest.Build())
-          .SetLocation(Manifest::UNPACKED)
+          .SetLocation(ManifestLocation::kUnpacked)
           .SetID("abcdefghijabcdefghijabcdefghijaa")
           .Build());
   extension_service_->AddExtension(ext_unpacked.get());
@@ -122,7 +127,7 @@ TEST_F(ExtensionWebUITest, ExtensionURLOverride) {
   scoped_refptr<const Extension> ext_component(
       ExtensionBuilder()
           .SetManifest(manifest2.Build())
-          .SetLocation(Manifest::COMPONENT)
+          .SetLocation(ManifestLocation::kComponent)
           .SetID("bbabcdefghijabcdefghijabcdefghij")
           .Build());
   extension_service_->AddComponentExtension(ext_component.get());
@@ -264,7 +269,7 @@ TEST_F(ExtensionWebUITest, TestNumExtensionsOverridingURL) {
         DictionaryBuilder().Set("newtab", "newtab.html").Build();
     scoped_refptr<const Extension> extension =
         ExtensionBuilder(name)
-            .SetLocation(Manifest::INTERNAL)
+            .SetLocation(ManifestLocation::kInternal)
             .SetManifestKey("chrome_url_overrides",
                             std::move(chrome_url_overrides))
             .Build();

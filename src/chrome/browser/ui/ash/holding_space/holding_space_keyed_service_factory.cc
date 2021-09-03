@@ -5,10 +5,13 @@
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_factory.h"
 
 #include "ash/public/cpp/ash_features.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/chromeos/fileapi/file_change_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_type.h"
@@ -26,6 +29,10 @@ HoldingSpaceKeyedServiceFactory::HoldingSpaceKeyedServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "HoldingSpaceService",
           BrowserContextDependencyManager::GetInstance()) {
+  if (features::IsHoldingSpaceArcIntegrationEnabled())
+    DependsOn(arc::ArcIntentHelperBridge::GetFactory());
+  DependsOn(chromeos::FileChangeServiceFactory::GetInstance());
+  DependsOn(drive::DriveIntegrationServiceFactory::GetInstance());
   DependsOn(file_manager::VolumeManagerFactory::GetInstance());
 }
 
@@ -35,12 +42,24 @@ HoldingSpaceKeyedService* HoldingSpaceKeyedServiceFactory::GetService(
       GetInstance()->GetServiceForBrowserContext(context, /*create=*/true));
 }
 
+content::BrowserContext*
+HoldingSpaceKeyedServiceFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  Profile* const profile = Profile::FromBrowserContext(context);
+
+  // Guest sessions are supported but redirect to the primary OTR profile.
+  if (profile->IsGuestSession())
+    return profile->GetPrimaryOTRProfile(/*create_if_needed=*/true);
+
+  // Don't create the service for OTR profiles outside of guest sessions.
+  return profile->IsOffTheRecord() ? nullptr : context;
+}
+
 KeyedService* HoldingSpaceKeyedServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!features::IsTemporaryHoldingSpaceEnabled())
-    return nullptr;
+  Profile* const profile = Profile::FromBrowserContext(context);
+  DCHECK_EQ(profile->IsGuestSession(), profile->IsOffTheRecord());
 
-  Profile* profile = Profile::FromBrowserContext(context);
   user_manager::User* user =
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if (!user)
@@ -50,11 +69,6 @@ KeyedService* HoldingSpaceKeyedServiceFactory::BuildServiceInstanceFor(
     return nullptr;
 
   return new HoldingSpaceKeyedService(profile, user->GetAccountId());
-}
-
-bool HoldingSpaceKeyedServiceFactory::ServiceIsCreatedWithBrowserContext()
-    const {
-  return true;
 }
 
 void HoldingSpaceKeyedServiceFactory::RegisterProfilePrefs(

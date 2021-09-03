@@ -9,6 +9,7 @@
 
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_transform.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
@@ -29,6 +30,9 @@ class WaylandSurface {
   WaylandWindow* root_window() const { return root_window_; }
   wl_surface* surface() const { return surface_.get(); }
   wp_viewport* viewport() const { return viewport_.get(); }
+  zwp_linux_surface_synchronization_v1* surface_sync() const {
+    return surface_sync_.get();
+  }
   int32_t buffer_scale() const { return buffer_scale_; }
   void set_buffer_scale(int32_t scale) { buffer_scale_ = scale; }
 
@@ -46,6 +50,10 @@ class WaylandSurface {
   // the underlying wl_surface must be kept alive with no root window associated
   // (e.g: window/tab dragging sessions).
   void UnsetRootWindow();
+
+  // Sets a non-null in-fence, must be combined with an AttachBuffer() and a
+  // Commit().
+  void SetAcquireFence(const gfx::GpuFenceHandle& acquire_fence);
 
   // Attaches the given wl_buffer to the underlying wl_surface at (0, 0).
   void AttachBuffer(wl_buffer* buffer);
@@ -67,8 +75,16 @@ class WaylandSurface {
 
   // Sets the region that is opaque on this surface in physical pixels. This is
   // expected to be called whenever the region that the surface span changes or
-  // the opacity changes.
-  void SetOpaqueRegion(const gfx::Rect& bounds_px);
+  // the opacity changes. |region_px| is specified surface-local, in physical
+  // pixels.
+  void SetOpaqueRegion(const gfx::Rect& region_px);
+
+  // Sets the input region on this surface in physical pixels.
+  // The input region indicates which parts of the surface accept pointer and
+  // touch input events. This is expected to be called from ToplevelWindow
+  // whenever the region that the surface span changes or window state changes
+  // when custom frame is used.
+  void SetInputRegion(const gfx::Rect& region_px);
 
   // Set the source rectangle of the associated wl_surface.
   // See:
@@ -89,10 +105,13 @@ class WaylandSurface {
   wl::Object<wl_subsurface> CreateSubsurface(WaylandSurface* parent);
 
  private:
+  wl::Object<wl_region> CreateAndAddRegion(const gfx::Rect& region_px);
+
   WaylandConnection* const connection_;
   WaylandWindow* root_window_ = nullptr;
   wl::Object<wl_surface> surface_;
   wl::Object<wp_viewport> viewport_;
+  wl::Object<zwp_linux_surface_synchronization_v1> surface_sync_;
 
   // Transformation for how the compositor interprets the contents of the
   // buffer.

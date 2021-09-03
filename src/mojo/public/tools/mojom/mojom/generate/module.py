@@ -12,7 +12,11 @@
 # method = interface.AddMethod('Tat', 0)
 # method.AddParameter('baz', 0, mojom.INT32)
 
-import pickle
+import sys
+if sys.version_info.major == 2:
+  import cPickle as pickle
+else:
+  import pickle
 from uuid import UUID
 
 
@@ -283,7 +287,9 @@ PRIMITIVES = (
 )
 
 ATTRIBUTE_MIN_VERSION = 'MinVersion'
+ATTRIBUTE_DEFAULT = 'Default'
 ATTRIBUTE_EXTENSIBLE = 'Extensible'
+ATTRIBUTE_NO_INTERRUPT = 'NoInterrupt'
 ATTRIBUTE_STABLE = 'Stable'
 ATTRIBUTE_SYNC = 'Sync'
 ATTRIBUTE_UNLIMITED_SIZE = 'UnlimitedSize'
@@ -305,6 +311,9 @@ class NamedValue(object):
     return (isinstance(rhs, NamedValue)
             and (self.parent_kind, self.mojom_name) == (rhs.parent_kind,
                                                         rhs.mojom_name))
+
+  def __hash__(self):
+    return hash((self.parent_kind, self.mojom_name))
 
 
 class BuiltinValue(object):
@@ -400,7 +409,8 @@ class Field(object):
 
 
 class StructField(Field):
-  pass
+  def __hash__(self):
+    return super(Field, self).__hash__()
 
 
 class UnionField(Field):
@@ -1042,6 +1052,11 @@ class Method(object):
         if self.attributes else None
 
   @property
+  def allow_interrupt(self):
+    return not self.attributes.get(ATTRIBUTE_NO_INTERRUPT) \
+        if self.attributes else True
+
+  @property
   def unlimited_message_size(self):
     return self.attributes.get(ATTRIBUTE_UNLIMITED_SIZE) \
         if self.attributes else False
@@ -1250,6 +1265,11 @@ class EnumField(object):
     self.name = stylizer.StylizeEnumField(self.mojom_name)
 
   @property
+  def default(self):
+    return self.attributes.get(ATTRIBUTE_DEFAULT, False) \
+        if self.attributes else False
+
+  @property
   def min_version(self):
     return self.attributes.get(ATTRIBUTE_MIN_VERSION) \
         if self.attributes else None
@@ -1275,6 +1295,7 @@ class Enum(Kind):
     self.attributes = attributes
     self.min_value = None
     self.max_value = None
+    self.default_field = None
 
   def Repr(self, as_ref=True):
     if as_ref:
@@ -1340,9 +1361,10 @@ class Enum(Kind):
   def __eq__(self, rhs):
     return (isinstance(rhs, Enum) and
             (self.mojom_name, self.native_only, self.fields, self.attributes,
-             self.min_value,
-             self.max_value) == (rhs.mojom_name, rhs.native_only, rhs.fields,
-                                 rhs.attributes, rhs.min_value, rhs.max_value))
+             self.min_value, self.max_value,
+             self.default_field) == (rhs.mojom_name, rhs.native_only,
+                                     rhs.fields, rhs.attributes, rhs.min_value,
+                                     rhs.max_value, rhs.default_field))
 
   def __hash__(self):
     return id(self)
@@ -1375,6 +1397,9 @@ class Module(object):
              self.interfaces) == (rhs.path, rhs.attributes, rhs.mojom_namespace,
                                   rhs.imports, rhs.constants, rhs.enums,
                                   rhs.structs, rhs.unions, rhs.interfaces))
+
+  def __hash__(self):
+    return id(self)
 
   def Repr(self, as_ref=True):
     if as_ref:
@@ -1642,6 +1667,13 @@ def MethodPassesInterfaces(method):
 def HasSyncMethods(interface):
   for method in interface.methods:
     if method.sync:
+      return True
+  return False
+
+
+def HasUninterruptableMethods(interface):
+  for method in interface.methods:
+    if not method.allow_interrupt:
       return True
   return False
 
