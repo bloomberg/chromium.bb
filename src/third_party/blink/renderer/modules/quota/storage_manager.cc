@@ -85,9 +85,7 @@ void QueryStorageUsageAndQuotaCallback(
 
 }  // namespace
 
-StorageManager::StorageManager(
-    ExecutionContext* execution_context,
-    mojo::Remote<mojom::blink::QuotaManagerHost> backend)
+StorageManager::StorageManager(ExecutionContext* execution_context)
     : ExecutionContextClient(execution_context),
       permission_service_(execution_context),
       quota_host_(execution_context),
@@ -238,7 +236,7 @@ void StorageManager::PermissionRequestComplete(ScriptPromiseResolver* resolver,
 }
 
 void StorageManager::StartObserving() {
-  if (change_listener_receiver_.is_bound())
+  if (change_listener_receiver_.is_bound() || !quota_host_.is_bound())
     return;
 
   ExecutionContext* execution_context = GetExecutionContext();

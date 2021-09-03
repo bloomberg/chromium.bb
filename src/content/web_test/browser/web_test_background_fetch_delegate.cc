@@ -33,6 +33,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace content {
@@ -48,8 +49,7 @@ class TestBlobContextGetterFactory : public download::BlobContextGetterFactory {
   // download::BlobContextGetterFactory implementation.
   void RetrieveBlobContextGetter(
       download::BlobContextGetterCallback callback) override {
-    auto blob_context_getter =
-        content::BrowserContext::GetBlobStorageContext(browser_context_);
+    auto blob_context_getter = browser_context_->GetBlobStorageContext();
     std::move(callback).Run(blob_context_getter);
   }
 
@@ -241,14 +241,6 @@ void WebTestBackgroundFetchDelegate::GetIconDisplaySize(
   std::move(callback).Run(gfx::Size(192, 192));
 }
 
-void WebTestBackgroundFetchDelegate::GetPermissionForOrigin(
-    const url::Origin& origin,
-    const WebContents::Getter& wc_getter,
-    GetPermissionForOriginCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  std::move(callback).Run(BackgroundFetchPermission::ALLOWED);
-}
-
 void WebTestBackgroundFetchDelegate::CreateDownloadJob(
     base::WeakPtr<Client> client,
     std::unique_ptr<BackgroundFetchDescription> fetch_description) {
@@ -273,10 +265,9 @@ void WebTestBackgroundFetchDelegate::CreateDownloadJob(
       base::test::ScopedFeatureList download_service_configuration;
       download_service_configuration.InitAndEnableFeatureWithParameters(
           download::kDownloadServiceFeature, {{"start_up_delay_ms", "0"}});
-      auto* url_loader_factory =
-          BrowserContext::GetDefaultStoragePartition(browser_context_)
-              ->GetURLLoaderFactoryForBrowserProcess()
-              .get();
+      auto* url_loader_factory = browser_context_->GetDefaultStoragePartition()
+                                     ->GetURLLoaderFactoryForBrowserProcess()
+                                     .get();
       SimpleFactoryKey* simple_key =
           SimpleKeyMap::GetInstance()->GetForBrowserContext(browser_context_);
       download_service_ = download::BuildInMemoryDownloadService(
@@ -310,7 +301,7 @@ void WebTestBackgroundFetchDelegate::DownloadUrl(
   params.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation);
 
-  download_service_->StartDownload(params);
+  download_service_->StartDownload(std::move(params));
 }
 
 void WebTestBackgroundFetchDelegate::Abort(const std::string& job_unique_id) {
@@ -323,8 +314,8 @@ void WebTestBackgroundFetchDelegate::MarkJobComplete(
 
 void WebTestBackgroundFetchDelegate::UpdateUI(
     const std::string& job_unique_id,
-    const base::Optional<std::string>& title,
-    const base::Optional<SkBitmap>& icon) {
+    const absl::optional<std::string>& title,
+    const absl::optional<SkBitmap>& icon) {
   background_fetch_client_->client()->OnUIUpdated(job_unique_id);
 }
 

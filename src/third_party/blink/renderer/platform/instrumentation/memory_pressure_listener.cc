@@ -29,7 +29,7 @@ namespace blink {
 // Function defined in third_party/blink/public/web/blink.h.
 void DecommitFreeableMemory() {
   CHECK(IsMainThread());
-  base::PartitionAllocMemoryReclaimer::Instance()->Reclaim();
+  base::PartitionAllocMemoryReclaimer::Instance()->ReclaimAll();
 }
 
 // static
@@ -100,13 +100,13 @@ void MemoryPressureListenerRegistry::UnregisterClient(
 }
 
 void MemoryPressureListenerRegistry::OnMemoryPressure(
-    WebMemoryPressureLevel level) {
+    base::MemoryPressureListener::MemoryPressureLevel level) {
   TRACE_EVENT1("blink", "MemoryPressureListenerRegistry::onMemoryPressure",
                "level", level);
   CHECK(IsMainThread());
   for (auto& client : clients_)
     client->OnMemoryPressure(level);
-  base::PartitionAllocMemoryReclaimer::Instance()->Reclaim();
+  base::PartitionAllocMemoryReclaimer::Instance()->ReclaimAll();
 }
 
 void MemoryPressureListenerRegistry::OnPurgeMemory() {
@@ -114,7 +114,7 @@ void MemoryPressureListenerRegistry::OnPurgeMemory() {
   for (auto& client : clients_)
     client->OnPurgeMemory();
   ImageDecodingStore::Instance().Clear();
-  base::PartitionAllocMemoryReclaimer::Instance()->Reclaim();
+  base::PartitionAllocMemoryReclaimer::Instance()->ReclaimAll();
 
   // Thread-specific data never issues a layout, so we are safe here.
   MutexLocker lock(threads_mutex_);

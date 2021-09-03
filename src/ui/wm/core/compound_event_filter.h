@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/strings/string_piece.h"
 #include "ui/events/event.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/native_widget_types.h"
@@ -39,6 +40,10 @@ class WM_CORE_EXPORT CompoundEventFilter : public ui::EventHandler {
 
   // Returns the cursor for the specified component.
   static gfx::NativeCursor CursorForWindowComponent(int window_component);
+
+  // Returns the not-resizable cursor for the specified component.
+  static gfx::NativeCursor NoResizeCursorForWindowComponent(
+      int window_component);
 
   // Adds/removes additional event filters. This does not take ownership of
   // the EventHandler.
@@ -73,6 +78,7 @@ class WM_CORE_EXPORT CompoundEventFilter : public ui::EventHandler {
   void OnScrollEvent(ui::ScrollEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
+  base::StringPiece GetLogContext() const override;
 
   // Additional pre-target event handlers.
   base::ObserverList<ui::EventHandler, true>::Unchecked handlers_;

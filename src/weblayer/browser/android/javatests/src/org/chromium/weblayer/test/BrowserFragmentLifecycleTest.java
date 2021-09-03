@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.test.filters.SmallTest;
 
@@ -26,6 +27,7 @@ import org.chromium.weblayer.NavigationCallback;
 import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.Tab;
+import org.chromium.weblayer.TabListCallback;
 import org.chromium.weblayer.WebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
@@ -48,6 +50,16 @@ public class BrowserFragmentLifecycleTest {
     private Tab getTab() {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> mActivityTestRule.getActivity().getTab());
+    }
+
+    private Browser getBrowser() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().getBrowser());
+    }
+
+    private Fragment getFragment() {
+        return TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> mActivityTestRule.getActivity().getFragment());
     }
 
     private boolean isRestoringPreviousState() {
@@ -103,7 +115,7 @@ public class BrowserFragmentLifecycleTest {
             NavigationController navigationController = activity.getTab().getNavigationController();
             navigationController.registerNavigationCallback(new NavigationCallback() {
                 @Override
-                public void onReadyToCommitNavigation(@NonNull Navigation navigation) {
+                public void onNavigationStarted(@NonNull Navigation navigation) {
                     destroyFragment(helper);
                 }
             });
@@ -215,7 +227,76 @@ public class BrowserFragmentLifecycleTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(85)
+    public void useViewModelDoesntRecreateBrowser() throws Throwable {
+        Bundle extras = new Bundle();
+        extras.putBoolean(InstrumentationActivity.EXTRA_USE_VIEW_MODEL, true);
+        InstrumentationActivity activity =
+                mActivityTestRule.launchShellWithUrl("about:blank", extras);
+        final Browser browser = getBrowser();
+        final Tab tab = getTab();
+        final Fragment fragment = getFragment();
+
+        mActivityTestRule.recreateActivity();
+
+        // The tab and browser should not have changed.
+        Assert.assertEquals(tab, getTab());
+        Assert.assertEquals(browser, getBrowser());
+        Assert.assertFalse(
+                TestThreadUtils.runOnUiThreadBlocking(() -> { return browser.isDestroyed(); }));
+        // But the fragment should have.
+        Assert.assertNotEquals(fragment, getFragment());
+    }
+
+    @Test
+    @SmallTest
+    public void useViewModelDestroysBrowserWhenActivityDestroyed() throws Throwable {
+        Bundle extras = new Bundle();
+        extras.putBoolean(InstrumentationActivity.EXTRA_USE_VIEW_MODEL, true);
+        InstrumentationActivity activity =
+                mActivityTestRule.launchShellWithUrl("about:blank", extras);
+        final Browser browser = getBrowser();
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            activity.getBrowser().registerTabListCallback(new TabListCallback() {
+                @Override
+                public void onWillDestroyBrowserAndAllTabs() {
+                    callbackHelper.notifyCalled();
+                }
+            });
+            activity.finish();
+        });
+        callbackHelper.waitForFirst();
+        Assert.assertTrue(
+                TestThreadUtils.runOnUiThreadBlocking(() -> { return browser.isDestroyed(); }));
+    }
+
+    @Test
+    @SmallTest
+    public void useViewModelDestroysBrowserWhenFragmentDestroyed() throws Throwable {
+        Bundle extras = new Bundle();
+        extras.putBoolean(InstrumentationActivity.EXTRA_USE_VIEW_MODEL, true);
+        InstrumentationActivity activity =
+                mActivityTestRule.launchShellWithUrl("about:blank", extras);
+        final Browser browser = getBrowser();
+        final CallbackHelper callbackHelper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            activity.getBrowser().registerTabListCallback(new TabListCallback() {
+                @Override
+                public void onWillDestroyBrowserAndAllTabs() {
+                    callbackHelper.notifyCalled();
+                }
+            });
+            destroyFragment(callbackHelper);
+        });
+        // There are two callbacks, one from destroying the fragment, and the second from
+        // onWillDestroyBrowserAndAllTabs().
+        callbackHelper.waitForCallback(0, 2);
+        Assert.assertTrue(
+                TestThreadUtils.runOnUiThreadBlocking(() -> { return browser.isDestroyed(); }));
+    }
+
+    @Test
+    @SmallTest
     public void restoresTabData() throws Throwable {
         Bundle extras = new Bundle();
         extras.putString(InstrumentationActivity.EXTRA_PERSISTENCE_ID, "x");
@@ -227,7 +308,6 @@ public class BrowserFragmentLifecycleTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(85)
     public void restoreTabDataAfterRecreate() throws Throwable {
         Map<String, String> initialData = new HashMap<>();
         initialData.put("foo", "bar");
@@ -255,7 +335,6 @@ public class BrowserFragmentLifecycleTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(85)
     public void getAndRemoveBrowserPersistenceIds() throws Throwable {
         // Creates a browser with the persistence id 'x'.
         final String persistenceId = "x";
@@ -341,7 +420,7 @@ public class BrowserFragmentLifecycleTest {
         }
 
         @Override
-        public void onCreated(Browser browser) {
+        public void onCreated(Browser browser, InstrumentationActivity activity) {
             mBrowsers.add(browser);
             if (!browser.isRestoringPreviousState()) {
                 mCallbackHelper.notifyCalled();
@@ -387,7 +466,6 @@ public class BrowserFragmentLifecycleTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(87)
     public void twoFragmentsDifferentIncognitoProfiles() throws Throwable {
         // This test creates two browsers with different profile names and persistence ids.
         final String persistenceId1 = "x";
@@ -467,7 +545,6 @@ public class BrowserFragmentLifecycleTest {
 
     @Test
     @SmallTest
-    @MinWebLayerVersion(87)
     public void twoFragmentsSameIncognitoProfile() throws Throwable {
         // This test creates two browsers with the same profile, but different persistence ids.
         final String persistenceId1 = "x";

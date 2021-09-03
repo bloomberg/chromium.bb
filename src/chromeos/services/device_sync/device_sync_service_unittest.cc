@@ -7,11 +7,11 @@
 #include <tuple>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -21,10 +21,12 @@
 #include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/components/multidevice/secure_message_delegate.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler_test_helper.h"
 #include "chromeos/services/device_sync/cryptauth_device_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_device_registry_impl.h"
+#include "chromeos/services/device_sync/cryptauth_enroller.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_feature_type.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager_impl.h"
@@ -59,6 +61,7 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -594,10 +597,10 @@ class FakeRemoteDeviceProviderFactory
               device_manager);
     EXPECT_EQ(fake_cryptauth_v2_device_manager_factory_->instance(),
               v2_device_manager);
-    EXPECT_EQ(identity_manager_
-                  ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
-                  .email,
-              user_email);
+    EXPECT_EQ(
+        identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin)
+            .email,
+        user_email);
     if (base::FeatureList::IsEnabled(features::kCryptAuthV2Enrollment)) {
       EXPECT_EQ(fake_cryptauth_v2_enrollment_manager_factory_->instance()
                     ->GetUserPrivateKey(),
@@ -742,7 +745,7 @@ class DeviceSyncServiceTest
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     DBusThreadManager::Initialize();
-    NetworkHandler::Initialize();
+    network_handler_test_helper_ = std::make_unique<NetworkHandlerTestHelper>();
     base::RunLoop().RunUntilIdle();
 
     fake_gcm_driver_ = std::make_unique<gcm::FakeGCMDriver>();
@@ -872,7 +875,7 @@ class DeviceSyncServiceTest
     SoftwareFeatureManagerImpl::Factory::SetFactoryForTesting(nullptr);
     DeviceSyncImpl::Factory::SetCustomFactory(nullptr);
 
-    NetworkHandler::Shutdown();
+    network_handler_test_helper_.reset();
     DBusThreadManager::Shutdown();
   }
 
@@ -1040,7 +1043,7 @@ class DeviceSyncServiceTest
               success ? CryptAuthDeviceSyncResult::ResultCode::kSuccess
                       : CryptAuthDeviceSyncResult::ResultCode::
                             kErrorSyncMetadataApiCallBadRequest,
-              !updated_devices.empty(), base::nullopt /* client_directive */),
+              !updated_devices.empty(), absl::nullopt /* client_directive */),
           base::Time::Now());
     }
 
@@ -1275,7 +1278,7 @@ class DeviceSyncServiceTest
     return last_force_sync_now_result_;
   }
 
-  const base::Optional<multidevice::RemoteDevice>&
+  const absl::optional<multidevice::RemoteDevice>&
   CallGetLocalDeviceMetadata() {
     base::RunLoop run_loop;
     device_sync_->GetLocalDeviceMetadata(base::BindOnce(
@@ -1285,7 +1288,7 @@ class DeviceSyncServiceTest
     return last_local_device_metadata_result_;
   }
 
-  const base::Optional<multidevice::RemoteDeviceList>& CallGetSyncedDevices() {
+  const absl::optional<multidevice::RemoteDeviceList>& CallGetSyncedDevices() {
     base::RunLoop run_loop;
     device_sync_->GetSyncedDevices(
         base::BindOnce(&DeviceSyncServiceTest::OnGetSyncedDevicesCompleted,
@@ -1400,7 +1403,7 @@ class DeviceSyncServiceTest
     fake_device_notifier()->set_delegate(nullptr);
   }
 
-  const base::Optional<mojom::DebugInfo>& CallGetDebugInfo() {
+  const absl::optional<mojom::DebugInfo>& CallGetDebugInfo() {
     base::RunLoop run_loop;
     device_sync_->GetDebugInfo(
         base::BindOnce(&DeviceSyncServiceTest::OnGetDebugInfoCompleted,
@@ -1494,14 +1497,14 @@ class DeviceSyncServiceTest
 
   void OnGetLocalDeviceMetadataCompleted(
       base::OnceClosure quit_closure,
-      const base::Optional<multidevice::RemoteDevice>& local_device_metadata) {
+      const absl::optional<multidevice::RemoteDevice>& local_device_metadata) {
     last_local_device_metadata_result_ = local_device_metadata;
     std::move(quit_closure).Run();
   }
 
   void OnGetSyncedDevicesCompleted(
       base::OnceClosure quit_closure,
-      const base::Optional<multidevice::RemoteDeviceList>& synced_devices) {
+      const absl::optional<multidevice::RemoteDeviceList>& synced_devices) {
     last_synced_devices_result_ = synced_devices;
     std::move(quit_closure).Run();
   }
@@ -1575,6 +1578,7 @@ class DeviceSyncServiceTest
   const std::vector<cryptauth::ExternalDeviceInfo> test_device_infos_;
   const std::vector<cryptauth::IneligibleDevice> test_ineligible_devices_;
 
+  std::unique_ptr<NetworkHandlerTestHelper> network_handler_test_helper_;
   std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
   base::MockOneShotTimer* mock_timer_;
   std::unique_ptr<base::SimpleTestClock> simple_test_clock_;
@@ -1613,14 +1617,14 @@ class DeviceSyncServiceTest
   bool device_already_enrolled_in_cryptauth_;
   bool last_force_enrollment_now_result_;
   bool last_force_sync_now_result_;
-  base::Optional<multidevice::RemoteDeviceList> last_synced_devices_result_;
-  base::Optional<multidevice::RemoteDevice> last_local_device_metadata_result_;
+  absl::optional<multidevice::RemoteDeviceList> last_synced_devices_result_;
+  absl::optional<multidevice::RemoteDevice> last_local_device_metadata_result_;
   std::unique_ptr<mojom::NetworkRequestResult>
       last_set_software_feature_state_response_;
   std::unique_ptr<std::pair<mojom::NetworkRequestResult,
                             mojom::FindEligibleDevicesResponsePtr>>
       last_find_eligible_devices_response_;
-  base::Optional<mojom::DebugInfo> last_debug_info_result_;
+  absl::optional<mojom::DebugInfo> last_debug_info_result_;
   std::vector<mojom::NetworkRequestResult> set_feature_status_results_;
   std::vector<mojom::NetworkRequestResult> notify_devices_results_;
 
@@ -1715,7 +1719,7 @@ TEST_P(DeviceSyncServiceTest, ClientAppMetadataFetch) {
       std::move(fake_client_app_metadata_provider()
                     ->metadata_requests()[attempt - 1]
                     .callback)
-          .Run(base::nullopt /* client_app_metadata */);
+          .Run(absl::nullopt /* client_app_metadata */);
       EXPECT_TRUE(mock_timer()->IsRunning());  // Retry timer is running.
       mock_timer()->Fire();
     } else if (attempt == 3) {
@@ -2431,12 +2435,12 @@ TEST_P(DeviceSyncServiceTest, GetDebugInfo) {
   if (features::ShouldUseV2DeviceSync()) {
     fake_cryptauth_v2_device_manager()->ForceDeviceSyncNow(
         cryptauthv2::ClientMetadata::MANUAL /* invocation_reason */,
-        base::nullopt /* session_id */);
+        absl::nullopt /* session_id */);
     fake_cryptauth_v2_device_manager()->FinishNextForcedDeviceSync(
         CryptAuthDeviceSyncResult(
             CryptAuthDeviceSyncResult::ResultCode::kSuccess,
             true /* did_device_registry_change */,
-            base::nullopt /* client_directive */),
+            absl::nullopt /* client_directive */),
         base::Time::FromDeltaSinceWindowsEpoch(
             kTimeBetweenEpochAndLastSync) /* device_sync_finish_time */);
     fake_cryptauth_v2_device_manager()->set_time_to_next_attempt(

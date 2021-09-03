@@ -15,6 +15,7 @@
 #include "content/browser/media/session/mock_media_session_service_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/media_session_service.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/test/test_web_contents.h"
@@ -50,12 +51,13 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
     return AudioFocusResult::kSuccess;
   }
 
-  base::Optional<AudioFocusType> GetCurrentFocusType() const override {
+  absl::optional<AudioFocusType> GetCurrentFocusType() const override {
     return AudioFocusType::kGain;
   }
 
-  void MediaSessionInfoChanged(MediaSessionInfoPtr session_info) override {
-    session_info_ = std::move(session_info);
+  void MediaSessionInfoChanged(
+      const MediaSessionInfoPtr& session_info) override {
+    session_info_ = session_info.Clone();
   }
 
   MOCK_CONST_METHOD0(request_id, const base::UnguessableToken&());
@@ -75,6 +77,13 @@ class MockAudioFocusDelegate : public AudioFocusDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockAudioFocusDelegate);
 };
 
+// A mock WebContentsDelegate which listens to |ActivateContents()| calls.
+class MockWebContentsDelegate : public content::WebContentsDelegate {
+ public:
+  // content::WebContentsDelegate:
+  MOCK_METHOD(void, ActivateContents, (content::WebContents*), (override));
+};
+
 }  // anonymous namespace
 
 class MediaSessionImplTest : public RenderViewHostTestHarness {
@@ -83,6 +92,8 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
     default_actions_.insert(media_session::mojom::MediaSessionAction::kPlay);
     default_actions_.insert(media_session::mojom::MediaSessionAction::kPause);
     default_actions_.insert(media_session::mojom::MediaSessionAction::kStop);
+    default_actions_.insert(media_session::mojom::MediaSessionAction::kSeekTo);
+    default_actions_.insert(media_session::mojom::MediaSessionAction::kScrubTo);
   }
 
   void SetUp() override {
@@ -93,9 +104,11 @@ class MediaSessionImplTest : public RenderViewHostTestHarness {
 
     RenderViewHostTestHarness::SetUp();
 
-    player_observer_.reset(new MockMediaSessionPlayerObserver(main_rfh()));
-    mock_media_session_service_.reset(
-        new testing::NiceMock<MockMediaSessionServiceImpl>(main_rfh()));
+    player_observer_ =
+        std::make_unique<MockMediaSessionPlayerObserver>(main_rfh());
+    mock_media_session_service_ =
+        std::make_unique<testing::NiceMock<MockMediaSessionServiceImpl>>(
+            main_rfh());
 
     // Connect to the Media Session service and bind |audio_focus_remote_| to
     // it.
@@ -715,6 +728,21 @@ TEST_F(MediaSessionImplTest, SessionInfoAudioSink) {
   player_observer_->SetAudioSinkId(player2, "2");
   info = media_session::test::GetMediaSessionInfoSync(GetMediaSession());
   EXPECT_FALSE(info->audio_sink_id.has_value());
+}
+
+TEST_F(MediaSessionImplTest, RaiseActivatesWebContents) {
+  MockWebContentsDelegate delegate;
+  web_contents()->SetDelegate(&delegate);
+
+  // When the WebContents has a delegate, |Raise()| should activate the
+  // WebContents.
+  EXPECT_CALL(delegate, ActivateContents(web_contents()));
+  GetMediaSession()->Raise();
+  testing::Mock::VerifyAndClearExpectations(&delegate);
+
+  // When the WebContents does not have a delegate, |Raise()| should not crash.
+  web_contents()->SetDelegate(nullptr);
+  GetMediaSession()->Raise();
 }
 
 }  // namespace content

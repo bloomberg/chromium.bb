@@ -12,7 +12,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
-#import "components/autofill/ios/browser/js_suggestion_manager.h"
+#import "components/autofill/ios/browser/form_suggestion_provider.h"
 #import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_observer_bridge.h"
 #include "components/autofill/ios/form_util/form_activity_params.h"
@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_view.h"
 #import "ios/chrome/browser/ui/commands/security_alert_commands.h"
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/keyboard_observer_helper.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
@@ -36,7 +37,6 @@
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/common/url_scheme_util.h"
-#import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
@@ -72,9 +72,6 @@ using base::UmaHistogramEnumeration;
 // The form input handler. This is in charge of form navigation.
 @property(nonatomic, strong)
     FormInputAccessoryViewHandler* formInputAccessoryHandler;
-
-// The JS manager for interacting with the underlying form.
-@property(nonatomic, weak) JsSuggestionManager* JSSuggestionManager;
 
 // The observer to determine when the keyboard dissapears and when it stays.
 @property(nonatomic, strong) KeyboardObserverHelper* keyboardObserver;
@@ -164,12 +161,6 @@ using base::UmaHistogramEnumeration;
       web::WebState* webState = webStateList->GetActiveWebState();
       if (webState) {
         _webState = webState;
-        CRWJSInjectionReceiver* injectionReceiver =
-            webState->GetJSInjectionReceiver();
-        _JSSuggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
-            [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
-        [_JSSuggestionManager
-            setWebFramesManager:webState->GetWebFramesManager()];
         FormSuggestionTabHelper* tabHelper =
             FormSuggestionTabHelper::FromWebState(webState);
         if (tabHelper) {
@@ -184,7 +175,7 @@ using base::UmaHistogramEnumeration;
       }
     }
     _formInputAccessoryHandler = [[FormInputAccessoryViewHandler alloc] init];
-    _formInputAccessoryHandler.JSSuggestionManager = _JSSuggestionManager;
+    _formInputAccessoryHandler.webState = _webState;
 
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
@@ -277,6 +268,10 @@ using base::UmaHistogramEnumeration;
     _webState = nullptr;
     _formActivityObserverBridge.reset();
   }
+}
+
+- (BOOL)lastFocusedFieldWasPassword {
+  return _lastSeenParams.field_type == autofill::kPasswordFieldType;
 }
 
 #pragma mark - KeyboardObserverHelperConsumer
@@ -464,7 +459,7 @@ using base::UmaHistogramEnumeration;
   __weak __typeof(self) weakSelf = self;
   [self.formInputAccessoryHandler
       fetchPreviousAndNextElementsPresenceWithCompletionHandler:^(
-          BOOL previousButtonEnabled, BOOL nextButtonEnabled) {
+          bool previousButtonEnabled, bool nextButtonEnabled) {
         weakSelf.consumer.formInputNextButtonEnabled = nextButtonEnabled;
         weakSelf.consumer.formInputPreviousButtonEnabled =
             previousButtonEnabled;
@@ -483,21 +478,14 @@ using base::UmaHistogramEnumeration;
     webState->AddObserver(_webStateObserverBridge.get());
     _formActivityObserverBridge =
         std::make_unique<autofill::FormActivityObserverBridge>(webState, self);
-    CRWJSInjectionReceiver* injectionReceiver =
-        webState->GetJSInjectionReceiver();
-    self.JSSuggestionManager = base::mac::ObjCCastStrict<JsSuggestionManager>(
-        [injectionReceiver instanceOfClass:[JsSuggestionManager class]]);
-    [self.JSSuggestionManager
-        setWebFramesManager:webState->GetWebFramesManager()];
     FormSuggestionTabHelper* tabHelper =
         FormSuggestionTabHelper::FromWebState(webState);
     if (tabHelper) {
       self.provider = tabHelper->GetAccessoryViewProvider();
     }
-    _formInputAccessoryHandler.JSSuggestionManager = self.JSSuggestionManager;
+    _formInputAccessoryHandler.webState = webState;
   } else {
     self.webState = nullptr;
-    self.JSSuggestionManager = nil;
     self.provider = nil;
   }
 }
@@ -550,6 +538,12 @@ using base::UmaHistogramEnumeration;
     self.currentProvider = provider;
     // Post it to the consumer.
     [self.consumer showAccessorySuggestions:suggestions];
+    if (suggestions.count) {
+      if (provider.type == SuggestionProviderTypeAutofill) {
+        LogLikelyInterestedDefaultBrowserUserActivity(
+            DefaultPromoTypeMadeForIOS);
+      }
+    }
   }
 }
 
@@ -631,21 +625,27 @@ using base::UmaHistogramEnumeration;
 - (void)didSelectSuggestion:(FormSuggestion*)formSuggestion {
   UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
                           ReauthenticationEvent::kAttempt);
+  __weak __typeof(self) weakSelf = self;
+  auto suggestionHandler = ^() {
+    if (weakSelf.currentProvider.type == SuggestionProviderTypePassword) {
+      LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeStaySafe);
+    }
+    [weakSelf.currentProvider didSelectSuggestion:formSuggestion];
+  };
 
   if (!formSuggestion.requiresReauth) {
     UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
                             ReauthenticationEvent::kSuccess);
-    [self.currentProvider didSelectSuggestion:formSuggestion];
+    suggestionHandler();
     return;
   }
   if ([self.reauthenticationModule canAttemptReauth]) {
     NSString* reason = l10n_util::GetNSString(IDS_IOS_AUTOFILL_REAUTH_REASON);
-    __weak __typeof(self) weakSelf = self;
     auto completionHandler = ^(ReauthenticationResult result) {
       if (result != ReauthenticationResult::kFailure) {
         UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
                                 ReauthenticationEvent::kSuccess);
-        [weakSelf.currentProvider didSelectSuggestion:formSuggestion];
+        suggestionHandler();
       } else {
         UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
                                 ReauthenticationEvent::kFailure);
@@ -659,7 +659,7 @@ using base::UmaHistogramEnumeration;
   } else {
     UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
                             ReauthenticationEvent::kMissingPasscode);
-    [self.securityAlertHandler showSetPasscodeDialog];
+    suggestionHandler();
   }
 }
 
@@ -701,11 +701,6 @@ using base::UmaHistogramEnumeration;
   _webState->AddObserver(_webStateObserverBridge.get());
   _formActivityObserverBridge =
       std::make_unique<autofill::FormActivityObserverBridge>(_webState, self);
-}
-
-- (void)injectSuggestionManager:(JsSuggestionManager*)JSSuggestionManager {
-  _JSSuggestionManager = JSSuggestionManager;
-  _formInputAccessoryHandler.JSSuggestionManager = _JSSuggestionManager;
 }
 
 - (void)injectProvider:(id<FormInputSuggestionsProvider>)provider {

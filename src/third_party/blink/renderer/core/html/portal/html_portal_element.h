@@ -5,10 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_HTML_PORTAL_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_HTML_PORTAL_ELEMENT_H_
 
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -23,6 +23,7 @@ namespace blink {
 class Document;
 class PortalActivateOptions;
 class PortalContents;
+class PostMessageOptions;
 class ScriptState;
 
 // The HTMLPortalElement implements the <portal> HTML element. The portal
@@ -54,12 +55,7 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   ScriptPromise activate(ScriptState*, PortalActivateOptions*, ExceptionState&);
   void postMessage(ScriptState* script_state,
                    const ScriptValue& message,
-                   const String& target_origin,
-                   const HeapVector<ScriptValue>& transfer,
-                   ExceptionState& exception_state);
-  void postMessage(ScriptState* script_state,
-                   const ScriptValue& message,
-                   const WindowPostMessageOptions* options,
+                   const PostMessageOptions* options,
                    ExceptionState& exception_state);
   EventListener* onmessage();
   void setOnmessage(EventListener* listener);
@@ -144,8 +140,8 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
 
   // HTMLFrameOwnerElement overrides
   void DisconnectContentFrame() override;
-  ParsedFeaturePolicy ConstructContainerPolicy() const override {
-    return ParsedFeaturePolicy();
+  ParsedPermissionsPolicy ConstructContainerPolicy() const override {
+    return ParsedPermissionsPolicy();
   }
   void AttachLayoutTree(AttachContext& context) override;
   network::mojom::ReferrerPolicy ReferrerPolicyAttribute() override;

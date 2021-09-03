@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
 namespace blink {
@@ -25,18 +26,26 @@ class ExecutionContext;
 class MediaDecodingConfiguration;
 class MediaEncodingConfiguration;
 class MediaKeySystemAccess;
+class NavigatorBase;
 class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
+class MODULES_EXPORT MediaCapabilities final
+    : public ScriptWrappable,
+      public Supplement<NavigatorBase> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static const char kLearningBadWindowThresholdParamName[];
   static const char kLearningNnrThresholdParamName[];
 
-  explicit MediaCapabilities(ExecutionContext* context);
+  static const char kSupplementName[];
+
+  // Getter for navigator.mediaCapabilities
+  static MediaCapabilities* mediaCapabilities(NavigatorBase&);
+
+  explicit MediaCapabilities(NavigatorBase&);
 
   void Trace(blink::Visitor* visitor) const override;
 
@@ -53,18 +62,19 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
     PendingCallbackState(ScriptPromiseResolver* resolver,
                          MediaKeySystemAccess* access,
                          const base::TimeTicks& request_time,
-                         base::Optional<IdentifiableToken> input_token);
+                         absl::optional<IdentifiableToken> input_token);
     virtual void Trace(blink::Visitor* visitor) const;
 
     Member<ScriptPromiseResolver> resolver;
     Member<MediaKeySystemAccess> key_system_access;
-    base::Optional<bool> is_bad_window_prediction_smooth;
-    base::Optional<bool> is_nnr_prediction_smooth;
-    base::Optional<bool> db_is_smooth;
-    base::Optional<bool> db_is_power_efficient;
-    base::Optional<bool> is_gpu_factories_supported;
+    absl::optional<bool> is_supported;
+    absl::optional<bool> is_bad_window_prediction_smooth;
+    absl::optional<bool> is_nnr_prediction_smooth;
+    absl::optional<bool> db_is_smooth;
+    absl::optional<bool> db_is_power_efficient;
+    absl::optional<bool> is_gpu_factories_supported;
     base::TimeTicks request_time;
-    base::Optional<IdentifiableToken> input_token;
+    absl::optional<IdentifiableToken> input_token;
   };
 
   // Lazily binds remote LearningTaskControllers for ML smoothness predictions
@@ -117,12 +127,12 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
   // Callback for predictions from |bad_window_predictor_|.
   void OnBadWindowPrediction(
       int callback_id,
-      const base::Optional<::media::learning::TargetHistogram>& histogram);
+      const absl::optional<::media::learning::TargetHistogram>& histogram);
 
   // Callback for predictions from |nnr_predictor_|.
   void OnNnrPrediction(
       int callback_id,
-      const base::Optional<::media::learning::TargetHistogram>& histogram);
+      const absl::optional<::media::learning::TargetHistogram>& histogram);
 
   // Callback for GetGpuFactoriesSupport().
   void OnGpuFactoriesSupport(int callback_id, bool is_supported);
@@ -131,26 +141,29 @@ class MODULES_EXPORT MediaCapabilities final : public ScriptWrappable {
   // |pending_callback_map_|.
   void ResolveCallbackIfReady(int callback_id);
 
+  void OnWebrtcDecodingInfoSupport(int callback_id,
+                                   bool is_supported,
+                                   bool is_power_efficient);
+
+  void ResolveWebrtcDecodingCallbackIfReady(int callback_id);
+
   // Creates a new (incremented) callback ID from |last_callback_id_| for
   // mapping in |pending_cb_map_|.
   int CreateCallbackId();
 
-  HeapMojoRemote<media::mojom::blink::VideoDecodePerfHistory,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+  HeapMojoRemote<media::mojom::blink::VideoDecodePerfHistory>
       decode_history_service_;
 
   // Connection to a browser-process LearningTaskController for predicting the
   // number of consecutive "bad" dropped frame windows during a playback. See
   // media::SmoothnessHelper.
-  HeapMojoRemote<media::learning::mojom::blink::LearningTaskController,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+  HeapMojoRemote<media::learning::mojom::blink::LearningTaskController>
       bad_window_predictor_;
 
   // Connects to a browser-process LearningTaskController for predicting the
   // number of consecutive non-network re-buffers (NNRs). See
   // media::SmoothnessHelper.
-  HeapMojoRemote<media::learning::mojom::blink::LearningTaskController,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
+  HeapMojoRemote<media::learning::mojom::blink::LearningTaskController>
       nnr_predictor_;
 
   // Holds the last key for callbacks in the map below. Incremented for each

@@ -16,7 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
+#include "chrome/browser/ash/certificate_provider/certificate_provider.h"
 #include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
 #include "crypto/nss_crypto_module_delegate.h"
 #include "net/ssl/ssl_cert_request_info.h"
@@ -56,10 +56,11 @@ void ClientCertStoreChromeOS::GetClientCerts(
                        net::ClientCertIdentityList());
   }
 
-  auto repeating_callback = base::AdaptCallbackForRepeating(
-      std::move(get_additional_certs_and_continue));
-  if (cert_filter_.Init(repeating_callback))
-    repeating_callback.Run();
+  auto split_callback =
+      base::SplitOnceCallback(std::move(get_additional_certs_and_continue));
+  if (cert_filter_.Init(std::move(split_callback.first))) {
+    std::move(split_callback.second).Run();
+  }
 }
 
 void ClientCertStoreChromeOS::GotAdditionalCerts(

@@ -16,8 +16,9 @@
 #include "base/no_destructor.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-forward.h"
 #include "components/safe_browsing/content/common/safe_browsing.mojom-shared.h"
+#include "components/safe_browsing/content/renderer/phishing_classifier/flatbuffer_scorer.h"
 #include "components/safe_browsing/content/renderer/phishing_classifier/phishing_classifier.h"
-#include "components/safe_browsing/content/renderer/phishing_classifier/scorer.h"
+#include "components/safe_browsing/content/renderer/phishing_classifier/protobuf_scorer.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -79,12 +80,32 @@ PhishingClassifierDelegate::~PhishingClassifierDelegate() {
   PhishingClassifierDelegates().erase(this);
 }
 
-void PhishingClassifierDelegate::SetPhishingModel(const std::string& model) {
+void PhishingClassifierDelegate::SetPhishingModel(
+    const std::string& model,
+    base::File tflite_visual_model) {
   safe_browsing::Scorer* scorer = nullptr;
-  // An empty model string means we should disable client-side phishing
-  // detection.
-  if (!model.empty()) {
-    scorer = safe_browsing::Scorer::Create(model);
+  // An empty model string and invalid model file means we should disable
+  // client-side phishing detection.
+  if (!model.empty() || tflite_visual_model.IsValid()) {
+    scorer = safe_browsing::ProtobufModelScorer::Create(
+        model, std::move(tflite_visual_model));
+    if (!scorer)
+      return;
+  }
+  for (auto* delegate : PhishingClassifierDelegates())
+    delegate->SetPhishingScorer(scorer);
+  g_phishing_scorer.Get().reset(scorer);
+}
+
+void PhishingClassifierDelegate::SetPhishingFlatBufferModel(
+    base::ReadOnlySharedMemoryRegion flatbuffer_region,
+    base::File tflite_visual_model) {
+  safe_browsing::Scorer* scorer = nullptr;
+  // An invalid region or invalid model file means we should disable
+  // client-side phishing detection.
+  if (flatbuffer_region.IsValid() || tflite_visual_model.IsValid()) {
+    scorer = safe_browsing::FlatBufferModelScorer::Create(
+        std::move(flatbuffer_region), std::move(tflite_visual_model));
     if (!scorer)
       return;
   }
@@ -161,7 +182,7 @@ void PhishingClassifierDelegate::DidFinishSameDocumentNavigation() {
   CancelPendingClassification(NAVIGATE_WITHIN_PAGE);
 }
 
-void PhishingClassifierDelegate::PageCaptured(base::string16* page_text,
+void PhishingClassifierDelegate::PageCaptured(std::u16string* page_text,
                                               bool preliminary_capture) {
   RecordEvent(SBPhishingClassifierEvent::kPageTextCaptured);
 
@@ -183,10 +204,6 @@ void PhishingClassifierDelegate::PageCaptured(base::string16* page_text,
   if (stripped_last_load_url == StripRef(last_url_sent_to_classifier_)) {
     return;
   }
-
-  UMA_HISTOGRAM_BOOLEAN(
-      "SBClientPhishing.PageCapturedMatchesBrowserURL",
-      (last_url_received_from_browser_ == stripped_last_load_url));
 
   MaybeStartClassification();
 }

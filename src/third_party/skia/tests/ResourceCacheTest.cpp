@@ -5,8 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "include/core/SkTypes.h"
-
+#include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkSurface.h"
 #include "include/gpu/GrDirectContext.h"
@@ -60,7 +59,7 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ResourceCacheCache, reporter, ctxInfo) {
     readback.allocN32Pixels(size.width(), size.height());
 
     for (int i = 0; i < 100; ++i) {
-        canvas->drawBitmap(src, 0, 0);
+        canvas->drawImage(src.asImage(), 0, 0);
         surface->readPixels(readback, 0, 0);
 
         // "modify" the src texture
@@ -97,7 +96,7 @@ static sk_sp<GrRenderTarget> create_RT_with_SB(GrResourceProvider* provider,
         return nullptr;
     }
 
-    if (!provider->attachStencilAttachment(tex->asRenderTarget(), sampleCount)) {
+    if (!provider->attachStencilAttachment(tex->asRenderTarget(), sampleCount > 1)) {
         return nullptr;
     }
     SkASSERT(get_SB(tex->asRenderTarget()));
@@ -818,7 +817,8 @@ static void test_duplicate_scratch_key(skiatest::Reporter* reporter) {
 
     // Scratch resources are registered with GrResourceCache just by existing. There are 2.
     REPORTER_ASSERT(reporter, 2 == TestResource::NumAlive());
-    SkDEBUGCODE(REPORTER_ASSERT(reporter, 2 == cache->countScratchEntriesForKey(scratchKey));)
+    // As long as there are outstanding refs on the resources they will not be in the scratch map
+    SkDEBUGCODE(REPORTER_ASSERT(reporter, 0 == cache->countScratchEntriesForKey(scratchKey));)
     REPORTER_ASSERT(reporter, 2 == cache->getResourceCount());
     REPORTER_ASSERT(reporter, a->gpuMemorySize() + b->gpuMemorySize() ==
                               cache->getResourceBytes());
@@ -832,6 +832,7 @@ static void test_duplicate_scratch_key(skiatest::Reporter* reporter) {
     a->unref();
     b->unref();
     REPORTER_ASSERT(reporter, 2 == TestResource::NumAlive());
+    // Since we removed the refs to the resources they will now be in the scratch map
     SkDEBUGCODE(REPORTER_ASSERT(reporter, 2 == cache->countScratchEntriesForKey(scratchKey));)
 
     // Purge again. This time resources should be purgeable.
@@ -1079,7 +1080,7 @@ static void test_purge_invalidated(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, 3 == TestResource::NumAlive());
 
     typedef GrUniqueKeyInvalidatedMessage Msg;
-    typedef SkMessageBus<GrUniqueKeyInvalidatedMessage> Bus;
+    typedef SkMessageBus<GrUniqueKeyInvalidatedMessage, uint32_t> Bus;
 
     // Invalidate two of the three, they should be purged and no longer accessible via their keys.
     Bus::Post(Msg(key1, dContext->priv().contextID()));
@@ -1560,15 +1561,15 @@ static void test_free_texture_messages(skiatest::Reporter* reporter) {
     REPORTER_ASSERT(reporter, 0 == (freed[0] + freed[1] + freed[2]));
 
     // Send message to free the first resource
-    GrTextureFreedMessage msg1{wrapped[0], dContext->priv().contextID()};
-    SkMessageBus<GrTextureFreedMessage>::Post(msg1);
+    GrTextureFreedMessage msg1{wrapped[0], dContext->directContextID()};
+    SkMessageBus<GrTextureFreedMessage, GrDirectContext::DirectContextID>::Post(msg1);
     cache->purgeAsNeeded();
 
     REPORTER_ASSERT(reporter, 1 == (freed[0] + freed[1] + freed[2]));
     REPORTER_ASSERT(reporter, 1 == freed[0]);
 
-    GrTextureFreedMessage msg2{wrapped[2], dContext->priv().contextID()};
-    SkMessageBus<GrTextureFreedMessage>::Post(msg2);
+    GrTextureFreedMessage msg2{wrapped[2], dContext->directContextID()};
+    SkMessageBus<GrTextureFreedMessage, GrDirectContext::DirectContextID>::Post(msg2);
     cache->purgeAsNeeded();
 
     REPORTER_ASSERT(reporter, 2 == (freed[0] + freed[1] + freed[2]));
@@ -1605,13 +1606,13 @@ DEF_GPUTEST(ResourceCacheMisc, reporter, /* options */) {
 // This simulates a portion of Chrome's context abandonment processing.
 // Please see: crbug.com/1011368 and crbug.com/1014993
 DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ResourceMessagesAfterAbandon, reporter, ctxInfo) {
-    auto context = ctxInfo.directContext();
-    GrGpu* gpu = context->priv().getGpu();
-    GrResourceCache* cache = context->priv().getResourceCache();
+    auto dContext = ctxInfo.directContext();
+    GrGpu* gpu = dContext->priv().getGpu();
+    GrResourceCache* cache = dContext->priv().getResourceCache();
 
-    GrBackendTexture backend = context->createBackendTexture(16, 16,
-                                                             SkColorType::kRGBA_8888_SkColorType,
-                                                             GrMipmapped::kNo, GrRenderable::kNo);
+    GrBackendTexture backend = dContext->createBackendTexture(16, 16,
+                                                              SkColorType::kRGBA_8888_SkColorType,
+                                                              GrMipmapped::kNo, GrRenderable::kNo);
     GrTexture* tex = gpu->wrapBackendTexture(backend,
                                              GrWrapOwnership::kBorrow_GrWrapOwnership,
                                              GrWrapCacheable::kYes,
@@ -1636,18 +1637,18 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(ResourceMessagesAfterAbandon, reporter, ctxIn
 
     // We must delete the backend texture before abandoning the context in vulkan. We just do it
     // for all the backends for consistency.
-    context->deleteBackendTexture(backend);
-    context->abandonContext();
+    dContext->deleteBackendTexture(backend);
+    dContext->abandonContext();
 
     REPORTER_ASSERT(reporter, 1 == freed);
 
     // In the past, creating this message could cause an exception due to
     // an un-safe downcast from GrTexture to GrGpuResource
-    GrTextureFreedMessage msg{tex, context->priv().contextID()};
-    SkMessageBus<GrTextureFreedMessage>::Post(msg);
+    GrTextureFreedMessage msg{tex, dContext->directContextID()};
+    SkMessageBus<GrTextureFreedMessage, GrDirectContext::DirectContextID>::Post(msg);
 
     // This doesn't actually do anything but it does trigger us to read messages
-    context->purgeUnlockedResources(false);
+    dContext->purgeUnlockedResources(false);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1729,6 +1730,40 @@ DEF_GPUTEST_FOR_RENDERING_CONTEXTS(GPUMemorySize, reporter, ctxInfo) {
         proxy = make_mipmap_proxy(context, GrRenderable::kNo, kSize, 1);
         size = proxy->gpuMemorySize();
         REPORTER_ASSERT(reporter, kArea*4 + (kArea*4)/3 == size);
+    }
+}
+
+DEF_GPUTEST_FOR_RENDERING_CONTEXTS(PurgeToMakeHeadroom, reporter, ctxInfo) {
+    constexpr size_t kTexSize = 16 * 16 * 4;
+
+    auto dContext = ctxInfo.directContext();
+    dContext->setResourceCacheLimit(2 * kTexSize);
+    auto resourceProvider = dContext->priv().resourceProvider();
+    auto resourceCache = dContext->priv().getResourceCache();
+    for (bool success : { true, false }) {
+        reporter->push(SkString(success ? "success" : "failure"));
+
+        resourceCache->releaseAll();
+        REPORTER_ASSERT(reporter, resourceCache->getBudgetedResourceBytes() == 0);
+
+        // Make one unpurgeable texture and one purgeable texture.
+        auto lockedTex = make_normal_texture(resourceProvider, GrRenderable::kNo, {16, 16}, 1);
+        REPORTER_ASSERT(reporter, lockedTex->gpuMemorySize() == kTexSize);
+
+        // N.b. this surface is renderable so "reuseScratchTextures = false" won't mess us up.
+        auto purgeableTex = make_normal_texture(resourceProvider, GrRenderable::kYes, {16, 16}, 1);
+        if (success) {
+            purgeableTex = nullptr;
+        }
+
+        size_t expectedPurgeable = success ? kTexSize : 0;
+        REPORTER_ASSERT(reporter, expectedPurgeable == resourceCache->getPurgeableBytes(),
+                        "%zu vs %zu", expectedPurgeable, resourceCache->getPurgeableBytes());
+        REPORTER_ASSERT(reporter, success == resourceCache->purgeToMakeHeadroom(kTexSize));
+        size_t expectedBudgeted = success ? kTexSize : (2 * kTexSize);
+        REPORTER_ASSERT(reporter, expectedBudgeted == resourceCache->getBudgetedResourceBytes(),
+                        "%zu vs %zu", expectedBudgeted, resourceCache->getBudgetedResourceBytes());
+        reporter->pop();
     }
 }
 

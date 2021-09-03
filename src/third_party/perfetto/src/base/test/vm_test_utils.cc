@@ -46,7 +46,7 @@ bool IsMapped(void* start, size_t size) {
   const size_t page_size = GetSysPageSize();
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_WIN)
   int retries = 5;
-  int number_of_entries = 4000;  // Just a guess.
+  size_t number_of_entries = 4000;  // Just a guess.
   PSAPI_WORKING_SET_INFORMATION* ws_info = nullptr;
 
   std::vector<char> buffer;
@@ -70,7 +70,7 @@ bool IsMapped(void* start, size_t size) {
 
     // Maybe some entries are being added right now. Increase the buffer to
     // take that into account. Increasing by 10% should generally be enough.
-    number_of_entries *= 1.1;
+    number_of_entries = static_cast<size_t>(double(number_of_entries) * 1.1);
 
     PERFETTO_CHECK(--retries > 0);  // If we're looping, eventually fail.
   }
@@ -90,6 +90,10 @@ bool IsMapped(void* start, size_t size) {
   return false;
 #elif PERFETTO_BUILDFLAG(PERFETTO_OS_FUCHSIA)
   // Fuchsia doesn't yet support paging (b/119503290).
+  ignore_result(page_size);
+  return true;
+#elif PERFETTO_BUILDFLAG(PERFETTO_OS_NACL)
+  // mincore isn't available on NaCL.
   ignore_result(page_size);
   return true;
 #else

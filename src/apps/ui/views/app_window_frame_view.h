@@ -5,9 +5,8 @@
 #ifndef APPS_UI_VIEWS_APP_WINDOW_FRAME_VIEW_H_
 #define APPS_UI_VIEWS_APP_WINDOW_FRAME_VIEW_H_
 
-#include <string>
-
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/button/button.h"
@@ -32,7 +31,7 @@ namespace apps {
 // A frameless or non-Ash, non-panel NonClientFrameView for app windows.
 class AppWindowFrameView : public views::NonClientFrameView {
  public:
-  static const char kViewClassName[];
+  METADATA_HEADER(AppWindowFrameView);
 
   // AppWindowFrameView is used to draw frames for app windows when a non
   // standard frame is needed. This occurs if there is no frame needed, or if
@@ -73,7 +72,6 @@ class AppWindowFrameView : public views::NonClientFrameView {
   // views::View implementation.
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
-  const char* GetClassName() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;

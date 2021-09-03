@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/login/ui/login_button.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/controls/image_view.h"
 
@@ -22,16 +23,16 @@ namespace ash {
 // view.
 class ArrowButtonView : public LoginButton {
  public:
+  METADATA_HEADER(ArrowButtonView);
+
   ArrowButtonView(PressedCallback callback, int size);
+  ArrowButtonView(const ArrowButtonView&) = delete;
+  ArrowButtonView& operator=(const ArrowButtonView&) = delete;
   ~ArrowButtonView() override;
 
-  // views::Button:
+  // LoginButton:
   void PaintButtonContents(gfx::Canvas* canvas) override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  const char* GetClassName() const override;
-
-  // Set background color of the button.
-  void SetBackgroundColor(SkColor color);
+  void OnThemeChanged() override;
 
   // Allows to control the loading animation (disabled by default). The
   // animation is an arc that gradually increases from a point to a full circle;
@@ -56,12 +57,8 @@ class ArrowButtonView : public LoginButton {
     ArrowButtonView* const owner_;
   };
 
-  int size_;
-  SkColor background_color_;
   LoadingAnimationDelegate loading_animation_delegate_{this};
   std::unique_ptr<gfx::MultiAnimation> loading_animation_;
-
-  DISALLOW_COPY_AND_ASSIGN(ArrowButtonView);
 };
 
 }  // namespace ash

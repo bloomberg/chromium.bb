@@ -35,8 +35,10 @@ if (enable_perfetto_platform_services) {
     "src/perfetto_cmd:perfetto",
     "src/perfetto_cmd:trigger_perfetto",
     "src/traced/service:traced",
-    "src/traced/probes:traced_probes",
   ]
+  if (enable_perfetto_traced_probes) {
+    all_targets += [ "src/traced/probes:traced_probes" ]
+  }
 }
 
 if (enable_perfetto_trace_processor && enable_perfetto_trace_processor_sqlite) {
@@ -44,10 +46,11 @@ if (enable_perfetto_trace_processor && enable_perfetto_trace_processor_sqlite) {
 }
 
 if (enable_perfetto_heapprofd) {
-  all_targets += [
-    "src/profiling/memory:heapprofd",
-    "src/profiling/memory:heapprofd_preload",
-  ]
+  all_targets += [ "src/profiling/memory:heapprofd" ]
+
+  if (is_linux && !is_android) {
+    all_targets += [ "src/profiling/memory:heapprofd_glibc_preload" ]
+  }
   if (perfetto_build_with_android) {
     all_targets += [
       "src/profiling/memory:heapprofd_client",
@@ -61,7 +64,7 @@ if (enable_perfetto_traced_perf) {
 }
 
 if (perfetto_build_with_android) {
-  all_targets += [ "src/android_internal/:libperfetto_android_internal" ]
+  all_targets += [ "src/android_internal:libperfetto_android_internal" ]
 }
 
 if (enable_perfetto_tools) {
@@ -121,7 +124,6 @@ if (enable_perfetto_fuzzers) {
 # compile-time checks for the CI.
 if (perfetto_build_standalone) {
   all_targets += [
-    "src/tracing/consumer_api_deprecated:consumer_api_test",
     "test/configs",
 
     # For syntax-checking the proto.
@@ -133,16 +135,15 @@ if (perfetto_build_standalone) {
     "protos/perfetto/config:cpp",
     "protos/perfetto/common:cpp",
 
-    # The diff testing framework depends on these descriptors.
-    "protos/perfetto/metrics:descriptor($host_toolchain)",
-    "protos/perfetto/trace:descriptor($host_toolchain)",
-
     # Used in the when updating the ftrace protos
     "protos/perfetto/trace/ftrace:descriptor",
 
     # Checks that the "fake" backend implementations build.
     "src/tracing:client_api_no_backends_compile_test",
   ]
+  if (is_linux || is_android) {
+    all_targets += [ "src/tracing/consumer_api_deprecated:consumer_api_test" ]
+  }
 }
 
 # The CTS code is built (but not ran) also in standalone builds. This is to
@@ -176,10 +177,6 @@ if (enable_perfetto_ui) {
   group("ui") {
     deps = [ "ui" ]
   }
-
-  group("site") {
-    deps = [ "infra/perfetto.dev:site" ]
-  }
 }
 
 # In Android builds, we build the code of traced and traced_probes in one shared
@@ -206,10 +203,16 @@ if (enable_perfetto_platform_services) {
     }
     deps = [
       "gn:default_deps",
-      "src/traced/probes",
       "src/traced/service",
-      "src/tracing/consumer_api_deprecated",
     ]
+    if (enable_perfetto_traced_probes) {
+      deps += [ "src/traced/probes" ]
+    }
+    if (is_linux || is_android || is_mac) {
+      # TODO(primiano): this is here only for Android's iorapd. At some point
+      # we need to migrate iorapd to the Perfetto SDK.
+      deps += [ "src/tracing/consumer_api_deprecated" ]
+    }
   }
 }
 
@@ -223,7 +226,7 @@ if (!build_with_chromium) {
     public_deps = [
       "gn:default_deps",
       "src/tracing:client_api",
-      "src/tracing:platform_posix",
+      "src/tracing:platform_impl",
     ]
     sources = [ "include/perfetto/tracing.h" ]
     assert_no_deps = [ "//gn:protobuf_lite" ]
@@ -283,5 +286,13 @@ if (build_with_chromium) {
     configs -= [ "//build/config/compiler:chromium_code" ]
     configs += [ "//build/config/compiler:no_chromium_code" ]
     public_deps = [ "include/perfetto/trace_processor" ]
+  }
+  component("perfetto_test_support") {
+    testonly = true
+    public_configs = [ "gn:public_config" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
+    public_deps = [ "include/perfetto/test:test_support" ]
+    deps = [ "src/tracing/test:test_support" ]
   }
 }

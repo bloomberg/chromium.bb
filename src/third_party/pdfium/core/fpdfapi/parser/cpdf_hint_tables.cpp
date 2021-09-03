@@ -19,6 +19,7 @@
 #include "core/fpdfapi/parser/cpdf_syntax_parser.h"
 #include "core/fxcrt/cfx_bitstream.h"
 #include "core/fxcrt/fx_safe_types.h"
+#include "third_party/base/check.h"
 #include "third_party/base/numerics/safe_conversions.h"
 #include "third_party/base/span.h"
 
@@ -44,8 +45,8 @@ CPDF_HintTables::PageInfo::~PageInfo() = default;
 //  static
 std::unique_ptr<CPDF_HintTables> CPDF_HintTables::Parse(
     CPDF_SyntaxParser* parser,
-    CPDF_LinearizedHeader* pLinearized) {
-  ASSERT(parser);
+    const CPDF_LinearizedHeader* pLinearized) {
+  DCHECK(parser);
   if (!pLinearized || pLinearized->GetPageCount() <= 1 ||
       !pLinearized->HasHintTable()) {
     return nullptr;
@@ -75,12 +76,9 @@ std::unique_ptr<CPDF_HintTables> CPDF_HintTables::Parse(
 }
 
 CPDF_HintTables::CPDF_HintTables(CPDF_ReadValidator* pValidator,
-                                 CPDF_LinearizedHeader* pLinearized)
-    : m_pValidator(pValidator),
-      m_pLinearized(pLinearized),
-      m_nFirstPageSharedObjs(0),
-      m_szFirstPageObjOffset(0) {
-  ASSERT(m_pLinearized);
+                                 const CPDF_LinearizedHeader* pLinearized)
+    : m_pValidator(pValidator), m_pLinearized(pLinearized) {
+  DCHECK(m_pLinearized);
 }
 
 CPDF_HintTables::~CPDF_HintTables() = default;
@@ -193,7 +191,7 @@ bool CPDF_HintTables::ReadPageHintTable(CFX_BitStream* hStream) {
     m_PageInfos[i].set_page_length(safePageLen.ValueOrDie());
   }
 
-  ASSERT(m_szFirstPageObjOffset);
+  DCHECK(m_szFirstPageObjOffset);
   m_PageInfos[nFirstPageNum].set_page_offset(m_szFirstPageObjOffset);
   FX_FILESIZE prev_page_end = m_pLinearized->GetFirstPageEndOffset();
   for (uint32_t i = 0; i < nPages; ++i) {
@@ -406,18 +404,18 @@ bool CPDF_HintTables::GetPagePos(uint32_t index,
 
 CPDF_DataAvail::DocAvailStatus CPDF_HintTables::CheckPage(uint32_t index) {
   if (index == m_pLinearized->GetFirstPageNo())
-    return CPDF_DataAvail::DataAvailable;
+    return CPDF_DataAvail::kDataAvailable;
 
   if (index >= m_pLinearized->GetPageCount())
-    return CPDF_DataAvail::DataError;
+    return CPDF_DataAvail::kDataError;
 
   const uint32_t dwLength = m_PageInfos[index].page_length();
   if (!dwLength)
-    return CPDF_DataAvail::DataError;
+    return CPDF_DataAvail::kDataError;
 
   if (!m_pValidator->CheckDataRangeAndRequestIfUnavailable(
           m_PageInfos[index].page_offset(), dwLength)) {
-    return CPDF_DataAvail::DataNotAvailable;
+    return CPDF_DataAvail::kDataNotAvailable;
   }
 
   // Download data of shared objects in the page.
@@ -428,14 +426,14 @@ CPDF_DataAvail::DocAvailStatus CPDF_HintTables::CheckPage(uint32_t index) {
         m_SharedObjGroupInfos[dwIndex];
 
     if (!shared_group_info.m_szOffset || !shared_group_info.m_dwLength)
-      return CPDF_DataAvail::DataError;
+      return CPDF_DataAvail::kDataError;
 
     if (!m_pValidator->CheckDataRangeAndRequestIfUnavailable(
             shared_group_info.m_szOffset, shared_group_info.m_dwLength)) {
-      return CPDF_DataAvail::DataNotAvailable;
+      return CPDF_DataAvail::kDataNotAvailable;
     }
   }
-  return CPDF_DataAvail::DataAvailable;
+  return CPDF_DataAvail::kDataAvailable;
 }
 
 bool CPDF_HintTables::LoadHintStream(CPDF_Stream* pHintStream) {

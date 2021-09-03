@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONNECTION_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PRESENTATION_PRESENTATION_CONNECTION_H_
 
-#include <memory>
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
@@ -89,8 +88,6 @@ class MODULES_EXPORT PresentationConnection
   mojom::blink::PresentationConnectionState GetState() const;
 
  protected:
-  static void DispatchEventAsync(EventTarget*, Event*);
-
   PresentationConnection(LocalDOMWindow&, const String& id, const KURL&);
 
   // EventTarget implementation.
@@ -151,9 +148,6 @@ class MODULES_EXPORT PresentationConnection
   // Closes the PresentationConnection with the given reason and notifies the
   // target connection.
   void DoClose(mojom::blink::PresentationConnectionCloseReason);
-
-  // Internal helper function to dispatch state change events asynchronously.
-  void DispatchStateChangeEvent(Event*);
 
   // Cancel loads and pending messages when the connection is closed.
   void TearDown();

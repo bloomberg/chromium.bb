@@ -6,11 +6,11 @@
 #define UI_BASE_PREDICTION_PREDICTION_METRICS_HANDLER_H_
 
 #include <deque>
-#include <unordered_map>
+#include <string>
 
 #include "base/component_export.h"
-#include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
@@ -25,7 +25,7 @@ class PredictionMetricsHandlerTest;
 // few metrics.
 class COMPONENT_EXPORT(UI_BASE_PREDICTION) PredictionMetricsHandler {
  public:
-  explicit PredictionMetricsHandler(const char* histogram_name);
+  explicit PredictionMetricsHandler(std::string histogram_name);
   ~PredictionMetricsHandler();
 
   // Struct used to store predicted and real event information.
@@ -100,7 +100,7 @@ class COMPONENT_EXPORT(UI_BASE_PREDICTION) PredictionMetricsHandler {
   gfx::PointF last_interpolated_, last_frame_interpolated_;
   // Last predicted point that pop from predicted_event_queue_. Use for
   // computing Jitter metrics.
-  base::Optional<gfx::PointF> last_predicted_ = base::nullopt;
+  absl::optional<gfx::PointF> last_predicted_ = absl::nullopt;
   // The first real event position which time is later than the predicted time.
   gfx::PointF next_real_;
 
@@ -108,7 +108,7 @@ class COMPONENT_EXPORT(UI_BASE_PREDICTION) PredictionMetricsHandler {
   // names (.OverPrediction, .UnderPrediction, .WrongDirection,
   // .PredictionJitter, .VisualJitter) appended to it when counting the metric
   // in a histogram.
-  const char* const histogram_name_;
+  const std::string histogram_name_;
 };
 
 }  // namespace ui

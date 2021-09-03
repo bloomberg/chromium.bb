@@ -11,27 +11,21 @@ namespace blink {
 
 class NGFragmentItem;
 class NGInlineCursor;
-class NGPaintFragment;
 
 // The implementation of |AbstractInlineTextBox| for LayoutNG.
 // See also |LegacyAbstractInlineTextBox| for legacy layout.
 class CORE_EXPORT NGAbstractInlineTextBox final : public AbstractInlineTextBox {
  private:
   // Returns existing or newly created |NGAbstractInlineTextBox|.
-  // * |cursor| should be attached to |NGPhysicalTextFragment|.
+  // * |cursor| should be attached to a text item.
   static scoped_refptr<AbstractInlineTextBox> GetOrCreate(
       const NGInlineCursor& cursor);
   static void WillDestroy(const NGInlineCursor& cursor);
-  static void WillDestroy(const NGPaintFragment* fragment);
 
   friend class LayoutText;
 
  public:
-  NGAbstractInlineTextBox(LineLayoutText line_layout_item,
-                          const NGPaintFragment& fragment);
-  NGAbstractInlineTextBox(LineLayoutText line_layout_item,
-                          const NGFragmentItem& fragment);
-
+  explicit NGAbstractInlineTextBox(const NGInlineCursor& cursor);
   ~NGAbstractInlineTextBox() final;
 
  private:
@@ -55,10 +49,9 @@ class CORE_EXPORT NGAbstractInlineTextBox final : public AbstractInlineTextBox {
   bool IsLineBreak() const final;
   bool NeedsTrailingSpace() const final;
 
-  union {
-    const NGPaintFragment* fragment_;
-    const NGFragmentItem* fragment_item_;
-  };
+  const NGFragmentItem* fragment_item_;
+  // |root_box_fragment_| owns |fragment_item_|.
+  scoped_refptr<const NGPhysicalBoxFragment> root_box_fragment_;
 };
 
 }  // namespace blink

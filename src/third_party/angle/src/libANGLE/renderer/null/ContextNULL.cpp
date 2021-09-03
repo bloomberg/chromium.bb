@@ -68,7 +68,8 @@ ContextNULL::ContextNULL(const gl::State &state,
 
     mExtensions                        = gl::Extensions();
     mExtensions.fenceNV                = true;
-    mExtensions.framebufferBlit        = true;
+    mExtensions.framebufferBlitANGLE   = true;
+    mExtensions.framebufferBlitNV      = true;
     mExtensions.instancedArraysANGLE   = true;
     mExtensions.instancedArraysEXT     = true;
     mExtensions.pixelBufferObjectNV    = true;
@@ -310,16 +311,6 @@ angle::Result ContextNULL::multiDrawElementsInstancedBaseVertexBaseInstance(
 gl::GraphicsResetStatus ContextNULL::getResetStatus()
 {
     return gl::GraphicsResetStatus::NoError;
-}
-
-std::string ContextNULL::getVendorString() const
-{
-    return "NULL";
-}
-
-std::string ContextNULL::getRendererDescription() const
-{
-    return "NULL";
 }
 
 angle::Result ContextNULL::insertEventMarker(GLsizei length, const char *marker)

@@ -48,15 +48,13 @@ class WorkerFetchContext final : public BaseFetchContext {
   scoped_refptr<const SecurityOrigin> GetTopFrameOrigin() const override;
 
   SubresourceFilter* GetSubresourceFilter() const override;
-  PreviewsResourceLoadingHints* GetPreviewsResourceLoadingHints()
-      const override;
   bool AllowScriptFromSource(const KURL&) const override;
   bool ShouldBlockRequestByInspector(const KURL&) const override;
   void DispatchDidBlockRequest(const ResourceRequest&,
-                               const FetchInitiatorInfo&,
+                               const ResourceLoaderOptions&,
                                ResourceRequestBlockedReason,
                                ResourceType) const override;
-  const ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
+  ContentSecurityPolicy* GetContentSecurityPolicyForWorld(
       const DOMWrapperWorld* world) const override;
   bool IsSVGImageChromeClient() const override;
   void CountUsage(WebFeature) const override;
@@ -66,15 +64,15 @@ class WorkerFetchContext final : public BaseFetchContext {
       override;
   bool ShouldBlockFetchByMixedContentCheck(
       mojom::blink::RequestContextType request_context,
-      const base::Optional<ResourceRequest::RedirectInfo>& redirect_info,
+      const absl::optional<ResourceRequest::RedirectInfo>& redirect_info,
       const KURL& url,
       ReportingDisposition reporting_disposition,
-      const base::Optional<String>& devtools_id) const override;
+      const absl::optional<String>& devtools_id) const override;
   bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
                                                  const KURL&) const override;
   const KURL& Url() const override;
   const SecurityOrigin* GetParentSecurityOrigin() const override;
-  const ContentSecurityPolicy* GetContentSecurityPolicy() const override;
+  ContentSecurityPolicy* GetContentSecurityPolicy() const override;
   void AddConsoleMessage(ConsoleMessage*) const override;
 
   // FetchContext implementation:

@@ -7,7 +7,6 @@ export type TestSuiteListingEntry = TestSuiteListingEntrySpec | TestSuiteListing
 
 interface TestSuiteListingEntrySpec {
   readonly file: string[];
-  readonly description: string;
 }
 
 interface TestSuiteListingEntryReadme {

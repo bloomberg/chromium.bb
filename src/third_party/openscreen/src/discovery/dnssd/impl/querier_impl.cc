@@ -84,7 +84,6 @@ std::vector<DnsSdInstanceEndpoint> GetValues(
   std::vector<DnsSdInstanceEndpoint> results;
   results.reserve(endpoints.size());
   for (ErrorOr<DnsSdInstanceEndpoint>& endpoint : endpoints) {
-    OSP_CHECK(endpoint.is_value());
     results.push_back(std::move(endpoint.value()));
   }
   return results;

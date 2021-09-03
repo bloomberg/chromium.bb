@@ -45,11 +45,16 @@ class PLATFORM_EXPORT PushPullFIFO {
   static const size_t kMaxFIFOLength;
 
   // |fifo_length| cannot exceed |kMaxFIFOLength|. Otherwise it crashes.
-  explicit PushPullFIFO(unsigned number_of_channels, size_t fifo_length);
+  // ||render_quantum_frames| is the render size used by the audio graph.  It
+  // |defaults to 128, the original and default render size.
+  explicit PushPullFIFO(unsigned number_of_channels,
+                        size_t fifo_length,
+                        unsigned render_quantum_frames = 128);
   ~PushPullFIFO();
 
   // Pushes the rendered frames by WebAudio engine.
-  //  - The |input_bus| length is 128 frames (1 render quantum), fixed.
+  //  - The |input_bus| length has a length equal to |render_quantum_frames_|,
+  //  fixed.
   //  - In case of overflow (FIFO full while push), the existing frames in FIFO
   //    will be overwritten and |index_read_| will be forcibly moved to
   //    |index_write_| to avoid reading overwritten frames.
@@ -66,16 +71,31 @@ class PLATFORM_EXPORT PushPullFIFO {
   //    the request from the consumer without causing error, but with a glitch.
   size_t Pull(AudioBus* output_bus, size_t frames_requested);
 
+  // Pull and update |ear_mark_frames_| to make the dual thread rendering mode
+  // (i.e. AudioWorklet) more smooth. The single thread rendering does not need
+  // this treatment.
+  size_t PullAndUpdateEarmark(AudioBus* output_bus, size_t frames_requested);
+
+  void SetEarmarkFrames(size_t earmark_frames) {
+    DCHECK(IsMainThread());
+    MutexLocker locker(lock_);
+    earmark_frames_ = earmark_frames;
+  }
+
   size_t length() const { return fifo_length_; }
   unsigned NumberOfChannels() const {
     lock_.AssertAcquired();
     return fifo_bus_->NumberOfChannels();
   }
 
-  // TODO(hongchan): For single thread unit test only. Consider refactoring.
   AudioBus* GetFIFOBusForTest() {
     MutexLocker locker(lock_);
     return fifo_bus_.get();
+  }
+
+  size_t GetEarmarkFramesForTest() {
+    MutexLocker locker(lock_);
+    return earmark_frames_;
   }
 
   // For single thread unit test only. Get the current configuration that
@@ -87,12 +107,20 @@ class PLATFORM_EXPORT PushPullFIFO {
   // The size of the FIFO.
   const size_t fifo_length_ = 0;
 
+  // The render size used by the audio graph.
+  const unsigned render_quantum_frames_;
+
   // For UMA reporting purpose.
   unsigned pull_count_ = 0;
   unsigned overflow_count_ = 0;
   unsigned underflow_count_ = 0;
 
   Mutex lock_;
+
+  // To adapt the unstable callback timing. Every buffer underrun from
+  // PullAndUpdateEarmark() will increase this number.
+  size_t earmark_frames_ GUARDED_BY(lock_) = 0;
+
   // The number of frames in the FIFO actually available for pulling.
   size_t frames_available_ GUARDED_BY(lock_) = 0;
   size_t index_read_ GUARDED_BY(lock_) = 0;

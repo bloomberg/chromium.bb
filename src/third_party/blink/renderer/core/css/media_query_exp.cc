@@ -114,6 +114,14 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
     }
   }
 
+  if (RuntimeEnabledFeatures::DevicePostureEnabled()) {
+    if (media_feature == media_feature_names::kDevicePostureMediaFeature) {
+      return ident == CSSValueID::kNoFold || ident == CSSValueID::kLaptop ||
+             ident == CSSValueID::kFlat || ident == CSSValueID::kTent ||
+             ident == CSSValueID::kTablet || ident == CSSValueID::kBook;
+    }
+  }
+
   return false;
 }
 
@@ -242,7 +250,9 @@ static inline bool FeatureWithoutValue(
           RuntimeEnabledFeatures::OriginTrialsSampleAPIEnabled(
               execution_context)) ||
          (media_feature == media_feature_names::kScreenSpanningMediaFeature &&
-          RuntimeEnabledFeatures::CSSFoldablesEnabled());
+          RuntimeEnabledFeatures::CSSFoldablesEnabled()) ||
+         (media_feature == media_feature_names::kDevicePostureMediaFeature &&
+          RuntimeEnabledFeatures::DevicePostureEnabled());
 }
 
 bool MediaQueryExp::IsViewportDependent() const {
@@ -274,6 +284,24 @@ bool MediaQueryExp::IsDeviceDependent() const {
          media_feature_ == kMaxDeviceAspectRatioMediaFeature ||
          media_feature_ == media_feature_names::kMaxDeviceWidthMediaFeature ||
          media_feature_ == media_feature_names::kMaxDeviceHeightMediaFeature;
+}
+
+bool MediaQueryExp::IsWidthDependent() const {
+  return media_feature_ == media_feature_names::kWidthMediaFeature ||
+         media_feature_ == media_feature_names::kMinWidthMediaFeature ||
+         media_feature_ == media_feature_names::kMaxWidthMediaFeature ||
+         media_feature_ == media_feature_names::kAspectRatioMediaFeature ||
+         media_feature_ == media_feature_names::kMinAspectRatioMediaFeature ||
+         media_feature_ == media_feature_names::kMaxAspectRatioMediaFeature;
+}
+
+bool MediaQueryExp::IsHeightDependent() const {
+  return media_feature_ == media_feature_names::kHeightMediaFeature ||
+         media_feature_ == media_feature_names::kMinHeightMediaFeature ||
+         media_feature_ == media_feature_names::kMaxHeightMediaFeature ||
+         media_feature_ == media_feature_names::kAspectRatioMediaFeature ||
+         media_feature_ == media_feature_names::kMinAspectRatioMediaFeature ||
+         media_feature_ == media_feature_names::kMaxAspectRatioMediaFeature;
 }
 
 MediaQueryExp::MediaQueryExp(const MediaQueryExp& other)

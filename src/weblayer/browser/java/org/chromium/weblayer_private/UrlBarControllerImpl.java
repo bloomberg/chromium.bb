@@ -28,13 +28,10 @@ import androidx.core.widget.ImageViewCompat;
 import org.chromium.base.LifetimeAssert;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.components.content_settings.ContentSettingsType;
-import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.omnibox.SecurityButtonAnimationDelegate;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.page_info.PageInfoController;
-import org.chromium.components.page_info.PermissionParamsListBuilderDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
@@ -87,13 +84,6 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
 
     boolean hasActiveView() {
         return mActiveViewCount != 0;
-    }
-
-    @Override
-    @Deprecated
-    public IObjectWrapper /* View */ deprecatedCreateUrlBarView(Bundle options) {
-        return createUrlBarView(
-                options, /* OnLongClickListener */ null, /* OnLongClickListener */ null);
     }
 
     @Override
@@ -259,26 +249,13 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             PageInfoController.show(mBrowserImpl.getWindowAndroid().getActivity().get(),
                     webContents, publisherUrl, PageInfoController.OpenedFromSource.TOOLBAR,
                     PageInfoControllerDelegateImpl.create(webContents),
-                    new PermissionParamsListBuilderDelegate(mBrowserImpl.getProfile()) {
-                        @Override
-                        public String getDelegateAppName(
-                                Origin origin, @ContentSettingsType int type) {
-                            if (type == ContentSettingsType.GEOLOCATION
-                                    && WebLayerImpl.isLocationPermissionManaged(origin)) {
-                                return WebLayerImpl.getClientApplicationName();
-                            }
-
-                            return null;
-                        }
-                    });
+                    PageInfoController.NO_HIGHLIGHTED_PERMISSION);
         }
 
         @DrawableRes
         private int getSecurityIcon() {
             return SecurityStatusIcon.getSecurityIconResource(
                     UrlBarControllerImplJni.get().getConnectionSecurityLevel(
-                            mNativeUrlBarController),
-                    UrlBarControllerImplJni.get().shouldShowDangerTriangleForWarningLevel(
                             mNativeUrlBarController),
                     mBrowserImpl.isWindowOnSmallDevice(),
                     /* skipIconForNeutralState= */ true);
@@ -292,6 +269,5 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
         String getUrlForDisplay(long nativeUrlBarControllerImpl);
         String getPublisherUrl(long nativeUrlBarControllerImpl);
         int getConnectionSecurityLevel(long nativeUrlBarControllerImpl);
-        boolean shouldShowDangerTriangleForWarningLevel(long nativeUrlBarControllerImpl);
     }
 }

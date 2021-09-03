@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/scoped_observer.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -20,7 +19,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_response_headers.h"
-#include "third_party/blink/public/common/loader/network_utils.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 
 namespace content {
 
@@ -165,7 +164,7 @@ bool ClearSiteDataHandler::HandleHeaderAndOutputConsoleMessages() {
 
 bool ClearSiteDataHandler::Run() {
   // Only accept the header on secure non-unique origins.
-  if (!blink::network_utils::IsOriginSecure(url_)) {
+  if (!network::IsUrlPotentiallyTrustworthy(url_)) {
     delegate_->AddMessage(url_, "Not supported for insecure origins.",
                           blink::mojom::ConsoleMessageLevel::kError);
     return false;

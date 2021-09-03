@@ -5,13 +5,14 @@
 #include "chromeos/components/phonehub/fake_notification_manager.h"
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 
 namespace chromeos {
 namespace phonehub {
 
 FakeNotificationManager::InlineReplyMetadata::InlineReplyMetadata(
     int64_t notification_id,
-    const base::string16& inline_reply_text)
+    const std::u16string& inline_reply_text)
     : notification_id(notification_id), inline_reply_text(inline_reply_text) {}
 
 FakeNotificationManager::InlineReplyMetadata::~InlineReplyMetadata() = default;
@@ -37,7 +38,7 @@ void FakeNotificationManager::DismissNotification(int64_t notification_id) {
 
 void FakeNotificationManager::SendInlineReply(
     int64_t notification_id,
-    const base::string16& inline_reply_text) {
+    const std::u16string& inline_reply_text) {
   DCHECK(base::Contains(id_to_notification_map_, notification_id));
   inline_replies_.emplace_back(notification_id, inline_reply_text);
 }

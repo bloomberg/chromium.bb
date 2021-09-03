@@ -11,6 +11,7 @@
 #include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_config_memory_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 namespace trace_event {
@@ -31,7 +32,7 @@ const char kCustomTraceConfigString[] =
     "\"event_filters\":["
     "{"
     "\"excluded_categories\":[\"unfiltered_cat\"],"
-    "\"filter_args\":{\"event_name_whitelist\":[\"a snake\",\"a dog\"]},"
+    "\"filter_args\":{\"event_name_allowlist\":[\"a snake\",\"a dog\"]},"
     "\"filter_predicate\":\"event_whitelist_predicate\","
     "\"included_categories\":[\"*\"]"
     "}"
@@ -341,7 +342,8 @@ TEST(TraceConfigTest, TraceConfigFromDict) {
   EXPECT_FALSE(tc.IsArgumentFilterEnabled());
   EXPECT_STREQ("", tc.ToCategoryFilterString().c_str());
 
-  Optional<Value> default_value = JSONReader::Read(kDefaultTraceConfigString);
+  absl::optional<Value> default_value =
+      JSONReader::Read(kDefaultTraceConfigString);
   ASSERT_TRUE(default_value);
   ASSERT_TRUE(default_value->is_dict());
   TraceConfig default_tc(*default_value);
@@ -351,7 +353,8 @@ TEST(TraceConfigTest, TraceConfigFromDict) {
   EXPECT_FALSE(default_tc.IsArgumentFilterEnabled());
   EXPECT_STREQ("", default_tc.ToCategoryFilterString().c_str());
 
-  Optional<Value> custom_value = JSONReader::Read(kCustomTraceConfigString);
+  absl::optional<Value> custom_value =
+      JSONReader::Read(kCustomTraceConfigString);
   ASSERT_TRUE(custom_value);
   ASSERT_TRUE(custom_value->is_dict());
   TraceConfig custom_tc(*custom_value);
@@ -379,7 +382,7 @@ TEST(TraceConfigTest, TraceConfigFromValidString) {
       "\"event_filters\":["
       "{"
       "\"excluded_categories\":[\"unfiltered_cat\"],"
-      "\"filter_args\":{\"event_name_whitelist\":[\"a snake\",\"a dog\"]},"
+      "\"filter_args\":{\"event_name_allowlist\":[\"a snake\",\"a dog\"]},"
       "\"filter_predicate\":\"event_whitelist_predicate\","
       "\"included_categories\":[\"*\"]"
       "}"
@@ -438,9 +441,9 @@ TEST(TraceConfigTest, TraceConfigFromValidString) {
   std::string json_out;
   base::JSONWriter::Write(event_filter.filter_args(), &json_out);
   EXPECT_STREQ(json_out.c_str(),
-               "{\"event_name_whitelist\":[\"a snake\",\"a dog\"]}");
+               "{\"event_name_allowlist\":[\"a snake\",\"a dog\"]}");
   std::unordered_set<std::string> filter_values;
-  EXPECT_TRUE(event_filter.GetArgAsSet("event_name_whitelist", &filter_values));
+  EXPECT_TRUE(event_filter.GetArgAsSet("event_name_allowlist", &filter_values));
   EXPECT_EQ(2u, filter_values.size());
   EXPECT_EQ(1u, filter_values.count("a snake"));
   EXPECT_EQ(1u, filter_values.count("a dog"));

@@ -8,10 +8,10 @@
 #ifndef SKSL_REHYDRATOR
 #define SKSL_REHYDRATOR
 
-#include "src/sksl/SkSLDefines.h"
-
-#include "src/sksl/ir/SkSLModifiers.h"
-#include "src/sksl/ir/SkSLSymbol.h"
+#include "include/private/SkSLDefines.h"
+#include "include/private/SkSLModifiers.h"
+#include "include/private/SkSLSymbol.h"
+#include "src/sksl/SkSLContext.h"
 
 #include <vector>
 
@@ -50,8 +50,15 @@ public:
         kBreak_Command,
         // int16 builtin
         kBuiltinLayout_Command,
-        // Type type, uint8 argCount, Expression[] arguments
-        kConstructor_Command,
+        // (All constructors) Type type, uint8 argCount, Expression[] arguments
+        kConstructorArray_Command,
+        kConstructorCompound_Command,
+        kConstructorCompoundCast_Command,
+        kConstructorDiagonalMatrix_Command,
+        kConstructorMatrixResize_Command,
+        kConstructorScalarCast_Command,
+        kConstructorSplat_Command,
+        kConstructorStruct_Command,
         kContinue_Command,
         kDefaultLayout_Command,
         kDefaultModifiers_Command,
@@ -102,9 +109,6 @@ public:
         kModifiers8Bit_Command,
         // Layout layout, uint32 flags
         kModifiers_Command,
-        // uint16 id, Type baseType
-        kNullableType_Command,
-        kNullLiteral_Command,
         // uint8 op, Expression operand
         kPostfix_Command,
         // uint8 op, Expression operand
@@ -113,6 +117,8 @@ public:
         kReturn_Command,
         // String name, Expression value
         kSetting_Command,
+        // uint16 id, Type structType
+        kStructDefinition_Command,
         // uint16 id, String name, uint8 fieldCount, (Modifiers, String, Type)[] fields
         kStructType_Command,
         // bool isStatic, SymbolTable symbols, Expression value, uint8 caseCount,
@@ -142,13 +148,10 @@ public:
         // uint16 varId, uint8 refKind
         kVariableReference_Command,
         kVoid_Command,
-        // Expression test, Statement body
-        kWhile_Command,
     };
 
     // src must remain in memory as long as the objects created from it do
-    Rehydrator(const Context* context, ModifiersPool* modifiers,
-               std::shared_ptr<SymbolTable> symbolTable, ErrorReporter* errorReporter,
+    Rehydrator(const Context* context, std::shared_ptr<SymbolTable> symbolTable,
                const uint8_t* src, size_t length);
 
     std::vector<std::unique_ptr<ProgramElement>> elements();
@@ -220,11 +223,15 @@ private:
 
     std::unique_ptr<Expression> expression();
 
+    ExpressionArray expressionArray();
+
     const Type* type();
 
+    ErrorReporter* errorReporter() { return &fContext.fErrors; }
+
+    ModifiersPool& modifiersPool() const { return *fContext.fModifiersPool; }
+
     const Context& fContext;
-    ModifiersPool& fModifiers;
-    ErrorReporter* fErrors;
     std::shared_ptr<SymbolTable> fSymbolTable;
     std::vector<const Symbol*> fSymbols;
 

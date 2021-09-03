@@ -102,9 +102,6 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider,
   void DetachRoute(const std::string& route_id) override;
   void EnableMdnsDiscovery() override;
   void UpdateMediaSinks(const std::string& media_source) override;
-  void ProvideSinks(
-      const std::string& provider_name,
-      const std::vector<media_router::MediaSinkInternal>& sinks) override;
   void CreateMediaRouteController(
       const std::string& route_id,
       mojo::PendingReceiver<mojom::MediaController> media_controller,
@@ -131,7 +128,7 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider,
 
     // Set of registered media sources for current sink query.
     base::flat_set<MediaSource> media_sources;
-    DialMediaSinkServiceImpl::SinkQueryByAppSubscription subscription;
+    base::CallbackListSubscription subscription;
 
     DISALLOW_COPY_AND_ASSIGN(MediaSinkQuery);
   };
@@ -157,15 +154,23 @@ class DialMediaRouteProvider : public mojom::MediaRouteProvider,
                                    const MediaSink::Id& sink_id,
                                    const std::string& app_name,
                                    DialAppInfoResult result);
+  void SendDialAppInfoResponse(const MediaRoute::Id& route_id,
+                               int sequence_number,
+                               const MediaSink::Id& sink_id,
+                               const std::string& app_name,
+                               DialAppInfoResult result);
   void HandleCustomDialLaunchResponse(const DialActivity& activity,
                                       const DialInternalMessage& message);
+  void HandleDiapAppInfoRequest(const DialActivity& activity,
+                                const DialInternalMessage& message,
+                                const MediaSinkInternal& sink);
   void HandleAppLaunchResult(const MediaRoute::Id& route_id, bool success);
   void DoTerminateRoute(const DialActivity& activity,
                         const MediaSinkInternal& sink,
                         TerminateRouteCallback callback);
   void HandleStopAppResult(const MediaRoute::Id& route_id,
                            TerminateRouteCallback callback,
-                           const base::Optional<std::string>& message,
+                           const absl::optional<std::string>& message,
                            RouteRequestResult::ResultCode result_code);
   void NotifyAllOnRoutesUpdated();
   void NotifyOnRoutesUpdated(const MediaSource::Id& source_id,

@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_DOCUMENT_TIMELINE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_DOCUMENT_TIMELINE_H_
 
-#include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/animation_timeline.h"
@@ -70,7 +69,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   void ScheduleNextService() override;
 
   bool IsActive() const override;
-  base::Optional<base::TimeDelta> InitialStartTimeForAnimations() override;
+  absl::optional<base::TimeDelta> InitialStartTimeForAnimations() override;
   bool HasPendingUpdates() const {
     return !animations_needing_update_.IsEmpty();
   }
@@ -78,12 +77,14 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   // The zero time of DocumentTimeline is computed by adding a separate
   // |origin_time_| from DocumentTimelineOptions.
   // https://drafts.csswg.org/web-animations/#origin-time
-  base::TimeTicks ZeroTime();
-  double ZeroTimeInSeconds() override {
-    return ZeroTime().since_origin().InSecondsF();
+  // TODO(crbug.com/1162960) Convert DocumentTimeline::zero_time_ from
+  // base::TimeTicks to AnimationTimeDelta
+  base::TimeTicks CalculateZeroTime();
+  AnimationTimeDelta ZeroTime() override {
+    return AnimationTimeDelta(CalculateZeroTime().since_origin());
   }
 
-  void PauseAnimationsForTesting(double);
+  void PauseAnimationsForTesting(AnimationTimeDelta);
 
   void InvalidateKeyframeEffects(const TreeScope&);
 
@@ -107,6 +108,8 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   base::TimeDelta origin_time_;
   // The origin time. This is computed by adding |origin_time_| to the time
   // origin of the document.
+  // TODO(crbug.com/1162960) Convert DocumentTimeline::zero_time_ from
+  // base::TimeTicks to AnimationTimeDelta
   base::TimeTicks zero_time_;
   bool zero_time_initialized_;
 
@@ -119,7 +122,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
 
   class DocumentTimelineTiming final : public PlatformTiming {
    public:
-    DocumentTimelineTiming(DocumentTimeline* timeline)
+    explicit DocumentTimelineTiming(DocumentTimeline* timeline)
         : timeline_(timeline),
           timer_(timeline->GetDocument()->GetTaskRunner(
                      TaskType::kInternalDefault),
@@ -136,7 +139,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
 
    private:
     Member<DocumentTimeline> timeline_;
-    TaskRunnerTimer<DocumentTimelineTiming> timer_;
+    HeapTaskRunnerTimer<DocumentTimelineTiming> timer_;
   };
 
   friend class AnimationDocumentTimelineTest;
@@ -151,4 +154,4 @@ struct DowncastTraits<DocumentTimeline> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_DOCUMENT_TIMELINE_H_

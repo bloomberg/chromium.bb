@@ -38,10 +38,39 @@ class RemoveUserDelegate;
 // Base implementation of the UserManager interface.
 class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
  public:
+  // These enum values represent a legacy supervised user's (LSU) status on the
+  // sign in screen.
+  // TODO(crbug/1155729): Remove once all LSUs deleted in the wild. LSUs were
+  // first hidden on the login screen in M74. Assuming a five year AUE, we
+  // should stop supporting devices with LSUs by 2024.
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "LegacySupervisedUserStatus" in src/tools/metrics/histograms/enums.xml.
+  enum class LegacySupervisedUserStatus {
+    // Non-LSU Gaia user displayed on login screen.
+    kGaiaUserDisplayed = 0,
+    // LSU hidden on login screen. Expect this count to decline to zero over
+    // time as we delete LSUs.
+    kLSUHidden = 1,
+    // LSU attempted to delete cryptohome. Expect this count to decline to zero
+    // over time as we delete LSUs.
+    kLSUDeleted = 2,
+    // Add future entires above this comment, in sync with
+    // "LegacySupervisedUserStatus" in src/tools/metrics/histograms/enums.xml.
+    // Update kMaxValue to the last value.
+    kMaxValue = kLSUDeleted
+  };
+
   // Creates UserManagerBase with |task_runner| for UI thread.
   explicit UserManagerBase(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~UserManagerBase() override;
+
+  // Histogram for tracking the number of deprecated legacy supervised user
+  // cryptohomes remaining in the wild.
+  static const char kLegacySupervisedUsersHistogramName[];
+  // Feature that removes legacy supervised users.
+  static const base::Feature kRemoveLegacySupervisedUsersOnStartup;
 
   // Registers UserManagerBase preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -73,8 +102,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   void SaveForceOnlineSignin(const AccountId& account_id,
                              bool force_online_signin) override;
   void SaveUserDisplayName(const AccountId& account_id,
-                           const base::string16& display_name) override;
-  base::string16 GetUserDisplayName(const AccountId& account_id) const override;
+                           const std::u16string& display_name) override;
+  std::u16string GetUserDisplayName(const AccountId& account_id) const override;
   void SaveUserDisplayEmail(const AccountId& account_id,
                             const std::string& display_email) override;
   void SaveUserType(const User* user) override;
@@ -207,13 +236,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // Check for a particular user type.
 
-  // Returns true if |account_id| represents demo app.
-  virtual bool IsDemoApp(const AccountId& account_id) const = 0;
-
   // These methods are called when corresponding user type has signed in.
-
-  // Indicates that the demo account has just logged in.
-  virtual void DemoAccountLoggedIn() = 0;
 
   // Indicates that a user just logged in as guest.
   virtual void GuestUserLoggedIn();
@@ -327,6 +350,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Updates user account after locale was resolved.
   void DoUpdateAccountLocale(const AccountId& account_id,
                              std::unique_ptr<std::string> resolved_locale);
+
+  void RemoveLegacySupervisedUser(const AccountId& account_id);
 
   // Indicates stage of loading user from prefs.
   UserLoadStage user_loading_stage_ = STAGE_NOT_LOADED;

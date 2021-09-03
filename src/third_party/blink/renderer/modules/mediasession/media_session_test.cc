@@ -11,6 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_position_state.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
@@ -36,6 +37,10 @@ class MockMediaSessionService : public mojom::blink::MediaSessionService {
   MOCK_METHOD1(SetPositionState,
                void(media_session::mojom::blink::MediaPositionPtr));
   void SetMetadata(mojom::blink::SpecMediaMetadataPtr metadata) override {}
+  void SetMicrophoneState(
+      media_session::mojom::MicrophoneState microphone_state) override {}
+  void SetCameraState(media_session::mojom::CameraState camera_state) override {
+  }
   void EnableAction(
       media_session::mojom::blink::MediaSessionAction action) override {}
   void DisableAction(
@@ -56,7 +61,8 @@ class MediaSessionTest : public PageTestBase {
 
     mock_service_ = std::make_unique<MockMediaSessionService>();
 
-    media_session_ = MakeGarbageCollected<MediaSession>(GetFrame().DomWindow());
+    media_session_ =
+        MediaSession::mediaSession(*GetFrame().DomWindow()->navigator());
     media_session_->service_ = mock_service_->CreateRemoteAndBind();
     media_session_->clock_ = &test_clock_;
   }

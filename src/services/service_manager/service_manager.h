@@ -12,10 +12,8 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/process/process.h"
 #include "base/token.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -31,6 +29,7 @@
 #include "services/service_manager/public/mojom/service_manager.mojom.h"
 #include "services/service_manager/service_instance_registry.h"
 #include "services/service_manager/service_process_host.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace service_manager {
 
@@ -111,12 +110,6 @@ class ServiceManager : public Service {
                  ServiceExecutablePolicy service_executable_policy);
 
   ~ServiceManager() override;
-
-  // Provide a callback to be notified whenever an instance is destroyed.
-  // Typically the creator of the Service Manager will use this to determine
-  // when some set of services it created are destroyed, so it can shut down.
-  void SetInstanceQuitCallback(
-      base::OnceCallback<void(const Identity&)> callback);
 
   // Directly requests that the Service Manager start a new instance for
   // |service_name| if one is not already running.
@@ -212,7 +205,6 @@ class ServiceManager : public Service {
   ServiceInstance* service_manager_instance_;
 
   mojo::RemoteSet<mojom::ServiceManagerListener> listeners_;
-  base::OnceCallback<void(const Identity&)> instance_quit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceManager);
 };

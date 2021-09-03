@@ -79,7 +79,20 @@ void av1_update_ref_frame_map(AV1_COMP *cpi,
                               int ref_map_index,
                               RefBufferStack *ref_buffer_stack);
 
-void av1_get_ref_frames(AV1_COMP *const cpi, RefBufferStack *ref_buffer_stack);
+/*!\brief Obtain indices of reference frames from reference frame buffer stacks
+ *
+ * \callgraph
+ * \callergraph
+ *
+ * \param[in]    ref_buffer_stack  Data structure for reference frame buffer
+ *                                 stacks.
+ * \param[out]   remapped_ref_idx  An array for storing indices of reference
+ *                                 frames. The index is used to retrieve a
+ *                                 reference frame buffer from ref_frame_map
+ *                                 in AV1Common.
+ */
+void av1_get_ref_frames(const RefBufferStack *ref_buffer_stack,
+                        int remapped_ref_idx[REF_FRAMES]);
 
 int is_forced_keyframe_pending(struct lookahead_ctx *lookahead,
                                const int up_to_index,

@@ -20,7 +20,9 @@
 namespace wgpu {
 
     static constexpr uint64_t kWholeSize = WGPU_WHOLE_SIZE;
+    // TODO(crbug.com/520): Remove kStrideUndefined in favor of kCopyStrideUndefined.
     static constexpr uint32_t kStrideUndefined = WGPU_STRIDE_UNDEFINED;
+    static constexpr uint32_t kCopyStrideUndefined = WGPU_COPY_STRIDE_UNDEFINED;
 
     {% for type in by_category["enum"] %}
         enum class {{as_cppType(type.name)}} : uint32_t {
@@ -59,6 +61,13 @@ namespace wgpu {
 
     {% for type in by_category["structure"] %}
         struct {{as_cppType(type.name)}};
+    {% endfor %}
+
+    {% for typeDef in by_category["typedef"] %}
+        // {{as_cppType(typeDef.name)}} is deprecated.
+        // Use {{as_cppType(typeDef.type.name)}} instead.
+        using {{as_cppType(typeDef.name)}} = {{as_cppType(typeDef.type.name)}};
+
     {% endfor %}
 
     template<typename Derived, typename CType>

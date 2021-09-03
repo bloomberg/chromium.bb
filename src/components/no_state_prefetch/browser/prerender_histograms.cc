@@ -12,9 +12,8 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
-#include "base/strings/stringprintf.h"
 #include "components/google/core/common/google_util.h"
-#include "components/no_state_prefetch/common/prerender_util.h"
+#include "components/no_state_prefetch/common/no_state_prefetch_utils.h"
 #include "net/http/http_cache.h"
 
 namespace prerender {
@@ -52,6 +51,8 @@ std::string PrerenderHistograms::GetHistogramPrefix(Origin origin) {
       return "navigationpredictor";
     case ORIGIN_ISOLATED_PRERENDER:
       return "isolatedprerender";
+    case ORIGIN_SAME_ORIGIN_SPECULATION:
+      return "sameoriginspeculation";
     case ORIGIN_MAX:
       NOTREACHED();
       break;

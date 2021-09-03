@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/format_macros.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -180,12 +181,12 @@ class NavigationHandleSXGAttributeObserver : public WebContentsObserver {
         navigation_handle->HasPrefetchedAlternativeSubresourceSignedExchange();
   }
 
-  const base::Optional<bool>& had_prefetched_alt_sxg() const {
+  const absl::optional<bool>& had_prefetched_alt_sxg() const {
     return had_prefetched_alt_sxg_;
   }
 
  private:
-  base::Optional<bool> had_prefetched_alt_sxg_;
+  absl::optional<bool> had_prefetched_alt_sxg_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleSXGAttributeObserver);
 };
@@ -969,8 +970,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangePrefetchBrowserTest, ClearAll) {
   EXPECT_EQ(IsSignedExchangePrefetchCacheEnabled() ? 1u : 0u,
             GetCachedExchanges(shell()).size());
 
-  BrowsingDataRemover* remover = BrowserContext::GetBrowsingDataRemover(
-      shell()->web_contents()->GetBrowserContext());
+  BrowsingDataRemover* remover =
+      shell()->web_contents()->GetBrowserContext()->GetBrowsingDataRemover();
   BrowsingDataRemoverCompletionObserver completion_observer(remover);
   remover->RemoveAndReply(
       base::Time(), base::Time::Max(), BrowsingDataRemover::DATA_TYPE_CACHE,
@@ -2390,7 +2391,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
   EXPECT_EQ(0, script_request_counter->GetRequestCount());
 
   // Clears the title.
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), "document.title = '';"));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), "document.title = '';"));
 
   const char* next_page_path = "/next_page.html";
   const GURL next_page_url = embedded_test_server()->GetURL(next_page_path);
@@ -2400,7 +2401,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest,
           "<head><title>Next page</title>"
           "<script src=\"./script.js\" async defer></script></head>"));
   // Triggers GC.
-  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), "window.gc();"));
+  EXPECT_TRUE(ExecJs(shell()->web_contents(), "window.gc();"));
   // The script which was served via SXG must be kept in memory cache and must
   // be reused.
   NavigateToURLAndWaitTitle(next_page_url, "done");

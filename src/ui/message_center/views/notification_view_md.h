@@ -11,14 +11,14 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/animation/ink_drop_observer.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 
 namespace views {
 class ImageButton;
@@ -41,29 +41,29 @@ class MESSAGE_CENTER_EXPORT NotificationMdTextButton
   METADATA_HEADER(NotificationMdTextButton);
 
   NotificationMdTextButton(PressedCallback callback,
-                           const base::string16& label,
-                           const base::Optional<base::string16>& placeholder);
+                           const std::u16string& label,
+                           const absl::optional<std::u16string>& placeholder);
   ~NotificationMdTextButton() override;
 
   // views::MdTextButton:
   void UpdateBackgroundColor() override;
   void OnThemeChanged() override;
 
-  const base::Optional<base::string16>& placeholder() const {
+  const absl::optional<std::u16string>& placeholder() const {
     return placeholder_;
   }
-  void set_placeholder(base::Optional<base::string16> placeholder) {
+  void set_placeholder(absl::optional<std::u16string> placeholder) {
     placeholder_ = std::move(placeholder);
   }
   SkColor enabled_color_for_testing() const {
     return label()->GetEnabledColor();
   }
 
-  void OverrideTextColor(base::Optional<SkColor> text_color);
+  void OverrideTextColor(absl::optional<SkColor> text_color);
 
  private:
-  base::Optional<base::string16> placeholder_;
-  base::Optional<SkColor> text_color_;
+  absl::optional<std::u16string> placeholder_;
+  absl::optional<SkColor> text_color_;
 };
 
 // CompactTitleMessageView shows notification title and message in a single
@@ -78,8 +78,8 @@ class CompactTitleMessageView : public views::View {
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
 
-  void set_title(const base::string16& title);
-  void set_message(const base::string16& message);
+  void set_title(const std::u16string& title);
+  void set_message(const std::u16string& message);
 
  private:
   views::Label* title_ = nullptr;
@@ -112,11 +112,11 @@ class LargeImageView : public views::View {
 class NotificationInputDelegate {
  public:
   virtual void OnNotificationInputSubmit(size_t index,
-                                         const base::string16& text) = 0;
+                                         const std::u16string& text) = 0;
   virtual ~NotificationInputDelegate() = default;
 };
 
-class NotificationInputContainerMD : public views::InkDropHostView,
+class NotificationInputContainerMD : public views::View,
                                      public views::TextfieldController {
  public:
   explicit NotificationInputContainerMD(NotificationInputDelegate* delegate);
@@ -124,11 +124,9 @@ class NotificationInputContainerMD : public views::InkDropHostView,
 
   void AnimateBackground(const ui::Event& event);
 
-  // views::InkDropHostView:
+  // views::View:
   void AddLayerBeneathView(ui::Layer* layer) override;
   void RemoveLayerBeneathView(ui::Layer* layer) override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  SkColor GetInkDropBaseColor() const override;
   void OnThemeChanged() override;
   void Layout() override;
 
@@ -141,10 +139,11 @@ class NotificationInputContainerMD : public views::InkDropHostView,
   views::ImageButton* button() const { return button_; }
 
  private:
-  void SetButtonImage();
+  void UpdateButtonImage();
 
   NotificationInputDelegate* const delegate_;
 
+  views::InkDropHost ink_drop_{this};
   views::InkDropContainerView* const ink_drop_container_;
 
   views::Textfield* const textfield_;
@@ -181,6 +180,8 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void AddBackgroundAnimation(const ui::Event& event);
   void RemoveBackgroundAnimation();
 
+  views::InkDropHost* ink_drop() { return &ink_drop_; }
+
   // MessageView:
   void AddLayerBeneathView(ui::Layer* layer) override;
   void RemoveLayerBeneathView(ui::Layer* layer) override;
@@ -192,9 +193,6 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void PreferredSizeChanged() override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  SkColor GetInkDropBaseColor() const override;
   void UpdateWithNotification(const Notification& notification) override;
   void UpdateCornerRadius(int top_radius, int bottom_radius) override;
   NotificationControlButtonsView* GetControlButtonsView() const override;
@@ -211,7 +209,10 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   // Overridden from NotificationInputDelegate:
   void OnNotificationInputSubmit(size_t index,
-                                 const base::string16& text) override;
+                                 const std::u16string& text) override;
+
+ protected:
+  views::View* image_container_view() { return image_container_view_; }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotificationViewMDTest, AppNameExtension);
@@ -285,6 +286,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   // destroyed when the ink drop is visible.
   std::vector<views::View*> GetChildrenForLayerAdjustment() const;
 
+  views::InkDropHost ink_drop_{this};
   views::InkDropContainerView* const ink_drop_container_;
 
   // View containing close and settings buttons

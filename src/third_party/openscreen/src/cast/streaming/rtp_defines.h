@@ -98,20 +98,17 @@ enum class RtpPayloadType : uint8_t {
   // video to be 96; regardless of the codecs actually being used. This is
   // definitely out-of-spec, and inconsistent with the audio versus video range
   // of values, but must be taken into account for backwards-compatibility.
-  // TODO(crbug.com/1127978): RTP payload types need to represent actual type,
-  // as well as have options for new codecs like VP9.
   kAudioHackForAndroidTV = 127,
   kVideoHackForAndroidTV = 96,
 };
 
-// NOTE: currently we match the legacy Chrome sender's behavior of always
-// sending the audio and video hacks for AndroidTV, however we should migrate
-// to using proper rtp payload types. New payload types for new codecs, such
-// as VP9, should also be defined.
-// TODO(crbug.com/1127978): RTP payload types need to represent actual type,
-// as well as have options for new codecs like VP9.
-RtpPayloadType GetPayloadType(AudioCodec codec);
-RtpPayloadType GetPayloadType(VideoCodec codec);
+// Setting |use_android_rtp_hack| to true means that we match the legacy Chrome
+// sender's behavior of always sending the audio and video hacks for AndroidTV,
+// as some legacy android receivers require these.
+// TODO(issuetracker.google.com/184438154): we need to figure out what receivers
+// need this still, if any. The hack should be removed when possible.
+RtpPayloadType GetPayloadType(AudioCodec codec, bool use_android_rtp_hack);
+RtpPayloadType GetPayloadType(VideoCodec codec, bool use_android_rtp_hack);
 
 // Returns true if the |raw_byte| can be type-casted to a RtpPayloadType, and is
 // also not RtpPayloadType::kNull. The caller should mask the byte, to select

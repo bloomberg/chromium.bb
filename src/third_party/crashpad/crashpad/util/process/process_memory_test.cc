@@ -18,7 +18,7 @@
 
 #include <memory>
 
-#include "base/process/process_metrics.h"
+#include "base/memory/page_size.h"
 #include "build/build_config.h"
 #include "gtest/gtest.h"
 #include "test/errors.h"
@@ -104,7 +104,7 @@ void DoChildReadTestSetup(size_t* region_size,
   *region_size = 4 * base::GetPageSize();
   region->reset(new char[*region_size]);
   for (size_t index = 0; index < *region_size; ++index) {
-    (*region)[index] = index % 256;
+    (*region)[index] = static_cast<char>(index % 256);
   }
 }
 
@@ -367,7 +367,7 @@ TEST(ProcessMemory, ReadCStringSizeLimitedChild) {
 void DoReadUnmappedChildMainSetup(void* page) {
   char* region = reinterpret_cast<char*>(page);
   for (size_t index = 0; index < base::GetPageSize(); ++index) {
-    region[index] = index % 256;
+    region[index] = static_cast<char>(index % 256);
   }
 }
 

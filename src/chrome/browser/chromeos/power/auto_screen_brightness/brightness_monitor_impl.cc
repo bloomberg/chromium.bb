@@ -6,6 +6,7 @@
 
 #include <cmath>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/memory/ptr_util.h"
@@ -15,7 +16,6 @@
 #include "base/numerics/ranges.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/chromeos/power/auto_screen_brightness/utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 
@@ -38,7 +38,7 @@ void BrightnessMonitorImpl::Init() {
           ? kBrightnessSampleDelay
           : base::TimeDelta::FromSeconds(brightness_sample_delay_seconds);
 
-  power_manager_client_observer_.Add(PowerManagerClient::Get());
+  power_manager_client_observation_.Observe(PowerManagerClient::Get());
 }
 
 void BrightnessMonitorImpl::AddObserver(
@@ -115,7 +115,7 @@ base::TimeDelta BrightnessMonitorImpl::GetBrightnessSampleDelayForTesting()
 }
 
 void BrightnessMonitorImpl::OnReceiveInitialBrightnessPercent(
-    const base::Optional<double> brightness_percent) {
+    const absl::optional<double> brightness_percent) {
   DCHECK_EQ(brightness_monitor_status_, Status::kInitializing);
 
   if (brightness_percent && *brightness_percent >= 0.0 &&
@@ -161,7 +161,7 @@ void BrightnessMonitorImpl::NotifyUserBrightnessChanged() {
   }
 
   stable_brightness_percent_ = user_brightness_percent_;
-  user_brightness_percent_ = base::nullopt;
+  user_brightness_percent_ = absl::nullopt;
 }
 
 void BrightnessMonitorImpl::NotifyUserBrightnessChangeRequested() {

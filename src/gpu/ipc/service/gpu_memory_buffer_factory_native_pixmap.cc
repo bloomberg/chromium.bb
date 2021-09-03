@@ -145,6 +145,13 @@ void GpuMemoryBufferFactoryNativePixmap::DestroyGpuMemoryBuffer(
   native_pixmaps_.erase(key);
 }
 
+bool GpuMemoryBufferFactoryNativePixmap::
+    FillSharedMemoryRegionWithBufferContents(
+        gfx::GpuMemoryBufferHandle buffer_handle,
+        base::UnsafeSharedMemoryRegion shared_memory) {
+  return false;
+}
+
 ImageFactory* GpuMemoryBufferFactoryNativePixmap::AsImageFactory() {
   return this;
 }
@@ -154,9 +161,12 @@ GpuMemoryBufferFactoryNativePixmap::CreateImageForGpuMemoryBuffer(
     gfx::GpuMemoryBufferHandle handle,
     const gfx::Size& size,
     gfx::BufferFormat format,
+    gfx::BufferPlane plane,
     int client_id,
     SurfaceHandle surface_handle) {
   if (handle.type != gfx::NATIVE_PIXMAP)
+    return nullptr;
+  if (plane != gfx::BufferPlane::DEFAULT)
     return nullptr;
 
   scoped_refptr<gfx::NativePixmap> pixmap;

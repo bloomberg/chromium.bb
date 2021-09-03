@@ -19,6 +19,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/chrome_debug_urls.h"
 
 namespace {
 
@@ -49,13 +50,13 @@ class SubscriptionInterceptingPermissionManager
     callback_ = std::move(callback);
   }
 
-  int SubscribePermissionStatusChange(
+  SubscriptionId SubscribePermissionStatusChange(
       content::PermissionType permission,
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback)
       override {
-    int result =
+    SubscriptionId result =
         permissions::PermissionManager::SubscribePermissionStatusChange(
             permission, render_frame_host, requesting_origin, callback);
     std::move(callback_).Run();
@@ -131,11 +132,11 @@ IN_PROC_BROWSER_TEST_F(PermissionManagerBrowserTest,
                        MAYBE_ServiceWorkerPermissionAfterRendererCrash) {
   content::ScopedAllowRendererCrashes scoped_allow_renderer_crashes_;
 
-  content::WindowedNotificationObserver crash_observer(
-      content::NOTIFICATION_WEB_CONTENTS_DISCONNECTED,
-      content::NotificationService::AllSources());
+  content::RenderProcessHostWatcher crash_observer(
+      incognito_browser()->tab_strip_model()->GetActiveWebContents(),
+      content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   incognito_browser()->OpenURL(content::OpenURLParams(
-      GURL(content::kChromeUICrashURL), content::Referrer(),
+      GURL(blink::kChromeUICrashURL), content::Referrer(),
       WindowOpenDisposition::CURRENT_TAB, ui::PAGE_TRANSITION_TYPED, false));
   crash_observer.Wait();
 

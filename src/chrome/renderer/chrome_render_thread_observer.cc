@@ -28,6 +28,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/common/cache_stats_recorder.mojom.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
@@ -35,13 +36,13 @@
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/url_constants.h"
 #include "components/visitedlink/renderer/visitedlink_reader.h"
+#include "components/web_cache/public/features.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/resource_usage_reporter_type_converters.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/render_view_visitor.h"
-#include "content/public/renderer/resource_dispatcher_delegate.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ipc/ipc_sync_channel.h"
 #include "media/base/localized_strings.h"
@@ -49,6 +50,10 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_module.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/platform/web_request_peer.h"
+#include "third_party/blink/public/platform/web_resource_request_sender_delegate.h"
+#include "third_party/blink/public/platform/web_string.h"
+#include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_security_policy.h"
@@ -58,25 +63,32 @@
 #include "chrome/renderer/extensions/extension_localization_peer.h"
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/renderer/chromeos_merge_session_loader_throttle.h"
 #endif
 
 using blink::WebCache;
 using blink::WebSecurityPolicy;
-using blink::WebString;
 using content::RenderThread;
 
 namespace {
 
 const int kCacheStatsDelayMS = 2000;
 
-class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
+class RendererResourceDelegate
+    : public blink::WebResourceRequestSenderDelegate {
  public:
-  RendererResourceDelegate() {}
+  RendererResourceDelegate() = default;
 
   void OnRequestComplete() override {
     // Update the browser about our cache.
+
+    // No need to update the browser if the WebCache manager doesn't need this
+    // information.
+    if (base::FeatureList::IsEnabled(
+            web_cache::kTrimWebCacheOnMemoryPressureOnly)) {
+      return;
+    }
     // Rate limit informing the host of our cache stats.
     if (!weak_factory_.HasWeakPtrs()) {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -87,13 +99,13 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
     }
   }
 
-  std::unique_ptr<content::RequestPeer> OnReceivedResponse(
-      std::unique_ptr<content::RequestPeer> current_peer,
-      const std::string& mime_type,
-      const GURL& url) override {
+  scoped_refptr<blink::WebRequestPeer> OnReceivedResponse(
+      scoped_refptr<blink::WebRequestPeer> current_peer,
+      const blink::WebString& mime_type,
+      const blink::WebURL& url) override {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     return ExtensionLocalizationPeer::CreateExtensionLocalizationPeer(
-        std::move(current_peer), RenderThread::Get(), mime_type, url);
+        std::move(current_peer), RenderThread::Get(), mime_type.Utf8(), url);
 #else
     return current_peer;
 #endif
@@ -101,6 +113,8 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
 
  private:
   void InformHostOfCacheStats() {
+    DCHECK(!base::FeatureList::IsEnabled(
+        web_cache::kTrimWebCacheOnMemoryPressureOnly));
     WebCache::UsageStats stats;
     WebCache::GetUsageStats(&stats);
     if (!cache_stats_recorder_) {
@@ -118,7 +132,7 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
   DISALLOW_COPY_AND_ASSIGN(RendererResourceDelegate);
 };
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 scoped_refptr<base::SequencedTaskRunner> GetCallbackGroupTaskRunner() {
   content::ChildThread* child_thread = content::ChildThread::Get();
   if (child_thread)
@@ -127,13 +141,13 @@ scoped_refptr<base::SequencedTaskRunner> GetCallbackGroupTaskRunner() {
   // This will happen when running via tests.
   return base::SequencedTaskRunnerHandle::Get();
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
 bool ChromeRenderThreadObserver::is_incognito_process_ = false;
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // static
 scoped_refptr<ChromeRenderThreadObserver::ChromeOSListener>
 ChromeRenderThreadObserver::ChromeOSListener::Create(
@@ -180,7 +194,7 @@ void ChromeRenderThreadObserver::ChromeOSListener::BindOnIOThread(
         chromeos_listener_receiver) {
   receiver_.Bind(std::move(chromeos_listener_receiver));
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 chrome::mojom::DynamicParams* GetDynamicConfigParams() {
   static base::NoDestructor<chrome::mojom::DynamicParams> dynamic_params;
@@ -188,10 +202,12 @@ chrome::mojom::DynamicParams* GetDynamicConfigParams() {
 }
 
 ChromeRenderThreadObserver::ChromeRenderThreadObserver()
-    : visited_link_reader_(new visitedlink::VisitedLinkReader) {
+    : resource_request_sender_delegate_(
+          std::make_unique<RendererResourceDelegate>()),
+      visited_link_reader_(new visitedlink::VisitedLinkReader) {
   RenderThread* thread = RenderThread::Get();
-  resource_delegate_.reset(new RendererResourceDelegate());
-  thread->SetResourceDispatcherDelegate(resource_delegate_.get());
+  thread->SetResourceRequestSenderDelegate(
+      resource_request_sender_delegate_.get());
 
   // Configure modules that need access to resources.
   net::NetModule::SetResourceProvider(ChromeNetResourceProvider);
@@ -224,12 +240,12 @@ void ChromeRenderThreadObserver::SetInitialConfiguration(
     mojo::PendingReceiver<chrome::mojom::ChromeOSListener>
         chromeos_listener_receiver) {
   is_incognito_process_ = is_incognito_process;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos_listener_receiver) {
     chromeos_listener_ =
         ChromeOSListener::Create(std::move(chromeos_listener_receiver));
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 void ChromeRenderThreadObserver::SetConfiguration(

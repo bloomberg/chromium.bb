@@ -5,9 +5,7 @@
 #ifndef UI_VIEWS_ANIMATION_COMPOSITOR_ANIMATION_RUNNER_H_
 #define UI_VIEWS_ANIMATION_COMPOSITOR_ANIMATION_RUNNER_H_
 
-#include <memory>
 
-#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_animation_observer.h"

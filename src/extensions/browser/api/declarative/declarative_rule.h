@@ -209,9 +209,10 @@ class DeclarativeRule {
 
   // Checks whether the set of |conditions| and |actions| are consistent.
   // Returns true in case of consistency and MUST set |error| otherwise.
-  using ConsistencyChecker = base::Callback<bool(const ConditionSet* conditions,
-                                                 const ActionSet* actions,
-                                                 std::string* error)>;
+  using ConsistencyChecker =
+      base::OnceCallback<bool(const ConditionSet* conditions,
+                              const ActionSet* actions,
+                              std::string* error)>;
 
   DeclarativeRule(const GlobalRuleId& id,
                   const Tags& tags,
@@ -372,7 +373,7 @@ DeclarativeActionSet<ActionT>::Create(content::BrowserContext* browser_context,
     scoped_refptr<const ActionT> action =
         ActionT::Create(browser_context, extension, *value, error, bad_message);
     if (!error->empty() || *bad_message)
-      return std::unique_ptr<DeclarativeActionSet>();
+      return nullptr;
     result.push_back(action);
   }
 
@@ -472,7 +473,8 @@ DeclarativeRule<ConditionT, ActionT>::Create(
   CHECK(actions.get());
 
   if (!check_consistency.is_null() &&
-      !check_consistency.Run(conditions.get(), actions.get(), error)) {
+      !std::move(check_consistency)
+           .Run(conditions.get(), actions.get(), error)) {
     DCHECK(!error->empty());
     return std::move(error_result);
   }

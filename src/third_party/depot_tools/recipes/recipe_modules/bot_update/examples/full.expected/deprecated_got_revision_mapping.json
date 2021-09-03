@@ -23,7 +23,7 @@
     },
     "infra_step": true,
     "name": "gerrit fetch current CL info",
-    "timeout": 600,
+    "timeout": 60,
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@[@@@",
       "@@@STEP_LOG_LINE@json.output@  {@@@",
@@ -66,8 +66,9 @@
       "--disable-syntax-validation"
     ],
     "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "chromium/src/try/linux/8945511751514863184",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
-      "GIT_HTTP_LOW_SPEED_TIME": "300"
+      "GIT_HTTP_LOW_SPEED_TIME": "1800"
     },
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -139,8 +140,9 @@
       "--no_fetch_tags"
     ],
     "env": {
+      "DEPOT_TOOLS_REPORT_BUILD": "chromium/src/try/linux/8945511751514863184",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
-      "GIT_HTTP_LOW_SPEED_TIME": "300"
+      "GIT_HTTP_LOW_SPEED_TIME": "1800"
     },
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [

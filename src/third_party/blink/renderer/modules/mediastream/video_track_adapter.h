@@ -10,10 +10,10 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "media/base/video_frame.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/platform/modules/mediastream/media_stream_types.h"
 #include "third_party/blink/public/web/modules/mediastream/encoded_video_frame.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
@@ -62,8 +62,10 @@ class MODULES_EXPORT VideoTrackAdapter
 
   // Delivers |frame| to all tracks that have registered a callback.
   // Must be called on the IO-thread.
-  void DeliverFrameOnIO(scoped_refptr<media::VideoFrame> frame,
-                        base::TimeTicks estimated_capture_time);
+  void DeliverFrameOnIO(
+      scoped_refptr<media::VideoFrame> video_frame,
+      std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
+      base::TimeTicks estimated_capture_time);
 
   // Delivers |encoded_frame| to all tracks that have registered a callback.
   // Must be called on the IO-thread.
@@ -95,7 +97,7 @@ class MODULES_EXPORT VideoTrackAdapter
                                    const VideoTrackAdapterSettings& settings,
                                    gfx::Size* desired_size);
 
-  base::Optional<gfx::Size> source_frame_size() const {
+  absl::optional<gfx::Size> source_frame_size() const {
     return source_frame_size_;
   }
 
@@ -108,6 +110,7 @@ class MODULES_EXPORT VideoTrackAdapter
   using VideoCaptureDeliverFrameInternalCallback =
       WTF::CrossThreadFunction<void(
           scoped_refptr<media::VideoFrame> video_frame,
+          std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
           base::TimeTicks estimated_capture_time)>;
   using DeliverEncodedVideoFrameInternalCallback =
       WTF::CrossThreadFunction<void(
@@ -174,7 +177,7 @@ class MODULES_EXPORT VideoTrackAdapter
   float source_frame_rate_;
 
   // Resolution configured on the video source, accessed on the IO-thread.
-  base::Optional<gfx::Size> source_frame_size_;
+  absl::optional<gfx::Size> source_frame_size_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoTrackAdapter);
 };

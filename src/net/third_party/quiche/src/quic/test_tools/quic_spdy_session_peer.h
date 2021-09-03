@@ -5,19 +5,18 @@
 #ifndef QUICHE_QUIC_TEST_TOOLS_QUIC_SPDY_SESSION_PEER_H_
 #define QUICHE_QUIC_TEST_TOOLS_QUIC_SPDY_SESSION_PEER_H_
 
-#include "net/third_party/quiche/src/quic/core/http/quic_receive_control_stream.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_send_control_stream.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_receive_stream.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_send_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/core/quic_write_blocked_list.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
+#include "quic/core/http/quic_receive_control_stream.h"
+#include "quic/core/http/quic_send_control_stream.h"
+#include "quic/core/qpack/qpack_receive_stream.h"
+#include "quic/core/qpack/qpack_send_stream.h"
+#include "quic/core/quic_packets.h"
+#include "quic/core/quic_write_blocked_list.h"
+#include "spdy/core/spdy_framer.h"
 
 namespace quic {
 
 class QuicHeadersStream;
 class QuicSpdySession;
-class QuicHpackDebugVisitor;
 
 namespace test {
 
@@ -29,12 +28,6 @@ class QuicSpdySessionPeer {
   static void SetHeadersStream(QuicSpdySession* session,
                                QuicHeadersStream* headers_stream);
   static spdy::SpdyFramer* GetSpdyFramer(QuicSpdySession* session);
-  static void SetHpackEncoderDebugVisitor(
-      QuicSpdySession* session,
-      std::unique_ptr<QuicHpackDebugVisitor> visitor);
-  static void SetHpackDecoderDebugVisitor(
-      QuicSpdySession* session,
-      std::unique_ptr<QuicHpackDebugVisitor> visitor);
   // Must be called before Initialize().
   static void SetMaxInboundHeaderListSize(QuicSpdySession* session,
                                           size_t max_inbound_header_size);
@@ -57,6 +50,9 @@ class QuicSpdySessionPeer {
       QuicSpdySession* session);
   static QpackReceiveStream* GetQpackEncoderReceiveStream(
       QuicSpdySession* session);
+  static void SetH3DatagramSupported(QuicSpdySession* session,
+                                     bool h3_datagram_supported);
+  static void EnableWebTransport(QuicSpdySession& session);
 };
 
 }  // namespace test

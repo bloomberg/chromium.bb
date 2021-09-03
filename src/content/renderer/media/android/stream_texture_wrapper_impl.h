@@ -5,8 +5,6 @@
 #ifndef CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_WRAPPER_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_ANDROID_STREAM_TEXTURE_WRAPPER_IMPL_H_
 
-#include <memory>
-
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
@@ -103,7 +101,7 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   void CreateVideoFrame(const gpu::Mailbox& mailbox,
                         const gfx::Size& coded_size,
                         const gfx::Rect& visible_rect,
-                        const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info);
+                        const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info);
 
   void SetCurrentFrameInternal(scoped_refptr<media::VideoFrame> video_frame);
 

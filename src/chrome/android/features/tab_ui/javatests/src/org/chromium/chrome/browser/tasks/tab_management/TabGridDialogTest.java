@@ -47,17 +47,15 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.f
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.getSwipeToDismissAction;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.mergeAllNormalTabsToAGroup;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.prepareTabsWithThumbnail;
-import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.rotateDeviceToOrientation;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyAllTabsHaveThumbnail;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabStripFaviconCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabSwitcherCardCount;
-import static org.chromium.chrome.features.start_surface.InstantStartTest.createTabStateFile;
-import static org.chromium.chrome.features.start_surface.InstantStartTest.createThumbnailBitmapAndWriteToFile;
+import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.createTabStateFile;
+import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.createThumbnailBitmapAndWriteToFile;
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Rect;
@@ -106,6 +104,7 @@ import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -173,8 +172,7 @@ public class TabGridDialogTest {
     @After
     public void tearDown() {
         TabUiFeatureUtilities.setTabManagementModuleSupportedForTesting(null);
-        mActivityTestRule.getActivity().setRequestedOrientation(
-                ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        ActivityTestUtils.clearActivityOrientation(mActivityTestRule.getActivity());
     }
 
     @Test
@@ -294,6 +292,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "Flaky test - see: https://crbug.com/1177149")
     public void testTabGridDialogAnimation() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -394,8 +393,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
-            ChromeFeatureList.CHROME_SHARING_HUB})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID})
     public void testDialogToolbarMenuShareGroup_WithSharingHub() {
         // clang-format on
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -416,8 +414,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     // clang-format off
-    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
-        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study"})
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
         "force-fieldtrial-params=Study.Group:enable_launch_polish/true"})
     public void testSelectionEditorShowHide() throws ExecutionException {
@@ -538,8 +535,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     // clang-format off
-    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
-        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study"})
+    @EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
         "force-fieldtrial-params=Study.Group:enable_launch_polish/true"})
     public void testSelectionEditorPosition() {
@@ -563,7 +559,7 @@ public class TabGridDialogTest {
         checkPosition(cta, false, true);
 
         // Verify the size and position of TabSelectionEditor in landscape mode.
-        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
         CriteriaHelper.pollUiThread(() -> parentView.getHeight() < parentView.getWidth());
         checkPosition(cta, false, false);
 
@@ -575,7 +571,7 @@ public class TabGridDialogTest {
 
         // Verify the positioning in multi-window mode. Adjusting the height of the root view to
         // mock entering/exiting multi-window mode.
-        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
+        ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_PORTRAIT);
         CriteriaHelper.pollUiThread(() -> parentView.getHeight() > parentView.getWidth());
         View rootView = cta.findViewById(R.id.coordinator);
         int rootViewHeight = rootView.getHeight();
@@ -636,8 +632,7 @@ public class TabGridDialogTest {
     @Test
     @MediumTest
     // clang-format off
-    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID,
-            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study"})
+    @Features.EnableFeatures({ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     @CommandLineFlags.Add({"force-fieldtrials=Study/Group", TAB_GROUP_LAUNCH_POLISH_PARAMS})
     public void testTabGroupNaming_KeyboardVisibility() throws ExecutionException {
         // clang-format on
@@ -721,7 +716,7 @@ public class TabGridDialogTest {
         verifyAllTabsHaveThumbnail(cta.getCurrentTabModel());
 
         // Rotate to landscape mode and create a tab group.
-        rotateDeviceToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
+        ActivityTestUtils.rotateActivityToOrientation(cta, Configuration.ORIENTATION_LANDSCAPE);
         mergeAllNormalTabsToAGroup(cta);
         verifyTabSwitcherCardCount(cta, 1);
         openDialogFromTabSwitcherAndVerify(cta, 3, null);
@@ -777,6 +772,7 @@ public class TabGridDialogTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1157518")
     public void testAdjustBackGroundViewAccessibilityImportance() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
         createTabs(cta, false, 2);
@@ -980,6 +976,43 @@ public class TabGridDialogTest {
         verifyShowingDialog(cta, 2, null);
     }
 
+    @Test
+    @MediumTest
+    public void testCreateTabInDialog() {
+        final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        createTabs(cta, false, 2);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 2);
+
+        // Create a tab group.
+        mergeAllNormalTabsToAGroup(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        // Open dialog from tab switcher and verify dialog is showing correct content.
+        openDialogFromTabSwitcherAndVerify(cta, 2, null);
+
+        // Create a tab by tapping "+" on the dialog.
+        onView(allOf(withId(R.id.toolbar_right_button),
+                       isDescendantOfA(withId(R.id.dialog_container_view))))
+                .perform(click());
+        waitForDialogHidingAnimation(cta);
+        enterTabSwitcher(cta);
+        verifyTabSwitcherCardCount(cta, 1);
+        openDialogFromTabSwitcherAndVerify(cta, 3, null);
+
+        // Enter first tab page.
+        clickFirstTabInDialog(cta);
+        waitForDialogHidingAnimation(cta);
+        // Open dialog from tab strip and verify dialog is showing correct content.
+        openDialogFromStripAndVerify(cta, 3, null);
+
+        // Create a tab by tapping "+" on the dialog.
+        onView(allOf(withId(R.id.toolbar_right_button),
+                       isDescendantOfA(withId(R.id.dialog_container_view))))
+                .perform(click());
+        waitForDialogHidingAnimation(cta);
+        openDialogFromStripAndVerify(cta, 4, null);
+    }
+
     private void openDialogFromTabSwitcherAndVerify(
             ChromeTabbedActivity cta, int tabCount, String customizedTitle) {
         clickFirstCardFromTabSwitcher(cta);
@@ -1030,7 +1063,8 @@ public class TabGridDialogTest {
             return;
         }
         @ColorInt
-        int scrimDefaultColor = ApiCompatibilityUtils.getColor(resources, R.color.black_alpha_65);
+        int scrimDefaultColor =
+                ApiCompatibilityUtils.getColor(resources, R.color.default_scrim_color);
         @ColorInt
         int navigationBarColor =
                 ApiCompatibilityUtils.getColor(resources, R.color.bottom_system_nav_color);
@@ -1061,7 +1095,7 @@ public class TabGridDialogTest {
     }
 
     private void verifyTabGroupsContinuation(ChromeTabbedActivity cta, boolean isEnabled) {
-        assertEquals(isEnabled, TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled());
+        assertEquals(isEnabled, TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(cta));
 
         // Verify whether the menu button exists.
         onView(withId(R.id.toolbar_menu_button))

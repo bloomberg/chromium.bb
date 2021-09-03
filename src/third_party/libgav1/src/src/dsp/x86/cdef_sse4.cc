@@ -15,7 +15,7 @@
 #include "src/dsp/cdef.h"
 #include "src/utils/cpu.h"
 
-#if LIBGAV1_ENABLE_SSE4_1
+#if LIBGAV1_TARGETING_SSE4_1
 
 #include <emmintrin.h>
 #include <tmmintrin.h>
@@ -349,8 +349,8 @@ inline uint32_t SumVector_S32(__m128i a) {
 inline uint32_t Cost0Or4(const __m128i a, const __m128i b,
                          const __m128i division_table[2]) {
   // Reverse and clear upper 2 bytes.
-  const __m128i reverser =
-      _mm_set_epi32(0x80800100, 0x03020504, 0x07060908, 0x0b0a0d0c);
+  const __m128i reverser = _mm_set_epi32(static_cast<int>(0x80800100),
+                                         0x03020504, 0x07060908, 0x0b0a0d0c);
   // 14 13 12 11 10 09 08 ZZ
   const __m128i b_reversed = _mm_shuffle_epi8(b, reverser);
   // 00 14 01 13 02 12 03 11
@@ -371,7 +371,8 @@ inline uint32_t CostOdd(const __m128i a, const __m128i b,
                         const __m128i division_table[2]) {
   // Reverse and clear upper 10 bytes.
   const __m128i reverser =
-      _mm_set_epi32(0x80808080, 0x80808080, 0x80800100, 0x03020504);
+      _mm_set_epi32(static_cast<int>(0x80808080), static_cast<int>(0x80808080),
+                    static_cast<int>(0x80800100), 0x03020504);
   // 10 09 08 ZZ ZZ ZZ ZZ ZZ
   const __m128i b_reversed = _mm_shuffle_epi8(b, reverser);
   // 00 10 01 09 02 08 03 ZZ
@@ -395,7 +396,7 @@ inline uint32_t SquareSum_S16(const __m128i a) {
 }
 
 void CdefDirection_SSE4_1(const void* const source, ptrdiff_t stride,
-                          int* const direction, int* const variance) {
+                          uint8_t* const direction, int* const variance) {
   assert(direction != nullptr);
   assert(variance != nullptr);
   const auto* src = static_cast<const uint8_t*>(source);
@@ -414,8 +415,8 @@ void CdefDirection_SSE4_1(const void* const source, ptrdiff_t stride,
   cost[4] = Cost0Or4(partial_lo[4], partial_hi[4], division_table);
 
   const __m128i division_table_odd[2] = {
-      LoadUnaligned16(kCdefDivisionTableOddPadded),
-      LoadUnaligned16(kCdefDivisionTableOddPadded + 4)};
+      LoadAligned16(kCdefDivisionTableOddPadded),
+      LoadAligned16(kCdefDivisionTableOddPadded + 4)};
 
   cost[1] = CostOdd(partial_lo[1], partial_hi[1], division_table_odd);
   cost[3] = CostOdd(partial_lo[3], partial_hi[3], division_table_odd);
@@ -717,7 +718,7 @@ void CdefInit_SSE4_1() { low_bitdepth::Init8bpp(); }
 
 }  // namespace dsp
 }  // namespace libgav1
-#else  // !LIBGAV1_ENABLE_SSE4_1
+#else   // !LIBGAV1_TARGETING_SSE4_1
 namespace libgav1 {
 namespace dsp {
 
@@ -725,4 +726,4 @@ void CdefInit_SSE4_1() {}
 
 }  // namespace dsp
 }  // namespace libgav1
-#endif  // LIBGAV1_ENABLE_SSE4_1
+#endif  // LIBGAV1_TARGETING_SSE4_1

@@ -5,6 +5,8 @@
 #include "ui/aura/test/ui_controls_ozone.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "ui/events/event_utils.h"
 
 namespace aura {
 namespace test {
@@ -203,7 +205,7 @@ bool UIControlsOzone::SendMouseClick(ui_controls::MouseButton type) {
                          ui_controls::kNoAccelerator);
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 bool UIControlsOzone::SendTouchEvents(int action, int id, int x, int y) {
   return SendTouchEventsNotifyWhenDone(action, id, x, y, base::OnceClosure());
 }
@@ -274,6 +276,15 @@ void UIControlsOzone::PostKeyEventTask(ui::EventType type,
   flags |= ui::EF_FINAL;
 
   ui::KeyEvent key_event(type, key_code, flags);
+  if (type == ui::ET_KEY_PRESSED) {
+    // Set a property as if this is a key event not consumed by IME.
+    // Ozone/X11+GTK IME works so already. Ozone/wayland IME relies on this
+    // flag to work properly.
+    key_event.SetProperties({{
+        ui::kPropertyKeyboardImeFlag,
+        std::vector<uint8_t>{ui::kPropertyKeyboardImeIgnoredFlag},
+    }});
+  }
   SendEventToSink(&key_event, display_id, std::move(closure), optional_host);
 }
 

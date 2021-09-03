@@ -16,11 +16,13 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.search_engines.SearchEnginePromoType;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ActivityUtils;
+import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.components.policy.test.annotations.Policies;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -54,17 +56,17 @@ public class LocaleManagerTest {
             @Override
             public int getSearchEnginePromoShowType() {
                 getShowTypeCallback.notifyCalled();
-                return LocaleManager.SearchEnginePromoType.DONT_SHOW;
+                return SearchEnginePromoType.DONT_SHOW;
             }
         });
 
         // Launch any activity as an Activity ref is required to attempt to show the activity.
-        final SearchActivity searchActivity = ActivityUtils.waitForActivity(
+        final SearchActivity searchActivity = ActivityTestUtils.waitForActivity(
                 InstrumentationRegistry.getInstrumentation(), SearchActivity.class);
 
         final CallbackHelper searchEnginesFinalizedCallback = new CallbackHelper();
         TestThreadUtils.runOnUiThreadBlocking(
-                () -> LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
+                () -> AppHooks.get().getLocaleManager().showSearchEnginePromoIfNeeded(
                                 searchActivity, new Callback<Boolean>() {
                                     @Override
                                     public void onResult(Boolean result) {

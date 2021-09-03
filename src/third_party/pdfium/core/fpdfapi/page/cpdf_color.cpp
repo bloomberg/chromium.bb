@@ -8,6 +8,7 @@
 
 #include "core/fpdfapi/page/cpdf_patterncs.h"
 #include "core/fxcrt/fx_system.h"
+#include "third_party/base/check.h"
 
 CPDF_Color::CPDF_Color() = default;
 
@@ -22,7 +23,7 @@ bool CPDF_Color::IsPattern() const {
 }
 
 bool CPDF_Color::IsPatternInternal() const {
-  return m_pCS->GetFamily() == PDFCS_PATTERN;
+  return m_pCS->GetFamily() == CPDF_ColorSpace::Family::kPattern;
 }
 
 void CPDF_Color::SetColorSpace(const RetainPtr<CPDF_ColorSpace>& pCS) {
@@ -37,8 +38,8 @@ void CPDF_Color::SetColorSpace(const RetainPtr<CPDF_ColorSpace>& pCS) {
 }
 
 void CPDF_Color::SetValueForNonPattern(const std::vector<float>& values) {
-  ASSERT(!IsPatternInternal());
-  ASSERT(m_pCS->CountComponents() <= values.size());
+  DCHECK(!IsPatternInternal());
+  DCHECK(m_pCS->CountComponents() <= values.size());
   m_Buffer = values;
 }
 
@@ -47,9 +48,10 @@ void CPDF_Color::SetValueForPattern(const RetainPtr<CPDF_Pattern>& pPattern,
   if (values.size() > kMaxPatternColorComps)
     return;
 
-  if (!IsPattern())
-    SetColorSpace(CPDF_ColorSpace::GetStockCS(PDFCS_PATTERN));
-
+  if (!IsPattern()) {
+    SetColorSpace(
+        CPDF_ColorSpace::GetStockCS(CPDF_ColorSpace::Family::kPattern));
+  }
   m_pValue->SetPattern(pPattern);
   m_pValue->SetComps(values);
 }
@@ -70,7 +72,8 @@ uint32_t CPDF_Color::CountComponents() const {
 }
 
 bool CPDF_Color::IsColorSpaceRGB() const {
-  return m_pCS == CPDF_ColorSpace::GetStockCS(PDFCS_DEVICERGB);
+  return m_pCS ==
+         CPDF_ColorSpace::GetStockCS(CPDF_ColorSpace::Family::kDeviceRGB);
 }
 
 bool CPDF_Color::GetRGB(int* R, int* G, int* B) const {
@@ -97,6 +100,6 @@ bool CPDF_Color::GetRGB(int* R, int* G, int* B) const {
 }
 
 CPDF_Pattern* CPDF_Color::GetPattern() const {
-  ASSERT(IsPattern());
+  DCHECK(IsPattern());
   return m_pValue ? m_pValue->GetPattern() : nullptr;
 }

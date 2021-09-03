@@ -14,12 +14,12 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/location.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
@@ -96,7 +96,7 @@ scoped_refptr<UsbContext> InitializeUsbContextBlocking() {
   return nullptr;
 }
 
-base::Optional<std::vector<ScopedLibusbDeviceRef>> GetDeviceListBlocking(
+absl::optional<std::vector<ScopedLibusbDeviceRef>> GetDeviceListBlocking(
     const std::wstring& new_device_path,
     scoped_refptr<UsbContext> usb_context) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -107,7 +107,7 @@ base::Optional<std::vector<ScopedLibusbDeviceRef>> GetDeviceListBlocking(
     if (!IsWinUsbInterface(new_device_path)) {
       // Wait to call libusb_get_device_list until libusb will be able to find
       // a WinUSB interface for the device.
-      return base::nullopt;
+      return absl::nullopt;
     }
   }
 #endif  // defined(OS_WIN)
@@ -118,7 +118,7 @@ base::Optional<std::vector<ScopedLibusbDeviceRef>> GetDeviceListBlocking(
   if (device_count < 0) {
     USB_LOG(ERROR) << "Failed to get device list: "
                    << ConvertPlatformUsbErrorToString(device_count);
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   std::vector<ScopedLibusbDeviceRef> scoped_devices;
@@ -145,7 +145,7 @@ void SaveStringsAndRunContinuation(
     uint8_t product,
     uint8_t serial_number,
     base::OnceClosure continuation,
-    std::unique_ptr<std::map<uint8_t, base::string16>> string_map) {
+    std::unique_ptr<std::map<uint8_t, std::u16string>> string_map) {
   if (manufacturer != 0)
     device->set_manufacturer_string((*string_map)[manufacturer]);
   if (product != 0)
@@ -183,14 +183,14 @@ void OnDeviceOpenedReadDescriptors(
     base::OnceClosure completion_closure,
     scoped_refptr<UsbDeviceHandle> device_handle) {
   if (device_handle) {
-    std::unique_ptr<std::map<uint8_t, base::string16>> string_map(
-        new std::map<uint8_t, base::string16>());
+    std::unique_ptr<std::map<uint8_t, std::u16string>> string_map(
+        new std::map<uint8_t, std::u16string>());
     if (manufacturer != 0)
-      (*string_map)[manufacturer] = base::string16();
+      (*string_map)[manufacturer] = std::u16string();
     if (product != 0)
-      (*string_map)[product] = base::string16();
+      (*string_map)[product] = std::u16string();
     if (serial_number != 0)
-      (*string_map)[serial_number] = base::string16();
+      (*string_map)[serial_number] = std::u16string();
 
     int count = 0;
     if (!string_map->empty())
@@ -313,7 +313,7 @@ void UsbServiceImpl::OnUsbContext(scoped_refptr<UsbContext> context) {
 #if defined(OS_WIN)
   DeviceMonitorWin* device_monitor = DeviceMonitorWin::GetForAllInterfaces();
   if (device_monitor)
-    device_observer_.Add(device_monitor);
+    device_observation_.Observe(device_monitor);
 #endif  // OS_WIN
 }
 
@@ -340,7 +340,7 @@ void UsbServiceImpl::RefreshDevices() {
 }
 
 void UsbServiceImpl::OnDeviceList(
-    base::Optional<std::vector<ScopedLibusbDeviceRef>> devices) {
+    absl::optional<std::vector<ScopedLibusbDeviceRef>> devices) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!devices) {
     RefreshDevicesComplete();

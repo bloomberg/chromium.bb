@@ -10,17 +10,16 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
+#include "chrome/browser/ash/login/users/chrome_user_manager.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -59,16 +58,12 @@ class UserCloudPolicyManagerTest
     MixinBasedInProcessBrowserTest::TearDown();
   }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(chromeos::switches::kOobeSkipPostLogin);
-    MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
-  }
-
   // Sets up fake GAIA for specified user login, and requests login for the user
   // (using LoggedInUserMixin).
   void StartUserLogIn(bool wait_for_active_session) {
     logged_in_user_mixin_.LogInUser(true /*issue_any_scope_token*/,
-                                    wait_for_active_session);
+                                    wait_for_active_session,
+                                    /*request_policy_update=*/false);
   }
 
  protected:
@@ -90,7 +85,7 @@ class UserCloudPolicyManagerTest
 
 IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, StartSession) {
   // User hasn't signed in yet, so shouldn't know if the user requires policy.
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
+  EXPECT_EQ(user_manager::ProfileRequiresPolicy::kUnknown,
             user_manager::known_user::GetProfileRequiresPolicy(
                 logged_in_user_mixin_.GetAccountId()));
 
@@ -112,12 +107,6 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, StartSession) {
 
   StartUserLogIn(true /*wait_for_active_session*/);
 
-  // User should be marked as having a valid OAuth token.
-  const user_manager::UserManager* const user_manager =
-      user_manager::UserManager::Get();
-  EXPECT_EQ(user_manager::User::OAUTH2_TOKEN_STATUS_VALID,
-            user_manager->GetActiveUser()->oauth_token_status());
-
   // Check that the startup pages specified in policy were opened.
   BrowserList* browser_list = BrowserList::GetInstance();
   EXPECT_EQ(1U, browser_list->size());
@@ -134,7 +123,7 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, StartSession) {
   }
 
   // User should be marked as requiring policy.
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kPolicyRequired,
+  EXPECT_EQ(user_manager::ProfileRequiresPolicy::kPolicyRequired,
             user_manager::known_user::GetProfileRequiresPolicy(
                 logged_in_user_mixin_.GetAccountId()));
 
@@ -153,7 +142,7 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
   EXPECT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
 
   // User should be marked as not knowing if policy is required yet.
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
+  EXPECT_EQ(user_manager::ProfileRequiresPolicy::kUnknown,
             user_manager::known_user::GetProfileRequiresPolicy(
                 logged_in_user_mixin_.GetAccountId()));
 }
@@ -164,18 +153,12 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
   // ignored (unlike previous ErrorLoadingPolicy test).
   user_manager::known_user::SetProfileRequiresPolicy(
       logged_in_user_mixin_.GetAccountId(),
-      user_manager::known_user::ProfileRequiresPolicy::kNoPolicyRequired);
+      user_manager::ProfileRequiresPolicy::kNoPolicyRequired);
 
   StartUserLogIn(true /*wait_for_active_session*/);
 
-  // User should be marked as having a valid OAuth token.
-  const user_manager::UserManager* const user_manager =
-      user_manager::UserManager::Get();
-  EXPECT_EQ(user_manager::User::OAUTH2_TOKEN_STATUS_VALID,
-            user_manager->GetActiveUser()->oauth_token_status());
-
   // User should still be marked as not needing policy
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kNoPolicyRequired,
+  EXPECT_EQ(user_manager::ProfileRequiresPolicy::kNoPolicyRequired,
             user_manager::known_user::GetProfileRequiresPolicy(
                 logged_in_user_mixin_.GetAccountId()));
 }
@@ -191,20 +174,14 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
       logged_in_user_mixin_.GetAccountId().GetUserEmail()));
   // If a user signs in with a known non-enterprise account there should be no
   // policy.
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
+  EXPECT_EQ(user_manager::ProfileRequiresPolicy::kUnknown,
             user_manager::known_user::GetProfileRequiresPolicy(
                 logged_in_user_mixin_.GetAccountId()));
 
   StartUserLogIn(true /*wait_for_active_session*/);
 
-  // User should be marked as having a valid OAuth token.
-  const user_manager::UserManager* const user_manager =
-      user_manager::UserManager::Get();
-  EXPECT_EQ(user_manager::User::OAUTH2_TOKEN_STATUS_VALID,
-            user_manager->GetActiveUser()->oauth_token_status());
-
   // User should be marked as not requiring policy.
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kNoPolicyRequired,
+  EXPECT_EQ(user_manager::ProfileRequiresPolicy::kNoPolicyRequired,
             user_manager::known_user::GetProfileRequiresPolicy(
                 logged_in_user_mixin_.GetAccountId()));
 }
@@ -219,7 +196,7 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
 
   // If a user signs in with a known non-enterprise account there should be no
   // policy in case user type is child.
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
+  EXPECT_EQ(user_manager::ProfileRequiresPolicy::kUnknown,
             user_manager::known_user::GetProfileRequiresPolicy(
                 logged_in_user_mixin_.GetAccountId()));
 
@@ -229,14 +206,8 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
       ->Clear();
   StartUserLogIn(true /*wait_for_active_session*/);
 
-  // User should be marked as having a valid OAuth token.
-  const user_manager::UserManager* const user_manager =
-      user_manager::UserManager::Get();
-  EXPECT_EQ(user_manager::User::OAUTH2_TOKEN_STATUS_VALID,
-            user_manager->GetActiveUser()->oauth_token_status());
-
   // User of CHILD type should be marked as requiring policy.
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kPolicyRequired,
+  EXPECT_EQ(user_manager::ProfileRequiresPolicy::kPolicyRequired,
             user_manager::known_user::GetProfileRequiresPolicy(
                 logged_in_user_mixin_.GetAccountId()));
 
@@ -256,7 +227,7 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest,
 
   // If a user signs in with a known non-enterprise account there should be no
   // policy in case user type is child.
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
+  EXPECT_EQ(user_manager::ProfileRequiresPolicy::kUnknown,
             user_manager::known_user::GetProfileRequiresPolicy(
                 logged_in_user_mixin_.GetAccountId()));
 
@@ -267,7 +238,7 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest,
   EXPECT_FALSE(session_manager::SessionManager::Get()->IsSessionStarted());
 
   // User should be marked as not knowing if policy is required yet.
-  EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kUnknown,
+  EXPECT_EQ(user_manager::ProfileRequiresPolicy::kUnknown,
             user_manager::known_user::GetProfileRequiresPolicy(
                 logged_in_user_mixin_.GetAccountId()));
 }

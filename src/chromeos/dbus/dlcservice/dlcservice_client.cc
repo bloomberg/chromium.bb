@@ -20,7 +20,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -32,6 +31,7 @@
 #include "dbus/message.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -68,6 +68,7 @@ class DlcserviceErrorResponseHandler {
         dlcservice::kErrorBusy,
         dlcservice::kErrorNeedReboot,
         dlcservice::kErrorInvalidDlc,
+        dlcservice::kErrorNoImageFound,
     });
     // Lookup the dlcservice error code and provide default on invalid.
     auto itr = err_set->find(err);
@@ -170,6 +171,20 @@ class DlcserviceClientImpl : public DlcserviceClient {
         base::BindOnce(&DlcserviceClientImpl::OnPurge,
                        weak_ptr_factory_.GetWeakPtr(),
                        std::move(purge_callback)));
+  }
+
+  void GetDlcState(const std::string& dlc_id,
+                   GetDlcStateCallback callback) override {
+    CheckServiceAvailable("GetDlcState");
+    dbus::MethodCall method_call(dlcservice::kDlcServiceInterface,
+                                 dlcservice::kGetDlcStateMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(dlc_id);
+    VLOG(1) << "Requesting DLC state of" << dlc_id;
+    dlcservice_proxy_->CallMethodWithErrorResponse(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DlcserviceClientImpl::OnGetDlcState,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void GetExistingDlcs(GetExistingDlcsCallback callback) override {
@@ -342,10 +357,11 @@ class DlcserviceClientImpl : public DlcserviceClient {
                  ProgressCallback progress_callback,
                  dbus::Response* response,
                  dbus::ErrorResponse* err_response) {
-    HoldInstallation(dlc_id, std::move(install_callback),
-                     std::move(progress_callback));
-    if (response)
+    if (response) {
+      HoldInstallation(dlc_id, std::move(install_callback),
+                       std::move(progress_callback));
       return;
+    }
 
     const auto err = DlcserviceErrorResponseHandler(err_response).get_err();
     if (err == dlcservice::kErrorBusy) {
@@ -353,6 +369,8 @@ class DlcserviceClientImpl : public DlcserviceClient {
           &DlcserviceClientImpl::Install, weak_ptr_factory_.GetWeakPtr(),
           dlc_id, std::move(install_callback), std::move(progress_callback)));
     } else {
+      HoldInstallation(dlc_id, std::move(install_callback),
+                       std::move(progress_callback));
       dlcservice::DlcState dlc_state;
       dlc_state.set_id(dlc_id);
       dlc_state.set_last_error_code(err);
@@ -375,6 +393,20 @@ class DlcserviceClientImpl : public DlcserviceClient {
     std::move(purge_callback)
         .Run(response ? dlcservice::kErrorNone
                       : DlcserviceErrorResponseHandler(err_response).get_err());
+  }
+
+  void OnGetDlcState(GetDlcStateCallback callback,
+                     dbus::Response* response,
+                     dbus::ErrorResponse* err_response) {
+    dlcservice::DlcState dlc_state;
+    if (response &&
+        dbus::MessageReader(response).PopArrayOfBytesAsProto(&dlc_state)) {
+      std::move(callback).Run(dlcservice::kErrorNone, dlc_state);
+    } else {
+      std::move(callback).Run(
+          DlcserviceErrorResponseHandler(err_response).get_err(),
+          dlcservice::DlcState());
+    }
   }
 
   void OnGetExistingDlcs(GetExistingDlcsCallback callback,

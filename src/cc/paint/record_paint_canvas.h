@@ -5,14 +5,12 @@
 #ifndef CC_PAINT_RECORD_PAINT_CANVAS_H_
 #define CC_PAINT_RECORD_PAINT_CANVAS_H_
 
-#include <memory>
-
 #include "base/compiler_specific.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_record.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/utils/SkNoDrawCanvas.h"
 
 namespace cc {
@@ -46,8 +44,12 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
   void translate(SkScalar dx, SkScalar dy) override;
   void scale(SkScalar sx, SkScalar sy) override;
   void rotate(SkScalar degrees) override;
+  // TODO(crbug.com/1167153): The concat and setMatrix methods that take an
+  // SkMatrix should be removed in favor of the SkM44 versions.
   void concat(const SkMatrix& matrix) override;
   void setMatrix(const SkMatrix& matrix) override;
+  void concat(const SkM44& matrix) override;
+  void setMatrix(const SkM44& matrix) override;
 
   void clipRect(const SkRect& rect, SkClipOp op, bool antialias) override;
   void clipRRect(const SkRRect& rrect, SkClipOp op, bool antialias) override;
@@ -79,10 +81,12 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
   void drawImage(const PaintImage& image,
                  SkScalar left,
                  SkScalar top,
+                 const SkSamplingOptions&,
                  const PaintFlags* flags) override;
   void drawImageRect(const PaintImage& image,
                      const SkRect& src,
                      const SkRect& dst,
+                     const SkSamplingOptions&,
                      const PaintFlags* flags,
                      SkCanvas::SrcRectConstraint constraint) override;
   void drawSkottie(scoped_refptr<SkottieWrapper> skottie,
@@ -102,6 +106,7 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
 
   bool isClipEmpty() const override;
   SkMatrix getTotalMatrix() const override;
+  SkM44 getLocalToDevice() const override;
 
   void Annotate(AnnotationType type,
                 const SkRect& rect,
@@ -133,7 +138,7 @@ class CC_PAINT_EXPORT RecordPaintCanvas : public PaintCanvas {
   //
   // This is mutable so that const functions (e.g. quickReject) that may
   // lazy initialize the canvas can still be const.
-  mutable base::Optional<SkNoDrawCanvas> canvas_;
+  mutable absl::optional<SkNoDrawCanvas> canvas_;
   SkRect recording_bounds_;
 };
 

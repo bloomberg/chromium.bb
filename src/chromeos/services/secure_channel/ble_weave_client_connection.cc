@@ -630,7 +630,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnNotifySessionStarted(
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnNotifySessionError(
-    device::BluetoothRemoteGattService::GattErrorCode error) {
+    device::BluetoothGattService::GattErrorCode error) {
   DCHECK(sub_status() == SubStatus::WAITING_NOTIFY_SESSION);
   RecordGattNotifySessionResult(
       BluetoothRemoteDeviceGattServiceGattErrorCodeToGattServiceOperationResult(
@@ -767,7 +767,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnRemoteCharacteristicWritten() {
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnWriteRemoteCharacteristicError(
-    device::BluetoothRemoteGattService::GattErrorCode error) {
+    device::BluetoothGattService::GattErrorCode error) {
   DCHECK(sub_status() == SubStatus::WAITING_CONNECTION_RESPONSE ||
          sub_status() == SubStatus::CONNECTED_AND_SENDING_MESSAGE);
   if (sub_status() == SubStatus::CONNECTED_AND_SENDING_MESSAGE)
@@ -866,26 +866,23 @@ std::string BluetoothLowEnergyWeaveClientConnection::GetDeviceAddress() {
 }
 
 void BluetoothLowEnergyWeaveClientConnection::GetConnectionRssi(
-    base::OnceCallback<void(base::Optional<int32_t>)> callback) {
+    base::OnceCallback<void(absl::optional<int32_t>)> callback) {
   device::BluetoothDevice* bluetooth_device = GetBluetoothDevice();
   if (!bluetooth_device || !bluetooth_device->IsConnected()) {
-    std::move(callback).Run(base::nullopt);
+    std::move(callback).Run(absl::nullopt);
     return;
   }
 
-  // device::BluetoothDevice has not converted to using a base::OnceCallback
-  // instead of a base::Callback, so use a wrapper for now.
-  auto callback_holder = base::AdaptCallbackForRepeating(std::move(callback));
   bluetooth_device->GetConnectionInfo(
       base::BindOnce(&BluetoothLowEnergyWeaveClientConnection::OnConnectionInfo,
-                     weak_ptr_factory_.GetWeakPtr(), callback_holder));
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnConnectionInfo(
-    base::RepeatingCallback<void(base::Optional<int32_t>)> rssi_callback,
+    base::OnceCallback<void(absl::optional<int32_t>)> rssi_callback,
     const device::BluetoothDevice::ConnectionInfo& connection_info) {
   if (connection_info.rssi == device::BluetoothDevice::kUnknownPower) {
-    std::move(rssi_callback).Run(base::nullopt);
+    std::move(rssi_callback).Run(absl::nullopt);
     return;
   }
 
@@ -1006,36 +1003,30 @@ void BluetoothLowEnergyWeaveClientConnection::
 BluetoothLowEnergyWeaveClientConnection::GattServiceOperationResult
 BluetoothLowEnergyWeaveClientConnection::
     BluetoothRemoteDeviceGattServiceGattErrorCodeToGattServiceOperationResult(
-        device::BluetoothRemoteGattService::GattErrorCode error_code) {
+        device::BluetoothGattService::GattErrorCode error_code) {
   switch (error_code) {
-    case device::BluetoothRemoteGattService::GattErrorCode::GATT_ERROR_UNKNOWN:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_UNKNOWN:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_UNKNOWN;
-    case device::BluetoothRemoteGattService::GattErrorCode::GATT_ERROR_FAILED:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_FAILED:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_FAILED;
-    case device::BluetoothRemoteGattService::GattErrorCode::
-        GATT_ERROR_IN_PROGRESS:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_IN_PROGRESS:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_IN_PROGRESS;
-    case device::BluetoothRemoteGattService::GattErrorCode::
-        GATT_ERROR_INVALID_LENGTH:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_INVALID_LENGTH:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_INVALID_LENGTH;
-    case device::BluetoothRemoteGattService::GattErrorCode::
-        GATT_ERROR_NOT_PERMITTED:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PERMITTED:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_PERMITTED;
-    case device::BluetoothRemoteGattService::GattErrorCode::
-        GATT_ERROR_NOT_AUTHORIZED:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_AUTHORIZED:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_AUTHORIZED;
-    case device::BluetoothRemoteGattService::GattErrorCode::
-        GATT_ERROR_NOT_PAIRED:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_PAIRED:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_PAIRED;
-    case device::BluetoothRemoteGattService::GattErrorCode::
-        GATT_ERROR_NOT_SUPPORTED:
+    case device::BluetoothGattService::GattErrorCode::GATT_ERROR_NOT_SUPPORTED:
       return GattServiceOperationResult::
           GATT_SERVICE_OPERATION_RESULT_GATT_ERROR_NOT_SUPPORTED;
     default:

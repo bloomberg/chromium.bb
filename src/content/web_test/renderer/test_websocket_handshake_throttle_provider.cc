@@ -67,7 +67,7 @@ class TestWebSocketHandshakeThrottle
 
     auto wrapper = base::BindOnce(
         [](CompletionCallback callback) {
-          std::move(callback).Run(base::nullopt);
+          std::move(callback).Run(absl::nullopt);
         },
         std::move(completion_callback));
 
@@ -80,7 +80,7 @@ class TestWebSocketHandshakeThrottle
 
 }  // namespace
 
-std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
+std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
 TestWebSocketHandshakeThrottleProvider::Clone(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return std::make_unique<TestWebSocketHandshakeThrottleProvider>();

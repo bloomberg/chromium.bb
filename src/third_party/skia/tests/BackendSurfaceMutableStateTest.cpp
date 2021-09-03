@@ -14,6 +14,7 @@
 #include "src/gpu/GrTextureProxy.h"
 #include "src/image/SkImage_Base.h"
 #include "tests/Test.h"
+#include "tools/gpu/ProxyUtils.h"
 
 #ifdef SK_VULKAN
 #include "src/gpu/vk/GrVkGpu.h"
@@ -61,14 +62,15 @@ DEF_GPUTEST_FOR_VULKAN_CONTEXT(VkBackendSurfaceMutableStateTest, reporter, ctxIn
                                                            kRGBA_8888_SkColorType,
                                                            kPremul_SkAlphaType, nullptr);
 
-    const GrSurfaceProxyView* view = as_IB(wrappedImage)->view(dContext);
-    REPORTER_ASSERT(reporter, view);
-    REPORTER_ASSERT(reporter, view->proxy()->isInstantiated());
-    GrTexture* texture = view->proxy()->peekTexture();
+    GrSurfaceProxy* proxy = sk_gpu_test::GetTextureImageProxy(wrappedImage.get(), dContext);
+
+    REPORTER_ASSERT(reporter, proxy);
+    REPORTER_ASSERT(reporter, proxy->isInstantiated());
+    GrTexture* texture = proxy->peekTexture();
     REPORTER_ASSERT(reporter, texture);
 
     // Verify that modifying the layout via the GrVkTexture is reflected in the GrBackendTexture
-    GrVkTexture* vkTexture = static_cast<GrVkTexture*>(texture);
+    GrVkAttachment* vkTexture = static_cast<GrVkTexture*>(texture)->textureAttachment();
     REPORTER_ASSERT(reporter, initLayout == vkTexture->currentLayout());
     REPORTER_ASSERT(reporter, initQueue == vkTexture->currentQueueFamilyIndex());
     vkTexture->updateImageLayout(VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);

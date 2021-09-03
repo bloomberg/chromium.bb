@@ -378,8 +378,8 @@ TEST_F(ValueUtilTest, TestGetNthValue) {
   EXPECT_EQ(GetNthValue(value, 1), SimpleValue(std::string("b")));
   EXPECT_EQ(GetNthValue(value, 2), SimpleValue(std::string("c")));
 
-  EXPECT_EQ(GetNthValue(value, -1), base::nullopt);
-  EXPECT_EQ(GetNthValue(value, 3), base::nullopt);
+  EXPECT_EQ(GetNthValue(value, -1), absl::nullopt);
+  EXPECT_EQ(GetNthValue(value, 3), absl::nullopt);
 
   value.set_is_client_side_only(true);
   EXPECT_EQ(GetNthValue(value, 0),
@@ -396,6 +396,61 @@ TEST_F(ValueUtilTest, TestContainsClientOnlyValues) {
   value_b.set_is_client_side_only(true);
   EXPECT_TRUE(ContainsClientOnlyValue({value_a, value_b, value_c}));
   EXPECT_FALSE(ContainsClientOnlyValue({value_a, value_c}));
+}
+
+TEST_F(ValueUtilTest, TestEqualOperatorForAutofillProfile) {
+  AutofillProfileProto profile_a;
+  AutofillProfileProto profile_b;
+  EXPECT_TRUE(profile_a == profile_b);
+
+  profile_a.set_guid("guid_a");
+  EXPECT_FALSE(profile_a == profile_b);
+
+  profile_b.set_guid("guid_b");
+  EXPECT_FALSE(profile_a == profile_b);
+
+  profile_b.set_guid("guid_a");
+  EXPECT_TRUE(profile_a == profile_b);
+
+  profile_a.clear_guid();
+  profile_a.set_selected_profile_name("name_a");
+  EXPECT_FALSE(profile_a == profile_b);
+
+  profile_b.clear_guid();
+  profile_b.set_selected_profile_name("name_b");
+  EXPECT_FALSE(profile_a == profile_b);
+
+  profile_b.set_selected_profile_name("name_a");
+  EXPECT_TRUE(profile_a == profile_b);
+
+  profile_a.clear_selected_profile_name();
+  EXPECT_FALSE(profile_a == profile_b);
+}
+
+TEST_F(ValueUtilTest, TestEqualOperatorForAutofillCreditCard) {
+  AutofillCreditCardProto credit_card_a;
+  AutofillCreditCardProto credit_card_b;
+  EXPECT_TRUE(credit_card_a == credit_card_b);
+
+  credit_card_a.set_guid("guid_a");
+  EXPECT_FALSE(credit_card_a == credit_card_b);
+
+  credit_card_b.set_guid("guid_b");
+  EXPECT_FALSE(credit_card_a == credit_card_b);
+
+  credit_card_b.set_guid("guid_a");
+  EXPECT_TRUE(credit_card_a == credit_card_b);
+
+  credit_card_a.clear_guid();
+  credit_card_a.mutable_selected_credit_card();
+  EXPECT_FALSE(credit_card_a == credit_card_b);
+
+  credit_card_b.clear_guid();
+  credit_card_b.mutable_selected_credit_card();
+  EXPECT_TRUE(credit_card_a == credit_card_b);
+
+  credit_card_a.clear_selected_credit_card();
+  EXPECT_FALSE(credit_card_a == credit_card_b);
 }
 
 }  // namespace value_util

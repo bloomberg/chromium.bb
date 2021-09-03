@@ -21,7 +21,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "base/strings/string16.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_undo_provider.h"
@@ -33,6 +32,7 @@ class PrefService;
 
 namespace base {
 class FilePath;
+class GUID;
 }
 
 namespace favicon_base {
@@ -172,7 +172,7 @@ class BookmarkModel : public BookmarkUndoProvider,
   const gfx::Image& GetFavicon(const BookmarkNode* node);
 
   // Sets the title of |node|.
-  void SetTitle(const BookmarkNode* node, const base::string16& title);
+  void SetTitle(const BookmarkNode* node, const std::u16string& title);
 
   // Sets the URL of |node|.
   void SetURL(const BookmarkNode* node, const GURL& url);
@@ -204,26 +204,26 @@ class BookmarkModel : public BookmarkUndoProvider,
   void GetBookmarks(std::vector<UrlAndTitle>* urls);
 
   // Adds a new folder node at the specified position with the given |guid| and
-  // |meta_info|. If a GUID is provided, it must be a valid version 4 GUID,
-  // otherwise a new one is generated to replace it.
+  // |meta_info|. If no GUID is provided (i.e. nullopt), then a random one will
+  // be generated. If a GUID is provided, it must be valid.
   const BookmarkNode* AddFolder(
       const BookmarkNode* parent,
       size_t index,
-      const base::string16& title,
+      const std::u16string& title,
       const BookmarkNode::MetaInfoMap* meta_info = nullptr,
-      base::Optional<std::string> guid = base::nullopt);
+      absl::optional<base::GUID> guid = absl::nullopt);
 
   // Adds a url at the specified position with the given |creation_time|,
-  // |meta_info| and |guid|. If a GUID is provided, it must be a valid version 4
-  // GUID, otherwise a new one is generated to replace it.
+  // |meta_info| and |guid|. If no GUID is provided (i.e. nullopt), then a
+  // random one will be generated. If a GUID is provided, it must be valid.
   const BookmarkNode* AddURL(
       const BookmarkNode* parent,
       size_t index,
-      const base::string16& title,
+      const std::u16string& title,
       const GURL& url,
       const BookmarkNode::MetaInfoMap* meta_info = nullptr,
-      base::Optional<base::Time> creation_time = base::nullopt,
-      base::Optional<std::string> guid = base::nullopt);
+      absl::optional<base::Time> creation_time = absl::nullopt,
+      absl::optional<base::GUID> guid = absl::nullopt);
 
   // Sorts the children of |parent|, notifying observers by way of the
   // BookmarkNodeChildrenReordered method.
@@ -249,7 +249,7 @@ class BookmarkModel : public BookmarkUndoProvider,
   // of ancestors. |matching_algorithm| determines the algorithm used by
   // QueryParser internally to parse |query|.
   std::vector<TitledUrlMatch> GetBookmarksMatching(
-      const base::string16& query,
+      const std::u16string& query,
       size_t max_count,
       query_parser::MatchingAlgorithm matching_algorithm,
       bool match_ancestor_titles = false);

@@ -5,8 +5,8 @@
 #ifndef QUICHE_QUIC_CORE_QUIC_VERSION_MANAGER_H_
 #define QUICHE_QUIC_CORE_QUIC_VERSION_MANAGER_H_
 
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_export.h"
 
 namespace quic {
 
@@ -17,10 +17,6 @@ class QUIC_EXPORT_PRIVATE QuicVersionManager {
   // highest supported version to the lowest supported version).
   explicit QuicVersionManager(ParsedQuicVersionVector supported_versions);
   virtual ~QuicVersionManager();
-
-  // Returns currently supported QUIC versions.
-  // TODO(nharper): Remove this method once it is unused.
-  const QuicTransportVersionVector& GetSupportedTransportVersions();
 
   // Returns currently supported QUIC versions. This vector has the same order
   // as the versions passed to the constructor.
@@ -54,14 +50,12 @@ class QUIC_EXPORT_PRIVATE QuicVersionManager {
 
  private:
   // Cached value of reloadable flags.
+  // quic_enable_version_rfcv1 flag
+  bool enable_version_rfcv1_;
   // quic_disable_version_draft_29 flag
   bool disable_version_draft_29_;
-  // quic_disable_version_draft_27 flag
-  bool disable_version_draft_27_;
   // quic_disable_version_t051 flag
   bool disable_version_t051_;
-  // quic_disable_version_t050 flag
-  bool disable_version_t050_;
   // quic_disable_version_q050 flag
   bool disable_version_q050_;
   // quic_disable_version_q046 flag

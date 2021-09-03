@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_SITE_DATA_WRITER_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PERSISTENCE_SITE_DATA_SITE_DATA_WRITER_H_
 
-#include <memory>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/performance_manager/persistence/site_data/site_data_impl.h"
@@ -40,7 +38,10 @@ class SiteDataWriter {
 
   virtual const url::Origin& Origin() const;
 
-  internal::SiteDataImpl* impl_for_testing() const { return impl_.get(); }
+  internal::SiteDataImpl* impl_for_testing() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return impl_.get();
+  }
 
  protected:
   friend class SiteDataWriterTest;
@@ -53,7 +54,8 @@ class SiteDataWriter {
 
  private:
   // The SiteDataImpl object we delegate to.
-  const scoped_refptr<internal::SiteDataImpl> impl_;
+  const scoped_refptr<internal::SiteDataImpl> impl_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

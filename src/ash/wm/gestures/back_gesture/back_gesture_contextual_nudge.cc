@@ -16,6 +16,7 @@
 #include "base/i18n/rtl.h"
 #include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
@@ -89,7 +90,7 @@ std::unique_ptr<views::Widget> CreateWidget() {
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.z_order = ui::ZOrderLevel::kFloatingWindow;
   params.accept_events = false;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.name = "BackGestureContextualNudge";
   params.layer_type = ui::LAYER_NOT_DRAWN;

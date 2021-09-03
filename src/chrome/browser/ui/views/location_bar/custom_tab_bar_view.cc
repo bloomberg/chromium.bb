@@ -8,6 +8,7 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -27,6 +28,8 @@
 #include "content/public/browser/navigation_entry.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -46,7 +49,7 @@
 #include "ui/views/view_class_properties.h"
 #include "url/gurl.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #else
 #include "chrome/browser/themes/theme_properties.h"
@@ -96,10 +99,11 @@ ui::NativeTheme::ColorId GetSecurityChipColorId(
 // page.
 class CustomTabBarTitleOriginView : public views::View {
  public:
+  METADATA_HEADER(CustomTabBarTitleOriginView);
   CustomTabBarTitleOriginView(SkColor background_color,
                               bool should_show_title) {
     auto location_label = std::make_unique<views::Label>(
-        base::string16(), views::style::CONTEXT_LABEL,
+        std::u16string(), views::style::CONTEXT_LABEL,
         views::style::STYLE_SECONDARY,
         gfx::DirectionalityMode::DIRECTIONALITY_AS_URL);
 
@@ -114,7 +118,7 @@ class CustomTabBarTitleOriginView : public views::View {
 
     if (should_show_title) {
       auto title_label = std::make_unique<views::Label>(
-          base::string16(), views::style::CONTEXT_LABEL);
+          std::u16string(), views::style::CONTEXT_LABEL);
 
       title_label->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
       title_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -131,7 +135,7 @@ class CustomTabBarTitleOriginView : public views::View {
         .SetCrossAxisAlignment(views::LayoutAlignment::kStart);
   }
 
-  void Update(const base::string16 title, const base::string16 location) {
+  void Update(const std::u16string title, const std::u16string location) {
     if (title_label_)
       title_label_->SetText(title);
     location_label_->SetText(location);
@@ -189,8 +193,12 @@ class CustomTabBarTitleOriginView : public views::View {
   views::Label* location_label_ = nullptr;
 };
 
-// static
-const char CustomTabBarView::kViewClassName[] = "CustomTabBarView";
+BEGIN_METADATA(CustomTabBarTitleOriginView, views::View)
+ADD_READONLY_PROPERTY_METADATA(int, MinimumWidth)
+ADD_READONLY_PROPERTY_METADATA(SkColor,
+                               LocationColor,
+                               ui::metadata::SkColorConverter)
+END_METADATA
 
 CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
                                    LocationBarView::Delegate* delegate)
@@ -210,11 +218,11 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   close_button_->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
   views::InstallCircleHighlightPathGenerator(close_button_);
 
-  location_icon_view_ =
-      AddChildView(std::make_unique<LocationIconView>(font_list, this, this));
+  location_icon_view_ = AddChildView(std::make_unique<LocationIconView>(
+      font_list, this, this, browser_->profile()));
 
   auto title_origin_view = std::make_unique<CustomTabBarTitleOriginView>(
-      background_color_, ShouldShowTitle());
+      background_color_, GetShowTitle());
   title_origin_view->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
@@ -225,7 +233,7 @@ CustomTabBarView::CustomTabBarView(BrowserView* browser_view,
   // mode. Find a better place to set it.
   gfx::Insets interior_margin =
       GetLayoutInsets(LayoutInset::TOOLBAR_INTERIOR_MARGIN);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (browser_->is_type_custom_tab()) {
     web_app_menu_button_ = AddChildView(std::make_unique<WebAppMenuButton>(
         browser_view, l10n_util::GetStringUTF16(
@@ -253,10 +261,6 @@ CustomTabBarView::~CustomTabBarView() {}
 gfx::Rect CustomTabBarView::GetAnchorBoundsInScreen() const {
   return gfx::UnionRects(location_icon_view_->GetAnchorBoundsInScreen(),
                          title_origin_view_->GetAnchorBoundsInScreen());
-}
-
-const char* CustomTabBarView::GetClassName() const {
-  return kViewClassName;
 }
 
 void CustomTabBarView::SetVisible(bool visible) {
@@ -317,7 +321,7 @@ void CustomTabBarView::ChildPreferredSizeChanged(views::View* child) {
 
 void CustomTabBarView::OnThemeChanged() {
   views::AccessiblePaneView::OnThemeChanged();
-  base::Optional<SkColor> optional_theme_color = GetThemeColor();
+  absl::optional<SkColor> optional_theme_color = GetThemeColor();
 
   title_bar_color_ = optional_theme_color.value_or(GetDefaultFrameColor());
 
@@ -358,7 +362,7 @@ void CustomTabBarView::UpdateContents() {
     return;
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
-  base::string16 title, location;
+  std::u16string title, location;
   if (entry) {
     title = Browser::FormatTitleForDisplay(entry->GetTitleForDisplay());
     if (ShouldDisplayUrl(contents)) {
@@ -448,7 +452,7 @@ bool CustomTabBarView::IsShowingOriginForTesting() const {
 // drawing the separator the current frame color should be queried directly and
 // not assume knowledge of what the color might be.
 SkColor CustomTabBarView::GetDefaultFrameColor() const {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Ash system frames differ from ChromeOS browser frames.
   return chromeos::kDefaultFrameColor;
 #else
@@ -529,12 +533,20 @@ void CustomTabBarView::ShowContextMenuForViewImpl(
       views::MenuAnchorPosition::kTopLeft, source_type);
 }
 
-base::Optional<SkColor> CustomTabBarView::GetThemeColor() const {
+absl::optional<SkColor> CustomTabBarView::GetThemeColor() const {
   web_app::AppBrowserController* application_controller = app_controller();
   return application_controller ? application_controller->GetThemeColor()
-                                : base::nullopt;
+                                : absl::nullopt;
 }
 
-bool CustomTabBarView::ShouldShowTitle() const {
+bool CustomTabBarView::GetShowTitle() const {
   return app_controller() != nullptr;
 }
+
+BEGIN_METADATA(CustomTabBarView, views::AccessiblePaneView)
+ADD_READONLY_PROPERTY_METADATA(SkColor,
+                               DefaultFrameColor,
+                               ui::metadata::SkColorConverter)
+ADD_READONLY_PROPERTY_METADATA(absl::optional<SkColor>, ThemeColor)
+ADD_READONLY_PROPERTY_METADATA(bool, ShowTitle)
+END_METADATA

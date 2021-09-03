@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/stl_util.h"
@@ -164,13 +165,13 @@ void ViscaWebcam::Open(const std::string& extension_id,
   api::serial::ConnectionOptions options;
 
   // Set the receive buffer size to receive the response data 1 by 1.
-  options.buffer_size.reset(new int(1));
-  options.persistent.reset(new bool(false));
-  options.bitrate.reset(new int(9600));
-  options.cts_flow_control.reset(new bool(false));
+  options.buffer_size = std::make_unique<int>(1);
+  options.persistent = std::make_unique<bool>(false);
+  options.bitrate = std::make_unique<int>(9600);
+  options.cts_flow_control = std::make_unique<bool>(false);
   // Enable send and receive timeout error.
-  options.receive_timeout.reset(new int(3000));
-  options.send_timeout.reset(new int(3000));
+  options.receive_timeout = std::make_unique<int>(3000);
+  options.send_timeout = std::make_unique<int>(3000);
   options.data_bits = api::serial::DATA_BITS_EIGHT;
   options.parity_bit = api::serial::PARITY_BIT_NO;
   options.stop_bits = api::serial::STOP_BITS_ONE;
@@ -190,8 +191,8 @@ void ViscaWebcam::OnConnected(const OpenCompleteCallback& open_callback,
   }
 
   Send(CHAR_VECTOR_FROM_ARRAY(kSetAddressCommand),
-       base::Bind(&ViscaWebcam::OnAddressSetCompleted, base::Unretained(this),
-                  open_callback));
+       base::BindRepeating(&ViscaWebcam::OnAddressSetCompleted,
+                           base::Unretained(this), open_callback));
 }
 
 void ViscaWebcam::OnAddressSetCompleted(
@@ -205,8 +206,8 @@ void ViscaWebcam::OnAddressSetCompleted(
   }
 
   Send(CHAR_VECTOR_FROM_ARRAY(kClearAllCommand),
-       base::Bind(&ViscaWebcam::OnClearAllCompleted, base::Unretained(this),
-                  open_callback));
+       base::BindRepeating(&ViscaWebcam::OnClearAllCompleted,
+                           base::Unretained(this), open_callback));
 }
 
 void ViscaWebcam::OnClearAllCompleted(const OpenCompleteCallback& open_callback,
@@ -358,26 +359,26 @@ void ViscaWebcam::ProcessNextCommand() {
 
 void ViscaWebcam::GetPan(const GetPTZCompleteCallback& callback) {
   Send(CHAR_VECTOR_FROM_ARRAY(kGetPanTiltCommand),
-       base::Bind(&ViscaWebcam::OnInquiryCompleted, base::Unretained(this),
-                  INQUIRY_PAN, callback));
+       base::BindRepeating(&ViscaWebcam::OnInquiryCompleted,
+                           base::Unretained(this), INQUIRY_PAN, callback));
 }
 
 void ViscaWebcam::GetTilt(const GetPTZCompleteCallback& callback) {
   Send(CHAR_VECTOR_FROM_ARRAY(kGetPanTiltCommand),
-       base::Bind(&ViscaWebcam::OnInquiryCompleted, base::Unretained(this),
-                  INQUIRY_TILT, callback));
+       base::BindRepeating(&ViscaWebcam::OnInquiryCompleted,
+                           base::Unretained(this), INQUIRY_TILT, callback));
 }
 
 void ViscaWebcam::GetZoom(const GetPTZCompleteCallback& callback) {
   Send(CHAR_VECTOR_FROM_ARRAY(kGetZoomCommand),
-       base::Bind(&ViscaWebcam::OnInquiryCompleted, base::Unretained(this),
-                  INQUIRY_ZOOM, callback));
+       base::BindRepeating(&ViscaWebcam::OnInquiryCompleted,
+                           base::Unretained(this), INQUIRY_ZOOM, callback));
 }
 
 void ViscaWebcam::GetFocus(const GetPTZCompleteCallback& callback) {
   Send(CHAR_VECTOR_FROM_ARRAY(kGetFocusCommand),
-       base::Bind(&ViscaWebcam::OnInquiryCompleted, base::Unretained(this),
-                  INQUIRY_FOCUS, callback));
+       base::BindRepeating(&ViscaWebcam::OnInquiryCompleted,
+                           base::Unretained(this), INQUIRY_FOCUS, callback));
 }
 
 void ViscaWebcam::SetPan(int value,
@@ -392,8 +393,8 @@ void ViscaWebcam::SetPan(int value,
   command[5] |= kDefaultTiltSpeed;
   ResponseToCommand(&command, 6, static_cast<uint16_t>(pan_));
   ResponseToCommand(&command, 10, static_cast<uint16_t>(tilt_));
-  Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           base::Unretained(this), callback));
+  Send(command, base::BindRepeating(&ViscaWebcam::OnCommandCompleted,
+                                    base::Unretained(this), callback));
 }
 
 void ViscaWebcam::SetTilt(int value,
@@ -408,24 +409,24 @@ void ViscaWebcam::SetTilt(int value,
   command[5] |= actual_tilt_speed;
   ResponseToCommand(&command, 6, static_cast<uint16_t>(pan_));
   ResponseToCommand(&command, 10, static_cast<uint16_t>(tilt_));
-  Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           base::Unretained(this), callback));
+  Send(command, base::BindRepeating(&ViscaWebcam::OnCommandCompleted,
+                                    base::Unretained(this), callback));
 }
 
 void ViscaWebcam::SetZoom(int value, const SetPTZCompleteCallback& callback) {
   int actual_value = std::max(value, 0);
   std::vector<char> command = CHAR_VECTOR_FROM_ARRAY(kSetZoomCommand);
   ResponseToCommand(&command, 4, actual_value);
-  Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           base::Unretained(this), callback));
+  Send(command, base::BindRepeating(&ViscaWebcam::OnCommandCompleted,
+                                    base::Unretained(this), callback));
 }
 
 void ViscaWebcam::SetFocus(int value, const SetPTZCompleteCallback& callback) {
   int actual_value = std::max(value, 0);
   std::vector<char> command = CHAR_VECTOR_FROM_ARRAY(kSetFocusCommand);
   ResponseToCommand(&command, 4, actual_value);
-  Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           base::Unretained(this), callback));
+  Send(command, base::BindRepeating(&ViscaWebcam::OnCommandCompleted,
+                                    base::Unretained(this), callback));
 }
 
 void ViscaWebcam::SetAutofocusState(AutofocusState state,
@@ -436,8 +437,8 @@ void ViscaWebcam::SetAutofocusState(AutofocusState state,
   } else {
     command = CHAR_VECTOR_FROM_ARRAY(kSetManualFocusCommand);
   }
-  Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           base::Unretained(this), callback));
+  Send(command, base::BindRepeating(&ViscaWebcam::OnCommandCompleted,
+                                    base::Unretained(this), callback));
 }
 
 void ViscaWebcam::SetPanDirection(PanDirection direction,
@@ -460,8 +461,8 @@ void ViscaWebcam::SetPanDirection(PanDirection direction,
       command[5] |= kDefaultTiltSpeed;
       break;
   }
-  Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           base::Unretained(this), callback));
+  Send(command, base::BindRepeating(&ViscaWebcam::OnCommandCompleted,
+                                    base::Unretained(this), callback));
 }
 
 void ViscaWebcam::SetTiltDirection(TiltDirection direction,
@@ -484,8 +485,8 @@ void ViscaWebcam::SetTiltDirection(TiltDirection direction,
       command[5] |= actual_tilt_speed;
       break;
   }
-  Send(command, base::Bind(&ViscaWebcam::OnCommandCompleted,
-                           base::Unretained(this), callback));
+  Send(command, base::BindRepeating(&ViscaWebcam::OnCommandCompleted,
+                                    base::Unretained(this), callback));
 }
 
 void ViscaWebcam::Reset(bool pan,
@@ -495,8 +496,8 @@ void ViscaWebcam::Reset(bool pan,
   // pan and tilt are always reset together in Visca Webcams.
   if (pan || tilt) {
     Send(CHAR_VECTOR_FROM_ARRAY(kResetPanTiltCommand),
-         base::Bind(&ViscaWebcam::OnCommandCompleted, base::Unretained(this),
-                    callback));
+         base::BindRepeating(&ViscaWebcam::OnCommandCompleted,
+                             base::Unretained(this), callback));
   }
   if (zoom) {
     // Set the default zoom value to 100 to be consistent with V4l2 webcam.

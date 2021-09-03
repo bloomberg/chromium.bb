@@ -244,8 +244,8 @@ void CXFA_FFCheckButton::RenderWidget(CFGAS_GEGraphics* pGS,
   CXFA_FFWidget::RenderWidget(pGS, mtRotate, highlight);
   DrawBorderWithFlag(pGS, m_pNode->GetUIBorder(), m_UIRect, mtRotate,
                      button_->IsRound());
-  RenderCaption(pGS, &mtRotate);
-  DrawHighlight(pGS, &mtRotate, highlight,
+  RenderCaption(pGS, mtRotate);
+  DrawHighlight(pGS, mtRotate, highlight,
                 button_->IsRound() ? kRoundShape : kSquareShape);
   CFX_Matrix mt(1, 0, 0, 1, m_CheckBoxRect.left, m_CheckBoxRect.top);
   mt.Concat(mtRotate);
@@ -274,8 +274,7 @@ XFA_CHECKSTATE CXFA_FFCheckButton::FWLState2XFAState() {
 }
 
 bool CXFA_FFCheckButton::CommitData() {
-  XFA_CHECKSTATE eCheckState = FWLState2XFAState();
-  m_pNode->SetCheckState(eCheckState, true);
+  m_pNode->SetCheckState(FWLState2XFAState());
   return true;
 }
 

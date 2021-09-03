@@ -20,10 +20,12 @@ DEPS = [
   'recipe_engine/python',
   'recipe_engine/raw_io',
   'recipe_engine/step',
+  'gold_upload',
   'run',
   'vars',
 ]
 
+DM_JSON = 'dm.json'
 
 def test_steps(api):
   """Run the DM test."""
@@ -127,7 +129,10 @@ def test_steps(api):
             api.flavor.device_dirs.images_dir, 'colorspace'),
     ])
   if svgs:
-    args.extend(['--svgs', api.flavor.device_dirs.svg_dir])
+    # svg_dir is the root of the SVG corpus. Within that directory,
+    # the *.svg inputs are in the 'svg' subdirectory. See skbug.com/11229
+    args.extend(['--svgs', api.flavor.device_path_join(
+      api.flavor.device_dirs.svg_dir, "svg")])
   if lotties:
     args.extend([
       '--lotties',
@@ -148,6 +153,9 @@ def test_steps(api):
     # Copy images and JSON to host machine if needed.
     api.flavor.copy_directory_contents_to_host(
         api.flavor.device_dirs.dm_dir, api.flavor.host_dirs.dm_dir)
+    # https://bugs.chromium.org/p/chromium/issues/detail?id=1192611
+    if 'Win' not in api.vars.builder_cfg.get('os', ''):
+      api.gold_upload.upload()
 
 
 def RunSteps(api):
@@ -175,11 +183,15 @@ def GenTests(api):
     props = dict(
       buildername=builder,
       buildbucket_build_id='123454321',
-      dm_flags='["dm","--dummy","--flags"]',
+      dm_flags='["dm","--example","--flags"]',
       dm_properties=('{"key1":"value1","key2":"",'
                      '"bot":"${SWARMING_BOT_ID}",'
                      '"task":"${SWARMING_TASK_ID}"}'),
       revision='abc123',
+      gs_bucket='skia-infra-gm',
+      patch_ref='89/456789/12',
+      patch_set=7,
+      patch_issue=1234,
       path_config='kitchen',
       gold_hashes_url='https://example.com/hashes.txt',
       swarm_out_dir='[SWARM_OUT_DIR]',
@@ -212,7 +224,7 @@ def GenTests(api):
       api.step_data('get swarming task id',
           stdout=api.raw_io.output('123456'))
     )
-    if 'Win' in builder and not 'LenovoYogaC630' in builder:
+    if 'Win' in builder:
       test += api.platform('win', 64)
 
     yield test

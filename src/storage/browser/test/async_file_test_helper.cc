@@ -100,14 +100,14 @@ const int64_t AsyncFileTestHelper::kDontCheckSize = -1;
 base::File::Error AsyncFileTestHelper::Copy(FileSystemContext* context,
                                             const FileSystemURL& src,
                                             const FileSystemURL& dest) {
-  return CopyWithProgress(context, src, dest, CopyProgressCallback());
+  return CopyWithProgress(context, src, dest, CopyOrMoveProgressCallback());
 }
 
 base::File::Error AsyncFileTestHelper::CopyWithProgress(
     FileSystemContext* context,
     const FileSystemURL& src,
     const FileSystemURL& dest,
-    const CopyProgressCallback& progress_callback) {
+    const CopyOrMoveProgressCallback& progress_callback) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
   context->operation_runner()->Copy(src, dest, FileSystemOperation::OPTION_NONE,
@@ -118,13 +118,58 @@ base::File::Error AsyncFileTestHelper::CopyWithProgress(
   return result;
 }
 
+base::File::Error AsyncFileTestHelper::CopyFileLocal(
+    FileSystemContext* context,
+    const FileSystemURL& src,
+    const FileSystemURL& dest) {
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
+  base::RunLoop run_loop;
+  context->operation_runner()->CopyFileLocal(
+      src, dest, FileSystemOperation::OPTION_NONE,
+      FileSystemOperation::CopyFileProgressCallback(),
+      AssignAndQuitCallback(&run_loop, &result));
+  run_loop.Run();
+  return result;
+}
+
 base::File::Error AsyncFileTestHelper::Move(FileSystemContext* context,
                                             const FileSystemURL& src,
                                             const FileSystemURL& dest) {
   base::File::Error result = base::File::FILE_ERROR_FAILED;
   base::RunLoop run_loop;
+  context->operation_runner()->Move(
+      src, dest, FileSystemOperation::OPTION_NONE,
+      storage::FileSystemOperation::ERROR_BEHAVIOR_ABORT,
+      storage::FileSystemOperation::CopyOrMoveProgressCallback(),
+      AssignAndQuitCallback(&run_loop, &result));
+  run_loop.Run();
+  return result;
+}
+
+base::File::Error AsyncFileTestHelper::MoveWithProgress(
+    FileSystemContext* context,
+    const FileSystemURL& src,
+    const FileSystemURL& dest,
+    const CopyOrMoveProgressCallback& progress_callback) {
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
+  base::RunLoop run_loop;
   context->operation_runner()->Move(src, dest, FileSystemOperation::OPTION_NONE,
+                                    FileSystemOperation::ERROR_BEHAVIOR_ABORT,
+                                    progress_callback,
                                     AssignAndQuitCallback(&run_loop, &result));
+  run_loop.Run();
+  return result;
+}
+
+base::File::Error AsyncFileTestHelper::MoveFileLocal(
+    FileSystemContext* context,
+    const FileSystemURL& src,
+    const FileSystemURL& dest) {
+  base::File::Error result = base::File::FILE_ERROR_FAILED;
+  base::RunLoop run_loop;
+  context->operation_runner()->MoveFileLocal(
+      src, dest, FileSystemOperation::OPTION_NONE,
+      AssignAndQuitCallback(&run_loop, &result));
   run_loop.Run();
   return result;
 }

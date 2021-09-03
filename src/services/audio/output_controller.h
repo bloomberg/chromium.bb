@@ -17,7 +17,6 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -28,6 +27,7 @@
 #include "media/audio/audio_source_diverter.h"
 #include "media/base/audio_power_monitor.h"
 #include "services/audio/loopback_group_member.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // An OutputController controls an AudioOutputStream and provides data to this
 // output stream. It executes audio operations like play, pause, stop, etc. on
@@ -199,9 +199,7 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // cycle.
   class ErrorStatisticsTracker {
    public:
-    // |handler| must outlive the ErrorStatisticsTracker. See comments for
-    // |OutputController::handler_| why it is safe to use a raw pointer here.
-    ErrorStatisticsTracker(EventHandler* handler);
+    explicit ErrorStatisticsTracker(OutputController* controller);
 
     // Note: the destructor takes care of logging all of the stats.
     ~ErrorStatisticsTracker();
@@ -215,9 +213,9 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
    private:
     void WedgeCheck();
 
-    // Using a raw pointer is safe since the EventHandler object will outlive
-    // the ErrorStatisticsTracker object.
-    EventHandler* const handler_;
+    // Using a raw pointer is safe since the OutputController object will
+    // outlive the ErrorStatisticsTracker object.
+    OutputController* const controller_;
 
     const base::TimeTicks start_time_;
 
@@ -305,7 +303,7 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   // Used for keeping track of and logging stats. Created when a stream starts
   // and destroyed when a stream stops. Also reset every time there is a stream
   // being created due to device changes.
-  base::Optional<ErrorStatisticsTracker> stats_tracker_;
+  absl::optional<ErrorStatisticsTracker> stats_tracker_;
 
   // WeakPtrFactory+WeakPtr that is used to post tasks that are canceled when a
   // stream is closed.
