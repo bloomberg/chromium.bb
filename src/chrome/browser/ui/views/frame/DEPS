@@ -1,10 +1,11 @@
 specific_include_rules = {
   # Parts of this class use Ash, but only when run in classic Ash mode.
-  "browser_non_client_frame_view_ash\.*": [
+  "browser_non_client_frame_view_chromeos\.*": [
     "+ash",
   ],
   "browser_frame_ash\.*": [
     "+ash",
+    "+components/full_restore",
   ],
   "dbus_appmenu\.*": [
     "+dbus",

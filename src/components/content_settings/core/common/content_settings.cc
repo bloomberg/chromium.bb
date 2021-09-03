@@ -32,7 +32,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::COOKIES, 0},
     {ContentSettingsType::IMAGES, 1},
     {ContentSettingsType::JAVASCRIPT, 2},
-    {ContentSettingsType::PLUGINS, 3},
+    // Removed PLUGINS in M91.
     {ContentSettingsType::POPUPS, 4},
     {ContentSettingsType::GEOLOCATION, 5},
     {ContentSettingsType::NOTIFICATIONS, 6},
@@ -41,7 +41,6 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::MEDIASTREAM_MIC, 12},
     {ContentSettingsType::MEDIASTREAM_CAMERA, 13},
     {ContentSettingsType::PROTOCOL_HANDLERS, 14},
-    {ContentSettingsType::PPAPI_BROKER, 15},
     {ContentSettingsType::AUTOMATIC_DOWNLOADS, 16},
     {ContentSettingsType::MIDI_SYSEX, 17},
     {ContentSettingsType::SSL_CERT_DECISIONS, 19},
@@ -93,6 +92,11 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::FONT_ACCESS, 71},
     {ContentSettingsType::PERMISSION_AUTOREVOCATION_DATA, 72},
     {ContentSettingsType::FILE_SYSTEM_LAST_PICKED_DIRECTORY, 73},
+    {ContentSettingsType::DISPLAY_CAPTURE, 74},
+    {ContentSettingsType::FILE_HANDLING, 75},
+    {ContentSettingsType::FILE_SYSTEM_ACCESS_CHOOSER_DATA, 76},
+    {ContentSettingsType::FEDERATED_IDENTITY_SHARING, 77},
+    {ContentSettingsType::FEDERATED_IDENTITY_REQUEST, 78},
 };
 
 }  // namespace

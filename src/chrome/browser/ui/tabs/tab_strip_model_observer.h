@@ -8,9 +8,11 @@
 #include <memory>
 #include <vector>
 
-#include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_change_type.h"
 #include "components/tab_groups/tab_group_id.h"
+#include "components/tab_groups/tab_group_visual_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/base/models/list_selection_model.h"
 
 class TabStripModel;
@@ -41,11 +43,27 @@ class TabStripModelChange {
   // but C++17 features are not yet approved for use in chromium.
   struct Delta {
     virtual ~Delta() = default;
+
+    virtual void WriteIntoTrace(perfetto::TracedValue context) const = 0;
+  };
+
+  struct ContentsWithIndexAndWillBeDeleted {
+    content::WebContents* contents;
+    int index;
+
+    // The specified WebContents are being closed (and eventually destroyed).
+    // TODO(https://crbug.com/1149549): Make will_be_deleted into enum to
+    // consider the case for ClosedTabCache feature separtely.
+    bool will_be_deleted;
+
+    void WriteIntoTrace(perfetto::TracedValue context) const;
   };
 
   struct ContentsWithIndex {
     content::WebContents* contents;
     int index;
+
+    void WriteIntoTrace(perfetto::TracedValue context) const;
   };
 
   // WebContents were inserted. This implicitly changes the existing selection
@@ -79,6 +97,8 @@ class TabStripModelChange {
     // not do index-based queries based on their own internally-stored indices
     // until after processing all of |contents|.
     std::vector<ContentsWithIndex> contents;
+
+    void WriteIntoTrace(perfetto::TracedValue context) const override;
   };
 
   // WebContents were removed at |indices_before_removal|. This implicitly
@@ -89,8 +109,10 @@ class TabStripModelChange {
     Remove(Remove&& other);
     Remove& operator=(Remove&& other);
 
-    // Contains the list of web contents removed, along with their indexes at
-    // the time of removal. For example, if we removed elements:
+    // Contains the list of web contents removed with their indexes at
+    // the time of removal along with flag |will_be_deleted| that indicates if
+    // the web contents will be deleted or not after removing. For example, if
+    // we removed elements:
     //
     // Before removal:
     // A B C D E F G
@@ -111,11 +133,9 @@ class TabStripModelChange {
     // them in the order the web contents appear in |contents|. Observers should
     // not do index-based queries based on their own internally-stored indices
     // until after processing all of |contents|.
-    std::vector<ContentsWithIndex> contents;
+    std::vector<ContentsWithIndexAndWillBeDeleted> contents;
 
-    // The specified WebContents are being closed (and eventually destroyed).
-    // |tab_strip_model| is the TabStripModel that contained the tab.
-    bool will_be_deleted;
+    void WriteIntoTrace(perfetto::TracedValue context) const override;
   };
 
   // A WebContents was moved from |from_index| to |to_index|. This implicitly
@@ -125,6 +145,8 @@ class TabStripModelChange {
     content::WebContents* contents;
     int from_index;
     int to_index;
+
+    void WriteIntoTrace(perfetto::TracedValue context) const override;
   };
 
   // The WebContents was replaced at the specified index. This is invoked when
@@ -133,6 +155,8 @@ class TabStripModelChange {
     content::WebContents* old_contents;
     content::WebContents* new_contents;
     int index;
+
+    void WriteIntoTrace(perfetto::TracedValue context) const override;
   };
 
   TabStripModelChange();
@@ -149,6 +173,8 @@ class TabStripModelChange {
   const Remove* GetRemove() const;
   const Move* GetMove() const;
   const Replace* GetReplace() const;
+
+  void WriteIntoTrace(perfetto::TracedValue context) const;
 
  private:
   TabStripModelChange(Type type, std::unique_ptr<Delta> delta);
@@ -208,11 +234,32 @@ struct TabGroupChange {
     kClosed
   };
 
-  TabGroupChange(tab_groups::TabGroupId group, Type type);
+  // Base class for all changes. Similar to TabStripModelChange::Delta.
+  struct Delta {
+    virtual ~Delta() = default;
+  };
+
+  // The TabGroupVisualData that was changed at the specified group.
+  struct VisualsChange : public Delta {
+    VisualsChange();
+    ~VisualsChange() override;
+    const tab_groups::TabGroupVisualData* old_visuals;
+    const tab_groups::TabGroupVisualData* new_visuals;
+  };
+
+  TabGroupChange(tab_groups::TabGroupId group,
+                 Type type,
+                 std::unique_ptr<Delta> deltap = nullptr);
+  explicit TabGroupChange(tab_groups::TabGroupId group, VisualsChange deltap);
   ~TabGroupChange();
+
+  const VisualsChange* GetVisualsChange() const;
 
   tab_groups::TabGroupId group;
   Type type;
+
+ private:
+  std::unique_ptr<Delta> delta;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,7 +336,7 @@ class TabStripModelObserver {
 
   // Called when the tab at |index| is added to the group with id |group|.
   virtual void TabGroupedStateChanged(
-      base::Optional<tab_groups::TabGroupId> group,
+      absl::optional<tab_groups::TabGroupId> group,
       content::WebContents* contents,
       int index);
 

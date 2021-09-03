@@ -147,33 +147,35 @@ enum DeviceManagementStatus {
 
 // List of modes that the device can be locked into.
 enum DeviceMode {
-  DEVICE_MODE_PENDING,             // The device mode is not yet available.
-  DEVICE_MODE_NOT_SET,             // The device is not yet enrolled or owned.
-  DEVICE_MODE_CONSUMER,            // The device is locally owned as consumer
-                                   // device.
-  DEVICE_MODE_ENTERPRISE,          // The device is enrolled as an enterprise
-                                   // device.
-  DEVICE_MODE_ENTERPRISE_AD,       // The device has joined AD.
-  DEVICE_MODE_LEGACY_RETAIL_MODE,  // The device is enrolled as a retail kiosk
-                                   // device. Even though retail mode is
-                                   // deprecated, we still check for this device
-                                   // mode so that if an existing device is
-                                   // still enrolled in retail mode, we take the
-                                   // appropriate action (currently, launching
-                                   // offline demo mode).
-  DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,  // The device is locally owned as
+  DEVICE_MODE_PENDING,        // The device mode is not yet available.
+  DEVICE_MODE_NOT_SET,        // The device is not yet enrolled or owned.
+  DEVICE_MODE_CONSUMER,       // The device is locally owned as consumer
+                              // device.
+  DEVICE_MODE_ENTERPRISE,     // The device is enrolled as an enterprise
+                              // device.
+  DEVICE_MODE_ENTERPRISE_AD,  // The device has joined AD.
+  DEPRECATED_DEVICE_MODE_LEGACY_RETAIL_MODE,  // The device is enrolled as a
+                                              // retail kiosk device. This is
+                                              // deprecated.
+  DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,      // The device is locally owned as
                                           // consumer kiosk with ability to auto
                                           // launch a kiosk webapp.
-  DEVICE_MODE_DEMO,                       // The device is in demo mode. It was
-                                          // either enrolled online or setup
-                                          // offline into demo mode domain -
-                                          // see kDemoModeDomain.
+  DEVICE_MODE_DEMO,  // The device is in demo mode. It was
+                     // either enrolled online or setup
+                     // offline into demo mode domain -
+                     // see kDemoModeDomain.
 };
 
 // Domain that demo mode devices are enrolled into: cros-demo-mode.com
 POLICY_EXPORT extern const char kDemoModeDomain[];
 
-// Indicate this device's market segment. go/cros-rlz-segments
+// Indicate this device's market segment. go/cros-rlz-segments.
+// This enum should be kept in sync with MarketSegment enum in
+// device_management_backend.proto (http://shortn/_p0P58C4BRV). If any additions
+// are made to this proto, the UserDeviceMatrix in
+// src/tools/metrics/histograms/enums.xml should also be updated, as well as the
+// browser test suite in usertype_by_devicetype_metrics_provider_browsertest.cc
+// (http://shortn/_gD5uIM9Z78) to account for the new user / device type combo.
 enum class MarketSegment {
   UNKNOWN,  // If device is not enrolled or market segment is not specified.
   EDUCATION,

@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 
 #include "base/i18n/time_formatting.h"
+#import "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -14,11 +15,11 @@
 #import "ios/chrome/app/tests_hook.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 #import "ios/chrome/browser/drag_and_drop/table_view_url_drag_drop_handler.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -34,14 +35,16 @@
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/menu_util.h"
-#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -70,10 +73,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeEntriesStatusWithLink,
   ItemTypeActivityIndicator,
 };
-// Name of the asset to use when history is empty.
-// TODO(crbug.com/1101842): When changing this const with the new asset, delete
-// the old asset.
-NSString* const kEmptyStateImage = @"legacy_empty_history";
 // Section identifier for the header (sync information) section.
 const NSInteger kEntriesStatusSectionIdentifier = kSectionIdentifierEnumZero;
 // Maximum number of entries to retrieve in a single query to history service.
@@ -88,6 +87,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 @interface HistoryTableViewController () <HistoryEntriesStatusItemDelegate,
                                           HistoryEntryInserterDelegate,
+                                          TableViewLinkHeaderFooterItemDelegate,
                                           TableViewTextLinkCellDelegate,
                                           TableViewURLDragDataSource,
                                           UISearchControllerDelegate,
@@ -139,7 +139,10 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 #pragma mark - ViewController Lifecycle.
 
 - (instancetype)init {
-  return [super initWithStyle:UITableViewStylePlain];
+  UITableViewStyle style = base::FeatureList::IsEnabled(kSettingsRefresh)
+                               ? ChromeTableViewStyle()
+                               : UITableViewStylePlain;
+  return [super initWithStyle:style];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -194,14 +197,11 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     [self.tableView addGestureRecognizer:longPressRecognizer];
   }
 
-  if (DragAndDropIsEnabled()) {
-    self.dragDropHandler = [[TableViewURLDragDropHandler alloc] init];
-    self.dragDropHandler.origin = WindowActivityHistoryOrigin;
-    self.dragDropHandler.dragDataSource = self;
-    self.tableView.dragDelegate = self.dragDropHandler;
-    self.tableView.dragInteractionEnabled =
-        !tests_hook::DisableTableDragAndDrop();
-  }
+  self.dragDropHandler = [[TableViewURLDragDropHandler alloc] init];
+  self.dragDropHandler.origin = WindowActivityHistoryOrigin;
+  self.dragDropHandler.dragDataSource = self;
+  self.tableView.dragDelegate = self.dragDropHandler;
+  self.tableView.dragInteractionEnabled = true;
 
   // NavigationController configuration.
   self.title = l10n_util::GetNSString(IDS_HISTORY_TITLE);
@@ -279,13 +279,17 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                                    queryResultsInfo
                         continuationClosure:
                             (base::OnceClosure)continuationClosure {
+  if (!self.browser)
+    return;
+
   self.loading = NO;
   _query_history_continuation = std::move(continuationClosure);
 
   // If history sync is enabled and there hasn't been a response from synced
   // history, try fetching again.
   SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(_browser->GetBrowserState());
+      SyncSetupServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   if (syncSetupService->IsSyncEnabled() &&
       syncSetupService->IsDataTypeActive(syncer::HISTORY_DELETE_DIRECTIVES) &&
       queryResultsInfo.sync_timed_out) {
@@ -458,6 +462,14 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 - (void)tableViewTextLinkCell:(TableViewTextLinkCell*)cell
             didRequestOpenURL:(const GURL&)URL {
+  DCHECK(!base::FeatureList::IsEnabled(kSettingsRefresh));
+  [self openURLInNewTab:URL];
+}
+
+#pragma mark TableViewLinkHeaderFooterItemDelegate
+
+- (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(GURL)URL {
+  DCHECK(base::FeatureList::IsEnabled(kSettingsRefresh));
   [self openURLInNewTab:URL];
 }
 
@@ -531,6 +543,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 // Deletes selected items from browser history and removes them from the
 // tableView.
 - (void)deleteSelectedItemsFromHistory {
+  if (!self.browser)
+    return;
+
   NSArray* toDeleteIndexPaths = self.tableView.indexPathsForSelectedRows;
 
   // Delete items from Browser History.
@@ -547,13 +562,15 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   self.historyService->RemoveVisits(entries);
 
   // Delete items from |self.tableView| using performBatchUpdates.
-  [self.tableView performBatchUpdates:^{
-    [self deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths
-                        deleteItemsFromTableView:YES];
-  }
+  __weak __typeof(self) weakSelf = self;
+  [self.tableView
+      performBatchUpdates:^{
+        [weakSelf deleteItemsFromTableViewModelWithIndex:toDeleteIndexPaths
+                                deleteItemsFromTableView:YES];
+      }
       completion:^(BOOL) {
-        [self updateTableViewAfterDeletingEntries];
-        [self configureViewsForNonEditModeWithAnimation:YES];
+        [weakSelf updateTableViewAfterDeletingEntries];
+        [weakSelf configureViewsForNonEditModeWithAnimation:YES];
       }];
   base::RecordAction(base::UserMetricsAction("HistoryPage_RemoveSelected"));
 }
@@ -563,8 +580,11 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 - (CGFloat)tableView:(UITableView*)tableView
     heightForHeaderInSection:(NSInteger)section {
   if (section ==
-      [self.tableViewModel
-          sectionForSectionIdentifier:kEntriesStatusSectionIdentifier])
+          [self.tableViewModel
+              sectionForSectionIdentifier:kEntriesStatusSectionIdentifier] &&
+      (!base::FeatureList::IsEnabled(kSettingsRefresh) ||
+       ![self.tableViewModel
+           headerForSectionWithIdentifier:kEntriesStatusSectionIdentifier]))
     return 0;
   return UITableViewAutomaticDimension;
 }
@@ -632,6 +652,12 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     return nil;
   }
 
+  if (indexPath.section ==
+      [self.tableViewModel
+          sectionForSectionIdentifier:kEntriesStatusSectionIdentifier]) {
+    return nil;
+  }
+
   HistoryEntryItem* entry = base::mac::ObjCCastStrict<HistoryEntryItem>(
       [self.tableViewModel itemAtIndexPath:indexPath]);
   UIView* cell = [self.tableView cellForRowAtIndexPath:indexPath];
@@ -640,6 +666,24 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 }
 
 #pragma mark - UITableViewDataSource
+
+- (UIView*)tableView:(UITableView*)tableView
+    viewForHeaderInSection:(NSInteger)section {
+  UIView* view = [super tableView:tableView viewForHeaderInSection:section];
+  NSInteger sectionIdentifier =
+      [self.tableViewModel sectionIdentifierForSection:section];
+  switch (sectionIdentifier) {
+    case kEntriesStatusSectionIdentifier: {
+      // Might be a different type of header.
+      TableViewLinkHeaderFooterView* linkView =
+          base::mac::ObjCCast<TableViewLinkHeaderFooterView>(view);
+      linkView.delegate = self;
+    } break;
+    default:
+      break;
+  }
+  return view;
+}
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
@@ -664,6 +708,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
            }];
   }
   if (item.type == ItemTypeEntriesStatusWithLink) {
+    DCHECK(!base::FeatureList::IsEnabled(kSettingsRefresh));
     TableViewTextLinkCell* tableViewTextLinkCell =
         base::mac::ObjCCastStrict<TableViewTextLinkCell>(cellToReturn);
     [tableViewTextLinkCell setDelegate:self];
@@ -730,6 +775,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 // recent results are fetched, otherwise the results more recent than the
 // previous query will be returned.
 - (void)fetchHistoryForQuery:(NSString*)query continuation:(BOOL)continuation {
+  if (!self.browser)
+    return;
+
   self.loading = YES;
   // Add loading indicator if no items are shown.
   if (self.empty && !self.searchInProgress) {
@@ -744,8 +792,8 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     _query_history_continuation.Reset();
 
     BOOL fetchAllHistory = !query || [query isEqualToString:@""];
-    base::string16 queryString =
-        fetchAllHistory ? base::string16() : base::SysNSStringToUTF16(query);
+    std::u16string queryString =
+        fetchAllHistory ? std::u16string() : base::SysNSStringToUTF16(query);
     history::QueryOptions options;
     options.duplicate_policy =
         fetchAllHistory ? history::QueryOptions::REMOVE_DUPLICATES_PER_DAY
@@ -826,32 +874,61 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     }
   } else {
     // Since there's a new status message, create the new status item.
-    TableViewItem* updatedMessageItem =
-        [self statusItemWithMessage:newStatusMessage
-             messageWillContainLink:messageWillContainLink];
-
-    // If there was a previous status item delete it, insert the new status item
-    // and reload. If not simply insert the new status item.
-    tableUpdates = ^{
-      if (previousStatusItem) {
-        [self.tableViewModel
-                   removeItemWithType:previousStatusItem.type
-            fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-        [self.tableViewModel addItem:updatedMessageItem
-             toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-        [self.tableView
-            reloadRowsAtIndexPaths:@[ [self.tableViewModel
-                                       indexPathForItem:updatedMessageItem] ]
-                  withRowAnimation:UITableViewRowAnimationAutomatic];
+    if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
+      TableViewHeaderFooterItem* item = nil;
+      if (messageWillContainLink) {
+        TableViewLinkHeaderFooterItem* header =
+            [[TableViewLinkHeaderFooterItem alloc]
+                initWithType:ItemTypeEntriesStatusWithLink];
+        header.text = newStatusMessage;
+        header.urls = std::vector<GURL>{GURL(kHistoryMyActivityURL)};
+        item = header;
       } else {
-        [self.tableViewModel addItem:updatedMessageItem
-             toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-        [self.tableView
-            insertRowsAtIndexPaths:@[ [self.tableViewModel
-                                       indexPathForItem:updatedMessageItem] ]
-                  withRowAnimation:UITableViewRowAnimationAutomatic];
+        TableViewTextHeaderFooterItem* header =
+            [[TableViewTextHeaderFooterItem alloc]
+                initWithType:ItemTypeEntriesStatus];
+        header.text = newStatusMessage;
+        item = header;
       }
-    };
+      // Change the header then reload the section to have it taken into
+      // account.
+      tableUpdates = ^{
+        NSInteger sectionIndex = [self.tableViewModel
+            sectionForSectionIdentifier:kEntriesStatusSectionIdentifier];
+        [self.tableViewModel setHeader:item
+              forSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+        [self.tableView
+              reloadSections:[NSIndexSet indexSetWithIndex:sectionIndex]
+            withRowAnimation:UITableViewRowAnimationAutomatic];
+      };
+    } else {
+      TableViewItem* updatedMessageItem =
+          [self statusItemWithMessage:newStatusMessage
+               messageWillContainLink:messageWillContainLink];
+
+      // If there was a previous status item delete it, insert the new status
+      // item and reload. If not simply insert the new status item.
+      tableUpdates = ^{
+        if (previousStatusItem) {
+          [self.tableViewModel
+                     removeItemWithType:previousStatusItem.type
+              fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+          [self.tableViewModel addItem:updatedMessageItem
+               toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+          [self.tableView
+              reloadRowsAtIndexPaths:@[ [self.tableViewModel
+                                         indexPathForItem:updatedMessageItem] ]
+                    withRowAnimation:UITableViewRowAnimationAutomatic];
+        } else {
+          [self.tableViewModel addItem:updatedMessageItem
+               toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+          [self.tableView
+              insertRowsAtIndexPaths:@[ [self.tableViewModel
+                                         indexPathForItem:updatedMessageItem] ]
+                    withRowAnimation:UITableViewRowAnimationAutomatic];
+        }
+      };
+    }
   }
 
   // If there's any tableUpdates, run them.
@@ -956,10 +1033,11 @@ const CGFloat kButtonHorizontalPadding = 30.0;
     AddSameConstraints(self.scrimView, self.view.superview);
     self.tableView.accessibilityElementsHidden = YES;
     self.tableView.scrollEnabled = NO;
+    __weak __typeof(self) weakSelf = self;
     [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
                      animations:^{
-                       self.scrimView.alpha = 1.0f;
-                       [self.view layoutIfNeeded];
+                       weakSelf.scrimView.alpha = 1.0f;
+                       [weakSelf.view layoutIfNeeded];
                      }];
   }
 }
@@ -968,14 +1046,15 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 - (void)hideScrim {
   if (self.scrimView.alpha > 0.0f) {
     self.navigationController.toolbarHidden = NO;
+    __weak __typeof(self) weakSelf = self;
     [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
         animations:^{
-          self.scrimView.alpha = 0.0f;
+          weakSelf.scrimView.alpha = 0.0f;
         }
         completion:^(BOOL finished) {
-          [self.scrimView removeFromSuperview];
-          self.tableView.accessibilityElementsHidden = NO;
-          self.tableView.scrollEnabled = YES;
+          [weakSelf.scrimView removeFromSuperview];
+          weakSelf.tableView.accessibilityElementsHidden = NO;
+          weakSelf.tableView.scrollEnabled = YES;
         }];
   }
 }
@@ -1024,18 +1103,14 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Configure the navigationItem contents for the current state.
 - (void)updateNavigationBar {
-  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
-    if ([self isEmptyState]) {
-      self.navigationItem.searchController = nil;
-      self.navigationItem.largeTitleDisplayMode =
-          UINavigationItemLargeTitleDisplayModeNever;
-    } else {
-      self.navigationItem.searchController = self.searchController;
-      self.navigationItem.largeTitleDisplayMode =
-          UINavigationItemLargeTitleDisplayModeAutomatic;
-    }
+  if ([self isEmptyState]) {
+    self.navigationItem.searchController = nil;
+    self.navigationItem.largeTitleDisplayMode =
+        UINavigationItemLargeTitleDisplayModeNever;
   } else {
     self.navigationItem.searchController = self.searchController;
+    self.navigationItem.largeTitleDisplayMode =
+        UINavigationItemLargeTitleDisplayModeAutomatic;
   }
 }
 
@@ -1072,7 +1147,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       base::SysUTF16ToNSString(url_formatter::FormatUrl(entry.URL));
   self.contextMenuCoordinator = [[ActionSheetCoordinator alloc]
       initWithBaseViewController:self.navigationController
-                         browser:_browser
+                         browser:self.browser
                            title:menuTitle
                          message:nil
                             rect:CGRectMake(touchLocation.x, touchLocation.y,
@@ -1089,7 +1164,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
                                          action:openInNewTabAction
                                           style:UIAlertActionStyleDefault];
 
-  if (IsMultipleScenesSupported()) {
+  if (base::ios::IsMultipleScenesSupported()) {
     // Add "Open In New Window" option.
     NSString* openInNewWindowTitle =
         l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW);
@@ -1107,9 +1182,12 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   ProceduralBlock openInNewIncognitoTabAction = ^{
     [weakSelf openURLInNewIncognitoTab:entry.URL];
   };
+  BOOL incognitoEnabled =
+      !IsIncognitoModeDisabled(self.browser->GetBrowserState()->GetPrefs());
   [self.contextMenuCoordinator addItemWithTitle:openInNewIncognitoTabTitle
                                          action:openInNewIncognitoTabAction
-                                          style:UIAlertActionStyleDefault];
+                                          style:UIAlertActionStyleDefault
+                                        enabled:incognitoEnabled];
 
   // Add "Copy URL" option.
   NSString* copyURLTitle =
@@ -1128,9 +1206,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   base::RecordAction(
       base::UserMetricsAction("MobileHistoryPage_EntryLinkOpenNewTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
+  __weak __typeof(self) weakSelf = self;
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
-    [self.presentationDelegate showActiveRegularTabFromHistory];
+    [weakSelf loadAndActivateTabFromHistoryWithParams:params incognito:NO];
   }];
 }
 
@@ -1150,13 +1228,28 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       "MobileHistoryPage_EntryLinkOpenNewIncognitoTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   params.in_incognito = YES;
+  __weak __typeof(self) weakSelf = self;
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
-    [self.presentationDelegate showActiveIncognitoTabFromHistory];
+    [weakSelf loadAndActivateTabFromHistoryWithParams:params incognito:YES];
   }];
 }
 
 #pragma mark Helper Methods
+
+// Loads and opens a tab using |params|. If |incognito| is YES the tab will be
+// opened in incognito mode.
+- (void)loadAndActivateTabFromHistoryWithParams:(const UrlLoadParams&)params
+                                      incognito:(BOOL)incognito {
+  if (!self.browser)
+    return;
+
+  UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
+  if (incognito) {
+    [self.presentationDelegate showActiveIncognitoTabFromHistory];
+  } else {
+    [self.presentationDelegate showActiveRegularTabFromHistory];
+  }
+}
 
 // Returns YES if the history is actually empty, and the user is neither
 // searching nor editing.
@@ -1173,8 +1266,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Returns the toolbar buttons for the current state.
 - (NSArray<UIBarButtonItem*>*)toolbarButtons {
-  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates) &&
-      [self isEmptyState]) {
+  if ([self isEmptyState]) {
     return @[
       [self createSpacerButton], self.clearBrowsingDataButton,
       [self createSpacerButton]
@@ -1190,20 +1282,12 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Adds a view as background of the TableView.
 - (void)addEmptyTableViewBackground {
-  if (base::FeatureList::IsEnabled(kIllustratedEmptyStates)) {
-    [self addEmptyTableViewWithImage:[UIImage imageNamed:@"history_empty"]
-                               title:l10n_util::GetNSString(
-                                         IDS_IOS_HISTORY_EMPTY_TITLE)
-                            subtitle:l10n_util::GetNSString(
-                                         IDS_IOS_HISTORY_EMPTY_MESSAGE)];
-    [self updateNavigationBar];
-  } else {
-    UIImage* emptyImage = [[UIImage imageNamed:kEmptyStateImage]
-        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
-                                           IDS_HISTORY_NO_RESULTS)
-                                 image:emptyImage];
-  }
+  [self addEmptyTableViewWithImage:[UIImage imageNamed:@"history_empty"]
+                             title:l10n_util::GetNSString(
+                                       IDS_IOS_HISTORY_EMPTY_TITLE)
+                          subtitle:l10n_util::GetNSString(
+                                       IDS_IOS_HISTORY_EMPTY_MESSAGE)];
+  [self updateNavigationBar];
 }
 
 // Clears the background of the TableView.
@@ -1215,15 +1299,15 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 // Opens URL in the current tab and dismisses the history view.
 - (void)openURL:(const GURL&)URL {
   new_tab_page_uma::RecordAction(
-      _browser->GetBrowserState(),
-      _browser->GetWebStateList()->GetActiveWebState(),
+      self.browser->GetBrowserState(),
+      self.browser->GetWebStateList()->GetActiveWebState(),
       new_tab_page_uma::ACTION_OPENED_HISTORY_ENTRY);
   UrlLoadParams params = UrlLoadParams::InCurrentTab(URL);
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   params.load_strategy = self.loadStrategy;
+  __weak __typeof(self) weakSelf = self;
   [self.delegate dismissHistoryWithCompletion:^{
-    UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
-    [self.presentationDelegate showActiveRegularTabFromHistory];
+    [weakSelf loadAndActivateTabFromHistoryWithParams:params incognito:NO];
   }];
 }
 

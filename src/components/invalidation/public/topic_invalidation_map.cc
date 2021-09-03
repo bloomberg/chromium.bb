@@ -8,7 +8,7 @@
 
 #include "base/values.h"
 
-namespace syncer {
+namespace invalidation {
 
 TopicInvalidationMap::TopicInvalidationMap() = default;
 
@@ -37,7 +37,7 @@ void TopicInvalidationMap::Insert(const Invalidation& invalidation) {
 
 TopicInvalidationMap TopicInvalidationMap::GetSubsetWithTopics(
     const Topics& topics) const {
-  std::map<Topic, SingleObjectInvalidationSet> new_map;
+  std::map<Topic, SingleTopicInvalidationSet> new_map;
   for (const auto& topic : topics) {
     auto lookup = map_.find(topic.first);
     if (lookup != map_.end()) {
@@ -49,7 +49,7 @@ TopicInvalidationMap TopicInvalidationMap::GetSubsetWithTopics(
 
 TopicInvalidationMap TopicInvalidationMap::GetSubsetWithTopics(
     const TopicSet& topics) const {
-  std::map<Topic, SingleObjectInvalidationSet> new_map;
+  std::map<Topic, SingleTopicInvalidationSet> new_map;
   for (const auto& topic : topics) {
     auto lookup = map_.find(topic);
     if (lookup != map_.end()) {
@@ -59,7 +59,7 @@ TopicInvalidationMap TopicInvalidationMap::GetSubsetWithTopics(
   return TopicInvalidationMap(new_map);
 }
 
-const SingleObjectInvalidationSet& TopicInvalidationMap::ForTopic(
+const SingleTopicInvalidationSet& TopicInvalidationMap::ForTopic(
     Topic topic) const {
   auto lookup = map_.find(topic);
   DCHECK(lookup != map_.end());
@@ -68,7 +68,7 @@ const SingleObjectInvalidationSet& TopicInvalidationMap::ForTopic(
 }
 
 void TopicInvalidationMap::GetAllInvalidations(
-    std::vector<syncer::Invalidation>* out) const {
+    std::vector<Invalidation>* out) const {
   for (const auto& topic_to_invalidations : map_) {
     out->insert(out->begin(), topic_to_invalidations.second.begin(),
                 topic_to_invalidations.second.end());
@@ -98,7 +98,7 @@ std::unique_ptr<base::ListValue> TopicInvalidationMap::ToValue() const {
 }
 
 TopicInvalidationMap::TopicInvalidationMap(
-    const std::map<Topic, SingleObjectInvalidationSet>& map)
+    const std::map<Topic, SingleTopicInvalidationSet>& map)
     : map_(map) {}
 
-}  // namespace syncer
+}  // namespace invalidation

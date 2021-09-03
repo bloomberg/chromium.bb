@@ -17,7 +17,6 @@
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -94,7 +93,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
           WTF::Bind(&WaitUntilObserver::OnPromiseRejected,
                     WrapPersistent(observer_.Get())));
       observer_ = nullptr;
-      return ScriptPromise::Reject(GetScriptState(), value).GetScriptValue();
+      return ScriptPromise::Reject(GetScriptState(), value).AsScriptValue();
     }
 
     event_loop->EnqueueMicrotask(
@@ -336,6 +335,7 @@ void WaitUntilObserver::ConsumeWindowInteraction(TimerBase*) {
 }
 
 void WaitUntilObserver::Trace(Visitor* visitor) const {
+  visitor->Trace(consume_window_interaction_timer_);
   ExecutionContextClient::Trace(visitor);
 }
 

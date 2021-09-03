@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/css_math_function_value.h"
 
 #include "third_party/blink/renderer/core/css/css_math_expression_node.h"
+#include "third_party/blink/renderer/core/css/css_value_clamping_utils.h"
 #include "third_party/blink/renderer/platform/geometry/calculation_expression_node.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
 #include "third_party/blink/renderer/platform/wtf/size_assertions.h"
@@ -137,9 +138,10 @@ bool CSSMathFunctionValue::IsComputationallyIndependent() const {
   return expression_->IsComputationallyIndependent();
 }
 
-scoped_refptr<CalculationValue> CSSMathFunctionValue::ToCalcValue(
+scoped_refptr<const CalculationValue> CSSMathFunctionValue::ToCalcValue(
     const CSSToLengthConversionData& conversion_data) const {
-  return expression_->ToCalcValue(conversion_data, PermittedValueRange());
+  return expression_->ToCalcValue(conversion_data, PermittedValueRange(),
+                                  AllowsNegativePercentageReference());
 }
 
 }  // namespace blink

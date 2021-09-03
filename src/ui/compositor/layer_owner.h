@@ -11,9 +11,10 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/compositor/compositor_export.h"
-#include "ui/compositor/layer.h"
 
 namespace ui {
+
+class Layer;
 
 class COMPOSITOR_EXPORT LayerOwner {
  public:
@@ -44,7 +45,7 @@ class COMPOSITOR_EXPORT LayerOwner {
   std::unique_ptr<Layer> AcquireLayer();
 
   // Similar to AcquireLayer(), but layer() will be set to nullptr immediately.
-  std::unique_ptr<Layer> ReleaseLayer();
+  virtual std::unique_ptr<Layer> ReleaseLayer();
 
   // Releases the ownership of the current layer, and takes ownership of
   // |layer|.
@@ -63,7 +64,7 @@ class COMPOSITOR_EXPORT LayerOwner {
   bool OwnsLayer() const;
 
  protected:
-  void SetLayer(std::unique_ptr<Layer> layer);
+  virtual void SetLayer(std::unique_ptr<Layer> layer);
   void DestroyLayer();
 
  private:

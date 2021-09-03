@@ -6,11 +6,11 @@
 #define QUICHE_QUIC_TOOLS_QUIC_SIMPLE_SERVER_STREAM_H_
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_server_stream_base.h"
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
-#include "net/third_party/quiche/src/quic/tools/quic_backend_response.h"
-#include "net/third_party/quiche/src/quic/tools/quic_simple_server_backend.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_framer.h"
+#include "quic/core/http/quic_spdy_server_stream_base.h"
+#include "quic/core/quic_packets.h"
+#include "quic/tools/quic_backend_response.h"
+#include "quic/tools/quic_simple_server_backend.h"
+#include "spdy/core/spdy_framer.h"
 
 namespace quic {
 
@@ -57,9 +57,7 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
   QuicConnectionId connection_id() const override;
   QuicStreamId stream_id() const override;
   std::string peer_host() const override;
-  void OnResponseBackendComplete(
-      const QuicBackendResponse* response,
-      std::list<QuicBackendResponse::ServerPushInfo> resources) override;
+  void OnResponseBackendComplete(const QuicBackendResponse* response) override;
 
  protected:
   // Sends a basic 200 response using SendHeaders for the headers and WriteData
@@ -99,6 +97,8 @@ class QuicSimpleServerStream : public QuicSpdyServerStreamBase,
 
  private:
   uint64_t generate_bytes_length_;
+  // Whether response headers have already been sent.
+  bool response_sent_ = false;
 
   QuicSimpleServerBackend* quic_simple_server_backend_;  // Not owned.
 };

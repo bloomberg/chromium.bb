@@ -4,7 +4,9 @@
 
 #include "components/autofill_assistant/browser/field_formatter.h"
 
+#include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -19,14 +21,14 @@ namespace {
 // Regex to find placeholders of the form ${key}, where key is an arbitrary
 // string that does not contain curly braces. The first capture group is for
 // the prefix before the key, the second for the key itself.
-const char kPlaceholderExtractor[] = R"re(([^$]*)\$\{([^{}]+)\})re";
+const char kPlaceholderExtractor[] = R"re((.*?)\$\{([^{}]+)\})re";
 
-base::Optional<std::string> GetFieldValue(
+absl::optional<std::string> GetFieldValue(
     const std::map<std::string, std::string>& mappings,
     const std::string& key) {
   auto it = mappings.find(key);
   if (it == mappings.end()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   return it->second;
 }
@@ -50,7 +52,7 @@ std::map<std::string, std::string> CreateFormGroupMappings(
 namespace autofill_assistant {
 namespace field_formatter {
 
-base::Optional<std::string> FormatString(
+absl::optional<std::string> FormatString(
     const std::string& pattern,
     const std::map<std::string, std::string>& mappings,
     bool strict) {
@@ -68,7 +70,7 @@ base::Optional<std::string> FormatString(
     if (!rewrite_value.has_value()) {
       if (strict) {
         VLOG(2) << "No value for " << key << " in " << pattern;
-        return base::nullopt;
+        return absl::nullopt;
       }
       // Leave placeholder unchanged.
       rewrite_value = "${" + key + "}";
@@ -82,6 +84,57 @@ base::Optional<std::string> FormatString(
   return out;
 }
 
+ClientStatus FormatExpression(
+    const ValueExpression& value_expression,
+    const std::map<std::string, std::string>& mappings,
+    bool quote_meta,
+    std::string* out_value) {
+  out_value->clear();
+  for (const auto& chunk : value_expression.chunk()) {
+    switch (chunk.chunk_case()) {
+      case ValueExpression::Chunk::kText:
+        out_value->append(chunk.text());
+        break;
+      case ValueExpression::Chunk::kKey: {
+        auto rewrite_value =
+            GetFieldValue(mappings, base::NumberToString(chunk.key()));
+        if (!rewrite_value.has_value()) {
+          return ClientStatus(AUTOFILL_INFO_NOT_AVAILABLE);
+        }
+        if (quote_meta) {
+          out_value->append(re2::RE2::QuoteMeta(*rewrite_value));
+        } else {
+          out_value->append(*rewrite_value);
+        }
+        break;
+      }
+      case ValueExpression::Chunk::CHUNK_NOT_SET:
+        return ClientStatus(INVALID_ACTION);
+    }
+  }
+
+  return OkClientStatus();
+}
+
+std::string GetHumanReadableValueExpression(
+    const ValueExpression& value_expression) {
+  std::string out;
+  for (const auto& chunk : value_expression.chunk()) {
+    switch (chunk.chunk_case()) {
+      case ValueExpression::Chunk::kText:
+        out += chunk.text();
+        break;
+      case ValueExpression::Chunk::kKey:
+        out += "${" + base::NumberToString(chunk.key()) + "}";
+        break;
+      case ValueExpression::Chunk::CHUNK_NOT_SET:
+        out += "<CHUNK_NOT_SET>";
+        break;
+    }
+  }
+  return out;
+}
+
 template <>
 std::map<std::string, std::string>
 CreateAutofillMappings<autofill::AutofillProfile>(
@@ -92,16 +145,24 @@ CreateAutofillMappings<autofill::AutofillProfile>(
   auto state = profile.GetInfo(
       autofill::AutofillType(autofill::ADDRESS_HOME_STATE), locale);
   if (!state.empty()) {
-    // TODO(b/159309560): Capitalize first letter of the state name.
-    auto state_name =
-        base::UTF16ToUTF8(autofill::state_names::GetNameForAbbreviation(state));
-    if (state_name.empty()) {
-      mappings[base::NumberToString(
-          static_cast<int>(AutofillFormatProto::ADDRESS_HOME_STATE_NAME))] =
-          base::UTF16ToUTF8(state);
+    std::u16string full_name;
+    std::u16string abbreviation;
+    autofill::state_names::GetNameAndAbbreviation(state, &full_name,
+                                                  &abbreviation);
+    mappings[base::NumberToString(
+        static_cast<int>(AutofillFormatProto::ADDRESS_HOME_STATE_NAME))] =
+        base::UTF16ToUTF8(
+            full_name.length() > 1
+                ? base::StrCat({base::i18n::ToUpper(full_name.substr(0, 1)),
+                                full_name.substr(1)})
+                : base::i18n::ToUpper(full_name));
+    if (abbreviation.empty()) {
+      mappings.erase(
+          base::NumberToString(static_cast<int>(autofill::ADDRESS_HOME_STATE)));
     } else {
-      mappings[base::NumberToString(static_cast<int>(
-          AutofillFormatProto::ADDRESS_HOME_STATE_NAME))] = state_name;
+      mappings[base::NumberToString(
+          static_cast<int>(autofill::ADDRESS_HOME_STATE))] =
+          base::UTF16ToUTF8(base::i18n::ToUpper(abbreviation));
     }
   }
 
@@ -146,4 +207,11 @@ std::map<std::string, std::string> CreateAutofillMappings<autofill::CreditCard>(
 }
 
 }  // namespace field_formatter
+
+std::ostream& operator<<(std::ostream& out,
+                         const ValueExpression& value_expression) {
+  return out << field_formatter::GetHumanReadableValueExpression(
+             value_expression);
+}
+
 }  // namespace autofill_assistant

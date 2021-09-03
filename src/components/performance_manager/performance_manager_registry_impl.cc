@@ -137,6 +137,8 @@ void PerformanceManagerRegistryImpl::CreatePageNodeForWebContents(
 PerformanceManagerRegistryImpl::Throttles
 PerformanceManagerRegistryImpl::CreateThrottlesForNavigation(
     content::NavigationHandle* handle) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   Throttles combined_throttles;
   for (auto& mechanism : mechanisms_) {
     Throttles throttles = mechanism.CreateThrottlesForNavigation(handle);
@@ -149,8 +151,10 @@ PerformanceManagerRegistryImpl::CreateThrottlesForNavigation(
 
 void PerformanceManagerRegistryImpl::NotifyBrowserContextAdded(
     content::BrowserContext* browser_context) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   content::StoragePartition* storage_partition =
-      content::BrowserContext::GetDefaultStoragePartition(browser_context);
+      browser_context->GetDefaultStoragePartition();
 
   // Create an adapter for the service worker context.
   auto insertion_result = service_worker_context_adapters_.emplace(
@@ -195,6 +199,8 @@ void PerformanceManagerRegistryImpl::ExposeInterfacesToRenderFrame(
 
 void PerformanceManagerRegistryImpl::NotifyBrowserContextRemoved(
     content::BrowserContext* browser_context) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   auto it = worker_watchers_.find(browser_context);
   DCHECK(it != worker_watchers_.end());
   it->second->TearDown();

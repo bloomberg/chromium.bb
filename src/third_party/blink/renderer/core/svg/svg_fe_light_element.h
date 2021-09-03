@@ -71,7 +71,7 @@ class SVGFELightElement : public SVGElement {
   SVGFELightElement(const QualifiedName&, Document&);
 
  private:
-  void SvgAttributeChanged(const QualifiedName&) final;
+  void SvgAttributeChanged(const SvgAttributeChangedParams&) final;
   void ChildrenChanged(const ChildrenChange&) final;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
@@ -109,4 +109,4 @@ struct DowncastTraits<SVGFELightElement> {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_FE_LIGHT_ELEMENT_H_

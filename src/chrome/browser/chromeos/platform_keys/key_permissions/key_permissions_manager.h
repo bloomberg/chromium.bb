@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/optional.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace platform_keys {
@@ -26,7 +26,7 @@ using AllowKeyForUsageCallback = base::OnceCallback<void(Status status)>;
 // has occurred, an error |status| will be returned and |allowed| will be
 // nullopt.
 using IsKeyAllowedForUsageCallback =
-    base::OnceCallback<void(base::Optional<bool> allowed, Status status)>;
+    base::OnceCallback<void(absl::optional<bool> allowed, Status status)>;
 
 // ** KeyPermissionsManager (KPM) instances **
 // Every KPM instance is responsible for managing key permissions of keys
@@ -96,5 +96,14 @@ class KeyPermissionsManager {
 
 }  // namespace platform_keys
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when
+// //chrome/browser/chromeos/platform_keys moved to ash
+namespace ash {
+namespace platform_keys {
+using ::chromeos::platform_keys::KeyPermissionsManager;
+using ::chromeos::platform_keys::KeyUsage;
+}  // namespace platform_keys
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_KEY_PERMISSIONS_KEY_PERMISSIONS_MANAGER_H_

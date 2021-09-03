@@ -21,17 +21,25 @@ class LacrosChromeServiceDelegateImpl
   ~LacrosChromeServiceDelegateImpl() override;
 
   // chromeos::LacrosChromeServiceDelegate:
-  void NewWindow() override;
+  void OnInitialized(
+      const crosapi::mojom::BrowserInitParams& init_params) override;
+  void NewWindow(bool incognito) override;
+  void NewTab() override;
+  void RestoreTab() override;
   std::string GetChromeVersion() override;
   void GetFeedbackData(GetFeedbackDataCallback callback) override;
   void GetHistograms(GetHistogramsCallback callback) override;
-  void GetActiveTabUrl(GetActiveTabUrlCallback callback) override;
+  GURL GetActiveTabUrl() override;
 
  private:
   void OnSystemInformationReady(
+      GetFeedbackDataCallback callback,
       std::unique_ptr<system_logs::SystemLogsResponse> sys_info);
 
-  GetFeedbackDataCallback get_feedback_data_callback_;
+  void OnGetCompressedHistograms(
+      GetHistogramsCallback callback,
+      const std::string& compressed_histogram);
+
   base::WeakPtrFactory<LacrosChromeServiceDelegateImpl> weak_ptr_factory_{this};
 };
 

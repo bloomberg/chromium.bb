@@ -4,6 +4,8 @@
 
 #include "fuchsia/engine/browser/web_engine_permission_delegate.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
@@ -15,7 +17,7 @@
 WebEnginePermissionDelegate::WebEnginePermissionDelegate() = default;
 WebEnginePermissionDelegate::~WebEnginePermissionDelegate() = default;
 
-int WebEnginePermissionDelegate::RequestPermission(
+void WebEnginePermissionDelegate::RequestPermission(
     content::PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& origin,
@@ -30,12 +32,10 @@ int WebEnginePermissionDelegate::RequestPermission(
             DCHECK_EQ(state.size(), 1U);
             std::move(callback).Run(state[0]);
           },
-          base::Passed(std::move(callback))));
-
-  return content::PermissionController::kNoPendingOperation;
+          std::move(callback)));
 }
 
-int WebEnginePermissionDelegate::RequestPermissions(
+void WebEnginePermissionDelegate::RequestPermissions(
     const std::vector<content::PermissionType>& permissions,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -47,8 +47,6 @@ int WebEnginePermissionDelegate::RequestPermissions(
   frame->permission_controller()->RequestPermissions(
       permissions, url::Origin::Create(requesting_origin), user_gesture,
       std::move(callback));
-
-  return content::PermissionController::kNoPendingOperation;
 }
 
 void WebEnginePermissionDelegate::ResetPermission(
@@ -83,20 +81,21 @@ WebEnginePermissionDelegate::GetPermissionStatusForFrame(
       permission, url::Origin::Create(requesting_origin));
 }
 
-int WebEnginePermissionDelegate::SubscribePermissionStatusChange(
+WebEnginePermissionDelegate::SubscriptionId
+WebEnginePermissionDelegate::SubscribePermissionStatusChange(
     content::PermissionType permission,
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     base::RepeatingCallback<void(blink::mojom::PermissionStatus)> callback) {
   // TODO(crbug.com/1063094): Implement permission status subscription. It's
   // used in blink to emit PermissionStatus.onchange notifications.
-  NOTIMPLEMENTED() << ": " << static_cast<int>(permission);
-  return content::PermissionController::kNoPendingOperation;
+  NOTIMPLEMENTED_LOG_ONCE() << ": " << static_cast<int>(permission);
+  return SubscriptionId();
 }
 
 void WebEnginePermissionDelegate::UnsubscribePermissionStatusChange(
-    int subscription_id) {
+    SubscriptionId subscription_id) {
   // TODO(crbug.com/1063094): Implement permission status subscription. It's
   // used in blink to emit PermissionStatus.onchange notifications.
-  NOTREACHED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }

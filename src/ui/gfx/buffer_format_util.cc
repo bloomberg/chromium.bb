@@ -8,6 +8,7 @@
 #include "base/notreached.h"
 #include "base/numerics/safe_math.h"
 #include "base/stl_util.h"
+#include "ui/gfx/switches.h"
 
 namespace gfx {
 namespace {
@@ -170,7 +171,7 @@ bool RowSizeForBufferFormatChecked(size_t width,
       *size_in_bytes = checked_size.ValueOrDie();
       return true;
     case BufferFormat::YVU_420:
-      DCHECK_EQ(0u, width % 2);
+      DCHECK_EQ(width % 2, 0u);
       *size_in_bytes = width / SubsamplingFactorForBufferFormat(format, plane);
       return true;
     case BufferFormat::YUV_420_BIPLANAR:
@@ -293,6 +294,29 @@ const char* BufferFormatToString(BufferFormat format) {
       << "Invalid BufferFormat: "
       << static_cast<typename std::underlying_type<BufferFormat>::type>(format);
   return "Invalid Format";
+}
+
+const char* BufferPlaneToString(BufferPlane format) {
+  switch (format) {
+    case BufferPlane::DEFAULT:
+      return "DEFAULT";
+    case BufferPlane::Y:
+      return "Y";
+    case BufferPlane::UV:
+      return "UV";
+    case BufferPlane::U:
+      return "U";
+    case BufferPlane::V:
+      return "V";
+  }
+  NOTREACHED() << "Invalid BufferPlane: "
+               << static_cast<typename std::underlying_type<BufferPlane>::type>(
+                      format);
+  return "Invalid Plane";
+}
+
+bool AllowOddHeightMultiPlanarBuffers() {
+  return base::FeatureList::IsEnabled(features::kOddHeightMultiPlanarBuffers);
 }
 
 }  // namespace gfx

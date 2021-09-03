@@ -13,12 +13,17 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/ime/chromeos/ime_bridge.h"
 #include "ui/base/ime/text_input_flags.h"
+#include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/devices/device_data_manager_test_api.h"
+#include "ui/events/devices/input_device.h"
+#include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/label.h"
 
@@ -55,7 +60,7 @@ class ImeMenuTrayTest : public AshTestBase {
   bool IsVisible() { return GetTray()->GetVisible(); }
 
   // Returns the label text of the tray.
-  const base::string16& GetTrayText() { return GetTray()->label_->GetText(); }
+  const std::u16string& GetTrayText() { return GetTray()->label_->GetText(); }
 
   // Returns true if the background color of the tray is active.
   bool IsTrayBackgroundActive() { return GetTray()->is_active(); }
@@ -111,6 +116,12 @@ class ImeMenuTrayTest : public AshTestBase {
     ui::IMEBridge::Get()->SetCurrentInputContext(input_context);
   }
 
+  bool MenuHasOnScreenKeyboardToggle() const {
+    if (!GetTray()->ime_list_view_)
+      return false;
+    return ImeListViewTestApi(GetTray()->ime_list_view_).GetToggleView();
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ImeMenuTrayTest);
 };
@@ -134,25 +145,23 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
 
   ImeInfo info1;
   info1.id = "ime1";
-  info1.name = UTF8ToUTF16("English");
-  info1.medium_name = UTF8ToUTF16("English");
-  info1.short_name = UTF8ToUTF16("US");
+  info1.name = u"English";
+  info1.short_name = u"US";
   info1.third_party = false;
 
   ImeInfo info2;
   info2.id = "ime2";
-  info2.name = UTF8ToUTF16("English UK");
-  info2.medium_name = UTF8ToUTF16("English UK");
-  info2.short_name = UTF8ToUTF16("UK");
+  info2.name = u"English UK";
+  info2.short_name = u"UK";
   info2.third_party = true;
 
   // Changes the input method to "ime1".
   SetCurrentIme("ime1", {info1, info2});
-  EXPECT_EQ(UTF8ToUTF16("US"), GetTrayText());
+  EXPECT_EQ(u"US", GetTrayText());
 
   // Changes the input method to a third-party IME extension.
   SetCurrentIme("ime2", {info1, info2});
-  EXPECT_EQ(UTF8ToUTF16("UK*"), GetTrayText());
+  EXPECT_EQ(u"UK*", GetTrayText());
 }
 
 // Tests that IME menu tray changes background color when tapped/clicked. And
@@ -204,33 +213,30 @@ TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
 
   ImeInfo info1, info2, info3;
   info1.id = "ime1";
-  info1.name = UTF8ToUTF16("English");
-  info1.medium_name = UTF8ToUTF16("English");
-  info1.short_name = UTF8ToUTF16("US");
+  info1.name = u"English";
+  info1.short_name = u"US";
   info1.third_party = false;
 
   info2.id = "ime2";
-  info2.name = UTF8ToUTF16("English UK");
-  info2.medium_name = UTF8ToUTF16("English UK");
-  info2.short_name = UTF8ToUTF16("UK");
+  info2.name = u"English UK";
+  info2.short_name = u"UK";
   info2.third_party = true;
 
   info3.id = "ime3";
-  info3.name = UTF8ToUTF16("Pinyin");
-  info3.medium_name = UTF8ToUTF16("Chinese Pinyin");
-  info3.short_name = UTF8ToUTF16("拼");
+  info3.name = u"Pinyin";
+  info3.short_name = u"拼";
   info3.third_party = false;
 
   std::vector<ImeInfo> ime_info_list{info1, info2, info3};
 
   // Switch to ime1.
   SetCurrentIme("ime1", ime_info_list);
-  EXPECT_EQ(UTF8ToUTF16("US"), GetTrayText());
+  EXPECT_EQ(u"US", GetTrayText());
   ExpectValidImeList(ime_info_list, info1);
 
   // Switch to ime3.
   SetCurrentIme("ime3", ime_info_list);
-  EXPECT_EQ(UTF8ToUTF16("拼"), GetTrayText());
+  EXPECT_EQ(u"拼", GetTrayText());
   ExpectValidImeList(ime_info_list, info3);
 
   // Closes the menu before quitting.
@@ -350,6 +356,67 @@ TEST_F(ImeMenuTrayTest, ShouldShowBottomButtonsSeperate) {
   EXPECT_TRUE(IsEmojiEnabled());
   EXPECT_FALSE(IsHandwritingEnabled());
   EXPECT_FALSE(IsVoiceEnabled());
+}
+
+TEST_F(ImeMenuTrayTest, ShowOnScreenKeyboardToggle) {
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
+  ASSERT_TRUE(IsVisible());
+  ASSERT_FALSE(IsTrayBackgroundActive());
+
+  ui::GestureEvent tap(0, 0, 0, base::TimeTicks(),
+                       ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+  GetTray()->PerformAction(tap);
+  EXPECT_TRUE(IsTrayBackgroundActive());
+  EXPECT_TRUE(IsBubbleShown());
+
+  EXPECT_FALSE(MenuHasOnScreenKeyboardToggle());
+
+  // The on-screen keyboard toggle should show if the device has a touch
+  // screen, and does not have an internal keyboard.
+  std::vector<ui::TouchscreenDevice> screens;
+  screens.push_back(
+      ui::TouchscreenDevice(1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL,
+                            "Touchscreen", gfx::Size(1024, 768), 0));
+  ui::DeviceDataManagerTestApi().SetTouchscreenDevices(screens);
+
+  std::vector<ui::InputDevice> keyboard_devices;
+  keyboard_devices.push_back(ui::InputDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_USB, "external keyboard"));
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices(keyboard_devices);
+
+  // Bubble gets closed when the keyboard suppression state changes.
+  EXPECT_FALSE(IsBubbleShown());
+
+  GetTray()->PerformAction(ui::GestureEvent(
+      0, 0, 0, base::TimeTicks(), ui::GestureEventDetails(ui::ET_GESTURE_TAP)));
+  EXPECT_TRUE(IsBubbleShown());
+
+  EXPECT_TRUE(MenuHasOnScreenKeyboardToggle());
+
+  // The toggle should not be removed on IME device refresh.
+  ImeInfo info;
+  info.id = "ime";
+  info.name = u"English UK";
+  info.short_name = u"UK";
+  info.third_party = true;
+
+  SetCurrentIme("ime", {info});
+  EXPECT_TRUE(MenuHasOnScreenKeyboardToggle());
+
+  // The toggle should be hidden with internal keyboard.
+  keyboard_devices.push_back(ui::InputDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_USB, "external keyboard"));
+  keyboard_devices.push_back(ui::InputDevice(
+      1, ui::InputDeviceType::INPUT_DEVICE_INTERNAL, "internal keyboard"));
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices(keyboard_devices);
+
+  // Bubble gets closed when the keyboard suppression state changes.
+  EXPECT_FALSE(IsBubbleShown());
+
+  GetTray()->PerformAction(ui::GestureEvent(
+      0, 0, 0, base::TimeTicks(), ui::GestureEventDetails(ui::ET_GESTURE_TAP)));
+  EXPECT_TRUE(IsBubbleShown());
+  EXPECT_FALSE(MenuHasOnScreenKeyboardToggle());
 }
 
 }  // namespace ash

@@ -8,10 +8,11 @@
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/test/bind.h"
+#include "build/build_config.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -24,6 +25,7 @@
 #include "content/shell/browser/shell.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
@@ -62,7 +64,7 @@ class FetchEventTestHelper {
     for (const FetchEventDispatchParamAndExpectedResult&
              param_and_expected_result : test_inputs) {
       fetch_event_dispatches_.push_back(
-          FetchEventDispatch{param_and_expected_result, base::nullopt});
+          FetchEventDispatch{param_and_expected_result, absl::nullopt});
     }
   }
 
@@ -101,7 +103,7 @@ class FetchEventTestHelper {
  private:
   struct FetchEventDispatch {
     FetchEventDispatchParamAndExpectedResult param_and_expected_result;
-    base::Optional<FetchResult> fetch_result;
+    absl::optional<FetchResult> fetch_result;
     std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher;
   };
 
@@ -203,8 +205,10 @@ class ServiceWorkerOfflineCapabilityCheckBrowserTest
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
-        shell()->web_contents()->GetBrowserContext());
+    StoragePartition* partition = shell()
+                                      ->web_contents()
+                                      ->GetBrowserContext()
+                                      ->GetDefaultStoragePartition();
     wrapper_ = static_cast<ServiceWorkerContextWrapper*>(
         partition->GetServiceWorkerContext());
   }
@@ -226,8 +230,10 @@ class ServiceWorkerOfflineCapabilityCheckBrowserTest
   void SetupFetchEventDispatchTargetVersionOnCoreThread(
       base::OnceClosure done) {
     DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+    GURL url = embedded_test_server()->GetURL("/service_worker/");
+    storage::StorageKey key = storage::StorageKey(url::Origin::Create(url));
     wrapper()->context()->registry()->FindRegistrationForScope(
-        embedded_test_server()->GetURL("/service_worker/"),
+        embedded_test_server()->GetURL("/service_worker/"), key,
         base::BindOnce(&ServiceWorkerOfflineCapabilityCheckBrowserTest::
                            DidFindRegistration,
                        base::Unretained(this), std::move(done)));
@@ -275,7 +281,7 @@ class ServiceWorkerOfflineCapabilityCheckBrowserTest
 
   OfflineCapability CheckOfflineCapability(const std::string& path) {
     base::RunLoop fetch_run_loop;
-    base::Optional<OfflineCapability> out_offline_capability;
+    absl::optional<OfflineCapability> out_offline_capability;
     RunOrPostTaskOnThread(
         FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
         base::BindOnce(
@@ -314,6 +320,14 @@ class ServiceWorkerOfflineCapabilityCheckBrowserTest
           ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
           network::mojom::FetchResponseSource::kUnspecified,
           200,
+      };
+
+  const FetchEventTestHelper::ExpectedResult kRedirect =
+      FetchEventTestHelper::ExpectedResult{
+          blink::ServiceWorkerStatusCode::kOk,
+          ServiceWorkerFetchDispatcher::FetchEventResult::kGotResponse,
+          network::mojom::FetchResponseSource::kUnspecified,
+          301,
       };
 
   const FetchEventTestHelper::ExpectedResult kFailed =
@@ -467,6 +481,22 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
           is_offline_capability_check,
       },
       kFailed,
+  }});
+
+  RunFetchEventDispatchTest({{
+      {
+          "/service_worker/empty.html?redirect",
+          normal,
+      },
+      kRedirect,
+  }});
+
+  RunFetchEventDispatchTest({{
+      {
+          "/service_worker/empty.html?redirect",
+          is_offline_capability_check,
+      },
+      kRedirect,
   }});
 }
 
@@ -646,6 +676,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
 
 // Sites with a service worker are identified as supporting offline capability
 // only when it returns a valid response in the offline mode.
+
 IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
                        CheckOfflineCapability) {
   EXPECT_TRUE(NavigateToURL(shell(),
@@ -695,6 +726,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerOfflineCapabilityCheckBrowserTest,
   EXPECT_EQ(OfflineCapability::kSupported,
             CheckOfflineCapability(
                 "/service_worker/empty.html?sleep_then_fetch&sleep=20000"));
+
+  EXPECT_EQ(OfflineCapability::kSupported,
+            CheckOfflineCapability("/service_worker/empty.html?redirect"));
 }
 
 // Sites with a service worker which is not activated yet are identified as

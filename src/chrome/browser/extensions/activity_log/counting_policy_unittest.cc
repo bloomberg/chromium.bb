@@ -25,6 +25,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/activity_log/activity_log_task_runner.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -38,9 +39,9 @@
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/users/scoped_test_user_manager.h"
-#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/users/scoped_test_user_manager.h"
+#include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #endif
 
 namespace extensions {
@@ -49,10 +50,10 @@ class CountingPolicyTest : public testing::Test {
  public:
   CountingPolicyTest()
       : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {
-#if defined OS_CHROMEOS
-    test_user_manager_.reset(new chromeos::ScopedTestUserManager());
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    test_user_manager_ = std::make_unique<ash::ScopedTestUserManager>();
 #endif
-    profile_.reset(new TestingProfile());
+    profile_ = std::make_unique<TestingProfile>();
     base::CommandLine::ForCurrentProcess()->
         AppendSwitch(switches::kEnableExtensionActivityLogging);
     base::CommandLine no_program_command_line(base::CommandLine::NO_PROGRAM);
@@ -63,7 +64,7 @@ class CountingPolicyTest : public testing::Test {
   }
 
   ~CountingPolicyTest() override {
-#if defined OS_CHROMEOS
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     test_user_manager_.reset();
 #endif
     base::RunLoop().RunUntilIdle();
@@ -111,8 +112,8 @@ class CountingPolicyTest : public testing::Test {
 
     // Set up a timeout for receiving results; if we haven't received anything
     // when the timeout triggers then assume that the test is broken.
-    base::CancelableClosure timeout(
-        base::BindRepeating(&CountingPolicyTest::TimeoutCallback));
+    base::CancelableOnceClosure timeout(
+        base::BindOnce(&CountingPolicyTest::TimeoutCallback));
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, timeout.callback(), TestTimeouts::action_timeout());
 
@@ -386,9 +387,9 @@ class CountingPolicyTest : public testing::Test {
   std::unique_ptr<TestingProfile> profile_;
   content::BrowserTaskEnvironment task_environment_;
 
-#if defined OS_CHROMEOS
-  chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
-  std::unique_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  ash::ScopedCrosSettingsTestHelper cros_settings_test_helper_;
+  std::unique_ptr<ash::ScopedTestUserManager> test_user_manager_;
 #endif
 };
 
@@ -1089,9 +1090,8 @@ TEST_F(CountingPolicyTest, DuplicateRows) {
   policy->SetClockForTesting(&mock_clock_);
 
   // Record two actions with distinct URLs.
-  scoped_refptr<Action> action;
-  action = new Action("punky", mock_clock_.Now(), Action::ACTION_API_CALL,
-                      "brewster");
+  scoped_refptr<Action> action = base::MakeRefCounted<Action>(
+      "punky", mock_clock_.Now(), Action::ACTION_API_CALL, "brewster");
   action->set_page_url(GURL("http://www.google.com"));
   policy->ProcessAction(action);
 

@@ -6,11 +6,11 @@
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_VIEW_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"
@@ -19,7 +19,6 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
-#include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/animation/slide_out_controller.h"
 #include "ui/views/animation/slide_out_controller_delegate.h"
 #include "ui/views/controls/focus_ring.h"
@@ -42,12 +41,8 @@ class NotificationControlButtonsView;
 
 // An base class for a notification entry. Contains background and other
 // elements shared by derived notification views.
-// TODO(pkasting): This class only subclasses InkDropHostView because the
-// NotificationViewMD subclass needs ink drop functionality.  Rework ink drops
-// to not need to be the base class of views which use them, and move the
-// functionality to the subclass that uses these.
 class MESSAGE_CENTER_EXPORT MessageView
-    : public views::InkDropHostView,
+    : public views::View,
       public views::SlideOutControllerDelegate,
       public views::FocusChangeListener {
  public:
@@ -117,7 +112,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   virtual void OnSettingsButtonPressed(const ui::Event& event);
   virtual void OnSnoozeButtonPressed(const ui::Event& event);
 
-  // views::InkDropHostView:
+  // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
@@ -205,16 +200,17 @@ class MESSAGE_CENTER_EXPORT MessageView
   // Returns if the control buttons should be shown.
   bool ShouldShowControlButtons() const;
 
-  // Sets the border if |is_nested_| is true.
-  void SetNestedBorderIfNecessary();
-
   // Updates the background painter using the themed background color and radii.
   void UpdateBackgroundPainter();
 
   std::string notification_id_;
   views::ScrollView* scroller_ = nullptr;
 
-  base::string16 accessible_name_;
+  std::u16string accessible_name_;
+
+  // Tracks whether background should be drawn as active based on gesture
+  // events.
+  bool is_active_ = false;
 
   // Flag if the notification is set to pinned or not. See the comment in
   // MessageView::Mode for detail.

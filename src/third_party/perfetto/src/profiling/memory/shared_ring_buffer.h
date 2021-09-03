@@ -21,10 +21,13 @@
 #include "perfetto/ext/base/unix_socket.h"
 #include "perfetto/ext/base/utils.h"
 #include "src/profiling/memory/scoped_spinlock.h"
+#include "src/profiling/memory/util.h"
 
 #include <atomic>
+#include <limits>
 #include <map>
 #include <memory>
+#include <type_traits>
 
 #include <stdint.h>
 
@@ -72,20 +75,26 @@ class SharedRingBuffer {
     uint64_t bytes_free = 0;
   };
 
-  struct Stats {
-    uint64_t bytes_written;
-    uint64_t num_writes_succeeded;
-    uint64_t num_writes_corrupt;
-    uint64_t num_writes_overflow;
+  enum ErrorState : uint64_t {
+    kNoError = 0,
+    kHitTimeout = 1,
+    kInvalidStackBounds = 2,
+  };
 
-    uint64_t num_reads_succeeded;
-    uint64_t num_reads_corrupt;
-    uint64_t num_reads_nodata;
+  struct Stats {
+    PERFETTO_CROSS_ABI_ALIGNED(uint64_t) bytes_written;
+    PERFETTO_CROSS_ABI_ALIGNED(uint64_t) num_writes_succeeded;
+    PERFETTO_CROSS_ABI_ALIGNED(uint64_t) num_writes_corrupt;
+    PERFETTO_CROSS_ABI_ALIGNED(uint64_t) num_writes_overflow;
+
+    PERFETTO_CROSS_ABI_ALIGNED(uint64_t) num_reads_succeeded;
+    PERFETTO_CROSS_ABI_ALIGNED(uint64_t) num_reads_corrupt;
+    PERFETTO_CROSS_ABI_ALIGNED(uint64_t) num_reads_nodata;
 
     // Fields below get set by GetStats as copies of atomics in MetadataPage.
-    uint64_t failed_spinlocks;
-    uint64_t client_spinlock_blocked_us;
-    bool hit_timeout;
+    PERFETTO_CROSS_ABI_ALIGNED(uint64_t) failed_spinlocks;
+    PERFETTO_CROSS_ABI_ALIGNED(uint64_t) client_spinlock_blocked_us;
+    PERFETTO_CROSS_ABI_ALIGNED(ErrorState) error_state;
   };
 
   static base::Optional<SharedRingBuffer> Create(size_t);
@@ -95,11 +104,17 @@ class SharedRingBuffer {
   SharedRingBuffer() = default;
 
   SharedRingBuffer(SharedRingBuffer&&) noexcept;
-  SharedRingBuffer& operator=(SharedRingBuffer&&);
+  SharedRingBuffer& operator=(SharedRingBuffer&&) noexcept;
 
   bool is_valid() const { return !!mem_; }
   size_t size() const { return size_; }
   int fd() const { return *mem_fd_; }
+  size_t write_avail() {
+    auto pos = GetPointerPositions();
+    if (!pos)
+      return 0;
+    return write_avail(*pos);
+  }
 
   Buffer BeginWrite(const ScopedSpinlock& spinlock, size_t size);
   void EndWrite(Buffer buf);
@@ -112,13 +127,13 @@ class SharedRingBuffer {
     Stats stats = meta_->stats;
     stats.failed_spinlocks =
         meta_->failed_spinlocks.load(std::memory_order_relaxed);
-    stats.hit_timeout = meta_->hit_timeout.load(std::memory_order_relaxed);
+    stats.error_state = meta_->error_state.load(std::memory_order_relaxed);
     stats.client_spinlock_blocked_us =
         meta_->client_spinlock_blocked_us.load(std::memory_order_relaxed);
     return stats;
   }
 
-  void SetHitTimeout() { meta_->hit_timeout.store(true); }
+  void SetErrorState(ErrorState error) { meta_->error_state.store(error); }
 
   // This is used by the caller to be able to hold the SpinLock after
   // BeginWrite has returned. This is so that additional bookkeeping can be
@@ -154,25 +169,37 @@ class SharedRingBuffer {
     return meta_->reader_paused.exchange(false, std::memory_order_relaxed);
   }
 
+  void InfiniteBufferForTesting() {
+    // Pretend this buffer is really large, while keeping size_mask_ as
+    // original so it keeps wrapping in circles.
+    size_ = std::numeric_limits<size_t>::max() / 2;
+  }
+
   // Exposed for fuzzers.
   struct MetadataPage {
-    alignas(uint64_t) std::atomic<bool> spinlock;
-    std::atomic<uint64_t> read_pos;
-    std::atomic<uint64_t> write_pos;
+    static_assert(std::is_trivially_constructible<Spinlock>::value,
+                  "Spinlock needs to be trivially constructible.");
+    alignas(8) Spinlock spinlock;
+    PERFETTO_CROSS_ABI_ALIGNED(std::atomic<uint64_t>) read_pos;
+    PERFETTO_CROSS_ABI_ALIGNED(std::atomic<uint64_t>) write_pos;
 
-    std::atomic<uint64_t> client_spinlock_blocked_us;
-    std::atomic<uint64_t> failed_spinlocks;
-    alignas(uint64_t) std::atomic<bool> hit_timeout;
-    alignas(uint64_t) std::atomic<bool> shutting_down;
-    alignas(uint64_t) std::atomic<bool> reader_paused;
+    PERFETTO_CROSS_ABI_ALIGNED(std::atomic<uint64_t>)
+    client_spinlock_blocked_us;
+    PERFETTO_CROSS_ABI_ALIGNED(std::atomic<uint64_t>) failed_spinlocks;
+    PERFETTO_CROSS_ABI_ALIGNED(std::atomic<ErrorState>) error_state;
+    alignas(sizeof(uint64_t)) std::atomic<bool> shutting_down;
+    alignas(sizeof(uint64_t)) std::atomic<bool> reader_paused;
     // For stats that are only accessed by a single thread or under the
     // spinlock, members of this struct are directly modified. Other stats use
     // the atomics above this struct.
     //
     // When the user requests stats, the atomics above get copied into this
     // struct, which is then returned.
-    Stats stats;
+    alignas(sizeof(uint64_t)) Stats stats;
   };
+
+  static_assert(sizeof(MetadataPage) == 144,
+                "metadata page size needs to be ABI independent");
 
  private:
   struct PointerPositions {
@@ -210,6 +237,11 @@ class SharedRingBuffer {
     return result;
   }
 
+  inline void set_size(size_t size) {
+    size_ = size;
+    size_mask_ = size - 1;
+  }
+
   inline size_t read_avail(const PointerPositions& pos) {
     PERFETTO_DCHECK(pos.write_pos >= pos.read_pos);
     auto res = static_cast<size_t>(pos.write_pos - pos.read_pos);
@@ -221,7 +253,7 @@ class SharedRingBuffer {
     return size_ - read_avail(pos);
   }
 
-  inline uint8_t* at(uint64_t pos) { return mem_ + (pos & (size_ - 1)); }
+  inline uint8_t* at(uint64_t pos) { return mem_ + (pos & size_mask_); }
 
   base::ScopedFile mem_fd_;
   MetadataPage* meta_ = nullptr;  // Start of the mmaped region.
@@ -230,6 +262,7 @@ class SharedRingBuffer {
   // Size of the ring buffer contents, without including metadata or the 2nd
   // mmap.
   size_t size_ = 0;
+  size_t size_mask_ = 0;
 
   // Remember to update the move ctor when adding new fields.
 };

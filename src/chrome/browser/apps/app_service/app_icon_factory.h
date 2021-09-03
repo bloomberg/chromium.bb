@@ -11,15 +11,16 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "components/arc/mojom/app.mojom.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
-#endif  // OS_CHROMEOS
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace content {
 class BrowserContext;
@@ -33,6 +34,10 @@ using ScaleToSize = std::map<float, int>;
 //
 // It derives from a uint32_t because it needs to be the same size as the
 // uint32_t IconKey.icon_effects field.
+
+// This enum is used to mask the icon_effects value in crosapi, which is a
+// stable interface that needs to be backwards compatible. Do not change the
+// masks here.
 enum IconEffects : uint32_t {
   kNone = 0x00,
 
@@ -45,9 +50,6 @@ enum IconEffects : uint32_t {
   kRoundCorners = 0x08,  // Bookmark apps get round corners.
   kPaused = 0x10,  // Paused apps are grayed out and badged to indicate they
                    // cannot be launched.
-  kPendingLocalLaunch = 0x20,  // Apps that are installed through sync, but
-                               // have not been launched locally yet. They
-                               // should appear gray until they are launched.
   kCrOsStandardBackground =
       0x40,                   // Add the white background to the standard icon.
   kCrOsStandardMask = 0x80,   // Apply the mask to the standard icon.
@@ -90,7 +92,7 @@ CompressedDataToImageSkiaCallback(
 std::vector<uint8_t> EncodeImageToPngBytes(const gfx::ImageSkia image,
                                            float rep_icon_scale);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 gfx::ImageSkia LoadMaskImage(const ScaleToSize& scale_to_size);
 
 gfx::ImageSkia ApplyBackgroundAndMask(const gfx::ImageSkia& image);
@@ -108,13 +110,21 @@ void ArcActivityIconsToImageSkias(
     const std::vector<arc::mojom::ActivityIconPtr>& icons,
     base::OnceCallback<void(const std::vector<gfx::ImageSkia>& icons)>
         callback);
-#endif  // OS_CHROMEOS
 
-// Modifies |image_skia| to apply icon post-processing effects like badging and
+// TODO(crbug.com/1189994): Unify this function with IconLoadingPipeline class.
+// It's the same as IconLoadingPipeline::OnReadWebAppIcon().
+gfx::ImageSkia ConvertSquareBitmapsToImageSkia(
+    const std::map<SquareSizePx, SkBitmap>& icon_bitmaps,
+    IconEffects icon_effects,
+    int size_hint_in_dip);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Modifies |iv| to apply icon post-processing effects like badging and
 // desaturation to gray.
 void ApplyIconEffects(IconEffects icon_effects,
                       int size_hint_in_dip,
-                      gfx::ImageSkia* image_skia);
+                      apps::mojom::IconValuePtr iv,
+                      apps::mojom::Publisher::LoadIconCallback callback);
 
 // Loads an icon from an extension.
 void LoadIconFromExtension(apps::mojom::IconType icon_type,

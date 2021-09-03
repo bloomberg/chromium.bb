@@ -20,10 +20,10 @@ class ASH_EXPORT ShelfButton : public views::Button {
 
   // views::Button:
   const char* GetClassName() const override;
+  gfx::Rect GetAnchorBoundsInScreen() const override;
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void NotifyClick(const ui::Event& event) override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
 
   Shelf* shelf() { return shelf_; }
   const Shelf* shelf() const { return shelf_; }

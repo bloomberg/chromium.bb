@@ -1,14 +1,15 @@
 {
   "sandbox": {
     "features": [
-      "isolated-persistent-storage",
-      "deprecated-ambient-replace-as-executable"
+      "deprecated-ambient-replace-as-executable",
+      "isolated-persistent-storage"
     ],
     "services": [
       "fuchsia.accessibility.semantics.SemanticsManager",
       "fuchsia.camera3.DeviceWatcher",
       "fuchsia.device.NameProvider",
       "fuchsia.fonts.Provider",
+      "fuchsia.input.virtualkeyboard.ControllerCreator",
       "fuchsia.intl.PropertyProvider",
       "fuchsia.logger.LogSink",
       "fuchsia.media.Audio",
@@ -17,13 +18,12 @@
       "fuchsia.mediacodec.CodecFactory",
       "fuchsia.memorypressure.Provider",
       "fuchsia.net.NameLookup",
-      "fuchsia.netstack.Netstack",
+      "fuchsia.net.interfaces.State",
       "fuchsia.posix.socket.Provider",
       "fuchsia.process.Launcher",
       "fuchsia.sys.Launcher",
       "fuchsia.sysmem.Allocator",
-      "fuchsia.ui.input.ImeService",
-      "fuchsia.ui.input.ImeVisibilityService",
+      "fuchsia.ui.input3.Keyboard",
       "fuchsia.ui.policy.Presenter",
       "fuchsia.ui.scenic.Scenic",
       "fuchsia.vulkan.loader.Loader",

@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
@@ -22,7 +23,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
-#include "chromeos/constants/chromeos_paths.h"
 #include "chromeos/printing/ppd_cache.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "net/base/net_errors.h"

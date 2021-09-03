@@ -1,6 +1,7 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import logging
 import optparse
 import os
@@ -113,7 +114,7 @@ def IsUpdateDocsNeeded():
   already_documented_module_names = set(m.name
                                         for m in already_documented_modules)
 
-  current_module_names = set([m.__name__ for m in current_modules])
+  current_module_names = {m.__name__ for m in current_modules}
 
   if current_module_names != already_documented_module_names:
     return True

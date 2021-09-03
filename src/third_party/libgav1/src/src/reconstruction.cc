@@ -14,6 +14,7 @@
 
 #include "src/reconstruction.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cstdint>
 
@@ -48,6 +49,84 @@ dsp::TransformSize1D Get1DTransformSize(int size_log2) {
   return static_cast<dsp::TransformSize1D>(size_log2 - 2);
 }
 
+// Returns the number of rows to process based on |non_zero_coeff_count|. The
+// transform loops process either 4 or a multiple of 8 rows. Use the
+// TransformClass derived from |tx_type| to determine the scan order.
+template <int tx_width>
+int GetNumRows(TransformType tx_type, int tx_height, int non_zero_coeff_count) {
+  const TransformClass tx_class = GetTransformClass(tx_type);
+
+  switch (tx_class) {
+    case kTransformClass2D:
+      if (tx_width == 4) {
+        if (non_zero_coeff_count <= 13) return 4;
+        if (non_zero_coeff_count <= 29) return 8;
+      }
+      if (tx_width == 8) {
+        if (non_zero_coeff_count <= 10) return 4;
+        if ((non_zero_coeff_count <= 14) & (tx_height > 8)) return 4;
+        if (non_zero_coeff_count <= 43) return 8;
+        if ((non_zero_coeff_count <= 107) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 171) & (tx_height > 16)) return 24;
+      }
+      if (tx_width == 16) {
+        if (non_zero_coeff_count <= 10) return 4;
+        if ((non_zero_coeff_count <= 14) & (tx_height > 16)) return 4;
+        if (non_zero_coeff_count <= 36) return 8;
+        if ((non_zero_coeff_count <= 44) & (tx_height > 16)) return 8;
+        if ((non_zero_coeff_count <= 151) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 279) & (tx_height > 16)) return 24;
+      }
+      if (tx_width == 32) {
+        if (non_zero_coeff_count <= 10) return 4;
+        if (non_zero_coeff_count <= 36) return 8;
+        if ((non_zero_coeff_count <= 136) & (tx_height > 16)) return 16;
+        if ((non_zero_coeff_count <= 300) & (tx_height > 16)) return 24;
+      }
+      break;
+
+    case kTransformClassHorizontal:
+      if (non_zero_coeff_count <= 4) return 4;
+      if (non_zero_coeff_count <= 8) return 8;
+      if ((non_zero_coeff_count <= 16) & (tx_height > 16)) return 16;
+      if ((non_zero_coeff_count <= 24) & (tx_height > 16)) return 24;
+      break;
+
+    default:
+      assert(tx_class == kTransformClassVertical);
+      if (tx_width == 4) {
+        if (non_zero_coeff_count <= 16) return 4;
+        if (non_zero_coeff_count <= 32) return 8;
+      }
+      if (tx_width == 8) {
+        if (non_zero_coeff_count <= 32) return 4;
+        if (non_zero_coeff_count <= 64) return 8;
+        // There's no need to check tx_height since the maximum values for
+        // smaller sizes are: 8x8: 63, 8x16: 127.
+        if (non_zero_coeff_count <= 128) return 16;
+        if (non_zero_coeff_count <= 192) return 24;
+      }
+      if (tx_width == 16) {
+        if (non_zero_coeff_count <= 64) return 4;
+        if (non_zero_coeff_count <= 128) return 8;
+        // There's no need to check tx_height since the maximum values for
+        // smaller sizes are: 16x8: 127, 16x16: 255.
+        if (non_zero_coeff_count <= 256) return 16;
+        if (non_zero_coeff_count <= 384) return 24;
+      }
+      if (tx_width == 32) {
+        if (non_zero_coeff_count <= 128) return 4;
+        if (non_zero_coeff_count <= 256) return 8;
+        // There's no need to check tx_height since the maximum values for
+        // smaller sizes are: 32x8 is 255, 32x16 is 511.
+        if ((non_zero_coeff_count <= 512)) return 16;
+        if ((non_zero_coeff_count <= 768)) return 24;
+      }
+      break;
+  }
+  return (tx_width >= 16) ? std::min(tx_height, 32) : tx_height;
+}
+
 }  // namespace
 
 template <typename Residual, typename Pixel>
@@ -59,17 +138,28 @@ void Reconstruct(const dsp::Dsp& dsp, TransformType tx_type,
   const int tx_width_log2 = kTransformWidthLog2[tx_size];
   const int tx_height_log2 = kTransformHeightLog2[tx_size];
 
+  int tx_height = (non_zero_coeff_count == 1) ? 1 : kTransformHeight[tx_size];
+  if (tx_height > 4) {
+    static constexpr int (*kGetNumRows[])(TransformType tx_type, int tx_height,
+                                          int non_zero_coeff_count) = {
+        &GetNumRows<4>, &GetNumRows<8>, &GetNumRows<16>, &GetNumRows<32>,
+        &GetNumRows<32>};
+    tx_height = kGetNumRows[tx_width_log2 - 2](tx_type, tx_height,
+                                               non_zero_coeff_count);
+  }
+  assert(tx_height <= 32);
+
   // Row transform.
   const dsp::TransformSize1D row_transform_size =
       Get1DTransformSize(tx_width_log2);
   const dsp::Transform1D row_transform =
       lossless ? dsp::k1DTransformWht : kRowTransform[tx_type];
   const dsp::InverseTransformAddFunc row_transform_func =
-      dsp.inverse_transforms[row_transform_size][row_transform];
+      dsp.inverse_transforms[row_transform][row_transform_size][dsp::kRow];
   assert(row_transform_func != nullptr);
 
-  row_transform_func(tx_type, tx_size, buffer, start_x, start_y, frame,
-                     /*is_row=*/true, non_zero_coeff_count);
+  row_transform_func(tx_type, tx_size, tx_height, buffer, start_x, start_y,
+                     frame);
 
   // Column transform.
   const dsp::TransformSize1D column_transform_size =
@@ -77,11 +167,12 @@ void Reconstruct(const dsp::Dsp& dsp, TransformType tx_type,
   const dsp::Transform1D column_transform =
       lossless ? dsp::k1DTransformWht : kColumnTransform[tx_type];
   const dsp::InverseTransformAddFunc column_transform_func =
-      dsp.inverse_transforms[column_transform_size][column_transform];
+      dsp.inverse_transforms[column_transform][column_transform_size]
+                            [dsp::kColumn];
   assert(column_transform_func != nullptr);
 
-  column_transform_func(tx_type, tx_size, buffer, start_x, start_y, frame,
-                        /*is_row=*/false, non_zero_coeff_count);
+  column_transform_func(tx_type, tx_size, tx_height, buffer, start_x, start_y,
+                        frame);
 }
 
 template void Reconstruct(const dsp::Dsp& dsp, TransformType tx_type,

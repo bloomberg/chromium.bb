@@ -18,7 +18,6 @@
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
-#include "ash/window_factory.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -267,7 +266,7 @@ TEST_F(OverviewButtonTrayTest, DisplaysOnBothDisplays) {
   base::RunLoop().RunUntilIdle();
   // DisplayConfigurationObserver enables mirror mode when tablet mode is
   // enabled. Disable mirror mode to test tablet mode with multiple displays.
-  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(GetTray()->GetVisible());
   EXPECT_TRUE(GetSecondaryTray()->GetVisible());

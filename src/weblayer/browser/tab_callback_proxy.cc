@@ -5,6 +5,7 @@
 #include "weblayer/browser/tab_callback_proxy.h"
 
 #include "base/android/jni_string.h"
+#include "base/trace_event/trace_event.h"
 #include "url/gurl.h"
 #include "weblayer/browser/java/jni/TabCallbackProxy_jni.h"
 #include "weblayer/browser/tab_impl.h"
@@ -39,7 +40,7 @@ void TabCallbackProxy::OnRenderProcessGone() {
                                             java_observer_);
 }
 
-void TabCallbackProxy::OnTitleUpdated(const base::string16& title) {
+void TabCallbackProxy::OnTitleUpdated(const std::u16string& title) {
   JNIEnv* env = AttachCurrentThread();
   Java_TabCallbackProxy_onTitleUpdated(
       env, java_observer_, base::android::ConvertUTF16ToJavaString(env, title));

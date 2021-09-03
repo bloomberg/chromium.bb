@@ -14,6 +14,7 @@ import androidx.mediarouter.media.MediaRouter.RouteInfo;
 
 import com.google.android.gms.cast.framework.CastSession;
 import com.google.android.gms.cast.framework.SessionManagerListener;
+import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 
 import org.chromium.base.Log;
 import org.chromium.components.media_router.DiscoveryCallback;
@@ -22,6 +23,7 @@ import org.chromium.components.media_router.FlingingController;
 import org.chromium.components.media_router.MediaRoute;
 import org.chromium.components.media_router.MediaRouteManager;
 import org.chromium.components.media_router.MediaRouteProvider;
+import org.chromium.components.media_router.MediaRouteUmaRecorder;
 import org.chromium.components.media_router.MediaSink;
 import org.chromium.components.media_router.MediaSource;
 
@@ -161,13 +163,13 @@ public abstract class CafBaseMediaRouteProvider
 
         MediaSink sink = MediaSink.fromSinkId(sinkId, mAndroidMediaRouter);
         if (sink == null) {
-            mManager.onRouteRequestError("No sink", nativeRequestId);
+            mManager.onCreateRouteRequestError("No sink", nativeRequestId);
             return;
         }
 
         MediaSource source = getSourceFromId(sourceId);
         if (source == null) {
-            mManager.onRouteRequestError("Unsupported source URL", nativeRequestId);
+            mManager.onCreateRouteRequestError("Unsupported source URL", nativeRequestId);
             return;
         }
 
@@ -179,7 +181,7 @@ public abstract class CafBaseMediaRouteProvider
             }
         }
         if (targetRouteInfo == null) {
-            mManager.onRouteRequestError("The sink does not exist", nativeRequestId);
+            mManager.onCreateRouteRequestError("The sink does not exist", nativeRequestId);
         }
 
         CastUtils.getCastContext().getSessionManager().addSessionManagerListener(
@@ -257,12 +259,22 @@ public abstract class CafBaseMediaRouteProvider
 
     @Override
     public final void onSessionEnding(CastSession session) {
+        RemoteMediaClient client = session.getRemoteMediaClient();
+        if (client != null) {
+            MediaRouteUmaRecorder.castEndedTimeRemaining(
+                    client.getApproximateStreamPosition(), client.getStreamDuration());
+        }
         handleSessionEnd();
     }
 
     @Override
     public final void onSessionEnded(CastSession session, int error) {
         Log.d(TAG, "Session ended with error code " + error);
+        RemoteMediaClient client = session.getRemoteMediaClient();
+        if (client != null) {
+            MediaRouteUmaRecorder.castEndedTimeRemaining(
+                    client.getApproximateStreamPosition(), client.getStreamDuration());
+        }
         handleSessionEnd();
     }
 
@@ -308,7 +320,7 @@ public abstract class CafBaseMediaRouteProvider
     private void cancelPendingRequest(String error) {
         if (mPendingCreateRouteRequestInfo == null) return;
 
-        mManager.onRouteRequestError(error, mPendingCreateRouteRequestInfo.nativeRequestId);
+        mManager.onCreateRouteRequestError(error, mPendingCreateRouteRequestInfo.nativeRequestId);
         mPendingCreateRouteRequestInfo = null;
     }
 

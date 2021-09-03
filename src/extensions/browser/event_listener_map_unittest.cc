@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
@@ -95,9 +96,9 @@ class EventListenerMapTest : public ExtensionsTest {
                                      const GURL& url) {
     EventFilteringInfo info;
     info.url = url;
-    return std::make_unique<Event>(
-        events::FOR_TEST, event_name, std::make_unique<ListValue>(), nullptr,
-        GURL(), EventRouter::USER_GESTURE_UNKNOWN, info);
+    return std::make_unique<Event>(events::FOR_TEST, event_name,
+                                   std::vector<base::Value>(), nullptr, GURL(),
+                                   EventRouter::USER_GESTURE_UNKNOWN, info);
   }
 
   std::unique_ptr<EventListener> CreateLazyListener(

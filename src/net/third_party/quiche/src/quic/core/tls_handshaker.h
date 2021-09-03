@@ -8,14 +8,15 @@
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_message_parser.h"
-#include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/tls_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/crypto/crypto_handshake.h"
+#include "quic/core/crypto/crypto_message_parser.h"
+#include "quic/core/crypto/proof_verifier.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/crypto/tls_connection.h"
+#include "quic/core/quic_session.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_flags.h"
 
 namespace quic {
 
@@ -59,6 +60,11 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   void AdvanceHandshake();
 
   void CloseConnection(QuicErrorCode error, const std::string& reason_phrase);
+  // Closes the connection, specifying the wire error code |ietf_error|
+  // explicitly.
+  void CloseConnection(QuicErrorCode error,
+                       QuicIetfTransportErrorCodes ietf_error,
+                       const std::string& reason_phrase);
 
   void OnConnectionClosed(QuicErrorCode error, ConnectionCloseSource source);
 
@@ -68,7 +74,19 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   // finished. Note that due to 0-RTT, the handshake may "finish" twice;
   // |SSL_in_early_data| can be used to determine whether the handshake is truly
   // done.
+  // TODO(wub): When --quic_tls_retry_handshake_on_early_data is true, this
+  // function will only be called once when the handshake actually finishes.
+  // Update comment when deprecating the flag.
   virtual void FinishHandshake() = 0;
+
+  // Called when |SSL_do_handshake| returns 1 and the connection is in early
+  // data. In that case, |AdvanceHandshake| will call |OnEnterEarlyData| and
+  // retry |SSL_do_handshake| once.
+  virtual void OnEnterEarlyData() {
+    // By default, do nothing but check the preconditions.
+    QUICHE_DCHECK(retry_handshake_on_early_data_);
+    QUICHE_DCHECK(SSL_in_early_data(ssl()));
+  }
 
   // Called when a handshake message is received after the handshake is
   // complete.
@@ -149,6 +167,12 @@ class QUIC_EXPORT_PRIVATE TlsHandshaker : public TlsConnection::Delegate,
   // SendAlert causes this TlsHandshaker to close the QUIC connection with an
   // error code corresponding to the TLS alert description |desc|.
   void SendAlert(EncryptionLevel level, uint8_t desc) override;
+
+  const bool add_packet_flusher_on_async_op_done_ =
+      GetQuicReloadableFlag(quic_add_packet_flusher_on_async_op_done);
+
+  const bool retry_handshake_on_early_data_ =
+      GetQuicReloadableFlag(quic_tls_retry_handshake_on_early_data);
 
  private:
   // ProofVerifierCallbackImpl handles the result of an asynchronous certificate

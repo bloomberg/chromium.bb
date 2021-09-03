@@ -384,13 +384,17 @@ void PipelineController::SetVolume(float volume) {
 }
 
 void PipelineController::SetLatencyHint(
-    base::Optional<base::TimeDelta> latency_hint) {
+    absl::optional<base::TimeDelta> latency_hint) {
   DCHECK(!latency_hint || (*latency_hint >= base::TimeDelta()));
   pipeline_->SetLatencyHint(latency_hint);
 }
 
 void PipelineController::SetPreservesPitch(bool preserves_pitch) {
   pipeline_->SetPreservesPitch(preserves_pitch);
+}
+
+void PipelineController::SetAutoplayInitiated(bool autoplay_initiated) {
+  pipeline_->SetAutoplayInitiated(autoplay_initiated);
 }
 
 base::TimeDelta PipelineController::GetMediaTime() const {
@@ -429,7 +433,7 @@ void PipelineController::OnEnabledAudioTracksChanged(
 }
 
 void PipelineController::OnSelectedVideoTrackChanged(
-    base::Optional<MediaTrack::Id> selected_track_id) {
+    absl::optional<MediaTrack::Id> selected_track_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   pending_video_track_change_ = true;

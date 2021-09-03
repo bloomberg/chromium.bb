@@ -29,8 +29,7 @@ class ScalabilityTest
   virtual ~ScalabilityTest() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(GET_PARAM(1));
+    InitializeConfig(GET_PARAM(1));
     num_spatial_layers_ = 2;
   }
 

@@ -55,6 +55,9 @@ class CompositingLayerAssigner {
 
  private:
   struct SquashingState {
+    STACK_ALLOCATED();
+
+   public:
     void UpdateSquashingStateForNewMapping(
         CompositedLayerMapping*,
         Vector<PaintLayer*>& layers_needing_paint_invalidation);

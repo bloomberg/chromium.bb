@@ -29,14 +29,20 @@
 #include "dnn_backend_native_layer_depth2space.h"
 #include "libavformat/avio.h"
 #include "libavutil/avassert.h"
+#include "../internal.h"
 #include "dnn_backend_native_layer_pad.h"
 #include "dnn_backend_native_layer_maximum.h"
 #include "dnn_io_proc.h"
 
 #include <tensorflow/c/c_api.h>
 
+typedef struct TFOptions{
+    char *sess_config;
+} TFOptions;
+
 typedef struct TFContext {
     const AVClass *class;
+    TFOptions options;
 } TFContext;
 
 typedef struct TFModel{
@@ -47,13 +53,14 @@ typedef struct TFModel{
     TF_Status *status;
 } TFModel;
 
-static const AVClass dnn_tensorflow_class = {
-    .class_name = "dnn_tensorflow",
-    .item_name  = av_default_item_name,
-    .option     = NULL,
-    .version    = LIBAVUTIL_VERSION_INT,
-    .category   = AV_CLASS_CATEGORY_FILTER,
+#define OFFSET(x) offsetof(TFContext, x)
+#define FLAGS AV_OPT_FLAG_FILTERING_PARAM
+static const AVOption dnn_tensorflow_options[] = {
+    { "sess_config", "config for SessionOptions", OFFSET(options.sess_config), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, FLAGS },
+    { NULL }
 };
+
+AVFILTER_DEFINE_CLASS(dnn_tensorflow);
 
 static DNNReturnType execute_model_tf(const DNNModel *model, const char *input_name, AVFrame *in_frame,
                                       const char **output_names, uint32_t nb_output, AVFrame *out_frame,
@@ -90,7 +97,7 @@ static TF_Buffer *read_graph(const char *model_filename)
     }
 
     graph_buf = TF_NewBuffer();
-    graph_buf->data = (void *)graph_data;
+    graph_buf->data = graph_data;
     graph_buf->length = size;
     graph_buf->data_deallocator = free_buffer;
 
@@ -121,7 +128,7 @@ static TF_Tensor *allocate_input_tensor(const DNNData *input)
 
 static DNNReturnType get_input_tf(void *model, DNNData *input, const char *input_name)
 {
-    TFModel *tf_model = (TFModel *)model;
+    TFModel *tf_model = model;
     TFContext *ctx = &tf_model->ctx;
     TF_Status *status;
     int64_t dims[4];
@@ -158,9 +165,23 @@ static DNNReturnType get_output_tf(void *model, const char *input_name, int inpu
                                    const char *output_name, int *output_width, int *output_height)
 {
     DNNReturnType ret;
-    TFModel *tf_model = (TFModel *)model;
+    TFModel *tf_model = model;
+    TFContext *ctx = &tf_model->ctx;
     AVFrame *in_frame = av_frame_alloc();
-    AVFrame *out_frame = av_frame_alloc();
+    AVFrame *out_frame = NULL;
+
+    if (!in_frame) {
+        av_log(ctx, AV_LOG_ERROR, "Failed to allocate memory for input frame\n");
+        return DNN_ERROR;
+    }
+
+    out_frame = av_frame_alloc();
+    if (!out_frame) {
+        av_log(ctx, AV_LOG_ERROR, "Failed to allocate memory for output frame\n");
+        av_frame_free(&in_frame);
+        return DNN_ERROR;
+    }
+
     in_frame->width = input_width;
     in_frame->height = input_height;
 
@@ -180,10 +201,64 @@ static DNNReturnType load_tf_model(TFModel *tf_model, const char *model_filename
     TF_ImportGraphDefOptions *graph_opts;
     TF_SessionOptions *sess_opts;
     const TF_Operation *init_op;
+    uint8_t *sess_config = NULL;
+    int sess_config_length = 0;
+
+    // prepare the sess config data
+    if (tf_model->ctx.options.sess_config != NULL) {
+        /*
+        tf_model->ctx.options.sess_config is hex to present the serialized proto
+        required by TF_SetConfig below, so we need to first generate the serialized
+        proto in a python script, the following is a script example to generate
+        serialized proto which specifies one GPU, we can change the script to add
+        more options.
+
+        import tensorflow as tf
+        gpu_options = tf.GPUOptions(visible_device_list='0')
+        config = tf.ConfigProto(gpu_options=gpu_options)
+        s = config.SerializeToString()
+        b = ''.join("%02x" % int(ord(b)) for b in s[::-1])
+        print('0x%s' % b)
+
+        the script output looks like: 0xab...cd, and then pass 0xab...cd to sess_config.
+        */
+        char tmp[3];
+        tmp[2] = '\0';
+
+        if (strncmp(tf_model->ctx.options.sess_config, "0x", 2) != 0) {
+            av_log(ctx, AV_LOG_ERROR, "sess_config should start with '0x'\n");
+            return DNN_ERROR;
+        }
+
+        sess_config_length = strlen(tf_model->ctx.options.sess_config);
+        if (sess_config_length % 2 != 0) {
+            av_log(ctx, AV_LOG_ERROR, "the length of sess_config is not even (%s), "
+                                      "please re-generate the config.\n",
+                                      tf_model->ctx.options.sess_config);
+            return DNN_ERROR;
+        }
+
+        sess_config_length -= 2; //ignore the first '0x'
+        sess_config_length /= 2; //get the data length in byte
+
+        sess_config = av_malloc(sess_config_length);
+        if (!sess_config) {
+            av_log(ctx, AV_LOG_ERROR, "failed to allocate memory\n");
+            return DNN_ERROR;
+        }
+
+        for (int i = 0; i < sess_config_length; i++) {
+            int index = 2 + (sess_config_length - 1 - i) * 2;
+            tmp[0] = tf_model->ctx.options.sess_config[index];
+            tmp[1] = tf_model->ctx.options.sess_config[index + 1];
+            sess_config[i] = strtol(tmp, NULL, 16);
+        }
+    }
 
     graph_def = read_graph(model_filename);
     if (!graph_def){
         av_log(ctx, AV_LOG_ERROR, "Failed to read model \"%s\" graph\n", model_filename);
+        av_freep(&sess_config);
         return DNN_ERROR;
     }
     tf_model->graph = TF_NewGraph();
@@ -196,11 +271,23 @@ static DNNReturnType load_tf_model(TFModel *tf_model, const char *model_filename
         TF_DeleteGraph(tf_model->graph);
         TF_DeleteStatus(tf_model->status);
         av_log(ctx, AV_LOG_ERROR, "Failed to import serialized graph to model graph\n");
+        av_freep(&sess_config);
         return DNN_ERROR;
     }
 
     init_op = TF_GraphOperationByName(tf_model->graph, "init");
     sess_opts = TF_NewSessionOptions();
+
+    if (sess_config) {
+        TF_SetConfig(sess_opts, sess_config, sess_config_length,tf_model->status);
+        av_freep(&sess_config);
+        if (TF_GetCode(tf_model->status) != TF_OK) {
+            av_log(ctx, AV_LOG_ERROR, "Failed to set config for sess options with %s\n",
+                                      tf_model->ctx.options.sess_config);
+            return DNN_ERROR;
+        }
+    }
+
     tf_model->session = TF_NewSession(tf_model->graph, sess_opts, tf_model->status);
     TF_DeleteSessionOptions(sess_opts);
     if (TF_GetCode(tf_model->status) != TF_OK)
@@ -337,7 +424,7 @@ static DNNReturnType add_conv_layer(TFModel *tf_model, TF_Operation *transpose_o
         op_desc = TF_NewOperation(tf_model->graph, "Sigmoid", name_buffer);
         break;
     default:
-        av_log(ctx, AV_LOG_ERROR, "Unsupported convolutional activation function\n");
+        avpriv_report_missing_feature(ctx, "convolutional activation function %d", params->activation);
         return DNN_ERROR;
     }
     input.oper = *cur_op;
@@ -493,13 +580,13 @@ static DNNReturnType load_native_model(TFModel *tf_model, const char *model_file
     DNNModel *model = NULL;
     NativeModel *native_model;
 
-    model = ff_dnn_load_model_native(model_filename, NULL, NULL);
+    model = ff_dnn_load_model_native(model_filename, DFT_PROCESS_FRAME, NULL, NULL);
     if (!model){
         av_log(ctx, AV_LOG_ERROR, "Failed to load native model\n");
         return DNN_ERROR;
     }
 
-    native_model = (NativeModel *)model->model;
+    native_model = model->model;
     tf_model->graph = TF_NewGraph();
     tf_model->status = TF_NewStatus();
 
@@ -577,7 +664,7 @@ static DNNReturnType load_native_model(TFModel *tf_model, const char *model_file
     return DNN_SUCCESS;
 }
 
-DNNModel *ff_dnn_load_model_tf(const char *model_filename, const char *options, void *userdata)
+DNNModel *ff_dnn_load_model_tf(const char *model_filename, DNNFunctionType func_type, const char *options, AVFilterContext *filter_ctx)
 {
     DNNModel *model = NULL;
     TFModel *tf_model = NULL;
@@ -595,6 +682,15 @@ DNNModel *ff_dnn_load_model_tf(const char *model_filename, const char *options, 
     tf_model->ctx.class = &dnn_tensorflow_class;
     tf_model->model = model;
 
+    //parse options
+    av_opt_set_defaults(&tf_model->ctx);
+    if (av_opt_set_from_string(&tf_model->ctx, options, NULL, "=", "&") < 0) {
+        av_log(&tf_model->ctx, AV_LOG_ERROR, "Failed to parse options \"%s\"\n", options);
+        av_freep(&tf_model);
+        av_freep(&model);
+        return NULL;
+    }
+
     if (load_tf_model(tf_model, model_filename) != DNN_SUCCESS){
         if (load_native_model(tf_model, model_filename) != DNN_SUCCESS){
             av_freep(&tf_model);
@@ -604,11 +700,12 @@ DNNModel *ff_dnn_load_model_tf(const char *model_filename, const char *options, 
         }
     }
 
-    model->model = (void *)tf_model;
+    model->model = tf_model;
     model->get_input = &get_input_tf;
     model->get_output = &get_output_tf;
     model->options = options;
-    model->userdata = userdata;
+    model->filter_ctx = filter_ctx;
+    model->func_type = func_type;
 
     return model;
 }
@@ -618,7 +715,7 @@ static DNNReturnType execute_model_tf(const DNNModel *model, const char *input_n
                                       int do_ioproc)
 {
     TF_Output *tf_outputs;
-    TFModel *tf_model = (TFModel *)model->model;
+    TFModel *tf_model = model->model;
     TFContext *ctx = &tf_model->ctx;
     DNNData input, output;
     TF_Tensor **output_tensors;
@@ -645,16 +742,16 @@ static DNNReturnType execute_model_tf(const DNNModel *model, const char *input_n
 
     if (do_ioproc) {
         if (tf_model->model->pre_proc != NULL) {
-            tf_model->model->pre_proc(in_frame, &input, tf_model->model->userdata);
+            tf_model->model->pre_proc(in_frame, &input, tf_model->model->filter_ctx);
         } else {
-            proc_from_frame_to_dnn(in_frame, &input, ctx);
+            ff_proc_from_frame_to_dnn(in_frame, &input, tf_model->model->func_type, ctx);
         }
     }
 
     if (nb_output != 1) {
         // currently, the filter does not need multiple outputs,
         // so we just pending the support until we really need it.
-        av_log(ctx, AV_LOG_ERROR, "do not support multiple outputs\n");
+        avpriv_report_missing_feature(ctx, "multiple outputs");
         return DNN_ERROR;
     }
 
@@ -702,9 +799,9 @@ static DNNReturnType execute_model_tf(const DNNModel *model, const char *input_n
 
         if (do_ioproc) {
             if (tf_model->model->post_proc != NULL) {
-                tf_model->model->post_proc(out_frame, &output, tf_model->model->userdata);
+                tf_model->model->post_proc(out_frame, &output, tf_model->model->filter_ctx);
             } else {
-                proc_from_dnn_to_frame(out_frame, &output, ctx);
+                ff_proc_from_dnn_to_frame(out_frame, &output, ctx);
             }
         } else {
             out_frame->width = output.width;
@@ -726,7 +823,7 @@ static DNNReturnType execute_model_tf(const DNNModel *model, const char *input_n
 DNNReturnType ff_dnn_execute_model_tf(const DNNModel *model, const char *input_name, AVFrame *in_frame,
                                       const char **output_names, uint32_t nb_output, AVFrame *out_frame)
 {
-    TFModel *tf_model = (TFModel *)model->model;
+    TFModel *tf_model = model->model;
     TFContext *ctx = &tf_model->ctx;
 
     if (!in_frame) {
@@ -747,7 +844,7 @@ void ff_dnn_free_model_tf(DNNModel **model)
     TFModel *tf_model;
 
     if (*model){
-        tf_model = (TFModel *)(*model)->model;
+        tf_model = (*model)->model;
         if (tf_model->graph){
             TF_DeleteGraph(tf_model->graph);
         }

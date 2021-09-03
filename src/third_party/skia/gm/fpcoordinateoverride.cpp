@@ -17,12 +17,11 @@
 #include "include/core/SkString.h"
 #include "include/core/SkTileMode.h"
 #include "include/core/SkTypes.h"
-#include "src/gpu/GrBitmapTextureMaker.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrFragmentProcessor.h"
-#include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
+#include "src/gpu/SkGr.h"
 #include "src/gpu/effects/GrRRectEffect.h"
 #include "src/gpu/effects/GrSkSLFP.h"
 #include "src/gpu/glsl/GrGLSLFragmentShaderBuilder.h"
@@ -55,7 +54,7 @@ public:
     }
 
 private:
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     using INHERITED = GrFragmentProcessor;
 };
 
@@ -64,13 +63,12 @@ class GLSLSampleCoordEffect : public GrGLSLFragmentProcessor {
         GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
         SkString sample1 = this->invokeChild(0, args, "float2(sk_FragCoord.x, sk_FragCoord.y)");
         SkString sample2 = this->invokeChild(0, args, "float2(sk_FragCoord.x, 512-sk_FragCoord.y)");
-        fragBuilder->codeAppendf("%s = (%s + %s) / 2;\n", args.fOutputColor, sample1.c_str(),
-                                 sample2.c_str());
+        fragBuilder->codeAppendf("return (%s + %s) / 2;\n", sample1.c_str(), sample2.c_str());
     }
 };
 
-GrGLSLFragmentProcessor* SampleCoordEffect::onCreateGLSLInstance() const {
-    return new GLSLSampleCoordEffect();
+std::unique_ptr<GrGLSLFragmentProcessor> SampleCoordEffect::onMakeProgramImpl() const {
+    return std::make_unique<GLSLSampleCoordEffect>();
 }
 
 DEF_SIMPLE_GPU_GM_BG(fpcoordinateoverride, ctx, rtCtx, canvas, 512, 512,
@@ -79,8 +77,7 @@ DEF_SIMPLE_GPU_GM_BG(fpcoordinateoverride, ctx, rtCtx, canvas, 512, 512,
 
     SkBitmap bmp;
     GetResourceAsBitmap("images/mandrill_512_q075.jpg", &bmp);
-    GrBitmapTextureMaker maker(ctx, bmp, GrImageTexGenPolicy::kDraw);
-    auto view = maker.view(GrMipmapped::kNo);
+    auto view = std::get<0>(GrMakeCachedBitmapProxyView(ctx, bmp, GrMipmapped::kNo));
     if (!view) {
         return;
     }
@@ -91,8 +88,5 @@ DEF_SIMPLE_GPU_GM_BG(fpcoordinateoverride, ctx, rtCtx, canvas, 512, 512,
     GrPaint grPaint;
     grPaint.setCoverageFragmentProcessor(std::move(fp));
 
-    rtCtx->priv().testingOnly_addDrawOp(GrFillRectOp::MakeNonAARect(ctx,
-                                                                    std::move(grPaint),
-                                                                    SkMatrix::I(),
-                                                                    bounds));
+    rtCtx->addDrawOp(GrFillRectOp::MakeNonAARect(ctx, std::move(grPaint), SkMatrix::I(), bounds));
 }

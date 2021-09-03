@@ -44,8 +44,6 @@
   freetype::GlyphVisitorBitmapHandling::
   run( Unique_FT_Glyph  glyph )
   {
-    FT_Error  error;
-
     FT_Library  library;
     FT_Bitmap   bitmap_1;
     FT_Bitmap   bitmap_2;

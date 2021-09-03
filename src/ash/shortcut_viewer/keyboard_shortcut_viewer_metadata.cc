@@ -4,15 +4,20 @@
 
 #include "ash/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 
+#include "ash/constants/ash_features.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shortcut_viewer/keyboard_shortcut_item.h"
 #include "ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h"
 #include "ash/shortcut_viewer/vector_icons/vector_icons.h"
 #include "base/check.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event_constants.h"
@@ -50,7 +55,7 @@ ui::KeyboardCode GetKeyCodeForModifier(ui::EventFlags modifier) {
 // description or they require a special one we explicitly specify. For example,
 // ui::VKEY_COMMAND could return a string "Meta", but we want to display it as
 // "Search" or "Launcher".
-base::Optional<base::string16> GetSpecialStringForKeyboardCode(
+absl::optional<std::u16string> GetSpecialStringForKeyboardCode(
     ui::KeyboardCode key_code) {
   int msg_id = 0;
   switch (key_code) {
@@ -79,8 +84,11 @@ base::Optional<base::string16> GetSpecialStringForKeyboardCode(
     case ui::VKEY_MEDIA_LAUNCH_APP1:
       msg_id = IDS_KSV_KEY_OVERVIEW;
       break;
-    case ui::VKEY_MEDIA_LAUNCH_APP2:
+    case ui::VKEY_ZOOM:
       msg_id = IDS_KSV_KEY_FULLSCREEN;
+      break;
+    case ui::VKEY_SNAPSHOT:
+      msg_id = IDS_KSV_KEY_SNAPSHOT;
       break;
     case ui::VKEY_UNKNOWN:
       // TODO(wutao): make this reliable.
@@ -88,16 +96,50 @@ base::Optional<base::string16> GetSpecialStringForKeyboardCode(
       // one plus and one space to replace the string resourece's placeholder so
       // that the separator will not conflict with the replacement string for
       // "VKEY_OEM_PLUS", which is "+" and "VKEY_SPACE", which is "Space".
-      return base::ASCIIToUTF16("+ ");
+      return u"+ ";
     default:
-      return base::nullopt;
+      return absl::nullopt;
   }
   return l10n_util::GetStringUTF16(msg_id);
 }
 
+// Dead keys work by combining two consecutive keystrokes together. The first
+// keystroke does not produce an output character, it acts as a one-shot
+// modifier for a subsequent keystroke. So for example on a German keyboard,
+// pressing the acute ´ dead key, then pressing the letter e will produce é.
+// The first character is called the combining character and does not produce
+// an output glyph. This table maps the combining character to a string
+// containing the non-combining equivalent that can be displayed.
+std::u16string GetStringForDeadKey(ui::DomKey dom_key) {
+  DCHECK(dom_key.IsDeadKey());
+  int32_t ch = dom_key.ToDeadKeyCombiningCharacter();
+  switch (ch) {
+    // Combining grave.
+    case 0x300:
+      return u"`";
+    // Combining acute.
+    case 0x301:
+      return u"´";
+    // Combining circumflex.
+    case 0x302:
+      return u"^";
+    // Combining tilde.
+    case 0x303:
+      return u"~";
+    // Combining diaeresis.
+    case 0x308:
+      return u"¨";
+    default:
+      break;
+  }
+
+  LOG(WARNING) << "No mapping for dead key shortcut " << ch;
+  return base::UTF8ToUTF16(ui::KeycodeConverter::DomKeyToKeyString(dom_key));
+}
+
 }  // namespace
 
-base::string16 GetStringForCategory(ShortcutCategory category) {
+std::u16string GetStringForCategory(ShortcutCategory category) {
   int msg_id = 0;
   switch (category) {
     case ShortcutCategory::kPopular:
@@ -120,22 +162,53 @@ base::string16 GetStringForCategory(ShortcutCategory category) {
       break;
     default:
       NOTREACHED();
-      return base::string16();
+      return std::u16string();
   }
   return l10n_util::GetStringUTF16(msg_id);
 }
 
-base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code) {
-  const base::Optional<base::string16> key_label =
+std::u16string GetStringForKeyboardCode(ui::KeyboardCode key_code,
+                                        bool remap_positional_key) {
+  const absl::optional<std::u16string> key_label =
       GetSpecialStringForKeyboardCode(key_code);
   if (key_label)
     return key_label.value();
 
   ui::DomKey dom_key;
   ui::KeyboardCode key_code_to_compare = ui::VKEY_UNKNOWN;
+  const ui::KeyboardLayoutEngine* layout_engine =
+      ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine();
+
+  // The input |key_code| is the |KeyboardCode| aka VKEY of the shortcut in
+  // the US layout which is registered from the shortcut table. |key_code|
+  // is first mapped to the |DomCode| this key is on in the US layout. If
+  // the key is not positional, this processing is skipped and it is handled
+  // normally in the loop below. For the positional keys, the |DomCode| is
+  // then mapped to the |DomKey| in the current layout which represents the
+  // glyph/character that appears on the key (and usually when typed).
+  if (remap_positional_key &&
+      ::features::IsImprovedKeyboardShortcutsEnabled()) {
+    ui::DomCode dom_code =
+        ui::KeycodeConverter::MapUSPositionalShortcutKeyToDomCode(key_code);
+    if (dom_code != ui::DomCode::NONE) {
+      if (layout_engine->Lookup(dom_code, /*flags=*/ui::EF_NONE, &dom_key,
+                                &key_code_to_compare)) {
+        if (dom_key.IsDeadKey()) {
+          return GetStringForDeadKey(dom_key);
+        }
+        if (!dom_key.IsValid()) {
+          return std::u16string();
+        }
+        return base::UTF8ToUTF16(
+            ui::KeycodeConverter::DomKeyToKeyString(dom_key));
+      }
+      return std::u16string();
+    }
+  }
+
   for (const auto& dom_code : ui::dom_codes) {
-    if (!ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
-            dom_code, /*flags=*/ui::EF_NONE, &dom_key, &key_code_to_compare)) {
+    if (!layout_engine->Lookup(dom_code, /*flags=*/ui::EF_NONE, &dom_key,
+                               &key_code_to_compare)) {
       continue;
     }
     if (key_code_to_compare != key_code || !dom_key.IsValid() ||
@@ -144,10 +217,10 @@ base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code) {
     }
     return base::UTF8ToUTF16(ui::KeycodeConverter::DomKeyToKeyString(dom_key));
   }
-  return base::string16();
+  return std::u16string();
 }
 
-base::string16 GetAccessibleNameForKeyboardCode(ui::KeyboardCode key_code) {
+std::u16string GetAccessibleNameForKeyboardCode(ui::KeyboardCode key_code) {
   int msg_id = 0;
   switch (key_code) {
     case ui::VKEY_OEM_PERIOD:
@@ -168,7 +241,7 @@ base::string16 GetAccessibleNameForKeyboardCode(ui::KeyboardCode key_code) {
     default:
       break;
   }
-  return msg_id ? l10n_util::GetStringUTF16(msg_id) : base::string16();
+  return msg_id ? l10n_util::GetStringUTF16(msg_id) : std::u16string();
 }
 
 const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code) {
@@ -179,7 +252,7 @@ const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code) {
       return &kKsvBrowserForwardIcon;
     case ui::VKEY_BROWSER_REFRESH:
       return &kKsvReloadIcon;
-    case ui::VKEY_MEDIA_LAUNCH_APP2:
+    case ui::VKEY_ZOOM:
       return &kKsvFullscreenIcon;
     case ui::VKEY_MEDIA_LAUNCH_APP1:
       return &kKsvOverviewIcon;
@@ -203,6 +276,8 @@ const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code) {
       return &kKsvArrowRightIcon;
     case ui::VKEY_PRIVACY_SCREEN_TOGGLE:
       return &kKsvPrivacyScreenToggleIcon;
+    case ui::VKEY_SNAPSHOT:
+      return &kKsvSnapshotIcon;
     default:
       return nullptr;
   }
@@ -503,6 +578,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
       {// |categories|
        {ShortcutCategory::kTabAndWindow},
+       IDS_KSV_DESCRIPTION_IDC_SEARCH_TABS,
+       {},
+       // |accelerator_ids|
+       {{ui::VKEY_A, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN}}},
+
+      {// |categories|
+       {ShortcutCategory::kTabAndWindow},
        IDS_KSV_DESCRIPTION_IDC_SELECT_LAST_TAB,
        {},
        // |accelerator_ids|
@@ -634,6 +716,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT,
        {},
        // |accelerator_ids|
+       {{ui::VKEY_SNAPSHOT, ui::EF_NONE}}},
+
+      {// |categories|
+       {ShortcutCategory::kPopular},
+       IDS_KSV_DESCRIPTION_TAKE_FULLSCREEN_SCREENSHOT,
+       {},
+       // |accelerator_ids|
        {{ui::VKEY_MEDIA_LAUNCH_APP1, ui::EF_CONTROL_DOWN}}},
 
       {// |categories|
@@ -698,6 +787,14 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {},
        // |accelerator_ids|
        {{ui::VKEY_OEM_6, ui::EF_ALT_DOWN}}},
+      {// |categories|
+       {ShortcutCategory::kPopular, ShortcutCategory::kTextEditing},
+       IDS_KSV_DESCRIPTION_CLIPBOARD_HISTORY,
+       {},
+       // |accelerator_ids|
+       {},
+       // |shortcut_key_codes|
+       {ui::VKEY_COMMAND, ui::VKEY_UNKNOWN, ui::VKEY_V}},
       {// |categories|
        {ShortcutCategory::kPopular, ShortcutCategory::kTextEditing},
        IDS_KSV_DESCRIPTION_COPY,
@@ -809,8 +906,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        // |accelerator_ids|
        {},
        // |shortcut_key_codes|
-       {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_LMENU, ui::VKEY_UNKNOWN,
-        ui::VKEY_UP}},
+       {ui::VKEY_COMMAND, ui::VKEY_UNKNOWN, ui::VKEY_LEFT}},
 
       {// |categories|
        {ShortcutCategory::kPageAndBrowser},
@@ -819,8 +915,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        // |accelerator_ids|
        {},
        // |shortcut_key_codes|
-       {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_LMENU, ui::VKEY_UNKNOWN,
-        ui::VKEY_DOWN}},
+       {ui::VKEY_COMMAND, ui::VKEY_UNKNOWN, ui::VKEY_RIGHT}},
 
       {// |categories|
        {ShortcutCategory::kPageAndBrowser},
@@ -880,15 +975,6 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {},
        // |shortcut_key_codes|
        {ui::VKEY_LMENU, ui::VKEY_UNKNOWN}},
-
-      {// |categories|
-       {ShortcutCategory::kSystemAndDisplay},
-       IDS_KSV_DESCRIPTION_USE_F_KEYS,
-       IDS_KSV_SHORTCUT_USE_F_KEYS,
-       // |accelerator_ids|
-       {},
-       // |shortcut_key_codes|
-       {ui::VKEY_COMMAND, ui::VKEY_UNKNOWN}},
 
       {// |categories|
        {ShortcutCategory::kTextEditing},
@@ -1109,14 +1195,14 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        IDS_KSV_DESCRIPTION_TOGGLE_MIRROR_MODE,
        {},
        // |accelerator_ids|
-       {{ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_CONTROL_DOWN}}},
+       {{ui::VKEY_ZOOM, ui::EF_CONTROL_DOWN}}},
 
       {// |categories|
        {ShortcutCategory::kSystemAndDisplay},
        IDS_KSV_DESCRIPTION_SWAP_PRIMARY_DISPLAY,
        {},
        // |accelerator_ids|
-       {{ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_ALT_DOWN}}},
+       {{ui::VKEY_ZOOM, ui::EF_ALT_DOWN}}},
 
       {// |categories|
        {ShortcutCategory::kSystemAndDisplay},
@@ -1179,7 +1265,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        IDS_KSV_DESCRIPTION_TOGGLE_FULLSCREEN,
        {},
        // |accelerator_ids|
-       {{ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE}}},
+       {{ui::VKEY_ZOOM, ui::EF_NONE}}},
 
       {// |categories|
        {ShortcutCategory::kTabAndWindow},
@@ -1424,6 +1510,13 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {},
        // |accelerator_ids|
        {{ui::VKEY_PRIVACY_SCREEN_TOGGLE, ui::EF_NONE}}},
+
+      {// |categories|
+       {ShortcutCategory::kTextEditing},
+       IDS_KSV_DESCRIPTION_SHOW_EMOJI_PICKER,
+       {},
+       // |accelerator_ids|
+       {{ui::VKEY_SPACE, ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN}}},
   });
 
   static bool is_initialized = false;
@@ -1432,7 +1525,40 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
   // string.
   if (!is_initialized) {
     is_initialized = true;
+
+    // Include diagnostics shortcuts only when experiment flag is enabled.
+    if (base::FeatureList::IsEnabled(chromeos::features::kDiagnosticsApp)) {
+      const KeyboardShortcutItem diagnostics_shortcut = {
+          // |categories|
+          {ShortcutCategory::kSystemAndDisplay},
+          IDS_KSV_DESCRIPTION_OPEN_DIAGNOSTICS,
+          {},
+          // |accelerator_ids|
+          {{ui::VKEY_ESCAPE, ui::EF_CONTROL_DOWN | ui::EF_COMMAND_DOWN}}};
+      item_list->emplace_back(diagnostics_shortcut);
+    }
+
     for (auto& item : *item_list) {
+      // Capture mode is an improved screenshot and video recording tool, and
+      // the shortuct messages reflect the differences. If capture mode is
+      // disabled, we will swap the strings.
+      // TODO(sammiequon): Remove the strings suffixed with _OLD once capture
+      // mode can no longer be disabled.
+      if (!ash::features::IsCaptureModeEnabled()) {
+        static base::flat_map<int, int> new_to_old_message_id_map = {
+            {IDS_KSV_DESCRIPTION_TAKE_PARTIAL_SCREENSHOT,
+             IDS_KSV_DESCRIPTION_TAKE_PARTIAL_SCREENSHOT_OLD},
+            {IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT,
+             IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT_OLD},
+            {IDS_KSV_DESCRIPTION_TAKE_FULLSCREEN_SCREENSHOT,
+             IDS_KSV_DESCRIPTION_TAKE_SCREENSHOT_OLD},
+            {IDS_KSV_DESCRIPTION_TAKE_WINDOW_SCREENSHOT,
+             IDS_KSV_DESCRIPTION_TAKE_WINDOW_SCREENSHOT_OLD}};
+        const int id = item.description_message_id;
+        if (new_to_old_message_id_map.contains(id))
+          item.description_message_id = new_to_old_message_id_map[id];
+      }
+
       if (item.shortcut_key_codes.empty() && !item.accelerator_ids.empty()) {
         // Only use the first |accelerator_id| because the modifiers are the
         // same even if it is a grouped accelerators.

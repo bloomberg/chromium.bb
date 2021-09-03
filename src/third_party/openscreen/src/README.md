@@ -21,8 +21,8 @@ To get gclient, run the following command in your terminal:
 Then add the `depot_tools` folder to your `PATH` environment variable.
 
 Note that openscreen does not use other features of `depot_tools` like `repo` or
-`drover`.  However, some `git-cl` functions *do* work, like `git cl try`, `git cl
-lint` and `git cl upload.`
+`drover`.  However, some `git-cl` functions *do* work, like `git cl try`,
+`git cl format`, `git cl lint`, and `git cl upload.`
 
 ## Checking out code
 
@@ -44,7 +44,7 @@ and at their appropriate revisions.
 
 ## Syncing your local checkout
 
-To update your local checkout from the openscreen master repository, just run
+To update your local checkout from the openscreen reference repository, just run
 
 ```bash
    cd ~/my_project_dir/openscreen
@@ -205,8 +205,10 @@ target.
 
 # Continuous build and try jobs
 
-openscreen uses [LUCI builders](https://ci.chromium.org/p/openscreen/builders)
-to monitor the build and test health of the library.  Current builders include:
+Open Screen uses [LUCI builders](https://ci.chromium.org/p/openscreen/builders)
+to monitor the build and test health of the library.
+
+Current builders include:
 
 | Name                   | Arch   | OS                 | Toolchain | Build   | Notes                  |
 |------------------------|--------|--------------------|-----------|---------|------------------------|
@@ -217,6 +219,7 @@ to monitor the build and test health of the library.  Current builders include:
 | chromium_linux64_debug | x86-64 | Ubuntu Linux 16.04 | clang     | debug   | built within chromium  |
 | chromium_mac_debug     | x86-64 | Mac OS X/Xcode     | clang     | debug   | built within chromium  |
 | linux64_coverage_debug | x86-64 | Ubuntu Linux 16.04 | clang     | debug   | used for code coverage |
+<br />
 
 You can run a patch through the try job queue (which tests it on all
 non-chromium builders) using `git cl try`, or through Gerrit (details below).
@@ -226,10 +229,10 @@ experimental trybots and continuous-integration FYI bots.
 
 # Submitting changes
 
-openscreen library code should follow the [Open Screen Library Style
+Open Screen library code should follow the [Open Screen Library Style
 Guide](docs/style_guide.md).
 
-openscreen uses [Chromium Gerrit](https://chromium-review.googlesource.com/) for
+This library uses [Chromium Gerrit](https://chromium-review.googlesource.com/) for
 patch management and code review (for better or worse).
 
 The following sections contain some tips about dealing with Gerrit for code

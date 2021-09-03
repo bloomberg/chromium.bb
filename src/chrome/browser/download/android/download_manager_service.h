@@ -11,10 +11,9 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_multi_source_observation.h"
 #include "chrome/browser/download/download_manager_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
@@ -53,7 +52,7 @@ class DownloadManagerService
   ~DownloadManagerService() override;
 
   // Called to Initialize this object. If |is_profile_added| is false,
-  // it means only the service manager is launched. OnProfileAdded() will
+  // it means only a minimal browser is launched. OnProfileAdded() will
   // be called later when the profile is added.
   void Init(JNIEnv* env, jobject obj, bool is_profile_added);
 
@@ -71,14 +70,17 @@ class DownloadManagerService
                          int64_t system_download_id);
 
   // Called to open a given download item.
-  void OpenDownload(download::DownloadItem* download, int source);
+  void OpenDownload(download::DownloadItem* download,
+                    int source,
+                    const JavaParamRef<jobject>& j_context);
 
   // Called to open a download item whose GUID is equal to |jdownload_guid|.
   void OpenDownload(JNIEnv* env,
                     jobject obj,
                     const JavaParamRef<jstring>& jdownload_guid,
                     const JavaParamRef<jobject>& j_profile_key,
-                    jint source);
+                    jint source,
+                    const JavaParamRef<jobject>& j_context);
 
   // Called to resume downloading the item that has GUID equal to
   // |jdownload_guid|..
@@ -239,9 +241,9 @@ class DownloadManagerService
   // Called when all pending downloads are loaded.
   void OnPendingDownloadsLoaded();
 
-  typedef base::Callback<void(bool)> ResumeCallback;
-  void set_resume_callback_for_testing(const ResumeCallback& resume_cb) {
-    resume_callback_for_testing_ = resume_cb;
+  using ResumeCallback = base::OnceCallback<void(bool)>;
+  void set_resume_callback_for_testing(ResumeCallback resume_cb) {
+    resume_callback_for_testing_ = std::move(resume_cb);
   }
 
   // Helper method to reset the SimpleDownloadManagerCoordinator if needed.
@@ -292,7 +294,8 @@ class DownloadManagerService
 
   ResumeCallback resume_callback_for_testing_;
 
-  ScopedObserver<Profile, ProfileObserver> observed_profiles_{this};
+  base::ScopedMultiSourceObservation<Profile, ProfileObserver>
+      observed_profiles_{this};
 
   std::map<ProfileKey*, download::SimpleDownloadManagerCoordinator*>
       coordinators_;

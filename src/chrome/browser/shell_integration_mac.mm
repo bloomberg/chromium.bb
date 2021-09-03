@@ -86,7 +86,7 @@ bool SetAsDefaultProtocolClient(const std::string& protocol) {
   if (!identifier)
     return false;
 
-  NSString* protocol_ns = [NSString stringWithUTF8String:protocol.c_str()];
+  NSString* protocol_ns = base::SysUTF8ToNSString(protocol);
   OSStatus return_code =
       LSSetDefaultHandlerForURLScheme(base::mac::NSToCFCast(protocol_ns),
                                       base::mac::NSToCFCast(identifier));
@@ -101,7 +101,7 @@ DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
   return SET_DEFAULT_UNATTENDED;
 }
 
-base::string16 GetApplicationNameForProtocol(const GURL& url) {
+std::u16string GetApplicationNameForProtocol(const GURL& url) {
   NSURL* ns_url = [NSURL URLWithString:
       base::SysUTF8ToNSString(url.possibly_invalid_spec())];
   base::ScopedCFTypeRef<CFErrorRef> out_err;
@@ -109,7 +109,7 @@ base::string16 GetApplicationNameForProtocol(const GURL& url) {
       (CFURLRef)ns_url, kLSRolesAll, out_err.InitializeInto()));
   if (out_err) {
     // likely kLSApplicationNotFoundErr
-    return base::string16();
+    return std::u16string();
   }
   NSString* appPath = [base::mac::CFToNSCast(openingApp.get()) path];
   NSString* appDisplayName =
@@ -187,9 +187,10 @@ DefaultWebClientState IsDefaultProtocolClient(const std::string& protocol) {
   if (!my_identifier)
     return UNKNOWN_DEFAULT;
 
-  NSString* protocol_ns = [NSString stringWithUTF8String:protocol.c_str()];
-  return IsIdentifierDefaultProtocolClient(my_identifier, protocol_ns) ?
-      IS_DEFAULT : NOT_DEFAULT;
+  return IsIdentifierDefaultProtocolClient(my_identifier,
+                                           base::SysUTF8ToNSString(protocol))
+             ? IS_DEFAULT
+             : NOT_DEFAULT;
 }
 
 }  // namespace shell_integration

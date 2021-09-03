@@ -52,8 +52,8 @@ void ConnectToSharedWorker(
   auto options = blink::mojom::WorkerOptions::New();
   options->name = name;
   blink::mojom::SharedWorkerInfoPtr info(blink::mojom::SharedWorkerInfo::New(
-      url, std::move(options), std::string(),
-      network::mojom::ContentSecurityPolicyType::kReport,
+      url, std::move(options),
+      std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       network::mojom::IPAddressSpace::kPublic,
       blink::mojom::FetchClientSettingsObject::New(
           network::mojom::ReferrerPolicy::kDefault, GURL(),
@@ -181,7 +181,7 @@ class SharedWorkerServiceImplTest : public RenderViewHostImplTestHarness {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             fake_url_loader_factory_.get());
     static_cast<SharedWorkerServiceImpl*>(
-        BrowserContext::GetDefaultStoragePartition(browser_context_.get())
+        browser_context_->GetDefaultStoragePartition()
             ->GetSharedWorkerService())
         ->SetURLLoaderFactoryForTesting(url_loader_factory_wrapper_);
   }
@@ -245,7 +245,7 @@ TEST_F(SharedWorkerServiceImplTest, BasicTest) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      kUrl, "name", network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, "name", std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host, &worker_receiver));
   MockSharedWorker worker(std::move(worker_receiver));
   base::RunLoop().RunUntilIdle();
@@ -372,7 +372,7 @@ TEST_F(SharedWorkerServiceImplTest, TwoRendererTest) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      kUrl, "name", network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, "name", std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host, &worker_receiver));
   MockSharedWorker worker(std::move(worker_receiver));
   base::RunLoop().RunUntilIdle();
@@ -519,7 +519,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      kUrl, kName, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, kName, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host, &worker_receiver));
   MockSharedWorker worker(std::move(worker_receiver));
   base::RunLoop().RunUntilIdle();
@@ -582,7 +582,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host0;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver0;
   EXPECT_TRUE(factory0.CheckReceivedCreateSharedWorker(
-      kUrl0, kName, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl0, kName, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host0, &worker_receiver0));
   MockSharedWorker worker0(std::move(worker_receiver0));
   base::RunLoop().RunUntilIdle();
@@ -607,7 +607,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_URLMismatch) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host1;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kUrl1, kName, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl1, kName, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host1, &worker_receiver1));
   MockSharedWorker worker1(std::move(worker_receiver1));
   base::RunLoop().RunUntilIdle();
@@ -669,7 +669,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host0;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver0;
   EXPECT_TRUE(factory0.CheckReceivedCreateSharedWorker(
-      kUrl, kName0, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, kName0, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host0, &worker_receiver0));
   MockSharedWorker worker0(std::move(worker_receiver0));
   base::RunLoop().RunUntilIdle();
@@ -694,7 +694,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_NormalCase_NameMismatch) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host1;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kUrl, kName1, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, kName1, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host1, &worker_receiver1));
   MockSharedWorker worker1(std::move(worker_receiver1));
   base::RunLoop().RunUntilIdle();
@@ -766,7 +766,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      kUrl, kName, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, kName, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host, &worker_receiver));
   MockSharedWorker worker(std::move(worker_receiver));
 
@@ -835,14 +835,14 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_URLMismatch) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host0;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver0;
   EXPECT_TRUE(factory0.CheckReceivedCreateSharedWorker(
-      kUrl0, kName, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl0, kName, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host0, &worker_receiver0));
   MockSharedWorker worker0(std::move(worker_receiver0));
 
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host1;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kUrl1, kName, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl1, kName, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host1, &worker_receiver1));
   MockSharedWorker worker1(std::move(worker_receiver1));
 
@@ -920,14 +920,14 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerTest_PendingCase_NameMismatch) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host0;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver0;
   EXPECT_TRUE(factory0.CheckReceivedCreateSharedWorker(
-      kUrl, kName0, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, kName0, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host0, &worker_receiver0));
   MockSharedWorker worker0(std::move(worker_receiver0));
 
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host1;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kUrl, kName1, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, kName1, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host1, &worker_receiver1));
   MockSharedWorker worker1(std::move(worker_receiver1));
 
@@ -991,7 +991,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host0;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver0;
   EXPECT_TRUE(factory0.CheckReceivedCreateSharedWorker(
-      kUrl, kName, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, kName, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host0, &worker_receiver0));
   MockSharedWorker worker0(std::move(worker_receiver0));
 
@@ -1024,7 +1024,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host1;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kUrl, kName, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, kName, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host1, &worker_receiver1));
   MockSharedWorker worker1(std::move(worker_receiver1));
 
@@ -1108,7 +1108,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest2) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host1;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver1;
   EXPECT_TRUE(factory1.CheckReceivedCreateSharedWorker(
-      kUrl, kName, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, kName, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host1, &worker_receiver1));
   MockSharedWorker worker1(std::move(worker_receiver1));
 
@@ -1181,7 +1181,7 @@ TEST_F(SharedWorkerServiceImplTest, CreateWorkerRaceTest3) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      kURL, kName, network::mojom::ContentSecurityPolicyType::kReport,
+      kURL, kName, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host, &worker_receiver));
   MockSharedWorker worker(std::move(worker_receiver));
   base::RunLoop().RunUntilIdle();
@@ -1263,9 +1263,7 @@ TEST_F(SharedWorkerServiceImplTest, Observer) {
   base::ScopedObservation<SharedWorkerService, SharedWorkerService::Observer>
       scoped_observation(&observer);
   scoped_observation.Observe(
-      content::BrowserContext::GetDefaultStoragePartition(
-          browser_context_.get())
-          ->GetSharedWorkerService());
+      browser_context_->GetDefaultStoragePartition()->GetSharedWorkerService());
 
   std::unique_ptr<TestWebContents> web_contents =
       CreateWebContents(GURL("http://example.com/"));
@@ -1292,7 +1290,7 @@ TEST_F(SharedWorkerServiceImplTest, Observer) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      kUrl, "name", network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, "name", std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host, &worker_receiver));
   MockSharedWorker worker(std::move(worker_receiver));
   base::RunLoop().RunUntilIdle();
@@ -1336,7 +1334,7 @@ TEST_F(SharedWorkerServiceImplTest, EnumerateSharedWorkers) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      kUrl, "name", network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, "name", std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host, &worker_receiver));
   MockSharedWorker worker(std::move(worker_receiver));
   base::RunLoop().RunUntilIdle();
@@ -1351,7 +1349,7 @@ TEST_F(SharedWorkerServiceImplTest, EnumerateSharedWorkers) {
   EXPECT_EQ(0u, observer.GetWorkerCount());
 
   // Retrieve running shared workers.
-  content::BrowserContext::GetDefaultStoragePartition(browser_context_.get())
+  browser_context_->GetDefaultStoragePartition()
       ->GetSharedWorkerService()
       ->EnumerateSharedWorkers(&observer);
 
@@ -1368,9 +1366,7 @@ TEST_F(SharedWorkerServiceImplTest, CollapseDuplicateNotifications) {
   base::ScopedObservation<SharedWorkerService, SharedWorkerService::Observer>
       scoped_observation(&observer);
   scoped_observation.Observe(
-      content::BrowserContext::GetDefaultStoragePartition(
-          browser_context_.get())
-          ->GetSharedWorkerService());
+      browser_context_->GetDefaultStoragePartition()->GetSharedWorkerService());
 
   const GURL kUrl("http://example.com/w.js");
   const char kName[] = "name";
@@ -1397,7 +1393,7 @@ TEST_F(SharedWorkerServiceImplTest, CollapseDuplicateNotifications) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      kUrl, kName, network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, kName, std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host, &worker_receiver));
   MockSharedWorker worker(std::move(worker_receiver));
   base::RunLoop().RunUntilIdle();
@@ -1455,9 +1451,7 @@ TEST_F(SharedWorkerServiceImplTest, Observer_OnClientConnectionLost) {
   base::ScopedObservation<SharedWorkerService, SharedWorkerService::Observer>
       scoped_observation(&observer);
   scoped_observation.Observe(
-      content::BrowserContext::GetDefaultStoragePartition(
-          browser_context_.get())
-          ->GetSharedWorkerService());
+      browser_context_->GetDefaultStoragePartition()->GetSharedWorkerService());
 
   std::unique_ptr<TestWebContents> web_contents =
       CreateWebContents(GURL("http://example.com/"));
@@ -1478,7 +1472,7 @@ TEST_F(SharedWorkerServiceImplTest, Observer_OnClientConnectionLost) {
   mojo::Remote<blink::mojom::SharedWorkerHost> worker_host;
   mojo::PendingReceiver<blink::mojom::SharedWorker> worker_receiver;
   EXPECT_TRUE(factory.CheckReceivedCreateSharedWorker(
-      kUrl, "name", network::mojom::ContentSecurityPolicyType::kReport,
+      kUrl, "name", std::vector<network::mojom::ContentSecurityPolicyPtr>(),
       &worker_host, &worker_receiver));
   MockSharedWorker worker(std::move(worker_receiver));
   base::RunLoop().RunUntilIdle();

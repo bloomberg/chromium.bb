@@ -29,26 +29,29 @@ IN_PROC_BROWSER_TEST_F(TextInput_SurroundingTextChangedTest,
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  ASSERT_TRUE(content::ExecuteScript(
-      tab,
-      "document.getElementById('text_id').focus()"));
+  ASSERT_TRUE(
+      content::ExecJs(tab, "document.getElementById('text_id').focus()"));
   helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_TEXT_AREA);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT_AREA, helper.GetTextInputType());
 
-  const base::string16 sample_text1 = base::UTF8ToUTF16("abcde");
-  const base::string16 sample_text2 = base::UTF8ToUTF16("fghij");
-  const base::string16 surrounding_text2 = sample_text1 + sample_text2;
+  const std::u16string sample_text1 = u"abcde";
+  const std::u16string sample_text2 = u"fghij";
+  const std::u16string surrounding_text2 = sample_text1 + sample_text2;
   gfx::Range expected_range1(5, 5);
   gfx::Range expected_range2(10, 10);
 
   ASSERT_TRUE(helper.GetTextInputClient());
 
-  helper.GetTextInputClient()->InsertText(sample_text1);
+  helper.GetTextInputClient()->InsertText(
+      sample_text1,
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   helper.WaitForSurroundingTextChanged(sample_text1, expected_range1);
   EXPECT_EQ(sample_text1, helper.GetSurroundingText());
   EXPECT_EQ(expected_range1, helper.GetSelectionRange());
 
-  helper.GetTextInputClient()->InsertText(sample_text2);
+  helper.GetTextInputClient()->InsertText(
+      sample_text2,
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   helper.WaitForSurroundingTextChanged(surrounding_text2, expected_range2);
   EXPECT_EQ(surrounding_text2, helper.GetSurroundingText());
   EXPECT_EQ(expected_range2, helper.GetSelectionRange());
@@ -66,13 +69,12 @@ IN_PROC_BROWSER_TEST_F(TextInput_SurroundingTextChangedTest,
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  ASSERT_TRUE(content::ExecuteScript(
-      tab,
-      "document.getElementById('text_id').focus()"));
+  ASSERT_TRUE(
+      content::ExecJs(tab, "document.getElementById('text_id').focus()"));
   helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_TEXT_AREA);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT_AREA, helper.GetTextInputType());
 
-  const base::string16 sample_text = base::UTF8ToUTF16("abcde");
+  const std::u16string sample_text = u"abcde";
   gfx::Range expected_range(5, 5);
 
   ui::CompositionText composition_text;
@@ -84,7 +86,9 @@ IN_PROC_BROWSER_TEST_F(TextInput_SurroundingTextChangedTest,
   helper.GetTextInputClient()->SetCompositionText(composition_text);
   ASSERT_TRUE(helper.GetTextInputClient()->HasCompositionText());
   // TODO(nona): Make sure there is no IPC from renderer.
-  helper.GetTextInputClient()->InsertText(sample_text);
+  helper.GetTextInputClient()->InsertText(
+      sample_text,
+      ui::TextInputClient::InsertTextCursorBehavior::kMoveCursorAfterText);
   helper.GetTextInputClient()->ClearCompositionText();
 
   ASSERT_FALSE(helper.GetTextInputClient()->HasCompositionText());
@@ -110,13 +114,13 @@ IN_PROC_BROWSER_TEST_F(TextInput_SurroundingTextChangedTest,
   helper.ClickElement("empty_textarea", tab);
   helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_TEXT_AREA);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT_AREA, helper.GetTextInputType());
-  helper.WaitForSurroundingTextChanged(base::string16(), zero_range);
+  helper.WaitForSurroundingTextChanged(std::u16string(), zero_range);
   EXPECT_TRUE(helper.GetSurroundingText().empty());
   EXPECT_EQ(zero_range, helper.GetSelectionRange());
 
   // Click textarea containing text, so expecting new surrounding text comes.
   helper.ClickElement("filled_textarea", tab);
-  const base::string16 expected_text = base::UTF8ToUTF16("abcde");
+  const std::u16string expected_text = u"abcde";
   const gfx::Range expected_range(5, 5);
   helper.WaitForSurroundingTextChanged(expected_text, expected_range);
   EXPECT_EQ(expected_text, helper.GetSurroundingText());
@@ -126,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(TextInput_SurroundingTextChangedTest,
   helper.ClickElement("empty_textarea", tab);
   helper.WaitForTextInputStateChanged(ui::TEXT_INPUT_TYPE_TEXT_AREA);
   EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT_AREA, helper.GetTextInputType());
-  helper.WaitForSurroundingTextChanged(base::string16(), zero_range);
+  helper.WaitForSurroundingTextChanged(std::u16string(), zero_range);
   EXPECT_TRUE(helper.GetSurroundingText().empty());
   EXPECT_EQ(zero_range, helper.GetSelectionRange());
 }
