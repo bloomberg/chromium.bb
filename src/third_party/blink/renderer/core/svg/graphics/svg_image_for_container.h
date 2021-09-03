@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
 
@@ -81,6 +80,7 @@ class CORE_EXPORT SVGImageForContainer final : public Image {
             const cc::PaintFlags&,
             const FloatRect&,
             const FloatRect&,
+            const SkSamplingOptions&,
             RespectImageOrientationEnum,
             ImageClampingMode,
             ImageDecodingMode) override;

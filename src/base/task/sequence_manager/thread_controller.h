@@ -106,6 +106,14 @@ class ThreadController {
   virtual void DetachFromMessagePump() = 0;
 #endif
 
+  // Currently only overridden on ThreadControllerWithMessagePumpImpl.
+  //
+  // While Now() is less than |prioritize_until| we will alternate between
+  // |work_batch_size| tasks before setting |yield_to_native| on the
+  // NextWorkInfo and yielding to the underlying sequence (e.g. the message
+  // pump).
+  virtual void PrioritizeYieldingToNative(base::TimeTicks prioritize_until) = 0;
+
   // Sets the SingleThreadTaskRunner that will be returned by
   // ThreadTaskRunnerHandle::Get on the thread controlled by this
   // ThreadController.
@@ -144,7 +152,7 @@ class ThreadController {
   //
   // Note 1: "native tasks" are only captured if the MessagePump is
   // instrumented to see them and shares them with ThreadController (via
-  // MessagePump::Delegate::OnBeginNativeWork). As such it is still possible to
+  // MessagePump::Delegate::OnBeginWorkItem). As such it is still possible to
   // view trace events emanating from native tasks without "ThreadController
   // active" being active.
   // Note 2: Non-instrumented native tasks do not break the two high-level

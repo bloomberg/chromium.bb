@@ -25,6 +25,7 @@
 /ninja*                       recipes
 /pylint*                      recipes
 /repo                         recipes
+/repo_launcher                recipes
 /roll-dep*                    recipes
 /yapf*                        recipes
 

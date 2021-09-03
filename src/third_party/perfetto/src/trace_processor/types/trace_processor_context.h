@@ -38,6 +38,7 @@ class GlobalArgsTracker;
 class GlobalStackProfileTracker;
 class HeapGraphTracker;
 class HeapProfileTracker;
+class PerfSampleTracker;
 class MetadataTracker;
 class ProtoImporterModule;
 class ProcessTracker;
@@ -48,7 +49,7 @@ class TraceSorter;
 class TraceStorage;
 class TrackTracker;
 class JsonTracker;
-class ProtoToArgsTable;
+class DescriptorPool;
 
 class TraceProcessorContext {
  public:
@@ -76,6 +77,7 @@ class TraceProcessorContext {
   std::unique_ptr<EventTracker> event_tracker;
   std::unique_ptr<ClockTracker> clock_tracker;
   std::unique_ptr<HeapProfileTracker> heap_profile_tracker;
+  std::unique_ptr<PerfSampleTracker> perf_sample_tracker;
   std::unique_ptr<GlobalStackProfileTracker> global_stack_profile_tracker;
   std::unique_ptr<MetadataTracker> metadata_tracker;
 
@@ -107,12 +109,13 @@ class TraceProcessorContext {
   std::unique_ptr<TraceParser> json_trace_parser;
   std::unique_ptr<TraceParser> fuchsia_trace_parser;
 
-  // Reflection-based proto parser used to convert TrackEvent fields into SQL.
-  std::unique_ptr<ProtoToArgsTable> proto_to_args_table_;
+  // This field contains the list of proto descriptors that can be used by
+  // reflection-based parsers.
+  std::unique_ptr<DescriptorPool> descriptor_pool_;
 
   // The module at the index N is registered to handle field id N in
   // TracePacket.
-  std::vector<ProtoImporterModule*> modules_by_field;
+  std::vector<std::vector<ProtoImporterModule*>> modules_by_field;
   std::vector<std::unique_ptr<ProtoImporterModule>> modules;
   FtraceModule* ftrace_module = nullptr;
 };

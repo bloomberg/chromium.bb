@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_pending_task.h"
 #include "base/test/test_simple_task_runner.h"
@@ -20,6 +19,7 @@
 #include "device/bluetooth/bluetooth_classic_win_fake.h"
 #include "device/bluetooth/bluetooth_low_energy_win_fake.h"
 #include "device/bluetooth/bluetooth_task_manager_win.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace device {
 
@@ -38,7 +38,7 @@ class BluetoothTestWin : public BluetoothTestBase,
   bool DenyPermission() override;
   void StartLowEnergyDiscoverySession() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
-  base::Optional<BluetoothUUID> GetTargetGattService(
+  absl::optional<BluetoothUUID> GetTargetGattService(
       BluetoothDevice* device) override;
   void SimulateGattConnection(BluetoothDevice* device) override;
   void SimulateStatusChangeToDisconnect(BluetoothDevice* device) override;
@@ -60,12 +60,12 @@ class BluetoothTestWin : public BluetoothTestBase,
       const std::vector<uint8_t>& value) override;
   void SimulateGattCharacteristicReadError(
       BluetoothRemoteGattCharacteristic* characteristic,
-      BluetoothRemoteGattService::GattErrorCode error_code) override;
+      BluetoothGattService::GattErrorCode error_code) override;
   void SimulateGattCharacteristicWrite(
       BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattCharacteristicWriteError(
       BluetoothRemoteGattCharacteristic* characteristic,
-      BluetoothRemoteGattService::GattErrorCode error_code) override;
+      BluetoothGattService::GattErrorCode error_code) override;
   void RememberDeviceForSubsequentAction(BluetoothDevice* device) override;
   void DeleteDevice(BluetoothDevice* device) override;
   void SimulateGattDescriptor(BluetoothRemoteGattCharacteristic* characteristic,
@@ -74,7 +74,7 @@ class BluetoothTestWin : public BluetoothTestBase,
       BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattNotifySessionStartError(
       BluetoothRemoteGattCharacteristic* characteristic,
-      BluetoothRemoteGattService::GattErrorCode error_code) override;
+      BluetoothGattService::GattErrorCode error_code) override;
   void SimulateGattCharacteristicChanged(
       BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
@@ -217,12 +217,12 @@ class BluetoothTestWinrt
       BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattNotifySessionStartError(
       BluetoothRemoteGattCharacteristic* characteristic,
-      BluetoothRemoteGattService::GattErrorCode error_code) override;
+      BluetoothGattService::GattErrorCode error_code) override;
   void SimulateGattNotifySessionStopped(
       BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattNotifySessionStopError(
       BluetoothRemoteGattCharacteristic* characteristic,
-      BluetoothRemoteGattService::GattErrorCode error_code) override;
+      BluetoothGattService::GattErrorCode error_code) override;
   void SimulateGattCharacteristicChanged(
       BluetoothRemoteGattCharacteristic* characteristic,
       const std::vector<uint8_t>& value) override;
@@ -231,24 +231,24 @@ class BluetoothTestWinrt
       const std::vector<uint8_t>& value) override;
   void SimulateGattCharacteristicReadError(
       BluetoothRemoteGattCharacteristic* characteristic,
-      BluetoothRemoteGattService::GattErrorCode error_code) override;
+      BluetoothGattService::GattErrorCode error_code) override;
   void SimulateGattCharacteristicWrite(
       BluetoothRemoteGattCharacteristic* characteristic) override;
   void SimulateGattCharacteristicWriteError(
       BluetoothRemoteGattCharacteristic* characteristic,
-      BluetoothRemoteGattService::GattErrorCode error_code) override;
+      BluetoothGattService::GattErrorCode error_code) override;
   void SimulateGattDescriptor(BluetoothRemoteGattCharacteristic* characteristic,
                               const std::string& uuid) override;
   void SimulateGattDescriptorRead(BluetoothRemoteGattDescriptor* descriptor,
                                   const std::vector<uint8_t>& value) override;
   void SimulateGattDescriptorReadError(
       BluetoothRemoteGattDescriptor* descriptor,
-      BluetoothRemoteGattService::GattErrorCode error_code) override;
+      BluetoothGattService::GattErrorCode error_code) override;
   void SimulateGattDescriptorWrite(
       BluetoothRemoteGattDescriptor* descriptor) override;
   void SimulateGattDescriptorWriteError(
       BluetoothRemoteGattDescriptor* descriptor,
-      BluetoothRemoteGattService::GattErrorCode error_code) override;
+      BluetoothGattService::GattErrorCode error_code) override;
   void DeleteDevice(BluetoothDevice* device) override;
 
   void OnFakeBluetoothDeviceConnectGattAttempt();
@@ -262,7 +262,7 @@ class BluetoothTestWinrt
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::Optional<base::win::ScopedWinrtInitializer> scoped_winrt_initializer_;
+  absl::optional<base::win::ScopedWinrtInitializer> scoped_winrt_initializer_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothTestWinrt);
 };

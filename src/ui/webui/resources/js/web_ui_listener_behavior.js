@@ -46,3 +46,14 @@
     }
   },
 };
+
+/** @interface */
+/* #export */ class WebUIListenerBehaviorInterface {
+  /**
+   * @param {string} eventName
+   * @param {!Function} callback
+   */
+  addWebUIListener(eventName, callback) {}
+}
+
+/* #ignore */ console.warn('crbug/1173575, non-JS module files deprecated.');

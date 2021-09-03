@@ -4,20 +4,22 @@
 
 #include "chrome/updater/device_management/dm_storage.h"
 
+#include <memory>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/base64.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
-#include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/updater/device_management/dm_cached_policy_info.h"
-#include "chrome/updater/device_management/dm_policy_manager.h"
-#include "chrome/updater/updater_version.h"
+#include "chrome/updater/device_management/dm_message.h"
+#include "chrome/updater/protos/omaha_settings.pb.h"
 #include "chrome/updater/util.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace updater {
 
@@ -37,9 +39,6 @@ constexpr char kPolicyInfoFileName[] = "CachedPolicyInfo";
 // This is the standard name for the file that PersistPolicies() uses for each
 // {policy_type} that it receives from the DMServer.
 constexpr char kPolicyFileName[] = "PolicyFetchResponse";
-
-// The policy type for Omaha policy settings.
-constexpr char kGoogleUpdatePolicyType[] = "google/machine-level-omaha";
 
 // Policy subfolder in the updater installation path.
 constexpr char kPolicyCacheSubfolder[] = "Policies";
@@ -142,7 +141,7 @@ bool DMStorage::PersistPolicies(const DMPolicyMap& policy_map) const {
   return DeleteObsoletePolicies(policy_cache_root_, policy_types_base64);
 }
 
-std::unique_ptr<CachedPolicyInfo> DMStorage::GetCachedPolicyInfo() {
+std::unique_ptr<CachedPolicyInfo> DMStorage::GetCachedPolicyInfo() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   auto cached_info = std::make_unique<CachedPolicyInfo>();
 
@@ -161,7 +160,9 @@ std::unique_ptr<CachedPolicyInfo> DMStorage::GetCachedPolicyInfo() {
   return cached_info;
 }
 
-std::unique_ptr<PolicyManagerInterface> DMStorage::GetOmahaPolicyManager() {
+std::unique_ptr<
+    ::wireless_android_enterprise_devicemanagement::OmahaSettingsClientProto>
+DMStorage::GetOmahaPolicySettings() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!IsValidDMToken())
@@ -176,27 +177,29 @@ std::unique_ptr<PolicyManagerInterface> DMStorage::GetOmahaPolicyManager() {
   std::string response_data;
   ::enterprise_management::PolicyFetchResponse response;
   ::enterprise_management::PolicyData policy_data;
-  ::wireless_android_enterprise_devicemanagement::OmahaSettingsClientProto
-      omaha_settings;
+  auto omaha_settings =
+      std::make_unique<::wireless_android_enterprise_devicemanagement::
+                           OmahaSettingsClientProto>();
   if (!base::PathExists(omaha_policy_file) ||
       !base::ReadFileToString(omaha_policy_file, &response_data) ||
       response_data.empty() || !response.ParseFromString(response_data) ||
       !policy_data.ParseFromString(response.policy_data()) ||
       !policy_data.has_policy_value() ||
-      !omaha_settings.ParseFromString(policy_data.policy_value())) {
+      !omaha_settings->ParseFromString(policy_data.policy_value())) {
     return nullptr;
   }
 
-  return std::make_unique<DMPolicyManager>(omaha_settings);
+  return omaha_settings;
 }
 
 scoped_refptr<DMStorage> GetDefaultDMStorage() {
-  base::FilePath updater_versioned_path;
-  if (!GetVersionedDirectory(&updater_versioned_path))
+  absl::optional<base::FilePath> updater_versioned_path =
+      GetVersionedDirectory();
+  if (!updater_versioned_path)
     return nullptr;
 
   base::FilePath policy_cache_folder =
-      updater_versioned_path.AppendASCII(kPolicyCacheSubfolder);
+      updater_versioned_path->AppendASCII(kPolicyCacheSubfolder);
 
   return base::MakeRefCounted<DMStorage>(policy_cache_folder);
 }

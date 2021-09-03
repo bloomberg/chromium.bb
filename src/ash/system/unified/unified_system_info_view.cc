@@ -21,12 +21,14 @@
 #include "ash/system/supervised/supervised_icon_string.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -45,13 +47,13 @@ using ContentLayerType = AshColorProvider::ContentLayerType;
 
 namespace {
 
-base::string16 FormatDate(const base::Time& time) {
+std::u16string FormatDate(const base::Time& time) {
   // Use 'short' month format (e.g., "Oct") followed by non-padded day of
   // month (e.g., "2", "10").
   return base::TimeFormatWithPattern(time, "LLLd");
 }
 
-base::string16 FormatDayOfWeek(const base::Time& time) {
+std::u16string FormatDayOfWeek(const base::Time& time) {
   // Use 'short' day of week format (e.g., "Wed").
   return base::TimeFormatWithPattern(time, "EEE");
 }
@@ -97,7 +99,7 @@ DateView::DateView(UnifiedSystemTrayController* controller)
   Shell::Get()->system_tray_model()->clock()->AddObserver(this);
   SetEnabled(Shell::Get()->system_tray_model()->clock()->IsSettingsAvailable());
   SetInstallFocusRingOnFocus(true);
-  SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
 }
 
 DateView::~DateView() {
@@ -209,8 +211,8 @@ void BatteryView::OnPowerStatusChanged() {
 }
 
 void BatteryView::Update() {
-  base::string16 percentage_text;
-  base::string16 status_text;
+  std::u16string percentage_text;
+  std::u16string status_text;
   std::tie(percentage_text, status_text) =
       PowerStatus::Get()->GetStatusStrings();
 
@@ -285,7 +287,7 @@ ManagedStateView::ManagedStateView(PressedCallback callback,
       gfx::Size(kUnifiedSystemInfoHeight, kUnifiedSystemInfoHeight));
 
   SetInstallFocusRingOnFocus(true);
-  SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
 }
 
 // A view that shows whether the device is enterprise managed or not. It updates
@@ -299,6 +301,7 @@ class EnterpriseManagedView : public ManagedStateView,
 
   // EnterpriseDomainObserver:
   void OnEnterpriseDomainChanged() override;
+  void OnEnterpriseAccountDomainChanged() override;
 
   // SessionObserver:
   void OnLoginStatusChanged(LoginStatus status) override;
@@ -336,6 +339,10 @@ void EnterpriseManagedView::OnEnterpriseDomainChanged() {
   Update();
 }
 
+void EnterpriseManagedView::OnEnterpriseAccountDomainChanged() {
+  Update();
+}
+
 void EnterpriseManagedView::OnLoginStatusChanged(LoginStatus status) {
   Update();
 }
@@ -345,18 +352,54 @@ void EnterpriseManagedView::Update() {
       Shell::Get()->system_tray_model()->enterprise_domain();
   SessionControllerImpl* session_controller =
       Shell::Get()->session_controller();
-  SetVisible(session_controller->ShouldDisplayManagedUI() ||
-             model->active_directory_managed() ||
-             !model->enterprise_domain_manager().empty());
+  std::string enterprise_domain_manager = model->enterprise_domain_manager();
+  std::string account_domain_manager =
+      features::IsManagedDeviceUIRedesignEnabled()
+          ? model->account_domain_manager()
+          : std::string();
 
-  if (model->active_directory_managed()) {
-    SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_ASH_ENTERPRISE_DEVICE_MANAGED));
-  } else if (!model->enterprise_domain_manager().empty()) {
-    SetTooltipText(l10n_util::GetStringFUTF16(
-        IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY,
-        base::UTF8ToUTF16(model->enterprise_domain_manager())));
+  bool visible = session_controller->ShouldDisplayManagedUI() ||
+                 model->active_directory_managed() ||
+                 !enterprise_domain_manager.empty() ||
+                 !account_domain_manager.empty();
+  SetVisible(visible);
+
+  if (!visible)
+    return;
+
+  if (!features::IsManagedDeviceUIRedesignEnabled()) {
+    if (model->active_directory_managed()) {
+      SetTooltipText(l10n_util::GetStringFUTF16(
+          IDS_ASH_ENTERPRISE_DEVICE_MANAGED, ui::GetChromeOSDeviceName()));
+    } else if (!model->enterprise_domain_manager().empty()) {
+      SetTooltipText(l10n_util::GetStringFUTF16(
+          IDS_ASH_ENTERPRISE_DEVICE_MANAGED_BY, ui::GetChromeOSDeviceName(),
+          base::UTF8ToUTF16(model->enterprise_domain_manager())));
+    }
+    return;
   }
+
+  // Display both device and user management if the feature is enabled.
+  std::u16string managed_string;
+  if (enterprise_domain_manager.empty() && account_domain_manager.empty()) {
+    managed_string = l10n_util::GetStringFUTF16(
+        IDS_ASH_ENTERPRISE_DEVICE_MANAGED, ui::GetChromeOSDeviceName());
+  } else if (!enterprise_domain_manager.empty() &&
+             !account_domain_manager.empty() &&
+             enterprise_domain_manager != account_domain_manager) {
+    managed_string =
+        l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY_MULTIPLE,
+                                   base::UTF8ToUTF16(enterprise_domain_manager),
+                                   base::UTF8ToUTF16(account_domain_manager));
+  } else {
+    std::u16string display_domain_manager =
+        enterprise_domain_manager.empty()
+            ? base::UTF8ToUTF16(account_domain_manager)
+            : base::UTF8ToUTF16(enterprise_domain_manager);
+    managed_string = l10n_util::GetStringFUTF16(IDS_ASH_SHORT_MANAGED_BY,
+                                                display_domain_manager);
+  }
+  SetTooltipText(managed_string);
 }
 
 // A view that shows whether the user is supervised or a child.
@@ -376,8 +419,10 @@ SupervisedUserView::SupervisedUserView()
     : ManagedStateView(PressedCallback(),
                        IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL,
                        GetSupervisedUserIcon()) {
-  SetVisible(Shell::Get()->session_controller()->IsUserSupervised());
-  if (Shell::Get()->session_controller()->IsUserSupervised())
+  bool visible =
+      Shell::Get()->session_controller()->IsUserChildOrDeprecatedSupervised();
+  SetVisible(visible);
+  if (visible)
     SetTooltipText(GetSupervisedUserMessage());
 
   // TODO(crbug/1026821) Add SupervisedUserView::ButtonPress() overload
@@ -407,12 +452,9 @@ UnifiedSystemInfoView::UnifiedSystemInfoView(
   auto* spacing = AddChildView(std::make_unique<views::View>());
   layout->SetFlexForView(spacing, 1);
 
-  if (!features::IsManagedDeviceUIRedesignEnabled()) {
-    // UnifiedManagedDeviceView is shown instead.
-    enterprise_managed_ =
-        AddChildView(std::make_unique<EnterpriseManagedView>(controller));
-    supervised_ = AddChildView(std::make_unique<SupervisedUserView>());
-  }
+  enterprise_managed_ =
+      AddChildView(std::make_unique<EnterpriseManagedView>(controller));
+  supervised_ = AddChildView(std::make_unique<SupervisedUserView>());
 }
 
 UnifiedSystemInfoView::~UnifiedSystemInfoView() = default;

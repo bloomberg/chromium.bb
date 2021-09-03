@@ -113,7 +113,7 @@ void ServiceWorkerInstalledScriptReader::Start() {
 void ServiceWorkerInstalledScriptReader::OnReadResponseHeadComplete(
     int result,
     network::mojom::URLResponseHeadPtr response_head,
-    base::Optional<mojo_base::BigBuffer> metadata) {
+    absl::optional<mojo_base::BigBuffer> metadata) {
   DCHECK(client_);
   TRACE_EVENT0(
       "ServiceWorker",
@@ -140,7 +140,7 @@ void ServiceWorkerInstalledScriptReader::OnReadResponseHeadComplete(
 
 void ServiceWorkerInstalledScriptReader::OnReadDataStarted(
     network::mojom::URLResponseHeadPtr response_head,
-    base::Optional<mojo_base::BigBuffer> metadata,
+    absl::optional<mojo_base::BigBuffer> metadata,
     mojo::ScopedDataPipeConsumerHandle body_consumer_handle) {
   if (!body_consumer_handle) {
     CompleteSendIfNeeded(FinishedReason::kCreateDataPipeError);
@@ -160,8 +160,8 @@ void ServiceWorkerInstalledScriptReader::OnReadDataStarted(
     options.element_num_bytes = 1;
     options.capacity_num_bytes =
         blink::BlobUtils::GetDataPipeCapacity(metadata->size());
-    int rv = mojo::CreateDataPipe(&options, &meta_producer_handle,
-                                  &meta_data_consumer);
+    int rv = mojo::CreateDataPipe(&options, meta_producer_handle,
+                                  meta_data_consumer);
     if (rv != MOJO_RESULT_OK) {
       CompleteSendIfNeeded(FinishedReason::kCreateDataPipeError);
       return;

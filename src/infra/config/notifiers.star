@@ -29,6 +29,15 @@ luci.notifier(
 )
 
 luci.notifier(
+    name = "chromium-3pp-packager",
+    on_new_status = ["FAILURE"],
+    notify_emails = [
+        "chromium-3pp-packager+failures@google.com",
+        "clank-build-core+3ppfailures@google.com",
+    ],
+)
+
+luci.notifier(
     name = "cr-fuchsia",
     on_status_change = True,
     notify_emails = [
@@ -41,7 +50,7 @@ luci.notifier(
     name = "cronet",
     on_status_change = True,
     notify_emails = [
-        "cronet-bots-observer@google.com",
+        "cronet-sheriff@grotations.appspotmail.com",
     ],
 )
 
@@ -59,13 +68,14 @@ luci.notifier(
     ],
 )
 
-TREE_CLOSING_STEPS = [
+TREE_CLOSING_STEPS_REGEXP = "\\b({})\\b".format("|".join([
     "bot_update",
     "compile",
     "gclient runhooks",
     "runhooks",
     "update",
-]
+    "\\w*nocompile_test",
+]))
 
 # This results in a notifier with no recipients, so nothing will actually be
 # notified. This still creates a "notifiable" that can be passed to the notifies
@@ -91,7 +101,7 @@ def tree_closer(*, name, tree_status_host, **kwargs):
 tree_closer(
     name = "chromium-tree-closer",
     tree_status_host = "chromium-status.appspot.com",
-    failed_step_regexp = TREE_CLOSING_STEPS,
+    failed_step_regexp = TREE_CLOSING_STEPS_REGEXP,
 )
 
 tree_closer(
@@ -104,7 +114,7 @@ def tree_closure_notifier(*, name, **kwargs):
         luci.notifier(
             name = name,
             on_occurrence = ["FAILURE"],
-            failed_step_regexp = TREE_CLOSING_STEPS,
+            failed_step_regexp = TREE_CLOSING_STEPS_REGEXP,
             **kwargs
         )
     else:
@@ -125,7 +135,7 @@ tree_closure_notifier(
     name = "gpu-tree-closer-email",
     notify_emails = ["chrome-gpu-build-failures@google.com"],
     notify_rotation_urls = [
-        "https://chrome-ops-rotation-proxy.appspot.com/current/grotation:chrome-gpu-pixel-wrangling",
+        "https://chrome-ops-rotation-proxy.appspot.com/current/oncallator:chrome-gpu-pixel-wrangler",
     ],
 )
 
@@ -193,7 +203,7 @@ luci.notifier(
 )
 
 luci.notifier(
-    name = "linux-blink-heap-verification",
+    name = "linux-blink-fyi-bots",
     notify_emails = [
         "mlippautz+fyi-bots@chromium.org",
     ],

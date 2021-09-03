@@ -5,11 +5,11 @@
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
-#include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -71,7 +71,7 @@ bool HostedAppBrowserController::HasMinimalUiButtons() const {
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
   // TODO(calamity): Use the app name to retrieve the app icon without using the
   // extensions tab helper to make icon load more immediate.
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon) &&
       apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
           browser()->profile())) {
@@ -108,31 +108,31 @@ gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowIcon() const {
-  if (IsForWebAppBrowser(browser()))
+  if (IsWebApp(browser()))
     return GetWindowAppIcon();
 
   return browser()->GetCurrentPageIcon().AsImageSkia();
 }
 
-base::Optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
-  base::Optional<SkColor> web_theme_color =
+absl::optional<SkColor> HostedAppBrowserController::GetThemeColor() const {
+  absl::optional<SkColor> web_theme_color =
       AppBrowserController::GetThemeColor();
   if (web_theme_color)
     return web_theme_color;
 
   const Extension* extension = GetExtension();
   if (!extension)
-    return base::nullopt;
+    return absl::nullopt;
 
-  base::Optional<SkColor> extension_theme_color =
+  absl::optional<SkColor> extension_theme_color =
       AppThemeColorInfo::GetThemeColor(extension);
   if (extension_theme_color)
     return SkColorSetA(*extension_theme_color, SK_AlphaOPAQUE);
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
-base::string16 HostedAppBrowserController::GetTitle() const {
+std::u16string HostedAppBrowserController::GetTitle() const {
   // When showing the toolbar, display the name of the app, instead of the
   // current page as the title.
   if (ShouldShowCustomTabBar()) {
@@ -172,19 +172,19 @@ const Extension* HostedAppBrowserController::GetExtension() const {
       ->GetExtensionById(GetAppId(), ExtensionRegistry::EVERYTHING);
 }
 
-base::string16 HostedAppBrowserController::GetAppShortName() const {
+std::u16string HostedAppBrowserController::GetAppShortName() const {
   const Extension* extension = GetExtension();
   return extension ? base::UTF8ToUTF16(extension->short_name())
-                   : base::string16();
+                   : std::u16string();
 }
 
-base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
+std::u16string HostedAppBrowserController::GetFormattedUrlOrigin() const {
   const Extension* extension = GetExtension();
   return extension ? FormatUrlOrigin(AppLaunchInfo::GetLaunchWebURL(extension))
-                   : base::string16();
+                   : std::u16string();
 }
 
-bool HostedAppBrowserController::CanUninstall() const {
+bool HostedAppBrowserController::CanUserUninstall() const {
   if (uninstall_dialog_)
     return false;
 
@@ -197,7 +197,8 @@ bool HostedAppBrowserController::CanUninstall() const {
       ->UserMayModifySettings(extension, nullptr);
 }
 
-void HostedAppBrowserController::Uninstall() {
+void HostedAppBrowserController::Uninstall(
+    webapps::WebappUninstallSource webapp_uninstall_source) {
   const Extension* extension = GetExtension();
   if (!extension)
     return;
@@ -225,7 +226,7 @@ bool HostedAppBrowserController::IsHostedApp() const {
 
 void HostedAppBrowserController::OnExtensionUninstallDialogClosed(
     bool success,
-    const base::string16& error) {
+    const std::u16string& error) {
   uninstall_dialog_.reset();
 }
 

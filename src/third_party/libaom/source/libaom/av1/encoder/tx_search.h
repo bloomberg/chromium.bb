@@ -47,6 +47,10 @@ static AOM_INLINE int tx_size_cost(const MACROBLOCK *const x, BLOCK_SIZE bsize,
   return x->mode_costs.tx_size_cost[tx_size_cat][tx_size_ctx][depth];
 }
 
+int64_t av1_estimate_txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
+                              RD_STATS *rd_stats, int64_t ref_best_rd,
+                              BLOCK_SIZE bs, TX_SIZE tx_size);
+
 /*!\brief Transform type search for luma macroblock with fixed transform size.
  *
  * \ingroup transform_search

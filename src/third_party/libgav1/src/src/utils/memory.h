@@ -34,8 +34,9 @@ namespace libgav1 {
 enum {
 // The byte alignment required for buffers used with SIMD code to be read or
 // written with aligned operations.
-#if defined(__i386__) || defined(_M_IX86)
-  kMaxAlignment = 16,  // extended alignment is safe on x86.
+#if defined(__i386__) || defined(_M_IX86) || defined(__x86_64__) || \
+    defined(_M_X64)
+  kMaxAlignment = 32,  // extended alignment is safe on x86.
 #else
   kMaxAlignment = alignof(max_align_t),
 #endif
@@ -70,7 +71,7 @@ inline void* AlignedAlloc(size_t alignment, size_t size) {
   // more convenient to use memalign(). Unlike glibc, Android does not consider
   // memalign() an obsolete function.
   return memalign(alignment, size);
-#else  // !defined(__ANDROID__)
+#else   // !defined(__ANDROID__)
   void* ptr = nullptr;
   // posix_memalign requires that the requested alignment be at least
   // sizeof(void*). In this case, fall back on malloc which should return

@@ -13,18 +13,14 @@
 // for all new work.
 enum IPCMessageStart {
   AutomationMsgStart = 0,
-  FrameMsgStart,
   TestMsgStart,
   WorkerMsgStart,
   NaClMsgStart,
   GpuChannelMsgStart,
   MediaMsgStart,
   PpapiMsgStart,
-  ChromeMsgStart,
-  PrintMsgStart,
   ExtensionMsgStart,
   ChromotingMsgStart,
-  AndroidWebViewMsgStart,
   BlpControlMsgStart,
   BlpProfileMsgStart,
   BlpWebViewMsgStart,  
@@ -36,8 +32,6 @@ enum IPCMessageStart {
   GuestViewMsgStart,
   MediaPlayerDelegateMsgStart,
   ExtensionWorkerMsgStart,
-  SubresourceFilterMsgStart,
-  UnfreezableFrameMsgStart,
   LastIPCMsgStart  // Must come last.
 };
 

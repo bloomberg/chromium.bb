@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_HIGHLIGHT_PAINTING_UTILS_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
 #include "third_party/blink/renderer/core/style/applied_text_decoration.h"
@@ -24,7 +25,7 @@ class CORE_EXPORT HighlightPaintingUtils {
   STATIC_ONLY(HighlightPaintingUtils);
 
  public:
-  static base::Optional<AppliedTextDecoration> HighlightTextDecoration(
+  static absl::optional<AppliedTextDecoration> HighlightTextDecoration(
       const ComputedStyle& style,
       const ComputedStyle& pseudo_style);
   static Color HighlightBackgroundColor(const Document&,

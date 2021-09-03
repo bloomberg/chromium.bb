@@ -11,33 +11,31 @@
 #include "base/fuchsia/test_log_listener_safe.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind.h"
-#include "fuchsia/base/context_provider_test_connector.h"
-#include "fuchsia/base/frame_test_util.h"
+#include "fuchsia/base/test/context_provider_test_connector.h"
+#include "fuchsia/base/test/frame_test_util.h"
 #include "fuchsia/engine/web_engine_integration_test_base.h"
 
 namespace {
 
+// Name of the console logging test page.
 constexpr char kLogTestPageFileName[] = "console_logging.html";
-constexpr char kWebEngineLogTag[] = "web_engine_exe";
-constexpr char kNormalizedLineNumber[] = "12345";
+constexpr char kLogTestPageDebugMessage[] = "This is a debug() message.";
+
+// Debug name to create Frames with, to use as their logging tag.
+constexpr char kFrameLogTag[] = "Test🖼🪵";
+
 constexpr char kNormalizedPortNumber[] = "678";
 
 // Replaces the line number in frame_impl.cc with kNormalizedLineNumber and
 // the port with kNormalizedPortNumber to enable reliable comparison of
 // console log messages.
 std::string NormalizeConsoleLogMessage(base::StringPiece original) {
-  size_t line_number_begin = original.find("(") + 1;
-  size_t close_parenthesis = original.find(")", line_number_begin);
-  std::string normalized = original.as_string().replace(
-      line_number_begin, close_parenthesis - line_number_begin,
-      kNormalizedLineNumber);
-
   const char kSchemePortColon[] = "http://127.0.0.1:";
   size_t port_begin =
-      normalized.find(kSchemePortColon) + strlen(kSchemePortColon);
-  size_t path_begin = normalized.find("/", port_begin);
-  return normalized.replace(port_begin, path_begin - port_begin,
-                            kNormalizedPortNumber);
+      original.find(kSchemePortColon) + strlen(kSchemePortColon);
+  size_t path_begin = original.find("/", port_begin);
+  return std::string(original).replace(port_begin, path_begin - port_begin,
+                                       kNormalizedPortNumber);
 }
 
 }  // namespace
@@ -45,24 +43,34 @@ std::string NormalizeConsoleLogMessage(base::StringPiece original) {
 class WebEngineIntegrationLoggingTest : public WebEngineIntegrationTestBase {
  protected:
   WebEngineIntegrationLoggingTest()
-      : WebEngineIntegrationTestBase(),
-        isolated_archivist_service_dir_(
-            StartIsolatedArchivist(archivist_controller_.NewRequest())),
-        binding_(&test_log_listener_) {}
+      : isolated_archivist_service_dir_(
+            StartIsolatedArchivist(archivist_controller_.NewRequest())) {
+    // Redirect the LogSink service to an isolated archivist instance.
+    zx_status_t status = filtered_service_directory()
+                             .outgoing_directory()
+                             ->RemovePublicService<fuchsia::logger::LogSink>();
+    ZX_CHECK(status == ZX_OK, status) << "RemovePublicService";
+
+    status =
+        filtered_service_directory().outgoing_directory()->AddPublicService(
+            fidl::InterfaceRequestHandler<fuchsia::logger::LogSink>(
+                [this](auto request) {
+                  isolated_archivist_service_dir_.Connect(std::move(request));
+                }));
+    ZX_CHECK(status == ZX_OK, status) << "AddPublicService";
+  }
 
   void SetUp() override {
     WebEngineIntegrationTestBase::SetUp();
     StartWebEngineForLoggingTest(
         base::CommandLine(base::CommandLine::NO_PROGRAM));
 
-    logger_ = isolated_archivist_service_dir_.Connect<fuchsia::logger::Log>();
-    logger_.set_error_handler([&](zx_status_t status) {
-      ZX_LOG(ERROR, status) << "fuchsia.logger.Log disconnected";
-      ADD_FAILURE();
-      wait_for_message_loop_.Quit();
-    });
+    log_ = isolated_archivist_service_dir_.Connect<fuchsia::logger::Log>();
   }
 
+  fuchsia::logger::Log* log() { return log_.get(); }
+
+ private:
   // Starts WebEngine without redirecting its logs.
   void StartWebEngineForLoggingTest(base::CommandLine command_line) {
     web_context_provider_ = cr_fuchsia::ConnectContextProviderForLoggingTest(
@@ -96,96 +104,47 @@ class WebEngineIntegrationLoggingTest : public WebEngineIntegrationTestBase {
     return archivist_services_dir;
   }
 
-  // Returns a CreateContextParams that has an isolated LogSink service from
-  // |isolated_archivist_service_dir_|.
-  fuchsia::web::CreateContextParams ContextParamsWithIsolatedLogSink() {
-    // Use a FilteredServiceDirectory in order to inject an isolated service.
-    fuchsia::web::CreateContextParams create_params =
-        ContextParamsWithFilteredServiceDirectory();
-
-    EXPECT_EQ(filtered_service_directory_->outgoing_directory()
-                  ->RemovePublicService<fuchsia::logger::LogSink>(),
-              ZX_OK);
-
-    EXPECT_EQ(
-        filtered_service_directory_->outgoing_directory()->AddPublicService(
-            std::make_unique<vfs::Service>(
-                [this](zx::channel channel, async_dispatcher_t* dispatcher) {
-                  isolated_archivist_service_dir_.Connect(
-                      fuchsia::logger::LogSink::Name_, std::move(channel));
-                }),
-            fuchsia::logger::LogSink::Name_),
-        ZX_OK);
-
-    return create_params;
-  }
-
-  // Checks whether the expected log line has been received yet,
-  // and invokes DumpLogsSafe() if not. It passes itself as the completion
-  // callback, so that when the call completes it can check again for the
-  // expected message and re-invoke DumpLogsSafe(), or quit the loop, as
-  // appropriate.
-  void DumpLogs() {
-    // Look for kLogTestPageFileName because that string is unique to the
-    // console logs generated by these tests.
-    if (test_log_listener_.DidReceiveString(kLogTestPageFileName,
-                                            &logged_message_)) {
-      wait_for_message_loop_.Quit();
-      return;
-    }
-
-    std::unique_ptr<fuchsia::logger::LogFilterOptions> options =
-        std::make_unique<fuchsia::logger::LogFilterOptions>();
-    options->tags = {kWebEngineLogTag};
-
-    test_log_listener_.set_on_dump_logs_done(base::BindOnce(
-        &WebEngineIntegrationLoggingTest::DumpLogs, base::Unretained(this)));
-    logger_->DumpLogsSafe(binding_.NewBinding(), std::move(options));
-  }
-
-  void LoadLogTestPage() {
-    EXPECT_TRUE(cr_fuchsia::LoadUrlAndExpectResponse(
-        navigation_controller_.get(), fuchsia::web::LoadUrlParams(),
-        embedded_test_server_.GetURL(std::string("/") + kLogTestPageFileName)
-            .spec()));
-  }
-
   fuchsia::sys::ComponentControllerPtr archivist_controller_;
   sys::ServiceDirectory isolated_archivist_service_dir_;
 
-  fuchsia::logger::LogPtr logger_;
-  base::TestLogListenerSafe test_log_listener_;
-  fidl::Binding<fuchsia::logger::LogListenerSafe> binding_;
-
-  fuchsia::logger::LogMessage logged_message_;
-
-  base::RunLoop wait_for_message_loop_;
+  fuchsia::logger::LogPtr log_;
 };
 
 // Verifies that calling messages from console.debug() calls go to the Fuchsia
 // system log when the script log level is set to DEBUG.
 TEST_F(WebEngineIntegrationLoggingTest, SetJavaScriptLogLevel_DEBUG) {
-  CreateContextAndFrame(ContextParamsWithIsolatedLogSink());
+  base::SimpleTestLogListener log_listener;
+  log_listener.ListenToLog(log(), nullptr);
 
-  // Enable all logging.
+  // Create the Context & Frame with all log severities enabled.
+  fuchsia::web::CreateFrameParams frame_params;
+  frame_params.set_debug_name(kFrameLogTag);
+  CreateContext(TestContextParams());
+  CreateFrameWithParams(std::move(frame_params));
   frame_->SetJavaScriptLogLevel(fuchsia::web::ConsoleLogLevel::DEBUG);
 
-  LoadLogTestPage();
-  navigation_listener_->RunUntilTitleEquals("ended");
+  // Navigate to the test page, which will emit console logging.
+  ASSERT_NO_FATAL_FAILURE(LoadUrlAndExpectResponse(
+      embedded_test_server_.GetURL(std::string("/") + kLogTestPageFileName)
+          .spec()));
+  navigation_listener()->RunUntilTitleEquals("ended");
 
-  // Start the first DumpLogs() call.
-  DumpLogs();
+  // Run until the message passed to console.debug() is received.
+  absl::optional<fuchsia::logger::LogMessage> logged_message =
+      log_listener.RunUntilMessageReceived(kLogTestPageDebugMessage);
 
-  // Run until kLogMessage is received.
-  wait_for_message_loop_.Run();
+  ASSERT_TRUE(logged_message.has_value());
 
-  EXPECT_EQ(logged_message_.severity,
-            static_cast<int32_t>(fuchsia::logger::LogLevelFilter::INFO));
-  ASSERT_EQ(logged_message_.tags.size(), 1u);
-  EXPECT_EQ(logged_message_.tags[0], kWebEngineLogTag);
-  EXPECT_EQ(NormalizeConsoleLogMessage(logged_message_.msg),
-            "[frame_impl.cc(" + std::string(kNormalizedLineNumber) +
-                ")] debug:http://127.0.0.1:" + kNormalizedPortNumber +
-                "/console_logging.html:8 "
-                ": This is a debug() message.");
+  // console.debug() should map to Fuchsia's DEBUG log severity.
+  EXPECT_EQ(logged_message->severity,
+            static_cast<int32_t>(fuchsia::logger::LogLevelFilter::DEBUG));
+
+  // Verify that the Frame's |debug_name| is amongst the log message tags.
+  EXPECT_FALSE(logged_message->tags.empty());
+  EXPECT_TRUE(base::Contains(logged_message->tags, kFrameLogTag));
+
+  // Verify that the message is formatted as expected.
+  EXPECT_EQ(NormalizeConsoleLogMessage(logged_message->msg),
+            std::string("http://127.0.0.1:") + kNormalizedPortNumber +
+                "/console_logging.html:8 : This is a debug() message.");
 }

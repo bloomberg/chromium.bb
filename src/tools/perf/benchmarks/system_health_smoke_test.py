@@ -28,9 +28,10 @@ from benchmarks import system_health
 
 
 def GetSystemHealthBenchmarksToSmokeTest():
-  sh_benchmark_classes = discover.DiscoverClassesInModule(
-      system_health, perf_benchmark.PerfBenchmark,
-      index_by_class_name=True).values()
+  sh_benchmark_classes = list(
+      discover.DiscoverClassesInModule(system_health,
+                                       perf_benchmark.PerfBenchmark,
+                                       index_by_class_name=True).values())
   return list(b for b in sh_benchmark_classes if
               b.Name().startswith('system_health.memory'))
 
@@ -52,7 +53,7 @@ _DISABLED_TESTS = frozenset({
     'system_health.memory_desktop/long_running:tools:gmail-background',
 
     # crbug.com/885320
-    'system_health.memory_desktop/browse:search:google:2018',
+    'system_health.memory_desktop/browse:search:google:2020',
 
     # crbug.com/893615
     'system_health.memory_desktop/multitab:misc:typical24:2018',
@@ -61,7 +62,7 @@ _DISABLED_TESTS = frozenset({
     'system_health.memory_mobile/browse:news:cnn:2018',
 
     # crbug.com/978358
-    'system_health.memory_desktop/browse:news:flipboard:2018',
+    'system_health.memory_desktop/browse:news:flipboard:2020',
 
     # crbug.com/1008001
     'system_health.memory_desktop/browse:tools:sheets:2019',
@@ -69,7 +70,7 @@ _DISABLED_TESTS = frozenset({
 
     # crbug.com/1014661
     'system_health.memory_desktop/browse:social:tumblr_infinite_scroll:2018',
-    'system_health.memory_desktop/browse:search:google_india:2018',
+    'system_health.memory_desktop/browse:search:google_india:2021',
 
     # The following tests are disabled because they are disabled on the perf
     # waterfall (using tools/perf/expectations.config) on one platform or
@@ -85,13 +86,15 @@ _DISABLED_TESTS = frozenset({
     # crbug.com/934885
     'system_health.memory_desktop/load_accessibility:media:wikipedia:2018',
     # crbug.com/942952
-    'system_health.memory_desktop/browse:news:hackernews:2018',
+    'system_health.memory_desktop/browse:news:hackernews:2020',
     # crbug.com/992436
     'system_health.memory_desktop/browse:social:twitter:2018',
     # crbug.com/1060068
     'system_health.memory_desktop/browse:tech:discourse_infinite_scroll:2018',
     # crbug.com/1091274
     'system_health.memory_desktop/browse:media:tumblr:2018',
+    # crbug.com/1194256
+    'system_health.memory_desktop/browse:news:cnn:2021',
     # ]
 })
 
@@ -147,7 +150,7 @@ def _GenerateSmokeTestCase(benchmark_class, story_to_smoke_test):
       self.assertEqual(
           return_code, 0,
           msg='Benchmark run failed: %s' % benchmark_class.Name())
-      return_code = results_processor.ProcessResults(options)
+      return_code = results_processor.ProcessResults(options, is_unittest=True)
       self.assertEqual(
           return_code, 0,
           msg='Result processing failed: %s' % benchmark_class.Name())

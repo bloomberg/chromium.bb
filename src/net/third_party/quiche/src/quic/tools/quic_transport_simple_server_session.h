@@ -9,12 +9,12 @@
 #include <vector>
 
 #include "url/origin.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_server_session.h"
-#include "net/third_party/quiche/src/quic/quic_transport/quic_transport_stream.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/quic_transport/quic_transport_server_session.h"
+#include "quic/quic_transport/quic_transport_stream.h"
 
 namespace quic {
 
@@ -73,7 +73,7 @@ class QuicTransportSimpleServerSession
   size_t pending_outgoing_bidirectional_streams_ = 0u;
   Mode mode_;
   std::vector<url::Origin> accepted_origins_;
-  QuicCircularDeque<std::string> streams_to_echo_back_;
+  quiche::QuicheCircularDeque<std::string> streams_to_echo_back_;
 };
 
 }  // namespace quic

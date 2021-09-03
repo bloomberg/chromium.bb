@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_H_
 #define CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/values.h"
+#include "chromeos/crosapi/mojom/keystore_error.mojom.h"
 #include "net/cert/x509_certificate.h"
 
 namespace chromeos {
@@ -42,7 +46,10 @@ enum class TokenId { kUser, kSystem };
 enum class Status {
   kSuccess,
   kErrorAlgorithmNotSupported,
+  kErrorAlgorithmNotPermittedByCertificate,
   kErrorCertificateNotFound,
+  kErrorCertificateInvalid,
+  kErrorInputTooLong,
   kErrorGrantKeyPermissionForExtension,
   kErrorInternal,
   kErrorKeyAttributeRetrievalFailed,
@@ -62,6 +69,19 @@ enum class Status {
 // extensions may hardcode specific messages.
 std::string StatusToString(Status status);
 
+// Convert platform_keys::Status into a KeystoreError. Status::kSuccess should
+// not be passed in the function.
+crosapi::mojom::KeystoreError StatusToKeystoreError(Status status);
+
+// Creates platform_keys::Status into a KeystoreError. Keystore specific errors
+// are not supported and should be processed separately.
+Status StatusFromKeystoreError(crosapi::mojom::KeystoreError error);
+
+// Converts KeystoreError code into an error message.
+// Note: Do not change already existing error-to-string translations, since
+// extensions may hardcode specific messages.
+std::string KeystoreErrorToString(crosapi::mojom::KeystoreError error);
+
 // Returns the DER encoding of the X.509 Subject Public Key Info of the public
 // key in |certificate|.
 std::string GetSubjectPublicKeyInfo(
@@ -72,8 +92,53 @@ std::string GetSubjectPublicKeyInfo(
 void IntersectCertificates(
     const net::CertificateList& certs1,
     const net::CertificateList& certs2,
-    const base::Callback<void(std::unique_ptr<net::CertificateList>)>&
-        callback);
+    base::OnceCallback<void(std::unique_ptr<net::CertificateList>)> callback);
+
+// The output for GetPublicKeyAndAlgorithm.
+struct GetPublicKeyAndAlgorithmOutput {
+  GetPublicKeyAndAlgorithmOutput();
+  GetPublicKeyAndAlgorithmOutput(GetPublicKeyAndAlgorithmOutput&&);
+  ~GetPublicKeyAndAlgorithmOutput();
+
+  Status status = Status::kSuccess;
+  std::vector<uint8_t> public_key;  // Only set if status == kSuccess
+  base::DictionaryValue algorithm;  // Only set if status == kSuccess
+};
+
+// This is a convenient wrapper around GetPublicKey which also builds a
+// WebCrypto algorithm dictionary and performs error checking.
+GetPublicKeyAndAlgorithmOutput GetPublicKeyAndAlgorithm(
+    const std::vector<uint8_t>& possibly_invalid_cert_der,
+    const std::string& algorithm_name);
+
+struct PublicKeyInfo {
+  PublicKeyInfo();
+  ~PublicKeyInfo();
+
+  // The X.509 Subject Public Key Info of the key in DER encoding.
+  std::string public_key_spki_der;
+
+  // The type of the key.
+  net::X509Certificate::PublicKeyType key_type =
+      net::X509Certificate::kPublicKeyTypeUnknown;
+
+  // The size of the key in bits.
+  size_t key_size_bits = 0;
+};
+
+// Builds a partial WebCrypto Algorithm object from the parameters available in
+// |key_info|, which must be the info of an RSA key. This doesn't include
+// sign/hash parameters and thus isn't complete. platform_keys::GetPublicKey()
+// enforced the public exponent 65537.
+void BuildWebCryptoRSAAlgorithmDictionary(const PublicKeyInfo& key_info,
+                                          base::DictionaryValue* algorithm);
+
+// Builds a partial WebCrypto Algorithm object from the parameters available in
+// |key_info|, which must be the info of an EC key. For more information about
+// EcKeyAlgorithm dictionary, please refer to:
+// https://www.w3.org/TR/WebCryptoAPI/#EcKeyAlgorithm-dictionary
+void BuildWebCryptoEcdsaAlgorithmDictionary(const PublicKeyInfo& key_info,
+                                            base::DictionaryValue* algorithm);
 
 // Obtains information about the public key in |certificate|.
 // If |certificate| contains an RSA key, sets |key_size_bits| to the modulus
@@ -112,5 +177,18 @@ struct ClientCertificateRequest {
 
 }  // namespace platform_keys
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when
+// //chrome/browser/chromeos/platform_keys moved to ash
+namespace ash {
+namespace platform_keys {
+using ::chromeos::platform_keys::GetSubjectPublicKeyInfo;
+using ::chromeos::platform_keys::HashAlgorithm;
+using ::chromeos::platform_keys::KeyAttributeType;
+using ::chromeos::platform_keys::Status;
+using ::chromeos::platform_keys::StatusToString;
+using ::chromeos::platform_keys::TokenId;
+}  // namespace platform_keys
+}  // namespace ash
 
 #endif  // CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_H_

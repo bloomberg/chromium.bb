@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CERT_REPORT_HELPER_H_
 #define COMPONENTS_SECURITY_INTERSTITIALS_CONTENT_CERT_REPORT_HELPER_H_
 
-#include <string>
-
 #include "base/macros.h"
 #include "components/security_interstitials/content/certificate_error_report.h"
 #include "components/security_interstitials/core/controller_client.h"
@@ -50,6 +48,7 @@ class CertReportHelper {
       CertificateErrorReport::InterstitialReason interstitial_reason,
       bool overridable,
       const base::Time& interstitial_time,
+      bool can_show_enhanced_protection_message,
       security_interstitials::MetricsHelper* metrics_helper);
 
   virtual ~CertReportHelper();
@@ -116,6 +115,13 @@ class CertReportHelper {
   bool overridable_;
   // The time at which the interstitial was constructed.
   const base::Time interstitial_time_;
+  // Whether to show enhanced protection message in the interstitial. If it is
+  // set to false, the message will be hidden. If it is set to true, other
+  // states and user preferences will still be checked.
+  // TODO(crbug.com/1078381): This is currently set to false in WebLayer and
+  // true in other platforms. Remove this member once WebLayer supports enhanced
+  // protection.
+  bool can_show_enhanced_protection_message_;
   // Helpful for recording metrics about cert reports.
   security_interstitials::MetricsHelper* metrics_helper_;
   // Appends additional details to a report.

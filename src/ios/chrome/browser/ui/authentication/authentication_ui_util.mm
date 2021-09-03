@@ -4,16 +4,37 @@
 
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 
-#include "base/check.h"
-#include "base/format_macros.h"
-#include "components/strings/grit/components_strings.h"
-#include "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
-#include "ios/chrome/grit/ios_strings.h"
-#include "ui/base/l10n/l10n_util.h"
+#import "base/check.h"
+#import "base/format_macros.h"
+#import "base/strings/utf_string_conversions.h"
+#import "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/signin/authentication_service.h"
+#import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/sync/sync_setup_service.h"
+#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+std::u16string HostedDomainForPrimaryAccount(Browser* browser) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForBrowserState(browser->GetBrowserState());
+  absl::optional<AccountInfo> account_info =
+      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
+          identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
+  std::string hosted_domain = account_info.has_value()
+                                  ? account_info.value().hosted_domain
+                                  : std::string();
+  return base::UTF8ToUTF16(hosted_domain);
+}
 
 AlertCoordinator* ErrorCoordinator(NSError* error,
                                    ProceduralBlock dismissAction,

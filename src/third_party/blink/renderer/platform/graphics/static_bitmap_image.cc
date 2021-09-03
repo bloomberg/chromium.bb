@@ -47,6 +47,7 @@ void StaticBitmapImage::DrawHelper(
     const PaintFlags& flags,
     const FloatRect& dst_rect,
     const FloatRect& src_rect,
+    const SkSamplingOptions& sampling,
     ImageClampingMode clamp_mode,
     RespectImageOrientationEnum respect_orientation,
     const PaintImage& image) {
@@ -75,60 +76,9 @@ void StaticBitmapImage::DrawHelper(
     }
   }
 
-  canvas->drawImageRect(image, adjusted_src_rect, adjusted_dst_rect, &flags,
+  canvas->drawImageRect(image, adjusted_src_rect, adjusted_dst_rect, sampling,
+                        &flags,
                         WebCoreClampingModeToSkiaRectConstraint(clamp_mode));
-}
-
-base::CheckedNumeric<size_t> StaticBitmapImage::GetSizeInBytes(
-    const IntRect& rect,
-    const CanvasColorParams& color_params) {
-  uint8_t bytes_per_pixel = color_params.BytesPerPixel();
-  base::CheckedNumeric<size_t> data_size = bytes_per_pixel;
-  data_size *= rect.Size().Area();
-  return data_size;
-}
-
-bool StaticBitmapImage::MayHaveStrayArea(
-    scoped_refptr<StaticBitmapImage> src_image,
-    const IntRect& rect) {
-  if (!src_image)
-    return false;
-
-  return rect.X() < 0 || rect.Y() < 0 ||
-         rect.MaxX() > src_image->Size().Width() ||
-         rect.MaxY() > src_image->Size().Height();
-}
-
-bool StaticBitmapImage::CopyToByteArray(
-    scoped_refptr<StaticBitmapImage> src_image,
-    base::span<uint8_t> dst,
-    const IntRect& rect,
-    const CanvasColorParams& color_params) {
-  DCHECK_EQ(dst.size(), GetSizeInBytes(rect, color_params).ValueOrDie());
-
-  if (!src_image)
-    return true;
-
-  if (dst.size() == 0)
-    return true;
-
-  SkColorType color_type =
-      (color_params.GetSkColorType() == kRGBA_F16_SkColorType)
-          ? kRGBA_F16_SkColorType
-          : kRGBA_8888_SkColorType;
-  SkImageInfo info =
-      SkImageInfo::Make(rect.Width(), rect.Height(), color_type,
-                        kUnpremul_SkAlphaType, color_params.GetSkColorSpace());
-  bool read_pixels_successful =
-      src_image->PaintImageForCurrentFrame().readPixels(
-          info, dst.data(), info.minRowBytes(), rect.X(), rect.Y());
-  DCHECK(read_pixels_successful ||
-         !src_image->PaintImageForCurrentFrame()
-              .GetSkImageInfo()
-              .bounds()
-              .intersect(SkIRect::MakeXYWH(rect.X(), rect.Y(), info.width(),
-                                           info.height())));
-  return true;
 }
 
 }  // namespace blink

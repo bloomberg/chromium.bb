@@ -11,8 +11,14 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "pdf/paint_aggregator.h"
+#include "pdf/ppapi_migration/callback.h"
 #include "ui/gfx/geometry/size.h"
+
+namespace base {
+class Location;
+}  // namespace base
 
 namespace gfx {
 class Point;
@@ -36,7 +42,7 @@ class PaintManager {
   class Client {
    public:
     // Creates a new, unbound `Graphics` for the paint manager, with the given
-    // |size| and always-opaque rendering.
+    // `size` and always-opaque rendering.
     virtual std::unique_ptr<Graphics> CreatePaintGraphics(
         const gfx::Size& size) = 0;
 
@@ -47,14 +53,14 @@ class PaintManager {
     // Paints the given invalid area of the plugin to the given graphics
     // device. Returns true if anything was painted.
     //
-    // You are given the list of rects to paint in |paint_rects|.  You can
+    // You are given the list of rects to paint in `paint_rects`.  You can
     // combine painting into less rectangles if it's more efficient.  When a
     // rect is painted, information about that paint should be inserted into
-    // |ready|.  Otherwise if a paint needs more work, add the rect to
-    // |pending|.  If |pending| is not empty, your OnPaint function will get
+    // `ready`.  Otherwise if a paint needs more work, add the rect to
+    // `pending`.  If `pending` is not empty, your OnPaint function will get
     // called again.  Once OnPaint is called and it returns no pending rects,
     // all the previously ready rects will be flushed on screen.  The exception
-    // is for ready rects that have |flush_now| set to true.  These will be
+    // is for ready rects that have `flush_now` set to true.  These will be
     // flushed right away.
     //
     // Do not call Flush() on the graphics device, this will be done
@@ -63,8 +69,19 @@ class PaintManager {
     //
     // Calling Invalidate/Scroll is not allowed while inside an OnPaint
     virtual void OnPaint(const std::vector<gfx::Rect>& paint_rects,
-                         std::vector<PaintReadyRect>* ready,
-                         std::vector<gfx::Rect>* pending) = 0;
+                         std::vector<PaintReadyRect>& ready,
+                         std::vector<gfx::Rect>& pending) = 0;
+
+    // Schedules work to be executed on a main thread after a specific delay.
+    // The `result` parameter will be passed as the argument to the `callback`.
+    // `result` is needed sometimes to emulate calls of some callbacks, but it's
+    // not always needed. `delay` should be no longer than `INT32_MAX`
+    // milliseconds for the Pepper plugin implementation to prevent integer
+    // overflow.
+    virtual void ScheduleTaskOnMainThread(const base::Location& from_here,
+                                          ResultCallback callback,
+                                          int32_t result,
+                                          base::TimeDelta delay) = 0;
 
    protected:
     // You shouldn't be doing deleting through this interface.
@@ -74,8 +91,9 @@ class PaintManager {
   // The Client is a non-owning pointer and must remain valid (normally the
   // object implementing the Client interface will own the paint manager).
   //
-  // You will need to call SetSize before this class will do anything. Normally
-  // you do this from the ViewChanged method of your plugin instance.
+  // You will need to call SetSize() before this class will do anything.
+  // Normally you do this from UpdateGeometryOnViewChanged() of your plugin
+  // instance.
   explicit PaintManager(Client* client);
   PaintManager(const PaintManager&) = delete;
   PaintManager& operator=(const PaintManager&) = delete;
@@ -116,8 +134,8 @@ class PaintManager {
   float GetEffectiveDeviceScale() const;
 
   // Set the transform for the graphics layer.
-  // If |schedule_flush| is true, it ensures a flush will be scheduled for
-  // this change. If |schedule_flush| is false, then the change will not take
+  // If `schedule_flush` is true, it ensures a flush will be scheduled for
+  // this change. If `schedule_flush` is false, then the change will not take
   // effect until another change causes a flush.
   void SetTransform(float scale,
                     const gfx::Point& origin,

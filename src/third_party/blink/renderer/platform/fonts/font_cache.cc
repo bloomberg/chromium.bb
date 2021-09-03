@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_process_memory_dump.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/layout_locale.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -77,6 +76,10 @@ const base::Feature kFontCacheNoSizeInKey{"FontCacheNoSizeInKey",
 }
 
 const char kColorEmojiLocale[] = "und-Zsye";
+
+#if defined(OS_ANDROID)
+extern const char kNotoColorEmojiCompat[] = "Noto Color Emoji Compat";
+#endif
 
 SkFontMgr* FontCache::static_font_manager_ = nullptr;
 
@@ -416,7 +419,7 @@ void FontCache::AddClient(FontCacheClient* client) {
   if (!font_cache_clients_) {
     font_cache_clients_ =
         MakeGarbageCollected<HeapHashSet<WeakMember<FontCacheClient>>>();
-    font_cache_clients_.RegisterAsStaticReference();
+    LEAK_SANITIZER_IGNORE_OBJECT(&font_cache_clients_);
   }
   DCHECK(!font_cache_clients_->Contains(client));
   font_cache_clients_->insert(client);

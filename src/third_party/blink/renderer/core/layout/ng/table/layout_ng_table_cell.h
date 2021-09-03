@@ -69,6 +69,8 @@ class CORE_EXPORT LayoutNGTableCell
   void StyleDidChange(StyleDifference diff,
                       const ComputedStyle* old_style) final;
 
+  void WillBeRemovedFromTree() override;
+
   // TODO(atotic) Remove "New" from name.
   // Currently,  LayoutNGTableCellLegacy is named LayoutNGTableCell for test
   // compat.
@@ -86,6 +88,10 @@ class CORE_EXPORT LayoutNGTableCell
 
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
       const LayoutObject* parent) const override;
+
+  LayoutBlock* StickyContainer() const override;
+
+  void InvalidatePaint(const PaintInvalidatorContext&) const override;
 
   // LayoutBlockFlow methods end.
 

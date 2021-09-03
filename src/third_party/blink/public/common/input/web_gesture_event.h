@@ -98,8 +98,8 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
       // If true, this event will skip hit testing to find a scroll
       // target and instead just scroll the viewport.
       bool target_viewport;
-      // True if this event is generated from a wheel event with synthetic
-      // phase.
+      // True if this event is generated from a mousewheel or scrollbar.
+      // Synthetic GSB(s) are ignored by the blink::ElasticOverscrollController.
       bool synthetic;
       // If true, this event has been hit tested by the main thread and the
       // result is stored in scrollable_area_element_id. Used only in scroll
@@ -212,7 +212,7 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
   std::unique_ptr<WebInputEvent> Clone() const override;
   bool CanCoalesce(const WebInputEvent& event) const override;
   void Coalesce(const WebInputEvent& event) override;
-  base::Optional<ui::ScrollInputType> GetScrollInputType() const override;
+  absl::optional<ui::ScrollInputType> GetScrollInputType() const override;
 
   void SetPositionInWidget(const gfx::PointF& point) {
     position_in_widget_ = point;

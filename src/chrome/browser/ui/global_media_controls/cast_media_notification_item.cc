@@ -125,7 +125,7 @@ media_session::mojom::MediaSessionInfo::SessionState ToSessionState(
   }
 }
 
-base::string16 GetSourceTitle(const media_router::MediaRoute& route) {
+std::u16string GetSourceTitle(const media_router::MediaRoute& route) {
   if (route.media_sink_name().empty())
     return base::UTF8ToUTF16(route.description());
 
@@ -148,14 +148,14 @@ CastMediaNotificationItem::CastMediaNotificationItem(
     std::unique_ptr<CastMediaSessionController> session_controller,
     Profile* profile)
     : notification_controller_(notification_controller),
+      profile_(profile),
       session_controller_(std::move(session_controller)),
       media_route_id_(route.media_route_id()),
       image_downloader_(
           profile,
           base::BindRepeating(&CastMediaNotificationItem::ImageChanged,
                               base::Unretained(this))),
-      session_info_(CreateSessionInfo()),
-      profile_(profile) {
+      session_info_(CreateSessionInfo()) {
   metadata_.source_title = GetSourceTitle(route);
   base::UmaHistogramEnumeration(
       kSourceHistogramName, route.is_local() ? Source::kLocalCastSession
@@ -196,8 +196,13 @@ void CastMediaNotificationItem::OnMediaSessionActionButtonPressed(
   session_controller_->Send(action);
 }
 
+void CastMediaNotificationItem::SeekTo(base::TimeDelta time) {
+  session_controller_->SeekTo(time);
+}
+
 void CastMediaNotificationItem::Dismiss() {
   notification_controller_->HideNotification(media_route_id_);
+  is_active_ = false;
 }
 
 media_message_center::SourceType CastMediaNotificationItem::SourceType() {
@@ -211,6 +216,16 @@ void CastMediaNotificationItem::OnMediaStatusUpdated(
   actions_ = ToMediaSessionActions(*status);
   session_info_->state = ToSessionState(status->play_state);
   session_info_->playback_state = ToPlaybackState(status->play_state);
+
+  // Make sure |current_time| is always less than or equal to |duration|
+  base::TimeDelta duration = status->duration;
+  base::TimeDelta current_time =
+      status->current_time > duration ? duration : status->current_time;
+  media_position_ = media_session::MediaPosition(
+      status->play_state == media_router::mojom::MediaStatus::PlayState::PLAYING
+          ? 1.0
+          : 0.0 /* playback_rate */,
+      duration, current_time);
 
   if (status->images.empty()) {
     image_downloader_.Reset();
@@ -226,12 +241,12 @@ void CastMediaNotificationItem::OnRouteUpdated(
     const media_router::MediaRoute& route) {
   DCHECK_EQ(route.media_route_id(), media_route_id_);
   bool updated = false;
-  const base::string16 new_source_title = GetSourceTitle(route);
+  const std::u16string new_source_title = GetSourceTitle(route);
   if (metadata_.source_title != new_source_title) {
     metadata_.source_title = new_source_title;
     updated = true;
   }
-  const base::string16 new_artist = base::UTF8ToUTF16(route.description());
+  const std::u16string new_artist = base::UTF8ToUTF16(route.description());
   if (metadata_.artist != new_artist) {
     metadata_.artist = new_artist;
     updated = true;
@@ -248,9 +263,8 @@ CastMediaNotificationItem::GetObserverPendingRemote() {
 CastMediaNotificationItem::ImageDownloader::ImageDownloader(
     Profile* profile,
     base::RepeatingCallback<void(const SkBitmap&)> callback)
-    : url_loader_factory_(
-          content::BrowserContext::GetDefaultStoragePartition(profile)
-              ->GetURLLoaderFactoryForBrowserProcess()),
+    : url_loader_factory_(profile->GetDefaultStoragePartition()
+                              ->GetURLLoaderFactoryForBrowserProcess()),
       callback_(std::move(callback)) {}
 
 CastMediaNotificationItem::ImageDownloader::~ImageDownloader() = default;
@@ -294,6 +308,9 @@ void CastMediaNotificationItem::UpdateView() {
   view_->UpdateWithMediaSessionInfo(session_info_.Clone());
   view_->UpdateWithMediaArtwork(
       gfx::ImageSkia::CreateFrom1xBitmap(image_downloader_.bitmap()));
+
+  if (!media_position_.duration().is_zero())
+    view_->UpdateWithMediaPosition(media_position_);
 }
 
 void CastMediaNotificationItem::ImageChanged(const SkBitmap& bitmap) {

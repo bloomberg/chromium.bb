@@ -27,19 +27,22 @@ class DebugEvaluate : public AllStatic {
                                     debug::EvaluateGlobalMode mode,
                                     REPLMode repl_mode = REPLMode::kNo);
 
+  static V8_EXPORT_PRIVATE MaybeHandle<Object> Global(
+      Isolate* isolate, Handle<JSFunction> function,
+      debug::EvaluateGlobalMode mode, REPLMode repl_mode = REPLMode::kNo);
+
   // Evaluate a piece of JavaScript in the context of a stack frame for
   // debugging.  Things that need special attention are:
   // - Parameters and stack-allocated locals need to be materialized.  Altered
   //   values need to be written back to the stack afterwards.
   // - The arguments object needs to materialized.
+  // The stack frame can be either a JavaScript stack frame or a Wasm
+  // stack frame. In the latter case, a special Debug Proxy API is
+  // provided to peek into the Wasm state.
   static MaybeHandle<Object> Local(Isolate* isolate, StackFrameId frame_id,
                                    int inlined_jsframe_index,
                                    Handle<String> source,
                                    bool throw_on_side_effect);
-
-  static V8_EXPORT MaybeHandle<Object> WebAssembly(
-      Handle<WasmInstanceObject> instance, StackFrameId frame_id,
-      Handle<String> source, bool throw_on_side_effect);
 
   // This is used for break-at-entry for builtins and API functions.
   // Evaluate a piece of JavaScript in the native context, but with the

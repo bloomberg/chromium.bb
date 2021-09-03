@@ -16,6 +16,7 @@
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "net/base/network_interfaces.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/base/constants.h"
@@ -109,7 +110,9 @@ const net::BackoffEntry::Policy kBackoffPolicy = {
 };
 
 std::string GetHostname() {
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag
+// switch of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   return net::GetHostName();
 #elif defined(OS_WIN)
   wchar_t buffer[MAX_PATH] = {0};
@@ -119,8 +122,8 @@ std::string GetHostname() {
     return std::string();
   }
   std::string hostname;
-  if (!base::UTF16ToUTF8(buffer, size, &hostname)) {
-    LOG(ERROR) << "Failed to convert from UTF16 to UTF8";
+  if (!base::WideToUTF8(buffer, size, &hostname)) {
+    LOG(ERROR) << "Failed to convert from Wide to UTF8";
     return std::string();
   }
   return hostname;
@@ -160,12 +163,11 @@ HeartbeatSender::HeartbeatClientImpl::~HeartbeatClientImpl() = default;
 void HeartbeatSender::HeartbeatClientImpl::Heartbeat(
     std::unique_ptr<apis::v1::HeartbeatRequest> request,
     HeartbeatResponseCallback callback) {
-  std::string host_offline_reason_or_empty_log =
+  std::string host_offline_reason =
       request->has_host_offline_reason()
-          ? (", host_offline_reason: " + request->host_offline_reason())
+          ? (" host_offline_reason: " + request->host_offline_reason())
           : "";
-  HOST_LOG << "Sending outgoing heartbeat. tachyon_id: "
-           << request->tachyon_id() << host_offline_reason_or_empty_log;
+  HOST_LOG << "Sending outgoing heartbeat." << host_offline_reason;
 
   auto request_config =
       std::make_unique<ProtobufHttpRequestConfig>(kTrafficAnnotation);
@@ -315,7 +317,7 @@ void HeartbeatSender::OnResponse(
     }
 
     if (response->has_remote_command()) {
-      OnRemoteCommand(response->remote_command());
+      LOG(WARNING) << "Remote command ignored: " << response->remote_command();
     }
   } else {
     LOG(ERROR) << "Heartbeat failed. Error code: "
@@ -350,7 +352,6 @@ void HeartbeatSender::OnResponse(
 
   // Calculate delay before sending the next message.
   base::TimeDelta delay;
-  // See CoreErrorDomainTranslator.java for the mapping
   switch (status.error_code()) {
     case ProtobufHttpStatus::Code::OK:
       delay = base::TimeDelta::FromSeconds(response->set_interval_seconds());
@@ -378,21 +379,6 @@ void HeartbeatSender::OnResponse(
                          &HeartbeatSender::SendHeartbeat);
 }
 
-void HeartbeatSender::OnRemoteCommand(
-    apis::v1::HeartbeatResponse::RemoteCommand remote_command) {
-  HOST_LOG << "Received remote command: "
-           << apis::v1::HeartbeatResponse::RemoteCommand_Name(remote_command)
-           << "(" << remote_command << ")";
-  switch (remote_command) {
-    case apis::v1::HeartbeatResponse::RESTART_HOST:
-      delegate_->OnRemoteRestartHost();
-      break;
-    default:
-      LOG(WARNING) << "Unknown remote command: " << remote_command;
-      break;
-  }
-}
-
 std::unique_ptr<apis::v1::HeartbeatRequest>
 HeartbeatSender::CreateHeartbeatRequest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -409,6 +395,7 @@ HeartbeatSender::CreateHeartbeatRequest() {
   heartbeat->set_host_cpu_type(base::SysInfo::OperatingSystemArchitecture());
   heartbeat->set_is_initial_heartbeat(!initial_heartbeat_sent_);
 
+  // Only set the hostname if the user's email is @google.com.
   if (is_googler_) {
     std::string hostname = GetHostname();
     if (!hostname.empty()) {

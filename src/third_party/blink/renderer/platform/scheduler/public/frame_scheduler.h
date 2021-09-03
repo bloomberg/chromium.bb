@@ -96,7 +96,7 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   virtual void SetCrossOriginToMainFrame(bool) = 0;
   virtual bool IsCrossOriginToMainFrame() const = 0;
 
-  virtual void SetIsAdFrame() = 0;
+  virtual void SetIsAdFrame(bool is_ad_frame) = 0;
   virtual bool IsAdFrame() const = 0;
 
   virtual void TraceUrlChange(const String&) = 0;
@@ -161,8 +161,8 @@ class FrameScheduler : public FrameOrWorkerScheduler {
                                         NavigationType navigation_type) = 0;
 
   // Tells the scheduler that the first contentful paint has occurred for this
-  // frame.
-  virtual void OnFirstContentfulPaint() = 0;
+  // frame. Only for main frames.
+  virtual void OnFirstContentfulPaintInMainFrame() = 0;
 
   // Tells the scheduler that the first meaningful paint has occurred for this
   // frame.

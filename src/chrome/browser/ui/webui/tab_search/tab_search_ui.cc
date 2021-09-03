@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/ranges.h"
+#include "base/trace_event/trace_event.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -37,18 +38,17 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
       {"searchTabs", IDS_TAB_SEARCH_SEARCH_TABS},
       {"noResultsFound", IDS_TAB_SEARCH_NO_RESULTS_FOUND},
       {"closeTab", IDS_TAB_SEARCH_CLOSE_TAB},
-      {"submitFeedback", IDS_TAB_SEARCH_SUBMIT_FEEDBACK},
       {"a11yTabClosed", IDS_TAB_SEARCH_A11Y_TAB_CLOSED},
       {"a11yFoundTab", IDS_TAB_SEARCH_A11Y_FOUND_TAB},
       {"a11yFoundTabs", IDS_TAB_SEARCH_A11Y_FOUND_TABS},
       {"a11yFoundTabFor", IDS_TAB_SEARCH_A11Y_FOUND_TAB_FOR},
       {"a11yFoundTabsFor", IDS_TAB_SEARCH_A11Y_FOUND_TABS_FOR},
+      {"a11yOpenTab", IDS_TAB_SEARCH_A11Y_OPEN_TAB},
+      {"a11yRecentlyClosedTab", IDS_TAB_SEARCH_A11Y_RECENTLY_CLOSED_TAB},
+      {"openTabs", IDS_TAB_SEARCH_OPEN_TABS},
+      {"recentlyClosedTabs", IDS_TAB_SEARCH_RECENTLY_CLOSED_TABS},
   };
-  AddLocalizedStringsBulk(source, kStrings);
-
-  source->AddBoolean(
-      "submitFeedbackEnabled",
-      base::FeatureList::IsEnabled(features::kTabSearchFeedback));
+  source->AddLocalizedStrings(kStrings);
   source->AddBoolean("useRipples", views::PlatformStyle::kUseRipples);
 
   // Add the configuration parameters for fuzzy search.
@@ -68,13 +68,17 @@ TabSearchUI::TabSearchUI(content::WebUI* web_ui)
                      features::kTabSearchMoveActiveTabToBottom.Get());
   source->AddLocalizedString("close", IDS_CLOSE);
 
+  source->AddInteger(
+      "recentlyClosedDefaultItemDisplayCount",
+      features::kTabSearchRecentlyClosedDefaultItemDisplayCount.Get());
+
   ui::Accelerator accelerator(ui::VKEY_A,
                               ui::EF_SHIFT_DOWN | ui::EF_PLATFORM_ACCELERATOR);
   source->AddString("shortcutText", accelerator.GetShortcutText());
 
   webui::SetupWebUIDataSource(
       source, base::make_span(kTabSearchResources, kTabSearchResourcesSize),
-      /*generated_path=*/std::string(), IDR_TAB_SEARCH_TAB_SEARCH_PAGE_HTML);
+      IDR_TAB_SEARCH_TAB_SEARCH_HTML);
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                 source);
 

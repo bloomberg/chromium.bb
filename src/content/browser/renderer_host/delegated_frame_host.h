@@ -46,7 +46,8 @@ class CONTENT_EXPORT DelegatedFrameHostClient {
   virtual bool DelegatedFrameHostIsVisible() const = 0;
   // Returns the color that the resize gutters should be drawn with.
   virtual SkColor DelegatedFrameHostGetGutterColor() const = 0;
-  virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
+  virtual void OnFrameTokenChanged(uint32_t frame_token,
+                                   base::TimeTicks activation_time) = 0;
   virtual float GetDeviceScaleFactor() const = 0;
   virtual void InvalidateLocalSurfaceIdOnEviction() = 0;
   virtual std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() = 0;
@@ -94,7 +95,8 @@ class CONTENT_EXPORT DelegatedFrameHost
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
-  void OnFrameTokenChanged(uint32_t frame_token) override;
+  void OnFrameTokenChanged(uint32_t frame_token,
+                           base::TimeTicks activation_time) override;
 
   // Public interface exposed to RenderWidgetHostView.
 
@@ -152,6 +154,10 @@ class CONTENT_EXPORT DelegatedFrameHost
   }
 
   void DidNavigate();
+  // Navigation to a different page than the current one has begun. Caches the
+  // current LocalSurfaceId information so that old content can be evicted if
+  // navigation fails to complete.
+  void OnNavigateToNewPage();
 
   void WindowTitleChanged(const std::string& title);
 
@@ -219,6 +225,10 @@ class CONTENT_EXPORT DelegatedFrameHost
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 
   viz::LocalSurfaceId first_local_surface_id_after_navigation_;
+  // While navigating we have no active |local_surface_id_|. Track the one from
+  // before a navigation, because if the navigation fails to complete, we will
+  // need to evict its surface.
+  viz::LocalSurfaceId pre_navigation_local_surface_id_;
 
   FrameEvictionState frame_eviction_state_ = FrameEvictionState::kNotStarted;
 

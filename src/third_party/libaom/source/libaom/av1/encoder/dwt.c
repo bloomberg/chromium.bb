@@ -70,14 +70,14 @@ static void analysis_53_col(int length, tran_low_t *x, tran_low_t *lowpass,
 }
 
 static void dyadic_analyze_53_uint8_input(int levels, int width, int height,
-                                          uint8_t *x, int pitch_x,
+                                          const uint8_t *x, int pitch_x,
                                           tran_low_t *c, int pitch_c,
                                           int dwt_scale_bits, int hbd) {
   int lv, i, j, nh, nw, hh = height, hw = width;
   tran_low_t buffer[2 * DWT_MAX_LENGTH];
 
   if (hbd) {
-    uint16_t *x16 = CONVERT_TO_SHORTPTR(x);
+    const uint16_t *x16 = CONVERT_TO_SHORTPTR(x);
     for (i = 0; i < height; i++) {
       for (j = 0; j < width; j++) {
         c[i * pitch_c + j] = x16[i * pitch_x + j] << dwt_scale_bits;
@@ -109,12 +109,12 @@ static void dyadic_analyze_53_uint8_input(int levels, int width, int height,
   }
 }
 
-void av1_fdwt8x8_uint8_input_c(uint8_t *input, tran_low_t *output, int stride,
-                               int hbd) {
+void av1_fdwt8x8_uint8_input_c(const uint8_t *input, tran_low_t *output,
+                               int stride, int hbd) {
   dyadic_analyze_53_uint8_input(4, 8, 8, input, stride, output, 8, 2, hbd);
 }
 
-int av1_haar_ac_sad(tran_low_t *output, int bw, int bh, int stride) {
+int av1_haar_ac_sad(const tran_low_t *output, int bw, int bh, int stride) {
   int acsad = 0;
 
   for (int r = 0; r < bh; ++r)
@@ -147,7 +147,7 @@ uint32_t av1_variance(uint8_t *input, int bw, int bh, int stride) {
   return sse - (uint32_t)(((int64_t)sum * sum) / (bw * bh));
 }
 
-int av1_haar_ac_sad_8x8_uint8_input(uint8_t *input, int stride, int hbd) {
+int av1_haar_ac_sad_8x8_uint8_input(const uint8_t *input, int stride, int hbd) {
   tran_low_t output[64];
 
   av1_fdwt8x8_uint8_input_c(input, output, stride, hbd);

@@ -4,13 +4,15 @@
 
 #include "chrome/browser/ui/views/renderer_context_menu/render_view_context_menu_views.h"
 
+#include <string>
 #include <utility>
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
 #include "base/task/current_thread.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -21,6 +23,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/blink/public/common/context_menu_data/context_menu_data.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -43,10 +46,10 @@ class RenderViewContextMenuViews::SubmenuViewObserver
   SubmenuViewObserver(RenderViewContextMenuViews* parent,
                       views::SubmenuView* submenu_view)
       : parent_(parent), submenu_view_(submenu_view) {
-    observed_submenu_view_.Add(submenu_view);
+    submenu_view_observation_.Observe(submenu_view);
     auto* widget = submenu_view_->host();
     if (widget)
-      observed_submenu_widget_.Add(widget);
+      submenu_widget_observation_.Observe(widget);
   }
 
   SubmenuViewObserver(const SubmenuViewObserver&) = delete;
@@ -72,7 +75,7 @@ class RenderViewContextMenuViews::SubmenuViewObserver
     DCHECK_EQ(submenu_view_, observed_view);
     auto* widget = submenu_view_->host();
     if (widget)
-      observed_submenu_widget_.Add(widget);
+      submenu_widget_observation_.Observe(widget);
   }
 
   // WidgetObserver:
@@ -92,9 +95,10 @@ class RenderViewContextMenuViews::SubmenuViewObserver
  private:
   RenderViewContextMenuViews* const parent_;
   views::SubmenuView* const submenu_view_;
-  ScopedObserver<views::View, views::ViewObserver> observed_submenu_view_{this};
-  ScopedObserver<views::Widget, views::WidgetObserver> observed_submenu_widget_{
-      this};
+  base::ScopedObservation<views::View, views::ViewObserver>
+      submenu_view_observation_{this};
+  base::ScopedObservation<views::Widget, views::WidgetObserver>
+      submenu_widget_observation_{this};
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -212,7 +216,7 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
         return true;
       }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       // Chromebooks typically do not have an F11 key, so do not show an
       // accelerator here.
       return false;
@@ -241,14 +245,20 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
       *accel = ui::Accelerator(ui::VKEY_SPACE,
                                ui::EF_COMMAND_DOWN | ui::EF_CONTROL_DOWN);
       return true;
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
+      *accel = ui::Accelerator(ui::VKEY_SPACE,
+                               ui::EF_SHIFT_DOWN | ui::EF_COMMAND_DOWN);
+      return true;
 #else
       return false;
 #endif
 
     case IDC_CONTENT_CLIPBOARD_HISTORY_MENU:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
       *accel = ui::Accelerator(ui::VKEY_V, ui::EF_COMMAND_DOWN);
       return true;
+#elif BUILDFLAG(IS_CHROMEOS_LACROS)
+      return false;
 #else
       NOTREACHED();
       return false;
@@ -288,13 +298,13 @@ bool RenderViewContextMenuViews::IsCommandIdChecked(int command_id) const {
   switch (command_id) {
     case IDC_WRITING_DIRECTION_DEFAULT:
       return (params_.writing_direction_default &
-              blink::WebContextMenuData::kCheckableMenuItemChecked) != 0;
+              blink::ContextMenuData::kCheckableMenuItemChecked) != 0;
     case IDC_WRITING_DIRECTION_RTL:
       return (params_.writing_direction_right_to_left &
-              blink::WebContextMenuData::kCheckableMenuItemChecked) != 0;
+              blink::ContextMenuData::kCheckableMenuItemChecked) != 0;
     case IDC_WRITING_DIRECTION_LTR:
       return (params_.writing_direction_left_to_right &
-              blink::WebContextMenuData::kCheckableMenuItemChecked) != 0;
+              blink::ContextMenuData::kCheckableMenuItemChecked) != 0;
 
     default:
       return RenderViewContextMenu::IsCommandIdChecked(command_id);
@@ -307,13 +317,13 @@ bool RenderViewContextMenuViews::IsCommandIdEnabled(int command_id) const {
       return true;
     case IDC_WRITING_DIRECTION_DEFAULT:  // Provided to match OS defaults.
       return params_.writing_direction_default &
-             blink::WebContextMenuData::kCheckableMenuItemEnabled;
+             blink::ContextMenuData::kCheckableMenuItemEnabled;
     case IDC_WRITING_DIRECTION_RTL:
       return params_.writing_direction_right_to_left &
-             blink::WebContextMenuData::kCheckableMenuItemEnabled;
+             blink::ContextMenuData::kCheckableMenuItemEnabled;
     case IDC_WRITING_DIRECTION_LTR:
       return params_.writing_direction_left_to_right &
-             blink::WebContextMenuData::kCheckableMenuItemEnabled;
+             blink::ContextMenuData::kCheckableMenuItemEnabled;
 
     default:
       return RenderViewContextMenu::IsCommandIdEnabled(command_id);

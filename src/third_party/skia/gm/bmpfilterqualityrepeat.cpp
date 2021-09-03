@@ -37,13 +37,13 @@ protected:
         SkBitmap colorBmp;
         colorBmp.allocN32Pixels(20, 20, true);
         colorBmp.eraseColor(0xFFFF0000);
-        canvas.drawBitmap(colorBmp, 0, 0);
+        canvas.drawImage(colorBmp.asImage(), 0, 0);
         colorBmp.eraseColor(ToolUtils::color_to_565(0xFF008200));
-        canvas.drawBitmap(colorBmp, 20, 0);
+        canvas.drawImage(colorBmp.asImage(), 20, 0);
         colorBmp.eraseColor(ToolUtils::color_to_565(0xFFFF9000));
-        canvas.drawBitmap(colorBmp, 0, 20);
+        canvas.drawImage(colorBmp.asImage(), 0, 20);
         colorBmp.eraseColor(ToolUtils::color_to_565(0xFF2000FF));
-        canvas.drawBitmap(colorBmp, 20, 20);
+        canvas.drawImage(colorBmp.asImage(), 20, 20);
     }
 
     SkString onShortName() override { return SkString("bmp_filter_quality_repeat"); }
@@ -86,8 +86,8 @@ private:
 
         for (size_t q = 0; q < SK_ARRAY_COUNT(kQualities); ++q) {
             constexpr SkTileMode kTM = SkTileMode::kRepeat;
-            bmpPaint.setShader(fBmp.makeShader(kTM, kTM, &lm));
-            bmpPaint.setFilterQuality(kQualities[q].fQuality);
+            bmpPaint.setShader(fBmp.makeShader(kTM, kTM,
+                                               SkSamplingOptions(kQualities[q].fQuality), lm));
             canvas->drawRect(rect, bmpPaint);
             canvas->drawString(kQualities[q].fName, 20, 40, font, textPaint);
             canvas->translate(250, 0);

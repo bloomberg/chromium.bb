@@ -5,7 +5,10 @@
 * found in the LICENSE file.
 */
 #include "include/core/SkString.h"
+#include "include/private/SkMutex.h"
+#include "include/private/SkOnce.h"
 #include "include/private/SkTFitsIn.h"
+#include "include/private/SkTHash.h"
 #include "include/private/SkTemplates.h"
 #include "modules/skshaper/src/SkUnicode.h"
 #include "src/utils/SkUTF.h"
@@ -22,6 +25,22 @@
 #include "SkLoadICU.h"
 #endif
 
+// ubrk_clone added as draft in ICU69 and Android API 31 (first ICU NDK).
+// ubrk_safeClone deprecated in ICU69 and not exposed by Android.
+template<typename...> using void_t = void;
+template<typename T, typename = void>
+struct SkUbrkClone {
+    UBreakIterator* operator()(T bi, UErrorCode* status) {
+        return ubrk_safeClone(bi, nullptr, nullptr, status);
+    }
+};
+template<typename T>
+struct SkUbrkClone<T, void_t<decltype(ubrk_clone(std::declval<T>(), nullptr))>> {
+    UBreakIterator* operator()(T bi, UErrorCode* status) {
+        return ubrk_clone(bi, status);
+    }
+};
+
 using SkUnicodeBidi = std::unique_ptr<UBiDi, SkFunctionWrapper<decltype(ubidi_close), ubidi_close>>;
 using ICUUText = std::unique_ptr<UText, SkFunctionWrapper<decltype(utext_close), utext_close>>;
 using ICUBreakIterator = std::unique_ptr<UBreakIterator, SkFunctionWrapper<decltype(ubrk_close), ubrk_close>>;
@@ -30,6 +49,16 @@ using ICUBreakIterator = std::unique_ptr<UBreakIterator, SkFunctionWrapper<declt
 static inline SkUnichar utf8_next(const char** ptr, const char* end) {
     SkUnichar val = SkUTF::NextUTF8(ptr, end);
     return val < 0 ? 0xFFFD : val;
+}
+
+static UBreakIteratorType convertType(SkUnicode::BreakType type) {
+    switch (type) {
+        case SkUnicode::BreakType::kLines: return UBRK_LINE;
+        case SkUnicode::BreakType::kGraphemes: return UBRK_CHARACTER;
+        case SkUnicode::BreakType::kWords: return UBRK_WORD;
+        default:
+            return UBRK_CHARACTER;
+    }
 }
 
 class SkBidiIterator_icu : public SkBidiIterator {
@@ -140,9 +169,7 @@ class SkBreakIterator_icu : public SkBreakIterator {
 
     bool setText(const char utftext8[], int utf8Units) override {
         UErrorCode status = U_ZERO_ERROR;
-
-        UText sUtf8UText = UTEXT_INITIALIZER;
-        ICUUText text(utext_openUTF8(&sUtf8UText, &utftext8[0], utf8Units, &status));
+        ICUUText text(utext_openUTF8(nullptr, &utftext8[0], utf8Units, &status));
 
         if (U_FAILURE(status)) {
             SkDEBUGF("Break error: %s", u_errorName(status));
@@ -157,26 +184,58 @@ class SkBreakIterator_icu : public SkBreakIterator {
         fLastResult = 0;
         return true;
     }
-
-    static UBreakIteratorType convertType(SkUnicode::BreakType type) {
-        switch (type) {
-            case SkUnicode::BreakType::kLines: return UBRK_LINE;
-            case SkUnicode::BreakType::kGraphemes: return UBRK_CHARACTER;
-            case SkUnicode::BreakType::kWords: return UBRK_WORD;
-            default:
-              return UBRK_CHARACTER;
-        }
-    }
-
-    static std::unique_ptr<SkBreakIterator> makeUtf8BreakIterator
-        (const char locale[], SkUnicode::BreakType type) {
+    bool setText(const char16_t utftext16[], int utf16Units) override {
         UErrorCode status = U_ZERO_ERROR;
-        ICUBreakIterator iterator(ubrk_open(convertType(type), locale, nullptr, 0, &status));
+        ICUUText text(utext_openUChars(nullptr, reinterpret_cast<const UChar*>(&utftext16[0]), utf16Units, &status));
+
         if (U_FAILURE(status)) {
             SkDEBUGF("Break error: %s", u_errorName(status));
-            return nullptr;
+            return false;
         }
-        return std::unique_ptr<SkBreakIterator>(new SkBreakIterator_icu(std::move(iterator)));
+        SkASSERT(text);
+        ubrk_setUText(fBreakIterator.get(), text.get(), &status);
+        if (U_FAILURE(status)) {
+            SkDEBUGF("Break error: %s", u_errorName(status));
+            return false;
+        }
+        fLastResult = 0;
+        return true;
+    }
+};
+
+class SkIcuBreakIteratorCache {
+    SkTHashMap<SkUnicode::BreakType, ICUBreakIterator> fBreakCache;
+    SkMutex fBreakCacheMutex;
+
+ public:
+    static SkIcuBreakIteratorCache& get() {
+        static SkIcuBreakIteratorCache instance;
+        return instance;
+    }
+
+    ICUBreakIterator makeBreakIterator(SkUnicode::BreakType type) {
+        UErrorCode status = U_ZERO_ERROR;
+        ICUBreakIterator* cachedIterator;
+        {
+            SkAutoMutexExclusive lock(fBreakCacheMutex);
+            cachedIterator = fBreakCache.find(type);
+            if (!cachedIterator) {
+                ICUBreakIterator newIterator(ubrk_open(convertType(type), uloc_getDefault(), nullptr, 0, &status));
+                if (U_FAILURE(status)) {
+                    SkDEBUGF("Break error: %s", u_errorName(status));
+                } else {
+                    cachedIterator = fBreakCache.set(type, std::move(newIterator));
+                }
+            }
+        }
+        ICUBreakIterator iterator;
+        if (cachedIterator) {
+            iterator.reset(SkUbrkClone<const UBreakIterator*>()(cachedIterator->get(), &status));
+            if (U_FAILURE(status)) {
+                SkDEBUGF("Break error: %s", u_errorName(status));
+            }
+        }
+        return iterator;
     }
 };
 
@@ -200,18 +259,6 @@ class SkScriptIterator_icu : public SkScriptIterator {
 };
 
 class SkUnicode_icu : public SkUnicode {
-
-    static UBreakIteratorType convertType(BreakType type) {
-        switch (type) {
-            case BreakType::kLines: return UBRK_LINE;
-            case BreakType::kGraphemes: return UBRK_CHARACTER;
-            case BreakType::kWords: return UBRK_WORD;
-            default:
-              SkDEBUGF("Convert error: wrong break type");
-              return UBRK_CHARACTER;
-        }
-    }
-
     static bool extractBidi(const char utf8[],
                             int utf8Units,
                             TextDirection dir,
@@ -273,16 +320,14 @@ class SkUnicode_icu : public SkUnicode {
 
         UErrorCode status = U_ZERO_ERROR;
 
-        UBreakIteratorType breakType = convertType(BreakType::kWords);
-        ICUBreakIterator iterator(ubrk_open(breakType, uloc_getDefault(), nullptr, 0, &status));
-        if (U_FAILURE(status)) {
+        ICUBreakIterator iterator = SkIcuBreakIteratorCache::get().makeBreakIterator(BreakType::kWords);
+        if (!iterator) {
             SkDEBUGF("Break error: %s", u_errorName(status));
             return false;
         }
         SkASSERT(iterator);
 
-        UText sUtf16UText = UTEXT_INITIALIZER;
-        ICUUText utf16UText(utext_openUChars(&sUtf16UText, (UChar*)utf16, utf16Units, &status));
+        ICUUText utf16UText(utext_openUChars(nullptr, (UChar*)utf16, utf16Units, &status));
         if (U_FAILURE(status)) {
             SkDEBUGF("Break error: %s", u_errorName(status));
             return false;
@@ -308,8 +353,7 @@ class SkUnicode_icu : public SkUnicode {
         (const char utf8[], int utf8Units, BreakType type, std::function<void(int, int)> setBreak) {
 
         UErrorCode status = U_ZERO_ERROR;
-        UText sUtf8UText = UTEXT_INITIALIZER;
-        ICUUText text(utext_openUTF8(&sUtf8UText, &utf8[0], utf8Units, &status));
+        ICUUText text(utext_openUTF8(nullptr, &utf8[0], utf8Units, &status));
 
         if (U_FAILURE(status)) {
             SkDEBUGF("Break error: %s", u_errorName(status));
@@ -317,9 +361,9 @@ class SkUnicode_icu : public SkUnicode {
         }
         SkASSERT(text);
 
-        ICUBreakIterator iterator(ubrk_open(convertType(type), uloc_getDefault(), nullptr, 0, &status));
-        if (U_FAILURE(status)) {
-            SkDEBUGF("Break error: %s", u_errorName(status));
+        ICUBreakIterator iterator = SkIcuBreakIteratorCache::get().makeBreakIterator(type);
+        if (!iterator) {
+            return false;
         }
 
         ubrk_setUText(iterator.get(), text.get(), &status);
@@ -349,26 +393,6 @@ class SkUnicode_icu : public SkUnicode {
                 auto unichar = utf8_next(&ch, end);
                 if (isHardLineBreak(unichar)) {
                     setBreak(ch - utf8, UBRK_LINE_HARD);
-                }
-            }
-        }
-        return true;
-    }
-
-    static bool extractWhitespaces(const char utf8[],
-                                   int utf8Units,
-                                   std::vector<Position>* whitespaces) {
-
-        const char* start = utf8;
-        const char* end = utf8 + utf8Units;
-        const char* ch = start;
-        while (ch < end) {
-            auto index = ch - start;
-            auto unichar = utf8_next(&ch, end);
-            if (u_isWhitespace(unichar)) {
-                auto ending = ch - start;
-                for (auto k = index; k < ending; ++k) {
-                  whitespaces->emplace_back(k);
                 }
             }
         }
@@ -412,7 +436,16 @@ public:
     }
     std::unique_ptr<SkBreakIterator> makeBreakIterator(const char locale[],
                                                        BreakType breakType) override {
-        return SkBreakIterator_icu::makeUtf8BreakIterator(locale, breakType);
+        UErrorCode status = U_ZERO_ERROR;
+        ICUBreakIterator iterator(ubrk_open(convertType(breakType), locale, nullptr, 0, &status));
+        if (U_FAILURE(status)) {
+            SkDEBUGF("Break error: %s", u_errorName(status));
+            return nullptr;
+        }
+        return std::unique_ptr<SkBreakIterator>(new SkBreakIterator_icu(std::move(iterator)));
+    }
+    std::unique_ptr<SkBreakIterator> makeBreakIterator(BreakType breakType) override {
+        return makeBreakIterator(uloc_getDefault(), breakType);
     }
     std::unique_ptr<SkScriptIterator> makeScriptIterator() override {
         return SkScriptIterator_icu::makeScriptIterator();
@@ -425,6 +458,10 @@ public:
 
     bool isWhitespace(SkUnichar utf8) override {
         return u_isWhitespace(utf8);
+    }
+
+    bool isSpace(SkUnichar utf8) override {
+        return u_isspace(utf8);
     }
 
     static bool isHardLineBreak(SkUnichar utf8) {
@@ -480,11 +517,6 @@ public:
         });
     }
 
-    bool getWhitespaces(const char utf8[], int utf8Units, std::vector<Position>* results) override {
-
-        return extractWhitespaces(utf8, utf8Units, results);
-    }
-
     void reorderVisual(const BidiLevel runLevels[],
                        int levelsCount,
                        int32_t logicalFromVisual[]) override {
@@ -495,7 +527,8 @@ public:
 std::unique_ptr<SkUnicode> SkUnicode::Make() {
     #if defined(SK_USING_THIRD_PARTY_ICU)
     if (!SkLoadICU()) {
-        SkDEBUGF("SkLoadICU() failed!\n");
+        static SkOnce once;
+        once([] { SkDEBUGF("SkLoadICU() failed!\n"); });
         return nullptr;
     }
     #endif

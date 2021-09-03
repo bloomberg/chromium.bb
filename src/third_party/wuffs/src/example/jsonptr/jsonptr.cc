@@ -115,8 +115,8 @@ for a C++ compiler $CXX, such as clang++ or g++.
 #define WUFFS_IMPLEMENTATION
 
 // Defining the WUFFS_CONFIG__MODULE* macros are optional, but it lets users of
-// release/c/etc.c whitelist which parts of Wuffs to build. That file contains
-// the entire Wuffs standard library, implementing a variety of codecs and file
+// release/c/etc.c choose which parts of Wuffs to build. That file contains the
+// entire Wuffs standard library, implementing a variety of codecs and file
 // formats. Without this macro definition, an optimizing compiler or linker may
 // very well discard Wuffs code for unused codecs, but listing the Wuffs
 // modules we use makes that process explicit. Preprocessing means that such
@@ -161,6 +161,7 @@ static const char* g_usage =
     "            -input-allow-comments\n"
     "            -input-allow-extra-comma\n"
     "            -input-allow-inf-nan-numbers\n"
+    "            -input-jwcc\n"
     "            -jwcc\n"
     "            -output-comments\n"
     "            -output-extra-comma\n"
@@ -200,18 +201,27 @@ static const char* g_usage =
     "occur after arbitrarily many comments, so -output-comments also requires\n"
     "that one or both of -compact-output and -output-extra-comma be set.\n"
     "\n"
+    "With -output-comments, consecutive blank lines collapse to a single\n"
+    "blank line. Without that flag, all blank lines are removed.\n"
+    "\n"
     "The -output-extra-comma flag writes output like \"[1,2,]\", with a comma\n"
     "after the final element of a JSON list or dictionary. Such commas are\n"
     "non-compliant with the JSON specification but many parsers accept them\n"
     "and they can produce simpler line-based diffs. This flag is ignored when\n"
     "-compact-output is set.\n"
     "\n"
-    "The -jwcc flag (JSON With Commas and Comments) enables all of:\n"
+    "Combining some of those flags results in speaking JWCC (JSON With Commas\n"
+    "and Comments), not plain JSON. For convenience, the -input-jwcc or -jwcc\n"
+    "flags enables the first two or all four of:\n"
     "            -input-allow-comments\n"
     "            -input-allow-extra-comma\n"
     "            -output-comments\n"
     "            -output-extra-comma\n"
     "\n"
+#if defined(WUFFS_EXAMPLE_SPEAK_JWCC_NOT_JSON)
+    "This program was configured at compile time to always use -jwcc.\n"
+    "\n"
+#endif
     "----\n"
     "\n"
     "The -q=STR or -query=STR flag gives an optional JSON Pointer query, to\n"
@@ -241,10 +251,11 @@ static const char* g_usage =
     "\n"
     "The -strict-json-pointer-syntax flag restricts the -query=STR string to\n"
     "exactly RFC 6901, with only two escape sequences: \"~0\" and \"~1\" for\n"
-    "\"~\" and \"/\". Without this flag, this program also lets \"~n\" and\n"
-    "\"~r\" escape the New Line and Carriage Return ASCII control characters,\n"
-    "which can work better with line oriented Unix tools that assume exactly\n"
-    "one value (i.e. one JSON Pointer string) per line.\n"
+    "\"~\" and \"/\". Without this flag, this program also lets \"~n\",\n"
+    "\"~r\" and \"~t\" escape the New Line, Carriage Return and Horizontal\n"
+    "Tab ASCII control characters, which can work better with line oriented\n"
+    "(and tab separated) Unix tools that assume exactly one record (e.g. one\n"
+    "JSON Pointer string) per line.\n"
     "\n"
     "----\n"
     "\n"
@@ -421,21 +432,21 @@ bool g_sandboxed = false;
 
 int g_input_file_descriptor = 0;  // A 0 default means stdin.
 
-#define NEW_LINE_THEN_256_SPACES                                               \
-  "\n                                                                        " \
+#define TWO_NEW_LINES_THEN_256_SPACES                                          \
+  "\n\n                                                                      " \
   "                                                                          " \
   "                                                                          " \
-  "                                    "
-#define NEW_LINE_THEN_256_TABS                                                 \
-  "\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t" \
+  "                                      "
+#define TWO_NEW_LINES_THEN_256_TABS                                            \
+  "\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t" \
   "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t" \
   "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t" \
   "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t" \
   "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t" \
   "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t" \
-  "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t"
+  "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t"
 
-const char* g_new_line_then_256_indent_bytes;
+const char* g_two_new_lines_then_256_indent_bytes;
 uint32_t g_bytes_per_indent_depth;
 
 #ifndef DST_BUFFER_ARRAY_SIZE
@@ -478,6 +489,8 @@ in_dict_before_key() {
   return (g_ctx == context::in_dict_after_brace) ||
          (g_ctx == context::in_dict_after_value);
 }
+
+uint64_t g_num_input_blank_lines;
 
 bool g_is_after_comment;
 
@@ -660,6 +673,10 @@ class Query {
           if (*ptr != '\r') {
             break;
           }
+        } else if (*j == 't') {
+          if (*ptr != '\t') {
+            break;
+          }
         } else {
           break;
         }
@@ -693,7 +710,7 @@ class Query {
   // Pointer. In particular, it must be valid UTF-8, and either be empty or
   // start with a '/'. Any '~' within must immediately be followed by either
   // '0' or '1'. If strict_json_pointer_syntax is false, a '~' may also be
-  // followed by either 'n' or 'r'.
+  // followed by either 'n', 'r' or 't'.
   static bool validate(char* query_c_string,
                        size_t length,
                        bool strict_json_pointer_syntax) {
@@ -719,6 +736,7 @@ class Query {
             break;
           case 'n':
           case 'r':
+          case 't':
             if (strict_json_pointer_syntax) {
               return false;
             }
@@ -763,6 +781,13 @@ const char*  //
 parse_flags(int argc, char** argv) {
   g_flags.spaces = 4;
   g_flags.max_output_depth = 0xFFFFFFFF;
+
+#if defined(WUFFS_EXAMPLE_SPEAK_JWCC_NOT_JSON)
+  g_flags.input_allow_comments = true;
+  g_flags.input_allow_extra_comma = true;
+  g_flags.output_comments = true;
+  g_flags.output_extra_comma = true;
+#endif
 
   int c = (argc > 0) ? 1 : 0;  // Skip argv[0], the program name.
   for (; c < argc; c++) {
@@ -818,6 +843,11 @@ parse_flags(int argc, char** argv) {
     }
     if (!strcmp(arg, "input-allow-inf-nan-numbers")) {
       g_flags.input_allow_inf_nan_numbers = true;
+      continue;
+    }
+    if (!strcmp(arg, "input-jwcc")) {
+      g_flags.input_allow_comments = true;
+      g_flags.input_allow_extra_comma = true;
       continue;
     }
     if (!strcmp(arg, "jwcc")) {
@@ -897,6 +927,8 @@ initialize_globals(int argc, char** argv) {
 
   g_ctx = context::none;
 
+  g_num_input_blank_lines = 0;
+
   g_is_after_comment = false;
 
   TRY(parse_flags(argc, argv));
@@ -918,8 +950,9 @@ initialize_globals(int argc, char** argv) {
     return g_usage;
   }
 
-  g_new_line_then_256_indent_bytes =
-      g_flags.tabs ? NEW_LINE_THEN_256_TABS : NEW_LINE_THEN_256_SPACES;
+  g_two_new_lines_then_256_indent_bytes = g_flags.tabs
+                                              ? TWO_NEW_LINES_THEN_256_TABS
+                                              : TWO_NEW_LINES_THEN_256_SPACES;
   g_bytes_per_indent_depth = g_flags.tabs ? 1 : g_flags.spaces;
 
   g_query.reset(g_flags.query_c_string);
@@ -1041,24 +1074,30 @@ write_dst(const void* s, size_t n) {
   return write_dst_slow(s, n);
 }
 
-#define TRY_INDENT_WITH_LEADING_NEW_LINE                                   \
-  do {                                                                     \
-    uint32_t indent = g_depth * g_bytes_per_indent_depth;                  \
-    TRY(write_dst(g_new_line_then_256_indent_bytes, 1 + (indent & 0xFF))); \
-    for (indent >>= 8; indent > 0; indent--) {                             \
-      TRY(write_dst(g_new_line_then_256_indent_bytes + 1, 0x100));         \
-    }                                                                      \
+#define TRY_INDENT_WITH_LEADING_NEW_LINE                                \
+  do {                                                                  \
+    uint32_t adj = (g_num_input_blank_lines > 1) ? 1 : 0;               \
+    g_num_input_blank_lines = 0;                                        \
+    uint32_t indent = g_depth * g_bytes_per_indent_depth;               \
+    TRY(write_dst(g_two_new_lines_then_256_indent_bytes + 1 - adj,      \
+                  1 + adj + (indent & 0xFF)));                          \
+    for (indent >>= 8; indent > 0; indent--) {                          \
+      TRY(write_dst(g_two_new_lines_then_256_indent_bytes + 2, 0x100)); \
+    }                                                                   \
   } while (false)
 
 // TRY_INDENT_SANS_LEADING_NEW_LINE is used after comments, which print their
 // own "\n".
-#define TRY_INDENT_SANS_LEADING_NEW_LINE                                   \
-  do {                                                                     \
-    uint32_t indent = g_depth * g_bytes_per_indent_depth;                  \
-    TRY(write_dst(g_new_line_then_256_indent_bytes + 1, (indent & 0xFF))); \
-    for (indent >>= 8; indent > 0; indent--) {                             \
-      TRY(write_dst(g_new_line_then_256_indent_bytes + 1, 0x100));         \
-    }                                                                      \
+#define TRY_INDENT_SANS_LEADING_NEW_LINE                                \
+  do {                                                                  \
+    uint32_t adj = (g_num_input_blank_lines > 1) ? 1 : 0;               \
+    g_num_input_blank_lines = 0;                                        \
+    uint32_t indent = g_depth * g_bytes_per_indent_depth;               \
+    TRY(write_dst(g_two_new_lines_then_256_indent_bytes + 2 - adj,      \
+                  adj + (indent & 0xFF)));                              \
+    for (indent >>= 8; indent > 0; indent--) {                          \
+      TRY(write_dst(g_two_new_lines_then_256_indent_bytes + 2, 0x100)); \
+    }                                                                   \
   } while (false)
 
 // ----
@@ -1123,6 +1162,8 @@ handle_token(wuffs_base__token t, bool start_of_token_chain) {
             }
             TRY_INDENT_WITH_LEADING_NEW_LINE;
           }
+        } else {
+          g_num_input_blank_lines = 0;
         }
 
         TRY(write_dst(
@@ -1206,6 +1247,7 @@ handle_token(wuffs_base__token t, bool start_of_token_chain) {
         g_ctx = (vbd & WUFFS_BASE__TOKEN__VBD__STRUCTURE__TO_LIST)
                     ? context::in_list_after_bracket
                     : context::in_dict_after_brace;
+        g_num_input_blank_lines = 0;
         return nullptr;
 
       case WUFFS_BASE__TOKEN__VBC__STRING:
@@ -1287,12 +1329,14 @@ main1(int argc, char** argv) {
       // Handle filler tokens (e.g. whitespace, punctuation and comments).
       // These are skipped, unless -output-comments is enabled.
       if (t.value_base_category() == WUFFS_BASE__TOKEN__VBC__FILLER) {
-        if (g_flags.output_comments &&
-            (t.value_base_detail() &
-             WUFFS_BASE__TOKEN__VBD__FILLER__COMMENT_ANY)) {
+        if (!g_flags.output_comments) {
+          // No-op.
+        } else if (t.value_base_detail() &
+                   WUFFS_BASE__TOKEN__VBD__FILLER__COMMENT_ANY) {
           if (g_flags.compact_output) {
             TRY(write_dst(g_src.data.ptr + g_cursor_index - token_length,
                           token_length));
+
           } else {
             if (start_of_token_chain) {
               if (g_is_after_comment) {
@@ -1305,9 +1349,7 @@ main1(int argc, char** argv) {
                            (g_ctx != context::end_of_data)) {
                   TRY(write_dst(",", 1));
                 }
-                if (!g_flags.compact_output) {
-                  TRY_INDENT_WITH_LEADING_NEW_LINE;
-                }
+                TRY_INDENT_WITH_LEADING_NEW_LINE;
               }
             }
             TRY(write_dst(g_src.data.ptr + g_cursor_index - token_length,
@@ -1319,7 +1361,27 @@ main1(int argc, char** argv) {
             }
             g_is_after_comment = true;
           }
+          if (g_ctx == context::in_list_after_bracket) {
+            g_ctx = context::in_list_after_value;
+          } else if (g_ctx == context::in_dict_after_brace) {
+            g_ctx = context::in_dict_after_value;
+          }
+          g_num_input_blank_lines =
+              (t.value_base_detail() &
+               WUFFS_BASE__TOKEN__VBD__FILLER__COMMENT_LINE)
+                  ? 1
+                  : 0;
+
+        } else {
+          uint8_t* p = g_src.data.ptr + g_cursor_index - token_length;
+          uint8_t* q = g_src.data.ptr + g_cursor_index;
+          for (; p < q; p++) {
+            if (*p == '\n') {
+              g_num_input_blank_lines++;
+            }
+          }
         }
+
         start_of_token_chain = !t.continued();
         continue;
       }

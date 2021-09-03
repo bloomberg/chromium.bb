@@ -4,6 +4,8 @@
 
 #include "dbus/bus.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/files/file_descriptor_watcher_posix.h"
@@ -38,7 +40,7 @@ class RunLoopWithExpectedCount {
     DCHECK_EQ(0, expected_quit_calls_);
     DCHECK_EQ(0, actual_quit_calls_);
     expected_quit_calls_ = expected_quit_calls;
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
   }
 
@@ -136,7 +138,7 @@ TEST(BusTest, RemoveObjectProxy) {
   base::Thread::Options thread_options;
   thread_options.message_pump_type = base::MessagePumpType::IO;
   base::Thread dbus_thread("D-Bus thread");
-  dbus_thread.StartWithOptions(thread_options);
+  dbus_thread.StartWithOptions(std::move(thread_options));
 
   // Create the bus.
   Bus::Options options;
@@ -214,7 +216,7 @@ TEST(BusTest, UnregisterExportedObject) {
   base::Thread::Options thread_options;
   thread_options.message_pump_type = base::MessagePumpType::IO;
   base::Thread dbus_thread("D-Bus thread");
-  dbus_thread.StartWithOptions(thread_options);
+  dbus_thread.StartWithOptions(std::move(thread_options));
 
   // Create the bus.
   Bus::Options options;
@@ -264,7 +266,7 @@ TEST(BusTest, ShutdownAndBlockWithDBusThread) {
   base::Thread::Options thread_options;
   thread_options.message_pump_type = base::MessagePumpType::IO;
   base::Thread dbus_thread("D-Bus thread");
-  dbus_thread.StartWithOptions(thread_options);
+  dbus_thread.StartWithOptions(std::move(thread_options));
 
   // Create the bus.
   Bus::Options options;

@@ -19,12 +19,14 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_stream_string_converter.h"
+#include "chrome/browser/chromeos/extensions/file_manager/files_extension_function.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_base.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "components/drive/file_errors.h"
 #include "extensions/browser/extension_function.h"
 #include "services/device/public/mojom/mtp_storage_info.mojom-forward.h"
 #include "storage/browser/file_system/file_system_url.h"
+
+class Profile;
 
 namespace storage {
 class FileSystemContext;
@@ -72,7 +74,7 @@ class FileManagerPrivateEnableExternalFileSchemeFunction
 
 // Grants R/W permissions to profile-specific directories (Drive, Downloads)
 // from other profiles.
-class FileManagerPrivateGrantAccessFunction : public ExtensionFunction {
+class FileManagerPrivateGrantAccessFunction : public FilesExtensionFunction {
  public:
   FileManagerPrivateGrantAccessFunction();
 
@@ -84,7 +86,6 @@ class FileManagerPrivateGrantAccessFunction : public ExtensionFunction {
 
  private:
   ExtensionFunction::ResponseAction Run() override;
-  const ChromeExtensionFunctionDetails chrome_details_;
   DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateGrantAccessFunction);
 };
 
@@ -95,7 +96,7 @@ class FileManagerPrivateGrantAccessFunction : public ExtensionFunction {
 // directories.
 class FileWatchFunctionBase : public LoggedExtensionFunction {
  public:
-  using ResponseCallback = base::Callback<void(bool success)>;
+  using ResponseCallback = base::OnceCallback<void(bool success)>;
 
   // Calls Respond() with |success| converted to base::Value.
   void RespondWith(bool success);
@@ -186,12 +187,12 @@ class FileManagerPrivateGetSizeStatsFunction : public LoggedExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void OnGetDriveAvailableSpace(drive::FileError error,
-                                int64_t bytes_total,
-                                int64_t bytes_used);
-
   void OnGetMtpAvailableSpace(device::mojom::MtpStorageInfoPtr mtp_storage_info,
                               const bool error);
+
+  void OnGetDocumentsProviderAvailableSpace(const bool error,
+                                            const uint64_t available_bytes,
+                                            const uint64_t capacity_bytes);
 
   void OnGetSizeStats(const uint64_t* total_size,
                       const uint64_t* remaining_size);
@@ -279,7 +280,6 @@ class FileManagerPrivateInternalCopyImageToClipboardFunction
   void RespondWith(bool is_on_clipboard);
   void MoveBytesToClipboard(scoped_refptr<base::RefCountedString> bytes);
 
-  const ChromeExtensionFunctionDetails chrome_details_;
   std::unique_ptr<storage::FileStreamStringConverter> converter_;
   // Stores the clipboard copy sequence number to validate the clipboard did not
   // change during an async operation.
@@ -317,9 +317,10 @@ class FileManagerPrivateInternalStartCopyFunction
   // Part of RunAsync(). Called after Copy() is started on IO thread.
   void RunAfterStartCopy(int operation_id);
 
+  Profile* profile_ = nullptr;
+
   storage::FileSystemURL source_url_;
   storage::FileSystemURL destination_url_;
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivate.cancelCopy method.
@@ -405,8 +406,6 @@ class FileManagerPrivateSearchFilesByHashesFunction
   void OnSearchByHashes(const std::set<std::string>& hashes,
                         drive::FileError error,
                         const std::vector<drive::HashAndFilePath>& results);
-
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 class FileManagerPrivateSearchFilesFunction : public LoggedExtensionFunction {
@@ -425,8 +424,6 @@ class FileManagerPrivateSearchFilesFunction : public LoggedExtensionFunction {
 
   void OnSearchByPattern(
       const std::vector<std::pair<base::FilePath, bool>>& results);
-
-  const ChromeExtensionFunctionDetails chrome_details_;
 };
 
 // Implements the chrome.fileManagerPrivate.getDirectorySize method.

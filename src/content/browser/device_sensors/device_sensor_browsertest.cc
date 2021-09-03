@@ -56,8 +56,8 @@ class DeviceSensorBrowserTest : public ContentBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    https_embedded_test_server_.reset(
-        new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
+    https_embedded_test_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
     // Serve both a.com and b.com (and any other domain).
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(https_embedded_test_server_->InitializeAndListen());
@@ -273,9 +273,9 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
 
   EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
   // Now allow 'accelerometer' and 'gyroscope' policy features.
-  EXPECT_TRUE(ExecuteScript(shell(),
-                            "document.getElementById('cross_origin_iframe')."
-                            "allow='accelerometer; gyroscope'"));
+  EXPECT_TRUE(ExecJs(shell(),
+                     "document.getElementById('cross_origin_iframe')."
+                     "allow='accelerometer; gyroscope'"));
   EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(),
                                   "cross_origin_iframe", iframe_url));
 
@@ -323,9 +323,9 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
 
   EXPECT_TRUE(NavigateToURL(shell(), main_frame_url));
   // Now allow 'accelerometer' and 'gyroscope' policy features.
-  EXPECT_TRUE(ExecuteScript(shell(),
-                            "document.getElementById('cross_origin_iframe')."
-                            "allow='accelerometer; gyroscope'"));
+  EXPECT_TRUE(ExecJs(shell(),
+                     "document.getElementById('cross_origin_iframe')."
+                     "allow='accelerometer; gyroscope'"));
   EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(),
                                   "cross_origin_iframe", iframe_url));
 
@@ -338,7 +338,7 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
-                       DeviceOrientationFeaturePolicyWarning) {
+                       DeviceOrientationPermissionsPolicyWarning) {
   // Main frame is on a.com, iframe is on b.com.
   GURL main_frame_url =
       https_embedded_test_server_->GetURL("a.com", "/cross_origin_iframe.html");
@@ -347,9 +347,9 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
 
   const char kWarningMessage[] =
       "The deviceorientationabsolute events are blocked by "
-      "feature policy. See "
-      "https://github.com/WICG/feature-policy/blob/"
-      "master/features.md#sensor-features";
+      "permissions policy. See "
+      "https://github.com/w3c/webappsec-permissions-policy/blob/master/"
+      "features.md#sensor-features";
 
   WebContentsConsoleObserver console_observer(shell()->web_contents());
   console_observer.SetPattern(kWarningMessage);

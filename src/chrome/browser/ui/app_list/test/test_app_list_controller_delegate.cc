@@ -25,7 +25,7 @@ void TestAppListControllerDelegate::DismissView() {
   did_dismiss_view_ = true;
 }
 
-gfx::NativeWindow TestAppListControllerDelegate::GetAppListWindow() {
+aura::Window* TestAppListControllerDelegate::GetAppListWindow() {
   return nullptr;
 }
 
@@ -60,21 +60,6 @@ void TestAppListControllerDelegate::OpenURL(Profile* profile,
                                             ui::PageTransition transition,
                                             WindowOpenDisposition deposition) {
   last_opened_url_ = url;
-}
-
-void TestAppListControllerDelegate::ActivateApp(
-    Profile* profile,
-    const extensions::Extension* extension,
-    AppListSource source,
-    int event_flags) {
-}
-
-void TestAppListControllerDelegate::LaunchApp(
-    Profile* profile,
-    const extensions::Extension* extension,
-    AppListSource source,
-    int event_flags,
-    int64_t display_id) {
 }
 
 void TestAppListControllerDelegate::Reset() {

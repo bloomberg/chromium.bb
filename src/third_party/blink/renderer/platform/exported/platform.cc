@@ -40,6 +40,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -47,6 +48,7 @@
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_memory_dump_provider.h"
+#include "third_party/blink/renderer/platform/graphics/parkable_image_manager.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/gc_task_runner.h"
 #include "third_party/blink/renderer/platform/heap/process_heap.h"
@@ -59,6 +61,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/simple_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/theme/web_theme_engine_helper.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -176,6 +179,10 @@ class SimpleMainThread : public Thread {
 
 }  // namespace
 
+WebThemeEngine* Platform::ThemeEngine() {
+  return WebThemeEngineHelper::GetNativeThemeEngine();
+}
+
 void Platform::InitializeBlink() {
   DCHECK(!did_initialize_blink_);
   WTF::Partitions::Initialize();
@@ -239,6 +246,9 @@ void Platform::InitializeMainThreadCommon(Platform* platform,
       ParkableStringManagerDumpProvider::Instance(), "ParkableStrings",
       base::ThreadTaskRunnerHandle::Get());
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      &ParkableImageManager::Instance(), "ParkableImages",
+      base::ThreadTaskRunnerHandle::Get());
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       CanvasMemoryDumpProvider::Instance(), "Canvas",
       base::ThreadTaskRunnerHandle::Get());
 
@@ -274,6 +284,12 @@ void Platform::UnsetMainThreadTaskRunnerForTesting() {
 
 Platform* Platform::Current() {
   return g_platform;
+}
+
+std::unique_ptr<blink::WebURLLoaderFactory>
+Platform::WrapSharedURLLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> factory) {
+  return nullptr;
 }
 
 ThreadSafeBrowserInterfaceBrokerProxy* Platform::GetBrowserInterfaceBroker() {
@@ -328,6 +344,10 @@ Platform::SharedCompositorWorkerContextProvider() {
 
 scoped_refptr<gpu::GpuChannelHost> Platform::EstablishGpuChannelSync() {
   return nullptr;
+}
+
+gfx::ColorSpace Platform::GetRenderingColorSpace() const {
+  return {};
 }
 
 }  // namespace blink

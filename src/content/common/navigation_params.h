@@ -5,8 +5,6 @@
 #ifndef CONTENT_COMMON_NAVIGATION_PARAMS_H_
 #define CONTENT_COMMON_NAVIGATION_PARAMS_H_
 
-#include <string>
-
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.mojom-forward.h"
 
@@ -14,7 +12,6 @@ namespace content {
 
 CONTENT_EXPORT mojom::CommonNavigationParamsPtr CreateCommonNavigationParams();
 CONTENT_EXPORT mojom::CommitNavigationParamsPtr CreateCommitNavigationParams();
-CONTENT_EXPORT mojom::InitiatorCSPInfoPtr CreateInitiatorCSPInfo();
 
 }  // namespace content
 

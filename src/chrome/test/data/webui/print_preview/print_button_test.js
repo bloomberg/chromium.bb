@@ -8,6 +8,10 @@ import {NativeLayerStub} from 'chrome://test/print_preview/native_layer_stub.js'
 import {getDefaultInitialSettings} from 'chrome://test/print_preview/print_preview_test_utils.js';
 import {TestPluginProxy} from 'chrome://test/print_preview/test_plugin_proxy.js';
 
+// <if expr="chromeos or lacros">
+import {setNativeLayerCrosInstance} from './native_layer_cros_stub.js';
+// </if>
+
 window.print_button_test = {};
 print_button_test.suiteName = 'PrintButtonTest';
 /** @enum {string} */
@@ -37,6 +41,9 @@ suite(print_button_test.suiteName, function() {
   setup(function() {
     nativeLayer = new NativeLayerStub();
     NativeLayerImpl.instance_ = nativeLayer;
+    // <if expr="chromeos or lacros">
+    setNativeLayerCrosInstance();
+    // </if>
     document.body.innerHTML = '';
     nativeLayer.setInitialSettings(initialSettings);
     const localDestinationInfos = [
@@ -135,8 +142,7 @@ suite(print_button_test.suiteName, function() {
 
   // Tests that hidePreview() is not called if Save to Drive is selected on
   // Chrome OS and the user clicks print while the preview is loading because
-  // when the flag |kPrintSaveToDrive| is enabled, Save to Drive needs to be
-  // treated like Save as PDF.
+  // Save to Drive needs to be treated like Save as PDF.
   test(
       assert(print_button_test.TestNames.SaveToDriveVisiblePreviewCros),
       function() {

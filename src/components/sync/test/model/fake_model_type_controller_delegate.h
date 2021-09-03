@@ -6,13 +6,12 @@
 #define COMPONENTS_SYNC_TEST_MODEL_FAKE_MODEL_TYPE_CONTROLLER_DELEGATE_H_
 
 #include <memory>
-#include <string>
 
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_controller_delegate.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace syncer {
 
@@ -20,6 +19,9 @@ class FakeModelTypeControllerDelegate : public ModelTypeControllerDelegate {
  public:
   explicit FakeModelTypeControllerDelegate(ModelType type);
   ~FakeModelTypeControllerDelegate() override;
+
+  void SetModelTypeStateForActivationResponse(
+      const sync_pb::ModelTypeState& model_type_state);
 
   // By default, this delegate (model) completes startup automatically when
   // OnSyncStarting() is invoked. For tests that want to manually control the
@@ -49,10 +51,13 @@ class FakeModelTypeControllerDelegate : public ModelTypeControllerDelegate {
   base::WeakPtr<ModelTypeControllerDelegate> GetWeakPtr();
 
  private:
+  std::unique_ptr<DataTypeActivationResponse> MakeActivationResponse() const;
+
   const ModelType type_;
   bool manual_model_start_enabled_ = false;
   int clear_metadata_call_count_ = 0;
-  base::Optional<ModelError> model_error_;
+  sync_pb::ModelTypeState model_type_state_for_activation_response_;
+  absl::optional<ModelError> model_error_;
   StartCallback start_callback_;
   ModelErrorHandler error_handler_;
   base::WeakPtrFactory<FakeModelTypeControllerDelegate> weak_ptr_factory_{this};

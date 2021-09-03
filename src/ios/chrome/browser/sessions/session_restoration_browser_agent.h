@@ -14,10 +14,9 @@
 #include "ios/chrome/browser/main/browser_observer.h"
 #include "ios/chrome/browser/main/browser_user_data.h"
 #include "ios/chrome/browser/web_state_list/web_state_list_observer.h"
+#include "ios/web/public/web_state_observer.h"
 
-namespace base {
-class FilePath;
-}
+class AllWebStateObservationForwarder;
 class ChromeBrowserState;
 @class SessionWindowIOS;
 @class SessionIOSFactory;
@@ -29,11 +28,13 @@ class WebUsageEnablerBrowserAgent;
 // This class is responsible for handling requests of session restoration. It
 // can be observed via SeassonRestorationObserver which it uses to notify
 // observers of session restoration events. This class also automatically
-// save sessions when the active webState changes.
+// save sessions when the active webState changes, and when each web state
+// completes a navigation.
 class SessionRestorationBrowserAgent
     : BrowserObserver,
       public BrowserUserData<SessionRestorationBrowserAgent>,
-      WebStateListObserver {
+      WebStateListObserver,
+      public web::WebStateObserver {
  public:
   // Creates an SessionRestorationBrowserAgent scoped to |browser|.
   static void CreateForBrowser(Browser* browser,
@@ -41,13 +42,14 @@ class SessionRestorationBrowserAgent
 
   ~SessionRestorationBrowserAgent() override;
 
+  SessionRestorationBrowserAgent(const SessionRestorationBrowserAgent&) =
+      delete;
+  SessionRestorationBrowserAgent& operator=(
+      const SessionRestorationBrowserAgent&) = delete;
+
   // Set a session identification string that will be used to locate which
-  // session to restore. If this is unset (or an empty string), then the
-  // default session will be restored. This value is ignored when multi-window
-  // is not enabled, and the default session is always used.
-  // Setting this more than once on the same agent is probably a programming
-  // error.
-  void SetSessionID(const std::string& session_identifier);
+  // session to restore. Must be set before restoring/saving the session.
+  void SetSessionID(NSString* session_identifier);
 
   // Adds/Removes Observer to session restoration events.
   void AddObserver(SessionRestorationObserver* observer);
@@ -86,7 +88,7 @@ class SessionRestorationBrowserAgent
   // BrowserObserver methods
   void BrowserDestroyed(Browser* browser) override;
 
-  // WebStateListObserver methods
+  // WebStateListObserver methods.
   void WebStateActivatedAt(WebStateList* web_state_list,
                            web::WebState* old_web_state,
                            web::WebState* new_web_state,
@@ -108,33 +110,34 @@ class SessionRestorationBrowserAgent
                      int from_index,
                      int to_index) override;
 
-  // The path to use for all session storage reads and writes. If multi-window
-  // is enabled, the session ID for this agent is used to determine this path;
-  // otherwise or if |force_single_window| is true, the state path of the
-  // associated browser state will be returned.
-  base::FilePath GetSessionStoragePath(bool force_single_window = false);
+  // web::WebStateObserver methods.
+  void DidFinishNavigation(web::WebState* web_state,
+                           web::NavigationContext* navigation_context) override;
 
   // The service object which handles the actual saving of sessions.
-  SessionServiceIOS* session_service_;
+  SessionServiceIOS* session_service_ = nullptr;
 
   // The list of web states to be saved.
-  WebStateList* web_state_list_;
+  WebStateList* web_state_list_ = nullptr;
 
   // The web usage enabler for the web state list being restored.
-  WebUsageEnablerBrowserAgent* web_enabler_;
+  WebUsageEnablerBrowserAgent* web_enabler_ = nullptr;
 
   base::ObserverList<SessionRestorationObserver, true> observers_;
 
-  ChromeBrowserState* browser_state_;
+  ChromeBrowserState* browser_state_ = nullptr;
 
   // Session Factory used to create session data for saving.
-  SessionIOSFactory* session_ios_factory_;
+  SessionIOSFactory* session_ios_factory_ = nullptr;
 
   // Session identifier for this agent.
-  std::string session_identifier_;
+  __strong NSString* session_identifier_ = nil;
 
   // True when session restoration is in progress.
   bool restoring_session_ = false;
+
+  // Observer for the active web state in |browser_|'s web state list.
+  std::unique_ptr<AllWebStateObservationForwarder> all_web_state_observer_;
 };
 
 #endif  // IOS_CHROME_BROWSER_SESSIONS_SESSION_RESTORATION_BROWSER_AGENT_H_

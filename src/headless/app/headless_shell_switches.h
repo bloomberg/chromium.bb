@@ -33,12 +33,14 @@ HEADLESS_EXPORT extern const char kRepl[];
 HEADLESS_EXPORT extern const char kScreenshot[];
 HEADLESS_EXPORT extern const char kSSLKeyLogFile[];
 HEADLESS_EXPORT extern const char kTimeout[];
+HEADLESS_EXPORT extern const char kUseANGLE[];
 HEADLESS_EXPORT extern const char kUseGL[];
 HEADLESS_EXPORT extern const char kUserAgent[];
 HEADLESS_EXPORT extern const char kUserDataDir[];
 HEADLESS_EXPORT extern const char kVirtualTimeBudget[];
 HEADLESS_EXPORT extern const char kWindowSize[];
 HEADLESS_EXPORT extern const char kAuthServerAllowlist[];
+HEADLESS_EXPORT extern const char kAuthServerAllowlistDeprecated[];
 HEADLESS_EXPORT extern const char kFontRenderHinting[];
 HEADLESS_EXPORT extern const char kBlockNewWebContents[];
 

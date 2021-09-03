@@ -113,7 +113,7 @@ void AccessibilityAuraLinuxBrowserTest::CheckTextAtOffset(
     int expected_start_offset,
     int expected_end_offset,
     const char* expected_text) {
-  testing::Message message;
+  ::testing::Message message;
   message << "While checking at index \'" << offset << "\' for \'"
           << expected_text << "\' at " << expected_start_offset << '-'
           << expected_end_offset << '.';
@@ -254,7 +254,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   int character_count = atk_text_get_character_count(contenteditable_text);
   ASSERT_EQ(13, character_count);
 
-  const base::string16 embedded_character(
+  const std::u16string embedded_character(
       1, ui::AXPlatformNodeAuraLinux::kEmbeddedCharacter);
   const std::vector<const std::string> expected_hypertext = {
       "B", "e", "f", "o", "r", "e", base::UTF16ToUTF8(embedded_character),
@@ -298,11 +298,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kValueChanged);
   // Place an e acute, and two emoticons in the text field.
-  ExecuteScript(base::UTF8ToUTF16(R"SCRIPT(
+  ExecuteScript(
+      uR"SCRIPT(
       const input = document.querySelector('input');
       input.value =
-          'e\u0301\uD83D\uDC69\u200D\u2764\uFE0F\u200D\uD83D\uDC69\uD83D\uDC36';
-      )SCRIPT"));
+          'é👩\u200D❤\uFE0F\u200D👩🐶';
+      )SCRIPT");
   waiter.WaitForNotification();
 
   int character_count = atk_text_get_character_count(atk_text);
@@ -383,10 +384,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
                                          ui::kAXModeComplete,
                                          ax::mojom::Event::kValueChanged);
   // Add a blank line at the end of the textarea.
-  ExecuteScript(base::UTF8ToUTF16(R"SCRIPT(
+  ExecuteScript(
+      uR"SCRIPT(
       const textarea = document.querySelector('textarea');
       textarea.value += '\n';
-      )SCRIPT"));
+      )SCRIPT");
   waiter.WaitForNotification();
 
   // The second last line should have an additional trailing newline. Also,
@@ -429,7 +431,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   int n_characters = atk_text_get_character_count(atk_text);
   ASSERT_LT(newline_offset, n_characters);
 
-  const base::string16 embedded_character(
+  const std::u16string embedded_character(
       1, ui::AXPlatformNodeAuraLinux::kEmbeddedCharacter);
   std::string expected_string = "Game theory is \"the study of " +
                                 base::UTF16ToUTF8(embedded_character) +
@@ -584,7 +586,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 
     gfx::Rect combined_extents(x, y, width, height);
     for (int offset = 1; offset < newline_offset; ++offset) {
-      testing::Message message;
+      ::testing::Message message;
       message << "While checking at offset " << offset;
       SCOPED_TRACE(message);
 
@@ -613,7 +615,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
     }
 
     {
-      testing::Message message;
+      ::testing::Message message;
       message << "While checking at offset " << newline_offset + 1;
       SCOPED_TRACE(message);
 
@@ -628,7 +630,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
 
     combined_extents = gfx::Rect(x, y, width, height);
     for (int offset = newline_offset + 2; offset < n_characters; ++offset) {
-      testing::Message message;
+      ::testing::Message message;
       message << "While checking at offset " << offset;
       SCOPED_TRACE(message);
 
@@ -679,7 +681,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
     // Test that non offscreen characters have increasing x coordinates and a
     // height that is greater than 1px.
     {
-      testing::Message message;
+      ::testing::Message message;
       message << "While checking at offset 0";
       SCOPED_TRACE(message);
 
@@ -692,7 +694,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
     }
 
     for (int offset = 1; offset < first_line_end; ++offset) {
-      testing::Message message;
+      ::testing::Message message;
       message << "While checking at offset " << offset;
       SCOPED_TRACE(message);
 
@@ -709,7 +711,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
     }
 
     {
-      testing::Message message;
+      ::testing::Message message;
       message << "While checking at offset " << last_line_start;
       SCOPED_TRACE(message);
 
@@ -722,7 +724,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
     }
 
     for (int offset = last_line_start + 1; offset < n_characters; ++offset) {
-      testing::Message message;
+      ::testing::Message message;
       message << "While checking at offset " << offset;
       SCOPED_TRACE(message);
 
@@ -1316,7 +1318,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest, TestAtkTextListItem) {
 
   EXPECT_TRUE(ATK_IS_TEXT(list_item_1));
 
-  const base::string16 string16_embed(
+  const std::u16string string16_embed(
       1, ui::AXPlatformNodeAuraLinux::kEmbeddedCharacter);
   std::string expected_string = base::UTF16ToUTF8(string16_embed) + "Text 1";
 
@@ -1437,15 +1439,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
       shell()->web_contents(), ui::kAXModeComplete,
       ax::mojom::Event::kTextSelectionChanged);
   ExecuteScript(
-      base::UTF8ToUTF16("let parent = document.getElementById('parent');"
-                        "let child1 = document.getElementById('child1');"
-                        "let child2 = document.getElementById('child2');"
-                        "let range = document.createRange();"
-                        "range.setStart(child1.firstChild, 3);"
-                        "range.setEnd(child1.firstChild, 5);"
-                        "parent.focus();"
-                        "document.getSelection().removeAllRanges();"
-                        "document.getSelection().addRange(range);"));
+      u"let parent = document.getElementById('parent');"
+      u"let child1 = document.getElementById('child1');"
+      u"let child2 = document.getElementById('child2');"
+      u"let range = document.createRange();"
+      u"range.setStart(child1.firstChild, 3);"
+      u"range.setEnd(child1.firstChild, 5);"
+      u"parent.focus();"
+      u"document.getSelection().removeAllRanges();"
+      u"document.getSelection().addRange(range);");
   selection_waiter.WaitForNotification();
 
   EXPECT_FALSE(saw_selection_change_in_parent);
@@ -1468,12 +1470,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   saw_selection_change_in_child2 = false;
 
   ExecuteScript(
-      base::UTF8ToUTF16("let range2 = document.createRange();"
-                        "range2.setStart(child1.firstChild, 0);"
-                        "range2.setEnd(child2.firstChild, 3);"
-                        "parent.focus();"
-                        "document.getSelection().removeAllRanges();"
-                        "document.getSelection().addRange(range2);"));
+      u"let range2 = document.createRange();"
+      u"range2.setStart(child1.firstChild, 0);"
+      u"range2.setEnd(child2.firstChild, 3);"
+      u"parent.focus();"
+      u"document.getSelection().removeAllRanges();"
+      u"document.getSelection().addRange(range2);");
   selection_waiter.WaitForNotification();
 
   EXPECT_TRUE(saw_selection_change_in_parent);
@@ -1507,18 +1509,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
       shell()->web_contents(), ui::kAXModeComplete,
       ax::mojom::Event::kTextSelectionChanged);
 
-  int length = atk_text_get_character_count(ATK_TEXT(heading));
-  for (int i = 0; i < length; i++) {
-    atk_text_set_caret_offset(ATK_TEXT(heading), i);
-
-    // We aren't getting kTextSelectionChanged or kDocumentSelectionChanged for
-    // the following offsets in the generated content. Recheck this after the
-    // crasher bug is fixed.
-    if (i == 1 || i == 6)
-      continue;
-
+  // Caret can't be set inside generated content, it will go to the closest
+  // allowed place. Ordered the targets so that the caret will always actually
+  // move somewhere between steps, and thus the waiter will always be satisfied.
+  std::vector<int> target_offset = {0, 3, 1, 4, 2, 4, 5, 4, 6};
+  std::vector<int> expect_offset = {2, 3, 2, 4, 2, 4, 2, 4, 2};
+  for (size_t i = 0; i < target_offset.size(); i++) {
+    atk_text_set_caret_offset(ATK_TEXT(heading), target_offset[i]);
     waiter.WaitForNotification();
-    ASSERT_EQ(i, atk_text_get_caret_offset(ATK_TEXT(heading)));
+    ASSERT_EQ(expect_offset[i], atk_text_get_caret_offset(ATK_TEXT(heading)));
   }
 
   g_object_unref(heading);
@@ -1902,15 +1901,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   AccessibilityNotificationWaiter selection_waiter(
       shell()->web_contents(), ui::kAXModeComplete,
       ax::mojom::Event::kTextSelectionChanged);
-  ExecuteScript(base::UTF8ToUTF16(
-      "let selection = document.getSelection();"
-      "let editable = document.querySelector('div[contenteditable=\"true\"]');"
-      "editable.focus();"
-      "let range = document.createRange();"
-      "range.setStart(editable.lastChild, 4);"
-      "range.setEnd(editable.lastChild, 4);"
-      "selection.removeAllRanges();"
-      "selection.addRange(range);"));
+  ExecuteScript(
+      u"let selection = document.getSelection();"
+      u"let editable = document.querySelector('div[contenteditable=\"true\"]');"
+      u"editable.focus();"
+      u"let range = document.createRange();"
+      u"range.setStart(editable.lastChild, 4);"
+      u"range.setEnd(editable.lastChild, 4);"
+      u"selection.removeAllRanges();"
+      u"selection.addRange(range);");
   selection_waiter.WaitForNotification();
 
   // We should see the event happen in div and not the static text element.
@@ -2155,6 +2154,22 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
     ASSERT_NE(nullptr, hit_child_node);
     EXPECT_EQ(node->GetId(), hit_child_node->GetDelegate()->GetData().id);
   }
+}
+
+// Tests if it does not DCHECK when textarea has a placeholder break element.
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestGetTextContainerFromTextArea) {
+  std::string content = std::string("<textarea style=\"height:100px;\">hello") +
+                        std::string("\n") + std::string("</textarea>");
+  LoadInitialAccessibilityTreeFromHtml(content);
+
+  AtkText* atk_text = FindNode(ATK_ROLE_ENTRY);
+  AtkTextRectangle atk_rect;
+  // atk_text_get_range_extents() calls GetTextContainerForPlainTextField() and
+  // DCHECK on checking children counts.
+  atk_text_get_range_extents(atk_text, 0, 7, AtkCoordType::ATK_XY_SCREEN,
+                             &atk_rect);
+  g_object_unref(atk_text);
 }
 
 }  // namespace content

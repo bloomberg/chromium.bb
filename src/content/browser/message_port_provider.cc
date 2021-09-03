@@ -6,15 +6,14 @@
 
 #include <utility>
 
-#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/frame_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/messaging/string_message_codec.h"
 
 #if defined(OS_ANDROID)
@@ -29,9 +28,9 @@ namespace {
 
 void PostMessageToFrameInternal(
     WebContents* web_contents,
-    const base::string16& source_origin,
-    const base::string16& target_origin,
-    const base::string16& data,
+    const std::u16string& source_origin,
+    const std::u16string& target_origin,
+    const std::u16string& data,
     std::vector<blink::MessagePortDescriptor> ports) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -48,15 +47,15 @@ void PostMessageToFrameInternal(
 
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
-  rfh->PostMessageEvent(base::nullopt, source_origin, target_origin,
+  rfh->PostMessageEvent(absl::nullopt, source_origin, target_origin,
                         std::move(message));
 }
 
 #if defined(OS_ANDROID)
-base::string16 ToString16(JNIEnv* env,
+std::u16string ToString16(JNIEnv* env,
                           const base::android::JavaParamRef<jstring>& s) {
   if (s.is_null())
-    return base::string16();
+    return std::u16string();
   return base::android::ConvertJavaStringToUTF16(env, s);
 }
 #endif
@@ -66,9 +65,9 @@ base::string16 ToString16(JNIEnv* env,
 // static
 void MessagePortProvider::PostMessageToFrame(
     WebContents* web_contents,
-    const base::string16& source_origin,
-    const base::string16& target_origin,
-    const base::string16& data) {
+    const std::u16string& source_origin,
+    const std::u16string& target_origin,
+    const std::u16string& data) {
   PostMessageToFrameInternal(web_contents, source_origin, target_origin, data,
                              std::vector<blink::MessagePortDescriptor>());
 }
@@ -92,9 +91,9 @@ void MessagePortProvider::PostMessageToFrame(
 // static
 void MessagePortProvider::PostMessageToFrame(
     WebContents* web_contents,
-    const base::string16& source_origin,
-    const base::Optional<base::string16>& target_origin,
-    const base::string16& data,
+    const std::u16string& source_origin,
+    const absl::optional<std::u16string>& target_origin,
+    const std::u16string& data,
     std::vector<blink::WebMessagePort> ports) {
   // Extract the underlying descriptors.
   std::vector<blink::MessagePortDescriptor> descriptors;

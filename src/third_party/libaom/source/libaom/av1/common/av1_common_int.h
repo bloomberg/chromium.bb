@@ -192,12 +192,32 @@ typedef struct BufferPool {
 
 /*!\brief Parameters related to CDEF */
 typedef struct {
-  int cdef_damping;                       /*!< CDEF damping factor */
-  int nb_cdef_strengths;                  /*!< Number of CDEF strength values */
-  int cdef_strengths[CDEF_MAX_STRENGTHS]; /*!< CDEF strength values for luma */
-  int cdef_uv_strengths[CDEF_MAX_STRENGTHS]; /*!< CDEF strength values for
-                                                chroma */
-  int cdef_bits; /*!< Number of CDEF strength values in bits */
+  //! CDEF column line buffer
+  uint16_t *colbuf[MAX_MB_PLANE];
+  //! CDEF top & bottom line buffer
+  uint16_t *linebuf[MAX_MB_PLANE];
+  //! CDEF intermediate buffer
+  uint16_t *srcbuf;
+  //! CDEF column line buffer sizes
+  size_t allocated_colbuf_size[MAX_MB_PLANE];
+  //! CDEF top and bottom line buffer sizes
+  size_t allocated_linebuf_size[MAX_MB_PLANE];
+  //! CDEF intermediate buffer size
+  size_t allocated_srcbuf_size;
+  //! CDEF damping factor
+  int cdef_damping;
+  //! Number of CDEF strength values
+  int nb_cdef_strengths;
+  //! CDEF strength values for luma
+  int cdef_strengths[CDEF_MAX_STRENGTHS];
+  //! CDEF strength values for chroma
+  int cdef_uv_strengths[CDEF_MAX_STRENGTHS];
+  //! Number of CDEF strength values in bits
+  int cdef_bits;
+  //! Number of rows in the frame in 4 pixel
+  int allocated_mi_rows;
+  //! Number of CDEF workers
+  int allocated_num_workers;
 } CdefInfo;
 
 /*!\cond */
@@ -602,12 +622,12 @@ struct CommonQuantParams {
 
   /*!
    * Delta of qindex (from base_qindex) for V plane DC coefficients.
-   * Same as those for U plane if cm->seq_params.separate_uv_delta_q == 0.
+   * Same as those for U plane if cm->seq_params->separate_uv_delta_q == 0.
    */
   int u_ac_delta_q;
   /*!
    * Delta of qindex (from base_qindex) for V plane AC coefficients.
-   * Same as those for U plane if cm->seq_params.separate_uv_delta_q == 0.
+   * Same as those for U plane if cm->seq_params->separate_uv_delta_q == 0.
    */
   int v_ac_delta_q;
 
@@ -728,7 +748,7 @@ typedef struct AV1Common {
   /*!
    * Code and details about current error status.
    */
-  struct aom_internal_error_info error;
+  struct aom_internal_error_info *error;
 
   /*!
    * AV1 allows two types of frame scaling operations:
@@ -779,10 +799,6 @@ typedef struct AV1Common {
    */
   uint8_t superres_scale_denominator;
 
-  /*!
-   * If true, buffer removal times are present.
-   */
-  bool buffer_removal_time_present;
   /*!
    * buffer_removal_times[op_num] specifies the frame removal time in units of
    * DecCT clock ticks counted from the removal time of the last random access
@@ -950,7 +966,7 @@ typedef struct AV1Common {
    * Elements part of the sequence header, that are applicable for all the
    * frames in the video.
    */
-  SequenceHeader seq_params;
+  SequenceHeader *seq_params;
 
   /*!
    * Current CDFs of all the symbols for the current frame.
@@ -982,7 +998,7 @@ typedef struct AV1Common {
   CommonContexts above_contexts;
 
   /**
-   * \name Signaled when cm->seq_params.frame_id_numbers_present_flag == 1
+   * \name Signaled when cm->seq_params->frame_id_numbers_present_flag == 1
    */
   /**@{*/
   int current_frame_id;         /*!< frame ID for the current frame. */
@@ -1014,19 +1030,11 @@ typedef struct AV1Common {
   int8_t ref_frame_side[REF_FRAMES];
 
   /*!
-   * Number of temporal layers: may be > 1 for SVC (scalable vector coding).
-   */
-  unsigned int number_temporal_layers;
-  /*!
    * Temporal layer ID of this frame
    * (in the range 0 ... (number_temporal_layers - 1)).
    */
   int temporal_layer_id;
 
-  /*!
-   * Number of spatial layers: may be > 1 for SVC (scalable vector coding).
-   */
-  unsigned int number_spatial_layers;
   /*!
    * Spatial layer ID of this frame
    * (in the range 0 ... (number_spatial_layers - 1)).
@@ -1192,15 +1200,15 @@ static INLINE RefCntBuffer *get_primary_ref_frame_buf(
 // Returns 1 if this frame might allow mvs from some reference frame.
 static INLINE int frame_might_allow_ref_frame_mvs(const AV1_COMMON *cm) {
   return !cm->features.error_resilient_mode &&
-         cm->seq_params.order_hint_info.enable_ref_frame_mvs &&
-         cm->seq_params.order_hint_info.enable_order_hint &&
+         cm->seq_params->order_hint_info.enable_ref_frame_mvs &&
+         cm->seq_params->order_hint_info.enable_order_hint &&
          !frame_is_intra_only(cm);
 }
 
 // Returns 1 if this frame might use warped_motion
 static INLINE int frame_might_allow_warped_motion(const AV1_COMMON *cm) {
   return !cm->features.error_resilient_mode && !frame_is_intra_only(cm) &&
-         cm->seq_params.enable_warped_motion;
+         cm->seq_params->enable_warped_motion;
 }
 
 static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
@@ -1240,7 +1248,7 @@ static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {
 void cfl_init(CFL_CTX *cfl, const SequenceHeader *seq_params);
 
 static INLINE int av1_num_planes(const AV1_COMMON *cm) {
-  return cm->seq_params.monochrome ? 1 : MAX_MB_PLANE;
+  return cm->seq_params->monochrome ? 1 : MAX_MB_PLANE;
 }
 
 static INLINE void av1_init_above_context(CommonContexts *above_contexts,
@@ -1279,8 +1287,8 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd) {
     }
   }
   xd->mi_stride = cm->mi_params.mi_stride;
-  xd->error_info = &cm->error;
-  cfl_init(&xd->cfl, &cm->seq_params);
+  xd->error_info = cm->error;
+  cfl_init(&xd->cfl, cm->seq_params);
 }
 
 static INLINE void set_entropy_context(MACROBLOCKD *xd, int mi_row, int mi_col,
@@ -1562,7 +1570,7 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
                                           const MACROBLOCKD *xd,
                                           int mi_col_start, int mi_col_end,
                                           const int tile_row) {
-  const SequenceHeader *const seq_params = &cm->seq_params;
+  const SequenceHeader *const seq_params = cm->seq_params;
   const int num_planes = av1_num_planes(cm);
   const int width = mi_col_end - mi_col_start;
   const int aligned_width =

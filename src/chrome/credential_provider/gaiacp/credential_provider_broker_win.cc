@@ -15,7 +15,7 @@
 // clang-format on
 
 #include "base/memory/free_deleter.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_devinfo.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -35,7 +35,7 @@ using ScopedPreparsedData =
 
 // Opens the HID device handle with the input |device_path| and
 // returns a ScopedHandle.
-base::win::ScopedHandle OpenHidDevice(const base::string16& device_path) {
+base::win::ScopedHandle OpenHidDevice(const std::wstring& device_path) {
   base::win::ScopedHandle file(
       CreateFile(device_path.c_str(), GENERIC_WRITE | GENERIC_READ,
                  FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
@@ -48,18 +48,18 @@ base::win::ScopedHandle OpenHidDevice(const base::string16& device_path) {
 }
 
 // Gets the usage page for the input device |handle|.
-base::Optional<uint16_t> GetUsagePage(HANDLE handle) {
+absl::optional<uint16_t> GetUsagePage(HANDLE handle) {
   ScopedPreparsedData scoped_preparsed_data;
   if (!HidD_GetPreparsedData(
           handle, ScopedPreparsedData::Receiver(scoped_preparsed_data).get()) ||
       !scoped_preparsed_data.is_valid()) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   HIDP_CAPS capabilities = {};
   if (HidP_GetCaps(scoped_preparsed_data.get(), &capabilities) !=
       HIDP_STATUS_SUCCESS) {
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return capabilities.UsagePage;
@@ -67,7 +67,7 @@ base::Optional<uint16_t> GetUsagePage(HANDLE handle) {
 
 // Extracts the device path from |device_info_set| and |device_interface_data|
 // input fields.
-base::Optional<base::string16> GetDevicePath(
+absl::optional<std::wstring> GetDevicePath(
     HDEVINFO device_info_set,
     PSP_DEVICE_INTERFACE_DATA device_interface_data) {
   DWORD required_size = 0;
@@ -86,11 +86,11 @@ base::Optional<base::string16> GetDevicePath(
   if (!SetupDiGetDeviceInterfaceDetail(device_info_set, device_interface_data,
                                        device_interface_detail_data.get(),
                                        required_size, nullptr, nullptr)) {
-    return base::nullopt;
+    return absl::nullopt;
   }
   // Extract the device path and compare it with input device path
   // and ignore it if it doesn't match the input device path.
-  return base::string16(device_interface_detail_data->DevicePath);
+  return std::wstring(device_interface_detail_data->DevicePath);
 }
 }  // namespace
 
@@ -101,7 +101,7 @@ CredentialProviderBrokerWin::CredentialProviderBrokerWin() = default;
 CredentialProviderBrokerWin::~CredentialProviderBrokerWin() = default;
 
 void CredentialProviderBrokerWin::OpenDevice(
-    const base::string16& input_device_path,
+    const std::u16string& input_device_path,
     OpenDeviceCallback callback) {
   base::win::ScopedDevInfo device_info_set(
       SetupDiGetClassDevs(&GUID_DEVINTERFACE_HID, nullptr, nullptr,
@@ -115,14 +115,14 @@ void CredentialProviderBrokerWin::OpenDevice(
              device_info_set.get(), nullptr, &GUID_DEVINTERFACE_HID,
              device_index, &device_interface_data);
          ++device_index) {
-      base::Optional<base::string16> device_path =
+      absl::optional<std::wstring> device_path =
           GetDevicePath(device_info_set.get(), &device_interface_data);
       if (!device_path)
         continue;
 
       DCHECK(base::IsStringASCII(device_path.value()));
-      if (!base::EqualsCaseInsensitiveASCII(device_path.value(),
-                                            input_device_path)) {
+      if (!base::EqualsCaseInsensitiveASCII(
+              device_path.value(), base::AsWStringPiece(input_device_path))) {
         continue;
       }
 
@@ -131,13 +131,15 @@ void CredentialProviderBrokerWin::OpenDevice(
       if (!device_handle.IsValid())
         break;
 
-      base::Optional<uint16_t> usage_page = GetUsagePage(device_handle.Get());
+      absl::optional<uint16_t> usage_page = GetUsagePage(device_handle.Get());
 
       // Only if the input device path is corresponding to a FIDO
       // device, we will return appropriate device handle. Otherwise,
       // return an invalid device handle.
-      if (usage_page && usage_page.value() == FIDO_USAGE_PAGE)
+      if (usage_page && usage_page.value() == FIDO_USAGE_PAGE) {
         std::move(callback).Run(PlatformHandle(std::move(device_handle)));
+        return;
+      }
       break;
     }
   }
@@ -145,6 +147,5 @@ void CredentialProviderBrokerWin::OpenDevice(
   // Return default PlatformHandle when we can't find any appropriate device
   // handle.
   std::move(callback).Run(PlatformHandle());
-  return;
 }
 }  // namespace credential_provider

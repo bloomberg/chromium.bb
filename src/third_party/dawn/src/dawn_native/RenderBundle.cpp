@@ -23,11 +23,11 @@ namespace dawn_native {
 
     RenderBundleBase::RenderBundleBase(RenderBundleEncoder* encoder,
                                        const RenderBundleDescriptor* descriptor,
-                                       AttachmentState* attachmentState,
-                                       PassResourceUsage resourceUsage)
+                                       Ref<AttachmentState> attachmentState,
+                                       RenderPassResourceUsage resourceUsage)
         : ObjectBase(encoder->GetDevice()),
           mCommands(encoder->AcquireCommands()),
-          mAttachmentState(attachmentState),
+          mAttachmentState(std::move(attachmentState)),
           mResourceUsage(std::move(resourceUsage)) {
     }
 
@@ -53,7 +53,7 @@ namespace dawn_native {
         return mAttachmentState.Get();
     }
 
-    const PassResourceUsage& RenderBundleBase::GetResourceUsage() const {
+    const RenderPassResourceUsage& RenderBundleBase::GetResourceUsage() const {
         ASSERT(!IsError());
         return mResourceUsage;
     }

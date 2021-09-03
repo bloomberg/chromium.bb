@@ -4,10 +4,11 @@
 
 #include "chrome/browser/password_manager/android/credential_leak_controller_android.h"
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/insecure_credentials_table.h"
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,8 +29,7 @@ CredentialLeakControllerAndroid* MakeController(IsSaved is_saved,
                                                 IsSyncing is_syncing) {
   return new CredentialLeakControllerAndroid(
       CreateLeakType(is_saved, is_reused, is_syncing),
-      password_manager::CompromisedSitesCount(0), GURL("https://example.com"),
-      base::ASCIIToUTF16("test_username"), nullptr);
+      GURL("https://example.com"), u"test_username", nullptr);
 }
 
 }  // namespace
