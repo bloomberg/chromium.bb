@@ -20,12 +20,12 @@
 namespace dawn_native { namespace metal {
 
     // static
-    ResultOrError<ComputePipeline*> ComputePipeline::Create(
+    ResultOrError<Ref<ComputePipeline>> ComputePipeline::Create(
         Device* device,
         const ComputePipelineDescriptor* descriptor) {
         Ref<ComputePipeline> pipeline = AcquireRef(new ComputePipeline(device, descriptor));
         DAWN_TRY(pipeline->Initialize(descriptor));
-        return pipeline.Detach();
+        return pipeline;
     }
 
     MaybeError ComputePipeline::Initialize(const ComputePipelineDescriptor* descriptor) {
@@ -37,10 +37,11 @@ namespace dawn_native { namespace metal {
         DAWN_TRY(computeModule->CreateFunction(computeEntryPoint, SingleShaderStage::Compute,
                                                ToBackend(GetLayout()), &computeData));
 
-        NSError* error = nil;
-        mMtlComputePipelineState =
-            [mtlDevice newComputePipelineStateWithFunction:computeData.function error:&error];
-        if (error != nil) {
+        NSError* error = nullptr;
+        mMtlComputePipelineState.Acquire([mtlDevice
+            newComputePipelineStateWithFunction:computeData.function.Get()
+                                          error:&error]);
+        if (error != nullptr) {
             NSLog(@" error => %@", error);
             return DAWN_INTERNAL_ERROR("Error creating pipeline state");
         }
@@ -53,12 +54,8 @@ namespace dawn_native { namespace metal {
         return {};
     }
 
-    ComputePipeline::~ComputePipeline() {
-        [mMtlComputePipelineState release];
-    }
-
     void ComputePipeline::Encode(id<MTLComputeCommandEncoder> encoder) {
-        [encoder setComputePipelineState:mMtlComputePipelineState];
+        [encoder setComputePipelineState:mMtlComputePipelineState.Get()];
     }
 
     MTLSize ComputePipeline::GetLocalWorkGroupSize() const {

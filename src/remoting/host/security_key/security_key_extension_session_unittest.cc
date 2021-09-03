@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
@@ -119,7 +121,7 @@ void TestClientStub::WaitForDeliverHostMessage(base::TimeDelta max_timeout) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop_->QuitClosure(), max_timeout);
   run_loop_->Run();
-  run_loop_.reset(new base::RunLoop);
+  run_loop_ = std::make_unique<base::RunLoop>();
 }
 
 void TestClientStub::CheckHostDataMessage(int id, const std::string& data) {

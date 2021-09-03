@@ -9,9 +9,8 @@
 
 #include "base/bind.h"
 #include "chrome/android/chrome_jni_headers/DownloadProgressInfoBar_jni.h"
-#include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/android/tab_android.h"
-#include "chrome/browser/infobars/infobar_service.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"
@@ -52,9 +51,7 @@ class DownloadProgressInfoBarDelegate : public infobars::InfoBarDelegate {
 
 DownloadProgressInfoBar::DownloadProgressInfoBar(
     std::unique_ptr<DownloadProgressInfoBarDelegate> delegate)
-    : infobars::InfoBarAndroid(
-          std::move(delegate),
-          base::BindRepeating(&ResourceMapper::MapToJavaDrawableId)) {}
+    : infobars::InfoBarAndroid(std::move(delegate)) {}
 
 DownloadProgressInfoBar::~DownloadProgressInfoBar() = default;
 
@@ -63,7 +60,8 @@ infobars::InfoBarDelegate* DownloadProgressInfoBar::GetDelegate() {
 }
 
 ScopedJavaLocalRef<jobject> DownloadProgressInfoBar::CreateRenderInfoBar(
-    JNIEnv* env) {
+    JNIEnv* env,
+    const ResourceIdMapper& resource_id_mapper) {
   DownloadProgressInfoBarDelegate* delegate =
       static_cast<DownloadProgressInfoBarDelegate*>(GetDelegate());
 
@@ -77,7 +75,7 @@ base::android::ScopedJavaLocalRef<jobject> DownloadProgressInfoBar::GetTab(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   content::WebContents* web_contents =
-      InfoBarService::WebContentsFromInfoBar(this);
+      infobars::ContentInfoBarManager::WebContentsFromInfoBar(this);
   if (!web_contents)
     return nullptr;
 
@@ -89,9 +87,10 @@ void JNI_DownloadProgressInfoBar_Create(JNIEnv* env,
                                         const JavaParamRef<jobject>& j_client,
                                         const JavaParamRef<jobject>& j_tab,
                                         const JavaParamRef<jobject>& j_data) {
-  InfoBarService* service = InfoBarService::FromWebContents(
-      TabAndroid::GetNativeTab(env, j_tab)->web_contents());
+  infobars::ContentInfoBarManager* manager =
+      infobars::ContentInfoBarManager::FromWebContents(
+          TabAndroid::GetNativeTab(env, j_tab)->web_contents());
 
-  service->AddInfoBar(std::make_unique<DownloadProgressInfoBar>(
+  manager->AddInfoBar(std::make_unique<DownloadProgressInfoBar>(
       std::make_unique<DownloadProgressInfoBarDelegate>(j_client, j_data)));
 }

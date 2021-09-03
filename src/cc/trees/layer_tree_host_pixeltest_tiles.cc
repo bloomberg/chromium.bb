@@ -71,7 +71,7 @@ class BlueYellowClient : public ContentLayerClient {
   explicit BlueYellowClient(const gfx::Size& size)
       : size_(size), blue_top_(true) {}
 
-  gfx::Rect PaintableRegion() override { return gfx::Rect(size_); }
+  gfx::Rect PaintableRegion() const override { return gfx::Rect(size_); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList() override {
     auto display_list = base::MakeRefCounted<DisplayItemList>();
 
@@ -151,7 +151,7 @@ class PrimaryColorClient : public ContentLayerClient {
  public:
   explicit PrimaryColorClient(const gfx::Size& size) : size_(size) {}
 
-  gfx::Rect PaintableRegion() override { return gfx::Rect(size_); }
+  gfx::Rect PaintableRegion() const override { return gfx::Rect(size_); }
   scoped_refptr<DisplayItemList> PaintContentsToDisplayList() override {
     // When painted, the DisplayItemList should produce blocks of red, green,
     // and blue to test primary color reproduction.
@@ -267,7 +267,7 @@ std::vector<RasterTestConfig> const kTestCasesMultiThread = {
     {viz::RendererType::kSkiaGL, TestRasterType::kOneCopy},
 #endif  // BUILDFLAG(ENABLE_GL_BACKEND_TESTS)
 #if BUILDFLAG(ENABLE_VULKAN_BACKEND_TESTS)
-    // TODO(sgilhuly): Switch this to one copy raster once is is supported for
+    // TODO(rivr): Switch this to one copy raster once is is supported for
     // Vulkan in these tests.
     {viz::RendererType::kSkiaVk, TestRasterType::kOop},
 #endif  // BUILDFLAG(ENABLE_VULKAN_BACKEND_TESTS)
@@ -283,6 +283,10 @@ INSTANTIATE_TEST_SUITE_P(All,
                          LayerTreeHostTilesTestPartialInvalidationMultiThread,
                          ::testing::ValuesIn(kTestCasesMultiThread),
                          ::testing::PrintToStringParamName());
+
+// kTestCasesMultiThread is empty on some platforms.
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(
+    LayerTreeHostTilesTestPartialInvalidationMultiThread);
 
 #if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(THREAD_SANITIZER)
 // Flaky on Linux TSAN. https://crbug.com/707711
@@ -353,7 +357,8 @@ TEST_P(LayerTreeHostTilesTestRasterColorSpace, CustomColorSpace) {
 
 // This test doesn't work on Vulkan because on our hardware we can't render to
 // RGBA4444 format using either SwiftShader or native Vulkan. See
-// crbug.com/987278 for details
+// crbug.com/987278 for details.
+// TODO(crbug.com/1151490) : Re-enable after this is supported for OOPR.
 #if BUILDFLAG(ENABLE_GL_BACKEND_TESTS)
 class LayerTreeHostTilesTestPartialInvalidationLowBitDepth
     : public LayerTreeHostTilesTestPartialInvalidation {
@@ -373,14 +378,16 @@ INSTANTIATE_TEST_SUITE_P(
         RasterTestConfig{viz::RendererType::kGL, TestRasterType::kGpu}),
     ::testing::PrintToStringParamName());
 
-TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth, PartialRaster) {
+TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
+       DISABLED_PartialRaster) {
   use_partial_raster_ = true;
   RunSingleThreadedPixelTest(picture_layer_,
                              base::FilePath(FILE_PATH_LITERAL(
                                  "blue_yellow_partial_flipped_dither.png")));
 }
 
-TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth, FullRaster) {
+TEST_P(LayerTreeHostTilesTestPartialInvalidationLowBitDepth,
+       DISABLED_FullRaster) {
   RunSingleThreadedPixelTest(
       picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped_dither.png")));

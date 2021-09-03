@@ -7,6 +7,9 @@
 
 #include "src/gpu/GrShaderCaps.h"
 #include "src/sksl/SkSLCompiler.h"
+#include "src/sksl/codegen/SkSLPipelineStageCodeGenerator.h"
+#include "src/sksl/ir/SkSLVarDeclarations.h"
+#include "src/sksl/ir/SkSLVariable.h"
 
 #include "fuzz/Fuzz.h"
 
@@ -15,14 +18,40 @@ bool FuzzSKSL2Pipeline(sk_sp<SkData> bytes) {
     SkSL::Compiler compiler(caps.get());
     SkSL::Program::Settings settings;
     std::unique_ptr<SkSL::Program> program = compiler.convertProgram(
-                                                    SkSL::Program::kPipelineStage_Kind,
+                                                    SkSL::ProgramKind::kRuntimeShader,
                                                     SkSL::String((const char*) bytes->data(),
                                                                  bytes->size()),
                                                     settings);
-    SkSL::PipelineStageArgs args;
-    if (!program || !compiler.toPipelineStage(*program, &args)) {
+    if (!program) {
         return false;
     }
+
+    class Callbacks : public SkSL::PipelineStage::Callbacks {
+        using String = SkSL::String;
+
+        String declareUniform(const SkSL::VarDeclaration* decl) override {
+            return decl->var().name();
+        }
+
+        void defineFunction(const char* /*decl*/, const char* /*body*/, bool /*isMain*/) override {}
+        void defineStruct(const char* /*definition*/) override {}
+        void declareGlobal(const char* /*declaration*/) override {}
+
+        String sampleChild(int index, String coords, String color) override {
+            String result = "sample(" + SkSL::to_string(index);
+            if (!coords.empty()) {
+                result += ", " + coords;
+            }
+            if (!color.empty()) {
+                result += ", " + color;
+            }
+            result += ")";
+            return result;
+        }
+    };
+
+    Callbacks callbacks;
+    SkSL::PipelineStage::ConvertProgram(*program, "coords", "inColor", &callbacks);
     return true;
 }
 

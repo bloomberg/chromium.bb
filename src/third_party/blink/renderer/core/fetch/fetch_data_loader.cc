@@ -7,8 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/optional.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/renderer/core/fetch/multipart_parser.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
@@ -402,7 +402,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
           string_decoder_ = std::make_unique<TextResourceDecoder>(
               TextResourceDecoderOptions::CreateUTF8DecodeWithoutBOM());
         }
-        string_builder_.reset(new StringBuilder);
+        string_builder_ = std::make_unique<StringBuilder>();
       }
       return true;
     }
@@ -423,7 +423,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
         DCHECK(!string_builder_);
         const auto size = blob_data_->length();
         auto* file = MakeGarbageCollected<File>(
-            filename_, base::nullopt,
+            filename_, absl::nullopt,
             BlobDataHandle::Create(std::move(blob_data_), size));
         form_data->append(name_, file, filename_);
         return true;
@@ -559,7 +559,7 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
       options.capacity_num_bytes = 0;
 
       MojoResult rv =
-          mojo::CreateDataPipe(&options, &out_data_pipe_, &pipe_consumer);
+          mojo::CreateDataPipe(&options, out_data_pipe_, pipe_consumer);
       if (rv != MOJO_RESULT_OK) {
         StopInternal();
         client_->DidFetchDataLoadFailed();

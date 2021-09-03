@@ -6,8 +6,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_INTERACTIVE_DETECTOR_H_
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/time/time.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/long_task_detector.h"
@@ -32,6 +32,15 @@ namespace blink {
 
 class Document;
 class Event;
+
+// This enum is for EventType UKM and existing values should not be removed or
+// modified.
+enum class InputEventType {
+  kMousedown = 0,
+  kClick = 1,
+  kKeydown = 2,
+  kPointerup = 3
+};
 
 // Detects when a page reaches First Idle and Time to Interactive. See
 // https://goo.gl/SYt55W for detailed description and motivation of First Idle
@@ -72,8 +81,8 @@ class CORE_EXPORT InteractiveDetector
   // Calls to base::TimeTicks::Now().since_origin().InSecondsF() is expensive,
   // so we try not to call it unless we really have to. If we already have the
   // event time available, we pass it in as an argument.
-  void OnResourceLoadBegin(base::Optional<base::TimeTicks> load_begin_time);
-  void OnResourceLoadEnd(base::Optional<base::TimeTicks> load_finish_time);
+  void OnResourceLoadBegin(absl::optional<base::TimeTicks> load_begin_time);
+  void OnResourceLoadEnd(absl::optional<base::TimeTicks> load_finish_time);
 
   void SetNavigationStartTime(base::TimeTicks navigation_start_time);
   void OnFirstContentfulPaint(base::TimeTicks first_contentful_paint);
@@ -84,31 +93,31 @@ class CORE_EXPORT InteractiveDetector
   // The duration between the hardware timestamp and being queued on the main
   // thread for the first click, tap, key press, cancelable touchstart, or
   // pointer down followed by a pointer up.
-  base::Optional<base::TimeDelta> GetFirstInputDelay() const;
+  absl::optional<base::TimeDelta> GetFirstInputDelay() const;
 
-  WTF::Vector<base::Optional<base::TimeDelta>>
+  WTF::Vector<absl::optional<base::TimeDelta>>
   GetFirstInputDelaysAfterBackForwardCacheRestore() const;
 
   // The timestamp of the event whose delay is reported by GetFirstInputDelay().
-  base::Optional<base::TimeTicks> GetFirstInputTimestamp() const;
+  absl::optional<base::TimeTicks> GetFirstInputTimestamp() const;
 
   // Queueing Time of the meaningful input event with longest delay. Meaningful
   // input events are click, tap, key press, cancellable touchstart, or pointer
   // down followed by a pointer up.
-  base::Optional<base::TimeDelta> GetLongestInputDelay() const;
+  absl::optional<base::TimeDelta> GetLongestInputDelay() const;
 
   // The timestamp of the event whose delay is reported by
   // GetLongestInputDelay().
-  base::Optional<base::TimeTicks> GetLongestInputTimestamp() const;
+  absl::optional<base::TimeTicks> GetLongestInputTimestamp() const;
 
   // The duration of event handlers processing the first input event.
-  base::Optional<base::TimeDelta> GetFirstInputProcessingTime() const;
+  absl::optional<base::TimeDelta> GetFirstInputProcessingTime() const;
 
   // The duration between the user's first scroll and display update.
-  base::Optional<base::TimeTicks> GetFirstScrollTimestamp() const;
+  absl::optional<base::TimeTicks> GetFirstScrollTimestamp() const;
 
   // The hardware timestamp of the first scroll after a navigation.
-  base::Optional<base::TimeDelta> GetFirstScrollDelay() const;
+  absl::optional<base::TimeDelta> GetFirstScrollDelay() const;
 
   // Process an input event, updating first_input_delay and
   // first_input_timestamp if needed.
@@ -130,10 +139,10 @@ class CORE_EXPORT InteractiveDetector
 
   void SetUkmRecorderForTesting(ukm::UkmRecorder* test_ukm_recorder);
 
-  void RecordInputEventTimingUKM(const Event& event,
-                                 base::TimeTicks event_timestamp,
-                                 base::TimeTicks processing_start,
-                                 base::TimeTicks processing_end);
+  void RecordInputEventTimingUKM(base::TimeDelta input_delay,
+                                 base::TimeDelta processing_time,
+                                 base::TimeDelta time_to_next_paint,
+                                 WTF::AtomicString event_type);
 
   void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay,
                                   base::TimeTicks first_scroll_timestamp);
@@ -158,15 +167,15 @@ class CORE_EXPORT InteractiveDetector
     // Interactive computation. This is used when reporting Time To Interactive
     // on a trace event.
     base::TimeTicks first_invalidating_input;
-    base::Optional<base::TimeDelta> first_input_delay;
-    base::Optional<base::TimeDelta> longest_input_delay;
-    base::Optional<base::TimeTicks> first_input_timestamp;
-    base::Optional<base::TimeTicks> longest_input_timestamp;
-    base::Optional<base::TimeDelta> first_input_processing_time;
-    base::Optional<base::TimeTicks> first_scroll_timestamp;
-    base::Optional<base::TimeDelta> frist_scroll_delay;
+    absl::optional<base::TimeDelta> first_input_delay;
+    absl::optional<base::TimeDelta> longest_input_delay;
+    absl::optional<base::TimeTicks> first_input_timestamp;
+    absl::optional<base::TimeTicks> longest_input_timestamp;
+    absl::optional<base::TimeDelta> first_input_processing_time;
+    absl::optional<base::TimeTicks> first_scroll_timestamp;
+    absl::optional<base::TimeDelta> frist_scroll_delay;
 
-    WTF::Vector<base::Optional<base::TimeDelta>>
+    WTF::Vector<absl::optional<base::TimeDelta>>
         first_input_delays_after_back_forward_cache_restore;
   } page_event_times_;
 
@@ -199,15 +208,14 @@ class CORE_EXPORT InteractiveDetector
   // Updates current network quietness tracking information. Opens and closes
   // network quiet windows as necessary.
   void UpdateNetworkQuietState(double request_count,
-                               base::Optional<base::TimeTicks> current_time);
+                               absl::optional<base::TimeTicks> current_time);
 
-  TaskRunnerTimer<InteractiveDetector> time_to_interactive_timer_;
+  HeapTaskRunnerTimer<InteractiveDetector> time_to_interactive_timer_;
   base::TimeTicks time_to_interactive_timer_fire_time_;
   void StartOrPostponeCITimer(base::TimeTicks timer_fire_time);
   void TimeToInteractiveTimerFired(TimerBase*);
   void CheckTimeToInteractiveReached();
   void OnTimeToInteractiveDetected();
-  std::unique_ptr<TracedValue> ComputeTimeToInteractiveTraceArgs();
   base::TimeDelta ComputeTotalBlockingTime();
 
   Vector<VisibilityChangeEvent> visibility_change_events_;
@@ -228,10 +236,6 @@ class CORE_EXPORT InteractiveDetector
   void OnLongTaskDetected(base::TimeTicks start_time,
                           base::TimeTicks end_time) override;
 
-  // The duration of event handlers processing the event for the previous
-  // pointer down.
-  base::Optional<base::TimeDelta> pending_pointerdown_processing_time_;
-
   // The duration between the hardware timestamp and when we received the event
   // for the previous pointer down. Only non-zero if we've received a pointer
   // down event, and haven't yet reported the first input delay.
@@ -247,4 +251,4 @@ class CORE_EXPORT InteractiveDetector
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_INTERACTIVE_DETECTOR_H_

@@ -10,8 +10,15 @@
 namespace page_info {
 
 #if defined(OS_ANDROID)
-const base::Feature kPageInfoV2{"PageInfoV2",
-                                base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kPageInfoDiscoverability{"PageInfoDiscoverability",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kPageInfoHistory{"PageInfoHistory",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
+#if !defined(OS_ANDROID)
+const base::Feature kPageInfoV2Desktop{"PageInfoV2Desktop",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 }  // namespace page_info

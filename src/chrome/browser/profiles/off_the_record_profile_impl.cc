@@ -12,10 +12,13 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/accessibility/accessibility_labels_service.h"
 #include "chrome/browser/background/background_contents_service_factory.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_factory.h"
@@ -30,14 +33,14 @@
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
-#include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
+#include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
+#include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
 #include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
-#include "chrome/browser/native_file_system/chrome_native_file_system_permission_context.h"
-#include "chrome/browser/native_file_system/native_file_system_permission_context_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
+#include "chrome/browser/profiles/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -49,12 +52,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/background_sync/background_sync_controller_impl.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/heavy_ad_intervention/heavy_ad_service.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/simple_dependency_manager.h"
 #include "components/keyed_service/core/simple_key_map.h"
 #include "components/keyed_service/core/simple_keyed_service_factory.h"
 #include "components/permissions/permission_manager.h"
 #include "components/prefs/json_pref_store.h"
+#include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
@@ -79,9 +84,9 @@
 #include "content/public/browser/host_zoom_map.h"
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/preferences.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -113,8 +118,33 @@ using content::HostZoomMap;
 
 namespace {
 
-// Key names for OTR Profile user data.
-constexpr char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
+profile_metrics::BrowserProfileType ComputeOffTheRecordProfileType(
+    const Profile::OTRProfileID* otr_profile_id,
+    const Profile* parent_profile) {
+  DCHECK(!parent_profile->IsOffTheRecord());
+
+  if (*otr_profile_id != Profile::OTRProfileID::PrimaryID())
+    return profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile;
+
+  switch (profile_metrics::GetBrowserProfileType(parent_profile)) {
+    case profile_metrics::BrowserProfileType::kRegular:
+      return profile_metrics::BrowserProfileType::kIncognito;
+
+    case profile_metrics::BrowserProfileType::kGuest:
+      return profile_metrics::BrowserProfileType::kGuest;
+
+    case profile_metrics::BrowserProfileType::kEphemeralGuest:
+      return profile_metrics::BrowserProfileType::kEphemeralGuest;
+
+    case profile_metrics::BrowserProfileType::kSystem:
+      return profile_metrics::BrowserProfileType::kSystem;
+
+    case profile_metrics::BrowserProfileType::kIncognito:
+    case profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile:
+      NOTREACHED();
+  }
+  return profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile;
+}
 
 }  // namespace
 
@@ -122,8 +152,9 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(
     Profile* real_profile,
     const OTRProfileID& otr_profile_id)
     : profile_(real_profile),
+      profile_keep_alive_(profile_,
+                          ProfileKeepAliveOrigin::kOffTheRecordProfile),
       otr_profile_id_(otr_profile_id),
-      io_data_(this),
       start_time_(base::Time::Now()),
       key_(std::make_unique<ProfileKey>(profile_->GetPath(),
                                         profile_->GetProfileKey())) {
@@ -136,15 +167,12 @@ OffTheRecordProfileImpl::OffTheRecordProfileImpl(
 
   // Register on BrowserContext.
   user_prefs::UserPrefs::Set(this, prefs_.get());
+  profile_metrics::SetBrowserProfileType(
+      this, ComputeOffTheRecordProfileType(&otr_profile_id_, profile_));
 }
 
 void OffTheRecordProfileImpl::Init() {
   FullBrowserTransitionManager::Get()->OnProfileCreated(this);
-
-  // Must be done before CreateBrowserContextServices(), since some of them
-  // change behavior based on whether the provided context is a guest session.
-  set_is_guest_profile(profile_->IsGuestSession());
-  set_is_system_profile(profile_->IsSystemProfile());
 
   BrowserContextDependencyManager::GetInstance()->CreateBrowserContextServices(
       this);
@@ -184,7 +212,10 @@ void OffTheRecordProfileImpl::Init() {
   HeavyAdServiceFactory::GetForBrowserContext(this)->InitializeOffTheRecord();
 
   key_->SetProtoDatabaseProvider(
-      GetDefaultStoragePartition(this)->GetProtoDatabaseProvider());
+      GetDefaultStoragePartition()->GetProtoDatabaseProvider());
+
+  if (IsIncognitoProfile())
+    base::RecordAction(base::UserMetricsAction("IncognitoMode_Started"));
 }
 
 OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
@@ -215,6 +246,12 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
   // other profile-related destroy notifications are dispatched.
   ShutdownStoragePartitions();
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Bypass profile lifetime recording for ChromeOS helper profiles (sign-in,
+  // lockscreen, etc).
+  if (!chromeos::ProfileHelper::IsRegularProfile(profile_))
+    return;
+#endif
   // Store incognito lifetime and navigations count histogram.
   if (IsIncognitoProfile()) {
     auto duration = base::Time::Now() - start_time_;
@@ -225,6 +262,8 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
     base::UmaHistogramCounts1000(
         "Profile.Incognito.MainFrameNavigationsPerSession",
         main_frame_navigations_);
+
+    base::RecordAction(base::UserMetricsAction("IncognitoMode_Ended"));
   }
 }
 
@@ -248,8 +287,8 @@ void OffTheRecordProfileImpl::TrackZoomLevelsFromParent() {
   // Also track changes to the parent profile's default zoom level.
   parent_default_zoom_level_subscription_ =
       profile_->GetZoomLevelPrefs()->RegisterDefaultZoomLevelCallback(
-          base::Bind(&OffTheRecordProfileImpl::UpdateDefaultZoomLevel,
-                     base::Unretained(this)));
+          base::BindRepeating(&OffTheRecordProfileImpl::UpdateDefaultZoomLevel,
+                              base::Unretained(this)));
 }
 #endif  // !defined(OS_ANDROID)
 
@@ -292,15 +331,22 @@ bool OffTheRecordProfileImpl::IsOffTheRecord() const {
   return true;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+bool OffTheRecordProfileImpl::IsMainProfile() const {
+  return false;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 const Profile::OTRProfileID& OffTheRecordProfileImpl::GetOTRProfileID() const {
   return otr_profile_id_;
 }
 
 Profile* OffTheRecordProfileImpl::GetOffTheRecordProfile(
-    const OTRProfileID& otr_profile_id) {
+    const OTRProfileID& otr_profile_id,
+    bool create_if_needed) {
   if (otr_profile_id_ == otr_profile_id)
     return this;
-  return profile_->GetOffTheRecordProfile(otr_profile_id);
+  return profile_->GetOffTheRecordProfile(otr_profile_id, create_if_needed);
 }
 
 std::vector<Profile*> OffTheRecordProfileImpl::GetAllOffTheRecordProfiles() {
@@ -348,10 +394,6 @@ bool OffTheRecordProfileImpl::IsChild() const {
   return profile_->IsChild();
 }
 
-bool OffTheRecordProfileImpl::IsLegacySupervised() const {
-  return profile_->IsLegacySupervised();
-}
-
 bool OffTheRecordProfileImpl::AllowsBrowserWindows() const {
   return profile_->AllowsBrowserWindows() &&
          otr_profile_id_.AllowsBrowserWindows();
@@ -365,10 +407,6 @@ const PrefService* OffTheRecordProfileImpl::GetPrefs() const {
   return prefs_.get();
 }
 
-PrefService* OffTheRecordProfileImpl::GetOffTheRecordPrefs() {
-  return prefs_.get();
-}
-
 DownloadManagerDelegate* OffTheRecordProfileImpl::GetDownloadManagerDelegate() {
   return DownloadCoreServiceFactory::GetForBrowserContext(this)
       ->GetDownloadManagerDelegate();
@@ -379,7 +417,7 @@ OffTheRecordProfileImpl::GetPolicySchemaRegistryService() {
   return nullptr;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 policy::UserCloudPolicyManagerChromeOS*
 OffTheRecordProfileImpl::GetUserCloudPolicyManagerChromeOS() {
   return GetOriginalProfile()->GetUserCloudPolicyManagerChromeOS();
@@ -394,16 +432,11 @@ policy::UserCloudPolicyManager*
 OffTheRecordProfileImpl::GetUserCloudPolicyManager() {
   return GetOriginalProfile()->GetUserCloudPolicyManager();
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 scoped_refptr<network::SharedURLLoaderFactory>
 OffTheRecordProfileImpl::GetURLLoaderFactory() {
-  return GetDefaultStoragePartition(this)
-      ->GetURLLoaderFactoryForBrowserProcess();
-}
-
-content::ResourceContext* OffTheRecordProfileImpl::GetResourceContext() {
-  return io_data_.GetResourceContext();
+  return GetDefaultStoragePartition()->GetURLLoaderFactoryForBrowserProcess();
 }
 
 content::BrowserPluginGuestManager* OffTheRecordProfileImpl::GetGuestManager() {
@@ -466,57 +499,29 @@ OffTheRecordProfileImpl::GetBrowsingDataRemoverDelegate() {
   return ChromeBrowsingDataRemoverDelegateFactory::GetForProfile(this);
 }
 
-media::VideoDecodePerfHistory*
-OffTheRecordProfileImpl::GetVideoDecodePerfHistory() {
-  media::VideoDecodePerfHistory* decode_history =
-      static_cast<media::VideoDecodePerfHistory*>(
-          GetUserData(kVideoDecodePerfHistoryId));
+std::unique_ptr<media::VideoDecodePerfHistory>
+OffTheRecordProfileImpl::CreateVideoDecodePerfHistory() {
+  // Use the original profile's DB to seed the OTR VideoDecodePerfHisotry. The
+  // original DB is treated as read-only, while OTR playbacks will write stats
+  // to the InMemory version (cleared on profile destruction). Guest profiles
+  // don't have a root profile like incognito, meaning they don't have a seed
+  // DB to call on and we can just pass null.
+  media::VideoDecodeStatsDBProvider* seed_db_provider =
+      IsGuestSession() ? nullptr
+                       // Safely passing raw pointer to VideoDecodePerfHistory
+                       // because original profile will outlive this profile.
+                       : GetOriginalProfile()->GetVideoDecodePerfHistory();
 
-  // Lazily created. Note, this does not trigger loading the DB from disk. That
-  // occurs later upon first VideoDecodePerfHistory API request that requires DB
-  // access. DB operations will not block the UI thread.
-  if (!decode_history) {
-    // Use the original profile's DB to seed the OTR VideoDeocdePerfHisotry. The
-    // original DB is treated as read-only, while OTR playbacks will write stats
-    // to the InMemory version (cleared on profile destruction). Guest profiles
-    // don't have a root profile like incognito, meaning they don't have a seed
-    // DB to call on and we can just pass null.
-    media::VideoDecodeStatsDBProvider* seed_db_provider =
-        IsGuestSession() ? nullptr
-                         // Safely passing raw pointer to VideoDecodePerfHistory
-                         // because original profile will outlive this profile.
-                         : GetOriginalProfile()->GetVideoDecodePerfHistory();
-
-    auto stats_db = std::make_unique<media::InMemoryVideoDecodeStatsDBImpl>(
-        seed_db_provider);
-    // TODO(liberato): Get the FeatureProviderFactoryCB from BrowserContext.
-    auto new_decode_history = std::make_unique<media::VideoDecodePerfHistory>(
-        std::move(stats_db), media::learning::FeatureProviderFactoryCB());
-    decode_history = new_decode_history.get();
-
-    SetUserData(kVideoDecodePerfHistoryId, std::move(new_decode_history));
-  }
-
-  return decode_history;
+  auto stats_db =
+      std::make_unique<media::InMemoryVideoDecodeStatsDBImpl>(seed_db_provider);
+  // TODO(liberato): Get the FeatureProviderFactoryCB from BrowserContext.
+  return std::make_unique<media::VideoDecodePerfHistory>(
+      std::move(stats_db), media::learning::FeatureProviderFactoryCB());
 }
 
-void OffTheRecordProfileImpl::SetCorsOriginAccessListForOrigin(
-    const url::Origin& source_origin,
-    std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
-    std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
-    base::OnceClosure closure) {
-  NOTREACHED()
-      << "CorsOriginAccessList should not be modified in incognito profiles";
-}
-
-content::SharedCorsOriginAccessList*
-OffTheRecordProfileImpl::GetSharedCorsOriginAccessList() {
-  return profile_->GetSharedCorsOriginAccessList();
-}
-
-content::NativeFileSystemPermissionContext*
-OffTheRecordProfileImpl::GetNativeFileSystemPermissionContext() {
-  return NativeFileSystemPermissionContextFactory::GetForProfile(this);
+content::FileSystemAccessPermissionContext*
+OffTheRecordProfileImpl::GetFileSystemAccessPermissionContext() {
+  return FileSystemAccessPermissionContextFactory::GetForProfile(this);
 }
 
 bool OffTheRecordProfileImpl::IsSameOrParent(Profile* profile) {
@@ -567,7 +572,7 @@ Profile::ExitType OffTheRecordProfileImpl::GetLastSessionExitType() const {
   return profile_->GetLastSessionExitType();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void OffTheRecordProfileImpl::ChangeAppLocale(const std::string& locale,
                                               AppLocaleChangedVia) {
 }
@@ -579,7 +584,11 @@ void OffTheRecordProfileImpl::InitChromeOSPreferences() {
   // The incognito profile shouldn't have Chrome OS's preferences.
   // The preferences are associated with the regular user profile.
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+bool OffTheRecordProfileImpl::IsNewProfile() const {
+  return profile_->IsNewProfile();
+}
 
 GURL OffTheRecordProfileImpl::GetHomePage() {
   return profile_->GetHomePage();
@@ -590,18 +599,19 @@ void OffTheRecordProfileImpl::SetCreationTimeForTesting(
   start_time_ = creation_time;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Special case of the OffTheRecordProfileImpl which is used while Guest
 // session in CrOS.
 class GuestSessionProfile : public OffTheRecordProfileImpl {
  public:
   explicit GuestSessionProfile(Profile* real_profile)
       : OffTheRecordProfileImpl(real_profile, OTRProfileID::PrimaryID()) {
-    set_is_guest_profile(true);
+    profile_metrics::SetBrowserProfileType(
+        this, profile_metrics::BrowserProfileType::kGuest);
   }
 
   void InitChromeOSPreferences() override {
-    chromeos_preferences_.reset(new chromeos::Preferences());
+    chromeos_preferences_ = std::make_unique<chromeos::Preferences>();
     chromeos_preferences_->Init(
         this, user_manager::UserManager::Get()->GetActiveUser());
   }
@@ -617,14 +627,18 @@ std::unique_ptr<Profile> Profile::CreateOffTheRecordProfile(
     Profile* parent,
     const OTRProfileID& otr_profile_id) {
   std::unique_ptr<OffTheRecordProfileImpl> profile;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (parent->IsGuestSession() && otr_profile_id == OTRProfileID::PrimaryID())
-    profile.reset(new GuestSessionProfile(parent));
+    profile = std::make_unique<GuestSessionProfile>(parent);
 #endif
   if (!profile)
-    profile.reset(new OffTheRecordProfileImpl(parent, otr_profile_id));
+    profile = std::make_unique<OffTheRecordProfileImpl>(parent, otr_profile_id);
   profile->Init();
   return std::move(profile);
+}
+
+bool OffTheRecordProfileImpl::IsSignedIn() {
+  return false;
 }
 
 #if !defined(OS_ANDROID)

@@ -63,11 +63,10 @@ void LogVideoCaptureTimestamps(CastEnvironment* cast_environment,
   capture_end_event->width = video_frame.visible_rect().width();
   capture_end_event->height = video_frame.visible_rect().height();
 
-  if (video_frame.metadata()->capture_begin_time.has_value() &&
-      video_frame.metadata()->capture_end_time.has_value()) {
-    capture_begin_event->timestamp =
-        *video_frame.metadata()->capture_begin_time;
-    capture_end_event->timestamp = *video_frame.metadata()->capture_end_time;
+  if (video_frame.metadata().capture_begin_time.has_value() &&
+      video_frame.metadata().capture_end_time.has_value()) {
+    capture_begin_event->timestamp = *video_frame.metadata().capture_begin_time;
+    capture_end_event->timestamp = *video_frame.metadata().capture_end_time;
   } else {
     // The frame capture timestamps were not provided by the video capture
     // source.  Simply log the events as happening right now.
@@ -91,7 +90,6 @@ VideoSender::VideoSender(
     const FrameSenderConfig& video_config,
     StatusChangeCallback status_change_cb,
     const CreateVideoEncodeAcceleratorCallback& create_vea_cb,
-    const CreateVideoEncodeMemoryCallback& create_video_encode_mem_cb,
     CastTransport* const transport_sender,
     PlayoutDelayChangeCB playout_delay_change_cb,
     media::VideoCaptureFeedbackCB feedback_callback)
@@ -113,12 +111,8 @@ VideoSender::VideoSender(
       low_latency_mode_(false),
       last_reported_encoder_utilization_(-1.0),
       last_reported_lossy_utilization_(-1.0) {
-  video_encoder_ = VideoEncoder::Create(
-      cast_environment_,
-      video_config,
-      status_change_cb,
-      create_vea_cb,
-      create_video_encode_mem_cb);
+  video_encoder_ = VideoEncoder::Create(cast_environment_, video_config,
+                                        status_change_cb, create_vea_cb);
   if (!video_encoder_) {
     cast_environment_->PostTask(
         CastEnvironment::MAIN, FROM_HERE,
@@ -150,7 +144,7 @@ void VideoSender::InsertRawVideoFrame(
                        "rtp_timestamp", rtp_timestamp.lower_32_bits());
 
   {
-    bool new_low_latency_mode = video_frame->metadata()->interactive_content;
+    bool new_low_latency_mode = video_frame->metadata().interactive_content;
     if (new_low_latency_mode && !low_latency_mode_) {
       VLOG(1) << "Interactive mode playout time " << min_playout_delay_;
       playout_delay_change_cb_.Run(min_playout_delay_);
@@ -328,7 +322,7 @@ void VideoSender::OnEncodedVideoFrame(
     // Key frames are artificially capped to 1.0 because their actual
     // utilization is atypical compared to the other frames in the stream, and
     // this can misguide the producer of the input video frames.
-    VideoFrameFeedback feedback;
+    VideoCaptureFeedback feedback;
     feedback.resource_utilization =
         encoded_frame->dependency == EncodedFrame::KEY
             ? std::min(1.0, attenuated_utilization)

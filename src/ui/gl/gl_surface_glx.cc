@@ -22,8 +22,10 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "ui/base/x/visual_picker_glx.h"
 #include "ui/base/x/x11_display_util.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/base/x/x11_xrandr_interval_only_vsync_provider.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/xproto_util.h"
@@ -31,7 +33,6 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_presentation_helper.h"
-#include "ui/gl/gl_visual_picker_glx.h"
 #include "ui/gl/glx_util.h"
 #include "ui/gl/sync_control_vsync_provider.h"
 
@@ -106,6 +107,7 @@ class OMLSyncControlVSyncProvider : public SyncControlVSyncProvider {
   bool GetSyncValues(int64_t* system_time,
                      int64_t* media_stream_counter,
                      int64_t* swap_buffer_counter) override {
+    x11::Connection::Get()->Flush();
     return glXGetSyncValuesOML(x11::Connection::Get()->GetXlibDisplay(),
                                glx_window_, system_time, media_stream_counter,
                                swap_buffer_counter);
@@ -435,7 +437,7 @@ bool GLSurfaceGLX::InitializeOneOff() {
     return false;
   }
 
-  auto* visual_picker = gl::GLVisualPickerGLX::GetInstance();
+  auto* visual_picker = ui::VisualPickerGlx::GetInstance();
   auto visual_id = visual_picker->rgba_visual();
   if (visual_id == x11::VisualId{})
     visual_id = visual_picker->system_visual();
@@ -600,7 +602,7 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
 
   auto parent = static_cast<x11::Window>(parent_window_);
   auto attributes_req = conn->GetWindowAttributes({parent});
-  auto geometry_req = conn->GetGeometry({parent});
+  auto geometry_req = conn->GetGeometry(parent);
   conn->Flush();
   auto attributes = attributes_req.Sync();
   auto geometry = geometry_req.Sync();
@@ -666,18 +668,9 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
     presentation_helper_ =
         std::make_unique<GLSurfacePresentationHelper>(vsync_provider_.get());
   } else {
-    // Assume a refresh rate of 59.9 Hz, which will cause us to skip
-    // 1 frame every 10 seconds on a 60Hz monitor, but will prevent us
-    // from blocking the GPU service due to back pressure. This would still
-    // encounter backpressure on a <60Hz monitor, but hopefully that is
-    // not common.
-    const base::TimeTicks kDefaultTimebase;
-    const base::TimeDelta kDefaultInterval =
-        base::TimeDelta::FromSeconds(1) / 59.9;
-    vsync_provider_ = std::make_unique<gfx::FixedVSyncProvider>(
-        kDefaultTimebase, kDefaultInterval);
+    vsync_provider_ = std::make_unique<ui::XrandrIntervalOnlyVSyncProvider>();
     presentation_helper_ = std::make_unique<GLSurfacePresentationHelper>(
-        kDefaultTimebase, kDefaultInterval);
+        base::TimeTicks(), ui::GetPrimaryDisplayRefreshIntervalFromXrandr());
   }
 
   return true;
@@ -808,16 +801,16 @@ NativeViewGLSurfaceGLX::~NativeViewGLSurfaceGLX() {
   Destroy();
 }
 
-void NativeViewGLSurfaceGLX::ForwardExposeEvent(x11::Event* event) {
-  auto forwarded_event = *event->As<x11::ExposeEvent>();
+void NativeViewGLSurfaceGLX::ForwardExposeEvent(const x11::Event& event) {
+  auto forwarded_event = *event.As<x11::ExposeEvent>();
   auto window = static_cast<x11::Window>(parent_window_);
   forwarded_event.window = window;
   x11::SendEvent(forwarded_event, window, x11::EventMask::Exposure);
   x11::Connection::Get()->Flush();
 }
 
-bool NativeViewGLSurfaceGLX::CanHandleEvent(x11::Event* x11_event) {
-  auto* expose = x11_event->As<x11::ExposeEvent>();
+bool NativeViewGLSurfaceGLX::CanHandleEvent(const x11::Event& x11_event) {
+  auto* expose = x11_event.As<x11::ExposeEvent>();
   return expose && expose->window == static_cast<x11::Window>(window_);
 }
 

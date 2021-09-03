@@ -16,6 +16,7 @@
 #include "src/core/SkColorSpacePriv.h"
 #include "src/core/SkMD5.h"
 #include "src/core/SkOSFile.h"
+#include "src/core/SkTaskGroup.h"
 #include "src/gpu/GrDirectContextPriv.h"
 #include "src/gpu/GrGpu.h"
 #include "src/utils/SkOSPath.h"
@@ -33,6 +34,7 @@
 
 #include <chrono>
 #include <functional>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -54,14 +56,16 @@ static DEFINE_string(at    , "premul", "The alpha type for any raster backend.")
 static DEFINE_string(gamut ,   "srgb", "The color gamut for any raster backend.");
 static DEFINE_string(tf    ,   "srgb", "The transfer function for any raster backend.");
 static DEFINE_bool  (legacy,    false, "Use a null SkColorSpace instead of --gamut and --tf?");
-static DEFINE_bool  (skvm  ,    false, "Use SkVMBlitter when supported?");
-static DEFINE_bool  (jit   ,     true, "JIT SkVM?");
-static DEFINE_bool  (dylib ,    false, "JIT SkVM via dylib?");
 
-static DEFINE_int   (samples ,         0, "Samples per pixel in GPU backends.");
-static DEFINE_bool  (stencils,      true, "If false, avoid stencil buffers in GPU backends.");
-static DEFINE_bool  (dit     ,     false, "Use device-independent text in GPU backends.");
-static DEFINE_string(surf    , "default", "Backing store for GPU backend surfaces.");
+static DEFINE_bool  (skvm ,    false, "Use SkVMBlitter when supported?");
+static DEFINE_bool  (jit  ,     true, "JIT SkVM?");
+static DEFINE_bool  (dylib,    false, "JIT SkVM via dylib?");
+
+static DEFINE_bool  (reducedshaders,    false, "Use reduced shader set for any GPU backend.");
+static DEFINE_int   (samples       ,         0, "Samples per pixel in GPU backends.");
+static DEFINE_bool  (stencils      ,      true, "If false, avoid stencil buffers in GPU backends.");
+static DEFINE_bool  (dit           ,     false, "Use device-independent text in GPU backends.");
+static DEFINE_string(surf          , "default", "Backing store for GPU backend surfaces.");
 
 static DEFINE_bool(       preAbandonGpuContext, false, "Abandon the GrContext before drawing.");
 static DEFINE_bool(          abandonGpuContext, false, "Abandon the GrContext after drawing.");
@@ -75,9 +79,13 @@ static DEFINE_double(rasterDPI, SK_ScalarDefaultRasterDPI,
                      "DPI for rasterized content in vector backends like --backend pdf.");
 static DEFINE_bool(PDFA, false, "Create PDF/A with --backend pdf?");
 
+static DEFINE_int(clipW, INT_MAX, "Limit source width.");
+static DEFINE_int(clipH, INT_MAX, "Limit source height.");
+
 static DEFINE_bool   (cpuDetect, true, "Detect CPU features for runtime optimizations?");
 static DEFINE_string2(writePath, w, "", "Write .pngs to this directory if set.");
 static DEFINE_bool   (quick, false, "Skip image hashing and encoding?");
+static DEFINE_int    (race, 0, "If >0, use threads to induce race conditions?");
 
 static DEFINE_string(writeShaders, "", "Write GLSL shaders to this directory if set.");
 
@@ -169,22 +177,20 @@ static void init(Source* source, std::shared_ptr<SkCodec> codec) {
             info = canvas->imageInfo().makeDimensions(info.dimensions());
         }
 
-        SkBitmap bm;
-        bm.allocPixels(info);
-        switch (SkCodec::Result result = codec->getPixels(info, bm.getPixels(), bm.rowBytes())) {
-            case SkCodec::kSuccess:
-            case SkCodec::kErrorInInput:
-            case SkCodec::kIncompleteInput: canvas->drawBitmap(bm, 0,0);
-                                            break;
-            default: return fail("codec->getPixels() failed: %d\n", result);
+        auto [image, result] = codec->getImage(info);
+        if (image) {
+            canvas->drawImage(image, 0,0);
+            return ok;
         }
-        return ok;
+        return fail("codec->getPixels() failed: %d\n", result);
     };
 }
 
 static void init(Source* source, sk_sp<SkSVGDOM> svg) {
-    source->size = svg->containerSize().isEmpty() ? SkISize{1000,1000}
-                                                  : svg->containerSize().toCeil();
+    if (svg->containerSize().isEmpty()) {
+        svg->setContainerSize({1000,1000});
+    }
+    source->size = svg->containerSize().toCeil();
     source->draw = [svg](SkCanvas* canvas) {
         svg->render(canvas);
         return ok;
@@ -211,9 +217,8 @@ static void init(Source* source, sk_sp<skottie::Animation> animation) {
 
             SkAutoCanvasRestore _(canvas, /*doSave=*/true);
             canvas->clipRect(dst, /*doAntiAlias=*/true);
-            canvas->concat(SkMatrix::MakeRectToRect(SkRect::MakeSize(animation->size()),
-                                                    dst,
-                                                    SkMatrix::kCenter_ScaleToFit));
+            canvas->concat(SkMatrix::RectToRect(SkRect::MakeSize(animation->size()), dst,
+                                                SkMatrix::kCenter_ScaleToFit));
             float t = (y*tiles + x) * dt;
             animation->seek(t);
             animation->render(canvas);
@@ -371,6 +376,7 @@ extern bool gSkVMJITViaDylib;
 int main(int argc, char** argv) {
     CommandLineFlags::Parse(argc, argv);
     SetupCrashHandler();
+    SkTaskGroup::Enabler enabled(FLAGS_race);
 
     if (FLAGS_cpuDetect) {
         SkGraphics::Init();
@@ -385,6 +391,7 @@ int main(int argc, char** argv) {
 
     GrContextOptions baseOptions;
     SetCtxOptionsFromCommonFlags(&baseOptions);
+    baseOptions.fReducedShaderVariations = FLAGS_reducedshaders;
 
     sk_gpu_test::MemoryCache memoryCache;
     if (!FLAGS_writeShaders.isEmpty()) {
@@ -422,26 +429,26 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    const int replicas = std::max(1, FLAGS_race);
+
     SkTArray<Source> sources;
-    for (const SkString& name : FLAGS_sources) {
+    for (const SkString& name : FLAGS_sources)
+    for (int replica = 0; replica < replicas; replica++) {
         Source* source = &sources.push_back();
+        source->name = name;
 
         if (skiagm::GMFactory* factory = gm_factories.find(name)) {
             std::shared_ptr<skiagm::GM> gm{(*factory)()};
-            source->name = name;
             init(source, std::move(gm));
             continue;
         }
 
         if (const skiatest::Test** test = tests.find(name)) {
-            source->name = name;
             init(source, **test);
             continue;
         }
 
         if (sk_sp<SkData> blob = SkData::MakeFromFileName(name.c_str())) {
-            source->name = SkOSPath::Basename(name.c_str());
-
             if (name.endsWith(".skp")) {
                 if (sk_sp<SkPicture> pic = SkPicture::MakeFromData(blob.get())) {
                     init(source, pic);
@@ -549,15 +556,19 @@ int main(int argc, char** argv) {
 
     sk_sp<SkColorSpace> cs = FLAGS_legacy ? nullptr
                                           : SkColorSpace::MakeRGB(tf,gamut);
-    const SkImageInfo unsized_info = SkImageInfo::Make(0,0, ct,at,cs);
+    const SkColorInfo color_info{ct,at,cs};
 
-    AutoreleasePool pool;
-    for (auto source : sources) {
+    for (int i = 0; i < sources.count(); i += replicas)
+    SkTaskGroup{}.batch(replicas, [=](int replica) {
+        Source source = sources[i+replica];
+
+        AutoreleasePool pool;
         const auto start = std::chrono::steady_clock::now();
-        fprintf(stdout, "%50s", source.name.c_str());
-        fflush(stdout);
 
-        const SkImageInfo info = unsized_info.makeDimensions(source.size);
+        auto [w,h] = source.size;
+        w = std::min(w, FLAGS_clipW);
+        h = std::min(h, FLAGS_clipH);
+        const SkImageInfo info = SkImageInfo::Make({w,h}, color_info);
 
         auto draw = [&source](SkCanvas* canvas) {
             Result result = source.draw(canvas);
@@ -594,16 +605,22 @@ int main(int argc, char** argv) {
                 break;
         }
 
-        if (!image && !blob) {
-            fprintf(stdout, "\tskipped\n");
-            continue;
-        }
-
         // We read back a bitmap even when --quick is set and we won't use it,
         // to keep us honest about deferred work, flushing pipelines, etc.
         SkBitmap bitmap;
         if (image && !image->asLegacyBitmap(&bitmap)) {
             SK_ABORT("SkImage::asLegacyBitmap() failed.");
+        }
+
+        // Our --race replicas have done their job by now if they're going to catch anything.
+        if (replica != 0) {
+            return;
+        }
+
+        if (!image && !blob) {
+            fprintf(stdout, "%50s  skipped\n", source.name.c_str());
+            fflush(stdout);
+            return;
         }
 
         SkString md5;
@@ -624,9 +641,15 @@ int main(int argc, char** argv) {
             }
 
             if (!FLAGS_writePath.isEmpty()) {
-                sk_mkdir(FLAGS_writePath[0]);
                 SkString path = SkStringPrintf("%s/%s%s",
                                                FLAGS_writePath[0], source.name.c_str(), ext);
+                for (char* it = path.writable_str(); *it != '\0'; it++) {
+                    if (*it == '/' || *it == '\\') {
+                        char prev = std::exchange(*it, '\0');
+                        sk_mkdir(path.c_str());
+                        *it = prev;
+                    }
+                }
 
                 SkFILEWStream file(path.c_str());
                 if (image) {
@@ -641,11 +664,13 @@ int main(int argc, char** argv) {
         }
 
         const auto elapsed = std::chrono::steady_clock::now() - start;
-        fprintf(stdout, "\t%s\t%7dms\n",
+        fprintf(stdout, "%50s  %s  %7dms\n",
+                source.name.c_str(),
                 md5.c_str(),
                 (int)std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count());
-        pool.drain();
-    }
+        fflush(stdout);
+    });
+
 
     if (!FLAGS_writeShaders.isEmpty()) {
         sk_mkdir(FLAGS_writeShaders[0]);

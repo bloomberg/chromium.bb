@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/qbone/qbone_stream.h"
+#include "quic/qbone/qbone_stream.h"
 
 #include <utility>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_random.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_simple_buffer_allocator.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test_loopback.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_constants.h"
-#include "net/third_party/quiche/src/quic/qbone/qbone_session_base.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
+#include "quic/core/crypto/quic_random.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_simple_buffer_allocator.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/platform/api/quic_test_loopback.h"
+#include "quic/qbone/qbone_constants.h"
+#include "quic/qbone/qbone_session_base.h"
+#include "quic/test_tools/mock_clock.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "spdy/core/spdy_protocol.h"
 
 namespace quic {
 
@@ -58,10 +58,6 @@ class MockQuicSession : public QboneSessionBase {
   }
 
   // Called by QuicStream when they want to close stream.
-  MOCK_METHOD(void,
-              SendRstStream,
-              (QuicStreamId, QuicRstStreamErrorCode, QuicStreamOffset, bool),
-              (override));
   MOCK_METHOD(void,
               MaybeSendRstStreamFrame,
               (QuicStreamId stream_id,
@@ -245,15 +241,10 @@ TEST_F(QboneReadOnlyStreamTest, ReadBufferedTooLarge) {
   CreateReliableQuicStream();
   std::string packet = "0123456789";
   int iterations = (QboneConstants::kMaxQbonePacketBytes / packet.size()) + 2;
-  if (!session_->split_up_send_rst()) {
-    EXPECT_CALL(*session_,
-                SendRstStream(kStreamId, QUIC_BAD_APPLICATION_PAYLOAD, _, _));
-  } else {
-    EXPECT_CALL(*session_, MaybeSendStopSendingFrame(
-                               kStreamId, QUIC_BAD_APPLICATION_PAYLOAD));
-    EXPECT_CALL(*session_, MaybeSendRstStreamFrame(
-                               kStreamId, QUIC_BAD_APPLICATION_PAYLOAD, _));
-  }
+  EXPECT_CALL(*session_, MaybeSendStopSendingFrame(
+                             kStreamId, QUIC_BAD_APPLICATION_PAYLOAD));
+  EXPECT_CALL(*session_, MaybeSendRstStreamFrame(
+                             kStreamId, QUIC_BAD_APPLICATION_PAYLOAD, _));
   for (int i = 0; i < iterations; ++i) {
     QuicStreamFrame frame(kStreamId, i == (iterations - 1), i * packet.size(),
                           packet);

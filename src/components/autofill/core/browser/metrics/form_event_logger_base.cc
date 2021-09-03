@@ -17,6 +17,24 @@ using base::UmaHistogramBoolean;
 
 namespace autofill {
 
+namespace {
+
+// The default group is mapped to nullptr, as this does not get logged as a
+// histogram sample.
+const char* AblationGroupToString(AblationGroup ablation_group) {
+  switch (ablation_group) {
+    case AblationGroup::kAblation:
+      return "Ablation";
+    case AblationGroup::kControl:
+      return "Control";
+    case AblationGroup::kDefault:
+      return nullptr;
+  }
+  return nullptr;
+}
+
+}  // namespace
+
 FormEventLoggerBase::FormEventLoggerBase(
     const std::string& form_type_name,
     bool is_in_main_frame,
@@ -28,7 +46,11 @@ FormEventLoggerBase::FormEventLoggerBase(
       log_manager_(log_manager) {}
 
 FormEventLoggerBase::~FormEventLoggerBase() {
-  RecordFunnelAndKeyMetrics();
+  // Don't record Funnel and Key metrics for the ablation group as they don't
+  // represent the true quality metrics.
+  if (ablation_group_ != AblationGroup::kAblation)
+    RecordFunnelAndKeyMetrics();
+  RecordAblationMetrics();
 }
 
 void FormEventLoggerBase::OnDidInteractWithAutofillableForm(
@@ -102,6 +124,25 @@ void FormEventLoggerBase::OnDidShowSuggestions(
   RecordShowSuggestions();
 }
 
+void FormEventLoggerBase::SetAblationStatus(
+    AblationGroup ablation_group,
+    AblationGroup conditional_ablation_group) {
+  ablation_group_ = ablation_group;
+  // For each form, the ablation group should be stable (except in the rare
+  // event that a day boundary is crossed). In practice, it is possible,
+  // however, that a the condtional_ablation_group is reported as kDefault
+  // because the user has typed a prefix into an input element that filtered
+  // all filling options. In this case, we should still consider this an
+  // ablation experience if suggestions were available when the field was empty.
+  if (conditional_ablation_group != AblationGroup::kDefault)
+    conditional_ablation_group_ = conditional_ablation_group;
+}
+
+void FormEventLoggerBase::SetTimeFromInteractionToSubmission(
+    base::TimeDelta time_from_interaction_to_submission) {
+  time_from_interaction_to_submission_ = time_from_interaction_to_submission;
+}
+
 void FormEventLoggerBase::OnWillSubmitForm(AutofillSyncSigninState sync_state,
                                            const FormStructure& form) {
   sync_state_ = sync_state;
@@ -123,8 +164,7 @@ void FormEventLoggerBase::OnWillSubmitForm(AutofillSyncSigninState sync_state,
   base::RecordAction(base::UserMetricsAction("Autofill_OnWillSubmitForm"));
 }
 
-void FormEventLoggerBase::OnFormSubmitted(bool force_logging,
-                                          AutofillSyncSigninState sync_state,
+void FormEventLoggerBase::OnFormSubmitted(AutofillSyncSigninState sync_state,
                                           const FormStructure& form) {
   sync_state_ = sync_state;
   // Not logging this kind of form if we haven't logged a user interaction.
@@ -138,7 +178,7 @@ void FormEventLoggerBase::OnFormSubmitted(bool force_logging,
 
   LogFormSubmitted(form);
 
-  if (has_logged_suggestions_shown_ || force_logging) {
+  if (has_logged_suggestions_shown_) {
     Log(FORM_EVENT_SUGGESTION_SHOWN_SUBMITTED_ONCE, form);
     OnSuggestionsShownSubmittedOnce(form);
   }
@@ -318,6 +358,56 @@ void FormEventLoggerBase::RecordFunnelAndKeyMetrics() {
     log_manager_->Log() << LoggingScope::kMetrics << LogMessage::kKeyMetrics
                         << Tag{"table"} << std::move(key_metrics_rows)
                         << CTag{"table"};
+  }
+}
+
+void FormEventLoggerBase::RecordAblationMetrics() {
+  if (!has_logged_interacted_)
+    return;
+
+  // Record whether the form was submitted.
+
+  // AblationGroup::kDefault is mapped to nullptr.
+  const char* conditional_ablation_group_string =
+      AblationGroupToString(conditional_ablation_group_);
+  if (conditional_ablation_group_string) {
+    UmaHistogramBoolean(
+        base::StrCat({"Autofill.Ablation.FormSubmissionAfterInteraction.",
+                      form_type_name_.c_str(), ".Conditional",
+                      conditional_ablation_group_string}),
+        has_logged_will_submit_);
+  }
+
+  // AblationGroup::kDefault is mapped to nullptr.
+  const char* ablation_group_string = AblationGroupToString(ablation_group_);
+  if (ablation_group_string) {
+    UmaHistogramBoolean(
+        base::StrCat({"Autofill.Ablation.FormSubmissionAfterInteraction.",
+                      form_type_name_.c_str(), ".Unconditional",
+                      ablation_group_string}),
+        has_logged_will_submit_);
+  }
+
+  // Record the submission time since interaction.
+  if (time_from_interaction_to_submission_) {
+    if (conditional_ablation_group_string) {
+      base::UmaHistogramCustomTimes(
+          base::StrCat({"Autofill.Ablation.FillDurationSinceInteraction.",
+                        form_type_name_.c_str(), ".Conditional",
+                        conditional_ablation_group_string}),
+          *time_from_interaction_to_submission_,
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMinutes(10), 50);
+    }
+    if (ablation_group_string) {
+      base::UmaHistogramCustomTimes(
+          base::StrCat({"Autofill.Ablation.FillDurationSinceInteraction.",
+                        form_type_name_.c_str(), ".Unconditional",
+                        ablation_group_string}),
+          *time_from_interaction_to_submission_,
+          base::TimeDelta::FromMilliseconds(100),
+          base::TimeDelta::FromMinutes(10), 50);
+    }
   }
 }
 

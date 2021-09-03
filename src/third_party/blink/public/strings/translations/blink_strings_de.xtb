@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">Banner</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> Elemente</translation>
 <translation id="1480676835519562650">Mehrfachauswahl, <ph name="SELECTED" /> von <ph name="COUNT" /> ausgewählt.</translation>
+<translation id="1588438908519853928">Normal</translation>
 <translation id="1589122976691792535">Region</translation>
 <translation id="1591562245178063882">Aktueller Monat</translation>
 <translation id="1637811476055996098">Dateien auswählen</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">Timer</translation>
 <translation id="3199563858620722075">Kombinationsfeld</translation>
 <translation id="3220661731597678625">aktueller Schritt</translation>
+<translation id="3321030238473337787">Wiedergabegeschwindigkeit</translation>
 <translation id="3329013043687509092">Sättigung</translation>
 <translation id="3450233048674729344">Wert muss kleiner als oder gleich <ph name="MAXIMUM" /> sein.</translation>
 <translation id="3486220673238053218">Definition</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">Menüleiste</translation>
 <translation id="4293574643247337246">Kopfzeile</translation>
 <translation id="4360991593054037559">Geben Sie einen gültigen Wert ein. Die zwei nächstliegenden gültigen Werte sind <ph name="VALID_VALUE_LOW" /> und <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4371899966896349864">Menü für Wiedergabegeschwindigkeit ausblenden</translation>
 <translation id="4384249794467006333">Dieses Bild hat kein Label. Öffnen Sie oben rechts das Menü „Weitere Optionen“, um Bildbeschreibungen zu verwenden.</translation>
 <translation id="4384583879834880242">Fragen und Antworten</translation>
 <translation id="4444765639179266822">Es sieht aus wie: <ph name="OCR_TEXT" /></translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">Zeilenüberschrift</translation>
 <translation id="5143125788380636750">Epilog</translation>
 <translation id="5164977714490026579">Wert muss größer als oder gleich <ph name="MINIMUM" /> sein.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Geben Sie etwas vor dem <ph name="ATSIGN" />-Zeichen ein. Die Angabe "<ph name="INVALIDADDRESS" />" ist unvollständig.</translation>
 <translation id="5334352251556557839">Medien können nicht abgespielt werden.</translation>
 <translation id="537648784377940524">Das Mindestdatum (<ph name="MIN_DATE_OR_TIME" />) muss vor dem Maximaldatum (<ph name="MAX_DATE_OR_TIME" />) liegen.</translation>
+<translation id="5378437566635403538">maximiert, Dialogfeld geöffnet.</translation>
 <translation id="5406322316791861025">Zahl</translation>
 <translation id="5425179576310518467">aktuelles Datum</translation>
 <translation id="5453733299334684579">Baumelement</translation>
 <translation id="5466621249238537318">Wählen Sie eine oder mehrere Dateien aus.</translation>
 <translation id="5468998798572797635">Vollbildmodus beenden</translation>
+<translation id="5516235301412634559">0,75</translation>
 <translation id="5516424706154626233">Datumsauswahl</translation>
 <translation id="5537725057119320332">Streamen</translation>
 <translation id="5546461542133609677">Ton an</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">weitere Optionen</translation>
 <translation id="576709008726043716">Einleitung</translation>
 <translation id="57838592816432529">Stummschalten</translation>
+<translation id="5786442179789148008">Menü für Wiedergabegeschwindigkeit einblenden</translation>
+<translation id="5787939484346677755">maximiert, Optionen für automatische Vervollständigung sind verfügbar.</translation>
 <translation id="5860033963881614850">Aus</translation>
 <translation id="588258955323874662">Vollbild</translation>
 <translation id="5888666972993069672">Wird gerade auf <ph name="DEVICE_FRIENDLY_NAME" /> gestreamt</translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">An</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5966707198760109579">Woche</translation>
+<translation id="5985507339671257014">0,5</translation>
 <translation id="5987525920412732405">Drehfeld</translation>
 <translation id="6011459053400940133">Schieberegler für die Lautstärke</translation>
 <translation id="6015796118275082299">Jahr</translation>
 <translation id="6023896073578205740">Listenfeld</translation>
 <translation id="6150588977291308318">Bibliografie</translation>
 <translation id="6164829606128959761">Messinstrument</translation>
+<translation id="6165053282446038410">maximiert, <ph name="COUNT" /> Optionen für automatische Vervollständigung sind verfügbar.</translation>
 <translation id="6166809985690652833">Nachwort</translation>
 <translation id="6209276755895393898">Anscheinend ist es: <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">aktuelle Seite</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="668171684555832681">Andere...</translation>
 <translation id="6692633176391053278">Stepper</translation>
+<translation id="6696580792574109116">Monatsauswahl</translation>
 <translation id="6709093583001123835">Der Wert muss <ph name="VALUE" /> sein.</translation>
 <translation id="6709570249143506788">Schlechte Wiedergabequalität</translation>
 <translation id="6755330956360078551">Kurzinfo</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">Stumm</translation>
 <translation id="6885760532393684712">Verzeichnis</translation>
 <translation id="689129560213475294">Kolophon</translation>
+<translation id="6919891270253167948">1,5</translation>
 <translation id="6934078000481955284">blockquote</translation>
 <translation id="693476918119313863">Überschrift</translation>
 <translation id="6941933287844615239">Medien herunterladen</translation>
 <translation id="6981594929165378967">Einfügen</translation>
+<translation id="698788488269350478">maximiert.</translation>
 <translation id="6989848892321993519">Verlängern Sie diesen Text auf mindestens <ph name="MIN_CHARACTERS" /> Zeichen. Derzeit verwenden Sie 1 Zeichen.</translation>
 <translation id="7034405885550056553">Vorschlag</translation>
 <translation id="709897737746224366">Ihre Eingabe muss mit dem geforderten Format übereinstimmen.</translation>
 <translation id="7102274145889307184">aktueller Standort</translation>
 <translation id="7118469954320184356">Keine Beschreibung verfügbar.</translation>
 <translation id="7139483182332611405">Vorbemerkung</translation>
+<translation id="7198226213493847604">Pop-up-Schaltfläche für das Menü</translation>
 <translation id="7214187073215825913">Informationen zum Inhalt</translation>
 <translation id="7238347055216017155">Betonung</translation>
 <translation id="7263440858009898357">Wählen Sie ein Element in der Liste aus.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">Wenn Sie fehlende Bildbeschreibungen abrufen möchten, öffnen Sie das Kontextmenü.</translation>
 <translation id="7750228210027921155">Bild im Bild</translation>
 <translation id="775297008183122718">Ungültiger Eintrag</translation>
+<translation id="7782515065589691344">1,25</translation>
 <translation id="7789962463072032349">Pausieren</translation>
 <translation id="7802800022689234070">Aufklappdreieck</translation>
 <translation id="7852167693871241274">Schieberegler für den Farbton</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">Hinweisreferenz</translation>
 <translation id="811583516810654505">Beschreibung wird abgerufen…</translation>
 <translation id="8117451130807776954">Diese Woche</translation>
+<translation id="8131955114056917397">0,25</translation>
 <translation id="8199524924445686405">jjjj</translation>
 <translation id="8208673686607688524">lokale Datums- und Uhrzeitauswahl</translation>
 <translation id="8261464734335370856">Ungültige Schreibweise</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">Remote-Wiedergabe steuern</translation>
 <translation id="862370744433916922">Untertitel</translation>
 <translation id="8634971699417195529">Monatsauswahl anzeigen</translation>
+<translation id="8637593834423658414">1,75</translation>
+<translation id="8668988909814782445">Zeilenumbruch</translation>
 <translation id="8711688047404765493">Ausgang</translation>
 <translation id="8750798805984357768">Wählen Sie eine dieser Optionen aus.</translation>
 <translation id="8808573423886751634">Kapitel</translation>
 <translation id="8845239796550121995">Wird gerade auf Ihren Fernseher gestreamt</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8861621546968757188">Pop-up-Schaltfläche für das Dialogfeld</translation>
 <translation id="8875657656876809964">Videowiedergabefehler</translation>
 <translation id="8889402386540077796">Farbton</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>

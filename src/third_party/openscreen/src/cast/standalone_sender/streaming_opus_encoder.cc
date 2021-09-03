@@ -35,8 +35,8 @@ StreamingOpusEncoder::StreamingOpusEncoder(int num_channels,
     : num_channels_(num_channels),
       sender_(sender),
       samples_per_cast_frame_(sample_rate() / cast_frames_per_second),
-      approximate_cast_frame_duration_(
-          Clock::to_duration(std::chrono::seconds(1)) / cast_frames_per_second),
+      approximate_cast_frame_duration_(Clock::to_duration(seconds(1)) /
+                                       cast_frames_per_second),
       encoder_storage_(new uint8_t[opus_encoder_get_size(num_channels_)]),
       input_(new float[num_channels_ * samples_per_cast_frame_]),
       output_(new uint8_t[kOpusMaxPayloadSize]) {

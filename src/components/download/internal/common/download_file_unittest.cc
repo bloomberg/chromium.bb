@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -238,7 +239,8 @@ class DownloadFileTest : public testing::Test {
       int data_len = strlen(kTestData1);
       while (len > 0) {
         int bytes_to_write = len > data_len ? data_len : len;
-        base::AppendToFile(save_info->file_path, kTestData1, bytes_to_write);
+        base::AppendToFile(save_info->file_path,
+                           base::StringPiece(kTestData1, bytes_to_write));
         len -= bytes_to_write;
       }
     }
@@ -246,10 +248,10 @@ class DownloadFileTest : public testing::Test {
     save_info->offset = 0;
     save_info->file_offset = file_offset;
 
-    download_file_.reset(new TestDownloadFileImpl(
+    download_file_ = std::make_unique<TestDownloadFileImpl>(
         std::move(save_info), download_dir_.GetPath(),
         std::unique_ptr<MockInputStream>(input_stream_),
-        DownloadItem::kInvalidId, observer_factory_.GetWeakPtr()));
+        DownloadItem::kInvalidId, observer_factory_.GetWeakPtr());
 
     EXPECT_CALL(*input_stream_, Read(_, _))
         .WillOnce(Return(InputStream::EMPTY))

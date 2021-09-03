@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/perf/metric_provider.h"
 #include "chrome/browser/metrics/perf/perf_events_collector.h"
 #include "chrome/browser/metrics/perf/windowed_incognito_observer.h"
@@ -58,8 +59,8 @@ ProfileProvider::ProfileProvider()
   // Initialize the WindowedIncognitoMonitor on the UI thread.
   WindowedIncognitoMonitor::Init();
   // Register a perf events collector.
-  collectors_.push_back(
-      std::make_unique<MetricProvider>(std::make_unique<PerfCollector>()));
+  collectors_.push_back(std::make_unique<MetricProvider>(
+      std::make_unique<PerfCollector>(), g_browser_process->profile_manager()));
 }
 
 ProfileProvider::~ProfileProvider() {
@@ -112,6 +113,18 @@ bool ProfileProvider::GetSampledProfiles(
   return result;
 }
 
+void ProfileProvider::OnRecordingEnabled() {
+  for (auto& collector : collectors_) {
+    collector->EnableRecording();
+  }
+}
+
+void ProfileProvider::OnRecordingDisabled() {
+  for (auto& collector : collectors_) {
+    collector->DisableRecording();
+  }
+}
+
 void ProfileProvider::LoggedInStateChanged() {
   if (IsNormalUserLoggedIn()) {
     for (auto& collector : collectors_) {
@@ -124,7 +137,7 @@ void ProfileProvider::LoggedInStateChanged() {
   }
 }
 
-void ProfileProvider::SuspendDone(const base::TimeDelta& sleep_duration) {
+void ProfileProvider::SuspendDone(base::TimeDelta sleep_duration) {
   // A zero value for the suspend duration indicates that the suspend was
   // canceled. Do not collect anything if that's the case.
   if (sleep_duration.is_zero())

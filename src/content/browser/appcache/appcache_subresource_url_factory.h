@@ -43,7 +43,6 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
   // network::mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> url_loader_receiver,
-      int32_t routing_id,
       int32_t request_id,
       uint32_t options,
       const network::ResourceRequest& request,
@@ -74,4 +73,4 @@ class CONTENT_EXPORT AppCacheSubresourceURLFactory
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_APPCACHE_APPCACHE_URL_LOADER_FACTORY_H_
+#endif  // CONTENT_BROWSER_APPCACHE_APPCACHE_SUBRESOURCE_URL_FACTORY_H_

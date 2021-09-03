@@ -4,6 +4,7 @@
 
 #include "google_apis/gcm/engine/connection_factory_impl.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -392,7 +393,7 @@ void ConnectionFactoryImpl::InitHandler(
 
 std::unique_ptr<net::BackoffEntry> ConnectionFactoryImpl::CreateBackoffEntry(
     const net::BackoffEntry::Policy* const policy) {
-  return std::unique_ptr<net::BackoffEntry>(new net::BackoffEntry(policy));
+  return std::make_unique<net::BackoffEntry>(policy);
 }
 
 std::unique_ptr<ConnectionHandler>
@@ -412,8 +413,8 @@ base::TimeTicks ConnectionFactoryImpl::NowTicks() {
 
 void ConnectionFactoryImpl::OnConnectDone(
     int result,
-    const base::Optional<net::IPEndPoint>& local_addr,
-    const base::Optional<net::IPEndPoint>& peer_addr,
+    const absl::optional<net::IPEndPoint>& local_addr,
+    const absl::optional<net::IPEndPoint>& peer_addr,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK_NE(net::ERR_IO_PENDING, result);

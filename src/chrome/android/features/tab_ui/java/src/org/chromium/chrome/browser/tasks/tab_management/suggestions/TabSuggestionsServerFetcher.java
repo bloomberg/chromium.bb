@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.tasks.tab_management.suggestions;
 
+import android.content.Context;
+
 import androidx.annotation.VisibleForTesting;
 
 import org.json.JSONArray;
@@ -16,7 +18,7 @@ import org.chromium.chrome.browser.endpoint_fetcher.EndpointFetcher;
 import org.chromium.chrome.browser.endpoint_fetcher.EndpointResponse;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 
 import java.util.Collections;
@@ -46,11 +48,15 @@ public class TabSuggestionsServerFetcher implements TabSuggestionsFetcher {
     private static final String EMPTY_RESPONSE = "{}";
 
     private Profile mProfileForTesting;
+    private Context mContext;
 
     /**
      * Acquires Tab suggestions from an endpoint
+     * @param context The activity context.
      */
-    public TabSuggestionsServerFetcher() {}
+    public TabSuggestionsServerFetcher(Context context) {
+        mContext = context;
+    }
 
     /**
      * Constructor for testing
@@ -141,7 +147,7 @@ public class TabSuggestionsServerFetcher implements TabSuggestionsFetcher {
         //  flag checking logic to somewhere if this server fetcher supports suggestions other than
         //  grouping in the future.
         return isSignedIn() && isServerFetcherFlagEnabled()
-                && TabUiFeatureUtilities.isTabGroupsAndroidEnabled();
+                && TabUiFeatureUtilities.isTabGroupsAndroidEnabled(mContext);
     }
 
     @VisibleForTesting

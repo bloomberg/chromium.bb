@@ -4,13 +4,13 @@
 
 #include "device/bluetooth/chromeos/bluetooth_utils.h"
 
+#include "ash/constants/ash_features.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -116,6 +116,19 @@ TEST_F(BluetoothUtilsTest,
 }
 
 TEST_F(BluetoothUtilsTest,
+       TestFilterBluetoothDeviceList_FilterKnown_FilterPairedPhone) {
+  auto* mock_bluetooth_device =
+      AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_INVALID);
+  EXPECT_CALL(*mock_bluetooth_device, IsPaired)
+      .WillRepeatedly(testing::Return(true));
+  ON_CALL(*mock_bluetooth_device, GetDeviceType)
+      .WillByDefault(testing::Return(BluetoothDeviceType::PHONE));
+
+  VerifyFilterBluetoothDeviceList(BluetoothFilterType::KNOWN,
+                                  0u /* num_expected_remaining_devices */);
+}
+
+TEST_F(BluetoothUtilsTest,
        TestFilterBluetoothDeviceList_FilterKnown_RemoveInvalidDevices) {
   AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_INVALID);
 
@@ -137,7 +150,7 @@ TEST_F(
   auto* mock_bluetooth_device =
       AddMockBluetoothDeviceToAdapter(BLUETOOTH_TRANSPORT_CLASSIC);
   EXPECT_CALL(*mock_bluetooth_device, GetName)
-      .WillOnce(testing::Return(base::nullopt));
+      .WillOnce(testing::Return(absl::nullopt));
 
   VerifyFilterBluetoothDeviceList(BluetoothFilterType::KNOWN,
                                   0u /* num_expected_remaining_devices */);

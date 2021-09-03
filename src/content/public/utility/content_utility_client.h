@@ -8,13 +8,10 @@
 #include <map>
 #include <memory>
 
-#include "base/callback_forward.h"
 #include "content/public/common/content_client.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 namespace IPC {
 class Message;
@@ -58,9 +55,9 @@ class CONTENT_EXPORT ContentUtilityClient {
   // |UtilityThread::ReleaseProcess()|) once the running service terminates.
   //
   // If the embedder returns |false| this process is terminated immediately.
-  virtual bool HandleServiceRequest(
+  virtual bool HandleServiceRequestDeprecated(
       const std::string& service_name,
-      mojo::PendingReceiver<service_manager::mojom::Service> receiver);
+      mojo::ScopedMessagePipeHandle service_pipe);
 
   // Allows the embedder to handle an incoming service interface request to run
   // a service on the IO thread.
@@ -76,6 +73,8 @@ class CONTENT_EXPORT ContentUtilityClient {
 
   virtual void RegisterNetworkBinders(
       service_manager::BinderRegistry* registry) {}
+
+  virtual bool GetDefaultUserDataDirectory(base::FilePath* path);
 };
 
 }  // namespace content

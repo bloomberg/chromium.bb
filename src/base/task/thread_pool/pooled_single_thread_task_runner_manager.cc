@@ -115,6 +115,7 @@ class WorkerThreadDelegate : public WorkerThread::Delegate {
   RegisteredTaskSource GetWork(WorkerThread* worker) override {
     CheckedAutoLock auto_lock(lock_);
     DCHECK(worker_awake_);
+
     auto task_source = GetWorkLockRequired(worker);
     if (!task_source) {
       // The worker will sleep after this returns nullptr.
@@ -348,7 +349,7 @@ class WorkerThreadCOMDelegate : public WorkerThreadDelegate {
                                    DispatchMessage(&msg);
                                  },
                                  std::move(msg)),
-                             TimeDelta());
+                             TimeTicks::Now(), TimeDelta());
       if (task_tracker()->WillPostTask(
               &pump_message_task, TaskShutdownBehavior::SKIP_ON_SHUTDOWN)) {
         auto transaction = message_pump_sequence_->BeginTransaction();
@@ -409,7 +410,7 @@ class PooledSingleThreadTaskRunnerManager::PooledSingleThreadTaskRunner
     if (!g_manager_is_alive)
       return false;
 
-    Task task(from_here, std::move(closure), delay);
+    Task task(from_here, std::move(closure), TimeTicks::Now(), delay);
 
     if (!outer_->task_tracker_->WillPostTask(&task,
                                              sequence_->shutdown_behavior())) {

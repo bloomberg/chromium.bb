@@ -14,9 +14,7 @@
 #include "fuchsia/runners/cast/cast_component.h"
 
 namespace base {
-namespace fuchsia {
 class StartupContext;
-}
 }  // namespace base
 
 // Manages asynchronous retrieval of parameters required to launch the specified
@@ -39,16 +37,17 @@ class PendingCastComponent {
     virtual void CancelPendingComponent(PendingCastComponent* component) = 0;
   };
 
-  PendingCastComponent(
-      Delegate* delegate,
-      std::unique_ptr<base::fuchsia::StartupContext> startup_context,
-      fidl::InterfaceRequest<fuchsia::sys::ComponentController>
-          controller_request,
-      base::StringPiece app_id);
+  PendingCastComponent(Delegate* delegate,
+                       std::unique_ptr<base::StartupContext> startup_context,
+                       fidl::InterfaceRequest<fuchsia::sys::ComponentController>
+                           controller_request,
+                       base::StringPiece app_id);
   ~PendingCastComponent();
 
   PendingCastComponent(const PendingCastComponent&) = delete;
   PendingCastComponent& operator=(const PendingCastComponent&) = delete;
+
+  const base::StringPiece app_id() const { return app_id_; }
 
  private:
   void RequestCorsExemptHeaders();
@@ -65,6 +64,9 @@ class PendingCastComponent {
 
   // Reference to the Delegate which manages |this|.
   Delegate* const delegate_;
+
+  // Id of the Cast application that this instance describes.
+  const std::string app_id_;
 
   // Parameters required to construct the CastComponent.
   CastComponent::Params params_;

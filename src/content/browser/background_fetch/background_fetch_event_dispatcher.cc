@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/stringprintf.h"
+#include "components/services/storage/public/cpp/storage_key.h"
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/background_fetch/background_fetch_registration_service_impl.h"
 #include "content/browser/devtools/devtools_background_services_context_impl.h"
@@ -158,9 +159,9 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchAbortEvent(
   LoadServiceWorkerRegistrationForDispatch(
       registration_id, ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_ABORT,
       std::move(finished_closure),
-      base::AdaptCallbackForRepeating(base::BindOnce(
+      base::BindOnce(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchAbortEvent,
-          std::move(registration))));
+          std::move(registration)));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchAbortEvent(
@@ -189,9 +190,9 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchClickEvent(
   LoadServiceWorkerRegistrationForDispatch(
       registration_id, ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_CLICK,
       std::move(finished_closure),
-      base::AdaptCallbackForRepeating(base::BindOnce(
+      base::BindOnce(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchClickEvent,
-          std::move(registration))));
+          std::move(registration)));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchClickEvent(
@@ -218,9 +219,9 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchFailEvent(
   LoadServiceWorkerRegistrationForDispatch(
       registration_id, ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_FAIL,
       std::move(finished_closure),
-      base::AdaptCallbackForRepeating(base::BindOnce(
+      base::BindOnce(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent,
-          std::move(registration))));
+          std::move(registration)));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent(
@@ -249,10 +250,9 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchSuccessEvent(
       registration_id,
       ServiceWorkerMetrics::EventType::BACKGROUND_FETCH_SUCCESS,
       std::move(finished_closure),
-      base::AdaptCallbackForRepeating(
-          base::BindOnce(&BackgroundFetchEventDispatcher::
-                             DoDispatchBackgroundFetchSuccessEvent,
-                         std::move(registration))));
+      base::BindOnce(&BackgroundFetchEventDispatcher::
+                         DoDispatchBackgroundFetchSuccessEvent,
+                     std::move(registration)));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchSuccessEvent(
@@ -273,7 +273,7 @@ void BackgroundFetchEventDispatcher::LoadServiceWorkerRegistrationForDispatch(
     ServiceWorkerLoadedCallback loaded_callback) {
   service_worker_context_->FindReadyRegistrationForId(
       registration_id.service_worker_registration_id(),
-      registration_id.origin(),
+      storage::StorageKey(registration_id.origin()),
       base::BindOnce(
           &BackgroundFetchEventDispatcher::StartActiveWorkerForDispatch, event,
           std::move(finished_closure), std::move(loaded_callback)));

@@ -16,32 +16,32 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.MainSettings;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.chrome.browser.signin.IdentityServicesProvider;
-import org.chromium.chrome.browser.signin.ProfileDataCache;
-import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.signin.services.ProfileDataCache;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ButtonData;
+import org.chromium.chrome.browser.toolbar.ButtonData.ButtonSpec;
+import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.signin.identitymanager.PrimaryAccountChangeEvent;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.Collections;
 
 /**
  * Handles displaying IdentityDisc on toolbar depending on several conditions
@@ -83,7 +83,7 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
     @IdentityDiscState
     private int mState = IdentityDiscState.NONE;
 
-    private ButtonData mButtonData;
+    private ButtonDataImpl mButtonData;
     private ObserverList<ButtonDataObserver> mObservers = new ObserverList<>();
     private boolean mNativeIsInitialized;
 
@@ -101,22 +101,19 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
         mProfileSupplier = profileSupplier;
         mActivityLifecycleDispatcher.register(this);
 
-        mButtonData = new ButtonData(false, null,
+        mButtonData = new ButtonDataImpl(/*canShow=*/false, /*drawable=*/null,
+                /*onClickListener=*/
                 view
                 -> {
                     recordIdentityDiscUsed();
                     SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-                    settingsLauncher.launchSettingsActivity(mContext,
-                            ChromeFeatureList.isEnabled(
-                                    ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
-                                    ? MainSettings.class
-                                    : SyncAndServicesSettings.class);
+                    settingsLauncher.launchSettingsActivity(mContext, MainSettings.class);
                 },
-                R.string.accessibility_toolbar_btn_identity_disc, false,
+                R.string.accessibility_toolbar_btn_identity_disc, /*supportsTinting=*/false,
                 new IPHCommandBuilder(mContext.getResources(),
                         FeatureConstants.IDENTITY_DISC_FEATURE, R.string.iph_identity_disc_text,
                         R.string.iph_identity_disc_accessibility_text),
-                true);
+                /*isEnabled=*/true);
     }
 
     /**
@@ -145,7 +142,7 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
     public ButtonData get(Tab tab) {
         boolean isNtp = tab != null && tab.getNativePage() instanceof NewTabPage;
         if (!isNtp) {
-            mButtonData.canShow = false;
+            mButtonData.setCanShow(false);
             return mButtonData;
         }
 
@@ -155,7 +152,7 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
 
     public ButtonData getForStartSurface(@StartSurfaceState int overviewModeState) {
         if (overviewModeState != StartSurfaceState.SHOWN_HOMEPAGE) {
-            mButtonData.canShow = false;
+            mButtonData.setCanShow(false);
             return mButtonData;
         }
 
@@ -165,7 +162,7 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
 
     private void calculateButtonData() {
         if (!mNativeIsInitialized) {
-            assert !mButtonData.canShow;
+            assert !mButtonData.canShow();
             return;
         }
 
@@ -174,11 +171,19 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
         ensureProfileDataCache(email, mState);
 
         if (mState != IdentityDiscState.NONE) {
-            mButtonData.drawable = getProfileImage(email);
-            mButtonData.canShow = true;
+            mButtonData.setButtonSpec(
+                    buttonSpecWithDrawable(mButtonData.getButtonSpec(), getProfileImage(email)));
+            mButtonData.setCanShow(true);
         } else {
-            mButtonData.canShow = false;
+            mButtonData.setCanShow(false);
         }
+    }
+
+    private static ButtonSpec buttonSpecWithDrawable(ButtonSpec buttonSpec, Drawable drawable) {
+        if (buttonSpec.getDrawable() == drawable) return buttonSpec;
+        return new ButtonSpec(drawable, buttonSpec.getOnClickListener(),
+                buttonSpec.getContentDescriptionResId(), buttonSpec.getSupportsTinting(),
+                buttonSpec.getIPHCommandBuilder());
     }
 
     /**
@@ -192,10 +197,9 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
         int dimension_id =
                 (state == IdentityDiscState.SMALL) ? R.dimen.toolbar_identity_disc_size
                                                    : R.dimen.toolbar_identity_disc_size_duet;
-        int imageSize = mContext.getResources().getDimensionPixelSize(dimension_id);
-        ProfileDataCache profileDataCache = new ProfileDataCache(mContext, imageSize);
+        ProfileDataCache profileDataCache =
+                ProfileDataCache.createWithoutBadge(mContext, dimension_id);
         profileDataCache.addObserver(this);
-        profileDataCache.update(Collections.singletonList(accountName));
         mProfileDataCache[state] = profileDataCache;
     }
 
@@ -250,18 +254,22 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
     /**
      * Implements {@link IdentityManager.Observer}.
      *
-     * TODO(https://crbug.com/1132291): This method only observes sign-in with sync, we should also
-     * observe sign-in without sync.
+     * IdentityDisc should be shown as long as the user is signed in. Whether the user is syncing
+     * or not should not matter.
      */
     @Override
-    public void onPrimaryAccountSet(CoreAccountInfo account) {
-        resetIdentityDiscCache();
-        notifyObservers(true);
-    }
-
-    @Override
-    public void onPrimaryAccountCleared(CoreAccountInfo account) {
-        notifyObservers(false);
+    public void onPrimaryAccountChanged(PrimaryAccountChangeEvent eventDetails) {
+        switch (eventDetails.getEventTypeFor(ConsentLevel.SIGNIN)) {
+            case PrimaryAccountChangeEvent.Type.SET:
+                resetIdentityDiscCache();
+                notifyObservers(true);
+                break;
+            case PrimaryAccountChangeEvent.Type.CLEARED:
+                notifyObservers(false);
+                break;
+            case PrimaryAccountChangeEvent.Type.NONE:
+                break;
+        }
     }
 
     /**
@@ -308,13 +316,9 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
      * @return account info for the current profile. Returns null for OTR profile.
      */
     private CoreAccountInfo getSignedInAccountInfo() {
-        @ConsentLevel
-        int consentLevel =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)
-                ? ConsentLevel.NOT_REQUIRED
-                : ConsentLevel.SYNC;
-        return mIdentityManager != null ? mIdentityManager.getPrimaryAccountInfo(consentLevel)
-                                        : null;
+        return mIdentityManager != null
+                ? mIdentityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN)
+                : null;
     }
 
     /**

@@ -4,6 +4,7 @@
 
 #include "components/gcm_driver/gcm_profile_service.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -45,12 +46,11 @@ class GCMProfileService::IdentityObserver
   ~IdentityObserver() override;
 
   // signin::IdentityManager::Observer:
-  void OnPrimaryAccountSet(
-      const CoreAccountInfo& primary_account_info) override;
-  void OnPrimaryAccountCleared(
-      const CoreAccountInfo& previous_primary_account_info) override;
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event) override;
 
  private:
+  void OnSyncPrimaryAccountSet(const CoreAccountInfo& primary_account_info);
   void StartAccountTracker(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
@@ -75,7 +75,8 @@ GCMProfileService::IdentityObserver::IdentityObserver(
     : driver_(driver), identity_manager_(identity_manager) {
   identity_manager_->AddObserver(this);
 
-  OnPrimaryAccountSet(identity_manager_->GetPrimaryAccountInfo());
+  OnSyncPrimaryAccountSet(
+      identity_manager_->GetPrimaryAccountInfo(signin::ConsentLevel::kSync));
   StartAccountTracker(std::move(url_loader_factory));
 }
 
@@ -85,7 +86,24 @@ GCMProfileService::IdentityObserver::~IdentityObserver() {
   identity_manager_->RemoveObserver(this);
 }
 
-void GCMProfileService::IdentityObserver::OnPrimaryAccountSet(
+void GCMProfileService::IdentityObserver::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event) {
+  switch (event.GetEventTypeFor(signin::ConsentLevel::kSync)) {
+    case signin::PrimaryAccountChangeEvent::Type::kSet:
+      OnSyncPrimaryAccountSet(event.GetCurrentState().primary_account);
+      break;
+    case signin::PrimaryAccountChangeEvent::Type::kCleared:
+      account_id_ = CoreAccountId();
+
+      // Still need to notify GCMDriver for UMA purpose.
+      driver_->OnSignedOut();
+      break;
+    case signin::PrimaryAccountChangeEvent::Type::kNone:
+      break;
+  }
+}
+
+void GCMProfileService::IdentityObserver::OnSyncPrimaryAccountSet(
     const CoreAccountInfo& primary_account_info) {
   // This might be called multiple times when the password changes.
   if (primary_account_info.account_id == account_id_)
@@ -96,14 +114,6 @@ void GCMProfileService::IdentityObserver::OnPrimaryAccountSet(
   driver_->OnSignedIn();
 }
 
-void GCMProfileService::IdentityObserver::OnPrimaryAccountCleared(
-    const CoreAccountInfo& previous_primary_account_info) {
-  account_id_ = CoreAccountId();
-
-  // Still need to notify GCMDriver for UMA purpose.
-  driver_->OnSignedOut();
-}
-
 void GCMProfileService::IdentityObserver::StartAccountTracker(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   if (gcm_account_tracker_)
@@ -112,8 +122,8 @@ void GCMProfileService::IdentityObserver::StartAccountTracker(
   std::unique_ptr<AccountTracker> gaia_account_tracker(
       new AccountTracker(identity_manager_));
 
-  gcm_account_tracker_.reset(new GCMAccountTracker(
-      std::move(gaia_account_tracker), identity_manager_, driver_));
+  gcm_account_tracker_ = std::make_unique<GCMAccountTracker>(
+      std::move(gaia_account_tracker), identity_manager_, driver_);
 
   gcm_account_tracker_->Start();
 }
@@ -161,8 +171,8 @@ GCMProfileService::GCMProfileService(
       product_category_for_subtypes, ui_task_runner, io_task_runner,
       blocking_task_runner);
 
-  identity_observer_.reset(new IdentityObserver(
-      identity_manager_, url_loader_factory_, driver_.get()));
+  identity_observer_ = std::make_unique<IdentityObserver>(
+      identity_manager_, url_loader_factory_, driver_.get());
 }
 #endif  // BUILDFLAG(USE_GCM_FROM_PLATFORM)
 

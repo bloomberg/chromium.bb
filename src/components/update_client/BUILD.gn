@@ -21,6 +21,31 @@ source_set("network_impl") {
   ]
 }
 
+source_set("in_process_unzipper") {
+  sources = [
+    "unzip/in_process_unzipper.cc",
+    "unzip/in_process_unzipper.h",
+  ]
+  deps = [
+    ":update_client",
+    "//base",
+    "//third_party/zlib/google:zip",
+  ]
+}
+
+source_set("in_process_patcher") {
+  sources = [
+    "patch/in_process_patcher.cc",
+    "patch/in_process_patcher.h",
+  ]
+  deps = [
+    ":update_client",
+    "//base",
+    "//courgette:bsdiff",
+    "//courgette:courgette_lib",
+  ]
+}
+
 source_set("unzip_impl") {
   sources = [
     "unzip/unzip_impl.cc",
@@ -39,6 +64,7 @@ source_set("patch_impl") {
   ]
   deps = [
     ":update_client",
+    "//build:chromeos_buildflags",
     "//components/services/patch/public/cpp",
     "//components/services/patch/public/mojom",
     "//mojo/public/cpp/bindings",
@@ -127,6 +153,7 @@ static_library("update_client") {
   deps = [
     "//base",
     "//build:branding_buildflags",
+    "//build:chromeos_buildflags",
     "//components/client_update_protocol",
     "//components/crx_file",
     "//components/prefs",
@@ -154,6 +181,8 @@ static_library("test_support") {
   sources = [
     "net/url_loader_post_interceptor.cc",
     "net/url_loader_post_interceptor.h",
+    "test_activity_data_service.cc",
+    "test_activity_data_service.h",
     "test_configurator.cc",
     "test_configurator.h",
     "test_installer.cc",
@@ -187,6 +216,7 @@ bundle_data("unit_tests_bundle_data") {
     "//components/test/data/update_client/binary_courgette_patch.bin",
     "//components/test/data/update_client/binary_input.bin",
     "//components/test/data/update_client/binary_output.bin",
+    "//components/test/data/update_client/empty_file",
     "//components/test/data/update_client/ihfokbkgjpifnbbojhneepfflplebdkc_1.crx",
     "//components/test/data/update_client/ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx",
     "//components/test/data/update_client/ihfokbkgjpifnbbojhneepfflplebdkc_2.crx",

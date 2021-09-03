@@ -4,8 +4,8 @@
 
 #include "components/arc/mojom/video_encode_accelerator_mojom_traits.h"
 
-#include "base/optional.h"
 #include "components/arc/mojom/video_accelerator_mojom_traits.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace mojo {
 
@@ -42,7 +42,8 @@ bool EnumTraits<arc::mojom::VideoFrameStorageType,
       *output = media::VideoEncodeAccelerator::Config::StorageType::kShmem;
       return true;
     case arc::mojom::VideoFrameStorageType::DMABUF:
-      *output = media::VideoEncodeAccelerator::Config::StorageType::kDmabuf;
+      *output =
+          media::VideoEncodeAccelerator::Config::StorageType::kGpuMemoryBuffer;
       return true;
   }
   return false;
@@ -82,12 +83,12 @@ bool StructTraits<arc::mojom::VideoEncodeAcceleratorConfigDataView,
   if (!input.ReadOutputProfile(&output_profile))
     return false;
 
-  base::Optional<uint32_t> initial_framerate;
+  absl::optional<uint32_t> initial_framerate;
   if (input.has_initial_framerate()) {
     initial_framerate = input.initial_framerate();
   }
 
-  base::Optional<uint8_t> h264_output_level;
+  absl::optional<uint8_t> h264_output_level;
   if (input.has_h264_output_level()) {
     h264_output_level = input.h264_output_level();
   }
@@ -98,7 +99,7 @@ bool StructTraits<arc::mojom::VideoEncodeAcceleratorConfigDataView,
 
   *output = media::VideoEncodeAccelerator::Config(
       input_format, input_visible_size, output_profile, input.initial_bitrate(),
-      initial_framerate, base::nullopt, h264_output_level, false, storage_type);
+      initial_framerate, absl::nullopt, h264_output_level, false, storage_type);
   return true;
 }
 

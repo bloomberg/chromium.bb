@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/shell.h"
 #include "base/base64.h"
@@ -27,6 +26,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/open_util.h"
@@ -84,8 +84,8 @@ class ScreenshotGrabberNotificationDelegate
         screenshot_path_(screenshot_path) {}
 
   // message_center::NotificationDelegate:
-  void Click(const base::Optional<int>& button_index,
-             const base::Optional<base::string16>& reply) override {
+  void Click(const absl::optional<int>& button_index,
+             const absl::optional<std::u16string>& reply) override {
     if (!button_index) {
       // TODO(estade): this conditional can be a DCHECK after
       // NotificationDelegate::Click() is not called for notifications that are
@@ -143,6 +143,8 @@ int GetScreenshotNotificationTitle(ScreenshotResult screenshot_result) {
   switch (screenshot_result) {
     case ScreenshotResult::DISABLED:
       return IDS_SCREENSHOT_NOTIFICATION_TITLE_DISABLED;
+    case ScreenshotResult::DISABLED_BY_DLP:
+      return IDS_SCREENSHOT_NOTIFICATION_TITLE_DISABLED_BY_DLP;
     case ScreenshotResult::SUCCESS:
       return IDS_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS;
     default:
@@ -154,6 +156,8 @@ int GetScreenshotNotificationText(ScreenshotResult screenshot_result) {
   switch (screenshot_result) {
     case ScreenshotResult::DISABLED:
       return IDS_SCREENSHOT_NOTIFICATION_TEXT_DISABLED;
+    case ScreenshotResult::DISABLED_BY_DLP:
+      return IDS_SCREENSHOT_NOTIFICATION_TEXT_DISABLED_BY_DLP;
     case ScreenshotResult::SUCCESS:
       return IDS_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS;
     default:
@@ -220,11 +224,11 @@ std::string ReadFileToString(const base::FilePath& path) {
 }
 
 using ShowNotificationCallback =
-    base::Callback<void(ScreenshotResult screenshot_result,
-                        const base::FilePath& screenshot_path)>;
+    base::OnceCallback<void(ScreenshotResult screenshot_result,
+                            const base::FilePath& screenshot_path)>;
 
 void SaveScreenshot(scoped_refptr<base::TaskRunner> ui_task_runner,
-                    const ShowNotificationCallback& callback,
+                    ShowNotificationCallback callback,
                     const base::FilePath& screenshot_path,
                     scoped_refptr<base::RefCountedMemory> png_data,
                     ScreenshotFileResult result,
@@ -257,7 +261,8 @@ void SaveScreenshot(scoped_refptr<base::TaskRunner> ui_task_runner,
 
   // Report the result on the UI thread.
   ui_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(callback, screenshot_result, screenshot_path));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), screenshot_result, screenshot_path));
 }
 
 void EnsureLocalDirectoryExists(
@@ -269,11 +274,11 @@ void EnsureLocalDirectoryExists(
   if (!base::CreateDirectory(path.DirName())) {
     LOG(ERROR) << "Failed to ensure the existence of "
                << path.DirName().value();
-    callback.Run(ScreenshotFileResult::CREATE_DIR_FAILED, path);
+    std::move(callback).Run(ScreenshotFileResult::CREATE_DIR_FAILED, path);
     return;
   }
 
-  callback.Run(ScreenshotFileResult::SUCCESS, path);
+  std::move(callback).Run(ScreenshotFileResult::SUCCESS, path);
 }
 
 }  // namespace
@@ -296,8 +301,7 @@ ChromeScreenshotGrabber* ChromeScreenshotGrabber::Get() {
 
 void ChromeScreenshotGrabber::HandleTakeScreenshotForAllRootWindows() {
   const ScreenshotArea area = ScreenshotArea::CreateForAllRootWindows();
-  if (!IsScreenshotAllowed(area)) {
-    OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
+  if (!CheckIfScreenshotAllowed(area)) {
     return;
   }
 
@@ -314,7 +318,7 @@ void ChromeScreenshotGrabber::HandleTakeScreenshotForAllRootWindows() {
     aura::Window* root_window = root_windows[i];
     gfx::Rect rect = root_window->bounds();
 
-    base::Optional<int> display_id;
+    absl::optional<int> display_id;
     if (root_windows.size() > 1)
       display_id = static_cast<int>(i + 1);
     screenshot_grabber_->TakeScreenshot(
@@ -330,8 +334,7 @@ void ChromeScreenshotGrabber::HandleTakePartialScreenshot(
     const gfx::Rect& rect) {
   const ScreenshotArea area =
       ScreenshotArea::CreateForPartialWindow(window, rect);
-  if (!IsScreenshotAllowed(area)) {
-    OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
+  if (!CheckIfScreenshotAllowed(area)) {
     return;
   }
 
@@ -339,14 +342,13 @@ void ChromeScreenshotGrabber::HandleTakePartialScreenshot(
       window, rect,
       base::BindOnce(&ChromeScreenshotGrabber::OnTookScreenshot,
                      weak_factory_.GetWeakPtr(), base::Time::Now(),
-                     base::Optional<int>(), area));
+                     absl::optional<int>(), area));
   base::RecordAction(base::UserMetricsAction("Screenshot_TakePartial"));
 }
 
 void ChromeScreenshotGrabber::HandleTakeWindowScreenshot(aura::Window* window) {
   const ScreenshotArea area = ScreenshotArea::CreateForWindow(window);
-  if (!IsScreenshotAllowed(area)) {
-    OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
+  if (!CheckIfScreenshotAllowed(area)) {
     return;
   }
 
@@ -354,7 +356,7 @@ void ChromeScreenshotGrabber::HandleTakeWindowScreenshot(aura::Window* window) {
       window, gfx::Rect(window->bounds().size()),
       base::BindOnce(&ChromeScreenshotGrabber::OnTookScreenshot,
                      weak_factory_.GetWeakPtr(), base::Time::Now(),
-                     base::Optional<int>(), area));
+                     absl::optional<int>(), area));
   base::RecordAction(base::UserMetricsAction("Screenshot_TakeWindow"));
 }
 
@@ -364,7 +366,7 @@ bool ChromeScreenshotGrabber::CanTakeScreenshot() {
 
 void ChromeScreenshotGrabber::OnTookScreenshot(
     const base::Time& screenshot_time,
-    const base::Optional<int>& display_num,
+    const absl::optional<int>& display_num,
     const ScreenshotArea& area,
     ScreenshotResult result,
     scoped_refptr<base::RefCountedMemory> png_data) {
@@ -374,8 +376,7 @@ void ChromeScreenshotGrabber::OnTookScreenshot(
     return;
   }
 
-  if (!IsScreenshotAllowed(area)) {
-    OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
+  if (!CheckIfScreenshotAllowed(area)) {
     return;
   }
 
@@ -393,22 +394,23 @@ void ChromeScreenshotGrabber::OnTookScreenshot(
       screenshot_directory.AppendASCII(screenshot_basename + ".png");
 
   ShowNotificationCallback screenshot_complete_callback(
-      base::Bind(&ChromeScreenshotGrabber::OnScreenshotCompleted,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ChromeScreenshotGrabber::OnScreenshotCompleted,
+                     weak_factory_.GetWeakPtr()));
 
   PrepareFileAndRunOnBlockingPool(
       screenshot_path,
-      base::Bind(&SaveScreenshot, base::ThreadTaskRunnerHandle::Get(),
-                 screenshot_complete_callback, screenshot_path, png_data));
+      base::BindOnce(&SaveScreenshot, base::ThreadTaskRunnerHandle::Get(),
+                     std::move(screenshot_complete_callback), screenshot_path,
+                     png_data));
 }
 
 void ChromeScreenshotGrabber::PrepareFileAndRunOnBlockingPool(
     const base::FilePath& path,
-    const FileCallback& callback) {
+    FileCallback callback) {
   base::ThreadPool::PostTask(
       FROM_HERE,
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(EnsureLocalDirectoryExists, path, callback));
+      base::BindOnce(EnsureLocalDirectoryExists, path, std::move(callback)));
 }
 
 void ChromeScreenshotGrabber::OnScreenshotCompleted(
@@ -433,7 +435,7 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
     return;
   }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   SYSLOG(INFO) << "Screenshot taken";
 #endif
 
@@ -467,11 +469,11 @@ void ChromeScreenshotGrabber::DecodeScreenshotFileForPreview(
     return;
   }
 
-  // Decode the image in sandboxed process becuase decode image_data comes from
+  // Decode the image in sandboxed process because decode image_data comes from
   // external storage.
   data_decoder::DecodeImageIsolated(
       std::vector<uint8_t>(image_data.begin(), image_data.end()),
-      data_decoder::mojom::ImageCodec::DEFAULT, false,
+      data_decoder::mojom::ImageCodec::kDefault, false,
       data_decoder::kDefaultMaxSizeInBytes, gfx::Size(),
       base::BindOnce(
           &ChromeScreenshotGrabber::OnScreenshotFileForPreviewDecoded,
@@ -525,7 +527,7 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
           kNotificationId,
           l10n_util::GetStringUTF16(GetScreenshotNotificationTitle(result)),
           l10n_util::GetStringUTF16(GetScreenshotNotificationText(result)),
-          /*display_source=*/base::string16() /*system name*/,
+          /*display_source=*/std::u16string() /*system name*/,
           GURL(kNotificationOriginUrl),
           message_center::NotifierId(
               message_center::NotifierType::SYSTEM_COMPONENT,
@@ -542,7 +544,7 @@ void ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted(
       ->Display(NotificationHandler::Type::TRANSIENT, *notification,
                 /*metadata=*/nullptr);
 
-  if (success && ash::features::IsTemporaryHoldingSpaceEnabled()) {
+  if (success) {
     ash::HoldingSpaceKeyedServiceFactory::GetInstance()
         ->GetService(GetProfile())
         ->AddScreenshot(screenshot_path);
@@ -553,17 +555,24 @@ Profile* ChromeScreenshotGrabber::GetProfile() {
   return ProfileManager::GetActiveUserProfile();
 }
 
-bool ChromeScreenshotGrabber::IsScreenshotAllowed(
-    const ScreenshotArea& area) const {
+bool ChromeScreenshotGrabber::CheckIfScreenshotAllowed(
+    const ScreenshotArea& area) {
   // Have three ways to disable screenshots:
   // - local state pref whose value is set from policy;
   // - simple flag which is set/unset when entering/exiting special modes where
   // screenshots should be disabled (pref is problematic because it's kept
   // across reboots, hence if the device crashes it may get stuck with the wrong
   // value).
-  // - because of DLP restricted content present in the area of the screenshot.
-  return screenshots_allowed_ &&
-         !g_browser_process->local_state()->GetBoolean(
-             prefs::kDisableScreenshots) &&
-         !policy::DlpContentManager::Get()->IsScreenshotRestricted(area);
+  // - because of DataLeakPrevention restricted content present in the area of
+  // the screenshot - handled in the second check.
+  if (!screenshots_allowed_ || g_browser_process->local_state()->GetBoolean(
+                                   prefs::kDisableScreenshots)) {
+    OnScreenshotCompleted(ScreenshotResult::DISABLED, base::FilePath());
+    return false;
+  }
+  if (policy::DlpContentManager::Get()->IsScreenshotRestricted(area)) {
+    OnScreenshotCompleted(ScreenshotResult::DISABLED_BY_DLP, base::FilePath());
+    return false;
+  }
+  return true;
 }

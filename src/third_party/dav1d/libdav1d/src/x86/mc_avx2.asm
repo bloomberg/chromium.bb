@@ -94,7 +94,7 @@ pd_0x4000:       dd 0x4000
 pq_0x40000000:   dq 0x40000000
 
 cextern mc_subpel_filters
-cextern mc_warp_filter
+cextern mc_warp_filter2
 cextern resize_filter
 
 %define subpel_filters (mangle(private_prefix %+ _mc_subpel_filters)-8)
@@ -3825,9 +3825,8 @@ cglobal prep_8tap_scaled, 4, 14, 16, 128, tmp, src, ss, w, h, mx, my, dx, dy
     pblendw              m6, m7, 0xaa   ; 67 89
     pmulhrsw             m6, m12
     paddd                m4, m5
-    vpblendd             m0, m1, m6, 0x0f
+    vperm2i128           m0, m1, m6, 0x21 ; 45 67
     mova                 m1, m6
-    vpermq               m0, m0, q1032  ; 45 67
     pmaddwd              m6, m0, m10
     pmaddwd              m7, m1, m11
     paddd                m4, m13
@@ -4184,7 +4183,7 @@ ALIGN function_align
     vpbroadcastd        m14, [pw_8192]
     vpbroadcastd        m15, [pd_32768]
     pxor                m11, m11
-    lea             filterq, [mc_warp_filter]
+    lea             filterq, [mc_warp_filter2]
     lea               tmp1q, [ssq*3+3]
     add                 mxd, 512+(64<<10)
     lea               tmp2d, [alphaq*3]

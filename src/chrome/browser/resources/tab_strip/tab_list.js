@@ -10,10 +10,11 @@ import 'chrome://resources/cr_elements/icons.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {addWebUIListener, removeWebUIListener, WebUIListener} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
+import {CustomElement} from 'chrome://resources/js/custom_element.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
 
-import {CustomElement} from './custom_element.js';
 import {DragManager, DragManagerDelegate} from './drag_manager.js';
 import {isTabElement, TabElement} from './tab.js';
 import {isTabGroupElement, TabGroupElement} from './tab_group.js';
@@ -30,6 +31,25 @@ const SCROLL_PADDING = 32;
 
 /** @type {boolean} */
 let scrollAnimationEnabled = true;
+
+/** @const {number} */
+const TOUCH_CONTEXT_MENU_OFFSET_X = 8;
+
+/** @const {number} */
+const TOUCH_CONTEXT_MENU_OFFSET_Y = -40;
+
+/**
+ * Context menu should position below the element for touch.
+ * @param {!Element} element
+ * @return {!Object<{x: number, y: number}>}
+ */
+function getContextMenuPosition(element) {
+  const rect = element.getBoundingClientRect();
+  return {
+    x: rect.left + TOUCH_CONTEXT_MENU_OFFSET_X,
+    y: rect.bottom + TOUCH_CONTEXT_MENU_OFFSET_Y
+  };
+}
 
 /** @param {boolean} enabled */
 export function setScrollAnimationEnabledForTesting(enabled) {
@@ -169,6 +189,12 @@ export class TabListElement extends CustomElement {
     this.focusOutlineManager_ = FocusOutlineManager.forDocument(document);
 
     /**
+     * Map of tab IDs to whether or not the tab's thumbnail should be tracked.
+     * @private {!Map<number, boolean>}
+     */
+    this.thumbnailTracker_ = new Map();
+
+    /**
      * An intersection observer is needed to observe which TabElements are
      * currently in view or close to being in view, which will help determine
      * which thumbnails need to be tracked to stay fresh and which can be
@@ -177,8 +203,13 @@ export class TabListElement extends CustomElement {
      */
     this.intersectionObserver_ = new IntersectionObserver(entries => {
       for (const entry of entries) {
-        this.tabsApi_.setThumbnailTracked(
-            entry.target.tab.id, entry.isIntersecting);
+        this.thumbnailTracker_.set(entry.target.tab.id, entry.isIntersecting);
+      }
+
+      if (this.scrollingTimeoutId_ === -1) {
+        // If there is no need to wait for scroll to end, immediately process
+        // and request thumbnails.
+        this.flushThumbnailTracker_();
       }
     }, {
       root: this,
@@ -192,6 +223,15 @@ export class TabListElement extends CustomElement {
 
     /** @private {number|undefined} Timestamp in ms */
     this.activatingTabIdTimestamp_;
+
+    /** @private @const {!EventTracker} */
+    this.eventTracker_ = new EventTracker();
+
+    /** @private {!TabElement|null} */
+    this.lastTargetedTab_;
+
+    /** @private {!Object<{x: number, y: number}>|undefined} */
+    this.lastTouchPoint_;
 
     /** @private {!Element} */
     this.newTabButtonElement_ =
@@ -216,8 +256,16 @@ export class TabListElement extends CustomElement {
     /** @private {!Function} */
     this.windowBlurListener_ = () => this.onWindowBlur_();
 
+    /**
+     * Timeout that is created at every scroll event and is either canceled at
+     * each subsequent scroll event or resolves after a few milliseconds after
+     * the last scroll event.
+     * @private {number}
+     */
+    this.scrollingTimeoutId_ = -1;
+
     /** @private {!Function} */
-    this.contextMenuListener_ = e => this.onContextMenu_(e);
+    this.scrollListener_ = (e) => this.onScroll_(e);
 
     this.addWebUIListener_(
         'layout-changed', layout => this.applyCSSDictionary_(layout));
@@ -230,12 +278,30 @@ export class TabListElement extends CustomElement {
     this.addWebUIListener_(
         'tab-thumbnail-updated', this.tabThumbnailUpdated_.bind(this));
 
-    document.addEventListener('contextmenu', this.contextMenuListener_);
-    document.addEventListener(
-        'visibilitychange', this.documentVisibilityChangeListener_);
+    this.addWebUIListener_('long-press', () => this.handleLongPress_());
+
+    this.addWebUIListener_(
+        'context-menu-closed', () => this.clearLastTargetedTab_());
+
+    this.eventTracker_.add(
+        document, 'contextmenu', e => this.onContextMenu_(e));
+    this.eventTracker_.add(
+        document, 'pointerup',
+        e => this.onPointerUp_(/** @type {!PointerEvent} */ (e)));
+    this.eventTracker_.add(
+        document, 'visibilitychange', () => this.onDocumentVisibilityChange_());
+    this.eventTracker_.add(window, 'blur', () => this.onWindowBlur_());
+    this.eventTracker_.add(this, 'scroll', e => this.onScroll_(e));
+    this.eventTracker_.add(
+        document, 'touchstart', (e) => this.onTouchStart_(e));
+    // Touchend events happen when a touch gesture finishes normally (ie not due
+    // to the context menu appearing or drag starting). Clear the last targeted
+    // tab on a drag end to ensure `lastTargetedTab_` is cleared for the cases
+    // that do not end with a dragstart or the context menu appearing.
+    this.eventTracker_.add(
+        document, 'touchend', () => this.clearLastTargetedTab_());
     this.addWebUIListener_(
         'received-keyboard-focus', () => this.onReceivedKeyboardFocus_());
-    window.addEventListener('blur', this.windowBlurListener_);
 
     this.newTabButtonElement_.addEventListener('click', () => {
       this.tabsApi_.createNewTab();
@@ -243,6 +309,11 @@ export class TabListElement extends CustomElement {
 
     const dragManager = new DragManager(this);
     dragManager.startObserving();
+
+    if (!loadTimeData.getBoolean('newTabButtonEnabled')) {
+      this.style.setProperty(LayoutVariable.NEW_TAB_BUTTON_MARGIN, '0');
+      this.style.setProperty(LayoutVariable.NEW_TAB_BUTTON_WIDTH, '0');
+    }
   }
 
   /**
@@ -316,6 +387,12 @@ export class TabListElement extends CustomElement {
     }
   }
 
+  /** @private */
+  clearScrollTimeout_() {
+    clearTimeout(this.scrollingTimeoutId_);
+    this.scrollingTimeoutId_ = -1;
+  }
+
   connectedCallback() {
     this.tabStripEmbedderProxy_.getLayout().then(
         layout => this.applyCSSDictionary_(layout));
@@ -332,6 +409,8 @@ export class TabListElement extends CustomElement {
       this.tabStripEmbedderProxy_.reportTabCreationDuration(
           tabs.length, Date.now() - createTabsStartTimestamp);
 
+      this.addWebUIListener_(
+          'show-context-menu', () => this.onShowContextMenu_());
       this.addWebUIListener_('tab-created', tab => this.onTabCreated_(tab));
       this.addWebUIListener_(
           'tab-moved',
@@ -362,11 +441,8 @@ export class TabListElement extends CustomElement {
   }
 
   disconnectedCallback() {
-    document.removeEventListener('contextmenu', this.contextMenuListener_);
-    document.removeEventListener(
-        'visibilitychange', this.documentVisibilityChangeListener_);
-    window.removeEventListener('blur', this.windowBlurListener_);
     this.webUIListeners_.forEach(removeWebUIListener);
+    this.eventTracker_.removeAll();
   }
 
   /**
@@ -444,14 +520,34 @@ export class TabListElement extends CustomElement {
     return parseInt(this.style.getPropertyValue(variable), 10);
   }
 
+  /** @private */
+  handleLongPress_() {
+    if (this.lastTargetedTab_) {
+      this.lastTargetedTab_.setTouchPressed(true);
+    }
+  }
+
   /**
    * @param {!Event} event
    * @private
    */
   onContextMenu_(event) {
+    // Prevent the default context menu from triggering.
     event.preventDefault();
-    this.tabStripEmbedderProxy_.showBackgroundContextMenu(
-        event.clientX, event.clientY);
+  }
+
+  /**
+   * @param {!PointerEvent} event
+   * @private
+   */
+  onPointerUp_(event) {
+    event.stopPropagation();
+    if (event.pointerType !== 'touch' && event.button === 2) {
+      // If processing an uncaught right click event show the background context
+      // menu.
+      this.tabStripEmbedderProxy_.showBackgroundContextMenu(
+          event.clientX, event.clientY);
+    }
   }
 
   /** @private */
@@ -538,6 +634,23 @@ export class TabListElement extends CustomElement {
       return;
     }
     tabElement.resetSwipe();
+  }
+
+  /** @private */
+  onShowContextMenu_() {
+    // If we do not have a touch point don't show the context menu.
+    if (!this.lastTouchPoint_) {
+      return;
+    }
+
+    if (this.lastTargetedTab_) {
+      const position = getContextMenuPosition(this.lastTargetedTab_);
+      this.tabStripEmbedderProxy_.showTabContextMenu(
+          this.lastTargetedTab_.tab.id, position.x, position.y);
+    } else {
+      this.tabStripEmbedderProxy_.showBackgroundContextMenu(
+          this.lastTouchPoint_.clientX, this.lastTouchPoint_.clientY);
+    }
   }
 
   /**
@@ -686,6 +799,40 @@ export class TabListElement extends CustomElement {
   }
 
   /**
+   * @param {!Event} e
+   * @private
+   */
+  onScroll_(e) {
+    this.clearScrollTimeout_();
+    this.scrollingTimeoutId_ = setTimeout(() => {
+      this.flushThumbnailTracker_();
+      this.clearScrollTimeout_();
+    }, 100);
+  }
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onTouchStart_(event) {
+    const composedPath = /** @type {!Array<!Element>} */ (event.composedPath());
+    const dragOverTabElement =
+        /** @type {?TabElement} */ (composedPath.find(isTabElement));
+    this.lastTargetedTab_ = dragOverTabElement;
+    const touch = event.changedTouches[0];
+    this.lastTouchPoint_ = {clientX: touch.clientX, clientY: touch.clientY};
+  }
+
+  /** @private */
+  clearLastTargetedTab_() {
+    if (this.lastTargetedTab_) {
+      this.lastTargetedTab_.setTouchPressed(false);
+    }
+    this.lastTargetedTab_ = null;
+    this.lastTouchPoint_ = undefined;
+  }
+
+  /**
    * @param {!TabElement} element
    * @param {number} index
    * @param {boolean} pinned
@@ -739,6 +886,14 @@ export class TabListElement extends CustomElement {
     animateElementMoved(
         element, previousDomIndex,
         Array.from(this.unpinnedTabsElement_.children).indexOf(element));
+  }
+
+  /** @private */
+  flushThumbnailTracker_() {
+    this.thumbnailTracker_.forEach((shouldTrack, tabId) => {
+      this.tabsApi_.setThumbnailTracked(tabId, shouldTrack);
+    });
+    this.thumbnailTracker_.clear();
   }
 
   /** @private */
@@ -796,6 +951,11 @@ export class TabListElement extends CustomElement {
     }
 
     this.animateScrollPosition_(scrollBy);
+  }
+
+  /** @return {boolean} */
+  shouldPreventDrag() {
+    return this.$all('tabstrip-tab').length === 1;
   }
 
   /**

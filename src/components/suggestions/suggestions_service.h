@@ -5,14 +5,12 @@
 #ifndef COMPONENTS_SUGGESTIONS_SUGGESTIONS_SERVICE_H_
 #define COMPONENTS_SUGGESTIONS_SUGGESTIONS_SERVICE_H_
 
-#include <memory>
-
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/suggestions/proto/suggestions.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace suggestions {
@@ -24,7 +22,7 @@ class SuggestionsService : public KeyedService {
       base::RepeatingCallback<void(const SuggestionsProfile&)>;
 
   using ResponseCallbackList =
-      base::CallbackList<void(const SuggestionsProfile&)>;
+      base::RepeatingCallbackList<void(const SuggestionsProfile&)>;
 
   // Initiates a network request for suggestions if sync state allows and there
   // is no pending request. Returns true iff sync state allowed for a request,
@@ -32,11 +30,11 @@ class SuggestionsService : public KeyedService {
   virtual bool FetchSuggestionsData() = 0;
 
   // Returns the current set of suggestions from the cache.
-  virtual base::Optional<SuggestionsProfile> GetSuggestionsDataFromCache()
+  virtual absl::optional<SuggestionsProfile> GetSuggestionsDataFromCache()
       const = 0;
 
   // Adds a callback that is called when the suggestions are updated.
-  virtual std::unique_ptr<ResponseCallbackList::Subscription> AddCallback(
+  virtual base::CallbackListSubscription AddCallback(
       const ResponseCallback& callback) WARN_UNUSED_RESULT = 0;
 
   // Adds a URL to the blocklist cache, returning true on success or false on

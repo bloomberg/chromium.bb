@@ -45,7 +45,6 @@
 
 #include "common/language.h"
 #include "common/module.h"
-#include "common/dwarf/bytereader.h"
 #include "common/dwarf/dwarf2diehandler.h"
 #include "common/dwarf/dwarf2reader.h"
 #include "common/scoped_ptr.h"
@@ -131,12 +130,11 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
     virtual ~RangesHandler() { }
 
     // Called when finishing a function to populate the function's ranges.
-    // The ranges' entries are read starting from offset in the .debug_ranges
-    // section, base_address holds the base PC the range list values are
-    // offsets off. Return false if the rangelist falls out of the
-    // .debug_ranges section.
-    virtual bool ReadRanges(uint64_t offset, Module::Address base_address,
-                            vector<Module::Range>* ranges) = 0;
+    // The entries are read according to the form and data.
+    virtual bool ReadRanges(
+        enum dwarf2reader::DwarfForm form, uint64_t data,
+        dwarf2reader::RangeListReader::CURangesInfo* cu_info,
+        vector<Module::Range>* ranges) = 0;
   };
 
   // An abstract base class for handlers that handle DWARF line data

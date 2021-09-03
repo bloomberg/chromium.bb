@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LIST_ITEM_ORDINAL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_LIST_ITEM_ORDINAL_H_
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 
@@ -34,7 +34,7 @@ class CORE_EXPORT ListItemOrdinal {
 
   // Get/set/clear the explicit value; i.e., the 'value' attribute of an <li>
   // element.
-  base::Optional<int> ExplicitValue() const;
+  absl::optional<int> ExplicitValue() const;
   void SetExplicitValue(int, const Node&);
   void ClearExplicitValue(const Node&);
 
@@ -51,6 +51,8 @@ class CORE_EXPORT ListItemOrdinal {
 
   // Invalidate items that are affected by an insertion or a removal.
   static void ItemInsertedOrRemoved(const LayoutObject*);
+  // Invalidate items that are affected by counter style update.
+  static void ItemCounterStyleUpdated(const LayoutObject&);
 
  private:
   enum ValueType { kNeedsUpdate, kUpdated, kExplicit };
@@ -82,6 +84,8 @@ class CORE_EXPORT ListItemOrdinal {
   static void InvalidateOrdinalsAfter(bool is_reversed,
                                       const Node* list_node,
                                       const Node* item_node);
+  enum UpdateType { kInsertedOrRemoved, kCounterStyle };
+  static void ItemUpdated(const LayoutObject*, UpdateType type);
 
   mutable int value_ = 0;
   mutable unsigned type_ : 2;  // ValueType

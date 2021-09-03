@@ -9,6 +9,7 @@ ch-downlink
 ch-dpr
 ch-ect
 ch-lang
+ch-prefers-color-scheme
 ch-rtt
 ch-ua
 ch-ua-arch
@@ -27,6 +28,7 @@ encrypted-media
 fullscreen
 geolocation
 gyroscope
+hid
 magnetometer
 microphone
 midi
@@ -34,6 +36,7 @@ payment
 picture-in-picture
 publickey-credentials-get
 screen-wake-lock
+serial
 sync-xhr
 usb
 xr-spatial-tracking

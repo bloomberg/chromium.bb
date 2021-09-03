@@ -7,7 +7,10 @@
 
 #include <string>
 
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/webui/read_later/read_later.mojom.h"
+#include "components/reading_list/core/reading_list_model.h"
+#include "components/reading_list/core/reading_list_model_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -17,35 +20,55 @@ namespace base {
 class Clock;
 }
 
-class Browser;
+namespace content {
+class WebContents;
+class WebUI;
+}
+
 class GURL;
 class ReadLaterUI;
 class ReadingListEntry;
-class ReadingListModel;
 
-class ReadLaterPageHandler : public read_later::mojom::PageHandler {
+class ReadLaterPageHandler : public read_later::mojom::PageHandler,
+                             public ReadingListModelObserver {
  public:
   ReadLaterPageHandler(
       mojo::PendingReceiver<read_later::mojom::PageHandler> receiver,
       mojo::PendingRemote<read_later::mojom::Page> page,
-      ReadLaterUI* read_later_ui);
+      ReadLaterUI* read_later_ui,
+      content::WebUI* web_ui);
   ReadLaterPageHandler(const ReadLaterPageHandler&) = delete;
   ReadLaterPageHandler& operator=(const ReadLaterPageHandler&) = delete;
   ~ReadLaterPageHandler() override;
 
   // read_later::mojom::PageHandler:
   void GetReadLaterEntries(GetReadLaterEntriesCallback callback) override;
-  void OpenSavedEntry(const GURL& url) override;
+  void OpenURL(const GURL& url, bool mark_as_read) override;
   void UpdateReadStatus(const GURL& url, bool read) override;
   void RemoveEntry(const GURL& url) override;
   void ShowUI() override;
   void CloseUI() override;
+
+  // ReadingListModelObserver:
+  void ReadingListModelLoaded(const ReadingListModel* model) override {}
+  void ReadingListModelCompletedBatchUpdates(
+      const ReadingListModel* model) override;
+  void ReadingListModelBeingDeleted(const ReadingListModel* model) override;
+  void ReadingListDidApplyChanges(ReadingListModel* model) override;
+
+  void set_web_contents_for_testing(content::WebContents* web_contents) {
+    web_contents_ = web_contents;
+  }
 
  private:
   // Gets the reading list entry data used for displaying to the user and
   // triggering actions.
   read_later::mojom::ReadLaterEntryPtr GetEntryData(
       const ReadingListEntry* entry);
+
+  // Returns the lists for the read/unread entries.
+  read_later::mojom::ReadLaterEntriesByStatusPtr
+  CreateReadLaterEntriesByStatusData();
 
   // Converts |last_update_time| from microseconds since epoch in Unix-like
   // system (Jan 1, 1970), since this is how ReadingListEntry's |update_time| is
@@ -54,14 +77,16 @@ class ReadLaterPageHandler : public read_later::mojom::PageHandler {
 
   mojo::Receiver<read_later::mojom::PageHandler> receiver_;
   mojo::Remote<read_later::mojom::Page> page_;
-  Browser* const browser_;
   // ReadLaterPageHandler is owned by |read_later_ui_| and so we expect
   // |read_later_ui_| to remain valid for the lifetime of |this|.
   ReadLaterUI* const read_later_ui_;
+  content::WebContents* web_contents_;
 
   base::Clock* clock_;
 
   ReadingListModel* reading_list_model_ = nullptr;
+  base::ScopedObservation<ReadingListModel, ReadingListModelObserver>
+      reading_list_model_scoped_observation_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_READ_LATER_READ_LATER_PAGE_HANDLER_H_

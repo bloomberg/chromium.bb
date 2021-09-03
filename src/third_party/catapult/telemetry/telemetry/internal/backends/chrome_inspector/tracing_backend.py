@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import base64
 import json
 import logging
@@ -311,6 +312,7 @@ class TracingBackend(object):
       since the last time any data is received.
       TracingUnrecoverableException: If there is a websocket error.
     """
+    before_time = time.time()
     start_time = time.time()
     self._trace_data_builder = trace_data_builder
     try:
@@ -357,7 +359,8 @@ class TracingBackend(object):
               'the timeout amount.' % elapsed_time)
     finally:
       self._trace_data_builder = None
-    logging.info('Successfully collected all trace data.')
+    logging.info('Successfully collected all trace data after %f seconds.'
+                 % (time.time() - before_time))
 
   def _NotificationHandler(self, res):
     if res.get('method') == 'Tracing.dataCollected':

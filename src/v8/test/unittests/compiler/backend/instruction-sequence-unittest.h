@@ -42,7 +42,7 @@ class InstructionSequenceTest : public TestWithIsolateAndZone {
 
   enum TestOperandType {
     kInvalid,
-    kSameAsFirst,
+    kSameAsInput,
     kRegister,
     kFixedRegister,
     kSlot,
@@ -51,7 +51,8 @@ class InstructionSequenceTest : public TestWithIsolateAndZone {
     kNone,
     kConstant,
     kUnique,
-    kUniqueRegister
+    kUniqueRegister,
+    kDeoptArg
   };
 
   struct TestOperand {
@@ -72,7 +73,7 @@ class InstructionSequenceTest : public TestWithIsolateAndZone {
     MachineRepresentation rep_;
   };
 
-  static TestOperand Same() { return TestOperand(kSameAsFirst); }
+  static TestOperand Same() { return TestOperand(kSameAsInput); }
 
   static TestOperand Reg(VReg vreg, int index = kNoValue) {
     TestOperandType type = (index == kNoValue) ? kRegister : kFixedRegister;
@@ -102,6 +103,10 @@ class InstructionSequenceTest : public TestWithIsolateAndZone {
   static TestOperand Const(int index) {
     CHECK_NE(kNoValue, index);
     return TestOperand(kConstant, index);
+  }
+
+  static TestOperand DeoptArg(VReg vreg) {
+    return TestOperand(kDeoptArg, vreg);
   }
 
   static TestOperand Use(VReg vreg) { return TestOperand(kNone, vreg); }

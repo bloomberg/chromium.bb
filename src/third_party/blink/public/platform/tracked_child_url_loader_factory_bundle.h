@@ -36,8 +36,6 @@ class BLINK_PLATFORM_EXPORT TrackedChildPendingURLLoaderFactoryBundle
       SchemeMap pending_scheme_specific_factories,
       OriginMap pending_isolated_world_factories,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          direct_network_factory_remote,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>
           pending_prefetch_loader_factory,
       std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle,
       bool bypass_redirect_checks);
@@ -46,6 +44,8 @@ class BLINK_PLATFORM_EXPORT TrackedChildPendingURLLoaderFactoryBundle
   std::unique_ptr<HostPtrAndTaskRunner>& main_thread_host_bundle() {
     return main_thread_host_bundle_;
   }
+
+  bool IsTrackedChildPendingURLLoaderFactoryBundle() const override;
 
  protected:
   // ChildPendingURLLoaderFactoryBundle overrides.
@@ -101,7 +101,7 @@ class BLINK_PLATFORM_EXPORT TrackedChildURLLoaderFactoryBundle
 
   // |WeakPtr| and |TaskRunner| of the host bundle. Can be copied and passed
   // across sequences.
-  std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle_ = nullptr;
+  std::unique_ptr<HostPtrAndTaskRunner> main_thread_host_bundle_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackedChildURLLoaderFactoryBundle);
 };
@@ -132,8 +132,6 @@ class BLINK_PLATFORM_EXPORT HostChildURLLoaderFactoryBundle
   bool IsHostChildURLLoaderFactoryBundle() const override;
 
   // Update this bundle with |info|, and post cloned |info| to tracked bundles.
-  // Note: We don't need to worry about |direct_network_factory_| since it's
-  // only used by |RendererBlinkPlatformImpl| and doesn't rely on this codepath.
   void UpdateThisAndAllClones(
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle> pending_factories);
 
@@ -161,7 +159,7 @@ class BLINK_PLATFORM_EXPORT HostChildURLLoaderFactoryBundle
       std::unique_ptr<network::PendingSharedURLLoaderFactory> update_info);
 
   // Contains |WeakPtr| and |TaskRunner| to tracked bundles.
-  std::unique_ptr<ObserverList> observer_list_ = nullptr;
+  std::unique_ptr<ObserverList> observer_list_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

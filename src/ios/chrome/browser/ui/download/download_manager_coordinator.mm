@@ -30,7 +30,6 @@
 #include "ios/chrome/browser/overlays/public/overlay_callback_manager.h"
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
-#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/download/activities/open_downloads_folder_activity.h"
@@ -173,10 +172,6 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
   UIActivityViewController* _openInController;
   DownloadManagerMediator _mediator;
   StoreKitCoordinator* _storeKitCoordinator;
-  // Coordinator for displaying the alert informing the user that no application
-  // on the device can open the file. The alert offers the user to install
-  // Google Drive app.
-  AlertCoordinator* _installDriveAlertCoordinator;
   UnopenedDownloadsTracker _unopenedDownloads;
 }
 @end
@@ -229,8 +224,6 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 
   [_storeKitCoordinator stop];
   _storeKitCoordinator = nil;
-  [_installDriveAlertCoordinator stop];
-  _installDriveAlertCoordinator = nil;
 }
 
 - (UIViewController*)viewController {
@@ -402,11 +395,22 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
 // Cancels the download task and stops the coordinator.
 - (void)cancelDownload {
   // |stop| nulls-our _downloadTask and |Cancel| destroys the task. Call |stop|
-  // first to perform all coordinator cleanups, but retain |_downloadTask|
+  // first to perform all coordinator cleanups, but copy |_downloadTask|
   // pointer to destroy the task.
   web::DownloadTask* downloadTask = _downloadTask;
   [self stop];
-  downloadTask->Cancel();
+
+  // The pointer may be null if -stop was called before -cancelDownload.
+  // This can happen during shutdown because -stop is called when the UI
+  // is destroyed, but whether or not -cancelDownload is called depends
+  // on whether the object is deallocated or not when the block created
+  // in -downloadManagerViewControllerDidClose: is executed. Due to the
+  // autorelease pool, it is not possible to control how the order of
+  // those two events. Thus, this code needs to support a null value at
+  // this point.
+  if (downloadTask) {
+    downloadTask->Cancel();
+  }
 }
 
 // Called when Google Drive app is installed after starting StoreKitCoordinator.
@@ -415,38 +419,6 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver,
       "Download.IOSDownloadFileUIGoogleDrive",
       DownloadFileUIGoogleDrive::GoogleDriveInstalledAfterDisplay,
       DownloadFileUIGoogleDrive::Count);
-}
-
-// Called when Open In... menu was not presented. This method shows the alert
-// which offers the user to install Google Drive app.
-- (void)didFailOpenInMenuPresentation {
-  NSString* title =
-      l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_UNABLE_TO_OPEN_FILE);
-  NSString* message =
-      l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_NO_APP_MESSAGE);
-
-  _installDriveAlertCoordinator = [[AlertCoordinator alloc]
-      initWithBaseViewController:self.baseViewController
-                         browser:self.browser
-                           title:title
-                         message:message];
-
-  NSString* googleDriveButtonTitle =
-      l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_UPLOAD_TO_GOOGLE_DRIVE);
-  __weak DownloadManagerCoordinator* weakSelf = self;
-  [_installDriveAlertCoordinator
-      addItemWithTitle:googleDriveButtonTitle
-                action:^{
-                  [weakSelf presentStoreKitForGoogleDriveApp];
-                }
-                 style:UIAlertActionStyleDefault];
-
-  [_installDriveAlertCoordinator
-      addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                action:nil
-                 style:UIAlertActionStyleCancel];
-
-  [_installDriveAlertCoordinator start];
 }
 
 // Presents StoreKit dialog for Google Drive application.

@@ -10,8 +10,9 @@ namespace blink {
 
 AXVirtualObject::AXVirtualObject(AXObjectCacheImpl& axObjectCache,
                                  AccessibleNode* accessible_node)
-    : AXObject(axObjectCache), accessible_node_(accessible_node) {
-}
+    : AXObject(axObjectCache),
+      accessible_node_(accessible_node),
+      aria_role_(ax::mojom::blink::Role::kUnknown) {}
 
 AXVirtualObject::~AXVirtualObject() = default;
 
@@ -21,26 +22,43 @@ void AXVirtualObject::Detach() {
   accessible_node_ = nullptr;
 }
 
+Document* AXVirtualObject::GetDocument() const {
+  return GetAccessibleNode() ? GetAccessibleNode()->GetDocument() : nullptr;
+}
+
 bool AXVirtualObject::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignoredReasons) const {
   return AccessibilityIsIgnoredByDefault(ignoredReasons);
 }
 
 void AXVirtualObject::AddChildren() {
+#if DCHECK_IS_ON()
+  DCHECK(!IsDetached());
+  DCHECK(!is_adding_children_) << " Reentering method on " << GetNode();
+  base::AutoReset<bool> reentrancy_protector(&is_adding_children_, true);
+  DCHECK_EQ(children_.size(), 0U)
+      << "Parent still has " << children_.size() << " children before adding:"
+      << "\nParent is " << ToString(true, true) << "\nFirst child is "
+      << children_[0]->ToString(true, true);
+#endif
   if (!accessible_node_)
     return;
 
+  DCHECK(children_dirty_);
+  children_dirty_ = false;
+
   for (const auto& child : accessible_node_->GetChildren()) {
-    AXObject* ax_child = AXObjectCache().GetOrCreate(child);
+    AXObject* ax_child = AXObjectCache().GetOrCreate(child, this);
     if (!ax_child)
       continue;
+    DCHECK(!ax_child->IsDetached());
+    DCHECK(ax_child->AccessibilityIsIncludedInTree());
 
     children_.push_back(ax_child);
-    ax_child->SetParent(this);
   }
 }
 
-void AXVirtualObject::ChildrenChanged() {
+void AXVirtualObject::ChildrenChangedWithCleanLayout() {
   ClearChildren();
   AXObjectCache().PostNotification(this, ax::mojom::Event::kChildrenChanged);
 }
@@ -58,7 +76,7 @@ bool AXVirtualObject::HasAOMPropertyOrARIAAttribute(AOMBooleanProperty property,
   if (!accessible_node_)
     return false;
 
-  base::Optional<bool> property_value = accessible_node_->GetProperty(property);
+  absl::optional<bool> property_value = accessible_node_->GetProperty(property);
   result = property_value.value_or(false);
   return property_value.has_value();
 }
@@ -80,6 +98,24 @@ String AXVirtualObject::TextAlternative(bool recursive,
   return AriaTextAlternative(recursive, in_aria_labelled_by_traversal, visited,
                              name_from, related_objects, name_sources,
                              &found_text_alternative);
+}
+
+ax::mojom::blink::Role AXVirtualObject::DetermineAccessibilityRole() {
+  aria_role_ = DetermineAriaRoleAttribute();
+
+  if (aria_role_ != ax::mojom::blink::Role::kUnknown)
+    return aria_role_;
+
+  return NativeRoleIgnoringAria();
+}
+
+ax::mojom::blink::Role AXVirtualObject::AriaRoleAttribute() const {
+  return aria_role_;
+}
+
+ax::mojom::blink::Role AXVirtualObject::NativeRoleIgnoringAria() const {
+  // If no role was assigned, will fall back to role="generic".
+  return ax::mojom::blink::Role::kGenericContainer;
 }
 
 void AXVirtualObject::Trace(Visitor* visitor) const {

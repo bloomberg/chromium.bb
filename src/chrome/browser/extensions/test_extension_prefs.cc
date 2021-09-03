@@ -41,6 +41,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
+using extensions::mojom::ManifestLocation;
 
 namespace extensions {
 
@@ -115,7 +116,7 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
     run_loop.Run();
   }
 
-  extension_pref_value_map_.reset(new ExtensionPrefValueMap);
+  extension_pref_value_map_ = std::make_unique<ExtensionPrefValueMap>();
   sync_preferences::PrefServiceMockFactory factory;
   factory.SetUserPrefsFile(preferences_file_, task_runner_.get());
   factory.set_extension_prefs(
@@ -138,45 +139,42 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtension(
     const std::string& name) {
-  return AddExtensionWithLocation(name, Manifest::INTERNAL);
+  return AddExtensionWithLocation(name, ManifestLocation::kInternal);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddApp(const std::string& name) {
   base::DictionaryValue dictionary;
-  dictionary.SetString(manifest_keys::kName, name);
-  dictionary.SetString(manifest_keys::kVersion, "0.1");
+  AddDefaultManifestKeys(name, &dictionary);
   dictionary.SetString(manifest_keys::kApp, "true");
   dictionary.SetString(manifest_keys::kLaunchWebURL, "http://example.com");
-  return AddExtensionWithManifest(dictionary, Manifest::INTERNAL);
-
+  return AddExtensionWithManifest(dictionary, ManifestLocation::kInternal);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithLocation(
     const std::string& name,
-    Manifest::Location location) {
+    ManifestLocation location) {
   base::DictionaryValue dictionary;
-  dictionary.SetString(manifest_keys::kName, name);
-  dictionary.SetString(manifest_keys::kVersion, "0.1");
-  dictionary.SetInteger(manifest_keys::kManifestVersion, 2);
+  AddDefaultManifestKeys(name, &dictionary);
   return AddExtensionWithManifest(dictionary, location);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifest(
-    const base::DictionaryValue& manifest, Manifest::Location location) {
+    const base::DictionaryValue& manifest,
+    ManifestLocation location) {
   return AddExtensionWithManifestAndFlags(manifest, location,
                                           Extension::NO_FLAGS);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
     const base::DictionaryValue& manifest,
-    Manifest::Location location,
+    ManifestLocation location,
     int extra_flags) {
   std::string name;
   EXPECT_TRUE(manifest.GetString(manifest_keys::kName, &name));
   base::FilePath path =  extensions_dir_.AppendASCII(name);
   std::string errors;
-  scoped_refptr<Extension> extension = Extension::Create(
-      path, location, manifest, extra_flags, &errors);
+  scoped_refptr<Extension> extension =
+      Extension::Create(path, location, manifest, extra_flags, &errors);
   EXPECT_TRUE(extension.get()) << errors;
   if (!extension.get())
     return nullptr;
@@ -216,6 +214,14 @@ void TestExtensionPrefs::set_extensions_disabled(bool extensions_disabled) {
 ChromeAppSorting* TestExtensionPrefs::app_sorting() {
   return static_cast<ChromeAppSorting*>(
       ExtensionSystem::Get(&profile_)->app_sorting());
+}
+
+void TestExtensionPrefs::AddDefaultManifestKeys(const std::string& name,
+                                                base::DictionaryValue* dict) {
+  DCHECK(dict);
+  dict->SetString(manifest_keys::kName, name);
+  dict->SetString(manifest_keys::kVersion, "0.1");
+  dict->SetInteger(manifest_keys::kManifestVersion, 2);
 }
 
 }  // namespace extensions

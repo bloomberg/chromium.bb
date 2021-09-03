@@ -3,15 +3,17 @@
 // found in the LICENSE file.
 
 import {assert} from 'chai';
-import {$$, click, getBrowserAndPages, goToResource, step, waitForElementsWithTextContent, waitForElementWithTextContent, waitForFunction} from '../../shared/helper.js';
+import {$$, assertNotNull, click, getBrowserAndPages, goToResource, step, waitFor, waitForElementsWithTextContent, waitForElementWithTextContent, waitForFunction} from '../../shared/helper.js';
 import {describe, it} from '../../shared/mocha-extensions.js';
-import {changeViewViaDropdown, findSearchResult, getDataGridRows, navigateToMemoryTab, setSearchFilter, takeHeapSnapshot, waitForNonEmptyHeapSnapshotData, waitForRetainerChain, waitForSearchResultNumber, waitUntilRetainerChainSatisfies} from '../helpers/memory-helpers.js';
+import {changeAllocationSampleViewViaDropdown, changeViewViaDropdown, findSearchResult, getDataGridRows, navigateToMemoryTab, setSearchFilter, takeAllocationProfile, takeHeapSnapshot, waitForNonEmptyHeapSnapshotData, waitForRetainerChain, waitForSearchResultNumber, waitUntilRetainerChainSatisfies} from '../helpers/memory-helpers.js';
 
 describe('The Memory Panel', async function() {
   // These tests render large chunks of data into DevTools and filter/search
   // through it. On bots with less CPU power, these can fail because the
   // rendering takes a long time, so we allow a larger timeout.
-  this.timeout(35000);
+  if (this.timeout() !== 0) {
+    this.timeout(35000);
+  }
 
   it('Loads content', async () => {
     await goToResource('memory/default.html');
@@ -38,7 +40,7 @@ describe('The Memory Panel', async function() {
     await waitForSearchResultNumber(4);
     await findSearchResult(async p => {
       const el = await p.$(':scope > td > div > .object-value-function');
-      return !!el && await el.evaluate(el => el.textContent === 'leaking()');
+      return el !== null && await el.evaluate(el => el.textContent === 'leaking()');
     });
     await waitForRetainerChain([
       'Detached V8EventListener',
@@ -52,7 +54,7 @@ describe('The Memory Panel', async function() {
   });
 
   // Flaky test
-  it.skip('[crbug.com/1134602] Correctly retains the path for event listeners', async () => {
+  it.skipOnPlatforms(['mac'], '[crbug.com/1134602] Correctly retains the path for event listeners', async () => {
     await goToResource('memory/event-listeners.html');
     await step('taking a heap snapshot', async () => {
       await navigateToMemoryTab();
@@ -67,7 +69,7 @@ describe('The Memory Panel', async function() {
     await step('selecting the search result that we need', async () => {
       await findSearchResult(async p => {
         const el = await p.$(':scope > td > div > .object-value-function');
-        return !!el && await el.evaluate(el => el.textContent === 'myEventListener()');
+        return el !== null && await el.evaluate(el => el.textContent === 'myEventListener()');
       });
     });
 
@@ -122,7 +124,7 @@ describe('The Memory Panel', async function() {
     await waitForSearchResultNumber(8);
     await findSearchResult(async p => {
       const el = await p.$(':scope > td > div > .object-value-object');
-      return !!el && await el.evaluate(el => el.textContent === 'Retainer');
+      return el !== null && await el.evaluate(el => el.textContent === 'Retainer');
     });
     // The following line checks two things: That the property 'aUniqueName'
     // in the iframe is retaining the Retainer class object, and that the
@@ -160,8 +162,6 @@ describe('The Memory Panel', async function() {
       assert.fail('Could not find data-grid row with "shared in leaking()" text.');
     }
 
-    // TODO(jacktfranklin): Consider some helpers to make asserting on contents
-    // of the data-grid in the heap snapshot UI easier.
     const textOfEl = await sharedInLeakingElementRow.evaluate(e => e.textContent || '');
     // Double check we got the right element to avoid a confusing text failure
     // later down the line.
@@ -187,7 +187,7 @@ describe('The Memory Panel', async function() {
     if (!nextRow) {
       assert.fail('Could not find row below "shared in leaking()" row');
     }
-    const nextNextRow = await nextRow!.evaluateHandle(e => e.nextSibling);
+    const nextNextRow = await nextRow.evaluateHandle(e => e.nextSibling);
     if (!nextNextRow) {
       assert.fail('Could not find 2nd row below "shared in leaking()" row');
     }
@@ -207,5 +207,32 @@ describe('The Memory Panel', async function() {
     await waitForSearchResultNumber(8);
     await waitUntilRetainerChainSatisfies(
         retainerChain => retainerChain.some(({retainerClassName}) => retainerClassName === 'Detached Window'));
+  });
+
+  it('Shows the a tooltip', async () => {
+    await goToResource('memory/detached-dom-tree.html');
+    await navigateToMemoryTab();
+    await takeHeapSnapshot();
+    await waitForNonEmptyHeapSnapshotData();
+    await setSearchFilter('Detached HTMLDivElement');
+    await waitForSearchResultNumber(3);
+    await waitUntilRetainerChainSatisfies(retainerChain => {
+      return retainerChain.length > 0 && retainerChain[0].propertyName === 'retaining_wrapper';
+    });
+    const rows = await getDataGridRows('.retaining-paths-view table.data');
+    const propertyNameElement = await rows[0].$('span.property-name');
+    assertNotNull(propertyNameElement);
+    propertyNameElement.hover();
+    const el = await waitFor('div.vbox.flex-auto.no-pointer-events');
+    await waitFor('.source-code', el);
+  });
+
+  it('shows the flamechart for an allocation sample', async () => {
+    const {frontend} = getBrowserAndPages();
+    await goToResource('memory/allocations.html');
+    await navigateToMemoryTab();
+    takeAllocationProfile(frontend);
+    changeAllocationSampleViewViaDropdown('Chart');
+    await waitFor('canvas.flame-chart-canvas');
   });
 });

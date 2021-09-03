@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
@@ -27,6 +28,33 @@ const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
 
   auto it = registry_.find(app_id);
   return it == registry_.end() ? nullptr : it->second.get();
+}
+
+const WebApp* WebAppRegistrar::GetAppByStartUrl(const GURL& start_url) const {
+  if (registry_profile_being_deleted_)
+    return nullptr;
+
+  for (auto const& it : registry_) {
+    if (it.second->start_url() == start_url)
+      return it.second.get();
+  }
+  return nullptr;
+}
+
+std::vector<AppId> WebAppRegistrar::GetAppsInSyncInstall() {
+  AppSet apps_in_sync_install = AppSet(
+      this, [](const WebApp& web_app) { return web_app.is_in_sync_install(); });
+
+  std::vector<AppId> app_ids;
+  for (const WebApp& app : apps_in_sync_install)
+    app_ids.push_back(app.app_id());
+
+  return app_ids;
+}
+
+bool WebAppRegistrar::WasInstalledByDefaultOnly(const AppId& app_id) const {
+  const WebApp* web_app = GetAppById(app_id);
+  return web_app && web_app->HasOnlySource(Source::Type::kDefault);
 }
 
 void WebAppRegistrar::Start() {
@@ -55,6 +83,12 @@ bool WebAppRegistrar::WasInstalledByUser(const AppId& app_id) const {
   return web_app && web_app->WasInstalledByUser();
 }
 
+bool WebAppRegistrar::WasInstalledByOem(const AppId& app_id) const {
+  const WebApp* web_app = GetAppById(app_id);
+  return web_app && web_app->chromeos_data().has_value() &&
+         web_app->chromeos_data()->oem_installed;
+}
+
 int WebAppRegistrar::CountUserInstalledApps() const {
   int num_user_installed = 0;
   for (const WebApp& app : GetAppsIncludingStubs()) {
@@ -74,16 +108,16 @@ std::string WebAppRegistrar::GetAppDescription(const AppId& app_id) const {
   return web_app ? web_app->description() : std::string();
 }
 
-base::Optional<SkColor> WebAppRegistrar::GetAppThemeColor(
+absl::optional<SkColor> WebAppRegistrar::GetAppThemeColor(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->theme_color() : base::nullopt;
+  return web_app ? web_app->theme_color() : absl::nullopt;
 }
 
-base::Optional<SkColor> WebAppRegistrar::GetAppBackgroundColor(
+absl::optional<SkColor> WebAppRegistrar::GetAppBackgroundColor(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->background_color() : base::nullopt;
+  return web_app ? web_app->background_color() : absl::nullopt;
 }
 
 const GURL& WebAppRegistrar::GetAppStartUrl(const AppId& app_id) const {
@@ -105,18 +139,43 @@ const apps::ShareTarget* WebAppRegistrar::GetAppShareTarget(
              : nullptr;
 }
 
-base::Optional<GURL> WebAppRegistrar::GetAppScopeInternal(
+blink::mojom::CaptureLinks WebAppRegistrar::GetAppCaptureLinks(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->capture_links()
+                 : blink::mojom::CaptureLinks::kUndefined;
+}
+
+const apps::FileHandlers* WebAppRegistrar::GetAppFileHandlers(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? &web_app->file_handlers() : nullptr;
+}
+
+const apps::ProtocolHandlers* WebAppRegistrar::GetAppProtocolHandlers(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? &web_app->protocol_handlers() : nullptr;
+}
+
+bool WebAppRegistrar::IsAppFileHandlerPermissionBlocked(
+    const web_app::AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->file_handler_permission_blocked() : false;
+}
+
+absl::optional<GURL> WebAppRegistrar::GetAppScopeInternal(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   if (!web_app)
-    return base::nullopt;
+    return absl::nullopt;
 
   // TODO(crbug.com/910016): Treat shortcuts as PWAs.
   // Shortcuts on the WebApp system have empty scopes, while the implementation
-  // of IsShortcutApp just checks if the scope is |base::nullopt|, so make sure
-  // we return |base::nullopt| rather than an empty scope.
+  // of IsShortcutApp just checks if the scope is |absl::nullopt|, so make sure
+  // we return |absl::nullopt| rather than an empty scope.
   if (web_app->scope().is_empty())
-    return base::nullopt;
+    return absl::nullopt;
 
   return web_app->scope();
 }
@@ -136,6 +195,23 @@ std::vector<DisplayMode> WebAppRegistrar::GetAppDisplayModeOverride(
   auto* web_app = GetAppById(app_id);
   return web_app ? web_app->display_mode_override()
                  : std::vector<DisplayMode>();
+}
+
+apps::UrlHandlers WebAppRegistrar::GetAppUrlHandlers(
+    const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->url_handlers()
+                 : std::vector<apps::UrlHandlerInfo>();
+}
+
+GURL WebAppRegistrar::GetAppManifestUrl(const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->manifest_url() : GURL::EmptyGURL();
+}
+
+base::Time WebAppRegistrar::GetAppLastBadgingTime(const AppId& app_id) const {
+  auto* web_app = GetAppById(app_id);
+  return web_app ? web_app->last_badging_time() : base::Time();
 }
 
 base::Time WebAppRegistrar::GetAppLastLaunchTime(const AppId& app_id) const {
@@ -169,12 +245,11 @@ WebAppRegistrar::GetAppShortcutsMenuItemInfos(const AppId& app_id) const {
                  : std::vector<WebApplicationShortcutsMenuItemInfo>();
 }
 
-std::vector<std::vector<SquareSizePx>>
-WebAppRegistrar::GetAppDownloadedShortcutsMenuIconsSizes(
+std::vector<IconSizes> WebAppRegistrar::GetAppDownloadedShortcutsMenuIconsSizes(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
   return web_app ? web_app->downloaded_shortcuts_menu_icons_sizes()
-                 : std::vector<std::vector<SquareSizePx>>();
+                 : std::vector<IconSizes>();
 }
 
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {
@@ -189,11 +264,14 @@ std::vector<AppId> WebAppRegistrar::GetAppIds() const {
 RunOnOsLoginMode WebAppRegistrar::GetAppRunOnOsLoginMode(
     const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app ? web_app->run_on_os_login_mode()
-                 : RunOnOsLoginMode::kUndefined;
+  return web_app ? web_app->run_on_os_login_mode() : RunOnOsLoginMode::kNotRun;
 }
 
 WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {
+  return this;
+}
+
+const WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() const {
   return this;
 }
 

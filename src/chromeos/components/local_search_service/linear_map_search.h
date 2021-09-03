@@ -11,12 +11,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "chromeos/components/local_search_service/index.h"
-#include "chromeos/components/local_search_service/index_sync.h"
 #include "chromeos/components/local_search_service/shared_structs.h"
-
-class PrefService;
 
 namespace chromeos {
 
@@ -38,25 +34,13 @@ typedef std::map<
 // A search backend that linearly scans all documents in the storage and finds
 // documents that match the input query. Search is done by matching query with
 // documents' search tags.
-class LinearMapSearch : public IndexSync, public Index {
+class LinearMapSearch : public Index {
  public:
-  LinearMapSearch(IndexId index_id, PrefService* local_state);
+  explicit LinearMapSearch(IndexId index_id);
   ~LinearMapSearch() override;
 
   LinearMapSearch(const LinearMapSearch&) = delete;
   LinearMapSearch& operator=(const LinearMapSearch&) = delete;
-
-  // IndexSync overrides:
-  uint64_t GetSizeSync() override;
-  void AddOrUpdateSync(const std::vector<Data>& data) override;
-  uint32_t DeleteSync(const std::vector<std::string>& ids) override;
-  void ClearIndexSync() override;
-  // For each data in the index, we return the 1st search tag that matches
-  // the query (i.e. above the threshold). Client should put the most
-  // important search tag first when registering the data in the index.
-  ResponseStatus FindSync(const base::string16& query,
-                          uint32_t max_results,
-                          std::vector<Result>* results) override;
 
   // Index overrides:
   void GetSize(GetSizeCallback callback) override;
@@ -66,14 +50,15 @@ class LinearMapSearch : public IndexSync, public Index {
               DeleteCallback callback) override;
   void UpdateDocuments(const std::vector<Data>& data,
                        UpdateDocumentsCallback callback) override;
-  void Find(const base::string16& query,
+  void Find(const std::u16string& query,
             uint32_t max_results,
             FindCallback callback) override;
   void ClearIndex(ClearIndexCallback callback) override;
+  uint32_t GetIndexSize() const override;
 
  private:
   // Returns all search results for a given query.
-  std::vector<Result> GetSearchResults(const base::string16& query,
+  std::vector<Result> GetSearchResults(const std::u16string& query,
                                        uint32_t max_results) const;
 
   KeyToTagVector data_;

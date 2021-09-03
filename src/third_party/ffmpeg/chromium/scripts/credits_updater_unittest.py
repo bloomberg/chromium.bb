@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -8,7 +8,6 @@ import codecs
 import copy
 import credits_updater as cu
 import os
-import string
 import unittest
 
 # Assumes this script is in ffmpeg/chromium/scripts/
@@ -135,7 +134,7 @@ class CreditsUpdaterUnittest(unittest.TestCase):
     credits = ''.join(ReadCreditsLines())
     current_offset = 0
     for f in sorted(files):
-      i = string.find(credits, f, current_offset)
+      i = credits.find(f, current_offset)
       if i == -1:
         self.fail("Failed to find %s starting at offset %s of content:\n%s" %
                   (f, current_offset, credits))

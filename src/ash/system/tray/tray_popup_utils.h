@@ -6,12 +6,12 @@
 #define ASH_SYSTEM_TRAY_TRAY_POPUP_UTILS_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/login_status.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_ink_drop_style.h"
 #include "ash/system/tray/tri_view.h"
-#include "base/strings/string16.h"
 #include "ui/views/controls/button/button.h"
 
 namespace views {
@@ -20,12 +20,10 @@ class ImageView;
 class InkDrop;
 class InkDropRipple;
 class InkDropHighlight;
-class InkDropHostView;
 class Label;
 class LabelButton;
 class Painter;
 class Separator;
-class ToggleButton;
 }  // namespace views
 
 namespace ash {
@@ -38,7 +36,9 @@ class TrayPopupUtils {
   enum class FontStyle {
     // Topmost header rows for default view and detailed view.
     kTitle,
-    // Topmost header rows for secondary tray bubbles.
+    // Topmost header for secondary tray bubbles
+    kPodMenuHeader,
+    // Small title used for selections in tray bubbles.
     kSmallTitle,
     // Text in sub-section header rows in detailed views.
     kSubHeader,
@@ -117,16 +117,15 @@ class TrayPopupUtils {
   // TODO(bruthig): Update all system menu rows to use this.
   static views::ImageView* CreateMainImageView();
 
-  // Returns a ToggleButton that has been configured for system menu layout.
-  static views::ToggleButton* CreateToggleButton(
-      views::Button::PressedCallback callback,
-      int accessible_name_id);
-
   // Creates a default focus painter used for most things in tray popups.
   static std::unique_ptr<views::Painter> CreateFocusPainter();
 
   // Common setup for various buttons in the system menu.
-  static void ConfigureTrayPopupButton(views::Button* button);
+  static void ConfigureTrayPopupButton(
+      views::Button* button,
+      TrayPopupInkDropStyle ink_drop_style = TrayPopupInkDropStyle::FILL_BOUNDS,
+      bool highlight_on_hover = false,
+      bool highlight_on_focus = false);
 
   // Sets up |view| to be a sticky header in a tray detail scroll view.
   static void ConfigureAsStickyHeader(views::View* view);
@@ -143,7 +142,7 @@ class TrayPopupUtils {
   // ownership.
   static views::LabelButton* CreateTrayPopupButton(
       views::Button::PressedCallback callback,
-      const base::string16& text);
+      const std::u16string& text);
 
   // Creates and returns a vertical separator to be used between two items in a
   // material design system menu row. The caller assumes ownership of the
@@ -156,7 +155,9 @@ class TrayPopupUtils {
   // All targetable views in the system menu should delegate
   // InkDropHost::CreateInkDrop() calls here.
   static std::unique_ptr<views::InkDrop> CreateInkDrop(
-      views::InkDropHostView* host);
+      views::Button* host,
+      bool highlight_on_hover = false,
+      bool highlight_on_focus = false);
 
   // Creates an InkDropRipple instance for |host| according to the
   // |ink_drop_style|. The ripple will be centered on |center_point|.
@@ -165,8 +166,7 @@ class TrayPopupUtils {
   // InkDropHost::CreateInkDropRipple() calls here.
   static std::unique_ptr<views::InkDropRipple> CreateInkDropRipple(
       TrayPopupInkDropStyle ink_drop_style,
-      const views::View* host,
-      const gfx::Point& center_point);
+      const views::Button* host);
 
   // Creates in InkDropHighlight instance for |host|.
   //

@@ -84,7 +84,6 @@ class MediaEngagementScoreDetailsProviderImpl
         base::FeatureList::IsEnabled(media::kPreloadMediaEngagementData),
         base::FeatureList::IsEnabled(media::kMediaEngagementHTTPSOnly),
         base::FeatureList::IsEnabled(media::kAutoplayDisableSettings),
-        base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings),
         GetBlockAutoplayPref(),
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kAutoplayPolicy),
@@ -145,10 +144,9 @@ MediaEngagementUI::MediaEngagementUI(content::WebUI* web_ui)
   // Setup the data source behind chrome://media-engagement.
   std::unique_ptr<content::WebUIDataSource> source(
       content::WebUIDataSource::Create(chrome::kChromeUIMediaEngagementHost));
-  source->AddResourcePath("media-engagement.js", IDR_MEDIA_ENGAGEMENT_JS);
-  source->AddResourcePath(
-      "chrome/browser/media/media_engagement_score_details.mojom-lite.js",
-      IDR_MEDIA_ENGAGEMENT_SCORE_DETAILS_MOJOM_LITE_JS);
+  source->AddResourcePath("media_engagement.js", IDR_MEDIA_ENGAGEMENT_JS);
+  source->AddResourcePath("media_engagement_score_details.mojom-lite.js",
+                          IDR_MEDIA_ENGAGEMENT_SCORE_DETAILS_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_MEDIA_ENGAGEMENT_HTML);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source.release());
 }

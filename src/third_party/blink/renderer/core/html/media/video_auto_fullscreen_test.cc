@@ -53,12 +53,14 @@ class VideoAutoFullscreenFrameHost : public FakeLocalFrameHost {
 class VideoAutoFullscreenFrameClient
     : public frame_test_helpers::TestWebFrameClient {
  public:
-  WebMediaPlayer* CreateMediaPlayer(const WebMediaPlayerSource&,
-                                    WebMediaPlayerClient*,
-                                    blink::MediaInspectorContext*,
-                                    WebMediaPlayerEncryptedMediaClient*,
-                                    WebContentDecryptionModule*,
-                                    const WebString& sink_id) final {
+  WebMediaPlayer* CreateMediaPlayer(
+      const WebMediaPlayerSource&,
+      WebMediaPlayerClient*,
+      blink::MediaInspectorContext*,
+      WebMediaPlayerEncryptedMediaClient*,
+      WebContentDecryptionModule*,
+      const WebString& sink_id,
+      const cc::LayerTreeSettings& settings) final {
     return new EmptyWebMediaPlayer();
   }
 };
@@ -167,7 +169,9 @@ TEST_F(VideoAutoFullscreen, ExitFullscreenDoesNotPauseWithPlaysInline) {
   EXPECT_FALSE(Video()->paused());
 }
 
-TEST_F(VideoAutoFullscreen, OnPlayTriggersFullscreenWithoutGesture) {
+// This test is disabled because it requires adding a fake activation in
+// production code (crbug.com/1082258).
+TEST_F(VideoAutoFullscreen, DISABLED_OnPlayTriggersFullscreenWithoutGesture) {
   Video()->SetSrc("http://example.com/foo.mp4");
 
   LocalFrame::NotifyUserActivation(

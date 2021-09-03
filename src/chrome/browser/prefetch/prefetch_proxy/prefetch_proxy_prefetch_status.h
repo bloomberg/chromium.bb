@@ -97,6 +97,16 @@ enum class PrefetchProxyPrefetchStatus {
   // A previous prefetch to the origin got a HTTP 503 response with an
   // Retry-After header that has no elapsed yet.
   kPrefetchIneligibleRetryAfter = 27,
+
+  // A network error or intentional loadshed was previously encountered when
+  // trying to setup a connection to the proxy and a prefetch should not be done
+  // right now.
+  kPrefetchProxyNotAvailable = 28,
+
+  // The prefetch was not eligible, but was put on the network anyways and not
+  // used to disguise that the user had some kind of previous relationship with
+  // the origin.
+  kPrefetchIsPrivacyDecoy = 29,
 };
 
 #endif  // CHROME_BROWSER_PREFETCH_PREFETCH_PROXY_PREFETCH_PROXY_PREFETCH_STATUS_H_

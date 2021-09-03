@@ -32,13 +32,14 @@ class DidCommitNavigationInterceptor : public WebContentsObserver {
   ~DidCommitNavigationInterceptor() override;
 
   // Called just before DidCommitNavigation with |navigation_request|, |params|
-  // and |interface_provider_request| would be processed by
-  // |render_frame_host|.
+  // and |interface_provider_request| would be processed by |render_frame_host|.
   // Return false to cancel the processing of this call by |render_frame_host|.
+  // |params| and |interface_params| can be modified. When returning false, they
+  // can also be consumed, they won't be used anymore by the caller.
   virtual bool WillProcessDidCommitNavigation(
       RenderFrameHost* render_frame_host,
       NavigationRequest* navigation_request,
-      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
+      mojom::DidCommitProvisionalLoadParamsPtr* params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params) = 0;
 
  private:
@@ -51,40 +52,6 @@ class DidCommitNavigationInterceptor : public WebContentsObserver {
   std::map<RenderFrameHost*, std::unique_ptr<FrameAgent>> frame_agents_;
 
   DISALLOW_COPY_AND_ASSIGN(DidCommitNavigationInterceptor);
-};
-
-// A helper class to run a predefined callback just before processing the
-// DidCommitProvisionalLoad IPC for |deferred_url|.
-class CommitMessageDelayer : public DidCommitNavigationInterceptor {
- public:
-  using DidCommitCallback = base::OnceCallback<void(RenderFrameHost*)>;
-
-  // Starts monitoring |web_contents| for DidCommit IPC and executes
-  // |deferred_action| for each DidCommit IPC that matches |deferred_url|.
-  explicit CommitMessageDelayer(WebContents* web_contents,
-                                const GURL& deferred_url,
-                                DidCommitCallback deferred_action);
-  ~CommitMessageDelayer() override;
-
-  // Waits until DidCommit IPC arrives for |deferred_url|, then calls
-  // |deferred_action|, then handles the IPC, then returns.
-  void Wait();
-
- private:
-  // DidCommitNavigationInterceptor:
-  bool WillProcessDidCommitNavigation(
-      RenderFrameHost* render_frame_host,
-      NavigationRequest* navigation_request,
-      ::FrameHostMsg_DidCommitProvisionalLoad_Params* params,
-      mojom::DidCommitProvisionalLoadInterfaceParamsPtr* interface_params)
-      override;
-
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  const GURL deferred_url_;
-  DidCommitCallback deferred_action_;
-
-  DISALLOW_COPY_AND_ASSIGN(CommitMessageDelayer);
 };
 
 }  // namespace content

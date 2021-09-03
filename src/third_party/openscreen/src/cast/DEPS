@@ -12,4 +12,6 @@ include_rules = [
 
   # All libcast code can use cast/third_party.
   '+cast/third_party',
+  '+valijson',
+  '+json',
 ]

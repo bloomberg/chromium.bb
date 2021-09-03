@@ -13,11 +13,51 @@
 // limitations under the License.
 
 #include "dawn_platform/DawnPlatform.h"
+#include "dawn_platform/WorkerThread.h"
+
+#include "common/Assert.h"
 
 namespace dawn_platform {
+
+    CachingInterface::CachingInterface() = default;
+
+    CachingInterface::~CachingInterface() = default;
 
     Platform::Platform() = default;
 
     Platform::~Platform() = default;
+
+    const unsigned char* Platform::GetTraceCategoryEnabledFlag(TraceCategory category) {
+        static unsigned char disabled = 0;
+        return &disabled;
+    }
+
+    double Platform::MonotonicallyIncreasingTime() {
+        return 0;
+    }
+
+    uint64_t Platform::AddTraceEvent(char phase,
+                                     const unsigned char* categoryGroupEnabled,
+                                     const char* name,
+                                     uint64_t id,
+                                     double timestamp,
+                                     int numArgs,
+                                     const char** argNames,
+                                     const unsigned char* argTypes,
+                                     const uint64_t* argValues,
+                                     unsigned char flags) {
+        // AddTraceEvent cannot be called if events are disabled.
+        ASSERT(false);
+        return 0;
+    }
+
+    dawn_platform::CachingInterface* Platform::GetCachingInterface(const void* fingerprint,
+                                                                   size_t fingerprintSize) {
+        return nullptr;
+    }
+
+    std::unique_ptr<dawn_platform::WorkerTaskPool> Platform::CreateWorkerTaskPool() {
+        return std::make_unique<AsyncWorkerThreadPool>();
+    }
 
 }  // namespace dawn_platform

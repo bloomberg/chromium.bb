@@ -53,7 +53,7 @@ std::unique_ptr<base::ListValue> ToValue(const std::vector<T>& vec) {
 template <typename T>
 void SetValue(base::DictionaryValue* dict,
               const char* key,
-              const base::Optional<T>& value) {
+              const absl::optional<T>& value) {
   if (!value)
     return;
 
@@ -76,9 +76,14 @@ std::unique_ptr<base::DictionaryValue> TestRuleCondition::ToValue() const {
            is_url_filter_case_sensitive);
   SetValue(dict.get(), kDomainsKey, domains);
   SetValue(dict.get(), kExcludedDomainsKey, excluded_domains);
+  SetValue(dict.get(), kRequestMethodsKey, request_methods);
+  SetValue(dict.get(), kExcludedRequestMethodsKey, excluded_request_methods);
   SetValue(dict.get(), kResourceTypesKey, resource_types);
   SetValue(dict.get(), kExcludedResourceTypesKey, excluded_resource_types);
+  SetValue(dict.get(), kTabIdsKey, tab_ids);
+  SetValue(dict.get(), kExcludedTabIdsKey, excluded_tab_ids);
   SetValue(dict.get(), kDomainTypeKey, domain_type);
+
   return dict;
 }
 
@@ -148,7 +153,7 @@ std::unique_ptr<base::DictionaryValue> TestRuleRedirect::ToValue() const {
 
 TestHeaderInfo::TestHeaderInfo(std::string header,
                                std::string operation,
-                               base::Optional<std::string> value)
+                               absl::optional<std::string> value)
     : header(std::move(header)),
       operation(std::move(operation)),
       value(std::move(value)) {}
@@ -205,6 +210,13 @@ TestRule CreateGenericRule(int id) {
   return rule;
 }
 
+TestRule CreateRegexRule(int id) {
+  TestRule rule = CreateGenericRule(id);
+  rule.condition->url_filter.reset();
+  rule.condition->regex_filter = std::string("filter");
+  return rule;
+}
+
 TestRulesetInfo::TestRulesetInfo(const std::string& manifest_id_and_path,
                                  const base::Value& rules_value,
                                  bool enabled)
@@ -243,7 +255,9 @@ std::unique_ptr<base::DictionaryValue> CreateManifest(
     unsigned flags,
     const std::string& extension_name) {
   std::vector<std::string> permissions = hosts;
-  permissions.push_back(kAPIPermission);
+
+  if (!(flags & kConfig_OmitDeclarativeNetRequestPermission))
+    permissions.push_back(kAPIPermission);
 
   // These permissions are needed for some tests. TODO(karandeepb): Add a
   // ConfigFlag for these.

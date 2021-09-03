@@ -13,13 +13,13 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chromeos/login/auth/auth_status_consumer.h"
 #include "chromeos/login/auth/authenticator.h"
 #include "chromeos/login/auth/extended_authenticator.h"
 #include "chromeos/login/auth/user_context.h"
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class AccountId;
 
@@ -29,10 +29,6 @@ class SequencedTaskRunner;
 
 namespace network {
 class SharedURLLoaderFactory;
-}
-
-namespace content {
-class BrowserContext;
 }
 
 namespace chromeos {
@@ -73,10 +69,6 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   // will perform auth checks.
   void PerformLogin(const UserContext& user_context,
                     AuthorizationMode auth_mode);
-
-  // TODO(crbug.com/866790): Check it is not used anymore and remove it.
-  // Performs supervised user login with a given |user_context|.
-  void LoginAsSupervisedUser(const UserContext& user_context);
 
   // Performs actions to prepare guest mode login.
   void LoginOffTheRecord();
@@ -133,11 +125,11 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   // contain additional information whether this user is explicitly listed or
   // not (may be relevant for external-based sign-in). |user_type| will be used
   // to check if the user is allowed because of the user type, pass
-  // base::nullopt if user type is not known.
+  // absl::nullopt if user type is not known.
   virtual bool IsUserAllowlisted(
       const AccountId& account_id,
       bool* wildcard_match,
-      const base::Optional<user_manager::UserType>& user_type) = 0;
+      const absl::optional<user_manager::UserType>& user_type) = 0;
 
  protected:
   // Platform-dependant methods to be implemented by concrete class.
@@ -162,9 +154,6 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
   // Run policy check for |account_id|. If something is wrong, delegate's
   // PolicyLoadFailed is called.
   virtual bool CheckPolicyForUser(const AccountId& account_id) = 0;
-
-  // Look up browser context to use during signin.
-  virtual content::BrowserContext* GetSigninContext() = 0;
 
   // Gets the SharedURLLoaderFactory used for sign in.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
@@ -223,5 +212,11 @@ class COMPONENT_EXPORT(CHROMEOS_LOGIN_AUTH) LoginPerformer
 };
 
 }  // namespace chromeos
+
+// TODO(https://crbug.com/1164001): remove when the //chrome/browser/chromeos
+// source code migration is finished.
+namespace ash {
+using ::chromeos::LoginPerformer;
+}
 
 #endif  // CHROMEOS_LOGIN_AUTH_LOGIN_PERFORMER_H_

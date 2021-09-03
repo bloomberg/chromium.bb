@@ -46,7 +46,7 @@ class ExtensionFunctionalTest : public ExtensionBrowserTest {
     scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service));
     installer->set_is_gallery_install(false);
     installer->set_allow_silent_install(true);
-    installer->set_install_source(Manifest::INTERNAL);
+    installer->set_install_source(mojom::ManifestLocation::kInternal);
     installer->set_off_store_install_allow_reason(
         CrxInstaller::OffStoreInstallAllowedInTest);
 
@@ -149,8 +149,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionFunctionalTest, DownloadExtensionResource) {
-  auto* download_manager =
-      content::BrowserContext::GetDownloadManager(profile());
+  auto* download_manager = profile()->GetDownloadManager();
   content::DownloadTestObserverTerminal download_observer(
       download_manager, 1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_ACCEPT);

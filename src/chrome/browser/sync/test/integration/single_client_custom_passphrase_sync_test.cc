@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/base64.h"
+#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/encryption_helper.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
@@ -10,6 +11,7 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/driver/profile_sync_service.h"
+#include "components/sync/engine/nigori/key_derivation_params.h"
 #include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/nigori/cryptographer_impl.h"
 #include "components/sync/nigori/nigori.h"
@@ -234,6 +236,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
   EXPECT_TRUE(WaitForClientBookmarkWithTitle("PBKDF2-encrypted bookmark"));
 }
 
+// PRE_* tests aren't supported on Android browser tests.
+#if !defined(OS_ANDROID)
 // Populates custom passphrase Nigori without keystore keys to the client.
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
                        PRE_CanDecryptWithKeystoreKeys) {
@@ -260,6 +264,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseSyncTest,
       PasswordFormsChecker(/*index=*/0, /*expected_forms=*/{password_form})
           .Wait());
 }
+#endif  // !defined(OS_ANDROID)
 
 IN_PROC_BROWSER_TEST_F(SingleClientCustomPassphraseDoNotUseScryptSyncTest,
                        CommitsEncryptedDataUsingPbkdf2WhenScryptDisabled) {

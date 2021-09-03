@@ -6,7 +6,7 @@
 
 #import <Carbon/Carbon.h>
 
-#include "base/optional.h"
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -19,6 +19,7 @@
 #include "content/public/browser/web_drag_dest_delegate.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/drop_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -217,7 +218,8 @@ void DropCompletionCallback(
 
   _currentRWHForDrag->DragTargetDragEnter(
       *_dropDataFiltered, transformedPt, info->location_in_screen,
-      static_cast<DragOperationsMask>(mask), GetModifierFlags());
+      static_cast<DragOperationsMask>(mask), GetModifierFlags(),
+      base::DoNothing());
 
   // We won't know the true operation (whether the drag is allowed) until we
   // hear back from the renderer. For now, be optimistic:
@@ -299,7 +301,7 @@ void DropCompletionCallback(
   NSDragOperation mask = info->operation_mask;
   targetRWH->DragTargetDragOver(transformedPt, info->location_in_screen,
                                 static_cast<DragOperationsMask>(mask),
-                                GetModifierFlags());
+                                GetModifierFlags(), base::DoNothing());
 
   if (_delegate)
     _delegate->OnDragOver();
@@ -345,7 +347,8 @@ void DropCompletionCallback(
     if (_delegate)
       _delegate->OnDrop();
     targetRWH->DragTargetDrop(*_dropDataFiltered, transformedPt,
-                              info->location_in_screen, GetModifierFlags());
+                              info->location_in_screen, GetModifierFlags(),
+                              base::DoNothing());
   }
   _dropDataUnfiltered.reset();
   _dropDataFiltered.reset();
@@ -358,9 +361,9 @@ void DropCompletionCallback(
   if (success) {
     if (_delegate)
       _delegate->OnDrop();
-    context.target_rwh->DragTargetDrop(context.drop_data, context.client_pt,
-                                       context.screen_pt,
-                                       context.modifier_flags);
+    context.target_rwh->DragTargetDrop(
+        context.drop_data, context.client_pt, context.screen_pt,
+        context.modifier_flags, base::DoNothing());
   } else {
     if (_delegate)
       _delegate->OnDragLeave();
@@ -395,7 +398,8 @@ void PopulateDropDataFromPasteboard(content::DropData* data,
                                     NSPasteboard* pboard) {
   DCHECK(data);
   DCHECK(pboard);
-  NSArray* types = [pboard types];
+  // https://crbug.com/1016740#c21
+  base::scoped_nsobject<NSArray> types([[pboard types] retain]);
 
   data->did_originate_from_renderer =
       [types containsObject:ui::kChromeDragDummyPboardType];

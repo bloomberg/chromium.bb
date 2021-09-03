@@ -6,6 +6,8 @@
 #define CHROME_SERVICES_FILE_UTIL_FILE_UTIL_SERVICE_H_
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/services/file_util/buildflags.h"
 #include "chrome/services/file_util/public/mojom/file_util_service.mojom.h"
 #include "components/safe_browsing/buildflags.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -19,7 +21,7 @@ class FileUtilService : public chrome::mojom::FileUtilService {
 
  private:
   // chrome::mojom::FileUtilService implementation:
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void BindZipFileCreator(
       mojo::PendingReceiver<chrome::mojom::ZipFileCreator> receiver) override;
 #endif
@@ -28,6 +30,11 @@ class FileUtilService : public chrome::mojom::FileUtilService {
   void BindSafeArchiveAnalyzer(
       mojo::PendingReceiver<chrome::mojom::SafeArchiveAnalyzer> receiver)
       override;
+#endif
+
+#if BUILDFLAG(ENABLE_XZ_EXTRACTOR)
+  void BindXzFileExtractor(
+      mojo::PendingReceiver<chrome::mojom::XzFileExtractor> receiver) override;
 #endif
 
   mojo::Receiver<chrome::mojom::FileUtilService> receiver_;

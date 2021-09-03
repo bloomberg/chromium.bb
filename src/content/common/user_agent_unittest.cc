@@ -5,6 +5,7 @@
 #include "content/public/common/user_agent.h"
 
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -73,7 +74,7 @@ TEST(UserAgentStringTest, BuildOSCpuInfoFromOSVersionAndCpuType) {
         /*cpu_type=*/"CPU TYPE",
         /*expected_os_cpu_info=*/"CPU TYPE Mac OS X VERSION",
     },
-#elif defined(OS_CHROMEOS)
+#elif BUILDFLAG(IS_CHROMEOS_ASH)
     {
         /*os_version=*/"4537.56.0",
         /*cpu_type=*/"armv7l",
@@ -123,6 +124,17 @@ TEST(UserAgentStringTest, BuildOSCpuInfoFromOSVersionAndCpuType) {
         test_case.os_version, test_case.cpu_type);
     EXPECT_EQ(os_cpu_info, test_case.expected_os_cpu_info);
   }
+}
+
+TEST(UserAgentStringTest, LowEntropyCpuArchitecture) {
+  std::string arch = GetLowEntropyCpuArchitecture();
+
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_POSIX) && !defined(OS_ANDROID))
+  EXPECT_TRUE("arm" == arch || "x86" == arch);
+#else
+  EXPECT_EQ("", arch);
+#endif
 }
 
 }  // namespace content

@@ -8,11 +8,11 @@
 #define XFA_FXFA_PARSER_XFA_UTILS_H_
 
 #include "core/fxcrt/fx_stream.h"
+#include "core/fxcrt/retain_ptr.h"
 #include "xfa/fxfa/fxfa.h"
 #include "xfa/fxfa/fxfa_basic.h"
 
 class CFX_XMLElement;
-class CFX_XMLNode;
 class CXFA_LocaleValue;
 class CXFA_Node;
 

@@ -126,20 +126,10 @@ namespace dawn_native {
             }
         }
 
-        if (aspects[VALIDATION_ASPECT_INDEX_BUFFER]) {
-            if (mIndexBufferSet) {
-                wgpu::IndexFormat pipelineIndexFormat =
-                    mLastRenderPipeline->GetVertexStateDescriptor()->indexFormat;
-                if (mIndexFormat != wgpu::IndexFormat::Undefined) {
-                    if (!IsStripPrimitiveTopology(mLastRenderPipeline->GetPrimitiveTopology()) ||
-                        mIndexFormat == pipelineIndexFormat) {
-                        mAspects.set(VALIDATION_ASPECT_INDEX_BUFFER);
-                    }
-                } else if (pipelineIndexFormat != wgpu::IndexFormat::Undefined) {
-                    // TODO(crbug.com/dawn/502): Deprecated path. Remove once setIndexFormat always
-                    // requires an index format.
-                    mAspects.set(VALIDATION_ASPECT_INDEX_BUFFER);
-                }
+        if (aspects[VALIDATION_ASPECT_INDEX_BUFFER] && mIndexBufferSet) {
+            if (!IsStripPrimitiveTopology(mLastRenderPipeline->GetPrimitiveTopology()) ||
+                mIndexFormat == mLastRenderPipeline->GetStripIndexFormat()) {
+                mAspects.set(VALIDATION_ASPECT_INDEX_BUFFER);
             }
         }
     }
@@ -150,21 +140,13 @@ namespace dawn_native {
         }
 
         if (aspects[VALIDATION_ASPECT_INDEX_BUFFER]) {
-            wgpu::IndexFormat pipelineIndexFormat =
-                mLastRenderPipeline->GetVertexStateDescriptor()->indexFormat;
+            wgpu::IndexFormat pipelineIndexFormat = mLastRenderPipeline->GetStripIndexFormat();
             if (!mIndexBufferSet) {
                 return DAWN_VALIDATION_ERROR("Missing index buffer");
-            } else if (mIndexFormat != wgpu::IndexFormat::Undefined &&
-                IsStripPrimitiveTopology(mLastRenderPipeline->GetPrimitiveTopology()) &&
-                mIndexFormat != pipelineIndexFormat) {
+            } else if (IsStripPrimitiveTopology(mLastRenderPipeline->GetPrimitiveTopology()) &&
+                       mIndexFormat != pipelineIndexFormat) {
                 return DAWN_VALIDATION_ERROR(
                     "Pipeline strip index format does not match index buffer format");
-            } else if (mIndexFormat == wgpu::IndexFormat::Undefined &&
-                       pipelineIndexFormat == wgpu::IndexFormat::Undefined) {
-                // TODO(crbug.com/dawn/502): Deprecated path. Remove once setIndexFormat always
-                // requires an index format.
-                return DAWN_VALIDATION_ERROR(
-                    "Index format must be specified on the pipeline or in setIndexBuffer");
             }
 
             // The chunk of code above should be similar to the one in |RecomputeLazyAspects|.
@@ -225,9 +207,10 @@ namespace dawn_native {
         mAspects.reset(VALIDATION_ASPECT_BIND_GROUPS);
     }
 
-    void CommandBufferStateTracker::SetIndexBuffer(wgpu::IndexFormat format) {
+    void CommandBufferStateTracker::SetIndexBuffer(wgpu::IndexFormat format, uint64_t size) {
         mIndexBufferSet = true;
         mIndexFormat = format;
+        mIndexBufferSize = size;
     }
 
     void CommandBufferStateTracker::SetVertexBuffer(VertexBufferSlot slot) {
@@ -242,6 +225,14 @@ namespace dawn_native {
 
         // Reset lazy aspects so they get recomputed on the next operation.
         mAspects &= ~kLazyAspects;
+    }
+
+    BindGroupBase* CommandBufferStateTracker::GetBindGroup(BindGroupIndex index) const {
+        return mBindgroups[index];
+    }
+
+    PipelineLayoutBase* CommandBufferStateTracker::GetPipelineLayout() const {
+        return mLastPipelineLayout;
     }
 
 }  // namespace dawn_native

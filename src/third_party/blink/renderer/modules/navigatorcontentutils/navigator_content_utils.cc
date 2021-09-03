@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/modules/navigatorcontentutils/navigator_content_utils.h"
 
 #include "base/stl_util.h"
+#include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/blink/public/common/custom_handlers/protocol_handler_utils.h"
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -54,15 +55,14 @@ static bool VerifyCustomHandlerURLSecurity(
     const KURL& full_url,
     String& error_message,
     ProtocolHandlerSecurityLevel security_level) {
-  // Although not required by the spec, the spec allows additional security
-  // checks. Bugs have arisen from allowing non-http/https URLs, e.g.
-  // https://crbug.com/971917 and it doesn't make a lot of sense to support
-  // them. We do need to allow extensions to continue using the API.
-  if (!full_url.ProtocolIsInHTTPFamily() &&
-      !full_url.ProtocolIs("chrome-extension")) {
-    error_message =
-        "The scheme of the url provided must be 'https' or "
-        "'chrome-extension'.";
+  // This matches ProtocolHandler::IsValid().
+  // https://html.spec.whatwg.org/multipage/system-state.html#normalize-protocol-handler-parameters
+  bool has_valid_scheme =
+      full_url.ProtocolIsInHTTPFamily() ||
+      (security_level == ProtocolHandlerSecurityLevel::kExtensionFeatures &&
+       full_url.ProtocolIs("chrome-extension"));
+  if (!has_valid_scheme || !network::IsUrlPotentiallyTrustworthy(full_url)) {
+    error_message = "The scheme of the url provided must be HTTP(S).";
     return false;
   }
 
@@ -105,22 +105,26 @@ static bool VerifyCustomHandlerURL(
 
 }  // namespace
 
-bool VerifyCustomHandlerScheme(const String& scheme, String& error_string) {
+bool VerifyCustomHandlerScheme(const String& scheme,
+                               String& error_string,
+                               ProtocolHandlerSecurityLevel security_level) {
   if (!IsValidProtocol(scheme)) {
     error_string = "The scheme name '" + scheme +
                    "' is not allowed by URI syntax (RFC3986).";
     return false;
   }
 
+  bool allow_ext_plus_prefix =
+      security_level >= ProtocolHandlerSecurityLevel::kExtensionFeatures;
   bool has_custom_scheme_prefix;
   StringUTF8Adaptor scheme_adaptor(scheme);
   if (!IsValidCustomHandlerScheme(scheme_adaptor.AsStringPiece(),
+                                  allow_ext_plus_prefix,
                                   has_custom_scheme_prefix)) {
     if (has_custom_scheme_prefix) {
-      error_string =
-          "The scheme name '" + scheme +
-          "' is not allowed. Schemes starting with 'web+' must be followed by "
-          "one or more ASCII letters.";
+      error_string = "The scheme name '" + scheme +
+                     "' is not allowed. Schemes starting with '" + scheme +
+                     "' must be followed by one or more ASCII letters.";
     } else {
       error_string = "The scheme '" + scheme +
                      "' doesn't belong to the scheme allowlist. "
@@ -181,17 +185,18 @@ void NavigatorContentUtils::registerProtocolHandler(
   if (!window)
     return;
 
+  ProtocolHandlerSecurityLevel security_level =
+      Platform::Current()->GetProtocolHandlerSecurityLevel();
+
   // Per the HTML specification, exceptions for arguments must be surfaced in
   // the order of the arguments.
   String error_message;
-  if (!VerifyCustomHandlerScheme(scheme, error_message)) {
+  if (!VerifyCustomHandlerScheme(scheme, error_message, security_level)) {
     exception_state.ThrowSecurityError(error_message);
     return;
   }
 
-  if (!VerifyCustomHandlerURL(
-          *window, url, exception_state,
-          Platform::Current()->GetProtocolHandlerSecurityLevel()))
+  if (!VerifyCustomHandlerURL(*window, url, exception_state, security_level))
     return;
 
   // Count usage; perhaps we can forbid this from cross-origin subframes as
@@ -221,15 +226,16 @@ void NavigatorContentUtils::unregisterProtocolHandler(
   if (!window)
     return;
 
+  ProtocolHandlerSecurityLevel security_level =
+      Platform::Current()->GetProtocolHandlerSecurityLevel();
+
   String error_message;
-  if (!VerifyCustomHandlerScheme(scheme, error_message)) {
+  if (!VerifyCustomHandlerScheme(scheme, error_message, security_level)) {
     exception_state.ThrowSecurityError(error_message);
     return;
   }
 
-  if (!VerifyCustomHandlerURL(
-          *window, url, exception_state,
-          Platform::Current()->GetProtocolHandlerSecurityLevel()))
+  if (!VerifyCustomHandlerURL(*window, url, exception_state, security_level))
     return;
 
   NavigatorContentUtils::From(navigator, *window->GetFrame())
