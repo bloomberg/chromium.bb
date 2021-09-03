@@ -13,8 +13,8 @@
 const helpApp = {};
 
 /**
- * Contains the id and fields that can be searched. Each SearchableItem
- * maps to one Data field in the LSS MOJO API.
+ * Each SearchableItem maps to one Data field in the LSS Mojo API and represents
+ * a single potential search result for in-app search inside the help app.
  * These originate from the untrusted frame and get parsed by the LSS.
  * @record
  * @struct
@@ -58,6 +58,50 @@ helpApp.SearchableItem.prototype.subheadings;
 helpApp.SearchableItem.prototype.locale;
 
 /**
+ * Each LauncherSearchableItem maps to one Data field in the LSS Mojo API and
+ * represents a single potential help app search result in the CrOS launcher.
+ * These originate from the untrusted frame and get parsed by the LSS.
+ * @record
+ * @struct
+ */
+helpApp.LauncherSearchableItem = function() {};
+/**
+ * The unique identifier of this item.
+ * @type {string}
+ */
+helpApp.LauncherSearchableItem.prototype.id;
+/**
+ * Title text. Plain localized text.
+ * @type {string}
+ */
+helpApp.LauncherSearchableItem.prototype.title;
+/**
+ * The main category name, e.g. Perks or Help. Plain localized text.
+ * @type {string}
+ */
+helpApp.LauncherSearchableItem.prototype.mainCategoryName;
+/**
+ * List of tags. Each tag is plain localized text. The item will be searchable
+ *     by these tags.
+ * @type {!Array<!string>}
+ */
+helpApp.LauncherSearchableItem.prototype.tags;
+/**
+ * The URL path containing the relevant content, which may or may not contain
+ *     URL parameters. For example, if the help content is at
+ *     chrome://help-app/help/sub/3399763/id/1282338#install-user, then the
+ *     field would be "help/sub/3399763/id/1282338#install-user" for this page.
+ * @type {string}
+ */
+helpApp.LauncherSearchableItem.prototype.urlPathWithParameters;
+/**
+ * The locale that this content is localized in. Empty string means system
+ *     locale.
+ * @type {string}
+ */
+helpApp.LauncherSearchableItem.prototype.locale;
+
+/**
  * A position in a string. For highlighting matches in snippets.
  * @record
  * @struct
@@ -83,7 +127,7 @@ helpApp.SearchResult.prototype.id;
  */
 helpApp.SearchResult.prototype.titlePositions;
 /**
- * List of positions corresponding to the body sorted by start index. Used in
+ * List of positions corresponding to the body, sorted by start index. Used in
  * snippet.
  * @type {?Array<!helpApp.Position>}
  */
@@ -152,22 +196,24 @@ helpApp.ClientApiDelegate.prototype.clearSearchIndex = function() {};
 helpApp.ClientApiDelegate.prototype.findInSearchIndex = function(query) {};
 
 /**
- * The client Api for interacting with the help app instance.
- * @record
- * @struct
+ * Close the app. Works if the app is open in the background page.
+ * @return {undefined}
  */
-helpApp.ClientApi = function() {};
+helpApp.ClientApiDelegate.prototype.closeBackgroundPage = function() {};
 
 /**
- * Sets the delegate through which HelpApp can access open-source privileged
- * WebUI methods.
- * @param {!helpApp.ClientApiDelegate} delegate
+ * Replace the content that is stored in the launcher search index.
+ * @param {!Array<!helpApp.LauncherSearchableItem>} data
+ * @return {!Promise<undefined>} Promise which resolves after the update is
+ *     complete.
  */
-helpApp.ClientApi.prototype.setDelegate = function(delegate) {};
+helpApp.ClientApiDelegate.prototype.updateLauncherSearchIndex
+    = function(data) {};
 
 /**
- * Gets the delegate through which HelpApp can access open-source privileged
- * WebUI methods.
- * @return {!helpApp.ClientApiDelegate}
+ * Launch data that can be read by the app when it first loads.
+ * @type {{
+ *     delegate: (!helpApp.ClientApiDelegate | undefined),
+ * }}
  */
-helpApp.ClientApi.prototype.getDelegate = function() {};
+window.customLaunchData;

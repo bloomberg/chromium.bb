@@ -4,13 +4,19 @@
 
 package org.chromium.chrome.browser.tab;
 
+import android.content.Context;
 import android.view.View;
+
+import org.junit.Assert;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ResourceRequestBody;
+import org.chromium.url.GURL;
+
+import java.nio.ByteBuffer;
 
 /**
  * Exposes helper functions to be used in tests to instrument tab interaction.
@@ -38,7 +44,7 @@ public class TabTestUtils {
      */
     public static void simulatePageLoadFinished(Tab tab) {
         RewindableIterator<TabObserver> observers = ((TabImpl) tab).getTabObservers();
-        while (observers.hasNext()) observers.next().onPageLoadFinished(tab, tab.getUrlString());
+        while (observers.hasNext()) observers.next().onPageLoadFinished(tab, tab.getUrl());
     }
 
     /**
@@ -69,14 +75,14 @@ public class TabTestUtils {
         } else if (show && !isShowing) {
             SadTab sadTab = new SadTab(tab) {
                 @Override
-                public View createView(Runnable suggestionAction, Runnable buttonAction,
-                        boolean showSendFeedbackView, boolean isIncognito) {
-                    return new View(((TabImpl) tab).getThemedApplicationContext());
+                public View createView(Context context, Runnable suggestionAction,
+                        Runnable buttonAction, boolean showSendFeedbackView, boolean isIncognito) {
+                    return new View(context);
                 }
             };
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 SadTab.initForTesting(tab, sadTab);
-                sadTab.show();
+                sadTab.show(((TabImpl) tab).getThemedApplicationContext(), () -> {}, () -> {});
             });
         }
     }
@@ -146,7 +152,7 @@ public class TabTestUtils {
      *                            //ui/base/mojo/window_open_disposition.mojom.
      * @param isRendererInitiated Whether or not the renderer initiated this action.
      */
-    public static void openNewTab(Tab tab, String url, String extraHeaders,
+    public static void openNewTab(Tab tab, GURL url, String extraHeaders,
             ResourceRequestBody postData, int disposition, boolean isRendererInitiated) {
         getTabWebContentsDelegate(tab).openNewTab(
                 url, extraHeaders, postData, disposition, isRendererInitiated);
@@ -167,5 +173,17 @@ public class TabTestUtils {
      */
     public static void setIsShowingErrorPage(Tab tab, boolean isShowingErrorPage) {
         ((TabImpl) tab).setIsShowingErrorPage(isShowingErrorPage);
+    }
+
+    /**
+     * Verify a ByteBuffer is equal to a byte array.
+     * @param expected bytes expected in ByteBuffer, stored as a byte array.
+     * @param actual ByteBuffer found to be compared to the byte array.
+     */
+    public static void verifyByteBuffer(byte[] expected, ByteBuffer actual) {
+        Assert.assertEquals(expected.length, actual.limit());
+        for (int i = 0; i < actual.limit(); i++) {
+            Assert.assertEquals(expected[i], actual.get());
+        }
     }
 }

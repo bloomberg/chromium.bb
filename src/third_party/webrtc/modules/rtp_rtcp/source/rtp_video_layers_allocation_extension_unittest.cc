@@ -11,6 +11,7 @@
 #include "modules/rtp_rtcp/source/rtp_video_layers_allocation_extension.h"
 
 #include "api/video/video_layers_allocation.h"
+#include "rtc_base/bit_buffer.h"
 #include "rtc_base/buffer.h"
 
 #include "test/gmock.h"
@@ -18,13 +19,31 @@
 namespace webrtc {
 namespace {
 
-TEST(RtpVideoLayersAllocationExtension,
-     WriteEmptyLayersAllocationReturnsFalse) {
+TEST(RtpVideoLayersAllocationExtension, WriteEmptyLayersAllocationReturnsTrue) {
   VideoLayersAllocation written_allocation;
   rtc::Buffer buffer(
       RtpVideoLayersAllocationExtension::ValueSize(written_allocation));
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       RtpVideoLayersAllocationExtension::Write(buffer, written_allocation));
+}
+
+TEST(RtpVideoLayersAllocationExtension,
+     CanWriteAndParseLayersAllocationWithZeroSpatialLayers) {
+  // We require the resolution_and_frame_rate_is_valid to be set to true in
+  // order to send an "empty" allocation.
+  VideoLayersAllocation written_allocation;
+  written_allocation.resolution_and_frame_rate_is_valid = true;
+  written_allocation.rtp_stream_index = 0;
+
+  rtc::Buffer buffer(
+      RtpVideoLayersAllocationExtension::ValueSize(written_allocation));
+  EXPECT_TRUE(
+      RtpVideoLayersAllocationExtension::Write(buffer, written_allocation));
+
+  VideoLayersAllocation parsed_allocation;
+  EXPECT_TRUE(
+      RtpVideoLayersAllocationExtension::Parse(buffer, &parsed_allocation));
+  EXPECT_EQ(written_allocation, parsed_allocation);
 }
 
 TEST(RtpVideoLayersAllocationExtension,
@@ -50,6 +69,96 @@ TEST(RtpVideoLayersAllocationExtension,
           /*height*/ 0,
           /*frame_rate_fps*/ 0,
       },
+  };
+  rtc::Buffer buffer(
+      RtpVideoLayersAllocationExtension::ValueSize(written_allocation));
+  EXPECT_TRUE(
+      RtpVideoLayersAllocationExtension::Write(buffer, written_allocation));
+  VideoLayersAllocation parsed_allocation;
+  EXPECT_TRUE(
+      RtpVideoLayersAllocationExtension::Parse(buffer, &parsed_allocation));
+  EXPECT_EQ(written_allocation, parsed_allocation);
+}
+
+TEST(RtpVideoLayersAllocationExtension,
+     CanWriteAndParseAllocationWithDifferentNumerOfSpatialLayers) {
+  VideoLayersAllocation written_allocation;
+  written_allocation.rtp_stream_index = 1;
+  written_allocation.active_spatial_layers = {
+      {/*rtp_stream_index*/ 0,
+       /*spatial_id*/ 0,
+       /*target_bitrate_per_temporal_layer*/ {DataRate::KilobitsPerSec(50)},
+       /*width*/ 0,
+       /*height*/ 0,
+       /*frame_rate_fps*/ 0},
+      {/*rtp_stream_index*/ 1,
+       /*spatial_id*/ 0,
+       /*target_bitrate_per_temporal_layer*/ {DataRate::KilobitsPerSec(100)},
+       /*width*/ 0,
+       /*height*/ 0,
+       /*frame_rate_fps*/ 0},
+      {/*rtp_stream_index*/ 1,
+       /*spatial_id*/ 1,
+       /*target_bitrate_per_temporal_layer*/ {DataRate::KilobitsPerSec(200)},
+       /*width*/ 0,
+       /*height*/ 0,
+       /*frame_rate_fps*/ 0},
+  };
+  rtc::Buffer buffer(
+      RtpVideoLayersAllocationExtension::ValueSize(written_allocation));
+  EXPECT_TRUE(
+      RtpVideoLayersAllocationExtension::Write(buffer, written_allocation));
+  VideoLayersAllocation parsed_allocation;
+  EXPECT_TRUE(
+      RtpVideoLayersAllocationExtension::Parse(buffer, &parsed_allocation));
+  EXPECT_EQ(written_allocation, parsed_allocation);
+}
+
+TEST(RtpVideoLayersAllocationExtension,
+     CanWriteAndParseAllocationWithSkippedLowerSpatialLayer) {
+  VideoLayersAllocation written_allocation;
+  written_allocation.rtp_stream_index = 1;
+  written_allocation.active_spatial_layers = {
+      {/*rtp_stream_index*/ 0,
+       /*spatial_id*/ 0,
+       /*target_bitrate_per_temporal_layer*/ {DataRate::KilobitsPerSec(50)},
+       /*width*/ 0,
+       /*height*/ 0,
+       /*frame_rate_fps*/ 0},
+      {/*rtp_stream_index*/ 1,
+       /*spatial_id*/ 1,
+       /*target_bitrate_per_temporal_layer*/ {DataRate::KilobitsPerSec(200)},
+       /*width*/ 0,
+       /*height*/ 0,
+       /*frame_rate_fps*/ 0},
+  };
+  rtc::Buffer buffer(
+      RtpVideoLayersAllocationExtension::ValueSize(written_allocation));
+  EXPECT_TRUE(
+      RtpVideoLayersAllocationExtension::Write(buffer, written_allocation));
+  VideoLayersAllocation parsed_allocation;
+  EXPECT_TRUE(
+      RtpVideoLayersAllocationExtension::Parse(buffer, &parsed_allocation));
+  EXPECT_EQ(written_allocation, parsed_allocation);
+}
+
+TEST(RtpVideoLayersAllocationExtension,
+     CanWriteAndParseAllocationWithSkippedRtpStreamIds) {
+  VideoLayersAllocation written_allocation;
+  written_allocation.rtp_stream_index = 2;
+  written_allocation.active_spatial_layers = {
+      {/*rtp_stream_index*/ 0,
+       /*spatial_id*/ 0,
+       /*target_bitrate_per_temporal_layer*/ {DataRate::KilobitsPerSec(50)},
+       /*width*/ 0,
+       /*height*/ 0,
+       /*frame_rate_fps*/ 0},
+      {/*rtp_stream_index*/ 2,
+       /*spatial_id*/ 0,
+       /*target_bitrate_per_temporal_layer*/ {DataRate::KilobitsPerSec(200)},
+       /*width*/ 0,
+       /*height*/ 0,
+       /*frame_rate_fps*/ 0},
   };
   rtc::Buffer buffer(
       RtpVideoLayersAllocationExtension::ValueSize(written_allocation));
@@ -110,7 +219,7 @@ TEST(RtpVideoLayersAllocationExtension,
           /*frame_rate_fps*/ 8,
       },
       {
-          /*rtp_stream_index*/ 0,
+          /*rtp_stream_index*/ 1,
           /*spatial_id*/ 1,
           /*target_bitrate_per_temporal_layer*/
           {DataRate::KilobitsPerSec(100), DataRate::KilobitsPerSec(200)},
@@ -128,6 +237,16 @@ TEST(RtpVideoLayersAllocationExtension,
   EXPECT_TRUE(
       RtpVideoLayersAllocationExtension::Parse(buffer, &parsed_allocation));
   EXPECT_EQ(written_allocation, parsed_allocation);
+}
+
+TEST(RtpVideoLayersAllocationExtension,
+     WriteEmptyAllocationCanHaveAnyRtpStreamIndex) {
+  VideoLayersAllocation written_allocation;
+  written_allocation.rtp_stream_index = 1;
+  rtc::Buffer buffer(
+      RtpVideoLayersAllocationExtension::ValueSize(written_allocation));
+  EXPECT_TRUE(
+      RtpVideoLayersAllocationExtension::Write(buffer, written_allocation));
 }
 
 }  // namespace

@@ -5,7 +5,8 @@
 #ifndef WEBLAYER_BROWSER_URL_BAR_URL_BAR_CONTROLLER_IMPL_H_
 #define WEBLAYER_BROWSER_URL_BAR_URL_BAR_CONTROLLER_IMPL_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "build/build_config.h"
 #include "components/omnibox/browser/location_bar_model_delegate.h"
 #include "weblayer/public/url_bar_controller.h"
@@ -35,20 +36,18 @@ class UrlBarControllerImpl : public UrlBarController,
   base::android::ScopedJavaLocalRef<jstring> GetUrlForDisplay(JNIEnv* env);
   base::android::ScopedJavaLocalRef<jstring> GetPublisherUrl(JNIEnv* env);
   jint GetConnectionSecurityLevel(JNIEnv* env);
-  jboolean ShouldShowDangerTriangleForWarningLevel(JNIEnv* env);
 #endif
 
   // UrlBarController:
-  base::string16 GetUrlForDisplay() override;
+  std::u16string GetUrlForDisplay() override;
   security_state::SecurityLevel GetConnectionSecurityLevel() override;
-  bool ShouldShowDangerTriangleForWarningLevel() override;
 
   // LocationBarModelDelegate:
   bool GetURL(GURL* url) const override;
   bool ShouldTrimDisplayUrlAfterHostName() const override;
-  base::string16 FormattedStringWithEquivalentMeaning(
+  std::u16string FormattedStringWithEquivalentMeaning(
       const GURL& url,
-      const base::string16& formatted_url) const override;
+      const std::u16string& formatted_url) const override;
 
  private:
   content::WebContents* GetActiveWebContents() const;

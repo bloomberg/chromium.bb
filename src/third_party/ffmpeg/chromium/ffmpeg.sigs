@@ -23,6 +23,8 @@ const AVCodecDescriptor *avcodec_descriptor_get(enum AVCodecID id);
 int avcodec_parameters_to_context(AVCodecContext *codec, const AVCodecParameters *par);
 int avcodec_send_packet(AVCodecContext *avctx, const AVPacket *avpkt);
 int avcodec_receive_frame(AVCodecContext *avctx, AVFrame *frame);
+AVPacket *av_packet_alloc(void);
+void av_packet_free(AVPacket **pkt);
 
 // RDFT functions.
 RDFTContext *av_rdft_init(int nbits, enum RDFTransformType trans);

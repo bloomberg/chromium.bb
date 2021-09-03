@@ -20,10 +20,9 @@ android_library("java") {
     ":java_resources",
     ":subresource_filter_jni_headers",
     "//base:base_java",
-    "//base:jni_java",
     "//components/infobars/android:infobar_android_enums_java",
     "//components/infobars/android:java",
-    "//third_party/android_deps:androidx_appcompat_appcompat_java",
+    "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//ui/android:ui_no_recycler_view_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -31,25 +30,11 @@ android_library("java") {
 }
 
 source_set("android") {
-  sources = [
-    "ads_blocked_infobar.cc",
-    "ads_blocked_infobar.h",
-    "ads_blocked_infobar_delegate.cc",
-    "ads_blocked_infobar_delegate.h",
-    "subresource_filter_feature_list.cc",
-  ]
+  sources = [ "subresource_filter_feature_list.cc" ]
   deps = [
     ":subresource_filter_jni_headers",
     "//base",
-    "//components/infobars/android",
-    "//components/infobars/content",
-    "//components/infobars/core",
-    "//components/resources:android_resources",
-    "//components/strings:components_strings_grit",
-    "//components/subresource_filter/content/browser",
     "//components/subresource_filter/core/browser",
-    "//content/public/browser",
-    "//ui/base",
   ]
 }
 

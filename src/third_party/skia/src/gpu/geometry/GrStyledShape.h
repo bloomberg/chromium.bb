@@ -44,44 +44,69 @@ public:
 
     GrStyledShape() {}
 
-    explicit GrStyledShape(const SkPath& path) : GrStyledShape(path, GrStyle::SimpleFill()) {}
+    enum class DoSimplify : bool { kNo = false, kYes };
 
-    explicit GrStyledShape(const SkRRect& rrect) : GrStyledShape(rrect, GrStyle::SimpleFill()) {}
+    explicit GrStyledShape(const SkPath& path, DoSimplify doSimplify = DoSimplify::kYes)
+            : GrStyledShape(path, GrStyle::SimpleFill(), doSimplify) {}
 
-    explicit GrStyledShape(const SkRect& rect) : GrStyledShape(rect, GrStyle::SimpleFill()) {}
+    explicit GrStyledShape(const SkRRect& rrect, DoSimplify doSimplify = DoSimplify::kYes)
+            : GrStyledShape(rrect, GrStyle::SimpleFill(), doSimplify) {}
 
-    GrStyledShape(const SkPath& path, const SkPaint& paint) : GrStyledShape(path, GrStyle(paint)) {}
+    explicit GrStyledShape(const SkRect& rect, DoSimplify doSimplify = DoSimplify::kYes)
+            : GrStyledShape(rect, GrStyle::SimpleFill(), doSimplify) {}
 
-    GrStyledShape(const SkRRect& rrect, const SkPaint& paint)
-            : GrStyledShape(rrect, GrStyle(paint)) {}
+    GrStyledShape(const SkPath& path, const SkPaint& paint,
+                  DoSimplify doSimplify = DoSimplify::kYes)
+            : GrStyledShape(path, GrStyle(paint), doSimplify) {}
 
-    GrStyledShape(const SkRect& rect, const SkPaint& paint) : GrStyledShape(rect, GrStyle(paint)) {}
+    GrStyledShape(const SkRRect& rrect, const SkPaint& paint,
+                  DoSimplify doSimplify = DoSimplify::kYes)
+            : GrStyledShape(rrect, GrStyle(paint), doSimplify) {}
 
-    GrStyledShape(const SkPath& path, const GrStyle& style) : fShape(path), fStyle(style) {
-        this->simplify();
+    GrStyledShape(const SkRect& rect, const SkPaint& paint,
+                  DoSimplify doSimplify = DoSimplify::kYes)
+            : GrStyledShape(rect, GrStyle(paint), doSimplify) {}
+
+    GrStyledShape(const SkPath& path, const GrStyle& style,
+                  DoSimplify doSimplify = DoSimplify::kYes)
+            : fShape(path), fStyle(style) {
+        if (doSimplify == DoSimplify::kYes) {
+            this->simplify();
+        }
     }
 
-    GrStyledShape(const SkRRect& rrect, const GrStyle& style) : fShape(rrect), fStyle(style) {
-        this->simplify();
+    GrStyledShape(const SkRRect& rrect, const GrStyle& style,
+                  DoSimplify doSimplify = DoSimplify::kYes)
+            : fShape(rrect), fStyle(style) {
+        if (doSimplify == DoSimplify::kYes) {
+            this->simplify();
+        }
     }
 
     GrStyledShape(const SkRRect& rrect, SkPathDirection dir, unsigned start, bool inverted,
-                  const GrStyle& style)
+                  const GrStyle& style, DoSimplify doSimplify = DoSimplify::kYes)
             : fShape(rrect)
             , fStyle(style) {
         fShape.setPathWindingParams(dir, start);
         fShape.setInverted(inverted);
-        this->simplify();
+        if (doSimplify == DoSimplify::kYes) {
+            this->simplify();
+        }
     }
 
-    GrStyledShape(const SkRect& rect, const GrStyle& style) : fShape(rect), fStyle(style) {
-        this->simplify();
+    GrStyledShape(const SkRect& rect, const GrStyle& style,
+                  DoSimplify doSimplify = DoSimplify::kYes)
+            : fShape(rect), fStyle(style) {
+        if (doSimplify == DoSimplify::kYes) {
+            this->simplify();
+        }
     }
 
     GrStyledShape(const GrStyledShape&);
 
     static GrStyledShape MakeArc(const SkRect& oval, SkScalar startAngleDegrees,
-                                 SkScalar sweepAngleDegrees, bool useCenter, const GrStyle& style);
+                                 SkScalar sweepAngleDegrees, bool useCenter, const GrStyle& style,
+                                 DoSimplify = DoSimplify::kYes);
 
     GrStyledShape& operator=(const GrStyledShape& that);
 
@@ -249,6 +274,13 @@ public:
     bool testingOnly_isPath() const;
     bool testingOnly_isNonVolatilePath() const;
 
+    /**
+     * Similar to GrShape::simplify but also takes into account style and stroking, possibly
+     * applying the style explicitly to produce a new analytic shape with a simpler style.
+     * Unless "doSimplify" is kNo, this method gets called automatically during construction.
+     */
+    void simplify();
+
 private:
     /** Constructor used by the applyStyle() function */
     GrStyledShape(const GrStyledShape& parentShape, GrStyle::Apply, SkScalar scale);
@@ -259,12 +291,11 @@ private:
      */
     void setInheritedKey(const GrStyledShape& parentShape, GrStyle::Apply, SkScalar scale);
 
-    // Similar to GrShape::simplify but also takes into account style and stroking, possibly
-    // applying the style explicitly to produce a new analytic shape with a simpler style.
-    void simplify();
-    // As part of the simplification process, some shapes can have stroking trivially evaluated
-    // and form a new geometry with just a fill.
-    bool simplifyStroke(bool originallyClosed);
+    /**
+     * As part of the simplification process, some shapes can have stroking trivially evaluated
+     * and form a new geometry with just a fill.
+     */
+    void simplifyStroke();
 
     /** Gets the path that gen id listeners should be added to. */
     const SkPath* originalPathForListeners() const;
@@ -273,6 +304,7 @@ private:
     GrStyle fStyle;
     // Gen ID of the original path (path may be modified or simplified away).
     int32_t fGenID      = 0;
+    bool    fClosed     = false;
     bool    fSimplified = false;
 
     SkTLazy<SkPath>            fInheritedPathForListeners;

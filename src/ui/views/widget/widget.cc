@@ -10,6 +10,8 @@
 #include "base/auto_reset.h"
 #include "base/check_op.h"
 #include "base/containers/adapters.h"
+#include "base/feature_list.h"
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
@@ -19,7 +21,9 @@
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/l10n/l10n_font_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_provider_manager.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
@@ -32,6 +36,7 @@
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/views_features.h"
 #include "ui/views/widget/any_widget_observer_singleton.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
@@ -42,6 +47,10 @@
 #include "ui/views/widget/widget_removals_observer.h"
 #include "ui/views/window/custom_frame_view.h"
 #include "ui/views/window/dialog_delegate.h"
+
+#if defined(OS_LINUX)
+#include "ui/views/linux_ui/linux_ui.h"
+#endif
 
 namespace views {
 
@@ -87,7 +96,9 @@ void NotifyCaretBoundsChanged(ui::InputMethod* input_method) {
 }  // namespace
 
 // static
-bool Widget::g_disable_activation_change_handling_ = false;
+Widget::DisableActivationChangeHandlingType
+    Widget::g_disable_activation_change_handling_ =
+        Widget::DisableActivationChangeHandlingType::kNone;
 
 // A default implementation of WidgetDelegate, used by Widget when no
 // WidgetDelegate is supplied.
@@ -142,8 +153,8 @@ Widget::InitParams::InitParams(InitParams&& other) = default;
 Widget::InitParams::~InitParams() = default;
 
 bool Widget::InitParams::CanActivate() const {
-  if (activatable != InitParams::ACTIVATABLE_DEFAULT)
-    return activatable == InitParams::ACTIVATABLE_YES;
+  if (activatable != InitParams::Activatable::kDefault)
+    return activatable == InitParams::Activatable::kYes;
   return type != InitParams::TYPE_CONTROL && type != InitParams::TYPE_POPUP &&
          type != InitParams::TYPE_MENU && type != InitParams::TYPE_TOOLTIP &&
          type != InitParams::TYPE_DRAG;
@@ -271,16 +282,18 @@ void Widget::ReparentNativeView(gfx::NativeView native_view,
 
 // static
 int Widget::GetLocalizedContentsWidth(int col_resource_id) {
-  return ui::GetLocalizedContentsWidthForFont(
-      col_resource_id, ui::ResourceBundle::GetSharedInstance().GetFontWithDelta(
-                           ui::kMessageFontSizeDelta));
+  return ui::GetLocalizedContentsWidthForFontList(
+      col_resource_id,
+      ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+          ui::kMessageFontSizeDelta));
 }
 
 // static
 int Widget::GetLocalizedContentsHeight(int row_resource_id) {
-  return ui::GetLocalizedContentsHeightForFont(
-      row_resource_id, ui::ResourceBundle::GetSharedInstance().GetFontWithDelta(
-                           ui::kMessageFontSizeDelta));
+  return ui::GetLocalizedContentsHeightForFontList(
+      row_resource_id,
+      ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+          ui::kMessageFontSizeDelta));
 }
 
 // static
@@ -335,8 +348,8 @@ void Widget::Init(InitParams params) {
     params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
 
   bool can_activate = params.CanActivate();
-  params.activatable =
-      can_activate ? InitParams::ACTIVATABLE_YES : InitParams::ACTIVATABLE_NO;
+  params.activatable = can_activate ? InitParams::Activatable::kYes
+                                    : InitParams::Activatable::kNo;
 
   widget_delegate_->SetCanActivate(can_activate);
 
@@ -394,7 +407,7 @@ void Widget::Init(InitParams params) {
     SetInitialBoundsForFramelessWindow(bounds);
   }
 
-  observer_manager_.Add(GetNativeTheme());
+  native_theme_observation_.Observe(GetNativeTheme());
   native_widget_initialized_ = true;
   native_widget_->OnWidgetInitDone();
 
@@ -493,6 +506,14 @@ const Widget* Widget::GetTopLevelWidget() const {
   // for toplevel so that InputMethod can remove itself from
   // focus manager.
   return is_top_level() ? this : native_widget_->GetTopLevelWidget();
+}
+
+Widget* Widget::GetPrimaryWindowWidget() {
+  return GetTopLevelWidget();
+}
+
+const Widget* Widget::GetPrimaryWindowWidget() const {
+  return const_cast<Widget*>(this)->GetPrimaryWindowWidget();
 }
 
 void Widget::SetContentsView(View* view) {
@@ -610,6 +631,15 @@ void Widget::CloseWithReason(ClosedReason closed_reason) {
   if (widget_delegate_ && !widget_delegate_->OnCloseRequested(closed_reason))
     return;
 
+  // Cancel widget close on focus lost. This is used in UI Devtools to lock
+  // bubbles and in some tests where we want to ignore spurious deactivation.
+  if (closed_reason == ClosedReason::kLostFocus &&
+      (g_disable_activation_change_handling_ ==
+           DisableActivationChangeHandlingType::kIgnore ||
+       g_disable_activation_change_handling_ ==
+           DisableActivationChangeHandlingType::kIgnoreDeactivationOnly))
+    return;
+
   // The actions below can cause this function to be called again, so mark
   // |this| as closed early. See crbug.com/714334
   widget_closed_ = true;
@@ -687,6 +717,7 @@ void Widget::ShowInactive() {
     saved_show_state_ = ui::SHOW_STATE_NORMAL;
   }
   native_widget_->Show(ui::SHOW_STATE_INACTIVE, gfx::Rect());
+  internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetShown(this);
 }
 
 void Widget::Activate() {
@@ -742,7 +773,10 @@ void Widget::SetFullscreen(bool fullscreen) {
   if (IsFullscreen() == fullscreen)
     return;
 
+  auto weak_ptr = GetWeakPtr();
   native_widget_->SetFullscreen(fullscreen);
+  if (!weak_ptr)
+    return;
 
   if (non_client_view_)
     non_client_view_->InvalidateLayout();
@@ -788,6 +822,19 @@ const ui::ThemeProvider* Widget::GetThemeProvider() const {
   const Widget* root_widget = GetTopLevelWidget();
   return (root_widget && root_widget != this) ? root_widget->GetThemeProvider()
                                               : nullptr;
+}
+
+const ui::ColorProvider* Widget::GetColorProvider() const {
+  auto color_scheme = GetNativeTheme()->GetDefaultSystemColorScheme();
+  auto theme_name = GetNativeTheme()->GetNativeThemeName();
+  return ui::ColorProviderManager::Get().GetColorProviderFor(
+      {(color_scheme == ui::NativeTheme::ColorScheme::kDark)
+           ? ui::ColorProviderManager::ColorMode::kDark
+           : ui::ColorProviderManager::ColorMode::kLight,
+       (color_scheme == ui::NativeTheme::ColorScheme::kPlatformHighContrast)
+           ? ui::ColorProviderManager::ContrastMode::kHigh
+           : ui::ColorProviderManager::ContrastMode::kNormal,
+       std::move(theme_name)});
 }
 
 FocusManager* Widget::GetFocusManager() {
@@ -877,7 +924,7 @@ void Widget::UpdateWindowTitle() {
 
   // Update the native frame's text. We do this regardless of whether or not
   // the native frame is being used, since this also updates the taskbar, etc.
-  base::string16 window_title = widget_delegate_->GetWindowTitle();
+  std::u16string window_title = widget_delegate_->GetWindowTitle();
   base::i18n::AdjustStringForLocaleDirection(&window_title);
   if (!native_widget_->SetWindowTitle(window_title))
     return;
@@ -898,6 +945,9 @@ FocusTraversable* Widget::GetFocusTraversable() {
 
 void Widget::ThemeChanged() {
   root_view_->ThemeChanged();
+
+  for (WidgetObserver& observer : observers_)
+    observer.OnWidgetThemeChanged(this);
 }
 
 void Widget::DeviceScaleFactorChanged(float old_device_scale_factor,
@@ -996,7 +1046,7 @@ void Widget::SetCapture(View* view) {
 
   if (native_widget_->IsMouseButtonDown())
     is_mouse_button_pressed_ = true;
-  root_view_->SetMouseHandler(view);
+  root_view_->SetMouseAndGestureHandler(view);
 }
 
 void Widget::ReleaseCapture() {
@@ -1043,6 +1093,10 @@ ui::GestureRecognizer* Widget::GetGestureRecognizer() {
   return native_widget_->GetGestureRecognizer();
 }
 
+ui::GestureConsumer* Widget::GetGestureConsumer() {
+  return native_widget_->GetGestureConsumer();
+}
+
 void Widget::OnSizeConstraintsChanged() {
   native_widget_->OnSizeConstraintsChanged();
   if (non_client_view_)
@@ -1055,8 +1109,7 @@ std::string Widget::GetName() const {
   return native_widget_->GetName();
 }
 
-std::unique_ptr<Widget::PaintAsActiveCallbackList::Subscription>
-Widget::RegisterPaintAsActiveChangedCallback(
+base::CallbackListSubscription Widget::RegisterPaintAsActiveChangedCallback(
     PaintAsActiveCallbackList::CallbackType callback) {
   return paint_as_active_callbacks_.Add(std::move(callback));
 }
@@ -1076,6 +1129,75 @@ base::WeakPtr<Widget> Widget::GetWeakPtr() {
 
 bool Widget::ShouldPaintAsActive() const {
   return native_widget_active_ || paint_as_active_refcount_;
+}
+
+void Widget::SetNativeTheme(ui::NativeTheme* native_theme) {
+  native_theme_ = native_theme;
+  native_theme_observation_.Reset();
+  if (native_theme)
+    native_theme_observation_.Observe(native_theme);
+  PropagateNativeThemeChanged();
+}
+
+int Widget::GetX() const {
+  return GetRestoredBounds().x();
+}
+
+int Widget::GetY() const {
+  return GetRestoredBounds().y();
+}
+
+int Widget::GetWidth() const {
+  return GetRestoredBounds().width();
+}
+
+int Widget::GetHeight() const {
+  return GetRestoredBounds().height();
+}
+
+bool Widget::GetVisible() const {
+  return IsVisible();
+}
+
+void Widget::SetX(int x) {
+  gfx::Rect bounds = GetRestoredBounds();
+  if (x == bounds.x())
+    return;
+  bounds.set_x(x);
+  SetBounds(bounds);
+}
+
+void Widget::SetY(int y) {
+  gfx::Rect bounds = GetRestoredBounds();
+  if (y == bounds.y())
+    return;
+  bounds.set_y(y);
+  SetBounds(bounds);
+}
+
+void Widget::SetWidth(int width) {
+  gfx::Rect bounds = GetRestoredBounds();
+  if (width == bounds.width())
+    return;
+  bounds.set_width(width);
+  SetBounds(bounds);
+}
+
+void Widget::SetHeight(int height) {
+  gfx::Rect bounds = GetRestoredBounds();
+  if (height == bounds.height())
+    return;
+  bounds.set_height(height);
+  SetBounds(bounds);
+}
+
+void Widget::SetVisible(bool visible) {
+  if (visible == IsVisible())
+    return;
+  if (visible)
+    Show();
+  else
+    Hide();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1100,7 +1222,11 @@ bool Widget::IsNativeWidgetInitialized() const {
 }
 
 bool Widget::OnNativeWidgetActivationChanged(bool active) {
-  if (g_disable_activation_change_handling_)
+  if (g_disable_activation_change_handling_ ==
+          DisableActivationChangeHandlingType::kIgnore ||
+      (g_disable_activation_change_handling_ ==
+           DisableActivationChangeHandlingType::kIgnoreDeactivationOnly &&
+       !active))
     return false;
 
   // On windows we may end up here before we've completed initialization (from
@@ -1500,19 +1626,6 @@ View* Widget::GetFocusTraversableParentView() {
 
 void Widget::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   TRACE_EVENT0("ui", "Widget::OnNativeThemeUpdated");
-
-  DCHECK(observer_manager_.IsObserving(observed_theme));
-
-#if defined(OS_APPLE) || defined(OS_WIN)
-  ui::NativeTheme* current_native_theme = observed_theme;
-#else
-  ui::NativeTheme* current_native_theme = GetNativeTheme();
-#endif
-  if (!observer_manager_.IsObserving(current_native_theme)) {
-    observer_manager_.RemoveAll();
-    observer_manager_.Add(current_native_theme);
-  }
-
   PropagateNativeThemeChanged();
 }
 
@@ -1541,6 +1654,25 @@ void Widget::DestroyRootView() {
 void Widget::OnDragWillStart() {}
 
 void Widget::OnDragComplete() {}
+
+const ui::NativeTheme* Widget::GetNativeTheme() const {
+  if (native_theme_)
+    return native_theme_;
+
+  if (base::FeatureList::IsEnabled(
+          features::kInheritNativeThemeFromParentWidget) &&
+      parent_)
+    return parent_->GetNativeTheme();
+
+#if defined(OS_LINUX)
+  if (const views::LinuxUI* linux_ui = views::LinuxUI::instance()) {
+    if (auto* native_theme = linux_ui->GetNativeTheme(GetNativeWindow()))
+      return native_theme;
+  }
+#endif
+
+  return ui::NativeTheme::GetInstanceForNativeUi();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, private:
@@ -1659,6 +1791,20 @@ void Widget::ClearFocusFromWidget() {
     focus_manager->ViewRemoved(root_view_.get());
 }
 
+BEGIN_METADATA_BASE(Widget)
+ADD_READONLY_PROPERTY_METADATA(const char*, ClassName)
+ADD_READONLY_PROPERTY_METADATA(gfx::Rect, ClientAreaBoundsInScreen)
+ADD_READONLY_PROPERTY_METADATA(std::string, Name)
+ADD_READONLY_PROPERTY_METADATA(gfx::Rect, RestoredBounds)
+ADD_READONLY_PROPERTY_METADATA(gfx::Rect, WindowBoundsInScreen)
+ADD_PROPERTY_METADATA(int, X)
+ADD_PROPERTY_METADATA(int, Y)
+ADD_PROPERTY_METADATA(int, Width)
+ADD_PROPERTY_METADATA(int, Height)
+ADD_PROPERTY_METADATA(bool, Visible)
+ADD_PROPERTY_METADATA(ui::ZOrderLevel, ZOrderLevel)
+END_METADATA
+
 namespace internal {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1670,3 +1816,10 @@ internal::NativeWidgetPrivate* NativeWidgetPrivate::AsNativeWidgetPrivate() {
 
 }  // namespace internal
 }  // namespace views
+
+DEFINE_ENUM_CONVERTERS(ui::ZOrderLevel,
+                       {ui::ZOrderLevel::kNormal, u"kNormal"},
+                       {ui::ZOrderLevel::kFloatingWindow, u"kFloatingWindow"},
+                       {ui::ZOrderLevel::kFloatingUIElement,
+                        u"kFloatingUIElement"},
+                       {ui::ZOrderLevel::kSecuritySurface, u"kSecuritySurface"})

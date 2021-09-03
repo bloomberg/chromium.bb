@@ -6,16 +6,18 @@
 
 #include <numeric>
 
+#include "base/callback_helpers.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_util.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
-#include "chromeos/dbus/cryptohome/cryptohome_client.h"
+#include "chromeos/cryptohome/userdataauth_util.h"
+#include "chromeos/dbus/userdataauth/userdataauth_client.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
@@ -72,7 +74,7 @@ void SizeCalculator::RemoveObserver(SizeCalculator::Observer* observer) {
 
 void SizeCalculator::NotifySizeCalculated(
     int64_t total_bytes,
-    const base::Optional<int64_t>& available_bytes) {
+    const absl::optional<int64_t>& available_bytes) {
   calculating_ = false;
   for (SizeCalculator::Observer& observer : observers_) {
     observer.OnSizeCalculated(calculation_type_, total_bytes, available_bytes);
@@ -159,15 +161,14 @@ void BrowsingDataSizeCalculator::PerformCalculation() {
 
   // Fetch the size of http cache in browsing data.
   browsing_data::ConditionalCacheCountingHelper::Count(
-      content::BrowserContext::GetDefaultStoragePartition(profile_),
-      base::Time(), base::Time::Max(),
+      profile_->GetDefaultStoragePartition(), base::Time(), base::Time::Max(),
       base::BindOnce(&BrowsingDataSizeCalculator::OnGetCacheSize,
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Fetch the size of site data in browsing data.
   if (!site_data_size_collector_.get()) {
     content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile_);
+        profile_->GetDefaultStoragePartition();
     site_data_size_collector_ = std::make_unique<SiteDataSizeCollector>(
         storage_partition->GetPath(),
         new browsing_data::CookieHelper(storage_partition,
@@ -179,11 +180,11 @@ void BrowsingDataSizeCalculator::PerformCalculation() {
         new browsing_data::IndexedDBHelper(storage_partition),
         browsing_data::FileSystemHelper::Create(
             storage_partition->GetFileSystemContext(),
-            browsing_data_file_system_util::GetAdditionalFileSystemTypes()),
+            browsing_data_file_system_util::GetAdditionalFileSystemTypes(),
+            storage_partition->GetNativeIOContext()),
         new browsing_data::ServiceWorkerHelper(
             storage_partition->GetServiceWorkerContext()),
-        new browsing_data::CacheStorageHelper(
-            storage_partition->GetCacheStorageContext()));
+        new browsing_data::CacheStorageHelper(storage_partition));
   }
   site_data_size_collector_->Fetch(
       base::BindOnce(&BrowsingDataSizeCalculator::OnGetBrowsingDataSize,
@@ -239,7 +240,7 @@ void AppsSizeCalculator::OnConnectionClosed() {
 void AppsSizeCalculator::AddObserver(SizeCalculator::Observer* observer) {
   // Start observing arc mojo connection when the first observer is added, to
   // allow the calculation of android apps.
-  if (!observers_.might_have_observers()) {
+  if (observers_.empty()) {
     arc::ArcServiceManager::Get()
         ->arc_bridge_service()
         ->storage_manager()
@@ -251,7 +252,7 @@ void AppsSizeCalculator::AddObserver(SizeCalculator::Observer* observer) {
 void AppsSizeCalculator::RemoveObserver(SizeCalculator::Observer* observer) {
   observers_.RemoveObserver(observer);
   // Stop observing arc connection if all observers have been removed.
-  if (!observers_.might_have_observers()) {
+  if (observers_.empty()) {
     arc::ArcServiceManager::Get()
         ->arc_bridge_service()
         ->storage_manager()
@@ -363,10 +364,12 @@ void OtherUsersSizeCalculator::PerformCalculation() {
     if (user->is_active())
       continue;
     other_users_.push_back(user);
-    CryptohomeClient::Get()->GetAccountDiskUsage(
-        cryptohome::CreateAccountIdentifierFromAccountId(user->GetAccountId()),
-        base::BindOnce(&OtherUsersSizeCalculator::OnGetOtherUserSize,
-                       weak_ptr_factory_.GetWeakPtr()));
+    user_data_auth::GetAccountDiskUsageRequest request;
+    *request.mutable_identifier() =
+        cryptohome::CreateAccountIdentifierFromAccountId(user->GetAccountId());
+    UserDataAuthClient::Get()->GetAccountDiskUsage(
+        request, base::BindOnce(&OtherUsersSizeCalculator::OnGetOtherUserSize,
+                                weak_ptr_factory_.GetWeakPtr()));
   }
   // We should show "0 B" if there is no other user.
   if (other_users_.empty()) {
@@ -375,8 +378,9 @@ void OtherUsersSizeCalculator::PerformCalculation() {
 }
 
 void OtherUsersSizeCalculator::OnGetOtherUserSize(
-    base::Optional<cryptohome::BaseReply> reply) {
-  user_sizes_.push_back(cryptohome::AccountDiskUsageReplyToUsageSize(reply));
+    absl::optional<user_data_auth::GetAccountDiskUsageReply> reply) {
+  user_sizes_.push_back(
+      user_data_auth::AccountDiskUsageReplyToUsageSize(reply));
   if (user_sizes_.size() != other_users_.size())
     return;
   int64_t other_users_total_bytes;

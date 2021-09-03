@@ -11,7 +11,6 @@
 #include "base/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "content/browser/background_fetch/background_fetch_test_base.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/background_fetch_description.h"
@@ -38,12 +37,6 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
   void GetIconDisplaySize(
       BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) override {
     std::move(callback).Run(gfx::Size(kIconDisplaySize, kIconDisplaySize));
-  }
-  void GetPermissionForOrigin(
-      const url::Origin& origin,
-      const WebContents::Getter& wc_getter,
-      GetPermissionForOriginCallback callback) override {
-    std::move(callback).Run(BackgroundFetchPermission::ALLOWED);
   }
   void CreateDownloadJob(
       base::WeakPtr<Client> client,
@@ -72,10 +65,12 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
                                                         std::move(response));
     if (complete_downloads_) {
       // Post a task so that Abort() can cancel this download before completing.
-      base::PostTask(
-          FROM_HERE, {ServiceWorkerContext::GetCoreThreadId()},
-          base::BindOnce(&FakeBackgroundFetchDelegate::CompleteDownload,
-                         base::Unretained(this), job_unique_id, guid));
+      BrowserThread::GetTaskRunnerForThread(
+          ServiceWorkerContext::GetCoreThreadId())
+          ->PostTask(
+              FROM_HERE,
+              base::BindOnce(&FakeBackgroundFetchDelegate::CompleteDownload,
+                             base::Unretained(this), job_unique_id, guid));
     }
   }
 
@@ -86,8 +81,8 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
   void MarkJobComplete(const std::string& job_unique_id) override {}
 
   void UpdateUI(const std::string& job_unique_id,
-                const base::Optional<std::string>& title,
-                const base::Optional<SkBitmap>& icon) override {
+                const absl::optional<std::string>& title,
+                const absl::optional<SkBitmap>& icon) override {
     ++ui_update_count_;
   }
 
@@ -114,7 +109,7 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
         job_unique_id, guid,
         std::make_unique<BackgroundFetchResult>(
             std::move(response), base::Time::Now(), base::FilePath(),
-            base::nullopt /* blob_handle */, 10u));
+            absl::nullopt /* blob_handle */, 10u));
     download_guid_to_url_map_.erase(guid);
   }
 
@@ -335,7 +330,7 @@ TEST_F(BackgroundFetchDelegateProxyTest, UpdateUI) {
   EXPECT_TRUE(controller.request_started_);
   EXPECT_TRUE(controller.request_completed_);
 
-  delegate_proxy_.UpdateUI(kExampleUniqueId, "Job 1 Complete!", base::nullopt,
+  delegate_proxy_.UpdateUI(kExampleUniqueId, "Job 1 Complete!", absl::nullopt,
                            base::DoNothing());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(delegate_->ui_update_count_, 1);

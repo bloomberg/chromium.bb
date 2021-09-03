@@ -9,19 +9,20 @@ import android.view.WindowManager;
 
 import androidx.test.filters.LargeTest;
 
-import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.ApplicationTestUtils;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.blink.mojom.ViewportFit;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.concurrent.TimeoutException;
 
@@ -36,11 +37,6 @@ public class DisplayCutoutTest {
     @Rule
     public DisplayCutoutTestRule mTestRule =
             new DisplayCutoutTestRule<ChromeActivity>(ChromeActivity.class);
-
-    @After
-    public void tearDown() throws Exception {
-        ApplicationTestUtils.finishActivity(mTestRule.getActivity());
-    }
 
     /**
      * Test that no safe area is applied when we have viewport fit auto
@@ -175,5 +171,41 @@ public class DisplayCutoutTest {
         mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);
         mTestRule.waitForLayoutInDisplayCutoutMode(
                 WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES);
+    }
+
+    /**
+     * Test that the display cutout mode requested by the activity (ex. by the Trusted Web Activity)
+     * takes precedence over the display cutout mode requested by the web page.
+     */
+    @Test
+    @LargeTest
+    public void testBrowserDisplayCutoutTakesPrecedence() throws Exception {
+        final ObservableSupplierImpl<Integer> browserCutoutModeSupplier =
+                TestThreadUtils.runOnUiThreadBlocking(
+                        () -> { return new ObservableSupplierImpl<Integer>(); });
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            browserCutoutModeSupplier.set(
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_DEFAULT);
+            Tab tab = mTestRule.getActivity().getActivityTab();
+            mTestRule.setDisplayCutoutController(
+                    DisplayCutoutTestRule.TestDisplayCutoutController.create(
+                            tab, browserCutoutModeSupplier));
+        });
+
+        mTestRule.enterFullscreen();
+        mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_COVER);
+
+        mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITH_CUTOUT);
+        mTestRule.waitForLayoutInDisplayCutoutMode(
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            browserCutoutModeSupplier.set(
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER);
+        });
+        mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);
+        mTestRule.waitForLayoutInDisplayCutoutMode(
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER);
     }
 }

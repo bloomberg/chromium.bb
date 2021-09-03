@@ -12,6 +12,7 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/engine/sync_encryption_handler.h"
+#include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 
 namespace syncer {
@@ -73,6 +74,7 @@ struct SyncStatus {
   bool has_keystore_key;
   base::Time keystore_migration_time;
   PassphraseType passphrase_type;
+  sync_pb::NigoriSpecifics::TrustedVaultDebugInfo trusted_vault_debug_info;
 
   // Per-datatype throttled status.
   ModelTypeSet throttled_types;

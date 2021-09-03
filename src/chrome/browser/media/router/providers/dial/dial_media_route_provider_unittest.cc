@@ -14,6 +14,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "chrome/browser/media/router/test/provider_test_helpers.h"
 #include "components/media_router/browser/route_message_util.h"
+#include "components/media_router/common/route_request_result.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -44,7 +45,7 @@ class TestDialMediaSinkServiceImpl : public DialMediaSinkServiceImpl {
     return &app_discovery_service_;
   }
 
-  SinkQueryByAppSubscription StartMonitoringAvailableSinksForApp(
+  base::CallbackListSubscription StartMonitoringAvailableSinksForApp(
       const std::string& app_name,
       const SinkQueryByAppCallback& callback) override {
     DoStartMonitoringAvailableSinksForApp(app_name);
@@ -112,16 +113,12 @@ class DialMediaRouteProviderTest : public ::testing::Test {
 
   void TearDown() override { provider_.reset(); }
 
-  void SetExpectedRouteResultCode(
-      RouteRequestResult::ResultCode expected_result_code) {
-    expected_result_code_ = expected_result_code;
-  }
-
-  void ExpectCreateRouteResult(const base::Optional<MediaRoute>& media_route,
-                               mojom::RoutePresentationConnectionPtr,
-                               const base::Optional<std::string>& error_text,
-                               RouteRequestResult::ResultCode result_code) {
-    EXPECT_EQ(expected_result_code_, result_code);
+  void ExpectRouteResult(RouteRequestResult::ResultCode expected_result_code,
+                         const absl::optional<MediaRoute>& media_route,
+                         mojom::RoutePresentationConnectionPtr,
+                         const absl::optional<std::string>& error_text,
+                         RouteRequestResult::ResultCode result_code) {
+    EXPECT_EQ(expected_result_code, result_code);
     if (result_code == RouteRequestResult::OK) {
       ASSERT_TRUE(media_route);
       route_ = std::make_unique<MediaRoute>(*media_route);
@@ -138,25 +135,27 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     EXPECT_EQ(expected_type, internal_message->type);
   }
 
-  void TestCreateRoute() {
+  void CreateRoute(const std::string& presentation_id = "presentationId") {
     const MediaSink::Id& sink_id = sink_.sink().id();
     std::vector<MediaSinkInternal> sinks = {sink_};
     mock_sink_service_.SetAvailableSinks("YouTube", sinks);
 
     MediaSource::Id source_id = "cast-dial:YouTube?clientId=12345";
-    std::string presentation_id = "presentationId";
-    url::Origin origin = url::Origin::Create(GURL("https://www.youtube.com"));
 
     // DialMediaRouteProvider doesn't send route list update following
     // CreateRoute, but MR will add the route returned in the response.
     EXPECT_CALL(mock_router_, OnRoutesUpdated(_, _, _, _)).Times(0);
     provider_->CreateRoute(
-        source_id, sink_id, presentation_id, origin, 1, base::TimeDelta(),
+        source_id, sink_id, presentation_id, origin_, 1, base::TimeDelta(),
         /* off_the_record */ false,
-        base::BindOnce(&DialMediaRouteProviderTest::ExpectCreateRouteResult,
-                       base::Unretained(this)));
+        base::BindOnce(&DialMediaRouteProviderTest::ExpectRouteResult,
+                       base::Unretained(this), RouteRequestResult::OK));
     base::RunLoop().RunUntilIdle();
+  }
 
+  void TestCreateRoute() {
+    const std::string presentation_id = "presentationId";
+    CreateRoute(presentation_id);
     ASSERT_TRUE(route_);
     EXPECT_EQ(presentation_id, route_->presentation_id());
     EXPECT_FALSE(route_->is_off_the_record());
@@ -172,12 +171,37 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
 
     // RECEIVER_ACTION and NEW_SESSION messages are sent from MRP to page when
-    // |CreateRoute()| succeeds.
+    // |provider_->CreateRoute()| succeeds.
     ASSERT_EQ(2u, received_messages.size());
     ExpectDialInternalMessageType(received_messages[0],
                                   DialInternalMessageType::kReceiverAction);
     ExpectDialInternalMessageType(received_messages[1],
                                   DialInternalMessageType::kNewSession);
+  }
+
+  void TestJoinRoute(
+      RouteRequestResult::ResultCode expected_result,
+      absl::optional<std::string> source_to_join = absl::nullopt,
+      absl::optional<std::string> presentation_to_join = absl::nullopt,
+      absl::optional<url::Origin> client_origin = absl::nullopt,
+      absl::optional<bool> client_incognito = absl::nullopt) {
+    CreateRoute();
+    ASSERT_TRUE(route_);
+
+    const std::string& source =
+        source_to_join ? *source_to_join : route_->media_source().id();
+    const std::string& presentation = presentation_to_join
+                                          ? *presentation_to_join
+                                          : route_->presentation_id();
+    const url::Origin& origin = client_origin ? *client_origin : origin_;
+    const bool incognito =
+        client_incognito ? *client_incognito : route_->is_off_the_record();
+
+    provider_->JoinRoute(
+        source, presentation, origin, /*tab_id*/ 5, base::TimeDelta(),
+        incognito,
+        base::BindOnce(&DialMediaRouteProviderTest::ExpectRouteResult,
+                       base::Unretained(this), expected_result));
   }
 
   // Note: |TestCreateRoute()| must be called first.
@@ -216,7 +240,6 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     ASSERT_EQ(1u, received_messages.size());
     ExpectDialInternalMessageType(received_messages[0],
                                   DialInternalMessageType::kCustomDialLaunch);
-    std::string error_unused;
     auto internal_message =
         ParseDialInternalMessage(*received_messages[0]->message);
     ASSERT_TRUE(internal_message);
@@ -273,7 +296,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     const MediaRoute::Id& route_id = route_->media_route_id();
     ASSERT_TRUE(app_instance_url_.is_valid());
     activity_manager_->SetExpectedRequest(app_instance_url_, "DELETE",
-                                          base::nullopt);
+                                          absl::nullopt);
     loader_factory_.AddResponse(app_instance_url_,
                                 network::mojom::URLResponseHead::New(), "",
                                 network::URLLoaderCompletionStatus());
@@ -313,7 +336,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
 
     ASSERT_TRUE(app_instance_url_.is_valid());
     activity_manager_->SetExpectedRequest(app_instance_url_, "DELETE",
-                                          base::nullopt);
+                                          absl::nullopt);
     loader_factory_.AddResponse(app_instance_url_,
                                 network::mojom::URLResponseHead::New(), "",
                                 network::URLLoaderCompletionStatus());
@@ -349,7 +372,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     const MediaRoute::Id& route_id = route_->media_route_id();
     ASSERT_TRUE(app_instance_url_.is_valid());
     activity_manager_->SetExpectedRequest(app_instance_url_, "DELETE",
-                                          base::nullopt);
+                                          absl::nullopt);
     loader_factory_.AddResponse(
         app_instance_url_, network::mojom::URLResponseHead::New(), "",
         network::URLLoaderCompletionStatus(net::HTTP_SERVICE_UNAVAILABLE));
@@ -378,7 +401,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
   }
 
   MOCK_METHOD2(OnTerminateRoute,
-               void(const base::Optional<std::string>&,
+               void(const absl::optional<std::string>&,
                     RouteRequestResult::ResultCode));
 
  protected:
@@ -395,14 +418,12 @@ class DialMediaRouteProviderTest : public ::testing::Test {
   TestDialActivityManager* activity_manager_ = nullptr;
   std::unique_ptr<DialMediaRouteProvider> provider_;
 
-  MediaSinkInternal sink_ = CreateDialSink(1);
-  RouteRequestResult::ResultCode expected_result_code_ = RouteRequestResult::OK;
+  MediaSinkInternal sink_{CreateDialSink(1)};
   std::unique_ptr<MediaRoute> route_;
-  int custom_dial_launch_seq_number_ = -1;
+  int custom_dial_launch_seq_number_{-1};
   GURL app_launch_url_;
   GURL app_instance_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(DialMediaRouteProviderTest);
+  url::Origin origin_{url::Origin::Create(GURL{"https://www.youtube.com"})};
 };
 
 TEST_F(DialMediaRouteProviderTest, AddRemoveSinkQuery) {
@@ -592,6 +613,30 @@ TEST_F(DialMediaRouteProviderTest, CreateRoute) {
   TestSendCustomDialLaunchMessage();
 }
 
+TEST_F(DialMediaRouteProviderTest, JoinRoute) {
+  TestJoinRoute(RouteRequestResult::OK);
+}
+
+TEST_F(DialMediaRouteProviderTest, JoinRouteFailsForWrongMediaSource) {
+  TestJoinRoute(RouteRequestResult::ROUTE_NOT_FOUND, "wrong-media-source");
+}
+
+TEST_F(DialMediaRouteProviderTest, JoinRouteFailsForWrongPresentationId) {
+  TestJoinRoute(RouteRequestResult::ROUTE_NOT_FOUND, absl::nullopt,
+                "wrong-presentation-id");
+}
+
+TEST_F(DialMediaRouteProviderTest, JoinRouteFailsForWrongOrigin) {
+  TestJoinRoute(RouteRequestResult::ROUTE_NOT_FOUND, absl::nullopt,
+                absl::nullopt,
+                url::Origin::Create(GURL("https://wrong-origin.com")));
+}
+
+TEST_F(DialMediaRouteProviderTest, JoinRouteFailsForIncognitoMismatch) {
+  TestJoinRoute(RouteRequestResult::ROUTE_NOT_FOUND, absl::nullopt,
+                absl::nullopt, absl::nullopt, true);
+}
+
 TEST_F(DialMediaRouteProviderTest, TerminateRoute) {
   TestCreateRoute();
   TestSendClientConnectMessage();
@@ -622,6 +667,57 @@ TEST_F(DialMediaRouteProviderTest, TerminateRouteFailsThenSucceeds) {
   TestSendCustomDialLaunchMessage();
   TestTerminateRouteFails();
   TestTerminateRoute();
+}
+
+TEST_F(DialMediaRouteProviderTest, GetDialAppinfoExtraData) {
+  const int seq_number = 12345;
+  const char kDialAppInfoRequestMessage[] = R"(
+      {
+        "type":"dial_app_info",
+        "sequenceNumber":%d,
+        "timeoutMillis":3000,
+        "clientId":"152127444812943594"
+      })";
+  std::map<std::string, std::string> extra_data = {
+      {"additionalKey1", "additional value 1"},
+      {"additionalKey2", "additional value 2"}};
+  TestCreateRoute();
+  TestSendClientConnectMessage();
+  TestSendCustomDialLaunchMessage();
+
+  const MediaRoute::Id& route_id = route_->media_route_id();
+  EXPECT_CALL(*mock_sink_service_.app_discovery_service(),
+              DoFetchDialAppInfo(_, _));
+  provider_->SendRouteMessage(
+      route_id, base::StringPrintf(kDialAppInfoRequestMessage, seq_number));
+  base::RunLoop().RunUntilIdle();
+  auto app_info_cb = mock_sink_service_.app_discovery_service()->PassCallback();
+  ASSERT_FALSE(app_info_cb.is_null());
+
+  auto app_info = CreateParsedDialAppInfoPtr("YouTube", DialAppState::kRunning);
+  app_info->extra_data = std::move(extra_data);
+  std::move(app_info_cb)
+      .Run(sink_.sink().id(), "YouTube",
+           DialAppInfoResult(std::move(app_info), DialAppInfoResultCode::kOk));
+
+  EXPECT_CALL(mock_router_, OnRouteMessagesReceived(route_id, _))
+      .WillOnce([&](const auto& route_id, auto messages) {
+        EXPECT_EQ(1UL, messages.size());
+        auto message = base::test::ParseJson(*messages[0]->message);
+
+        EXPECT_TRUE(message.FindStringKey("type"));
+        EXPECT_TRUE(message.FindIntKey("sequenceNumber"));
+        EXPECT_TRUE(message.FindStringPath("message.extraData.additionalKey1"));
+        EXPECT_TRUE(message.FindStringPath("message.extraData.additionalKey2"));
+
+        EXPECT_EQ("dial_app_info", *message.FindStringKey("type"));
+        EXPECT_EQ(seq_number, *message.FindIntKey("sequenceNumber"));
+        EXPECT_EQ("additional value 1",
+                  *message.FindStringPath("message.extraData.additionalKey1"));
+        EXPECT_EQ("additional value 2",
+                  *message.FindStringPath("message.extraData.additionalKey2"));
+      });
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace media_router

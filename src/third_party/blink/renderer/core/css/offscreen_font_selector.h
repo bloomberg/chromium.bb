@@ -27,8 +27,6 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
 
   unsigned Version() const override { return 1; }
 
-  void ReportNotDefGlyph() const override;
-
   void ReportSuccessfulFontFamilyMatch(
       const AtomicString& font_family_name) override;
 
@@ -60,6 +58,11 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
       const FontDescription& font_description,
       SimpleFontData* resulting_font_data) override;
 
+  void ReportNotDefGlyph() const override;
+
+  void ReportEmojiSegmentGlyphCoverage(unsigned num_clusters,
+                                       unsigned num_broken_clusters) override;
+
   scoped_refptr<FontData> GetFontData(const FontDescription&,
                                       const AtomicString&) override;
   void WillUseFontData(const FontDescription&,
@@ -81,7 +84,7 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
 
   void UpdateGenericFontFamilySettings(const GenericFontFamilySettings&);
 
-  FontFaceCache* GetFontFaceCache() override { return &font_face_cache_; }
+  FontFaceCache* GetFontFaceCache() override { return font_face_cache_; }
 
   bool IsPlatformFamilyMatchAvailable(
       const FontDescription&,
@@ -99,7 +102,7 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
  private:
   GenericFontFamilySettings generic_font_family_settings_;
 
-  FontFaceCache font_face_cache_;
+  Member<FontFaceCache> font_face_cache_;
 
   Member<WorkerGlobalScope> worker_;
 };

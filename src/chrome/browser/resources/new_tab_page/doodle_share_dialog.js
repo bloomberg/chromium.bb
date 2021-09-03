@@ -7,8 +7,10 @@ import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {BrowserProxy} from './browser_proxy.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {I18nBehavior} from './i18n_setup.js';
+import {WindowProxy} from './window_proxy.js';
 
 /**
  * The ID of the doodle app for Facebook. Used to share doodles to Facebook.
@@ -16,8 +18,13 @@ import {BrowserProxy} from './browser_proxy.js';
  */
 const FACEBOOK_APP_ID = 738026486351791;
 
-// Dialog that lets the user share the doodle.
-class DoodleShareDialogElement extends PolymerElement {
+/**
+ * Dialog that lets the user share the doodle.
+ * @polymer
+ * @extends {PolymerElement}
+ */
+class DoodleShareDialogElement extends mixinBehaviors
+([I18nBehavior], PolymerElement) {
   static get is() {
     return 'ntp-doodle-share-dialog';
   }
@@ -48,7 +55,7 @@ class DoodleShareDialogElement extends PolymerElement {
         `?app_id=${FACEBOOK_APP_ID}` +
         `&href=${encodeURIComponent(this.url.url)}` +
         `&hashtag=${encodeURIComponent('#GoogleDoodle')}`;
-    BrowserProxy.getInstance().open(url);
+    WindowProxy.getInstance().open(url);
     this.notifyShare_(newTabPage.mojom.DoodleShareChannel.kFacebook);
   }
 
@@ -56,7 +63,7 @@ class DoodleShareDialogElement extends PolymerElement {
   onTwitterClick_() {
     const url = 'https://twitter.com/intent/tweet' +
         `?text=${encodeURIComponent(`${this.title}\n${this.url.url}`)}`;
-    BrowserProxy.getInstance().open(url);
+    WindowProxy.getInstance().open(url);
     this.notifyShare_(newTabPage.mojom.DoodleShareChannel.kTwitter);
   }
 
@@ -64,7 +71,7 @@ class DoodleShareDialogElement extends PolymerElement {
   onEmailClick_() {
     const url = `mailto:?subject=${encodeURIComponent(this.title)}` +
         `&body=${encodeURIComponent(this.url.url)}`;
-    BrowserProxy.getInstance().navigate(url);
+    WindowProxy.getInstance().navigate(url);
     this.notifyShare_(newTabPage.mojom.DoodleShareChannel.kEmail);
   }
 

@@ -125,11 +125,14 @@ void FlagsDOMHandler::Init(
 
 void FlagsDOMHandler::HandleRequestExperimentalFeatures(
     const base::ListValue* args) {
+  const base::Value& callback_id = args->GetList()[0];
   experimental_features_requested_ = true;
   // Bail out if the handler hasn't been initialized yet. The request will be
   // handled after the initialization.
-  if (!flags_storage_)
+  if (!flags_storage_) {
+    web_ui()->ResolveJavascriptCallback(callback_id, base::Value());
     return;
+  }
 
   base::DictionaryValue results;
 
@@ -147,9 +150,7 @@ void FlagsDOMHandler::HandleRequestExperimentalFeatures(
   results.SetBoolean(flags_ui::kShowBetaChannelPromotion, false);
   results.SetBoolean(flags_ui::kShowDevChannelPromotion, false);
 
-  std::vector<const base::Value*> params{&results};
-  web_ui()->CallJavascriptFunction(flags_ui::kReturnExperimentalFeatures,
-                                   params);
+  web_ui()->ResolveJavascriptCallback(callback_id, results);
 }
 
 void FlagsDOMHandler::HandleEnableExperimentalFeatureMessage(
@@ -230,6 +231,7 @@ void FlagsUI::AddFlagsIOSStrings(web::WebUIIOSDataSource* source) {
   source->AddLocalizedString("reset", IDS_FLAGS_UI_PAGE_RESET);
   source->AddLocalizedString("reset-acknowledged",
                              IDS_FLAGS_UI_RESET_ACKNOWLEDGED);
+  source->AddLocalizedString("search-label", IDS_FLAGS_UI_SEARCH_LABEL);
   source->AddLocalizedString("search-placeholder",
                              IDS_FLAGS_UI_SEARCH_PLACEHOLDER);
   source->AddLocalizedString("title", IDS_FLAGS_UI_TITLE);

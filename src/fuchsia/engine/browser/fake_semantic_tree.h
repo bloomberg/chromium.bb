@@ -36,7 +36,9 @@ class FakeSemanticTree
   void Disconnect();
 
   void RunUntilNodeCountAtLeast(size_t count);
+  void RunUntilNodeWithLabelIsInTree(base::StringPiece label);
   void RunUntilCommitCountIs(size_t count);
+  void RunUntilCondititionIsTrue(base::RepeatingCallback<bool()> condition);
   void SetNodeUpdatedCallback(uint32_t node_id,
                               base::OnceClosure node_updated_callback);
   fuchsia::accessibility::semantics::Node* GetNodeWithId(uint32_t id);

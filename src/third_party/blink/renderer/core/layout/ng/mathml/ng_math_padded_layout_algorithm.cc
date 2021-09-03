@@ -27,18 +27,18 @@ LayoutUnit NGMathPaddedLayoutAlgorithm::RequestedVOffset() const {
   return ValueForLength(Style().GetMathPaddedVOffset(), LayoutUnit());
 }
 
-base::Optional<LayoutUnit> NGMathPaddedLayoutAlgorithm::RequestedAscent(
+absl::optional<LayoutUnit> NGMathPaddedLayoutAlgorithm::RequestedAscent(
     LayoutUnit content_ascent) const {
   if (Style().GetMathBaseline().IsAuto())
-    return base::nullopt;
+    return absl::nullopt;
   return std::max(LayoutUnit(),
                   ValueForLength(Style().GetMathBaseline(), content_ascent));
 }
 
-base::Optional<LayoutUnit> NGMathPaddedLayoutAlgorithm::RequestedDescent(
+absl::optional<LayoutUnit> NGMathPaddedLayoutAlgorithm::RequestedDescent(
     LayoutUnit content_descent) const {
   if (Style().GetMathPaddedDepth().IsAuto())
-    return base::nullopt;
+    return absl::nullopt;
   return std::max(LayoutUnit(), ValueForLength(Style().GetMathPaddedDepth(),
                                                content_descent));
 }
@@ -115,27 +115,25 @@ scoped_refptr<const NGLayoutResult> NGMathPaddedLayoutAlgorithm::Layout() {
 }
 
 MinMaxSizesResult NGMathPaddedLayoutAlgorithm::ComputeMinMaxSizes(
-    const MinMaxSizesInput& input) const {
+    const MinMaxSizesFloatInput&) const {
   if (auto result = CalculateMinMaxSizesIgnoringChildren(
           Node(), BorderScrollbarPadding()))
     return *result;
 
-  MinMaxSizes sizes;
-  bool depends_on_percentage_block_size = false;
-  sizes += BorderScrollbarPadding().InlineSum();
 
   NGBlockNode content = nullptr;
   GatherChildren(&content);
 
-  MinMaxSizesResult content_result =
-      ComputeMinAndMaxContentContribution(Style(), content, input);
-  NGBoxStrut content_margins = ComputeMinMaxMargins(Style(), content);
-  content_result.sizes += content_margins.InlineSum();
-  depends_on_percentage_block_size |=
-      content_result.depends_on_percentage_block_size;
+  const auto content_result = ComputeMinAndMaxContentContributionForMathChild(
+      Style(), ConstraintSpace(), content, ChildAvailableSize().block_size);
+
+  bool depends_on_block_constraints =
+      content_result.depends_on_block_constraints;
+  MinMaxSizes sizes;
   sizes += content_result.sizes;
 
-  return {sizes, depends_on_percentage_block_size};
+  sizes += BorderScrollbarPadding().InlineSum();
+  return MinMaxSizesResult(sizes, depends_on_block_constraints);
 }
 
 }  // namespace blink

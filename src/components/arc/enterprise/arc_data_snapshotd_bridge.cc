@@ -109,8 +109,71 @@ void ArcDataSnapshotdBridge::ClearSnapshot(
     return;
   }
   VLOG(1) << "ClearSnapshot via D-Bus";
-  // TODO(pbond): implement
-  std::move(callback).Run(true /* success */);
+  chromeos::DBusThreadManager::Get()
+      ->GetArcDataSnapshotdClient()
+      ->ClearSnapshot(last, std::move(callback));
+}
+
+void ArcDataSnapshotdBridge::TakeSnapshot(
+    const std::string& account_id,
+    base::OnceCallback<void(bool)> callback) {
+  if (!is_available_) {
+    LOG(ERROR) << "TakeSnapshot call when D-Bus service is not available.";
+    std::move(callback).Run(false /* success */);
+    return;
+  }
+  VLOG(1) << "TakeSnapshot via D-Bus";
+  chromeos::DBusThreadManager::Get()->GetArcDataSnapshotdClient()->TakeSnapshot(
+      account_id, std::move(callback));
+}
+
+void ArcDataSnapshotdBridge::LoadSnapshot(
+    const std::string& account_id,
+    base::OnceCallback<void(bool, bool)> callback) {
+  if (!is_available_) {
+    LOG(ERROR) << "LoadSnapshot call when D-Bus service is not available.";
+    std::move(callback).Run(false /* success */, false /* last */);
+    return;
+  }
+  VLOG(1) << "LoadSnapshot via D-Bus";
+  chromeos::DBusThreadManager::Get()->GetArcDataSnapshotdClient()->LoadSnapshot(
+      account_id, std::move(callback));
+}
+
+void ArcDataSnapshotdBridge::Update(int percent,
+                                    base::OnceCallback<void(bool)> callback) {
+  if (!is_available_) {
+    LOG(ERROR) << "Update call when D-Bus service is not available.";
+    std::move(callback).Run(false /* success */);
+    return;
+  }
+  VLOG(1) << "Update via D-Bus";
+  chromeos::DBusThreadManager::Get()->GetArcDataSnapshotdClient()->Update(
+      percent, std::move(callback));
+}
+
+void ArcDataSnapshotdBridge::ConnectToUiCancelledSignal(
+    base::RepeatingClosure signal_callback) {
+  if (!is_available_) {
+    LOG(ERROR) << "Connection to UiCancelled signal when D-Bus service is not "
+               << "available.";
+    return;
+  }
+  VLOG(1) << "Connect to UiCancelled D-Bus signal.";
+  chromeos::DBusThreadManager::Get()
+      ->GetArcDataSnapshotdClient()
+      ->ConnectToUiCancelledSignal(
+          std::move(signal_callback),
+          base::BindOnce(
+              &ArcDataSnapshotdBridge::OnUiCancelledSignalConnectedCallback,
+              weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ArcDataSnapshotdBridge::OnUiCancelledSignalConnectedCallback(
+    bool success) {
+  if (!success)
+    LOG(ERROR) << "UiCancelled signal connection failed, will not cancel "
+               << "snapshot generation from UI";
 }
 
 }  // namespace data_snapshotd

@@ -7,10 +7,10 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,6 +24,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MAC) || \
     defined(OS_WIN)
@@ -162,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
                        LocalUrlsDoNotCallObserver) {
   EXPECT_CALL(holder_, OnResult(_)).Times(0);
   NavigateAndWait("about:blank", kWaitNoExpectedCall);
-  EXPECT_EQ(GetLatestResult(web_contents_), base::nullopt);
+  EXPECT_EQ(GetLatestResult(web_contents_), absl::nullopt);
 }
 
 using DistillablePageUtilsBrowserTestNone =
@@ -171,7 +172,7 @@ using DistillablePageUtilsBrowserTestNone =
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestNone, NeverCallObserver) {
   EXPECT_CALL(holder_, OnResult(_)).Times(0);
   NavigateAndWait(kSimpleArticlePath, kWaitNoExpectedCall);
-  EXPECT_EQ(GetLatestResult(web_contents_), base::nullopt);
+  EXPECT_EQ(GetLatestResult(web_contents_), absl::nullopt);
 }
 
 using DistillablePageUtilsBrowserTestOGArticle =
@@ -311,6 +312,6 @@ IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAllArticles,
                                           "IsPageDistillable"),
               Pointee(false));
 }
-#endif  // OS_CHROMEOS || OS_LINUX || OS_MACOS || OS_WIN
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH) || OS_LINUX || OS_MACOS || OS_WIN
 
 }  // namespace dom_distiller

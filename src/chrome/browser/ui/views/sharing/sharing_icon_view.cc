@@ -7,6 +7,8 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -85,7 +87,7 @@ void SharingIconView::UpdateImpl() {
 
   const bool is_bubble_showing = IsBubbleShowing();
   const bool is_visible =
-      is_bubble_showing || IsLoadingAnimationVisible() || label()->GetVisible();
+      is_bubble_showing || loading_animation_ || label()->GetVisible();
 
   SetVisible(is_visible);
   UpdateInkDrop(is_bubble_showing);
@@ -135,8 +137,8 @@ void SharingIconView::UpdateOpacity() {
 void SharingIconView::UpdateInkDrop(bool activate) {
   auto target_state =
       activate ? views::InkDropState::ACTIVATED : views::InkDropState::HIDDEN;
-  if (GetInkDrop()->GetTargetInkDropState() != target_state)
-    AnimateInkDrop(target_state, /*event=*/nullptr);
+  if (ink_drop()->GetInkDrop()->GetTargetInkDropState() != target_state)
+    ink_drop()->AnimateToState(target_state, /*event=*/nullptr);
 }
 
 bool SharingIconView::IsTriggerableEvent(const ui::Event& event) {
@@ -151,10 +153,6 @@ const gfx::VectorIcon& SharingIconView::GetVectorIconBadge() const {
 void SharingIconView::OnExecuting(
     PageActionIconView::ExecuteSource execute_source) {}
 
-bool SharingIconView::IsLoadingAnimationVisible() {
-  return loading_animation_;
-}
-
 views::BubbleDialogDelegate* SharingIconView::GetBubble() const {
   auto* controller = GetController();
   return controller ? get_bubble_callback_.Run(controller->dialog()) : nullptr;
@@ -165,12 +163,11 @@ const gfx::VectorIcon& SharingIconView::GetVectorIcon() const {
   return controller ? controller->GetVectorIcon() : gfx::kNoneIcon;
 }
 
-base::string16 SharingIconView::GetTextForTooltipAndAccessibleName() const {
+std::u16string SharingIconView::GetTextForTooltipAndAccessibleName() const {
   auto* controller = GetController();
   return controller ? controller->GetTextForTooltipAndAccessibleName()
-                    : base::string16();
+                    : std::u16string();
 }
 
-const char* SharingIconView::GetClassName() const {
-  return "SharingIconView";
-}
+BEGIN_METADATA(SharingIconView, PageActionIconView)
+END_METADATA

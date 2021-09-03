@@ -18,11 +18,11 @@
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "media/fuchsia/cdm/service/provisioning_fetcher_impl.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace media {
@@ -126,7 +126,7 @@ std::string HexEncodeHash(const std::string& name) {
 }
 
 // Returns a nullopt if storage was created successfully.
-base::Optional<base::File::Error> CreateStorageDirectory(base::FilePath path) {
+absl::optional<base::File::Error> CreateStorageDirectory(base::FilePath path) {
   base::File::Error error;
   bool success = base::CreateDirectoryAndGetError(path, &error);
   if (!success) {
@@ -168,10 +168,9 @@ class FuchsiaCdmManager::KeySystemClient {
       CreateFetcherCB create_fetcher_callback,
       fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
           request) {
-    base::Optional<DataStoreId> data_store_id = GetDataStoreIdForPath(
+    absl::optional<DataStoreId> data_store_id = GetDataStoreIdForPath(
         std::move(storage_path), std::move(create_fetcher_callback));
     if (!data_store_id) {
-      DLOG(ERROR) << "Unable to create DataStore for path: " << storage_path;
       request.Close(ZX_ERR_NO_RESOURCES);
       return;
     }
@@ -187,7 +186,7 @@ class FuchsiaCdmManager::KeySystemClient {
  private:
   using DataStoreId = uint32_t;
 
-  base::Optional<DataStoreId> GetDataStoreIdForPath(
+  absl::optional<DataStoreId> GetDataStoreIdForPath(
       base::FilePath storage_path,
       CreateFetcherCB create_fetcher_callback) {
     // If we have already added a data store id for that path, just use that
@@ -201,7 +200,7 @@ class FuchsiaCdmManager::KeySystemClient {
         base::OpenDirectoryHandle(storage_path);
     if (!data_directory.is_valid()) {
       DLOG(ERROR) << "Unable to OpenDirectory " << storage_path;
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     auto provisioning_fetcher = std::make_unique<ProvisioningFetcherImpl>(
@@ -265,7 +264,7 @@ class FuchsiaCdmManager::KeySystemClient {
 FuchsiaCdmManager::FuchsiaCdmManager(
     CreateKeySystemCallbackMap create_key_system_callbacks_by_name,
     base::FilePath cdm_data_path,
-    base::Optional<uint64_t> cdm_data_quota_bytes)
+    absl::optional<uint64_t> cdm_data_quota_bytes)
     : create_key_system_callbacks_by_name_(
           std::move(create_key_system_callbacks_by_name)),
       cdm_data_path_(std::move(cdm_data_path)),
@@ -292,11 +291,12 @@ void FuchsiaCdmManager::CreateAndProvision(
 
   base::FilePath storage_path = GetStoragePath(key_system, origin);
 
+  auto task = base::BindOnce(&CreateStorageDirectory, storage_path);
   storage_task_runner_->PostTaskAndReplyWithResult(
-      FROM_HERE, base::BindOnce(&CreateStorageDirectory, storage_path),
+      FROM_HERE, std::move(task),
       base::BindOnce(&FuchsiaCdmManager::CreateCdm, weak_factory_.GetWeakPtr(),
                      key_system, std::move(create_fetcher_cb),
-                     std::move(request), storage_path));
+                     std::move(request), std::move(storage_path)));
 }
 
 void FuchsiaCdmManager::set_on_key_system_disconnect_for_test_callback(
@@ -352,7 +352,7 @@ void FuchsiaCdmManager::CreateCdm(
     fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
         request,
     base::FilePath storage_path,
-    base::Optional<base::File::Error> storage_creation_error) {
+    absl::optional<base::File::Error> storage_creation_error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (storage_creation_error) {

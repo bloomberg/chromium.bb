@@ -9,7 +9,6 @@
 
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "media/base/media_switches.h"
 #include "media/blink/url_index.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +21,8 @@ class UrlIndexTest : public testing::Test {
 
   scoped_refptr<UrlData> GetByUrl(const GURL& gurl,
                                   UrlData::CorsMode cors_mode) {
-    scoped_refptr<UrlData> ret = url_index_.GetByUrl(gurl, cors_mode);
+    scoped_refptr<UrlData> ret =
+        url_index_.GetByUrl(gurl, cors_mode, UrlIndex::kNormal);
     EXPECT_EQ(ret->url(), gurl);
     EXPECT_EQ(ret->cors_mode(), cors_mode);
     return ret;
@@ -153,6 +153,21 @@ TEST_F(UrlIndexTest, TryInsert) {
   // B is still valid, so it should be preferred over C.
   EXPECT_EQ(b, url_index_.TryInsert(c));
   EXPECT_EQ(b, GetByUrl(url, UrlData::CORS_UNSPECIFIED));
+}
+
+TEST_F(UrlIndexTest, GetByUrlCacheDisabled) {
+  GURL url("http://foo.bar.com");
+  UrlData::CorsMode cors = UrlData::CORS_UNSPECIFIED;
+
+  scoped_refptr<UrlData> url_data =
+      url_index_.GetByUrl(url, cors, UrlIndex::kNormal);
+  url_data->Use();
+  url_data->set_range_supported();
+  EXPECT_TRUE(url_data->Valid());
+  url_index_.TryInsert(url_data);
+
+  EXPECT_EQ(url_data, url_index_.GetByUrl(url, cors, UrlIndex::kNormal));
+  EXPECT_NE(url_data, url_index_.GetByUrl(url, cors, UrlIndex::kCacheDisabled));
 }
 
 }  // namespace media

@@ -16,6 +16,8 @@
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/focus_changed_observer.h"
+#include "third_party/blink/renderer/modules/xr/xr_enter_fullscreen_observer.h"
+#include "third_party/blink/renderer/modules/xr/xr_exit_fullscreen_observer.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -228,6 +230,21 @@ class XRSystem final : public EventTargetWithInlineData,
       return tracked_images_;
     }
 
+    void SetDepthSensingConfiguration(
+        const Vector<device::mojom::XRDepthUsage>& preferred_usage,
+        const Vector<device::mojom::XRDepthDataFormat>& preferred_format) {
+      preferred_usage_ = preferred_usage;
+      preferred_format_ = preferred_format;
+    }
+
+    const Vector<device::mojom::XRDepthUsage>& PreferredUsage() const {
+      return preferred_usage_;
+    }
+
+    const Vector<device::mojom::XRDepthDataFormat>& PreferredFormat() const {
+      return preferred_format_;
+    }
+
     virtual void Trace(Visitor*) const;
 
    private:
@@ -252,6 +269,9 @@ class XRSystem final : public EventTargetWithInlineData,
     Member<Element> dom_overlay_element_;
 
     Vector<device::mojom::blink::XRTrackedImage> tracked_images_;
+
+    Vector<device::mojom::XRDepthUsage> preferred_usage_;
+    Vector<device::mojom::XRDepthDataFormat> preferred_format_;
 
     DISALLOW_COPY_AND_ASSIGN(PendingRequestSessionQuery);
   };
@@ -311,53 +331,6 @@ class XRSystem final : public EventTargetWithInlineData,
     DISALLOW_COPY_AND_ASSIGN(PendingSupportsSessionQuery);
   };
 
-  // Native event listener for fullscreen change / error events when starting an
-  // immersive-ar session that uses DOM Overlay mode. See
-  // OnRequestSessionReturned().
-  class OverlayFullscreenEventManager : public NativeEventListener {
-   public:
-    OverlayFullscreenEventManager(
-        XRSystem* xr,
-        XRSystem::PendingRequestSessionQuery*,
-        device::mojom::blink::RequestSessionResultPtr);
-    ~OverlayFullscreenEventManager() override;
-
-    // NativeEventListener
-    void Invoke(ExecutionContext*, Event*) override;
-
-    void RequestFullscreen();
-    void OnSessionStarting();
-
-    void Trace(Visitor*) const override;
-
-   private:
-    Member<XRSystem> xr_;
-    Member<PendingRequestSessionQuery> query_;
-    device::mojom::blink::RequestSessionResultPtr result_;
-    DISALLOW_COPY_AND_ASSIGN(OverlayFullscreenEventManager);
-  };
-
-  // Native event listener used when waiting for fullscreen mode to fully exit
-  // when starting or ending an XR session.
-  class OverlayFullscreenExitObserver : public NativeEventListener {
-   public:
-    explicit OverlayFullscreenExitObserver(XRSystem* xr);
-    ~OverlayFullscreenExitObserver() override;
-
-    // NativeEventListener
-    void Invoke(ExecutionContext*, Event*) override;
-
-    void ExitFullscreen(Document* doc, base::OnceClosure on_exited);
-
-    void Trace(Visitor*) const override;
-
-   private:
-    Member<XRSystem> xr_;
-    Member<Document> document_;
-    base::OnceClosure on_exited_;
-    DISALLOW_COPY_AND_ASSIGN(OverlayFullscreenExitObserver);
-  };
-
   // Helper, logs message to the console as well as DVLOGs.
   void AddConsoleMessage(mojom::blink::ConsoleMessageLevel error_level,
                          const String& message);
@@ -386,10 +359,14 @@ class XRSystem final : public EventTargetWithInlineData,
   void DoRequestSession(
       PendingRequestSessionQuery* query,
       device::mojom::blink::XRSessionOptionsPtr session_options);
-  void OnRequestSessionSetupForDomOverlay(
+  void OnRequestSessionReturned(
       PendingRequestSessionQuery*,
       device::mojom::blink::RequestSessionResultPtr result);
-  void OnRequestSessionReturned(
+  void OnFullscreenConfigured(
+      PendingRequestSessionQuery* query,
+      device::mojom::blink::RequestSessionResultPtr result,
+      bool fullscreen_succeeded);
+  void FinishSessionCreation(
       PendingRequestSessionQuery*,
       device::mojom::blink::RequestSessionResultPtr result);
   void OnSupportsSessionReturned(PendingSupportsSessionQuery*,
@@ -427,6 +404,11 @@ class XRSystem final : public EventTargetWithInlineData,
 
   void TryEnsureService();
 
+  // Helper, returns true if immersive AR session creation is supported.
+  // Currently, it checks whether AR is enabled in runtime features, and in web
+  // settings (controlled by enterprise policy).
+  bool IsImmersiveArAllowed();
+
   // Indicates whether use of requestDevice has already been logged.
   bool did_log_supports_immersive_ = false;
 
@@ -446,8 +428,7 @@ class XRSystem final : public EventTargetWithInlineData,
   HeapHashSet<WeakMember<XRSession>> sessions_;
   HeapMojoRemote<device::mojom::blink::VRService> service_;
   HeapMojoAssociatedRemote<
-      device::mojom::blink::XREnvironmentIntegrationProvider,
-      HeapMojoWrapperMode::kWithoutContextObserver>
+      device::mojom::blink::XREnvironmentIntegrationProvider>
       environment_provider_;
   HeapMojoReceiver<device::mojom::blink::VRServiceClient, XRSystem> receiver_;
 
@@ -461,11 +442,11 @@ class XRSystem final : public EventTargetWithInlineData,
   // In DOM overlay mode, use a fullscreen event listener to detect when
   // transition to fullscreen mode completes or fails, and reject/resolve
   // the pending request session promise accordingly.
-  Member<OverlayFullscreenEventManager> fullscreen_event_manager_;
+  Member<XrEnterFullscreenObserver> fullscreen_enter_observer_;
   // DOM overlay mode uses a separate temporary fullscreen event listener
   // if it needs to wait for fullscreen mode to fully exit when ending
   // the session.
-  Member<OverlayFullscreenExitObserver> fullscreen_exit_observer_;
+  Member<XrExitFullscreenObserver> fullscreen_exit_observer_;
 
   bool is_context_destroyed_ = false;
   bool did_service_ever_disconnect_ = false;

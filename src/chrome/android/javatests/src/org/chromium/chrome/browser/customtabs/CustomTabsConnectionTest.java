@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static org.junit.Assert.assertEquals;
-
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_LOW_END_DEVICE;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
@@ -35,13 +33,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.MetricsUtils;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
+import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -434,23 +430,6 @@ public class CustomTabsConnectionTest {
 
     /**
      * Tests that
-     * {@link
-     * CustomTabsConnection#mayLaunchUrlReportsNavigationPredictorService(CustomTabsSessionToken,
-     * Uri, Bundle, List)} succeeds.
-     */
-    @Test
-    @SmallTest
-    public void testMayLaunchUrlReportsNavigationPredictorService() throws Exception {
-        MetricsUtils.HistogramDelta delta = new MetricsUtils.HistogramDelta(
-                "NavigationPredictor.ExternalAndroidApp.CountPredictedURLs", 1);
-        assertWarmupAndMayLaunchUrl(null, URL, true);
-
-        CriteriaHelper.pollUiThread(() -> delta.getDelta() > 0);
-        assertEquals(1, delta.getDelta());
-    }
-
-    /**
-     * Tests that
      * {@link CustomTabsConnection#mayLaunchUrl(CustomTabsSessionToken, Uri, Bundle, List)}
      * can be called several times with the same, and different URLs.
      */
@@ -623,8 +602,8 @@ public class CustomTabsConnectionTest {
         // Needs the browser process to be initialized.
         boolean enabled = TestThreadUtils.runOnUiThreadBlocking(() -> {
             boolean oldEnabled =
-                    PrivacyPreferencesManager.getInstance().getNetworkPredictionEnabled();
-            PrivacyPreferencesManager.getInstance().setNetworkPredictionEnabled(false);
+                    PrivacyPreferencesManagerImpl.getInstance().getNetworkPredictionEnabled();
+            PrivacyPreferencesManagerImpl.getInstance().setNetworkPredictionEnabled(false);
             return oldEnabled;
         });
 
@@ -635,8 +614,8 @@ public class CustomTabsConnectionTest {
         } finally {
             TestThreadUtils.runOnUiThreadBlocking(
                     ()
-                            -> PrivacyPreferencesManager.getInstance().setNetworkPredictionEnabled(
-                                    enabled));
+                            -> PrivacyPreferencesManagerImpl.getInstance()
+                                       .setNetworkPredictionEnabled(enabled));
         }
     }
 

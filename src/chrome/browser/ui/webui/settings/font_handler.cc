@@ -21,7 +21,7 @@
 #include "content/public/browser/web_ui.h"
 
 #if defined(OS_MAC)
-#include "chrome/browser/ui/webui/settings_utils.h"
+#include "chrome/browser/ui/webui/settings/settings_utils.h"
 #endif
 
 namespace settings {
@@ -64,7 +64,7 @@ void FontHandler::FontListHasLoaded(std::string callback_id,
     bool has_font = list->GetList(i, &font);
     DCHECK(has_font);
 
-    base::string16 value;
+    std::u16string value;
     bool has_value = font->GetString(1, &value);
     DCHECK(has_value);
 

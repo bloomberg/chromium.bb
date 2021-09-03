@@ -73,14 +73,15 @@ class ProtoToJSONRuleConverter {
     }
 
     // Sanity check that we can parse this rule.
-    base::string16 err;
+    std::u16string err;
     dnr_api::Rule rule;
     CHECK(dnr_api::Rule::Populate(json_rule_, &rule, &err) && err.empty())
         << "Converted rule can't be parsed " << json_rule_;
 
     IndexedRule indexed_rule;
-    ParseResult result = IndexedRule::CreateIndexedRule(
-        std::move(rule), GURL() /* base_url */, &indexed_rule);
+    ParseResult result =
+        IndexedRule::CreateIndexedRule(std::move(rule), GURL() /* base_url */,
+                                       kMinValidStaticRulesetID, &indexed_rule);
 
     auto get_non_ascii_error = [this](const std::string& context) {
       return base::StringPrintf(
@@ -407,13 +408,13 @@ class ProtoToJSONRuleConverter {
     dnr_api::RuleActionType action_type = dnr_api::RULE_ACTION_TYPE_NONE;
 
     CHECK(!is_allow_all_requests_rule_ ||
-          input_rule_.semantics() == proto::RULE_SEMANTICS_WHITELIST);
+          input_rule_.semantics() == proto::RULE_SEMANTICS_ALLOWLIST);
 
     switch (input_rule_.semantics()) {
-      case proto::RULE_SEMANTICS_BLACKLIST:
+      case proto::RULE_SEMANTICS_BLOCKLIST:
         action_type = dnr_api::RULE_ACTION_TYPE_BLOCK;
         break;
-      case proto::RULE_SEMANTICS_WHITELIST:
+      case proto::RULE_SEMANTICS_ALLOWLIST:
         if (is_allow_all_requests_rule_)
           action_type = dnr_api::RULE_ACTION_TYPE_ALLOWALLREQUESTS;
         else

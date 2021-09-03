@@ -8,15 +8,13 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/web_usb_chooser.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -37,7 +35,7 @@ class UsbChooserContext;
 // chooser UI.
 class WebUsbServiceImpl
     : public blink::mojom::WebUsbService,
-      public permissions::ChooserContextBase::PermissionObserver,
+      public permissions::ObjectPermissionContextBase::PermissionObserver,
       public UsbChooserContext::DeviceObserver {
  public:
   WebUsbServiceImpl(content::RenderFrameHost* render_frame_host,
@@ -52,6 +50,7 @@ class WebUsbServiceImpl
 
   bool HasDevicePermission(
       const device::mojom::UsbDeviceInfo& device_info) const;
+  std::vector<uint8_t> GetProtectedInterfaceClasses() const;
 
   // blink::mojom::WebUsbService implementation:
   void GetDevices(GetDevicesCallback callback) override;
@@ -69,9 +68,8 @@ class WebUsbServiceImpl
       GetDevicesCallback callback,
       std::vector<device::mojom::UsbDeviceInfoPtr> device_info_list);
 
-  // ChooserContextBase::PermissionObserver implementation:
-  void OnPermissionRevoked(const url::Origin& requesting_origin,
-                           const url::Origin& embedding_origin) override;
+  // ObjectPermissionContextBase::PermissionObserver implementation:
+  void OnPermissionRevoked(const url::Origin& origin) override;
 
   // UsbChooserContext::DeviceObserver implementation:
   void OnDeviceAdded(const device::mojom::UsbDeviceInfo& device_info) override;
@@ -88,8 +86,7 @@ class WebUsbServiceImpl
   content::RenderFrameHost* const render_frame_host_;
   base::WeakPtr<WebUsbChooser> usb_chooser_;
   UsbChooserContext* chooser_context_;
-  url::Origin requesting_origin_;
-  url::Origin embedding_origin_;
+  url::Origin origin_;
 
   // Used to bind with Blink.
   mojo::ReceiverSet<blink::mojom::WebUsbService> receivers_;
@@ -98,11 +95,12 @@ class WebUsbServiceImpl
   // A UsbDeviceClient tracks a UsbDevice pipe that has been passed to Blink.
   std::vector<std::unique_ptr<UsbDeviceClient>> device_clients_;
 
-  ScopedObserver<UsbChooserContext, UsbChooserContext::DeviceObserver>
-      device_observer_;
-  ScopedObserver<permissions::ChooserContextBase,
-                 permissions::ChooserContextBase::PermissionObserver>
-      permission_observer_;
+  base::ScopedObservation<UsbChooserContext, UsbChooserContext::DeviceObserver>
+      device_observation_{this};
+  base::ScopedObservation<
+      permissions::ObjectPermissionContextBase,
+      permissions::ObjectPermissionContextBase::PermissionObserver>
+      permission_observation_{this};
 
   base::WeakPtrFactory<WebUsbServiceImpl> weak_factory_{this};
 

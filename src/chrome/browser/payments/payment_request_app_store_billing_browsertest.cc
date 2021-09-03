@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/chromeos_buildflags.h"
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
 #include "content/public/test/browser_test.h"
 
@@ -61,12 +62,17 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestAppStoreBillingTest,
   EXPECT_EQ(expected,
             content::EvalJs(GetActiveWebContents(), "createPaymentRequest()"));
 
+  std::string expected_error =
+      "NotSupportedError: The payment method "
+      "\"https://play.google.com/billing\" is not supported.";
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  expected_error = expected_error + " Unable to invoke Android apps.";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // We expect the standard NotSupportedError inside a TWA because Play Billing
   // isn't supported yet.
-  EXPECT_EQ(
-      "NotSupportedError: The payment method "
-      "\"https://play.google.com/billing\" is not supported.",
-      content::EvalJs(GetActiveWebContents(), "show()"));
+  EXPECT_EQ(expected_error, content::EvalJs(GetActiveWebContents(), "show()"));
 }
 
 // Prove that requesting with a non-app-store method would not produce the same

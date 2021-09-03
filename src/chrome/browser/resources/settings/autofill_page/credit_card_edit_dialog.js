@@ -13,8 +13,8 @@ import 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
-import '../settings_shared_css.m.js';
-import '../settings_vars_css.m.js';
+import '../settings_shared_css.js';
+import '../settings_vars_css.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -69,18 +69,6 @@ Polymer({
 
     /** @private {string|undefined} */
     expirationMonth_: String,
-
-    /**
-     * True if nickname management is enabled.
-     * @private
-     */
-    nicknameManagementEnabled_: {
-      type: Boolean,
-      reflectToAttribute: true,
-      value() {
-        return loadTimeData.getBoolean('nicknameManagementEnabled');
-      }
-    },
 
     /**
      * Whether the current nickname input is invalid.
@@ -212,23 +200,11 @@ Polymer({
   },
 
   /**
-   * @return {boolean} True iff the card is expired and nickname management is
-   *     disabled.
-   * @private
-   */
-  // TODO(crbug.com/1082013): Remove legacy expired error message when nickname
-  // management is fully enabled.
-  showLegacyExpiredError_() {
-    return !this.nicknameManagementEnabled_ && this.expired_;
-  },
-
-  /**
    * Handles a11y error announcement the same way as in cr-input.
    * @private
    */
   onExpiredChanged_() {
-    const ERROR_ID =
-        this.nicknameManagementEnabled_ ? 'expired-error' : 'expired';
+    const ERROR_ID = 'expired-error';
     const errorElement = this.$$(`#${ERROR_ID}`);
     // Readding attributes is needed for consistent announcement by VoiceOver
     if (this.expired_) {

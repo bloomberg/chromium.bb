@@ -3,19 +3,28 @@
 // found in the LICENSE file.
 
 #include "base/feature_list.h"
+#include <string>
+
+// feature_list.h is a widely included header and its size impacts build
+// time. Try not to raise this limit unless necessary. See
+// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/wmax_tokens.md
+#ifndef NACL_TC_REV
+#pragma clang max_tokens_here 520000
+#endif
 
 #include <stddef.h>
 
-#include <utility>
-#include <vector>
-
+#include "base/base_paths.h"
 #include "base/base_switches.h"
 #include "base/debug/alias.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/persistent_memory_allocator.h"
+#include "base/path_service.h"
 #include "base/pickle.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -35,6 +44,10 @@ FeatureList* g_feature_list_instance = nullptr;
 const Feature* g_initialized_from_accessor = nullptr;
 
 #if DCHECK_IS_ON()
+// Tracks whether the use of base::Feature is allowed for this module.
+// See ForbidUseForCurrentModule().
+bool g_use_allowed = true;
+
 const char* g_reason_overrides_disallowed = nullptr;
 
 void DCheckOverridesAllowed() {
@@ -103,10 +116,10 @@ bool SplitIntoTwo(const std::string& separator,
   std::vector<StringPiece> parts =
       SplitStringPiece(*first, separator, TRIM_WHITESPACE, SPLIT_WANT_ALL);
   if (parts.size() == 2) {
-    *second = parts[1].as_string();
+    *second = std::string(parts[1]);
   } else if (parts.size() > 2) {
     DLOG(ERROR) << "Only one '" << separator
-                << "' is allowed but got: " << first->as_string();
+                << "' is allowed but got: " << *first;
     return false;
   }
   *first = parts[0];
@@ -144,7 +157,7 @@ bool ParseEnableFeatures(const std::string& enable_features,
     if (!SplitIntoTwo("<", &enable_feature, &study))
       return false;
 
-    const std::string feature_name = enable_feature.as_string();
+    const std::string feature_name(enable_feature);
     // If feature params were set but group and study weren't, associate the
     // feature and its feature params to a synthetic field trial as the
     // feature params only make sense when it's combined with a field trial.
@@ -252,7 +265,7 @@ void FeatureList::InitializeFromSharedMemory(
     if (!entry->GetFeatureAndTrialName(&feature_name, &trial_name))
       continue;
 
-    FieldTrial* trial = FieldTrialList::Find(trial_name.as_string());
+    FieldTrial* trial = FieldTrialList::Find(trial_name);
     RegisterOverride(feature_name, override_state, trial);
   }
 }
@@ -357,6 +370,9 @@ void FeatureList::GetCommandLineFeatureOverrides(
 
 // static
 bool FeatureList::IsEnabled(const Feature& feature) {
+#if DCHECK_IS_ON()
+  CHECK(g_use_allowed) << "base::Feature not permitted for this module.";
+#endif
   if (!g_feature_list_instance) {
     g_initialized_from_accessor = &feature;
     return feature.default_state == FEATURE_ENABLED_BY_DEFAULT;
@@ -366,6 +382,10 @@ bool FeatureList::IsEnabled(const Feature& feature) {
 
 // static
 FieldTrial* FeatureList::GetFieldTrial(const Feature& feature) {
+#if DCHECK_IS_ON()
+  // See documentation for ForbidUseForCurrentModule.
+  CHECK(g_use_allowed) << "base::Feature not permitted for this module.";
+#endif
   if (!g_feature_list_instance) {
     g_initialized_from_accessor = &feature;
     return nullptr;
@@ -470,6 +490,15 @@ void FeatureList::RestoreInstanceForTesting(
   g_feature_list_instance = instance.release();
 }
 
+// static
+void FeatureList::ForbidUseForCurrentModule() {
+#if DCHECK_IS_ON()
+  // Verify there hasn't been any use prior to being called.
+  DCHECK(!g_initialized_from_accessor);
+  g_use_allowed = false;
+#endif  // DCHECK_IS_ON()
+}
+
 void FeatureList::FinalizeInitialization() {
   DCHECK(!initialized_);
   // Store the field trial list pointer for DCHECKing.
@@ -502,15 +531,45 @@ bool FeatureList::IsFeatureEnabled(const Feature& feature) {
 
 FieldTrial* FeatureList::GetAssociatedFieldTrial(const Feature& feature) {
   DCHECK(initialized_);
-  DCHECK(IsValidFeatureOrFieldTrialName(feature.name)) << feature.name;
   DCHECK(CheckFeatureIdentity(feature)) << feature.name;
 
-  auto it = overrides_.find(feature.name);
+  return GetAssociatedFieldTrialByFeatureName(feature.name);
+}
+
+const base::FeatureList::OverrideEntry*
+FeatureList::GetOverrideEntryByFeatureName(StringPiece name) {
+  DCHECK(initialized_);
+  DCHECK(IsValidFeatureOrFieldTrialName(std::string(name))) << name;
+
+  auto it = overrides_.find(name);
   if (it != overrides_.end()) {
     const OverrideEntry& entry = it->second;
-    return entry.field_trial;
+    return &entry;
   }
+  return nullptr;
+}
 
+FieldTrial* FeatureList::GetAssociatedFieldTrialByFeatureName(
+    StringPiece name) {
+  DCHECK(initialized_);
+
+  const base::FeatureList::OverrideEntry* entry =
+      GetOverrideEntryByFeatureName(name);
+  if (entry) {
+    return entry->field_trial;
+  }
+  return nullptr;
+}
+
+FieldTrial* FeatureList::GetEnabledFieldTrialByFeatureName(StringPiece name) {
+  DCHECK(initialized_);
+
+  const base::FeatureList::OverrideEntry* entry =
+      GetOverrideEntryByFeatureName(name);
+  if (entry &&
+      entry->overridden_state == base::FeatureList::OVERRIDE_ENABLE_FEATURE) {
+    return entry->field_trial;
+  }
   return nullptr;
 }
 
@@ -526,11 +585,11 @@ void FeatureList::RegisterOverridesFromCommandLine(
     std::string::size_type pos = feature_name.find('<');
     if (pos != std::string::npos) {
       feature_name = StringPiece(value.data(), pos);
-      trial = FieldTrialList::Find(value.substr(pos + 1).as_string());
+      trial = FieldTrialList::Find(value.substr(pos + 1));
 #if !defined(OS_NACL)
       // If the below DCHECK fires, it means a non-existent trial name was
       // specified via the "Feature<Trial" command-line syntax.
-      DCHECK(trial) << "trial=" << value.substr(pos + 1);
+      DCHECK(trial) << "trial='" << value.substr(pos + 1) << "' does not exist";
 #endif  // !defined(OS_NACL)
     }
 
@@ -552,11 +611,11 @@ void FeatureList::RegisterOverride(StringPiece feature_name,
     overridden_state = OVERRIDE_USE_DEFAULT;
   }
 
-  // Note: The semantics of insert() is that it does not overwrite the entry if
+  // Note: The semantics of emplace() is that it does not overwrite the entry if
   // one already exists for the key. Thus, only the first override for a given
   // feature name takes effect.
-  overrides_.insert(std::make_pair(
-      feature_name.as_string(), OverrideEntry(overridden_state, field_trial)));
+  overrides_.emplace(std::string(feature_name),
+                     OverrideEntry(overridden_state, field_trial));
 }
 
 void FeatureList::GetFeatureOverridesImpl(std::string* enable_overrides,

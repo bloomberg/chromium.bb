@@ -65,7 +65,9 @@ SVGGeometryElement::SVGGeometryElement(const QualifiedName& tag_name,
   AddToPropertyMap(path_length_);
 }
 
-void SVGGeometryElement::SvgAttributeChanged(const QualifiedName& attr_name) {
+void SVGGeometryElement::SvgAttributeChanged(
+    const SvgAttributeChangedParams& params) {
+  const QualifiedName& attr_name = params.name;
   if (attr_name == svg_names::kPathLengthAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
     if (LayoutObject* layout_object = GetLayoutObject())
@@ -73,7 +75,7 @@ void SVGGeometryElement::SvgAttributeChanged(const QualifiedName& attr_name) {
     return;
   }
 
-  SVGGraphicsElement::SvgAttributeChanged(attr_name);
+  SVGGraphicsElement::SvgAttributeChanged(params);
 }
 
 void SVGGeometryElement::Trace(Visitor* visitor) const {
@@ -92,7 +94,7 @@ bool SVGGeometryElement::isPointInFill(SVGPointTearOff* point) const {
     return false;
 
   // Path::Contains will reject points with a non-finite component.
-  WindRule fill_rule = layout_object->StyleRef().SvgStyle().FillRule();
+  WindRule fill_rule = layout_object->StyleRef().FillRule();
   return AsPath().Contains(point->Target()->Value(), fill_rule);
 }
 
@@ -138,7 +140,7 @@ Path SVGGeometryElement::ToClipPath() const {
 
   DCHECK(GetLayoutObject());
   DCHECK(GetLayoutObject()->Style());
-  path.SetWindRule(GetLayoutObject()->StyleRef().SvgStyle().ClipRule());
+  path.SetWindRule(GetLayoutObject()->StyleRef().ClipRule());
   return path;
 }
 

@@ -12,7 +12,7 @@
 #include "base/bind.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/settings_utils.h"
+#include "chrome/browser/ui/webui/settings/settings_utils.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_ui.h"
 #include "url/gurl.h"
@@ -66,8 +66,8 @@ void StartupPagesHandler::OnJavascriptAllowed() {
   pref_change_registrar_.Init(prefService);
   pref_change_registrar_.Add(
       prefs::kURLsToRestoreOnStartup,
-      base::Bind(&StartupPagesHandler::UpdateStartupPages,
-                 base::Unretained(this)));
+      base::BindRepeating(&StartupPagesHandler::UpdateStartupPages,
+                          base::Unretained(this)));
 }
 
 void StartupPagesHandler::OnJavascriptDisallowed() {

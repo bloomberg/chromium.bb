@@ -31,6 +31,8 @@
 
 #include "third_party/blink/renderer/core/timing/window_performance.h"
 
+#include "base/trace_event/common/trace_event_common.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
@@ -44,6 +46,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/page_hidden_state.h"
@@ -151,7 +154,9 @@ static base::TimeTicks ToTimeOrigin(LocalDOMWindow* window) {
 
 WindowPerformance::WindowPerformance(LocalDOMWindow* window)
     : Performance(ToTimeOrigin(window),
-                  window->GetTaskRunner(TaskType::kPerformanceTimeline)),
+                  window->CrossOriginIsolatedCapability(),
+                  window->GetTaskRunner(TaskType::kPerformanceTimeline),
+                  window),
       ExecutionContextClient(window),
       PageVisibilityObserver(window->GetFrame()->GetPage()) {
   DCHECK(window);
@@ -184,16 +189,23 @@ PerformanceNavigation* WindowPerformance::navigation() const {
   return navigation_.Get();
 }
 
-MemoryInfo* WindowPerformance::memory() const {
+MemoryInfo* WindowPerformance::memory(ScriptState* script_state) const {
   // The performance.memory() API has been improved so that we report precise
   // values when the process is locked to a site. The intent (which changed
   // course over time about what changes would be implemented) can be found at
   // https://groups.google.com/a/chromium.org/forum/#!topic/blink-dev/no00RdMnGio,
   // and the relevant bug is https://crbug.com/807651.
-  return MakeGarbageCollected<MemoryInfo>(
-      Platform::Current()->IsLockedToSite()
-          ? MemoryInfo::Precision::Precise
-          : MemoryInfo::Precision::Bucketized);
+  auto* memory_info =
+      MakeGarbageCollected<MemoryInfo>(Platform::Current()->IsLockedToSite()
+                                           ? MemoryInfo::Precision::Precise
+                                           : MemoryInfo::Precision::Bucketized);
+  // Record Web Memory UKM.
+  const uint64_t kBytesInKB = 1024;
+  auto* execution_context = ExecutionContext::From(script_state);
+  ukm::builders::PerformanceAPI_Memory_Legacy(execution_context->UkmSourceID())
+      .SetJavaScript(memory_info->usedJSHeapSize() / kBytesInKB)
+      .Record(execution_context->UkmRecorder());
+  return memory_info;
 }
 
 PerformanceNavigationTiming*
@@ -201,6 +213,10 @@ WindowPerformance::CreateNavigationTimingInstance() {
   if (!DomWindow())
     return nullptr;
   DocumentLoader* document_loader = DomWindow()->document()->Loader();
+  // TODO(npm): figure out when |document_loader| can be null and add tests.
+  DCHECK(document_loader);
+  if (!document_loader)
+    return nullptr;
   ResourceTimingInfo* info = document_loader->GetNavigationTimingInfo();
   if (!info)
     return nullptr;
@@ -210,7 +226,8 @@ WindowPerformance::CreateNavigationTimingInstance() {
     document_loader->CountUse(WebFeature::kPerformanceServerTiming);
 
   return MakeGarbageCollected<PerformanceNavigationTiming>(
-      DomWindow(), info, time_origin_, std::move(server_timing));
+      DomWindow(), info, time_origin_,
+      DomWindow()->CrossOriginIsolatedCapability(), std::move(server_timing));
 }
 
 void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
@@ -314,7 +331,7 @@ void WindowPerformance::ReportLongTask(base::TimeTicks start_time,
   if (!culprit_dom_window || !culprit_dom_window->GetFrame() ||
       !culprit_dom_window->GetFrame()->DeprecatedLocalOwner()) {
     AddLongTaskTiming(start_time, end_time, attribution.first, "window",
-                      g_empty_string, g_empty_string, g_empty_string);
+                      g_empty_atom, g_empty_atom, g_empty_atom);
   } else {
     HTMLFrameOwnerElement* frame_owner =
         culprit_dom_window->GetFrame()->DeprecatedLocalOwner();
@@ -338,48 +355,67 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
   if (!DomWindow())
     return;
 
-  if (!event_counts_)
-    event_counts_ = MakeGarbageCollected<EventCounts>();
-  event_counts_->Add(event_type);
+  // Count non-pointerevent Events. Avoid double counting pointerevents
+  // because we count them in pointer_event_manager.cc. Note click, auxclick and
+  // contextmenu are PointerEvent but the dispatch process of them are different
+  // from other PointerEvent.
+  if (event_type != event_type_names::kPointerover &&
+      event_type != event_type_names::kPointerenter &&
+      event_type != event_type_names::kPointerdown &&
+      event_type != event_type_names::kPointerup &&
+      event_type != event_type_names::kPointercancel &&
+      event_type != event_type_names::kPointerout &&
+      event_type != event_type_names::kPointerleave &&
+      event_type != event_type_names::kGotpointercapture &&
+      event_type != event_type_names::kLostpointercapture) {
+    eventCounts()->Add(event_type);
+  }
+
   PerformanceEventTiming* entry = PerformanceEventTiming::Create(
       event_type, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(processing_start),
       MonotonicTimeToDOMHighResTimeStamp(processing_end), cancelable, target);
   // Add |entry| to the end of the queue along with the frame index at which is
-  // is being queued to know when to queue a swap promise for it.
+  // is being queued to know when to queue a presentation promise for it.
   event_timings_.push_back(entry);
   event_frames_.push_back(frame_index_);
-  bool should_queue_swap_promise = false;
-  // If there are no pending swap promises, we should queue one. This ensures
-  // that |event_timings_| are processed even if the Blink lifecycle does not
-  // occur due to no DOM updates.
-  if (pending_swap_promise_count_ == 0u) {
-    should_queue_swap_promise = true;
+  bool should_queue_presentation_promise = false;
+  // If there are no pending presentation promises, we should queue one. This
+  // ensures that |event_timings_| are processed even if the Blink lifecycle
+  // does not occur due to no DOM updates.
+  if (pending_presentation_promise_count_ == 0u) {
+    should_queue_presentation_promise = true;
   } else {
-    // There are pending swap promises, so only queue one if the event
-    // corresponds to a later frame than the one of the latest queued swap
-    // promise.
-    should_queue_swap_promise = frame_index_ > last_registered_frame_index_;
+    // There are pending presentation promises, so only queue one if the event
+    // corresponds to a later frame than the one of the latest queued
+    // presentation promise.
+    should_queue_presentation_promise =
+        frame_index_ > last_registered_frame_index_;
   }
-  if (should_queue_swap_promise) {
-    DomWindow()->GetFrame()->GetChromeClient().NotifySwapTime(
+  if (should_queue_presentation_promise) {
+    DomWindow()->GetFrame()->GetChromeClient().NotifyPresentationTime(
         *DomWindow()->GetFrame(),
         CrossThreadBindOnce(&WindowPerformance::ReportEventTimings,
                             WrapCrossThreadWeakPersistent(this), frame_index_));
     last_registered_frame_index_ = frame_index_;
-    ++pending_swap_promise_count_;
+    ++pending_presentation_promise_count_;
   }
 }
 
 void WindowPerformance::ReportEventTimings(uint64_t frame_index,
                                            WebSwapResult result,
                                            base::TimeTicks timestamp) {
-  DCHECK(pending_swap_promise_count_);
-  --pending_swap_promise_count_;
+  DCHECK(pending_presentation_promise_count_);
+  --pending_presentation_promise_count_;
   // |event_timings_| and |event_frames_| should always have the same size.
   DCHECK(event_timings_.size() == event_frames_.size());
   if (event_timings_.IsEmpty())
     return;
+
+  if (!DomWindow())
+    return;
+  InteractiveDetector* interactive_detector =
+      InteractiveDetector::From(*(DomWindow()->document()));
   bool event_timing_enabled =
       RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext());
   DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
@@ -396,7 +432,35 @@ void WindowPerformance::ReportEventTimings(uint64_t frame_index,
     event_frames_.pop_front();
 
     int duration_in_ms = std::round((end_time - entry->startTime()) / 8) * 8;
+    base::TimeDelta input_delay = base::TimeDelta::FromMillisecondsD(
+        entry->processingStart() - entry->startTime());
+    base::TimeDelta processing_time = base::TimeDelta::FromMillisecondsD(
+        entry->processingEnd() - entry->processingStart());
+    base::TimeDelta time_to_next_paint =
+        base::TimeDelta::FromMillisecondsD(end_time - entry->processingEnd());
     entry->SetDuration(duration_in_ms);
+    TRACE_EVENT2("devtools.timeline", "EventTiming", "data",
+                 entry->ToTracedValue(), "frame",
+                 ToTraceValue(DomWindow()->GetFrame()));
+    if (entry->name() == "pointerdown") {
+      pending_pointer_down_input_delay_ = input_delay;
+      pending_pointer_down_processing_time_ = processing_time;
+      pending_pointer_down_time_to_next_paint_ = time_to_next_paint;
+    } else if (entry->name() == "pointerup") {
+      if (pending_pointer_down_time_to_next_paint_.has_value() &&
+          interactive_detector) {
+        interactive_detector->RecordInputEventTimingUKM(
+            pending_pointer_down_input_delay_.value(),
+            pending_pointer_down_processing_time_.value(),
+            pending_pointer_down_time_to_next_paint_.value(), entry->name());
+      }
+    } else if ((entry->name() == "click" || entry->name() == "keydown" ||
+                entry->name() == "mousedown") &&
+               interactive_detector) {
+      interactive_detector->RecordInputEventTimingUKM(
+          input_delay, processing_time, time_to_next_paint, entry->name());
+    }
+
     if (!first_input_timing_) {
       if (entry->name() == "pointerdown") {
         first_pointer_down_event_timing_ =

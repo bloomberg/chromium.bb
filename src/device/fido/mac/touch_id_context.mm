@@ -14,6 +14,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/mac/authenticator_config.h"
@@ -24,6 +27,7 @@ namespace fido {
 namespace mac {
 
 namespace {
+
 API_AVAILABLE(macosx(10.12.2))
 base::ScopedCFTypeRef<SecAccessControlRef> DefaultAccessControl() {
   // The default access control policy used for WebAuthn credentials stored by
@@ -39,8 +43,12 @@ base::ScopedCFTypeRef<SecAccessControlRef> DefaultAccessControl() {
 // entitlement that contains |keychain_access_group|. This is required for the
 // TouchIdAuthenticator to access key material stored in the Touch ID secure
 // enclave.
-bool BinaryHasKeychainAccessGroupEntitlement(
+bool BinaryHasKeychainAccessGroupEntitlementBlocking(
     const std::string& keychain_access_group) {
+  // This method makes call into the macOS Security Framework, which may block.
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
   base::ScopedCFTypeRef<SecCodeRef> code;
   if (SecCodeCopySelf(kSecCSDefaultFlags, code.InitializeInto()) !=
       errSecSuccess) {
@@ -73,11 +81,13 @@ bool BinaryHasKeychainAccessGroupEntitlement(
           base::SysUTF8ToCFStringRef(keychain_access_group)));
 }
 
+// Returns whether creating a key pair in the secure enclave succeeds. Keys are
+// not persisted to the keychain.
 API_AVAILABLE(macosx(10.12.2))
-bool CanCreateSecureEnclaveKeyPair() {
-  // CryptoKit offers SecureEnclave.isAvailable but does not have Swift
-  // bindings. Instead, attempt to create an ephemeral key pair in the secure
-  // enclave.
+bool CanCreateSecureEnclaveKeyPairBlocking() {
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
   base::ScopedCFTypeRef<CFMutableDictionaryRef> params(
       CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
                                 &kCFTypeDictionaryKeyCallBacks,
@@ -92,11 +102,7 @@ bool CanCreateSecureEnclaveKeyPair() {
   base::ScopedCFTypeRef<SecKeyRef> private_key(
       Keychain::GetInstance().KeyCreateRandomKey(params,
                                                  cferr.InitializeInto()));
-  if (!private_key) {
-    FIDO_LOG(DEBUG) << "SecKeyCreateRandomKey failed: " << cferr;
-    return false;
-  }
-  return true;
+  return !!private_key;
 }
 
 }  // namespace
@@ -117,16 +123,17 @@ std::unique_ptr<TouchIdContext> TouchIdContext::Create() {
 }
 
 // static
-bool TouchIdContext::TouchIdAvailableImpl(const AuthenticatorConfig& config) {
+bool TouchIdContext::TouchIdAvailableImplBlocking(AuthenticatorConfig config) {
   // Ensure that the binary is signed with the keychain-access-group
   // entitlement that is configured by the embedder; that user authentication
   // with biometry, watch, or device passcode possible; and that the device has
   // a secure enclave.
-
-  if (!BinaryHasKeychainAccessGroupEntitlement(config.keychain_access_group)) {
+  if (!BinaryHasKeychainAccessGroupEntitlementBlocking(
+          config.keychain_access_group)) {
     FIDO_LOG(ERROR)
         << "Touch ID authenticator unavailable because keychain-access-group "
-           "entitlement is missing or incorrect";
+           "entitlement is missing or incorrect. Expected value: "
+        << config.keychain_access_group;
     return false;
   }
 
@@ -138,22 +145,27 @@ bool TouchIdContext::TouchIdAvailableImpl(const AuthenticatorConfig& config) {
     return false;
   }
 
-  if (!CanCreateSecureEnclaveKeyPair()) {
-    FIDO_LOG(DEBUG) << "No secure enclave";
-    return false;
-  }
-
-  return true;
+  // CryptoKit offers a SecureEnclave.isAvailable property, but no ObjectiveC
+  // bindings exist. Instead, test whether we can create a key pair in the
+  // secure enclave. This takes hundreds of milliseconds, so only do it once.
+  static const bool kHasSecureEnclave = CanCreateSecureEnclaveKeyPairBlocking();
+  return kHasSecureEnclave;
 }
 
-// static
+// Testing seam to allow faking Touch ID in tests.
 TouchIdContext::TouchIdAvailableFuncPtr TouchIdContext::g_touch_id_available_ =
-    &TouchIdContext::TouchIdAvailableImpl;
+    &TouchIdContext::TouchIdAvailableImplBlocking;
 
 // static
-bool TouchIdContext::TouchIdAvailable(const AuthenticatorConfig& config) {
-  // Testing seam to allow faking Touch ID in tests.
-  return (*g_touch_id_available_)(config);
+void TouchIdContext::TouchIdAvailable(
+    AuthenticatorConfig config,
+    base::OnceCallback<void(bool is_available)> callback) {
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(g_touch_id_available_, std::move(config)),
+      std::move(callback));
 }
 
 TouchIdContext::TouchIdContext()
@@ -169,7 +181,7 @@ TouchIdContext::~TouchIdContext() {
   [context_ invalidate];
 }
 
-void TouchIdContext::PromptTouchId(const base::string16& reason,
+void TouchIdContext::PromptTouchId(const std::u16string& reason,
                                    Callback callback) {
   callback_ = std::move(callback);
   scoped_refptr<base::SequencedTaskRunner> runner =

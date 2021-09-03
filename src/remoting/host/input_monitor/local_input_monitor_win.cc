@@ -5,6 +5,7 @@
 #include "remoting/host/input_monitor/local_input_monitor_win.h"
 
 #include <cstdint>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,7 +15,6 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/stringprintf.h"
 #include "base/win/message_window.h"
 
 namespace remoting {
@@ -121,7 +121,7 @@ LocalInputMonitorWinImpl::Core::~Core() {
 void LocalInputMonitorWinImpl::Core::StartOnUiThread() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  window_.reset(new base::win::MessageWindow());
+  window_ = std::make_unique<base::win::MessageWindow>();
   if (!window_->Create(
           base::BindRepeating(&Core::HandleMessage, base::Unretained(this)))) {
     PLOG(ERROR) << "Failed to create the raw input window";

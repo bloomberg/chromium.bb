@@ -84,6 +84,14 @@ _COVERAGE_EXCLUSION_LIST_MAP = {
         # This file caused webview native library failed on arm64.
         '../../device/gamepad/dualshock4_controller.cc',
     ],
+    'fuchsia': [
+        # TODO(crbug.com/1174725): These files caused clang to crash while
+        # compiling them.
+        '../../base/allocator/partition_allocator/pcscan.cc',
+        '../../third_party/skia/src/core/SkOpts.cpp',
+        '../../third_party/skia/src/opts/SkOpts_hsw.cpp',
+        '../../third_party/skia/third_party/skcms/skcms.cc',
+    ],
     'linux': [
         # These files caused a static initializer to be generated, which
         # shouldn't.
@@ -130,6 +138,13 @@ _COVERAGE_FORCE_LIST_MAP = {
     # be linked in. Therefore we force coverage for this file to ensure that
     # any target that includes it will also get the profiling runtime.
     'win': [r'..\..\base\test\clang_profiling.cc'],
+    # TODO(crbug.com/1141727) We're seeing runtime LLVM errors in mac-rel when
+    # no files are changed, so we suspect that this is similar to the other
+    # problem with clang_profiling.cc on Windows. The TODO here is to force
+    # coverage for this specific file on ALL platforms, if it turns out to fix
+    # this issue on Mac as well. It's the only file that directly calls
+    # `__llvm_profile_dump` so it warrants some special treatment.
+    'mac': ['../../base/test/clang_profiling.cc'],
 }
 
 
@@ -157,7 +172,6 @@ def _remove_flags_from_command(command):
 
 
 def main():
-  # TODO(crbug.com/898695): Make this wrapper work on Windows platform.
   arg_parser = argparse.ArgumentParser()
   arg_parser.usage = __doc__
   arg_parser.add_argument(

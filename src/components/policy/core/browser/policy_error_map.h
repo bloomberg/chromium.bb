@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "components/policy/policy_export.h"
 
 namespace policy {
@@ -21,7 +20,7 @@ namespace policy {
 // Collects error messages and their associated policies.
 class POLICY_EXPORT PolicyErrorMap {
  public:
-  typedef std::multimap<std::string, base::string16> PolicyMapType;
+  typedef std::multimap<std::string, std::u16string> PolicyMapType;
   typedef PolicyMapType::const_iterator const_iterator;
 
   class PendingError;
@@ -46,9 +45,7 @@ class POLICY_EXPORT PolicyErrorMap {
 
   // Adds an entry with key |policy|, list index |index|, and the error message
   // corresponding to |message_id| in grit/generated_resources.h to the map.
-  void AddError(const std::string& policy,
-                int index,
-                int message_id);
+  void AddError(const std::string& policy, int index, int message_id);
 
   // Adds an entry with key |policy| and the error message corresponding to
   // |message_id| in grit/generated_resources.h to the map and replaces the
@@ -57,9 +54,16 @@ class POLICY_EXPORT PolicyErrorMap {
                 int message_id,
                 const std::string& replacement_string);
 
+  // Same as AddError above but supports two replacement strings.
+  void AddError(const std::string& policy,
+                int message_id,
+                const std::string& replacement_a,
+                const std::string& replacement_b);
+
   // Adds an entry with key |policy|, subkey |subkey| and the error message
   // corresponding to |message_id| in grit/generated_resources.h to the map.
-  // Replaces the placeholder in the error message with |replacement_string|.
+  // Replaces the placeholder in the error message with
+  // |replacement_string|.
   void AddError(const std::string& policy,
                 const std::string& subkey,
                 int message_id,
@@ -79,9 +83,12 @@ class POLICY_EXPORT PolicyErrorMap {
                 const std::string& error_path,
                 const std::string& message);
 
+  // Returns true if there is any error for |policy|.
+  bool HasError(const std::string& policy);
+
   // Returns all the error messages stored for |policy|, separated by a white
   // space. Returns an empty string if there are no errors for |policy|.
-  base::string16 GetErrors(const std::string& policy);
+  std::u16string GetErrors(const std::string& policy);
 
   bool empty() const;
   size_t size();

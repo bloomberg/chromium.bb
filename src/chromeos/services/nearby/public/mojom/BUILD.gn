@@ -1,6 +1,7 @@
+import("//build/config/chromeos/ui_mode.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-assert(is_chromeos)
+assert(is_chromeos_ash)
 
 mojom("nearby_share_target_types") {
   sources = [ "nearby_share_target_types.mojom" ]
@@ -23,5 +24,19 @@ mojom("mojom") {
     "//mojo/public/mojom/base",
     "//services/network/public/mojom",
     "//url/mojom:url_mojom_gurl",
+  ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "location.nearby.connections.mojom.LogSeverity"
+          cpp = "api::LogMessage::Severity"
+        },
+      ]
+      traits_headers = [ "nearby_connections_mojom_traits.h" ]
+      traits_sources = [ "nearby_connections_mojom_traits.cc" ]
+      traits_deps = [ "//third_party/nearby:platform_api_types" ]
+    },
   ]
 }

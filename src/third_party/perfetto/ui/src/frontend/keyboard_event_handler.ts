@@ -24,6 +24,7 @@ import {
 } from './scroll_helper';
 import {executeSearch} from './search_handler';
 
+const INSTANT_FOCUS_DURATION_S = 1 / 1e9;  // 1 ns.
 type Direction = 'Forward'|'Backward';
 
 // Handles all key events than are not handled by the
@@ -171,9 +172,12 @@ function findTimeRangeOfSelection() {
   if (selection !== null) {
     if (selection.kind === 'SLICE' || selection.kind === 'CHROME_SLICE') {
       const slice = globals.sliceDetails;
-      if (slice.ts && slice.dur) {
+      if (slice.ts && slice.dur !== undefined && slice.dur > 0) {
         startTs = slice.ts + globals.state.traceTime.startSec;
         endTs = startTs + slice.dur;
+      } else if (slice.ts) {
+        startTs = slice.ts + globals.state.traceTime.startSec;
+        endTs = startTs + INSTANT_FOCUS_DURATION_S;
       }
     } else if (selection.kind === 'THREAD_STATE') {
       const threadState = globals.threadStateDetails;

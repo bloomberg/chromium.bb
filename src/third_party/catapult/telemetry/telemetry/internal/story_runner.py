@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import absolute_import
 import contextlib
 import itertools
 import logging
@@ -113,7 +115,8 @@ def CaptureLogsAsArtifacts(results):
       yield
 
 
-def _RunStoryAndProcessErrorIfNeeded(story, results, state, test):
+def _RunStoryAndProcessErrorIfNeeded(
+    story, results, state, test, finder_options):
   def ProcessError(log_message):
     logging.exception(log_message)
     state.DumpStateUponStoryRunFailure(results)
@@ -125,7 +128,7 @@ def _RunStoryAndProcessErrorIfNeeded(story, results, state, test):
   with CaptureLogsAsArtifacts(results):
     try:
       if isinstance(test, story_test.StoryTest):
-        test.WillRunStory(state.platform)
+        test.WillRunStory(state.platform, story)
       state.WillRunStory(story)
 
       if not state.CanRunStory(story):
@@ -138,6 +141,9 @@ def _RunStoryAndProcessErrorIfNeeded(story, results, state, test):
         state.browser.CleanupUnsymbolizedMinidumps()
 
       story.wpr_mode = state.wpr_mode
+      if finder_options.periodic_screenshot_frequency_ms:
+        state.browser.StartCollectingPeriodicScreenshots(
+            finder_options.periodic_screenshot_frequency_ms)
       state.RunStory(results)
       if isinstance(test, story_test.StoryTest):
         test.Measure(state.platform, results)
@@ -158,6 +164,8 @@ def _RunStoryAndProcessErrorIfNeeded(story, results, state, test):
       # create a new shared state.
       raise
     finally:
+      if finder_options.periodic_screenshot_frequency_ms:
+        state.browser.StopCollectingPeriodicScreenshots()
       has_existing_exception = (sys.exc_info() != (None, None, None))
       try:
         if hasattr(state, 'browser') and state.browser:
@@ -233,6 +241,11 @@ def RunStorySet(test, story_set, finder_options, results,
     finder_options.browser_options.browser_type = possible_browser.browser_type
   else:
     possible_browser = _GetPossibleBrowser(finder_options)
+
+  if (finder_options.periodic_screenshot_frequency_ms and
+      possible_browser.target_os == "android"):
+    raise ValueError("Periodic screenshots are not compatible with Android!")
+
   platform_tags = possible_browser.GetTypExpectationsTags()
   logging.info('The following expectations condition tags were generated %s',
                str(platform_tags))
@@ -249,7 +262,7 @@ def RunStorySet(test, story_set, finder_options, results,
   if finder_options.print_only:
     if finder_options.print_only == 'tags':
       tags = set(itertools.chain.from_iterable(s.tags for s in stories))
-      print 'List of tags:\n%s' % '\n'.join(tags)
+      print('List of tags:\n%s' % '\n'.join(tags))
       return
     include_tags = finder_options.print_only == 'both'
     if include_tags:
@@ -257,7 +270,7 @@ def RunStorySet(test, story_set, finder_options, results,
     else:
       format_string = '%s%s'
     for s in stories:
-      print format_string % (s.name, ','.join(s.tags) if include_tags else '')
+      print(format_string % (s.name, ','.join(s.tags) if include_tags else ''))
     return
 
   if (not finder_options.use_live_sites and
@@ -290,7 +303,7 @@ def RunStorySet(test, story_set, finder_options, results,
   # pylint: disable=too-many-nested-blocks
   try:
     pageset_repeat = finder_options.pageset_repeat
-    for storyset_repeat_counter in xrange(pageset_repeat):
+    for storyset_repeat_counter in range(pageset_repeat):
       for story in stories:
         if not state:
           # Construct shared state by using a copy of finder_options. Shared
@@ -316,7 +329,8 @@ def RunStorySet(test, story_set, finder_options, results,
               if finder_options.wait_for_cpu_temp:
                 state.platform.WaitForCpuTemperature(38.0)
               _WaitForThermalThrottlingIfNeeded(state.platform)
-            _RunStoryAndProcessErrorIfNeeded(story, results, state, test)
+            _RunStoryAndProcessErrorIfNeeded(story, results, state, test,
+                                             finder_options)
           except _UNHANDLEABLE_ERRORS as exc:
             interruption = (
                 'Benchmark execution interrupted by a fatal exception: %r' %
@@ -376,9 +390,9 @@ def _ShouldRunBenchmark(benchmark, possible_browser, finder_options):
     return True  # Should always run on print-only mode.
   if benchmark.CanRunOnPlatform(possible_browser.platform, finder_options):
     return True
-  print ('Benchmark "%s" is not supported on the current platform. If this '
-         "is in error please add it to the benchmark's SUPPORTED_PLATFORMS."
-         % benchmark.Name())
+  print('Benchmark "%s" is not supported on the current platform. If this '
+        "is in error please add it to the benchmark's SUPPORTED_PLATFORMS."
+        % benchmark.Name())
   return False
 
 
@@ -392,18 +406,21 @@ def RunBenchmark(benchmark, finder_options):
   if not re.match(_RE_VALID_TEST_SUITE_NAME, benchmark_name):
     logging.fatal('Invalid benchmark name: %s', benchmark_name)
     return 2  # exit_codes.FATAL_ERROR
-  benchmark.CustomizeOptions(finder_options)
+
+  possible_browser = browser_finder.FindBrowser(finder_options)
+  if not possible_browser:
+    print('No browser of type "%s" found for running benchmark "%s".' % (
+        finder_options.browser_options.browser_type, benchmark.Name()))
+    return exit_codes.ALL_TESTS_SKIPPED
+
+  benchmark.CustomizeOptions(finder_options, possible_browser)
+
   with results_options.CreateResults(
       finder_options,
       benchmark_name=benchmark_name,
       benchmark_description=benchmark.Description(),
       report_progress=not finder_options.suppress_gtest_report) as results:
 
-    possible_browser = browser_finder.FindBrowser(finder_options)
-    if not possible_browser:
-      print ('No browser of type "%s" found for running benchmark "%s".' % (
-          finder_options.browser_options.browser_type, benchmark.Name()))
-      return exit_codes.ALL_TESTS_SKIPPED
     if not _ShouldRunBenchmark(benchmark, possible_browser, finder_options):
       return exit_codes.ALL_TESTS_SKIPPED
 

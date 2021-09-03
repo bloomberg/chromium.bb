@@ -5,96 +5,59 @@
 #ifndef CHROMEOS_SERVICES_TTS_TTS_SERVICE_H_
 #define CHROMEOS_SERVICES_TTS_TTS_SERVICE_H_
 
-#include "base/synchronization/lock.h"
-#include "base/thread_annotations.h"
+#include "chromeos/services/tts/google_tts_stream.h"
+#include "chromeos/services/tts/playback_tts_stream.h"
 #include "chromeos/services/tts/public/mojom/tts_service.mojom.h"
-#include "library_loaders/libchrometts.h"
-#include "media/base/audio_renderer_sink.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
-
-namespace audio {
-class OutputDevice;
-}
 
 namespace chromeos {
 namespace tts {
 
-class TtsService : public mojom::TtsService,
-                   public mojom::TtsStream,
-                   public media::AudioRendererSink::RenderCallback {
+class TtsService : public mojom::TtsService {
  public:
   explicit TtsService(mojo::PendingReceiver<mojom::TtsService> receiver);
   ~TtsService() override;
 
- private:
+  // Maybe exit this process.
+  void MaybeExit();
+
+  void set_keep_process_alive_for_testing(bool value) {
+    keep_process_alive_for_testing_ = value;
+  }
+
+  mojo::Receiver<mojom::TtsService>* receiver_for_testing() {
+    return &service_receiver_;
+  }
+
+  PlaybackTtsStream* playback_tts_stream_for_testing() {
+    return playback_tts_stream_.get();
+  }
+
   // mojom::TtsService:
-  void BindTtsStream(
-      mojo::PendingReceiver<mojom::TtsStream> receiver,
-      mojo::PendingRemote<audio::mojom::StreamFactory> factory) override;
+  void BindGoogleTtsStream(
+      mojo::PendingReceiver<mojom::GoogleTtsStream> receiver,
+      mojo::PendingRemote<media::mojom::AudioStreamFactory> factory) override;
+  void BindPlaybackTtsStream(
+      mojo::PendingReceiver<mojom::PlaybackTtsStream> receiver,
+      mojo::PendingRemote<media::mojom::AudioStreamFactory> factory,
+      BindPlaybackTtsStreamCallback callback) override;
 
-  // mojom::TtsStream:
-  void InstallVoice(const std::string& voice_name,
-                    const std::vector<uint8_t>& voice_bytes,
-                    InstallVoiceCallback callback) override;
-  void SelectVoice(const std::string& voice_name,
-                   SelectVoiceCallback callback) override;
-  void Speak(const std::vector<uint8_t>& text_jspb,
-             SpeakCallback callback) override;
-  void Stop() override;
-  void SetVolume(float volume) override;
-  void Pause() override;
-  void Resume() override;
-
-  // media::AudioRendererSink::RenderCallback:
-  int Render(base::TimeDelta delay,
-             base::TimeTicks delay_timestamp,
-             int prior_frames_skipped,
-             media::AudioBus* dest) override;
-  void OnRenderError() override;
-
-  // Handles stopping tts.
-  void StopLocked(bool clear_buffers = true)
-      EXCLUSIVE_LOCKS_REQUIRED(state_lock_);
-
-  void ReadMoreFrames(bool is_first_buffer);
-
+ private:
   // Connection to tts in the browser.
   mojo::Receiver<mojom::TtsService> service_receiver_;
 
-  // Protects access to state from main thread and audio thread.
-  base::Lock state_lock_;
+  // The Google text-to-speech engine.
+  std::unique_ptr<GoogleTtsStream> google_tts_stream_;
 
-  // Prebuilt.
-  LibChromeTtsLoader libchrometts_;
+  // The active playback-based text-to-speech engine.
+  std::unique_ptr<PlaybackTtsStream> playback_tts_stream_;
 
-  // Connection to tts in the component extension.
-  mojo::Receiver<mojom::TtsStream> stream_receiver_;
+  // Keeps this process alive for testing.
+  bool keep_process_alive_for_testing_ = false;
 
-  // Connection to send tts events to component extension.
-  mojo::Remote<mojom::TtsEventObserver> tts_event_observer_;
-
-  // Outputs speech synthesis to audio.
-  std::unique_ptr<audio::OutputDevice> output_device_;
-
-  // Helper group of state to pass from main thread to audio thread.
-  struct AudioBuffer {
-    AudioBuffer();
-    ~AudioBuffer();
-    AudioBuffer(const AudioBuffer& other) = delete;
-    AudioBuffer(AudioBuffer&& other);
-
-    std::vector<float> frames;
-    int char_index;
-    int status;
-    bool is_first_buffer;
-  };
-
-  // The queue of audio buffers to be played by the audio thread.
-  std::deque<AudioBuffer> buffers_ GUARDED_BY(state_lock_);
-
-  // Tracks whether the output device is playing audio.
-  bool is_playing_ = false;
+  base::WeakPtrFactory<TtsService> weak_factory_{this};
 };
 
 }  // namespace tts

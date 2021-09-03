@@ -9,7 +9,6 @@
 #include "base/check_op.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/browser_process.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/background_fetch/job_details.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/download/public/background_service/download_service.h"
@@ -180,7 +180,7 @@ class OfflineContentProviderObserver final
   void OnItemRemoved(const ContentId& id) override {}
   void OnItemUpdated(
       const OfflineItem& item,
-      const base::Optional<offline_items_collection::UpdateDelta>& update_delta)
+      const absl::optional<offline_items_collection::UpdateDelta>& update_delta)
       override {
     if (item.state != offline_items_collection::OfflineItemState::IN_PROGRESS &&
         item.state != offline_items_collection::OfflineItemState::PENDING &&
@@ -208,6 +208,7 @@ class OfflineContentProviderObserver final
     DCHECK_GE(item.progress.value, latest_item_.progress.value);
     latest_item_ = item;
   }
+  void OnContentProviderGoingDown() override {}
 
   const OfflineItem& latest_item() const { return latest_item_; }
 
@@ -500,8 +501,15 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DownloadService_Acceptance) {
   EXPECT_FALSE(guid.empty());
 }
 
+// Flaky on linux: crbug.com/1182296
+#if defined(OS_LINUX)
+#define MAYBE_RecordBackgroundFetchUkmEvent \
+  DISABLED_RecordBackgroundFetchUkmEvent
+#else
+#define MAYBE_RecordBackgroundFetchUkmEvent RecordBackgroundFetchUkmEvent
+#endif
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
-                       RecordBackgroundFetchUkmEvent) {
+                       MAYBE_RecordBackgroundFetchUkmEvent) {
   // Start a Background Fetch for a single to-be-downloaded file and  test that
   // the expected UKM data for the BackgroundFetch UKM event has been recorded.
 
@@ -564,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 
   // Change-detector tests for values we might want to provide or change.
   EXPECT_TRUE(offline_item.description.empty());
-  EXPECT_TRUE(offline_item.page_url.is_empty());
+  EXPECT_TRUE(offline_item.url.is_empty());
   EXPECT_FALSE(offline_item.is_off_the_record);
 }
 
@@ -601,7 +609,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(
     BackgroundFetchBrowserTest,
-    OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalLargerThanActualSize) {
+    DISABLED_OfflineItemCollection_VerifyResourceDownloadedWhenDownloadTotalLargerThanActualSize) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // the fetch to be registered with the offline items collection.
   std::vector<OfflineItem> items;
@@ -758,19 +766,27 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, ClickEventIsDispatched) {
 
   base::RunLoop().RunUntilIdle();  // Give updates a chance to propagate.
 
-  ASSERT_EQ(delegate_->job_details_map_.size(), 1u);
-  auto& job_details = delegate_->job_details_map_.begin()->second;
-  EXPECT_EQ(job_details.job_state,
-            BackgroundFetchDelegateImpl::JobDetails::State::kJobComplete);
+  ASSERT_EQ(delegate_->ui_state_map_.size(), 1u);
+  auto entry = delegate_->ui_state_map_.begin();
+  std::string job_id = entry->first;
+  auto& offline_item = entry->second.offline_item;
+  EXPECT_EQ(offline_items_collection::OfflineItemState::COMPLETE,
+            offline_item.state);
+  background_fetch::JobDetails* job_details =
+      delegate_->GetJobDetails(job_id, /*allow_null=*/true);
+  ASSERT_TRUE(!!job_details);
+  EXPECT_EQ(job_details->job_state,
+            background_fetch::JobDetails::State::kJobComplete);
 
   // Simulate notification click.
   delegate_->OpenItem(
       offline_items_collection::OpenParams(
           offline_items_collection::LaunchLocation::NOTIFICATION),
-      job_details.offline_item.id);
+      offline_item.id);
 
-  // Job Details should be deleted at this point.
-  EXPECT_TRUE(delegate_->job_details_map_.empty());
+  // The offline item and JobDetails should both be deleted at this point.
+  EXPECT_TRUE(delegate_->ui_state_map_.empty());
+  EXPECT_FALSE(delegate_->GetJobDetails(job_id, /*allow_null=*/true));
 
   // Wait for click event.
   {

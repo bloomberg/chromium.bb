@@ -51,7 +51,8 @@ public:
         return fState->getResourceState();
     }
 
-    void setResourceState(const GrD3DGpu* gpu, D3D12_RESOURCE_STATES newResourceState);
+    void setResourceState(const GrD3DGpu* gpu, D3D12_RESOURCE_STATES newResourceState,
+                          unsigned int subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
 
     // Changes the layout to present
     void prepareForPresent(GrD3DGpu* gpu);
@@ -76,28 +77,6 @@ public:
 
 protected:
     void releaseResource(GrD3DGpu* gpu);
-
-    void addResourceIdleProc(GrTexture* owningTexture, sk_sp<GrRefCntedCallback> idleProc) {
-        if (fResource) {
-            fResource->addIdleProc(owningTexture, std::move(idleProc));
-        }
-    }
-    void resetResourceIdleProcs() {
-        SkASSERT(fResource);
-        fResource->resetIdleProcs();
-    }
-    bool resourceIsQueuedForWorkOnGpu() const {
-        SkASSERT(fResource);
-        return fResource->isQueuedForWorkOnGpu();
-    }
-    int resourceIdleProcCnt() const {
-        SkASSERT(fResource);
-        return fResource->idleProcCnt();
-    }
-    sk_sp<GrRefCntedCallback> resourceIdleProc(int i) const {
-        SkASSERT(fResource);
-        return fResource->idleProc(i);
-    }
 
     GrD3DTextureResourceInfo fInfo;
     sk_sp<GrD3DResourceState> fState;

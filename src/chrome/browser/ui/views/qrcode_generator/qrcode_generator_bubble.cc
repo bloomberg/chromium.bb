@@ -26,10 +26,12 @@
 #include "content/public/browser/web_contents.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/theme_provider.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -49,20 +51,16 @@
 namespace {
 
 // Rendered QR Code size, pixels.
-constexpr int kQRImageSizePx = 200;
+constexpr int kQRImageSizePx = 240;
 constexpr int kPaddingTooltipDownloadButtonPx = 10;
-// Padding around the QR code. Ensures we can scan when using dark themes.
-constexpr int kQRPaddingPx = 40;
 
-// Calculates preview image dimensions.
-constexpr gfx::Size GetQRImageSize() {
+// Calculates the height of the QR Code with padding.
+constexpr gfx::Size GetQRCodeImageSize() {
   return gfx::Size(kQRImageSizePx, kQRImageSizePx);
 }
 
-// Calculates the height of the QR Code with padding.
-constexpr gfx::Size GetPreferredQRCodeImageSize() {
-  return gfx::Size(kQRImageSizePx + kQRPaddingPx,
-                   kQRImageSizePx + kQRPaddingPx);
+constexpr bool IsSquare(gfx::Size size) {
+  return size.width() == size.height();
 }
 
 // Renders a solid square of color {r, g, b} at 100% alpha.
@@ -71,7 +69,14 @@ gfx::ImageSkia GetPlaceholderImageSkia(const SkColor color) {
   bitmap.allocN32Pixels(kQRImageSizePx, kQRImageSizePx);
   bitmap.eraseARGB(0xFF, 0xFF, 0xFF, 0xFF);
   bitmap.eraseColor(color);
-  return gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 1.0f));
+  return gfx::ImageSkia::CreateFromBitmap(bitmap, 1.0f);
+}
+
+gfx::ImageSkia CreateBackgroundImageSkia(const gfx::Size& size) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(size.width(), size.height());
+  bitmap.eraseColor(SK_ColorWHITE);
+  return gfx::ImageSkia::CreateFromBitmap(bitmap, 1.0f);
 }
 
 // Adds a new small vertical padding row to the current bottom of |layout|.
@@ -85,16 +90,15 @@ void AddSmallPaddingRow(views::GridLayout* layout) {
 
 namespace qrcode_generator {
 
-QRCodeGeneratorBubble::QRCodeGeneratorBubble(
-    views::View* anchor_view,
-    content::WebContents* web_contents,
-    QRCodeGeneratorBubbleController* controller,
-    const GURL& url)
+QRCodeGeneratorBubble::QRCodeGeneratorBubble(views::View* anchor_view,
+                                             content::WebContents* web_contents,
+                                             base::OnceClosure on_closing,
+                                             const GURL& url)
     : LocationBarBubbleDelegateView(anchor_view, nullptr),
       url_(url),
-      controller_(controller),
+      on_closing_(std::move(on_closing)),
       web_contents_(web_contents) {
-  DCHECK(controller);
+  DCHECK(on_closing_);
 
   SetButtons(ui::DIALOG_BUTTON_NONE);
   SetTitle(IDS_BROWSER_SHARING_QR_CODE_DIALOG_TITLE);
@@ -112,10 +116,8 @@ void QRCodeGeneratorBubble::Show() {
 }
 
 void QRCodeGeneratorBubble::Hide() {
-  if (controller_) {
-    controller_->OnBubbleClosed();
-    controller_ = nullptr;
-  }
+  if (on_closing_)
+    std::move(on_closing_).Run();
   CloseBubble();
 }
 
@@ -150,14 +152,17 @@ void QRCodeGeneratorBubble::OnCodeGeneratorResponse(
   ShrinkAndHideDisplay(center_error_label_);
   bottom_error_label_->SetVisible(false);
   download_button_->SetEnabled(true);
-  gfx::ImageSkia image = gfx::ImageSkia::CreateFrom1xBitmap(response->bitmap);
-  UpdateQRImage(image);
+  UpdateQRImage(
+      AddQRCodeQuietZone(gfx::ImageSkia::CreateFrom1xBitmap(response->bitmap),
+                         response->data_size));
 }
 
 void QRCodeGeneratorBubble::UpdateQRImage(gfx::ImageSkia qr_image) {
   qr_code_image_->SetImage(qr_image);
-  qr_code_image_->SetImageSize(GetQRImageSize());
-  qr_code_image_->SetPreferredSize(GetPreferredQRCodeImageSize());
+  const int border_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kHigh);
+  qr_code_image_->SetPreferredSize(GetQRCodeImageSize() +
+                                   gfx::Size(border_radius, border_radius));
   qr_code_image_->SetVisible(true);
 }
 
@@ -175,7 +180,7 @@ void QRCodeGeneratorBubble::DisplayError(mojom::QRCodeGeneratorError error) {
   }
   ShrinkAndHideDisplay(qr_code_image_);
   bottom_error_label_->SetVisible(false);
-  center_error_label_->SetPreferredSize(GetPreferredQRCodeImageSize());
+  center_error_label_->SetPreferredSize(GetQRCodeImageSize());
   center_error_label_->SetVisible(true);
 }
 
@@ -193,21 +198,15 @@ bool QRCodeGeneratorBubble::ShouldShowCloseButton() const {
 }
 
 void QRCodeGeneratorBubble::WindowClosing() {
-  if (controller_) {
-    controller_->OnBubbleClosed();
-    controller_ = nullptr;
-  }
-}
-
-const char* QRCodeGeneratorBubble::GetClassName() const {
-  return "QRCodeGeneratorBubble";
+  if (on_closing_)
+    std::move(on_closing_).Run();
 }
 
 void QRCodeGeneratorBubble::Init() {
   // Requesting TEXT for trailing prevents extra padding at bottom of dialog.
   gfx::Insets insets =
-      ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(views::CONTROL,
-                                                                 views::TEXT);
+      ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
+          views::DialogContentType::kControl, views::DialogContentType::kText);
   set_margins(insets);
 
   // Internal IDs for column layout; no effect on UI.
@@ -230,14 +229,15 @@ void QRCodeGeneratorBubble::Init() {
       1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   using Alignment = views::ImageView::Alignment;
   auto qr_code_image = std::make_unique<views::ImageView>();
-  const int border_radius =
-      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
+  const int border_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kHigh);
   qr_code_image->SetBorder(views::CreateRoundedRectBorder(
       /*thickness=*/2, border_radius, gfx::kGoogleGrey200));
   qr_code_image->SetHorizontalAlignment(Alignment::kCenter);
   qr_code_image->SetVerticalAlignment(Alignment::kCenter);
-  qr_code_image->SetImageSize(GetQRImageSize());
-  qr_code_image->SetPreferredSize(GetPreferredQRCodeImageSize());
+  qr_code_image->SetImageSize(GetQRCodeImageSize());
+  qr_code_image->SetPreferredSize(GetQRCodeImageSize() +
+                                  gfx::Size(border_radius, border_radius));
   qr_code_image->SetBackground(
       views::CreateRoundedRectBackground(SK_ColorWHITE, border_radius));
 
@@ -250,14 +250,12 @@ void QRCodeGeneratorBubble::Init() {
   column_set_center_error_label->AddColumn(
       views::GridLayout::CENTER, views::GridLayout::CENTER, 1.0,
       views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  auto center_error_label = std::make_unique<views::Label>();
+  auto center_error_label = std::make_unique<views::Label>(
+      l10n_util::GetStringUTF16(
+          IDS_BROWSER_SHARING_QR_CODE_DIALOG_ERROR_UNKNOWN),
+      views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY);
   center_error_label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   center_error_label->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
-  center_error_label->SetEnabledColor(
-      center_error_label->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelSecondaryColor));
-  center_error_label->SetText(l10n_util::GetStringUTF16(
-      IDS_BROWSER_SHARING_QR_CODE_DIALOG_ERROR_UNKNOWN));
   layout->StartRow(views::GridLayout::kFixedSize, kCenterErrorLabelColumnSetId);
   center_error_label_ = layout->AddView(std::move(center_error_label));
   ShrinkAndHideDisplay(center_error_label_);
@@ -291,16 +289,12 @@ void QRCodeGeneratorBubble::Init() {
   column_set_bottom_error_label->AddColumn(
       views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
       views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
-  auto bottom_error_label = std::make_unique<views::Label>();
+  // User-facing limit rounded down to 250 characters for readability.
+  auto bottom_error_label = std::make_unique<views::Label>(
+      l10n_util::GetStringFUTF16Int(
+          IDS_BROWSER_SHARING_QR_CODE_DIALOG_ERROR_TOO_LONG, 250),
+      views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY);
   bottom_error_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  bottom_error_label->SetEnabledColor(
-      bottom_error_label->GetNativeTheme()->GetSystemColor(
-          ui::NativeTheme::kColorId_LabelSecondaryColor));
-  // User-facing limit rounded down for readability.
-  int maxUrlLength = base::GetFieldTrialParamByFeatureAsInt(
-      kSharingQRCodeGenerator, "max_url_length", 250);
-  bottom_error_label->SetText(l10n_util::GetStringFUTF16Int(
-      IDS_BROWSER_SHARING_QR_CODE_DIALOG_ERROR_TOO_LONG, maxUrlLength));
   bottom_error_label->SetVisible(false);
   layout->StartRow(views::GridLayout::kFixedSize, kBottomErrorLabelColumnSetId);
   bottom_error_label_ = layout->AddView(std::move(bottom_error_label));
@@ -355,12 +349,13 @@ void QRCodeGeneratorBubble::Init() {
   // End controls row
 
   // Initialize Service
-  qr_code_service_remote_ = qrcode_generator::LaunchQRCodeGeneratorService();
+  if (!qr_code_service_remote_)
+    qr_code_service_remote_ = qrcode_generator::LaunchQRCodeGeneratorService();
 }
 
 void QRCodeGeneratorBubble::ContentsChanged(
     views::Textfield* sender,
-    const base::string16& new_contents) {
+    const std::u16string& new_contents) {
   DCHECK_EQ(sender, textfield_url_);
   if (sender == textfield_url_) {
     url_ = GURL(base::UTF16ToUTF8(new_contents));
@@ -387,12 +382,43 @@ bool QRCodeGeneratorBubble::HandleMouseEvent(
 }
 
 /*static*/
-const base::string16 QRCodeGeneratorBubble::GetQRCodeFilenameForURL(
+const std::u16string QRCodeGeneratorBubble::GetQRCodeFilenameForURL(
     const GURL& url) {
   if (!url.has_host() || url.HostIsIPAddress())
-    return base::ASCIIToUTF16("qrcode_chrome.png");
+    return u"qrcode_chrome.png";
 
   return base::ASCIIToUTF16(base::StrCat({"qrcode_", url.host(), ".png"}));
+}
+
+// Given a square |image| and a size in QR code tiles (*not* in pixels or
+// dips) |qr_size|, produce a new image that contains |image| with the
+// mandatory 4 tiles worth of white padding around the original image.
+// static
+gfx::ImageSkia QRCodeGeneratorBubble::AddQRCodeQuietZone(
+    const gfx::ImageSkia& image,
+    const gfx::Size& qr_size) {
+  const gfx::Size image_size(image.width(), image.height());
+
+  DCHECK(IsSquare(image_size));
+  DCHECK(IsSquare(qr_size));
+
+  // Set by the QR code specification. We need to leave this many tiles blank on
+  // *each side* of the image.
+  const int kQuietZoneSizeTiles = 4;
+  const int tile_size = image.width() / qr_size.width();
+  const gfx::Size background_size =
+      image_size + gfx::Size(kQuietZoneSizeTiles * tile_size * 2,
+                             kQuietZoneSizeTiles * tile_size * 2);
+
+  auto final_image = gfx::ImageSkiaOperations::CreateSuperimposedImage(
+      CreateBackgroundImageSkia(background_size), image);
+  DCHECK(IsSquare(gfx::Size(final_image.width(), final_image.height())));
+  return final_image;
+}
+
+void QRCodeGeneratorBubble::SetQRCodeServiceForTesting(
+    mojo::Remote<mojom::QRCodeGeneratorService>&& remote) {
+  qr_code_service_remote_ = std::move(remote);
 }
 
 void QRCodeGeneratorBubble::DownloadButtonPressed() {
@@ -405,7 +431,7 @@ void QRCodeGeneratorBubble::DownloadButtonPressed() {
 
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
   content::DownloadManager* download_manager =
-      content::BrowserContext::GetDownloadManager(browser->profile());
+      browser->profile()->GetDownloadManager();
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("qr_code_save", R"(
       semantics {
@@ -439,5 +465,8 @@ void QRCodeGeneratorBubble::DownloadButtonPressed() {
   download_manager->DownloadUrl(std::move(params));
   base::RecordAction(base::UserMetricsAction("SharingQRCode.DownloadQRCode"));
 }
+
+BEGIN_METADATA(QRCodeGeneratorBubble, LocationBarBubbleDelegateView)
+END_METADATA
 
 }  // namespace qrcode_generator

@@ -5,6 +5,184 @@ Unreleased:
     *
   UI:
     *
+  SDK:
+    *
+
+
+v15.0 - 2021-05-05:
+  Tracing service and probes:
+    * Added support for {host,target}=aarch64 standalone builds.
+    * Added --background cmdline switch to traced and traced_probes services.
+    * Changed trigger_perfetto to ignore unknown command line arguments to
+      preserve forward compatibility.
+    * Added -a / --app cmdline argument to tools/record_android_trace.
+  Trace Processor:
+    * Added sanitisation of keys in nested debug annotation dictionaries.
+    * Changed Android startup metric: count CPU time of JIT thread pool, report
+      timestamp of activities during startup.
+    * Changed android_surfaceflinger metric, added missed frame counters.
+    * Changed version of SQLite to 3.35.4.
+    * Fixed importing of JSON traces with decimal (sub-us) timestamp.
+    * Fixed prepending "debug." prefix to debug annotations with non-interned
+      names.
+  UI:
+    * Added support to visualize the lifetime of individual dmabuf allocations
+      as async slices (datasource: already existing ftrace dmabuf event).
+    * Fixed visualization of unfinished slices to extend to the end of the
+      viewport.
+  SDK:
+    * Added support for passing arbitrary number of debug annotations to
+      TRACE_EVENT and combining them with lambdas.
+    * Added support for writing typed TrackEvent arguments using TRACE_EVENT
+      inline without lambdas.
+    * Changed ConvertTimestampToTraceTimeNs to be a member of
+      TraceTimestampTraits<T> struct instead of a standalone function.
+    * Changed TracedValue to use nested DebugAnnotation proto instead of
+      DebugAnnotation::NestedValue.
+
+
+v14.0 - 2021-04-01:
+  Tracing service and probes:
+    * Added support for polling power rails on Android from the newer
+      IPowerStats AIDL interface (previously using only the HAL interface).
+    * Fixed native heap profiler crash when ABI of heapprofd and profiled
+      process mismatch.
+    * Changed encoding format of Anroid managed heap profiler to reduce heap
+      dump sizes by delta-encoding object IDs.
+  Trace Processor:
+    * Added activity create/resume, layout inflation and resource timings to
+      the Android startup metric.
+    * Added chrome metadata key/value pairs (e.g. chrome version) into the
+      `metadata` table with 'cr-' prefixed keys.
+    * Added dma-buf-based memory metrics reporting total/avg/min/max dmabuf
+      allocation per-dmabuf-heap and per-process.
+    * Removed |force_full_sort| flag from config. This has been replaced
+      by setting the sorting mode to force a full sort.
+  UI:
+    * Added tools/symbolize-ui-crash script to resolve crash reports via
+      TypeScript source maps.
+    * Fixed newlines when copying Android event log lines into the clipboard.
+    * Fixed crash when selecting "Did not finish" slices.
+    * Fixed OOM dialog to give actionable instructions when opening large traces
+      rather than suggesting to file a bug.
+  SDK:
+    * Added /meson.build for bundling /sdk/perfetto.{cc,h} in Meson builds.
+    * Added support for counter trace points with the TRACE_COUNTER macro.
+
+
+v13.0 - 2021-03-01:
+  Tracing service and probes:
+    * Added ability to sample callstacks using kernel tracepoints as timebase.
+    * Added abililty to record the perf timebase counter values into the trace,
+      both combined callstack+counter or counter-only.
+    * Added abillity to trigger traces based on VM pressure on Android. Requires
+      a dedicated tracing instance in $tracefs/instances/mm_events.
+  Trace Processor:
+    * Added sorting mode to trace processor config to specify how trace
+      processor should sort events. The |force_full_sort| flag has been
+      deprecated (with replacement) and will be removed in the next version.
+    * Added ingestion of frame timeline events into the
+      {expected,actual}_frame_timeline_slice tables.
+    * Added support for Mali's trace_marker_write ftrace event.
+    * Added memory metric based on newer android_fastrpc kernel events.
+  UI:
+    * Added flow events support for instant events and async tracks.
+    * Added support for Android frame timeline events. They allow inspecting
+      end-to-end expected vs actual app-to-surfaceflinger frame times.
+    * Added ability to switch between Canary and Stable channels in the UI.
+    * Added ability to drag&drop to open trace files.
+    * Changed UI serving infrastructure, old ui versions can be now retrieved by
+      directly opening https://ui.perfetto.dev/v12.1.269/ .
+    * Removed thread state track for threads that have no activity.
+  SDK:
+    * Use process start time hashed with the process id as a unique process
+      identifier, allowing multiple independent users of the SDK in the same
+      process to interleave their events on shared tracks.
+    * Record process and thread names into the trace.
+    * Add ring buffer tracing support, i.e., periodic clearing of incremental
+      state.
+  Misc:
+    * Convert python scripts to python3.
+
+
+v12.1 - 2021-02-01:
+  Misc:
+    * Fixed CHANGELOG which was missed in the 12.0 branch cut, causing
+      mis-labeling of the version code in the v12.x branch as v11.0..N
+
+
+v12.0 - 2021-02-01:
+  Tracing service and probes:
+    * Added more helpful error messages if the client library is used without
+      having been initialized.
+    * Added //tools/record_android_trace script to facilitate recording traces
+      from Android devices, automating start + stop-via-ctrl+c + pull + open.
+    * Added auto-attachment of traces to Android bugreports if dumpstate is
+      invoked when a trace with bugreport_score > 0 is running.
+  SDK:
+    * Added ability to customize the timestamp of events via
+      ConvertTimestampToTraceTimeNs().
+    * Fixed support for category names that contain a space.
+  Trace Processor:
+    * Added ingestion and query support for Android end-to-end frame timing
+      events through the {actual, expected}_frame_timeline_slice tables.
+    * Added time-to-reportFullyDrawn (Android's API) to startup metrics.
+    * Fixed excessive memory usage when decoding traces containing callstacks
+      (https://github.com/google/perfetto/issues/83).
+  UI:
+    * Added ability to inspect the full trace config string from the
+      'Info and stats' page.
+    * Fixed 'TABLE/VIEW XXX already exists' in the Metrics page when running the
+      same metric twice.
+    * Fixed sorting of tracks using numeric sorting instead of lexicographic:
+      Thread {1, 2, 10, 11, 20} rather than Thread {1, 10, 11, 2, 20}.
+    * Fixed CSP-related bug that was preventing the UI to work on Firefox.
+    * Changed max zoom resolution to allow to zoom to sub-us events.
+
+
+v11.0 - 2021-01-01:
+  Tracing service and probes:
+    * Added trace packet interceptor API for rerouting trace data into
+      non-Perfetto systems.
+    * Added support for printing track events to the console.
+    * Added a way to observe track event tracing sessions starting and
+      stopping.
+  Trace Processor:
+    * Added "ancestor_slice" and "experimental_ancestor_stack_profile_callsite"
+      table functions to look up ancestors of CPU stack samples in profiler
+      tables.
+    * Added power metric reporting suspend/resume time periods.
+  UI:
+    * Fixed CPU time calculation in example queries.
+    * Added tracks to debug Android SystemUI jank.
+
+
+v10.0 - 2020-12-01:
+  Tracing service and probes:
+    * Fixed crash of tracing service if a client is unresponsive on the IPC
+      channel. Clients are disconnected if they don't respond to IPCs for 10s.
+    * Added cmdline arguments for integration within ChromeOS system image
+      (--{producer,consumer}-socket-{group,mode} for chmod-ing sockets).
+    * Changed path lookup logic for traced socket. /run/perfetto/ is used if the
+      directory exists, falling back on /tmp/ otherwise.
+    * Added support for kernel frame symbolization to the traced_perf callstack
+      sampler.
+    * Added support for resolving ftrace event arguments that require
+      symbolization against printk_format.
+  Trace Processor:
+    * Added .read command to inject a SQL query file, similar to the -q cmdline.
+    * Added trace-based metrics to root cause jank in Android System UI.
+    * Added symbolization support for ELF files on Windows for heap and
+      callstack profilers.
+    * Added support for symbolizing names of workqueue ftrace events.
+    * Improved Android startup metric with activity restart time.
+  UI:
+    * Added support for navigating flows with Ctrl+[ / Ctr+].
+    * Improved query result panel, moved to the bottom group allowing
+      simultaneous query result and timeline views.
+    * Fixed data corruption when recording traces via the WebUSB-based Record
+      page in the UI.
+
 
 v9.0 - 2020-11-01:
   Tracing service and probes:

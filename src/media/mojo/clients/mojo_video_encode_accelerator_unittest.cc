@@ -4,6 +4,9 @@
 
 #include <stddef.h>
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "gpu/config/gpu_info.h"
@@ -146,9 +149,10 @@ class MojoVideoEncodeAcceleratorTest : public ::testing::Test {
         std::make_unique<MockMojoVideoEncodeAccelerator>(),
         mojo_vea.InitWithNewPipeAndPassReceiver());
 
-    mojo_vea_.reset(new MojoVideoEncodeAccelerator(
-        std::move(mojo_vea),
-        media::VideoEncodeAccelerator::SupportedProfiles()));
+    mojo_vea_ =
+        base::WrapUnique<VideoEncodeAccelerator>(new MojoVideoEncodeAccelerator(
+            std::move(mojo_vea),
+            media::VideoEncodeAccelerator::SupportedProfiles()));
   }
 
   void TearDown() override {
@@ -184,7 +188,7 @@ class MojoVideoEncodeAcceleratorTest : public ::testing::Test {
 
     const VideoEncodeAccelerator::Config config(
         PIXEL_FORMAT_I420, kInputVisibleSize, kOutputProfile, kInitialBitrate,
-        base::nullopt, base::nullopt, base::nullopt, false, base::nullopt,
+        absl::nullopt, absl::nullopt, absl::nullopt, false, absl::nullopt,
         kContentType);
     EXPECT_TRUE(mojo_vea()->Initialize(config, mock_vea_client));
     base::RunLoop().RunUntilIdle();

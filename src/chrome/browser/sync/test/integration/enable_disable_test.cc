@@ -31,7 +31,6 @@ using syncer::ModelTypeFromString;
 using syncer::ModelTypeSet;
 using syncer::ModelTypeToString;
 using syncer::ProxyTypes;
-using syncer::SyncPrefs;
 using syncer::SyncUserSettings;
 using syncer::UserSelectableType;
 using syncer::UserSelectableTypeSet;
@@ -426,21 +425,24 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
                                          /*REMOTE_INITIAL_UPDATE=*/5));
 }
 
-IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, ClearsPrefsIfClearData) {
+IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, ResetsPrefsIfClearData) {
   SetupTest(/*all_types_enabled=*/true);
 
-  SyncPrefs prefs(GetProfile(0)->GetPrefs());
-  ASSERT_NE("", prefs.GetCacheGuid());
+  syncer::SyncTransportDataPrefs prefs(GetProfile(0)->GetPrefs());
+  const std::string first_cache_guid = prefs.GetCacheGuid();
+  ASSERT_NE("", first_cache_guid);
 
   GetClient(0)->StopSyncServiceAndClearData();
-  EXPECT_EQ("", prefs.GetCacheGuid());
+  // Sync should have restarted in transport mode, creating a new cache GUID.
+  EXPECT_NE("", prefs.GetCacheGuid());
+  EXPECT_NE(first_cache_guid, prefs.GetCacheGuid());
 }
 
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest,
                        DoesNotClearPrefsWithKeepData) {
   SetupTest(/*all_types_enabled=*/true);
 
-  SyncPrefs prefs(GetProfile(0)->GetPrefs());
+  syncer::SyncTransportDataPrefs prefs(GetProfile(0)->GetPrefs());
   const std::string cache_guid = prefs.GetCacheGuid();
   ASSERT_NE("", cache_guid);
 
@@ -473,7 +475,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientSelfNotifyTest,
 
   SetupTest(/*all_types_enabled=*/true);
 
-  SyncPrefs prefs(GetProfile(0)->GetPrefs());
+  syncer::SyncTransportDataPrefs prefs(GetProfile(0)->GetPrefs());
   EXPECT_EQ(bag_of_chips.SerializeAsString(), prefs.GetBagOfChips());
 
   sync_pb::ClientToServerMessage message = TriggerGetUpdatesCycleAndWait();
@@ -484,7 +486,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientSelfNotifyTest,
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientSelfNotifyTest,
                        ResendsBagOfChips) {
   ASSERT_TRUE(SetupClients());
-  SyncPrefs prefs(GetProfile(0)->GetPrefs());
+  syncer::SyncTransportDataPrefs prefs(GetProfile(0)->GetPrefs());
   ASSERT_NE("", prefs.GetBagOfChips());
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
 

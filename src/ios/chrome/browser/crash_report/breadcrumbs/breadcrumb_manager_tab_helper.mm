@@ -5,11 +5,12 @@
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
 
 #import "base/ios/ns_error_util.h"
+#include "base/strings/stringprintf.h"
+#include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/net/protocol_handler_util.h"
@@ -105,14 +106,13 @@ using LoggingBlock = void (^)(const std::string& event);
 
 BreadcrumbManagerTabHelper::BreadcrumbManagerTabHelper(web::WebState* web_state)
     : web_state_(web_state),
-      infobar_manager_(InfoBarManagerImpl::FromWebState(web_state)),
-      infobar_observer_(this) {
+      infobar_manager_(InfoBarManagerImpl::FromWebState(web_state)) {
   web_state_->AddObserver(this);
 
   static int next_unique_id = 1;
   unique_id_ = next_unique_id++;
 
-  infobar_observer_.Add(infobar_manager_);
+  infobar_observation_.Observe(infobar_manager_);
 
   scroll_observer_ = [[BreadcrumbScrollingObserver alloc]
       initWithLoggingBlock:^(const std::string& event) {
@@ -306,7 +306,8 @@ void BreadcrumbManagerTabHelper::OnInfoBarReplaced(
 void BreadcrumbManagerTabHelper::OnManagerShuttingDown(
     infobars::InfoBarManager* manager) {
   DCHECK_EQ(infobar_manager_, manager);
-  infobar_observer_.Remove(manager);
+  DCHECK(infobar_observation_.IsObservingSource(manager));
+  infobar_observation_.Reset();
   infobar_manager_ = nullptr;
   sequentially_replaced_infobars_ = 0;
 }

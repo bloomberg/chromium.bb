@@ -4,9 +4,19 @@
 
 #include "android_webview/browser/page_load_metrics/page_load_metrics_initialize.h"
 
+#include "android_webview/browser/page_load_metrics/aw_page_load_metrics_memory_tracker_factory.h"
 #include "base/macros.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_base.h"
+#include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
+
+namespace page_load_metrics {
+class PageLoadMetricsMemoryTracker;
+}  // namespace page_load_metrics
 
 namespace android_webview {
 
@@ -20,14 +30,16 @@ class PageLoadMetricsEmbedder
 
   // page_load_metrics::PageLoadMetricsEmbedderBase:
   bool IsNewTabPageUrl(const GURL& url) override;
-  bool IsPrerender(content::WebContents* web_contents) override;
+  bool IsNoStatePrefetch(content::WebContents* web_contents) override;
   bool IsExtensionUrl(const GURL& url) override;
+  page_load_metrics::PageLoadMetricsMemoryTracker*
+  GetMemoryTrackerForBrowserContext(
+      content::BrowserContext* browser_context) override;
 
  protected:
   // page_load_metrics::PageLoadMetricsEmbedderBase:
   void RegisterEmbedderObservers(
       page_load_metrics::PageLoadTracker* tracker) override;
-  bool IsPrerendering() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsEmbedder);
@@ -42,20 +54,27 @@ PageLoadMetricsEmbedder::~PageLoadMetricsEmbedder() = default;
 void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
     page_load_metrics::PageLoadTracker* tracker) {}
 
-bool PageLoadMetricsEmbedder::IsPrerendering() const {
-  return false;
-}
-
 bool PageLoadMetricsEmbedder::IsNewTabPageUrl(const GURL& url) {
   return false;
 }
 
-bool PageLoadMetricsEmbedder::IsPrerender(content::WebContents* web_contents) {
+bool PageLoadMetricsEmbedder::IsNoStatePrefetch(
+    content::WebContents* web_contents) {
   return false;
 }
 
 bool PageLoadMetricsEmbedder::IsExtensionUrl(const GURL& url) {
   return false;
+}
+
+page_load_metrics::PageLoadMetricsMemoryTracker*
+PageLoadMetricsEmbedder::GetMemoryTrackerForBrowserContext(
+    content::BrowserContext* browser_context) {
+  if (!base::FeatureList::IsEnabled(features::kV8PerFrameMemoryMonitoring))
+    return nullptr;
+
+  return AwPageLoadMetricsMemoryTrackerFactory::GetForBrowserContext(
+      browser_context);
 }
 
 }  // namespace

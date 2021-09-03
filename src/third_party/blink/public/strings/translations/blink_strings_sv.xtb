@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">banner</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> objekt</translation>
 <translation id="1480676835519562650">kan välja flera, <ph name="SELECTED" /> av <ph name="COUNT" /> har valts.</translation>
+<translation id="1588438908519853928">Normal</translation>
 <translation id="1589122976691792535">område</translation>
 <translation id="1591562245178063882">Den här månaden</translation>
 <translation id="1637811476055996098">Välj filer</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">timer</translation>
 <translation id="3199563858620722075">kombinationsruta</translation>
 <translation id="3220661731597678625">aktuellt steg</translation>
+<translation id="3321030238473337787">Uppspelningshastighet</translation>
 <translation id="3329013043687509092">Mättnad</translation>
 <translation id="3450233048674729344">Värdet måste vara mindre än eller lika med <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definition</translation>
@@ -111,11 +113,12 @@
 <translation id="4248100235867064564">menyfält</translation>
 <translation id="4293574643247337246">sidhuvud</translation>
 <translation id="4360991593054037559">Ange ett giltigt värde. De två närmaste giltiga värdena är <ph name="VALID_VALUE_LOW" /> och <ph name="VALID_VALUE_HIGHER" />.</translation>
+<translation id="4371899966896349864">dölj menyn för uppspelningshastighet</translation>
 <translation id="4384249794467006333">Den här bilden har ingen etikett. Öppna menyn Fler alternativ uppe till höger för att se bildbeskrivningar.</translation>
 <translation id="4384583879834880242">Frågor och svar</translation>
 <translation id="4444765639179266822">Säger troligen: <ph name="OCR_TEXT" /></translation>
 <translation id="4446524499724042288">hänvisning till ordlista</translation>
-<translation id="4522570452068850558">Info</translation>
+<translation id="4522570452068850558">Detaljer</translation>
 <translation id="4576178047100686001">Den här bilden har ingen etikett. Öppna menyn Fler inställningar uppe till vänster för att se bildbeskrivningar.</translation>
 <translation id="4597532268155981612">formulär</translation>
 <translation id="4661075872484491155">träd</translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">radrubrik</translation>
 <translation id="5143125788380636750">epilog</translation>
 <translation id="5164977714490026579">Värdet måste vara större än eller lika med <ph name="MINIMUM" />.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" /> PB</translation>
 <translation id="5307600278924710095">Ange en del följt av <ph name="ATSIGN" />. <ph name="INVALIDADDRESS" /> är ofullständig.</translation>
 <translation id="5334352251556557839">Det går inte att spela upp media.</translation>
 <translation id="537648784377940524">Tidigaste datum (<ph name="MIN_DATE_OR_TIME" />) måste vara före senaste datum (<ph name="MAX_DATE_OR_TIME" />).</translation>
+<translation id="5378437566635403538">har utökats, en dialogruta är öppen.</translation>
 <translation id="5406322316791861025">figur</translation>
 <translation id="5425179576310518467">aktuellt datum</translation>
 <translation id="5453733299334684579">trädobjekt</translation>
 <translation id="5466621249238537318">Välj en eller flera filer.</translation>
 <translation id="5468998798572797635">avsluta helskärmsläge</translation>
+<translation id="5516235301412634559">0,75</translation>
 <translation id="5516424706154626233">datumväljare</translation>
 <translation id="5537725057119320332">Casta</translation>
 <translation id="5546461542133609677">slå på ljudet</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">fler alternativ</translation>
 <translation id="576709008726043716">inledning</translation>
 <translation id="57838592816432529">Stäng av ljudet</translation>
+<translation id="5786442179789148008">visa menyn för uppspelningshastighet</translation>
+<translation id="5787939484346677755">har utökats, autofyllförslag tillgängliga.</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="588258955323874662">Helskärm</translation>
 <translation id="5888666972993069672">Castar till <ph name="DEVICE_FRIENDLY_NAME" /></translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">På</translation>
 <translation id="5939518447894949180">Återställ</translation>
 <translation id="5966707198760109579">Vecka</translation>
+<translation id="5985507339671257014">0,5</translation>
 <translation id="5987525920412732405">snurrknapp</translation>
 <translation id="6011459053400940133">volymreglage</translation>
 <translation id="6015796118275082299">År</translation>
 <translation id="6023896073578205740">listruta</translation>
 <translation id="6150588977291308318">bibliografi</translation>
 <translation id="6164829606128959761">mätare</translation>
+<translation id="6165053282446038410">har utökats, <ph name="COUNT" /> autofyllförslag tillgängliga.</translation>
 <translation id="6166809985690652833">efterord</translation>
 <translation id="6209276755895393898">Det verkar vara: <ph name="DESCRIPTION" /></translation>
 <translation id="6212595056017402527">aktuell sida</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">Rensa</translation>
 <translation id="668171684555832681">Annan...</translation>
 <translation id="6692633176391053278">knappreglage</translation>
+<translation id="6696580792574109116">månadsväljare</translation>
 <translation id="6709093583001123835">Värdet måste vara <ph name="VALUE" />.</translation>
 <translation id="6709570249143506788">Låg uppspelningskvalitet</translation>
 <translation id="6755330956360078551">beskrivning</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">ljud av</translation>
 <translation id="6885760532393684712">katalog</translation>
 <translation id="689129560213475294">kolofon</translation>
+<translation id="6919891270253167948">1,5</translation>
 <translation id="6934078000481955284">citatblock</translation>
 <translation id="693476918119313863">rubrik</translation>
 <translation id="6941933287844615239">ladda ned media</translation>
 <translation id="6981594929165378967">infogning</translation>
+<translation id="698788488269350478">har utökats.</translation>
 <translation id="6989848892321993519">Lägg till minst <ph name="MIN_CHARACTERS" /> tecken (för närvarande har du angett 1 tecken).</translation>
 <translation id="7034405885550056553">förslag</translation>
 <translation id="709897737746224366">Matcha det format som anges.</translation>
 <translation id="7102274145889307184">aktuell plats</translation>
 <translation id="7118469954320184356">Det finns ingen tillgänglig beskrivning.</translation>
 <translation id="7139483182332611405">företal</translation>
+<translation id="7198226213493847604">popupknapp för meny</translation>
 <translation id="7214187073215825913">innehållsinformation</translation>
 <translation id="7238347055216017155">betoning</translation>
 <translation id="7263440858009898357">Välj ett alternativ i listan.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">Öppna snabbmenyn om du vill hämta en bildbeskrivning när en sådan saknas.</translation>
 <translation id="7750228210027921155">Bild-i-bild</translation>
 <translation id="775297008183122718">Ogiltig inmatning</translation>
+<translation id="7782515065589691344">1,25</translation>
 <translation id="7789962463072032349">paus</translation>
 <translation id="7802800022689234070">expanderingstriangel</translation>
 <translation id="7852167693871241274">Nyansreglage</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">referensnot</translation>
 <translation id="811583516810654505">Beskrivningen hämtas …</translation>
 <translation id="8117451130807776954">Den här veckan</translation>
+<translation id="8131955114056917397">0,25</translation>
 <translation id="8199524924445686405">åååå</translation>
 <translation id="8208673686607688524">datum- och tidsväljare för lokal tid</translation>
 <translation id="8261464734335370856">Stavfel</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">styra fjärruppspelning</translation>
 <translation id="862370744433916922">undertext</translation>
 <translation id="8634971699417195529">Visa månadsväljare</translation>
+<translation id="8637593834423658414">1,75</translation>
+<translation id="8668988909814782445">Radbrytning</translation>
 <translation id="8711688047404765493">utdata</translation>
 <translation id="8750798805984357768">Välj ett av följande alternativ.</translation>
 <translation id="8808573423886751634">kapitel</translation>
 <translation id="8845239796550121995">Castar nu till TV:n</translation>
 <translation id="8851136666856101339">huvud</translation>
+<translation id="8861621546968757188">popupknapp för dialogruta</translation>
 <translation id="8875657656876809964">Videouppspelningsfel</translation>
 <translation id="8889402386540077796">Nyans</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>

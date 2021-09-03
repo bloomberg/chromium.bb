@@ -28,13 +28,13 @@
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
 #include "media/cast/logging/simple_event_subscriber.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "media/cast/net/cast_transport_impl.h"
+#include "media/cast/test/receiver/cast_receiver.h"
 #include "media/cast/test/skewed_single_thread_task_runner.h"
 #include "media/cast/test/skewed_tick_clock.h"
 #include "media/cast/test/utility/audio_utility.h"
@@ -911,17 +911,17 @@ class TransportClient : public CastTransport::Client {
 }  // namespace
 
 void End2EndTest::Create() {
-  transport_sender_.reset(new CastTransportImpl(
+  transport_sender_ = std::make_unique<CastTransportImpl>(
       &testing_clock_sender_, base::TimeDelta::FromMilliseconds(1),
       std::make_unique<TransportClient>(cast_environment_sender_->logger(),
                                         nullptr),
-      base::WrapUnique(sender_to_receiver_), task_runner_sender_));
+      base::WrapUnique(sender_to_receiver_), task_runner_sender_);
 
-  transport_receiver_.reset(new CastTransportImpl(
+  transport_receiver_ = std::make_unique<CastTransportImpl>(
       &testing_clock_sender_, base::TimeDelta::FromMilliseconds(1),
       std::make_unique<TransportClient>(cast_environment_receiver_->logger(),
                                         this),
-      base::WrapUnique(receiver_to_sender_), task_runner_sender_));
+      base::WrapUnique(receiver_to_sender_), task_runner_sender_);
 
   cast_receiver_ =
       CastReceiver::Create(cast_environment_receiver_, audio_receiver_config_,
@@ -935,9 +935,7 @@ void End2EndTest::Create() {
       audio_sender_config_, base::BindOnce(&ExpectSuccessOperationalStatus));
   cast_sender_->InitializeVideo(
       video_sender_config_,
-      base::BindRepeating(&ExpectSuccessOperationalStatus),
-      CreateDefaultVideoEncodeAcceleratorCallback(),
-      CreateDefaultVideoEncodeMemoryCallback());
+      base::BindRepeating(&ExpectSuccessOperationalStatus), base::DoNothing());
   task_runner_->RunTasks();
 
   receiver_to_sender_->SetPacketReceiver(
@@ -950,9 +948,9 @@ void End2EndTest::Create() {
   audio_frame_input_ = cast_sender_->audio_frame_input();
   video_frame_input_ = cast_sender_->video_frame_input();
 
-  audio_bus_factory_.reset(new TestAudioBusFactory(
+  audio_bus_factory_ = std::make_unique<TestAudioBusFactory>(
       audio_sender_config_.channels, audio_sender_config_.rtp_timebase,
-      kSoundFrequency, kSoundVolume));
+      kSoundFrequency, kSoundVolume);
 }
 
 TEST_F(End2EndTest, CAST_E2E_TEST(LoopWithLosslessEncoding)) {

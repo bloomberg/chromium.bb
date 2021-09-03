@@ -16,6 +16,7 @@
 #include "src/gpu/d3d/GrD3DGpu.h"
 #include "src/gpu/d3d/GrD3DPipelineState.h"
 #include "src/gpu/d3d/GrD3DPipelineStateBuilder.h"
+#include "src/gpu/d3d/GrD3DRenderTarget.h"
 
 GrD3DResourceProvider::GrD3DResourceProvider(GrD3DGpu* gpu)
         : fGpu(gpu)
@@ -48,14 +49,15 @@ void GrD3DResourceProvider::recycleDirectCommandList(
     fAvailableDirectCommandLists.push_back(std::move(commandList));
 }
 
-sk_sp<GrD3DRootSignature> GrD3DResourceProvider::findOrCreateRootSignature(int numTextureSamplers) {
+sk_sp<GrD3DRootSignature> GrD3DResourceProvider::findOrCreateRootSignature(int numTextureSamplers,
+                                                                           int numUAVs) {
     for (int i = 0; i < fRootSignatures.count(); ++i) {
-        if (fRootSignatures[i]->isCompatible(numTextureSamplers)) {
+        if (fRootSignatures[i]->isCompatible(numTextureSamplers, numUAVs)) {
             return fRootSignatures[i];
         }
     }
 
-    auto rootSig = GrD3DRootSignature::Make(fGpu, numTextureSamplers);
+    auto rootSig = GrD3DRootSignature::Make(fGpu, numTextureSamplers, numUAVs);
     if (!rootSig) {
         return nullptr;
     }
@@ -105,13 +107,18 @@ GrD3DDescriptorHeap::CPUHandle GrD3DResourceProvider::createConstantBufferView(
 }
 
 GrD3DDescriptorHeap::CPUHandle GrD3DResourceProvider::createShaderResourceView(
-        ID3D12Resource* resource) {
-    return fCpuDescriptorManager.createShaderResourceView(fGpu, resource);
+        ID3D12Resource* resource, unsigned int highestMip, unsigned int mipLevels) {
+    return fCpuDescriptorManager.createShaderResourceView(fGpu, resource, highestMip, mipLevels);
 }
 
-void GrD3DResourceProvider::recycleConstantOrShaderView(
+GrD3DDescriptorHeap::CPUHandle GrD3DResourceProvider::createUnorderedAccessView(
+        ID3D12Resource* resource, unsigned int mipSlice) {
+    return fCpuDescriptorManager.createUnorderedAccessView(fGpu, resource, mipSlice);
+}
+
+void GrD3DResourceProvider::recycleShaderView(
         const GrD3DDescriptorHeap::CPUHandle& view) {
-    fCpuDescriptorManager.recycleConstantOrShaderView(view);
+    fCpuDescriptorManager.recycleShaderView(view);
 }
 
 static D3D12_TEXTURE_ADDRESS_MODE wrap_mode_to_d3d_address_mode(GrSamplerState::WrapMode wrapMode) {
@@ -170,14 +177,13 @@ D3D12_CPU_DESCRIPTOR_HANDLE GrD3DResourceProvider::findOrCreateCompatibleSampler
     return sampler;
 }
 
-sk_sp<GrD3DDescriptorTable> GrD3DResourceProvider::findOrCreateShaderResourceTable(
-    const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& shaderResourceViews) {
+sk_sp<GrD3DDescriptorTable> GrD3DResourceProvider::findOrCreateShaderViewTable(
+    const std::vector<D3D12_CPU_DESCRIPTOR_HANDLE>& shaderViews) {
 
     auto createFunc = [this](GrD3DGpu* gpu, unsigned int numDesc) {
-        return this->fDescriptorTableManager.createShaderOrConstantResourceTable(gpu, numDesc);
+        return this->fDescriptorTableManager.createShaderViewTable(gpu, numDesc);
     };
-    return fShaderResourceDescriptorTableCache.findOrCreateDescTable(shaderResourceViews,
-                                                                     createFunc);
+    return fShaderResourceDescriptorTableCache.findOrCreateDescTable(shaderViews, createFunc);
 }
 
 sk_sp<GrD3DDescriptorTable> GrD3DResourceProvider::findOrCreateSamplerTable(
@@ -188,9 +194,73 @@ sk_sp<GrD3DDescriptorTable> GrD3DResourceProvider::findOrCreateSamplerTable(
     return fShaderResourceDescriptorTableCache.findOrCreateDescTable(samplers, createFunc);
 }
 
-sk_sp<GrD3DPipelineState> GrD3DResourceProvider::findOrCreateCompatiblePipelineState(
-        GrRenderTarget* rt, const GrProgramInfo& info) {
+GrD3DPipelineState* GrD3DResourceProvider::findOrCreateCompatiblePipelineState(
+        GrD3DRenderTarget* rt, const GrProgramInfo& info) {
     return fPipelineStateCache->refPipelineState(rt, info);
+}
+
+sk_sp<GrD3DPipeline> GrD3DResourceProvider::findOrCreateMipmapPipeline() {
+    if (!fMipmapPipeline) {
+        // Note: filtering for non-even widths and heights samples at the 0.25 and 0.75
+        // locations and averages the result. As the initial samples are bilerped this is
+        // approximately a triangle filter. We should look into doing a better kernel but
+        // this should hold us for now.
+        const char* shader =
+            "SamplerState textureSampler : register(s0, space1);\n"
+            "Texture2D<float4> inputTexture : register(t1, space1);\n"
+            "RWTexture2D<float4> outUAV : register(u2, space1);\n"
+            "\n"
+            "cbuffer UniformBuffer : register(b0, space0) {\n"
+            "    float2 inverseDims;\n"
+            "    uint mipLevel;\n"
+            "    uint sampleMode;\n"
+            "}\n"
+            "\n"
+            "[numthreads(8, 8, 1)]\n"
+            "void main(uint groupIndex : SV_GroupIndex, uint3 threadID : SV_DispatchThreadID) {\n"
+            "    float2 uv = inverseDims * (threadID.xy + 0.5);\n"
+            "    float4 mipVal;\n"
+            "    switch (sampleMode) {\n"
+            "        case 0: {\n"
+            "            mipVal = inputTexture.SampleLevel(textureSampler, uv, mipLevel);\n"
+            "            break;\n"
+            "        }\n"
+            "        case 1: {\n"
+            "            float2 uvdiff = inverseDims * 0.25;\n"
+            "            mipVal = inputTexture.SampleLevel(textureSampler, uv-uvdiff, mipLevel);\n"
+            "            mipVal += inputTexture.SampleLevel(textureSampler, uv+uvdiff, mipLevel);\n"
+            "            uvdiff.y = -uvdiff.y;\n"
+            "            mipVal += inputTexture.SampleLevel(textureSampler, uv-uvdiff, mipLevel);\n"
+            "            mipVal += inputTexture.SampleLevel(textureSampler, uv+uvdiff, mipLevel);\n"
+            "            mipVal *= 0.25;\n"
+            "            break;\n"
+            "        }\n"
+            "        case 2: {\n"
+            "            float2 uvdiff = float2(inverseDims.x * 0.25, 0);\n"
+            "            mipVal = inputTexture.SampleLevel(textureSampler, uv-uvdiff, mipLevel);\n"
+            "            mipVal += inputTexture.SampleLevel(textureSampler, uv+uvdiff, mipLevel);\n"
+            "            mipVal *= 0.5;\n"
+            "            break;\n"
+            "        }\n"
+            "        case 3: {\n"
+            "            float2 uvdiff = float2(0, inverseDims.y * 0.25);\n"
+            "            mipVal = inputTexture.SampleLevel(textureSampler, uv-uvdiff, mipLevel);\n"
+            "            mipVal += inputTexture.SampleLevel(textureSampler, uv+uvdiff, mipLevel);\n"
+            "            mipVal *= 0.5;\n"
+            "            break;\n"
+            "        }\n"
+            "    }\n"
+            "\n"
+            "    outUAV[threadID.xy] = mipVal;\n"
+            "}\n";
+
+        sk_sp<GrD3DRootSignature> rootSig = this->findOrCreateRootSignature(1, 1);
+
+        fMipmapPipeline =
+                GrD3DPipelineStateBuilder::MakeComputePipeline(fGpu, rootSig.get(), shader);
+    }
+
+    return fMipmapPipeline;
 }
 
 D3D12_GPU_VIRTUAL_ADDRESS GrD3DResourceProvider::uploadConstantData(void* data, size_t size) {
@@ -225,11 +295,11 @@ static const bool c_DisplayMtlPipelineCache{false};
 #endif
 
 struct GrD3DResourceProvider::PipelineStateCache::Entry {
-    Entry(GrD3DGpu* gpu, sk_sp<GrD3DPipelineState> pipelineState)
+    Entry(GrD3DGpu* gpu, std::unique_ptr<GrD3DPipelineState> pipelineState)
             : fGpu(gpu), fPipelineState(std::move(pipelineState)) {}
 
     GrD3DGpu* fGpu;
-    sk_sp<GrD3DPipelineState> fPipelineState;
+    std::unique_ptr<GrD3DPipelineState> fPipelineState;
 };
 
 GrD3DResourceProvider::PipelineStateCache::PipelineStateCache(GrD3DGpu* gpu)
@@ -260,8 +330,8 @@ void GrD3DResourceProvider::PipelineStateCache::release() {
     fMap.reset();
 }
 
-sk_sp<GrD3DPipelineState> GrD3DResourceProvider::PipelineStateCache::refPipelineState(
-        GrRenderTarget* renderTarget, const GrProgramInfo& programInfo) {
+GrD3DPipelineState* GrD3DResourceProvider::PipelineStateCache::refPipelineState(
+        GrD3DRenderTarget* renderTarget, const GrProgramInfo& programInfo) {
 #ifdef GR_PIPELINE_STATE_CACHE_STATS
     ++fTotalRequests;
 #endif
@@ -279,16 +349,16 @@ sk_sp<GrD3DPipelineState> GrD3DResourceProvider::PipelineStateCache::refPipeline
 #ifdef GR_PIPELINE_STATE_CACHE_STATS
         ++fCacheMisses;
 #endif
-        sk_sp<GrD3DPipelineState> pipelineState = GrD3DPipelineStateBuilder::MakePipelineState(
-                fGpu, renderTarget, desc, programInfo);
+        std::unique_ptr<GrD3DPipelineState> pipelineState =
+                GrD3DPipelineStateBuilder::MakePipelineState(fGpu, renderTarget, desc, programInfo);
         if (!pipelineState) {
             return nullptr;
         }
         entry = fMap.insert(desc, std::unique_ptr<Entry>(
                 new Entry(fGpu, std::move(pipelineState))));
-        return (*entry)->fPipelineState;
+        return ((*entry)->fPipelineState).get();
     }
-    return (*entry)->fPipelineState;
+    return ((*entry)->fPipelineState).get();
 }
 
 void GrD3DResourceProvider::PipelineStateCache::markPipelineStateUniformsDirty() {

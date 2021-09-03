@@ -7,16 +7,16 @@
 #include <memory>
 #include <vector>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/components/multidevice/beacon_seed.h"
 #include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/components/multidevice/remote_device.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/cryptauth_device.h"
 #include "chromeos/services/device_sync/cryptauth_device_manager.h"
 #include "chromeos/services/device_sync/fake_cryptauth_device_manager.h"
@@ -143,8 +143,8 @@ CryptAuthDevice ConvertRemoteDeviceToCryptAuthDevice(
       "DeviceSync:BetterTogether public key",
       base::Time::FromJavaTime(remote_device.last_update_time_millis),
       remote_device.public_key.empty()
-          ? base::nullopt
-          : base::make_optional(beto_device_metadata),
+          ? absl::nullopt
+          : absl::make_optional(beto_device_metadata),
       remote_device.software_features);
 }
 
@@ -381,7 +381,7 @@ class DeviceSyncRemoteDeviceProviderImplTest : public ::testing::Test {
         success ? CryptAuthDeviceSyncResult::ResultCode::kSuccess
                 : CryptAuthDeviceSyncResult::ResultCode::
                       kErrorSyncMetadataApiCallBadRequest,
-        did_devices_change, base::nullopt /* client_directive */));
+        did_devices_change, absl::nullopt /* client_directive */));
 
     // A new loader should be created after a successful v2 DeviceSync that
     // changed the device registry.

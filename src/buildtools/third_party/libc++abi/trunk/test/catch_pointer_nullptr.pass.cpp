@@ -6,7 +6,15 @@
 //
 //===----------------------------------------------------------------------===//
 
-// UNSUPPORTED: c++98, c++03, libcxxabi-no-exceptions
+// Catching an exception thrown as nullptr was not properly handled before
+// 2f984cab4fa7, which landed in macOS 10.13
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.12
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.11
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.10
+// XFAIL: use_system_cxx_lib && x86_64-apple-macosx10.9
+
+// UNSUPPORTED: c++03
+// UNSUPPORTED: no-exceptions
 
 #include <cassert>
 #include <cstdlib>
@@ -60,7 +68,7 @@ void catch_nullptr_test() {
 }
 
 
-int main()
+int main(int, char**)
 {
   // catch naked nullptrs
   test1();
@@ -71,4 +79,6 @@ int main()
   catch_nullptr_test<int A::*>();
   catch_nullptr_test<const int A::*>();
   catch_nullptr_test<int A::**>();
+
+  return 0;
 }

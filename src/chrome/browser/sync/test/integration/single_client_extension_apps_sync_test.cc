@@ -3,15 +3,17 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/sync/test/integration/apps_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "content/public/test/browser_test.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "chrome/browser/sync/test/integration/os_sync_test.h"
-#include "chromeos/constants/chromeos_features.h"
 #endif
 
 using apps_helper::AllProfilesHaveSameApps;
@@ -114,7 +116,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionAppsSyncTest, InstallSomeApps) {
   ASSERT_TRUE(AllProfilesHaveSameApps());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Tests for SplitSettingsSync.
 class SingleClientExtensionAppsOsSyncTest : public OsSyncTest {
@@ -142,4 +144,4 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionAppsOsSyncTest,
   EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::APPS));
 }
 
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)

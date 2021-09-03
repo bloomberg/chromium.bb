@@ -12,24 +12,24 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 
 class ChromeSearchResult;
 
 namespace app_list {
 
 enum class RankingItemType;
+class SearchController;
 
 class SearchProvider {
  public:
   using Results = std::vector<std::unique_ptr<ChromeSearchResult>>;
-  using ResultChangedCallback = base::Closure;
+  using ResultChangedCallback = base::RepeatingClosure;
 
   SearchProvider();
   virtual ~SearchProvider();
 
   // Invoked to start a query.
-  virtual void Start(const base::string16& query) = 0;
+  virtual void Start(const std::u16string& query) = 0;
   // Invoked when the UI view closes. In response, the |SearchProvider| may
   // clear its caches.
   virtual void ViewClosing() {}
@@ -43,8 +43,12 @@ class SearchProvider {
   // Returns the main result type created by this provider.
   virtual ash::AppListSearchResultType ResultType() = 0;
 
-  void set_result_changed_callback(const ResultChangedCallback& callback) {
-    result_changed_callback_ = callback;
+  void set_controller(SearchController* controller) {
+    search_controller_ = controller;
+  }
+
+  void set_result_changed_callback(ResultChangedCallback callback) {
+    result_changed_callback_ = std::move(callback);
   }
 
   const Results& results() const { return results_; }
@@ -68,6 +72,7 @@ class SearchProvider {
   void FireResultChanged();
 
   ResultChangedCallback result_changed_callback_;
+  SearchController* search_controller_;
   Results results_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchProvider);

@@ -15,6 +15,9 @@
 namespace base {
 class SequencedTaskRunner;
 class SingleThreadTaskRunner;
+
+template <typename T>
+class DeleteHelper;
 }
 
 namespace IPC {
@@ -52,8 +55,7 @@ struct PPAPI_HOST_EXPORT ResourceMessageFilterDeleteTraits {
 //   scoped_refptr<base::TaskRunner> OverrideTaskRunnerForMessage(
 //       const IPC::Message& message) override {
 //     if (message.type() == MyMessage::ID) {
-//       return base::CreateSingleThreadTaskRunner(
-//           {BrowserThread::UI});
+//       return content::GetUIThreadTaskRunner({});
 //     }
 //     return NULL;
 //   }

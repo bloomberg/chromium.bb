@@ -19,7 +19,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
+#include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom.h"
 
 // Set the default number of "automatic" implicit storage access grants per
 // third party origin that can be granted. This can be overridden via
@@ -48,7 +48,7 @@ StorageAccessGrantPermissionContext::StorageAccessGrantPermissionContext(
     : PermissionContextBase(
           browser_context,
           ContentSettingsType::STORAGE_ACCESS,
-          blink::mojom::FeaturePolicyFeature::kStorageAccessAPI),
+          blink::mojom::PermissionsPolicyFeature::kStorageAccessAPI),
       content_settings_type_(ContentSettingsType::STORAGE_ACCESS) {}
 
 StorageAccessGrantPermissionContext::~StorageAccessGrantPermissionContext() =
@@ -197,7 +197,8 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
   // partition has updated and ack'd the update. This prevents a race where
   // the renderer could initiate a network request based on the response to this
   // request before the access grants have updated in the network service.
-  content::BrowserContext::GetDefaultStoragePartition(browser_context())
+  browser_context()
+      ->GetDefaultStoragePartition()
       ->GetCookieManagerForBrowserProcess()
       ->SetStorageAccessGrantSettings(
           grants, base::BindOnce(std::move(callback), content_setting));

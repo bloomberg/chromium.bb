@@ -5,6 +5,7 @@
  * found in the LICENSE file.
  */
 
+#include "include/core/SkBitmap.h"
 #include "include/core/SkImage.h"
 #include "include/core/SkSurface.h"
 #include "include/core/SkSurfaceCharacterization.h"
@@ -27,7 +28,7 @@ DEF_GPUTEST(GrDDLImage_MakeSubset, reporter, options) {
         bm.allocPixels();
         bm.eraseColor(SK_ColorBLACK);
         bm.setImmutable();
-        auto rasterImg = SkImage::MakeFromBitmap(bm);
+        auto rasterImg = bm.asImage();
         REPORTER_ASSERT(reporter, rasterImg->isValid(static_cast<GrRecordingContext*>(nullptr)));
 
         // raster + context:

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -67,7 +68,7 @@ class CC_BASE_EXPORT ScopedLayerTask {
 
 class CC_BASE_EXPORT ScopedImageTask {
  public:
-  enum ImageType { kAvif, kBmp, kGif, kIco, kJpeg, kPng, kWebP, kOther };
+  enum ImageType { kJxl, kAvif, kBmp, kGif, kIco, kJpeg, kPng, kWebP, kOther };
 
   explicit ScopedImageTask(ImageType image_type)
       : image_type_(image_type), start_time_(base::TimeTicks::Now()) {}
@@ -175,10 +176,12 @@ inline void CC_BASE_EXPORT DidActivateLayerTree(int layer_tree_host_id,
                        internal::kFrameId, frame_id);
 }
 
-inline void CC_BASE_EXPORT DidBeginFrame(int layer_tree_host_id) {
-  TRACE_EVENT_INSTANT1(internal::CategoryName::kTimelineFrame,
-                       internal::kBeginFrame, TRACE_EVENT_SCOPE_THREAD,
-                       internal::kLayerTreeId, layer_tree_host_id);
+inline void CC_BASE_EXPORT
+DidBeginFrame(int layer_tree_host_id, base::TimeTicks begin_frame_timestamp) {
+  TRACE_EVENT_INSTANT_WITH_TIMESTAMP1(
+      internal::CategoryName::kTimelineFrame, internal::kBeginFrame,
+      TRACE_EVENT_SCOPE_THREAD, begin_frame_timestamp, internal::kLayerTreeId,
+      layer_tree_host_id);
 }
 
 inline void CC_BASE_EXPORT DidDrawFrame(int layer_tree_host_id) {

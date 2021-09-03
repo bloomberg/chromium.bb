@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 
 // Objective-C protocol mirroring ChromeIdentityService::Observer.
@@ -31,16 +31,16 @@ class ChromeIdentityServiceObserverBridge
 
  private:
   // ios::ChromeIdentityService::Observer implementation.
-  void OnIdentityListChanged() override;
+  void OnIdentityListChanged(bool keychainReload) override;
   void OnAccessTokenRefreshFailed(ChromeIdentity* identity,
                                   NSDictionary* user_info) override;
   void OnProfileUpdate(ChromeIdentity* identity) override;
   void OnChromeIdentityServiceWillBeDestroyed() override;
 
   __weak id<ChromeIdentityServiceObserver> observer_ = nil;
-  ScopedObserver<ios::ChromeIdentityService,
-                 ios::ChromeIdentityService::Observer>
-      scoped_observer_{this};
+  base::ScopedObservation<ios::ChromeIdentityService,
+                          ios::ChromeIdentityService::Observer>
+      scoped_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeIdentityServiceObserverBridge);
 };

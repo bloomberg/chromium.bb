@@ -49,7 +49,7 @@ TEST_PAIR(TestWrongTypeInNormalField) {
 
   // There must be no GC (and therefore no verifiers running) until we can
   // restore the modified data.
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
 
   // Elements must be FixedArrayBase according to the Torque definition, so a
   // JSObject should cause a failure.
@@ -70,7 +70,7 @@ TEST_PAIR(TestWrongStrongTypeInIndexedStructField) {
   v8::Local<v8::Value> v = CompileRun("({a: 3, b: 4})");
   Handle<Object> o = v8::Utils::OpenHandle(*v);
   Handle<Map> map(Handle<HeapObject>::cast(o)->map(), i_isolate);
-  Handle<DescriptorArray> descriptors(map->instance_descriptors(kRelaxedLoad),
+  Handle<DescriptorArray> descriptors(map->instance_descriptors(i_isolate),
                                       i_isolate);
   int offset = DescriptorArray::OffsetOfDescriptorAt(1) +
                DescriptorArray::kEntryKeyOffset;
@@ -80,7 +80,7 @@ TEST_PAIR(TestWrongStrongTypeInIndexedStructField) {
 
   // There must be no GC (and therefore no verifiers running) until we can
   // restore the modified data.
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
 
   // Key must be Name|Undefined according to the Torque definition, so a
   // JSObject should cause a failure.
@@ -102,7 +102,7 @@ TEST_PAIR(TestWrongWeakTypeInIndexedStructField) {
   v8::Local<v8::Value> v = CompileRun("({a: 3, b: 4})");
   Handle<Object> o = v8::Utils::OpenHandle(*v);
   Handle<Map> map(Handle<HeapObject>::cast(o)->map(), i_isolate);
-  Handle<DescriptorArray> descriptors(map->instance_descriptors(kRelaxedLoad),
+  Handle<DescriptorArray> descriptors(map->instance_descriptors(i_isolate),
                                       i_isolate);
   int offset = DescriptorArray::OffsetOfDescriptorAt(0) +
                DescriptorArray::kEntryValueOffset;
@@ -111,7 +111,7 @@ TEST_PAIR(TestWrongWeakTypeInIndexedStructField) {
 
   // There must be no GC (and therefore no verifiers running) until we can
   // restore the modified data.
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
 
   // Value can be JSAny, which includes JSObject, and it can be Weak<Map>, but
   // it can't be Weak<JSObject>.
@@ -140,7 +140,7 @@ TEST_PAIR(TestWrongOddball) {
 
   // There must be no GC (and therefore no verifiers running) until we can
   // restore the modified data.
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
 
   // Hour is Undefined|Smi|NaN. Other oddballs like null should cause a failure.
   TaggedField<Object>::store(*date, JSDate::kHourOffset,
@@ -167,7 +167,7 @@ TEST_PAIR(TestWrongNumber) {
 
   // There must be no GC (and therefore no verifiers running) until we can
   // restore the modified data.
-  DisallowHeapAllocation no_gc;
+  DisallowGarbageCollection no_gc;
 
   // Hour is Undefined|Smi|NaN. Other doubles like 1.1 should cause a failure.
   TaggedField<Object>::store(*date, JSDate::kHourOffset, *float_val);

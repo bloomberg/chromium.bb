@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_IMAGE_RESOURCE_CONTENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_IMAGE_RESOURCE_CONTENT_H_
 
-#include <memory>
 #include "base/auto_reset.h"
+#include "base/dcheck_is_on.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
@@ -30,6 +30,7 @@ class ImageResourceObserver;
 class ResourceError;
 class ResourceFetcher;
 class ResourceResponse;
+class UseCounter;
 
 // ImageResourceContent is a container that holds fetch result of
 // an ImageResource in a decoded form.
@@ -60,12 +61,15 @@ class CORE_EXPORT ImageResourceContent final
   blink::Image* GetImage() const;
   bool HasImage() const { return image_.get(); }
 
-  // The device pixel ratio we got from the server for this image, or 1.0.
-  float DevicePixelRatioHeaderValue() const;
-  bool HasDevicePixelRatioHeaderValue() const;
+  // Returns true if enough of the image has been decoded to allow its size to
+  // be determined. If this returns true, so will HasImage().
+  bool IsSizeAvailable() const {
+    return size_available_ != Image::kSizeUnavailable;
+  }
 
   // Returns the intrinsic width and height of the image, or 0x0 if no image
-  // exists. If the image is a BitmapImage, then this corresponds to the
+  // exists. IsSizeAvailable() can be used to determine if the value returned is
+  // reliable. If the image is a BitmapImage, then this corresponds to the
   // physical pixel dimensions of the image. If the image is an SVGImage, this
   // does not quite return the intrinsic width/height, but rather a concrete
   // object size resolved using a default object size of 300x150.
@@ -76,9 +80,14 @@ class CORE_EXPORT ImageResourceContent final
   void AddObserver(ImageResourceObserver*);
   void RemoveObserver(ImageResourceObserver*);
 
-  bool IsSizeAvailable() const {
-    return size_available_ != Image::kSizeUnavailable;
-  }
+  // The device pixel ratio we got from the server for this image, or 1.0.
+  float DevicePixelRatioHeaderValue() const;
+  bool HasDevicePixelRatioHeaderValue() const;
+
+  // Correct the image orientation preference for potentially cross-origin
+  // content.
+  RespectImageOrientationEnum ForceOrientationIfNecessary(
+      RespectImageOrientationEnum default_orientation) const;
 
   void Trace(Visitor*) const override;
 
@@ -104,9 +113,9 @@ class CORE_EXPORT ImageResourceContent final
   // Redirecting methods to Resource.
   const KURL& Url() const;
   base::TimeTicks LoadResponseEnd() const;
-  bool IsAccessAllowed();
+  bool IsAccessAllowed() const;
   const ResourceResponse& GetResponse() const;
-  base::Optional<ResourceError> GetResourceError() const;
+  absl::optional<ResourceError> GetResourceError() const;
   // DEPRECATED: ImageResourceContents consumers shouldn't need to worry about
   // whether the underlying Resource is being revalidated.
   bool IsCacheValidator() const;
@@ -175,13 +184,17 @@ class CORE_EXPORT ImageResourceContent final
   // Returns true if the image content is well-compressed (and not full of
   // extraneous metadata). "well-compressed" is determined by comparing the
   // image's compression ratio against a specific value that is defined by an
-  // unoptimized image feature policy on |context|.
+  // unoptimized image policy on |context|.
   bool IsAcceptableCompressionRatio(ExecutionContext& context);
 
   void LoadDeferredImage(ResourceFetcher* fetcher);
 
   // Returns whether the resource request has been tagged as an ad.
   bool IsAdResource() const;
+
+  // Records the decoded image type in a UseCounter if the image is a
+  // BitmapImage. |use_counter| may be a null pointer.
+  void RecordDecodedImageType(UseCounter* use_counter);
 
  private:
   using CanDeferInvalidation = ImageResourceObserver::CanDeferInvalidation;
@@ -235,4 +248,4 @@ class CORE_EXPORT ImageResourceContent final
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_IMAGE_RESOURCE_CONTENT_H_

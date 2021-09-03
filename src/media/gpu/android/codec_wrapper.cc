@@ -12,10 +12,10 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "media/base/android/media_codec_util.h"
 #include "media/base/bind_to_current_loop.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -38,7 +38,6 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   bool IsFlushed() const;
   bool IsDraining() const;
   bool IsDrained() const;
-  bool SupportsFlush(DeviceInfo* device_info) const;
   bool Flush();
   bool SetSurface(scoped_refptr<CodecSurfaceBundle> surface_bundle);
   scoped_refptr<CodecSurfaceBundle> SurfaceBundle();
@@ -83,7 +82,7 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   // An input buffer that was dequeued but subsequently rejected from
   // QueueInputBuffer() because the codec didn't have the crypto key. We
   // maintain ownership of it and reuse it next time.
-  base::Optional<int> owned_input_buffer_;
+  absl::optional<int> owned_input_buffer_;
 
   // The current output size. Updated when DequeueOutputBuffer() reports
   // OUTPUT_FORMAT_CHANGED.
@@ -125,7 +124,10 @@ CodecOutputBuffer::~CodecOutputBuffer() {
 
 bool CodecOutputBuffer::ReleaseToSurface() {
   was_rendered_ = true;
-  return codec_->ReleaseCodecOutputBuffer(id_, true);
+  auto result = codec_->ReleaseCodecOutputBuffer(id_, true);
+  if (render_cb_)
+    std::move(render_cb_).Run();
+  return result;
 }
 
 CodecWrapperImpl::CodecWrapperImpl(
@@ -184,12 +186,6 @@ void CodecWrapperImpl::DiscardOutputBuffers_Locked() {
   for (auto& kv : buffer_ids_)
     codec_->ReleaseOutputBuffer(kv.second, false);
   buffer_ids_.clear();
-}
-
-bool CodecWrapperImpl::SupportsFlush(DeviceInfo* device_info) const {
-  DVLOG(2) << __func__;
-  base::AutoLock l(lock_);
-  return !device_info->CodecNeedsFlushWorkaround(codec_.get());
 }
 
 bool CodecWrapperImpl::Flush() {
@@ -456,10 +452,6 @@ bool CodecWrapper::HasUnreleasedOutputBuffers() const {
 
 void CodecWrapper::DiscardOutputBuffers() {
   impl_->DiscardOutputBuffers();
-}
-
-bool CodecWrapper::SupportsFlush(DeviceInfo* device_info) const {
-  return impl_->SupportsFlush(device_info);
 }
 
 bool CodecWrapper::IsFlushed() const {

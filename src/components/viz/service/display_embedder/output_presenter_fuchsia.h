@@ -63,18 +63,6 @@ class VIZ_SERVICE_EXPORT OutputPresenterFuchsia : public OutputPresenter {
                         std::vector<ScopedOverlayAccess*> accesses) final;
 
  private:
-  struct PendingOverlay {
-    PendingOverlay(OverlayCandidate candidate,
-                   std::vector<gfx::GpuFence> release_fences);
-    ~PendingOverlay();
-
-    PendingOverlay(PendingOverlay&&);
-    PendingOverlay& operator=(PendingOverlay&&);
-
-    OverlayCandidate candidate;
-    std::vector<gfx::GpuFence> release_fences;
-  };
-
   struct PendingFrame {
     explicit PendingFrame(uint32_t ordinal);
     ~PendingFrame();
@@ -98,10 +86,10 @@ class VIZ_SERVICE_EXPORT OutputPresenterFuchsia : public OutputPresenter {
     bool remove_buffer_collection = false;
 
     // Vector of overlays that are associated with this frame.
-    std::vector<PendingOverlay> overlays;
+    std::vector<OverlayCandidate> overlays;
   };
 
-  struct PresentatonState {
+  struct PresentationState {
     int presented_frame_ordinal;
     base::TimeTicks presentation_time;
     base::TimeDelta interval;
@@ -130,9 +118,11 @@ class VIZ_SERVICE_EXPORT OutputPresenterFuchsia : public OutputPresenter {
   std::unique_ptr<gpu::SysmemBufferCollection> buffer_collection_;
 
   // The next frame to be submitted by SwapBuffers().
-  base::Optional<PendingFrame> next_frame_;
+  absl::optional<PendingFrame> next_frame_;
 
   base::circular_deque<PendingFrame> pending_frames_;
+
+  std::vector<zx::event> release_fences_from_last_present_;
 
   // Ordinal that will be assigned to the next frame. Ordinals are used to
   // calculate frame position relative to the current frame stored in
@@ -143,7 +133,11 @@ class VIZ_SERVICE_EXPORT OutputPresenterFuchsia : public OutputPresenter {
   // Presentation information received from ImagePipe after rendering a frame.
   // Used to calculate target presentation time for the frames presented in the
   // future.
-  base::Optional<PresentatonState> presentation_state_;
+  absl::optional<PresentationState> presentation_state_;
+
+  // Target presentation time of tha last frame sent to ImagePipe. Stored here
+  // to ensure ImagePipe.Present() is not called with decreasing timestamps.
+  base::TimeTicks last_frame_present_time_;
 };
 
 }  // namespace viz

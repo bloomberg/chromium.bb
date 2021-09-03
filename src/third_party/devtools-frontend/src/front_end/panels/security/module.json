@@ -1,0 +1,11 @@
+{
+    "dependencies": [
+    "panels/network"
+  ],
+  "resources": [
+    "lockIcon.css",
+    "mainView.css",
+    "originView.css",
+    "sidebar.css"
+  ]
+}

@@ -13,13 +13,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/system/sys_info.h"
 #include "components/policy/core/common/cloud/dm_token.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class TaskRunner;
@@ -69,8 +69,6 @@ class BrowserDMTokenStorage {
 
   // Returns a client ID unique to the machine.
   std::string RetrieveClientId();
-  // Returns the serial number of the machine.
-  std::string RetrieveSerialNumber();
   // Returns the enrollment token, or an empty string if there is none.
   std::string RetrieveEnrollmentToken();
   // Asynchronously stores |dm_token| and calls |callback| with a boolean to
@@ -120,10 +118,6 @@ class BrowserDMTokenStorage {
   // is called the first time the BrowserDMTokenStorage is interacted with.
   void InitIfNeeded();
 
-  // Gets the client ID and returns it. This implementation is shared by all
-  // platforms.
-  std::string InitSerialNumber();
-
   // Saves the DM token.
   void SaveDMToken(const std::string& token);
 
@@ -133,7 +127,6 @@ class BrowserDMTokenStorage {
   bool is_initialized_;
 
   std::string client_id_;
-  base::Optional<std::string> serial_number_;
   std::string enrollment_token_;
   DMToken dm_token_;
   bool should_display_error_message_on_failure_;

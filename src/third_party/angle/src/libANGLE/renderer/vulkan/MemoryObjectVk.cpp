@@ -178,7 +178,7 @@ angle::Result MemoryObjectVk::createImage(ContextVk *contextVk,
     // values constituting the bits of |usageFlags| are identical to their corresponding Vulkan
     // value.
     const VkImageUsageFlags imageUsageFlags =
-        vk::GetMaximalImageUsageFlags(renderer, vkFormat.vkImageFormat) & usageFlags;
+        vk::GetMaximalImageUsageFlags(renderer, vkFormat.actualImageFormatID) & usageFlags;
 
     VkExternalMemoryImageCreateInfo externalMemoryImageCreateInfo = {};
     externalMemoryImageCreateInfo.sType       = VK_STRUCTURE_TYPE_EXTERNAL_MEMORY_IMAGE_CREATE_INFO;
@@ -204,11 +204,11 @@ angle::Result MemoryObjectVk::createImage(ContextVk *contextVk,
     // ANGLE_external_objects_flags allows create flags to be specified by the application instead
     // of getting defaulted to zero.  Note that the GL enum values constituting the bits of
     // |createFlags| are identical to their corresponding Vulkan value.
-    ANGLE_TRY(image->initExternal(
-        contextVk, type, vkExtents, vkFormat, 1, imageUsageFlags, createFlags,
-        vk::ImageLayout::Undefined, &externalMemoryImageCreateInfo, gl::LevelIndex(0),
-        gl::LevelIndex(static_cast<uint32_t>(levels) - 1), static_cast<uint32_t>(levels),
-        layerCount, contextVk->isRobustResourceInitEnabled()));
+    ANGLE_TRY(image->initExternal(contextVk, type, vkExtents, vkFormat, 1, imageUsageFlags,
+                                  createFlags, vk::ImageLayout::Undefined,
+                                  &externalMemoryImageCreateInfo, gl::LevelIndex(0),
+                                  static_cast<uint32_t>(levels), layerCount,
+                                  contextVk->isRobustResourceInitEnabled(), nullptr));
 
     VkMemoryRequirements externalMemoryRequirements;
     image->getImage().getMemoryRequirements(renderer->getDevice(), &externalMemoryRequirements);

@@ -117,7 +117,7 @@ void SecurityKeyIpcServerTest::OperationComplete() {
 
 void SecurityKeyIpcServerTest::WaitForOperationComplete() {
   run_loop_->Run();
-  run_loop_.reset(new base::RunLoop());
+  run_loop_ = std::make_unique<base::RunLoop>();
 }
 
 void SecurityKeyIpcServerTest::RunPendingTasks() {
@@ -492,7 +492,7 @@ TEST_F(SecurityKeyIpcServerTest, CleanupPendingConnection) {
   base::RunLoop().RunUntilIdle();
 
   // Create a fake client and connect to the IPC server channel.
-  FakeSecurityKeyIpcClient fake_ipc_client(base::Bind(
+  FakeSecurityKeyIpcClient fake_ipc_client(base::BindRepeating(
       &SecurityKeyIpcServerTest::OperationComplete, base::Unretained(this)));
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(server_name));
   WaitForOperationComplete();

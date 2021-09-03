@@ -43,6 +43,11 @@ public:
         return fCoverageFragmentProcessor.get();
     }
 
+    bool usesVaryingCoords() const {
+        return (fColorFragmentProcessor && fColorFragmentProcessor->usesVaryingCoords()) ||
+               (fCoverageFragmentProcessor && fCoverageFragmentProcessor->usesVaryingCoords());
+    }
+
     const GrXferProcessor* xferProcessor() const {
         SkASSERT(this->isFinalized());
         return fXP.fProcessor;
@@ -86,6 +91,7 @@ public:
             return fInputColorType == kOverridden_InputColorType;
         }
         bool usesNonCoherentHWBlending() const { return fUsesNonCoherentHWBlending; }
+        bool unaffectedByDstValue() const { return fUnaffectedByDstValue; }
 
     private:
         constexpr Analysis(Empty)
@@ -96,6 +102,7 @@ public:
                 , fHasColorFragmentProcessor(false)
                 , fIsInitialized(true)
                 , fUsesNonCoherentHWBlending(false)
+                , fUnaffectedByDstValue(false)
                 , fInputColorType(kOriginal_InputColorType) {}
         enum InputColorType : uint32_t {
             kOriginal_InputColorType,
@@ -114,6 +121,7 @@ public:
         PackedBool fHasColorFragmentProcessor : 1;
         PackedBool fIsInitialized : 1;
         PackedBool fUsesNonCoherentHWBlending : 1;
+        PackedBool fUnaffectedByDstValue : 1;
         PackedInputColorType fInputColorType : 2;
 
         friend class GrProcessorSet;
@@ -134,10 +142,9 @@ public:
      * that owns a processor set is recorded to ensure pending and writes are propagated to
      * resources referred to by the processors. Otherwise, data hazards may occur.
      */
-    Analysis finalize(
-            const GrProcessorAnalysisColor&, const GrProcessorAnalysisCoverage,
-            const GrAppliedClip*, const GrUserStencilSettings*, bool hasMixedSampledCoverage,
-            const GrCaps&, GrClampType, SkPMColor4f* inputColorOverride);
+    Analysis finalize(const GrProcessorAnalysisColor&, const GrProcessorAnalysisCoverage,
+                      const GrAppliedClip*, const GrUserStencilSettings*, const GrCaps&,
+                      GrClampType, SkPMColor4f* inputColorOverride);
 
     bool isFinalized() const { return SkToBool(kFinalized_Flag & fFlags); }
 

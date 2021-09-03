@@ -10,8 +10,8 @@
 #include <cstdint>
 #include <limits>
 
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_export.h"
 
 // Definitions of constant values used throughout the QUIC code.
 
@@ -99,6 +99,9 @@ const size_t kDefaultMaxStreamsPerConnection = 100;
 const size_t kPublicFlagsSize = 1;
 // Number of bytes reserved for version number in the packet header.
 const size_t kQuicVersionSize = 4;
+
+// Minimum number of active connection IDs that an end point can maintain.
+const uint32_t kMinNumOfActiveConnectionIds = 2;
 
 // Length of the retry integrity tag in bytes.
 // https://tools.ietf.org/html/draft-ietf-quic-transport-25#section-17.2.5
@@ -209,6 +212,10 @@ const size_t kDiversificationNonceSize = 32;
 // This will likely have to be tuned.
 const QuicPacketCount kMaxPacketGap = 5000;
 
+// The max number of sequence number intervals that
+// QuicPeerIssuedConnetionIdManager can maintain.
+const size_t kMaxNumConnectionIdSequenceNumberIntervals = 20;
+
 // The maximum number of random padding bytes to add.
 const QuicByteCount kMaxNumRandomPaddingBytes = 256;
 
@@ -275,6 +282,9 @@ const float kAckDecimationDelay = 0.25;
 // The default alarm granularity assumed by QUIC code.
 const QuicTime::Delta kAlarmGranularity = QuicTime::Delta::FromMilliseconds(1);
 
+// Maximum number of unretired connection IDs a connection can have.
+const size_t kMaxNumConnectonIdsInUse = 10u;
+
 // Packet number of first sending packet of a connection. Please note, this
 // cannot be used as first received packet because peer can choose its starting
 // packet number.
@@ -283,6 +293,13 @@ QUIC_EXPORT_PRIVATE QuicPacketNumber FirstSendingPacketNumber();
 // Used by clients to tell if a public reset is sent from a Google frontend.
 QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd;
 QUIC_EXPORT_PRIVATE extern const char* const kEPIDGoogleFrontEnd0;
+
+// HTTP/3 Datagrams.
+enum : QuicDatagramFlowId {
+  kFirstDatagramFlowIdClient = 0,
+  kFirstDatagramFlowIdServer = 1,
+  kDatagramFlowIdIncrement = 2,
+};
 
 }  // namespace quic
 

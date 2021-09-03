@@ -12,7 +12,7 @@
 # builder to be used with mb.py for creating a zip archive of the WebLayer
 # instrumentation tests.
 {
-  'masters': {
+  'builder_groups': {
     'dummy.group': {
       'dummy.builder.google_webview_pkg_name': 'android_weblayer_with_google_webview_pkg_name',
       'dummy.builder.aosp_webview_pkg_name': 'android_weblayer_with_aosp_webview_pkg_name',

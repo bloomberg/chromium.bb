@@ -16,18 +16,18 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/version.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/browser/updater/request_queue.h"
 #include "extensions/browser/updater/safe_manifest_parser.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/extension_id.h"
+#include "extensions/common/mojom/manifest.mojom-shared.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_request_headers.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace crx_file {
@@ -82,22 +82,10 @@ class ExtensionDownloader {
       const base::FilePath& profile_path = base::FilePath());
   ~ExtensionDownloader();
 
-  // Adds |extension| to the list of extensions to check for updates.
-  // Returns false if the |extension| can't be updated due to invalid details.
-  // In that case, no callbacks will be performed on the |delegate_|.
-  // The |request_id| is passed on as is to the various |delegate_| callbacks.
-  // This is used for example by ExtensionUpdater to keep track of when
-  // potentially concurrent update checks complete. |fetch_priority|
-  // parameter notifies the downloader the priority of this extension update
-  // (either foreground or background).
-  bool AddExtension(const Extension& extension,
-                    int request_id,
-                    ManifestFetchData::FetchPriority fetch_priority);
-
   // Check AddPendingExtensionWithVersion with the version set as "0.0.0.0".
   bool AddPendingExtension(const std::string& id,
                            const GURL& update_url,
-                           Manifest::Location install_source,
+                           mojom::ManifestLocation install_source,
                            bool is_corrupt_reinstall,
                            int request_id,
                            ManifestFetchData::FetchPriority fetch_priority);
@@ -113,15 +101,20 @@ class ExtensionDownloader {
   // |fetch_priority| parameter notifies the downloader the priority of this
   // extension update (either foreground or background). The |version|
   // parameter specifies the version of the downloaded crx file,
-  // equals to 0.0.0.0 if there is no crx file.
+  // equals to 0.0.0.0 if there is no crx file. The |type| parameter is used for
+  // metrics only and can be TYPE_UNKNOWN if e.g. the extension is not yet
+  // installed. The |update_url_data| paramater may be used to pass some
+  // additional data to the update server.
   bool AddPendingExtensionWithVersion(
       const std::string& id,
       const GURL& update_url,
-      Manifest::Location install_source,
+      mojom::ManifestLocation install_source,
       bool is_corrupt_reinstall,
       int request_id,
       ManifestFetchData::FetchPriority fetch_priority,
-      base::Version version);
+      base::Version version,
+      Manifest::Type type,
+      const std::string& update_url_data);
 
   // Schedules a fetch of the manifest of all the extensions added with
   // AddExtension() and AddPendingExtension().
@@ -252,7 +245,7 @@ class ExtensionDownloader {
     int request_id{0};
     GURL update_url;
     // The extensions in current ManifestFetchData are all force installed
-    // (Manifest::Location::EXTERNAL_POLICY_DOWNLOAD) or not. In a
+    // (mojom::ManifestLocation::kExternalPolicyDownload) or not. In a
     // ManifestFetchData we would have either all the extensions as force
     // installed or we would none extensions as force installed.
     bool is_force_installed{false};
@@ -268,7 +261,7 @@ class ExtensionDownloader {
   bool AddExtensionData(const std::string& id,
                         const base::Version& version,
                         Manifest::Type extension_type,
-                        Manifest::Location extension_location,
+                        mojom::ManifestLocation extension_location,
                         const GURL& extension_update_url,
                         const ExtraParams& extra,
                         int request_id,
@@ -288,7 +281,7 @@ class ExtensionDownloader {
   void CreateManifestLoader();
 
   // Retries the active request with some backoff delay.
-  void RetryManifestFetchRequest();
+  void RetryManifestFetchRequest(int network_error_code, int response_code);
 
   // Reports failures if we failed to fetch the manifest or the fetched manifest
   // was invalid.
@@ -305,7 +298,7 @@ class ExtensionDownloader {
       ExtensionDownloaderDelegate::Error error,
       const int net_error,
       const int response_code,
-      const base::Optional<ManifestInvalidFailureDataList>&
+      const absl::optional<ManifestInvalidFailureDataList>&
           manifest_invalid_errors);
 
   // Makes a retry attempt, reports failure by calling
@@ -322,7 +315,7 @@ class ExtensionDownloader {
   // If |results| is null, it means something went wrong when parsing it.
   void HandleManifestResults(std::unique_ptr<ManifestFetchData> fetch_data,
                              std::unique_ptr<UpdateManifestResults> results,
-                             const base::Optional<ManifestParseFailure>& error);
+                             const absl::optional<ManifestParseFailure>& error);
 
   // This function partition extension IDs stored in |fetch_data| into 3 sets:
   // update/no update/error using the update information from
@@ -340,10 +333,10 @@ class ExtensionDownloader {
                         ManifestInvalidFailureDataList* errors);
 
   // Checks whether extension is presented in cache. If yes, return path to its
-  // cached CRX, base::nullopt otherwise. |manifest_fetch_failed| flag indicates
+  // cached CRX, absl::nullopt otherwise. |manifest_fetch_failed| flag indicates
   // whether the lookup in cache is performed after the manifest is fetched or
   // due to failure while fetching or parsing manifest.
-  base::Optional<base::FilePath> GetCachedExtension(
+  absl::optional<base::FilePath> GetCachedExtension(
       const ExtensionFetch& fetch_data,
       bool manifest_fetch_failed);
 
@@ -351,7 +344,7 @@ class ExtensionDownloader {
   // additional information about the extension update from the info field in
   // the update manifest.
   void FetchUpdatedExtension(std::unique_ptr<ExtensionFetch> fetch_data,
-                             base::Optional<std::string> info);
+                             absl::optional<std::string> info);
 
   // Called by RequestQueue when a new extension load request is started.
   void CreateExtensionLoader();

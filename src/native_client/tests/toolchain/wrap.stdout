@@ -1,4 +1,0 @@
-__wrap_foo()
-foo()
-__wrap_bar()
-bar()

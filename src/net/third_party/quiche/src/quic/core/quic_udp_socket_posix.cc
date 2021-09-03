@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_udp_socket.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_udp_socket_platform_api.h"
+#include "quic/core/quic_udp_socket.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_udp_socket_platform_api.h"
 
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -102,7 +102,7 @@ QuicUdpSocketFd CreateNonblockingSocket(int address_family) {
 
 void SetV4SelfIpInControlMessage(const QuicIpAddress& self_address,
                                  cmsghdr* cmsg) {
-  DCHECK(self_address.IsIPv4());
+  QUICHE_DCHECK(self_address.IsIPv4());
   in_pktinfo* pktinfo = reinterpret_cast<in_pktinfo*>(CMSG_DATA(cmsg));
   memset(pktinfo, 0, sizeof(in_pktinfo));
   pktinfo->ipi_ifindex = 0;
@@ -113,7 +113,7 @@ void SetV4SelfIpInControlMessage(const QuicIpAddress& self_address,
 
 void SetV6SelfIpInControlMessage(const QuicIpAddress& self_address,
                                  cmsghdr* cmsg) {
-  DCHECK(self_address.IsIPv6());
+  QUICHE_DCHECK(self_address.IsIPv6());
   in6_pktinfo* pktinfo = reinterpret_cast<in6_pktinfo*>(CMSG_DATA(cmsg));
   memset(pktinfo, 0, sizeof(in6_pktinfo));
   std::string address_string = self_address.ToPackedString();
@@ -157,7 +157,7 @@ void PopulatePacketInfoFromControlMessage(struct cmsghdr* cmsg,
       if (self_v6_ip.FromPackedString(addr_data, addr_len)) {
         packet_info->SetSelfV6Ip(self_v6_ip);
       } else {
-        QUIC_BUG << "QuicIpAddress::FromPackedString failed";
+        QUIC_BUG(quic_bug_10751_1) << "QuicIpAddress::FromPackedString failed";
       }
     }
     return;
@@ -172,7 +172,7 @@ void PopulatePacketInfoFromControlMessage(struct cmsghdr* cmsg,
       if (self_v4_ip.FromPackedString(addr_data, addr_len)) {
         packet_info->SetSelfV4Ip(self_v4_ip);
       } else {
-        QUIC_BUG << "QuicIpAddress::FromPackedString failed";
+        QUIC_BUG(quic_bug_10751_2) << "QuicIpAddress::FromPackedString failed";
       }
     }
     return;
@@ -212,12 +212,12 @@ bool NextCmsg(msghdr* hdr,
   }
 
   if ((*cmsg) == nullptr) {
-    DCHECK_EQ(nullptr, hdr->msg_control);
+    QUICHE_DCHECK_EQ(nullptr, hdr->msg_control);
     memset(control_buffer, 0, control_buffer_len);
     hdr->msg_control = control_buffer;
     (*cmsg) = CMSG_FIRSTHDR(hdr);
   } else {
-    DCHECK_NE(nullptr, hdr->msg_control);
+    QUICHE_DCHECK_NE(nullptr, hdr->msg_control);
     (*cmsg) = CMSG_NXTHDR(hdr, (*cmsg));
   }
 
@@ -237,10 +237,10 @@ QuicUdpSocketFd QuicUdpSocketApi::Create(int address_family,
                                          int receive_buffer_size,
                                          int send_buffer_size,
                                          bool ipv6_only) {
-  // DCHECK here so the program exits early(before reading packets) in debug
-  // mode. This should have been a static_assert, however it can't be done on
-  // ios/osx because CMSG_SPACE isn't a constant expression there.
-  DCHECK_GE(kDefaultUdpPacketControlBufferSize, kMinCmsgSpaceForRead);
+  // QUICHE_DCHECK here so the program exits early(before reading packets) in
+  // debug mode. This should have been a static_assert, however it can't be done
+  // on ios/osx because CMSG_SPACE isn't a constant expression there.
+  QUICHE_DCHECK_GE(kDefaultUdpPacketControlBufferSize, kMinCmsgSpaceForRead);
   QuicUdpSocketFd fd = CreateNonblockingSocket(address_family);
 
   if (fd == kQuicInvalidSocketFd) {
@@ -383,7 +383,7 @@ void QuicUdpSocketApi::ReadPacket(QuicUdpSocketFd fd,
   BufferSpan& control_buffer = result->control_buffer;
   QuicUdpPacketInfo* packet_info = &result->packet_info;
 
-  DCHECK_GE(control_buffer.buffer_len, kMinCmsgSpaceForRead);
+  QUICHE_DCHECK_GE(control_buffer.buffer_len, kMinCmsgSpaceForRead);
 
   struct iovec iov = {packet_buffer.buffer, packet_buffer.buffer_len};
   struct sockaddr_storage raw_peer_address;
@@ -421,7 +421,8 @@ void QuicUdpSocketApi::ReadPacket(QuicUdpSocketFd fd,
   }
 
   if (QUIC_PREDICT_FALSE(hdr.msg_flags & MSG_CTRUNC)) {
-    QUIC_BUG << "Control buffer too small. size:" << control_buffer.buffer_len;
+    QUIC_BUG(quic_bug_10751_3)
+        << "Control buffer too small. size:" << control_buffer.buffer_len;
     return;
   }
 
@@ -488,7 +489,7 @@ size_t QuicUdpSocketApi::ReadMultiplePackets(QuicUdpSocketFd fd,
     hdr->msg_control = (*results)[i].control_buffer.buffer;
     hdr->msg_controllen = (*results)[i].control_buffer.buffer_len;
 
-    DCHECK_GE(hdr->msg_controllen, kMinCmsgSpaceForRead);
+    QUICHE_DCHECK_GE(hdr->msg_controllen, kMinCmsgSpaceForRead);
   }
   // If MSG_TRUNC is set on Linux, recvmmsg will return the real packet size in
   // |hdrs[i].msg_len| even if packet buffer is too small to receive it.
@@ -509,9 +510,9 @@ size_t QuicUdpSocketApi::ReadMultiplePackets(QuicUdpSocketFd fd,
 
     msghdr& hdr = hdrs[i].msg_hdr;
     if (QUIC_PREDICT_FALSE(hdr.msg_flags & MSG_CTRUNC)) {
-      QUIC_BUG << "Control buffer too small. size:"
-               << (*results)[i].control_buffer.buffer_len
-               << ", need:" << hdr.msg_controllen;
+      QUIC_BUG(quic_bug_10751_4) << "Control buffer too small. size:"
+                                 << (*results)[i].control_buffer.buffer_len
+                                 << ", need:" << hdr.msg_controllen;
       continue;
     }
 

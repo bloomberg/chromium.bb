@@ -10,12 +10,12 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
 #include "build/build_config.h"
 #include "components/viz/service/display_embedder/skia_output_device.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/vulkan/vulkan_swap_chain.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace gpu {
 class VulkanSurface;
@@ -28,7 +28,7 @@ class VulkanContextProvider;
 class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
  public:
   SkiaOutputDeviceVulkan(
-      util::PassKey<SkiaOutputDeviceVulkan>,
+      base::PassKey<SkiaOutputDeviceVulkan>,
       VulkanContextProvider* context_provider,
       gpu::SurfaceHandle surface_handle,
       gpu::MemoryTracker* memory_tracker,
@@ -52,10 +52,10 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
                gfx::BufferFormat format,
                gfx::OverlayTransform transform) override;
   void SwapBuffers(BufferPresentedCallback feedback,
-                   std::vector<ui::LatencyInfo> latency_info) override;
+                   OutputSurfaceFrame frame) override;
   void PostSubBuffer(const gfx::Rect& rect,
                      BufferPresentedCallback feedback,
-                     std::vector<ui::LatencyInfo> latency_info) override;
+                     OutputSurfaceFrame frame) override;
   SkSurface* BeginPaint(
       std::vector<GrBackendSemaphore>* end_semaphores) override;
   void EndPaint() override;
@@ -74,7 +74,7 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
   bool RecreateSwapChain(const gfx::Size& size,
                          sk_sp<SkColorSpace> color_space,
                          gfx::OverlayTransform transform);
-  void OnPostSubBufferFinished(std::vector<ui::LatencyInfo> latency_info,
+  void OnPostSubBufferFinished(OutputSurfaceFrame frame,
                                gfx::SwapResult result);
 
   VulkanContextProvider* const context_provider_;
@@ -82,7 +82,7 @@ class SkiaOutputDeviceVulkan final : public SkiaOutputDevice {
   const gpu::SurfaceHandle surface_handle_;
   std::unique_ptr<gpu::VulkanSurface> vulkan_surface_;
 
-  base::Optional<gpu::VulkanSwapChain::ScopedWrite> scoped_write_;
+  absl::optional<gpu::VulkanSwapChain::ScopedWrite> scoped_write_;
 
 #if DCHECK_IS_ON()
   bool image_modified_ = false;

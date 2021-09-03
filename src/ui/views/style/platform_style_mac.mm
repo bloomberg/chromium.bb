@@ -37,13 +37,14 @@ const int PlatformStyle::kMinLabelButtonHeight = 30;
 const bool PlatformStyle::kDialogDefaultButtonCanBeCancel = false;
 const bool PlatformStyle::kSelectWordOnRightClick = true;
 const bool PlatformStyle::kSelectAllOnRightClickWhenUnfocused = true;
-const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = true;
 const bool PlatformStyle::kTextfieldUsesDragCursorWhenDraggable = false;
 const bool PlatformStyle::kTableViewSupportsKeyboardNavigationByCell = false;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = true;
 const bool PlatformStyle::kUseRipples = false;
 const bool PlatformStyle::kInactiveWidgetControlsAppearDisabled = true;
 const bool PlatformStyle::kAdjustBubbleIfOffscreen = false;
+const View::FocusBehavior PlatformStyle::kDefaultFocusBehavior =
+    View::FocusBehavior::ACCESSIBLE_ONLY;
 
 const Button::KeyClickAction PlatformStyle::kKeyClickActionOnSpace =
     Button::KeyClickAction::kOnKeyPress;
@@ -63,14 +64,14 @@ void PlatformStyle::OnTextfieldEditFailed() {
 }
 
 // static
-gfx::Range PlatformStyle::RangeToDeleteBackwards(const base::string16& text,
+gfx::Range PlatformStyle::RangeToDeleteBackwards(const std::u16string& text,
                                                  size_t cursor_position) {
   if (cursor_position == 0)
     return gfx::Range();
 
-  base::ScopedCFTypeRef<CFStringRef> cf_string(
-      CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, text.data(),
-                                         text.size(), kCFAllocatorNull));
+  base::ScopedCFTypeRef<CFStringRef> cf_string(CFStringCreateWithCharacters(
+      kCFAllocatorDefault, reinterpret_cast<const UniChar*>(text.data()),
+      text.size()));
   CFRange range_to_delete = CFStringGetRangeOfCharacterClusterAtIndex(
       cf_string, cursor_position - 1, kCFStringBackwardDeletionCluster);
 
@@ -80,11 +81,6 @@ gfx::Range PlatformStyle::RangeToDeleteBackwards(const base::string16& text,
   // The range needs to be reversed to undo correctly.
   return gfx::Range(range_to_delete.location + range_to_delete.length,
                     range_to_delete.location);
-}
-
-// static
-View::FocusBehavior PlatformStyle::DefaultFocusBehavior() {
-  return View::FocusBehavior::ACCESSIBLE_ONLY;
 }
 
 }  // namespace views

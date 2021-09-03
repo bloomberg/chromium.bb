@@ -13,6 +13,7 @@
 #include "base/containers/circular_deque.h"
 #include "components/cast/message_port/message_port.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace cast_api_bindings {
 
@@ -61,9 +62,12 @@ class MessagePortFuchsia : public cast_api_bindings::MessagePort {
   // Delivers a message to FIDL from |message_queue_|.
   virtual void DeliverMessageToFidl() = 0;
 
-  // Receives a |message| from FIDL into |message_queue_|. Returns a value if
-  // an error occurred.
-  base::Optional<fuchsia::web::FrameError> ReceiveMessageFromFidl(
+  // Extracts the message and transferrables from |message_queue_| and invokes
+  // |receiver_.OnMessage()| to process it. Returns a FrameError if extracting
+  // or handling the message fails.
+  // Note that handling the message may result in |this| being deleted before
+  // the call returns.
+  absl::optional<fuchsia::web::FrameError> ExtractAndHandleMessageFromFidl(
       fuchsia::web::WebMessage message);
 
   void OnZxError(zx_status_t status);

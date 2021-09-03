@@ -138,14 +138,19 @@ const std::string& UserContext::GetGAPSCookie() const {
   return gaps_cookie_;
 }
 
-const base::Optional<password_manager::PasswordHashData>&
+const absl::optional<password_manager::PasswordHashData>&
 UserContext::GetSyncPasswordData() const {
   return sync_password_data_;
 }
 
-const base::Optional<SamlPasswordAttributes>&
+const absl::optional<SamlPasswordAttributes>&
 UserContext::GetSamlPasswordAttributes() const {
   return saml_password_attributes_;
+}
+
+const absl::optional<SyncTrustedVaultKeys>&
+UserContext::GetSyncTrustedVaultKeys() const {
+  return sync_trusted_vault_keys_;
 }
 
 bool UserContext::IsLockableManagedGuestSession() const {
@@ -240,6 +245,11 @@ void UserContext::SetSamlPasswordAttributes(
   saml_password_attributes_ = saml_password_attributes;
 }
 
+void UserContext::SetSyncTrustedVaultKeys(
+    const SyncTrustedVaultKeys& sync_trusted_vault_keys) {
+  sync_trusted_vault_keys_ = sync_trusted_vault_keys;
+}
+
 void UserContext::SetIsUnderAdvancedProtection(
     bool is_under_advanced_protection) {
   is_under_advanced_protection_ = is_under_advanced_protection;
@@ -265,6 +275,7 @@ void UserContext::ClearSecrets() {
   password_key_.ClearSecret();
   auth_code_.clear();
   refresh_token_.clear();
+  sync_trusted_vault_keys_.reset();
 }
 
 }  // namespace chromeos

@@ -13,15 +13,16 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class BrowserContext;
+class NavigationHandle;
 class RenderFrameHost;
 }
 
@@ -71,6 +72,8 @@ class RulesetManager {
   // Returns the CompositeMatcher corresponding to the |extension_id| or null
   // if no matcher is present for the extension.
   CompositeMatcher* GetMatcherForExtension(const ExtensionId& extension_id);
+  const CompositeMatcher* GetMatcherForExtension(
+      const ExtensionId& extension_id) const;
 
   // Returns the action to take for the given request; does not return an
   // |ALLOW| action. Note: the returned action is owned by |request|.
@@ -91,7 +94,7 @@ class RulesetManager {
 
   void OnRenderFrameCreated(content::RenderFrameHost* host);
   void OnRenderFrameDeleted(content::RenderFrameHost* host);
-  void OnDidFinishNavigation(content::RenderFrameHost* host);
+  void OnDidFinishNavigation(content::NavigationHandle* navigation_handle);
 
   // Returns the number of CompositeMatchers currently being managed.
   size_t GetMatcherCountForTest() const { return rulesets_.size(); }
@@ -120,7 +123,7 @@ class RulesetManager {
   using RulesetAndPageAccess =
       std::pair<const ExtensionRulesetData*, PermissionsData::PageAccess>;
 
-  base::Optional<RequestAction> GetBeforeRequestAction(
+  absl::optional<RequestAction> GetBeforeRequestAction(
       const std::vector<RulesetAndPageAccess>& rulesets,
       const WebRequestInfo& request,
       const RequestParams& params) const;

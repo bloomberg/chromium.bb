@@ -51,6 +51,8 @@ void UpdateAnimationFlagsForEffect(const KeyframeEffect& effect,
     style.SetHasCurrentFilterAnimation(true);
   if (effect.Affects(PropertyHandle(GetCSSPropertyBackdropFilter())))
     style.SetHasCurrentBackdropFilterAnimation(true);
+  if (effect.Affects(PropertyHandle(GetCSSPropertyBackgroundColor())))
+    style.SetHasCurrentBackgroundColorAnimation(true);
 }
 
 }  // namespace
@@ -69,6 +71,15 @@ void ElementAnimations::UpdateAnimationFlags(ComputedStyle& style) {
     if (!effect.IsCurrent())
       continue;
     UpdateAnimationFlagsForEffect(effect, style);
+
+    // This animation animates background-color and some input of the animation
+    // is changed compared with the previous frame, so trigger a repaint.
+    if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
+        animation.CalculateAnimationPlayState() != Animation::kIdle &&
+        effect.Affects(PropertyHandle(GetCSSPropertyBackgroundColor())) &&
+        animation.CompositorPending()) {
+      style.SetCompositablePaintAnimationChanged(true);
+    }
   }
 
   for (const auto& entry : worklet_animations_) {
@@ -149,6 +160,18 @@ bool ElementAnimations::UpdateBoxSizeAndCheckTransformAxisAlignment(
     }
   }
   return preserves_axis_alignment;
+}
+
+bool ElementAnimations::IsIdentityOrTranslation() const {
+  for (auto& entry : animations_) {
+    if (auto* effect = DynamicTo<KeyframeEffect>(entry.key->effect())) {
+      if (!effect->IsCurrent() && !effect->IsInEffect())
+        continue;
+      if (!effect->IsIdentityOrTranslation())
+        return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace blink

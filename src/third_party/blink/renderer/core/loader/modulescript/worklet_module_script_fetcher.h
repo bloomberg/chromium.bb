@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_WORKLET_MODULE_SCRIPT_FETCHER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_WORKLET_MODULE_SCRIPT_FETCHER_H_
 
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/loader/modulescript/module_script_fetcher.h"
 #include "third_party/blink/renderer/core/workers/worklet_module_responses_map.h"
 
@@ -27,10 +27,11 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
       public ModuleScriptFetcher {
  public:
   WorkletModuleScriptFetcher(WorkletModuleResponsesMap*,
-                             util::PassKey<ModuleScriptLoader>);
+                             base::PassKey<ModuleScriptLoader>);
 
   // Implements ModuleScriptFetcher.
   void Fetch(FetchParameters&,
+             ModuleType,
              ResourceFetcher*,
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
@@ -48,6 +49,7 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
   CrossThreadPersistent<WorkletModuleResponsesMap> module_responses_map_;
 
   KURL url_;
+  ModuleType expected_module_type_;
 };
 
 }  // namespace blink

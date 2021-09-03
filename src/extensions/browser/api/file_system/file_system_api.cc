@@ -8,17 +8,18 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -112,7 +113,7 @@ bool g_allow_directory_access_for_test = false;
 bool GetFileTypesFromAcceptOption(
     const file_system::AcceptOption& accept_option,
     std::vector<base::FilePath::StringType>* extensions,
-    base::string16* description) {
+    std::u16string* description) {
   std::set<base::FilePath::StringType> extension_set;
   int description_id = 0;
 
@@ -197,6 +198,9 @@ void PassFileInfoToUIThread(FileInfoOptCallback callback,
 content::WebContents* GetWebContentsForRenderFrameHost(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* render_frame_host) {
+  if (!render_frame_host)
+    return nullptr;
+
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   // Check if there is an app window associated with the web contents; if not,
@@ -247,7 +251,7 @@ ExtensionFunction::ResponseAction FileSystemGetDisplayPathFunction::Run() {
   }
 
   file_path = path_util::PrettifyPath(file_path);
-  return RespondNow(OneArgument(base::Value(file_path.value())));
+  return RespondNow(OneArgument(base::Value(file_path.AsUTF8Unsafe())));
 }
 
 FileSystemEntryFunction::FileSystemEntryFunction()
@@ -347,7 +351,7 @@ ExtensionFunction::ResponseAction FileSystemGetWritableEntryFunction::Run() {
 void FileSystemGetWritableEntryFunction::CheckPermissionAndSendResponse() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (is_directory_ && !extension_->permissions_data()->HasAPIPermission(
-                           APIPermission::kFileSystemDirectory)) {
+                           mojom::APIPermissionID::kFileSystemDirectory)) {
     Respond(Error(kRequiresFileSystemDirectoryError));
     return;
   }
@@ -484,8 +488,8 @@ void FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
   // smoothly, all accessed paths need to be registered in the list of
   // external mount points.
   storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      name, storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(), path);
+      name, storage::kFileSystemTypeLocal, storage::FileSystemMountOption(),
+      path);
 }
 
 void FileSystemChooseEntryFunction::FilesSelected(
@@ -508,15 +512,6 @@ void FileSystemChooseEntryFunction::FilesSelected(
   }
 
   if (is_directory_) {
-    // Get the WebContents for the app window to be the parent window of the
-    // confirmation dialog if necessary.
-    content::WebContents* const web_contents = GetWebContentsForRenderFrameHost(
-        browser_context(), render_frame_host());
-    if (!web_contents) {
-      Respond(Error(kInvalidCallingPage));
-      return;
-    }
-
     DCHECK_EQ(paths.size(), 1u);
     bool non_native_path = false;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -530,7 +525,7 @@ void FileSystemChooseEntryFunction::FilesSelected(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(
             &FileSystemChooseEntryFunction::ConfirmDirectoryAccessAsync, this,
-            non_native_path, paths, web_contents));
+            non_native_path, paths));
     return;
   }
 
@@ -543,8 +538,7 @@ void FileSystemChooseEntryFunction::FileSelectionCanceled() {
 
 void FileSystemChooseEntryFunction::ConfirmDirectoryAccessAsync(
     bool non_native_path,
-    const std::vector<base::FilePath>& paths,
-    content::WebContents* web_contents) {
+    const std::vector<base::FilePath>& paths) {
   const base::FilePath check_path =
       non_native_path ? paths[0] : base::MakeAbsoluteFilePath(paths[0]);
   if (check_path.empty()) {
@@ -576,7 +570,7 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessAsync(
         FROM_HERE,
         base::BindOnce(
             &FileSystemChooseEntryFunction::ConfirmSensitiveDirectoryAccess,
-            this, paths, web_contents));
+            this, paths));
     return;
   }
 
@@ -587,8 +581,7 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessAsync(
 }
 
 void FileSystemChooseEntryFunction::ConfirmSensitiveDirectoryAccess(
-    const std::vector<base::FilePath>& paths,
-    content::WebContents* web_contents) {
+    const std::vector<base::FilePath>& paths) {
   if (ExtensionsBrowserClient::Get()->IsShuttingDown()) {
     FileSelectionCanceled();
     return;
@@ -598,6 +591,13 @@ void FileSystemChooseEntryFunction::ConfirmSensitiveDirectoryAccess(
       ExtensionsAPIClient::Get()->GetFileSystemDelegate();
   if (!delegate) {
     Respond(Error(kNotSupportedOnCurrentPlatformError));
+    return;
+  }
+
+  content::WebContents* const web_contents =
+      GetWebContentsForRenderFrameHost(browser_context(), render_frame_host());
+  if (!web_contents) {
+    Respond(Error(kInvalidCallingPage));
     return;
   }
 
@@ -635,7 +635,7 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
 
   if (accepts) {
     for (const file_system::AcceptOption& option : *accepts) {
-      base::string16 description;
+      std::u16string description;
       std::vector<base::FilePath::StringType> extensions;
 
       if (!GetFileTypesFromAcceptOption(option, &extensions, &description))
@@ -732,7 +732,7 @@ ExtensionFunction::ResponseAction FileSystemChooseEntryFunction::Run() {
     } else if (options->type == file_system::CHOOSE_ENTRY_TYPE_OPENDIRECTORY) {
       is_directory_ = true;
       if (!extension_->permissions_data()->HasAPIPermission(
-              APIPermission::kFileSystemDirectory)) {
+              mojom::APIPermissionID::kFileSystemDirectory)) {
         return RespondNow(Error(kRequiresFileSystemDirectoryError));
       }
       if (multiple_) {

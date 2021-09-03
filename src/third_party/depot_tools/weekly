@@ -21,7 +21,7 @@ def show_log(path, authors, since='1 week ago'):
 
   author_option = ' '.join(['--author=' + author for author in authors])
   command = ' '.join(['git log', author_option, '--since="%s"' % since,
-                      'origin/master', '| git shortlog'])
+                      'origin/HEAD', '| git shortlog'])
   status = subprocess.Popen(['sh', '-c', command],
                             cwd=path,
                             stdout=subprocess.PIPE).communicate()[0].rstrip()
