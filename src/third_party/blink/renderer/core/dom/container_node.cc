@@ -326,7 +326,7 @@ void ContainerNode::InsertNodeVector(
       Node& child = *target_node;
       mutator(*this, child, next);
       ChildListMutationScope(*this).ChildAdded(child);
-      if (GetDocument().ContainsV1ShadowTree())
+      if (GetDocument().ContainsShadowTree())
         child.CheckSlotChangeAfterInserted();
       probe::DidInsertDOMNode(&child);
       NotifyNodeInsertedInternal(child, *post_insertion_notification_targets);
@@ -814,11 +814,8 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
     GetDocument().NodeChildrenWillBeRemoved(*this);
   }
 
-  HeapVector<Member<Node>>* removed_nodes = nullptr;
-  if (ChildrenChangedAllChildrenRemovedNeedsList()) {
-    removed_nodes =
-        MakeGarbageCollected<HeapVector<Member<Node>>>(CountChildren());
-  }
+  HeapVector<Member<Node>> removed_nodes;
+  const bool children_changed = ChildrenChangedAllChildrenRemovedNeedsList();
   {
     HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
     TreeOrderedMap::RemoveScope tree_remove_scope;
@@ -833,8 +830,8 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
       while (Node* child = first_child_) {
         RemoveBetween(nullptr, child->nextSibling(), *child);
         NotifyNodeRemoved(*child);
-        if (removed_nodes)
-          removed_nodes->push_back(child);
+        if (children_changed)
+          removed_nodes.push_back(child);
       }
     }
 
@@ -843,7 +840,8 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
                              nullptr,
                              nullptr,
                              nullptr,
-                             removed_nodes};
+                             std::move(removed_nodes),
+                             String()};
     ChildrenChanged(change);
   }
 
@@ -925,7 +923,7 @@ void ContainerNode::NotifyNodeInserted(Node& root,
 #endif
   DCHECK(!root.IsShadowRoot());
 
-  if (GetDocument().ContainsV1ShadowTree())
+  if (GetDocument().ContainsShadowTree())
     root.CheckSlotChangeAfterInserted();
 
   probe::DidInsertDOMNode(&root);
@@ -1349,7 +1347,9 @@ void ContainerNode::SetRestyleFlag(DynamicRestyleFlags mask) {
   EnsureRareData().SetRestyleFlag(mask);
 }
 
-void ContainerNode::RecalcDescendantStyles(const StyleRecalcChange change) {
+void ContainerNode::RecalcDescendantStyles(
+    const StyleRecalcChange change,
+    const StyleRecalcContext& style_recalc_context) {
   DCHECK(GetDocument().InStyleRecalc());
   DCHECK(!NeedsStyleRecalc());
 
@@ -1360,7 +1360,7 @@ void ContainerNode::RecalcDescendantStyles(const StyleRecalcChange change) {
       child_text_node->RecalcTextStyle(change);
 
     if (auto* child_element = DynamicTo<Element>(child))
-      child_element->RecalcStyle(change);
+      child_element->RecalcStyle(change, style_recalc_context);
   }
 }
 
@@ -1389,12 +1389,9 @@ void ContainerNode::RebuildChildrenLayoutTrees(
     WhitespaceAttacher& whitespace_attacher) {
   DCHECK(!NeedsReattachLayoutTree());
 
-  if (IsActiveSlotOrActiveV0InsertionPoint()) {
+  if (IsActiveSlot()) {
     if (auto* slot = DynamicTo<HTMLSlotElement>(this)) {
       slot->RebuildDistributedChildrenLayoutTrees(whitespace_attacher);
-    } else {
-      To<V0InsertionPoint>(this)->RebuildDistributedChildrenLayoutTrees(
-          whitespace_attacher);
     }
     return;
   }

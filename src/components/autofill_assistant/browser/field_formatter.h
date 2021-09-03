@@ -7,9 +7,11 @@
 
 #include <map>
 #include <string>
-#include "base/optional.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill_assistant/browser/action_value.pb.h"
+#include "components/autofill_assistant/browser/client_status.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 namespace field_formatter {
@@ -19,10 +21,24 @@ namespace field_formatter {
 // does not contain curly braces. If |strict| is true, this will fail if any of
 // the found placeholders is not in |mappings|. Otherwise, placeholders other
 // than those from |mappings| will be left unchanged.
-base::Optional<std::string> FormatString(
+absl::optional<std::string> FormatString(
     const std::string& input,
     const std::map<std::string, std::string>& mappings,
     bool strict = true);
+
+// Turns a |value_expression| into a string, replacing |key| chunks with
+// corresponding values in |mappings|. This will fail if any of the keys are
+// not in |mappings|. If |quote_meta| the replacement pieces will be quoted.
+ClientStatus FormatExpression(
+    const ValueExpression& value_expression,
+    const std::map<std::string, std::string>& mappings,
+    bool quote_meta,
+    std::string* out_value);
+
+// Returns a human-readable string representation of |value_expression| for
+// use in logging and error reporting.
+std::string GetHumanReadableValueExpression(
+    const ValueExpression& value_expression);
 
 // Creates a lookup map for all non-empty autofill and custom
 // AutofillFormatProto::AutofillAssistantCustomField field types in
@@ -34,6 +50,12 @@ std::map<std::string, std::string> CreateAutofillMappings(
     const std::string& locale);
 
 }  // namespace field_formatter
+
+// Debug output operator for value expressions. The output is only useful in
+// debug builds.
+std::ostream& operator<<(std::ostream& out,
+                         const ValueExpression& value_expression);
+
 }  // namespace autofill_assistant
 
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_FIELD_FORMATTER_H_

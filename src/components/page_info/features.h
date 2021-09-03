@@ -14,10 +14,17 @@ struct Feature;
 namespace page_info {
 
 #if defined(OS_ANDROID)
-// Enables the second version of the Page Info View.
-extern const base::Feature kPageInfoV2;
+// Enables the discoverability ui animations for Page Info.
+extern const base::Feature kPageInfoDiscoverability;
+// Enables the history sub page for Page Info.
+extern const base::Feature kPageInfoHistory;
+#endif
+
+#if !defined(OS_ANDROID)
+// Enables the second version of the Page Info View on desktop.
+extern const base::Feature kPageInfoV2Desktop;
 #endif
 
 }  // namespace page_info
 
-#endif  // COMPONENTS_PAGE_INFO_ANDROID_FEATURES_H_
+#endif  // COMPONENTS_PAGE_INFO_FEATURES_H_

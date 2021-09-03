@@ -9,12 +9,12 @@
 #include <utility>
 
 #include "base/big_endian.h"
-#include "base/optional.h"
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_test_util.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 namespace {
@@ -47,7 +47,7 @@ TEST(RecordRdataTest, ParseSrvRecord) {
                                                                // "google.com"
           };
 
-  DnsRecordParser parser(record, sizeof(record), 0);
+  DnsRecordParser parser(record, sizeof(record), 0, /*num_records=*/0);
   const unsigned first_record_len = 22;
   base::StringPiece record1_strpiece = MakeStringPiece(
       record, first_record_len);
@@ -84,7 +84,7 @@ TEST(RecordRdataTest, ParseARecord) {
       0x7F, 0x00, 0x00, 0x01  // 127.0.0.1
   };
 
-  DnsRecordParser parser(record, sizeof(record), 0);
+  DnsRecordParser parser(record, sizeof(record), 0, /*num_records=*/0);
   base::StringPiece record_strpiece = MakeStringPiece(record, sizeof(record));
 
   std::unique_ptr<ARecordRdata> record_obj =
@@ -105,7 +105,7 @@ TEST(RecordRdataTest, ParseAAAARecord) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x09  // 1234:5678::9A
   };
 
-  DnsRecordParser parser(record, sizeof(record), 0);
+  DnsRecordParser parser(record, sizeof(record), 0, /*num_records=*/0);
   base::StringPiece record_strpiece = MakeStringPiece(record, sizeof(record));
 
   std::unique_ptr<AAAARecordRdata> record_obj =
@@ -124,7 +124,7 @@ TEST(RecordRdataTest, ParseCnameRecord) {
   const uint8_t record[] = {0x03, 'w', 'w', 'w',  0x06, 'g', 'o', 'o',
                             'g',  'l', 'e', 0x03, 'c',  'o', 'm', 0x00};
 
-  DnsRecordParser parser(record, sizeof(record), 0);
+  DnsRecordParser parser(record, sizeof(record), 0, /*num_records=*/0);
   base::StringPiece record_strpiece = MakeStringPiece(record, sizeof(record));
 
   std::unique_ptr<CnameRecordRdata> record_obj =
@@ -143,7 +143,7 @@ TEST(RecordRdataTest, ParsePtrRecord) {
   const uint8_t record[] = {0x03, 'w', 'w', 'w',  0x06, 'g', 'o', 'o',
                             'g',  'l', 'e', 0x03, 'c',  'o', 'm', 0x00};
 
-  DnsRecordParser parser(record, sizeof(record), 0);
+  DnsRecordParser parser(record, sizeof(record), 0, /*num_records=*/0);
   base::StringPiece record_strpiece = MakeStringPiece(record, sizeof(record));
 
   std::unique_ptr<PtrRecordRdata> record_obj =
@@ -162,7 +162,7 @@ TEST(RecordRdataTest, ParseTxtRecord) {
   const uint8_t record[] = {0x03, 'w', 'w', 'w',  0x06, 'g', 'o', 'o',
                             'g',  'l', 'e', 0x03, 'c',  'o', 'm'};
 
-  DnsRecordParser parser(record, sizeof(record), 0);
+  DnsRecordParser parser(record, sizeof(record), 0, /*num_records=*/0);
   base::StringPiece record_strpiece = MakeStringPiece(record, sizeof(record));
 
   std::unique_ptr<TxtRecordRdata> record_obj =
@@ -187,7 +187,7 @@ TEST(RecordRdataTest, ParseNsecRecord) {
                             'o',  'g',  'l',  'e',  0x03, 'c', 'o',
                             'm',  0x00, 0x00, 0x02, 0x40, 0x01};
 
-  DnsRecordParser parser(record, sizeof(record), 0);
+  DnsRecordParser parser(record, sizeof(record), 0, /*num_records=*/0);
   base::StringPiece record_strpiece = MakeStringPiece(record, sizeof(record));
 
   std::unique_ptr<NsecRecordRdata> record_obj =
@@ -213,7 +213,7 @@ TEST(RecordRdataTest, CreateNsecRecordWithEmptyBitmapReturnsNull) {
   const uint8_t record[] = {0x03, 'w', 'w',  'w', 0x06, 'g', 'o',  'o',  'g',
                             'l',  'e', 0x03, 'c', 'o',  'm', 0x00, 0x00, 0x00};
 
-  DnsRecordParser parser(record, sizeof(record), 0);
+  DnsRecordParser parser(record, sizeof(record), 0, /*num_records=*/0);
   base::StringPiece record_strpiece = MakeStringPiece(record, sizeof(record));
 
   std::unique_ptr<NsecRecordRdata> record_obj =
@@ -233,7 +233,7 @@ TEST(RecordRdataTest, CreateNsecRecordWithOversizedBitmapReturnsNull) {
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-  DnsRecordParser parser(record, sizeof(record), 0);
+  DnsRecordParser parser(record, sizeof(record), 0, /*num_records=*/0);
   base::StringPiece record_strpiece = MakeStringPiece(record, sizeof(record));
 
   std::unique_ptr<NsecRecordRdata> record_obj =
@@ -255,7 +255,7 @@ TEST(RecordRdataTest, ParseOptRecord) {
       0xDE, 0xAD, 0xBE, 0xEF  // OPT data
   };
 
-  DnsRecordParser parser(rdata, sizeof(rdata), 0);
+  DnsRecordParser parser(rdata, sizeof(rdata), 0, /*num_records=*/0);
   base::StringPiece rdata_strpiece = MakeStringPiece(rdata, sizeof(rdata));
 
   std::unique_ptr<OptRecordRdata> rdata_obj =
@@ -278,7 +278,7 @@ TEST(RecordRdataTest, ParseOptRecordWithShorterSizeThanData) {
       0xDE, 0xAD, 0xBE, 0xEF  // OPT data
   };
 
-  DnsRecordParser parser(rdata, sizeof(rdata), 0);
+  DnsRecordParser parser(rdata, sizeof(rdata), 0, /*num_records=*/0);
   base::StringPiece rdata_strpiece = MakeStringPiece(rdata, sizeof(rdata));
 
   std::unique_ptr<OptRecordRdata> rdata_obj =
@@ -295,7 +295,7 @@ TEST(RecordRdataTest, ParseOptRecordWithLongerSizeThanData) {
       0xDE, 0xAD   // OPT data
   };
 
-  DnsRecordParser parser(rdata, sizeof(rdata), 0);
+  DnsRecordParser parser(rdata, sizeof(rdata), 0, /*num_records=*/0);
   base::StringPiece rdata_strpiece = MakeStringPiece(rdata, sizeof(rdata));
 
   std::unique_ptr<OptRecordRdata> rdata_obj =
@@ -322,7 +322,7 @@ TEST(RecordRdataTest, IntegrityParseSerializeInverseProperty) {
   IntegrityRecordRdata record(IntegrityRecordRdata::Random());
 
   EXPECT_TRUE(record.IsIntact());
-  base::Optional<std::vector<uint8_t>> serialized = record.Serialize();
+  absl::optional<std::vector<uint8_t>> serialized = record.Serialize();
   EXPECT_TRUE(serialized);
 
   std::unique_ptr<IntegrityRecordRdata> reparsed =
@@ -336,7 +336,7 @@ TEST(RecordRdataTest, IntegrityEmptyNonceCornerCase) {
   IntegrityRecordRdata record(empty_nonce);
   EXPECT_TRUE(record.IsIntact());
 
-  base::Optional<std::vector<uint8_t>> serialized = record.Serialize();
+  absl::optional<std::vector<uint8_t>> serialized = record.Serialize();
   EXPECT_TRUE(serialized);
   std::unique_ptr<IntegrityRecordRdata> reparsed =
       IntegrityRecordRdata::Create(MakeStringPiece(*serialized));
@@ -349,12 +349,12 @@ TEST(RecordRdataTest, IntegrityEmptyNonceCornerCase) {
 TEST(RecordRdataTest, IntegrityMoveConstructor) {
   IntegrityRecordRdata record_a(IntegrityRecordRdata::Random());
   EXPECT_TRUE(record_a.IsIntact());
-  base::Optional<std::vector<uint8_t>> serialized_a = record_a.Serialize();
+  absl::optional<std::vector<uint8_t>> serialized_a = record_a.Serialize();
   EXPECT_TRUE(serialized_a);
 
   IntegrityRecordRdata record_b = std::move(record_a);
   EXPECT_TRUE(record_b.IsIntact());
-  base::Optional<std::vector<uint8_t>> serialized_b = record_b.Serialize();
+  absl::optional<std::vector<uint8_t>> serialized_b = record_b.Serialize();
   EXPECT_TRUE(serialized_b);
 
   EXPECT_EQ(serialized_a, serialized_b);
@@ -369,7 +369,7 @@ TEST(RecordRdataTest, IntegrityRandomRecordsDiffer) {
 TEST(RecordRdataTest, IntegritySerialize) {
   IntegrityRecordRdata record({'A'});
   EXPECT_TRUE(record.IsIntact());
-  const base::Optional<std::vector<uint8_t>> serialized = record.Serialize();
+  const absl::optional<std::vector<uint8_t>> serialized = record.Serialize();
   EXPECT_TRUE(serialized);
 
   // Expected payload contains the SHA256 hash of 'A'. For the lazy:

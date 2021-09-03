@@ -18,6 +18,7 @@
 #include <functional>
 
 #include "platform/base/exception.h"
+#include "platform/public/count_down_latch.h"
 #include "gtest/gtest.h"
 #include "absl/synchronization/mutex.h"
 #include "absl/time/clock.h"
@@ -95,6 +96,20 @@ TEST(ScheduledExecutorTest, CanCancel) {
   EXPECT_EQ(value, 0);
 }
 
+TEST(ScheduledExecutorTest, CanCancelTwice) {
+  ScheduledExecutor executor;
+  std::atomic_int value = 0;
+  Cancelable cancelable =
+      executor.Schedule([&value]() { value += 1; }, kShortDelay);
+  EXPECT_EQ(value, 0);
+
+  cancelable.Cancel();
+  cancelable.Cancel();
+
+  absl::SleepFor(kLongDelay);
+  EXPECT_EQ(value, 0);
+}
+
 TEST(ScheduledExecutorTest, FailToCancel) {
   absl::Mutex mutex;
   absl::CondVar cond;
@@ -116,6 +131,75 @@ TEST(ScheduledExecutorTest, FailToCancel) {
     cond.Wait(&mutex);
   }
   EXPECT_EQ(value, 1);
+}
+
+TEST(ScheduledExecutorTest,
+     CancelWhileRunning_TaskCompletesBeforeCancelReturns) {
+  CountDownLatch start_latch(1);
+  ScheduledExecutor executor;
+  std::atomic_int value = 0;
+  // A task that takes a little bit of time to complete
+  Cancelable cancelable = executor.Schedule(
+      [&start_latch, &value]() {
+        start_latch.CountDown();
+        absl::SleepFor(kLongDelay);
+        value += 1;
+      },
+      absl::ZeroDuration());
+
+  start_latch.Await();
+  cancelable.Cancel();
+
+  EXPECT_EQ(value, 1);
+}
+
+TEST(ScheduledExecutorTest,
+     CancelTwiceWhileRunning_TaskCompletesBeforeCancelReturns) {
+  CountDownLatch start_latch(1);
+  ScheduledExecutor executor;
+  std::atomic_int value = 0;
+  // A task that takes a little bit of time to complete
+  Cancelable cancelable = executor.Schedule(
+      [&start_latch, &value]() {
+        start_latch.CountDown();
+        absl::SleepFor(kLongDelay);
+        value += 1;
+      },
+      absl::ZeroDuration());
+
+  start_latch.Await();
+
+  cancelable.Cancel();
+  cancelable.Cancel();
+
+  EXPECT_EQ(value, 1);
+}
+
+struct ThreadCheckTestClass {
+  ScheduledExecutor executor;
+  int value ABSL_GUARDED_BY(executor) = 0;
+
+  void incValue() ABSL_EXCLUSIVE_LOCKS_REQUIRED(executor) { value++; }
+  int getValue() ABSL_EXCLUSIVE_LOCKS_REQUIRED(executor) { return value; }
+};
+
+TEST(ScheduledExecutorTest, ThreadCheck_Execute) {
+  ThreadCheckTestClass test_class;
+
+  test_class.executor.Execute(
+      [&test_class]() ABSL_EXCLUSIVE_LOCKS_REQUIRED(test_class.executor) {
+        test_class.incValue();
+      });
+}
+
+TEST(ScheduledExecutorTest, ThreadCheck_Schedule) {
+  ThreadCheckTestClass test_class;
+
+  test_class.executor.Schedule(
+      [&test_class]() ABSL_EXCLUSIVE_LOCKS_REQUIRED(test_class.executor) {
+        test_class.incValue();
+      },
+      absl::ZeroDuration());
 }
 
 }  // namespace nearby

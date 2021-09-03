@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BLINK_MODULES_BATTERY_BATTERY_STATUS_H_
-#define BLINK_MODULES_BATTERY_BATTERY_STATUS_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_BATTERY_BATTERY_STATUS_H_
+#define THIRD_PARTY_BLINK_RENDERER_MODULES_BATTERY_BATTERY_STATUS_H_
 
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 #include <cmath>
 #include <limits>
@@ -60,4 +59,4 @@ class MODULES_EXPORT BatteryStatus final {
 
 }  // namespace blink
 
-#endif  // BLINK_MODULES_BATTERY_BATTERY_STATUS_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_BATTERY_BATTERY_STATUS_H_

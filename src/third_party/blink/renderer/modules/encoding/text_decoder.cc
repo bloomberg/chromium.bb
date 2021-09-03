@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/modules/encoding/text_decoder.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/modules/encoding/encoding.h"
@@ -77,34 +78,62 @@ String TextDecoder::encoding() const {
   return name;
 }
 
-String TextDecoder::decode(const BufferSource& input,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+String TextDecoder::decode(const V8BufferSource* input,
                            const TextDecodeOptions* options,
                            ExceptionState& exception_state) {
   DCHECK(options);
-  DCHECK(!input.IsNull());
-  if (input.IsArrayBufferView()) {
-    const char* start = static_cast<const char*>(
-        input.GetAsArrayBufferView().View()->BaseAddress());
-    size_t length = input.GetAsArrayBufferView().View()->byteLength();
-    if (length > std::numeric_limits<uint32_t>::max()) {
-      exception_state.ThrowRangeError(
-          "Buffer size exceeds maximum heap object size.");
-      return String();
+  // In case of `input` == IDL "missing" special value, default to (nullptr, 0).
+  void* start = nullptr;
+  size_t length = 0;
+  if (input) {
+    switch (input->GetContentType()) {
+      case V8BufferSource::ContentType::kArrayBuffer:
+        start = input->GetAsArrayBuffer()->Data();
+        length = input->GetAsArrayBuffer()->ByteLength();
+        break;
+      case V8BufferSource::ContentType::kArrayBufferView:
+        start = input->GetAsArrayBufferView()->BaseAddress();
+        length = input->GetAsArrayBufferView()->byteLength();
+        break;
     }
-    return decode(start, static_cast<uint32_t>(length), options,
-                  exception_state);
   }
-  DCHECK(input.IsArrayBuffer());
-  const char* start =
-      static_cast<const char*>(input.GetAsArrayBuffer()->Data());
-  size_t length = input.GetAsArrayBuffer()->ByteLength();
+
   if (length > std::numeric_limits<uint32_t>::max()) {
     exception_state.ThrowRangeError(
         "Buffer size exceeds maximum heap object size.");
     return String();
   }
-  return decode(start, static_cast<uint32_t>(length), options, exception_state);
+
+  return decode(static_cast<const char*>(start), static_cast<uint32_t>(length),
+                options, exception_state);
 }
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+String TextDecoder::decode(const BufferSource& input,
+                           const TextDecodeOptions* options,
+                           ExceptionState& exception_state) {
+  DCHECK(options);
+  // In case of `input` == IDL "missing" special value, default to (nullptr, 0).
+  void* start = nullptr;
+  size_t length = 0;
+  if (input.IsArrayBufferView()) {
+    start = input.GetAsArrayBufferView()->BaseAddress();
+    length = input.GetAsArrayBufferView()->byteLength();
+  } else if (input.IsArrayBuffer()) {
+    start = input.GetAsArrayBuffer()->Data();
+    length = input.GetAsArrayBuffer()->ByteLength();
+  }
+
+  if (length > std::numeric_limits<uint32_t>::max()) {
+    exception_state.ThrowRangeError(
+        "Buffer size exceeds maximum heap object size.");
+    return String();
+  }
+
+  return decode(static_cast<const char*>(start), static_cast<uint32_t>(length),
+                options, exception_state);
+}
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
 String TextDecoder::decode(const char* start,
                            uint32_t length,

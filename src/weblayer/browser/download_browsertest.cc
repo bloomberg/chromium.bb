@@ -54,8 +54,7 @@ class DownloadBrowserTest : public WebLayerBrowserTest,
 
     auto* browser_context = tab_impl->web_contents()->GetBrowserContext();
     auto* download_manager_delegate =
-        content::BrowserContext::GetDownloadManager(browser_context)
-            ->GetDelegate();
+        browser_context->GetDownloadManager()->GetDelegate();
     static_cast<DownloadManagerDelegateImpl*>(download_manager_delegate)
         ->set_download_dropped_closure_for_testing(base::BindRepeating(
             &DownloadBrowserTest::DownloadDropped, base::Unretained(this)));
@@ -91,7 +90,7 @@ class DownloadBrowserTest : public WebLayerBrowserTest,
   void AllowDownload(Tab* tab,
                      const GURL& url,
                      const std::string& request_method,
-                     base::Optional<url::Origin> request_initiator,
+                     absl::optional<url::Origin> request_initiator,
                      AllowDownloadCallback callback) override {
     std::move(callback).Run(allow_);
     allow_run_loop_->Quit();

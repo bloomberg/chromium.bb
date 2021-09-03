@@ -12,7 +12,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/back_forward_cache_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -24,6 +23,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_container.mojom.h"
@@ -288,7 +288,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // worker clients, updates the client uuid if it's a cross-origin transition.
   void UpdateUrls(const GURL& url,
                   const net::SiteForCookies& site_for_cookies,
-                  const base::Optional<url::Origin>& top_frame_origin);
+                  const absl::optional<url::Origin>& top_frame_origin);
 
   // For service worker clients. Makes this client be controlled by
   // |registration|'s active worker, or makes this client be not
@@ -368,7 +368,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // For shared worker it is the origin of the document that created the worker.
   // For dedicated worker it is the top-frame origin of the document that owns
   // the worker.
-  base::Optional<url::Origin> top_frame_origin() const {
+  absl::optional<url::Origin> top_frame_origin() const {
     return top_frame_origin_;
   }
 
@@ -447,6 +447,12 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
 
   void EnterBackForwardCacheForTesting() { is_in_back_forward_cache_ = true; }
   void LeaveBackForwardCacheForTesting() { is_in_back_forward_cache_ = false; }
+
+  // Returns the origin of this container host.
+  // Note that you must use this function instead of retrieving the origin from
+  // url(). That can be invalid when this container host is created for a blob
+  // URL context. See comments on GetUrlForScopeMatch() for details.
+  const GURL GetOrigin() const;
 
   // For service worker clients. Returns the URL that is used for scope matching
   // algorithm. This can be different from url() in the case of blob URL
@@ -570,7 +576,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   // See comments for the getter functions.
   GURL url_;
   net::SiteForCookies site_for_cookies_;
-  base::Optional<url::Origin> top_frame_origin_;
+  absl::optional<url::Origin> top_frame_origin_;
 
   // Contains all ServiceWorkerRegistrationObjectHost instances corresponding to
   // the service worker registration JavaScript objects for the hosted execution
@@ -665,7 +671,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   mojo::AssociatedRemote<blink::mojom::ServiceWorkerContainer> container_;
 
   // The type of client.
-  const base::Optional<ServiceWorkerClientInfo> client_info_;
+  const absl::optional<ServiceWorkerClientInfo> client_info_;
 
   // The source id of the client's ExecutionContext, set on response commit.
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
@@ -691,7 +697,7 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   int frame_id_ = MSG_ROUTING_NONE;
 
   // The embedder policy of the client. Set on response commit.
-  base::Optional<network::CrossOriginEmbedderPolicy>
+  absl::optional<network::CrossOriginEmbedderPolicy>
       cross_origin_embedder_policy_;
 
   // An endpoint connected to the COEP reporter. A clone of this connection is
@@ -712,6 +718,10 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
 
   // The ServiceWorkerHost that owns |this|.
   ServiceWorkerHost* service_worker_host_ = nullptr;
+
+  // For all instances --------------------------------------------------------
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ServiceWorkerContainerHost> weak_factory_{this};
 };

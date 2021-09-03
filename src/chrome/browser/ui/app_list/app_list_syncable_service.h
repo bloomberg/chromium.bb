@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/one_shot_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/glue/sync_start_util.h"
@@ -64,24 +65,24 @@ class AppListSyncableService : public syncer::SyncableService,
     std::string ToString() const;
   };
 
-  class Observer {
+  class Observer : public base::CheckedObserver {
    public:
     // Notifies that sync model was updated.
     virtual void OnSyncModelUpdated() = 0;
 
    protected:
-    virtual ~Observer() = default;
+    ~Observer() override;
   };
 
   // An app list model updater factory function used by tests.
   using ModelUpdaterFactoryCallback =
-      base::Callback<std::unique_ptr<AppListModelUpdater>()>;
+      base::RepeatingCallback<std::unique_ptr<AppListModelUpdater>()>;
 
   // Sets and resets an app list model updater factory function for tests.
   class ScopedModelUpdaterFactoryForTest {
    public:
     explicit ScopedModelUpdaterFactoryForTest(
-        const ModelUpdaterFactoryCallback& factory);
+        ModelUpdaterFactoryCallback factory);
     ScopedModelUpdaterFactoryForTest(const ScopedModelUpdaterFactoryForTest&) =
         delete;
     ScopedModelUpdaterFactoryForTest& operator=(
@@ -181,14 +182,14 @@ class AppListSyncableService : public syncer::SyncableService,
 
   // syncer::SyncableService
   void WaitUntilReadyToSync(base::OnceClosure done) override;
-  base::Optional<syncer::ModelError> MergeDataAndStartSyncing(
+  absl::optional<syncer::ModelError> MergeDataAndStartSyncing(
       syncer::ModelType type,
       const syncer::SyncDataList& initial_sync_data,
       std::unique_ptr<syncer::SyncChangeProcessor> sync_processor,
       std::unique_ptr<syncer::SyncErrorFactory> error_handler) override;
   void StopSyncing(syncer::ModelType type) override;
   syncer::SyncDataList GetAllSyncDataForTesting() const;
-  base::Optional<syncer::ModelError> ProcessSyncChanges(
+  absl::optional<syncer::ModelError> ProcessSyncChanges(
       const base::Location& from_here,
       const syncer::SyncChangeList& change_list) override;
 
@@ -357,7 +358,7 @@ class AppListSyncableService : public syncer::SyncableService,
   base::OnceClosure wait_until_ready_to_sync_cb_;
 
   // List of observers.
-  base::ObserverList<Observer>::Unchecked observer_list_;
+  base::ObserverList<Observer> observer_list_;
   base::OneShotEvent on_initialized_;
 
   base::WeakPtrFactory<AppListSyncableService> weak_ptr_factory_{this};

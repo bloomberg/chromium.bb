@@ -14,8 +14,8 @@ import argparse
 import curlish
 import sys
 
-SCRIPT_DOWNLOAD_URL = ('https://raw.githubusercontent.com/chromium/' +
-                       'chromium/master/tools/clang/scripts/update.py')
+SCRIPT_DOWNLOAD_URL = ('https://raw.githubusercontent.com/chromium/'
+                       'chromium/main/tools/clang/scripts/update.py')
 
 
 def main():

@@ -61,7 +61,7 @@ void av1_intra_mode_cnn_partition(const AV1_COMMON *const cm, MACROBLOCK *x,
                                   int *partition_vert_allowed,
                                   int *do_rectangular_split,
                                   int *do_square_split) {
-  assert(cm->seq_params.sb_size >= BLOCK_64X64 &&
+  assert(cm->seq_params->sb_size >= BLOCK_64X64 &&
          "Invalid sb_size for intra_cnn!");
   const int bsize_idx = convert_bsize_to_idx(bsize);
 
@@ -304,6 +304,17 @@ void av1_simple_motion_search_based_split(
       score < no_split_thresh) {
     *do_square_split = 0;
   }
+
+  // If the score is very low, prune rectangular split since it is unlikely to
+  // occur.
+  if (cpi->sf.part_sf.simple_motion_search_rect_split) {
+    const float scale = res_idx >= 2 ? 3.0f : 2.0f;
+    const float rect_split_thresh =
+        scale * av1_simple_motion_search_no_split_thresh
+                    [cpi->sf.part_sf.simple_motion_search_rect_split][res_idx]
+                    [bsize_idx];
+    if (score < rect_split_thresh) *do_rectangular_split = 0;
+  }
 }
 
 // Given a list of ref frames in refs, performs simple_motion_search on each of
@@ -345,7 +356,7 @@ static int simple_motion_search_get_best_ref(
       int_mv best_mv =
           av1_simple_motion_search(cpi, x, mi_row, mi_col, bsize, ref,
                                    start_mvs[ref], num_planes, use_subpixel);
-      curr_var = cpi->fn_ptr[bsize].vf(
+      curr_var = cpi->ppi->fn_ptr[bsize].vf(
           x->plane[0].src.buf, x->plane[0].src.stride, xd->plane[0].dst.buf,
           xd->plane[0].dst.stride, &curr_sse);
       if (curr_sse < *best_sse) {
@@ -625,8 +636,9 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
                                         float *features) {
   AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *xd = &x->e_mbd;
-  const BLOCK_SIZE sb_size = cm->seq_params.sb_size;
+  const BLOCK_SIZE sb_size = cm->seq_params->sb_size;
 
+  // Currently this only allows 128X128 SB size. May extend it to 64X64 SB size.
   assert(sb_size == BLOCK_128X128);
 
   int f_idx = 0;
@@ -690,14 +702,18 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
       if (log_sse > max_log_sse) max_log_sse = log_sse;
     }
   aom_clear_system_state();
-  const float avg_mv_row = sum_mv_row / 64.0f;
-  const float var_mv_row = sum_mv_row_sq / 64.0f - avg_mv_row * avg_mv_row;
+  const int blks = mb_rows * mb_cols;
+  const float avg_mv_row = sum_mv_row / (float)blks;
+  const float var_mv_row =
+      sum_mv_row_sq / (float)blks - avg_mv_row * avg_mv_row;
 
-  const float avg_mv_col = sum_mv_col / 64.0f;
-  const float var_mv_col = sum_mv_col_sq / 64.0f - avg_mv_col * avg_mv_col;
+  const float avg_mv_col = sum_mv_col / (float)blks;
+  const float var_mv_col =
+      sum_mv_col_sq / (float)blks - avg_mv_col * avg_mv_col;
 
-  const float avg_log_sse = sum_log_sse / 64.0f;
-  const float var_log_sse = sum_log_sse_sq / 64.0f - avg_log_sse * avg_log_sse;
+  const float avg_log_sse = sum_log_sse / (float)blks;
+  const float var_log_sse =
+      sum_log_sse_sq / (float)blks - avg_log_sse * avg_log_sse;
 
   features[f_idx++] = avg_log_sse;
   features[f_idx++] = avg_mv_col;
@@ -716,11 +732,20 @@ void av1_get_max_min_partition_features(AV1_COMP *const cpi, MACROBLOCK *x,
   assert(f_idx == FEATURE_SIZE_MAX_MIN_PART_PRED);
 }
 
+// Convert result index to block size.
+// result idx     block size
+//     0          BLOCK_16X16
+//     1          BLOCK_32X32
+//     2          BLOCK_64X64
+//     3          BLOCK_128X128
+static BLOCK_SIZE get_block_size(int idx) {
+  return (BLOCK_SIZE)((idx + 2) * 3);
+}
+
 BLOCK_SIZE av1_predict_max_partition(const AV1_COMP *const cpi,
                                      const MACROBLOCK *const x,
                                      const float *features) {
-  float scores[MAX_NUM_CLASSES_MAX_MIN_PART_PRED] = { 0.0f },
-        probs[MAX_NUM_CLASSES_MAX_MIN_PART_PRED] = { 0.0f };
+  float scores[MAX_NUM_CLASSES_MAX_MIN_PART_PRED] = { 0.0f };
   const NN_CONFIG *nn_config = &av1_max_part_pred_nn_config;
 
   assert(cpi->sf.part_sf.auto_max_partition_based_on_simple_motion !=
@@ -728,21 +753,26 @@ BLOCK_SIZE av1_predict_max_partition(const AV1_COMP *const cpi,
 
   aom_clear_system_state();
   av1_nn_predict(features, nn_config, 1, scores);
-  av1_nn_softmax(scores, probs, MAX_NUM_CLASSES_MAX_MIN_PART_PRED);
 
   int result = MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1;
   if (cpi->sf.part_sf.auto_max_partition_based_on_simple_motion ==
       DIRECT_PRED) {
     result = 0;
-    float max_prob = probs[0];
+    float max_score = scores[0];
     for (int i = 1; i < MAX_NUM_CLASSES_MAX_MIN_PART_PRED; ++i) {
-      if (probs[i] > max_prob) {
-        max_prob = probs[i];
+      if (scores[i] > max_score) {
+        max_score = scores[i];
         result = i;
       }
     }
-  } else if (cpi->sf.part_sf.auto_max_partition_based_on_simple_motion ==
-             RELAXED_PRED) {
+    return get_block_size(result);
+  }
+
+  float probs[MAX_NUM_CLASSES_MAX_MIN_PART_PRED] = { 0.0f };
+  av1_nn_softmax(scores, probs, MAX_NUM_CLASSES_MAX_MIN_PART_PRED);
+
+  if (cpi->sf.part_sf.auto_max_partition_based_on_simple_motion ==
+      RELAXED_PRED) {
     for (result = MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1; result >= 0;
          --result) {
       if (result < MAX_NUM_CLASSES_MAX_MIN_PART_PRED - 1) {
@@ -752,7 +782,7 @@ BLOCK_SIZE av1_predict_max_partition(const AV1_COMP *const cpi,
     }
   } else if (cpi->sf.part_sf.auto_max_partition_based_on_simple_motion ==
              ADAPT_PRED) {
-    const BLOCK_SIZE sb_size = cpi->common.seq_params.sb_size;
+    const BLOCK_SIZE sb_size = cpi->common.seq_params->sb_size;
     const MACROBLOCKD *const xd = &x->e_mbd;
     // TODO(debargha): x->source_variance is unavailable at this point,
     // so compute. The redundant recomputation later can be removed.
@@ -773,7 +803,7 @@ BLOCK_SIZE av1_predict_max_partition(const AV1_COMP *const cpi,
     }
   }
 
-  return (BLOCK_SIZE)((result + 2) * 3);
+  return get_block_size(result);
 }
 
 // Get the minimum partition block width and height(in log scale) under a
@@ -1350,7 +1380,7 @@ void av1_prune_partitions_before_search(
   const int try_intra_cnn_split =
       !cpi->use_screen_content_tools && frame_is_intra_only(cm) &&
       cpi->sf.part_sf.intra_cnn_split &&
-      cm->seq_params.sb_size >= BLOCK_64X64 && bsize <= BLOCK_64X64 &&
+      cm->seq_params->sb_size >= BLOCK_64X64 && bsize <= BLOCK_64X64 &&
       bsize >= BLOCK_8X8 &&
       mi_row + mi_size_high[bsize] <= mi_params->mi_rows &&
       mi_col + mi_size_wide[bsize] <= mi_params->mi_cols;
@@ -1564,7 +1594,7 @@ void av1_prune_ab_partitions(
 
   // Pruning: pruning out some ab partitions using a DNN taking rd costs of
   // sub-blocks from previous basic partition types.
-  if (cpi->sf.part_sf.ml_prune_ab_partition && ext_partition_allowed &&
+  if (cpi->sf.part_sf.ml_prune_partition && ext_partition_allowed &&
       partition_horz_allowed && partition_vert_allowed) {
     // TODO(huisu@google.com): x->source_variance may not be the current
     // block's variance. The correct one to use is pb_source_variance. Need to
@@ -1584,22 +1614,22 @@ void av1_prune_ab_partitions(
 
   // Pruning: pruning AB partitions based on the number of horz/vert wins
   // in the current block and sub-blocks in PARTITION_SPLIT.
-  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+  if (cpi->sf.part_sf.prune_ext_part_using_split_info >= 2 &&
       *horza_partition_allowed) {
     *horza_partition_allowed &= evaluate_ab_partition_based_on_split(
         pc_tree, PARTITION_HORZ, rect_part_win_info, x->qindex, 0, 1);
   }
-  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+  if (cpi->sf.part_sf.prune_ext_part_using_split_info >= 2 &&
       *horzb_partition_allowed) {
     *horzb_partition_allowed &= evaluate_ab_partition_based_on_split(
         pc_tree, PARTITION_HORZ, rect_part_win_info, x->qindex, 2, 3);
   }
-  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+  if (cpi->sf.part_sf.prune_ext_part_using_split_info >= 2 &&
       *verta_partition_allowed) {
     *verta_partition_allowed &= evaluate_ab_partition_based_on_split(
         pc_tree, PARTITION_VERT, rect_part_win_info, x->qindex, 0, 2);
   }
-  if (cpi->sf.part_sf.prune_ab_partition_using_split_info &&
+  if (cpi->sf.part_sf.prune_ext_part_using_split_info >= 2 &&
       *vertb_partition_allowed) {
     *vertb_partition_allowed &= evaluate_ab_partition_based_on_split(
         pc_tree, PARTITION_VERT, rect_part_win_info, x->qindex, 1, 3);

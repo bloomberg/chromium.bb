@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_encoder.h"
+#include "quic/core/qpack/qpack_encoder.h"
 
 #include <algorithm>
 #include <utility>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_index_conversions.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_instruction_encoder.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_required_insert_count.h"
-#include "net/third_party/quiche/src/quic/core/qpack/value_splitting_header_list.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "quic/core/qpack/qpack_index_conversions.h"
+#include "quic/core/qpack/qpack_instruction_encoder.h"
+#include "quic/core/qpack/qpack_required_insert_count.h"
+#include "quic/core/qpack/value_splitting_header_list.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -37,13 +38,13 @@ QpackEncoder::QpackEncoder(
       decoder_stream_receiver_(this),
       maximum_blocked_streams_(0),
       header_list_count_(0) {
-  DCHECK(decoder_stream_error_delegate_);
+  QUICHE_DCHECK(decoder_stream_error_delegate_);
 }
 
 QpackEncoder::~QpackEncoder() {}
 
 // static
-QpackInstructionWithValues QpackEncoder::EncodeIndexedHeaderField(
+QpackEncoder::Representation QpackEncoder::EncodeIndexedHeaderField(
     bool is_static,
     uint64_t index,
     QpackBlockingManager::IndexSet* referred_indices) {
@@ -51,11 +52,11 @@ QpackInstructionWithValues QpackEncoder::EncodeIndexedHeaderField(
   if (!is_static) {
     referred_indices->insert(index);
   }
-  return QpackInstructionWithValues::IndexedHeaderField(is_static, index);
+  return Representation::IndexedHeaderField(is_static, index);
 }
 
 // static
-QpackInstructionWithValues
+QpackEncoder::Representation
 QpackEncoder::EncodeLiteralHeaderFieldWithNameReference(
     bool is_static,
     uint64_t index,
@@ -65,18 +66,18 @@ QpackEncoder::EncodeLiteralHeaderFieldWithNameReference(
   if (!is_static) {
     referred_indices->insert(index);
   }
-  return QpackInstructionWithValues::LiteralHeaderFieldNameReference(
-      is_static, index, value);
+  return Representation::LiteralHeaderFieldNameReference(is_static, index,
+                                                         value);
 }
 
 // static
-QpackInstructionWithValues QpackEncoder::EncodeLiteralHeaderField(
+QpackEncoder::Representation QpackEncoder::EncodeLiteralHeaderField(
     absl::string_view name,
     absl::string_view value) {
-  return QpackInstructionWithValues::LiteralHeaderField(name, value);
+  return Representation::LiteralHeaderField(name, value);
 }
 
-QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
+QpackEncoder::Representations QpackEncoder::FirstPassEncode(
     QuicStreamId stream_id,
     const spdy::Http2HeaderBlock& header_list,
     QpackBlockingManager::IndexSet* referred_indices,
@@ -86,8 +87,8 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
   const QuicByteCount initial_encoder_stream_buffered_byte_count =
       encoder_stream_sender_.BufferedByteCount();
 
-  Instructions instructions;
-  instructions.reserve(header_list.size());
+  Representations representations;
+  representations.reserve(header_list.size());
 
   // The index of the oldest entry that must not be evicted.
   uint64_t smallest_blocking_index =
@@ -121,10 +122,10 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
         header_table_.FindHeaderField(name, value, &is_static, &index);
 
     switch (match_type) {
-      case QpackHeaderTable::MatchType::kNameAndValue:
+      case QpackEncoderHeaderTable::MatchType::kNameAndValue:
         if (is_static) {
           // Refer to entry directly.
-          instructions.push_back(
+          representations.push_back(
               EncodeIndexedHeaderField(is_static, index, referred_indices));
 
           break;
@@ -135,7 +136,7 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
           if (!blocking_allowed && index >= known_received_count) {
             blocked_stream_limit_exhausted = true;
           } else {
-            instructions.push_back(
+            representations.push_back(
                 EncodeIndexedHeaderField(is_static, index, referred_indices));
             smallest_blocking_index = std::min(smallest_blocking_index, index);
             header_table_.set_dynamic_table_entry_referenced();
@@ -155,9 +156,9 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
             encoder_stream_sender_.SendDuplicate(
                 QpackAbsoluteIndexToEncoderStreamRelativeIndex(
                     index, header_table_.inserted_entry_count()));
-            auto entry = header_table_.InsertEntry(name, value);
-            instructions.push_back(EncodeIndexedHeaderField(
-                is_static, entry->InsertionIndex(), referred_indices));
+            uint64_t new_index = header_table_.InsertEntry(name, value);
+            representations.push_back(EncodeIndexedHeaderField(
+                is_static, new_index, referred_indices));
             smallest_blocking_index = std::min(smallest_blocking_index, index);
             header_table_.set_dynamic_table_entry_referenced();
 
@@ -170,11 +171,11 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
         // exists.
         // TODO(b/112770235): Use static entry name with literal value if
         // dynamic entry exists but cannot be used.
-        instructions.push_back(EncodeLiteralHeaderField(name, value));
+        representations.push_back(EncodeLiteralHeaderField(name, value));
 
         break;
 
-      case QpackHeaderTable::MatchType::kName:
+      case QpackEncoderHeaderTable::MatchType::kName:
         if (is_static) {
           if (blocking_allowed &&
               QpackEntry::Size(name, value) <=
@@ -183,18 +184,17 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
             // If allowed, insert entry into dynamic table and refer to it.
             encoder_stream_sender_.SendInsertWithNameReference(is_static, index,
                                                                value);
-            auto entry = header_table_.InsertEntry(name, value);
-            instructions.push_back(EncodeIndexedHeaderField(
-                /* is_static = */ false, entry->InsertionIndex(),
-                referred_indices));
-            smallest_blocking_index = std::min<uint64_t>(
-                smallest_blocking_index, entry->InsertionIndex());
+            uint64_t new_index = header_table_.InsertEntry(name, value);
+            representations.push_back(EncodeIndexedHeaderField(
+                /* is_static = */ false, new_index, referred_indices));
+            smallest_blocking_index =
+                std::min<uint64_t>(smallest_blocking_index, new_index);
 
             break;
           }
 
           // Emit literal field with name reference.
-          instructions.push_back(EncodeLiteralHeaderFieldWithNameReference(
+          representations.push_back(EncodeLiteralHeaderFieldWithNameReference(
               is_static, index, value, referred_indices));
 
           break;
@@ -213,9 +213,9 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
               QpackAbsoluteIndexToEncoderStreamRelativeIndex(
                   index, header_table_.inserted_entry_count()),
               value);
-          auto entry = header_table_.InsertEntry(name, value);
-          instructions.push_back(EncodeIndexedHeaderField(
-              is_static, entry->InsertionIndex(), referred_indices));
+          uint64_t new_index = header_table_.InsertEntry(name, value);
+          representations.push_back(
+              EncodeIndexedHeaderField(is_static, new_index, referred_indices));
           smallest_blocking_index = std::min(smallest_blocking_index, index);
           header_table_.set_dynamic_table_entry_referenced();
 
@@ -225,7 +225,7 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
         if ((blocking_allowed || index < known_received_count) &&
             index >= draining_index) {
           // If allowed, refer to entry name directly, with literal value.
-          instructions.push_back(EncodeLiteralHeaderFieldWithNameReference(
+          representations.push_back(EncodeLiteralHeaderFieldWithNameReference(
               is_static, index, value, referred_indices));
           smallest_blocking_index = std::min(smallest_blocking_index, index);
           header_table_.set_dynamic_table_entry_referenced();
@@ -238,11 +238,11 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
         // exists.
         // TODO(b/112770235): Use static entry name with literal value if
         // dynamic entry exists but cannot be used.
-        instructions.push_back(EncodeLiteralHeaderField(name, value));
+        representations.push_back(EncodeLiteralHeaderField(name, value));
 
         break;
 
-      case QpackHeaderTable::MatchType::kNoMatch:
+      case QpackEncoderHeaderTable::MatchType::kNoMatch:
         // If allowed, insert entry and refer to it.
         if (!blocking_allowed) {
           blocked_stream_limit_exhausted = true;
@@ -252,12 +252,11 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
           dynamic_table_insertion_blocked = true;
         } else {
           encoder_stream_sender_.SendInsertWithoutNameReference(name, value);
-          auto entry = header_table_.InsertEntry(name, value);
-          instructions.push_back(EncodeIndexedHeaderField(
-              /* is_static = */ false, entry->InsertionIndex(),
-              referred_indices));
-          smallest_blocking_index = std::min<uint64_t>(smallest_blocking_index,
-                                                       entry->InsertionIndex());
+          uint64_t new_index = header_table_.InsertEntry(name, value);
+          representations.push_back(EncodeIndexedHeaderField(
+              /* is_static = */ false, new_index, referred_indices));
+          smallest_blocking_index =
+              std::min<uint64_t>(smallest_blocking_index, new_index);
 
           break;
         }
@@ -266,7 +265,7 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
         // TODO(b/112770235): Consider also adding to dynamic table to improve
         // compression ratio for subsequent header blocks with peers that do not
         // allow any blocked streams.
-        instructions.push_back(EncodeLiteralHeaderField(name, value));
+        representations.push_back(EncodeLiteralHeaderField(name, value));
 
         break;
     }
@@ -274,8 +273,8 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
 
   const QuicByteCount encoder_stream_buffered_byte_count =
       encoder_stream_sender_.BufferedByteCount();
-  DCHECK_GE(encoder_stream_buffered_byte_count,
-            initial_encoder_stream_buffered_byte_count);
+  QUICHE_DCHECK_GE(encoder_stream_buffered_byte_count,
+                   initial_encoder_stream_buffered_byte_count);
   if (encoder_stream_sent_byte_count) {
     *encoder_stream_sent_byte_count =
         encoder_stream_buffered_byte_count -
@@ -321,34 +320,34 @@ QpackEncoder::Instructions QpackEncoder::FirstPassEncode(
         "prevent referencing unacknowledged dynamic table entries.");
   }
 
-  return instructions;
+  return representations;
 }
 
 std::string QpackEncoder::SecondPassEncode(
-    QpackEncoder::Instructions instructions,
+    QpackEncoder::Representations representations,
     uint64_t required_insert_count) const {
   QpackInstructionEncoder instruction_encoder;
   std::string encoded_headers;
 
   // Header block prefix.
   instruction_encoder.Encode(
-      QpackInstructionWithValues::Prefix(QpackEncodeRequiredInsertCount(
+      Representation::Prefix(QpackEncodeRequiredInsertCount(
           required_insert_count, header_table_.max_entries())),
       &encoded_headers);
 
   const uint64_t base = required_insert_count;
 
-  for (auto& instruction : instructions) {
+  for (auto& representation : representations) {
     // Dynamic table references must be transformed from absolute to relative
     // indices.
-    if ((instruction.instruction() == QpackIndexedHeaderFieldInstruction() ||
-         instruction.instruction() ==
+    if ((representation.instruction() == QpackIndexedHeaderFieldInstruction() ||
+         representation.instruction() ==
              QpackLiteralHeaderFieldNameReferenceInstruction()) &&
-        !instruction.s_bit()) {
-      instruction.set_varint(QpackAbsoluteIndexToRequestStreamRelativeIndex(
-          instruction.varint(), base));
+        !representation.s_bit()) {
+      representation.set_varint(QpackAbsoluteIndexToRequestStreamRelativeIndex(
+          representation.varint(), base));
     }
-    instruction_encoder.Encode(instruction, &encoded_headers);
+    instruction_encoder.Encode(representation, &encoded_headers);
   }
 
   return encoded_headers;
@@ -362,8 +361,8 @@ std::string QpackEncoder::EncodeHeaderList(
   // that it can be passed to QpackBlockingManager.
   QpackBlockingManager::IndexSet referred_indices;
 
-  // First pass: encode into |instructions|.
-  Instructions instructions =
+  // First pass: encode into |representations|.
+  Representations representations =
       FirstPassEncode(stream_id, header_list, &referred_indices,
                       encoder_stream_sent_byte_count);
 
@@ -376,7 +375,7 @@ std::string QpackEncoder::EncodeHeaderList(
   }
 
   // Second pass.
-  return SecondPassEncode(std::move(instructions), required_insert_count);
+  return SecondPassEncode(std::move(representations), required_insert_count);
 }
 
 bool QpackEncoder::SetMaximumDynamicTableCapacity(
@@ -391,7 +390,7 @@ void QpackEncoder::SetDynamicTableCapacity(uint64_t dynamic_table_capacity) {
   // instructions are written.
 
   bool success = header_table_.SetDynamicTableCapacity(dynamic_table_capacity);
-  DCHECK(success);
+  QUICHE_DCHECK(success);
 }
 
 bool QpackEncoder::SetMaximumBlockedStreams(uint64_t maximum_blocked_streams) {
@@ -416,13 +415,12 @@ void QpackEncoder::OnInsertCountIncrement(uint64_t increment) {
 
   if (blocking_manager_.known_received_count() >
       header_table_.inserted_entry_count()) {
-    OnErrorDetected(
-        QUIC_QPACK_DECODER_STREAM_IMPOSSIBLE_INSERT_COUNT,
-        quiche::QuicheStrCat("Increment value ", increment,
-                             " raises known received count to ",
-                             blocking_manager_.known_received_count(),
-                             " exceeding inserted entry count ",
-                             header_table_.inserted_entry_count()));
+    OnErrorDetected(QUIC_QPACK_DECODER_STREAM_IMPOSSIBLE_INSERT_COUNT,
+                    absl::StrCat("Increment value ", increment,
+                                 " raises known received count to ",
+                                 blocking_manager_.known_received_count(),
+                                 " exceeding inserted entry count ",
+                                 header_table_.inserted_entry_count()));
   }
 }
 
@@ -430,8 +428,8 @@ void QpackEncoder::OnHeaderAcknowledgement(QuicStreamId stream_id) {
   if (!blocking_manager_.OnHeaderAcknowledgement(stream_id)) {
     OnErrorDetected(
         QUIC_QPACK_DECODER_STREAM_INCORRECT_ACKNOWLEDGEMENT,
-        quiche::QuicheStrCat("Header Acknowledgement received for stream ",
-                             stream_id, " with no outstanding header blocks."));
+        absl::StrCat("Header Acknowledgement received for stream ", stream_id,
+                     " with no outstanding header blocks."));
   }
 }
 
@@ -441,14 +439,8 @@ void QpackEncoder::OnStreamCancellation(QuicStreamId stream_id) {
 
 void QpackEncoder::OnErrorDetected(QuicErrorCode error_code,
                                    absl::string_view error_message) {
-  if (GetQuicReloadableFlag(quic_granular_qpack_error_codes)) {
-    QUIC_CODE_COUNT_N(quic_granular_qpack_error_codes, 1, 2);
-    decoder_stream_error_delegate_->OnDecoderStreamError(error_code,
-                                                         error_message);
-  } else {
-    decoder_stream_error_delegate_->OnDecoderStreamError(
-        QUIC_QPACK_DECODER_STREAM_ERROR, error_message);
-  }
+  decoder_stream_error_delegate_->OnDecoderStreamError(error_code,
+                                                       error_message);
 }
 
 }  // namespace quic

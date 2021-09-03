@@ -98,7 +98,8 @@ void ExtensionEventObserver::OnProfileAdded(Profile* profile) {
   // Add the observer when |profile| is added and ProcessManager is available as
   // a keyed service. It will be removed when the ProcessManager instance is
   // shut down (OnProcessManagerShutdown).
-  process_manager_observers_.Add(extensions::ProcessManager::Get(profile));
+  process_manager_observers_.AddObservation(
+      extensions::ProcessManager::Get(profile));
 }
 
 void ExtensionEventObserver::OnBackgroundHostCreated(
@@ -106,7 +107,7 @@ void ExtensionEventObserver::OnBackgroundHostCreated(
   // We only care about ExtensionHosts for extensions that use GCM and have a
   // lazy background page.
   if (!host->extension()->permissions_data()->HasAPIPermission(
-          extensions::APIPermission::kGcm) ||
+          extensions::mojom::APIPermissionID::kGcm) ||
       !extensions::BackgroundInfo::HasLazyBackgroundPage(host->extension()))
     return;
 
@@ -119,7 +120,7 @@ void ExtensionEventObserver::OnBackgroundHostCreated(
 
 void ExtensionEventObserver::OnProcessManagerShutdown(
     extensions::ProcessManager* manager) {
-  process_manager_observers_.Remove(manager);
+  process_manager_observers_.RemoveObservation(manager);
 }
 
 void ExtensionEventObserver::OnExtensionHostDestroyed(
@@ -199,7 +200,7 @@ void ExtensionEventObserver::DarkSuspendImminent() {
     OnSuspendImminent(true);
 }
 
-void ExtensionEventObserver::SuspendDone(const base::TimeDelta& duration) {
+void ExtensionEventObserver::SuspendDone(base::TimeDelta duration) {
   block_suspend_token_ = {};
   suspend_readiness_callback_.Cancel();
 }
@@ -214,8 +215,8 @@ void ExtensionEventObserver::OnSuspendImminent(bool dark_suspend) {
                                           "ExtensionEventObserver");
 
   suspend_readiness_callback_.Reset(
-      base::Bind(&ExtensionEventObserver::MaybeReportSuspendReadiness,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&ExtensionEventObserver::MaybeReportSuspendReadiness,
+                     weak_factory_.GetWeakPtr()));
 
   // Unfortunately, there is a race between the arrival of the
   // DarkSuspendImminent signal and OnBackgroundEventDispatched.  As a result,

@@ -10,6 +10,7 @@
 #include "base/timer/timer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/event.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
 #include "ui/ozone/platform/wayland/test/test_keyboard.h"
@@ -26,6 +27,7 @@
 
 using ::testing::_;
 using ::testing::SaveArg;
+using ::testing::Values;
 
 namespace ui {
 
@@ -40,6 +42,9 @@ class WaylandKeyboardTest : public WaylandTest {
                               WL_SEAT_CAPABILITY_KEYBOARD);
 
     Sync();
+
+    EXPECT_EQ(1u,
+              DeviceDataManager::GetInstance()->GetKeyboardDevices().size());
 
     keyboard_ = server_.seat()->keyboard();
     ASSERT_TRUE(keyboard_);
@@ -482,9 +487,11 @@ TEST_P(WaylandKeyboardTest, NoEventAutoRepeatBeforeTimeout) {
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionStableTest,
                          WaylandKeyboardTest,
-                         ::testing::Values(kXdgShellStable));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kStable}));
 INSTANTIATE_TEST_SUITE_P(XdgVersionV6Test,
                          WaylandKeyboardTest,
-                         ::testing::Values(kXdgShellV6));
+                         Values(wl::ServerConfig{
+                             .shell_version = wl::ShellVersion::kV6}));
 
 }  // namespace ui

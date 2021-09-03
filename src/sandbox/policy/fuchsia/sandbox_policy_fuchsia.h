@@ -14,13 +14,9 @@
 #include "sandbox/policy/sandbox_type.h"
 
 namespace base {
+class FilteredServiceDirectory;
 struct LaunchOptions;
 class SequencedTaskRunner;
-
-namespace fuchsia {
-class FilteredServiceDirectory;
-}  // namespace fuchsia
-
 }  // namespace base
 
 namespace sandbox {
@@ -32,11 +28,8 @@ class SANDBOX_POLICY_EXPORT SandboxPolicyFuchsia {
   explicit SandboxPolicyFuchsia(SandboxType type);
   ~SandboxPolicyFuchsia();
 
-  // Sets the service directory to pass to the child process when launching it.
-  // This is only supported for SandboxType::kWebContext processes.  If this is
-  // not called for a WEB_CONTEXT process then it will receive no services.
-  void SetServiceDirectory(
-      fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory_client);
+  SandboxPolicyFuchsia(const SandboxPolicyFuchsia&) = delete;
+  SandboxPolicyFuchsia& operator=(const SandboxPolicyFuchsia&) = delete;
 
   // Modifies the process launch |options| to achieve  the level of
   // isolation appropriate for current the sandbox type. The caller may then add
@@ -48,14 +41,12 @@ class SANDBOX_POLICY_EXPORT SandboxPolicyFuchsia {
   SandboxType type_;
 
   // Services directory used for the /svc namespace of the child process.
-  std::unique_ptr<base::fuchsia::FilteredServiceDirectory> service_directory_;
+  std::unique_ptr<base::FilteredServiceDirectory> service_directory_;
   fidl::InterfaceHandle<::fuchsia::io::Directory> service_directory_client_;
   scoped_refptr<base::SequencedTaskRunner> service_directory_task_runner_;
 
   // Job in which the child process is launched.
   zx::job job_;
-
-  DISALLOW_COPY_AND_ASSIGN(SandboxPolicyFuchsia);
 };
 
 }  // namespace policy

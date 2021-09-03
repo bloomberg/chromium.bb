@@ -8,6 +8,7 @@
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
@@ -72,3 +73,6 @@ void RingProgressBar::OnPaint(gfx::Canvas* canvas) {
 void RingProgressBar::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
 }
+
+BEGIN_METADATA(RingProgressBar, views::View)
+END_METADATA

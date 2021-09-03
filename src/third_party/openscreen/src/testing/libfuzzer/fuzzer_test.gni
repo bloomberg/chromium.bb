@@ -36,14 +36,6 @@ template("openscreen_fuzzer_test") {
     assert(defined(invoker.sources), "Need sources in $target_name.")
 
     test_deps = [ "//testing/libfuzzer:fuzzing_engine_main" ]
-    test_data_deps = []
-
-    if (defined(invoker.deps)) {
-      test_deps += invoker.deps
-    }
-    if (defined(invoker.data_deps)) {
-      test_data_deps += invoker.data_deps
-    }
 
     if (defined(invoker.seed_corpus) || defined(invoker.seed_corpuses)) {
       assert(!(defined(invoker.seed_corpus) && defined(invoker.seed_corpuses)),
@@ -145,18 +137,8 @@ template("openscreen_fuzzer_test") {
 
     executable(target_name) {
       testonly = true
-      forward_variables_from(invoker,
-                             [
-                               "cflags",
-                               "cflags_cc",
-                               "check_includes",
-                               "defines",
-                               "include_dirs",
-                               "sources",
-                               "libs",
-                             ])
-      deps = test_deps
-      data_deps = test_data_deps
+      forward_variables_from(invoker, "*")
+      deps += test_deps
 
       if (defined(invoker.additional_configs)) {
         configs += invoker.additional_configs

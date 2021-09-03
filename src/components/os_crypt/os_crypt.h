@@ -12,12 +12,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 class KeyStorageLinux;
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if defined(OS_WIN) || defined(OS_MAC)
 class PrefRegistrySimple;
@@ -34,24 +36,30 @@ struct Config;
 // true for Linux, if a password management tool is available.
 class OSCrypt {
  public:
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   // Set the configuration of OSCrypt.
   static COMPONENT_EXPORT(OS_CRYPT) void SetConfig(
       std::unique_ptr<os_crypt::Config> config);
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#if defined(OS_APPLE) || (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_APPLE) || defined(OS_WIN) || \
+    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   // On Linux returns true iff the real secret key (not hardcoded one) is
   // available. On MacOS returns true if Keychain is available (for mock
   // Keychain it returns true if not using locked Keychain, false if using
-  // locked mock Keychain).
+  // locked mock Keychain). On Windows returns true if non mock encryption
+  // key is available.
   static COMPONENT_EXPORT(OS_CRYPT) bool IsEncryptionAvailable();
 #endif
 
   // Encrypt a string16. The output (second argument) is really an array of
   // bytes, but we're passing it back as a std::string.
   static COMPONENT_EXPORT(OS_CRYPT) bool EncryptString16(
-      const base::string16& plaintext,
+      const std::u16string& plaintext,
       std::string* ciphertext);
 
   // Decrypt an array of bytes obtained with EncryptString16 back into a
@@ -59,7 +67,7 @@ class OSCrypt {
   // need to first get your (binary) data into a string.
   static COMPONENT_EXPORT(OS_CRYPT) bool DecryptString16(
       const std::string& ciphertext,
-      base::string16* plaintext);
+      std::u16string* plaintext);
 
   // Encrypt a string.
   static COMPONENT_EXPORT(OS_CRYPT) bool EncryptString(
@@ -131,7 +139,9 @@ class OSCrypt {
   DISALLOW_IMPLICIT_CONSTRUCTORS(OSCrypt);
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 // For unit testing purposes, inject methods to be used.
 // |get_key_storage_mock| provides the desired |KeyStorage| implementation.
 // If the provider returns |nullptr|, a hardcoded password will be used.
@@ -146,6 +156,6 @@ void UseMockKeyStorageForTesting(
 // Clears any caching and most lazy initialisations performed by the production
 // code. Should be used after any test which required a password.
 COMPONENT_EXPORT(OS_CRYPT) void ClearCacheForTesting();
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#endif  // defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #endif  // COMPONENTS_OS_CRYPT_OS_CRYPT_H_

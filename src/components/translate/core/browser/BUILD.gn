@@ -16,6 +16,7 @@ static_library("browser") {
     "translate_client.h",
     "translate_download_manager.cc",
     "translate_download_manager.h",
+    "translate_driver.cc",
     "translate_driver.h",
     "translate_error_details.h",
     "translate_event_details.cc",
@@ -51,12 +52,12 @@ static_library("browser") {
     "//base",
     "//base:i18n",
     "//base/util/values:values_util",
+    "//build:chromeos_buildflags",
     "//components/assist_ranker",
     "//components/assist_ranker/proto",
     "//components/keyed_service/core",
     "//components/language/core/browser",
     "//components/language/core/common",
-    "//components/language_usage_metrics",
     "//components/metrics",
     "//components/pref_registry",
     "//components/prefs",
@@ -113,10 +114,12 @@ source_set("unit_tests") {
     ":browser",
     ":test_support",
     "//base",
+    "//build:chromeos_buildflags",
     "//components/assist_ranker",
     "//components/assist_ranker/proto",
     "//components/infobars/core",
     "//components/language/core/browser",
+    "//components/language/core/browser:test_support",
     "//components/language/core/common:common",
     "//components/pref_registry:pref_registry",
     "//components/prefs",
@@ -133,6 +136,10 @@ source_set("unit_tests") {
     "//services/network/public/cpp:cpp",
     "//ui/base",
   ]
+
+  if (is_ios || is_android) {
+    sources += [ "translate_infobar_delegate_unittest.cc" ]
+  }
 }
 
 source_set("test_support") {
@@ -149,6 +156,7 @@ source_set("test_support") {
   ]
   deps = [
     "//base",
+    "//build:chromeos_buildflags",
     "//components/infobars/core",
     "//components/language/core/browser",
     "//components/sync_preferences",

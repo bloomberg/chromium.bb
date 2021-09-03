@@ -11,7 +11,6 @@
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind.h"
@@ -31,6 +30,7 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_device_id.h"
@@ -42,6 +42,7 @@
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system.h"
 #include "media/base/media_switches.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -73,14 +74,14 @@ void GetAudioDeviceDescriptions(bool for_input,
   std::unique_ptr<media::AudioSystem> audio_system =
       content::CreateAudioSystemForAudioService();
   audio_system->GetDeviceDescriptions(
-      for_input,
-      base::BindOnce(
-          [](base::Closure finished_callback, AudioDeviceDescriptions* result,
-             AudioDeviceDescriptions received) {
-            *result = std::move(received);
-            finished_callback.Run();
-          },
-          run_loop.QuitClosure(), device_descriptions));
+      for_input, base::BindOnce(
+                     [](base::OnceClosure finished_callback,
+                        AudioDeviceDescriptions* result,
+                        AudioDeviceDescriptions received) {
+                       *result = std::move(received);
+                       std::move(finished_callback).Run();
+                     },
+                     run_loop.QuitClosure(), device_descriptions));
   run_loop.Run();
 }
 
@@ -237,6 +238,9 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, TriggerEvent) {
 
 class HangoutServicesBrowserTest : public AudioWaitingExtensionTest {
  public:
+  HangoutServicesBrowserTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+
   void SetUp() override {
     // Make sure the Hangout Services component extension gets loaded.
     ComponentLoader::EnableBackgroundExtensionsForTesting();
@@ -248,7 +252,20 @@ class HangoutServicesBrowserTest : public AudioWaitingExtensionTest {
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
         switches::autoplay::kNoUserGestureRequiredPolicy);
+    // This is necessary to use https with arbitrary hostnames.
+    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
+
+  void SetUpOnMainThread() override {
+    https_server().AddDefaultHandlers(GetChromeTestDataDir());
+    host_resolver()->AddRule("*", "127.0.0.1");
+    AudioWaitingExtensionTest::SetUpOnMainThread();
+  }
+
+  net::EmbeddedTestServer& https_server() { return https_server_; }
+
+ private:
+  net::EmbeddedTestServer https_server_;
 };
 
 #if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
@@ -257,7 +274,7 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
   constexpr char kLogUploadUrlPath[] = "/upload_webrtc_log";
 
   // Set up handling of the log upload request.
-  embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
+  https_server().RegisterRequestHandler(base::BindLambdaForTesting(
       [&](const net::test_server::HttpRequest& request)
           -> std::unique_ptr<net::test_server::HttpResponse> {
         if (request.relative_url == kLogUploadUrlPath) {
@@ -270,34 +287,29 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
 
         return nullptr;
       }));
+  ASSERT_TRUE(https_server().Start());
 
   // This runs the end-to-end JavaScript test for the Hangout Services
   // component extension, which uses the webrtcAudioPrivate API among
   // others.
-  ASSERT_TRUE(StartEmbeddedTestServer());
-  GURL url(embedded_test_server()->GetURL(
-               "/extensions/hangout_services_test.html"));
-  // The "externally connectable" extension permission doesn't seem to
-  // like when we use 127.0.0.1 as the host, but using localhost works.
-  std::string url_spec = url.spec();
-  base::ReplaceFirstSubstringAfterOffset(
-      &url_spec, 0, "127.0.0.1", "localhost");
-  GURL localhost_url(url_spec);
-  ui_test_utils::NavigateToURL(browser(), localhost_url);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server().GetURL("any-subdomain.google.com",
+                            "/extensions/hangout_services_test.html"));
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitUntilAudioIsPlaying(tab);
 
   // Use a test server URL for uploading.
   g_browser_process->webrtc_log_uploader()->SetUploadUrlForTesting(
-      embedded_test_server()->GetURL(kLogUploadUrlPath));
+      https_server().GetURL("any-subdomain.google.com", kLogUploadUrlPath));
 
   ASSERT_TRUE(content::ExecuteScript(tab, "browsertestRunAllTests();"));
 
-  content::TitleWatcher title_watcher(tab, base::ASCIIToUTF16("success"));
-  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("failure"));
-  base::string16 result = title_watcher.WaitAndGetTitle();
-  EXPECT_EQ(base::ASCIIToUTF16("success"), result);
+  content::TitleWatcher title_watcher(tab, u"success");
+  title_watcher.AlsoWaitForTitle(u"failure");
+  std::u16string result = title_watcher.WaitAndGetTitle();
+  EXPECT_EQ(u"success", result);
 }
 #endif  // BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
 

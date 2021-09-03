@@ -122,9 +122,9 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
   // Writes an empty serialized ModuleList proto to |GetModuleListPath()|.
   void CreateModuleList() {
     chrome::conflicts::ModuleList module_list;
-    // Include an empty blacklist and whitelist.
-    module_list.mutable_blacklist();
-    module_list.mutable_whitelist();
+    // Include an empty blocklist and allowlist.
+    module_list.mutable_blocklist();
+    module_list.mutable_allowlist();
 
     std::string contents;
     ASSERT_TRUE(module_list.SerializeToString(&contents));
@@ -144,7 +144,7 @@ class IncompatibleApplicationsBrowserTest : public InProcessBrowserTest {
         L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\%ls";
 
     // Note: Using the application name for the product id.
-    const base::string16 registry_key_path =
+    const std::wstring registry_key_path =
         base::StringPrintf(kRegistryKeyPathFormat, kApplicationName);
     base::win::RegKey registry_key(HKEY_CURRENT_USER, registry_key_path.c_str(),
                                    KEY_WRITE);
@@ -240,6 +240,6 @@ IN_PROC_BROWSER_TEST_F(IncompatibleApplicationsBrowserTest,
   ASSERT_EQ(incompatible_applications.size(), 1u);
   const auto& incompatible_application = incompatible_applications[0];
   EXPECT_EQ(incompatible_application.info.name, kApplicationName);
-  EXPECT_EQ(incompatible_application.blacklist_action->message_type(),
-            chrome::conflicts::BlacklistMessageType::UNINSTALL);
+  EXPECT_EQ(incompatible_application.blocklist_action->message_type(),
+            chrome::conflicts::BlocklistMessageType::UNINSTALL);
 }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -107,7 +109,8 @@ const BookmarkNode* GetNodeByID(const BookmarkNode* parent, int64_t id) {
 }
 
 std::unique_ptr<BookmarkNode> CreatePartnerBookmarksRoot(int id) {
-  return std::make_unique<BookmarkNode>(id, base::GenerateGUID(), GURL());
+  return std::make_unique<BookmarkNode>(id, base::GUID::GenerateRandomV4(),
+                                        GURL());
 }
 
 }  // namespace
@@ -155,8 +158,8 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
     jboolean fetch_uncached_favicons_from_server,
     jint desired_favicon_size_px,
     const JavaParamRef<jobject>& j_callback) {
-  base::string16 url;
-  base::string16 title;
+  std::u16string url;
+  std::u16string title;
   if (jurl) {
     DCHECK(!is_folder);
     url = ConvertJavaStringToUTF16(env, jurl);
@@ -167,7 +170,7 @@ jlong PartnerBookmarksReader::AddPartnerBookmark(
   jlong node_id = 0;
   if (wip_partner_bookmarks_root_.get()) {
     std::unique_ptr<BookmarkNode> node = std::make_unique<BookmarkNode>(
-        wip_next_available_id_++, base::GenerateGUID(), GURL(url));
+        wip_next_available_id_++, base::GUID::GenerateRandomV4(), GURL(url));
     node->SetTitle(title);
 
     // Handle favicon and touchicon
@@ -266,9 +269,8 @@ void PartnerBookmarksReader::GetFaviconFromCacheOrServer(
   GetLargeIconService()->GetLargeIconRawBitmapOrFallbackStyleForPageUrl(
       page_url, kPartnerBookmarksMinimumFaviconSizePx, desired_favicon_size_px,
       base::BindOnce(&PartnerBookmarksReader::OnGetFaviconFromCacheFinished,
-                     base::Unretained(this), page_url,
-                     base::Passed(std::move(callback)), fallback_to_server,
-                     from_server, desired_favicon_size_px),
+                     base::Unretained(this), page_url, std::move(callback),
+                     fallback_to_server, from_server, desired_favicon_size_px),
       &favicon_task_tracker_);
 }
 
@@ -325,7 +327,7 @@ void PartnerBookmarksReader::OnGetFaviconFromCacheFinished(
           base::BindOnce(
               &PartnerBookmarksReader::OnGetFaviconFromServerFinished,
               base::Unretained(this), page_url, desired_favicon_size_px,
-              base::Passed(std::move(callback))));
+              std::move(callback)));
 }
 
 void PartnerBookmarksReader::OnGetFaviconFromServerFinished(

@@ -32,6 +32,7 @@
 #include "cast/streaming/sender_report_parser.h"
 #include "cast/streaming/session_config.h"
 #include "cast/streaming/ssrc.h"
+#include "cast/streaming/testing/simple_socket_subscriber.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/test/fake_clock.h"
@@ -100,6 +101,11 @@ constexpr milliseconds kCaptureDelay{11};
   } else {                                                   \
     EXPECT_GE((duration_a), (duration_b) - (epsilon));       \
   }
+
+void OverrideRtpTimestamp(int frame_count, EncodedFrame* frame, int fps) {
+  const int ticks = frame_count * kRtpTimebase / fps;
+  frame->rtp_timestamp = RtpTimeTicks() + RtpTimeDelta::FromTicks(ticks);
+}
 
 // Simulates UDP/IPv6 traffic in one direction (from Sender→Receiver, or
 // Receiver→Sender), with a settable amount of delay.
@@ -339,13 +345,13 @@ class SenderTest : public testing::Test {
                  /* .channels = */ 2,
                  /* .target_playout_delay = */ kTargetPlayoutDelay,
                  /* .aes_secret_key = */ kAesKey,
-                 /* .aes_iv_mask = */ kCastIvMask},
+                 /* .aes_iv_mask = */ kCastIvMask,
+                 /* .is_pli_enabled = */ true},
                 kRtpPayloadType),
         receiver_to_sender_pipe_(&task_runner_, &sender_packet_router_),
         receiver_(&receiver_to_sender_pipe_),
         sender_to_receiver_pipe_(&task_runner_, &receiver_) {
-    sender_environment_.set_socket_error_handler(
-        [](Error error) { ASSERT_TRUE(error.ok()) << error; });
+    sender_environment_.SetSocketSubscriber(&socket_subscriber_);
     sender_environment_.set_remote_endpoint(
         receiver_to_sender_pipe_.local_endpoint());
     ON_CALL(sender_environment_, SendPacket(_))
@@ -436,6 +442,7 @@ class SenderTest : public testing::Test {
   SimulatedNetworkPipe receiver_to_sender_pipe_;
   NiceMock<MockReceiver> receiver_;
   SimulatedNetworkPipe sender_to_receiver_pipe_;
+  SimpleSubscriber socket_subscriber_;
 };
 
 // Tests that the Sender can send EncodedFrames over an ideal network (i.e., low
@@ -615,18 +622,13 @@ TEST_F(SenderTest, RejectsEnqueuingBeforeProtocolDesignLimit) {
   constexpr int kFramesPerSecond = 1000;
   constexpr milliseconds kFrameDuration{1};
 
-  const auto OverrideRtpTimestamp = [](int frame_count, EncodedFrame* frame) {
-    const int ticks = frame_count * kRtpTimebase / kFramesPerSecond;
-    frame->rtp_timestamp = RtpTimeTicks() + RtpTimeDelta::FromTicks(ticks);
-  };
-
   // Send the absolute design-limit maximum number of frames.
   int frame_count = 0;
   for (; frame_count < kMaxUnackedFrames; ++frame_count) {
     EncodedFrameWithBuffer frame;
     PopulateFrameWithDefaults(sender()->GetNextFrameId(), FakeClock::now(), 0,
                               13 /* bytes */, &frame);
-    OverrideRtpTimestamp(frame_count, &frame);
+    OverrideRtpTimestamp(frame_count, &frame, kFramesPerSecond);
     ASSERT_EQ(Sender::OK, sender()->EnqueueFrame(frame));
     SimulateExecution(kFrameDuration);
   }
@@ -635,7 +637,7 @@ TEST_F(SenderTest, RejectsEnqueuingBeforeProtocolDesignLimit) {
   EncodedFrameWithBuffer one_frame_too_much;
   PopulateFrameWithDefaults(sender()->GetNextFrameId(), FakeClock::now(), 0,
                             13 /* bytes */, &one_frame_too_much);
-  OverrideRtpTimestamp(frame_count++, &one_frame_too_much);
+  OverrideRtpTimestamp(frame_count++, &one_frame_too_much, kFramesPerSecond);
   EXPECT_EQ(Sender::REACHED_ID_SPAN_LIMIT,
             sender()->EnqueueFrame(one_frame_too_much));
   SimulateExecution(kFrameDuration);
@@ -652,10 +654,29 @@ TEST_F(SenderTest, RejectsEnqueuingBeforeProtocolDesignLimit) {
   EncodedFrameWithBuffer another_frame_too_much;
   PopulateFrameWithDefaults(sender()->GetNextFrameId(), FakeClock::now(), 0,
                             13 /* bytes */, &another_frame_too_much);
-  OverrideRtpTimestamp(frame_count++, &another_frame_too_much);
+  OverrideRtpTimestamp(frame_count++, &another_frame_too_much,
+                       kFramesPerSecond);
   EXPECT_EQ(Sender::REACHED_ID_SPAN_LIMIT,
             sender()->EnqueueFrame(another_frame_too_much));
   SimulateExecution(kFrameDuration);
+}
+
+TEST_F(SenderTest, CanCancelAllInFlightFrames) {
+  NiceMock<MockObserver> observer;
+  sender()->SetObserver(&observer);
+
+  // Send the absolute design-limit maximum number of frames.
+  for (int i = 0; i < kMaxUnackedFrames; ++i) {
+    EncodedFrameWithBuffer frame;
+    PopulateFrameWithDefaults(sender()->GetNextFrameId(), FakeClock::now(), 0,
+                              13 /* bytes */, &frame);
+    OverrideRtpTimestamp(i, &frame, 1000 /* fps */);
+    ASSERT_EQ(Sender::OK, sender()->EnqueueFrame(frame));
+    SimulateExecution(kFrameDuration);
+  }
+
+  EXPECT_CALL(observer, OnFrameCanceled(_)).Times(kMaxUnackedFrames);
+  sender()->CancelInFlightData();
 }
 
 // Tests that the Sender rejects frames if too-long a media duration is
@@ -666,11 +687,6 @@ TEST_F(SenderTest, RejectsEnqueuingIfTooLongMediaDurationIsInFlight) {
   constexpr int kFramesPerSecond = 20;
   constexpr milliseconds kFrameDuration{50};
 
-  const auto OverrideRtpTimestamp = [](int frame_count, EncodedFrame* frame) {
-    const int ticks = frame_count * kRtpTimebase / kFramesPerSecond;
-    frame->rtp_timestamp = RtpTimeTicks() + RtpTimeDelta::FromTicks(ticks);
-  };
-
   // Enqueue frames until one is rejected because the in-flight duration would
   // be too high.
   EncodedFrameWithBuffer frame;
@@ -678,7 +694,7 @@ TEST_F(SenderTest, RejectsEnqueuingIfTooLongMediaDurationIsInFlight) {
   for (; frame_count < kMaxUnackedFrames; ++frame_count) {
     PopulateFrameWithDefaults(sender()->GetNextFrameId(), FakeClock::now(), 0,
                               13 /* bytes */, &frame);
-    OverrideRtpTimestamp(frame_count, &frame);
+    OverrideRtpTimestamp(frame_count, &frame, kFramesPerSecond);
     const auto result = sender()->EnqueueFrame(frame);
     SimulateExecution(kFrameDuration);
     if (result == Sender::MAX_DURATION_IN_FLIGHT) {
@@ -699,7 +715,7 @@ TEST_F(SenderTest, RejectsEnqueuingIfTooLongMediaDurationIsInFlight) {
   EncodedFrameWithBuffer one_frame_too_much;
   PopulateFrameWithDefaults(sender()->GetNextFrameId(), FakeClock::now(), 0,
                             13 /* bytes */, &one_frame_too_much);
-  OverrideRtpTimestamp(++frame_count, &one_frame_too_much);
+  OverrideRtpTimestamp(++frame_count, &one_frame_too_much, kFramesPerSecond);
   EXPECT_EQ(Sender::MAX_DURATION_IN_FLIGHT,
             sender()->EnqueueFrame(one_frame_too_much));
   SimulateExecution(kFrameDuration);

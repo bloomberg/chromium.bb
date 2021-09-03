@@ -8,18 +8,13 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/battery_status.mojom-forward.h"
-
-#if defined(OS_ANDROID)
-#include "base/android/application_status_listener.h"
-#include "components/power_metrics/android_battery_metrics.h"
-#endif  // defined(OS_ANDROID)
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // Records metrics around battery usage on all platforms. Connects to
 // Battery monitor via mojo.
@@ -50,15 +45,10 @@ class BatteryMetrics {
   // The battery level at the last time the battery level was recorded. This
   // value is updated by the amount of battery drop reported, so may be
   // different from the last update by .01.
-  base::Optional<float> last_recorded_battery_level_;
+  absl::optional<float> last_recorded_battery_level_;
 
   // The battery monitor backend for the device Chrome is running on.
   mojo::Remote<device::mojom::BatteryMonitor> battery_monitor_;
-
-#if defined(OS_ANDROID)
-  power_metrics::AndroidBatteryMetrics android_metrics_;
-  std::unique_ptr<base::android::ApplicationStatusListener> app_state_listener_;
-#endif  // defined(OS_ANDROID)
 
   SEQUENCE_CHECKER(sequence_checker_);
 

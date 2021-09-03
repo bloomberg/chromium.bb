@@ -32,7 +32,7 @@ typedef ValidatingAuthenticator::Result ValidationResult;
 
 constexpr char kRemoteTestJid[] = "ficticious_jid_for_testing";
 
-// testing::InvokeArgument<N> does not work with base::Callback, fortunately
+// testing::InvokeArgument<N> does not work with base::OnceCallback, fortunately
 // gmock makes it simple to create action templates that do for the various
 // possible numbers of arguments.
 ACTION_TEMPLATE(InvokeCallbackArgument,
@@ -96,11 +96,11 @@ void ValidatingAuthenticatorTest::SetUp() {
   mock_authenticator_ = new testing::NiceMock<MockAuthenticator>();
   std::unique_ptr<Authenticator> authenticator(mock_authenticator_);
 
-  validating_authenticator_.reset(new ValidatingAuthenticator(
+  validating_authenticator_ = std::make_unique<ValidatingAuthenticator>(
       kRemoteTestJid,
       base::BindRepeating(&ValidatingAuthenticatorTest::ValidateCallback,
                           base::Unretained(this)),
-      std::move(authenticator)));
+      std::move(authenticator));
 }
 
 void ValidatingAuthenticatorTest::SendMessageAndWaitForCallback() {

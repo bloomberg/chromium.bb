@@ -86,10 +86,11 @@ void ManifestManagerHost::OnRequestManifestResponse(
 }
 
 void ManifestManagerHost::ManifestUrlChanged(
-    const base::Optional<GURL>& manifest_url) {
+    const absl::optional<GURL>& manifest_url) {
   if (!manifest_manager_frame_->IsCurrent())
     return;
 
+  manifest_manager_frame_->UpdateManifestURL(manifest_url);
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(manifest_manager_frame_);
   static_cast<WebContentsImpl*>(web_contents)

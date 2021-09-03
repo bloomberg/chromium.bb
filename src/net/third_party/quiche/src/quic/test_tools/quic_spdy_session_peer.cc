@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/quic_spdy_session_peer.h"
+#include "quic/test_tools/quic_spdy_session_peer.h"
 
-#include "net/third_party/quiche/src/quic/core/http/quic_spdy_session.h"
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_receive_stream.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
+#include "quic/core/http/quic_spdy_session.h"
+#include "quic/core/qpack/qpack_receive_stream.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/test_tools/quic_session_peer.h"
+#include "common/platform/api/quiche_logging.h"
 
 namespace quic {
 namespace test {
@@ -14,14 +17,14 @@ namespace test {
 // static
 QuicHeadersStream* QuicSpdySessionPeer::GetHeadersStream(
     QuicSpdySession* session) {
-  DCHECK(!VersionUsesHttp3(session->transport_version()));
+  QUICHE_DCHECK(!VersionUsesHttp3(session->transport_version()));
   return session->headers_stream();
 }
 
 void QuicSpdySessionPeer::SetHeadersStream(QuicSpdySession* session,
                                            QuicHeadersStream* headers_stream) {
-  DCHECK(!VersionUsesHttp3(session->transport_version()));
-  for (auto& it : session->stream_map()) {
+  QUICHE_DCHECK(!VersionUsesHttp3(session->transport_version()));
+  for (auto& it : QuicSessionPeer::stream_map(session)) {
     if (it.first ==
         QuicUtils::GetHeadersStreamId(session->transport_version())) {
       it.second.reset(headers_stream);
@@ -34,18 +37,6 @@ void QuicSpdySessionPeer::SetHeadersStream(QuicSpdySession* session,
 // static
 spdy::SpdyFramer* QuicSpdySessionPeer::GetSpdyFramer(QuicSpdySession* session) {
   return &session->spdy_framer_;
-}
-
-void QuicSpdySessionPeer::SetHpackEncoderDebugVisitor(
-    QuicSpdySession* session,
-    std::unique_ptr<QuicHpackDebugVisitor> visitor) {
-  session->SetHpackEncoderDebugVisitor(std::move(visitor));
-}
-
-void QuicSpdySessionPeer::SetHpackDecoderDebugVisitor(
-    QuicSpdySession* session,
-    std::unique_ptr<QuicHpackDebugVisitor> visitor) {
-  session->SetHpackDecoderDebugVisitor(std::move(visitor));
 }
 
 void QuicSpdySessionPeer::SetMaxInboundHeaderListSize(
@@ -106,6 +97,20 @@ QpackReceiveStream* QuicSpdySessionPeer::GetQpackDecoderReceiveStream(
 QpackReceiveStream* QuicSpdySessionPeer::GetQpackEncoderReceiveStream(
     QuicSpdySession* session) {
   return session->qpack_encoder_receive_stream_;
+}
+
+// static
+void QuicSpdySessionPeer::SetH3DatagramSupported(QuicSpdySession* session,
+                                                 bool h3_datagram_supported) {
+  session->h3_datagram_supported_ = h3_datagram_supported;
+}
+
+// static
+void QuicSpdySessionPeer::EnableWebTransport(QuicSpdySession& session) {
+  SetQuicReloadableFlag(quic_h3_datagram, true);
+  QUICHE_DCHECK(session.WillNegotiateWebTransport());
+  session.h3_datagram_supported_ = true;
+  session.peer_supports_webtransport_ = true;
 }
 
 }  // namespace test

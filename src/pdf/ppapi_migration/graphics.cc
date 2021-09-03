@@ -6,10 +6,14 @@
 
 #include <stdint.h>
 
+#include <cmath>
 #include <utility>
 
 #include "base/callback.h"
 #include "base/check_op.h"
+#include "base/location.h"
+#include "base/memory/ptr_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "pdf/ppapi_migration/callback.h"
 #include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/ppapi_migration/image.h"
@@ -18,8 +22,12 @@
 #include "ppapi/cpp/instance_handle.h"
 #include "ppapi/cpp/point.h"
 #include "ppapi/cpp/rect.h"
+#include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/blit.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/skia_util.h"
 
 namespace chrome_pdf {
 
@@ -57,7 +65,8 @@ void PepperGraphics::PaintImage(const Image& image, const gfx::Rect& src_rect) {
 
 void PepperGraphics::Scroll(const gfx::Rect& clip,
                             const gfx::Vector2d& amount) {
-  pepper_graphics_.Scroll(PPRectFromRect(clip), PPPointFromVector(amount));
+  pepper_graphics_.Scroll(PPRectFromRect(clip),
+                          pp::Point(amount.x(), amount.y()));
 }
 
 void PepperGraphics::SetScale(float scale) {
@@ -69,8 +78,70 @@ void PepperGraphics::SetLayerTransform(float scale,
                                        const gfx::Point& origin,
                                        const gfx::Vector2d& translate) {
   bool result = pepper_graphics_.SetLayerTransform(
-      scale, PPPointFromPoint(origin), PPPointFromVector(translate));
+      scale, pp::Point(origin.x(), origin.y()),
+      pp::Point(translate.x(), translate.y()));
   DCHECK(result);
+}
+
+// static
+std::unique_ptr<SkiaGraphics> SkiaGraphics::Create(Client* client,
+                                                   const gfx::Size& size) {
+  auto graphics = base::WrapUnique(new SkiaGraphics(client, size));
+  if (!graphics->skia_graphics_)
+    return nullptr;
+
+  return graphics;
+}
+
+SkiaGraphics::SkiaGraphics(Client* client, const gfx::Size& size)
+    : Graphics(size),
+      client_(client),
+      skia_graphics_(
+          SkSurface::MakeRasterN32Premul(size.width(), size.height())) {}
+
+SkiaGraphics::~SkiaGraphics() = default;
+
+// TODO(https://crbug.com/1099020): After completely switching to non-Pepper
+// plugin, make Flush() return false since there is no pending action for
+// syncing the client's snapshot.
+bool SkiaGraphics::Flush(ResultCallback callback) {
+  sk_sp<SkImage> snapshot = skia_graphics_->makeImageSnapshot();
+  skia_graphics_->getCanvas()->drawImage(
+      snapshot.get(), /*x=*/0, /*y=*/0, SkSamplingOptions(), /*paint=*/nullptr);
+
+  client_->UpdateSnapshot(std::move(snapshot));
+
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), 0));
+  return true;
+}
+
+void SkiaGraphics::PaintImage(const Image& image, const gfx::Rect& src_rect) {
+  SkRect skia_rect = RectToSkRect(src_rect);
+  skia_graphics_->getCanvas()->drawImageRect(
+      image.skia_image().asImage(), skia_rect, skia_rect, SkSamplingOptions(),
+      nullptr, SkCanvas::kStrict_SrcRectConstraint);
+}
+
+void SkiaGraphics::Scroll(const gfx::Rect& clip, const gfx::Vector2d& amount) {
+  // If we are being asked to scroll by more than the graphics' rect size, just
+  // ignore the scroll command.
+  if (std::abs(amount.x()) >= skia_graphics_->width() ||
+      std::abs(amount.y()) >= skia_graphics_->height()) {
+    return;
+  }
+
+  gfx::ScrollCanvas(skia_graphics_->getCanvas(), clip, amount);
+}
+
+void SkiaGraphics::SetScale(float scale) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void SkiaGraphics::SetLayerTransform(float scale,
+                                     const gfx::Point& origin,
+                                     const gfx::Vector2d& translate) {
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 }  // namespace chrome_pdf

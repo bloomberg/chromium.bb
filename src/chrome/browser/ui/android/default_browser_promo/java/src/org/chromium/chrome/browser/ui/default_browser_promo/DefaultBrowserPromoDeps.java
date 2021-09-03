@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.ui.default_browser_promo;
 
-import static org.chromium.chrome.browser.ui.default_browser_promo.DefaultBrowserPromoManager.P_NO_DEFAULT_PROMO_STRATEGY;
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.role.RoleManager;
@@ -19,11 +17,9 @@ import android.text.TextUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageManagerUtils;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.ui.default_browser_promo.DefaultBrowserPromoUtils.DefaultBrowserPromoAction;
 import org.chromium.chrome.browser.ui.default_browser_promo.DefaultBrowserPromoUtils.DefaultBrowserState;
 
 import java.util.concurrent.TimeUnit;
@@ -36,9 +32,7 @@ import java.util.concurrent.TimeUnit;
 public class DefaultBrowserPromoDeps {
     private static final int MAX_PROMO_COUNT = 1;
     private static final int MIN_TRIGGER_SESSION_COUNT = 3;
-    private static final String SESSION_COUNT_PARAM = "min_trigger_session_count";
-    private static final String PROMO_COUNT_PARAM = "max_promo_count";
-    private static final String PROMO_INTERVAL_PARAM = "promo_interval";
+    private static final int MIN_PROMO_INTERVAL = 0;
 
     static final String CHROME_STABLE_PACKAGE_NAME = "com.android.chrome";
 
@@ -55,9 +49,7 @@ public class DefaultBrowserPromoDeps {
     }
 
     boolean isFeatureEnabled() {
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO)
-                && !CommandLine.getInstance().hasSwitch(
-                        ChromeSwitches.DISABLE_DEFAULT_BROWSER_PROMO);
+        return !CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_DEFAULT_BROWSER_PROMO);
     }
 
     int getPromoCount() {
@@ -71,9 +63,7 @@ public class DefaultBrowserPromoDeps {
     }
 
     int getMaxPromoCount() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, PROMO_COUNT_PARAM,
-                MAX_PROMO_COUNT);
+        return MAX_PROMO_COUNT;
     }
 
     int getSessionCount() {
@@ -88,9 +78,7 @@ public class DefaultBrowserPromoDeps {
     }
 
     int getMinSessionCount() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, SESSION_COUNT_PARAM,
-                MIN_TRIGGER_SESSION_COUNT);
+        return MIN_TRIGGER_SESSION_COUNT;
     }
 
     int getLastPromoInterval() {
@@ -104,8 +92,7 @@ public class DefaultBrowserPromoDeps {
     }
 
     int getMinPromoInterval() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, PROMO_INTERVAL_PARAM, 0);
+        return MIN_PROMO_INTERVAL;
     }
 
     boolean isCurrentDefaultBrowserChrome(ResolveInfo info) {
@@ -162,24 +149,13 @@ public class DefaultBrowserPromoDeps {
         return Build.VERSION.SDK_INT;
     }
 
-    int promoActionOnP() {
-        String promoOnP = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, P_NO_DEFAULT_PROMO_STRATEGY);
-        if (TextUtils.equals(promoOnP, "disabled")) {
-            return DefaultBrowserPromoAction.NO_ACTION;
-        } else if (TextUtils.equals(promoOnP, "system_settings")) {
-            return DefaultBrowserPromoAction.SYSTEM_SETTINGS;
-        } else {
-            return DefaultBrowserPromoAction.DISAMBIGUATION_SHEET;
-        }
-    }
-
     @SuppressLint("NewApi")
     boolean isRoleAvailable(Activity activity) {
         if (getSDKInt() < Build.VERSION_CODES.Q) {
             return false;
         }
         RoleManager roleManager = (RoleManager) activity.getSystemService(Context.ROLE_SERVICE);
+        if (roleManager == null) return false;
         boolean isRoleAvailable = roleManager.isRoleAvailable(RoleManager.ROLE_BROWSER);
         boolean isRoleHeld = roleManager.isRoleHeld(RoleManager.ROLE_BROWSER);
         return isRoleAvailable && !isRoleHeld;

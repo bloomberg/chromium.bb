@@ -610,6 +610,21 @@ TEST(VerifyCastDeviceCertTest, NameConstraintsViolated) {
           TRUST_STORE_FROM_TEST_FILE, "");
 }
 
+// Tests reversibility between DateTimeToSeconds and DateTimeFromSeconds
+TEST(VerifyCastDeviceCertTest, TimeDateConversionValidate) {
+  DateTime org_date = AprilFirst2020();
+  DateTime converted_date = {};
+  std::chrono::seconds seconds = DateTimeToSeconds(org_date);
+  DateTimeFromSeconds(seconds.count(), &converted_date);
+
+  EXPECT_EQ(org_date.second, converted_date.second);
+  EXPECT_EQ(org_date.minute, converted_date.minute);
+  EXPECT_EQ(org_date.hour, converted_date.hour);
+  EXPECT_EQ(org_date.day, converted_date.day);
+  EXPECT_EQ(org_date.month, converted_date.month);
+  EXPECT_EQ(org_date.year, converted_date.year);
+}
+
 }  // namespace
 }  // namespace cast
 }  // namespace openscreen

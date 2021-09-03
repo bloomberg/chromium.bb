@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """
-Create new branch tracking origin/master by default.
+Create new branch tracking origin HEAD by default.
 """
 
 import argparse

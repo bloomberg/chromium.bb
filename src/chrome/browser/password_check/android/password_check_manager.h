@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_PASSWORD_CHECK_ANDROID_PASSWORD_CHECK_MANAGER_H_
 
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/strings/string_piece_forward.h"
 #include "chrome/browser/password_check/android/password_check_ui_status.h"
+#include "chrome/browser/password_entry_edit/android/credential_edit_bridge.h"
 #include "chrome/browser/password_manager/bulk_leak_check_service_factory.h"
 #include "chrome/browser/password_manager/password_scripts_fetcher_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -20,6 +20,7 @@
 #include "components/password_manager/core/browser/ui/bulk_leak_check_service_adapter.h"
 #include "components/password_manager/core/browser/ui/insecure_credentials_manager.h"
 #include "components/password_manager/core/browser/ui/saved_passwords_presenter.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PasswordCheckManager
     : public password_manager::SavedPasswordsPresenter::Observer,
@@ -48,8 +49,8 @@ class PasswordCheckManager
     CompromisedCredentialForUI& operator=(CompromisedCredentialForUI&& other);
     ~CompromisedCredentialForUI();
 
-    base::string16 display_username;
-    base::string16 display_origin;
+    std::u16string display_username;
+    std::u16string display_origin;
     std::string package_name;
     std::string change_password_url;
     bool has_startable_script = false;
@@ -84,6 +85,12 @@ class PasswordCheckManager
   // password to `new_password`.
   void UpdateCredential(const password_manager::CredentialView& credential,
                         base::StringPiece new_password);
+
+  // Called by java to launch the edit credential UI for `credential`.
+  void OnEditCredential(
+      const password_manager::CredentialView& credential,
+      const base::android::JavaParamRef<jobject>& context,
+      const base::android::JavaParamRef<jobject>& settings_launcher);
 
   // Called by java to remove the given compromised `credential` and trigger a
   // UI update on completion.
@@ -157,7 +164,7 @@ class PasswordCheckManager
       override;
 
   // InsecureCredentialsManager::Observer
-  void OnCompromisedCredentialsChanged(
+  void OnInsecureCredentialsChanged(
       password_manager::InsecureCredentialsManager::CredentialsView credentials)
       override;
 
@@ -201,6 +208,9 @@ class PasswordCheckManager
 
   // Resets the passed |condition| so that it's expected to happen again.
   void ResetPrecondition(CheckPreconditions condition);
+
+  // Destroys the edit ui bridge.
+  void OnEditUIDismissed();
 
   // Obsever being notified of UI-relevant events.
   // It must outlive `this`.
@@ -252,21 +262,26 @@ class PasswordCheckManager
   // Latest number of changed compromised credentials while script fetching
   // was running. If `credentials_count_to_notify_` has value, after scripts are
   // fetched `onCompromisedCredentials` should be called.
-  base::Optional<size_t> credentials_count_to_notify_;
+  absl::optional<size_t> credentials_count_to_notify_;
+
+  // Used to open the view/edit/delete UI.
+  std::unique_ptr<CredentialEditBridge> credential_edit_bridge_;
 
   // A scoped observer for `saved_passwords_presenter_`.
-  ScopedObserver<password_manager::SavedPasswordsPresenter,
-                 password_manager::SavedPasswordsPresenter::Observer>
+  base::ScopedObservation<password_manager::SavedPasswordsPresenter,
+                          password_manager::SavedPasswordsPresenter::Observer>
       observed_saved_passwords_presenter_{this};
 
   // A scoped observer for `insecure_credentials_manager_`.
-  ScopedObserver<password_manager::InsecureCredentialsManager,
-                 password_manager::InsecureCredentialsManager::Observer>
+  base::ScopedObservation<
+      password_manager::InsecureCredentialsManager,
+      password_manager::InsecureCredentialsManager::Observer>
       observed_insecure_credentials_manager_{this};
 
   // A scoped observer for the BulkLeakCheckService.
-  ScopedObserver<password_manager::BulkLeakCheckServiceInterface,
-                 password_manager::BulkLeakCheckServiceInterface::Observer>
+  base::ScopedObservation<
+      password_manager::BulkLeakCheckServiceInterface,
+      password_manager::BulkLeakCheckServiceInterface::Observer>
       observed_bulk_leak_check_service_{this};
 };
 

@@ -6,6 +6,10 @@
 
 #include "base/check_op.h"
 #include "base/notreached.h"
+#include "ui/ozone/platform/wayland/common/wayland_util.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
+#include "ui/platform_window/platform_window_init_properties.h"
 
 namespace ui {
 
@@ -13,25 +17,25 @@ constexpr uint32_t kAnchorDefaultWidth = 1;
 constexpr uint32_t kAnchorDefaultHeight = 1;
 constexpr uint32_t kAnchorHeightParentMenu = 30;
 
-gfx::Rect GetAnchorRect(MenuType menu_type,
+gfx::Rect GetAnchorRect(PopupType menu_type,
                         const gfx::Rect& menu_bounds,
                         const gfx::Rect& parent_window_bounds) {
   gfx::Rect anchor_rect;
   switch (menu_type) {
-    case MenuType::TYPE_RIGHT_CLICK:
-      // Place anchor for right click menus normally.
+    case PopupType::TYPE_NORMAL:
+      // Place anchor for normal popups normally.
       anchor_rect = gfx::Rect(menu_bounds.x(), menu_bounds.y(),
                               kAnchorDefaultWidth, kAnchorDefaultHeight);
       break;
-    case MenuType::TYPE_3DOT_PARENT_MENU:
-      // The anchor for parent menu windows is positioned slightly above the
-      // specified bounds to ensure flipped window along y-axis won't hide 3-dot
-      // menu button.
+    case PopupType::TYPE_3DOT_PARENT_MENU:
+      // The anchor for a parent 3-dot menu windows is positioned slightly above
+      // the specified bounds to ensure flipped window along y-axis won't hide
+      // 3-dot menu button.
       anchor_rect = gfx::Rect(menu_bounds.x() - kAnchorDefaultWidth,
                               menu_bounds.y() - kAnchorHeightParentMenu,
                               kAnchorDefaultWidth, kAnchorHeightParentMenu);
       break;
-    case MenuType::TYPE_3DOT_CHILD_MENU:
+    case PopupType::TYPE_3DOT_CHILD_MENU:
       // The child menu's anchor must meet the following requirements: at some
       // point, the Wayland compositor can flip it along x-axis. To make sure
       // it's positioned correctly, place it closer to the beginning of the
@@ -71,12 +75,127 @@ gfx::Rect GetAnchorRect(MenuType menu_type,
         }
       }
       break;
-    case MenuType::TYPE_UNKNOWN:
-      NOTREACHED() << "Unsupported menu type";
+    case PopupType::TYPE_UNKNOWN:
+      NOTREACHED() << "Unsupported popup type";
       break;
   }
 
   return anchor_rect;
+}
+
+WlAnchor GetAnchor(PopupType menu_type, const gfx::Rect& bounds) {
+  WlAnchor anchor = WlAnchor::None;
+  switch (menu_type) {
+    case PopupType::TYPE_NORMAL:
+      anchor = WlAnchor::TopLeft;
+      break;
+    case PopupType::TYPE_3DOT_PARENT_MENU:
+      anchor = WlAnchor::BottomRight;
+      break;
+    case PopupType::TYPE_3DOT_CHILD_MENU:
+      // Chromium may want to manually position a child menu on the left side of
+      // its parent menu. Thus, react accordingly. Positive x means the child is
+      // located on the right side of the parent and negative - on the left
+      // side.
+      if (bounds.x() >= 0)
+        anchor = WlAnchor::TopRight;
+      else
+        anchor = WlAnchor::TopLeft;
+      break;
+    case PopupType::TYPE_UNKNOWN:
+      NOTREACHED() << "Unsupported menu type";
+      break;
+  }
+
+  return anchor;
+}
+
+WlGravity GetGravity(PopupType menu_type, const gfx::Rect& bounds) {
+  WlGravity gravity = WlGravity::None;
+  switch (menu_type) {
+    case PopupType::TYPE_NORMAL:
+      gravity = WlGravity::BottomRight;
+      break;
+    case PopupType::TYPE_3DOT_PARENT_MENU:
+      gravity = WlGravity::BottomRight;
+      break;
+    case PopupType::TYPE_3DOT_CHILD_MENU:
+      // Chromium may want to manually position a child menu on the left side of
+      // its parent menu. Thus, react accordingly. Positive x means the child is
+      // located on the right side of the parent and negative - on the left
+      // side.
+      if (bounds.x() >= 0)
+        gravity = WlGravity::BottomRight;
+      else
+        gravity = WlGravity::BottomLeft;
+      break;
+    case PopupType::TYPE_UNKNOWN:
+      NOTREACHED() << "Unsupported menu type";
+      break;
+  }
+
+  return gravity;
+}
+
+WlConstraintAdjustment GetConstraintAdjustment(PopupType menu_type) {
+  WlConstraintAdjustment constraint = WlConstraintAdjustment::None;
+
+  switch (menu_type) {
+    case PopupType::TYPE_NORMAL:
+      constraint =
+          WlConstraintAdjustment::SlideX | WlConstraintAdjustment::SlideY |
+          WlConstraintAdjustment::FlipY | WlConstraintAdjustment::ResizeY;
+      break;
+    case PopupType::TYPE_3DOT_PARENT_MENU:
+      constraint = WlConstraintAdjustment::SlideX |
+                   WlConstraintAdjustment::FlipY |
+                   WlConstraintAdjustment::ResizeY;
+      break;
+    case PopupType::TYPE_3DOT_CHILD_MENU:
+      constraint = WlConstraintAdjustment::SlideY |
+                   WlConstraintAdjustment::FlipX |
+                   WlConstraintAdjustment::ResizeY;
+      break;
+    case PopupType::TYPE_UNKNOWN:
+      NOTREACHED() << "Unsupported menu type";
+      break;
+  }
+
+  return constraint;
+}
+
+PopupType ShellPopupWrapper::GetPopupTypeForPositioner(
+    PlatformWindowType type,
+    int last_pointer_button_pressed,
+    WaylandWindow* parent_window) const {
+  bool is_right_click_menu =
+      last_pointer_button_pressed & EF_RIGHT_MOUSE_BUTTON;
+
+  // Different types of menu require different anchors, constraint adjustments,
+  // gravity and etc.
+  if (is_right_click_menu || type == PlatformWindowType::kTooltip)
+    return PopupType::TYPE_NORMAL;
+  else if (!parent_window->AsWaylandPopup())
+    return PopupType::TYPE_3DOT_PARENT_MENU;
+  else
+    return PopupType::TYPE_3DOT_CHILD_MENU;
+}
+
+bool ShellPopupWrapper::CanGrabPopup(WaylandConnection* connection) const {
+  // When drag process starts, as described the protocol -
+  // https://goo.gl/1Mskq3, the client must have an active implicit grab. If
+  // we try to create a popup and grab it, it will be immediately dismissed.
+  // Thus, do not take explicit grab during drag process.
+  if (connection->IsDragInProgress() || !connection->seat())
+    return false;
+
+  // According to the definition of the xdg protocol, the grab request must be
+  // used in response to some sort of user action like a button press, key
+  // press, or touch down event.
+  EventType last_event_type = connection->event_serial().event_type;
+  return last_event_type == ET_TOUCH_PRESSED ||
+         last_event_type == ET_KEY_PRESSED ||
+         last_event_type == ET_MOUSE_PRESSED;
 }
 
 }  // namespace ui

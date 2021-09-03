@@ -32,7 +32,7 @@ void FocusOmnibox(bool focus, content::WebContents* web_contents) {
     return;
 
   if (focus) {
-    // This is an invisible focus to support "realbox" implementations on NTPs
+    // This is an invisible focus to support "fakebox" implementations on NTPs
     // (including other search providers). We shouldn't consider it as the user
     // explicitly focusing the omnibox.
     omnibox_view->SetFocus(/*is_user_initiated=*/false);
@@ -51,34 +51,6 @@ void FocusOmnibox(bool focus, content::WebContents* web_contents) {
     if (!omnibox_view->model()->popup_model()->IsOpen())
       web_contents->Focus();
   }
-}
-
-void PasteIntoOmnibox(const base::string16& text,
-                      content::WebContents* web_contents) {
-  OmniboxView* omnibox_view = GetOmniboxView(web_contents);
-  if (!omnibox_view)
-    return;
-  // The first case is for right click to paste, where the text is retrieved
-  // from the clipboard already sanitized. The second case is needed to handle
-  // drag-and-drop value and it has to be sanitazed before setting it into the
-  // omnibox.
-  base::string16 text_to_paste =
-      text.empty() ? GetClipboardText(/*notify_if_restricted=*/true)
-                   : omnibox_view->SanitizeTextForPaste(text);
-
-  if (text_to_paste.empty())
-    return;
-
-  if (!omnibox_view->model()->has_focus()) {
-    // Pasting into a "realbox" should not be considered the user explicitly
-    // focusing the omnibox.
-    omnibox_view->SetFocus(/*is_user_initiated=*/false);
-  }
-
-  omnibox_view->OnBeforePossibleChange();
-  omnibox_view->model()->OnPaste();
-  omnibox_view->SetUserText(text_to_paste);
-  omnibox_view->OnAfterPossibleChange(true);
 }
 
 bool IsOmniboxInputInProgress(content::WebContents* web_contents) {

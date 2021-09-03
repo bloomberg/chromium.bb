@@ -11,15 +11,13 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
-#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/file_system/async_file_util_adapter.h"
-#include "storage/browser/file_system/file_stream_reader.h"
-#include "storage/browser/file_system/file_stream_writer.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation.h"
 #include "storage/browser/file_system/file_system_operation_context.h"
@@ -27,6 +25,7 @@
 #include "storage/browser/file_system/obfuscated_file_util.h"
 #include "storage/browser/file_system/obfuscated_file_util_memory_delegate.h"
 #include "storage/browser/file_system/quota/quota_reservation.h"
+#include "storage/browser/file_system/sandbox_file_stream_reader.h"
 #include "storage/browser/file_system/sandbox_file_stream_writer.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "url/origin.h"
@@ -103,11 +102,13 @@ PluginPrivateFileSystemBackend::PluginPrivateFileSystemBackend(
       base_path_(profile_path.Append(kFileSystemDirectory)
                      .Append(kPluginPrivateDirectory)),
       plugin_map_(new FileSystemIDToPluginMap(file_task_runner)) {
-  file_util_ = std::make_unique<AsyncFileUtilAdapter>(new ObfuscatedFileUtil(
-      special_storage_policy, base_path_, env_override,
-      base::BindRepeating(&FileSystemIDToPluginMap::GetPluginIDForURL,
-                          base::Owned(plugin_map_)),
-      std::set<std::string>(), nullptr, file_system_options.is_incognito()));
+  file_util_ = std::make_unique<AsyncFileUtilAdapter>(
+      std::make_unique<ObfuscatedFileUtil>(
+          special_storage_policy, base_path_, env_override,
+          base::BindRepeating(&FileSystemIDToPluginMap::GetPluginIDForURL,
+                              base::Owned(plugin_map_)),
+          std::set<std::string>(), nullptr,
+          file_system_options.is_incognito()));
 }
 
 PluginPrivateFileSystemBackend::~PluginPrivateFileSystemBackend() {
@@ -180,7 +181,7 @@ FileSystemOperation* PluginPrivateFileSystemBackend::CreateFileSystemOperation(
     FileSystemContext* context,
     base::File::Error* error_code) const {
   std::unique_ptr<FileSystemOperationContext> operation_context(
-      new FileSystemOperationContext(context));
+      std::make_unique<FileSystemOperationContext>(context));
   return FileSystemOperation::Create(url, context,
                                      std::move(operation_context));
 }
@@ -206,7 +207,7 @@ PluginPrivateFileSystemBackend::CreateFileStreamReader(
     const base::Time& expected_modification_time,
     FileSystemContext* context) const {
   DCHECK(CanHandleType(url.type()));
-  return FileStreamReader::CreateForFileSystemFile(context, url, offset,
+  return std::make_unique<SandboxFileStreamReader>(context, url, offset,
                                                    expected_modification_time);
 }
 
@@ -258,7 +259,7 @@ PluginPrivateFileSystemBackend::GetOriginsForTypeOnFileTaskRunner(
   std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enumerator(
       obfuscated_file_util()->CreateOriginEnumerator());
   std::vector<url::Origin> origins;
-  base::Optional<url::Origin> origin;
+  absl::optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value())
     origins.push_back(std::move(origin).value());
   return origins;
@@ -273,7 +274,7 @@ PluginPrivateFileSystemBackend::GetOriginsForHostOnFileTaskRunner(
   std::unique_ptr<ObfuscatedFileUtil::AbstractOriginEnumerator> enumerator(
       obfuscated_file_util()->CreateOriginEnumerator());
   std::vector<url::Origin> origins;
-  base::Optional<url::Origin> origin;
+  absl::optional<url::Origin> origin;
   while ((origin = enumerator->Next()).has_value()) {
     if (host == origin->host())
       origins.push_back(std::move(origin).value());
@@ -315,7 +316,7 @@ void PluginPrivateFileSystemBackend::GetOriginDetailsOnFileTaskRunner(
                                                         "pluginprivate");
 
   std::unique_ptr<FileSystemOperationContext> operation_context(
-      new FileSystemOperationContext(context));
+      std::make_unique<FileSystemOperationContext>(context));
 
   // Determine the available plugin private filesystem directories for this
   // origin. Currently the plugin private filesystem is only used by Encrypted

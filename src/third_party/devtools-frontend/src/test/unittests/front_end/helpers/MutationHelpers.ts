@@ -4,7 +4,7 @@
 
 const {assert} = chai;
 
-export enum MutationType {
+export const enum MutationType {
   ADD = 'ADD',
   REMOVE = 'REMOVE',
   TEXT_UPDATE = 'TEXT_UPDATE',
@@ -15,7 +15,7 @@ export const TEXT_NODE = 'TEXT_NODE';
 interface ExpectedMutation {
   max?: number;
   target: keyof HTMLElementTagNameMap|typeof TEXT_NODE;
-  type?: MutationType
+  type?: MutationType;
 }
 
 const nodeShouldBeIgnored = (node: Node): boolean => {
@@ -57,7 +57,11 @@ const observedMutationsThatMatchExpected =
     };
 
 interface MutationCount {
-  ADD: number, REMOVE: number, TEXT_UPDATE: number,
+  /* eslint-disable @typescript-eslint/naming-convention */
+  ADD: number;
+  REMOVE: number;
+  TEXT_UPDATE: number;
+  /* eslint-enable @typescript-eslint/naming-convention */
 }
 
 const getMutationsForTagName = (trackedMutations: Map<string, MutationCount>, tagName: string): MutationCount => {
@@ -91,7 +95,7 @@ const getAllMutationCounts = (observedMutations: ObservedMutation[]): Map<string
 
 type ObservedMutation = {
   target: keyof HTMLElementTagNameMap,
-  type: MutationType
+  type: MutationType,
 }|{target: typeof TEXT_NODE, type: MutationType.TEXT_UPDATE};
 
 const storeRelevantMutationEntries = (entries: MutationRecord[], storageArray: ObservedMutation[]) => {

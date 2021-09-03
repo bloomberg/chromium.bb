@@ -6,6 +6,12 @@ platforms that are not yet fully supported.
 gRPC C# now has experimental support for Xamarin.
 See [HelloworldXamarin](/examples/csharp/HelloworldXamarin) for an example how to use it.
 
+Starting from gRPC C# 2.34.x: in addition to the regular `Grpc.Core` dependency, you will also
+need to add `Grpc.Core.Xamarin` dependency to your project (which has the mobile-specific builds of c# native extension library).
+The `Grpc.Core` and `Grpc.Core.Xamarin` package versions must always match exactly for things to work.
+Also note that the `Grpc.Core.Xamarin` needs to be added to your `*.Android` and `*.iOS` projects
+in order for the native library bindings to be registered correctly (see https://github.com/grpc/grpc/issues/16250).
+
 What's currently supported:
 
 Xamarin.Android
@@ -23,7 +29,7 @@ Unity and provide feedback!
 
 How to test gRPC in a Unity project
 
-1. Create a Unity project that targets .NET 4.x (Edit -> Project Settings -> Editor -> Scripting Runtime Version). gRPC uses APIs that are only available in .NET4.5+ so this is a requirement.
+1. Create a Unity project that targets .NET 4.x Equivalent (Edit -> Project Settings -> Player -> Configuration -> Scripting Runtime Version). gRPC uses APIs that are only available in .NET4.5+ so this is a requirement.
 
 2. Download the latest development build of `grpc_unity_package.VERSION.zip` from
    [daily builds](https://packages.grpc.io/)

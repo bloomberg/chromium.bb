@@ -13,6 +13,8 @@
 #include "fxjs/cjs_object.h"
 #include "fxjs/fxv8.h"
 #include "fxjs/xfa/cfxjse_runtimedata.h"
+#include "third_party/base/check.h"
+#include "third_party/base/check_op.h"
 #include "third_party/base/stl_util.h"
 #include "v8/include/v8-util.h"
 
@@ -25,7 +27,14 @@ v8::Isolate* g_isolate = nullptr;
 size_t g_isolate_ref_count = 0;
 CFX_V8ArrayBufferAllocator* g_arrayBufferAllocator = nullptr;
 v8::Global<v8::ObjectTemplate>* g_DefaultGlobalObjectTemplate = nullptr;
+
+// Only the address matters, values are for humans debugging. ASLR should
+// ensure that these values are unlikely to arise otherwise. Keep these
+// wchar_t to prevent the compiler from doing something clever, like
+// aligning them on a byte boundary to save space, which would make them
+// incompatible for use as V8 aligned pointers.
 const wchar_t kPerObjectDataTag[] = L"CFXJS_PerObjectData";
+const wchar_t kPerIsolateDataTag[] = L"FXJS_PerIsolateData";
 
 void* GetAlignedPointerForPerObjectDataTag() {
   return const_cast<void*>(static_cast<const void*>(kPerObjectDataTag));
@@ -84,7 +93,7 @@ class V8TemplateMap {
   ~V8TemplateMap() = default;
 
   void SetAndMakeWeak(WeakCallbackDataType* key, v8::Local<v8::Object> handle) {
-    ASSERT(!m_map.Contains(key));
+    DCHECK(!m_map.Contains(key));
 
     // Inserting an object into a GlobalValueMap with the appropriate traits
     // has the side-effect of making the object weak deep in the guts of V8,
@@ -164,7 +173,7 @@ class CFXJS_ObjDefinition {
       return;
     }
     v8::Local<v8::Object> holder = info.Holder();
-    ASSERT(holder->InternalFieldCount() == 2);
+    DCHECK_EQ(holder->InternalFieldCount(), 2);
     holder->SetAlignedPointerInInternalField(0, nullptr);
     holder->SetAlignedPointerInInternalField(1, nullptr);
   }
@@ -211,7 +220,7 @@ class CFXJS_ObjDefinition {
     return scope.Escape(m_Signature.Get(GetIsolate()));
   }
 
-  const char* const m_ObjName;
+  UnownedPtr<const char> const m_ObjName;
   const FXJSOBJTYPE m_ObjType;
   const CFXJS_Engine::Constructor m_pConstructor;
   const CFXJS_Engine::Destructor m_pDestructor;
@@ -271,8 +280,8 @@ V8TemplateMapTraits::MapType* V8TemplateMapTraits::MapFromWeakCallbackInfo(
 
 void FXJS_Initialize(unsigned int embedderDataSlot, v8::Isolate* pIsolate) {
   if (g_isolate) {
-    ASSERT(g_embedderDataSlot == embedderDataSlot);
-    ASSERT(g_isolate == pIsolate);
+    DCHECK_EQ(g_embedderDataSlot, embedderDataSlot);
+    DCHECK_EQ(g_isolate, pIsolate);
     return;
   }
   g_embedderDataSlot = embedderDataSlot;
@@ -280,7 +289,7 @@ void FXJS_Initialize(unsigned int embedderDataSlot, v8::Isolate* pIsolate) {
 }
 
 void FXJS_Release() {
-  ASSERT(!g_isolate || g_isolate_ref_count == 0);
+  DCHECK(!g_isolate || g_isolate_ref_count == 0);
   delete g_DefaultGlobalObjectTemplate;
   g_DefaultGlobalObjectTemplate = nullptr;
   g_isolate = nullptr;
@@ -307,8 +316,6 @@ size_t FXJS_GlobalIsolateRefCount() {
   return g_isolate_ref_count;
 }
 
-FXJS_PerIsolateData::~FXJS_PerIsolateData() = default;
-
 // static
 void FXJS_PerIsolateData::SetUp(v8::Isolate* pIsolate) {
   if (!pIsolate->GetData(g_embedderDataSlot))
@@ -317,16 +324,21 @@ void FXJS_PerIsolateData::SetUp(v8::Isolate* pIsolate) {
 
 // static
 FXJS_PerIsolateData* FXJS_PerIsolateData::Get(v8::Isolate* pIsolate) {
-  return static_cast<FXJS_PerIsolateData*>(
-      pIsolate->GetData(g_embedderDataSlot));
+  auto* result =
+      static_cast<FXJS_PerIsolateData*>(pIsolate->GetData(g_embedderDataSlot));
+  CHECK(result->m_Tag == kPerIsolateDataTag);
+  return result;
 }
+
+FXJS_PerIsolateData::FXJS_PerIsolateData(v8::Isolate* pIsolate)
+    : m_Tag(kPerIsolateDataTag),
+      m_pDynamicObjsMap(std::make_unique<V8TemplateMap>(pIsolate)) {}
+
+FXJS_PerIsolateData::~FXJS_PerIsolateData() = default;
 
 uint32_t FXJS_PerIsolateData::CurrentMaxObjDefinitionID() const {
   return pdfium::CollectionSize<uint32_t>(m_ObjectDefnArray);
 }
-
-FXJS_PerIsolateData::FXJS_PerIsolateData(v8::Isolate* pIsolate)
-    : m_pDynamicObjsMap(std::make_unique<V8TemplateMap>(pIsolate)) {}
 
 CFXJS_ObjDefinition* FXJS_PerIsolateData::ObjDefinitionForID(
     uint32_t id) const {
@@ -495,7 +507,7 @@ void CFXJS_Engine::InitializeEngine() {
                                           .ToLocalChecked());
       }
     } else if (pObjDef->m_ObjType == FXJSOBJTYPE_STATIC) {
-      v8::Local<v8::String> pObjName = NewString(pObjDef->m_ObjName);
+      v8::Local<v8::String> pObjName = NewString(pObjDef->m_ObjName.Get());
       v8::Local<v8::Object> obj = NewFXJSBoundObject(i, FXJSOBJTYPE_STATIC);
       if (!obj.IsEmpty()) {
         v8Context->Global()->Set(v8Context, pObjName, obj).FromJust();

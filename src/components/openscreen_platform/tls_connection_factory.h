@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_OPENSCREEN_PLATFORM_TLS_CONNECTION_FACTORY_H_
 #define COMPONENTS_OPENSCREEN_PLATFORM_TLS_CONNECTION_FACTORY_H_
 
-#include <memory>
-
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -91,8 +89,8 @@ class TlsConnectionFactory final : public openscreen::TlsConnectionFactory {
 
   void OnTcpConnect(TcpConnectRequest request,
                     int32_t net_result,
-                    const base::Optional<net::IPEndPoint>& local_address,
-                    const base::Optional<net::IPEndPoint>& remote_address,
+                    const absl::optional<net::IPEndPoint>& local_address,
+                    const absl::optional<net::IPEndPoint>& remote_address,
                     mojo::ScopedDataPipeConsumerHandle receive_stream,
                     mojo::ScopedDataPipeProducerHandle send_stream);
 
@@ -100,7 +98,7 @@ class TlsConnectionFactory final : public openscreen::TlsConnectionFactory {
                     int32_t net_result,
                     mojo::ScopedDataPipeConsumerHandle receive_stream,
                     mojo::ScopedDataPipeProducerHandle send_stream,
-                    const base::Optional<net::SSLInfo>& ssl_info);
+                    const absl::optional<net::SSLInfo>& ssl_info);
 
   openscreen::TlsConnectionFactory::Client* client_;
   openscreen::TaskRunner* const task_runner_;

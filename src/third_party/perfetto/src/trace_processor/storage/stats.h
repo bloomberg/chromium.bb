@@ -30,8 +30,9 @@ namespace stats {
   F(android_log_num_skipped,            kSingle,  kInfo,     kTrace,    ""),   \
   F(android_log_num_total,              kSingle,  kInfo,     kTrace,    ""),   \
   F(counter_events_out_of_order,        kSingle,  kError,    kAnalysis, ""),   \
-  F(ftrace_bundle_tokenizer_errors,     kSingle,  kError,    kAnalysis, ""),   \
   F(deobfuscate_location_parse_error,   kSingle,  kError,    kTrace,    ""),   \
+  F(frame_timeline_event_parser_errors, kSingle,  kInfo,     kAnalysis, ""),   \
+  F(ftrace_bundle_tokenizer_errors,     kSingle,  kError,    kAnalysis, ""),   \
   F(ftrace_cpu_bytes_read_begin,        kIndexed, kInfo,     kTrace,    ""),   \
   F(ftrace_cpu_bytes_read_end,          kIndexed, kInfo,     kTrace,    ""),   \
   F(ftrace_cpu_commit_overrun_begin,    kIndexed, kError,    kTrace,    ""),   \
@@ -98,11 +99,11 @@ namespace stats {
                                         kIndexed, kInfo,     kTrace,    ""),   \
   F(traced_buf_padding_bytes_cleared,   kIndexed, kInfo,     kTrace,    ""),   \
   F(traced_buf_padding_bytes_written,   kIndexed, kInfo,     kTrace,    ""),   \
-  F(traced_buf_patches_failed,          kIndexed, kInfo,     kTrace,    ""),   \
+  F(traced_buf_patches_failed,          kIndexed, kDataLoss, kTrace,    ""),   \
   F(traced_buf_patches_succeeded,       kIndexed, kInfo,     kTrace,    ""),   \
   F(traced_buf_readaheads_failed,       kIndexed, kInfo,     kTrace,    ""),   \
   F(traced_buf_readaheads_succeeded,    kIndexed, kInfo,     kTrace,    ""),   \
-  F(traced_buf_trace_writer_packet_loss,kIndexed, kInfo,     kTrace,    ""),   \
+  F(traced_buf_trace_writer_packet_loss,kIndexed, kDataLoss, kTrace,    ""),   \
   F(traced_buf_write_wrap_count,        kIndexed, kInfo,     kTrace,    ""),   \
   F(traced_chunks_discarded,            kSingle,  kInfo,     kTrace,    ""),   \
   F(traced_data_sources_registered,     kSingle,  kInfo,     kTrace,    ""),   \
@@ -122,6 +123,7 @@ namespace stats {
   F(clock_sync_cache_miss,              kSingle,  kInfo,     kAnalysis, ""),   \
   F(process_tracker_errors,             kSingle,  kError,    kAnalysis, ""),   \
   F(json_tokenizer_failure,             kSingle,  kError,    kTrace,    ""),   \
+  F(json_parser_failure,                kSingle,  kError,    kTrace,    ""),   \
   F(heap_graph_invalid_string_id,       kIndexed, kError,    kTrace,    ""),   \
   F(heap_graph_non_finalized_graph,     kSingle,  kError,    kTrace,    ""),   \
   F(heap_graph_malformed_packet,        kIndexed, kError,    kTrace,    ""),   \
@@ -135,6 +137,9 @@ namespace stats {
   F(heapprofd_buffer_overran,           kIndexed, kDataLoss, kTrace,           \
       "The shared memory buffer between the target and heapprofd overran. "    \
       "The profile was truncated early. Indexed by target upid."),             \
+  F(heapprofd_client_error,             kIndexed, kError,    kTrace,           \
+      "The heapprofd client ran into a problem and disconnected. "             \
+      "See profile_packet.proto  for error codes."),                           \
   F(heapprofd_client_disconnected,      kIndexed, kInfo,     kTrace,    ""),   \
   F(heapprofd_malformed_packet,         kIndexed, kError,    kTrace,    ""),   \
   F(heapprofd_missing_packet,           kSingle,  kError,    kTrace,    ""),   \
@@ -142,6 +147,18 @@ namespace stats {
       "The target was already profiled by another tracing session, so the "    \
       "profile was not taken. Indexed by target upid."),                       \
   F(heapprofd_non_finalized_profile,    kSingle,  kError,    kTrace,    ""),   \
+  F(heapprofd_sampling_interval_adjusted,                                      \
+      kIndexed, kInfo,    kTrace,                                              \
+      "By how many byes the interval for PID was increased "                   \
+      "by adaptive sampling."),                                                \
+  F(heapprofd_unwind_time_us,           kIndexed, kInfo,     kTrace,           \
+      "Time spent unwinding callstacks."),                                     \
+  F(heapprofd_unwind_samples,           kIndexed, kInfo,     kTrace,           \
+      "Number of samples unwound."),                                           \
+  F(heapprofd_client_spinlock_blocked,  kIndexed, kInfo,     kTrace,           \
+       "Time (us) the heapprofd client was blocked on the spinlock."),         \
+  F(heapprofd_last_profile_timestamp,   kIndexed, kInfo,     kTrace,           \
+       "The timestamp (in trace time) for the last dump for a process"),       \
   F(metatrace_overruns,                 kSingle,  kError,    kTrace,    ""),   \
   F(packages_list_has_parse_errors,     kSingle,  kError,    kTrace,    ""),   \
   F(packages_list_has_read_errors,      kSingle,  kError,    kTrace,    ""),   \
@@ -155,6 +172,7 @@ namespace stats {
   F(ninja_parse_errors,                 kSingle,  kError,    kTrace,    ""),   \
   F(perf_samples_skipped,               kSingle,  kInfo,     kTrace,    ""),   \
   F(perf_samples_skipped_dataloss,      kSingle,  kDataLoss, kTrace,    ""),   \
+  F(memory_snapshot_parser_failure,     kSingle,  kError,    kAnalysis, ""),   \
   F(thread_time_in_state_out_of_order,  kSingle,  kError,    kAnalysis, ""),   \
   F(thread_time_in_state_unknown_cpu_freq,                                     \
                                         kSingle,  kError,    kAnalysis, ""),   \
@@ -162,7 +180,8 @@ namespace stats {
       "An ftrace packet was seen before the tracing start timestamp from "     \
       "the tracing service. This happens if the ftrace buffers were not "      \
       "cleared properly. These packets are silently dropped by trace "         \
-      "processor.")
+      "processor."),                                                           \
+  F(perf_guardrail_stop_ts,             kIndexed, kDataLoss, kTrace,    "")
 // clang-format on
 
 enum Type {
@@ -189,7 +208,9 @@ enum Source {
 };
 
 // Ignore GCC warning about a missing argument for a variadic macro parameter.
+#if defined(__GNUC__) || defined(__clang__)
 #pragma GCC system_header
+#endif
 
 // Declares an enum of literals (one for each stat). The enum values of each
 // literal corresponds to the string index in the arrays below.

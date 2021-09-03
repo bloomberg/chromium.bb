@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace cast_api_bindings {
@@ -47,7 +46,6 @@ void NamedMessagePortConnector::GetConnectMessage(
     std::string* message,
     std::unique_ptr<MessagePort>* port) {
   constexpr char kControlPortConnectMessage[] = "cast.master.connect";
-  std::unique_ptr<MessagePort> control_port_for_web_engine;
   MessagePort::CreatePair(&control_port_, port);
   *message = kControlPortConnectMessage;
   control_port_->SetReceiver(this);

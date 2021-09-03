@@ -9,11 +9,14 @@
 #include <string>
 #include <vector>
 
+#include "base/test/task_environment.h"
+#include "base/test/trace_test_utils.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/producer_host.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "services/tracing/public/cpp/perfetto/producer_client.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/consumer.h"
 #include "third_party/perfetto/include/perfetto/tracing/core/trace_config.h"
 #include "third_party/perfetto/protos/perfetto/common/observable_events.pb.h"
@@ -37,19 +40,14 @@ class TestDataSource : public PerfettoTracedProcess::DataSourceBase {
   void WritePacketBigly();
 
   // DataSourceBase implementation
-  void StartTracing(
+  void StartTracingImpl(
       PerfettoProducer* producer,
       const perfetto::DataSourceConfig& data_source_config) override;
-  void StopTracing(
+  void StopTracingImpl(
       base::OnceClosure stop_complete_callback = base::OnceClosure()) override;
   void Flush(base::RepeatingClosure flush_complete_callback) override;
 
   const perfetto::DataSourceConfig& config() { return config_; }
-
-  // In some tests we violate the assumption that only a single tracing session
-  // is alive. This allows tests to explicitly ignore the DCHECK in place to
-  // check this.
-  void SetSystemProducerToNullptr() { producer_ = nullptr; }
 
   void set_send_packet_count(size_t count) { send_packet_count_ = count; }
 
@@ -59,6 +57,7 @@ class TestDataSource : public PerfettoTracedProcess::DataSourceBase {
   TestDataSource(const std::string& data_source_name, size_t send_packet_count);
 
   size_t send_packet_count_;
+  tracing::PerfettoProducer* producer_ = nullptr;
   perfetto::DataSourceConfig config_;
   base::OnceClosure start_tracing_callback_ = base::OnceClosure();
 };
@@ -226,29 +225,24 @@ class MockProducer {
   std::unique_ptr<MockProducerHost> producer_host_;
 };
 
-// A proxy task runner which can be dynamically pointed to route tasks into a
-// different task runner.
-class RebindableTaskRunner : public base::SequencedTaskRunner {
+// Base class for various tracing unit tests, ensuring cleanup of
+// PerfettoTracedProcess. Tracing tasks are run on the test thread.
+class TracingUnitTest : public testing::Test {
  public:
-  RebindableTaskRunner();
+  TracingUnitTest();
+  ~TracingUnitTest() override;
 
-  void set_task_runner(scoped_refptr<base::SequencedTaskRunner> task_runner) {
-    task_runner_ = task_runner;
-  }
+  void SetUp() override;
+  void TearDown() override;
 
-  // base::SequecedTaskRunner implementation.
-  bool PostDelayedTask(const base::Location& from_here,
-                       base::OnceClosure task,
-                       base::TimeDelta delay) override;
-  bool PostNonNestableDelayedTask(const base::Location& from_here,
-                                  base::OnceClosure task,
-                                  base::TimeDelta delay) override;
-  bool RunsTasksInCurrentSequence() const override;
+ protected:
+  void RunUntilIdle() { task_environment_->RunUntilIdle(); }
 
  private:
-  ~RebindableTaskRunner() override;
-
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
+  std::unique_ptr<base::test::TracingEnvironment> tracing_environment_;
+  bool setup_called_ = false;
+  bool teardown_called_ = false;
 };
 
 }  // namespace tracing

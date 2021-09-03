@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/simple_quic_framer.h"
+#include "quic/test_tools/simple_quic_framer.h"
 
 #include <memory>
 #include <utility>
 
+#include "absl/memory/memory.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_decrypter.h"
-#include "net/third_party/quiche/src/quic/core/crypto/quic_encrypter.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
+#include "quic/core/crypto/quic_decrypter.h"
+#include "quic/core/crypto/quic_encrypter.h"
+#include "quic/core/quic_types.h"
 
 namespace quic {
 namespace test {
@@ -52,7 +53,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   bool OnUnauthenticatedHeader(const QuicPacketHeader& /*header*/) override {
     return true;
   }
-  void OnDecryptedPacket(EncryptionLevel level) override {
+  void OnDecryptedPacket(size_t /*length*/, EncryptionLevel level) override {
     last_decrypted_level_ = level;
   }
   bool OnPacketHeader(const QuicPacketHeader& header) override {
@@ -73,7 +74,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     // Save a copy of the data so it is valid after the packet is processed.
     std::string* string_data =
         new std::string(frame.data_buffer, frame.data_length);
-    stream_data_.push_back(QuicWrapUnique(string_data));
+    stream_data_.push_back(absl::WrapUnique(string_data));
     // TODO(ianswett): A pointer isn't necessary with emplace_back.
     stream_frames_.push_back(std::make_unique<QuicStreamFrame>(
         frame.stream_id, frame.fin, frame.offset,
@@ -85,7 +86,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     // Save a copy of the data so it is valid after the packet is processed.
     std::string* string_data =
         new std::string(frame.data_buffer, frame.data_length);
-    crypto_data_.push_back(QuicWrapUnique(string_data));
+    crypto_data_.push_back(absl::WrapUnique(string_data));
     crypto_frames_.push_back(std::make_unique<QuicCryptoFrame>(
         frame.level, frame.offset, absl::string_view(*string_data)));
     return true;
@@ -101,7 +102,7 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
   }
 
   bool OnAckRange(QuicPacketNumber start, QuicPacketNumber end) override {
-    DCHECK(!ack_frames_.empty());
+    QUICHE_DCHECK(!ack_frames_.empty());
     ack_frames_[ack_frames_.size() - 1].packets.AddRange(start, end);
     return true;
   }
@@ -210,7 +211,8 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
 
   void OnPacketComplete() override {}
 
-  bool IsValidStatelessResetToken(QuicUint128 /*token*/) const override {
+  bool IsValidStatelessResetToken(
+      const StatelessResetToken& /*token*/) const override {
     return false;
   }
 

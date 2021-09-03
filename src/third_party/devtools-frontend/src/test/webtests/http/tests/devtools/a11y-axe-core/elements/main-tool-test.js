@@ -11,8 +11,8 @@
     },
   };
   const DEFAULT_RULESET = {};
-  await TestRunner.loadModule('axe_core_test_runner');
-  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.loadTestModule('axe_core_test_runner');
+  await TestRunner.loadTestModule('elements_test_runner');
   const tests = [
     testElementsDomTree,
     testElementsDomBreadcrumbs,
@@ -43,7 +43,7 @@
   async function testElementsStylesPane() {
     TestRunner.addResult('Tests accessibility of the Styles pane using the axe-core linter');
     await UI.viewManager.showView('elements');
-    const panel = self.runtime.sharedInstance(Elements.ElementsPanel);
+    const panel = Elements.ElementsPanel.instance();
     const element = panel._stylesWidget.element;
 
     await AxeCoreTestRunner.runValidation(element, NO_REQUIRED_CHILDREN_RULESET);
@@ -53,7 +53,7 @@
     TestRunner.addResult('Tests accessibility in the Computed Styles pane using the axe-core linter');
     await UI.viewManager.showView('elements');
     await ElementsTestRunner.showComputedStyles();
-    const panel = self.runtime.sharedInstance(Elements.ElementsPanel);
+    const panel = Elements.ElementsPanel.instance();
     const element = panel._computedStyleWidget.element;
 
     await AxeCoreTestRunner.runValidation(element, DEFAULT_RULESET);

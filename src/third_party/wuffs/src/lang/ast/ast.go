@@ -40,6 +40,7 @@ const (
 	KArg
 	KAssert
 	KAssign
+	KChoose
 	KConst
 	KExpr
 	KField
@@ -71,6 +72,7 @@ var kindStrings = [...]string{
 	KArg:      "KArg",
 	KAssert:   "KAssert",
 	KAssign:   "KAssign",
+	KChoose:   "KChoose",
 	KConst:    "KConst",
 	KExpr:     "KExpr",
 	KField:    "KField",
@@ -103,6 +105,8 @@ const (
 	FlagsSubExprHasEffect = Flags(0x00002000)
 	FlagsRetsError        = Flags(0x00004000)
 	FlagsPrivateData      = Flags(0x00008000)
+	FlagsChoosy           = Flags(0x00010000)
+	FlagsHasChooseCPUArch = Flags(0x00020000)
 )
 
 func (f Flags) AsEffect() Effect { return Effect(f) }
@@ -159,6 +163,7 @@ type Node struct {
 	// Arg           .             .             name          Arg
 	// Assert        keyword       .             lit(reason)   Assert
 	// Assign        operator      .             .             Assign
+	// Choose        .             .             name          Choose
 	// Const         .             pkg           name          Const
 	// Expr          operator      .             literal/ident Expr
 	// Field         .             .             name          Field
@@ -166,7 +171,7 @@ type Node struct {
 	// Func          funcName      receiverPkg   receiverName  Func
 	// IOBind        .             .             .             IOBind
 	// If            .             .             .             If
-	// Iterate       unroll        label         length        Iterate
+	// Iterate       advance       label         length        Iterate
 	// Jump          keyword       label         .             Jump
 	// Ret           keyword       .             .             Ret
 	// Status        keyword       pkg           lit(message)  Status
@@ -197,6 +202,7 @@ func (n *Node) SetMType(x *TypeExpr)           { n.mType = x }
 func (n *Node) AsArg() *Arg           { return (*Arg)(n) }
 func (n *Node) AsAssert() *Assert     { return (*Assert)(n) }
 func (n *Node) AsAssign() *Assign     { return (*Assign)(n) }
+func (n *Node) AsChoose() *Choose     { return (*Choose)(n) }
 func (n *Node) AsConst() *Const       { return (*Const)(n) }
 func (n *Node) AsExpr() *Expr         { return (*Expr)(n) }
 func (n *Node) AsField() *Field       { return (*Field)(n) }
@@ -371,6 +377,24 @@ func (n *Expr) SetGlobalIdent()                { n.flags |= FlagsGlobalIdent }
 func (n *Expr) SetMBounds(x interval.IntRange) { n.mBounds = x }
 func (n *Expr) SetMType(x *TypeExpr)           { n.mType = x }
 
+func (n *Expr) IsArgsDotFoo() (foo t.ID) {
+	if n.id0 == t.IDDot {
+		if (n.lhs.id0 == 0) && (n.lhs.id2 == t.IDArgs) {
+			return n.id2
+		}
+	}
+	return 0
+}
+
+func (n *Expr) IsMethodCall() (recv *Expr, meth t.ID, args []*Node) {
+	if n.id0 == t.IDOpenParen {
+		if o := n.lhs; o.id0 == t.IDDot {
+			return o.lhs.AsExpr(), o.id2, n.list0
+		}
+	}
+	return nil, 0, nil
+}
+
 func NewExpr(flags Flags, operator t.ID, ident t.ID, lhs *Node, mhs *Node, rhs *Node, args []*Node) *Expr {
 	subExprEffect := Flags(0)
 	if lhs != nil {
@@ -401,8 +425,9 @@ func NewExpr(flags Flags, operator t.ID, ident t.ID, lhs *Node, mhs *Node, rhs *
 	}
 }
 
-// Assert is "assert RHS via ID2(args)", "pre etc", "inv etc" or "post etc":
-//  - ID0:   <IDAssert|IDPre|IDInv|IDPost>
+// Assert is "assert RHS via ID2(args)", "choose etc", "pre etc", "inv etc" or
+// "post etc":
+//  - ID0:   <IDAssert|IDChoose|IDPre|IDInv|IDPost>
 //  - ID2:   <"-string literal> reason
 //  - RHS:   <Expr>
 //  - List0: <Arg> reason arguments
@@ -415,6 +440,26 @@ func (n *Assert) Condition() *Expr { return n.rhs.AsExpr() }
 func (n *Assert) Args() []*Node    { return n.list0 }
 
 func (n *Assert) DropExprCachedMBounds() error { return n.AsNode().Walk(dropExprCachedMBounds) }
+
+func (n *Assert) IsChooseCPUArch() bool {
+	if n.id0 != t.IDChoose {
+		return false
+	}
+	cond := n.Condition()
+	if cond.Operator() != t.IDXBinaryGreaterEq {
+		return false
+	}
+	lhs := cond.LHS().AsExpr()
+	rhs := cond.RHS().AsExpr()
+	if (lhs.Operator() != 0) || (lhs.Ident() != t.IDCPUArch) || (rhs.Operator() != 0) {
+		return false
+	}
+	switch rhs.Ident() {
+	case t.IDARMCRC32, t.IDARMNeon, t.IDX86SSE42, t.IDX86AVX2:
+		return true
+	}
+	return false
+}
 
 func NewAssert(keyword t.ID, condition *Expr, reason t.ID, args []*Node) *Assert {
 	return &Assert{
@@ -527,12 +572,13 @@ func NewIOBind(keyword t.ID, io *Expr, arg1 *Expr, body []*Node) *IOBind {
 }
 
 // Iterate is
-// "iterate.ID1 (assigns)(length:ID2, unroll:ID0), List1 { List2 } else RHS":
+// "iterate.ID1 (assigns)(length:ID2, advance:ID0, unroll:LHS), List1 { List2 } else RHS":
 //  - FlagsHasBreak    is the iterate has an explicit break
 //  - FlagsHasContinue is the iterate has an explicit continue
-//  - ID0:   unroll
+//  - ID0:   advance
 //  - ID1:   <0|label>
 //  - ID2:   length
+//  - LHS:   <Expr> unroll
 //  - RHS:   <nil|Iterate>
 //  - List0: <Assign> assigns
 //  - List1: <Assert> asserts
@@ -543,9 +589,11 @@ func (n *Iterate) AsNode() *Node         { return (*Node)(n) }
 func (n *Iterate) HasBreak() bool        { return n.flags&FlagsHasBreak != 0 }
 func (n *Iterate) HasContinue() bool     { return n.flags&FlagsHasContinue != 0 }
 func (n *Iterate) Keyword() t.ID         { return t.IDIterate }
-func (n *Iterate) Unroll() t.ID          { return n.id0 }
+func (n *Iterate) Advance() t.ID         { return n.id0 }
 func (n *Iterate) Label() t.ID           { return n.id1 }
 func (n *Iterate) Length() t.ID          { return n.id2 }
+func (n *Iterate) Unroll() t.ID          { return n.lhs.id2 }
+func (n *Iterate) UnrollAsExpr() *Expr   { return n.lhs.AsExpr() }
 func (n *Iterate) ElseIterate() *Iterate { return n.rhs.AsIterate() }
 func (n *Iterate) Assigns() []*Node      { return n.list0 }
 func (n *Iterate) Asserts() []*Node      { return n.list1 }
@@ -556,12 +604,13 @@ func (n *Iterate) SetElseIterate(o *Iterate) { n.rhs = o.AsNode() }
 func (n *Iterate) SetHasBreak()              { n.flags |= FlagsHasBreak }
 func (n *Iterate) SetHasContinue()           { n.flags |= FlagsHasContinue }
 
-func NewIterate(label t.ID, assigns []*Node, length t.ID, unroll t.ID, asserts []*Node) *Iterate {
+func NewIterate(label t.ID, assigns []*Node, length t.ID, advance t.ID, unroll t.ID, asserts []*Node) *Iterate {
 	return &Iterate{
 		kind:  KIterate,
-		id0:   unroll,
+		id0:   advance,
 		id1:   label,
 		id2:   length,
+		lhs:   NewExpr(0, 0, unroll, nil, nil, nil, nil).AsNode(),
 		list0: assigns,
 		list1: asserts,
 	}
@@ -625,6 +674,23 @@ func NewIf(condition *Expr, bodyIfTrue []*Node, bodyIfFalse []*Node, elseIf *If)
 		rhs:   elseIf.AsNode(),
 		list1: bodyIfFalse,
 		list2: bodyIfTrue,
+	}
+}
+
+// Choose is "choose ID2: List0":
+//  - ID2:   name
+//  - List0: <Expr> method names.
+type Choose Node
+
+func (n *Choose) AsNode() *Node { return (*Node)(n) }
+func (n *Choose) Name() t.ID    { return n.id2 }
+func (n *Choose) Args() []*Node { return n.list0 }
+
+func NewChoose(name t.ID, args []*Node) *Choose {
+	return &Choose{
+		kind:  KChoose,
+		id2:   name,
+		list0: args,
 	}
 }
 
@@ -731,6 +797,14 @@ func (n *TypeExpr) IsBool() bool {
 	return n.id0 == 0 && n.id1 == t.IDBase && n.id2 == t.IDBool
 }
 
+func (n *TypeExpr) IsCPUArchType() bool {
+	return n.id0 == 0 && n.id1 == t.IDBase && n.id2.IsBuiltInCPUArch()
+}
+
+func (n *TypeExpr) IsEtcUtilityType() bool {
+	return n.id0 == 0 && n.id1 == t.IDBase && n.id2.IsEtcUtility()
+}
+
 func (n *TypeExpr) IsIdeal() bool {
 	return n.id0 == 0 && n.id1 == t.IDBase && n.id2 == t.IDQIdeal
 }
@@ -773,6 +847,10 @@ func (n *TypeExpr) IsStatus() bool {
 
 func (n *TypeExpr) IsArrayType() bool {
 	return n.id0 == t.IDArray
+}
+
+func (n *TypeExpr) IsFuncType() bool {
+	return n.id0 == t.IDFunc
 }
 
 func (n *TypeExpr) IsPointerType() bool {
@@ -846,18 +924,20 @@ const MaxBodyDepth = 255
 //  - List2: <Statement> body
 type Func Node
 
-func (n *Func) AsNode() *Node    { return (*Node)(n) }
-func (n *Func) Effect() Effect   { return Effect(n.flags) }
-func (n *Func) Public() bool     { return n.flags&FlagsPublic != 0 }
-func (n *Func) Filename() string { return n.filename }
-func (n *Func) Line() uint32     { return n.line }
-func (n *Func) QQID() t.QQID     { return t.QQID{n.id1, n.id2, n.id0} }
-func (n *Func) Receiver() t.QID  { return t.QID{n.id1, n.id2} }
-func (n *Func) FuncName() t.ID   { return n.id0 }
-func (n *Func) In() *Struct      { return n.lhs.AsStruct() }
-func (n *Func) Out() *TypeExpr   { return n.rhs.AsTypeExpr() }
-func (n *Func) Asserts() []*Node { return n.list1 }
-func (n *Func) Body() []*Node    { return n.list2 }
+func (n *Func) AsNode() *Node          { return (*Node)(n) }
+func (n *Func) Choosy() bool           { return n.flags&FlagsChoosy != 0 }
+func (n *Func) Effect() Effect         { return Effect(n.flags) }
+func (n *Func) HasChooseCPUArch() bool { return n.flags&FlagsHasChooseCPUArch != 0 }
+func (n *Func) Public() bool           { return n.flags&FlagsPublic != 0 }
+func (n *Func) Filename() string       { return n.filename }
+func (n *Func) Line() uint32           { return n.line }
+func (n *Func) QQID() t.QQID           { return t.QQID{n.id1, n.id2, n.id0} }
+func (n *Func) Receiver() t.QID        { return t.QID{n.id1, n.id2} }
+func (n *Func) FuncName() t.ID         { return n.id0 }
+func (n *Func) In() *Struct            { return n.lhs.AsStruct() }
+func (n *Func) Out() *TypeExpr         { return n.rhs.AsTypeExpr() }
+func (n *Func) Asserts() []*Node       { return n.list1 }
+func (n *Func) Body() []*Node          { return n.list2 }
 
 func (n *Func) BodyEndsWithReturn() bool {
 	if len(n.list2) == 0 {
@@ -865,6 +945,32 @@ func (n *Func) BodyEndsWithReturn() bool {
 	}
 	end := n.list2[len(n.list2)-1]
 	return (end.kind == KRet) && (end.AsRet().Keyword() == t.IDReturn)
+}
+
+func fieldsEq(xs []*Node, ys []*Node) bool {
+	if len(xs) != len(ys) {
+		return false
+	}
+	for i := range xs {
+		x, y := xs[i].AsField(), ys[i].AsField()
+		if (x.Name() != y.Name()) || !x.XType().Eq(y.XType()) {
+			return false
+		}
+	}
+	return true
+}
+
+func (n *Func) CheckChooseCompatible(o *Func) error {
+	if n.Effect() != o.Effect() {
+		return fmt.Errorf("different effects")
+	}
+	if !fieldsEq(n.In().Fields(), o.In().Fields()) {
+		return fmt.Errorf("different args type")
+	}
+	if !n.Out().Eq(o.Out()) {
+		return fmt.Errorf("different return type")
+	}
+	return nil
 }
 
 func NewFunc(flags Flags, filename string, line uint32, receiverName t.ID, funcName t.ID, in *Struct, out *TypeExpr, asserts []*Node, body []*Node) *Func {
@@ -1006,6 +1112,7 @@ func NewFile(filename string, topLevelDecls []*Node) *File {
 // Statement means one of:
 //  - Assert
 //  - Assign
+//  - Choose
 //  - IOBind
 //  - If
 //  - Iterate

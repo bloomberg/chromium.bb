@@ -90,6 +90,11 @@ EGLContext EGLWindow::getContext() const
     return mContext;
 }
 
+bool EGLWindow::isContextVersion(EGLint glesMajorVersion, EGLint glesMinorVersion) const
+{
+    return mClientMajorVersion == glesMajorVersion && mClientMinorVersion == glesMinorVersion;
+}
+
 bool EGLWindow::initializeGL(OSWindow *osWindow,
                              angle::Library *glWindowingLibrary,
                              angle::GLESDriverType driverType,
@@ -159,10 +164,21 @@ bool EGLWindow::initializeDisplay(OSWindow *osWindow,
         displayAttributes.push_back(params.debugLayersEnabled);
     }
 
+    const bool hasFeatureVirtualizationANGLE =
+        strstr(extensionString, "EGL_ANGLE_platform_angle_context_virtualization") != nullptr;
+
     if (params.contextVirtualization != EGL_DONT_CARE)
     {
-        displayAttributes.push_back(EGL_PLATFORM_ANGLE_CONTEXT_VIRTUALIZATION_ANGLE);
-        displayAttributes.push_back(params.contextVirtualization);
+        if (hasFeatureVirtualizationANGLE)
+        {
+            displayAttributes.push_back(EGL_PLATFORM_ANGLE_CONTEXT_VIRTUALIZATION_ANGLE);
+            displayAttributes.push_back(params.contextVirtualization);
+        }
+        else
+        {
+            fprintf(stderr,
+                    "EGL_ANGLE_platform_angle_context_virtualization extension not active\n");
+        }
     }
 
     if (params.platformMethods)
@@ -206,6 +222,15 @@ bool EGLWindow::initializeDisplay(OSWindow *osWindow,
         disabledFeatureOverrides.push_back("gen_multiple_mips_per_pass");
     }
 
+    if (params.supportsVulkanViewportFlip == EGL_TRUE)
+    {
+        enabledFeatureOverrides.push_back("supportsViewportFlip");
+    }
+    else if (params.supportsVulkanViewportFlip == EGL_FALSE)
+    {
+        disabledFeatureOverrides.push_back("supportsViewportFlip");
+    }
+
     switch (params.emulatedPrerotation)
     {
         case 90:
@@ -243,30 +268,34 @@ bool EGLWindow::initializeDisplay(OSWindow *osWindow,
         enabledFeatureOverrides.push_back("force_buffer_gpu_storage_mtl");
     }
 
+    if (params.emulatedVAOs == EGL_TRUE)
+    {
+        enabledFeatureOverrides.push_back("sync_vertex_arrays_to_default");
+    }
+
+    const bool hasFeatureControlANGLE =
+        strstr(extensionString, "EGL_ANGLE_feature_control") != nullptr;
+
+    if (!hasFeatureControlANGLE &&
+        (!enabledFeatureOverrides.empty() || !disabledFeatureOverrides.empty()))
+    {
+        fprintf(stderr, "Missing EGL_ANGLE_feature_control.\n");
+        destroyGL();
+        return false;
+    }
+
     if (!disabledFeatureOverrides.empty())
     {
-        if (strstr(extensionString, "EGL_ANGLE_feature_control") == nullptr)
-        {
-            fprintf(stderr, "Missing EGL_ANGLE_feature_control.\n");
-            destroyGL();
-            return false;
-        }
-
         disabledFeatureOverrides.push_back(nullptr);
 
         displayAttributes.push_back(EGL_FEATURE_OVERRIDES_DISABLED_ANGLE);
         displayAttributes.push_back(reinterpret_cast<EGLAttrib>(disabledFeatureOverrides.data()));
     }
 
-    if (!enabledFeatureOverrides.empty())
+    if (hasFeatureControlANGLE)
     {
-        if (strstr(extensionString, "EGL_ANGLE_feature_control") == nullptr)
-        {
-            fprintf(stderr, "Missing EGL_ANGLE_feature_control.\n");
-            destroyGL();
-            return false;
-        }
-
+        // Always enable exposeNonConformantExtensionsAndVersions in ANGLE tests.
+        enabledFeatureOverrides.push_back("exposeNonConformantExtensionsAndVersions");
         enabledFeatureOverrides.push_back(nullptr);
 
         displayAttributes.push_back(EGL_FEATURE_OVERRIDES_ENABLED_ANGLE);
@@ -507,7 +536,9 @@ EGLContext EGLWindow::createContext(EGLContext share) const
             contextAttributes.push_back(mConfigParams.debug ? EGL_TRUE : EGL_FALSE);
         }
 
-        if (hasKHRCreateContextNoError)
+        // TODO (http://anglebug.com/5809)
+        // Mesa does not allow EGL_CONTEXT_OPENGL_NO_ERROR_KHR for GLES1.
+        if (hasKHRCreateContextNoError && mConfigParams.noError)
         {
             contextAttributes.push_back(EGL_CONTEXT_OPENGL_NO_ERROR_KHR);
             contextAttributes.push_back(mConfigParams.noError ? EGL_TRUE : EGL_FALSE);

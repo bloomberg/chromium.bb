@@ -10,6 +10,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/viz/common/features.h"
 #include "components/viz/service/display/overlay_strategy_fullscreen.h"
 #include "components/viz/service/display/overlay_strategy_single_on_top.h"
@@ -31,9 +32,8 @@ void ConvertToOzoneOverlaySurface(
   ozone_candidate->transform = primary_plane.transform;
   ozone_candidate->format = primary_plane.format;
   ozone_candidate->display_rect = primary_plane.display_rect;
-  ozone_candidate->crop_rect = gfx::RectF(0.f, 0.f, 1.f, 1.f);
-  ozone_candidate->clip_rect = gfx::ToEnclosingRect(primary_plane.display_rect);
-  ozone_candidate->is_clipped = false;
+  ozone_candidate->crop_rect = primary_plane.uv_rect;
+  ozone_candidate->clip_rect.reset();
   ozone_candidate->is_opaque = !primary_plane.enable_blending;
   ozone_candidate->plane_z_order = 0;
   ozone_candidate->buffer_size = primary_plane.resource_size;
@@ -47,10 +47,10 @@ void ConvertToOzoneOverlaySurface(
   ozone_candidate->display_rect = overlay_candidate.display_rect;
   ozone_candidate->crop_rect = overlay_candidate.uv_rect;
   ozone_candidate->clip_rect = overlay_candidate.clip_rect;
-  ozone_candidate->is_clipped = overlay_candidate.is_clipped;
   ozone_candidate->is_opaque = overlay_candidate.is_opaque;
   ozone_candidate->plane_z_order = overlay_candidate.plane_z_order;
   ozone_candidate->buffer_size = overlay_candidate.resource_size_in_pixels;
+  ozone_candidate->requires_overlay = overlay_candidate.requires_overlay;
 }
 
 uint32_t MailboxToUInt32(const gpu::Mailbox& mailbox) {
@@ -64,6 +64,28 @@ void ReportSharedImageExists(bool exists) {
       "SharedImageExists",
       exists);
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool AllowColorSpaceCombination(
+    const gfx::ColorSpace& source_color_space,
+    const gfx::ColorSpace& destination_color_space) {
+  // Allow invalid source color spaces because the assumption is that the
+  // compositor won't do a color space conversion in this case anyway, so it
+  // should be consistent with the overlay path.
+  if (!source_color_space.IsValid())
+    return true;
+
+  // Allow color space mismatches as long as either a) the source color space is
+  // SRGB; or b) both the source and destination color spaces have the same
+  // color usage. It is possible that case (a) still allows for visible color
+  // inconsistency between overlays and composition, but we'll address that case
+  // if it comes up.
+  return source_color_space.GetContentColorUsage() ==
+             gfx::ContentColorUsage::kSRGB ||
+         source_color_space.GetContentColorUsage() ==
+             destination_color_space.GetContentColorUsage();
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -137,7 +159,8 @@ void OverlayProcessorOzone::CheckOverlaySupport(
 #if !defined(OS_FUCHSIA)
       if (shared_image_interface_) {
         bool result = SetNativePixmapForCandidate(&(*ozone_surface_iterator),
-                                                  primary_plane->mailbox);
+                                                  primary_plane->mailbox,
+                                                  /*is_primary=*/true);
         // We cannot validate an overlay configuration without the buffer for
         // primary plane present.
         if (!result) {
@@ -157,9 +180,30 @@ void OverlayProcessorOzone::CheckOverlaySupport(
          ozone_surface_iterator++, surface_iterator++) {
       ConvertToOzoneOverlaySurface(*surface_iterator,
                                    &(*ozone_surface_iterator));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      // On Chrome OS, skip the candidate if we think a color space combination
+      // might cause visible color differences between compositing and overlays.
+      // The reason is that on Chrome OS, we don't yet have an API to set up
+      // color space conversion per plane. Note however that we should only do
+      // this if the candidate does not require an overlay (e.g., for protected
+      // content, it's better to display it with an incorrect color space than
+      // to not display it at all).
+      // TODO(b/181974042): plumb the color space all the way to the ozone DRM
+      // backend when we get an API for per-plane color management.
+      DCHECK(primary_plane);
+      if (!surface_iterator->requires_overlay &&
+          !AllowColorSpaceCombination(
+              /*source_color_space=*/surface_iterator->color_space,
+              /*destination_color_space=*/primary_plane->color_space)) {
+        *ozone_surface_iterator = ui::OverlaySurfaceCandidate();
+        ozone_surface_iterator->plane_z_order = surface_iterator->plane_z_order;
+        continue;
+      }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
       if (shared_image_interface_) {
         bool result = SetNativePixmapForCandidate(&(*ozone_surface_iterator),
-                                                  surface_iterator->mailbox);
+                                                  surface_iterator->mailbox,
+                                                  /*is_primary=*/false);
         // Skip the candidate if the corresponding NativePixmap is not found.
         if (!result) {
           *ozone_surface_iterator = ui::OverlaySurfaceCandidate();
@@ -198,7 +242,8 @@ gfx::Rect OverlayProcessorOzone::GetOverlayDamageRectForOutputSurface(
 
 bool OverlayProcessorOzone::SetNativePixmapForCandidate(
     ui::OverlaySurfaceCandidate* candidate,
-    const gpu::Mailbox& mailbox) {
+    const gpu::Mailbox& mailbox,
+    bool is_primary) {
   DCHECK(shared_image_interface_);
 
   UMA_HISTOGRAM_BOOLEAN(
@@ -209,9 +254,10 @@ bool OverlayProcessorOzone::SetNativePixmapForCandidate(
   if (!mailbox.IsSharedImage())
     return false;
 
-  candidate->native_pixmap = shared_image_interface_->GetNativePixmap(mailbox);
+  scoped_refptr<gfx::NativePixmap> native_pixmap =
+      shared_image_interface_->GetNativePixmap(mailbox);
 
-  if (!candidate->native_pixmap) {
+  if (!native_pixmap) {
     // SharedImage creation and destruction happens on a different
     // thread so there is no guarantee that we can always look them up
     // successfully. If a SharedImage doesn't exist, ignore the
@@ -221,9 +267,19 @@ bool OverlayProcessorOzone::SetNativePixmapForCandidate(
     ReportSharedImageExists(false);
     return false;
   }
-
-  candidate->native_pixmap_unique_id = MailboxToUInt32(mailbox);
   ReportSharedImageExists(true);
+
+  if (is_primary && (candidate->buffer_size != native_pixmap->GetBufferSize() ||
+                     candidate->format != native_pixmap->GetBufferFormat())) {
+    // If |mailbox| corresponds to the last submitted primary plane, its
+    // parameters may not match those of the current candidate due to a
+    // reshape. If the size and format don't match, skip this candidate for
+    // now, and try again next frame.
+    return false;
+  }
+
+  candidate->native_pixmap = std::move(native_pixmap);
+  candidate->native_pixmap_unique_id = MailboxToUInt32(mailbox);
   return true;
 }
 

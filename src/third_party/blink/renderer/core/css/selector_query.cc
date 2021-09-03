@@ -96,10 +96,8 @@ struct AllElementsSelectorQueryTrait {
 
 inline bool SelectorMatches(const CSSSelector& selector,
                             Element& element,
-                            const ContainerNode& root_node) {
-  SelectorChecker::Init init;
-  init.mode = SelectorChecker::kQueryingRules;
-  SelectorChecker checker(init);
+                            const ContainerNode& root_node,
+                            const SelectorChecker& checker) {
   SelectorChecker::SelectorCheckingContext context(&element);
   context.selector = &selector;
   context.scope = &root_node;
@@ -108,8 +106,6 @@ inline bool SelectorMatches(const CSSSelector& selector,
 
 bool SelectorQuery::Matches(Element& target_element) const {
   QUERY_STATS_RESET();
-  if (needs_updated_distribution_)
-    target_element.UpdateDistributionForFlatTreeTraversal();
   return SelectorListMatches(target_element, target_element);
 }
 
@@ -117,8 +113,6 @@ Element* SelectorQuery::Closest(Element& target_element) const {
   QUERY_STATS_RESET();
   if (selectors_.IsEmpty())
     return nullptr;
-  if (needs_updated_distribution_)
-    target_element.UpdateDistributionForFlatTreeTraversal();
 
   for (Element* current_element = &target_element; current_element;
        current_element = current_element->parentElement()) {
@@ -150,11 +144,12 @@ static void CollectElementsByClassName(
     const AtomicString& class_name,
     const CSSSelector* selector,
     typename SelectorQueryTrait::OutputType& output) {
+  SelectorChecker checker(SelectorChecker::kQueryingRules);
   for (Element& element : ElementTraversal::DescendantsOf(root_node)) {
     QUERY_STATS_INCREMENT(fast_class);
     if (!element.HasClassName(class_name))
       continue;
-    if (selector && !SelectorMatches(*selector, element, root_node))
+    if (selector && !SelectorMatches(*selector, element, root_node, checker))
       continue;
     SelectorQueryTrait::AppendElement(output, element);
     if (SelectorQueryTrait::kShouldOnlyMatchFirstElement)
@@ -271,10 +266,11 @@ void SelectorQuery::ExecuteForTraverseRoot(
   DCHECK_EQ(selectors_.size(), 1u);
 
   const CSSSelector& selector = *selectors_[0];
+  SelectorChecker checker(SelectorChecker::kQueryingRules);
 
   for (Element& element : ElementTraversal::DescendantsOf(traverse_root)) {
     QUERY_STATS_INCREMENT(fast_scan);
-    if (SelectorMatches(selector, element, root_node)) {
+    if (SelectorMatches(selector, element, root_node, checker)) {
       SelectorQueryTrait::AppendElement(output, element);
       if (SelectorQueryTrait::kShouldOnlyMatchFirstElement)
         return;
@@ -284,8 +280,9 @@ void SelectorQuery::ExecuteForTraverseRoot(
 
 bool SelectorQuery::SelectorListMatches(ContainerNode& root_node,
                                         Element& element) const {
+  SelectorChecker checker(SelectorChecker::kQueryingRules);
   for (auto* const selector : selectors_) {
-    if (SelectorMatches(*selector, element, root_node))
+    if (SelectorMatches(*selector, element, root_node, checker))
       return true;
   }
   return false;
@@ -305,57 +302,6 @@ void SelectorQuery::ExecuteSlow(
   }
 }
 
-// FIXME: Move the following helper functions, AuthorShadowRootOf,
-// NextTraversingShadowTree to the best place, e.g. NodeTraversal.
-static ShadowRoot* AuthorShadowRootOf(const ContainerNode& node) {
-  if (!node.IsElementNode())
-    return nullptr;
-  ShadowRoot* root = node.GetShadowRoot();
-  if (root && root->IsOpenOrV0())
-    return root;
-  return nullptr;
-}
-
-static ContainerNode* NextTraversingShadowTree(const ContainerNode& node,
-                                               const ContainerNode* root_node) {
-  if (ShadowRoot* shadow_root = AuthorShadowRootOf(node))
-    return shadow_root;
-
-  const ContainerNode* current = &node;
-  while (current) {
-    if (Element* next = ElementTraversal::Next(*current, root_node))
-      return next;
-
-    if (!current->IsInShadowTree())
-      return nullptr;
-
-    ShadowRoot* shadow_root = current->ContainingShadowRoot();
-    if (shadow_root == root_node)
-      return nullptr;
-
-    current = &shadow_root->host();
-  }
-  return nullptr;
-}
-
-template <typename SelectorQueryTrait>
-void SelectorQuery::ExecuteSlowTraversingShadowTree(
-    ContainerNode& root_node,
-    typename SelectorQueryTrait::OutputType& output) const {
-  for (ContainerNode* node = NextTraversingShadowTree(root_node, &root_node);
-       node; node = NextTraversingShadowTree(*node, &root_node)) {
-    auto* element = DynamicTo<Element>(node);
-    if (!element)
-      continue;
-    QUERY_STATS_INCREMENT(slow_traversing_shadow_tree_scan);
-    if (!SelectorListMatches(root_node, *element))
-      continue;
-    SelectorQueryTrait::AppendElement(output, *element);
-    if (SelectorQueryTrait::kShouldOnlyMatchFirstElement)
-      return;
-  }
-}
-
 template <typename SelectorQueryTrait>
 void SelectorQuery::ExecuteWithId(
     ContainerNode& root_node,
@@ -365,6 +311,7 @@ void SelectorQuery::ExecuteWithId(
 
   const CSSSelector& first_selector = *selectors_[0];
   const TreeScope& scope = root_node.ContainingTreeScope();
+  SelectorChecker checker(SelectorChecker::kQueryingRules);
 
   if (scope.ContainsMultipleElementsWithId(selector_id_)) {
     // We don't currently handle cases where there's multiple elements with the
@@ -378,7 +325,7 @@ void SelectorQuery::ExecuteWithId(
       if (!element->IsDescendantOf(&root_node))
         continue;
       QUERY_STATS_INCREMENT(fast_id);
-      if (SelectorMatches(first_selector, *element, root_node)) {
+      if (SelectorMatches(first_selector, *element, root_node, checker)) {
         SelectorQueryTrait::AppendElement(output, *element);
         if (SelectorQueryTrait::kShouldOnlyMatchFirstElement)
           return;
@@ -394,7 +341,7 @@ void SelectorQuery::ExecuteWithId(
     if (!element->IsDescendantOf(&root_node))
       return;
     QUERY_STATS_INCREMENT(fast_id);
-    if (SelectorMatches(first_selector, *element, root_node))
+    if (SelectorMatches(first_selector, *element, root_node, checker))
       SelectorQueryTrait::AppendElement(output, *element);
     return;
   }
@@ -417,19 +364,11 @@ void SelectorQuery::Execute(
     return;
 
   if (use_slow_scan_) {
-    if (needs_updated_distribution_)
-      root_node.UpdateDistributionForFlatTreeTraversal();
-    if (uses_deep_combinator_or_shadow_pseudo_) {
-      ExecuteSlowTraversingShadowTree<SelectorQueryTrait>(root_node, output);
-    } else {
-      ExecuteSlow<SelectorQueryTrait>(root_node, output);
-    }
+    ExecuteSlow<SelectorQueryTrait>(root_node, output);
     return;
   }
 
   DCHECK_EQ(selectors_.size(), 1u);
-  DCHECK(!needs_updated_distribution_);
-  DCHECK(!uses_deep_combinator_or_shadow_pseudo_);
 
   // In quirks mode getElementById("a") is case sensitive and should only
   // match elements with lowercase id "a", but querySelector is case-insensitive
@@ -477,8 +416,6 @@ SelectorQuery::SelectorQuery(CSSSelectorList selector_list)
     : selector_list_(std::move(selector_list)),
       selector_id_is_rightmost_(true),
       selector_id_affected_by_sibling_combinator_(false),
-      uses_deep_combinator_or_shadow_pseudo_(false),
-      needs_updated_distribution_(false),
       use_slow_scan_(true) {
   selectors_.ReserveInitialCapacity(selector_list_.ComputeLength());
   for (const CSSSelector* selector = selector_list_.First(); selector;
@@ -486,13 +423,9 @@ SelectorQuery::SelectorQuery(CSSSelectorList selector_list)
     if (selector->MatchesPseudoElement())
       continue;
     selectors_.UncheckedAppend(selector);
-    uses_deep_combinator_or_shadow_pseudo_ |=
-        selector->HasDeepCombinatorOrShadowPseudo();
-    needs_updated_distribution_ |= selector->NeedsUpdatedDistribution();
   }
 
-  if (selectors_.size() == 1 && !uses_deep_combinator_or_shadow_pseudo_ &&
-      !needs_updated_distribution_) {
+  if (selectors_.size() == 1) {
     use_slow_scan_ = false;
     for (const CSSSelector* current = selectors_[0]; current;
          current = current->TagHistory()) {
@@ -535,9 +468,8 @@ SelectorQuery* SelectorQueryCache::Add(const AtomicString& selectors,
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
       MakeGarbageCollected<CSSParserContext>(
-          document, document.BaseURL(), true /* origin_clean */,
-          document.GetReferrerPolicy(), WTF::TextEncoding(),
-          CSSParserContext::kSnapshotProfile),
+          document, document.BaseURL(), true /* origin_clean */, Referrer(),
+          WTF::TextEncoding(), CSSParserContext::kSnapshotProfile),
       nullptr, selectors);
 
   if (!selector_list.First()) {

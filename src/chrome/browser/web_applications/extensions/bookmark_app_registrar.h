@@ -8,8 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
@@ -38,19 +37,28 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   bool IsInstalled(const web_app::AppId& app_id) const override;
   bool IsLocallyInstalled(const web_app::AppId& app_id) const override;
   bool WasInstalledByUser(const web_app::AppId& app_id) const override;
+  bool WasInstalledByOem(const web_app::AppId& app_id) const override;
   int CountUserInstalledApps() const override;
   std::string GetAppShortName(const web_app::AppId& app_id) const override;
   std::string GetAppDescription(const web_app::AppId& app_id) const override;
-  base::Optional<SkColor> GetAppThemeColor(
+  absl::optional<SkColor> GetAppThemeColor(
       const web_app::AppId& app_id) const override;
-  base::Optional<SkColor> GetAppBackgroundColor(
+  absl::optional<SkColor> GetAppBackgroundColor(
       const web_app::AppId& app_id) const override;
   const GURL& GetAppStartUrl(const web_app::AppId& app_id) const override;
   const std::string* GetAppLaunchQueryParams(
       const web_app::AppId& app_id) const override;
   const apps::ShareTarget* GetAppShareTarget(
       const web_app::AppId& app_id) const override;
-  base::Optional<GURL> GetAppScopeInternal(
+  blink::mojom::CaptureLinks GetAppCaptureLinks(
+      const web_app::AppId& app_id) const override;
+  const apps::FileHandlers* GetAppFileHandlers(
+      const web_app::AppId& app_id) const override;
+  const apps::ProtocolHandlers* GetAppProtocolHandlers(
+      const web_app::AppId& app_id) const override;
+  bool IsAppFileHandlerPermissionBlocked(
+      const web_app::AppId& app_id) const override;
+  absl::optional<GURL> GetAppScopeInternal(
       const web_app::AppId& app_id) const override;
   web_app::DisplayMode GetAppDisplayMode(
       const web_app::AppId& app_id) const override;
@@ -58,6 +66,10 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   std::vector<web_app::DisplayMode> GetAppDisplayModeOverride(
       const web_app::AppId& app_id) const override;
+  apps::UrlHandlers GetAppUrlHandlers(
+      const web_app::AppId& app_id) const override;
+  GURL GetAppManifestUrl(const web_app::AppId& app_id) const override;
+  base::Time GetAppLastBadgingTime(const web_app::AppId& app_id) const override;
   base::Time GetAppLastLaunchTime(const web_app::AppId& app_id) const override;
   base::Time GetAppInstallTime(const web_app::AppId& app_id) const override;
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
@@ -66,13 +78,13 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
       const web_app::AppId& app_id) const override;
   std::vector<WebApplicationShortcutsMenuItemInfo> GetAppShortcutsMenuItemInfos(
       const web_app::AppId& app_id) const override;
-  std::vector<std::vector<SquareSizePx>>
-  GetAppDownloadedShortcutsMenuIconsSizes(
+  std::vector<IconSizes> GetAppDownloadedShortcutsMenuIconsSizes(
       const web_app::AppId& app_id) const override;
   web_app::RunOnOsLoginMode GetAppRunOnOsLoginMode(
       const web_app::AppId& app_id) const override;
   std::vector<web_app::AppId> GetAppIds() const override;
   web_app::WebAppRegistrar* AsWebAppRegistrar() override;
+  const web_app::WebAppRegistrar* AsWebAppRegistrar() const override;
   BookmarkAppRegistrar* AsBookmarkAppRegistrar() override;
 
   syncer::StringOrdinal GetUserPageOrdinal(const web_app::AppId& app_id) const;
@@ -99,7 +111,7 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   // Finds the extension object in ExtensionRegistry and in the being
   // uninstalled slot.
   //
-  // When AppRegistrarObserver::OnWebAppUninstalled(app_id) happens for
+  // When AppRegistrarObserver::OnWebAppWillBeUninstalled(app_id) happens for
   // bookmark apps, the bookmark app backing that app_id is already removed
   // from ExtensionRegistry. If some abstract observer needs the extension
   // pointer for |app_id| being uninstalled, that observer should use this
@@ -113,8 +125,8 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   const Extension* GetBookmarkAppDchecked(const web_app::AppId& app_id) const;
   const Extension* GetEnabledExtension(const web_app::AppId& app_id) const;
 
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      extension_observer_{this};
+  base::ScopedObservation<ExtensionRegistry, ExtensionRegistryObserver>
+      extension_observation_{this};
 
   // Observers may find this pointer via FindExtension method.
   const Extension* bookmark_app_being_observed_ = nullptr;

@@ -2,14 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import division
+from __future__ import absolute_import
 import logging
 import os
 import posixpath
 import uuid
 import sys
 import tempfile
+import threading
 import time
 
+from datetime import datetime
 from py_utils import cloud_storage  # pylint: disable=import-error
 
 from telemetry import decorators
@@ -39,6 +43,8 @@ class BrowserBackend(app_backend.AppBackend):
     self._dump_finder = None
     self._tmp_minidump_dir = tempfile.mkdtemp()
     self._symbolized_minidump_paths = set([])
+    self._periodic_screenshot_timer = None
+    self._collect_periodic_screenshots = False
 
   def SetBrowser(self, browser):
     super(BrowserBackend, self).SetApp(app=browser)
@@ -51,7 +57,7 @@ class BrowserBackend(app_backend.AppBackend):
   def GetLogFileContents(self):
     if not self.log_file_path:
       return 'No log file'
-    with file(self.log_file_path) as f:
+    with open(self.log_file_path) as f:
       return f.read()
 
   def UploadLogsToCloudStorage(self):
@@ -148,7 +154,25 @@ class BrowserBackend(app_backend.AppBackend):
     self._SymbolizeAndLogMinidumps(log_level, data)
     return data
 
-  def _CollectScreenshot(self, log_level, suffix):
+  def StartCollectingPeriodicScreenshots(self, frequency_ms):
+    self._collect_periodic_screenshots = True
+    self._CollectPeriodicScreenshots(datetime.now(), frequency_ms)
+
+  def StopCollectingPeriodicScreenshots(self):
+    self._collect_periodic_screenshots = False
+    self._periodic_screenshot_timer.cancel()
+
+  def _CollectPeriodicScreenshots(self, start_time, frequency_ms):
+    self._CollectScreenshot(logging.INFO, "periodic.png", start_time)
+    #2To3-division: this line is unchanged as result is expected floats.
+    self._periodic_screenshot_timer = threading.Timer(
+        frequency_ms / 1000.0,
+        self._CollectPeriodicScreenshots,
+        [start_time, frequency_ms])
+    if self._collect_periodic_screenshots:
+      self._periodic_screenshot_timer.start()
+
+  def _CollectScreenshot(self, log_level, suffix, start_time=None):
     """Helper function to handle the screenshot portion of CollectDebugData.
 
     Attempts to take a screenshot at the OS level and save it as an artifact.
@@ -156,12 +180,22 @@ class BrowserBackend(app_backend.AppBackend):
     Args:
       log_level: The logging level to use from the logging module, e.g.
           logging.ERROR.
-      suffix: The suffix to append to the names of any created artifacts.
+      suffix: The suffix to prepend to the names of any created artifacts.
+      start_time: If set, prepend elaped time to screenshot path.
+          Should be time at which the test started, as a datetime.
+          This is done here because it may take a nonzero amount of time
+          to take a screenshot.
     """
     screenshot_handle = screenshot.TryCaptureScreenShot(
         self.browser.platform, timeout=self.screenshot_timeout)
     if screenshot_handle:
       with open(screenshot_handle.GetAbsPath(), 'rb') as infile:
+        if start_time:
+          # Prepend time since test started to path
+          test_time = datetime.now() - start_time
+          suffix = str(test_time.total_seconds()).replace(
+              '.', '_') + '-' + suffix
+
         artifact_name = posixpath.join(
             'debug_screenshots', 'screenshot-%s' % suffix)
         logging.log(
@@ -421,3 +455,17 @@ class BrowserBackend(app_backend.AppBackend):
   def ExecuteBrowserCommand(
       self, command_id, timeout): # pylint: disable=unused-argument
     raise exceptions.StoryActionError('Execute browser command not supported')
+
+  def SetDownloadBehavior(
+      self, behavior, downloadPath, timeout): # pylint: disable=unused-argument
+    raise exceptions.StoryActionError('Set download behavior not supported')
+
+  def GetUIDevtoolsBackend(self, port): # pylint: disable=unused-argument
+    raise exceptions.StoryActionError('UI Devtools not supported')
+
+  def GetWindowForTarget(self, target_id): # pylint: disable=unused-argument
+    raise exceptions.StoryActionError('Get Window For Target not supported')
+
+  def SetWindowBounds(
+      self, window_id, bounds): # pylint: disable=unused-argument
+    raise exceptions.StoryActionError('Set Window Bounds not supported')

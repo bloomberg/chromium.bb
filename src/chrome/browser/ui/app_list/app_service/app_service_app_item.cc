@@ -5,6 +5,8 @@
 #include "chrome/browser/ui/app_list/app_service/app_service_app_item.h"
 
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_types.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/bind.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
@@ -12,10 +14,13 @@
 #include "base/notreached.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/apps/app_service/launch_utils.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
+#include "chrome/browser/ash/remote_apps/remote_apps_manager.h"
+#include "chrome/browser/ash/remote_apps/remote_apps_manager_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_service/app_service_context_menu.h"
-#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/common/chrome_features.h"
 
 // static
@@ -32,6 +37,15 @@ AppServiceAppItem::AppServiceAppItem(
   OnAppUpdate(app_update, true);
   if (sync_item && sync_item->item_ordinal.IsValid()) {
     UpdateFromSync(sync_item);
+  } else if (app_type_ == apps::mojom::AppType::kRemote) {
+    chromeos::RemoteAppsManager* remote_apps_manager =
+        chromeos::RemoteAppsManagerFactory::GetForProfile(profile);
+
+    if (remote_apps_manager->ShouldAddToFront(app_update.AppId())) {
+      SetPosition(model_updater->GetPositionBeforeFirstItem());
+    } else {
+      SetDefaultPositionIfApplicable(model_updater);
+    }
   } else {
     SetDefaultPositionIfApplicable(model_updater);
 
@@ -39,7 +53,7 @@ AppServiceAppItem::AppServiceAppItem(
     if (app_type_ == apps::mojom::AppType::kCrostini ||
         id() == crostini::kCrostiniTerminalSystemAppId) {
       DCHECK(folder_id().empty());
-      SetChromeFolderId(crostini::kCrostiniFolderId);
+      SetChromeFolderId(ash::kCrostiniFolderId);
     }
   }
 
@@ -68,23 +82,32 @@ void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
     is_platform_app_ =
         app_update.IsPlatformApp() == apps::mojom::OptionalBool::kTrue;
   }
+
+  if (in_constructor || app_update.ReadinessChanged() ||
+      app_update.PausedChanged()) {
+    if (app_update.Readiness() == apps::mojom::Readiness::kDisabledByPolicy) {
+      SetAppStatus(ash::AppStatus::kBlocked);
+    } else if (app_update.Paused() == apps::mojom::OptionalBool::kTrue) {
+      SetAppStatus(ash::AppStatus::kPaused);
+    } else {
+      SetAppStatus(ash::AppStatus::kReady);
+    }
+  }
 }
 
 void AppServiceAppItem::Activate(int event_flags) {
   // For Crostini apps, non-platform Chrome apps, Web apps, it could be
   // selecting an existing delegate for the app, so call
-  // ChromeLauncherController's ActivateApp interface. Platform apps or ARC
+  // ChromeShelfController's ActivateApp interface. Platform apps or ARC
   // apps, Crostini apps treat activations as a launch. The app can decide
   // whether to show a new window or focus an existing window as it sees fit.
   //
   // TODO(crbug.com/1022541): Move the Chrome special case to ExtensionApps,
   // when AppService Instance feature is done.
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile());
-
   bool is_active_app = false;
-  proxy->AppRegistryCache().ForOneApp(
-      id(), [&is_active_app](const apps::AppUpdate& update) {
+  apps::AppServiceProxyFactory::GetForProfile(profile())
+      ->AppRegistryCache()
+      .ForOneApp(id(), [&is_active_app](const apps::AppUpdate& update) {
         if (update.AppType() == apps::mojom::AppType::kCrostini ||
             ((update.AppType() == apps::mojom::AppType::kExtension ||
               update.AppType() == apps::mojom::AppType::kWeb) &&
@@ -93,7 +116,7 @@ void AppServiceAppItem::Activate(int event_flags) {
         }
       });
   if (is_active_app) {
-    ChromeLauncherController::instance()->ActivateApp(
+    ChromeShelfController::instance()->ActivateApp(
         id(), ash::LAUNCH_FROM_APP_LIST, event_flags,
         GetController()->GetAppListDisplayId());
     return;
@@ -129,25 +152,22 @@ void AppServiceAppItem::ExecuteLaunchCommand(int event_flags) {
 
 void AppServiceAppItem::Launch(int event_flags,
                                apps::mojom::LaunchSource launch_source) {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile());
-  proxy->Launch(id(), event_flags, launch_source,
-                GetController()->GetAppListDisplayId());
+  apps::AppServiceProxyFactory::GetForProfile(profile())->Launch(
+      id(), event_flags, launch_source,
+      apps::MakeWindowInfo(GetController()->GetAppListDisplayId()));
 }
 
 void AppServiceAppItem::CallLoadIcon(bool allow_placeholder_icon) {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile());
-
   auto icon_type =
       (base::FeatureList::IsEnabled(features::kAppServiceAdaptiveIcon))
           ? apps::mojom::IconType::kStandard
           : apps::mojom::IconType::kUncompressed;
-  proxy->LoadIcon(app_type_, id(), icon_type,
-                  ash::AppListConfig::instance().grid_icon_dimension(),
-                  allow_placeholder_icon,
-                  base::BindOnce(&AppServiceAppItem::OnLoadIcon,
-                                 weak_ptr_factory_.GetWeakPtr()));
+  apps::AppServiceProxyFactory::GetForProfile(profile())->LoadIcon(
+      app_type_, id(), icon_type,
+      ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
+      allow_placeholder_icon,
+      base::BindOnce(&AppServiceAppItem::OnLoadIcon,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AppServiceAppItem::OnLoadIcon(apps::mojom::IconValuePtr icon_value) {

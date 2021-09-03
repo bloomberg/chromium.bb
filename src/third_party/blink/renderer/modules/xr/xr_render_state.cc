@@ -55,15 +55,14 @@ HTMLCanvasElement* XRRenderState::output_canvas() const {
   return nullptr;
 }
 
-base::Optional<double> XRRenderState::inlineVerticalFieldOfView() const {
+absl::optional<double> XRRenderState::inlineVerticalFieldOfView() const {
   if (immersive_)
-    return base::nullopt;
+    return absl::nullopt;
   return inline_vertical_fov_;
 }
 
 void XRRenderState::Trace(Visitor* visitor) const {
   visitor->Trace(base_layer_);
-  visitor->Trace(inline_vertical_fov_);
   ScriptWrappable::Trace(visitor);
 }
 

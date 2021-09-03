@@ -19,22 +19,25 @@
 #include "components/prefs/pref_service.h"
 #import "components/previous_session_info/previous_session_info.h"
 #include "components/ukm/ios/features.h"
+#include "components/ukm/ios/ukm_reporting_ios_util.h"
 #import "ios/chrome/app/application_delegate/metric_kit_subscriber.h"
 #import "ios/chrome/app/application_delegate/startup_information.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/crash_report/breakpad_helper.h"
+#include "ios/chrome/browser/crash_report/crash_helper.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/metrics/first_user_action_recorder.h"
 #import "ios/chrome/browser/net/connection_type_observer_bridge.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/main/browser_interface_provider.h"
 #import "ios/chrome/browser/ui/main/connection_information.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/widget_kit/widget_metrics_util.h"
+#include "ios/chrome/common/app_group/app_group_metrics.h"
 #include "ios/chrome/common/app_group/app_group_metrics_mainapp.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
@@ -65,6 +68,55 @@ base::TimeDelta TimeDeltaSinceAppLaunchFromProcess() {
       time.tv_sec + (time.tv_usec / (double)USEC_PER_SEC);
   NSDate* date = [NSDate dateWithTimeIntervalSince1970:time_since_1970];
   return base::TimeDelta::FromSecondsD(-date.timeIntervalSinceNow);
+}
+
+// Send histograms reporting the usage of notification center metrics.
+void RecordWidgetUsage() {
+  using base::SysNSStringToUTF8;
+
+  // Dictionary containing the respective metric for each NSUserDefault's key.
+  NSDictionary<NSString*, NSString*>* keyMetric = @{
+    app_group::
+    kContentExtensionDisplayCount : @"IOS.ContentExtension.DisplayCount",
+    app_group::
+    kSearchExtensionDisplayCount : @"IOS.SearchExtension.DisplayCount",
+    app_group::
+    kCredentialExtensionDisplayCount : @"IOS.CredentialExtension.DisplayCount",
+    app_group::
+    kCredentialExtensionReauthCount : @"IOS.CredentialExtension.ReauthCount",
+    app_group::
+    kCredentialExtensionCopyURLCount : @"IOS.CredentialExtension.CopyURLCount",
+    app_group::kCredentialExtensionCopyUsernameCount :
+        @"IOS.CredentialExtension.CopyUsernameCount",
+    app_group::kCredentialExtensionCopyPasswordCount :
+        @"IOS.CredentialExtension.CopyPasswordCount",
+    app_group::kCredentialExtensionShowPasswordCount :
+        @"IOS.CredentialExtension.ShowPasswordCount",
+    app_group::
+    kCredentialExtensionSearchCount : @"IOS.CredentialExtension.SearchCount",
+    app_group::kCredentialExtensionPasswordUseCount :
+        @"IOS.CredentialExtension.PasswordUseCount",
+    app_group::kCredentialExtensionQuickPasswordUseCount :
+        @"IOS.CredentialExtension.QuickPasswordUseCount",
+    app_group::kCredentialExtensionFetchPasswordFailureCount :
+        @"IOS.CredentialExtension.FetchPasswordFailure",
+    app_group::kCredentialExtensionFetchPasswordNilArgumentCount :
+        @"IOS.CredentialExtension.FetchPasswordNilArgument",
+  };
+
+  NSUserDefaults* shared_defaults = app_group::GetGroupUserDefaults();
+  for (NSString* key in keyMetric) {
+    int count = [shared_defaults integerForKey:key];
+    if (count != 0) {
+      base::UmaHistogramCounts1000(SysNSStringToUTF8(keyMetric[key]), count);
+      [shared_defaults setInteger:0 forKey:key];
+      if ([key isEqual:app_group::kCredentialExtensionPasswordUseCount] ||
+          [key isEqual:app_group::kCredentialExtensionQuickPasswordUseCount]) {
+        LogLikelyInterestedDefaultBrowserUserActivity(
+            DefaultPromoTypeMadeForIOS);
+      }
+    }
+  }
 }
 }  // namespace
 
@@ -134,7 +186,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   const base::TimeDelta startDurationFromProcess =
       TimeDeltaSinceAppLaunchFromProcess();
 
-  base::UmaHistogramTimes("Startup.ColdStartFromProcessCreationTime",
+  base::UmaHistogramTimes("Startup.ColdStartFromProcessCreationTimeV2",
                           startDurationFromProcess);
 
   if ([connectionInformation startupParameters]) {
@@ -155,6 +207,8 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 + (void)logLaunchMetricsWithStartupInformation:
             (id<StartupInformation>)startupInformation
                                connectedScenes:(NSArray<SceneState*>*)scenes {
+  RecordAndResetUkmLogSizeOnSuccessCounter();
+
   int numTabs = 0;
   int numNTPTabs = 0;
   for (SceneState* scene in scenes) {
@@ -322,7 +376,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
   } else {
     app_group::main_app::DisableMetrics();
   }
-  app_group::main_app::RecordWidgetUsage();
+  RecordWidgetUsage();
 }
 
 - (void)processCrashReportsPresentAtStartup {
@@ -330,9 +384,9 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 - (void)setBreakpadEnabled:(BOOL)enabled withUploading:(BOOL)allowUploading {
-  breakpad_helper::SetUserEnabledUploading(enabled);
+  crash_helper::SetUserEnabledUploading(enabled);
   if (enabled) {
-    breakpad_helper::SetEnabled(true);
+    crash_helper::SetEnabled(true);
 
     // Do some processing of the crash reports present at startup. Note that
     // this processing must be done before uploading is enabled because once
@@ -347,7 +401,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
                                            isFirstSessionAfterUpgrade] &&
                                        allowUploading)];
   } else {
-    breakpad_helper::SetEnabled(false);
+    crash_helper::SetEnabled(false);
   }
 }
 
@@ -389,7 +443,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 + (void)disableReporting {
-  breakpad_helper::SetUploadingEnabled(false);
+  crash_helper::SetUploadingEnabled(false);
   metrics::MetricsService* metrics =
       GetApplicationContext()->GetMetricsService();
   DCHECK(metrics);
@@ -456,7 +510,7 @@ using metrics_mediator::kAppEnteredBackgroundDateKey;
 }
 
 - (void)setBreakpadUploadingEnabled:(BOOL)enableUploading {
-  breakpad_helper::SetUploadingEnabled(enableUploading);
+  crash_helper::SetUploadingEnabled(enableUploading);
 }
 
 - (void)setReporting:(BOOL)enableReporting {

@@ -9,7 +9,6 @@
 #include <memory>
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -17,7 +16,6 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -26,6 +24,7 @@
 #include "net/reporting/reporting_endpoint.h"
 #include "net/reporting/reporting_header_parser.h"
 #include "net/reporting/reporting_report.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -146,28 +145,28 @@ class ReportingCacheImpl : public ReportingCache {
 
   ReportSet::const_iterator FindReportToEvict() const;
 
-  // Sanity-checks the entire data structure of clients, groups, and endpoints,
-  // if DCHECK is on. The cached clients should pass this sanity check after
-  // completely parsing a header (i.e. not after the intermediate steps), and
-  // before and after any of the public methods that remove or retrieve client
-  // info. Also calls |sequence_checker_| to DCHECK that we are being called on
-  // a valid sequence.
-  void SanityCheckClients() const;
+  // Consistency-checks the entire data structure of clients, groups, and
+  // endpoints, if DCHECK is on. The cached clients should pass this consistency
+  // check after completely parsing a header (i.e. not after the intermediate
+  // steps), and before and after any of the public methods that remove or
+  // retrieve client info. Also calls |sequence_checker_| to DCHECK that we are
+  // being called on a valid sequence.
+  void ConsistencyCheckClients() const;
 
-  // Helper methods for SanityCheckClients():
+  // Helper methods for ConsistencyCheckClients():
 #if DCHECK_IS_ON()
   // Returns number of endpoint groups found in |client|.
-  size_t SanityCheckClient(const std::string& domain,
-                           const Client& client) const;
+  size_t ConsistencyCheckClient(const std::string& domain,
+                                const Client& client) const;
 
   // Returns the number of endpoints found in |group|.
-  size_t SanityCheckEndpointGroup(
+  size_t ConsistencyCheckEndpointGroup(
       const ReportingEndpointGroupKey& key,
       const CachedReportingEndpointGroup& group) const;
 
-  void SanityCheckEndpoint(const ReportingEndpointGroupKey& key,
-                           const ReportingEndpoint& endpoint,
-                           EndpointMap::const_iterator endpoint_it) const;
+  void ConsistencyCheckEndpoint(const ReportingEndpointGroupKey& key,
+                                const ReportingEndpoint& endpoint,
+                                EndpointMap::const_iterator endpoint_it) const;
 #endif  // DCHECK_IS_ON()
 
   // Finds iterator to the client with the given |network_isolation_key| and
@@ -232,10 +231,10 @@ class ReportingCacheImpl : public ReportingCache {
   // Also takes iterators to the client and endpoint group to avoid repeated
   // lookups. May cause the client and/or group to be removed if they become
   // empty, which would invalidate those iterators.
-  // Returns the iterator following the endpoint removed, or base::nullopt if
+  // Returns the iterator following the endpoint removed, or absl::nullopt if
   // either of |group_it| or |client_it| were invalidated. (If |client_it| is
   // invalidated, then so must |group_it|).
-  base::Optional<EndpointMap::iterator> RemoveEndpointInternal(
+  absl::optional<EndpointMap::iterator> RemoveEndpointInternal(
       ClientMap::iterator client_it,
       EndpointGroupMap::iterator group_it,
       EndpointMap::iterator endpoint_it);
@@ -246,9 +245,9 @@ class ReportingCacheImpl : public ReportingCache {
   // invalidate |client_it|. If |num_endpoints_removed| is not null, then
   // |*num_endpoints_removed| is incremented by the number of endpoints
   // removed.
-  // Returns the iterator following the endpoint group removed, or base::nullopt
+  // Returns the iterator following the endpoint group removed, or absl::nullopt
   // if |client_it| was invalidated.
-  base::Optional<EndpointGroupMap::iterator> RemoveEndpointGroupInternal(
+  absl::optional<EndpointGroupMap::iterator> RemoveEndpointGroupInternal(
       ClientMap::iterator client_it,
       EndpointGroupMap::iterator group_it,
       size_t* num_endpoints_removed = nullptr);

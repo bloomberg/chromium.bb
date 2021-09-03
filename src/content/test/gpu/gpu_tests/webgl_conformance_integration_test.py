@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import logging
 import os
 import re
@@ -56,6 +58,12 @@ conformance_harness_script = r"""
 extension_harness_additional_script = r"""
   window.onload = function() { window._loaded = true; }
 """
+
+
+if sys.version_info[0] == 3:
+  # cmp no longer exists in Python 3
+  def cmp(a, b):  # pylint: disable=redefined-builtin
+    return int(a > b) - int(a < b)
 
 
 def _CompareVersion(version1, version2):
@@ -184,6 +192,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           'WEBGL_lose_context',
           'WEBGL_multi_draw',
           'WEBGL_video_texture',
+          'WEBGL_webcodecs_video_frame',
       ]
     else:
       return [
@@ -212,6 +221,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           'WEBGL_multi_draw',
           'WEBGL_multi_draw_instanced_base_vertex_base_instance',
           'WEBGL_video_texture',
+          'WEBGL_webcodecs_video_frame',
       ]
 
   def RunActualGpuTest(self, test_path, *args):

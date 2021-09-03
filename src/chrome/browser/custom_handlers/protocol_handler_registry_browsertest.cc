@@ -5,8 +5,9 @@
 #include <memory>
 #include <string>
 
-#include "base/strings/string16.h"
+#include "base/scoped_observation.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
@@ -20,10 +21,11 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "third_party/blink/public/common/context_menu_data/media_type.h"
+#include "third_party/blink/public/mojom/context_menu/context_menu.mojom.h"
 
 #if defined(OS_MAC)
 #include "chrome/test/base/launchservices_utils_mac.h"
@@ -36,7 +38,7 @@ namespace {
 class ProtocolHandlerChangeWaiter : public ProtocolHandlerRegistry::Observer {
  public:
   explicit ProtocolHandlerChangeWaiter(ProtocolHandlerRegistry* registry) {
-    registry_observer_.Add(registry);
+    registry_observation_.Observe(registry);
   }
   ProtocolHandlerChangeWaiter(const ProtocolHandlerChangeWaiter&) = delete;
   ProtocolHandlerChangeWaiter& operator=(const ProtocolHandlerChangeWaiter&) =
@@ -48,8 +50,9 @@ class ProtocolHandlerChangeWaiter : public ProtocolHandlerRegistry::Observer {
   void OnProtocolHandlerRegistryChanged() override { run_loop_.Quit(); }
 
  private:
-  ScopedObserver<ProtocolHandlerRegistry, ProtocolHandlerRegistry::Observer>
-      registry_observer_{this};
+  base::ScopedObservation<ProtocolHandlerRegistry,
+                          ProtocolHandlerRegistry::Observer>
+      registry_observation_{this};
   base::RunLoop run_loop_;
 };
 
@@ -67,7 +70,7 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
 
   TestRenderViewContextMenu* CreateContextMenu(GURL url) {
     content::ContextMenuParams params;
-    params.media_type = blink::ContextMenuDataMediaType::kNone;
+    params.media_type = blink::mojom::ContextMenuDataMediaType::kNone;
     params.link_url = url;
     params.unfiltered_link_url = url;
     WebContents* web_contents =
@@ -115,11 +118,11 @@ class RegisterProtocolHandlerBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
     ContextMenuEntryAppearsForHandledUrls) {
   std::unique_ptr<TestRenderViewContextMenu> menu(
-      CreateContextMenu(GURL("http://www.google.com/")));
+      CreateContextMenu(GURL("https://www.google.com/")));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 
   AddProtocolHandler(std::string("web+search"),
-                     GURL("http://www.google.com/%s"));
+                     GURL("https://www.google.com/%s"));
   GURL url("web+search:testing");
   ProtocolHandlerRegistry* registry =
       ProtocolHandlerRegistryFactory::GetForBrowserContext(
@@ -132,11 +135,11 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
     UnregisterProtocolHandler) {
   std::unique_ptr<TestRenderViewContextMenu> menu(
-      CreateContextMenu(GURL("http://www.google.com/")));
+      CreateContextMenu(GURL("https://www.google.com/")));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
 
   AddProtocolHandler(std::string("web+search"),
-                     GURL("http://www.google.com/%s"));
+                     GURL("https://www.google.com/%s"));
   GURL url("web+search:testing");
   ProtocolHandlerRegistry* registry =
       ProtocolHandlerRegistryFactory::GetForBrowserContext(
@@ -145,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest,
   menu.reset(CreateContextMenu(url));
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
   RemoveProtocolHandler(std::string("web+search"),
-                        GURL("http://www.google.com/%s"));
+                        GURL("https://www.google.com/%s"));
   ASSERT_EQ(0u, registry->GetHandlersFor(url.scheme()).size());
   menu.reset(CreateContextMenu(url));
   ASSERT_FALSE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKWITH));
@@ -168,6 +171,39 @@ IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerBrowserTest, CustomHandler) {
 
   ASSERT_EQ(handler_url,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+class RegisterProtocolHandlerSubresourceWebBundlesBrowserTest
+    : public RegisterProtocolHandlerBrowserTest {
+ public:
+  RegisterProtocolHandlerSubresourceWebBundlesBrowserTest() = default;
+  ~RegisterProtocolHandlerSubresourceWebBundlesBrowserTest() override = default;
+
+  void SetUp() override {
+    feature_list_.InitWithFeatures({features::kSubresourceWebBundles}, {});
+    RegisterProtocolHandlerBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerSubresourceWebBundlesBrowserTest,
+                       UrnProtocolHandler) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL handler_url = embedded_test_server()->GetURL("/%s");
+  AddProtocolHandler("urn", handler_url);
+
+  std::u16string expected_title = u"OK";
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL("/web_bundle/urn-handler-test.html"));
+
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
 using RegisterProtocolHandlerExtensionBrowserTest =
@@ -228,8 +264,9 @@ class RegisterProtocolHandlerAndServiceWorkerInterceptor
   }
 };
 
+// TODO(crbug.com/1204127): Fix flakiness.
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerAndServiceWorkerInterceptor,
-                       RegisterFetchListenerForHTMLHandler) {
+                       DISABLED_RegisterFetchListenerForHTMLHandler) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 

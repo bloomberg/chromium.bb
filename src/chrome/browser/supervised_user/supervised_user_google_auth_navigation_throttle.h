@@ -42,11 +42,10 @@ class SupervisedUserGoogleAuthNavigationThrottle
 
   ThrottleCheckResult ShouldProceed();
 
-  void OnReauthenticationResult(bool reauth_successful);
+  void OnReauthenticationFailed();
 
   ChildAccountService* child_account_service_;
-  std::unique_ptr<base::CallbackList<void()>::Subscription>
-      google_auth_state_subscription_;
+  base::CallbackListSubscription google_auth_state_subscription_;
 
 #if defined(OS_ANDROID)
   bool has_shown_reauth_;

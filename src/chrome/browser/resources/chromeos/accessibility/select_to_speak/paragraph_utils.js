@@ -2,11 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {WordUtils} from './word_utils.js';
+
 var AutomationNode = chrome.automation.AutomationNode;
 var RoleType = chrome.automation.RoleType;
 
-class ParagraphUtils {
+export class ParagraphUtils {
   constructor() {}
+
+  /**
+   * @param {!AutomationNode} node
+   * @return {boolean} Whether the given node is a paragraph.
+   * TODO(joelriley@google.com): Consider expanding what is considered a block,
+   * for instance, any non-inline node.
+   */
+  static isBlock(node) {
+    if (node.role === RoleType.PARAGRAPH || node.role === RoleType.SVG_ROOT) {
+      return true;
+    }
+    if (node.display !== undefined && node.display !== 'inline' &&
+        node.role !== RoleType.STATIC_TEXT &&
+        (node.parent && node.parent.role !== RoleType.SVG_ROOT)) {
+      return true;
+    }
+    return false;
+  }
 
   /**
    * Gets the first ancestor of a node which is a paragraph or is not inline,
@@ -18,16 +38,7 @@ class ParagraphUtils {
     let parent = node.parent;
     const root = node.root;
     while (parent != null) {
-      if (parent === root) {
-        return parent;
-      }
-      if (parent.role === RoleType.PARAGRAPH ||
-          parent.role === RoleType.SVG_ROOT) {
-        return parent;
-      }
-      if (parent.display !== undefined && parent.display !== 'inline' &&
-          parent.role !== RoleType.STATIC_TEXT &&
-          (parent.parent && parent.parent.role !== RoleType.SVG_ROOT)) {
+      if (parent === root || ParagraphUtils.isBlock(parent)) {
         return parent;
       }
       parent = parent.parent;
@@ -235,6 +246,8 @@ class ParagraphUtils {
   /**
    * Determines the index into the parent name at which the inlineTextBox
    * node name begins.
+   * TODO(leileilei@google.com): Corrects the annotation of |inlineTextNode|
+   * to non-nullable.
    * @param {AutomationNode} inlineTextNode An inlineTextBox type node.
    * @return {number} The character index into the parent node at which
    *     this node begins.
@@ -249,11 +262,8 @@ class ParagraphUtils {
 
   /**
    * Determines the inlineTextBox child of a staticText node that appears
-   * at the given character index into the name of the staticText node. Uses
-   * the inlineTextBoxes name length to determine position. For example, if
-   * a staticText has name "abc 123" and two children with names "abc " and
-   * "123", indexes 0-3 would return the first child and indexes 4+ would
-   * return the second child.
+   * at the given character index into the name of the staticText node. See the
+   * |findInlineTextNodeIndexByCharacterIndex| function below.
    * @param {AutomationNode} staticTextNode The staticText node to search.
    * @param {number} index The index into the staticTextNode's name.
    * @return {?AutomationNode} The inlineTextBox node within the staticText
@@ -262,18 +272,43 @@ class ParagraphUtils {
    *    large.
    */
   static findInlineTextNodeByCharacterIndex(staticTextNode, index) {
-    if (staticTextNode.children.length === 0) {
+    const inlineTextNodeIndex =
+        ParagraphUtils.findInlineTextNodeIndexByCharacterIndex(
+            staticTextNode, index);
+    if (inlineTextNodeIndex < 0) {
       return null;
+    }
+    return staticTextNode.children[inlineTextNodeIndex];
+  }
+
+  /**
+   * Determines the inlineTextBox child of a staticText node that appears
+   * at the given character index into the name of the staticText node. Uses
+   * the inlineTextBox's name length to determine position. For example, if
+   * a staticText has name "abc 123" and two children with names "abc " and
+   * "123", indexes 0-3 would return the index of the first child (i.e., 0)
+   * and indexes 4+ would return the index of the second child (i.e., 1).
+   * @param {AutomationNode} staticTextNode The staticText node to search.
+   * @param {number} index The index into the staticTextNode's name.
+   * @return {number} The index of the inlineTextBox node within the
+   *    staticText node that appears at the staticTextNode's name index into
+   *    the staticText node's name, or the last inlineTextBox index in the
+   *    staticText node if the staticTextNode's name index is too large. Return
+   *    a negative number (-1) if the staticTextNode has no children.
+   */
+  static findInlineTextNodeIndexByCharacterIndex(staticTextNode, index) {
+    if (staticTextNode.children.length === 0) {
+      return -1;
     }
     let textLength = 0;
     for (var i = 0; i < staticTextNode.children.length; i++) {
       const node = staticTextNode.children[i];
       if (node.name.length + textLength > index) {
-        return node;
+        return i;
       }
       textLength += node.name.length;
     }
-    return staticTextNode.children[staticTextNode.children.length - 1];
+    return staticTextNode.children.length - 1;
   }
 
   /**
@@ -282,11 +317,23 @@ class ParagraphUtils {
    * representing a paragraph of inline nodes.
    * @param {Array<!AutomationNode>} nodes List of automation nodes to use.
    * @param {number} index The index into nodes at which to start.
-   * @param {boolean} splitOnLanguage flag to determine if we should split nodes
-   *                  up based on language.
+   * @param {{splitOnLanguage: (boolean|undefined),
+   *          splitOnParagraph: (boolean|undefined),
+   *          clipOverflowWords: (boolean|undefined)}=} options
+   *     splitOnLanguage: flag to determine if we should split nodes up based on
+   * language. If this is not passed, default to false.
+   *     splitOnParagraph: flag to determine if we should split nodes up based
+   * on paragraph. If this is not passed, default to true.
+   *     clipOverflowWords: Whether to clip generated text.
    * @return {ParagraphUtils.NodeGroup} info about the node group
    */
-  static buildNodeGroup(nodes, index, splitOnLanguage) {
+  static buildNodeGroup(nodes, index, options) {
+    options = options || {};
+    const splitOnLanguage = options.splitOnLanguage || false;
+    const splitOnParagraph = options.splitOnParagraph === undefined ?
+        true :
+        options.splitOnParagraph;
+    const clipOverflowWords = options.clipOverflowWords || false;
     let node = nodes[index];
     let next = nodes[index + 1];
     const blockParent = ParagraphUtils.getFirstBlockAncestor(nodes[index]);
@@ -331,9 +378,14 @@ class ParagraphUtils {
               new ParagraphUtils.NodeGroupItem(node, result.text.length, false);
         }
         if (newNode) {
-          result.text += ParagraphUtils.getNodeNameWithoutOverflowWords(
-                             newNode, blockParent) +
-              ' ';
+          if (clipOverflowWords) {
+            result.text += ParagraphUtils.getNodeNameWithoutOverflowWords(
+                newNode, blockParent);
+          } else {
+            result.text += ParagraphUtils.getNodeName(newNode.node);
+          }
+          // Add space between each node.
+          result.text += ' ';
           result.nodes.push(newNode);
         }
       }
@@ -349,9 +401,10 @@ class ParagraphUtils {
 
       // Stop if any of following is true:
       //  1. we have no more nodes to process.
-      //  2. the next node is not part of the same paragraph.
+      //  2. we need to check for a paragraph split and if the next node is not
+      //  part of the same paragraph.
       if (index + 1 >= nodes.length ||
-          !ParagraphUtils.inSameParagraph(node, next)) {
+          (splitOnParagraph && !ParagraphUtils.inSameParagraph(node, next))) {
         break;
       }
 
@@ -375,6 +428,115 @@ class ParagraphUtils {
     result.endIndex = index;
     return result;
   }
+
+  /**
+   * Builds a single node group that contains all the input |nodes|. In
+   * addition, this function will transform the provided node offsets to values
+   * that are relative to the text of the resulting node group. This function
+   * can be used to check the sentence boundaries across all the input nodes.
+   * @param {!Array<!AutomationNode>} nodes The nodes for the selected content.
+   * @param {number=} opt_startIndex The index into the first node's text at
+   *     which the selected content starts.
+   * @param {number=} opt_endIndex The index into the last node's text at which
+   *     the selected content ends.
+   * @return {!{nodeGroup: ParagraphUtils.NodeGroup,
+   *          startIndexInGroup: (number|undefined),
+   *          endIndexInGroup: (number|undefined)}}
+   *     nodeGroup: The node group that contains all the input |nodes|. The node
+   * group will not consider any language difference or paragraph split.
+   *     startOffsetInGroup: The index into the node group's text at which the
+   * selected content starts.
+   *     endOffsetInGroup: The index into the node group's text at which the
+   * selected content ends.
+   */
+  static buildSingleNodeGroupWithOffset(nodes, opt_startIndex, opt_endIndex) {
+    const nodeGroup = ParagraphUtils.buildNodeGroup(
+        nodes, 0 /* index */,
+        {splitOnLanguage: false, splitOnParagraph: false});
+    if (opt_startIndex !== undefined) {
+      // The first node of the NodeGroup may not be at the beginning of the
+      // parent of the NodeGroup. (e.g., an inlineText in its staticText
+      // parent). Thus, we need to adjust the |opt_startIndex|.
+      const firstNodeHasInlineText =
+          nodeGroup.nodes.length > 0 && nodeGroup.nodes[0].hasInlineText;
+      const startIndexInNodeParent = firstNodeHasInlineText ?
+          ParagraphUtils.getStartCharIndexInParent(nodes[0]) :
+          0;
+      opt_startIndex += startIndexInNodeParent + nodeGroup.nodes[0].startChar;
+    }
+    if (opt_endIndex !== undefined) {
+      // Similarly, |opt_endIndex| needs to be adjusted.
+      const lastNodeHasInlineText = nodeGroup.nodes.length > 0 &&
+          nodeGroup.nodes[nodeGroup.nodes.length - 1].hasInlineText;
+      const startIndexInNodeParent = lastNodeHasInlineText ?
+          ParagraphUtils.getStartCharIndexInParent(nodes[0]) :
+          0;
+      opt_endIndex += startIndexInNodeParent +
+          nodeGroup.nodes[nodeGroup.nodes.length - 1].startChar;
+    }
+
+    return {
+      nodeGroup,
+      startIndexInGroup: opt_startIndex,
+      endIndexInGroup: opt_endIndex
+    };
+  }
+
+  /**
+   * Finds the AutomationNode that appears at the given character index within
+   * the |nodeGroup|.
+   * @param {!ParagraphUtils.NodeGroup} nodeGroup The nodeGroup that has the
+   *     nodeGroupItem.
+   * @param {number} charIndex The char index into the nodeGroup's text. The
+   *     index is relative to the start of the |nodeGroup|.
+   * @return {!{node: ?AutomationNode,
+   *          offset: number}}
+   *     node: the AutomationNode within the |nodeGroup| that appears at
+   * |charIndex|. For a static text node that has inline text nodes, we will
+   * return the inline text node corresponding to the |charIndex|.
+   *     offset: the offset indicating the position of the |charIndex| within
+   * the found nodeGroupItem. The offset is relative to the start of the |node|.
+   */
+  static findNodeFromNodeGroupByCharIndex(nodeGroup, charIndex) {
+    for (const currentNodeGroupItem of nodeGroup.nodes) {
+      const currentNode = currentNodeGroupItem.node;
+      const currentNodeNameLength =
+          ParagraphUtils.getNodeName(currentNode).length;
+      // We iterate over each nodeGroupItem until the |charIndex| is pointing
+      // before the current node's name.
+      if (currentNodeGroupItem.startChar + currentNodeNameLength > charIndex) {
+        // The |currentNodeOffset| is the position of the |charIndex| within the
+        // current nodeGroupItem. ParagraphUtils.getNodeName returns a string
+        // without an ending space character, though |charIndex| is based on a
+        // string that was generated with an extra space character between each
+        // nodeGroupItems. Thus, there might be a gap between the previous
+        // nodeGroupItem and the current nodeGroupItem. If
+        // |currentNodeGroupItem.startChar| is greater than |charIndex|, that
+        // means the |charIndex| is pointing to the gap. In such case, we set
+        // |currentNodeOffset| to 0 and return the beginning of the current
+        // nodeGroupItem.
+        const currentNodeOffset =
+            Math.max(0, charIndex - currentNodeGroupItem.startChar);
+        if (!currentNodeGroupItem.hasInlineText) {
+          // If the nodeGroupItem does not have inline text, we return the
+          // corresponding node and the current offset.
+          return {node: currentNode, offset: currentNodeOffset};
+        }
+
+        const inlineTextNode =
+            ParagraphUtils.findInlineTextNodeByCharacterIndex(
+                currentNode, currentNodeOffset);
+
+        return inlineTextNode ? {
+          node: inlineTextNode,
+          offset: currentNodeOffset -
+              ParagraphUtils.getStartCharIndexInParent(inlineTextNode)
+        } :
+                                {node: currentNode, offset: currentNodeOffset};
+      }
+    }
+    return {node: null, offset: 0};
+  }
 }
 
 
@@ -396,7 +558,7 @@ ParagraphUtils.NodeGroup = class {
 
     /**
      * List of nodes in this paragraph in order.
-     * @type {Array<ParagraphUtils.NodeGroupItem>}
+     * @type {!Array<ParagraphUtils.NodeGroupItem>}
      */
     this.nodes = [];
 
@@ -421,6 +583,14 @@ ParagraphUtils.NodeGroup = class {
      * @type {string|undefined}
      */
     this.detectedLanguage = undefined;
+
+    /**
+     * The offset marks the end index of selected content in this nodeGroup. For
+     * example, if a user selects a part of a paragraph, we will remove all text
+     * after the |endOffset| so it is not spoken.
+     * @type {number|undefined}
+     */
+    this.endOffset;
   }
 };
 

@@ -63,6 +63,8 @@ public:
     uint32_t getCount() const { return fCount; }
 #endif
 
+    SkString dumpRec() const;
+
 private:
     SkDescriptor() = default;
     friend class SkDescriptorTestHelper;
@@ -79,11 +81,11 @@ class SkAutoDescriptor {
 public:
     SkAutoDescriptor();
     explicit SkAutoDescriptor(size_t size);
-    explicit SkAutoDescriptor(const SkDescriptor& desc);
-    SkAutoDescriptor(const SkAutoDescriptor& ad);
-    SkAutoDescriptor& operator= (const SkAutoDescriptor& ad);
-    SkAutoDescriptor(SkAutoDescriptor&&) = delete;
-    SkAutoDescriptor& operator= (SkAutoDescriptor&&) = delete;
+    explicit SkAutoDescriptor(const SkDescriptor&);
+    SkAutoDescriptor(const SkAutoDescriptor&);
+    SkAutoDescriptor& operator=(const SkAutoDescriptor&);
+    SkAutoDescriptor(SkAutoDescriptor&&);
+    SkAutoDescriptor& operator=(SkAutoDescriptor&&);
 
     ~SkAutoDescriptor();
 

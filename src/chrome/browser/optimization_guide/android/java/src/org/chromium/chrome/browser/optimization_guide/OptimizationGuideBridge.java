@@ -12,8 +12,9 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.optimization_guide.OptimizationGuideDecision;
+import org.chromium.components.optimization_guide.proto.CommonTypesProto.Any;
 import org.chromium.components.optimization_guide.proto.HintsProto.OptimizationType;
-import org.chromium.components.optimization_guide.proto.PerformanceHintsMetadataProto.PerformanceHintsMetadata;
+import org.chromium.components.optimization_guide.proto.PushNotificationProto.HintNotificationPayload;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.url.GURL;
 
@@ -34,13 +35,14 @@ public class OptimizationGuideBridge {
      */
     public interface OptimizationGuideCallback {
         void onOptimizationGuideDecision(
-                @OptimizationGuideDecision int decision, @Nullable OptimizationMetadata metadata);
+                @OptimizationGuideDecision int decision, @Nullable Any metadata);
     }
 
     /**
      * Initializes the C++ side of this class, using the Optimization Guide Decider for the last
      * used Profile.
      */
+    @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public OptimizationGuideBridge() {
         ThreadUtils.assertOnUiThread();
 
@@ -89,46 +91,145 @@ public class OptimizationGuideBridge {
      * navigationHandle} and {@link optimizationType} when sufficient information has been
      * collected to make a decision. This should only be called for main frame navigations.
      */
-    public void canApplyOptimization(NavigationHandle navigationHandle,
+    public void canApplyOptimizationAsync(NavigationHandle navigationHandle,
             OptimizationType optimizationType, OptimizationGuideCallback callback) {
-        ThreadUtils.assertOnUiThread();
         assert navigationHandle.isInMainFrame();
 
         if (mNativeOptimizationGuideBridge == 0) {
-            callback.onOptimizationGuideDecision(OptimizationGuideDecision.FALSE, null);
+            callback.onOptimizationGuideDecision(OptimizationGuideDecision.UNKNOWN, null);
             return;
         }
 
-        OptimizationGuideBridgeJni.get().canApplyOptimization(mNativeOptimizationGuideBridge,
+        OptimizationGuideBridgeJni.get().canApplyOptimizationAsync(mNativeOptimizationGuideBridge,
                 navigationHandle.getUrl(), optimizationType.getNumber(), callback);
+    }
+
+    /**
+     * Returns whether {@link optimizationType} can be applied for {@link url}. This should
+     * only be called for main frame navigations or future main frame navigations. This will invoke
+     * {@link callback} immediately with any information available on device.
+     *
+     * @param url main frame navigation URL an optimization decision is being made for.
+     * @param optimizationType {@link OptimizationType} decision is being made for
+     * @param callback {@link OptimizationGuideCallback} optimization decision is passed in
+     */
+    public void canApplyOptimization(
+            GURL url, OptimizationType optimizationType, OptimizationGuideCallback callback) {
+        ThreadUtils.assertOnUiThread();
+
+        if (mNativeOptimizationGuideBridge == 0) {
+            callback.onOptimizationGuideDecision(OptimizationGuideDecision.UNKNOWN, null);
+            return;
+        }
+
+        OptimizationGuideBridgeJni.get().canApplyOptimization(
+                mNativeOptimizationGuideBridge, url, optimizationType.getNumber(), callback);
+    }
+
+    public void onNewPushNotification(HintNotificationPayload notification) {
+        ThreadUtils.assertOnUiThread();
+        if (mNativeOptimizationGuideBridge == 0) {
+            OptimizationGuidePushNotificationManager.onPushNotificationNotHandledByNative(
+                    notification);
+            return;
+        }
+        OptimizationGuideBridgeJni.get().onNewPushNotification(
+                mNativeOptimizationGuideBridge, notification.toByteArray());
     }
 
     @CalledByNative
     private static void onOptimizationGuideDecision(OptimizationGuideCallback callback,
-            @OptimizationGuideDecision int optimizationGuideDecision, Object optimizationMetadata) {
+            @OptimizationGuideDecision int optimizationGuideDecision,
+            @Nullable byte[] serializedAnyMetadata) {
         callback.onOptimizationGuideDecision(
-                optimizationGuideDecision, (OptimizationMetadata) optimizationMetadata);
+                optimizationGuideDecision, deserializeAnyMetadata(serializedAnyMetadata));
     }
 
+    /**
+     * Clears all cached push notifications for the given optimization type.
+     */
     @CalledByNative
-    private static OptimizationMetadata createOptimizationMetadataWithPerformanceHintsMetadata(
-            byte[] serializedPerformanceHintsMetadata) {
-        OptimizationMetadata optimizationMetadata = new OptimizationMetadata();
+    private static void clearCachedPushNotifications(int optimizationTypeInt) {
+        OptimizationType optimizationType = OptimizationType.forNumber(optimizationTypeInt);
+        if (optimizationType == null) return;
+
+        OptimizationGuidePushNotificationManager.clearCacheForOptimizationType(optimizationType);
+    }
+
+    /**
+     * Returns whether or not the given optimization type's push notifications overflowed the
+     * maximum cache size.
+     */
+    @CalledByNative
+    private static boolean didPushNotificationCacheOverflow(int optimizationTypeInt) {
+        OptimizationType optimizationType = OptimizationType.forNumber(optimizationTypeInt);
+        if (optimizationType == null) return false;
+
+        return OptimizationGuidePushNotificationManager
+                .didNotificationCacheOverflowForOptimizationType(optimizationType);
+    }
+
+    /**
+     * Returns a 2D byte array of all cached push notifications for the given optimization type.
+     */
+    @CalledByNative
+    private static byte[][] getEncodedPushNotifications(int optimizationTypeInt) {
+        OptimizationType optimizationType = OptimizationType.forNumber(optimizationTypeInt);
+        if (optimizationType == null) return null;
+
+        HintNotificationPayload[] notifications =
+                OptimizationGuidePushNotificationManager.getNotificationCacheForOptimizationType(
+                        optimizationType);
+        if (notifications == null) return null;
+
+        byte[][] encoded_notifications = new byte[notifications.length][];
+        for (int i = 0; i < notifications.length; i++) {
+            encoded_notifications[i] = notifications[i].toByteArray();
+        }
+
+        return encoded_notifications;
+    }
+
+    /**
+     * Called when a push notification that was passed to native immediately (without having been
+     * cached) is unable to be stored right now, so it should be cached.
+     */
+    @CalledByNative
+    private static void onPushNotificationNotHandledByNative(byte[] encodedNotification) {
+        HintNotificationPayload notification;
         try {
-            optimizationMetadata.setPerformanceHintsMetadata(
-                    PerformanceHintsMetadata.parseFrom(serializedPerformanceHintsMetadata));
+            notification = HintNotificationPayload.parseFrom(encodedNotification);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+            return;
+        }
+        OptimizationGuidePushNotificationManager.onPushNotificationNotHandledByNative(notification);
+    }
+
+    @Nullable
+    private static Any deserializeAnyMetadata(@Nullable byte[] serializedAnyMetadata) {
+        if (serializedAnyMetadata == null) {
+            return null;
+        }
+
+        Any anyMetadata;
+        try {
+            anyMetadata = Any.parseFrom(serializedAnyMetadata);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
             return null;
         }
-        return optimizationMetadata;
+        return anyMetadata;
     }
 
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
     @NativeMethods
-    interface Natives {
+    public interface Natives {
         long init();
         void destroy(long nativeOptimizationGuideBridge);
         void registerOptimizationTypes(long nativeOptimizationGuideBridge, int[] optimizationTypes);
+        void canApplyOptimizationAsync(long nativeOptimizationGuideBridge, GURL url,
+                int optimizationType, OptimizationGuideCallback callback);
         void canApplyOptimization(long nativeOptimizationGuideBridge, GURL url,
                 int optimizationType, OptimizationGuideCallback callback);
+        void onNewPushNotification(long nativeOptimizationGuideBridge, byte[] encodedNotification);
     }
 }

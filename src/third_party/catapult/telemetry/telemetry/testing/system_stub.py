@@ -7,6 +7,7 @@
 This test allows one to test code that itself uses os, sys, and subprocess.
 """
 
+from __future__ import absolute_import
 import ntpath
 import os
 import posixpath
@@ -14,6 +15,7 @@ import re
 import shlex
 import sys
 import traceback
+import six
 
 
 class Override(object):
@@ -64,7 +66,7 @@ class Override(object):
     assert not len(self._overrides)
 
   def Restore(self):
-    for module_name, original_module in self._overrides.iteritems():
+    for module_name, original_module in six.iteritems(self._overrides):
       if original_module is None:
         # This will happen when we override built-in functions, like open.
         # If we don't delete the attribute, we will shadow the built-in
@@ -96,7 +98,7 @@ class AdbDevice(object):
 
   def RunShellCommand(self, args, **kwargs):
     del kwargs  # unused
-    if isinstance(args, basestring):
+    if isinstance(args, six.string_types):
       args = shlex.split(args)
     handler = self.shell_command_handlers[args[0]]
     return handler(args)
@@ -188,14 +190,14 @@ class CloudStorageModuleStub(object):
     self.local_file_hashes = calculated_hash_dictionary
 
   def GetLocalDataFiles(self):
-    return self.local_file_hashes.keys()
+    return list(self.local_file_hashes.keys())
 
   # Set a dictionary of hash files and the hashes they should contain.
   def SetHashFileContentsForTesting(self, hash_file_dictionary):
     self.local_hash_files = hash_file_dictionary
 
   def GetLocalHashFiles(self):
-    return self.local_hash_files.keys()
+    return list(self.local_hash_files.keys())
 
   def ChangeRemoteHashForTesting(self, bucket, remote_path, new_hash):
     self.remote_paths[bucket][remote_path] = new_hash

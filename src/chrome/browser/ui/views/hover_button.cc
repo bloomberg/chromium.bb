@@ -6,11 +6,16 @@
 
 #include <algorithm>
 
+#include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button_controller.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
@@ -41,6 +46,7 @@ std::unique_ptr<views::Border> CreateBorderWithVerticalSpacing(
 // badged part of the icon to extend into the padding.
 class IconWrapper : public views::View {
  public:
+  METADATA_HEADER(IconWrapper);
   explicit IconWrapper(std::unique_ptr<views::View> icon, int vertical_spacing)
       : icon_(AddChildView(std::move(icon))) {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -69,9 +75,12 @@ class IconWrapper : public views::View {
   views::View* icon_;
 };
 
+BEGIN_METADATA(IconWrapper, views::View)
+END_METADATA
+
 }  // namespace
 
-HoverButton::HoverButton(PressedCallback callback, const base::string16& text)
+HoverButton::HoverButton(PressedCallback callback, const std::u16string& text)
     : views::LabelButton(callback, text, views::style::CONTEXT_BUTTON) {
   SetButtonController(std::make_unique<HoverButtonController>(
       this, std::move(callback),
@@ -87,7 +96,12 @@ HoverButton::HoverButton(PressedCallback callback, const base::string16& text)
                            2;
   SetBorder(CreateBorderWithVerticalSpacing(vert_spacing));
 
-  SetInkDropMode(InkDropMode::ON);
+  ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
+  views::InkDrop::UseInkDropForFloodFillRipple(ink_drop(),
+                                               /*highlight_on_hover=*/false,
+                                               /*highlight_on_focus=*/true);
+  ink_drop()->SetBaseColorCallback(base::BindRepeating(
+      [](views::View* host) { return GetInkDropColor(host); }, this));
 
   SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
                            ui::EF_RIGHT_MOUSE_BUTTON);
@@ -96,20 +110,20 @@ HoverButton::HoverButton(PressedCallback callback, const base::string16& text)
 }
 
 HoverButton::HoverButton(PressedCallback callback,
-                         const gfx::ImageSkia& icon,
-                         const base::string16& text)
+                         const ui::ImageModel& icon,
+                         const std::u16string& text)
     : HoverButton(std::move(callback), text) {
-  SetImage(STATE_NORMAL, icon);
+  SetImageModel(STATE_NORMAL, icon);
 }
 
 HoverButton::HoverButton(PressedCallback callback,
                          std::unique_ptr<views::View> icon_view,
-                         const base::string16& title,
-                         const base::string16& subtitle,
+                         const std::u16string& title,
+                         const std::u16string& subtitle,
                          std::unique_ptr<views::View> secondary_view,
                          bool resize_row_for_secondary_view,
                          bool secondary_view_can_process_events)
-    : HoverButton(std::move(callback), base::string16()) {
+    : HoverButton(std::move(callback), std::u16string()) {
   label()->SetHandlesTooltips(false);
 
   // Set the layout manager to ignore the ink_drop_container to ensure the ink
@@ -162,7 +176,7 @@ HoverButton::HoverButton(PressedCallback callback,
   label_wrapper_ = AddChildView(std::move(label_wrapper));
   // Observe |label_wrapper_| bounds changes to ensure the HoverButton tooltip
   // is kept in sync with the size.
-  observed_label_.Add(label_wrapper_);
+  label_observation_.Observe(label_wrapper_);
 
   if (secondary_view) {
     secondary_view->SetCanProcessEventsWithinSubtree(
@@ -225,11 +239,10 @@ void HoverButton::SetTitleTextStyle(views::style::TextStyle text_style,
 }
 
 void HoverButton::SetTooltipAndAccessibleName() {
-  const base::string16 accessible_name =
+  const std::u16string accessible_name =
       subtitle_ == nullptr
           ? title_->GetText()
-          : base::JoinString({title_->GetText(), subtitle_->GetText()},
-                             base::ASCIIToUTF16("\n"));
+          : base::JoinString({title_->GetText(), subtitle_->GetText()}, u"\n");
 
   // views::StyledLabels only add tooltips for any links they may have. However,
   // since HoverButton will never insert a link inside its child StyledLabel,
@@ -237,7 +250,7 @@ void HoverButton::SetTooltipAndAccessibleName() {
   // is smaller than its preferred size.
   const bool needs_tooltip =
       label_wrapper_->GetPreferredSize().width() > label_wrapper_->width();
-  SetTooltipText(needs_tooltip ? accessible_name : base::string16());
+  SetTooltipText(needs_tooltip ? accessible_name : std::u16string());
   SetAccessibleName(accessible_name);
 }
 
@@ -264,19 +277,6 @@ void HoverButton::StateChanged(ButtonState old_state) {
   }
 }
 
-SkColor HoverButton::GetInkDropBaseColor() const {
-  return GetInkDropColor(this);
-}
-
-std::unique_ptr<views::InkDrop> HoverButton::CreateInkDrop() {
-  std::unique_ptr<views::InkDrop> ink_drop = LabelButton::CreateInkDrop();
-  // Turn on highlighting when the button is focused only - hovering the button
-  // will request focus.
-  ink_drop->SetShowHighlightOnFocus(true);
-  ink_drop->SetShowHighlightOnHover(false);
-  return ink_drop;
-}
-
 views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
   if (!HitTestPoint(point))
     return nullptr;
@@ -298,3 +298,6 @@ views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
 
   return this;
 }
+
+BEGIN_METADATA(HoverButton, views::LabelButton)
+END_METADATA

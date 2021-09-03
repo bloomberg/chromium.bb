@@ -13,8 +13,13 @@ altgraph.Graph - Base Graph class
   #--Nathan Denny, May 27, 1999
 """
 
+from __future__ import division
+from __future__ import absolute_import
 from altgraph import GraphError
 from collections import deque
+
+# 2To3-division: the / operations here are not converted to // as the results
+# are expected floats.
 
 class Graph(object):
     """
@@ -491,7 +496,7 @@ class Graph(object):
         The forward parameter specifies whether it is a forward or backward
         traversal.
         """
-        visited, stack = set([start]), deque([start])
+        visited, stack = {start}, deque([start])
 
         if forward:
             get_edges = self.out_edges
@@ -518,7 +523,7 @@ class Graph(object):
         condition callback is only called when node_data is not None.
         """
 
-        visited, stack = set([start]), deque([start])
+        visited, stack = {start}, deque([start])
 
         if forward:
             get_edges = self.out_edges
@@ -550,7 +555,7 @@ class Graph(object):
         traversal.  Returns a list of tuples where the first value is the hop
         value the second value is the node id.
         """
-        queue, visited = deque([(start, 0)]), set([start])
+        queue, visited = deque([(start, 0)]), {start}
 
         # the direction of the bfs depends on the edges that are sampled
         if forward:

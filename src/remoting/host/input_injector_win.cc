@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <windows.h>
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -17,16 +18,15 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/ranges.h"
-#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "remoting/base/util.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/host/touch_injector_win.h"
 #include "remoting/proto/event.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
 namespace remoting {
@@ -168,8 +168,8 @@ bool IsLockKey(int scancode) {
 }
 
 // Sets the keyboard lock states to those provided.
-void SetLockStates(base::Optional<bool> caps_lock,
-                   base::Optional<bool> num_lock) {
+void SetLockStates(absl::optional<bool> caps_lock,
+                   absl::optional<bool> num_lock) {
   if (caps_lock) {
     bool client_capslock_state = *caps_lock;
     bool host_capslock_state = (GetKeyState(VK_CAPITAL) & 1) != 0;
@@ -391,8 +391,8 @@ void InputInjectorWin::Core::HandleKey(const KeyEvent& event) {
     return;
 
   if (event.pressed() && !IsLockKey(scancode)) {
-    base::Optional<bool> caps_lock;
-    base::Optional<bool> num_lock;
+    absl::optional<bool> caps_lock;
+    absl::optional<bool> num_lock;
 
     // For caps lock, check both the new caps_lock field and the old lock_states
     // field.
@@ -421,9 +421,9 @@ void InputInjectorWin::Core::HandleText(const TextEvent& event) {
   // HostEventDispatcher should filter events missing the pressed field.
   DCHECK(event.has_text());
 
-  base::string16 text = base::UTF8ToUTF16(event.text());
-  for (base::string16::const_iterator it = text.begin();
-       it != text.end(); ++it)  {
+  std::u16string text = base::UTF8ToUTF16(event.text());
+  for (std::u16string::const_iterator it = text.begin(); it != text.end();
+       ++it) {
     if (*it == '\n') {
       // The WM_CHAR event generated for carriage return is '\r', not '\n', and
       // some applications may check for VK_RETURN explicitly, so handle

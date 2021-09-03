@@ -6,7 +6,7 @@
 #define SERVICES_NETWORK_PUBLIC_CPP_INITIATOR_LOCK_COMPATIBILITY_H_
 
 #include "base/component_export.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace network {
@@ -44,9 +44,6 @@ enum class InitiatorLockCompatibility {
   // - HTML Imports (see https://crbug.com/871827#c9).
   kIncorrectLock = 4,
 
-  // Covered by CrossOriginReadBlockingExceptionForPlugin::ShouldAllowForPlugin.
-  kExcludedCorbForPlugin = 6,
-
   // Covered by AddAllowedRequestInitiatorForPlugin.
   kAllowedRequestInitiatorForPlugin = 7,
 
@@ -60,8 +57,8 @@ enum class InitiatorLockCompatibility {
 // (ones that are not coverd by the kExcludedPlugin exception).
 COMPONENT_EXPORT(NETWORK_CPP)
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
-    const base::Optional<url::Origin>& request_initiator_origin_lock,
-    const base::Optional<url::Origin>& request_initiator);
+    const absl::optional<url::Origin>& request_initiator_origin_lock,
+    const absl::optional<url::Origin>& request_initiator);
 
 // Gets initiator of request, falling back to a unique origin if
 // 1) |request_initiator| is missing or
@@ -82,8 +79,8 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
 // remove this, this header can be moved to non-public directory.
 COMPONENT_EXPORT(NETWORK_CPP)
 url::Origin GetTrustworthyInitiator(
-    const base::Optional<url::Origin>& request_initiator_origin_lock,
-    const base::Optional<url::Origin>& request_initiator);
+    const absl::optional<url::Origin>& request_initiator_origin_lock,
+    const absl::optional<url::Origin>& request_initiator);
 
 }  // namespace network
 

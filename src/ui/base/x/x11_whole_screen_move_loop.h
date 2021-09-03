@@ -22,10 +22,13 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/connection.h"
 
+namespace x11 {
+class XScopedEventSelector;
+}
+
 namespace ui {
 class MouseEvent;
 class ScopedEventDispatcher;
-class XScopedEventSelector;
 
 // Runs a nested run loop and grabs the mouse. This is used to implement
 // dragging.
@@ -70,14 +73,14 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WholeScreenMoveLoop
 
   // Cursor in use prior to the move loop starting. Restored when the move loop
   // quits.
-  scoped_refptr<X11Cursor> initial_cursor_ = nullptr;
+  scoped_refptr<X11Cursor> initial_cursor_;
 
   // An invisible InputOnly window. Keyboard grab and sometimes mouse grab
   // are set on this window.
   x11::Window grab_input_window_;
 
   // Events selected on |grab_input_window_|.
-  std::unique_ptr<ui::XScopedEventSelector> grab_input_window_events_;
+  std::unique_ptr<x11::XScopedEventSelector> grab_input_window_events_;
 
   // Whether the pointer was grabbed on |grab_input_window_|.
   bool grabbed_pointer_;

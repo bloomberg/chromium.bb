@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # Copyright (c) 2011 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -12,7 +12,6 @@ functions are working as intended (i.e., producing lists of files).
 
 import generate_gn as gg
 from generate_gn import SourceSet, SourceListCondition
-import string
 import unittest
 from os import path
 
@@ -158,28 +157,28 @@ class SourceSetUnittest(unittest.TestCase):
     a = SourceSet(
         set(['a', 'b']), set([SourceListCondition('ia32', 'Chromium', 'win')]))
     a_stanza = a.GenerateGnStanza()
-    string.index(a_stanza, 'current_cpu == "x86"')
-    string.index(a_stanza, 'is_win')
+    a_stanza.index('current_cpu == "x86"')
+    a_stanza.index('is_win')
 
     # x64 should just be x64.  Linux should appear as an OS restriction.
     b = SourceSet(
         set(['a', 'b']), set([SourceListCondition('x64', 'Chromium', 'linux')]))
     b_stanza = b.GenerateGnStanza()
-    string.index(b_stanza, 'current_cpu == "x64"')
-    string.index(b_stanza, 'use_linux_config')
+    b_stanza.index('current_cpu == "x64"')
+    b_stanza.index('use_linux_config')
 
     # arm should just be arm.
     c = SourceSet(
         set(['a', 'b']), set([SourceListCondition('arm', 'Chromium', 'linux')]))
     c_stanza = c.GenerateGnStanza()
-    string.index(c_stanza, 'current_cpu == "arm"')
+    c_stanza.index('current_cpu == "arm"')
 
     # arm-neon should be arm and flip the arm_neon switch.
     d = SourceSet(
         set(['a', 'b']),
         set([SourceListCondition('arm-neon', 'Chromium', 'linux')]))
     d_stanza = d.GenerateGnStanza()
-    string.index(d_stanza, 'current_cpu == "arm" && arm_use_neon')
+    d_stanza.index('current_cpu == "arm" && arm_use_neon')
 
     # Multiple conditions
     e = SourceSet(
@@ -189,10 +188,10 @@ class SourceSetUnittest(unittest.TestCase):
             SourceListCondition('x64', 'Chromium', 'linux')
         ]))
     e_stanza = e.GenerateGnStanza()
-    string.index(e_stanza, ('is_win && current_cpu == "arm"'
-                            ' && ffmpeg_branding == "Chrome"'))
-    string.index(e_stanza, ('use_linux_config && current_cpu == "x64"'
-                            ' && ffmpeg_branding == "Chromium"'))
+    e_stanza.index(('is_win && current_cpu == "arm"'
+                    ' && ffmpeg_branding == "Chrome"'))
+    e_stanza.index(('use_linux_config && current_cpu == "x64"'
+                    ' && ffmpeg_branding == "Chromium"'))
 
   def testComplexSourceListConditions(self):
     # Create 2 sets with intersecting source 'a', but setup such that 'a'
@@ -216,7 +215,7 @@ class SourceSetUnittest(unittest.TestCase):
     self.assertEqual(1, len(disjoint_sets))
 
     stanza = disjoint_sets[0].GenerateGnStanza()
-    self.assertEqual(string.find(stanza, bad_condition), -1)
+    self.assertEqual(stanza.find(bad_condition), -1)
 
   def assertEqualSourceSets(self, expected, actual):
     assert all(isinstance(a, SourceSet) for a in expected)
@@ -459,10 +458,10 @@ class SourceSetUnittest(unittest.TestCase):
     a = SourceSet(
         set(['foo.c']), set([SourceListCondition('x64', 'Chromium', '*')]))
     stanza = a.GenerateGnStanza()
-    string.index(stanza, '== "x64"')
-    string.index(stanza, 'ffmpeg_branding == "Chromium"')
+    stanza.index('== "x64"')
+    stanza.index('ffmpeg_branding == "Chromium"')
     # OS is wild-card, so it should not be mentioned in the stanza.
-    self.assertEqual(-1, string.find(stanza, 'OS =='))
+    self.assertEqual(-1, stanza.find('OS =='))
 
   def testFixObjectBasenameCollisions(self):
     # Use callback to capture executed renames.

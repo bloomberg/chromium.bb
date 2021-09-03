@@ -9,6 +9,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -18,6 +19,10 @@ class DiceTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
   DiceTabHelperTest() {
     signin_url_ = GaiaUrls::GetInstance()->signin_chrome_sync_dice();
+    feature_list_.InitWithFeaturesAndParameters(
+        {{features::kBackForwardCache, {}},
+         {features::kBackForwardCacheMemoryControls, {}}},
+        {});
   }
 
   // Does a navigation to Gaia and initializes the tab helper.
@@ -38,6 +43,7 @@ class DiceTabHelperTest : public ChromeRenderViewHostTestHarness {
   }
 
   GURL signin_url_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests DiceTabHelper intialization.
@@ -49,15 +55,14 @@ TEST_F(DiceTabHelperTest, Initialization) {
   // Check default state.
   EXPECT_EQ(signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN,
             dice_tab_helper->signin_access_point());
-  EXPECT_EQ(signin_metrics::Reason::REASON_UNKNOWN_REASON,
+  EXPECT_EQ(signin_metrics::Reason::kUnknownReason,
             dice_tab_helper->signin_reason());
   EXPECT_FALSE(dice_tab_helper->IsChromeSigninPage());
 
   // Initialize the signin flow.
   signin_metrics::AccessPoint access_point =
       signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE;
-  signin_metrics::Reason reason =
-      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT;
+  signin_metrics::Reason reason = signin_metrics::Reason::kSigninPrimaryAccount;
   InitializeDiceTabHelper(dice_tab_helper, access_point, reason);
   EXPECT_EQ(access_point, dice_tab_helper->signin_access_point());
   EXPECT_EQ(reason, dice_tab_helper->signin_reason());
@@ -73,8 +78,7 @@ TEST_F(DiceTabHelperTest, SigninPageStatus) {
   // Load the signin page.
   signin_metrics::AccessPoint access_point =
       signin_metrics::AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE;
-  signin_metrics::Reason reason =
-      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT;
+  signin_metrics::Reason reason = signin_metrics::Reason::kSigninPrimaryAccount;
   InitializeDiceTabHelper(dice_tab_helper, access_point, reason);
   EXPECT_TRUE(dice_tab_helper->IsChromeSigninPage());
 
@@ -105,6 +109,16 @@ TEST_F(DiceTabHelperTest, SigninPageStatus) {
   EXPECT_FALSE(dice_tab_helper->IsChromeSigninPage());
   simulator->Commit();
   EXPECT_FALSE(dice_tab_helper->IsChromeSigninPage());
+
+  // Go Back to the signin page
+  content::NavigationSimulator::GoBack(web_contents());
+  // IsChromeSigninPage() returns false after navigating away from the
+  // signin page.
+  EXPECT_FALSE(dice_tab_helper->IsChromeSigninPage());
+
+  // Navigate away from the signin page
+  content::NavigationSimulator::GoForward(web_contents());
+  EXPECT_FALSE(dice_tab_helper->IsChromeSigninPage());
 }
 
 // Tests DiceTabHelper metrics.
@@ -127,7 +141,7 @@ TEST_F(DiceTabHelperTest, Metrics) {
   simulator->Start();
   dice_tab_helper->InitializeSigninFlow(
       signin_url_, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
-      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+      signin_metrics::Reason::kSigninPrimaryAccount,
       signin_metrics::PromoAction::PROMO_ACTION_NEW_ACCOUNT_NO_EXISTING_ACCOUNT,
       GURL::EmptyGURL());
   EXPECT_EQ(1, ua_tester.GetActionCount("Signin_Signin_FromSettings"));
@@ -157,7 +171,7 @@ TEST_F(DiceTabHelperTest, Metrics) {
   simulator->Start();
   dice_tab_helper->InitializeSigninFlow(
       signin_url_, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
-      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT,
+      signin_metrics::Reason::kSigninPrimaryAccount,
       signin_metrics::PromoAction::PROMO_ACTION_WITH_DEFAULT,
       GURL::EmptyGURL());
   EXPECT_EQ(2, ua_tester.GetActionCount("Signin_Signin_FromSettings"));
@@ -179,13 +193,13 @@ TEST_F(DiceTabHelperTest, IsSyncSigninInProgress) {
   // Non-sync signin.
   InitializeDiceTabHelper(dice_tab_helper,
                           signin_metrics::AccessPoint::ACCESS_POINT_EXTENSIONS,
-                          signin_metrics::Reason::REASON_ADD_SECONDARY_ACCOUNT);
+                          signin_metrics::Reason::kAddSecondaryAccount);
   EXPECT_FALSE(dice_tab_helper->IsSyncSigninInProgress());
 
   // Sync signin
-  InitializeDiceTabHelper(
-      dice_tab_helper, signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
-      signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
+  InitializeDiceTabHelper(dice_tab_helper,
+                          signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS,
+                          signin_metrics::Reason::kSigninPrimaryAccount);
   EXPECT_TRUE(dice_tab_helper->IsSyncSigninInProgress());
   dice_tab_helper->OnSyncSigninFlowComplete();
   EXPECT_FALSE(dice_tab_helper->IsSyncSigninInProgress());

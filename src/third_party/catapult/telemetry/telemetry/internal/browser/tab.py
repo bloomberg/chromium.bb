@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 from telemetry.internal.actions import action_runner
 from telemetry.internal.browser import web_contents
 
@@ -101,7 +102,7 @@ class Tab(web_contents.WebContents):
       exceptions.TimeoutException
     """
     if keep_one and len(self._tab_list_backend) <= 1:
-      self._tab_list_backend.New(in_new_window=False, timeout=timeout)
+      self._tab_list_backend.New(in_new_window=False, timeout=timeout, url=None)
     self._tab_list_backend.CloseTab(self.id, timeout)
 
   @property

@@ -33,12 +33,12 @@ sk_sp<GrDawnTexture> GrDawnTexture::Make(GrDawnGpu* gpu, SkISize dimensions,
         wgpu::TextureUsage::CopyDst;
 
     if (renderTarget) {
-        textureDesc.usage |= wgpu::TextureUsage::OutputAttachment;
+        textureDesc.usage |= wgpu::TextureUsage::RenderAttachment;
     }
 
     textureDesc.size.width = dimensions.fWidth;
     textureDesc.size.height = dimensions.fHeight;
-    textureDesc.size.depth = 1;
+    textureDesc.size.depthOrArrayLayers = 1;
     textureDesc.format = format;
     textureDesc.mipLevelCount = std::max(mipLevels, 1);
     textureDesc.sampleCount = sampleCnt;

@@ -8,7 +8,9 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
+#include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
+#include "net/filter/source_stream.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/constants.h"
@@ -19,10 +21,13 @@
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "services/network/public/mojom/trust_tokens.mojom-blink.h"
 #include "services/network/public/mojom/trust_tokens.mojom.h"
+#include "third_party/blink/public/common/buildflags.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
+#include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -36,19 +41,25 @@
 namespace blink {
 
 const char* ImageAcceptHeader() {
-  static constexpr char kImageAcceptHeaderWithAvif[] =
-      "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
-  static constexpr size_t kOffset = sizeof("image/avif,") - 1;
-#if BUILDFLAG(ENABLE_AV1_DECODER)
-  static const char* header = base::FeatureList::IsEnabled(features::kAVIF)
-                                  ? kImageAcceptHeaderWithAvif
-                                  : kImageAcceptHeaderWithAvif + kOffset;
+#if BUILDFLAG(ENABLE_JXL_DECODER) && BUILDFLAG(ENABLE_AV1_DECODER)
+  if (base::FeatureList::IsEnabled(blink::features::kJXL)) {
+    return "image/jxl,image/avif,image/webp,image/apng,image/svg+xml,image/*,*/"
+           "*;q=0.8";
+  } else {
+    return "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
+  }
+#elif BUILDFLAG(ENABLE_JXL_DECODER)
+  if (base::FeatureList::IsEnabled(blink::features::kJXL)) {
+    return "image/jxl,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
+  } else {
+    return "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
+  }
+#elif BUILDFLAG(ENABLE_AV1_DECODER)
+  return "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
 #else
-  static const char* header = kImageAcceptHeaderWithAvif + kOffset;
+  return "image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8";
 #endif
-  return header;
 }
-
 namespace {
 
 constexpr char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
@@ -140,7 +151,6 @@ mojom::ResourceType RequestContextToResourceType(
       return mojom::ResourceType::kPrefetch;
 
     // Script
-    case mojom::blink::RequestContextType::IMPORT:
     case mojom::blink::RequestContextType::SCRIPT:
       return mojom::ResourceType::kScript;
 
@@ -153,6 +163,7 @@ mojom::ResourceType RequestContextToResourceType(
     case mojom::blink::RequestContextType::DOWNLOAD:
     case mojom::blink::RequestContextType::MANIFEST:
     case mojom::blink::RequestContextType::SUBRESOURCE:
+    case mojom::blink::RequestContextType::SUBRESOURCE_WEBBUNDLE:
       return mojom::ResourceType::kSubResource;
 
     // TextTrack
@@ -216,26 +227,23 @@ void PopulateResourceRequestBody(const EncodedFormData& src,
         break;
       case FormDataElement::kEncodedBlob: {
         DCHECK(element.optional_blob_data_handle_);
-        mojo::Remote<mojom::Blob> blob_remote(mojo::PendingRemote<mojom::Blob>(
-            element.optional_blob_data_handle_->CloneBlobRemote().PassPipe(),
-            mojom::Blob::Version_));
-        mojo::PendingRemote<network::mojom::DataPipeGetter>
+        mojo::Remote<mojom::blink::Blob> blob_remote(
+            element.optional_blob_data_handle_->CloneBlobRemote());
+        mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
             data_pipe_getter_remote;
         blob_remote->AsDataPipeGetter(
             data_pipe_getter_remote.InitWithNewPipeAndPassReceiver());
-        dest->AppendDataPipe(std::move(data_pipe_getter_remote));
+        dest->AppendDataPipe(
+            ToCrossVariantMojoType(std::move(data_pipe_getter_remote)));
         break;
       }
       case FormDataElement::kDataPipe: {
-        // Convert network::mojom::blink::DataPipeGetter to
-        // network::mojom::DataPipeGetter through a raw message pipe.
         mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
             pending_data_pipe_getter;
         element.data_pipe_getter_->GetDataPipeGetter()->Clone(
             pending_data_pipe_getter.InitWithNewPipeAndPassReceiver());
         dest->AppendDataPipe(
-            mojo::PendingRemote<network::mojom::DataPipeGetter>(
-                pending_data_pipe_getter.PassPipe(), 0u));
+            ToCrossVariantMojoType(std::move(pending_data_pipe_getter)));
         break;
       }
     }
@@ -243,6 +251,27 @@ void PopulateResourceRequestBody(const EncodedFormData& src,
 }
 
 }  // namespace
+
+scoped_refptr<network::ResourceRequestBody> NetworkResourceRequestBodyFor(
+    ResourceRequestBody src_body,
+    bool allow_http1_for_streaming_upload) {
+  scoped_refptr<network::ResourceRequestBody> dest_body;
+  if (const EncodedFormData* form_body = src_body.FormBody().get()) {
+    dest_body = base::MakeRefCounted<network::ResourceRequestBody>();
+
+    PopulateResourceRequestBody(*form_body, dest_body.get());
+  } else if (src_body.StreamBody().is_valid()) {
+    mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>
+        stream_body = src_body.TakeStreamBody();
+    dest_body = base::MakeRefCounted<network::ResourceRequestBody>();
+    dest_body->SetToChunkedDataPipe(
+        ToCrossVariantMojoType(std::move(stream_body)),
+        network::ResourceRequestBody::ReadOnlyOnce(true));
+    dest_body->SetAllowHTTP1ForStreamingUpload(
+        allow_http1_for_streaming_upload);
+  }
+  return dest_body;
+}
 
 void PopulateResourceRequest(const ResourceRequestHead& src,
                              ResourceRequestBody src_body,
@@ -252,6 +281,12 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
   dest->site_for_cookies = src.SiteForCookies();
   dest->upgrade_if_insecure = src.UpgradeIfInsecure();
   dest->is_revalidating = src.IsRevalidating();
+  if (src.GetDevToolsAcceptedStreamTypes()) {
+    dest->devtools_accepted_stream_types =
+        std::vector<net::SourceStream::SourceType>(
+            src.GetDevToolsAcceptedStreamTypes()->data.begin(),
+            src.GetDevToolsAcceptedStreamTypes()->data.end());
+  }
   if (src.RequestorOrigin()->ToString() == "null") {
     // "file:" origin is treated like an opaque unique origin when
     // allow-file-access-from-files is not specified. Such origin is not opaque
@@ -305,19 +340,24 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
   dest->credentials_mode = src.GetCredentialsMode();
   dest->redirect_mode = src.GetRedirectMode();
   dest->fetch_integrity = src.GetFetchIntegrity().Utf8();
-
-  mojom::ResourceType resource_type =
-      RequestContextToResourceType(src.GetRequestContext());
+  if (src.GetWebBundleTokenParams().has_value()) {
+    dest->web_bundle_token_params =
+        absl::make_optional(network::ResourceRequest::WebBundleTokenParams(
+            src.GetWebBundleTokenParams()->bundle_url,
+            src.GetWebBundleTokenParams()->token,
+            src.GetWebBundleTokenParams()->CloneHandle()));
+  }
 
   // TODO(kinuko): Deprecate this.
-  dest->resource_type = static_cast<int>(resource_type);
+  dest->resource_type =
+      static_cast<int>(RequestContextToResourceType(src.GetRequestContext()));
 
-  if (resource_type == mojom::ResourceType::kXhr &&
+  if (src.IsFetchLikeAPI() &&
       (dest->url.has_username() || dest->url.has_password())) {
     dest->do_not_prompt_for_login = true;
   }
-  if (resource_type == mojom::ResourceType::kPrefetch ||
-      resource_type == mojom::ResourceType::kFavicon) {
+  if (src.GetRequestContext() == mojom::blink::RequestContextType::PREFETCH ||
+      src.IsFavicon()) {
     dest->do_not_prompt_for_login = true;
   }
 
@@ -333,7 +373,7 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
   dest->trust_token_params = ConvertTrustTokenParams(src.TrustTokenParams());
 
   if (base::UnguessableToken window_id = src.GetFetchWindowId())
-    dest->fetch_window_id = base::make_optional(window_id);
+    dest->fetch_window_id = absl::make_optional(window_id);
 
   if (src.GetDevToolsId().has_value()) {
     dest->devtools_request_id = src.GetDevToolsId().value().Ascii();
@@ -351,30 +391,23 @@ void PopulateResourceRequest(const ResourceRequestHead& src,
 
   dest->is_fetch_like_api = src.IsFetchLikeAPI();
 
-  if (const EncodedFormData* body = src_body.FormBody().get()) {
-    DCHECK_NE(dest->method, net::HttpRequestHeaders::kGetMethod);
-    DCHECK_NE(dest->method, net::HttpRequestHeaders::kHeadMethod);
-    dest->request_body = base::MakeRefCounted<network::ResourceRequestBody>();
+  dest->is_favicon = src.IsFavicon();
 
-    PopulateResourceRequestBody(*body, dest->request_body.get());
-  } else if (src_body.StreamBody().is_valid()) {
+  dest->request_body = NetworkResourceRequestBodyFor(
+      std::move(src_body), src.AllowHTTP1ForStreamingUpload());
+  if (dest->request_body) {
     DCHECK_NE(dest->method, net::HttpRequestHeaders::kGetMethod);
     DCHECK_NE(dest->method, net::HttpRequestHeaders::kHeadMethod);
-    mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>
-        stream_body = src_body.TakeStreamBody();
-    dest->request_body = base::MakeRefCounted<network::ResourceRequestBody>();
-    mojo::PendingRemote<network::mojom::ChunkedDataPipeGetter>
-        network_stream_body(stream_body.PassPipe(), 0u);
-    dest->request_body->SetToReadOnceStream(std::move(network_stream_body));
-    dest->request_body->SetAllowHTTP1ForStreamingUpload(
-        src.AllowHTTP1ForStreamingUpload());
   }
 
-  if (resource_type == mojom::ResourceType::kStylesheet) {
+  network::mojom::RequestDestination request_destination =
+      src.GetRequestDestination();
+  if (request_destination == network::mojom::RequestDestination::kStyle ||
+      request_destination == network::mojom::RequestDestination::kXslt) {
     dest->headers.SetHeader(net::HttpRequestHeaders::kAccept,
                             kStylesheetAcceptHeader);
-  } else if (resource_type == mojom::ResourceType::kImage ||
-             resource_type == mojom::ResourceType::kFavicon) {
+  } else if (request_destination ==
+             network::mojom::RequestDestination::kImage) {
     dest->headers.SetHeaderIfMissing(net::HttpRequestHeaders::kAccept,
                                      ImageAcceptHeader());
   } else {

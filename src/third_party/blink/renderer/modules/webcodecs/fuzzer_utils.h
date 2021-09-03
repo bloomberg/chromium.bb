@@ -7,12 +7,14 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_encoded_audio_config.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_decoder_config.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_encoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_init.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_encoder_encode_options.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
+#include "third_party/blink/renderer/modules/webcodecs/audio_data.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_audio_chunk.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.h"
 #include "third_party/blink/renderer/modules/webcodecs/fuzzer_inputs.pb.h"
@@ -40,11 +42,14 @@ class FakeFunction : public ScriptFunction {
 VideoDecoderConfig* MakeVideoDecoderConfig(
     const wc_fuzzer::ConfigureVideoDecoder& proto);
 
-EncodedAudioConfig* MakeAudioDecoderConfig(
+AudioDecoderConfig* MakeAudioDecoderConfig(
     const wc_fuzzer::ConfigureAudioDecoder& proto);
 
-VideoEncoderConfig* MakeEncoderConfig(
+VideoEncoderConfig* MakeVideoEncoderConfig(
     const wc_fuzzer::ConfigureVideoEncoder& proto);
+
+AudioEncoderConfig* MakeAudioEncoderConfig(
+    const wc_fuzzer::ConfigureAudioEncoder& proto);
 
 EncodedVideoChunk* MakeEncodedVideoChunk(
     const wc_fuzzer::EncodedVideoChunk& proto);
@@ -52,7 +57,11 @@ EncodedVideoChunk* MakeEncodedVideoChunk(
 EncodedAudioChunk* MakeEncodedAudioChunk(
     const wc_fuzzer::EncodedAudioChunk& proto);
 
-VideoFrame* MakeVideoFrame(const wc_fuzzer::VideoFrameBitmapInit& proto);
+VideoFrame* MakeVideoFrame(ScriptState* script_state,
+                           const wc_fuzzer::VideoFrameBitmapInit& proto);
+
+AudioData* MakeAudioData(ScriptState* script_state,
+                         const wc_fuzzer::AudioDataInit& proto);
 
 VideoEncoderEncodeOptions* MakeEncodeOptions(
     const wc_fuzzer::EncodeVideo_EncodeOptions& proto);

@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_switches.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -13,14 +14,13 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/chromeos/policy/device_display_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
-#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/settings/cros_settings_names.h"
@@ -39,11 +39,11 @@ namespace em = enterprise_management;
 namespace {
 
 struct PolicyValue {
-  base::Optional<int> external_width;
-  base::Optional<int> external_height;
-  base::Optional<int> external_scale_percentage;
+  absl::optional<int> external_width;
+  absl::optional<int> external_height;
+  absl::optional<int> external_scale_percentage;
   bool use_native = false;
-  base::Optional<int> internal_scale_percentage;
+  absl::optional<int> internal_scale_percentage;
 
   bool operator==(const PolicyValue& rhs) const {
     return external_width == rhs.external_width &&
@@ -64,8 +64,8 @@ const int kDefaultDisplayScale = 100;
 
 PolicyValue GetPolicySetting() {
   const base::DictionaryValue* resolution_pref = nullptr;
-  chromeos::CrosSettings::Get()->GetDictionary(
-      chromeos::kDeviceDisplayResolution, &resolution_pref);
+  ash::CrosSettings::Get()->GetDictionary(chromeos::kDeviceDisplayResolution,
+                                          &resolution_pref);
   EXPECT_TRUE(resolution_pref) << "DeviceDisplayResolution setting is not set";
   const base::Value* width = resolution_pref->FindKeyOfType(
       {chromeos::kDeviceDisplayResolutionKeyExternalWidth},
@@ -342,8 +342,8 @@ IN_PROC_BROWSER_TEST_P(DisplayResolutionBootTest, PRE_Reboot) {
   em::ChromeDeviceSettingsProto& proto(device_policy->payload());
   SetPolicyValue(&proto, policy_value, true);
   base::RunLoop run_loop;
-  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription> observer =
-      chromeos::CrosSettings::Get()->AddSettingsObserver(
+  base::CallbackListSubscription subscription =
+      ash::CrosSettings::Get()->AddSettingsObserver(
           chromeos::kDeviceDisplayResolution, run_loop.QuitClosure());
   device_policy->SetDefaultSigningKey();
   device_policy->Build();
@@ -404,11 +404,11 @@ class DeviceDisplayResolutionRecommendedTest
       extensions::api::system_display::DisplayProperties props) {
     base::RunLoop run_loop;
     base::OnceClosure quit_closure(run_loop.QuitClosure());
-    base::Optional<std::string> operation_error;
+    absl::optional<std::string> operation_error;
     extensions::DisplayInfoProvider::Get()->SetDisplayProperties(
         std::to_string(display_id), std::move(props),
         base::BindOnce(
-            [](base::OnceClosure quit_closure, base::Optional<std::string>) {
+            [](base::OnceClosure quit_closure, absl::optional<std::string>) {
               std::move(quit_closure).Run();
             },
             std::move(quit_closure)));

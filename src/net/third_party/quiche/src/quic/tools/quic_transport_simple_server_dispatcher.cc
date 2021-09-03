@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/tools/quic_transport_simple_server_dispatcher.h"
+#include "quic/tools/quic_transport_simple_server_dispatcher.h"
 
 #include <memory>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection.h"
-#include "net/third_party/quiche/src/quic/core/quic_dispatcher.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_versions.h"
-#include "net/third_party/quiche/src/quic/tools/quic_transport_simple_server_session.h"
+#include "quic/core/quic_connection.h"
+#include "quic/core/quic_dispatcher.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_versions.h"
+#include "quic/tools/quic_transport_simple_server_session.h"
 
 namespace quic {
 
@@ -39,7 +39,8 @@ QuicTransportSimpleServerDispatcher::CreateQuicSession(
     const QuicSocketAddress& self_address,
     const QuicSocketAddress& peer_address,
     absl::string_view /*alpn*/,
-    const ParsedQuicVersion& version) {
+    const ParsedQuicVersion& version,
+    absl::string_view /*sni*/) {
   auto connection = std::make_unique<QuicConnection>(
       server_connection_id, self_address, peer_address, helper(),
       alarm_factory(), writer(),

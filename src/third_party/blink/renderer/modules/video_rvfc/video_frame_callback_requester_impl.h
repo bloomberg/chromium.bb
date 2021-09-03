@@ -39,6 +39,7 @@ class MODULES_EXPORT VideoFrameCallbackRequesterImpl final
   void cancelVideoFrameCallback(int);
 
   void OnWebMediaPlayerCreated() override;
+  void OnWebMediaPlayerCleared() override;
   void OnRequestVideoFrameCallback() override;
 
   // Called by ScriptedAnimationController as part of the rendering steps,
@@ -55,7 +56,8 @@ class MODULES_EXPORT VideoFrameCallbackRequesterImpl final
 
   // Utility functions to limit the clock resolution of fields, for security
   // reasons.
-  static double GetClampedTimeInMillis(base::TimeDelta time);
+  static double GetClampedTimeInMillis(base::TimeDelta time,
+                                       bool cross_origin_isolated_capability);
   static double GetCoarseClampedTimeInSeconds(base::TimeDelta time);
 
   void ExecuteVideoFrameCallbacks(
@@ -108,7 +110,13 @@ class MODULES_EXPORT VideoFrameCallbackRequesterImpl final
   // Indicates if we are currently in an XR session.
   bool in_immersive_session_ = false;
 
+  // Indicates we are cross-origin isolated.
+  bool cross_origin_isolated_capability_ = false;
+
   Member<VideoFrameRequestCallbackCollection> callback_collection_;
+
+  // Only used to invalidate pending OnExecution() calls.
+  base::WeakPtrFactory<VideoFrameCallbackRequesterImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VideoFrameCallbackRequesterImpl);
 };

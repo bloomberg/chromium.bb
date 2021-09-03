@@ -15,7 +15,7 @@
 
 class GrCoverageCountingPathRenderer;
 class GrRecordingContext;
-class GrRenderTargetContext;
+class GrSurfaceDrawContext;
 
 /**
  * This class takes a clip stack and produces a reduced set of elements that are equivalent to
@@ -90,8 +90,8 @@ public:
      */
     bool maskRequiresAA() const { SkASSERT(!fMaskElements.isEmpty()); return fMaskRequiresAA; }
 
-    bool drawAlphaClipMask(GrRenderTargetContext*) const;
-    bool drawStencilClipMask(GrRecordingContext*, GrRenderTargetContext*) const;
+    bool drawAlphaClipMask(GrSurfaceDrawContext*) const;
+    bool drawStencilClipMask(GrRecordingContext*, GrSurfaceDrawContext*) const;
 
     int numAnalyticElements() const;
 
@@ -104,9 +104,9 @@ public:
      * the render target context, surface allocations, and even switching render targets (pre MDB)
      * may cause flushes or otherwise change which opsTask the actual draw is going into.
      */
-    std::unique_ptr<GrFragmentProcessor> finishAndDetachAnalyticElements(
-            GrRecordingContext*, const SkMatrixProvider& matrixProvider,
-            GrCoverageCountingPathRenderer*, uint32_t opsTaskID);
+    GrFPResult finishAndDetachAnalyticElements(GrRecordingContext*, const SkMatrixProvider&
+                                               matrixProvider, GrCoverageCountingPathRenderer*,
+                                               uint32_t opsTaskID);
 
 private:
     void walkStack(const SkClipStack&, const SkRect& queryBounds);

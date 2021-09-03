@@ -126,14 +126,14 @@ void MultiStorePasswordSaveManager::SavePendingToStoreImpl(
   auto account_matches = AccountStoreMatches(matches);
   auto profile_matches = ProfileStoreMatches(matches);
 
-  base::string16 old_account_password =
+  std::u16string old_account_password =
       states.similar_saved_form_from_account_store
           ? states.similar_saved_form_from_account_store->password_value
-          : base::string16();
-  base::string16 old_profile_password =
+          : std::u16string();
+  std::u16string old_profile_password =
       states.similar_saved_form_from_profile_store
           ? states.similar_saved_form_from_profile_store->password_value
-          : base::string16();
+          : std::u16string();
 
   if (states.profile_store_state == PendingCredentialsState::NEW_LOGIN &&
       states.account_store_state == PendingCredentialsState::NEW_LOGIN) {
@@ -220,25 +220,25 @@ void MultiStorePasswordSaveManager::SavePendingToStoreImpl(
   }
 }
 
-void MultiStorePasswordSaveManager::PermanentlyBlacklist(
+void MultiStorePasswordSaveManager::Blocklist(
     const PasswordStore::FormDigest& form_digest) {
   DCHECK(!client_->IsIncognito());
   if (IsOptedInForAccountStorage() && AccountStoreIsDefault()) {
-    account_store_form_saver_->PermanentlyBlacklist(form_digest);
+    account_store_form_saver_->Blocklist(form_digest);
   } else {
     // For users who aren't yet opted-in to the account storage, we store their
-    // blacklisted entries in the profile store.
-    form_saver_->PermanentlyBlacklist(form_digest);
+    // blocklisted entries in the profile store.
+    form_saver_->Blocklist(form_digest);
   }
 }
 
-void MultiStorePasswordSaveManager::Unblacklist(
+void MultiStorePasswordSaveManager::Unblocklist(
     const PasswordStore::FormDigest& form_digest) {
-  // Try to unblacklist in both stores anyway because if credentials don't
-  // exist, the unblacklist operation is no-op.
-  form_saver_->Unblacklist(form_digest);
+  // Try to unblocklist in both stores anyway because if credentials don't
+  // exist, the unblocklist operation is no-op.
+  form_saver_->Unblocklist(form_digest);
   if (IsOptedInForAccountStorage())
-    account_store_form_saver_->Unblacklist(form_digest);
+    account_store_form_saver_->Unblocklist(form_digest);
 }
 
 std::unique_ptr<PasswordSaveManager> MultiStorePasswordSaveManager::Clone() {
@@ -286,7 +286,7 @@ void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore(
       PasswordForm match_copy = *match;
       match_copy.moving_blocked_for_list.clear();
       account_store_form_saver_->Save(match_copy, account_store_matches,
-                                      /*old_password=*/base::string16());
+                                      /*old_password=*/std::u16string());
     }
     form_saver_->Remove(*match);
   }

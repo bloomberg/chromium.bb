@@ -5,12 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_DIRECT_SOCKETS_UDP_SOCKET_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_DIRECT_SOCKETS_UDP_SOCKET_H_
 
-#include "base/optional.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/udp_socket.mojom-blink.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/direct_sockets/direct_sockets.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -37,21 +38,21 @@ class MODULES_EXPORT UDPSocket final
   UDPSocket& operator=(const UDPSocket&) = delete;
 
   // Called by NavigatorSocket when initiating a connection:
-  mojo::PendingReceiver<network::mojom::blink::UDPSocket>
+  mojo::PendingReceiver<blink::mojom::blink::DirectUDPSocket>
   GetUDPSocketReceiver();
   mojo::PendingRemote<network::mojom::blink::UDPSocketListener>
   GetUDPSocketListener();
   void Init(int32_t result,
-            const base::Optional<net::IPEndPoint>& local_addr,
-            const base::Optional<net::IPEndPoint>& peer_addr);
+            const absl::optional<net::IPEndPoint>& local_addr,
+            const absl::optional<net::IPEndPoint>& peer_addr);
 
   // Web-exposed function
   ScriptPromise close(ScriptState*, ExceptionState&);
 
   // network::mojom::blink::UDPSocketListener:
   void OnReceived(int32_t result,
-                  const base::Optional<::net::IPEndPoint>& src_addr,
-                  base::Optional<::base::span<const ::uint8_t>> data) override;
+                  const absl::optional<::net::IPEndPoint>& src_addr,
+                  absl::optional<::base::span<const ::uint8_t>> data) override;
 
   // ScriptWrappable:
   void Trace(Visitor* visitor) const override;
@@ -63,7 +64,7 @@ class MODULES_EXPORT UDPSocket final
   FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;
 
-  mojo::Remote<network::mojom::blink::UDPSocket> udp_socket_;
+  mojo::Remote<blink::mojom::blink::DirectUDPSocket> udp_socket_;
   mojo::Receiver<network::mojom::blink::UDPSocketListener>
       socket_listener_receiver_{this};
 };

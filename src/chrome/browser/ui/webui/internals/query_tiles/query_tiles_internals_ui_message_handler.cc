@@ -38,18 +38,21 @@ void QueryTilesInternalsUIMessageHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback(
       "getServiceStatus",
-      base::Bind(&QueryTilesInternalsUIMessageHandler::HandleGetServiceStatus,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(
+          &QueryTilesInternalsUIMessageHandler::HandleGetServiceStatus,
+          weak_ptr_factory_.GetWeakPtr()));
 
   web_ui()->RegisterMessageCallback(
       "getTileData",
-      base::Bind(&QueryTilesInternalsUIMessageHandler::HandleGetTileData,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(
+          &QueryTilesInternalsUIMessageHandler::HandleGetTileData,
+          weak_ptr_factory_.GetWeakPtr()));
 
   web_ui()->RegisterMessageCallback(
       "setServerUrl",
-      base::Bind(&QueryTilesInternalsUIMessageHandler::HandleSetServerUrl,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(
+          &QueryTilesInternalsUIMessageHandler::HandleSetServerUrl,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void QueryTilesInternalsUIMessageHandler::HandleGetTileData(
@@ -102,9 +105,9 @@ void QueryTilesInternalsUIMessageHandler::OnTileDataAvailable(
 }
 
 void QueryTilesInternalsUIMessageHandler::OnJavascriptAllowed() {
-  logger_observer_.Add(tile_service_->GetLogger());
+  logger_observation_.Observe(tile_service_->GetLogger());
 }
 
 void QueryTilesInternalsUIMessageHandler::OnJavascriptDisallowed() {
-  logger_observer_.RemoveAll();
+  logger_observation_.Reset();
 }

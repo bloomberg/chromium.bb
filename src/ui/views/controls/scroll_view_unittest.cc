@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -18,20 +17,21 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/scrollbar/base_scroll_bar_thumb.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
-#include "ui/views/controls/separator.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view_test_api.h"
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 #include "ui/base/test/scoped_preferred_scroller_style_mac.h"
 #endif
 
@@ -77,16 +77,10 @@ class ScrollViewTestApi {
   View* corner_view() { return scroll_view_->corner_view_.get(); }
   View* contents_viewport() { return scroll_view_->contents_viewport_; }
 
-  Separator* more_content_left() {
-    return scroll_view_->more_content_left_.get();
-  }
-  Separator* more_content_top() {
-    return scroll_view_->more_content_top_.get();
-  }
-  Separator* more_content_right() {
-    return scroll_view_->more_content_right_.get();
-  }
-  Separator* more_content_bottom() {
+  View* more_content_left() { return scroll_view_->more_content_left_.get(); }
+  View* more_content_top() { return scroll_view_->more_content_top_.get(); }
+  View* more_content_right() { return scroll_view_->more_content_right_.get(); }
+  View* more_content_bottom() {
     return scroll_view_->more_content_bottom_.get();
   }
 
@@ -254,7 +248,7 @@ class ScrollViewTest : public ViewsTestBase {
   }
 
  protected:
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   void SetOverlayScrollersEnabled(bool enabled) {
     // Ensure the old scroller override is destroyed before creating a new one.
     // Otherwise, the swizzlers are interleaved and restore incorrect methods.
@@ -302,7 +296,7 @@ class WidgetScrollViewTest : public test::WidgetTest,
   // Adds a ScrollView with the given |contents_view| and does layout.
   ScrollView* AddScrollViewWithContents(std::unique_ptr<View> contents,
                                         bool commit_layers = true) {
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
     scroller_style_ = std::make_unique<ui::test::ScopedPreferredScrollerStyle>(
         use_overlay_scrollers_);
 #endif
@@ -378,7 +372,7 @@ class WidgetScrollViewTest : public test::WidgetTest,
 
   base::RepeatingClosure quit_closure_;
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
   std::unique_ptr<ui::test::ScopedPreferredScrollerStyle> scroller_style_;
 #endif
 
@@ -640,12 +634,14 @@ TEST_F(ScrollViewTest, ScrollBars) {
 }
 
 // Assertions around adding a header.
-TEST_F(ScrollViewTest, Header) {
-  auto* header = scroll_view_->SetHeader(std::make_unique<CustomView>());
+TEST_F(WidgetScrollViewTest, Header) {
+  auto contents_ptr = std::make_unique<View>();
+  auto* contents = contents_ptr.get();
+  ScrollView* scroll_view = AddScrollViewWithContents(std::move(contents_ptr));
+  auto* header = scroll_view->SetHeader(std::make_unique<CustomView>());
   View* header_parent = header->parent();
-  View* contents = InstallContents();
 
-  scroll_view_->Layout();
+  widget()->LayoutRootViewIfNecessary();
   // |header|s preferred size is empty, which should result in all space going
   // to contents.
   EXPECT_EQ("0,0 100x0", header->parent()->bounds().ToString());
@@ -663,8 +659,8 @@ TEST_F(ScrollViewTest, Header) {
 
   // Get the header a height of 20.
   header->SetPreferredSize(gfx::Size(10, 20));
-  EXPECT_TRUE(ViewTestApi(scroll_view_.get()).needs_layout());
-  scroll_view_->Layout();
+  EXPECT_TRUE(ViewTestApi(scroll_view).needs_layout());
+  widget()->LayoutRootViewIfNecessary();
   EXPECT_EQ("0,0 100x20", header->parent()->bounds().ToString());
   EXPECT_EQ("0,20 100x80", contents->parent()->bounds().ToString());
   if (contents->layer()) {
@@ -674,9 +670,10 @@ TEST_F(ScrollViewTest, Header) {
   EXPECT_EQ("0,0 0x0", contents->bounds().ToString());
 
   // Remove the header.
-  scroll_view_->SetHeader(nullptr);
+  scroll_view->SetHeader(nullptr);
   // SetHeader(nullptr) deletes header.
   header = nullptr;
+  widget()->LayoutRootViewIfNecessary();
   EXPECT_EQ("0,0 100x0", header_parent->bounds().ToString());
   EXPECT_EQ("0,0 100x100", contents->parent()->bounds().ToString());
 }
@@ -1099,6 +1096,25 @@ TEST_F(ScrollViewTest, ClipHeightToScrollbarUsesWidth) {
   EXPECT_EQ(gfx::Size(kWidth, kMaxHeight), scroll_view_->size());
 }
 
+// Verifies ClipHeightTo() updates the ScrollView's preferred size.
+TEST_F(ScrollViewTest, ClipHeightToUpdatesPreferredSize) {
+  auto contents_view = std::make_unique<View>();
+  contents_view->SetPreferredSize({100, 100});
+  scroll_view_->SetContents(std::move(contents_view));
+  EXPECT_FALSE(scroll_view_->is_bounded());
+
+  constexpr int kMinHeight1 = 20;
+  constexpr int kMaxHeight1 = 80;
+  scroll_view_->ClipHeightTo(kMinHeight1, kMaxHeight1);
+  EXPECT_TRUE(scroll_view_->is_bounded());
+  EXPECT_EQ(scroll_view_->GetPreferredSize().height(), kMaxHeight1);
+
+  constexpr int kMinHeight2 = 200;
+  constexpr int kMaxHeight2 = 300;
+  scroll_view_->ClipHeightTo(kMinHeight2, kMaxHeight2);
+  EXPECT_EQ(scroll_view_->GetPreferredSize().height(), kMinHeight2);
+}
+
 TEST_F(ScrollViewTest, CornerViewVisibility) {
   View* contents = InstallContents();
   View* corner_view = ScrollViewTestApi(scroll_view_.get()).corner_view();
@@ -1144,9 +1160,12 @@ TEST_F(ScrollViewTest, CornerViewVisibility) {
   EXPECT_TRUE(corner_view->GetVisible());
 }
 
-TEST_F(ScrollViewTest, ChildWithLayerTest) {
-  View* contents = InstallContents();
-  ScrollViewTestApi test_api(scroll_view_.get());
+// This test needs a widget so that color changes will be reflected.
+TEST_F(WidgetScrollViewTest, ChildWithLayerTest) {
+  auto contents_ptr = std::make_unique<View>();
+  auto* contents = contents_ptr.get();
+  ScrollView* scroll_view = AddScrollViewWithContents(std::move(contents_ptr));
+  ScrollViewTestApi test_api(scroll_view);
 
   if (test_api.contents_viewport()->layer())
     return;
@@ -1159,8 +1178,8 @@ TEST_F(ScrollViewTest, ChildWithLayerTest) {
   // should be true.
   EXPECT_TRUE(test_api.contents_viewport()->layer()->fills_bounds_opaquely());
 
-  // Setting a base::nullopt color should make fills opaquely false.
-  scroll_view_->SetBackgroundColor(base::nullopt);
+  // Setting a absl::nullopt color should make fills opaquely false.
+  scroll_view->SetBackgroundColor(absl::nullopt);
   EXPECT_FALSE(test_api.contents_viewport()->layer()->fills_bounds_opaquely());
 
   child->DestroyLayer();
@@ -1189,7 +1208,7 @@ TEST_F(ScrollViewTest, DontCreateLayerOnViewportIfLayerOnScrollViewCreated) {
   EXPECT_FALSE(test_api.contents_viewport()->layer());
 }
 
-#if defined(OS_APPLE)
+#if defined(OS_MAC)
 // Tests the overlay scrollbars on Mac. Ensure that they show up properly and
 // do not overlap each other.
 TEST_F(ScrollViewTest, CocoaOverlayScrollBars) {
@@ -1355,7 +1374,7 @@ TEST_F(WidgetScrollViewTest, ScrollersOnRest) {
   EXPECT_EQ(gfx::ScrollOffset(x_offset, y_offset), test_api.CurrentOffset());
 }
 
-#endif  // OS_APPLE
+#endif  // OS_MAC
 
 // Test that increasing the size of the viewport "below" scrolled content causes
 // the content to scroll up so that it still fills the viewport.
@@ -1738,6 +1757,73 @@ TEST_F(ScrollViewTest, VerticalWithHeaderOverflowIndicators) {
   // As above, no other overflow indicators should be visible.
   EXPECT_FALSE(test_api.more_content_left()->GetVisible());
   EXPECT_FALSE(test_api.more_content_right()->GetVisible());
+}
+
+TEST_F(ScrollViewTest, CustomOverflowIndicator) {
+  const int kWidth = 100;
+  const int kHeight = 100;
+
+  ScrollViewTestApi test_api(scroll_view_.get());
+
+  // Set up with both horizontal and vertical scrolling.
+  auto contents = std::make_unique<FixedView>();
+  contents->SetPreferredSize(gfx::Size(kWidth * 5, kHeight * 5));
+  scroll_view_->SetContents(std::move(contents));
+
+  // Hide both scrollbars so they don't interfere with indicator visibility.
+  scroll_view_->SetHorizontalScrollBarMode(
+      views::ScrollView::ScrollBarMode::kHiddenButEnabled);
+  scroll_view_->SetVerticalScrollBarMode(
+      views::ScrollView::ScrollBarMode::kHiddenButEnabled);
+
+  // Make sure the size is set so the ScrollView is smaller than its contents
+  // in both directions.
+  scroll_view_->SetSize(gfx::Size(kWidth, kHeight));
+
+  // The horizontal and vertical scroll bars should not be visible.
+  CheckScrollbarVisibility(scroll_view_.get(), HORIZONTAL, false);
+  CheckScrollbarVisibility(scroll_view_.get(), VERTICAL, false);
+
+  // Make sure the initial origin is 0,0
+  EXPECT_EQ(gfx::ScrollOffset(0, 0), test_api.CurrentOffset());
+
+  // Now scroll the view to someplace in the middle of the scrollable region.
+  int offset_x = kWidth * 2;
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(HORIZONTAL), offset_x);
+  int offset_y = kHeight * 2;
+  scroll_view_->ScrollToPosition(test_api.GetScrollBar(VERTICAL), offset_y);
+  EXPECT_EQ(gfx::ScrollOffset(offset_x, offset_y), test_api.CurrentOffset());
+
+  // All overflow indicators should be visible.
+  ASSERT_TRUE(test_api.more_content_right()->GetVisible());
+  ASSERT_TRUE(test_api.more_content_bottom()->GetVisible());
+  ASSERT_TRUE(test_api.more_content_left()->GetVisible());
+  ASSERT_TRUE(test_api.more_content_top()->GetVisible());
+
+  // This should be similar to the default separator.
+  View* left_indicator = scroll_view_->SetCustomOverflowIndicator(
+      OverflowIndicatorAlignment::kLeft, std::make_unique<View>(), 1, true);
+  EXPECT_EQ(gfx::Rect(0, 0, 1, 100), left_indicator->bounds());
+  if (left_indicator->layer())
+    EXPECT_TRUE(left_indicator->layer()->fills_bounds_opaquely());
+
+  // A larger, but still reasonable, indicator that is not opaque.
+  View* top_indicator = scroll_view_->SetCustomOverflowIndicator(
+      OverflowIndicatorAlignment::kTop, std::make_unique<View>(), 20, false);
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 20), top_indicator->bounds());
+  if (top_indicator->layer())
+    EXPECT_FALSE(top_indicator->layer()->fills_bounds_opaquely());
+
+  // Negative thickness doesn't make sense. It should be treated like zero.
+  View* right_indicator = scroll_view_->SetCustomOverflowIndicator(
+      OverflowIndicatorAlignment::kRight, std::make_unique<View>(), -1, true);
+  EXPECT_EQ(gfx::Rect(100, 0, 0, 100), right_indicator->bounds());
+
+  // Thicker than the scrollview is strange, but works as you'd expect.
+  View* bottom_indicator = scroll_view_->SetCustomOverflowIndicator(
+      OverflowIndicatorAlignment::kBottom, std::make_unique<View>(), 1000,
+      true);
+  EXPECT_EQ(gfx::Rect(0, -900, 100, 1000), bottom_indicator->bounds());
 }
 
 // Ensure ScrollView::Layout succeeds if a disabled scrollbar's overlap style
@@ -2204,6 +2290,21 @@ TEST_F(WidgetScrollViewTest,
 
   // Check if the scroll view has been offset.
   EXPECT_EQ(gfx::ScrollOffset(10, 0), test_api.CurrentOffset());
+}
+
+TEST_F(WidgetScrollViewTest, UnboundedScrollViewUsesContentPreferredSize) {
+  auto contents = std::make_unique<View>();
+  constexpr gfx::Size kContentsPreferredSize(500, 500);
+  contents->SetPreferredSize(kContentsPreferredSize);
+  ScrollView* scroll_view =
+      AddScrollViewWithContents(std::move(contents), true);
+  EXPECT_EQ(kContentsPreferredSize, scroll_view->GetPreferredSize());
+
+  constexpr gfx::Insets kInsets(20);
+  scroll_view->SetBorder(CreateEmptyBorder(kInsets));
+  gfx::Size preferred_size_with_insets(kContentsPreferredSize);
+  preferred_size_with_insets.Enlarge(kInsets.width(), kInsets.height());
+  EXPECT_EQ(preferred_size_with_insets, scroll_view->GetPreferredSize());
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

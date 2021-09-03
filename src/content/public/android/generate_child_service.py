@@ -20,13 +20,10 @@ def GenerateService(i):
 
 package org.chromium.content.app;
 
-import org.chromium.base.annotations.MainDex;
-
 /**
  * This is needed to register multiple SandboxedProcess services so that we
  * can have more than one sandboxed process.
  */
-@MainDex
 public class SandboxedProcessService{0} extends SandboxedProcessService {{
 }}"""
   return template.format(str(i))
@@ -46,7 +43,7 @@ def DoMain(argv):
   path_template = "org/chromium/content/app/SandboxedProcessService{0}.java"
   with build_utils.AtomicOutput(output) as f:
     with zipfile.ZipFile(f, 'w', zipfile.ZIP_STORED) as srcjar:
-      for i in xrange(number):
+      for i in range(number):
         build_utils.AddToZipHermetic(srcjar,
                                      path_template.format(i),
                                      data=GenerateService(i))

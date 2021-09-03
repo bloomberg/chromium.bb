@@ -30,10 +30,9 @@ constexpr char kTestWorkgroup[] = "accounts.baz.com";
 class SmbFileSystemIdTest : public testing::Test {
  public:
   SmbFileSystemIdTest() = default;
+  SmbFileSystemIdTest(const SmbFileSystemIdTest&) = delete;
+  SmbFileSystemIdTest& operator=(const SmbFileSystemIdTest&) = delete;
   ~SmbFileSystemIdTest() override = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SmbFileSystemIdTest);
 };
 
 TEST_F(SmbFileSystemIdTest, ShouldCreateFileSystemIdCorrectly) {
@@ -98,7 +97,7 @@ TEST_F(SmbFileSystemIdTest, GetUserFromFileSystemId) {
   const std::string file_system_id_2 = base::StrCat(
       {"EFAFF3864D0FE389@@smb://192.168.0.1/test@@user=", user_workgroup});
 
-  base::Optional<std::string> actual_user =
+  absl::optional<std::string> actual_user =
       GetUserFromFileSystemId(file_system_id_1);
   ASSERT_TRUE(actual_user);
   EXPECT_EQ(kTestUsername, *actual_user);

@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_components/chromeos/network/cellular_utils.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/cr_policy_network_behavior_mojo.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_icon.html">
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_siminfo.html">
@@ -29,15 +30,20 @@
         flex: auto;
       }
 
-      #networkState {
+      .network-state {
         color: var(--cr-secondary-text-color);
+        font-size: inherit;
+      }
+
+      .locked-warning-message {
+        color: var(--google-yellow-800);
         font-size: inherit;
       }
     </style>
     <div class="settings-box two-line no-padding">
       <div actionable$="[[isItemActionable_(activeNetworkState,
                             deviceState, networkStateList)]]"
-           class="flex layout horizontal center link-wrapper"
+          class="flex layout horizontal center link-wrapper"
           on-click="onShowDetailsTap_">
         <div id="details" no-flex$="[[showSimInfo_(deviceState)]]"
              aria-hidden="true">
@@ -51,14 +57,18 @@
             <div id="networkTitleText">
               [[getTitleText_(activeNetworkState)]]
             </div>
-            <div id="networkState">
+            <div id="networkState"
+                class$="[[getNetworkStateClass_(deviceState, deviceState.*)]]">
               [[getNetworkStateText_(activeNetworkState, deviceState.*)]]
             </div>
           </div>
         </div>
 
         <template is="dom-if" if="[[showSimInfo_(deviceState)]]" restamp>
-          <network-siminfo device-state="[[deviceState]]" on-click="doNothing_">
+          <network-siminfo
+              on-click="doNothing_"
+              network-state="[[activeNetworkState]]"
+              device-state="[[deviceState]]">
           </network-siminfo>
         </template>
 

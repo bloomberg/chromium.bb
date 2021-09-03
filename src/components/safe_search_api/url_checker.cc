@@ -17,7 +17,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/google/core/common/google_util.h"
@@ -47,11 +46,7 @@ URLChecker::Check::Check(const GURL& url, CheckCallback callback) : url(url) {
   callbacks.push_back(std::move(callback));
 }
 
-URLChecker::Check::~Check() {
-  for (const CheckCallback& callback : callbacks) {
-    DCHECK(!callback);
-  }
-}
+URLChecker::Check::~Check() = default;
 
 URLChecker::CheckResult::CheckResult(Classification classification,
                                      bool uncertain)
@@ -118,7 +113,7 @@ bool URLChecker::CheckURL(const GURL& url, CheckCallback callback) {
       std::make_unique<Check>(url, std::move(callback)));
   async_checker_->CheckURL(url,
                            base::BindOnce(&URLChecker::OnAsyncCheckComplete,
-                                          base::Unretained(this), it));
+                                          weak_factory_.GetWeakPtr(), it));
 
   return false;
 }

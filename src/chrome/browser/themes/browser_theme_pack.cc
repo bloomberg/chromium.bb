@@ -12,13 +12,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -368,7 +368,8 @@ SkBitmap CreateLowQualityResizedBitmap(const SkBitmap& source_bitmap,
   SkRect scaled_bounds = RectToSkRect(gfx::Rect(scaled_size));
   // Note(oshima): The following scaling code doesn't work with
   // a mask image.
-  canvas.drawBitmapRect(source_bitmap, scaled_bounds, nullptr);
+  canvas.drawImageRect(source_bitmap.asImage(), scaled_bounds,
+                       SkSamplingOptions());
   return scaled_bitmap;
 }
 
@@ -734,8 +735,7 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   pack->set_extension_id(expected_id);
   // Scale factor parameter is moot as data pack has image resources for all
   // supported scale factors.
-  pack->data_pack_.reset(
-      new ui::DataPack(ui::SCALE_FACTOR_NONE));
+  pack->data_pack_ = std::make_unique<ui::DataPack>(ui::SCALE_FACTOR_NONE);
 
   if (!pack->data_pack_->LoadFromPath(path)) {
     LOG(ERROR) << "Failed to load theme data pack.";
@@ -1317,9 +1317,8 @@ void BrowserThemePack::SetDisplayPropertiesFromJSON(
         break;
       }
       case TP::NTP_LOGO_ALTERNATE: {
-        int val = 0;
-        if (iter.value().GetAsInteger(&val))
-          temp_properties[TP::NTP_LOGO_ALTERNATE] = val;
+        if (iter.value().is_int())
+          temp_properties[TP::NTP_LOGO_ALTERNATE] = iter.value().GetInt();
         break;
       }
     }
@@ -1527,12 +1526,12 @@ void BrowserThemePack::CreateFrameImagesAndColors(ImageCache* images) {
   static constexpr struct FrameValues {
     PersistentID prs_id;
     int tint_id;
-    base::Optional<int> color_id;
+    absl::optional<int> color_id;
   } kFrameValues[] = {
       {PRS::kFrame, TP::TINT_FRAME, TP::COLOR_FRAME_ACTIVE},
       {PRS::kFrameInactive, TP::TINT_FRAME_INACTIVE, TP::COLOR_FRAME_INACTIVE},
-      {PRS::kFrameOverlay, TP::TINT_FRAME, base::nullopt},
-      {PRS::kFrameOverlayInactive, TP::TINT_FRAME_INACTIVE, base::nullopt},
+      {PRS::kFrameOverlay, TP::TINT_FRAME, absl::nullopt},
+      {PRS::kFrameOverlayInactive, TP::TINT_FRAME_INACTIVE, absl::nullopt},
       {PRS::kFrameIncognito, TP::TINT_FRAME_INCOGNITO,
        TP::COLOR_FRAME_ACTIVE_INCOGNITO},
       {PRS::kFrameIncognitoInactive, TP::TINT_FRAME_INCOGNITO_INACTIVE,
@@ -1686,7 +1685,7 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
     // For inactive images, the corresponding active image.  If the active
     // images are customized and the inactive ones are not, the inactive ones
     // will be based on the active ones.
-    base::Optional<PersistentID> fallback_tab_id;
+    absl::optional<PersistentID> fallback_tab_id;
 
     // The frame image to use as the base of this tab background image.
     PersistentID frame_id;
@@ -1697,12 +1696,12 @@ void BrowserThemePack::CreateTabBackgroundImagesAndColors(ImageCache* images) {
     // The color to compute and store for this image, if not present.
     int color_id;
   } kTabBackgroundMap[] = {
-      {PRS::kTabBackground, base::nullopt, PRS::kFrame, TP::COLOR_FRAME_ACTIVE,
+      {PRS::kTabBackground, absl::nullopt, PRS::kFrame, TP::COLOR_FRAME_ACTIVE,
        TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE},
       {PRS::kTabBackgroundInactive, PRS::kTabBackground, PRS::kFrameInactive,
        TP::COLOR_FRAME_INACTIVE,
        TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE},
-      {PRS::kTabBackgroundIncognito, base::nullopt, PRS::kFrameIncognito,
+      {PRS::kTabBackgroundIncognito, absl::nullopt, PRS::kFrameIncognito,
        TP::COLOR_FRAME_ACTIVE_INCOGNITO,
        TP::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_ACTIVE_INCOGNITO},
       {PRS::kTabBackgroundIncognitoInactive, PRS::kTabBackgroundIncognito,

@@ -14,6 +14,7 @@
 #include "common/MemoryBuffer.h"
 #include "common/angleutils.h"
 #include "common/debug.h"
+#include "libANGLE/ErrorStrings.h"
 #include "libANGLE/renderer/metal/BufferMtl.h"
 #include "libANGLE/renderer/metal/DisplayMtl.h"
 #include "libANGLE/renderer/metal/FrameBufferMtl.h"
@@ -456,10 +457,10 @@ angle::Result FramebufferMtl::blitWithDraw(const gl::Context *context,
         colorBlitParams.srcLevel = srcColorRt->getLevelIndex();
         colorBlitParams.srcLayer = srcColorRt->getLayerIndex();
 
-        colorBlitParams.blitColorMask  = contextMtl->getColorMask();
-        colorBlitParams.enabledBuffers = getState().getEnabledDrawBuffers();
-        colorBlitParams.filter         = filter;
-        colorBlitParams.dstLuminance   = srcColorRt->getFormat()->actualAngleFormat().isLUMA();
+        colorBlitParams.blitWriteMaskArray = contextMtl->getWriteMaskArray();
+        colorBlitParams.enabledBuffers     = getState().getEnabledDrawBuffers();
+        colorBlitParams.filter             = filter;
+        colorBlitParams.dstLuminance       = srcColorRt->getFormat()->actualAngleFormat().isLUMA();
 
         ANGLE_TRY(contextMtl->getDisplay()->getUtils().blitColorWithDraw(
             context, renderEncoder, srcColorRt->getFormat()->actualAngleFormat(), colorBlitParams));
@@ -468,18 +469,22 @@ angle::Result FramebufferMtl::blitWithDraw(const gl::Context *context,
     return angle::Result::Continue;
 }
 
-bool FramebufferMtl::checkStatus(const gl::Context *context) const
+gl::FramebufferStatus FramebufferMtl::checkStatus(const gl::Context *context) const
 {
     if (!mState.attachmentsHaveSameDimensions())
     {
-        return false;
+        return gl::FramebufferStatus::Incomplete(
+            GL_FRAMEBUFFER_UNSUPPORTED,
+            gl::err::kFramebufferIncompleteUnsupportedMissmatchedDimensions);
     }
 
     ContextMtl *contextMtl = mtl::GetImpl(context);
     if (!contextMtl->getDisplay()->getFeatures().allowSeparatedDepthStencilBuffers.enabled &&
         mState.hasSeparateDepthAndStencilAttachments())
     {
-        return false;
+        return gl::FramebufferStatus::Incomplete(
+            GL_FRAMEBUFFER_UNSUPPORTED,
+            gl::err::kFramebufferIncompleteUnsupportedSeparateDepthStencilBuffers);
     }
 
     if (mState.getDepthAttachment() && mState.getDepthAttachment()->getFormat().info->depthBits &&
@@ -495,10 +500,10 @@ bool FramebufferMtl::checkStatus(const gl::Context *context) const
         return checkPackedDepthStencilAttachment();
     }
 
-    return true;
+    return gl::FramebufferStatus::Complete();
 }
 
-bool FramebufferMtl::checkPackedDepthStencilAttachment() const
+gl::FramebufferStatus FramebufferMtl::checkPackedDepthStencilAttachment() const
 {
     if (ANGLE_APPLE_AVAILABLE_XCI(10.14, 13.0, 12.0))
     {
@@ -509,7 +514,9 @@ bool FramebufferMtl::checkPackedDepthStencilAttachment() const
         {
             WARN() << "Packed depth stencil texture/buffer must not be mixed with other "
                       "texture/buffer.";
-            return false;
+            return gl::FramebufferStatus::Incomplete(
+                GL_FRAMEBUFFER_UNSUPPORTED,
+                gl::err::kFramebufferIncompleteUnsupportedSeparateDepthStencilBuffers);
         }
     }
     else
@@ -520,10 +527,12 @@ bool FramebufferMtl::checkPackedDepthStencilAttachment() const
         {
             WARN() << "Packed depth stencil texture/buffer must be bound to both depth & stencil "
                       "attachment point.";
-            return false;
+            return gl::FramebufferStatus::Incomplete(
+                GL_FRAMEBUFFER_UNSUPPORTED,
+                gl::err::kFramebufferIncompleteUnsupportedSeparateDepthStencilBuffers);
         }
     }
-    return true;
+    return gl::FramebufferStatus::Complete();
 }
 
 angle::Result FramebufferMtl::syncState(const gl::Context *context,
@@ -1042,6 +1051,8 @@ angle::Result FramebufferMtl::clearWithDraw(const gl::Context *context,
             continue;
         }
 
+        overrideClearOps.clearWriteMaskArray[0] = overrideClearOps.clearWriteMaskArray[drawbuffer];
+
         mtl::RenderCommandEncoder *encoder =
             contextMtl->getRenderTargetCommandEncoder(*renderTarget);
         ANGLE_TRY(display->getUtils().clearWithDraw(context, encoder, overrideClearOps));
@@ -1078,8 +1089,8 @@ angle::Result FramebufferMtl::clearImpl(const gl::Context *context,
         return angle::Result::Continue;
     }
 
-    clearOpts.clearColorMask = contextMtl->getColorMask();
-    uint32_t stencilMask     = contextMtl->getStencilMask();
+    clearOpts.clearWriteMaskArray = contextMtl->getWriteMaskArray();
+    uint32_t stencilMask          = contextMtl->getStencilMask();
     if (!contextMtl->getDepthMask())
     {
         // Disable depth clearing, since depth write is disable
@@ -1089,8 +1100,18 @@ angle::Result FramebufferMtl::clearImpl(const gl::Context *context,
     // Only clear enabled buffers
     clearOpts.enabledBuffers = clearColorBuffers;
 
+    bool allBuffersUnmasked = true;
+    for (size_t enabledBuffer : clearColorBuffers)
+    {
+        if (clearOpts.clearWriteMaskArray[enabledBuffer] != MTLColorWriteMaskAll)
+        {
+            allBuffersUnmasked = false;
+            break;
+        }
+    }
+
     if (clearOpts.clearArea == renderArea &&
-        (!clearOpts.clearColor.valid() || clearOpts.clearColorMask == MTLColorWriteMaskAll) &&
+        (!clearOpts.clearColor.valid() || allBuffersUnmasked) &&
         (!clearOpts.clearStencil.valid() ||
          (stencilMask & mtl::kStencilMaskAll) == mtl::kStencilMaskAll))
     {

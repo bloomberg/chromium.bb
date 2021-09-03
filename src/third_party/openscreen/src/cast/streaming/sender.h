@@ -168,6 +168,10 @@ class Sender final : public SenderPacketRouter::Sender,
   // prior frame; and the frame's |data| pointer must be set.
   [[nodiscard]] EnqueueFrameResult EnqueueFrame(const EncodedFrame& frame);
 
+  // Causes all pending operations to discard data when they are processed
+  // later.
+  void CancelInFlightData();
+
  private:
   // Tracking/Storage for frames that are ready-to-send, and until they are
   // fully received at the other end.

@@ -34,6 +34,7 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "v8/include/v8.h"
 
 namespace cc {
@@ -49,7 +50,6 @@ class WebPlugin;
 class WebString;
 class WebURLRequest;
 class WebDOMMessageEvent;
-struct WebRect;
 
 class WebPluginContainer {
  public:
@@ -78,7 +78,6 @@ class WebPluginContainer {
   virtual void EnqueueMessageEvent(const WebDOMMessageEvent&) = 0;
 
   virtual void Invalidate() = 0;
-  virtual void InvalidateRect(const WebRect&) = 0;
   virtual void EnqueueEvent(const WebDOMEvent& event) = 0;
 
   // Schedules an animation of the WebView that contains the plugin, as well as
@@ -104,7 +103,7 @@ class WebPluginContainer {
 
   // Determines whether the given rectangle in this plugin is above all other
   // content. The rectangle is in the plugin's coordinate system.
-  virtual bool IsRectTopmost(const WebRect&) = 0;
+  virtual bool IsRectTopmost(const gfx::Rect&) = 0;
 
   // Notifies when the plugin changes the kind of touch-events it accepts.
   virtual void RequestTouchEventType(TouchEventRequestType) = 0;
@@ -144,7 +143,7 @@ class WebPluginContainer {
 
   // Sets the layer representing the plugin for compositing. The
   // WebPluginContainer does *not* take ownership.
-  virtual void SetCcLayer(cc::Layer*, bool prevent_contents_opaque_changes) = 0;
+  virtual void SetCcLayer(cc::Layer*) = 0;
 
   virtual void RequestFullscreen() = 0;
   virtual bool IsFullscreenElement() const = 0;
@@ -169,4 +168,4 @@ class WebPluginContainer {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_CONTAINER_H_
