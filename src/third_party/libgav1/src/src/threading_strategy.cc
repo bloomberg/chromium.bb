@@ -132,7 +132,7 @@ bool ThreadingStrategy::Reset(const ObuFrameHeader& frame_header,
     thread_count -= 2;
     if (thread_count <= 0) break;
   }
-#else  // !defined(__ANDROID__)
+#else   // !defined(__ANDROID__)
   // Assign the remaining threads to each Tile.
   for (int i = 0; i < tile_count; ++i) {
     const int count = thread_count / tile_count +

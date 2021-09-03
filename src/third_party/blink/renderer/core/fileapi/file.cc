@@ -125,11 +125,16 @@ static std::unique_ptr<BlobData> CreateBlobDataForFileSystemURL(
 }
 
 // static
-File* File::Create(
-    ExecutionContext* context,
-    const HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString>& file_bits,
-    const String& file_name,
-    const FilePropertyBag* options) {
+File* File::Create(ExecutionContext* context,
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                   const HeapVector<Member<V8BlobPart>>& file_bits,
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                   const HeapVector<
+                       ArrayBufferOrArrayBufferViewOrBlobOrUSVString>&
+                       file_bits,
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+                   const String& file_name,
+                   const FilePropertyBag* options) {
   DCHECK(options->hasType());
 
   base::Time last_modified;
@@ -219,7 +224,7 @@ File::File(const String& path,
            UserVisibility user_visibility,
            bool has_snapshot_data,
            uint64_t size,
-           const base::Optional<base::Time>& last_modified,
+           const absl::optional<base::Time>& last_modified,
            scoped_refptr<BlobDataHandle> blob_data_handle)
     : Blob(std::move(blob_data_handle)),
       has_backing_file_(!path.IsEmpty() || !relative_path.IsEmpty()),
@@ -233,7 +238,7 @@ File::File(const String& path,
 }
 
 File::File(const String& name,
-           const base::Optional<base::Time>& modification_time,
+           const absl::optional<base::Time>& modification_time,
            scoped_refptr<BlobDataHandle> blob_data_handle)
     : Blob(std::move(blob_data_handle)),
       has_backing_file_(false),
@@ -318,7 +323,7 @@ ScriptValue File::lastModifiedDate(ScriptState* script_state) const {
                      ToV8(LastModifiedTime(), script_state));
 }
 
-base::Optional<base::Time> File::LastModifiedTimeForSerialization() const {
+absl::optional<base::Time> File::LastModifiedTimeForSerialization() const {
   CaptureSnapshotIfNeeded();
 
   return snapshot_modification_time_;

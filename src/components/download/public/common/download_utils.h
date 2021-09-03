@@ -78,7 +78,7 @@ CreateDownloadDBEntryFromItem(const DownloadItemImpl& item);
 // Helper function to convert DownloadDBEntry to DownloadEntry.
 // TODO(qinmin): remove this function after DownloadEntry is deprecated.
 COMPONENTS_DOWNLOAD_EXPORT std::unique_ptr<DownloadEntry>
-CreateDownloadEntryFromDownloadDBEntry(base::Optional<DownloadDBEntry> entry);
+CreateDownloadEntryFromDownloadDBEntry(absl::optional<DownloadDBEntry> entry);
 
 COMPONENTS_DOWNLOAD_EXPORT uint64_t GetUniqueDownloadId();
 
@@ -117,9 +117,15 @@ int64_t GetDownloadValidationLengthConfig();
 constexpr char kExpiredDownloadDeleteTimeFinchKey[] =
     "expired_download_delete_days";
 
+// Finch parameter key value for the time to delete expired downloads in days.
+constexpr char kOverwrittenDownloadDeleteTimeFinchKey[] =
+    "overwritten_download_delete_days";
+
 // Returns the time to delete expired downloads.
 COMPONENTS_DOWNLOAD_EXPORT base::TimeDelta GetExpiredDownloadDeleteTime();
 
+// Returns the time in days to delete download that is overwritten by others.
+COMPONENTS_DOWNLOAD_EXPORT base::TimeDelta GetOverwrittenDownloadDeleteTime();
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_UTILS_H_

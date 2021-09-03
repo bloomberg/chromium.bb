@@ -110,6 +110,20 @@ bool IsAndroidDevice(const std::string &deviceName)
     return false;
 }
 
+bool IsAndroid9OrNewer()
+{
+    if (!IsAndroid())
+    {
+        return false;
+    }
+    SystemInfo *systemInfo = GetTestSystemInfo();
+    if (systemInfo->androidSdkLevel >= 28)
+    {
+        return true;
+    }
+    return false;
+}
+
 GPUDeviceInfo *GetActiveGPUDeviceInfo()
 {
     SystemInfo *systemInfo = GetTestSystemInfo();
@@ -214,7 +228,16 @@ bool IsLinux()
 
 bool IsOSX()
 {
-#if defined(ANGLE_PLATFORM_APPLE)
+#if defined(ANGLE_PLATFORM_MACOS)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool IsIOS()
+{
+#if defined(ANGLE_PLATFORM_IOS)
     return true;
 #else
     return false;
@@ -288,11 +311,6 @@ bool IsNexus5X()
     return IsAndroidDevice("Nexus 5X");
 }
 
-bool IsNexus6P()
-{
-    return IsAndroidDevice("Nexus 6P");
-}
-
 bool IsNexus9()
 {
     return IsAndroidDevice("Nexus 9");
@@ -353,6 +371,11 @@ bool IsNVIDIA()
     }
 #endif
     return HasSystemVendorID(kVendorID_NVIDIA);
+}
+
+bool IsQualcomm()
+{
+    return IsNexus5X() || IsNexus9() || IsPixelXL() || IsPixel2() || IsPixel2XL();
 }
 
 bool IsConfigAllowlisted(const SystemInfo &systemInfo, const PlatformParameters &param)
@@ -425,7 +448,7 @@ bool IsConfigAllowlisted(const SystemInfo &systemInfo, const PlatformParameters 
     }
 
 #if defined(ANGLE_PLATFORM_APPLE)
-    if (IsOSX())
+    if (IsOSX() || IsIOS())
     {
         // We do not support non-ANGLE bindings on OSX.
         if (param.driver != GLESDriverType::AngleEGL)
@@ -515,9 +538,10 @@ bool IsConfigAllowlisted(const SystemInfo &systemInfo, const PlatformParameters 
         switch (param.getRenderer())
         {
             case EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE:
-            case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
-                // Note that system info collection depends on Vulkan support.
                 return true;
+            case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
+                // http://issuetracker.google.com/173004081
+                return !IsIntel() || param.eglParameters.asyncCommandQueueFeatureVulkan != EGL_TRUE;
             default:
                 return false;
         }
@@ -530,7 +554,7 @@ bool IsConfigAllowlisted(const SystemInfo &systemInfo, const PlatformParameters 
         // Nexus Android devices don't support backing 3.2 contexts
         if (param.eglParameters.majorVersion == 3 && param.eglParameters.minorVersion == 2)
         {
-            if (IsNexus5X() || IsNexus6P())
+            if (IsNexus5X())
             {
                 return false;
             }
@@ -540,9 +564,18 @@ bool IsConfigAllowlisted(const SystemInfo &systemInfo, const PlatformParameters 
         switch (param.getRenderer())
         {
             case EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE:
+                return true;
             case EGL_PLATFORM_ANGLE_TYPE_VULKAN_ANGLE:
                 // Swiftshader's vulkan frontend doesn't build on Android.
                 if (param.getDeviceType() == EGL_PLATFORM_ANGLE_DEVICE_TYPE_SWIFTSHADER_ANGLE)
+                {
+                    return false;
+                }
+                if (!IsAndroid9OrNewer())
+                {
+                    return false;
+                }
+                if (param.eglParameters.supportsVulkanViewportFlip == EGL_FALSE)
                 {
                     return false;
                 }

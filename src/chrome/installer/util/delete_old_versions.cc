@@ -9,13 +9,13 @@
 #include <set>
 #include <vector>
 
+#include "base/containers/contains.h"
 #include "base/file_version_info.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "base/stl_util.h"
 #include "base/version.h"
 #include "chrome/installer/util/util_constants.h"
 
@@ -33,13 +33,14 @@ base::FilePath GetExecutableVersionDirName(const base::FilePath& exe_path) {
       FileVersionInfo::CreateFileVersionInfo(exe_path));
   if (!file_version_info.get())
     return base::FilePath();
-  return base::FilePath(file_version_info->file_version());
+  return base::FilePath::FromUTF16Unsafe(file_version_info->file_version());
 }
 
 // Returns the names of the old version directories found in |install_dir|. The
 // directories named after the version of chrome.exe or new_chrome.exe are
 // excluded.
 DirectorySet GetOldVersionDirectories(const base::FilePath& install_dir) {
+  // TODO(crbug/1182976): Delete old version directory from all known locations.
   const base::FilePath new_chrome_exe_version_dir_name =
       GetExecutableVersionDirName(install_dir.Append(kChromeNewExe));
   const base::FilePath chrome_exe_version_dir_name =

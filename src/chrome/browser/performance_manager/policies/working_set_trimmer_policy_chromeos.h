@@ -7,13 +7,13 @@
 
 #include <map>
 
-#include <base/memory/weak_ptr.h>
 #include "base/memory/memory_pressure_listener.h"
-#include "base/optional.h"
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/arc/process/arc_process_service.h"
+#include "chrome/browser/ash/arc/process/arc_process_service.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/browser/performance_manager/policies/working_set_trimmer_policy.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace arc {
 class ArcProcess;
@@ -55,6 +55,10 @@ class WorkingSetTrimmerPolicyChromeOS : public WorkingSetTrimmerPolicy {
     return trim_arc_on_memory_pressure_;
   }
 
+  virtual void TrimReceivedArcProcesses(
+      int allowed_to_trim,
+      arc::ArcProcessService::OptionalArcProcessList arc_processes);
+
  protected:
   friend class WorkingSetTrimmerPolicyChromeOSTest;
 
@@ -75,9 +79,6 @@ class WorkingSetTrimmerPolicyChromeOS : public WorkingSetTrimmerPolicy {
   // TrimArcProcesses will walk procfs looking for ARC container processes which
   // can be trimmed. These are virtual for testing.
   virtual void TrimArcProcesses();
-  virtual void TrimReceivedArcProcesses(
-      int allowed_to_trim,
-      arc::ArcProcessService::OptionalArcProcessList arc_processes);
   virtual bool IsArcProcessEligibleForReclaim(
       const arc::ArcProcess& arc_process);
   virtual bool TrimArcProcess(base::ProcessId pid);
@@ -91,7 +92,7 @@ class WorkingSetTrimmerPolicyChromeOS : public WorkingSetTrimmerPolicy {
   // We keep track of the last time we fetched the ARC process list.
   base::TimeTicks last_arc_process_fetch_;
 
-  base::Optional<base::MemoryPressureListener> memory_pressure_listener_;
+  absl::optional<base::MemoryPressureListener> memory_pressure_listener_;
 
  private:
   Graph* graph_ = nullptr;

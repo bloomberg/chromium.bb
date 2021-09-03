@@ -6,9 +6,9 @@
 #define ASH_SYSTEM_ACCESSIBILITY_FLOATING_MENU_BUTTON_H_
 
 #include "ash/system/tray/tray_constants.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/metadata/view_factory.h"
 
 namespace gfx {
@@ -59,10 +59,6 @@ class FloatingMenuButton : public views::ImageButton {
   void PaintButtonContents(gfx::Canvas* canvas) override;
   gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
   void OnThemeChanged() override;
 
  private:

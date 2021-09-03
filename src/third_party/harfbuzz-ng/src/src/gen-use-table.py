@@ -243,12 +243,9 @@ def is_BASE(U, UISC, UGC, AJT):
 			Vowel_Independent,
 			] or
 		# TODO: https://github.com/MicrosoftDocs/typography-issues/issues/484
-		AJT in [jt_C, jt_D, jt_L, jt_R] and not is_ZWJ(U, UISC, UGC, AJT) or
+		AJT in [jt_C, jt_D, jt_L, jt_R] and UISC != Joiner or
 		(UGC == Lo and UISC in [Avagraha, Bindu, Consonant_Final, Consonant_Medial,
 					Consonant_Subjoined, Vowel, Vowel_Dependent]))
-def is_BASE_IND(U, UISC, UGC, AJT):
-	return (UISC in [Consonant_Dead, Modifying_Letter] or
-		(UGC == Po and not U in [0x0F04, 0x0F05, 0x0F06, 0x104B, 0x104E, 0x1800, 0x1807, 0x180A, 0x1B5B, 0x1B5C, 0x1B5F, 0x2022, 0x111C8, 0x11A3F, 0x11A45, 0x11C44, 0x11C45]))
 def is_BASE_NUM(U, UISC, UGC, AJT):
 	return UISC == Brahmi_Joining_Number
 def is_BASE_OTHER(U, UISC, UGC, AJT):
@@ -290,19 +287,13 @@ def is_HIEROGLYPH_SEGMENT_END(U, UISC, UGC, AJT):
 	return UISC == Hieroglyph_Segment_End
 def is_ZWNJ(U, UISC, UGC, AJT):
 	return UISC == Non_Joiner
-def is_ZWJ(U, UISC, UGC, AJT):
-	return UISC == Joiner
-def is_Word_Joiner(U, UISC, UGC, AJT):
-	return U == 0x2060
 def is_OTHER(U, UISC, UGC, AJT):
-	return (UISC == Other
+	return ((UGC in [Cn, Po] or UISC in [Consonant_Dead, Joiner, Modifying_Letter, Other])
 		and not is_BASE(U, UISC, UGC, AJT)
+		and not is_BASE_OTHER(U, UISC, UGC, AJT)
 		and not is_SYM(U, UISC, UGC, AJT)
 		and not is_SYM_MOD(U, UISC, UGC, AJT)
-		and not is_Word_Joiner(U, UISC, UGC, AJT)
 	)
-def is_Reserved(U, UISC, UGC, AJT):
-	return UGC == 'Cn'
 def is_REPHA(U, UISC, UGC, AJT):
 	return UISC in [Consonant_Preceding_Repha, Consonant_Prefixed]
 def is_SAKOT(U, UISC, UGC, AJT):
@@ -321,10 +312,9 @@ def is_VOWEL_MOD(U, UISC, UGC, AJT):
 	return (UISC in [Tone_Mark, Cantillation_Mark, Register_Shifter, Visarga] or
 		(UGC != Lo and (UISC == Bindu or U in [0xAA29])))
 
-# CGJ and VS are handled in find_syllables
+# CGJ, VS, WJ, and ZWJ are handled in find_syllables
 use_mapping = {
 	'B':	is_BASE,
-	'IND':	is_BASE_IND,
 	'N':	is_BASE_NUM,
 	'GB':	is_BASE_OTHER,
 	'F':	is_CONS_FINAL,
@@ -341,10 +331,7 @@ use_mapping = {
 	'SB':	is_HIEROGLYPH_SEGMENT_BEGIN,
 	'SE':	is_HIEROGLYPH_SEGMENT_END,
 	'ZWNJ':	is_ZWNJ,
-	'ZWJ':	is_ZWJ,
-	'WJ':	is_Word_Joiner,
 	'O':	is_OTHER,
-	'Rsv':	is_Reserved,
 	'R':	is_REPHA,
 	'S':	is_SYM,
 	'Sk':	is_SAKOT,
@@ -401,11 +388,6 @@ def map_to_use(data):
 	out = {}
 	items = use_mapping.items()
 	for U,(UISC,UIPC,UGC,AJT,UBlock) in data.items():
-
-		if UGC == Cn: continue
-
-		# TODO: These variation selectors are overridden to IND, but we want to ignore them
-		if U in range (0xFE00, 0xFE0F + 1): continue
 
 		# Resolve Indic_Syllabic_Category
 
@@ -475,11 +457,12 @@ for h in headers:
 		print (" * %s" % (l.strip()))
 print (" */")
 print ()
+print ("#ifndef HB_OT_SHAPE_COMPLEX_USE_TABLE_HH")
+print ("#define HB_OT_SHAPE_COMPLEX_USE_TABLE_HH")
+print ()
 print ('#include "hb.hh"')
 print ()
-print ('#ifndef HB_NO_OT_SHAPE')
-print ()
-print ('#include "hb-ot-shape-complex-use.hh"')
+print ('#include "hb-ot-shape-complex-use-machine.hh"')
 print ()
 
 total = 0
@@ -521,17 +504,19 @@ print ('#pragma GCC diagnostic push')
 print ('#pragma GCC diagnostic ignored "-Wunused-macros"')
 for k,v in sorted(use_mapping.items()):
 	if k in use_positions and use_positions[k]: continue
-	print ("#define %s	USE_%s	/* %s */" % (k, k, v.__name__[3:]))
+	print ("#define %s	USE(%s)	/* %s */" % (k, k, v.__name__[3:]))
 for k,v in sorted(use_positions.items()):
 	if not v: continue
 	for suf in v.keys():
 		tag = k + suf
-		print ("#define %s	USE_%s" % (tag, tag))
+		print ("#define %s	USE(%s)" % (tag, tag))
 print ('#pragma GCC diagnostic pop')
 print ("")
-print ("static const USE_TABLE_ELEMENT_TYPE use_table[] = {")
+print ("static const uint8_t use_table[] = {")
 for u in uu:
 	if u <= last:
+		continue
+	if data[u][0] == 'O':
 		continue
 	block = data[u][1]
 
@@ -563,7 +548,7 @@ occupancy = used * 100. / total
 page_bits = 12
 print ("}; /* Table items: %d; occupancy: %d%% */" % (offset, occupancy))
 print ()
-print ("USE_TABLE_ELEMENT_TYPE")
+print ("static inline uint8_t")
 print ("hb_use_get_category (hb_codepoint_t u)")
 print ("{")
 print ("  switch (u >> %d)" % page_bits)
@@ -580,7 +565,7 @@ for p in sorted(pages):
 print ("    default:")
 print ("      break;")
 print ("  }")
-print ("  return USE_O;")
+print ("  return USE(O);")
 print ("}")
 print ()
 for k in sorted(use_mapping.keys()):
@@ -593,7 +578,7 @@ for k,v in sorted(use_positions.items()):
 		print ("#undef %s" % tag)
 print ()
 print ()
-print ('#endif')
+print ("#endif /* HB_OT_SHAPE_COMPLEX_USE_TABLE_HH */")
 print ("/* == End of generated table == */")
 
 # Maintain at least 50% occupancy in the table */

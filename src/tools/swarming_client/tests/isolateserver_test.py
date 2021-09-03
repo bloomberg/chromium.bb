@@ -172,6 +172,7 @@ class UtilsTest(TestCase):
     # TODO(maruel): Write test for file_read generator (or remove it).
     pass
 
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_fileobj_path(self):
     # No path on in-memory objects
     self.assertIs(None, isolateserver.fileobj_path(io.BytesIO(b'hello')))
@@ -510,6 +511,7 @@ class StorageTest(TestCase):
       self.assertEqual(os.path.join(self.tempdir, filename), pushed_item.path)
       self.assertEqual(files_content[filename], pushed_content)
 
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_archive_files_to_storage_symlink(self):
     link_path = os.path.join(self.tempdir, u'link')
     with open(os.path.join(self.tempdir, u'foo'), 'wb') as f:
@@ -1093,6 +1095,7 @@ class IsolateServerDownloadTest(TestCase):
     }
     self.assertEqual(expected, actual)
 
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_download_isolated_simple(self):
     # Test downloading an isolated tree.
     # It writes files to disk for real.
@@ -1172,6 +1175,7 @@ class IsolateServerDownloadTest(TestCase):
     ]
     self.checkOutput(expected_stdout)
 
+  @unittest.skipIf(sys.platform == 'win32', 'crbug.com/1148174')
   def test_download_isolated_tar_archive(self):
     # Test downloading an isolated tree.
     server_ref = isolate_storage.ServerRef('http://example.com', 'default-gzip')

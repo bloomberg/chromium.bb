@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -94,7 +95,6 @@ class GCMDriverDesktop : public GCMDriver,
   void RemoveAccountMapping(const CoreAccountId& account_id) override;
   base::Time GetLastTokenFetchTime() override;
   void SetLastTokenFetchTime(const base::Time& time) override;
-  void WakeFromSuspendForHeartbeat(bool wake) override;
   InstanceIDHandler* GetInstanceIDHandlerInternal() override;
   void AddHeartbeatInterval(const std::string& scope, int interval_ms) override;
   void RemoveHeartbeatInterval(const std::string& scope) override;
@@ -116,7 +116,6 @@ class GCMDriverDesktop : public GCMDriver,
                 const std::string& authorized_entity,
                 const std::string& scope,
                 base::TimeDelta time_to_live,
-                const std::map<std::string, std::string>& options,
                 GetTokenCallback callback) override;
   void ValidateToken(const std::string& app_id,
                      const std::string& authorized_entity,
@@ -166,8 +165,7 @@ class GCMDriverDesktop : public GCMDriver,
   void DoGetToken(const std::string& app_id,
                   const std::string& authorized_entity,
                   const std::string& scope,
-                  base::TimeDelta time_to_live,
-                  const std::map<std::string, std::string>& options);
+                  base::TimeDelta time_to_live);
   void DoDeleteToken(const std::string& app_id,
                      const std::string& authorized_entity,
                      const std::string& scope);
@@ -226,10 +224,6 @@ class GCMDriverDesktop : public GCMDriver,
 
   std::unique_ptr<GCMDelayedTaskController> delayed_task_controller_;
 
-  // Whether the HeartbeatManager should try to wake the system from suspend for
-  // sending heartbeat messages.
-  bool wake_from_suspend_enabled_;
-
   // For all the work occurring on the IO thread. Must be destroyed on the IO
   // thread.
   std::unique_ptr<IOWorker> io_worker_;
@@ -237,8 +231,15 @@ class GCMDriverDesktop : public GCMDriver,
   // Callback for SetGCMRecording.
   GCMStatisticsRecordingCallback gcm_statistics_recording_callback_;
 
-  // Callbacks for GetInstanceIDData.
-  std::map<std::string, GetInstanceIDDataCallback>
+  // Callbacks for GetInstanceIDData. Initializing InstanceID is asynchronous,
+  // which leads to a race condition when recreating an InstanceID before such
+  // initialization has finished, causing multiple callbacks to be in flight.
+  // Expecting all InstanceID users to care for that is fragile and complicated,
+  // so allow for a queue of callbacks to be stored here instead.
+  //
+  // Note that other InstanceID callbacks don't have this concern, as they all
+  // wait for initialization of the InstanceID instance to have completed.
+  std::map<std::string, base::queue<GetInstanceIDDataCallback>>
       get_instance_id_data_callbacks_;
 
   // Callbacks for GetToken/DeleteToken.

@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -112,6 +111,15 @@ chrome::mojom::AppShimLaunchType AppShimHostBootstrap::GetLaunchType() const {
 const std::vector<base::FilePath>& AppShimHostBootstrap::GetLaunchFiles()
     const {
   return app_shim_info_->files;
+}
+
+chrome::mojom::AppShimLoginItemRestoreState
+AppShimHostBootstrap::GetLoginItemRestoreState() const {
+  return app_shim_info_->login_item_restore_state;
+}
+
+const std::vector<GURL>& AppShimHostBootstrap::GetLaunchUrls() const {
+  return app_shim_info_->urls;
 }
 
 bool AppShimHostBootstrap::IsMultiProfile() const {

@@ -31,7 +31,13 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   static GLImageIOSurface* Create(const gfx::Size& size,
                                   unsigned internalformat);
 
+  // Initialize to wrap of |io_surface|. The format of the plane to wrap is
+  // specified in |format|. The index of the plane to wrap is
+  // |io_surface_plane|. If |format| is a multi-planar format (e.g,
+  // YUV_420_BIPLANAR or P010), then this will automatically convert from YUV
+  // to RGB, and |io_surface_plane| is ignored.
   bool Initialize(IOSurfaceRef io_surface,
+                  uint32_t io_surface_plane,
                   gfx::GenericSharedMemoryId io_surface_id,
                   gfx::BufferFormat format);
 
@@ -81,6 +87,10 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   // RGB transformation.
   void SetColorSpaceForYUVToRGBConversion(const gfx::ColorSpace& color_space);
 
+  // Sets the color space of the GLImage without modifying the underlying
+  // IOSurface. Callers should ensure the color spaces match.
+  void SetColorSpaceShallow(const gfx::ColorSpace& color_space);
+
   static unsigned GetInternalFormatForTesting(gfx::BufferFormat format);
 
   // Downcasts from |image|. Returns |nullptr| on failure.
@@ -108,6 +118,7 @@ class GL_EXPORT GLImageIOSurface : public GLImage {
   base::ScopedCFTypeRef<IOSurfaceRef> io_surface_;
   base::ScopedCFTypeRef<CVPixelBufferRef> cv_pixel_buffer_;
   gfx::GenericSharedMemoryId io_surface_id_;
+  uint32_t io_surface_plane_ = 0;
 
   base::ThreadChecker thread_checker_;
   // The default value of Rec. 601 is based on historical shader code.

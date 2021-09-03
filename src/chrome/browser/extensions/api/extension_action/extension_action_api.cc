@@ -28,9 +28,11 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_host.h"
@@ -42,6 +44,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/image_util.h"
+#include "extensions/common/mojom/view_type.mojom.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -223,7 +226,7 @@ void ExtensionActionAPI::DispatchEventToExtension(
     return;
 
   auto event = std::make_unique<Event>(histogram_value, event_name,
-                                       std::move(event_args), context);
+                                       event_args->TakeList(), context);
   event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
   EventRouter::Get(context)
       ->DispatchEventToExtension(extension_id, std::move(event));
@@ -286,7 +289,7 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
 
   switch (first_arg->type()) {
     case base::Value::Type::INTEGER:
-      CHECK(first_arg->GetAsInteger(&tab_id_));
+      tab_id_ = first_arg->GetInt();
       break;
 
     case base::Value::Type::DICTIONARY: {
@@ -300,7 +303,7 @@ bool ExtensionActionFunction::ExtractDataFromArguments() {
             // OK; tabId is optional, leave it default.
             return true;
           case base::Value::Type::INTEGER:
-            CHECK(tab_id_value->GetAsInteger(&tab_id_));
+            tab_id_ = tab_id_value->GetInt();
             return true;
           default:
             // Boom.
@@ -513,18 +516,24 @@ ExtensionActionGetPopupFunction::RunExtensionAction() {
 
 ExtensionFunction::ResponseAction
 ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
-  // Return a placeholder value if the extension has enabled using
-  // declarativeNetRequest action count as badge text and the badge count shown
-  // for this tab is the number of actions matched.
-  std::string badge_text =
-      extension_action_->UseDNRActionCountAsBadgeText(tab_id_)
-          ? declarative_net_request::kActionCountPlaceholderBadgeText
-          : extension_action_->GetExplicitlySetBadgeText(tab_id_);
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context());
+  bool is_dnr_action_count_active =
+      prefs->GetDNRUseActionCountAsBadgeText(extension_id()) &&
+      !extension_action_->HasBadgeText(tab_id_);
 
-  // TODO(crbug.com/990224): Document this behavior once
-  // chrome.declarativeNetRequest.setExtensionActionOptions is promoted to beta
-  // from trunk.
-  return RespondNow(OneArgument(base::Value(std::move(badge_text))));
+  // Ensure that the placeholder string is returned if this extension is
+  // displaying action counts for the badge labels and the extension doesn't
+  // have permission to view the action count for this tab. Note that
+  // tab-specific badge text takes priority over the action count.
+  if (is_dnr_action_count_active &&
+      !declarative_net_request::HasDNRFeedbackPermission(extension(),
+                                                         tab_id_)) {
+    return RespondNow(OneArgument(base::Value(
+        std::move(declarative_net_request::kActionCountPlaceholderBadgeText))));
+  }
+
+  return RespondNow(OneArgument(
+      base::Value(extension_action_->GetDisplayBadgeText(tab_id_))));
 }
 
 ExtensionFunction::ResponseAction
@@ -537,6 +546,34 @@ ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
   list->AppendInteger(static_cast<int>(SkColorGetA(color)));
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(list))));
+}
+
+ActionGetUserSettingsFunction::ActionGetUserSettingsFunction() = default;
+ActionGetUserSettingsFunction::~ActionGetUserSettingsFunction() = default;
+
+ExtensionFunction::ResponseAction ActionGetUserSettingsFunction::Run() {
+  DCHECK(extension());
+  ExtensionActionManager* const action_manager =
+      ExtensionActionManager::Get(browser_context());
+  ExtensionAction* const action =
+      action_manager->GetExtensionAction(*extension());
+
+  // This API is only available to extensions with the "action" key in the
+  // manifest, so they should always have an action.
+  DCHECK(action);
+  DCHECK_EQ(ActionInfo::TYPE_ACTION, action->action_type());
+
+  const bool is_pinned =
+      ToolbarActionsModel::Get(Profile::FromBrowserContext(browser_context()))
+          ->IsActionPinned(extension_id());
+
+  // TODO(devlin): Today, no action APIs are compiled. Unfortunately, this
+  // means we miss out on the compiled types, which would be rather helpful
+  // here.
+  base::Value ui_settings(base::Value::Type::DICTIONARY);
+  ui_settings.SetBoolKey("isOnToolbar", is_pinned);
+
+  return RespondNow(OneArgument(std::move(ui_settings)));
 }
 
 BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction() = default;
@@ -552,8 +589,8 @@ ExtensionFunction::ResponseAction BrowserActionOpenPopupFunction::Run() {
   if ((!browser || !browser->window()->IsActive()) &&
       util::IsIncognitoEnabled(extension()->id(), profile) &&
       profile->HasPrimaryOTRProfile()) {
-    browser =
-        chrome::FindLastActiveWithProfile(profile->GetPrimaryOTRProfile());
+    browser = chrome::FindLastActiveWithProfile(
+        profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
   }
 
   // If there's no active browser, or the Toolbar isn't visible, abort.
@@ -602,7 +639,7 @@ void BrowserActionOpenPopupFunction::Observe(
     return;
 
   ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-  if (host->extension_host_type() != VIEW_TYPE_EXTENSION_POPUP ||
+  if (host->extension_host_type() != mojom::ViewType::kExtensionPopup ||
       host->extension()->id() != extension_->id())
     return;
 

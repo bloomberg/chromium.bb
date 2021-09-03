@@ -82,6 +82,8 @@ static const arg_def_t outputfile =
     ARG_DEF("o", "output", 1, "Output file name pattern (see below)");
 static const arg_def_t threadsarg =
     ARG_DEF("t", "threads", 1, "Max threads to use");
+static const arg_def_t rowmtarg =
+    ARG_DEF(NULL, "row-mt", 1, "Enable row based multi-threading, default: 0");
 static const arg_def_t verbosearg =
     ARG_DEF("v", "verbose", 0, "Show version string");
 static const arg_def_t scalearg =
@@ -106,11 +108,13 @@ static const arg_def_t skipfilmgrain =
     ARG_DEF(NULL, "skip-film-grain", 0, "Skip film grain application");
 
 static const arg_def_t *all_args[] = {
-  &help,       &codecarg,   &use_yv12,      &use_i420,      &flipuvarg,
-  &rawvideo,   &noblitarg,  &progressarg,   &limitarg,      &skiparg,
-  &summaryarg, &outputfile, &threadsarg,    &verbosearg,    &scalearg,
-  &fb_arg,     &md5arg,     &framestatsarg, &continuearg,   &outbitdeptharg,
-  &isannexb,   &oppointarg, &outallarg,     &skipfilmgrain, NULL
+  &help,           &codecarg, &use_yv12,      &use_i420,
+  &flipuvarg,      &rawvideo, &noblitarg,     &progressarg,
+  &limitarg,       &skiparg,  &summaryarg,    &outputfile,
+  &threadsarg,     &rowmtarg, &verbosearg,    &scalearg,
+  &fb_arg,         &md5arg,   &framestatsarg, &continuearg,
+  &outbitdeptharg, &isannexb, &oppointarg,    &outallarg,
+  &skipfilmgrain,  NULL
 };
 
 #if CONFIG_LIBYUV
@@ -453,6 +457,7 @@ static int main_loop(int argc, const char **argv_) {
   int operating_point = 0;
   int output_all_layers = 0;
   int skip_film_grain = 0;
+  int enable_row_mt = 0;
   aom_image_t *scaled_img = NULL;
   aom_image_t *img_shifted = NULL;
   int frame_avail, got_data, flush_decoder = 0;
@@ -549,6 +554,8 @@ static int main_loop(int argc, const char **argv_) {
             cfg.threads);
       }
 #endif
+    } else if (arg_match(&arg, &rowmtarg, argi)) {
+      enable_row_mt = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &verbosearg, argi)) {
       quiet = 0;
     } else if (arg_match(&arg, &scalearg, argi)) {
@@ -702,6 +709,12 @@ static int main_loop(int argc, const char **argv_) {
   if (AOM_CODEC_CONTROL_TYPECHECKED(&decoder, AV1D_SET_SKIP_FILM_GRAIN,
                                     skip_film_grain)) {
     fprintf(stderr, "Failed to set skip_film_grain: %s\n",
+            aom_codec_error(&decoder));
+    goto fail;
+  }
+
+  if (AOM_CODEC_CONTROL_TYPECHECKED(&decoder, AV1D_SET_ROW_MT, enable_row_mt)) {
+    fprintf(stderr, "Failed to set row multithreading mode: %s\n",
             aom_codec_error(&decoder));
     goto fail;
   }
@@ -872,7 +885,8 @@ static int main_loop(int argc, const char **argv_) {
               len = y4m_write_file_header(
                   y4m_buf, sizeof(y4m_buf), aom_input_ctx.width,
                   aom_input_ctx.height, &aom_input_ctx.framerate,
-                  img->monochrome, img->csp, img->fmt, img->bit_depth);
+                  img->monochrome, img->csp, img->fmt, img->bit_depth,
+                  img->range);
               if (img->csp == AOM_CSP_COLOCATED) {
                 fprintf(stderr,
                         "Warning: Y4M lacks a colorspace for colocated "

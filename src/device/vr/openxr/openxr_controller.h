@@ -11,11 +11,11 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/optional.h"
 #include "device/vr/openxr/openxr_interaction_profiles.h"
 #include "device/vr/openxr/openxr_path_helper.h"
 #include "device/vr/openxr/openxr_util.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 #include "ui/gfx/transform.h"
 
@@ -47,22 +47,27 @@ class OpenXrController {
   mojom::XRInputSourceDescriptionPtr GetDescription(
       XrTime predicted_display_time);
 
-  base::Optional<GamepadButton> GetButton(OpenXrButtonType type) const;
+  absl::optional<GamepadButton> GetButton(OpenXrButtonType type) const;
   std::vector<double> GetAxis(OpenXrAxisType type) const;
 
-  base::Optional<gfx::Transform> GetMojoFromGripTransform(
+  absl::optional<gfx::Transform> GetMojoFromGripTransform(
       XrTime predicted_display_time,
       XrSpace local_space,
       bool* emulated_position) const;
 
   XrResult UpdateInteractionProfile();
 
+  // Hand Tracking
+  mojom::XRHandTrackingDataPtr GetHandTrackingData(
+      XrSpace base_space,
+      XrTime predicted_display_time);
+
  private:
   XrResult InitializeControllerActions();
   XrResult InitializeControllerSpaces();
+  XrResult InitializeHandTracking();
 
   XrResult SuggestBindings(
-      const OpenXrExtensionHelper& extension_helper,
       std::map<XrPath, std::vector<XrActionSuggestedBinding>>* bindings) const;
 
   XrResult CreateActionsForButton(OpenXrButtonType button_type);
@@ -78,10 +83,10 @@ class OpenXrController {
       XrAction action,
       std::string binding_string) const;
 
-  base::Optional<gfx::Transform> GetPointerFromGripTransform(
+  absl::optional<gfx::Transform> GetPointerFromGripTransform(
       XrTime predicted_display_time) const;
 
-  base::Optional<gfx::Transform> GetTransformFromSpaces(
+  absl::optional<gfx::Transform> GetTransformFromSpaces(
       XrTime predicted_display_time,
       XrSpace target,
       XrSpace origin,
@@ -140,6 +145,7 @@ class OpenXrController {
   OpenXrHandednessType type_;
   XrInstance instance_;
   XrSession session_;
+  XrHandTrackerEXT hand_tracker_{XR_NULL_HANDLE};
   XrActionSet action_set_;
   XrAction grip_pose_action_;
   XrSpace grip_pose_space_;
@@ -154,6 +160,7 @@ class OpenXrController {
   std::unordered_map<OpenXrAxisType, XrAction> axis_action_map_;
 
   const OpenXRPathHelper* path_helper_;
+  const OpenXrExtensionHelper* extension_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenXrController);
 };

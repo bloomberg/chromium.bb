@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/values.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
@@ -39,12 +40,11 @@ bool IsValueAllowedForType(const base::Value* value, ContentSettingsType type) {
   const content_settings::ContentSettingsInfo* info =
       content_settings::ContentSettingsRegistry::GetInstance()->Get(type);
   if (info) {
-    int setting;
-    if (!value->GetAsInteger(&setting))
+    if (!value->is_int())
       return false;
-    if (setting == CONTENT_SETTING_DEFAULT)
+    if (value->GetInt() == CONTENT_SETTING_DEFAULT)
       return false;
-    return info->IsSettingValid(IntToContentSetting(setting));
+    return info->IsSettingValid(IntToContentSetting(value->GetInt()));
   }
 
   // TODO(raymes): We should permit different types of base::Value for
@@ -411,8 +411,8 @@ void ContentSettingsPref::UpdatePref(
         settings_dictionary->RemoveWithoutPathExpansion(kSessionModelPath,
                                                         nullptr);
       } else {
-        settings_dictionary->SetWithoutPathExpansion(kSettingPath,
-                                                     value->CreateDeepCopy());
+        settings_dictionary->SetWithoutPathExpansion(
+            kSettingPath, base::Value::ToUniquePtrValue(value->Clone()));
         settings_dictionary->SetKey(
             kLastModifiedPath,
             base::Value(base::NumberToString(

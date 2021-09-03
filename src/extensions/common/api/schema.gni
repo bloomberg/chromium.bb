@@ -17,11 +17,9 @@ extensions_api_schema_files_ = [
   "bluetooth_low_energy.idl",
   "bluetooth_private.idl",
   "bluetooth_socket.idl",
-  "cast_channel.idl",
   "cec_private.idl",
   "clipboard.idl",
   "declarative_net_request.idl",
-  "display_source.idl",
   "dns.idl",
   "events.json",
   "extension_options_internal.idl",
@@ -51,7 +49,6 @@ extensions_api_schema_files_ = [
   "system_display.idl",
   "system_memory.idl",
   "system_network.idl",
-  "system_power_source.idl",
   "system_storage.idl",
   "test.json",
   "usb.idl",
@@ -65,6 +62,10 @@ extensions_manifest_only_schema_files_ = [
   "content_scripts.idl",
   "extensions_manifest_types.json",
   "incognito.json",
+  "requirements.json",
+  "shared_module.idl",
+  "web_accessible_resources.idl",
+  "web_accessible_resources_mv2.idl",
 ]
 
 if (is_chromeos_ash) {

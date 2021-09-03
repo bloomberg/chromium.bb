@@ -6,8 +6,8 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
-#include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/sync/base/model_type.h"
@@ -19,7 +19,12 @@
 #include "components/sync/driver/fake_data_type_controller.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/data_type_activation_response.h"
+#include "components/sync/engine/data_type_debug_info_listener.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::UnorderedElementsAre;
 
 namespace syncer {
 
@@ -64,8 +69,8 @@ DataTypeStatusTable BuildStatusTable(ModelTypeSet crypto_errors,
 // callback passed into ConfigureDataTypes.
 class FakeModelTypeConfigurer : public ModelTypeConfigurer {
  public:
-  FakeModelTypeConfigurer() {}
-  ~FakeModelTypeConfigurer() override {}
+  FakeModelTypeConfigurer() = default;
+  ~FakeModelTypeConfigurer() override = default;
 
   void ConfigureDataTypes(ConfigureParams params) override {
     configure_call_count_++;
@@ -155,8 +160,8 @@ class FakeDataTypeManagerObserver : public DataTypeManagerObserver {
 
 class FakeDataTypeEncryptionHandler : public DataTypeEncryptionHandler {
  public:
-  FakeDataTypeEncryptionHandler();
-  ~FakeDataTypeEncryptionHandler() override;
+  FakeDataTypeEncryptionHandler() = default;
+  ~FakeDataTypeEncryptionHandler() override = default;
 
   bool HasCryptoError() const override;
   ModelTypeSet GetEncryptedDataTypes() const override;
@@ -167,13 +172,9 @@ class FakeDataTypeEncryptionHandler : public DataTypeEncryptionHandler {
   }
 
  private:
-  bool crypto_error_;
+  bool crypto_error_ = false;
   ModelTypeSet encrypted_types_;
 };
-
-FakeDataTypeEncryptionHandler::FakeDataTypeEncryptionHandler()
-    : crypto_error_(false) {}
-FakeDataTypeEncryptionHandler::~FakeDataTypeEncryptionHandler() {}
 
 bool FakeDataTypeEncryptionHandler::HasCryptoError() const {
   return crypto_error_;
@@ -183,44 +184,46 @@ ModelTypeSet FakeDataTypeEncryptionHandler::GetEncryptedDataTypes() const {
   return encrypted_types_;
 }
 
-}  // namespace
-
-class TestDataTypeManager : public DataTypeManagerImpl {
+class MockDebugInfoListener
+    : public DataTypeDebugInfoListener,
+      public base::SupportsWeakPtr<MockDebugInfoListener> {
  public:
-  using DataTypeManagerImpl::DataTypeManagerImpl;
+  MockDebugInfoListener() = default;
 
-  void set_priority_types(const ModelTypeSet& priority_types) {
-    custom_priority_types_ = priority_types;
-  }
-
-  void set_downloaded_types(ModelTypeSet downloaded_types) {
-    downloaded_types_ = downloaded_types;
-  }
-
- protected:
-  ModelTypeSet GetPriorityTypes() const override {
-    return custom_priority_types_;
-  }
-
- private:
-  ModelTypeSet custom_priority_types_;
+  MOCK_METHOD(void,
+              OnDataTypeConfigureComplete,
+              (const std::vector<DataTypeConfigurationStats>&),
+              (override));
 };
 
-// The actual test harness class, parametrized on nigori state (i.e., tests are
-// run both configuring with nigori, and configuring without).
+MATCHER_P(ConfigurationStatsForType, model_type, "") {
+  return arg.model_type == model_type;
+}
+
+MATCHER_P3(ConfigurationStatsForType,
+           model_type,
+           high_prio_types_before,
+           same_prio_types_before,
+           "") {
+  return arg.model_type == model_type &&
+         arg.high_priority_types_configured_before == high_prio_types_before &&
+         arg.same_priority_types_configured_before == same_prio_types_before;
+}
+
+}  // namespace
+
 class SyncDataTypeManagerImplTest : public testing::Test {
  public:
-  SyncDataTypeManagerImplTest() {}
-
-  ~SyncDataTypeManagerImplTest() override {}
+  SyncDataTypeManagerImplTest() = default;
+  ~SyncDataTypeManagerImplTest() override = default;
 
  protected:
   void SetUp() override { RecreateDataTypeManager(); }
 
-  void RecreateDataTypeManager() {
-    dtm_ = std::make_unique<TestDataTypeManager>(
-        ModelTypeSet(), WeakHandle<DataTypeDebugInfoListener>(), &controllers_,
-        &encryption_handler_, &configurer_, &observer_);
+  void RecreateDataTypeManager(ModelTypeSet initial_types = ModelTypeSet()) {
+    dtm_ = std::make_unique<DataTypeManagerImpl>(
+        initial_types, MakeWeakHandle(debug_info_listener_.AsWeakPtr()),
+        &controllers_, &encryption_handler_, &configurer_, &observer_);
   }
 
   void SetConfigureStartExpectation() { observer_.ExpectStart(); }
@@ -289,8 +292,9 @@ class SyncDataTypeManagerImplTest : public testing::Test {
   DataTypeController::TypeMap controllers_;
   FakeModelTypeConfigurer configurer_;
   FakeDataTypeManagerObserver observer_;
-  std::unique_ptr<TestDataTypeManager> dtm_;
+  std::unique_ptr<DataTypeManagerImpl> dtm_;
   FakeDataTypeEncryptionHandler encryption_handler_;
+  testing::NiceMock<MockDebugInfoListener> debug_info_listener_;
 };
 
 // Set up a DTM with no controllers, configure it, finish downloading,
@@ -321,10 +325,23 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOne) {
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(ModelTypeSet(BOOKMARKS), configurer_.activated_types());
 
+  // Once configuration is finished, the debug info listener should be notified,
+  // including the implicitly-enabled NIGORI and the newly-downloaded BOOKMARKS.
+  base::RunLoop run_loop;
+  EXPECT_CALL(debug_info_listener_,
+              OnDataTypeConfigureComplete(
+                  UnorderedElementsAre(ConfigurationStatsForType(NIGORI),
+                                       ConfigurationStatsForType(BOOKMARKS))))
+      .WillOnce([&]() { run_loop.Quit(); });
+
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
   FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(1U, configurer_.activated_types().Size());
+
+  // The debug info listener is called through a WeakHandle, which posts a task.
+  // So wait for that to actually get executed.
+  run_loop.Run();
 
   dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
@@ -399,19 +416,38 @@ TEST_F(SyncDataTypeManagerImplTest, OneWaitingForCrypto) {
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
 
-  dtm_->set_priority_types(ModelTypeSet(PASSWORDS));
-
   // Step 1.
   Configure(ModelTypeSet(PASSWORDS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+
+  // Once configuration is finished, the debug info listener should be notified,
+  // including the implicitly-enabled NIGORI and the newly-downloaded PASSWORDS.
+  base::RunLoop run_loop;
+  EXPECT_CALL(debug_info_listener_,
+              OnDataTypeConfigureComplete(
+                  UnorderedElementsAre(ConfigurationStatsForType(NIGORI),
+                                       ConfigurationStatsForType(PASSWORDS))))
+      .WillOnce([&]() { run_loop.Quit(); });
 
   // Step 2.
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // priority types
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
 
+  // The debug info listener is called through a WeakHandle, which posts a task.
+  // So wait for that to actually get executed.
+  run_loop.Run();
+
   // Step 3.
   FailEncryptionFor(ModelTypeSet(PASSWORDS));
+
+  // Once configuration is finished (again), the debug info listener should be
+  // notified for the remaining (non-failed) NIGORI type.
+  base::RunLoop run_loop2;
+  EXPECT_CALL(debug_info_listener_,
+              OnDataTypeConfigureComplete(
+                  UnorderedElementsAre(ConfigurationStatsForType(NIGORI))))
+      .WillOnce([&]() { run_loop2.Quit(); });
 
   // Step 4.
   SetConfigureStartExpectation();
@@ -423,6 +459,10 @@ TEST_F(SyncDataTypeManagerImplTest, OneWaitingForCrypto) {
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // priority types
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+
+  // The debug info listener is called through a WeakHandle, which posts a task.
+  // So wait for that to actually get executed.
+  run_loop2.Run();
 
   // Step 5.
   dtm_->Stop(STOP_SYNC);
@@ -520,15 +560,8 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureOneThenSwitch) {
   EXPECT_TRUE(configurer_.activated_types().Empty());
 }
 
-// Set up a DTM with two controllers.  Then:
-//   1) Configure with first controller (model stays loading).
-//   2) Configure with both controllers, which gets postponed because there's an
-//      ongoing configuration that cannot complete before the model loads.
-//   3) Finish starting the first controller.
-//   4) Finish the download of the first controller.
-//   5) Finish the download of the second controller.
-//   6) Stop the DTM.
 TEST_F(SyncDataTypeManagerImplTest, ConfigureModelLoading) {
+  // Set up a DTM with two controllers.
   AddController(BOOKMARKS);
   AddController(PREFERENCES);
 
@@ -537,38 +570,40 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureModelLoading) {
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
 
-  // Step 1.
+  // Step 1: Configure with first controller (model stays loading).
   Configure(ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
 
-  // Step 2: this one gets postponed because the first configuration is ongoing.
+  // Step 2: Configure with both controllers, which gets postponed because
+  //         there's an ongoing configuration that cannot complete before the
+  //         model loads.
   ASSERT_EQ(DataTypeController::MODEL_STARTING,
             GetController(BOOKMARKS)->state());
+  ASSERT_FALSE(dtm_->needs_reconfigure_for_test());
   Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+  EXPECT_TRUE(dtm_->needs_reconfigure_for_test());
 
-  // Step 3.
+  // Step 3: Finish starting the first controller. This triggers a
+  //         reconfiguration with both data types.
   ASSERT_EQ(DataTypeController::MODEL_STARTING,
             GetController(BOOKMARKS)->state());
   GetController(BOOKMARKS)->model()->SimulateModelStartFinished();
+  EXPECT_FALSE(dtm_->needs_reconfigure_for_test());
 
-  // Step 4.
+  // Step 4: Finish the download of both data types. This completes the
+  //         configuration.
   ASSERT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
+  ASSERT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
-  EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-
-  // Step 5.
-  ASSERT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
-  FinishDownload(ModelTypeSet(PREFERENCES), ModelTypeSet());
-
+  FinishDownload(ModelTypeSet(BOOKMARKS, PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(ModelTypeSet(BOOKMARKS, PREFERENCES),
             configurer_.activated_types());
 
-  // Step 6.
+  // Step 5: Stop the DTM.
   dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_TRUE(configurer_.activated_types().Empty());
@@ -689,32 +724,35 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureWhileDownloadPendingWithFailure) {
 // Tests a Purge then Configure.  This is similar to the sequence of
 // operations that would be invoked by the BackendMigrator.
 TEST_F(SyncDataTypeManagerImplTest, MigrateAll) {
-  AddController(BOOKMARKS);
-  dtm_->set_priority_types(ModelTypeSet(BOOKMARKS));
+  AddController(PRIORITY_PREFERENCES);
 
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
 
   // Initial setup.
-  Configure(ModelTypeSet(BOOKMARKS));
+  Configure(ModelTypeSet(PRIORITY_PREFERENCES));
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
+  FinishDownload(ModelTypeSet(PRIORITY_PREFERENCES), ModelTypeSet());
 
-  // We've now configured bookmarks and (implicitly) the control types.
+  // We've now configured priority prefs and (implicitly) the control types.
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   observer_.ResetExpectations();
 
   // Pretend we were told to migrate all types.
   ModelTypeSet to_migrate;
-  to_migrate.Put(BOOKMARKS);
+  to_migrate.Put(PRIORITY_PREFERENCES);
   to_migrate.PutAll(ControlTypes());
 
-  EXPECT_EQ(0, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
+  EXPECT_EQ(0, GetController(PRIORITY_PREFERENCES)
+                   ->model()
+                   ->clear_metadata_call_count());
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
   dtm_->PurgeForMigration(to_migrate);
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-  EXPECT_EQ(1, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
+  EXPECT_EQ(1, GetController(PRIORITY_PREFERENCES)
+                   ->model()
+                   ->clear_metadata_call_count());
 
   // The DTM will call ConfigureDataTypes(), even though it is unnecessary.
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // no enabled types
@@ -726,9 +764,11 @@ TEST_F(SyncDataTypeManagerImplTest, MigrateAll) {
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
   Configure(to_migrate);
   FinishDownload(ControlTypes(), ModelTypeSet());  // control types
-  FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
+  FinishDownload(ModelTypeSet(PRIORITY_PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
-  EXPECT_EQ(1, GetController(BOOKMARKS)->model()->clear_metadata_call_count());
+  EXPECT_EQ(1, GetController(PRIORITY_PREFERENCES)
+                   ->model()
+                   ->clear_metadata_call_count());
 }
 
 // Test receipt of a Configure request while a purge is in flight.
@@ -779,23 +819,21 @@ TEST_F(SyncDataTypeManagerImplTest, ConfigureDuringPurge) {
 
 TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfiguration) {
   AddController(BOOKMARKS);
-  AddController(PREFERENCES);
-
-  dtm_->set_priority_types(ModelTypeSet(PREFERENCES));
+  AddController(PRIORITY_PREFERENCES);
 
   // Initial configure.
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
 
-  // Initially only PREFERENCES is downloaded.
-  Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
+  // Initially only PRIORITY_PREFERENCES is downloaded.
+  Configure(ModelTypeSet(BOOKMARKS, PRIORITY_PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  EXPECT_EQ(AddControlTypesTo(PREFERENCES),
+  EXPECT_EQ(AddControlTypesTo(PRIORITY_PREFERENCES),
             last_configure_params().to_download);
 
-  // BOOKMARKS is downloaded after PREFERENCES finishes.
-  FinishDownload(ModelTypeSet(PREFERENCES), ModelTypeSet());
+  // BOOKMARKS is downloaded after PRIORITY_PREFERENCES finishes.
+  FinishDownload(ModelTypeSet(PRIORITY_PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(ModelTypeSet(BOOKMARKS, NIGORI),
             last_configure_params().to_download);
@@ -805,30 +843,29 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfiguration) {
 }
 
 TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationReconfigure) {
+  AddController(PRIORITY_PREFERENCES);
   AddController(BOOKMARKS);
-  AddController(PREFERENCES);
   AddController(APPS);
-
-  dtm_->set_priority_types(ModelTypeSet(PREFERENCES));
 
   // Initial configure.
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
 
-  // Reconfigure while associating PREFERENCES and downloading BOOKMARKS.
-  Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
+  // Reconfigure while associating PRIORITY_PREFERENCES and downloading
+  // BOOKMARKS.
+  Configure(ModelTypeSet(BOOKMARKS, PRIORITY_PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  EXPECT_EQ(AddControlTypesTo(PREFERENCES),
+  EXPECT_EQ(AddControlTypesTo(PRIORITY_PREFERENCES),
             last_configure_params().to_download);
 
-  FinishDownload(ModelTypeSet(PREFERENCES), ModelTypeSet());
+  FinishDownload(ModelTypeSet(PRIORITY_PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(ModelTypeSet(BOOKMARKS, NIGORI),
             last_configure_params().to_download);
 
   // Enable syncing for APPS.
-  Configure(ModelTypeSet(BOOKMARKS, PREFERENCES, APPS));
+  Configure(ModelTypeSet(BOOKMARKS, PRIORITY_PREFERENCES, APPS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
   // Reconfiguration starts after downloading and association of previous
@@ -838,7 +875,7 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationReconfigure) {
   EXPECT_EQ(ModelTypeSet(), last_configure_params().to_download);
 
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  FinishDownload(ModelTypeSet(PREFERENCES), ModelTypeSet());
+  FinishDownload(ModelTypeSet(PRIORITY_PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(ModelTypeSet(APPS, NIGORI), last_configure_params().to_download);
 
@@ -847,44 +884,41 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationReconfigure) {
 }
 
 TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationStop) {
+  AddController(PRIORITY_PREFERENCES);
   AddController(BOOKMARKS);
-  AddController(PREFERENCES);
-
-  dtm_->set_priority_types(ModelTypeSet(PREFERENCES));
 
   // Initial configure.
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::ABORTED, DataTypeStatusTable());
 
-  // Initially only PREFERENCES is configured.
-  Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
+  // Initially only PRIORITY_PREFERENCES is configured.
+  Configure(ModelTypeSet(BOOKMARKS, PRIORITY_PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  EXPECT_EQ(AddControlTypesTo(PREFERENCES),
+  EXPECT_EQ(AddControlTypesTo(PRIORITY_PREFERENCES),
             last_configure_params().to_download);
 
-  // BOOKMARKS is configured after download of PREFERENCES finishes.
-  FinishDownload(ModelTypeSet(PREFERENCES), ModelTypeSet());
+  // BOOKMARKS is configured after download of PRIORITY_PREFERENCES finishes.
+  FinishDownload(ModelTypeSet(PRIORITY_PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(ModelTypeSet(BOOKMARKS, NIGORI),
             last_configure_params().to_download);
 
-  // PREFERENCES controller is running while BOOKMARKS is downloading.
-  EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
+  // PRIORITY_PREFERENCES controller is running while BOOKMARKS is downloading.
+  EXPECT_EQ(DataTypeController::RUNNING,
+            GetController(PRIORITY_PREFERENCES)->state());
   EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
 
   dtm_->Stop(STOP_SYNC);
   EXPECT_EQ(DataTypeManager::STOPPED, dtm_->state());
   EXPECT_EQ(DataTypeController::NOT_RUNNING,
-            GetController(PREFERENCES)->state());
+            GetController(PRIORITY_PREFERENCES)->state());
   EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
 }
 
 TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationDownloadError) {
+  AddController(PRIORITY_PREFERENCES);
   AddController(BOOKMARKS);
-  AddController(PREFERENCES);
-
-  dtm_->set_priority_types(ModelTypeSet(PREFERENCES));
 
   // Initial configure. Bookmarks will fail to associate due to the download
   // failure.
@@ -895,47 +929,47 @@ TEST_F(SyncDataTypeManagerImplTest, PrioritizedConfigurationDownloadError) {
                        /*datatype_errors=*/ModelTypeSet(BOOKMARKS),
                        ModelTypeSet()));
 
-  // Initially only PREFERENCES is configured.
-  Configure(ModelTypeSet(BOOKMARKS, PREFERENCES));
+  // Initially only PRIORITY_PREFERENCES is configured.
+  Configure(ModelTypeSet(BOOKMARKS, PRIORITY_PREFERENCES));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  EXPECT_EQ(AddControlTypesTo(PREFERENCES),
+  EXPECT_EQ(AddControlTypesTo(PRIORITY_PREFERENCES),
             last_configure_params().to_download);
 
-  // BOOKMARKS is configured after download of PREFERENCES finishes.
-  FinishDownload(ModelTypeSet(PREFERENCES), ModelTypeSet());
+  // BOOKMARKS is configured after download of PRIORITY_PREFERENCES finishes.
+  FinishDownload(ModelTypeSet(PRIORITY_PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
   EXPECT_EQ(AddControlTypesTo(BOOKMARKS), last_configure_params().to_download);
 
-  // PREFERENCES controller is running while BOOKMARKS is downloading.
-  EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
+  // PRIORITY_PREFERENCES controller is running while BOOKMARKS is downloading.
+  EXPECT_EQ(DataTypeController::RUNNING,
+            GetController(PRIORITY_PREFERENCES)->state());
   EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
 
-  // Make BOOKMARKS download fail. Preferences is still running.
+  // Make BOOKMARKS download fail. PRIORITY_PREFERENCES is still running.
   FinishDownload(ModelTypeSet(), ModelTypeSet(BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
-  EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
+  EXPECT_EQ(DataTypeController::RUNNING,
+            GetController(PRIORITY_PREFERENCES)->state());
 
-  // Finish downloading of PREFERENCES. This will trigger a reconfiguration to
-  // disable bookmarks.
+  // Finish downloading of PRIORITY_PREFERENCES. This will trigger a
+  // reconfiguration to disable bookmarks.
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  FinishDownload(ModelTypeSet(PREFERENCES), ModelTypeSet());
+  FinishDownload(ModelTypeSet(PRIORITY_PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(ModelTypeSet(), last_configure_params().to_download);
-  EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
+  EXPECT_EQ(DataTypeController::RUNNING,
+            GetController(PRIORITY_PREFERENCES)->state());
   EXPECT_EQ(DataTypeController::NOT_RUNNING, GetController(BOOKMARKS)->state());
 }
 
 TEST_F(SyncDataTypeManagerImplTest, FilterDesiredTypes) {
   AddController(BOOKMARKS);
 
-  ModelTypeSet types(BOOKMARKS, APPS);
-  dtm_->set_priority_types(ModelTypeSet(types));
-
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
 
-  Configure(types);
+  Configure({BOOKMARKS, APPS});
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
   EXPECT_EQ(AddControlTypesTo(BOOKMARKS), last_configure_params().to_download);
   FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
@@ -1201,7 +1235,7 @@ TEST_F(SyncDataTypeManagerImplTest, ModelLoadError) {
                        ModelTypeSet()));
   Configure(ModelTypeSet(BOOKMARKS));
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
+  // No need to finish the download of BOOKMARKS since it was never started.
   EXPECT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
   EXPECT_EQ(DataTypeController::FAILED, GetController(BOOKMARKS)->state());
 
@@ -1234,7 +1268,7 @@ TEST_F(SyncDataTypeManagerImplTest, ErrorBeforeStartup) {
   SetConfigureDoneExpectation(DataTypeManager::OK,
                               BuildStatusTable(/*crypto_errors=*/{},
                                                /*datatype_errors=*/{BOOKMARKS},
-                                               /*unready_errore=*/{}));
+                                               /*unready_errors=*/{}));
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
   FinishDownload(ModelTypeSet(PREFERENCES), ModelTypeSet());
 
@@ -1244,26 +1278,26 @@ TEST_F(SyncDataTypeManagerImplTest, ErrorBeforeStartup) {
 
 // Test that sync configures properly if all types are ready.
 TEST_F(SyncDataTypeManagerImplTest, AllTypesReady) {
-  AddController(PREFERENCES);
-  AddController(BOOKMARKS);
+  // Mark PRIORITY_PREFERENCES and BOOKMARKS as already downloaded.
+  RecreateDataTypeManager(/*initial_types=*/{PRIORITY_PREFERENCES, BOOKMARKS});
 
-  dtm_->set_priority_types(ModelTypeSet(PREFERENCES));
+  AddController(PRIORITY_PREFERENCES);
+  AddController(BOOKMARKS);
 
   SetConfigureStartExpectation();
   SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
 
-  dtm_->set_downloaded_types(ModelTypeSet(PREFERENCES));
-  Configure(ModelTypeSet(PREFERENCES, BOOKMARKS));
+  Configure(ModelTypeSet(PRIORITY_PREFERENCES, BOOKMARKS));
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
-  EXPECT_EQ(DataTypeController::RUNNING, GetController(PREFERENCES)->state());
+  EXPECT_EQ(DataTypeController::RUNNING,
+            GetController(PRIORITY_PREFERENCES)->state());
   EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
 
   // Because Bookmarks are a ready type, it can start associating immediately
   // after the high priority types finish downloading.
-  dtm_->set_downloaded_types(AddControlTypesTo(BOOKMARKS));
   FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
-  FinishDownload(ModelTypeSet(PREFERENCES), ModelTypeSet());
+  FinishDownload(ModelTypeSet(PRIORITY_PREFERENCES), ModelTypeSet());
   EXPECT_EQ(DataTypeController::RUNNING, GetController(BOOKMARKS)->state());
   EXPECT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
 
@@ -1552,6 +1586,51 @@ TEST_F(SyncDataTypeManagerImplTest,
   FinishDownload(ModelTypeSet(BOOKMARKS), ModelTypeSet());
 
   histogram_tester.ExpectTotalCount("Sync.ConfigureTime_Subsequent.OK", 1);
+}
+
+TEST_F(SyncDataTypeManagerImplTest, ProvideDebugInfo) {
+  AddController(PREFERENCES);
+  AddController(BOOKMARKS);
+
+  // Mark BOOKMARKS as already downloaded.
+  sync_pb::ModelTypeState bookmarks_state;
+  bookmarks_state.set_initial_sync_done(true);
+  GetController(BOOKMARKS)->model()->SetModelTypeStateForActivationResponse(
+      bookmarks_state);
+
+  SetConfigureStartExpectation();
+  SetConfigureDoneExpectation(DataTypeManager::OK, DataTypeStatusTable());
+
+  Configure(ModelTypeSet(PREFERENCES, BOOKMARKS));
+  ASSERT_EQ(DataTypeManager::CONFIGURING, dtm_->state());
+
+  // Once configuration is finished, the debug info listener should be notified,
+  // including the implicitly-enabled NIGORI, the already-downloaded BOOKMARKS,
+  // and the newly-downloaded PREFERENCES
+  base::RunLoop run_loop;
+  EXPECT_CALL(
+      debug_info_listener_,
+      OnDataTypeConfigureComplete(UnorderedElementsAre(
+          ConfigurationStatsForType(NIGORI,
+                                    /*high_prio_types_before=*/ModelTypeSet(),
+                                    /*same_prio_types_before=*/ModelTypeSet()),
+          ConfigurationStatsForType(
+              BOOKMARKS, /*high_prio_types_before=*/ModelTypeSet(NIGORI),
+              /*same_prio_types_before=*/ModelTypeSet()),
+          ConfigurationStatsForType(
+              PREFERENCES, /*high_prio_types_before=*/ModelTypeSet(NIGORI),
+              /*same_prio_types_before=*/ModelTypeSet(BOOKMARKS)))))
+      .WillOnce([&]() { run_loop.Quit(); });
+
+  // Because Bookmarks are already downloaded, configuration finishes as soon
+  // as preferences are downloaded.
+  FinishDownload(ModelTypeSet(), ModelTypeSet());  // control types
+  FinishDownload(ModelTypeSet(PREFERENCES), ModelTypeSet());
+  ASSERT_EQ(DataTypeManager::CONFIGURED, dtm_->state());
+
+  // The debug info listener is called through a WeakHandle, which posts a task.
+  // So wait for that to actually get executed.
+  run_loop.Run();
 }
 
 }  // namespace syncer

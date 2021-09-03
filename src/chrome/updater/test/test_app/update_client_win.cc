@@ -12,6 +12,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_post_task.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/sequence_checker.h"
@@ -23,16 +24,16 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/win_util.h"
+#include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/test/test_app/constants.h"
 #include "chrome/updater/update_service.h"
 
 namespace updater {
-
 namespace {
 
 HRESULT CreateUpdaterInterface(Microsoft::WRL::ComPtr<IUpdater>* updater) {
   Microsoft::WRL::ComPtr<IUnknown> server;
-  HRESULT hr = ::CoCreateInstance(CLSID_UpdaterClass, nullptr,
+  HRESULT hr = ::CoCreateInstance(__uuidof(UpdaterClass), nullptr,
                                   CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&server));
 
   if (FAILED(hr)) {
@@ -73,6 +74,41 @@ class UpdaterObserver
   Microsoft::WRL::ComPtr<IUpdater> updater_;
 
   // Called by IUpdaterObserver::OnComplete when the COM RPC call is done.
+  UpdateService::Callback callback_;
+};
+
+// Implements `IUpdaterRegisterAppCallback`, captures the `IUpdater` instance,
+// and takes ownership of the callback.
+class UpdaterRegisterAppCallback
+    : public Microsoft::WRL::RuntimeClass<
+          Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
+          IUpdaterRegisterAppCallback> {
+ public:
+  UpdaterRegisterAppCallback(Microsoft::WRL::ComPtr<IUpdater> updater,
+                             UpdateService::Callback callback)
+      : updater_(updater), callback_(std::move(callback)) {}
+  UpdaterRegisterAppCallback(const UpdaterRegisterAppCallback&) = delete;
+  UpdaterRegisterAppCallback& operator=(const UpdaterRegisterAppCallback&) =
+      delete;
+
+  // Overrides for IUpdaterRegisterAppCallback.
+  IFACEMETHODIMP Run(LONG status_code) override {
+    if (callback_) {
+      std::move(callback_).Run(status_code
+                                   ? UpdateService::Result::kServiceFailed
+                                   : UpdateService::Result::kSuccess);
+    }
+    updater_ = nullptr;
+    return S_OK;
+  }
+
+  // Releases the ownership of the `callback`.
+  UpdateService::Callback Disconnect() { return std::move(callback_); }
+
+ private:
+  ~UpdaterRegisterAppCallback() override = default;
+
+  Microsoft::WRL::ComPtr<IUpdater> updater_;
   UpdateService::Callback callback_;
 };
 
@@ -135,8 +171,39 @@ void UpdateClientWin::BeginRegister(const std::string& brand_code,
                                     const std::string& tag,
                                     const std::string& version,
                                     UpdateService::Callback callback) {
-  // TODO(1068693): Implement TestApp Functionality.
-  NOTIMPLEMENTED();
+  com_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UpdateClientWin::RegisterInternal, this, brand_code, tag,
+                     version,
+                     base::BindPostTask(task_runner(), std::move(callback))));
+}
+
+void UpdateClientWin::RegisterInternal(const std::string& brand_code,
+                                       const std::string& tag,
+                                       const std::string& version,
+                                       UpdateService::Callback callback) {
+  DCHECK(com_task_runner_->BelongsToCurrentThread());
+
+  Microsoft::WRL::ComPtr<IUpdater> updater;
+  HRESULT hr = CreateUpdaterInterface(&updater);
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to create IUpdater:" << std::hex << hr;
+    std::move(callback).Run(UpdateService::Result::kServiceFailed);
+    return;
+  }
+
+  // Takes ownership of `updater` and `callback`.
+  auto com_callback = Microsoft::WRL::Make<UpdaterRegisterAppCallback>(
+      updater, std::move(callback));
+  hr = updater->RegisterApp(
+      base::UTF8ToWide(kTestAppId).c_str(),
+      base::UTF8ToWide(brand_code).c_str(), base::UTF8ToWide(tag).c_str(),
+      base::UTF8ToWide(version).c_str(), L"", com_callback.Get());
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Failed to call IUpdater::RegisterApp:" << std::hex << hr;
+    com_callback->Disconnect().Run(UpdateService::Result::kServiceFailed);
+    return;
+  }
 }
 
 void UpdateClientWin::BeginUpdateCheck(
@@ -156,11 +223,6 @@ void UpdateClientWin::BeginUpdateCheck(
               task_runner(), std::move(callback))));
 }
 
-void UpdateClientWin::RegisterInternal(const std::string& brand_code,
-                                       const std::string& tag,
-                                       const std::string& version,
-                                       UpdateService::Callback callback) {}
-
 void UpdateClientWin::UpdateCheckInternal(
     UpdateService::StateChangeCallback state_change,
     UpdateService::Callback callback) {
@@ -176,7 +238,7 @@ void UpdateClientWin::UpdateCheckInternal(
   auto observer =
       Microsoft::WRL::Make<UpdaterObserver>(updater_, std::move(callback));
   HRESULT hr =
-      updater_->Update(base::ASCIIToUTF16(kTestAppId).c_str(), observer.Get());
+      updater_->Update(base::ASCIIToWide(kTestAppId).c_str(), observer.Get());
   if (FAILED(hr)) {
     LOG(ERROR) << "Failed to call IUpdater::UpdateAll " << std::hex << hr;
     UpdateService::UpdateState state;

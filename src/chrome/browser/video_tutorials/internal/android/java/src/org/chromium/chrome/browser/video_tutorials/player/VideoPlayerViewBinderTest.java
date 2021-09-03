@@ -8,7 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import android.app.Activity;
-import android.support.test.rule.ActivityTestRule;
+import android.support.test.runner.lifecycle.Stage;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -25,7 +25,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.UiThreadTest;
+import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.chrome.browser.video_tutorials.PlaybackStateObserver.WatchStateInfo.State;
 import org.chromium.chrome.browser.video_tutorials.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -43,8 +45,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class VideoPlayerViewBinderTest {
     @Rule
-    public ActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new ActivityTestRule<>(DummyUiActivity.class);
+    public BaseActivityTestRule<DummyUiActivity> mActivityTestRule =
+            new BaseActivityTestRule<>(DummyUiActivity.class);
 
     private Activity mActivity;
     private VideoPlayerView mVideoPlayerView;
@@ -62,6 +64,8 @@ public class VideoPlayerViewBinderTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         mModel = new PropertyModel(VideoPlayerProperties.ALL_KEYS);
+        mActivityTestRule.launchActivity(null);
+        ApplicationTestUtils.waitForActivityState(mActivityTestRule.getActivity(), Stage.RESUMED);
         mActivity = mActivityTestRule.getActivity();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -110,14 +114,6 @@ public class VideoPlayerViewBinderTest {
     @Test
     @UiThreadTest
     @SmallTest
-    public void testControlsVisibility() {
-        mModel.set(VideoPlayerProperties.SHOW_MEDIA_CONTROLS, true);
-        assertEquals(View.VISIBLE, mControls.getVisibility());
-    }
-
-    @Test
-    @UiThreadTest
-    @SmallTest
     public void testTryNowButton() {
         View tryNowButton = mControls.findViewById(R.id.try_now);
         mModel.set(VideoPlayerProperties.SHOW_TRY_NOW, false);
@@ -152,6 +148,22 @@ public class VideoPlayerViewBinderTest {
     @Test
     @UiThreadTest
     @SmallTest
+    public void testPlayButton() {
+        View playButton = mControls.findViewById(R.id.play_button);
+        mModel.set(VideoPlayerProperties.SHOW_PLAY_BUTTON, false);
+        assertEquals(View.GONE, playButton.getVisibility());
+        mModel.set(VideoPlayerProperties.SHOW_PLAY_BUTTON, true);
+        assertEquals(View.VISIBLE, playButton.getVisibility());
+
+        AtomicBoolean buttonClicked = new AtomicBoolean();
+        mModel.set(VideoPlayerProperties.CALLBACK_PLAY_BUTTON, () -> buttonClicked.set(true));
+        playButton.performClick();
+        assertTrue(buttonClicked.get());
+    }
+
+    @Test
+    @UiThreadTest
+    @SmallTest
     public void testChangeLanguageButton() {
         TextView changeLanguage = mControls.findViewById(R.id.change_language);
         String languageName = "XYZ";
@@ -173,6 +185,8 @@ public class VideoPlayerViewBinderTest {
     @SmallTest
     public void testShareButton() {
         View shareButton = mControls.findViewById(R.id.share_button);
+        mModel.set(VideoPlayerProperties.SHOW_SHARE, true);
+        assertEquals(View.VISIBLE, shareButton.getVisibility());
         AtomicBoolean buttonClicked = new AtomicBoolean();
         mModel.set(VideoPlayerProperties.CALLBACK_SHARE, () -> buttonClicked.set(true));
         shareButton.performClick();

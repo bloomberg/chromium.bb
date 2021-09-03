@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/input_method/personal_info_suggester.h"
-#include "chrome/browser/chromeos/extensions/input_method_api.h"
-#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
-#include "ash/public/cpp/ash_pref_names.h"
+#include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
@@ -15,22 +14,27 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
+#include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
-#include "chromeos/constants/chromeos_features.h"
-#include "chromeos/constants/chromeos_pref_names.h"
+#include "chromeos/services/ime/public/cpp/suggestions.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
-#include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/re2/src/re2/re2.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 
 namespace chromeos {
 
 namespace {
+
+using TextSuggestion = ::chromeos::ime::TextSuggestion;
+using TextSuggestionMode = ::chromeos::ime::TextSuggestionMode;
+using TextSuggestionType = ::chromeos::ime::TextSuggestionType;
 
 const size_t kMaxConfirmedTextLength = 10;
 
@@ -94,42 +98,19 @@ void RecordTimeToDismiss(base::TimeDelta delta) {
                           delta);
 }
 
+void RecordAssistiveInsufficientData(AssistiveType type) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.InsufficientData", type);
+}
+
+TextSuggestion MapToTextSuggestion(std::u16string candidate_string) {
+  return {.mode = TextSuggestionMode::kPrediction,
+          .type = TextSuggestionType::kAssistivePersonalInfo,
+          .text = base::UTF16ToUTF8(candidate_string)};
+}
+
 }  // namespace
 
-TtsHandler::TtsHandler(Profile* profile) : profile_(profile) {}
-TtsHandler::~TtsHandler() = default;
-
-void TtsHandler::Announce(const std::string& text,
-                          const base::TimeDelta delay) {
-  const bool chrome_vox_enabled = profile_->GetPrefs()->GetBoolean(
-      ash::prefs::kAccessibilitySpokenFeedbackEnabled);
-  if (!chrome_vox_enabled)
-    return;
-
-  delay_timer_ = std::make_unique<base::OneShotTimer>();
-  delay_timer_->Start(
-      FROM_HERE, delay,
-      base::BindOnce(&TtsHandler::Speak, base::Unretained(this), text));
-}
-
-void TtsHandler::OnTtsEvent(content::TtsUtterance* utterance,
-                            content::TtsEventType event_type,
-                            int char_index,
-                            int length,
-                            const std::string& error_message) {}
-
-void TtsHandler::Speak(const std::string& text) {
-  std::unique_ptr<content::TtsUtterance> utterance =
-      content::TtsUtterance::Create(profile_);
-  utterance->SetText(text);
-  utterance->SetEventDelegate(this);
-
-  auto* tts_controller = content::TtsController::GetInstance();
-  tts_controller->Stop();
-  tts_controller->SpeakOrEnqueue(std::move(utterance));
-}
-
-AssistiveType ProposePersonalInfoAssistiveAction(const base::string16& text) {
+AssistiveType ProposePersonalInfoAssistiveAction(const std::u16string& text) {
   std::string lower_case_utf8_text =
       base::ToLowerASCII(base::UTF16ToUTF8(text));
   if (!(RE2::FullMatch(lower_case_utf8_text, ".* $"))) {
@@ -210,7 +191,7 @@ PersonalInfoSuggester::PersonalInfoSuggester(
       ui::ime::AssistiveWindowType::kPersonalInfoSuggestion;
 }
 
-PersonalInfoSuggester::~PersonalInfoSuggester() {}
+PersonalInfoSuggester::~PersonalInfoSuggester() = default;
 
 void PersonalInfoSuggester::OnFocus(int context_id) {
   context_id_ = context_id;
@@ -220,23 +201,31 @@ void PersonalInfoSuggester::OnBlur() {
   context_id_ = -1;
 }
 
+void PersonalInfoSuggester::OnExternalSuggestionsUpdated(
+    const std::vector<TextSuggestion>& suggestions) {
+  // PersonalInfoSuggester doesn't utilize any suggestions produced externally,
+  // so ignore this call.
+}
+
 SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
-    const InputMethodEngineBase::KeyboardEvent& event) {
+    const ui::KeyEvent& event) {
   if (!suggestion_shown_)
     return SuggestionStatus::kNotHandled;
 
-  if (event.key == "Esc") {
+  if (event.code() == ui::DomCode::ESCAPE) {
     DismissSuggestion();
     return SuggestionStatus::kDismiss;
   }
   if (highlighted_index_ == kNoneHighlighted && buttons_.size() > 0) {
-    if (event.key == "Down" || event.key == "Up") {
-      highlighted_index_ = event.key == "Down" ? 0 : buttons_.size() - 1;
+    if (event.code() == ui::DomCode::ARROW_DOWN ||
+        event.code() == ui::DomCode::ARROW_UP) {
+      highlighted_index_ =
+          event.code() == ui::DomCode::ARROW_DOWN ? 0 : buttons_.size() - 1;
       SetButtonHighlighted(buttons_[highlighted_index_], true);
       return SuggestionStatus::kBrowsing;
     }
   } else {
-    if (event.key == "Enter") {
+    if (event.code() == ui::DomCode::ENTER) {
       switch (buttons_[highlighted_index_].id) {
         case ui::ime::ButtonId::kSuggestion:
           AcceptSuggestion();
@@ -247,9 +236,10 @@ SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
         default:
           break;
       }
-    } else if (event.key == "Up" || event.key == "Down") {
+    } else if (event.code() == ui::DomCode::ARROW_UP ||
+               event.code() == ui::DomCode::ARROW_DOWN) {
       SetButtonHighlighted(buttons_[highlighted_index_], false);
-      if (event.key == "Up") {
+      if (event.code() == ui::DomCode::ARROW_UP) {
         highlighted_index_ =
             (highlighted_index_ + buttons_.size() - 1) % buttons_.size();
       } else {
@@ -263,7 +253,7 @@ SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
   return SuggestionStatus::kNotHandled;
 }
 
-bool PersonalInfoSuggester::Suggest(const base::string16& text) {
+bool PersonalInfoSuggester::Suggest(const std::u16string& text) {
   if (suggestion_shown_) {
     size_t text_length = text.length();
     bool matched = false;
@@ -271,8 +261,8 @@ bool PersonalInfoSuggester::Suggest(const base::string16& text) {
          offset < suggestion_.length() && offset < text_length &&
          offset < kMaxConfirmedTextLength;
          offset++) {
-      base::string16 text_before = text.substr(0, text_length - offset);
-      base::string16 confirmed_text = text.substr(text_length - offset);
+      std::u16string text_before = text.substr(0, text_length - offset);
+      std::u16string confirmed_text = text.substr(text_length - offset);
       if (base::StartsWith(suggestion_, confirmed_text,
                            base::CompareCase::INSENSITIVE_ASCII) &&
           suggestion_ == GetSuggestion(text_before)) {
@@ -284,14 +274,18 @@ bool PersonalInfoSuggester::Suggest(const base::string16& text) {
     return matched;
   } else {
     suggestion_ = GetSuggestion(text);
-    if (!suggestion_.empty())
+    if (suggestion_.empty()) {
+      if (proposed_action_type_ != AssistiveType::kGenericAction)
+        RecordAssistiveInsufficientData(proposed_action_type_);
+    } else {
       ShowSuggestion(suggestion_, 0);
+    }
     return suggestion_shown_;
   }
 }
 
-base::string16 PersonalInfoSuggester::GetSuggestion(
-    const base::string16& text) {
+std::u16string PersonalInfoSuggester::GetSuggestion(
+    const std::u16string& text) {
   proposed_action_type_ = ProposePersonalInfoAssistiveAction(text);
 
   if (proposed_action_type_ == AssistiveType::kGenericAction)
@@ -312,7 +306,7 @@ base::string16 PersonalInfoSuggester::GetSuggestion(
   // Currently, we are just picking the first candidate, will improve the
   // strategy in the future.
   auto* profile = autofill_profiles[0];
-  base::string16 suggestion;
+  std::u16string suggestion;
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   switch (proposed_action_type_) {
     case AssistiveType::kPersonalName:
@@ -339,7 +333,7 @@ base::string16 PersonalInfoSuggester::GetSuggestion(
   return suggestion;
 }
 
-void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
+void PersonalInfoSuggester::ShowSuggestion(const std::u16string& text,
                                            const size_t confirmed_length) {
   if (ChromeKeyboardControllerClient::Get()->is_keyboard_visible()) {
     const std::vector<std::string> args{base::UTF16ToUTF8(text)};
@@ -416,6 +410,16 @@ void PersonalInfoSuggester::IncrementPrefValueTilCapped(
 
 AssistiveType PersonalInfoSuggester::GetProposeActionType() {
   return proposed_action_type_;
+}
+
+bool PersonalInfoSuggester::HasSuggestions() {
+  return suggestion_shown_;
+}
+
+std::vector<TextSuggestion> PersonalInfoSuggester::GetSuggestions() {
+  if (HasSuggestions())
+    return {MapToTextSuggestion(suggestion_)};
+  return {};
 }
 
 bool PersonalInfoSuggester::AcceptSuggestion(size_t index) {

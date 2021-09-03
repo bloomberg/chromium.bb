@@ -87,13 +87,14 @@ namespace utils {
         wgpu::TextureFormat::BC6HRGBUfloat, wgpu::TextureFormat::BC6HRGBFloat,
         wgpu::TextureFormat::BC7RGBAUnorm,  wgpu::TextureFormat::BC7RGBAUnormSrgb};
 
-    const char* GetColorTextureComponentTypePrefix(wgpu::TextureFormat textureFormat);
     bool TextureFormatSupportsStorageTexture(wgpu::TextureFormat format);
 
     uint32_t GetTexelBlockSizeInBytes(wgpu::TextureFormat textureFormat);
     uint32_t GetTextureFormatBlockWidth(wgpu::TextureFormat textureFormat);
     uint32_t GetTextureFormatBlockHeight(wgpu::TextureFormat textureFormat);
-    const char* GetGLSLImageFormatQualifier(wgpu::TextureFormat textureFormat);
+
+    const char* GetWGSLColorTextureComponentType(wgpu::TextureFormat textureFormat);
+    const char* GetWGSLImageFormatQualifier(wgpu::TextureFormat textureFormat);
 }  // namespace utils
 
 #endif

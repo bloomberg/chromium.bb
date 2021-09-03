@@ -4,17 +4,14 @@
 
 #import "ios/chrome/browser/ui/ntp/incognito_view.h"
 
-#include "base/feature_list.h"
+#include "base/ios/ns_range.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/application_context.h"
-#include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
-#import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
-#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -104,18 +101,18 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
       stringByTrimmingCharactersInSet:[NSCharacterSet
                                           whitespaceAndNewlineCharacterSet]];
 
-  NSRange emphasisRange;
-  listString =
-      ParseStringWithTag(listString, &emphasisRange, @"<em>", @"</em>");
+  const StringWithTag parsedString =
+      ParseStringWithTag(listString, @"<em>", @"</em>");
+
   NSMutableAttributedString* attributedText =
-      [[NSMutableAttributedString alloc] initWithString:listString];
+      [[NSMutableAttributedString alloc] initWithString:parsedString.string];
   [attributedText addAttribute:NSFontAttributeName
                          value:BodyFont()
                          range:NSMakeRange(0, attributedText.length)];
-  if (emphasisRange.location != NSNotFound) {
+  if (parsedString.range != NSMakeRange(NSNotFound, 0)) {
     [attributedText addAttribute:NSFontAttributeName
                            value:BoldBodyFont()
-                           range:emphasisRange];
+                           range:parsedString.range];
   }
   return attributedText;
 }
@@ -158,12 +155,10 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   if (self) {
     _URLLoader = URLLoader;
 
-    if (DragAndDropIsEnabled()) {
       _dragDropHandler = [[URLDragDropHandler alloc] init];
       _dragDropHandler.dropDelegate = self;
       [self addInteraction:[[UIDropInteraction alloc]
                                initWithDelegate:_dragDropHandler]];
-    }
 
     self.alwaysBounceVertical = YES;
     // The bottom safe area is taken care of with the bottomUnsafeArea guides.
@@ -397,7 +392,8 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   subtitleLabel.font = BodyFont();
   subtitleLabel.textColor = bodyTextColor;
   subtitleLabel.numberOfLines = 0;
-  subtitleLabel.text = l10n_util::GetNSString(IDS_NEW_TAB_OTR_SUBTITLE);
+  subtitleLabel.text =
+      l10n_util::GetNSString(IDS_NEW_TAB_OTR_SUBTITLE_WITH_READING_LIST);
   subtitleLabel.adjustsFontForContentSizeCategory = YES;
 
   UIButton* learnMoreButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -411,14 +407,10 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
   [learnMoreButton addTarget:self
                       action:@selector(learnMoreButtonPressed)
             forControlEvents:UIControlEventTouchUpInside];
-#if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
-    if (base::FeatureList::IsEnabled(kPointerSupport)) {
       // TODO(crbug.com/1075616): Style as a link rather than a button.
       learnMoreButton.pointerInteractionEnabled = YES;
-    }
   }
-#endif  // defined(__IPHONE_13_4)
 
   UIStackView* subtitleStackView = [[UIStackView alloc]
       initWithArrangedSubviews:@[ subtitleLabel, learnMoreButton ]];

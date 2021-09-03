@@ -5,9 +5,8 @@
 #include <memory>
 
 #include "base/callback_helpers.h"
-#include "base/optional.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
-#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -24,6 +23,7 @@
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
@@ -71,9 +71,12 @@ class NetworkMetadataStoreTest : public ::testing::Test {
             helper_.network_state_handler(),
             nullptr /* network_device_handler */);
 
-    network_connection_handler_.reset(new NetworkConnectionHandlerImpl());
-    network_connection_handler_->Init(helper_.network_state_handler(),
-                                      network_configuration_handler_, nullptr);
+    network_connection_handler_ =
+        std::make_unique<NetworkConnectionHandlerImpl>();
+    network_connection_handler_->Init(
+        helper_.network_state_handler(), network_configuration_handler_,
+        /*managed_network_configuration_handler=*/nullptr,
+        /*cellular_esim_connection_handler=*/nullptr);
 
     network_state_handler_ = helper_.network_state_handler();
     NetworkHandler::Initialize();
@@ -119,10 +122,10 @@ class NetworkMetadataStoreTest : public ::testing::Test {
 
   // This creates a new NetworkMetadataStore object.
   void SetIsEnterpriseEnrolled(bool is_enterprise_enrolled) {
-    metadata_store_.reset(new NetworkMetadataStore(
+    metadata_store_ = std::make_unique<NetworkMetadataStore>(
         network_configuration_handler_, network_connection_handler_.get(),
         network_state_handler_, user_prefs_.get(), device_prefs_.get(),
-        is_enterprise_enrolled));
+        is_enterprise_enrolled);
     metadata_store_->AddObserver(metadata_observer_.get());
   }
 
@@ -160,6 +163,14 @@ class NetworkMetadataStoreTest : public ::testing::Test {
   NetworkStateHandler* network_state_handler() {
     return network_state_handler_;
   }
+  void ResetStore() {
+    metadata_store_ = std::make_unique<NetworkMetadataStore>(
+        network_configuration_handler_, network_connection_handler_.get(),
+        network_state_handler_, user_prefs_.get(), device_prefs_.get(),
+        /*is_enterprise_enrolled=*/false);
+    metadata_observer_ = std::make_unique<TestNetworkMetadataObserver>();
+    metadata_store_->AddObserver(metadata_observer_.get());
+  }
 
  protected:
   const user_manager::User* primary_user_;
@@ -182,12 +193,23 @@ class NetworkMetadataStoreTest : public ::testing::Test {
 
 namespace {
 const char* kGuid = "wifi0";
+const char* kGuid1 = "wifi1";
 const char* kConfigWifi0Connectable =
     "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"idle\", "
     "  \"Connectable\": true }";
+const char* kConfigWifi0HiddenUser =
+    "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"idle\", "
+    "  \"Connectable\": true, \"Profile\": \"user_profile_path\", "
+    "\"WiFi.HiddenSSID\": true }";
+const char* kConfigWifi1HiddenUser =
+    "{ \"GUID\": \"wifi1\", \"Type\": \"wifi\", \"State\": \"idle\", "
+    "  \"Connectable\": true, \"Profile\": \"user_profile_path\", "
+    "\"WiFi.HiddenSSID\": true }";
 const char* kConfigWifi1Shared =
     "{ \"GUID\": \"wifi0\", \"Type\": \"wifi\", \"State\": \"idle\", "
     "  \"Connectable\": true, \"Profile\": \"/profile/default\" }";
+const char kHasFixedHiddenNetworks[] =
+    "metadata_store.has_fixed_hidden_networks";
 }  // namespace
 
 TEST_F(NetworkMetadataStoreTest, FirstConnect) {
@@ -321,6 +343,33 @@ TEST_F(NetworkMetadataStoreTest, SharedConfigurationUpdatedByOtherUser) {
       kGuid, shill::kProxyConfigProperty));
 }
 
+TEST_F(NetworkMetadataStoreTest, SharedConfigurationUpdated_NewPassword) {
+  std::string service_path = ConfigureService(kConfigWifi1Shared);
+  metadata_store()->OnConfigurationCreated(service_path, kGuid);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(0, metadata_observer()->GetNumberOfUpdates(kGuid));
+  ASSERT_TRUE(metadata_store()->GetIsCreatedByUser(kGuid));
+
+  LoginUser(secondary_user_);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(metadata_store()->GetIsCreatedByUser(kGuid));
+
+  base::DictionaryValue other_properties;
+  other_properties.SetKey(shill::kPassphraseProperty, base::Value("pass2"));
+
+  network_configuration_handler()->SetShillProperties(
+      service_path, other_properties, base::DoNothing(), base::DoNothing());
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(metadata_store()->GetIsCreatedByUser(kGuid));
+
+  LoginUser(primary_user_);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(metadata_store()->GetIsCreatedByUser(kGuid));
+}
+
 TEST_F(NetworkMetadataStoreTest, ConfigurationRemoved) {
   std::string service_path = ConfigureService(kConfigWifi0Connectable);
   network_connection_handler()->ConnectToNetwork(
@@ -332,7 +381,7 @@ TEST_F(NetworkMetadataStoreTest, ConfigurationRemoved) {
   ASSERT_TRUE(metadata_store()->GetIsConfiguredBySync(kGuid));
 
   network_configuration_handler()->RemoveConfiguration(
-      service_path, /*remove_confirmer=*/base::nullopt, base::DoNothing(),
+      service_path, /*remove_confirmer=*/absl::nullopt, base::DoNothing(),
       base::DoNothing());
   base::RunLoop().RunUntilIdle();
 
@@ -395,6 +444,63 @@ TEST_F(NetworkMetadataStoreTest, OwnOobeNetworks_NotFirstLogin) {
   UserManager()->set_is_current_user_owner(true);
   metadata_store()->LoggedInStateChanged();
   ASSERT_FALSE(metadata_store()->GetIsCreatedByUser(kGuid));
+}
+
+TEST_F(NetworkMetadataStoreTest, FixSyncedHiddenNetworks) {
+  std::string service_path = ConfigureService(kConfigWifi0HiddenUser);
+  metadata_store()->OnConfigurationCreated(service_path, kGuid);
+  base::RunLoop().RunUntilIdle();
+  std::string service_path1 = ConfigureService(kConfigWifi1HiddenUser);
+  metadata_store()->OnConfigurationCreated(service_path1, kGuid1);
+  base::RunLoop().RunUntilIdle();
+
+  metadata_store()->SetIsConfiguredBySync(kGuid);
+  user_prefs()->SetBoolean(kHasFixedHiddenNetworks, false);
+
+  ASSERT_TRUE(metadata_store()->GetIsCreatedByUser(kGuid));
+  ASSERT_TRUE(metadata_store()->GetIsConfiguredBySync(kGuid));
+  ASSERT_TRUE(
+      network_state_handler()->GetNetworkStateFromGuid(kGuid)->hidden_ssid());
+  ASSERT_TRUE(
+      network_state_handler()->GetNetworkStateFromGuid(kGuid1)->hidden_ssid());
+
+  base::HistogramTester tester;
+  ResetStore();
+  metadata_store()->NetworkListChanged();
+  base::RunLoop().RunUntilIdle();
+  ASSERT_FALSE(
+      network_state_handler()->GetNetworkStateFromGuid(kGuid)->hidden_ssid());
+  ASSERT_TRUE(
+      network_state_handler()->GetNetworkStateFromGuid(kGuid1)->hidden_ssid());
+  tester.ExpectBucketCount("Network.Wifi.Synced.Hidden.Fixed",
+                           /*sample=*/1, /*expected_count=*/1);
+}
+
+TEST_F(NetworkMetadataStoreTest, LogHiddenNetworks) {
+  std::string service_path = ConfigureService(kConfigWifi0HiddenUser);
+  metadata_store()->OnConfigurationCreated(service_path, kGuid);
+  base::RunLoop().RunUntilIdle();
+
+  std::string service_path1 = ConfigureService(kConfigWifi1HiddenUser);
+  metadata_store()->OnConfigurationCreated(service_path1, kGuid1);
+  base::RunLoop().RunUntilIdle();
+
+  metadata_store()->ConnectSucceeded(service_path);
+  base::RunLoop().RunUntilIdle();
+
+  base::HistogramTester tester;
+  ResetStore();
+  metadata_store()->NetworkListChanged();
+  base::RunLoop().RunUntilIdle();
+
+  // Wifi0 connected today (0 days ago)
+  tester.ExpectBucketCount("Network.Shill.WiFi.Hidden.LastConnected",
+                           /*sample=*/0, /*expected_count=*/1);
+  tester.ExpectBucketCount("Network.Shill.WiFi.Hidden.EverConnected",
+                           /*sample=*/true, /*expected_count=*/1);
+  // Wifi1 never connected
+  tester.ExpectBucketCount("Network.Shill.WiFi.Hidden.EverConnected",
+                           /*sample=*/false, /*expected_count=*/1);
 }
 
 }  // namespace chromeos

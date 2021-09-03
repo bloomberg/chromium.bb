@@ -19,6 +19,9 @@ TRAILING_WHITESPACE = re.compile('.*?([ \t]+)$')
 # Matches all non-empty strings that contain no whitespaces.
 NO_WHITESPACE = re.compile('[^\s]+$')
 
+SOURCE_DIR = os.path.dirname(
+    os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
 # Convert a 'type' to the schema types it may be converted to.
 # The 'dict' type represents structured JSON data, and can be converted
 # to an 'object' or an 'array'.
@@ -179,20 +182,34 @@ def _GetSupportedVersionPlatformAndRange(supported_on):
                                               if supported_on_to else None)
 
 
-def _PolicyStillSupported(supported_on, current_version):
-  for s in supported_on:
-    _, _, supported_on_to = _GetSupportedVersionPlatformAndRange(s)
+def _GetPolicyValueType(policy_type):
+  if policy_type == 'main':
+    return bool
+  elif policy_type in ('string', 'string-enum'):
+    return str
+  elif policy_type in ('int', 'int-enum'):
+    return int
+  elif policy_type in ('list', 'string-enum-list'):
+    return list
+  elif policy_type == 'external':
+    return dict
+  elif policy_type == 'dict':
+    return [dict, list]
+  else:
+    raise NotImplementedError('Unknown value type for policy type: %s' %
+                              policy_type)
 
-    # If supported_on_to isn't given, this policy is still supported.
-    if supported_on_to is None:
-      return True
 
-    # If supported_on_to is equal or greater than the current version, it's
-    # still supported.
-    if current_version <= int(supported_on_to):
-      return True
-
-  return False
+def _GetPolicyItemType(policy_type):
+  if policy_type == 'main':
+    return bool
+  elif policy_type in ('string-enum', 'string-enum-list'):
+    return str
+  elif policy_type in ('int-enum'):
+    return int
+  else:
+    raise NotImplementedError('Unknown item type for policy type: %s' %
+                              policy_type)
 
 
 def MergeDict(*dicts):
@@ -483,8 +500,14 @@ class PolicyTemplateChecker(object):
   def _NeedsDefault(self, policy):
     return policy.get('type') in ('int', 'main', 'string-enum', 'int-enum')
 
-  def _CheckDefault(self, policy):
+  def _CheckDefault(self, policy, current_version):
     if not self._NeedsDefault(policy):
+      return
+
+    # If a policy should have a default but it is no longer supported, we can
+    # safely ignore this error.
+    if ('default' not in policy
+        and not self._SupportedPolicy(policy, current_version)):
       return
 
     # Only validate the default when present.
@@ -526,8 +549,14 @@ class PolicyTemplateChecker(object):
     return policy.get('type') in ('main', 'int-enum', 'string-enum',
                                   'string-enum-list')
 
-  def _CheckItems(self, policy, item_type):
+  def _CheckItems(self, policy, current_version):
     if not self._NeedsItems(policy):
+      return
+
+    # If a policy should have items, but it is no longer supported, we
+    # can safely ignore this error.
+    if 'items' not in policy and not self._SupportedPolicy(
+        policy, current_version):
       return
 
     # TODO(crbug.com/1139306): Remove this check once all main policies
@@ -565,13 +594,13 @@ class PolicyTemplateChecker(object):
       # Since the item captions don't appear everywhere the description does,
       # try and ensure the items are still described in the descriptions.
       value_to_names = {
-          None: {'None', 'Unset', 'unset'},
-          True: {'True', 'Enable', 'enable'},
-          False: {'False', 'Disable', 'disable'},
+          None: {'None', 'Unset', 'unset', 'not set', 'not configured'},
+          True: {'true', 'enable'},
+          False: {'false', 'disable'},
       }
       for value in required_values:
         names = value_to_names[value]
-        if not any(name in policy['desc'] for name in names):
+        if not any(name in policy['desc'].lower() for name in names):
           self._Warning(
               ('Policy %s doesn\'t seem to describe what happens when it is '
                'set to %s. If possible update the description to describe this '
@@ -604,7 +633,7 @@ class PolicyTemplateChecker(object):
               self._Error(
                   ('Policy %s of type main has an item with a value %s, value '
                    'must be one of %s') %
-                  (policy.get('name'), name, required_names))
+                  (policy.get('name'), value, required_values))
 
       if not values_seen.issuperset(required_values):
         self._Error(
@@ -624,9 +653,51 @@ class PolicyTemplateChecker(object):
         # Each item must have a value of the correct type.
         self._CheckContains(item,
                             'value',
-                            item_type,
+                            _GetPolicyItemType(policy_type),
                             container_name='item',
                             identifier=policy.get('name'))
+
+  def _CheckOwners(self, policy):
+    owners = self._CheckContains(policy, 'owners', list)
+    if not owners:
+      return
+
+    for owner in owners:
+      FILE_PREFIX = 'file://'
+      if owner.startswith(FILE_PREFIX):
+        file_path = owner[len(FILE_PREFIX):]
+        full_file_path = os.path.join(SOURCE_DIR, file_path)
+        if not (os.path.exists(full_file_path)):
+          self._Warning(
+              'Policy %s lists non-existant owners files, %s, as an owner. '
+              'Please either add the owners file or remove it from this list.' %
+              (policy.get('name'), full_file_path))
+      elif '@' in owner:
+        # TODO(pastarmovj): Validate the email is a committer's.
+        pass
+      else:
+        self._Error('Policy %s has an unexpected owner, %s, all owners should '
+                    'be committer emails or file:// paths' %
+                    (policy.get('name'), owner))
+
+  def _SupportedPolicy(self, policy, current_version):
+    # If a policy has any future_on platforms, it is still supported.
+    if len(policy.get('future_on', [])) > 0:
+      return True
+
+    for s in policy.get('supported_on', []):
+      _, _, supported_on_to = _GetSupportedVersionPlatformAndRange(s)
+
+      # If supported_on_to isn't given, this policy is still supported.
+      if supported_on_to is None:
+        return True
+
+      # If supported_on_to is equal or greater than the current version, it's
+      # still supported.
+      if current_version <= int(supported_on_to):
+        return True
+
+    return False
 
   def _CheckPolicy(self, policy, is_in_group, policy_ids, deleted_policy_ids,
                    current_version):
@@ -734,9 +805,7 @@ class PolicyTemplateChecker(object):
       self._AddPolicyID(id, policy_ids, policy, deleted_policy_ids)
 
       # Each policy must have an owner.
-      # TODO(pastarmovj): Verify that each owner is either an OWNERS file or an
-      # email of a committer.
-      self._CheckContains(policy, 'owners', list)
+      self._CheckOwners(policy)
 
       # Each policy must have a tag list.
       self._CheckContains(policy, 'tags', list)
@@ -778,7 +847,7 @@ class PolicyTemplateChecker(object):
                 'supported version must have a version larger than the '
                 'starting supported version.', 'policy', policy, supported_on)
 
-        if (not _PolicyStillSupported(supported_on, current_version)
+        if (not self._SupportedPolicy(policy, current_version)
             and not policy.get('deprecated', False)):
           self._Error(
               'Policy %s is marked as no longer supported (%s), but isn\'t '
@@ -941,22 +1010,8 @@ class PolicyTemplateChecker(object):
               supported_chrome_os_management)
 
       # Each policy must have an 'example_value' of appropriate type.
-      if policy_type == 'main':
-        value_type = item_type = bool
-      elif policy_type in ('string', 'string-enum'):
-        value_type = item_type = str
-      elif policy_type in ('int', 'int-enum'):
-        value_type = item_type = int
-      elif policy_type in ('list', 'string-enum-list'):
-        value_type = list
-        item_type = str
-      elif policy_type == 'external':
-        value_type = item_type = dict
-      elif policy_type == 'dict':
-        value_type = item_type = [dict, list]
-      else:
-        raise NotImplementedError('Unimplemented policy type: %s' % policy_type)
-      self._CheckContains(policy, 'example_value', value_type)
+      self._CheckContains(policy, 'example_value',
+                          _GetPolicyValueType(policy_type))
 
       # Verify that the example complies with the schema and that all properties
       # are used at least once, so the examples are as useful as possible for
@@ -989,14 +1044,14 @@ class PolicyTemplateChecker(object):
             self._Error(('Example for policy %s does not comply to the ' +
                          'policy\'s validation_schema') % policy.get('name'))
 
-      self._CheckDefault(policy)
+      self._CheckDefault(policy, current_version)
 
       # Statistics.
       self.num_policies += 1
       if is_in_group:
         self.num_policies_in_groups += 1
 
-      self._CheckItems(policy, item_type)
+      self._CheckItems(policy, current_version)
 
       if policy_type == 'external':
         # Each policy referencing external data must specify a maximum data
@@ -1559,7 +1614,7 @@ class PolicyTemplateChecker(object):
       # TODO(crbug.com/1139306): This item check should apply to all policies
       # instead of just new ones.
       if self._NeedsItems(new_policy) and new_policy.get('items', None) == None:
-        self._Error(('Missing items field for policy %') % (new_policy_name))
+        self._Error(('Missing items field for policy %s') % (new_policy_name))
 
   def _LeadingWhitespace(self, line):
     match = LEADING_WHITESPACE.match(line)
@@ -1841,7 +1896,7 @@ class PolicyTemplateChecker(object):
           'bypass this validation by adding "BYPASS_POLICY_COMPATIBILITY_CHECK='
           '<justification>" to your changelist description. If you believe '
           'that this validation is a bug, please file a crbug against '
-          '"Enterprise>CloudPolicy" and add a link to the bug as '
+          '"Enterprise" and add a link to the bug as '
           'justification. Otherwise, please provide an explanation for the '
           'change. For more information please refer to: '
           'https://bit.ly/33qr3ZV.')

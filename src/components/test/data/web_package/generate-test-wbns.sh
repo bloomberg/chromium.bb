@@ -10,6 +10,7 @@ for cmd in gen-bundle sign-bundle; do
     if ! command -v $cmd > /dev/null 2>&1; then
         echo "$cmd is not installed. Please run:"
         echo "  go get -u github.com/WICG/webpackage/go/bundle/cmd/..."
+        echo '  export PATH=$PATH:$(go env GOPATH)/bin'
         exit 1
     fi
 done
@@ -24,6 +25,11 @@ gen-bundle \
   -dir hello/ \
   -manifestURL https://test.example.org/manifest.webmanifest \
   -o hello.wbn
+
+gen-bundle \
+  -har simple.har \
+  -o simple.wbn \
+  -primaryURL https://test.example.org/ \
 
 sign-bundle \
   -i hello.wbn \

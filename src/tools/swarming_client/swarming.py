@@ -1405,14 +1405,6 @@ def CMDbots(parser, args):
   parser.filter_group.add_option(
       '--idle', action='store_true', help='Keep only idle bots')
   parser.filter_group.add_option(
-      '--mp',
-      action='store_true',
-      help='Keep only Machine Provider managed bots')
-  parser.filter_group.add_option(
-      '--non-mp',
-      action='store_true',
-      help='Keep only non Machine Provider managed bots')
-  parser.filter_group.add_option(
       '-b', '--bare', action='store_true', help='Do not print out dimensions')
   options, args = parser.parse_args(args)
   process_filter_options(parser, options)
@@ -1421,8 +1413,6 @@ def CMDbots(parser, args):
     parser.error('Use only one of --keep-dead or --dead-only')
   if options.busy and options.idle:
     parser.error('Use only one of --busy or --idle')
-  if options.mp and options.non_mp:
-    parser.error('Use only one of --mp or --non-mp')
 
   url = options.swarming + '/_ah/api/swarming/v1/bots/list?'
   values = []
@@ -1439,13 +1429,6 @@ def CMDbots(parser, args):
     values.append(('is_busy', 'FALSE'))
   else:
     values.append(('is_busy', 'NONE'))
-
-  if options.mp:
-    values.append(('is_mp', 'TRUE'))
-  elif options.non_mp:
-    values.append(('is_mp', 'FALSE'))
-  else:
-    values.append(('is_mp', 'NONE'))
 
   for key, value in options.dimensions:
     values.append(('dimensions', '%s:%s' % (key, value)))

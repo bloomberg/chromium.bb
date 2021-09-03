@@ -129,9 +129,10 @@ void GCDApiFlowImpl::OnAccessTokenFetchComplete(
   request->headers.SetHeader(kCloudPrintOAuthHeaderKey,
                              GetOAuthHeaderValue(access_token_info.token));
 
-  std::vector<std::string> extra_headers = request_->GetExtraRequestHeaders();
-  for (const std::string& header : extra_headers)
-    request->headers.AddHeaderFromString(header);
+  auto extra_headers = request_->GetExtraRequestHeaders();
+  for (const auto& header : extra_headers) {
+    request->headers.SetHeader(header.first, header.second);
+  }
 
   url_loader_ = network::SimpleURLLoader::Create(
       std::move(request),
@@ -162,7 +163,7 @@ void GCDApiFlowImpl::OnDownloadedToString(
     return;
   }
 
-  base::Optional<base::Value> value = base::JSONReader::Read(*response_body);
+  absl::optional<base::Value> value = base::JSONReader::Read(*response_body);
   const base::DictionaryValue* dictionary_value = NULL;
 
   if (!value || !value->GetAsDictionary(&dictionary_value)) {

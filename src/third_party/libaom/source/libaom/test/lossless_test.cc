@@ -24,19 +24,19 @@ namespace {
 const int kMaxPsnr = 100;
 
 class LosslessTestLarge
-    : public ::libaom_test::CodecTestWith2Params<libaom_test::TestMode,
-                                                 aom_rc_mode>,
+    : public ::libaom_test::CodecTestWith3Params<libaom_test::TestMode,
+                                                 aom_rc_mode, int>,
       public ::libaom_test::EncoderTest {
  protected:
   LosslessTestLarge()
       : EncoderTest(GET_PARAM(0)), psnr_(kMaxPsnr), nframes_(0),
-        encoding_mode_(GET_PARAM(1)), rc_end_usage_(GET_PARAM(2)) {}
+        encoding_mode_(GET_PARAM(1)), rc_end_usage_(GET_PARAM(2)),
+        cpu_used_(GET_PARAM(3)) {}
 
   virtual ~LosslessTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     cfg_.rc_end_usage = rc_end_usage_;
   }
 
@@ -48,6 +48,7 @@ class LosslessTestLarge
       if (cfg_.rc_max_quantizer > 0 || cfg_.rc_min_quantizer > 0) {
         encoder->Control(AV1E_SET_LOSSLESS, 1);
       }
+      encoder->Control(AOME_SET_CPUUSED, cpu_used_);
     }
   }
 
@@ -80,6 +81,7 @@ class LosslessTestLarge
   unsigned int nframes_;
   libaom_test::TestMode encoding_mode_;
   aom_rc_mode rc_end_usage_;
+  int cpu_used_;
   int base_qindex_;
 };
 
@@ -137,8 +139,33 @@ TEST_P(LosslessTestLarge, TestLossLessEncodingCtrl) {
   EXPECT_GE(psnr_lossless, kMaxPsnr);
 }
 
+class LosslessAllIntraTestLarge : public LosslessTestLarge {};
+
+TEST_P(LosslessAllIntraTestLarge, TestLossLessEncodingCtrl) {
+  const aom_rational timebase = { 33333333, 1000000000 };
+  cfg_.g_timebase = timebase;
+  // Intentionally set Q > 0, to make sure control can be used to activate
+  // lossless
+  cfg_.rc_min_quantizer = 10;
+  cfg_.rc_max_quantizer = 20;
+
+  init_flags_ = AOM_CODEC_USE_PSNR;
+
+  libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+                                     timebase.den, timebase.num, 0, 5);
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+  const double psnr_lossless = GetMinPsnr();
+  EXPECT_GE(psnr_lossless, kMaxPsnr);
+}
+
 AV1_INSTANTIATE_TEST_SUITE(LosslessTestLarge,
                            ::testing::Values(::libaom_test::kOnePassGood,
                                              ::libaom_test::kTwoPassGood),
-                           ::testing::Values(AOM_Q, AOM_VBR, AOM_CBR, AOM_CQ));
+                           ::testing::Values(AOM_Q, AOM_VBR, AOM_CBR, AOM_CQ),
+                           ::testing::Values(0));  // cpu_used
+
+AV1_INSTANTIATE_TEST_SUITE(LosslessAllIntraTestLarge,
+                           ::testing::Values(::libaom_test::kAllIntra),
+                           ::testing::Values(AOM_Q),
+                           ::testing::Values(6, 9));  // cpu_used
 }  // namespace

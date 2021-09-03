@@ -26,9 +26,7 @@ DEF_SIMPLE_GM(bicubic, canvas, 300, 320) {
 
     canvas->scale(40, 8);
     for (auto q : {kNone_SkFilterQuality, kLow_SkFilterQuality, kHigh_SkFilterQuality}) {
-        SkPaint p;
-        p.setFilterQuality(q);
-        canvas->drawImage(img, 0, 0, &p);
+        canvas->drawImage(img, 0, 0, SkSamplingOptions(q), nullptr);
         canvas->translate(0, img->height() + 1.0f);
     }
 
@@ -36,11 +34,12 @@ DEF_SIMPLE_GM(bicubic, canvas, 300, 320) {
     SkPaint paint;
 
     SkImage::CubicResampler cubics[] = {
-        {      0, 1.0f/2 },
-        { 1.0f/3, 1.0f/3 },
+        SkCubicResampler::CatmullRom(),
+        SkCubicResampler::Mitchell(),
     };
     for (auto c : cubics) {
-        paint.setShader(img->makeShader(SkTileMode::kClamp, SkTileMode::kClamp, c));
+        paint.setShader(img->makeShader(SkTileMode::kClamp, SkTileMode::kClamp,
+                                        SkSamplingOptions(c)));
         canvas->drawRect(r, paint);
         canvas->translate(0, img->height() + 1.0f);
     }

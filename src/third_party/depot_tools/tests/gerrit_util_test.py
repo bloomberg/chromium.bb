@@ -425,11 +425,11 @@ class GerritUtilTest(unittest.TestCase):
   @mock.patch('gerrit_util.ReadHttpJsonResponse')
   def testQueryChanges(self, mockJsonResponse, mockCreateHttpConn):
     gerrit_util.QueryChanges(
-        'host', [('key', 'val'), ('foo', 'bar')], 'first param', limit=500,
+        'host', [('key', 'val'), ('foo', 'bar baz')], 'first param', limit=500,
         o_params=['PARAM_A', 'PARAM_B'], start='start')
     mockCreateHttpConn.assert_called_once_with(
         'host',
-        ('changes/?q=first%20param+key:val+foo:bar'
+        ('changes/?q=first%20param+key:val+foo:bar+baz'
          '&start=start'
          '&n=500'
          '&o=PARAM_A'
@@ -481,6 +481,19 @@ class GerritUtilTest(unittest.TestCase):
         ],
         mockQueryChanges.mock_calls)
 
+  @mock.patch('gerrit_util.CreateHttpConn')
+  @mock.patch('gerrit_util.ReadHttpJsonResponse')
+  def testIsCodeOwnersEnabledOnRepo_Disabled(
+      self, mockJsonResponse, mockCreateHttpConn):
+    mockJsonResponse.return_value = {'status': {'disabled': True}}
+    self.assertFalse(gerrit_util.IsCodeOwnersEnabledOnRepo('host', 'repo'))
+
+  @mock.patch('gerrit_util.CreateHttpConn')
+  @mock.patch('gerrit_util.ReadHttpJsonResponse')
+  def testIsCodeOwnersEnabledOnRepo_Enabled(
+      self, mockJsonResponse, mockCreateHttpConn):
+    mockJsonResponse.return_value = {'status': {}}
+    self.assertTrue(gerrit_util.IsCodeOwnersEnabledOnRepo('host', 'repo'))
 
 if __name__ == '__main__':
   unittest.main()

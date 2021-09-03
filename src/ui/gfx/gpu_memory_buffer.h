@@ -14,6 +14,7 @@
 #include "ui/gfx/generic_shared_memory_id.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gfx_export.h"
+#include "ui/gfx/hdr_metadata.h"
 
 #if defined(USE_OZONE) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #include "ui/gfx/native_pixmap_handle.h"
@@ -72,7 +73,7 @@ struct GFX_EXPORT GpuMemoryBufferHandle {
 #if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
   NativePixmapHandle native_pixmap_handle;
 #elif defined(OS_MAC)
-  gfx::ScopedIOSurface io_surface;
+  ScopedIOSurface io_surface;
 #elif defined(OS_WIN)
   base::win::ScopedHandle dxgi_handle;
 #elif defined(OS_ANDROID)
@@ -101,11 +102,14 @@ class GFX_EXPORT GpuMemoryBuffer {
   // after this has been called.
   virtual void Unmap() = 0;
 
-  // Returns the size for the buffer.
+  // Returns the size in pixels of the first plane of the buffer.
   virtual Size GetSize() const = 0;
 
   // Returns the format for the buffer.
   virtual BufferFormat GetFormat() const = 0;
+
+  // Returns the size in pixels of the specified plane.
+  Size GetSizeOfPlane(gfx::BufferPlane plane) const;
 
   // Fills the stride in bytes for each plane of the buffer. The stride of
   // plane K is stored at index K-1 of the |stride| array.
@@ -113,7 +117,11 @@ class GFX_EXPORT GpuMemoryBuffer {
 
   // Set the color space in which this buffer should be interpreted when used
   // as an overlay. Note that this will not impact texturing from the buffer.
-  virtual void SetColorSpace(const gfx::ColorSpace& color_space);
+  virtual void SetColorSpace(const ColorSpace& color_space);
+
+  // Set the HDR metadata for use when this buffer is used as an overlay. Note
+  // that this will not impact texturing from the buffer.
+  virtual void SetHDRMetadata(const HDRMetadata& hdr_metadata);
 
   // Returns a unique identifier associated with buffer.
   virtual GpuMemoryBufferId GetId() const = 0;

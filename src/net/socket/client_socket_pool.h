@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/load_states.h"
@@ -19,10 +18,12 @@
 #include "net/base/privacy_mode.h"
 #include "net/base/request_priority.h"
 #include "net/dns/host_resolver.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_request_info.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/connect_job.h"
 #include "net/socket/socket_tag.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class Value;
@@ -113,7 +114,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
             SocketType socket_type,
             PrivacyMode privacy_mode,
             NetworkIsolationKey network_isolation_key,
-            bool disable_secure_dns);
+            SecureDnsPolicy secure_dns_policy);
     GroupId(const GroupId& group_id);
 
     ~GroupId();
@@ -131,25 +132,25 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
       return network_isolation_key_;
     }
 
-    bool disable_secure_dns() const { return disable_secure_dns_; }
+    SecureDnsPolicy secure_dns_policy() const { return secure_dns_policy_; }
 
     // Returns the group ID as a string, for logging.
     std::string ToString() const;
 
     bool operator==(const GroupId& other) const {
       return std::tie(destination_, socket_type_, privacy_mode_,
-                      network_isolation_key_, disable_secure_dns_) ==
+                      network_isolation_key_, secure_dns_policy_) ==
              std::tie(other.destination_, other.socket_type_,
                       other.privacy_mode_, other.network_isolation_key_,
-                      other.disable_secure_dns_);
+                      other.secure_dns_policy_);
     }
 
     bool operator<(const GroupId& other) const {
       return std::tie(destination_, socket_type_, privacy_mode_,
-                      network_isolation_key_, disable_secure_dns_) <
+                      network_isolation_key_, secure_dns_policy_) <
              std::tie(other.destination_, other.socket_type_,
                       other.privacy_mode_, other.network_isolation_key_,
-                      other.disable_secure_dns_);
+                      other.secure_dns_policy_);
     }
 
    private:
@@ -164,8 +165,8 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
     // Used to separate requests made in different contexts.
     NetworkIsolationKey network_isolation_key_;
 
-    // If host resolutions for this request may not use secure DNS.
-    bool disable_secure_dns_;
+    // Controls the Secure DNS behavior to use when creating this socket.
+    SecureDnsPolicy secure_dns_policy_;
   };
 
   // Parameters that, in combination with GroupId, proxy, websocket information,
@@ -249,7 +250,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   virtual int RequestSocket(
       const GroupId& group_id,
       scoped_refptr<SocketParams> params,
-      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       RequestPriority priority,
       const SocketTag& socket_tag,
       RespectLimits respect_limits,
@@ -271,7 +272,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   virtual void RequestSockets(
       const GroupId& group_id,
       scoped_refptr<SocketParams> params,
-      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       int num_sockets,
       const NetLogWithSource& net_log) = 0;
 
@@ -366,7 +367,7 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
       GroupId group_id,
       scoped_refptr<SocketParams> socket_params,
       const ProxyServer& proxy_server,
-      const base::Optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
+      const absl::optional<NetworkTrafficAnnotationTag>& proxy_annotation_tag,
       bool is_for_websockets,
       const CommonConnectJobParams* common_connect_job_params,
       RequestPriority request_priority,

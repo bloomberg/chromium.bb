@@ -480,8 +480,15 @@
     },
     {
       "id": 88,
-      "description": "Always rewrite vec/mat constructors to be consistent",
-      "cr_bugs": [398694],
+      "description": "Rewrite vec/mat constructors on older GLSL ES drivers, Android O and earlier",
+      "cr_bugs": [398694, 1165751],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<=",
+          "value": "8.0"
+        }
+      },
       "features": [
         "scalarize_vec_and_mat_constructor_args"
       ]
@@ -516,8 +523,8 @@
       "os": {
         "type": "android"
       },
-      "gl_vendor": "Imagination.*",
-      "gl_renderer": "PowerVR SGX 5.*",
+      "gl_vendor": ".*Imagination.*",
+      "gl_renderer": ".*PowerVR SGX 5.*",
       "features": [
         "etc1_power_of_two_only"
       ]
@@ -704,16 +711,13 @@
           "value2": "5.1.99"
         }
       },
-      "gl_vendor": "Imagination.*",
-      "gl_renderer": "PowerVR Rogue.*",
+      "gl_vendor": ".*Imagination.*",
+      "gl_renderer": ".*PowerVR Rogue.*",
       "driver_version": {
         "op": "between",
         "value": "1.3",
         "value2": "1.4"
       },
-      "features": [
-        "avoid_egl_image_target_texture_reuse"
-      ],
       "disabled_extensions": [
         "EGL_KHR_wait_sync"
       ]
@@ -855,23 +859,6 @@
       ]
     },
     {
-      "id": 118,
-      "cr_bugs": [477306],
-      "description": "NVIDIA 331 series drivers shader compiler may crash when attempting to optimize pow()",
-      "os": {
-        "type": "linux"
-      },
-      "driver_version": {
-        "op": "<=",
-        "value": "331"
-      },
-      "vendor_id": "0x10de",
-      "gl_vendor": "NVIDIA.*",
-      "features": [
-        "remove_pow_with_constant_exponent"
-      ]
-    },
-    {
       "id": 119,
       "description": "Context lost recovery often fails on Mali-400/450 on Android.",
       "cr_bugs": [496438],
@@ -917,7 +904,7 @@
       "os": {
         "type": "android"
       },
-      "gl_renderer": "Adreno \\(TM\\) 3.*",
+      "gl_renderer": ".*Adreno \\(TM\\) 3.*",
       "features": [
         "disable_program_cache"
       ]
@@ -1705,19 +1692,6 @@
       ]
     },
     {
-      "id": 201,
-      "cr_bugs": [659326,639760],
-      "description": "AMD drivers in Linux require invariant qualifier to match between vertex and fragment shaders",
-      "os": {
-        "type": "linux"
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "dont_remove_invariant_for_fragment_input",
-        "remove_invariant_and_centroid_for_essl3"
-      ]
-    },
-    {
       "id": 202,
       "cr_bugs": [639760,641129],
       "description": "Mac driver GL 4.1 requires invariant and centroid to match between shaders",
@@ -2138,21 +2112,6 @@
       "device_id": ["0x1626", "0x162B", "0x1622"],
       "features": [
         "clear_to_zero_or_one_broken"
-      ]
-    },
-    {
-      "id": 237,
-      "description": "eglSwapBuffers intermittently fails on Android when app goes to background",
-      "cr_bugs": [744678],
-      "os": {
-        "type": "android",
-        "version": {
-          "op": "<",
-          "value": "9.0"
-        }
-      },
-      "features": [
-        "dont_disable_webgl_when_compositor_context_lost"
       ]
     },
     {
@@ -2807,18 +2766,6 @@
       ]
     },
     {
-      "id": 297,
-      "cr_bugs": [938678],
-      "description": "Needed to pass dEQP-EGL.functional.robustness.reset_context.shaders.infinite_loop.*",
-      "os": {
-        "type" : "chromeos"
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "exit_on_context_lost"
-      ]
-    },
-    {
       "id": 299,
       "description": "Context lost recovery often fails on PowerVR Rogue GE8* GPUs on Android.",
       "cr_bugs": [942106],
@@ -2951,19 +2898,6 @@
       ],
       "features": [
           "disable_vp_scaling"
-      ]
-    },
-    {
-      "id": 310,
-      "description": "Context lost recovery often fails on Mali on CrOS.",
-      "cr_bugs": [992286],
-      "os": {
-        "type": "chromeos"
-      },
-      "gl_vendor": "ARM.*",
-      "gl_renderer": ".*Mali-.*",
-      "features": [
-        "exit_on_context_lost"
       ]
     },
     {
@@ -3481,39 +3415,10 @@
       "vendor_id": "0x8086",
       "intel_gpu_series": [
         "geminilake",
-        "kabylake",
-        "whiskeylake",
-        "cometlake"
+        "kabylake"
       ],
       "features": [
         "disable_accelerated_vp8_encode"
-      ]
-    },
-    {
-      "id": 349,
-      "cr_bugs": [1126058],
-      "description": "VP8 decoding hangs on Intel Broadwell",
-      "os": {
-        "type": "chromeos"
-      },
-      "vendor_id": "0x8086",
-      "intel_gpu_series": [
-        "broadwell"
-      ],
-      "features": [
-        "disable_accelerated_vp8_decode"
-      ]
-    },
-    {
-      "id": 350,
-      "cr_bugs": [1121061],
-      "description": "Intel GPUs need reset VP when colorspace changes",
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x8086",
-      "features": [
-        "reset_vp_when_colorspace_changes"
       ]
     },
     {
@@ -3645,16 +3550,18 @@
       ]
     },
     {
-      "id": 361,
-      "description": "VP9 Profile 2 decoding doesn't work on ChromeOS AMDs",
-      "cr_bugs": [1147466],
+      "id": 362,
+      "description": "Promote 2 videos to hardware overlays on Windows Intel platforms",
+      "cr_bugs": [1105618],
       "os": {
-        "type": "chromeos"
+        "type": "win"
       },
-      "vendor_id": "0x1002",
-      "driver_vendor": "Mesa",
+      "intel_gpu_series": [
+        "icelake",
+        "tigerlake"
+      ],
       "features": [
-        "disable_accelerated_vp9_profile2_decode"
+        "supports_two_yuv_hardware_overlays"
       ]
     },
     {
@@ -3671,6 +3578,120 @@
       ],
       "features": [
         "disable_accelerated_vp9_decode"
+      ]
+    },
+    {
+      "id": 364,
+      "cr_bugs": [1161215, 1160217],
+      "description": "Software overlays fail to work reliably on AMD devices",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "disable_direct_composition_sw_video_overlays"
+      ]
+    },
+    {
+      "id": 365,
+      "description": "Context lost recovery often fails on Adreno with SkiaRenderer GL.",
+      "cr_bugs": [1079161],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno.*",
+      "features": [
+        "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 367,
+      "cr_bugs": [1180962],
+      "description": "ANGLE cannot recover from context lost",
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "ANGLE.*",
+      "features": [
+        "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 369,
+      "cr_bugs": [1184340],
+      "description": "Limit MSAA quality samples to 4 and storage samples 2 on Pollock",
+      "os": {
+        "type" : "chromeos"
+      },
+      "vendor_id": "0x1002",
+      "device_id": ["0x15d8"],
+      "device_revision": ["0xe9", "0xea"],
+      "features": [
+        "max_msaa_sample_count_4",
+        "use_eqaa_storage_samples_2"
+      ]
+    },
+    {
+      "id": 370,
+      "description": "Context loss recovery often fails on Chrome OS",
+      "cr_bugs": [992286, 1177986],
+      "os": {
+        "type": "chromeos"
+      },
+      "features": [
+        "exit_on_context_lost"
+      ]
+    },
+    {
+      "id": 371,
+      "cr_bugs": [1192748],
+      "description": "Disable software overlays for Intel GPUs. All Skylake+ devices support hw overlays, older devices peform poorly.",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "features": [
+        "disable_direct_composition_sw_video_overlays"
+      ]
+    },
+    {
+      "id": 372,
+      "cr_bugs": [1103852],
+      "description": "Check YCbCr_Studio_G22_Left_P709 color space for NV12 overlay support on Intel",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x8086",
+      "intel_gpu_generation": {
+        "op": "=",
+        "value": "9"
+      },
+      "features": [
+        "check_ycbcr_studio_g22_left_p709_for_nv12_support"
+      ]
+    },
+    {
+      "id": 373,
+      "cr_bugs": [1198714],
+      "description": "VP9 Profile 2 HW decoding on Qualcomm SC7180 is broken",
+      "os": {
+        "type": "chromeos"
+      },
+      "gl_vendor": "freedreno",
+      "features": [
+        "disable_accelerated_vp9_profile2_decode"
+      ]
+    },
+    {
+      "id": 374,
+      "cr_bugs": [1087422],
+      "description": "VP9 resilient mode causes corruptions with AMD VCN HW decoders, using DXVA",
+      "os": {
+        "type": "win"
+      },
+      "vendor_id": "0x1002",
+      "features": [
+        "disallow_vp9_resilient_dxva_decoding"
       ]
     }
   ]

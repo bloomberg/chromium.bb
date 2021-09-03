@@ -1,12 +1,52 @@
-# Dynamic Feature Modules (DFMs)
-
-[Android App bundles and Dynamic Feature Modules (DFMs)](https://developer.android.com/guide/app-bundle)
-is a Play Store feature that allows delivering pieces of an app when they are
-needed rather than at install time. We use DFMs to modularize Chrome and make
-Chrome's install size smaller.
+# App Bundles and Dynamic Feature Modules (DFMs)
 
 [TOC]
 
+## About Bundles
+[Android App bundles] is a Play Store feature that allows packaging an app as
+multiple `.apk` files, known as "splits". Bundles are zip files with an `.aab`
+extension. See [android_build_instructions.md#multiple-chrome-targets] for a
+list of buildable bundle targets.
+
+Bundles provide three main advantages over monolithic `.apk` files:
+1. Language resources are split into language-specific `.apk` files, known as
+   "resource splits". Delivering only the active languages reduces the overhead
+   of UI strings.
+2. Features can be packaged into lazily loaded `.apk` files, known as
+   "feature splits". Feature splits have no performance overhead until used.
+   * Except on versions prior to Android O, where support for
+     [android:isolatedSplits] was added. On prior versions, all installed splits
+     are loaded on application launch.
+   * E.g.: The `chrome` feature split makes renderers more efficient by having
+     them not load Java code that they don't need.
+   * E.g.: The `image_editor` feature split defers loading of Share-related code
+     until a Share action is performed.
+   * See also: [go/isolated-splits-dev-guide] (Googlers only).
+3. Feature splits can be downloaded on-demand, saving disk space for users that
+   do not need the functionality they provide. These are known as
+   "Dynamic feature modules", or "DFMs".
+   * E.g. Chrome's VR support is packaged in this way, via the `vr` module.
+
+You can inspect which `.apk` files are produced by a bundle target via:
+```
+out/Default/bin/${target_name} build-bundle-apks --output-apks foo.apks
+unzip -l foo.apks
+```
+
+*** note
+Adding new features vis feature splits is highly encouraged when it makes sense
+to do so:
+ * Has a non-trivial amount of Dex (>50kb)
+ * Not needed on startup
+ * Has a small integration surface (calls into it must be done with reflection).
+***
+
+The remainder of this doc focuses on DFMs.
+
+[android_build_instructions.md#multiple-chrome-targets]: android_build_instructions.md#multiple-chrome-targets
+[Android App Bundles]: https://developer.android.com/guide/app-bundle
+[android:isolatedSplits]: https://developer.android.com/reference/android/R.attr#isolatedSplits
+[go/isolated-splits-dev-guide]: http://go/isolated-splits-dev-guide
 
 ## Limitations
 
@@ -14,9 +54,6 @@ DFMs have the following limitations:
 
 * **WebView:** We don't support DFMs for WebView. If your feature is used by
   WebView you cannot put it into a DFM.
-* **Android K:** DFMs are based on split APKs, a feature introduced in Android
-  L. Therefore, we don't support DFMs on Android K. As a workaround
-  you can add your feature to the Android K APK build. See below for details.
 
 ## Getting started
 
@@ -580,8 +617,8 @@ follows:
         lang="am"
         type="android" />
     <!-- List output file for all other supported languages. See
-         //chrome/android/java/strings/android_chrome_strings.grd for the full
-         list. -->
+         //chrome/browser/ui/android/strings/android_chrome_strings.grd for the
+         full list. -->
     ...
   </outputs>
   <translations>
@@ -589,7 +626,7 @@ follows:
     <!-- Here, too, list XTB files for all other supported languages. -->
     ...
   </translations>
-  <release allow_pseudo="false" seq="1">
+  <release seq="1">
     <messages fallback_to_english="true">
       <message name="IDS_BAR_IMPL_TEXT" desc="Magical string.">
         impl
@@ -720,7 +757,6 @@ So far, we have installed the Foo DFM as a true split (`-m foo` option on the
 install script). In production, however, we have to explicitly install the Foo
 DFM for users to get it. There are three install options: _on-demand_,
 _deferred_ and _conditional_.
-
 
 #### On-demand install
 
@@ -857,6 +893,13 @@ like this:
 </manifest>
 ```
 
+You can also specify no conditions to have your module always installed.
+You might want to do this in order to delay the performance implications
+of loading your module until its first use (true only on Android O+ where
+[android:isolatedSplits](https://developer.android.com/reference/android/R.attr#isolatedSplits)
+is supported. See [go/isolated-splits-dev-guide](http://go/isolated-splits-dev-guide)
+(googlers only).
+
 ### Metrics
 
 After adding your module to `AndroidFeatureModuleName` (see
@@ -874,12 +917,11 @@ metrics:
   install your module successfully after on-demand requesting it.
 
 
-### Integration test APK and Android K support
+### chrome_public_apk and Integration Tests
 
-On Android K we still ship an APK. To make the Foo feature available on Android
-K add its code to the APK build. For this, add the `java` target to
-the `chrome_public_common_apk_or_module_tmpl` in
-`//chrome/android/chrome_public_apk_tmpl.gni` like so:
+To make the Foo feature available in the non-bundle `chrome_public_apk`
+target, add the `java` target to the `chrome_public_common_apk_or_module_tmpl`
+in `//chrome/android/chrome_public_apk_tmpl.gni` like so:
 
 ```gn
 template("chrome_public_common_apk_or_module_tmpl") {
@@ -895,6 +937,5 @@ template("chrome_public_common_apk_or_module_tmpl") {
 }
 ```
 
-This will also add Foo's Java to the integration test APK. You may also have to
-add `java` as a dependency of `chrome_test_java` if you want to call into Foo
-from test code.
+You may also have to add `java` as a dependency of `chrome_test_java` if you want
+to call into Foo from test code.

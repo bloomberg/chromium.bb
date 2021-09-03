@@ -60,8 +60,7 @@ class ExternalProtocolDialogBrowserTest
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     dialog_ = new ExternalProtocolDialog(
-        web_contents, GURL("telnet://12345"),
-        base::UTF8ToUTF16("/usr/bin/telnet"),
+        web_contents, GURL("telnet://12345"), u"/usr/bin/telnet",
         url::Origin::Create(GURL(initiating_origin)));
   }
 
@@ -84,7 +83,7 @@ class ExternalProtocolDialogBrowserTest
       content::WebContents* web_contents,
       ui::PageTransition page_transition,
       bool has_user_gesture,
-      const base::Optional<url::Origin>& initiating_origin) override {}
+      const absl::optional<url::Origin>& initiating_origin) override {}
   void LaunchUrlWithoutSecurityCheck(
       const GURL& url,
       content::WebContents* web_contents) override {

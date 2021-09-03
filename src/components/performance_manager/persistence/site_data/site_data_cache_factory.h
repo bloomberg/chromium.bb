@@ -13,11 +13,11 @@
 #include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "components/performance_manager/persistence/site_data/site_data_cache.h"
 #include "content/public/browser/browser_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class BrowserContext;
@@ -75,17 +75,18 @@ class SiteDataCacheFactory {
   // that runs on this object's task runner.
   void OnBrowserContextCreated(const std::string& browser_context_id,
                                const base::FilePath& context_path,
-                               base::Optional<std::string> parent_context_id);
+                               absl::optional<std::string> parent_context_id);
   void OnBrowserContextDestroyed(const std::string& browser_context_id);
 
  private:
   // A map that associates a BrowserContext's ID with a SiteDataCache. This
   // object owns the caches.
-  base::flat_map<std::string, std::unique_ptr<SiteDataCache>> data_cache_map_;
+  base::flat_map<std::string, std::unique_ptr<SiteDataCache>> data_cache_map_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // A map that associates a BrowserContext's ID with a SiteDataCacheInspector.
-  base::flat_map<std::string, SiteDataCacheInspector*>
-      data_cache_inspector_map_;
+  base::flat_map<std::string, SiteDataCacheInspector*> data_cache_inspector_map_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

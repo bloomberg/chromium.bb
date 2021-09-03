@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/tabs/hover_tab_selector.h"
 #include "chrome/browser/ui/tabs/tab_menu_model_factory.h"
@@ -91,14 +90,14 @@ class BrowserTabStripController : public TabStripController,
   int HasAvailableDragActions() const override;
   void OnDropIndexUpdate(int index, bool drop_before) override;
   void CreateNewTab() override;
-  void CreateNewTabWithLocation(const base::string16& loc) override;
+  void CreateNewTabWithLocation(const std::u16string& loc) override;
   void StackedLayoutMaybeChanged() override;
   void OnStartedDragging(bool dragging_window) override;
   void OnStoppedDragging() override;
-  void OnKeyboardFocusedTabChanged(base::Optional<int> index) override;
-  base::string16 GetGroupTitle(
+  void OnKeyboardFocusedTabChanged(absl::optional<int> index) override;
+  std::u16string GetGroupTitle(
       const tab_groups::TabGroupId& group_id) const override;
-  base::string16 GetGroupContentString(
+  std::u16string GetGroupContentString(
       const tab_groups::TabGroupId& group_id) const override;
   tab_groups::TabGroupColorId GetGroupColorId(
       const tab_groups::TabGroupId& group_id) const override;
@@ -107,7 +106,11 @@ class BrowserTabStripController : public TabStripController,
   void SetVisualDataForGroup(
       const tab_groups::TabGroupId& group,
       const tab_groups::TabGroupVisualData& visual_data) override;
-  std::vector<int> ListTabsInGroup(
+  absl::optional<int> GetFirstTabInGroup(
+      const tab_groups::TabGroupId& group) const override;
+  absl::optional<int> GetLastTabInGroup(
+      const tab_groups::TabGroupId& group) const override;
+  gfx::Range ListTabsInGroup(
       const tab_groups::TabGroupId& group_id) const override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
@@ -116,9 +119,9 @@ class BrowserTabStripController : public TabStripController,
   bool CanDrawStrokes() const override;
   SkColor GetFrameColor(BrowserFrameActiveState active_state) const override;
   SkColor GetToolbarTopSeparatorColor() const override;
-  base::Optional<int> GetCustomBackgroundId(
+  absl::optional<int> GetCustomBackgroundId(
       BrowserFrameActiveState active_state) const override;
-  base::string16 GetAccessibleTabName(const Tab* tab) const override;
+  std::u16string GetAccessibleTabName(const Tab* tab) const override;
   Profile* GetProfile() const override;
   const Browser* GetBrowser() const override;
 
@@ -136,7 +139,7 @@ class BrowserTabStripController : public TabStripController,
                              int model_index) override;
   void TabBlockedStateChanged(content::WebContents* contents,
                               int model_index) override;
-  void TabGroupedStateChanged(base::Optional<tab_groups::TabGroupId> group,
+  void TabGroupedStateChanged(absl::optional<tab_groups::TabGroupId> group,
                               content::WebContents* contents,
                               int index) override;
   void SetTabNeedsAttentionAt(int index, bool attention) override;

@@ -42,6 +42,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
   static const uint32_t kFlagExpectsResponse = 1 << 0;
   static const uint32_t kFlagIsResponse = 1 << 1;
   static const uint32_t kFlagIsSync = 1 << 2;
+  static const uint32_t kFlagNoInterrupt = 1 << 3;
 
   // Constructs an uninitialized Message object.
   Message();
@@ -77,6 +78,11 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
           size_t payload_size,
           size_t payload_interface_id_count,
           std::vector<ScopedHandle>* handles);
+
+  // Constructs a new Message object from an existing message handle. Used
+  // exclusively for serializing an existing unserialized message.
+  explicit Message(ScopedMessageHandle handle,
+                   const internal::MessageHeaderV1& header);
 
   // Constructs a new serialized Message object from a fully populated message
   // payload (including a well-formed message header) and an optional set of
@@ -207,11 +213,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
     return receiver_connection_group_;
   }
 
-  // Takes ownership of any handles within |*context| and attaches them to this
-  // Message.
-  void AttachHandlesFromSerializationContext(
-      internal::SerializationContext* context);
-
   // Takes a scoped MessageHandle which may be passed to |WriteMessageNew()| for
   // transmission. Note that this invalidates this Message object, taking
   // ownership of its internal storage and any attached handles.
@@ -221,13 +222,12 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
   // rejected by bindings validation code.
   void NotifyBadMessage(const std::string& error);
 
-  // Serializes |associated_endpoint_handles_| into the payload_interface_ids
-  // field.
-  void SerializeAssociatedEndpointHandles(
-      AssociatedGroupController* group_controller);
+  // Serializes and attaches Mojo handles and associated endpoint handles from
+  // |handles_| and |associated_endpoint_handles_| respectively.
+  void SerializeHandles(AssociatedGroupController* group_controller);
 
-  // Deserializes |associated_endpoint_handles_| from the payload_interface_ids
-  // field.
+  // Deserializes associated endpoint handles from the payload_interface_ids
+  // field, into |associated_endpoint_handles_|.
   bool DeserializeAssociatedEndpointHandles(
       AssociatedGroupController* group_controller);
 
@@ -281,6 +281,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
 
   std::vector<ScopedHandle> handles_;
   std::vector<ScopedInterfaceEndpointHandle> associated_endpoint_handles_;
+  const ConnectionGroup::Ref* receiver_connection_group_ = nullptr;
 
   // Indicates whether this Message object is transferable, i.e. can be sent
   // elsewhere. In general this is true unless |handle_| is invalid or
@@ -296,11 +297,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) Message {
   const char* interface_name_ = nullptr;
   const char* method_name_ = nullptr;
 #endif
-
-  // A reference to the ConnectionGroup to which the receiver of this Message
-  // belongs, if any. Only set if this Message was just read off of a message
-  // pipe and is about to be deserialized.
-  const ConnectionGroup::Ref* receiver_connection_group_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(Message);
 };
@@ -392,43 +388,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) PassThroughFilter
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PassThroughFilter);
-};
-
-namespace internal {
-class SyncMessageResponseSetup;
-}
-
-// An object which should be constructed on the stack immediately before making
-// a sync request for which the caller wishes to perform custom validation of
-// the response value(s). It is illegal to make more than one sync call during
-// the lifetime of the topmost SyncMessageResponseContext, but it is legal to
-// nest contexts to support reentrancy.
-//
-// Usage should look something like:
-//
-//     SyncMessageResponseContext response_context;
-//     foo_interface->SomeSyncCall(&response_value);
-//     if (response_value.IsBad())
-//       response_context.ReportBadMessage("Bad response_value!");
-//
-class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) SyncMessageResponseContext {
- public:
-  SyncMessageResponseContext();
-  ~SyncMessageResponseContext();
-
-  static SyncMessageResponseContext* current();
-
-  void ReportBadMessage(const std::string& error);
-
-  ReportBadMessageCallback GetBadMessageCallback();
-
- private:
-  friend class internal::SyncMessageResponseSetup;
-
-  SyncMessageResponseContext* outer_context_;
-  Message response_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncMessageResponseContext);
 };
 
 // Reports the currently dispatching Message as bad. Note that this is only

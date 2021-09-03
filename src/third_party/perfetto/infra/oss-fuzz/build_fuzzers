@@ -6,12 +6,19 @@ $SRC/perfetto/tools/install-build-deps
 
 mkdir -p $WORK/build
 
+# sanitize=vptr needs RTTI, which we do not compile with.
+CXXFLAGS="$CXXFLAGS -fno-sanitize=vptr"
+
 GN_ARGS="is_clang=true is_debug=false is_fuzzer=true use_libfuzzer=false \
-link_fuzzer=\"-lFuzzingEngine\" is_asan=true is_hermetic_clang=false \
+link_fuzzer=\"-lFuzzingEngine\" is_hermetic_clang=false \
 use_custom_libcxx=false \
 extra_cflags=\"$CFLAGS -Wno-implicit-int-float-conversion\" \
 extra_cxxflags=\"$CXXFLAGS\" extra_ldflags=\"$CXXFLAGS\" \
-is_system_compiler=true"
+is_system_compiler=true cc=\"$CC\" cxx=\"$CXX\" linker=\"gold\""
+
+if [ "$SANITIZER" = "address" ]; then
+  GN_ARGS="$GN_ARGS is_asan=true";
+fi;
 
 OUTDIR=$WORK/build
 $SRC/perfetto/tools/gn gen "$OUTDIR" --args="${GN_ARGS}" --check
@@ -21,3 +28,7 @@ cp $WORK/build/*fuzzer $OUT
 mkdir -p $OUT/src/traced/probes/ftrace/test/data
 cp -a $SRC/perfetto/src/traced/probes/ftrace/test/data/synthetic \
   $OUT/src/traced/probes/ftrace/test/data
+
+if [ "$SANITIZER" = "undefined" ]; then
+  rm $OUT/trace_processor_fuzzer
+fi;

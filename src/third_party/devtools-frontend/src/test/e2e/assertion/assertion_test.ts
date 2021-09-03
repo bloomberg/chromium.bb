@@ -12,7 +12,7 @@ describe('Assertions', async function() {
   it('console.assert', async () => {
     const {frontend} = getBrowserAndPages();
     await step('Check the evaluation results from console', async () => {
-      frontend.evaluate(() => {
+      await frontend.evaluate(() => {
         console.assert(false, 'expected failure 1');
       });
     });
@@ -20,10 +20,10 @@ describe('Assertions', async function() {
     assert.ok(expectedErrors.some(error => error.includes('expected failure 1')));
   });
 
-  it('[crbug.com/1145969]: console.error', async () => {
+  it('console.error', async () => {
     const {frontend} = getBrowserAndPages();
     await step('Check the evaluation results from console', async () => {
-      frontend.evaluate(() => {
+      await frontend.evaluate(() => {
         function foo() {
           console.error('expected failure 2');
         }

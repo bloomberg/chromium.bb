@@ -86,9 +86,17 @@ class FrameSinkManagerTest : public testing::Test {
            base::Contains(manager_.root_sink_map_, frame_sink_id);
   }
 
-  const base::TimeDelta GetCompositorFrameSinkSupportBeginFrameInterval(
-      const FrameSinkId& id) {
-    return manager_.support_map_[id]->begin_frame_interval_;
+  CapturableFrameSink* FindCapturableFrameSink(const FrameSinkId& id) {
+    return manager_.FindCapturableFrameSink(id);
+  }
+
+  // Verifies the frame sinks with provided id in |ids| are throttled at
+  // |interval|.
+  void VerifyThrottling(base::TimeDelta interval,
+                        const std::vector<FrameSinkId>& ids) {
+    for (auto& id : ids) {
+      EXPECT_EQ(interval, manager_.support_map_[id]->begin_frame_interval_);
+    }
   }
 
   // testing::Test implementation.
@@ -404,7 +412,7 @@ TEST_F(FrameSinkManagerTest, DebugLabel) {
 
 // Verifies the the begin frames are throttled properly for the requested frame
 // sinks and their children.
-TEST_F(FrameSinkManagerTest, ThrottleBeginFrame) {
+TEST_F(FrameSinkManagerTest, Throttle) {
   // root -> A -> B
   //      -> C -> D
   auto root = CreateCompositorFrameSinkSupport(kFrameSinkIdRoot);
@@ -423,40 +431,27 @@ TEST_F(FrameSinkManagerTest, ThrottleBeginFrame) {
   manager_.RegisterFrameSinkHierarchy(client_c->frame_sink_id(),
                                       client_d->frame_sink_id());
 
-  constexpr base::TimeDelta interval = base::TimeDelta::FromSeconds(1) / 20;
+  constexpr base::TimeDelta interval = base::TimeDelta::FromHz(20);
 
   std::vector<FrameSinkId> ids{kFrameSinkIdRoot, kFrameSinkIdA, kFrameSinkIdB,
                                kFrameSinkIdC, kFrameSinkIdD};
 
   // By default, a CompositorFrameSinkSupport shouldn't have its
   // |begin_frame_interval| set.
-  for (auto& id : ids) {
-    EXPECT_EQ(GetCompositorFrameSinkSupportBeginFrameInterval(id),
-              base::TimeDelta());
-  }
+  VerifyThrottling(base::TimeDelta(), ids);
 
-  manager_.StartThrottling({kFrameSinkIdRoot}, interval);
-  for (auto& id : ids) {
-    EXPECT_EQ(GetCompositorFrameSinkSupportBeginFrameInterval(id), interval);
-  }
+  manager_.Throttle({kFrameSinkIdRoot}, interval);
+  VerifyThrottling(interval, ids);
 
-  manager_.EndThrottling();
-  for (auto& id : ids) {
-    EXPECT_EQ(GetCompositorFrameSinkSupportBeginFrameInterval(id),
-              base::TimeDelta());
-  }
+  manager_.Throttle({}, base::TimeDelta());
+  VerifyThrottling(base::TimeDelta(), ids);
 
-  manager_.StartThrottling({kFrameSinkIdB, kFrameSinkIdC}, interval);
-  ids = {kFrameSinkIdB, kFrameSinkIdC, kFrameSinkIdD};
-  for (auto& id : ids) {
-    EXPECT_EQ(GetCompositorFrameSinkSupportBeginFrameInterval(id), interval);
-  }
+  manager_.Throttle({kFrameSinkIdB, kFrameSinkIdC}, interval);
+  VerifyThrottling(interval, {kFrameSinkIdB, kFrameSinkIdC, kFrameSinkIdD});
+  VerifyThrottling(base::TimeDelta(), {kFrameSinkIdA, kFrameSinkIdRoot});
 
-  manager_.EndThrottling();
-  for (auto& id : ids) {
-    EXPECT_EQ(GetCompositorFrameSinkSupportBeginFrameInterval(id),
-              base::TimeDelta());
-  }
+  manager_.Throttle({}, base::TimeDelta());
+  VerifyThrottling(base::TimeDelta(), ids);
 
   manager_.UnregisterFrameSinkHierarchy(root->frame_sink_id(),
                                         client_a->frame_sink_id());
@@ -466,6 +461,113 @@ TEST_F(FrameSinkManagerTest, ThrottleBeginFrame) {
                                         client_c->frame_sink_id());
   manager_.UnregisterFrameSinkHierarchy(client_c->frame_sink_id(),
                                         client_d->frame_sink_id());
+}
+
+// Verifies if a frame sink is being captured, it should not be throttled.
+TEST_F(FrameSinkManagerTest, NoThrottleOnFrameSinksBeingCaptured) {
+  // root -> A -> B -> C
+  auto root = CreateCompositorFrameSinkSupport(kFrameSinkIdRoot);
+  auto client_a = CreateCompositorFrameSinkSupport(kFrameSinkIdA);
+  auto client_b = CreateCompositorFrameSinkSupport(kFrameSinkIdB);
+  auto client_c = CreateCompositorFrameSinkSupport(kFrameSinkIdC);
+
+  // Set up the hierarchy.
+  manager_.RegisterFrameSinkHierarchy(root->frame_sink_id(),
+                                      client_a->frame_sink_id());
+  manager_.RegisterFrameSinkHierarchy(client_a->frame_sink_id(),
+                                      client_b->frame_sink_id());
+  manager_.RegisterFrameSinkHierarchy(client_b->frame_sink_id(),
+                                      client_c->frame_sink_id());
+
+  constexpr base::TimeDelta interval = base::TimeDelta::FromHz(20);
+
+  std::vector<FrameSinkId> ids{kFrameSinkIdRoot, kFrameSinkIdA, kFrameSinkIdB,
+                               kFrameSinkIdC};
+
+  // By default, a CompositorFrameSinkSupport shouldn't have its
+  // |begin_frame_interval| set.
+  VerifyThrottling(base::TimeDelta(), ids);
+
+  // Throttle all frame sinks.
+  manager_.Throttle({kFrameSinkIdRoot}, interval);
+  VerifyThrottling(interval, ids);
+
+  // Start capturing frame sink B.
+  CapturableFrameSink* capturable_frame_sink =
+      FindCapturableFrameSink(kFrameSinkIdB);
+  capturable_frame_sink->OnClientCaptureStarted();
+
+  // Throttling should be stopped on frame sink B and its child C, but not
+  // affected on root frame sink and frame sink A.
+  VerifyThrottling(interval, {kFrameSinkIdRoot, kFrameSinkIdA});
+  VerifyThrottling(base::TimeDelta(), {kFrameSinkIdB, kFrameSinkIdC});
+
+  // Explicitly request to throttle all frame sinks. This would not affect B or
+  // C while B is still being captured.
+  manager_.Throttle(ids, interval);
+  VerifyThrottling(interval, {kFrameSinkIdRoot, kFrameSinkIdA});
+  VerifyThrottling(base::TimeDelta(), {kFrameSinkIdB, kFrameSinkIdC});
+
+  // Stop capturing.
+  capturable_frame_sink->OnClientCaptureStopped();
+  // Now the throttling state should be the same as before capturing started,
+  // i.e. all frame sinks will now be throttled.
+  VerifyThrottling(interval, ids);
+
+  manager_.Throttle({}, base::TimeDelta());
+  VerifyThrottling(base::TimeDelta(), ids);
+
+  manager_.UnregisterFrameSinkHierarchy(root->frame_sink_id(),
+                                        client_a->frame_sink_id());
+  manager_.UnregisterFrameSinkHierarchy(client_a->frame_sink_id(),
+                                        client_b->frame_sink_id());
+  manager_.UnregisterFrameSinkHierarchy(client_b->frame_sink_id(),
+                                        client_c->frame_sink_id());
+}
+
+// Verifies if throttling on frame sinks is updated properly when hierarchy
+// changes.
+TEST_F(FrameSinkManagerTest, ThrottleUponHierarchyChange) {
+  // root -> A -> B
+  auto root = CreateCompositorFrameSinkSupport(kFrameSinkIdRoot);
+  auto client_a = CreateCompositorFrameSinkSupport(kFrameSinkIdA);
+  auto client_b = CreateCompositorFrameSinkSupport(kFrameSinkIdB);
+
+  // Set up the hierarchy.
+  manager_.RegisterFrameSinkHierarchy(root->frame_sink_id(),
+                                      client_a->frame_sink_id());
+  manager_.RegisterFrameSinkHierarchy(client_a->frame_sink_id(),
+                                      client_b->frame_sink_id());
+
+  constexpr base::TimeDelta interval = base::TimeDelta::FromHz(20);
+
+  std::vector<FrameSinkId> ids{kFrameSinkIdRoot, kFrameSinkIdA, kFrameSinkIdB};
+
+  // Throttle the root frame sink.
+  manager_.Throttle({kFrameSinkIdRoot}, interval);
+  // All frame sinks should now be throttled.
+  VerifyThrottling(interval, ids);
+
+  // Unparent A from root. Root should remain throttled while A and B should be
+  // unthrottled.
+  manager_.UnregisterFrameSinkHierarchy(root->frame_sink_id(),
+                                        client_a->frame_sink_id());
+  VerifyThrottling(interval, {kFrameSinkIdRoot});
+  VerifyThrottling(base::TimeDelta(), {kFrameSinkIdA, kFrameSinkIdB});
+
+  // Reparent A to root. Both A and B should now be throttled along with root.
+  manager_.RegisterFrameSinkHierarchy(root->frame_sink_id(),
+                                      client_a->frame_sink_id());
+  VerifyThrottling(interval, ids);
+
+  // Unthrottle all frame sinks.
+  manager_.Throttle({}, base::TimeDelta());
+  VerifyThrottling(base::TimeDelta(), ids);
+
+  manager_.UnregisterFrameSinkHierarchy(root->frame_sink_id(),
+                                        client_a->frame_sink_id());
+  manager_.UnregisterFrameSinkHierarchy(client_a->frame_sink_id(),
+                                        client_b->frame_sink_id());
 }
 
 namespace {

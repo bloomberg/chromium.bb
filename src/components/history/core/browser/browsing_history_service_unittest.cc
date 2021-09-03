@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/callback_forward.h"
 #include "base/callback_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -255,7 +254,7 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
   TestBrowsingHistoryDriver::QueryResult QueryHistory(
       const QueryOptions& options) {
     size_t previous_results_count = driver()->GetQueryResults().size();
-    service()->QueryHistory(base::string16(), options);
+    service()->QueryHistory(std::u16string(), options);
     BlockUntilHistoryProcessesPendingRequests();
     const std::vector<TestBrowsingHistoryDriver::QueryResult> all_results =
         driver()->GetQueryResults();
@@ -382,9 +381,9 @@ TEST_F(BrowsingHistoryServiceTest, QueryHistoryLocalTimeRanges) {
   QueryOptions options;
   options.begin_time = OffsetToTime(2);
   options.end_time = OffsetToTime(4);
-  // Having a |reached_beginning| value of false here seems
-  // counterintuitive. Seems to be for paging by |begin_time| instead of
-  // |count|. If the local history implementation changes, feel free to update
+  // Having a `reached_beginning` value of false here seems
+  // counterintuitive. Seems to be for paging by `begin_time` instead of
+  // `count`. If the local history implementation changes, feel free to update
   // this value, all this test cares about is that BrowsingHistoryService passes
   // the values through correctly.
   VerifyQueryResult(/*reached_beginning*/ false,
@@ -644,7 +643,7 @@ TEST_F(BrowsingHistoryServiceTest, WebHistoryTimeout) {
   driver()->SetWebHistory(&timeout);
   ResetService(driver(), local_history(), sync());
   EXPECT_EQ(0U, driver()->GetQueryResults().size());
-  service()->QueryHistory(base::string16(), QueryOptions());
+  service()->QueryHistory(std::u16string(), QueryOptions());
   EXPECT_EQ(0U, driver()->GetQueryResults().size());
   BlockUntilHistoryProcessesPendingRequests();
   timer()->Fire();
@@ -655,7 +654,7 @@ TEST_F(BrowsingHistoryServiceTest, WebHistoryTimeout) {
 
   // WebHistoryService will DCHECK if we destroy it before the observer in
   // BrowsingHistoryService is removed, so reset our first
-  // BrowsingHistoryService before |timeout| goes out of scope.
+  // BrowsingHistoryService before `timeout` goes out of scope.
   driver()->SetWebHistory(nullptr);
   ResetService(driver(), nullptr, nullptr);
 }
@@ -717,7 +716,7 @@ TEST_F(BrowsingHistoryServiceTest, IncorrectlyOrderedRemoteResults) {
 
   // WebHistoryService will DCHECK if we destroy it before the observer in
   // BrowsingHistoryService is removed, so reset our first
-  // BrowsingHistoryService before |reversed| goes out of scope.
+  // BrowsingHistoryService before `reversed` goes out of scope.
   driver()->SetWebHistory(nullptr);
   ResetService(driver(), nullptr, nullptr);
 }

@@ -114,6 +114,9 @@ enum {
   // restricted in some way.
   RESPONSE_INFO_RESTRICTED_PREFETCH = 1 << 26,
 
+  // This bit is set if the response has a nonempty `dns_aliases` entry.
+  RESPONSE_INFO_HAS_DNS_ALIASES = 1 << 27,
+
   // TODO(darin): Add other bits to indicate alternate request methods.
   // For now, we don't support storing those.
 };
@@ -164,6 +167,7 @@ HttpResponseInfo::ConnectionInfoCoarse HttpResponseInfo::ConnectionInfoToCoarse(
     case CONNECTION_INFO_QUIC_DRAFT_28:
     case CONNECTION_INFO_QUIC_DRAFT_29:
     case CONNECTION_INFO_QUIC_T051:
+    case CONNECTION_INFO_QUIC_RFC_V1:
       return CONNECTION_INFO_COARSE_QUIC;
 
     case CONNECTION_INFO_UNKNOWN:
@@ -368,6 +372,20 @@ bool HttpResponseInfo::InitFromPickle(const base::Pickle& pickle,
         base::checked_cast<uint16_t>(peer_signature_algorithm);
   }
 
+  // Read DNS aliases.
+  if (flags & RESPONSE_INFO_HAS_DNS_ALIASES) {
+    int num_aliases;
+    if (!iter.ReadInt(&num_aliases))
+      return false;
+
+    std::string alias;
+    for (int i = 0; i < num_aliases; i++) {
+      if (!iter.ReadString(&alias))
+        return false;
+      dns_aliases.push_back(alias);
+    }
+  }
+
   return true;
 }
 
@@ -409,6 +427,8 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
     flags |= RESPONSE_INFO_PKP_BYPASSED;
   if (!stale_revalidate_timeout.is_null())
     flags |= RESPONSE_INFO_HAS_STALENESS;
+  if (!dns_aliases.empty())
+    flags |= RESPONSE_INFO_HAS_DNS_ALIASES;
 
   pickle->WriteInt(flags);
   pickle->WriteInt64(request_time.ToInternalValue());
@@ -457,6 +477,12 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
 
   if (ssl_info.is_valid() && ssl_info.peer_signature_algorithm != 0)
     pickle->WriteInt(ssl_info.peer_signature_algorithm);
+
+  if (!dns_aliases.empty()) {
+    pickle->WriteInt(dns_aliases.size());
+    for (const auto& alias : dns_aliases)
+      pickle->WriteString(alias);
+  }
 }
 
 bool HttpResponseInfo::DidUseQuic() const {
@@ -502,6 +528,7 @@ bool HttpResponseInfo::DidUseQuic() const {
     case CONNECTION_INFO_QUIC_DRAFT_28:
     case CONNECTION_INFO_QUIC_DRAFT_29:
     case CONNECTION_INFO_QUIC_T051:
+    case CONNECTION_INFO_QUIC_RFC_V1:
       return true;
     case NUM_OF_CONNECTION_INFOS:
       NOTREACHED();
@@ -598,6 +625,8 @@ std::string HttpResponseInfo::ConnectionInfoToString(
       return "http2+quic/999";
     case CONNECTION_INFO_QUIC_T051:
       return "h3-T051";
+    case CONNECTION_INFO_QUIC_RFC_V1:
+      return "h3";
     case NUM_OF_CONNECTION_INFOS:
       break;
   }

@@ -129,7 +129,7 @@ class RenderWidgetHostLatencyTrackerTest
   ui::LatencyTracker* viz_tracker() { return &viz_tracker_; }
 
   void ResetHistograms() {
-    histogram_tester_.reset(new base::HistogramTester());
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   const base::HistogramTester& histogram_tester() {
@@ -197,8 +197,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestValidEventTiming) {
   // of the start_component, zero is recorded instead of a negative value.
   histogram_tester().ExpectUniqueSample(
       "Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4", 0, 1);
-  histogram_tester().ExpectUniqueSample(
-      "Event.Latency.Scroll.Wheel.TimeToScrollUpdateSwapBegin2", 0, 1);
   histogram_tester().ExpectUniqueSample(
       "Event.Latency.ScrollBegin.Wheel.TimeToHandled2_Impl", 0, 1);
   histogram_tester().ExpectUniqueSample(
@@ -271,10 +269,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest,
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
                           "TimeToScrollUpdateSwapBegin4",
-                          1));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.Scroll.Wheel."
-                          "TimeToScrollUpdateSwapBegin2",
                           1));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel."
@@ -386,10 +380,6 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, MAYBE_TestWheelToScrollHistograms) {
           HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
                           "TimeToScrollUpdateSwapBegin4",
                           0));
-      EXPECT_TRUE(
-          HistogramSizeEq("Event.Latency.Scroll.Wheel."
-                          "TimeToScrollUpdateSwapBegin2",
-                          1));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollUpdate.Wheel."
                           "TimeToScrollUpdateSwapBegin4",

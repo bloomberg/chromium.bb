@@ -11,6 +11,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/tick_clock.h"
 #include "components/sync/base/sync_base_switches.h"
+#include "components/sync/engine/nigori/key_derivation_params.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

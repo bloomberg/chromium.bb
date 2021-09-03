@@ -28,7 +28,6 @@ class NavigationHandleObserver : public WebContentsObserver {
   bool has_committed() { return has_committed_; }
   bool is_error() { return is_error_; }
   bool is_main_frame() { return is_main_frame_; }
-  bool is_parent_main_frame() { return is_parent_main_frame_; }
   bool is_renderer_initiated() { return is_renderer_initiated_; }
   bool is_same_document() { return is_same_document_; }
   bool was_redirected() { return was_redirected_; }
@@ -39,7 +38,7 @@ class NavigationHandleObserver : public WebContentsObserver {
   int64_t navigation_id() { return navigation_id_; }
   bool is_download() { return is_download_; }
   ukm::SourceId next_page_ukm_source_id() { return next_page_ukm_source_id_; }
-  base::Optional<net::AuthChallengeInfo> auth_challenge_info() {
+  absl::optional<net::AuthChallengeInfo> auth_challenge_info() {
     return auth_challenge_info_;
   }
   const net::ResolveErrorInfo& resolve_error_info() {
@@ -50,6 +49,7 @@ class NavigationHandleObserver : public WebContentsObserver {
     return navigation_handle_timing_;
   }
   ReloadType reload_type() { return reload_type_; }
+  std::string GetNormalizedResponseHeader(const std::string& key) const;
 
  private:
   // A reference to the NavigationHandle so this class will track only
@@ -59,7 +59,6 @@ class NavigationHandleObserver : public WebContentsObserver {
   bool has_committed_ = false;
   bool is_error_ = false;
   bool is_main_frame_ = false;
-  bool is_parent_main_frame_ = false;
   bool is_renderer_initiated_ = true;
   bool is_same_document_ = false;
   bool was_redirected_ = false;
@@ -71,11 +70,12 @@ class NavigationHandleObserver : public WebContentsObserver {
   int64_t navigation_id_ = -1;
   bool is_download_ = false;
   ukm::SourceId next_page_ukm_source_id_ = ukm::kInvalidSourceId;
-  base::Optional<net::AuthChallengeInfo> auth_challenge_info_;
+  absl::optional<net::AuthChallengeInfo> auth_challenge_info_;
   net::ResolveErrorInfo resolve_error_info_;
   base::TimeTicks navigation_start_;
   NavigationHandleTiming navigation_handle_timing_;
   ReloadType reload_type_ = ReloadType::NONE;
+  scoped_refptr<const net::HttpResponseHeaders> response_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationHandleObserver);
 };

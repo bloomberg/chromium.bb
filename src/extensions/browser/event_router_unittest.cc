@@ -20,7 +20,6 @@
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_messages.h"
-#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::DictionaryValue;
@@ -120,7 +119,7 @@ scoped_refptr<const Extension> CreateExtension(bool component,
   manifest->SetBoolean("background.persistent", persistent);
   builder.SetManifest(std::move(manifest));
   if (component)
-    builder.SetLocation(Manifest::Location::COMPONENT);
+    builder.SetLocation(mojom::ManifestLocation::kComponent);
 
   return builder.Build();
 }
@@ -345,6 +344,41 @@ TEST_F(EventRouterTest, EventRouterObserverForServiceWorkers) {
       99, 199));
 }
 
+TEST_F(EventRouterTest, MultipleEventRouterObserver) {
+  EventRouter router(nullptr, nullptr);
+  std::unique_ptr<EventListener> listener =
+      EventListener::ForURL("event_name", GURL("http://google.com/path"),
+                            nullptr, std::make_unique<base::DictionaryValue>());
+
+  // Add/remove works without any observers.
+  router.OnListenerAdded(listener.get());
+  router.OnListenerRemoved(listener.get());
+
+  // Register two observers for same event name.
+  MockEventRouterObserver matching_observer1;
+  router.RegisterObserver(&matching_observer1, "event_name");
+  MockEventRouterObserver matching_observer2;
+  router.RegisterObserver(&matching_observer2, "event_name");
+
+  // Adding a listener notifies the appropriate observers.
+  router.OnListenerAdded(listener.get());
+  EXPECT_EQ(1, matching_observer1.listener_added_count());
+  EXPECT_EQ(1, matching_observer2.listener_added_count());
+
+  // Removing a listener notifies the appropriate observers.
+  router.OnListenerRemoved(listener.get());
+  EXPECT_EQ(1, matching_observer1.listener_removed_count());
+  EXPECT_EQ(1, matching_observer2.listener_removed_count());
+
+  // Unregister the observer so that the current observer no longer receives
+  // monitoring, but the other observer still continues to receive monitoring.
+  router.UnregisterObserver(&matching_observer1);
+
+  router.OnListenerAdded(listener.get());
+  EXPECT_EQ(1, matching_observer1.listener_added_count());
+  EXPECT_EQ(2, matching_observer2.listener_added_count());
+}
+
 TEST_F(EventRouterTest, TestReportEvent) {
   EventRouter router(browser_context(), nullptr);
   scoped_refptr<const Extension> normal = ExtensionBuilder("Test").Build();
@@ -383,7 +417,6 @@ TEST_F(EventRouterTest, TestReportEvent) {
                      true /** did_enqueue */);
   ExpectHistogramCounts(7, 3, 2, 2, 2, 0);
 
-  ScopedWorkerBasedExtensionsChannel current_channel_override;
   scoped_refptr<const Extension> service_worker_extension =
       CreateServiceWorkerExtension();
   router.ReportEvent(events::HistogramValue::FOR_TEST,
@@ -400,14 +433,14 @@ TEST_P(EventRouterFilterTest, Basic) {
   const std::string kExtensionId = "mbflcebpggnecokmikipoihdbecnjfoj";
   const std::string kHostSuffixes[] = {"foo.com", "bar.com", "baz.com"};
 
-  base::Optional<ServiceWorkerIdentifier> worker_identifier = base::nullopt;
+  absl::optional<ServiceWorkerIdentifier> worker_identifier = absl::nullopt;
   if (is_for_service_worker()) {
     ServiceWorkerIdentifier identifier;
     identifier.scope = Extension::GetBaseURLFromExtensionId(kExtensionId);
     identifier.version_id = 99;  // Dummy version_id.
     identifier.thread_id = 199;  // Dummy thread_id.
     worker_identifier =
-        base::make_optional<ServiceWorkerIdentifier>(std::move(identifier));
+        absl::make_optional<ServiceWorkerIdentifier>(std::move(identifier));
   }
   std::vector<std::unique_ptr<DictionaryValue>> filters;
   for (size_t i = 0; i < base::size(kHostSuffixes); ++i) {
@@ -422,7 +455,7 @@ TEST_P(EventRouterFilterTest, Basic) {
   const base::DictionaryValue* filtered_events =
       GetFilteredEvents(kExtensionId);
   ASSERT_TRUE(filtered_events);
-  ASSERT_EQ(1u, filtered_events->size());
+  ASSERT_EQ(1u, filtered_events->DictSize());
 
   DictionaryValue::Iterator iter(*filtered_events);
   ASSERT_EQ(kEventName, iter.key());

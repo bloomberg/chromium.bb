@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/webstore_standalone_installer.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -65,12 +66,12 @@ void WebstoreStandaloneInstaller::BeginInstall() {
   // Use the requesting page as the referrer both since that is more correct
   // (it is the page that caused this request to happen) and so that we can
   // track top sites that trigger inline install requests.
-  webstore_data_fetcher_.reset(new WebstoreDataFetcher(this, GURL(), id_));
+  webstore_data_fetcher_ =
+      std::make_unique<WebstoreDataFetcher>(this, GURL(), id_);
 
-  webstore_data_fetcher_->Start(
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get());
+  webstore_data_fetcher_->Start(profile_->GetDefaultStoragePartition()
+                                    ->GetURLLoaderFactoryForBrowserProcess()
+                                    .get());
 }
 
 //
@@ -112,7 +113,8 @@ bool WebstoreStandaloneInstaller::EnsureUniqueInstall(
   }
 
   ActiveInstallData install_data(id_);
-  scoped_active_install_.reset(new ScopedActiveInstall(tracker, install_data));
+  scoped_active_install_ =
+      std::make_unique<ScopedActiveInstall>(tracker, install_data);
   return true;
 }
 
@@ -299,7 +301,7 @@ void WebstoreStandaloneInstaller::OnWebstoreResponseParseSuccess(
                                                             icon_url);
   // The helper will call us back via OnWebstoreParseSuccess() or
   // OnWebstoreParseFailure().
-  helper->Start(content::BrowserContext::GetDefaultStoragePartition(profile_)
+  helper->Start(profile_->GetDefaultStoragePartition()
                     ->GetURLLoaderFactoryForBrowserProcess()
                     .get());
 }
@@ -386,7 +388,7 @@ void WebstoreStandaloneInstaller::ShowInstallUI() {
 
   install_ui_ = CreateInstallUI();
   install_ui_->ShowDialog(
-      base::Bind(&WebstoreStandaloneInstaller::OnInstallPromptDone, this),
+      base::BindOnce(&WebstoreStandaloneInstaller::OnInstallPromptDone, this),
       localized_extension.get(), &icon_, std::move(install_prompt_),
       ExtensionInstallPrompt::GetDefaultShowDialogCallback());
 }
