@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -40,6 +39,8 @@ class SharedSamplerTest : public testing::Test {
                             base::Unretained(this)));
   }
 
+  SharedSamplerTest(const SharedSamplerTest&) = delete;
+  SharedSamplerTest& operator=(const SharedSamplerTest&) = delete;
   ~SharedSamplerTest() override {}
 
  protected:
@@ -75,7 +76,7 @@ class SharedSamplerTest : public testing::Test {
   }
 
   void OnSamplerRefreshDone(
-      base::Optional<SharedSampler::SamplingResult> results) {
+      absl::optional<SharedSampler::SamplingResult> results) {
     if (results) {
       idle_wakeups_per_second_ = results->idle_wakeups_per_second;
       start_time_ = results->start_time;
@@ -97,8 +98,6 @@ class SharedSamplerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<base::SequencedTaskRunner> blocking_pool_runner_;
   scoped_refptr<SharedSampler> shared_sampler_;
-
-  DISALLOW_COPY_AND_ASSIGN(SharedSamplerTest);
 };
 
 // Tests that Idle Wakeups per second value can be obtained from SharedSampler.
@@ -170,12 +169,12 @@ TEST_F(SharedSamplerTest, MultipleRefreshTypes) {
 static int ReturnZeroThreadProcessInformation(unsigned char* buffer,
                                               int buffer_size) {
   // Calculate the number of bytes required for the structure, and ImageName.
-  base::string16 image_name =
+  std::wstring image_name =
       base::PathService::CheckedGet(base::FILE_EXE).BaseName().value();
 
-  const int kImageNameBytes = image_name.length() * sizeof(base::char16);
-  const int kRequiredBytes = sizeof(SYSTEM_PROCESS_INFORMATION) +
-                             kImageNameBytes + sizeof(base::char16);
+  const int kImageNameBytes = image_name.length() * sizeof(char16_t);
+  const int kRequiredBytes =
+      sizeof(SYSTEM_PROCESS_INFORMATION) + kImageNameBytes + sizeof(char16_t);
   if (kRequiredBytes > buffer_size)
     return kRequiredBytes;
 

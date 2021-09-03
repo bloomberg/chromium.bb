@@ -12,17 +12,18 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/chromeos/arc/session/arc_session_manager.h"
-#include "chrome/browser/chromeos/arc/test/test_arc_session_manager.h"
+#include "base/test/scoped_running_on_chromeos.h"
+#include "chrome/browser/ash/arc/session/arc_session_manager.h"
+#include "chrome/browser/ash/arc/test/test_arc_session_manager.h"
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
-#include "chrome/browser/chromeos/scoped_set_running_on_chromeos_for_testing.h"
 #include "chrome/browser/ui/webui/settings/chromeos/calculator/size_calculator_test_api.h"
 #include "chrome/browser/ui/webui/settings/chromeos/device_storage_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/dbus/concierge/concierge_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/test/fake_arc_session.h"
@@ -37,10 +38,6 @@ namespace chromeos {
 namespace settings {
 
 namespace {
-
-const char kLsbRelease[] =
-    "CHROMEOS_RELEASE_NAME=Chrome OS\n"
-    "CHROMEOS_RELEASE_VERSION=1.2.3.4\n";
 
 class TestStorageHandler : public StorageHandler {
  public:
@@ -62,6 +59,8 @@ class StorageHandlerTest : public testing::Test {
     // Need to initialize DBusThreadManager before ArcSessionManager's
     // constructor calls DBusThreadManager::Get().
     chromeos::DBusThreadManager::Initialize();
+    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+
     // The storage handler requires an instance of DiskMountManager,
     // ArcServiceManager and ArcSessionManager.
     chromeos::disks::DiskMountManager::InitializeForTesting(
@@ -104,14 +103,13 @@ class StorageHandlerTest : public testing::Test {
     // Create and register My files directory.
     // By emulating chromeos running, GetMyFilesFolderForProfile will return the
     // profile's temporary location instead of $HOME/Downloads.
-    chromeos::ScopedSetRunningOnChromeOSForTesting fake_release(kLsbRelease,
-                                                                base::Time());
+    base::test::ScopedRunningOnChromeOS running_on_chromeos;
     const base::FilePath my_files_path =
         file_manager::util::GetMyFilesFolderForProfile(profile_);
     CHECK(base::CreateDirectory(my_files_path));
     CHECK(storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
         file_manager::util::GetDownloadsMountPointName(profile_),
-        storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
+        storage::kFileSystemTypeLocal, storage::FileSystemMountOption(),
         my_files_path));
   }
 
@@ -127,6 +125,7 @@ class StorageHandlerTest : public testing::Test {
     arc_service_manager_.reset();
     chromeos::disks::DiskMountManager::Shutdown();
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
+    chromeos::ConciergeClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -325,7 +324,7 @@ TEST_F(StorageHandlerTest, MyFilesSize) {
   // Register android files mount point.
   CHECK(storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       file_manager::util::GetAndroidFilesMountPointName(),
-      storage::kFileSystemTypeNativeLocal, storage::FileSystemMountOption(),
+      storage::kFileSystemTypeLocal, storage::FileSystemMountOption(),
       android_files_path));
 
   // Add files in My files and android files.
@@ -468,12 +467,9 @@ TEST_F(StorageHandlerTest, SystemSize) {
       std::vector<int64_t>{200 * GB, 50 * GB, 50 * GB};
   other_users_size_test_api_->InitializeOtherUserSize(other_user_sizes.size());
   for (std::size_t i = 0; i < other_user_sizes.size(); i++) {
-    cryptohome::BaseReply result;
-    result.set_error(cryptohome::CRYPTOHOME_ERROR_NOT_SET);
-    cryptohome::GetAccountDiskUsageReply* usage_reply =
-        result.MutableExtension(cryptohome::GetAccountDiskUsageReply::reply);
-    usage_reply->set_size(other_user_sizes[i]);
-    base::Optional<cryptohome::BaseReply> reply = std::move(result);
+    absl::optional<::user_data_auth::GetAccountDiskUsageReply> reply =
+        ::user_data_auth::GetAccountDiskUsageReply();
+    reply->set_size(other_user_sizes[i]);
     other_users_size_test_api_->SimulateOnGetOtherUserSize(reply);
     if (i < other_user_sizes.size() - 1) {
       ASSERT_FALSE(GetWebUICallbackMessage("storage-other-users-size-changed"));

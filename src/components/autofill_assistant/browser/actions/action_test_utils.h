@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_TEST_UTILS_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_TEST_UTILS_H_
 
+#include "components/autofill/core/browser/field_types.h"
+#include "components/autofill_assistant/browser/action_value.pb.h"
 #include "components/autofill_assistant/browser/actions/mock_action_delegate.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/web/element_finder.h"
@@ -14,7 +16,7 @@
 namespace autofill_assistant {
 
 MATCHER_P(EqualsElement, element, "") {
-  return arg.object_id == element.object_id;
+  return arg.object_id() == element.object_id();
 }
 
 MATCHER_P(EqualsStatus, status, "") {
@@ -43,7 +45,24 @@ ElementFinder::Result MockFindElement(MockWebController& web_controller,
                                       const Selector& selector,
                                       int times = 1);
 
+struct ValueExpressionBuilder {
+ public:
+  ValueExpressionBuilder();
+
+  ValueExpressionBuilder(const ValueExpressionBuilder&) = delete;
+  ValueExpressionBuilder& operator=(const ValueExpressionBuilder&) = delete;
+
+  ValueExpressionBuilder& addChunk(const std::string& text);
+  ValueExpressionBuilder& addChunk(int key);
+  ValueExpressionBuilder& addChunk(autofill::ServerFieldType field);
+
+  ValueExpression toProto();
+
+ private:
+  ValueExpression value_expression;
+};
+
 }  // namespace test_util
 }  // namespace autofill_assistant
 
-#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_UNITTEST_HELPER_H_
+#endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ACTION_TEST_UTILS_H_

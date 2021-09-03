@@ -17,7 +17,7 @@ class MockPlatformWindowDelegate : public PlatformWindowDelegate {
   MockPlatformWindowDelegate();
   ~MockPlatformWindowDelegate();
 
-  MOCK_METHOD1(OnBoundsChanged, void(const gfx::Rect& new_bounds));
+  MOCK_METHOD1(OnBoundsChanged, void(const BoundsChange& change));
   MOCK_METHOD1(OnDamageRect, void(const gfx::Rect& damaged_region));
   MOCK_METHOD1(DispatchEvent, void(Event* event));
   MOCK_METHOD0(OnCloseRequest, void());
@@ -29,13 +29,16 @@ class MockPlatformWindowDelegate : public PlatformWindowDelegate {
   MOCK_METHOD0(OnWillDestroyAcceleratedWidget, void());
   MOCK_METHOD0(OnAcceleratedWidgetDestroyed, void());
   MOCK_METHOD1(OnActivationChanged, void(bool active));
-  MOCK_METHOD0(GetMinimumSizeForWindow, base::Optional<gfx::Size>());
-  MOCK_METHOD0(GetMaximumSizeForWindow, base::Optional<gfx::Size>());
+  MOCK_METHOD0(GetMinimumSizeForWindow, absl::optional<gfx::Size>());
+  MOCK_METHOD0(GetMaximumSizeForWindow, absl::optional<gfx::Size>());
   MOCK_METHOD0(OnMouseEnter, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPlatformWindowDelegate);
 };
+
+bool operator==(const PlatformWindowDelegate::BoundsChange& bounds,
+                const gfx::Rect& rect);
 
 }  // namespace ui
 

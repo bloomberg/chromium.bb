@@ -21,11 +21,13 @@
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/program_cache.h"
 #include "gpu/command_buffer/service/sequence_id.h"
+#include "gpu/ipc/common/gpu_channel.mojom.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/context_url.h"
 #include "gpu/ipc/service/gpu_ipc_service_export.h"
@@ -38,8 +40,6 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
-
-struct GPUCreateCommandBufferConfig;
 
 namespace gpu {
 class DecoderContext;
@@ -68,7 +68,7 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   };
 
   CommandBufferStub(GpuChannel* channel,
-                    const GPUCreateCommandBufferConfig& init_params,
+                    const mojom::CreateCommandBufferParams& init_params,
                     CommandBufferId command_buffer_id,
                     SequenceId sequence_id,
                     int32_t stream_id,
@@ -81,11 +81,34 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   // the gpu::Capabilities.
   virtual gpu::ContextResult Initialize(
       CommandBufferStub* share_group,
-      const GPUCreateCommandBufferConfig& init_params,
+      const mojom::CreateCommandBufferParams& params,
       base::UnsafeSharedMemoryRegion shared_state_shm) = 0;
 
   MemoryTracker* GetMemoryTracker() const;
   virtual MemoryTracker* GetContextGroupMemoryTracker() const = 0;
+
+  // Executes a DeferredRequest routed to this command buffer by a GpuChannel.
+  void ExecuteDeferredRequest(
+      mojom::DeferredCommandBufferRequestParams& params);
+
+  // Instructs the CommandBuffer to wait asynchronously until the reader has
+  // updated the token value to be within the [start, end] range (inclusive).
+  // `callback` is invoked with the last known State once this occurs, or with
+  // an invalid State if the CommandBuffer is destroyed first.
+  using WaitForStateCallback =
+      base::OnceCallback<void(const CommandBuffer::State&)>;
+  void WaitForTokenInRange(int32_t start,
+                           int32_t end,
+                           WaitForStateCallback callback);
+
+  // Instructs the CommandBuffer to wait asynchronously until the reader has
+  // reached a get offset within the range [start, end] (inclusive). `callback`
+  // is invoked with the last known State once this occurs, or with an invalid
+  // State if the CommandBuffer is destroyed first.
+  void WaitForGetOffsetInRange(uint32_t set_get_buffer_count,
+                               int32_t start,
+                               int32_t end,
+                               WaitForStateCallback callback);
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -145,6 +168,8 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
 
  protected:
   virtual bool HandleMessage(const IPC::Message& message) = 0;
+  virtual void OnTakeFrontBuffer(const Mailbox& mailbox) {}
+  virtual void OnReturnFrontBuffer(const Mailbox& mailbox, bool is_lost) {}
 
   std::unique_ptr<MemoryTracker> CreateMemoryTracker() const;
 
@@ -197,13 +222,6 @@ class GPU_IPC_SERVICE_EXPORT CommandBufferStub
   // Message handlers:
   void OnSetGetBuffer(int32_t shm_id);
   void OnGetState(IPC::Message* reply_message);
-  void OnWaitForTokenInRange(int32_t start,
-                             int32_t end,
-                             IPC::Message* reply_message);
-  void OnWaitForGetOffsetInRange(uint32_t set_get_buffer_count,
-                                 int32_t start,
-                                 int32_t end,
-                                 IPC::Message* reply_message);
   void OnAsyncFlush(int32_t put_offset,
                     uint32_t flush_id,
                     const std::vector<SyncToken>& sync_token_fences);

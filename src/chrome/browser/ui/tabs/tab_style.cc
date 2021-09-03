@@ -32,7 +32,7 @@ int TabStyle::GetStandardWidth() {
 
 // static
 int TabStyle::GetPinnedWidth() {
-  constexpr int kTabPinnedContentWidth = 23;
+  constexpr int kTabPinnedContentWidth = 24;
   return kTabPinnedContentWidth + GetContentsHorizontalInsetSize() * 2;
 }
 
@@ -66,7 +66,7 @@ gfx::Size TabStyle::GetPreviewImageSize() {
 // static
 int TabStyle::GetCornerRadius() {
   return views::LayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_HIGH);
+      views::Emphasis::kHigh);
 }
 
 // static

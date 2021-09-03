@@ -26,14 +26,13 @@
 #include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/extensions/icon_with_badge_image_source.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_delegate.h"
-#include "chrome/browser/ui/ui_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "extensions/browser/extension_action.h"
+#include "extensions/browser/extension_action_manager.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/extension_action/action_info.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -44,27 +43,48 @@ using extensions::ActionInfo;
 using extensions::CommandService;
 using extensions::ExtensionActionRunner;
 
+// static
+std::unique_ptr<ExtensionActionViewController>
+ExtensionActionViewController::Create(
+    const extensions::ExtensionId& extension_id,
+    Browser* browser,
+    ExtensionsContainer* extensions_container) {
+  DCHECK(browser);
+  DCHECK(extensions_container);
+
+  auto* registry = extensions::ExtensionRegistry::Get(browser->profile());
+  scoped_refptr<const extensions::Extension> extension =
+      registry->enabled_extensions().GetByID(extension_id);
+  DCHECK(extension);
+  extensions::ExtensionAction* extension_action =
+      extensions::ExtensionActionManager::Get(browser->profile())
+          ->GetExtensionAction(*extension);
+  DCHECK(extension_action);
+
+  // WrapUnique() because the constructor is private.
+  return base::WrapUnique(new ExtensionActionViewController(
+      std::move(extension), browser, extension_action, registry,
+      extensions_container));
+}
+
 ExtensionActionViewController::ExtensionActionViewController(
-    const extensions::Extension* extension,
+    scoped_refptr<const extensions::Extension> extension,
     Browser* browser,
     extensions::ExtensionAction* extension_action,
-    ExtensionsContainer* extensions_container,
-    bool in_overflow_mode)
-    : extension_(extension),
+    extensions::ExtensionRegistry* extension_registry,
+    ExtensionsContainer* extensions_container)
+    : extension_(std::move(extension)),
       browser_(browser),
-      in_overflow_mode_(in_overflow_mode),
       extension_action_(extension_action),
       extensions_container_(extensions_container),
       popup_host_(nullptr),
       view_delegate_(nullptr),
       platform_delegate_(ExtensionActionPlatformDelegate::Create(this)),
-      icon_factory_(browser->profile(), extension, extension_action, this),
-      extension_registry_(
-          extensions::ExtensionRegistry::Get(browser_->profile())) {
-  DCHECK(extensions_container);
-  DCHECK(extension_action);
-  DCHECK(extension);
-}
+      icon_factory_(browser->profile(),
+                    extension_.get(),
+                    extension_action,
+                    this),
+      extension_registry_(extension_registry) {}
 
 ExtensionActionViewController::~ExtensionActionViewController() {
   DCHECK(!IsShowingPopup());
@@ -79,7 +99,6 @@ void ExtensionActionViewController::SetDelegate(
   DCHECK((delegate == nullptr) ^ (view_delegate_ == nullptr));
   if (delegate) {
     view_delegate_ = delegate;
-    platform_delegate_->OnDelegateSet();
   } else {
     HidePopup();
     platform_delegate_.reset();
@@ -97,17 +116,17 @@ gfx::Image ExtensionActionViewController::GetIcon(
       gfx::ImageSkia(GetIconImageSource(web_contents, size), size));
 }
 
-base::string16 ExtensionActionViewController::GetActionName() const {
+std::u16string ExtensionActionViewController::GetActionName() const {
   if (!ExtensionIsValid())
-    return base::string16();
+    return std::u16string();
 
   return base::UTF8ToUTF16(extension_->name());
 }
 
-base::string16 ExtensionActionViewController::GetAccessibleName(
+std::u16string ExtensionActionViewController::GetAccessibleName(
     content::WebContents* web_contents) const {
   if (!ExtensionIsValid())
-    return base::string16();
+    return std::u16string();
 
   // GetAccessibleName() can (surprisingly) be called during browser
   // teardown. Handle this gracefully.
@@ -117,7 +136,7 @@ base::string16 ExtensionActionViewController::GetAccessibleName(
   std::string title = extension_action()->GetTitle(
       sessions::SessionTabHelper::IdForTab(web_contents).id());
 
-  base::string16 title_utf16 =
+  std::u16string title_utf16 =
       base::UTF8ToUTF16(title.empty() ? extension()->name() : title);
 
   // Include a "host access" portion of the tooltip if the extension has or
@@ -139,14 +158,14 @@ base::string16 ExtensionActionViewController::GetAccessibleName(
 
   if (interaction_status_description_id != -1) {
     title_utf16 = base::StrCat(
-        {title_utf16, base::UTF8ToUTF16("\n"),
+        {title_utf16, u"\n",
          l10n_util::GetStringUTF16(interaction_status_description_id)});
   }
 
   return title_utf16;
 }
 
-base::string16 ExtensionActionViewController::GetTooltip(
+std::u16string ExtensionActionViewController::GetTooltip(
     content::WebContents* web_contents) const {
   return GetAccessibleName(web_contents);
 }
@@ -160,15 +179,6 @@ bool ExtensionActionViewController::IsEnabled(
              sessions::SessionTabHelper::IdForTab(web_contents).id()) ||
          GetPageInteractionStatus(web_contents) ==
              PageInteractionStatus::kPending;
-}
-
-bool ExtensionActionViewController::HasPopup(
-    content::WebContents* web_contents) const {
-  if (!ExtensionIsValid())
-    return false;
-
-  SessionID tab_id = sessions::SessionTabHelper::IdForTab(web_contents);
-  return tab_id.is_valid() ? extension_action_->HasPopup(tab_id.id()) : false;
 }
 
 bool ExtensionActionViewController::IsShowingPopup() const {
@@ -212,13 +222,7 @@ void ExtensionActionViewController::OnContextMenuShown() {
 }
 
 void ExtensionActionViewController::OnContextMenuClosed() {
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    extensions_container_->OnContextMenuClosed(this);
-    return;
-  }
-
-  if (extensions_container_->GetPoppedOutAction() == this && !IsShowingPopup())
-    extensions_container_->UndoPopOut();
+  extensions_container_->OnContextMenuClosed(this);
 }
 
 bool ExtensionActionViewController::ExecuteAction(bool by_user,
@@ -227,8 +231,8 @@ bool ExtensionActionViewController::ExecuteAction(bool by_user,
     return false;
 
   if (!IsEnabled(view_delegate_->GetCurrentWebContents())) {
-    if (DisabledClickOpensMenu())
-      GetPreferredPopupViewController()->platform_delegate_->ShowContextMenu();
+    GetPreferredPopupViewController()
+        ->view_delegate_->ShowContextMenuAsFallback();
     return false;
   }
 
@@ -254,8 +258,7 @@ bool ExtensionActionViewController::ExecuteAction(PopupShowAction show_action,
   if (!action_runner)
     return false;
 
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu))
-    extensions_container_->CloseOverflowMenuIfOpen();
+  extensions_container_->CloseOverflowMenuIfOpen();
 
   if (action_runner->RunAction(extension(), grant_tab_permissions) ==
       extensions::ExtensionAction::ACTION_SHOW_POPUP) {
@@ -276,10 +279,6 @@ void ExtensionActionViewController::RegisterCommand() {
 
 void ExtensionActionViewController::UnregisterCommand() {
   platform_delegate_->UnregisterCommand();
-}
-
-bool ExtensionActionViewController::DisabledClickOpensMenu() const {
-  return true;
 }
 
 void ExtensionActionViewController::InspectPopup() {
@@ -392,8 +391,6 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
     PopupShowAction show_action,
     const GURL& popup_url,
     bool grant_tab_permissions) {
-  DCHECK(!in_overflow_mode_)
-      << "Only the main bar's extensions should ever try to show a popup";
   if (!ExtensionIsValid())
     return false;
 
@@ -408,20 +405,15 @@ bool ExtensionActionViewController::TriggerPopupWithUrl(
     return false;
 
   popup_host_ = host.get();
-  popup_host_observer_.Add(popup_host_);
+  popup_host_observation_.Observe(popup_host_);
   extensions_container_->SetPopupOwner(this);
 
-  if (!extensions_container_->IsActionVisibleOnToolbar(this) ||
-      base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    extensions_container_->CloseOverflowMenuIfOpen();
-    extensions_container_->PopOutAction(
-        this, show_action == SHOW_POPUP_AND_INSPECT,
-        base::Bind(&ExtensionActionViewController::ShowPopup,
-                   weak_factory_.GetWeakPtr(), base::Passed(std::move(host)),
-                   grant_tab_permissions, show_action));
-  } else {
-    ShowPopup(std::move(host), grant_tab_permissions, show_action);
-  }
+  extensions_container_->CloseOverflowMenuIfOpen();
+  extensions_container_->PopOutAction(
+      this, show_action == SHOW_POPUP_AND_INSPECT,
+      base::BindOnce(&ExtensionActionViewController::ShowPopup,
+                     weak_factory_.GetWeakPtr(), std::move(host),
+                     grant_tab_permissions, show_action));
 
   return true;
 }
@@ -440,14 +432,12 @@ void ExtensionActionViewController::ShowPopup(
 }
 
 void ExtensionActionViewController::OnPopupClosed() {
-  popup_host_observer_.Remove(popup_host_);
+  DCHECK(popup_host_observation_.IsObservingSource(popup_host_));
+  popup_host_observation_.Reset();
   popup_host_ = nullptr;
   extensions_container_->SetPopupOwner(nullptr);
-  if (extensions_container_->GetPoppedOutAction() == this &&
-      (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu) ||
-       !view_delegate_->IsMenuRunning())) {
+  if (extensions_container_->GetPoppedOutAction() == this)
     extensions_container_->UndoPopOut();
-  }
   view_delegate_->OnPopupClosed();
 }
 
@@ -484,28 +474,13 @@ ExtensionActionViewController::GetIconImageSource(
   image_source->set_grayscale(grayscale);
   image_source->set_paint_blocked_actions_decoration(was_blocked);
 
-  // If the action has an active page action on the web contents and is also
-  // overflowed, we add a decoration so that the user can see which overflowed
-  // action wants to run (since they wouldn't be able to see the change from
-  // grayscale to color).
-  image_source->set_paint_page_action_decoration(
-      !was_blocked && in_overflow_mode_ && PageActionWantsToRun(web_contents));
-
   return image_source;
-}
-
-bool ExtensionActionViewController::PageActionWantsToRun(
-    content::WebContents* web_contents) const {
-  return extension_action_->action_type() ==
-             extensions::ActionInfo::TYPE_PAGE &&
-         extension_action_->GetIsVisible(
-             sessions::SessionTabHelper::IdForTab(web_contents).id());
 }
 
 bool ExtensionActionViewController::HasActiveTabAndCanAccess(
     const GURL& url) const {
   return extension_->permissions_data()->HasAPIPermission(
-             extensions::APIPermission::kActiveTab) &&
+             extensions::mojom::APIPermissionID::kActiveTab) &&
          !extension_->permissions_data()->IsRestrictedUrl(url,
                                                           /*error=*/nullptr) &&
          (!url.SchemeIsFile() || extensions::util::AllowFileAccess(

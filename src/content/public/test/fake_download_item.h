@@ -11,11 +11,11 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/observer_list.h"
-#include "base/optional.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_source.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -57,7 +57,7 @@ class FakeDownloadItem : public download::DownloadItem {
   bool IsTransient() const override;
   bool IsParallelDownload() const override;
   DownloadCreationType GetDownloadCreationType() const override;
-  const base::Optional<download::DownloadSchedule>& GetDownloadSchedule()
+  const absl::optional<download::DownloadSchedule>& GetDownloadSchedule()
       const override;
   bool IsDone() const override;
   const std::string& GetETag() const override;
@@ -72,7 +72,7 @@ class FakeDownloadItem : public download::DownloadItem {
   const GURL& GetSiteUrl() const override;
   const GURL& GetTabUrl() const override;
   const GURL& GetTabReferrerUrl() const override;
-  const base::Optional<url::Origin>& GetRequestInitiator() const override;
+  const absl::optional<url::Origin>& GetRequestInitiator() const override;
   std::string GetSuggestedFilename() const override;
   std::string GetContentDisposition() const override;
   std::string GetOriginalMimeType() const override;
@@ -89,6 +89,7 @@ class FakeDownloadItem : public download::DownloadItem {
   const std::string& GetHash() const override;
   void DeleteFile(base::OnceCallback<void(bool)> callback) override;
   download::DownloadFile* GetDownloadFile() override;
+  download::DownloadItemRenameHandler* GetRenameHandler() override;
   bool IsDangerous() const override;
   bool IsMixedContent() const override;
   download::DownloadDangerType GetDangerType() const override;
@@ -126,7 +127,7 @@ class FakeDownloadItem : public download::DownloadItem {
   void OnAsyncScanningCompleted(
       download::DownloadDangerType danger_type) override;
   void OnDownloadScheduleChanged(
-      base::Optional<download::DownloadSchedule> schedule) override;
+      absl::optional<download::DownloadSchedule> schedule) override;
   bool removed() const { return removed_; }
   void NotifyDownloadDestroyed();
   void NotifyDownloadRemoved();
@@ -144,6 +145,7 @@ class FakeDownloadItem : public download::DownloadItem {
       scoped_refptr<const net::HttpResponseHeaders> response_headers);
   void SetMimeType(const std::string& mime_type);
   void SetOriginalUrl(const GURL& url);
+  void SetTabUrl(const GURL& url);
   void SetLastReason(download::DownloadInterruptReason last_reason);
   void SetReceivedBytes(int64_t received_bytes);
   void SetTotalBytes(int64_t total_bytes);
@@ -172,6 +174,7 @@ class FakeDownloadItem : public download::DownloadItem {
   scoped_refptr<const net::HttpResponseHeaders> response_headers_;
   std::string mime_type_;
   GURL original_url_;
+  GURL tab_url_;
   download::DownloadInterruptReason last_reason_ =
       download::DOWNLOAD_INTERRUPT_REASON_NONE;
   int64_t received_bytes_ = 0;
@@ -182,12 +185,12 @@ class FakeDownloadItem : public download::DownloadItem {
   std::string etag_;
   std::string last_modified_time_;
   std::string hash_;
-  base::Optional<download::DownloadSchedule> download_schedule_;
+  absl::optional<download::DownloadSchedule> download_schedule_;
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;
   GURL dummy_url;
-  base::Optional<url::Origin> dummy_origin;
+  absl::optional<url::Origin> dummy_origin;
   base::FilePath dummy_file_path;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDownloadItem);

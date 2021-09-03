@@ -220,8 +220,10 @@ int ff_img_read_header(AVFormatContext *s1)
         avpriv_set_pts_info(st, 64, 1, 1000000000);
     } else if (s->ts_from_file)
         avpriv_set_pts_info(st, 64, 1, 1);
-    else
+    else {
         avpriv_set_pts_info(st, 64, s->framerate.den, s->framerate.num);
+        st->avg_frame_rate = s->framerate;
+    }
 
     if (s->width && s->height) {
         st->codecpar->width  = s->width;
@@ -587,7 +589,7 @@ static int img_read_seek(AVFormatContext *s, int stream_index, int64_t timestamp
         int index = av_index_search_timestamp(st, timestamp, flags);
         if(index < 0)
             return -1;
-        s1->img_number = st->index_entries[index].pos;
+        s1->img_number = st->internal->index_entries[index].pos;
         return 0;
     }
 
@@ -682,6 +684,17 @@ static int bmp_probe(const AVProbeData *p)
         return AVPROBE_SCORE_EXTENSION + 1;
     }
     return AVPROBE_SCORE_EXTENSION / 4;
+}
+
+static int cri_probe(const AVProbeData *p)
+{
+    const uint8_t *b = p->buf;
+
+    if (   AV_RL32(b) == 1
+        && AV_RL32(b + 4) == 4
+        && AV_RN32(b + 8) == AV_RN32("DVCC"))
+        return AVPROBE_SCORE_MAX - 1;
+    return 0;
 }
 
 static int dds_probe(const AVProbeData *p)
@@ -804,7 +817,7 @@ static int jpeg_probe(const AVProbeData *p)
         return AVPROBE_SCORE_EXTENSION + 1;
     if (state == SOS)
         return AVPROBE_SCORE_EXTENSION / 2;
-    return AVPROBE_SCORE_EXTENSION / 8;
+    return AVPROBE_SCORE_EXTENSION / 8 + 1;
 }
 
 static int jpegls_probe(const AVProbeData *p)
@@ -980,7 +993,7 @@ static inline int pnm_probe(const AVProbeData *p)
 
 static int pbm_probe(const AVProbeData *p)
 {
-    return pnm_magic_check(p, 1) || pnm_magic_check(p, 4) ? pnm_probe(p) : 0;
+    return pnm_magic_check(p, 1) || pnm_magic_check(p, 4) || pnm_magic_check(p, 22) || pnm_magic_check(p, 54) ? pnm_probe(p) : 0;
 }
 
 static inline int pgmx_probe(const AVProbeData *p)
@@ -1016,6 +1029,16 @@ static int ppm_probe(const AVProbeData *p)
 static int pam_probe(const AVProbeData *p)
 {
     return pnm_magic_check(p, 7) ? pnm_probe(p) : 0;
+}
+
+static int xbm_probe(const AVProbeData *p)
+{
+    if (!memcmp(p->buf, "/* XBM X10 format */", 20))
+        return AVPROBE_SCORE_MAX;
+
+    if (!memcmp(p->buf, "#define", 7))
+        return AVPROBE_SCORE_MAX - 1;
+    return 0;
 }
 
 static int xpm_probe(const AVProbeData *p)
@@ -1101,6 +1124,7 @@ AVInputFormat ff_image_ ## imgname ## _pipe_demuxer = {\
 };
 
 IMAGEAUTO_DEMUXER(bmp,     AV_CODEC_ID_BMP)
+IMAGEAUTO_DEMUXER(cri,     AV_CODEC_ID_CRI)
 IMAGEAUTO_DEMUXER(dds,     AV_CODEC_ID_DDS)
 IMAGEAUTO_DEMUXER(dpx,     AV_CODEC_ID_DPX)
 IMAGEAUTO_DEMUXER(exr,     AV_CODEC_ID_EXR)
@@ -1125,5 +1149,6 @@ IMAGEAUTO_DEMUXER(sunrast, AV_CODEC_ID_SUNRAST)
 IMAGEAUTO_DEMUXER(svg,     AV_CODEC_ID_SVG)
 IMAGEAUTO_DEMUXER(tiff,    AV_CODEC_ID_TIFF)
 IMAGEAUTO_DEMUXER(webp,    AV_CODEC_ID_WEBP)
+IMAGEAUTO_DEMUXER(xbm,     AV_CODEC_ID_XBM)
 IMAGEAUTO_DEMUXER(xpm,     AV_CODEC_ID_XPM)
 IMAGEAUTO_DEMUXER(xwd,     AV_CODEC_ID_XWD)

@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/device_identity/device_oauth2_token_store.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -33,8 +34,8 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
                                  public gaia::GaiaOAuthClient::Delegate,
                                  public DeviceOAuth2TokenStore::Observer {
  public:
-  typedef base::RepeatingCallback<void()> RefreshTokenAvailableCallback;
-  typedef base::RepeatingCallback<void(bool)> StatusCallback;
+  using RefreshTokenAvailableCallback = base::RepeatingClosure;
+  using StatusCallback = base::OnceCallback<void(bool)>;
 
   // Persist the given refresh token on the device. Overwrites any previous
   // value. Should only be called during initial device setup. Signals
@@ -74,7 +75,7 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
 
   OAuth2AccessTokenManager* GetAccessTokenManager();
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   // Used on non-ChromeOS platforms to set the email associated with the
   // current service account. On ChromeOS, this function isn't used because
   // the service account identity comes from CrosSettings.

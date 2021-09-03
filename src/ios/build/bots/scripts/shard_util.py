@@ -27,8 +27,11 @@ TEST_CLASS_RELEASE_APP_PATTERN = re.compile(
 TEST_NAME_RELEASE_APP_PATTERN = re.compile(
     r'name +0[xX]\w+ (?P<testCase>(?:DISABLED_|FLAKY_)?test[A-Za-z0-9_]+)\n')
 # 'ChromeTestCase' and 'BaseEarlGreyTestCase' are parent classes
-# of all EarlGrey/EarlGrey2 test classes. They have no real tests.
-IGNORED_CLASSES = ['BaseEarlGreyTestCase', 'ChromeTestCase']
+# of all EarlGrey/EarlGrey2 test classes. 'appConfigurationForTestCase' is a
+# class method. They have no real tests.
+IGNORED_CLASSES = [
+    'BaseEarlGreyTestCase', 'ChromeTestCase', 'appConfigurationForTestCase'
+]
 
 
 def determine_app_path(app, host_app=None, release=False):
@@ -126,9 +129,9 @@ def fetch_test_names_for_debug(stdout):
     Returns:
         (list) a list of (TestCase, testMethod), containing disabled tests.
     """
-  test_names = TEST_NAMES_DEBUG_APP_PATTERN.findall(stdout)
-  return filter(lambda (test_case, _): test_case not in IGNORED_CLASSES,
-                test_names)
+  test_names = TEST_NAMES_DEBUG_APP_PATTERN.findall(stdout.decode("utf-8"))
+  return list(
+      filter(lambda test_name: test_name[0] not in IGNORED_CLASSES, test_names))
 
 
 def fetch_test_names(app, host_app, release, enabled_tests_only=True):
@@ -156,8 +159,9 @@ def fetch_test_names(app, host_app, release, enabled_tests_only=True):
       fetch_test_names_for_release(stdout)
       if release else fetch_test_names_for_debug(stdout))
   enabled_test_names = (
-      filter(lambda (_, test_method): test_method.startswith('test'),
-             all_test_names))
+      list(
+          filter(lambda test_name: test_name[1].startswith('test'),
+                 all_test_names)))
   return enabled_test_names if enabled_tests_only else all_test_names
 
 

@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -28,14 +27,17 @@ constexpr const base::FilePath::CharType kArcVmFeaturesJsonFile[] =
 constexpr const base::FilePath::CharType kArcFeaturesJsonFile[] =
     FILE_PATH_LITERAL("/etc/arc/features.json");
 
-base::Optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
+base::RepeatingCallback<absl::optional<ArcFeatures>()>*
+    g_arc_features_getter_for_testing = nullptr;
+
+absl::optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
   ArcFeatures arc_features;
 
   base::JSONReader::ValueWithError parsed_json =
       base::JSONReader::ReadAndReturnValueWithError(input_json);
   if (!parsed_json.value || !parsed_json.value->is_dict()) {
     LOG(ERROR) << "Error parsing feature JSON: " << parsed_json.error_message;
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   // Parse each item under features.
@@ -43,7 +45,7 @@ base::Optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
       parsed_json.value->FindKeyOfType("features", base::Value::Type::LIST);
   if (!feature_list) {
     LOG(ERROR) << "No feature list in JSON.";
-    return base::nullopt;
+    return absl::nullopt;
   }
   for (auto& feature_item : feature_list->GetList()) {
     const base::Value* feature_name =
@@ -52,11 +54,11 @@ base::Optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
         feature_item.FindKeyOfType("version", base::Value::Type::INTEGER);
     if (!feature_name || feature_name->GetString().empty()) {
       LOG(ERROR) << "Missing name in the feature.";
-      return base::nullopt;
+      return absl::nullopt;
     }
     if (!feature_version) {
       LOG(ERROR) << "Missing version in the feature.";
-      return base::nullopt;
+      return absl::nullopt;
     }
     arc_features.feature_map.emplace(feature_name->GetString(),
                                      feature_version->GetInt());
@@ -68,17 +70,17 @@ base::Optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
                                        base::Value::Type::LIST);
   if (!unavailable_feature_list) {
     LOG(ERROR) << "No unavailable feature list in JSON.";
-    return base::nullopt;
+    return absl::nullopt;
   }
   for (auto& feature_item : unavailable_feature_list->GetList()) {
     if (!feature_item.is_string()) {
       LOG(ERROR) << "Item in the unavailable feature list is not a string.";
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     if (feature_item.GetString().empty()) {
       LOG(ERROR) << "Missing name in the feature.";
-      return base::nullopt;
+      return absl::nullopt;
     }
     arc_features.unavailable_features.emplace_back(feature_item.GetString());
   }
@@ -88,12 +90,12 @@ base::Optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
       "properties", base::Value::Type::DICTIONARY);
   if (!properties) {
     LOG(ERROR) << "No properties in JSON.";
-    return base::nullopt;
+    return absl::nullopt;
   }
   for (const auto& item : properties->DictItems()) {
     if (!item.second.is_string()) {
       LOG(ERROR) << "Item in the properties mapping is not a string.";
-      return base::nullopt;
+      return absl::nullopt;
     }
 
     arc_features.build_props.emplace(item.first, item.second.GetString());
@@ -104,14 +106,14 @@ base::Optional<ArcFeatures> ParseFeaturesJson(base::StringPiece input_json) {
       "play_store_version", base::Value::Type::STRING);
   if (!play_version) {
     LOG(ERROR) << "No Play Store version in JSON.";
-    return base::nullopt;
+    return absl::nullopt;
   }
   arc_features.play_store_version = play_version->GetString();
 
   return arc_features;
 }
 
-base::Optional<ArcFeatures> ReadOnFileThread(const base::FilePath& file_path) {
+absl::optional<ArcFeatures> ReadOnFileThread(const base::FilePath& file_path) {
   DCHECK(!file_path.empty());
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -123,13 +125,13 @@ base::Optional<ArcFeatures> ReadOnFileThread(const base::FilePath& file_path) {
     if (!base::ReadFileToString(file_path, &input_json)) {
       PLOG(ERROR) << "Cannot read file " << file_path.value()
                   << " into string.";
-      return base::nullopt;
+      return absl::nullopt;
     }
   }
 
   if (input_json.empty()) {
     LOG(ERROR) << "Input JSON is empty in file " << file_path.value();
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return ParseFeaturesJson(input_json);
@@ -143,7 +145,12 @@ ArcFeatures::~ArcFeatures() = default;
 ArcFeatures& ArcFeatures::operator=(ArcFeatures&& other) = default;
 
 void ArcFeaturesParser::GetArcFeatures(
-    base::OnceCallback<void(base::Optional<ArcFeatures>)> callback) {
+    base::OnceCallback<void(absl::optional<ArcFeatures>)> callback) {
+  if (g_arc_features_getter_for_testing) {
+    std::move(callback).Run(g_arc_features_getter_for_testing->Run());
+    return;
+  }
+
   const auto* json_file =
       arc::IsArcVmEnabled() ? kArcVmFeaturesJsonFile : kArcFeaturesJsonFile;
   base::ThreadPool::PostTaskAndReplyWithResult(
@@ -152,9 +159,14 @@ void ArcFeaturesParser::GetArcFeatures(
       std::move(callback));
 }
 
-base::Optional<ArcFeatures> ArcFeaturesParser::ParseFeaturesJsonForTesting(
+absl::optional<ArcFeatures> ArcFeaturesParser::ParseFeaturesJsonForTesting(
     base::StringPiece input_json) {
   return ParseFeaturesJson(input_json);
+}
+
+void ArcFeaturesParser::SetArcFeaturesGetterForTesting(
+    base::RepeatingCallback<absl::optional<ArcFeatures>()>* getter) {
+  g_arc_features_getter_for_testing = getter;
 }
 
 }  // namespace arc

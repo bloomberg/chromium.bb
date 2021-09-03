@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+from __future__ import absolute_import
 import codecs
 import os
 import logging
@@ -9,9 +11,10 @@ import json
 import re
 import shutil
 import sys
-import urllib2
-
 from io import BytesIO
+
+import six.moves.urllib.request # pylint: disable=import-error
+from six.moves import input # pylint: disable=redefined-builtin
 
 from telemetry.core import util
 from telemetry.internal.browser import browser_finder
@@ -74,7 +77,7 @@ def _FetchImages(image_dir, frame_number, external_images):
   print('Fetching external images [local_dir=%s, frame_number=%d, '
         'image_count=%d].' % (image_dir, frame_number, image_count))
 
-  for i in xrange(image_count):
+  for i in range(image_count):
     [element_id, image_url] = external_images[i]
     _, image_file_extension = os.path.splitext(image_url)
     # Strip any query param and all subsequent characters. Note that
@@ -90,18 +93,18 @@ def _FetchImages(image_dir, frame_number, external_images):
                  'url=%s].' % (frame_number, i, image_count, image_file,
                                image_url))
     try:
-      image_request = urllib2.urlopen(image_url)
+      image_request = six.moves.urllib.request.urlopen(image_url)
     except IOError as e:
-      print 'Error fetching image [local_file=%s, url=%s, message=%s].' % (
-          image_file, image_url, e)
+      print('Error fetching image [local_file=%s, url=%s, message=%s].' % (
+          image_file, image_url, e))
       continue
 
     try:
       with open(image_file, 'wb') as image_file_handle:
         shutil.copyfileobj(BytesIO(image_request.read()), image_file_handle)
     except IOError as e:
-      print 'Error copying image [local_file=%s, url=%s, message=%s].' % (
-          image_file, image_url, e)
+      print('Error copying image [local_file=%s, url=%s, message=%s].' % (
+          image_file, image_url, e))
 
 def _GetLocalImageDirectory(snapshot_path):
   return os.path.splitext(snapshot_path)[0]
@@ -115,11 +118,11 @@ def _SnapPageToFile(finder_options, url, interactive, snapshot_path,
     tab = browser.tabs[0]
     tab.Navigate(url)
     if interactive:
-      raw_input(
+      input(
           'Activating interactive mode. Press enter after you finish '
           "interacting with the page to snapshot the page's DOM content.")
 
-    print 'Snapshotting content of %s. This could take a while...' % url
+    print('Snapshotting content of %s. This could take a while...' % url)
     tab.WaitForDocumentReadyStateToBeComplete()
     tab.action_runner.WaitForNetworkQuiescence(
         timeout_in_seconds=EXPENSIVE_JS_TIMEOUT_SECONDS)
@@ -171,11 +174,11 @@ def _SnapPageToFile(finder_options, url, interactive, snapshot_path,
 
     # Sending all the serialized doms back to tab execution context.
     tab.ExecuteJavaScript('var serializedDoms = [];')
-    for i in xrange(len(serialized_doms)):
+    for i, dom in enumerate(serialized_doms):
       sys.stdout.write('Processing dom of frame #%i / %i\r' %
                        (i, len(serialized_doms)))
       sys.stdout.flush()
-      _TransmitLargeJSONToTab(tab, serialized_doms[i], 'sub_dom')
+      _TransmitLargeJSONToTab(tab, dom, 'sub_dom')
       tab.ExecuteJavaScript('serializedDoms.push(sub_dom);')
 
     # Combine all the doms to one HTML string.
@@ -184,10 +187,10 @@ def _SnapPageToFile(finder_options, url, interactive, snapshot_path,
     page_snapshot = tab.EvaluateJavaScript('outputHTMLString(serializedDoms);',
                                            timeout=EXPENSIVE_JS_TIMEOUT_SECONDS)
 
-    print 'Writing page snapshot [path=%s].' % snapshot_path
+    print('Writing page snapshot [path=%s].' % snapshot_path)
     snapshot_file.write(page_snapshot)
-    for i in xrange(len(external_images)):
-      _FetchImages(image_dir, i, external_images[i])
+    for i, image in enumerate(external_images):
+      _FetchImages(image_dir, i, image)
 
 
 def SnapPage(finder_options, url, interactive, snapshot_path,
@@ -203,4 +206,4 @@ def SnapPage(finder_options, url, interactive, snapshot_path,
   with codecs.open(snapshot_path, 'w', 'utf-8') as f:
     _SnapPageToFile(finder_options, url, interactive, snapshot_path, f,
                     enable_browser_log)
-  print 'Successfully saved snapshot to file://%s' % snapshot_path
+  print('Successfully saved snapshot to file://%s' % snapshot_path)

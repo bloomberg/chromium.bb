@@ -12,35 +12,42 @@
 #include "chrome/browser/ui/views/autofill/payments/save_payment_icon_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
+#include "components/autofill/core/common/autofill_features.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 
-// static
-const char ToolbarAccountIconContainerView::
-    kToolbarAccountIconContainerViewClassName[] =
-        "ToolbarAccountIconContainerView";
-
 ToolbarAccountIconContainerView::ToolbarAccountIconContainerView(
-    Browser* browser)
+    BrowserView* browser_view)
     : ToolbarIconContainerView(
-          /*uses_highlight=*/!browser->profile()->IsIncognitoProfile()),
-      avatar_(new AvatarToolbarButton(browser, this)),
-      browser_(browser) {
+          /*uses_highlight=*/!browser_view->browser()
+              ->profile()
+              ->IsIncognitoProfile()),
+      avatar_(new AvatarToolbarButton(browser_view, this)),
+      browser_(browser_view->browser()) {
   PageActionIconParams params;
   params.types_enabled = {
       PageActionIconType::kManagePasswords,
       PageActionIconType::kLocalCardMigration,
       PageActionIconType::kSaveCard,
+      PageActionIconType::kVirtualCardManualFallback,
   };
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillAddressProfileSavePrompt)) {
+    // TODO(crbug.com/1167060): Place this in the proper order upon having
+    // final mocks.
+    params.types_enabled.push_back(PageActionIconType::kSaveAutofillAddress);
+  }
   params.browser = browser_;
   params.command_updater = browser_->command_controller();
   params.icon_label_bubble_delegate = this;
@@ -107,12 +114,12 @@ void ToolbarAccountIconContainerView::OnThemeChanged() {
   UpdateAllIcons();
 }
 
-const char* ToolbarAccountIconContainerView::GetClassName() const {
-  return kToolbarAccountIconContainerViewClassName;
-}
-
-void ToolbarAccountIconContainerView::AddPageActionIcon(views::View* icon) {
+void ToolbarAccountIconContainerView::AddPageActionIcon(
+    std::unique_ptr<views::View> icon) {
   // Add the page action icons to the end of the container, just before the
   // avatar icon.
-  AddChildViewAt(icon, GetIndexOf(avatar_));
+  AddChildViewAt(std::move(icon), GetIndexOf(avatar_));
 }
+
+BEGIN_METADATA(ToolbarAccountIconContainerView, ToolbarIconContainerView)
+END_METADATA

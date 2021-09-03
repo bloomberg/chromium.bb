@@ -5,10 +5,14 @@
 #include "chrome/browser/login_detection/login_detection_tab_helper.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "chrome/browser/login_detection/login_detection_keyed_service.h"
+#include "chrome/browser/login_detection/login_detection_keyed_service_factory.h"
 #include "chrome/browser/login_detection/login_detection_prefs.h"
+#include "chrome/browser/login_detection/login_detection_type.h"
 #include "chrome/browser/login_detection/login_detection_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
+#include "components/site_isolation/site_isolation_policy.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -29,9 +33,8 @@ PrefService* GetPrefs(content::WebContents* web_contents) {
       ->GetPrefs();
 }
 
-void RecordLoginDetectionMetrics(
-    LoginDetectionTabHelper::LoginDetectionType type,
-    ukm::SourceId ukm_source_id) {
+void RecordLoginDetectionMetrics(LoginDetectionType type,
+                                 ukm::SourceId ukm_source_id) {
   base::UmaHistogramEnumeration("Login.PageLoad.DetectionType", type);
   ukm::builders::LoginDetection builder(ukm_source_id);
   builder.SetPage_LoginType(static_cast<int64_t>(type))
@@ -86,23 +89,21 @@ void LoginDetectionTabHelper::DidFinishNavigation(
   // the time of login will be updated.
   if (auto signedin_site = oauth_login_detector_->GetSuccessfulLoginFlowSite(
           prev_navigation_url, navigation_handle->GetRedirectChain())) {
-    prefs::SaveSiteToOAuthSignedInList(GetPrefs(web_contents()),
-                                       *signedin_site);
+    ProcessNewSignedInSite(*signedin_site);
     RecordLoginDetectionMetrics(LoginDetectionType::kOauthFirstTimeLoginFlow,
                                 navigation_handle->GetNextPageUkmSourceId());
     return;
   }
 
-  // Check if OAuth login for this site was detected earlier, and remembered
-  // in prefs.
-  if (prefs::IsSiteInOAuthSignedInList(GetPrefs(web_contents()), url)) {
-    RecordLoginDetectionMetrics(LoginDetectionType::kOauthLogin,
-                                navigation_handle->GetNextPageUkmSourceId());
+  LoginDetectionKeyedService* login_detection_keyed_service =
+      LoginDetectionKeyedServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+  if (!login_detection_keyed_service)
     return;
-  }
 
-  RecordLoginDetectionMetrics(LoginDetectionType::kNoLogin,
-                              navigation_handle->GetNextPageUkmSourceId());
+  RecordLoginDetectionMetrics(
+      login_detection_keyed_service->GetPersistentLoginDetection(url),
+      navigation_handle->GetNextPageUkmSourceId());
 }
 
 void LoginDetectionTabHelper::DidOpenRequestedURL(
@@ -129,13 +130,19 @@ void LoginDetectionTabHelper::DidOpenAsPopUp(
 
 void LoginDetectionTabHelper::WebContentsDestroyed() {
   if (auto signedin_site = oauth_login_detector_->GetPopUpLoginFlowSite()) {
+    ProcessNewSignedInSite(*signedin_site);
     RecordLoginDetectionMetrics(
         LoginDetectionType::kOauthPopUpFirstTimeLoginFlow,
         ukm::GetSourceIdForWebContentsDocument(web_contents()));
-    prefs::SaveSiteToOAuthSignedInList(GetPrefs(web_contents()),
-                                       *signedin_site);
   }
   oauth_login_detector_.reset();
+}
+
+void LoginDetectionTabHelper::ProcessNewSignedInSite(
+    const GURL& signedin_site) {
+  prefs::SaveSiteToOAuthSignedInList(GetPrefs(web_contents()), signedin_site);
+  site_isolation::SiteIsolationPolicy::IsolateNewOAuthURL(
+      web_contents()->GetBrowserContext(), signedin_site);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(LoginDetectionTabHelper)

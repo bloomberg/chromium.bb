@@ -19,18 +19,19 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
 #include "base/tracing/protos/grit/tracing_proto_resources.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/tracing/common/trace_startup_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/tracing/file_tracing_provider_impl.h"
-#include "content/browser/tracing/perfetto_file_tracer.h"
 #include "content/browser/tracing/tracing_ui.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -53,7 +54,7 @@
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
 #include "v8/include/v8-version-string.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 #include "chromeos/system/statistics_provider.h"
@@ -163,11 +164,6 @@ std::string GetClockOffsetSinceEpoch() {
 }
 #endif
 
-void OnStoppedStartupTracing(const base::FilePath& trace_file) {
-  VLOG(0) << "Completed startup tracing to " << trace_file.value();
-  tracing::TraceStartupConfig::GetInstance()->OnTraceToResultFileFinished();
-}
-
 }  // namespace
 
 TracingController* TracingController::GetInstance() {
@@ -183,14 +179,7 @@ TracingControllerImpl::TracingControllerImpl()
   AddAgents();
   g_tracing_controller = this;
 
-  // TODO(oysteine): Startup tracing using Perfetto
-  // is enabled by the Mojo consumer in content/browser
-  // for now; this is too late in the browser startup
-  // process however.
-  if (PerfettoFileTracer::ShouldEnable())
-    perfetto_file_tracer_ = std::make_unique<PerfettoFileTracer>();
-
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Bind hwclass once the statistics are available.
   chromeos::system::StatisticsProvider::GetInstance()
       ->ScheduleOnMachineStatisticsLoaded(
@@ -208,7 +197,7 @@ void TracingControllerImpl::AddAgents() {
   tracing::TracedProcessImpl::GetInstance()->SetTaskRunner(
       base::SequencedTaskRunnerHandle::Get());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   agents_.push_back(std::make_unique<CrOSTracingAgent>());
 #elif defined(CAST_TRACING_AGENT)
   agents_.push_back(std::make_unique<CastTracingAgent>());
@@ -276,7 +265,7 @@ TracingControllerImpl::GenerateMetadataDict() {
   // obtained from process maps since library can be mapped from apk directly.
   // This is not added as part of memory-infra os dumps since it is special case
   // only for chrome library.
-  base::Optional<base::StringPiece> soname =
+  absl::optional<base::StringPiece> soname =
       base::debug::ReadElfLibraryName(&__ehdr_start);
   if (soname)
     metadata_dict->SetString("chrome-library-name", *soname);
@@ -290,13 +279,13 @@ TracingControllerImpl::GenerateMetadataDict() {
 #endif
 
   // OS
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   metadata_dict->SetString("os-name", "CrOS");
   if (are_statistics_loaded_)
     metadata_dict->SetString("hardware-class", hardware_class_);
 #else
   metadata_dict->SetString("os-name", base::SysInfo::OperatingSystemName());
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   metadata_dict->SetString("os-version",
                            base::SysInfo::OperatingSystemVersion());
 #if defined(OS_WIN)
@@ -348,14 +337,21 @@ TracingControllerImpl::GenerateMetadataDict() {
   metadata_dict->SetString("gpu-gl-vendor", gpu_info.gl_vendor);
   metadata_dict->SetString("gpu-gl-renderer", gpu_info.gl_renderer);
 #endif
+  metadata_dict->SetDictionary(
+      "gpu-features", base::DictionaryValue::From(
+                          std::make_unique<base::Value>(GetFeatureStatus())));
 
   metadata_dict->SetString("clock-domain", GetClockString());
   metadata_dict->SetBoolean("highres-ticks",
                             base::TimeTicks::IsHighResolution());
 
-  metadata_dict->SetString(
-      "command_line",
-      base::CommandLine::ForCurrentProcess()->GetCommandLineString());
+  base::CommandLine::StringType command_line =
+      base::CommandLine::ForCurrentProcess()->GetCommandLineString();
+#if defined(OS_WIN)
+  metadata_dict->SetString("command_line", base::WideToUTF16(command_line));
+#else
+  metadata_dict->SetString("command_line", command_line);
+#endif
 
   base::Time::Exploded ctime;
   TRACE_TIME_NOW().UTCExplode(&ctime);
@@ -435,7 +431,8 @@ bool TracingControllerImpl::StartTracing(
 
   consumer_host_->EnableTracing(
       tracing_session_host_.BindNewPipeAndPassReceiver(),
-      receiver_.BindNewPipeAndPassRemote(), std::move(perfetto_config));
+      receiver_.BindNewPipeAndPassRemote(), std::move(perfetto_config),
+      base::File());
   receiver_.set_disconnect_handler(base::BindOnce(
       &TracingControllerImpl::OnTracingFailed, base::Unretained(this)));
   tracing_session_host_.set_disconnect_handler(base::BindOnce(
@@ -446,106 +443,6 @@ bool TracingControllerImpl::StartTracing(
   // TODO(chiniforooshan): The actual success value should be sent by the
   // callback asynchronously.
   return true;
-}
-
-void TracingControllerImpl::StartStartupTracingIfNeeded() {
-  auto* trace_startup_config = tracing::TraceStartupConfig::GetInstance();
-  if (trace_startup_config->AttemptAdoptBySessionOwner(
-          tracing::TraceStartupConfig::SessionOwner::kTracingController)) {
-    StartTracing(trace_startup_config->GetTraceConfig(),
-                 StartTracingDoneCallback());
-  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-                 switches::kTraceToConsole)) {
-    StartTracing(tracing::GetConfigForTraceToConsole(),
-                 StartTracingDoneCallback());
-  }
-
-  if (trace_startup_config->IsTracingStartupForDuration()) {
-    TRACE_EVENT0("startup",
-                 "TracingControllerImpl::InitStartupTracingForDuration");
-    InitStartupTracingForDuration();
-  }
-}
-
-base::FilePath TracingControllerImpl::GetStartupTraceFileName() const {
-  base::FilePath trace_file;
-
-  trace_file = tracing::TraceStartupConfig::GetInstance()->GetResultFile();
-  if (trace_file.empty()) {
-#if defined(OS_ANDROID)
-    TracingControllerAndroid::GenerateTracingFilePath(&trace_file);
-#else
-    // Default to saving the startup trace into the current dir.
-    trace_file = base::FilePath().AppendASCII("chrometrace.log");
-#endif
-  }
-
-  return trace_file;
-}
-
-void TracingControllerImpl::InitStartupTracingForDuration() {
-  DCHECK(tracing::TraceStartupConfig::GetInstance()
-             ->IsTracingStartupForDuration());
-
-  startup_trace_file_ = GetStartupTraceFileName();
-
-  startup_trace_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(
-          tracing::TraceStartupConfig::GetInstance()->GetStartupDuration()),
-      this, &TracingControllerImpl::EndStartupTracing);
-}
-
-void TracingControllerImpl::EndStartupTracing() {
-  // Do nothing if startup tracing is already stopped.
-  if (!tracing::TraceStartupConfig::GetInstance()->IsEnabled())
-    return;
-
-  // Use USER_VISIBLE priority because BEST_EFFORT tasks are not run at startup
-  // and we want the trace file to be written soon.
-  StopTracing(CreateFileEndpoint(
-      startup_trace_file_,
-      base::BindOnce(OnStoppedStartupTracing, startup_trace_file_),
-      base::TaskPriority::USER_VISIBLE));
-}
-
-void TracingControllerImpl::FinalizeStartupTracingIfNeeded() {
-  // There are two cases:
-  // 1. Startup duration is not reached.
-  // 2. Or if the trace should be saved to file for --trace-config-file flag.
-  base::Optional<base::FilePath> startup_trace_file;
-  if (startup_trace_timer_.IsRunning()) {
-    startup_trace_timer_.Stop();
-    if (startup_trace_file_ != base::FilePath().AppendASCII("none")) {
-      startup_trace_file = startup_trace_file_;
-    }
-  } else if (tracing::TraceStartupConfig::GetInstance()
-                 ->ShouldTraceToResultFile()) {
-    startup_trace_file = GetStartupTraceFileName();
-  }
-  if (!startup_trace_file)
-    return;
-  // Perfetto currently doesn't support tracing during shutdown as the trace
-  // buffer is lost when the service is shut down, so we wait until the trace is
-  // complete. See also crbug.com/944107.
-  // TODO(eseckler): Avoid the nestedRunLoop here somehow.
-  base::RunLoop run_loop;
-  // We may not have completed startup yet when we attempt to write the trace,
-  // and thus tasks with BEST_EFFORT may not be run. Choose a non-background
-  // priority to avoid blocking forever.
-  const base::TaskPriority kWritePriority = base::TaskPriority::USER_VISIBLE;
-  bool success = StopTracing(CreateFileEndpoint(
-      startup_trace_file.value(),
-      base::BindOnce(
-          [](base::FilePath trace_file, base::OnceClosure quit_closure) {
-            OnStoppedStartupTracing(trace_file);
-            std::move(quit_closure).Run();
-          },
-          startup_trace_file.value(), run_loop.QuitClosure()),
-      kWritePriority));
-  if (!success)
-    return;
-  run_loop.Run();
 }
 
 bool TracingControllerImpl::StopTracing(
@@ -574,7 +471,6 @@ bool TracingControllerImpl::StopTracing(
   // removed.
   CHECK(privacy_filtering_enabled || !trace_config_->IsArgumentFilterEnabled());
 
-  tracing::TraceStartupConfig::GetInstance()->SetDisabled();
   trace_data_endpoint_ = std::move(trace_data_endpoint);
   is_data_complete_ = false;
   read_buffers_complete_ = false;
@@ -582,13 +478,14 @@ bool TracingControllerImpl::StopTracing(
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   MojoResult result =
-      mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+      mojo::CreateDataPipe(nullptr, producer_handle, consumer_handle);
   if (result != MOJO_RESULT_OK) {
     CompleteFlush();
     return true;
   }
 
-  drainer_.reset(new mojo::DataPipeDrainer(this, std::move(consumer_handle)));
+  drainer_ =
+      std::make_unique<mojo::DataPipeDrainer>(this, std::move(consumer_handle));
 
   tracing_session_host_->DisableTracingAndEmitJson(
       agent_label, std::move(producer_handle), privacy_filtering_enabled,
@@ -664,7 +561,7 @@ void TracingControllerImpl::OnReadBuffersComplete() {
     CompleteFlush();
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void TracingControllerImpl::OnMachineStatisticsLoaded() {
   chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
       chromeos::system::kHardwareClassKey, &hardware_class_);

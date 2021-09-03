@@ -7,6 +7,8 @@
 #include "base/notreached.h"
 #include "ios/net/cookies/system_cookie_util.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -45,18 +47,21 @@
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   net::CookieAccessSemantics cookieAccessSemantics =
       net::CookieAccessSemantics::LEGACY;
+  // No extra trustworthy URLs.
+  bool delegate_treats_url_as_trustworthy = false;
   if (@available(iOS 13, *)) {
     // Using |UNKNOWN| semantics to allow the experiment to switch between non
     // legacy (where cookies that don't have a specific same-site access policy
     // and not secure will not be included), and legacy mode.
     cookieAccessSemantics = net::CookieAccessSemantics::UNKNOWN;
   }
+  net::CookieAccessParams params = {
+      cookieAccessSemantics, delegate_treats_url_as_trustworthy,
+      net::CookieSamePartyStatus::kNoSamePartyEnforcement};
   for (NSHTTPCookie* cookie in self.cookies) {
     std::unique_ptr<net::CanonicalCookie> canonical_cookie =
         net::CanonicalCookieFromSystemCookie(cookie, base::Time());
-    if (canonical_cookie &&
-        canonical_cookie
-            ->IncludeForRequestURL(gURL, options, cookieAccessSemantics)
+    if (canonical_cookie->IncludeForRequestURL(gURL, options, params)
             .status.IsInclude())
       [result addObject:cookie];
   }

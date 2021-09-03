@@ -158,6 +158,9 @@ interface DriveFsDelegate {
       pending_receiver<NativeMessagingPort> port,
       pending_remote<NativeMessagingHost> host) => (
           ExtensionConnectionStatus error);
+
+  // Invoked when Drive wants to display a confirmation dialog.
+  DisplayConfirmDialog(DialogReason reason) => (DialogResult result);
 };
 
 // Next MinVersion: 6
@@ -192,6 +195,17 @@ enum AccessTokenStatus {
 
   // Getting an access token failed due to an auth error.
   kAuthError,
+};
+
+enum DialogResult {
+  // The dialog was not displayed to the user.
+  kNotDisplayed,
+  // The user accepted the action proposed by the dialog.
+  kAccept,
+  // The user rejected the action proposed by the dialog.
+  kReject,
+  // The user closed the dialog without selecting an option.
+  kDismiss,
 };
 
 enum FileError {
@@ -231,7 +245,18 @@ struct DriveError {
   mojo_base.mojom.FilePath path;
 };
 
-// Next MinVersion: 3
+struct DialogReason {
+  [Extensible] enum Type {
+    kEnableDocsOffline,
+  };
+
+  Type type;
+
+  // The path to the file associated with this dialog, if there was one.
+  mojo_base.mojom.FilePath path;
+};
+
+// Next MinVersion: 4
 struct FileMetadata {
   [Extensible] enum Type {
     // A regular file.
@@ -278,6 +303,10 @@ struct FileMetadata {
 
   // Only present in QuickAccess queries.
   [MinVersion=2] QuickAccess? quick_access;
+
+  // The unique device local ID used by DriveFS to refer to this file.
+  // Note: 0 is an invalid stable id.
+  [MinVersion=3] int64 stable_id = 0;
 };
 
 struct ImageMetadata {
@@ -360,6 +389,7 @@ struct SyncingStatus {
 };
 
 // A report of a server-side change to a file.
+// Next MinVersion: 2
 struct FileChange {
   mojo_base.mojom.FilePath path;
 
@@ -370,6 +400,10 @@ struct FileChange {
   };
 
   Type type;
+
+  // The unique device local ID used by DriveFS to refer to this file.
+  // Note: 0 is an invalid stable id.
+  [MinVersion=1] int64 stable_id = 0;
 };
 
 // Definition of the search request sent to DriveFS.

@@ -61,8 +61,8 @@ class StreamCreator {
     options.capacity_num_bytes = capacity;
 
     mojo::ScopedDataPipeProducerHandle data_pipe_producer;
-    MojoResult result = mojo::CreateDataPipe(&options, &data_pipe_producer,
-                                             &data_pipe_consumer_);
+    MojoResult result =
+        mojo::CreateDataPipe(&options, data_pipe_producer, data_pipe_consumer_);
     if (result != MOJO_RESULT_OK) {
       ADD_FAILURE() << "CreateDataPipe() returned " << result;
     }
@@ -71,7 +71,11 @@ class StreamCreator {
     mock_client_ = MakeGarbageCollected<StrictMock<MockClient>>();
     auto* outgoing_stream = MakeGarbageCollected<OutgoingStream>(
         script_state, mock_client_, std::move(data_pipe_producer));
-    outgoing_stream->Init();
+    ExceptionState exception_state(scope.GetIsolate(),
+                                   ExceptionState::kConstructionContext,
+                                   "OutgoingStream");
+    outgoing_stream->Init(exception_state);
+    CHECK(!exception_state.HadException());
     return outgoing_stream;
   }
 

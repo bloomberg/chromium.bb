@@ -31,7 +31,8 @@ PictureInPictureServiceImpl* PictureInPictureServiceImpl::CreateForTesting(
 
 void PictureInPictureServiceImpl::StartSession(
     uint32_t player_id,
-    const base::Optional<viz::SurfaceId>& surface_id,
+    mojo::PendingAssociatedRemote<media::mojom::MediaPlayer> player_remote,
+    const absl::optional<viz::SurfaceId>& surface_id,
     const gfx::Size& natural_size,
     bool show_play_pause_button,
     mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver> observer,
@@ -41,9 +42,12 @@ void PictureInPictureServiceImpl::StartSession(
 
   if (surface_id.has_value()) {
     auto result = GetController().StartSession(
-        this, MediaPlayerId(render_frame_host(), player_id), surface_id.value(),
-        natural_size, show_play_pause_button, std::move(observer),
-        &session_remote, &window_size);
+        this,
+        MediaPlayerId(render_frame_host()->GetGlobalFrameRoutingId(),
+                      player_id),
+        std::move(player_remote), surface_id.value(), natural_size,
+        show_play_pause_button, std::move(observer), &session_remote,
+        &window_size);
 
     if (result == PictureInPictureResult::kSuccess) {
       // Frames are to be blocklisted from the back-forward cache because the

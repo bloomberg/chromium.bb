@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_config.h"
+#include "quic/core/quic_config.h"
 
 #include <algorithm>
 #include <cstring>
@@ -12,18 +12,18 @@
 
 #include "absl/base/attributes.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_handshake_message.h"
-#include "net/third_party/quiche/src/quic/core/crypto/crypto_protocol.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_socket_address_coder.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_uint128.h"
+#include "quic/core/crypto/crypto_handshake_message.h"
+#include "quic/core/crypto/crypto_protocol.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_socket_address_coder.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_flags.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_socket_address.h"
 
 namespace quic {
 
@@ -36,7 +36,7 @@ QuicErrorCode ReadUint32(const CryptoHandshakeMessage& msg,
                          uint32_t default_value,
                          uint32_t* out,
                          std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
   QuicErrorCode error = msg.GetUint32(tag, out);
   switch (error) {
     case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
@@ -71,7 +71,7 @@ bool QuicFixedUint32::HasSendValue() const {
 }
 
 uint32_t QuicFixedUint32::GetSendValue() const {
-  QUIC_BUG_IF(!has_send_value_)
+  QUIC_BUG_IF(quic_bug_12743_1, !has_send_value_)
       << "No send value to get for tag:" << QuicTagToString(tag_);
   return send_value_;
 }
@@ -86,7 +86,7 @@ bool QuicFixedUint32::HasReceivedValue() const {
 }
 
 uint32_t QuicFixedUint32::GetReceivedValue() const {
-  QUIC_BUG_IF(!has_receive_value_)
+  QUIC_BUG_IF(quic_bug_12743_2, !has_receive_value_)
       << "No receive value to get for tag:" << QuicTagToString(tag_);
   return receive_value_;
 }
@@ -98,7 +98,7 @@ void QuicFixedUint32::SetReceivedValue(uint32_t value) {
 
 void QuicFixedUint32::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   if (tag_ == 0) {
-    QUIC_BUG
+    QUIC_BUG(quic_bug_12743_3)
         << "This parameter does not support writing to CryptoHandshakeMessage";
     return;
   }
@@ -111,11 +111,11 @@ QuicErrorCode QuicFixedUint32::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType /*hello_type*/,
     std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
   if (tag_ == 0) {
     *error_details =
         "This parameter does not support reading from CryptoHandshakeMessage";
-    QUIC_BUG << *error_details;
+    QUIC_BUG(quic_bug_10575_1) << *error_details;
     return QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND;
   }
   QuicErrorCode error = peer_hello.GetUint32(tag_, &receive_value_);
@@ -149,7 +149,8 @@ bool QuicFixedUint62::HasSendValue() const {
 
 uint64_t QuicFixedUint62::GetSendValue() const {
   if (!has_send_value_) {
-    QUIC_BUG << "No send value to get for tag:" << QuicTagToString(tag_);
+    QUIC_BUG(quic_bug_10575_2)
+        << "No send value to get for tag:" << QuicTagToString(tag_);
     return 0;
   }
   return send_value_;
@@ -157,7 +158,7 @@ uint64_t QuicFixedUint62::GetSendValue() const {
 
 void QuicFixedUint62::SetSendValue(uint64_t value) {
   if (value > kVarInt62MaxValue) {
-    QUIC_BUG << "QuicFixedUint62 invalid value " << value;
+    QUIC_BUG(quic_bug_10575_3) << "QuicFixedUint62 invalid value " << value;
     value = kVarInt62MaxValue;
   }
   has_send_value_ = true;
@@ -170,7 +171,8 @@ bool QuicFixedUint62::HasReceivedValue() const {
 
 uint64_t QuicFixedUint62::GetReceivedValue() const {
   if (!has_receive_value_) {
-    QUIC_BUG << "No receive value to get for tag:" << QuicTagToString(tag_);
+    QUIC_BUG(quic_bug_10575_4)
+        << "No receive value to get for tag:" << QuicTagToString(tag_);
     return 0;
   }
   return receive_value_;
@@ -187,8 +189,8 @@ void QuicFixedUint62::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   }
   uint32_t send_value32;
   if (send_value_ > std::numeric_limits<uint32_t>::max()) {
-    QUIC_BUG << "Attempting to send " << send_value_
-             << " for tag:" << QuicTagToString(tag_);
+    QUIC_BUG(quic_bug_10575_5) << "Attempting to send " << send_value_
+                               << " for tag:" << QuicTagToString(tag_);
     send_value32 = std::numeric_limits<uint32_t>::max();
   } else {
     send_value32 = static_cast<uint32_t>(send_value_);
@@ -200,7 +202,7 @@ QuicErrorCode QuicFixedUint62::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType /*hello_type*/,
     std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
   uint32_t receive_value32;
   QuicErrorCode error = peer_hello.GetUint32(tag_, &receive_value32);
   // GetUint32 is guaranteed to always initialize receive_value32.
@@ -222,54 +224,61 @@ QuicErrorCode QuicFixedUint62::ProcessPeerHello(
   return error;
 }
 
-QuicFixedUint128::QuicFixedUint128(QuicTag tag, QuicConfigPresence presence)
+QuicFixedStatelessResetToken::QuicFixedStatelessResetToken(
+    QuicTag tag,
+    QuicConfigPresence presence)
     : QuicConfigValue(tag, presence),
       has_send_value_(false),
       has_receive_value_(false) {}
-QuicFixedUint128::~QuicFixedUint128() {}
+QuicFixedStatelessResetToken::~QuicFixedStatelessResetToken() {}
 
-bool QuicFixedUint128::HasSendValue() const {
+bool QuicFixedStatelessResetToken::HasSendValue() const {
   return has_send_value_;
 }
 
-QuicUint128 QuicFixedUint128::GetSendValue() const {
-  QUIC_BUG_IF(!has_send_value_)
+const StatelessResetToken& QuicFixedStatelessResetToken::GetSendValue() const {
+  QUIC_BUG_IF(quic_bug_12743_4, !has_send_value_)
       << "No send value to get for tag:" << QuicTagToString(tag_);
   return send_value_;
 }
 
-void QuicFixedUint128::SetSendValue(QuicUint128 value) {
+void QuicFixedStatelessResetToken::SetSendValue(
+    const StatelessResetToken& value) {
   has_send_value_ = true;
   send_value_ = value;
 }
 
-bool QuicFixedUint128::HasReceivedValue() const {
+bool QuicFixedStatelessResetToken::HasReceivedValue() const {
   return has_receive_value_;
 }
 
-QuicUint128 QuicFixedUint128::GetReceivedValue() const {
-  QUIC_BUG_IF(!has_receive_value_)
+const StatelessResetToken& QuicFixedStatelessResetToken::GetReceivedValue()
+    const {
+  QUIC_BUG_IF(quic_bug_12743_5, !has_receive_value_)
       << "No receive value to get for tag:" << QuicTagToString(tag_);
   return receive_value_;
 }
 
-void QuicFixedUint128::SetReceivedValue(QuicUint128 value) {
+void QuicFixedStatelessResetToken::SetReceivedValue(
+    const StatelessResetToken& value) {
   has_receive_value_ = true;
   receive_value_ = value;
 }
 
-void QuicFixedUint128::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
+void QuicFixedStatelessResetToken::ToHandshakeMessage(
+    CryptoHandshakeMessage* out) const {
   if (has_send_value_) {
     out->SetValue(tag_, send_value_);
   }
 }
 
-QuicErrorCode QuicFixedUint128::ProcessPeerHello(
+QuicErrorCode QuicFixedStatelessResetToken::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType /*hello_type*/,
     std::string* error_details) {
-  DCHECK(error_details != nullptr);
-  QuicErrorCode error = peer_hello.GetUint128(tag_, &receive_value_);
+  QUICHE_DCHECK(error_details != nullptr);
+  QuicErrorCode error =
+      peer_hello.GetStatelessResetToken(tag_, &receive_value_);
   switch (error) {
     case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
       if (presence_ == PRESENCE_OPTIONAL) {
@@ -303,7 +312,7 @@ bool QuicFixedTagVector::HasSendValues() const {
 }
 
 const QuicTagVector& QuicFixedTagVector::GetSendValues() const {
-  QUIC_BUG_IF(!has_send_values_)
+  QUIC_BUG_IF(quic_bug_12743_6, !has_send_values_)
       << "No send values to get for tag:" << QuicTagToString(tag_);
   return send_values_;
 }
@@ -318,7 +327,7 @@ bool QuicFixedTagVector::HasReceivedValues() const {
 }
 
 const QuicTagVector& QuicFixedTagVector::GetReceivedValues() const {
-  QUIC_BUG_IF(!has_receive_values_)
+  QUIC_BUG_IF(quic_bug_12743_7, !has_receive_values_)
       << "No receive value to get for tag:" << QuicTagToString(tag_);
   return receive_values_;
 }
@@ -338,7 +347,7 @@ QuicErrorCode QuicFixedTagVector::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType /*hello_type*/,
     std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
   QuicTagVector values;
   QuicErrorCode error = peer_hello.GetTaglist(tag_, &values);
   switch (error) {
@@ -374,7 +383,7 @@ bool QuicFixedSocketAddress::HasSendValue() const {
 }
 
 const QuicSocketAddress& QuicFixedSocketAddress::GetSendValue() const {
-  QUIC_BUG_IF(!has_send_value_)
+  QUIC_BUG_IF(quic_bug_12743_8, !has_send_value_)
       << "No send value to get for tag:" << QuicTagToString(tag_);
   return send_value_;
 }
@@ -389,7 +398,7 @@ bool QuicFixedSocketAddress::HasReceivedValue() const {
 }
 
 const QuicSocketAddress& QuicFixedSocketAddress::GetReceivedValue() const {
-  QUIC_BUG_IF(!has_receive_value_)
+  QUIC_BUG_IF(quic_bug_12743_9, !has_receive_value_)
       << "No receive value to get for tag:" << QuicTagToString(tag_);
   return receive_value_;
 }
@@ -447,7 +456,6 @@ QuicConfig::QuicConfig()
       initial_stream_flow_control_window_bytes_(kSFCW, PRESENCE_OPTIONAL),
       initial_session_flow_control_window_bytes_(kCFCW, PRESENCE_OPTIONAL),
       connection_migration_disabled_(kNCMR, PRESENCE_OPTIONAL),
-      support_handshake_done_(0, PRESENCE_OPTIONAL),
       key_update_supported_remotely_(false),
       key_update_supported_locally_(false),
       alternate_server_address_ipv6_(kASAD, PRESENCE_OPTIONAL),
@@ -544,7 +552,8 @@ const QuicTagVector& QuicConfig::ClientRequestedIndependentOptions(
 
 void QuicConfig::SetIdleNetworkTimeout(QuicTime::Delta idle_network_timeout) {
   if (idle_network_timeout.ToMicroseconds() <= 0) {
-    QUIC_BUG << "Invalid idle network timeout " << idle_network_timeout;
+    QUIC_BUG(quic_bug_10575_6)
+        << "Invalid idle network timeout " << idle_network_timeout;
     return;
   }
   max_idle_timeout_to_send_ = idle_network_timeout;
@@ -729,9 +738,10 @@ uint64_t QuicConfig::GetInitialRoundTripTimeUsToSend() const {
 void QuicConfig::SetInitialStreamFlowControlWindowToSend(
     uint64_t window_bytes) {
   if (window_bytes < kMinimumFlowControlSendWindow) {
-    QUIC_BUG << "Initial stream flow control receive window (" << window_bytes
-             << ") cannot be set lower than minimum ("
-             << kMinimumFlowControlSendWindow << ").";
+    QUIC_BUG(quic_bug_10575_7)
+        << "Initial stream flow control receive window (" << window_bytes
+        << ") cannot be set lower than minimum ("
+        << kMinimumFlowControlSendWindow << ").";
     window_bytes = kMinimumFlowControlSendWindow;
   }
   initial_stream_flow_control_window_bytes_.SetSendValue(window_bytes);
@@ -824,9 +834,10 @@ uint64_t QuicConfig::ReceivedInitialMaxStreamDataBytesUnidirectional() const {
 void QuicConfig::SetInitialSessionFlowControlWindowToSend(
     uint64_t window_bytes) {
   if (window_bytes < kMinimumFlowControlSendWindow) {
-    QUIC_BUG << "Initial session flow control receive window (" << window_bytes
-             << ") cannot be set lower than default ("
-             << kMinimumFlowControlSendWindow << ").";
+    QUIC_BUG(quic_bug_10575_8)
+        << "Initial session flow control receive window (" << window_bytes
+        << ") cannot be set lower than default ("
+        << kMinimumFlowControlSendWindow << ").";
     window_bytes = kMinimumFlowControlSendWindow;
   }
   initial_session_flow_control_window_bytes_.SetSendValue(window_bytes);
@@ -852,19 +863,6 @@ bool QuicConfig::DisableConnectionMigration() const {
   return connection_migration_disabled_.HasReceivedValue();
 }
 
-void QuicConfig::SetSupportHandshakeDone() {
-  support_handshake_done_.SetSendValue(1);
-}
-
-bool QuicConfig::HandshakeDoneSupported() const {
-  return support_handshake_done_.HasSendValue() &&
-         support_handshake_done_.GetSendValue() > 0;
-}
-
-bool QuicConfig::PeerSupportsHandshakeDone() const {
-  return support_handshake_done_.HasReceivedValue();
-}
-
 void QuicConfig::SetKeyUpdateSupportedLocally() {
   key_update_supported_locally_ = true;
 }
@@ -884,11 +882,27 @@ bool QuicConfig::KeyUpdateSupportedRemotely() const {
 void QuicConfig::SetIPv6AlternateServerAddressToSend(
     const QuicSocketAddress& alternate_server_address_ipv6) {
   if (!alternate_server_address_ipv6.host().IsIPv6()) {
-    QUIC_BUG << "Cannot use SetIPv6AlternateServerAddressToSend with "
-             << alternate_server_address_ipv6;
+    QUIC_BUG(quic_bug_10575_9)
+        << "Cannot use SetIPv6AlternateServerAddressToSend with "
+        << alternate_server_address_ipv6;
     return;
   }
   alternate_server_address_ipv6_.SetSendValue(alternate_server_address_ipv6);
+}
+
+void QuicConfig::SetIPv6AlternateServerAddressToSend(
+    const QuicSocketAddress& alternate_server_address_ipv6,
+    const QuicConnectionId& connection_id,
+    const StatelessResetToken& stateless_reset_token) {
+  if (!alternate_server_address_ipv6.host().IsIPv6()) {
+    QUIC_BUG(quic_bug_10575_10)
+        << "Cannot use SetIPv6AlternateServerAddressToSend with "
+        << alternate_server_address_ipv6;
+    return;
+  }
+  alternate_server_address_ipv6_.SetSendValue(alternate_server_address_ipv6);
+  preferred_address_connection_id_and_token_ =
+      std::make_pair(connection_id, stateless_reset_token);
 }
 
 bool QuicConfig::HasReceivedIPv6AlternateServerAddress() const {
@@ -903,11 +917,27 @@ const QuicSocketAddress& QuicConfig::ReceivedIPv6AlternateServerAddress()
 void QuicConfig::SetIPv4AlternateServerAddressToSend(
     const QuicSocketAddress& alternate_server_address_ipv4) {
   if (!alternate_server_address_ipv4.host().IsIPv4()) {
-    QUIC_BUG << "Cannot use SetIPv4AlternateServerAddressToSend with "
-             << alternate_server_address_ipv4;
+    QUIC_BUG(quic_bug_10575_11)
+        << "Cannot use SetIPv4AlternateServerAddressToSend with "
+        << alternate_server_address_ipv4;
     return;
   }
   alternate_server_address_ipv4_.SetSendValue(alternate_server_address_ipv4);
+}
+
+void QuicConfig::SetIPv4AlternateServerAddressToSend(
+    const QuicSocketAddress& alternate_server_address_ipv4,
+    const QuicConnectionId& connection_id,
+    const StatelessResetToken& stateless_reset_token) {
+  if (!alternate_server_address_ipv4.host().IsIPv4()) {
+    QUIC_BUG(quic_bug_10575_12)
+        << "Cannot use SetIPv4AlternateServerAddressToSend with "
+        << alternate_server_address_ipv4;
+    return;
+  }
+  alternate_server_address_ipv4_.SetSendValue(alternate_server_address_ipv4);
+  preferred_address_connection_id_and_token_ =
+      std::make_pair(connection_id, stateless_reset_token);
 }
 
 bool QuicConfig::HasReceivedIPv4AlternateServerAddress() const {
@@ -917,6 +947,18 @@ bool QuicConfig::HasReceivedIPv4AlternateServerAddress() const {
 const QuicSocketAddress& QuicConfig::ReceivedIPv4AlternateServerAddress()
     const {
   return alternate_server_address_ipv4_.GetReceivedValue();
+}
+
+bool QuicConfig::HasReceivedPreferredAddressConnectionIdAndToken() const {
+  return (HasReceivedIPv6AlternateServerAddress() ||
+          HasReceivedIPv4AlternateServerAddress()) &&
+         preferred_address_connection_id_and_token_.has_value();
+}
+
+const std::pair<QuicConnectionId, StatelessResetToken>&
+QuicConfig::ReceivedPreferredAddressConnectionIdAndToken() const {
+  QUICHE_DCHECK(HasReceivedPreferredAddressConnectionIdAndToken());
+  return *preferred_address_connection_id_and_token_;
 }
 
 void QuicConfig::SetOriginalConnectionIdToSend(
@@ -931,7 +973,7 @@ bool QuicConfig::HasReceivedOriginalConnectionId() const {
 
 QuicConnectionId QuicConfig::ReceivedOriginalConnectionId() const {
   if (!HasReceivedOriginalConnectionId()) {
-    QUIC_BUG << "No received original connection ID";
+    QUIC_BUG(quic_bug_10575_13) << "No received original connection ID";
     return EmptyQuicConnectionId();
   }
   return received_original_destination_connection_id_.value();
@@ -948,7 +990,7 @@ bool QuicConfig::HasReceivedInitialSourceConnectionId() const {
 
 QuicConnectionId QuicConfig::ReceivedInitialSourceConnectionId() const {
   if (!HasReceivedInitialSourceConnectionId()) {
-    QUIC_BUG << "No received initial source connection ID";
+    QUIC_BUG(quic_bug_10575_14) << "No received initial source connection ID";
     return EmptyQuicConnectionId();
   }
   return received_initial_source_connection_id_.value();
@@ -965,14 +1007,14 @@ bool QuicConfig::HasReceivedRetrySourceConnectionId() const {
 
 QuicConnectionId QuicConfig::ReceivedRetrySourceConnectionId() const {
   if (!HasReceivedRetrySourceConnectionId()) {
-    QUIC_BUG << "No received retry source connection ID";
+    QUIC_BUG(quic_bug_10575_15) << "No received retry source connection ID";
     return EmptyQuicConnectionId();
   }
   return received_retry_source_connection_id_.value();
 }
 
 void QuicConfig::SetStatelessResetTokenToSend(
-    QuicUint128 stateless_reset_token) {
+    const StatelessResetToken& stateless_reset_token) {
   stateless_reset_token_.SetSendValue(stateless_reset_token);
 }
 
@@ -980,7 +1022,7 @@ bool QuicConfig::HasReceivedStatelessResetToken() const {
   return stateless_reset_token_.HasReceivedValue();
 }
 
-QuicUint128 QuicConfig::ReceivedStatelessResetToken() const {
+const StatelessResetToken& QuicConfig::ReceivedStatelessResetToken() const {
   return stateless_reset_token_.GetReceivedValue();
 }
 
@@ -1065,7 +1107,7 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
     const CryptoHandshakeMessage& peer_hello,
     HelloType hello_type,
     std::string* error_details) {
-  DCHECK(error_details != nullptr);
+  QUICHE_DCHECK(error_details != nullptr);
 
   QuicErrorCode error = QUIC_NO_ERROR;
   if (error == QUIC_NO_ERROR) {
@@ -1168,7 +1210,8 @@ bool QuicConfig::FillTransportParameters(TransportParameters* params) const {
       max_idle_timeout_to_send_.ToMilliseconds());
 
   if (stateless_reset_token_.HasSendValue()) {
-    QuicUint128 stateless_reset_token = stateless_reset_token_.GetSendValue();
+    StatelessResetToken stateless_reset_token =
+        stateless_reset_token_.GetSendValue();
     params->stateless_reset_token.assign(
         reinterpret_cast<const char*>(&stateless_reset_token),
         reinterpret_cast<const char*>(&stateless_reset_token) +
@@ -1204,7 +1247,6 @@ bool QuicConfig::FillTransportParameters(TransportParameters* params) const {
   params->disable_active_migration =
       connection_migration_disabled_.HasSendValue() &&
       connection_migration_disabled_.GetSendValue() != 0;
-  params->support_handshake_done = HandshakeDoneSupported();
 
   if (alternate_server_address_ipv6_.HasSendValue() ||
       alternate_server_address_ipv4_.HasSendValue()) {
@@ -1216,6 +1258,15 @@ bool QuicConfig::FillTransportParameters(TransportParameters* params) const {
     if (alternate_server_address_ipv4_.HasSendValue()) {
       preferred_address.ipv4_socket_address =
           alternate_server_address_ipv4_.GetSendValue();
+    }
+    if (preferred_address_connection_id_and_token_) {
+      preferred_address.connection_id =
+          preferred_address_connection_id_and_token_->first;
+      auto* begin = reinterpret_cast<const char*>(
+          &preferred_address_connection_id_and_token_->second);
+      auto* end =
+          begin + sizeof(preferred_address_connection_id_and_token_->second);
+      preferred_address.stateless_reset_token.assign(begin, end);
     }
     params->preferred_address =
         std::make_unique<TransportParameters::PreferredAddress>(
@@ -1275,10 +1326,10 @@ QuicErrorCode QuicConfig::ProcessTransportParameters(
   }
 
   if (!is_resumption && !params.stateless_reset_token.empty()) {
-    QuicUint128 stateless_reset_token;
+    StatelessResetToken stateless_reset_token;
     if (params.stateless_reset_token.size() != sizeof(stateless_reset_token)) {
-      QUIC_BUG << "Bad stateless reset token length "
-               << params.stateless_reset_token.size();
+      QUIC_BUG(quic_bug_10575_16) << "Bad stateless reset token length "
+                                  << params.stateless_reset_token.size();
       *error_details = "Bad stateless reset token length";
       return QUIC_INTERNAL_ERROR;
     }
@@ -1335,26 +1386,29 @@ QuicErrorCode QuicConfig::ProcessTransportParameters(
         alternate_server_address_ipv4_.SetReceivedValue(
             params.preferred_address->ipv4_socket_address);
       }
-    }
-    if (GetQuicReloadableFlag(quic_record_received_min_ack_delay)) {
-      if (params.min_ack_delay_us.value() != 0) {
-        if (params.min_ack_delay_us.value() >
-            params.max_ack_delay.value() * kNumMicrosPerMilli) {
-          *error_details = "MinAckDelay is greater than MaxAckDelay.";
-          return IETF_QUIC_PROTOCOL_VIOLATION;
-        }
-        QUIC_RELOADABLE_FLAG_COUNT(quic_record_received_min_ack_delay);
-        min_ack_delay_ms_.SetReceivedValue(params.min_ack_delay_us.value() /
-                                           kNumMicrosPerMilli);
+      // TODO(haoyuewang) Treat 0 length connection ID sent in preferred_address
+      // as a connection error of type TRANSPORT_PARAMETER_ERROR when server
+      // fully supports it.
+      if (!params.preferred_address->connection_id.IsEmpty()) {
+        preferred_address_connection_id_and_token_ = std::make_pair(
+            params.preferred_address->connection_id,
+            *reinterpret_cast<const StatelessResetToken*>(
+                &params.preferred_address->stateless_reset_token.front()));
       }
+    }
+    if (params.min_ack_delay_us.value() != 0) {
+      if (params.min_ack_delay_us.value() >
+          params.max_ack_delay.value() * kNumMicrosPerMilli) {
+        *error_details = "MinAckDelay is greater than MaxAckDelay.";
+        return IETF_QUIC_PROTOCOL_VIOLATION;
+      }
+      min_ack_delay_ms_.SetReceivedValue(params.min_ack_delay_us.value() /
+                                         kNumMicrosPerMilli);
     }
   }
 
   if (params.disable_active_migration) {
     connection_migration_disabled_.SetReceivedValue(1u);
-  }
-  if (params.support_handshake_done) {
-    support_handshake_done_.SetReceivedValue(1u);
   }
   if (!is_resumption && !params.key_update_not_yet_supported) {
     key_update_supported_remotely_ = true;

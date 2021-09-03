@@ -15,6 +15,7 @@ import android.os.Bundle;
 
 import androidx.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,18 +29,26 @@ import org.mockito.MockitoAnnotations;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorSupplier;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
+import org.chromium.components.payments.AndroidPaymentAppFinder;
 import org.chromium.components.payments.PackageManagerDelegate;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentAppFactoryDelegate;
 import org.chromium.components.payments.PaymentAppFactoryParams;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
+import org.chromium.components.payments.PaymentManifestWebDataService;
 import org.chromium.components.payments.WebAppManifestSection;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
+import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
+import org.chromium.ui.base.ActivityWindowAndroid;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.test.util.DummyUiActivityTestCase;
 import org.chromium.url.GURL;
 import org.chromium.url.Origin;
 
@@ -51,7 +60,7 @@ import java.util.Map;
 /** Tests for the native Android payment app finder. */
 @RunWith(BaseJUnit4ClassRunner.class)
 @Batch(AndroidPaymentAppFinderUnitTest.PAYMENTS_BROWSER_UNIT_TESTS)
-public class AndroidPaymentAppFinderUnitTest {
+public class AndroidPaymentAppFinderUnitTest extends DummyUiActivityTestCase {
     // Collection of payments unit tests that require the browser process to be initialized.
     static final String PAYMENTS_BROWSER_UNIT_TESTS = "PaymentsBrowserUnitTests";
     private static final IntentArgumentMatcher sPayIntentArgumentMatcher =
@@ -69,11 +78,21 @@ public class AndroidPaymentAppFinderUnitTest {
     @Mock
     private PackageManagerDelegate mPackageManagerDelegate;
 
+    private WindowAndroid mWindowAndroid;
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
+        mWindowAndroid = TestThreadUtils.runOnUiThreadBlockingNoException(
+                () -> { return new ActivityWindowAndroid(getActivity()); });
+
         NativeLibraryTestUtils.loadNativeLibraryAndInitBrowserProcess();
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mWindowAndroid.destroy(); });
     }
 
     /**
@@ -108,7 +127,12 @@ public class AndroidPaymentAppFinderUnitTest {
             methodData.put(methodName, data);
         }
         PaymentAppFactoryParams params = Mockito.mock(PaymentAppFactoryParams.class);
-        Mockito.when(params.getWebContents()).thenReturn(Mockito.mock(WebContents.class));
+        WebContents webContents = Mockito.mock(WebContents.class);
+        TabModelSelector tabModelSelector = Mockito.mock(TabModelSelector.class);
+        TabModelSelectorSupplier.setInstanceForTesting(tabModelSelector);
+        Mockito.when(tabModelSelector.isIncognitoSelected()).thenReturn(false);
+        Mockito.when(webContents.getTopLevelNativeWindow()).thenReturn(mWindowAndroid);
+        Mockito.when(params.getWebContents()).thenReturn(webContents);
         Mockito.when(params.getId()).thenReturn("id");
         Mockito.when(params.getMethodData()).thenReturn(methodData);
         Mockito.when(params.getTopLevelOrigin()).thenReturn("https://chromium.org");
@@ -119,10 +143,9 @@ public class AndroidPaymentAppFinderUnitTest {
         Mockito.when(params.getMayCrawl()).thenReturn(false);
         PaymentAppFactoryDelegate delegate = Mockito.mock(PaymentAppFactoryDelegate.class);
         Mockito.when(delegate.getParams()).thenReturn(params);
-        AndroidPaymentAppFinder finder =
-                new AndroidPaymentAppFinder(mPaymentManifestWebDataService, downloader, parser,
-                        packageManagerDelegate, new TwaPackageManagerDelegate(), delegate,
-                        /*factory=*/null);
+        AndroidPaymentAppFinder finder = new AndroidPaymentAppFinder(mPaymentManifestWebDataService,
+                downloader, parser, packageManagerDelegate, delegate,
+                /*factory=*/null);
         finder.bypassIsReadyToPayServiceInTest();
         finder.findAndroidPaymentApps();
         return delegate;
@@ -282,67 +305,6 @@ public class AndroidPaymentAppFinderUnitTest {
         Mockito.verify(packageManagerDelegate, Mockito.never())
                 .getStringArrayResourceForApplication(
                         ArgumentMatchers.any(ApplicationInfo.class), ArgumentMatchers.anyInt());
-    }
-
-    @SmallTest
-    @Test
-    @UiThreadTest
-    public void testQueryBasicCardsWithTwoApps() {
-        List<ResolveInfo> activities = new ArrayList<>();
-        ResolveInfo alicePay = new ResolveInfo();
-        alicePay.activityInfo = new ActivityInfo();
-        alicePay.activityInfo.packageName = "com.alicepay.app";
-        alicePay.activityInfo.name = "com.alicepay.app.WebPaymentActivity";
-        alicePay.activityInfo.applicationInfo = new ApplicationInfo();
-        Bundle alicePayMetaData = new Bundle();
-        alicePayMetaData.putString(
-                AndroidPaymentAppFinder.META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME,
-                "basic-card");
-        alicePayMetaData.putInt(AndroidPaymentAppFinder.META_DATA_NAME_OF_PAYMENT_METHOD_NAMES, 1);
-        alicePay.activityInfo.metaData = alicePayMetaData;
-        activities.add(alicePay);
-
-        ResolveInfo bobPay = new ResolveInfo();
-        bobPay.activityInfo = new ActivityInfo();
-        bobPay.activityInfo.packageName = "com.bobpay.app";
-        bobPay.activityInfo.name = "com.bobpay.app.WebPaymentActivity";
-        bobPay.activityInfo.applicationInfo = new ApplicationInfo();
-        Bundle bobPayMetaData = new Bundle();
-        bobPayMetaData.putString(
-                AndroidPaymentAppFinder.META_DATA_NAME_OF_DEFAULT_PAYMENT_METHOD_NAME,
-                "basic-card");
-        bobPayMetaData.putInt(AndroidPaymentAppFinder.META_DATA_NAME_OF_PAYMENT_METHOD_NAMES, 2);
-        bobPay.activityInfo.metaData = bobPayMetaData;
-        activities.add(bobPay);
-
-        Mockito.when(mPackageManagerDelegate.getAppLabel(Mockito.any(ResolveInfo.class)))
-                .thenReturn("A non-empty label");
-        Mockito.when(mPackageManagerDelegate.getActivitiesThatCanRespondToIntentWithMetaData(
-                             ArgumentMatchers.argThat(sPayIntentArgumentMatcher)))
-                .thenReturn(activities);
-        Mockito.when(mPackageManagerDelegate.getServicesThatCanRespondToIntent(
-                             ArgumentMatchers.argThat(new IntentArgumentMatcher(
-                                     new Intent(AndroidPaymentAppFinder.ACTION_IS_READY_TO_PAY)))))
-                .thenReturn(new ArrayList<ResolveInfo>());
-
-        Mockito.when(mPackageManagerDelegate.getStringArrayResourceForApplication(
-                             ArgumentMatchers.eq(alicePay.activityInfo.applicationInfo),
-                             ArgumentMatchers.eq(1)))
-                .thenReturn(new String[] {"https://alicepay.com"});
-        Mockito.when(mPackageManagerDelegate.getStringArrayResourceForApplication(
-                             ArgumentMatchers.eq(bobPay.activityInfo.applicationInfo),
-                             ArgumentMatchers.eq(2)))
-                .thenReturn(new String[] {"https://bobpay.com"});
-
-        PaymentAppFactoryDelegate delegate = findApps(new String[] {"basic-card"},
-                mPaymentManifestDownloader, mPaymentManifestParser, mPackageManagerDelegate);
-
-        Mockito.verify(delegate).onCanMakePaymentCalculated(true);
-        Mockito.verify(delegate).onPaymentAppCreated(
-                ArgumentMatchers.argThat(Matches.paymentAppIdentifier("com.alicepay.app")));
-        Mockito.verify(delegate).onPaymentAppCreated(
-                ArgumentMatchers.argThat(Matches.paymentAppIdentifier("com.bobpay.app")));
-        Mockito.verify(delegate).onDoneCreatingPaymentApps(/*factory=*/null);
     }
 
     @SmallTest

@@ -35,7 +35,7 @@ import {
   kSizedDepthStencilFormats,
 } from '../../../capability_info.js';
 import { GPUTest } from '../../../gpu_test.js';
-import { PerTexelComponent } from '../../../util/texture/texelData.js';
+import { PerTexelComponent } from '../../../util/texture/texel_data.js';
 
 // Test with a zero and non-zero mip.
 const kMipLevel: number[] = [0, 1];
@@ -68,8 +68,8 @@ g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
     const kColorFormat: GPUTextureFormat = 'rgba8unorm';
     const colorAttachment = t.device.createTexture({
       format: kColorFormat,
-      size: { width: kWidth, height: kHeight, depth: 1 },
-      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+      size: { width: kWidth, height: kHeight, depthOrArrayLayers: 1 },
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     const colorAttachmentView = colorAttachment.createView();
@@ -78,8 +78,8 @@ g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
     const kDepthStencilFormat: GPUTextureFormat = 'depth32float';
     const depthStencilAttachment = t.device.createTexture({
       format: kDepthStencilFormat,
-      size: { width: kWidth, height: kHeight, depth: 1 },
-      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+      size: { width: kWidth, height: kHeight, depthOrArrayLayers: 1 },
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     // Color load operation will clear to {1.0, 1.0, 1.0, 1.0}.
@@ -89,13 +89,13 @@ g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
     const pass = encoder.beginRenderPass({
       colorAttachments: [
         {
-          attachment: colorAttachmentView,
+          view: colorAttachmentView,
           loadValue: { r: 1.0, g: 1.0, b: 1.0, a: 1.0 },
           storeOp: t.params.colorStoreOperation,
         },
       ],
       depthStencilAttachment: {
-        attachment: depthStencilAttachment.createView(),
+        view: depthStencilAttachment.createView(),
         depthLoadValue: 1.0,
         depthStoreOp: t.params.depthStencilStoreOperation,
         stencilLoadValue: 1.0,
@@ -104,7 +104,7 @@ g.test('render_pass_store_op,color_attachment_with_depth_stencil_attachment')
     });
     pass.endPass();
 
-    t.device.defaultQueue.submit([encoder.finish()]);
+    t.device.queue.submit([encoder.finish()]);
 
     // Check that the correct store operation occurred.
     let expectedColorValue: PerTexelComponent<number> = {};
@@ -144,7 +144,10 @@ g.test('render_pass_store_op,color_attachment_only')
     params()
       .combine(poptions('colorFormat', kEncodableTextureFormats))
       // Filter out any non-renderable formats
-      .filter(({ colorFormat }) => kEncodableTextureFormatInfo[colorFormat].renderable)
+      .filter(({ colorFormat }) => {
+        const info = kEncodableTextureFormatInfo[colorFormat];
+        return info.color && info.renderable;
+      })
       .combine(poptions('storeOperation', kStoreOps))
       .combine(poptions('mipLevel', kMipLevel))
       .combine(poptions('arrayLayer', kArrayLayers))
@@ -152,9 +155,9 @@ g.test('render_pass_store_op,color_attachment_only')
   .fn(t => {
     const colorAttachment = t.device.createTexture({
       format: t.params.colorFormat,
-      size: { width: kWidth, height: kHeight, depth: t.params.arrayLayer + 1 },
+      size: { width: kWidth, height: kHeight, depthOrArrayLayers: t.params.arrayLayer + 1 },
       mipLevelCount: kMipLevelCount,
-      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     const colorViewDesc: GPUTextureViewDescriptor = {
@@ -172,14 +175,14 @@ g.test('render_pass_store_op,color_attachment_only')
     const pass = encoder.beginRenderPass({
       colorAttachments: [
         {
-          attachment: colorAttachmentView,
+          view: colorAttachmentView,
           loadValue: { r: 1.0, g: 0.0, b: 0.0, a: 1.0 },
           storeOp: t.params.storeOperation,
         },
       ],
     });
     pass.endPass();
-    t.device.defaultQueue.submit([encoder.finish()]);
+    t.device.queue.submit([encoder.finish()]);
 
     // Check that the correct store operation occurred.
     let expectedValue: PerTexelComponent<number> = {};
@@ -215,8 +218,8 @@ g.test('render_pass_store_op,multiple_color_attachments')
       colorAttachments.push(
         t.device.createTexture({
           format: kColorFormat,
-          size: { width: kWidth, height: kHeight, depth: 1 },
-          usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+          size: { width: kWidth, height: kHeight, depthOrArrayLayers: 1 },
+          usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
         })
       );
     }
@@ -224,10 +227,10 @@ g.test('render_pass_store_op,multiple_color_attachments')
     // Color load operation will clear to {1.0, 1.0, 1.0, 1.0}
     // Color store operation is determined by test params. Use storeOperation1 for even numbered
     // attachments and storeOperation2 for odd numbered attachments.
-    const renderPassColorAttachmentDescriptors: GPURenderPassColorAttachmentDescriptor[] = [];
+    const renderPassColorAttachments: GPURenderPassColorAttachment[] = [];
     for (let i = 0; i < t.params.colorAttachments; i++) {
-      renderPassColorAttachmentDescriptors.push({
-        attachment: colorAttachments[i].createView(),
+      renderPassColorAttachments.push({
+        view: colorAttachments[i].createView(),
         loadValue: { r: 1.0, g: 1.0, b: 1.0, a: 1.0 },
         storeOp: i % 2 === 0 ? t.params.storeOperation1 : t.params.storeOperation2,
       });
@@ -235,18 +238,18 @@ g.test('render_pass_store_op,multiple_color_attachments')
 
     const encoder = t.device.createCommandEncoder();
     const pass = encoder.beginRenderPass({
-      colorAttachments: renderPassColorAttachmentDescriptors,
+      colorAttachments: renderPassColorAttachments,
     });
     pass.endPass();
-    t.device.defaultQueue.submit([encoder.finish()]);
+    t.device.queue.submit([encoder.finish()]);
 
     // Check that the correct store operation occurred.
     let expectedValue: PerTexelComponent<number> = {};
     for (let i = 0; i < t.params.colorAttachments; i++) {
-      if (renderPassColorAttachmentDescriptors[i].storeOp === 'clear') {
+      if (renderPassColorAttachments[i].storeOp === 'clear') {
         // If colorStoreOp was clear, the texture should now contain {0.0, 0.0, 0.0, 0.0}.
         expectedValue = { R: 0.0, G: 0.0, B: 0.0, A: 0.0 };
-      } else if (renderPassColorAttachmentDescriptors[i].storeOp === 'store') {
+      } else if (renderPassColorAttachments[i].storeOp === 'store') {
         // If colorStoreOP was store, the texture should still contain {1.0, 1.0, 1.0, 1.0}.
         expectedValue = { R: 1.0, G: 1.0, B: 1.0, A: 1.0 };
       }
@@ -257,13 +260,20 @@ g.test('render_pass_store_op,multiple_color_attachments')
     }
   });
 
-// Tests that render pass depth stencil store operations work correctly for all renderable color
-// formats, mip levels and array layers.
 g.test('render_pass_store_op,depth_stencil_attachment_only')
+  .desc(
+    `
+Tests that render pass depth stencil store operations work correctly for all renderable color
+formats, mip levels and array layers.
+
+- x= all (sized) depth stencil formats, all store ops, multiple mip levels, multiple array layers
+
+TODO: Also test unsized depth/stencil formats
+  `
+  )
   .params(
     params()
-      // TODO: Also test unsized depth/stencil formats
-      .combine(poptions('depthStencilFormat', kSizedDepthStencilFormats))
+      .combine(poptions('depthStencilFormat', kSizedDepthStencilFormats)) // TODO
       .combine(poptions('storeOperation', kStoreOps))
       .combine(poptions('mipLevel', kMipLevel))
       .combine(poptions('arrayLayer', kArrayLayers))
@@ -271,9 +281,9 @@ g.test('render_pass_store_op,depth_stencil_attachment_only')
   .fn(t => {
     const depthStencilAttachment = t.device.createTexture({
       format: t.params.depthStencilFormat,
-      size: { width: kWidth, height: kHeight, depth: t.params.arrayLayer + 1 },
+      size: { width: kWidth, height: kHeight, depthOrArrayLayers: t.params.arrayLayer + 1 },
       mipLevelCount: kMipLevelCount,
-      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.OUTPUT_ATTACHMENT,
+      usage: GPUTextureUsage.COPY_SRC | GPUTextureUsage.RENDER_ATTACHMENT,
     });
 
     const depthStencilViewDesc: GPUTextureViewDescriptor = {
@@ -291,7 +301,7 @@ g.test('render_pass_store_op,depth_stencil_attachment_only')
     const pass = encoder.beginRenderPass({
       colorAttachments: [],
       depthStencilAttachment: {
-        attachment: depthStencilAttachmentView,
+        view: depthStencilAttachmentView,
         depthLoadValue: 1.0,
         depthStoreOp: t.params.storeOperation,
         stencilLoadValue: 1.0,
@@ -299,7 +309,7 @@ g.test('render_pass_store_op,depth_stencil_attachment_only')
       },
     });
     pass.endPass();
-    t.device.defaultQueue.submit([encoder.finish()]);
+    t.device.queue.submit([encoder.finish()]);
 
     let expectedValue: PerTexelComponent<number> = {};
     if (t.params.storeOperation === 'clear') {

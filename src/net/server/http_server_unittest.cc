@@ -63,8 +63,8 @@ class TestHttpClient {
   int ConnectAndWait(const IPEndPoint& address) {
     AddressList addresses(address);
     NetLogSource source;
-    socket_.reset(
-        new TCPClientSocket(addresses, nullptr, nullptr, nullptr, source));
+    socket_ = std::make_unique<TCPClientSocket>(addresses, nullptr, nullptr,
+                                                nullptr, source);
 
     TestCompletionCallback callback;
     int rv = socket_->Connect(callback.callback());
@@ -177,7 +177,7 @@ class HttpServerTest : public TestWithTaskEnvironment,
     std::unique_ptr<ServerSocket> server_socket(
         new TCPServerSocket(nullptr, NetLogSource()));
     server_socket->ListenWithAddressAndPort("127.0.0.1", 0, 1);
-    server_.reset(new HttpServer(std::move(server_socket), this));
+    server_ = std::make_unique<HttpServer>(std::move(server_socket), this);
     ASSERT_THAT(server_->GetLocalAddress(&server_address_), IsOk());
   }
 
@@ -442,6 +442,19 @@ TEST_F(HttpServerTest, RequestWithBody) {
   ASSERT_EQ(body.length(), GetRequest(0).data.length());
   ASSERT_EQ('a', body[0]);
   ASSERT_EQ('c', *body.rbegin());
+}
+
+// Tests that |HttpServer::HandleReadResult| will ignore Upgrade header if value
+// is not WebSocket.
+TEST_F(HttpServerTest, UpgradeIgnored) {
+  TestHttpClient client;
+  CreateConnection(&client);
+  client.Send(
+      "GET /test HTTP/1.1\r\n"
+      "Upgrade: h2c\r\n"
+      "Connection: SomethingElse, Upgrade\r\n"
+      "\r\n");
+  RunUntilRequestsReceived(1);
 }
 
 TEST_F(WebSocketTest, RequestWebSocket) {

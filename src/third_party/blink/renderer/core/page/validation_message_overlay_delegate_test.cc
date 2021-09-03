@@ -34,7 +34,7 @@ class ValidationMessageOverlayDelegateTest : public PaintTestConfigurations,
     // an extra step is required to ensure that the system font is configured.
     // See https://crbug.com/969622
     blink::WebFontRendering::SetMenuFontMetrics(
-        base::ASCIIToUTF16("Arial").c_str(), 12);
+        blink::WebString::FromASCII("Arial"), 12);
   }
 #endif
 };
@@ -49,8 +49,7 @@ TEST_P(ValidationMessageOverlayDelegateTest,
   // When WebTestSupport::IsRunningWebTest is set, the animations in
   // ValidationMessageOverlayDelegate are disabled. We are specifically testing
   // animations, so make sure that doesn't happen.
-  bool was_running_web_test = WebTestSupport::IsRunningWebTest();
-  WebTestSupport::SetIsRunningWebTest(false);
+  ScopedWebTestMode web_test_mode(false);
 
   SetBodyInnerHTML("<div id='anchor'></div>");
   Element* anchor = GetElementById("anchor");
@@ -64,7 +63,7 @@ TEST_P(ValidationMessageOverlayDelegateTest,
   auto overlay =
       std::make_unique<FrameOverlay>(&GetFrame(), std::move(delegate));
   delegate_ptr->CreatePage(*overlay);
-  ASSERT_TRUE(GetFrame().View()->UpdateLifecycleToCompositingCleanPlusScrolling(
+  ASSERT_TRUE(GetFrame().View()->UpdateAllLifecyclePhasesExceptPaint(
       DocumentUpdateReason::kTest));
 
   // Trigger the overlay animations.
@@ -85,8 +84,6 @@ TEST_P(ValidationMessageOverlayDelegateTest,
   for (const auto& animation : animations) {
     EXPECT_FALSE(animation->HasActiveAnimationsOnCompositor());
   }
-
-  WebTestSupport::SetIsRunningWebTest(was_running_web_test);
 }
 
 // Regression test for https://crbug.com/990680, where we found we were not

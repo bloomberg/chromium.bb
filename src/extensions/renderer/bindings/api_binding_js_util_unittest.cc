@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "base/stl_util.h"
 #include "extensions/renderer/bindings/api_binding_test_util.h"
 #include "extensions/renderer/bindings/api_bindings_system.h"
@@ -15,6 +14,7 @@
 #include "gin/arguments.h"
 #include "gin/handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace extensions {
 
@@ -173,7 +173,7 @@ TEST_F(APIBindingJSUtilUnittest, TestSendRequestWithOptions) {
   CallFunctionOnObject(context, v8_util, kSendRequestWithNoOptions);
   ASSERT_TRUE(last_request());
   EXPECT_EQ("alpha.functionWithCallback", last_request()->method_name);
-  EXPECT_EQ("[\"someString\"]", ValueToString(*last_request()->arguments));
+  EXPECT_EQ("[\"someString\"]", ValueToString(*last_request()->arguments_list));
   reset_last_request();
 
   const char kSendRequestForUIThread[] =
@@ -183,7 +183,8 @@ TEST_F(APIBindingJSUtilUnittest, TestSendRequestWithOptions) {
   CallFunctionOnObject(context, v8_util, kSendRequestForUIThread);
   ASSERT_TRUE(last_request());
   EXPECT_EQ("alpha.functionWithCallback", last_request()->method_name);
-  EXPECT_EQ("[\"someOtherString\"]", ValueToString(*last_request()->arguments));
+  EXPECT_EQ("[\"someOtherString\"]",
+            ValueToString(*last_request()->arguments_list));
   reset_last_request();
 
   const char kSendRequestWithCustomCallback[] =
@@ -199,7 +200,7 @@ TEST_F(APIBindingJSUtilUnittest, TestSendRequestWithOptions) {
   CallFunctionOnObject(context, v8_util, kSendRequestWithCustomCallback);
   ASSERT_TRUE(last_request());
   EXPECT_EQ("alpha.functionWithCallback", last_request()->method_name);
-  EXPECT_EQ("[\"stringy\"]", ValueToString(*last_request()->arguments));
+  EXPECT_EQ("[\"stringy\"]", ValueToString(*last_request()->arguments_list));
   bindings_system()->CompleteRequest(last_request()->request_id,
                                      base::ListValue(), std::string());
   EXPECT_EQ("true", GetStringPropertyFromObject(context->Global(), context,
@@ -224,7 +225,7 @@ TEST_F(APIBindingJSUtilUnittest, TestSendRequestSerializationFailure) {
   CallFunctionOnObject(context, v8_util, kSendRequest);
   ASSERT_TRUE(last_request());
   EXPECT_EQ("alpha.functionWithCallback", last_request()->method_name);
-  EXPECT_EQ("[null,null]", ValueToString(*last_request()->arguments));
+  EXPECT_EQ("[null,null]", ValueToString(*last_request()->arguments_list));
   reset_last_request();
 }
 
@@ -308,7 +309,7 @@ TEST_F(APIBindingJSUtilUnittest, TestValidateType) {
 
   auto call_validate_type = [context, v8_util](
                                 const char* function,
-                                base::Optional<std::string> expected_error) {
+                                absl::optional<std::string> expected_error) {
     v8::Local<v8::Function> v8_function = FunctionFromString(context, function);
     v8::Local<v8::Value> args[] = {v8_util};
     if (expected_error) {
@@ -324,7 +325,7 @@ TEST_F(APIBindingJSUtilUnittest, TestValidateType) {
       R"((function(util) {
            util.validateType('alpha.objRef', {prop1: 'hello'});
          }))",
-      base::nullopt);
+      absl::nullopt);
 
   // Test a failing case (prop1 is supposed to be a string).
   std::string expected_error =
@@ -368,7 +369,7 @@ TEST_F(APIBindingJSUtilUnittest, TestValidateCustomSignature) {
 
   auto call_validate_signature =
       [context, v8_util](const char* function,
-                         base::Optional<std::string> expected_error) {
+                         absl::optional<std::string> expected_error) {
         v8::Local<v8::Function> v8_function =
             FunctionFromString(context, function);
         v8::Local<v8::Value> args[] = {v8_util};
@@ -385,7 +386,7 @@ TEST_F(APIBindingJSUtilUnittest, TestValidateCustomSignature) {
       R"((function(util) {
            util.validateCustomSignature('custom_signature', [1, 'foo']);
          }))",
-      base::nullopt);
+      absl::nullopt);
 
   // Test a failing case (prop1 is supposed to be a string).
   std::string expected_error =

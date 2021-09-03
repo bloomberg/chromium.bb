@@ -8,6 +8,7 @@
 #include "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/credential_provider/credential.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/elements/highlight_button.h"
 #import "ios/chrome/common/ui/util/pointer_interaction_util.h"
 #import "ios/chrome/credential_provider_extension/metrics_util.h"
 
@@ -23,7 +24,6 @@ NSString* kCellIdentifier = @"clvcCell";
 const CGFloat kHeaderHeight = 70;
 }
 
-#if defined(__IPHONE_13_4)
 // This cell just adds a simple hover pointer interaction to the TableViewCell.
 @interface CredentialListCell : UITableViewCell
 @end
@@ -42,7 +42,6 @@ const CGFloat kHeaderHeight = 70;
 }
 
 @end
-#endif  // defined(__IPHONE_13_4)
 
 @interface CredentialListViewController () <UITableViewDataSource,
                                             UISearchResultsUpdating>
@@ -132,8 +131,15 @@ const CGFloat kHeaderHeight = 70;
     return NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_NO_SEARCH_RESULTS",
                              @"No search results found");
   } else if ([self isSuggestedPasswordSection:section]) {
-    return NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_SUGGESTED_PASSWORDS",
-                             @"Suggested Passwords");
+    if (self.suggestedPasswords.count > 1) {
+      return NSLocalizedString(
+          @"IDS_IOS_CREDENTIAL_PROVIDER_SUGGESTED_PASSWORDS",
+          @"Suggested Passwords");
+    } else {
+      return NSLocalizedString(
+          @"IDS_IOS_CREDENTIAL_PROVIDER_SUGGESTED_PASSWORD",
+          @"Suggested Password");
+    }
   } else {
     return NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_ALL_PASSWORDS",
                              @"All Passwords");
@@ -145,14 +151,9 @@ const CGFloat kHeaderHeight = 70;
   UITableViewCell* cell =
       [tableView dequeueReusableCellWithIdentifier:kCellIdentifier];
   if (!cell) {
-#if defined(__IPHONE_13_4)
     cell =
         [[CredentialListCell alloc] initWithStyle:UITableViewCellStyleSubtitle
                                   reuseIdentifier:kCellIdentifier];
-#else
-    cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleSubtitle
-                                  reuseIdentifier:kCellIdentifier];
-#endif  // defined(__IPHONE_13_4)
     cell.accessoryView = [self infoIconButton];
   }
 
@@ -219,7 +220,7 @@ const CGFloat kHeaderHeight = 70;
   UIImage* image = [UIImage imageNamed:@"info_icon"];
   image = [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
 
-  UIButton* button = [UIButton buttonWithType:UIButtonTypeCustom];
+  HighlightButton* button = [HighlightButton buttonWithType:UIButtonTypeCustom];
   button.frame = CGRectMake(0.0, 0.0, image.size.width, image.size.height);
   [button setBackgroundImage:image forState:UIControlStateNormal];
   [button setTintColor:[UIColor colorNamed:kBlueColor]];
@@ -230,7 +231,6 @@ const CGFloat kHeaderHeight = 70;
       @"IDS_IOS_CREDENTIAL_PROVIDER_SHOW_DETAILS_ACCESSIBILITY_LABEL",
       @"Show Details.");
 
-#if defined(__IPHONE_13_4)
   if (@available(iOS 13.4, *)) {
     button.pointerInteractionEnabled = YES;
     button.pointerStyleProvider = ^UIPointerStyle*(
@@ -246,7 +246,6 @@ const CGFloat kHeaderHeight = 70;
       return [UIPointerStyle styleWithEffect:effect shape:shape];
     };
   }
-#endif  // defined(__IPHONE_13_4)
 
   return button;
 }

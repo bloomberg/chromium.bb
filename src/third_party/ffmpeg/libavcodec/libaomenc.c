@@ -124,6 +124,7 @@ typedef struct AOMEncoderContext {
     int enable_diff_wtd_comp;
     int enable_dist_wtd_comp;
     int enable_dual_filter;
+    AVDictionary *aom_params;
 } AOMContext;
 
 static const char *const ctlidstr[] = {
@@ -338,6 +339,9 @@ static int set_pix_fmt(AVCodecContext *avctx, aom_codec_caps_t codec_caps,
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(avctx->pix_fmt);
     enccfg->g_bit_depth = enccfg->g_input_bit_depth = desc->comp[0].depth;
     switch (avctx->pix_fmt) {
+    case AV_PIX_FMT_GRAY8:
+        enccfg->monochrome = 1;
+        /* Fall-through */
     case AV_PIX_FMT_YUV420P:
         enccfg->g_profile = FF_PROFILE_AV1_MAIN;
         *img_fmt = AOM_IMG_FMT_I420;
@@ -351,6 +355,10 @@ static int set_pix_fmt(AVCodecContext *avctx, aom_codec_caps_t codec_caps,
         enccfg->g_profile = FF_PROFILE_AV1_HIGH;
         *img_fmt = AOM_IMG_FMT_I444;
         return 0;
+    case AV_PIX_FMT_GRAY10:
+    case AV_PIX_FMT_GRAY12:
+        enccfg->monochrome = 1;
+        /* Fall-through */
     case AV_PIX_FMT_YUV420P10:
     case AV_PIX_FMT_YUV420P12:
         if (codec_caps & AOM_CODEC_CAP_HIGHBITDEPTH) {
@@ -867,6 +875,20 @@ static av_cold int aom_init(AVCodecContext *avctx,
         codecctl_int(avctx, AV1E_SET_ENABLE_INTRABC, ctx->enable_intrabc);
 #endif
 
+#if AOM_ENCODER_ABI_VERSION >= 23
+    {
+        AVDictionaryEntry *en = NULL;
+
+        while ((en = av_dict_get(ctx->aom_params, "", en, AV_DICT_IGNORE_SUFFIX))) {
+            int ret = aom_codec_set_option(&ctx->encoder, en->key, en->value);
+            if (ret != AOM_CODEC_OK) {
+                log_encoder_error(avctx, en->key);
+                return AVERROR_EXTERNAL;
+            }
+        }
+    }
+#endif
+
     // provide dummy value to initialize wrapper, values will be updated each _encode()
     aom_img_wrap(&ctx->rawimg, img_fmt, avctx->width, avctx->height, 1,
                  (unsigned char*)1);
@@ -1158,6 +1180,15 @@ static const enum AVPixelFormat av1_pix_fmts[] = {
     AV_PIX_FMT_NONE
 };
 
+static const enum AVPixelFormat av1_pix_fmts_with_gray[] = {
+    AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_GBRP,
+    AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_NONE
+};
+
 static const enum AVPixelFormat av1_pix_fmts_highbd[] = {
     AV_PIX_FMT_YUV420P,
     AV_PIX_FMT_YUV422P,
@@ -1174,13 +1205,35 @@ static const enum AVPixelFormat av1_pix_fmts_highbd[] = {
     AV_PIX_FMT_NONE
 };
 
+static const enum AVPixelFormat av1_pix_fmts_highbd_with_gray[] = {
+    AV_PIX_FMT_YUV420P,
+    AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_GBRP,
+    AV_PIX_FMT_YUV420P10,
+    AV_PIX_FMT_YUV422P10,
+    AV_PIX_FMT_YUV444P10,
+    AV_PIX_FMT_YUV420P12,
+    AV_PIX_FMT_YUV422P12,
+    AV_PIX_FMT_YUV444P12,
+    AV_PIX_FMT_GBRP10,
+    AV_PIX_FMT_GBRP12,
+    AV_PIX_FMT_GRAY8,
+    AV_PIX_FMT_GRAY10,
+    AV_PIX_FMT_GRAY12,
+    AV_PIX_FMT_NONE
+};
+
 static av_cold void av1_init_static(AVCodec *codec)
 {
+    int supports_monochrome = aom_codec_version() >= 20001;
     aom_codec_caps_t codec_caps = aom_codec_get_caps(aom_codec_av1_cx());
     if (codec_caps & AOM_CODEC_CAP_HIGHBITDEPTH)
-        codec->pix_fmts = av1_pix_fmts_highbd;
+        codec->pix_fmts = supports_monochrome ? av1_pix_fmts_highbd_with_gray :
+                                                av1_pix_fmts_highbd;
     else
-        codec->pix_fmts = av1_pix_fmts;
+        codec->pix_fmts = supports_monochrome ? av1_pix_fmts_with_gray :
+                                                av1_pix_fmts;
 
     if (aom_codec_version_major() < 2)
         codec->capabilities |= AV_CODEC_CAP_EXPERIMENTAL;
@@ -1261,6 +1314,9 @@ static const AVOption options[] = {
     { "enable-masked-comp",           "Enable masked compound",                            OFFSET(enable_masked_comp),           AV_OPT_TYPE_BOOL, {.i64 = -1}, -1, 1, VE},
     { "enable-interintra-comp",       "Enable interintra compound",                        OFFSET(enable_interintra_comp),       AV_OPT_TYPE_BOOL, {.i64 = -1}, -1, 1, VE},
     { "enable-smooth-interintra",     "Enable smooth interintra mode",                     OFFSET(enable_smooth_interintra),     AV_OPT_TYPE_BOOL, {.i64 = -1}, -1, 1, VE},
+#if AOM_ENCODER_ABI_VERSION >= 23
+    { "aom-params",                   "Set libaom options using a :-separated list of key=value pairs", OFFSET(aom_params), AV_OPT_TYPE_DICT, { 0 }, 0, 0, VE },
+#endif
     { NULL },
 };
 

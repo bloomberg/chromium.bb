@@ -5,10 +5,6 @@
 # Old enough to support Ubuntu Xenial.
 cmake_minimum_required(VERSION 3.5.1)
 
-if(POLICY CMP0048)
-  cmake_policy(SET CMP0048 NEW)
-endif()
-
 project(RE2 CXX)
 include(CTest)
 include(GNUInstallDirs)
@@ -24,6 +20,10 @@ option(USEPCRE "use PCRE in tests and benchmarks" OFF)
 # CMake seems to have no way to enable/disable testing per subproject,
 # so we provide an option similar to BUILD_TESTING, but just for RE2.
 option(RE2_BUILD_TESTING "enable testing for RE2" ON)
+
+# ABI version
+# http://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html
+set(SONAME 9)
 
 set(EXTRA_TARGET_LINK_LIBRARIES)
 
@@ -47,16 +47,14 @@ if(WIN32)
   add_definitions(-DUNICODE -D_UNICODE -DSTRICT -DNOMINMAX)
   add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
 elseif(UNIX)
-  add_compile_options(-pthread)
-  list(APPEND EXTRA_TARGET_LINK_LIBRARIES -pthread)
+  set(THREADS_PREFER_PTHREAD_FLAG ON)
+  find_package(Threads REQUIRED)
 endif()
 
 if(USEPCRE)
   add_definitions(-DUSEPCRE)
   list(APPEND EXTRA_TARGET_LINK_LIBRARIES pcre)
 endif()
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(RE2_SOURCES
     re2/bitstate.cc
@@ -84,7 +82,13 @@ set(RE2_SOURCES
     )
 
 add_library(re2 ${RE2_SOURCES})
+target_include_directories(re2 PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+set_target_properties(re2 PROPERTIES SOVERSION ${SONAME} VERSION ${SONAME}.0.0)
 add_library(re2::re2 ALIAS re2)
+
+if(UNIX)
+  target_link_libraries(re2 PUBLIC Threads::Threads)
+endif()
 
 if(RE2_BUILD_TESTING)
   set(TESTING_SOURCES
@@ -99,6 +103,7 @@ if(RE2_BUILD_TESTING)
       )
 
   add_library(testing STATIC ${TESTING_SOURCES})
+  target_link_libraries(testing PUBLIC re2)
 
   set(TEST_TARGETS
       charclass_test
@@ -130,14 +135,14 @@ if(RE2_BUILD_TESTING)
 
   foreach(target ${TEST_TARGETS})
     add_executable(${target} re2/testing/${target}.cc util/test.cc)
-    target_link_libraries(${target} testing re2 ${EXTRA_TARGET_LINK_LIBRARIES})
+    target_link_libraries(${target} testing ${EXTRA_TARGET_LINK_LIBRARIES})
     add_test(NAME ${target} COMMAND ${target})
-  endforeach(target)
+  endforeach()
 
   foreach(target ${BENCHMARK_TARGETS})
     add_executable(${target} re2/testing/${target}.cc util/benchmark.cc)
-    target_link_libraries(${target} testing re2 ${EXTRA_TARGET_LINK_LIBRARIES})
-  endforeach(target)
+    target_link_libraries(${target} testing ${EXTRA_TARGET_LINK_LIBRARIES})
+  endforeach()
 endif()
 
 set(RE2_HEADERS

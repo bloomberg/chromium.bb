@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/views/commander_frontend_views.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
@@ -19,6 +21,8 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/notification_service.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
@@ -50,6 +54,7 @@ void AnchorToBrowser(gfx::Rect* bounds, Browser* browser) {
 // Required for hotkeys to work.
 class CommanderWebView : public views::WebView {
  public:
+  METADATA_HEADER(CommanderWebView);
   explicit CommanderWebView(content::BrowserContext* context)
       : views::WebView(context) {}
   bool HandleKeyboardEvent(
@@ -59,12 +64,22 @@ class CommanderWebView : public views::WebView {
     return event_handler_.HandleKeyboardEvent(event, owner_->GetFocusManager());
   }
 
-  void set_owner(views::View* owner) { owner_ = owner; }
+  void SetOwner(views::View* owner) {
+    if (owner_ == owner)
+      return;
+    owner_ = owner;
+    OnPropertyChanged(&owner_, views::kPropertyEffectsNone);
+  }
+  views::View* GetOwner() const { return owner_; }
 
  private:
   views::UnhandledKeyboardEventHandler event_handler_;
-  views::View* owner_;
+  views::View* owner_ = nullptr;
 };
+
+BEGIN_METADATA(CommanderWebView, views::WebView)
+ADD_PROPERTY_METADATA(views::View*, Owner)
+END_METADATA
 
 CommanderFrontendViews::CommanderFrontendViews(
     commander::CommanderBackend* backend)
@@ -73,13 +88,12 @@ CommanderFrontendViews::CommanderFrontendViews(
       base::BindRepeating(&CommanderFrontendViews::OnViewModelUpdated,
                           weak_ptr_factory_.GetWeakPtr()));
 
-#if !defined(OS_CHROMEOS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   profile_manager->CreateProfileAsync(
       ProfileManager::GetSystemProfilePath(),
       base::BindRepeating(&CommanderFrontendViews::OnSystemProfileAvailable,
-                          weak_ptr_factory_.GetWeakPtr()),
-      base::string16(), std::string());
+                          weak_ptr_factory_.GetWeakPtr()));
 #else
   // TODO(lgrey): ChromeOS doesn't have a system profile. Need to find
   // a better way to do this before Commander is hooked up, but doing
@@ -130,7 +144,7 @@ void CommanderFrontendViews::Show(Browser* browser) {
 #endif
   widget_->Init(std::move(params));
 
-  web_view_->set_owner(parent);
+  web_view_->SetOwner(parent);
   web_view_->SetSize(kDefaultSize);
   CommanderUI* controller = static_cast<CommanderUI*>(
       web_view_->GetWebContents()->GetWebUI()->GetController());
@@ -160,7 +174,7 @@ void CommanderFrontendViews::Hide() {
   browser_ = nullptr;
 
   web_view_ = widget_->GetRootView()->RemoveChildViewT(web_view_ptr_);
-  web_view_->set_owner(nullptr);
+  web_view_->SetOwner(nullptr);
 
   widget_delegate_->SetOwnedByWidget(true);
   ignore_result(widget_delegate_.release());
@@ -195,7 +209,7 @@ void CommanderFrontendViews::OnWidgetBoundsChanged(
   widget_->SetBounds(bounds);
 }
 
-void CommanderFrontendViews::OnTextChanged(const base::string16& text) {
+void CommanderFrontendViews::OnTextChanged(const std::u16string& text) {
   DCHECK(is_showing());
   backend_->OnTextChanged(text, browser_);
 }
@@ -247,8 +261,10 @@ void CommanderFrontendViews::OnViewModelUpdated(
 void CommanderFrontendViews::OnSystemProfileAvailable(
     Profile* profile,
     Profile::CreateStatus status) {
-  if (status == Profile::CreateStatus::CREATE_STATUS_CREATED && !is_showing())
+  if (status == Profile::CreateStatus::CREATE_STATUS_INITIALIZED &&
+      !is_showing()) {
     CreateWebView(profile);
+  }
 }
 
 void CommanderFrontendViews::CreateWebView(Profile* profile) {

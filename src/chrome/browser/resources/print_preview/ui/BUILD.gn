@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/polymer/html_to_js.gni")
 
@@ -20,7 +21,6 @@ js_type_check("closure_compile_module") {
     ":button_strip",
     ":color_settings",
     ":copies_settings",
-    ":destination_dialog",
     ":destination_list",
     ":destination_list_item",
     ":destination_settings",
@@ -43,7 +43,6 @@ js_type_check("closure_compile_module") {
     ":plugin_proxy",
     ":preview_area",
     ":print_preview_search_box",
-    ":provisional_destination_resolver",
     ":scaling_settings",
     ":select_behavior",
     ":settings_behavior",
@@ -53,12 +52,17 @@ js_type_check("closure_compile_module") {
 
   if (is_chromeos) {
     deps += [
+      ":destination_dialog_cros",
       ":destination_dropdown_cros",
       ":destination_select_cros",
       ":pin_settings",
+      ":provisional_destination_resolver",
     ]
   } else {
-    deps += [ ":destination_select" ]
+    deps += [
+      ":destination_dialog",
+      ":destination_select",
+    ]
   }
 }
 
@@ -69,6 +73,7 @@ js_library("app") {
     "..:cloud_print_interface",
     "..:cloud_print_interface_impl",
     "..:native_layer",
+    "..:native_layer_cros",
     "../data:destination",
     "../data:document_info",
     "../data:margins",
@@ -139,12 +144,10 @@ js_library("header") {
 
 js_library("destination_settings") {
   deps = [
-    ":destination_dialog",
     ":settings_behavior",
     "..:cloud_print_interface_impl",
     "../data:destination",
     "../data:destination_store",
-    "../data:invitation_store",
     "../data:state",
     "../data:user_manager",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
@@ -154,9 +157,15 @@ js_library("destination_settings") {
   ]
 
   if (is_chromeos) {
-    deps += [ ":destination_select_cros" ]
+    deps += [
+      ":destination_dialog_cros",
+      ":destination_select_cros",
+    ]
   } else {
-    deps += [ ":destination_select" ]
+    deps += [
+      ":destination_dialog",
+      ":destination_select",
+    ]
   }
 }
 
@@ -213,6 +222,7 @@ js_library("pages_settings") {
     "..:print_preview_utils",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
+    "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:load_time_data.m",
   ]
 }
@@ -428,23 +438,40 @@ js_library("plugin_proxy") {
   ]
 }
 
-js_library("destination_dialog") {
-  deps = [
-    ":destination_list",
-    ":print_preview_search_box",
-    ":provisional_destination_resolver",
-    "..:metrics",
-    "..:native_layer",
-    "../data:destination",
-    "../data:destination_store",
-    "../data:invitation",
-    "../data:invitation_store",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
-    "//ui/webui/resources/js:event_tracker.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
-    "//ui/webui/resources/js:list_property_update_behavior.m",
-  ]
+if (is_chromeos) {
+  js_library("destination_dialog_cros") {
+    deps = [
+      ":destination_list",
+      ":print_preview_search_box",
+      ":provisional_destination_resolver",
+      "..:metrics",
+      "..:native_layer",
+      "../data:destination",
+      "../data:destination_store",
+      "../data:print_server_store",
+      "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+      "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+      "//ui/webui/resources/cr_elements/cr_searchable_drop_down:cr_searchable_drop_down.m",
+      "//ui/webui/resources/js:event_tracker.m",
+      "//ui/webui/resources/js:list_property_update_behavior.m",
+      "//ui/webui/resources/js:web_ui_listener_behavior.m",
+    ]
+  }
+} else {
+  js_library("destination_dialog") {
+    deps = [
+      ":destination_list",
+      ":print_preview_search_box",
+      "..:metrics",
+      "..:native_layer",
+      "../data:destination",
+      "../data:destination_store",
+      "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+      "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+      "//ui/webui/resources/js:event_tracker.m",
+      "//ui/webui/resources/js:list_property_update_behavior.m",
+    ]
+  }
 }
 
 js_library("destination_list") {
@@ -463,7 +490,7 @@ js_library("destination_list_item") {
     "../data:destination",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:load_time_data.m",
-    "//ui/webui/resources/js:search_highlight_utils.m",
+    "//ui/webui/resources/js:search_highlight_utils",
   ]
 }
 
@@ -477,7 +504,7 @@ js_library("advanced_settings_dialog") {
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
     "//ui/webui/resources/js:i18n_behavior.m",
-    "//ui/webui/resources/js:search_highlight_utils.m",
+    "//ui/webui/resources/js:search_highlight_utils",
   ]
 }
 
@@ -486,6 +513,7 @@ js_library("advanced_settings_item") {
     ":highlight_utils",
     ":settings_behavior",
     "..:print_preview_utils",
+    "../data:cdd",
     "../data:destination",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
@@ -495,26 +523,28 @@ js_library("print_preview_search_box") {
   deps = [
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
-    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field_behavior.m",
+    "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field_behavior",
   ]
 }
 
-js_library("provisional_destination_resolver") {
-  deps = [
-    "../data:destination",
-    "../data:destination_store",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
-    "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:i18n_behavior.m",
-    "//ui/webui/resources/js:promise_resolver.m",
-  ]
+if (is_chromeos) {
+  js_library("provisional_destination_resolver") {
+    deps = [
+      "../data:destination",
+      "../data:destination_store",
+      "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+      "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+      "//ui/webui/resources/js:assert.m",
+      "//ui/webui/resources/js:i18n_behavior.m",
+      "//ui/webui/resources/js:promise_resolver.m",
+    ]
+  }
 }
 
 js_library("highlight_utils") {
   deps = [
     "//ui/webui/resources/js:assert.m",
-    "//ui/webui/resources/js:search_highlight_utils.m",
+    "//ui/webui/resources/js:search_highlight_utils",
   ]
 }
 
@@ -527,7 +557,7 @@ html_to_js("web_components") {
     "button_strip.js",
     "color_settings.js",
     "copies_settings.js",
-    "destination_dialog.js",
+    "destination_dialog_css.js",
     "destination_list_item.js",
     "destination_list.js",
     "destination_select_css.js",
@@ -551,7 +581,6 @@ html_to_js("web_components") {
     "print_preview_search_box.js",
     "print_preview_shared_css.js",
     "print_preview_vars_css.js",
-    "provisional_destination_resolver.js",
     "scaling_settings.js",
     "settings_section.js",
     "settings_select.js",
@@ -560,11 +589,16 @@ html_to_js("web_components") {
   ]
   if (is_chromeos) {
     js_files += [
+      "destination_dialog_cros.js",
       "destination_dropdown_cros.js",
       "destination_select_cros.js",
       "pin_settings.js",
+      "provisional_destination_resolver.js",
     ]
   } else {
-    js_files += [ "destination_select.js" ]
+    js_files += [
+      "destination_dialog.js",
+      "destination_select.js",
+    ]
   }
 }

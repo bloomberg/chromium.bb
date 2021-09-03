@@ -16,7 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/browser/browser_process_sub_thread.h"
+#include "content/browser/browser_process_io_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/common/content_features.h"
@@ -234,8 +234,18 @@ void BrowserTaskExecutor::ResetForTesting() {
 void BrowserTaskExecutor::PostFeatureListSetup() {
   DCHECK(Get()->browser_ui_thread_handle_);
   DCHECK(Get()->browser_io_thread_handle_);
+  DCHECK(Get()->ui_thread_executor_);
   Get()->browser_ui_thread_handle_->PostFeatureListInitializationSetup();
   Get()->browser_io_thread_handle_->PostFeatureListInitializationSetup();
+  Get()->ui_thread_executor_->PostFeatureListSetup();
+}
+
+// static
+absl::optional<BrowserUIThreadScheduler::UserInputActiveHandle>
+BrowserTaskExecutor::OnUserInputStart() {
+  DCHECK(Get()->ui_thread_executor_);
+  return absl::optional<BrowserUIThreadScheduler::UserInputActiveHandle>(
+      Get()->ui_thread_executor_->OnUserInputStart());
 }
 
 // static
@@ -303,7 +313,7 @@ void BrowserTaskExecutor::InitializeIOThread() {
   Get()->browser_io_thread_handle_->EnableAllExceptBestEffortQueues();
 }
 
-std::unique_ptr<BrowserProcessSubThread> BrowserTaskExecutor::CreateIOThread() {
+std::unique_ptr<BrowserProcessIOThread> BrowserTaskExecutor::CreateIOThread() {
   DCHECK(Get()->io_thread_executor_);
 
   std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate =
@@ -312,7 +322,7 @@ std::unique_ptr<BrowserProcessSubThread> BrowserTaskExecutor::CreateIOThread() {
   DCHECK(browser_io_thread_delegate);
   TRACE_EVENT0("startup", "BrowserTaskExecutor::CreateIOThread");
 
-  auto io_thread = std::make_unique<BrowserProcessSubThread>(BrowserThread::IO);
+  auto io_thread = std::make_unique<BrowserProcessIOThread>();
 
   if (browser_io_thread_delegate->allow_blocking_for_testing()) {
     io_thread->AllowBlockingForTesting();
@@ -344,6 +354,17 @@ BrowserTaskExecutor::UIThreadExecutor::~UIThreadExecutor() {
 void BrowserTaskExecutor::UIThreadExecutor::BindToCurrentThread() {
   bound_to_thread_ = true;
   base::SetTaskExecutorForCurrentThread(this);
+}
+
+absl::optional<BrowserUIThreadScheduler::UserInputActiveHandle>
+BrowserTaskExecutor::UIThreadExecutor::OnUserInputStart() {
+  DCHECK(browser_ui_thread_scheduler_);
+  return browser_ui_thread_scheduler_->OnUserInputStart();
+}
+
+void BrowserTaskExecutor::UIThreadExecutor::PostFeatureListSetup() {
+  DCHECK(browser_ui_thread_scheduler_);
+  browser_ui_thread_scheduler_->PostFeatureListSetup();
 }
 
 scoped_refptr<BrowserUIThreadScheduler::Handle>

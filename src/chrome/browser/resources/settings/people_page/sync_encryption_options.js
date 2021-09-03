@@ -2,7 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-(function() {
+import {Polymer, html} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {assert, assertNotReached} from '//resources/js/assert.m.js';
+import '//resources/cr_elements/cr_button/cr_button.m.js';
+import '//resources/cr_elements/cr_input/cr_input.m.js';
+import '//resources/cr_elements/cr_radio_button/cr_radio_button.m.js';
+import '//resources/cr_elements/cr_radio_group/cr_radio_group.m.js';
+import '//resources/cr_elements/shared_style_css.m.js';
+import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from './sync_browser_proxy.js';
+import '../settings_shared_css.js';
+import '../settings_vars_css.js';
+
 
 /**
  * Names of the radio buttons which allow the user to choose their encryption
@@ -17,16 +29,18 @@ const RadioButtonNames = {
 Polymer({
   is: 'settings-sync-encryption-options',
 
+  _template: html`{__html_template__}`,
+
   properties: {
     /**
-     * @type {settings.SyncPrefs}
+     * @type {SyncPrefs}
      */
     syncPrefs: {
       type: Object,
       notify: true,
     },
 
-    /** @type {settings.SyncStatus} */
+    /** @type {SyncStatus} */
     syncStatus: Object,
 
     /**
@@ -68,6 +82,13 @@ Polymer({
   },
 
   /**
+   * Whether there's a setEncryptionPassphrase() call pending response, in which
+   * case the component should wait before making a new call.
+   * @private {boolean}
+   */
+  isSettingEncryptionPassphrase_: false,
+
+  /**
    * Returns the encryption options CrRadioGroupElement.
    * @return {?CrRadioGroupElement}
    */
@@ -92,7 +113,7 @@ Polymer({
     return !!(
         (this.syncPrefs &&
          (this.syncPrefs.encryptAllData ||
-          !this.syncPrefs.encryptAllDataAllowed ||
+          !this.syncPrefs.customPassphraseAllowed ||
           this.syncPrefs.trustedVaultKeysRequired)) ||
         (this.syncStatus && this.syncStatus.supervisedUser));
   },
@@ -137,24 +158,26 @@ Polymer({
   saveNewPassphrase_() {
     assert(this.creatingNewPassphrase_);
     chrome.metricsPrivate.recordUserAction('Sync_SaveNewPassphraseClicked');
-    // Might happen within the transient time between the request to
-    // |setSyncEncryption| and receiving the response.
-    if (this.syncPrefs.setNewPassphrase) {
+
+    if (this.isSettingEncryptionPassphrase_) {
       return;
     }
+
     // If a new password has been entered but it is invalid, do not send the
     // sync state to the API.
     if (!this.validateCreatedPassphrases_()) {
       return;
     }
 
-    this.syncPrefs.setNewPassphrase = true;
-    this.syncPrefs.passphrase = this.passphrase_;
-
-    settings.SyncBrowserProxyImpl.getInstance()
-        .setSyncEncryption(this.syncPrefs)
-        .then(pageStatus => {
-          this.fire('passphrase-changed', pageStatus);
+    this.isSettingEncryptionPassphrase_ = true;
+    SyncBrowserProxyImpl.getInstance()
+        .setEncryptionPassphrase(this.passphrase_)
+        .then(successfullySet => {
+          // TODO(crbug.com/1139060): Rename the event, there is no change if
+          // |successfullySet| is false. It should also mention 'encryption
+          // passphrase' in its name.
+          this.fire('passphrase-changed', {didChange: successfullySet});
+          this.isSettingEncryptionPassphrase_ = false;
         });
   },
 
@@ -208,4 +231,3 @@ Polymer({
     }
   },
 });
-})();

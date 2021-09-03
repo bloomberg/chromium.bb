@@ -5,10 +5,11 @@
 #ifndef ASH_LOGIN_UI_LOGIN_USER_MENU_VIEW_H_
 #define ASH_LOGIN_UI_LOGIN_USER_MENU_VIEW_H_
 
+#include <string>
+
 #include "ash/ash_export.h"
 #include "ash/login/ui/login_base_bubble_view.h"
 #include "ash/login/ui/login_button.h"
-#include "base/strings/string16.h"
 #include "components/user_manager/user_type.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/focus/focus_search.h"
@@ -50,6 +51,7 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
 
   // LoginBaseBubbleView:
   LoginButton* GetBubbleOpener() const override;
+  void OnThemeChanged() override;
 
   // views::View:
   void RequestFocus() override;
@@ -73,9 +75,10 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
   views::View* remove_user_confirm_data_ = nullptr;
   RemoveUserButton* remove_user_button_ = nullptr;
   views::Label* username_label_ = nullptr;
+  views::Label* email_label_ = nullptr;
   views::Label* management_disclosure_label_ = nullptr;
 
-  base::string16 warning_message_;
+  std::u16string warning_message_;
 
   std::unique_ptr<views::FocusSearch> focus_search_;
 
@@ -84,4 +87,4 @@ class ASH_EXPORT LoginUserMenuView : public LoginBaseBubbleView,
 
 }  // namespace ash
 
-#endif
+#endif  // ASH_LOGIN_UI_LOGIN_USER_MENU_VIEW_H_

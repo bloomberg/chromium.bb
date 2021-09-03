@@ -16,8 +16,8 @@ import shutil
 import sys
 import tempfile
 import time
-import urllib
 import logging
+import six.moves.urllib.parse  # pylint: disable=import-error
 
 from core import results_dashboard
 
@@ -55,6 +55,7 @@ def _GetDashboardJson(options):
     # pylint: disable=redefined-variable-type
     dashboard_json = results_dashboard.MakeListOfPoints(
       results, options.configuration_name, stripped_test_name,
+      options.project, options.buildbucket,
       options.buildername, options.buildnumber, {},
       options.perf_dashboard_machine_group,
       revisions_dict=revisions)
@@ -62,6 +63,7 @@ def _GetDashboardJson(options):
     dashboard_json = results_dashboard.MakeDashboardJsonV1(
       results,
       revisions, stripped_test_name, options.configuration_name,
+      options.project, options.buildbucket,
       options.buildername, options.buildnumber,
       {}, reference_build,
       perf_dashboard_machine_group=options.perf_dashboard_machine_group)
@@ -199,9 +201,9 @@ def GetDashboardUrl(name, configuration_name, results_url,
   """
   name = name.replace('.reference', '')
   dashboard_url = results_url + RESULTS_LINK_PATH % (
-      urllib.quote(perf_dashboard_machine_group),
-      urllib.quote(configuration_name),
-      urllib.quote(name),
+      six.moves.urllib.parse.quote(perf_dashboard_machine_group),
+      six.moves.urllib.parse.quote(configuration_name),
+      six.moves.urllib.parse.quote(name),
       _CommitPositionNumber(got_revision_cp))
 
   return dashboard_url

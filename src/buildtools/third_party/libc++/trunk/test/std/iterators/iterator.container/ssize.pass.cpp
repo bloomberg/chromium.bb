@@ -6,7 +6,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-// UNSUPPORTED: c++98, c++03, c++11, c++14, c++17
+// UNSUPPORTED: c++03, c++11, c++14, c++17
 
 // <iterator>
 // template <class C> constexpr auto ssize(const C& c)
@@ -23,12 +23,14 @@
 
 #include "test_macros.h"
 
+// Ignore warning about std::numeric_limits comparisons being tautological.
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wtype-limits"
+#endif
 
 struct short_container {
     uint16_t size() const { return 60000; } // not noexcept
-    };
-
-
+};
 
 template<typename C>
 void test_container(C& c)
@@ -115,6 +117,6 @@ int main(int, char**)
     static_assert( std::numeric_limits<std::make_signed_t<decltype(std:: size(sc))>>::max() < 60000, "");
     assert (std::ssize(sc) == 60000);
     LIBCPP_ASSERT_NOT_NOEXCEPT(std::ssize(sc));
-    
+
   return 0;
 }

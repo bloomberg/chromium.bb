@@ -8,12 +8,11 @@
 
 #include "base/bind.h"
 #include "components/performance_manager/graph/graph_impl.h"
+#include "components/performance_manager/graph/graph_impl_util.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/graph/worker_node_impl.h"
-#include "components/performance_manager/public/execution_context_priority/execution_context_priority.h"
 #include "components/performance_manager/public/v8_memory/web_memory.h"
-#include "third_party/blink/public/common/features.h"
 
 namespace performance_manager {
 
@@ -44,15 +43,19 @@ FrameNodeImpl::FrameNodeImpl(ProcessNodeImpl* process_node,
               .render_process_host_id()
               .value(),
           render_frame_id)) {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
+  weak_this_ = weak_factory_.GetWeakPtr();
+
   DCHECK(process_node);
   DCHECK(page_node);
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 FrameNodeImpl::~FrameNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(child_worker_nodes_.empty());
   DCHECK(opened_page_nodes_.empty());
+  DCHECK(embedded_page_nodes_.empty());
+  DCHECK(!execution_context_);
 }
 
 void FrameNodeImpl::Bind(
@@ -81,14 +84,9 @@ void FrameNodeImpl::SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) {
   document_.has_nonempty_beforeunload = has_nonempty_beforeunload;
 }
 
-void FrameNodeImpl::SetOriginTrialFreezePolicy(
-    mojom::InterventionPolicy policy) {
-  document_.origin_trial_freeze_policy.SetAndMaybeNotify(this, policy);
-}
-
-void FrameNodeImpl::SetIsAdFrame() {
+void FrameNodeImpl::SetIsAdFrame(bool is_ad_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  is_ad_frame_.SetAndMaybeNotify(this, true);
+  is_ad_frame_.SetAndMaybeNotify(this, is_ad_frame);
 }
 
 void FrameNodeImpl::SetHadFormInteraction() {
@@ -120,38 +118,47 @@ bool FrameNodeImpl::IsMainFrame() const {
 }
 
 FrameNodeImpl* FrameNodeImpl::parent_frame_node() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return parent_frame_node_;
 }
 
 PageNodeImpl* FrameNodeImpl::page_node() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return page_node_;
 }
 
 ProcessNodeImpl* FrameNodeImpl::process_node() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return process_node_;
 }
 
 int FrameNodeImpl::frame_tree_node_id() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return frame_tree_node_id_;
 }
 
 int FrameNodeImpl::render_frame_id() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return render_frame_id_;
 }
 
 const blink::LocalFrameToken& FrameNodeImpl::frame_token() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return frame_token_;
 }
 
 int32_t FrameNodeImpl::browsing_instance_id() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return browsing_instance_id_;
 }
 
 int32_t FrameNodeImpl::site_instance_id() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return site_instance_id_;
 }
 
 const RenderFrameHostProxy& FrameNodeImpl::render_frame_host_proxy() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return render_frame_host_proxy_;
 }
 
@@ -165,14 +172,15 @@ const base::flat_set<PageNodeImpl*>& FrameNodeImpl::opened_page_nodes() const {
   return opened_page_nodes_;
 }
 
+const base::flat_set<PageNodeImpl*>& FrameNodeImpl::embedded_page_nodes()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return embedded_page_nodes_;
+}
+
 mojom::LifecycleState FrameNodeImpl::lifecycle_state() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return lifecycle_state_.value();
-}
-
-mojom::InterventionPolicy FrameNodeImpl::origin_trial_freeze_policy() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return document_.origin_trial_freeze_policy.value();
 }
 
 bool FrameNodeImpl::has_nonempty_beforeunload() const {
@@ -231,7 +239,7 @@ bool FrameNodeImpl::is_audible() const {
   return is_audible_.value();
 }
 
-const base::Optional<gfx::Rect>& FrameNodeImpl::viewport_intersection() const {
+const absl::optional<gfx::Rect>& FrameNodeImpl::viewport_intersection() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The viewport intersection of the main frame is not tracked.
   DCHECK(!IsMainFrame());
@@ -355,7 +363,17 @@ void FrameNodeImpl::SetPriorityAndReason(
   priority_and_reason_.SetAndMaybeNotify(this, priority_and_reason);
 }
 
-void FrameNodeImpl::AddOpenedPage(util::PassKey<PageNodeImpl>,
+base::WeakPtr<FrameNodeImpl> FrameNodeImpl::GetWeakPtrOnUIThread() {
+  // TODO(siggi): Validate the thread context here.
+  return weak_this_;
+}
+
+base::WeakPtr<FrameNodeImpl> FrameNodeImpl::GetWeakPtr() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return weak_factory_.GetWeakPtr();
+}
+
+void FrameNodeImpl::AddOpenedPage(base::PassKey<PageNodeImpl>,
                                   PageNodeImpl* page_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(page_node);
@@ -366,7 +384,7 @@ void FrameNodeImpl::AddOpenedPage(util::PassKey<PageNodeImpl>,
   DCHECK(inserted);
 }
 
-void FrameNodeImpl::RemoveOpenedPage(util::PassKey<PageNodeImpl>,
+void FrameNodeImpl::RemoveOpenedPage(base::PassKey<PageNodeImpl>,
                                      PageNodeImpl* page_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(page_node);
@@ -374,6 +392,28 @@ void FrameNodeImpl::RemoveOpenedPage(util::PassKey<PageNodeImpl>,
   DCHECK(graph()->NodeInGraph(page_node));
   DCHECK_EQ(this, page_node->opener_frame_node());
   size_t removed = opened_page_nodes_.erase(page_node);
+  DCHECK_EQ(1u, removed);
+}
+
+void FrameNodeImpl::AddEmbeddedPage(base::PassKey<PageNodeImpl>,
+                                    PageNodeImpl* page_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(page_node);
+  DCHECK_NE(page_node_, page_node);
+  DCHECK(graph()->NodeInGraph(page_node));
+  DCHECK_EQ(this, page_node->embedder_frame_node());
+  bool inserted = embedded_page_nodes_.insert(page_node).second;
+  DCHECK(inserted);
+}
+
+void FrameNodeImpl::RemoveEmbeddedPage(base::PassKey<PageNodeImpl>,
+                                       PageNodeImpl* page_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(page_node);
+  DCHECK_NE(page_node_, page_node);
+  DCHECK(graph()->NodeInGraph(page_node));
+  DCHECK_EQ(this, page_node->embedder_frame_node());
+  size_t removed = embedded_page_nodes_.erase(page_node);
   DCHECK_EQ(1u, removed);
 }
 
@@ -426,11 +466,8 @@ bool FrameNodeImpl::VisitChildFrameNodes(
 const base::flat_set<const FrameNode*> FrameNodeImpl::GetChildFrameNodes()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::flat_set<const FrameNode*> children;
-  for (auto* child : child_frame_nodes())
-    children.insert(static_cast<const FrameNode*>(child));
-  DCHECK_EQ(children.size(), child_frame_nodes().size());
-  return children;
+
+  return UpcastNodeSet<FrameNode>(child_frame_nodes());
 }
 
 bool FrameNodeImpl::VisitOpenedPageNodes(const PageNodeVisitor& visitor) const {
@@ -446,22 +483,29 @@ bool FrameNodeImpl::VisitOpenedPageNodes(const PageNodeVisitor& visitor) const {
 const base::flat_set<const PageNode*> FrameNodeImpl::GetOpenedPageNodes()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::flat_set<const PageNode*> opened;
-  for (auto* page : opened_page_nodes())
-    opened.insert(static_cast<const PageNode*>(page));
-  DCHECK_EQ(opened.size(), opened_page_nodes().size());
-  return opened;
+  return UpcastNodeSet<PageNode>(opened_page_nodes());
+}
+
+bool FrameNodeImpl::VisitEmbeddedPageNodes(
+    const PageNodeVisitor& visitor) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto* page_impl : embedded_page_nodes()) {
+    const PageNode* page = page_impl;
+    if (!visitor.Run(page))
+      return false;
+  }
+  return true;
+}
+
+const base::flat_set<const PageNode*> FrameNodeImpl::GetEmbeddedPageNodes()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return UpcastNodeSet<PageNode>(embedded_page_nodes());
 }
 
 FrameNodeImpl::LifecycleState FrameNodeImpl::GetLifecycleState() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return lifecycle_state();
-}
-
-FrameNodeImpl::InterventionPolicy FrameNodeImpl::GetOriginTrialFreezePolicy()
-    const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return origin_trial_freeze_policy();
 }
 
 bool FrameNodeImpl::HasNonemptyBeforeUnload() const {
@@ -502,11 +546,19 @@ bool FrameNodeImpl::IsHoldingIndexedDBLock() const {
 const base::flat_set<const WorkerNode*> FrameNodeImpl::GetChildWorkerNodes()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::flat_set<const WorkerNode*> children;
-  for (auto* child : child_worker_nodes())
-    children.insert(static_cast<const WorkerNode*>(child));
-  DCHECK_EQ(children.size(), child_worker_nodes().size());
-  return children;
+  return UpcastNodeSet<WorkerNode>(child_worker_nodes());
+}
+
+bool FrameNodeImpl::VisitChildDedicatedWorkers(
+    const WorkerNodeVisitor& visitor) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto* worker_node_impl : child_worker_nodes()) {
+    const WorkerNode* node = worker_node_impl;
+    if (node->GetWorkerType() == WorkerNode::WorkerType::kDedicated &&
+        !visitor.Run(node))
+      return false;
+  }
+  return true;
 }
 
 const PriorityAndReason& FrameNodeImpl::GetPriorityAndReason() const {
@@ -524,7 +576,7 @@ bool FrameNodeImpl::IsAudible() const {
   return is_audible();
 }
 
-const base::Optional<gfx::Rect>& FrameNodeImpl::GetViewportIntersection()
+const absl::optional<gfx::Rect>& FrameNodeImpl::GetViewportIntersection()
     const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return viewport_intersection();
@@ -570,12 +622,12 @@ void FrameNodeImpl::OnJoiningGraph() {
   // page node must be accessed. OnFrameNodeAdded() has not been called yet for
   // this frame, so it is important to avoid sending a notification for this
   // property change.
-  visibility_.Set(GetInitialFrameVisibility());
+  visibility_.Set(this, GetInitialFrameVisibility());
 
   // Wire this up to the other nodes in the graph.
   if (parent_frame_node_)
     parent_frame_node_->AddChildFrame(this);
-  page_node_->AddFrame(this);
+  page_node_->AddFrame(base::PassKey<FrameNodeImpl>(), this);
   process_node_->AddFrame(this);
 }
 
@@ -584,12 +636,11 @@ void FrameNodeImpl::OnBeforeLeavingGraph() {
 
   DCHECK(child_frame_nodes_.empty());
 
-  // Sever opener relationships.
-  SeverOpenedPagesAndMaybeReparent();
+  SeverPageRelationshipsAndMaybeReparent();
 
   // Leave the page.
   DCHECK(graph()->NodeInGraph(page_node_));
-  page_node_->RemoveFrame(this);
+  page_node_->RemoveFrame(base::PassKey<FrameNodeImpl>(), this);
 
   // Leave the frame hierarchy.
   if (parent_frame_node_) {
@@ -606,32 +657,50 @@ void FrameNodeImpl::OnBeforeLeavingGraph() {
                                     render_frame_id_, this);
 }
 
-void FrameNodeImpl::SeverOpenedPagesAndMaybeReparent() {
+void FrameNodeImpl::RemoveNodeAttachedData() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  execution_context_.reset();
+}
+
+void FrameNodeImpl::SeverPageRelationshipsAndMaybeReparent() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Copy |opened_page_nodes_| as we'll be modifying it in this loop: when we
-  // call PageNodeImpl::(Set|Clear)OpenerFrameNodeAndOpenedType() this will call
-  // back into this frame node and call RemoveOpenedPage().
-  base::flat_set<PageNodeImpl*> opened_nodes = opened_page_nodes_;
-  for (auto* opened_node : opened_nodes) {
-    auto opened_type = opened_node->opened_type();
-
-    // Reparent opened pages to this frame's parent to maintain the relationship
-    // between the frame trees for bookkeeping. For the relationship to be
-    // finally severed one of the frame trees must completely disappear, or it
-    // must be explicitly severed (this can happen with portals).
+  // Be careful when iterating: when we call
+  // PageNodeImpl::(Set|Clear)(Opener|Embedder)FrameNode() this will call
+  // back into this frame node and call Remove(Opened|Embedded)Page(), which
+  // modifies |opened_page_nodes_| and |embedded_page_nodes_|.
+  //
+  // We also reparent related pages to this frame's parent to maintain the
+  // relationship between the distinct frame trees for bookkeeping. For the
+  // relationship to be finally severed one of the frame trees must completely
+  // disappear, or it must be explicitly severed (this can happen with
+  // portals).
+  while (!opened_page_nodes_.empty()) {
+    auto* opened_node = *opened_page_nodes_.begin();
     if (parent_frame_node_) {
-      opened_node->SetOpenerFrameNodeAndOpenedType(parent_frame_node_,
-                                                   opened_type);
+      opened_node->SetOpenerFrameNode(parent_frame_node_);
     } else {
-      // There's no new parent, so simply clear the opener.
-      opened_node->ClearOpenerFrameNodeAndOpenedType();
+      opened_node->ClearOpenerFrameNode();
     }
+    DCHECK(!base::Contains(opened_page_nodes_, opened_node));
   }
 
-  // Expect each page node to have called RemoveOpenedPage(), and for this to
+  while (!embedded_page_nodes_.empty()) {
+    auto* embedded_node = *embedded_page_nodes_.begin();
+    auto embedding_type = embedded_node->embedding_type();
+    if (parent_frame_node_) {
+      embedded_node->SetEmbedderFrameNodeAndEmbeddingType(parent_frame_node_,
+                                                          embedding_type);
+    } else {
+      embedded_node->ClearEmbedderFrameNodeAndEmbeddingType();
+    }
+    DCHECK(!base::Contains(embedded_page_nodes_, embedded_node));
+  }
+
+  // Expect each page node to have called RemoveEmbeddedPage(), and for this to
   // now be empty.
   DCHECK(opened_page_nodes_.empty());
+  DCHECK(embedded_page_nodes_.empty());
 }
 
 FrameNodeImpl* FrameNodeImpl::GetFrameTreeRoot() const {
@@ -695,17 +764,15 @@ void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
   has_nonempty_beforeunload = false;
   // Network is busy on navigation.
   network_almost_idle.SetAndMaybeNotify(frame_node, false);
-  origin_trial_freeze_policy.SetAndMaybeNotify(
-      frame_node, mojom::InterventionPolicy::kDefault);
   had_form_interaction.SetAndMaybeNotify(frame_node, false);
 }
 
 void FrameNodeImpl::OnWebMemoryMeasurementRequested(
     mojom::WebMemoryMeasurement::Mode mode,
     OnWebMemoryMeasurementRequestedCallback callback) {
-  CHECK(base::FeatureList::IsEnabled(
-      blink::features::kWebMeasureMemoryViaPerformanceManager));
-  v8_memory::WebMeasureMemory(this, mode, std::move(callback));
+  v8_memory::WebMeasureMemory(
+      this, mode, v8_memory::WebMeasureMemorySecurityChecker::Create(),
+      std::move(callback), mojo::GetBadMessageCallback());
 }
 
 }  // namespace performance_manager

@@ -33,6 +33,7 @@
 #include "perfetto/tracing/core/data_source_config.h"
 #include "perfetto/tracing/core/data_source_descriptor.h"
 #include "perfetto/tracing/core/trace_config.h"
+#include "src/android_stats/statsd_logging_helper.h"
 #include "src/traced/probes/android_log/android_log_data_source.h"
 #include "src/traced/probes/common/cpu_freq_info.h"
 #include "src/traced/probes/filesystem/inode_file_data_source.h"
@@ -86,8 +87,19 @@ ProbesDataSource::Descriptor const* const kAllDataSources[]{
 //                    +--------------+
 //
 
-ProbesProducer::ProbesProducer() : weak_factory_(this) {}
+ProbesProducer* ProbesProducer::instance_ = nullptr;
+
+ProbesProducer* ProbesProducer::GetInstance() {
+  return instance_;
+}
+
+ProbesProducer::ProbesProducer() : weak_factory_(this) {
+  PERFETTO_CHECK(instance_ == nullptr);
+  instance_ = this;
+}
+
 ProbesProducer::~ProbesProducer() {
+  instance_ = nullptr;
   // The ftrace data sources must be deleted before the ftrace controller.
   data_sources_.clear();
   ftrace_.reset();
@@ -493,7 +505,7 @@ void ProbesProducer::OnFtraceDataWrittenIntoDataSourceBuffers() {
       if (ps->on_demand_dumps_enabled())
         ps_data_source = ps;
     }
-  }    // for (session_data_sources_)
+  }  // for (session_data_sources_)
 }
 
 void ProbesProducer::ConnectWithRetries(const char* socket_name,
@@ -524,6 +536,20 @@ void ProbesProducer::IncreaseConnectionBackoff() {
 
 void ProbesProducer::ResetConnectionBackoff() {
   connection_backoff_ms_ = kInitialConnectionBackoffMs;
+}
+
+void ProbesProducer::ActivateTrigger(std::string trigger) {
+  android_stats::MaybeLogTriggerEvent(
+      PerfettoTriggerAtom::kProbesProducerTrigger, trigger);
+
+  task_runner_->PostTask([this, trigger]() {
+    if (!endpoint_) {
+      android_stats::MaybeLogTriggerEvent(
+          PerfettoTriggerAtom::kProbesProducerTriggerFail, trigger);
+      return;
+    }
+    endpoint_->ActivateTriggers({trigger});
+  });
 }
 
 }  // namespace perfetto

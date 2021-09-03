@@ -84,7 +84,7 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
     // many blinded, unsigned trust tokens; on error, returns nullopt. The
     // format of this string will eventually be specified, but it is currently
     // considered an implementation detail of the underlying cryptographic code.
-    virtual base::Optional<std::string> BeginIssuance(size_t num_tokens) = 0;
+    virtual absl::optional<std::string> BeginIssuance(size_t num_tokens) = 0;
 
     struct UnblindedTokens {
       UnblindedTokens();
@@ -106,6 +106,16 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
         base::StringPiece response_header) = 0;
   };
 
+  class MetricsDelegate {
+   public:
+    virtual ~MetricsDelegate() = default;
+
+    // Indicates that this delegate is about to attempt to execute its
+    // issuance operation through a call to the provided
+    // LocalTrustTokenOperationDelegate.
+    virtual void WillExecutePlatformProvidedOperation() = 0;
+  };
+
   // Creates a new issuance helper.
   //
   // - |top_level_origin| is the top-level origin of the request subsequently
@@ -124,9 +134,13 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   // present in the issuer's "request_issuance_locally_on" field in its key
   // commitment, the issuance helper should attempt to forward requests to the
   // local operation delegate.
+  // - |metrics_delegate|, which must outlive this object, will learn about
+  // certain aspects of this operation's execution in order to slice the metrics
+  // that it reports.
   //
   // REQUIRES: |token_store|, |key_commitment_getter|, |cryptographer|,
-  // |local_operation_delegate|, and |is_current_os_callback| must be non-null.
+  // |local_operation_delegate|, |is_current_os_callback|, and
+  // |metrics_delegate|  must be non-null.
   TrustTokenRequestIssuanceHelper(
       SuitableTrustTokenOrigin top_level_origin,
       TrustTokenStore* token_store,
@@ -136,6 +150,7 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
           local_operation_delegate,
       base::RepeatingCallback<bool(mojom::TrustTokenKeyCommitmentResult::Os)>
           is_current_os_callback,
+      MetricsDelegate* metrics_delegate,
       net::NetLogWithSource net_log = net::NetLogWithSource());
   ~TrustTokenRequestIssuanceHelper() override;
 
@@ -187,6 +202,9 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   struct CryptographerAndBlindedTokens;
   struct CryptographerAndUnblindedTokens;
 
+  mojom::TrustTokenOperationResultPtr CollectOperationResultWithStatus(
+      mojom::TrustTokenOperationStatus status) override;
+
  private:
   // Continuation of |Begin| after asynchronous key commitment fetching
   // concludes.
@@ -212,15 +230,16 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   // Continuation of |Finalize| after extracting the base64-encoded issuance
   // response from a response header (or receiving it from a locally executed
   // operation).
-  void ConfirmIssuanceResponse(
+  void ProcessIssuanceResponse(
       std::string issuance_response,
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done);
 
-  // Continuation of |Finalize| after a call to the cryptography delegate to
+  // Continuation of |Finalize| after processing the received issuance response,
+  // which typically involves an off-thread call to the cryptography delegate to
   // execute the bulk of the inbound half of the issuance operation.
   // Receives ownership of the cryptographer back from the asynchronous
   // callback.
-  void OnDelegateConfirmIssuanceCallComplete(
+  void OnDoneProcessingIssuanceResponse(
       base::OnceCallback<void(mojom::TrustTokenOperationStatus)> done,
       CryptographerAndUnblindedTokens cryptographer_and_unblinded_tokens);
 
@@ -246,7 +265,7 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   // |issuer_| needs to be a nullable type because it is initialized in |Begin|,
   // but, once initialized, it will never be empty over the course of the
   // operation's execution.
-  base::Optional<SuitableTrustTokenOrigin> issuer_;
+  absl::optional<SuitableTrustTokenOrigin> issuer_;
   const SuitableTrustTokenOrigin top_level_origin_;
   TrustTokenStore* const token_store_;
   const TrustTokenKeyCommitmentGetter* const key_commitment_getter_;
@@ -274,7 +293,10 @@ class TrustTokenRequestIssuanceHelper : public TrustTokenRequestHelper {
   base::RepeatingCallback<bool(mojom::TrustTokenKeyCommitmentResult::Os)>
       is_current_os_callback_;
 
+  MetricsDelegate* const metrics_delegate_;
+
   net::NetLogWithSource net_log_;
+  absl::optional<size_t> num_obtained_tokens_;
   base::WeakPtrFactory<TrustTokenRequestIssuanceHelper> weak_ptr_factory_{this};
 };
 

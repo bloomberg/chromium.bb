@@ -18,6 +18,7 @@
 #include <unordered_set>
 
 #include "dawn_native/opengl/OpenGLFunctionsBase_autogen.h"
+#include "dawn_native/opengl/OpenGLVersion.h"
 
 namespace dawn_native { namespace opengl {
 
@@ -25,6 +26,7 @@ namespace dawn_native { namespace opengl {
       public:
         MaybeError Initialize(GetProcAddress getProc);
 
+        const OpenGLVersion& GetVersion() const;
         bool IsAtLeastGL(uint32_t majorVersion, uint32_t minorVersion) const;
         bool IsAtLeastGLES(uint32_t majorVersion, uint32_t minorVersion) const;
 
@@ -33,14 +35,7 @@ namespace dawn_native { namespace opengl {
       private:
         void InitializeSupportedGLExtensions();
 
-        uint32_t mMajorVersion;
-        uint32_t mMinorVersion;
-
-        enum class Standard {
-            Desktop,
-            ES,
-        };
-        Standard mStandard;
+        OpenGLVersion mVersion;
 
         std::unordered_set<std::string> mSupportedGLExtensionsSet;
     };

@@ -15,18 +15,27 @@
 
 import argparse
 
-from google.protobuf import descriptor, descriptor_pb2, message_factory, reflection
-from google.protobuf.pyext import _message
+from collections import namedtuple
+from google.protobuf import descriptor, descriptor_pb2, message_factory, descriptor_pool
 
 CLONE_THREAD = 0x00010000
 CLONE_VFORK = 0x00004000
 CLONE_VM = 0x00000100
 
 
+def ms_to_ns(time_in_ms):
+  return int(time_in_ms * 1000000)
+
+
+def s_to_ns(time_in_s):
+  return int(time_in_s * 1000000000)
+
+
 class Trace(object):
 
-  def __init__(self, trace):
+  def __init__(self, trace, prototypes):
     self.trace = trace
+    self.prototypes = prototypes
     self.proc_map = {}
     self.proc_map[0] = 'idle_thread'
 
@@ -414,6 +423,322 @@ class Trace(object):
     sched_blocked_reason.pid = pid
     sched_blocked_reason.io_wait = io_wait
 
+  def add_track_event(self,
+                      name=None,
+                      ts=None,
+                      track=None,
+                      trusted_sequence_id=0,
+                      cpu_time=None):
+    packet = self.add_packet(ts=ts)
+    if name is not None:
+      packet.track_event.name = name
+    if track is not None:
+      packet.track_event.track_uuid = track
+    packet.trusted_packet_sequence_id = trusted_sequence_id
+    if cpu_time is not None:
+      packet.track_event.extra_counter_values.append(cpu_time)
+    return packet
+
+  def add_track_descriptor(self, uuid, parent=None):
+    packet = self.add_packet()
+    track_descriptor = packet.track_descriptor
+    if uuid is not None:
+      track_descriptor.uuid = uuid
+    if parent is not None:
+      track_descriptor.parent_uuid = parent
+    return packet
+
+  def add_process_track_descriptor(self, process_track, pid=None):
+    packet = self.add_track_descriptor(process_track)
+    packet.track_descriptor.process.pid = pid
+    return packet
+
+  def add_chrome_process_track_descriptor(
+      self,
+      process_track,
+      pid=None,
+      process_type=None,
+      host_app_package_name="org.chromium.chrome"):
+    if process_type is None:
+      process_type = self.prototypes.ChromeProcessDescriptor \
+        .ProcessType \
+        .PROCESS_RENDERER
+
+    packet = self.add_process_track_descriptor(process_track, pid=pid)
+    chrome_process = packet.track_descriptor.chrome_process
+    chrome_process.process_type = process_type
+    chrome_process.host_app_package_name = host_app_package_name
+    return packet
+
+  def add_thread_track_descriptor(self,
+                                  process_track,
+                                  thread_track,
+                                  trusted_packet_sequence_id=None,
+                                  pid=None,
+                                  tid=None):
+    packet = self.add_track_descriptor(thread_track, parent=process_track)
+    packet.trusted_packet_sequence_id = trusted_packet_sequence_id
+    packet.track_descriptor.thread.pid = pid
+    packet.track_descriptor.thread.tid = tid
+    return packet
+
+  def add_chrome_thread_track_descriptor(self,
+                                         process_track,
+                                         thread_track,
+                                         trusted_packet_sequence_id=None,
+                                         pid=None,
+                                         tid=None,
+                                         thread_type=None):
+    if thread_type is None:
+      thread_type = self.prototypes.ThreadDescriptor \
+        .ChromeThreadType \
+        .CHROME_THREAD_TYPE_UNSPECIFIED
+
+    packet = self.add_thread_track_descriptor(
+        process_track,
+        thread_track,
+        trusted_packet_sequence_id=trusted_packet_sequence_id,
+        pid=pid,
+        tid=tid)
+    packet.track_descriptor.thread.chrome_thread_type = thread_type
+    return packet
+
+  def add_trace_packet_defaults(self,
+                                trusted_packet_sequence_id=None,
+                                thread_track=None,
+                                counter_track=None):
+    packet = self.add_track_descriptor(None)
+    packet.trusted_packet_sequence_id = trusted_packet_sequence_id
+    track_event_defaults = packet.trace_packet_defaults.track_event_defaults
+    track_event_defaults.track_uuid = thread_track
+    track_event_defaults.extra_counter_track_uuids.append(counter_track)
+    return packet
+
+  def add_counter_track_descriptor(self,
+                                   trusted_packet_sequence_id=None,
+                                   thread_track=None,
+                                   counter_track=None):
+    packet = self.add_track_descriptor(counter_track, parent=thread_track)
+    packet.trusted_packet_sequence_id = trusted_packet_sequence_id
+    packet.track_descriptor.counter.type = self.prototypes.CounterDescriptor \
+      .BuiltinCounterType \
+      .COUNTER_THREAD_TIME_NS
+    return packet
+
+  def add_chrome_thread_with_cpu_counter(self,
+                                         process_track,
+                                         thread_track,
+                                         trusted_packet_sequence_id=None,
+                                         counter_track=None,
+                                         pid=None,
+                                         tid=None,
+                                         thread_type=None):
+    self.add_chrome_thread_track_descriptor(
+        process_track,
+        thread_track,
+        trusted_packet_sequence_id=trusted_packet_sequence_id,
+        pid=pid,
+        tid=tid,
+        thread_type=thread_type)
+    self.add_trace_packet_defaults(
+        trusted_packet_sequence_id=trusted_packet_sequence_id,
+        counter_track=counter_track,
+        thread_track=thread_track)
+
+    self.add_counter_track_descriptor(
+        trusted_packet_sequence_id=trusted_packet_sequence_id,
+        counter_track=counter_track,
+        thread_track=thread_track)
+
+  def add_track_event_slice_begin(self,
+                                  name,
+                                  ts,
+                                  track=None,
+                                  trusted_sequence_id=0,
+                                  cpu_time=None):
+    packet = self.add_track_event(
+        name,
+        ts=ts,
+        track=track,
+        trusted_sequence_id=trusted_sequence_id,
+        cpu_time=cpu_time)
+    packet.track_event.type = self.prototypes.TrackEvent.Type.TYPE_SLICE_BEGIN
+    return packet
+
+  def add_track_event_slice_end(self,
+                                ts,
+                                track=None,
+                                trusted_sequence_id=0,
+                                cpu_time=None):
+    packet = self.add_track_event(
+        ts=ts,
+        track=track,
+        trusted_sequence_id=trusted_sequence_id,
+        cpu_time=cpu_time)
+    packet.track_event.type = self.prototypes.TrackEvent.Type.TYPE_SLICE_END
+    return packet
+
+  # Returns the start slice packet.
+  def add_track_event_slice(self,
+                            name,
+                            ts,
+                            dur,
+                            track=None,
+                            trusted_sequence_id=0,
+                            cpu_start=None,
+                            cpu_delta=None):
+
+    packet = self.add_track_event_slice_begin(
+        name,
+        ts,
+        track=track,
+        trusted_sequence_id=trusted_sequence_id,
+        cpu_time=cpu_start)
+
+    if dur >= 0:
+      cpu_end = cpu_start + cpu_delta if cpu_start is not None else None
+      self.add_track_event_slice_end(
+          ts + dur,
+          track=track,
+          trusted_sequence_id=trusted_sequence_id,
+          cpu_time=cpu_end)
+
+    return packet
+
+  def add_rail_mode_slice(self, ts, dur, track, mode):
+    packet = self.add_track_event_slice(
+        "Scheduler.RAILMode", ts=ts, dur=dur, track=track)
+    packet.track_event.chrome_renderer_scheduler_state.rail_mode = mode
+
+  def add_latency_info_flow(self,
+                            ts,
+                            dur,
+                            track=None,
+                            trusted_sequence_id=None,
+                            trace_id=None,
+                            flow_ids=[],
+                            terminating_flow_ids=[]):
+    packet = self.add_track_event_slice(
+        "LatencyInfo.Flow",
+        ts,
+        dur,
+        track=track,
+        trusted_sequence_id=trusted_sequence_id)
+    if trace_id is not None:
+      packet.track_event.chrome_latency_info.trace_id = trace_id
+    for flow_id in flow_ids:
+      packet.track_event.flow_ids.append(flow_id)
+    for flow_id in terminating_flow_ids:
+      packet.track_event.terminating_flow_ids.append(flow_id)
+    return packet
+
+  def add_input_latency_event_slice(self,
+                                    name,
+                                    ts,
+                                    dur,
+                                    track=None,
+                                    trace_id=None,
+                                    gesture_scroll_id=None,
+                                    is_coalesced=None):
+    packet = self.add_track_event_slice(
+        "InputLatency::" + name, ts=ts, dur=dur, track=track)
+    packet.track_event.chrome_latency_info.trace_id = trace_id
+    packet.track_event.chrome_latency_info.gesture_scroll_id = gesture_scroll_id
+    if is_coalesced is not None:
+      packet.track_event.chrome_latency_info.is_coalesced = is_coalesced
+    return packet
+
+  def add_chrome_metadata(self, os_name=None):
+    metadata = self.add_packet().chrome_events.metadata.add()
+    if os_name is not None:
+      metadata.name = "os-name"
+      metadata.string_value = os_name
+
+    return metadata
+
+  def add_expected_display_frame_start_event(self, ts, cookie, token, pid):
+    packet = self.add_packet()
+    packet.timestamp = ts
+    event = packet.frame_timeline_event.expected_display_frame_start
+    if token != -1:
+      event.cookie = cookie
+      event.token = token
+      event.pid = pid
+
+  def add_actual_display_frame_start_event(self, ts, cookie, token, pid,
+                                           present_type, on_time_finish,
+                                           gpu_composition, jank_type, prediction_type):
+    packet = self.add_packet()
+    packet.timestamp = ts
+    event = packet.frame_timeline_event.actual_display_frame_start
+    if token != -1:
+      event.cookie = cookie
+      event.token = token
+      event.pid = pid
+      event.present_type = present_type
+      event.on_time_finish = on_time_finish
+      event.gpu_composition = gpu_composition
+      event.jank_type = jank_type
+      event.prediction_type = prediction_type
+
+  def add_expected_surface_frame_start_event(self, ts, cookie, token,
+                                             display_frame_token, pid,
+                                             layer_name):
+    packet = self.add_packet()
+    packet.timestamp = ts
+    event = packet.frame_timeline_event.expected_surface_frame_start
+    if token != -1 and display_frame_token != -1:
+      event.cookie = cookie
+      event.token = token
+      event.display_frame_token = display_frame_token
+      event.pid = pid
+      event.layer_name = layer_name
+
+  def add_actual_surface_frame_start_event(self, ts, cookie, token,
+                                           display_frame_token, pid, layer_name,
+                                           present_type, on_time_finish,
+                                           gpu_composition, jank_type, prediction_type):
+    packet = self.add_packet()
+    packet.timestamp = ts
+    event = packet.frame_timeline_event.actual_surface_frame_start
+    if token != -1 and display_frame_token != -1:
+      event.cookie = cookie
+      event.token = token
+      event.display_frame_token = display_frame_token
+      event.pid = pid
+      event.layer_name = layer_name
+      event.present_type = present_type
+      event.on_time_finish = on_time_finish
+      event.gpu_composition = gpu_composition
+      event.jank_type = jank_type
+      event.prediction_type = prediction_type
+
+  def add_frame_end_event(self, ts, cookie):
+    packet = self.add_packet()
+    packet.timestamp = ts
+    event = packet.frame_timeline_event.frame_end
+    event.cookie = cookie
+
+
+def read_descriptor(file_name):
+  with open(file_name, 'rb') as f:
+    contents = f.read()
+
+  descriptor = descriptor_pb2.FileDescriptorSet()
+  descriptor.MergeFromString(contents)
+
+  return descriptor
+
+
+def create_pool(args):
+  trace_descriptor = read_descriptor(args.trace_descriptor)
+
+  pool = descriptor_pool.DescriptorPool()
+  for file in trace_descriptor.file:
+    pool.Add(file)
+
+  return pool
+
 
 def create_trace():
   parser = argparse.ArgumentParser()
@@ -421,23 +746,37 @@ def create_trace():
       'trace_descriptor', type=str, help='location of trace descriptor')
   args = parser.parse_args()
 
-  with open(args.trace_descriptor, 'rb') as t:
-    fileContent = t.read()
+  pool = create_pool(args)
+  factory = message_factory.MessageFactory(pool)
+  ProtoTrace = factory.GetPrototype(
+      pool.FindMessageTypeByName('perfetto.protos.Trace'))
 
-  file_desc_set_pb2 = descriptor_pb2.FileDescriptorSet()
-  file_desc_set_pb2.MergeFromString(fileContent)
+  class EnumPrototype(object):
 
-  desc_by_path = {}
-  for f_desc_pb2 in file_desc_set_pb2.file:
-    f_desc_pb2_encode = f_desc_pb2.SerializeToString()
-    f_desc = descriptor.FileDescriptor(
-        name=f_desc_pb2.name,
-        package=f_desc_pb2.package,
-        serialized_pb=f_desc_pb2_encode)
+    def from_descriptor(desc):
+      res = EnumPrototype()
+      for desc in desc.values:
+        setattr(res, desc.name, desc.number)
+      return res
 
-    for desc in f_desc.message_types_by_name.values():
-      desc_by_path[desc.full_name] = desc
-
-  trace = message_factory.MessageFactory().GetPrototype(
-      desc_by_path['perfetto.protos.Trace'])()
-  return Trace(trace)
+  Prototypes = namedtuple('Prototypes', [
+      'TrackEvent',
+      'ChromeRAILMode',
+      'ThreadDescriptor',
+      'ChromeProcessDescriptor',
+      'CounterDescriptor',
+  ])
+  prototypes = Prototypes(
+      TrackEvent=factory.GetPrototype(
+          pool.FindMessageTypeByName('perfetto.protos.TrackEvent')),
+      ChromeRAILMode=EnumPrototype.from_descriptor(
+          pool.FindEnumTypeByName('perfetto.protos.ChromeRAILMode')),
+      ThreadDescriptor=factory.GetPrototype(
+          pool.FindMessageTypeByName('perfetto.protos.ThreadDescriptor')),
+      ChromeProcessDescriptor=factory.GetPrototype(
+          pool.FindMessageTypeByName(
+              'perfetto.protos.ChromeProcessDescriptor')),
+      CounterDescriptor=factory.GetPrototype(
+          pool.FindMessageTypeByName('perfetto.protos.CounterDescriptor')),
+  )
+  return Trace(ProtoTrace(), prototypes)

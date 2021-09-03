@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/optional.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -18,7 +17,10 @@
 #include "chrome/grit/theme_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "extensions/common/image_util.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -26,6 +28,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/render_text.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/layout_provider.h"
@@ -44,6 +47,8 @@ static constexpr int kEntityImageSize = 32;
 class PlaceholderImageSource : public gfx::CanvasImageSource {
  public:
   PlaceholderImageSource(const gfx::Size& canvas_size, SkColor color);
+  PlaceholderImageSource(const PlaceholderImageSource&) = delete;
+  PlaceholderImageSource& operator=(const PlaceholderImageSource&) = delete;
   ~PlaceholderImageSource() override = default;
 
   // gfx::CanvasImageSource:
@@ -51,8 +56,6 @@ class PlaceholderImageSource : public gfx::CanvasImageSource {
 
  private:
   const SkColor color_;
-
-  DISALLOW_COPY_AND_ASSIGN(PlaceholderImageSource);
 };
 
 PlaceholderImageSource::PlaceholderImageSource(const gfx::Size& canvas_size,
@@ -65,7 +68,7 @@ void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setColor(color_);
   const int corner_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MEDIUM);
+      views::Emphasis::kMedium);
   canvas->sk_canvas()->drawRoundRect(gfx::RectToSkRect(gfx::Rect(size())),
                                      corner_radius, corner_radius, flags);
 }
@@ -75,7 +78,10 @@ void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
 
 class RoundedCornerImageView : public views::ImageView {
  public:
+  METADATA_HEADER(RoundedCornerImageView);
   RoundedCornerImageView() = default;
+  RoundedCornerImageView(const RoundedCornerImageView&) = delete;
+  RoundedCornerImageView& operator=(const RoundedCornerImageView&) = delete;
 
   // views::ImageView:
   bool GetCanProcessEventsWithinSubtree() const override { return false; }
@@ -83,25 +89,86 @@ class RoundedCornerImageView : public views::ImageView {
  protected:
   // views::ImageView:
   void OnPaint(gfx::Canvas* canvas) override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(RoundedCornerImageView);
 };
 
 void RoundedCornerImageView::OnPaint(gfx::Canvas* canvas) {
   SkPath mask;
   const int corner_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MEDIUM);
+      views::Emphasis::kMedium);
   mask.addRoundRect(gfx::RectToSkRect(GetImageBounds()), corner_radius,
                     corner_radius);
   canvas->ClipPath(mask, true);
   ImageView::OnPaint(canvas);
 }
 
+BEGIN_METADATA(RoundedCornerImageView, views::ImageView)
+END_METADATA
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxMatchCellView:
+
+// static
+void OmniboxMatchCellView::ComputeMatchMaxWidths(
+    int contents_width,
+    int separator_width,
+    int description_width,
+    int available_width,
+    bool description_on_separate_line,
+    bool allow_shrinking_contents,
+    int* contents_max_width,
+    int* description_max_width) {
+  available_width = std::max(available_width, 0);
+  *contents_max_width = std::min(contents_width, available_width);
+  *description_max_width = std::min(description_width, available_width);
+
+  // If the description is empty, or the contents and description are on
+  // separate lines, each can get the full available width.
+  if (!description_width || description_on_separate_line)
+    return;
+
+  // If we want to display the description, we need to reserve enough space for
+  // the separator.
+  available_width -= separator_width;
+  if (available_width < 0) {
+    *description_max_width = 0;
+    return;
+  }
+
+  if (contents_width + description_width > available_width) {
+    if (allow_shrinking_contents) {
+      // Try to split the available space fairly between contents and
+      // description (if one wants less than half, give it all it wants and
+      // give the other the remaining space; otherwise, give each half).
+      // However, if this makes the contents too narrow to show a significant
+      // amount of information, give the contents more space.
+      *contents_max_width = std::max((available_width + 1) / 2,
+                                     available_width - description_width);
+
+      const int kMinimumContentsWidth = 300;
+      *contents_max_width = std::min(
+          std::min(std::max(*contents_max_width, kMinimumContentsWidth),
+                   contents_width),
+          available_width);
+    }
+
+    // Give the description the remaining space, unless this makes it too small
+    // to display anything meaningful, in which case just hide the description
+    // and let the contents take up the whole width.
+    *description_max_width =
+        std::min(description_width, available_width - *contents_max_width);
+    const int kMinimumDescriptionWidth = 75;
+    if (*description_max_width <
+        std::min(description_width, kMinimumDescriptionWidth)) {
+      *description_max_width = 0;
+      // Since we're not going to display the description, the contents can have
+      // the space we reserved for the separator.
+      available_width += separator_width;
+      *contents_max_width = std::min(contents_width, available_width);
+    }
+  }
+}
 
 OmniboxMatchCellView::OmniboxMatchCellView(OmniboxResultView* result_view) {
   icon_view_ = AddChildView(std::make_unique<views::ImageView>());
@@ -201,7 +268,7 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
   SetTailSuggestCommonPrefixWidth(
       (match.type == AutocompleteMatchType::SEARCH_SUGGEST_TAIL)
           ? match.tail_suggest_common_prefix  // Used for indent calculation.
-          : base::string16());
+          : std::u16string());
 }
 
 void OmniboxMatchCellView::SetImage(const gfx::ImageSkia& image) {
@@ -218,10 +285,6 @@ void OmniboxMatchCellView::SetImage(const gfx::ImageSkia& image) {
   width = kEntityImageSize * width / max;
   height = kEntityImageSize * height / max;
   answer_image_view_->SetImageSize(gfx::Size(width, height));
-}
-
-const char* OmniboxMatchCellView::GetClassName() const {
-  return "OmniboxMatchCellView";
 }
 
 gfx::Insets OmniboxMatchCellView::GetInsets() const {
@@ -251,7 +314,7 @@ void OmniboxMatchCellView::Layout() {
   const int text_width = child_area.width() - text_indent;
 
   if (two_line) {
-    if (description_view_->text().empty()) {
+    if (description_view_->GetText().empty()) {
       // This vertically centers content in the rare case that no description is
       // provided.
       content_view_->SetBounds(x, y, text_width, row_height);
@@ -267,10 +330,10 @@ void OmniboxMatchCellView::Layout() {
     int content_width = content_view_->GetPreferredSize().width();
     int description_width = description_view_->GetPreferredSize().width();
     const gfx::Size separator_size = separator_view_->GetPreferredSize();
-    OmniboxPopupModel::ComputeMatchMaxWidths(
-        content_width, separator_size.width(), description_width, text_width,
-        /*description_on_separate_line=*/false, !is_search_type_,
-        &content_width, &description_width);
+    ComputeMatchMaxWidths(content_width, separator_size.width(),
+                          description_width, text_width,
+                          /*description_on_separate_line=*/false,
+                          !is_search_type_, &content_width, &description_width);
     content_view_->SetBounds(x, y, content_width, row_height);
     if (description_width) {
       x += content_view_->width();
@@ -298,7 +361,7 @@ gfx::Size OmniboxMatchCellView::CalculatePreferredSize() const {
 }
 
 void OmniboxMatchCellView::SetTailSuggestCommonPrefixWidth(
-    const base::string16& common_prefix) {
+    const std::u16string& common_prefix) {
   InvalidateLayout();
   if (common_prefix.empty()) {
     tail_suggest_common_prefix_width_ = 0;
@@ -309,9 +372,12 @@ void OmniboxMatchCellView::SetTailSuggestCommonPrefixWidth(
   tail_suggest_common_prefix_width_ = render_text->GetStringSize().width();
   // Only calculate fixed string width once.
   if (!ellipsis_width_) {
-    render_text->SetText(base::ASCIIToUTF16(AutocompleteMatch::kEllipsis));
+    render_text->SetText(AutocompleteMatch::kEllipsis);
     ellipsis_width_ = render_text->GetStringSize().width();
   }
   // Indent text by prefix, but come back by width of ellipsis.
   tail_suggest_common_prefix_width_ -= ellipsis_width_;
 }
+
+BEGIN_METADATA(OmniboxMatchCellView, views::View)
+END_METADATA

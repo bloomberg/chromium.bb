@@ -40,6 +40,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
+#include "ui/compositor/compositor.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -63,7 +64,7 @@ namespace {
 
 KeyboardShortcutView* g_ksv_view = nullptr;
 
-constexpr base::nullopt_t kAllCategories = base::nullopt;
+constexpr absl::nullopt_t kAllCategories = absl::nullopt;
 
 // Creates the no search result view.
 std::unique_ptr<views::View> CreateNoSearchResultView() {
@@ -92,8 +93,7 @@ std::unique_ptr<views::View> CreateNoSearchResultView() {
   text->SetEnabledColor(kSearchIllustrationTextColor);
   constexpr int kLabelFontSizeDelta = 1;
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  text->SetFontList(rb.GetFontListWithDelta(
-      kLabelFontSizeDelta, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL));
+  text->SetFontList(rb.GetFontListWithDelta(kLabelFontSizeDelta));
   illustration_view->AddChildView(std::move(text));
   return illustration_view;
 }
@@ -213,6 +213,8 @@ views::Widget* KeyboardShortcutView::Toggle(aura::Window* context) {
 
     g_ksv_view->AddAccelerator(
         ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN));
+    g_ksv_view->AddAccelerator(
+        ui::Accelerator(ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
 
     g_ksv_view->needs_init_all_categories_ = false;
     g_ksv_view->did_first_paint_ = false;
@@ -238,14 +240,18 @@ ax::mojom::Role KeyboardShortcutView::GetAccessibleWindowRole() {
   return ax::mojom::Role::kWindow;
 }
 
-base::string16 KeyboardShortcutView::GetAccessibleWindowTitle() const {
+std::u16string KeyboardShortcutView::GetAccessibleWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_KSV_TITLE);
 }
 
 bool KeyboardShortcutView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
+  const bool is_valid_modifier =
+      accelerator.modifiers() == ui::EF_CONTROL_DOWN ||
+      accelerator.modifiers() == (ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+  DCHECK(is_valid_modifier);
   DCHECK_EQ(ui::VKEY_W, accelerator.key_code());
-  DCHECK_EQ(ui::EF_CONTROL_DOWN, accelerator.modifiers());
+
   GetWidget()->Close();
   return true;
 }
@@ -408,7 +414,7 @@ void KeyboardShortcutView::InitViews() {
 }
 
 void KeyboardShortcutView::InitCategoriesTabbedPane(
-    base::Optional<ShortcutCategory> initial_category) {
+    absl::optional<ShortcutCategory> initial_category) {
   active_tab_index_ = categories_tabbed_pane_->GetSelectedTabIndex();
   // If the tab count is 0, GetSelectedTabIndex() will return kNoSelectedTab,
   // which we do not want to cache.
@@ -508,7 +514,7 @@ void KeyboardShortcutView::UpdateViewsLayout(bool is_search_box_active) {
 }
 
 void KeyboardShortcutView::ShowSearchResults(
-    const base::string16& search_query) {
+    const std::u16string& search_query) {
   search_results_container_->RemoveAllChildViews(true);
   auto* search_container_content_view = search_no_result_view_.get();
   auto found_items_list_view = std::make_unique<KeyboardShortcutItemListView>();
@@ -519,9 +525,9 @@ void KeyboardShortcutView::ShowSearchResults(
   found_shortcut_items_.clear();
 
   for (const auto& item_view : shortcut_views_) {
-    base::string16 description_text =
+    std::u16string description_text =
         item_view->description_label_view()->GetText();
-    base::string16 shortcut_text = item_view->shortcut_label_view()->GetText();
+    std::u16string shortcut_text = item_view->shortcut_label_view()->GetText();
     size_t match_index = -1;
     size_t match_length = 0;
     // Only highlight |description_label_view_| in KeyboardShortcutItemView.
@@ -560,7 +566,7 @@ void KeyboardShortcutView::ShowSearchResults(
     }
   }
 
-  std::vector<base::string16> replacement_strings;
+  std::vector<std::u16string> replacement_strings;
   const int number_search_results = found_shortcut_items_.size();
   if (!found_items_list_view->children().empty()) {
     UpdateAXNodeDataPosition(found_shortcut_items_);

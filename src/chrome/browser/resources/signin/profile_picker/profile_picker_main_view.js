@@ -5,12 +5,13 @@
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import './icons.js';
 import './profile_card.js';
 import './profile_picker_shared_css.js';
-import './strings.js';
+import './strings.m.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
@@ -18,7 +19,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {ManageProfilesBrowserProxy, ManageProfilesBrowserProxyImpl, ProfileState} from './manage_profiles_browser_proxy.js';
 import {navigateTo, NavigationBehavior, Routes} from './navigation_behavior.js';
-import {isGuestModeEnabled, isProfileCreationAllowed} from './policy_helper.js';
+import {isAskOnStartupAllowed, isGuestModeEnabled, isProfileCreationAllowed} from './policy_helper.js';
 
 Polymer({
   is: 'profile-picker-main-view',
@@ -58,18 +59,13 @@ Polymer({
         return loadTimeData.getBoolean('askOnStartup');
       }
     },
-
-    /** @private */
-    disableAskOnStartup_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('disableAskOnStartup');
-      }
-    },
   },
 
   /** @private {?ManageProfilesBrowserProxy} */
   manageProfilesBrowserProxy_: null,
+
+  /** @type {ResizeObserver} used to observer size changes to this element */
+  resizeObserver_: null,
 
   /** @override */
   ready() {
@@ -87,11 +83,32 @@ Polymer({
 
   /** @override */
   attached() {
+    this.addResizeObserver_();
     this.addWebUIListener(
         'profiles-list-changed', this.handleProfilesListChanged_.bind(this));
     this.addWebUIListener(
         'profile-removed', this.handleProfileRemoved_.bind(this));
     this.manageProfilesBrowserProxy_.initializeMainView();
+  },
+
+  /** @override */
+  detached() {
+    this.resizeObserver_.disconnect();
+  },
+
+  /** @private */
+  addResizeObserver_() {
+    this.resizeObserver_ = new ResizeObserver(() => {
+      const profileContainer =
+          /** @type {!HTMLDivElement} */ (this.$$('.profiles-container'));
+      if (profileContainer.scrollHeight > profileContainer.clientHeight) {
+        this.$$('.footer').classList.add('division-line');
+      } else {
+        this.$$('.footer').classList.remove('division-line');
+      }
+    });
+    this.resizeObserver_.observe(
+        /** @type {!HTMLDivElement} */ (this.$$('.profiles-container')));
   },
 
   /** @private */
@@ -161,7 +178,7 @@ Polymer({
    * @private
    */
   computeHideAskOnStartup_() {
-    return this.disableAskOnStartup_ || !this.profilesList_ ||
+    return !isAskOnStartupAllowed() || !this.profilesList_ ||
         this.profilesList_.length < 2;
   },
 });

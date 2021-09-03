@@ -4,22 +4,24 @@
 
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 
-#include "base/optional.h"
 #include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/cursor/platform_cursor.h"
 
 namespace ui {
+
+using mojom::CursorType;
 
 TEST(BitmapCursorFactoryOzoneTest, InvisibleCursor) {
   BitmapCursorFactoryOzone cursor_factory;
 
-  base::Optional<PlatformCursor> cursor =
-      cursor_factory.GetDefaultCursor(mojom::CursorType::kNone);
-  // The invisible cursor should be nullptr, not base::nullopt.
-  ASSERT_TRUE(cursor.has_value());
-  EXPECT_EQ(cursor, nullptr);
+  auto cursor = cursor_factory.GetDefaultCursor(CursorType::kNone);
+  // The invisible cursor should be a BitmapCursorOzone of type kNone, not
+  // nullptr.
+  ASSERT_NE(cursor, nullptr);
+  EXPECT_EQ(BitmapCursorOzone::FromPlatformCursor(cursor)->type(),
+            CursorType::kNone);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -27,29 +29,27 @@ TEST(BitmapCursorFactoryOzoneTest, LacrosUsesDefaultCursorsForCommonTypes) {
   BitmapCursorFactoryOzone factory;
 
   // Verify some common cursor types.
-  base::Optional<PlatformCursor> cursor =
-      factory.GetDefaultCursor(mojom::CursorType::kPointer);
-  ASSERT_TRUE(cursor.has_value());
+  auto cursor = factory.GetDefaultCursor(CursorType::kPointer);
   EXPECT_NE(cursor, nullptr);
-  factory.UnrefImageCursor(cursor.value());
+  EXPECT_EQ(BitmapCursorOzone::FromPlatformCursor(cursor)->type(),
+            CursorType::kPointer);
 
-  cursor = factory.GetDefaultCursor(mojom::CursorType::kHand);
-  ASSERT_TRUE(cursor.has_value());
+  cursor = factory.GetDefaultCursor(CursorType::kHand);
   EXPECT_NE(cursor, nullptr);
-  factory.UnrefImageCursor(cursor.value());
+  EXPECT_EQ(BitmapCursorOzone::FromPlatformCursor(cursor)->type(),
+            CursorType::kHand);
 
-  cursor = factory.GetDefaultCursor(mojom::CursorType::kIBeam);
-  ASSERT_TRUE(cursor.has_value());
+  cursor = factory.GetDefaultCursor(CursorType::kIBeam);
   EXPECT_NE(cursor, nullptr);
-  factory.UnrefImageCursor(cursor.value());
+  EXPECT_EQ(BitmapCursorOzone::FromPlatformCursor(cursor)->type(),
+            CursorType::kIBeam);
 }
 
 TEST(BitmapCursorFactoryOzoneTest, LacrosCustomCursor) {
   BitmapCursorFactoryOzone factory;
-  base::Optional<PlatformCursor> cursor =
-      factory.GetDefaultCursor(mojom::CursorType::kCustom);
+  auto cursor = factory.GetDefaultCursor(CursorType::kCustom);
   // Custom cursors don't have a default platform cursor.
-  EXPECT_FALSE(cursor.has_value());
+  EXPECT_EQ(cursor, nullptr);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 

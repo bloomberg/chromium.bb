@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/chromeos_buildflags.h"
 #include "components/policy/policy_constants.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
@@ -68,7 +69,7 @@ It2MeHost::~It2MeHost() {
 }
 
 void It2MeHost::set_enable_dialogs(bool enable) {
-#if defined(OS_CHROMEOS) || !defined(NDEBUG)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || !defined(NDEBUG)
   enable_dialogs_ = enable;
 #else
   NOTREACHED() << "It2MeHost::set_enable_dialogs is only supported on ChromeOS";
@@ -76,7 +77,7 @@ void It2MeHost::set_enable_dialogs(bool enable) {
 }
 
 void It2MeHost::set_enable_notifications(bool enable) {
-#if defined(OS_CHROMEOS) || !defined(NDEBUG)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || !defined(NDEBUG)
   enable_notifications_ = enable;
 #else
   NOTREACHED() << "It2MeHost::set_enable_notifications is only supported on "
@@ -85,7 +86,7 @@ void It2MeHost::set_enable_notifications(bool enable) {
 }
 
 void It2MeHost::set_terminate_upon_input(bool terminate_upon_input) {
-#if defined(OS_CHROMEOS) || !defined(NDEBUG)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || !defined(NDEBUG)
   terminate_upon_input_ = terminate_upon_input;
 #else
   NOTREACHED()
@@ -200,7 +201,9 @@ void It2MeHost::ConnectOnNetworkThread(
           std::make_unique<protocol::ChromiumPortAllocatorFactory>(),
           host_context_->url_loader_factory(), network_settings,
           protocol::TransportRole::SERVER);
-  transport_context->set_turn_ice_config(ice_config);
+  if (!ice_config.is_null()) {
+    transport_context->set_turn_ice_config(ice_config);
+  }
 
   std::unique_ptr<protocol::SessionManager> session_manager(
       new protocol::JingleSessionManager(signal_strategy_.get()));
@@ -315,7 +318,7 @@ void It2MeHost::OnPolicyUpdate(
   if (policies->GetList(policy::key::kRemoteAccessHostDomainList,
                         &host_domain_list)) {
     std::vector<std::string> host_domain_list_vector;
-    for (const auto& value : *host_domain_list) {
+    for (const auto& value : host_domain_list->GetList()) {
       host_domain_list_vector.push_back(value.GetString());
     }
     UpdateHostDomainListPolicy(std::move(host_domain_list_vector));
@@ -325,7 +328,7 @@ void It2MeHost::OnPolicyUpdate(
   if (policies->GetList(policy::key::kRemoteAccessHostClientDomainList,
                         &client_domain_list)) {
     std::vector<std::string> client_domain_list_vector;
-    for (const auto& value : *client_domain_list) {
+    for (const auto& value : client_domain_list->GetList()) {
       client_domain_list_vector.push_back(value.GetString());
     }
     UpdateClientDomainListPolicy(std::move(client_domain_list_vector));
@@ -601,7 +604,7 @@ void It2MeHost::ValidateConnectionDetails(
     confirmation_dialog_proxy_->Show(
         client_username,
         base::BindOnce(&It2MeHost::OnConfirmationResult, base::Unretained(this),
-                       base::Passed(std::move(result_callback))));
+                       std::move(result_callback)));
   } else {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

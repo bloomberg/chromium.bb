@@ -5,6 +5,7 @@
 #include "net/disk_cache/memory/mem_entry_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -126,7 +127,7 @@ void MemEntryImpl::UpdateStateOnUse(EntryModified modified_enum) {
   if (!doomed_ && backend_)
     backend_->OnEntryUpdated(this);
 
-  last_used_ = Time::Now();
+  last_used_ = MemBackendImpl::Now(backend_);
   if (modified_enum == ENTRY_WAS_MODIFIED)
     last_modified_ = last_used_;
 }
@@ -301,7 +302,7 @@ MemEntryImpl::MemEntryImpl(base::WeakPtr<MemBackendImpl> backend,
       child_id_(child_id),
       child_first_pos_(0),
       parent_(parent),
-      last_modified_(Time::Now()),
+      last_modified_(MemBackendImpl::Now(backend)),
       last_used_(last_modified_),
       backend_(backend),
       doomed_(false) {
@@ -599,7 +600,7 @@ bool MemEntryImpl::InitSparseInfo() {
     // initialized as a sparse entry, we should fail.
     if (GetDataSize(kSparseData))
       return false;
-    children_.reset(new EntryMap());
+    children_ = std::make_unique<EntryMap>();
 
     // The parent entry stores data for the first block, so save this object to
     // index 0.

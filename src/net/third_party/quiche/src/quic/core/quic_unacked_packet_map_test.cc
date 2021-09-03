@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_unacked_packet_map.h"
+#include "quic/core/quic_unacked_packet_map.h"
 #include <cstddef>
 #include <limits>
 
 #include "absl/base/macros.h"
-#include "net/third_party/quiche/src/quic/core/frames/quic_stream_frame.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_number.h"
-#include "net/third_party/quiche/src/quic/core/quic_transmission_info.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_unacked_packet_map_peer.h"
+#include "quic/core/frames/quic_stream_frame.h"
+#include "quic/core/quic_packet_number.h"
+#include "quic/core/quic_transmission_info.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/quic_unacked_packet_map_peer.h"
 
 using testing::_;
 using testing::Return;
@@ -136,7 +136,7 @@ class QuicUnackedPacketMapTest : public QuicTestWithParam<Perspective> {
   void RetransmitAndSendPacket(uint64_t old_packet_number,
                                uint64_t new_packet_number,
                                TransmissionType transmission_type) {
-    DCHECK(unacked_packets_.HasRetransmittableFrames(
+    QUICHE_DCHECK(unacked_packets_.HasRetransmittableFrames(
         QuicPacketNumber(old_packet_number)));
     QuicTransmissionInfo* info = unacked_packets_.GetMutableTransmissionInfo(
         QuicPacketNumber(old_packet_number));
@@ -658,7 +658,6 @@ TEST_P(QuicUnackedPacketMapTest, LargestSentPacketMultiplePacketNumberSpaces) {
 }
 
 TEST_P(QuicUnackedPacketMapTest, ReserveInitialCapacityTest) {
-  SetQuicReloadableFlag(quic_use_circular_deque_for_unacked_packets, true);
   QuicUnackedPacketMap unacked_packets(GetParam());
   ASSERT_EQ(QuicUnackedPacketMapPeer::GetCapacity(unacked_packets), 0u);
   unacked_packets.ReserveInitialCapacity(16);
@@ -667,6 +666,32 @@ TEST_P(QuicUnackedPacketMapTest, ReserveInitialCapacityTest) {
   unacked_packets.AddSentPacket(&packet, TransmissionType::NOT_RETRANSMISSION,
                                 now_, true, true);
   ASSERT_EQ(QuicUnackedPacketMapPeer::GetCapacity(unacked_packets), 16u);
+}
+
+TEST_P(QuicUnackedPacketMapTest, DebugString) {
+  EXPECT_EQ(unacked_packets_.DebugString(),
+            "{size: 0, least_unacked: 1, largest_sent_packet: uninitialized, "
+            "largest_acked: uninitialized, bytes_in_flight: 0, "
+            "packets_in_flight: 0}");
+
+  SerializedPacket packet1(CreateRetransmittablePacket(1));
+  unacked_packets_.AddSentPacket(&packet1, NOT_RETRANSMISSION, now_, true,
+                                 true);
+  EXPECT_EQ(
+      unacked_packets_.DebugString(),
+      "{size: 1, least_unacked: 1, largest_sent_packet: 1, largest_acked: "
+      "uninitialized, bytes_in_flight: 1000, packets_in_flight: 1}");
+
+  SerializedPacket packet2(CreateRetransmittablePacket(2));
+  unacked_packets_.AddSentPacket(&packet2, NOT_RETRANSMISSION, now_, true,
+                                 true);
+  unacked_packets_.RemoveFromInFlight(QuicPacketNumber(1));
+  unacked_packets_.IncreaseLargestAcked(QuicPacketNumber(1));
+  unacked_packets_.RemoveObsoletePackets();
+  EXPECT_EQ(
+      unacked_packets_.DebugString(),
+      "{size: 1, least_unacked: 2, largest_sent_packet: 2, largest_acked: 1, "
+      "bytes_in_flight: 1000, packets_in_flight: 1}");
 }
 
 }  // namespace

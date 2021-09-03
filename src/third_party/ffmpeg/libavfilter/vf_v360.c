@@ -128,6 +128,7 @@ static const AVOption v360_options[] = {
     {  "spline16", "spline16 interpolation",                     0, AV_OPT_TYPE_CONST,  {.i64=SPLINE16},        0,                   0, FLAGS, "interp" },
     {     "gauss", "gaussian interpolation",                     0, AV_OPT_TYPE_CONST,  {.i64=GAUSSIAN},        0,                   0, FLAGS, "interp" },
     {  "gaussian", "gaussian interpolation",                     0, AV_OPT_TYPE_CONST,  {.i64=GAUSSIAN},        0,                   0, FLAGS, "interp" },
+    {  "mitchell", "mitchell interpolation",                     0, AV_OPT_TYPE_CONST,  {.i64=MITCHELL},        0,                   0, FLAGS, "interp" },
     {         "w", "output width",                   OFFSET(width), AV_OPT_TYPE_INT,    {.i64=0},               0,           INT16_MAX, FLAGS, "w"},
     {         "h", "output height",                 OFFSET(height), AV_OPT_TYPE_INT,    {.i64=0},               0,           INT16_MAX, FLAGS, "h"},
     { "in_stereo", "input stereo format",        OFFSET(in_stereo), AV_OPT_TYPE_INT,    {.i64=STEREO_2D},       0,    NB_STEREO_FMTS-1, FLAGS, "stereo" },
@@ -381,6 +382,7 @@ void ff_v360_init(V360Context *s, int depth)
     case LANCZOS:
     case SPLINE16:
     case GAUSSIAN:
+    case MITCHELL:
         s->remap_line = depth <= 8 ? remap4_8bit_line_c : remap4_16bit_line_c;
         break;
     }
@@ -670,6 +672,71 @@ static void gaussian_kernel(float du, float dv, const XYRemap *rmap,
 }
 
 /**
+ * Calculate 1-dimensional cubic_bc_spline coefficients.
+ *
+ * @param t relative coordinate
+ * @param coeffs coefficients
+ */
+static void calculate_cubic_bc_coeffs(float t, float *coeffs,
+                                      float b, float c)
+{
+    float sum = 0.f;
+    float p0 = (6.f - 2.f * b) / 6.f,
+          p2 = (-18.f + 12.f * b + 6.f * c) / 6.f,
+          p3 = (12.f - 9.f * b - 6.f * c) / 6.f,
+          q0 = (8.f * b + 24.f * c) / 6.f,
+          q1 = (-12.f * b - 48.f * c) / 6.f,
+          q2 = (6.f * b + 30.f * c) / 6.f,
+          q3 = (-b - 6.f * c) / 6.f;
+
+    for (int i = 0; i < 4; i++) {
+        const float x = fabsf(t - i + 1.f);
+        if (x < 1.f) {
+            coeffs[i] = (p0 + x * x * (p2 + x * p3)) *
+                        (p0 + x * x * (p2 + x * p3 / 2.f) / 4.f);
+        } else if (x < 2.f) {
+            coeffs[i] = (q0 + x * (q1 + x * (q2 + x * q3))) *
+                        (q0 + x * (q1 + x * (q2 + x / 2.f * q3) / 2.f) / 2.f);
+        } else {
+            coeffs[i] = 0.f;
+        }
+        sum += coeffs[i];
+    }
+
+    for (int i = 0; i < 4; i++) {
+        coeffs[i] /= sum;
+    }
+}
+
+/**
+ * Calculate kernel for mitchell interpolation.
+ *
+ * @param du horizontal relative coordinate
+ * @param dv vertical relative coordinate
+ * @param rmap calculated 4x4 window
+ * @param u u remap data
+ * @param v v remap data
+ * @param ker ker remap data
+ */
+static void mitchell_kernel(float du, float dv, const XYRemap *rmap,
+                            int16_t *u, int16_t *v, int16_t *ker)
+{
+    float du_coeffs[4];
+    float dv_coeffs[4];
+
+    calculate_cubic_bc_coeffs(du, du_coeffs, 1.f / 3.f, 1.f / 3.f);
+    calculate_cubic_bc_coeffs(dv, dv_coeffs, 1.f / 3.f, 1.f / 3.f);
+
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            u[i * 4 + j] = rmap->u[i][j];
+            v[i * 4 + j] = rmap->v[i][j];
+            ker[i * 4 + j] = lrintf(du_coeffs[j] * dv_coeffs[i] * 16385.f);
+        }
+    }
+}
+
+/**
  * Modulo operation with only positive remainders.
  *
  * @param a dividend
@@ -696,12 +763,12 @@ static inline int mod(int a, int b)
 static inline int reflecty(int y, int h)
 {
     if (y < 0) {
-        return -y;
+        y = -y;
     } else if (y >= h) {
-        return 2 * h - 1 - y;
+        y = 2 * h - 1 - y;
     }
 
-    return y;
+    return av_clip(y, 0, h - 1);
 }
 
 /**
@@ -3066,8 +3133,8 @@ static int perspective_to_xyz(const V360Context *s,
         const float cos_theta = cosf(theta);
 
         vec[0] = cos_theta * sin_phi;
-        vec[1] = sin_theta;
-        vec[2] = cos_theta * cos_phi;
+        vec[1] = cos_theta * cos_phi;
+        vec[2] = sin_theta;
     } else {
         vec[0] = 0.f;
         vec[1] = 1.f;
@@ -3075,7 +3142,6 @@ static int perspective_to_xyz(const V360Context *s,
         return 0;
     }
 
-    normalize_vector(vec);
     return 1;
 }
 
@@ -3796,73 +3862,76 @@ static int xyz_to_octahedron(const V360Context *s,
     return 1;
 }
 
-static void multiply_matrix(float c[3][3], const float a[3][3], const float b[3][3])
+static void multiply_quaternion(float c[4], const float a[4], const float b[4])
 {
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            float sum = 0.f;
+    c[0] = a[0] * b[0] - a[1] * b[1] - a[2] * b[2] - a[3] * b[3];
+    c[1] = a[1] * b[0] + a[0] * b[1] + a[2] * b[3] - a[3] * b[2];
+    c[2] = a[2] * b[0] + a[0] * b[2] + a[3] * b[1] - a[1] * b[3];
+    c[3] = a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1];
+}
 
-            for (int k = 0; k < 3; k++)
-                sum += a[i][k] * b[k][j];
-
-            c[i][j] = sum;
-        }
-    }
+static void conjugate_quaternion(float d[4], const float q[4])
+{
+    d[0] =  q[0];
+    d[1] = -q[1];
+    d[2] = -q[2];
+    d[3] = -q[3];
 }
 
 /**
- * Calculate rotation matrix for yaw/pitch/roll angles.
+ * Calculate rotation quaternion for yaw/pitch/roll angles.
  */
-static inline void calculate_rotation_matrix(float yaw, float pitch, float roll,
-                                             float rot_mat[3][3],
-                                             const int rotation_order[3])
+static inline void calculate_rotation(float yaw, float pitch, float roll,
+                                      float rot_quaternion[2][4],
+                                      const int rotation_order[3])
 {
     const float yaw_rad   = yaw   * M_PI / 180.f;
     const float pitch_rad = pitch * M_PI / 180.f;
     const float roll_rad  = roll  * M_PI / 180.f;
 
-    const float sin_yaw   = sinf(yaw_rad);
-    const float cos_yaw   = cosf(yaw_rad);
-    const float sin_pitch = sinf(pitch_rad);
-    const float cos_pitch = cosf(pitch_rad);
-    const float sin_roll  = sinf(roll_rad);
-    const float cos_roll  = cosf(roll_rad);
+    const float sin_yaw   = sinf(yaw_rad   * 0.5f);
+    const float cos_yaw   = cosf(yaw_rad   * 0.5f);
+    const float sin_pitch = sinf(pitch_rad * 0.5f);
+    const float cos_pitch = cosf(pitch_rad * 0.5f);
+    const float sin_roll  = sinf(roll_rad  * 0.5f);
+    const float cos_roll  = cosf(roll_rad  * 0.5f);
 
-    float m[3][3][3];
-    float temp[3][3];
+    float m[3][4];
+    float tmp[2][4];
 
-    m[0][0][0] =  cos_yaw;  m[0][0][1] = 0;          m[0][0][2] =  sin_yaw;
-    m[0][1][0] =  0;        m[0][1][1] = 1;          m[0][1][2] =  0;
-    m[0][2][0] = -sin_yaw;  m[0][2][1] = 0;          m[0][2][2] =  cos_yaw;
+    m[0][0] = cos_yaw;   m[0][1] = 0.f;       m[0][2] = sin_yaw; m[0][3] = 0.f;
+    m[1][0] = cos_pitch; m[1][1] = sin_pitch; m[1][2] = 0.f;     m[1][3] = 0.f;
+    m[2][0] = cos_roll;  m[2][1] = 0.f;       m[2][2] = 0.f;     m[2][3] = sin_roll;
 
-    m[1][0][0] = 1;         m[1][0][1] = 0;          m[1][0][2] =  0;
-    m[1][1][0] = 0;         m[1][1][1] = cos_pitch;  m[1][1][2] = -sin_pitch;
-    m[1][2][0] = 0;         m[1][2][1] = sin_pitch;  m[1][2][2] =  cos_pitch;
+    multiply_quaternion(tmp[0], rot_quaternion[0], m[rotation_order[0]]);
+    multiply_quaternion(tmp[1], tmp[0], m[rotation_order[1]]);
+    multiply_quaternion(rot_quaternion[0], tmp[1], m[rotation_order[2]]);
 
-    m[2][0][0] = cos_roll;  m[2][0][1] = -sin_roll;  m[2][0][2] =  0;
-    m[2][1][0] = sin_roll;  m[2][1][1] =  cos_roll;  m[2][1][2] =  0;
-    m[2][2][0] = 0;         m[2][2][1] =  0;         m[2][2][2] =  1;
-
-    multiply_matrix(temp, m[rotation_order[0]], m[rotation_order[1]]);
-    multiply_matrix(rot_mat, temp, m[rotation_order[2]]);
+    conjugate_quaternion(rot_quaternion[1], rot_quaternion[0]);
 }
 
 /**
- * Rotate vector with given rotation matrix.
+ * Rotate vector with given rotation quaternion.
  *
- * @param rot_mat rotation matrix
+ * @param rot_quaternion rotation quaternion
  * @param vec vector
  */
-static inline void rotate(const float rot_mat[3][3],
+static inline void rotate(const float rot_quaternion[2][4],
                           float *vec)
 {
-    const float x_tmp = vec[0] * rot_mat[0][0] + vec[1] * rot_mat[0][1] + vec[2] * rot_mat[0][2];
-    const float y_tmp = vec[0] * rot_mat[1][0] + vec[1] * rot_mat[1][1] + vec[2] * rot_mat[1][2];
-    const float z_tmp = vec[0] * rot_mat[2][0] + vec[1] * rot_mat[2][1] + vec[2] * rot_mat[2][2];
+    float qv[4], temp[4], rqv[4];
 
-    vec[0] = x_tmp;
-    vec[1] = y_tmp;
-    vec[2] = z_tmp;
+    qv[0] = 0.f;
+    qv[1] = vec[0];
+    qv[2] = vec[1];
+    qv[3] = vec[2];
+
+    multiply_quaternion(temp, rot_quaternion[0], qv);
+    multiply_quaternion(rqv, temp, rot_quaternion[1]);
+
+    vec[0] = rqv[1];
+    vec[1] = rqv[2];
+    vec[2] = rqv[3];
 }
 
 static inline void set_mirror_modifier(int h_flip, int v_flip, int d_flip,
@@ -4042,7 +4111,7 @@ static av_always_inline int v360_slice(AVFilterContext *ctx, void *arg, int jobn
                 else
                     out_mask = s->out_transform(s, i, j, width, height, vec);
                 av_assert1(!isnan(vec[0]) && !isnan(vec[1]) && !isnan(vec[2]));
-                rotate(s->rot_mat, vec);
+                rotate(s->rot_quaternion, vec);
                 av_assert1(!isnan(vec[0]) && !isnan(vec[1]) && !isnan(vec[2]));
                 normalize_vector(vec);
                 mirror(s->output_mirror_modifier, vec);
@@ -4133,6 +4202,13 @@ static int config_output(AVFilterLink *outlink)
         break;
     case GAUSSIAN:
         s->calculate_kernel = gaussian_kernel;
+        s->remap_slice = depth <= 8 ? remap4_8bit_slice : remap4_16bit_slice;
+        s->elements = 4 * 4;
+        sizeof_uv = sizeof(int16_t) * s->elements;
+        sizeof_ker = sizeof(int16_t) * s->elements;
+        break;
+    case MITCHELL:
+        s->calculate_kernel = mitchell_kernel;
         s->remap_slice = depth <= 8 ? remap4_8bit_slice : remap4_16bit_slice;
         s->elements = 4 * 4;
         sizeof_uv = sizeof(int16_t) * s->elements;
@@ -4593,7 +4669,9 @@ static int config_output(AVFilterLink *outlink)
             return err;
     }
 
-    calculate_rotation_matrix(s->yaw, s->pitch, s->roll, s->rot_mat, s->rotation_order);
+    calculate_rotation(s->yaw, s->pitch, s->roll,
+                       s->rot_quaternion, s->rotation_order);
+
     set_mirror_modifier(s->h_flip, s->v_flip, s->d_flip, s->output_mirror_modifier);
 
     ctx->internal->execute(ctx, v360_slice, NULL, NULL, s->nb_threads);
@@ -4628,13 +4706,26 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
                            char *res, int res_len, int flags)
 {
+    V360Context *s = ctx->priv;
     int ret;
+
+    s->yaw = s->pitch = s->roll = 0.f;
 
     ret = ff_filter_process_command(ctx, cmd, args, res, res_len, flags);
     if (ret < 0)
         return ret;
 
     return config_output(ctx->outputs[0]);
+}
+
+static av_cold int init(AVFilterContext *ctx)
+{
+    V360Context *s = ctx->priv;
+
+    s->rot_quaternion[0][0] = 1.f;
+    s->rot_quaternion[0][1] = s->rot_quaternion[0][2] = s->rot_quaternion[0][3] = 0.f;
+
+    return 0;
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
@@ -4678,6 +4769,7 @@ AVFilter ff_vf_v360 = {
     .name          = "v360",
     .description   = NULL_IF_CONFIG_SMALL("Convert 360 projection of video."),
     .priv_size     = sizeof(V360Context),
+    .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
     .inputs        = inputs,
