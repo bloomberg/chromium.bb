@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_instructions.h"
+#include "quic/core/qpack/qpack_instructions.h"
 
 #include <limits>
 
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_logging.h"
 
 namespace quic {
 
@@ -19,7 +19,7 @@ namespace {
 void ValidateLangague(const QpackLanguage* language) {
 #ifndef NDEBUG
   for (const auto* instruction : *language) {
-    DCHECK_EQ(0, instruction->opcode.value & ~instruction->opcode.mask);
+    QUICHE_DCHECK_EQ(0, instruction->opcode.value & ~instruction->opcode.mask);
   }
 
   for (uint8_t byte = 0; byte < std::numeric_limits<uint8_t>::max(); ++byte) {
@@ -29,7 +29,7 @@ void ValidateLangague(const QpackLanguage* language) {
         ++match_count;
       }
     }
-    DCHECK_EQ(1u, match_count) << static_cast<int>(byte);
+    QUICHE_DCHECK_EQ(1u, match_count) << static_cast<int>(byte);
   }
 #else
   (void)language;

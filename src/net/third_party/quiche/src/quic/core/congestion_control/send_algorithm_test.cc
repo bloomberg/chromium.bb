@@ -8,21 +8,21 @@
 #include <string>
 #include <utility>
 
-#include "net/third_party/quiche/src/quic/core/congestion_control/rtt_stats.h"
-#include "net/third_party/quiche/src/quic/core/congestion_control/send_algorithm_interface.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/core/quic_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_config_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_connection_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_sent_packet_manager_peer.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/quic_endpoint.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/switch.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "quic/core/congestion_control/rtt_stats.h"
+#include "quic/core/congestion_control/send_algorithm_interface.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_logging.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/mock_clock.h"
+#include "quic/test_tools/quic_config_peer.h"
+#include "quic/test_tools/quic_connection_peer.h"
+#include "quic/test_tools/quic_sent_packet_manager_peer.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/simulator/quic_endpoint.h"
+#include "quic/test_tools/simulator/simulator.h"
+#include "quic/test_tools/simulator/switch.h"
 
 namespace quic {
 namespace test {
@@ -134,7 +134,7 @@ struct TestParams {
 
 std::string TestParamToString(
     const testing::TestParamInfo<TestParams>& params) {
-  return quiche::QuicheStrCat(
+  return absl::StrCat(
       CongestionControlTypeToString(params.param.congestion_control_type), "_");
 }
 

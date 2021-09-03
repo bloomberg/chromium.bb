@@ -69,6 +69,7 @@ class CORE_EXPORT LayoutImageResource
   // Default size is effective when this is LayoutImageResourceStyleImage.
   virtual FloatSize ImageSizeWithDefaultSize(float multiplier,
                                              const FloatSize&) const;
+  virtual RespectImageOrientationEnum ImageOrientation() const;
   virtual WrappedImagePtr ImagePtr() const { return cached_image_.Get(); }
 
   virtual void Trace(Visitor* visitor) const { visitor->Trace(cached_image_); }
@@ -85,4 +86,4 @@ class CORE_EXPORT LayoutImageResource
 
 }  // namespace blink
 
-#endif  // LayoutImage_h
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_IMAGE_RESOURCE_H_

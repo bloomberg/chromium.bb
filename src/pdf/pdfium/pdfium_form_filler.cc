@@ -9,10 +9,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
+#include "base/feature_list.h"
+#include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "pdf/pdf_features.h"
 #include "pdf/pdfium/pdfium_engine.h"
-#include "pdf/ppapi_migration/input_event_conversions.h"
+#include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -23,10 +27,19 @@ namespace {
 int g_last_timer_id = 0;
 
 std::string WideStringToString(FPDF_WIDESTRING wide_string) {
-  return base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(wide_string));
+  return base::UTF16ToUTF8(reinterpret_cast<const char16_t*>(wide_string));
 }
 
 }  // namespace
+
+// static
+PDFiumFormFiller::ScriptOption PDFiumFormFiller::DefaultScriptOption() {
+#if defined(PDF_ENABLE_XFA)
+  if (base::FeatureList::IsEnabled(features::kPdfXfaSupport))
+    return PDFiumFormFiller::ScriptOption::kJavaScriptAndXFA;
+#endif  // defined(PDF_ENABLE_XFA)
+  return PDFiumFormFiller::ScriptOption::kJavaScript;
+}
 
 PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine,
                                    ScriptOption script_option)
@@ -318,11 +331,12 @@ void PDFiumFormFiller::Form_DoURIActionWithKeyboardModifier(
     FPDF_BYTESTRING uri,
     int modifiers) {
   PDFiumEngine* engine = GetEngine(param);
-  bool middle_button = !!(modifiers & kInputEventModifierMiddleButtonDown);
-  bool alt_key = !!(modifiers & kInputEventModifierAltKey);
-  bool ctrl_key = !!(modifiers & kInputEventModifierControlKey);
-  bool meta_key = !!(modifiers & kInputEventModifierMetaKey);
-  bool shift_key = !!(modifiers & kInputEventModifierShiftKey);
+  bool middle_button =
+      !!(modifiers & blink::WebInputEvent::Modifiers::kMiddleButtonDown);
+  bool alt_key = !!(modifiers & blink::WebInputEvent::Modifiers::kAltKey);
+  bool ctrl_key = !!(modifiers & blink::WebInputEvent::Modifiers::kControlKey);
+  bool meta_key = !!(modifiers & blink::WebInputEvent::Modifiers::kMetaKey);
+  bool shift_key = !!(modifiers & blink::WebInputEvent::Modifiers::kShiftKey);
 
   WindowOpenDisposition disposition = ui::DispositionFromClick(
       middle_button, alt_key, ctrl_key, meta_key, shift_key);
@@ -394,9 +408,6 @@ void PDFiumFormFiller::Form_GetPageViewRect(FPDF_FORMFILLINFO* param,
 
   gfx::Rect page_view_rect = engine->GetPageContentsRect(page_index);
 
-  float toolbar_height_in_screen_coords =
-      engine->GetToolbarHeightInScreenCoords();
-
   float page_width = FPDF_GetPageWidth(page);
   float page_height = FPDF_GetPageHeight(page);
 
@@ -409,11 +420,10 @@ void PDFiumFormFiller::Form_GetPageViewRect(FPDF_FORMFILLINFO* param,
   // coords, we use (page_width * (x - base_x) / page_view_rect.width()).
   // For y positions, (page_height * (y - base_y) / page_view_rect.height()).
 
-  // The top-most y position that can be relied to be visible on the screen is
-  // the bottom of the toolbar, which is y = toolbar_height_in_screen_coords.
+  // The top-most x position that is visible on the screen is the top of the
+  // plugin area, which is y = 0.
   float screen_top_in_page_coords =
-      page_height * (toolbar_height_in_screen_coords - page_view_rect.y()) /
-      page_view_rect.height();
+      page_height * (0 - page_view_rect.y()) / page_view_rect.height();
   // The bottom-most y position that is visible on the screen is the bottom of
   // the plugin area, which is y = engine->plugin_size_.height().
   float screen_bottom_in_page_coords =
@@ -603,8 +613,8 @@ int PDFiumFormFiller::Form_Response(IPDF_JSPLATFORM* param,
 
   PDFiumEngine* engine = GetEngine(param);
   std::string rv = engine->client_->Prompt(question_str, default_str);
-  base::string16 rv_16 = base::UTF8ToUTF16(rv);
-  int rv_bytes = rv_16.size() * sizeof(base::char16);
+  std::u16string rv_16 = base::UTF8ToUTF16(rv);
+  int rv_bytes = rv_16.size() * sizeof(char16_t);
   if (response) {
     int bytes_to_copy = rv_bytes < length ? rv_bytes : length;
     memcpy(response, rv_16.c_str(), bytes_to_copy);
@@ -633,7 +643,7 @@ void PDFiumFormFiller::Form_Mail(IPDF_JSPLATFORM* param,
                                  FPDF_WIDESTRING cc,
                                  FPDF_WIDESTRING bcc,
                                  FPDF_WIDESTRING message) {
-  // Note: |mail_data| and |length| are ignored. We don't handle attachments;
+  // Note: `mail_data` and `length` are ignored. We don't handle attachments;
   // there is no way with mailto.
   std::string to_str = WideStringToString(to);
   std::string cc_str = WideStringToString(cc);

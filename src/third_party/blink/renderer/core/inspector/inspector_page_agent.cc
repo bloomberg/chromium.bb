@@ -31,9 +31,11 @@
 #include "third_party/blink/renderer/core/inspector/inspector_page_agent.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/containers/span.h"
 #include "build/build_config.h"
+#include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/widget/screen_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_regexp.h"
@@ -53,8 +55,6 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
-#include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
-#include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/inspector/identifiers_factory.h"
@@ -69,8 +69,10 @@
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
+#include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/permissions_policy/permissions_policy_devtools_support.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/script/classic_script.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -156,15 +158,6 @@ Resource* CachedResource(LocalFrame* frame,
     return nullptr;
   Resource* cached_resource = document->Fetcher()->CachedResource(url);
   if (!cached_resource) {
-    HeapVector<Member<Document>> all_imports =
-        InspectorPageAgent::ImportsForFrame(frame);
-    for (Document* import : all_imports) {
-      cached_resource = import->Fetcher()->CachedResource(url);
-      if (cached_resource)
-        break;
-    }
-  }
-  if (!cached_resource) {
     cached_resource = GetMemoryCache()->ResourceForURL(
         url, document->Fetcher()->GetCacheIdentifier(url));
   }
@@ -236,8 +229,7 @@ static bool HasTextContent(const Resource* cached_resource) {
   ResourceType type = cached_resource->GetType();
   return type == ResourceType::kCSSStyleSheet ||
          type == ResourceType::kXSLStyleSheet ||
-         type == ResourceType::kScript || type == ResourceType::kRaw ||
-         type == ResourceType::kImportResource;
+         type == ResourceType::kScript || type == ResourceType::kRaw;
 }
 
 static std::unique_ptr<TextResourceDecoder> CreateResourceTextDecoder(
@@ -377,13 +369,13 @@ bool InspectorPageAgent::CachedResourceContent(const Resource* cached_resource,
   switch (cached_resource->GetType()) {
     case blink::ResourceType::kCSSStyleSheet:
       MaybeEncodeTextContent(
-          ToCSSStyleSheetResource(cached_resource)
+          To<CSSStyleSheetResource>(cached_resource)
               ->SheetText(nullptr, CSSStyleSheetResource::MIMETypeCheck::kLax),
           cached_resource->ResourceBuffer(), result, base64_encoded);
       return true;
     case blink::ResourceType::kScript:
       MaybeEncodeTextContent(
-          ToScriptResource(cached_resource)->TextForInspector(),
+          To<ScriptResource>(cached_resource)->TextForInspector(),
           cached_resource->ResourceBuffer(), result, base64_encoded);
       return true;
     default:
@@ -428,6 +420,8 @@ String InspectorPageAgent::ResourceTypeJson(
       return protocol::Network::ResourceTypeEnum::Manifest;
     case kSignedExchangeResource:
       return protocol::Network::ResourceTypeEnum::SignedExchange;
+    case kPingResource:
+      return protocol::Network::ResourceTypeEnum::Ping;
     case kOtherResource:
       return protocol::Network::ResourceTypeEnum::Other;
   }
@@ -454,8 +448,6 @@ InspectorPageAgent::ResourceType InspectorPageAgent::ToResourceType(
       return InspectorPageAgent::kStylesheetResource;
     case blink::ResourceType::kScript:
       return InspectorPageAgent::kScriptResource;
-    case blink::ResourceType::kImportResource:
-      return InspectorPageAgent::kDocumentResource;
     default:
       break;
   }
@@ -486,6 +478,9 @@ InspectorPageAgent::InspectorPageAgent(
                                    /*default_value=*/WTF::String()),
       worlds_to_evaluate_on_load_(&agent_state_,
                                   /*default_value=*/WTF::String()),
+      include_command_line_api_for_scripts_to_evaluate_on_load_(
+          &agent_state_,
+          /*default_value=*/false),
       standard_font_family_(&agent_state_, /*default_value=*/WTF::String()),
       fixed_font_family_(&agent_state_, /*default_value=*/WTF::String()),
       serif_font_family_(&agent_state_, /*default_value=*/WTF::String()),
@@ -564,7 +559,8 @@ Response InspectorPageAgent::disable() {
   instrumenting_agents_->RemoveInspectorPageAgent(this);
   inspector_resource_content_loader_->Cancel(
       resource_content_loader_client_id_);
-
+  requested_compilation_cache_.clear();
+  compilation_cache_.clear();
   stopScreencast();
 
   return Response::Success();
@@ -573,6 +569,7 @@ Response InspectorPageAgent::disable() {
 Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
     const String& source,
     Maybe<String> world_name,
+    Maybe<bool> include_command_line_api,
     String* identifier) {
   Vector<WTF::String> keys = scripts_to_evaluate_on_load_.Keys();
   auto* result = std::max_element(
@@ -587,6 +584,8 @@ Response InspectorPageAgent::addScriptToEvaluateOnNewDocument(
 
   scripts_to_evaluate_on_load_.Set(*identifier, source);
   worlds_to_evaluate_on_load_.Set(*identifier, world_name.fromMaybe(""));
+  include_command_line_api_for_scripts_to_evaluate_on_load_.Set(
+      *identifier, include_command_line_api.fromMaybe(false));
   return Response::Success();
 }
 
@@ -596,13 +595,14 @@ Response InspectorPageAgent::removeScriptToEvaluateOnNewDocument(
     return Response::ServerError("Script not found");
   scripts_to_evaluate_on_load_.Clear(identifier);
   worlds_to_evaluate_on_load_.Clear(identifier);
+  include_command_line_api_for_scripts_to_evaluate_on_load_.Clear(identifier);
   return Response::Success();
 }
 
 Response InspectorPageAgent::addScriptToEvaluateOnLoad(const String& source,
                                                        String* identifier) {
   return addScriptToEvaluateOnNewDocument(source, Maybe<String>(""),
-                                          identifier);
+                                          Maybe<bool>(false), identifier);
 }
 
 Response InspectorPageAgent::removeScriptToEvaluateOnLoad(
@@ -697,32 +697,10 @@ static void CachedResourcesForDocument(Document* document,
 }
 
 // static
-HeapVector<Member<Document>> InspectorPageAgent::ImportsForFrame(
-    LocalFrame* frame) {
-  HeapVector<Member<Document>> result;
-  Document* root_document = frame->GetDocument();
-
-  if (HTMLImportsController* controller = root_document->ImportsController()) {
-    for (wtf_size_t i = 0; i < controller->LoaderCount(); ++i) {
-      if (Document* document = controller->LoaderAt(i)->GetDocument())
-        result.push_back(document);
-    }
-  }
-
-  return result;
-}
-
 static HeapVector<Member<Resource>> CachedResourcesForFrame(LocalFrame* frame,
                                                             bool skip_xhrs) {
   HeapVector<Member<Resource>> result;
-  Document* root_document = frame->GetDocument();
-  HeapVector<Member<Document>> loaders =
-      InspectorPageAgent::ImportsForFrame(frame);
-
-  CachedResourcesForDocument(root_document, result, skip_xhrs);
-  for (wtf_size_t i = 0; i < loaders.size(); ++i)
-    CachedResourcesForDocument(loaders[i], result, skip_xhrs);
-
+  CachedResourcesForDocument(frame->GetDocument(), result, skip_xhrs);
   return result;
 }
 
@@ -772,8 +750,7 @@ void InspectorPageAgent::getResourceContent(
       resource_content_loader_client_id_,
       WTF::Bind(
           &InspectorPageAgent::GetResourceContentAfterResourcesContentLoaded,
-          WrapPersistent(this), frame_id, url,
-          WTF::Passed(std::move(callback))));
+          WrapPersistent(this), frame_id, url, std::move(callback)));
 }
 
 void InspectorPageAgent::SearchContentAfterResourcesContentLoaded(
@@ -824,14 +801,83 @@ void InspectorPageAgent::searchInResource(
       WTF::Bind(&InspectorPageAgent::SearchContentAfterResourcesContentLoaded,
                 WrapPersistent(this), frame_id, url, query,
                 optional_case_sensitive.fromMaybe(false),
-                optional_is_regex.fromMaybe(false),
-                WTF::Passed(std::move(callback))));
+                optional_is_regex.fromMaybe(false), std::move(callback)));
 }
 
 Response InspectorPageAgent::setBypassCSP(bool enabled) {
   LocalFrame* frame = inspected_frames_->Root();
   frame->GetSettings()->SetBypassCSP(enabled);
   bypass_csp_enabled_.Set(enabled);
+  return Response::Success();
+}
+
+namespace {
+
+std::unique_ptr<protocol::Page::PermissionsPolicyBlockLocator>
+CreatePermissionsPolicyBlockLocator(
+    const blink::PermissionsPolicyBlockLocator& locator) {
+  protocol::Page::PermissionsPolicyBlockReason reason;
+  switch (locator.reason) {
+    case blink::PermissionsPolicyBlockReason::kHeader:
+      reason = protocol::Page::PermissionsPolicyBlockReasonEnum::Header;
+      break;
+    case blink::PermissionsPolicyBlockReason::kIframeAttribute:
+      reason =
+          protocol::Page::PermissionsPolicyBlockReasonEnum::IframeAttribute;
+      break;
+  }
+
+  return protocol::Page::PermissionsPolicyBlockLocator::create()
+      .setFrameId(locator.frame_id)
+      .setBlockReason(reason)
+      .build();
+}
+}  // namespace
+
+Response InspectorPageAgent::getPermissionsPolicyState(
+    const String& frame_id,
+    std::unique_ptr<
+        protocol::Array<protocol::Page::PermissionsPolicyFeatureState>>*
+        states) {
+  LocalFrame* frame =
+      IdentifiersFactory::FrameById(inspected_frames_, frame_id);
+
+  if (!frame)
+    return Response::ServerError("No frame for given id found in this target");
+
+  const blink::PermissionsPolicy* permissions_policy =
+      frame->GetSecurityContext()->GetPermissionsPolicy();
+
+  if (!permissions_policy)
+    return Response::ServerError("Frame not ready");
+
+  auto feature_states = std::make_unique<
+      protocol::Array<protocol::Page::PermissionsPolicyFeatureState>>();
+
+  for (const auto& entry : blink::GetDefaultFeatureNameMap()) {
+    const String& feature_name = entry.key;
+    const mojom::blink::PermissionsPolicyFeature feature = entry.value;
+
+    if (blink::DisabledByOriginTrial(feature_name, frame->DomWindow()))
+      continue;
+
+    absl::optional<blink::PermissionsPolicyBlockLocator> locator =
+        blink::TracePermissionsPolicyBlockSource(frame, feature);
+
+    std::unique_ptr<protocol::Page::PermissionsPolicyFeatureState>
+        feature_state =
+            protocol::Page::PermissionsPolicyFeatureState::create()
+                .setFeature(blink::PermissionsPolicyFeatureToProtocol(feature))
+                .setAllowed(!locator.has_value())
+                .build();
+
+    if (locator.has_value())
+      feature_state->setLocator(CreatePermissionsPolicyBlockLocator(*locator));
+
+    feature_states->push_back(std::move(feature_state));
+  }
+
+  *states = std::move(feature_states);
   return Response::Success();
 }
 
@@ -895,10 +941,26 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
   for (const WTF::String& key : keys) {
     const String source = scripts_to_evaluate_on_load_.Get(key);
     const String world_name = worlds_to_evaluate_on_load_.Get(key);
+    const bool include_command_line_api =
+        include_command_line_api_for_scripts_to_evaluate_on_load_.Get(key);
+    auto* window = frame->DomWindow();
     if (world_name.IsEmpty()) {
-      ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
-          ->RunScript(frame->DomWindow(),
-                      ScriptController::kExecuteScriptWhenScriptsDisabled);
+      if (include_command_line_api) {
+        v8::HandleScope handle_scope(window->GetIsolate());
+        ScriptState* script_state =
+            ToScriptStateForMainWorld(window->GetFrame());
+        auto scope = v8_session_->initializeCommandLineAPIScope(
+            v8_inspector::V8ContextInfo::executionContextId(
+                script_state->GetContext()));
+        DCHECK(scope);
+        ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
+            ->RunScript(window,
+                        ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
+      } else {
+        ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
+            ->RunScript(window,
+                        ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
+      }
       continue;
     }
 
@@ -910,16 +972,28 @@ void InspectorPageAgent::DidClearDocumentOfWindowObject(LocalFrame* frame) {
     // Note: An error event in an isolated world will never be dispatched to
     // a foreign world.
     v8::HandleScope handle_scope(V8PerIsolateData::MainThreadIsolate());
-    ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
-        ->RunScriptInIsolatedWorldAndReturnValue(frame->DomWindow(),
-                                                 world->GetWorldId());
+    if (include_command_line_api) {
+      ScriptState* script_state = ToScriptState(
+          window->GetFrame(),
+          *DOMWrapperWorld::EnsureIsolatedWorld(ToIsolate(window->GetFrame()),
+                                                world->GetWorldId()));
+      auto scope = v8_session_->initializeCommandLineAPIScope(
+          v8_inspector::V8ContextInfo::executionContextId(
+              script_state->GetContext()));
+      DCHECK(scope);
+      ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
+          ->RunScriptInIsolatedWorldAndReturnValue(window, world->GetWorldId());
+    } else {
+      ClassicScript::CreateUnspecifiedScript(ScriptSourceCode(source))
+          ->RunScriptInIsolatedWorldAndReturnValue(window, world->GetWorldId());
+    }
   }
 
   if (!script_to_evaluate_on_load_once_.IsEmpty()) {
     ClassicScript::CreateUnspecifiedScript(
         ScriptSourceCode(script_to_evaluate_on_load_once_))
         ->RunScript(frame->DomWindow(),
-                    ScriptController::kExecuteScriptWhenScriptsDisabled);
+                    ExecuteScriptPolicy::kExecuteScriptWhenScriptsDisabled);
   }
 }
 
@@ -944,7 +1018,21 @@ void InspectorPageAgent::WillCommitLoad(LocalFrame*, DocumentLoader* loader) {
     script_to_evaluate_on_load_once_ = pending_script_to_evaluate_on_load_once_;
     pending_script_to_evaluate_on_load_once_ = String();
   }
-  GetFrontend()->frameNavigated(BuildObjectForFrame(loader->GetFrame()));
+  GetFrontend()->frameNavigated(BuildObjectForFrame(loader->GetFrame()),
+                                protocol::Page::NavigationTypeEnum::Navigation);
+}
+
+void InspectorPageAgent::DidRestoreFromBackForwardCache(LocalFrame* frame) {
+  GetFrontend()->frameNavigated(
+      BuildObjectForFrame(frame),
+      protocol::Page::NavigationTypeEnum::BackForwardCacheRestore);
+}
+
+void InspectorPageAgent::DidOpenDocument(LocalFrame* frame,
+                                         DocumentLoader* loader) {
+  GetFrontend()->documentOpened(BuildObjectForFrame(loader->GetFrame()));
+  LifecycleEvent(frame, loader, "init",
+                 base::TimeTicks::Now().since_origin().InSecondsF());
 }
 
 void InspectorPageAgent::FrameAttachedToParent(LocalFrame* frame) {
@@ -1095,8 +1183,8 @@ protocol::Page::CrossOriginIsolatedContextType
 CreateProtocolCrossOriginIsolatedContextType(ExecutionContext* context) {
   if (context->CrossOriginIsolatedCapability()) {
     return protocol::Page::CrossOriginIsolatedContextTypeEnum::Isolated;
-  } else if (context->IsFeatureEnabled(
-                 mojom::blink::FeaturePolicyFeature::kCrossOriginIsolated)) {
+  } else if (context->IsFeatureEnabled(mojom::blink::PermissionsPolicyFeature::
+                                           kCrossOriginIsolated)) {
     return protocol::Page::CrossOriginIsolatedContextTypeEnum::NotIsolated;
   }
   return protocol::Page::CrossOriginIsolatedContextTypeEnum::
@@ -1124,6 +1212,121 @@ CreateGatedAPIFeaturesArray(LocalDOMWindow* window) {
   // and performance.profile() once they are gated/available, respectively.
   return features;
 }
+
+protocol::Page::OriginTrialTokenStatus CreateOriginTrialTokenStatus(
+    blink::OriginTrialTokenStatus status) {
+  switch (status) {
+    case blink::OriginTrialTokenStatus::kSuccess:
+      return protocol::Page::OriginTrialTokenStatusEnum::Success;
+    case blink::OriginTrialTokenStatus::kNotSupported:
+      return protocol::Page::OriginTrialTokenStatusEnum::NotSupported;
+    case blink::OriginTrialTokenStatus::kInsecure:
+      return protocol::Page::OriginTrialTokenStatusEnum::Insecure;
+    case blink::OriginTrialTokenStatus::kExpired:
+      return protocol::Page::OriginTrialTokenStatusEnum::Expired;
+    case blink::OriginTrialTokenStatus::kWrongOrigin:
+      return protocol::Page::OriginTrialTokenStatusEnum::WrongOrigin;
+    case blink::OriginTrialTokenStatus::kInvalidSignature:
+      return protocol::Page::OriginTrialTokenStatusEnum::InvalidSignature;
+    case blink::OriginTrialTokenStatus::kMalformed:
+      return protocol::Page::OriginTrialTokenStatusEnum::Malformed;
+    case blink::OriginTrialTokenStatus::kWrongVersion:
+      return protocol::Page::OriginTrialTokenStatusEnum::WrongVersion;
+    case blink::OriginTrialTokenStatus::kFeatureDisabled:
+      return protocol::Page::OriginTrialTokenStatusEnum::FeatureDisabled;
+    case blink::OriginTrialTokenStatus::kTokenDisabled:
+      return protocol::Page::OriginTrialTokenStatusEnum::TokenDisabled;
+    case blink::OriginTrialTokenStatus::kFeatureDisabledForUser:
+      return protocol::Page::OriginTrialTokenStatusEnum::FeatureDisabledForUser;
+  }
+}
+
+protocol::Page::OriginTrialStatus CreateOriginTrialStatus(
+    blink::OriginTrialStatus status) {
+  switch (status) {
+    case blink::OriginTrialStatus::kEnabled:
+      return protocol::Page::OriginTrialStatusEnum::Enabled;
+    case blink::OriginTrialStatus::kValidTokenNotProvided:
+      return protocol::Page::OriginTrialStatusEnum::ValidTokenNotProvided;
+    case blink::OriginTrialStatus::kOSNotSupported:
+      return protocol::Page::OriginTrialStatusEnum::OSNotSupported;
+    case blink::OriginTrialStatus::kTrialNotAllowed:
+      return protocol::Page::OriginTrialStatusEnum::TrialNotAllowed;
+  }
+}
+
+protocol::Page::OriginTrialUsageRestriction CreateOriginTrialUsageRestriction(
+    blink::TrialToken::UsageRestriction blink_restriction) {
+  switch (blink_restriction) {
+    case blink::TrialToken::UsageRestriction::kNone:
+      return protocol::Page::OriginTrialUsageRestrictionEnum::None;
+    case blink::TrialToken::UsageRestriction::kSubset:
+      return protocol::Page::OriginTrialUsageRestrictionEnum::Subset;
+  }
+}
+
+std::unique_ptr<protocol::Page::OriginTrialToken> CreateOriginTrialToken(
+    const blink::TrialToken& blink_trial_token) {
+  return protocol::Page::OriginTrialToken::create()
+      .setOrigin(SecurityOrigin::CreateFromUrlOrigin(blink_trial_token.origin())
+                     ->ToRawString())
+      .setIsThirdParty(blink_trial_token.is_third_party())
+      .setMatchSubDomains(blink_trial_token.match_subdomains())
+      .setExpiryTime(blink_trial_token.expiry_time().ToDoubleT())
+      .setTrialName(blink_trial_token.feature_name().c_str())
+      .setUsageRestriction(CreateOriginTrialUsageRestriction(
+          blink_trial_token.usage_restriction()))
+      .build();
+}
+
+std::unique_ptr<protocol::Page::OriginTrialTokenWithStatus>
+CreateOriginTrialTokenWithStatus(
+    const blink::OriginTrialTokenResult& blink_token_result) {
+  auto result =
+      protocol::Page::OriginTrialTokenWithStatus::create()
+          .setRawTokenText(blink_token_result.raw_token)
+          .setStatus(CreateOriginTrialTokenStatus(blink_token_result.status))
+          .build();
+
+  if (blink_token_result.parsed_token.has_value()) {
+    result->setParsedToken(
+        CreateOriginTrialToken(*blink_token_result.parsed_token));
+  }
+  return result;
+}
+
+std::unique_ptr<protocol::Page::OriginTrial> CreateOriginTrial(
+    const blink::OriginTrialResult& blink_trial_result) {
+  auto tokens_with_status = std::make_unique<
+      protocol::Array<protocol::Page::OriginTrialTokenWithStatus>>();
+
+  for (const auto& blink_token_result : blink_trial_result.token_results) {
+    tokens_with_status->push_back(
+        CreateOriginTrialTokenWithStatus(blink_token_result));
+  }
+
+  return protocol::Page::OriginTrial::create()
+      .setTrialName(blink_trial_result.trial_name)
+      .setStatus(CreateOriginTrialStatus(blink_trial_result.status))
+      .setTokensWithStatus(std::move(tokens_with_status))
+      .build();
+}
+
+std::unique_ptr<protocol::Array<protocol::Page::OriginTrial>>
+CreateOriginTrials(LocalDOMWindow* window) {
+  auto trials =
+      std::make_unique<protocol::Array<protocol::Page::OriginTrial>>();
+  // Note: `blink::OriginTrialContext` is initialized when
+  // `blink::ExecutionContext` is created. `GetOriginTrialContext()` should
+  // not return nullptr.
+  const blink::OriginTrialContext* context = window->GetOriginTrialContext();
+  DCHECK(context);
+  for (const auto& entry : context->GetOriginTrialResultsForDevtools()) {
+    trials->push_back(CreateOriginTrial(entry.value));
+  }
+  return trials;
+}
+
 }  // namespace
 
 std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
@@ -1170,6 +1373,9 @@ std::unique_ptr<protocol::Page::Frame> InspectorPageAgent::BuildObjectForFrame(
   } else {
     frame_object->setAdFrameType(protocol::Page::AdFrameTypeEnum::None);
   }
+  auto origin_trials = CreateOriginTrials(frame->DomWindow());
+  if (!origin_trials->empty())
+    frame_object->setOriginTrials(std::move(origin_trials));
   return frame_object;
 }
 
@@ -1213,7 +1419,7 @@ InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
             .setMimeType(cached_resource->GetResponse().MimeType())
             .setContentSize(cached_resource->GetResponse().DecodedBodyLength())
             .build();
-    base::Optional<base::Time> last_modified =
+    absl::optional<base::Time> last_modified =
         cached_resource->GetResponse().LastModified();
     if (last_modified)
       resource_object->setLastModified(last_modified.value().ToDoubleT());
@@ -1221,18 +1427,6 @@ InspectorPageAgent::BuildObjectForResourceTree(LocalFrame* frame) {
       resource_object->setCanceled(true);
     else if (cached_resource->GetStatus() == ResourceStatus::kLoadError)
       resource_object->setFailed(true);
-    subresources->emplace_back(std::move(resource_object));
-  }
-
-  HeapVector<Member<Document>> all_imports =
-      InspectorPageAgent::ImportsForFrame(frame);
-  for (Document* import : all_imports) {
-    std::unique_ptr<protocol::Page::FrameResource> resource_object =
-        protocol::Page::FrameResource::create()
-            .setUrl(UrlWithoutFragment(import->Url()).GetString())
-            .setType(ResourceTypeJson(InspectorPageAgent::kDocumentResource))
-            .setMimeType(import->SuggestedMIMEType())
-            .build();
     subresources->emplace_back(std::move(resource_object));
   }
 
@@ -1276,7 +1470,10 @@ Response InspectorPageAgent::stopScreencast() {
 Response InspectorPageAgent::getLayoutMetrics(
     std::unique_ptr<protocol::Page::LayoutViewport>* out_layout_viewport,
     std::unique_ptr<protocol::Page::VisualViewport>* out_visual_viewport,
-    std::unique_ptr<protocol::DOM::Rect>* out_content_size) {
+    std::unique_ptr<protocol::DOM::Rect>* out_content_size,
+    std::unique_ptr<protocol::Page::LayoutViewport>* out_css_layout_viewport,
+    std::unique_ptr<protocol::Page::VisualViewport>* out_css_visual_viewport,
+    std::unique_ptr<protocol::DOM::Rect>* out_css_content_size) {
   LocalFrame* main_frame = inspected_frames_->Root();
   VisualViewport& visual_viewport = main_frame->GetPage()->GetVisualViewport();
 
@@ -1292,8 +1489,43 @@ Response InspectorPageAgent::getLayoutMetrics(
                              .setClientHeight(visible_contents.Height())
                              .build();
 
+  // `visible_contents` is in DIP or DP depending on the
+  // `enable-use-zoom-for-dsf` flag. Normlisation needed to convert it to CSS
+  // pixels. Details: https://crbug.com/1181313
+  IntRect css_visible_contents =
+      main_frame->GetPage()->GetChromeClient().ViewportToScreen(
+          visible_contents, main_frame->View());
+  *out_css_layout_viewport = protocol::Page::LayoutViewport::create()
+                                 .setPageX(css_visible_contents.X())
+                                 .setPageY(css_visible_contents.Y())
+                                 .setClientWidth(css_visible_contents.Width())
+                                 .setClientHeight(css_visible_contents.Height())
+                                 .build();
+
   LocalFrameView* frame_view = main_frame->View();
   ScrollOffset page_offset = frame_view->GetScrollableArea()->GetScrollOffset();
+
+  IntSize content_size = frame_view->GetScrollableArea()->ContentsSize();
+  *out_content_size = protocol::DOM::Rect::create()
+                          .setX(0)
+                          .setY(0)
+                          .setWidth(content_size.Width())
+                          .setHeight(content_size.Height())
+                          .build();
+
+  // `content_size` is in DIP or DP depending on the
+  // `enable-use-zoom-for-dsf` flag. Normlisation needed to convert it to CSS
+  // pixels. Details: https://crbug.com/1181313
+  IntRect css_content_size =
+      main_frame->GetPage()->GetChromeClient().ViewportToScreen(
+          IntRect(IntPoint(0, 0), content_size), main_frame->View());
+  *out_css_content_size = protocol::DOM::Rect::create()
+                              .setX(css_content_size.X())
+                              .setY(css_content_size.Y())
+                              .setWidth(css_content_size.Width())
+                              .setHeight(css_content_size.Height())
+                              .build();
+
   // page_zoom is either CSS-to-DP or CSS-to-DIP depending on
   // enable-use-zoom-for-dsf flag.
   float page_zoom = main_frame->PageZoomFactor();
@@ -1304,15 +1536,6 @@ Response InspectorPageAgent::getLayoutMetrics(
           main_frame, 1);
   FloatRect visible_rect = visual_viewport.VisibleRect();
   float scale = visual_viewport.Scale();
-
-  IntSize content_size = frame_view->GetScrollableArea()->ContentsSize();
-  *out_content_size = protocol::DOM::Rect::create()
-                          .setX(0)
-                          .setY(0)
-                          .setWidth(content_size.Width())
-                          .setHeight(content_size.Height())
-                          .build();
-
   *out_visual_viewport = protocol::Page::VisualViewport::create()
                              .setOffsetX(AdjustForAbsoluteZoom::AdjustScroll(
                                  visible_rect.X(), page_zoom))
@@ -1327,6 +1550,24 @@ Response InspectorPageAgent::getLayoutMetrics(
                              .setScale(scale)
                              .setZoom(page_zoom_factor)
                              .build();
+
+  *out_css_visual_viewport =
+      protocol::Page::VisualViewport::create()
+          .setOffsetX(
+              AdjustForAbsoluteZoom::AdjustScroll(visible_rect.X(), page_zoom))
+          .setOffsetY(
+              AdjustForAbsoluteZoom::AdjustScroll(visible_rect.Y(), page_zoom))
+          .setPageX(AdjustForAbsoluteZoom::AdjustScroll(page_offset.Width(),
+                                                        page_zoom))
+          .setPageY(AdjustForAbsoluteZoom::AdjustScroll(page_offset.Height(),
+                                                        page_zoom))
+          .setClientWidth(AdjustForAbsoluteZoom::AdjustScroll(
+              visible_rect.Width(), page_zoom))
+          .setClientHeight(AdjustForAbsoluteZoom::AdjustScroll(
+              visible_rect.Height(), page_zoom))
+          .setScale(scale)
+          .setZoom(page_zoom_factor)
+          .build();
   return Response::Success();
 }
 
@@ -1413,35 +1654,44 @@ Response InspectorPageAgent::setFontSizes(
   return Response::Success();
 }
 
-void InspectorPageAgent::ConsumeCompilationCache(
+void InspectorPageAgent::ApplyCompilationModeOverride(
     const ScriptSourceCode& source,
-    v8::ScriptCompiler::CachedData** cached_data) {
+    v8::ScriptCompiler::CachedData** cached_data,
+    v8::ScriptCompiler::CompileOptions* compile_options) {
   if (source.SourceLocationType() != ScriptSourceLocationType::kExternalFile)
     return;
   if (source.Url().IsEmpty())
     return;
   auto it = compilation_cache_.find(source.Url().GetString());
-  if (it == compilation_cache_.end())
+  if (it == compilation_cache_.end()) {
+    auto requested =
+        requested_compilation_cache_.find(source.Url().GetString());
+    if (requested != requested_compilation_cache_.end() && requested->value)
+      *compile_options = v8::ScriptCompiler::kEagerCompile;
     return;
+  }
   const protocol::Binary& data = it->value;
   *cached_data = new v8::ScriptCompiler::CachedData(
       data.data(), data.size(), v8::ScriptCompiler::CachedData::BufferNotOwned);
 }
 
-void InspectorPageAgent::ProduceCompilationCache(const ScriptSourceCode& source,
-                                                 v8::Local<v8::Script> script) {
-  if (!produce_compilation_cache_.Get())
-    return;
+void InspectorPageAgent::DidProduceCompilationCache(
+    const ScriptSourceCode& source,
+    v8::Local<v8::Script> script) {
   KURL url = source.Url();
-  if (source.Streamer())
-    return;
-  if (source.SourceLocationType() != ScriptSourceLocationType::kExternalFile)
-    return;
   if (url.IsEmpty())
     return;
   String url_string = url.GetString();
-  auto it = compilation_cache_.find(url_string);
-  if (it != compilation_cache_.end())
+  if (!produce_compilation_cache_.Get()) {
+    auto requested = requested_compilation_cache_.find(url_string);
+    if (requested == requested_compilation_cache_.end())
+      return;
+    requested_compilation_cache_.erase(requested);
+  }
+  if (source.SourceLocationType() != ScriptSourceLocationType::kExternalFile)
+    return;
+  // TODO(caseq): should we rather issue updates if compiled code differs?
+  if (compilation_cache_.Contains(url_string))
     return;
   static const int kMinimalCodeLength = 1024;
   if (source.Source().length() < kMinimalCodeLength)
@@ -1449,11 +1699,13 @@ void InspectorPageAgent::ProduceCompilationCache(const ScriptSourceCode& source,
   std::unique_ptr<v8::ScriptCompiler::CachedData> cached_data(
       v8::ScriptCompiler::CreateCodeCache(script->GetUnboundScript()));
   if (cached_data) {
-    // CachedData produced by CreateCodeCache always owns its buffer.
     CHECK_EQ(cached_data->buffer_policy,
              v8::ScriptCompiler::CachedData::BufferOwned);
-    GetFrontend()->compilationCacheProduced(
-        url_string, protocol::Binary::fromCachedData(std::move(cached_data)));
+    auto data = protocol::Binary::fromCachedData(std::move(cached_data));
+    // This also prevents the notification from being re-issued.
+    compilation_cache_.Set(url_string, data);
+    // CachedData produced by CreateCodeCache always owns its buffer.
+    GetFrontend()->compilationCacheProduced(url_string, data);
   }
 }
 
@@ -1471,13 +1723,33 @@ void InspectorPageAgent::FileChooserOpened(LocalFrame* frame,
 }
 
 Response InspectorPageAgent::setProduceCompilationCache(bool enabled) {
+  if (!enabled_.Get())
+    return Response::ServerError("Agent needs to be enabled first");
   produce_compilation_cache_.Set(enabled);
+  if (!enabled)
+    requested_compilation_cache_.clear();
+  return Response::Success();
+}
+
+Response InspectorPageAgent::produceCompilationCache(
+    std::unique_ptr<protocol::Array<protocol::Page::CompilationCacheParams>>
+        scripts) {
+  if (!enabled_.Get())
+    return Response::ServerError("Agent needs to be enabled first");
+  for (const auto& script : *scripts) {
+    requested_compilation_cache_.Set(script->getUrl(), script->getEager(false));
+  }
   return Response::Success();
 }
 
 Response InspectorPageAgent::addCompilationCache(const String& url,
                                                  const protocol::Binary& data) {
-  compilation_cache_.Set(url, data);
+  // TODO(caseq): this is temporary undocumented behavior, remove after m91.
+  if (!data.size()) {
+    requested_compilation_cache_.Set(url, true);
+  } else {
+    compilation_cache_.Set(url, data);
+  }
   return Response::Success();
 }
 

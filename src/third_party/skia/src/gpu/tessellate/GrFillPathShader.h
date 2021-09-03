@@ -23,7 +23,35 @@ public:
     }
 
     void getGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override {}
-    GrGLSLPrimitiveProcessor* createGLSLInstance(const GrShaderCaps&) const final;
+    GrGLSLGeometryProcessor* createGLSLInstance(const GrShaderCaps&) const final;
+
+    static const GrPipeline* MakeFillPassPipeline(const GrPathShader::ProgramArgs& args,
+                                                  GrAAType aaType, GrAppliedClip&& appliedClip,
+                                                  GrProcessorSet&& processors) {
+        auto pipelineFlags = GrPipeline::InputFlags::kNone;
+        if (aaType != GrAAType::kNone) {
+            pipelineFlags |= GrPipeline::InputFlags::kHWAntialias;
+        }
+        return GrSimpleMeshDrawOpHelper::CreatePipeline(
+                args.fCaps, args.fArena, args.fWriteView.swizzle(), std::move(appliedClip),
+                *args.fDstProxyView, std::move(processors), pipelineFlags);
+    }
+
+    // Allows non-zero stencil values to pass and write a color, and resets the stencil value back
+    // to zero; discards immediately on stencil values of zero.
+    static const GrUserStencilSettings* TestAndResetStencilSettings() {
+        constexpr static GrUserStencilSettings kTestAndResetStencil(
+            GrUserStencilSettings::StaticInit<
+                0x0000,
+                // No need to check the clip because the previous stencil pass will have only
+                // written to samples already inside the clip.
+                GrUserStencilTest::kNotEqual,
+                0xffff,
+                GrUserStencilOp::kZero,
+                GrUserStencilOp::kKeep,
+                0xffff>());
+        return &kTestAndResetStencil;
+    }
 
 protected:
     class Impl;

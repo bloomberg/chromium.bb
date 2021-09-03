@@ -466,7 +466,7 @@ TEST_P(CopyTexImageTest, CopyTexSubImageToNonCubeCompleteDestination)
 // Deleting textures after copying to them. http://anglebug.com/4267
 TEST_P(CopyTexImageTest, DeleteAfterCopyingToTextures)
 {
-    // TODO(crbug.com/1132295): Failing on Apple DTK.
+    // TODO(anglebug.com/5360): Failing on ARM-based Apple DTKs.
     ANGLE_SKIP_TEST_IF(IsOSX() && IsARM64() && IsDesktopOpenGL());
 
     GLTexture texture;
@@ -521,7 +521,7 @@ TEST_P(CopyTexImageTest, CopyTexSubImageFrom3DTexureOES)
     ANGLE_SKIP_TEST_IF(IsD3D11() & IsWindows());
 
     // http://anglebug.com/4927
-    ANGLE_SKIP_TEST_IF(IsPixel2() || IsOpenGLES());
+    ANGLE_SKIP_TEST_IF((IsPixel2() || IsNexus5X()) && IsOpenGLES());
 
     constexpr GLsizei kDepth = 6;
 
@@ -1001,6 +1001,9 @@ TEST_P(CopyTexImageTestES3, 3DSubImageDrawMismatchedTextureTypes)
     // TODO(anglebug.com/3801)
     ANGLE_SKIP_TEST_IF(IsWindows() && IsD3D11());
 
+    // TODO(anglebug.com/5491)
+    ANGLE_SKIP_TEST_IF(IsIOS() && IsOpenGLES());
+
     GLFramebuffer fbo;
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
@@ -1039,8 +1042,6 @@ TEST_P(CopyTexImageTestES3, 3DSubImageDrawMismatchedTextureTypes)
     glBindTexture(GL_TEXTURE_3D, 0);
 }
 
-// Use this to select which configurations (e.g. which renderer, which GLES major version) these
-// tests should be run against.
 ANGLE_INSTANTIATE_TEST(CopyTexImageTest,
                        ANGLE_ALL_TEST_PLATFORMS_ES2,
                        ES2_D3D11_PRESENT_PATH_FAST(),
@@ -1048,6 +1049,7 @@ ANGLE_INSTANTIATE_TEST(CopyTexImageTest,
                        WithEmulateCopyTexImage2DFromRenderbuffers(ES2_OPENGL()),
                        WithEmulateCopyTexImage2DFromRenderbuffers(ES2_OPENGLES()));
 
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CopyTexImageTestES3);
 ANGLE_INSTANTIATE_TEST(CopyTexImageTestES3,
                        ANGLE_ALL_TEST_PLATFORMS_ES3,
                        WithEmulateCopyTexImage2DFromRenderbuffers(ES3_OPENGL()),

@@ -9,9 +9,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "chromeos/components/tether/active_host.h"
 #include "chromeos/components/tether/crash_recovery_manager.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -48,7 +48,7 @@ class CrashRecoveryManagerImpl : public CrashRecoveryManager {
 
   // CrashRecoveryManager:
   void RestorePreCrashStateIfNecessary(
-      const base::Closure& on_restoration_finished) override;
+      base::OnceClosure on_restoration_finished) override;
 
  protected:
   CrashRecoveryManagerImpl(NetworkStateHandler* network_state_handler,
@@ -56,14 +56,14 @@ class CrashRecoveryManagerImpl : public CrashRecoveryManager {
                            HostScanCache* host_scan_cache);
 
  private:
-  void RestoreConnectedState(const base::Closure& on_restoration_finished,
+  void RestoreConnectedState(base::OnceClosure on_restoration_finished,
                              const std::string& active_host_device_id,
                              const std::string& tether_network_guid,
                              const std::string& wifi_network_guid);
   void OnActiveHostFetched(
-      const base::Closure& on_restoration_finished,
+      base::OnceClosure on_restoration_finished,
       ActiveHost::ActiveHostStatus active_host_status,
-      base::Optional<multidevice::RemoteDeviceRef> active_host,
+      absl::optional<multidevice::RemoteDeviceRef> active_host,
       const std::string& tether_network_guid,
       const std::string& wifi_network_guid);
 

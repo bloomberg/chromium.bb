@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "components/feed/core/proto/v2/wire/stream_structure.pb.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_store.h"
 #include "components/feed/core/v2/feed_stream.h"
+#include "components/feed/core/v2/public/feed_api.h"
 #include "components/feed/core/v2/stream_model.h"
 #include "components/feed/core/v2/tasks/load_stream_from_store_task.h"
 
@@ -38,14 +40,20 @@ PrefetchImagesTask::PrefetchImagesTask(FeedStream* stream) : stream_(stream) {
 PrefetchImagesTask::~PrefetchImagesTask() = default;
 
 void PrefetchImagesTask::Run() {
-  if (stream_->GetModel()) {
-    PrefetchImagesFromModel(*stream_->GetModel());
+  if (stream_->ClearAllInProgress()) {
+    // Abort if ClearAll is in progress.
+    TaskComplete();
+    return;
+  }
+  if (stream_->GetModel(kForYouStream)) {
+    PrefetchImagesFromModel(*stream_->GetModel(kForYouStream));
     return;
   }
 
   load_from_store_task_ = std::make_unique<LoadStreamFromStoreTask>(
-      LoadStreamFromStoreTask::LoadType::kFullLoad, stream_->GetStore(),
-      stream_->GetClock(),
+      LoadStreamFromStoreTask::LoadType::kFullLoad, stream_, kForYouStream,
+      stream_->GetStore(),
+      /*missed_last_refresh=*/false,
       base::BindOnce(&PrefetchImagesTask::LoadStreamComplete,
                      base::Unretained(this)));
 

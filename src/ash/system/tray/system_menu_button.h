@@ -7,7 +7,7 @@
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/macros.h"
-#include "base/optional.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -40,10 +40,6 @@ class SystemMenuButton : public views::ImageButton {
   void SetVectorIcon(const gfx::VectorIcon& icon);
 
   // views::ImageButton:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override;
   const char* GetClassName() const override;
 
  private:

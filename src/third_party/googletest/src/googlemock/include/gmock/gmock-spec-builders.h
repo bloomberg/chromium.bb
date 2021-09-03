@@ -58,8 +58,8 @@
 
 // GOOGLETEST_CM0002 DO NOT DELETE
 
-#ifndef GMOCK_INCLUDE_GMOCK_GMOCK_SPEC_BUILDERS_H_
-#define GMOCK_INCLUDE_GMOCK_GMOCK_SPEC_BUILDERS_H_
+#ifndef GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_SPEC_BUILDERS_H_
+#define GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_SPEC_BUILDERS_H_
 
 #include <functional>
 #include <map>
@@ -107,6 +107,14 @@ template <typename F> class TypedExpectation;
 
 // Helper class for testing the Expectation class template.
 class ExpectationTester;
+
+// Helper classes for implementing NiceMock, StrictMock, and NaggyMock.
+template <typename MockClass>
+class NiceMockImpl;
+template <typename MockClass>
+class StrictMockImpl;
+template <typename MockClass>
+class NaggyMockImpl;
 
 // Protects the mock object registry (in class Mock), all function
 // mockers, and all expectations.
@@ -413,14 +421,12 @@ class GTEST_API_ Mock {
   template <typename F>
   friend class internal::FunctionMocker;
 
-  template <typename M>
-  friend class NiceMock;
-
-  template <typename M>
-  friend class NaggyMock;
-
-  template <typename M>
-  friend class StrictMock;
+  template <typename MockClass>
+  friend class internal::NiceMockImpl;
+  template <typename MockClass>
+  friend class internal::NaggyMockImpl;
+  template <typename MockClass>
+  friend class internal::StrictMockImpl;
 
   // Tells Google Mock to allow uninteresting calls on the given mock
   // object.
@@ -2027,4 +2033,4 @@ GTEST_DISABLE_MSC_WARNINGS_POP_()  //  4251
 #define EXPECT_CALL(obj, call) \
   GMOCK_ON_CALL_IMPL_(obj, InternalExpectedAt, call)
 
-#endif  // GMOCK_INCLUDE_GMOCK_GMOCK_SPEC_BUILDERS_H_
+#endif  // GOOGLEMOCK_INCLUDE_GMOCK_GMOCK_SPEC_BUILDERS_H_

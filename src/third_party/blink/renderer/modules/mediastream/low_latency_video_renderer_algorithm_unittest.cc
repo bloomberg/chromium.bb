@@ -25,7 +25,7 @@ class LowLatencyVideoRendererAlgorithmTest : public testing::Test {
     scoped_refptr<media::VideoFrame> frame = frame_pool_.CreateFrame(
         media::PIXEL_FORMAT_I420, natural_size, gfx::Rect(natural_size),
         natural_size, base::TimeDelta());
-    frame->metadata()->maximum_composition_delay_in_frames =
+    frame->metadata().maximum_composition_delay_in_frames =
         maximum_composition_delay_in_frames;
     return frame;
   }
@@ -57,7 +57,7 @@ class LowLatencyVideoRendererAlgorithmTest : public testing::Test {
 
   void StepUntilJustBeforeNextFrameIsRendered(
       base::TimeDelta render_interval,
-      base::Optional<int> expected_id = base::nullopt) {
+      absl::optional<int> expected_id = absl::nullopt) {
     // No frame will be rendered until the total render time that has passed is
     // greater than the frame duration of a frame.
     base::TimeTicks start_time = current_render_time_;
@@ -244,6 +244,13 @@ TEST_F(LowLatencyVideoRendererAlgorithmTest,
       RenderAndStep(&frames_dropped);
   ASSERT_TRUE(rendered_frame);
   EXPECT_EQ(frames_dropped, kInitialQueueSize - 1);
+  EXPECT_EQ(rendered_frame->unique_id(), last_id);
+
+  // The following frame should be rendered as normal.
+  last_id = CreateAndEnqueueFrame(kMaxCompositionDelayInFrames);
+  rendered_frame = RenderAndStep(&frames_dropped);
+  ASSERT_TRUE(rendered_frame);
+  EXPECT_EQ(frames_dropped, 0u);
   EXPECT_EQ(rendered_frame->unique_id(), last_id);
 }
 

@@ -19,7 +19,6 @@
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "net/cookies/cookie_access_result.h"
-#include "services/network/public/mojom/cookie_manager.mojom.h"
 
 class GaiaAuthFetcher;
 class GoogleServiceAuthError;
@@ -46,6 +45,7 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
       gaia::MultiloginMode mode,
       const std::vector<AccountIdGaiaIdPair>& accounts,
       const std::string& external_cc_result,
+      const gaia::GaiaSource& gaia_source,
       base::OnceCallback<void(SetAccountsInCookieResult)> callback);
 
   ~OAuthMultiloginHelper() override;
@@ -85,6 +85,9 @@ class OAuthMultiloginHelper : public GaiaAuthConsumer {
   const std::vector<AccountIdGaiaIdPair> accounts_;
   // See GaiaCookieManagerService::ExternalCcResultFetcher for details.
   const std::string external_cc_result_;
+  // The Gaia source to be passed when creating GaiaAuthFetchers for the
+  // OAuthmultilogin request.
+  const gaia::GaiaSource gaia_source_;
   // Access tokens, in the same order as the account ids.
   std::vector<GaiaAuthFetcher::MultiloginTokenIDPair> gaia_id_token_pairs_;
 

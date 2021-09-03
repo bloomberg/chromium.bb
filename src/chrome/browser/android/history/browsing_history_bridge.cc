@@ -20,6 +20,7 @@
 #include "components/history/core/browser/browsing_history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/url_formatter/url_formatter.h"
+#include "url/android/gurl_android.h"
 
 using history::BrowsingHistoryService;
 
@@ -82,7 +83,7 @@ void BrowsingHistoryBridge::OnQueryComplete(
   for (const BrowsingHistoryService::HistoryEntry& entry : results) {
     // TODO(twellington): Move the domain logic to BrowsingHistoryServce so it
     // can be shared with ContentBrowsingHistoryDriver.
-    base::string16 domain = url_formatter::IDNToUnicode(entry.url.host());
+    std::u16string domain = url_formatter::IDNToUnicode(entry.url.host());
     // When the domain is empty, use the scheme instead. This allows for a
     // sensible treatment of e.g. file: URLs when group by domain is on.
     if (domain.empty())
@@ -97,7 +98,7 @@ void BrowsingHistoryBridge::OnQueryComplete(
 
     Java_BrowsingHistoryBridge_createHistoryItemAndAddToList(
         env, j_query_result_obj_,
-        base::android::ConvertUTF8ToJavaString(env, entry.url.spec()),
+        url::GURLAndroid::FromNativeGURL(env, entry.url),
         base::android::ConvertUTF16ToJavaString(env, domain),
         base::android::ConvertUTF16ToJavaString(env, entry.title),
         most_recent_java_timestamp,
@@ -113,10 +114,10 @@ void BrowsingHistoryBridge::OnQueryComplete(
 void BrowsingHistoryBridge::MarkItemForRemoval(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    jstring j_url,
+    const JavaParamRef<jobject>& j_url,
     const JavaParamRef<jlongArray>& j_native_timestamps) {
   BrowsingHistoryService::HistoryEntry entry;
-  entry.url = GURL(base::android::ConvertJavaStringToUTF16(env, j_url));
+  entry.url = *url::GURLAndroid::ToNativeGURL(env, j_url);
 
   std::vector<int64_t> timestamps;
   base::android::JavaLongArrayToInt64Vector(env, j_native_timestamps,

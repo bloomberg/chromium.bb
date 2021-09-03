@@ -20,6 +20,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
@@ -29,7 +30,6 @@
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
@@ -50,13 +50,12 @@ class FakeWebURLLoader final : public WebURLLoader {
   void LoadSynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool pass_response_pipe_to_client,
       bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
       WebURLLoaderClient*,
       WebURLResponse&,
-      base::Optional<WebURLError>&,
+      absl::optional<WebURLError>&,
       WebData&,
       int64_t& encoded_data_length,
       int64_t& encoded_body_length,
@@ -69,7 +68,6 @@ class FakeWebURLLoader final : public WebURLLoader {
   void LoadAsynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      int requestor_id,
       bool no_mime_sniffing,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper,
@@ -100,7 +98,9 @@ class FakeWebURLLoaderFactory final : public WebURLLoaderFactory {
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const WebURLRequest&,
       std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>,
-      std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>) override {
+      std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>,
+      CrossVariantMojoRemote<blink::mojom::KeepAliveHandleInterfaceBase>,
+      WebBackForwardCacheLoaderHelper) override {
     return std::make_unique<FakeWebURLLoader>();
   }
 };
@@ -128,8 +128,8 @@ class FakeWebServiceWorkerFetchContext final
   net::SiteForCookies SiteForCookies() const override {
     return net::SiteForCookies();
   }
-  base::Optional<WebSecurityOrigin> TopFrameOrigin() const override {
-    return base::Optional<WebSecurityOrigin>();
+  absl::optional<WebSecurityOrigin> TopFrameOrigin() const override {
+    return absl::optional<WebSecurityOrigin>();
   }
   WebString GetAcceptLanguages() const override { return WebString(); }
   CrossVariantMojoReceiver<mojom::blink::WorkerTimingContainerInterfaceBase>
@@ -216,11 +216,9 @@ class MockServiceWorkerContextClient final
         /*reporting_observer_receiver=*/mojo::NullReceiver());
 
     // To make the other side callable.
-    mojo::AssociateWithDisconnectedPipe(host_receiver.PassHandle());
-    mojo::AssociateWithDisconnectedPipe(
-        registration_object_host_receiver.PassHandle());
-    mojo::AssociateWithDisconnectedPipe(
-        service_worker_object_host_receiver.PassHandle());
+    host_receiver.EnableUnassociatedUsage();
+    registration_object_host_receiver.EnableUnassociatedUsage();
+    service_worker_object_host_receiver.EnableUnassociatedUsage();
   }
 
   void FailedToFetchClassicScript() override {

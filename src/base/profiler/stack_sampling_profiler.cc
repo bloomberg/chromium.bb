@@ -30,6 +30,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/base_tracing.h"
 #include "build/build_config.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if defined(OS_WIN)
 #include "base/win/static_constants.h"
@@ -126,8 +127,8 @@ class StackSamplingProfiler::SamplingThread : public Thread {
         : collection_id(next_collection_id.GetNext()),
           params(params),
           finished(finished),
-          sampler(std::move(sampler)),
-          profile_builder(std::move(profile_builder)) {}
+          profile_builder(std::move(profile_builder)),
+          sampler(std::move(sampler)) {}
     ~CollectionContext() = default;
 
     // An identifier for this collection, used to uniquely identify the
@@ -137,11 +138,11 @@ class StackSamplingProfiler::SamplingThread : public Thread {
     const SamplingParams params;    // Information about how to sample.
     WaitableEvent* const finished;  // Signaled when all sampling complete.
 
-    // Platform-specific module that does the actual sampling.
-    std::unique_ptr<StackSampler> sampler;
-
     // Receives the sampling data and builds a CallStackProfile.
     std::unique_ptr<ProfileBuilder> profile_builder;
+
+    // Platform-specific module that does the actual sampling.
+    std::unique_ptr<StackSampler> sampler;
 
     // The absolute time for the next sample.
     TimeTicks next_sample_time;
@@ -172,7 +173,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   void ApplyMetadataToPastSamples(base::TimeTicks period_start,
                                   base::TimeTicks period_end,
                                   int64_t name_hash,
-                                  Optional<int64_t> key,
+                                  absl::optional<int64_t> key,
                                   int64_t value);
 
   // Removes an active collection based on its collection id, forcing it to run
@@ -217,7 +218,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   // signalled. The |collection| should already have been removed from
   // |active_collections_| by the caller, as this is needed to avoid flakiness
   // in unit tests.
-  void FinishCollection(CollectionContext* collection);
+  void FinishCollection(std::unique_ptr<CollectionContext> collection);
 
   // Check if the sampling thread is idle and begin a shutdown if it is.
   void ScheduleShutdownIfIdle();
@@ -229,7 +230,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
   void ApplyMetadataToPastSamplesTask(base::TimeTicks period_start,
                                       base::TimeTicks period_end,
                                       int64_t name_hash,
-                                      Optional<int64_t> key,
+                                      absl::optional<int64_t> key,
                                       int64_t value);
   void RemoveCollectionTask(int collection_id);
   void RecordSampleTask(int collection_id);
@@ -398,7 +399,7 @@ void StackSamplingProfiler::SamplingThread::ApplyMetadataToPastSamples(
     base::TimeTicks period_start,
     base::TimeTicks period_end,
     int64_t name_hash,
-    Optional<int64_t> key,
+    absl::optional<int64_t> key,
     int64_t value) {
   ThreadExecutionState state;
   scoped_refptr<SingleThreadTaskRunner> task_runner = GetTaskRunner(&state);
@@ -506,7 +507,7 @@ StackSamplingProfiler::SamplingThread::GetTaskRunnerOnSamplingThread() {
 }
 
 void StackSamplingProfiler::SamplingThread::FinishCollection(
-    CollectionContext* collection) {
+    std::unique_ptr<CollectionContext> collection) {
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
   DCHECK_EQ(0u, active_collections_.count(collection->collection_id));
 
@@ -518,7 +519,11 @@ void StackSamplingProfiler::SamplingThread::FinishCollection(
       profile_duration, collection->params.sampling_interval);
 
   // Signal that this collection is finished.
-  collection->finished->Signal();
+  WaitableEvent* collection_finished = collection->finished;
+  // Ensure the collection is destroyed before signaling, so that it may
+  // not outlive StackSamplingProfiler.
+  collection.reset();
+  collection_finished->Signal();
 
   ScheduleShutdownIfIdle();
 }
@@ -562,7 +567,7 @@ void StackSamplingProfiler::SamplingThread::ApplyMetadataToPastSamplesTask(
     base::TimeTicks period_start,
     base::TimeTicks period_end,
     int64_t name_hash,
-    Optional<int64_t> key,
+    absl::optional<int64_t> key,
     int64_t value) {
   DCHECK_EQ(GetThreadId(), PlatformThread::CurrentId());
   MetadataRecorder::Item item(name_hash, key, value);
@@ -612,7 +617,7 @@ void StackSamplingProfiler::SamplingThread::RemoveCollectionTask(
   size_t count = active_collections_.erase(collection_id);
   DCHECK_EQ(1U, count);
 
-  FinishCollection(collection.get());
+  FinishCollection(std::move(collection));
 }
 
 void StackSamplingProfiler::SamplingThread::RecordSampleTask(
@@ -658,7 +663,7 @@ void StackSamplingProfiler::SamplingThread::RecordSampleTask(
   DCHECK_EQ(1U, count);
 
   // All capturing has completed so finish the collection.
-  FinishCollection(collection);
+  FinishCollection(std::move(owned_collection));
 }
 
 void StackSamplingProfiler::SamplingThread::ShutdownTask(int add_events) {
@@ -886,7 +891,7 @@ void StackSamplingProfiler::ApplyMetadataToPastSamples(
     base::TimeTicks period_start,
     base::TimeTicks period_end,
     int64_t name_hash,
-    Optional<int64_t> key,
+    absl::optional<int64_t> key,
     int64_t value) {
   SamplingThread::GetInstance()->ApplyMetadataToPastSamples(
       period_start, period_end, name_hash, key, value);

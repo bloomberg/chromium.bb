@@ -5,14 +5,18 @@
 #include "chrome/browser/extensions/api/terminal/crostini_startup_status.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/location.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "components/version_info/version_info.h"
@@ -35,7 +39,7 @@ const char kColor3Yellow[] = "\x1b[33m";
 const char kColor5Purple[] = "\x1b[35m";
 const char kEraseInLine[] = "\x1b[K";
 const char kSpinner[] = "|/-\\";
-const int kMaxStage = 9;
+const int kMaxStage = static_cast<int>(InstallerState::kMaxValue);
 
 std::string MoveForward(int i) {
   return base::StringPrintf("\x1b[%dC", i);
@@ -57,6 +61,29 @@ void CrostiniStartupStatus::OnCrostiniRestarted(
     PrintAfterStage(
         kColor1RedBright,
         base::StringPrintf("Error starting penguin container: %d\r\n", result));
+    crostini::RecordAppLaunchResultHistogram(
+        crostini::CrostiniAppLaunchAppType::kTerminal, result);
+  } else {
+    if (verbose_) {
+      // We change the stage_string but don't increment the stage number. This
+      // is deliberate, per UX they don't want more pieces in the stage progress
+      // bar.
+      const std::string& stage_string = l10n_util::GetStringUTF8(
+          IDS_CROSTINI_TERMINAL_STATUS_CONNECT_CONTAINER);
+      PrintStage(kColor3Yellow, stage_string);
+    }
+  }
+}
+
+void CrostiniStartupStatus::OnCrostiniConnected(
+    crostini::CrostiniResult result) {
+  crostini::RecordAppLaunchResultHistogram(
+      crostini::CrostiniAppLaunchAppType::kTerminal, result);
+  if (result != crostini::CrostiniResult::SUCCESS) {
+    PrintAfterStage(
+        kColor1RedBright,
+        base::StringPrintf(
+            "Error connecting shell to penguin container: %d\r\n", result));
   } else {
     if (verbose_) {
       stage_index_ = kMaxStage + 1;  // done.
@@ -72,24 +99,18 @@ void CrostiniStartupStatus::OnCrostiniRestarted(
 
 void CrostiniStartupStatus::ShowProgressAtInterval() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Wait one interval before showing progress.
-  if (spinner_index_ > 0) {
-    PrintProgress();
-  }
-  ++spinner_index_;
-  content::GetUIThreadTaskRunner({})->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&CrostiniStartupStatus::ShowProgressAtInterval,
-                     weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(300));
+  show_progress_timer_ = std::make_unique<base::RepeatingTimer>();
+  show_progress_timer_->Start(FROM_HERE, base::TimeDelta::FromMilliseconds(300),
+                              base::BindRepeating(
+                                  [](CrostiniStartupStatus* self) {
+                                    self->spinner_index_++;
+                                    self->PrintProgress();
+                                  },
+                                  this));
 }
 
 void CrostiniStartupStatus::OnStageStarted(InstallerState stage) {
-  stage_ = stage;
-  if (stage_index_ < kMaxStage) {
-    ++stage_index_;
-  }
+  stage_index_ = static_cast<int>(stage) + 1;
   if (!verbose_) {
     return;
   }
@@ -106,6 +127,8 @@ void CrostiniStartupStatus::OnStageStarted(InstallerState stage) {
           {InstallerState::kStartTerminaVm,
            l10n_util::GetStringUTF8(
                IDS_CROSTINI_TERMINAL_STATUS_START_TERMINA_VM)},
+          {InstallerState::kStartLxd,
+           l10n_util::GetStringUTF8(IDS_CROSTINI_TERMINAL_STATUS_START_LXD)},
           {InstallerState::kCreateContainer,
            l10n_util::GetStringUTF8(
                IDS_CROSTINI_TERMINAL_STATUS_CREATE_CONTAINER)},
@@ -115,12 +138,6 @@ void CrostiniStartupStatus::OnStageStarted(InstallerState stage) {
           {InstallerState::kStartContainer,
            l10n_util::GetStringUTF8(
                IDS_CROSTINI_TERMINAL_STATUS_START_CONTAINER)},
-          {InstallerState::kFetchSshKeys,
-           l10n_util::GetStringUTF8(
-               IDS_CROSTINI_TERMINAL_STATUS_FETCH_SSH_KEYS)},
-          {InstallerState::kMountContainer,
-           l10n_util::GetStringUTF8(
-               IDS_CROSTINI_TERMINAL_STATUS_MOUNT_CONTAINER)},
       });
   const std::string& stage_string = (*kStartStrings)[stage];
   PrintStage(kColor3Yellow, stage_string);

@@ -9,8 +9,8 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/phonehub/phone_hub_content_view.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/progress_bar.h"
-#include "ui/views/metadata/metadata_header_macros.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -36,8 +36,8 @@ class ASH_EXPORT PhoneHubInterstitialView : public PhoneHubContentView {
   ~PhoneHubInterstitialView() override;
 
   void SetImage(const gfx::ImageSkia& image);
-  void SetTitle(const base::string16& title);
-  void SetDescription(const base::string16& desc);
+  void SetTitle(const std::u16string& title);
+  void SetDescription(const std::u16string& desc);
   void AddButton(std::unique_ptr<views::Button> button);
 
  private:

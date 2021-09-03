@@ -11,12 +11,12 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/guid.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -27,8 +27,8 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/url_database.h"
-#include "components/no_state_prefetch/browser/prerender_field_trial.h"
-#include "components/no_state_prefetch/browser/prerender_manager.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_field_trial.h"
+#include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
 #include "content/public/test/browser_task_environment.h"
@@ -43,9 +43,9 @@ namespace {
 
 struct TestUrlInfo {
   GURL url;
-  base::string16 title;
+  std::u16string title;
   int days_from_now;
-  base::string16 user_text;
+  std::u16string user_text;
   int number_of_hits;
   int number_of_misses;
   AutocompleteActionPredictor::Action expected_action;
@@ -53,70 +53,46 @@ struct TestUrlInfo {
 
 const std::vector<TestUrlInfo>& TestUrlDb() {
   static base::NoDestructor<std::vector<TestUrlInfo>> db{
-      {{GURL("http://www.testsite.com/a.html"),
-        ASCIIToUTF16("Test - site - just a test"), 1, ASCIIToUTF16("j"), 5, 0,
-        AutocompleteActionPredictor::ACTION_PRERENDER},
-       {GURL("http://www.testsite.com/b.html"),
-        ASCIIToUTF16("Test - site - just a test"), 1, ASCIIToUTF16("ju"), 3, 0,
-        AutocompleteActionPredictor::ACTION_PRERENDER},
-       {GURL("http://www.testsite.com/c.html"),
-        ASCIIToUTF16("Test - site - just a test"), 5, ASCIIToUTF16("just"), 3,
-        1, AutocompleteActionPredictor::ACTION_PRECONNECT},
-       {GURL("http://www.testsite.com/d.html"),
-        ASCIIToUTF16("Test - site - just a test"), 5, ASCIIToUTF16("just"), 3,
-        0, AutocompleteActionPredictor::ACTION_PRERENDER},
-       {GURL("http://www.testsite.com/e.html"),
-        ASCIIToUTF16("Test - site - just a test"), 8, ASCIIToUTF16("just"), 3,
-        1, AutocompleteActionPredictor::ACTION_PRECONNECT},
-       {GURL("http://www.testsite.com/f.html"),
-        ASCIIToUTF16("Test - site - just a test"), 8, ASCIIToUTF16("just"), 3,
-        0, AutocompleteActionPredictor::ACTION_PRERENDER},
-       {GURL("http://www.testsite.com/g.html"),
-        ASCIIToUTF16("Test - site - just a test"), 12, base::string16(), 5, 0,
-        AutocompleteActionPredictor::ACTION_NONE},
-       {GURL("http://www.testsite.com/h.html"),
-        ASCIIToUTF16("Test - site - just a test"), 21,
-        ASCIIToUTF16("just a test"), 2, 0,
-        AutocompleteActionPredictor::ACTION_NONE},
-       {GURL("http://www.testsite.com/i.html"),
-        ASCIIToUTF16("Test - site - just a test"), 28,
-        ASCIIToUTF16("just a test"), 2, 0,
-        AutocompleteActionPredictor::ACTION_NONE}}};
+      {{GURL("http://www.testsite.com/a.html"), u"Test - site - just a test", 1,
+        u"j", 5, 0, AutocompleteActionPredictor::ACTION_PRERENDER},
+       {GURL("http://www.testsite.com/b.html"), u"Test - site - just a test", 1,
+        u"ju", 3, 0, AutocompleteActionPredictor::ACTION_PRERENDER},
+       {GURL("http://www.testsite.com/c.html"), u"Test - site - just a test", 5,
+        u"just", 3, 1, AutocompleteActionPredictor::ACTION_PRECONNECT},
+       {GURL("http://www.testsite.com/d.html"), u"Test - site - just a test", 5,
+        u"just", 3, 0, AutocompleteActionPredictor::ACTION_PRERENDER},
+       {GURL("http://www.testsite.com/e.html"), u"Test - site - just a test", 8,
+        u"just", 3, 1, AutocompleteActionPredictor::ACTION_PRECONNECT},
+       {GURL("http://www.testsite.com/f.html"), u"Test - site - just a test", 8,
+        u"just", 3, 0, AutocompleteActionPredictor::ACTION_PRERENDER},
+       {GURL("http://www.testsite.com/g.html"), u"Test - site - just a test",
+        12, std::u16string(), 5, 0, AutocompleteActionPredictor::ACTION_NONE},
+       {GURL("http://www.testsite.com/h.html"), u"Test - site - just a test",
+        21, u"just a test", 2, 0, AutocompleteActionPredictor::ACTION_NONE},
+       {GURL("http://www.testsite.com/i.html"), u"Test - site - just a test",
+        28, u"just a test", 2, 0, AutocompleteActionPredictor::ACTION_NONE}}};
   return *db;
 }
 
 // List of urls sorted by the confidence score in ascending order.
 const std::vector<TestUrlInfo>& TestUrlConfidenceDb() {
   static base::NoDestructor<std::vector<TestUrlInfo>> db{{
-      {GURL("http://www.testsite.com/g.html"), ASCIIToUTF16("Test"), 1,
-       ASCIIToUTF16("test"), 0, 2, AutocompleteActionPredictor::ACTION_NONE},
-      {GURL("http://www.testsite.com/f.html"), ASCIIToUTF16("Test"), 1,
-       ASCIIToUTF16("test"), 1, 2, AutocompleteActionPredictor::ACTION_NONE},
-      {GURL("http://www.testsite.com/e.html"), ASCIIToUTF16("Test"), 1,
-       ASCIIToUTF16("test"), 2, 2, AutocompleteActionPredictor::ACTION_NONE},
-      {GURL("http://www.testsite.com/d.html"), ASCIIToUTF16("Test"), 1,
-       ASCIIToUTF16("test"), 3, 3, AutocompleteActionPredictor::ACTION_NONE},
-      {GURL("http://www.testsite.com/c.html"), ASCIIToUTF16("Test"), 1,
-       ASCIIToUTF16("test"), 3, 2, AutocompleteActionPredictor::ACTION_NONE},
-      {GURL("http://www.testsite.com/b.html"), ASCIIToUTF16("Test"), 1,
-       ASCIIToUTF16("test"), 3, 0, AutocompleteActionPredictor::ACTION_NONE},
-      {GURL("http://www.testsite.com/a.html"), ASCIIToUTF16("Test"), 1,
-       ASCIIToUTF16("test"), 5, 0, AutocompleteActionPredictor::ACTION_NONE},
+      {GURL("http://www.testsite.com/g.html"), u"Test", 1, u"test", 0, 2,
+       AutocompleteActionPredictor::ACTION_NONE},
+      {GURL("http://www.testsite.com/f.html"), u"Test", 1, u"test", 1, 2,
+       AutocompleteActionPredictor::ACTION_NONE},
+      {GURL("http://www.testsite.com/e.html"), u"Test", 1, u"test", 2, 2,
+       AutocompleteActionPredictor::ACTION_NONE},
+      {GURL("http://www.testsite.com/d.html"), u"Test", 1, u"test", 3, 3,
+       AutocompleteActionPredictor::ACTION_NONE},
+      {GURL("http://www.testsite.com/c.html"), u"Test", 1, u"test", 3, 2,
+       AutocompleteActionPredictor::ACTION_NONE},
+      {GURL("http://www.testsite.com/b.html"), u"Test", 1, u"test", 3, 0,
+       AutocompleteActionPredictor::ACTION_NONE},
+      {GURL("http://www.testsite.com/a.html"), u"Test", 1, u"test", 5, 0,
+       AutocompleteActionPredictor::ACTION_NONE},
   }};
   return *db;
-}
-
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL GenerateTestURL(size_t size) {
-  std::string prefix = "http://b/";
-  // Cannot generate an URL shorter than |prefix|.
-  DCHECK_GE(size, prefix.size());
-  size_t suffix_len = size - prefix.size();
-  std::string suffix(suffix_len, 'c');
-  GURL url(prefix + suffix);
-  DCHECK_EQ(url.spec().size(), size);
-  return url;
 }
 
 }  // end namespace
@@ -129,7 +105,6 @@ class AutocompleteActionPredictorTest : public testing::Test {
       : profile_(std::make_unique<TestingProfile>()), predictor_(nullptr) {
     CHECK(profile_->CreateHistoryService());
     predictor_ = std::make_unique<AutocompleteActionPredictor>(profile_.get());
-    predictor_->CreateLocalCachesFromDatabase();
     profile_->BlockUntilHistoryProcessesPendingRequests();
     content::RunAllTasksUntilIdle();
 
@@ -244,7 +219,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
     predictor_->OnURLsDeleted(
         history_service,
         history::DeletionInfo(history::DeletionTimeRange::Invalid(), expired,
-                              rows, std::set<GURL>(), base::nullopt));
+                              rows, std::set<GURL>(), absl::nullopt));
 
     EXPECT_EQ(expected.size(), db_cache()->size());
     EXPECT_EQ(expected.size(), db_id_cache()->size());
@@ -535,35 +510,39 @@ TEST_F(AutocompleteActionPredictorTest, RecommendActionSearch) {
 
 TEST_F(AutocompleteActionPredictorTest,
        RegisterTransitionalMatchesUserTextSizeLimits) {
-  auto test = [this](const base::string16& user_text,
+  auto test = [this](const std::u16string& user_text,
                      bool should_be_registered) {
     predictor()->RegisterTransitionalMatches(user_text, AutocompleteResult());
     bool registered = base::Contains(*transitional_matches(), user_text);
     EXPECT_EQ(registered, should_be_registered);
   };
 
-  base::string16 short_text =
+  std::u16string short_text =
       ASCIIToUTF16(std::string(minimum_user_text_length(), 'g'));
   test(short_text, true);
 
-  base::string16 too_short_text =
+  std::u16string too_short_text =
       ASCIIToUTF16(std::string(minimum_user_text_length() - 1, 'g'));
   test(too_short_text, false);
 
-  base::string16 long_text =
+  std::u16string long_text =
       ASCIIToUTF16(std::string(maximum_string_length(), 'g'));
   test(long_text, true);
 
-  base::string16 too_long_text =
+  std::u16string too_long_text =
       ASCIIToUTF16(std::string(maximum_string_length() + 1, 'g'));
   test(too_long_text, false);
 }
 
 TEST_F(AutocompleteActionPredictorTest,
        RegisterTransitionalMatchesURLSizeLimits) {
-  GURL urls[] = {GenerateTestURL(10), GenerateTestURL(maximum_string_length()),
-                 GenerateTestURL(maximum_string_length() + 1),
-                 GenerateTestURL(maximum_string_length() * 10)};
+  const auto test_url = [](size_t size) {
+    const std::string kPrefix = "http://b/";
+    return GURL(kPrefix + std::string(size - kPrefix.size(), 'c'));
+  };
+  GURL urls[] = {test_url(10), test_url(maximum_string_length()),
+                 test_url(maximum_string_length() + 1),
+                 test_url(maximum_string_length() * 10)};
   ACMatches matches;
   for (const auto& url : urls) {
     AutocompleteMatch match;
@@ -572,7 +551,7 @@ TEST_F(AutocompleteActionPredictorTest,
   }
   AutocompleteResult result;
   result.AppendMatches(AutocompleteInput(), matches);
-  base::string16 user_text = ASCIIToUTF16("google");
+  std::u16string user_text = u"google";
   predictor()->RegisterTransitionalMatches(user_text, result);
   auto it = std::find(transitional_matches()->begin(),
                       transitional_matches()->end(), user_text);

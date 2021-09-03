@@ -1,16 +1,16 @@
 Name: icu
 URL: https://github.com/unicode-org/icu
-Version: 68.1
-CPEPrefix: cpe:/a:icu-project:international_components_for_unicode:68.1
+Version: 69-1
+CPEPrefix: cpe:/a:icu-project:international_components_for_unicode:69.1
 License: MIT
 Security Critical: yes
 
 Description:
-This directory contains the source code of ICU 68.1 for C/C++.
+This directory contains the source code of ICU 69.1 for C/C++.
 
 A. How to update ICU
 
-1. Run "scripts/update.sh <version>" (e.g. 68-1).
+1. Run "scripts/update.sh <version>" (e.g. 69-1).
    This will download ICU from the upstream git repository.
    It does preserve Chrome-specific build files and
    converter files. (see section C)
@@ -193,7 +193,7 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of Octber 23, 2020, the latest version is 2020c and the above files
+  As of Janurary 27, 2021, the latest version is 2021a and the above files
   are available at the ICU github repos.
 
 4. Build-related changes
@@ -225,40 +225,27 @@ D. Local Modifications
   - patches/ardatepattern.patch
   - https://bugs.chromium.org/p/chromium/issues/detail?id=1139186
 
-8. Patch fix for CFI due to unnecessary cast
-  - patches/fixCFI.patch
-  - updatream PR:
-    https://github.com/unicode-org/icu/pull/1440
-  - updtream bug:
-    https://unicode-org.atlassian.net/browse/ICU-21373
+8.  Remove explicit std::atomic<NumberRangeFormatterImpl*> template
+    instantiation
+    patches/atomic_template_instantiation.patch
+  - The explicit instantiation was added to silence MSVC C4251 warnings:
+    https://unicode-org.atlassian.net/browse/ICU-20157
+    Small test cases show that it is generally an error to instantiate
+    std::atomic<T*> with an incomplete type T with MSVC, clang, and GCC, so this
+    instantiation never should have worked:
+    https://gcc.godbolt.org/z/34xx8h
+    At this time, it's not clear if this particular instantiation with
+    NumberRangeFormatterImpl* was ever necessary for MSVC. Further testing with
+    MSVC is required to upstream this patch.
+  - https://unicode-org.atlassian.net/browse/ICU-21482
 
-9. Patch fix for > 8 items in ListFormatter Memory READ
-  - patches/listformatmemread.patch
-  - updatream PR:
-    https://github.com/unicode-org/icu/pull/1450
-  - updtream bug:
-    https://unicode-org.atlassian.net/browse/ICU-21383
+9.  Patch source/common/uposixdefs.h so it compiles on Fuchsia on Macs.
+    patches/fuchsia.patch
+  - context bug: https://bugs.chromium.org/p/chromium/issues/detail?id=1184527
 
-10. Patch fix for Locale::setKeywordValue
-    patches/setkeywordvalue.patch
-  - updatream PR:
-    https://github.com/unicode-org/icu/pull/1461
-  - updtream bug:
-    https://unicode-org.atlassian.net/browse/ICU-21385
-
-11. Patch Windows to fix Host timezone detection
-    patches/wintz.patch
-    patches/wintz2.patch
-  - updatream PR:
-    https://github.com/unicode-org/icu/pull/1465
-    https://github.com/unicode-org/icu/pull/1539
-  - updtream bug:
-    https://unicode-org.atlassian.net/browse/ICU-21392
-    https://unicode-org.atlassian.net/browse/ICU-21465
-
-12. Patch fixing crash in list format
-    patches/formatted_string_builder.patch
-  - updatream PR:
-    https://github.com/unicode-org/icu/pull/1479
-  - updtream bug:
-    https://unicode-org.atlassian.net/browse/ICU-21410
+10. Patch locale to fix assign and assing move operators:
+    patches/locid_operators.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-21587
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/1698

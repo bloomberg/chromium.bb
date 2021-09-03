@@ -6,10 +6,12 @@
 
 #include <memory>
 #include <utility>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_file_property_bag.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_union_arraybuffer_arraybufferview_blob_usvstring.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_share_data.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -99,7 +101,7 @@ class NavigatorShareTest : public testing::Test {
     EXPECT_EQ(mock_share_service_.error() == mojom::ShareError::OK
                   ? v8::Promise::kFulfilled
                   : v8::Promise::kRejected,
-              promise.V8Value().As<v8::Promise>()->State());
+              promise.V8Promise()->State());
   }
 
   MockShareService& mock_share_service() { return mock_share_service_; }
@@ -107,8 +109,8 @@ class NavigatorShareTest : public testing::Test {
  protected:
   void SetUp() override {
     GetFrame().Loader().CommitNavigation(
-        WebNavigationParams::CreateWithHTMLBuffer(SharedBuffer::Create(),
-                                                  KURL("https://example.com")),
+        WebNavigationParams::CreateWithHTMLBufferForTesting(
+            SharedBuffer::Create(), KURL("https://example.com")),
         nullptr /* extra_data */);
     test::RunPendingTasks();
 
@@ -158,9 +160,14 @@ File* CreateSampleFile(ExecutionContext* context,
                        const String& file_name,
                        const String& content_type,
                        const String& file_contents) {
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  HeapVector<Member<V8BlobPart>> blob_parts;
+  blob_parts.push_back(MakeGarbageCollected<V8BlobPart>(file_contents));
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   HeapVector<ArrayBufferOrArrayBufferViewOrBlobOrUSVString> blob_parts;
   blob_parts.push_back(ArrayBufferOrArrayBufferViewOrBlobOrUSVString());
   blob_parts.back().SetUSVString(file_contents);
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
 
   FilePropertyBag file_property_bag;
   file_property_bag.setType(content_type);

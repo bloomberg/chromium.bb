@@ -117,9 +117,11 @@ TransformSize Tile::ReadFixedTransformSize(const Block& block) {
   const auto context = static_cast<int>(top_width >= max_tx_width) +
                        static_cast<int>(left_height >= max_tx_height);
   const int cdf_index = kTxDepthCdfIndex[block.size];
-  const int symbol_count = 3 - static_cast<int>(cdf_index == 0);
-  const int tx_depth = reader_.ReadSymbol(
-      symbol_decoder_context_.tx_depth_cdf[cdf_index][context], symbol_count);
+  uint16_t* const cdf =
+      symbol_decoder_context_.tx_depth_cdf[cdf_index][context];
+  const int tx_depth = (cdf_index == 0)
+                           ? static_cast<int>(reader_.ReadSymbol(cdf))
+                           : reader_.ReadSymbol<3>(cdf);
   assert(tx_depth < 3);
   TransformSize tx_size = max_rect_tx_size;
   if (tx_depth == 0) return tx_size;

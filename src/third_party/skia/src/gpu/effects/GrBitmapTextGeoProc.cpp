@@ -26,7 +26,7 @@ public:
             , fLocalMatrix(SkMatrix::InvalidMatrix()) {}
 
     void onEmitCode(EmitArgs& args, GrGPArgs* gpArgs) override {
-        const GrBitmapTextGeoProc& btgp = args.fGP.cast<GrBitmapTextGeoProc>();
+        const GrBitmapTextGeoProc& btgp = args.fGeomProc.cast<GrBitmapTextGeoProc>();
 
         GrGLSLVertexBuilder* vertBuilder = args.fVertBuilder;
         GrGLSLVaryingHandler* varyingHandler = args.fVaryingHandler;
@@ -45,6 +45,7 @@ public:
 
         GrGLSLFPFragmentBuilder* fragBuilder = args.fFragBuilder;
         // Setup pass through color
+        fragBuilder->codeAppendf("half4 %s;", args.fOutputColor);
         if (btgp.hasVertexColor()) {
             varyingHandler->addPassThroughAttribute(btgp.inColor(), args.fOutputColor);
         } else {
@@ -54,8 +55,13 @@ public:
 
         // Setup position
         gpArgs->fPositionVar = btgp.inPosition().asShaderVar();
-        this->writeLocalCoord(vertBuilder, uniformHandler, gpArgs, btgp.inPosition().asShaderVar(),
-                              btgp.localMatrix(), &fLocalMatrixUniform);
+        WriteLocalCoord(vertBuilder,
+                        uniformHandler,
+                        *args.fShaderCaps,
+                        gpArgs,
+                        btgp.inPosition().asShaderVar(),
+                        btgp.localMatrix(),
+                        &fLocalMatrixUniform);
 
         fragBuilder->codeAppend("half4 texColor;");
         append_multitexture_lookup(args, btgp.numTextureSamplers(),
@@ -64,14 +70,16 @@ public:
         if (btgp.maskFormat() == kARGB_GrMaskFormat) {
             // modulate by color
             fragBuilder->codeAppendf("%s = %s * texColor;", args.fOutputColor, args.fOutputColor);
-            fragBuilder->codeAppendf("%s = half4(1);", args.fOutputCoverage);
+            fragBuilder->codeAppendf("const half4 %s = half4(1);", args.fOutputCoverage);
         } else {
-            fragBuilder->codeAppendf("%s = texColor;", args.fOutputCoverage);
+            fragBuilder->codeAppendf("half4 %s = texColor;", args.fOutputCoverage);
         }
     }
 
-    void setData(const GrGLSLProgramDataManager& pdman, const GrPrimitiveProcessor& gp) override {
-        const GrBitmapTextGeoProc& btgp = gp.cast<GrBitmapTextGeoProc>();
+    void setData(const GrGLSLProgramDataManager& pdman,
+                 const GrShaderCaps& shaderCaps,
+                 const GrGeometryProcessor& geomProc) override {
+        const GrBitmapTextGeoProc& btgp = geomProc.cast<GrBitmapTextGeoProc>();
         if (btgp.color() != fColor && !btgp.hasVertexColor()) {
             pdman.set4fv(fColorUniform, 1, btgp.color().vec());
             fColor = btgp.color();
@@ -87,19 +95,20 @@ public:
             fAtlasDimensions = atlasDimensions;
         }
 
-        this->setTransform(pdman, fLocalMatrixUniform, btgp.localMatrix(), &fLocalMatrix);
+        SetTransform(pdman, shaderCaps, fLocalMatrixUniform, btgp.localMatrix(), &fLocalMatrix);
     }
 
     static inline void GenKey(const GrGeometryProcessor& proc,
-                              const GrShaderCaps&,
+                              const GrShaderCaps& shaderCaps,
                               GrProcessorKeyBuilder* b) {
         const GrBitmapTextGeoProc& btgp = proc.cast<GrBitmapTextGeoProc>();
-        uint32_t key = 0;
-        key |= btgp.usesW() ? 0x1 : 0x0;
-        key |= btgp.maskFormat() << 1;
-        key |= ComputeMatrixKey(btgp.localMatrix()) << 2;
-        b->add32(key);
-        b->add32(btgp.numTextureSamplers());
+        b->addBool(btgp.usesW(), "usesW");
+        static_assert(kLast_GrMaskFormat < (1u << 2));
+        b->addBits(2, btgp.maskFormat(), "maskFormat");
+        b->addBits(kMatrixKeyBits,
+                   ComputeMatrixKey(shaderCaps, btgp.localMatrix()),
+                   "localMatrixType");
+        b->add32(btgp.numTextureSamplers(),"numTextures");
     }
 
 private:
@@ -189,7 +198,7 @@ void GrBitmapTextGeoProc::getGLSLProcessorKey(const GrShaderCaps& caps,
     GrGLBitmapTextGeoProc::GenKey(*this, caps, b);
 }
 
-GrGLSLPrimitiveProcessor* GrBitmapTextGeoProc::createGLSLInstance(const GrShaderCaps& caps) const {
+GrGLSLGeometryProcessor* GrBitmapTextGeoProc::createGLSLInstance(const GrShaderCaps& caps) const {
     return new GrGLBitmapTextGeoProc();
 }
 
@@ -222,10 +231,14 @@ GrGeometryProcessor* GrBitmapTextGeoProc::TestCreate(GrProcessorTestData* d) {
             break;
     }
 
+    GrColor color = GrRandomColor(d->fRandom);
+    bool wideColor = d->fRandom->nextBool();
+    SkMatrix localMatrix = GrTest::TestMatrix(d->fRandom);
+    bool usesW = d->fRandom->nextBool();
     return GrBitmapTextGeoProc::Make(d->allocator(), *d->caps()->shaderCaps(),
-                                     SkPMColor4f::FromBytes_RGBA(GrRandomColor(d->fRandom)),
-                                     d->fRandom->nextBool(),
+                                     SkPMColor4f::FromBytes_RGBA(color),
+                                     wideColor,
                                      &view, 1, samplerState, format,
-                                     GrTest::TestMatrix(d->fRandom), d->fRandom->nextBool());
+                                     localMatrix, usesW);
 }
 #endif

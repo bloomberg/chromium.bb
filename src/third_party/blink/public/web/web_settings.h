@@ -39,7 +39,6 @@
 #include "third_party/blink/public/mojom/webpreferences/web_preferences.mojom-forward.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
-#include "third_party/blink/public/platform/web_size.h"
 
 namespace blink {
 
@@ -181,9 +180,9 @@ class WebSettings {
   virtual void SetPluginsEnabled(bool) = 0;
   virtual void SetPresentationReceiver(bool) = 0;
   virtual void SetAvailablePointerTypes(int) = 0;
-  virtual void SetPrimaryPointerType(ui::PointerType) = 0;
+  virtual void SetPrimaryPointerType(blink::mojom::PointerType) = 0;
   virtual void SetAvailableHoverTypes(int) = 0;
-  virtual void SetPrimaryHoverType(ui::HoverType) = 0;
+  virtual void SetPrimaryHoverType(blink::mojom::HoverType) = 0;
   virtual void SetPreferHiddenVolumeControls(bool) = 0;
   virtual void SetShouldProtectAgainstIpcFlooding(bool) = 0;
   virtual void SetRenderVSyncNotificationEnabled(bool) = 0;
@@ -221,6 +220,8 @@ class WebSettings {
   virtual void SetSyncXHRInDocumentsEnabled(bool) = 0;
   // TODO(https://crbug.com/1163644): Remove once Chrome Apps are deprecated.
   virtual void SetTargetBlankImpliesNoOpenerEnabledWillBeRemoved(bool) = 0;
+  // TODO(https://crbug.com/1172495): Remove once Chrome Apps are deprecated.
+  virtual void SetAllowNonEmptyNavigatorPlugins(bool) = 0;
   virtual void SetTextAreasAreResizable(bool) = 0;
   virtual void SetTextAutosizingEnabled(bool) = 0;
   virtual void SetAccessibilityFontScaleFactor(float) = 0;
@@ -283,6 +284,7 @@ class WebSettings {
   virtual void SetUseAXMenuList(bool) = 0;
   virtual void SetSelectionClipboardBufferAvailable(bool) = 0;
   virtual void SetAccessibilityIncludeSvgGElement(bool) = 0;
+  virtual void SetWebXRImmersiveArAllowed(bool) = 0;
 
  protected:
   ~WebSettings() = default;
@@ -290,4 +292,4 @@ class WebSettings {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_SETTINGS_H_

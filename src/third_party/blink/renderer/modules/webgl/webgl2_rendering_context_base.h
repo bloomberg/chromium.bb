@@ -140,6 +140,17 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLenum,
                   HTMLVideoElement*,
                   ExceptionState&);
+  void texImage2D(ExecutionContext*,
+                  GLenum,
+                  GLint,
+                  GLint,
+                  GLsizei,
+                  GLsizei,
+                  GLint,
+                  GLenum,
+                  GLenum,
+                  VideoFrame*,
+                  ExceptionState&);
   void texImage2D(GLenum,
                   GLint,
                   GLint,
@@ -212,6 +223,17 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                      GLenum,
                      HTMLVideoElement*,
                      ExceptionState&);
+  void texSubImage2D(ExecutionContext*,
+                     GLenum,
+                     GLint,
+                     GLint,
+                     GLint,
+                     GLsizei,
+                     GLsizei,
+                     GLenum,
+                     GLenum,
+                     VideoFrame*,
+                     ExceptionState&);
   void texSubImage2D(GLenum,
                      GLint,
                      GLint,
@@ -261,6 +283,14 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLenum,
                   HTMLVideoElement*,
                   ExceptionState&);
+  void texImage2D(ExecutionContext*,
+                  GLenum,
+                  GLint,
+                  GLint,
+                  GLenum,
+                  GLenum,
+                  VideoFrame*,
+                  ExceptionState&);
   void texImage2D(GLenum,
                   GLint,
                   GLint,
@@ -295,6 +325,15 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                      GLenum,
                      GLenum,
                      HTMLVideoElement*,
+                     ExceptionState&);
+  void texSubImage2D(ExecutionContext*,
+                     GLenum,
+                     GLint,
+                     GLint,
+                     GLint,
+                     GLenum,
+                     GLenum,
+                     VideoFrame*,
                      ExceptionState&);
   void texSubImage2D(GLenum,
                      GLint,
@@ -373,6 +412,18 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   GLenum,
                   GLenum,
                   HTMLVideoElement*,
+                  ExceptionState&);
+  void texImage3D(ExecutionContext*,
+                  GLenum,
+                  GLint,
+                  GLint,
+                  GLsizei,
+                  GLsizei,
+                  GLsizei,
+                  GLint,
+                  GLenum,
+                  GLenum,
+                  VideoFrame*,
                   ExceptionState&);
   void texImage3D(GLenum,
                   GLint,
@@ -467,6 +518,19 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                      GLenum,
                      GLenum,
                      HTMLVideoElement*,
+                     ExceptionState&);
+  void texSubImage3D(ExecutionContext*,
+                     GLenum,
+                     GLint,
+                     GLint,
+                     GLint,
+                     GLint,
+                     GLsizei,
+                     GLsizei,
+                     GLsizei,
+                     GLenum,
+                     GLenum,
+                     VideoFrame*,
                      ExceptionState&);
   void texSubImage3D(GLenum,
                      GLint,
@@ -979,7 +1043,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   WebGL2RenderingContextBase(
       CanvasRenderingContextHost*,
       std::unique_ptr<WebGraphicsContext3DProvider>,
-      bool using_gpu_compositing,
+      const Platform::GraphicsInfo&,
       const CanvasContextCreationAttributesCore& requested_attributes,
       Platform::ContextType context_type);
 
@@ -1144,4 +1208,4 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGL_WEBGL2_RENDERING_CONTEXT_BASE_H_

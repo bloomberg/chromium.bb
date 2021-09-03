@@ -161,10 +161,17 @@ class POLICY_EXPORT CloudPolicyStore {
   // Sets whether or not the first policies for this policy store were loaded.
   void SetFirstPoliciesLoaded(bool loaded);
 
+  // Test helper to set |policy_|.
+  void set_policy_data_for_testing(
+      std::unique_ptr<enterprise_management::PolicyData> policy);
+
  protected:
   // Invokes the corresponding callback on all registered observers.
   void NotifyStoreLoaded();
   void NotifyStoreError();
+
+  // Updates whether or not the first policies were loaded.
+  virtual void UpdateFirstPoliciesLoaded();
 
   // Assert non-concurrent usage in debug builds.
   SEQUENCE_CHECKER(sequence_checker_);

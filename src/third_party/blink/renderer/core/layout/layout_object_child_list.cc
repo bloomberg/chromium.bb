@@ -27,12 +27,12 @@
 #include "third_party/blink/renderer/core/layout/layout_object_child_list.h"
 
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
 namespace blink {
@@ -59,19 +59,12 @@ void InvalidateInlineItems(LayoutObject* object) {
     }
   }
 
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-    // This LayoutObject is not technically destroyed, but further access should
-    // be prohibited when moved to different parent as if it were destroyed.
-    if (object->FirstInlineFragmentItemIndex()) {
-      if (auto* text = DynamicTo<LayoutText>(object))
-        text->DetachAbstractInlineTextBoxesIfNeeded();
-      NGFragmentItems::LayoutObjectWillBeMoved(*object);
-    }
-  } else if (NGPaintFragment* fragment = object->FirstInlineFragment()) {
-    // This LayoutObject is not technically destroyed, but further access should
-    // be prohibited when moved to different parent as if it were destroyed.
-    fragment->LayoutObjectWillBeDestroyed();
-    object->SetFirstInlineFragment(nullptr);
+  // This LayoutObject is not technically destroyed, but further access should
+  // be prohibited when moved to different parent as if it were destroyed.
+  if (object->FirstInlineFragmentItemIndex()) {
+    if (auto* text = DynamicTo<LayoutText>(object))
+      text->DetachAbstractInlineTextBoxesIfNeeded();
+    NGFragmentItems::LayoutObjectWillBeMoved(*object);
   }
   object->SetIsInLayoutNGInlineFormattingContext(false);
 }
@@ -131,8 +124,7 @@ LayoutObject* LayoutObjectChildList::RemoveChildNode(
 
     if (old_child->IsInLayoutNGInlineFormattingContext()) {
       owner->SetChildNeedsCollectInlines();
-      if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
-        InvalidateInlineItems(old_child);
+      InvalidateInlineItems(old_child);
     }
   }
 
@@ -188,8 +180,7 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
     return;
   }
 
-  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled() &&
-      !owner->DocumentBeingDestroyed() &&
+  if (!owner->DocumentBeingDestroyed() &&
       new_child->IsInLayoutNGInlineFormattingContext()) {
     InvalidateInlineItems(new_child);
   }
@@ -242,8 +233,17 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   if (new_child->WasNotifiedOfSubtreeChange())
     owner->NotifyAncestorsOfSubtreeChange();
 
-  if (owner->ForceLegacyLayout() && !new_child->IsLayoutNGObject())
-    new_child->SetForceLegacyLayout();
+  if (UNLIKELY(!new_child->IsLayoutNGObject())) {
+    if (owner->ForceLegacyLayout()) {
+      new_child->SetForceLegacyLayout();
+    } else if (const auto* element = DynamicTo<Element>(new_child->GetNode())) {
+      if (element->ShouldForceLegacyLayout())
+        new_child->SetForceLegacyLayout();
+    }
+  }
+
+  // Mark the ancestor chain for paint invalidation checking.
+  owner->SetShouldCheckForPaintInvalidation();
 
   new_child->SetNeedsLayoutAndIntrinsicWidthsRecalc(
       layout_invalidation_reason::kAddedToLayout);

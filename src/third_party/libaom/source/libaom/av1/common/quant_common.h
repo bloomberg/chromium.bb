@@ -36,6 +36,7 @@ extern "C" {
 #define DEFAULT_QM_V 12
 #define DEFAULT_QM_FIRST 5
 #define DEFAULT_QM_LAST 9
+#define LOSSLESS_Q_STEP 4  // this should equal to dc/ac_qlookup_QTX[0]
 
 struct AV1Common;
 struct CommonQuantParams;

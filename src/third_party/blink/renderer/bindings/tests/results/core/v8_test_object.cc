@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/custom/ce_reactions_scope.h"
-#include "third_party/blink/renderer/core/html/custom/v0_custom_element_processing_stack.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_options_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_controls_collection.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
@@ -1332,7 +1331,7 @@ static void BooleanOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  base::Optional<bool> cpp_value(impl->booleanOrNullAttribute());
+  absl::optional<bool> cpp_value(impl->booleanOrNullAttribute());
 
   if (!cpp_value.has_value()) {
     V8SetReturnValueNull(info);
@@ -1357,7 +1356,7 @@ static void BooleanOrNullAttributeAttributeSetter(
   bool is_null = IsUndefinedOrNull(v8_value);
 
   // Prepare the value to be set.
-  base::Optional<bool> cpp_value{ is_null ? base::nullopt : base::Optional<bool>(NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state)) };
+  absl::optional<bool> cpp_value{ is_null ? absl::nullopt : absl::optional<bool>(NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state)) };
   if (exception_state.HadException())
     return;
 
@@ -1395,7 +1394,7 @@ static void LongOrNullAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  base::Optional<int32_t> cpp_value(impl->longOrNullAttribute());
+  absl::optional<int32_t> cpp_value(impl->longOrNullAttribute());
 
   if (!cpp_value.has_value()) {
     V8SetReturnValueNull(info);
@@ -1420,7 +1419,7 @@ static void LongOrNullAttributeAttributeSetter(
   bool is_null = IsUndefinedOrNull(v8_value);
 
   // Prepare the value to be set.
-  base::Optional<int32_t> cpp_value{ is_null ? base::nullopt : base::Optional<int32_t>(NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state)) };
+  absl::optional<int32_t> cpp_value{ is_null ? absl::nullopt : absl::optional<int32_t>(NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state)) };
   if (exception_state.HadException())
     return;
 
@@ -3163,8 +3162,6 @@ static void ReflectTestInterfaceAttributeAttributeSetter(
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
-
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectTestInterfaceAttribute");
 
   // Prepare the value to be set.
@@ -3196,8 +3193,6 @@ static void ReflectReflectedNameAttributeTestAttributeAttributeSetter(
   ALLOW_UNUSED_LOCAL(holder);
 
   TestObject* impl = V8TestObject::ToImpl(holder);
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectReflectedNameAttributeTestAttribute");
 
@@ -3231,8 +3226,6 @@ static void ReflectBooleanAttributeAttributeSetter(
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
-
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectBooleanAttribute");
 
   // Prepare the value to be set.
@@ -3260,8 +3253,6 @@ static void ReflectLongAttributeAttributeSetter(
   ALLOW_UNUSED_LOCAL(holder);
 
   TestObject* impl = V8TestObject::ToImpl(holder);
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectLongAttribute");
 
@@ -3291,8 +3282,6 @@ static void ReflectUnsignedShortAttributeAttributeSetter(
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
-
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectUnsignedShortAttribute");
 
   // Prepare the value to be set.
@@ -3320,8 +3309,6 @@ static void ReflectUnsignedLongAttributeAttributeSetter(
   ALLOW_UNUSED_LOCAL(holder);
 
   TestObject* impl = V8TestObject::ToImpl(holder);
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectUnsignedLongAttribute");
 
@@ -3351,8 +3338,6 @@ static void IdAttributeSetter(
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
-
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
@@ -3378,8 +3363,6 @@ static void NameAttributeSetter(
   ALLOW_UNUSED_LOCAL(holder);
 
   TestObject* impl = V8TestObject::ToImpl(holder);
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
@@ -3407,8 +3390,6 @@ static void ClassAttributeSetter(
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
-
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
@@ -3434,8 +3415,6 @@ static void ReflectedIdAttributeSetter(
   ALLOW_UNUSED_LOCAL(holder);
 
   TestObject* impl = V8TestObject::ToImpl(holder);
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
@@ -3463,8 +3442,6 @@ static void ReflectedNameAttributeSetter(
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
-
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
@@ -3490,8 +3467,6 @@ static void ReflectedClassAttributeSetter(
   ALLOW_UNUSED_LOCAL(holder);
 
   TestObject* impl = V8TestObject::ToImpl(holder);
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
@@ -3529,8 +3504,6 @@ static void LimitedToOnlyOneAttributeAttributeSetter(
   ALLOW_UNUSED_LOCAL(holder);
 
   TestObject* impl = V8TestObject::ToImpl(holder);
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
@@ -3573,8 +3546,6 @@ static void LimitedToOnlyAttributeAttributeSetter(
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
-
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
@@ -3614,8 +3585,6 @@ static void LimitedToOnlyOtherAttributeAttributeSetter(
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
-
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
@@ -3654,8 +3623,6 @@ static void LimitedWithMissingDefaultAttributeAttributeSetter(
   ALLOW_UNUSED_LOCAL(holder);
 
   TestObject* impl = V8TestObject::ToImpl(holder);
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
@@ -3697,8 +3664,6 @@ static void LimitedWithInvalidMissingDefaultAttributeAttributeSetter(
   ALLOW_UNUSED_LOCAL(holder);
 
   TestObject* impl = V8TestObject::ToImpl(holder);
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
@@ -3955,8 +3920,6 @@ static void UrlStringAttributeAttributeSetter(
 
   TestObject* impl = V8TestObject::ToImpl(holder);
 
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
-
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
@@ -3982,8 +3945,6 @@ static void UrlStringAttributeAttributeSetter(
   ALLOW_UNUSED_LOCAL(holder);
 
   TestObject* impl = V8TestObject::ToImpl(holder);
-
-  V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
   V8StringResource<> cpp_value{ v8_value };
@@ -5264,7 +5225,7 @@ static void VoidMethodNullableSequenceLongArgMethod(const v8::FunctionCallbackIn
     return;
   }
 
-  base::Optional<Vector<int32_t>> long_sequence_arg;
+  absl::optional<Vector<int32_t>> long_sequence_arg;
   if (!info[0]->IsNullOrUndefined()) {
     long_sequence_arg = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(info.GetIsolate(), info[0], exception_state);
     if (exception_state.HadException())
@@ -5319,7 +5280,7 @@ static void VoidMethodTestInterfaceEmptyFrozenArrayMethodMethod(const v8::Functi
 static void NullableLongMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  base::Optional<int32_t> result = impl->nullableLongMethod();
+  absl::optional<int32_t> result = impl->nullableLongMethod();
   if (!result)
     V8SetReturnValueNull(info);
   else
@@ -5341,7 +5302,7 @@ static void NullableTestInterfaceMethodMethod(const v8::FunctionCallbackInfo<v8:
 static void NullableLongSequenceMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  base::Optional<Vector<int32_t>> result = impl->nullableLongSequenceMethod();
+  absl::optional<Vector<int32_t>> result = impl->nullableLongSequenceMethod();
   if (!result)
     V8SetReturnValueNull(info);
   else
@@ -13600,6 +13561,22 @@ void V8TestObject::InstallOriginTrialFeature(
       V8TestObject::GetWrapperTypeInfo()->DomTemplate(isolate, world);
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interface_template);
   ALLOW_UNUSED_LOCAL(signature);
+  static constexpr V8DOMConfiguration::AttributeConfiguration
+  kAttributeConfigurations[] = {
+      { "originTrialEnabledLongAttribute", V8TestObject::OriginTrialEnabledLongAttributeAttributeGetterCallback, V8TestObject::OriginTrialEnabledLongAttributeAttributeSetterCallback, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "unscopableOriginTrialEnabledLongAttribute", V8TestObject::UnscopableOriginTrialEnabledLongAttributeAttributeGetterCallback, V8TestObject::UnscopableOriginTrialEnabledLongAttributeAttributeSetterCallback, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+  };
+  V8DOMConfiguration::InstallAttributes(
+      isolate, world, instance, prototype,
+      kAttributeConfigurations, base::size(kAttributeConfigurations));
+  static constexpr V8DOMConfiguration::AttributeConfiguration
+  kAttributeConfigurations[] = {
+      { "originTrialEnabledLongAttribute", V8TestObject::OriginTrialEnabledLongAttributeAttributeGetterCallback, V8TestObject::OriginTrialEnabledLongAttributeAttributeSetterCallback, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "unscopableOriginTrialEnabledLongAttribute", V8TestObject::UnscopableOriginTrialEnabledLongAttributeAttributeGetterCallback, V8TestObject::UnscopableOriginTrialEnabledLongAttributeAttributeSetterCallback, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+  };
+  V8DOMConfiguration::InstallAttributes(
+      isolate, world, instance, prototype,
+      kAttributeConfigurations, base::size(kAttributeConfigurations));
   static constexpr V8DOMConfiguration::AccessorConfiguration
   kAccessorConfigurations[] = {
       { "originTrialEnabledLongAttribute", V8TestObject::OriginTrialEnabledLongAttributeAttributeGetterCallback, V8TestObject::OriginTrialEnabledLongAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },

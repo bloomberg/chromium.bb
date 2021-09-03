@@ -5,11 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_PLANE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_PLANE_H_
 
-#include <memory>
-
-#include "base/optional.h"
 #include "device/vr/public/mojom/pose.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -17,7 +15,6 @@
 
 namespace blink {
 
-class ExceptionState;
 class XRSession;
 class XRSpace;
 
@@ -36,14 +33,13 @@ class XRPlane : public ScriptWrappable {
 
   XRSpace* planeSpace() const;
 
-  base::Optional<TransformationMatrix> MojoFromObject() const;
+  absl::optional<TransformationMatrix> MojoFromObject() const;
+
+  device::mojom::blink::XRNativeOriginInformationPtr NativeOrigin() const;
 
   String orientation() const;
   HeapVector<Member<DOMPointReadOnly>> polygon() const;
   double lastChangedTime() const;
-
-  ScriptPromise createAnchor(ScriptState* script_state,
-                             ExceptionState& exception_state);
 
   // Updates plane data from passed in |plane_data|. The resulting instance
   // should be equivalent to the instance that would be create by calling
@@ -51,23 +47,30 @@ class XRPlane : public ScriptWrappable {
   void Update(const device::mojom::blink::XRPlaneData& plane_data,
               double timestamp);
 
+  bool IsStationary() const {
+    // Plane objects are not considered stationary since their pose may vary
+    // dramatically from frame to frame (it depends on the plane boundary,
+    // drastic changes in plane boundary will cause the pose to change a lot).
+    return false;
+  }
+
   void Trace(Visitor* visitor) const override;
 
  private:
   XRPlane(uint64_t id,
           XRSession* session,
-          const base::Optional<Orientation>& orientation,
+          const absl::optional<Orientation>& orientation,
           const HeapVector<Member<DOMPointReadOnly>>& polygon,
-          const base::Optional<device::Pose>& mojo_from_plane,
+          const absl::optional<device::Pose>& mojo_from_plane,
           double timestamp);
 
   const uint64_t id_;
   HeapVector<Member<DOMPointReadOnly>> polygon_;
-  base::Optional<Orientation> orientation_;
+  absl::optional<Orientation> orientation_;
 
   // Plane center's pose in device (mojo) space.  Nullptr if the pose of the
   // anchor is unknown in the current frame.
-  base::Optional<device::Pose> mojo_from_plane_;
+  absl::optional<device::Pose> mojo_from_plane_;
 
   Member<XRSession> session_;
 

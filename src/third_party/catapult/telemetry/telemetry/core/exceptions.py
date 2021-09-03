@@ -1,6 +1,7 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+from __future__ import absolute_import
 import logging
 import sys
 
@@ -29,13 +30,19 @@ class Error(Exception):
 
     self._debugging_messages.append(annotated_message)
 
-  def __str__(self):
+  def _get_debugging_messages(self, base_output):
     divider = '\n' + '*' * 80 + '\n'
-    output = super(Error, self).__str__()
+    output = base_output
     for message in self._debugging_messages:
       output += divider
       output += message
     return output
+
+  def __str__(self):
+    return self._get_debugging_messages(super(Error, self).__str__())
+
+  def __repr__(self):
+    return self._get_debugging_messages(super(Error, self).__repr__())
 
 
 class PlatformError(Error):

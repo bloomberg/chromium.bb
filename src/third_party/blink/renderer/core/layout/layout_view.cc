@@ -42,7 +42,8 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
-#include "third_party/blink/renderer/core/layout/layout_geometry_map.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/view_fragmentation_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -203,8 +204,11 @@ bool LayoutView::HitTestNoLifecycleUpdate(const HitTestLocation& location,
   }
 
   TRACE_EVENT_END1("blink,devtools.timeline", "HitTest", "endData",
-                   inspector_hit_test_event::EndData(result.GetHitTestRequest(),
-                                                     location, result));
+                   [&](perfetto::TracedValue context) {
+                     inspector_hit_test_event::EndData(
+                         std::move(context), result.GetHitTestRequest(),
+                         location, result);
+                   });
   return hit_layer;
 }
 
@@ -414,37 +418,6 @@ void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   }
 }
 
-const LayoutObject* LayoutView::PushMappingToContainer(
-    const LayoutBoxModelObject* ancestor_to_stop_at,
-    LayoutGeometryMap& geometry_map) const {
-  NOT_DESTROYED();
-  PhysicalOffset offset;
-  LayoutObject* container = nullptr;
-
-  if (geometry_map.GetMapCoordinatesFlags() & kTraverseDocumentBoundaries) {
-    if (auto* parent_doc_layout_object = GetFrame()->OwnerLayoutObject()) {
-      offset += parent_doc_layout_object->PhysicalContentBoxOffset();
-      container = parent_doc_layout_object;
-    }
-  }
-
-  // If a container was specified, and was not 0 or the LayoutView, then we
-  // should have found it by now unless we're traversing to a parent document.
-  DCHECK(!ancestor_to_stop_at || ancestor_to_stop_at == this || container);
-
-  if ((!ancestor_to_stop_at || container) &&
-      ShouldUseTransformFromContainer(container)) {
-    TransformationMatrix t;
-    GetTransformFromContainer(container, PhysicalOffset(), t);
-    geometry_map.Push(this, t, kContainsFixedPosition,
-                      OffsetForFixedPosition());
-  } else {
-    geometry_map.Push(this, offset, 0, OffsetForFixedPosition());
-  }
-
-  return container;
-}
-
 void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
                                     TransformState& transform_state,
                                     MapCoordinatesFlags mode) const {
@@ -643,7 +616,7 @@ PhysicalRect LayoutView::OverflowClipRect(
                                        overlay_scrollbar_clip_behavior);
   }
 
-  rect.offset = location;
+  rect.offset += location;
   if (IsScrollContainer())
     ExcludeScrollbars(rect, overlay_scrollbar_clip_behavior);
 
@@ -695,8 +668,8 @@ void LayoutView::CalculateScrollbarModes(
       RETURN_SCROLLBAR_MODE(mojom::blink::ScrollbarMode::kAlwaysOff);
   }
 
-  if (document.IsCapturingLayout()) {
-    // When capturing layout (e.g. printing), frame-level scrollbars are never
+  if (document.IsPrintingOrPaintingPreview()) {
+    // When printing or painting preview, frame-level scrollbars are never
     // displayed.
     // TODO(szager): Figure out the right behavior when printing an overflowing
     // iframe.  https://bugs.chromium.org/p/chromium/issues/detail?id=777528
@@ -854,11 +827,6 @@ void LayoutView::UpdateHitTestResult(HitTestResult& result,
   }
 }
 
-bool LayoutView::UsesCompositing() const {
-  NOT_DESTROYED();
-  return compositor_ && compositor_->StaleInCompositingMode();
-}
-
 PaintLayerCompositor* LayoutView::Compositor() {
   NOT_DESTROYED();
   return compositor_.get();
@@ -944,28 +912,48 @@ CompositingReasons LayoutView::AdditionalCompositingReasons() const {
   NOT_DESTROYED();
   // TODO(lfg): Audit for portals
   const LocalFrame& frame = frame_view_->GetFrame();
-  if (frame.OwnerLayoutObject() &&
-      base::FeatureList::IsEnabled(
-          blink::features::kCompositeCrossOriginIframes) &&
-      frame.IsCrossOriginToParentFrame()) {
+  if (frame.OwnerLayoutObject() && frame.IsCrossOriginToParentFrame())
     return CompositingReason::kIFrame;
-  }
   return CompositingReason::kNone;
 }
 
-void LayoutView::UpdateCounters() {
+void LayoutView::UpdateMarkersAndCountersAfterStyleChange(
+    LayoutObject* container) {
   NOT_DESTROYED();
-  if (!needs_counter_update_)
+  if (!needs_marker_counter_update_)
     return;
 
-  needs_counter_update_ = false;
-  if (!HasLayoutCounters())
+  DCHECK(!container ||
+         (container->View() == this && container->IsDescendantOf(this) &&
+          GetDocument().GetStyleEngine().InContainerQueryStyleRecalc()))
+      << "The container parameter is currently only for scoping updates for "
+         "container query style recalcs";
+
+  needs_marker_counter_update_ = false;
+  if (!HasLayoutCounters() && !HasLayoutListItems())
     return;
 
-  for (LayoutObject* layout_object = this; layout_object;
-       layout_object = layout_object->NextInPreOrder()) {
-    if (auto* counter = DynamicTo<LayoutCounter>(layout_object))
+  // For container queries style recalc, we know the counter styles didn't
+  // change outside the container. Hence, we can start the update traversal from
+  // the container.
+  LayoutObject* start = container ? container : this;
+  // Additionally, if the container contains style, we know counters inside the
+  // container cannot affect counters outside the container, which means we can
+  // limit the traversal to the container subtree.
+  LayoutObject* stay_within =
+      container && container->ShouldApplyStyleContainment() ? container
+                                                            : nullptr;
+
+  for (LayoutObject* layout_object = start; layout_object;
+       layout_object = layout_object->NextInPreOrder(stay_within)) {
+    if (auto* list_item = DynamicTo<LayoutListItem>(layout_object)) {
+      list_item->UpdateCounterStyle();
+    } else if (auto* ng_list_item =
+                   DynamicTo<LayoutNGListItem>(layout_object)) {
+      ng_list_item->UpdateCounterStyle();
+    } else if (auto* counter = DynamicTo<LayoutCounter>(layout_object)) {
       counter->UpdateCounter();
+    }
   }
 }
 

@@ -15,7 +15,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/mock_render_process_host.h"
+#include "extensions/browser/api/declarative/rules_registry_service.h"
+#include "extensions/browser/api/declarative_content/content_rules_registry.h"
+#include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/mojom/renderer.mojom.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace extensions {
@@ -24,11 +29,106 @@ using testing::HasSubstr;
 using testing::UnorderedElementsAre;
 using testing::UnorderedElementsAreArray;
 
+namespace {
+
+// Class that implements the binding of a new Renderer mojom interface and
+// can receive callbacks on it for testing validation.
+class InterceptingRendererStartupHelper : public RendererStartupHelper,
+                                          public mojom::Renderer {
+ public:
+  explicit InterceptingRendererStartupHelper(
+      content::BrowserContext* browser_context)
+      : RendererStartupHelper(browser_context) {}
+
+  void Reset() { is_watch_pages_called_ = false; }
+  void SetWatchPagesCalledClosure(base::OnceClosure on_watch_pages_done) {
+    on_watch_pages_done_ = std::move(on_watch_pages_done);
+  }
+
+  bool IsWatchPagesCalled() { return is_watch_pages_called_; }
+  const std::vector<std::string>& CssSelector() { return css_selectors_; }
+
+ protected:
+  mojo::PendingAssociatedRemote<mojom::Renderer> BindNewRendererRemote(
+      content::RenderProcessHost* process) override {
+    mojo::AssociatedRemote<mojom::Renderer> remote;
+    receivers_.Add(this, remote.BindNewEndpointAndPassDedicatedReceiver());
+    return remote.Unbind();
+  }
+
+ private:
+  // mojom::Renderer implementation:
+  void ActivateExtension(const std::string& extension_id) override {}
+  void SetActivityLoggingEnabled(bool enabled) override {}
+  void LoadExtensions(
+      std::vector<mojom::ExtensionLoadedParamsPtr> loaded_extensions) override {
+  }
+  void UnloadExtension(const std::string& extension_id) override {}
+  void SuspendExtension(
+      const std::string& extension_id,
+      mojom::Renderer::SuspendExtensionCallback callback) override {
+    std::move(callback).Run();
+  }
+  void CancelSuspendExtension(const std::string& extension_id) override {}
+  void SetSessionInfo(version_info::Channel channel,
+                      mojom::FeatureSessionType session,
+                      bool is_lock_screen_context) override {}
+  void SetSystemFont(const std::string& font_family,
+                     const std::string& font_size) override {}
+  void SetWebViewPartitionID(const std::string& partition_id) override {}
+  void SetScriptingAllowlist(
+      const std::vector<std::string>& extension_ids) override {}
+  void ShouldSuspend(ShouldSuspendCallback callback) override {
+    std::move(callback).Run();
+  }
+  void TransferBlobs(TransferBlobsCallback callback) override {
+    std::move(callback).Run();
+  }
+  void UpdateDefaultPolicyHostRestrictions(
+      URLPatternSet default_policy_blocked_hosts,
+      URLPatternSet default_policy_allowed_hosts) override {}
+  void UpdateTabSpecificPermissions(const std::string& extension_id,
+                                    URLPatternSet new_hosts,
+                                    int tab_id,
+                                    bool update_origin_allowlist) override {}
+  void UpdateUserScripts(base::ReadOnlySharedMemoryRegion shared_memory,
+                         mojom::HostIDPtr host_id) override {}
+  void ClearTabSpecificPermissions(
+      const std::vector<std::string>& extension_ids,
+      int tab_id,
+      bool update_origin_allowlist) override {}
+  void WatchPages(const std::vector<std::string>& css_selectors) override {
+    is_watch_pages_called_ = true;
+    css_selectors_ = css_selectors;
+    std::move(on_watch_pages_done_).Run();
+  }
+
+  bool is_watch_pages_called_ = false;
+  std::vector<std::string> css_selectors_;
+  base::OnceClosure on_watch_pages_done_;
+  mojo::AssociatedReceiverSet<mojom::Renderer> receivers_;
+};
+
+}  // namespace
+
 class DeclarativeContentCssConditionTrackerTest
     : public DeclarativeContentConditionTrackerTest {
  protected:
-  DeclarativeContentCssConditionTrackerTest()
-      : tracker_(&delegate_) {
+  DeclarativeContentCssConditionTrackerTest() : tracker_(&delegate_) {}
+
+  static std::unique_ptr<KeyedService> BuildFakeRendererStartupHelper(
+      content::BrowserContext* context) {
+    return std::make_unique<InterceptingRendererStartupHelper>(context);
+  }
+
+  TestingProfile::TestingFactories GetTestingFactories() const override {
+    return {{RendererStartupHelperFactory::GetInstance(),
+             base::BindRepeating(&BuildFakeRendererStartupHelper)}};
+  }
+
+  void SimulateRenderProcessCreated(content::RenderProcessHost* rph) {
+    RendererStartupHelperFactory::GetForBrowserContext(profile())
+        ->OnRenderProcessHostCreated(rph);
   }
 
   class Delegate : public ContentPredicateEvaluator::Delegate {
@@ -61,41 +161,44 @@ class DeclarativeContentCssConditionTrackerTest
     return predicate;
   }
 
-  // Expects an ExtensionMsg_WatchPages message in |sink| with |selectors| as
-  // the param, after invoking |func|.
+  // Expects the WatchPages Mojo method is called with |selectors| as the param,
+  // after invoking |func|.
   template <class Func>
   void ExpectWatchPagesMessage(content::WebContents* tab,
                                const std::set<std::string>& selectors,
                                const Func& func) {
-    IPC::TestSink& sink = GetMockRenderProcessHost(tab)->sink();
-    sink.ClearMessages();
+    auto* helper = static_cast<InterceptingRendererStartupHelper*>(
+        RendererStartupHelperFactory::GetForBrowserContext(profile()));
+
+    helper->Reset();
+    base::RunLoop run_loop;
+    helper->SetWatchPagesCalledClosure(run_loop.QuitClosure());
     func();
-    EXPECT_EQ(1u, sink.message_count());
-    const IPC::Message* message =
-        sink.GetUniqueMessageMatching(ExtensionMsg_WatchPages::ID);
-    ASSERT_TRUE(message);
-    ExtensionMsg_WatchPages::Param params;
-    ExtensionMsg_WatchPages::Read(message, &params);
-    EXPECT_THAT(std::get<0>(params), UnorderedElementsAreArray(selectors));
+    run_loop.Run();
+
+    EXPECT_TRUE(helper->IsWatchPagesCalled());
+    EXPECT_THAT(helper->CssSelector(), UnorderedElementsAreArray(selectors));
   }
 
-  // Expects no ExtensionMsg_WatchPages message in |sink| after invoking |func|.
+  // Expects no the WatchPages Mojo method is called after invoking |func|.
   template <class Func>
   void ExpectNoWatchPagesMessage(content::WebContents* tab,
                                  const Func& func) {
-    IPC::TestSink& sink = GetMockRenderProcessHost(tab)->sink();
-    sink.ClearMessages();
+    auto* helper = static_cast<InterceptingRendererStartupHelper*>(
+        RendererStartupHelperFactory::GetForBrowserContext(profile()));
+    helper->Reset();
+    base::RunLoop run_loop;
     func();
-    EXPECT_EQ(0u, sink.message_count());
+    run_loop.RunUntilIdle();
+
+    EXPECT_FALSE(helper->IsWatchPagesCalled());
   }
 
-  // Sends an OnWatchedPageChange message to the tab.
-  void SendOnWatchedPageChangeMessage(
-      content::WebContents* tab,
-      const std::vector<std::string>& selectors) {
-    ExtensionHostMsg_OnWatchedPageChange page_change(
-        tab->GetMainFrame()->GetRenderViewHost()->GetRoutingID(), selectors);
-    EXPECT_TRUE(GetMockRenderProcessHost(tab)->OnMessageReceived(page_change));
+  // Calls OnWatchedPageChanged() with the tab to simulate the watched page
+  // is changed.
+  void SimulateWatchedPageChanged(content::WebContents* tab,
+                                  const std::vector<std::string>& selectors) {
+    tracker_.OnWatchedPageChanged(tab, selectors);
   }
 
   Delegate delegate_;
@@ -140,6 +243,7 @@ TEST(DeclarativeContentCssPredicateTest, CssPredicate) {
 // sent.
 TEST_F(DeclarativeContentCssConditionTrackerTest, AddAndRemovePredicates) {
   const std::unique_ptr<content::WebContents> tab = MakeTab();
+  SimulateRenderProcessCreated(GetMockRenderProcessHost(tab.get()));
   tracker_.TrackForWebContents(tab.get());
   EXPECT_EQ(0, delegate_.evaluation_requests());
 
@@ -191,6 +295,7 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, AddAndRemovePredicates) {
 TEST_F(DeclarativeContentCssConditionTrackerTest,
        AddAndRemovePredicatesWithSameSelectors) {
   const std::unique_ptr<content::WebContents> tab = MakeTab();
+  SimulateRenderProcessCreated(GetMockRenderProcessHost(tab.get()));
   tracker_.TrackForWebContents(tab.get());
   EXPECT_EQ(0, delegate_.evaluation_requests());
 
@@ -263,7 +368,7 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, WatchedPageChange) {
   // Check that receiving an OnWatchedPageChange message from the tab results in
   // a request for condition evaluation.
   const std::vector<std::string> matched_selectors(1, "div");
-  SendOnWatchedPageChangeMessage(tab.get(), matched_selectors);
+  SimulateWatchedPageChanged(tab.get(), matched_selectors);
   EXPECT_EQ(++expected_evaluation_requests, delegate_.evaluation_requests());
 
   // Check that only the div predicate matches.
@@ -295,7 +400,7 @@ TEST_F(DeclarativeContentCssConditionTrackerTest, Navigation) {
 
   // Set up the tab to have a matching selector.
   const std::vector<std::string> matched_selectors(1, "div");
-  SendOnWatchedPageChangeMessage(tab.get(), matched_selectors);
+  SimulateWatchedPageChanged(tab.get(), matched_selectors);
   EXPECT_EQ(++expected_evaluation_requests, delegate_.evaluation_requests());
 
   // Check that an in-page navigation has no effect on the matching selectors.

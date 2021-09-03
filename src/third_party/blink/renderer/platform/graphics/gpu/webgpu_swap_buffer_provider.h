@@ -35,7 +35,7 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
   WebGPUSwapBufferProvider(
       Client* client,
       scoped_refptr<DawnControlClientHolder> dawn_control_client,
-      uint64_t device_client_id,
+      WGPUDevice device,
       WGPUTextureUsage usage,
       WGPUTextureFormat format);
   ~WebGPUSwapBufferProvider() override;
@@ -45,12 +45,14 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
   void Neuter();
   WGPUTexture GetNewTexture(const IntSize& size);
 
+  base::WeakPtr<WebGraphicsContext3DProviderWrapper> GetContextProviderWeakPtr()
+      const;
+
   // cc::TextureLayerClient implementation.
   bool PrepareTransferableResource(
       cc::SharedBitmapIdRegistrar* bitmap_registrar,
       viz::TransferableResource* out_resource,
-      std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback)
-      override;
+      viz::ReleaseCallback* out_release_callback) override;
 
  private:
   // Holds resources and synchronization for one of the swapchain images.
@@ -83,7 +85,7 @@ class PLATFORM_EXPORT WebGPUSwapBufferProvider
 
   scoped_refptr<DawnControlClientHolder> dawn_control_client_;
   Client* client_;
-  uint64_t device_client_id_;
+  WGPUDevice device_;
   scoped_refptr<cc::TextureLayer> layer_;
   bool neutered_ = false;
 

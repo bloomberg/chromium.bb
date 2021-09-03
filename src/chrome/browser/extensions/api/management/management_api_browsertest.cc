@@ -10,6 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -30,11 +31,10 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension_builder.h"
-#include "extensions/common/scoped_worker_based_extensions_channel.h"
 #include "extensions/test/extension_test_message_listener.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #endif
 
 namespace keys = extension_management_api_constants;
@@ -63,24 +63,11 @@ using ContextType = ExtensionBrowserTest::ContextType;
 class ExtensionManagementApiTestWithBackgroundType
     : public ExtensionManagementApiBrowserTest,
       public testing::WithParamInterface<ContextType> {
- public:
-  ExtensionManagementApiTestWithBackgroundType() {
-    // Service Workers are currently only available on certain channels, so set
-    // the channel for those tests.
-    if (GetParam() == ContextType::kServiceWorker)
-      current_channel_ = std::make_unique<ScopedWorkerBasedExtensionsChannel>();
+ protected:
+  const Extension* LoadExtensionWithParamOptions(const base::FilePath& path) {
+    return LoadExtension(path, {.load_as_service_worker =
+                                    GetParam() == ContextType::kServiceWorker});
   }
-
-  const Extension* LoadExtensionWithParamFlags(const base::FilePath& path) {
-    int flags = kFlagEnableFileAccess;
-    if (GetParam() == ContextType::kServiceWorker)
-      flags |= ExtensionBrowserTest::kFlagRunAsServiceWorkerBasedExtension;
-    return LoadExtensionWithFlags(path, flags);
-  }
-
- private:
-  std::unique_ptr<extensions::ScopedWorkerBasedExtensionsChannel>
-      current_channel_;
 };
 
 INSTANTIATE_TEST_SUITE_P(PersistentBackground,
@@ -96,7 +83,7 @@ INSTANTIATE_TEST_SUITE_P(ServiceWorker,
 IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
                        InstallEvent) {
   ExtensionTestMessageListener listener1("ready", false);
-  ASSERT_TRUE(LoadExtensionWithParamFlags(
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
       test_data_dir_.AppendASCII("management/install_event")));
   ASSERT_TRUE(listener1.WaitUntilSatisfied());
 
@@ -114,17 +101,17 @@ IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
       test_data_dir_.AppendASCII("management/simple_extension")));
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("management/packaged_app")));
-  ASSERT_TRUE(LoadExtensionWithParamFlags(
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
       test_data_dir_.AppendASCII("management/launch_app")));
   ASSERT_TRUE(listener1.WaitUntilSatisfied());
   ASSERT_TRUE(listener2.WaitUntilSatisfied());
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 
 IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
                        NoDemoModeAppLaunchSourceReported) {
-  EXPECT_FALSE(chromeos::DemoSession::IsDeviceInDemoMode());
+  EXPECT_FALSE(ash::DemoSession::IsDeviceInDemoMode());
 
   base::HistogramTester histogram_tester;
   // Should see 0 apps launched from the API in the histogram at first.
@@ -133,7 +120,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
   ExtensionTestMessageListener app_launched_listener("app_launched", false);
   ASSERT_TRUE(
       LoadExtension(test_data_dir_.AppendASCII("management/packaged_app")));
-  ASSERT_TRUE(LoadExtensionWithParamFlags(
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
       test_data_dir_.AppendASCII("management/launch_app")));
   ASSERT_TRUE(app_launched_listener.WaitUntilSatisfied());
 
@@ -143,9 +130,9 @@ IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
 
 IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
                        DemoModeAppLaunchSourceReported) {
-  chromeos::DemoSession::SetDemoConfigForTesting(
-      chromeos::DemoSession::DemoModeConfig::kOnline);
-  EXPECT_TRUE(chromeos::DemoSession::IsDeviceInDemoMode());
+  ash::DemoSession::SetDemoConfigForTesting(
+      ash::DemoSession::DemoModeConfig::kOnline);
+  EXPECT_TRUE(ash::DemoSession::IsDeviceInDemoMode());
 
   base::HistogramTester histogram_tester;
   // Should see 0 apps launched from the Launcher in the histogram at first.
@@ -154,14 +141,14 @@ IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
   ExtensionTestMessageListener app_launched_listener("app_launched", false);
   ASSERT_TRUE(
       LoadExtension(test_data_dir_.AppendASCII("management/packaged_app")));
-  ASSERT_TRUE(LoadExtensionWithParamFlags(
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
       test_data_dir_.AppendASCII("management/launch_app")));
   ASSERT_TRUE(app_launched_listener.WaitUntilSatisfied());
 
   // Should see 1 app launched from the highlights app  in the histogram.
   histogram_tester.ExpectUniqueSample(
       "DemoMode.AppLaunchSource",
-      chromeos::DemoSession::AppLaunchSource::kExtensionApi, 1);
+      ash::DemoSession::AppLaunchSource::kExtensionApi, 1);
 }
 
 #endif
@@ -171,43 +158,46 @@ IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
   ExtensionTestMessageListener listener1("success", false);
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("management/packaged_app")));
-  ASSERT_TRUE(LoadExtensionWithParamFlags(
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
       test_data_dir_.AppendASCII("management/launch_app_from_background")));
   ASSERT_TRUE(listener1.WaitUntilSatisfied());
 }
 
-// TODO(https://crbug.com/1132581): This uninstall test is flaky for Service
-// Worker-based extensions. This should be an
-// ExtensionManagementApiTestWithBackgroundType test once that issue is
-// resolved.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest, SelfUninstall) {
-  ExtensionTestMessageListener listener1("success", false);
-  ASSERT_TRUE(LoadExtension(
+IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
+                       SelfUninstall) {
+  // Wait for the helper script to finish before loading the primary
+  // extension. This ensures that the onUninstall event listener is
+  // added before we proceed to the uninstall step.
+  ExtensionTestMessageListener listener1("ready", false);
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
       test_data_dir_.AppendASCII("management/self_uninstall_helper")));
-  ASSERT_TRUE(
-      LoadExtension(test_data_dir_.AppendASCII("management/self_uninstall")));
   ASSERT_TRUE(listener1.WaitUntilSatisfied());
+  ExtensionTestMessageListener listener2("success", false);
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
+      test_data_dir_.AppendASCII("management/self_uninstall")));
+  ASSERT_TRUE(listener2.WaitUntilSatisfied());
 }
 
-// TODO(https://crbug.com/1132581): This uninstall test is flaky for Service
-// Worker-based extensions. This should be an
-// ExtensionManagementApiTestWithBackgroundType test once that issue is
-// resolved.
-IN_PROC_BROWSER_TEST_F(ExtensionManagementApiBrowserTest,
+IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
                        SelfUninstallNoPermissions) {
-  ExtensionTestMessageListener listener1("success", false);
-  ASSERT_TRUE(LoadExtension(
+  // Wait for the helper script to finish before loading the primary
+  // extension. This ensures that the onUninstall event listener is
+  // added before we proceed to the uninstall step.
+  ExtensionTestMessageListener listener1("ready", false);
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
       test_data_dir_.AppendASCII("management/self_uninstall_helper")));
-  ASSERT_TRUE(LoadExtension(
-      test_data_dir_.AppendASCII("management/self_uninstall_noperm")));
   ASSERT_TRUE(listener1.WaitUntilSatisfied());
+  ExtensionTestMessageListener listener2("success", false);
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
+      test_data_dir_.AppendASCII("management/self_uninstall_noperm")));
+  ASSERT_TRUE(listener2.WaitUntilSatisfied());
 }
 
 IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType, Get) {
   ExtensionTestMessageListener listener("success", false);
   ASSERT_TRUE(
       LoadExtension(test_data_dir_.AppendASCII("management/simple_extension")));
-  ASSERT_TRUE(LoadExtensionWithParamFlags(
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
       test_data_dir_.AppendASCII("management/get")));
   ASSERT_TRUE(listener.WaitUntilSatisfied());
 }
@@ -215,7 +205,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType, Get) {
 IN_PROC_BROWSER_TEST_P(ExtensionManagementApiTestWithBackgroundType,
                        GetSelfNoPermissions) {
   ExtensionTestMessageListener listener1("success", false);
-  ASSERT_TRUE(LoadExtensionWithParamFlags(
+  ASSERT_TRUE(LoadExtensionWithParamOptions(
       test_data_dir_.AppendASCII("management/get_self")));
   ASSERT_TRUE(listener1.WaitUntilSatisfied());
 }

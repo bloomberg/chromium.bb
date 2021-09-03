@@ -145,7 +145,7 @@ class ChromeBrowserExtraSetUp : public ChromeBrowserMainExtraParts {
   explicit ChromeBrowserExtraSetUp(
       ChromeBrowserCloudManagementControllerObserver* observer)
       : observer_(observer) {}
-  void PreMainMessageLoopStart() override {
+  void PreCreateMainMessageLoop() override {
     g_browser_process->browser_policy_connector()
         ->chrome_browser_cloud_management_controller()
         ->AddObserver(observer_);
@@ -251,7 +251,7 @@ class ChromeBrowserCloudManagementServiceIntegrationTest
             !enrollment_token.empty()
                 ? DMAuth::FromEnrollmentToken(enrollment_token)
                 : DMAuth::NoAuth(),
-            /*oauth_token=*/base::nullopt,
+            /*oauth_token=*/absl::nullopt,
             g_browser_process->system_network_context_manager()
                 ->GetSharedURLLoaderFactory(),
             base::BindOnce(
@@ -305,9 +305,9 @@ class ChromeBrowserCloudManagementServiceIntegrationTest
 
   void SetUpOnMainThread() override {
     std::string service_url((this->*(GetParam()))());
-    service_.reset(new DeviceManagementService(
+    service_ = std::make_unique<DeviceManagementService>(
         std::unique_ptr<DeviceManagementService::Configuration>(
-            new MockDeviceManagementServiceConfiguration(service_url))));
+            new MockDeviceManagementServiceConfiguration(service_url)));
     service_->ScheduleInitialization(0);
     base::RunLoop().RunUntilIdle();
   }
@@ -318,9 +318,9 @@ class ChromeBrowserCloudManagementServiceIntegrationTest
   }
 
   void StartTestServer() {
-    test_server_.reset(new LocalPolicyTestServer(
+    test_server_ = std::make_unique<LocalPolicyTestServer>(
         "chrome/test/data/policy/"
-        "policy_machine_level_user_cloud_policy_service_browsertest.json"));
+        "policy_machine_level_user_cloud_policy_service_browsertest.json");
     ASSERT_TRUE(test_server_->Start());
   }
 
@@ -795,7 +795,8 @@ class MachineLevelUserCloudPolicyRobotAuthTest
 };  // namespace policy
 
 // Flaky on linux & win: https://crbug.com/1105167
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_CHROMEOS) || \
+    defined(OS_MAC)
 #define MAYBE_Test DISABLED_Test
 #else
 #define MAYBE_Test Test
@@ -810,8 +811,7 @@ IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyRobotAuthTest, MAYBE_Test) {
     base::RunLoop run_loop;
     // Listen to store event which is fired after policy validation if token is
     // valid.
-    std::unique_ptr<PolicyFetchStoreObserver> store_observer;
-    store_observer = std::make_unique<PolicyFetchStoreObserver>(
+    auto store_observer = std::make_unique<PolicyFetchStoreObserver>(
         manager->store(), run_loop.QuitClosure());
 
     g_browser_process->browser_policy_connector()

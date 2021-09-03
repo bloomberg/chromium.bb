@@ -13,23 +13,22 @@
 
 class SkSVGPath final : public SkSVGShape {
 public:
-    ~SkSVGPath() override = default;
     static sk_sp<SkSVGPath> Make() { return sk_sp<SkSVGPath>(new SkSVGPath()); }
 
-    void setPath(const SkPath& path) { fPath = path; }
+    SVG_ATTR(Path, SkPath, SkPath())
 
 protected:
-    void onSetAttribute(SkSVGAttribute, const SkSVGValue&) override;
+    bool parseAndSetAttribute(const char*, const char*) override;
 
     void onDraw(SkCanvas*, const SkSVGLengthContext&, const SkPaint&,
                 SkPathFillType) const override;
 
     SkPath onAsPath(const SkSVGRenderContext&) const override;
 
+    SkRect onObjectBoundingBox(const SkSVGRenderContext&) const override;
+
 private:
     SkSVGPath();
-
-    mutable SkPath fPath; // mutated in onDraw(), to apply inherited fill types.
 
     using INHERITED = SkSVGShape;
 };

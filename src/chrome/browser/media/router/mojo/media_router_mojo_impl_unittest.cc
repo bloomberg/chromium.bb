@@ -281,7 +281,7 @@ TEST_F(MediaRouterMojoImplTest, CreateRouteFails) {
                           const url::Origin& origin, int tab_id,
                           base::TimeDelta timeout, bool off_the_record,
                           mojom::MediaRouteProvider::CreateRouteCallback& cb) {
-        std::move(cb).Run(base::nullopt, nullptr, std::string(kError),
+        std::move(cb).Run(absl::nullopt, nullptr, std::string(kError),
                           RouteRequestResult::TIMED_OUT);
       }));
 
@@ -368,7 +368,7 @@ TEST_F(MediaRouterMojoImplTest, IncognitoRoutesTerminatedOnProfileShutdown) {
       .WillOnce(
           Invoke([](const std::string& route_id,
                     mojom::MediaRouteProvider::TerminateRouteCallback& cb) {
-            std::move(cb).Run(base::nullopt, RouteRequestResult::OK);
+            std::move(cb).Run(absl::nullopt, RouteRequestResult::OK);
           }));
 
   base::RunLoop run_loop2;
@@ -414,7 +414,7 @@ TEST_F(MediaRouterMojoImplTest, JoinRouteTimedOutFails) {
                           const url::Origin& origin, int tab_id,
                           base::TimeDelta timeout, bool off_the_record,
                           mojom::MediaRouteProvider::JoinRouteCallback& cb) {
-        std::move(cb).Run(base::nullopt, nullptr, std::string(kError),
+        std::move(cb).Run(absl::nullopt, nullptr, std::string(kError),
                           RouteRequestResult::TIMED_OUT);
       }));
 
@@ -494,7 +494,7 @@ TEST_F(MediaRouterMojoImplTest, ConnectRouteByRouteIdFails) {
              const std::string& presentation_id, const url::Origin& origin,
              int tab_id, base::TimeDelta timeout, bool off_the_record,
              mojom::MediaRouteProvider::JoinRouteCallback& cb) {
-            std::move(cb).Run(base::nullopt, nullptr, std::string(kError),
+            std::move(cb).Run(absl::nullopt, nullptr, std::string(kError),
                               RouteRequestResult::TIMED_OUT);
           }));
 
@@ -1027,7 +1027,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
   blink::mojom::PresentationInfo connection(presentation_url, kPresentationId);
   base::MockCallback<content::PresentationConnectionStateChangedCallback>
       callback;
-  std::unique_ptr<PresentationConnectionStateSubscription> subscription =
+  base::CallbackListSubscription subscription =
       router()->AddPresentationConnectionStateChangedCallback(route_id,
                                                               callback.Get());
 
@@ -1065,12 +1065,12 @@ TEST_F(MediaRouterMojoImplTest,
   MediaRoute::Id route_id("route-id");
   base::MockCallback<content::PresentationConnectionStateChangedCallback>
       callback;
-  std::unique_ptr<PresentationConnectionStateSubscription> subscription =
+  base::CallbackListSubscription subscription =
       router()->AddPresentationConnectionStateChangedCallback(route_id,
                                                               callback.Get());
 
   // Callback has been removed, so we don't expect it to be called anymore.
-  subscription.reset();
+  subscription = {};
   EXPECT_TRUE(router()->presentation_connection_state_callbacks_.empty());
 
   EXPECT_CALL(callback, Run(_)).Times(0);

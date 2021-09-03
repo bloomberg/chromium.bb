@@ -8,7 +8,6 @@
 #include <lib/fdio/fdio.h>
 
 #include <algorithm>
-#include <map>
 #include <memory>
 #include <utility>
 
@@ -43,61 +42,11 @@
 
 namespace {
 
-using ContentDirectoriesMap =
-    std::map<std::string, fidl::InterfaceHandle<fuchsia::io::Directory>>;
-
 // Maximum number of bytes to read when "sniffing" its MIME type.
 constexpr size_t kMaxBytesToSniff = 1024 * 10;  // Read up to 10KB.
 
 // The MIME type to use if "sniffing" fails to compute a result.
 constexpr char kFallbackMimeType[] = "application/octet-stream";
-
-ContentDirectoriesMap ParseContentDirectoriesFromCommandLine() {
-  ContentDirectoriesMap directories;
-
-  // Parse the list of content directories from the command line.
-  std::string content_directories_unsplit =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kContentDirectories);
-  if (content_directories_unsplit.empty())
-    return {};
-
-  base::StringPairs named_handle_ids;
-  if (!base::SplitStringIntoKeyValuePairs(content_directories_unsplit, '=', ',',
-                                          &named_handle_ids)) {
-    LOG(WARNING) << "Couldn't parse --" << switches::kContentDirectories
-                 << " into KV pairs: " << content_directories_unsplit;
-    return {};
-  }
-
-  for (const auto& named_handle_id : named_handle_ids) {
-    uint32_t handle_id = 0;
-    if (!net::ParseUint32(named_handle_id.second, &handle_id)) {
-      DLOG(FATAL) << "Couldn't parse handle ID as uint32: "
-                  << named_handle_id.second;
-      continue;
-    }
-
-    auto directory_channel = zx::channel(zx_take_startup_handle(handle_id));
-    if (directory_channel == ZX_HANDLE_INVALID) {
-      DLOG(FATAL) << "Couldn't take startup handle: " << handle_id;
-      continue;
-    }
-
-    directories.emplace(named_handle_id.first,
-                        fidl::InterfaceHandle<fuchsia::io::Directory>(
-                            std::move(directory_channel)));
-  }
-  return directories;
-}
-
-// Gets the process-global list of content directory channels.
-ContentDirectoriesMap* GetContentDirectories() {
-  static base::NoDestructor<ContentDirectoriesMap> directories(
-      ParseContentDirectoriesFromCommandLine());
-
-  return directories.get();
-}
 
 // Returns a list of populated response HTTP headers.
 // |mime_type|: The MIME type of the resource.
@@ -105,7 +54,7 @@ ContentDirectoriesMap* GetContentDirectories() {
 //            will assume the charset to be "text/plain" by default.
 scoped_refptr<net::HttpResponseHeaders> CreateHeaders(
     base::StringPiece mime_type,
-    const base::Optional<std::string>& charset) {
+    const absl::optional<std::string>& charset) {
   constexpr char kXFrameOptions[] = "X-Frame-Options";
   constexpr char kXFrameOptionsValue[] = "DENY";
   constexpr char kCacheControl[] = "Cache-Control";
@@ -165,6 +114,10 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
  public:
   ContentDirectoryURLLoader() = default;
   ~ContentDirectoryURLLoader() final = default;
+
+  ContentDirectoryURLLoader(const ContentDirectoryURLLoader&) = delete;
+  ContentDirectoryURLLoader& operator=(const ContentDirectoryURLLoader&) =
+      delete;
 
   // Creates a read-only MemoryMappedFile view to |file|.
   bool MapFile(fidl::InterfaceHandle<fuchsia::io::Node> file,
@@ -232,11 +185,11 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
     auto response = network::mojom::URLResponseHead::New();
 
     // Read the charset and MIME type from the optional _metadata file.
-    base::Optional<std::string> charset;
-    base::Optional<std::string> mime_type;
+    absl::optional<std::string> charset;
+    absl::optional<std::string> mime_type;
     base::MemoryMappedFile metadata_mmap;
     if (MapFile(std::move(metadata_channel), &metadata_mmap)) {
-      base::Optional<base::Value> metadata_parsed = base::JSONReader::Read(
+      absl::optional<base::Value> metadata_parsed = base::JSONReader::Read(
           base::StringPiece(reinterpret_cast<char*>(metadata_mmap.data()),
                             metadata_mmap.length()));
 
@@ -284,7 +237,7 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
     // client.
     mojo::ScopedDataPipeProducerHandle producer_handle;
     mojo::ScopedDataPipeConsumerHandle consumer_handle;
-    MojoResult rv = mojo::CreateDataPipe(0, &producer_handle, &consumer_handle);
+    MojoResult rv = mojo::CreateDataPipe(0u, producer_handle, consumer_handle);
     if (rv != MOJO_RESULT_OK) {
       client_->OnComplete(
           network::URLLoaderCompletionStatus(net::ERR_INSUFFICIENT_RESOURCES));
@@ -312,7 +265,7 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
       const std::vector<std::string>& removed_headers,
       const net::HttpRequestHeaders& modified_request_headers,
       const net::HttpRequestHeaders& modified_cors_exempt_request_headers,
-      const base::Optional<GURL>& new_url) override {}
+      const absl::optional<GURL>& new_url) override {}
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -344,11 +297,36 @@ class ContentDirectoryURLLoader : public network::mojom::URLLoader {
 
   // Manages chunked data transfer over the response DataPipe.
   std::unique_ptr<mojo::DataPipeProducer> body_writer_;
-
-  DISALLOW_COPY_AND_ASSIGN(ContentDirectoryURLLoader);
 };
 
+net::Error OpenFileFromDirectory(
+    const std::string& content_directory_name,
+    const base::FilePath& relative_file_path,
+    fidl::InterfaceRequest<fuchsia::io::Node> file_request) {
+  DCHECK(file_request);
+  DCHECK(!relative_file_path.IsAbsolute());
+
+  auto absolute_file_path =
+      base::FilePath(ContentDirectoryLoaderFactory::kContentDirectoriesPath)
+          .Append(content_directory_name)
+          .Append(relative_file_path);
+
+  zx_status_t status = fdio_open(absolute_file_path.value().c_str(),
+                                 fuchsia::io::OPEN_RIGHT_READABLE,
+                                 file_request.TakeChannel().release());
+  if (status != ZX_OK) {
+    ZX_DLOG(WARNING, status) << "fdio_open";
+    return net::ERR_FILE_NOT_FOUND;
+  }
+
+  return net::OK;
+}
+
 }  // namespace
+
+// static
+const char ContentDirectoryLoaderFactory::kContentDirectoriesPath[] =
+    "/content-directories";
 
 // static
 mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -356,7 +334,8 @@ ContentDirectoryLoaderFactory::Create() {
   mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_remote;
 
   // The ContentDirectoryLoaderFactory will delete itself when there are no more
-  // receivers - see the NonNetworkURLLoaderFactoryBase::OnDisconnect method.
+  // receivers - see the network::SelfDeletingURLLoaderFactory::OnDisconnect
+  // method.
   new ContentDirectoryLoaderFactory(
       pending_remote.InitWithNewPipeAndPassReceiver());
 
@@ -365,42 +344,15 @@ ContentDirectoryLoaderFactory::Create() {
 
 ContentDirectoryLoaderFactory::ContentDirectoryLoaderFactory(
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> factory_receiver)
-    : content::NonNetworkURLLoaderFactoryBase(std::move(factory_receiver)),
+    : network::SelfDeletingURLLoaderFactory(std::move(factory_receiver)),
       task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
 
-ContentDirectoryLoaderFactory::~ContentDirectoryLoaderFactory() {}
-
-net::Error ContentDirectoryLoaderFactory::OpenFileFromDirectory(
-    const std::string& directory_name,
-    base::FilePath path,
-    fidl::InterfaceRequest<fuchsia::io::Node> file_request) {
-  DCHECK(file_request);
-
-  ContentDirectoriesMap* content_directories = GetContentDirectories();
-  if (content_directories->find(directory_name) == content_directories->end())
-    return net::ERR_FILE_NOT_FOUND;
-
-  const fidl::InterfaceHandle<fuchsia::io::Directory>& directory =
-      content_directories->at(directory_name);
-  if (!directory)
-    return net::ERR_INVALID_HANDLE;
-
-  zx_status_t status = fdio_open_at(
-      directory.channel().get(), path.value().c_str(),
-      fuchsia::io::OPEN_RIGHT_READABLE, file_request.TakeChannel().release());
-  if (status != ZX_OK) {
-    ZX_DLOG(WARNING, status) << "fdio_open_at";
-    return net::ERR_FILE_NOT_FOUND;
-  }
-
-  return net::OK;
-}
+ContentDirectoryLoaderFactory::~ContentDirectoryLoaderFactory() = default;
 
 void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
     mojo::PendingReceiver<network::mojom::URLLoader> loader,
-    int32_t routing_id,
     int32_t request_id,
     uint32_t options,
     const network::ResourceRequest& request,
@@ -443,7 +395,7 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
   fidl::InterfaceHandle<fuchsia::io::Node> metadata_handle;
   open_result = OpenFileFromDirectory(
       request.url.GetOrigin().host(),
-      base::FilePath(requested_path.as_string() + "._metadata"),
+      base::FilePath(base::StrCat({requested_path, "._metadata"})),
       metadata_handle.NewRequest());
   if (open_result != net::OK) {
     mojo::Remote<network::mojom::URLLoaderClient>(std::move(client))
@@ -453,20 +405,8 @@ void ContentDirectoryLoaderFactory::CreateLoaderAndStart(
 
   // Load the resource on a blocking-capable TaskRunner.
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ContentDirectoryURLLoader::CreateAndStart,
-                                base::Passed(std::move(loader)), request,
-                                base::Passed(std::move(client)),
-                                base::Passed(std::move(file_handle)),
-                                base::Passed(std::move(metadata_handle))));
-}
-
-void ContentDirectoryLoaderFactory::SetContentDirectoriesForTest(
-    std::vector<fuchsia::web::ContentDirectoryProvider> directories) {
-  ContentDirectoriesMap* current_process_directories = GetContentDirectories();
-
-  current_process_directories->clear();
-  for (fuchsia::web::ContentDirectoryProvider& directory : directories) {
-    current_process_directories->emplace(directory.name(),
-                                         directory.mutable_directory()->Bind());
-  }
+      FROM_HERE,
+      base::BindOnce(&ContentDirectoryURLLoader::CreateAndStart,
+                     std::move(loader), request, std::move(client),
+                     std::move(file_handle), std::move(metadata_handle)));
 }

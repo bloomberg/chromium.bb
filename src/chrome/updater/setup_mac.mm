@@ -10,36 +10,43 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "chrome/updater/constants.h"
 #include "chrome/updater/launchd_util.h"
 #include "chrome/updater/mac/xpc_service_names.h"
+#include "chrome/updater/updater_scope.h"
 
 namespace updater {
 
 namespace {
 
-void SetupDone(base::OnceCallback<void(int)> callback, int result) {
+void SetupDone(base::OnceCallback<void(int)> callback,
+               UpdaterScope scope,
+               int result) {
   if (result != setup_exit_codes::kSuccess) {
     std::move(callback).Run(result);
     return;
   }
   PollLaunchctlList(
-      kControlLaunchdName, base::TimeDelta::FromSeconds(3),
+      scope, GetUpdateServiceInternalLaunchdName(), LaunchctlPresence::kPresent,
+      base::TimeDelta::FromSeconds(kWaitForLaunchctlUpdateSec),
       base::BindOnce(
           [](base::OnceCallback<void(int)> callback, bool service_exists) {
             std::move(callback).Run(
                 service_exists
                     ? setup_exit_codes::kSuccess
-                    : setup_exit_codes::kFailedAwaitingLaunchdControlJob);
+                    : setup_exit_codes::
+                          kFailedAwaitingLaunchdUpdateServiceInternalJob);
           },
           std::move(callback)));
 }
 
 }  // namespace
 
-void InstallCandidate(bool is_machine, base::OnceCallback<void(int)> callback) {
+void InstallCandidate(UpdaterScope scope,
+                      base::OnceCallback<void(int)> callback) {
   base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()}, base::BindOnce(&Setup),
-      base::BindOnce(&SetupDone, std::move(callback)));
+      FROM_HERE, {base::MayBlock()}, base::BindOnce(&Setup, scope),
+      base::BindOnce(&SetupDone, std::move(callback), scope));
 }
 
 }  // namespace updater

@@ -52,6 +52,12 @@ void MediaStreamVideoCapturerSource::SetDeviceCapturerFactoryCallbackForTesting(
   device_capturer_factory_callback_ = std::move(testing_factory_callback);
 }
 
+void MediaStreamVideoCapturerSource::SetCanDiscardAlpha(
+    bool can_discard_alpha) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  source_->SetCanDiscardAlpha(can_discard_alpha);
+}
+
 void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_->RequestRefreshFrame();
@@ -134,13 +140,13 @@ void MediaStreamVideoCapturerSource::RestartSourceImpl(
                          WTF::Unretained(this), new_capture_params));
 }
 
-base::Optional<media::VideoCaptureFormat>
+absl::optional<media::VideoCaptureFormat>
 MediaStreamVideoCapturerSource::GetCurrentFormat() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return capture_params_.requested_format;
 }
 
-base::Optional<media::VideoCaptureParams>
+absl::optional<media::VideoCaptureParams>
 MediaStreamVideoCapturerSource::GetCurrentCaptureParams() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return capture_params_;
@@ -163,6 +169,11 @@ void MediaStreamVideoCapturerSource::ChangeSourceImpl(
       capture_params_, frame_callback_,
       WTF::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,
                          WTF::Unretained(this), capture_params_));
+}
+
+base::WeakPtr<MediaStreamVideoSource>
+MediaStreamVideoCapturerSource::GetWeakPtr() const {
+  return weak_factory_.GetWeakPtr();
 }
 
 void MediaStreamVideoCapturerSource::OnRunStateChanged(

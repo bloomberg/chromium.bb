@@ -27,18 +27,20 @@ import org.robolectric.ParameterizedRobolectricTestRunner.Parameter;
 import org.robolectric.ParameterizedRobolectricTestRunner.Parameters;
 import org.robolectric.annotation.Config;
 
-import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.browserservices.intents.WebappExtras;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiUnitTestUtils;
-import org.chromium.chrome.browser.webapps.WebappExtras;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.GURL;
+import org.chromium.url.JUnitTestGURLs;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -97,11 +99,12 @@ public class CloseButtonNavigatorTest {
         });
     }
 
-    private Tab createTabWithNavigationHistory(String... urls) {
+    private Tab createTabWithNavigationHistory(GURL... urls) {
         NavigationHistory history = new NavigationHistory();
 
-        for (String url : urls) {
-            history.addEntry(new NavigationEntry(0, url, "", "", "", "", null, 0, 0));
+        for (GURL url : urls) {
+            history.addEntry(new NavigationEntry(
+                    0, url, GURL.emptyGURL(), GURL.emptyGURL(), GURL.emptyGURL(), "", null, 0, 0));
         }
 
         // Point to the most recent entry in history.
@@ -111,7 +114,7 @@ public class CloseButtonNavigatorTest {
         WebContents webContents = mock(WebContents.class);
         NavigationController navigationController = mock(NavigationController.class);
 
-        when(tab.getUrlString())
+        when(tab.getUrl())
                 .thenAnswer(invocation
                         -> history.getEntryAtIndex(history.getCurrentEntryIndex()).getUrl());
         when(tab.getWebContents()).thenReturn(webContents);
@@ -142,10 +145,8 @@ public class CloseButtonNavigatorTest {
 
     @Test
     public void noCriteria_singleTab() {
-        mTabs.push(createTabWithNavigationHistory(
-                "www.blue.com/page1",
-                "www.blue.com/page2"
-        ));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2)));
 
         mCloseButtonNavigator.navigateOnClose();
 
@@ -154,8 +155,8 @@ public class CloseButtonNavigatorTest {
 
     @Test
     public void noCriteria_multipleTabs() {
-        mTabs.push(createTabWithNavigationHistory( "www.blue.com/page1"));
-        mTabs.push(createTabWithNavigationHistory( "www.blue.com/page2"));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1)));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2)));
         setParentTabId(mTabs.get(1), mTabs.get(0).getId());
 
         mCloseButtonNavigator.navigateOnClose();
@@ -171,10 +172,8 @@ public class CloseButtonNavigatorTest {
     @Test
     public void noMatchingUrl_singleTab() {
         mCloseButtonNavigator.setLandingPageCriteria(CloseButtonNavigatorTest::isRed);
-        mTabs.push(createTabWithNavigationHistory(
-                "www.blue.com/page1",
-                "www.blue.com/page2"
-        ));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2)));
 
         mCloseButtonNavigator.navigateOnClose();
 
@@ -184,8 +183,8 @@ public class CloseButtonNavigatorTest {
     @Test
     public void noMatchingUrl_multipleTabs() {
         mCloseButtonNavigator.setLandingPageCriteria(CloseButtonNavigatorTest::isRed);
-        mTabs.push(createTabWithNavigationHistory( "www.blue.com/page1"));
-        mTabs.push(createTabWithNavigationHistory( "www.blue.com/page2"));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1)));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2)));
         setParentTabId(mTabs.get(1), mTabs.get(0).getId());
 
         mCloseButtonNavigator.navigateOnClose();
@@ -201,12 +200,10 @@ public class CloseButtonNavigatorTest {
     @Test
     public void matchingUrl_singleTab() {
         mCloseButtonNavigator.setLandingPageCriteria(CloseButtonNavigatorTest::isRed);
-        mTabs.push(createTabWithNavigationHistory(
-                "www.red.com/page1",
-                "www.red.com/page2",
-                "www.blue.com/page1",
-                "www.blue.com/page2"
-        ));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_1),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_2),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2)));
 
         mCloseButtonNavigator.navigateOnClose();
 
@@ -219,14 +216,10 @@ public class CloseButtonNavigatorTest {
     @Test
     public void matchingUrl_startOfNextTab() {
         mCloseButtonNavigator.setLandingPageCriteria(CloseButtonNavigatorTest::isRed);
-        mTabs.push(createTabWithNavigationHistory(
-                "www.red.com/page1",
-                "www.red.com/page2"
-        ));
-        mTabs.push(createTabWithNavigationHistory(
-                "www.blue.com/page1",
-                "www.blue.com/page2"
-        ));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_1),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_2)));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2)));
         setParentTabId(mTabs.get(1), mTabs.get(0).getId());
 
         mCloseButtonNavigator.navigateOnClose();
@@ -238,14 +231,10 @@ public class CloseButtonNavigatorTest {
     @Test
     public void matchingUrl_middleOfNextTab() {
         mCloseButtonNavigator.setLandingPageCriteria(CloseButtonNavigatorTest::isRed);
-        mTabs.push(createTabWithNavigationHistory(
-                "www.red.com/page1",
-                "www.blue.com/page1"
-        ));
-        mTabs.push(createTabWithNavigationHistory(
-                "www.blue.com/page2",
-                "www.blue.com/page3"
-        ));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_1),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1)));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_3)));
         setParentTabId(mTabs.get(1), mTabs.get(0).getId());
 
         mCloseButtonNavigator.navigateOnClose();
@@ -262,13 +251,11 @@ public class CloseButtonNavigatorTest {
     @Test
     public void middleOfHistory() {
         mCloseButtonNavigator.setLandingPageCriteria(CloseButtonNavigatorTest::isRed);
-        mTabs.push(createTabWithNavigationHistory(
-                "www.red.com/page1",
-                "www.red.com/page2",
-                "www.blue.com/page1",
-                "www.blue.com/page2",
-                "www.red.com/page3"
-        ));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_1),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_2),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_3)));
 
         mTabs.peek().getWebContents().getNavigationController().getNavigationHistory()
                 .setCurrentEntryIndex(3);
@@ -283,13 +270,11 @@ public class CloseButtonNavigatorTest {
     @Test
     public void navigateFromLandingPage() {
         mCloseButtonNavigator.setLandingPageCriteria(CloseButtonNavigatorTest::isRed);
-        mTabs.push(createTabWithNavigationHistory(
-                "www.red.com/page1",
-                "www.red.com/page2",
-                "www.blue.com/page1",
-                "www.blue.com/page2",
-                "www.red.com/page3"
-        ));
+        mTabs.push(createTabWithNavigationHistory(JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_1),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_2),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_2),
+                JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_3)));
 
         mCloseButtonNavigator.navigateOnClose();
 

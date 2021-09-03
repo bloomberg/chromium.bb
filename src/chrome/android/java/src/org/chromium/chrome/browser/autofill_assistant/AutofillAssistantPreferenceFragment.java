@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill_assistant;
 
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.annotation.VisibleForTesting;
@@ -16,12 +17,11 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
+import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.settings.GoogleServicesSettings;
-import org.chromium.chrome.browser.sync.settings.SyncAndServicesSettings;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
+import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
@@ -92,14 +92,7 @@ public class AutofillAssistantPreferenceFragment extends PreferenceFragmentCompa
         mGoogleServicesSettingsLink = findPreference(PREF_GOOGLE_SERVICES_SETTINGS_LINK);
         NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(getResources(), view -> {
             SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
-                settingsLauncher.launchSettingsActivity(
-                        getActivity(), GoogleServicesSettings.class);
-            } else {
-                settingsLauncher.launchSettingsActivity(getActivity(),
-                        SyncAndServicesSettings.class,
-                        SyncAndServicesSettings.createArguments(false));
-            }
+            settingsLauncher.launchSettingsActivity(requireContext(), GoogleServicesSettings.class);
         });
         mGoogleServicesSettingsLink.setSummary(
                 SpanApplier.applySpans(getString(R.string.prefs_proactive_help_sync_link),
@@ -176,5 +169,12 @@ public class AutofillAssistantPreferenceFragment extends PreferenceFragmentCompa
 
         mAssistantVoiceSearchEnabledPref.setChecked(mSharedPreferencesManager.readBoolean(
                 ChromePreferenceKeys.ASSISTANT_VOICE_SEARCH_ENABLED, /* default= */ false));
+    }
+
+    /** Open a page to learn more about the consent dialog. */
+    public static void launchSettings(Context context) {
+        SettingsLauncherImpl settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(
+                context, AutofillAssistantPreferenceFragment.class, /* fragmentArgs= */ null);
     }
 }

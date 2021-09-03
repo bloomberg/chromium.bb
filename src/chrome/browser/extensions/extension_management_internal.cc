@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/url_pattern_set.h"
 #include "url/gurl.h"
 
@@ -68,7 +69,8 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
     if (installation_mode == ExtensionManagement::INSTALLATION_FORCED ||
         installation_mode == ExtensionManagement::INSTALLATION_RECOMMENDED) {
       if (scope != SCOPE_INDIVIDUAL) {
-        // Only individual extensions are allowed to be automatically installed.
+        // Only individual extensions are allowed to be automatically
+        // installed.
         LOG(WARNING) << kMalformedPreferenceWarning;
         return false;
       }
@@ -85,9 +87,22 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
     }
   }
 
+  bool is_policy_installed =
+      installation_mode == ExtensionManagement::INSTALLATION_FORCED ||
+      installation_mode == ExtensionManagement::INSTALLATION_RECOMMENDED;
+  // Note: We ignore the override update URL policy when the update URL is from
+  // the webstore.
+  if (is_policy_installed &&
+      !extension_urls::IsWebstoreUpdateUrl(GURL(update_url))) {
+    const absl::optional<bool> is_update_url_overridden =
+        dict->FindBoolKey(schema_constants::kOverrideUpdateUrl);
+    if (is_update_url_overridden)
+      override_update_url = is_update_url_overridden.value();
+  }
+
   // Parses the blocked permission settings.
   const base::ListValue* list_value = nullptr;
-  base::string16 error;
+  std::u16string error;
 
   // Set default blocked permissions, or replace with extension specific blocks.
   APIPermissionSet parsed_blocked_permissions;

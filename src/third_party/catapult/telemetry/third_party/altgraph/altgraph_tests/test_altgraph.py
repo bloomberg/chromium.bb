@@ -1,4 +1,5 @@
 #!/usr/bin/env py.test
+from __future__ import absolute_import
 import os
 import sys
 
@@ -8,9 +9,9 @@ import unittest
 class BasicTests (unittest.TestCase):
     def setUp(self):
         self.edges = [
-            (1,2), (2,4), (1,3), (2,4), (3,4), (4,5), (6,5), (6,14), (14,15),
-            (6, 15), (5,7), (7, 8), (7,13), (12,8), (8,13), (11,12), (11,9),
-            (13,11), (9,13), (13,10)
+            (1, 2), (2, 4), (1, 3), (2, 4), (3, 4), (4, 5), (6, 5), (6, 14), (14, 15),
+            (6, 15), (5, 7), (7, 8), (7, 13), (12, 8), (8, 13), (11, 12), (11, 9),
+            (13, 11), (9, 13), (13, 10)
         ]
 
         # these are the edges

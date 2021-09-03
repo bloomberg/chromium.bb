@@ -37,24 +37,20 @@ BIT_FIELD_ACCESSORS(DebugInfo, debugger_hints, debugging_id,
                     DebugInfo::DebuggingIdBits)
 
 bool DebugInfo::HasInstrumentedBytecodeArray() {
-  DCHECK_EQ(debug_bytecode_array().IsBytecodeArray(),
-            original_bytecode_array().IsBytecodeArray());
-  return debug_bytecode_array().IsBytecodeArray();
+  return debug_bytecode_array(kAcquireLoad).IsBytecodeArray();
 }
 
 BytecodeArray DebugInfo::OriginalBytecodeArray() {
   DCHECK(HasInstrumentedBytecodeArray());
-  return BytecodeArray::cast(original_bytecode_array());
+  return BytecodeArray::cast(original_bytecode_array(kAcquireLoad));
 }
 
 BytecodeArray DebugInfo::DebugBytecodeArray() {
   DCHECK(HasInstrumentedBytecodeArray());
-  DCHECK_EQ(shared().GetDebugBytecodeArray(), debug_bytecode_array());
-  return BytecodeArray::cast(debug_bytecode_array());
+  DCHECK_EQ(shared().GetActiveBytecodeArray(),
+            debug_bytecode_array(kAcquireLoad));
+  return BytecodeArray::cast(debug_bytecode_array(kAcquireLoad));
 }
-
-TQ_OBJECT_CONSTRUCTORS_IMPL(WasmValue)
-NEVER_READ_ONLY_SPACE_IMPL(WasmValue)
 
 }  // namespace internal
 }  // namespace v8

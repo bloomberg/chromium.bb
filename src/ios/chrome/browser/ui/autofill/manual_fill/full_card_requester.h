@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_FULL_CARD_REQUESTER_H_
 #define IOS_CHROME_BROWSER_UI_AUTOFILL_MANUAL_FILL_FULL_CARD_REQUESTER_H_
 
-#include <string>
 
 #import <UIKit/UIKit.h>
 
@@ -18,7 +17,7 @@
 class ChromeBrowserState;
 
 namespace autofill {
-class AutofillManager;
+class BrowserAutofillManager;
 class CreditCard;
 }  // namespace autofill
 
@@ -32,7 +31,7 @@ class FullCardRequester
 
   void GetFullCard(
       const autofill::CreditCard& card,
-      autofill::AutofillManager* autofill_manager,
+      autofill::BrowserAutofillManager* autofill_manager,
       base::WeakPtr<autofill::payments::FullCardRequest::ResultDelegate>
           result_delegate);
 

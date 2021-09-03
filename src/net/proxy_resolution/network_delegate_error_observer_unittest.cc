@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/location.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/task_environment.h"
@@ -16,6 +15,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -46,7 +46,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
       const HttpResponseHeaders* original_response_headers,
       scoped_refptr<HttpResponseHeaders>* override_response_headers,
       const net::IPEndPoint& endpoint,
-      base::Optional<GURL>* preserve_fragment_on_redirect_url) override {
+      absl::optional<GURL>* preserve_fragment_on_redirect_url) override {
     return OK;
   }
   void OnBeforeRedirect(URLRequest* request,
@@ -55,7 +55,7 @@ class TestNetworkDelegate : public NetworkDelegateImpl {
   void OnCompleted(URLRequest* request, bool started, int net_error) override {}
   void OnURLRequestDestroyed(URLRequest* request) override {}
 
-  void OnPACScriptError(int line_number, const base::string16& error) override {
+  void OnPACScriptError(int line_number, const std::u16string& error) override {
     got_pac_error_ = true;
   }
   bool OnCanGetCookies(const URLRequest& request,
@@ -84,7 +84,7 @@ TEST(NetworkDelegateErrorObserverTest, CallOnThread) {
   thread.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&NetworkDelegateErrorObserver::OnPACScriptError,
-                     base::Unretained(&observer), 42, base::string16()));
+                     base::Unretained(&observer), 42, std::u16string()));
   thread.Stop();
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(network_delegate.got_pac_error());
@@ -100,7 +100,7 @@ TEST(NetworkDelegateErrorObserverTest, NoDelegate) {
   thread.task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&NetworkDelegateErrorObserver::OnPACScriptError,
-                     base::Unretained(&observer), 42, base::string16()));
+                     base::Unretained(&observer), 42, std::u16string()));
   thread.Stop();
   base::RunLoop().RunUntilIdle();
   // Shouldn't have crashed until here...

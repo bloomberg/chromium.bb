@@ -5,12 +5,12 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// UNSUPPORTED: c++98, c++03, c++11, c++14, c++17
+// UNSUPPORTED: c++03, c++11, c++14, c++17
 // <chrono>
 
 // template <class Duration>
 // class hh_mm_ss
-// 
+//
 // constexpr precision to_duration() const noexcept;
 //
 // See the table in hours.pass.cpp for correspondence between the magic values used below
@@ -26,14 +26,14 @@ constexpr long long check_duration(Duration d)
     using HMS = std::chrono::hh_mm_ss<Duration>;
     ASSERT_SAME_TYPE(typename HMS::precision, decltype(std::declval<HMS>().to_duration()));
     ASSERT_NOEXCEPT(                                   std::declval<HMS>().to_duration());
-    
+
     return HMS(d).to_duration().count();
 }
 
 int main(int, char**)
 {
     using microfortnights = std::chrono::duration<int, std::ratio<756, 625>>;
-    
+
     static_assert( check_duration(std::chrono::minutes( 1)) ==  60, "");
     static_assert( check_duration(std::chrono::minutes(-1)) == -60, "");
 

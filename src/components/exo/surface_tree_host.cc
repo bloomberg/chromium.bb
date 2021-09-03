@@ -31,6 +31,7 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -299,9 +300,9 @@ void SurfaceTreeHost::SubmitEmptyCompositorFrame() {
       render_pass->CreateAndAppendSharedQuadState();
   quad_state->SetAll(
       gfx::Transform(), /*quad_layer_rect=*/quad_rect,
-      /*visible_quad_layer_rect=*/quad_rect,
-      /*mask_filter_info=*/gfx::MaskFilterInfo(), /*clip_rect=*/gfx::Rect(),
-      /*is_clipped=*/false, /*are_contents_opaque=*/true, /*opacity=*/1.f,
+      /*visible_layer_rect=*/quad_rect,
+      /*mask_filter_info=*/gfx::MaskFilterInfo(), /*clip_rect=*/absl::nullopt,
+      /*are_contents_opaque=*/true, /*opacity=*/1.f,
       /*blend_mode=*/SkBlendMode::kSrcOver, /*sorting_context_id=*/0);
 
   viz::SolidColorDrawQuad* solid_quad =

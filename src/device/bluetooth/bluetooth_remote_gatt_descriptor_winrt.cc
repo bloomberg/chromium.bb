@@ -100,13 +100,12 @@ BluetoothRemoteGattDescriptorWinrt::GetCharacteristic() const {
 }
 
 void BluetoothRemoteGattDescriptorWinrt::ReadRemoteDescriptor(
-    ValueCallback callback,
-    ErrorCallback error_callback) {
-  if (pending_read_callbacks_ || pending_write_callbacks_) {
+    ValueCallback callback) {
+  if (pending_read_callback_ || pending_write_callbacks_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(error_callback),
-                       BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  BluetoothGattService::GATT_ERROR_IN_PROGRESS,
+                                  /*value=*/std::vector<uint8_t>()));
     return;
   }
 
@@ -118,9 +117,9 @@ void BluetoothRemoteGattDescriptorWinrt::ReadRemoteDescriptor(
         << "GattDescriptor::ReadValueWithCacheModeAsync failed: "
         << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(error_callback),
-                       BluetoothRemoteGattService::GATT_ERROR_FAILED));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  BluetoothGattService::GATT_ERROR_FAILED,
+                                  /*value=*/std::vector<uint8_t>()));
     return;
   }
 
@@ -133,25 +132,24 @@ void BluetoothRemoteGattDescriptorWinrt::ReadRemoteDescriptor(
     BLUETOOTH_LOG(ERROR) << "PostAsyncResults failed: "
                          << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(error_callback),
-                       BluetoothRemoteGattService::GATT_ERROR_FAILED));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  BluetoothGattService::GATT_ERROR_FAILED,
+                                  /*value=*/std::vector<uint8_t>()));
     return;
   }
 
-  pending_read_callbacks_ = std::make_unique<PendingReadCallbacks>(
-      std::move(callback), std::move(error_callback));
+  pending_read_callback_ = std::move(callback);
 }
 
 void BluetoothRemoteGattDescriptorWinrt::WriteRemoteDescriptor(
     const std::vector<uint8_t>& value,
     base::OnceClosure callback,
     ErrorCallback error_callback) {
-  if (pending_read_callbacks_ || pending_write_callbacks_) {
+  if (pending_read_callback_ || pending_write_callbacks_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(error_callback),
-                       BluetoothRemoteGattService::GATT_ERROR_IN_PROGRESS));
+                       BluetoothGattService::GATT_ERROR_IN_PROGRESS));
     return;
   }
 
@@ -161,9 +159,8 @@ void BluetoothRemoteGattDescriptorWinrt::WriteRemoteDescriptor(
     BLUETOOTH_LOG(ERROR) << "As IGattDescriptor2 failed: "
                          << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(error_callback),
-                       BluetoothRemoteGattService::GATT_ERROR_FAILED));
+        FROM_HERE, base::BindOnce(std::move(error_callback),
+                                  BluetoothGattService::GATT_ERROR_FAILED));
     return;
   }
 
@@ -173,9 +170,8 @@ void BluetoothRemoteGattDescriptorWinrt::WriteRemoteDescriptor(
     BLUETOOTH_LOG(ERROR) << "base::win::CreateIBufferFromData failed: "
                          << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(error_callback),
-                       BluetoothRemoteGattService::GATT_ERROR_FAILED));
+        FROM_HERE, base::BindOnce(std::move(error_callback),
+                                  BluetoothGattService::GATT_ERROR_FAILED));
     return;
   }
 
@@ -185,9 +181,8 @@ void BluetoothRemoteGattDescriptorWinrt::WriteRemoteDescriptor(
     BLUETOOTH_LOG(ERROR) << "GattDescriptor::WriteValueWithResultAsync failed: "
                          << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(error_callback),
-                       BluetoothRemoteGattService::GATT_ERROR_FAILED));
+        FROM_HERE, base::BindOnce(std::move(error_callback),
+                                  BluetoothGattService::GATT_ERROR_FAILED));
     return;
   }
 
@@ -201,9 +196,8 @@ void BluetoothRemoteGattDescriptorWinrt::WriteRemoteDescriptor(
     BLUETOOTH_LOG(ERROR) << "PostAsyncResults failed: "
                          << logging::SystemErrorCodeToString(hr);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(error_callback),
-                       BluetoothRemoteGattService::GATT_ERROR_FAILED));
+        FROM_HERE, base::BindOnce(std::move(error_callback),
+                                  BluetoothGattService::GATT_ERROR_FAILED));
     return;
   }
 
@@ -214,15 +208,6 @@ void BluetoothRemoteGattDescriptorWinrt::WriteRemoteDescriptor(
 IGattDescriptor* BluetoothRemoteGattDescriptorWinrt::GetDescriptorForTesting() {
   return descriptor_.Get();
 }
-
-BluetoothRemoteGattDescriptorWinrt::PendingReadCallbacks::PendingReadCallbacks(
-    ValueCallback callback,
-    ErrorCallback error_callback)
-    : callback(std::move(callback)),
-      error_callback(std::move(error_callback)) {}
-
-BluetoothRemoteGattDescriptorWinrt::PendingReadCallbacks::
-    ~PendingReadCallbacks() = default;
 
 BluetoothRemoteGattDescriptorWinrt::PendingWriteCallbacks::
     PendingWriteCallbacks(base::OnceClosure callback,
@@ -250,14 +235,15 @@ BluetoothRemoteGattDescriptorWinrt::BluetoothRemoteGattDescriptorWinrt(
 
 void BluetoothRemoteGattDescriptorWinrt::OnReadValue(
     ComPtr<IGattReadResult> read_result) {
-  DCHECK(pending_read_callbacks_);
-  auto pending_read_callbacks = std::move(pending_read_callbacks_);
+  DCHECK(pending_read_callback_);
+  auto pending_read_callback = std::move(pending_read_callback_);
 
   if (!read_result) {
     BLUETOOTH_LOG(ERROR)
         << "GattDescriptor::ReadValueWithCacheModeAsync returned no result";
-    std::move(pending_read_callbacks->error_callback)
-        .Run(BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(pending_read_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED,
+             /*value=*/std::vector<uint8_t>());
     return;
   }
 
@@ -266,8 +252,9 @@ void BluetoothRemoteGattDescriptorWinrt::OnReadValue(
   if (FAILED(hr)) {
     BLUETOOTH_LOG(ERROR) << "Getting GATT Communication Status failed: "
                          << logging::SystemErrorCodeToString(hr);
-    std::move(pending_read_callbacks->error_callback)
-        .Run(BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(pending_read_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED,
+             /*value=*/std::vector<uint8_t>());
     return;
   }
 
@@ -278,14 +265,16 @@ void BluetoothRemoteGattDescriptorWinrt::OnReadValue(
     if (FAILED(hr)) {
       BLUETOOTH_LOG(ERROR) << "As IGattReadResult2 failed: "
                            << logging::SystemErrorCodeToString(hr);
-      std::move(pending_read_callbacks->error_callback)
-          .Run(BluetoothGattService::GATT_ERROR_FAILED);
+      std::move(pending_read_callback)
+          .Run(BluetoothGattService::GATT_ERROR_FAILED,
+               /*value=*/std::vector<uint8_t>());
       return;
     }
 
-    std::move(pending_read_callbacks->error_callback)
+    std::move(pending_read_callback)
         .Run(BluetoothRemoteGattServiceWinrt::GetGattErrorCode(
-            read_result_2.Get()));
+                 read_result_2.Get()),
+             /*value=*/std::vector<uint8_t>());
     return;
   }
 
@@ -294,8 +283,9 @@ void BluetoothRemoteGattDescriptorWinrt::OnReadValue(
   if (FAILED(hr)) {
     BLUETOOTH_LOG(ERROR) << "Getting Descriptor Value failed: "
                          << logging::SystemErrorCodeToString(hr);
-    std::move(pending_read_callbacks->error_callback)
-        .Run(BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(pending_read_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED,
+             /*value=*/std::vector<uint8_t>());
     return;
   }
 
@@ -305,13 +295,14 @@ void BluetoothRemoteGattDescriptorWinrt::OnReadValue(
   if (FAILED(hr)) {
     BLUETOOTH_LOG(ERROR) << "Getting Pointer To Buffer Data failed: "
                          << logging::SystemErrorCodeToString(hr);
-    std::move(pending_read_callbacks->error_callback)
-        .Run(BluetoothGattService::GATT_ERROR_FAILED);
+    std::move(pending_read_callback)
+        .Run(BluetoothGattService::GATT_ERROR_FAILED,
+             /*value=*/std::vector<uint8_t>());
     return;
   }
 
   value_.assign(data, data + length);
-  std::move(pending_read_callbacks->callback).Run(value_);
+  std::move(pending_read_callback).Run(/*error_code=*/absl::nullopt, value_);
 }
 
 void BluetoothRemoteGattDescriptorWinrt::OnWriteValueWithResult(

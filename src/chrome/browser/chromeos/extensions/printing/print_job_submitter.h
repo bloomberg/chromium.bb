@@ -12,9 +12,9 @@
 #include "base/callback.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "chrome/common/extensions/api/printing.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace base {
@@ -55,12 +55,12 @@ class PrintJobSubmitter {
  public:
   // In case of success |job_id| will contain unique job identifier returned
   // by CUPS. In case of failure |job_id| is nullptr.
-  // We could use base::Optional but to be consistent with auto-generated API
+  // We could use absl::optional but to be consistent with auto-generated API
   // wrappers we use std::unique_ptr.
   using SubmitJobCallback = base::OnceCallback<void(
-      base::Optional<api::printing::SubmitJobStatus> status,
+      absl::optional<api::printing::SubmitJobStatus> status,
       std::unique_ptr<std::string> job_id,
-      base::Optional<std::string> error)>;
+      absl::optional<std::string> error)>;
 
   PrintJobSubmitter(gfx::NativeWindow native_window,
                     content::BrowserContext* browser_context,
@@ -89,7 +89,7 @@ class PrintJobSubmitter {
   void CheckPrinter();
 
   void CheckCapabilitiesCompatibility(
-      base::Optional<printing::PrinterSemanticCapsAndDefaults> capabilities);
+      absl::optional<printing::PrinterSemanticCapsAndDefaults> capabilities);
 
   void ReadDocumentData();
 
@@ -129,7 +129,7 @@ class PrintJobSubmitter {
   scoped_refptr<const extensions::Extension> extension_;
   api::printing::SubmitJobRequest request_;
   std::unique_ptr<printing::PrintSettings> settings_;
-  base::string16 printer_name_;
+  std::u16string printer_name_;
   base::ReadOnlySharedMemoryMapping flattened_pdf_mapping_;
   // This is cleared after the request is handled (successfully or not).
   SubmitJobCallback callback_;

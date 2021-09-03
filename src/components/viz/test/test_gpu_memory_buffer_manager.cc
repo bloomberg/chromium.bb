@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <utility>
 
 #include "base/check_op.h"
 #include "base/numerics/safe_conversions.h"
@@ -176,7 +177,8 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     const gfx::Size& size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    gpu::SurfaceHandle surface_handle) {
+    gpu::SurfaceHandle surface_handle,
+    base::WaitableEvent* shutdown_event) {
   base::AutoLock hold(lock_);
 
   if (fail_on_create_)
@@ -200,5 +202,18 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBuffer(
 void TestGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {}
+
+void TestGpuMemoryBufferManager::CopyGpuMemoryBufferAsync(
+    gfx::GpuMemoryBufferHandle buffer_handle,
+    base::UnsafeSharedMemoryRegion memory_region,
+    base::OnceCallback<void(bool)> callback) {
+  std::move(callback).Run(false);
+}
+
+bool TestGpuMemoryBufferManager::CopyGpuMemoryBufferSync(
+    gfx::GpuMemoryBufferHandle buffer_handle,
+    base::UnsafeSharedMemoryRegion memory_region) {
+  return false;
+}
 
 }  // namespace viz

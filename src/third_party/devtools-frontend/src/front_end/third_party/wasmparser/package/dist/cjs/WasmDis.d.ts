@@ -4,6 +4,7 @@ export interface IExportMetadata {
     getGlobalExportNames(index: number): string[];
     getMemoryExportNames(index: number): string[];
     getTableExportNames(index: number): string[];
+    getEventExportNames(index: number): string[];
 }
 export interface INameResolver {
     getTypeName(index: number, isRef: boolean): string;
@@ -11,8 +12,10 @@ export interface INameResolver {
     getMemoryName(index: number, isRef: boolean): string;
     getGlobalName(index: number, isRef: boolean): string;
     getElementName(index: number, isRef: boolean): string;
+    getEventName(index: number, isRef: boolean): string;
     getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
     getVariableName(funcIndex: number, index: number, isRef: boolean): string;
+    getFieldName(typeIndex: number, index: number, isRef: boolean): string;
     getLabel(index: number): string;
 }
 export declare class DefaultNameResolver implements INameResolver {
@@ -21,8 +24,10 @@ export declare class DefaultNameResolver implements INameResolver {
     getMemoryName(index: number, isRef: boolean): string;
     getGlobalName(index: number, isRef: boolean): string;
     getElementName(index: number, isRef: boolean): string;
+    getEventName(index: number, isRef: boolean): string;
     getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
     getVariableName(funcIndex: number, index: number, isRef: boolean): string;
+    getFieldName(typeIndex: number, index: number, isRef: boolean): string;
     getLabel(index: number): string;
 }
 export declare class NumericNameResolver implements INameResolver {
@@ -31,8 +36,10 @@ export declare class NumericNameResolver implements INameResolver {
     getMemoryName(index: number, isRef: boolean): string;
     getGlobalName(index: number, isRef: boolean): string;
     getElementName(index: number, isRef: boolean): string;
+    getEventName(index: number, isRef: boolean): string;
     getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
     getVariableName(funcIndex: number, index: number, isRef: boolean): string;
+    getFieldName(typeIndex: number, index: number, isRef: boolean): string;
     getLabel(index: number): string;
 }
 export declare enum LabelMode {
@@ -41,8 +48,8 @@ export declare enum LabelMode {
     Always = 2
 }
 export interface IFunctionBodyOffset {
-    start?: number;
-    end?: number;
+    start: number;
+    end: number;
 }
 export interface IDisassemblerResult {
     lines: Array<string>;
@@ -60,6 +67,7 @@ export declare class WasmDisassembler {
     private _importCount;
     private _globalCount;
     private _memoryCount;
+    private _eventCount;
     private _tableCount;
     private _elementCount;
     private _expression;
@@ -94,7 +102,13 @@ export declare class WasmDisassembler {
     private newLine;
     private logStartOfFunctionBodyOffset;
     private logEndOfFunctionBodyOffset;
+    private typeIndexToString;
+    private typeToString;
+    private maybeMut;
+    private globalTypeToString;
     private printFuncType;
+    private printStructType;
+    private printArrayType;
     private printBlockType;
     private printString;
     private printExpression;
@@ -110,17 +124,21 @@ export declare class WasmDisassembler {
 declare class NameSectionNameResolver extends DefaultNameResolver {
     protected readonly _functionNames: string[];
     protected readonly _localNames: string[][];
+    protected readonly _eventNames: string[];
     protected readonly _typeNames: string[];
     protected readonly _tableNames: string[];
     protected readonly _memoryNames: string[];
     protected readonly _globalNames: string[];
-    constructor(functionNames: string[], localNames: string[][], typeNames: string[], tableNames: string[], memoryNames: string[], globalNames: string[]);
+    protected readonly _fieldNames: string[][];
+    constructor(functionNames: string[], localNames: string[][], eventNames: string[], typeNames: string[], tableNames: string[], memoryNames: string[], globalNames: string[], fieldNames: string[][]);
     getTypeName(index: number, isRef: boolean): string;
     getTableName(index: number, isRef: boolean): string;
     getMemoryName(index: number, isRef: boolean): string;
     getGlobalName(index: number, isRef: boolean): string;
+    getEventName(index: number, isRef: boolean): string;
     getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
     getVariableName(funcIndex: number, index: number, isRef: boolean): string;
+    getFieldName(typeIndex: number, index: number, isRef: boolean): string;
 }
 export declare class NameSectionReader {
     private _done;
@@ -128,17 +146,19 @@ export declare class NameSectionReader {
     private _functionImportsCount;
     private _functionNames;
     private _functionLocalNames;
+    private _eventNames;
     private _typeNames;
     private _tableNames;
     private _memoryNames;
     private _globalNames;
+    private _fieldNames;
     private _hasNames;
     read(reader: BinaryReader): boolean;
     hasValidNames(): boolean;
     getNameResolver(): INameResolver;
 }
 export declare class DevToolsNameResolver extends NameSectionNameResolver {
-    constructor(functionNames: string[], localNames: string[][], typeNames: string[], tableNames: string[], memoryNames: string[], globalNames: string[]);
+    constructor(functionNames: string[], localNames: string[][], eventNames: string[], typeNames: string[], tableNames: string[], memoryNames: string[], globalNames: string[], fieldNames: string[][]);
     getFunctionName(index: number, isImport: boolean, isRef: boolean): string;
 }
 export declare class DevToolsNameGenerator {
@@ -147,16 +167,20 @@ export declare class DevToolsNameGenerator {
     private _memoryImportsCount;
     private _tableImportsCount;
     private _globalImportsCount;
+    private _eventImportsCount;
     private _functionNames;
     private _functionLocalNames;
+    private _eventNames;
     private _memoryNames;
     private _typeNames;
     private _tableNames;
     private _globalNames;
+    private _fieldNames;
     private _functionExportNames;
     private _globalExportNames;
     private _memoryExportNames;
     private _tableExportNames;
+    private _eventExportNames;
     private _addExportName;
     private _setName;
     read(reader: BinaryReader): boolean;

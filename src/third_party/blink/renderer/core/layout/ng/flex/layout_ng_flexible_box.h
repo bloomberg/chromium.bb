@@ -11,6 +11,22 @@
 
 namespace blink {
 
+// Devtools uses this info to highlight lines and items on its flexbox overlay.
+// Devtools usually reads such info from the layout or fragment trees. But
+// Layout doesn't store this flex line -> flex items hierarchy there, or
+// anywhere, because neither paint nor ancestor layout needs it. So the NG flex
+// layout algorithm will fill one of these in when devtools requests it.
+struct DevtoolsFlexInfo {
+  struct Item {
+    PhysicalRect rect;
+    LayoutUnit baseline;
+  };
+  struct Line {
+    Vector<Item> items;
+  };
+  Vector<Line> lines;
+};
+
 class CORE_EXPORT LayoutNGFlexibleBox : public LayoutNGMixin<LayoutBlock> {
  public:
   explicit LayoutNGFlexibleBox(Element*);
@@ -24,6 +40,8 @@ class CORE_EXPORT LayoutNGFlexibleBox : public LayoutNGMixin<LayoutBlock> {
   bool IsFlexibleBoxIncludingNG() const final { return true; }
   const char* GetName() const override { return "LayoutNGFlexibleBox"; }
 
+  DevtoolsFlexInfo LayoutForDevtools();
+
  protected:
   bool IsChildAllowed(LayoutObject* object,
                       const ComputedStyle& style) const override;
@@ -32,6 +50,13 @@ class CORE_EXPORT LayoutNGFlexibleBox : public LayoutNGMixin<LayoutBlock> {
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectNGFlexibleBox ||
            LayoutNGMixin<LayoutBlock>::IsOfType(type);
+  }
+};
+
+template <>
+struct DowncastTraits<LayoutNGFlexibleBox> {
+  static bool AllowFrom(const LayoutObject& object) {
+    return object.IsFlexibleBoxIncludingNG() && object.IsLayoutNGObject();
   }
 };
 

@@ -9,14 +9,14 @@
 #include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/os_integration_manager.h"
-#include "chrome/browser/web_applications/components/pending_app_manager.h"
-#include "chrome/browser/web_applications/components/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
-#include "chrome/browser/web_applications/system_web_app_manager.h"
-#include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
+#include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 
@@ -84,10 +84,11 @@ void TestWebAppProvider::SetInstallFinalizer(
   install_finalizer_ = std::move(install_finalizer);
 }
 
-void TestWebAppProvider::SetPendingAppManager(
-    std::unique_ptr<PendingAppManager> pending_app_manager) {
+void TestWebAppProvider::SetExternallyManagedAppManager(
+    std::unique_ptr<ExternallyManagedAppManager>
+        externally_managed_app_manager) {
   CheckNotStarted();
-  pending_app_manager_ = std::move(pending_app_manager);
+  externally_managed_app_manager_ = std::move(externally_managed_app_manager);
 }
 
 void TestWebAppProvider::SetWebAppUiManager(
@@ -112,6 +113,11 @@ void TestWebAppProvider::SetOsIntegrationManager(
     std::unique_ptr<OsIntegrationManager> os_integration_manager) {
   CheckNotStarted();
   os_integration_manager_ = std::move(os_integration_manager);
+}
+
+void TestWebAppProvider::SkipAwaitingExtensionSystem() {
+  CheckNotStarted();
+  skip_awaiting_extension_system_ = true;
 }
 
 void TestWebAppProvider::CheckNotStarted() const {

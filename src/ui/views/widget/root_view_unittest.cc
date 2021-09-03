@@ -21,6 +21,10 @@
 #include "ui/views/widget/widget_deletion_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
+#if defined(OS_MAC)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace views {
 namespace test {
 
@@ -114,7 +118,7 @@ class TestContextMenuController : public ContextMenuController {
 // and VKEY_APPS) by the pre-target handler installed on RootView.
 TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
   // This behavior is intentionally unsupported on macOS.
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
   Widget widget;
   Widget::InitParams init_params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -177,6 +181,80 @@ class GestureHandlingView : public View {
  private:
   DISALLOW_COPY_AND_ASSIGN(GestureHandlingView);
 };
+
+// View which handles all mouse events.
+class MouseHandlingView : public View {
+ public:
+  MouseHandlingView() = default;
+  MouseHandlingView(const MouseHandlingView&) = delete;
+  MouseHandlingView& operator=(const MouseHandlingView&) = delete;
+  ~MouseHandlingView() override = default;
+
+  // View:
+  void OnMouseEvent(ui::MouseEvent* event) override { event->SetHandled(); }
+};
+
+// Verifies that the gesture handler stored in the root view is reset after
+// mouse is released. Note that during mouse event handling,
+// `RootView::SetMouseAndGestureHandler()` may be called to set the gesture
+// handler. Therefore we should reset the gesture handler when mouse is
+// released. We may remove this test in the future if the implementation of the
+// product code changes.
+TEST_F(RootViewTest, GestureHandlerResetAfterMouseReleased) {
+  Widget widget;
+  Widget::InitParams init_params =
+      CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+  init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  init_params.bounds = gfx::Rect(100, 100);
+  widget.Init(std::move(init_params));
+  widget.Show();
+  internal::RootView* root_view =
+      static_cast<internal::RootView*>(widget.GetRootView());
+  View* contents_view = widget.SetContentsView(std::make_unique<View>());
+
+  // Create a child view to handle gestures.
+  View* gesture_handler =
+      contents_view->AddChildView(std::make_unique<GestureHandlingView>());
+  gesture_handler->SetBoundsRect(gfx::Rect(gfx::Size{50, 50}));
+
+  // Create a child view to handle mouse events.
+  View* mouse_handler =
+      contents_view->AddChildView(std::make_unique<MouseHandlingView>());
+  mouse_handler->SetBoundsRect(
+      gfx::Rect(gesture_handler->bounds().bottom_right(), gfx::Size{50, 50}));
+
+  // Emulate to start gesture scroll on `child_view`.
+  const gfx::Point gesture_handler_center_point =
+      gesture_handler->GetBoundsInScreen().CenterPoint();
+  ui::GestureEvent scroll_begin(
+      gesture_handler_center_point.x(), gesture_handler_center_point.y(),
+      ui::EF_NONE, base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
+  root_view->OnEventFromSource(&scroll_begin);
+  ui::GestureEvent scroll_update(
+      gesture_handler_center_point.x(), gesture_handler_center_point.y(),
+      ui::EF_NONE, base::TimeTicks(),
+      ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, /*delta_x=*/20,
+                              /*delta_y=*/10));
+  root_view->OnEventFromSource(&scroll_update);
+
+  // Emulate the mouse click on `mouse_handler` before gesture scroll ends.
+  const gfx::Point mouse_handler_center_point =
+      mouse_handler->GetBoundsInScreen().CenterPoint();
+  ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, mouse_handler_center_point,
+                               mouse_handler_center_point,
+                               ui::EventTimeForNow(), ui::EF_NONE,
+                               /*changed_button_flags=*/0);
+  ui::MouseEvent released_event(
+      ui::ET_MOUSE_RELEASED, mouse_handler_center_point,
+      mouse_handler_center_point, ui::EventTimeForNow(), ui::EF_NONE,
+      /*changed_button_flags=*/0);
+  root_view->OnMousePressed(pressed_event);
+  root_view->OnMouseReleased(released_event);
+
+  // Check that the gesture handler is reset.
+  EXPECT_EQ(nullptr, root_view->gesture_handler_for_testing());
+}
 
 // Tests that context menus are shown for long press by the post-target handler
 // installed on the RootView only if the event is targetted at a view which can
@@ -763,7 +841,7 @@ TEST_F(RootViewDesktopNativeWidgetTest, SingleLayoutDuringInit) {
   widget->CloseNow();
 }
 
-#if !defined(OS_APPLE)
+#if !defined(OS_MAC)
 
 // Tests that AnnounceText sets up the correct text value on the hidden view,
 // and that the resulting hidden view actually stays hidden.
@@ -780,7 +858,7 @@ TEST_F(RootViewTest, AnnounceTextTest) {
   root_view->SetContentsView(new View());
 
   EXPECT_EQ(1U, root_view->children().size());
-  const base::string16 kText = base::ASCIIToUTF16("Text");
+  const std::u16string kText = u"Text";
   root_view->AnnounceText(kText);
   EXPECT_EQ(2U, root_view->children().size());
   root_view->Layout();
@@ -793,7 +871,7 @@ TEST_F(RootViewTest, AnnounceTextTest) {
             node_data.GetString16Attribute(ax::mojom::StringAttribute::kName));
 }
 
-#endif  // !defined(OS_APPLE)
+#endif  // !defined(OS_MAC)
 
 TEST_F(RootViewTest, MouseEventDispatchedToClosestEnabledView) {
   Widget widget;

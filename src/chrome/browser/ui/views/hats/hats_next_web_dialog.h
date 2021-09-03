@@ -7,6 +7,7 @@
 
 #include "chrome/browser/profiles/profile_observer.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/webview/web_dialog_view.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -29,10 +30,12 @@ class HatsNextWebDialog : public views::BubbleDialogDelegateView,
                           public content::WebContentsDelegate,
                           public ProfileObserver {
  public:
+  METADATA_HEADER(HatsNextWebDialog);
   HatsNextWebDialog(Browser* browser,
                     const std::string& trigger_id,
                     base::OnceClosure success_callback,
-                    base::OnceClosure failure_callback);
+                    base::OnceClosure failure_callback,
+                    const std::map<std::string, bool>& product_specific_data);
   ~HatsNextWebDialog() override;
   HatsNextWebDialog(const HatsNextWebDialog&) = delete;
   HatsNextWebDialog& operator=(const HatsNextWebDialog&) = delete;
@@ -48,13 +51,15 @@ class HatsNextWebDialog : public views::BubbleDialogDelegateView,
   FRIEND_TEST_ALL_PREFIXES(HatsNextWebDialogBrowserTest, SurveyLoaded);
   FRIEND_TEST_ALL_PREFIXES(HatsNextWebDialogBrowserTest, DialogResize);
   FRIEND_TEST_ALL_PREFIXES(HatsNextWebDialogBrowserTest, MaximumSize);
+  FRIEND_TEST_ALL_PREFIXES(HatsNextWebDialogBrowserTest, ZoomLevel);
 
   HatsNextWebDialog(Browser* browser,
                     const std::string& trigger_id,
                     const GURL& hats_survey_url_,
                     const base::TimeDelta& timeout,
                     base::OnceClosure success_callback,
-                    base::OnceClosure failure_callback);
+                    base::OnceClosure failure_callback,
+                    const std::map<std::string, bool>& product_specific_data);
 
   class HatsWebView;
 
@@ -121,6 +126,8 @@ class HatsNextWebDialog : public views::BubbleDialogDelegateView,
 
   base::OnceClosure success_callback_;
   base::OnceClosure failure_callback_;
+
+  std::map<std::string, bool> product_specific_data_;
 
   base::WeakPtrFactory<HatsNextWebDialog> weak_factory_{this};
 };

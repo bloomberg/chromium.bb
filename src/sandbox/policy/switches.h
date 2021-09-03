@@ -7,7 +7,12 @@
 
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "printing/buildflags/buildflags.h"
 #include "sandbox/policy/export.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/assistant/buildflags.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace sandbox {
 namespace policy {
@@ -25,9 +30,12 @@ SANDBOX_POLICY_EXPORT extern const char kNetworkSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kPpapiSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kUtilitySandbox[];
 SANDBOX_POLICY_EXPORT extern const char kCdmSandbox[];
+#if BUILDFLAG(ENABLE_PRINTING)
+SANDBOX_POLICY_EXPORT extern const char kPrintBackendSandbox[];
+#endif
 SANDBOX_POLICY_EXPORT extern const char kPrintCompositorSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kAudioSandbox[];
-SANDBOX_POLICY_EXPORT extern const char kSharingServiceSandbox[];
+SANDBOX_POLICY_EXPORT extern const char kServiceSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kSpeechRecognitionSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kVideoCaptureSandbox[];
 
@@ -39,9 +47,16 @@ SANDBOX_POLICY_EXPORT extern const char kIconReaderSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kMediaFoundationCdmSandbox[];
 #endif  // OS_WIN
 
+#if defined(OS_MAC)
+SANDBOX_POLICY_EXPORT extern const char kMirroringSandbox[];
+#endif  // OS_MAC
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 SANDBOX_POLICY_EXPORT extern const char kImeSandbox[];
 SANDBOX_POLICY_EXPORT extern const char kTtsSandbox[];
+#if BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
+SANDBOX_POLICY_EXPORT extern const char kLibassistantSandbox[];
+#endif  // BUILDFLAG(ENABLE_LIBASSISTANT_SANDBOX)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Flags owned by the service manager sandbox.
@@ -65,6 +80,7 @@ SANDBOX_POLICY_EXPORT extern const char kAddXrAppContainerCaps[];
 #endif
 #if defined(OS_MAC)
 SANDBOX_POLICY_EXPORT extern const char kEnableSandboxLogging[];
+SANDBOX_POLICY_EXPORT extern const char kDisableMetalShaderCache[];
 #endif
 
 // Flags spied upon from other layers.
@@ -77,6 +93,7 @@ SANDBOX_POLICY_EXPORT extern const char kRendererProcess[];
 SANDBOX_POLICY_EXPORT extern const char kUtilityProcess[];
 SANDBOX_POLICY_EXPORT extern const char kCloudPrintServiceProcess[];
 SANDBOX_POLICY_EXPORT extern const char kZygoteProcessType[];
+SANDBOX_POLICY_EXPORT extern const char kRelauncherProcessType[];
 
 }  // namespace switches
 }  // namespace policy

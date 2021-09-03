@@ -151,7 +151,8 @@ class PLATFORM_EXPORT MemoryCache final : public GarbageCollected<MemoryCache>,
   // Take memory usage snapshot for tracing.
   bool OnMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) override;
 
-  void OnMemoryPressure(WebMemoryPressureLevel) override;
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel) override;
 
  private:
   enum PruneStrategy {
@@ -206,4 +207,4 @@ PLATFORM_EXPORT MemoryCache* ReplaceMemoryCacheForTesting(MemoryCache*);
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_MEMORY_CACHE_H_

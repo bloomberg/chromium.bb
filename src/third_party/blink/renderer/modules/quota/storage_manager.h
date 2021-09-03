@@ -10,6 +10,7 @@
 #include "third_party/blink/public/mojom/quota/quota_manager_host.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
@@ -29,8 +30,7 @@ class StorageManager final : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit StorageManager(ExecutionContext*,
-                          mojo::Remote<mojom::blink::QuotaManagerHost> backend);
+  explicit StorageManager(ExecutionContext*);
   ~StorageManager() override;
 
   ScriptPromise persisted(ScriptState*);
@@ -72,12 +72,8 @@ class StorageManager final : public EventTargetWithInlineData,
   // provider, and returns it,
   mojom::blink::QuotaManagerHost* GetQuotaHost(ExecutionContext*);
 
-  HeapMojoRemote<mojom::blink::PermissionService,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      permission_service_;
-  HeapMojoRemote<mojom::blink::QuotaManagerHost,
-                 HeapMojoWrapperMode::kWithoutContextObserver>
-      quota_host_;
+  HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
+  HeapMojoRemote<mojom::blink::QuotaManagerHost> quota_host_;
 
   HeapMojoReceiver<mojom::blink::QuotaChangeListener, StorageManager>
       change_listener_receiver_;

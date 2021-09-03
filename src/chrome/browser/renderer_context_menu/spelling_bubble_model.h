@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class Profile;
 
@@ -17,18 +18,21 @@ class WebContents;
 
 // A class that implements a bubble menu shown when we confirm a user allows
 // integrating the spelling service of Google to Chrome.
-class SpellingBubbleModel : public ConfirmBubbleModel {
+class SpellingBubbleModel : public ConfirmBubbleModel,
+                            public content::WebContentsObserver {
  public:
   SpellingBubbleModel(Profile* profile, content::WebContents* web_contents);
   ~SpellingBubbleModel() override;
+  SpellingBubbleModel(const SpellingBubbleModel&) = delete;
+  SpellingBubbleModel& operator=(const SpellingBubbleModel&) = delete;
 
   // ConfirmBubbleModel implementation.
-  base::string16 GetTitle() const override;
-  base::string16 GetMessageText() const override;
-  base::string16 GetButtonLabel(ui::DialogButton button) const override;
+  std::u16string GetTitle() const override;
+  std::u16string GetMessageText() const override;
+  std::u16string GetButtonLabel(ui::DialogButton button) const override;
   void Accept() override;
   void Cancel() override;
-  base::string16 GetLinkText() const override;
+  std::u16string GetLinkText() const override;
   GURL GetHelpPageURL() const override;
   void OpenHelpPage() override;
 
@@ -36,10 +40,8 @@ class SpellingBubbleModel : public ConfirmBubbleModel {
   // Set the profile preferences to enable or disable the feature.
   void SetPref(bool enabled);
 
+  // Unowned.
   Profile* profile_;
-  content::WebContents* web_contents_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpellingBubbleModel);
 };
 
 #endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_SPELLING_BUBBLE_MODEL_H_

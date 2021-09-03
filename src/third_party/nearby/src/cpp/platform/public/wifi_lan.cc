@@ -55,6 +55,7 @@ bool WifiLanMedium::StartDiscovery(const std::string& service_id,
                              wifi_lan_service.GetServiceInfo()
                                  .GetServiceInfoName()
                                  .c_str());
+                  return;
                 } else {
                   context.wifi_lan_service = WifiLanService(&wifi_lan_service);
                   NEARBY_LOG(
@@ -136,13 +137,15 @@ bool WifiLanMedium::StopAcceptingConnections(const std::string& service_id) {
 }
 
 WifiLanSocket WifiLanMedium::Connect(WifiLanService& wifi_lan_service,
-                                     const std::string& service_id) {
+                                     const std::string& service_id,
+                                     CancellationFlag* cancellation_flag) {
   NEARBY_LOG(
       INFO,
       "WifiLanMedium::Connect: service=%p [impl=%p, service_info_name=%s]",
       &wifi_lan_service, &wifi_lan_service.GetImpl(),
       wifi_lan_service.GetServiceInfo().GetServiceInfoName().c_str());
-  return WifiLanSocket(impl_->Connect(wifi_lan_service.GetImpl(), service_id));
+  return WifiLanSocket(impl_->Connect(wifi_lan_service.GetImpl(), service_id,
+                                      cancellation_flag));
 }
 
 WifiLanService WifiLanMedium::GetRemoteService(const std::string& ip_address,

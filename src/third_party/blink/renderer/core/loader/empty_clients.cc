@@ -29,6 +29,7 @@
 
 #include <memory>
 #include "cc/layers/layer.h"
+#include "components/viz/common/surfaces/local_surface_id.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
@@ -45,10 +46,10 @@
 
 namespace blink {
 
-void FillWithEmptyClients(Page::PageClients& page_clients) {
-  DEFINE_STATIC_LOCAL(Persistent<ChromeClient>, dummy_chrome_client,
+ChromeClient& GetStaticEmptyChromeClientInstance() {
+  DEFINE_STATIC_LOCAL(Persistent<ChromeClient>, chrome_client,
                       (MakeGarbageCollected<EmptyChromeClient>()));
-  page_clients.chrome_client = dummy_chrome_client;
+  return *chrome_client;
 }
 
 class EmptyPopupMenu : public PopupMenu {
@@ -97,30 +98,30 @@ void EmptyLocalFrameClient::BeginNavigation(
     NavigationPolicy,
     WebFrameLoadType,
     bool,
-    TriggeringEventInfo,
+    mojom::blink::TriggeringEventInfo,
     HTMLFormElement*,
     network::mojom::CSPDisposition,
     mojo::PendingRemote<mojom::blink::BlobURLToken>,
     base::TimeTicks,
     const String&,
-    const base::Optional<WebImpression>&,
-    WTF::Vector<network::mojom::blink::ContentSecurityPolicyPtr> initiator_csp,
-    network::mojom::blink::CSPSourcePtr initiator_csp_self,
+    const absl::optional<WebImpression>&,
     network::mojom::IPAddressSpace,
-    mojo::PendingRemote<mojom::blink::NavigationInitiator>) {}
+    const LocalFrameToken* initiator_frame_token,
+    std::unique_ptr<SourceLocation>,
+    mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>) {}
 
 void EmptyLocalFrameClient::DispatchWillSendSubmitEvent(HTMLFormElement*) {}
 
 DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
     LocalFrame* frame,
     WebNavigationType navigation_type,
-    ContentSecurityPolicy* content_security_policy,
     std::unique_ptr<WebNavigationParams> navigation_params,
+    std::unique_ptr<PolicyContainer> policy_container,
     std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(frame);
   return MakeGarbageCollected<DocumentLoader>(frame, navigation_type,
-                                              content_security_policy,
-                                              std::move(navigation_params));
+                                              std::move(navigation_params),
+                                              std::move(policy_container));
 }
 
 LocalFrame* EmptyLocalFrameClient::CreateFrame(const AtomicString&,
@@ -183,7 +184,5 @@ std::unique_ptr<WebServiceWorkerProvider>
 EmptyLocalFrameClient::CreateServiceWorkerProvider() {
   return nullptr;
 }
-
-EmptyRemoteFrameClient::EmptyRemoteFrameClient() = default;
 
 }  // namespace blink

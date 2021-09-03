@@ -49,17 +49,16 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
     std::string result =
         the_browser->web_contents()->GetLastCommittedURL().ref();
     if (result != "pass") {
-      std::string js_result;
-      ASSERT_TRUE(ExecuteScriptAndExtractString(
-          the_browser, "window.domAutomationController.send(getLog())",
-          &js_result));
+      std::string js_result = EvalJs(the_browser, "getLog()").ExtractString();
       FAIL() << "Failed: " << js_result;
     }
   }
 
   StoragePartition* partition() {
-    return BrowserContext::GetDefaultStoragePartition(
-        shell()->web_contents()->GetBrowserContext());
+    return shell()
+        ->web_contents()
+        ->GetBrowserContext()
+        ->GetDefaultStoragePartition();
   }
 
   std::vector<StorageUsageInfo> GetUsage() {
@@ -156,13 +155,11 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, FileUrlWithHost) {
               testing::EndsWith("/title1.html"));
 
   // Verify that window.localStorage works fine.
-  std::string result;
   std::string script = R"(
       localStorage["foo"] = "bar";
-      domAutomationController.send(localStorage["foo"]);
+      localStorage["foo"];
   )";
-  EXPECT_TRUE(ExecuteScriptAndExtractString(shell(), script, &result));
-  EXPECT_EQ("bar", result);
+  EXPECT_EQ("bar", EvalJs(shell(), script));
 }
 #endif
 
@@ -180,8 +177,7 @@ IN_PROC_BROWSER_TEST_F(DOMStorageBrowserTest, DataMigrates) {
         std::make_unique<storage::FilesystemProxy>(
             storage::FilesystemProxy::UNRESTRICTED, legacy_local_storage_path));
     storage::LegacyDomStorageValuesMap data;
-    data[base::ASCIIToUTF16("foo")] =
-        base::NullableString16(base::ASCIIToUTF16("bar"), false);
+    data[u"foo"] = u"bar";
     db.CommitChanges(false, data);
     EXPECT_TRUE(base::PathExists(db_path));
   }

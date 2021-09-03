@@ -13,10 +13,10 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
-#include "chrome/common/web_page_metadata.mojom-forward.h"
 #include "components/services/app_service/public/cpp/share_target.h"
+#include "components/services/app_service/public/cpp/url_handler_info.h"
+#include "components/webapps/common/web_page_metadata.mojom-forward.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-shared.h"
@@ -28,8 +28,68 @@
 using SquareSizePx = int;
 // Iterates in ascending order (checked in SortedSizesPxIsAscending test).
 using SortedSizesPx = base::flat_set<SquareSizePx, std::less<>>;
-using ShortcutsMenuIconsBitmaps = std::vector<std::map<SquareSizePx, SkBitmap>>;
 using IconPurpose = blink::mojom::ManifestImageResource_Purpose;
+
+// Icon bitmaps for each IconPurpose.
+struct IconBitmaps {
+  IconBitmaps();
+  ~IconBitmaps();
+  IconBitmaps(const IconBitmaps&);
+  IconBitmaps(IconBitmaps&&) noexcept;
+  IconBitmaps& operator=(const IconBitmaps&);
+  IconBitmaps& operator=(IconBitmaps&&) noexcept;
+
+  const std::map<SquareSizePx, SkBitmap>& GetBitmapsForPurpose(
+      IconPurpose purpose) const;
+  void SetBitmapsForPurpose(IconPurpose purpose,
+                            std::map<SquareSizePx, SkBitmap> bitmaps);
+
+  bool empty() const;
+
+  // TODO(crbug.com/1152661): Consider using base::flat_map.
+
+  // Icon bitmaps suitable for any context, keyed by their square size.
+  // See https://www.w3.org/TR/appmanifest/#dfn-any-purpose
+  std::map<SquareSizePx, SkBitmap> any;
+
+  // Icon bitmaps designed for masking, keyed by their square size.
+  // See https://www.w3.org/TR/appmanifest/#dfn-maskable-purpose
+  std::map<SquareSizePx, SkBitmap> maskable;
+
+  // Monochrome bitmaps designed for any context, keyed by their square size.
+  // See https://www.w3.org/TR/appmanifest/#purpose-member
+  std::map<SquareSizePx, SkBitmap> monochrome;
+};
+
+// Icon sizes for each IconPurpose.
+struct IconSizes {
+  IconSizes();
+  ~IconSizes();
+  IconSizes(const IconSizes&);
+  IconSizes(IconSizes&&) noexcept;
+  IconSizes& operator=(const IconSizes&);
+  IconSizes& operator=(IconSizes&&) noexcept;
+
+  const std::vector<SquareSizePx>& GetSizesForPurpose(
+      IconPurpose purpose) const;
+  void SetSizesForPurpose(IconPurpose purpose, std::vector<SquareSizePx> sizes);
+
+  bool empty() const;
+
+  // Sizes of icon bitmaps suitable for any context.
+  // See https://www.w3.org/TR/appmanifest/#dfn-any-purpose
+  std::vector<SquareSizePx> any;
+
+  // Sizes of icon bitmaps designed for masking.
+  // See https://www.w3.org/TR/appmanifest/#dfn-maskable-purpose
+  std::vector<SquareSizePx> maskable;
+
+  // Sizes of monochrome bitmaps, keyed by their square size.
+  // See https://www.w3.org/TR/appmanifest/#purpose-member
+  std::vector<SquareSizePx> monochrome;
+};
+
+using ShortcutsMenuIconBitmaps = std::vector<IconBitmaps>;
 
 // TODO(https://crbug.com/1091473): Rename WebApplication* occurrences in this
 // file to WebApp*.
@@ -43,8 +103,7 @@ struct WebApplicationIconInfo {
   WebApplicationIconInfo& operator=(WebApplicationIconInfo&&) noexcept;
 
   GURL url;
-  base::Optional<SquareSizePx> square_size_px;
-  // TODO (crbug.com/1114638): Support Monochrome.
+  absl::optional<SquareSizePx> square_size_px;
   IconPurpose purpose = IconPurpose::ANY;
 };
 
@@ -74,14 +133,31 @@ struct WebApplicationShortcutsMenuItemInfo {
   WebApplicationShortcutsMenuItemInfo& operator=(
       WebApplicationShortcutsMenuItemInfo&&) noexcept;
 
+  const std::vector<Icon>& GetShortcutIconInfosForPurpose(
+      IconPurpose purpose) const;
+  void SetShortcutIconInfosForPurpose(IconPurpose purpose,
+                                      std::vector<Icon> shortcut_icon_infos);
+
   // Title of shortcut item in App Icon Shortcut Menu.
-  base::string16 name;
+  std::u16string name;
 
   // URL launched when shortcut item is selected.
   GURL url;
 
-  // List of shortcut icon URLs with associated square size.
-  std::vector<Icon> shortcut_icon_infos;
+  // List of shortcut icon URLs with associated square size,
+  // suitable for any context.
+  // See https://www.w3.org/TR/appmanifest/#dfn-any-purpose
+  std::vector<Icon> any;
+
+  // List of shortcut icon URLs with associated square size,
+  // designed for masking.
+  // See https://www.w3.org/TR/appmanifest/#dfn-maskable-purpose
+  std::vector<Icon> maskable;
+
+  // List of shortcut icon URLs with associated square size,
+  // designed for monochrome contexts.
+  // See https://www.w3.org/TR/appmanifest/#purpose-member
+  std::vector<Icon> monochrome;
 };
 
 // Structure used when installing a web page as an app.
@@ -94,35 +170,38 @@ struct WebApplicationInfo {
 
   WebApplicationInfo();
   WebApplicationInfo(const WebApplicationInfo& other);
-  explicit WebApplicationInfo(const chrome::mojom::WebPageMetadata& metadata);
+  explicit WebApplicationInfo(const webapps::mojom::WebPageMetadata& metadata);
   ~WebApplicationInfo();
 
+  // Id specified in the manifest.
+  absl::optional<std::string> manifest_id;
+
   // Title of the application.
-  base::string16 title;
+  std::u16string title;
 
   // Description of the application.
-  base::string16 description;
+  std::u16string description;
 
-  // The start_url for the app.
+  // The URL the site would prefer the user agent load when launching the app.
   // https://www.w3.org/TR/appmanifest/#start_url-member
   GURL start_url;
 
+  // The URL of the manifest.
+  // https://www.w3.org/TR/appmanifest/#web-application-manifest
+  GURL manifest_url;
+
   // Optional query parameters to add to the start_url when launching the app.
-  base::Optional<std::string> launch_query_params;
+  absl::optional<std::string> launch_query_params;
 
   // Scope for the app. Dictates what URLs will be opened in the app.
+  // https://www.w3.org/TR/appmanifest/#scope-member
   GURL scope;
 
   // List of icon URLs with associated square size and purpose.
   std::vector<WebApplicationIconInfo> icon_infos;
 
-  // Icon bitmaps suitable for any context, keyed by their square size.
-  // See https://www.w3.org/TR/appmanifest/#dfn-any-purpose
-  std::map<SquareSizePx, SkBitmap> icon_bitmaps_any;
-
-  // Icon bitmaps designed for masking, keyed by their square size.
-  // See https://www.w3.org/TR/appmanifest/#dfn-maskable-purpose
-  std::map<SquareSizePx, SkBitmap> icon_bitmaps_maskable;
+  // Icon bitmaps, keyed by their square size.
+  IconBitmaps icon_bitmaps;
 
   // Represents whether the icons for the web app are generated by Chrome due to
   // no suitable icons being available.
@@ -136,11 +215,11 @@ struct WebApplicationInfo {
   SkColor generated_icon_color = SK_ColorTRANSPARENT;
 
   // The color to use for the web app frame.
-  base::Optional<SkColor> theme_color;
+  absl::optional<SkColor> theme_color;
 
   // The expected page background color of the web app.
   // https://www.w3.org/TR/appmanifest/#background_color-member
-  base::Optional<SkColor> background_color;
+  absl::optional<SkColor> background_color;
 
   // App preference regarding whether the app should be opened in a tab,
   // in a window (with or without minimal-ui buttons), or full screen. Defaults
@@ -165,7 +244,7 @@ struct WebApplicationInfo {
   std::vector<blink::Manifest::FileHandler> file_handlers;
 
   // File types the app accepts as a Web Share Target.
-  base::Optional<apps::ShareTarget> share_target;
+  absl::optional<apps::ShareTarget> share_target;
 
   // Additional search terms that users can use to find the app.
   std::vector<std::string> additional_search_terms;
@@ -175,24 +254,36 @@ struct WebApplicationInfo {
   std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos;
 
   // Vector of shortcut icon bitmaps keyed by their square size. The index of a
-  // given std::map matches that of the shortcut in shortcuts_menu_item_infos
-  // whose bitmaps it contains.
-  ShortcutsMenuIconsBitmaps shortcuts_menu_icons_bitmaps;
+  // given |IconBitmaps| matches that of the shortcut in
+  // |shortcuts_menu_item_infos| whose bitmaps it contains.
+  ShortcutsMenuIconBitmaps shortcuts_menu_icon_bitmaps;
 
   // The URL protocols/schemes that the app can handle.
   std::vector<blink::Manifest::ProtocolHandler> protocol_handlers;
 
+  // URL within scope to launch for a "new note" action. Valid iff this is
+  // considered a note-taking app.
+  // TODO(crbug.com/1185678): Parse this from the manifest.
+  GURL note_taking_new_note_url;
+
   // The app intends to act as a URL handler for URLs described by this
   // information.
-  std::vector<blink::Manifest::UrlHandler> url_handlers;
+  apps::UrlHandlers url_handlers;
 
   // User preference as to whether to auto run the app on OS login.
   // Currently only supported in Windows platform.
   bool run_on_os_login = false;
+
+  // The link capturing behaviour to use for navigations into in the app's
+  // scope.
+  blink::mojom::CaptureLinks capture_links =
+      blink::mojom::CaptureLinks::kUndefined;
 };
 
 std::ostream& operator<<(std::ostream& out,
                          const WebApplicationIconInfo& icon_info);
+
+bool operator==(const IconSizes& icon_sizes1, const IconSizes& icon_sizes2);
 
 bool operator==(const WebApplicationIconInfo& icon_info1,
                 const WebApplicationIconInfo& icon_info2);
@@ -202,5 +293,8 @@ bool operator==(const WebApplicationShortcutsMenuItemInfo::Icon& icon1,
 
 bool operator==(const WebApplicationShortcutsMenuItemInfo& shortcut_info1,
                 const WebApplicationShortcutsMenuItemInfo& shortcut_info2);
+
+std::ostream& operator<<(std::ostream& out,
+                         const WebApplicationShortcutsMenuItemInfo& info);
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_WEB_APPLICATION_INFO_H_

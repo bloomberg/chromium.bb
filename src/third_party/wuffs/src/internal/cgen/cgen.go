@@ -43,7 +43,8 @@ var (
 
 	maxInt64 = big.NewInt((1 << 63) - 1)
 
-	typeExprUtility = a.NewTypeExpr(0, t.IDBase, t.IDUtility, nil, nil, nil)
+	typeExprARMCRC32U32   = a.NewTypeExpr(0, t.IDBase, t.IDARMCRC32U32, nil, nil, nil)
+	typeExprPixelSwizzler = a.NewTypeExpr(0, t.IDBase, t.IDPixelSwizzler, nil, nil, nil)
 )
 
 // Prefixes are prepended to names to form a namespace and to avoid e.g.
@@ -66,10 +67,10 @@ const (
 // reading or writing the next byte (and advancing the stream) is essentially
 // "etc = *iop_a_src++" or "*io_a_dst++ = etc".
 //
-// The other two prefixes, giving names like io1_etc and io2_etc, are
-// auxilliary pointers: lower and upper inclusive bounds. As an iop_etc pointer
-// advances, it cannot advance past io2_etc. In the rarer case that an iop_etc
-// pointer retreats, undoing a read or write, it cannot retreat past io1_etc.
+// The other two prefixes, giving names like io1_etc and io2_etc, are auxiliary
+// pointers: lower and upper inclusive bounds. As an iop_etc pointer advances,
+// it cannot advance past io2_etc. In the rarer case that an iop_etc pointer
+// retreats, undoing a read or write, it cannot retreat past io1_etc.
 //
 // The iop_etc pointer can change over the lifetime of a function. The ioN_etc
 // pointers, for numeric N, cannot.
@@ -99,6 +100,7 @@ var BaseSubModules = []string{
 	"floatconv",
 	"intconv",
 	"interfaces",
+	"magic",
 	"pixconv",
 	"utf8",
 }
@@ -128,6 +130,7 @@ func Do(args []string) error {
 				"// !! INSERT base/copyright\n":              insertBaseCopyright,
 				"// !! INSERT base/floatconv-submodule.c.\n": insertBaseFloatConvSubmoduleC,
 				"// !! INSERT base/intconv-submodule.c.\n":   insertBaseIntConvSubmoduleC,
+				"// !! INSERT base/magic-submodule.c.\n":     insertBaseMagicSubmoduleC,
 				"// !! INSERT base/pixconv-submodule.c.\n":   insertBasePixConvSubmoduleC,
 				"// !! INSERT base/utf8-submodule.c.\n":      insertBaseUTF8SubmoduleC,
 				"// !! INSERT vtable names.\n": func(b *buffer) error {
@@ -301,6 +304,21 @@ func insertBaseAllPublicH(buf *buffer) error {
 			}
 			return nil
 		},
+		"// !! INSERT Quirks.\n": func(b *buffer) error {
+			first := true
+			for _, z := range builtin.Consts {
+				if (z.Name == "") || (z.Name[0] != 'Q') || !strings.HasPrefix(z.Name, "QUIRK_") {
+					continue
+				}
+				if first {
+					first = false
+				} else {
+					b.writeb('\n')
+				}
+				b.printf("#define WUFFS_BASE__%s %s\n", z.Name, z.Value)
+			}
+			return nil
+		},
 		"// !! INSERT wuffs_base__status names.\n": func(b *buffer) error {
 			for _, z := range builtin.Statuses {
 				msg, _ := t.Unescape(z)
@@ -353,6 +371,11 @@ func insertBaseIntConvSubmoduleC(buf *buffer) error {
 	return nil
 }
 
+func insertBaseMagicSubmoduleC(buf *buffer) error {
+	buf.writes(data.BaseMagicSubmoduleC)
+	return nil
+}
+
 func insertBasePixConvSubmoduleC(buf *buffer) error {
 	buf.writes(data.BasePixConvSubmoduleC)
 	return nil
@@ -387,7 +410,7 @@ func insertInterfaceDeclarations(buf *buffer) error {
 
 		buf.printf("extern const char wuffs_base__%s__vtable_name[];\n\n", n)
 
-		buf.writes("typedef struct {\n")
+		buf.printf("typedef struct wuffs_base__%s__func_ptrs__struct {\n", n)
 		for _, f := range builtInInterfaceMethods[qid] {
 			buf.writes("  ")
 			if err := g.writeFuncSignature(buf, f, wfsCFuncPtrField); err != nil {
@@ -416,7 +439,7 @@ func insertInterfaceDeclarations(buf *buffer) error {
 		buf.writes("  } private_impl;\n\n")
 
 		buf.writes("#ifdef __cplusplus\n")
-		buf.writes("#if (__cplusplus >= 201103L)\n")
+		buf.writes("#if defined(WUFFS_BASE__HAVE_UNIQUE_PTR)\n")
 		buf.printf("  using unique_ptr = std::unique_ptr<wuffs_base__%s, decltype(&free)>;\n", n)
 		buf.writes("#endif\n\n")
 
@@ -662,7 +685,7 @@ func (g *gen) genIncludes(b *buffer) error {
 			useDirname := g.tm.ByID(tld.AsUse().Path())
 			useDirname, _ = t.Unescape(useDirname)
 
-			// TODO: sanity check useDirname via commonflags.IsValidUsePath?
+			// TODO: coherence check useDirname via commonflags.IsValidUsePath?
 
 			if _, ok := usesMap[useDirname]; ok {
 				continue
@@ -684,8 +707,7 @@ func (g *gen) genIncludes(b *buffer) error {
 }
 
 func (g *gen) genHeader(b *buffer) error {
-	b.writes("\n#ifdef __cplusplus\nextern \"C\" {\n#endif\n\n")
-
+	b.writes("\n")
 	b.writes("// ---------------- Status Codes\n\n")
 
 	wroteStatus := false
@@ -710,6 +732,8 @@ func (g *gen) genHeader(b *buffer) error {
 		structName := n.QID().Str(g.tm)
 		b.printf("typedef struct %s%s__struct %s%s;\n\n", g.pkgPrefix, structName, g.pkgPrefix, structName)
 	}
+
+	b.writes("#ifdef __cplusplus\nextern \"C\" {\n#endif\n\n")
 
 	b.writes("// ---------------- Public Initializer Prototypes\n\n")
 	b.writes("// For any given \"wuffs_foo__bar* self\", \"wuffs_foo__bar__initialize(self,\n")
@@ -771,6 +795,8 @@ func (g *gen) genHeader(b *buffer) error {
 		return err
 	}
 
+	b.writes("#ifdef __cplusplus\n}  // extern \"C\"\n#endif\n\n")
+
 	b.writes("// ---------------- Struct Definitions\n\n")
 	b.writes("// These structs' fields, and the sizeof them, are private implementation\n")
 	b.writes("// details that aren't guaranteed to be stable across Wuffs versions.\n")
@@ -783,9 +809,8 @@ func (g *gen) genHeader(b *buffer) error {
 			return err
 		}
 	}
-	b.writes("#endif  // defined(__cplusplus) || defined(WUFFS_IMPLEMENTATION)\n")
+	b.writes("#endif  // defined(__cplusplus) || defined(WUFFS_IMPLEMENTATION)\n\n")
 
-	b.writes("\n#ifdef __cplusplus\n}  // extern \"C\"\n#endif\n\n")
 	return nil
 }
 
@@ -853,8 +878,8 @@ func (g *gen) forEachConst(b *buffer, v visibility, f func(*gen, *buffer, *a.Con
 	for _, file := range g.files {
 		for _, tld := range file.TopLevelDecls() {
 			if tld.Kind() != a.KConst ||
-				(v == pubOnly && tld.AsRaw().Flags()&a.FlagsPublic == 0) ||
-				(v == priOnly && tld.AsRaw().Flags()&a.FlagsPublic != 0) {
+				((v == pubOnly) && !tld.AsConst().Public()) ||
+				((v == priOnly) && tld.AsConst().Public()) {
 				continue
 			}
 			if err := f(g, b, tld.AsConst()); err != nil {
@@ -869,8 +894,8 @@ func (g *gen) forEachFunc(b *buffer, v visibility, f func(*gen, *buffer, *a.Func
 	for _, file := range g.files {
 		for _, tld := range file.TopLevelDecls() {
 			if tld.Kind() != a.KFunc ||
-				(v == pubOnly && tld.AsRaw().Flags()&a.FlagsPublic == 0) ||
-				(v == priOnly && tld.AsRaw().Flags()&a.FlagsPublic != 0) {
+				((v == pubOnly) && !tld.AsFunc().Public()) ||
+				((v == priOnly) && tld.AsFunc().Public()) {
 				continue
 			}
 			if err := f(g, b, tld.AsFunc()); err != nil {
@@ -885,12 +910,23 @@ func (g *gen) forEachStatus(b *buffer, v visibility, f func(*gen, *buffer, *a.St
 	for _, file := range g.files {
 		for _, tld := range file.TopLevelDecls() {
 			if tld.Kind() != a.KStatus ||
-				(v == pubOnly && tld.AsRaw().Flags()&a.FlagsPublic == 0) ||
-				(v == priOnly && tld.AsRaw().Flags()&a.FlagsPublic != 0) {
+				((v == pubOnly) && !tld.AsStatus().Public()) ||
+				((v == priOnly) && tld.AsStatus().Public()) {
 				continue
 			}
 			if err := f(g, b, tld.AsStatus()); err != nil {
 				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (g *gen) findAstFunc(qqid t.QQID) *a.Func {
+	for _, file := range g.files {
+		for _, tld := range file.TopLevelDecls() {
+			if (tld.Kind() == a.KFunc) && (tld.AsFunc().QQID() == qqid) {
+				return tld.AsFunc()
 			}
 		}
 	}
@@ -989,7 +1025,7 @@ func (g *gen) writeConst(b *buffer, n *a.Const) error {
 		if err := g.writeCTypeName(b, n.XType(), "\n"+g.PKGPREFIX, n.QID()[1].Str(g.tm)); err != nil {
 			return err
 		}
-		b.writes("WUFFS_BASE__POTENTIALLY_UNUSED = ")
+		b.writes(" WUFFS_BASE__POTENTIALLY_UNUSED = ")
 		if err := g.writeConstList(b, n.Value()); err != nil {
 			return err
 		}
@@ -1045,7 +1081,7 @@ func (g *gen) writeStructPrivateImpl(b *buffer, n *a.Struct) error {
 
 	for _, o := range n.Fields() {
 		o := o.AsField()
-		if o.PrivateData() || o.XType().Eq(typeExprUtility) {
+		if o.PrivateData() || o.XType().IsEtcUtilityType() {
 			continue
 		}
 		if err := g.writeCTypeName(b, o.XType(), fPrefix, o.Name().Str(g.tm)); err != nil {
@@ -1062,22 +1098,32 @@ func (g *gen) writeStructPrivateImpl(b *buffer, n *a.Struct) error {
 					continue
 				}
 				o := tld.AsFunc()
-				if o.Receiver() != n.QID() || !o.Effect().Coroutine() {
+				if o.Receiver() != n.QID() {
 					continue
-				}
-				k := g.funks[o.QQID()]
-				if k.coroSuspPoint == 0 {
-					continue
-				}
 
-				if needEmptyLine {
-					needEmptyLine = false
-					b.writeb('\n')
+				} else if o.Effect().Coroutine() {
+					k := g.funks[o.QQID()]
+					if k.coroSuspPoint == 0 {
+						continue
+					}
+					if needEmptyLine {
+						needEmptyLine = false
+						b.writeb('\n')
+					}
+					b.printf("uint32_t %s%s[%d];\n", pPrefix, o.FuncName().Str(g.tm), maxDepth)
+
+				} else if o.Choosy() {
+					if needEmptyLine {
+						needEmptyLine = false
+						b.writeb('\n')
+					}
+					if err := g.writeFuncSignature(b, o, wfsCFuncPtrFieldChoosy); err != nil {
+						return err
+					}
+					b.writes(";\n")
 				}
-				b.printf("uint32_t %s%s[%d];\n", pPrefix, o.FuncName().Str(g.tm), maxDepth)
 			}
 		}
-
 	}
 	b.writes("} private_impl;\n\n")
 
@@ -1088,7 +1134,7 @@ func (g *gen) writeStructPrivateImpl(b *buffer, n *a.Struct) error {
 
 		for _, o := range n.Fields() {
 			o := o.AsField()
-			if !o.PrivateData() || o.XType().Eq(typeExprUtility) {
+			if !o.PrivateData() || o.XType().IsEtcUtilityType() {
 				continue
 			}
 			if err := g.writeCTypeName(b, o.XType(), fPrefix, o.Name().Str(g.tm)); err != nil {
@@ -1156,7 +1202,7 @@ func (g *gen) writeStruct(b *buffer, n *a.Struct) error {
 		return err
 	}
 
-	if n.AsNode().AsRaw().Flags()&a.FlagsPublic != 0 {
+	if n.Public() {
 		if err := g.writeCppMethods(b, n); err != nil {
 			return err
 		}
@@ -1171,7 +1217,7 @@ func (g *gen) writeCppMethods(b *buffer, n *a.Struct) error {
 	fullStructName := g.pkgPrefix + structName + "__struct"
 	b.writes("#ifdef __cplusplus\n")
 
-	b.writes("#if (__cplusplus >= 201103L)\n")
+	b.writes("#if defined(WUFFS_BASE__HAVE_UNIQUE_PTR)\n")
 	b.printf("using unique_ptr = std::unique_ptr<%s%s, decltype(&free)>;\n\n", g.pkgPrefix, structName)
 	b.writes("// On failure, the alloc_etc functions return nullptr. They don't throw.\n\n")
 	b.writes("static inline unique_ptr\n")
@@ -1187,9 +1233,9 @@ func (g *gen) writeCppMethods(b *buffer, n *a.Struct) error {
 			iName, g.pkgPrefix, structName, iName)
 		b.printf("}\n")
 	}
-	b.writes("#endif  // (__cplusplus >= 201103L)\n\n")
+	b.writes("#endif  // defined(WUFFS_BASE__HAVE_UNIQUE_PTR)\n\n")
 
-	b.writes("#if (__cplusplus >= 201103L) && !defined(WUFFS_IMPLEMENTATION)\n")
+	b.writes("#if defined(WUFFS_BASE__HAVE_EQ_DELETE) && !defined(WUFFS_IMPLEMENTATION)\n")
 	b.writes("// Disallow constructing or copying an object via standard C++ mechanisms,\n")
 	b.writes("// e.g. the \"new\" operator, as this struct is intentionally opaque. Its total\n")
 	b.writes("// size and field layout is not part of the public, stable, memory-safe API.\n")
@@ -1204,7 +1250,9 @@ func (g *gen) writeCppMethods(b *buffer, n *a.Struct) error {
 	b.printf("%s() = delete;\n", fullStructName)
 	b.printf("%s(const %s&) = delete;\n", fullStructName, fullStructName)
 	b.printf("%s& operator=(\nconst %s&) = delete;\n", fullStructName, fullStructName)
-	b.writes("\n")
+	b.writes("#endif  // defined(WUFFS_BASE__HAVE_EQ_DELETE) && !defined(WUFFS_IMPLEMENTATION)\n\n")
+
+	b.writes("#if !defined(WUFFS_IMPLEMENTATION)\n")
 	b.writes("// As above, the size of the struct is not part of the public API, and unless\n")
 	b.writes("// WUFFS_IMPLEMENTATION is #define'd, this struct type T should be heap\n")
 	b.writes("// allocated, not stack allocated. Its size is not intended to be known at\n")
@@ -1214,7 +1262,7 @@ func (g *gen) writeCppMethods(b *buffer, n *a.Struct) error {
 	b.writes("// different, so that passing the latter will be rejected by the initialize\n")
 	b.writes("// function, we add an arbitrary amount of dead weight.\n")
 	b.writes("uint8_t dead_weight[123000000];  // 123 MB.\n")
-	b.writes("#endif  // (__cplusplus >= 201103L) && !defined(WUFFS_IMPLEMENTATION)\n\n")
+	b.writes("#endif  // !defined(WUFFS_IMPLEMENTATION)\n\n")
 
 	b.writes("inline wuffs_base__status WUFFS_BASE__WARN_UNUSED_RESULT\n" +
 		"initialize(\nsize_t sizeof_star_self,\nuint64_t wuffs_version,\nuint32_t options) {\n")
@@ -1233,7 +1281,7 @@ func (g *gen) writeCppMethods(b *buffer, n *a.Struct) error {
 	structID := n.QID()[1]
 	for _, file := range g.files {
 		for _, tld := range file.TopLevelDecls() {
-			if (tld.Kind() != a.KFunc) || (tld.AsRaw().Flags()&a.FlagsPublic == 0) {
+			if (tld.Kind() != a.KFunc) || !tld.AsFunc().Public() {
 				continue
 			}
 			f := tld.AsFunc()
@@ -1383,6 +1431,26 @@ func (g *gen) writeInitializerImpl(b *buffer, n *a.Struct) error {
 	b.writes("    memset(&(self->private_impl), 0, sizeof(self->private_impl));\n")
 	b.writes("  }\n")
 	b.writes("}\n\n")
+
+	// Initialize any choosy function pointers.
+	hasChoosy := false
+	for _, file := range g.files {
+		for _, tld := range file.TopLevelDecls() {
+			if tld.Kind() != a.KFunc {
+				continue
+			}
+			o := tld.AsFunc()
+			if (o.Receiver() != n.QID()) || !o.Choosy() {
+				continue
+			}
+			hasChoosy = true
+			b.printf("self->private_impl.choosy_%s = &%s__choosy_default;\n",
+				o.FuncName().Str(g.tm), g.funcCName(o))
+		}
+	}
+	if hasChoosy {
+		b.writes("\n")
+	}
 
 	// Call any ctors on sub-structs.
 	for _, f := range n.Fields() {

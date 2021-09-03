@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,16 +94,18 @@ export const generatedProperties = [
     'keywords': ['read-only', 'read-write', 'read-write-plaintext-only']
   },
   {'name': '-webkit-writing-mode', 'inherited': true},
+  {'name': 'accent-color', 'inherited': true, 'keywords': ['auto', 'currentcolor']},
   {'name': 'additive-symbols'},
   {'name': 'advance-override'},
-  {'name': 'advance-proportional-override'},
   {'name': 'align-content'},
   {'name': 'align-items'},
   {'name': 'align-self'},
   {
-    'keywords': ['baseline', 'alphabetic', 'ideographic', 'middle', 'central', 'mathematical'],
-    'svg': true,
-    'name': 'alignment-baseline'
+    'name': 'alignment-baseline',
+    'keywords': [
+      'auto', 'baseline', 'alphabetic', 'ideographic', 'middle', 'central', 'mathematical', 'before-edge',
+      'text-before-edge', 'after-edge', 'text-after-edge', 'hanging'
+    ]
   },
   {'name': 'all'},
   {
@@ -159,7 +161,7 @@ export const generatedProperties = [
   {'name': 'background-repeat-x'},
   {'name': 'background-repeat-y'},
   {'name': 'background-size', 'keywords': ['auto', 'cover', 'contain']},
-  {'name': 'baseline-shift', 'svg': true, 'keywords': ['sub', 'super']},
+  {'name': 'baseline-shift', 'keywords': ['baseline', 'sub', 'super']},
   {'name': 'block-size', 'keywords': ['auto']},
   {
     'longhands': [
@@ -208,6 +210,8 @@ export const generatedProperties = [
     'longhands': ['border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color'],
     'name': 'border-color'
   },
+  {'name': 'border-end-end-radius'},
+  {'name': 'border-end-start-radius'},
   {
     'longhands': [
       'border-image-source', 'border-image-slice', 'border-image-width', 'border-image-outset', 'border-image-repeat'
@@ -268,6 +272,8 @@ export const generatedProperties = [
     'name': 'border-spacing',
     'inherited': true
   },
+  {'name': 'border-start-end-radius'},
+  {'name': 'border-start-start-radius'},
   {
     'keywords': ['none'],
     'longhands': ['border-top-style', 'border-right-style', 'border-bottom-style', 'border-left-style'],
@@ -298,17 +304,17 @@ export const generatedProperties = [
     'keywords': ['auto', 'avoid', 'avoid-column', 'avoid-page', 'column', 'left', 'page', 'recto', 'right', 'verso']
   },
   {'name': 'break-inside', 'keywords': ['auto', 'avoid', 'avoid-column', 'avoid-page']},
-  {'svg': true, 'name': 'buffered-rendering'},
+  {'name': 'buffered-rendering', 'keywords': ['auto', 'dynamic', 'static']},
   {'name': 'caption-side', 'inherited': true, 'keywords': ['top', 'bottom']},
   {'name': 'caret-color', 'inherited': true, 'keywords': ['auto', 'currentcolor']},
   {'name': 'clear', 'keywords': ['none', 'left', 'right', 'both', 'inline-start', 'inline-end']},
   {'name': 'clip', 'keywords': ['auto']},
   {'name': 'clip-path', 'keywords': ['none']},
-  {'name': 'clip-rule', 'svg': true, 'inherited': true, 'keywords': ['nonzero', 'evenodd']},
+  {'name': 'clip-rule', 'inherited': true, 'keywords': ['nonzero', 'evenodd']},
   {'name': 'color', 'inherited': true, 'keywords': ['currentcolor']},
-  {'name': 'color-interpolation', 'svg': true, 'inherited': true, 'keywords': ['auto', 'srgb', 'linearrgb']},
-  {'svg': true, 'name': 'color-interpolation-filters', 'inherited': true},
-  {'name': 'color-rendering', 'svg': true, 'inherited': true, 'keywords': ['auto', 'optimizespeed', 'optimizequality']},
+  {'name': 'color-interpolation', 'inherited': true, 'keywords': ['auto', 'srgb', 'linearrgb']},
+  {'name': 'color-interpolation-filters', 'inherited': true, 'keywords': ['auto', 'srgb', 'linearrgb']},
+  {'name': 'color-rendering', 'inherited': true, 'keywords': ['auto', 'optimizespeed', 'optimizequality']},
   {'name': 'color-scheme', 'inherited': true},
   {'name': 'column-count', 'keywords': ['auto']},
   {'name': 'column-fill', 'keywords': ['balance', 'auto']},
@@ -323,7 +329,10 @@ export const generatedProperties = [
   {'name': 'column-span', 'keywords': ['none', 'all']},
   {'name': 'column-width', 'keywords': ['auto']},
   {'longhands': ['column-width', 'column-count'], 'name': 'columns'},
-  {'name': 'contain', 'keywords': ['none', 'strict', 'content', 'size', 'layout', 'style', 'paint']},
+  {
+    'name': 'contain',
+    'keywords': ['none', 'strict', 'content', 'size', 'layout', 'style', 'paint', 'inline-size', 'block-size']
+  },
   {'name': 'contain-intrinsic-size', 'keywords': ['auto']},
   {'name': 'content'},
   {'name': 'content-visibility', 'keywords': ['visible', 'auto', 'hidden', 'hidden-matchable']},
@@ -341,9 +350,9 @@ export const generatedProperties = [
       'zoom-in',     'zoom-out',  'grab',      'grabbing'
     ]
   },
-  {'svg': true, 'name': 'cx'},
-  {'svg': true, 'name': 'cy'},
-  {'name': 'd', 'svg': true, 'keywords': ['none']},
+  {'name': 'cx'},
+  {'name': 'cy'},
+  {'name': 'd', 'keywords': ['none']},
   {'name': 'descent-override'},
   {'name': 'direction', 'inherited': true, 'keywords': ['ltr', 'rtl']},
   {
@@ -376,16 +385,18 @@ export const generatedProperties = [
   },
   {
     'name': 'dominant-baseline',
-    'svg': true,
     'inherited': true,
-    'keywords': ['auto', 'alphabetic', 'ideographic', 'middle', 'central', 'mathematical', 'hanging']
+    'keywords': [
+      'auto', 'alphabetic', 'ideographic', 'middle', 'central', 'mathematical', 'hanging', 'use-script', 'no-change',
+      'reset-size', 'text-after-edge', 'text-before-edge'
+    ]
   },
   {'name': 'empty-cells', 'inherited': true, 'keywords': ['show', 'hide']},
   {'name': 'end'},
   {'name': 'fallback'},
-  {'name': 'fill', 'svg': true, 'inherited': true},
-  {'svg': true, 'inherited': true, 'name': 'fill-opacity'},
-  {'name': 'fill-rule', 'svg': true, 'inherited': true, 'keywords': ['nonzero', 'evenodd']},
+  {'name': 'fill', 'inherited': true},
+  {'name': 'fill-opacity', 'inherited': true},
+  {'name': 'fill-rule', 'inherited': true, 'keywords': ['nonzero', 'evenodd']},
   {'name': 'filter', 'keywords': ['none']},
   {'longhands': ['flex-grow', 'flex-shrink', 'flex-basis'], 'name': 'flex'},
   {'name': 'flex-basis', 'keywords': ['auto']},
@@ -395,8 +406,8 @@ export const generatedProperties = [
   {'name': 'flex-shrink'},
   {'name': 'flex-wrap', 'keywords': ['nowrap', 'wrap', 'wrap-reverse']},
   {'name': 'float', 'keywords': ['none', 'left', 'right', 'inline-start', 'inline-end']},
-  {'name': 'flood-color', 'svg': true, 'keywords': ['currentcolor']},
-  {'name': 'flood-opacity', 'svg': true},
+  {'name': 'flood-color', 'keywords': ['currentcolor']},
+  {'name': 'flood-opacity'},
   {
     'longhands': [
       'font-style', 'font-variant-ligatures', 'font-variant-caps', 'font-variant-numeric', 'font-variant-east-asian',
@@ -514,7 +525,7 @@ export const generatedProperties = [
   {'name': 'justify-self'},
   {'name': 'left', 'keywords': ['auto']},
   {'inherited': true, 'keywords': ['normal'], 'name': 'letter-spacing'},
-  {'name': 'lighting-color', 'svg': true, 'keywords': ['currentcolor']},
+  {'name': 'lighting-color', 'keywords': ['currentcolor']},
   {'name': 'line-break', 'inherited': true, 'keywords': ['auto', 'loose', 'normal', 'strict', 'anywhere']},
   {'name': 'line-gap-override'},
   {'name': 'line-height', 'inherited': true, 'keywords': ['normal']},
@@ -527,10 +538,14 @@ export const generatedProperties = [
   {'name': 'list-style-image', 'inherited': true, 'keywords': ['none']},
   {'name': 'list-style-position', 'inherited': true, 'keywords': ['outside', 'inside']},
   {
+    'name': 'list-style-type',
+    'inherited': true,
     'keywords': [
       'disc',
       'circle',
       'square',
+      'disclosure-open',
+      'disclosure-closed',
       'decimal',
       'decimal-leading-zero',
       'arabic-indic',
@@ -584,9 +599,7 @@ export const generatedProperties = [
       'hiragana-iroha',
       'katakana-iroha',
       'none'
-    ],
-    'name': 'list-style-type',
-    'inherited': true
+    ]
   },
   {'longhands': ['margin-top', 'margin-right', 'margin-bottom', 'margin-left'], 'name': 'margin'},
   {'longhands': ['margin-block-start', 'margin-block-end'], 'name': 'margin-block'},
@@ -599,12 +612,12 @@ export const generatedProperties = [
   {'name': 'margin-left', 'keywords': ['auto']},
   {'name': 'margin-right', 'keywords': ['auto']},
   {'name': 'margin-top', 'keywords': ['auto']},
-  {'longhands': ['marker-start', 'marker-mid', 'marker-end'], 'inherited': true, 'name': 'marker', 'svg': true},
-  {'svg': true, 'inherited': true, 'keywords': ['none'], 'name': 'marker-end'},
-  {'svg': true, 'inherited': true, 'keywords': ['none'], 'name': 'marker-mid'},
-  {'svg': true, 'inherited': true, 'keywords': ['none'], 'name': 'marker-start'},
-  {'svg': true, 'name': 'mask'},
-  {'keywords': ['luminance', 'alpha'], 'svg': true, 'name': 'mask-type'},
+  {'longhands': ['marker-start', 'marker-mid', 'marker-end'], 'name': 'marker', 'inherited': true},
+  {'name': 'marker-end', 'inherited': true, 'keywords': ['none']},
+  {'name': 'marker-mid', 'inherited': true, 'keywords': ['none']},
+  {'name': 'marker-start', 'inherited': true, 'keywords': ['none']},
+  {'name': 'mask'},
+  {'name': 'mask-type', 'keywords': ['luminance', 'alpha']},
   {'name': 'math-depth', 'inherited': true},
   {'name': 'math-shift', 'inherited': true, 'keywords': ['normal', 'compact']},
   {'name': 'math-style', 'inherited': true, 'keywords': ['normal', 'compact']},
@@ -680,7 +693,7 @@ export const generatedProperties = [
   {'longhands': ['break-before'], 'name': 'page-break-before'},
   {'longhands': ['break-inside'], 'name': 'page-break-inside'},
   {'name': 'page-orientation'},
-  {'svg': true, 'inherited': true, 'keywords': ['normal', 'fill', 'stroke', 'markers'], 'name': 'paint-order'},
+  {'name': 'paint-order', 'inherited': true, 'keywords': ['normal', 'fill', 'stroke', 'markers']},
   {'name': 'perspective', 'keywords': ['none']},
   {'name': 'perspective-origin'},
   {'longhands': ['align-content', 'justify-content'], 'name': 'place-content'},
@@ -697,15 +710,15 @@ export const generatedProperties = [
   {'name': 'position', 'keywords': ['static', 'relative', 'absolute', 'fixed', 'sticky']},
   {'name': 'prefix'},
   {'name': 'quotes', 'inherited': true, 'keywords': ['auto', 'none']},
-  {'svg': true, 'name': 'r'},
+  {'name': 'r'},
   {'name': 'range'},
   {'name': 'resize', 'keywords': ['none', 'both', 'horizontal', 'vertical', 'block', 'inline']},
   {'name': 'right', 'keywords': ['auto']},
   {'name': 'rotate'},
   {'name': 'row-gap', 'keywords': ['normal']},
   {'inherited': true, 'name': 'ruby-position'},
-  {'name': 'rx', 'svg': true, 'keywords': ['auto']},
-  {'name': 'ry', 'svg': true, 'keywords': ['auto']},
+  {'name': 'rx', 'keywords': ['auto']},
+  {'name': 'ry', 'keywords': ['auto']},
   {'name': 'scale'},
   {'name': 'scroll-behavior', 'keywords': ['auto', 'smooth']},
   {'name': 'scroll-customization'},
@@ -747,11 +760,11 @@ export const generatedProperties = [
   {'name': 'shape-outside', 'keywords': ['none']},
   {
     'name': 'shape-rendering',
-    'svg': true,
     'inherited': true,
     'keywords': ['auto', 'optimizespeed', 'crispedges', 'geometricprecision']
   },
   {'name': 'size'},
+  {'name': 'size-adjust'},
   {'name': 'source'},
   {
     'name': 'speak',
@@ -761,16 +774,16 @@ export const generatedProperties = [
   {'name': 'speak-as'},
   {'name': 'src'},
   {'name': 'start'},
-  {'name': 'stop-color', 'svg': true, 'keywords': ['currentcolor']},
-  {'name': 'stop-opacity', 'svg': true},
-  {'name': 'stroke', 'svg': true, 'inherited': true},
-  {'name': 'stroke-dasharray', 'svg': true, 'inherited': true, 'keywords': ['none']},
-  {'name': 'stroke-dashoffset', 'svg': true, 'inherited': true},
-  {'name': 'stroke-linecap', 'svg': true, 'inherited': true, 'keywords': ['butt', 'round', 'square']},
-  {'name': 'stroke-linejoin', 'svg': true, 'inherited': true, 'keywords': ['miter', 'bevel', 'round']},
-  {'name': 'stroke-miterlimit', 'svg': true, 'inherited': true},
-  {'svg': true, 'inherited': true, 'name': 'stroke-opacity'},
-  {'svg': true, 'inherited': true, 'name': 'stroke-width'},
+  {'name': 'stop-color', 'keywords': ['currentcolor']},
+  {'name': 'stop-opacity'},
+  {'name': 'stroke', 'inherited': true},
+  {'name': 'stroke-dasharray', 'inherited': true, 'keywords': ['none']},
+  {'name': 'stroke-dashoffset', 'inherited': true},
+  {'name': 'stroke-linecap', 'inherited': true, 'keywords': ['butt', 'round', 'square']},
+  {'name': 'stroke-linejoin', 'inherited': true, 'keywords': ['miter', 'bevel', 'round']},
+  {'name': 'stroke-miterlimit', 'inherited': true},
+  {'name': 'stroke-opacity', 'inherited': true},
+  {'name': 'stroke-width', 'inherited': true},
   {'name': 'suffix'},
   {'name': 'symbols'},
   {'name': 'syntax'},
@@ -788,7 +801,7 @@ export const generatedProperties = [
     'inherited': true,
     'keywords': ['auto', 'start', 'end', 'left', 'right', 'center', 'justify']
   },
-  {'name': 'text-anchor', 'svg': true, 'inherited': true, 'keywords': ['start', 'middle', 'end']},
+  {'name': 'text-anchor', 'inherited': true, 'keywords': ['start', 'middle', 'end']},
   {'name': 'text-combine-upright', 'inherited': true, 'keywords': ['none', 'all']},
   {
     'longhands':
@@ -851,7 +864,7 @@ export const generatedProperties = [
   {'name': 'unicode-range'},
   {'name': 'user-select', 'inherited': true, 'keywords': ['auto', 'none', 'text', 'all']},
   {'name': 'user-zoom'},
-  {'keywords': ['none', 'non-scaling-stroke'], 'svg': true, 'name': 'vector-effect'},
+  {'name': 'vector-effect', 'keywords': ['none', 'non-scaling-stroke']},
   {'name': 'vertical-align', 'keywords': ['baseline', 'sub', 'super', 'text-top', 'text-bottom', 'middle']},
   {'name': 'viewport-fit'},
   {'name': 'visibility', 'inherited': true, 'keywords': ['visible', 'hidden', 'collapse']},
@@ -866,8 +879,8 @@ export const generatedProperties = [
   {'name': 'word-break', 'inherited': true, 'keywords': ['normal', 'break-all', 'keep-all', 'break-word']},
   {'inherited': true, 'keywords': ['normal'], 'name': 'word-spacing'},
   {'name': 'writing-mode', 'inherited': true, 'keywords': ['horizontal-tb', 'vertical-rl', 'vertical-lr']},
-  {'svg': true, 'name': 'x'},
-  {'svg': true, 'name': 'y'},
+  {'name': 'x'},
+  {'name': 'y'},
   {'name': 'z-index', 'keywords': ['auto']},
   {'name': 'zoom'}
 ];
@@ -885,7 +898,13 @@ export const generatedPropertyValues = {
   '-webkit-text-security': {'values': ['none', 'disc', 'circle', 'square']},
   '-webkit-user-drag': {'values': ['auto', 'none', 'element']},
   '-webkit-user-modify': {'values': ['read-only', 'read-write', 'read-write-plaintext-only']},
-  'alignment-baseline': {'values': ['baseline', 'alphabetic', 'ideographic', 'middle', 'central', 'mathematical']},
+  'accent-color': {'values': ['auto', 'currentcolor']},
+  'alignment-baseline': {
+    'values': [
+      'auto', 'baseline', 'alphabetic', 'ideographic', 'middle', 'central', 'mathematical', 'before-edge',
+      'text-before-edge', 'after-edge', 'text-after-edge', 'hanging'
+    ]
+  },
   'animation-direction': {'values': ['normal', 'reverse', 'alternate', 'alternate-reverse']},
   'animation-fill-mode': {'values': ['none', 'forwards', 'backwards', 'both']},
   'animation-iteration-count': {'values': ['infinite']},
@@ -913,7 +932,7 @@ export const generatedPropertyValues = {
   'background-image': {'values': ['auto', 'none']},
   'background-origin': {'values': ['border-box', 'padding-box', 'content-box']},
   'background-size': {'values': ['auto', 'cover', 'contain']},
-  'baseline-shift': {'values': ['sub', 'super']},
+  'baseline-shift': {'values': ['baseline', 'sub', 'super']},
   'block-size': {'values': ['auto']},
   'border-bottom-color': {'values': ['currentcolor']},
   'border-bottom-style':
@@ -944,6 +963,7 @@ export const generatedPropertyValues = {
   'break-before':
       {'values': ['auto', 'avoid', 'avoid-column', 'avoid-page', 'column', 'left', 'page', 'recto', 'right', 'verso']},
   'break-inside': {'values': ['auto', 'avoid', 'avoid-column', 'avoid-page']},
+  'buffered-rendering': {'values': ['auto', 'dynamic', 'static']},
   'caption-side': {'values': ['top', 'bottom']},
   'caret-color': {'values': ['auto', 'currentcolor']},
   'clear': {'values': ['none', 'left', 'right', 'both', 'inline-start', 'inline-end']},
@@ -952,6 +972,7 @@ export const generatedPropertyValues = {
   'clip-rule': {'values': ['nonzero', 'evenodd']},
   'color': {'values': ['currentcolor']},
   'color-interpolation': {'values': ['auto', 'srgb', 'linearrgb']},
+  'color-interpolation-filters': {'values': ['auto', 'srgb', 'linearrgb']},
   'color-rendering': {'values': ['auto', 'optimizespeed', 'optimizequality']},
   'column-count': {'values': ['auto']},
   'column-fill': {'values': ['balance', 'auto']},
@@ -962,7 +983,7 @@ export const generatedPropertyValues = {
   'column-rule-width': {'values': ['thin', 'medium', 'thick']},
   'column-span': {'values': ['none', 'all']},
   'column-width': {'values': ['auto']},
-  'contain': {'values': ['none', 'strict', 'content', 'size', 'layout', 'style', 'paint']},
+  'contain': {'values': ['none', 'strict', 'content', 'size', 'layout', 'style', 'paint', 'inline-size', 'block-size']},
   'contain-intrinsic-size': {'values': ['auto']},
   'content-visibility': {'values': ['visible', 'auto', 'hidden', 'hidden-matchable']},
   'counter-increment': {'values': ['none']},
@@ -1006,8 +1027,12 @@ export const generatedPropertyValues = {
       'none'
     ]
   },
-  'dominant-baseline':
-      {'values': ['auto', 'alphabetic', 'ideographic', 'middle', 'central', 'mathematical', 'hanging']},
+  'dominant-baseline': {
+    'values': [
+      'auto', 'alphabetic', 'ideographic', 'middle', 'central', 'mathematical', 'hanging', 'use-script', 'no-change',
+      'reset-size', 'text-after-edge', 'text-before-edge'
+    ]
+  },
   'empty-cells': {'values': ['show', 'hide']},
   'fill-rule': {'values': ['nonzero', 'evenodd']},
   'filter': {'values': ['none']},
@@ -1084,6 +1109,8 @@ export const generatedPropertyValues = {
       'disc',
       'circle',
       'square',
+      'disclosure-open',
+      'disclosure-closed',
       'decimal',
       'decimal-leading-zero',
       'arabic-indic',

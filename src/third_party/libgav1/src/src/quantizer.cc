@@ -18,6 +18,7 @@
 #include <cstdint>
 
 #include "src/utils/common.h"
+#include "src/utils/constants.h"
 
 #if LIBGAV1_MAX_BITDEPTH != 8 && LIBGAV1_MAX_BITDEPTH != 10
 #error LIBGAV1_MAX_BITDEPTH must be 8 or 10
@@ -25,6 +26,9 @@
 
 namespace libgav1 {
 namespace {
+
+// Import all the constants in the anonymous namespace.
+#include "src/quantizer_tables.inc"
 
 // Format the kDcLookup and kAcLookup arrays manually for easier comparison
 // with the Dc_Qlookup and Ac_Qlookup arrays in Section 7.12.2.
@@ -141,7 +145,98 @@ constexpr int16_t kAcLookup[][256] = {
 };
 // clang-format on
 
+void Transpose(uint8_t* const dst, const uint8_t* const src, int src_width,
+               int src_height) {
+  const int dst_width = src_height;
+  const int dst_height = src_width;
+  Array2DView<const uint8_t> source(src_height, src_width, src);
+  Array2DView<uint8_t> dest(dst_height, dst_width, dst);
+  for (int y = 0; y < dst_height; ++y) {
+    for (int x = 0; x < dst_width; ++x) {
+      dest[y][x] = source[x][y];
+    }
+  }
+}
+
+// Copies the lower triangle and fills the upper triangle of |dst| using |src|
+// as the source.
+void FillUpperTriangle(uint8_t* dst, const uint8_t* src, int size) {
+  Array2DView<uint8_t> dest(size, size, dst);
+  int k = 0;
+  for (int y = 0; y < size; ++y) {
+    for (int x = 0; x <= y; ++x) {
+      dest[y][x] = dest[x][y] = src[k++];
+    }
+  }
+}
+
 }  // namespace
+
+bool InitializeQuantizerMatrix(QuantizerMatrix* quantizer_matrix_ptr) {
+  for (int level = 0; level < kNumQuantizerLevelsForQuantizerMatrix; ++level) {
+    for (int plane_type = kPlaneTypeY; plane_type < kNumPlaneTypes;
+         ++plane_type) {
+      auto& quantizer_matrix = (*quantizer_matrix_ptr)[level][plane_type];
+      // Notes about how these matrices are populated:
+      // * For square transforms, we store only the lower left triangle (it is
+      // symmetric about the main diagonal. So when populating the matrix, we
+      // will have to fill in the upper right triangle.
+      // * For rectangular transforms, the matrices are transposes when the
+      // width and height are reversed. So when populating we populate it with
+      // memcpy when w < h and populate it by transposing when w > h.
+      // * There is a special case for 16x16 where the matrix is the same as
+      // 32x32 with some offsets.
+      // * We use the "adjusted transform size" when using these matrices, so we
+      // won't have to populate them for transform sizes with one of the
+      // dimensions equal to 64.
+      for (int tx_size = 0; tx_size < kNumTransformSizes; ++tx_size) {
+        if (kTransformWidth[tx_size] == 64 || kTransformHeight[tx_size] == 64) {
+          continue;
+        }
+        const int size = kTransformWidth[tx_size] * kTransformHeight[tx_size];
+        if (!quantizer_matrix[tx_size].Resize(size)) {
+          return false;
+        }
+      }
+#define QUANTIZER_MEMCPY(W, H)                            \
+  memcpy(quantizer_matrix[kTransformSize##W##x##H].get(), \
+         kQuantizerMatrix##W##x##H[level][plane_type], (W) * (H))
+#define QUANTIZER_TRANSPOSE(W, H)                            \
+  Transpose(quantizer_matrix[kTransformSize##W##x##H].get(), \
+            kQuantizerMatrix##H##x##W[level][plane_type], H, W)
+#define QUANTIZER_FILL_UPPER_TRIANGLE(SIZE)                                \
+  FillUpperTriangle(quantizer_matrix[kTransformSize##SIZE##x##SIZE].get(), \
+                    kQuantizerMatrix##SIZE##x##SIZE[level][plane_type], SIZE)
+      QUANTIZER_FILL_UPPER_TRIANGLE(4);   // 4x4
+      QUANTIZER_MEMCPY(4, 8);             // 4x8
+      QUANTIZER_MEMCPY(4, 16);            // 4x16
+      QUANTIZER_TRANSPOSE(8, 4);          // 8x4
+      QUANTIZER_FILL_UPPER_TRIANGLE(8);   // 8x8
+      QUANTIZER_MEMCPY(8, 16);            // 8x16
+      QUANTIZER_MEMCPY(8, 32);            // 8x32
+      QUANTIZER_TRANSPOSE(16, 4);         // 16x4
+      QUANTIZER_TRANSPOSE(16, 8);         // 16x8
+      QUANTIZER_MEMCPY(16, 32);           // 16x32
+      QUANTIZER_TRANSPOSE(32, 8);         // 32x8
+      QUANTIZER_TRANSPOSE(32, 16);        // 32x16
+      QUANTIZER_FILL_UPPER_TRIANGLE(32);  // 32x32
+      // 16x16.
+      Array2DView<uint8_t> dst16x16(
+          16, 16, quantizer_matrix[kTransformSize16x16].get());
+      Array2DView<const uint8_t> src32x32(
+          32, 32, quantizer_matrix[kTransformSize32x32].get());
+      for (int y = 0; y < 16; ++y) {
+        for (int x = 0; x < 16; ++x) {
+          dst16x16[y][x] = src32x32[MultiplyBy2(y)][MultiplyBy2(x)];
+        }
+      }
+#undef QUANTIZER_FILL_UPPER_TRIANGLE
+#undef QUANTIZER_TRANSPOSE
+#undef QUANTIZER_MEMCPY
+    }
+  }
+  return true;
+}
 
 int GetQIndex(const Segmentation& segmentation, int index, int base_qindex) {
   if (segmentation.FeatureActive(index, kSegmentFeatureQuantizer)) {

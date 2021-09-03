@@ -34,8 +34,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (!bitmap->Create(width, height, FXDIB_Format::k1bppRgb))
     return 0;
 
+  JBig2_DocumentContext document_context;
   Jbig2Context jbig2_context;
-  std::unique_ptr<JBig2_DocumentContext> document_context;
   FXCODEC_STATUS status = Jbig2Decoder::StartDecode(
       &jbig2_context, &document_context, width, height, {data, size}, 1, {}, 0,
       bitmap->GetBuffer(), bitmap->GetPitch(), nullptr);

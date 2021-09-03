@@ -11,7 +11,8 @@
 // #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {TestMultideviceBrowserProxy, createFakePageContentData, HOST_DEVICE} from './test_multidevice_browser_proxy.m.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// #import {isChildVisible, waitAfterNextRender} from 'chrome://test/test_util.m.js';
+// import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // clang-format on
 
@@ -81,6 +82,24 @@ suite('Multidevice', function() {
   }
 
   /**
+   * @param {boolean} isOnboardingComplete
+   */
+  function setNearbyShareIsOnboardingComplete(isOnboardingComplete) {
+    multidevicePage.setPrefValue(
+        'nearby_sharing.onboarding_complete', isOnboardingComplete);
+    Polymer.dom.flush();
+  }
+
+  /**
+   * @param {boolean} isDisallowedByPolicy
+   */
+  function setNearbyShareDisallowedByPolicy(isDisallowedByPolicy) {
+    setPageContentData(Object.assign(
+        {}, multidevicePage.pageContentData,
+        {isNearbyShareDisallowedByPolicy: isDisallowedByPolicy}));
+  }
+
+  /**
    * @param {!settings.MultiDeviceFeature} feature The feature to change.
    * @param {boolean} enabled Whether to enable or disable the feature.
    * @param {boolean} authRequired Whether authentication is required for the
@@ -140,10 +159,27 @@ suite('Multidevice', function() {
     browserProxy = new multidevice.TestMultideviceBrowserProxy();
     settings.MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
 
+    loadTimeData.overrideValues({
+      isNearbyShareSupported: true,
+    });
+
     multidevicePage = document.createElement('settings-multidevice-page');
     assertTrue(!!multidevicePage);
 
+    multidevicePage.prefs = {
+      'nearby_sharing': {
+        'onboarding_complete': {
+          value: false,
+        },
+        'enabled': {
+          value: false,
+        },
+      },
+    };
+
     document.body.appendChild(multidevicePage);
+    Polymer.dom.flush();
+
     return browserProxy.whenCalled('getPageContentData');
   });
 
@@ -242,7 +278,7 @@ suite('Multidevice', function() {
       setHostData(mode);
       assertEquals(
           multidevicePage.isHostSet(),
-          !!multidevicePage.$$('.link-wrapper').hasAttribute('actionable'));
+          !!multidevicePage.$$('#suiteLinkWrapper').hasAttribute('actionable'));
     }
   });
 
@@ -251,7 +287,7 @@ suite('Multidevice', function() {
       function() {
         setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
         assertFalse(!!getSubpage());
-        multidevicePage.$$('.link-wrapper').click();
+        multidevicePage.$$('#suiteLinkWrapper').click();
         assertTrue(!!getSubpage());
         assertTrue(!!getSubpage().$$('settings-multidevice-feature-item'));
       });
@@ -263,20 +299,20 @@ suite('Multidevice', function() {
             settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION,
             multidevice.HOST_DEVICE);
         assertFalse(!!getSubpage());
-        multidevicePage.$$('.link-wrapper').click();
+        multidevicePage.$$('#suiteLinkWrapper').click();
         assertTrue(!!getSubpage());
         assertFalse(!!getSubpage().$$('settings-multidevice-feature-item'));
       });
 
   test('policy prohibited suite shows policy indicator', function() {
     setHostData(settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS);
-    assertFalse(!!multidevicePage.$$('cr-policy-indicator'));
+    assertFalse(!!multidevicePage.$$('#suitePolicyIndicator'));
     // Prohibit suite by policy.
     setSuiteState(settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY);
-    assertTrue(!!multidevicePage.$$('cr-policy-indicator'));
+    assertTrue(!!multidevicePage.$$('#suitePolicyIndicator'));
     // Reallow suite.
     setSuiteState(settings.MultiDeviceFeatureState.DISABLED_BY_USER);
-    assertFalse(!!multidevicePage.$$('cr-policy-indicator'));
+    assertFalse(!!multidevicePage.$$('#suitePolicyIndicator'));
   });
 
   test('Phone hub notification access setup dialog', () => {
@@ -373,5 +409,133 @@ suite('Multidevice', function() {
           // SMART_LOCK always requires authentication.
           return enableFeatureWithAuthFn(Feature.SMART_LOCK);
         });
+  });
+
+  test('Nearby setup button shown before onboarding is complete', async () => {
+    setNearbyShareDisallowedByPolicy(false);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#nearbySetUp', /*checkLightDom=*/ false));
+    assertFalse(test_util.isChildVisible(
+        multidevicePage, '#nearbySharingToggleButton',
+        /*checkLightDom=*/ false));
+
+    setNearbyShareIsOnboardingComplete(true);
+    assertFalse(test_util.isChildVisible(
+        multidevicePage, '#nearbySetUp', /*checkLightDom=*/ false));
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#nearbySharingToggleButton',
+        /*checkLightDom=*/ false));
+    assertFalse(multidevicePage.$$('#nearbySharingToggleButton').disabled);
+  });
+
+  test('Nearby disabled toggle shown if disallowed by policy', async () => {
+    setNearbyShareDisallowedByPolicy(false);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#nearbySetUp', /*checkLightDom=*/ false));
+    assertFalse(test_util.isChildVisible(
+        multidevicePage, '#nearbySharingToggleButton',
+        /*checkLightDom=*/ false));
+
+    setNearbyShareDisallowedByPolicy(true);
+    assertFalse(test_util.isChildVisible(
+        multidevicePage, '#nearbySetUp', /*checkLightDom=*/ false));
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#nearbySharingToggleButton',
+        /*checkLightDom=*/ false));
+    assertTrue(multidevicePage.$$('#nearbySharingToggleButton').disabled);
+  });
+
+  test('Nearby description shown before onboarding is completed', async () => {
+    setNearbyShareDisallowedByPolicy(false);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#nearbyShareSecondary > settings-localized-link',
+        /*checkLightDom=*/ false));
+
+    setNearbyShareIsOnboardingComplete(true);
+    assertFalse(test_util.isChildVisible(
+        multidevicePage, '#nearbyShareSecondary > settings-localized-link',
+        /*checkLightDom=*/ false));
+    assertEquals(
+        multidevicePage.$$('#nearbyShareSecondary').textContent.trim(), 'Off');
+  });
+
+  test('Nearby description shown if disallowed by policy', async () => {
+    setNearbyShareDisallowedByPolicy(false);
+    setNearbyShareIsOnboardingComplete(true);
+    assertFalse(test_util.isChildVisible(
+        multidevicePage, '#nearbyShareSecondary > settings-localized-link',
+        /*checkLightDom=*/ false));
+    assertEquals(
+        multidevicePage.$$('#nearbyShareSecondary').textContent.trim(), 'Off');
+
+    setNearbyShareDisallowedByPolicy(true);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#nearbyShareSecondary > settings-localized-link',
+        /*checkLightDom=*/ false));
+  });
+
+  test('Nearby policy indicator shown when disallowed by policy', async () => {
+    setNearbyShareDisallowedByPolicy(false);
+    assertFalse(test_util.isChildVisible(
+        multidevicePage, '#nearbyPolicyIndicator',
+        /*checkLightDom=*/ false));
+
+    setNearbyShareDisallowedByPolicy(true);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#nearbyPolicyIndicator',
+        /*checkLightDom=*/ false));
+
+    setNearbyShareDisallowedByPolicy(false);
+    assertFalse(test_util.isChildVisible(
+        multidevicePage, '#nearbyPolicyIndicator',
+        /*checkLightDom=*/ false));
+  });
+
+  test('Nearby subpage not available when disallowed by policy', async () => {
+    setNearbyShareDisallowedByPolicy(true);
+    assertFalse(
+        !!multidevicePage.$$('#nearbyLinkWrapper').hasAttribute('actionable'));
+
+    setNearbyShareDisallowedByPolicy(false);
+    assertTrue(
+        !!multidevicePage.$$('#nearbyLinkWrapper').hasAttribute('actionable'));
+  });
+
+  test('Better Together Suite icon visible when there is no host set', () => {
+    setHostData(settings.MultiDeviceSettingsMode.NO_HOST_SET);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon',
+        /*checkLightDom=*/ false));
+  });
+
+  test('Better Together Suite icon visible when there is a host set', () => {
+    setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon',
+        /*checkLightDom=*/ false));
+  });
+
+  test('Better Together Suite icon remains visible when host added', () => {
+    setHostData(settings.MultiDeviceSettingsMode.NO_HOST_SET);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon',
+        /*checkLightDom=*/ false));
+
+    setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon',
+        /*checkLightDom=*/ false));
+  });
+
+  test('Better Together Suite icon remains visible when host removed', () => {
+    setHostData(settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon',
+        /*checkLightDom=*/ false));
+
+    setHostData(settings.MultiDeviceSettingsMode.NO_HOST_SET);
+    assertTrue(test_util.isChildVisible(
+        multidevicePage, '#betterTogetherSuiteIcon',
+        /*checkLightDom=*/ false));
   });
 });

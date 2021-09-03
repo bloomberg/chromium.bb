@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/payments/card_unmask_delegate.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
@@ -34,20 +33,6 @@ class FormStructure;
                        saveCreditCardOptions
                             callback:(autofill::AutofillClient::
                                           UploadSaveCardPromptCallback)callback;
-
-// Bridge For AutofillClient's method |ConfirmAccountNameFixFlow|.
-- (void)
-    confirmCreditCardAccountName:(const base::string16&)name
-                        callback:
-                            (base::OnceCallback<void(const base::string16&)>)
-                                callback;
-
-// Bridge For AutofillClient's method |ConfirmExpirationDateFixFlow|.
-- (void)confirmCreditCardExpirationWithCard:(const autofill::CreditCard&)card
-                                   callback:
-                                       (base::OnceCallback<void(
-                                            const base::string16&,
-                                            const base::string16&)>)callback;
 
 // Bridge for AutofillClient's method |CreditCardUploadCompleted|.
 - (void)handleCreditCardUploadCompleted:(BOOL)cardSaved;

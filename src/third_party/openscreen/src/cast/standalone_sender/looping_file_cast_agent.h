@@ -7,13 +7,15 @@
 
 #include <openssl/x509.h>
 
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "absl/types/optional.h"
+#include "cast/common/channel/cast_message_handler.h"
 #include "cast/common/channel/cast_socket_message_port.h"
-#include "cast/common/channel/virtual_connection_manager.h"
+#include "cast/common/channel/connection_namespace_handler.h"
 #include "cast/common/channel/virtual_connection_router.h"
 #include "cast/common/public/cast_socket.h"
 #include "cast/sender/public/sender_socket_factory.h"
@@ -26,23 +28,58 @@
 #include "platform/base/interface_info.h"
 #include "platform/impl/task_runner.h"
 
+namespace Json {
+class Value;
+}
+
 namespace openscreen {
 namespace cast {
 
-// This class manages sender connections, starting with listening over TLS for
-// connection attempts, constructing SenderSessions when OFFER messages are
-// received, and linking Senders to the output decoder and SDL visualizer.
+// A single-use sender-side Cast Agent that manages the workflow for a mirroring
+// session, casting the content from a local file indefinitely. After being
+// constructed and having its Connect() method called, the LoopingFileCastAgent
+// steps through the following workflow:
+//
+//   1. Waits for a CastSocket representing a successful connection to a remote
+//      Cast Receiver's agent.
+//   2. Sends a LAUNCH request to the Cast Receiver to start its Mirroring App.
+//   3. Waits for a RECEIVER_STATUS message from the Receiver indicating launch
+//      success, or a LAUNCH_ERROR.
+//   4. Once launched, message routing (i.e., a VirtualConnection) is requested,
+//      for messaging between the SenderSession (locally) and the remote
+//      Mirroring App.
+//   5. Once message routing is established, the local SenderSession is created
+//      and begins the mirroring-specific OFFER/ANSWER messaging to negotiate
+//      the streaming parameters.
+//   6. Streaming commences.
+//
+// If at any point an error occurs, the LoopingFileCastAgent executes a clean
+// shut-down (both locally, and with the remote Cast Receiver), and then invokes
+// the ShutdownCallback that was passed to the constructor.
+//
+// Normal shutdown happens when either:
+//
+//   1. Receiver-side, the Mirroring App is shut down. This will cause the
+//      ShutdownCallback passed to the constructor to be invoked.
+//   2. This LoopingFileCastAgent is destroyed (automatic shutdown is part of
+//      the destruction procedure).
 class LoopingFileCastAgent final
     : public SenderSocketFactory::Client,
       public VirtualConnectionRouter::SocketErrorHandler,
+      public ConnectionNamespaceHandler::VirtualConnectionPolicy,
+      public CastMessageHandler,
       public SenderSession::Client {
  public:
-  explicit LoopingFileCastAgent(TaskRunner* task_runner);
+  using ShutdownCallback = std::function<void()>;
+
+  // |shutdown_callback| is invoked after normal shutdown, whether initiated
+  // sender- or receiver-side; or, for any fatal error.
+  LoopingFileCastAgent(TaskRunner* task_runner,
+                       ShutdownCallback shutdown_callback);
   ~LoopingFileCastAgent();
 
   struct ConnectionSettings {
-    // The endpoint of the receiver we wish to connect to. Eventually this
-    // will come from discovery, instead of an endpoint here.
+    // The endpoint of the receiver we wish to connect to.
     IPEndpoint receiver_endpoint;
 
     // The path to the file that we want to play.
@@ -60,9 +97,12 @@ class LoopingFileCastAgent final
     bool use_android_rtp_hack = true;
   };
 
+  // Connect to a Cast Receiver, and start the workflow to establish a
+  // mirroring/streaming session. Destroy the LoopingFileCastAgent to shutdown
+  // and disconnect.
   void Connect(ConnectionSettings settings);
-  void Stop();
 
+ private:
   // SenderSocketFactory::Client overrides.
   void OnConnected(SenderSocketFactory* factory,
                    const IPEndpoint& endpoint,
@@ -75,6 +115,33 @@ class LoopingFileCastAgent final
   void OnClose(CastSocket* cast_socket) override;
   void OnError(CastSocket* socket, Error error) override;
 
+  // ConnectionNamespaceHandler::VirtualConnectionPolicy overrides.
+  bool IsConnectionAllowed(
+      const VirtualConnection& virtual_conn) const override;
+
+  // CastMessageHandler overrides.
+  void OnMessage(VirtualConnectionRouter* router,
+                 CastSocket* socket,
+                 ::cast::channel::CastMessage message) override;
+
+  // Returns the Cast application ID for either A/V mirroring or audio-only
+  // mirroring, as configured by the ConnectionSettings.
+  const char* GetMirroringAppId() const;
+
+  // Called by OnMessage() to determine whether the Cast Receiver has launched
+  // or unlaunched the Mirroring App. If the former, a VirtualConnection is
+  // requested. Otherwise, the workflow is aborted and Shutdown() is called.
+  void HandleReceiverStatus(const Json::Value& status);
+
+  // Called by the |connection_handler_| after message routing to the Cast
+  // Receiver's Mirroring App has been established (if |success| is true).
+  void OnRemoteMessagingOpened(bool success);
+
+  // Once we have a connection to the receiver we need to create and start
+  // a sender session. This method results in the OFFER/ANSWER exchange
+  // being completed and a session should be started.
+  void CreateAndStartSession();
+
   // SenderSession::Client overrides.
   void OnNegotiated(const SenderSession* session,
                     SenderSession::ConfiguredSenders senders,
@@ -82,33 +149,38 @@ class LoopingFileCastAgent final
                         capture_recommendations) override;
   void OnError(const SenderSession* session, Error error) override;
 
- private:
-  // Once we have a connection to the receiver we need to create and start
-  // a sender session. This method results in the OFFER/ANSWER exchange
-  // being completed and a session should be started.
-  void CreateAndStartSession();
-
-  // Helper for stopping the current session. This is useful for when we don't
-  // want to completely stop (e.g. an issue with a specific Sender) but need
-  // to terminate the current connection.
-  void StopCurrentSession();
+  // Helper for stopping the current session, and/or unwinding a remote
+  // connection request (pre-session). This ensures LoopingFileCastAgent is in a
+  // terminal shutdown state.
+  void Shutdown();
 
   // Member variables set as part of construction.
-  VirtualConnectionManager connection_manager_;
   TaskRunner* const task_runner_;
-  SerialDeletePtr<VirtualConnectionRouter> router_;
-  SerialDeletePtr<CastSocketMessagePort> message_port_;
-  SerialDeletePtr<SenderSocketFactory> socket_factory_;
-  SerialDeletePtr<TlsConnectionFactory> connection_factory_;
+  ShutdownCallback shutdown_callback_;
+  VirtualConnectionRouter router_;
+  ConnectionNamespaceHandler connection_handler_;
+  SenderSocketFactory socket_factory_;
+  std::unique_ptr<TlsConnectionFactory> connection_factory_;
+  CastSocketMessagePort message_port_;
 
-  // Member variables set as part of starting up.
-  std::unique_ptr<Environment> environment_;
+  // Counter for distinguishing request messages sent to the Cast Receiver.
+  int next_request_id_ = 1;
+
+  // Initialized by Connect().
   absl::optional<ConnectionSettings> connection_settings_;
   SerialDeletePtr<ScopedWakeLock> wake_lock_;
 
-  // Member variables set as part of a sender connection.
-  // NOTE: currently we only support a single sender connection and a
-  // single streaming session.
+  // If non-empty, this is the sessionId associated with the Cast Receiver
+  // application that this LoopingFileCastAgent launched.
+  std::string app_session_id_;
+
+  // This is set once LoopingFileCastAgent has requested to start messaging to
+  // the mirroring app on a Cast Receiver.
+  absl::optional<VirtualConnection> remote_connection_;
+
+  // Member variables set while a streaming to the mirroring app on a Cast
+  // Receiver.
+  std::unique_ptr<Environment> environment_;
   std::unique_ptr<SenderSession> current_session_;
   std::unique_ptr<LoopingFileSender> file_sender_;
 };
