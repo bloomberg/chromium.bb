@@ -39,6 +39,18 @@ function onRaf(rafWin) {
   rafWin.close();
 }
 
+function promisify(f, ...args) {
+  return new Promise((resolve, reject) => {
+    f(...args, (result) => {
+      if (chrome.runtime.lastError) {
+        reject(chrome.runtime.lastError);
+      } else {
+        resolve(result);
+      }
+    });
+  });
+}
+
 var defaultTests = [
   // logout/restart/shutdown don't do anything as we don't want to kill the
   // browser with these tests.
@@ -184,6 +196,8 @@ var defaultTests = [
         chrome.test.assertTrue(state.allowed);
         chrome.test.assertTrue(state.enabled);
         chrome.test.assertFalse(state.managed);
+        // Revert to disable state as default in this test set.
+        chrome.autotestPrivate.setPlayStoreEnabled(false, function() {});
         chrome.test.succeed();
       });
     });
@@ -315,11 +329,12 @@ var defaultTests = [
   // This test verifies that getArcState returns provisioned False in case ARC
   // is not provisioned by default.
   function arcNotProvisioned() {
-    chrome.autotestPrivate.getArcState(function(state) {
-      chrome.test.assertFalse(state.provisioned);
-      chrome.test.assertNoLastError();
-      chrome.test.succeed();
-    });
+    chrome.autotestPrivate.getArcState(
+        chrome.test.callbackPass(function(state) {
+          chrome.test.assertFalse(state.provisioned);
+          chrome.test.assertEq(0, state.preStartTime);
+          chrome.test.assertEq(0, state.startTime);
+        }));
   },
   // This test verifies that ARC Terms of Service are needed by default.
   function arcTosNeeded() {
@@ -461,6 +476,17 @@ var defaultTests = [
           chrome.test.succeed();
         });
   },
+  function waitForLauncherStateInTabletMode() {
+    promisify(chrome.autotestPrivate.setTabletModeEnabled, true)
+      .then(promisify(chrome.autotestPrivate.waitForLauncherState,
+                      'FullscreenAllApps'))
+      .then(promisify(chrome.autotestPrivate.setTabletModeEnabled, false))
+      .then(function() {
+        chrome.test.succeed();
+      }).catch(function(err) {
+        chrome.test.fail(err);
+      });
+  },
   // Check if tablet mode is enabled.
   function isTabletModeEnabled() {
     chrome.autotestPrivate.isTabletModeEnabled(
@@ -497,6 +523,7 @@ var defaultTests = [
         // their values change if chrome_branded is true.
         chrome.test.assertTrue(!!chromium.name);
         chrome.test.assertTrue(!!chromium.shortName);
+        chrome.test.assertEq(chromium.publisherId, "");
         chrome.test.assertEq(chromium.additionalSearchTerms, []);
         chrome.test.assertEq(chromium.readiness, 'Ready');
         chrome.test.assertEq(chromium.showInLauncher, true);
@@ -782,41 +809,46 @@ var defaultTests = [
   function acceleratorTest() {
     // Ash level accelerator.
     var newBrowser = newAccelerator('n', false /* shift */, true /* control */);
-    chrome.autotestPrivate.activateAccelerator(
-        newBrowser,
-        function() {
-          chrome.autotestPrivate.getAppWindowList(function(list) {
-            chrome.test.assertEq(2, list.length);
-            var closeWindow =
-                newAccelerator('w', false /* shift */, true /* control */);
-            chrome.autotestPrivate.activateAccelerator(
-                closeWindow,
-                async function(success) {
-                  chrome.test.assertTrue(success);
+    chrome.autotestPrivate.activateAccelerator(newBrowser, function() {
+      newBrowser.pressed = false;
+      chrome.autotestPrivate.activateAccelerator(newBrowser, function() {
+        chrome.autotestPrivate.getAppWindowList(function(list) {
+          chrome.test.assertEq(2, list.length);
+          var closeWindow =
+              newAccelerator('w', false /* shift */, true /* control */);
+          chrome.autotestPrivate.activateAccelerator(
+              closeWindow, function(success) {
+                chrome.test.assertTrue(success);
+                closeWindow.pressed = false;
+                chrome.autotestPrivate.activateAccelerator(
+                    closeWindow, async function(success) {
+                      chrome.test.assertNoLastError();
+                      // Actual window close might happen sometime later after
+                      // the accelerator. So keep trying until window count
+                      // drops to 1.
+                      await new Promise(resolve => {
+                        function check() {
+                          chrome.autotestPrivate.getAppWindowList(function(
+                              list) {
+                            chrome.test.assertNoLastError();
 
-                  // Actual window close might happen sometime later after the
-                  // accelerator. So keep trying until window count drops to 1.
-                  await new Promise(resolve => {
-                    function check() {
-                      chrome.autotestPrivate.getAppWindowList(function(list) {
-                        chrome.test.assertNoLastError();
+                            if (list.length == 1) {
+                              resolve();
+                              return;
+                            }
 
-                        if (list.length == 1) {
-                          resolve();
-                          return;
-                        }
+                            window.setTimeout(check, 100);
+                          });
+                        };
 
-                        window.setTimeout(check, 100);
+                        check();
                       });
-                    };
-
-                    check();
-                  });
-
-                  chrome.test.succeed();
-                });
-          });
+                      chrome.test.succeed();
+                    });
+              });
         });
+      });
+    });
   },
   // This test verifies that api to activate accelrator with number works as
   // expected.
@@ -824,12 +856,12 @@ var defaultTests = [
     // An ash accelerator with number to reset UI scale.
     var accelerator = newAccelerator('0', true /* shift */, true /* control */);
     chrome.autotestPrivate.activateAccelerator(
-        accelerator,
-        function(success) {
-          chrome.test.assertNoLastError();
+        accelerator, chrome.test.callbackPass((success) => {
           chrome.test.assertTrue(success);
-          chrome.test.succeed();
-        });
+          accelerator.pressed = false;
+          chrome.autotestPrivate.activateAccelerator(
+              accelerator, chrome.test.callbackPass());
+        }));
   },
   function setMetricsEnabled() {
     chrome.autotestPrivate.setMetricsEnabled(true, chrome.test.callbackPass());
@@ -984,6 +1016,31 @@ var defaultTests = [
     });
   },
 
+  function setAndGetClipboardTextData() {
+    const textData = 'foo bar';
+    chrome.autotestPrivate.getClipboardTextData(function(beforeData) {
+      chrome.test.assertTrue(textData != beforeData);
+      chrome.autotestPrivate.setClipboardTextData(textData, function() {
+        chrome.autotestPrivate.getClipboardTextData(function(afterData) {
+          chrome.test.assertEq(afterData, textData);
+          chrome.test.succeed();
+        });
+      });
+    });
+  },
+
+  function setClipboardTextDataTwice() {
+    const textData = 'twice clipboard data';
+    chrome.autotestPrivate.setClipboardTextData(textData, function() {
+      chrome.autotestPrivate.setClipboardTextData(textData, function() {
+        chrome.autotestPrivate.getClipboardTextData(function(data) {
+          chrome.test.assertEq(data, textData);
+          chrome.test.succeed();
+        });
+      });
+    });
+  },
+
   // KEEP |lockScreen()| TESTS AT THE BOTTOM OF THE defaultTests AS IT WILL
   // CHANGE THE SESSION STATE TO LOCKED STATE.
   function lockScreen() {
@@ -997,11 +1054,14 @@ var arcEnabledTests = [
   // This test verifies that getArcState returns provisioned True in case ARC
   // provisioning is done.
   function arcProvisioned() {
-    chrome.autotestPrivate.getArcState(function(state) {
-        chrome.test.assertTrue(state.provisioned);
-        chrome.test.assertNoLastError();
-        chrome.test.succeed();
-      });
+    chrome.autotestPrivate.getArcState(
+        chrome.test.callbackPass(function(state) {
+          chrome.test.assertTrue(state.provisioned);
+          chrome.test.assertTrue(state.preStartTime > 0);
+          chrome.test.assertTrue(state.startTime > 0);
+          chrome.test.assertTrue(state.startTime >= state.preStartTime);
+          chrome.test.assertTrue((new Date()).getTime() >= state.startTime);
+        }));
   },
   // This test verifies that ARC Terms of Service are not needed in case ARC is
   // provisioned and Terms of Service are accepted.
@@ -1295,6 +1355,34 @@ var systemWebAppsTests = [
         chrome.test.assertEq('chrome://test-system-app/', apps[0].url);
       })
     );
+  },
+  function isSystemWebAppOpen() {
+    chrome.autotestPrivate.waitForSystemWebAppsInstall(
+        chrome.test.callbackPass(() => {
+          // Test system app should not be open by default.
+          chrome.autotestPrivate.isSystemWebAppOpen(
+              'maphiehpiinjgiaepbljmopkodkadcbh',
+              chrome.test.callbackPass(isOpen => {
+                chrome.test.assertFalse(isOpen);
+              }));
+
+          // Open test app and verify the state should be open.
+          chrome.autotestPrivate.launchSystemWebApp(
+              'OSSettings', 'chrome://test-system-app/',
+              chrome.test.callbackPass(() => {
+                chrome.autotestPrivate.isSystemWebAppOpen(
+                    'maphiehpiinjgiaepbljmopkodkadcbh',
+                    chrome.test.callbackPass(isOpen => {
+                      chrome.test.assertTrue(isOpen);
+                    }));
+              }));
+
+          // Check for invalid app.
+          chrome.autotestPrivate.isSystemWebAppOpen(
+              '',
+              chrome.test.callbackFail(
+                  'No system web app is found by given app id.'));
+        }));
   },
 ]
 

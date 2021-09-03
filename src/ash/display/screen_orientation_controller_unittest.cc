@@ -19,7 +19,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test_shell_delegate.h"
-#include "ash/window_factory.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
@@ -79,8 +78,8 @@ void SetInternalDisplayRotation(display::Display::Rotation rotation) {
 }
 
 void TriggerLidUpdate(const gfx::Vector3dF& lid) {
-  scoped_refptr<AccelerometerUpdate> update(new AccelerometerUpdate());
-  update->Set(ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
+  AccelerometerUpdate update;
+  update.Set(ACCELEROMETER_SOURCE_SCREEN, lid.x(), lid.y(), lid.z());
   Shell::Get()->screen_orientation_controller()->OnAccelerometerUpdated(update);
 }
 
@@ -108,7 +107,7 @@ void Unlock(aura::Window* window) {
 
 // Creates a window of type WINDOW_TYPE_CONTROL.
 std::unique_ptr<aura::Window> CreateControlWindow() {
-  std::unique_ptr<aura::Window> window = window_factory::NewWindow(
+  std::unique_ptr<aura::Window> window = std::make_unique<aura::Window>(
       nullptr, aura::client::WindowType::WINDOW_TYPE_CONTROL);
   window->Init(ui::LAYER_NOT_DRAWN);
   window->set_owned_by_parent(false);
@@ -897,7 +896,7 @@ TEST_F(ScreenOrientationControllerTest, GetCurrentAppRequestedOrientationLock) {
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   EXPECT_EQ(OrientationLockType::kAny, UserLockedOrientation());
 
-  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
   base::RunLoop().RunUntilIdle();
 
   roots = Shell::GetAllRootWindows();
@@ -943,7 +942,7 @@ TEST_F(ScreenOrientationControllerTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(display_manager()->IsInSoftwareMirrorMode());
   // Now switch mirror mode off so that we can have two displays in tablet mode.
-  display_manager()->SetMirrorMode(display::MirrorMode::kOff, base::nullopt);
+  display_manager()->SetMirrorMode(display::MirrorMode::kOff, absl::nullopt);
   base::RunLoop().RunUntilIdle();
   auto roots = Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
@@ -997,6 +996,39 @@ TEST_F(ScreenOrientationControllerTest,
       screen_orientation_controller->GetCurrentAppRequestedOrientationLock());
   EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
   EXPECT_EQ(OrientationLockType::kAny, UserLockedOrientation());
+}
+
+class SupportsClamshellAutoRotation : public ScreenOrientationControllerTest {
+ public:
+  SupportsClamshellAutoRotation() = default;
+  SupportsClamshellAutoRotation(const SupportsClamshellAutoRotation&) = delete;
+  SupportsClamshellAutoRotation& operator=(
+      const SupportsClamshellAutoRotation&) = delete;
+  ~SupportsClamshellAutoRotation() override = default;
+
+  // ScreenOrientationControllerTest:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kSupportsClamshellAutoRotation);
+    ScreenOrientationControllerTest::SetUp();
+  }
+};
+
+// Tests that auto rotation is supported even in clamshell when
+// kSupportsClamshellAutoRotation is set.
+TEST_F(SupportsClamshellAutoRotation, ScreenRotation) {
+  TabletModeControllerTestApi tablet_mode_controller_test_api;
+  ASSERT_FALSE(tablet_mode_controller_test_api.IsTabletModeStarted());
+
+  // Test rotating in all directions are supported.
+  TriggerLidUpdate(gfx::Vector3dF(kMeanGravityFloat, 0.0f, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, -kMeanGravityFloat, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_180, GetCurrentInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(-kMeanGravityFloat, 0.0f, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_270, GetCurrentInternalDisplayRotation());
+  TriggerLidUpdate(gfx::Vector3dF(0.0f, kMeanGravityFloat, 0.0f));
+  EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 }
 
 }  // namespace ash

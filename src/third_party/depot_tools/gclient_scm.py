@@ -345,7 +345,7 @@ class GitWrapper(SCMWrapper):
 
     The patch ref is given by |patch_repo|@|patch_rev|.
     |target_rev| is usually the branch that the |patch_rev| was uploaded against
-    (e.g. 'refs/heads/master'), but this is not required.
+    (e.g. 'refs/heads/main'), but this is not required.
 
     We cherry-pick all commits reachable from |patch_rev| on top of the curret
     HEAD, excluding those reachable from |target_rev|
@@ -371,7 +371,7 @@ class GitWrapper(SCMWrapper):
           e.g. 'refs/changes/1234/34/1'.
       target_rev: The revision to use when finding the merge base.
           Typically, the branch that the patch was uploaded against.
-          e.g. 'refs/heads/master' or 'refs/heads/infra/config'.
+          e.g. 'refs/heads/main' or 'refs/heads/infra/config'.
       options: The options passed to gclient.
       file_list: A list where modified files will be appended.
     """
@@ -399,7 +399,7 @@ class GitWrapper(SCMWrapper):
     elif not scm.GIT.IsValidRevision(self.checkout_path, target_rev):
       # Fetch |target_rev| if it's not already available.
       url, _ = gclient_utils.SplitUrlRevision(self.url)
-      mirror = self._GetMirror(url, options, target_rev)
+      mirror = self._GetMirror(url, options, target_rev, target_rev)
       if mirror:
         rev_type = 'branch' if target_rev.startswith('refs/') else 'hash'
         self._UpdateMirrorIfNotContains(mirror, options, rev_type, target_rev)
@@ -473,8 +473,6 @@ class GitWrapper(SCMWrapper):
 
     self._CheckMinVersion("1.6.6")
 
-    # If a dependency is not pinned, track the default remote branch.
-    default_rev = 'refs/remotes/%s/master' % self.remote
     url, deps_revision = gclient_utils.SplitUrlRevision(self.url)
     revision = deps_revision
     managed = True
@@ -487,7 +485,11 @@ class GitWrapper(SCMWrapper):
       revision = deps_revision
       managed = False
     if not revision:
-      revision = default_rev
+      # If a dependency is not pinned, track the default remote branch.
+      revision = scm.GIT.GetRemoteHeadRef(self.checkout_path, self.url,
+                                          self.remote)
+    if revision.startswith('origin/'):
+      revision = 'refs/remotes/' + revision
 
     if managed:
       self._DisableHooks()
@@ -506,7 +508,7 @@ class GitWrapper(SCMWrapper):
     if revision_ref.startswith('refs/branch-heads'):
       options.with_branch_heads = True
 
-    mirror = self._GetMirror(url, options, revision_ref)
+    mirror = self._GetMirror(url, options, revision, revision_ref)
     if mirror:
       url = mirror.mirror_path
 
@@ -632,9 +634,9 @@ class GitWrapper(SCMWrapper):
     #      - checkout new branch
     #   c) otherwise exit
 
-    # GetUpstreamBranch returns something like 'refs/remotes/origin/master' for
+    # GetUpstreamBranch returns something like 'refs/remotes/origin/main' for
     # a tracking branch
-    # or 'master' if not a tracking branch (it's based on a specific rev/hash)
+    # or 'main' if not a tracking branch (it's based on a specific rev/hash)
     # or it returns None if it couldn't find an upstream
     if cur_branch is None:
       upstream_branch = None
@@ -946,13 +948,14 @@ class GitWrapper(SCMWrapper):
     return os.path.join(self._root_dir,
                         'old_' + self.relpath.replace(os.sep, '_')) + '.git'
 
-  def _GetMirror(self, url, options, revision_ref=None):
+  def _GetMirror(self, url, options, revision=None, revision_ref=None):
     """Get a git_cache.Mirror object for the argument url."""
     if not self.cache_dir:
       return None
     mirror_kwargs = {
         'print_func': self.filter,
-        'refs': []
+        'refs': [],
+        'commits': [],
     }
     if hasattr(options, 'with_branch_heads') and options.with_branch_heads:
       mirror_kwargs['refs'].append('refs/branch-heads/*')
@@ -962,6 +965,8 @@ class GitWrapper(SCMWrapper):
       mirror_kwargs['refs'].append('refs/tags/*')
     elif revision_ref and revision_ref.startswith('refs/tags/'):
       mirror_kwargs['refs'].append(revision_ref)
+    if revision and not revision.startswith('refs/'):
+      mirror_kwargs['commits'].append(revision)
     return git_cache.Mirror(url, **mirror_kwargs)
 
   def _UpdateMirrorIfNotContains(self, mirror, options, rev_type, revision):
@@ -1372,22 +1377,6 @@ class GitWrapper(SCMWrapper):
       revision = self._Capture(['rev-parse', 'FETCH_HEAD'])
     return revision
 
-  def _IsRunningUnderRosetta(self):
-    if sys.platform != 'darwin':
-      return False
-    if self._running_under_rosetta is None:
-      # If we are running under Rosetta, platform.machine() is
-      # 'x86_64'; we need to use a sysctl to see if we're being
-      # translated.
-      import ctypes
-      libSystem = ctypes.CDLL("libSystem.dylib")
-      ret = ctypes.c_int(0)
-      size = ctypes.c_size_t(4)
-      e = libSystem.sysctlbyname(ctypes.c_char_p(b'sysctl.proc_translated'),
-                                 ctypes.byref(ret), ctypes.byref(size), None, 0)
-      self._running_under_rosetta = e == 0 and ret.value == 1
-    return self._running_under_rosetta
-
   def _Run(self, args, options, **kwargs):
     # Disable 'unused options' warning | pylint: disable=unused-argument
     kwargs.setdefault('cwd', self.checkout_path)
@@ -1396,18 +1385,6 @@ class GitWrapper(SCMWrapper):
     env = scm.GIT.ApplyEnvVars(kwargs)
 
     cmd = ['git'] + args
-
-    if self._IsRunningUnderRosetta():
-      # We currently only ship an Intel Python binary in depot_tools.
-      # Intel binaries run under Rosetta on ARM Macs, and by default
-      # prefer to run their subprocesses as Intel under Rosetta too.
-      # Intel git running under Rosetta has a bug where it fails to
-      # clone src.git (rdar://7868319), so until we ship a native
-      # ARM python3 binary, explicitly use `arch` to let git run
-      # the native ARM slice instead of the Intel slice.
-      # TODO(thakis): Remove this again once we ship an arm64 python3
-      # binary.
-      cmd = ['arch', '-arch', 'arm64e', '-arch', 'arm64'] + cmd
     gclient_utils.CheckCallAndFilter(cmd, env=env, **kwargs)
 
 

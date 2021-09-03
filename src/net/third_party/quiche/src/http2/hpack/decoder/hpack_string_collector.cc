@@ -2,16 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/http2/hpack/decoder/hpack_string_collector.h"
+#include "http2/hpack/decoder/hpack_string_collector.h"
 
 #include <stddef.h>
 
 #include <iosfwd>
 #include <ostream>
 
-#include "net/third_party/quiche/src/http2/platform/api/http2_string_utils.h"
-#include "net/third_party/quiche/src/http2/platform/api/http2_test_helpers.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_test.h"
+#include "absl/strings/escaping.h"
+#include "absl/strings/str_cat.h"
+#include "http2/platform/api/http2_test_helpers.h"
+#include "common/platform/api/quiche_test.h"
 
 namespace http2 {
 namespace test {
@@ -69,7 +70,7 @@ void HpackStringCollector::OnStringData(const char* data, size_t length) {
   absl::string_view sp(data, length);
   EXPECT_TRUE(IsInProgress()) << ToString();
   EXPECT_LE(sp.size(), len) << ToString();
-  Http2StrAppend(&s, sp);
+  absl::StrAppend(&s, sp);
   EXPECT_LE(s.size(), len) << ToString();
 }
 
@@ -116,7 +117,7 @@ std::ostream& operator<<(std::ostream& out, const HpackStringCollector& v) {
   if (!v.s.empty() && v.len != v.s.size()) {
     out << " (" << v.s.size() << ")";
   }
-  return out << ", String=\"" << Http2HexEscape(v.s) << "\")";
+  return out << ", String=\"" << absl::CHexEscape(v.s) << "\")";
 }
 
 }  // namespace test

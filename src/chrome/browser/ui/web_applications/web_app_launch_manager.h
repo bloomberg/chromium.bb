@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Browser;
 enum class WindowOpenDisposition;
@@ -41,15 +42,18 @@ class WebAppLaunchManager {
   explicit WebAppLaunchManager(Profile* profile);
   WebAppLaunchManager(const WebAppLaunchManager&) = delete;
   WebAppLaunchManager& operator=(const WebAppLaunchManager&) = delete;
-  ~WebAppLaunchManager();
+  virtual ~WebAppLaunchManager();
 
   // apps::LaunchManager:
   content::WebContents* OpenApplication(apps::AppLaunchParams&& params);
 
+  // |browser| may be nullptr if the navigation fails.
   void LaunchApplication(
       const std::string& app_id,
       const base::CommandLine& command_line,
       const base::FilePath& current_directory,
+      const absl::optional<GURL>& url_handler_launch_url,
+      const absl::optional<GURL>& protocol_handler_launch_url,
       base::OnceCallback<void(Browser* browser,
                               apps::mojom::LaunchContainer container)>
           callback);
@@ -58,7 +62,7 @@ class WebAppLaunchManager {
       OpenApplicationCallback callback);
 
  private:
-  void LaunchWebApplication(
+  virtual void LaunchWebApplication(
       apps::AppLaunchParams&& params,
       base::OnceCallback<void(Browser* browser,
                               apps::mojom::LaunchContainer container)>
@@ -70,13 +74,14 @@ class WebAppLaunchManager {
   WebAppProvider* const provider_;
 
   base::WeakPtrFactory<WebAppLaunchManager> weak_ptr_factory_{this};
-
 };
 
 Browser* CreateWebApplicationWindow(Profile* profile,
                                     const std::string& app_id,
                                     WindowOpenDisposition disposition,
-                                    bool can_resize = true);
+                                    int32_t restore_id,
+                                    bool can_resize = true,
+                                    bool can_maximize = true);
 
 content::WebContents* NavigateWebApplicationWindow(
     Browser* browser,

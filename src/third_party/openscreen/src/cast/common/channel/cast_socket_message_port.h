@@ -28,7 +28,8 @@ class CastSocketMessagePort : public MessagePort, public CastMessageHandler {
 
   void SetSocket(WeakPtr<CastSocket> socket);
 
-  // Returns current socket identifier, or -1 if not connected.
+  // Returns current socket identifier, or ToCastSocketId(nullptr) if not
+  // connected.
   int GetSocketId();
 
   // MessagePort overrides.

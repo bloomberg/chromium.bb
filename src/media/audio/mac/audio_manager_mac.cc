@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -16,7 +17,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "base/memory/free_deleter.h"
-#include "base/optional.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/strings/sys_string_conversions.h"
@@ -35,6 +35,7 @@
 #include "media/base/limits.h"
 #include "media/base/mac/audio_latency_mac.h"
 #include "media/base/media_switches.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace media {
 
@@ -138,12 +139,12 @@ static void GetAudioDeviceInfo(bool is_input,
     if (!is_valid_for_direction)
       continue;
 
-    base::Optional<std::string> unique_id =
+    absl::optional<std::string> unique_id =
         core_audio_mac::GetDeviceUniqueID(device_id);
     if (!unique_id)
       continue;
 
-    base::Optional<std::string> label =
+    absl::optional<std::string> label =
         core_audio_mac::GetDeviceLabel(device_id, is_input);
     if (!label)
       continue;
@@ -438,7 +439,7 @@ static bool GetDeviceChannels(AudioUnit audio_unit,
   return true;
 }
 
-class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
+class AudioManagerMac::AudioPowerObserver : public base::PowerSuspendObserver {
  public:
   AudioPowerObserver()
       : is_suspending_(false),
@@ -449,14 +450,14 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
     // base::PowerMonitorDeviceSource for more details.
     if (!is_monitoring_)
       return;
-    base::PowerMonitor::AddObserver(this);
+    base::PowerMonitor::AddPowerSuspendObserver(this);
   }
 
   ~AudioPowerObserver() override {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!is_monitoring_)
       return;
-    base::PowerMonitor::RemoveObserver(this);
+    base::PowerMonitor::RemovePowerSuspendObserver(this);
   }
 
   bool IsSuspending() const {
@@ -679,7 +680,7 @@ std::string AudioManagerMac::GetAssociatedOutputDeviceID(
   // to detect if a device (e.g. a digital output device) is actually connected
   // to an endpoint, so we cannot randomly pick a device.
   if (related_output_device_ids.size() == 1) {
-    base::Optional<std::string> related_unique_id =
+    absl::optional<std::string> related_unique_id =
         core_audio_mac::GetDeviceUniqueID(related_output_device_ids[0]);
     if (related_unique_id)
       return std::move(*related_unique_id);
@@ -714,9 +715,9 @@ AudioOutputStream* AudioManagerMac::MakeLowLatencyOutputStream(
     // even if OSX calls us on the right thread.  Some CoreAudio drivers will
     // fire the callbacks during stream creation, leading to re-entrancy issues
     // otherwise.  See http://crbug.com/349604
-    output_device_listener_.reset(
-        new AudioDeviceListenerMac(BindToCurrentLoop(base::BindRepeating(
-            &AudioManagerMac::HandleDeviceChanges, base::Unretained(this)))));
+    output_device_listener_ = std::make_unique<AudioDeviceListenerMac>(
+        BindToCurrentLoop(base::BindRepeating(
+            &AudioManagerMac::HandleDeviceChanges, base::Unretained(this))));
     device_listener_first_init = true;
   }
 
@@ -883,7 +884,7 @@ AudioParameters AudioManagerMac::GetPreferredOutputStreamParameters(
 void AudioManagerMac::InitializeOnAudioThread() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   InitializeCoreAudioDispatchOverride();
-  power_observer_.reset(new AudioPowerObserver());
+  power_observer_ = std::make_unique<AudioPowerObserver>();
 }
 
 void AudioManagerMac::HandleDeviceChanges() {

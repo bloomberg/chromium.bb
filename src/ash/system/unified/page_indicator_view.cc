@@ -13,6 +13,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/tray_popup_utils.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -51,8 +52,34 @@ class PageIndicatorView::PageIndicatorButton : public views::Button {
             base::Unretained(controller),
             page)) {
     SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
-    SetInkDropMode(InkDropMode::ON);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
     views::InstallFixedSizeCircleHighlightPathGenerator(this, kInkDropRadius);
+    ink_drop()->SetCreateInkDropCallback(base::BindRepeating(
+        [](Button* host) {
+          return TrayPopupUtils::CreateInkDrop(host,
+                                               /*highlight_on_hover=*/true);
+        },
+        this));
+    ink_drop()->SetCreateHighlightCallback(base::BindRepeating(
+        [](PageIndicatorButton* host) {
+          auto highlight = std::make_unique<views::InkDropHighlight>(
+              gfx::SizeF(host->size()), host->ripple_base_color_);
+          highlight->set_visible_opacity(host->highlight_opacity_);
+          return highlight;
+        },
+        this));
+    ink_drop()->SetCreateRippleCallback(base::BindRepeating(
+        [](PageIndicatorButton* host) -> std::unique_ptr<views::InkDropRipple> {
+          gfx::Point center = host->GetLocalBounds().CenterPoint();
+          gfx::Rect bounds(center.x() - kInkDropRadius,
+                           center.y() - kInkDropRadius, 2 * kInkDropRadius,
+                           2 * kInkDropRadius);
+          return std::make_unique<views::FloodFillInkDropRipple>(
+              host->size(), host->GetLocalBounds().InsetsFrom(bounds),
+              host->ink_drop()->GetInkDropCenterBasedOnLastEvent(),
+              host->ripple_base_color_, host->inkdrop_opacity_);
+        },
+        this));
   }
 
   ~PageIndicatorButton() override {}
@@ -106,33 +133,10 @@ class PageIndicatorView::PageIndicatorButton : public views::Button {
 
  protected:
   // views::Button:
-  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
-    auto ink_drop = TrayPopupUtils::CreateInkDrop(this);
-    ink_drop->SetShowHighlightOnHover(true);
-    return ink_drop;
-  }
-
-  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
-    gfx::Point center = GetLocalBounds().CenterPoint();
-    gfx::Rect bounds(center.x() - kInkDropRadius, center.y() - kInkDropRadius,
-                     2 * kInkDropRadius, 2 * kInkDropRadius);
-    return std::make_unique<views::FloodFillInkDropRipple>(
-        size(), GetLocalBounds().InsetsFrom(bounds),
-        GetInkDropCenterBasedOnLastEvent(), ripple_base_color_,
-        inkdrop_opacity_);
-  }
-
-  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
-      const override {
-    auto highlight = std::make_unique<views::InkDropHighlight>(
-        gfx::SizeF(size()), ripple_base_color_);
-    highlight->set_visible_opacity(highlight_opacity_);
-    return highlight;
-  }
-
   void NotifyClick(const ui::Event& event) override {
     Button::NotifyClick(event);
-    GetInkDrop()->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
+    ink_drop()->GetInkDrop()->AnimateToState(
+        views::InkDropState::ACTION_TRIGGERED);
   }
 
  private:

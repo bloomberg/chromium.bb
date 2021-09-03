@@ -5,13 +5,14 @@
 #ifndef QUICHE_QUIC_MASQUE_MASQUE_PROTOCOL_H_
 #define QUICHE_QUIC_MASQUE_MASQUE_PROTOCOL_H_
 
+#include "absl/container/flat_hash_map.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_containers.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_socket_address.h"
+#include "quic/core/http/quic_spdy_session.h"
+#include "quic/core/quic_connection_id.h"
+#include "quic/core/quic_types.h"
+#include "quic/platform/api/quic_containers.h"
+#include "quic/platform/api/quic_export.h"
+#include "quic/platform/api/quic_socket_address.h"
 
 namespace quic {
 
@@ -34,7 +35,7 @@ class QUIC_NO_EXPORT MasqueCompressionEngine {
  public:
   // Caller must ensure that |masque_session| has a lifetime longer than the
   // newly constructed MasqueCompressionEngine.
-  explicit MasqueCompressionEngine(QuicSession* masque_session);
+  explicit MasqueCompressionEngine(QuicSpdySession* masque_session);
 
   // Disallow copy and assign.
   MasqueCompressionEngine(const MasqueCompressionEngine&) = delete;
@@ -77,9 +78,6 @@ class QUIC_NO_EXPORT MasqueCompressionEngine {
     bool validated = false;
   };
 
-  // Generates a new datagram flow ID.
-  QuicDatagramFlowId GetNextFlowId();
-
   // Finds or creates a new compression context to use during compression.
   // |client_connection_id_present| and |server_connection_id_present| indicate
   // whether the corresponding connection ID is present in the current packet.
@@ -116,9 +114,8 @@ class QUIC_NO_EXPORT MasqueCompressionEngine {
                                std::vector<char>* packet,
                                bool* version_present);
 
-  QuicSession* masque_session_;  // Unowned.
-  QuicHashMap<QuicDatagramFlowId, MasqueCompressionContext> contexts_;
-  QuicDatagramFlowId next_flow_id_;
+  QuicSpdySession* masque_session_;  // Unowned.
+  absl::flat_hash_map<QuicDatagramFlowId, MasqueCompressionContext> contexts_;
 };
 
 }  // namespace quic

@@ -11,18 +11,18 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/webui/help/version_updater.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/policy/core/common/policy_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace base {
 class DictionaryValue;
@@ -51,7 +51,7 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   void OnUpgradeRecommended() override;
 
   // Returns the browser version as a string.
-  static base::string16 BuildBrowserVersionString();
+  static std::u16string BuildBrowserVersionString();
 
  protected:
   // Used to test the EOL string displayed in the About details page.
@@ -82,7 +82,7 @@ class AboutHandler : public settings::SettingsPageUIHandler,
   // Opens the help page. |args| must be empty.
   void HandleOpenHelpPage(const base::ListValue* args);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Checks if ReleaseNotes is enabled.
   void HandleGetEnabledReleaseNotes(const base::ListValue* args);
 
@@ -145,14 +145,16 @@ class AboutHandler : public settings::SettingsPageUIHandler,
                        bool powerwash,
                        const std::string& version,
                        int64_t size,
-                       const base::string16& fail_message);
+                       const std::u16string& fail_message);
 
 #if defined(OS_MAC)
   // Callback method which forwards promotion state to the page.
   void SetPromotionState(VersionUpdater::PromotionState state);
 #endif
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  void HandleOpenDiagnostics(const base::ListValue* args);
+
   void HandleGetRegulatoryInfo(const base::ListValue* args);
 
   // Callback for when the directory with the regulatory label image and alt

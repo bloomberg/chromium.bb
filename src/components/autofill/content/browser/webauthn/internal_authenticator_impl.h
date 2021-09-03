@@ -8,11 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
-#include <string>
 
 #include "base/macros.h"
 #include "components/autofill/core/browser/payments/internal_authenticator.h"
-#include "content/browser/webauth/authenticator_common.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -25,6 +23,7 @@ class Origin;
 
 namespace content {
 
+class AuthenticatorCommon;
 class RenderFrameHost;
 
 // Implementation of the public InternalAuthenticator interface.
@@ -62,7 +61,6 @@ class InternalAuthenticatorImpl : public autofill::InternalAuthenticator,
     return authenticator_common_.get();
   }
 
-  RenderFrameHost* const render_frame_host_;
   url::Origin effective_origin_;
   std::unique_ptr<AuthenticatorCommon> authenticator_common_;
 

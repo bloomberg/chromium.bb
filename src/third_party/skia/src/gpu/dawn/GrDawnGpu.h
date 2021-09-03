@@ -26,10 +26,6 @@ class GrDirectContext;
 class GrPipeline;
 struct GrDawnProgram;
 
-namespace SkSL {
-    class Compiler;
-}
-
 class GrDawnGpu : public GrGpu {
 public:
     static sk_sp<GrGpu> Make(const wgpu::Device&, const GrContextOptions&, GrDirectContext*);
@@ -37,6 +33,9 @@ public:
     ~GrDawnGpu() override;
 
     void disconnect(DisconnectType) override;
+
+    GrThreadSafePipelineBuilder* pipelineBuilder() override;
+    sk_sp<GrThreadSafePipelineBuilder> refPipelineBuilder() override;
 
     GrStagingBufferManager* stagingBufferManager() override { return &fStagingBufferManager; }
     void takeOwnershipOfBuffer(sk_sp<GrGpuBuffer>) override;
@@ -58,13 +57,10 @@ public:
                                                                int sampleCnt,
                                                                GrProtected) override;
     void deleteTestingOnlyBackendRenderTarget(const GrBackendRenderTarget&) override;
-
-    void testingOnly_flushGpuAndSync() override;
 #endif
 
-    sk_sp<GrAttachment> makeStencilAttachmentForRenderTarget(const GrRenderTarget*,
-                                                             SkISize dimensions,
-                                                             int numStencilSamples) override;
+    sk_sp<GrAttachment> makeStencilAttachment(const GrBackendFormat& /*colorFormat*/,
+                                              SkISize dimensions, int numStencilSamples) override;
 
     GrBackendFormat getPreferredStencilFormat(const GrBackendFormat&) override {
         return GrBackendFormat::MakeDawn(wgpu::TextureFormat::Depth24PlusStencil8);
@@ -75,10 +71,6 @@ public:
                                            int numSamples,
                                            GrProtected isProtected) override {
         return nullptr;
-    }
-
-    SkSL::Compiler* shaderCompiler() const {
-        return fCompiler.get();
     }
 
     void submit(GrOpsRenderPass*) override;
@@ -95,6 +87,7 @@ public:
     void insertSemaphore(GrSemaphore* semaphore) override;
     void waitSemaphore(GrSemaphore* semaphore) override;
     void checkFinishProcs() override;
+    void finishOutstandingGpuWork() override;
 
     std::unique_ptr<GrSemaphore> prepareTextureForCrossContextUsage(GrTexture*) override;
 
@@ -108,16 +101,12 @@ public:
     void appendCommandBuffer(wgpu::CommandBuffer commandBuffer);
 
     void waitOnAllBusyStagingBuffers();
-    SkSL::String SkSLToSPIRV(const char* shaderString, SkSL::Program::Kind, bool flipY,
+    SkSL::String SkSLToSPIRV(const char* shaderString, SkSL::ProgramKind, bool flipY,
                              uint32_t rtHeightOffset, SkSL::Program::Inputs*);
     wgpu::ShaderModule createShaderModule(const SkSL::String& spirvSource);
 
 private:
     GrDawnGpu(GrDirectContext*, const GrContextOptions&, const wgpu::Device&);
-
-    void onResetContext(uint32_t resetBits) override {}
-
-    virtual void querySampleLocations(GrRenderTarget*, SkTArray<SkPoint>*) override {}
 
     sk_sp<GrTexture> onCreateTexture(SkISize,
                                      const GrBackendFormat&,
@@ -154,9 +143,9 @@ private:
                                             GrMipmapped,
                                             GrProtected) override;
 
-    bool onUpdateBackendTexture(const GrBackendTexture&,
-                                sk_sp<GrRefCntedCallback> finishedCallback,
-                                const BackendTextureData*) override;
+    bool onClearBackendTexture(const GrBackendTexture&,
+                               sk_sp<GrRefCntedCallback> finishedCallback,
+                               std::array<float, 4> color) override;
 
     GrBackendTexture onCreateCompressedBackendTexture(SkISize dimensions,
                                                       const GrBackendFormat&,
@@ -165,7 +154,8 @@ private:
 
     bool onUpdateCompressedBackendTexture(const GrBackendTexture&,
                                           sk_sp<GrRefCntedCallback> finishedCallback,
-                                          const BackendTextureData*) override;
+                                          const void* data,
+                                          size_t size) override;
 
     sk_sp<GrGpuBuffer> onCreateBuffer(size_t size, GrGpuBufferType type, GrAccessPattern,
                                       const void* data) override;
@@ -181,11 +171,12 @@ private:
 
     bool onTransferPixelsTo(GrTexture*, int left, int top, int width, int height,
                             GrColorType textureColorType, GrColorType bufferColorType,
-                            GrGpuBuffer* transferBuffer, size_t offset, size_t rowBytes) override;
+                            sk_sp<GrGpuBuffer> transferBuffer, size_t offset,
+                            size_t rowBytes) override;
 
     bool onTransferPixelsFrom(GrSurface* surface, int left, int top, int width, int height,
                               GrColorType surfaceColorType, GrColorType bufferColorType,
-                              GrGpuBuffer* transferBuffer, size_t offset) override;
+                              sk_sp<GrGpuBuffer> transferBuffer, size_t offset) override;
 
     void onResolveRenderTarget(GrRenderTarget*, const SkIRect&) override {}
 
@@ -198,6 +189,7 @@ private:
                          GrGpuFinishedContext finishedContext) override;
 
     GrOpsRenderPass* onGetOpsRenderPass(GrRenderTarget*,
+                                        bool useMSAASurface,
                                         GrAttachment*,
                                         GrSurfaceOrigin,
                                         const SkIRect&,
@@ -216,7 +208,6 @@ private:
 
     wgpu::Device                                    fDevice;
     wgpu::Queue                                     fQueue;
-    std::unique_ptr<SkSL::Compiler>                 fCompiler;
     std::unique_ptr<GrDawnOpsRenderPass>            fOpsRenderPass;
     GrDawnRingBuffer                                fUniformRingBuffer;
     wgpu::CommandEncoder                            fCopyEncoder;

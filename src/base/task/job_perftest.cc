@@ -10,23 +10,39 @@
 #include "base/callback_helpers.h"
 #include "base/containers/queue.h"
 #include "base/containers/stack.h"
-#include "base/optional.h"
 #include "base/synchronization/lock.h"
 #include "base/task/post_job.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_result_reporter.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 
 namespace {
 
+// The perftest implements the following assignment strategy:
+// - Naive: See RunJobWithNaiveAssignment().
+// - Dynamic: See RunJobWithDynamicAssignment().
+// - Loop around: See RunJobWithLoopAround().
+// The following test setups exists for different strategies, although
+// not every combination is performed:
+// - No-op: Work items are no-op tasks.
+// - No-op + disrupted: 10 disruptive tasks are posted every 1ms.
+// - Busy wait: Work items are busy wait for 5us.
+// - Busy wait + disrupted
+
 constexpr char kMetricPrefixJob[] = "Job.";
 constexpr char kMetricWorkThroughput[] = "work_throughput";
 constexpr char kStoryNoOpNaive[] = "noop_naive";
 constexpr char kStoryBusyWaitNaive[] = "busy_wait_naive";
+constexpr char kStoryNoOpAtomic[] = "noop_atomic";
+constexpr char kStoryNoOpAtomicDisrupted[] = "noop_atomic_disrupted";
+constexpr char kStoryBusyWaitAtomic[] = "busy_wait_atomic";
+constexpr char kStoryBusyWaitAtomicDisrupted[] = "busy_wait_atomic_disrupted";
 constexpr char kStoryNoOpDynamic[] = "noop_dynamic";
 constexpr char kStoryNoOpDynamicDisrupted[] = "noop_dynamic_disrupted";
 constexpr char kStoryBusyWaitDynamic[] = "busy_wait_dynamic";
@@ -55,7 +71,7 @@ class IndexGenerator {
     ranges_to_split_.push({0, size_});
   }
 
-  Optional<size_t> GetNext() {
+  absl::optional<size_t> GetNext() {
     AutoLock auto_lock(lock_);
     if (!pending_indices_.empty()) {
       // Return any pending index first.
@@ -64,7 +80,7 @@ class IndexGenerator {
       return index;
     }
     if (ranges_to_split_.empty())
-      return nullopt;
+      return absl::nullopt;
 
     // Split the oldest running range in 2 and return the middle index as
     // starting point.
@@ -158,11 +174,11 @@ RepeatingCallback<void(size_t)> BusyWaitCallback(TimeDelta delta) {
 // Posts |task_count| no-op tasks every |delay|.
 void DisruptivePostTasks(size_t task_count, TimeDelta delay) {
   for (size_t i = 0; i < task_count; ++i) {
-    PostTask(FROM_HERE, {ThreadPool(), TaskPriority::USER_BLOCKING},
-             DoNothing());
+    ThreadPool::PostTask(FROM_HERE, {TaskPriority::USER_BLOCKING}, DoNothing());
   }
-  PostDelayedTask(FROM_HERE, {ThreadPool(), TaskPriority::USER_BLOCKING},
-                  BindOnce(&DisruptivePostTasks, task_count, delay), delay);
+  ThreadPool::PostDelayedTask(FROM_HERE, {TaskPriority::USER_BLOCKING},
+                              BindOnce(&DisruptivePostTasks, task_count, delay),
+                              delay);
 }
 
 class JobPerfTest : public testing::Test {
@@ -212,6 +228,51 @@ class JobPerfTest : public testing::Test {
   }
 
   // Process |num_work_items| items with |process_item| in parallel. Work is
+  // assigned by having each worker sequentially traversing all items
+  // synchronized with an atomic variable.
+  void RunJobWithAtomicAssignment(const std::string& story_name,
+                                  size_t num_work_items,
+                                  RepeatingCallback<void(size_t)> process_item,
+                                  bool disruptive_post_tasks = false) {
+    WorkList work_list(num_work_items, std::move(process_item));
+    std::atomic_size_t index{0};
+
+    // Post extra tasks to disrupt Job execution and cause workers to yield.
+    if (disruptive_post_tasks)
+      DisruptivePostTasks(10, TimeDelta::FromMilliseconds(1));
+
+    const TimeTicks job_run_start = TimeTicks::Now();
+
+    WaitableEvent complete;
+    auto handle = PostJob(
+        FROM_HERE, {TaskPriority::USER_VISIBLE},
+        BindRepeating(
+            [](WorkList* work_list, WaitableEvent* complete,
+               std::atomic_size_t* index, JobDelegate* delegate) {
+              while (!delegate->ShouldYield()) {
+                const size_t i = index->fetch_add(1, std::memory_order_relaxed);
+                if (i >= work_list->NumWorkItems() ||
+                    !work_list->ProcessWorkItem(i)) {
+                  complete->Signal();
+                  return;
+                }
+              }
+            },
+            Unretained(&work_list), Unretained(&complete), Unretained(&index)),
+        BindRepeating(&WorkList::NumIncompleteWorkItems,
+                      Unretained(&work_list)));
+
+    complete.Wait();
+    handle.Join();
+    const TimeDelta job_duration = TimeTicks::Now() - job_run_start;
+    EXPECT_EQ(0U, work_list.NumIncompleteWorkItems(0));
+
+    auto reporter = SetUpReporter(story_name);
+    reporter.AddResult(kMetricWorkThroughput,
+                       size_t(num_work_items / job_duration.InMilliseconds()));
+  }
+
+  // Process |num_work_items| items with |process_item| in parallel. Work is
   // assigned dynamically having each new worker given a different point far
   // from other workers until all work is done. This is achieved by recursively
   // splitting each range that was previously given in half.
@@ -236,7 +297,7 @@ class JobPerfTest : public testing::Test {
                WaitableEvent* complete, JobDelegate* delegate) {
               while (work_list->NumIncompleteWorkItems(0) != 0 &&
                      !delegate->ShouldYield()) {
-                Optional<size_t> index = generator->GetNext();
+                absl::optional<size_t> index = generator->GetNext();
                 if (!index)
                   return;
                 for (size_t i = *index; i < work_list->NumWorkItems(); ++i) {
@@ -293,7 +354,7 @@ class JobPerfTest : public testing::Test {
                 BindRepeating(
                     [](IndexGenerator* generator, WorkList* work_list,
                        WaitableEvent* complete, JobDelegate* delegate) {
-                      Optional<size_t> index = generator->GetNext();
+                      absl::optional<size_t> index = generator->GetNext();
                       if (!index)
                         return;
                       size_t i = *index;
@@ -340,17 +401,6 @@ class JobPerfTest : public testing::Test {
 
 }  // namespace
 
-// The perftest implements the following assignment strategy:
-// - Naive: See RunJobWithNaiveAssignment().
-// - Dynamic: See RunJobWithDynamicAssignment().
-// - Loop around: See RunJobWithLoopAround().
-// The following test setups exists for different strategies, although
-// not every combination is performed:
-// - No-op: Work items are no-op tasks.
-// - No-op + disrupted: 10 disruptive tasks are posted every 1ms.
-// - Busy wait: Work items are busy wait for 5us.
-// - Busy wait + disrupted
-
 TEST_F(JobPerfTest, NoOpWorkNaiveAssignment) {
   RunJobWithNaiveAssignment(kStoryNoOpNaive, 10000000, DoNothing());
 }
@@ -359,6 +409,28 @@ TEST_F(JobPerfTest, BusyWaitNaiveAssignment) {
   RepeatingCallback<void(size_t)> callback =
       BusyWaitCallback(TimeDelta::FromMicroseconds(5));
   RunJobWithNaiveAssignment(kStoryBusyWaitNaive, 500000, std::move(callback));
+}
+
+TEST_F(JobPerfTest, NoOpWorkAtomicAssignment) {
+  RunJobWithAtomicAssignment(kStoryNoOpAtomic, 10000000, DoNothing());
+}
+
+TEST_F(JobPerfTest, NoOpDisruptedWorkAtomicAssignment) {
+  RunJobWithAtomicAssignment(kStoryNoOpAtomicDisrupted, 10000000, DoNothing(),
+                             true);
+}
+
+TEST_F(JobPerfTest, BusyWaitAtomicAssignment) {
+  RepeatingCallback<void(size_t)> callback =
+      BusyWaitCallback(TimeDelta::FromMicroseconds(5));
+  RunJobWithAtomicAssignment(kStoryBusyWaitAtomic, 500000, std::move(callback));
+}
+
+TEST_F(JobPerfTest, BusyWaitDisruptedWorkAtomicAssignment) {
+  RepeatingCallback<void(size_t)> callback =
+      BusyWaitCallback(TimeDelta::FromMicroseconds(5));
+  RunJobWithAtomicAssignment(kStoryBusyWaitAtomicDisrupted, 500000,
+                             std::move(callback), true);
 }
 
 TEST_F(JobPerfTest, NoOpWorkDynamicAssignment) {

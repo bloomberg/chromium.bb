@@ -8,43 +8,25 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
-class PrePaintTreeWalk;
-
 struct CORE_EXPORT PaintInvalidatorContext {
-  DISALLOW_NEW();
+  STACK_ALLOCATED();
 
  public:
-  class ParentContextAccessor {
-   public:
-    ParentContextAccessor() = default;
-    ParentContextAccessor(PrePaintTreeWalk* tree_walk,
-                          wtf_size_t parent_context_index)
-        : tree_walk_(tree_walk), parent_context_index_(parent_context_index) {}
-    const PaintInvalidatorContext* ParentContext() const;
-
-   private:
-    PrePaintTreeWalk* tree_walk_ = nullptr;
-    wtf_size_t parent_context_index_ = 0u;
-  };
-
   PaintInvalidatorContext() = default;
 
-  PaintInvalidatorContext(const ParentContextAccessor& parent_context_accessor)
-      : parent_context_accessor_(parent_context_accessor),
-        subtree_flags(ParentContext()->subtree_flags),
-        directly_composited_container(
-            ParentContext()->directly_composited_container),
+  explicit PaintInvalidatorContext(const PaintInvalidatorContext& parent)
+      : parent_context(&parent),
+        subtree_flags(parent.subtree_flags),
+        directly_composited_container(parent.directly_composited_container),
         directly_composited_container_for_stacked_contents(
-            ParentContext()
-                ->directly_composited_container_for_stacked_contents),
-        painting_layer(ParentContext()->painting_layer) {}
+            parent.directly_composited_container_for_stacked_contents),
+        painting_layer(parent.painting_layer) {}
 
   bool NeedsSubtreeWalk() const {
     return subtree_flags &
@@ -52,16 +34,12 @@ struct CORE_EXPORT PaintInvalidatorContext {
             kSubtreeFullInvalidationForStackedContents);
   }
 
+  // TODO(pdr): Remove this accessor.
   const PaintInvalidatorContext* ParentContext() const {
-    return parent_context_accessor_.ParentContext();
+    return parent_context;
   }
+  const PaintInvalidatorContext* parent_context = nullptr;
 
- private:
-  // Parent context accessor has to be initialized first, so inject the private
-  // access block here for that reason.
-  ParentContextAccessor parent_context_accessor_;
-
- public:
   // When adding new subtree flags, ensure |NeedsSubtreeWalk| is updated.
   enum SubtreeFlag {
     kSubtreeInvalidationChecking = 1 << 0,
@@ -104,15 +82,13 @@ struct CORE_EXPORT PaintInvalidatorContext {
  private:
   friend class PaintInvalidator;
 
-  // Not using Optional because we need to keep the pointer stable when the
-  // vector containing this PaintInvalidatorContext reallocates.
-  std::unique_ptr<LayoutShiftTracker::ContainingBlockScope>
+  absl::optional<LayoutShiftTracker::ContainingBlockScope>
       containing_block_scope_;
   const TransformPaintPropertyNodeOrAlias* transform_ = nullptr;
 };
 
-class PaintInvalidator {
-  DISALLOW_NEW();
+class PaintInvalidator final {
+  STACK_ALLOCATED();
 
  public:
   // Returns true if the object is invalidated.
@@ -127,7 +103,6 @@ class PaintInvalidator {
 
  private:
   friend struct PaintInvalidatorContext;
-  friend class PrePaintTreeWalk;
 
   ALWAYS_INLINE void UpdatePaintingLayer(const LayoutObject&,
                                          PaintInvalidatorContext&,

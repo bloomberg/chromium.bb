@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace language {
@@ -45,7 +46,7 @@ TEST_F(LocaleUtilTest, ConvertToActualUILocale) {
   locale = "fr-FR";
   is_ui = ConvertToActualUILocale(&locale);
   EXPECT_TRUE(is_ui);
-  EXPECT_EQ("fr-FR", locale);
+  EXPECT_EQ("fr", locale);
 
   //---------------------------------------------------------------------------
   // Languages that are converted to their fallback version.
@@ -57,14 +58,24 @@ TEST_F(LocaleUtilTest, ConvertToActualUILocale) {
     locale = es_locale;
     is_ui = ConvertToActualUILocale(&locale);
     EXPECT_TRUE(is_ui) << es_locale;
+#if defined(OS_IOS)
+    // iOS uses a different name for es-419 (es-MX).
+    EXPECT_EQ("es-MX", locale) << es_locale;
+#else
     EXPECT_EQ("es-419", locale) << es_locale;
+#endif
   }
 
   // English falls back to US.
   locale = "en";
   is_ui = ConvertToActualUILocale(&locale);
   EXPECT_TRUE(is_ui);
+#if defined(OS_APPLE)
+  // On Apple platforms, "en" is used instead of "en-US".
+  EXPECT_EQ("en", locale);
+#else
   EXPECT_EQ("en-US", locale);
+#endif
 
   // All other regional English languages fall back to UK.
   for (const char* en_locale :
@@ -78,7 +89,12 @@ TEST_F(LocaleUtilTest, ConvertToActualUILocale) {
   locale = "pt";
   is_ui = ConvertToActualUILocale(&locale);
   EXPECT_TRUE(is_ui);
-  EXPECT_EQ("pt-PT", locale);
+#if defined(OS_IOS)
+  // On iOS, "pt" is used instead of "pt-BR".
+  EXPECT_EQ("pt", locale);
+#else
+  EXPECT_EQ("pt-BR", locale);
+#endif
 
   locale = "it-CH";
   is_ui = ConvertToActualUILocale(&locale);
@@ -93,19 +109,19 @@ TEST_F(LocaleUtilTest, ConvertToActualUILocale) {
   locale = "it-IT";
   is_ui = ConvertToActualUILocale(&locale);
   EXPECT_TRUE(is_ui);
-  EXPECT_EQ("it-IT", locale);
+  EXPECT_EQ("it", locale);
 
   locale = "de-DE";
   is_ui = ConvertToActualUILocale(&locale);
   EXPECT_TRUE(is_ui);
-  EXPECT_EQ("de-DE", locale);
+  EXPECT_EQ("de", locale);
 
 //---------------------------------------------------------------------------
 // Languages that cannot be used as display UI.
 //---------------------------------------------------------------------------
 // This only matters for ChromeOS and Windows, as they are the only systems
 // where users can set the display UI.
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || defined(OS_WIN)
   locale = "sd";  // Sindhi
   is_ui = ConvertToActualUILocale(&locale);
   EXPECT_FALSE(is_ui);

@@ -9,15 +9,20 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "build/chromeos_buildflags.h"
 #include "components/feedback/feedback_uploader.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chromeos/components/chromebox_for_meetings/buildflags/buildflags.h"
 #if BUILDFLAG(PLATFORM_CFM)
 #include "components/invalidation/public/identity_provider.h"
 #endif  // BUILDFLAG(PLATFORM_CFM)
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace signin {
 class PrimaryAccountAccessTokenFetcher;
@@ -29,9 +34,7 @@ namespace feedback {
 
 class FeedbackUploaderChrome : public FeedbackUploader {
  public:
-  FeedbackUploaderChrome(
-      content::BrowserContext* context,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  explicit FeedbackUploaderChrome(content::BrowserContext* context);
   ~FeedbackUploaderChrome() override;
 
   class Delegate {
@@ -59,7 +62,7 @@ class FeedbackUploaderChrome : public FeedbackUploader {
 
   void AccessTokenAvailable(GoogleServiceAuthError error, std::string token);
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(PLATFORM_CFM)
   void ActiveAccountAccessTokenAvailable(GoogleServiceAuthError error,
                                          std::string token);
@@ -67,7 +70,7 @@ class FeedbackUploaderChrome : public FeedbackUploader {
   std::unique_ptr<invalidation::ActiveAccountAccessTokenFetcher>
       active_account_token_fetcher_;
 #endif  // BUILDFLAG(PLATFORM_CFM)
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   std::unique_ptr<signin::PrimaryAccountAccessTokenFetcher>
       primary_account_token_fetcher_;
@@ -75,6 +78,8 @@ class FeedbackUploaderChrome : public FeedbackUploader {
   std::string access_token_;
 
   Delegate* delegate_ = nullptr;  // Not owned.
+
+  content::BrowserContext* context_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackUploaderChrome);
 };

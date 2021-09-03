@@ -5,10 +5,10 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_GFX_DISPLAY_SCHEDULER_WEBVIEW_H_
 #define ANDROID_WEBVIEW_BROWSER_GFX_DISPLAY_SCHEDULER_WEBVIEW_H_
 
-#include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/service/display/display_scheduler.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace android_webview {
 class RootFrameSink;
@@ -25,6 +25,8 @@ class DisplaySchedulerWebView : public viz::DisplaySchedulerBase {
   void DidSwapBuffers() override;
   void DidReceiveSwapBuffersAck() override {}
   void OutputSurfaceLost() override;
+  void SetGpuLatency(base::TimeDelta gpu_latency) override {}
+
   // DisplayDamageTrackerObserver implementation.
   void OnDisplayDamaged(viz::SurfaceId surface_id) override;
   void OnRootFrameMissing(bool missing) override {}

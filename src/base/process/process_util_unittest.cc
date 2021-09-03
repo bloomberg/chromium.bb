@@ -718,7 +718,7 @@ TEST_F(ProcessUtilTest, MAYBE_GetTerminationStatusSigKill) {
   exit_code = 42;
   TerminationStatus status =
       WaitForChildTermination(process.Handle(), &exit_code);
-#if defined(OS_CHROMEOS) || BUILDFLAG(IS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
   EXPECT_EQ(TERMINATION_STATUS_PROCESS_WAS_KILLED_BY_OOM, status);
 #else
   EXPECT_EQ(TERMINATION_STATUS_PROCESS_WAS_KILLED, status);
@@ -828,6 +828,35 @@ TEST_F(ProcessUtilTest, LaunchAsUser) {
   options.as_user = token;
   EXPECT_TRUE(
       LaunchProcess(MakeCmdLine("SimpleChildProcess"), options).IsValid());
+}
+
+MULTIPROCESS_TEST_MAIN(ChildVerifiesCetDisabled) {
+  auto get_process_mitigation_policy =
+      reinterpret_cast<decltype(&GetProcessMitigationPolicy)>(::GetProcAddress(
+          ::GetModuleHandleW(L"kernel32.dll"), "GetProcessMitigationPolicy"));
+
+  // Not available for Win7 but this process should still work.
+  if (!get_process_mitigation_policy)
+    return kSuccess;
+
+  // Policy not defined for Win < Win10 20H1 but that's also ok.
+  PROCESS_MITIGATION_USER_SHADOW_STACK_POLICY policy = {};
+  if (get_process_mitigation_policy(GetCurrentProcess(),
+                                    ProcessUserShadowStackPolicy, &policy,
+                                    sizeof(policy))) {
+    if (policy.EnableUserShadowStack)
+      return 1;
+  }
+  return kSuccess;
+}
+
+TEST_F(ProcessUtilTest, LaunchDisablingCetCompat) {
+  LaunchOptions options;
+  // This only has an effect on Windows > 20H2 with CET hardware but
+  // is safe on every platform.
+  options.disable_cetcompat = true;
+  EXPECT_TRUE(LaunchProcess(MakeCmdLine("ChildVerifiesCetDisabled"), options)
+                  .IsValid());
 }
 
 static const char kEventToTriggerHandleSwitch[] = "event-to-trigger-handle";

@@ -47,6 +47,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -442,7 +443,7 @@ void OverviewItem::AnimateAndCloseWindow(bool up) {
 }
 
 void OverviewItem::CloseWindow() {
-  SetShadowBounds(base::nullopt);
+  SetShadowBounds(absl::nullopt);
 
   gfx::RectF inset_bounds(target_bounds_);
   inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
@@ -639,14 +640,13 @@ void OverviewItem::Restack() {
 }
 
 void OverviewItem::UpdatePhantomsForDragging(bool is_touch_dragging) {
-  DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
   DCHECK_GT(Shell::GetAllRootWindows().size(), 1u);
   if (!phantoms_for_dragging_) {
     phantoms_for_dragging_ =
         transform_window_.IsMinimized()
             ? std::make_unique<DragWindowController>(
                   item_widget_->GetNativeWindow(), is_touch_dragging,
-                  base::make_optional(shadow_->content_bounds()))
+                  absl::make_optional(shadow_->content_bounds()))
             : std::make_unique<DragWindowController>(GetWindow(),
                                                      is_touch_dragging);
   }
@@ -654,12 +654,11 @@ void OverviewItem::UpdatePhantomsForDragging(bool is_touch_dragging) {
 }
 
 void OverviewItem::DestroyPhantomsForDragging() {
-  DCHECK(AreMultiDisplayOverviewAndSplitViewEnabled());
   phantoms_for_dragging_.reset();
 }
 
 void OverviewItem::SetShadowBounds(
-    base::Optional<gfx::RectF> bounds_in_screen) {
+    absl::optional<gfx::RectF> bounds_in_screen) {
   // Shadow is normally turned off during animations and reapplied when they
   // are finished. On destruction, |shadow_| is cleaned up before
   // |transform_window_|, which may call this function, so early exit if
@@ -716,9 +715,9 @@ void OverviewItem::UpdateRoundedCornersAndShadow() {
     const gfx::RectF shadow_bounds = unclipped_size_
                                          ? GetWindowTargetBoundsWithInsets()
                                          : GetUnclippedShadowBounds();
-    SetShadowBounds(base::make_optional(shadow_bounds));
+    SetShadowBounds(absl::make_optional(shadow_bounds));
   } else {
-    SetShadowBounds(base::nullopt);
+    SetShadowBounds(absl::nullopt);
   }
 }
 
@@ -924,8 +923,14 @@ void OverviewItem::OnWindowBoundsChanged(aura::Window* window,
   if (!prepared_for_overview_)
     return;
 
-  // Do not keep the overview bounds if we're shutting down.
+  // Do not update the overview bounds if we're shutting down.
   if (!Shell::Get()->overview_controller()->InOverviewSession())
+    return;
+
+  // Do not update the overview item if the window is to be snapped into split
+  // view. It will be removed from overview soon and will update overview grid
+  // at that moment.
+  if (SplitViewController::Get(window)->IsWindowInTransitionalState(window))
     return;
 
   // The drop target will get its bounds set as opposed to its transform
@@ -982,6 +987,12 @@ void OverviewItem::OnPostWindowStateTypeChange(WindowState* window_state,
   // During preparation, window state can change, e.g. updating shelf
   // visibility may show the temporarily hidden (minimized) panels.
   if (!prepared_for_overview_)
+    return;
+
+  // Minimizing an originally active window will activate and unminimize the
+  // window upon exiting, and the item window will be "moved" to fade out in
+  // 'RestoreWindow'.
+  if (!item_widget_)
     return;
 
   WindowStateType new_type = window_state->GetStateType();
@@ -1043,7 +1054,7 @@ void OverviewItem::OnItemBoundsAnimationStarted() {
   // performance. The shadow will be added back once the animation is completed.
   // Note that we can't use UpdateRoundedCornersAndShadow() since we don't want
   // to update the rounded corners.
-  SetShadowBounds(base::nullopt);
+  SetShadowBounds(absl::nullopt);
 }
 
 void OverviewItem::OnItemBoundsAnimationEnded() {
@@ -1142,9 +1153,21 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
   const gfx::Transform transform =
       gfx::TransformBetweenRects(screen_rect, overview_item_bounds);
 
+  // Determine the amount of clipping we should put on the window. Note that the
+  // clipping goes after setting a transform, as layer transform affects layer
+  // clip.
+  using ClippingType = ScopedOverviewTransformWindow::ClippingType;
+  ScopedOverviewTransformWindow::ClippingData clipping_data{
+      ClippingType::kCustom, gfx::SizeF()};
+  if (unclipped_size_)
+    clipping_data.second = GetWindowTargetBoundsWithInsets().size();
+  else if (is_first_update)
+    clipping_data.first = ClippingType::kEnter;
+
   if (is_first_update &&
       animation_type == OVERVIEW_ANIMATION_SPAWN_ITEM_IN_OVERVIEW) {
     PerformItemSpawnedAnimation(window, transform);
+    transform_window_.SetClipping(clipping_data);
     return;
   }
 
@@ -1159,14 +1182,6 @@ void OverviewItem::SetItemBounds(const gfx::RectF& target_bounds,
                        weak_ptr_factory_.GetWeakPtr())});
   }
   SetTransform(window, transform);
-
-  using ClippingType = ScopedOverviewTransformWindow::ClippingType;
-  ScopedOverviewTransformWindow::ClippingData clipping_data{
-      ClippingType::kCustom, gfx::SizeF()};
-  if (unclipped_size_)
-    clipping_data.second = GetWindowTargetBoundsWithInsets().size();
-  else if (is_first_update)
-    clipping_data.first = ClippingType::kEnter;
   transform_window_.SetClipping(clipping_data);
 }
 
@@ -1178,8 +1193,7 @@ void OverviewItem::CreateItemWidget() {
   params.visible_on_all_workspaces = true;
   params.layer_type = ui::LAYER_NOT_DRAWN;
   params.name = "OverviewModeLabel";
-  params.activatable =
-      views::Widget::InitParams::Activatable::ACTIVATABLE_DEFAULT;
+  params.activatable = views::Widget::InitParams::Activatable::kDefault;
   params.accept_events = true;
   params.parent = transform_window_.window()->parent();
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);

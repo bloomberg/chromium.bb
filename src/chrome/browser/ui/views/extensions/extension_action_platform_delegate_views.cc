@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/extensions/accelerator_priority.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/common/extensions/command.h"
@@ -36,7 +35,7 @@ ExtensionActionPlatformDelegate::Create(
 ExtensionActionPlatformDelegateViews::ExtensionActionPlatformDelegateViews(
     ExtensionActionViewController* controller)
     : controller_(controller) {
-  command_service_observer_.Add(
+  command_service_observation_.Observe(
       extensions::CommandService::Get(controller_->browser()->profile()));
 }
 
@@ -90,12 +89,6 @@ void ExtensionActionPlatformDelegateViews::ShowPopup(
                             arrow, popup_show_action);
 }
 
-void ExtensionActionPlatformDelegateViews::ShowContextMenu() {
-  views::View* view = GetDelegateViews()->GetAsView();
-  view->context_menu_controller()->ShowContextMenuForView(
-      view, view->GetKeyboardContextMenuLocation(), ui::MENU_SOURCE_NONE);
-}
-
 void ExtensionActionPlatformDelegateViews::OnExtensionCommandAdded(
     const std::string& extension_id,
     const extensions::Command& command) {
@@ -133,7 +126,8 @@ void ExtensionActionPlatformDelegateViews::OnExtensionCommandRemoved(
 }
 
 void ExtensionActionPlatformDelegateViews::OnCommandServiceDestroying() {
-  command_service_observer_.RemoveAll();
+  DCHECK(command_service_observation_.IsObserving());
+  command_service_observation_.Reset();
 }
 
 bool ExtensionActionPlatformDelegateViews::AcceleratorPressed(

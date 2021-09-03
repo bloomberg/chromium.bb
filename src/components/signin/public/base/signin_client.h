@@ -9,13 +9,18 @@
 
 #include "base/callback.h"
 #include "base/callback_list.h"
-#include "base/time/time.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "components/account_manager_core/account.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+#endif
 
 class PrefService;
 
@@ -92,6 +97,11 @@ class SigninClient : public KeyedService {
   // gmail.com and googlemail.com are known to not be managed. Also returns
   // false if the username is empty.
   virtual bool IsNonEnterpriseUser(const std::string& username);
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  virtual absl::optional<account_manager::Account>
+  GetInitialPrimaryAccount() = 0;
+#endif
 };
 
 #endif  // COMPONENTS_SIGNIN_PUBLIC_BASE_SIGNIN_CLIENT_H_

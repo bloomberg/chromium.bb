@@ -1,6 +1,13 @@
+// Copyright 2021 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// **** DO NOT EDIT - this .proto was automatically generated. ****
 syntax = "proto3";
 
 package cast.platform;
+
+import "cast/cast_core/api/common/service_info.proto";
 
 option optimize_for = LITE_RUNTIME;
 
@@ -18,7 +25,10 @@ service PlatformService {
 }
 
 message StartRuntimeRequest {
+  // Cast Runtime ID assigned in CastCoreService.RegisterRuntime.
   string runtime_id = 1;
+  // gRPC endpoint Cast Runtime must run on.
+  cast.common.ServiceInfo runtime_service_info = 2;
 }
 
 message StartRuntimeResponse {}

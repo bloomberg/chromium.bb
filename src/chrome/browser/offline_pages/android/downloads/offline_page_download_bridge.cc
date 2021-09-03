@@ -125,7 +125,7 @@ void DownloadUIAdapterDelegate::OpenItem(
     const offline_items_collection::OpenParams& open_params) {
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageDownloadBridge_openItem(
-      env, ConvertUTF8ToJavaString(env, item.page_url.spec()), offline_id,
+      env, ConvertUTF8ToJavaString(env, item.url.spec()), offline_id,
       static_cast<int>(open_params.launch_location),
       open_params.open_in_incognito,
       offline_pages::ShouldOfflinePagesInDownloadHomeOpenInCct());
@@ -147,7 +147,8 @@ void DownloadUIAdapterDelegate::GetShareInfoForItem(
     const ContentId& id,
     ShareCallback share_callback) {
   auto share_helper = std::make_unique<OfflinePageShareHelper>(model_);
-  share_helper->GetShareInfo(
+  auto* const share_helper_ptr = share_helper.get();
+  share_helper_ptr->GetShareInfo(
       id, base::BindOnce(&OnShareInfoRetrieved, std::move(share_helper),
                          std::move(share_callback)));
 }
@@ -276,8 +277,8 @@ content::WebContents::Getter GetWebContentsGetter(
 }
 
 void DownloadAsFile(content::WebContents* web_contents, const GURL& url) {
-  content::DownloadManager* dlm = content::BrowserContext::GetDownloadManager(
-      web_contents->GetBrowserContext());
+  content::DownloadManager* dlm =
+      web_contents->GetBrowserContext()->GetDownloadManager();
   std::unique_ptr<download::DownloadUrlParameters> dl_params(
       content::DownloadRequestUtils::CreateDownloadForWebContentsMainFrame(
           web_contents, url,

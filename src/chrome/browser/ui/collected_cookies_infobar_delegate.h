@@ -8,7 +8,9 @@
 #include "base/macros.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
-class InfoBarService;
+namespace infobars {
+class ContentInfoBarManager;
+}
 
 // This class configures an infobar shown when the collected cookies dialog
 // is closed and the settings for one or more cookies have been changed.  The
@@ -18,8 +20,8 @@ class InfoBarService;
 class CollectedCookiesInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates a collected cookies infobar and delegate and adds the infobar to
-  // |infobar_service|.
-  static void Create(InfoBarService* infobar_service);
+  // |infobar_manager|.
+  static void Create(infobars::ContentInfoBarManager* infobar_manager);
 
  private:
   CollectedCookiesInfoBarDelegate();
@@ -28,9 +30,9 @@ class CollectedCookiesInfoBarDelegate : public ConfirmInfoBarDelegate {
   // ConfirmInfoBarDelegate:
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
-  base::string16 GetMessageText() const override;
+  std::u16string GetMessageText() const override;
   int GetButtons() const override;
-  base::string16 GetButtonLabel(InfoBarButton button) const override;
+  std::u16string GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
 
   DISALLOW_COPY_AND_ASSIGN(CollectedCookiesInfoBarDelegate);

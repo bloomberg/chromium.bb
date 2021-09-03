@@ -17,6 +17,7 @@
  */
 
 #include "libavutil/avassert.h"
+#include "libavutil/opt.h"
 #include "libavutil/pixfmt.h"
 
 #include "cbs.h"
@@ -758,6 +759,39 @@ static int cbs_av1_split_fragment(CodedBitstreamContext *ctx,
         goto fail;
     }
 
+    if (header && size && data[0] & 0x80) {
+        // first bit is nonzero, the extradata does not consist purely of
+        // OBUs. Expect MP4/Matroska AV1CodecConfigurationRecord
+        int config_record_version = data[0] & 0x7f;
+
+        if (config_record_version != 1) {
+            av_log(ctx->log_ctx, AV_LOG_ERROR,
+                   "Unknown version %d of AV1CodecConfigurationRecord "
+                   "found!\n",
+                   config_record_version);
+            err = AVERROR_INVALIDDATA;
+            goto fail;
+        }
+
+        if (size <= 4) {
+            if (size < 4) {
+                av_log(ctx->log_ctx, AV_LOG_WARNING,
+                       "Undersized AV1CodecConfigurationRecord v%d found!\n",
+                       config_record_version);
+                err = AVERROR_INVALIDDATA;
+                goto fail;
+            }
+
+            goto success;
+        }
+
+        // In AV1CodecConfigurationRecord v1, actual OBUs start after
+        // four bytes. Thus set the offset as required for properly
+        // parsing them.
+        data += 4;
+        size -= 4;
+    }
+
     while (size > 0) {
         AV1RawOBUHeader header;
         uint64_t obu_size;
@@ -803,6 +837,7 @@ static int cbs_av1_split_fragment(CodedBitstreamContext *ctx,
         size -= obu_length;
     }
 
+success:
     err = 0;
 fail:
     ctx->trace_enable = trace;
@@ -883,7 +918,7 @@ static int cbs_av1_read_unit(CodedBitstreamContext *ctx,
             int in_spatial_layer  =
                 (priv->operating_point_idc >> (priv->spatial_id + 8)) & 1;
             if (!in_temporal_layer || !in_spatial_layer) {
-                // Decoding will drop this OBU at this operating point.
+                return AVERROR(EAGAIN); // drop_obu()
             }
         }
     }
@@ -895,6 +930,18 @@ static int cbs_av1_read_unit(CodedBitstreamContext *ctx,
                                                    &obu->obu.sequence_header);
             if (err < 0)
                 return err;
+
+            if (priv->operating_point >= 0) {
+                AV1RawSequenceHeader *sequence_header = &obu->obu.sequence_header;
+
+                if (priv->operating_point > sequence_header->operating_points_cnt_minus_1) {
+                    av_log(ctx->log_ctx, AV_LOG_ERROR, "Invalid Operating Point %d requested. "
+                                                       "Must not be higher than %u.\n",
+                           priv->operating_point, sequence_header->operating_points_cnt_minus_1);
+                    return AVERROR(EINVAL);
+                }
+                priv->operating_point_idc = sequence_header->operating_point_idc[priv->operating_point];
+            }
 
             av_buffer_unref(&priv->sequence_header_ref);
             priv->sequence_header = NULL;
@@ -1041,6 +1088,10 @@ static int cbs_av1_write_obu(CodedBitstreamContext *ctx,
 
             av_buffer_unref(&priv->sequence_header_ref);
             priv->sequence_header = NULL;
+
+            err = ff_cbs_make_unit_refcounted(ctx, unit);
+            if (err < 0)
+                return err;
 
             priv->sequence_header_ref = av_buffer_ref(unit->content_ref);
             if (!priv->sequence_header_ref)
@@ -1205,6 +1256,7 @@ static void cbs_av1_flush(CodedBitstreamContext *ctx)
     memset(priv->ref, 0, sizeof(priv->ref));
     priv->operating_point_idc = 0;
     priv->seen_frame_header = 0;
+    priv->tile_num = 0;
 }
 
 static void cbs_av1_close(CodedBitstreamContext *ctx)
@@ -1228,6 +1280,7 @@ static void cbs_av1_free_metadata(void *unit, uint8_t *content)
         av_buffer_unref(&md->metadata.itut_t35.payload_ref);
         break;
     }
+    av_free(content);
 }
 
 static const CodedBitstreamUnitTypeDescriptor cbs_av1_unit_types[] = {
@@ -1251,9 +1304,24 @@ static const CodedBitstreamUnitTypeDescriptor cbs_av1_unit_types[] = {
     CBS_UNIT_TYPE_END_OF_LIST
 };
 
+#define OFFSET(x) offsetof(CodedBitstreamAV1Context, x)
+static const AVOption cbs_av1_options[] = {
+    { "operating_point",  "Set operating point to select layers to parse from a scalable bitstream",
+                          OFFSET(operating_point), AV_OPT_TYPE_INT, { .i64 = -1 }, -1, AV1_MAX_OPERATING_POINTS - 1, 0 },
+    { NULL }
+};
+
+static const AVClass cbs_av1_class = {
+    .class_name = "cbs_av1",
+    .item_name  = av_default_item_name,
+    .option     = cbs_av1_options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
 const CodedBitstreamType ff_cbs_type_av1 = {
     .codec_id          = AV_CODEC_ID_AV1,
 
+    .priv_class        = &cbs_av1_class,
     .priv_data_size    = sizeof(CodedBitstreamAV1Context),
 
     .unit_types        = cbs_av1_unit_types,

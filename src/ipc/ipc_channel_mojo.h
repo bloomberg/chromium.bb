@@ -80,11 +80,11 @@ class COMPONENT_EXPORT(IPC) ChannelMojo
   // These access protected API of IPC::Message, which has ChannelMojo
   // as a friend class.
   static MojoResult WriteToMessageAttachmentSet(
-      base::Optional<std::vector<mojo::native::SerializedHandlePtr>> handles,
+      absl::optional<std::vector<mojo::native::SerializedHandlePtr>> handles,
       Message* message);
   static MojoResult ReadFromMessageAttachmentSet(
       Message* message,
-      base::Optional<std::vector<mojo::native::SerializedHandlePtr>>* handles);
+      absl::optional<std::vector<mojo::native::SerializedHandlePtr>>* handles);
 
   // MessagePipeReader::Delegate
   void OnPeerPidReceived(int32_t peer_pid) override;
@@ -104,10 +104,7 @@ class COMPONENT_EXPORT(IPC) ChannelMojo
       const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner,
       const scoped_refptr<mojo::internal::MessageQuotaChecker>& quota_checker);
 
-  void ForwardMessageFromThreadSafePtr(mojo::Message message);
-  void ForwardMessageWithResponderFromThreadSafePtr(
-      mojo::Message message,
-      std::unique_ptr<mojo::MessageReceiver> responder);
+  void ForwardMessage(mojo::Message message);
 
   // Channel::AssociatedInterfaceSupport:
   std::unique_ptr<mojo::ThreadSafeForwarder<mojom::Channel>>

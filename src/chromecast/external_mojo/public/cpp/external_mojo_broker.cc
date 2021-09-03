@@ -5,6 +5,7 @@
 #include "chromecast/external_mojo/public/cpp/external_mojo_broker.h"
 
 #include <map>
+#include <set>
 #include <utility>
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
@@ -17,10 +18,10 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_pump_for_io.h"
-#include "base/optional.h"
 #include "base/task/current_thread.h"
 #include "base/token.h"
 #include "base/trace_event/trace_event.h"
+#include "chromecast/chromecast_buildflags.h"
 #include "chromecast/external_mojo/public/cpp/common.h"
 #include "chromecast/external_mojo/public/mojom/connector.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -39,6 +40,7 @@
 #include "services/service_manager/public/cpp/service_receiver.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromecast {
 namespace external_mojo {
@@ -58,7 +60,7 @@ void OnInternalBindResult(
     const std::string& service_name,
     const std::string& interface_name,
     service_manager::mojom::ConnectResult result,
-    const base::Optional<service_manager::Identity>& identity) {
+    const absl::optional<service_manager::Identity>& identity) {
   if (result != service_manager::mojom::ConnectResult::SUCCEEDED) {
     LOG(ERROR) << "Failed to bind " << service_name << ":" << interface_name
                << ", result = " << result;
@@ -135,7 +137,7 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
       connector_->BindInterface(filter.service_name(), interface_name,
                                 std::move(interface_pipe));
       std::move(callback).Run(service_manager::mojom::ConnectResult::SUCCEEDED,
-                              base::nullopt);
+                              absl::nullopt);
     }
 
     void QueryService(const std::string& service_name,
@@ -147,7 +149,7 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
     void WarmService(const ::service_manager::ServiceFilter& filter,
                      WarmServiceCallback callback) override {
       std::move(callback).Run(service_manager::mojom::ConnectResult::SUCCEEDED,
-                              base::nullopt);
+                              absl::nullopt);
     }
 
     void RegisterServiceInstance(
@@ -185,6 +187,9 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
     if (external_services_to_proxy.empty()) {
       return;
     }
+
+    external_services_to_proxy_.insert(external_services_to_proxy.begin(),
+                                       external_services_to_proxy.end());
 
     for (const auto& service_name : external_services_to_proxy) {
       LOG(INFO) << "Register proxy for external " << service_name;
@@ -272,7 +277,9 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
       return;
     }
 
-    if (!connector_) {
+    auto service_proxy_it = external_services_to_proxy_.find(service_name);
+
+    if (!connector_ || service_proxy_it != external_services_to_proxy_.end()) {
       ServiceNotFound(service_name, interface_name, std::move(interface_pipe));
       return;
     }
@@ -349,6 +356,7 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
   std::unique_ptr<service_manager::Connector> connector_;
 
   mojo::ReceiverSet<mojom::ExternalConnector> receivers_;
+  std::set<std::string> external_services_to_proxy_;
   std::map<std::string, std::unique_ptr<ExternalServiceProxy>>
       registered_external_services_;
 
@@ -402,6 +410,10 @@ class ExternalMojoBroker::ReadWatcher
 ExternalMojoBroker::ExternalMojoBroker(const std::string& broker_path) {
   connector_ = std::make_unique<ConnectorImpl>();
 
+  // For external service support, we expose a channel endpoint on the
+  // |broker_path|. Otherwise, only services in the same process network can
+  // make use of the broker.
+#if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
   LOG(INFO) << "Initializing external mojo broker at: " << broker_path;
 
   mojo::NamedPlatformChannel::Options channel_options;
@@ -418,6 +430,7 @@ ExternalMojoBroker::ExternalMojoBroker(const std::string& broker_path) {
 
   read_watcher_ = std::make_unique<ReadWatcher>(
       connector_.get(), server_endpoint.TakePlatformHandle());
+#endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 }
 
 void ExternalMojoBroker::InitializeChromium(
@@ -432,6 +445,11 @@ ExternalMojoBroker::CreateConnector() {
   mojo::PendingRemote<mojom::ExternalConnector> remote;
   connector_->AddReceiver(remote.InitWithNewPipeAndPassReceiver());
   return remote;
+}
+
+void ExternalMojoBroker::BindConnector(
+    mojo::PendingReceiver<mojom::ExternalConnector> receiver) {
+  connector_->AddReceiver(std::move(receiver));
 }
 
 ExternalMojoBroker::~ExternalMojoBroker() = default;

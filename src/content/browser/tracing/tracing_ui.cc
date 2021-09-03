@@ -23,7 +23,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "content/browser/tracing/grit/tracing_resources.h"
@@ -76,7 +75,9 @@ bool BeginRecording(const std::string& data64,
   if (stream_format == kStreamFormatProtobuf) {
     if (g_tracing_session)
       delete g_tracing_session;
-    g_tracing_session = perfetto::Tracing::NewTrace().release();
+    g_tracing_session =
+        perfetto::Tracing::NewTrace(perfetto::BackendType::kCustomBackend)
+            .release();
     g_tracing_session->Setup(tracing::GetDefaultPerfettoConfig(trace_config));
 
     auto shared_callback = base::MakeRefCounted<
@@ -213,11 +214,10 @@ void OnTracingRequest(const std::string& path,
   // to take ownership of |callback| even though it won't call |callback|
   // sometimes, as it binds |callback| into other callbacks before it makes that
   // decision. So we must give it one copy and keep one ourselves.
-  auto repeating_callback =
-      base::AdaptCallbackForRepeating(std::move(callback));
-  if (!OnBeginJSONRequest(path, repeating_callback)) {
+  auto split_callback = base::SplitOnceCallback(std::move(callback));
+  if (!OnBeginJSONRequest(path, std::move(split_callback.first))) {
     std::string error("##ERROR##");
-    std::move(repeating_callback)
+    std::move(split_callback.second)
         .Run(base::RefCountedString::TakeString(&error));
   }
 }
@@ -241,8 +241,9 @@ TracingUI::TracingUI(WebUI* web_ui)
   WebUIDataSource* source = WebUIDataSource::Create(kChromeUITracingHost);
   source->DisableTrustedTypesCSP();
   source->UseStringsJs();
-  source->SetDefaultResource(IDR_TRACING_HTML);
-  source->AddResourcePath("tracing.js", IDR_TRACING_JS);
+  source->SetDefaultResource(IDR_TRACING_ABOUT_TRACING_HTML);
+  source->AddResourcePath("tracing.js", IDR_TRACING_ABOUT_TRACING_JS);
+
   source->SetRequestFilter(base::BindRepeating(OnShouldHandleRequest),
                            base::BindRepeating(OnTracingRequest));
   WebUIDataSource::Add(browser_context, source);

@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/printing/print_servers_provider.h"
 #include "chrome/browser/chromeos/printing/print_servers_provider_factory.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
-#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/policy/proto/chrome_device_policy.pb.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
@@ -31,6 +31,20 @@ using ::testing::UnorderedElementsAre;
 namespace chromeos {
 
 namespace {
+
+class TestingProfileWithURLLoaderFactory : public TestingProfile {
+ public:
+  explicit TestingProfileWithURLLoaderFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : url_loader_factory_(url_loader_factory) {}
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      override {
+    return url_loader_factory_;
+  }
+
+ private:
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+};
 
 chromeos::PrintServer PrintServer1() {
   GURL url("http://192.168.1.5/printer");
@@ -57,7 +71,7 @@ Printer Printer1() {
 Printer Printer2() {
   Printer printer("server-5da95e01216b1fe0ee1de25dc8d0a6e8");
   printer.set_display_name("Color Laser - Name");
-  std::string server("ipps://print-server.intranet.example.com");
+  std::string server("ipps://print-server.intranet.example.com:443");
   printer.set_print_server_uri(server);
   Uri url(
       "ipps://print-server.intranet.example.com/printers/Color Laser - Name");
@@ -80,20 +94,13 @@ auto PrinterMatcher(Printer printer) {
 }
 
 class ServerPrintersProviderTest : public ::testing::Test {
- public:
-  ServerPrintersProviderTest()
-      : test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
-
  protected:
   void SetUp() override {
-    TestingBrowserProcess::GetGlobal()->SetSharedURLLoaderFactory(
-        test_shared_loader_factory_);
-
+    test_profile_ = std::make_unique<TestingProfileWithURLLoaderFactory>(
+        test_url_loader_factory_.GetSafeWeakWrapper());
     ASSERT_TRUE(test_server_.Start());
-
-    server_printers_provider_ = ServerPrintersProvider::Create();
+    server_printers_provider_ =
+        ServerPrintersProvider::Create(test_profile_.get());
   }
 
   void TearDown() override { PrintServersProviderFactory::Get()->Shutdown(); }
@@ -127,8 +134,7 @@ class ServerPrintersProviderTest : public ::testing::Test {
 
   network::TestURLLoaderFactory test_url_loader_factory_;
 
-  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
-      test_shared_loader_factory_;
+  std::unique_ptr<TestingProfileWithURLLoaderFactory> test_profile_;
 
   net::test_server::EmbeddedTestServer test_server_;
 
@@ -150,12 +156,6 @@ TEST_F(ServerPrintersProviderTest, GetPrinters) {
   print_servers.push_back(PrintServer2());
   OnServersChanged(true, print_servers);
   task_environment_.RunUntilIdle();
-
-  auto first = server_printers_provider_->GetPrinters().front();
-
-  LOG(INFO) << first.printer.uri().GetNormalized()
-            << " server:" << first.printer.print_server_uri()
-            << " name:" << first.printer.display_name();
 
   EXPECT_THAT(server_printers_provider_->GetPrinters(),
               UnorderedElementsAre(PrinterMatcher(Printer1()),

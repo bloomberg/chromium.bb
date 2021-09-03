@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -19,6 +20,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_widget_host_observer.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
@@ -36,11 +38,42 @@
 #include "third_party/blink/public/common/input/synthetic_web_input_event_builders.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/switches.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/latency/latency_info.h"
 
 namespace content {
+
+namespace {
+
+// Test observer which waits for a visual properties update from a
+// `RenderWidgetHost`.
+class TestRenderWidgetHostObserver : public RenderWidgetHostObserver {
+ public:
+  explicit TestRenderWidgetHostObserver(RenderWidgetHost* widget_host)
+      : widget_host_(widget_host) {
+    widget_host_->AddObserver(this);
+  }
+
+  ~TestRenderWidgetHostObserver() override {
+    widget_host_->RemoveObserver(this);
+  }
+
+  // RenderWidgetHostObserver:
+  void RenderWidgetHostDidUpdateVisualProperties(
+      RenderWidgetHost* widget_host) override {
+    run_loop_.Quit();
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  RenderWidgetHost* widget_host_;
+  base::RunLoop run_loop_;
+};
+
+}  // namespace
 
 // For tests that just need a browser opened/navigated to a simple web page.
 class RenderWidgetHostBrowserTest : public ContentBrowserTest {
@@ -63,20 +96,20 @@ class RenderWidgetHostBrowserTest : public ContentBrowserTest {
 
   void WaitForVisualPropertiesAck() {
     while (host()->visual_properties_ack_pending_for_testing()) {
-      WindowedNotificationObserver(
-          NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
-          Source<RenderWidgetHost>(host()))
-          .Wait();
+      TestRenderWidgetHostObserver(host()).Wait();
     }
   }
 };
 
-// This test enables --site-per-porcess flag.
+// This test enables --site-per-process flag.
 class RenderWidgetHostSitePerProcessTest : public ContentBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
     IsolateAllSitesForTesting(command_line);
+    // Slow bots are flaky due to slower loading interacting with
+    // deferred commits.
+    command_line->AppendSwitch(blink::switches::kAllowPreCommitInput);
   }
 
   void SetUpOnMainThread() override {
@@ -206,7 +239,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostTouchEmulatorBrowserTest,
 
   SyntheticSmoothDragGestureParams params;
   params.start_point = gfx::PointF(10.f, 110.f);
-  params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
+  params.gesture_source_type = content::mojom::GestureSourceType::kMouseInput;
   params.distances.push_back(gfx::Vector2d(0, -10));
   params.distances.push_back(gfx::Vector2d(0, -10));
   params.distances.push_back(gfx::Vector2d(0, -10));
@@ -482,7 +515,7 @@ class DocumentLoadObserver : WebContentsObserver {
   void Wait() {
     if (loaded_)
       return;
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
   }
 
@@ -569,7 +602,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
     // wait for the RenderWidgetHost to be shown.
     auto filter =
         std::make_unique<ShowPopupWidgetWaiter>(contents, root_frame_host);
-    EXPECT_TRUE(ExecuteScript(root_frame_host, "focusSelectMenu();"));
+    EXPECT_TRUE(ExecJs(root_frame_host, "focusSelectMenu();"));
     root_frame_host->GetRenderWidgetHost()->ForwardKeyboardEvent(event);
     filter->Wait();
 
@@ -592,8 +625,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
           popup_widget_host_impl->GetWeakPtr();
 
       // Close the popup RenderWidget from the renderer side by removing focus.
-      EXPECT_TRUE(
-          ExecuteScript(root_frame_host, "document.activeElement.blur()"));
+      EXPECT_TRUE(ExecJs(root_frame_host, "document.activeElement.blur()"));
 
       // Ensure that the RenderWidgetHostImpl gets destroyed, which implies the
       // close step has also been sent to the renderer process.
@@ -603,11 +635,10 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostSitePerProcessTest,
     }
     // Ensure the renderer didn't explode :).
     {
-      base::string16 title_when_done[] = {base::UTF8ToUTF16("done 0"),
-                                          base::UTF8ToUTF16("done 1")};
+      std::u16string title_when_done[] = {u"done 0", u"done 1"};
       TitleWatcher title_watcher(shell()->web_contents(), title_when_done[i]);
-      EXPECT_TRUE(ExecuteScript(root_frame_host,
-                                JsReplace("document.title='done $1'", i)));
+      EXPECT_TRUE(
+          ExecJs(root_frame_host, JsReplace("document.title='done $1'", i)));
       EXPECT_EQ(title_watcher.WaitAndGetTitle(), title_when_done[i]);
     }
   }
@@ -889,16 +920,41 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostDelegatedInkMetadataTest,
   {
     const cc::RenderFrameMetadata& last_metadata =
         host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
-    EXPECT_TRUE(last_metadata.has_delegated_ink_metadata);
+    EXPECT_TRUE(last_metadata.delegated_ink_metadata.has_value());
+    EXPECT_TRUE(
+        last_metadata.delegated_ink_metadata.value().delegated_ink_is_hovering);
+  }
+
+  // Confirm that the state of hover changing on the next produced delegated ink
+  // metadata results in a new RenderFrameMetadata being sent, with
+  // |delegated_ink_hovering| false.
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 20, 20,
+                           blink::WebInputEvent::kLeftButtonDown, false);
+  RunUntilInputProcessed(host());
+
+  {
+    const cc::RenderFrameMetadata& last_metadata =
+        host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
+    EXPECT_TRUE(last_metadata.delegated_ink_metadata.has_value());
+    EXPECT_FALSE(
+        last_metadata.delegated_ink_metadata.value().delegated_ink_is_hovering);
   }
 
   // Confirm that the flag is set back to false when the JS API isn't called.
   RunUntilInputProcessed(host());
-  {
-    const cc::RenderFrameMetadata& last_metadata =
-        host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
-    EXPECT_FALSE(last_metadata.has_delegated_ink_metadata);
-  }
+  const cc::RenderFrameMetadata& last_metadata =
+      host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
+  EXPECT_FALSE(last_metadata.delegated_ink_metadata.has_value());
+
+  // Finally, confirm that a change in hovering state (pointerdown to pointerup
+  // here) without a call to updateInkTrailStartPoint doesn't cause a new
+  // RenderFrameMetadata to be sent.
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 20, 20, 0,
+                           false);
+  RunUntilInputProcessed(host());
+  EXPECT_EQ(
+      last_metadata,
+      host()->render_frame_metadata_provider()->LastRenderFrameMetadata());
 }
 
 }  // namespace content

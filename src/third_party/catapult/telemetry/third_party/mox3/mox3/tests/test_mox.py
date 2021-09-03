@@ -17,6 +17,7 @@
 # This is a fork of the pymox library intended to work with Python 3.
 # The file was modified by quermit@gmail.com and dawid.fatyga@gmail.com
 
+from __future__ import absolute_import
 import io
 import re
 import sys
@@ -1707,7 +1708,7 @@ class MoxTest(testtools.TestCase):
         # Replace OtherValidCall with a mock.
         self.mox.StubOutWithMock(test_obj, 'OtherValidCall')
         self.assertTrue(isinstance(test_obj.OtherValidCall, mox.MockObject))
-        self.assertFalse(type(test_obj.OtherValidCall) is method_type)
+        self.assertFalse(isinstance(test_obj.OtherValidCall, method_type))
 
         test_obj.OtherValidCall().AndReturn('foo')
         self.mox.ReplayAll()
@@ -1717,7 +1718,7 @@ class MoxTest(testtools.TestCase):
         self.mox.VerifyAll()
         self.mox.UnsetStubs()
         self.assertEqual('foo', actual)
-        self.assertTrue(type(test_obj.OtherValidCall) is method_type)
+        self.assertTrue(isinstance(test_obj.OtherValidCall, method_type))
 
     def testStubOutMethod_Unbound_Comparator(self):
         instance = TestClass()

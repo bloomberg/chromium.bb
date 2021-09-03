@@ -2,13 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/python.gni")
 import("../third_party/typescript/typescript.gni")
 
 resources_out_dir = "$root_out_dir/resources/inspector_overlay"
 
-# TODO(crbug.com/1112471): Get this to work under Python 3.
-python2_action("build_inspector_overlay") {
+action("build_inspector_overlay") {
   script = "../scripts/build/build_inspector_overlay.py"
 
   inputs = [
@@ -16,9 +14,11 @@ python2_action("build_inspector_overlay") {
     "$target_gen_dir/common.js",
     "$target_gen_dir/css_grid_label_helpers.js",
     "$target_gen_dir/highlight_common.js",
+    "$target_gen_dir/highlight_flex_common.js",
     "$target_gen_dir/highlight_grid_common.js",
+    "$target_gen_dir/highlight_scroll_snap.js",
     "$target_gen_dir/tool_distances.js",
-    "$target_gen_dir/tool_grid.js",
+    "$target_gen_dir/tool_persistent.js",
     "$target_gen_dir/tool_grid.css",
     "$target_gen_dir/tool_highlight.js",
     "$target_gen_dir/tool_highlight.css",
@@ -36,7 +36,7 @@ python2_action("build_inspector_overlay") {
 
   args = [
     "main.js",
-    "80000",  # max_size in bytes
+    "65000",  # max_size in bytes
     "--input_path",
     rebase_path(target_gen_dir, root_build_dir),
     "--output_path",
@@ -74,16 +74,18 @@ ts_library("inspector_overlay") {
     "common.ts",
     "css_grid_label_helpers.ts",
     "highlight_common.ts",
+    "highlight_flex_common.ts",
     "highlight_grid_common.ts",
+    "highlight_scroll_snap.ts",
     "main.ts",
     "tool_distances.ts",
-    "tool_grid.ts",
     "tool_highlight.ts",
     "tool_paused.ts",
+    "tool_persistent.ts",
     "tool_screenshot.ts",
     "tool_source_order.ts",
     "tool_viewport_size.ts",
   ]
 
-  deps = [ "../front_end/common:bundle" ]
+  deps = [ "../front_end/core/common:ColorUtils" ]
 }

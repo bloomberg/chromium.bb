@@ -1,0 +1,87 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("../../../scripts/build/ninja/devtools_entrypoint.gni")
+import("../../../scripts/build/ninja/devtools_module.gni")
+import("../visibility.gni")
+
+devtools_module("emulation") {
+  sources = [
+    "AdvancedApp.ts",
+    "DeviceModeModel.ts",
+    "DeviceModeToolbar.ts",
+    "DeviceModeView.ts",
+    "DeviceModeWrapper.ts",
+    "DevicesSettingsTab.ts",
+    "EmulatedDevices.ts",
+    "InspectedPagePlaceholder.ts",
+    "LocationsSettingsTab.ts",
+    "MediaQueryInspector.ts",
+    "ModuleUIStrings.ts",
+    "SensorsView.ts",
+    "StructuredHeaders.ts",
+    "UserAgentMetadata.ts",
+  ]
+
+  deps = [
+    "../../core/common:bundle",
+    "../../core/host:bundle",
+    "../../core/i18n:bundle",
+    "../../core/platform:bundle",
+    "../../core/protocol_client:bundle",
+    "../../core/sdk:bundle",
+    "../../models/bindings:bundle",
+    "../../models/workspace:bundle",
+    "../../panels/mobile_throttling:bundle",
+    "../../ui/legacy:bundle",
+    "../../ui/legacy/components/utils:bundle",
+  ]
+}
+
+copy_to_gen("legacy_css") {
+  sources = [
+    "deviceModeToolbar.css",
+    "deviceModeView.css",
+    "devicesSettingsTab.css",
+    "inspectedPagePlaceholder.css",
+    "locationsSettingsTab.css",
+    "mediaQueryInspector.css",
+    "sensors.css",
+  ]
+}
+
+devtools_entrypoint("bundle") {
+  entrypoint = "emulation.ts"
+
+  deps = [ ":emulation" ]
+
+  visibility = [
+    ":*",
+    "../../../test/unittests/front_end/entrypoints/missing_entrypoints/*",
+    "../../../test/unittests/front_end/panels/emulation/*",
+    "../../entrypoints/*",
+
+    # TODO(crbug.com/1202788): Remove invalid dependents
+    "../elements/*",
+    "../lighthouse/*",
+  ]
+
+  visibility += devtools_panels_visibility
+}
+
+devtools_entrypoint("legacy") {
+  entrypoint = "emulation-legacy.ts"
+
+  deps = [ ":bundle" ]
+
+  visibility = [ "../..:legacy_entrypoints" ]
+}
+
+devtools_entrypoint("meta") {
+  entrypoint = "emulation-meta.ts"
+
+  deps = [ ":bundle" ]
+
+  visibility = [ "../../entrypoints/*" ]
+}

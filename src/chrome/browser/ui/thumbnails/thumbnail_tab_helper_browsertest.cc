@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/session_restore_policy.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
@@ -29,37 +29,30 @@
 
 namespace {
 
-class ThumbnailWaiter : public ThumbnailImage::Observer {
+class ThumbnailWaiter {
  public:
   ThumbnailWaiter() = default;
-  ~ThumbnailWaiter() override = default;
+  ~ThumbnailWaiter() = default;
 
-  base::Optional<gfx::ImageSkia> WaitForThumbnail(ThumbnailImage* thumbnail) {
-    DCHECK(!thumbnail_);
-    thumbnail_ = thumbnail;
-    scoped_observer_.Add(thumbnail);
-    thumbnail_->RequestThumbnailImage();
+  absl::optional<gfx::ImageSkia> WaitForThumbnail(ThumbnailImage* thumbnail) {
+    std::unique_ptr<ThumbnailImage::Subscription> subscription =
+        thumbnail->Subscribe();
+    subscription->SetUncompressedImageCallback(base::BindRepeating(
+        &ThumbnailWaiter::ThumbnailImageCallback, base::Unretained(this)));
+    thumbnail->RequestThumbnailImage();
     run_loop_.Run();
     return image_;
   }
 
  protected:
-  // ThumbnailImage::Observer:
-  void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image) override {
-    if (thumbnail_) {
-      scoped_observer_.Remove(thumbnail_);
-      thumbnail_ = nullptr;
-      image_ = thumbnail_image;
-      run_loop_.Quit();
-    }
+  void ThumbnailImageCallback(gfx::ImageSkia thumbnail_image) {
+    image_ = std::move(thumbnail_image);
+    run_loop_.Quit();
   }
 
  private:
   base::RunLoop run_loop_;
-  ThumbnailImage* thumbnail_ = nullptr;
-  base::Optional<gfx::ImageSkia> image_;
-  ScopedObserver<ThumbnailImage, ThumbnailImage::Observer> scoped_observer_{
-      this};
+  absl::optional<gfx::ImageSkia> image_;
 };
 
 }  // anonymous namespace
@@ -139,7 +132,7 @@ class ThumbnailTabHelperBrowserTest : public InProcessBrowserTest {
         << " tab at index " << tab_index << " already has data.";
 
     ThumbnailWaiter waiter;
-    const base::Optional<gfx::ImageSkia> data =
+    const absl::optional<gfx::ImageSkia> data =
         waiter.WaitForThumbnail(thumbnail.get());
     EXPECT_TRUE(thumbnail->has_data())
         << " tab at index " << tab_index << " thumbnail has no data.";

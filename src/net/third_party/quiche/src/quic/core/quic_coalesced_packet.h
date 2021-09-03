@@ -5,7 +5,7 @@
 #ifndef QUICHE_QUIC_CORE_QUIC_COALESCED_PACKET_H_
 #define QUICHE_QUIC_CORE_QUIC_COALESCED_PACKET_H_
 
-#include "net/third_party/quiche/src/quic/core/quic_packets.h"
+#include "quic/core/quic_packets.h"
 
 namespace quic {
 
@@ -45,6 +45,9 @@ class QUIC_EXPORT_PRIVATE QuicCoalescedPacket {
   // Returns transmission type of packet of |level|. This should only be called
   // when this coalesced packet contains packet of |level|.
   TransmissionType TransmissionTypeOfPacket(EncryptionLevel level) const;
+
+  // Returns number of packets contained in this coalesced packet.
+  size_t NumberOfPackets() const;
 
   const SerializedPacket* initial_packet() const {
     return initial_packet_.get();

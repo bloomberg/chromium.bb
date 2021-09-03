@@ -11,11 +11,22 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "ui/base/device_form_factor.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chromeos/system/statistics_provider.h"
+#endif
+
 namespace syncer {
+
+LocalDeviceNameInfo::LocalDeviceNameInfo() = default;
+LocalDeviceNameInfo::LocalDeviceNameInfo(const LocalDeviceNameInfo& other) =
+    default;
+LocalDeviceNameInfo::~LocalDeviceNameInfo() = default;
 
 namespace {
 
@@ -29,7 +40,7 @@ void OnHardwareInfoReady(LocalDeviceNameInfo* name_info_ptr,
                          base::ScopedClosureRunner done_closure,
                          base::SysInfo::HardwareInfo hardware_info) {
   name_info_ptr->manufacturer_name = std::move(hardware_info.manufacturer);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // For ChromeOS the returned model values are product code names like Eve. We
   // want to use generic names like Chromebook.
   name_info_ptr->model_name = GetChromeOSDeviceNameFromType();
@@ -44,21 +55,33 @@ void OnPersonalizableDeviceNameReady(LocalDeviceNameInfo* name_info_ptr,
   name_info_ptr->personalizable_name = std::move(personalizable_name);
 }
 
+void OnMachineStatisticsLoaded(LocalDeviceNameInfo* name_info_ptr,
+                               base::ScopedClosureRunner done_closure) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // |full_hardware_class| is set on Chrome OS devices if the user has UMA
+  // enabled. Otherwise |full_hardware_class| is set to an empty string.
+  chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+      chromeos::system::kHardwareClassKey, &name_info_ptr->full_hardware_class);
+#else
+  name_info_ptr->full_hardware_class = "";
+#endif
+}
+
 }  // namespace
 
 // Declared here but defined in platform-specific files.
 std::string GetPersonalizableDeviceNameInternal();
 
 sync_pb::SyncEnums::DeviceType GetLocalDeviceType() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return sync_pb::SyncEnums_DeviceType_TYPE_CROS;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   return sync_pb::SyncEnums_DeviceType_TYPE_LINUX;
 #elif defined(OS_ANDROID) || defined(OS_IOS)
   return ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET
              ? sync_pb::SyncEnums_DeviceType_TYPE_TABLET
              : sync_pb::SyncEnums_DeviceType_TYPE_PHONE;
-#elif defined(OS_APPLE)
+#elif defined(OS_MAC)
   return sync_pb::SyncEnums_DeviceType_TYPE_MAC;
 #elif defined(OS_WIN)
   return sync_pb::SyncEnums_DeviceType_TYPE_WIN;
@@ -86,7 +109,7 @@ void GetLocalDeviceNameInfo(
   LocalDeviceNameInfo* name_info_ptr = name_info.get();
 
   auto done_closure = base::BarrierClosure(
-      /*num_closures=*/2,
+      /*num_closures=*/3,
       base::BindOnce(&OnLocalDeviceNameInfoReady, std::move(callback),
                      std::move(name_info)));
 
@@ -94,10 +117,20 @@ void GetLocalDeviceNameInfo(
       base::BindOnce(&OnHardwareInfoReady, name_info_ptr,
                      base::ScopedClosureRunner(done_closure)));
 
-  base::PostTaskAndReplyWithResult(
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Bind hwclass once the statistics are available on ChromeOS devices.
+  chromeos::system::StatisticsProvider::GetInstance()
+      ->ScheduleOnMachineStatisticsLoaded(
+          base::BindOnce(&OnMachineStatisticsLoaded, name_info_ptr,
+                         base::ScopedClosureRunner(done_closure)));
+#else
+  OnMachineStatisticsLoaded(name_info_ptr,
+                            base::ScopedClosureRunner(done_closure));
+#endif
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&GetPersonalizableDeviceNameBlocking),
       base::BindOnce(&OnPersonalizableDeviceNameReady, name_info_ptr,
                      base::ScopedClosureRunner(done_closure)));

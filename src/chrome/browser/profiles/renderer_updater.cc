@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -20,9 +21,9 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/features.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
-#include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/signin/merge_session_throttling_utils.h"
+#include "chrome/browser/ash/login/signin/oauth2_login_manager_factory.h"
 #endif
 
 namespace {
@@ -55,11 +56,10 @@ void GetGuestViewDefaultContentSettingRules(
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 }  // namespace
 
-RendererUpdater::RendererUpdater(Profile* profile)
-    : profile_(profile), identity_manager_observer_(this) {
+RendererUpdater::RendererUpdater(Profile* profile) : profile_(profile) {
   identity_manager_ = IdentityManagerFactory::GetForProfile(profile);
-  identity_manager_observer_.Add(identity_manager_);
-#if defined(OS_CHROMEOS)
+  identity_manager_observation_.Observe(identity_manager_);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   oauth2_login_manager_ =
       chromeos::OAuth2LoginManagerFactory::GetForProfile(profile_);
   oauth2_login_manager_->AddObserver(this);
@@ -89,17 +89,17 @@ RendererUpdater::RendererUpdater(Profile* profile)
 
 RendererUpdater::~RendererUpdater() {
   DCHECK(!identity_manager_);
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   DCHECK(!oauth2_login_manager_);
 #endif
 }
 
 void RendererUpdater::Shutdown() {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   oauth2_login_manager_->RemoveObserver(this);
   oauth2_login_manager_ = nullptr;
 #endif
-  identity_manager_observer_.RemoveAll();
+  identity_manager_observation_.Reset();
   identity_manager_ = nullptr;
 }
 
@@ -113,13 +113,13 @@ void RendererUpdater::InitializeRenderer(
 
   mojo::PendingReceiver<chrome::mojom::ChromeOSListener>
       chromeos_listener_receiver;
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   if (merge_session_running_) {
     mojo::Remote<chrome::mojom::ChromeOSListener> chromeos_listener;
     chromeos_listener_receiver = chromeos_listener.BindNewPipeAndPassReceiver();
     chromeos_listeners_.push_back(std::move(chromeos_listener));
   }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   renderer_configuration->SetInitialConfiguration(
       is_incognito_process, std::move(chromeos_listener_receiver));
 
@@ -171,7 +171,7 @@ RendererUpdater::GetRendererConfiguration(
   return renderer_configuration;
 }
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void RendererUpdater::OnSessionRestoreStateChanged(
     Profile* user_profile,
     chromeos::OAuth2LoginManager::SessionRestoreState state) {
@@ -186,12 +186,12 @@ void RendererUpdater::OnSessionRestoreStateChanged(
 }
 #endif
 
-void RendererUpdater::OnPrimaryAccountSet(const CoreAccountInfo& account_info) {
-  UpdateAllRenderers();
-}
-
-void RendererUpdater::OnPrimaryAccountCleared(
-    const CoreAccountInfo& account_info) {
+void RendererUpdater::OnPrimaryAccountChanged(
+    const signin::PrimaryAccountChangeEvent& event) {
+  if (event.GetEventTypeFor(signin::ConsentLevel::kSync) ==
+      signin::PrimaryAccountChangeEvent::Type::kNone) {
+    return;
+  }
   UpdateAllRenderers();
 }
 

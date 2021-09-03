@@ -615,9 +615,17 @@ inline VkIndirectCommandsStreamNV makeIndirectCommandsStreamNV (VkBuffer buffer,
 	return res;
 }
 
-inline VkAccelerationStructureBuildOffsetInfoKHR makeAccelerationStructureBuildOffsetInfoKHR (deUint32 primitiveCount, deUint32 primitiveOffset, deUint32 firstVertex, deUint32 transformOffset)
+inline VkMutableDescriptorTypeListVALVE makeMutableDescriptorTypeListVALVE (deUint32 descriptorTypeCount, const VkDescriptorType* pDescriptorTypes)
 {
-	VkAccelerationStructureBuildOffsetInfoKHR res;
+	VkMutableDescriptorTypeListVALVE res;
+	res.descriptorTypeCount	= descriptorTypeCount;
+	res.pDescriptorTypes	= pDescriptorTypes;
+	return res;
+}
+
+inline VkAccelerationStructureBuildRangeInfoKHR makeAccelerationStructureBuildRangeInfoKHR (deUint32 primitiveCount, deUint32 primitiveOffset, deUint32 firstVertex, deUint32 transformOffset)
+{
+	VkAccelerationStructureBuildRangeInfoKHR res;
 	res.primitiveCount	= primitiveCount;
 	res.primitiveOffset	= primitiveOffset;
 	res.firstVertex		= firstVertex;
@@ -625,13 +633,12 @@ inline VkAccelerationStructureBuildOffsetInfoKHR makeAccelerationStructureBuildO
 	return res;
 }
 
-inline VkStridedBufferRegionKHR makeStridedBufferRegionKHR (VkBuffer buffer, VkDeviceSize offset, VkDeviceSize stride, VkDeviceSize size)
+inline VkStridedDeviceAddressRegionKHR makeStridedDeviceAddressRegionKHR (VkDeviceAddress deviceAddress, VkDeviceSize stride, VkDeviceSize size)
 {
-	VkStridedBufferRegionKHR res;
-	res.buffer	= buffer;
-	res.offset	= offset;
-	res.stride	= stride;
-	res.size	= size;
+	VkStridedDeviceAddressRegionKHR res;
+	res.deviceAddress	= deviceAddress;
+	res.stride			= stride;
+	res.size			= size;
 	return res;
 }
 
@@ -641,5 +648,34 @@ inline VkTraceRaysIndirectCommandKHR makeTraceRaysIndirectCommandKHR (deUint32 w
 	res.width	= width;
 	res.height	= height;
 	res.depth	= depth;
+	return res;
+}
+
+inline StdVideoEncodeH264RefListModEntry makeStdVideoEncodeH264RefListModEntry (StdVideoH264ModificationOfPicNumsIdc modification_of_pic_nums_idc, deUint16 abs_diff_pic_num_minus1, deUint16 long_term_pic_num)
+{
+	StdVideoEncodeH264RefListModEntry res;
+	res.modification_of_pic_nums_idc	= modification_of_pic_nums_idc;
+	res.abs_diff_pic_num_minus1			= abs_diff_pic_num_minus1;
+	res.long_term_pic_num				= long_term_pic_num;
+	return res;
+}
+
+inline StdVideoEncodeH264RefPicMarkingEntry makeStdVideoEncodeH264RefPicMarkingEntry (StdVideoH264MemMgmtControlOp operation, deUint16 difference_of_pic_nums_minus1, deUint16 long_term_pic_num, deUint16 long_term_frame_idx, deUint16 max_long_term_frame_idx_plus1)
+{
+	StdVideoEncodeH264RefPicMarkingEntry res;
+	res.operation						= operation;
+	res.difference_of_pic_nums_minus1	= difference_of_pic_nums_minus1;
+	res.long_term_pic_num				= long_term_pic_num;
+	res.long_term_frame_idx				= long_term_frame_idx;
+	res.max_long_term_frame_idx_plus1	= max_long_term_frame_idx_plus1;
+	return res;
+}
+
+inline StdVideoDecodeH264Mvc makeStdVideoDecodeH264Mvc (deUint32 viewId0, deUint32 mvcElementCount, StdVideoDecodeH264MvcElement* pMvcElements)
+{
+	StdVideoDecodeH264Mvc res;
+	res.viewId0			= viewId0;
+	res.mvcElementCount	= mvcElementCount;
+	res.pMvcElements	= pMvcElements;
 	return res;
 }

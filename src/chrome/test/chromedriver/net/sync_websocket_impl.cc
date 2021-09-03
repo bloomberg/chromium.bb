@@ -4,6 +4,8 @@
 
 #include "chrome/test/chromedriver/net/sync_websocket_impl.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
@@ -132,7 +134,7 @@ void SyncWebSocketImpl::Core::OnMessageReceived(const std::string& message) {
 
 void SyncWebSocketImpl::Core::DetermineRecipient(const std::string& message,
                                                  bool* send_to_chromedriver) {
-  base::Optional<base::Value> message_value =
+  absl::optional<base::Value> message_value =
       base::JSONReader::Read(message, base::JSON_REPLACE_INVALID_CHARACTERS);
   base::DictionaryValue* message_dict;
   if (!message_value || !message_value->GetAsDictionary(&message_dict)) {
@@ -169,7 +171,7 @@ void SyncWebSocketImpl::Core::ConnectOnIO(
   // stale memory, so don't use either parameters before returning.
   if (socket_ && is_connected_)
     return;
-  socket_.reset(new WebSocket(url, this));
+  socket_ = std::make_unique<WebSocket>(url, this);
   socket_->Connect(base::BindOnce(
       &SyncWebSocketImpl::Core::OnConnectCompletedOnIO, this, success, event));
 }

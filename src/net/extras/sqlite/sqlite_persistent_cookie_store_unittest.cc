@@ -15,7 +15,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -43,6 +42,7 @@
 #include "sql/statement.h"
 #include "sql/transaction.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
 
@@ -144,7 +144,7 @@ class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
               bool restore_old_session_cookies,
               bool use_current_thread) {
     if (crypt_cookies)
-      cookie_crypto_delegate_.reset(new CookieCryptor());
+      cookie_crypto_delegate_ = std::make_unique<CookieCryptor>();
 
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.GetPath().Append(kCookieFilename),
@@ -179,7 +179,7 @@ class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
                  const std::string& domain,
                  const std::string& path,
                  const base::Time& creation) {
-    store_->AddCookie(CanonicalCookie(
+    store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
         name, value, domain, path, creation, creation, base::Time(), false,
         false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false));
   }
@@ -190,7 +190,7 @@ class SQLitePersistentCookieStoreTest : public TestWithTaskEnvironment {
                                const std::string& path,
                                const base::Time& creation,
                                const base::Time& expiration) {
-    store_->AddCookie(CanonicalCookie(
+    store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
         name, value, domain, path, creation, expiration, base::Time(), false,
         false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false));
   }
@@ -528,7 +528,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   InitializeStore(false, true);
 
   // Add a session cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "D", "sessioncookie.com", "/", base::Time::Now(), base::Time(),
       base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
       COOKIE_PRIORITY_DEFAULT, false));
@@ -555,7 +555,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestDontLoadOldSessionCookies) {
   InitializeStore(false, true);
 
   // Add a session cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "D", "sessioncookie.com", "/", base::Time::Now(), base::Time(),
       base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
       COOKIE_PRIORITY_DEFAULT, false));
@@ -658,12 +658,12 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   static const char kPersistentName[] = "persistent";
 
   // Add a session cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kSessionName, "val", "sessioncookie.com", "/", base::Time::Now(),
       base::Time(), base::Time(), false, false, CookieSameSite::NO_RESTRICTION,
       COOKIE_PRIORITY_DEFAULT, false));
   // Add a persistent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kPersistentName, "val", "sessioncookie.com", "/",
       base::Time::Now() - base::TimeDelta::FromDays(1),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
@@ -704,21 +704,21 @@ TEST_F(SQLitePersistentCookieStoreTest, PriorityIsPersistent) {
   InitializeStore(false, true);
 
   // Add a low-priority persistent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kLowName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(1),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
       false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_LOW, false));
 
   // Add a medium-priority persistent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kMediumName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(2),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
       false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_MEDIUM, false));
 
-  // Add a high-priority peristent cookie.
-  store_->AddCookie(CanonicalCookie(
+  // Add a high-priority persistent cookie.
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kHighName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(3),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
@@ -765,21 +765,21 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteIsPersistent) {
   InitializeStore(false, true);
 
   // Add a non-samesite persistent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kNoneName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(1),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
       false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false));
 
   // Add a lax-samesite persistent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kLaxName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(2),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
       false, CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT, false));
 
   // Add a strict-samesite persistent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kStrictName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(3),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
@@ -821,7 +821,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SameSiteExtendedTreatedAsUnspecified) {
   // Add an extended-samesite persistent cookie by first adding a strict-same
   // site cookie, then turning that into the legacy extended-samesite state with
   // direct SQL DB access.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kExtendedName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(1),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(), false,
@@ -861,7 +861,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SamePartyIsPersistent) {
   InitializeStore(false, true);
 
   // Add a non-SameParty persistent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kNonSamePartyCookieName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(1),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(),
@@ -869,7 +869,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SamePartyIsPersistent) {
       /*same_party=*/false));
 
   // Add a SameParty persistent cookie.
-  store_->AddCookie(CanonicalCookie(
+  store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
       kSamePartyCookieName, kCookieValue, kDomain, kCookiePath,
       base::Time::Now() - base::TimeDelta::FromMinutes(1),
       base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(),
@@ -919,7 +919,7 @@ TEST_F(SQLitePersistentCookieStoreTest, SourcePortIsPersistent) {
 
   for (const auto& input : kTestCookies) {
     // Add some persistent cookies.
-    store_->AddCookie(CanonicalCookie(
+    store_->AddCookie(*CanonicalCookie::CreateUnsafeCookieForTesting(
         input.name, kCookieValue, kDomain, kCookiePath,
         base::Time::Now() - base::TimeDelta::FromMinutes(1),
         base::Time::Now() + base::TimeDelta::FromDays(1), base::Time(),
@@ -1119,32 +1119,32 @@ bool AddV9CookiesToDB(sql::Database* db) {
   static base::Time cookie_time(base::Time::Now());
 
   std::vector<CanonicalCookie> cookies;
-  cookies.push_back(CanonicalCookie("A", "B", "example.com", "/", cookie_time,
-                                    cookie_time, cookie_time, false, false,
-                                    CookieSameSite::NO_RESTRICTION,
-                                    COOKIE_PRIORITY_DEFAULT, false));
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
+      "A", "B", "example.com", "/", cookie_time, cookie_time, cookie_time,
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
+      false));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
-  cookies.push_back(CanonicalCookie("C", "B", "example.com", "/", cookie_time,
-                                    cookie_time, cookie_time, false, false,
-                                    CookieSameSite::NO_RESTRICTION,
-                                    COOKIE_PRIORITY_DEFAULT, false));
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
+      "C", "B", "example.com", "/", cookie_time, cookie_time, cookie_time,
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
+      false));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
-  cookies.push_back(CanonicalCookie("A", "B", "example2.com", "/", cookie_time,
-                                    cookie_time, cookie_time, false, false,
-                                    CookieSameSite::NO_RESTRICTION,
-                                    COOKIE_PRIORITY_DEFAULT, false));
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
+      "A", "B", "example2.com", "/", cookie_time, cookie_time, cookie_time,
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
+      false));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
-  cookies.push_back(CanonicalCookie("C", "B", "example2.com", "/", cookie_time,
-                                    cookie_time, cookie_time, false, false,
-                                    CookieSameSite::NO_RESTRICTION,
-                                    COOKIE_PRIORITY_DEFAULT, false));
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
+      "C", "B", "example2.com", "/", cookie_time, cookie_time, cookie_time,
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
+      false));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "example.com", "/path", cookie_time, cookie_time, cookie_time,
       false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
       false));
   cookie_time += base::TimeDelta::FromMicroseconds(1);
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "B", "example.com", "/path", cookie_time, cookie_time, cookie_time,
       false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
       false));
@@ -1154,44 +1154,44 @@ bool AddV9CookiesToDB(sql::Database* db) {
 
 bool AddV9CookiesToDBImpl(sql::Database* db,
                           const std::vector<CanonicalCookie>& cookies) {
-  sql::Statement add_smt(db->GetCachedStatement(
+  sql::Statement statement(db->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO cookies (creation_utc, host_key, name, value, "
       "encrypted_value, path, expires_utc, secure, httponly, firstpartyonly, "
       "last_access_utc, has_expires, persistent, priority) "
       "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
-  if (!add_smt.is_valid())
+  if (!statement.is_valid())
     return false;
   sql::Transaction transaction(db);
   transaction.Begin();
   for (size_t i = 0; i < cookies.size(); ++i) {
-    add_smt.Reset(true);
-    add_smt.BindInt64(
+    statement.Reset(true);
+    statement.BindInt64(
         0,
         cookies[i].CreationDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
-    add_smt.BindString(1, cookies[i].Domain());
-    add_smt.BindString(2, cookies[i].Name());
-    add_smt.BindString(3, cookies[i].Value());
-    add_smt.BindBlob(4, "", 0);  // encrypted_value
-    add_smt.BindString(5, cookies[i].Path());
-    add_smt.BindInt64(
+    statement.BindString(1, cookies[i].Domain());
+    statement.BindString(2, cookies[i].Name());
+    statement.BindString(3, cookies[i].Value());
+    statement.BindBlob(4, "", 0);  // encrypted_value
+    statement.BindString(5, cookies[i].Path());
+    statement.BindInt64(
         6, cookies[i].ExpiryDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
-    add_smt.BindInt(7, cookies[i].IsSecure());
-    add_smt.BindInt(8, cookies[i].IsHttpOnly());
+    statement.BindInt(7, cookies[i].IsSecure());
+    statement.BindInt(8, cookies[i].IsHttpOnly());
     // Note that this and Priority() below nominally rely on the enums in
     // sqlite_persistent_cookie_store.cc having the same values as the
     // ones in ../../cookies/cookie_constants.h.  But nothing in this test
     // relies on that equivalence, so it's not worth the hassle to guarantee
     // that.
-    add_smt.BindInt(9, static_cast<int>(cookies[i].SameSite()));
-    add_smt.BindInt64(10, cookies[i]
-                              .LastAccessDate()
-                              .ToDeltaSinceWindowsEpoch()
-                              .InMicroseconds());
-    add_smt.BindInt(11, cookies[i].IsPersistent());
-    add_smt.BindInt(12, cookies[i].IsPersistent());
-    add_smt.BindInt(13, static_cast<int>(cookies[i].Priority()));
-    if (!add_smt.Run())
+    statement.BindInt(9, static_cast<int>(cookies[i].SameSite()));
+    statement.BindInt64(10, cookies[i]
+                                .LastAccessDate()
+                                .ToDeltaSinceWindowsEpoch()
+                                .InMicroseconds());
+    statement.BindInt(11, cookies[i].IsPersistent());
+    statement.BindInt(12, cookies[i].IsPersistent());
+    statement.BindInt(13, static_cast<int>(cookies[i].Priority()));
+    if (!statement.Run())
       return false;
   }
   if (!transaction.Commit())
@@ -1269,21 +1269,21 @@ TEST_F(SQLitePersistentCookieStoreTest, UpgradeToSchemaVersion10Corrupted) {
 
   base::Time old_time = base::Time::Now() - base::TimeDelta::FromMinutes(90);
   base::Time old_time2 = base::Time::Now() - base::TimeDelta::FromMinutes(91);
-  CanonicalCookie old_cookie1(
+  auto old_cookie1 = CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "old_value", "example.com", "/", old_time, old_time, old_time, false,
       false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false);
-  AddV9CookiesToDBImpl(&connection, {old_cookie1});
+  AddV9CookiesToDBImpl(&connection, {*old_cookie1});
 
   // Add the same set of cookies twice to create duplicates.
   ASSERT_TRUE(AddV9CookiesToDB(&connection));
   ASSERT_TRUE(AddV9CookiesToDB(&connection));
 
   // Add some others as well.
-  CanonicalCookie old_cookie2("A", "old_value", "example.com", "/path",
-                              old_time2, old_time2, old_time2, false, false,
-                              CookieSameSite::NO_RESTRICTION,
-                              COOKIE_PRIORITY_DEFAULT, false);
-  AddV9CookiesToDBImpl(&connection, {old_cookie2});
+  auto old_cookie2 = CanonicalCookie::CreateUnsafeCookieForTesting(
+      "A", "old_value", "example.com", "/path", old_time2, old_time2, old_time2,
+      false, false, CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT,
+      false);
+  AddV9CookiesToDBImpl(&connection, {*old_cookie2});
 
   connection.Close();
 
@@ -1385,7 +1385,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
   GURL ftp_url("ftp://subdomain.ftperiffic.com/page/");
   auto cookie =
       CanonicalCookie::Create(ftp_url, "A=B; max-age=3600", base::Time::Now(),
-                              base::nullopt /* server_time */);
+                              absl::nullopt /* server_time */);
   cookie_monster->SetCanonicalCookieAsync(std::move(cookie), ftp_url,
                                           CookieOptions::MakeAllInclusive(),
                                           set_cookie_callback.MakeCallback());
@@ -1399,7 +1399,7 @@ TEST_F(SQLitePersistentCookieStoreTest, KeyInconsistency) {
     GURL url(base::StringPrintf("http://example%d.com/", i));
     auto canonical_cookie =
         CanonicalCookie::Create(url, "A=B; max-age=3600", base::Time::Now(),
-                                base::nullopt /* server_time */);
+                                absl::nullopt /* server_time */);
     cookie_monster->SetCanonicalCookieAsync(
         std::move(canonical_cookie), url, CookieOptions::MakeAllInclusive(),
         set_cookie_callback2.MakeCallback());
@@ -1453,7 +1453,7 @@ TEST_F(SQLitePersistentCookieStoreTest, OpsIfInitFailed) {
   GURL url("http://www.example.com/");
   auto cookie =
       CanonicalCookie::Create(url, "A=B; max-age=3600", base::Time::Now(),
-                              base::nullopt /* server_time */);
+                              absl::nullopt /* server_time */);
   cookie_monster->SetCanonicalCookieAsync(std::move(cookie), url,
                                           CookieOptions::MakeAllInclusive(),
                                           set_cookie_callback.MakeCallback());
@@ -1486,7 +1486,7 @@ TEST_F(SQLitePersistentCookieStoreTest, Coalescing) {
 
   std::unique_ptr<CanonicalCookie> cookie = CanonicalCookie::Create(
       GURL("http://www.example.com/path"), "Tasty=Yes", base::Time::Now(),
-      base::nullopt /* server_time */);
+      absl::nullopt /* server_time */);
 
   for (const TestCase& testcase : testcases) {
     Create(false, false, true /* want current thread to invoke the store. */);
@@ -1539,11 +1539,11 @@ TEST_F(SQLitePersistentCookieStoreTest, NoCoalesceUnrelated) {
 
   std::unique_ptr<CanonicalCookie> cookie1 = CanonicalCookie::Create(
       GURL("http://www.example.com/path"), "Tasty=Yes", base::Time::Now(),
-      base::nullopt /* server_time */);
+      absl::nullopt /* server_time */);
 
   std::unique_ptr<CanonicalCookie> cookie2 = CanonicalCookie::Create(
       GURL("http://not.example.com/path"), "Tasty=No", base::Time::Now(),
-      base::nullopt /* server_time */);
+      absl::nullopt /* server_time */);
 
   // Wedge the background thread to make sure that it doesn't start consuming
   // the queue.
@@ -1598,22 +1598,22 @@ bool AddV10CookiesToDB(sql::Database* db) {
   static base::Time time = base::Time::Now();
 
   std::vector<CanonicalCookie> cookies;
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "example.com", "/", time, time, time, false, false,
       CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false));
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "B", "example.com", "/", time, time, time, false, false,
       CookieSameSite::NO_RESTRICTION, COOKIE_PRIORITY_DEFAULT, false));
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "example2.com", "/", time, time, time, false, false,
       CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT, false));
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "B", "example2.com", "/", time, time, time, false, false,
       CookieSameSite::LAX_MODE, COOKIE_PRIORITY_DEFAULT, false));
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "example.com", "/path", time, time, time, false, false,
       CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT, false));
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "B", "example.com", "/path", time, time, time, false, false,
       CookieSameSite::STRICT_MODE, COOKIE_PRIORITY_DEFAULT, false));
   return AddV10CookiesToDBImpl(db, cookies);
@@ -1621,44 +1621,44 @@ bool AddV10CookiesToDB(sql::Database* db) {
 
 bool AddV10CookiesToDBImpl(sql::Database* db,
                            const std::vector<CanonicalCookie>& cookies) {
-  sql::Statement add_smt(db->GetCachedStatement(
+  sql::Statement statement(db->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO cookies (creation_utc, host_key, name, value, "
       "encrypted_value, path, expires_utc, is_secure, is_httponly, "
       "firstpartyonly, last_access_utc, has_expires, is_persistent, priority) "
       "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
-  if (!add_smt.is_valid())
+  if (!statement.is_valid())
     return false;
   sql::Transaction transaction(db);
   transaction.Begin();
   for (size_t i = 0; i < cookies.size(); ++i) {
-    add_smt.Reset(true);
-    add_smt.BindInt64(
+    statement.Reset(true);
+    statement.BindInt64(
         0,
         cookies[i].CreationDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
-    add_smt.BindString(1, cookies[i].Domain());
-    add_smt.BindString(2, cookies[i].Name());
-    add_smt.BindString(3, cookies[i].Value());
-    add_smt.BindBlob(4, "", 0);  // encrypted_value
-    add_smt.BindString(5, cookies[i].Path());
-    add_smt.BindInt64(
+    statement.BindString(1, cookies[i].Domain());
+    statement.BindString(2, cookies[i].Name());
+    statement.BindString(3, cookies[i].Value());
+    statement.BindBlob(4, "", 0);  // encrypted_value
+    statement.BindString(5, cookies[i].Path());
+    statement.BindInt64(
         6, cookies[i].ExpiryDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
-    add_smt.BindInt(7, cookies[i].IsSecure());
-    add_smt.BindInt(8, cookies[i].IsHttpOnly());
+    statement.BindInt(7, cookies[i].IsSecure());
+    statement.BindInt(8, cookies[i].IsHttpOnly());
     // Note that this and Priority() below nominally rely on the enums in
     // sqlite_persistent_cookie_store.cc having the same values as the
     // ones in ../../cookies/cookie_constants.h.  But nothing in this test
     // relies on that equivalence, so it's not worth the hassle to guarantee
     // that.
-    add_smt.BindInt(9, static_cast<int>(cookies[i].SameSite()));
-    add_smt.BindInt64(10, cookies[i]
-                              .LastAccessDate()
-                              .ToDeltaSinceWindowsEpoch()
-                              .InMicroseconds());
-    add_smt.BindInt(11, cookies[i].IsPersistent());
-    add_smt.BindInt(12, cookies[i].IsPersistent());
-    add_smt.BindInt(13, static_cast<int>(cookies[i].Priority()));
-    if (!add_smt.Run())
+    statement.BindInt(9, static_cast<int>(cookies[i].SameSite()));
+    statement.BindInt64(10, cookies[i]
+                                .LastAccessDate()
+                                .ToDeltaSinceWindowsEpoch()
+                                .InMicroseconds());
+    statement.BindInt(11, cookies[i].IsPersistent());
+    statement.BindInt(12, cookies[i].IsPersistent());
+    statement.BindInt(13, static_cast<int>(cookies[i].Priority()));
+    if (!statement.Run())
       return false;
   }
   if (!transaction.Commit())
@@ -1807,27 +1807,27 @@ std::vector<CanonicalCookie> CookiesForMigrationTest() {
   // v11 doesn't store that info.
   // Some of these are constructed with SameParty set to true, to test that in
   // the DB migration, the is_same_party values are all defaulted to false.
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "example.com", "/", now, now, now, true /* secure */,
       false /* httponly */, CookieSameSite::UNSPECIFIED,
       COOKIE_PRIORITY_DEFAULT, false /* same_party */));
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "B", "example.com", "/", now, now, now, true /* secure */,
       false /* httponly */, CookieSameSite::UNSPECIFIED,
       COOKIE_PRIORITY_DEFAULT, true /* same_party */));
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "example2.com", "/", now, now, now, true /* secure */,
       false /* httponly */, CookieSameSite::UNSPECIFIED,
       COOKIE_PRIORITY_DEFAULT, true /* same_party */));
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "B", "example2.com", "/", now, now, now, false /* secure */,
       false /* httponly */, CookieSameSite::UNSPECIFIED,
       COOKIE_PRIORITY_DEFAULT, false /* same_party */));
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "A", "B", "example.com", "/path", now, now, now, false /* secure */,
       false /* httponly */, CookieSameSite::UNSPECIFIED,
       COOKIE_PRIORITY_DEFAULT, false /* same_party */));
-  cookies.push_back(CanonicalCookie(
+  cookies.push_back(*CanonicalCookie::CreateUnsafeCookieForTesting(
       "C", "B", "example.com", "/path", now, now, now, false /* secure */,
       false /* httponly */, CookieSameSite::UNSPECIFIED,
       COOKIE_PRIORITY_DEFAULT, false /* same_party */));
@@ -1836,44 +1836,44 @@ std::vector<CanonicalCookie> CookiesForMigrationTest() {
 
 bool AddV11CookiesToDB(sql::Database* db) {
   std::vector<CanonicalCookie> cookies = CookiesForMigrationTest();
-  sql::Statement add_smt(db->GetCachedStatement(
+  sql::Statement statement(db->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO cookies (creation_utc, host_key, name, value, "
       "encrypted_value, path, expires_utc, is_secure, is_httponly, "
       "samesite, last_access_utc, has_expires, is_persistent, priority)"
       "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
-  if (!add_smt.is_valid())
+  if (!statement.is_valid())
     return false;
   sql::Transaction transaction(db);
   transaction.Begin();
   for (size_t i = 0; i < cookies.size(); ++i) {
-    add_smt.Reset(true);
-    add_smt.BindInt64(
+    statement.Reset(true);
+    statement.BindInt64(
         0,
         cookies[i].CreationDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
-    add_smt.BindString(1, cookies[i].Domain());
-    add_smt.BindString(2, cookies[i].Name());
-    add_smt.BindString(3, cookies[i].Value());
-    add_smt.BindBlob(4, "", 0);  // encrypted_value
-    add_smt.BindString(5, cookies[i].Path());
-    add_smt.BindInt64(
+    statement.BindString(1, cookies[i].Domain());
+    statement.BindString(2, cookies[i].Name());
+    statement.BindString(3, cookies[i].Value());
+    statement.BindBlob(4, "", 0);  // encrypted_value
+    statement.BindString(5, cookies[i].Path());
+    statement.BindInt64(
         6, cookies[i].ExpiryDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
-    add_smt.BindInt(7, cookies[i].IsSecure());
-    add_smt.BindInt(8, cookies[i].IsHttpOnly());
+    statement.BindInt(7, cookies[i].IsSecure());
+    statement.BindInt(8, cookies[i].IsHttpOnly());
     // Note that this and Priority() below nominally rely on the enums in
     // sqlite_persistent_cookie_store.cc having the same values as the
     // ones in ../../cookies/cookie_constants.h.  But nothing in this test
     // relies on that equivalence, so it's not worth the hassle to guarantee
     // that.
-    add_smt.BindInt(9, static_cast<int>(cookies[i].SameSite()));
-    add_smt.BindInt64(10, cookies[i]
-                              .LastAccessDate()
-                              .ToDeltaSinceWindowsEpoch()
-                              .InMicroseconds());
-    add_smt.BindInt(11, cookies[i].IsPersistent());
-    add_smt.BindInt(12, cookies[i].IsPersistent());
-    add_smt.BindInt(13, static_cast<int>(cookies[i].Priority()));
-    if (!add_smt.Run())
+    statement.BindInt(9, static_cast<int>(cookies[i].SameSite()));
+    statement.BindInt64(10, cookies[i]
+                                .LastAccessDate()
+                                .ToDeltaSinceWindowsEpoch()
+                                .InMicroseconds());
+    statement.BindInt(11, cookies[i].IsPersistent());
+    statement.BindInt(12, cookies[i].IsPersistent());
+    statement.BindInt(13, static_cast<int>(cookies[i].Priority()));
+    if (!statement.Run())
       return false;
   }
   if (!transaction.Commit())
@@ -1884,44 +1884,44 @@ bool AddV11CookiesToDB(sql::Database* db) {
 
 bool AddV12CookiesToDB(sql::Database* db) {
   std::vector<CanonicalCookie> cookies = CookiesForMigrationTest();
-  sql::Statement add_smt(db->GetCachedStatement(
+  sql::Statement statement(db->GetCachedStatement(
       SQL_FROM_HERE,
       "INSERT INTO cookies (creation_utc, host_key, name, value, "
       "encrypted_value, path, expires_utc, is_secure, is_httponly, "
       "samesite, last_access_utc, has_expires, is_persistent, priority, "
       "source_scheme)"
       "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"));
-  if (!add_smt.is_valid())
+  if (!statement.is_valid())
     return false;
   sql::Transaction transaction(db);
   transaction.Begin();
   for (const CanonicalCookie& cookie : cookies) {
-    add_smt.Reset(true);
-    add_smt.BindInt64(
+    statement.Reset(true);
+    statement.BindInt64(
         0, cookie.CreationDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
-    add_smt.BindString(1, cookie.Domain());
-    add_smt.BindString(2, cookie.Name());
-    add_smt.BindString(3, cookie.Value());
-    add_smt.BindBlob(4, "", 0);  // encrypted_value
-    add_smt.BindString(5, cookie.Path());
-    add_smt.BindInt64(
+    statement.BindString(1, cookie.Domain());
+    statement.BindString(2, cookie.Name());
+    statement.BindString(3, cookie.Value());
+    statement.BindBlob(4, "", 0);  // encrypted_value
+    statement.BindString(5, cookie.Path());
+    statement.BindInt64(
         6, cookie.ExpiryDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
-    add_smt.BindInt(7, cookie.IsSecure());
-    add_smt.BindInt(8, cookie.IsHttpOnly());
+    statement.BindInt(7, cookie.IsSecure());
+    statement.BindInt(8, cookie.IsHttpOnly());
     // Note that this, Priority(), and SourceScheme() below nominally rely on
     // the enums in sqlite_persistent_cookie_store.cc having the same values as
     // the ones in ../../cookies/cookie_constants.h.  But nothing in this test
     // relies on that equivalence, so it's not worth the hassle to guarantee
     // that.
-    add_smt.BindInt(9, static_cast<int>(cookie.SameSite()));
-    add_smt.BindInt64(
+    statement.BindInt(9, static_cast<int>(cookie.SameSite()));
+    statement.BindInt64(
         10,
         cookie.LastAccessDate().ToDeltaSinceWindowsEpoch().InMicroseconds());
-    add_smt.BindInt(11, cookie.IsPersistent());
-    add_smt.BindInt(12, cookie.IsPersistent());
-    add_smt.BindInt(13, static_cast<int>(cookie.Priority()));
-    add_smt.BindInt(14, static_cast<int>(cookie.SourceScheme()));
-    if (!add_smt.Run())
+    statement.BindInt(11, cookie.IsPersistent());
+    statement.BindInt(12, cookie.IsPersistent());
+    statement.BindInt(13, static_cast<int>(cookie.Priority()));
+    statement.BindInt(14, static_cast<int>(cookie.SourceScheme()));
+    if (!statement.Run())
       return false;
   }
   if (!transaction.Commit())

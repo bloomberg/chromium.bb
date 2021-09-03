@@ -11,7 +11,6 @@ import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
-import android.support.test.rule.ActivityTestRule;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,12 +25,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetPropertyModelBuilder.ContentType;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.components.favicon.IconType;
 import org.chromium.components.favicon.LargeIconBridge;
@@ -45,14 +43,13 @@ import java.util.ArrayList;
  * Tests {@link ShareSheetBottomSheetContent}.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@Features.EnableFeatures({ChromeFeatureList.CHROME_SHARING_HUB_V15})
 public final class ShareSheetBottomSheetContentTest {
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
     @Rule
-    public ActivityTestRule<DummyUiActivity> mActivityTestRule =
-            new ActivityTestRule<>(DummyUiActivity.class);
+    public BaseActivityTestRule<DummyUiActivity> mActivityTestRule =
+            new BaseActivityTestRule<>(DummyUiActivity.class);
 
     private static final Bitmap.Config sConfig = Bitmap.Config.ALPHA_8;
     private static final Uri sImageUri = Uri.parse("content://testImage.png");
@@ -67,11 +64,13 @@ public final class ShareSheetBottomSheetContentTest {
 
     @Before
     public void setUp() {
+        mActivityTestRule.launchActivity(null);
         mActivity = mActivityTestRule.getActivity();
         mPreviewUrl = UrlFormatter.formatUrlForDisplayOmitSchemeOmitTrivialSubdomains(sUrl);
         mShareParams = new ShareParams.Builder(/*window=*/null, sTitle, sUrl)
                                .setText(sText)
                                .setFileUris(new ArrayList<>(ImmutableList.of(sImageUri)))
+                               .setLinkToTextSuccessful(true)
                                .build();
 
         mShareSheetBottomSheetContent = new ShareSheetBottomSheetContent(

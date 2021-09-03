@@ -14,7 +14,8 @@ namespace network {
 
 // This corresponds to network::mojom::CrossOriginEmbedderPolicy.
 // See the comments there.
-struct COMPONENT_EXPORT(NETWORK_CPP_BASE) CrossOriginEmbedderPolicy final {
+struct COMPONENT_EXPORT(NETWORK_CPP_CROSS_ORIGIN)
+    CrossOriginEmbedderPolicy final {
   CrossOriginEmbedderPolicy();
   ~CrossOriginEmbedderPolicy();
   CrossOriginEmbedderPolicy(const CrossOriginEmbedderPolicy&);
@@ -25,11 +26,16 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) CrossOriginEmbedderPolicy final {
 
   mojom::CrossOriginEmbedderPolicyValue value =
       mojom::CrossOriginEmbedderPolicyValue::kNone;
-  base::Optional<std::string> reporting_endpoint;
+  absl::optional<std::string> reporting_endpoint;
   mojom::CrossOriginEmbedderPolicyValue report_only_value =
       mojom::CrossOriginEmbedderPolicyValue::kNone;
-  base::Optional<std::string> report_only_reporting_endpoint;
+  absl::optional<std::string> report_only_reporting_endpoint;
 };
+
+COMPONENT_EXPORT(NETWORK_CPP_CROSS_ORIGIN)
+bool CompatibleWithCrossOriginIsolated(const CrossOriginEmbedderPolicy&);
+COMPONENT_EXPORT(NETWORK_CPP_CROSS_ORIGIN)
+bool CompatibleWithCrossOriginIsolated(mojom::CrossOriginEmbedderPolicyValue);
 
 }  // namespace network
 

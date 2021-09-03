@@ -21,16 +21,12 @@
 #include "base/metrics/user_metrics.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
-#include "content/browser/accessibility/browser_accessibility_android.h"
-#include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/frame.mojom.h"
-#include "content/common/frame_messages.h"
-#include "content/common/input_messages.h"
 #include "content/public/android/content_jni_headers/WebContentsImpl_jni.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -40,6 +36,7 @@
 #include "content/public/common/content_switches.h"
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_update.h"
 #include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 #include "ui/android/overscroll_refresh_handler.h"
 #include "ui/android/window_android.h"
@@ -50,14 +47,15 @@
 #include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertJavaStringToUTF16;
-using base::android::ConvertUTF8ToJavaString;
+using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
+using base::android::ToJavaArrayOfStringArray;
 using base::android::ToJavaIntArray;
 
 namespace content {
@@ -79,8 +77,8 @@ void JavaScriptResultCallback(const ScopedJavaGlobalRef<jobject>& callback,
 }
 
 void SmartClipCallback(const ScopedJavaGlobalRef<jobject>& callback,
-                       const base::string16& text,
-                       const base::string16& html,
+                       const std::u16string& text,
+                       const std::u16string& html,
                        const gfx::Rect& clip_rect) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_text = ConvertUTF16ToJavaString(env, text);
@@ -97,14 +95,31 @@ ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_CreateJavaAXSnapshot(
     bool is_root) {
   ScopedJavaLocalRef<jstring> j_text =
       ConvertUTF16ToJavaString(env, node->text);
+
+  // The (fake) Android java class name.
   ScopedJavaLocalRef<jstring> j_class =
       ConvertUTF8ToJavaString(env, node->class_name);
+
+  // HTML/CSS attributes.
+  ScopedJavaLocalRef<jstring> j_html_tag =
+      ConvertUTF8ToJavaString(env, node->html_tag);
+  ScopedJavaLocalRef<jstring> j_css_display =
+      ConvertUTF8ToJavaString(env, node->css_display);
+
+  std::vector<std::vector<std::u16string>> html_attrs;
+  for (const auto& attr : node->html_attributes) {
+    html_attrs.push_back(
+        {base::UTF8ToUTF16(attr.first), base::UTF8ToUTF16(attr.second)});
+  }
+  ScopedJavaLocalRef<jobjectArray> j_attrs =
+      ToJavaArrayOfStringArray(env, html_attrs);
+
   ScopedJavaLocalRef<jobject> j_node =
       Java_WebContentsImpl_createAccessibilitySnapshotNode(
           env, node->rect.x(), node->rect.y(), node->rect.width(),
           node->rect.height(), is_root, j_text, node->color, node->bgcolor,
           node->text_size, node->bold, node->italic, node->underline,
-          node->line_through, j_class);
+          node->line_through, j_class, j_html_tag, j_css_display, j_attrs);
 
   if (node->selection.has_value()) {
     Java_WebContentsImpl_setAccessibilitySnapshotSelection(
@@ -118,24 +133,6 @@ ScopedJavaLocalRef<jobject> JNI_WebContentsImpl_CreateJavaAXSnapshot(
             env, tree, tree->nodes[child].get(), false));
   }
   return j_node;
-}
-
-// Walks over the AXTreeUpdate and creates a light weight snapshot.
-void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
-                            const ui::AXTreeUpdate& result) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  if (result.nodes.empty()) {
-    Java_WebContentsImpl_onAccessibilitySnapshot(env, nullptr, callback);
-    return;
-  }
-  std::unique_ptr<BrowserAccessibilityManagerAndroid> manager(
-      static_cast<BrowserAccessibilityManagerAndroid*>(
-          BrowserAccessibilityManager::Create(result, nullptr)));
-  std::unique_ptr<ui::AssistantTree> assistant_tree =
-      ui::CreateAssistantTree(result, manager->ShouldExposePasswordText());
-  ScopedJavaLocalRef<jobject> j_root = JNI_WebContentsImpl_CreateJavaAXSnapshot(
-      env, assistant_tree.get(), assistant_tree->nodes.front().get(), true);
-  Java_WebContentsImpl_onAccessibilitySnapshot(env, j_root, callback);
 }
 
 }  // namespace
@@ -291,6 +288,19 @@ ScopedJavaLocalRef<jobject> WebContentsAndroid::GetRenderFrameHostFromId(
   return rfh->GetJavaRenderFrameHost();
 }
 
+ScopedJavaLocalRef<jobjectArray> WebContentsAndroid::GetAllRenderFrameHosts(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) const {
+  std::vector<RenderFrameHost*> frames = web_contents_->GetAllFrames();
+  ScopedJavaLocalRef<jobjectArray> jframes =
+      Java_WebContentsImpl_createRenderFrameHostArray(env, frames.size());
+  for (size_t i = 0; i < frames.size(); i++) {
+    Java_WebContentsImpl_addRenderFrameHostToArray(
+        env, jframes, i, frames[i]->GetJavaRenderFrameHost());
+  }
+  return jframes;
+}
+
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetTitle(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) const {
@@ -409,11 +419,11 @@ jint WebContentsAndroid::GetBackgroundColor(JNIEnv* env,
   return *rwhva->GetCachedBackgroundColor();
 }
 
-ScopedJavaLocalRef<jstring> WebContentsAndroid::GetLastCommittedURL(
+ScopedJavaLocalRef<jobject> WebContentsAndroid::GetLastCommittedURL(
     JNIEnv* env,
     const JavaParamRef<jobject>&) const {
-  return ConvertUTF8ToJavaString(env,
-                                 web_contents_->GetLastCommittedURL().spec());
+  return url::GURLAndroid::FromNativeGURL(env,
+                                          web_contents_->GetLastCommittedURL());
 }
 
 jboolean WebContentsAndroid::IsIncognito(JNIEnv* env,
@@ -544,7 +554,7 @@ void WebContentsAndroid::EvaluateJavaScript(
   }
 
   // Secure the Java callback in a scoped object and give ownership of it to the
-  // base::Callback.
+  // base::OnceCallback below.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
 
@@ -572,7 +582,7 @@ void WebContentsAndroid::EvaluateJavaScriptForTests(
   }
 
   // Secure the Java callback in a scoped object and give ownership of it to the
-  // base::Callback.
+  // base::OnceCallback below.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
 
@@ -631,7 +641,7 @@ void WebContentsAndroid::RequestSmartClipExtract(
     jint width,
     jint height) {
   // Secure the Java callback in a scoped object and give ownership of it to the
-  // base::Callback.
+  // base::OnceCallback below.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
 
@@ -640,19 +650,41 @@ void WebContentsAndroid::RequestSmartClipExtract(
       gfx::Rect(x, y, width, height));
 }
 
+void WebContentsAndroid::AXTreeSnapshotCallback(
+    const ScopedJavaGlobalRef<jobject>& callback,
+    const ui::AXTreeUpdate& result) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (result.nodes.empty()) {
+    Java_WebContentsImpl_onAccessibilitySnapshot(env, nullptr, callback);
+    return;
+  }
+  std::unique_ptr<ui::AssistantTree> assistant_tree =
+      ui::CreateAssistantTree(result);
+  ScopedJavaLocalRef<jobject> j_root = JNI_WebContentsImpl_CreateJavaAXSnapshot(
+      env, assistant_tree.get(), assistant_tree->nodes.front().get(), true);
+  Java_WebContentsImpl_onAccessibilitySnapshot(env, j_root, callback);
+}
+
 void WebContentsAndroid::RequestAccessibilitySnapshot(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& callback) {
   // Secure the Java callback in a scoped object and give ownership of it to the
-  // base::Callback.
+  // base::OnceCallback below.
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
 
+  // Set a timeout of 2.0 seconds to compute the snapshot of the
+  // accessibility tree because Google Assistant ignores results that
+  // don't come back within 3.0 seconds.
   static_cast<WebContentsImpl*>(web_contents_)
       ->RequestAXTreeSnapshot(
-          base::BindOnce(&AXTreeSnapshotCallback, j_callback),
-          ui::kAXModeComplete);
+          base::BindOnce(&WebContentsAndroid::AXTreeSnapshotCallback,
+                         weak_factory_.GetWeakPtr(), j_callback),
+          ui::kAXModeComplete,
+          /* exclude_offscreen= */ false,
+          /* max_nodes= */ 5000,
+          /* timeout= */ base::TimeDelta::FromSeconds(2));
 }
 
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetEncoding(
@@ -683,15 +715,15 @@ void WebContentsAndroid::SetSpatialNavigationDisabled(
 int WebContentsAndroid::DownloadImage(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
-    const base::android::JavaParamRef<jstring>& jurl,
+    const base::android::JavaParamRef<jobject>& jurl,
     jboolean is_fav_icon,
     jint max_bitmap_size,
     jboolean bypass_cache,
     const base::android::JavaParamRef<jobject>& jcallback) {
-  GURL url(base::android::ConvertJavaStringToUTF8(env, jurl));
   const uint32_t preferred_size = 0;
   return web_contents_->DownloadImage(
-      url, is_fav_icon, preferred_size, max_bitmap_size, bypass_cache,
+      *url::GURLAndroid::ToNativeGURL(env, jurl), is_fav_icon, preferred_size,
+      max_bitmap_size, bypass_cache,
       base::BindOnce(&WebContentsAndroid::OnFinishDownloadImage,
                      weak_factory_.GetWeakPtr(),
                      ScopedJavaGlobalRef<jobject>(env, obj),
@@ -768,8 +800,7 @@ void WebContentsAndroid::OnFinishDownloadImage(
       Java_WebContentsImpl_createBitmapList(env);
   ScopedJavaLocalRef<jobject> jsizes =
       Java_WebContentsImpl_createSizeList(env);
-  ScopedJavaLocalRef<jstring> jurl =
-      base::android::ConvertUTF8ToJavaString(env, url.spec());
+  ScopedJavaLocalRef<jobject> jurl = url::GURLAndroid::FromNativeGURL(env, url);
 
   for (const SkBitmap& bitmap : bitmaps) {
     // WARNING: convering to java bitmaps results in duplicate memory
@@ -815,7 +846,7 @@ void WebContentsAndroid::OnScaleFactorChanged(
     // |SendScreenRects()| indirectly calls GetViewSize() that asks Java layer.
     web_contents_->SendScreenRects();
     rwhva->SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
-                                       base::nullopt);
+                                       absl::nullopt);
   }
 }
 

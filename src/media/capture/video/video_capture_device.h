@@ -27,11 +27,11 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/video_frame.h"
-#include "media/base/video_frame_feedback.h"
 #include "media/capture/capture_export.h"
 #include "media/capture/mojom/image_capture.mojom.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
+#include "media/capture/video/video_capture_feedback.h"
 #include "media/capture/video_capture_types.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -64,7 +64,21 @@ class CAPTURE_EXPORT VideoFrameConsumerFeedbackObserver {
   // It is used to indicate which particular frame the reported utilization
   // corresponds to.
   virtual void OnUtilizationReport(int frame_feedback_id,
-                                   media::VideoFrameFeedback feedback) {}
+                                   media::VideoCaptureFeedback feedback) {}
+};
+
+struct CAPTURE_EXPORT CapturedExternalVideoBuffer {
+  CapturedExternalVideoBuffer(gfx::GpuMemoryBufferHandle handle,
+                              VideoCaptureFormat format,
+                              gfx::ColorSpace color_space);
+  CapturedExternalVideoBuffer(CapturedExternalVideoBuffer&& other);
+  ~CapturedExternalVideoBuffer();
+
+  CapturedExternalVideoBuffer& operator=(CapturedExternalVideoBuffer&& other);
+
+  gfx::GpuMemoryBufferHandle handle;
+  VideoCaptureFormat format;
+  gfx::ColorSpace color_space;
 };
 
 class CAPTURE_EXPORT VideoCaptureDevice
@@ -123,6 +137,12 @@ class CAPTURE_EXPORT VideoCaptureDevice
       int frame_feedback_id;
       std::unique_ptr<HandleProvider> handle_provider;
       std::unique_ptr<ScopedAccessPermission> access_permission;
+
+      // Some buffer types may be preemptively mapped in the capturer if
+      // requested by the consumer.
+      // This is used to notify the client that a shared memory region
+      // associated with the buffer is valid.
+      bool is_premapped = false;
     };
 
     // Result code for calls to ReserveOutputBuffer()
@@ -187,9 +207,8 @@ class CAPTURE_EXPORT VideoCaptureDevice
     // gfx::ScopedInUseIOSurface is used to prevent reuse of buffers until all
     // consumers have consumed them.
     virtual void OnIncomingCapturedExternalBuffer(
-        gfx::GpuMemoryBufferHandle handle,
-        const VideoCaptureFormat& format,
-        const gfx::ColorSpace& color_space,
+        CapturedExternalVideoBuffer buffer,
+        std::vector<CapturedExternalVideoBuffer> scaled_buffers,
         base::TimeTicks reference_time,
         base::TimeDelta timestamp) = 0;
 
@@ -310,6 +329,10 @@ class CAPTURE_EXPORT VideoCaptureDevice
   // would be sequenced through the same task runner, so that deallocation
   // happens first.
   virtual void StopAndDeAllocate() = 0;
+
+  // Hints to the source that if it has an alpha channel, that alpha channel
+  // will be ignored and can be discarded.
+  virtual void SetCanDiscardAlpha(bool can_discard_alpha) {}
 
   // Retrieve the photo capabilities and settings of the device (e.g. zoom
   // levels etc). On success, invokes |callback|. On failure, drops callback

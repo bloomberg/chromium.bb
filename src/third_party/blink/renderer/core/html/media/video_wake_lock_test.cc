@@ -4,7 +4,11 @@
 
 #include "third_party/blink/renderer/core/html/media/video_wake_lock.h"
 
+#include <memory>
+
 #include "cc/layers/layer.h"
+#include "media/mojo/mojom/media_player.mojom-blink.h"
+#include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -14,6 +18,7 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/html/media/html_media_test_helper.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -39,7 +44,9 @@ class VideoWakeLockPictureInPictureSession
   void Stop(StopCallback callback) final { std::move(callback).Run(); }
 
   void Update(uint32_t player_id,
-              const base::Optional<viz::SurfaceId>&,
+              mojo::PendingAssociatedRemote<media::mojom::blink::MediaPlayer>
+                  player_remote,
+              const absl::optional<viz::SurfaceId>&,
               const gfx::Size&,
               bool show_play_pause_button) final {}
 
@@ -63,14 +70,15 @@ class VideoWakeLockPictureInPictureService
 
   void StartSession(
       uint32_t,
-      const base::Optional<viz::SurfaceId>&,
+      mojo::PendingAssociatedRemote<media::mojom::blink::MediaPlayer>,
+      const absl::optional<viz::SurfaceId>&,
       const gfx::Size&,
       bool,
       mojo::PendingRemote<mojom::blink::PictureInPictureSessionObserver>,
       StartSessionCallback callback) final {
     mojo::PendingRemote<mojom::blink::PictureInPictureSession> session_remote;
-    session_.reset(new VideoWakeLockPictureInPictureSession(
-        session_remote.InitWithNewPipeAndPassReceiver()));
+    session_ = std::make_unique<VideoWakeLockPictureInPictureSession>(
+        session_remote.InitWithNewPipeAndPassReceiver());
 
     std::move(callback).Run(std::move(session_remote), gfx::Size());
   }

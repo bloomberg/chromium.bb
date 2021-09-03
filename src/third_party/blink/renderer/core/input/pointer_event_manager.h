@@ -20,6 +20,7 @@ namespace blink {
 
 class LocalFrame;
 class MouseEventManager;
+class GestureManager;
 
 // This class takes care of dispatching all pointer events and keeps track of
 // properties of active pointer events.
@@ -76,7 +77,10 @@ class CORE_EXPORT PointerEventManager final
 
   void ElementRemoved(Element*);
 
-  bool SetPointerCapture(PointerId, Element*);
+  // Starts capturing of all events with the given |PointerId| to the given
+  // |Element|.  The paramenter |explicit_capture| identifies if this call was
+  // triggered by an explicit |elem.setPointerCapture()| call from JS.
+  bool SetPointerCapture(PointerId, Element*, bool explicit_capture);
   bool ReleasePointerCapture(PointerId, Element*);
   void ReleaseMousePointerCapture();
 
@@ -107,6 +111,8 @@ class CORE_EXPORT PointerEventManager final
   // it also clears any state that might have kept since the last call to this
   // function.
   WebInputEventResult FlushEvents();
+
+  void SetGestureManager(GestureManager* gesture_manager);
 
  private:
   class EventTargetAttributes : public GarbageCollected<EventTargetAttributes> {
@@ -280,6 +286,8 @@ class CORE_EXPORT PointerEventManager final
   // main thread, or all events (touch start/end/move).
   bool skip_touch_filter_discrete_ = false;
   bool skip_touch_filter_all_ = false;
+
+  Member<GestureManager> gesture_manager_;
 };
 
 }  // namespace blink

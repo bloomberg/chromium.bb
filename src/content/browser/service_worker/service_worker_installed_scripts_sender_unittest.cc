@@ -6,9 +6,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/optional.h"
+#include "base/containers/contains.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -20,6 +19,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -675,7 +675,7 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, RemoteStorageDisconnection) {
 
   sender->Start();
 
-  registry()->SimulateStorageRestartForTesting();
+  helper()->SimulateStorageRestartForTesting();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(sender->last_finished_reason(), FinishedReason::kConnectionError);
@@ -700,8 +700,9 @@ TEST_F(ServiceWorkerInstalledScriptsSenderTest, StorageDisabled) {
         info.second.WriteToDiskCache(context()->GetStorageControl()));
   version()->script_cache_map()->SetResources(records);
 
-  registry()->GetRemoteStorageControl()->Disable();
-  registry()->GetRemoteStorageControl().FlushForTesting();
+  base::RunLoop loop;
+  registry()->DisableStorageForTesting(loop.QuitClosure());
+  loop.Run();
 
   auto sender =
       std::make_unique<ServiceWorkerInstalledScriptsSender>(version());

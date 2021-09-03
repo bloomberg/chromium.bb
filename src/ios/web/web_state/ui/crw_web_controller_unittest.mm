@@ -10,8 +10,7 @@
 #include <utility>
 
 #include "base/mac/foundation_util.h"
-#include "base/scoped_observer.h"
-#include "base/strings/stringprintf.h"
+#include "base/scoped_observation.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -20,6 +19,7 @@
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_web_view_content_view.h"
 #include "ios/web/common/features.h"
+#import "ios/web/common/uikit_ui_util.h"
 #import "ios/web/js_messaging/crw_js_injector.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
 #include "ios/web/navigation/block_universal_links_buildflags.h"
@@ -33,13 +33,13 @@
 #include "ios/web/public/navigation/referrer.h"
 #import "ios/web/public/session/crw_navigation_item_storage.h"
 #import "ios/web/public/session/crw_session_storage.h"
+#import "ios/web/public/test/fakes/crw_fake_web_view_content_view.h"
+#include "ios/web/public/test/fakes/fake_browser_state.h"
 #include "ios/web/public/test/fakes/fake_download_controller_delegate.h"
+#import "ios/web/public/test/fakes/fake_web_client.h"
+#import "ios/web/public/test/fakes/fake_web_state_delegate.h"
+#include "ios/web/public/test/fakes/fake_web_state_observer.h"
 #import "ios/web/public/test/fakes/fake_web_state_policy_decider.h"
-#include "ios/web/public/test/fakes/test_browser_state.h"
-#import "ios/web/public/test/fakes/test_web_client.h"
-#import "ios/web/public/test/fakes/test_web_state_delegate.h"
-#include "ios/web/public/test/fakes/test_web_state_observer.h"
-#import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #include "ios/web/public/web_state_observer.h"
 #import "ios/web/security/wk_web_view_security_util.h"
@@ -137,7 +137,7 @@ enum PageScalabilityType {
 class CRWWebControllerTest : public WebTestWithWebController {
  protected:
   CRWWebControllerTest()
-      : WebTestWithWebController(std::make_unique<TestWebClient>()) {}
+      : WebTestWithWebController(std::make_unique<FakeWebClient>()) {}
 
   void SetUp() override {
     WebTestWithWebController::SetUp();
@@ -148,9 +148,9 @@ class CRWWebControllerTest : public WebTestWithWebController {
     SetWebViewURL(@(kTestURLString));
     [[[mock_web_view_ stub] andReturn:scroll_view_] scrollView];
 
-    TestWebViewContentView* web_view_content_view =
-        [[TestWebViewContentView alloc] initWithMockWebView:mock_web_view_
-                                                 scrollView:scroll_view_];
+    CRWFakeWebViewContentView* web_view_content_view =
+        [[CRWFakeWebViewContentView alloc] initWithMockWebView:mock_web_view_
+                                                    scrollView:scroll_view_];
     [web_controller() injectWebViewContentView:web_view_content_view];
   }
 
@@ -160,17 +160,21 @@ class CRWWebControllerTest : public WebTestWithWebController {
     WebTestWithWebController::TearDown();
   }
 
-  TestWebClient* GetWebClient() override {
-    return static_cast<TestWebClient*>(
+  FakeWebClient* GetWebClient() override {
+    return static_cast<FakeWebClient*>(
         WebTestWithWebController::GetWebClient());
   }
 
   // The value for web view OCMock objects to expect for |-setFrame:|.
   CGRect GetExpectedWebViewFrame() const {
-    CGSize container_view_size =
-        UIApplication.sharedApplication.keyWindow.bounds.size;
+    CGSize container_view_size = GetAnyKeyWindow().bounds.size;
+#if !defined(__IPHONE_13_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_13_0
     container_view_size.height -=
         CGRectGetHeight([UIApplication sharedApplication].statusBarFrame);
+#else
+    container_view_size.height -= CGRectGetHeight(
+        GetAnyKeyWindow().windowScene.statusBarManager.statusBarFrame);
+#endif
     return {CGPointZero, container_view_size};
   }
 
@@ -283,31 +287,6 @@ TEST_F(CRWWebControllerTest, SetAllowsBackForwardNavigationGestures) {
   EXPECT_FALSE(web_controller().allowsBackForwardNavigationGestures);
 }
 
-// Tests that the navigation state is reset to FINISHED when a back/forward
-// navigation occurs during a pending navigation.
-TEST_F(CRWWebControllerTest, BackForwardWithPendingNavigation) {
-  ASSERT_FALSE([web_controller() lastPendingItemForNewNavigation]);
-  ASSERT_FALSE(web_controller().webStateImpl->GetPendingItem());
-
-  // Commit a navigation so that there is a back NavigationItem.
-  SetWebViewURL(@"about:blank");
-  [navigation_delegate_ webView:mock_web_view_
-      didStartProvisionalNavigation:nil];
-  [navigation_delegate_ webView:mock_web_view_ didCommitNavigation:nil];
-  [navigation_delegate_ webView:mock_web_view_ didFinishNavigation:nil];
-
-  // Create pending item by simulating a renderer-initiated navigation.
-  [navigation_delegate_ webView:mock_web_view_
-      didStartProvisionalNavigation:nil];
-  ASSERT_EQ(web::WKNavigationState::REQUESTED,
-            web_controller().navigationState);
-
-  [web_controller() didFinishGoToIndexSameDocumentNavigationWithType:
-                        web::NavigationInitiationType::BROWSER_INITIATED
-                                                      hasUserGesture:YES];
-  EXPECT_EQ(web::WKNavigationState::FINISHED, web_controller().navigationState);
-}
-
 // Tests that a web view is created after calling -[ensureWebViewCreated] and
 // check its user agent.
 TEST_F(CRWWebControllerTest, WebViewCreatedAfterEnsureWebViewCreated) {
@@ -315,7 +294,7 @@ TEST_F(CRWWebControllerTest, WebViewCreatedAfterEnsureWebViewCreated) {
   scoped_feature_list.InitAndEnableFeature(
       features::kUseDefaultUserAgentInWebClient);
 
-  TestWebClient* web_client = static_cast<TestWebClient*>(GetWebClient());
+  FakeWebClient* web_client = static_cast<FakeWebClient*>(GetWebClient());
 
   [web_controller() removeWebView];
   WKWebView* web_view = [web_controller() ensureWebViewCreated];
@@ -339,7 +318,7 @@ TEST_F(CRWWebControllerTest, WebViewCreatedAfterEnsureWebViewCreated) {
 TEST_F(CRWWebControllerTest, RemoveWebViewFromViewHierarchy) {
   // Make sure that the WebController view has a window to avoid stashing the
   // WebView once created.
-  [UIApplication.sharedApplication.keyWindow addSubview:web_controller().view];
+  [GetAnyKeyWindow() addSubview:web_controller().view];
 
   // Get the web view.
   [web_controller() removeWebView];
@@ -361,23 +340,23 @@ class JavaScriptDialogPresenterTest : public WebTestWithWebController {
   void SetUp() override {
     WebTestWithWebState::SetUp();
     LoadHtml(@"<html><body></body></html>", page_url_);
-    web_state()->SetDelegate(&test_web_delegate_);
+    web_state()->SetDelegate(&web_state_delegate_);
   }
   void TearDown() override {
     web_state()->SetDelegate(nullptr);
     WebTestWithWebState::TearDown();
   }
-  TestJavaScriptDialogPresenter* js_dialog_presenter() {
-    return test_web_delegate_.GetTestJavaScriptDialogPresenter();
+  FakeJavaScriptDialogPresenter* js_dialog_presenter() {
+    return web_state_delegate_.GetFakeJavaScriptDialogPresenter();
   }
-  const std::vector<std::unique_ptr<TestJavaScriptDialog>>&
+  const std::vector<std::unique_ptr<FakeJavaScriptDialog>>&
   requested_dialogs() {
     return js_dialog_presenter()->requested_dialogs();
   }
   const GURL& page_url() { return page_url_; }
 
  private:
-  TestWebStateDelegate test_web_delegate_;
+  FakeWebStateDelegate web_state_delegate_;
   GURL page_url_;
 };
 
@@ -470,7 +449,7 @@ typedef WebTestWithWebState CRWWebStateSecurityStateTest;
 
 // Tests that loading HTTP page updates the SSLStatus.
 TEST_F(CRWWebStateSecurityStateTest, LoadHttpPage) {
-  TestWebStateObserver observer(web_state());
+  FakeWebStateObserver observer(web_state());
   ASSERT_FALSE(observer.did_change_visible_security_state_info());
   LoadHtml(@"<html><body></body></html>", GURL("http://chromium.test"));
   NavigationManager* nav_manager = web_state()->GetNavigationManager();
@@ -540,7 +519,13 @@ TEST_F(CRWWebControllerJSExecutionTest, WindowIdMissmatch) {
 // delegate method.
 class CRWWebControllerResponseTest : public CRWWebControllerTest {
  protected:
-  CRWWebControllerResponseTest() : download_delegate_(download_controller()) {}
+  CRWWebControllerResponseTest() {}
+
+  void SetUp() override {
+    CRWWebControllerTest::SetUp();
+    download_delegate_ =
+        std::make_unique<FakeDownloadControllerDelegate>(download_controller());
+  }
 
   // Calls webView:decidePolicyForNavigationResponse:decisionHandler: callback
   // and waits for decision handler call. Returns false if decision handler call
@@ -579,7 +564,7 @@ class CRWWebControllerResponseTest : public CRWWebControllerTest {
     return DownloadController::FromBrowserState(GetBrowserState());
   }
 
-  FakeDownloadControllerDelegate download_delegate_;
+  std::unique_ptr<FakeDownloadControllerDelegate> download_delegate_;
 };
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: allows
@@ -597,7 +582,7 @@ TEST_F(CRWWebControllerResponseTest, AllowRendererInitiatedResponse) {
   EXPECT_EQ(WKNavigationResponsePolicyAllow, policy);
 
   // Verify that download task was not created for html response.
-  ASSERT_TRUE(download_delegate_.alive_download_tasks().empty());
+  ASSERT_TRUE(download_delegate_->alive_download_tasks().empty());
 }
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: allows
@@ -617,7 +602,7 @@ TEST_F(CRWWebControllerResponseTest,
   EXPECT_EQ(WKNavigationResponsePolicyAllow, policy);
 
   // Verify that download task was not created for html response.
-  ASSERT_TRUE(download_delegate_.alive_download_tasks().empty());
+  ASSERT_TRUE(download_delegate_->alive_download_tasks().empty());
 }
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler: blocks
@@ -638,9 +623,9 @@ TEST_F(CRWWebControllerResponseTest,
   EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
 
   // Verify that download task was created (see crbug.com/949114).
-  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
   DownloadTask* task =
-      download_delegate_.alive_download_tasks()[0].second.get();
+      download_delegate_->alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
   EXPECT_TRUE(task->GetIndentifier());
   EXPECT_EQ(kTestDataURL, task->GetOriginalUrl());
@@ -670,7 +655,7 @@ TEST_F(CRWWebControllerResponseTest,
   EXPECT_EQ(WKNavigationResponsePolicyAllow, policy);
 
   // Verify that download task was not created for html response.
-  ASSERT_TRUE(download_delegate_.alive_download_tasks().empty());
+  ASSERT_TRUE(download_delegate_->alive_download_tasks().empty());
 }
 
 // Tests that webView:decidePolicyForNavigationResponse:decisionHandler:
@@ -696,9 +681,9 @@ TEST_F(CRWWebControllerResponseTest, DownloadForPostRequest) {
   EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
 
   // Verify that download task was created with POST method (crbug.com/.
-  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
   DownloadTask* task =
-      download_delegate_.alive_download_tasks()[0].second.get();
+      download_delegate_->alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
   EXPECT_TRUE(task->GetIndentifier());
   EXPECT_NSEQ(@"POST", task->GetHttpMethod());
@@ -720,9 +705,9 @@ TEST_F(CRWWebControllerResponseTest, DownloadWithNSURLResponse) {
   EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
 
   // Verify that download task was created.
-  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
   DownloadTask* task =
-      download_delegate_.alive_download_tasks()[0].second.get();
+      download_delegate_->alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
   EXPECT_TRUE(task->GetIndentifier());
   EXPECT_EQ(kTestURLString, task->GetOriginalUrl());
@@ -749,9 +734,9 @@ TEST_F(CRWWebControllerResponseTest, DownloadWithNSHTTPURLResponse) {
   EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
 
   // Verify that download task was created.
-  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
   DownloadTask* task =
-      download_delegate_.alive_download_tasks()[0].second.get();
+      download_delegate_->alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
   EXPECT_TRUE(task->GetIndentifier());
   EXPECT_EQ(kTestURLString, task->GetOriginalUrl());
@@ -778,7 +763,7 @@ TEST_F(CRWWebControllerResponseTest, DownloadDiscardsPendingUrl) {
   EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
 
   // Verify that download task was created and pending URL discarded.
-  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
   EXPECT_EQ("", web_state()->GetVisibleURL());
 }
 
@@ -800,9 +785,9 @@ TEST_F(CRWWebControllerResponseTest, IFrameDownloadWithNSHTTPURLResponse) {
   EXPECT_EQ(WKNavigationResponsePolicyCancel, policy);
 
   // Verify that download task was created.
-  ASSERT_EQ(1U, download_delegate_.alive_download_tasks().size());
+  ASSERT_EQ(1U, download_delegate_->alive_download_tasks().size());
   DownloadTask* task =
-      download_delegate_.alive_download_tasks()[0].second.get();
+      download_delegate_->alive_download_tasks()[0].second.get();
   ASSERT_TRUE(task);
   EXPECT_TRUE(task->GetIndentifier());
   EXPECT_EQ(kTestURLString, task->GetOriginalUrl());
@@ -875,7 +860,7 @@ class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
   // Return an owned BrowserState in order to set off the record state.
   BrowserState* GetBrowserState() override { return &browser_state_; }
 
-  TestBrowserState browser_state_;
+  FakeBrowserState browser_state_;
 };
 
 // Tests that App specific URLs in iframes are allowed if the main frame is App
@@ -957,13 +942,13 @@ TEST_F(CRWWebControllerPolicyDeciderTest, BlobUrl) {
 TEST_F(CRWWebControllerPolicyDeciderTest, ClosedWebState) {
   static CRWWebControllerPolicyDeciderTest* test_fixture = nullptr;
   test_fixture = this;
-  class FakeWebStateDelegate : public TestWebStateDelegate {
+  class CloseWebStateDelegate : public FakeWebStateDelegate {
    public:
     void CloseWebState(WebState* source) override {
       test_fixture->DestroyWebState();
     }
   };
-  FakeWebStateDelegate delegate;
+  CloseWebStateDelegate delegate;
   web_state()->SetDelegate(&delegate);
 
   FakeWebStatePolicyDecider policy_decider(web_state());
@@ -1083,7 +1068,7 @@ class WindowOpenByDomTest : public WebTestWithWebController {
 
   // URL of a page which opens child windows.
   const GURL opener_url_;
-  TestWebStateDelegate delegate_;
+  FakeWebStateDelegate delegate_;
 };
 
 // Tests that absence of web state delegate is handled gracefully.
@@ -1167,8 +1152,9 @@ TEST_F(CRWWebControllerTitleTest, TitleChange) {
   };
 
   TitleObserver observer;
-  ScopedObserver<WebState, WebStateObserver> scoped_observer(&observer);
-  scoped_observer.Add(web_state());
+  base::ScopedObservation<WebState, WebStateObserver> scoped_observer(
+      &observer);
+  scoped_observer.Observe(web_state());
   ASSERT_EQ(0, observer.title_change_count());
 
   // Expect TitleWasSet callback after the page is loaded and due to WKWebView
@@ -1244,7 +1230,9 @@ TEST_F(ScriptExecutionTest, UserScriptOnAppSpecificPage) {
       [web_controller() webStateImpl]->GetNavigationManagerImpl();
   nav_manager.AddPendingItem(GURL(kTestAppSpecificURL), Referrer(),
                              ui::PAGE_TRANSITION_TYPED,
-                             NavigationInitiationType::BROWSER_INITIATED);
+                             NavigationInitiationType::BROWSER_INITIATED,
+                             /*is_post_navigation=*/false,
+                             /*is_using_https_as_default_scheme=*/false);
   nav_manager.CommitPendingItem();
 
   NSError* error = nil;
@@ -1262,9 +1250,10 @@ class CRWWebControllerWebProcessTest : public WebTestWithWebController {
   void SetUp() override {
     WebTestWithWebController::SetUp();
     web_view_ = BuildTerminatedWKWebView();
-    TestWebViewContentView* webViewContentView = [[TestWebViewContentView alloc]
-        initWithMockWebView:web_view_
-                 scrollView:[web_view_ scrollView]];
+    CRWFakeWebViewContentView* webViewContentView =
+        [[CRWFakeWebViewContentView alloc]
+            initWithMockWebView:web_view_
+                     scrollView:[web_view_ scrollView]];
     [web_controller() injectWebViewContentView:webViewContentView];
 
     // This test intentionally crashes the render process.
@@ -1281,8 +1270,8 @@ TEST_F(CRWWebControllerWebProcessTest, Crash) {
   ASSERT_FALSE(web_state()->IsCrashed());
   ASSERT_FALSE(web_state()->IsEvicted());
 
-  TestWebStateObserver observer(web_state());
-  TestWebStateObserver* observer_ptr = &observer;
+  FakeWebStateObserver observer(web_state());
+  FakeWebStateObserver* observer_ptr = &observer;
   SimulateWKWebViewCrash(web_view_);
   base::test::ios::WaitUntilCondition(^bool() {
     return observer_ptr->render_process_gone_info();
@@ -1314,11 +1303,12 @@ class CRWWebControllerWebViewTest : public WebTestWithWebController {
  protected:
   void SetUp() override {
     WebTestWithWebController::SetUp();
-    web::TestBrowserState browser_state;
+    FakeBrowserState browser_state;
     web_view_ = [[CRWFakeWKWebViewObserverCount alloc] init];
-    TestWebViewContentView* webViewContentView = [[TestWebViewContentView alloc]
-        initWithMockWebView:web_view_
-                 scrollView:web_view_.scrollView];
+    CRWFakeWebViewContentView* webViewContentView =
+        [[CRWFakeWebViewContentView alloc]
+            initWithMockWebView:web_view_
+                     scrollView:web_view_.scrollView];
     [web_controller() injectWebViewContentView:webViewContentView];
   }
   CRWFakeWKWebViewObserverCount* web_view_;

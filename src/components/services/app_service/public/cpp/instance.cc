@@ -8,15 +8,32 @@
 
 namespace apps {
 
-Instance::Instance(const std::string& app_id, aura::Window* window)
-    : app_id_(app_id), window_(window) {
+Instance::InstanceKey::InstanceKey(aura::Window* window) : window_(window) {}
+
+bool Instance::InstanceKey::operator<(const InstanceKey& other) const {
+  return Window() < other.Window();
+}
+
+bool Instance::InstanceKey::operator==(const InstanceKey& other) const {
+  return Window() == other.Window();
+}
+
+bool Instance::InstanceKey::operator!=(const InstanceKey& other) const {
+  return Window() != other.Window();
+}
+
+Instance::Instance(const std::string& app_id,
+                   std::unique_ptr<InstanceKey> instance_key)
+    : app_id_(app_id), instance_key_(std::move(instance_key)) {
+  DCHECK(instance_key_);
   state_ = InstanceState::kUnknown;
 }
 
 Instance::~Instance() = default;
 
 std::unique_ptr<Instance> Instance::Clone() {
-  auto instance = std::make_unique<Instance>(this->AppId(), this->Window());
+  auto instance = std::make_unique<Instance>(
+      this->AppId(), std::make_unique<InstanceKey>(this->Window()));
   instance->SetLaunchId(this->LaunchId());
   instance->UpdateState(this->State(), this->LastUpdatedTime());
   instance->SetBrowserContext(this->BrowserContext());
@@ -34,3 +51,13 @@ void Instance::SetBrowserContext(content::BrowserContext* browser_context) {
 }
 
 }  // namespace apps
+
+std::ostream& operator<<(std::ostream& os,
+                         const apps::Instance::InstanceKey& instance_key) {
+  return os << "InstanceKey {Window: " << instance_key.Window() << "}";
+}
+
+size_t InstanceKeyHash::operator()(
+    const apps::Instance::InstanceKey& key) const {
+  return std::hash<aura::Window*>()(key.Window());
+}

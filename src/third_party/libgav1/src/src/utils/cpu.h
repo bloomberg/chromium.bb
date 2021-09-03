@@ -21,19 +21,58 @@
 
 namespace libgav1 {
 
-#if defined(_MSC_VER) && (defined(_M_X64) || defined(_M_IX86))
+#if defined(__i386__) || defined(__x86_64__)
+#define LIBGAV1_X86
+#elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
+#define LIBGAV1_X86
 #define LIBGAV1_X86_MSVC
 #endif
 
-#if !defined(LIBGAV1_ENABLE_SSE4_1)
-#if defined(__SSE4_1__) || defined(LIBGAV1_X86_MSVC)
-#define LIBGAV1_ENABLE_SSE4_1 1
-#else
-#define LIBGAV1_ENABLE_SSE4_1 0
-#endif
-#endif  // !defined(LIBGAV1_ENABLE_SSE4_1)
+#if defined(LIBGAV1_X86)
 
-#undef LIBGAV1_X86_MSVC
+#if !defined(LIBGAV1_ENABLE_SSE4_1)
+#define LIBGAV1_ENABLE_SSE4_1 1
+#endif
+
+#if LIBGAV1_ENABLE_SSE4_1
+#if !defined(LIBGAV1_ENABLE_AVX2)
+#define LIBGAV1_ENABLE_AVX2 1
+#endif  // !defined(LIBGAV1_ENABLE_AVX2)
+#else   // !LIBGAV1_ENABLE_SSE4_1
+// Disable AVX2 when SSE4.1 is disabled as it may rely on shared components.
+#undef LIBGAV1_ENABLE_AVX2
+#define LIBGAV1_ENABLE_AVX2 0
+#endif  // LIBGAV1_ENABLE_SSE4_1
+
+#else  // !LIBGAV1_X86
+
+#undef LIBGAV1_ENABLE_AVX2
+#define LIBGAV1_ENABLE_AVX2 0
+#undef LIBGAV1_ENABLE_SSE4_1
+#define LIBGAV1_ENABLE_SSE4_1 0
+
+#endif  // LIBGAV1_X86
+
+// For x86 LIBGAV1_TARGETING_* indicate the source being built is targeting
+// (at least) that instruction set. This prevents disabling other instruction
+// sets if the current instruction set isn't a global target, e.g., building
+// *_avx2.cc w/-mavx2, but the remaining files without the flag.
+#if LIBGAV1_ENABLE_AVX2 && defined(__AVX2__)
+#define LIBGAV1_TARGETING_AVX2 1
+#else
+#define LIBGAV1_TARGETING_AVX2 0
+#endif
+
+// Note: LIBGAV1_X86_MSVC isn't completely correct for Visual Studio, but there
+// is no equivalent to __SSE4_1__. LIBGAV1_ENABLE_ALL_DSP_FUNCTIONS will be
+// enabled in dsp.h to compensate for this.
+#if LIBGAV1_ENABLE_SSE4_1 && (defined(__SSE4_1__) || defined(LIBGAV1_X86_MSVC))
+#define LIBGAV1_TARGETING_SSE4_1 1
+#else
+#define LIBGAV1_TARGETING_SSE4_1 0
+#endif
+
+#undef LIBGAV1_X86
 
 #if !defined(LIBGAV1_ENABLE_NEON)
 // TODO(jzern): add support for _M_ARM64.
