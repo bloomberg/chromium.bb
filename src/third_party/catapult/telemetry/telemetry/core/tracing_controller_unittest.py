@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import unittest
 
 from telemetry import decorators
@@ -189,7 +190,7 @@ class StartupTracingTest(unittest.TestCase):
   @decorators.Disabled('chromeos')  # https://crbug.com/920454
   @decorators.Disabled('win')  # https://crbug.com/957831
   def testRestartBrowserWhileTracing(self):
-    expected_markers = ['trace-event-%i' % i for i in xrange(4)]
+    expected_markers = ['trace-event-%i' % i for i in range(4)]
     self.tracing_controller.StartTracing(self.config)
     try:
       self.possible_browser.SetUpEnvironment(self.browser_options)

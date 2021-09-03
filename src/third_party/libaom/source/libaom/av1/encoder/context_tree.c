@@ -65,9 +65,11 @@ void av1_free_shared_coeff_buffer(PC_TREE_SHARED_BUFFERS *shared_bufs) {
   }
 }
 
-PICK_MODE_CONTEXT *av1_alloc_pmc(const AV1_COMMON *cm, BLOCK_SIZE bsize,
+PICK_MODE_CONTEXT *av1_alloc_pmc(const struct AV1_COMP *const cpi,
+                                 BLOCK_SIZE bsize,
                                  PC_TREE_SHARED_BUFFERS *shared_bufs) {
   PICK_MODE_CONTEXT *ctx = NULL;
+  const AV1_COMMON *const cm = &cpi->common;
   struct aom_internal_error_info error;
 
   AOM_CHECK_MEM_ERROR(&error, ctx, aom_calloc(1, sizeof(*ctx)));
@@ -96,9 +98,13 @@ PICK_MODE_CONTEXT *av1_alloc_pmc(const AV1_COMMON *cm, BLOCK_SIZE bsize,
 
   if (num_pix <= MAX_PALETTE_SQUARE) {
     for (int i = 0; i < 2; ++i) {
-      AOM_CHECK_MEM_ERROR(
-          &error, ctx->color_index_map[i],
-          aom_memalign(32, num_pix * sizeof(*ctx->color_index_map[i])));
+      if (!cpi->sf.rt_sf.use_nonrd_pick_mode || frame_is_intra_only(cm)) {
+        AOM_CHECK_MEM_ERROR(
+            &error, ctx->color_index_map[i],
+            aom_memalign(32, num_pix * sizeof(*ctx->color_index_map[i])));
+      } else {
+        ctx->color_index_map[i] = NULL;
+      }
     }
   }
 
@@ -124,8 +130,10 @@ void av1_free_pmc(PICK_MODE_CONTEXT *ctx, int num_planes) {
   }
 
   for (int i = 0; i < 2; ++i) {
-    aom_free(ctx->color_index_map[i]);
-    ctx->color_index_map[i] = NULL;
+    if (ctx->color_index_map[i]) {
+      aom_free(ctx->color_index_map[i]);
+      ctx->color_index_map[i] = NULL;
+    }
   }
 
   aom_free(ctx);
@@ -222,7 +230,7 @@ static AOM_INLINE int get_pc_tree_nodes(const int is_sb_size_128,
 void av1_setup_sms_tree(AV1_COMP *const cpi, ThreadData *td) {
   AV1_COMMON *const cm = &cpi->common;
   const int stat_generation_stage = is_stat_generation_stage(cpi);
-  const int is_sb_size_128 = cm->seq_params.sb_size == BLOCK_128X128;
+  const int is_sb_size_128 = cm->seq_params->sb_size == BLOCK_128X128;
   const int tree_nodes =
       get_pc_tree_nodes(is_sb_size_128, stat_generation_stage);
   int sms_tree_index = 0;

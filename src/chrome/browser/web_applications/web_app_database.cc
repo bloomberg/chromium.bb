@@ -10,11 +10,14 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/components/web_application_info.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
@@ -68,6 +71,33 @@ apps::ShareTarget::Enctype ProtoToEnctype(ShareTarget_Enctype enctype) {
       return apps::ShareTarget::Enctype::kFormUrlEncoded;
     case ShareTarget_Enctype_MULTIPART_FORM_DATA:
       return apps::ShareTarget::Enctype::kMultipartFormData;
+  }
+}
+
+blink::mojom::CaptureLinks ProtoToCaptureLinks(
+    WebAppProto::CaptureLinks capture_links) {
+  switch (capture_links) {
+    case WebAppProto_CaptureLinks_NONE:
+      return blink::mojom::CaptureLinks::kNone;
+    case WebAppProto_CaptureLinks_NEW_CLIENT:
+      return blink::mojom::CaptureLinks::kNewClient;
+    case WebAppProto_CaptureLinks_EXISTING_CLIENT_NAVIGATE:
+      return blink::mojom::CaptureLinks::kExistingClientNavigate;
+  }
+}
+
+WebAppProto::CaptureLinks CaptureLinksToProto(
+    blink::mojom::CaptureLinks capture_links) {
+  switch (capture_links) {
+    case blink::mojom::CaptureLinks::kUndefined:
+      NOTREACHED();
+      FALLTHROUGH;
+    case blink::mojom::CaptureLinks::kNone:
+      return WebAppProto_CaptureLinks_NONE;
+    case blink::mojom::CaptureLinks::kNewClient:
+      return WebAppProto_CaptureLinks_NEW_CLIENT;
+    case blink::mojom::CaptureLinks::kExistingClientNavigate:
+      return WebAppProto_CaptureLinks_EXISTING_CLIENT_NAVIGATE;
   }
 }
 
@@ -140,7 +170,6 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   DCHECK(!start_url.is_empty() && start_url.is_valid());
 
   DCHECK(!web_app.app_id().empty());
-  DCHECK_EQ(web_app.app_id(), GenerateAppIdFromURL(start_url));
 
   // Set sync data to sync proto.
   *(local_data->mutable_sync_data()) = WebAppToSyncProto(web_app);
@@ -179,6 +208,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     local_data->set_theme_color(web_app.theme_color().value());
   if (web_app.background_color().has_value())
     local_data->set_background_color(web_app.background_color().value());
+  if (!web_app.last_badging_time().is_null()) {
+    local_data->set_last_badging_time(
+        syncer::TimeToProtoTime(web_app.last_badging_time()));
+  }
   if (!web_app.last_launch_time().is_null()) {
     local_data->set_last_launch_time(
         syncer::TimeToProtoTime(web_app.last_launch_time()));
@@ -196,13 +229,21 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     mutable_chromeos_data->set_show_in_management(
         chromeos_data.show_in_management);
     mutable_chromeos_data->set_is_disabled(chromeos_data.is_disabled);
+    mutable_chromeos_data->set_oem_installed(chromeos_data.oem_installed);
   }
 
-  if (web_app.run_on_os_login_mode() != RunOnOsLoginMode::kUndefined) {
-    local_data->set_user_run_on_os_login_mode(
-        ToWebAppProtoRunOnOsLoginMode(web_app.run_on_os_login_mode()));
+  if (web_app.client_data().system_web_app_data.has_value()) {
+    auto& swa_data = web_app.client_data().system_web_app_data.value();
+
+    auto* mutable_swa_data =
+        local_data->mutable_client_data()->mutable_system_web_app_data();
+    mutable_swa_data->set_system_app_type(
+        static_cast<SystemWebAppDataProto_SystemAppType>(
+            swa_data.system_app_type));
   }
 
+  local_data->set_user_run_on_os_login_mode(
+      ToWebAppProtoRunOnOsLoginMode(web_app.run_on_os_login_mode()));
   local_data->set_is_in_sync_install(web_app.is_in_sync_install());
 
   for (const WebApplicationIconInfo& icon_info : web_app.icon_infos())
@@ -214,6 +255,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   for (SquareSizePx size :
        web_app.downloaded_icon_sizes(IconPurpose::MASKABLE)) {
     local_data->add_downloaded_icon_sizes_purpose_maskable(size);
+  }
+  for (SquareSizePx size :
+       web_app.downloaded_icon_sizes(IconPurpose::MONOCHROME)) {
+    local_data->add_downloaded_icon_sizes_purpose_monochrome(size);
   }
 
   local_data->set_is_generated_icon(web_app.is_generated_icon());
@@ -260,28 +305,55 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
     }
   }
 
+  std::array<IconPurpose, 3> purposes = {
+      IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
   for (const WebApplicationShortcutsMenuItemInfo& shortcut_info :
        web_app.shortcuts_menu_item_infos()) {
     WebAppShortcutsMenuItemInfoProto* shortcut_info_proto =
         local_data->add_shortcuts_menu_item_infos();
     shortcut_info_proto->set_name(base::UTF16ToUTF8(shortcut_info.name));
     shortcut_info_proto->set_url(shortcut_info.url.spec());
-    for (const WebApplicationShortcutsMenuItemInfo::Icon& icon_info :
-         shortcut_info.shortcut_icon_infos) {
-      sync_pb::WebAppIconInfo* shortcut_icon_info_proto =
-          shortcut_info_proto->add_shortcut_icon_infos();
-      DCHECK(!icon_info.url.is_empty());
-      shortcut_icon_info_proto->set_url(icon_info.url.spec());
-      shortcut_icon_info_proto->set_size_in_px(icon_info.square_size_px);
+    for (IconPurpose purpose : purposes) {
+      for (const WebApplicationShortcutsMenuItemInfo::Icon& icon_info :
+           shortcut_info.GetShortcutIconInfosForPurpose(purpose)) {
+        sync_pb::WebAppIconInfo* shortcut_icon_info_proto;
+        switch (purpose) {
+          case IconPurpose::ANY:
+            shortcut_icon_info_proto =
+                shortcut_info_proto->add_shortcut_icon_infos();
+            break;
+          case IconPurpose::MASKABLE:
+            shortcut_icon_info_proto =
+                shortcut_info_proto->add_shortcut_icon_infos_maskable();
+            break;
+          case IconPurpose::MONOCHROME:
+            shortcut_icon_info_proto =
+                shortcut_info_proto->add_shortcut_icon_infos_monochrome();
+            break;
+        }
+
+        DCHECK(!icon_info.url.is_empty());
+        shortcut_icon_info_proto->set_url(icon_info.url.spec());
+        shortcut_icon_info_proto->set_size_in_px(icon_info.square_size_px);
+      }
     }
   }
 
-  for (const std::vector<SquareSizePx>& icon_sizes :
+  for (const IconSizes& icon_sizes :
        web_app.downloaded_shortcuts_menu_icons_sizes()) {
     DownloadedShortcutsMenuIconSizesProto* icon_sizes_proto =
         local_data->add_downloaded_shortcuts_menu_icons_sizes();
-    for (const SquareSizePx& icon_size : icon_sizes) {
+    for (const SquareSizePx& icon_size :
+         icon_sizes.GetSizesForPurpose(IconPurpose::ANY)) {
       icon_sizes_proto->add_icon_sizes(icon_size);
+    }
+    for (const SquareSizePx& icon_size :
+         icon_sizes.GetSizesForPurpose(IconPurpose::MASKABLE)) {
+      icon_sizes_proto->add_icon_sizes_maskable(icon_size);
+    }
+    for (const SquareSizePx& icon_size :
+         icon_sizes.GetSizesForPurpose(IconPurpose::MONOCHROME)) {
+      icon_sizes_proto->add_icon_sizes_monochrome(icon_size);
     }
   }
 
@@ -301,8 +373,19 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   for (const auto& url_handler : web_app.url_handlers()) {
     WebAppUrlHandlerProto* url_handler_proto = local_data->add_url_handlers();
     url_handler_proto->set_origin(url_handler.origin.Serialize());
+    url_handler_proto->set_has_origin_wildcard(url_handler.has_origin_wildcard);
   }
 
+  if (web_app.capture_links() != blink::mojom::CaptureLinks::kUndefined)
+    local_data->set_capture_links(CaptureLinksToProto(web_app.capture_links()));
+  else
+    local_data->clear_capture_links();
+
+  if (!web_app.manifest_url().is_empty())
+    local_data->set_manifest_url(web_app.manifest_url().spec());
+
+  local_data->set_file_handler_permission_blocked(
+      web_app.file_handler_permission_blocked());
   return local_data;
 }
 
@@ -324,10 +407,16 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     return nullptr;
   }
 
-  const AppId app_id = GenerateAppIdFromURL(start_url);
+  absl::optional<std::string> manifest_id = absl::nullopt;
+  if (sync_data.has_manifest_id())
+    manifest_id = absl::optional<std::string>(sync_data.manifest_id());
+
+  const AppId app_id = GenerateAppId(manifest_id, start_url);
 
   auto web_app = std::make_unique<WebApp>(app_id);
   web_app->SetStartUrl(start_url);
+
+  web_app->SetManifestId(manifest_id);
 
   // Required fields:
   if (!local_data.has_sources()) {
@@ -394,13 +483,22 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
 
   if (local_data.has_chromeos_data()) {
-    auto chromeos_data = base::make_optional<WebAppChromeOsData>();
+    auto chromeos_data = absl::make_optional<WebAppChromeOsData>();
     chromeos_data->show_in_launcher = chromeos_data_proto.show_in_launcher();
     chromeos_data->show_in_search = chromeos_data_proto.show_in_search();
     chromeos_data->show_in_management =
         chromeos_data_proto.show_in_management();
     chromeos_data->is_disabled = chromeos_data_proto.is_disabled();
+    chromeos_data->oem_installed = chromeos_data_proto.oem_installed();
     web_app->SetWebAppChromeOsData(std::move(chromeos_data));
+  }
+
+  if (local_data.client_data().has_system_web_app_data()) {
+    WebAppSystemWebAppData& swa_data =
+        web_app->client_data()->system_web_app_data.emplace();
+
+    swa_data.system_app_type = static_cast<SystemAppType>(
+        local_data.client_data().system_web_app_data().system_app_type());
   }
 
   // Optional fields:
@@ -439,6 +537,10 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   if (local_data.has_is_in_sync_install())
     web_app->SetIsInSyncInstall(local_data.is_in_sync_install());
 
+  if (local_data.has_last_badging_time()) {
+    web_app->SetLastBadgingTime(
+        syncer::ProtoTimeToTime(local_data.last_badging_time()));
+  }
   if (local_data.has_last_launch_time()) {
     web_app->SetLastLaunchTime(
         syncer::ProtoTimeToTime(local_data.last_launch_time()));
@@ -447,7 +549,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     web_app->SetInstallTime(syncer::ProtoTimeToTime(local_data.install_time()));
   }
 
-  base::Optional<WebApp::SyncFallbackData> parsed_sync_fallback_data =
+  absl::optional<WebApp::SyncFallbackData> parsed_sync_fallback_data =
       ParseSyncFallbackDataStruct(sync_data);
   if (!parsed_sync_fallback_data.has_value()) {
     // ParseSyncFallbackDataStruct() reports any errors.
@@ -455,7 +557,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
   web_app->SetSyncFallbackData(std::move(parsed_sync_fallback_data.value()));
 
-  base::Optional<std::vector<WebApplicationIconInfo>> parsed_icon_infos =
+  absl::optional<std::vector<WebApplicationIconInfo>> parsed_icon_infos =
       ParseWebAppIconInfos("WebApp", local_data.icon_infos());
   if (!parsed_icon_infos.has_value()) {
     // ParseWebAppIconInfos() reports any errors.
@@ -474,6 +576,12 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     icon_sizes_maskable.push_back(size);
   web_app->SetDownloadedIconSizes(
       IconPurpose::MASKABLE, SortedSizesPx(std::move(icon_sizes_maskable)));
+
+  std::vector<SquareSizePx> icon_sizes_monochrome;
+  for (int32_t size : local_data.downloaded_icon_sizes_purpose_monochrome())
+    icon_sizes_monochrome.push_back(size);
+  web_app->SetDownloadedIconSizes(
+      IconPurpose::MONOCHROME, SortedSizesPx(std::move(icon_sizes_monochrome)));
 
   web_app->SetIsGeneratedIcon(local_data.is_generated_icon());
 
@@ -551,32 +659,66 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
   }
 
   std::vector<WebApplicationShortcutsMenuItemInfo> shortcuts_menu_item_infos;
+  std::array<IconPurpose, 3> purposes = {
+      IconPurpose::ANY, IconPurpose::MASKABLE, IconPurpose::MONOCHROME};
   for (const auto& shortcut_info_proto :
        local_data.shortcuts_menu_item_infos()) {
     WebApplicationShortcutsMenuItemInfo shortcut_info;
     shortcut_info.name = base::UTF8ToUTF16(shortcut_info_proto.name());
     shortcut_info.url = GURL(shortcut_info_proto.url());
-    for (const auto& icon_info_proto :
-         shortcut_info_proto.shortcut_icon_infos()) {
-      WebApplicationShortcutsMenuItemInfo::Icon shortcut_icon_info;
-      shortcut_icon_info.square_size_px = icon_info_proto.size_in_px();
-      shortcut_icon_info.url = GURL(icon_info_proto.url());
-      shortcut_info.shortcut_icon_infos.emplace_back(
-          std::move(shortcut_icon_info));
+    for (IconPurpose purpose : purposes) {
+      // This default init needed to infer the sophisticated protobuf type.
+      const auto* shortcut_icon_infos =
+          &shortcut_info_proto.shortcut_icon_infos();
+
+      switch (purpose) {
+        case IconPurpose::ANY:
+          shortcut_icon_infos = &shortcut_info_proto.shortcut_icon_infos();
+          break;
+        case IconPurpose::MASKABLE:
+          shortcut_icon_infos =
+              &shortcut_info_proto.shortcut_icon_infos_maskable();
+          break;
+        case IconPurpose::MONOCHROME:
+          shortcut_icon_infos =
+              &shortcut_info_proto.shortcut_icon_infos_monochrome();
+          break;
+      }
+
+      std::vector<WebApplicationShortcutsMenuItemInfo::Icon> icon_infos;
+      for (const auto& icon_info_proto : *shortcut_icon_infos) {
+        WebApplicationShortcutsMenuItemInfo::Icon shortcut_icon_info;
+        shortcut_icon_info.square_size_px = icon_info_proto.size_in_px();
+        shortcut_icon_info.url = GURL(icon_info_proto.url());
+        icon_infos.emplace_back(std::move(shortcut_icon_info));
+      }
+      shortcut_info.SetShortcutIconInfosForPurpose(purpose,
+                                                   std::move(icon_infos));
     }
     shortcuts_menu_item_infos.emplace_back(std::move(shortcut_info));
   }
   web_app->SetShortcutsMenuItemInfos(std::move(shortcuts_menu_item_infos));
 
-  std::vector<std::vector<SquareSizePx>> shortcuts_menu_icons_sizes;
+  std::vector<IconSizes> shortcuts_menu_icons_sizes;
   for (const auto& shortcuts_icon_sizes_proto :
        local_data.downloaded_shortcuts_menu_icons_sizes()) {
-    std::vector<SquareSizePx> shortcuts_menu_icon_sizes;
-    for (const auto& icon_size : shortcuts_icon_sizes_proto.icon_sizes()) {
-      shortcuts_menu_icon_sizes.emplace_back(icon_size);
-    }
-    shortcuts_menu_icons_sizes.emplace_back(
-        std::move(shortcuts_menu_icon_sizes));
+    IconSizes icon_sizes;
+    icon_sizes.SetSizesForPurpose(
+        IconPurpose::ANY, std::vector<SquareSizePx>(
+                              shortcuts_icon_sizes_proto.icon_sizes().begin(),
+                              shortcuts_icon_sizes_proto.icon_sizes().end()));
+    icon_sizes.SetSizesForPurpose(
+        IconPurpose::MASKABLE,
+        std::vector<SquareSizePx>(
+            shortcuts_icon_sizes_proto.icon_sizes_maskable().begin(),
+            shortcuts_icon_sizes_proto.icon_sizes_maskable().end()));
+    icon_sizes.SetSizesForPurpose(
+        IconPurpose::MONOCHROME,
+        std::vector<SquareSizePx>(
+            shortcuts_icon_sizes_proto.icon_sizes_monochrome().begin(),
+            shortcuts_icon_sizes_proto.icon_sizes_monochrome().end()));
+
+    shortcuts_menu_icons_sizes.push_back(std::move(icon_sizes));
   }
   web_app->SetDownloadedShortcutsMenuIconsSizes(
       std::move(shortcuts_menu_icons_sizes));
@@ -624,16 +766,34 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
       return nullptr;
     }
     url_handler.origin = std::move(origin);
+    url_handler.has_origin_wildcard = url_handler_proto.has_origin_wildcard();
     url_handlers.push_back(std::move(url_handler));
   }
   web_app->SetUrlHandlers(std::move(url_handlers));
 
+  if (local_data.has_capture_links())
+    web_app->SetCaptureLinks(ProtoToCaptureLinks(local_data.capture_links()));
+  else
+    web_app->SetCaptureLinks(blink::mojom::CaptureLinks::kUndefined);
+
+  if (local_data.has_manifest_url()) {
+    GURL manifest_url(local_data.manifest_url());
+    if (manifest_url.is_empty() || !manifest_url.is_valid()) {
+      DLOG(ERROR) << "WebApp proto manifest_url parse error: "
+                  << manifest_url.possibly_invalid_spec();
+      return nullptr;
+    }
+    web_app->SetManifestUrl(manifest_url);
+  }
+  if (local_data.has_file_handler_permission_blocked())
+    web_app->SetFileHandlerPermissionBlocked(
+        local_data.file_handler_permission_blocked());
   return web_app;
 }
 
 void WebAppDatabase::OnDatabaseOpened(
     RegistryOpenedCallback callback,
-    const base::Optional<syncer::ModelError>& error,
+    const absl::optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::ModelTypeStore> store) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
@@ -652,7 +812,7 @@ void WebAppDatabase::OnDatabaseOpened(
 
 void WebAppDatabase::OnAllDataRead(
     RegistryOpenedCallback callback,
-    const base::Optional<syncer::ModelError>& error,
+    const absl::optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
@@ -669,7 +829,7 @@ void WebAppDatabase::OnAllDataRead(
 void WebAppDatabase::OnAllMetadataRead(
     std::unique_ptr<syncer::ModelTypeStore::RecordList> data_records,
     RegistryOpenedCallback callback,
-    const base::Optional<syncer::ModelError>& error,
+    const absl::optional<syncer::ModelError>& error,
     std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
@@ -694,7 +854,7 @@ void WebAppDatabase::OnAllMetadataRead(
 
 void WebAppDatabase::OnDataWritten(
     CompletionCallback callback,
-    const base::Optional<syncer::ModelError>& error) {
+    const absl::optional<syncer::ModelError>& error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error) {
     error_callback_.Run(*error);

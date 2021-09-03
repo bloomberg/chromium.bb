@@ -11,6 +11,8 @@
 #include "components/webxr/android/ar_jni_headers/ArCoreJavaUtils_jni.h"
 #include "components/webxr/android/webxr_utils.h"
 #include "device/vr/android/arcore/arcore_shim.h"
+#include "gpu/ipc/common/gpu_surface_tracker.h"
+#include "ui/android/window_android.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
@@ -39,9 +41,10 @@ void ArCoreJavaUtils::RequestArSession(
     int render_process_id,
     int render_frame_id,
     bool use_overlay,
-    vr::SurfaceReadyCallback ready_callback,
-    vr::SurfaceTouchCallback touch_callback,
-    vr::SurfaceDestroyedCallback destroyed_callback) {
+    bool can_render_dom_content,
+    device::SurfaceReadyCallback ready_callback,
+    device::SurfaceTouchCallback touch_callback,
+    device::SurfaceDestroyedCallback destroyed_callback) {
   DVLOG(1) << __func__;
   JNIEnv* env = AttachCurrentThread();
 
@@ -52,7 +55,7 @@ void ArCoreJavaUtils::RequestArSession(
   Java_ArCoreJavaUtils_startSession(
       env, j_arcore_java_utils_, compositor_delegate_provider_.GetJavaObject(),
       webxr::GetJavaWebContents(render_process_id, render_frame_id),
-      use_overlay);
+      use_overlay, can_render_dom_content);
 }
 
 void ArCoreJavaUtils::EndSession() {
@@ -66,6 +69,7 @@ void ArCoreJavaUtils::OnDrawingSurfaceReady(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jobject>& surface,
+    const base::android::JavaParamRef<jobject>& java_root_window,
     int rotation,
     int width,
     int height) {
@@ -73,9 +77,16 @@ void ArCoreJavaUtils::OnDrawingSurfaceReady(
            << " rotation=" << rotation;
   gfx::AcceleratedWidget window =
       ANativeWindow_fromSurface(base::android::AttachCurrentThread(), surface);
+  gpu::SurfaceHandle surface_handle =
+      gpu::GpuSurfaceTracker::Get()->AddSurfaceForNativeWidget(
+          gpu::GpuSurfaceTracker::SurfaceRecord(
+              window, surface, /*can_be_used_with_surface_control=*/false));
+  ui::WindowAndroid* root_window =
+      ui::WindowAndroid::FromJavaWindowAndroid(java_root_window);
   display::Display::Rotation display_rotation =
       static_cast<display::Display::Rotation>(rotation);
-  surface_ready_callback_.Run(window, display_rotation, {width, height});
+  surface_ready_callback_.Run(window, surface_handle, root_window,
+                              display_rotation, {width, height});
 }
 
 void ArCoreJavaUtils::OnDrawingSurfaceTouch(
@@ -101,7 +112,7 @@ void ArCoreJavaUtils::OnDrawingSurfaceDestroyed(
 }
 
 bool ArCoreJavaUtils::EnsureLoaded() {
-  DCHECK(vr::IsArCoreSupported());
+  DCHECK(device::IsArCoreSupported());
 
   JNIEnv* env = AttachCurrentThread();
 
@@ -124,7 +135,7 @@ bool ArCoreJavaUtils::EnsureLoaded() {
     return false;
   }
 
-  return vr::LoadArCoreSdk(
+  return device::LoadArCoreSdk(
       base::android::ConvertJavaStringToUTF8(env, java_path));
 }
 

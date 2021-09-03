@@ -23,9 +23,8 @@ class CredentialLeakControllerAndroid {
  public:
   CredentialLeakControllerAndroid(
       password_manager::CredentialLeakType leak_type,
-      password_manager::CompromisedSitesCount saved_sites,
       const GURL& origin,
-      const base::string16& username,
+      const std::u16string& username,
       ui::WindowAndroid* window_android);
   ~CredentialLeakControllerAndroid();
 
@@ -46,16 +45,16 @@ class CredentialLeakControllerAndroid {
   void OnCloseDialog();
 
   // The label of the accept button. Varies by leak type.
-  base::string16 GetAcceptButtonLabel() const;
+  std::u16string GetAcceptButtonLabel() const;
 
   // The label of the cancel button. Varies by leak type.
-  base::string16 GetCancelButtonLabel() const;
+  std::u16string GetCancelButtonLabel() const;
 
   // Text explaining the leak details. Varies by leak type.
-  base::string16 GetDescription() const;
+  std::u16string GetDescription() const;
 
   // The title of the dialog displaying the leak warning.
-  base::string16 GetTitle() const;
+  std::u16string GetTitle() const;
 
   // Checks whether the dialog should show the option to check passwords.
   bool ShouldCheckPasswords() const;
@@ -71,11 +70,10 @@ class CredentialLeakControllerAndroid {
  private:
   // Used to customize the UI.
   const password_manager::CredentialLeakType leak_type_;
-  const password_manager::CompromisedSitesCount saved_sites_;
 
   const GURL origin_;
 
-  const base::string16 username_;
+  const std::u16string username_;
 
   ui::WindowAndroid* window_android_;
 

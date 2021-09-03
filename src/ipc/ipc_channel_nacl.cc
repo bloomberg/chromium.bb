@@ -10,6 +10,7 @@
 #include <sys/types.h>
 
 #include <algorithm>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -21,6 +22,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/simple_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_attachment_set.h"
@@ -164,16 +166,15 @@ bool ChannelNacl::Connect() {
   // ChannelProxy for an example of that). Therefore, we must wait until Connect
   // is called to decide which SingleThreadTaskRunner to pass to
   // ReaderThreadRunner.
-  reader_thread_runner_.reset(new ReaderThreadRunner(
+  reader_thread_runner_ = std::make_unique<ReaderThreadRunner>(
       pipe_,
       base::BindRepeating(&ChannelNacl::DidRecvMsg,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ChannelNacl::ReadDidFail,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::ThreadTaskRunnerHandle::Get()));
-  reader_thread_.reset(
-      new base::DelegateSimpleThread(reader_thread_runner_.get(),
-                                     "ipc_channel_nacl reader thread"));
+      base::ThreadTaskRunnerHandle::Get());
+  reader_thread_ = std::make_unique<base::DelegateSimpleThread>(
+      reader_thread_runner_.get(), "ipc_channel_nacl reader thread");
   reader_thread_->Start();
   waiting_connect_ = false;
   // If there were any messages queued before connection, send them.

@@ -6,13 +6,12 @@
 
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
-#include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/traced_value.h"
+#include "base/tracing/trace_time.h"
 #include "build/build_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
-#include "services/tracing/public/cpp/perfetto/trace_time.h"
 #include "third_party/perfetto/protos/perfetto/trace/memory_graph.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/profiling/smaps.pbzero.h"
 #include "third_party/perfetto/protos/perfetto/trace/ps/process_stats.pbzero.h"
@@ -67,7 +66,7 @@ bool TracingObserverProto::AddChromeDumpToTraceIfEnabled(
   if (!ShouldAddToTrace(args))
     return false;
 
-  base::AutoLock lock(producer_lock_);
+  base::AutoLock lock(writer_lock_);
 
   if (!trace_writer_)
     return false;
@@ -75,7 +74,7 @@ bool TracingObserverProto::AddChromeDumpToTraceIfEnabled(
   perfetto::TraceWriter::TracePacketHandle handle =
       trace_writer_->NewTracePacket();
   handle->set_timestamp(timestamp.since_origin().InNanoseconds());
-  handle->set_timestamp_clock_id(tracing::kTraceClockId);
+  handle->set_timestamp_clock_id(base::tracing::kTraceClockId);
   perfetto::protos::pbzero::MemoryTrackerSnapshot* memory_snapshot =
       handle->set_memory_tracker_snapshot();
   memory_snapshot->set_level_of_detail(
@@ -94,7 +93,7 @@ bool TracingObserverProto::AddOsDumpToTraceIfEnabled(
   if (!ShouldAddToTrace(args))
     return false;
 
-  base::AutoLock lock(producer_lock_);
+  base::AutoLock lock(writer_lock_);
 
   if (!trace_writer_)
     return false;
@@ -102,7 +101,7 @@ bool TracingObserverProto::AddOsDumpToTraceIfEnabled(
   perfetto::TraceWriter::TracePacketHandle process_stats_packet =
       trace_writer_->NewTracePacket();
   process_stats_packet->set_timestamp(timestamp.since_origin().InNanoseconds());
-  process_stats_packet->set_timestamp_clock_id(tracing::kTraceClockId);
+  process_stats_packet->set_timestamp_clock_id(base::tracing::kTraceClockId);
   perfetto::protos::pbzero::ProcessStats* process_stats =
       process_stats_packet->set_process_stats();
   perfetto::protos::pbzero::ProcessStats::Process* process =
@@ -117,9 +116,10 @@ bool TracingObserverProto::AddOsDumpToTraceIfEnabled(
     perfetto::TraceWriter::TracePacketHandle smaps_packet =
         trace_writer_->NewTracePacket();
     smaps_packet->set_timestamp(timestamp.since_origin().InNanoseconds());
-    smaps_packet->set_timestamp_clock_id(tracing::kTraceClockId);
+    smaps_packet->set_timestamp_clock_id(base::tracing::kTraceClockId);
     perfetto::protos::pbzero::SmapsPacket* smaps =
         smaps_packet->set_smaps_packet();
+    smaps->set_pid(static_cast<uint32_t>(pid));
 
     MemoryMapsAsProtoInto(memory_maps, smaps, false);
 
@@ -129,24 +129,22 @@ bool TracingObserverProto::AddOsDumpToTraceIfEnabled(
   return true;
 }
 
-void TracingObserverProto::StartTracing(
+void TracingObserverProto::StartTracingImpl(
     tracing::PerfettoProducer* producer,
     const perfetto::DataSourceConfig& data_source_config) {
-  base::AutoLock lock(producer_lock_);
-  producer_ = producer;
+  base::AutoLock lock(writer_lock_);
   // We rely on concurrent setup of TraceLog categories by the
   // TraceEventDataSource so don't look at the trace config ourselves.
   trace_writer_ =
       producer->CreateTraceWriter(data_source_config.target_buffer());
 }
 
-void TracingObserverProto::StopTracing(
+void TracingObserverProto::StopTracingImpl(
     base::OnceClosure stop_complete_callback) {
   // Scope to avoid reentrancy in case from the stop callback.
   {
-    base::AutoLock lock(producer_lock_);
+    base::AutoLock lock(writer_lock_);
     trace_writer_.reset();
-    producer_ = nullptr;
   }
 
   if (stop_complete_callback) {
@@ -155,7 +153,11 @@ void TracingObserverProto::StopTracing(
 }
 
 void TracingObserverProto::Flush(
-    base::RepeatingClosure flush_complete_callback) {}
+    base::RepeatingClosure flush_complete_callback) {
+  base::AutoLock lock(writer_lock_);
+  if (trace_writer_)
+    trace_writer_->Flush();
+}
 
 void TracingObserverProto::MemoryMapsAsProtoInto(
     const std::vector<mojom::VmRegionPtr>& memory_maps,

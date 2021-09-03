@@ -13,13 +13,18 @@
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
-#include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_window_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
+
+#if BUILDFLAG(USE_OPENGL_APITRACE)
+#include "ui/gl/gl_implementation.h"
+#endif
 
 namespace ui {
 
@@ -132,6 +137,10 @@ void GbmSurfaceless::SwapBuffersAsync(
       requires_gl_flush_on_swap_buffers_) {
     glFlush();
   }
+
+#if BUILDFLAG(USE_OPENGL_APITRACE)
+  gl::TerminateFrame();  // Notify end of frame at buffer swap request.
+#endif
 
   unsubmitted_frames_.back()->Flush();
 
@@ -259,7 +268,8 @@ void GbmSurfaceless::SubmitFrame() {
         submitted_frame_->ScheduleOverlayPlanes(widget_);
 
     if (!schedule_planes_succeeded) {
-      OnSubmission(gfx::SwapResult::SWAP_FAILED, nullptr);
+      OnSubmission(gfx::SwapResult::SWAP_FAILED,
+                   /*release_fence=*/gfx::GpuFenceHandle());
       OnPresentation(gfx::PresentationFeedback::Failure());
       return;
     }
@@ -287,7 +297,7 @@ void GbmSurfaceless::FenceRetired(PendingFrame* frame) {
 }
 
 void GbmSurfaceless::OnSubmission(gfx::SwapResult result,
-                                  std::unique_ptr<gfx::GpuFence> out_fence) {
+                                  gfx::GpuFenceHandle release_fence) {
   submitted_frame_->swap_result = result;
 }
 

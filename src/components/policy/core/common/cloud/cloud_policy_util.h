@@ -14,6 +14,13 @@
 
 namespace policy {
 
+// Returns the model of the device. This function is platform specific.
+POLICY_EXPORT std::string GetDeviceModel();
+
+// Returns the brand/manufacturer of the device. This function is platform
+// specific.
+POLICY_EXPORT std::string GetDeviceManufacturer();
+
 // Returns the name of the machine. This function is platform specific.
 POLICY_EXPORT std::string GetMachineName();
 

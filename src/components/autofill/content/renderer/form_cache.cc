@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -18,7 +19,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/page_form_analyser_logger.h"
@@ -193,7 +193,7 @@ std::vector<FormData> FormCache::ExtractNewForms(
   }
 
   FormData synthetic_form;
-  if (!UnownedCheckoutFormElementsAndFieldSetsToFormData(
+  if (!UnownedFormElementsAndFieldSetsToFormData(
           fieldsets, control_elements, nullptr, document, field_data_manager,
           extract_mask, &synthetic_form, nullptr)) {
     PruneInitialValueCaches(observed_unique_renderer_ids);
@@ -227,6 +227,7 @@ void FormCache::Reset() {
   parsed_forms_.clear();
   initial_select_values_.clear();
   initial_checked_state_.clear();
+  fields_eligible_for_manual_filling_.clear();
 }
 
 void FormCache::ClearElement(WebFormControlElement& control_element,
@@ -371,7 +372,7 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
     // If the flag is enabled, attach the prediction to the field.
     if (attach_predictions_to_dom) {
       constexpr size_t kMaxLabelSize = 100;
-      const base::string16 truncated_label = field_data.label.substr(
+      const std::u16string truncated_label = field_data.label.substr(
           0, std::min(field_data.label.length(), kMaxLabelSize));
 
       std::string form_id =
@@ -379,17 +380,30 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
       std::string field_id =
           base::NumberToString(field_data.unique_renderer_id.value());
 
-      std::string title =
-          base::StrCat({"overall type: ", field.overall_type,             //
-                        "\nserver type: ", field.server_type,             //
-                        "\nheuristic type: ", field.heuristic_type,       //
-                        "\nlabel: ", base::UTF16ToUTF8(truncated_label),  //
-                        "\nparseable name: ", field.parseable_name,       //
-                        "\nsection: ", field.section,                     //
-                        "\nfield signature: ", field.signature,           //
-                        "\nform signature: ", form.signature,             //
-                        "\nform renderer id: ", form_id,                  //
-                        "\nfield renderer id: ", field_id});
+      std::string title = base::StrCat({"overall type: ",
+                                        field.overall_type,
+                                        "\nserver type: ",
+                                        field.server_type,
+                                        "\nheuristic type: ",
+                                        field.heuristic_type,
+                                        "\nlabel: ",
+                                        base::UTF16ToUTF8(truncated_label),
+                                        "\nparseable name: ",
+                                        field.parseable_name,
+                                        "\nsection: ",
+                                        field.section,
+                                        "\nfield signature: ",
+                                        field.signature,
+                                        "\nform signature: ",
+                                        form.signature,
+                                        "\nform frame token: ",
+                                        form.data.host_frame.ToString(),
+                                        "\nfield frame token: ",
+                                        field_data.host_frame.ToString(),
+                                        "\nform renderer id: ",
+                                        form_id,
+                                        "\nfield renderer id: ",
+                                        field_id});
 
       // Set this debug string to the title so that a developer can easily debug
       // by hovering the mouse over the input field.
@@ -407,6 +421,19 @@ bool FormCache::ShowPredictions(const FormDataPredictions& form,
   logger.Flush();
 
   return true;
+}
+
+bool FormCache::IsFormElementEligibleForManualFilling(
+    const blink::WebFormControlElement& control_element) {
+  return fields_eligible_for_manual_filling_.find(
+             FieldRendererId(control_element.UniqueRendererFormControlId())) !=
+         fields_eligible_for_manual_filling_.end();
+}
+
+void FormCache::SetFieldsEligibleForManualFilling(
+    const std::vector<FieldRendererId>& fields_eligible_for_manual_filling) {
+  fields_eligible_for_manual_filling_ = base::flat_set<FieldRendererId>(
+      std::move(fields_eligible_for_manual_filling));
 }
 
 size_t FormCache::ScanFormControlElements(

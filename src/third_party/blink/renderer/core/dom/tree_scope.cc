@@ -106,6 +106,8 @@ ScopedStyleResolver& TreeScope::EnsureScopedStyleResolver() {
 }
 
 void TreeScope::ClearScopedStyleResolver() {
+  if (scoped_style_resolver_)
+    scoped_style_resolver_->ResetStyle();
   scoped_style_resolver_.Clear();
 }
 
@@ -497,7 +499,7 @@ Element* TreeScope::AdjustedFocusedElement() const {
   if (!element)
     return nullptr;
 
-  if (RootNode().IsInV1ShadowTree()) {
+  if (RootNode().IsInShadowTree()) {
     if (Element* retargeted = AdjustedFocusedElementInternal(*element)) {
       return (this == &retargeted->GetTreeScope()) ? retargeted : nullptr;
     }
@@ -522,12 +524,7 @@ Element* TreeScope::AdjustedElement(const Element& target) const {
   const Element* adjusted_target = &target;
   for (const Element* ancestor = &target; ancestor;
        ancestor = ancestor->OwnerShadowHost()) {
-    // This adjustment is done only for V1 shadows, and is skipped for V0 or UA
-    // shadows, because .pointerLockElement and .(webkit)fullscreenElement is
-    // not available for non-V1 shadow roots.
-    // TODO(kochi): Once V0 code is removed, use the same logic as
-    // .activeElement for V1.
-    if (ancestor->ShadowRootIfV1())
+    if (ancestor->GetShadowRoot())
       adjusted_target = ancestor;
     if (this == ancestor->GetTreeScope())
       return const_cast<Element*>(adjusted_target);

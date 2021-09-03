@@ -30,19 +30,16 @@ static_library("external_arc") {
     "overlay/arc_overlay_controller_impl.h",
     "overlay/arc_overlay_manager.cc",
     "overlay/arc_overlay_manager.h",
-    "overlay/test/fake_arc_overlay_controller_impl.cc",
-    "overlay/test/fake_arc_overlay_controller_impl.h",
-    "overlay/test/test_arc_overlay_manager.cc",
-    "overlay/test/test_arc_overlay_manager.h",
     "toast/arc_toast_surface_manager.cc",
     "toast/arc_toast_surface_manager.h",
   ]
   defines = [ "ASH_PUBLIC_IMPLEMENTATION" ]
   deps = [
+    "//ash/constants",
     "//ash/public/cpp",
     "//base",
-    "//chromeos/constants",
     "//components/account_id",
+    "//components/arc:arc_base_utils",
     "//components/arc:arc_metrics_constants",
     "//components/arc:connection_holder",
     "//components/arc/mojom:notifications",
@@ -64,6 +61,7 @@ source_set("unit_tests") {
     "message_center/arc_notification_content_view_unittest.cc",
     "message_center/arc_notification_manager_unittest.cc",
     "message_center/arc_notification_view_unittest.cc",
+    "overlay/arc_overlay_manager_unittest.cc",
     "toast/arc_toast_surface_manager_unittest.cc",
   ]
   public_deps = [ "//ash:test_support" ]
@@ -96,6 +94,10 @@ source_set("test_support") {
     "message_center/mock_arc_notification_item.h",
     "message_center/mock_arc_notification_surface.cc",
     "message_center/mock_arc_notification_surface.h",
+    "overlay/test/fake_arc_overlay_controller_impl.cc",
+    "overlay/test/fake_arc_overlay_controller_impl.h",
+    "overlay/test/test_arc_overlay_manager.cc",
+    "overlay/test/test_arc_overlay_manager.h",
   ]
   deps = [
     ":external_arc",

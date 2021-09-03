@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
 
       get_image_md5(img, digest);
       print_md5(outfile, digest);
-      fprintf(outfile, "  img-%dx%d-%04d.i420\n", img->d_w, img->d_h,
+      fprintf(outfile, "  img-%ux%u-%04d.i420\n", img->d_w, img->d_h,
               ++frame_cnt);
     }
   }

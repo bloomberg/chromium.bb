@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/autofill/payments/migratable_card_view.h"
 
+#include "base/bind.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/payments/local_card_migration_dialog_state.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_dialog_view.h"
@@ -14,6 +15,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
@@ -26,8 +28,6 @@
 #include "ui/views/layout/box_layout.h"
 
 namespace autofill {
-
-constexpr char MigratableCardView::kViewClassName[] = "MigratableCardView";
 
 MigratableCardView::MigratableCardView(
     const MigratableCreditCard& migratable_credit_card,
@@ -73,7 +73,7 @@ MigratableCardView::MigratableCardView(
 
 MigratableCardView::~MigratableCardView() = default;
 
-bool MigratableCardView::IsSelected() const {
+bool MigratableCardView::GetSelected() const {
   return !checkbox_ || checkbox_->GetChecked();
 }
 
@@ -81,13 +81,9 @@ std::string MigratableCardView::GetGuid() const {
   return migratable_credit_card_.credit_card().guid();
 }
 
-base::string16 MigratableCardView::GetCardIdentifierString() const {
+std::u16string MigratableCardView::GetCardIdentifierString() const {
   return migratable_credit_card_.credit_card()
       .CardIdentifierStringForAutofillDisplay();
-}
-
-const char* MigratableCardView::GetClassName() const {
-  return kViewClassName;
 }
 
 std::unique_ptr<views::View>
@@ -117,14 +113,14 @@ MigratableCardView::GetMigratableCardDescriptionView(
       if (should_show_checkbox) {
         checkbox_ = migratable_card_description_view->AddChildView(
             std::make_unique<views::Checkbox>(
-                base::string16(),
+                std::u16string(),
                 base::BindRepeating(&MigratableCardView::CheckboxPressed,
                                     base::Unretained(this))));
         checkbox_->SetChecked(true);
         // TODO(crbug/867194): Currently the ink drop animation circle is
         // cropped by the border of scroll bar view. Find a way to adjust the
         // format.
-        checkbox_->SetInkDropMode(views::InkDropHostView::InkDropMode::OFF);
+        checkbox_->ink_drop()->SetMode(views::InkDropHost::InkDropMode::OFF);
         checkbox_->SetAssociatedLabel(card_description.get());
       }
       break;
@@ -212,11 +208,17 @@ MigratableCardView::GetMigratableCardDescriptionView(
 void MigratableCardView::CheckboxPressed() {
   // If the button clicked is a checkbox. Enable/disable the save
   // button if needed.
-  parent_dialog_->DialogModelChanged();
+  parent_dialog_->OnCardCheckboxToggled();
   // The warning text will be visible only when user unchecks the checkbox.
   checkbox_uncheck_text_container_->SetVisible(!checkbox_->GetChecked());
   InvalidateLayout();
   parent_dialog_->UpdateLayout();
 }
+
+BEGIN_METADATA(MigratableCardView, views::View)
+ADD_READONLY_PROPERTY_METADATA(bool, Selected)
+ADD_READONLY_PROPERTY_METADATA(std::string, Guid)
+ADD_READONLY_PROPERTY_METADATA(std::u16string, CardIdentifierString)
+END_METADATA
 
 }  // namespace autofill

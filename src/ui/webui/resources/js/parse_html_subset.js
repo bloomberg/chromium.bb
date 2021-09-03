@@ -3,6 +3,30 @@
 // found in the LICENSE file.
 
 /**
+ * @typedef {{
+ *   substitutions: (!Array<string>|undefined),
+ *   attrs: (!Array<string>|undefined),
+ *   tags: (!Array<string>|undefined),
+ * }}
+ */
+/* #export */ let SanitizeInnerHtmlOpts;
+
+/**
+ * Make a string safe for Polymer bindings that are inner-h-t-m-l or other
+ * innerHTML use.
+ * @param {string} rawString The unsanitized string
+ * @param {SanitizeInnerHtmlOpts=} opts Optional additional allowed tags and
+ *     attributes.
+ * @return {string}
+ */
+/* #export */ const sanitizeInnerHtml = function(rawString, opts) {
+  opts = opts || {};
+  return parseHtmlSubset('<b>' + rawString + '</b>', opts.tags, opts.attrs)
+      .firstChild.innerHTML;
+};
+
+
+/**
  * Parses a very small subset of HTML. This ensures that insecure HTML /
  * javascript cannot be injected into WebUI.
  * @param {string} s The string to parse.
@@ -71,7 +95,7 @@
    * @const
    */
   const allowedTags =
-      new Set(['A', 'B', 'BR', 'DIV', 'P', 'PRE', 'SPAN', 'STRONG']);
+      new Set(['A', 'B', 'BR', 'DIV', 'KBD', 'P', 'PRE', 'SPAN', 'STRONG']);
 
   /**
    * Allow-list of optional tag names in parseHtmlSubset.
@@ -84,14 +108,10 @@
    * This policy maps a given string to a `TrustedHTML` object
    * without performing any validation. Callsites must ensure
    * that the resulting object will only be used in inert
-   * documents.
+   * documents. Initialized lazily.
    * @type {!TrustedTypePolicy}
    */
   let unsanitizedPolicy;
-  if (window.trustedTypes) {
-    unsanitizedPolicy = trustedTypes.createPolicy(
-        'parse-html-subset', {createHTML: untrustedHTML => untrustedHTML});
-  }
 
   /**
    * @param {!Array<string>} optTags an Array to merge.
@@ -154,6 +174,10 @@
     r.selectNode(doc.body);
 
     if (window.trustedTypes) {
+      if (!unsanitizedPolicy) {
+        unsanitizedPolicy = trustedTypes.createPolicy(
+            'parse-html-subset', {createHTML: untrustedHTML => untrustedHTML});
+      }
       s = unsanitizedPolicy.createHTML(s);
     }
 
@@ -181,3 +205,5 @@
     return df;
   };
 })();
+
+/* #ignore */ console.warn('crbug/1173575, non-JS module files deprecated.');

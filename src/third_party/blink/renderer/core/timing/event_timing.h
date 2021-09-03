@@ -39,6 +39,9 @@ class CORE_EXPORT EventTiming final {
   // The caller owns the |clock| which must outlive the EventTiming.
   static void SetTickClockForTesting(const base::TickClock* clock);
 
+  // Returns true when the type of the event is included in the EventTiming.
+  static bool IsEventTypeForEventTiming(const Event& event);
+
  private:
   // The time the first event handler or default action started to execute.
   base::TimeTicks processing_start_;
@@ -54,4 +57,4 @@ class CORE_EXPORT EventTiming final {
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_EVENT_TIMING_H_

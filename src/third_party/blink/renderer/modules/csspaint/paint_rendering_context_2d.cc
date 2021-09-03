@@ -20,7 +20,7 @@ PaintRenderingContext2D::PaintRenderingContext2D(
   InitializePaintRecorder();
 
   clip_antialiasing_ = kAntiAliased;
-  ModifiableState().SetShouldAntialias(true);
+  GetState().SetShouldAntialias(true);
 
   GetPaintCanvas()->clear(context_settings->alpha() ? SK_ColorTRANSPARENT
                                                     : SK_ColorBLACK);
@@ -116,6 +116,10 @@ bool PaintRenderingContext2D::StateHasFilter() {
 sk_sp<PaintFilter> PaintRenderingContext2D::StateGetFilter() {
   return GetState().GetFilterForOffscreenCanvas(IntSize(Width(), Height()),
                                                 this);
+}
+
+CanvasColorParams PaintRenderingContext2D::GetCanvas2DColorParams() const {
+  return CanvasColorParams();
 }
 
 void PaintRenderingContext2D::WillOverwriteCanvas() {

@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/signin/profile_colors_util.h"
 
+#include "base/containers/contains.h"
 #include "base/rand_util.h"
-#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -15,6 +15,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/common/search/generated_colors_info.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/native_theme/native_theme.h"
 
 namespace {
 
@@ -52,7 +53,7 @@ size_t GenerateRandomIndex(size_t size) {
 
 std::vector<int> GetAvailableColorIndices(
     const std::set<ProfileThemeColors>& used_theme_colors,
-    base::Optional<double> current_color_lightness) {
+    absl::optional<double> current_color_lightness) {
   std::vector<int> available_color_indices;
   for (size_t i = 0; i < base::size(chrome_colors::kGeneratedColorsInfo); ++i) {
     ProfileThemeColors theme_colors =
@@ -73,17 +74,17 @@ std::vector<int> GetAvailableColorIndices(
   return available_color_indices;
 }
 
-base::Optional<double> ExtractCurrentColorLightness(
-    ProfileAttributesEntry* current_profile) {
-  if (!current_profile)
-    return base::nullopt;
-  base::Optional<ProfileThemeColors> current_colors =
-      current_profile->GetProfileThemeColorsIfSet();
-  if (!current_colors)
-    return base::nullopt;
+double ExtractCurrentColorLightness(ProfileAttributesEntry* current_profile) {
+  ProfileThemeColors current_colors;
+  if (!current_profile) {
+    current_colors = GetDefaultProfileThemeColors(
+        ui::NativeTheme::GetInstanceForNativeUi()->ShouldUseDarkColors());
+  } else {
+    current_colors = current_profile->GetProfileThemeColors();
+  }
 
   color_utils::HSL hsl;
-  color_utils::SkColorToHSL(current_colors->profile_highlight_color, &hsl);
+  color_utils::SkColorToHSL(current_colors.profile_highlight_color, &hsl);
   return hsl.l;
 }
 
@@ -169,13 +170,13 @@ chrome_colors::ColorInfo GenerateNewProfileColorWithGenerator(
   // needed.
   std::set<ProfileThemeColors> used_theme_colors;
   for (ProfileAttributesEntry* entry : storage.GetAllProfilesAttributes()) {
-    base::Optional<ProfileThemeColors> current_colors =
+    absl::optional<ProfileThemeColors> current_colors =
         entry->GetProfileThemeColorsIfSet();
     if (current_colors)
       used_theme_colors.insert(*current_colors);
   }
 
-  base::Optional<double> current_color_lightness =
+  double current_color_lightness =
       ExtractCurrentColorLightness(current_profile);
 
   // Collect indices of profile colors that match all the filters.
@@ -184,13 +185,13 @@ chrome_colors::ColorInfo GenerateNewProfileColorWithGenerator(
   // Relax the constraints until some colors become available.
   if (available_color_indices.empty()) {
     available_color_indices =
-        GetAvailableColorIndices(used_theme_colors, base::nullopt);
+        GetAvailableColorIndices(used_theme_colors, absl::nullopt);
   }
   if (available_color_indices.empty()) {
     // If needed, we could allow unsaturated colors (shades of grey) before
     // allowing a duplicate color.
     available_color_indices =
-        GetAvailableColorIndices(std::set<ProfileThemeColors>(), base::nullopt);
+        GetAvailableColorIndices(std::set<ProfileThemeColors>(), absl::nullopt);
   }
   DCHECK(!available_color_indices.empty());
 

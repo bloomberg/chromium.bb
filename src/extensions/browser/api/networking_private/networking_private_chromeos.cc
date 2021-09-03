@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -145,7 +146,7 @@ void AppendDeviceState(
   properties->type = private_api::ParseNetworkType(type);
   properties->state = state;
   if (device && state == private_api::DEVICE_STATE_TYPE_ENABLED)
-    properties->scanning.reset(new bool(device->scanning()));
+    properties->scanning = std::make_unique<bool>(device->scanning());
   if (device && type == ::onc::network_config::kCellular) {
     bool sim_present = !device->IsSimAbsent();
     properties->sim_present = std::make_unique<bool>(sim_present);
@@ -153,7 +154,8 @@ void AppendDeviceState(
       auto sim_lock_status = std::make_unique<private_api::SIMLockStatus>();
       sim_lock_status->lock_enabled = device->sim_lock_enabled();
       sim_lock_status->lock_type = device->sim_lock_type();
-      sim_lock_status->retries_left.reset(new int(device->sim_retries_left()));
+      sim_lock_status->retries_left =
+          std::make_unique<int>(device->sim_retries_left());
       properties->sim_lock_status = std::move(sim_lock_status);
     }
   }
@@ -277,14 +279,14 @@ void NetworkingPrivateChromeOS::GetProperties(const std::string& guid,
   std::string service_path, error;
   if (!GetServicePathFromGuid(guid, &service_path, &error)) {
     NET_LOG(ERROR) << "GetProperties failed: " << error;
-    std::move(callback).Run(base::nullopt, error);
+    std::move(callback).Run(absl::nullopt, error);
     return;
   }
 
   std::string user_id_hash;
   if (!GetPrimaryUserIdHash(browser_context_, &user_id_hash, &error)) {
     NET_LOG(ERROR) << "GetProperties failed: " << error;
-    std::move(callback).Run(base::nullopt, error);
+    std::move(callback).Run(absl::nullopt, error);
     return;
   }
 
@@ -301,14 +303,14 @@ void NetworkingPrivateChromeOS::GetManagedProperties(
   std::string service_path, error;
   if (!GetServicePathFromGuid(guid, &service_path, &error)) {
     NET_LOG(ERROR) << "GetManagedProperties failed: " << error;
-    std::move(callback).Run(base::nullopt, error);
+    std::move(callback).Run(absl::nullopt, error);
     return;
   }
 
   std::string user_id_hash;
   if (!GetPrimaryUserIdHash(browser_context_, &user_id_hash, &error)) {
     NET_LOG(ERROR) << "GetManagedProperties failed: " << error;
-    std::move(callback).Run(base::nullopt, error);
+    std::move(callback).Run(absl::nullopt, error);
     return;
   }
 
@@ -495,7 +497,7 @@ void NetworkingPrivateChromeOS::GetNetworks(
       chromeos::network_util::TranslateNetworkListToONC(
           pattern, configured_only, visible_only, limit);
 
-  for (auto& value : *network_properties_list) {
+  for (auto& value : network_properties_list->GetList()) {
     base::DictionaryValue* network_dict = nullptr;
     value.GetAsDictionary(&network_dict);
     DCHECK(network_dict);
@@ -756,6 +758,7 @@ bool NetworkingPrivateChromeOS::EnableNetworkType(const std::string& type) {
   NetworkTypePattern pattern =
       chromeos::onc::NetworkTypePatternFromOncType(type);
 
+  NET_LOG(USER) << __func__ << ":" << type;
   GetStateHandler()->SetTechnologyEnabled(
       pattern, true, chromeos::network_handler::ErrorCallback());
 
@@ -766,6 +769,7 @@ bool NetworkingPrivateChromeOS::DisableNetworkType(const std::string& type) {
   NetworkTypePattern pattern =
       chromeos::onc::NetworkTypePatternFromOncType(type);
 
+  NET_LOG(USER) << __func__ << ":" << type;
   GetStateHandler()->SetTechnologyEnabled(
       pattern, false, chromeos::network_handler::ErrorCallback());
 
@@ -785,8 +789,8 @@ void NetworkingPrivateChromeOS::GetPropertiesCallback(
     const std::string& guid,
     PropertiesCallback callback,
     const std::string& service_path,
-    base::Optional<base::Value> dictionary,
-    base::Optional<std::string> error) {
+    absl::optional<base::Value> dictionary,
+    absl::optional<std::string> error) {
   if (dictionary)
     AppendThirdPartyProviderName(&dictionary.value());
   std::move(callback).Run(std::move(dictionary), std::move(error));
@@ -804,7 +808,7 @@ void NetworkingPrivateChromeOS::AppendThirdPartyProviderName(
       ExtensionRegistry::Get(browser_context_)->enabled_extensions();
   for (const auto& extension : extensions) {
     if (extension->permissions_data()->HasAPIPermission(
-            APIPermission::kVpnProvider) &&
+            mojom::APIPermissionID::kVpnProvider) &&
         extension->id() == extension_id) {
       third_party_vpn->SetKey(::onc::third_party_vpn::kProviderName,
                               base::Value(extension->name()));

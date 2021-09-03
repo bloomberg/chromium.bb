@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
+import six
+
 from py_trace_event import trace_event
 
 # Export story_test.Failure to this page_test module
@@ -20,7 +23,12 @@ class MeasurementFailure(Failure):
   """Exception raised when an undesired but designed-for problem."""
 
 
-class LegacyPageTest(object):
+if six.PY2:
+  LegacyPageTestBase = object
+else:
+  LegacyPageTestBase = six.with_metaclass(trace_event.TracedMetaClass, object)
+
+class LegacyPageTest(LegacyPageTestBase):
   """A class styled on unittest.TestCase for creating page-specific tests.
 
   Note that this method of measuring browser's performance is obsolete and only
@@ -42,7 +50,8 @@ class LegacyPageTest(object):
          results.AddMeasurement('body_children', 'count', body_child_count)
   """
 
-  __metaclass__ = trace_event.TracedMetaClass
+  if six.PY2:
+    __metaclass__ = trace_event.TracedMetaClass
 
   def __init__(self):
     self.options = None

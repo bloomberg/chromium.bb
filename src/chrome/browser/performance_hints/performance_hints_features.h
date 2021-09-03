@@ -12,9 +12,6 @@
 namespace performance_hints {
 namespace features {
 
-// Exposed for chrome://flags.
-extern const base::Feature kPageInfoPerformanceHints;
-
 // Exposed for testing.
 extern const base::Feature kPerformanceHintsObserver;
 extern const base::Feature kPerformanceHintsTreatUnknownAsFast;
@@ -50,10 +47,6 @@ bool AreLinkPerformanceHintsEnabled();
 
 // Returns true if performance info should be shown in the context menu.
 bool IsContextMenuPerformanceInfoEnabled();
-
-// Returns true if a feature that explicitly allows remote fetching has been
-// enabled.
-bool IsRemoteFetchingExplicitlyAllowedForPerformanceInfo();
 
 }  // namespace features
 }  // namespace performance_hints

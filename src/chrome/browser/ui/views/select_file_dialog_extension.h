@@ -11,8 +11,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -24,7 +24,7 @@ class Window;
 }
 
 namespace content {
-class RenderViewHost;
+class RenderFrameHost;
 class WebContents;
 }
 
@@ -65,8 +65,8 @@ class SelectFileDialogExtension
       const std::vector<ui::SelectedFileInfo>& files);
   static void OnFileSelectionCanceled(RoutingID routing_id);
 
-  // For testing, so we can inject JavaScript into the contained view.
-  content::RenderViewHost* GetRenderViewHost();
+  // Allows access to the extension's main frame for injecting javascript.
+  content::RenderFrameHost* GetMainFrame();
 
   // Call SelectFile with params specific to Chrome OS file manager.
   // |owner| specifies the window and app type that opened the dialog.
@@ -78,12 +78,12 @@ class SelectFileDialogExtension
     // The native window that opened the dialog.
     aura::Window* window = nullptr;
     // Android task ID if the owner window is an Android app.
-    base::Optional<int> android_task_id;
+    absl::optional<int> android_task_id;
     // Lacros window ID if the owner window is a Lacros browser.
-    base::Optional<std::string> lacros_window_id;
+    absl::optional<std::string> lacros_window_id;
   };
   void SelectFileWithFileManagerParams(Type type,
-                                       const base::string16& title,
+                                       const std::u16string& title,
                                        const base::FilePath& default_path,
                                        const FileTypeInfo* file_types,
                                        int file_type_index,
@@ -95,7 +95,7 @@ class SelectFileDialogExtension
  protected:
   // SelectFileDialog implementation.
   void SelectFileImpl(Type type,
-                      const base::string16& title,
+                      const std::u16string& title,
                       const base::FilePath& default_path,
                       const FileTypeInfo* file_types,
                       int file_type_index,

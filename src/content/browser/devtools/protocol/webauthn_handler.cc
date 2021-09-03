@@ -51,8 +51,8 @@ static constexpr char kInvalidUserHandle[] =
     "The User Handle must have a maximum size of ";
 static constexpr char kLargeBlobRequiresResidentKey[] =
     "Large blob requires resident key support";
-static constexpr char kLargeBlobRequiresCtap2_1[] =
-    "Large blob requires a CTAP 2.1 authenticator";
+static constexpr char kRequiresCtap2_1[] =
+    "Specified options require a CTAP 2.1 authenticator";
 static constexpr char kResidentCredentialNotSupported[] =
     "The Authenticator does not support Resident Credentials.";
 static constexpr char kRpIdRequired[] =
@@ -75,7 +75,7 @@ class GetCredentialCallbackAggregator
       const GetCredentialCallbackAggregator&) = delete;
 
   void OnLargeBlob(std::unique_ptr<WebAuthn::Credential> credential,
-                   const base::Optional<std::vector<uint8_t>>& blob) {
+                   const absl::optional<std::vector<uint8_t>>& blob) {
     if (blob) {
       credential->SetLargeBlob(Binary::fromVector(*blob));
     }
@@ -101,13 +101,13 @@ device::ProtocolVersion ConvertToProtocolVersion(base::StringPiece protocol) {
   return device::ProtocolVersion::kUnknown;
 }
 
-base::Optional<device::Ctap2Version> ConvertToCtap2Version(
+absl::optional<device::Ctap2Version> ConvertToCtap2Version(
     base::StringPiece version) {
   if (version == WebAuthn::Ctap2VersionEnum::Ctap2_0)
     return device::Ctap2Version::kCtap2_0;
   if (version == WebAuthn::Ctap2VersionEnum::Ctap2_1)
     return device::Ctap2Version::kCtap2_1;
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 std::vector<uint8_t> CopyBinaryToVector(const Binary& binary) {
@@ -201,32 +201,48 @@ Response WebAuthnHandler::AddVirtualAuthenticator(
     return Response::InvalidParams(kInvalidCtapVersion);
 
   bool has_large_blob = options->GetHasLargeBlob(/*default=*/false);
+  bool has_cred_blob = options->GetHasCredBlob(/*default=*/false);
   bool has_resident_key = options->GetHasResidentKey(/*default=*/false);
+
   if (has_large_blob && !has_resident_key)
     return Response::InvalidParams(kLargeBlobRequiresResidentKey);
-  if (has_large_blob && (protocol != device::ProtocolVersion::kCtap2 ||
-                         ctap2_version < device::Ctap2Version::kCtap2_1)) {
-    return Response::InvalidParams(kLargeBlobRequiresCtap2_1);
+
+  if ((protocol != device::ProtocolVersion::kCtap2 ||
+       ctap2_version < device::Ctap2Version::kCtap2_1) &&
+      (has_large_blob || has_cred_blob)) {
+    return Response::InvalidParams(kRequiresCtap2_1);
   }
 
-  VirtualAuthenticator* authenticator = nullptr;
+  auto virt_auth_options =
+      blink::test::mojom::VirtualAuthenticatorOptions::New();
+  virt_auth_options->protocol = protocol;
+  virt_auth_options->transport = *transport;
+
   switch (protocol) {
     case device::ProtocolVersion::kU2f:
-      authenticator = authenticator_manager->CreateU2FAuthenticator(*transport);
+      virt_auth_options->attachment =
+          device::AuthenticatorAttachment::kCrossPlatform;
       break;
     case device::ProtocolVersion::kCtap2:
-      authenticator = authenticator_manager->CreateCTAP2Authenticator(
-          *ctap2_version, *transport,
+      virt_auth_options->ctap2_version = *ctap2_version;
+      virt_auth_options->attachment =
           transport == device::FidoTransportProtocol::kInternal
               ? device::AuthenticatorAttachment::kPlatform
-              : device::AuthenticatorAttachment::kCrossPlatform,
-          has_resident_key, options->GetHasUserVerification(/*default=*/false),
-          has_large_blob);
+              : device::AuthenticatorAttachment::kCrossPlatform;
+      virt_auth_options->has_resident_key = has_resident_key;
+      virt_auth_options->has_user_verification =
+          options->GetHasUserVerification(/*default=*/false);
+      virt_auth_options->has_large_blob = has_large_blob;
+      virt_auth_options->has_cred_blob = has_cred_blob;
       break;
     case device::ProtocolVersion::kUnknown:
       NOTREACHED();
       break;
   }
+
+  VirtualAuthenticator* const authenticator =
+      authenticator_manager->AddAuthenticatorAndReturnNonOwningPointer(
+          *virt_auth_options);
   if (!authenticator)
     return Response::ServerError(kErrorCreatingAuthenticator);
 
@@ -355,7 +371,7 @@ void WebAuthnHandler::GetCredential(
       base::BindOnce(
           [](std::unique_ptr<WebAuthn::Credential> registration,
              std::unique_ptr<GetCredentialCallback> callback,
-             const base::Optional<std::vector<uint8_t>>& blob) {
+             const absl::optional<std::vector<uint8_t>>& blob) {
             if (blob) {
               registration->SetLargeBlob(Binary::fromVector(*blob));
             }

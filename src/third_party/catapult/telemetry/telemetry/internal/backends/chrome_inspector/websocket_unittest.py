@@ -2,18 +2,20 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 import base64
-import BaseHTTPServer
 import hashlib
 import socket
 import threading
 import unittest
 
+import six.moves.BaseHTTPServer # pylint: disable=import-error
+
 from telemetry.internal.backends.chrome_inspector import websocket
 
 
 # Minimal handler for a local websocket server.
-class _FakeWebSocketHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class _FakeWebSocketHandler(six.moves.BaseHTTPServer.BaseHTTPRequestHandler):
   def do_GET(self): # pylint: disable=invalid-name
     key = self.headers.getheader('Sec-WebSocket-Key')
 
@@ -37,7 +39,8 @@ class TestWebSocket(unittest.TestCase):
     self.assertNotEqual(websocket.WebSocketTimeoutException, None)
 
   def testSockOpts(self):
-    httpd = BaseHTTPServer.HTTPServer(('127.0.0.1', 0), _FakeWebSocketHandler)
+    httpd = six.moves.BaseHTTPServer.HTTPServer(
+        ('127.0.0.1', 0), _FakeWebSocketHandler)
     ws_url = 'ws://127.0.0.1:%d' % httpd.server_port
 
     threading.Thread(target=httpd.handle_request).start()

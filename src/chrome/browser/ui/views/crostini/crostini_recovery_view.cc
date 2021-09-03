@@ -5,16 +5,16 @@
 #include "chrome/browser/ui/views/crostini/crostini_recovery_view.h"
 
 #include "base/metrics/histogram_functions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
-#include "chrome/browser/chromeos/crostini/crostini_terminal.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_terminal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -49,7 +49,11 @@ void CrostiniRecoveryView::Show(Profile* profile,
                                 int64_t display_id,
                                 const std::vector<crostini::LaunchArg>& args,
                                 crostini::CrostiniSuccessCallback callback) {
-  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile)) {
+    std::move(callback).Run(false, "crostini is not allowed");
+    return;
+  }
+
   // Any new apps launched during recovery are immediately cancelled.
   if (g_crostini_recovery_view) {
     std::move(callback).Run(false, "recovery in progress");
@@ -128,7 +132,7 @@ CrostiniRecoveryView::CrostiniRecoveryView(
       provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  const base::string16 message =
+  const std::u16string message =
       l10n_util::GetStringUTF16(IDS_CROSTINI_RECOVERY_MESSAGE);
   views::Label* message_label = new views::Label(message);
   message_label->SetMultiLine(true);
@@ -141,3 +145,6 @@ CrostiniRecoveryView::CrostiniRecoveryView(
 CrostiniRecoveryView::~CrostiniRecoveryView() {
   g_crostini_recovery_view = nullptr;
 }
+
+BEGIN_METADATA(CrostiniRecoveryView, views::BubbleDialogDelegateView)
+END_METADATA

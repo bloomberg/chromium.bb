@@ -16,12 +16,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.annotation.DrawableRes;
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.supplier.UnownedUserDataSupplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.share.ShareDelegateSupplier;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.widget.FadingShadow;
 import org.chromium.components.browser_ui.widget.FadingShadowView;
@@ -34,10 +35,8 @@ import org.chromium.components.url_formatter.SchemeDisplay;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
-
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 
 /**
  * Represents ephemeral tab content and the toolbar, which can be included inside the bottom sheet.
@@ -51,28 +50,16 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
 
     private static final float PEEK_TOOLBAR_HEIGHT_MULTIPLE = 2.f;
 
-    /** Ratio of the height when in half mode. */
-    private static final float HALF_HEIGHT_RATIO = 0.6f;
-
     /** Ratio of the height when in full mode. Used in half-open variation. */
     private static final float FULL_HEIGHT_RATIO = 0.9f;
-
-    private static final String OPEN_MODE_VARIATION_NAME = "ephemeral_tab_open_mode";
-
-    /** The state to which preview tab will open to when requested. */
-    @IntDef({OpenMode.PEEK, OpenMode.HALF, OpenMode.FULL})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface OpenMode {
-        int PEEK = 0;
-        int HALF = 1;
-        int FULL = 2;
-    }
 
     private final Context mContext;
     private final Runnable mOpenNewTabCallback;
     private final Runnable mToolbarClickCallback;
     private final Runnable mCloseButtonCallback;
     private final int mToolbarHeightPx;
+    private final UnownedUserDataSupplier<ShareDelegate> mShareDelegateSupplier =
+            new ShareDelegateSupplier();
 
     private ViewGroup mToolbarView;
     private ViewGroup mSheetContentView;
@@ -83,7 +70,6 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     private FadingShadowView mShadow;
     private Drawable mCurrentFavicon;
     private ImageView mFaviconView;
-    private @OpenMode int mOpenMode;
 
     /**
      * Constructor.
@@ -104,9 +90,6 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
 
         createThinWebView((int) (maxViewHeight * FULL_HEIGHT_RATIO));
         createToolbarView();
-        mOpenMode = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                ChromeFeatureList.EPHEMERAL_TAB_USING_BOTTOM_SHEET, OPEN_MODE_VARIATION_NAME,
-                OpenMode.PEEK);
     }
 
     /**
@@ -123,6 +106,13 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
             ((ViewGroup) mWebContentView.getParent()).removeView(mWebContentView);
         }
         mThinWebView.attachWebContents(mWebContents, mWebContentView, delegate);
+
+        // Initialize the supplier of {@link ShareDelegate} for the WindowAndroid used by
+        // ThinWebView.  The {@link ShareDelegate} itself is not set by design in order to leave
+        // the share feature disabled on Preview Tab.
+        WindowAndroid window = mWebContents.getTopLevelNativeWindow();
+        assert window != null;
+        mShareDelegateSupplier.attach(window.getUnownedUserDataHost());
     }
 
     /**
@@ -264,6 +254,7 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     @Override
     public void destroy() {
         mThinWebView.destroy();
+        mShareDelegateSupplier.destroy();
     }
 
     @Override
@@ -278,23 +269,17 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
 
     @Override
     public int getPeekHeight() {
-        if (mOpenMode == OpenMode.PEEK) {
-            int toolbarHeight =
-                    mContext.getResources().getDimensionPixelSize(R.dimen.toolbar_height_no_shadow);
-            return (int) (toolbarHeight * PEEK_TOOLBAR_HEIGHT_MULTIPLE);
-        } else {
-            return HeightMode.DISABLED;
-        }
+        return HeightMode.DISABLED;
     }
 
     @Override
     public float getHalfHeightRatio() {
-        return mOpenMode == OpenMode.HALF ? HALF_HEIGHT_RATIO : HeightMode.DEFAULT;
+        return HeightMode.DEFAULT;
     }
 
     @Override
     public float getFullHeightRatio() {
-        return mOpenMode == OpenMode.HALF ? FULL_HEIGHT_RATIO : HeightMode.WRAP_CONTENT;
+        return HeightMode.WRAP_CONTENT;
     }
 
     @Override

@@ -159,13 +159,14 @@ class Dependency:
         self.input_scheme = 'chrome'
       return POLYMER_V3_DIR + 'polymer/polymer_bundled.min.js'
 
+    extension = ('.js'
+                 if self.html_path_normalized in _migrated_imports else '.m.js')
+
     if re.match(r'ui/webui/resources/html/', self.html_path_normalized):
       return (self.html_path_normalized
           .replace(r'ui/webui/resources/html/', 'ui/webui/resources/js/')
-          .replace(r'.html', '.m.js'))
+          .replace(r'.html', extension))
 
-    extension = (
-        '.js' if self.html_path_normalized in _migrated_imports else '.m.js')
     return self.html_path_normalized.replace(r'.html', extension)
 
   def _to_js(self):
@@ -418,10 +419,9 @@ def _process_dom_module(js_file, html_file):
         line = '\n'.join(js_imports) + '\n\n'
         cr_define_found = True
         imports_added = True
-      elif line.startswith('Polymer({\n'):
+      elif 'Polymer({\n' in line:
         # Place the JS imports right before the opening "Polymer({" line.
-        line = line.replace(
-            r'Polymer({', '%s\n\nPolymer({' % '\n'.join(js_imports))
+        line = '\n'.join(js_imports) + '\n\n' + line
         imports_added = True
 
     # Place the HTML content right after the opening "Polymer({" line.

@@ -5,7 +5,6 @@
 #ifndef ASH_PUBLIC_CPP_SHELL_WINDOW_IDS_H_
 #define ASH_PUBLIC_CPP_SHELL_WINDOW_IDS_H_
 
-#include <array>
 #include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
@@ -49,9 +48,10 @@ enum ShellWindowId {
   // PowerButtonController for animating lower-level containers.
   kShellWindowId_LockScreenRelatedContainersContainer,
 
-  // A container used for windows of WINDOW_TYPE_CONTROL that have no parent.
+  // A container used for windows that temporarily have no parent. It is
+  // expected the windows will get parented to another container shortly after.
   // This container is not visible.
-  kShellWindowId_UnparentedControlContainer,
+  kShellWindowId_UnparentedContainer,
 
   // The wallpaper (desktop background) window.
   kShellWindowId_WallpaperContainer,
@@ -69,6 +69,10 @@ enum ShellWindowId {
   kShellWindowId_DeskContainerB,
   kShellWindowId_DeskContainerC,
   kShellWindowId_DeskContainerD,
+  kShellWindowId_DeskContainerE,
+  kShellWindowId_DeskContainerF,
+  kShellWindowId_DeskContainerG,
+  kShellWindowId_DeskContainerH,
 
   // The container for top-level windows with the 'always-on-top' flag set.
   kShellWindowId_AlwaysOnTopContainer,
@@ -206,9 +210,9 @@ constexpr int kSystemModalContainerIds[] = {
 // windows in containers appearing later in the list. This list is used by
 // AshFocusRules to determine which container to start the search from when
 // looking for the next activatable window.
-ASH_PUBLIC_EXPORT const std::array<int, 18>& GetActivatableShellWindowIds();
+ASH_PUBLIC_EXPORT std::vector<int> GetActivatableShellWindowIds();
 
-// Returns true if |id| is in |kActivatableContainersIds|.
+// Returns true if |id| is in GetActivatableShellWindowIds.
 ASH_PUBLIC_EXPORT bool IsActivatableShellWindowId(int id);
 
 }  // namespace ash

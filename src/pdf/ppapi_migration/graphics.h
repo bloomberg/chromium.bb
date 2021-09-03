@@ -5,9 +5,15 @@
 #ifndef PDF_PPAPI_MIGRATION_GRAPHICS_H_
 #define PDF_PPAPI_MIGRATION_GRAPHICS_H_
 
+#include <memory>
+
 #include "pdf/ppapi_migration/callback.h"
 #include "ppapi/cpp/graphics_2d.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/size.h"
+
+class SkImage;
 
 namespace gfx {
 class Point;
@@ -35,11 +41,11 @@ class Graphics {
   // `true` if the callback is still pending.
   virtual bool Flush(ResultCallback callback) = 0;
 
-  // Paints the |src_rect| region of |image| to the graphics device. The image
+  // Paints the `src_rect` region of `image` to the graphics device. The image
   // must be compatible with the concrete `Graphics` implementation.
   virtual void PaintImage(const Image& image, const gfx::Rect& src_rect) = 0;
 
-  // Shifts the |clip| region of the graphics device by |amount|.
+  // Shifts the `clip` region of the graphics device by `amount`.
   virtual void Scroll(const gfx::Rect& clip, const gfx::Vector2d& amount) = 0;
 
   // Sets the output scale factor. Must be greater than 0.
@@ -78,6 +84,44 @@ class PepperGraphics final : public Graphics {
 
  private:
   pp::Graphics2D pepper_graphics_;
+};
+
+// A Skia graphics device.
+class SkiaGraphics final : public Graphics {
+ public:
+  // A client interface that needs to be registered when SkiaGraphics is
+  // created.
+  class Client {
+   public:
+    virtual ~Client() = default;
+
+    // Updates the client with the latest snapshot created by Flush().
+    virtual void UpdateSnapshot(sk_sp<SkImage> snapshot) = 0;
+  };
+
+  // `client` must remain valid throughout the lifespan of the object.
+  static std::unique_ptr<SkiaGraphics> Create(Client* client,
+                                              const gfx::Size& size);
+
+  ~SkiaGraphics() override;
+
+  bool Flush(ResultCallback callback) override;
+
+  void PaintImage(const Image& image, const gfx::Rect& src_rect) override;
+
+  void Scroll(const gfx::Rect& clip, const gfx::Vector2d& amount) override;
+  void SetScale(float scale) override;
+  void SetLayerTransform(float scale,
+                         const gfx::Point& origin,
+                         const gfx::Vector2d& translate) override;
+
+ private:
+  explicit SkiaGraphics(Client* client, const gfx::Size& size);
+
+  // Unowned pointer. The client is required to outlive this object.
+  Client* client_;
+
+  sk_sp<SkSurface> skia_graphics_;
 };
 
 }  // namespace chrome_pdf

@@ -34,7 +34,7 @@ using ::testing::Invoke;
 // compiling with ENABLE_TRACE_LOGGING, the mock receives no method calls.
 using StrictMockLoggingPlatform = ::testing::StrictMock<MockLoggingPlatform>;
 
-TEST(TraceLoggingTest, MacroCallScopedDoesntSegFault) {
+TEST(TraceLoggingTest, MacroCallScopedDoesNotSegFault) {
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
   EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
@@ -44,7 +44,7 @@ TEST(TraceLoggingTest, MacroCallScopedDoesntSegFault) {
   { TRACE_SCOPED(TraceCategory::Value::kAny, "test"); }
 }
 
-TEST(TraceLoggingTest, MacroCallDefaultScopedDoesntSegFault) {
+TEST(TraceLoggingTest, MacroCallDefaultScopedDoesNotSegFault) {
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
   EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))
@@ -54,7 +54,7 @@ TEST(TraceLoggingTest, MacroCallDefaultScopedDoesntSegFault) {
   { TRACE_DEFAULT_SCOPED(TraceCategory::Value::kAny); }
 }
 
-TEST(TraceLoggingTest, MacroCallUnscopedDoesntSegFault) {
+TEST(TraceLoggingTest, MacroCallUnscopedDoesNotSegFault) {
   StrictMockLoggingPlatform platform;
 #if defined(ENABLE_TRACE_LOGGING)
   EXPECT_CALL(platform, IsTraceLoggingEnabled(TraceCategory::Value::kAny))

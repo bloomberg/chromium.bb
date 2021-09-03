@@ -2,22 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/crypto/aes_base_encrypter.h"
+#include "quic/core/crypto/aes_base_encrypter.h"
 
 #include "absl/strings/string_view.h"
 #include "third_party/boringssl/src/include/openssl/aes.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_bug_tracker.h"
 
 namespace quic {
 
 bool AesBaseEncrypter::SetHeaderProtectionKey(absl::string_view key) {
   if (key.size() != GetKeySize()) {
-    QUIC_BUG << "Invalid key size for header protection: " << key.size();
+    QUIC_BUG(quic_bug_10726_1)
+        << "Invalid key size for header protection: " << key.size();
     return false;
   }
   if (AES_set_encrypt_key(reinterpret_cast<const uint8_t*>(key.data()),
                           key.size() * 8, &pne_key_) != 0) {
-    QUIC_BUG << "Unexpected failure of AES_set_encrypt_key";
+    QUIC_BUG(quic_bug_10726_2) << "Unexpected failure of AES_set_encrypt_key";
     return false;
   }
   return true;

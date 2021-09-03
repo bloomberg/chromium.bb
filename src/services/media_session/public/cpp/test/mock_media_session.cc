@@ -7,7 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/stl_util.h"
+#include "base/containers/contains.h"
+#include "base/ranges/algorithm.h"
 
 namespace media_session {
 namespace test {
@@ -66,15 +67,21 @@ void MockMediaSessionMojoObserver::MediaSessionInfoChanged(
       expected_controllable_ == session_info_->is_controllable) {
     run_loop_->Quit();
     expected_controllable_.reset();
-  } else if (wanted_state_ == session_info_->state ||
-             session_info_->playback_state == wanted_playback_state_ ||
-             session_info_->audio_video_state == wanted_audio_video_state_) {
-    run_loop_->Quit();
+  } else {
+    if (wanted_state_ == session_info_->state ||
+        session_info_->playback_state == wanted_playback_state_ ||
+        session_info_->microphone_state == wanted_microphone_state_ ||
+        session_info_->camera_state == wanted_camera_state_ ||
+        (wanted_audio_video_states_ &&
+         base::ranges::is_permutation(*session_info_->audio_video_states,
+                                      *wanted_audio_video_states_))) {
+      run_loop_->Quit();
+    }
   }
 }
 
 void MockMediaSessionMojoObserver::MediaSessionMetadataChanged(
-    const base::Optional<MediaMetadata>& metadata) {
+    const absl::optional<MediaMetadata>& metadata) {
   session_metadata_ = metadata;
 
   if (expected_metadata_.has_value() && expected_metadata_ == metadata) {
@@ -116,7 +123,7 @@ void MockMediaSessionMojoObserver::MediaSessionImagesChanged(
 }
 
 void MockMediaSessionMojoObserver::MediaSessionPositionChanged(
-    const base::Optional<media_session::MediaPosition>& position) {
+    const absl::optional<media_session::MediaPosition>& position) {
   session_position_ = position;
 
   if (position.has_value() && expected_position_.has_value() &&
@@ -151,12 +158,34 @@ void MockMediaSessionMojoObserver::WaitForPlaybackState(
   StartWaiting();
 }
 
-void MockMediaSessionMojoObserver::WaitForAudioVideoState(
-    mojom::MediaAudioVideoState wanted_state) {
-  if (session_info_ && session_info_->audio_video_state == wanted_state)
+void MockMediaSessionMojoObserver::WaitForMicrophoneState(
+    mojom::MicrophoneState wanted_state) {
+  if (session_info_ && session_info_->microphone_state == wanted_state)
     return;
 
-  wanted_audio_video_state_ = wanted_state;
+  wanted_microphone_state_ = wanted_state;
+  StartWaiting();
+  wanted_microphone_state_.reset();
+}
+
+void MockMediaSessionMojoObserver::WaitForCameraState(
+    mojom::CameraState wanted_state) {
+  if (session_info_ && session_info_->camera_state == wanted_state)
+    return;
+
+  wanted_camera_state_ = wanted_state;
+  StartWaiting();
+  wanted_camera_state_.reset();
+}
+
+void MockMediaSessionMojoObserver::WaitForAudioVideoStates(
+    const std::vector<mojom::MediaAudioVideoState>& wanted_states) {
+  if (session_info_ && base::ranges::is_permutation(
+                           *session_info_->audio_video_states, wanted_states)) {
+    return;
+  }
+
+  wanted_audio_video_states_ = wanted_states;
   StartWaiting();
 }
 
@@ -212,7 +241,7 @@ void MockMediaSessionMojoObserver::WaitForExpectedImagesOfType(
 }
 
 void MockMediaSessionMojoObserver::WaitForEmptyPosition() {
-  // |session_position_| is doubly wrapped in base::Optional so we must check
+  // |session_position_| is doubly wrapped in absl::optional so we must check
   // both values.
   if (session_position_.has_value() && !session_position_->has_value())
     return;
@@ -449,14 +478,14 @@ void MockMediaSession::FlushForTesting() {
 }
 
 void MockMediaSession::SimulateMetadataChanged(
-    const base::Optional<MediaMetadata>& metadata) {
+    const absl::optional<MediaMetadata>& metadata) {
   for (auto& observer : observers_) {
     observer->MediaSessionMetadataChanged(metadata);
   }
 }
 
 void MockMediaSession::SimulatePositionChanged(
-    const base::Optional<MediaPosition>& position) {
+    const absl::optional<MediaPosition>& position) {
   for (auto& observer : observers_) {
     observer->MediaSessionPositionChanged(position);
   }

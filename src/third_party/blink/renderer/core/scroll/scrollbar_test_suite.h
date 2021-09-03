@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_TEST_SUITE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_TEST_SUITE_H_
 
-#include <memory>
 #include "base/single_thread_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -50,10 +49,12 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
   }
 
   explicit MockScrollableArea()
-      : maximum_scroll_offset_(ScrollOffset(0, 100)),
+      : ScrollableArea(blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
+        maximum_scroll_offset_(ScrollOffset(0, 100)),
         chrome_client_(MakeGarbageCollected<MockPlatformChromeClient>()) {}
   explicit MockScrollableArea(const ScrollOffset& offset)
-      : maximum_scroll_offset_(offset),
+      : ScrollableArea(blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
+        maximum_scroll_offset_(offset),
         chrome_client_(MakeGarbageCollected<MockPlatformChromeClient>()) {}
 
   MOCK_CONST_METHOD0(VisualRectForScrollbarParts, LayoutRect());
@@ -141,4 +142,4 @@ class MockScrollableArea : public GarbageCollected<MockScrollableArea>,
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SCROLL_SCROLLBAR_TEST_SUITE_H_

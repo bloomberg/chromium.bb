@@ -5,11 +5,10 @@
 #ifndef CHROME_RENDERER_SEARCHBOX_SEARCHBOX_EXTENSION_H_
 #define CHROME_RENDERER_SEARCHBOX_SEARCHBOX_EXTENSION_H_
 
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/strings/string16.h"
-#include "chrome/common/search/omnibox.mojom.h"
 #include "ui/gfx/color_palette.h"
 
 namespace blink {
@@ -28,7 +27,7 @@ class SearchBoxExtension {
 
   // Helpers to dispatch Javascript events.
   static void DispatchChromeIdentityCheckResult(blink::WebLocalFrame* frame,
-                                                const base::string16& identity,
+                                                const std::u16string& identity,
                                                 bool identity_match);
   static void DispatchFocusChange(blink::WebLocalFrame* frame);
   static void DispatchAddCustomLinkResult(blink::WebLocalFrame* frame,
@@ -37,14 +36,6 @@ class SearchBoxExtension {
                                              bool success);
   static void DispatchDeleteCustomLinkResult(blink::WebLocalFrame* frame,
                                              bool success);
-  static void DispatchAutocompleteResultChanged(
-      blink::WebLocalFrame* frame,
-      search::mojom::AutocompleteResultPtr result);
-  static void DispatchAutocompleteMatchImageAvailable(
-      blink::WebLocalFrame* frame,
-      uint32_t match_index,
-      const std::string& image_url,
-      const std::string& data_url);
   static void DispatchInputCancel(blink::WebLocalFrame* frame);
   static void DispatchInputStart(blink::WebLocalFrame* frame);
   static void DispatchKeyCaptureChange(blink::WebLocalFrame* frame);

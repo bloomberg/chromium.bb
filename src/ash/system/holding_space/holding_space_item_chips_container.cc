@@ -5,11 +5,16 @@
 #include "ash/system/holding_space/holding_space_item_chips_container.h"
 
 #include "ash/public/cpp/holding_space/holding_space_constants.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/layout/layout_manager_base.h"
 #include "ui/views/layout/proposed_layout.h"
 
 namespace ash {
 namespace {
+
+// Appearance.
+constexpr int kNumberOfChipsPerRow = 2;
+constexpr int kSpacing = 8;
 
 // Need a custom grid layout to facilitate removal of views from the grid,
 // which can change the number of rows required. views::GridLayout makes this
@@ -99,7 +104,7 @@ class SimpleGridLayout : public views::LayoutManagerBase {
   }
 
  private:
-  mutable base::Optional<gfx::Size> cached_child_preferred_size_;
+  mutable absl::optional<gfx::Size> cached_child_preferred_size_;
 
   const int column_count_;
   const int column_spacing_;
@@ -109,14 +114,13 @@ class SimpleGridLayout : public views::LayoutManagerBase {
 
 HoldingSpaceItemChipsContainer::HoldingSpaceItemChipsContainer() {
   SetLayoutManager(std::make_unique<SimpleGridLayout>(
-      kHoldingSpaceChipsPerRow, kHoldingSpaceColumnSpacing,
-      kHoldingSpaceRowSpacing));
+      kNumberOfChipsPerRow, /*column_spacing=*/kSpacing,
+      /*row_spacing=*/kSpacing));
 }
 
 HoldingSpaceItemChipsContainer::~HoldingSpaceItemChipsContainer() = default;
 
-const char* HoldingSpaceItemChipsContainer::GetClassName() const {
-  return "HoldingSpaceItemChipsContainer";
-}
+BEGIN_METADATA(HoldingSpaceItemChipsContainer, views::View)
+END_METADATA
 
 }  // namespace ash

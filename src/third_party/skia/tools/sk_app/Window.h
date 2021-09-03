@@ -16,6 +16,8 @@
 #include "tools/skui/Key.h"
 #include "tools/skui/ModifierKey.h"
 
+#include <functional>
+
 class GrDirectContext;
 class SkCanvas;
 class SkSurface;
@@ -127,9 +129,11 @@ public:
     void onUIStateChanged(const SkString& stateName, const SkString& stateValue);
     void onPaint();
     void onResize(int width, int height);
+    void onActivate(bool isActive);
 
     int width() const;
     int height() const;
+    virtual float scaleFactor() const { return 1.0f; }
 
     virtual const DisplayParams& getRequestedDisplayParams() { return fRequestedDisplayParams; }
     virtual void setRequestedDisplayParams(const DisplayParams&, bool allowReattach = true);
@@ -146,6 +150,7 @@ protected:
 
     SkTDArray<Layer*>      fLayers;
     DisplayParams          fRequestedDisplayParams;
+    bool                   fIsActive = true;
 
     std::unique_ptr<WindowContext> fWindowContext;
 

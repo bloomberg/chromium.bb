@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/values.h"
 #include "components/policy/policy_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace policy {
 namespace internal {
@@ -37,11 +37,17 @@ enum SchemaOnErrorStrategy {
   // No errors will be allowed. This should not be used for policies, since it
   // basically prevents future changes to the policy (Server sends newField, but
   // clients running older versions of Chrome reject the policy because they
-  // don't know newField). Prefer to use |SCHEMA_ALLOW_UNKNOWN| for policies
+  // don't know newField). Prefer to use |SCHEMA_ALLOW_UNKNOWN| or
+  // |SCHEMA_ALLOW_UNKOWN_AND_INVALID_LIST_ENTRY| for policies
   // instead.
   SCHEMA_STRICT = 0,
   // Unknown properties in any dictionary will be ignored.
   SCHEMA_ALLOW_UNKNOWN,
+  // In addition to the previous, invalid list entries will be ignored for all
+  // lists in the schema. Should only be used in cases where dropping list items
+  // is safe. For example, can't be used if an empty list has a special meaning,
+  // like allowing everything.
+  SCHEMA_ALLOW_UNKNOWN_AND_INVALID_LIST_ENTRY,
 };
 
 // Schema validation options for Schema::ParseToDictAndValidate().
@@ -103,7 +109,7 @@ class POLICY_EXPORT Schema {
   // accept any strings.
   // |options| is a bitwise-OR combination of the options above (see
   // |kSchemaOptions*| above).
-  static base::Optional<base::Value> ParseToDictAndValidate(
+  static absl::optional<base::Value> ParseToDictAndValidate(
       const std::string& schema,
       int options,
       std::string* error);

@@ -8,7 +8,7 @@ module.exports = function (grunt) {
     pkg: grunt.file.readJSON('package.json'),
 
     clean: {
-      out: ['out/', 'out-wpt/'],
+      out: ['out/', 'out-wpt/', 'out-node/'],
     },
 
     run: {
@@ -18,7 +18,7 @@ module.exports = function (grunt) {
       },
       'generate-listings': {
         cmd: 'node',
-        args: ['tools/gen_listings', 'webgpu', 'unittests', 'demo'],
+        args: ['tools/gen_listings', 'out/', 'src/webgpu', 'src/unittests', 'src/demo'],
       },
       'generate-wpt-cts-html': {
         cmd: 'node',
@@ -56,6 +56,16 @@ module.exports = function (grunt) {
           '--ignore=src/webgpu/listing.ts',
         ],
       },
+      'build-out-node': {
+        cmd: 'node',
+        args: [
+          'node_modules/typescript/lib/tsc.js',
+          '--project', 'node.tsconfig.json',
+          '--outDir', 'out-node/',
+          '--noEmit', 'false',
+          '--declaration', 'false'
+        ],
+      },
       lint: {
         cmd: 'node',
         args: ['node_modules/eslint/bin/eslint', 'src/**/*.ts', '--max-warnings=0'],
@@ -70,31 +80,11 @@ module.exports = function (grunt) {
       }
     },
 
-    watch: {
-      src: {
-        files: ['src/**/*'],
-        tasks: ['build-standalone', 'ts:check', 'run:lint'],
-        options: {
-          spawn: false,
-        }
-      }
-    },
-
     copy: {
       'out-wpt-generated': {
         files: [
           { expand: true, cwd: 'out', src: 'common/framework/version.js', dest: 'out-wpt/' },
           { expand: true, cwd: 'out', src: 'webgpu/listing.js', dest: 'out-wpt/' },
-        ],
-      },
-      glslang: {
-        files: [
-          {
-            expand: true,
-            cwd: 'node_modules/@webgpu/glslang/dist/web-devel',
-            src: 'glslang.{js,wasm}',
-            dest: 'out/third_party/glslang_js/lib/',
-          },
         ],
       },
       'out-wpt-htmlfiles': {
@@ -110,19 +100,6 @@ module.exports = function (grunt) {
         port: 8080,
         host: '127.0.0.1',
         cache: -1,
-      },
-      'background': {
-        root: '.',
-        port: 8080,
-        host: '127.0.0.1',
-        cache: -1,
-        runInBackground: true,
-        logFn(req, res, error) {
-          // Only log errors to not spam the console.
-          if (error) {
-            console.error(error);
-          }
-        },
       },
     },
 
@@ -141,17 +118,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-http-server');
   grunt.loadNpmTasks('grunt-run');
   grunt.loadNpmTasks('grunt-ts');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-
-  grunt.event.on('watch', (action, filepath) => {
-    const buildArgs = grunt.config(['run', 'build-out', 'args']);
-    buildArgs[buildArgs.length - 1] = filepath;
-    grunt.config(['run', 'build-out', 'args'], buildArgs);
-
-    const lintArgs = grunt.config(['run', 'lint', 'args']);
-    lintArgs[lintArgs.length - 1] = filepath;
-    grunt.config(['run', 'lint', 'args'], lintArgs);
-  });
 
   const helpMessageTasks = [];
   function registerTaskAndAddToHelp(name, desc, deps) {
@@ -169,14 +135,12 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build-standalone', 'Build out/ (no checks, no WPT)', [
     'run:build-out',
-    'copy:glslang',
     'run:generate-version',
     'run:generate-listings',
   ]);
   grunt.registerTask('build-wpt', 'Build out/ (no checks)', [
     'run:build-out-wpt',
     'run:autoformat-out-wpt',
-    'copy:glslang',
     'run:generate-version',
     'run:generate-listings',
     'copy:out-wpt-generated',
@@ -192,35 +156,31 @@ module.exports = function (grunt) {
     'clean',
     'build-standalone',
     'build-wpt',
+    'run:build-out-node',
     'build-done-message',
     'ts:check',
     'run:unittest',
     'run:lint',
   ]);
-  registerTaskAndAddToHelp('test', 'Quick development build: standalone+typecheck+unittest', [
+  registerTaskAndAddToHelp('standalone', 'Build standalone and typecheck', [
     'set-quiet-mode',
     'build-standalone',
     'build-done-message',
     'ts:check',
-    'run:unittest',
   ]);
-  registerTaskAndAddToHelp('wpt', 'Build for WPT: wpt+typecheck+unittest', [
+  registerTaskAndAddToHelp('wpt', 'Build for WPT and typecheck', [
     'set-quiet-mode',
     'build-wpt',
     'build-done-message',
     'ts:check',
+  ]);
+  registerTaskAndAddToHelp('unittest', 'Build standalone, typecheck, and unittest', [
+    'standalone',
     'run:unittest',
   ]);
-  registerTaskAndAddToHelp('check', 'Typecheck and lint', [
+  registerTaskAndAddToHelp('check', 'Just typecheck', [
     'set-quiet-mode',
     'ts:check',
-    'run:lint',
-  ]);
-
-  registerTaskAndAddToHelp('dev', 'Start the dev server, and watch for changes', [
-    'build-standalone',
-    'http-server:background',
-    'watch',
   ]);
 
   registerTaskAndAddToHelp('serve', 'Serve out/ on 127.0.0.1:8080', ['http-server:.']);

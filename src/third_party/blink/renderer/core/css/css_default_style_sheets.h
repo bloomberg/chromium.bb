@@ -32,7 +32,9 @@
 
 namespace blink {
 
+class Document;
 class Element;
+class RuleFeatureSet;
 class RuleSet;
 class StyleSheetContents;
 
@@ -40,6 +42,8 @@ class CSSDefaultStyleSheets final
     : public GarbageCollected<CSSDefaultStyleSheets> {
  public:
   CORE_EXPORT static CSSDefaultStyleSheets& Instance();
+
+  static StyleSheetContents* ParseUASheet(const String&);
 
   CSSDefaultStyleSheets();
   CSSDefaultStyleSheets(const CSSDefaultStyleSheets&) = delete;
@@ -49,6 +53,7 @@ class CSSDefaultStyleSheets final
   bool EnsureDefaultStyleSheetsForPseudoElement(PseudoId);
   bool EnsureDefaultStyleSheetForXrOverlay();
   void EnsureDefaultStyleSheetForFullscreen();
+  bool EnsureDefaultStyleSheetForForcedColors();
 
   RuleSet* DefaultStyle() { return default_style_.Get(); }
   RuleSet* DefaultMathMLStyle() { return default_mathml_style_.Get(); }
@@ -62,6 +67,9 @@ class CSSDefaultStyleSheets final
   RuleSet* DefaultPseudoElementStyleOrNull() {
     return default_pseudo_element_style_.Get();
   }
+  RuleSet* DefaultMediaControlsStyle() {
+    return default_media_controls_style_.Get();
+  }
 
   StyleSheetContents* EnsureMobileViewportStyleSheet();
   StyleSheetContents* EnsureTelevisionViewportStyleSheet();
@@ -69,6 +77,7 @@ class CSSDefaultStyleSheets final
 
   StyleSheetContents* DefaultStyleSheet() { return default_style_sheet_.Get(); }
   StyleSheetContents* QuirksStyleSheet() { return quirks_style_sheet_.Get(); }
+  StyleSheetContents* PopupStyleSheet() { return popup_style_sheet_.Get(); }
   StyleSheetContents* SvgStyleSheet() { return svg_style_sheet_.Get(); }
   StyleSheetContents* MathmlStyleSheet() { return mathml_style_sheet_.Get(); }
   StyleSheetContents* MediaControlsStyleSheet() {
@@ -78,6 +87,9 @@ class CSSDefaultStyleSheets final
     return fullscreen_style_sheet_.Get();
   }
   StyleSheetContents* MarkerStyleSheet() { return marker_style_sheet_.Get(); }
+  StyleSheetContents* ForcedColorsStyleSheet() {
+    return forced_colors_style_sheet_.Get();
+  }
 
   CORE_EXPORT void PrepareForLeakDetection();
 
@@ -97,6 +109,8 @@ class CSSDefaultStyleSheets final
     return media_controls_style_sheet_loader_.get();
   }
 
+  void CollectFeaturesTo(const Document&, RuleFeatureSet&);
+
   void Trace(Visitor*) const;
 
  private:
@@ -110,6 +124,7 @@ class CSSDefaultStyleSheets final
   Member<RuleSet> default_view_source_style_;
   Member<RuleSet> default_forced_color_style_;
   Member<RuleSet> default_pseudo_element_style_;
+  Member<RuleSet> default_media_controls_style_;
 
   Member<StyleSheetContents> default_style_sheet_;
   Member<StyleSheetContents> mobile_viewport_style_sheet_;
@@ -121,8 +136,10 @@ class CSSDefaultStyleSheets final
   Member<StyleSheetContents> media_controls_style_sheet_;
   Member<StyleSheetContents> text_track_style_sheet_;
   Member<StyleSheetContents> fullscreen_style_sheet_;
+  Member<StyleSheetContents> popup_style_sheet_;
   Member<StyleSheetContents> webxr_overlay_style_sheet_;
   Member<StyleSheetContents> marker_style_sheet_;
+  Member<StyleSheetContents> forced_colors_style_sheet_;
 
   std::unique_ptr<UAStyleSheetLoader> media_controls_style_sheet_loader_;
 };

@@ -16,7 +16,7 @@
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/util/type_safety/pass_key.h"
+#include "base/types/pass_key.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/file_system/file_system_operation.h"
@@ -43,7 +43,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
   using WriteCallback = FileSystemOperation::WriteCallback;
   using OpenFileCallback = FileSystemOperation::OpenFileCallback;
   using ErrorBehavior = FileSystemOperation::ErrorBehavior;
-  using CopyProgressCallback = FileSystemOperation::CopyProgressCallback;
+  using CopyOrMoveProgressCallback =
+      FileSystemOperation::CopyOrMoveProgressCallback;
   using CopyFileProgressCallback =
       FileSystemOperation::CopyFileProgressCallback;
   using CopyOrMoveOption = FileSystemOperation::CopyOrMoveOption;
@@ -54,9 +55,9 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
   // |file_system_context| is stored as a raw pointer. The caller must ensure
   // that |file_system_context| outlives the new instance.
   FileSystemOperationRunner(
-      util::PassKey<FileSystemContext>,
+      base::PassKey<FileSystemContext>,
       const scoped_refptr<FileSystemContext>& file_system_context);
-  FileSystemOperationRunner(util::PassKey<FileSystemContext>,
+  FileSystemOperationRunner(base::PassKey<FileSystemContext>,
                             FileSystemContext* file_system_context);
   virtual ~FileSystemOperationRunner();
 
@@ -84,7 +85,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
                    const FileSystemURL& dest_url,
                    CopyOrMoveOption option,
                    ErrorBehavior error_behavior,
-                   const CopyProgressCallback& progress_callback,
+                   const CopyOrMoveProgressCallback& progress_callback,
                    StatusCallback callback);
 
   // Moves a file or directory from |src_url| to |dest_url|. A new file
@@ -93,6 +94,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
   OperationID Move(const FileSystemURL& src_url,
                    const FileSystemURL& dest_url,
                    CopyOrMoveOption option,
+                   ErrorBehavior error_behavior,
+                   const CopyOrMoveProgressCallback& progress_callback,
                    StatusCallback callback);
 
   // Checks if a directory is present at |url|.
@@ -283,8 +286,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemOperationRunner {
                          scoped_refptr<ShareableFileReference> file_ref);
 
   void OnCopyProgress(const OperationID id,
-                      const CopyProgressCallback& callback,
-                      FileSystemOperation::CopyProgressType type,
+                      const CopyOrMoveProgressCallback& callback,
+                      FileSystemOperation::CopyOrMoveProgressType type,
                       const FileSystemURL& source_url,
                       const FileSystemURL& dest_url,
                       int64_t size);

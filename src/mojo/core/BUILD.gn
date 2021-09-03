@@ -66,7 +66,6 @@ template("core_impl_source_set") {
       "platform_handle_utils.h",
       "platform_shared_memory_mapping.h",
       "request_context.h",
-      "scoped_process_handle.h",
       "shared_buffer_dispatcher.h",
       "user_message_impl.h",
     ]
@@ -94,7 +93,6 @@ template("core_impl_source_set") {
       "platform_handle_utils.cc",
       "platform_shared_memory_mapping.cc",
       "request_context.cc",
-      "scoped_process_handle.cc",
       "shared_buffer_dispatcher.cc",
       "user_message_impl.cc",
       "watch.cc",
@@ -107,6 +105,7 @@ template("core_impl_source_set") {
 
     public_deps = [
       "//base",
+      "//mojo/core/embedder:features",
       "//mojo/core/ports",
       "//mojo/public/c/system:headers",
       "//mojo/public/cpp/platform",
@@ -123,7 +122,17 @@ template("core_impl_source_set") {
         sources += [
           "broker_posix.cc",
           "channel_posix.cc",
+          "channel_posix.h",
         ]
+      }
+
+      if ((is_linux || is_chromeos || is_android) && !is_nacl) {
+        sources += [
+          "channel_linux.cc",
+          "channel_linux.h",
+        ]
+
+        public += [ "channel_linux.h" ]
       }
     }
 
@@ -202,7 +211,7 @@ if (is_chromeos || is_linux || is_android || is_win) {
     }
   }
 
-  if (is_chromeos) {
+  if (is_chromeos_ash) {
     if (target_cpu == "arm" || target_cpu == "arm64") {
       android32_toolchain = "android_clang_arm"
       android64_toolchain = "android_clang_arm64"

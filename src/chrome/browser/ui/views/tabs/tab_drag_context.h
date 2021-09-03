@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_TABS_TAB_DRAG_CONTEXT_H_
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_DRAG_CONTEXT_H_
 
+#include <memory>
 #include <vector>
 
-#include "base/optional.h"
+#include "base/compiler_specific.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/list_selection_model.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -41,16 +43,18 @@ class TabDragContext {
 
   // Returns the index of the active tab in touch mode, or no value if not in
   // touch mode.
-  virtual base::Optional<int> GetActiveTouchIndex() const = 0;
+  virtual absl::optional<int> GetActiveTouchIndex() const = 0;
 
   // Returns the tab drag controller owned by this delegate, or null if none.
   virtual TabDragController* GetDragController() = 0;
 
   // Takes ownership of |controller|.
-  virtual void OwnDragController(TabDragController* controller) = 0;
+  virtual void OwnDragController(
+      std::unique_ptr<TabDragController> controller) = 0;
 
   // Releases ownership of the current TabDragController.
-  virtual TabDragController* ReleaseDragController() = 0;
+  virtual std::unique_ptr<TabDragController> ReleaseDragController()
+      WARN_UNUSED_RESULT = 0;
 
   // Destroys the current TabDragController. This cancel the existing drag
   // operation.
@@ -85,19 +89,20 @@ class TabDragContext {
   // this tabstrip given the DraggedTabView's bounds |dragged_bounds| in
   // coordinates relative to |attached_tabstrip_| and has had the mirroring
   // transformation applied.
+  // |dragged_views| are the view children of |attached_tabstrip_| that are
+  // part of the drag.
   // |mouse_has_ever_moved_left| and |mouse_has_ever_moved_right| are used
   // only in stacked tabs cases.
   // |group| is set if the drag is originating from a group header, in which
   // case the entire group is dragged and should not be dropped into other
   // groups.
-  // NOTE: this is invoked from Attach() before the tabs have been inserted.
   virtual int GetInsertionIndexForDraggedBounds(
       const gfx::Rect& dragged_bounds,
-      bool attaching,
+      std::vector<TabSlotView*> dragged_views,
       int num_dragged_tabs,
       bool mouse_has_ever_moved_left,
       bool mouse_has_ever_moved_right,
-      base::Optional<tab_groups::TabGroupId> group) const = 0;
+      absl::optional<tab_groups::TabGroupId> group) const = 0;
 
   // Returns true if |dragged_bounds| is close enough to the next stacked tab
   // so that the active tab should be dragged there.

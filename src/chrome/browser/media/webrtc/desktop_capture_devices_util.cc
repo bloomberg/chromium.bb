@@ -14,15 +14,78 @@
 #include "chrome/browser/ui/tab_sharing/tab_sharing_ui.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
 #include "media/audio/audio_device_description.h"
+#include "media/mojo/mojom/capture_handle.mojom.h"
 #include "media/mojo/mojom/display_media_information.mojom.h"
+#include "third_party/blink/public/mojom/media/capture_handle_config.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
+// TODO(crbug.com/1208868): Eliminate code duplication with
+// capture_handle_manager.cc.
+media::mojom::CaptureHandlePtr CreateCaptureHandle(
+    content::WebContents* capturer,
+    const url::Origin& capturer_origin,
+    const content::DesktopMediaID& captured_id) {
+  if (capturer_origin.opaque()) {
+    return nullptr;
+  }
+
+  content::RenderFrameHost* const captured_rfh =
+      content::RenderFrameHost::FromID(
+          captured_id.web_contents_id.render_process_id,
+          captured_id.web_contents_id.main_render_frame_id);
+  if (!captured_rfh || !captured_rfh->IsCurrent()) {
+    return nullptr;
+  }
+
+  content::WebContents* const captured =
+      content::WebContents::FromRenderFrameHost(captured_rfh);
+  if (!captured) {
+    return nullptr;
+  }
+
+  const auto& captured_config = captured->GetCaptureHandleConfig();
+  if (!captured_config.all_origins_permitted &&
+      std::none_of(captured_config.permitted_origins.begin(),
+                   captured_config.permitted_origins.end(),
+                   [capturer_origin](const url::Origin& permitted_origin) {
+                     return capturer_origin.IsSameOriginWith(permitted_origin);
+                   })) {
+    return nullptr;
+  }
+
+  // Observing CaptureHandle when either the capturing or the captured party
+  // is incognito is disallowed, except for self-capture.
+  if (capturer->GetMainFrame() != captured->GetMainFrame()) {
+    if (capturer->GetBrowserContext()->IsOffTheRecord() ||
+        captured->GetBrowserContext()->IsOffTheRecord()) {
+      return nullptr;
+    }
+  }
+
+  if (!captured_config.expose_origin &&
+      captured_config.capture_handle.empty()) {
+    return nullptr;
+  }
+
+  auto result = media::mojom::CaptureHandle::New();
+  if (captured_config.expose_origin) {
+    result->origin = captured->GetMainFrame()->GetLastCommittedOrigin();
+  }
+  result->capture_handle = captured_config.capture_handle;
+
+  return result;
+}
+
 media::mojom::DisplayMediaInformationPtr
 DesktopMediaIDToDisplayMediaInformation(
+    content::WebContents* capturer,
+    const url::Origin& capturer_origin,
     const content::DesktopMediaID& media_id) {
   media::mojom::DisplayCaptureSurfaceType display_surface =
       media::mojom::DisplayCaptureSurfaceType::MONITOR;
@@ -35,6 +98,8 @@ DesktopMediaIDToDisplayMediaInformation(
 #else
   const bool uses_aura = false;
 #endif  // defined(USE_AURA)
+
+  media::mojom::CaptureHandlePtr capture_handle;
   switch (media_id.type) {
     case content::DesktopMediaID::TYPE_SCREEN:
       display_surface = media::mojom::DisplayCaptureSurfaceType::MONITOR;
@@ -49,18 +114,19 @@ DesktopMediaIDToDisplayMediaInformation(
     case content::DesktopMediaID::TYPE_WEB_CONTENTS:
       display_surface = media::mojom::DisplayCaptureSurfaceType::BROWSER;
       cursor = media::mojom::CursorCaptureType::MOTION;
+      capture_handle = CreateCaptureHandle(capturer, capturer_origin, media_id);
       break;
     case content::DesktopMediaID::TYPE_NONE:
       break;
   }
 
-  return media::mojom::DisplayMediaInformation::New(display_surface,
-                                                    logical_surface, cursor);
+  return media::mojom::DisplayMediaInformation::New(
+      display_surface, logical_surface, cursor, std::move(capture_handle));
 }
 
-base::string16 GetStopSharingUIString(
-    const base::string16& application_title,
-    const base::string16& registered_extension_name,
+std::u16string GetStopSharingUIString(
+    const std::u16string& application_title,
+    const std::u16string& registered_extension_name,
     bool capture_audio,
     content::DesktopMediaID::Type capture_type) {
   if (!capture_audio) {
@@ -127,13 +193,38 @@ base::string16 GetStopSharingUIString(
       }
     }
   }
-  return base::string16();
+  return std::u16string();
+}
+
+std::string DeviceNamePrefix(
+    content::WebContents* web_contents,
+    blink::mojom::MediaStreamType requested_stream_type,
+    const content::DesktopMediaID& media_id) {
+  if (!web_contents ||
+      requested_stream_type !=
+          blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE_THIS_TAB) {
+    return std::string();
+  }
+
+  // Note that all of these must still be checked, as the explicit-selection
+  // dialog for |getCurrentBrowsingContextMedia| could still return something
+  // other than the current tab - be it a screen, window, or another tab.
+  if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS &&
+      web_contents->GetMainFrame()->GetProcess()->GetID() ==
+          media_id.web_contents_id.render_process_id &&
+      web_contents->GetMainFrame()->GetRoutingID() ==
+          media_id.web_contents_id.main_render_frame_id) {
+    return "current-";
+  }
+
+  return std::string();
 }
 
 }  // namespace
 
 std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     content::WebContents* web_contents,
+    const url::Origin& capturer_origin,
     blink::MediaStreamDevices* devices,
     const content::DesktopMediaID& media_id,
     blink::mojom::MediaStreamType devices_video_type,
@@ -141,8 +232,8 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
     bool capture_audio,
     bool disable_local_echo,
     bool display_notification,
-    const base::string16& application_title,
-    const base::string16& registered_extension_name) {
+    const std::u16string& application_title,
+    const std::u16string& registered_extension_name) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   DVLOG(2) << __func__ << ": media_id " << media_id.ToString()
@@ -153,9 +244,13 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
            << registered_extension_name;
 
   // Add selected desktop source to the list.
-  auto device = blink::MediaStreamDevice(
-      devices_video_type, media_id.ToString(), media_id.ToString());
-  device.display_media_info = DesktopMediaIDToDisplayMediaInformation(media_id);
+  const std::string device_id = media_id.ToString();
+  const std::string device_name =
+      DeviceNamePrefix(web_contents, devices_video_type, media_id) + device_id;
+  auto device =
+      blink::MediaStreamDevice(devices_video_type, device_id, device_name);
+  device.display_media_info = DesktopMediaIDToDisplayMediaInformation(
+      web_contents, capturer_origin, media_id);
   devices->push_back(device);
   if (capture_audio) {
     if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
@@ -194,5 +289,6 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
 
   return MediaCaptureDevicesDispatcher::GetInstance()
       ->GetMediaStreamCaptureIndicator()
-      ->RegisterMediaStream(web_contents, *devices, std::move(notification_ui));
+      ->RegisterMediaStream(web_contents, *devices, std::move(notification_ui),
+                            application_title);
 }

@@ -7,9 +7,11 @@
 #include <memory>
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
+#include "components/live_caption/pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/soda/soda_installer.h"
+#include "media/base/media_switches.h"
 
 class PrefChangeRegistrar;
 
@@ -29,10 +31,18 @@ SpeechRecognitionClientBrowserInterface::
       base::BindRepeating(&SpeechRecognitionClientBrowserInterface::
                               OnSpeechRecognitionAvailabilityChanged,
                           base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kLiveCaptionLanguageCode,
+      base::BindRepeating(&SpeechRecognitionClientBrowserInterface::
+                              OnSpeechRecognitionLanguageChanged,
+                          base::Unretained(this)));
+  speech::SodaInstaller::GetInstance()->AddObserver(this);
 }
 
 SpeechRecognitionClientBrowserInterface::
-    ~SpeechRecognitionClientBrowserInterface() = default;
+    ~SpeechRecognitionClientBrowserInterface() {
+  speech::SodaInstaller::GetInstance()->RemoveObserver(this);
+}
 
 void SpeechRecognitionClientBrowserInterface::BindReceiver(
     mojo::PendingReceiver<media::mojom::SpeechRecognitionClientBrowserInterface>
@@ -41,11 +51,15 @@ void SpeechRecognitionClientBrowserInterface::BindReceiver(
 }
 
 void SpeechRecognitionClientBrowserInterface::
-    BindSpeechRecognitionAvailabilityObserver(
-        mojo::PendingRemote<media::mojom::SpeechRecognitionAvailabilityObserver>
+    BindSpeechRecognitionBrowserObserver(
+        mojo::PendingRemote<media::mojom::SpeechRecognitionBrowserObserver>
             pending_remote) {
   speech_recognition_availibility_observers_.Add(std::move(pending_remote));
   OnSpeechRecognitionAvailabilityChanged();
+}
+
+void SpeechRecognitionClientBrowserInterface::OnSodaInstalled() {
+  NotifyObservers(profile_prefs_->GetBoolean(prefs::kLiveCaptionEnabled));
 }
 
 void SpeechRecognitionClientBrowserInterface::
@@ -54,6 +68,26 @@ void SpeechRecognitionClientBrowserInterface::
     return;
 
   bool enabled = profile_prefs_->GetBoolean(prefs::kLiveCaptionEnabled);
+
+  if (enabled) {
+    if (!base::FeatureList::IsEnabled(media::kUseSodaForLiveCaption) ||
+        speech::SodaInstaller::GetInstance()->IsSodaInstalled()) {
+      NotifyObservers(enabled);
+    }
+  } else {
+    NotifyObservers(enabled);
+  }
+}
+
+void SpeechRecognitionClientBrowserInterface::
+    OnSpeechRecognitionLanguageChanged() {
+  for (auto& observer : speech_recognition_availibility_observers_) {
+    observer->SpeechRecognitionLanguageChanged(
+        profile_prefs_->GetString(prefs::kLiveCaptionLanguageCode));
+  }
+}
+
+void SpeechRecognitionClientBrowserInterface::NotifyObservers(bool enabled) {
   for (auto& observer : speech_recognition_availibility_observers_) {
     observer->SpeechRecognitionAvailabilityChanged(enabled);
   }

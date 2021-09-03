@@ -19,6 +19,7 @@
 <translation id="1359897965706325498">배너</translation>
 <translation id="145015347812617860">항목 <ph name="COUNT" />개</translation>
 <translation id="1480676835519562650">여러 항목 선택 가능, <ph name="COUNT" />개 중 <ph name="SELECTED" />개 선택됨.</translation>
+<translation id="1588438908519853928">일반</translation>
 <translation id="1589122976691792535">지역</translation>
 <translation id="1591562245178063882">이번 달</translation>
 <translation id="1637811476055996098">파일 선택</translation>
@@ -84,6 +85,7 @@
 <translation id="3175736971608411871">타이머</translation>
 <translation id="3199563858620722075">콤보 상자</translation>
 <translation id="3220661731597678625">현재 단계</translation>
+<translation id="3321030238473337787">재생 속도</translation>
 <translation id="3329013043687509092">채도</translation>
 <translation id="3450233048674729344">값은 <ph name="MAXIMUM" /> 이하여야 합니다.</translation>
 <translation id="3486220673238053218">정의</translation>
@@ -111,6 +113,7 @@
 <translation id="4248100235867064564">메뉴 표시줄</translation>
 <translation id="4293574643247337246">페이지 헤더</translation>
 <translation id="4360991593054037559">유효한 값을 입력해 주세요. 가장 근접한 유효 값 2개는 <ph name="VALID_VALUE_LOW" /> 및 <ph name="VALID_VALUE_HIGHER" />입니다.</translation>
+<translation id="4371899966896349864">재생 속도 메뉴 숨기기</translation>
 <translation id="4384249794467006333">라벨이 지정되지 않은 이미지입니다. 이미지 설명을 확인하려면 오른쪽 상단에서 옵션 더보기 메뉴를 여세요.</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4444765639179266822">텍스트가 <ph name="OCR_TEXT" />인 것으로 보입니다</translation>
@@ -147,15 +150,18 @@
 <translation id="512758898067543763">행 헤더</translation>
 <translation id="5143125788380636750">에필로그</translation>
 <translation id="5164977714490026579">값은 <ph name="MINIMUM" /> 이상이어야 합니다.</translation>
+<translation id="5196716972587102051">2</translation>
 <translation id="520299402983819650"><ph name="QUANTITY" />PB</translation>
 <translation id="5307600278924710095">'<ph name="ATSIGN" />' 앞 부분을 입력해 주세요. '<ph name="INVALIDADDRESS" />'(이)가 완전하지 않습니다.</translation>
 <translation id="5334352251556557839">미디어를 재생할 수 없습니다.</translation>
 <translation id="537648784377940524">최소 날짜(<ph name="MIN_DATE_OR_TIME" />)는 최대 날짜(<ph name="MAX_DATE_OR_TIME" />) 이전이어야 합니다.</translation>
+<translation id="5378437566635403538">펼쳐졌습니다. 대화상자가 열렸습니다.</translation>
 <translation id="5406322316791861025">그림</translation>
 <translation id="5425179576310518467">현재 날짜</translation>
 <translation id="5453733299334684579">트리 항목</translation>
 <translation id="5466621249238537318">파일을 한 개 이상 선택하세요.</translation>
 <translation id="5468998798572797635">전체화면 닫기</translation>
+<translation id="5516235301412634559">0.75</translation>
 <translation id="5516424706154626233">날짜 선택기</translation>
 <translation id="5537725057119320332">전송</translation>
 <translation id="5546461542133609677">음소거 해제</translation>
@@ -167,6 +173,8 @@
 <translation id="5677946354068040947">옵션 더보기</translation>
 <translation id="576709008726043716">소개</translation>
 <translation id="57838592816432529">음소거</translation>
+<translation id="5786442179789148008">재생 속도 메뉴 표시</translation>
+<translation id="5787939484346677755">펼쳐졌습니다. 자동 완성 옵션을 사용할 수 있습니다.</translation>
 <translation id="5860033963881614850">사용 안함</translation>
 <translation id="588258955323874662">전체화면</translation>
 <translation id="5888666972993069672">현재 <ph name="DEVICE_FRIENDLY_NAME" />(으)로 전송 중</translation>
@@ -174,12 +182,14 @@
 <translation id="5916664084637901428">사용</translation>
 <translation id="5939518447894949180">초기화</translation>
 <translation id="5966707198760109579">주</translation>
+<translation id="5985507339671257014">0.5</translation>
 <translation id="5987525920412732405">스핀 버튼</translation>
 <translation id="6011459053400940133">볼륨 슬라이더</translation>
 <translation id="6015796118275082299">연도</translation>
 <translation id="6023896073578205740">목록 상자</translation>
 <translation id="6150588977291308318">참고문헌</translation>
 <translation id="6164829606128959761">미터</translation>
+<translation id="6165053282446038410">펼쳐졌습니다. 자동 완성 옵션 <ph name="COUNT" />개를 사용할 수 있습니다.</translation>
 <translation id="6166809985690652833">후기</translation>
 <translation id="6209276755895393898"><ph name="DESCRIPTION" /> 같습니다</translation>
 <translation id="6212595056017402527">현재 페이지</translation>
@@ -200,6 +210,7 @@
 <translation id="6643016212128521049">삭제</translation>
 <translation id="668171684555832681">기타...</translation>
 <translation id="6692633176391053278">증감자</translation>
+<translation id="6696580792574109116">월 선택 도구</translation>
 <translation id="6709093583001123835">값이 <ph name="VALUE" />여야 합니다.</translation>
 <translation id="6709570249143506788">재생 품질 나쁨</translation>
 <translation id="6755330956360078551">도움말</translation>
@@ -210,16 +221,19 @@
 <translation id="6843725295806269523">음소거</translation>
 <translation id="6885760532393684712">디렉터리</translation>
 <translation id="689129560213475294">출판사 이름</translation>
+<translation id="6919891270253167948">1.5</translation>
 <translation id="6934078000481955284">인용구</translation>
 <translation id="693476918119313863">머리글</translation>
 <translation id="6941933287844615239">미디어 다운로드</translation>
 <translation id="6981594929165378967">삽입</translation>
+<translation id="698788488269350478">펼쳐졌습니다.</translation>
 <translation id="6989848892321993519">이 텍스트를 <ph name="MIN_CHARACTERS" />자 이상으로 늘리세요(현재 1자 사용 중).</translation>
 <translation id="7034405885550056553">추천</translation>
 <translation id="709897737746224366">요청한 형식과 일치시키세요.</translation>
 <translation id="7102274145889307184">현재 위치</translation>
 <translation id="7118469954320184356">설명이 없습니다.</translation>
 <translation id="7139483182332611405">머리말</translation>
+<translation id="7198226213493847604">메뉴 팝업 버튼</translation>
 <translation id="7214187073215825913">콘텐츠 정보</translation>
 <translation id="7238347055216017155">강조</translation>
 <translation id="7263440858009898357">목록에서 항목을 선택하세요.</translation>
@@ -244,6 +258,7 @@
 <translation id="7745230546936012372">누락된 이미지 설명을 확인하려면 컨텍스트 메뉴를 여세요.</translation>
 <translation id="7750228210027921155">PIP 모드</translation>
 <translation id="775297008183122718">입력값이 잘못되었습니다.</translation>
+<translation id="7782515065589691344">1.25</translation>
 <translation id="7789962463072032349">일시중지</translation>
 <translation id="7802800022689234070">펼치기/접기 삼각형</translation>
 <translation id="7852167693871241274">색조 슬라이더</translation>
@@ -257,6 +272,7 @@
 <translation id="8105797009065549151">참고 자료</translation>
 <translation id="811583516810654505">설명 가져오는 중...</translation>
 <translation id="8117451130807776954">이번 주</translation>
+<translation id="8131955114056917397">0.25</translation>
 <translation id="8199524924445686405">연도</translation>
 <translation id="8208673686607688524">로컬 날짜 및 시간 선택도구</translation>
 <translation id="8261464734335370856">맞춤법이 잘못되었습니다.</translation>
@@ -281,11 +297,14 @@
 <translation id="8613126697340063924">원격 재생 제어</translation>
 <translation id="862370744433916922">부제</translation>
 <translation id="8634971699417195529">월 선택도구 표시</translation>
+<translation id="8637593834423658414">1.75</translation>
+<translation id="8668988909814782445">자동 줄바꿈</translation>
 <translation id="8711688047404765493">출력</translation>
 <translation id="8750798805984357768">다음 옵션 중 하나를 선택하세요.</translation>
 <translation id="8808573423886751634">장</translation>
 <translation id="8845239796550121995">TV로 전송 중</translation>
 <translation id="8851136666856101339">main</translation>
+<translation id="8861621546968757188">대화상자 팝업 버튼</translation>
 <translation id="8875657656876809964">동영상 재생 오류</translation>
 <translation id="8889402386540077796">색조</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" />KB</translation>

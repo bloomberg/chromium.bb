@@ -34,7 +34,7 @@ namespace {
 // It's possible for an http request to be silently stalled. We set a time
 // limit for all http requests, beyond which the request is cancelled and
 // treated as a transient failure.
-const int kMaxHttpRequestTimeSeconds = 60 * 5;  // 5 minutes.
+constexpr base::TimeDelta kMaxHttpRequestTime = base::TimeDelta::FromMinutes(5);
 
 // Helper method for logging timeouts via UMA.
 void LogTimeout(bool timed_out) {
@@ -182,11 +182,9 @@ void HttpBridge::MakeAsynchronousPost() {
   // Start the timer on the network thread (the same thread progress is made
   // on, and on which the url fetcher lives).
   DCHECK(!fetch_state_.http_request_timeout_timer);
-  fetch_state_.http_request_timeout_timer =
-      std::make_unique<base::OneShotTimer>();
-  fetch_state_.http_request_timeout_timer->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kMaxHttpRequestTimeSeconds),
-      base::BindOnce(&HttpBridge::OnURLLoadTimedOut, this));
+  fetch_state_.http_request_timeout_timer = std::make_unique<base::DelayTimer>(
+      FROM_HERE, kMaxHttpRequestTime, this, &HttpBridge::OnURLLoadTimedOut);
+  fetch_state_.http_request_timeout_timer->Reset();
 
   // Some tests inject |url_loader_factory_| created to operated on the
   // IO-capable thread currently running.
@@ -315,7 +313,7 @@ void HttpBridge::Abort() {
 
 void HttpBridge::DestroyURLLoaderOnIOThread(
     std::unique_ptr<network::SimpleURLLoader> loader,
-    std::unique_ptr<base::OneShotTimer> loader_timer) {
+    std::unique_ptr<base::DelayTimer> loader_timer) {
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
 
   // Both |loader_timer| and |loader| go out of scope.
@@ -353,8 +351,7 @@ void HttpBridge::OnURLLoadCompleteInternal(
   DCHECK(network_task_runner_->RunsTasksInCurrentSequence());
 
   // Stop the request timer now that the request completed.
-  if (fetch_state_.http_request_timeout_timer)
-    fetch_state_.http_request_timeout_timer.reset();
+  fetch_state_.http_request_timeout_timer = nullptr;
 
   // TODO(crbug.com/844968): Relax this if-check to become a DCHECK?
   if (fetch_state_.aborted)
@@ -373,8 +370,6 @@ void HttpBridge::OnURLLoadCompleteInternal(
                            fetch_state_.request_succeeded
                                ? fetch_state_.http_status_code
                                : fetch_state_.net_error_code);
-  UMA_HISTOGRAM_LONG_TIMES("Sync.URLFetchTime",
-                           fetch_state_.end_time - fetch_state_.start_time);
 
   // Use a real (non-debug) log to facilitate troubleshooting in the wild.
   VLOG(2) << "HttpBridge::OnURLFetchComplete for: " << final_url.spec();
@@ -424,7 +419,7 @@ void HttpBridge::OnURLLoadTimedOut() {
   url_loader_factory_ = nullptr;
 
   // Timer is smart enough to handle being deleted as part of the invoked task.
-  fetch_state_.http_request_timeout_timer.reset();
+  fetch_state_.http_request_timeout_timer = nullptr;
 
   // Wake the blocked syncer thread in MakeSynchronousPost.
   // WARNING: DONT DO ANYTHING AFTER THIS CALL! |this| may be deleted!

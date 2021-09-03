@@ -24,7 +24,7 @@ class DesktopMediaListView
   DesktopMediaListView(DesktopMediaListController* controller,
                        DesktopMediaSourceViewStyle generic_style,
                        DesktopMediaSourceViewStyle single_style,
-                       const base::string16& accessible_name);
+                       const std::u16string& accessible_name);
 
   ~DesktopMediaListView() override;
 
@@ -38,7 +38,7 @@ class DesktopMediaListView
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // DesktopMediaListController::ListView:
-  base::Optional<content::DesktopMediaID> GetSelection() override;
+  absl::optional<content::DesktopMediaID> GetSelection() override;
   DesktopMediaListController::SourceListListener* GetSourceListListener()
       override;
 
@@ -61,7 +61,7 @@ class DesktopMediaListView
   DesktopMediaSourceViewStyle generic_style_;
   DesktopMediaSourceViewStyle* active_style_;
 
-  const base::string16 accessible_name_;
+  const std::u16string accessible_name_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopMediaListView);
 };

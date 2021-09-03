@@ -162,6 +162,7 @@ public class StatusIndicatorTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1188377")
     public void testShowAfterHide() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
 

@@ -18,7 +18,7 @@ const char* EmptyPredictor::GetName() const {
 }
 
 void EmptyPredictor::Reset() {
-  last_input_ = base::nullopt;
+  last_input_ = absl::nullopt;
 }
 
 void EmptyPredictor::Update(const InputData& cur_input) {
@@ -30,7 +30,8 @@ bool EmptyPredictor::HasPrediction() const {
 }
 
 std::unique_ptr<InputPredictor::InputData> EmptyPredictor::GeneratePrediction(
-    base::TimeTicks predict_time) const {
+    base::TimeTicks predict_time,
+    base::TimeDelta frame_interval) {
   if (!HasPrediction())
     return nullptr;
   return std::make_unique<InputData>(last_input_.value());

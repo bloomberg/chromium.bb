@@ -215,7 +215,7 @@ TEST_P(DumpSymsRegressionTest, EnsureDumpedSymbolsMatch) {
   EXPECT_EQ(expected_symbols, symbols);
 }
 
-INSTANTIATE_TEST_CASE_P(DumpSyms, DumpSymsRegressionTest,
+INSTANTIATE_TEST_SUITE_P(DumpSyms, DumpSymsRegressionTest,
   testing::ValuesIn(kRootNames));
 
 TEST_P(DumpSymsPEOnlyRegressionTest, EnsurePEOnlyDumpedSymbolsMatch) {
@@ -235,7 +235,7 @@ TEST_P(DumpSymsPEOnlyRegressionTest, EnsurePEOnlyDumpedSymbolsMatch) {
   EXPECT_EQ(expected_symbols, symbols);
 }
 
-INSTANTIATE_TEST_CASE_P(PEOnlyDumpSyms, DumpSymsPEOnlyRegressionTest,
+INSTANTIATE_TEST_SUITE_P(PEOnlyDumpSyms, DumpSymsPEOnlyRegressionTest,
   testing::ValuesIn(kPEOnlyRootNames));
 
 

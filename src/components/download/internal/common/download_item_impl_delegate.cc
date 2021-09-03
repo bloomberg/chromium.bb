@@ -38,7 +38,7 @@ void DownloadItemImplDelegate::DetermineDownloadTarget(
       target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE,
       DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
       DownloadItem::MixedContentStatus::UNKNOWN, target_path,
-      base::nullopt /*download_schedule*/, DOWNLOAD_INTERRUPT_REASON_NONE);
+      absl::nullopt /*download_schedule*/, DOWNLOAD_INTERRUPT_REASON_NONE);
 }
 
 bool DownloadItemImplDelegate::ShouldCompleteDownload(
@@ -109,6 +109,12 @@ void DownloadItemImplDelegate::BindWakeLockProvider(
 QuarantineConnectionCallback
 DownloadItemImplDelegate::GetQuarantineConnectionCallback() {
   return base::NullCallback();
+}
+
+std::unique_ptr<DownloadItemRenameHandler>
+DownloadItemImplDelegate::GetRenameHandlerForDownload(
+    DownloadItemImpl* download_item) {
+  return nullptr;
 }
 
 }  // namespace download

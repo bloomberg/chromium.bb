@@ -43,6 +43,12 @@ ArcRotationLockBridge* ArcRotationLockBridge::GetForBrowserContext(
   return ArcRotationLockBridgeFactory::GetForBrowserContext(context);
 }
 
+// static
+ArcRotationLockBridge* ArcRotationLockBridge::GetForBrowserContextForTesting(
+    content::BrowserContext* context) {
+  return ArcRotationLockBridgeFactory::GetForBrowserContextForTesting(context);
+}
+
 ArcRotationLockBridge::ArcRotationLockBridge(content::BrowserContext* context,
                                              ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service) {
@@ -93,10 +99,11 @@ void ArcRotationLockBridge::SendRotationLockState() {
     DCHECK(found);
   }
 
-  auto* shell = ash::Shell::Get();
+  auto* screen_orientation_controller =
+      ash::Shell::Get()->screen_orientation_controller();
   const bool accelerometer_active =
-      shell->tablet_mode_controller()->is_in_tablet_physical_state() &&
-      !shell->screen_orientation_controller()->rotation_locked();
+      screen_orientation_controller->IsAutoRotationAllowed() &&
+      !screen_orientation_controller->rotation_locked();
 
   rotation_lock_instance->OnRotationLockStateChanged(
       accelerometer_active,

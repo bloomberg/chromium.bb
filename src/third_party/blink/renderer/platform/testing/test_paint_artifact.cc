@@ -14,7 +14,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -59,8 +58,9 @@ TestPaintArtifact& TestPaintArtifact::RectDrawing(const IntRect& bounds,
 }
 
 TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
+    const IntRect& rect,
     const TransformPaintPropertyNode* scroll_translation) {
-  return ScrollHitTest(NewClient(), scroll_translation);
+  return ScrollHitTest(NewClient(), rect, scroll_translation);
 }
 
 TestPaintArtifact& TestPaintArtifact::ForeignLayer(
@@ -94,9 +94,12 @@ TestPaintArtifact& TestPaintArtifact::RectDrawing(DisplayItemClient& client,
 
 TestPaintArtifact& TestPaintArtifact::ScrollHitTest(
     DisplayItemClient& client,
+    const IntRect& rect,
     const TransformPaintPropertyNode* scroll_translation) {
-  paint_artifact_->PaintChunks().back().EnsureHitTestData().scroll_translation =
-      scroll_translation;
+  auto& hit_test_data =
+      paint_artifact_->PaintChunks().back().EnsureHitTestData();
+  hit_test_data.scroll_hit_test_rect = rect;
+  hit_test_data.scroll_translation = scroll_translation;
   return *this;
 }
 

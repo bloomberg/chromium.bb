@@ -8,6 +8,7 @@
 #include <va/va.h>
 
 #include "base/memory/scoped_refptr.h"
+#include "build/chromeos_buildflags.h"
 #include "media/gpu/h265_decoder.h"
 #include "media/gpu/h265_dpb.h"
 #include "media/gpu/vaapi/vaapi_video_decoder_delegate.h"
@@ -18,13 +19,18 @@ typedef struct _VAPictureHEVC VAPictureHEVC;
 
 namespace media {
 
+class CdmContext;
 class H265Picture;
 
 class H265VaapiVideoDecoderDelegate : public H265Decoder::H265Accelerator,
                                       public VaapiVideoDecoderDelegate {
  public:
-  H265VaapiVideoDecoderDelegate(DecodeSurfaceHandler<VASurface>* vaapi_dec,
-                                scoped_refptr<VaapiWrapper> vaapi_wrapper);
+  H265VaapiVideoDecoderDelegate(
+      DecodeSurfaceHandler<VASurface>* vaapi_dec,
+      scoped_refptr<VaapiWrapper> vaapi_wrapper,
+      ProtectedSessionUpdateCB on_protected_session_update_cb,
+      CdmContext* cdm_context,
+      EncryptionScheme encryption_scheme);
 
   H265VaapiVideoDecoderDelegate(const H265VaapiVideoDecoderDelegate&) = delete;
   H265VaapiVideoDecoderDelegate& operator=(
@@ -51,6 +57,8 @@ class H265VaapiVideoDecoderDelegate : public H265Decoder::H265Accelerator,
   Status SubmitDecode(scoped_refptr<H265Picture> pic) override;
   bool OutputPicture(scoped_refptr<H265Picture> pic) override;
   void Reset() override;
+  Status SetStream(base::span<const uint8_t> stream,
+                   const DecryptConfig* decrypt_config) override;
 
  private:
   void FillVAPicture(VAPictureHEVC* va_pic, scoped_refptr<H265Picture> pic);
@@ -80,6 +88,17 @@ class H265VaapiVideoDecoderDelegate : public H265Decoder::H265Accelerator,
   // |slice_param_| filled.
   const uint8_t* last_slice_data_{nullptr};
   size_t last_slice_size_{0};
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // We need to hold onto this memory here because it's referenced by the
+  // mapped buffer in libva across calls. It is filled in SubmitSlice() and
+  // stays alive until SubmitDecode() or Reset().
+  std::vector<VAEncryptionSegmentInfo> encryption_segment_info_;
+
+  // We need to retain this for the multi-slice case since that will aggregate
+  // the encryption details across all the slices.
+  VAEncryptionParameters crypto_params_;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 };
 
 }  // namespace media

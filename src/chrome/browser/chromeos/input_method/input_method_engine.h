@@ -100,14 +100,16 @@ class InputMethodEngine : public InputMethodEngineBase,
   bool IsActive() const override;
 
   // ui::IMEEngineHandlerInterface overrides.
+  void FocusIn(const ui::IMEEngineHandlerInterface::InputContext& input_context)
+      override;
+  void FocusOut() override;
   void PropertyActivate(const std::string& property_name) override;
   void CandidateClicked(uint32_t index) override;
   void AssistiveWindowButtonClicked(
       const ui::ime::AssistiveWindowButton& button) override;
   void SetMirroringEnabled(bool mirroring_enabled) override;
   void SetCastingEnabled(bool casting_enabled) override;
-  ui::InputMethodKeyboardController* GetInputMethodKeyboardController()
-      const override;
+  ui::VirtualKeyboardController* GetVirtualKeyboardController() const override;
 
   // SuggestionHandlerInterface overrides.
   bool DismissSuggestion(int context_id, std::string* error) override;
@@ -126,7 +128,7 @@ class InputMethodEngine : public InputMethodEngineBase,
   void ClickButton(const ui::ime::AssistiveWindowButton& button) override;
 
   bool AcceptSuggestionCandidate(int context_id,
-                                 const base::string16& candidate,
+                                 const std::u16string& candidate,
                                  std::string* error) override;
 
   bool SetAssistiveWindowProperties(
@@ -171,19 +173,10 @@ class InputMethodEngine : public InputMethodEngineBase,
   // Hides the input view window (from API call).
   void HideInputView();
 
-  // Determine if the key event should be processed by the key
-  // event handler.
-  bool IsValidKeyEvent(const ui::KeyEvent* ui_event) override;
-
-  // Sets a range as autocorrected to display a special dashed underline.  Start
-  // and end are code point offsets in the surroundingTextInfo which control the
-  // start and end point of the underline which is added to the text to show a
-  // word was autocorrected.
+  // Sets the autocorrect range to be `range`. The `range` is in bytes.
   // TODO(b/171924748): Improve documentation for this function all the way down
   // the stack.
-  bool SetAutocorrectRange(const base::string16& autocorrect_text,
-                           uint32_t start,
-                           uint32_t end) override;
+  bool SetAutocorrectRange(const gfx::Range& range) override;
 
   gfx::Range GetAutocorrectRange() override;
 
@@ -208,11 +201,9 @@ class InputMethodEngine : public InputMethodEngineBase,
   bool SetSelectionRange(uint32_t start, uint32_t end) override;
 
   void CommitTextToInputContext(int context_id,
-                                const std::string& text) override;
+                                const std::u16string& text) override;
 
-  bool SendKeyEvent(ui::KeyEvent* event,
-                    const std::string& code,
-                    std::string* error) override;
+  bool SendKeyEvent(const ui::KeyEvent& event, std::string* error) override;
 
   // Enables overriding input view page to Virtual Keyboard window.
   void EnableInputView();

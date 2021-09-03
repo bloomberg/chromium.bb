@@ -49,7 +49,11 @@ class CONTENT_EXPORT ServiceWorkerNetworkProviderForFrame final
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
           freezable_task_runner_handle,
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          unfreezable_task_runner_handle) override;
+          unfreezable_task_runner_handle,
+      blink::CrossVariantMojoRemote<blink::mojom::KeepAliveHandleInterfaceBase>
+          keep_alive_handle,
+      blink::WebBackForwardCacheLoaderHelper back_forward_cache_loader_helper)
+      override;
   blink::mojom::ControllerServiceWorkerMode GetControllerServiceWorkerMode()
       override;
   int64_t ControllerServiceWorkerID() override;
@@ -72,6 +76,8 @@ class CONTENT_EXPORT ServiceWorkerNetworkProviderForFrame final
   scoped_refptr<ServiceWorkerProviderContext> context_;
 
   std::unique_ptr<NewDocumentObserver> observer_;
+
+  const bool service_worker_subresource_filter_enabled_ = false;
 };
 
 }  // namespace content

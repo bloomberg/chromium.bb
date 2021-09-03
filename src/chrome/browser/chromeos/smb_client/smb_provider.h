@@ -8,10 +8,10 @@
 #include <memory>
 #include <string>
 
-#include "chrome/browser/chromeos/file_system_provider/icon_set.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
-#include "chrome/browser/chromeos/file_system_provider/provided_file_system_interface.h"
-#include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
+#include "chrome/browser/ash/file_system_provider/icon_set.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
+#include "chrome/browser/ash/file_system_provider/provider_interface.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 
 class Profile;
@@ -38,7 +38,10 @@ class SmbProvider : public ProviderInterface {
       UnmountCallback unmount_callback,
       SmbFileSystem::RequestCredentialsCallback request_creds_callback,
       SmbFileSystem::RequestUpdatedSharePathCallback request_path_callback);
+  SmbProvider(const SmbProvider&) = delete;
+  SmbProvider& operator=(const SmbProvider&) = delete;
   ~SmbProvider() override;
+
   // ProviderInterface overrides.
   std::unique_ptr<ProvidedFileSystemInterface> CreateProvidedFileSystem(
       Profile* profile,
@@ -59,8 +62,6 @@ class SmbProvider : public ProviderInterface {
   UnmountCallback unmount_callback_;
   SmbFileSystem::RequestCredentialsCallback request_creds_callback_;
   SmbFileSystem::RequestUpdatedSharePathCallback request_path_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SmbProvider);
 };
 
 }  // namespace smb_client

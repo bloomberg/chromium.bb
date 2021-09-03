@@ -7,13 +7,14 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/crostini/crostini_features.h"
-#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/devicetype_utils.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -80,7 +81,10 @@ void CloseCrostiniUpdateFilesystemView() {
 }  // namespace crostini
 
 void CrostiniUpdateFilesystemView::Show(Profile* profile) {
-  DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
+  if (!crostini::CrostiniFeatures::Get()->IsAllowedNow(profile)) {
+    return;
+  }
+
   if (!g_crostini_update_filesystem_view_dialog) {
     g_crostini_update_filesystem_view_dialog =
         new CrostiniUpdateFilesystemView();
@@ -112,7 +116,7 @@ CrostiniUpdateFilesystemView::CrostiniUpdateFilesystemView() {
       provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
       kDialogSpacingVertical));
 
-  const base::string16 message =
+  const std::u16string message =
       l10n_util::GetStringUTF16(IDS_CROSTINI_UPGRADING_SUBTEXT);
   views::Label* message_label = new views::Label(message);
   message_label->SetMultiLine(true);
@@ -126,3 +130,6 @@ CrostiniUpdateFilesystemView::CrostiniUpdateFilesystemView() {
 CrostiniUpdateFilesystemView::~CrostiniUpdateFilesystemView() {
   g_crostini_update_filesystem_view_dialog = nullptr;
 }
+
+BEGIN_METADATA(CrostiniUpdateFilesystemView, views::BubbleDialogDelegateView)
+END_METADATA

@@ -6,11 +6,16 @@ import 'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.m.js';
 import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import '../data/user_manager.js';
+// <if expr="not chromeos and not lacros">
 import './destination_dialog.js';
-// <if expr="not chromeos">
+// </if>
+// <if expr="chromeos or lacros">
+import './destination_dialog_cros.js';
+// </if>
+// <if expr="not chromeos and not lacros">
 import './destination_select.js';
 // </if>
-// <if expr="chromeos">
+// <if expr="chromeos or lacros">
 import './destination_select_cros.js';
 // </if>
 import './print_preview_shared_css.js';
@@ -28,12 +33,11 @@ import {beforeNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/p
 
 import {CloudPrintInterfaceImpl} from '../cloud_print_interface_impl.js';
 import {CloudOrigins, createDestinationKey, createRecentDestinationKey, Destination, DestinationOrigin, makeRecentDestination, RecentDestination} from '../data/destination.js';
-// <if expr="chromeos">
+// <if expr="chromeos or lacros">
 import {SAVE_TO_DRIVE_CROS_DESTINATION_KEY} from '../data/destination.js';
 // </if>
 import {getPrinterTypeForDestination, PrinterType} from '../data/destination_match.js';
 import {DestinationErrorType, DestinationStore} from '../data/destination_store.js';
-import {InvitationStore} from '../data/invitation_store.js';
 import {Error, State} from '../data/state.js';
 
 import {SettingsBehavior} from './settings_behavior.js';
@@ -49,7 +53,7 @@ export const DestinationState = {
 
 /** @type {number} Number of recent destinations to save. */
 export let NUM_PERSISTED_DESTINATIONS = 5;
-// <if expr="chromeos">
+// <if expr="chromeos or lacros">
 NUM_PERSISTED_DESTINATIONS = 10;
 // </if>
 
@@ -123,22 +127,19 @@ Polymer({
     /** @private {!Array<!Destination>} */
     displayedDestinations_: Array,
 
-    /** @private */
-    driveDestinationReady_: {
-      type: Boolean,
-      value: false,
+    // <if expr="chromeos or lacros">
+    /** @private {string} */
+    driveDestinationKey_: {
+      type: String,
+      value: '',
     },
 
-    // <if expr="chromeos">
     hasPinSetting_: {
       type: Boolean,
       computed: 'computeHasPinSetting_(settings.pin.available)',
       reflectToAttribute: true,
     },
     // </if>
-
-    /** @private {?InvitationStore} */
-    invitationStore_: Object,
 
     /** @private {boolean} */
     isDialogOpen_: {
@@ -164,21 +165,12 @@ Polymer({
     /** @private {!Array<string>} */
     users_: Array,
 
-    // <if expr="chromeos">
+    // <if expr="chromeos or lacros">
     /** @private */
     printerStatusFlagEnabled_: {
       type: Boolean,
       value() {
         return loadTimeData.getBoolean('showPrinterStatus');
-      },
-      readOnly: true,
-    },
-
-    /** @private */
-    saveToDriveFlagEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('printSaveToDrive');
       },
       readOnly: true,
     },
@@ -215,7 +207,7 @@ Polymer({
         DestinationStore.EventType.DESTINATIONS_INSERTED,
         this.updateDropdownDestinations_.bind(this));
 
-    // <if expr="chromeos">
+    // <if expr="chromeos or lacros">
     this.tracker_.add(
         this.destinationStore_,
         DestinationStore.EventType.DESTINATION_EULA_READY,
@@ -225,55 +217,13 @@ Polymer({
 
   /** @override */
   detached() {
-    if (!this.cloudPrintDisabled_) {
-      this.invitationStore_.resetTracker();
-    }
     this.destinationStore_.resetTracker();
     this.tracker_.removeAll();
   },
 
   /** @private */
-  updateDriveDestination_() {
-    let key = createDestinationKey(
-        Destination.GooglePromotedId.DOCS, DestinationOrigin.COOKIES,
-        this.activeUser_);
-    // <if expr="chromeos">
-    if (this.saveToDriveFlagEnabled_) {
-      key = SAVE_TO_DRIVE_CROS_DESTINATION_KEY;
-    }
-    // </if>
-    this.driveDestinationKey_ =
-        this.destinationStore_.getDestinationByKey(key) ? key : '';
-  },
-
-  /** @private */
   onActiveUserChanged_() {
-    this.destinationStore_.startLoadCookieDestination(
-        Destination.GooglePromotedId.DOCS);
-    this.updateDriveDestination_();
-    const recentDestinations = /** @type {!Array<!RecentDestination>} */ (
-        this.getSettingValue('recentDestinations'));
-    let numDestinationsChecked = 0;
-    for (const destination of recentDestinations) {
-      if (!this.destinationIsDriveOrPdf_(destination)) {
-        numDestinationsChecked++;
-      }
-      if (destination.origin === DestinationOrigin.COOKIES &&
-          (destination.account === this.activeUser_ ||
-           destination.account === '')) {
-        this.destinationStore_.startLoadCookieDestination(destination.id);
-      }
-      if (numDestinationsChecked === NUM_UNPINNED_DESTINATIONS) {
-        break;
-      }
-    }
-
-    // Re-filter the dropdown destinations for the new account.
-    if (!this.isDialogOpen_) {
-      // Don't update the destination settings UI while the dialog is open in
-      // front of it.
-      this.updateDropdownDestinations_();
-    }
+    this.updateDropdownDestinations_();
 
     if (!this.destination ||
         this.destination.origin !== DestinationOrigin.COOKIES) {
@@ -314,6 +264,32 @@ Polymer({
     this.destinationStore_.selectDefaultDestination();
   },
 
+  filterRecentDestinations_(recentDestinations) {
+    let filteredDestinations = recentDestinations;
+    // Remove unsupported privet printers from the sticky settings,
+    // to free up these spots for supported printers.
+    // TODO(rbpotter): Remove this logic a milestone after the policy and flag
+    // have been removed.
+    if (!loadTimeData.getBoolean('forceEnablePrivetPrinting')) {
+      filteredDestinations = recentDestinations.filter(d => {
+        return d.origin !== DestinationOrigin.PRIVET;
+      });
+    }
+
+    // <if expr="chromeos or lacros">
+    // Remove Cloud Print Drive destination. The Chrome OS version will always
+    // be shown in the dropdown and is still supported.
+    filteredDestinations = filteredDestinations.filter(d => {
+      return d.id !== Destination.GooglePromotedId.DOCS;
+    });
+    // </if>
+
+    if (filteredDestinations.length !== recentDestinations.length) {
+      this.setSetting('recentDestinations', filteredDestinations);
+    }
+    return filteredDestinations;
+  },
+
   /**
    * @param {string} defaultPrinter The system default printer ID.
    * @param {boolean} pdfPrinterDisabled Whether the PDF printer is disabled.
@@ -321,28 +297,26 @@ Polymer({
         on Chrome OS.
    * @param {string} serializedDefaultDestinationRulesStr String with rules
    *     for selecting a default destination.
-   * @param {?Array<string>} userAccounts The signed in user accounts.
-   * @param {boolean} syncAvailable Whether sync is available. Used to
-   *     determine whether to wait for user info updates from the handler, or
-   *     to always send requests to the Google Cloud Print server.
    */
   init(
       defaultPrinter, pdfPrinterDisabled, isDriveMounted,
-      serializedDefaultDestinationRulesStr, userAccounts, syncAvailable) {
+      serializedDefaultDestinationRulesStr) {
     const cloudPrintInterface = CloudPrintInterfaceImpl.getInstance();
     this.pdfPrinterDisabled_ = pdfPrinterDisabled;
     let recentDestinations =
         /** @type {!Array<!RecentDestination>} */ (
             this.getSettingValue('recentDestinations'));
+    // <if expr="chromeos or lacros">
+    this.driveDestinationKey_ =
+        isDriveMounted ? SAVE_TO_DRIVE_CROS_DESTINATION_KEY : '';
+    // </if>
 
     if (cloudPrintInterface.isConfigured()) {
       this.cloudPrintDisabled_ = false;
       this.destinationStore_.setCloudPrintInterface(cloudPrintInterface);
-      this.invitationStore_ = new InvitationStore();
-      this.invitationStore_.setCloudPrintInterface(cloudPrintInterface);
       beforeNextRender(this, () => {
-        this.shadowRoot.querySelector('#userManager')
-            .initUserAccounts(userAccounts, syncAvailable);
+        this.shadowRoot.querySelector('#userManager').initUserAccounts();
+        recentDestinations = this.filterRecentDestinations_(recentDestinations);
         recentDestinations = recentDestinations.slice(
             0, this.getRecentDestinationsDisplayCount_(recentDestinations));
         this.destinationStore_.init(
@@ -352,24 +326,7 @@ Polymer({
       return;
     }
 
-    // Remove unsupported cloud and privet printers from the sticky settings,
-    // to free up these spots for supported printers.
-    // TODO (rbpotter): Remove this logic a milestone after the policy and flag
-    // below have been removed, as it is unlikely for users to still have stale
-    // cloud and privet printers after that point.
-    if (!loadTimeData.getBoolean('cloudPrintDeprecationWarningsSuppressed')) {
-      const privetEnabled =
-          loadTimeData.getBoolean('forceEnablePrivetPrinting');
-      const filteredRecentDestinations = recentDestinations.filter(d => {
-        return !CloudOrigins.includes(d.origin) &&
-            (privetEnabled || d.origin !== DestinationOrigin.PRIVET);
-      });
-      if (filteredRecentDestinations.length !== recentDestinations.length) {
-        this.setSetting('recentDestinations', filteredRecentDestinations);
-        recentDestinations = filteredRecentDestinations;
-      }
-    }
-
+    recentDestinations = this.filterRecentDestinations_(recentDestinations);
     recentDestinations = recentDestinations.slice(
         0, this.getRecentDestinationsDisplayCount_(recentDestinations));
     this.destinationStore_.init(
@@ -477,14 +434,13 @@ Polymer({
    *     Drive.
    */
   destinationIsDriveOrPdf_(destination) {
-    // <if expr="chromeos">
+    // <if expr="chromeos or lacros">
     if (destination.id === Destination.GooglePromotedId.SAVE_TO_DRIVE_CROS) {
       return true;
     }
     // </if>
 
-    return destination.id === Destination.GooglePromotedId.SAVE_AS_PDF ||
-        destination.id === Destination.GooglePromotedId.DOCS;
+    return destination.id === Destination.GooglePromotedId.SAVE_AS_PDF;
   },
 
   /** @private */
@@ -571,7 +527,6 @@ Polymer({
     }
 
     this.displayedDestinations_ = updatedDestinations;
-    this.updateDriveDestination_();
   },
 
   /**
@@ -594,7 +549,7 @@ Polymer({
               PrinterType.PDF_PRINTER));
   },
 
-  // <if expr="chromeos">
+  // <if expr="chromeos or lacros">
   /**
    * @return {boolean}
    * @private
@@ -613,9 +568,6 @@ Polymer({
     const value = e.detail;
     if (value === 'seeMore') {
       this.destinationStore_.startLoadAllDestinations();
-      if (this.activeUser_) {
-        this.invitationStore_.startLoadingInvitations(this.activeUser_);
-      }
       this.$.destinationDialog.get().show();
       this.lastUser_ = this.activeUser_;
       this.isDialogOpen_ = true;
@@ -633,7 +585,6 @@ Polymer({
     assert(!this.cloudPrintDisabled_);
     this.shadowRoot.querySelector('#userManager')
         .updateActiveUser(e.detail, true);
-    this.updateDriveDestination_();
   },
 
   /** @private */
@@ -674,7 +625,7 @@ Polymer({
     return assert(this.destinationStore_);
   },
 
-  // <if expr="chromeos">
+  // <if expr="chromeos or lacros">
   /**
    * @param {!CustomEvent<string>} e Event containing the current destination's
    * EULA URL.

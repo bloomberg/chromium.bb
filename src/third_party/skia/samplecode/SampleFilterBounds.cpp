@@ -7,6 +7,7 @@
 
 #include "samplecode/Sample.h"
 
+#include "include/core/SkBitmap.h"
 #include "include/core/SkCanvas.h"
 #include "include/core/SkColor.h"
 #include "include/core/SkFont.h"
@@ -168,22 +169,22 @@ public:
 
     void onOnceBeforeDraw() override {
         fBlur = SkImageFilters::Blur(8.f, 8.f, nullptr);
-        fImage = SkImage::MakeFromBitmap(ToolUtils::create_checkerboard_bitmap(
-                300, 300, SK_ColorMAGENTA, SK_ColorLTGRAY, 50));
+        fImage = ToolUtils::create_checkerboard_image(
+                300, 300, SK_ColorMAGENTA, SK_ColorLTGRAY, 50);
     }
 
     void onDrawContent(SkCanvas* canvas) override {
         // The local content, e.g. what would be submitted to drawRect or the bounds to saveLayer
         const SkRect localContentRect = SkRect::MakeLTRB(100.f, 20.f, 180.f, 140.f);
-        SkMatrix ctm = canvas->getTotalMatrix();
+        SkMatrix ctm = canvas->getLocalToDeviceAs3x3();
 
         // Base rendering of a filter
         SkPaint blurPaint;
         blurPaint.setImageFilter(fBlur);
         canvas->saveLayer(&localContentRect, &blurPaint);
-        SkPaint imagePaint;
-        imagePaint.setFilterQuality(kLow_SkFilterQuality);
-        canvas->drawImageRect(fImage, localContentRect, &imagePaint);
+        canvas->drawImageRect(fImage.get(), localContentRect, localContentRect,
+                              SkSamplingOptions(SkFilterMode::kLinear),
+                              nullptr, SkCanvas::kFast_SrcRectConstraint);
         canvas->restore();
 
         // Now visualize the underlying bounds calculations used to determine the layer for the blur

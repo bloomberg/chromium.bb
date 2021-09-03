@@ -10,7 +10,7 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 /**
- * A class for native code to request full browser start when running in service manager only mode.
+ * A class for native code to request full browser start when running in minimal browser mode.
  */
 public class NativeStartupBridge {
     private static final String TAG = "NativeStartupBridge";
@@ -23,7 +23,8 @@ public class NativeStartupBridge {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
-                ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
+                ChromeBrowserInitializer.getInstance().handlePreNativeStartupAndLoadLibraries(
+                        parts);
                 ChromeBrowserInitializer.getInstance().handlePostNativeStartup(
                         true /* isAsync */, parts);
             }

@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/supervised_user/supervised_user_features.h"
+#include "components/account_manager_core/account_manager_facade.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget.h"
@@ -70,8 +71,9 @@ InlineLoginDialogChromeOSOnboarding* InlineLoginDialogChromeOSOnboarding::Show(
   DCHECK(base::FeatureList::IsEnabled(supervised_users::kEduCoexistenceFlowV2));
 
   base::UmaHistogramEnumeration(
-      InlineLoginDialogChromeOS::kAccountAdditionSource,
-      InlineLoginDialogChromeOS::Source::kOnboarding);
+      account_manager::AccountManagerFacade::kAccountAdditionSource,
+      ::account_manager::AccountManagerFacade::AccountAdditionSource::
+          kOnboarding);
 
   DCHECK(window);
 
@@ -82,12 +84,16 @@ InlineLoginDialogChromeOSOnboarding* InlineLoginDialogChromeOSOnboarding::Show(
   return dialog;
 }
 
+ui::ModalType InlineLoginDialogChromeOSOnboarding::GetDialogModalType() const {
+  // Override the default system-modal behavior of the dialog so that the
+  // shelf can be accessed during onboarding.
+  return ui::ModalType::MODAL_TYPE_WINDOW;
+}
+
 InlineLoginDialogChromeOSOnboarding::InlineLoginDialogChromeOSOnboarding(
     const gfx::Size& size,
     base::OnceCallback<void(void)> dialog_closed_callback)
-    : InlineLoginDialogChromeOS(InlineLoginDialogChromeOS::Source::kOnboarding),
-      size_(size),
-      dialog_closed_callback_(std::move(dialog_closed_callback)) {
+    : size_(size), dialog_closed_callback_(std::move(dialog_closed_callback)) {
   set_modal_type(ui::MODAL_TYPE_CHILD);
 }
 

@@ -13,7 +13,7 @@
 #include "ash/public/cpp/app_types.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
@@ -60,7 +60,7 @@ class ASH_EXPORT DemoSessionMetricsRecorder
     kScreensaver = 19,    // Demo Mode screensaver app.
     kAsphalt9 = 20,       // Android racing game demo app.
     kStardewValley = 21,  // Android farming game demo app.
-    kKinemaster = 22,     // Android video editing software demo app.
+    kKinemaster = 22,     // Android video editing software demo app. nocheck
     kGoogleKeepAndroidApp = 23,
     kAutoCAD = 24,     // Android 2D/3D drawing software demo app.
     kPixlr = 25,       // Android photo editing software demo app.
@@ -69,9 +69,18 @@ class ASH_EXPORT DemoSessionMetricsRecorder
     kGoogleDocsChromeApp = 28,
     kGoogleSheetsChromeApp = 29,
     kGoogleSlidesChromeApp = 30,
+    kYoutubePwa = 31,
+    kGoogleDocsPwa = 32,
+    kGoogleMeetPwa = 33,
+    kGoogleSheetsPwa = 34,
+    kSpotify = 35,
+    kBeFunky = 36,
+    kClipchamp = 37,
+    kGeForceNow = 38,
+    kZoom = 39,
     // Add future entries above this comment, in sync with enums.xml.
     // Update kMaxValue to the last value.
-    kMaxValue = kGoogleSlidesChromeApp,
+    kMaxValue = kZoom,
   };
 
   // The recorder will create a normal timer by default. Tests should provide a
@@ -139,8 +148,8 @@ class ASH_EXPORT DemoSessionMetricsRecorder
 
   std::unique_ptr<base::RepeatingTimer> timer_;
 
-  ScopedObserver<ui::UserActivityDetector, ui::UserActivityObserver> observer_{
-      this};
+  base::ScopedObservation<ui::UserActivityDetector, ui::UserActivityObserver>
+      observation_{this};
 
   class ActiveAppArcPackageNameObserver;
   class UniqueAppsLaunchedArcPackageNameObserver;

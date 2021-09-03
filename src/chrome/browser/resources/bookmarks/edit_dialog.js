@@ -10,42 +10,49 @@ import './strings.m.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {highlightUpdatedItems, trackUpdatedItems} from './api_listener.js';
 import {DialogFocusManager} from './dialog_focus_manager.js';
 import {BookmarkNode} from './types.js';
 
-Polymer({
-  is: 'bookmarks-edit-dialog',
+/** @polymer */
+export class BookmarksEditDialogElement extends PolymerElement {
+  static get is() {
+    return 'bookmarks-edit-dialog';
+  }
 
-  _template: html`{__html_template__}`,
+  static get template() {
+    return html`{__html_template__}`;
+  }
 
-  properties: {
-    /** @private */
-    isFolder_: Boolean,
+  static get properties() {
+    return {
+      /** @private */
+      isFolder_: Boolean,
 
-    /** @private */
-    isEdit_: Boolean,
+      /** @private */
+      isEdit_: Boolean,
 
-    /**
-     * Item that is being edited, or null when adding.
-     * @private {?BookmarkNode}
-     */
-    editItem_: Object,
+      /**
+       * Item that is being edited, or null when adding.
+       * @private {?BookmarkNode}
+       */
+      editItem_: Object,
 
-    /**
-     * Parent node for the item being added, or null when editing.
-     * @private {?string}
-     */
-    parentId_: String,
+      /**
+       * Parent node for the item being added, or null when editing.
+       * @private {?string}
+       */
+      parentId_: String,
 
-    /** @private */
-    titleValue_: String,
+      /** @private */
+      titleValue_: String,
 
-    /** @private */
-    urlValue_: String,
-  },
+      /** @private */
+      urlValue_: String,
+    };
+  }
 
   /**
    * Show the dialog to add a new folder (if |isFolder|) or item, which will be
@@ -59,8 +66,9 @@ Polymer({
     this.isFolder_ = isFolder;
     this.parentId_ = parentId;
 
-    DialogFocusManager.getInstance().showDialog(this.$.dialog);
-  },
+    DialogFocusManager.getInstance().showDialog(
+        /** @type {!HTMLDialogElement} */ (this.$.dialog));
+  }
 
   /**
    * Show the edit dialog for |editItem|.
@@ -77,8 +85,9 @@ Polymer({
       this.urlValue_ = assert(editItem.url);
     }
 
-    DialogFocusManager.getInstance().showDialog(this.$.dialog);
-  },
+    DialogFocusManager.getInstance().showDialog(
+        /** @type {!HTMLDialogElement} */ (this.$.dialog));
+  }
 
   /**
    * Clear out existing values from the dialog, allowing it to be reused.
@@ -90,7 +99,7 @@ Polymer({
     this.$.url.invalid = false;
     this.titleValue_ = '';
     this.urlValue_ = '';
-  },
+  }
 
   /**
    * @param {boolean} isFolder
@@ -107,7 +116,7 @@ Polymer({
     }
 
     return loadTimeData.getString(title);
-  },
+  }
 
   /**
    * Validates the value of the URL field, returning true if it is a valid URL.
@@ -131,7 +140,7 @@ Polymer({
 
     this.urlValue_ = originalValue;
     return false;
-  },
+  }
 
   /** @private */
   onSaveButtonTap_() {
@@ -152,10 +161,13 @@ Polymer({
       chrome.bookmarks.create(edit, highlightUpdatedItems);
     }
     this.$.dialog.close();
-  },
+  }
 
   /** @private */
   onCancelButtonTap_() {
     this.$.dialog.cancel();
-  },
-});
+  }
+}
+
+customElements.define(
+    BookmarksEditDialogElement.is, BookmarksEditDialogElement);

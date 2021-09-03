@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {RouteObserverBehavior, Route, Router} from '../router.m.js';
+// #import {RouteObserverBehavior, Route, Router} from '../router.js';
 // #import {assert} from 'chrome://resources/js/assert.m.js';
 
 cr.define('settings', function() {
@@ -48,7 +48,7 @@ cr.define('settings', function() {
     /**
      * settings.RouteObserverBehavior
      * @param {!settings.Route} newRoute
-     * @param {!settings.Route} oldRoute
+     * @param {!settings.Route|undefined} oldRoute
      * @protected
      */
     currentRouteChanged(newRoute, oldRoute) {
@@ -57,13 +57,15 @@ cr.define('settings', function() {
       if (!settings.Router.getInstance().lastRouteChangeWasPopstate()) {
         return;
       }
-      const focusSelector = this.focusConfig_.get(oldRoute.path);
 
-      if (this.route_ !== newRoute || !focusSelector) {
+      if (this.route_ !== newRoute || !oldRoute) {
         return;
       }
 
-      this.$$(focusSelector).focus();
+      const focusSelector = this.focusConfig_.get(oldRoute.path);
+      if (focusSelector) {
+        this.$$(focusSelector).focus();
+      }
     },
   };
 

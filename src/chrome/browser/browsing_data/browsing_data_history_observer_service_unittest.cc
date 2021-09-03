@@ -7,14 +7,16 @@
 #include <set>
 #include <utility>
 
-#include "base/optional.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_types.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_storage_partition.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -52,10 +54,10 @@ class RemovalDataTestStoragePartition : public content::TestStoragePartition {
     std::move(callback).Run();
   }
 
-  const base::Optional<RemovalData>& GetRemovalData() { return removal_data_; }
+  const absl::optional<RemovalData>& GetRemovalData() { return removal_data_; }
 
  private:
-  base::Optional<RemovalData> removal_data_;
+  absl::optional<RemovalData> removal_data_;
 };
 
 }  // namespace
@@ -77,7 +79,7 @@ TEST_F(BrowsingDataHistoryObserverServiceTest, AllHistoryDeleted_DataCleared) {
   service.OnURLsDeleted(nullptr /* history_service */,
                         history::DeletionInfo::ForAllHistory());
 
-  const base::Optional<RemovalData>& removal_data = partition.GetRemovalData();
+  const absl::optional<RemovalData>& removal_data = partition.GetRemovalData();
   EXPECT_TRUE(removal_data.has_value());
   EXPECT_EQ(content::StoragePartition::REMOVE_DATA_MASK_CONVERSIONS,
             removal_data->removal_mask);
@@ -111,7 +113,7 @@ TEST_F(BrowsingDataHistoryObserverServiceTest,
 
   service.OnURLsDeleted(nullptr /* history_service */, deletion_info);
 
-  const base::Optional<RemovalData>& removal_data = partition.GetRemovalData();
+  const absl::optional<RemovalData>& removal_data = partition.GetRemovalData();
   EXPECT_TRUE(removal_data.has_value());
 
   EXPECT_EQ(base::Time(), removal_data->begin);
@@ -136,11 +138,11 @@ TEST_F(BrowsingDataHistoryObserverServiceTest,
   history::DeletionInfo deletion_info(
       history::DeletionTimeRange(begin, end), false /* is_from_expiration */,
       {} /* deleted_rows */, {} /* favicon_urls */,
-      base::nullopt /* restrict_urls */);
+      absl::nullopt /* restrict_urls */);
 
   service.OnURLsDeleted(nullptr /* history_service */, deletion_info);
 
-  const base::Optional<RemovalData>& removal_data = partition.GetRemovalData();
+  const absl::optional<RemovalData>& removal_data = partition.GetRemovalData();
   EXPECT_TRUE(removal_data.has_value());
 
   EXPECT_EQ(begin, removal_data->begin);
@@ -169,7 +171,7 @@ TEST_F(BrowsingDataHistoryObserverServiceTest,
 
   service.OnURLsDeleted(nullptr /* history_service */, deletion_info);
 
-  const base::Optional<RemovalData>& removal_data = partition.GetRemovalData();
+  const absl::optional<RemovalData>& removal_data = partition.GetRemovalData();
   EXPECT_TRUE(removal_data.has_value());
 
   EXPECT_EQ(begin, removal_data->begin);
@@ -182,3 +184,53 @@ TEST_F(BrowsingDataHistoryObserverServiceTest,
   EXPECT_FALSE(removal_data->origin_matcher.Run(
       url::Origin::Create(origin_b), nullptr /* special_storage_policy */));
 }
+
+#if defined(OS_ANDROID)
+
+TEST_F(BrowsingDataHistoryObserverServiceTest,
+       TimeRangeHistoryWithRestrictions_ClearCommerceDataCalled) {
+  base::HistogramTester histogram_tester;
+  TestingProfile profile;
+  BrowsingDataHistoryObserverService service(&profile);
+  RemovalDataTestStoragePartition partition;
+  service.OverrideStoragePartitionForTesting(&partition);
+
+  GURL origin_a = GURL("https://a.test");
+
+  std::set<GURL> restrict_urls = {origin_a};
+
+  base::Time begin = base::Time::Now();
+  base::Time end = begin + base::TimeDelta::FromDays(1);
+  history::DeletionInfo deletion_info(
+      history::DeletionTimeRange(begin, end), false /* is_from_expiration */,
+      {} /* deleted_rows */, {} /* favicon_urls */,
+      restrict_urls /* restrict_urls */);
+
+  service.OnURLsDeleted(nullptr /* history_service */, deletion_info);
+  task_environment_.RunUntilIdle();
+  histogram_tester.ExpectUniqueSample(
+      "MerchantViewer.DataManager.DeleteMerchantViewerDataForTimeRange", 0, 1);
+}
+
+TEST_F(BrowsingDataHistoryObserverServiceTest,
+       OriginBasedCommerceDataCleared_EmptyList) {
+  base::HistogramTester histogram_tester;
+
+  TestingProfile profile;
+  BrowsingDataHistoryObserverService service(&profile);
+  RemovalDataTestStoragePartition partition;
+  service.OverrideStoragePartitionForTesting(&partition);
+
+  history::OriginCountAndLastVisitMap origin_map;
+  history::DeletionInfo deletion_info = history::DeletionInfo::ForUrls(
+      {} /* deleted_rows */, {} /* favicon_urls */);
+  deletion_info.set_deleted_urls_origin_map(std::move(origin_map));
+
+  service.OnURLsDeleted(nullptr /* history_service */, deletion_info);
+
+  task_environment_.RunUntilIdle();
+  histogram_tester.ExpectUniqueSample(
+      "MerchantViewer.DataManager.DeleteMerchantViewerDataForOrigins", 0, 1);
+}
+
+#endif
