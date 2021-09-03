@@ -16,11 +16,11 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
-#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/event.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/xproto.h"
+#include "ui/gfx/x/xproto_util.h"
 
 namespace ui {
 
@@ -37,8 +37,8 @@ class SelectionRequestorTest : public testing::Test {
   void SendSelectionNotify(x11::Atom selection,
                            x11::Atom target,
                            const std::string& value) {
-    ui::SetStringProperty(x_window_, requestor_->x_property_,
-                          gfx::GetAtom("STRING"), value);
+    x11::SetStringProperty(x_window_, requestor_->x_property_,
+                           x11::Atom::STRING, value);
 
     requestor_->OnSelectionNotify({
         .requestor = x_window_,
@@ -51,16 +51,12 @@ class SelectionRequestorTest : public testing::Test {
  protected:
   void SetUp() override {
     // Create a window for the selection requestor to use.
-    x_window_ = CreateDummyWindow();
-
-    event_source_ = PlatformEventSource::CreateDefault();
-    CHECK(PlatformEventSource::GetInstance());
-    requestor_ = std::make_unique<SelectionRequestor>(x_window_, nullptr);
+    x_window_ = x11::CreateDummyWindow();
+    requestor_ = std::make_unique<SelectionRequestor>(x_window_);
   }
 
   void TearDown() override {
     requestor_.reset();
-    event_source_.reset();
     connection_->DestroyWindow({x_window_});
   }
 
@@ -69,7 +65,6 @@ class SelectionRequestorTest : public testing::Test {
   // |requestor_|'s window.
   x11::Window x_window_ = x11::Window::None;
 
-  std::unique_ptr<PlatformEventSource> event_source_;
   std::unique_ptr<SelectionRequestor> requestor_;
 
   base::test::SingleThreadTaskEnvironment task_environment_{
@@ -93,7 +88,7 @@ void PerformBlockingConvertSelection(SelectionRequestor* requestor,
   EXPECT_EQ(expected_data.size(), out_data.size());
   EXPECT_EQ(expected_data, ui::RefCountedMemoryToString(
                                base::RefCountedBytes::TakeVector(&out_data)));
-  EXPECT_EQ(gfx::GetAtom("STRING"), out_type);
+  EXPECT_EQ(x11::Atom::STRING, out_type);
 }
 
 }  // namespace
@@ -105,10 +100,10 @@ TEST_F(SelectionRequestorTest, DISABLED_NestedRequests) {
   // Assume that |selection| will have no owner. If there is an owner, the owner
   // will set the property passed into the XConvertSelection() request which is
   // undesirable.
-  x11::Atom selection = gfx::GetAtom("FAKE_SELECTION");
+  x11::Atom selection = x11::GetAtom("FAKE_SELECTION");
 
-  x11::Atom target1 = gfx::GetAtom("TARGET1");
-  x11::Atom target2 = gfx::GetAtom("TARGET2");
+  x11::Atom target1 = x11::GetAtom("TARGET1");
+  x11::Atom target2 = x11::GetAtom("TARGET2");
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&PerformBlockingConvertSelection,

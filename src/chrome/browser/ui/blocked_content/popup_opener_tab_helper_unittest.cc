@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/page_specific_content_settings_delegate.h"
-#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -28,6 +27,7 @@
 #include "components/blocked_content/list_item_position.h"
 #include "components/blocked_content/popup_tracker.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
+#include "components/infobars/content/content_infobar_manager.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/web_contents.h"
@@ -66,7 +66,7 @@ class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
     blocked_content::PopupOpenerTabHelper::CreateForWebContents(
         web_contents(), &raw_clock_,
         HostContentSettingsMapFactory::GetForProfile(profile()));
-    InfoBarService::CreateForWebContents(web_contents());
+    infobars::ContentInfoBarManager::CreateForWebContents(web_contents());
     content_settings::PageSpecificContentSettings::CreateForWebContents(
         web_contents(),
         std::make_unique<chrome::PageSpecificContentSettingsDelegate>(
@@ -401,24 +401,22 @@ TEST_F(PopupOpenerTabHelperTest,
 
 class BlockTabUnderTest : public PopupOpenerTabHelperTest {
  public:
-  BlockTabUnderTest() {}
-  ~BlockTabUnderTest() override {}
-
-  void SetUp() override {
-    PopupOpenerTabHelperTest::SetUp();
+  BlockTabUnderTest() {
     scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
     scoped_feature_list_->InitAndEnableFeature(
         TabUnderNavigationThrottle::kBlockTabUnders);
   }
+  ~BlockTabUnderTest() override = default;
 
   infobars::InfoBarAndroid* GetInfoBar() {
 #if defined(OS_ANDROID)
-    auto* service = InfoBarService::FromWebContents(web_contents());
-    if (!service->infobar_count())
+    auto* manager =
+        infobars::ContentInfoBarManager::FromWebContents(web_contents());
+    if (!manager->infobar_count())
       return nullptr;
-    EXPECT_EQ(1u, service->infobar_count());
+    EXPECT_EQ(1u, manager->infobar_count());
     infobars::InfoBarAndroid* infobar =
-        static_cast<infobars::InfoBarAndroid*>(service->infobar_at(0));
+        static_cast<infobars::InfoBarAndroid*>(manager->infobar_at(0));
     EXPECT_TRUE(infobar);
     return infobar;
 #endif  // defined(OS_ANDROID)
@@ -440,15 +438,11 @@ class BlockTabUnderTest : public PopupOpenerTabHelperTest {
     blocked_urls_.push_back(url);
   }
 
-  void DisableFeature() {
-    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
-    scoped_feature_list_->InitAndDisableFeature(
-        TabUnderNavigationThrottle::kBlockTabUnders);
-  }
+ protected:
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 
  private:
   std::vector<GURL> blocked_urls_;
-  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(BlockTabUnderTest);
 };
@@ -459,14 +453,6 @@ TEST_F(BlockTabUnderTest, SimpleTabUnder_IsBlocked) {
   const GURL blocked_url("https://example.test/");
   EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
   ExpectUIShown(true);
-}
-
-TEST_F(BlockTabUnderTest, NoFeature_NoBlocking) {
-  DisableFeature();
-  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
-  SimulatePopup();
-  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://example.test/")));
-  ExpectUIShown(false);
 }
 
 TEST_F(BlockTabUnderTest, NoPopup_NoBlocking) {
@@ -625,29 +611,6 @@ TEST_F(BlockTabUnderTest, ClickThroughAction) {
       static_cast<int>(TabUnderNavigationThrottle::Action::kClickedThrough), 1);
 }
 
-// kDidTabUnder is not reported multiple times for redirects.
-TEST_F(BlockTabUnderTest, DisableFeature_LogsDidTabUnder) {
-  DisableFeature();
-  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
-  SimulatePopup();
-
-  const GURL a_url("https://a.com/");
-  const GURL b_url("https://b.com/");
-  std::unique_ptr<content::NavigationSimulator> simulator =
-      content::NavigationSimulator::CreateRendererInitiated(a_url, main_rfh());
-  simulator->SetHasUserGesture(false);
-  simulator->Redirect(b_url);
-  simulator->Redirect(a_url);
-  simulator->Commit();
-  histogram_tester()->ExpectBucketCount(
-      kTabUnderAction,
-      static_cast<int>(TabUnderNavigationThrottle::Action::kStarted), 2);
-  histogram_tester()->ExpectBucketCount(
-      kTabUnderAction,
-      static_cast<int>(TabUnderNavigationThrottle::Action::kDidTabUnder), 1);
-  histogram_tester()->ExpectTotalCount(kTabUnderAction, 3);
-}
-
 TEST_F(BlockTabUnderTest, LogsUkm) {
   using UkmEntry = ukm::builders::AbusiveExperienceHeuristic_TabUnder;
 
@@ -746,5 +709,45 @@ TEST_F(BlockTabUnderTest,
   EXPECT_EQ(content::NavigationThrottle::PROCEED,
             simulator->GetLastThrottleCheckResult());
   simulator->Commit();
+  ExpectUIShown(false);
+}
+
+class BlockTabUnderDisabledTest : public BlockTabUnderTest {
+ public:
+  BlockTabUnderDisabledTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        TabUnderNavigationThrottle::kBlockTabUnders);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// kDidTabUnder is not reported multiple times for redirects.
+TEST_F(BlockTabUnderDisabledTest, DisableFeature_LogsDidTabUnder) {
+  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
+  SimulatePopup();
+
+  const GURL a_url("https://a.com/");
+  const GURL b_url("https://b.com/");
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateRendererInitiated(a_url, main_rfh());
+  simulator->SetHasUserGesture(false);
+  simulator->Redirect(b_url);
+  simulator->Redirect(a_url);
+  simulator->Commit();
+  histogram_tester()->ExpectBucketCount(
+      kTabUnderAction,
+      static_cast<int>(TabUnderNavigationThrottle::Action::kStarted), 2);
+  histogram_tester()->ExpectBucketCount(
+      kTabUnderAction,
+      static_cast<int>(TabUnderNavigationThrottle::Action::kDidTabUnder), 1);
+  histogram_tester()->ExpectTotalCount(kTabUnderAction, 3);
+}
+
+TEST_F(BlockTabUnderDisabledTest, NoFeature_NoBlocking) {
+  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
+  SimulatePopup();
+  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://example.test/")));
   ExpectUIShown(false);
 }

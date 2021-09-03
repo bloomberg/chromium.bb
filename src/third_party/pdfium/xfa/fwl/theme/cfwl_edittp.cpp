@@ -17,32 +17,21 @@ CFWL_EditTP::CFWL_EditTP() = default;
 CFWL_EditTP::~CFWL_EditTP() = default;
 
 void CFWL_EditTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
-  if (CFWL_Part::CombTextLine == pParams.m_iPart) {
-    CFWL_Widget::AdapterIface* pWidget =
-        pParams.m_pWidget->GetOutmost()->GetAdapterIface();
-    FX_ARGB cr = 0xFF000000;
-    float fWidth = 1.0f;
-    pWidget->GetBorderColorAndThickness(&cr, &fWidth);
-    pParams.m_pGraphics->SetStrokeColor(CFGAS_GEColor(cr));
-    pParams.m_pGraphics->SetLineWidth(fWidth);
-    pParams.m_pGraphics->StrokePath(pParams.m_pPath.Get(), &pParams.m_matrix);
-    return;
-  }
-
   switch (pParams.m_iPart) {
     case CFWL_Part::Border: {
-      DrawBorder(pParams.m_pGraphics.Get(), pParams.m_PartRect,
-                 pParams.m_matrix);
+      DrawBorder(pParams.GetGraphics(), pParams.m_PartRect, pParams.m_matrix);
       break;
     }
     case CFWL_Part::Background: {
       if (pParams.m_pPath) {
-        CFGAS_GEGraphics* pGraphics = pParams.m_pGraphics.Get();
+        CFGAS_GEGraphics* pGraphics = pParams.GetGraphics();
         pGraphics->SaveGraphState();
         pGraphics->SetFillColor(CFGAS_GEColor(FWLTHEME_COLOR_BKSelected));
-        pGraphics->FillPath(pParams.m_pPath.Get(),
-                            CFX_FillRenderOptions::FillType::kWinding,
-                            &pParams.m_matrix);
+        if (pParams.m_pPath) {
+          pGraphics->FillPath(*pParams.m_pPath,
+                              CFX_FillRenderOptions::FillType::kWinding,
+                              pParams.m_matrix);
+        }
         pGraphics->RestoreGraphState();
       } else {
         CFGAS_GEPath path;
@@ -57,19 +46,24 @@ void CFWL_EditTP::DrawBackground(const CFWL_ThemeBackground& pParams) {
           else
             cr = CFGAS_GEColor(0xFFFFFFFF);
         }
-        pParams.m_pGraphics->SaveGraphState();
-        pParams.m_pGraphics->SetFillColor(cr);
-        pParams.m_pGraphics->FillPath(&path,
-                                      CFX_FillRenderOptions::FillType::kWinding,
-                                      &pParams.m_matrix);
-        pParams.m_pGraphics->RestoreGraphState();
+        pParams.GetGraphics()->SaveGraphState();
+        pParams.GetGraphics()->SetFillColor(cr);
+        pParams.GetGraphics()->FillPath(
+            path, CFX_FillRenderOptions::FillType::kWinding, pParams.m_matrix);
+        pParams.GetGraphics()->RestoreGraphState();
       }
       break;
     }
     case CFWL_Part::CombTextLine: {
-      pParams.m_pGraphics->SetStrokeColor(CFGAS_GEColor(0xFF000000));
-      pParams.m_pGraphics->SetLineWidth(1.0f);
-      pParams.m_pGraphics->StrokePath(pParams.m_pPath.Get(), &pParams.m_matrix);
+      CFWL_Widget::AdapterIface* pWidget =
+          pParams.GetWidget()->GetOutmost()->GetAdapterIface();
+      FX_ARGB cr = 0xFF000000;
+      float fWidth = 1.0f;
+      pWidget->GetBorderColorAndThickness(&cr, &fWidth);
+      pParams.GetGraphics()->SetStrokeColor(CFGAS_GEColor(cr));
+      pParams.GetGraphics()->SetLineWidth(fWidth);
+      if (pParams.m_pPath)
+        pParams.GetGraphics()->StrokePath(*pParams.m_pPath, pParams.m_matrix);
       break;
     }
     default:

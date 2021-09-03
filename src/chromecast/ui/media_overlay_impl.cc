@@ -43,7 +43,6 @@ constexpr base::TimeDelta kUiHideDelay = base::TimeDelta::FromSeconds(3);
 
 MediaOverlayImpl::MediaOverlayImpl(CastWindowManager* window_manager)
     : window_manager_(window_manager),
-      layout_provider_(std::make_unique<views::LayoutProvider>()),
       ui_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       controller_(nullptr),
       volume_icon_image_(ui::ResourceBundle::GetSharedInstance().GetImageNamed(
@@ -105,7 +104,7 @@ void MediaOverlayImpl::AddVolumeBar(views::View* container) {
 }
 
 void MediaOverlayImpl::AddToast(views::View* container) {
-  toast_label_ = new views::Label(base::UTF8ToUTF16(""));
+  toast_label_ = new views::Label(u"");
   toast_label_->SetFontList(toast_font_list_);
   toast_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
 
@@ -128,7 +127,7 @@ void MediaOverlayImpl::SetController(Controller* controller) {
   NotifyController();
 }
 
-void MediaOverlayImpl::ShowMessage(const base::string16& message) {
+void MediaOverlayImpl::ShowMessage(const std::u16string& message) {
   if (!ui_task_runner_->BelongsToCurrentThread()) {
     ui_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&MediaOverlayImpl::ShowMessage,
@@ -158,7 +157,7 @@ void MediaOverlayImpl::HideVolumeWidget() {
   volume_panel_->SetVisible(false);
 }
 
-void MediaOverlayImpl::ShowToast(const base::string16& text) {
+void MediaOverlayImpl::ShowToast(const std::u16string& text) {
   toast_label_->SetText(text);
   toast_label_->SizeToFit(volume_panel_->bounds().width());
   toast_label_->SetVisible(true);

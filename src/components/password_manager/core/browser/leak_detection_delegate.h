@@ -48,16 +48,15 @@ class LeakDetectionDelegate : public LeakDetectionDelegateInterface {
   // LeakDetectionDelegateInterface:
   void OnLeakDetectionDone(bool is_leaked,
                            GURL url,
-                           base::string16 username,
-                           base::string16 password) override;
+                           std::u16string username,
+                           std::u16string password) override;
 
   // Initiates the showing of the leak detection notification. It is called by
   // |helper_| after |is_saved|/|is_reused| was asynchronously determined.
   void OnShowLeakDetectionNotification(IsSaved is_saved,
                                        IsReused is_reused,
                                        GURL url,
-                                       base::string16 username,
-                                       CompromisedSitesCount saved_sites);
+                                       std::u16string username);
 
   void OnError(LeakDetectionError error) override;
 

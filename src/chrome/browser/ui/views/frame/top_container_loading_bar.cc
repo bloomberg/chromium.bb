@@ -7,6 +7,8 @@
 #include "chrome/browser/favicon/favicon_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -84,6 +86,9 @@ void LoadingBarView::AnimationProgressed(const gfx::Animation* animation) {
   SchedulePaint();
 }
 
+BEGIN_METADATA(LoadingBarView, views::View)
+END_METADATA
+
 TopContainerLoadingBar::TopContainerLoadingBar(Browser* browser)
     : browser_(browser) {}
 
@@ -148,7 +153,7 @@ void TopContainerLoadingBar::UpdateLoadingProgress() {
   }
 }
 
-double TopContainerLoadingBar::GetLoadingProgress() {
+double TopContainerLoadingBar::GetLoadingProgress() const {
   DCHECK(web_contents());
   return std::min(web_contents()->GetLoadProgress(), 0.9);
 }
@@ -156,3 +161,7 @@ double TopContainerLoadingBar::GetLoadingProgress() {
 void TopContainerLoadingBar::LoadProgressChanged(double progress) {
   UpdateLoadingProgress();
 }
+
+BEGIN_METADATA(TopContainerLoadingBar, LoadingBarView)
+ADD_READONLY_PROPERTY_METADATA(double, LoadingProgress)
+END_METADATA

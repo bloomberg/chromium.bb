@@ -22,7 +22,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 <histograms>
 
 <histogram name="Variations.AppSeedFreshness" units="minutes"
-    expires_after="2021-03-28">
+    expires_after="2021-10-04">
   <owner>rmcelrath@chromium.org</owner>
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -52,7 +52,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.CreateTrials.SeedExpiry"
-    enum="VariationsSeedExpiry" expires_after="2021-04-15">
+    enum="VariationsSeedExpiry" expires_after="2022-04-22">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -63,7 +63,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.FirstRun.SeedConnectTime" units="ms"
-    expires_after="2021-04-15">
+    expires_after="2022-04-22">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -76,7 +76,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.FirstRun.SeedFetchResult"
-    enum="VariationsSeedFetchResult" expires_after="2021-04-15">
+    enum="VariationsSeedFetchResult" expires_after="2022-04-22">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -88,7 +88,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.FirstRun.SeedFetchTime" units="ms"
-    expires_after="2021-04-15">
+    expires_after="2022-04-22">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -99,7 +99,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.FirstRunPrefsDebug"
-    enum="VariationsFirstRunPrefEvents" expires_after="2021-04-25">
+    enum="VariationsFirstRunPrefEvents" expires_after="2021-08-29">
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -109,7 +109,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.FirstRunResult" enum="VariationsFirstRunResult"
-    expires_after="2021-04-15">
+    expires_after="2021-10-25">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -136,7 +136,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.Headers.ExperimentCount" units="units"
-    expires_after="2021-04-15">
+    expires_after="2021-10-24">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -162,7 +162,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram
     name="Variations.Headers.URLValidationResult{VariationsHeadersURLValidationResult}"
-    enum="VariationsHeadersURLValidationResult" expires_after="2020-12-15">
+    enum="VariationsHeadersURLValidationResult" expires_after="2022-03-15">
   <owner>asvitkine@chromium.org</owner>
   <owner>jwd@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -188,7 +188,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Variations.LoadPermanentConsistencyCountryResult"
     enum="VariationsPermanentConsistencyCountryResult"
-    expires_after="2021-04-15">
+    expires_after="2022-04-22">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -212,7 +212,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.PolicyRestriction"
-    enum="VariationsRestrictionPolicyValues" expires_after="2020-12-31">
+    enum="VariationsRestrictionPolicyValues" expires_after="2021-05-31">
   <owner>pastarmovj@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -236,7 +236,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.ResourceRequestsAllowed"
-    enum="VariationsResourceRequestsAllowedState" expires_after="2021-04-15">
+    enum="VariationsResourceRequestsAllowedState" expires_after="2021-10-25">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -248,7 +248,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SafeMode.FellBackToSafeMode2"
-    enum="BooleanSafeMode" expires_after="2021-04-15">
+    enum="BooleanSafeMode" expires_after="2021-10-25">
   <owner>isherman@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -307,31 +307,33 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SafeMode.Streak.Crashes" units="crashes"
-    expires_after="2021-04-15">
+    expires_after="2022-05-09">
   <owner>isherman@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
-    The number of consecutive crashes observed by the VariationsService, without
-    a single intervening successful seed fetch. Recorded during Chrome startup,
-    when the VariationsService is created.
+    The number of consecutive crashes observed by the VariationsService without
+    a single intervening successful seed fetch. Recorded during Chrome startup
+    when the MetricsStateManager's CleanExitBeacon is created.
+
+    Prior to M92, this was recorded when the SafeSeedManager was created.
   </summary>
 </histogram>
 
 <histogram name="Variations.SafeMode.Streak.FetchFailures" units="failures"
-    expires_after="2021-04-15">
+    expires_after="2022-05-09">
   <owner>isherman@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
     The number of consecutive failed attempts to fetch a new seed by the
-    VariationsService. Recorded during Chrome startup, when the
-    VariationsService is created.
+    VariationsService. Recorded during Chrome startup when the SafeSeedManager
+    is created.
   </summary>
 </histogram>
 
 <histogram name="Variations.SeedDateChange" enum="VariationsSeedDateChange"
-    expires_after="2021-04-15">
+    expires_after="2021-10-25">
   <owner>jwd@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -345,7 +347,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SeedFetchResponseOrErrorCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-04-15">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-10-25">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -357,7 +359,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SeedFetchResponseOrErrorCode.HTTP"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-04-15">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2021-10-25">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -369,7 +371,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SeedFreshness" units="minutes"
-    expires_after="2021-04-15">
+    expires_after="2021-10-24">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -381,7 +383,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SeedLoadBlockingTime" units="ms"
-    expires_after="2021-04-15">
+    expires_after="2021-10-24">
   <owner>changwan@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <summary>
@@ -396,7 +398,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SeedLoadResult" enum="VariationsSeedLoadResult"
-    expires_after="2021-04-15">
+    expires_after="2021-10-24">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -408,7 +410,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SeedProcessingTime" units="ms"
-    expires_after="2021-04-15">
+    expires_after="2021-10-24">
   <owner>isherman@chromium.org</owner>
   <owner>asvitkine@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -419,7 +421,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.SeedStoreResult" enum="VariationsSeedStoreResult"
-    expires_after="2021-04-15">
+    expires_after="2021-10-25">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -484,7 +486,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.StoreSeed.DataSize" units="KiB"
-    expires_after="2021-04-15">
+    expires_after="2021-10-25">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -495,7 +497,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.StoreSeedSignature" enum="VariationSeedSignature"
-    expires_after="2021-04-15">
+    expires_after="2022-04-22">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -517,7 +519,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.TimeSinceLastFetchAttempt" units="minutes"
-    expires_after="2021-04-15">
+    expires_after="2022-04-22">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -529,7 +531,7 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.UserChannel" enum="UserChannels"
-    expires_after="2021-04-15">
+    expires_after="2021-10-25">
   <owner>asvitkine@chromium.org</owner>
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
@@ -541,6 +543,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Variations.WebViewDownloadJobFetchResult"
     enum="VariationsSeedFetchResult" expires_after="2021-01-31">
+  <obsolete>
+    Removed from code January 2021.
+  </obsolete>
   <owner>rmcelrath@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -551,6 +556,9 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 
 <histogram name="Variations.WebViewDownloadJobFetchTime2" units="ms"
     expires_after="2021-01-31">
+  <obsolete>
+    Removed from code January 2021.
+  </obsolete>
   <owner>rmcelrath@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -560,8 +568,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.WebViewDownloadJobInterval" units="minutes"
-    expires_after="2021-01-31">
-  <owner>rmcelrath@chromium.org</owner>
+    expires_after="2022-01-20">
+  <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
     The time between the start of two consecutive WebView seed downloads by
@@ -571,8 +579,8 @@ reviews. Googlers can read more about this at go/gwsq-gerrit.
 </histogram>
 
 <histogram name="Variations.WebViewDownloadJobQueueTime" units="minutes"
-    expires_after="2021-01-31">
-  <owner>rmcelrath@chromium.org</owner>
+    expires_after="2022-01-20">
+  <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
     The delay between when a WebView seed download was scheduled by the service

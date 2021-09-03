@@ -1,0 +1,60 @@
+# Copyright 2021 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/android/config.gni")
+import("//build/config/android/rules.gni")
+
+android_library("java") {
+  visibility = [
+    ":*",
+    "//chrome/android:chrome_all_java",
+  ]
+
+  sources = [
+    "java/src/org/chromium/chrome/browser/content_creation/notes/NoteCreationCoordinatorFactory.java",
+    "java/src/org/chromium/chrome/browser/content_creation/notes/NoteCreationCoordinatorImpl.java",
+    "java/src/org/chromium/chrome/browser/content_creation/notes/NoteCreationDialog.java",
+    "java/src/org/chromium/chrome/browser/content_creation/notes/NoteCreationMediator.java",
+    "java/src/org/chromium/chrome/browser/content_creation/notes/NoteProperties.java",
+    "java/src/org/chromium/chrome/browser/content_creation/notes/NoteServiceFactory.java",
+    "java/src/org/chromium/chrome/browser/content_creation/notes/fonts/GoogleFontService.java",
+    "java/src/org/chromium/chrome/browser/content_creation/notes/fonts/TypefaceRequest.java",
+    "java/src/org/chromium/chrome/browser/content_creation/notes/fonts/TypefaceResponse.java",
+    "java/src/org/chromium/chrome/browser/content_creation/notes/top_bar/TopBarCoordinator.java",
+    "java/src/org/chromium/chrome/browser/content_creation/notes/top_bar/TopBarView.java",
+  ]
+
+  deps = [
+    ":java_resources",
+    "//base:base_java",
+    "//chrome/browser/content_creation/notes/android:public_java",
+    "//chrome/browser/profiles/android:java",
+    "//components/browser_ui/styles/android:java_resources",
+    "//components/content_creation/notes/android:java",
+    "//content/public/android:content_java_resources",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//ui/android:ui_java",
+  ]
+  resources_package = "org.chromium.chrome.browser.content_creation.internal"
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+}
+
+generate_jni("jni_headers") {
+  visibility = [
+    "//chrome/browser",
+    "//chrome/browser/content_creation/notes/internal:*",
+  ]
+
+  sources = [ "java/src/org/chromium/chrome/browser/content_creation/notes/NoteServiceFactory.java" ]
+}
+
+android_resources("java_resources") {
+  sources = [
+    "java/res/drawable/note_background_outline.xml",
+    "java/res/drawable/note_title_outline.xml",
+    "java/res/layout/carousel_item.xml",
+    "java/res/layout/creation_dialog.xml",
+    "java/res/layout/top_bar.xml",
+  ]
+}

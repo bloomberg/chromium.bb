@@ -74,6 +74,14 @@ Polymer({
             loadTimeData.getBoolean('showTechnologyBadge');
       }
     },
+
+    /** @private */
+    isUpdatedCellularUiEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('updatedCellularActivationUi');
+      }
+    },
   },
 
   /*
@@ -89,6 +97,14 @@ Polymer({
    * @private
    */
   getNetworkStateText_() {
+    // If SIM Locked, show warning message instead of connection state.
+    if (this.shouldShowLockedWarningMessage_(this.deviceState)) {
+      return this.i18n('networkSimLockedSubtitle');
+    }
+    if (OncMojo.deviceIsInhibited(this.deviceState)) {
+      return this.i18n('internetDeviceBusy');
+    }
+
     const stateText =
         this.getConnectionStateText_(this.activeNetworkState, this.deviceState);
     if (stateText) {
@@ -98,7 +114,8 @@ Polymer({
     const deviceState = this.deviceState;
     if (deviceState) {
       // Type specific scanning or initialization states.
-      if (deviceState.type === mojom.NetworkType.kCellular) {
+      if (deviceState.type === mojom.NetworkType.kCellular &&
+          !this.isUpdatedCellularUiEnabled_) {
         if (deviceState.scanning) {
           return this.i18n('internetMobileSearching');
         }
@@ -108,18 +125,21 @@ Polymer({
         if (deviceState.deviceState === mojom.DeviceStateType.kDisabling) {
           return this.i18n('internetDeviceDisabling');
         }
-      } else if (deviceState.type === mojom.NetworkType.kTether) {
+      }
+
+      if (deviceState.type === mojom.NetworkType.kTether) {
         if (deviceState.deviceState === mojom.DeviceStateType.kUninitialized) {
           return this.i18n('tetherEnableBluetooth');
         }
       }
+
       // Enabled or enabling states.
       if (deviceState.deviceState === mojom.DeviceStateType.kEnabled) {
-        if (this.networkStateList.length > 0) {
-          return this.i18n('networkListItemNotConnected');
-        }
-        return this.i18n('networkListItemNoNetwork');
+        return this.networkStateList.length > 0 ?
+            this.i18n('networkListItemNotConnected') :
+            this.i18n('networkListItemNoNetwork');
       }
+
       if (deviceState.deviceState === mojom.DeviceStateType.kEnabling) {
         return this.i18n('internetDeviceEnabling');
       }
@@ -153,8 +173,15 @@ Polymer({
                     this.i18n('networkListItemConnecting');
     }
     if (networkState.type === mojom.NetworkType.kCellular && deviceState &&
-        deviceState.scanning) {
-      return this.i18n('internetMobileSearching');
+        !this.isUpdatedCellularUiEnabled_) {
+      // If there is no cellular SIM and the updated UI flag is disabled,
+      // simply display 'Off'. See b/162564761 for details.
+      if (deviceState.simAbsent) {
+        return this.i18n('deviceOff');
+      }
+      if (deviceState.scanning) {
+        return this.i18n('internetMobileSearching');
+      }
     }
     return this.i18n('networkListItemNotConnected');
   },
@@ -196,20 +223,74 @@ Polymer({
     if (!deviceState || deviceState.type !== mojom.NetworkType.kCellular) {
       return false;
     }
+
+    const {pSimSlots, eSimSlots} = getSimSlotCount(deviceState);
+    if (this.isUpdatedCellularUiEnabled_) {
+      if (eSimSlots > 0) {
+        // Do not show simInfo if |updatedCellularActivationUi| flag is enabled
+        // and if we are using an eSIM enabled device.
+        return false;
+      }
+      return this.simLocked_(deviceState);
+    }
     return this.simLockedOrAbsent_(deviceState);
   },
 
   /**
-   * @param {!OncMojo.DeviceStateProperties} deviceState
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
+   * @return {string}
+   * @private
+   */
+  getNetworkStateClass_(deviceState) {
+    if (this.shouldShowLockedWarningMessage_(deviceState)) {
+      return 'locked-warning-message';
+    }
+    return 'network-state';
+  },
+
+  /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
+   * @return {boolean}
+   * @private
+   */
+  shouldShowLockedWarningMessage_(deviceState) {
+    if (!deviceState || deviceState.type !== mojom.NetworkType.kCellular ||
+        !deviceState.simLockStatus || !this.isUpdatedCellularUiEnabled_) {
+      return false;
+    }
+
+    // If the device is eSIM capable, never show message.
+    const {eSimSlots} = getSimSlotCount(deviceState);
+    if (eSimSlots > 0) {
+      return false;
+    }
+
+    return !!deviceState.simLockStatus.lockType;
+  },
+
+  /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
    * @return {boolean}
    * @private
    */
   simLockedOrAbsent_(deviceState) {
-    if (this.deviceIsEnabled_(deviceState)) {
+    if (!deviceState) {
       return false;
     }
     if (deviceState.simAbsent) {
       return true;
+    }
+    return this.simLocked_(deviceState);
+  },
+
+  /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
+   * @return {boolean}
+   * @private
+   */
+  simLocked_(deviceState) {
+    if (!deviceState) {
+      return false;
     }
     if (!deviceState.simLockStatus) {
       return false;
@@ -220,7 +301,8 @@ Polymer({
 
   /**
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @return {boolean} True if the device is enabled or if it is a VPN. Note:
+   * @return {boolean} True if the device is enabled or if it is a VPN or if
+   *     we are in the state of inhibited. Note:
    *     This function will always return true for VPNs because VPNs can be
    *     disabled by policy only for built-in VPNs (OpenVPN & L2TP), but always
    *     enabled for other VPN providers. To know whether built-in VPNs are
@@ -230,7 +312,8 @@ Polymer({
   deviceIsEnabled_(deviceState) {
     return !!deviceState &&
         (deviceState.type === mojom.NetworkType.kVPN ||
-         deviceState.deviceState === mojom.DeviceStateType.kEnabled);
+         deviceState.deviceState === mojom.DeviceStateType.kEnabled ||
+         OncMojo.deviceIsInhibited(deviceState));
   },
 
   /**
@@ -246,14 +329,21 @@ Polymer({
       case mojom.NetworkType.kEthernet:
       case mojom.NetworkType.kVPN:
         return false;
+
       case mojom.NetworkType.kTether:
         return true;
+
       case mojom.NetworkType.kWiFi:
         return deviceState.deviceState !== mojom.DeviceStateType.kUninitialized;
+
       case mojom.NetworkType.kCellular:
-        return deviceState.deviceState !==
-            mojom.DeviceStateType.kUninitialized &&
-            !this.simLockedOrAbsent_(deviceState);
+        if (deviceState.deviceState === mojom.DeviceStateType.kUninitialized) {
+          return false;
+        }
+
+        // Toggle should be shown as long as we are not also showing the UI for
+        // unlocking the SIM.
+        return !this.showSimInfo_(deviceState);
     }
     assertNotReached();
     return false;
@@ -267,6 +357,7 @@ Polymer({
   enableToggleIsEnabled_(deviceState) {
     return this.enableToggleIsVisible_(deviceState) &&
         deviceState.deviceState !== mojom.DeviceStateType.kProhibited &&
+        !OncMojo.deviceIsInhibited(deviceState) &&
         !OncMojo.deviceStateIsIntermediate(deviceState.deviceState);
   },
 
@@ -391,11 +482,33 @@ Polymer({
       return false;
     }
     const type = deviceState.type;
+
     if (type === mojom.NetworkType.kTether ||
         (type === mojom.NetworkType.kCellular && this.tetherDeviceState)) {
       // The "Mobile data" subpage should always be shown if Tether is
       // available, even if there are currently no associated networks.
       return true;
+    }
+
+    if (type === mojom.NetworkType.kCellular) {
+      if (this.isUpdatedCellularUiEnabled_) {
+        if (OncMojo.deviceIsInhibited(deviceState)) {
+          // The "Mobile data" subpage should be shown if the device state is
+          // inhibited and the flag is enabled.
+          return true;
+        }
+        // When network type is Cellular and |updatedCellularActivationUi| is
+        // enabled, always show "Mobile data" subpage, when at least one eSIM
+        // or pSIM slot is available
+        const {pSimSlots, eSimSlots} = getSimSlotCount(deviceState);
+        if (eSimSlots > 0 || pSimSlots > 0) {
+          return true;
+        }
+      } else if (this.simLockedOrAbsent_(deviceState)) {
+        // No subpage should be shown if the SIM is locked/absent. The user
+        // should unlock their SIM before a subpage is possible.
+        return false;
+      }
     }
 
     if (type === mojom.NetworkType.kVPN) {
@@ -475,6 +588,11 @@ Polymer({
    * @private
    */
   showArrowButton_(activeNetworkState, deviceState, networkStateList) {
+    // If SIM info is shown on the right side of the item, no arrow should be
+    // shown.
+    if (this.showSimInfo_(deviceState)) {
+      return false;
+    }
     if (!this.deviceIsEnabled_(deviceState)) {
       return false;
     }

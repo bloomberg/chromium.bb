@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/payments/full_card_request.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/notreached.h"
@@ -53,7 +55,7 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
                                   base::WeakPtr<UIDelegate> ui_delegate) {
   DCHECK(ui_delegate);
   GetFullCard(card, reason, result_delegate, ui_delegate,
-              /*fido_assertion_info=*/base::nullopt);
+              /*fido_assertion_info=*/absl::nullopt);
 }
 
 void FullCardRequest::GetFullCardViaFIDO(
@@ -71,7 +73,7 @@ void FullCardRequest::GetFullCard(
     AutofillClient::UnmaskCardReason reason,
     base::WeakPtr<ResultDelegate> result_delegate,
     base::WeakPtr<UIDelegate> ui_delegate,
-    base::Optional<base::Value> fido_assertion_info) {
+    absl::optional<base::Value> fido_assertion_info) {
   // Retrieval of card information should happen via CVC auth or FIDO, but not
   // both. Use |ui_delegate|'s existence as evidence of doing CVC auth and
   // |fido_assertion_info| as evidence of doing FIDO auth.
@@ -82,12 +84,12 @@ void FullCardRequest::GetFullCard(
   // |result_delegate_| is already set, then immediately reject the new request
   // through the method parameter |result_delegate_|.
   if (result_delegate_) {
-    result_delegate_->OnFullCardRequestFailed();
+    result_delegate_->OnFullCardRequestFailed(FailureType::GENERIC_FAILURE);
     return;
   }
 
   result_delegate_ = result_delegate;
-  request_.reset(new payments::PaymentsClient::UnmaskRequestDetails);
+  request_ = std::make_unique<payments::PaymentsClient::UnmaskRequestDetails>();
   request_->card = card;
   request_->reason = reason;
   should_unmask_card_ = card.record_type() == CreditCard::MASKED_SERVER_CARD ||
@@ -160,7 +162,7 @@ void FullCardRequest::OnUnmaskPromptAccepted(
 
 void FullCardRequest::OnUnmaskPromptClosed() {
   if (result_delegate_)
-    result_delegate_->OnFullCardRequestFailed();
+    result_delegate_->OnFullCardRequestFailed(FailureType::PROMPT_CLOSED);
 
   Reset();
 }
@@ -216,10 +218,15 @@ void FullCardRequest::OnDidGetRealPan(
 
     // Neither PERMANENT_FAILURE nor NETWORK_ERROR allow retry.
     case AutofillClient::PERMANENT_FAILURE:
-    // Intentional fall through.
+      if (result_delegate_) {
+        result_delegate_->OnFullCardRequestFailed(
+            FailureType::VERIFICATION_DECLINED);
+      }
+      Reset();
+      break;
     case AutofillClient::NETWORK_ERROR: {
       if (result_delegate_)
-        result_delegate_->OnFullCardRequestFailed();
+        result_delegate_->OnFullCardRequestFailed(FailureType::GENERIC_FAILURE);
       Reset();
       break;
     }
@@ -239,7 +246,7 @@ void FullCardRequest::OnDidGetRealPan(
       // to avoid an unwanted registration prompt.
       unmask_response_details_ = response_details;
 
-      const base::string16 cvc =
+      const std::u16string cvc =
           (base::FeatureList::IsEnabled(
                features::kAutofillEnableGoogleIssuedCard) ||
            base::FeatureList::IsEnabled(

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/optional.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/components/diagnostics_ui/backend/cpu_usage_data.h"
 #include "chromeos/components/diagnostics_ui/mojom/system_data_provider.mojom.h"
 #include "chromeos/dbus/power/power_manager_client.h"
@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class RepeatingTimer;
@@ -24,10 +25,13 @@ class RepeatingTimer;
 namespace chromeos {
 namespace diagnostics {
 
+class TelemetryLog;
+
 class SystemDataProvider : public mojom::SystemDataProvider,
                            public PowerManagerClient::Observer {
  public:
   SystemDataProvider();
+  SystemDataProvider(TelemetryLog* telemetry_log_ptr);
 
   ~SystemDataProvider() override;
 
@@ -96,7 +100,7 @@ class SystemDataProvider : public mojom::SystemDataProvider,
   void NotifyCpuUsageObservers(const mojom::CpuUsagePtr& cpu_usage);
 
   void OnBatteryChargeStatusUpdated(
-      const base::Optional<power_manager::PowerSupplyProperties>&
+      const absl::optional<power_manager::PowerSupplyProperties>&
           power_supply_properties,
       cros_healthd::mojom::TelemetryInfoPtr info_ptr);
 
@@ -108,6 +112,10 @@ class SystemDataProvider : public mojom::SystemDataProvider,
 
   void ComputeAndPopulateCpuUsage(const cros_healthd::mojom::CpuInfo& cpu_info,
                                   mojom::CpuUsage& out_cpu_usage);
+
+  bool IsLoggingEnabled() const;
+
+  TelemetryLog* telemetry_log_ptr_ = nullptr;  // Not owned.
 
   CpuUsageData previous_cpu_usage_data_;
 
@@ -124,6 +132,8 @@ class SystemDataProvider : public mojom::SystemDataProvider,
   std::unique_ptr<base::RepeatingTimer> battery_health_timer_;
   std::unique_ptr<base::RepeatingTimer> memory_usage_timer_;
   std::unique_ptr<base::RepeatingTimer> cpu_usage_timer_;
+
+  base::WeakPtrFactory<SystemDataProvider> weak_factory_{this};
 };
 
 }  // namespace diagnostics

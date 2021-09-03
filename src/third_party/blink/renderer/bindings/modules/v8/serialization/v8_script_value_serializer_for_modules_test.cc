@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_rect_read_only.h"
 #include "third_party/blink/renderer/bindings/modules/v8/serialization/v8_script_value_deserializer_for_modules.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_audio_data.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_crypto_key.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_dom_file_system.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_certificate.h"
@@ -28,7 +29,9 @@
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_certificate_generator.h"
+#include "third_party/blink/renderer/modules/webcodecs/audio_data.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/modules/webcodecs/video_frame_transfer_list.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 
@@ -39,13 +42,17 @@ using testing::UnorderedElementsAre;
 namespace blink {
 namespace {
 
-v8::Local<v8::Value> RoundTripForModules(v8::Local<v8::Value> value,
-                                         V8TestingScope& scope) {
+v8::Local<v8::Value> RoundTripForModules(
+    v8::Local<v8::Value> value,
+    V8TestingScope& scope,
+    Transferables* transferables = nullptr) {
   ScriptState* script_state = scope.GetScriptState();
   ExceptionState& exception_state = scope.GetExceptionState();
+  V8ScriptValueSerializer::Options serialize_options;
+  DCHECK(!transferables || transferables->message_ports.IsEmpty());
+  serialize_options.transferables = transferables;
   scoped_refptr<SerializedScriptValue> serialized_script_value =
-      V8ScriptValueSerializerForModules(
-          script_state, V8ScriptValueSerializerForModules::Options())
+      V8ScriptValueSerializerForModules(script_state, serialize_options)
           .Serialize(value, exception_state);
   DCHECK_EQ(!serialized_script_value, exception_state.HadException());
   EXPECT_TRUE(serialized_script_value);
@@ -989,8 +996,8 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripVideoFrame) {
   scoped_refptr<media::VideoFrame> media_frame =
       media::VideoFrame::CreateBlackFrame(kFrameSize);
 
-  // Pass a copy the reference to the video frame.
-  auto* blink_frame = MakeGarbageCollected<VideoFrame>(media_frame);
+  auto* blink_frame = MakeGarbageCollected<VideoFrame>(
+      media_frame, scope.GetExecutionContext());
 
   // Round trip the frame and make sure the size is the same.
   v8::Local<v8::Value> wrapper = ToV8(blink_frame, scope.GetScriptState());
@@ -1003,13 +1010,50 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripVideoFrame) {
 
   EXPECT_FALSE(media_frame->HasOneRef());
 
-  // Destroying either |blink_frame| or |new_frame| should remove all references
+  // Closing |blink_frame| and |new_frame| should remove all references
   // to |media_frame|.
-  blink_frame->destroy();
+  blink_frame->close();
+  EXPECT_FALSE(media_frame->HasOneRef());
+
+  new_frame->close();
   EXPECT_TRUE(media_frame->HasOneRef());
 }
 
-TEST(V8ScriptValueSerializerForModulesTest, DestroyedVideoFrameThrows) {
+TEST(V8ScriptValueSerializerForModulesTest, TransferVideoFrame) {
+  V8TestingScope scope;
+
+  const gfx::Size kFrameSize(600, 480);
+  scoped_refptr<media::VideoFrame> media_frame =
+      media::VideoFrame::CreateBlackFrame(kFrameSize);
+
+  auto* blink_frame = MakeGarbageCollected<VideoFrame>(
+      media_frame, scope.GetExecutionContext());
+
+  // Transfer the frame and make sure the size is the same.
+  Transferables transferables;
+  VideoFrameTransferList* transfer_list =
+      transferables.GetOrCreateTransferList<VideoFrameTransferList>();
+  transfer_list->video_frames.push_back(blink_frame);
+  v8::Local<v8::Value> wrapper = ToV8(blink_frame, scope.GetScriptState());
+  v8::Local<v8::Value> result =
+      RoundTripForModules(wrapper, scope, &transferables);
+
+  ASSERT_TRUE(V8VideoFrame::HasInstance(result, scope.GetIsolate()));
+
+  VideoFrame* new_frame = V8VideoFrame::ToImpl(result.As<v8::Object>());
+  EXPECT_EQ(new_frame->frame()->natural_size(), kFrameSize);
+
+  EXPECT_FALSE(media_frame->HasOneRef());
+
+  // The transfer should have closed the source frame.
+  EXPECT_EQ(blink_frame->frame(), nullptr);
+
+  // Closing |new_frame| should remove all references to |media_frame|.
+  new_frame->close();
+  EXPECT_TRUE(media_frame->HasOneRef());
+}
+
+TEST(V8ScriptValueSerializerForModulesTest, ClosedVideoFrameThrows) {
   V8TestingScope scope;
   ExceptionState exception_state(scope.GetIsolate(),
                                  ExceptionState::kExecutionContext, "Window",
@@ -1019,12 +1063,94 @@ TEST(V8ScriptValueSerializerForModulesTest, DestroyedVideoFrameThrows) {
   scoped_refptr<media::VideoFrame> media_frame =
       media::VideoFrame::CreateBlackFrame(kFrameSize);
 
-  // Create and destroy the frame.
-  auto* blink_frame = MakeGarbageCollected<VideoFrame>(media_frame);
-  blink_frame->destroy();
+  // Create and close the frame.
+  auto* blink_frame = MakeGarbageCollected<VideoFrame>(
+      media_frame, scope.GetExecutionContext());
+  blink_frame->close();
 
-  // Serializing the destroyed frame should throw an error.
+  // Serializing the closed frame should throw an error.
   v8::Local<v8::Value> wrapper = ToV8(blink_frame, scope.GetScriptState());
+  EXPECT_FALSE(V8ScriptValueSerializer(scope.GetScriptState())
+                   .Serialize(wrapper, exception_state));
+  EXPECT_TRUE(HadDOMExceptionInModulesTest(
+      "DataCloneError", scope.GetScriptState(), exception_state));
+}
+
+TEST(V8ScriptValueSerializerForModulesTest, RoundTripAudioData) {
+  V8TestingScope scope;
+
+  const unsigned kChannels = 2;
+  const unsigned kSampleRate = 8000;
+  const unsigned kFrames = 500;
+  constexpr base::TimeDelta kTimestamp = base::TimeDelta::FromMilliseconds(314);
+
+  auto audio_bus = media::AudioBus::Create(kChannels, kFrames);
+
+  // Populate each frame with a unique value.
+  const unsigned kTotalFrames = (kFrames * kChannels);
+  const float kFramesMultiplier = 1.0 / kTotalFrames;
+  for (unsigned ch = 0; ch < kChannels; ++ch) {
+    float* data = audio_bus->channel(ch);
+    for (unsigned i = 0; i < kFrames; ++i)
+      data[i] = (i + ch * kFrames) * kFramesMultiplier;
+  }
+
+  // Copying the data from an AudioBus instead of creating a media::AudioBuffer
+  // directly is acceptable/desirable here, as it's a path often exercised when
+  // receiving microphone/WebCam data.
+  auto audio_buffer =
+      media::AudioBuffer::CopyFrom(kSampleRate, kTimestamp, audio_bus.get());
+
+  auto* audio_data = MakeGarbageCollected<AudioData>(std::move(audio_buffer));
+
+  // Round trip the frame and make sure the size is the same.
+  v8::Local<v8::Value> wrapper = ToV8(audio_data, scope.GetScriptState());
+  v8::Local<v8::Value> result = RoundTripForModules(wrapper, scope);
+
+  // The data should have been copied, not transferred.
+  EXPECT_TRUE(audio_data->buffer());
+
+  ASSERT_TRUE(V8AudioData::HasInstance(result, scope.GetIsolate()));
+
+  AudioData* new_data = V8AudioData::ToImpl(result.As<v8::Object>());
+  EXPECT_EQ(base::TimeDelta::FromMicroseconds(new_data->timestamp()),
+            kTimestamp);
+  EXPECT_EQ(new_data->buffer()->numberOfChannels(), kChannels);
+  EXPECT_EQ(new_data->buffer()->sampleRate(), kSampleRate);
+  EXPECT_EQ(new_data->buffer()->length(), kFrames);
+
+  // Make sure the data wasn't changed during the transfer.
+  for (unsigned ch = 0; ch < kChannels; ++ch) {
+    float* src_data = audio_data->buffer()->getChannelData(ch)->Data();
+    float* dst_data = new_data->buffer()->getChannelData(ch)->Data();
+    for (unsigned i = 0; i < kFrames; ++i) {
+      EXPECT_EQ(src_data[i], dst_data[i]);
+    }
+  }
+
+  // Closing the original |audio_data| should not affect |new_data|.
+  audio_data->close();
+  EXPECT_TRUE(new_data->buffer());
+}
+
+TEST(V8ScriptValueSerializerForModulesTest, ClosedAudioDataThrows) {
+  V8TestingScope scope;
+  ExceptionState exception_state(scope.GetIsolate(),
+                                 ExceptionState::kExecutionContext, "Window",
+                                 "postMessage");
+
+  auto audio_buffer = media::AudioBuffer::CreateEmptyBuffer(
+      media::ChannelLayout::CHANNEL_LAYOUT_STEREO,
+      /*channel_count=*/2,
+      /*sample_rate=*/8000,
+      /*frame_count=*/500, base::TimeDelta::FromMilliseconds(314));
+
+  // Create and close the frame.
+  auto* audio_data = MakeGarbageCollected<AudioData>(std::move(audio_buffer));
+  audio_data->close();
+
+  // Serializing the closed frame should throw an error.
+  v8::Local<v8::Value> wrapper = ToV8(audio_data, scope.GetScriptState());
   EXPECT_FALSE(V8ScriptValueSerializer(scope.GetScriptState())
                    .Serialize(wrapper, exception_state));
   EXPECT_TRUE(HadDOMExceptionInModulesTest(

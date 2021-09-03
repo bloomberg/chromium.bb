@@ -5,7 +5,8 @@
 #import "ios/chrome/browser/metrics/ios_chrome_default_browser_metrics_provider.h"
 
 #include "base/test/metrics/histogram_tester.h"
-#import "ios/chrome/browser/ui/whats_new/default_browser_utils.h"
+#include "components/metrics/metrics_log_uploader.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,7 +24,8 @@ class IOSChromeDefaultBrowserMetricsProviderTest : public PlatformTest {
 TEST_F(IOSChromeDefaultBrowserMetricsProviderTest, ProvideCurrentSessionData) {
   [[NSUserDefaults standardUserDefaults]
       removeObjectForKey:kLastHTTPURLOpenTime];
-  IOSChromeDefaultBrowserMetricsProvider provider;
+  IOSChromeDefaultBrowserMetricsProvider provider(
+      metrics::MetricsLogUploader::MetricServiceType::UMA);
   provider.ProvideCurrentSessionData(nullptr /* uma_proto */);
   histogram_tester_.ExpectBucketCount("IOS.IsDefaultBrowser", false, 1);
   histogram_tester_.ExpectBucketCount("IOS.IsDefaultBrowser", true, 0);

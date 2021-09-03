@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
+#include "media/base/video_frame.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "remoting/base/constants.h"
 #include "third_party/libyuv/include/libyuv/convert_from_argb.h"
@@ -22,25 +23,30 @@
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace {
+
+using media::VideoCodecProfile;
+using media::VideoFrame;
+using media::VideoPixelFormat;
+
 // Currently, the frame scheduler only encodes a single frame at a time. Thus,
 // there's no reason to have this set to anything greater than one.
 const int kWebrtcVideoEncoderGpuOutputBufferCount = 1;
 
-constexpr media::VideoCodecProfile kH264Profile =
-    media::VideoCodecProfile::H264PROFILE_MAIN;
+constexpr VideoCodecProfile kH264Profile = VideoCodecProfile::H264PROFILE_MAIN;
 
 constexpr int kH264MinimumTargetBitrateKbpsPerMegapixel = 1800;
 
 void ArgbToI420(const webrtc::DesktopFrame& frame,
-                scoped_refptr<media::VideoFrame> video_frame) {
+                scoped_refptr<VideoFrame> video_frame) {
   const uint8_t* rgb_data = frame.data();
   const int rgb_stride = frame.stride();
-  const int y_stride = video_frame->stride(0);
-  DCHECK_EQ(video_frame->stride(1), video_frame->stride(2));
-  const int uv_stride = video_frame->stride(1);
-  uint8_t* y_data = video_frame->data(0);
-  uint8_t* u_data = video_frame->data(1);
-  uint8_t* v_data = video_frame->data(2);
+  const int y_stride = video_frame->stride(VideoFrame::kYPlane);
+  DCHECK_EQ(video_frame->stride(VideoFrame::kUPlane),
+            video_frame->stride(VideoFrame::kVPlane));
+  const int uv_stride = video_frame->stride(VideoFrame::kUVPlane);
+  uint8_t* y_data = video_frame->data(VideoFrame::kYPlane);
+  uint8_t* u_data = video_frame->data(VideoFrame::kUPlane);
+  uint8_t* v_data = video_frame->data(VideoFrame::kVPlane);
   libyuv::ARGBToI420(rgb_data, rgb_stride, y_data, y_stride, u_data, uv_stride,
                      v_data, uv_stride, video_frame->visible_rect().width(),
                      video_frame->visible_rect().height());
@@ -63,8 +69,7 @@ gpu::GpuDriverBugWorkarounds CreateGpuWorkarounds() {
 
 namespace remoting {
 
-WebrtcVideoEncoderGpu::WebrtcVideoEncoderGpu(
-    media::VideoCodecProfile codec_profile)
+WebrtcVideoEncoderGpu::WebrtcVideoEncoderGpu(VideoCodecProfile codec_profile)
     : state_(UNINITIALIZED),
       codec_profile_(codec_profile),
       bitrate_filter_(kH264MinimumTargetBitrateKbpsPerMegapixel) {}
@@ -123,8 +128,8 @@ void WebrtcVideoEncoderGpu::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
   // an Encode to finish before attempting another.
   DCHECK_EQ(state_, INITIALIZED);
 
-  scoped_refptr<media::VideoFrame> video_frame = media::VideoFrame::CreateFrame(
-      media::VideoPixelFormat::PIXEL_FORMAT_I420, input_coded_size_,
+  scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateFrame(
+      VideoPixelFormat::PIXEL_FORMAT_I420, input_coded_size_,
       gfx::Rect(input_visible_size_), input_visible_size_, base::TimeDelta());
 
   base::TimeDelta new_timestamp = previous_timestamp_ + params.duration;
@@ -225,8 +230,7 @@ bool WebrtcVideoEncoderGpu::OutputBuffer::IsValid() {
 void WebrtcVideoEncoderGpu::BeginInitialization() {
   DVLOG(3) << __func__;
 
-  media::VideoPixelFormat input_format =
-      media::VideoPixelFormat::PIXEL_FORMAT_I420;
+  VideoPixelFormat input_format = VideoPixelFormat::PIXEL_FORMAT_I420;
   // TODO(zijiehe): implement some logical way to set an initial bitrate.
   // Currently we set the bitrate to 8M bits / 1M bytes per frame, and 30 frames
   // per second.
@@ -275,6 +279,17 @@ std::unique_ptr<WebrtcVideoEncoder> WebrtcVideoEncoderGpu::CreateForH264() {
 // static
 bool WebrtcVideoEncoderGpu::IsSupportedByH264(
     const WebrtcVideoEncoderSelector::Profile& profile) {
+#if defined(OS_WIN)
+  // This object is required by Chromium to ensure proper init/uninit of COM on
+  // this thread.  The guidance is to match the lifetime of this object to the
+  // lifetime of the thread if possible.  Since we are still experimenting with
+  // H.264 and run the encoder on a different thread, we use a locally scoped
+  // object for now.
+  // TODO(joedow): Use a COMscoped Autothread (or run in a separate process) if
+  // H.264 becomes a common use case for us.
+  base::win::ScopedCOMInitializer scoped_com_initializer;
+#endif
+
   media::VideoEncodeAccelerator::SupportedProfiles profiles =
       media::GpuVideoEncodeAcceleratorFactory::GetSupportedProfiles(
           CreateGpuPreferences(), CreateGpuWorkarounds());

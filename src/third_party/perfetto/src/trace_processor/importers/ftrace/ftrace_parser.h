@@ -23,8 +23,8 @@
 #include "src/trace_processor/importers/ftrace/rss_stat_tracker.h"
 #include "src/trace_processor/importers/ftrace/sched_event_tracker.h"
 #include "src/trace_processor/timestamped_trace_piece.h"
-#include "src/trace_processor/trace_blob_view.h"
 #include "src/trace_processor/types/trace_processor_context.h"
+#include "src/trace_processor/util/trace_blob_view.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -66,18 +66,26 @@ class FtraceParser {
   void ParseG2dTracingMarkWrite(int64_t timestamp,
                                 uint32_t pid,
                                 protozero::ConstBytes);
-  void ParseIonHeapGrowOrShrink(int64_t ts,
+  void ParseMaliTracingMarkWrite(int64_t timestamp,
+                                 uint32_t pid,
+                                 protozero::ConstBytes);
+  void ParseIonHeapGrowOrShrink(int64_t timestamp,
                                 uint32_t pid,
                                 protozero::ConstBytes,
                                 bool grow);
-  void ParseIonStat(int64_t ts, uint32_t pid, protozero::ConstBytes);
-  void ParseSignalGenerate(int64_t ts, protozero::ConstBytes);
-  void ParseSignalDeliver(int64_t ts, uint32_t pid, protozero::ConstBytes);
-  void ParseLowmemoryKill(int64_t ts, protozero::ConstBytes);
-  void ParseOOMScoreAdjUpdate(int64_t ts, protozero::ConstBytes);
-  void ParseOOMKill(int64_t ts, protozero::ConstBytes);
-  void ParseMmEventRecord(int64_t ts, uint32_t pid, protozero::ConstBytes);
-  void ParseSysEvent(int64_t ts,
+  void ParseIonStat(int64_t timestamp, uint32_t pid, protozero::ConstBytes);
+  void ParseDmaHeapStat(int64_t timestamp, uint32_t pid, protozero::ConstBytes);
+  void ParseSignalGenerate(int64_t timestamp, protozero::ConstBytes);
+  void ParseSignalDeliver(int64_t timestamp,
+                          uint32_t pid,
+                          protozero::ConstBytes);
+  void ParseLowmemoryKill(int64_t timestamp, protozero::ConstBytes);
+  void ParseOOMScoreAdjUpdate(int64_t timestamp, protozero::ConstBytes);
+  void ParseOOMKill(int64_t timestamp, protozero::ConstBytes);
+  void ParseMmEventRecord(int64_t timestamp,
+                          uint32_t pid,
+                          protozero::ConstBytes);
+  void ParseSysEvent(int64_t timestamp,
                      uint32_t pid,
                      bool is_enter,
                      protozero::ConstBytes);
@@ -138,6 +146,7 @@ class FtraceParser {
   void ParseFastRpcDmaStat(int64_t timestamp,
                            uint32_t pid,
                            protozero::ConstBytes);
+  void ParseCpuhpPause(int64_t, uint32_t, protozero::ConstBytes);
 
   TraceProcessorContext* context_;
   RssStatTracker rss_stat_tracker_;
@@ -149,6 +158,10 @@ class FtraceParser {
   const StringId cpu_idle_name_id_;
   const StringId ion_total_id_;
   const StringId ion_change_id_;
+  const StringId ion_buffer_id_;
+  const StringId dma_heap_total_id_;
+  const StringId dma_heap_change_id_;
+  const StringId dma_buffer_id_;
   const StringId ion_total_unknown_id_;
   const StringId ion_change_unknown_id_;
   const StringId signal_generate_id_;
@@ -188,7 +201,8 @@ class FtraceParser {
   };
 
   static constexpr size_t kFastRpcCounterSize = 4;
-  std::array<StringId, kFastRpcCounterSize> fast_rpc_counter_names_;
+  std::array<StringId, kFastRpcCounterSize> fast_rpc_delta_names_;
+  std::array<StringId, kFastRpcCounterSize> fast_rpc_total_names_;
 
   // Keep kMmEventCounterSize equal to mm_event_type::MM_TYPE_NUM in the kernel.
   static constexpr size_t kMmEventCounterSize = 7;

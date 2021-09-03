@@ -43,6 +43,8 @@
 
 using JSColor = int32_t;
 using Uint8Array = emscripten::val;
+using JSArray = emscripten::val;
+using JSObject = emscripten::val;
 
 // file signature for SkMultiPictureDocument
 // TODO(nifong): make public and include from SkMultiPictureDocument.h
@@ -63,6 +65,8 @@ SimpleImageInfo toSimpleImageInfo(const SkImageInfo& ii) {
   return (SimpleImageInfo){ii.width(), ii.height(), ii.colorType(), ii.alphaType()};
 }
 
+uint32_t MinVersion() { return SkPicturePriv::kMin_Version; }
+
 class SkpDebugPlayer {
   public:
     SkpDebugPlayer() :
@@ -82,33 +86,23 @@ class SkpDebugPlayer {
      */
     std::string loadSkp(uintptr_t cptr, int length) {
       const uint8_t* data = reinterpret_cast<const uint8_t*>(cptr);
-      char magic[8];
       // Both traditional and multi-frame skp files have a magic word
       SkMemoryStream stream(data, length);
       SkDebugf("make stream at %p, with %d bytes\n",data, length);
-      // Why -1? I think it's got to do with using a constexpr, just a guess.
-      const size_t magicsize = sizeof(kMultiMagic) - 1;
-      const bool isMulti = memcmp(data, kMultiMagic, magicsize) == 0;
+      const bool isMulti = memcmp(data, kMultiMagic, sizeof(kMultiMagic) - 1) == 0;
+
+
       if (isMulti) {
         SkDebugf("Try reading as a multi-frame skp\n");
         const auto& error = loadMultiFrame(&stream);
         if (!error.empty()) { return error; }
       } else {
         SkDebugf("Try reading as single-frame skp\n");
-        // The unint32 after the magic string is the SKP version
-        memcpy(&fFileVersion, data + 8, 4);
         // TODO(nifong): Rely on SkPicture's return errors once it provides some.
-        if (fFileVersion < SkPicturePriv::kMin_Version ||
-          fFileVersion > SkPicturePriv::kCurrent_Version) {
-          return std::string(SkStringPrintf("Skp version (%d) cannot be read by this build. Version range supported = (%d, %d)",
-              fFileVersion, SkPicturePriv::kMin_Version, SkPicturePriv::kCurrent_Version).c_str());
-        }
         frames.push_back(loadSingleFrame(&stream));
       }
       return "";
     }
-
-    uint32_t fileVersion() { return fFileVersion; }
 
     /* drawTo asks the debug canvas to draw from the beginning of the picture
      * to the given command and flush the canvas.
@@ -125,12 +119,12 @@ class SkpDebugPlayer {
       canvas->clear(SK_ColorTRANSPARENT);
       if (fInspectedLayer >= 0) {
         // when it's a layer event we're viewing, we use the layer manager to render it.
-        fLayerManager->drawLayerEventTo(canvas, fInspectedLayer, fp);
+        fLayerManager->drawLayerEventTo(surface, fInspectedLayer, fp);
       } else {
         // otherwise, its a frame at the top level.
         frames[fp]->drawTo(surface->getCanvas(), index);
       }
-      surface->getCanvas()->flush();
+      surface->flush();
     }
 
     // Draws to the end of the current frame.
@@ -141,12 +135,19 @@ class SkpDebugPlayer {
       surface->getCanvas()->flush();
     }
 
-    const SkIRect getBounds() {
+    // Gets the bounds for the given frame
+    // (or layer update, assuming there is one at that frame for fInspectedLayer)
+    const SkIRect getBoundsForFrame(int32_t frame) {
       if (fInspectedLayer < 0) {
-        return fBounds;
+        return fBoundsArray[frame];
       }
       auto summary = fLayerManager->event(fInspectedLayer, fp);
       return SkIRect::MakeWH(summary.layerWidth, summary.layerHeight);
+    }
+
+    // Gets the bounds for the current frame
+    const SkIRect getBounds() {
+      return getBoundsForFrame(fp);
     }
 
     // returns the debugcanvas of the current frame, or the current draw event when inspecting
@@ -228,7 +229,7 @@ class SkpDebugPlayer {
 
     // Gets the clip and matrix of the last command drawn
     std::string lastCommandInfo() {
-      SkMatrix vm = visibleCanvas()->getCurrentMatrix();
+      SkM44 vm = visibleCanvas()->getCurrentMatrix();
       SkIRect clip = visibleCanvas()->getCurrentClip();
 
       SkDynamicMemoryWStream stream;
@@ -236,7 +237,7 @@ class SkpDebugPlayer {
       writer.beginObject(); // root
 
       writer.appendName("ViewMatrix");
-      DrawCommand::MakeJsonMatrix(writer, vm);
+      DrawCommand::MakeJsonMatrix44(writer, vm);
       writer.appendName("ClipRect");
       DrawCommand::MakeJsonIRect(writer, clip);
 
@@ -276,32 +277,46 @@ class SkpDebugPlayer {
       return toSimpleImageInfo(fImages[index]->imageInfo());
     }
 
-    // returns a JSON string representing commands where each image is referenced.
-    std::string imageUseInfoForFrame(int framenumber) {
-      std::map<int, std::vector<int>> m = frames[framenumber]->getImageIdToCommandMap(udm);
-
-      SkDynamicMemoryWStream stream;
-      SkJSONWriter writer(&stream, SkJSONWriter::Mode::kFast);
-      writer.beginObject(); // root
-
-      for (auto it = m.begin(); it != m.end(); ++it) {
-        writer.beginArray(std::to_string(it->first).c_str());
-        for (const int commandId : it->second) {
-          writer.appendU64((uint64_t)commandId);
-        }
-        writer.endArray();
+    // return data on which commands each image is used in.
+    // (frame, -1) returns info for the given frame,
+    // (frame, nodeid) return info for a layer update
+    // { imageid: [commandid, commandid, ...], ... }
+    JSObject imageUseInfo(int framenumber, int nodeid) {
+      JSObject result = emscripten::val::object();
+      DebugCanvas* debugCanvas = frames[framenumber].get();
+      if (nodeid >= 0) {
+        debugCanvas = fLayerManager->getEventDebugCanvas(nodeid, framenumber);
       }
-
-      writer.endObject(); // root
-      writer.flush();
-      auto skdata = stream.detachAsData();
-      std::string_view data_view(reinterpret_cast<const char*>(skdata->data()), skdata->size());
-      return std::string(data_view);
+      const auto& map = debugCanvas->getImageIdToCommandMap(udm);
+      for (auto it = map.begin(); it != map.end(); ++it) {
+        JSArray list = emscripten::val::array();
+        for (const int commandId : it->second) {
+          list.call<void>("push", commandId);
+        }
+        result.set(std::to_string(it->first), list);
+      }
+      return result;
     }
 
-    // return a list of layer draw events that happened at the beginning of this frame.
-    std::vector<DebugLayerManager::LayerSummary> getLayerSummaries() {
-      return fLayerManager->summarizeLayers(fp);
+    // Return information on every layer (offscreeen buffer) that is available for drawing at
+    // the current frame.
+    JSArray getLayerSummariesJs() {
+      JSArray result = emscripten::val::array();
+      for (auto summary : fLayerManager->summarizeLayers(fp)) {
+          result.call<void>("push", summary);
+      }
+      return result;
+    }
+
+    JSArray getLayerKeys() {
+      JSArray result = emscripten::val::array();
+      for (auto key : fLayerManager->getKeys()) {
+        JSObject item = emscripten::val::object();
+        item.set("frame", key.frame);
+        item.set("nodeId", key.nodeId);
+        result.call<void>("push", item);
+      }
+      return result;
     }
 
     // When set to a valid layer index, causes this class to playback the layer draw event at nodeId
@@ -332,12 +347,16 @@ class SkpDebugPlayer {
           lowerBound = command;
         }
       }
+      // clean up after side effects
+      drawTo(surface, commandIndex);
       return upperBound;
     }
 
   private:
 
-      // Helper for findCommandByPixel
+      // Helper for findCommandByPixel.
+      // Has side effect of flushing to surface.
+      // TODO(nifong) eliminate side effect.
       SkColor evaluateCommandColor(SkSurface* surface, int command, int x, int y) {
         drawTo(surface, command);
 
@@ -359,8 +378,8 @@ class SkpDebugPlayer {
         }
         SkDebugf("Parsed SKP file.\n");
         // Make debug canvas using bounds from SkPicture
-        fBounds = picture->cullRect().roundOut();
-        std::unique_ptr<DebugCanvas> debugCanvas = std::make_unique<DebugCanvas>(fBounds);
+        fBoundsArray.push_back(picture->cullRect().roundOut());
+        std::unique_ptr<DebugCanvas> debugCanvas = std::make_unique<DebugCanvas>(fBoundsArray.back());
 
         // Only draw picture to the debug canvas once.
         debugCanvas->drawPicture(picture);
@@ -391,8 +410,8 @@ class SkpDebugPlayer {
         int i = 0;
         for (const auto& page : pages) {
           // Make debug canvas using bounds from SkPicture
-          fBounds = page.fPicture->cullRect().roundOut();
-          std::unique_ptr<DebugCanvas> debugCanvas = std::make_unique<DebugCanvas>(fBounds);
+          fBoundsArray.push_back(page.fPicture->cullRect().roundOut());
+          std::unique_ptr<DebugCanvas> debugCanvas = std::make_unique<DebugCanvas>(fBoundsArray.back());
           debugCanvas->setLayerManagerAndFrame(fLayerManager.get(), i);
 
           // Only draw picture to the debug canvas once.
@@ -420,8 +439,6 @@ class SkpDebugPlayer {
       int constrainFrameCommand(int index) {
         int cmdlen = frames[fp]->getSize();
         if (index >= cmdlen) {
-          SkDebugf("Constrained command index (%d) within this frame's length (%d)\n",
-            index, cmdlen);
           return cmdlen-1;
         }
         return index;
@@ -431,10 +448,9 @@ class SkpDebugPlayer {
       std::vector<std::unique_ptr<DebugCanvas>> frames;
       // The index of the current frame (into the vector above)
       int fp = 0;
-      // The width and height of the animation. (in practice the bounds of the last loaded frame)
-      SkIRect fBounds;
-      // SKP version of loaded file.
-      uint32_t fFileVersion;
+      // The width and height of every frame.
+      // frame sizes are known to change in Android Skia RenderEngine because it interleves pictures from different applications.
+      std::vector<SkIRect> fBoundsArray;
       // image resources from a loaded file
       std::vector<sk_sp<SkImage>> fImages;
 
@@ -522,6 +538,8 @@ sk_sp<SkSurface> MakeRenderTarget(sk_sp<GrDirectContext> dContext, SimpleImageIn
 using namespace emscripten;
 EMSCRIPTEN_BINDINGS(my_module) {
 
+  function("MinVersion", &MinVersion);
+
   // The main class that the JavaScript in index.html uses
   class_<SkpDebugPlayer>("SkpDebugPlayer")
     .constructor<>()
@@ -529,16 +547,21 @@ EMSCRIPTEN_BINDINGS(my_module) {
     .function("deleteCommand",        &SkpDebugPlayer::deleteCommand)
     .function("draw",                 &SkpDebugPlayer::draw, allow_raw_pointers())
     .function("drawTo",               &SkpDebugPlayer::drawTo, allow_raw_pointers())
-    .function("fileVersion",          &SkpDebugPlayer::fileVersion)
     .function("findCommandByPixel",   &SkpDebugPlayer::findCommandByPixel, allow_raw_pointers())
     .function("getBounds",            &SkpDebugPlayer::getBounds)
+    .function("getBoundsForFrame",    &SkpDebugPlayer::getBoundsForFrame)
     .function("getFrameCount",        &SkpDebugPlayer::getFrameCount)
     .function("getImageResource",     &SkpDebugPlayer::getImageResource)
     .function("getImageCount",        &SkpDebugPlayer::getImageCount)
     .function("getImageInfo",         &SkpDebugPlayer::getImageInfo)
-    .function("getLayerSummaries",    &SkpDebugPlayer::getLayerSummaries)
+    .function("getLayerKeys",         &SkpDebugPlayer::getLayerKeys)
+    .function("getLayerSummariesJs",  &SkpDebugPlayer::getLayerSummariesJs)
     .function("getSize",              &SkpDebugPlayer::getSize)
-    .function("imageUseInfoForFrame", &SkpDebugPlayer::imageUseInfoForFrame)
+    .function("imageUseInfo",         &SkpDebugPlayer::imageUseInfo)
+    .function("imageUseInfoForFrameJs", optional_override([](SkpDebugPlayer& self, const int frame)->JSObject {
+       // -1 as a node id is used throughout the application to mean no layer inspected.
+      return self.imageUseInfo(frame, -1);
+    }))
     .function("jsonCommandList",      &SkpDebugPlayer::jsonCommandList, allow_raw_pointers())
     .function("lastCommandInfo",      &SkpDebugPlayer::lastCommandInfo)
     .function("loadSkp",              &SkpDebugPlayer::loadSkp, allow_raw_pointers())
@@ -559,7 +582,7 @@ EMSCRIPTEN_BINDINGS(my_module) {
   // emscripten provided the following convenience function for binding vector<T>
   // https://emscripten.org/docs/api_reference/bind.h.html#_CPPv415register_vectorPKc
   register_vector<DebugLayerManager::LayerSummary>("VectorLayerSummary");
-  value_object<DebugLayerManager::LayerSummary>("DebugLayerManager::LayerSummary")
+  value_object<DebugLayerManager::LayerSummary>("LayerSummary")
     .field("nodeId",            &DebugLayerManager::LayerSummary::nodeId)
     .field("frameOfLastUpdate", &DebugLayerManager::LayerSummary::frameOfLastUpdate)
     .field("fullRedraw",        &DebugLayerManager::LayerSummary::fullRedraw)
@@ -594,7 +617,11 @@ EMSCRIPTEN_BINDINGS(my_module) {
     .function("_flush", optional_override([](SkSurface& self) {
             self.flushAndSubmit(false);
         }))
+    .function("clear", optional_override([](SkSurface& self, JSColor color)->void {
+      self.getCanvas()->clear(SkColor(color));
+    }))
     .function("getCanvas", &SkSurface::getCanvas, allow_raw_pointers());
+  // TODO(nifong): remove
   class_<SkCanvas>("SkCanvas")
     .function("clear", optional_override([](SkCanvas& self, JSColor color)->void {
       // JS side gives us a signed int instead of an unsigned int for color

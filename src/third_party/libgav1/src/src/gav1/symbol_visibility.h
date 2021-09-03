@@ -58,6 +58,11 @@
 //
 // Much of the above information and more can be found at
 // https://gcc.gnu.org/wiki/Visibility
+//
+// NOTE: A third-party build system for libgav1 can add -DLIBGAV1_PUBLIC= to the
+// compiler command line to override the definition of LIBGAV1_PUBLIC in this
+// header. This can be used to create a libgav1 static library that will not
+// export any symbols when it is linked into a shared library.
 
 #if !defined(LIBGAV1_PUBLIC)
 #if defined(_WIN32)
@@ -76,7 +81,7 @@
 #else
 #define LIBGAV1_PUBLIC
 #endif  // defined(LIBGAV1_BUILDING_DLL) && LIBGAV1_BUILDING_DLL
-#else
+#else   // !defined(_WIN32)
 #if defined(__GNUC__) && __GNUC__ >= 4
 #define LIBGAV1_PUBLIC __attribute__((visibility("default")))
 #else

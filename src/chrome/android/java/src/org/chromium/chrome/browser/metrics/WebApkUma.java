@@ -14,9 +14,9 @@ import androidx.annotation.IntDef;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.browserservices.intents.WebApkDistributor;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.webapps.WebApkDistributor;
 import org.chromium.chrome.browser.webapps.WebApkUkmRecorder;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.browser.webapps.WebappIntentUtils;
@@ -286,6 +286,11 @@ public class WebApkUma {
      */
     public static void recordNavigation(boolean isNavigationInScope) {
         RecordHistogram.recordBooleanHistogram("WebApk.Navigation.InScope", isNavigationInScope);
+    }
+
+    /** Records number of unique origins for WebAPKs in WebappRegistry */
+    public static void recordWebApksCount(int count) {
+        RecordHistogram.recordCount100Histogram("WebApk.WebappRegistry.NumberOfOrigins", count);
     }
 
     /**

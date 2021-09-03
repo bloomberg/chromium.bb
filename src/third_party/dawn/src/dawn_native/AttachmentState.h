@@ -38,6 +38,7 @@ namespace dawn_native {
         // Note: Descriptors must be validated before the AttachmentState is constructed.
         explicit AttachmentStateBlueprint(const RenderBundleEncoderDescriptor* descriptor);
         explicit AttachmentStateBlueprint(const RenderPipelineDescriptor* descriptor);
+        explicit AttachmentStateBlueprint(const RenderPipelineDescriptor2* descriptor);
         explicit AttachmentStateBlueprint(const RenderPassDescriptor* descriptor);
 
         AttachmentStateBlueprint(const AttachmentStateBlueprint& rhs);
@@ -68,6 +69,8 @@ namespace dawn_native {
         bool HasDepthStencilAttachment() const;
         wgpu::TextureFormat GetDepthStencilFormat() const;
         uint32_t GetSampleCount() const;
+
+        size_t ComputeContentHash() override;
 
       private:
         ~AttachmentState() override;

@@ -6,12 +6,11 @@
 
 #include "base/stl_util.h"
 #include "build/chromeos_buildflags.h"
+#include "media/base/cdm_context.h"
 #include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
-
-#include "base/strings/string_number_conversions.h"
 
 namespace media {
 
@@ -38,8 +37,15 @@ using DecodeStatus = H265Decoder::H265Accelerator::Status;
 
 H265VaapiVideoDecoderDelegate::H265VaapiVideoDecoderDelegate(
     DecodeSurfaceHandler<VASurface>* const vaapi_dec,
-    scoped_refptr<VaapiWrapper> vaapi_wrapper)
-    : VaapiVideoDecoderDelegate(vaapi_dec, std::move(vaapi_wrapper)) {
+    scoped_refptr<VaapiWrapper> vaapi_wrapper,
+    ProtectedSessionUpdateCB on_protected_session_update_cb,
+    CdmContext* cdm_context,
+    EncryptionScheme encryption_scheme)
+    : VaapiVideoDecoderDelegate(vaapi_dec,
+                                std::move(vaapi_wrapper),
+                                std::move(on_protected_session_update_cb),
+                                cdm_context,
+                                encryption_scheme) {
   ref_pic_list_pocs_.reserve(kMaxRefIdxActive);
 }
 
@@ -51,7 +57,15 @@ scoped_refptr<H265Picture> H265VaapiVideoDecoderDelegate::CreateH265Picture() {
   if (!va_surface)
     return nullptr;
 
-  return new VaapiH265Picture(std::move(va_surface));
+  scoped_refptr<H265Picture> pic = new VaapiH265Picture(std::move(va_surface));
+  if (!vaapi_dec_->IsScalingDecode())
+    return pic;
+
+  // Setup the scaling buffer.
+  scoped_refptr<VASurface> scaled_surface = vaapi_dec_->CreateDecodeSurface();
+  CHECK(scaled_surface);
+  pic->AsVaapiH265Picture()->SetDecodeSurface(std::move(scaled_surface));
+  return pic;
 }
 
 DecodeStatus H265VaapiVideoDecoderDelegate::SubmitFrameMetadata(
@@ -65,6 +79,9 @@ DecodeStatus H265VaapiVideoDecoderDelegate::SubmitFrameMetadata(
 
   VAPictureParameterBufferHEVC pic_param;
   memset(&pic_param, 0, sizeof(pic_param));
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  memset(&crypto_params_, 0, sizeof(crypto_params_));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   int highest_tid = sps->sps_max_sub_layers_minus1;
 #define FROM_SPS_TO_PP(a) pic_param.a = sps->a
@@ -289,6 +306,20 @@ DecodeStatus H265VaapiVideoDecoderDelegate::SubmitSlice(
     return DecodeStatus::kFail;
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (IsEncryptedSession()) {
+    const ProtectedSessionState state =
+        SetupDecryptDecode(/*full_sample=*/false, size, &crypto_params_,
+                           &encryption_segment_info_, subsamples);
+    if (state == ProtectedSessionState::kFailed) {
+      LOG(ERROR) << "SubmitSlice fails because we couldn't setup the protected "
+                    "session";
+      return DecodeStatus::kFail;
+    } else if (state != ProtectedSessionState::kCreated) {
+      return DecodeStatus::kTryAgain;
+    }
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   memset(&slice_param_, 0, sizeof(slice_param_));
 
   slice_param_.slice_data_size = slice_hdr->nalu_size;
@@ -411,7 +442,7 @@ DecodeStatus H265VaapiVideoDecoderDelegate::SubmitSlice(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   slice_param_.slice_data_num_emu_prevn_bytes =
       slice_hdr->header_emulation_prevention_bytes;
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   last_slice_data_ = data;
   last_slice_size_ = size;
@@ -427,11 +458,40 @@ DecodeStatus H265VaapiVideoDecoderDelegate::SubmitDecode(
     return DecodeStatus::kFail;
   }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  if (IsEncryptedSession() &&
+      !vaapi_wrapper_->SubmitBuffer(VAEncryptionParameterBufferType,
+                                    sizeof(crypto_params_), &crypto_params_)) {
+    return DecodeStatus::kFail;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+  const VaapiH265Picture* vaapi_pic = pic->AsVaapiH265Picture();
+  CHECK(gfx::Rect(vaapi_pic->GetDecodeSize()).Contains(pic->visible_rect()));
+  VAProcPipelineParameterBuffer proc_buffer;
+  if (FillDecodeScalingIfNeeded(pic->visible_rect(),
+                                vaapi_pic->GetVADecodeSurfaceID(),
+                                vaapi_pic->va_surface(), &proc_buffer)) {
+    if (!vaapi_wrapper_->SubmitBuffer(VAProcPipelineParameterBufferType,
+                                      sizeof(proc_buffer), &proc_buffer)) {
+      DLOG(ERROR) << "Failed submitting proc buffer";
+      return DecodeStatus::kFail;
+    }
+  }
+
+  const bool success = vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
+      vaapi_pic->GetVADecodeSurfaceID());
   ref_pic_list_pocs_.clear();
-  return vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
-             pic->AsVaapiH265Picture()->va_surface()->id())
-             ? DecodeStatus::kOk
-             : DecodeStatus::kFail;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  encryption_segment_info_.clear();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+  if (!success && NeedsProtectedSessionRecovery())
+    return DecodeStatus::kTryAgain;
+
+  if (success && IsEncryptedSession())
+    ProtectedDecodedSucceeded();
+
+  return success ? DecodeStatus::kOk : DecodeStatus::kFail;
 }
 
 bool H265VaapiVideoDecoderDelegate::OutputPicture(
@@ -439,9 +499,11 @@ bool H265VaapiVideoDecoderDelegate::OutputPicture(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const VaapiH265Picture* vaapi_pic = pic->AsVaapiH265Picture();
-  vaapi_dec_->SurfaceReady(vaapi_pic->va_surface(), vaapi_pic->bitstream_id(),
-                           vaapi_pic->visible_rect(),
-                           vaapi_pic->get_colorspace());
+  vaapi_dec_->SurfaceReady(
+      vaapi_pic->va_surface(), vaapi_pic->bitstream_id(),
+      vaapi_dec_->GetOutputVisibleRect(vaapi_pic->visible_rect(),
+                                       vaapi_pic->va_surface()->size()),
+      vaapi_pic->get_colorspace());
   return true;
 }
 
@@ -449,14 +511,27 @@ void H265VaapiVideoDecoderDelegate::Reset() {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   vaapi_wrapper_->DestroyPendingBuffers();
   ref_pic_list_pocs_.clear();
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  encryption_segment_info_.clear();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
   last_slice_data_ = nullptr;
+}
+
+DecodeStatus H265VaapiVideoDecoderDelegate::SetStream(
+    base::span<const uint8_t> /*stream*/,
+    const DecryptConfig* decrypt_config) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!decrypt_config)
+    return Status::kOk;
+  return SetDecryptConfig(decrypt_config->Clone()) ? Status::kOk
+                                                   : Status::kFail;
 }
 
 void H265VaapiVideoDecoderDelegate::FillVAPicture(
     VAPictureHEVC* va_pic,
     scoped_refptr<H265Picture> pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  va_pic->picture_id = pic->AsVaapiH265Picture()->va_surface()->id();
+  va_pic->picture_id = pic->AsVaapiH265Picture()->GetVADecodeSurfaceID();
   va_pic->pic_order_cnt = pic->pic_order_cnt_val_;
   va_pic->flags = 0;
 

@@ -35,6 +35,7 @@ class ASH_PUBLIC_EXPORT ClipboardImageModelFactory {
   // empty ImageModel will be passed through |callback|.
   virtual void Render(const base::UnguessableToken& id,
                       const std::string& html_markup,
+                      const gfx::Size& bounding_box_size,
                       ImageModelCallback callback) = 0;
 
   // Called to stop rendering which was requested with |id|.
@@ -44,8 +45,18 @@ class ASH_PUBLIC_EXPORT ClipboardImageModelFactory {
   // state and all rendering requests will be queued until activated.
   virtual void Activate() = 0;
 
-  // Called after Activate() to pause rendering requests.
+  // Called after Activate() to pause rendering requests. Rendering requests
+  // will will continue until all requests are processed if
+  // RenderCurrentPendingRequests() has been called.
   virtual void Deactivate() = 0;
+
+  // Called to render all currently pending requests. This is called when the
+  // virtual keyboard private api calls getClipboardHistory, so that clipboard
+  // history items that are displayed will be rendered. Since there is no way to
+  // track when the clipboard history is shown/hidden in the virtual keyboard,
+  // this is called to ensure the current clipboard history is rendered.
+  // Convenience function to `Activate()` until all requests are finished.
+  virtual void RenderCurrentPendingRequests() = 0;
 
   // Called during shutdown to cleanup references to Profile.
   virtual void OnShutdown() = 0;

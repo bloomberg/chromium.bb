@@ -129,7 +129,6 @@ void TaskRunnerImpl::RequestStopSoon() {
 }
 
 void TaskRunnerImpl::RunRunnableTasks() {
-  OSP_DVLOG << "Running " << running_tasks_.size() << " tasks...";
   for (TaskWithMetadata& running_task : running_tasks_) {
     // Move the task to the stack so that its bound state is freed immediately
     // after being run.

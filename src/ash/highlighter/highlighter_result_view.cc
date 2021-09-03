@@ -12,6 +12,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/timer/timer.h"
+#include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -176,7 +177,7 @@ views::UniqueWidgetPtr HighlighterResultView::Create(
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.name = "HighlighterResult";
   params.accept_events = false;
-  params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
+  params.activatable = views::Widget::InitParams::Activatable::kNo;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.parent =
       Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
@@ -206,7 +207,7 @@ void HighlighterResultView::Animate(const gfx::RectF& bounds,
     result_layer_->SetBounds(gfx::ToEnclosingRect(bounds));
     result_layer_->SetFillsBoundsOpaquely(false);
     result_layer_->SetMasksToBounds(false);
-    result_layer_->SetColor(HighlighterView::kPenColor);
+    result_layer_->SetColor(fast_ink::FastInkPoints::kDefaultColor);
 
     layer->Add(result_layer_.get());
 

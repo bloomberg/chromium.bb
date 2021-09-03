@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "base/time/time.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -52,9 +52,6 @@ class RelaunchNotificationControllerPlatformImpl
   // refresh.
   void RefreshRelaunchRecommendedTitle(bool past_deadline);
 
-  // Ensure show recording only once.
-  void RecordRecommendedShowResult();
-
   // Callback triggered whenever the required notification's title has to
   // refresh.
   void RefreshRelaunchRequiredTitle();
@@ -72,17 +69,14 @@ class RelaunchNotificationControllerPlatformImpl
   // notification title.
   std::unique_ptr<RelaunchRequiredTimer> relaunch_required_timer_;
 
-  // Indicate that show of the Recommended notification was already recorded.
-  bool recorded_shown_ = false;
-
   base::OnceCallback<base::Time()> on_visible_;
 
-  ScopedObserver<display::DisplayConfigurator,
-                 display::DisplayConfigurator::Observer>
-      display_observer_{this};
-  ScopedObserver<session_manager::SessionManager,
-                 session_manager::SessionManagerObserver>
-      session_observer_{this};
+  base::ScopedObservation<display::DisplayConfigurator,
+                          display::DisplayConfigurator::Observer>
+      display_observation_{this};
+  base::ScopedObservation<session_manager::SessionManager,
+                          session_manager::SessionManagerObserver>
+      session_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(RelaunchNotificationControllerPlatformImpl);
 };

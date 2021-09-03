@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/sequenced_task_runner.h"
+#include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "gpu/config/gpu_preferences.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/chromeos/mailbox_video_frame_converter.h"
@@ -15,55 +17,46 @@
 
 #if BUILDFLAG(USE_VAAPI)
 #include "media/gpu/vaapi/vaapi_video_decoder.h"
-#endif
-
-#if BUILDFLAG(USE_V4L2_CODEC)
+#elif BUILDFLAG(USE_V4L2_CODEC)
 #include "media/gpu/v4l2/v4l2_video_decoder.h"
+#else
+#error Either VA-API or V4L2 must be used for decode acceleration on Chrome OS.
 #endif
 
 namespace media {
 
-namespace {
-
-// Gets a list of the available functions for creating VideoDecoders.
-VideoDecoderPipeline::CreateDecoderFunctions GetCreateDecoderFunctions() {
-  constexpr VideoDecoderPipeline::CreateDecoderFunction kCreateVDFuncs[] = {
-#if BUILDFLAG(USE_VAAPI)
-    &VaapiVideoDecoder::Create,
-#endif  // BUILDFLAG(USE_VAAPI)
-
-#if BUILDFLAG(USE_V4L2_CODEC)
-    &V4L2VideoDecoder::Create,
-#endif  // BUILDFLAG(USE_V4L2_CODEC)
-  };
-
-  return VideoDecoderPipeline::CreateDecoderFunctions(
-      kCreateVDFuncs, kCreateVDFuncs + base::size(kCreateVDFuncs));
-}
-
-}  // namespace
-
 // static
 SupportedVideoDecoderConfigs ChromeosVideoDecoderFactory::GetSupportedConfigs(
     const gpu::GpuDriverBugWorkarounds& workarounds) {
-  SupportedVideoDecoderConfigs supported_configs;
-  SupportedVideoDecoderConfigs configs;
-
 #if BUILDFLAG(USE_VAAPI)
-  configs = VaapiVideoDecoder::GetSupportedConfigs(workarounds);
-  supported_configs.insert(supported_configs.end(), configs.begin(),
-                           configs.end());
-#endif  // BUILDFLAG(USE_VAAPI)
+  auto configs = VaapiVideoDecoder::GetSupportedConfigs();
+#elif BUILDFLAG(USE_V4L2_CODEC)
+  auto configs = V4L2VideoDecoder::GetSupportedConfigs();
+#endif
 
-#if BUILDFLAG(USE_V4L2_CODEC)
-  configs = V4L2VideoDecoder::GetSupportedConfigs();
-  supported_configs.insert(supported_configs.end(), configs.begin(),
-                           configs.end());
-#endif  // BUILDFLAG(USE_V4L2_CODEC)
+  if (workarounds.disable_accelerated_vp8_decode) {
+    base::EraseIf(configs, [](const auto& config) {
+      return config.profile_min >= VP8PROFILE_MIN &&
+             config.profile_max <= VP8PROFILE_MAX;
+    });
+  }
 
-  return supported_configs;
+  if (workarounds.disable_accelerated_vp9_decode) {
+    base::EraseIf(configs, [](const auto& config) {
+      return config.profile_min >= VP9PROFILE_PROFILE0 &&
+             config.profile_max <= VP9PROFILE_PROFILE0;
+    });
+  }
+
+  if (workarounds.disable_accelerated_vp9_profile2_decode) {
+    base::EraseIf(configs, [](const auto& config) {
+      return config.profile_min >= VP9PROFILE_PROFILE2 &&
+             config.profile_max <= VP9PROFILE_PROFILE2;
+    });
+  }
+
+  return configs;
 }
-
 // static
 std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
@@ -73,7 +66,12 @@ std::unique_ptr<VideoDecoder> ChromeosVideoDecoderFactory::Create(
   return VideoDecoderPipeline::Create(
       std::move(client_task_runner), std::move(frame_pool),
       std::move(frame_converter), std::move(media_log),
-      base::BindRepeating(&GetCreateDecoderFunctions));
+#if BUILDFLAG(USE_VAAPI)
+      base::BindRepeating(&VaapiVideoDecoder::Create)
+#elif BUILDFLAG(USE_V4L2_CODEC)
+      base::BindRepeating(&V4L2VideoDecoder::Create)
+#endif
+  );
 }
 
 }  // namespace media

@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-// UNSUPPORTED: c++98, c++03, c++11, c++14, c++17
+// UNSUPPORTED: c++03, c++11, c++14, c++17
 // <chrono>
 
 // constexpr bool is_pm(const hours& h) noexcept;
@@ -26,7 +26,7 @@ int main(int, char**)
     static_assert(!std::chrono::is_pm(hours(11)), "");
     static_assert( std::chrono::is_pm(hours(12)), "");
     static_assert( std::chrono::is_pm(hours(23)), "");
-    
+
     for (int i = 0; i < 12; ++i)
         assert(!std::chrono::is_pm(hours(i)));
     for (int i = 12; i < 24; ++i)

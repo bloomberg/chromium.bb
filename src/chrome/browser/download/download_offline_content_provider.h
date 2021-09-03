@@ -78,15 +78,13 @@ class DownloadOfflineContentProvider
                   RenameCallback callback) override;
   void ChangeSchedule(
       const offline_items_collection::ContentId& id,
-      base::Optional<offline_items_collection::OfflineItemSchedule> schedule)
+      absl::optional<offline_items_collection::OfflineItemSchedule> schedule)
       override;
 
   // Methods that can be run in reduced mode.
   void CancelDownload(const ContentId& id) override;
   void PauseDownload(const ContentId& id) override;
   void ResumeDownload(const ContentId& id, bool has_user_gesture) override;
-  void AddObserver(OfflineContentProvider::Observer* observer) override;
-  void RemoveObserver(OfflineContentProvider::Observer* observer) override;
 
   // Entry point for associating this class with a download item. Must be called
   // for all new and in-progress downloads, after which this class will start
@@ -127,13 +125,12 @@ class DownloadOfflineContentProvider
                                     DownloadItem* item,
                                     DownloadItem::DownloadRenameResult result);
   void UpdateObservers(const OfflineItem& item,
-                       const base::Optional<UpdateDelta>& update_delta);
+                       const absl::optional<UpdateDelta>& update_delta);
   void CheckForExternallyRemovedDownloads();
 
   // Ensure that download core service is started.
   void EnsureDownloadCoreServiceStarted();
 
-  base::ObserverList<OfflineContentProvider::Observer>::Unchecked observers_;
   OfflineContentAggregator* aggregator_;
   std::string name_space_;
   SimpleDownloadManagerCoordinator* manager_;

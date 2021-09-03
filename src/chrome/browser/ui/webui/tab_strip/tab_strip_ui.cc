@@ -9,6 +9,7 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_embedder.h"
 #include "chrome/browser/ui/webui/tab_strip/tab_strip_ui_handler.h"
@@ -47,7 +48,7 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUITabStripHost);
   webui::SetupWebUIDataSource(
       html_source, base::make_span(kTabStripResources, kTabStripResourcesSize),
-      "", IDR_TAB_STRIP_TAB_STRIP_HTML);
+      IDR_TAB_STRIP_TAB_STRIP_HTML);
 
   html_source->AddString("tabIdDataType", kWebUITabIdDataType);
   html_source->AddString("tabGroupIdDataType", kWebUITabGroupIdDataType);
@@ -82,7 +83,10 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
       {"unnamedGroupLabel", IDS_GROUP_AX_LABEL_UNNAMED_GROUP_FORMAT},
       {"namedGroupLabel", IDS_GROUP_AX_LABEL_NAMED_GROUP_FORMAT},
   };
-  AddLocalizedStringsBulk(html_source, kStrings);
+  html_source->AddLocalizedStrings(kStrings);
+  html_source->AddBoolean("newTabButtonEnabled",
+                          base::FeatureList::IsEnabled(
+                              features::kWebUITabStripNewTabButtonInTabStrip));
   content::WebUIDataSource::Add(profile, html_source);
 
   content::URLDataSource::Add(
@@ -93,6 +97,8 @@ TabStripUI::TabStripUI(content::WebUI* web_ui)
 }
 
 TabStripUI::~TabStripUI() = default;
+
+WEB_UI_CONTROLLER_TYPE_IMPL(TabStripUI)
 
 void TabStripUI::Initialize(Browser* browser, TabStripUIEmbedder* embedder) {
   content::WebUI* const web_ui = TabStripUI::web_ui();

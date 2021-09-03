@@ -9,9 +9,9 @@
 
 #include <memory>
 
+#include "base/containers/contains.h"
 #include "base/debug/crash_logging.h"
 #include "base/posix/eintr_wrapper.h"
-#include "base/stl_util.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/buffer_usage_util.h"
@@ -22,6 +22,7 @@
 #include "ui/gfx/linux/gbm_wrapper.h"
 #include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/dri3.h"
+#include "ui/gfx/x/future.h"
 
 namespace ui {
 
@@ -48,13 +49,13 @@ std::unique_ptr<ui::GbmDevice> CreateX11GbmDevice() {
   if (!reply)
     return nullptr;
 
-  int fd = reply->device_fd.release();
-  if (fd < 0)
+  base::ScopedFD fd(HANDLE_EINTR(dup(reply->device_fd.get())));
+  if (!fd.is_valid())
     return nullptr;
-  if (HANDLE_EINTR(fcntl(fd, F_SETFD, FD_CLOEXEC)) == -1)
+  if (HANDLE_EINTR(fcntl(fd.get(), F_SETFD, FD_CLOEXEC)) == -1)
     return nullptr;
 
-  return ui::CreateGbmDevice(fd);
+  return ui::CreateGbmDevice(fd.release());
 }
 
 std::vector<gfx::BufferUsageAndFormat> CreateSupportedConfigList(

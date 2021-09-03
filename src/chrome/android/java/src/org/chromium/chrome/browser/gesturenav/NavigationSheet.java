@@ -8,6 +8,7 @@ import android.content.Context;
 import android.view.View;
 
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.NavigationHistory;
 
@@ -20,10 +21,11 @@ public interface NavigationSheet {
      */
     interface Delegate {
         /**
-         * @param {@code true} if the requested history is of forward navigation.
+         * @param forward {@code true} if the requested history is of forward navigation.
+         * @param isOffTheRecord {@code true} if the history is called from incognito mode.
          * @return {@link NavigationHistory} object.
          */
-        NavigationHistory getHistory(boolean forward);
+        NavigationHistory getHistory(boolean forward, boolean isOffTheRecord);
 
         /**
          * Navigates to the page associated with the given index.
@@ -38,9 +40,9 @@ public interface NavigationSheet {
      * @param bottomSheetController {@link BottomSheetController} object.
      * @return NavigationSheet object.
      */
-    public static NavigationSheet create(
-            View rootView, Context context, Supplier<BottomSheetController> bottomSheetController) {
-        return new NavigationSheetCoordinator(rootView, context, bottomSheetController);
+    public static NavigationSheet create(View rootView, Context context,
+            Supplier<BottomSheetController> bottomSheetController, Profile profile) {
+        return new NavigationSheetCoordinator(rootView, context, bottomSheetController, profile);
     }
 
     /**

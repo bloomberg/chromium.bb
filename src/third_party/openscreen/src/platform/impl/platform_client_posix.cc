@@ -5,6 +5,7 @@
 #include "platform/impl/platform_client_posix.h"
 
 #include <functional>
+#include <utility>
 #include <vector>
 
 #include "platform/impl/udp_socket_reader_posix.h"
@@ -16,18 +17,14 @@ PlatformClientPosix* PlatformClientPosix::instance_ = nullptr;
 
 // static
 void PlatformClientPosix::Create(Clock::duration networking_operation_timeout,
-                                 Clock::duration networking_loop_interval,
                                  std::unique_ptr<TaskRunnerImpl> task_runner) {
   SetInstance(new PlatformClientPosix(networking_operation_timeout,
-                                      networking_loop_interval,
                                       std::move(task_runner)));
 }
 
 // static
-void PlatformClientPosix::Create(Clock::duration networking_operation_timeout,
-                                 Clock::duration networking_loop_interval) {
-  SetInstance(new PlatformClientPosix(networking_operation_timeout,
-                                      networking_loop_interval));
+void PlatformClientPosix::Create(Clock::duration networking_operation_timeout) {
+  SetInstance(new PlatformClientPosix(networking_operation_timeout));
 }
 
 // static
@@ -67,7 +64,7 @@ PlatformClientPosix::~PlatformClientPosix() {
   }
 
   OSP_DVLOG << "Shutting down network operations...";
-  networking_loop_.RequestStopSoon();
+  networking_loop_running_.store(false);
   networking_loop_thread_.join();
   OSP_DVLOG << "\tNetwork operation shutdown complete!";
 }
@@ -79,27 +76,21 @@ void PlatformClientPosix::SetInstance(PlatformClientPosix* instance) {
 }
 
 PlatformClientPosix::PlatformClientPosix(
-    Clock::duration networking_operation_timeout,
-    Clock::duration networking_loop_interval)
-    : networking_loop_(networking_operations(),
-                       networking_operation_timeout,
-                       networking_loop_interval),
-      task_runner_(new TaskRunnerImpl(Clock::now)),
-      networking_loop_thread_(&OperationLoop::RunUntilStopped,
-                              &networking_loop_),
+    Clock::duration networking_operation_timeout)
+    : task_runner_(new TaskRunnerImpl(Clock::now)),
+      networking_loop_timeout_(networking_operation_timeout),
+      networking_loop_thread_(&PlatformClientPosix::RunNetworkLoopUntilStopped,
+                              this),
       task_runner_thread_(
           std::thread(&TaskRunnerImpl::RunUntilStopped, task_runner_.get())) {}
 
 PlatformClientPosix::PlatformClientPosix(
     Clock::duration networking_operation_timeout,
-    Clock::duration networking_loop_interval,
     std::unique_ptr<TaskRunnerImpl> task_runner)
-    : networking_loop_(networking_operations(),
-                       networking_operation_timeout,
-                       networking_loop_interval),
-      task_runner_(std::move(task_runner)),
-      networking_loop_thread_(&OperationLoop::RunUntilStopped,
-                              &networking_loop_) {}
+    : task_runner_(std::move(task_runner)),
+      networking_loop_timeout_(networking_operation_timeout),
+      networking_loop_thread_(&PlatformClientPosix::RunNetworkLoopUntilStopped,
+                              this) {}
 
 SocketHandleWaiterPosix* PlatformClientPosix::socket_handle_waiter() {
   std::call_once(waiter_initialization_, [this]() {
@@ -109,20 +100,14 @@ SocketHandleWaiterPosix* PlatformClientPosix::socket_handle_waiter() {
   return waiter_.get();
 }
 
-void PlatformClientPosix::PerformSocketHandleWaiterActions(
-    Clock::duration timeout) {
-  if (!waiter_created_.load()) {
-    return;
+void PlatformClientPosix::RunNetworkLoopUntilStopped() {
+  while (networking_loop_running_.load()) {
+    if (!waiter_created_.load()) {
+      std::this_thread::sleep_for(networking_loop_timeout_);
+      continue;
+    }
+    socket_handle_waiter()->ProcessHandles(networking_loop_timeout_);
   }
-
-  socket_handle_waiter()->ProcessHandles(timeout);
-}
-
-std::vector<std::function<void(Clock::duration)>>
-PlatformClientPosix::networking_operations() {
-  return {[this](Clock::duration timeout) {
-    PerformSocketHandleWaiterActions(timeout);
-  }};
 }
 
 }  // namespace openscreen

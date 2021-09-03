@@ -39,7 +39,7 @@ defaults.build_numbers.set(True)
 defaults.cpu.set(cpu.X86_64)
 defaults.executable.set("recipe:chromium")
 defaults.execution_timeout.set(2 * time.hour)
-defaults.os.set(os.LINUX_DEFAULT)
+defaults.os.set(os.LINUX_XENIAL_OR_BIONIC_REMOVE)
 defaults.pool.set("luci.chromium.webrtc.fyi")
 defaults.service_account.set("chromium-ci-builder@chops-service-accounts.iam.gserviceaccount.com")
 defaults.swarming_tags.set(["vpython:native-python-wrapper"])
@@ -90,44 +90,34 @@ builder(
 builder(
     name = "WebRTC Chromium FYI Mac Builder",
     cores = 8,
-    caches = [xcode_cache.x11c29],
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
-    properties = {
-        "xcode_build_version": "11c29",
-    },
 )
 
 builder(
     name = "WebRTC Chromium FYI Mac Builder (dbg)",
     cores = 8,
-    caches = [xcode_cache.x11c29],
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
-    properties = {
-        "xcode_build_version": "11c29",
-    },
 )
 
 builder(
     name = "WebRTC Chromium FYI Mac Tester",
-    caches = [xcode_cache.x11c29],
     os = os.MAC_ANY,
-    properties = {
-        "xcode_build_version": "11c29",
-    },
     triggered_by = ["WebRTC Chromium FYI Mac Builder"],
 )
 
 builder(
     name = "WebRTC Chromium FYI Win Builder",
     goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
 builder(
     name = "WebRTC Chromium FYI Win Builder (dbg)",
     goma_backend = goma.backend.RBE_PROD,
+    goma_enable_ats = True,
     os = os.WINDOWS_DEFAULT,
 )
 
@@ -154,7 +144,7 @@ builder(
     executable = "recipe:webrtc/chromium_ios",
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
-    xcode = xcode.x12a7209,
+    xcode = xcode.x12d4e,
 )
 
 builder(
@@ -162,5 +152,5 @@ builder(
     executable = "recipe:webrtc/chromium_ios",
     goma_backend = goma.backend.RBE_PROD,
     os = os.MAC_ANY,
-    xcode = xcode.x12a7209,
+    xcode = xcode.x12d4e,
 )

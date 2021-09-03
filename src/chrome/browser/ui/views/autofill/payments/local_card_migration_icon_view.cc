@@ -122,7 +122,7 @@ void LocalCardMigrationIconView::UpdateImpl() {
     // Fade out inkdrop but only if icon was actually highlighted. Calling
     // SetHighlighted() can result in a spurious fade-out animation and visual
     // glitches.
-    if (this->GetHighlighted())
+    if (this->ink_drop()->GetHighlighted())
       SetHighlighted(false);
     // Handle corner cases where users navigate away or close the tab.
     UnpauseAnimation();
@@ -149,7 +149,7 @@ const char* LocalCardMigrationIconView::GetClassName() const {
   return "LocalCardMigrationIconView";
 }
 
-base::string16 LocalCardMigrationIconView::GetTextForTooltipAndAccessibleName()
+std::u16string LocalCardMigrationIconView::GetTextForTooltipAndAccessibleName()
     const {
   return l10n_util::GetStringUTF16(IDS_TOOLTIP_MIGRATE_LOCAL_CARD);
 }

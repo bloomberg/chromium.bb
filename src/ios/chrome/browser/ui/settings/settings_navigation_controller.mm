@@ -14,18 +14,20 @@
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/default_browser/default_browser_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_view_controller.h"
+#include "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_coordinator.h"
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_coordinator.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
+#import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -40,6 +42,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
 @interface SettingsNavigationController () <
     GoogleServicesSettingsCoordinatorDelegate,
+    ManageSyncSettingsCoordinatorDelegate,
     PasswordsCoordinatorDelegate,
     UIAdaptivePresentationControllerDelegate,
     UINavigationControllerDelegate>
@@ -47,6 +50,10 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 // Google services settings coordinator.
 @property(nonatomic, strong)
     GoogleServicesSettingsCoordinator* googleServicesSettingsCoordinator;
+
+// Sync settings coordinator.
+@property(nonatomic, strong)
+    ManageSyncSettingsCoordinator* manageSyncSettingsCoordinator;
 
 // Saved passwords settings coordinator.
 @property(nonatomic, strong) PasswordsCoordinator* savedPasswordsCoordinator;
@@ -120,6 +127,19 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
                          browser:browser
                         delegate:delegate];
   [nc showGoogleServices];
+  return nc;
+}
+
++ (instancetype)
+    syncSettingsControllerForBrowser:(Browser*)browser
+                            delegate:(id<SettingsNavigationControllerDelegate>)
+                                         delegate {
+  DCHECK(browser);
+  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
+      initWithRootViewController:nil
+                         browser:browser
+                        delegate:delegate];
+  [nc showSyncServices];
   return nc;
 }
 
@@ -262,6 +282,22 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   return nc;
 }
 
++ (instancetype)
+    defaultBrowserControllerForBrowser:(Browser*)browser
+                              delegate:
+                                  (id<SettingsNavigationControllerDelegate>)
+                                      delegate {
+  DCHECK(browser);
+  DefaultBrowserSettingsTableViewController* controller =
+      [[DefaultBrowserSettingsTableViewController alloc] init];
+  SettingsNavigationController* nc = [[SettingsNavigationController alloc]
+      initWithRootViewController:controller
+                         browser:browser
+                        delegate:delegate];
+  [controller navigationItem].leftBarButtonItem = [nc cancelButton];
+  return nc;
+}
+
 #pragma mark - Lifecycle
 
 - (instancetype)initWithRootViewController:(UIViewController*)rootViewController
@@ -288,14 +324,17 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.view.backgroundColor = UIColor.cr_systemBackgroundColor;
+  self.view.backgroundColor = [UIColor colorNamed:kPrimaryBackgroundColor];
 
   if (base::FeatureList::IsEnabled(kSettingsRefresh)) {
     self.navigationBar.translucent = NO;
-    self.navigationBar.barTintColor = UIColor.cr_systemBackgroundColor;
-
     self.toolbar.translucent = NO;
-    self.toolbar.barTintColor = UIColor.cr_systemBackgroundColor;
+    self.navigationBar.barTintColor =
+        [UIColor colorNamed:kSecondaryBackgroundColor];
+    self.toolbar.barTintColor =
+        [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
+    self.view.backgroundColor =
+        [UIColor colorNamed:kGroupedPrimaryBackgroundColor];
   }
 
   self.navigationBar.prefersLargeTitles = YES;
@@ -326,6 +365,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 
   // GoogleServicesSettingsCoordinator and PasswordsCoordinator must be stopped
   // before dismissing the sync settings view.
+  [self stopSyncSettingsCoordinator];
   [self stopGoogleServicesSettingsCoordinator];
   [self stopPasswordsCoordinator];
 
@@ -388,10 +428,31 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [self.googleServicesSettingsCoordinator start];
 }
 
+- (void)showSyncServices {
+  if ([self.topViewController
+          isKindOfClass:[ManageSyncSettingsCoordinator class]]) {
+    // The top view controller is already the Sync settings panel.
+    // No need to open it.
+    return;
+  }
+  DCHECK(!self.manageSyncSettingsCoordinator);
+  self.manageSyncSettingsCoordinator = [[ManageSyncSettingsCoordinator alloc]
+      initWithBaseNavigationController:self
+                               browser:self.browser];
+  self.manageSyncSettingsCoordinator.delegate = self;
+  [self.manageSyncSettingsCoordinator start];
+}
+
 // Stops the underlying Google services settings coordinator if it exists.
 - (void)stopGoogleServicesSettingsCoordinator {
   [self.googleServicesSettingsCoordinator stop];
   self.googleServicesSettingsCoordinator = nil;
+}
+
+// Stops the underlying Sync settings coordinator if it exists.
+- (void)stopSyncSettingsCoordinator {
+  [self.manageSyncSettingsCoordinator stop];
+  self.manageSyncSettingsCoordinator = nil;
 }
 
 // Shows the saved passwords and starts the password check is
@@ -420,6 +481,14 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     (GoogleServicesSettingsCoordinator*)coordinator {
   DCHECK_EQ(self.googleServicesSettingsCoordinator, coordinator);
   [self stopGoogleServicesSettingsCoordinator];
+}
+
+#pragma mark - ManageSyncSettingsCoordinatorDelegate
+
+- (void)manageSyncSettingsCoordinatorWasRemoved:
+    (ManageSyncSettingsCoordinator*)coordinator {
+  DCHECK_EQ(self.manageSyncSettingsCoordinator, coordinator);
+  [self stopSyncSettingsCoordinator];
 }
 
 #pragma mark - PasswordsCoordinatorDelegate
@@ -551,6 +620,12 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 }
 
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
+- (void)showSyncSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  [self showSyncServices];
+}
+
+// TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showSyncPassphraseSettingsFromViewController:
     (UIViewController*)baseViewController {
   SyncEncryptionPassphraseTableViewController* controller =
@@ -587,6 +662,14 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   AutofillCreditCardTableViewController* controller =
       [[AutofillCreditCardTableViewController alloc]
           initWithBrowser:self.browser];
+  controller.dispatcher = [self.settingsNavigationDelegate handlerForSettings];
+  [self pushViewController:controller animated:YES];
+}
+
+- (void)showDefaultBrowserSettingsFromViewController:
+    (UIViewController*)baseViewController {
+  DefaultBrowserSettingsTableViewController* controller =
+      [[DefaultBrowserSettingsTableViewController alloc] init];
   controller.dispatcher = [self.settingsNavigationDelegate handlerForSettings];
   [self pushViewController:controller animated:YES];
 }

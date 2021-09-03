@@ -113,8 +113,8 @@ class VideoCaptureTest : public testing::Test,
         &VideoCaptureTest::CreateFakeUI, base::Unretained(this)));
 
     // Create a Host and connect it to a simulated IPC channel.
-    host_.reset(new VideoCaptureHost(0 /* render_process_id */,
-                                     media_stream_manager_.get()));
+    host_ = std::make_unique<VideoCaptureHost>(0 /* render_process_id */,
+                                               media_stream_manager_.get());
 
     OpenSession();
   }
@@ -190,9 +190,10 @@ class VideoCaptureTest : public testing::Test,
     DoOnNewBuffer(buffer_id);
   }
   MOCK_METHOD1(DoOnNewBuffer, void(int32_t));
-  void OnBufferReady(int32_t buffer_id,
-                     media::mojom::VideoFrameInfoPtr info) override {
-    DoOnBufferReady(buffer_id);
+  void OnBufferReady(
+      media::mojom::ReadyBufferPtr buffer,
+      std::vector<media::mojom::ReadyBufferPtr> scaled_buffers) override {
+    DoOnBufferReady(buffer->buffer_id);
   }
   MOCK_METHOD1(DoOnBufferReady, void(int32_t));
   MOCK_METHOD1(OnBufferDestroyed, void(int32_t));

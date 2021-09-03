@@ -17,6 +17,7 @@
 #include "dawn_native/opengl/BufferGL.h"
 #include "dawn_native/opengl/CommandBufferGL.h"
 #include "dawn_native/opengl/DeviceGL.h"
+#include "dawn_native/opengl/TextureGL.h"
 #include "dawn_platform/DawnPlatform.h"
 #include "dawn_platform/tracing/TraceEvent.h"
 
@@ -51,11 +52,26 @@ namespace dawn_native { namespace opengl {
         return {};
     }
 
-    MaybeError Queue::WriteTextureImpl(const TextureCopyView& destination,
+    MaybeError Queue::WriteTextureImpl(const ImageCopyTexture& destination,
                                        const void* data,
                                        const TextureDataLayout& dataLayout,
                                        const Extent3D& writeSizePixel) {
-        return DAWN_UNIMPLEMENTED_ERROR("Unable to write to texture\n");
+        TextureCopy textureCopy;
+        textureCopy.texture = destination.texture;
+        textureCopy.mipLevel = destination.mipLevel;
+        textureCopy.origin = destination.origin;
+        textureCopy.aspect =
+            SelectFormatAspects(destination.texture->GetFormat(), destination.aspect);
+
+        SubresourceRange range = GetSubresourcesAffectedByCopy(textureCopy, writeSizePixel);
+        if (IsCompleteSubresourceCopiedTo(destination.texture, writeSizePixel,
+                                          destination.mipLevel)) {
+            destination.texture->SetIsSubresourceContentInitialized(true, range);
+        } else {
+            ToBackend(destination.texture)->EnsureSubresourceContentInitialized(range);
+        }
+        DoTexSubImage(ToBackend(GetDevice())->gl, textureCopy, data, dataLayout, writeSizePixel);
+        return {};
     }
 
 }}  // namespace dawn_native::opengl

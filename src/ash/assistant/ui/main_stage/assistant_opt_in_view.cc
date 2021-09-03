@@ -13,12 +13,12 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/metadata/metadata_impl_macros.h"
 
 namespace ash {
 
@@ -39,7 +39,7 @@ views::StyledLabel::RangeStyleInfo CreateStyleInfo(
   return style;
 }
 
-base::string16 GetAction(int consent_status) {
+std::u16string GetAction(int consent_status) {
   return consent_status ==
                  chromeos::assistant::prefs::ConsentStatus::kUnauthorized
              ? l10n_util::GetStringUTF16(
@@ -111,10 +111,6 @@ void AssistantOptInView::ChildPreferredSizeChanged(views::View* child) {
   PreferredSizeChanged();
 }
 
-void AssistantOptInView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  label_->SizeToFit(width());
-}
-
 void AssistantOptInView::OnAssistantConsentStatusChanged(int consent_status) {
   UpdateLabel(consent_status);
 }
@@ -145,6 +141,7 @@ void AssistantOptInView::InitLayout() {
 
   // Label.
   label_ = container_->AddChildView(std::make_unique<views::StyledLabel>());
+  label_->SetID(AssistantViewID::kOptInViewStyledLabel);
   label_->SetAutoColorReadabilityEnabled(false);
   label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_CENTER);
 
@@ -154,11 +151,11 @@ void AssistantOptInView::InitLayout() {
 
 void AssistantOptInView::UpdateLabel(int consent_status) {
   // First substitution string: "Unlock more Assistant features."
-  const base::string16 unlock_features =
+  const std::u16string unlock_features =
       l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_OPT_IN_UNLOCK_MORE_FEATURES);
 
   // Second substitution string specifies the action to be taken.
-  const base::string16 action = GetAction(consent_status);
+  const std::u16string action = GetAction(consent_status);
 
   // Set the text, having replaced placeholders in the opt in prompt with
   // substitution strings and caching their offset positions for styling.

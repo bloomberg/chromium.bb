@@ -14,14 +14,17 @@
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/omnibox_commands.h"
 #import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_view_controller.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -76,7 +79,7 @@ class NewTabPageCoordinatorTest : public PlatformTest {
     coordinator_.webState = &web_state_;
   }
 
-  web::TestWebState web_state_;
+  web::FakeWebState web_state_;
   id toolbar_delegate_;
   id delegate_;
   web::WebTaskEnvironment task_environment_;
@@ -87,18 +90,22 @@ class NewTabPageCoordinatorTest : public PlatformTest {
   NewTabPageCoordinator* coordinator_;
 };
 
-// Tests that the coordinator vends a content suggestions VC on the record.
+// Tests that the coordinator doesn't vend an IncognitoViewController VC on the
+// record.
 TEST_F(NewTabPageCoordinatorTest, StartOnTheRecord) {
   CreateCoordinator(/*off_the_record=*/false);
-  id snackbarCommandsHandlerMock =
-      [OCMockObject mockForProtocol:@protocol(SnackbarCommands)];
+  id omniboxCommandsHandlerMock = OCMProtocolMock(@protocol(OmniboxCommands));
+  id snackbarCommandsHandlerMock = OCMProtocolMock(@protocol(SnackbarCommands));
+  [browser_.get()->GetCommandDispatcher()
+      startDispatchingToTarget:omniboxCommandsHandlerMock
+                   forProtocol:@protocol(OmniboxCommands)];
   [browser_.get()->GetCommandDispatcher()
       startDispatchingToTarget:snackbarCommandsHandlerMock
                    forProtocol:@protocol(SnackbarCommands)];
   [coordinator_ start];
   UIViewController* viewController = [coordinator_ viewController];
-  EXPECT_TRUE(
-      [viewController isKindOfClass:[ContentSuggestionsViewController class]]);
+  EXPECT_FALSE([viewController isKindOfClass:[IncognitoViewController class]]);
+  [coordinator_ stop];
 }
 
 // Tests that the coordinator vends an incognito VC off the record.

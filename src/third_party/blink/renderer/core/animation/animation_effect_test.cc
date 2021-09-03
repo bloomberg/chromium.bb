@@ -84,8 +84,9 @@ class TestAnimationEffect : public AnimationEffect {
 
   void UpdateInheritedTime(double time, TimingUpdateReason reason) {
     event_delegate_->Reset();
-    AnimationEffect::UpdateInheritedTime(
-        time, /*inherited_phase*/ base::nullopt, reason);
+    AnimationEffect::UpdateInheritedTime(AnimationTimeDelta::FromSecondsD(time),
+                                         /*inherited_phase*/ absl::nullopt,
+                                         reason);
   }
 
   void UpdateChildrenAndEffects() const override {}
@@ -95,23 +96,21 @@ class TestAnimationEffect : public AnimationEffect {
   }
   AnimationTimeDelta CalculateTimeToEffectChange(
       bool forwards,
-      base::Optional<double> local_time,
+      absl::optional<AnimationTimeDelta> local_time,
       AnimationTimeDelta time_to_next_iteration) const override {
-    DCHECK(!local_time || std::isfinite(local_time.value()));
     local_time_ = local_time;
     time_to_next_iteration_ = time_to_next_iteration;
-    return AnimationTimeDelta::FromSecondsD(
-        std::numeric_limits<double>::infinity());
+    return AnimationTimeDelta::Max();
   }
   double TakeLocalTime() {
     DCHECK(local_time_);
-    const double result = local_time_.value();
+    const double result = local_time_->InSecondsF();
     local_time_.reset();
     return result;
   }
 
-  base::Optional<AnimationTimeDelta> TakeTimeToNextIteration() {
-    const base::Optional<AnimationTimeDelta> result = time_to_next_iteration_;
+  absl::optional<AnimationTimeDelta> TakeTimeToNextIteration() {
+    const absl::optional<AnimationTimeDelta> result = time_to_next_iteration_;
     time_to_next_iteration_.reset();
     return result;
   }
@@ -123,8 +122,8 @@ class TestAnimationEffect : public AnimationEffect {
 
  private:
   Member<TestAnimationEffectEventDelegate> event_delegate_;
-  mutable base::Optional<double> local_time_;
-  mutable base::Optional<AnimationTimeDelta> time_to_next_iteration_;
+  mutable absl::optional<AnimationTimeDelta> local_time_;
+  mutable absl::optional<AnimationTimeDelta> time_to_next_iteration_;
 };
 
 TEST(AnimationAnimationEffectTest, Sanity) {
@@ -139,7 +138,8 @@ TEST(AnimationAnimationEffectTest, Sanity) {
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(2, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(2),
+            animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(0, animation_node->Progress());
 
   animation_node->UpdateInheritedTime(1);
@@ -149,7 +149,8 @@ TEST(AnimationAnimationEffectTest, Sanity) {
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(2, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(2),
+            animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(0.5, animation_node->Progress());
 
   animation_node->UpdateInheritedTime(2);
@@ -159,7 +160,8 @@ TEST(AnimationAnimationEffectTest, Sanity) {
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(2, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(2),
+            animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(1, animation_node->Progress());
 
   animation_node->UpdateInheritedTime(3);
@@ -169,7 +171,8 @@ TEST(AnimationAnimationEffectTest, Sanity) {
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(2, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(2),
+            animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(1, animation_node->Progress());
 }
 
@@ -228,7 +231,7 @@ TEST(AnimationAnimationEffectTest, StartDelay) {
   Timing timing;
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
   timing.fill_mode = Timing::FillMode::FORWARDS;
-  timing.start_delay = 0.5;
+  timing.start_delay = AnimationTimeDelta::FromSecondsD(0.5);
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(0);
@@ -249,12 +252,14 @@ TEST(AnimationAnimationEffectTest, ZeroIteration) {
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(-1);
-  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(AnimationTimeDelta(),
+            animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_FALSE(animation_node->CurrentIteration());
   EXPECT_FALSE(animation_node->Progress());
 
   animation_node->UpdateInheritedTime(0);
-  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(AnimationTimeDelta(),
+            animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(0, animation_node->CurrentIteration());
   EXPECT_EQ(0, animation_node->Progress());
 }
@@ -270,7 +275,7 @@ TEST(AnimationAnimationEffectTest, InfiniteIteration) {
   EXPECT_FALSE(animation_node->CurrentIteration());
   EXPECT_FALSE(animation_node->Progress());
 
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
+  EXPECT_EQ(AnimationTimeDelta::Max(),
             animation_node->SpecifiedTiming().ActiveDuration());
 
   animation_node->UpdateInheritedTime(0);
@@ -377,7 +382,8 @@ TEST(AnimationAnimationEffectTest, ZeroDurationSanity) {
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(AnimationTimeDelta(),
+            animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(1, animation_node->Progress());
 
   animation_node->UpdateInheritedTime(1);
@@ -387,7 +393,8 @@ TEST(AnimationAnimationEffectTest, ZeroDurationSanity) {
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
   EXPECT_EQ(0, animation_node->CurrentIteration());
-  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(AnimationTimeDelta(),
+            animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(1, animation_node->Progress());
 }
 
@@ -439,7 +446,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationFillBoth) {
 TEST(AnimationAnimationEffectTest, ZeroDurationStartDelay) {
   Timing timing;
   timing.fill_mode = Timing::FillMode::FORWARDS;
-  timing.start_delay = 0.5;
+  timing.start_delay = AnimationTimeDelta::FromSecondsD(0.5);
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(0);
@@ -457,7 +464,7 @@ TEST(AnimationAnimationEffectTest, ZeroDurationIterationStartAndCount) {
   timing.iteration_start = 0.1;
   timing.iteration_count = 0.2;
   timing.fill_mode = Timing::FillMode::BOTH;
-  timing.start_delay = 0.3;
+  timing.start_delay = AnimationTimeDelta::FromSecondsD(0.3);
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(0);
@@ -478,12 +485,14 @@ TEST(AnimationAnimationEffectTest, ZeroDurationInfiniteIteration) {
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(-1);
-  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(AnimationTimeDelta(),
+            animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_FALSE(animation_node->CurrentIteration());
   EXPECT_FALSE(animation_node->Progress());
 
   animation_node->UpdateInheritedTime(0);
-  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(AnimationTimeDelta(),
+            animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             animation_node->CurrentIteration());
   EXPECT_EQ(1, animation_node->Progress());
@@ -576,7 +585,7 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationSanity) {
 
   animation_node->UpdateInheritedTime(0);
 
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
+  EXPECT_EQ(AnimationTimeDelta::Max(),
             animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
@@ -587,7 +596,7 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationSanity) {
 
   animation_node->UpdateInheritedTime(1);
 
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
+  EXPECT_EQ(AnimationTimeDelta::Max(),
             animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
@@ -606,7 +615,8 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationZeroIterations) {
 
   animation_node->UpdateInheritedTime(0);
 
-  EXPECT_EQ(0, animation_node->SpecifiedTiming().ActiveDuration());
+  EXPECT_EQ(AnimationTimeDelta(),
+            animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(Timing::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
@@ -633,7 +643,7 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationInfiniteIterations) {
 
   animation_node->UpdateInheritedTime(0);
 
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
+  EXPECT_EQ(AnimationTimeDelta::Max(),
             animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
@@ -644,7 +654,7 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationInfiniteIterations) {
 
   animation_node->UpdateInheritedTime(1);
 
-  EXPECT_EQ(std::numeric_limits<double>::infinity(),
+  EXPECT_EQ(AnimationTimeDelta::Max(),
             animation_node->SpecifiedTiming().ActiveDuration());
   EXPECT_EQ(Timing::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
@@ -656,12 +666,13 @@ TEST(AnimationAnimationEffectTest, InfiniteDurationInfiniteIterations) {
 
 TEST(AnimationAnimationEffectTest, EndTime) {
   Timing timing;
-  timing.start_delay = 1;
-  timing.end_delay = 2;
+  timing.start_delay = AnimationTimeDelta::FromSecondsD(1);
+  timing.end_delay = AnimationTimeDelta::FromSecondsD(2);
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(4);
   timing.iteration_count = 2;
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
-  EXPECT_EQ(11, animation_node->SpecifiedTiming().EndTimeInternal());
+  EXPECT_EQ(AnimationTimeDelta::FromSecondsD(11),
+            animation_node->SpecifiedTiming().EndTimeInternal());
 }
 
 TEST(AnimationAnimationEffectTest, Events) {
@@ -669,7 +680,7 @@ TEST(AnimationAnimationEffectTest, Events) {
   timing.iteration_duration = AnimationTimeDelta::FromSecondsD(1);
   timing.fill_mode = Timing::FillMode::FORWARDS;
   timing.iteration_count = 2;
-  timing.start_delay = 1;
+  timing.start_delay = AnimationTimeDelta::FromSecondsD(1);
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(0.0, kTimingUpdateOnDemand);
@@ -691,13 +702,13 @@ TEST(AnimationAnimationEffectTest, TimeToEffectChange) {
   timing.fill_mode = Timing::FillMode::FORWARDS;
   timing.iteration_start = 0.2;
   timing.iteration_count = 2.5;
-  timing.start_delay = 1;
+  timing.start_delay = AnimationTimeDelta::FromSecondsD(1);
   timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
   auto* animation_node = MakeGarbageCollected<TestAnimationEffect>(timing);
 
   animation_node->UpdateInheritedTime(0);
   EXPECT_EQ(0, animation_node->TakeLocalTime());
-  base::Optional<AnimationTimeDelta> time_to_next_iteration =
+  absl::optional<AnimationTimeDelta> time_to_next_iteration =
       animation_node->TakeTimeToNextIteration();
   EXPECT_TRUE(time_to_next_iteration);
   EXPECT_TRUE(time_to_next_iteration->is_max());
@@ -852,8 +863,8 @@ TEST(AnimationAnimationEffectTest, UpdateTimingInformsOwnerOnChange) {
 
 TEST(AnimationAnimationEffectTest, UpdateTimingNoChange) {
   Timing timing;
-  timing.start_delay = 0;
-  timing.end_delay = 5;
+  timing.start_delay = AnimationTimeDelta();
+  timing.end_delay = AnimationTimeDelta::FromSecondsD(5);
   timing.fill_mode = Timing::FillMode::BOTH;
   timing.iteration_start = 0.1;
   timing.iteration_count = 3;

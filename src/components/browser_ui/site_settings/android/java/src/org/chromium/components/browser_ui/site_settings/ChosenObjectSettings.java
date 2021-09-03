@@ -62,7 +62,7 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
         setDivider(null);
         int contentSettingsType = getArguments().getInt(EXTRA_CATEGORY);
         mCategory = SiteSettingsCategory.createFromContentSettingsType(
-                getSiteSettingsClient().getBrowserContextHandle(), contentSettingsType);
+                getSiteSettingsDelegate().getBrowserContextHandle(), contentSettingsType);
         mObjectInfos =
                 (ArrayList<ChosenObjectInfo>) getArguments().getSerializable(EXTRA_OBJECT_INFOS);
         checkObjectConsistency();
@@ -118,20 +118,18 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
         };
         mSearchView.setOnQueryTextListener(queryTextListener);
 
-        if (getSiteSettingsClient().getSiteSettingsHelpClient().isHelpAndFeedbackEnabled()) {
+        if (getSiteSettingsDelegate().isHelpAndFeedbackEnabled()) {
             MenuItem help = menu.add(
                     Menu.NONE, R.id.menu_id_site_settings_help, Menu.NONE, R.string.menu_help);
             help.setIcon(VectorDrawableCompat.create(
-                    getResources(), R.drawable.ic_help_and_feedback, getActivity().getTheme()));
+                    getResources(), R.drawable.ic_help_and_feedback, getContext().getTheme()));
         }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_site_settings_help) {
-            getSiteSettingsClient()
-                    .getSiteSettingsHelpClient()
-                    .launchSettingsHelpAndFeedbackActivity(getActivity());
+            getSiteSettingsDelegate().launchSettingsHelpAndFeedbackActivity(getActivity());
             return true;
         }
         return false;
@@ -159,14 +157,14 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
             if (info.isManaged()) {
                 hasManagedObject = true;
             } else {
-                info.revoke(getSiteSettingsClient().getBrowserContextHandle());
+                info.revoke(getSiteSettingsDelegate().getBrowserContextHandle());
             }
         }
 
         // Managed objects cannot be revoked, so finish the activity only if the list did not
         // contain managed objects.
         if (hasManagedObject) {
-            ManagedPreferencesUtils.showManagedSettingsCannotBeResetToast(getActivity());
+            ManagedPreferencesUtils.showManagedSettingsCannotBeResetToast(getContext());
         } else {
             getActivity().finish();
         }
@@ -219,7 +217,7 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
      */
     private void getInfo() {
         WebsitePermissionsFetcher fetcher =
-                new WebsitePermissionsFetcher(getSiteSettingsClient().getBrowserContextHandle());
+                new WebsitePermissionsFetcher(getSiteSettingsDelegate().getBrowserContextHandle());
         fetcher.fetchPreferencesForCategory(mCategory, new ResultsPopulator());
     }
 
@@ -240,7 +238,7 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
         header.setTitle(titleText);
         header.setImageView(R.drawable.ic_delete_white_24dp,
                 R.string.website_settings_revoke_all_permissions_for_device, (View view) -> {
-                    new AlertDialog.Builder(getActivity(), R.style.Theme_Chromium_AlertDialog)
+                    new AlertDialog.Builder(getContext(), R.style.Theme_Chromium_AlertDialog)
                             .setTitle(R.string.reset)
                             .setMessage(dialogMsg)
                             .setPositiveButton(R.string.reset,
@@ -276,18 +274,18 @@ public class ChosenObjectSettings extends SiteSettingsPreferenceFragment {
             Website site = mSites.get(i);
             ChosenObjectInfo info = mObjectInfos.get(i);
             WebsitePreference preference = new WebsitePreference(
-                    getStyledContext(), getSiteSettingsClient(), site, mCategory);
+                    getStyledContext(), getSiteSettingsDelegate(), site, mCategory);
 
             preference.getExtras().putSerializable(SingleWebsiteSettings.EXTRA_SITE, site);
             preference.setFragment(SingleWebsiteSettings.class.getCanonicalName());
             preference.setImageView(R.drawable.ic_delete_white_24dp,
                     R.string.website_settings_revoke_device_permission, (View view) -> {
-                        info.revoke(getSiteSettingsClient().getBrowserContextHandle());
+                        info.revoke(getSiteSettingsDelegate().getBrowserContextHandle());
                         getInfo();
                     });
 
             preference.setManagedPreferenceDelegate(new ForwardingManagedPreferenceDelegate(
-                    getSiteSettingsClient().getManagedPreferenceDelegate()) {
+                    getSiteSettingsDelegate().getManagedPreferenceDelegate()) {
                 @Override
                 public boolean isPreferenceControlledByPolicy(Preference preference) {
                     return info.isManaged();

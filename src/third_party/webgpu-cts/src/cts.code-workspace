@@ -1,6 +1,15 @@
 // Note: VS Code's setting precedence is `.vscode/` > `cts.code-workspace` > global user settings.
 {
-  "folders": [{ "path": "." }],
+  "folders": [
+    {
+      "name": "cts",
+      "path": "."
+    },
+    {
+      "name": "webgpu",
+      "path": "src/webgpu"
+    }
+  ],
   "settings": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.detectIndentation": false,
@@ -28,25 +37,54 @@
   "tasks": {
     "version": "2.0.0",
     "tasks": [
+      // Only supports "shell" and "process" tasks.
+      // https://code.visualstudio.com/docs/editor/multi-root-workspaces#_workspace-task-configuration
       {
-        "type": "grunt",
-        "task": "test",
-        "problemMatcher": [],
-        "group": {
-          "kind": "build",
-          "isDefault": true
-        }
-      },
-      {
-        "type": "grunt",
-        "task": "pre",
+        // Use "group": "build" instead of "test" so it's easy to access from cmd-shift-B.
+        "group": "build",
+        "label": "npm: test",
+        "detail": "Run all presubmit checks",
+
+        "type": "shell",
+        "command": "npm run test",
         "problemMatcher": []
       },
       {
-        "type": "grunt",
-        "task": "check",
+        "group": "build",
+        "label": "npm: check",
+        "detail": "Just typecheck",
+
+        "type": "shell",
+        "command": "npm run check",
         "problemMatcher": ["$tsc"]
-      }
+      },
+      {
+        "group": "build",
+        "label": "npm: standalone",
+        "detail": "Build standalone and typecheck",
+
+        "type": "shell",
+        "command": "npm run standalone",
+        "problemMatcher": []
+      },
+      {
+        "group": "build",
+        "label": "npm: wpt",
+        "detail": "Build for WPT and typecheck",
+
+        "type": "shell",
+        "command": "npm run wpt",
+        "problemMatcher": []
+      },
+      {
+        "group": "build",
+        "label": "npm: unittest",
+        "detail": "Build standalone, typecheck, and unittest",
+
+        "type": "shell",
+        "command": "npm run unittest",
+        "problemMatcher": []
+      },
     ]
   }
 }

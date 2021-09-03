@@ -15,6 +15,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
@@ -90,6 +91,10 @@ class NET_EXPORT_PRIVATE HttpBasicStream : public HttpStream {
   void SetPriority(RequestPriority priority) override;
 
   void SetRequestHeadersCallback(RequestHeadersCallback callback) override;
+
+  const std::vector<std::string>& GetDnsAliases() const override;
+
+  base::StringPiece GetAcceptChViaAlps() const override;
 
  private:
   HttpStreamParser* parser() const { return state_.parser(); }

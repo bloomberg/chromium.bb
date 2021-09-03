@@ -45,6 +45,7 @@ static constexpr uint32_t GrGLFormatChannels(GrGLFormat format) {
         case GrGLFormat::kR8:                    return kRed_SkColorChannelFlag;
         case GrGLFormat::kALPHA8:                return kAlpha_SkColorChannelFlag;
         case GrGLFormat::kLUMINANCE8:            return kGray_SkColorChannelFlag;
+        case GrGLFormat::kLUMINANCE8_ALPHA8:     return kGrayAlpha_SkColorChannelFlags;
         case GrGLFormat::kBGRA8:                 return kRGBA_SkColorChannelFlags;
         case GrGLFormat::kRGB565:                return kRGB_SkColorChannelFlags;
         case GrGLFormat::kRGBA16F:               return kRGBA_SkColorChannelFlags;
@@ -70,85 +71,145 @@ static constexpr uint32_t GrGLFormatChannels(GrGLFormat format) {
     SkUNREACHABLE;
 }
 
+static constexpr GrColorFormatDesc GrGLFormatDesc(GrGLFormat format) {
+    switch (format) {
+        case GrGLFormat::kUnknown: return GrColorFormatDesc::MakeInvalid();
+
+        case GrGLFormat::kRGBA8:
+            return GrColorFormatDesc::MakeRGBA(8, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kR8:
+            return GrColorFormatDesc::MakeR(8, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kALPHA8:
+            return GrColorFormatDesc::MakeAlpha(8, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kLUMINANCE8:
+            return GrColorFormatDesc::MakeGray(8, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kLUMINANCE8_ALPHA8:
+            return GrColorFormatDesc::MakeGrayAlpha(8, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kBGRA8:
+            return GrColorFormatDesc::MakeRGBA(8, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kRGB565:
+            return GrColorFormatDesc::MakeRGB(5, 6, 5, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kRGBA16F:
+            return GrColorFormatDesc::MakeRGBA(16, GrColorTypeEncoding::kFloat);
+        case GrGLFormat::kR16F:
+            return GrColorFormatDesc::MakeR(16, GrColorTypeEncoding::kFloat);
+        case GrGLFormat::kRGB8:
+            return GrColorFormatDesc::MakeRGB(8, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kRG8:
+            return GrColorFormatDesc::MakeRG(8, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kRGB10_A2:
+            return GrColorFormatDesc::MakeRGBA(10, 2, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kRGBA4:
+            return GrColorFormatDesc::MakeRGBA(4, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kSRGB8_ALPHA8:
+            return GrColorFormatDesc::MakeRGBA(8, GrColorTypeEncoding::kSRGBUnorm);
+        case GrGLFormat::kR16:
+            return GrColorFormatDesc::MakeR(16, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kRG16:
+            return GrColorFormatDesc::MakeRG(16, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kRGBA16:
+            return GrColorFormatDesc::MakeRGBA(16, GrColorTypeEncoding::kUnorm);
+        case GrGLFormat::kRG16F:
+            return GrColorFormatDesc::MakeRG(16, GrColorTypeEncoding::kFloat);
+        case GrGLFormat::kLUMINANCE16F:
+            return GrColorFormatDesc::MakeGray(16, GrColorTypeEncoding::kFloat);
+
+        // Compressed texture formats are not expected to have a description.
+        case GrGLFormat::kCOMPRESSED_ETC1_RGB8: return GrColorFormatDesc::MakeInvalid();
+        case GrGLFormat::kCOMPRESSED_RGB8_ETC2: return GrColorFormatDesc::MakeInvalid();
+        case GrGLFormat::kCOMPRESSED_RGB8_BC1:  return GrColorFormatDesc::MakeInvalid();
+        case GrGLFormat::kCOMPRESSED_RGBA8_BC1: return GrColorFormatDesc::MakeInvalid();
+
+        // This type only describes color channels.
+        case GrGLFormat::kSTENCIL_INDEX8:   return GrColorFormatDesc::MakeInvalid();
+        case GrGLFormat::kSTENCIL_INDEX16:  return GrColorFormatDesc::MakeInvalid();
+        case GrGLFormat::kDEPTH24_STENCIL8: return GrColorFormatDesc::MakeInvalid();
+    }
+    SkUNREACHABLE;
+}
+
 /**
  * The Vendor and Renderer enum values are lazily updated as required.
  */
-enum GrGLVendor {
-    kARM_GrGLVendor,
-    kGoogle_GrGLVendor,
-    kImagination_GrGLVendor,
-    kIntel_GrGLVendor,
-    kQualcomm_GrGLVendor,
-    kNVIDIA_GrGLVendor,
-    kATI_GrGLVendor,
+enum class GrGLVendor {
+    kARM,
+    kGoogle,
+    kImagination,
+    kIntel,
+    kQualcomm,
+    kNVIDIA,
+    kATI,
 
-    kOther_GrGLVendor
+    kOther
 };
 
-enum GrGLRenderer {
-    kTegra_PreK1_GrGLRenderer,  // Legacy Tegra architecture (pre-K1).
-    kTegra_GrGLRenderer,  // Tegra with the same architecture as NVIDIA desktop GPUs (K1+).
-    kPowerVR54x_GrGLRenderer,
-    kPowerVRRogue_GrGLRenderer,
-    kAdreno3xx_GrGLRenderer,
-    kAdreno430_GrGLRenderer,
-    kAdreno4xx_other_GrGLRenderer,
-    kAdreno5xx_GrGLRenderer,
-    kAdreno615_GrGLRenderer,  // Pixel3a
-    kAdreno630_GrGLRenderer,  // Pixel3
-    kAdreno640_GrGLRenderer,  // Pixel4
-    kGoogleSwiftShader_GrGLRenderer,
+enum class GrGLRenderer {
+    kTegra_PreK1,  // Legacy Tegra architecture (pre-K1).
+    kTegra,        // Tegra with the same architecture as NVIDIA desktop GPUs (K1+).
+
+    kPowerVR54x,
+    kPowerVRRogue,
+
+    kAdreno3xx,
+    kAdreno430,
+    kAdreno4xx_other,
+    kAdreno530,
+    kAdreno5xx_other,
+    kAdreno615,  // Pixel3a
+    kAdreno620,  // Pixel5
+    kAdreno630,  // Pixel3
+    kAdreno640,  // Pixel4
+
+    kGoogleSwiftShader,
 
     /** Intel GPU families, ordered by generation **/
     // 6th gen
-    kIntelSandyBridge_GrGLRenderer,
+    kIntelSandyBridge,
 
     // 7th gen
-    kIntelIvyBridge_GrGLRenderer,
-    kIntelValleyView_GrGLRenderer, // aka BayTrail
-    kIntelHaswell_GrGLRenderer,
+    kIntelIvyBridge,
+    kIntelValleyView,  // aka BayTrail
+    kIntelHaswell,
 
     // 8th gen
-    kIntelCherryView_GrGLRenderer, // aka Braswell
-    kIntelBroadwell_GrGLRenderer,
+    kIntelCherryView,  // aka Braswell
+    kIntelBroadwell,
 
     // 9th gen
-    kIntelApolloLake_GrGLRenderer,
-    kIntelSkyLake_GrGLRenderer,
-    kIntelGeminiLake_GrGLRenderer,
-    kIntelKabyLake_GrGLRenderer,
-    kIntelCoffeeLake_GrGLRenderer,
+    kIntelApolloLake,
+    kIntelSkyLake,
+    kIntelGeminiLake,
+    kIntelKabyLake,
+    kIntelCoffeeLake,
 
     // 11th gen
-    kIntelIceLake_GrGLRenderer,
+    kIntelIceLake,
 
-    kGalliumLLVM_GrGLRenderer,
-    kMali4xx_GrGLRenderer,
+    kGalliumLLVM,
+
+    kMali4xx,
     /** G-3x, G-5x, or G-7x */
-    kMaliG_GrGLRenderer,
+    kMaliG,
     /** T-6xx, T-7xx, or T-8xx */
-    kMaliT_GrGLRenderer,
-    kANGLE_GrGLRenderer,
+    kMaliT,
 
-    kAMDRadeonHD7xxx_GrGLRenderer,    // AMD Radeon HD 7000 Series
-    kAMDRadeonR9M3xx_GrGLRenderer,    // AMD Radeon R9 M300 Series
-    kAMDRadeonR9M4xx_GrGLRenderer,    // AMD Radeon R9 M400 Series
-    kAMDRadeonPro5xxx_GrGLRenderer,   // AMD Radeon Pro 5000 Series
-    kAMDRadeonProVegaxx_GrGLRenderer, // AMD Radeon Pro Vega
+    kAMDRadeonHD7xxx,     // AMD Radeon HD 7000 Series
+    kAMDRadeonR9M3xx,     // AMD Radeon R9 M300 Series
+    kAMDRadeonR9M4xx,     // AMD Radeon R9 M400 Series
+    kAMDRadeonPro5xxx,    // AMD Radeon Pro 5000 Series
+    kAMDRadeonProVegaxx,  // AMD Radeon Pro Vega
 
-    kOther_GrGLRenderer
+    kOther
 };
 
-enum GrGLDriver {
-    kMesa_GrGLDriver,
-    kChromium_GrGLDriver,
-    kNVIDIA_GrGLDriver,
-    kIntel_GrGLDriver,
-    kANGLE_GrGLDriver,
-    kSwiftShader_GrGLDriver,
-    kQualcomm_GrGLDriver,
-    kAndroidEmulator_GrGLDriver,
-    kUnknown_GrGLDriver
+enum class GrGLDriver {
+    kMesa,
+    kNVIDIA,
+    kIntel,
+    kSwiftShader,
+    kQualcomm,
+    kAndroidEmulator,
+    kUnknown
 };
 
 enum class GrGLANGLEBackend {
@@ -156,20 +217,6 @@ enum class GrGLANGLEBackend {
     kD3D9,
     kD3D11,
     kOpenGL
-};
-
-enum class GrGLANGLEVendor {
-    kUnknown,
-    kIntel,
-    kNVIDIA,
-    kAMD
-};
-
-enum class GrGLANGLERenderer {
-    kUnknown,
-    kSandyBridge,
-    kIvyBridge,
-    kSkylake
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -224,33 +271,30 @@ enum class GrGLANGLERenderer {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/**
- * Helpers for glGetString()
- */
-
-// these variants assume caller already has a string from glGetString()
-GrGLVersion GrGLGetVersionFromString(const char* versionString);
 GrGLStandard GrGLGetStandardInUseFromString(const char* versionString);
-GrGLSLVersion GrGLGetGLSLVersionFromString(const char* versionString);
-GrGLVendor GrGLGetVendorFromString(const char* vendorString);
-GrGLRenderer GrGLGetRendererFromStrings(const char* rendererString, const GrGLExtensions&);
-std::tuple<GrGLANGLEBackend, GrGLANGLEVendor, GrGLANGLERenderer> GrGLGetANGLEInfoFromString(
-        const char* rendererString);
+GrGLSLVersion GrGLGetVersion(const GrGLInterface*);
+GrGLSLVersion GrGLGetVersionFromString(const char*);
 
-void GrGLGetDriverInfo(GrGLStandard standard,
-                       GrGLVendor vendor,
-                       const char* rendererString,
-                       const char* versionString,
-                       GrGLDriver* outDriver,
-                       GrGLDriverVersion* outVersion);
+struct GrGLDriverInfo {
+    GrGLStandard      fStandard      = kNone_GrGLStandard;
+    GrGLVersion       fVersion       = GR_GL_INVALID_VER;
+    GrGLSLVersion     fGLSLVersion   = GR_GLSL_INVALID_VER;
+    GrGLVendor        fVendor        = GrGLVendor::kOther;
+    GrGLRenderer      fRenderer      = GrGLRenderer::kOther;
+    GrGLDriver        fDriver        = GrGLDriver::kUnknown;
+    GrGLDriverVersion fDriverVersion = GR_GL_DRIVER_UNKNOWN_VER;
 
-// these variants call glGetString()
-GrGLVersion GrGLGetVersion(const GrGLInterface*);
-GrGLSLVersion GrGLGetGLSLVersion(const GrGLInterface*);
-GrGLVendor GrGLGetVendor(const GrGLInterface*);
-GrGLRenderer GrGLGetRenderer(const GrGLInterface*);
-std::tuple<GrGLANGLEBackend, GrGLANGLEVendor, GrGLANGLERenderer> GrGLGetANGLEInfo(
-        const GrGLInterface*);
+    GrGLANGLEBackend  fANGLEBackend       = GrGLANGLEBackend::kUnknown;
+    GrGLVendor        fANGLEVendor        = GrGLVendor::kOther;
+    GrGLRenderer      fANGLERenderer      = GrGLRenderer::kOther;
+    GrGLDriver        fANGLEDriver        = GrGLDriver::kUnknown;
+    GrGLDriverVersion fANGLEDriverVersion = GR_GL_DRIVER_UNKNOWN_VER;
+
+    // Are we running over the Chrome interprocess command buffer?
+    bool fIsOverCommandBuffer = false;
+};
+
+GrGLDriverInfo GrGLGetDriverInfo(const GrGLInterface*);
 
 /**
  * Helpers for glGetError()
@@ -327,6 +371,7 @@ static constexpr GrGLFormat GrGLFormatFromGLEnum(GrGLenum glFormat) {
         case GR_GL_R8:                   return GrGLFormat::kR8;
         case GR_GL_ALPHA8:               return GrGLFormat::kALPHA8;
         case GR_GL_LUMINANCE8:           return GrGLFormat::kLUMINANCE8;
+        case GR_GL_LUMINANCE8_ALPHA8:    return GrGLFormat::kLUMINANCE8_ALPHA8;
         case GR_GL_BGRA8:                return GrGLFormat::kBGRA8;
         case GR_GL_RGB565:               return GrGLFormat::kRGB565;
         case GR_GL_RGBA16F:              return GrGLFormat::kRGBA16F;
@@ -361,6 +406,7 @@ static constexpr GrGLenum GrGLFormatToEnum(GrGLFormat format) {
         case GrGLFormat::kR8:                   return GR_GL_R8;
         case GrGLFormat::kALPHA8:               return GR_GL_ALPHA8;
         case GrGLFormat::kLUMINANCE8:           return GR_GL_LUMINANCE8;
+        case GrGLFormat::kLUMINANCE8_ALPHA8:    return GR_GL_LUMINANCE8_ALPHA8;
         case GrGLFormat::kBGRA8:                return GR_GL_BGRA8;
         case GrGLFormat::kRGB565:               return GR_GL_RGB565;
         case GrGLFormat::kRGBA16F:              return GR_GL_RGBA16F;
@@ -393,6 +439,7 @@ static constexpr size_t GrGLFormatBytesPerBlock(GrGLFormat format) {
         case GrGLFormat::kR8:                   return 1;
         case GrGLFormat::kALPHA8:               return 1;
         case GrGLFormat::kLUMINANCE8:           return 1;
+        case GrGLFormat::kLUMINANCE8_ALPHA8:    return 2;
         case GrGLFormat::kBGRA8:                return 4;
         case GrGLFormat::kRGB565:               return 2;
         case GrGLFormat::kRGBA16F:              return 8;
@@ -436,6 +483,7 @@ static constexpr int GrGLFormatStencilBits(GrGLFormat format) {
         case GrGLFormat::kR8:
         case GrGLFormat::kALPHA8:
         case GrGLFormat::kLUMINANCE8:
+        case GrGLFormat::kLUMINANCE8_ALPHA8:
         case GrGLFormat::kBGRA8:
         case GrGLFormat::kRGB565:
         case GrGLFormat::kRGBA16F:
@@ -468,6 +516,7 @@ static constexpr bool GrGLFormatIsPackedDepthStencil(GrGLFormat format) {
         case GrGLFormat::kR8:
         case GrGLFormat::kALPHA8:
         case GrGLFormat::kLUMINANCE8:
+        case GrGLFormat::kLUMINANCE8_ALPHA8:
         case GrGLFormat::kBGRA8:
         case GrGLFormat::kRGB565:
         case GrGLFormat::kRGBA16F:
@@ -502,6 +551,7 @@ static constexpr bool GrGLFormatIsSRGB(GrGLFormat format) {
     case GrGLFormat::kR8:
     case GrGLFormat::kALPHA8:
     case GrGLFormat::kLUMINANCE8:
+    case GrGLFormat::kLUMINANCE8_ALPHA8:
     case GrGLFormat::kBGRA8:
     case GrGLFormat::kRGB565:
     case GrGLFormat::kRGBA16F:
@@ -531,6 +581,7 @@ static constexpr const char* GrGLFormatToStr(GrGLenum glFormat) {
         case GR_GL_R8:                   return "R8";
         case GR_GL_ALPHA8:               return "ALPHA8";
         case GR_GL_LUMINANCE8:           return "LUMINANCE8";
+        case GR_GL_LUMINANCE8_ALPHA8:    return "LUMINANCE8_ALPHA8";
         case GR_GL_BGRA8:                return "BGRA8";
         case GR_GL_RGB565:               return "RGB565";
         case GR_GL_RGBA16F:              return "RGBA16F";

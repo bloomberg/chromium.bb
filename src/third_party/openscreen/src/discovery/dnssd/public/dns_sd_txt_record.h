@@ -33,7 +33,6 @@ class DnsSdTxtRecord {
   // setting a value with a key which was previously associated with a flag
   // erases the flag's value and vice versa.
   Error SetValue(const std::string& key, std::vector<uint8_t> value);
-  Error SetValue(const std::string& key, uint8_t value);
   Error SetValue(const std::string& key, const std::string& value);
   Error SetFlag(const std::string& key, bool value);
 

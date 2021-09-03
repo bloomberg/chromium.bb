@@ -27,6 +27,7 @@ except ImportError:  # For Py3 compatibility
 from download_from_google_storage import Gsutil
 import gclient_utils
 import lockfile
+import metrics
 import subcommand
 
 # Analogous to gc.autopacklimit git config.
@@ -107,9 +108,10 @@ class Mirror(object):
     regex = r'\+%s:.*' % src.replace('*', r'\*')
     return ('+%s:%s' % (src, dest), regex)
 
-  def __init__(self, url, refs=None, print_func=None):
+  def __init__(self, url, refs=None, commits=None, print_func=None):
     self.url = url
     self.fetch_specs = set([self.parse_fetch_spec(ref) for ref in (refs or [])])
+    self.fetch_commits = set(commits or [])
     self.basedir = self.UrlToCacheDir(url)
     self.mirror_path = os.path.join(self.GetCachePath(), self.basedir)
     if print_func:
@@ -308,6 +310,8 @@ class Mirror(object):
                            tempdir)
       if code:
         return False
+      # A quick validation that all references are valid.
+      self.RunGit(['for-each-ref'], cwd=tempdir)
     except Exception as e:
       self.print('Encountered error: %s' % str(e), file=sys.stderr)
       gclient_utils.rmtree(tempdir)
@@ -360,10 +364,11 @@ class Mirror(object):
       for fetchspec in config_fetchspecs.splitlines():
         self.fetch_specs.add(self.parse_fetch_spec(fetchspec))
     except subprocess.CalledProcessError:
-      logging.warn('Tried and failed to preserve remote.origin.fetch from the '
-                   'existing cache directory.  You may need to manually edit '
-                   '%s and "git cache fetch" again.'
-                   % os.path.join(self.mirror_path, 'config'))
+      logging.warning(
+          'Tried and failed to preserve remote.origin.fetch from the '
+          'existing cache directory.  You may need to manually edit '
+          '%s and "git cache fetch" again.' %
+          os.path.join(self.mirror_path, 'config'))
 
   def _ensure_bootstrapped(
       self, depth, bootstrap, reset_fetch_config, force=False):
@@ -381,7 +386,7 @@ class Mirror(object):
 
     if not should_bootstrap:
       if depth and os.path.exists(os.path.join(self.mirror_path, 'shallow')):
-        logging.warn(
+        logging.warning(
             'Shallow fetch requested, but repo cache already exists.')
       return
 
@@ -408,10 +413,10 @@ class Mirror(object):
         self.RunGit(['init', '--bare'], cwd=self.mirror_path)
       else:
         # Bootstrap failed, previous cache exists; warn and continue.
-        logging.warn(
+        logging.warning(
             'Git cache has a lot of pack files (%d). Tried to re-bootstrap '
-            'but failed. Continuing with non-optimized repository.'
-            % len(pack_files))
+            'but failed. Continuing with non-optimized repository.' %
+            len(pack_files))
 
   def _fetch(self,
              rundir,
@@ -444,7 +449,14 @@ class Mirror(object):
       except subprocess.CalledProcessError:
         if spec == '+refs/heads/*:refs/heads/*':
           raise ClobberNeeded()  # Corrupted cache.
-        logging.warn('Fetch of %s failed' % spec)
+        logging.warning('Fetch of %s failed' % spec)
+    for commit in self.fetch_commits:
+      self.print('Fetching %s' % commit)
+      try:
+        with self.print_duration_of('fetch %s' % commit):
+          self.RunGit(['fetch', 'origin', commit], cwd=rundir, retry=True)
+      except subprocess.CalledProcessError:
+        logging.warning('Fetch of %s failed' % commit)
 
   def populate(self,
                depth=None,
@@ -475,10 +487,10 @@ class Mirror(object):
         self._fetch(self.mirror_path, verbose, depth, no_fetch_tags,
                     reset_fetch_config)
 
-  def update_bootstrap(self, prune=False, gc_aggressive=False):
+  def update_bootstrap(self, prune=False, gc_aggressive=False, branch='master'):
     # The folder is <git number>
     gen_number = subprocess.check_output(
-        [self.git_exe, 'number', 'master'],
+        [self.git_exe, 'number', branch],
         cwd=self.mirror_path).decode('utf-8', 'ignore').strip()
     gsutil = Gsutil(path=self.gsutil_exe, boto_path=None)
 
@@ -565,12 +577,13 @@ class Mirror(object):
       f = os.path.join(pack_dir, f)
       try:
         os.remove(f)
-        logging.warn('Deleted stale temporary pack file %s' % f)
+        logging.warning('Deleted stale temporary pack file %s' % f)
       except OSError:
-        logging.warn('Unable to delete temporary pack file %s' % f)
+        logging.warning('Unable to delete temporary pack file %s' % f)
 
 
 @subcommand.usage('[url of repo to check for caching]')
+@metrics.collector.collect_metrics('git cache exists')
 def CMDexists(parser, args):
   """Check to see if there already is a cache of the given repo."""
   _, args = parser.parse_args(args)
@@ -585,6 +598,7 @@ def CMDexists(parser, args):
 
 
 @subcommand.usage('[url of repo to create a bootstrap zip file]')
+@metrics.collector.collect_metrics('git cache update-bootstrap')
 def CMDupdate_bootstrap(parser, args):
   """Create and uploads a bootstrap tarball."""
   # Lets just assert we can't do this on Windows.
@@ -598,6 +612,8 @@ def CMDupdate_bootstrap(parser, args):
                     help='Run aggressive repacking of the repo.')
   parser.add_option('--prune', action='store_true',
                     help='Prune all other cached bundles of the same repo.')
+  parser.add_option('--branch', default='master',
+                    help='Branch to use for bootstrap. (Default \'master\')')
 
   populate_args = args[:]
   options, args = parser.parse_args(args)
@@ -612,11 +628,12 @@ def CMDupdate_bootstrap(parser, args):
   _, args2 = parser.parse_args(args)
   url = args2[0]
   mirror = Mirror(url)
-  mirror.update_bootstrap(options.prune, options.gc_aggressive)
+  mirror.update_bootstrap(options.prune, options.gc_aggressive, options.branch)
   return 0
 
 
 @subcommand.usage('[url of repo to add to or update in cache]')
+@metrics.collector.collect_metrics('git cache populate')
 def CMDpopulate(parser, args):
   """Ensure that the cache has all up-to-date objects for the given repo."""
   parser.add_option('--depth', type='int',
@@ -630,6 +647,8 @@ def CMDpopulate(parser, args):
                     help='Only cache 10000 commits of history')
   parser.add_option('--ref', action='append',
                     help='Specify additional refs to be fetched')
+  parser.add_option('--commit', action='append',
+                    help='Specify additional commits to be fetched')
   parser.add_option('--no_bootstrap', '--no-bootstrap',
                     action='store_true',
                     help='Don\'t bootstrap from Google Storage')
@@ -652,7 +671,7 @@ def CMDpopulate(parser, args):
     print('break_locks is no longer used. Please remove its usage.')
   url = args[0]
 
-  mirror = Mirror(url, refs=options.ref)
+  mirror = Mirror(url, refs=options.ref, commits=options.commit)
   kwargs = {
       'no_fetch_tags': options.no_fetch_tags,
       'verbose': options.verbose,
@@ -667,6 +686,7 @@ def CMDpopulate(parser, args):
 
 
 @subcommand.usage('Fetch new commits into cache and current checkout')
+@metrics.collector.collect_metrics('git cache fetch')
 def CMDfetch(parser, args):
   """Update mirror, and fetch in cwd."""
   parser.add_option('--all', action='store_true', help='Fetch all remotes')
@@ -732,6 +752,7 @@ def CMDfetch(parser, args):
 
 
 @subcommand.usage('do not use - it is a noop.')
+@metrics.collector.collect_metrics('git cache unlock')
 def CMDunlock(parser, args):
   """This command does nothing."""
   print('This command does nothing and will be removed in the future.')
@@ -755,7 +776,19 @@ class OptionParser(optparse.OptionParser):
                     help='Timeout for acquiring cache lock, in seconds')
 
   def parse_args(self, args=None, values=None):
-    options, args = optparse.OptionParser.parse_args(self, args, values)
+    # Create an optparse.Values object that will store only the actual passed
+    # options, without the defaults.
+    actual_options = optparse.Values()
+    _, args = optparse.OptionParser.parse_args(self, args, actual_options)
+    # Create an optparse.Values object with the default options.
+    options = optparse.Values(self.get_default_values().__dict__)
+    # Update it with the options passed by the user.
+    options._update_careful(actual_options.__dict__)
+    # Store the options passed by the user in an _actual_options attribute.
+    # We store only the keys, and not the values, since the values can contain
+    # arbitrary information, which might be PII.
+    metrics.collector.add('arguments', list(actual_options.__dict__.keys()))
+
     if options.quiet:
       options.verbose = 0
 
@@ -770,7 +803,7 @@ class OptionParser(optparse.OptionParser):
       if global_cache_dir and (
           os.path.abspath(options.cache_dir) !=
           os.path.abspath(global_cache_dir)):
-        logging.warn('Overriding globally-configured cache directory.')
+        logging.warning('Overriding globally-configured cache directory.')
       Mirror.SetCachePath(options.cache_dir)
 
     return options, args
@@ -783,7 +816,8 @@ def main(argv):
 
 if __name__ == '__main__':
   try:
-    sys.exit(main(sys.argv[1:]))
+    with metrics.collector.print_notice_and_exit():
+      sys.exit(main(sys.argv[1:]))
   except KeyboardInterrupt:
     sys.stderr.write('interrupted\n')
     sys.exit(1)
