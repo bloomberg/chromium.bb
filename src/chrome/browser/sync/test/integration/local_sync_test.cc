@@ -5,10 +5,12 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/browser_sync/browser_sync_switches.h"
+#include "components/reading_list/features/reading_list_switches.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -67,7 +70,11 @@ class LocalSyncTest : public InProcessBrowserTest {
 };
 
 // The local sync backend is currently only supported on Windows, Mac and Linux.
-#if defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+// TODO(crbug.com/1052397): Reassess whether the following block needs to be
+// included in lacros-chrome once build flag switch of lacros-chrome is
+// complete.
+#if defined(OS_WIN) || defined(OS_MAC) || \
+    (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
 IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetAsProfileSyncServiceForProfile(
@@ -97,9 +104,18 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
       syncer::NIGORI);
 
   // The dictionary is currently only synced on Windows and Linux.
-#if defined(OS_WIN) || defined(OS_LINUX)
+  // TODO(crbug.com/1052397): Reassess whether the following block needs to be
+  // included
+  // in lacros-chrome once build flag switch of lacros-chrome is
+  // complete.
+
+#if defined(OS_WIN) || (defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS))
   expected_active_data_types.Put(syncer::DICTIONARY);
 #endif
+
+  if (base::FeatureList::IsEnabled(reading_list::switches::kReadLater)) {
+    expected_active_data_types.Put(syncer::READING_LIST);
+  }
 
   EXPECT_EQ(service->GetActiveDataTypes(), expected_active_data_types);
 
@@ -111,6 +127,7 @@ IN_PROC_BROWSER_TEST_F(LocalSyncTest, ShouldStart) {
   EXPECT_FALSE(service->GetActiveDataTypes().Has(syncer::SHARING_MESSAGE));
   EXPECT_FALSE(send_tab_to_self::IsUserSyncTypeActive(browser()->profile()));
 }
-#endif  // defined(OS_WIN) || defined(OS_MAC) || defined(OS_LINUX)
+#endif  // defined(OS_WIN) || defined(OS_MAC) || (defined(OS_LINUX) ||
+        // BUILDFLAG(IS_CHROMEOS_LACROS))
 
 }  // namespace

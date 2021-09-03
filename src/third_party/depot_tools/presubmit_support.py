@@ -29,6 +29,7 @@ import os  # Somewhat exposed through the API.
 import random
 import re  # Exposed through the API.
 import signal
+import six
 import sys  # Parts exposed through API.
 import tempfile  # Exposed through the API.
 import threading
@@ -43,7 +44,8 @@ import gclient_paths  # Exposed through the API
 import gclient_utils
 import git_footers
 import gerrit_util
-import owners
+import owners as owners_db
+import owners_client
 import owners_finder
 import presubmit_canned_checks
 import rdb_wrapper
@@ -375,9 +377,12 @@ class GerritAccessor(object):
   To avoid excessive Gerrit calls, caches the results.
   """
 
-  def __init__(self, host):
-    self.host = host
+  def __init__(self, url=None, project=None, branch=None):
+    self.host = urlparse.urlparse(url).netloc if url else None
+    self.project = project
+    self.branch = branch
     self.cache = {}
+    self.code_owners_enabled = None
 
   def _FetchChangeDetail(self, issue):
     # Separate function to be easily mocked in tests.
@@ -462,6 +467,12 @@ class GerritAccessor(object):
 
   def UpdateDescription(self, description, issue):
     gerrit_util.SetCommitMessage(self.host, issue, description, notify='NONE')
+
+  def IsCodeOwnersEnabledOnRepo(self):
+    if self.code_owners_enabled is None:
+      self.code_owners_enabled = gerrit_util.IsCodeOwnersEnabledOnRepo(
+          self.host, self.project)
+    return self.code_owners_enabled
 
 
 class OutputApi(object):
@@ -633,6 +644,8 @@ class InputApi(object):
     # repos (e.g. src.git) to automatically pick up that repo's .vpython file,
     # instead of inheriting the one in depot_tools.
     self.python_executable = 'vpython'
+    # Offer a python 3 executable for use during the migration off of python 2.
+    self.python3_executable = 'vpython3'
     self.environ = os.environ
 
     # InputApi.platform is the platform you're currently running on.
@@ -649,10 +662,16 @@ class InputApi(object):
     # Temporary files we must manually remove at the end of a run.
     self._named_temporary_files = []
 
-    # TODO(dpranke): figure out a list of all approved owners for a repo
-    # in order to be able to handle wildcard OWNERS files?
-    self.owners_db = owners.Database(change.RepositoryRoot(),
-                                     fopen=open, os_path=self.os_path)
+    self.owners_client = None
+    if self.gerrit:
+      self.owners_client = owners_client.GetCodeOwnersClient(
+          root=change.RepositoryRoot(),
+          upstream=change.UpstreamBranch(),
+          host=self.gerrit.host,
+          project=self.gerrit.project,
+          branch=self.gerrit.branch)
+    self.owners_db = owners_db.Database(
+        change.RepositoryRoot(), fopen=open, os_path=self.os_path)
     self.owners_finder = owners_finder.OwnersFinder
     self.verbose = verbose
     self.Command = CommandData
@@ -722,9 +741,12 @@ class InputApi(object):
     """An alias to AffectedTestableFiles for backwards compatibility."""
     return self.AffectedTestableFiles(include_deletes=include_deletes)
 
-  def FilterSourceFile(self, affected_file, files_to_check=None,
-                       files_to_skip=None, allow_list=None, block_list=None,
-                       white_list=None, black_list=None):
+  def FilterSourceFile(self,
+                       affected_file,
+                       files_to_check=None,
+                       files_to_skip=None,
+                       allow_list=None,
+                       block_list=None):
     """Filters out files that aren't considered 'source file'.
 
     If files_to_check or files_to_skip is None, InputApi.DEFAULT_FILES_TO_CHECK
@@ -733,20 +755,8 @@ class InputApi(object):
     The lists will be compiled as regular expression and
     AffectedFile.LocalPath() needs to pass both list.
 
-    Note: if files_to_check or files_to_skip is not set, and
-    white_list/allow_list or black_list/block_list is, then those values are
-    used. This is used for backward compatibility reasons.
-
     Note: Copy-paste this function to suit your needs or use a lambda function.
     """
-    # TODO(https://crbug.com/1098560): Remove non inclusive parameter names.
-    if files_to_check is None and (allow_list or white_list):
-      warn('Use files_to_check in FilterSourceFile')
-      files_to_check = allow_list or white_list
-    if files_to_skip is None and (block_list or black_list):
-      warn('Use files_to_skip in FilterSourceFile')
-      files_to_skip = block_list or black_list
-
     if files_to_check is None:
       files_to_check = self.DEFAULT_FILES_TO_CHECK
     if files_to_skip is None:
@@ -1095,6 +1105,10 @@ class Change(object):
         self._AFFECTED_FILES(path, action.strip(), self._local_root, diff_cache)
         for action, path in files
     ]
+
+  def UpstreamBranch(self):
+    """Returns the upstream branch for the change."""
+    return self._upstream
 
   def Name(self):
     """Returns the change name."""
@@ -1509,7 +1523,7 @@ def DoPostUploadExecuter(change,
 
 class PresubmitExecuter(object):
   def __init__(self, change, committing, verbose, gerrit_obj, dry_run=None,
-               thread_pool=None, parallel=False, gerrit_project=None):
+               thread_pool=None, parallel=False):
     """
     Args:
       change: The Change object.
@@ -1527,7 +1541,6 @@ class PresubmitExecuter(object):
     self.more_cc = []
     self.thread_pool = thread_pool
     self.parallel = parallel
-    self.gerrit_project = gerrit_project
 
   def ExecPresubmitScript(self, script_text, presubmit_path):
     """Executes a single presubmit script.
@@ -1554,6 +1567,16 @@ class PresubmitExecuter(object):
     output_api = OutputApi(self.committing)
     context = {}
 
+    # Try to figure out whether these presubmit checks should be run under
+    # python2 or python3. We need to do this without actually trying to
+    # compile the text, since the text might compile in one but not the
+    # other.
+    m = re.search('^USE_PYTHON3 = True$', script_text, flags=re.MULTILINE)
+    use_python3 = m is not None
+    if (((sys.version_info.major == 2) and use_python3) or
+        ((sys.version_info.major == 3) and not use_python3)):
+      return []
+
     try:
       exec(compile(script_text, 'PRESUBMIT.py', 'exec', dont_inherit=True),
            context)
@@ -1569,10 +1592,10 @@ class PresubmitExecuter(object):
     rel_path = rel_path.replace(os.path.sep, '/')
 
     # Get the URL of git remote origin and use it to identify host and project
-    host = ''
-    if self.gerrit and self.gerrit.host:
-      host = self.gerrit.host
-    project = self.gerrit_project or ''
+    host = project = ''
+    if self.gerrit:
+      host = self.gerrit.host or ''
+      project = self.gerrit.project or ''
 
     # Prefix for test names
     prefix = 'presubmit:%s/%s:%s/' % (host, project, rel_path)
@@ -1581,30 +1604,34 @@ class PresubmitExecuter(object):
     results = []
 
     try:
-      if 'PRESUBMIT_VERSION' in context and \
-        [int(x) for x in context['PRESUBMIT_VERSION'].split('.')] >= [2, 0, 0]:
-        for function_name in context:
-          if not function_name.startswith('Check'):
-            continue
-          if function_name.endswith('Commit') and not self.committing:
-            continue
-          if function_name.endswith('Upload') and self.committing:
-            continue
-          logging.debug('Running %s in %s', function_name, presubmit_path)
-          results.extend(
-              self._run_check_function(function_name, context, prefix))
-          logging.debug('Running %s done.', function_name)
-          self.more_cc.extend(output_api.more_cc)
+      version = [
+          int(x) for x in context.get('PRESUBMIT_VERSION', '0.0.0').split('.')
+      ]
 
-      else: # Old format
-        if self.committing:
-          function_name = 'CheckChangeOnCommit'
-        else:
-          function_name = 'CheckChangeOnUpload'
-        if function_name in context:
+      with rdb_wrapper.client(prefix) as sink:
+        if version >= [2, 0, 0]:
+          for function_name in context:
+            if not function_name.startswith('Check'):
+              continue
+            if function_name.endswith('Commit') and not self.committing:
+              continue
+            if function_name.endswith('Upload') and self.committing:
+              continue
             logging.debug('Running %s in %s', function_name, presubmit_path)
             results.extend(
-                self._run_check_function(function_name, context, prefix))
+                self._run_check_function(function_name, context, sink))
+            logging.debug('Running %s done.', function_name)
+            self.more_cc.extend(output_api.more_cc)
+
+        else:  # Old format
+          if self.committing:
+            function_name = 'CheckChangeOnCommit'
+          else:
+            function_name = 'CheckChangeOnUpload'
+          if function_name in context:
+            logging.debug('Running %s in %s', function_name, presubmit_path)
+            results.extend(
+                self._run_check_function(function_name, context, sink))
             logging.debug('Running %s done.', function_name)
             self.more_cc.extend(output_api.more_cc)
 
@@ -1616,23 +1643,42 @@ class PresubmitExecuter(object):
     os.chdir(main_path)
     return results
 
-  def _run_check_function(self, function_name, context, prefix):
-    """Evaluates a presubmit check function, function_name, in the context
-    provided. If LUCI_CONTEXT is enabled, it will send the result to ResultSink.
-    Passes function_name and prefix to rdb_wrapper.setup_rdb. Returns results.
+  def _run_check_function(self, function_name, context, sink=None):
+    """Evaluates and returns the result of a given presubmit function.
+
+    If sink is given, the result of the presubmit function will be reported
+    to the ResultSink.
 
     Args:
-      function_name: a string representing the name of the function to run
+      function_name: the name of the presubmit function to evaluate
       context: a context dictionary in which the function will be evaluated
-      prefix: a string describing prefix for ResultDB test id
-
-    Returns: Results from evaluating the function call."""
-    with rdb_wrapper.setup_rdb(function_name, prefix) as my_status:
+      sink: an instance of ResultSink. None, by default.
+    Returns:
+      the result of the presubmit function call.
+    """
+    start_time = time_time()
+    try:
       result = eval(function_name + '(*__args)', context)
       self._check_result_type(result)
-      if any(res.fatal for res in result):
-        my_status.status = rdb_wrapper.STATUS_FAIL
-      return result
+    except Exception:
+      if sink:
+        elapsed_time = time_time() - start_time
+        sink.report(function_name, rdb_wrapper.STATUS_FAIL, elapsed_time)
+      # TODO(crbug.com/953884): replace reraise with native py3:
+      #   raise .. from e
+      e_type, e_value, e_tb = sys.exc_info()
+      six.reraise(e_type, 'Evaluation of %s failed: %s' % (function_name,
+                                                           e_value),
+                  e_tb)
+
+    if sink:
+      elapsed_time = time_time() - start_time
+      status = rdb_wrapper.STATUS_PASS
+      if any(r.fatal for r in result):
+        status = rdb_wrapper.STATUS_FAIL
+      sink.report(function_name, status, elapsed_time)
+
+    return result
 
   def _check_result_type(self, result):
     """Helper function which ensures result is a list, and all elements are
@@ -1653,8 +1699,7 @@ def DoPresubmitChecks(change,
                       gerrit_obj,
                       dry_run=None,
                       parallel=False,
-                      json_output=None,
-                      gerrit_project=None):
+                      json_output=None):
   """Runs all presubmit checks that apply to the files in the change.
 
   This finds all PRESUBMIT.py files in directories enclosing the files in the
@@ -1685,10 +1730,13 @@ def DoPresubmitChecks(change,
     os.environ = os.environ.copy()
     os.environ['PYTHONDONTWRITEBYTECODE'] = '1'
 
+    python_version = 'Python %s' % sys.version_info.major
     if committing:
-      sys.stdout.write('Running presubmit commit checks ...\n')
+      sys.stdout.write('Running %s presubmit commit checks ...\n' % 
+                       python_version)
     else:
-      sys.stdout.write('Running presubmit upload checks ...\n')
+      sys.stdout.write('Running %s presubmit upload checks ...\n' %
+                       python_version)
     start_time = time_time()
     presubmit_files = ListRelevantPresubmitFiles(
         change.AbsoluteLocalPaths(), change.RepositoryRoot())
@@ -1697,7 +1745,7 @@ def DoPresubmitChecks(change,
     results = []
     thread_pool = ThreadPool()
     executer = PresubmitExecuter(change, committing, verbose, gerrit_obj,
-                                 dry_run, thread_pool, parallel, gerrit_project)
+                                 dry_run, thread_pool, parallel)
     if default_presubmit:
       if verbose:
         sys.stdout.write('Running default presubmit script.\n')
@@ -1738,9 +1786,9 @@ def DoPresubmitChecks(change,
           'Presubmit checks took %.1fs to calculate.\n\n' % total_time)
 
     if not should_prompt and not presubmits_failed:
-      sys.stdout.write('Presubmit checks passed.\n')
+      sys.stdout.write('%s presubmit checks passed.\n' % python_version)
     elif should_prompt:
-      sys.stdout.write('There were presubmit warnings. ')
+      sys.stdout.write('There were %s presubmit warnings. ' % python_version)
       if may_prompt:
         presubmits_failed = not prompt_should_continue(
             'Are you sure you wish to continue? (y/N): ')
@@ -1858,7 +1906,10 @@ def _parse_gerrit_options(parser, options):
   """
   gerrit_obj = None
   if options.gerrit_url:
-    gerrit_obj = GerritAccessor(urlparse.urlparse(options.gerrit_url).netloc)
+    gerrit_obj = GerritAccessor(
+        url=options.gerrit_url,
+        project=options.gerrit_project,
+        branch=options.gerrit_branch)
 
   if not options.gerrit_fetch:
     return gerrit_obj
@@ -1883,7 +1934,7 @@ def canned_check_filter(method_names):
   try:
     for method_name in method_names:
       if not hasattr(presubmit_canned_checks, method_name):
-        logging.warn('Skipping unknown "canned" check %s' % method_name)
+        logging.warning('Skipping unknown "canned" check %s' % method_name)
         continue
       filtered[method_name] = getattr(presubmit_canned_checks, method_name)
       setattr(presubmit_canned_checks, method_name, lambda *_a, **_kw: [])
@@ -1930,6 +1981,8 @@ def main(argv=None):
                       'to skip multiple canned checks.')
   parser.add_argument('--dry_run', action='store_true', help=argparse.SUPPRESS)
   parser.add_argument('--gerrit_url', help=argparse.SUPPRESS)
+  parser.add_argument('--gerrit_project', help=argparse.SUPPRESS)
+  parser.add_argument('--gerrit_branch', help=argparse.SUPPRESS)
   parser.add_argument('--gerrit_fetch', action='store_true',
                       help=argparse.SUPPRESS)
   parser.add_argument('--parallel', action='store_true',
@@ -1943,7 +1996,6 @@ def main(argv=None):
                       help='List of files to be marked as modified when '
                       'executing presubmit or post-upload hooks. fnmatch '
                       'wildcards can also be used.')
-  parser.add_argument('--gerrit_project', help=argparse.SUPPRESS)
   options = parser.parse_args(argv)
 
   log_level = logging.ERROR
@@ -1976,8 +2028,7 @@ def main(argv=None):
           gerrit_obj,
           options.dry_run,
           options.parallel,
-          options.json_output,
-          options.gerrit_project)
+          options.json_output)
   except PresubmitFailure as e:
     print(e, file=sys.stderr)
     print('Maybe your depot_tools is out of date?', file=sys.stderr)

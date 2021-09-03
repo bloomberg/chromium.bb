@@ -8,9 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_piece_forward.h"
 #include "build/chromeos_buildflags.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
-#include "components/version_info/channel.h"
-#include "ui/base/layout.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 
 namespace extensions {
 
@@ -146,10 +144,6 @@ enum LaunchType {
   LAUNCH_TYPE_DEFAULT = LAUNCH_TYPE_REGULAR
 };
 
-// The origin of injected CSS.
-enum CSSOrigin { CSS_ORIGIN_AUTHOR, CSS_ORIGIN_USER };
-static const CSSOrigin CSS_ORIGIN_LAST = CSS_ORIGIN_USER;
-
 }  // namespace extensions
 
 namespace extension_misc {
@@ -222,11 +216,20 @@ extern const char kGMailAppId[];
 // The extension id of the demo Google Docs application.
 extern const char kGoogleDocsDemoAppId[];
 
+// The extension id of the Google Docs PWA.
+extern const char kGoogleDocsPwaAppId[];
+
 // The extension id of the Google Drive application.
 extern const char kGoogleDriveAppId[];
 
+// The extension id of the Google Meet PWA.
+extern const char kGoogleMeetPwaAppId[];
+
 // The extension id of the demo Google Sheets application.
 extern const char kGoogleSheetsDemoAppId[];
+
+// The extension id of the Google Sheets PWA.
+extern const char kGoogleSheetsPwaAppId[];
 
 // The extension id of the demo Google Slides application.
 extern const char kGoogleSlidesDemoAppId[];
@@ -237,15 +240,27 @@ extern const char kGoogleKeepAppId[];
 // The extension id of the Youtube application.
 extern const char kYoutubeAppId[];
 
+// The extension id of the Youtube PWA.
+extern const char kYoutubePwaAppId[];
+
+// The extension id of the Spotify PWA.
+extern const char kSpotifyAppId[];
+
+// The extension id of the BeFunky PWA.
+extern const char kBeFunkyAppId[];
+
+// The extension id of the Clipchamp PWA.
+extern const char kClipchampAppId[];
+
+// The extension id of the GeForce NOW PWA.
+extern const char kGeForceNowAppId[];
+
+// The extension id of the Zoom PWA.
+extern const char kZoomAppId[];
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // The extension id of the default Demo Mode Highlights app.
 extern const char kHighlightsAppId[];
-
-// The extension id of the eve Demo Mode Highlights app.
-extern const char kHighlightsEveAppId[];
-
-// The extension id of the nocturne Demo Mode Highlights app.
-extern const char kHighlightsNocturneAppId[];
 
 // The extension id of the atlas Demo Mode Highlights app.
 extern const char kHighlightsAtlasAppId[];
@@ -253,20 +268,18 @@ extern const char kHighlightsAtlasAppId[];
 // The extension id of the default Demo Mode screensaver app.
 extern const char kScreensaverAppId[];
 
-// The extension id of the eve Demo Mode screensaver app.
-extern const char kScreensaverEveAppId[];
-
-// The extension id of the nocturne Demo Mode screensaver app.
-extern const char kScreensaverNocturneAppId[];
-
 // The extension id of the atlas Demo Mode screensaver app.
 extern const char kScreensaverAtlasAppId[];
 
-// The extension id of the kukui Demo Mode screensaver app.
-extern const char kScreensaverKukuiAppId[];
+// The extension id of the krane Demo Mode screensaver app. That app is only
+// run on KRANE-ZDKS devices.
+extern const char kScreensaverKraneZdksAppId[];
 
 // The id of the testing extension allowed in the signin profile.
 extern const char kSigninProfileTestExtensionId[];
+
+// The id of the testing extension allowed in guest mode.
+extern const char kGuestModeTestExtensionId[];
 
 // Returns true if this app is part of the "system UI". Generally this is UI
 // that that on other operating systems would be considered part of the OS,
@@ -285,13 +298,6 @@ extern const char kPolicyBlockedScripting[];
 
 // The default block size for hashing used in content verification.
 extern const int kContentVerificationDefaultBlockSize;
-
-// The minimum severity of a log or error in order to report it to the browser.
-extern const logging::LogSeverity kMinimumSeverityToReportError;
-
-// The minimum channel where Service Worker based extensions can run.
-constexpr version_info::Channel kMinChannelForServiceWorkerBasedExtension =
-    version_info::Channel::STABLE;
 
 // IDs for the Media Router Component Extension.
 extern const char kCastExtensionIdRelease[];

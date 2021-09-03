@@ -29,7 +29,9 @@
 namespace blink {
 
 namespace {
-constexpr double kBeginFrameDelaySeconds = 0.5;
+const double kBeginFrameDelaySeconds =
+    (base::FeatureList::IsEnabled(features::kImpulseScrollAnimations) ? 1.5
+                                                                      : 0.5);
 }
 
 class FractionalScrollSimTest : public SimTest {
@@ -287,7 +289,16 @@ TEST_F(ScrollAnimatorSimTest, TestRootFrameVisualViewporUserScrollCallBack) {
 // Test that the callback of user scroll will be executed when the animation
 // finishes at ScrollAnimator::TickAnimation for root frame user scroll at both
 // the layout and visual viewport.
-TEST_F(ScrollAnimatorSimTest, TestRootFrameBothViewportsUserScrollCallBack) {
+#if defined(THREAD_SANITIZER)
+// Flaky under thread sanitizers, see http://crbug.com/1202020
+#define MAYBE_TestRootFrameBothViewportsUserScrollCallBack \
+  DISABLED_TestRootFrameBothViewportsUserScrollCallBack
+#else
+#define MAYBE_TestRootFrameBothViewportsUserScrollCallBack \
+  TestRootFrameBothViewportsUserScrollCallBack
+#endif
+TEST_F(ScrollAnimatorSimTest,
+       MAYBE_TestRootFrameBothViewportsUserScrollCallBack) {
   GetDocument().GetFrame()->GetSettings()->SetScrollAnimatorEnabled(true);
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 500));
   SimRequest request("https://example.com/test.html", "text/html");

@@ -2,19 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_control_frame_manager.h"
+#include "quic/core/quic_control_frame_manager.h"
 
 #include <string>
 
-#include "net/third_party/quiche/src/quic/core/frames/quic_ack_frequency_frame.h"
-#include "net/third_party/quiche/src/quic/core/frames/quic_frame.h"
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/core/quic_session.h"
-#include "net/third_party/quiche/src/quic/core/quic_types.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_map_util.h"
-#include "net/third_party/quiche/src/common/platform/api/quiche_str_cat.h"
+#include "absl/strings/str_cat.h"
+#include "quic/core/frames/quic_ack_frequency_frame.h"
+#include "quic/core/frames/quic_frame.h"
+#include "quic/core/frames/quic_new_connection_id_frame.h"
+#include "quic/core/frames/quic_retire_connection_id_frame.h"
+#include "quic/core/quic_constants.h"
+#include "quic/core/quic_session.h"
+#include "quic/core/quic_types.h"
+#include "quic/core/quic_utils.h"
+#include "quic/platform/api/quic_bug_tracker.h"
+#include "quic/platform/api/quic_flag_utils.h"
+#include "quic/platform/api/quic_map_util.h"
 
 namespace quic {
 
@@ -45,10 +48,9 @@ void QuicControlFrameManager::WriteOrBufferQuicFrame(QuicFrame frame) {
   if (control_frames_.size() > kMaxNumControlFrames) {
     delegate_->OnControlFrameManagerError(
         QUIC_TOO_MANY_BUFFERED_CONTROL_FRAMES,
-        quiche::QuicheStrCat(
-            "More than ", kMaxNumControlFrames,
-            "buffered control frames, least_unacked: ", least_unacked_,
-            ", least_unsent_: ", least_unsent_));
+        absl::StrCat("More than ", kMaxNumControlFrames,
+                     "buffered control frames, least_unacked: ", least_unacked_,
+                     ", least_unsent_: ", least_unsent_));
     return;
   }
   if (had_buffered_frames) {
@@ -132,32 +134,34 @@ void QuicControlFrameManager::WriteOrBufferAckFrequency(
                                           ack_frequency_frame.max_ack_delay)));
 }
 
-void QuicControlFrameManager::WritePing() {
-  QUIC_DVLOG(1) << "Writing PING_FRAME";
-  if (HasBufferedFrames()) {
-    // Do not send ping if there is buffered frames.
-    QUIC_LOG(WARNING)
-        << "Try to send PING when there is buffered control frames.";
-    return;
-  }
-  control_frames_.emplace_back(
-      QuicFrame(QuicPingFrame(++last_control_frame_id_)));
-  if (control_frames_.size() > kMaxNumControlFrames) {
-    delegate_->OnControlFrameManagerError(
-        QUIC_TOO_MANY_BUFFERED_CONTROL_FRAMES,
-        quiche::QuicheStrCat(
-            "More than ", kMaxNumControlFrames,
-            "buffered control frames, least_unacked: ", least_unacked_,
-            ", least_unsent_: ", least_unsent_));
-    return;
-  }
-  WriteBufferedFrames();
+void QuicControlFrameManager::WriteOrBufferNewConnectionId(
+    const QuicConnectionId& connection_id,
+    uint64_t sequence_number,
+    uint64_t retire_prior_to,
+    const StatelessResetToken& stateless_reset_token) {
+  QUIC_DVLOG(1) << "Writing NEW_CONNECTION_ID frame";
+  WriteOrBufferQuicFrame(QuicFrame(new QuicNewConnectionIdFrame(
+      ++last_control_frame_id_, connection_id, sequence_number,
+      stateless_reset_token, retire_prior_to)));
+}
+
+void QuicControlFrameManager::WriteOrBufferRetireConnectionId(
+    uint64_t sequence_number) {
+  QUIC_DVLOG(1) << "Writing RETIRE_CONNECTION_ID frame";
+  WriteOrBufferQuicFrame(QuicFrame(new QuicRetireConnectionIdFrame(
+      ++last_control_frame_id_, sequence_number)));
+}
+
+void QuicControlFrameManager::WriteOrBufferNewToken(absl::string_view token) {
+  QUIC_DVLOG(1) << "Writing NEW_TOKEN frame";
+  WriteOrBufferQuicFrame(
+      QuicFrame(new QuicNewTokenFrame(++last_control_frame_id_, token)));
 }
 
 void QuicControlFrameManager::OnControlFrameSent(const QuicFrame& frame) {
   QuicControlFrameId id = GetControlFrameId(frame);
   if (id == kInvalidControlFrameId) {
-    QUIC_BUG
+    QUIC_BUG(quic_bug_12727_1)
         << "Send or retransmit a control frame with invalid control frame id";
     return;
   }
@@ -176,8 +180,9 @@ void QuicControlFrameManager::OnControlFrameSent(const QuicFrame& frame) {
     return;
   }
   if (id > least_unsent_) {
-    QUIC_BUG << "Try to send control frames out of order, id: " << id
-             << " least_unsent: " << least_unsent_;
+    QUIC_BUG(quic_bug_10517_1)
+        << "Try to send control frames out of order, id: " << id
+        << " least_unsent: " << least_unsent_;
     delegate_->OnControlFrameManagerError(
         QUIC_INTERNAL_ERROR, "Try to send control frames out of order");
     return;
@@ -207,7 +212,7 @@ void QuicControlFrameManager::OnControlFrameLost(const QuicFrame& frame) {
     return;
   }
   if (id >= least_unsent_) {
-    QUIC_BUG << "Try to mark unsent control frame as lost";
+    QUIC_BUG(quic_bug_10517_2) << "Try to mark unsent control frame as lost";
     delegate_->OnControlFrameManagerError(
         QUIC_INTERNAL_ERROR, "Try to mark unsent control frame as lost");
     return;
@@ -220,7 +225,8 @@ void QuicControlFrameManager::OnControlFrameLost(const QuicFrame& frame) {
   }
   if (!QuicContainsKey(pending_retransmissions_, id)) {
     pending_retransmissions_[id] = true;
-    QUIC_BUG_IF(pending_retransmissions_.size() > control_frames_.size())
+    QUIC_BUG_IF(quic_bug_12727_2,
+                pending_retransmissions_.size() > control_frames_.size())
         << "least_unacked_: " << least_unacked_
         << ", least_unsent_: " << least_unsent_;
   }
@@ -248,7 +254,7 @@ bool QuicControlFrameManager::WillingToWrite() const {
 }
 
 QuicFrame QuicControlFrameManager::NextPendingRetransmission() const {
-  QUIC_BUG_IF(pending_retransmissions_.empty())
+  QUIC_BUG_IF(quic_bug_12727_3, pending_retransmissions_.empty())
       << "Unexpected call to NextPendingRetransmission() with empty pending "
       << "retransmission list.";
   QuicControlFrameId id = pending_retransmissions_.begin()->first;
@@ -266,8 +272,8 @@ void QuicControlFrameManager::OnCanWrite() {
 
 bool QuicControlFrameManager::RetransmitControlFrame(const QuicFrame& frame,
                                                      TransmissionType type) {
-  DCHECK(type == PTO_RETRANSMISSION || type == RTO_RETRANSMISSION ||
-         type == TLP_RETRANSMISSION || type == PROBING_RETRANSMISSION);
+  QUICHE_DCHECK(type == PTO_RETRANSMISSION || type == RTO_RETRANSMISSION ||
+                type == TLP_RETRANSMISSION || type == PROBING_RETRANSMISSION);
   QuicControlFrameId id = GetControlFrameId(frame);
   if (id == kInvalidControlFrameId) {
     // Frame does not have a valid control frame ID, ignore it. Returns true
@@ -275,7 +281,7 @@ bool QuicControlFrameManager::RetransmitControlFrame(const QuicFrame& frame,
     return true;
   }
   if (id >= least_unsent_) {
-    QUIC_BUG << "Try to retransmit unsent control frame";
+    QUIC_BUG(quic_bug_10517_3) << "Try to retransmit unsent control frame";
     delegate_->OnControlFrameManagerError(
         QUIC_INTERNAL_ERROR, "Try to retransmit unsent control frame");
     return false;
@@ -329,7 +335,7 @@ bool QuicControlFrameManager::OnControlFrameIdAcked(QuicControlFrameId id) {
     return false;
   }
   if (id >= least_unsent_) {
-    QUIC_BUG << "Try to ack unsent control frame";
+    QUIC_BUG(quic_bug_10517_4) << "Try to ack unsent control frame";
     delegate_->OnControlFrameManagerError(QUIC_INTERNAL_ERROR,
                                           "Try to ack unsent control frame");
     return false;

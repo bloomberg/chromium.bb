@@ -31,8 +31,8 @@ void UpdateModel::SetUpdateAvailable(UpdateSeverity severity,
 
 void UpdateModel::SetUpdateNotificationState(
     NotificationStyle style,
-    const base::string16& notification_title,
-    const base::string16& notification_body) {
+    const std::u16string& notification_title,
+    const std::u16string& notification_body) {
   DCHECK_EQ(update_type_, UpdateType::kSystem);
   notification_style_ = style;
   notification_title_ = notification_title;
@@ -50,6 +50,11 @@ UpdateSeverity UpdateModel::GetSeverity() const {
   // time passing after update is available over cellular connection. Use low
   // severity for update available over cellular connection.
   return update_over_cellular_available_ ? UpdateSeverity::kLow : severity_;
+}
+
+void UpdateModel::ResetUpdateAvailable() {
+  update_required_ = false;
+  NotifyUpdateAvailable();
 }
 
 void UpdateModel::NotifyUpdateAvailable() {

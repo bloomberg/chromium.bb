@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/media/router/data_decoder_util.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,6 +40,61 @@ constexpr char kValidAppInfoXmlExtraData[] =
            <screenId>e5n3112oskr42pg0td55b38nh4</screenId>
            <otherField>2</otherField>
          </additionalData>
+       </service>
+    )";
+
+constexpr char kInvalidAppInfoXmlExtraData[] =
+    R"(<?xml version="1.0" encoding="UTF-8"?>
+       <service xmlns="urn:dial-multiscreen-org:schemas:dial">
+         <name>YouTube</name>
+         <state>Running</state>
+         <options allowStop="false"/>
+         <link rel="run" href="run"/>
+         <additionalData>
+           <>empty tags</>
+         </additionalData>
+       </service>
+    )";
+
+constexpr char kAppInfoXmlExtraDataWithEmptyValue[] =
+    R"(<?xml version="1.0" encoding="UTF-8"?>
+       <service xmlns="urn:dial-multiscreen-org:schemas:dial">
+         <name>YouTube</name>
+         <state>Running</state>
+         <options allowStop="false"/>
+         <link rel="run" href="run"/>
+         <additionalData>
+           <emptyValue></emptyValue>
+           <value>1</value>
+         </additionalData>
+       </service>
+    )";
+
+constexpr char kAppInfoXmlExtraDataWithNestedValue[] =
+    R"(<?xml version="1.0" encoding="UTF-8"?>
+       <service xmlns="urn:dial-multiscreen-org:schemas:dial">
+         <name>YouTube</name>
+         <state>Running</state>
+         <options allowStop="false"/>
+         <link rel="run" href="run"/>
+         <additionalData>
+           <nested>
+             <child1>1</child1>
+             <child2>2</child2>
+           </nested>
+           <value>1</value>
+         </additionalData>
+       </service>
+    )";
+
+constexpr char kAppInfoXmlEmptyExtraData[] =
+    R"(<?xml version="1.0" encoding="UTF-8"?>
+       <service xmlns="urn:dial-multiscreen-org:schemas:dial">
+         <name>YouTube</name>
+         <state>Running</state>
+         <options allowStop="false"/>
+         <link rel="run" href="run"/>
+         <additionalData></additionalData>
        </service>
     )";
 
@@ -147,8 +201,39 @@ TEST_F(SafeDialAppInfoParserTest, TestValidXmlExtraData) {
   EXPECT_EQ("YouTube", app_info->name);
   EXPECT_EQ(DialAppState::kRunning, app_info->state);
   EXPECT_EQ(2u, app_info->extra_data.size());
-  EXPECT_EQ("8080", app_info->extra_data["port"]);
-  EXPECT_EQ("websocket", app_info->extra_data["capabilities"]);
+  EXPECT_EQ("e5n3112oskr42pg0td55b38nh4", app_info->extra_data["screenId"]);
+  EXPECT_EQ("2", app_info->extra_data["otherField"]);
+}
+
+TEST_F(SafeDialAppInfoParserTest, TestInvalidXmlExtraData) {
+  std::string xml_text(kInvalidAppInfoXmlExtraData);
+  std::unique_ptr<ParsedDialAppInfo> app_info =
+      Parse(xml_text, SafeDialAppInfoParser::ParsingResult::kInvalidXML);
+  // Empty tag names in <additionalData> would invalidate the entire XML.
+  EXPECT_EQ(nullptr, app_info);
+}
+
+TEST_F(SafeDialAppInfoParserTest, TestExtraDataWithEmptyValue) {
+  std::string xml_text(kAppInfoXmlExtraDataWithEmptyValue);
+  std::unique_ptr<ParsedDialAppInfo> app_info =
+      Parse(xml_text, SafeDialAppInfoParser::ParsingResult::kSuccess);
+  EXPECT_EQ(1u, app_info->extra_data.size());
+  EXPECT_EQ("1", app_info->extra_data["value"]);
+}
+
+TEST_F(SafeDialAppInfoParserTest, TestExtraDataWithNestedValue) {
+  std::string xml_text(kAppInfoXmlExtraDataWithNestedValue);
+  std::unique_ptr<ParsedDialAppInfo> app_info =
+      Parse(xml_text, SafeDialAppInfoParser::ParsingResult::kSuccess);
+  EXPECT_EQ(1u, app_info->extra_data.size());
+  EXPECT_EQ("1", app_info->extra_data["value"]);
+}
+
+TEST_F(SafeDialAppInfoParserTest, TestEmptyExtraData) {
+  std::string xml_text(kAppInfoXmlEmptyExtraData);
+  std::unique_ptr<ParsedDialAppInfo> app_info =
+      Parse(xml_text, SafeDialAppInfoParser::ParsingResult::kSuccess);
+  EXPECT_EQ(0u, app_info->extra_data.size());
 }
 
 TEST_F(SafeDialAppInfoParserTest, TestInvalidXmlNoState) {

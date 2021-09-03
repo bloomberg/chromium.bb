@@ -260,7 +260,7 @@ void PostFilter::GetVerticalDeblockFilterEdgeInfoUV(
       kDeblockFilterLevelIndex[kPlaneU][kLoopFilterTypeVertical];
   const int filter_id_v =
       kDeblockFilterLevelIndex[kPlaneV][kLoopFilterTypeVertical];
-  const BlockParameters* bp_prev = *(bp_ptr - (1 << subsampling_x));
+  const BlockParameters* bp_prev = *(bp_ptr - (ptrdiff_t{1} << subsampling_x));
 
   if (bp == bp_prev) {
     // Not a border.
@@ -298,7 +298,7 @@ void PostFilter::GetVerticalDeblockFilterEdgeInfoUV(
 void PostFilter::HorizontalDeblockFilter(int row4x4_start,
                                          int column4x4_start) {
   const int column_step = 1;
-  const size_t src_step = MultiplyBy4(pixel_size_);
+  const int src_step = 4 << pixel_size_log2_;
   const ptrdiff_t src_stride = frame_buffer_.stride(kPlaneY);
   uint8_t* src = GetSourceBuffer(kPlaneY, row4x4_start, column4x4_start);
   int row_step;
@@ -382,6 +382,7 @@ void PostFilter::VerticalDeblockFilter(int row4x4_start, int column4x4_start) {
   BlockParameters* const* bp_row_base =
       block_parameters_.Address(row4x4_start, column4x4_start);
   const int bp_stride = block_parameters_.columns4x4();
+  const int column_step_shift = pixel_size_log2_;
   for (int row4x4 = 0; row4x4 < kNum4x4InLoopFilterUnit &&
                        MultiplyBy4(row4x4_start + row4x4) < height_;
        ++row4x4, src += row_stride, bp_row_base += bp_stride) {
@@ -399,7 +400,7 @@ void PostFilter::VerticalDeblockFilter(int row4x4_start, int column4x4_start) {
             src_row, src_stride, outer_thresh_[level], inner_thresh_[level],
             HevThresh(level));
       }
-      src_row += column_step * pixel_size_;
+      src_row += column_step << column_step_shift;
       column_step = DivideBy4(column_step);
     }
   }
@@ -423,7 +424,7 @@ void PostFilter::VerticalDeblockFilter(int row4x4_start, int column4x4_start) {
     BlockParameters* const* bp_row_base = block_parameters_.Address(
         GetDeblockPosition(row4x4_start, subsampling_y),
         GetDeblockPosition(column4x4_start, subsampling_x));
-    const int bp_stride = block_parameters_.columns4x4() * row_step;
+    const int bp_stride = block_parameters_.columns4x4() << subsampling_y;
     for (int row4x4 = 0; row4x4 < kNum4x4InLoopFilterUnit &&
                          MultiplyBy4(row4x4_start + row4x4) < height_;
          row4x4 += row_step, src_u += row_stride_u, src_v += row_stride_v,
@@ -449,8 +450,8 @@ void PostFilter::VerticalDeblockFilter(int row4x4_start, int column4x4_start) {
               src_row_v, src_stride_v, outer_thresh_[level_v],
               inner_thresh_[level_v], HevThresh(level_v));
         }
-        src_row_u += column_step * pixel_size_;
-        src_row_v += column_step * pixel_size_;
+        src_row_u += column_step << column_step_shift;
+        src_row_v += column_step << column_step_shift;
         column_step = DivideBy4(column_step << subsampling_x);
       }
     }

@@ -24,14 +24,16 @@
 @synthesize ssrc = _ssrc;
 @synthesize bitratePriority = _bitratePriority;
 @synthesize networkPriority = _networkPriority;
+@synthesize adaptiveAudioPacketTime = _adaptiveAudioPacketTime;
 
 - (instancetype)init {
-  return [super init];
+  webrtc::RtpEncodingParameters nativeParameters;
+  return [self initWithNativeParameters:nativeParameters];
 }
 
 - (instancetype)initWithNativeParameters:
     (const webrtc::RtpEncodingParameters &)nativeParameters {
-  if (self = [self init]) {
+  if (self = [super init]) {
     if (!nativeParameters.rid.empty()) {
       _rid = [NSString stringForStdString:nativeParameters.rid];
     }
@@ -60,6 +62,7 @@
     _bitratePriority = nativeParameters.bitrate_priority;
     _networkPriority = [RTC_OBJC_TYPE(RTCRtpEncodingParameters)
         priorityFromNativePriority:nativeParameters.network_priority];
+    _adaptiveAudioPacketTime = nativeParameters.adaptive_ptime;
   }
   return self;
 }
@@ -92,6 +95,7 @@
   parameters.bitrate_priority = _bitratePriority;
   parameters.network_priority =
       [RTC_OBJC_TYPE(RTCRtpEncodingParameters) nativePriorityFromPriority:_networkPriority];
+  parameters.adaptive_ptime = _adaptiveAudioPacketTime;
   return parameters;
 }
 

@@ -121,8 +121,7 @@ class PaintRecordMatcher
   do {                                                                       \
     const auto* concat = (op_buffer).GetOpAtForTesting<cc::ConcatOp>(index); \
     ASSERT_NE(nullptr, concat);                                              \
-    EXPECT_EQ(SkMatrix(TransformationMatrix::ToSkMatrix44(transform)),       \
-              concat->matrix);                                               \
+    EXPECT_EQ(TransformationMatrix::ToSkM44(transform), concat->matrix);     \
   } while (false)
 
 #define EXPECT_TRANSLATE(x, y, op_buffer, index)               \
@@ -164,7 +163,7 @@ class TestChunks {
       const ClipPaintPropertyNodeOrAlias& c,
       const EffectPaintPropertyNodeOrAlias& e,
       const IntRect& bounds = IntRect(0, 0, 100, 100),
-      const base::Optional<IntRect>& drawable_bounds = base::nullopt) {
+      const absl::optional<IntRect>& drawable_bounds = absl::nullopt) {
     auto record = sk_make_sp<PaintRecord>();
     record->push<cc::DrawRectOp>(drawable_bounds ? *drawable_bounds : bounds,
                                  cc::PaintFlags());
@@ -178,7 +177,7 @@ class TestChunks {
       const ClipPaintPropertyNodeOrAlias& c,
       const EffectPaintPropertyNodeOrAlias& e,
       const IntRect& bounds = IntRect(0, 0, 100, 100),
-      const base::Optional<IntRect>& drawable_bounds = base::nullopt) {
+      const absl::optional<IntRect>& drawable_bounds = absl::nullopt) {
     auto& items = paint_artifact_->GetDisplayItemList();
     auto i = items.size();
     items.AllocateAndConstruct<DrawingDisplayItem>(

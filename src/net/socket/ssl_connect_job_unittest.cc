@@ -23,9 +23,8 @@
 #include "net/base/network_isolation_key.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/mock_cert_verifier.h"
-#include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/dns/public/secure_dns_mode.h"
+#include "net/dns/public/secure_dns_policy.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_proxy_connect_job.h"
@@ -95,12 +94,12 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
         direct_transport_socket_params_(
             new TransportSocketParams(HostPortPair("host", 443),
                                       NetworkIsolationKey(),
-                                      false /* disable_secure_dns */,
+                                      SecureDnsPolicy::kAllow,
                                       OnHostResolutionCallback())),
         proxy_transport_socket_params_(
             new TransportSocketParams(HostPortPair("proxy", 443),
                                       NetworkIsolationKey(),
-                                      false /* disable_secure_dns */,
+                                      SecureDnsPolicy::kAllow,
                                       OnHostResolutionCallback())),
         socks_socket_params_(
             new SOCKSSocketParams(proxy_transport_socket_params_,
@@ -113,7 +112,6 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
                                       nullptr /* ssl_params */,
                                       false /* is_quic */,
                                       HostPortPair("host", 80),
-                                      /*is_trusted_proxy=*/false,
                                       /*tunnel=*/true,
                                       TRAFFIC_ANNOTATION_FOR_TESTS,
                                       NetworkIsolationKey())),
@@ -141,8 +139,8 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
   }
 
   void AddAuthToCache() {
-    const base::string16 kFoo(base::ASCIIToUTF16("foo"));
-    const base::string16 kBar(base::ASCIIToUTF16("bar"));
+    const std::u16string kFoo(u"foo");
+    const std::u16string kBar(u"bar");
     session_->http_auth_cache()->Add(
         GURL("http://proxy:443/"), HttpAuth::AUTH_PROXY, "MyRealm1",
         HttpAuth::AUTH_SCHEME_BASIC, NetworkIsolationKey(),
@@ -154,7 +152,6 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
     session_context.host_resolver = &host_resolver_;
     session_context.cert_verifier = &cert_verifier_;
     session_context.transport_security_state = &transport_security_state_;
-    session_context.cert_transparency_verifier = &ct_verifier_;
     session_context.ct_policy_enforcer = &ct_policy_enforcer_;
     session_context.proxy_resolution_service = proxy_resolution_service_.get();
     session_context.client_socket_factory = &socket_factory_;
@@ -172,7 +169,6 @@ class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
   MockHostResolver host_resolver_;
   MockCertVerifier cert_verifier_;
   TransportSecurityState transport_security_state_;
-  MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
   const std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   const std::unique_ptr<SSLConfigService> ssl_config_service_;
@@ -428,13 +424,14 @@ TEST_F(SSLConnectJobTest, RequestPriority) {
   }
 }
 
-TEST_F(SSLConnectJobTest, DisableSecureDns) {
-  for (bool disable_secure_dns : {false, true}) {
+TEST_F(SSLConnectJobTest, SecureDnsPolicy) {
+  for (auto secure_dns_policy :
+       {SecureDnsPolicy::kAllow, SecureDnsPolicy::kDisable}) {
     TestConnectJobDelegate test_delegate;
     direct_transport_socket_params_ =
         base::MakeRefCounted<TransportSocketParams>(
-            HostPortPair("host", 443), NetworkIsolationKey(),
-            disable_secure_dns, OnHostResolutionCallback());
+            HostPortPair("host", 443), NetworkIsolationKey(), secure_dns_policy,
+            OnHostResolutionCallback());
     auto common_connect_job_params = session_->CreateCommonConnectJobParams();
     std::unique_ptr<ConnectJob> ssl_connect_job =
         std::make_unique<SSLConnectJob>(DEFAULT_PRIORITY, SocketTag(),
@@ -443,12 +440,7 @@ TEST_F(SSLConnectJobTest, DisableSecureDns) {
                                         &test_delegate, nullptr /* net_log */);
 
     EXPECT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
-    EXPECT_EQ(disable_secure_dns,
-              host_resolver_.last_secure_dns_mode_override().has_value());
-    if (disable_secure_dns) {
-      EXPECT_EQ(net::SecureDnsMode::kOff,
-                host_resolver_.last_secure_dns_mode_override().value());
-    }
+    EXPECT_EQ(secure_dns_policy, host_resolver_.last_secure_dns_policy());
   }
 }
 
@@ -795,6 +787,9 @@ TEST_F(SSLConnectJobTest, SOCKSBasic) {
     test_delegate.StartJobExpectingResult(ssl_connect_job.get(), OK,
                                           io_mode == SYNCHRONOUS);
     CheckConnectTimesExceptDnsSet(ssl_connect_job->connect_timing());
+
+    // Proxies should not set any DNS aliases.
+    EXPECT_TRUE(test_delegate.socket()->GetDnsAliases().empty());
   }
 }
 
@@ -964,11 +959,13 @@ TEST_F(SSLConnectJobTest, HttpProxyAuthChallenge) {
   EXPECT_FALSE(test_delegate.has_result());
 
   // Respond to challenge.
-  test_delegate.auth_controller()->ResetAuth(
-      AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
+  test_delegate.auth_controller()->ResetAuth(AuthCredentials(u"foo", u"bar"));
   test_delegate.RunAuthCallback();
 
   EXPECT_THAT(test_delegate.WaitForResult(), test::IsOk());
+
+  // Proxies should not set any DNS aliases.
+  EXPECT_TRUE(test_delegate.socket()->GetDnsAliases().empty());
 }
 
 TEST_F(SSLConnectJobTest, HttpProxyAuthWithCachedCredentials) {
@@ -998,6 +995,7 @@ TEST_F(SSLConnectJobTest, HttpProxyAuthWithCachedCredentials) {
     test_delegate.StartJobExpectingResult(ssl_connect_job.get(), OK,
                                           io_mode == SYNCHRONOUS);
     CheckConnectTimesExceptDnsSet(ssl_connect_job->connect_timing());
+    EXPECT_TRUE(test_delegate.socket()->GetDnsAliases().empty());
   }
 }
 
@@ -1090,8 +1088,7 @@ TEST_F(SSLConnectJobTest, HttpProxyAuthHasEstablishedConnection) {
   EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
 
   // Respond to challenge.
-  test_delegate.auth_controller()->ResetAuth(
-      AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
+  test_delegate.auth_controller()->ResetAuth(AuthCredentials(u"foo", u"bar"));
   test_delegate.RunAuthCallback();
   EXPECT_FALSE(test_delegate.has_result());
   EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
@@ -1183,8 +1180,7 @@ TEST_F(SSLConnectJobTest,
   EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
 
   // Respond to challenge.
-  test_delegate.auth_controller()->ResetAuth(
-      AuthCredentials(base::ASCIIToUTF16("foo"), base::ASCIIToUTF16("bar")));
+  test_delegate.auth_controller()->ResetAuth(AuthCredentials(u"foo", u"bar"));
   test_delegate.RunAuthCallback();
   EXPECT_FALSE(test_delegate.has_result());
   EXPECT_EQ(LOAD_STATE_ESTABLISHING_PROXY_TUNNEL,
@@ -1219,6 +1215,60 @@ TEST_F(SSLConnectJobTest,
   EXPECT_TRUE(ssl_connect_job->HasEstablishedConnection());
 
   EXPECT_THAT(test_delegate.WaitForResult(), test::IsOk());
+}
+
+TEST_F(SSLConnectJobTest, DnsAliases) {
+  host_resolver_.set_synchronous_mode(true);
+
+  // Resolve an AddressList with DNS aliases.
+  std::vector<std::string> aliases({"alias1", "alias2", "host"});
+  host_resolver_.rules()->AddIPLiteralRuleWithDnsAliases("host", "2.2.2.2",
+                                                         std::move(aliases));
+  StaticSocketDataProvider data;
+  data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  socket_factory_.AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+  TestConnectJobDelegate test_delegate;
+
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate, ProxyServer::SCHEME_DIRECT, MEDIUM);
+
+  EXPECT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the elements of the alias list are those from the
+  // parameter vector.
+  EXPECT_THAT(test_delegate.socket()->GetDnsAliases(),
+              testing::ElementsAre("alias1", "alias2", "host"));
+}
+
+TEST_F(SSLConnectJobTest, NoAdditionalDnsAliases) {
+  host_resolver_.set_synchronous_mode(true);
+
+  // Resolve an AddressList without additional DNS aliases. (The parameter
+  // is an empty vector.)
+  std::vector<std::string> aliases;
+  host_resolver_.rules()->AddIPLiteralRuleWithDnsAliases("host", "2.2.2.2",
+                                                         std::move(aliases));
+  StaticSocketDataProvider data;
+  data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  socket_factory_.AddSocketDataProvider(&data);
+  SSLSocketDataProvider ssl(ASYNC, OK);
+  socket_factory_.AddSSLSocketDataProvider(&ssl);
+  TestConnectJobDelegate test_delegate;
+
+  std::unique_ptr<ConnectJob> ssl_connect_job =
+      CreateConnectJob(&test_delegate, ProxyServer::SCHEME_DIRECT, MEDIUM);
+
+  EXPECT_THAT(ssl_connect_job->Connect(), test::IsError(ERR_IO_PENDING));
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the alias list only contains "host".
+  EXPECT_THAT(test_delegate.socket()->GetDnsAliases(),
+              testing::ElementsAre("host"));
 }
 
 }  // namespace

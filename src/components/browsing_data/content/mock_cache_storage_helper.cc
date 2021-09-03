@@ -15,9 +15,7 @@ namespace browsing_data {
 
 MockCacheStorageHelper::MockCacheStorageHelper(
     content::BrowserContext* browser_context)
-    : CacheStorageHelper(
-          content::BrowserContext::GetDefaultStoragePartition(browser_context)
-              ->GetCacheStorageContext()) {}
+    : CacheStorageHelper(browser_context->GetDefaultStoragePartition()) {}
 
 MockCacheStorageHelper::~MockCacheStorageHelper() {}
 

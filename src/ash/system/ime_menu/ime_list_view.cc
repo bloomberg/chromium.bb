@@ -18,12 +18,15 @@
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/tray/tray_toggle_button.h"
 #include "ash/system/tray/tri_view.h"
+#include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -46,15 +49,17 @@ const int kMinFontSizeDelta = -10;
 // an IME property. A checkmark icon is shown in the row if selected.
 class ImeListItemView : public ActionableView {
  public:
+  METADATA_HEADER(ImeListItemView);
+
   ImeListItemView(ImeListView* list_view,
-                  const base::string16& id,
-                  const base::string16& label,
+                  const std::u16string& id,
+                  const std::u16string& label,
                   bool selected,
                   const SkColor button_color)
       : ActionableView(TrayPopupInkDropStyle::FILL_BOUNDS),
         ime_list_view_(list_view),
         selected_(selected) {
-    SetInkDropMode(InkDropMode::ON);
+    ink_drop()->SetMode(views::InkDropHost::InkDropMode::ON);
 
     TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
     AddChildView(tri_view);
@@ -102,7 +107,8 @@ class ImeListItemView : public ActionableView {
     }
     SetAccessibleName(label_view->GetText());
   }
-
+  ImeListItemView(const ImeListItemView&) = delete;
+  ImeListItemView& operator=(const ImeListItemView&) = delete;
   ~ImeListItemView() override = default;
 
   // ActionableView:
@@ -130,9 +136,10 @@ class ImeListItemView : public ActionableView {
  private:
   ImeListView* ime_list_view_;
   bool selected_;
-
-  DISALLOW_COPY_AND_ASSIGN(ImeListItemView);
 };
+
+BEGIN_METADATA(ImeListItemView, ActionableView)
+END_METADATA
 
 }  // namespace
 
@@ -142,7 +149,11 @@ class ImeListItemView : public ActionableView {
 // attached and the user is in TabletMode mode.
 class KeyboardStatusRow : public views::View {
  public:
+  METADATA_HEADER(KeyboardStatusRow);
+
   KeyboardStatusRow() = default;
+  KeyboardStatusRow(const KeyboardStatusRow&) = delete;
+  KeyboardStatusRow& operator=(const KeyboardStatusRow&) = delete;
   ~KeyboardStatusRow() override = default;
 
   views::ToggleButton* toggle() const { return toggle_; }
@@ -174,22 +185,20 @@ class KeyboardStatusRow : public views::View {
     tri_view->AddView(TriView::Container::CENTER, label);
 
     // The on-screen keyboard toggle button.
-    toggle_ = TrayPopupUtils::CreateToggleButton(
+    toggle_ = new TrayToggleButton(
         std::move(callback),
         IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD);
     toggle_->SetIsOn(keyboard::IsKeyboardEnabled());
     tri_view->AddView(TriView::Container::END, toggle_);
   }
 
-  // views::View:
-  const char* GetClassName() const override { return "KeyboardStatusRow"; }
-
  private:
   // ToggleButton to toggle keyboard on or off.
   views::ToggleButton* toggle_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(KeyboardStatusRow);
 };
+
+BEGIN_METADATA(KeyboardStatusRow, views::View)
+END_METADATA
 
 ImeListView::ImeListView(DetailedViewDelegate* delegate)
     : TrayDetailedView(delegate) {}
@@ -278,7 +287,7 @@ void ImeListView::AppendImeListAndProperties(
       // Adds the property items.
       for (size_t i = 0; i < property_list.size(); i++) {
         ImeListItemView* property_view =
-            new ImeListItemView(this, base::string16(), property_list[i].label,
+            new ImeListItemView(this, std::u16string(), property_list[i].label,
                                 property_list[i].checked, icon_color);
         scroll_content()->AddChildView(property_view);
         property_map_[property_view] = property_list[i].key;
@@ -347,10 +356,6 @@ void ImeListView::VisibilityChanged(View* starting_from, bool is_visible) {
   ScrollItemToVisible(current_ime_view_);
 }
 
-const char* ImeListView::GetClassName() const {
-  return "ImeListView";
-}
-
 void ImeListView::FocusCurrentImeIfNeeded() {
   views::FocusManager* manager = GetFocusManager();
   if (!manager || manager->GetFocusedView() || last_selected_item_id_.empty())
@@ -371,12 +376,17 @@ void ImeListView::FocusCurrentImeIfNeeded() {
   }
 }
 
+BEGIN_METADATA(ImeListView, TrayDetailedView)
+END_METADATA
+
 ImeListViewTestApi::ImeListViewTestApi(ImeListView* ime_list_view)
     : ime_list_view_(ime_list_view) {}
 
 ImeListViewTestApi::~ImeListViewTestApi() = default;
 
 views::View* ImeListViewTestApi::GetToggleView() const {
+  if (!ime_list_view_->keyboard_status_row_)
+    return nullptr;
   return ime_list_view_->keyboard_status_row_->toggle();
 }
 

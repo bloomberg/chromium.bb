@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <tuple>
 
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -14,15 +15,14 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial_params.h"
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/version.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/component_updater/component_updater_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -54,10 +54,9 @@ const uint8_t kSmartDimPublicKeySHA256[32] = {
 
 const char kMLSmartDimManifestName[] = "Smart Dim";
 
-
 // Read files from the component to strings, should be called from a blocking
 // task runner.
-base::Optional<ComponentFileContents> ReadComponentFiles(
+absl::optional<ComponentFileContents> ReadComponentFiles(
     const base::FilePath& meta_json_path,
     const base::FilePath& preprocessor_pb_path,
     const base::FilePath& model_path) {
@@ -66,7 +65,7 @@ base::Optional<ComponentFileContents> ReadComponentFiles(
       !base::ReadFileToString(preprocessor_pb_path, &preprocessor_proto) ||
       !base::ReadFileToString(model_path, &model_flatbuffer)) {
     DLOG(ERROR) << "Failed reading component files.";
-    return base::nullopt;
+    return absl::nullopt;
   }
 
   return std::make_tuple(std::move(metadata_json),
@@ -75,8 +74,8 @@ base::Optional<ComponentFileContents> ReadComponentFiles(
 }
 
 void UpdateSmartDimMlAgent(
-    const base::Optional<ComponentFileContents>& result) {
-  if (result == base::nullopt) {
+    const absl::optional<ComponentFileContents>& result) {
+  if (result == absl::nullopt) {
     LogLoadComponentEvent(LoadComponentEvent::kReadComponentFilesError);
     return;
   }
@@ -186,15 +185,7 @@ SmartDimComponentInstallerPolicy::GetInstallerAttributes() const {
   return attrs;
 }
 
-std::vector<std::string> SmartDimComponentInstallerPolicy::GetMimeTypes()
-    const {
-  return std::vector<std::string>();
-}
-
 void RegisterSmartDimComponent(ComponentUpdateService* cus) {
-  if (!base::FeatureList::IsEnabled(chromeos::features::kSmartDimNewMlAgent))
-    return;
-
   DVLOG(1) << "Registering smart dim component.";
   const std::string expected_version = kVersion.Get();
 

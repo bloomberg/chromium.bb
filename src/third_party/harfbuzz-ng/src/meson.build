@@ -1,6 +1,6 @@
 project('harfbuzz', 'c', 'cpp',
   meson_version: '>= 0.47.0',
-  version: '2.7.2',
+  version: '2.8.1',
   default_options: [
     'cpp_eh=none',          # Just to support msvc, we are passing -fno-rtti also anyway
     'cpp_rtti=false',       # Just to support msvc, we are passing -fno-exceptions also anyway
@@ -95,8 +95,6 @@ glib_dep = dependency('glib-2.0', required: get_option('glib'),
                       fallback: ['glib', 'libglib_dep'])
 gobject_dep = dependency('gobject-2.0', required: get_option('gobject'),
                          fallback: ['glib', 'libgobject_dep'])
-fontconfig_dep = dependency('fontconfig', required: get_option('fontconfig'),
-                            fallback: ['fontconfig', 'fontconfig_dep'])
 graphite2_dep = dependency('graphite2', required: get_option('graphite'))
 
 icu_dep = null_dep
@@ -127,37 +125,36 @@ cairo_dep = null_dep
 cairo_ft_dep = null_dep
 if not get_option('cairo').disabled()
   cairo_dep = dependency('cairo', required: false)
+  cairo_ft_dep = dependency('cairo-ft', required: false)
 
   if (not cairo_dep.found() and
       cpp.get_id() == 'msvc' and
       cpp.has_header('cairo.h'))
     cairo_dep = cpp.find_library('cairo', required: false)
+    if cairo_dep.found() and cpp.has_function('cairo_ft_font_face_create_for_ft_face',
+                                              prefix: '#include <cairo-ft.h>',
+                                              dependencies: cairo_dep)
+      cairo_ft_dep = cairo_dep
+    endif
   endif
 
   if not cairo_dep.found()
-    # Note that we don't have harfbuzz -> cairo -> freetype2 -> harfbuzz fallback
-    # dependency cycle here because we have configured freetype2 above with
-    # harfbuzz support disabled, so when cairo will lookup freetype2 dependency
-    # it will be forced to use that one.
-    cairo_dep = dependency('cairo', fallback: ['cairo', 'libcairo_dep'],
-                           required: get_option('cairo'))
-  endif
-
-  # Ensure that cairo-ft is fetched from the same library as cairo itself
-  if cairo_dep.found()
-    if cairo_dep.type_name() == 'internal'
-      # It is true at least for the port we have
-      cairo_ft_dep = cairo_dep
-    elif (cairo_dep.type_name() == 'library' and
-          cpp.has_function('cairo_ft_font_face_create_for_ft_face',
-                           prefix: '#include <cairo-ft.h>',
-                           dependencies: cairo_dep))
-      cairo_ft_dep = cairo_dep
-    else # including the most important type for us, 'pkgconfig'
-      cairo_ft_dep = dependency('cairo-ft', required: get_option('cairo'))
+    # Requires Meson 0.54.0 to use cairo subproject
+    if meson.version().version_compare('>=0.54.0')
+      # Note that we don't have harfbuzz -> cairo -> freetype2 -> harfbuzz fallback
+      # dependency cycle here because we have configured freetype2 above with
+      # harfbuzz support disabled, so when cairo will lookup freetype2 dependency
+      # it will be forced to use that one.
+      cairo_dep = dependency('cairo', fallback: 'cairo', required: get_option('cairo'))
+      cairo_ft_dep = dependency('cairo-ft', fallback: 'cairo', required: get_option('cairo'))
+    elif get_option('cairo').enabled()
+      error('cairo feature is enabled but it cannot be found on the system and ' +
+            'meson>=0.54.0 is required to build it as subproject')
     endif
   endif
 endif
+
+chafa_dep = dependency('chafa', version: '>= 1.6.0', required: get_option('chafa'))
 
 conf = configuration_data()
 incconfig = include_directories('.')
@@ -184,6 +181,10 @@ endif
 
 if cairo_ft_dep.found()
   conf.set('HAVE_CAIRO_FT', 1)
+endif
+
+if chafa_dep.found()
+  conf.set('HAVE_CHAFA', 1)
 endif
 
 if graphite2_dep.found()
@@ -218,10 +219,6 @@ if freetype_dep.found()
   else
     check_funcs += check_freetype_funcs
   endif
-endif
-
-if fontconfig_dep.found()
-  conf.set('HAVE_FONTCONFIG', 1)
 endif
 
 gdi_uniscribe_deps = []
@@ -288,9 +285,6 @@ if host_machine.system() != 'windows'
 
   if thread_dep.found()
     conf.set('HAVE_PTHREAD', 1)
-  else
-    check_headers += ['sched.h']
-    check_funcs += ['sched_yield', {'link_with': 'rt'}]
   endif
 endif
 
@@ -340,14 +334,6 @@ foreach check : check_funcs
   endif
 endforeach
 
-if cpp.links(files('meson-cc-tests/intel-atomic-primitives-test.c'), name: 'Intel atomics')
-  conf.set('HAVE_INTEL_ATOMIC_PRIMITIVES', 1)
-endif
-
-if cpp.links(files('meson-cc-tests/solaris-atomic-operations.c'), name: 'Solaris atomic ops')
-  conf.set('HAVE_SOLARIS_ATOMIC_OPS', 1)
-endif
-
 subdir('src')
 subdir('util')
 
@@ -355,16 +341,8 @@ if not get_option('tests').disabled()
   subdir('test')
 endif
 
-# get_option('wrap_mode') isn't available in <0.49 and this
-# is just an internal tool
-if meson.version().version_compare('>=0.49')
-  if (not get_option('benchmark').disabled() and
-      get_option('wrap_mode') != 'nodownload' and
-      host_machine.system() != 'windows' and
-      not meson.is_subproject() and
-      not meson.is_cross_build())
-    subdir('perf')
-  endif
+if not get_option('benchmark').disabled()
+  subdir('perf')
 endif
 
 if not get_option('docs').disabled()
@@ -391,7 +369,7 @@ build_summary = {
     },
   'Dependencies used for command-line utilities':
     {'Cairo': conf.get('HAVE_CAIRO', 0) == 1,
-     'Fontconfig': conf.get('HAVE_FONTCONFIG', 0) == 1,
+     'Chafa': conf.get('HAVE_CHAFA', 0) == 1,
     },
   'Additional shapers':
     {'Graphite2': conf.get('HAVE_GRAPHITE2', 0) == 1,
@@ -405,6 +383,11 @@ build_summary = {
     {'Documentation': conf.get('HAVE_GTK_DOC', 0) == 1,
      'GObject bindings': conf.get('HAVE_GOBJECT', 0) == 1,
      'Introspection': conf.get('HAVE_INTROSPECTION', 0) == 1,
+     'Experimental APIs': conf.get('HB_EXPERIMENTAL_API', 0) == 1,
+    },
+  'Testing':
+    {'Tests': get_option('tests').enabled(),
+     'Benchmark': get_option('benchmark').enabled(),
     },
 }
 if meson.version().version_compare('>=0.53')

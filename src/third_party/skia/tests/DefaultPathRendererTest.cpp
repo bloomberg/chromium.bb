@@ -27,9 +27,8 @@
 #include "src/gpu/GrFragmentProcessor.h"
 #include "src/gpu/GrImageInfo.h"
 #include "src/gpu/GrPaint.h"
-#include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrStyle.h"
-#include "src/gpu/effects/generated/GrConstColorProcessor.h"
+#include "src/gpu/GrSurfaceDrawContext.h"
 #include "tests/Test.h"
 #include "tools/gpu/GrContextFactory.h"
 
@@ -39,7 +38,7 @@ static void only_allow_default(GrContextOptions* options) {
     options->fGpuPathRenderers = GpuPathRenderers::kNone;
 }
 
-static SkBitmap read_back(GrDirectContext* dContext, GrRenderTargetContext* rtc,
+static SkBitmap read_back(GrDirectContext* dContext, GrSurfaceDrawContext* rtc,
                           int width, int height) {
 
     SkImageInfo dstII = SkImageInfo::MakeN32Premul(width, height);
@@ -47,7 +46,7 @@ static SkBitmap read_back(GrDirectContext* dContext, GrRenderTargetContext* rtc,
     SkBitmap bm;
     bm.allocPixels(dstII);
 
-    rtc->readPixels(dContext, dstII, bm.getAddr(0, 0), bm.rowBytes(), {0, 0});
+    rtc->readPixels(dContext, bm.pixmap(), {0, 0});
 
     return bm;
 }
@@ -84,34 +83,34 @@ static void run_test(GrDirectContext* dContext, skiatest::Reporter* reporter) {
     GrStyle style(SkStrokeRec::kFill_InitStyle);
 
     {
-        auto rtc = GrRenderTargetContext::Make(
-            dContext, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kApprox,
-            {kBigSize/2 + 1, kBigSize/2 + 1});
+        auto rtc = GrSurfaceDrawContext::Make(dContext, GrColorType::kRGBA_8888, nullptr,
+                                              SkBackingFit::kApprox,
+                                              {kBigSize/2 + 1, kBigSize/2 + 1}, SkSurfaceProps());
 
         rtc->clear(SK_PMColor4fBLACK);
 
         GrPaint paint;
 
         const SkPMColor4f color = { 1.0f, 0.0f, 0.0f, 1.0f };
-        auto fp = GrConstColorProcessor::Make(color);
+        auto fp = GrFragmentProcessor::MakeColor(color);
         paint.setColorFragmentProcessor(std::move(fp));
 
-        rtc->drawPath(nullptr, std::move(paint), GrAA::kNo,
-                      SkMatrix::I(), invPath, style);
+        rtc->drawPath(nullptr, std::move(paint), GrAA::kNo, SkMatrix::I(), invPath, style);
 
-        rtc->flush(SkSurface::BackendSurfaceAccess::kNoAccess, GrFlushInfo(), nullptr);
+        dContext->priv().flushSurface(rtc->asSurfaceProxy());
     }
 
     {
-        auto rtc = GrRenderTargetContext::Make(
-            dContext, GrColorType::kRGBA_8888, nullptr, SkBackingFit::kExact, {kBigSize, kBigSize});
+        auto rtc = GrSurfaceDrawContext::Make(dContext, GrColorType::kRGBA_8888, nullptr,
+                                              SkBackingFit::kExact, {kBigSize, kBigSize},
+                                              SkSurfaceProps());
 
         rtc->clear(SK_PMColor4fBLACK);
 
         GrPaint paint;
 
         const SkPMColor4f color = { 0.0f, 1.0f, 0.0f, 1.0f };
-        auto fp = GrConstColorProcessor::Make(color);
+        auto fp = GrFragmentProcessor::MakeColor(color);
         paint.setColorFragmentProcessor(std::move(fp));
 
         rtc->drawPath(nullptr, std::move(paint), GrAA::kNo,

@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">内置显示屏</translation>
 <translation id="335581015389089642">语音</translation>
 <translation id="3389286852084373014">文本过长</translation>
+<translation id="3406306243914553062">HTML 内容</translation>
 <translation id="348799646910989694">任务栏已自动隐藏</translation>
 <translation id="3554637740840164787">“<ph name="ITEM_TITLE" />”已被固定</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{还剩 1 天}other{还剩 # 天}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">卡号</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />。<ph name="TYPE_2" />。</translation>
 <translation id="3842239759367498783">继续在移动设备“<ph name="TITLE" />”上阅读</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3889424535448813030">向右箭头</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 个月前}other{# 个月前}}</translation>
 <translation id="4289300219472526559">开始讲话</translation>
 <translation id="430191667033048642">“<ph name="MOVED_APP_NAME" />”已移至文件夹“<ph name="FOLDER_NAME" />”</translation>
+<translation id="4306392492252714209">从剪贴板中移除。</translation>
 <translation id="4316910396681052118">所有应用</translation>
 <translation id="4491109536499578614">图片</translation>
 <translation id="4588090240171750605">向右滚动</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">要将这项搜索从您的历史记录中删除吗？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">表情符号</translation>
+<translation id="7620655452534002301">已移除。</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="7814458197256864873">复制(&amp;C)</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{1 小时前}other{# 小时前}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{还剩 1 秒}other{还剩 # 秒}}</translation>
 <translation id="8134065097954893699">重新加载此页</translation>
-<translation id="8144660977431427332">您的搜索由 Google 助理提供支持。<ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />，自动填充</translation>
 <translation id="815598010540052116">向下滚动</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">向下翻页</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Tab</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />，应用</translation>
 <translation id="8259556432390118667">十六进制颜色值</translation>

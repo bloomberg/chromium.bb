@@ -19,7 +19,7 @@ typedef const void*  GrMTLHandle;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef SK_METAL
+#ifdef __APPLE__
 
 #include <TargetConditionals.h>
 
@@ -37,12 +37,13 @@ struct GrMtlTextureInfo {
 public:
     GrMtlTextureInfo() {}
 
-    sk_cf_obj<const void*> fTexture;
+    sk_cfp<GrMTLHandle> fTexture;
 
     bool operator==(const GrMtlTextureInfo& that) const {
         return fTexture == that.fTexture;
     }
 };
+
 #endif
 
 #endif

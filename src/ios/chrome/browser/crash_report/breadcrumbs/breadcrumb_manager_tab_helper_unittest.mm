@@ -5,11 +5,12 @@
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
 
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
+#include "components/breadcrumbs/core/breadcrumb_manager_keyed_service.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -19,8 +20,8 @@
 #include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/test/error_test_util.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
-#import "ios/web/public/test/fakes/test_navigation_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_navigation_manager.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,16 +46,17 @@ class BreadcrumbManagerTabHelperTest : public PlatformTest {
     first_web_state_.SetBrowserState(chrome_browser_state_.get());
     second_web_state_.SetBrowserState(chrome_browser_state_.get());
 
-    breadcrumb_service_ = static_cast<BreadcrumbManagerKeyedService*>(
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-            chrome_browser_state_.get()));
+    breadcrumb_service_ =
+        static_cast<breadcrumbs::BreadcrumbManagerKeyedService*>(
+            BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+                chrome_browser_state_.get()));
 
     // Navigation manager is needed for InfobarManager.
     first_web_state_.SetNavigationManager(
-        std::make_unique<web::TestNavigationManager>());
+        std::make_unique<web::FakeNavigationManager>());
     InfoBarManagerImpl::CreateForWebState(&first_web_state_);
     second_web_state_.SetNavigationManager(
-        std::make_unique<web::TestNavigationManager>());
+        std::make_unique<web::FakeNavigationManager>());
     InfoBarManagerImpl::CreateForWebState(&second_web_state_);
 
     CRWWebViewScrollViewProxy* scroll_view_proxy =
@@ -70,9 +72,9 @@ class BreadcrumbManagerTabHelperTest : public PlatformTest {
 
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  web::TestWebState first_web_state_;
-  web::TestWebState second_web_state_;
-  BreadcrumbManagerKeyedService* breadcrumb_service_;
+  web::FakeWebState first_web_state_;
+  web::FakeWebState second_web_state_;
+  breadcrumbs::BreadcrumbManagerKeyedService* breadcrumb_service_;
   UIScrollView* scroll_view_ = nil;
 };
 
@@ -418,8 +420,8 @@ TEST_F(BreadcrumbManagerTabHelperTest, NavigationError) {
 
 // Tests changes in security states.
 TEST_F(BreadcrumbManagerTabHelperTest, DidChangeVisibleSecurityState) {
-  auto navigation_manager = std::make_unique<web::TestNavigationManager>();
-  web::TestNavigationManager* navigation_manager_ptr = navigation_manager.get();
+  auto navigation_manager = std::make_unique<web::FakeNavigationManager>();
+  web::FakeNavigationManager* navigation_manager_ptr = navigation_manager.get();
   first_web_state_.SetNavigationManager(std::move(navigation_manager));
   ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
 

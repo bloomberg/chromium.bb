@@ -5,12 +5,14 @@
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
 
 #include <map>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/grit/browser_resources.h"
@@ -59,7 +61,7 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate {
   ~TabProxyDelegate() override {}
 
   void Attach(content::DevToolsExternalAgentProxy* proxy) override {
-    proxies_[proxy].reset(new ClientProxy(proxy));
+    proxies_[proxy] = std::make_unique<ClientProxy>(proxy);
     MaterializeAgentHost();
     if (agent_host_)
       agent_host_->AttachClient(proxies_[proxy].get());
@@ -152,9 +154,7 @@ class TabProxyDelegate : public content::DevToolsExternalAgentProxyDelegate {
   }
 
   bool FindTab(TabModel** model_result, int* index_result) const {
-    for (TabModelList::const_iterator iter = TabModelList::begin();
-        iter != TabModelList::end(); ++iter) {
-      TabModel* model = *iter;
+    for (TabModel* model : TabModelList::models()) {
       for (int i = 0; i < model->GetTabCount(); ++i) {
         TabAndroid* tab = model->GetTabAt(i);
         if (tab && tab->GetAndroidId() == tab_id_) {
@@ -193,6 +193,11 @@ DevToolsManagerDelegateAndroid::DevToolsManagerDelegateAndroid() = default;
 
 DevToolsManagerDelegateAndroid::~DevToolsManagerDelegateAndroid() = default;
 
+content::BrowserContext*
+DevToolsManagerDelegateAndroid::GetDefaultBrowserContext() {
+  return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
+}
+
 std::string DevToolsManagerDelegateAndroid::GetTargetType(
     content::WebContents* web_contents) {
   TabAndroid* tab = web_contents ? TabAndroid::FromWebContents(web_contents)
@@ -206,9 +211,7 @@ DevToolsManagerDelegateAndroid::RemoteDebuggingTargets() {
   // Enumerate existing tabs, including the ones with no WebContents.
   DevToolsAgentHost::List result;
   std::set<WebContents*> tab_web_contents;
-  for (TabModelList::const_iterator iter = TabModelList::begin();
-      iter != TabModelList::end(); ++iter) {
-    TabModel* model = *iter;
+  for (const TabModel* model : TabModelList::models()) {
     for (int i = 0; i < model->GetTabCount(); ++i) {
       TabAndroid* tab = model->GetTabAt(i);
       if (!tab)
@@ -236,10 +239,10 @@ DevToolsManagerDelegateAndroid::RemoteDebuggingTargets() {
 
 scoped_refptr<DevToolsAgentHost>
 DevToolsManagerDelegateAndroid::CreateNewTarget(const GURL& url) {
-  if (TabModelList::empty())
+  if (TabModelList::models().empty())
     return nullptr;
 
-  TabModel* tab_model = TabModelList::get(0);
+  TabModel* tab_model = TabModelList::models()[0];
   if (!tab_model)
     return nullptr;
 

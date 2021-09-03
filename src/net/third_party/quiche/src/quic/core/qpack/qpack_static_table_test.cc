@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/qpack/qpack_static_table.h"
+#include "quic/core/qpack/qpack_static_table.h"
 
 #include <set>
 
 #include "absl/base/macros.h"
 #include "absl/strings/string_view.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
+#include "quic/platform/api/quic_test.h"
 
 namespace quic {
 
@@ -25,16 +25,17 @@ TEST(QpackStaticTableTest, Initialize) {
                    QpackStaticTableVector().size());
   EXPECT_TRUE(table.IsInitialized());
 
-  auto static_entries = table.GetStaticEntries();
+  const auto& static_entries = table.GetStaticEntries();
   EXPECT_EQ(QpackStaticTableVector().size(), static_entries.size());
 
-  auto static_index = table.GetStaticIndex();
+  const auto& static_index = table.GetStaticIndex();
   EXPECT_EQ(QpackStaticTableVector().size(), static_index.size());
 
-  auto static_name_index = table.GetStaticNameIndex();
+  const auto& static_name_index = table.GetStaticNameIndex();
+  // Count distinct names in static table.
   std::set<absl::string_view> names;
-  for (auto entry : static_index) {
-    names.insert(entry->name());
+  for (const auto& entry : static_entries) {
+    names.insert(entry.name());
   }
   EXPECT_EQ(names.size(), static_name_index.size());
 }

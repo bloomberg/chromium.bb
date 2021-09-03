@@ -25,7 +25,7 @@ namespace skiagm {
 constexpr SkRect kSrcImageClip{75, 75, 275, 275};
 
 /*
- * The purpose of this test is to exercise all three codepaths in GrRenderTargetContext
+ * The purpose of this test is to exercise all three codepaths in GrSurfaceDrawContext
  * (drawFilledRect, fillRectToRect, fillRectWithLocalMatrix) that pre-crop filled rects based on the
  * clip.
  *
@@ -56,38 +56,36 @@ private:
         srcCanvas->drawRect(kSrcImageClip.makeInset(kStrokeWidth / 2, kStrokeWidth / 2), stroke);
 
         fSrcImage = srcSurface->makeImageSnapshot();
-        fSrcImageShader = fSrcImage->makeShader();
+        fSrcImageShader = fSrcImage->makeShader(SkSamplingOptions());
     }
 
     void onDraw(SkCanvas* canvas) override {
         canvas->clear(SK_ColorWHITE);
 
         {
-            // GrRenderTargetContext::drawFilledRect.
+            // GrSurfaceDrawContext::drawFilledRect.
             SkAutoCanvasRestore acr(canvas, true);
             SkPaint paint;
             paint.setShader(fSrcImageShader);
-            paint.setFilterQuality(kNone_SkFilterQuality);
             canvas->clipRect(kSrcImageClip);
             canvas->drawPaint(paint);
         }
 
         {
-            // GrRenderTargetContext::fillRectToRect.
+            // GrSurfaceDrawContext::fillRectToRect.
             SkAutoCanvasRestore acr(canvas, true);
-            SkPaint paint;
-            paint.setFilterQuality(kNone_SkFilterQuality);
             SkRect drawRect = SkRect::MakeXYWH(350, 100, 100, 300);
             canvas->clipRect(drawRect);
             canvas->drawImageRect(fSrcImage.get(),
                                   kSrcImageClip.makeOutset(0.5f * kSrcImageClip.width(),
                                                            kSrcImageClip.height()),
                                   drawRect.makeOutset(0.5f * drawRect.width(), drawRect.height()),
-                                  &paint);
+                                  SkSamplingOptions(), nullptr,
+                                  SkCanvas::kStrict_SrcRectConstraint);
         }
 
         {
-            // GrRenderTargetContext::fillRectWithLocalMatrix.
+            // GrSurfaceDrawContext::fillRectWithLocalMatrix.
             SkAutoCanvasRestore acr(canvas, true);
             SkPath path = SkPath::Line(
                    {kSrcImageClip.fLeft - kSrcImageClip.width(), kSrcImageClip.centerY()},
@@ -96,7 +94,6 @@ private:
             paint.setStyle(SkPaint::kStroke_Style);
             paint.setStrokeWidth(2 * kSrcImageClip.height());
             paint.setShader(fSrcImageShader);
-            paint.setFilterQuality(kNone_SkFilterQuality);
             canvas->translate(23, 301);
             canvas->scale(300 / kSrcImageClip.width(), 100 / kSrcImageClip.height());
             canvas->translate(-kSrcImageClip.left(), -kSrcImageClip.top());

@@ -7,25 +7,20 @@
 build
 buildtools
 testing
-third_party/SPIRV-Tools/
-third_party/binutils/
+third_party/angle/
 third_party/clang-format/
 third_party/glfw/
 third_party/glm/
-third_party/glslang/
 third_party/googletest/
 third_party/jinja2/
 third_party/jsoncpp/
 third_party/llvm-build
 third_party/markupsafe/
-third_party/shaderc/
 third_party/swiftshader/
-third_party/spirv-cross/
-third_party/spirv-headers/
 third_party/tint/
-third_party/vulkan-headers/
-third_party/vulkan-loader/
-third_party/vulkan-validation-layers/
+third_party/vulkan-deps/
+third_party/vulkan_memory_allocator/
+third_party/zlib/
 tools
 out
 
@@ -83,12 +78,12 @@ Session.vim
 .netrwhist
 tags
 
+### VisualStudio ###
+.vs/*
+
 ### VisualStudioCode ###
 .vscode/*
-!.vscode/settings.json
 !.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
 
 ### Windows ###
 Thumbs.db

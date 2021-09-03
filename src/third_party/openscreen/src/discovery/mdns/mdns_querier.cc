@@ -5,6 +5,7 @@
 #include "discovery/mdns/mdns_querier.h"
 
 #include <algorithm>
+#include <array>
 #include <bitset>
 #include <memory>
 #include <unordered_set>
@@ -22,7 +23,7 @@ namespace openscreen {
 namespace discovery {
 namespace {
 
-const std::vector<DnsType> kTranslatedNsecAnyQueryTypes = {
+constexpr std::array<DnsType, 5> kTranslatedNsecAnyQueryTypes = {
     DnsType::kA, DnsType::kPTR, DnsType::kTXT, DnsType::kAAAA, DnsType::kSRV};
 
 bool IsNegativeResponseFor(const MdnsRecord& record, DnsType type) {
@@ -643,21 +644,27 @@ void MdnsQuerier::ProcessRecord(const MdnsRecord& record) {
   // NSEC records this will be all records which the record dictates the
   // nonexistence of.
   std::vector<DnsType> types;
-  const std::vector<DnsType>* types_ptr = &types;
+  int types_count = 0;
+  const DnsType* types_ptr = nullptr;
   if (record.dns_type() == DnsType::kNSEC) {
     const auto& nsec_rdata = absl::get<NsecRecordRdata>(record.rdata());
     if (std::find(nsec_rdata.types().begin(), nsec_rdata.types().end(),
                   DnsType::kANY) != nsec_rdata.types().end()) {
-      types_ptr = &kTranslatedNsecAnyQueryTypes;
+      types_ptr = kTranslatedNsecAnyQueryTypes.data();
+      types_count = kTranslatedNsecAnyQueryTypes.size();
     } else {
-      types_ptr = &nsec_rdata.types();
+      types_ptr = nsec_rdata.types().data();
+      types_count = nsec_rdata.types().size();
     }
   } else {
     types.push_back(record.dns_type());
+    types_ptr = types.data();
+    types_count = types.size();
   }
 
   // Apply the update for each type that the record is associated with.
-  for (DnsType dns_type : *types_ptr) {
+  for (int i = 0; i < types_count; ++i) {
+    DnsType dns_type = types_ptr[i];
     switch (record.record_type()) {
       case RecordType::kShared: {
         ProcessSharedRecord(record, dns_type);

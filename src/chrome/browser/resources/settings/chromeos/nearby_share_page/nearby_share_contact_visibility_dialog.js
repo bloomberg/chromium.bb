@@ -19,10 +19,18 @@ Polymer({
   },
 
   /** @private */
-  onDoneClick_() {
+  onSaveClick_() {
+    const contactVisibility = /** @type {NearbyContactVisibilityElement} */
+        (this.$.contactVisibility);
+    contactVisibility.saveVisibilityAndAllowedContacts();
     const dialog = /** @type {!CrDialogElement} */ (this.$.dialog);
     if (dialog.open) {
       dialog.close();
     }
   },
+
+  /** @private */
+  onManageContactsClick_() {
+    window.open(loadTimeData.getString('nearbyShareManageContactsUrl'));
+  }
 });

@@ -8,8 +8,8 @@
 #include "chromeos/services/ime/public/cpp/shared_lib/interfaces.h"
 
 #include "base/no_destructor.h"
-#include "base/optional.h"
 #include "base/scoped_native_library.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace ime {
@@ -31,14 +31,14 @@ class ImeDecoder {
   // This contains the function pointers to the entry points for the loaded
   // decoder shared library.
   struct EntryPoints {
-    ImeDecoderInitOnceFn initOnce;
-    ImeDecoderSupportsFn support;
-    ImeDecoderActivateImeFn activateIme;
+    ImeDecoderInitOnceFn init_once;
+    ImeDecoderSupportsFn supports;
+    ImeDecoderActivateImeFn activate_ime;
     ImeDecoderProcessFn process;
-    ImeDecoderCloseFn closeDecoder;
+    ImeDecoderCloseFn close;
 
     // Whether the EntryPoints is ready to use.
-    bool isReady;
+    bool is_ready = false;
   };
 
   // Gets the singleton ImeDecoder.
@@ -47,10 +47,6 @@ class ImeDecoder {
   // Get status of the IME decoder library initialization.
   // Return `Status::kSuccess` if the lib is successfully initialized.
   Status GetStatus() const;
-
-  // Returns an instance of ImeEngineMainEntry from the IME shared library.
-  // TODO(b/172527471): Remove it when decoder DSO is uprevved.
-  ImeEngineMainEntry* CreateMainEntry(ImeCrosPlatform* platform);
 
   // Returns entry points of the loaded decoder shared library.
   EntryPoints GetEntryPoints();
@@ -65,11 +61,7 @@ class ImeDecoder {
   Status status_;
 
   // Result of IME decoder DSO initialization.
-  base::Optional<base::ScopedNativeLibrary> library_;
-
-  // Function pointors from decoder DSO.
-  // TODO(b/172527471): Remove it when decoder DSO is uprevved.
-  ImeMainEntryCreateFn createMainEntry_;
+  absl::optional<base::ScopedNativeLibrary> library_;
 
   EntryPoints entry_points_;
 

@@ -73,7 +73,7 @@ class AppServiceProxyTest : public testing::Test {
                                            base::Unretained(this)));
   }
 
-  void OverrideAppServiceProxyInnerIconLoader(apps::AppServiceProxy* proxy,
+  void OverrideAppServiceProxyInnerIconLoader(apps::AppServiceProxyBase* proxy,
                                               apps::IconLoader* icon_loader) {
     proxy->OverrideInnerIconLoaderForTesting(icon_loader);
   }
@@ -96,7 +96,11 @@ TEST_F(AppServiceProxyTest, IconCache) {
   // This tests an AppServiceProxy as a 'black box', which uses an
   // IconCache but also other IconLoader filters, such as an IconCoalescer.
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  apps::AppServiceProxyChromeOs proxy(nullptr);
+#else
   apps::AppServiceProxy proxy(nullptr);
+#endif
   FakeIconLoader fake;
   OverrideAppServiceProxyInnerIconLoader(&proxy, &fake);
 
@@ -142,7 +146,12 @@ TEST_F(AppServiceProxyTest, IconCoalescer) {
   // This tests an AppServiceProxy as a 'black box', which uses an
   // IconCoalescer but also other IconLoader filters, such as an IconCache.
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  apps::AppServiceProxyChromeOs proxy(nullptr);
+#else
   apps::AppServiceProxy proxy(nullptr);
+#endif
+
   FakeIconLoader fake;
   OverrideAppServiceProxyInnerIconLoader(&proxy, &fake);
 
@@ -188,63 +197,54 @@ TEST_F(AppServiceProxyTest, IconCoalescer) {
   EXPECT_EQ(6, NumOuterFinishedCallbacks());
 }
 
-TEST_F(AppServiceProxyTest, ProxyAccessPerProfile) {
+class GuestAppServiceProxyTest : public AppServiceProxyTest,
+                                 public ::testing::WithParamInterface<bool> {
+ public:
+  GuestAppServiceProxyTest() {
+    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+        scoped_feature_list_, GetParam());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_P(GuestAppServiceProxyTest, ProxyAccessPerProfile) {
   TestingProfile::Builder profile_builder;
 
   // We expect an App Service in a regular profile.
   auto profile = profile_builder.Build();
+  EXPECT_TRUE(apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+      profile.get()));
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile.get());
   EXPECT_TRUE(proxy);
 
-  // We expect the same App Service in the incognito profile branched from that
-  // regular profile.
+  // We expect App Service to be unsupported in incognito.
+  TestingProfile::Builder incognito_builder;
+  auto* incognito_profile = incognito_builder.BuildIncognito(profile.get());
+  EXPECT_FALSE(apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+      incognito_profile));
+
+  // But if it's accidentally called, we expect the same App Service in the
+  // incognito profile branched from that regular profile.
   // TODO(https://crbug.com/1122463): this should be nullptr once we address all
   // incognito access to the App Service.
-  TestingProfile::Builder incognito_builder;
-  auto* incognito_proxy = apps::AppServiceProxyFactory::GetForProfile(
-      incognito_builder.BuildIncognito(profile.get()));
+  auto* incognito_proxy =
+      apps::AppServiceProxyFactory::GetForProfile(incognito_profile);
   EXPECT_EQ(proxy, incognito_proxy);
 
   // We expect a different App Service in the Guest Session profile.
   TestingProfile::Builder guest_builder;
   guest_builder.SetGuestSession();
   auto guest_profile = guest_builder.Build();
+  EXPECT_TRUE(apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(
+      guest_profile.get()));
   auto* guest_proxy =
       apps::AppServiceProxyFactory::GetForProfile(guest_profile.get());
   EXPECT_TRUE(guest_proxy);
   EXPECT_NE(guest_proxy, proxy);
 }
 
-TEST_F(AppServiceProxyTest, RedirectInIncognitoProxyAccessPerProfile) {
-  TestingProfile::Builder profile_builder;
-
-  // We expect an App Service in a regular profile.
-  auto profile = profile_builder.Build();
-  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile.get());
-  EXPECT_TRUE(proxy);
-
-  // We get the same App Service using GetForProfileRedirectInIncognito.
-  auto* redirected_proxy =
-      apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(
-          profile.get());
-  EXPECT_EQ(proxy, redirected_proxy);
-
-  // We expect the same App Service in the incognito profile branched from that
-  // regular profile.
-  TestingProfile::Builder incognito_builder;
-  auto* incognito_proxy =
-      apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(
-          incognito_builder.BuildIncognito(profile.get()));
-  EXPECT_EQ(proxy, incognito_proxy);
-
-  // We expect a different (but still valid) App Service in the Guest Session
-  // profile.
-  TestingProfile::Builder guest_builder;
-  guest_builder.SetGuestSession();
-  auto guest_profile = guest_builder.Build();
-  auto* guest_proxy =
-      apps::AppServiceProxyFactory::GetForProfileRedirectInIncognito(
-          guest_profile.get());
-  EXPECT_TRUE(guest_proxy);
-  EXPECT_NE(guest_proxy, proxy);
-}
+INSTANTIATE_TEST_SUITE_P(AllGuestTypes,
+                         GuestAppServiceProxyTest,
+                         /*is_ephemeral=*/testing::Bool());

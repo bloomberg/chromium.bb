@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 #
 # Copyright 2017 The ANGLE Project Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -40,15 +40,25 @@ def rebase_script_path(script_path, relative_path):
 
 # Check if we need a module from vpython
 def get_executable_name(first_line):
-    if 'vpython' in first_line:
-        return 'vpython.bat' if platform.system() == 'Windows' else 'vpython'
-    return 'python'
+    binary = os.path.basename(first_line.strip().replace(' ', '/'))
+    if platform.system() == 'Windows':
+        if binary == 'python2':
+            return 'python.bat'
+        else:
+            return binary + '.bat'
+    else:
+        return binary
 
 
 def grab_from_script(script, param):
     res = ''
-    f = open(os.path.basename(script), "r")
-    res = subprocess.check_output([get_executable_name(f.readline()), script, param]).strip()
+    f = open(os.path.basename(script), 'r')
+    exe = get_executable_name(f.readline())
+    try:
+        res = subprocess.check_output([exe, script, param]).decode().strip()
+    except Exception:
+        print('Error grabbing script output: %s, executable %s' % (script, exe))
+        raise
     f.close()
     if res == '':
         return []
@@ -115,24 +125,28 @@ generators = {
         'scripts/gen_proc_table.py',
     'restricted traces':
         'src/tests/restricted_traces/gen_restricted_traces.py',
+    'SPIR-V helpers':
+        'src/common/spirv/gen_spirv_builder_and_parser.py',
     'Static builtins':
         'src/compiler/translator/gen_builtin_symbols.py',
+    'Test spec JSON':
+        'infra/specs/generate_test_spec_json.py',
     'uniform type':
         'src/common/gen_uniform_type_table.py',
     'Vulkan format':
         'src/libANGLE/renderer/vulkan/gen_vk_format_table.py',
-    'Vulkan mandatory format support table':
-        'src/libANGLE/renderer/vulkan/gen_vk_mandatory_format_support_table.py',
     'Vulkan internal shader programs':
         'src/libANGLE/renderer/vulkan/gen_vk_internal_shaders.py',
+    'Vulkan mandatory format support table':
+        'src/libANGLE/renderer/vulkan/gen_vk_mandatory_format_support_table.py',
 }
 
 
 def md5(fname):
     hash_md5 = hashlib.md5()
     with open(fname, "r") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
+        for chunk in iter(lambda: f.read(4096), ""):
+            hash_md5.update(chunk.encode())
     return hash_md5.hexdigest()
 
 
@@ -157,12 +171,12 @@ def any_hash_dirty(name, filenames, new_hashes, old_hashes):
 
 def any_old_hash_missing(all_new_hashes, all_old_hashes):
     result = False
-    for file, old_hashes in all_old_hashes.iteritems():
+    for file, old_hashes in all_old_hashes.items():
         if file not in all_new_hashes:
             print('"%s" does not exist. Code gen dirty.' % file)
             result = True
         else:
-            for name, _ in old_hashes.iteritems():
+            for name, _ in old_hashes.items():
                 if name not in all_new_hashes[file]:
                     print('Hash for %s is missing from "%s". Code gen is dirty.' % (name, file))
                     result = True
@@ -182,7 +196,10 @@ def load_hashes():
     for file in os.listdir(hash_dir):
         hash_fname = os.path.join(hash_dir, file)
         with open(hash_fname) as hash_file:
-            hashes[file] = json.load(open(hash_fname))
+            try:
+                hashes[file] = json.load(hash_file)
+            except ValueError:
+                raise Exception("Could not decode JSON from %s" % file)
     return hashes
 
 
@@ -197,7 +214,7 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == '--verify-no-dirty':
         verify_only = True
 
-    for name, script in sorted(generators.iteritems()):
+    for name, script in sorted(generators.items()):
         info = auto_script(script)
         fname = get_hash_file_name(name)
         filenames = info['inputs'] + info['outputs'] + [script]
@@ -208,10 +225,10 @@ def main():
             any_dirty = True
 
             if not verify_only:
+                print('Running ' + name + ' code generator')
+
                 # Set the CWD to the script directory.
                 os.chdir(get_child_script_dirname(script))
-
-                print('Running ' + name + ' code generator')
 
                 f = open(os.path.basename(script), "r")
                 if subprocess.call([get_executable_name(f.readline()),
@@ -236,14 +253,14 @@ def main():
             sys.exit(1)
 
         # Update the output hashes again since they can be formatted.
-        for name, script in sorted(generators.iteritems()):
+        for name, script in sorted(generators.items()):
             info = auto_script(script)
             fname = get_hash_file_name(name)
             update_output_hashes(name, info['outputs'], all_new_hashes[fname])
 
         os.chdir(script_dir)
 
-        for fname, new_hashes in all_new_hashes.iteritems():
+        for fname, new_hashes in all_new_hashes.items():
             hash_fname = os.path.join(hash_dir, fname)
             json.dump(
                 new_hashes,

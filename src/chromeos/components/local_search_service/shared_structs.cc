@@ -6,18 +6,18 @@
 
 #include <utility>
 
-#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chromeos/components/local_search_service/linear_map_search.h"
 #include "chromeos/components/string_matching/fuzzy_tokenized_string_match.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace local_search_service {
 
 local_search_service::Content::Content(const std::string& id,
-                                       const base::string16& content,
+                                       const std::u16string& content,
                                        double weight)
     : id(id), content(content), weight(weight) {}
 local_search_service::Content::Content() = default;
@@ -56,7 +56,7 @@ WeightedPosition::WeightedPosition(double weight, const Position& position)
 WeightedPosition::~WeightedPosition() = default;
 
 Token::Token() = default;
-Token::Token(const base::string16& text,
+Token::Token(const std::u16string& text,
              const std::vector<WeightedPosition>& pos)
     : content(text), positions(pos) {}
 Token::Token(const Token& token)

@@ -143,6 +143,8 @@ class CompositingRequirementsUpdater::OverlapMap {
 };
 
 class CompositingRequirementsUpdater::RecursionData {
+  STACK_ALLOCATED();
+
  public:
   explicit RecursionData(PaintLayer* compositing_ancestor)
       : compositing_ancestor_(compositing_ancestor),
@@ -245,7 +247,7 @@ static void CheckSubtreeHasNoCompositing(PaintLayer* layer) {
   while (PaintLayer* cur_layer = iterator.Next()) {
     DCHECK(cur_layer->GetCompositingState() == kNotComposited);
     DCHECK(!cur_layer->DirectCompositingReasons() ||
-           !layer->Compositor()->CanBeComposited(cur_layer));
+           !cur_layer->CanBeComposited());
     CheckSubtreeHasNoCompositing(cur_layer);
   }
 }
@@ -280,7 +282,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
 
   bool use_clipped_bounding_rect = !has_non_root_composited_scrolling_ancestor;
 
-  const bool layer_can_be_composited = compositor->CanBeComposited(layer);
+  const bool layer_can_be_composited = layer->CanBeComposited();
 
   CompositingReasons direct_from_paint_layer = 0;
   if (layer_can_be_composited)
@@ -303,7 +305,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
       layer->GetScrollableArea()->NeedsCompositedScrolling())
     direct_reasons |= CompositingReason::kOverflowScrolling;
 
-  bool can_be_composited = compositor->CanBeComposited(layer);
+  bool can_be_composited = layer->CanBeComposited();
   if (can_be_composited)
     reasons_to_composite |= direct_reasons;
 
@@ -352,23 +354,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     unclipped_descendants.push_back(layer);
   }
 
-  IntRect abs_bounds = use_clipped_bounding_rect
-                           ? layer->ClippedAbsoluteBoundingBox()
-                           : layer->UnclippedAbsoluteBoundingBox();
-
-  if (!RuntimeEnabledFeatures::CompositingOptimizationsEnabled()) {
-    PaintLayer* root_layer = layout_view_.Layer();
-    // |abs_bounds| does not include root scroller offset. For the purposes
-    // of overlap, this only matters for fixed-position objects, and their
-    // relative position to other elements. Therefore, it's still correct to,
-    // instead of adding scroll to all non-fixed elements, add a reverse scroll
-    // to ones that are fixed.
-    if (root_layer->GetScrollableArea() &&
-        !layer->IsAffectedByScrollOf(root_layer)) {
-      abs_bounds.Move(
-          RoundedIntSize(root_layer->GetScrollableArea()->GetScrollOffset()));
-    }
-  }
+  IntRect abs_bounds = layer->ExpandedBoundingBoxForCompositingOverlapTest(
+      use_clipped_bounding_rect);
 
   absolute_descendant_bounding_box = abs_bounds;
   if (layer_can_be_composited && current_recursion_data.testing_overlap_ &&
@@ -393,7 +380,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   bool contains_composited_layer =
       (layer->GetLayoutObject().IsLayoutEmbeddedContent() &&
        To<LayoutEmbeddedContent>(layer->GetLayoutObject())
-           .ContentDocumentIsCompositing());
+           .ContentDocumentContainsGraphicsLayer());
 
   bool will_be_composited_or_squashed =
       can_be_composited && RequiresCompositingOrSquashing(reasons_to_composite);

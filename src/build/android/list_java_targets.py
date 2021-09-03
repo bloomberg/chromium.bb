@@ -98,22 +98,34 @@ class _TargetEntry(object):
   def ninja_build_config_target(self):
     return self.ninja_target + '__build_config_crbug_908819'
 
+  @property
+  def build_config_path(self):
+    """Returns the filepath of the project's .build_config."""
+    ninja_target = self.ninja_target
+    # Support targets at the root level. e.g. //:foo
+    if ninja_target[0] == ':':
+      ninja_target = ninja_target[1:]
+    subpath = ninja_target.replace(':', os.path.sep) + '.build_config'
+    return os.path.join(constants.GetOutDirectory(), 'gen', subpath)
+
   def build_config(self):
     """Reads and returns the project's .build_config JSON."""
     if not self._build_config:
-      ninja_target = self.ninja_target
-      # Support targets at the root level. e.g. //:foo
-      if ninja_target[0] == ':':
-        ninja_target = ninja_target[1:]
-      subpath = ninja_target.replace(':', os.path.sep) + '.build_config'
-      path = os.path.join('gen', subpath)
-      with open(os.path.join(constants.GetOutDirectory(), path)) as jsonfile:
+      with open(self.build_config_path) as jsonfile:
         self._build_config = json.load(jsonfile)
     return self._build_config
 
   def get_type(self):
     """Returns the target type from its .build_config."""
     return self.build_config()['deps_info']['type']
+
+  def proguard_enabled(self):
+    """Returns whether proguard runs for this target."""
+    # Modules set proguard_enabled, but the proguarding happens only once at the
+    # bundle level.
+    if self.get_type() == 'android_app_bundle_module':
+      return False
+    return self.build_config()['deps_info'].get('proguard_enabled', False)
 
 
 def main():
@@ -133,7 +145,10 @@ def main():
   parser.add_argument('--print-types',
                       action='store_true',
                       help='Print type of each target')
-  parser.add_argument('--build-build-configs',
+  parser.add_argument('--print-build-config-paths',
+                      action='store_true',
+                      help='Print path to the .build_config of each target')
+  parser.add_argument('--build',
                       action='store_true',
                       help='Build all .build_config files.')
   parser.add_argument('--type',
@@ -143,10 +158,14 @@ def main():
   parser.add_argument('--stats',
                       action='store_true',
                       help='Print counts of each target type.')
+  parser.add_argument('--proguard-enabled',
+                      action='store_true',
+                      help='Restrict to targets that have proguard enabled')
   parser.add_argument('-v', '--verbose', default=0, action='count')
   args = parser.parse_args()
 
-  args.build_build_configs |= bool(args.type or args.print_types or args.stats)
+  args.build |= bool(args.type or args.proguard_enabled or args.print_types
+                     or args.stats)
 
   logging.basicConfig(level=logging.WARNING - (10 * args.verbose),
                       format='%(levelname).1s %(relativeCreated)6d %(message)s')
@@ -160,12 +179,15 @@ def main():
   targets = _query_for_build_config_targets(output_dir)
   entries = [_TargetEntry(t) for t in targets]
 
-  if args.build_build_configs:
+  if args.build:
     logging.warning('Building %d .build_config files...', len(entries))
     _run_ninja(output_dir, [e.ninja_build_config_target for e in entries])
 
   if args.type:
     entries = [e for e in entries if e.get_type() in args.type]
+
+  if args.proguard_enabled:
+    entries = [e for e in entries if e.proguard_enabled()]
 
   if args.stats:
     counts = collections.Counter(e.get_type() for e in entries)
@@ -180,10 +202,12 @@ def main():
 
       # Convert to top-level target
       if not args.nested:
-        to_print = to_print.replace('__test_apk__apk', '').replace('__apk', '')
+        to_print = to_print.replace('__test_apk', '').replace('__apk', '')
 
       if args.print_types:
         to_print = f'{to_print}: {e.get_type()}'
+      elif args.print_build_config_paths:
+        to_print = f'{to_print}: {e.build_config_path}'
 
       print(to_print)
 

@@ -58,15 +58,14 @@ using namespace glu::TextureTestUtil;
 class LinearFilteringTestInstance: public TestInstance
 {
 public:
-	LinearFilteringTestInstance(Context& context, VkFormat format);
+	LinearFilteringTestInstance(Context& context, VkFormat format, VkFilter chromaFiltering);
 	~LinearFilteringTestInstance() = default;
 
 protected:
 
-	VkSamplerCreateInfo				getSamplerInfo				(VkFilter								minMagFilter,
-																 const VkSamplerYcbcrConversionInfo*	samplerConversionInfo = DE_NULL);
+	VkSamplerCreateInfo				getSamplerInfo				(const VkSamplerYcbcrConversionInfo*	samplerConversionInfo);
 	Move<VkDescriptorSetLayout>		createDescriptorSetLayout	(VkSampler sampler);
-	Move<VkDescriptorPool>			createDescriptorPool		(void);
+	Move<VkDescriptorPool>			createDescriptorPool		(const deUint32 combinedSamplerDescriptorCount);
 	Move<VkDescriptorSet>			createDescriptorSet			(VkDescriptorPool		descPool,
 																 VkDescriptorSetLayout	descLayout);
 	Move<VkSamplerYcbcrConversion>	createYCbCrConversion		(void);
@@ -76,9 +75,6 @@ protected:
 																 VkImageView			imageView,
 																 VkSampler				sampler);
 	tcu::TestStatus					iterate						(void);
-	void							getExplicitFilteringRefData	(const MultiPlaneImageData& imageData, vector<deUint8>& refData);
-	void							getImplicitFilteringRefData	(const MultiPlaneImageData& imageData, vector<deUint8>& refData);
-
 
 private:
 
@@ -89,34 +85,36 @@ private:
 	};
 
 	const VkFormat				m_format;
+	const VkFilter				m_chromaFiltering;
 	const DeviceInterface&		m_vkd;
 	const VkDevice				m_device;
 	int							m_caseIndex;
 	const vector<FilterCase>	m_cases;
 };
 
-LinearFilteringTestInstance::LinearFilteringTestInstance(Context& context, VkFormat format)
-	: TestInstance	(context)
-	, m_format		(format)
-	, m_vkd			(m_context.getDeviceInterface())
-	, m_device		(m_context.getDevice())
-	, m_caseIndex	(0)
-	, m_cases		{
+LinearFilteringTestInstance::LinearFilteringTestInstance(Context& context, VkFormat format, VkFilter chromaFiltering)
+	: TestInstance		(context)
+	, m_format			(format)
+	, m_chromaFiltering	(chromaFiltering)
+	, m_vkd				(m_context.getDeviceInterface())
+	, m_device			(m_context.getDevice())
+	, m_caseIndex		(0)
+	, m_cases			{
 		{ { 8,  8}, {64, 64} },
 		{ {64, 32}, {32, 64} }
 	}
 {
 }
 
-VkSamplerCreateInfo LinearFilteringTestInstance::getSamplerInfo(VkFilter minMagFilter, const VkSamplerYcbcrConversionInfo* samplerConversionInfo)
+VkSamplerCreateInfo LinearFilteringTestInstance::getSamplerInfo(const VkSamplerYcbcrConversionInfo* samplerConversionInfo)
 {
 	return
 	{
 		VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
 		samplerConversionInfo,
 		0u,
-		minMagFilter,								// magFilter
-		minMagFilter,								// minFilter
+		VK_FILTER_LINEAR,							// magFilter
+		VK_FILTER_LINEAR,							// minFilter
 		VK_SAMPLER_MIPMAP_MODE_NEAREST,				// mipmapMode
 		VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,		// addressModeU
 		VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,		// addressModeV
@@ -155,11 +153,11 @@ Move<VkDescriptorSetLayout> LinearFilteringTestInstance::createDescriptorSetLayo
 	return ::createDescriptorSetLayout(m_vkd, m_device, &layoutInfo);
 }
 
-Move<VkDescriptorPool> LinearFilteringTestInstance::createDescriptorPool()
+Move<VkDescriptorPool> LinearFilteringTestInstance::createDescriptorPool(const deUint32 combinedSamplerDescriptorCount)
 {
 	const VkDescriptorPoolSize poolSizes[] =
 	{
-		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	1u	},
+		{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,	combinedSamplerDescriptorCount	},
 	};
 	const VkDescriptorPoolCreateInfo poolInfo =
 	{
@@ -206,7 +204,7 @@ Move<VkSamplerYcbcrConversion> LinearFilteringTestInstance::createYCbCrConversio
 		},
 		VK_CHROMA_LOCATION_MIDPOINT,
 		VK_CHROMA_LOCATION_MIDPOINT,
-		VK_FILTER_NEAREST,							// chromaFilter
+		m_chromaFiltering,							// chromaFilter
 		VK_FALSE,									// forceExplicitReconstruction
 	};
 
@@ -287,92 +285,6 @@ void LinearFilteringTestInstance::bindImage(VkDescriptorSet	descriptorSet,
 	m_vkd.updateDescriptorSets(m_device, 1u, &descriptorWrite, 0u, DE_NULL);
 }
 
-void LinearFilteringTestInstance::getExplicitFilteringRefData(const MultiPlaneImageData& imageData, vector<deUint8>& refData)
-{
-	const tcu::UVec2					imageSize				= m_cases[m_caseIndex].imageSize;
-	const vk::PlanarFormatDescription&	planarFormatDescription = imageData.getDescription();
-	const deUint8*						lumaData				= static_cast<const deUint8*>(imageData.getPlanePtr(0));
-	const deUint8*						chromaBData				= static_cast<const deUint8*>(imageData.getPlanePtr(1));
-	const deUint8*						chromaRData				= chromaBData;		// assuming 2 planes
-	deUint32							chromaStride			= 2;
-	deUint32							chromaOffset			= 1;
-
-	if (planarFormatDescription.numPlanes == 3)
-	{
-		chromaRData		= static_cast<const deUint8*>(imageData.getPlanePtr(2));
-		chromaStride	= 1;
-		chromaOffset	= 0;
-	}
-
-	// associate nearest chroma sample with each luma sample
-	vector<deUint8> intermediateImageData(imageSize.x() * imageSize.y() * 4, 255);
-	for (deUint32 y = 0; y < imageSize.y(); ++y)
-	{
-		for (deUint32 x = 0; x < imageSize.x(); ++x)
-		{
-			deUint32 component						= x * 4 + imageSize.x() * y * 4;
-			deUint32 chromaIndex					= x / 2 + (imageSize.x() / 2) * (y / 2);
-			intermediateImageData[component]		= lumaData[x + imageSize.x() * y];
-			intermediateImageData[component + 1]	= chromaBData[chromaStride * chromaIndex];
-			intermediateImageData[component + 2]	= chromaRData[chromaStride * chromaIndex + chromaOffset];
-		}
-	}
-
-	tcu::ConstPixelBufferAccess intermediateImage	(vk::mapVkFormat(VK_FORMAT_R8G8B8A8_UNORM), imageSize.x(), imageSize.y(), 1, intermediateImageData.data());
-	const tcu::Texture2DView	intermediateTexView	(1u, &intermediateImage);
-	const tcu::Sampler			refSampler			(mapVkSampler(getSamplerInfo(VK_FILTER_LINEAR)));
-	const tcu::UVec2			renderSize			(m_cases[m_caseIndex].renderSize);
-
-	// sample intermediate image and convert to gbr to generate reference image
-	for (deUint32 y = 0; y < renderSize.y(); ++y)
-	{
-		float yCoord = ((float)y + 0.5f) / (float)renderSize.y();
-		for (deUint32 x = 0; x < renderSize.x(); ++x)
-		{
-			float		xCoord		= ((float)x + 0.5f) / (float)renderSize.x();
-			tcu::Vec4	color		= intermediateTexView.sample(refSampler, xCoord, yCoord, 0.0f);
-			deUint32	texelIndex	= x * 4 + renderSize.x() * y * 4;
-			refData[texelIndex + 1] = static_cast<deUint8>(255 * color[0]);		// g
-			refData[texelIndex + 2] = static_cast<deUint8>(255 * color[1]);		// b
-			refData[texelIndex]		= static_cast<deUint8>(255 * color[2]);		// r
-		}
-	}
-}
-
-void LinearFilteringTestInstance::getImplicitFilteringRefData(const MultiPlaneImageData& imageData, vector<deUint8>& refData)
-{
-	const tcu::UVec2			renderSize			(m_cases[m_caseIndex].renderSize);
-	const VkSamplerCreateInfo	nSamplerCreateInfo	(getSamplerInfo(VK_FILTER_NEAREST));
-	const VkSamplerCreateInfo	lSamplerCreateInfo	(getSamplerInfo(VK_FILTER_LINEAR));
-	const tcu::Sampler			refSamplerNearest	(mapVkSampler(nSamplerCreateInfo));
-	const tcu::Sampler			refSamplerLinear	(mapVkSampler(lSamplerCreateInfo));
-	const deUint32				channelRemap[]		= { 1, 0, 2 };		// remap to have channels in order: Y Cr Cb
-	const tcu::Sampler*			refSampler[]		=
-	{
-		&refSamplerLinear,
-		&refSamplerNearest,
-		&refSamplerNearest
-	};
-
-	for (deUint32 channelNdx = 0; channelNdx < 3; channelNdx++)
-	{
-		const tcu::ConstPixelBufferAccess	channelAccess		(imageData.getChannelAccess(channelNdx));
-		const tcu::Texture2DView			refTexView			(1u, &channelAccess);
-		const deUint32						orderedChannelNdx	(channelRemap[channelNdx]);
-
-		for (deUint32 y = 0; y < renderSize.y(); ++y)
-		{
-			float yCoord = ((float)y + 0.5f) / (float)renderSize.y();
-			for (deUint32 x = 0; x < renderSize.x(); ++x)
-			{
-				deUint32	texelIndex	= x * 4 + renderSize.x() * y * 4 + channelNdx;
-				float		xCoord		= ((float)x + 0.5f) / (float)renderSize.x();
-				refData[texelIndex]		= static_cast<deUint8>(255.0f * refTexView.sample(*refSampler[orderedChannelNdx], xCoord, yCoord, 0.0f)[0]);
-			}
-		}
-	}
-}
-
 tcu::TestStatus LinearFilteringTestInstance::iterate(void)
 {
 	const tcu::UVec2						imageSize			(m_cases[m_caseIndex].imageSize);
@@ -381,10 +293,37 @@ tcu::TestStatus LinearFilteringTestInstance::iterate(void)
 	auto									physicalDevice		(m_context.getPhysicalDevice());
 	const Unique<VkSamplerYcbcrConversion>	conversion			(createYCbCrConversion());
 	const VkSamplerYcbcrConversionInfo		samplerConvInfo		{ VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_INFO, DE_NULL, *conversion };
-	const VkSamplerCreateInfo				samplerCreateInfo	(getSamplerInfo(VK_FILTER_LINEAR, &samplerConvInfo));
+	const VkSamplerCreateInfo				samplerCreateInfo	(getSamplerInfo(&samplerConvInfo));
 	const Unique<VkSampler>					sampler				(createSampler(m_vkd, m_device, &samplerCreateInfo));
+
+	deUint32								combinedSamplerDescriptorCount = 1;
+	{
+		const VkPhysicalDeviceImageFormatInfo2			imageFormatInfo				=
+		{
+			VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,	// sType
+			DE_NULL,												// pNext
+			m_format,												// format
+			VK_IMAGE_TYPE_2D,										// type
+			VK_IMAGE_TILING_OPTIMAL,								// tiling
+			VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+			VK_IMAGE_USAGE_SAMPLED_BIT,								// usage
+			(VkImageCreateFlags)0u									// flags
+		};
+
+		VkSamplerYcbcrConversionImageFormatProperties	samplerYcbcrConversionImage = {};
+		samplerYcbcrConversionImage.sType = VK_STRUCTURE_TYPE_SAMPLER_YCBCR_CONVERSION_IMAGE_FORMAT_PROPERTIES;
+		samplerYcbcrConversionImage.pNext = DE_NULL;
+
+		VkImageFormatProperties2						imageFormatProperties		= {};
+		imageFormatProperties.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2;
+		imageFormatProperties.pNext = &samplerYcbcrConversionImage;
+
+		VK_CHECK(instInt.getPhysicalDeviceImageFormatProperties2(physicalDevice, &imageFormatInfo, &imageFormatProperties));
+		combinedSamplerDescriptorCount = samplerYcbcrConversionImage.combinedImageSamplerDescriptorCount;
+	}
+
 	const Unique<VkDescriptorSetLayout>		descLayout			(createDescriptorSetLayout(*sampler));
-	const Unique<VkDescriptorPool>			descPool			(createDescriptorPool());
+	const Unique<VkDescriptorPool>			descPool			(createDescriptorPool(combinedSamplerDescriptorCount));
 	const Unique<VkDescriptorSet>			descSet				(createDescriptorSet(*descPool, *descLayout));
 	const Unique<VkImage>					testImage			(createImage(imageSize.x(), imageSize.y()));
 	const vector<AllocationSp>				allocations			(allocateAndBindImageMemory(m_vkd, m_device, m_context.getDefaultAllocator(), *testImage, m_format, 0u));
@@ -430,26 +369,201 @@ tcu::TestStatus LinearFilteringTestInstance::iterate(void)
 	// get rendered image
 	tcu::ConstPixelBufferAccess resImage(renderer.getColorPixels());
 
-	vector<deUint8>					refData				(renderSize.x() * renderSize.y() * 4, 255);
-	const VkFormatProperties		formatProperties	(getPhysicalDeviceFormatProperties(instInt, physicalDevice, m_format));
-	const VkFormatFeatureFlags		featureFlags		(formatProperties.optimalTilingFeatures);
-	const bool						explicitFiltering	(featureFlags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT);
+	// construct ChannelAccess objects required to create reference results
+	const vk::PlanarFormatDescription	planeInfo				= imageData.getDescription();
+	deUint32							nullAccessData			(0u);
+	ChannelAccess						nullAccess				(tcu::TEXTURECHANNELCLASS_UNSIGNED_FIXED_POINT, 1u, tcu::IVec3(imageSize.x(), imageSize.y(), 1), tcu::IVec3(0, 0, 0), &nullAccessData, 0u);
+	deUint32							nullAccessAlphaData		(~0u);
+	ChannelAccess						nullAccessAlpha			(tcu::TEXTURECHANNELCLASS_UNSIGNED_FIXED_POINT, 1u, tcu::IVec3(imageSize.x(), imageSize.y(), 1), tcu::IVec3(0, 0, 0), &nullAccessAlphaData, 0u);
+	ChannelAccess						rChannelAccess			(planeInfo.hasChannelNdx(0) ? getChannelAccess(imageData, planeInfo, imageSize, 0) : nullAccess);
+	ChannelAccess						gChannelAccess			(planeInfo.hasChannelNdx(1) ? getChannelAccess(imageData, planeInfo, imageSize, 1) : nullAccess);
+	ChannelAccess						bChannelAccess			(planeInfo.hasChannelNdx(2) ? getChannelAccess(imageData, planeInfo, imageSize, 2) : nullAccess);
+	ChannelAccess						aChannelAccess			(planeInfo.hasChannelNdx(3) ? getChannelAccess(imageData, planeInfo, imageSize, 3) : nullAccessAlpha);
+	const VkFormatProperties			formatProperties		(getPhysicalDeviceFormatProperties(instInt, physicalDevice, m_format));
+	const VkFormatFeatureFlags			featureFlags			(formatProperties.optimalTilingFeatures);
+	const bool							explicitReconstruction	(featureFlags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_CHROMA_RECONSTRUCTION_EXPLICIT_BIT);
 
-	// generate reference image data
-	if (explicitFiltering)
-		getExplicitFilteringRefData(imageData, refData);
-	else
-		getImplicitFilteringRefData(imageData, refData);
+	// calulate texture coordinates used by fragment shader
+	vector<tcu::Vec2>					sts;
+	for (deUint32 y = 0; y < renderSize.y(); y++)
+	for (deUint32 x = 0; x < renderSize.x(); x++)
+	{
+		const float s = ((float)x + 0.5f) / (float)renderSize.x();
+		const float t = ((float)y + 0.5f) / (float)renderSize.y();
 
-	float							threshold			(0.01f);
-	tcu::Vec4						thresholdVec		(threshold, threshold, threshold, 1.0f);
-	tcu::TextureFormat				refFormat			(vk::mapVkFormat(frameBufferState.colorFormat));
-	tcu::ConstPixelBufferAccess		refImage			(refFormat, renderSize.x(), renderSize.y(), 1, refData.data());
+		sts.push_back(tcu::Vec2(s, t));
+	}
 
-	// compare reference with the rendered image
-	if (!tcu::floatThresholdCompare(m_context.getTestContext().getLog(), "Compare", "", refImage, resImage, thresholdVec, tcu::COMPARE_LOG_RESULT))
-		return tcu::TestStatus::fail("Invalid result");
+	// calculate minimum and maximum values between which the results should be placed
+	const tcu::UVec4					bitDepth				(getYCbCrBitDepth(m_format));
+	const std::vector<tcu::FloatFormat>	filteringPrecision		(getPrecision(m_format));
+	const std::vector<tcu::FloatFormat>	conversionPrecision		(getPrecision(m_format));
+	const deUint32						subTexelPrecisionBits	(vk::getPhysicalDeviceProperties(m_context.getInstanceInterface(), m_context.getPhysicalDevice()).limits.subTexelPrecisionBits);
+	const vk::VkComponentMapping		componentMapping		= { vk::VK_COMPONENT_SWIZZLE_IDENTITY, vk::VK_COMPONENT_SWIZZLE_IDENTITY, vk::VK_COMPONENT_SWIZZLE_IDENTITY, vk::VK_COMPONENT_SWIZZLE_IDENTITY };
 
+	std::vector<tcu::Vec4>				minBound;
+	std::vector<tcu::Vec4>				maxBound;
+	std::vector<tcu::Vec4>				uvBound;
+	std::vector<tcu::IVec4>				ijBound;
+	calculateBounds(rChannelAccess, gChannelAccess, bChannelAccess, aChannelAccess, bitDepth, sts, filteringPrecision, conversionPrecision, subTexelPrecisionBits, VK_FILTER_LINEAR, VK_SAMPLER_YCBCR_MODEL_CONVERSION_RGB_IDENTITY, VK_SAMPLER_YCBCR_RANGE_ITU_FULL, m_chromaFiltering, VK_CHROMA_LOCATION_MIDPOINT, VK_CHROMA_LOCATION_MIDPOINT, componentMapping, explicitReconstruction, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, minBound, maxBound, uvBound, ijBound);
+
+	// log result and reference images
+	TestLog&							log						(m_context.getTestContext().getLog());
+	{
+		const tcu::Vec4					scale					(1.0f);
+		const tcu::Vec4					bias					(0.0f);
+		vector<deUint8>					minData					(renderSize.x() * renderSize.y() * sizeof(tcu::Vec4), 255);
+		vector<deUint8>					maxData					(renderSize.x() * renderSize.y() * sizeof(tcu::Vec4), 255);
+		tcu::TextureFormat				refFormat				(vk::mapVkFormat(frameBufferState.colorFormat));
+		tcu::PixelBufferAccess			minImage				(refFormat, renderSize.x(), renderSize.y(), 1, minData.data());
+		tcu::PixelBufferAccess			maxImage				(refFormat, renderSize.x(), renderSize.y(), 1, maxData.data());
+		{
+			deUint32					ndx						= 0;
+			for (deUint32 y = 0; y < renderSize.y(); y++)
+			for (deUint32 x = 0; x < renderSize.x(); x++)
+			{
+				minImage.setPixel(minBound[ndx], x, y);
+				maxImage.setPixel(maxBound[ndx], x, y);
+				ndx++;
+			}
+		}
+
+		log << TestLog::Image("MinBoundImage", "MinBoundImage", minImage, scale, bias);
+		log << TestLog::Image("MaxBoundImage", "MaxBoundImage", maxImage, scale, bias);
+		log << TestLog::Image("ResImage", "ResImage", resImage, scale, bias);
+	}
+
+	bool								isOk					= true;
+	{
+		deUint32						ndx						= 0;
+		VkFilter						textureFilter			= VK_FILTER_LINEAR;
+		size_t							errorCount				= 0;
+
+		for (deUint32 y = 0; y < renderSize.y(); y++)
+		for (deUint32 x = 0; x < renderSize.x(); x++)
+		{
+			tcu::Vec4 resValue = resImage.getPixel(x, y);
+			bool fail = tcu::boolAny(tcu::lessThan(resValue, minBound[ndx])) || tcu::boolAny(tcu::greaterThan(resValue, maxBound[ndx]));
+
+			if (fail)
+			{
+				log << TestLog::Message << "Fail: " << sts[ndx] << " " << resValue << TestLog::EndMessage;
+				log << TestLog::Message << "  Min : " << minBound[ndx] << TestLog::EndMessage;
+				log << TestLog::Message << "  Max : " << maxBound[ndx] << TestLog::EndMessage;
+				log << TestLog::Message << "  Threshold: " << (maxBound[ndx] - minBound[ndx]) << TestLog::EndMessage;
+				log << TestLog::Message << "  UMin : " << uvBound[ndx][0] << TestLog::EndMessage;
+				log << TestLog::Message << "  UMax : " << uvBound[ndx][1] << TestLog::EndMessage;
+				log << TestLog::Message << "  VMin : " << uvBound[ndx][2] << TestLog::EndMessage;
+				log << TestLog::Message << "  VMax : " << uvBound[ndx][3] << TestLog::EndMessage;
+				log << TestLog::Message << "  IMin : " << ijBound[ndx][0] << TestLog::EndMessage;
+				log << TestLog::Message << "  IMax : " << ijBound[ndx][1] << TestLog::EndMessage;
+				log << TestLog::Message << "  JMin : " << ijBound[ndx][2] << TestLog::EndMessage;
+				log << TestLog::Message << "  JMax : " << ijBound[ndx][3] << TestLog::EndMessage;
+
+				if (isXChromaSubsampled(m_format))
+				{
+					log << TestLog::Message << "  LumaAlphaValues : " << TestLog::EndMessage;
+					log << TestLog::Message << "    Offset : (" << ijBound[ndx][0] << ", " << ijBound[ndx][2] << ")" << TestLog::EndMessage;
+
+					for (deInt32 k = ijBound[ndx][2]; k <= ijBound[ndx][3] + (textureFilter == vk::VK_FILTER_LINEAR ? 1 : 0); k++)
+					{
+						const deInt32		wrappedK = wrap(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, k, gChannelAccess.getSize().y());
+						bool				first = true;
+						std::ostringstream	line;
+
+						for (deInt32 j = ijBound[ndx][0]; j <= ijBound[ndx][1] + (textureFilter == vk::VK_FILTER_LINEAR ? 1 : 0); j++)
+						{
+							const deInt32	wrappedJ = wrap(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, j, gChannelAccess.getSize().x());
+
+							if (!first)
+							{
+								line << ", ";
+								first = false;
+							}
+
+							line << "(" << std::setfill(' ') << std::setw(5) << gChannelAccess.getChannelUint(tcu::IVec3(wrappedJ, wrappedK, 0))
+								<< ", " << std::setfill(' ') << std::setw(5) << aChannelAccess.getChannelUint(tcu::IVec3(wrappedJ, wrappedK, 0)) << ")";
+						}
+						log << TestLog::Message << "    " << line.str() << TestLog::EndMessage;
+					}
+
+					{
+						const tcu::IVec2 chromaJRange(divFloor(ijBound[ndx][0], 2) - 1, divFloor(ijBound[ndx][1] + (textureFilter == vk::VK_FILTER_LINEAR ? 1 : 0), 2) + 1);
+						const tcu::IVec2 chromaKRange(isYChromaSubsampled(m_format)
+							? tcu::IVec2(divFloor(ijBound[ndx][2], 2) - 1, divFloor(ijBound[ndx][3] + (textureFilter == vk::VK_FILTER_LINEAR ? 1 : 0), 2) + 1)
+							: tcu::IVec2(ijBound[ndx][2], ijBound[ndx][3] + (textureFilter == vk::VK_FILTER_LINEAR ? 1 : 0)));
+
+						log << TestLog::Message << "  ChromaValues : " << TestLog::EndMessage;
+						log << TestLog::Message << "    Offset : (" << chromaJRange[0] << ", " << chromaKRange[0] << ")" << TestLog::EndMessage;
+
+						for (deInt32 k = chromaKRange[0]; k <= chromaKRange[1]; k++)
+						{
+							const deInt32		wrappedK = wrap(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, k, rChannelAccess.getSize().y());
+							bool				first = true;
+							std::ostringstream	line;
+
+							for (deInt32 j = chromaJRange[0]; j <= chromaJRange[1]; j++)
+							{
+								const deInt32	wrappedJ = wrap(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, j, rChannelAccess.getSize().x());
+
+								if (!first)
+								{
+									line << ", ";
+									first = false;
+								}
+
+								line << "(" << std::setfill(' ') << std::setw(5) << rChannelAccess.getChannelUint(tcu::IVec3(wrappedJ, wrappedK, 0))
+									<< ", " << std::setfill(' ') << std::setw(5) << bChannelAccess.getChannelUint(tcu::IVec3(wrappedJ, wrappedK, 0)) << ")";
+							}
+							log << TestLog::Message << "    " << line.str() << TestLog::EndMessage;
+						}
+					}
+				}
+				else
+				{
+					log << TestLog::Message << "  Values : " << TestLog::EndMessage;
+					log << TestLog::Message << "    Offset : (" << ijBound[ndx][0] << ", " << ijBound[ndx][2] << ")" << TestLog::EndMessage;
+
+					for (deInt32 k = ijBound[ndx][2]; k <= ijBound[ndx][3] + (textureFilter == vk::VK_FILTER_LINEAR ? 1 : 0); k++)
+					{
+						const deInt32		wrappedK = wrap(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, k, rChannelAccess.getSize().y());
+						bool				first = true;
+						std::ostringstream	line;
+
+						for (deInt32 j = ijBound[ndx][0]; j <= ijBound[ndx][1] + (textureFilter == vk::VK_FILTER_LINEAR ? 1 : 0); j++)
+						{
+							const deInt32	wrappedJ = wrap(VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE, j, rChannelAccess.getSize().x());
+
+							if (!first)
+							{
+								line << ", ";
+								first = false;
+							}
+
+							line << "(" << std::setfill(' ') << std::setw(5) << rChannelAccess.getChannelUint(tcu::IVec3(wrappedJ, wrappedK, 0))
+								<< ", " << std::setfill(' ') << std::setw(5) << gChannelAccess.getChannelUint(tcu::IVec3(wrappedJ, wrappedK, 0))
+								<< ", " << std::setfill(' ') << std::setw(5) << bChannelAccess.getChannelUint(tcu::IVec3(wrappedJ, wrappedK, 0))
+								<< ", " << std::setfill(' ') << std::setw(5) << aChannelAccess.getChannelUint(tcu::IVec3(wrappedJ, wrappedK, 0)) << ")";
+						}
+						log << TestLog::Message << "    " << line.str() << TestLog::EndMessage;
+					}
+				}
+
+				errorCount++;
+				isOk = false;
+
+				if (errorCount > 30)
+				{
+					log << TestLog::Message << "Encountered " << errorCount << " errors. Omitting rest of the per result logs." << TestLog::EndMessage;
+					break;
+				}
+			}
+			ndx++;
+		}
+	}
+
+	if (!isOk)
+		return tcu::TestStatus::fail("Result comparison failed");
 	if (++m_caseIndex < (int)m_cases.size())
 		return tcu::TestStatus::incomplete();
 	return tcu::TestStatus::pass("Pass");
@@ -458,7 +572,7 @@ tcu::TestStatus LinearFilteringTestInstance::iterate(void)
 class LinearFilteringTestCase : public vkt::TestCase
 {
 public:
-	LinearFilteringTestCase(tcu::TestContext &context, const char* name, const char* description, VkFormat format);
+	LinearFilteringTestCase(tcu::TestContext &context, const char* name, const char* description, VkFormat format, VkFilter chromaFiltering);
 
 protected:
 	void				checkSupport(Context& context) const;
@@ -467,11 +581,13 @@ protected:
 
 private:
 	VkFormat			m_format;
+	VkFilter			m_chromaFiltering;
 };
 
-LinearFilteringTestCase::LinearFilteringTestCase(tcu::TestContext &context, const char* name, const char* description, VkFormat format)
+LinearFilteringTestCase::LinearFilteringTestCase(tcu::TestContext &context, const char* name, const char* description, VkFormat format, VkFilter chromaFiltering)
 	: TestCase(context, name, description)
 	, m_format(format)
+	, m_chromaFiltering(chromaFiltering)
 {
 }
 
@@ -490,13 +606,14 @@ void LinearFilteringTestCase::checkSupport(Context& context) const
 	if ((featureFlags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT) == 0)
 		TCU_THROW(NotSupportedError, "Linear filtering not supported for format");
 
-	if ((featureFlags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT) == 0)
+	if (m_chromaFiltering != VK_FILTER_LINEAR &&
+		(featureFlags & VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_SEPARATE_RECONSTRUCTION_FILTER_BIT) == 0)
 		TCU_THROW(NotSupportedError, "Different chroma, min, and mag filters not supported for format");
 }
 
 vkt::TestInstance* LinearFilteringTestCase::createInstance(vkt::Context& context) const
 {
-	return new LinearFilteringTestInstance(context, m_format);
+	return new LinearFilteringTestInstance(context, m_format, m_chromaFiltering);
 }
 
 void LinearFilteringTestCase::initPrograms(SourceCollections& programCollection) const
@@ -549,12 +666,20 @@ tcu::TestCaseGroup* createFilteringTests (tcu::TestContext& testCtx)
 
 	for (const auto& ycbcrFormat : ycbcrFormats)
 	{
-		const std::string name = std::string("linear_sampler_") + ycbcrFormat.name;
-		filteringTests->addChild(new LinearFilteringTestCase(filteringTests->getTestContext(), name.c_str(), "", ycbcrFormat.format));
+		{
+			const std::string name = std::string("linear_sampler_") + ycbcrFormat.name;
+			filteringTests->addChild(new LinearFilteringTestCase(filteringTests->getTestContext(), name.c_str(), "", ycbcrFormat.format, VK_FILTER_NEAREST));
+		}
+
+		{
+			const std::string name = std::string("linear_sampler_with_chroma_linear_filtering_") + ycbcrFormat.name;
+			filteringTests->addChild(new LinearFilteringTestCase(filteringTests->getTestContext(), name.c_str(), "", ycbcrFormat.format, VK_FILTER_LINEAR));
+		}
 	}
 
 	return filteringTests.release();
 }
 
 } // ycbcr
+
 } // vkt

@@ -16,9 +16,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/prefs/browser_prefs.h"
@@ -44,10 +46,11 @@
 #include "content/public/common/content_switch_dependent_feature_overrides.h"
 #include "ui/base/resource/resource_bundle.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/settings/owner_flags_storage.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 ChromeFeatureListCreator::ChromeFeatureListCreator() = default;
 
@@ -89,7 +92,7 @@ ChromeFeatureListCreator::TakeChromeBrowserPolicyConnector() {
   return std::move(browser_policy_connector_);
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 std::unique_ptr<installer::InitialPreferences>
 ChromeFeatureListCreator::TakeInitialPrefs() {
   return std::move(installer_initial_prefs_);
@@ -105,7 +108,7 @@ void ChromeFeatureListCreator::CreatePrefService() {
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
   RegisterLocalState(pref_registry.get());
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   // DBus must be initialized before constructing the policy connector.
   CHECK(chromeos::DBusThreadManager::IsInitialized());
   browser_policy_connector_ =
@@ -113,7 +116,7 @@ void ChromeFeatureListCreator::CreatePrefService() {
 #else
   browser_policy_connector_ =
       std::make_unique<policy::ChromeBrowserPolicyConnector>();
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   local_state_ = chrome_prefs::CreateLocalState(
       local_state_file, browser_policy_connector_->GetPolicyService(),
@@ -128,29 +131,38 @@ void ChromeFeatureListCreator::CreatePrefService() {
     // language the user selected when downloading the installer. This
     // becomes our default language in the prefs.
     // Other platforms obey the system locale.
-    base::string16 install_lang;
+    std::wstring install_lang;
     if (GoogleUpdateSettings::GetLanguage(&install_lang)) {
       local_state_->SetString(language::prefs::kApplicationLocale,
-                              base::UTF16ToASCII(install_lang));
+                              base::WideToASCII(install_lang));
     }
   }
 #endif  // defined(OS_WIN)
 }
 
 void ChromeFeatureListCreator::ConvertFlagsToSwitches() {
-#if !defined(OS_CHROMEOS)
   // Convert active flags into switches. This needs to be done before
   // ui::ResourceBundle::InitSharedInstanceWithLocale as some loaded resources
-  // are affected by experiment flags (--touch-optimized-ui in particular). On
-  // ChromeOS system level flags are applied from the device settings from the
-  // session manager.
+  // are affected by experiment flags (--touch-optimized-ui in particular).
   DCHECK(!ui::ResourceBundle::HasSharedInstance());
   TRACE_EVENT0("startup", "ChromeFeatureListCreator::ConvertFlagsToSwitches");
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // On Chrome OS, flags are passed on the command line when Chrome gets
+  // launched by session_manager. There are separate sets of flags for the login
+  // screen environment and user sessions. session_manager populates the former
+  // from signed device settings, while flags for user session are stored in
+  // preferences and applied via a chrome restart upon user login, see
+  // UserSessionManager::RestartToApplyPerSessionFlagsIfNeed for the latter.
+  ash::about_flags::ReadOnlyFlagsStorage flags_storage(
+      ash::about_flags::ParseFlagsFromCommandLine());
+#else
   flags_ui::PrefServiceFlagsStorage flags_storage(local_state_.get());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   about_flags::ConvertFlagsToSwitches(&flags_storage,
                                       base::CommandLine::ForCurrentProcess(),
                                       flags_ui::kAddSentinels);
-#endif  // !defined(OS_CHROMEOS)
 }
 
 void ChromeFeatureListCreator::SetupFieldTrials() {
@@ -201,7 +213,7 @@ void ChromeFeatureListCreator::CreateMetricsServices() {
 void ChromeFeatureListCreator::SetupInitialPrefs() {
 // Android does first run in Java instead of native.
 // Chrome OS has its own out-of-box-experience code.
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
   // On first run, we need to process the predictor preferences before the
   // browser's profile_manager object is created, but after ResourceBundle
   // is initialized.
@@ -236,5 +248,5 @@ void ChromeFeatureListCreator::SetupInitialPrefs() {
     local_state_->SetInt64(variations::prefs::kVariationsSeedDate,
                            base::Time::Now().ToInternalValue());
   }
-#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#endif  // !defined(OS_ANDROID) && !BUILDFLAG(IS_CHROMEOS_ASH)
 }

@@ -8,6 +8,7 @@
 #include <memory>
 #include <random>
 
+#include "third_party/blink/renderer/bindings/modules/v8/v8_typedefs.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
@@ -58,11 +59,16 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   bool IsRenderingContext2D() const override { return true; }
   bool IsComposited() const override { return false; }
   bool IsAccelerated() const override;
+#if defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  V8RenderingContext* AsV8RenderingContext() final;
+  V8OffscreenRenderingContext* AsV8OffscreenRenderingContext() final;
+#else   // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
+  void SetCanvasGetContextResult(RenderingContext&) final {}
   void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
+#endif  // defined(USE_BLINK_V8_BINDING_NEW_IDL_UNION)
   void SetIsInHiddenPage(bool) final { NOTREACHED(); }
   void SetIsBeingDisplayed(bool) final { NOTREACHED(); }
   void Stop() final { NOTREACHED(); }
-  void SetCanvasGetContextResult(RenderingContext&) final {}
   void ClearRect(double x, double y, double width, double height) override {
     BaseRenderingContext2D::clearRect(x, y, width, height);
   }
@@ -82,6 +88,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   void setTextWordSpacing(const double word_spacing);
   void setTextRendering(const String&);
   void setFontKerning(const String&);
+  void setFontStretch(const String&);
   void setFontVariantCaps(const String&);
 
   void fillText(const String& text, double x, double y);
@@ -122,6 +129,9 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   void ValidateStateStackWithCanvas(const cc::PaintCanvas*) const final;
 
   bool HasAlpha() const final { return CreationAttributes().alpha; }
+  bool IsDesynchronized() const final {
+    return CreationAttributes().desynchronized;
+  }
   bool isContextLost() const override;
 
   ImageBitmap* TransferToImageBitmap(ScriptState*) final;
@@ -143,7 +153,14 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   }
 
  protected:
-  CanvasColorParams ColorParams() const override;
+  // This reports CanvasColorParams to the CanvasRenderingContext interface.
+  CanvasColorParams CanvasRenderingContextColorParams() const override {
+    return color_params_;
+  }
+  // This reports CanvasColorParams to the BaseRenderingContext2D interface.
+  CanvasColorParams GetCanvas2DColorParams() const override {
+    return color_params_;
+  }
   bool WritePixels(const SkImageInfo& orig_info,
                    const void* pixels,
                    size_t row_bytes,
@@ -167,14 +184,13 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   scoped_refptr<CanvasResource> ProduceCanvasResource();
 
-  String ColorSpaceAsString() const override;
-  CanvasPixelFormat PixelFormat() const override;
   SkIRect dirty_rect_for_commit_;
 
   bool is_valid_size_ = false;
 
   std::mt19937 random_generator_;
   std::bernoulli_distribution bernoulli_distribution_;
+  CanvasColorParams color_params_;
 };
 
 }  // namespace blink

@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/active_directory_login_screen_handler.h"
 
+#include "chrome/browser/ash/login/oobe_screen.h"
+#include "chrome/browser/ash/login/screens/active_directory_login_screen.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/login/oobe_screen.h"
-#include "chrome/browser/chromeos/login/screens/active_directory_login_screen.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
 #include "chrome/grit/chromium_strings.h"
@@ -20,10 +20,8 @@ namespace chromeos {
 constexpr StaticOobeScreenId ActiveDirectoryLoginView::kScreenId;
 
 ActiveDirectoryLoginScreenHandler::ActiveDirectoryLoginScreenHandler(
-    JSCallsContainer* js_calls_container,
-    CoreOobeView* core_oobe_view)
-    : BaseScreenHandler(kScreenId, js_calls_container),
-      core_oobe_view_(core_oobe_view) {
+    JSCallsContainer* js_calls_container)
+    : BaseScreenHandler(kScreenId, js_calls_container) {
   set_user_acted_method_path("login.ActiveDirectoryLoginScreen.userActed");
 }
 
@@ -94,13 +92,6 @@ void ActiveDirectoryLoginScreenHandler::SetErrorState(
     int errorState) {
   CallJS("login.ActiveDirectoryLoginScreen.setErrorState", username,
          errorState);
-}
-
-void ActiveDirectoryLoginScreenHandler::ShowSignInError(
-    const std::string& error_text) {
-  core_oobe_view_->ShowSignInError(0 /* login_attempts */, error_text,
-                                   std::string() /* help_link_text */,
-                                   HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT);
 }
 
 void ActiveDirectoryLoginScreenHandler::HandleCompleteAuth(

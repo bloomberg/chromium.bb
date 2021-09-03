@@ -2,15 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ProtocolMapping} from '../../../../front_end/generated/protocol-mapping.js';
-import * as ProtocolClient from '../../../../front_end/protocol_client/protocol_client.js';
+import * as ProtocolClient from '../../../../front_end/core/protocol_client/protocol_client.js';
+import type {ProtocolMapping} from '../../../../front_end/generated/protocol-mapping.js'; // eslint-disable-line rulesdir/es_modules_import
 
 import {deinitializeGlobalVars, initializeGlobalVars} from './EnvironmentHelpers.js';
+
+import type * as SDK from '../../../../front_end/core/sdk/sdk.js';
 
 type ProtocolCommand = keyof ProtocolMapping.Commands;
 type ProtocolCommandParams<C extends ProtocolCommand> = ProtocolMapping.Commands[C]['paramsType'];
 type ProtocolResponse<C extends ProtocolCommand> = ProtocolMapping.Commands[C]['returnType'];
-type ProtocolCommandHandler<C extends ProtocolCommand> = (params: ProtocolCommandParams<C>) =>
+type ProtocolCommandHandler<C extends ProtocolCommand> = (...params: ProtocolCommandParams<C>) =>
     Omit<ProtocolResponse<C>, 'getError'>;
 type MessageCallback = (result: string|Object) => void;
 
@@ -32,6 +34,25 @@ export function getMockConnectionResponseHandler(method: ProtocolCommand) {
 
 export function clearMockConnectionResponseHandler(method: ProtocolCommand) {
   responseMap.delete(method);
+}
+
+export function clearAllMockConnectionResponseHandlers() {
+  responseMap.clear();
+}
+
+export function dispatchEvent<E extends keyof ProtocolMapping.Events>(
+    target: SDK.SDKModel.Target, event: E, ...payload: ProtocolMapping.Events[E]) {
+  const [domain, method] = event.split('.');
+  if (!target._dispatchers[domain]) {
+    throw new Error(`No dispatcher for domain "${domain}" on provided target`);
+  }
+
+  // Register the event if it doesn't exist already.
+  if (!(method in target._dispatchers[domain]._eventArgs)) {
+    target._dispatchers[domain].registerEvent(method, {});
+  }
+
+  target._dispatchers[domain].dispatch(method, {method, params: payload[0]});
 }
 
 function enable({reset = true} = {}) {

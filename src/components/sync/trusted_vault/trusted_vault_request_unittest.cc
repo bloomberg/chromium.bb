@@ -53,13 +53,13 @@ class FakeTrustedVaultAccessTokenFetcher
     : public TrustedVaultAccessTokenFetcher {
  public:
   explicit FakeTrustedVaultAccessTokenFetcher(
-      const base::Optional<std::string>& access_token)
+      const absl::optional<std::string>& access_token)
       : access_token_(access_token) {}
   ~FakeTrustedVaultAccessTokenFetcher() override = default;
 
   void FetchAccessToken(const CoreAccountId& account_id,
                         TokenCallback callback) override {
-    base::Optional<signin::AccessTokenInfo> access_token_info;
+    absl::optional<signin::AccessTokenInfo> access_token_info;
     if (access_token_) {
       access_token_info = signin::AccessTokenInfo(
           *access_token_, base::Time::Now() + base::TimeDelta::FromHours(1),
@@ -69,7 +69,7 @@ class FakeTrustedVaultAccessTokenFetcher
   }
 
  private:
-  const base::Optional<std::string> access_token_;
+  const absl::optional<std::string> access_token_;
 };
 
 class TrustedVaultRequestTest : public testing::Test {
@@ -80,9 +80,9 @@ class TrustedVaultRequestTest : public testing::Test {
                 &test_url_loader_factory_)) {}
 
   std::unique_ptr<TrustedVaultRequest> StartNewRequestWithAccessToken(
-      const base::Optional<std::string>& access_token,
+      const absl::optional<std::string>& access_token,
       TrustedVaultRequest::HttpMethod http_method,
-      const base::Optional<std::string>& request_body,
+      const absl::optional<std::string>& request_body,
       TrustedVaultRequest::CompletionCallback completion_callback) {
     const CoreAccountId account_id = CoreAccountId::FromEmail("user@gmail.com");
     FakeTrustedVaultAccessTokenFetcher access_token_fetcher(access_token);
@@ -97,7 +97,7 @@ class TrustedVaultRequestTest : public testing::Test {
 
   bool RespondToHttpRequest(
       net::Error error,
-      base::Optional<net::HttpStatusCode> response_http_code,
+      absl::optional<net::HttpStatusCode> response_http_code,
       const std::string& response_body) {
     network::mojom::URLResponseHeadPtr response_head;
     if (response_http_code.has_value()) {
@@ -129,7 +129,7 @@ TEST_F(TrustedVaultRequestTest, ShouldSendGetRequestAndHandleSuccess) {
       completion_callback;
   std::unique_ptr<TrustedVaultRequest> request = StartNewRequestWithAccessToken(
       kAccessToken, TrustedVaultRequest::HttpMethod::kGet,
-      /*request_body=*/base::nullopt, completion_callback.Get());
+      /*request_body=*/absl::nullopt, completion_callback.Get());
 
   network::TestURLLoaderFactory::PendingRequest* pending_request =
       GetPendingRequest();
@@ -142,7 +142,9 @@ TEST_F(TrustedVaultRequestTest, ShouldSendGetRequestAndHandleSuccess) {
   EXPECT_THAT(network::GetUploadData(resource_request), IsEmpty());
 
   // |completion_callback| should be called after receiving response.
-  EXPECT_CALL(completion_callback, Run(/*success=*/true, Eq(kResponseBody)));
+  EXPECT_CALL(
+      completion_callback,
+      Run(TrustedVaultRequest::HttpStatus::kSuccess, Eq(kResponseBody)));
   EXPECT_TRUE(RespondToHttpRequest(net::OK, net::HTTP_OK, kResponseBody));
 }
 
@@ -152,7 +154,7 @@ TEST_F(TrustedVaultRequestTest,
       completion_callback;
   std::unique_ptr<TrustedVaultRequest> request = StartNewRequestWithAccessToken(
       kAccessToken, TrustedVaultRequest::HttpMethod::kPost,
-      /*request_body=*/base::nullopt, completion_callback.Get());
+      /*request_body=*/absl::nullopt, completion_callback.Get());
 
   network::TestURLLoaderFactory::PendingRequest* pending_request =
       GetPendingRequest();
@@ -165,7 +167,9 @@ TEST_F(TrustedVaultRequestTest,
   EXPECT_THAT(network::GetUploadData(resource_request), IsEmpty());
 
   // |completion_callback| should be called after receiving response.
-  EXPECT_CALL(completion_callback, Run(/*success=*/true, Eq(kResponseBody)));
+  EXPECT_CALL(
+      completion_callback,
+      Run(TrustedVaultRequest::HttpStatus::kSuccess, Eq(kResponseBody)));
   EXPECT_TRUE(RespondToHttpRequest(net::OK, net::HTTP_OK, kResponseBody));
 }
 
@@ -189,7 +193,9 @@ TEST_F(TrustedVaultRequestTest,
   EXPECT_THAT(network::GetUploadData(resource_request), Eq(kRequestBody));
 
   // |completion_callback| should be called after receiving response.
-  EXPECT_CALL(completion_callback, Run(/*success=*/true, Eq(kResponseBody)));
+  EXPECT_CALL(
+      completion_callback,
+      Run(TrustedVaultRequest::HttpStatus::kSuccess, Eq(kResponseBody)));
   EXPECT_TRUE(RespondToHttpRequest(net::OK, net::HTTP_OK, kResponseBody));
 }
 
@@ -198,11 +204,12 @@ TEST_F(TrustedVaultRequestTest, ShouldHandleNetworkFailures) {
       completion_callback;
   std::unique_ptr<TrustedVaultRequest> request = StartNewRequestWithAccessToken(
       kAccessToken, TrustedVaultRequest::HttpMethod::kGet,
-      /*request_body=*/base::nullopt, completion_callback.Get());
+      /*request_body=*/absl::nullopt, completion_callback.Get());
 
   // |completion_callback| should be called after receiving response.
-  EXPECT_CALL(completion_callback, Run(/*success=*/false, _));
-  EXPECT_TRUE(RespondToHttpRequest(net::ERR_FAILED, base::nullopt,
+  EXPECT_CALL(completion_callback,
+              Run(TrustedVaultRequest::HttpStatus::kOtherError, _));
+  EXPECT_TRUE(RespondToHttpRequest(net::ERR_FAILED, absl::nullopt,
                                    /*response_body=*/std::string()));
 }
 
@@ -211,11 +218,40 @@ TEST_F(TrustedVaultRequestTest, ShouldHandleHttpErrors) {
       completion_callback;
   std::unique_ptr<TrustedVaultRequest> request = StartNewRequestWithAccessToken(
       kAccessToken, TrustedVaultRequest::HttpMethod::kGet,
-      /*request_body=*/base::nullopt, completion_callback.Get());
+      /*request_body=*/absl::nullopt, completion_callback.Get());
 
   // |completion_callback| should be called after receiving response.
-  EXPECT_CALL(completion_callback, Run(/*success=*/false, _));
+  EXPECT_CALL(completion_callback,
+              Run(TrustedVaultRequest::HttpStatus::kOtherError, _));
   EXPECT_TRUE(RespondToHttpRequest(net::OK, net::HTTP_INTERNAL_SERVER_ERROR,
+                                   /*response_body=*/""));
+}
+
+TEST_F(TrustedVaultRequestTest, ShouldHandleNotFoundStatus) {
+  base::MockCallback<TrustedVaultRequest::CompletionCallback>
+      completion_callback;
+  std::unique_ptr<TrustedVaultRequest> request = StartNewRequestWithAccessToken(
+      kAccessToken, TrustedVaultRequest::HttpMethod::kGet,
+      /*request_body=*/absl::nullopt, completion_callback.Get());
+
+  // |completion_callback| should be called after receiving response.
+  EXPECT_CALL(completion_callback,
+              Run(TrustedVaultRequest::HttpStatus::kNotFound, _));
+  EXPECT_TRUE(RespondToHttpRequest(net::OK, net::HTTP_NOT_FOUND,
+                                   /*response_body=*/""));
+}
+
+TEST_F(TrustedVaultRequestTest, ShouldHandlePreconditionFailedStatus) {
+  base::MockCallback<TrustedVaultRequest::CompletionCallback>
+      completion_callback;
+  std::unique_ptr<TrustedVaultRequest> request = StartNewRequestWithAccessToken(
+      kAccessToken, TrustedVaultRequest::HttpMethod::kGet,
+      /*request_body=*/absl::nullopt, completion_callback.Get());
+
+  // |completion_callback| should be called after receiving response.
+  EXPECT_CALL(completion_callback,
+              Run(TrustedVaultRequest::HttpStatus::kFailedPrecondition, _));
+  EXPECT_TRUE(RespondToHttpRequest(net::OK, net::HTTP_PRECONDITION_FAILED,
                                    /*response_body=*/""));
 }
 
@@ -224,10 +260,11 @@ TEST_F(TrustedVaultRequestTest, ShouldHandleAccessTokenFetchingFailures) {
       completion_callback;
   // Access token fetching failure propagated immediately in this test, so
   // |completion_callback| should be called immediately as well.
-  EXPECT_CALL(completion_callback, Run(/*success=*/false, _));
+  EXPECT_CALL(completion_callback,
+              Run(TrustedVaultRequest::HttpStatus::kOtherError, _));
   std::unique_ptr<TrustedVaultRequest> request = StartNewRequestWithAccessToken(
-      /*access_token=*/base::nullopt, TrustedVaultRequest::HttpMethod::kGet,
-      /*request_body=*/base::nullopt, completion_callback.Get());
+      /*access_token=*/absl::nullopt, TrustedVaultRequest::HttpMethod::kGet,
+      /*request_body=*/absl::nullopt, completion_callback.Get());
 }
 
 }  // namespace syncer

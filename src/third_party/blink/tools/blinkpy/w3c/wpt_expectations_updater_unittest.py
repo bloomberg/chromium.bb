@@ -252,17 +252,16 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater = WPTExpectationsUpdater(host)
         results = updater.get_failing_results_dicts(
             Build('MOCK Try Mac10.10', 123))
-        self.assertEqual(
-            results, [{
-                'external/wpt/x/failing-test.html': {
-                    DesktopConfig(port_name='test-mac-mac10.10'):
-                    SimpleTestResult(
-                        actual='IMAGE',
-                        expected='PASS',
-                        bug='crbug.com/626703',
-                    ),
-                },
-            }])
+        self.assertEqual(results, [{
+            'external/wpt/x/failing-test.html': {
+                DesktopConfig(port_name='test-mac-mac10.10'):
+                SimpleTestResult(
+                    actual='IMAGE',
+                    expected='',
+                    bug='crbug.com/626703',
+                ),
+            },
+        }])
 
     def test_get_failing_results_dict_non_wpt_test(self):
         host = self.mock_host()
@@ -325,25 +324,25 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         results = updater.get_failing_results_dicts(
             Build('MOCK Try Trusty', 123))
         self.assertEqual(len(results), 2)
-        self.assertEqual(
-            results, [{
-                'external/wpt/x/failing-test.html': {
-                    DesktopConfig('test-linux-trusty'):
-                    SimpleTestResult(
-                        actual='IMAGE',
-                        expected='PASS',
-                        bug='crbug.com/626703',
-                    ),
-                }}, {
-                'external/wpt/y/webdriver-fail.html': {
-                    DesktopConfig('test-linux-trusty'):
-                    SimpleTestResult(
-                        actual='FAIL',
-                        expected='PASS',
-                        bug='crbug.com/626703',
-                    ),
-                },
-            }])
+        self.assertEqual(results, [{
+            'external/wpt/x/failing-test.html': {
+                DesktopConfig('test-linux-trusty'):
+                SimpleTestResult(
+                    actual='IMAGE',
+                    expected='',
+                    bug='crbug.com/626703',
+                ),
+            }
+        }, {
+            'external/wpt/y/webdriver-fail.html': {
+                DesktopConfig('test-linux-trusty'):
+                SimpleTestResult(
+                    actual='FAIL',
+                    expected='',
+                    bug='crbug.com/626703',
+                ),
+            },
+        }])
 
     def test_merge_same_valued_keys_all_match(self):
         updater = WPTExpectationsUpdater(self.mock_host())
@@ -661,33 +660,30 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                                            DesktopConfig('test-win-win10')]),
             ['Win'])
 
-    def test_merge_dicts_with_conflict_raise_exception(self):
+    def test_merge_dicts_with_differing_status_is_merged(self):
         updater = WPTExpectationsUpdater(self.mock_host())
-        # Both dicts here have the key "one", and the value is not equal.
-        with self.assertRaises(ValueError):
-            updater.merge_dicts({
+        # Both dicts here have the key "one", and the value is not equal. The
+        # actual fields get joined together.
+        result = updater.merge_dicts(
+            {
                 'external/wpt/test/path.html': {
-                    'one': {
-                        'expected': 'FAIL',
-                        'actual': 'PASS'
-                    },
-                    'two': {
-                        'expected': 'FAIL',
-                        'actual': 'TIMEOUT'
-                    },
-                    'three': {
-                        'expected': 'FAIL',
-                        'actual': 'PASS'
-                    },
+                    'one': SimpleTestResult('FAIL', 'PASS', 'bug'),
+                    'two': SimpleTestResult('FAIL', 'TIMEOUT', 'bug'),
+                    'three': SimpleTestResult('FAIL', 'PASS', 'bug'),
                 },
             }, {
                 'external/wpt/test/path.html': {
-                    'one': {
-                        'expected': 'FAIL',
-                        'actual': 'TIMEOUT'
-                    },
+                    'one': SimpleTestResult('FAIL', 'TIMEOUT', 'bug'),
                 }
             })
+        expected_result = {
+            'external/wpt/test/path.html': {
+                'one': SimpleTestResult('FAIL', 'PASS TIMEOUT', 'bug'),
+                'two': SimpleTestResult('FAIL', 'TIMEOUT', 'bug'),
+                'three': SimpleTestResult('FAIL', 'PASS', 'bug'),
+            },
+        }
+        self.assertEqual(result, expected_result)
 
     def test_merge_dicts_merges_second_dict_into_first(self):
         updater = WPTExpectationsUpdater(self.mock_host())
@@ -751,17 +747,18 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater.port_name = lambda b: b.builder_name
         self.assertEqual(
             updater.generate_failing_results_dict(
-                Build(builder_name='test-mac-mac10.10', build_number=1), web_test_list),
-            {
-                'external/wpt/test/name.html': {
-                    DesktopConfig(port_name='test-mac-mac10.10'):
-                    SimpleTestResult(
-                        expected='bar',
-                        actual='foo',
-                        bug='crbug.com/626703',
-                    )
+                Build(builder_name='test-mac-mac10.10', build_number=1),
+                web_test_list), {
+                    'external/wpt/test/name.html': {
+                        DesktopConfig(port_name='test-mac-mac10.10'):
+                        SimpleTestResult(
+                            expected='',
+                            actual='foo',
+                            bug='crbug.com/626703',
+                        )
+                    }
                 }
-            })
+        )
 
     def test_no_expectations_to_write(self):
         host = self.mock_host()
@@ -1261,11 +1258,11 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 ['crbug.com/test external/wpt/x-manual.html [ Skip ]']
             })
 
-    def test_one_platform_has_no_results(self):
-        # In this example, there is a failure that has been observed on
-        # Linux and one Mac port, but the other Mac port has no results at all.
+    def test_same_platform_one_without_results(self):
+        # In this example, there are two configs using the same platform
+        # (Mac10.10), and one of them has no results while the other one does.
         # The specifiers are "filled in" and the failure is assumed to apply
-        # to all Mac platforms.
+        # to the platform with missing results.
         host = self.mock_host()
         updater = WPTExpectationsUpdater(host)
         results = {
@@ -1273,19 +1270,21 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                 (
                     DesktopConfig(port_name='test-linux-precise'),
                     DesktopConfig(port_name='test-linux-trusty'),
-                    DesktopConfig(port_name='test-mac-mac10.11'),
+                    DesktopConfig(port_name='test-mac-mac10.10'),
                 ):
-                SimpleTestResult(
-                    expected='PASS', actual='TEXT', bug='crbug.com/test')
+                SimpleTestResult(expected='PASS',
+                                 actual='TEXT',
+                                 bug='crbug.com/test')
             }
         }
         updater.configs_with_no_results = [
-            DesktopConfig(port_name='test-mac-mac10.10')]
+            DesktopConfig(port_name='test-mac-mac10.10')
+        ]
         self.assertEqual(
             updater.create_line_dict(results), {
                 'external/wpt/x.html': [
                     'crbug.com/test [ Linux ] external/wpt/x.html [ Failure ]',
-                    'crbug.com/test [ Mac ] external/wpt/x.html [ Failure ]',
+                    'crbug.com/test [ Mac10.10 ] external/wpt/x.html [ Failure ]',
                 ]
             })
 
@@ -1411,3 +1410,153 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
                     'crbug.com/test [ Win7 ] external/wpt/x.html [ Failure ]',
                 ]
             })
+
+    def test_inheriting_results(self):
+        # We make sure that platforms that have no results are able to inherit
+        # results from other builds.
+        host = self.mock_host()
+        # Reset the fake list of try builders to use 3 Macs, 2 Wins and 1 Linux.
+        host.builders = BuilderList({
+            'MOCK Try Mac10.10': {
+                'port_name': 'test-mac-mac10.10',
+                'specifiers': ['Mac10.10', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Mac10.11': {
+                'port_name': 'test-mac-mac10.11',
+                'specifiers': ['Mac10.11', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Mac10.12': {
+                'port_name': 'test-mac-mac10.12',
+                'specifiers': ['Mac10.12', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Trusty': {
+                'port_name': 'test-linux-trusty',
+                'specifiers': ['Trusty', 'Release'],
+                'master': 'tryserver.blink',
+                'has_webdriver_tests': True,
+                'is_try_builder': True,
+            },
+            'MOCK Try Win10': {
+                'port_name': 'test-win-win10',
+                'specifiers': ['Win10', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Win7': {
+                'port_name': 'test-win-win7',
+                'specifiers': ['Win7', 'Release'],
+                'is_try_builder': True,
+            },
+        })
+        updater = WPTExpectationsUpdater(host)
+        test_name = 'external/wpt/x.html'
+        results = {
+            test_name: {
+                (DesktopConfig('test-win-win7')):
+                SimpleTestResult(expected='',
+                                 actual='TIMEOUT',
+                                 bug='crbug.com/626703'),
+                (DesktopConfig('test-mac-mac10.10')):
+                SimpleTestResult(expected='',
+                                 actual='CRASH',
+                                 bug='crbug.com/626703'),
+                (DesktopConfig('test-mac-mac10.11')):
+                SimpleTestResult(expected='',
+                                 actual='FAILURE',
+                                 bug='crbug.com/626703')
+            }
+        }
+
+        # Win10 will inherit the result from win7
+        missing_config = DesktopConfig('test-win-win10')
+        tmp_results = copy.deepcopy(results)
+        updater.add_results_for_configs_without_results(
+            tmp_results, [missing_config])
+        inherited_result = tmp_results[test_name][missing_config]
+        self.assertEqual("TIMEOUT", inherited_result.actual)
+
+        # Mac10.12 will inherit the union of results from Mac10.10 and Mac10.11
+        missing_config = DesktopConfig('test-mac-mac10.12')
+        tmp_results = copy.deepcopy(results)
+        updater.add_results_for_configs_without_results(
+            tmp_results, [missing_config])
+        inherited_result = tmp_results[test_name][missing_config]
+        self.assertEqual("FAILURE CRASH", inherited_result.actual)
+
+        # Linux will inherit all results from Mac and Win since there is no
+        # other Linux result to take.
+        missing_config = DesktopConfig('test-linux-trusty')
+        tmp_results = copy.deepcopy(results)
+        updater.add_results_for_configs_without_results(
+            tmp_results, [missing_config])
+        inherited_result = tmp_results[test_name][missing_config]
+        self.assertEqual("FAILURE CRASH TIMEOUT", inherited_result.actual)
+
+    def test_inheriting_results_dedupe(self):
+        # In this test we make sure that we dedupe the inherited results.
+        host = self.mock_host()
+        # Set up a fake list of try builders.
+        # This uses 3 Macs, 2 Wins and 1 Linux.
+        host.builders = BuilderList({
+            'MOCK Try Mac10.10': {
+                'port_name': 'test-mac-mac10.10',
+                'specifiers': ['Mac10.10', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Mac10.11': {
+                'port_name': 'test-mac-mac10.11',
+                'specifiers': ['Mac10.11', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Mac10.12': {
+                'port_name': 'test-mac-mac10.12',
+                'specifiers': ['Mac10.12', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Trusty': {
+                'port_name': 'test-linux-trusty',
+                'specifiers': ['Trusty', 'Release'],
+                'master': 'tryserver.blink',
+                'has_webdriver_tests': True,
+                'is_try_builder': True,
+            },
+            'MOCK Try Win10': {
+                'port_name': 'test-win-win10',
+                'specifiers': ['Win10', 'Release'],
+                'is_try_builder': True,
+            },
+            'MOCK Try Win7': {
+                'port_name': 'test-win-win7',
+                'specifiers': ['Win7', 'Release'],
+                'is_try_builder': True,
+            },
+        })
+        updater = WPTExpectationsUpdater(host)
+        test_name = 'external/wpt/x.html'
+        results = {
+            test_name: {
+                (DesktopConfig('test-win-win7')):
+                SimpleTestResult(expected='',
+                                 actual='TIMEOUT',
+                                 bug='crbug.com/626703'),
+                (DesktopConfig('test-mac-mac10.10')):
+                SimpleTestResult(expected='',
+                                 actual='TIMEOUT',
+                                 bug='crbug.com/626703'),
+                (DesktopConfig('test-mac-mac10.11')):
+                SimpleTestResult(expected='',
+                                 actual='FAILURE',
+                                 bug='crbug.com/626703')
+            }
+        }
+
+        # Linux will inherit all results from Mac and Win since there is no
+        # other Linux result to take. The results are deduped so we should not
+        # get two TIMEOUT statuses in the result.
+        missing_config = DesktopConfig('test-linux-trusty')
+        updater.add_results_for_configs_without_results(
+            results, [missing_config])
+        inherited_result = results[test_name][missing_config]
+        self.assertEqual("FAILURE TIMEOUT", inherited_result.actual)

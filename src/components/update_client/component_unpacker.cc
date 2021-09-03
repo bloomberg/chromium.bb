@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/component_patcher.h"
@@ -64,9 +63,9 @@ bool ComponentUnpacker::Verify() {
   std::vector<std::vector<uint8_t>> required_keys;
   if (!pk_hash_.empty())
     required_keys.push_back(pk_hash_);
-  const crx_file::VerifierResult result =
-      crx_file::Verify(path_, crx_format_, required_keys,
-                       std::vector<uint8_t>(), &public_key_, nullptr);
+  const crx_file::VerifierResult result = crx_file::Verify(
+      path_, crx_format_, required_keys, std::vector<uint8_t>(), &public_key_,
+      nullptr, /*compressed_verified_contents=*/nullptr);
   if (result != crx_file::VerifierResult::OK_FULL &&
       result != crx_file::VerifierResult::OK_DELTA) {
     error_ = UnpackerError::kInvalidFile;

@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 
 #include "base/metrics/histogram_macros.h"
+#import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -104,16 +105,25 @@ const char kInfobarTranslateBadgeTappedHistogram[] =
     case InfobarType::kInfobarTypePasswordSave:
       UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordSaveBannerEventHistogram,
                                 event);
+      if (event == MobileMessagesBannerEvent::Accepted) {
+        LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeStaySafe);
+      }
       break;
     case InfobarType::kInfobarTypePasswordUpdate:
       UMA_HISTOGRAM_ENUMERATION(kInfobarPasswordUpdateBannerEventHistogram,
                                 event);
+      if (event == MobileMessagesBannerEvent::Accepted) {
+        LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeStaySafe);
+      }
       break;
     case InfobarType::kInfobarTypeSaveCard:
       UMA_HISTOGRAM_ENUMERATION(kInfobarSaveCardBannerEventHistogram, event);
       break;
     case InfobarType::kInfobarTypeTranslate:
       UMA_HISTOGRAM_ENUMERATION(kInfobarTranslateBannerEventHistogram, event);
+      break;
+    case InfobarType::kInfobarTypeSaveAutofillAddressProfile:
+      // TODO(crbug.com/1167062): Add metrics.
       break;
   }
 }
@@ -139,6 +149,9 @@ const char kInfobarTranslateBadgeTappedHistogram[] =
     case InfobarType::kInfobarTypeTranslate:
       UMA_HISTOGRAM_ENUMERATION(kInfobarTranslateBannerDismissTypeHistogram,
                                 dismissType);
+      break;
+    case InfobarType::kInfobarTypeSaveAutofillAddressProfile:
+      // TODO(crbug.com/1167062): Add metrics.
       break;
   }
 }
@@ -166,6 +179,9 @@ const char kInfobarTranslateBadgeTappedHistogram[] =
     case InfobarType::kInfobarTypeTranslate:
       UMA_HISTOGRAM_ENUMERATION(kInfobarTranslateModalEventHistogram, event);
       break;
+    case InfobarType::kInfobarTypeSaveAutofillAddressProfile:
+      // TODO(crbug.com/1167062): Add metrics.
+      break;
   }
 }
 
@@ -187,6 +203,9 @@ const char kInfobarTranslateBadgeTappedHistogram[] =
       break;
     case InfobarType::kInfobarTypeTranslate:
       UMA_HISTOGRAM_ENUMERATION(kInfobarTranslateBadgeTappedHistogram, state);
+      break;
+    case InfobarType::kInfobarTypeSaveAutofillAddressProfile:
+      // TODO(crbug.com/1167062): Add metrics.
       break;
   }
 }

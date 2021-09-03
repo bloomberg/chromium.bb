@@ -69,10 +69,7 @@ class AV1DecodeMultiThreadedTest
       delete multi_thread_dec_[i];
   }
 
-  virtual void SetUp() {
-    InitializeConfig();
-    SetMode(libaom_test::kTwoPassGood);
-  }
+  virtual void SetUp() { InitializeConfig(libaom_test::kTwoPassGood); }
 
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {

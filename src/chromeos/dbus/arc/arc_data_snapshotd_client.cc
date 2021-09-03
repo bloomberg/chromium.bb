@@ -19,9 +19,40 @@ namespace chromeos {
 
 namespace {
 
-void OnVoidDBusMethod(VoidDBusMethodCallback callback,
-                      dbus::Response* response) {
-  std::move(callback).Run(response != nullptr);
+void OnBoolMethodCallback(VoidDBusMethodCallback callback,
+                          dbus::Response* response) {
+  if (!response) {
+    std::move(callback).Run(false /* success */);
+    return;
+  }
+  dbus::MessageReader reader(response);
+  bool success;
+  if (!reader.PopBool(&success)) {
+    std::move(callback).Run(false /* success */);
+    return;
+  }
+  std::move(callback).Run(success);
+}
+
+void OnLoadSnapshotMethodCallback(
+    ArcDataSnapshotdClient::LoadSnapshotMethodCallback callback,
+    dbus::Response* response) {
+  if (!response) {
+    std::move(callback).Run(false /* success */, false /* last */);
+    return;
+  }
+  dbus::MessageReader reader(response);
+  bool success;
+  if (!reader.PopBool(&success)) {
+    std::move(callback).Run(false /* success */, false /* last */);
+    return;
+  }
+  bool last;
+  if (!reader.PopBool(&last)) {
+    std::move(callback).Run(success, false /* last */);
+    return;
+  }
+  std::move(callback).Run(success, last);
 }
 
 class ArcDataSnapshotdClientImpl : public ArcDataSnapshotdClient {
@@ -39,8 +70,70 @@ class ArcDataSnapshotdClientImpl : public ArcDataSnapshotdClient {
         arc::data_snapshotd::kArcDataSnapshotdServiceInterface,
         arc::data_snapshotd::kGenerateKeyPairMethod);
     dbus::MessageWriter writer(&method_call);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::BindOnce(&OnVoidDBusMethod, std::move(callback)));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&OnBoolMethodCallback, std::move(callback)));
+  }
+
+  void ClearSnapshot(bool last, VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(
+        arc::data_snapshotd::kArcDataSnapshotdServiceInterface,
+        arc::data_snapshotd::kClearSnapshotMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendBool(last);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&OnBoolMethodCallback, std::move(callback)));
+  }
+
+  void TakeSnapshot(const std::string& account_id,
+                    VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(
+        arc::data_snapshotd::kArcDataSnapshotdServiceInterface,
+        arc::data_snapshotd::kTakeSnapshotMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(account_id);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&OnBoolMethodCallback, std::move(callback)));
+  }
+
+  void LoadSnapshot(const std::string& account_id,
+                    base::OnceCallback<void(bool, bool)> callback) override {
+    dbus::MethodCall method_call(
+        arc::data_snapshotd::kArcDataSnapshotdServiceInterface,
+        arc::data_snapshotd::kLoadSnapshotMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(account_id);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&OnLoadSnapshotMethodCallback, std::move(callback)));
+  }
+
+  void Update(int percent, VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(
+        arc::data_snapshotd::kArcDataSnapshotdServiceInterface,
+        arc::data_snapshotd::kUpdateMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendInt32(percent);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&OnBoolMethodCallback, std::move(callback)));
+  }
+
+  void ConnectToUiCancelledSignal(
+      base::RepeatingClosure signal_callback,
+      base::OnceCallback<void(bool)> on_connected_callback) override {
+    signal_callback_ = std::move(signal_callback);
+    proxy_->ConnectToSignal(
+        arc::data_snapshotd::kArcDataSnapshotdServiceInterface,
+        arc::data_snapshotd::kUiCancelled,
+        base::BindRepeating(
+            &ArcDataSnapshotdClientImpl::OnUiCancelledSignalCallback,
+            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(
+            &ArcDataSnapshotdClientImpl::OnUiCancelledSignalConnectedCallback,
+            weak_ptr_factory_.GetWeakPtr(), std::move(on_connected_callback)));
   }
 
   void WaitForServiceToBeAvailable(
@@ -57,8 +150,32 @@ class ArcDataSnapshotdClientImpl : public ArcDataSnapshotdClient {
   }
 
  private:
+  void OnUiCancelledSignalCallback(dbus::Signal* signal) {
+    DCHECK_EQ(signal->GetInterface(),
+              arc::data_snapshotd::kArcDataSnapshotdServiceInterface);
+    DCHECK_EQ(signal->GetMember(), arc::data_snapshotd::kUiCancelled);
+    DCHECK(!signal_callback_.is_null());
+
+    signal_callback_.Run();
+  }
+
+  void OnUiCancelledSignalConnectedCallback(
+      base::OnceCallback<void(bool)> on_connected_callback,
+      const std::string& interface_name,
+      const std::string& signal_name,
+      bool success) {
+    DCHECK_EQ(interface_name,
+              arc::data_snapshotd::kArcDataSnapshotdServiceInterface);
+    DCHECK_EQ(signal_name, arc::data_snapshotd::kUiCancelled);
+
+    std::move(on_connected_callback).Run(success);
+  }
+
   // Owned by the D-Bus implementation, who outlives this class.
   dbus::ObjectProxy* proxy_ = nullptr;
+
+  // Callback passed to |ConnectToUiCancelledSignal| as a |signal_callback|.
+  base::RepeatingClosure signal_callback_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

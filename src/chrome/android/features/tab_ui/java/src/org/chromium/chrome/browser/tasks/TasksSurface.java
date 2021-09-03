@@ -9,12 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import com.google.android.material.appbar.AppBarLayout;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
-import org.chromium.chrome.browser.ntp.FakeboxDelegate;
+import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 
 /**
@@ -76,7 +77,7 @@ public interface TasksSurface {
      * Called when the native initialization is completed. Anything to construct a TasksSurface but
      * require native initialization should be constructed here.
      */
-    void onFinishNativeInitialization(Context context, FakeboxDelegate fakeboxDelegate);
+    void onFinishNativeInitialization(Context context, OmniboxStub omniboxStub);
 
     /**
      * @param onOffsetChangedListener Registers listener for the offset changes of the header view.
@@ -100,4 +101,17 @@ public interface TasksSurface {
      * Remove the omnibox shrink animation.
      */
     void removeFakeSearchBoxShrinkAnimation();
+
+    /**
+     * Called when the Tasks surface is hidden.
+     */
+    void onHide();
+
+    @VisibleForTesting
+    /** Returns whether the cleanup of MV tiles has been done after hiding the Start surface. */
+    boolean isMVTilesCleanedUp();
+
+    @VisibleForTesting
+    /** Returns whether the MV tiles has been initialized. */
+    boolean isMVTilesInitialized();
 }

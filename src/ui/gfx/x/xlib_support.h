@@ -5,11 +5,13 @@
 #ifndef UI_GFX_X_XLIB_SUPPORT_H_
 #define UI_GFX_X_XLIB_SUPPORT_H_
 
+#include <memory>
 #include <string>
 
 #include "base/component_export.h"
 
 struct _XDisplay;
+struct xcb_connection_t;
 
 namespace x11 {
 
@@ -30,6 +32,9 @@ COMPONENT_EXPORT(X11) void InitXlib();
 
 // Sets an async error handler which only logs an error message.
 COMPONENT_EXPORT(X11) void SetXlibErrorHandler();
+
+// Wraps XFree().
+COMPONENT_EXPORT(X11) void XlibFree(void* data);
 
 // A scoped Xlib display.
 class COMPONENT_EXPORT(X11) XlibDisplay {
@@ -55,6 +60,8 @@ class COMPONENT_EXPORT(X11) XlibDisplayWrapper {
     return display_;
   }
   operator struct _XDisplay *() { return display_; }
+
+  struct xcb_connection_t* GetXcbConnection();
 
   XlibDisplayWrapper(XlibDisplayWrapper&& other);
   XlibDisplayWrapper& operator=(XlibDisplayWrapper&& other);

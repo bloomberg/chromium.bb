@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
@@ -214,7 +213,7 @@ class SerialConnection : public ApiResource,
 
   // Callback to handle the completion of a pending Receive() request.
   ReceiveEventCallback receive_event_cb_;
-  base::Optional<device::mojom::SerialReceiveError> read_error_;
+  absl::optional<device::mojom::SerialReceiveError> read_error_;
 
   // Callback to handle the completion of a pending Send() request.
   SendCompleteCallback send_complete_;
@@ -225,11 +224,11 @@ class SerialConnection : public ApiResource,
 
   // Closure which will trigger a receive timeout unless cancelled. Reset on
   // initialization and after every successful Receive().
-  base::CancelableClosure receive_timeout_task_;
+  base::CancelableOnceClosure receive_timeout_task_;
 
   // Write timeout closure. Reset on initialization and after every successful
   // Send().
-  base::CancelableClosure send_timeout_task_;
+  base::CancelableOnceClosure send_timeout_task_;
 
   // Mojo interface remote corresponding with remote asynchronous I/O handler.
   mojo::Remote<device::mojom::SerialPort> serial_port_;

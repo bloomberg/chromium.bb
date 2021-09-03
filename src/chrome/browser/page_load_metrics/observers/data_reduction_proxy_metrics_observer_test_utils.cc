@@ -4,25 +4,12 @@
 
 #include "chrome/browser/page_load_metrics/observers/data_reduction_proxy_metrics_observer_test_utils.h"
 
-#include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "content/public/test/web_contents_tester.h"
 
 namespace data_reduction_proxy {
-
-previews::PreviewsUserData* PreviewsDataForNavigationHandle(
-    content::NavigationHandle* navigation_handle) {
-  PreviewsUITabHelper* ui_tab_helper =
-      PreviewsUITabHelper::FromWebContents(navigation_handle->GetWebContents());
-  previews::PreviewsUserData* previews_user_data =
-      ui_tab_helper->GetPreviewsUserData(navigation_handle);
-  if (previews_user_data)
-    return previews_user_data;
-  return ui_tab_helper->CreatePreviewsUserDataForNavigationHandle(
-      navigation_handle, 1u);
-}
 
 page_load_metrics::mojom::ResourceDataUpdatePtr
 CreateDataReductionProxyResource(bool was_cached,
@@ -98,8 +85,8 @@ void DataReductionProxyMetricsObserverTestBase::
 // Verify that, if expected and actual are set, their values are equal.
 // Otherwise, verify that both are unset.
 void DataReductionProxyMetricsObserverTestBase::ExpectEqualOrUnset(
-    const base::Optional<base::TimeDelta>& expected,
-    const base::Optional<base::TimeDelta>& actual) {
+    const absl::optional<base::TimeDelta>& expected,
+    const absl::optional<base::TimeDelta>& actual) {
   if (expected && actual) {
     EXPECT_EQ(expected.value(), actual.value());
   } else {
@@ -110,7 +97,6 @@ void DataReductionProxyMetricsObserverTestBase::ExpectEqualOrUnset(
 
 void DataReductionProxyMetricsObserverTestBase::SetUp() {
   page_load_metrics::PageLoadMetricsObserverTestHarness::SetUp();
-  PreviewsUITabHelper::CreateForWebContents(web_contents());
 }
 
 }  // namespace data_reduction_proxy

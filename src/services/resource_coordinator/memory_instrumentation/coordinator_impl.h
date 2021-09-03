@@ -10,8 +10,8 @@
 #include <set>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_request_args.h"
@@ -19,8 +19,10 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/resource_coordinator/memory_instrumentation/queued_request.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/registry.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 #include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace memory_instrumentation {
 
@@ -30,7 +32,7 @@ namespace memory_instrumentation {
 // - Provides global (i.e. for all processes) memory snapshots on demand.
 //   Global snapshots are obtained by requesting in-process snapshots from each
 //   registered client and aggregating them.
-class CoordinatorImpl : public mojom::CoordinatorController,
+class CoordinatorImpl : public Registry,
                         public mojom::Coordinator,
                         public mojom::HeapProfilerHelper {
  public:
@@ -40,20 +42,16 @@ class CoordinatorImpl : public mojom::CoordinatorController,
   // The getter of the unique instance.
   static CoordinatorImpl* GetInstance();
 
-  void BindController(
-      mojo::PendingReceiver<mojom::CoordinatorController> receiver);
-
-  void RegisterHeapProfiler(
-      mojo::PendingRemote<mojom::HeapProfiler> profiler,
-      mojo::PendingReceiver<mojom::HeapProfilerHelper> helper_receiver);
-
-  // mojom::CoordinatorController implementation.
+  // Registry:
+  void RegisterHeapProfiler(mojo::PendingRemote<mojom::HeapProfiler> profiler,
+                            mojo::PendingReceiver<mojom::HeapProfilerHelper>
+                                helper_receiver) override;
   void RegisterClientProcess(
       mojo::PendingReceiver<mojom::Coordinator> receiver,
       mojo::PendingRemote<mojom::ClientProcess> client_process,
       mojom::ProcessType process_type,
       base::ProcessId process_id,
-      const base::Optional<std::string>& service_name) override;
+      const absl::optional<std::string>& service_name) override;
 
   // mojom::Coordinator implementation.
   void RequestGlobalMemoryDump(
@@ -86,17 +84,21 @@ class CoordinatorImpl : public mojom::CoordinatorController,
   using RequestGlobalMemoryDumpInternalCallback =
       base::OnceCallback<void(bool, uint64_t, mojom::GlobalMemoryDumpPtr)>;
   friend class CoordinatorImplTest;             // For testing
+  FRIEND_TEST_ALL_PREFIXES(CoordinatorImplTest,
+                           DumpsAreAddedToTraceWhenRequested);
+  FRIEND_TEST_ALL_PREFIXES(CoordinatorImplTest,
+                           DumpsArentAddedToTraceUnlessRequested);
 
   // Holds metadata and a client pipe connected to every client process.
   struct ClientInfo {
     ClientInfo(mojo::Remote<mojom::ClientProcess> client,
                mojom::ProcessType,
-               base::Optional<std::string> service_name);
+               absl::optional<std::string> service_name);
     ~ClientInfo();
 
     const mojo::Remote<mojom::ClientProcess> client;
     const mojom::ProcessType process_type;
-    const base::Optional<std::string> service_name;
+    const absl::optional<std::string> service_name;
   };
 
   void UnregisterClientProcess(base::ProcessId);
@@ -170,9 +172,6 @@ class CoordinatorImpl : public mojom::CoordinatorController,
   // The key is a |dump_guid|.
   std::map<uint64_t, std::unique_ptr<QueuedVmRegionRequest>>
       in_progress_vm_region_requests_;
-
-  // Receives control messages from the single privileged client of this object.
-  mojo::Receiver<mojom::CoordinatorController> controller_receiver_{this};
 
   // There may be extant callbacks in |queued_memory_dump_requests_|. These
   // receivers must be closed before destroying the un-run callbacks.

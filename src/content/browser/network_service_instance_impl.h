@@ -24,7 +24,7 @@ CONTENT_EXPORT void ResetNetworkServiceForTesting();
 // mojo::Remote<URLLoaderFactory>).
 //
 // Can only be called on the UI thread.  No-op if NetworkService is disabled.
-CONTENT_EXPORT std::unique_ptr<base::CallbackList<void()>::Subscription>
+CONTENT_EXPORT base::CallbackListSubscription
 RegisterNetworkServiceCrashHandler(base::RepeatingClosure handler);
 
 // Corresponds to the "NetworkServiceAvailability" histogram enumeration type in
@@ -53,13 +53,17 @@ enum class SSLKeyLogFileAction {
 
 // TODO(http://crbug.com/934317): Remove these when done debugging renderer
 // hangs.
-CONTENT_EXPORT NetworkServiceAvailability GetNetworkServiceAvailability();
-CONTENT_EXPORT base::TimeDelta GetTimeSinceLastNetworkServiceCrash();
-CONTENT_EXPORT void PingNetworkService(base::OnceClosure closure);
+NetworkServiceAvailability GetNetworkServiceAvailability();
+base::TimeDelta GetTimeSinceLastNetworkServiceCrash();
+void PingNetworkService(base::OnceClosure closure);
 
 // Shuts down the in-process network service or disconnects from the out-of-
 // process one, allowing it to shut down.
 CONTENT_EXPORT void ShutDownNetworkService();
+
+// Returns whether the network sandbox should be enabled for the current
+// platform configuration.
+bool IsNetworkSandboxEnabled();
 
 }  // namespace content
 

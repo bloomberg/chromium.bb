@@ -42,8 +42,6 @@ def _ParseArgs(args):
                       action='store_true',
                       default=False,
                       help='Print a warning about proguard being disabled')
-  parser.add_argument('--dont-even-try',
-                      help='Prints the given message and exits.')
 
   options = parser.parse_args(args)
   options.dex_files = build_utils.ParseGnList(options.dex_files)
@@ -58,12 +56,11 @@ def main(args):
       'apk_path': options.apk_path,
       'native_libs': options.native_libs,
       'dex_files': options.dex_files,
-      'dont_even_try': options.dont_even_try,
       'show_proguard_warning': options.show_proguard_warning,
       'split_globs': options.split_globs,
   }
 
-  with build_utils.AtomicOutput(options.output_path) as f:
+  with build_utils.AtomicOutput(options.output_path, mode='w+') as f:
     json.dump(data, f, indent=2, sort_keys=True)
 
 

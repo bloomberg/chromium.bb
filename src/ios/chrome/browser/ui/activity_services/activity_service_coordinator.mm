@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/activity_services/activity_service_coordinator.h"
 
-#include "base/metrics/histogram_macros.h"
-#include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -24,6 +22,8 @@
 #import "ios/chrome/browser/ui/activity_services/requirements/activity_service_presentation.h"
 #import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
+#import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "net/base/mac/url_conversions.h"
@@ -33,19 +33,9 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// The histogram key to report the latency between the start of the Share Page
-// operation and when the UI is ready to be presented.
-const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
-
-}  // namespace
-
 @interface ActivityServiceCoordinator ()
 
 @property(nonatomic, weak) id<BrowserCommands, FindInPageCommands> handler;
-
-// The time when the Share Page operation started.
-@property(nonatomic, assign) base::TimeTicks sharePageStartTime;
 
 @property(nonatomic, strong) ActivityServiceMediator* mediator;
 
@@ -84,6 +74,11 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
                                    qrGenerationHandler:self.scopedHandler
                                            prefService:browserState->GetPrefs()
                                          bookmarkModel:bookmarkModel];
+
+  SceneState* sceneState =
+      SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
+  self.mediator.promoScheduler =
+      [DefaultBrowserSceneAgent agentFromScene:sceneState].nonModalScheduler;
 
   [self.mediator shareStartedWithScenario:self.params.scenario];
 
@@ -155,8 +150,6 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
 // Fetches the current tab's URL, configures activities and items, and shows
 // an activity view.
 - (void)shareCurrentPage {
-  self.sharePageStartTime = base::TimeTicks::Now();
-
   // Retrieve the current page's URL.
   __weak __typeof(self) weakSelf = self;
   activity_services::RetrieveCanonicalUrl(
@@ -171,12 +164,6 @@ const char kSharePageLatencyHistogram[] = "IOS.SharePageLatency";
       self.browser->GetWebStateList()->GetActiveWebState(), canonicalURL);
   if (!data)
     return;
-
-  if (self.sharePageStartTime != base::TimeTicks()) {
-    UMA_HISTOGRAM_TIMES(kSharePageLatencyHistogram,
-                        base::TimeTicks::Now() - self.sharePageStartTime);
-    self.sharePageStartTime = base::TimeTicks();
-  }
 
   NSArray<ChromeActivityURLSource*>* items =
       [self.mediator activityItemsForData:data];

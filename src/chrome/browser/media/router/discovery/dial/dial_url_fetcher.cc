@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/system_network_context_manager.h"
+#include "chrome/browser/net/system_network_context_manager.h"  // nogncheck
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -24,11 +24,12 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 // The maximum number of retries allowed for GET requests.
 constexpr int kMaxRetries = 2;
 
-// DIAL devices are unlikely to expose uPnP functions other than DIAL, so 256kb
+// DIAL devices are unlikely to expose uPnP functions other than DIAL, so 256KB
 // should be more than sufficient.
 constexpr int kMaxResponseSizeBytes = 262144;
 
@@ -101,23 +102,23 @@ const network::mojom::URLResponseHead* DialURLFetcher::GetResponseHead() const {
 
 void DialURLFetcher::Get(const GURL& url, bool set_origin_header) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  Start(url, "GET", base::nullopt, kMaxRetries, set_origin_header);
+  Start(url, "GET", absl::nullopt, kMaxRetries, set_origin_header);
 }
 
 void DialURLFetcher::Delete(const GURL& url) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  Start(url, "DELETE", base::nullopt, 0, true);
+  Start(url, "DELETE", absl::nullopt, 0, true);
 }
 
 void DialURLFetcher::Post(const GURL& url,
-                          const base::Optional<std::string>& post_data) {
+                          const absl::optional<std::string>& post_data) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   Start(url, "POST", post_data, 0, true);
 }
 
 void DialURLFetcher::Start(const GURL& url,
                            const std::string& method,
-                           const base::Optional<std::string>& post_data,
+                           const absl::optional<std::string>& post_data,
                            int max_retries,
                            bool set_origin_header) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -172,9 +173,16 @@ void DialURLFetcher::Start(const GURL& url,
   StartDownload();
 }
 
-void DialURLFetcher::ReportError(int response_code,
-                                 const std::string& message) {
-  std::move(error_cb_).Run(response_code, message);
+void DialURLFetcher::ReportError(const std::string& message) {
+  std::move(error_cb_).Run(message, GetHttpResponseCode());
+}
+
+absl::optional<int> DialURLFetcher::GetHttpResponseCode() const {
+  if (GetResponseHead() && GetResponseHead()->headers) {
+    int code = GetResponseHead()->headers->response_code();
+    return code == -1 ? absl::nullopt : absl::optional<int>(code);
+  }
+  return absl::nullopt;
 }
 
 void DialURLFetcher::ReportRedirectError(
@@ -185,8 +193,7 @@ void DialURLFetcher::ReportRedirectError(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   loader_.reset();
 
-  // Returning |OK| on error will be treated as unavailable.
-  ReportError(net::Error::OK, "Redirect not allowed");
+  ReportError("Redirect not allowed");
 }
 
 void DialURLFetcher::StartDownload() {
@@ -214,19 +221,18 @@ void DialURLFetcher::ProcessResponse(std::unique_ptr<std::string> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   int response_code = loader_->NetError();
   if (response_code != net::Error::OK) {
-    ReportError(response_code,
-                base::StringPrintf("HTTP response error: %d", response_code));
+    ReportError(base::StringPrintf("Internal net::Error: %d", response_code));
     return;
   }
 
   // Response for POST and DELETE may be empty.
   if (!response || (method_ == "GET" && response->empty())) {
-    ReportError(response_code, "Missing or empty response");
+    ReportError("Missing or empty response");
     return;
   }
 
   if (!base::IsStringUTF8(*response)) {
-    ReportError(response_code, "Invalid response encoding");
+    ReportError("Invalid response encoding");
     return;
   }
 

@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
+#include "base/scoped_observation.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_hide_callback.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
@@ -113,10 +113,10 @@ class ExclusiveAccessBubbleViews : public ExclusiveAccessBubble,
 
   // The contents of the popup.
   SubtleNotificationView* view_;
-  base::string16 browser_fullscreen_exit_accelerator_;
+  std::u16string browser_fullscreen_exit_accelerator_;
 
-  ScopedObserver<FullscreenController, FullscreenObserver> fullscreen_observer_{
-      this};
+  base::ScopedObservation<FullscreenController, FullscreenObserver>
+      fullscreen_observation_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExclusiveAccessBubbleViews);
 };

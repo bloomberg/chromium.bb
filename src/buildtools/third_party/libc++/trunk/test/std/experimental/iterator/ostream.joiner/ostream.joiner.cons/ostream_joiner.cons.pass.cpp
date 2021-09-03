@@ -6,7 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
-// UNSUPPORTED: c++98, c++03, c++11
+// UNSUPPORTED: c++03, c++11
+// UNSUPPORTED: libcpp-has-no-localization
 
 // <experimental/iterator>
 //
@@ -54,6 +55,6 @@ int main(int, char**) {
     { exper::ostream_joiner<std::wstring, wchar_t> oj(std::wcout, ten); }
     { exper::ostream_joiner<int, wchar_t>          oj(std::wcout, eleven); }
 
-    
+
   return 0;
 }

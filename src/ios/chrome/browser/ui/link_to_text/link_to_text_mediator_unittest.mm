@@ -30,7 +30,7 @@
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/fake_web_frames_manager.h"
-#import "ios/web/public/test/fakes/test_web_state.h"
+#import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
@@ -40,7 +40,7 @@
 #import "third_party/ocmock/gtest_support.h"
 
 using shared_highlighting::TextFragment;
-using web::TestWebState;
+using web::FakeWebState;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using base::test::ios::kWaitForJSCompletionTimeout;
 using shared_highlighting::LinkGenerationError;
@@ -59,7 +59,7 @@ const TextFragment kTestTextFragment = TextFragment("selected text");
 const char kSuccessUkmMetric[] = "Success";
 const char kErrorUkmMetric[] = "Error";
 
-class TestWebStateListDelegate : public WebStateListDelegate {
+class FakeWebStateListDelegate : public WebStateListDelegate {
   void WillAddWebState(web::WebState* web_state) override {}
   void WebStateDetached(web::WebState* web_state) override {}
 };
@@ -72,7 +72,7 @@ class LinkToTextMediatorTest : public PlatformTest {
     feature_list_.InitAndEnableFeature(kSharedHighlightingIOS);
     mocked_consumer_ = OCMStrictProtocolMock(@protocol(LinkToTextConsumer));
 
-    auto web_state = std::make_unique<TestWebState>();
+    auto web_state = std::make_unique<FakeWebState>();
     web_state_ = web_state.get();
     web_state_list_.InsertWebState(0, std::move(web_state),
                                    WebStateList::INSERT_ACTIVATE,
@@ -82,8 +82,8 @@ class LinkToTextMediatorTest : public PlatformTest {
     web_frames_manager_ = web_frames_manager.get();
     web_state_->SetWebFramesManager(std::move(web_frames_manager));
 
-    auto main_frame = std::make_unique<web::FakeWebFrame>(
-        web::kMainFakeFrameId, true, GURL("https://chromium.org/"));
+    auto main_frame = web::FakeWebFrame::Create(web::kMainFakeFrameId, true,
+                                                GURL("https://chromium.org/"));
     main_frame_ = main_frame.get();
     web_frames_manager_->AddWebFrame(std::move(main_frame));
 
@@ -113,10 +113,8 @@ class LinkToTextMediatorTest : public PlatformTest {
                                                 consumer:mocked_consumer_];
   }
 
-  void SetLinkToTextResponse(std::unique_ptr<base::Value> value,
-                             CGFloat zoom_scale) {
-    main_frame_->AddJsResultForFunctionCall(std::move(value),
-                                            kJavaScriptFunctionName);
+  void SetLinkToTextResponse(base::Value* value, CGFloat zoom_scale) {
+    main_frame_->AddJsResultForFunctionCall(value, kJavaScriptFunctionName);
 
     fake_scroll_view_.contentInset =
         UIEdgeInsetsMake(kFakeTopInset, kFakeLeftInset, 0, 0);
@@ -145,6 +143,10 @@ class LinkToTextMediatorTest : public PlatformTest {
     response_value->SetStringKey("selectedText", selected_text);
     response_value->SetKey("selectionRect", std::move(rect_value));
     return response_value;
+  }
+
+  void SetCanonicalUrl(base::Value* value, const std::string& canonical_url) {
+    value->SetStringKey("canonicalUrl", canonical_url);
   }
 
   std::unique_ptr<base::Value> CreateErrorResponse(
@@ -180,9 +182,9 @@ class LinkToTextMediatorTest : public PlatformTest {
       web::WebTaskEnvironment::Options::DEFAULT,
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   base::test::ScopedFeatureList feature_list_;
-  TestWebStateListDelegate web_state_list_delegate_;
+  FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;
-  TestWebState* web_state_;
+  FakeWebState* web_state_;
   ukm::TestAutoSetUkmRecorder ukm_recorder_;
   web::FakeWebFramesManager* web_frames_manager_;
   web::FakeWebFrame* main_frame_;
@@ -191,13 +193,6 @@ class LinkToTextMediatorTest : public PlatformTest {
   UIScrollView* fake_scroll_view_;
   id mocked_consumer_;
 };
-
-// Tests that the mediator should offer link to text to HTML pages that can
-// call JavaScript functions.
-TEST_F(LinkToTextMediatorTest, ShouldOfferLinkToText) {
-  // By default, all fake instances return the right values.
-  EXPECT_TRUE([mediator_ shouldOfferLinkToText]);
-}
 
 // Tests that the mediator should not offer link to text to pages that are not
 // HTML.
@@ -225,7 +220,7 @@ TEST_F(LinkToTextMediatorTest, HandleLinkToTextSelectionTriggersCommandNoZoom) {
 
   std::unique_ptr<base::Value> fake_response =
       CreateSuccessResponse(kTestQuote, selection_rect);
-  SetLinkToTextResponse(std::move(fake_response), zoom);
+  SetLinkToTextResponse(fake_response.get(), zoom);
 
   __block BOOL callback_invoked = NO;
 
@@ -270,7 +265,7 @@ TEST_F(LinkToTextMediatorTest,
 
   std::unique_ptr<base::Value> fake_response =
       CreateSuccessResponse(kTestQuote, selection_rect);
-  SetLinkToTextResponse(std::move(fake_response), zoom);
+  SetLinkToTextResponse(fake_response.get(), zoom);
 
   __block BOOL callback_invoked = NO;
 
@@ -310,7 +305,7 @@ TEST_F(LinkToTextMediatorTest, LinkGenerationError) {
 
   std::unique_ptr<base::Value> error_response =
       CreateErrorResponse(LinkGenerationOutcome::kInvalidSelection);
-  SetLinkToTextResponse(std::move(error_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(error_response.get(), /*zoom=*/1.0);
 
   __block BOOL callback_invoked = NO;
   [[[mocked_consumer_ expect] andDo:^(NSInvocation*) {
@@ -343,7 +338,7 @@ TEST_F(LinkToTextMediatorTest, EmptyResponseLinkGenerationError) {
   base::HistogramTester histogram_tester;
 
   std::unique_ptr<base::Value> empty_response = std::make_unique<base::Value>();
-  SetLinkToTextResponse(std::move(empty_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(empty_response.get(), /*zoom=*/1.0);
 
   __block BOOL callback_invoked = NO;
   [[[mocked_consumer_ expect] andDo:^(NSInvocation*) {
@@ -378,7 +373,7 @@ TEST_F(LinkToTextMediatorTest, BadResponseLinkGenerationError) {
   std::unique_ptr<base::Value> malformed_response =
       std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
   malformed_response->SetStringKey("somethingElse", "abc");
-  SetLinkToTextResponse(std::move(malformed_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(malformed_response.get(), /*zoom=*/1.0);
 
   __block BOOL callback_invoked = NO;
   [[[mocked_consumer_ expect] andDo:^(NSInvocation*) {
@@ -412,7 +407,7 @@ TEST_F(LinkToTextMediatorTest, StringResponseLinkGenerationError) {
 
   std::unique_ptr<base::Value> string_response =
       std::make_unique<base::Value>("someValue");
-  SetLinkToTextResponse(std::move(string_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(string_response.get(), /*zoom=*/1.0);
 
   __block BOOL callback_invoked = NO;
   [[[mocked_consumer_ expect] andDo:^(NSInvocation*) {
@@ -446,7 +441,7 @@ TEST_F(LinkToTextMediatorTest, LinkGenerationSuccessButNoPayload) {
 
   std::unique_ptr<base::Value> success_response =
       CreateErrorResponse(LinkGenerationOutcome::kSuccess);
-  SetLinkToTextResponse(std::move(success_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(success_response.get(), /*zoom=*/1.0);
 
   __block BOOL callback_invoked = NO;
   [[[mocked_consumer_ expect] andDo:^(NSInvocation*) {
@@ -482,7 +477,7 @@ TEST_F(LinkToTextMediatorTest, LinkGenerationTimeout) {
   // will simply invoke the callback with nullptr (due to a timeout).
   std::unique_ptr<base::Value> success_response =
       CreateErrorResponse(LinkGenerationOutcome::kSuccess);
-  SetLinkToTextResponse(std::move(success_response), /*zoom=*/1.0);
+  SetLinkToTextResponse(success_response.get(), /*zoom=*/1.0);
 
   main_frame_->set_force_timeout(true);
 
@@ -513,4 +508,76 @@ TEST_F(LinkToTextMediatorTest, LinkGenerationTimeout) {
   ValidateLinkGeneratedErrorUkm(error);
   histogram_tester.ExpectTotalCount(
       "SharedHighlights.LinkGenerated.Error.TimeToGenerate", 1);
+}
+
+// Tests that a canonical URL is being used as base for the generated link when
+// the current page is HTTPS.
+TEST_F(LinkToTextMediatorTest, WithHttpsAndCanonicalUrl) {
+  CGFloat zoom = 1;
+  CGRect selection_rect = CGRectMake(100, 150, 250, 250);
+
+  std::unique_ptr<base::Value> fake_response =
+      CreateSuccessResponse(kTestQuote, selection_rect);
+  std::string canonical_url = "https://www.example.com/";
+  SetCanonicalUrl(fake_response.get(), canonical_url);
+  SetLinkToTextResponse(fake_response.get(), zoom);
+
+  __block BOOL callback_invoked = NO;
+
+  [[mocked_consumer_ expect]
+      generatedPayload:[OCMArg checkWithBlock:^BOOL(
+                                   LinkToTextPayload* payload) {
+        // Validate that the generated URL is based on the canonical URL.
+        EXPECT_TRUE(payload.URL.is_valid());
+        EXPECT_TRUE(GURL(canonical_url).EqualsIgnoringRef(payload.URL));
+        callback_invoked = YES;
+        return YES;
+      }]];
+
+  [mediator_ handleLinkToTextSelection];
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^BOOL {
+    base::RunLoop().RunUntilIdle();
+    return callback_invoked;
+  }));
+
+  [mocked_consumer_ verify];
+}
+
+// Tests that a canonical URL is not being used as base for the generated link
+// when the current page is not HTTPS.
+TEST_F(LinkToTextMediatorTest, NotHttpsAndCanonicalUrl) {
+  CGFloat zoom = 1;
+  CGRect selection_rect = CGRectMake(100, 150, 250, 250);
+
+  // Set WebState's URL to something not HTTPS.
+  GURL new_base_url("http://chromium.org");
+  web_state_->SetCurrentURL(new_base_url);
+
+  std::unique_ptr<base::Value> fake_response =
+      CreateSuccessResponse(kTestQuote, selection_rect);
+  std::string canonical_url = "https://www.example.com/";
+  SetCanonicalUrl(fake_response.get(), canonical_url);
+  SetLinkToTextResponse(fake_response.get(), zoom);
+
+  __block BOOL callback_invoked = NO;
+
+  [[mocked_consumer_ expect]
+      generatedPayload:[OCMArg checkWithBlock:^BOOL(
+                                   LinkToTextPayload* payload) {
+        // Validate that the generated URL is not based on the canonical URL.
+        EXPECT_TRUE(payload.URL.is_valid());
+        EXPECT_TRUE(new_base_url.EqualsIgnoringRef(payload.URL));
+        callback_invoked = YES;
+        return YES;
+      }]];
+
+  [mediator_ handleLinkToTextSelection];
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^BOOL {
+    base::RunLoop().RunUntilIdle();
+    return callback_invoked;
+  }));
+
+  [mocked_consumer_ verify];
 }

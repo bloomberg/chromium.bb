@@ -14,8 +14,19 @@
 
 namespace device {
 struct OpenXrExtensionMethods {
+  // D3D
   PFN_xrGetD3D11GraphicsRequirementsKHR xrGetD3D11GraphicsRequirementsKHR{
       nullptr};
+
+  // Hand Tracking
+  PFN_xrCreateHandTrackerEXT xrCreateHandTrackerEXT{nullptr};
+  PFN_xrDestroyHandTrackerEXT xrDestroyHandTrackerEXT{nullptr};
+  PFN_xrLocateHandJointsEXT xrLocateHandJointsEXT{nullptr};
+
+  // Anchors
+  PFN_xrCreateSpatialAnchorMSFT xrCreateSpatialAnchorMSFT{nullptr};
+  PFN_xrDestroySpatialAnchorMSFT xrDestroySpatialAnchorMSFT{nullptr};
+  PFN_xrCreateSpatialAnchorSpaceMSFT xrCreateSpatialAnchorSpaceMSFT{nullptr};
 };
 
 class OpenXrExtensionEnumeration {

@@ -52,8 +52,8 @@ class NotificationUIManagerTest : public BrowserWithTestWindowTest {
 
   const Notification GetANotification(const std::string& id) {
     return Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE, id, base::string16(),
-        base::string16(), gfx::Image(), base::string16(),
+        message_center::NOTIFICATION_TYPE_SIMPLE, id, std::u16string(),
+        std::u16string(), gfx::Image(), std::u16string(),
         GURL("chrome-extension://adflkjsdflkdsfdsflkjdsflkdjfs"),
         NotifierId(NotifierType::APPLICATION, "adflkjsdflkdsfdsflkjdsflkdjfs"),
         message_center::RichNotificationData(),
@@ -81,6 +81,8 @@ TEST_F(NotificationUIManagerTest, AddNotificationOnShutdown) {
   EXPECT_TRUE(message_center()->NotificationCount() == 0);
   notification_manager()->Add(GetANotification("test2"), &profile);
   EXPECT_TRUE(message_center()->NotificationCount() == 0);
+
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(NotificationUIManagerTest, UpdateNotification) {
@@ -91,6 +93,8 @@ TEST_F(NotificationUIManagerTest, UpdateNotification) {
   ASSERT_TRUE(
       notification_manager()->Update(GetANotification("test"), &profile));
   EXPECT_TRUE(message_center()->NotificationCount() == 1);
+
+  base::RunLoop().RunUntilIdle();
 }
 
 // Regression test for crbug.com/767868

@@ -13,7 +13,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/ash/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/process_snapshot_server.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/providers/vm/crostini_process_task.h"
@@ -119,7 +119,7 @@ bool PluginVmExtractVmNameAndOwnerId(const std::string& arg,
     return false;
 
   const base::FilePath vm_disk_path(
-      base::StringPiece(arg.begin(), arg.end() - strlen(kArgEnd)));
+      base::MakeStringPiece(arg.begin(), arg.end() - strlen(kArgEnd)));
 
   std::vector<std::string> components;
   vm_disk_path.GetComponents(&components);

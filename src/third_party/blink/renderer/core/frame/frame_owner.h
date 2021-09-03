@@ -43,18 +43,6 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual void AddResourceTiming(const ResourceTimingInfo&) = 0;
   virtual void DispatchLoad() = 0;
 
-  // On load failure, a frame can ask its owner to render fallback content
-  // which replaces the frame contents.
-  virtual bool CanRenderFallbackContent() const = 0;
-
-  // The argument refers to the frame with the failed navigation. Note that this
-  // is not always the ContentFrame() for this owner; this argument is needed to
-  // support showing fallback using DOM of parent frame in a separate process.
-  // The use case is limited to RemoteFrameOwner when the corresponding local
-  // FrameOwner in parent process is an <object>. In such cases the frame with
-  // failed navigation could be provisional (cross-site navigations).
-  virtual void RenderFallbackContent(Frame*) = 0;
-
   // The intrinsic dimensions of the embedded object changed. This is only
   // relevant for SVG documents that are embedded via <object> or <embed>.
   virtual void IntrinsicSizingInfoChanged() = 0;
@@ -73,8 +61,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual bool AllowFullscreen() const = 0;
   virtual bool AllowPaymentRequest() const = 0;
   virtual bool IsDisplayNone() const = 0;
-  virtual mojom::ColorScheme GetColorScheme() const = 0;
-  virtual AtomicString RequiredCsp() const = 0;
+  virtual mojom::blink::ColorScheme GetColorScheme() const = 0;
 
   // Returns whether or not children of the owned frame should be lazily loaded.
   virtual bool ShouldLazyLoadChildren() const = 0;
@@ -137,8 +124,6 @@ class CORE_EXPORT DummyFrameOwner final
   }
   void AddResourceTiming(const ResourceTimingInfo&) override {}
   void DispatchLoad() override {}
-  bool CanRenderFallbackContent() const override { return false; }
-  void RenderFallbackContent(Frame*) override {}
   void IntrinsicSizingInfoChanged() override {}
   void SetNeedsOcclusionTracking(bool) override {}
   AtomicString BrowsingContextContainerName() const override {
@@ -152,10 +137,9 @@ class CORE_EXPORT DummyFrameOwner final
   bool AllowFullscreen() const override { return false; }
   bool AllowPaymentRequest() const override { return false; }
   bool IsDisplayNone() const override { return false; }
-  mojom::ColorScheme GetColorScheme() const override {
-    return mojom::ColorScheme::kLight;
+  mojom::blink::ColorScheme GetColorScheme() const override {
+    return mojom::blink::ColorScheme::kLight;
   }
-  AtomicString RequiredCsp() const override { return g_null_atom; }
   bool ShouldLazyLoadChildren() const override { return false; }
 
  private:

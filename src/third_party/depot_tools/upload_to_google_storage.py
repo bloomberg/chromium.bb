@@ -167,9 +167,11 @@ def upload_to_google_storage(
   # We want to hash everything in a single thread since its faster.
   # The bottleneck is in disk IO, not CPU.
   hashing_start = time.time()
+  has_missing_files = False
   for filename in input_filenames:
     if not os.path.exists(filename):
       stdout_queue.put('Main> Error: %s not found, skipping.' % filename)
+      has_missing_files = True
       continue
     if os.path.exists('%s.sha1' % filename) and skip_hashing:
       stdout_queue.put(
@@ -208,6 +210,9 @@ def upload_to_google_storage(
     max_ret_code = max(ret_code, max_ret_code)
     if message:
       print(message, file=sys.stderr)
+  if has_missing_files:
+    print('One or more input files missing', file=sys.stderr)
+    max_ret_code = max(1, max_ret_code)
 
   if not max_ret_code:
     print('Success!')

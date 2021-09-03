@@ -6,8 +6,12 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/rand_util.h"
 #include "base/time/default_clock.h"
 #include "base/util/values/values_util.h"
+#include "chrome/browser/permissions/permission_actions_history.h"
 #include "chrome/browser/permissions/prediction_service_factory.h"
 #include "chrome/browser/permissions/prediction_service_request.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,37 +30,38 @@ using QuietUiReason = PredictionBasedPermissionUiSelector::QuietUiReason;
 using Decision = PredictionBasedPermissionUiSelector::Decision;
 
 constexpr auto VeryUnlikely = permissions::
-    PermissionSuggestion_Likelihood_DiscretizedLikelihood_VERY_UNLIKELY;
+    PermissionPrediction_Likelihood_DiscretizedLikelihood_VERY_UNLIKELY;
 
 // The data we consider can only be at most 28 days old to match the data that
 // the ML model is built on.
 constexpr base::TimeDelta kPermissionActionCutoffAge =
     base::TimeDelta::FromDays(28);
 
-constexpr char kPermissionActionEntryActionKey[] = "action";
-constexpr char kPermissionActionEntryTimestampKey[] = "time";
+// Only send requests if there are at least 4 action in the user's history for
+// the particular permission type.
+constexpr size_t kRequestedPermissionMinimumHistoricalActions = 4;
 
-base::Optional<
-    permissions::PermissionSuggestion_Likelihood_DiscretizedLikelihood>
+absl::optional<
+    permissions::PermissionPrediction_Likelihood_DiscretizedLikelihood>
 ParsePredictionServiceMockLikelihood(const std::string& value) {
   if (value == "very-unlikely") {
     return permissions::
-        PermissionSuggestion_Likelihood_DiscretizedLikelihood_VERY_UNLIKELY;
+        PermissionPrediction_Likelihood_DiscretizedLikelihood_VERY_UNLIKELY;
   } else if (value == "unlikely") {
     return permissions::
-        PermissionSuggestion_Likelihood_DiscretizedLikelihood_UNLIKELY;
+        PermissionPrediction_Likelihood_DiscretizedLikelihood_UNLIKELY;
   } else if (value == "neutral") {
     return permissions::
-        PermissionSuggestion_Likelihood_DiscretizedLikelihood_NEUTRAL;
+        PermissionPrediction_Likelihood_DiscretizedLikelihood_NEUTRAL;
   } else if (value == "likely") {
     return permissions::
-        PermissionSuggestion_Likelihood_DiscretizedLikelihood_LIKELY;
+        PermissionPrediction_Likelihood_DiscretizedLikelihood_LIKELY;
   } else if (value == "very-likely") {
     return permissions::
-        PermissionSuggestion_Likelihood_DiscretizedLikelihood_VERY_LIKELY;
+        PermissionPrediction_Likelihood_DiscretizedLikelihood_VERY_LIKELY;
   }
 
-  return base::nullopt;
+  return absl::nullopt;
 }
 
 bool ShouldPredictionTriggerQuietUi(
@@ -85,31 +90,49 @@ PredictionBasedPermissionUiSelector::~PredictionBasedPermissionUiSelector() =
 void PredictionBasedPermissionUiSelector::SelectUiToUse(
     permissions::PermissionRequest* request,
     DecisionMadeCallback callback) {
-  if (!IsAllowedToUseAssistedPrompts()) {
-    std::move(callback).Run(Decision::UseNormalUiAndShowNoWarning());
+  VLOG(1) << "[CPSS] Selector activated";
+  callback_ = std::move(callback);
+  last_request_grant_likelihood_ = absl::nullopt;
+
+  if (!IsAllowedToUseAssistedPrompts(request->GetRequestType())) {
+    VLOG(1) << "[CPSS] Configuration either does not allows CPSS requests or "
+               "the request was held back";
+    std::move(callback_).Run(Decision::UseNormalUiAndShowNoWarning());
+    return;
+  }
+
+  auto features = BuildPredictionRequestFeatures(request);
+  if (features.requested_permission_counts.total() <
+      kRequestedPermissionMinimumHistoricalActions) {
+    VLOG(1) << "[CPSS] Historic prompt count ("
+            << features.requested_permission_counts.total()
+            << ") is smaller than threshold ("
+            << kRequestedPermissionMinimumHistoricalActions << ")";
+    std::move(callback_).Run(Decision::UseNormalUiAndShowNoWarning());
     return;
   }
 
   if (likelihood_override_for_testing_.has_value()) {
+    VLOG(1) << "[CPSS] Using likelihood override value that was provided via "
+               "command line";
     if (ShouldPredictionTriggerQuietUi(
             likelihood_override_for_testing_.value())) {
-      std::move(callback).Run(
+      std::move(callback_).Run(
           Decision(QuietUiReason::kPredictedVeryUnlikelyGrant,
                    Decision::ShowNoWarning()));
     } else {
-      std::move(callback).Run(Decision::UseNormalUiAndShowNoWarning());
+      std::move(callback_).Run(Decision::UseNormalUiAndShowNoWarning());
     }
     return;
   }
 
-  last_request_grant_likelihood_ = base::nullopt;
-
   DCHECK(!request_);
   permissions::PredictionService* service =
       PredictionServiceFactory::GetForProfile(profile_);
-  callback_ = std::move(callback);
+
+  VLOG(1) << "[CPSS] Starting prediction service request";
   request_ = std::make_unique<PredictionServiceRequest>(
-      service, BuildPredictionRequestFeatures(request),
+      service, features,
       base::BindOnce(
           &PredictionBasedPermissionUiSelector::LookupReponseReceived,
           base::Unretained(this)));
@@ -120,7 +143,12 @@ void PredictionBasedPermissionUiSelector::Cancel() {
   callback_.Reset();
 }
 
-base::Optional<permissions::PermissionUmaUtil::PredictionGrantLikelihood>
+bool PredictionBasedPermissionUiSelector::IsPermissionRequestSupported(
+    permissions::RequestType request_type) {
+  return request_type == permissions::RequestType::kNotifications;
+}
+
+absl::optional<permissions::PermissionUmaUtil::PredictionGrantLikelihood>
 PredictionBasedPermissionUiSelector::PredictedGrantLikelihoodForUKM() {
   return last_request_grant_likelihood_;
 }
@@ -130,49 +158,18 @@ PredictionBasedPermissionUiSelector::BuildPredictionRequestFeatures(
     permissions::PermissionRequest* request) {
   permissions::PredictionRequestFeatures features;
   features.gesture = request->GetGestureType();
-  features.type = request->GetPermissionRequestType();
-  auto* permission_actions =
-      profile_->GetPrefs()->GetList(prefs::kNotificationPermissionActions);
+  features.type = request->GetRequestType();
 
   base::Time cutoff = base::Time::Now() - kPermissionActionCutoffAge;
-  for (const auto& action : *permission_actions) {
-    const base::Optional<base::Time> timestamp =
-        util::ValueToTime(action.FindKey(kPermissionActionEntryTimestampKey));
 
-    if (!timestamp || *timestamp < cutoff)
-      continue;
+  auto* action_history = PermissionActionsHistory::GetForProfile(profile_);
 
-    const base::Optional<int> past_action_as_int =
-        action.FindIntKey(kPermissionActionEntryActionKey);
-    DCHECK(past_action_as_int);
+  auto actions = action_history->GetHistory(
+      cutoff, permissions::RequestType::kNotifications);
+  FillInActionCounts(&features.requested_permission_counts, actions);
 
-    const permissions::PermissionAction past_action =
-        static_cast<permissions::PermissionAction>(*past_action_as_int);
-
-    // TODO(andypaicu): implement recording all prompts outcomes regardless of
-    // type. We currently only count notification prompts.
-    switch (past_action) {
-      case permissions::PermissionAction::DENIED:
-        features.requested_permission_counts.denies++;
-        features.all_permission_counts.denies++;
-        break;
-      case permissions::PermissionAction::GRANTED:
-        features.requested_permission_counts.grants++;
-        features.all_permission_counts.grants++;
-        break;
-      case permissions::PermissionAction::DISMISSED:
-        features.requested_permission_counts.dismissals++;
-        features.all_permission_counts.dismissals++;
-        break;
-      case permissions::PermissionAction::IGNORED:
-        features.requested_permission_counts.ignores++;
-        features.all_permission_counts.ignores++;
-        break;
-      default:
-        // Anything else is ignored.
-        break;
-    }
-  }
+  actions = action_history->GetHistory(cutoff);
+  FillInActionCounts(&features.all_permission_counts, actions);
 
   return features;
 }
@@ -180,15 +177,20 @@ PredictionBasedPermissionUiSelector::BuildPredictionRequestFeatures(
 void PredictionBasedPermissionUiSelector::LookupReponseReceived(
     bool lookup_succesful,
     bool response_from_cache,
-    std::unique_ptr<permissions::GetSuggestionsResponse> response) {
+    std::unique_ptr<permissions::GeneratePredictionsResponse> response) {
   request_.reset();
-  if (!lookup_succesful || !response || response->suggestion_size() == 0) {
+  if (!lookup_succesful || !response || response->prediction_size() == 0) {
+    VLOG(1) << "[CPSS] Prediction service request failed";
     std::move(callback_).Run(Decision::UseNormalUiAndShowNoWarning());
     return;
   }
 
   last_request_grant_likelihood_ =
-      response->suggestion(0).grant_likelihood().discretized_likelihood();
+      response->prediction(0).grant_likelihood().discretized_likelihood();
+
+  VLOG(1)
+      << "[CPSS] Prediction service request succeeded and received likelihood: "
+      << last_request_grant_likelihood_.value();
 
   if (ShouldPredictionTriggerQuietUi(last_request_grant_likelihood_.value())) {
     std::move(callback_).Run(Decision(
@@ -199,10 +201,58 @@ void PredictionBasedPermissionUiSelector::LookupReponseReceived(
   std::move(callback_).Run(Decision::UseNormalUiAndShowNoWarning());
 }
 
-bool PredictionBasedPermissionUiSelector::IsAllowedToUseAssistedPrompts() {
+bool PredictionBasedPermissionUiSelector::IsAllowedToUseAssistedPrompts(
+    permissions::RequestType request_type) {
   // We need to also check `kQuietNotificationPrompts` here since there is no
   // generic safeguard anywhere else in the stack.
-  return base::FeatureList::IsEnabled(features::kQuietNotificationPrompts) &&
-         base::FeatureList::IsEnabled(features::kPermissionPredictions) &&
-         safe_browsing::IsEnhancedProtectionEnabled(*(profile_->GetPrefs()));
+  if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts) ||
+      !safe_browsing::IsSafeBrowsingEnabled(*(profile_->GetPrefs()))) {
+    return false;
+  }
+  double hold_back_chance = 0.0;
+  bool is_permissions_predictions_enabled = false;
+  switch (request_type) {
+    case permissions::RequestType::kNotifications:
+      is_permissions_predictions_enabled =
+          base::FeatureList::IsEnabled(features::kPermissionPredictions);
+      hold_back_chance = features::kPermissionPredictionsHoldbackChance.Get();
+      break;
+    default:
+      NOTREACHED();
+  }
+  if (!is_permissions_predictions_enabled)
+    return false;
+
+  const bool should_hold_back =
+      hold_back_chance && base::RandDouble() < hold_back_chance;
+  // Only recording the hold back UMA histogram if the request was actually
+  // eligible for an assisted prompt
+  base::UmaHistogramBoolean("Permissions.PredictionService.Request",
+                            !should_hold_back);
+  return !should_hold_back;
+}
+
+// static
+void PredictionBasedPermissionUiSelector::FillInActionCounts(
+    permissions::PredictionRequestFeatures::ActionCounts* counts,
+    const std::vector<PermissionActionsHistory::Entry>& actions) {
+  for (const auto& entry : actions) {
+    switch (entry.action) {
+      case permissions::PermissionAction::DENIED:
+        counts->denies++;
+        break;
+      case permissions::PermissionAction::GRANTED:
+        counts->grants++;
+        break;
+      case permissions::PermissionAction::DISMISSED:
+        counts->dismissals++;
+        break;
+      case permissions::PermissionAction::IGNORED:
+        counts->ignores++;
+        break;
+      default:
+        // Anything else is ignored.
+        break;
+    }
+  }
 }

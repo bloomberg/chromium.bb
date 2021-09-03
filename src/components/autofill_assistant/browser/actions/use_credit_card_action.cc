@@ -10,9 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
@@ -24,6 +22,7 @@
 #include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/field_formatter.h"
 #include "components/autofill_assistant/browser/user_model.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill_assistant {
 
@@ -74,16 +73,16 @@ void UseCreditCardAction::InternalProcessAction(
               << *credit_card_value;
     }
     auto* credit_card = delegate_->GetUserModel()->GetCreditCard(
-        credit_card_value->credit_cards().values(0).guid());
+        credit_card_value->credit_cards().values(0));
     if (credit_card == nullptr) {
-      VLOG(1) << "UseCreditCard failed: card not found for guid "
+      VLOG(1) << "UseCreditCard failed: card not found for: "
               << *credit_card_value;
       EndAction(ClientStatus(PRECONDITION_FAILED));
       return;
     }
     credit_card_ = std::make_unique<autofill::CreditCard>(*credit_card);
   } else {
-    auto* credit_card = delegate_->GetUserData()->selected_card_.get();
+    const auto* credit_card = delegate_->GetUserData()->selected_card();
     if (credit_card == nullptr) {
       VLOG(1) << "UseCreditCard failed: card not found in user_data";
       EndAction(ClientStatus(PRECONDITION_FAILED));
@@ -96,17 +95,11 @@ void UseCreditCardAction::InternalProcessAction(
   FillFormWithData();
 }
 
-void UseCreditCardAction::EndAction(
-    const ClientStatus& final_status,
-    const base::Optional<ClientStatus>& optional_details_status) {
+void UseCreditCardAction::EndAction(const ClientStatus& status) {
   if (fallback_handler_)
     action_stopwatch_.TransferToWaitTime(fallback_handler_->TotalWaitTime());
 
-  UpdateProcessedAction(final_status);
-  if (optional_details_status.has_value() && !optional_details_status->ok()) {
-    processed_action_proto_->mutable_status_details()->MergeFrom(
-        optional_details_status->details());
-  }
+  UpdateProcessedAction(status);
   std::move(process_action_callback_).Run(std::move(processed_action_proto_));
 }
 
@@ -117,7 +110,7 @@ void UseCreditCardAction::FillFormWithData() {
     return;
   }
 
-  delegate_->ShortWaitForElement(
+  delegate_->ShortWaitForElementWithSlowWarning(
       selector_,
       base::BindOnce(&UseCreditCardAction::OnWaitForElementTimed,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -139,13 +132,15 @@ void UseCreditCardAction::OnWaitForElement(const ClientStatus& element_status) {
 }
 
 void UseCreditCardAction::OnGetFullCard(
+    const ClientStatus& status,
     std::unique_ptr<autofill::CreditCard> card,
-    const base::string16& cvc) {
+    const std::u16string& cvc) {
   action_stopwatch_.StartActiveTime();
-  if (!card) {
-    EndAction(ClientStatus(GET_FULL_CARD_FAILED));
+  if (!status.ok()) {
+    EndAction(status);
     return;
   }
+  DCHECK(card);
 
   std::vector<RequiredField> required_fields;
   for (const auto& required_field_proto : proto_.use_card().required_fields()) {

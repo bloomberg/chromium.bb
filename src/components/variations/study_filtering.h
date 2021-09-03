@@ -15,6 +15,7 @@
 #include "components/variations/processed_study.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
+#include "components/variations/variations_layers.h"
 
 namespace variations {
 
@@ -46,10 +47,6 @@ bool CheckStudyPlatform(const Study::Filter& filter, Study::Platform platform);
 bool CheckStudyLowEndDevice(const Study::Filter& filter,
                             bool is_low_end_device);
 
-// Checks whether a study is applicable given |is_enterprise| per |filter|.
-bool CheckStudyEnterprise(const Study::Filter& filter,
-                          const ClientFilterableState& client_state);
-
 // Checks whether a study is applicable given the ChromeVariations policy value.
 bool CheckStudyPolicyRestriction(const Study::Filter& filter,
                                  RestrictionPolicy policy_restriction);
@@ -73,6 +70,10 @@ bool CheckStudyOSVersion(const Study::Filter& filter,
 // Checks whether a study is applicable for the given |country| per |filter|.
 bool CheckStudyCountry(const Study::Filter& filter, const std::string& country);
 
+// Checks whether a study is applicable given |is_enterprise| per |filter|.
+bool CheckStudyEnterprise(const Study::Filter& filter,
+                          const ClientFilterableState& client_state);
+
 // Returns the country that should be used for filtering this study, depending
 // on whether the study has session or permanent consistency.
 const std::string& GetClientCountryForStudy(
@@ -85,7 +86,8 @@ bool IsStudyExpired(const Study& study, const base::Time& date_time);
 // Returns whether |study| should be disabled according to the restriction
 // parameters in the |config|.
 bool ShouldAddStudy(const Study& study,
-                    const ClientFilterableState& client_state);
+                    const ClientFilterableState& client_state,
+                    const VariationsLayers& layers);
 
 }  // namespace internal
 
@@ -95,6 +97,7 @@ bool ShouldAddStudy(const Study& study,
 // than one study with the same name.
 void FilterAndValidateStudies(const VariationsSeed& seed,
                               const ClientFilterableState& client_state,
+                              const VariationsLayers& layers,
                               std::vector<ProcessedStudy>* filtered_studies);
 
 }  // namespace variations

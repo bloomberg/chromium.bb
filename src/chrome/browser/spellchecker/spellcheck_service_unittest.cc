@@ -7,8 +7,8 @@
 #include <ostream>
 
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/macros.h"
-#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
@@ -151,7 +151,9 @@ TEST_P(SpellcheckServiceUnitTest, GetDictionaries) {
   prefs()->SetString(language::prefs::kAcceptLanguages,
                      GetParam().accept_languages);
   base::ListValue spellcheck_dictionaries;
-  spellcheck_dictionaries.AppendStrings(GetParam().spellcheck_dictionaries);
+  for (const std::string& dictionary : GetParam().spellcheck_dictionaries) {
+    spellcheck_dictionaries.Append(dictionary);
+  }
   prefs()->Set(spellcheck::prefs::kSpellCheckDictionaries,
                spellcheck_dictionaries);
 
@@ -419,8 +421,7 @@ static const DictionaryMappingTestCase kHybridDictionaryMappingsParams[] = {
     DictionaryMappingTestCase({"en-PH", "en", "en", "", ""}),
     DictionaryMappingTestCase({"es-MX", "es-MX", "es-MX", "es", "es"}),
     DictionaryMappingTestCase({"ar-SA", "ar", "ar", "", ""}),
-    // Konkani not supported in Chromium.
-    DictionaryMappingTestCase({"kok-Deva-IN", "", "kok-Deva", "", ""}),
+    DictionaryMappingTestCase({"kok-Deva-IN", "kok", "kok-Deva", "", ""}),
     DictionaryMappingTestCase({"sr-Cyrl-RS", "sr", "sr-Cyrl", "", ""}),
     DictionaryMappingTestCase({"sr-Cyrl-ME", "sr", "sr-Cyrl", "", ""}),
     // Only sr with Cyrillic implied supported in Chromium.
