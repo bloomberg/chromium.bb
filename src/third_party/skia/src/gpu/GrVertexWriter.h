@@ -23,7 +23,28 @@
  * thereof.
  */
 struct GrVertexWriter {
+    constexpr static uint32_t kIEEE_32_infinity = 0x7f800000;
+
     void* fPtr;
+
+    GrVertexWriter() = default;
+    GrVertexWriter(void* ptr) : fPtr(ptr) {}
+    GrVertexWriter(const GrVertexWriter&) = delete;
+    GrVertexWriter(GrVertexWriter&& that) { *this = std::move(that); }
+
+    GrVertexWriter& operator=(const GrVertexWriter&) = delete;
+    GrVertexWriter& operator=(GrVertexWriter&& that) {
+        fPtr = that.fPtr;
+        that.fPtr = nullptr;
+        return *this;
+    }
+
+    bool operator==(const GrVertexWriter& that) const { return fPtr == that.fPtr; }
+    operator bool() const { return fPtr != nullptr; }
+
+    GrVertexWriter makeOffset(size_t offsetInBytes) const {
+        return {SkTAddOffset<void>(fPtr, offsetInBytes)};
+    }
 
     template <typename T>
     class Conditional {
@@ -48,10 +69,6 @@ struct GrVertexWriter {
     template <typename T, typename... Args>
     void write(const T& val, const Args&... remainder) {
         static_assert(std::is_pod<T>::value, "");
-        // This assert is barely related to what we're trying to check - that our vertex data
-        // matches our attribute layouts, where each attribute is aligned to four bytes. If this
-        // becomes a problem, just remove it.
-        static_assert(alignof(T) <= 4, "");
         memcpy(fPtr, &val, sizeof(T));
         fPtr = SkTAddOffset<void>(fPtr, sizeof(T));
         this->write(remainder...);
@@ -60,7 +77,6 @@ struct GrVertexWriter {
     template <typename T, size_t N, typename... Args>
     void write(const T(&val)[N], const Args&... remainder) {
         static_assert(std::is_pod<T>::value, "");
-        static_assert(alignof(T) <= 4, "");
         memcpy(fPtr, val, N * sizeof(T));
         fPtr = SkTAddOffset<void>(fPtr, N * sizeof(T));
         this->write(remainder...);
@@ -97,6 +113,20 @@ struct GrVertexWriter {
         vector.store(buffer);
         this->write<float, 4>(buffer);
         this->write(remainder...);
+    }
+
+    template <typename T>
+    void writeArray(const T* array, int count) {
+        static_assert(std::is_pod<T>::value, "");
+        memcpy(fPtr, array, count * sizeof(T));
+        fPtr = SkTAddOffset<void>(fPtr, count * sizeof(T));
+    }
+
+    template <typename T>
+    void fill(const T& val, int repeatCount) {
+        for (int i = 0; i < repeatCount; ++i) {
+            this->write(val);
+        }
     }
 
     void writeRaw(const void* data, size_t size) {

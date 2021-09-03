@@ -94,6 +94,7 @@
 <translation id="3306688585798492231">Vstavaná obrazovka</translation>
 <translation id="335581015389089642">Reč</translation>
 <translation id="3389286852084373014">Text je príliš veľký</translation>
+<translation id="3406306243914553062">Obsah HTML</translation>
 <translation id="348799646910989694">Polička sa bude automaticky skrývať</translation>
 <translation id="3554637740840164787">Položka <ph name="ITEM_TITLE" /> bola pripnutá</translation>
 <translation id="3600566671520689681">{DAYS,plural, =1{Zostáva 1 deň}few{Zostávajú # dni}many{Zostáva # dňa}other{Zostáva # dní}}</translation>
@@ -106,6 +107,7 @@
 <translation id="3670030362669914947">Číslo</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
+<translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="3842239759367498783">Pokračujte v čítaní v mobilnom zariadení <ph name="TITLE" /></translation>
 <translation id="385051799172605136">Späť</translation>
 <translation id="3889424535448813030">Šípka doprava</translation>
@@ -118,6 +120,7 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{pred mesiacom}few{pred # mesiacmi}many{pred # mesiacom}other{pred # mesiacmi}}</translation>
 <translation id="4289300219472526559">Začať hovoriť</translation>
 <translation id="430191667033048642"><ph name="MOVED_APP_NAME" /> bola presunutá do priečinka <ph name="FOLDER_NAME" />.</translation>
+<translation id="4306392492252714209">Odstrániť zo schránky</translation>
 <translation id="4316910396681052118">VŠETKY APLIKÁCIE</translation>
 <translation id="4491109536499578614">Obrázok</translation>
 <translation id="4588090240171750605">Rolovať doprava</translation>
@@ -212,6 +215,7 @@
 <translation id="7430878839542012341">Chcete odstrániť toto vyhľadávanie z histórie?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
 <translation id="7507604095951736240">Emodži</translation>
+<translation id="7620655452534002301">Odstránené.</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7781829728241885113">Včera</translation>
 <translation id="7814458197256864873">&amp;Kopírovať</translation>
@@ -227,11 +231,11 @@
 <translation id="8106081041558092062">{HOURS,plural, =1{Pred 1 hodinou}few{Pred # hodinami}many{Pred # hodinou}other{Pred # hodinami}}</translation>
 <translation id="8131263257437993507">{SECONDS,plural, =1{Zostáva 1 s}few{Zostávajú # s}many{Zostáva # s}other{Zostáva # s}}</translation>
 <translation id="8134065097954893699">Táto stránka sa znova načítava</translation>
-<translation id="8144660977431427332">Vaše vyhľadávania využívajú technológiu Asistenta Google. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, automatické dopĺňanie</translation>
 <translation id="815598010540052116">Rolovať nadol</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">Stránkovať nadol</translation>
+<translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>
 <translation id="8245914219290430011">Tab</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, aplikácia</translation>
 <translation id="8259556432390118667">Hodnota farby v šestnástkovej sústave</translation>

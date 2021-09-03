@@ -4,21 +4,23 @@
 
 #include "chromeos/components/local_search_service/inverted_index_search.h"
 
+#include <cstdint>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/i18n/rtl.h"
-#include "base/optional.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
+#include "base/task_runner_util.h"
 #include "base/time/time.h"
 #include "chromeos/components/local_search_service/content_extraction_utils.h"
 #include "chromeos/components/local_search_service/inverted_index.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
-#include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace local_search_service {
@@ -47,22 +49,39 @@ std::vector<Token> ExtractDocumentTokens(const Data& data) {
 }
 
 ExtractedContent ExtractDocumentsContent(const std::vector<Data>& data) {
-  DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ExtractedContent documents;
   for (const Data& d : data) {
     const std::vector<Token> document_tokens = ExtractDocumentTokens(d);
-    DCHECK(!document_tokens.empty());
     documents.push_back({d.id, document_tokens});
   }
 
   return documents;
 }
 
+std::unordered_set<std::u16string> GetTokenizedQuery(
+    const std::u16string& query) {
+  // TODO(jiameng): actual input query may not be the same as default locale.
+  // Need another way to determine actual language of the query.
+  const TokenizedString::Mode mode =
+      IsNonLatinLocale(base::i18n::GetConfiguredLocale())
+          ? TokenizedString::Mode::kCamelCase
+          : TokenizedString::Mode::kWords;
+
+  const TokenizedString tokenized_query(query, mode);
+  std::unordered_set<std::u16string> tokens;
+  for (const auto& token : tokenized_query.tokens()) {
+    // TODO(jiameng): we are not removing stopword because they shouldn't exist
+    // in the index. However, for performance reason, it may be worth to be
+    // removed.
+    tokens.insert(token);
+  }
+  return tokens;
+}
+
 }  // namespace
 
-InvertedIndexSearch::InvertedIndexSearch(IndexId index_id,
-                                         PrefService* local_state)
-    : IndexSync(index_id, Backend::kInvertedIndex, local_state),
+InvertedIndexSearch::InvertedIndexSearch(IndexId index_id)
+    : Index(index_id, Backend::kInvertedIndex),
       inverted_index_(std::make_unique<InvertedIndex>()),
       blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
@@ -72,99 +91,99 @@ InvertedIndexSearch::~InvertedIndexSearch() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-uint64_t InvertedIndexSearch::GetSizeSync() {
+void InvertedIndexSearch::GetSize(GetSizeCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return inverted_index_->NumberDocuments();
+  std::move(callback).Run(inverted_index_->NumberDocuments());
 }
 
-void InvertedIndexSearch::AddOrUpdateSync(
-    const std::vector<local_search_service::Data>& data) {
+void InvertedIndexSearch::AddOrUpdate(const std::vector<Data>& data,
+                                      AddOrUpdateCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!data.empty());
-  ++num_queued_index_updates_;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
       base::BindOnce(&ExtractDocumentsContent, data),
-      base::BindOnce(&InvertedIndexSearch::FinalizeAddOrUpdate,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &InvertedIndexSearch::FinalizeAddOrUpdate,
+          weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(&InvertedIndexSearch::AddOrUpdateCallbackWithTime,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                         base::Time::Now())));
 }
 
-uint32_t InvertedIndexSearch::DeleteSync(const std::vector<std::string>& ids) {
+void InvertedIndexSearch::Delete(const std::vector<std::string>& ids,
+                                 DeleteCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ids.empty());
-
-  if (num_queued_index_updates_ == 0) {
-    // We can remove the documents immediately as there is no earlier
-    // index-modifying operation.
-    inverted_index_->RemoveDocuments(ids);
-    MaybeBuildInvertedIndex();
-    return ids.size();
-  }
-
-  // If there is an earlier index-modifying operation, Delete should wait until
-  // the other operations are complete. Delete is queued and we create a no-op
-  // to run on the same |blocking_task_runner_|.
-  ++num_queued_index_updates_;
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE, base::DoNothing(),
-      base::BindOnce(&InvertedIndexSearch::FinalizeDelete,
-                     weak_ptr_factory_.GetWeakPtr(), ids));
-
-  return ids.size();
+      base::BindOnce(
+          &InvertedIndexSearch::FinalizeDelete, weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(&InvertedIndexSearch::DeleteCallbackWithTime,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                         base::Time::Now()),
+          ids));
 }
 
-void InvertedIndexSearch::ClearIndexSync() {
-  inverted_index_->ClearInvertedIndex();
+void InvertedIndexSearch::UpdateDocuments(const std::vector<Data>& data,
+                                          UpdateDocumentsCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!data.empty());
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ExtractDocumentsContent, data),
+      base::BindOnce(
+          &InvertedIndexSearch::FinalizeUpdateDocuments,
+          weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(&InvertedIndexSearch::UpdateDocumentsCallbackWithTime,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                         base::Time::Now())));
 }
 
-ResponseStatus InvertedIndexSearch::FindSync(const base::string16& query,
-                                             uint32_t max_results,
-                                             std::vector<Result>* results) {
+void InvertedIndexSearch::Find(const std::u16string& query,
+                               uint32_t max_results,
+                               FindCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const base::TimeTicks start = base::TimeTicks::Now();
-  DCHECK(results);
-  results->clear();
   if (query.empty()) {
     const ResponseStatus status = ResponseStatus::kEmptyQuery;
     MaybeLogSearchResultsStats(status, 0u, base::TimeDelta());
-    return status;
+    std::move(callback).Run(status, absl::nullopt);
+    return;
   }
-  if (GetSizeSync() == 0u) {
+  if (inverted_index_->NumberDocuments() == 0u) {
     const ResponseStatus status = ResponseStatus::kEmptyIndex;
     MaybeLogSearchResultsStats(status, 0u, base::TimeDelta());
-    return status;
+    std::move(callback).Run(status, absl::nullopt);
+    return;
   }
 
-  // TODO(jiameng): actual input query may not be the same as default locale.
-  // Need another way to determine actual language of the query.
-  const TokenizedString::Mode mode =
-      IsNonLatinLocale(base::i18n::GetConfiguredLocale())
-          ? TokenizedString::Mode::kCamelCase
-          : TokenizedString::Mode::kWords;
+  std::vector<Result> results =
+      inverted_index_->FindMatchingDocumentsApproximately(
+          GetTokenizedQuery(query), search_params_.prefix_threshold,
+          search_params_.fuzzy_threshold);
 
-  const TokenizedString tokenized_query(query, mode);
-  std::unordered_set<base::string16> tokens;
-  for (const auto& token : tokenized_query.tokens()) {
-    // TODO(jiameng): we are not removing stopword because they shouldn't exist
-    // in the index. However, for performance reason, it may be worth to be
-    // removed.
-    tokens.insert(token);
-  }
+  if (results.size() > max_results && max_results > 0u)
+    results.resize(max_results);
 
-  *results = inverted_index_->FindMatchingDocumentsApproximately(
-      tokens, search_params_.prefix_threshold, search_params_.fuzzy_threshold);
-
-  if (results->size() > max_results && max_results > 0u)
-    results->resize(max_results);
-
-  const base::TimeTicks end = base::TimeTicks::Now();
   const ResponseStatus status = ResponseStatus::kSuccess;
-  MaybeLogSearchResultsStats(status, results->size(), end - start);
-  return status;
+  const base::TimeTicks end = base::TimeTicks::Now();
+  MaybeLogSearchResultsStats(status, results.size(), end - start);
+  std::move(callback).Run(status, results);
+}
+
+void InvertedIndexSearch::ClearIndex(ClearIndexCallback callback) {
+  inverted_index_->ClearInvertedIndex(base::BindOnce(
+      &InvertedIndexSearch::ClearIndexCallbackWithTime,
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback), base::Time::Now()));
+}
+
+uint32_t InvertedIndexSearch::GetIndexSize() const {
+  return inverted_index_->NumberDocuments();
 }
 
 std::vector<std::pair<std::string, uint32_t>>
-InvertedIndexSearch::FindTermForTesting(const base::string16& term) const {
+InvertedIndexSearch::FindTermForTesting(const std::u16string& term) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const PostingList posting_list = inverted_index_->FindTerm(term);
   std::vector<std::pair<std::string, uint32_t>> doc_with_freq;
@@ -176,25 +195,23 @@ InvertedIndexSearch::FindTermForTesting(const base::string16& term) const {
 }
 
 void InvertedIndexSearch::FinalizeAddOrUpdate(
+    AddOrUpdateCallback callback,
     const ExtractedContent& documents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  --num_queued_index_updates_;
-  inverted_index_->AddDocuments(documents);
-  MaybeBuildInvertedIndex();
+  inverted_index_->AddDocuments(documents, std::move(callback));
 }
 
-void InvertedIndexSearch::FinalizeDelete(const std::vector<std::string>& ids) {
+void InvertedIndexSearch::FinalizeDelete(DeleteCallback callback,
+                                         const std::vector<std::string>& ids) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  --num_queued_index_updates_;
-  inverted_index_->RemoveDocuments(ids);
-  MaybeBuildInvertedIndex();
+  inverted_index_->RemoveDocuments(ids, std::move(callback));
 }
 
-void InvertedIndexSearch::MaybeBuildInvertedIndex() {
+void InvertedIndexSearch::FinalizeUpdateDocuments(
+    UpdateDocumentsCallback callback,
+    const ExtractedContent& documents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (num_queued_index_updates_ == 0) {
-    inverted_index_->BuildInvertedIndex();
-  }
+  inverted_index_->UpdateDocuments(documents, std::move(callback));
 }
 
 }  // namespace local_search_service

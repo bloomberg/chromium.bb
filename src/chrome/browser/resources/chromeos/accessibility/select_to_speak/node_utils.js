@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {ParagraphUtils} from './paragraph_utils.js';
+
+const AutomationNode = chrome.automation.AutomationNode;
+const RoleType = chrome.automation.RoleType;
+
 // Utilities for automation nodes in Select-to-Speak.
 
-class NodeUtils {
+export class NodeUtils {
   constructor() {}
 
   /**
@@ -87,7 +92,7 @@ class NodeUtils {
    */
   static getNearestContainingWindow(node) {
     // Go upwards to root nodes' parents until we find the first window.
-    if (node.root.role === RoleType.ROOT_WEB_AREA) {
+    if (node.root && node.root.role === RoleType.ROOT_WEB_AREA) {
       let nextRootParent = node;
       while (nextRootParent != null &&
              nextRootParent.role !== RoleType.WINDOW &&
@@ -457,6 +462,94 @@ class NodeUtils {
     if (lastSvgRoot !== null) {
       NodeUtils.sortNodeRangeByReadingOrder(nodes, startIndex, nodes.length);
     }
+  }
+
+  /**
+   * @param {!AutomationNode} node Leaf node.
+   * @return {!Array<!AutomationNode>} All selectable leaf nodes in the
+   *     paragraph that the given leaf node belongs to. If the node does
+   *     not belong to a paragraph, then just the node itself is returned.
+   */
+  static getAllNodesInParagraph(node) {
+    const blockParent = ParagraphUtils.getFirstBlockAncestor(node);
+    if (blockParent === null || blockParent === node.root) {
+      return [node];
+    }
+    return AutomationUtil.findAllNodes(
+        blockParent, constants.Dir.FORWARD,
+        /* pred= */ NodeUtils.isValidLeafNode, /* opt_restrictions= */ {
+          root: (node) =>
+              node === blockParent,  // Only traverse within the block
+        });
+  }
+
+  /**
+   * Gets the |NodeUtils.Position| identified by the |charIndex| to the text of
+   * |nodeGroup|. If |fallbackToEnd| is true, when the |charIndex| is undefined
+   * or out of the text of |nodeGroup|, we will return the end of the
+   * |nodeGroup|. Otherwise, we fallback to the start of the |nodeGroup|.
+   * @param {!ParagraphUtils.NodeGroup} nodeGroup
+   * @param {number|undefined} charIndex
+   * @param {boolean} fallbackToEnd
+   * @return {!NodeUtils.Position}
+   */
+  static getPositionFromNodeGroup(nodeGroup, charIndex, fallbackToEnd) {
+    let node, offset;
+    if (charIndex !== undefined) {
+      ({node, offset} = ParagraphUtils.findNodeFromNodeGroupByCharIndex(
+           nodeGroup, charIndex));
+    }
+    if (node && offset !== undefined) {
+      return {node, offset};
+    }
+
+    // |charIndex| is undefined or out of the text of |nodeGroup|, fallback to
+    // the end or the start of the |nodeGroup|.
+    if (fallbackToEnd) {
+      const lastNode = nodeGroup.nodes[nodeGroup.nodes.length - 1].node;
+      const lastChildOfLastNode = NodeUtils.getLastLeafChild(lastNode);
+      node = lastChildOfLastNode || lastNode;
+      offset = ParagraphUtils.getNodeName(node).length;
+    } else {
+      const firstNode = nodeGroup.nodes[0].node;
+      const firstChildOfFirstNode = NodeUtils.getFirstLeafChild(firstNode);
+      node = firstChildOfFirstNode || firstNode;
+      offset = 0;
+    }
+    return {node, offset};
+  }
+
+  /**
+   * @param {!AutomationNode} node
+   * @return {boolean} Whether the given node is a valid leaf node that is can
+   *     be ingested by Select-to-speak.
+   */
+  static isValidLeafNode(node) {
+    return AutomationPredicate.leafWithText(node) &&
+        !NodeUtils.shouldIgnoreNode(node, /* includeOffscreen= */ true) &&
+        !NodeUtils.isNotSelectable(node);
+  }
+
+  /**
+   * @param {!NodeUtils.Position} startPosition
+   * @param {!NodeUtils.Position} endPosition
+   * @return {constants.Dir} the direction from the |startPosition| to the
+   *     |endPosition|. If the input positions are equal, we view the
+   *     |endPosition| is to the |constants.Dir.BACKWARD| of the
+   *     |startPosition|.
+   */
+  static getDirectionBetweenPositions(startPosition, endPosition) {
+    const startNode = startPosition.node;
+    const startOffset = startPosition.offset;
+    const endNode = endPosition.node;
+    const endOffset = endPosition.offset;
+    if (startNode !== endNode) {
+      return AutomationUtil.getDirection(startNode, endNode);
+    }
+    if (startOffset < endOffset) {
+      return constants.Dir.FORWARD;
+    }
+    return constants.Dir.BACKWARD;
   }
 }
 

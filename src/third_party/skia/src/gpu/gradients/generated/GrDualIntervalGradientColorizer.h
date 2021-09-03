@@ -26,7 +26,6 @@ public:
     GrDualIntervalGradientColorizer(const GrDualIntervalGradientColorizer& src);
     std::unique_ptr<GrFragmentProcessor> clone() const override;
     const char* name() const override { return "DualIntervalGradientColorizer"; }
-    bool usesExplicitReturn() const override;
     SkPMColor4f scale01;
     SkPMColor4f bias01;
     SkPMColor4f scale23;
@@ -47,7 +46,7 @@ private:
             , threshold(threshold) {
         this->setUsesSampleCoordsDirectly();
     }
-    GrGLSLFragmentProcessor* onCreateGLSLInstance() const override;
+    std::unique_ptr<GrGLSLFragmentProcessor> onMakeProgramImpl() const override;
     void onGetGLSLProcessorKey(const GrShaderCaps&, GrProcessorKeyBuilder*) const override;
     bool onIsEqual(const GrFragmentProcessor&) const override;
 #if GR_TEST_UTILS

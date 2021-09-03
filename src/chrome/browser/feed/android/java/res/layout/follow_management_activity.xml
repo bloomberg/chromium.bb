@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2021 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file.
+-->
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layoutDirection="locale">
+
+  <!-- Header: we want back_arrow.icon, then "Following". -->
+  <LinearLayout
+      android:id="@+id/follow_management_header"
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/feed_management_header_height"
+      tools:ignore="UseCompoundDrawables" >
+    <ImageView
+          android:id="@+id/follow_management_back_arrow"
+          android:layout_width="@dimen/follow_arrow_size"
+          android:layout_height="@dimen/follow_arrow_size"
+          android:layout_margin="@dimen/follow_margin"
+          android:src="@drawable/ic_arrow_back_24dp"
+          tools:ignore="ContentDescription" />
+      <TextView
+          android:id="@+id/follow_management_page_title"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:layout_marginStart="@dimen/follow_margin"
+          style="@style/TextAppearance.Headline.Primary"
+          android:text="@string/follow_manage_following" />
+  </LinearLayout>
+
+  <!-- This recycler view gets the individual followed sites. -->
+  <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/follow_management_list"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content" />
+
+  <!-- TODO(petewil) - After UXR, show all button -->
+
+  <!-- TODO(petewil) - After UXR, "Updates Unavailable" section. -->
+
+</LinearLayout>

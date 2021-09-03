@@ -5,6 +5,7 @@
 #include "extensions/browser/extension_action.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/base64.h"
@@ -17,7 +18,6 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/grit/extensions_browser_resources.h"
-#include "skia/ext/skia_utils_base.h"
 #include "skia/public/mojom/bitmap.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -137,20 +137,12 @@ ExtensionAction::IconParseResult ExtensionAction::ParseIconFromCanvasDictionary(
     } else {
       continue;
     }
-    SkBitmap unsafe_bitmap;
-    if (!skia::mojom::InlineBitmap::Deserialize(bytes, num_bytes,
-                                                &unsafe_bitmap)) {
-      return IconParseResult::kUnpickleFailure;
-    }
-    CHECK(!unsafe_bitmap.isNull());
-    // On receipt of an arbitrary bitmap from the renderer, we convert to an N32
-    // 32bpp bitmap. Other pixel sizes can lead to out-of-bounds mistakes when
-    // transferring the pixels out of the/ bitmap into other buffers.
     SkBitmap bitmap;
-    if (!skia::SkBitmapToN32OpaqueOrPremul(unsafe_bitmap, &bitmap)) {
-      NOTREACHED() << "Unable to convert bitmap for icon";
+    if (!skia::mojom::InlineBitmap::Deserialize(bytes, num_bytes, &bitmap)) {
       return IconParseResult::kUnpickleFailure;
     }
+    // A well-behaved renderer will never send a null bitmap to us here.
+    CHECK(!bitmap.isNull());
 
     // Chrome helpfully scales the provided icon(s), but let's not go overboard.
     const int kActionIconMaxSize = 10 * ActionIconSize();
@@ -260,16 +252,13 @@ gfx::Image ExtensionAction::GetPlaceholderIconImage() const {
 }
 
 std::string ExtensionAction::GetDisplayBadgeText(int tab_id) const {
-  return UseDNRActionCountAsBadgeText(tab_id)
-             ? base::NumberToString(GetDNRActionCount(tab_id))
-             : GetExplicitlySetBadgeText(tab_id);
-}
-
-bool ExtensionAction::UseDNRActionCountAsBadgeText(int tab_id) const {
   // Tab specific badge text set by an extension overrides the automatically set
   // action count. Action count should only be shown if at least one action is
   // matched.
-  return !HasBadgeText(tab_id) && GetDNRActionCount(tab_id) > 0;
+  bool use_dnr_action_count =
+      !HasBadgeText(tab_id) && GetDNRActionCount(tab_id) > 0;
+  return use_dnr_action_count ? base::NumberToString(GetDNRActionCount(tab_id))
+                              : GetExplicitlySetBadgeText(tab_id);
 }
 
 bool ExtensionAction::HasPopupUrl(int tab_id) const {
@@ -320,12 +309,13 @@ void ExtensionAction::Populate(const Extension& extension,
 
   // Initialize the specified icon set.
   if (!manifest_data.default_icon.empty()) {
-    default_icon_.reset(new ExtensionIconSet(manifest_data.default_icon));
+    default_icon_ =
+        std::make_unique<ExtensionIconSet>(manifest_data.default_icon);
   } else {
     // Fall back to the product icons if no action icon exists.
     const ExtensionIconSet& product_icons = IconsInfo::GetIcons(&extension);
     if (!product_icons.empty())
-      default_icon_.reset(new ExtensionIconSet(product_icons));
+      default_icon_ = std::make_unique<ExtensionIconSet>(product_icons);
   }
 }
 

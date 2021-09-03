@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/optional.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/win/conflicts/module_database_observer.h"
@@ -17,6 +16,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
@@ -44,10 +44,9 @@ class ModuleDatabaseTest : public testing::Test {
         scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
         module_database_(std::make_unique<ModuleDatabase>(
             /* third_party_blocking_policy_enabled = */ false)) {
-    mojo::PendingRemote<chrome::mojom::UtilWin> remote;
-    util_win_impl_.emplace(remote.InitWithNewPipeAndPassReceiver());
-    module_database_->module_inspector_.SetRemoteUtilWinForTesting(
-        std::move(remote));
+    module_database_->module_inspector_.SetUtilWinFactoryCallbackForTesting(
+        base::BindRepeating(&ModuleDatabaseTest::CreateUtilWinService,
+                            base::Unretained(this)));
   }
 
   ~ModuleDatabaseTest() override {
@@ -75,12 +74,18 @@ class ModuleDatabaseTest : public testing::Test {
   const base::FilePath dll2_;
 
  private:
+  mojo::Remote<chrome::mojom::UtilWin> CreateUtilWinService() {
+    mojo::Remote<chrome::mojom::UtilWin> remote;
+    util_win_impl_.emplace(remote.BindNewPipeAndPassReceiver());
+    return remote;
+  }
+
   // Must be before |module_database_|.
   content::BrowserTaskEnvironment task_environment_;
 
   ScopedTestingLocalState scoped_testing_local_state_;
 
-  base::Optional<UtilWinImpl> util_win_impl_;
+  absl::optional<UtilWinImpl> util_win_impl_;
 
   std::unique_ptr<ModuleDatabase> module_database_;
 

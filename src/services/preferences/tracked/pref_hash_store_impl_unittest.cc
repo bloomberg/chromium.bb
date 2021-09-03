@@ -65,7 +65,7 @@ TEST_F(PrefHashStoreImplTest, ComputeSplitMacs) {
   const std::string mac_3 =
       computed_macs->FindKey("http://www.example.com")->GetString();
 
-  EXPECT_EQ(3U, computed_macs->size());
+  EXPECT_EQ(3U, computed_macs->DictSize());
 
   base::Value string_1("string1");
   base::Value string_2("string2");
@@ -83,7 +83,7 @@ TEST_F(PrefHashStoreImplTest, ComputeNullSplitMacs) {
       pref_hash_store.ComputeSplitMacs("foo.bar", nullptr);
 
   ASSERT_TRUE(computed_macs);
-  EXPECT_TRUE(computed_macs->empty());
+  EXPECT_TRUE(computed_macs->DictEmpty());
 }
 
 TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {

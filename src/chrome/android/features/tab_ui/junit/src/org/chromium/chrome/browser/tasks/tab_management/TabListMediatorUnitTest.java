@@ -33,12 +33,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID;
-import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_ANDROID;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID;
 import static org.chromium.chrome.browser.tasks.tab_management.MessageCardViewProperties.MESSAGE_TYPE;
 import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.FOR_TESTING;
+import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.PRICE_MESSAGE;
 import static org.chromium.chrome.browser.tasks.tab_management.MessageService.MessageType.TAB_SUGGESTION;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.CARD_TYPE;
 import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.CardProperties.ModelType.MESSAGE;
@@ -50,6 +49,7 @@ import android.content.ComponentCallbacks;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -64,6 +64,8 @@ import androidx.annotation.IntDef;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.protobuf.ByteString;
 
 import org.junit.After;
 import org.junit.Assume;
@@ -94,6 +96,9 @@ import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge;
+import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridge.OptimizationGuideCallback;
+import org.chromium.chrome.browser.optimization_guide.OptimizationGuideBridgeJni;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.MockTab;
@@ -102,10 +107,13 @@ import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.proto.PriceTracking.BuyableProduct;
+import org.chromium.chrome.browser.tab.proto.PriceTracking.PriceTrackingData;
+import org.chromium.chrome.browser.tab.proto.PriceTracking.ProductPrice;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tab.state.PersistedTabDataConfiguration;
 import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData;
+import org.chromium.chrome.browser.tab.state.ShoppingPersistedTabData.PriceDrop;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -115,7 +123,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
+import org.chromium.chrome.browser.tasks.tab_management.PriceMessageService.PriceTabData;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
+import org.chromium.chrome.browser.tasks.tab_management.TabListMediator.ShoppingPersistedTabDataFetcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabProperties.UiType;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
@@ -123,6 +133,8 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.components.embedder_support.util.UrlUtilitiesJni;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.optimization_guide.OptimizationGuideDecision;
+import org.chromium.components.optimization_guide.proto.CommonTypesProto.Any;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
@@ -132,6 +144,8 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
+import org.chromium.url.GURL;
+import org.chromium.url.JUnitTestGURLs;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -140,7 +154,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 /**
  * Tests for {@link TabListMediator}.
  */
@@ -165,23 +178,34 @@ public class TabListMediatorUnitTest {
     private static final String NEW_TITLE = "New title";
     private static final String CUSTOMIZED_DIALOG_TITLE1 = "Cool Tabs";
     private static final String TAB_GROUP_TITLES_FILE_NAME = "tab_group_titles";
-    private static final String TAB1_DOMAIN = "tab1.com";
-    private static final String TAB2_DOMAIN = "tab2.com";
-    private static final String TAB3_DOMAIN = "tab3.com";
-    private static final String NEW_DOMAIN = "new.com";
-    private static final String TAB1_URL = "https://" + TAB1_DOMAIN;
-    private static final String TAB2_URL = "https://" + TAB2_DOMAIN;
-    private static final String TAB3_URL = "https://" + TAB3_DOMAIN;
-    private static final String NEW_URL = "https://" + NEW_DOMAIN;
+    private static final String TAB1_URL = JUnitTestGURLs.URL_1;
+    private static final String TAB2_URL = JUnitTestGURLs.URL_2;
+    private static final String TAB3_URL = JUnitTestGURLs.URL_3;
+    private static final String NEW_URL = JUnitTestGURLs.EXAMPLE_URL;
     private static final int TAB1_ID = 456;
     private static final int TAB2_ID = 789;
     private static final int TAB3_ID = 123;
     private static final int POSITION1 = 0;
     private static final int POSITION2 = 1;
-    private static final String EMPTY_ENDPOINT_RESPONSE = "{}";
-    private static final String ENDPOINT_RESPONSE =
-            "{\"representations\" : [{\"type\" : \"SHOPPING\", \"productTitle\" : \"Book of Pie\","
-            + "\"price\" : 123456789012345, \"currency\" : \"USD\"}]}";
+
+    private static final BuyableProduct BUYABLE_PRODUCT_PROTO_INITIAL =
+            BuyableProduct.newBuilder()
+                    .setCurrentPrice(createProductPrice(123456789012345L, "USD"))
+                    .build();
+    private static ProductPrice createProductPrice(long amountMicros, String currencyCode) {
+        return ProductPrice.newBuilder()
+                .setCurrencyCode(currencyCode)
+                .setAmountMicros(amountMicros)
+                .build();
+    }
+    private static final PriceTrackingData PRICE_TRACKING_BUYABLE_PRODUCT_INITIAL =
+            PriceTrackingData.newBuilder().setBuyableProduct(BUYABLE_PRODUCT_PROTO_INITIAL).build();
+    private static final Any ANY_BUYABLE_PRODUCT_INITIAL =
+            Any.newBuilder()
+                    .setValue(ByteString.copyFrom(
+                            PRICE_TRACKING_BUYABLE_PRODUCT_INITIAL.toByteArray()))
+                    .build();
+    private static final Any ANY_EMPTY = Any.newBuilder().build();
 
     @IntDef({TabListMediatorType.TAB_SWITCHER, TabListMediatorType.TAB_STRIP,
             TabListMediatorType.TAB_GRID_DIALOG})
@@ -222,11 +246,13 @@ public class TabListMediatorUnitTest {
     @Mock
     Bitmap mFaviconBitmap;
     @Mock
-    Activity mContext;
+    Activity mActivity;
     @Mock
     TabListMediator.TabActionListener mOpenGroupActionListener;
     @Mock
     GridLayoutManager mGridLayoutManager;
+    @Mock
+    GridLayoutManager.SpanSizeLookup mSpanSizeLookup;
     @Mock
     Profile mProfile;
     @Mock
@@ -236,9 +262,15 @@ public class TabListMediatorUnitTest {
     @Mock
     UrlUtilities.Natives mUrlUtilitiesJniMock;
     @Mock
+    OptimizationGuideBridge.Natives mOptimizationGuideBridgeJniMock;
+    @Mock
     TabListMediator.TabGridAccessibilityHelper mTabGridAccessibilityHelper;
     @Mock
     TemplateUrlService mTemplateUrlService;
+    @Mock
+    TabSwitcherMediator.PriceWelcomeMessageController mPriceWelcomeMessageController;
+    @Mock
+    ShoppingPersistedTabData mShoppingPersistedTabData;
 
     @Captor
     ArgumentCaptor<TabModelObserver> mTabModelObserverCaptor;
@@ -254,6 +286,8 @@ public class TabListMediatorUnitTest {
     ArgumentCaptor<TemplateUrlService.TemplateUrlServiceObserver> mTemplateUrlServiceObserver;
     @Mock
     EndpointFetcher.Natives mEndpointFetcherJniMock;
+    @Mock
+    private Resources mResources;
 
     private TabImpl mTab1;
     private TabImpl mTab2;
@@ -267,6 +301,12 @@ public class TabListMediatorUnitTest {
     private View mItemView2 = mock(View.class);
     private TabModelObserver mMediatorTabModelObserver;
     private TabGroupModelFilter.Observer mMediatorTabGroupModelFilterObserver;
+    private PriceDrop mPriceDrop;
+    private PriceTabData mPriceTabData;
+    private String mTab1Domain;
+    private String mTab2Domain;
+    private String mTab3Domain;
+    private String mNewDomain;
 
     @Before
     public void setUp() {
@@ -274,6 +314,18 @@ public class TabListMediatorUnitTest {
         MockitoAnnotations.initMocks(this);
         mMocker.mock(UrlUtilitiesJni.TEST_HOOKS, mUrlUtilitiesJniMock);
         mMocker.mock(EndpointFetcherJni.TEST_HOOKS, mEndpointFetcherJniMock);
+        mMocker.mock(OptimizationGuideBridgeJni.TEST_HOOKS, mOptimizationGuideBridgeJniMock);
+        // Ensure native pointer is initialized
+        doReturn(1L).when(mOptimizationGuideBridgeJniMock).init();
+
+        when(mActivity.getResources()).thenReturn(mResources);
+        when(mResources.getInteger(org.chromium.ui.R.integer.min_screen_width_bucket))
+                .thenReturn(1);
+
+        mTab1Domain = JUnitTestGURLs.getGURL(TAB1_URL).getHost().replace("www.", "");
+        mTab2Domain = JUnitTestGURLs.getGURL(TAB2_URL).getHost().replace("www.", "");
+        mTab3Domain = JUnitTestGURLs.getGURL(TAB3_URL).getHost().replace("www.", "");
+        mNewDomain = JUnitTestGURLs.getGURL(NEW_URL).getHost().replace("www.", "");
 
         CachedFeatureFlags.setForTesting(ChromeFeatureList.START_SURFACE_ANDROID, false);
         TabUiFeatureUtilities.ENABLE_SEARCH_CHIP.setForTesting(true);
@@ -326,15 +378,19 @@ public class TabListMediatorUnitTest {
         doReturn(mOpenGroupActionListener)
                 .when(mGridCardOnClickListenerProvider)
                 .openTabGridDialog(any(Tab.class));
-        doNothing().when(mContext).registerComponentCallbacks(mComponentCallbacksCaptor.capture());
+        doNothing().when(mActivity).registerComponentCallbacks(mComponentCallbacksCaptor.capture());
         doReturn(mGridLayoutManager).when(mRecyclerView).getLayoutManager();
-        doReturn(TAB1_DOMAIN)
+        doReturn(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT)
+                .when(mGridLayoutManager)
+                .getSpanCount();
+        doReturn(mSpanSizeLookup).when(mGridLayoutManager).getSpanSizeLookup();
+        doReturn(mTab1Domain)
                 .when(mUrlUtilitiesJniMock)
                 .getDomainAndRegistry(eq(TAB1_URL), anyBoolean());
-        doReturn(TAB2_DOMAIN)
+        doReturn(mTab2Domain)
                 .when(mUrlUtilitiesJniMock)
                 .getDomainAndRegistry(eq(TAB2_URL), anyBoolean());
-        doReturn(TAB3_DOMAIN)
+        doReturn(mTab3Domain)
                 .when(mUrlUtilitiesJniMock)
                 .getDomainAndRegistry(eq(TAB3_URL), anyBoolean());
         doNothing().when(mTemplateUrlService).addObserver(mTemplateUrlServiceObserver.capture());
@@ -342,9 +398,9 @@ public class TabListMediatorUnitTest {
 
         mModel = new TabListModel();
         TemplateUrlServiceFactory.setInstanceForTesting(mTemplateUrlService);
-        mMediator = new TabListMediator(mContext, mModel, TabListMode.GRID, mTabModelSelector,
+        mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
-                mTabListFaviconProvider, false, null, mGridCardOnClickListenerProvider, null,
+                mTabListFaviconProvider, false, null, mGridCardOnClickListenerProvider, null, null,
                 getClass().getSimpleName(), UiType.CLOSABLE);
         mMediator.registerOrientationListener(mGridLayoutManager);
         TrackerFactory.setTrackerForTests(mTracker);
@@ -353,6 +409,18 @@ public class TabListMediatorUnitTest {
         assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(true));
         mMediator.initWithNative(mProfile);
         assertThat(mTabModelObserverCaptor.getAllValues().isEmpty(), equalTo(false));
+
+        doAnswer(invocation -> {
+            int position = invocation.getArgument(0);
+            int itemType = mModel.get(position).type;
+            if (itemType == TabProperties.UiType.MESSAGE
+                    || itemType == TabProperties.UiType.LARGE_MESSAGE) {
+                return mGridLayoutManager.getSpanCount();
+            }
+            return 1;
+        })
+                .when(mSpanSizeLookup)
+                .getSpanSize(anyInt());
     }
 
     @After
@@ -379,7 +447,7 @@ public class TabListMediatorUnitTest {
 
         assertThat(mModel.get(0).model.get(TabProperties.TITLE), equalTo(TAB1_TITLE));
 
-        when(mTitleProvider.getTitle(PseudoTab.fromTab(mTab1))).thenReturn(NEW_TITLE);
+        when(mTitleProvider.getTitle(mActivity, PseudoTab.fromTab(mTab1))).thenReturn(NEW_TITLE);
         mTabObserverCaptor.getValue().onTitleUpdated(mTab1);
 
         assertThat(mModel.get(0).model.get(TabProperties.TITLE), equalTo(NEW_TITLE));
@@ -856,27 +924,6 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
-    @Features.EnableFeatures({CONDITIONAL_TAB_STRIP_ANDROID})
-    @Features.DisableFeatures({TAB_GRID_LAYOUT_ANDROID, TAB_GROUPS_ANDROID})
-    public void tabClosureUndone_CTS() {
-        initAndAssertAllProperties();
-
-        TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
-        doReturn(3).when(mTabModel).getCount();
-        doReturn(newTab).when(mTabModel).getTabAt(2);
-        doReturn(Arrays.asList(mTab1, mTab2, newTab))
-                .when(mTabModelFilter)
-                .getRelatedTabList(eq(TAB1_ID));
-
-        mTabModelObserverCaptor.getValue().tabClosureUndone(newTab);
-
-        assertThat(mModel.size(), equalTo(3));
-        assertThat(mModel.get(2).model.get(TabProperties.TAB_ID), equalTo(TAB3_ID));
-        assertThat(mModel.get(2).model.get(TabProperties.TITLE), equalTo(TAB3_TITLE));
-        verify(mTabModel).setIndex(eq(2), eq(TabSelectionType.FROM_USER));
-    }
-
-    @Test
     public void tabMergeIntoGroup() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
 
@@ -1010,6 +1057,97 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
         assertThat(mModel.get(1).model.get(TabProperties.TITLE), equalTo(TAB2_TITLE));
         assertThat(mModel.get(1).model.get(TabProperties.IS_SELECTED), equalTo(false));
+    }
+
+    @Test
+    public void testShoppingFetcherActiveForForUngroupedTabs() {
+        prepareForPriceDrop();
+        resetWithRegularTabs(false);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER),
+                instanceOf(TabListMediator.ShoppingPersistedTabDataFetcher.class));
+        assertThat(mModel.get(1).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER),
+                instanceOf(TabListMediator.ShoppingPersistedTabDataFetcher.class));
+    }
+
+    @Test
+    public void testShoppingFetcherInactiveForForGroupedTabs() {
+        prepareForPriceDrop();
+        resetWithRegularTabs(true);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertNull(mModel.get(0).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER));
+        assertNull(mModel.get(1).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER));
+    }
+
+    @Test
+    public void testShoppingFetcherGroupedThenUngrouped() {
+        prepareForPriceDrop();
+        resetWithRegularTabs(true);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertNull(mModel.get(0).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER));
+        assertNull(mModel.get(1).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER));
+        resetWithRegularTabs(false);
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER),
+                instanceOf(TabListMediator.ShoppingPersistedTabDataFetcher.class));
+        assertThat(mModel.get(1).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER),
+                instanceOf(TabListMediator.ShoppingPersistedTabDataFetcher.class));
+    }
+
+    @Test
+    public void testShoppingFetcherUngroupedThenGrouped() {
+        prepareForPriceDrop();
+        resetWithRegularTabs(false);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER),
+                instanceOf(TabListMediator.ShoppingPersistedTabDataFetcher.class));
+        assertThat(mModel.get(1).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER),
+                instanceOf(TabListMediator.ShoppingPersistedTabDataFetcher.class));
+        resetWithRegularTabs(true);
+        assertThat(mModel.size(), equalTo(2));
+        assertNull(mModel.get(0).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER));
+        assertNull(mModel.get(1).model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER));
+    }
+
+    /**
+     * Set flags and initialize for verifying price drop behavior
+     */
+    private void prepareForPriceDrop() {
+        PriceTrackingUtilities.ENABLE_PRICE_TRACKING.setForTesting(true);
+        PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(true);
+        PersistedTabDataConfiguration.setUseTestConfig(true);
+        initAndAssertAllProperties();
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
+    }
+
+    /**
+     * Reset mediator with non-incognito tabs which are optionally grouped
+     * @param isGrouped true if the tabs should be grouped
+     */
+    private void resetWithRegularTabs(boolean isGrouped) {
+        doReturn(mTab1).when(mTabModelFilter).getTabAt(0);
+        doReturn(mTab2).when(mTabModelFilter).getTabAt(1);
+        doReturn(2).when(mTabModelFilter).getCount();
+        doReturn(mTabModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
+        if (isGrouped) {
+            doReturn(Arrays.asList(mTab1, mTab2))
+                    .when(mTabModelFilter)
+                    .getRelatedTabList(eq(TAB1_ID));
+            doReturn(Arrays.asList(mTab1, mTab2))
+                    .when(mTabModelFilter)
+                    .getRelatedTabList(eq(TAB2_ID));
+        } else {
+            doReturn(Arrays.asList(mTab1)).when(mTabModelFilter).getRelatedTabList(eq(TAB1_ID));
+            doReturn(Arrays.asList(mTab2)).when(mTabModelFilter).getRelatedTabList(eq(TAB2_ID));
+        }
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, mTab2));
+        doReturn(false).when(mTab1).isIncognito();
+        doReturn(false).when(mTab2).isIncognito();
+        mMediator.resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs), false, false);
     }
 
     @Test
@@ -1525,12 +1663,30 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    public void removeSpecialItem_Message_PriceMessage() {
+        PropertyModel model = mock(PropertyModel.class);
+        int expectedMessageType = PRICE_MESSAGE;
+        int wrongMessageType = TAB_SUGGESTION;
+        when(model.get(CARD_TYPE)).thenReturn(MESSAGE);
+        when(model.get(MESSAGE_TYPE)).thenReturn(expectedMessageType);
+        mMediator.addSpecialItemToModel(0, TabProperties.UiType.LARGE_MESSAGE, model);
+        assertEquals(1, mModel.size());
+
+        mMediator.removeSpecialItemFromModel(TabProperties.UiType.MESSAGE, wrongMessageType);
+        assertEquals(1, mModel.size());
+
+        mMediator.removeSpecialItemFromModel(
+                TabProperties.UiType.LARGE_MESSAGE, expectedMessageType);
+        assertEquals(0, mModel.size());
+    }
+
+    @Test
     @Features.DisableFeatures({TAB_GROUPS_ANDROID})
     public void testUrlUpdated_forSingleTab_GTS_GroupNotEnabled() {
         initAndAssertAllProperties();
-        assertNotEquals(NEW_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertNotEquals(mNewDomain, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
 
-        doReturn(NEW_URL).when(mTab1).getUrlString();
+        doReturn(JUnitTestGURLs.getGURL(NEW_URL)).when(mTab1).getUrl();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
         // TabProperties.URL_DOMAIN is empty string if TabGroupsAndroidContinuationEnabled is false.
@@ -1542,17 +1698,17 @@ public class TabListMediatorUnitTest {
     @Features.EnableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void testUrlUpdated_forSingleTab_GTS() {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
-        assertNotEquals(NEW_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertNotEquals(mNewDomain, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
 
-        doReturn(NEW_DOMAIN)
+        doReturn(mNewDomain)
                 .when(mUrlUtilitiesJniMock)
                 .getDomainAndRegistry(eq(NEW_URL), anyBoolean());
 
-        doReturn(NEW_URL).when(mTab1).getUrlString();
+        doReturn(JUnitTestGURLs.getGURL(NEW_URL)).when(mTab1).getUrl();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
-        assertEquals(NEW_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
-        assertEquals(TAB2_DOMAIN, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(mNewDomain, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(mTab2Domain, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
     }
 
     @Test
@@ -1565,25 +1721,25 @@ public class TabListMediatorUnitTest {
         doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab2);
 
         mMediatorTabGroupModelFilterObserver.didMergeTabToGroup(mTab2, TAB1_ID);
-        assertEquals(TAB1_DOMAIN + ", " + TAB2_DOMAIN,
+        assertEquals(mTab1Domain + ", " + mTab2Domain,
                 mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
 
-        doReturn(NEW_DOMAIN)
+        doReturn(mNewDomain)
                 .when(mUrlUtilitiesJniMock)
                 .getDomainAndRegistry(eq(NEW_URL), anyBoolean());
 
         // Update URL_DOMAIN for mTab1.
-        doReturn(NEW_URL).when(mTab1).getUrlString();
+        doReturn(JUnitTestGURLs.getGURL(NEW_URL)).when(mTab1).getUrl();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
-        assertEquals(NEW_DOMAIN + ", " + TAB2_DOMAIN,
+        assertEquals(mNewDomain + ", " + mTab2Domain,
                 mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
 
         // Update URL_DOMAIN for mTab2.
-        doReturn(NEW_URL).when(mTab2).getUrlString();
+        doReturn(JUnitTestGURLs.getGURL(NEW_URL)).when(mTab2).getUrl();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab2);
 
-        assertEquals(NEW_DOMAIN + ", " + NEW_DOMAIN,
+        assertEquals(mNewDomain + ", " + mNewDomain,
                 mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
     }
 
@@ -1597,26 +1753,26 @@ public class TabListMediatorUnitTest {
         doReturn(POSITION1).when(mTabGroupModelFilter).indexOf(mTab2);
 
         mMediatorTabGroupModelFilterObserver.didMergeTabToGroup(mTab2, TAB1_ID);
-        assertEquals(TAB1_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
-        assertEquals(TAB2_DOMAIN, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(mTab1Domain, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(mTab2Domain, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
 
-        doReturn(NEW_DOMAIN)
+        doReturn(mNewDomain)
                 .when(mUrlUtilitiesJniMock)
                 .getDomainAndRegistry(eq(NEW_URL), anyBoolean());
 
         // Update URL_DOMAIN for mTab1.
-        doReturn(NEW_URL).when(mTab1).getUrlString();
+        doReturn(JUnitTestGURLs.getGURL(NEW_URL)).when(mTab1).getUrl();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab1);
 
-        assertEquals(NEW_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
-        assertEquals(TAB2_DOMAIN, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(mNewDomain, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(mTab2Domain, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
 
         // Update URL_DOMAIN for mTab2.
-        doReturn(NEW_URL).when(mTab2).getUrlString();
+        doReturn(JUnitTestGURLs.getGURL(NEW_URL)).when(mTab2).getUrl();
         mTabObserverCaptor.getValue().onUrlUpdated(mTab2);
 
-        assertEquals(NEW_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
-        assertEquals(NEW_DOMAIN, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(mNewDomain, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(mNewDomain, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
     }
 
     @Test
@@ -1627,7 +1783,7 @@ public class TabListMediatorUnitTest {
         createTabGroup(tabs, TAB1_ID);
 
         mMediatorTabGroupModelFilterObserver.didMergeTabToGroup(mTab2, TAB1_ID);
-        assertEquals(TAB1_DOMAIN + ", " + TAB2_DOMAIN,
+        assertEquals(mTab1Domain + ", " + mTab2Domain,
                 mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
 
         // Assume that TabGroupModelFilter is already updated.
@@ -1638,8 +1794,8 @@ public class TabListMediatorUnitTest {
         doReturn(2).when(mTabGroupModelFilter).getCount();
 
         mMediatorTabGroupModelFilterObserver.didMoveTabOutOfGroup(mTab2, POSITION1);
-        assertEquals(TAB1_DOMAIN, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
-        assertEquals(TAB2_DOMAIN, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(mTab1Domain, mModel.get(POSITION1).model.get(TabProperties.URL_DOMAIN));
+        assertEquals(mTab2Domain, mModel.get(POSITION2).model.get(TabProperties.URL_DOMAIN));
     }
 
     @Test
@@ -1847,33 +2003,48 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.get(0).model.get(TabProperties.SEARCH_QUERY), equalTo(searchTerm1));
     }
 
+    // TODO(crbug.com/1177036): the assertThat in fetch callback is never reached.
     @Test
     public void testPriceTrackingProperty() {
-        TabUiFeatureUtilities.ENABLE_PRICE_TRACKING.setForTesting(true);
-        for (boolean signedIn : new boolean[] {false, true}) {
+        PriceTrackingUtilities.ENABLE_PRICE_TRACKING.setForTesting(true);
+        for (boolean signedInAndSyncEnabled : new boolean[] {false, true}) {
             for (boolean priceTrackingEnabled : new boolean[] {false, true}) {
                 for (boolean incognito : new boolean[] {false, true}) {
                     TabListMediator mMediatorSpy = spy(mMediator);
-                    doReturn(signedIn).when(mMediatorSpy).isSignedIn();
+                    doReturn(true).when(mMediatorSpy).isUngroupedTab(anyInt());
+                    PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(
+                            signedInAndSyncEnabled);
                     PriceTrackingUtilities.SHARED_PREFERENCES_MANAGER.writeBoolean(
                             PriceTrackingUtilities.TRACK_PRICES_ON_TABS, priceTrackingEnabled);
                     Profile.setLastUsedProfileForTesting(mProfile);
-                    Map<String, String> responses = new HashMap<>();
-                    responses.put(TAB1_URL, ENDPOINT_RESPONSE);
-                    responses.put(TAB2_URL, EMPTY_ENDPOINT_RESPONSE);
-                    mockEndpointResponse(responses);
+                    Map<GURL, Any> responses = new HashMap<>();
+                    GURL gurl1 = JUnitTestGURLs.getGURL(TAB1_URL);
+                    GURL gurl2 = JUnitTestGURLs.getGURL(TAB2_URL);
+                    responses.put(gurl1, ANY_BUYABLE_PRODUCT_INITIAL);
+                    responses.put(gurl2, ANY_EMPTY);
+                    mockOptimizationGuideResponse(OptimizationGuideDecision.TRUE, responses);
                     PersistedTabDataConfiguration.setUseTestConfig(true);
                     initAndAssertAllProperties(mMediatorSpy);
                     List<Tab> tabs = new ArrayList<>();
                     doReturn(incognito).when(mTab1).isIncognito();
                     doReturn(incognito).when(mTab2).isIncognito();
 
+                    for (int i = 0; i < 2; i++) {
+                        CriticalPersistedTabData criticalPersistedTabData =
+                                mock(CriticalPersistedTabData.class);
+                        doReturn(System.currentTimeMillis())
+                                .when(criticalPersistedTabData)
+                                .getTimestampMillis();
+                        mTabModel.getTabAt(i).getUserDataHost().setUserData(
+                                CriticalPersistedTabData.class, criticalPersistedTabData);
+                    }
+
                     tabs.add(mTabModel.getTabAt(0));
                     tabs.add(mTabModel.getTabAt(1));
 
                     mMediatorSpy.resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs),
                             /*quickMode =*/false, /*mruMode =*/false);
-                    if (signedIn && priceTrackingEnabled && !incognito) {
+                    if (signedInAndSyncEnabled && priceTrackingEnabled && !incognito) {
                         mModel.get(0)
                                 .model.get(TabProperties.SHOPPING_PERSISTED_TAB_DATA_FETCHER)
                                 .fetch((shoppingPersistedTabData) -> {
@@ -1948,10 +2119,10 @@ public class TabListMediatorUnitTest {
     public void navigateToLastSearchQuery() {
         initAndAssertAllProperties();
 
-        String otherUrl = "https://example.com";
-        String searchUrl = "https://www.google.com/search?q=test";
+        GURL otherUrl = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
+        GURL searchUrl = JUnitTestGURLs.getGURL(JUnitTestGURLs.SEARCH_URL);
         String searchTerm = "test";
-        String searchUrl2 = "https://www.google.com/search?q=query";
+        GURL searchUrl2 = JUnitTestGURLs.getGURL(JUnitTestGURLs.SEARCH_2_URL);
         String searchTerm2 = "query";
         TemplateUrlService service = Mockito.mock(TemplateUrlService.class);
         doReturn(null).when(service).getSearchQueryForUrl(otherUrl);
@@ -1985,47 +2156,47 @@ public class TabListMediatorUnitTest {
         doReturn(otherUrl).when(navigationEntry0).getOriginalUrl();
         TabListMediator.SearchTermChipUtils.navigateToLastSearchQuery(mTab1);
         inOrder.verify(mTab1).loadUrl(
-                refEq(new LoadUrlParams(searchUrl, PageTransition.KEYWORD_GENERATED)));
+                refEq(new LoadUrlParams(searchUrl.getSpec(), PageTransition.KEYWORD_GENERATED)));
 
         // Has earlier SRP.
         doReturn(otherUrl).when(navigationEntry1).getOriginalUrl();
         doReturn(searchUrl2).when(navigationEntry0).getOriginalUrl();
         TabListMediator.SearchTermChipUtils.navigateToLastSearchQuery(mTab1);
         inOrder.verify(mTab1).loadUrl(
-                refEq(new LoadUrlParams(searchUrl2, PageTransition.KEYWORD_GENERATED)));
+                refEq(new LoadUrlParams(searchUrl2.getSpec(), PageTransition.KEYWORD_GENERATED)));
 
         // Latest one wins.
         doReturn(searchUrl).when(navigationEntry1).getOriginalUrl();
         doReturn(searchUrl2).when(navigationEntry0).getOriginalUrl();
         TabListMediator.SearchTermChipUtils.navigateToLastSearchQuery(mTab1);
         inOrder.verify(mTab1).loadUrl(
-                refEq(new LoadUrlParams(searchUrl, PageTransition.KEYWORD_GENERATED)));
+                refEq(new LoadUrlParams(searchUrl.getSpec(), PageTransition.KEYWORD_GENERATED)));
 
         // Rejected by canGoToOffset().
         doReturn(false).when(navigationController).canGoToOffset(eq(-1));
         TabListMediator.SearchTermChipUtils.navigateToLastSearchQuery(mTab1);
         inOrder.verify(mTab1).loadUrl(
-                refEq(new LoadUrlParams(searchUrl2, PageTransition.KEYWORD_GENERATED)));
+                refEq(new LoadUrlParams(searchUrl2.getSpec(), PageTransition.KEYWORD_GENERATED)));
 
         // Reset canGoToOffset().
         doReturn(true).when(navigationController).canGoToOffset(anyInt());
         TabListMediator.SearchTermChipUtils.navigateToLastSearchQuery(mTab1);
         inOrder.verify(mTab1).loadUrl(
-                refEq(new LoadUrlParams(searchUrl, PageTransition.KEYWORD_GENERATED)));
+                refEq(new LoadUrlParams(searchUrl.getSpec(), PageTransition.KEYWORD_GENERATED)));
 
         // Only care about previous ones.
         doReturn(1).when(navigationHistory).getCurrentEntryIndex();
         TabListMediator.SearchTermChipUtils.navigateToLastSearchQuery(mTab1);
         inOrder.verify(mTab1).loadUrl(
-                refEq(new LoadUrlParams(searchUrl2, PageTransition.KEYWORD_GENERATED)));
+                refEq(new LoadUrlParams(searchUrl2.getSpec(), PageTransition.KEYWORD_GENERATED)));
     }
 
     @Test
     public void searchListener() {
         initAndAssertAllProperties();
 
-        String otherUrl = "https://example.com";
-        String searchUrl = "https://www.google.com/search?q=test";
+        GURL otherUrl = JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL);
+        GURL searchUrl = JUnitTestGURLs.getGURL(JUnitTestGURLs.SEARCH_URL);
         String searchTerm = "test";
         TemplateUrlService service = Mockito.mock(TemplateUrlService.class);
         doReturn(null).when(service).getSearchQueryForUrl(otherUrl);
@@ -2054,14 +2225,14 @@ public class TabListMediatorUnitTest {
         verify(mGridCardOnClickListenerProvider)
                 .onTabSelecting(mModel.get(0).model.get(TabProperties.TAB_ID), true);
         verify(mTab1).loadUrl(
-                refEq(new LoadUrlParams(searchUrl, PageTransition.KEYWORD_GENERATED)));
+                refEq(new LoadUrlParams(searchUrl.getSpec(), PageTransition.KEYWORD_GENERATED)));
     }
 
     @Test
     public void searchListener_frozenTab() {
         initAndAssertAllProperties();
 
-        String searchUrl = "https://www.google.com/search?q=test";
+        GURL searchUrl = JUnitTestGURLs.getGURL(JUnitTestGURLs.SEARCH_URL);
         String searchTerm = "test";
         TemplateUrlService service = Mockito.mock(TemplateUrlService.class);
         doReturn(searchTerm).when(service).getSearchQueryForUrl(searchUrl);
@@ -2089,7 +2260,7 @@ public class TabListMediatorUnitTest {
         doReturn(webContents).when(mTab1).getWebContents();
         mTabObserverCaptor.getValue().onPageLoadStarted(mTab1, searchUrl);
         verify(mTab1).loadUrl(
-                refEq(new LoadUrlParams(searchUrl, PageTransition.KEYWORD_GENERATED)));
+                refEq(new LoadUrlParams(searchUrl.getSpec(), PageTransition.KEYWORD_GENERATED)));
     }
 
     @Test
@@ -2099,10 +2270,11 @@ public class TabListMediatorUnitTest {
         doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
 
         // Re-initialize the mediator to setup TemplateUrlServiceObserver if needed.
-        mMediator = new TabListMediator(mContext, mModel, TabListMode.GRID, mTabModelSelector,
+        mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
-                mTabListFaviconProvider, true, null, null, null, getClass().getSimpleName(),
+                mTabListFaviconProvider, true, null, null, null, null, getClass().getSimpleName(),
                 TabProperties.UiType.CLOSABLE);
+        mMediator.registerOrientationListener(mGridLayoutManager);
         mMediator.initWithNative(mProfile);
 
         initAndAssertAllProperties();
@@ -2123,10 +2295,11 @@ public class TabListMediatorUnitTest {
         doReturn(true).when(mTemplateUrlService).isDefaultSearchEngineGoogle();
 
         // Re-initialize the mediator to setup TemplateUrlServiceObserver if needed.
-        mMediator = new TabListMediator(mContext, mModel, TabListMode.GRID, mTabModelSelector,
+        mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
-                mTabListFaviconProvider, true, null, null, null, getClass().getSimpleName(),
+                mTabListFaviconProvider, true, null, null, null, null, getClass().getSimpleName(),
                 TabProperties.UiType.CLOSABLE);
+        mMediator.registerOrientationListener(mGridLayoutManager);
         mMediator.initWithNative(mProfile);
 
         initAndAssertAllProperties();
@@ -2156,6 +2329,195 @@ public class TabListMediatorUnitTest {
             assertThat(mModel.get(i).model.get(TabProperties.PAGE_INFO_ICON_DRAWABLE_ID),
                     equalTo(R.drawable.ic_logo_googleg_24dp));
         }
+    }
+
+    @Test
+    public void testGetPriceWelcomeMessageInsertionIndex() {
+        initWithThreeTabs();
+
+        doReturn(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_PORTRAIT)
+                .when(mGridLayoutManager)
+                .getSpanCount();
+        assertThat(mMediator.getPriceWelcomeMessageInsertionIndex(), equalTo(2));
+
+        doReturn(TabListCoordinator.GRID_LAYOUT_SPAN_COUNT_LANDSCAPE)
+                .when(mGridLayoutManager)
+                .getSpanCount();
+        assertThat(mMediator.getPriceWelcomeMessageInsertionIndex(), equalTo(3));
+    }
+
+    @Test
+    public void testUpdateLayout_PriceMessage() {
+        initAndAssertAllProperties();
+        addSpecialItem(1, TabProperties.UiType.LARGE_MESSAGE, PRICE_MESSAGE);
+        assertThat(mModel.lastIndexForMessageItemFromType(PRICE_MESSAGE), equalTo(1));
+
+        doAnswer(invocation -> {
+            int position = invocation.getArgument(0);
+            int itemType = mModel.get(position).type;
+            if (itemType == TabProperties.UiType.LARGE_MESSAGE) {
+                return mGridLayoutManager.getSpanCount();
+            }
+            return 1;
+        })
+                .when(mSpanSizeLookup)
+                .getSpanSize(anyInt());
+        mMediator.updateLayout();
+        assertThat(mModel.lastIndexForMessageItemFromType(PRICE_MESSAGE), equalTo(1));
+        PriceTrackingUtilities.ENABLE_PRICE_TRACKING.setForTesting(true);
+        PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(true);
+        PriceTrackingUtilities.SHARED_PREFERENCES_MANAGER.writeBoolean(
+                PriceTrackingUtilities.PRICE_WELCOME_MESSAGE_CARD, true);
+        mMediator.updateLayout();
+        assertThat(mModel.lastIndexForMessageItemFromType(PRICE_MESSAGE), equalTo(2));
+    }
+
+    @Test
+    public void testUpdateLayout_Divider() {
+        initAndAssertAllProperties();
+        addSpecialItem(1, TabProperties.UiType.DIVIDER, 0);
+        assertThat(mModel.get(1).type, equalTo(TabProperties.UiType.DIVIDER));
+
+        doAnswer(invocation -> {
+            int position = invocation.getArgument(0);
+            int itemType = mModel.get(position).type;
+            if (itemType == TabProperties.UiType.DIVIDER) {
+                return mGridLayoutManager.getSpanCount();
+            }
+            return 1;
+        })
+                .when(mSpanSizeLookup)
+                .getSpanSize(anyInt());
+        PriceTrackingUtilities.SHARED_PREFERENCES_MANAGER.writeBoolean(
+                PriceTrackingUtilities.PRICE_WELCOME_MESSAGE_CARD, true);
+        mMediator.updateLayout();
+        assertThat(mModel.get(1).type, equalTo(TabProperties.UiType.DIVIDER));
+    }
+
+    @Test
+    public void testIndexOfNthTabCard() {
+        initAndAssertAllProperties();
+        addSpecialItem(1, TabProperties.UiType.LARGE_MESSAGE, PRICE_MESSAGE);
+
+        assertThat(mModel.lastIndexForMessageItemFromType(PRICE_MESSAGE), equalTo(1));
+        assertThat(mModel.indexOfNthTabCard(-1), equalTo(TabModel.INVALID_TAB_INDEX));
+        assertThat(mModel.indexOfNthTabCard(0), equalTo(0));
+        assertThat(mModel.indexOfNthTabCard(1), equalTo(2));
+        assertThat(mModel.indexOfNthTabCard(2), equalTo(3));
+    }
+
+    @Test
+    public void testGetTabCardCountsBefore() {
+        initAndAssertAllProperties();
+        addSpecialItem(1, TabProperties.UiType.LARGE_MESSAGE, PRICE_MESSAGE);
+
+        assertThat(mModel.lastIndexForMessageItemFromType(PRICE_MESSAGE), equalTo(1));
+        assertThat(mModel.getTabCardCountsBefore(-1), equalTo(TabModel.INVALID_TAB_INDEX));
+        assertThat(mModel.getTabCardCountsBefore(0), equalTo(0));
+        assertThat(mModel.getTabCardCountsBefore(1), equalTo(1));
+        assertThat(mModel.getTabCardCountsBefore(2), equalTo(1));
+        assertThat(mModel.getTabCardCountsBefore(3), equalTo(2));
+    }
+
+    @Test
+    public void testGetTabIndexBefore() {
+        initAndAssertAllProperties();
+        addSpecialItem(1, TabProperties.UiType.LARGE_MESSAGE, PRICE_MESSAGE);
+        assertThat(mModel.lastIndexForMessageItemFromType(PRICE_MESSAGE), equalTo(1));
+        assertThat(mModel.getTabIndexBefore(2), equalTo(0));
+        assertThat(mModel.getTabIndexBefore(0), equalTo(TabModel.INVALID_TAB_INDEX));
+    }
+
+    @Test
+    public void testGetTabIndexAfter() {
+        initAndAssertAllProperties();
+        addSpecialItem(1, TabProperties.UiType.LARGE_MESSAGE, PRICE_MESSAGE);
+        assertThat(mModel.lastIndexForMessageItemFromType(PRICE_MESSAGE), equalTo(1));
+        assertThat(mModel.getTabIndexAfter(0), equalTo(2));
+        assertThat(mModel.getTabIndexAfter(2), equalTo(TabModel.INVALID_TAB_INDEX));
+    }
+
+    @Test
+    public void testListObserver_OnItemRangeInserted() {
+        PriceTrackingUtilities.ENABLE_PRICE_TRACKING.setForTesting(true);
+        mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
+                mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
+                mTabListFaviconProvider, true, null, null, null, null, getClass().getSimpleName(),
+                TabProperties.UiType.CLOSABLE);
+        mMediator.registerOrientationListener(mGridLayoutManager);
+        mMediator.initWithNative(mProfile);
+        initAndAssertAllProperties();
+
+        PropertyModel model = mock(PropertyModel.class);
+        when(model.get(CARD_TYPE)).thenReturn(MESSAGE);
+        when(model.get(MESSAGE_TYPE)).thenReturn(PRICE_MESSAGE);
+        mMediator.addSpecialItemToModel(1, TabProperties.UiType.LARGE_MESSAGE, model);
+        assertThat(mModel.lastIndexForMessageItemFromType(PRICE_MESSAGE), equalTo(2));
+    }
+
+    @Test
+    public void testListObserver_OnItemRangeRemoved() {
+        PriceTrackingUtilities.ENABLE_PRICE_TRACKING.setForTesting(true);
+        mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
+                mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
+                mTabListFaviconProvider, true, null, null, null, null, getClass().getSimpleName(),
+                TabProperties.UiType.CLOSABLE);
+        mMediator.registerOrientationListener(mGridLayoutManager);
+        mMediator.initWithNative(mProfile);
+        initWithThreeTabs();
+
+        PropertyModel model = mock(PropertyModel.class);
+        when(model.get(CARD_TYPE)).thenReturn(MESSAGE);
+        when(model.get(MESSAGE_TYPE)).thenReturn(PRICE_MESSAGE);
+        mMediator.addSpecialItemToModel(2, TabProperties.UiType.LARGE_MESSAGE, model);
+        assertThat(mModel.lastIndexForMessageItemFromType(PRICE_MESSAGE), equalTo(2));
+        mModel.removeAt(0);
+        assertThat(mModel.lastIndexForMessageItemFromType(PRICE_MESSAGE), equalTo(2));
+    }
+
+    @Test
+    public void testMaybeShowPriceWelcomeMessage() {
+        prepareTestMaybeShowPriceWelcomeMessage();
+        ShoppingPersistedTabDataFetcher fetcher =
+                new ShoppingPersistedTabDataFetcher(mTab1, mPriceWelcomeMessageController);
+        fetcher.maybeShowPriceWelcomeMessage(mShoppingPersistedTabData);
+        verify(mPriceWelcomeMessageController, times(1)).showPriceWelcomeMessage(mPriceTabData);
+    }
+
+    @Test
+    public void testMaybeShowPriceWelcomeMessage_MessageDisabled() {
+        prepareTestMaybeShowPriceWelcomeMessage();
+        ShoppingPersistedTabDataFetcher fetcher =
+                new ShoppingPersistedTabDataFetcher(mTab1, mPriceWelcomeMessageController);
+
+        PriceTrackingUtilities.SHARED_PREFERENCES_MANAGER.writeBoolean(
+                PriceTrackingUtilities.PRICE_WELCOME_MESSAGE_CARD, false);
+        assertThat(PriceTrackingUtilities.isPriceWelcomeMessageCardEnabled(), equalTo(false));
+        fetcher.maybeShowPriceWelcomeMessage(mShoppingPersistedTabData);
+        verify(mPriceWelcomeMessageController, times(0)).showPriceWelcomeMessage(mPriceTabData);
+    }
+
+    @Test
+    public void testMaybeShowPriceWelcomeMessage_NullParameter() {
+        prepareTestMaybeShowPriceWelcomeMessage();
+
+        new ShoppingPersistedTabDataFetcher(mTab1, null)
+                .maybeShowPriceWelcomeMessage(mShoppingPersistedTabData);
+        verify(mPriceWelcomeMessageController, times(0)).showPriceWelcomeMessage(mPriceTabData);
+    }
+
+    @Test
+    public void testMaybeShowPriceWelcomeMessage_NoPriceDrop() {
+        prepareTestMaybeShowPriceWelcomeMessage();
+        ShoppingPersistedTabDataFetcher fetcher =
+                new ShoppingPersistedTabDataFetcher(mTab1, mPriceWelcomeMessageController);
+
+        fetcher.maybeShowPriceWelcomeMessage(null);
+        verify(mPriceWelcomeMessageController, times(0)).showPriceWelcomeMessage(mPriceTabData);
+
+        doReturn(null).when(mShoppingPersistedTabData).getPriceDrop();
+        fetcher.maybeShowPriceWelcomeMessage(mShoppingPersistedTabData);
+        verify(mPriceWelcomeMessageController, times(0)).showPriceWelcomeMessage(mPriceTabData);
     }
 
     @Test
@@ -2359,21 +2721,21 @@ public class TabListMediatorUnitTest {
                 String num = invocation.getArgument(2);
                 return String.format("Close %s group with %s tabs.", title, num);
             })
-                    .when(mContext)
+                    .when(mActivity)
                     .getString(anyInt(), anyString(), anyString());
 
             doAnswer(invocation -> {
                 String num = invocation.getArgument(1);
                 return String.format("Close tab group with %s tabs.", num);
             })
-                    .when(mContext)
+                    .when(mActivity)
                     .getString(anyInt(), anyString());
         } else {
             doAnswer(invocation -> {
                 String title = invocation.getArgument(1);
                 return String.format("Close %s, tab.", title);
             })
-                    .when(mContext)
+                    .when(mActivity)
                     .getString(anyInt(), anyString());
         }
     }
@@ -2384,14 +2746,14 @@ public class TabListMediatorUnitTest {
             String num = invocation.getArgument(2);
             return String.format("Expand %s tab group with %s tabs.", title, num);
         })
-                .when(mContext)
+                .when(mActivity)
                 .getString(anyInt(), anyString(), anyString());
 
         doAnswer(invocation -> {
             String num = invocation.getArgument(1);
             return String.format("Expand tab group with %s tabs.", num);
         })
-                .when(mContext)
+                .when(mActivity)
                 .getString(anyInt(), anyString());
     }
 
@@ -2445,7 +2807,7 @@ public class TabListMediatorUnitTest {
         TabImpl tab = TabUiUnitTestUtils.prepareTab(id, title, url);
         when(tab.getView()).thenReturn(mock(View.class));
         doReturn(true).when(tab).isIncognito();
-        when(mTitleProvider.getTitle(PseudoTab.fromTab(tab))).thenReturn(title);
+        when(mTitleProvider.getTitle(mActivity, PseudoTab.fromTab(tab))).thenReturn(title);
         return tab;
     }
 
@@ -2495,10 +2857,11 @@ public class TabListMediatorUnitTest {
         // TODO(crbug.com/1058196): avoid re-instanciate TabListMediator by using annotation.
         CachedFeatureFlags.setForTesting(TAB_GROUPS_ANDROID, true);
 
-        mMediator = new TabListMediator(mContext, mModel, TabListMode.GRID, mTabModelSelector,
+        mMediator = new TabListMediator(mActivity, mModel, TabListMode.GRID, mTabModelSelector,
                 mTabContentManager::getTabThumbnailWithCallback, mTitleProvider,
-                mTabListFaviconProvider, actionOnRelatedTabs, null, null, handler,
+                mTabListFaviconProvider, actionOnRelatedTabs, null, null, handler, null,
                 getClass().getSimpleName(), uiType);
+        mMediator.registerOrientationListener(mGridLayoutManager);
 
         // TabGroupModelFilterObserver is registered when native is ready.
         assertThat(mTabGroupModelFilterObserverCaptor.getAllValues().isEmpty(), equalTo(true));
@@ -2538,5 +2901,56 @@ public class TabListMediatorUnitTest {
                             anyString(), anyString(), any(String[].class), anyString(), anyLong(),
                             any(Callback.class));
         }
+    }
+
+    private void mockOptimizationGuideResponse(
+            @OptimizationGuideDecision int decision, Map<GURL, Any> responses) {
+        for (Map.Entry<GURL, Any> responseEntry : responses.entrySet()) {
+            doAnswer(new Answer<Void>() {
+                @Override
+                public Void answer(InvocationOnMock invocation) {
+                    OptimizationGuideCallback callback =
+                            (OptimizationGuideCallback) invocation.getArguments()[3];
+                    callback.onOptimizationGuideDecision(decision, responseEntry.getValue());
+                    return null;
+                }
+            })
+                    .when(mOptimizationGuideBridgeJniMock)
+                    .canApplyOptimization(anyLong(), eq(responseEntry.getKey()), anyInt(),
+                            any(OptimizationGuideCallback.class));
+        }
+    }
+
+    private void initWithThreeTabs() {
+        Tab tab3 = prepareTab(TAB3_ID, TAB3_TITLE, TAB3_URL);
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, mTab2, tab3));
+        mMediator.resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs), false, false);
+        assertThat(mModel.size(), equalTo(3));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(true));
+        assertThat(mModel.get(1).model.get(TabProperties.IS_SELECTED), equalTo(false));
+        assertThat(mModel.get(2).model.get(TabProperties.IS_SELECTED), equalTo(false));
+    }
+
+    private void addSpecialItem(int index, @UiType int uiType, int itemIdentifier) {
+        PropertyModel model = mock(PropertyModel.class);
+        when(model.get(CARD_TYPE)).thenReturn(MESSAGE);
+        if (uiType == TabProperties.UiType.MESSAGE
+                || uiType == TabProperties.UiType.LARGE_MESSAGE) {
+            when(model.get(MESSAGE_TYPE)).thenReturn(itemIdentifier);
+        }
+        // Avoid auto-updating the layout when inserting the special card.
+        doReturn(1).when(mSpanSizeLookup).getSpanSize(anyInt());
+        mMediator.addSpecialItemToModel(index, uiType, model);
+    }
+
+    private void prepareTestMaybeShowPriceWelcomeMessage() {
+        initAndAssertAllProperties();
+        PriceTrackingUtilities.ENABLE_PRICE_TRACKING.setForTesting(true);
+        PriceTrackingUtilities.setIsSignedInAndSyncEnabledForTesting(true);
+        PriceTrackingUtilities.SHARED_PREFERENCES_MANAGER.writeBoolean(
+                PriceTrackingUtilities.PRICE_WELCOME_MESSAGE_CARD, true);
+        mPriceDrop = new PriceDrop("1", "2");
+        mPriceTabData = new PriceTabData(TAB1_ID, mPriceDrop);
+        doReturn(mPriceDrop).when(mShoppingPersistedTabData).getPriceDrop();
     }
 }

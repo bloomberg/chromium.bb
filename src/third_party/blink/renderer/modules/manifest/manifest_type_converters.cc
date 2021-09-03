@@ -59,6 +59,8 @@ TypeConverter<blink::Manifest, blink::mojom::blink::ManifestPtr>::Convert(
         url_handler.To<blink::Manifest::UrlHandler>());
   }
 
+  output.note_taking = input->note_taking.To<blink::Manifest::NoteTaking>();
+
   for (auto& related_application : input->related_applications) {
     output.related_applications.push_back(
         related_application.To<blink::Manifest::RelatedApplication>());
@@ -79,6 +81,8 @@ TypeConverter<blink::Manifest, blink::mojom::blink::ManifestPtr>::Convert(
   if (!input->scope.IsEmpty())
     output.scope = input->scope;
 
+  output.capture_links = input->capture_links;
+
   return output;
 }
 
@@ -96,15 +100,8 @@ TypeConverter<blink::Manifest::ImageResource,
   for (auto& size : input->sizes)
     output.sizes.push_back(gfx::Size(size));
 
-  for (auto purpose : input->purpose) {
-    blink::mojom::ManifestImageResource_Purpose out_purpose;
-    if (!EnumTraits<blink::mojom::ManifestImageResource_Purpose,
-                    ::blink::mojom::ManifestImageResource_Purpose>::
-            FromMojom(purpose, &out_purpose)) {
-      NOTREACHED();
-    }
-    output.purpose.push_back(out_purpose);
-  }
+  for (auto purpose : input->purpose)
+    output.purpose.push_back(purpose);
 
   return output;
 }
@@ -233,8 +230,24 @@ TypeConverter<blink::Manifest::UrlHandler,
   if (input.is_null())
     return output;
 
-  if (!output.origin.opaque())
+  if (!output.origin.opaque()) {
     output.origin = input->origin->ToUrlOrigin();
+    output.has_origin_wildcard = input->has_origin_wildcard;
+  }
+
+  return output;
+}
+
+blink::Manifest::NoteTaking
+TypeConverter<blink::Manifest::NoteTaking,
+              blink::mojom::blink::ManifestNoteTakingPtr>::
+    Convert(const blink::mojom::blink::ManifestNoteTakingPtr& input) {
+  blink::Manifest::NoteTaking output;
+  if (input.is_null())
+    return output;
+
+  if (!input->new_note_url.IsEmpty())
+    output.new_note_url = input->new_note_url;
 
   return output;
 }

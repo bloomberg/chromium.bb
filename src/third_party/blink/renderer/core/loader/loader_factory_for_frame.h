@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <utility>
+#include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
@@ -27,7 +28,8 @@ class LoaderFactoryForFrame final : public ResourceFetcher::LoaderFactory {
       const ResourceRequest&,
       const ResourceLoaderOptions&,
       scoped_refptr<base::SingleThreadTaskRunner>,
-      scoped_refptr<base::SingleThreadTaskRunner>) override;
+      scoped_refptr<base::SingleThreadTaskRunner>,
+      WebBackForwardCacheLoaderHelper) override;
   std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() override;
 
   std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
@@ -35,10 +37,17 @@ class LoaderFactoryForFrame final : public ResourceFetcher::LoaderFactory {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
  private:
+  void IssueKeepAliveHandleIfRequested(
+      const ResourceRequest& request,
+      mojom::blink::LocalFrameHost& local_frame_host,
+      mojo::PendingReceiver<mojom::blink::KeepAliveHandle> pending_receiver);
+
   const Member<DocumentLoader> document_loader_;
   const Member<LocalDOMWindow> window_;
   const Member<PrefetchedSignedExchangeManager>
       prefetched_signed_exchange_manager_;
+  HeapMojoRemote<blink::mojom::blink::KeepAliveHandleFactory>
+      keep_alive_handle_factory_;
 };
 
 }  // namespace blink

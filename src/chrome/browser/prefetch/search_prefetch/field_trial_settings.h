@@ -11,6 +11,8 @@
 extern const base::Feature kSearchPrefetchService;
 extern const base::Feature kSearchPrefetchServicePrefetching;
 
+extern const char kSearchPrefetchServiceCommandLineFlag[];
+
 // Whether the search prefetch service and other objects should be created.
 bool SearchPrefetchServiceIsEnabled();
 
@@ -35,5 +37,14 @@ bool SearchPrefetchOnlyFetchDefaultMatch();
 // When a request is inflight, but no longer shows up in the match list, whether
 // the request is canceled or allowed to finish.
 bool SearchPrefetchShouldCancelUneededInflightRequests();
+
+// Whether Search Prefetch should use a streaming model to serve requests or
+// wait for the entire response to be streamed before being able to serve
+// requests.
+bool StreamSearchPrefetchResponses();
+
+// The max number of stored cached prefetch responses. This is stored as a list
+// of navigation URLs to prefetch URLs.
+size_t SearchPrefetchMaxCacheEntries();
 
 #endif  // CHROME_BROWSER_PREFETCH_SEARCH_PREFETCH_FIELD_TRIAL_SETTINGS_H_

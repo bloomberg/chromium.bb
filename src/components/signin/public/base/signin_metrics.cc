@@ -43,10 +43,6 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromExtensions"));
       break;
-    case AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Signin_FromAppsPageLink"));
-      break;
     case AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE:
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromBookmarkBubble"));
@@ -123,15 +119,22 @@ void RecordSigninUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(
           base::UserMetricsAction("Signin_Signin_FromGoogleServicesSettings"));
       break;
+    case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
+      NOTREACHED() << "Access point " << static_cast<int>(access_point)
+                   << " is only used to trigger non-sync sign-in and this"
+                   << " action should only be triggered for sync-enabled"
+                   << " sign-ins.";
+      break;
     case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
     case AccessPoint::ACCESS_POINT_FORCED_SIGNIN:
     case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
     case AccessPoint::ACCESS_POINT_WEB_SIGNIN:
-    case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
       NOTREACHED() << "Access point " << static_cast<int>(access_point)
-                   << " is only used on Android, where"
-                   << " RecordSigninUserActionForAccessPoint is not used"
-                   << " for logging user actions.";
+                   << " is not supposed to log signin user actions.";
+      break;
+    case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
+      VLOG(1) << "Signin_Signin_From* user action is not recorded "
+              << "for access point " << static_cast<int>(access_point);
       break;
     case AccessPoint::ACCESS_POINT_MAX:
       NOTREACHED();
@@ -191,7 +194,6 @@ void RecordSigninWithDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_MENU:
     case AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
     case AccessPoint::ACCESS_POINT_USER_MANAGER:
     case AccessPoint::ACCESS_POINT_DEVICES_PAGE:
     case AccessPoint::ACCESS_POINT_CLOUD_PRINT:
@@ -207,6 +209,7 @@ void RecordSigninWithDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
     case AccessPoint::ACCESS_POINT_WEB_SIGNIN:
     case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
+    case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
       NOTREACHED() << "Signin_SigninWithDefault_From* user actions"
                    << " are not recorded for access_point "
                    << static_cast<int>(access_point)
@@ -270,7 +273,6 @@ void RecordSigninNotDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_MENU:
     case AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
     case AccessPoint::ACCESS_POINT_USER_MANAGER:
     case AccessPoint::ACCESS_POINT_DEVICES_PAGE:
     case AccessPoint::ACCESS_POINT_CLOUD_PRINT:
@@ -286,6 +288,7 @@ void RecordSigninNotDefaultUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
     case AccessPoint::ACCESS_POINT_WEB_SIGNIN:
     case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
+    case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
       NOTREACHED() << "Signin_SigninNotDefault_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point)
@@ -353,7 +356,6 @@ void RecordSigninNewAccountNoExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_MENU:
     case AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
     case AccessPoint::ACCESS_POINT_USER_MANAGER:
     case AccessPoint::ACCESS_POINT_DEVICES_PAGE:
     case AccessPoint::ACCESS_POINT_CLOUD_PRINT:
@@ -369,6 +371,7 @@ void RecordSigninNewAccountNoExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
     case AccessPoint::ACCESS_POINT_WEB_SIGNIN:
     case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
+    case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
       // These access points do not support personalized sign-in promos, so
       // |Signin_SigninNewAccountNoExistingAccount_From*| user actions should
       // not be recorded for them. Note: To avoid bloating the sign-in APIs, the
@@ -439,7 +442,6 @@ void RecordSigninNewAccountExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_MENU:
     case AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
     case AccessPoint::ACCESS_POINT_USER_MANAGER:
     case AccessPoint::ACCESS_POINT_DEVICES_PAGE:
     case AccessPoint::ACCESS_POINT_CLOUD_PRINT:
@@ -455,6 +457,7 @@ void RecordSigninNewAccountExistingAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
     case AccessPoint::ACCESS_POINT_WEB_SIGNIN:
     case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
+    case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
       // These access points do not support personalized sign-in promos, so
       // |Signin_SigninNewAccountExistingAccount_From*| user actions should not
       // be recorded for them. Note: To avoid bloating the sign-in APIs, the
@@ -592,8 +595,7 @@ void LogSigninAccessPointCompleted(AccessPoint access_point,
 }
 
 void LogSigninReason(Reason reason) {
-  UMA_HISTOGRAM_ENUMERATION("Signin.SigninReason", static_cast<int>(reason),
-                            static_cast<int>(Reason::REASON_MAX));
+  UMA_HISTOGRAM_ENUMERATION("Signin.SigninReason", reason);
 }
 
 void LogSigninAccountReconciliation(int total_number_accounts,
@@ -648,10 +650,10 @@ void LogSigninAccountReconciliationDuration(base::TimeDelta duration,
 void LogSignout(ProfileSignout source_metric, SignoutDelete delete_metric) {
   UMA_HISTOGRAM_ENUMERATION("Signin.SignoutProfile", source_metric,
                             NUM_PROFILE_SIGNOUT_METRICS);
-  if (delete_metric != SignoutDelete::IGNORE_METRIC) {
+  if (delete_metric != SignoutDelete::kIgnoreMetric) {
     UMA_HISTOGRAM_BOOLEAN(
         "Signin.SignoutDeleteProfile",
-        delete_metric == SignoutDelete::DELETED ? true : false);
+        delete_metric == SignoutDelete::kDeleted ? true : false);
   }
 }
 
@@ -815,10 +817,6 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(base::UserMetricsAction(
           "Signin_Impression_FromExtensionInstallBubble"));
       break;
-    case AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
-      base::RecordAction(
-          base::UserMetricsAction("Signin_Impression_FromAppsPageLink"));
-      break;
     case AccessPoint::ACCESS_POINT_BOOKMARK_BUBBLE:
       base::RecordAction(
           base::UserMetricsAction("Signin_Impression_FromBookmarkBubble"));
@@ -879,10 +877,17 @@ void RecordSigninImpressionUserActionForAccessPoint(AccessPoint access_point) {
       base::RecordAction(base::UserMetricsAction(
           "Signin_Impression_FromGoogleServicesSettings"));
       break;
+    case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromKaleidoscope"));
+      break;
+    case AccessPoint::ACCESS_POINT_USER_MANAGER:
+      base::RecordAction(
+          base::UserMetricsAction("Signin_Impression_FromUserManager"));
+      break;
     case AccessPoint::ACCESS_POINT_CONTENT_AREA:
     case AccessPoint::ACCESS_POINT_EXTENSIONS:
     case AccessPoint::ACCESS_POINT_SUPERVISED_USER:
-    case AccessPoint::ACCESS_POINT_USER_MANAGER:
     case AccessPoint::ACCESS_POINT_UNKNOWN:
     case AccessPoint::ACCESS_POINT_MACHINE_LOGON:
     case AccessPoint::ACCESS_POINT_SYNC_ERROR_CARD:
@@ -1008,7 +1013,6 @@ void RecordSigninImpressionWithAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_MENU:
     case AccessPoint::ACCESS_POINT_SUPERVISED_USER:
     case AccessPoint::ACCESS_POINT_EXTENSIONS:
-    case AccessPoint::ACCESS_POINT_APPS_PAGE_LINK:
     case AccessPoint::ACCESS_POINT_USER_MANAGER:
     case AccessPoint::ACCESS_POINT_DEVICES_PAGE:
     case AccessPoint::ACCESS_POINT_CLOUD_PRINT:
@@ -1024,6 +1028,7 @@ void RecordSigninImpressionWithAccountUserActionForAccessPoint(
     case AccessPoint::ACCESS_POINT_ACCOUNT_RENAMED:
     case AccessPoint::ACCESS_POINT_WEB_SIGNIN:
     case AccessPoint::ACCESS_POINT_SAFETY_CHECK:
+    case AccessPoint::ACCESS_POINT_KALEIDOSCOPE:
       NOTREACHED() << "Signin_Impression{With|WithNo}Account_From* user actions"
                    << " are not recorded for access point "
                    << static_cast<int>(access_point)

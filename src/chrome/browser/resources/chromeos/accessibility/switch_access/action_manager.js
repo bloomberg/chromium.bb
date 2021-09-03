@@ -2,11 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {FocusRingManager} from './focus_ring_manager.js';
+import {MenuManager} from './menu_manager.js';
+import {Navigator} from './navigator.js';
+import {SAChildNode, SARootNode} from './nodes/switch_access_node.js';
+import {SwitchAccess} from './switch_access.js';
+import {SAConstants, SwitchAccessMenuAction} from './switch_access_constants.js';
+
 /**
  * Class to handle performing actions with Switch Access, including determining
  * which actions are available in the given context.
  */
-class ActionManager {
+export class ActionManager {
   /** @private */
   constructor() {
     /**
@@ -33,9 +40,14 @@ class ActionManager {
    * Exits all of the open menus and unconditionally closes the menu window.
    */
   static exitAllMenus() {
-    this.menuStack_ = [];
-    this.actionNode_ = null;
+    ActionManager.instance.menuStack_ = [];
+    ActionManager.instance.actionNode_ = null;
     MenuManager.close();
+    if (SwitchAccess.mode === SAConstants.Mode.POINT_SCAN) {
+      Navigator.byPoint.start();
+    } else {
+      Navigator.byPoint.stop();
+    }
   }
 
   /**
@@ -57,8 +69,9 @@ class ActionManager {
    * opens the action menu. Otherwise performs the node's default action.
    */
   static onSelect() {
-    const node = NavigationManager.currentNode;
-    if (node.actions.length <= 1 || !node.location) {
+    const node = Navigator.byItem.currentNode;
+    if (MenuManager.isMenuOpen() || node.actions.length <= 1 ||
+        !node.location) {
       node.doDefaultAction();
       return;
     }
@@ -69,20 +82,49 @@ class ActionManager {
     ActionManager.instance.openCurrentMenu_();
   }
 
+  /** @param {!SAConstants.MenuType} menu */
+  static openMenu(menu) {
+    ActionManager.instance.menuStack_.push(menu);
+    ActionManager.instance.openCurrentMenu_();
+  }
 
   /**
    * Given the action to be performed, appropriately handles performing it.
    * @param {!SwitchAccessMenuAction} action
    */
   static performAction(action) {
-    const manager = ActionManager.instance;
-    manager.handleGlobalActions_(action) ||
-        manager.performActionOnCurrentNode_(action);
+    switch (action) {
+      // Global actions:
+      case SwitchAccessMenuAction.SETTINGS:
+        chrome.accessibilityPrivate.openSettingsSubpage(
+            'manageAccessibility/switchAccess');
+        ActionManager.exitCurrentMenu();
+        break;
+      case SwitchAccessMenuAction.POINT_SCAN:
+        ActionManager.exitCurrentMenu();
+        Navigator.byPoint.start();
+        break;
+      case SwitchAccessMenuAction.ITEM_SCAN:
+        Navigator.byItem.restart();
+        ActionManager.exitAllMenus();
+        break;
+      // Point scan actions:
+      case SwitchAccessMenuAction.LEFT_CLICK:
+      case SwitchAccessMenuAction.RIGHT_CLICK:
+        // Exit menu, then click (so the action will hit the desired target,
+        // instead of the menu).
+        FocusRingManager.clearAll();
+        ActionManager.exitCurrentMenu();
+        Navigator.byPoint.performMouseAction(action);
+        break;
+      // Item scan actions:
+      default:
+        ActionManager.instance.performActionOnCurrentNode_(action);
+    }
   }
 
-
   /** Refreshes the current menu, if needed. */
-  static refreshMenu() {
+  static refreshMenuUnconditionally() {
     if (!MenuManager.isMenuOpen()) {
       return;
     }
@@ -97,7 +139,7 @@ class ActionManager {
    */
   static refreshMenuForNode(node) {
     if (node.equals(ActionManager.instance.actionNode_)) {
-      ActionManager.refreshMenu();
+      ActionManager.refreshMenuUnconditionally();
     }
   }
 
@@ -141,6 +183,11 @@ class ActionManager {
           SwitchAccessMenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT,
           SwitchAccessMenuAction.END_TEXT_SELECTION
         ];
+      case SAConstants.MenuType.POINT_SCAN_MENU:
+        return [
+          SwitchAccessMenuAction.LEFT_CLICK,
+          SwitchAccessMenuAction.RIGHT_CLICK,
+        ];
       default:
         return [];
     }
@@ -152,7 +199,11 @@ class ActionManager {
    * @private
    */
   addGlobalActions_(actions) {
-    actions.push(SwitchAccessMenuAction.POINT_SCAN);
+    if (SwitchAccess.mode === SAConstants.Mode.POINT_SCAN) {
+      actions.push(SwitchAccessMenuAction.ITEM_SCAN);
+    } else {
+      actions.push(SwitchAccessMenuAction.POINT_SCAN);
+    }
     actions.push(SwitchAccessMenuAction.SETTINGS);
     return actions;
   }
@@ -170,12 +221,18 @@ class ActionManager {
    * @private
    */
   getActionsForCurrentMenuAndNode_() {
+    if (this.currentMenuType_ === SAConstants.MenuType.POINT_SCAN_MENU) {
+      let actions = this.actionsForType_(SAConstants.MenuType.POINT_SCAN_MENU);
+      actions = this.addGlobalActions_(actions);
+      return actions;
+    }
+
     if (!this.actionNode_ || !this.actionNode_.isValidAndVisible()) {
       return [];
     }
     let actions = this.actionNode_.actions;
     const possibleActions = this.actionsForType_(this.currentMenuType_);
-    actions.filter((a) => possibleActions.includes(a));
+    actions = actions.filter((a) => possibleActions.includes(a));
     if (this.currentMenuType_ === SAConstants.MenuType.MAIN_MENU) {
       actions = this.addGlobalActions_(actions);
     }
@@ -183,37 +240,35 @@ class ActionManager {
   }
 
   /**
-   * If the action is a global action, perform the action and return true.
-   * Otherwise return false.
-   * @param {!SwitchAccessMenuAction} action
-   * @return {boolean}
+   * @return {chrome.accessibilityPrivate.ScreenRect|undefined}
    * @private
    */
-  handleGlobalActions_(action) {
-    switch (action) {
-      case SwitchAccessMenuAction.SETTINGS:
-        chrome.accessibilityPrivate.openSettingsSubpage(
-            'manageAccessibility/switchAccess');
-        return true;
-      case SwitchAccessMenuAction.POINT_SCAN:
-        chrome.accessibilityPrivate.activatePointScan();
-        chrome.accessibilityPrivate.onPointScanSet.addListener(
-            this.pointScanClick_.bind(this));
-        ActionManager.exitCurrentMenu();
-        return true;
-      default:
-        return false;
+  getLocationForCurrentMenuAndNode_() {
+    if (this.currentMenuType_ === SAConstants.MenuType.POINT_SCAN_MENU) {
+      return {
+        left: Math.floor(Navigator.byPoint.currentPoint.x),
+        top: Math.floor(Navigator.byPoint.currentPoint.y),
+        width: 1,
+        height: 1
+      };
     }
+
+    if (this.actionNode_) {
+      return this.actionNode_.location;
+    }
+
+    return undefined;
   }
 
   /** @private */
   openCurrentMenu_() {
     const actions = this.getActionsForCurrentMenuAndNode_();
+    const location = this.getLocationForCurrentMenuAndNode_();
 
     if (actions.length < 2) {
       ActionManager.exitCurrentMenu();
     }
-    MenuManager.open(actions, this.actionNode_.location);
+    MenuManager.open(actions, location);
   }
 
   /**
@@ -222,8 +277,7 @@ class ActionManager {
    */
   performActionOnCurrentNode_(action) {
     if (!this.actionNode_.hasAction(action)) {
-      // Refresh the actions in the menu.
-      this.openCurrentMenu_();
+      ActionManager.refreshMenuUnconditionally();
       return;
     }
 
@@ -231,17 +285,23 @@ class ActionManager {
     // having the menu on the group stack interferes with some actions. We do
     // not close the menu bubble until we receive the ActionResponse CLOSE_MENU.
     // If we receive a different response, we re-enter the menu.
-    NavigationManager.exitIfInGroup(MenuManager.menuAutomationNode);
+    Navigator.byItem.suspendCurrentGroup();
+
     const response = this.actionNode_.performAction(action);
     if (response === SAConstants.ActionResponse.CLOSE_MENU) {
-      MenuManager.close();
-    } else {
-      NavigationManager.jumpToSwitchAccessMenu();
+      ActionManager.exitAllMenus();
+      return;
     }
 
     switch (response) {
+      case SAConstants.ActionResponse.EXIT_MENU:
+        ActionManager.exitCurrentMenu();
+        return;
+      case SAConstants.ActionResponse.REMAIN_OPEN:
+        Navigator.byItem.restoreSuspendedGroup();
+        return;
       case SAConstants.ActionResponse.RELOAD_MENU:
-        this.openCurrentMenu_();
+        ActionManager.refreshMenuUnconditionally();
         break;
       case SAConstants.ActionResponse.OPEN_TEXT_NAVIGATION_MENU:
         if (SwitchAccess.instance.improvedTextInputEnabled()) {
@@ -249,16 +309,5 @@ class ActionManager {
         }
         this.openCurrentMenu_();
     }
-  }
-
-  /**
-   * Performs mouse left click action on the selected point scanning point
-   * coordinates
-   * @param {number} x
-   * @param {number} y
-   * @private
-   */
-  pointScanClick_(x, y) {
-    EventGenerator.sendMouseClick(x, y);
   }
 }

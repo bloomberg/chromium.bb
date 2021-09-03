@@ -5,7 +5,8 @@
 #ifndef COMPONENTS_HISTORY_CORE_BROWSER_KEYWORD_SEARCH_TERM_H_
 #define COMPONENTS_HISTORY_CORE_BROWSER_KEYWORD_SEARCH_TERM_H_
 
-#include "base/strings/string16.h"
+#include <string>
+
 #include "base/time/time.h"
 #include "components/history/core/browser/keyword_id.h"
 #include "components/history/core/browser/url_row.h"
@@ -26,14 +27,14 @@ struct NormalizedKeywordSearchTermVisit {
   //                   recency_in_seconds + recency_decay_unit_in_seconds
   // This score combines frequency and recency of the visit favoring ones that
   // are more frequent and more recent (see go/local-zps-frecency-ranking).
-  // |recency_decay_unit_sec| is the number of seconds until the recency
-  // component of the score decays to half. |frequency_exponent| is factor by
+  // `recency_decay_unit_sec` is the number of seconds until the recency
+  // component of the score decays to half. `frequency_exponent` is factor by
   // which the frequency of the visit is exponentiated.
   double GetFrecency(base::Time now,
                      int recency_decay_unit_sec,
                      double frequency_exponent) const;
 
-  base::string16 normalized_term;     // The search term, in lower case and with
+  std::u16string normalized_term;     // The search term, in lower case and with
                                       // extra whitespaces collapsed.
   int visits{0};                      // The visit count.
   base::Time most_recent_visit_time;  // The time of the most recent visit.
@@ -45,8 +46,8 @@ struct KeywordSearchTermVisit {
   KeywordSearchTermVisit();
   ~KeywordSearchTermVisit();
 
-  base::string16 term;  // The search term that was used.
-  base::string16 normalized_term;  // The search term, in lower case and with
+  std::u16string term;             // The search term that was used.
+  std::u16string normalized_term;  // The search term, in lower case and with
                                    // extra whitespaces collapsed.
   int visits;  // The visit count.
   base::Time time;  // The time of the most recent visit.
@@ -60,8 +61,8 @@ struct KeywordSearchTermRow {
 
   KeywordID keyword_id;  // ID of the keyword.
   URLID url_id;  // ID of the url.
-  base::string16 term;  // The search term that was used.
-  base::string16 normalized_term;  // The search term, in lower case and with
+  std::u16string term;             // The search term that was used.
+  std::u16string normalized_term;  // The search term, in lower case and with
                                    // extra whitespaces collapsed.
 };
 

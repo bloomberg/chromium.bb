@@ -18,6 +18,8 @@ import android.telephony.TelephonyManager;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.compat.ApiHelperForM;
+import org.chromium.base.compat.ApiHelperForP;
 
 /**
  * Exposes radio related information about the current device.
@@ -78,7 +80,7 @@ public class RadioUtils {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.CONNECTIVITY_SERVICE);
-        Network network = connectivityManager.getActiveNetwork();
+        Network network = ApiHelperForM.getActiveNetwork(connectivityManager);
         if (network == null) return false;
         NetworkCapabilities networkCapabilities =
                 connectivityManager.getNetworkCapabilities(network);
@@ -88,7 +90,7 @@ public class RadioUtils {
 
     /**
      * Return current cell signal level.
-     * @return Signal level from 0 (no signal) to 4 (good signal).
+     * @return Signal level from 0 (no signal) to 4 (good signal) or -1 in case of error.
      */
     @CalledByNative
     @TargetApi(Build.VERSION_CODES.P)
@@ -99,7 +101,7 @@ public class RadioUtils {
                         Context.TELEPHONY_SERVICE);
         int level = -1;
         try {
-            SignalStrength signalStrength = telephonyManager.getSignalStrength();
+            SignalStrength signalStrength = ApiHelperForP.getSignalStrength(telephonyManager);
             if (signalStrength != null) {
                 level = signalStrength.getLevel();
             }
@@ -108,5 +110,24 @@ public class RadioUtils {
             // that Chrome doesn't have. See crbug.com/1150536.
         }
         return level;
+    }
+
+    /**
+     * Return current cell data activity.
+     * @return 0 - none, 1 - in, 2 - out, 3 - in/out, 4 - dormant, or -1 in case of error.
+     */
+    @CalledByNative
+    @TargetApi(Build.VERSION_CODES.P)
+    private static int getCellDataActivity() {
+        assert isSupported();
+        TelephonyManager telephonyManager =
+                (TelephonyManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.TELEPHONY_SERVICE);
+        try {
+            return telephonyManager.getDataActivity();
+        } catch (java.lang.SecurityException e) {
+            // Just in case getDataActivity() requires extra permissions.
+            return -1;
+        }
     }
 }

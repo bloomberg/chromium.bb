@@ -1,5 +1,0 @@
-[Desktop Entry]
-Name=Weston
-Comment=The reference Wayland server
-Exec=weston
-Type=Application

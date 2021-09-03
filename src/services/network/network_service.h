@@ -19,7 +19,6 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -32,7 +31,7 @@
 #include "net/log/net_log.h"
 #include "net/log/trace_net_log_observer.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/network/first_party_sets/preloaded_first_party_sets.h"
+#include "services/network/first_party_sets/first_party_sets.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/network_change_manager.h"
 #include "services/network/network_quality_estimator_manager.h"
@@ -46,6 +45,7 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/trust_tokens/trust_token_key_commitments.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 class FileNetLogObserver;
@@ -61,46 +61,10 @@ namespace network {
 class CRLSetDistributor;
 class DnsConfigChangeManager;
 class HttpAuthCacheCopier;
-class LegacyTLSConfigDistributor;
 class NetLogProxySink;
 class NetworkContext;
 class NetworkService;
-class NetworkUsageAccumulator;
 class SCTAuditingCache;
-
-// DataPipeUseTracker tracks the mojo data pipe usage in the network
-// service.
-class COMPONENT_EXPORT(NETWORK_SERVICE) DataPipeUseTracker final {
- public:
-  enum DataPipeUser {
-    kUrlLoader = 0,
-    kWebSocket = 1,
-  };
-  // |network_service| must outlive |this|.
-  DataPipeUseTracker(NetworkService* network_service, DataPipeUser user);
-  DataPipeUseTracker(DataPipeUseTracker&&);
-  ~DataPipeUseTracker();
-  DataPipeUseTracker(const DataPipeUseTracker&) = delete;
-  DataPipeUseTracker& operator=(const DataPipeUseTracker&) = delete;
-
-  // Call this when the associated data pipe is created.
-  void Activate();
-  // Call this when (one end of) the associated data pipe is dropped.
-  void Reset();
-
- private:
-  enum State {
-    kInit,
-    kActivated,
-    kReset,
-  };
-  NetworkService* const network_service_;
-  const DataPipeUser user_;
-
-  State state_ = State::kInit;
-};
-
-using DataPipeUser = DataPipeUseTracker::DataPipeUser;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     : public mojom::NetworkService {
@@ -150,9 +114,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       net::NetLog::ThreadSafeObserver* observer);
 
   // mojom::NetworkService implementation:
-  void SetClient(mojo::PendingRemote<mojom::NetworkServiceClient> client,
-                 mojom::NetworkServiceParamsPtr params) override;
-#if BUILDFLAG(IS_ASH)
+  void SetParams(mojom::NetworkServiceParamsPtr params) override;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   void ReinitializeLogging(mojom::LoggingSettingsPtr settings) override;
 #endif
   void StartNetLog(base::File file,
@@ -168,8 +131,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void ConfigureStubHostResolver(
       bool insecure_dns_client_enabled,
       net::SecureDnsMode secure_dns_mode,
-      base::Optional<std::vector<mojom::DnsOverHttpsServerPtr>>
-          dns_over_https_servers) override;
+      absl::optional<std::vector<mojom::DnsOverHttpsServerPtr>>
+          dns_over_https_servers,
+      bool additional_dns_types_enabled) override;
   void DisableQuic() override;
   void SetUpHttpAuth(
       mojom::HttpAuthStaticParamsPtr http_auth_static_params) override;
@@ -185,25 +149,19 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
       override;
   void GetDnsConfigChangeManager(
       mojo::PendingReceiver<mojom::DnsConfigChangeManager> receiver) override;
-  void GetTotalNetworkUsages(
-      mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
   void GetNetworkList(
       uint32_t policy,
       mojom::NetworkService::GetNetworkListCallback callback) override;
   void UpdateCRLSet(
       base::span<const uint8_t> crl_set,
       mojom::NetworkService::UpdateCRLSetCallback callback) override;
-  void UpdateLegacyTLSConfig(
-      base::span<const uint8_t> config,
-      mojom::NetworkService::UpdateLegacyTLSConfigCallback callback) override;
   void OnCertDBChanged() override;
-#if defined(OS_LINUX) || BUILDFLAG(IS_LACROS)
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   void SetCryptConfig(mojom::CryptConfigPtr crypt_config) override;
 #endif
 #if defined(OS_WIN) || defined(OS_MAC)
   void SetEncryptionKey(const std::string& encryption_key) override;
 #endif
-  void AddCorbExceptionForPlugin(int32_t process_id) override;
   void AddAllowedRequestInitiatorForPlugin(
       int32_t process_id,
       const url::Origin& allowed_request_initiator) override;
@@ -233,14 +191,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #endif
   void BindTestInterface(
       mojo::PendingReceiver<mojom::NetworkServiceTest> receiver) override;
-  void SetPreloadedFirstPartySets(const std::string& raw_sets) override;
+  void SetFirstPartySets(const std::string& raw_sets) override;
+  void SetExplicitlyAllowedPorts(const std::vector<uint16_t>& ports) override;
 
   // Returns an HttpAuthHandlerFactory for the given NetworkContext.
   std::unique_ptr<net::HttpAuthHandlerFactory> CreateHttpAuthHandlerFactory(
       NetworkContext* network_context);
-
-  // Notification that a URLLoader is about to start.
-  void OnBeforeURLRequest();
 
   bool quic_disabled() const { return quic_disabled_; }
   bool HasRawHeadersAccess(int32_t process_id, const GURL& resource_url) const;
@@ -248,9 +204,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   bool IsInitiatorAllowedForPlugin(int process_id,
                                    const url::Origin& request_initiator);
 
-  mojom::NetworkServiceClient* client() {
-    return client_.is_bound() ? client_.get() : nullptr;
-  }
   net::NetworkQualityEstimator* network_quality_estimator() {
     return network_quality_estimator_manager_->GetNetworkQualityEstimator();
   }
@@ -264,9 +217,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   net::HostResolver::Factory* host_resolver_factory() {
     return host_resolver_factory_.get();
   }
-  NetworkUsageAccumulator* network_usage_accumulator() {
-    return network_usage_accumulator_.get();
-  }
   HttpAuthCacheCopier* http_auth_cache_copier() {
     return http_auth_cache_copier_.get();
   }
@@ -275,12 +225,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     return crl_set_distributor_.get();
   }
 
-  LegacyTLSConfigDistributor* legacy_tls_config_distributor() {
-    return legacy_tls_config_distributor_.get();
-  }
-
-  const PreloadedFirstPartySets* preloaded_first_party_sets() const {
-    return preloaded_first_party_sets_.get();
+  const FirstPartySets* first_party_sets() const {
+    return first_party_sets_.get();
   }
 
   bool os_crypt_config_set() const { return os_crypt_config_set_; }
@@ -306,9 +252,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   SCTAuditingCache* sct_auditing_cache() { return sct_auditing_cache_.get(); }
 #endif
 
-  void OnDataPipeCreated(DataPipeUser user);
-  void OnDataPipeDropped(DataPipeUser user);
-  void StopMetricsTimerForTesting();
+  mojom::URLLoaderNetworkServiceObserver*
+  GetDefaultURLLoaderNetworkServiceObserver();
 
   static NetworkService* GetNetworkServiceForTesting();
 
@@ -321,21 +266,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // context.
   void OnNetworkContextConnectionClosed(NetworkContext* network_context);
 
-  // Starts the timer to call NetworkServiceClient::OnLoadingStateUpdate(), if
-  // timer isn't already running, |waiting_on_load_state_ack_| is false, and
-  // there are live URLLoaders.
-  // Only works when network service is enabled.
-  void MaybeStartUpdateLoadInfoTimer();
-
-  // Checks all pending requests and updates the load info if necessary.
-  void UpdateLoadInfo();
-
-  // Invoked once the browser has acknowledged receiving the previous LoadInfo.
-  // Starts timer call UpdateLoadInfo() again, if needed.
-  void AckUpdateLoadInfo();
-
-  void ReportMetrics();
-
   bool initialized_ = false;
 
   net::NetLog* net_log_;
@@ -344,8 +274,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   std::unique_ptr<net::FileNetLogObserver> file_net_log_observer_;
   net::TraceNetLogObserver trace_net_log_observer_;
-
-  mojo::Remote<mojom::NetworkServiceClient> client_;
 
   KeepaliveStatisticsRecorder keepalive_statistics_recorder_;
 
@@ -361,6 +289,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   mojo::Receiver<mojom::NetworkService> receiver_{this};
 
+  mojo::Remote<mojom::URLLoaderNetworkServiceObserver>
+      default_url_loader_network_service_observer_;
+
   std::unique_ptr<NetworkQualityEstimatorManager>
       network_quality_estimator_manager_;
 
@@ -368,7 +299,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   std::unique_ptr<net::HostResolverManager> host_resolver_manager_;
   std::unique_ptr<net::HostResolver::Factory> host_resolver_factory_;
-  std::unique_ptr<NetworkUsageAccumulator> network_usage_accumulator_;
   std::unique_ptr<HttpAuthCacheCopier> http_auth_cache_copier_;
 
   // Members that would store the http auth network_service related params.
@@ -377,9 +307,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   mojom::HttpAuthDynamicParamsPtr http_auth_dynamic_network_service_params_;
   mojom::HttpAuthStaticParamsPtr http_auth_static_network_service_params_;
 
-  // Globally-scoped state for First-Party Sets that were preloaded (and
-  // updated) via the component updater.
-  std::unique_ptr<PreloadedFirstPartySets> preloaded_first_party_sets_;
+  // Globally-scoped state for First-Party Sets.
+  std::unique_ptr<FirstPartySets> first_party_sets_;
 
   // NetworkContexts created by CreateNetworkContext(). They call into the
   // NetworkService when their connection is closed so that it can delete
@@ -410,19 +339,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   std::unique_ptr<CRLSetDistributor> crl_set_distributor_;
 
-  std::unique_ptr<LegacyTLSConfigDistributor> legacy_tls_config_distributor_;
-
-  // A timer that periodically calls UpdateLoadInfo while there are pending
-  // loads and not waiting on an ACK from the client for the last sent
-  // LoadInfo callback.
-  base::OneShotTimer update_load_info_timer_;
-  // True if a LoadInfoList has been sent to the client, but has yet to be
-  // acknowledged.
-  bool waiting_on_load_state_ack_ = false;
-
-  // A timer that periodically calls ReportMetrics every 20 minutes.
-  base::RepeatingTimer metrics_trigger_timer_;
-
   // Whether new NetworkContexts will be configured to partition their
   // HttpAuthCaches by NetworkIsolationKey.
   bool split_auth_cache_by_network_isolation_key_ = false;
@@ -442,13 +358,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // that renderer process (the renderer will proxy requests from PPAPI - such
   // requests should have their initiator origin within the set stored here).
   std::map<int, std::set<url::Origin>> plugin_origins_;
-
-  struct DataPipeUsage final {
-    int current = 0;
-    int max = 0;
-    int min = 0;
-  };
-  base::flat_map<DataPipeUser, DataPipeUsage> data_pipe_use_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };

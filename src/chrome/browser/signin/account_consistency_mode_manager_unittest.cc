@@ -11,6 +11,7 @@
 #include "base/test/scoped_command_line.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
 #include "chrome/common/pref_names.h"
@@ -28,7 +29,7 @@ namespace {
 
 std::unique_ptr<TestingProfile> BuildTestingProfile(bool is_new_profile) {
   TestingProfile::Builder profile_builder;
-  profile_builder.OverrideIsNewProfile(is_new_profile);
+  profile_builder.SetIsNewProfile(is_new_profile);
   std::unique_ptr<TestingProfile> profile = profile_builder.Build();
   EXPECT_EQ(is_new_profile, profile->IsNewProfile());
   return profile;
@@ -42,7 +43,7 @@ TEST(AccountConsistencyModeManagerTest, DefaultValue) {
   std::unique_ptr<TestingProfile> profile =
       BuildTestingProfile(/*is_new_profile=*/false);
 
-#if BUILDFLAG(ENABLE_MIRROR) || defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_MIRROR) || BUILDFLAG(IS_CHROMEOS_ASH)
   EXPECT_EQ(signin::AccountConsistencyMethod::kMirror,
             AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
   EXPECT_TRUE(
@@ -171,7 +172,8 @@ TEST(AccountConsistencyModeManagerTest, NewProfile) {
       AccountConsistencyModeManager::IsDiceMigrationCompleted(profile.get()));
 }
 
-TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
+TEST(AccountConsistencyModeManagerTest,
+     DiceOnlyForRegularAndEphemeralGuestProfile) {
   content::BrowserTaskEnvironment task_environment;
 
   {
@@ -185,7 +187,8 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
         AccountConsistencyModeManager::ShouldBuildServiceForProfile(&profile));
 
     // Incognito profile.
-    Profile* incognito_profile = profile.GetPrimaryOTRProfile();
+    Profile* incognito_profile =
+        profile.GetPrimaryOTRProfile(/*create_if_needed=*/true);
     EXPECT_FALSE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
         incognito_profile));
     EXPECT_FALSE(
@@ -198,7 +201,8 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
 
     // Non-primary off-the-record profile.
     Profile* otr_profile = profile.GetOffTheRecordProfile(
-        Profile::OTRProfileID("Test::AccountConsistency"));
+        Profile::OTRProfileID::CreateUniqueForTesting(),
+        /*create_if_needed=*/true);
     EXPECT_FALSE(
         AccountConsistencyModeManager::IsDiceEnabledForProfile(otr_profile));
     EXPECT_FALSE(AccountConsistencyModeManager::GetForProfile(otr_profile));
@@ -208,8 +212,12 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
         otr_profile));
   }
 
+  // OTR Guest profile.
   {
-    // Guest profile.
+    base::test::ScopedFeatureList scoped_feature_list;
+    TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+        scoped_feature_list, false);
+
     TestingProfile::Builder profile_builder;
     profile_builder.SetGuestSession();
     std::unique_ptr<Profile> profile = profile_builder.Build();
@@ -223,22 +231,28 @@ TEST(AccountConsistencyModeManagerTest, DiceOnlyForRegularProfile) {
         profile.get()));
   }
 
+  // Ephemeral Guest profile.
   {
-    // Legacy supervised profile.
-    TestingProfile::Builder profile_builder;
-    profile_builder.SetSupervisedUserId("supervised_id");
-    std::unique_ptr<Profile> profile = profile_builder.Build();
-    ASSERT_TRUE(profile->IsLegacySupervised());
-    EXPECT_FALSE(
-        AccountConsistencyModeManager::IsDiceEnabledForProfile(profile.get()));
-    EXPECT_EQ(
-        signin::AccountConsistencyMethod::kDisabled,
-        AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
+    base::test::ScopedFeatureList scoped_feature_list;
+    if (TestingProfile::SetScopedFeatureListForEphemeralGuestProfiles(
+            scoped_feature_list, true)) {
+      TestingProfile::Builder profile_builder;
+      profile_builder.SetGuestSession();
+      std::unique_ptr<Profile> profile = profile_builder.Build();
+      ASSERT_TRUE(profile->IsEphemeralGuestProfile());
+      EXPECT_TRUE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
+          profile.get()));
+      EXPECT_EQ(
+          signin::AccountConsistencyMethod::kDice,
+          AccountConsistencyModeManager::GetMethodForProfile(profile.get()));
+      EXPECT_TRUE(AccountConsistencyModeManager::ShouldBuildServiceForProfile(
+          profile.get()));
+    }
   }
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Mirror is enabled by default on Chrome OS, unless specified otherwise.
 TEST(AccountConsistencyModeManagerTest, MirrorEnabledByDefault) {
   // Creation of this object sets the current thread's id as UI thread.
@@ -272,7 +286,8 @@ TEST(AccountConsistencyModeManagerTest, MirrorDisabledForOffTheRecordProfile) {
   content::BrowserTaskEnvironment task_environment;
 
   TestingProfile profile;
-  Profile* incognito_profile = profile.GetPrimaryOTRProfile();
+  Profile* incognito_profile =
+      profile.GetPrimaryOTRProfile(/*create_if_needed=*/true);
   EXPECT_FALSE(AccountConsistencyModeManager::IsMirrorEnabledForProfile(
       incognito_profile));
   EXPECT_FALSE(AccountConsistencyModeManager::IsDiceEnabledForProfile(
@@ -282,7 +297,8 @@ TEST(AccountConsistencyModeManagerTest, MirrorDisabledForOffTheRecordProfile) {
       AccountConsistencyModeManager::GetMethodForProfile(incognito_profile));
 
   Profile* otr_profile = profile.GetOffTheRecordProfile(
-      Profile::OTRProfileID("Test::AccountConsistency"));
+      Profile::OTRProfileID::CreateUniqueForTesting(),
+      /*create_if_needed=*/true);
   EXPECT_FALSE(
       AccountConsistencyModeManager::IsMirrorEnabledForProfile(otr_profile));
   EXPECT_FALSE(
@@ -290,7 +306,7 @@ TEST(AccountConsistencyModeManagerTest, MirrorDisabledForOffTheRecordProfile) {
   EXPECT_EQ(signin::AccountConsistencyMethod::kDisabled,
             AccountConsistencyModeManager::GetMethodForProfile(otr_profile));
 }
-#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(ENABLE_MIRROR)
 // Test that Mirror is enabled for child accounts.

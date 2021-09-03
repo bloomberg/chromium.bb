@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -23,7 +23,7 @@ import merge_js_lib as javascript_merger
 
 def _MergeAPIArgumentParser(*args, **kwargs):
   """Parameters passed to this merge script, as per:
-  https://chromium.googlesource.com/chromium/tools/build/+/master/scripts/slave/recipe_modules/swarming/resources/merge_api.py
+  https://chromium.googlesource.com/chromium/tools/build/+/main/scripts/slave/recipe_modules/swarming/resources/merge_api.py
   """
   parser = argparse.ArgumentParser(*args, **kwargs)
   parser.add_argument('--build-properties', help=argparse.SUPPRESS)
@@ -101,11 +101,14 @@ def main():
       parser.error('--merged-js-cov-filename required when merging '
                    'JavaScript coverage')
 
+    # Ensure JavaScript coverage dir exists.
+    if not os.path.exists(params.javascript_coverage_dir):
+      os.makedirs(params.javascript_coverage_dir)
+
     output_path = os.path.join(params.javascript_coverage_dir,
         '%s_javascript.json' % params.merged_js_cov_filename)
-    raw_coverage_folder = os.path.join(params.javascript_coverage_dir, 'tests')
     logging.info('Merging v8 coverage output to %s', output_path)
-    javascript_merger.merge_coverage_files(raw_coverage_folder, output_path)
+    javascript_merger.merge_coverage_files(params.task_output_dir, output_path)
 
   # Name the output profdata file name as {test_target}.profdata or
   # default.profdata.

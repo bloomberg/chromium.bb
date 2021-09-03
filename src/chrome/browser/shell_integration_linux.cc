@@ -41,6 +41,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
@@ -107,7 +108,7 @@ const int EXIT_XDG_SETTINGS_SYNTAX_ERROR = 1;
 // If |protocol| is empty this function sets Chrome as the default browser,
 // otherwise it sets Chrome as the default handler application for |protocol|.
 bool SetDefaultWebClient(const std::string& protocol) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return true;
 #else
   std::unique_ptr<base::Environment> env(base::Environment::Create());
@@ -140,7 +141,7 @@ bool SetDefaultWebClient(const std::string& protocol) {
 // |protocol|.
 shell_integration::DefaultWebClientState GetIsDefaultWebClient(
     const std::string& protocol) {
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return shell_integration::UNKNOWN_DEFAULT;
 #else
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -303,8 +304,7 @@ std::vector<base::FilePath> GetDataSearchLocations(base::Environment* env) {
   if (env->GetVar("XDG_DATA_DIRS", &xdg_data_dirs) && !xdg_data_dirs.empty()) {
     base::StringTokenizer tokenizer(xdg_data_dirs, ":");
     while (tokenizer.GetNext()) {
-      base::FilePath data_dir(tokenizer.token());
-      search_paths.push_back(data_dir);
+      search_paths.emplace_back(tokenizer.token_piece());
     }
   } else {
     search_paths.push_back(base::FilePath("/usr/local/share"));
@@ -495,14 +495,15 @@ std::string GetDesktopFileContents(const base::FilePath& chrome_exe_path,
                                    const std::string& app_name,
                                    const GURL& url,
                                    const std::string& extension_id,
-                                   const base::string16& title,
+                                   const std::u16string& title,
                                    const std::string& icon_name,
                                    const base::FilePath& profile_path,
                                    const std::string& categories,
                                    const std::string& mime_type,
-                                   bool no_display) {
+                                   bool no_display,
+                                   const std::string& run_on_os_login_mode) {
   base::CommandLine cmd_line = shell_integration::CommandLineArgsForLauncher(
-      url, extension_id, profile_path);
+      url, extension_id, profile_path, run_on_os_login_mode);
   cmd_line.SetProgram(chrome_exe_path);
   return GetDesktopFileContentsForCommand(cmd_line, app_name, url, title,
                                           icon_name, categories, mime_type,
@@ -513,7 +514,7 @@ std::string GetDesktopFileContentsForCommand(
     const base::CommandLine& command_line,
     const std::string& app_name,
     const GURL& url,
-    const base::string16& title,
+    const std::u16string& title,
     const std::string& icon_name,
     const std::string& categories,
     const std::string& mime_type,
@@ -556,7 +557,7 @@ std::string GetDesktopFileContentsForCommand(
     // Note: We only include this parameter if the application is actually able
     // to handle files, to prevent it showing up in the list of all applications
     // which can handle files.
-    modified_command_line.AppendArg("%F");
+    modified_command_line.AppendArg("%U");
   }
 
   // Set the "Exec" key.
@@ -608,7 +609,7 @@ std::string GetDesktopFileContentsForCommand(
 #endif
 }
 
-std::string GetDirectoryFileContents(const base::string16& title,
+std::string GetDirectoryFileContents(const std::u16string& title,
                                      const std::string& icon_name) {
 #if defined(USE_GLIB)
   // See http://standards.freedesktop.org/desktop-entry-spec/latest/
@@ -701,8 +702,8 @@ DefaultWebClientSetPermission GetDefaultWebClientSetPermission() {
   return SET_DEFAULT_UNATTENDED;
 }
 
-base::string16 GetApplicationNameForProtocol(const GURL& url) {
-  return base::ASCIIToUTF16("xdg-open");
+std::u16string GetApplicationNameForProtocol(const GURL& url) {
+  return u"xdg-open";
 }
 
 DefaultWebClientState GetDefaultBrowser() {

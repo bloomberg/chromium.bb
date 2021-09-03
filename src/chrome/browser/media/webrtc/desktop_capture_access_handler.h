@@ -7,21 +7,20 @@
 
 #include <list>
 #include <memory>
-#include <string>
 #include <utility>
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/media/capture_access_handler_base.h"
 #include "chrome/browser/media/media_access_handler.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_factory.h"
+#include "chrome/browser/tab_contents/web_contents_collection.h"
 #include "content/public/browser/desktop_media_id.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
-#if defined(OS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 namespace aura {
 class Window;
 }
@@ -35,7 +34,7 @@ class Extension;
 // getUserMedia() calls. Note that getDisplayMedia() calls are handled in
 // DisplayMediaAccessHandler.
 class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
-                                    public content::NotificationObserver {
+                                    public WebContentsCollection::Observer {
  public:
   DesktopCaptureAccessHandler();
   explicit DesktopCaptureAccessHandler(
@@ -64,6 +63,7 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
  private:
   friend class DesktopCaptureAccessHandlerTest;
 
+  class WebContentsDestroyedObserver;
   struct PendingAccessRequest;
   using RequestsQueue =
       base::circular_deque<std::unique_ptr<PendingAccessRequest>>;
@@ -80,11 +80,12 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
   // approved.
   static bool IsDefaultApproved(const extensions::Extension* extension);
 
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
-  void AddNotificationObserver();
+  // Returns whether desktop capture is always approved for |url|.
+  // Currently chrome://feedback/ is default approved.
+  static bool IsDefaultApproved(const GURL& url);
+
+  // WebContentsCollection::Observer:
+  void WebContentsDestroyed(content::WebContents* web_contents) override;
 
   // Methods for handling source change request, e.g. bringing up the picker to
   // select a new source within the current desktop sharing session.
@@ -103,9 +104,10 @@ class DesktopCaptureAccessHandler : public CaptureAccessHandlerBase,
   std::unique_ptr<DesktopMediaPickerFactory> picker_factory_;
   bool display_notification_;
   RequestsQueues pending_requests_;
-  content::NotificationRegistrar notifications_registrar_;
 
-#if defined(OS_CHROMEOS)
+  WebContentsCollection web_contents_collection_;
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   aura::Window* primary_root_window_for_testing_ = nullptr;
 #endif
 

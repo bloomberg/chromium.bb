@@ -72,7 +72,7 @@ void InstalledPaymentAppsFinderImpl::GetAllPaymentApps(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
-      BrowserContext::GetDefaultStoragePartition(browser_context_));
+      browser_context_->GetDefaultStoragePartition());
   scoped_refptr<PaymentAppContextImpl> payment_app_context =
       partition->GetPaymentAppContext();
 
@@ -91,7 +91,7 @@ void InstalledPaymentAppsFinderImpl::CheckPermissionForPaymentApps(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   PermissionController* permission_controller =
-      BrowserContext::GetPermissionController(browser_context_);
+      browser_context_->GetPermissionController();
   DCHECK(permission_controller);
 
   PaymentApps permitted_apps;

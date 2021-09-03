@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/browsing_data_remover.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class BrowserContext;
@@ -67,13 +67,29 @@ class ChromeBrowsingDataLifetimeManager : public KeyedService {
   // Sets the end time of the period for which data must be deleted, for all
   // configurations. If this is |end_time_for_testing| has no value, use the
   // computed end time from each configuration.
-  void SetEndTimeForTesting(base::Optional<base::Time> end_time_for_testing) {
+  void SetEndTimeForTesting(absl::optional<base::Time> end_time_for_testing) {
     end_time_for_testing_ = std::move(end_time_for_testing);
   }
   void SetBrowsingDataRemoverObserverForTesting(
       content::BrowsingDataRemover::Observer* observer) {
     testing_data_remover_observer_ = observer;
   }
+
+  // Deletes all browsing data specified by the ClearBrowsingDataOnExitList
+  // policy for on the record profiles. This blocks shutdown until the required
+  // data is deleted. This will be called when the last browser window of a
+  // Profile is closed, then browsing data will be cleared according to the
+  // ClearBrowsingDataOnExitList policy. The browser and profile will have to be
+  // kept alive until the data is deleted. In case the browsing data clearing
+  // does not end properly, this may be called at the next startup in order to
+  // cleanup any remaining data. The browser and profile must be kept from
+  // shutting down while this is running because an early deletion of the
+  // profile will abort the browsing data clearing but still notify us that the
+  // data was cleared, even if it was not. If |keep_browser_alive|, the browser
+  // will be kept alive until the deletion is completed. This should be done if
+  // this function is called as part of a shutdown, but not as part of a cleanup
+  // at startup.
+  void ClearBrowsingDataForOnExitPolicy(bool keep_browser_alive);
 
  private:
   // Updates the  scheduled removal settings from the prefs.
@@ -86,7 +102,7 @@ class ChromeBrowsingDataLifetimeManager : public KeyedService {
   Profile* profile_;
   content::BrowsingDataRemover::Observer* testing_data_remover_observer_ =
       nullptr;
-  base::Optional<base::Time> end_time_for_testing_;
+  absl::optional<base::Time> end_time_for_testing_;
   base::WeakPtrFactory<ChromeBrowsingDataLifetimeManager> weak_ptr_factory_{
       this};
 };

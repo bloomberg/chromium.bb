@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <utility>
-
 #include "third_party/blink/renderer/modules/worklet/worklet_thread_test_common.h"
+
+#include <utility>
 
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -32,7 +33,8 @@ CreateAnimationAndPaintWorkletThread(
       std::make_unique<GlobalScopeCreationParams>(
           window->Url(), mojom::blink::ScriptType::kModule, "Worklet",
           window->UserAgent(), window->GetFrame()->Loader().UserAgentMetadata(),
-          nullptr /* web_worker_fetch_context */, Vector<CSPHeaderAndType>(),
+          nullptr /* web_worker_fetch_context */,
+          Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
           window->GetReferrerPolicy(), window->GetSecurityOrigin(),
           window->IsSecureContext(), window->GetHttpsState(), clients,
           nullptr /* content_settings_client */, window->AddressSpace(),
@@ -41,9 +43,10 @@ CreateAnimationAndPaintWorkletThread(
           mojom::blink::V8CacheOptions::kDefault,
           MakeGarbageCollected<WorkletModuleResponsesMap>(),
           mojo::NullRemote() /* browser_interface_broker */,
-          BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
-          window->GetAgentClusterID(), window->GetExecutionContextToken()),
-      base::nullopt, std::make_unique<WorkerDevToolsParams>());
+          BeginFrameProviderParams(), nullptr /* parent_permissions_policy */,
+          window->GetAgentClusterID(), ukm::kInvalidSourceId,
+          window->GetExecutionContextToken()),
+      absl::nullopt, std::make_unique<WorkerDevToolsParams>());
   return thread;
 }
 

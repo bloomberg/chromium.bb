@@ -10,7 +10,6 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/callback_forward.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
@@ -200,7 +199,7 @@ TEST_F(BarcodeDetectionProviderMacTest, EnumerateSupportedBarcodesErrored) {
   }
 
   std::unique_ptr<VisionAPIInterface> mock_vision_api =
-      CreateMockVisionAPI([NSArray array]);
+      CreateMockVisionAPI(@[]);
 
   provider_ = CreateBarcodeProviderMac(std::move(mock_vision_api));
   provider_->EnumerateSupportedFormats(base::BindOnce(

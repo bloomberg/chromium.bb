@@ -45,7 +45,7 @@ class SharingService : public KeyedService, public syncer::SyncServiceObserver {
  public:
   using SharingDeviceList = std::vector<std::unique_ptr<syncer::DeviceInfo>>;
   using NotificationActionCallback =
-      base::RepeatingCallback<void(base::Optional<int> button, bool closed)>;
+      base::RepeatingCallback<void(absl::optional<int> button, bool closed)>;
 
   enum class State {
     // Device is unregistered with FCM and Sharing is unavailable.
@@ -87,7 +87,10 @@ class SharingService : public KeyedService, public syncer::SyncServiceObserver {
   // |message|: Message to be sent.
   // |callback| will be invoked once a response has received from remote device,
   // or if operation has failed or timed out.
-  virtual void SendMessageToDevice(
+  // Returns a callback that cancels receiving of the response. Calling it will
+  // run |callback| if it hasn't been executed yet, otherwise it will be a
+  // no-op. Returns a null callback if the message is failed to be sent.
+  virtual base::OnceClosure SendMessageToDevice(
       const syncer::DeviceInfo& device,
       base::TimeDelta response_timeout,
       chrome_browser_sharing::SharingMessage message,
@@ -132,6 +135,10 @@ class SharingService : public KeyedService, public syncer::SyncServiceObserver {
 
   // Returns SharingMessageSender for testing.
   SharingMessageSender* GetMessageSenderForTesting() const;
+
+  // Returns the message handler registered for |payload_case| for testing.
+  SharingMessageHandler* GetSharingHandlerForTesting(
+      chrome_browser_sharing::SharingMessage::PayloadCase payload_case) const;
 
  private:
   // Overrides for syncer::SyncServiceObserver.

@@ -361,8 +361,7 @@ int main(int argc, char** argv) {
   openscreen::osp::ServiceMap services;
   openscreen::osp::g_services = &services;
 
-  PlatformClientPosix::Create(std::chrono::milliseconds(50),
-                              std::chrono::milliseconds(50));
+  PlatformClientPosix::Create(std::chrono::milliseconds(50));
 
   openscreen::osp::BrowseDemo(
       PlatformClientPosix::GetInstance()->GetTaskRunner(), labels[0], labels[1],

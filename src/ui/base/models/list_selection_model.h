@@ -7,9 +7,8 @@
 
 #include <stddef.h>
 
-#include <vector>
-
 #include "base/component_export.h"
+#include "base/containers/flat_set.h"
 
 namespace ui {
 
@@ -27,7 +26,7 @@ namespace ui {
 // active index correspond to the same thing.
 class COMPONENT_EXPORT(UI_BASE) ListSelectionModel {
  public:
-  using SelectedIndices = std::vector<int>;
+  using SelectedIndices = base::flat_set<int>;
 
   // Used to identify no selection.
   static constexpr int kUnselectedIndex = -1;
@@ -79,6 +78,10 @@ class COMPONENT_EXPORT(UI_BASE) ListSelectionModel {
   // Adds |index| to the selection. This does not change the active or anchor
   // indices.
   void AddIndexToSelection(int index);
+
+  // Adds indices between |index_start| and |index_end|, inclusive.
+  // This does not change the active or anchor indices.
+  void AddIndexRangeToSelection(int index_start, int index_end);
 
   // Removes |index| from the selection. This does not change the active or
   // anchor indices.

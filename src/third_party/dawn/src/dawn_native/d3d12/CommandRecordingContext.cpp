@@ -102,7 +102,7 @@ namespace dawn_native { namespace d3d12 {
     // the device before calling.
     ID3D12GraphicsCommandList4* CommandRecordingContext::GetCommandList4() const {
         ASSERT(IsOpen());
-        ASSERT(mD3d12CommandList.Get() != nullptr);
+        ASSERT(mD3d12CommandList != nullptr);
         return mD3d12CommandList4.Get();
     }
 
@@ -112,10 +112,15 @@ namespace dawn_native { namespace d3d12 {
         mIsOpen = false;
         mSharedTextures.clear();
         mHeapsPendingUsage.clear();
+        mTempBuffers.clear();
     }
 
     bool CommandRecordingContext::IsOpen() const {
         return mIsOpen;
+    }
+
+    void CommandRecordingContext::AddToTempBuffers(Ref<Buffer> tempBuffer) {
+        mTempBuffers.emplace_back(tempBuffer);
     }
 
 }}  // namespace dawn_native::d3d12

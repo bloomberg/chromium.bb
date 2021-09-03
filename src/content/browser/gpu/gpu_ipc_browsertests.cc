@@ -91,6 +91,7 @@ class ContextTestBase : public content::ContentBrowserTest {
 // Include the shared tests.
 #define CONTEXT_TEST_F IN_PROC_BROWSER_TEST_F
 #include "base/bind.h"
+#include "build/chromeos_buildflags.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/ipc/client/gpu_context_tests.h"
 
@@ -145,7 +146,9 @@ class BrowserGpuChannelHostFactoryTest : public ContentBrowserTest {
 
 // Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
 // establishes a GPU channel.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_Basic Basic
 #else
 #define MAYBE_Basic DISABLED_Basic
@@ -159,7 +162,9 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, MAYBE_Basic) {
 #if !defined(OS_ANDROID)
 // Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
 // establishes a GPU channel.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_AlreadyEstablished AlreadyEstablished
 #else
 #define MAYBE_AlreadyEstablished DISABLED_AlreadyEstablished
@@ -237,7 +242,9 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 
 // Test fails on Chromeos + Mac, flaky on Windows because UI Compositor
 // establishes a GPU channel.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #define MAYBE_CrashAndRecover CrashAndRecover
 #else
 #define MAYBE_CrashAndRecover DISABLED_CrashAndRecover
@@ -264,18 +271,10 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   EXPECT_TRUE(IsChannelEstablished());
 }
 
-using GpuProcessHostBrowserTest = BrowserGpuChannelHostFactoryTest;
-
-IN_PROC_BROWSER_TEST_F(GpuProcessHostBrowserTest, Shutdown) {
-  DCHECK(!IsChannelEstablished());
-  EstablishAndWait();
-  base::RunLoop run_loop;
-  StopGpuProcess(run_loop.QuitClosure());
-  run_loop.Run();
-}
-
 // Disabled outside linux like other tests here sadface.
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+// TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
+// of lacros-chrome is complete.
+#if defined(OS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
 IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, CreateTransferBuffer) {
   DCHECK(!IsChannelEstablished());
   EstablishAndWait();
@@ -333,27 +332,6 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, CreateTransferBuffer) {
   buffer = impl->CreateTransferBuffer(100, &id);
   EXPECT_TRUE(buffer);
   EXPECT_GE(id, 0);
-}
-#endif
-
-class GpuProcessHostDisableGLBrowserTest : public GpuProcessHostBrowserTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    UseSoftwareCompositing();
-    GpuProcessHostBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kUseGL,
-                                    gl::kGLImplementationDisabledName);
-  }
-};
-
-// Android and CrOS don't support disabling GL.
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(GpuProcessHostDisableGLBrowserTest, CreateAndDestroy) {
-  DCHECK(!IsChannelEstablished());
-  EstablishAndWait();
-  base::RunLoop run_loop;
-  StopGpuProcess(run_loop.QuitClosure());
-  run_loop.Run();
 }
 #endif
 

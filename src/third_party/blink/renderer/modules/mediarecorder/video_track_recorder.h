@@ -88,10 +88,13 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
   // Video codec and its encoding profile/level.
   struct MODULES_EXPORT CodecProfile {
     CodecId codec_id;
-    base::Optional<media::VideoCodecProfile> profile;
-    base::Optional<uint8_t> level;
+    absl::optional<media::VideoCodecProfile> profile;
+    absl::optional<uint8_t> level;
 
     explicit CodecProfile(CodecId codec_id);
+    CodecProfile(CodecId codec_id,
+                 absl::optional<media::VideoCodecProfile> opt_profile,
+                 absl::optional<uint8_t> opt_level);
     CodecProfile(CodecId codec_id,
                  media::VideoCodecProfile profile,
                  uint8_t level);
@@ -138,7 +141,7 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
   // namely configuration, encoding (which might take some time) and
   // destruction. This task runner can be passed on the creation. If nothing is
   // passed, a new encoding thread is created and used.
-  class Encoder : public WTF::ThreadSafeRefCounted<Encoder> {
+  class MODULES_EXPORT Encoder : public WTF::ThreadSafeRefCounted<Encoder> {
    public:
     Encoder(const VideoTrackRecorder::OnEncodedVideoCB& on_encoded_video_cb,
             int32_t bits_per_second,
@@ -152,8 +155,10 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
     // encode the frame. If the |frame|'s data is not directly available (e.g.
     // it's a texture) then RetrieveFrameOnEncoderThread() is called, and if
     // even that fails, black frames are sent instead.
-    void StartFrameEncode(scoped_refptr<media::VideoFrame> frame,
-                          base::TimeTicks capture_timestamp);
+    void StartFrameEncode(
+        scoped_refptr<media::VideoFrame> video_frame,
+        std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
+        base::TimeTicks capture_timestamp);
     void RetrieveFrameOnEncodingTaskRunner(
         scoped_refptr<media::VideoFrame> video_frame,
         base::TimeTicks capture_timestamp);
@@ -201,12 +206,6 @@ class VideoTrackRecorder : public TrackRecorder<MediaStreamVideoSink> {
     // pixel format.  The function is best-effort.  If for any reason the
     // conversion fails, the original |frame| will be returned.
     scoped_refptr<media::VideoFrame> ConvertToI420ForSoftwareEncoder(
-        scoped_refptr<media::VideoFrame> frame);
-
-    // A helper function to map GpuMemoryBuffer-based VideoFrame. This function
-    // maps the given GpuMemoryBuffer of |frame| as-is without converting pixel
-    // format. The returned VideoFrame owns the |frame|.
-    static scoped_refptr<media::VideoFrame> WrapMappedGpuMemoryBufferVideoFrame(
         scoped_refptr<media::VideoFrame> frame);
 
     // Used to shutdown properly on the same thread we were created.
@@ -335,12 +334,21 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
 
  private:
   friend class VideoTrackRecorderTest;
-  void InitializeEncoder(CodecProfile codec,
-                         const OnEncodedVideoCB& on_encoded_video_cb,
-                         int32_t bits_per_second,
-                         bool allow_vea_encoder,
-                         scoped_refptr<media::VideoFrame> frame,
-                         base::TimeTicks capture_time);
+  void InitializeEncoder(
+      CodecProfile codec,
+      const OnEncodedVideoCB& on_encoded_video_cb,
+      int32_t bits_per_second,
+      bool allow_vea_encoder,
+      scoped_refptr<media::VideoFrame> video_frame,
+      std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
+      base::TimeTicks capture_time);
+  void InitializeEncoderOnEncoderSupportKnown(
+      CodecProfile codec_profile,
+      const OnEncodedVideoCB& on_encoded_video_cb,
+      int32_t bits_per_second,
+      bool allow_vea_encoder,
+      scoped_refptr<media::VideoFrame> frame,
+      base::TimeTicks capture_time);
   void OnError();
 
   void ConnectToTrack(const VideoCaptureDeliverFrameCB& callback);
@@ -355,9 +363,11 @@ class MODULES_EXPORT VideoTrackRecorderImpl : public VideoTrackRecorder {
   // Inner class to encode using whichever codec is configured.
   scoped_refptr<Encoder> encoder_;
 
-  base::RepeatingCallback<void(bool allow_vea_encoder,
-                               scoped_refptr<media::VideoFrame> frame,
-                               base::TimeTicks capture_time)>
+  base::RepeatingCallback<void(
+      bool allow_vea_encoder,
+      scoped_refptr<media::VideoFrame> video_frame,
+      std::vector<scoped_refptr<media::VideoFrame>> scaled_video_frames,
+      base::TimeTicks capture_time)>
       initialize_encoder_cb_;
 
   bool should_pause_encoder_on_initialization_;

@@ -9,7 +9,7 @@
 #include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_function.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_scheduler_post_task_callback.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/scheduler/dom_scheduler.h"
@@ -33,13 +33,12 @@ namespace blink {
 
 DOMTask::DOMTask(DOMScheduler* scheduler,
                  ScriptPromiseResolver* resolver,
-                 V8Function* callback,
-                 const HeapVector<ScriptValue>& args,
+                 V8SchedulerPostTaskCallback* callback,
                  DOMTaskSignal* signal,
+                 base::SingleThreadTaskRunner* task_runner,
                  base::TimeDelta delay)
     : scheduler_(scheduler),
       callback_(callback),
-      arguments_(args),
       resolver_(resolver),
       signal_(signal),
       // TODO(kdillon): Expose queuing time from base::sequence_manager so we
@@ -47,12 +46,12 @@ DOMTask::DOMTask(DOMScheduler* scheduler,
       queue_time_(delay.is_zero() ? base::TimeTicks::Now()
                                   : base::TimeTicks()) {
   DCHECK(signal_);
-  DCHECK(signal_->GetTaskRunner());
+  DCHECK(task_runner);
   DCHECK(callback_);
-  signal_->AddAlgorithm(WTF::Bind(&DOMTask::Abort, WrapWeakPersistent(this)));
+  signal_->AddAlgorithm(WTF::Bind(&DOMTask::OnAbort, WrapWeakPersistent(this)));
 
   task_handle_ = PostDelayedCancellableTask(
-      *signal_->GetTaskRunner(), FROM_HERE,
+      *task_runner, FROM_HERE,
       WTF::Bind(&DOMTask::Invoke, WrapPersistent(this)), delay);
 
   ScriptState* script_state =
@@ -65,7 +64,6 @@ DOMTask::DOMTask(DOMScheduler* scheduler,
 void DOMTask::Trace(Visitor* visitor) const {
   visitor->Trace(scheduler_);
   visitor->Trace(callback_);
-  visitor->Trace(arguments_);
   visitor->Trace(resolver_);
   visitor->Trace(signal_);
 }
@@ -97,14 +95,14 @@ void DOMTask::InvokeInternal(ScriptState* script_state) {
   v8_context->SetContinuationPreservedEmbedderData(
       ToV8(signal_.Get(), v8_context->Global(), isolate));
   ScriptValue result;
-  if (callback_->Invoke(nullptr, arguments_).To(&result))
+  if (callback_->Invoke(nullptr).To(&result))
     resolver_->Resolve(result.V8Value());
   else if (try_catch.HasCaught())
     resolver_->Reject(try_catch.Exception());
   v8_context->SetContinuationPreservedEmbedderData(v8::Local<v8::Object>());
 }
 
-void DOMTask::Abort() {
+void DOMTask::OnAbort() {
   // If the task has already finished running, the promise is either resolved or
   // rejected, in which case abort will no longer have any effect.
   if (!callback_)

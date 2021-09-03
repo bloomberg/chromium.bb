@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/test_tools/quic_dispatcher_peer.h"
+#include "quic/test_tools/quic_dispatcher_peer.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_dispatcher.h"
-#include "net/third_party/quiche/src/quic/core/quic_packet_writer_wrapper.h"
+#include "quic/core/quic_dispatcher.h"
+#include "quic/core/quic_packet_writer_wrapper.h"
 
 namespace quic {
 namespace test {
@@ -74,12 +74,6 @@ QuicBufferedPacketStore* QuicDispatcherPeer::GetBufferedPackets(
 }
 
 // static
-const QuicDispatcher::SessionMap& QuicDispatcherPeer::session_map(
-    QuicDispatcher* dispatcher) {
-  return dispatcher->session_map();
-}
-
-// static
 void QuicDispatcherPeer::set_new_sessions_allowed_per_event_loop(
     QuicDispatcher* dispatcher,
     size_t num_session_allowed) {
@@ -93,10 +87,11 @@ void QuicDispatcherPeer::SendPublicReset(
     const QuicSocketAddress& peer_address,
     QuicConnectionId connection_id,
     bool ietf_quic,
+    size_t received_packet_length,
     std::unique_ptr<QuicPerPacketContext> packet_context) {
   dispatcher->time_wait_list_manager()->SendPublicReset(
       self_address, peer_address, connection_id, ietf_quic,
-      std::move(packet_context));
+      received_packet_length, std::move(packet_context));
 }
 
 // static
@@ -117,6 +112,25 @@ std::string QuicDispatcherPeer::SelectAlpn(
     QuicDispatcher* dispatcher,
     const std::vector<std::string>& alpns) {
   return dispatcher->SelectAlpn(alpns);
+}
+
+// static
+QuicSession* QuicDispatcherPeer::GetFirstSessionIfAny(
+    QuicDispatcher* dispatcher) {
+  if (dispatcher->reference_counted_session_map_.empty()) {
+    return nullptr;
+  }
+  return dispatcher->reference_counted_session_map_.begin()->second.get();
+}
+
+// static
+const QuicSession* QuicDispatcherPeer::FindSession(
+    const QuicDispatcher* dispatcher,
+    QuicConnectionId id) {
+  auto it = dispatcher->reference_counted_session_map_.find(id);
+  return (it == dispatcher->reference_counted_session_map_.end())
+             ? nullptr
+             : it->second.get();
 }
 
 }  // namespace test

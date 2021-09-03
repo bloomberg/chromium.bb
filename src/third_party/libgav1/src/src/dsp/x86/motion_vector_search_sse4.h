@@ -30,8 +30,12 @@ void MotionVectorSearchInit_SSE4_1();
 }  // namespace dsp
 }  // namespace libgav1
 
-#if LIBGAV1_ENABLE_SSE4_1
+#if LIBGAV1_TARGETING_SSE4_1
+
+#ifndef LIBGAV1_Dsp8bpp_MotionVectorSearch
 #define LIBGAV1_Dsp8bpp_MotionVectorSearch LIBGAV1_CPU_SSE4_1
-#endif  // LIBGAV1_ENABLE_SSE4_1
+#endif
+
+#endif  // LIBGAV1_TARGETING_SSE4_1
 
 #endif  // LIBGAV1_SRC_DSP_X86_MOTION_VECTOR_SEARCH_SSE4_H_

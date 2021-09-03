@@ -34,6 +34,8 @@ nacl_irt_x86_32.nexe: %(VersionDir)s\
 nacl_irt_x86_64.nexe: %(VersionDir)s\
 notification_helper.exe: %(VersionDir)s\
 resources.pak: %(VersionDir)s\
+vk_swiftshader.dll: %(VersionDir)s\
+vk_swiftshader_icd.json: %(VersionDir)s\
 v8_context_snapshot.bin: %(VersionDir)s\
 #
 # Sub directories living in the version dir

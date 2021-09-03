@@ -5,16 +5,16 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_HIERARCHY_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_HIERARCHY_H_
 
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_identifier.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 namespace settings {
@@ -77,7 +77,7 @@ class Hierarchy {
     mojom::Section section;
 
     // The parent subpage, if applicable. Only applies to nested subpages.
-    base::Optional<mojom::Subpage> parent_subpage;
+    absl::optional<mojom::Subpage> parent_subpage;
 
     // Generates a search result for this subpage, using the canonical search
     // tag as the search result text. |relevance_score| must be passed by the
@@ -109,7 +109,7 @@ class Hierarchy {
   // its subpage. Some settings are embedded directly into the section and have
   // no associated subpage.
   using SettingLocation =
-      std::pair<mojom::Section, base::Optional<mojom::Subpage>>;
+      std::pair<mojom::Section, absl::optional<mojom::Subpage>>;
 
   struct SettingMetadata {
     explicit SettingMetadata(mojom::Section primary_section);
@@ -137,11 +137,11 @@ class Hierarchy {
   //                 ["Settings", "Network"]
   // Example 2 - External storage (has parent subpage):
   //                 ["Settings", "Device", "Storage management"]
-  std::vector<base::string16> GenerateAncestorHierarchyStrings(
+  std::vector<std::u16string> GenerateAncestorHierarchyStrings(
       mojom::Subpage subpage) const;
 
   // Same as above, but for settings.
-  std::vector<base::string16> GenerateAncestorHierarchyStrings(
+  std::vector<std::u16string> GenerateAncestorHierarchyStrings(
       mojom::Setting setting) const;
 
  protected:
@@ -153,7 +153,7 @@ class Hierarchy {
   class PerSectionHierarchyGenerator;
 
   // Generates an array with the Settings app name and |section|'s name.
-  std::vector<base::string16> GenerateHierarchyStrings(
+  std::vector<std::u16string> GenerateHierarchyStrings(
       mojom::Section section) const;
 
   virtual std::string ModifySearchResultUrl(

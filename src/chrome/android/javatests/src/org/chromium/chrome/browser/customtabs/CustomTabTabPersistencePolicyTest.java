@@ -20,6 +20,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.StreamUtil;
@@ -34,12 +35,11 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
 import org.chromium.chrome.browser.app.tabmodel.ChromeTabModelFilterFactory;
+import org.chromium.chrome.browser.app.tabmodel.CustomTabsTabModelOrchestrator;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabStateFileManager;
-import org.chromium.chrome.browser.tabmodel.NextTabPolicy;
-import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.tabpersistence.TabStateDirectory;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.url.GURL;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -350,7 +351,7 @@ public class CustomTabTabPersistencePolicyTest {
         };
     }
 
-    private static CustomTabActivity buildTestCustomTabActivity(
+    private CustomTabActivity buildTestCustomTabActivity(
             final int taskId, int[] normalTabIds, int[] incognitoTabIds) {
         final TabModelSelectorImpl selectorImpl =
                 buildTestTabModelSelector(normalTabIds, incognitoTabIds);
@@ -430,7 +431,7 @@ public class CustomTabTabPersistencePolicyTest {
         };
     }
 
-    private static TabModelSelectorImpl buildTestTabModelSelector(
+    private TabModelSelectorImpl buildTestTabModelSelector(
             int[] normalTabIds, int[] incognitoTabIds) {
         MockTabModel.MockTabModelDelegate tabModelDelegate =
                 new MockTabModel.MockTabModelDelegate() {
@@ -438,8 +439,8 @@ public class CustomTabTabPersistencePolicyTest {
                     public Tab createTab(int id, boolean incognito) {
                         return new MockTab(id, incognito) {
                             @Override
-                            public String getUrlString() {
-                                return "https://www.google.com";
+                            public GURL getUrl() {
+                                return new GURL("https://www.google.com");
                             }
                         };
                     }
@@ -453,17 +454,31 @@ public class CustomTabTabPersistencePolicyTest {
             for (int tabId : incognitoTabIds) incognitoTabModel.addTab(tabId);
         }
 
-        CustomTabActivity activity = new CustomTabActivity();
-        ApplicationStatus.onStateChangeForTesting(activity, ActivityState.CREATED);
+        CustomTabActivity customTabActivity = new CustomTabActivity() {
+            // This is intended to pretend we've started the activity, so we can attach a base
+            // context to the activity.
+            @Override
+            public void onStart() {
+                attachBaseContext(mAppContext);
+            }
+        };
+        ApplicationStatus.onStateChangeForTesting(customTabActivity, ActivityState.CREATED);
+        ActivityStateListener stateListener = (activity, state) -> {
+            if (state == ActivityState.STARTED) {
+                customTabActivity.onStart();
+            }
+        };
+        ApplicationStatus.registerStateListenerForActivity(stateListener, customTabActivity);
+        ApplicationStatus.onStateChangeForTesting(customTabActivity, ActivityState.STARTED);
 
-        NextTabPolicySupplier nextTabPolicySupplier = () -> NextTabPolicy.LOCATIONAL;
-
-        TabModelSelectorImpl selector = new TabModelSelectorImpl(activity,
-                activity::getWindowAndroid, activity, buildTestPersistencePolicy(),
-                new ChromeTabModelFilterFactory(), nextTabPolicySupplier,
-                AsyncTabParamsManagerSingleton.getInstance(), false, false, false);
+        CustomTabsTabModelOrchestrator orchestrator = new CustomTabsTabModelOrchestrator();
+        orchestrator.createTabModels(customTabActivity::getWindowAndroid, customTabActivity,
+                new ChromeTabModelFilterFactory(customTabActivity), buildTestPersistencePolicy(),
+                AsyncTabParamsManagerSingleton.getInstance());
+        TabModelSelectorImpl selector = orchestrator.getTabModelSelector();
         selector.initializeForTesting(normalTabModel, incognitoTabModel);
-        ApplicationStatus.onStateChangeForTesting(activity, ActivityState.DESTROYED);
+        ApplicationStatus.onStateChangeForTesting(customTabActivity, ActivityState.DESTROYED);
+        ApplicationStatus.unregisterActivityStateListener(stateListener);
         return selector;
     }
 }

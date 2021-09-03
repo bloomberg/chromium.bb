@@ -20,38 +20,34 @@
 class ClipSpaceTest : public DawnTest {
   protected:
     wgpu::RenderPipeline CreatePipelineForTest() {
-        utils::ComboRenderPipelineDescriptor pipelineDescriptor(device);
+        utils::ComboRenderPipelineDescriptor2 pipelineDescriptor;
 
         // Draw two triangles:
         // 1. The depth value of the top-left one is >= 0.5
         // 2. The depth value of the bottom-right one is <= 0.5
-        const char* vs =
-            R"(#version 450
-            const vec3 pos[6] = vec3[6](vec3(-1.0f,  1.0f, 1.0f),
-                                        vec3(-1.0f, -1.0f, 0.5f),
-                                        vec3( 1.0f,  1.0f, 0.5f),
-                                        vec3( 1.0f,  1.0f, 0.5f),
-                                        vec3(-1.0f, -1.0f, 0.5f),
-                                        vec3( 1.0f, -1.0f, 0.0f));
-            void main() {
-                gl_Position = vec4(pos[gl_VertexIndex], 1.0);
-            })";
-        pipelineDescriptor.vertexStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vs);
+        pipelineDescriptor.vertex.module = utils::CreateShaderModule(device, R"(
+            let pos : array<vec3<f32>, 6> = array<vec3<f32>, 6>(
+                vec3<f32>(-1.0,  1.0, 1.0),
+                vec3<f32>(-1.0, -1.0, 0.5),
+                vec3<f32>( 1.0,  1.0, 0.5),
+                vec3<f32>( 1.0,  1.0, 0.5),
+                vec3<f32>(-1.0, -1.0, 0.5),
+                vec3<f32>( 1.0, -1.0, 0.0));
 
-        const char* fs =
-            R"(#version 450
-            layout(location = 0) out vec4 fragColor;
-            void main() {
-               fragColor = vec4(1.0, 0.0, 0.0, 1.0);
-            })";
-        pipelineDescriptor.cFragmentStage.module =
-            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fs);
+            [[stage(vertex)]]
+            fn main([[builtin(vertex_index)]] VertexIndex : u32) -> [[builtin(position)]] vec4<f32> {
+                return vec4<f32>(pos[VertexIndex], 1.0);
+            })");
 
-        pipelineDescriptor.cDepthStencilState.depthCompare = wgpu::CompareFunction::LessEqual;
-        pipelineDescriptor.depthStencilState = &pipelineDescriptor.cDepthStencilState;
+        pipelineDescriptor.cFragment.module = utils::CreateShaderModule(device, R"(
+            [[stage(fragment)]] fn main() -> [[location(0)]] vec4<f32> {
+               return vec4<f32>(1.0, 0.0, 0.0, 1.0);
+            })");
 
-        return device.CreateRenderPipeline(&pipelineDescriptor);
+        wgpu::DepthStencilState* depthStencil = pipelineDescriptor.EnableDepthStencil();
+        depthStencil->depthCompare = wgpu::CompareFunction::LessEqual;
+
+        return device.CreateRenderPipeline2(&pipelineDescriptor);
     }
 
     wgpu::Texture Create2DTextureForTest(wgpu::TextureFormat format) {
@@ -101,4 +97,5 @@ DAWN_INSTANTIATE_TEST(ClipSpaceTest,
                       D3D12Backend(),
                       MetalBackend(),
                       OpenGLBackend(),
+                      OpenGLESBackend(),
                       VulkanBackend());

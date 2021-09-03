@@ -23,6 +23,7 @@
 Če je »<ph name="SERVICE_SCRIPT_NAME" />« že označeno, ga odznačite in znova označite.</translation>
 <translation id="225614027745146050">Pozdravljeni</translation>
 <translation id="2320166752086256636">Skrij tipkovnico</translation>
+<translation id="2333212046079545895">Copyright 2021 Google LLC. Vse pravice pridržane.</translation>
 <translation id="2359808026110333948">Naprej</translation>
 <translation id="2366718077645204424">Ni mogoče vzpostaviti povezave z gostiteljem; verjetno zaradi konfiguracije omrežja, ki ga uporabljate.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Zadnji odziv z vzpostavljeno povezavo: <ph name="RELATIVE_TIMESTAMP" />.</translation>
@@ -52,7 +53,6 @@
 <translation id="369442766917958684">Brez povezave.</translation>
 <translation id="3695446226812920698">Oglejte si navodila</translation>
 <translation id="3776024066357219166">Seja Oddaljenega namizja za Chrome je končana.</translation>
-<translation id="3870154837782082782">Google Inc.</translation>
 <translation id="3897092660631435901">Meni</translation>
 <translation id="3905196214175737742">Neveljavna domena lastnika gostitelja.</translation>
 <translation id="3931191050278863510">Gostitelj se je ustavil.</translation>
@@ -70,6 +70,7 @@
 <translation id="4405930547258349619">Knjižnica jedra</translation>
 <translation id="443560535555262820">Odpri nastavitve dostopnosti</translation>
 <translation id="4450893287417543264">Tega ne prikaži več</translation>
+<translation id="4512952200932940229">Copyright 2021 Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="4513946894732546136">Povratne informacije</translation>
 <translation id="4563926062592110512">Povezava z odjemalcem prekinjena: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="4703799847237267011">Seja Oddaljenega povezovanja s Chromom je končana.</translation>
@@ -91,6 +92,7 @@
 <translation id="5397086374758643919">Odstranitveni program gostitelja za Oddaljeno namizje za Chrome</translation>
 <translation id="544077782045763683">Gostitelj se je zaustavil.</translation>
 <translation id="5601503069213153581">PIN</translation>
+<translation id="5690427481109656848">Google LLC</translation>
 <translation id="5708869785009007625">Vaše namizje je trenutno v skupni rabi z uporabnikom <ph name="USER" />.</translation>
 <translation id="5750083143895808682">Prijavljen kot <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="579702532610384533">Znova poveži</translation>
@@ -106,7 +108,6 @@
 <translation id="6542902059648396432">Prijava težave …</translation>
 <translation id="6612717000975622067">Pošlji Ctrl + Alt + Del</translation>
 <translation id="6654753848497929428">Skupna raba</translation>
-<translation id="6681800064886881394">Copyright 2013 Google Inc. Vse pravice pridržane.</translation>
 <translation id="677755392401385740">Gostitelj zagnan za uporabnika: <ph name="HOST_USERNAME" />.</translation>
 <translation id="6939719207673461467">Pokaži/skrij tipkovnico.</translation>
 <translation id="6963936880795878952">Povezave z oddaljenim računalnikom so začasno onemogočene, ker je nekdo poskušal vzpostaviti povezavo z njim z neveljavno kodo PIN. Poskusite znova pozneje.</translation>
@@ -140,7 +141,6 @@
 <translation id="8073845705237259513">Če želite uporabljati Oddaljeno namizje za Chrome, morate v napravo dodati Google Račun.</translation>
 <translation id="809687642899217504">Moji računalniki</translation>
 <translation id="8116630183974937060">Omrežna napaka. Preverite, ali je naprava dosegljiva in poskusite znova.</translation>
-<translation id="8187079423890319756">Copyright 2013 Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
 <translation id="8295077433896346116">Če želite uporabljati izdelek <ph name="PRODUCT_NAME" />, morate odobriti dovoljenje »Dostopnost«, da bo mogoče v tem Macu vstavljati vnose iz oddaljenega računalnika.
 
 Če želite odobriti to dovoljenje, spodaj kliknite »<ph name="BUTTON_NAME" />«. V podoknu z nastavitvami možnosti »Dostopnost« označite polje zraven »<ph name="SERVICE_SCRIPT_NAME" />«.
@@ -159,6 +159,7 @@
 <translation id="8743328882720071828">Ali želite dovoliti, da ima uporabnik <ph name="CLIENT_USERNAME" /> dostop do vašega računalnika in ga lahko nadzira?</translation>
 <translation id="8747048596626351634">Seja se je zrušila ali je ni bilo mogoče začeti. Če je v oddaljenem računalniku seja ~/.chrome-remote-desktop-session, poskrbite, da je v njej zagnan dolgotrajen proces v ospredju, kot je okolje namizja ali upravitelj oken.</translation>
 <translation id="8804164990146287819">Pravilnik o zasebnosti</translation>
+<translation id="8906511416443321782">Za zajem zvoka in njegovega pretočnega predvajanja v odjemalcu Oddaljenega namizja Chrome je potreben dostop do mikrofona.</translation>
 <translation id="9111855907838866522">Imate vzpostavljeno povezavo z oddaljeno napravo. Če želite odpreti meni, se dotaknite zaslona s štirimi prsti.</translation>
 <translation id="9126115402994542723">Pri povezovanju s tem gostiteljem iz tega računalnika ne zahtevaj več kode PIN.</translation>
 <translation id="916856682307586697">Zagon privzete seje XSession</translation>

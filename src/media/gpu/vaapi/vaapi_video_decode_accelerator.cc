@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/containers/contains.h"
 #include "base/cpu.h"
 #include "base/files/scoped_file.h"
 #include "base/json/json_writer.h"
@@ -18,8 +19,10 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
@@ -150,7 +153,6 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
     const BindGLImageCallback& bind_image_cb)
     : state_(kUninitialized),
       input_ready_(&lock_),
-      vaapi_picture_factory_(new VaapiPictureFactory()),
       buffer_allocation_mode_(BufferAllocationMode::kNormal),
       surfaces_available_(&lock_),
       va_surface_format_(VA_INVALID_ID),
@@ -189,6 +191,8 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
 #endif
 
+  vaapi_picture_factory_ = std::make_unique<VaapiPictureFactory>();
+
   if (config.is_encrypted()) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
     return false;
@@ -204,7 +208,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
   VLOGF(2) << "Initializing VAVDA, profile: " << GetProfileName(profile);
 
   vaapi_wrapper_ = VaapiWrapper::CreateForVideoCodec(
-      VaapiWrapper::kDecode, profile,
+      VaapiWrapper::kDecode, profile, EncryptionScheme::kUnencrypted,
       base::BindRepeating(&ReportVaapiErrorToUMA,
                           "Media.VaapiVideoDecodeAccelerator.VAAPIError"));
 
@@ -468,6 +472,11 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
 
     switch (res) {
       case AcceleratedVideoDecoder::kConfigChange: {
+        const uint8_t bit_depth = decoder_->GetBitDepth();
+        RETURN_AND_NOTIFY_ON_FAILURE(
+            bit_depth == 8u,
+            "Unsupported bit depth: " << base::strict_cast<int>(bit_depth),
+            PLATFORM_FAILURE, );
         // The visible rect should be a subset of the picture size. Otherwise,
         // the encoded stream is bad.
         const gfx::Size pic_size = decoder_->GetPicSize();
@@ -614,7 +623,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
   if (profile_ != new_profile) {
     profile_ = new_profile;
     auto new_vaapi_wrapper = VaapiWrapper::CreateForVideoCodec(
-        VaapiWrapper::kDecode, profile_,
+        VaapiWrapper::kDecode, profile_, EncryptionScheme::kUnencrypted,
         base::BindRepeating(&ReportVaapiErrorToUMA,
                             "Media.VaapiVideoDecodeAccelerator.VAAPIError"));
     RETURN_AND_NOTIFY_ON_FAILURE(new_vaapi_wrapper.get(),
@@ -640,7 +649,7 @@ void VaapiVideoDecodeAccelerator::TryFinishSurfaceSetChange() {
            << " pictures of size: " << requested_pic_size_.ToString()
            << " and visible rectangle = " << requested_visible_rect_.ToString();
 
-  const base::Optional<VideoPixelFormat> format =
+  const absl::optional<VideoPixelFormat> format =
       GfxBufferFormatToVideoPixelFormat(
           vaapi_picture_factory_->GetBufferFormat());
   CHECK(format);
@@ -709,6 +718,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     if (!vpp_vaapi_wrapper_) {
       vpp_vaapi_wrapper_ = VaapiWrapper::Create(
           VaapiWrapper::kVideoProcess, VAProfileNone,
+          EncryptionScheme::kUnencrypted,
           base::BindRepeating(
               &ReportVaapiErrorToUMA,
               "Media.VaapiVideoDecodeAccelerator.Vpp.VAAPIError"));
@@ -1189,16 +1199,15 @@ void VaapiVideoDecodeAccelerator::RecycleVASurface(
 
 // static
 VideoDecodeAccelerator::SupportedProfiles
-VaapiVideoDecodeAccelerator::GetSupportedProfiles(
-    const gpu::GpuDriverBugWorkarounds& workarounds) {
+VaapiVideoDecodeAccelerator::GetSupportedProfiles() {
   VideoDecodeAccelerator::SupportedProfiles profiles =
-      VaapiWrapper::GetSupportedDecodeProfiles(workarounds);
-  // VaVDA never supported VP9 Profile 2 and AV1, but VaapiWrapper does. Filter
-  // them out.
+      VaapiWrapper::GetSupportedDecodeProfiles();
+  // VaVDA never supported VP9 Profile 2, AV1 and HEVC, but VaapiWrapper does.
+  // Filter them out.
   base::EraseIf(profiles, [](const auto& profile) {
+    VideoCodec codec = VideoCodecProfileToVideoCodec(profile.profile);
     return profile.profile == VP9PROFILE_PROFILE2 ||
-           VideoCodecProfileToVideoCodec(profile.profile) ==
-               VideoCodec::kCodecAV1;
+           codec == VideoCodec::kCodecAV1 || codec == VideoCodec::kCodecHEVC;
   });
   return profiles;
 }

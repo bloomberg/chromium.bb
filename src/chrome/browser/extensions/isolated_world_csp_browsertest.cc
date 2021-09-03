@@ -32,17 +32,15 @@ class IsolatedWorldCspBrowserTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(IsolatedWorldCspBrowserTest, Eval_ManifestV2) {
   GURL url = embedded_test_server()->GetURL("eval.com",
                                             "/page_with_script_src_csp.html");
-  ASSERT_TRUE(RunExtensionSubtest("mv2", url.spec())) << message_;
+  ASSERT_TRUE(RunExtensionTest({.name = "mv2", .page_url = url.spec().c_str()}))
+      << message_;
 }
 
 // Test that a Manifest V3 content script can't use eval.
 IN_PROC_BROWSER_TEST_F(IsolatedWorldCspBrowserTest, Eval_ManifestV3) {
-  // TODO(crbug.com/896897): Ignore manifest warnings for now since we get a
-  // warning for using manifest version 3.
   GURL url = embedded_test_server()->GetURL("eval.com",
                                             "/page_with_script_src_csp.html");
-  ASSERT_TRUE(RunExtensionSubtest("mv3", url.spec(),
-                                  kFlagIgnoreManifestWarnings, kFlagNone))
+  ASSERT_TRUE(RunExtensionTest({.name = "mv3", .page_url = url.spec().c_str()}))
       << message_;
 }
 
@@ -51,7 +49,8 @@ IN_PROC_BROWSER_TEST_F(IsolatedWorldCspBrowserTest, Eval_ManifestV3) {
 IN_PROC_BROWSER_TEST_F(IsolatedWorldCspBrowserTest, JavascriptUrl_ManifestV2) {
   GURL url = embedded_test_server()->GetURL("js-url.com",
                                             "/page_with_script_src_csp.html");
-  ASSERT_TRUE(RunExtensionSubtest("mv2", url.spec())) << message_;
+  ASSERT_TRUE(RunExtensionTest({.name = "mv2", .page_url = url.spec().c_str()}))
+      << message_;
 }
 
 // Test that a Manifest V3 content script can't navigate to a javascript url
@@ -67,17 +66,14 @@ IN_PROC_BROWSER_TEST_F(IsolatedWorldCspBrowserTest, JavascriptUrl_ManifestV3) {
       "Refused to run the JavaScript URL because it violates the following "
       "Content Security Policy directive: \"script-src 'self'\".*");
 
-  // TODO(crbug.com/896897): Ignore manifest warnings for now since we get a
-  // warning for using manifest version 3.
   GURL url = embedded_test_server()->GetURL("js-url.com",
                                             "/page_with_script_src_csp.html");
-  ASSERT_TRUE(RunExtensionSubtest("mv3", url.spec(),
-                                  kFlagIgnoreManifestWarnings, kFlagNone))
+  ASSERT_TRUE(RunExtensionTest({.name = "mv3", .page_url = url.spec().c_str()}))
       << message_;
   console_observer.Wait();
 
   // Also ensure the page title wasn't changed.
-  EXPECT_EQ(base::ASCIIToUTF16("Page With CSP"), web_contents->GetTitle());
+  EXPECT_EQ(u"Page With CSP", web_contents->GetTitle());
 }
 
 // Test that a Manifest V2 content script can execute a remote script even if
@@ -86,19 +82,17 @@ IN_PROC_BROWSER_TEST_F(IsolatedWorldCspBrowserTest,
                        RemoteScriptSrc_ManifestV2) {
   GURL url = embedded_test_server()->GetURL("remote-script.com",
                                             "/page_with_script_src_csp.html");
-  ASSERT_TRUE(RunExtensionSubtest("mv2", url.spec())) << message_;
+  ASSERT_TRUE(RunExtensionTest({.name = "mv2", .page_url = url.spec().c_str()}))
+      << message_;
 }
 
 // Test that a Manifest V3 content script can't execute a remote script even if
 // is allowed by the main world CSP.
 IN_PROC_BROWSER_TEST_F(IsolatedWorldCspBrowserTest,
                        RemoteScriptSrc_ManifestV3) {
-  // TODO(crbug.com/896897): Ignore manifest warnings for now since we get a
-  // warning for using manifest version 3.
   GURL url = embedded_test_server()->GetURL("remote-script.com",
                                             "/page_with_script_src_csp.html");
-  ASSERT_TRUE(RunExtensionSubtest("mv3", url.spec(),
-                                  kFlagIgnoreManifestWarnings, kFlagNone))
+  ASSERT_TRUE(RunExtensionTest({.name = "mv3", .page_url = url.spec().c_str()}))
       << message_;
 }
 

@@ -24,6 +24,10 @@
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_delegate.h"
 #include "net/base/upload_data_stream.h"
+#include "net/cookies/cookie_store.h"
+#include "net/cookies/cookie_util.h"
+#include "net/dns/public/secure_dns_policy.h"
+#include "net/http/http_log_util.h"
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
@@ -89,6 +93,12 @@ void ConvertRealLoadTimesToBlockingTimes(LoadTimingInfo* load_timing_info) {
       load_timing_info->receive_headers_start < block_on_connect) {
     load_timing_info->receive_headers_start = block_on_connect;
   }
+  if (!load_timing_info->receive_non_informational_headers_start.is_null() &&
+      load_timing_info->receive_non_informational_headers_start <
+          block_on_connect) {
+    load_timing_info->receive_non_informational_headers_start =
+        block_on_connect;
+  }
 
   // Make sure connection times are after start and proxy times.
 
@@ -125,7 +135,8 @@ void ConvertRealLoadTimesToBlockingTimes(LoadTimingInfo* load_timing_info) {
 // URLRequest::Delegate
 
 int URLRequest::Delegate::OnConnected(URLRequest* request,
-                                      const TransportInfo& info) {
+                                      const TransportInfo& info,
+                                      CompletionOnceCallback callback) {
   return OK;
 }
 
@@ -255,10 +266,10 @@ LoadStateWithParam URLRequest::GetLoadState() const {
     return LoadStateWithParam(LOAD_STATE_WAITING_FOR_DELEGATE,
                               use_blocked_by_as_load_param_
                                   ? base::UTF8ToUTF16(blocked_by_)
-                                  : base::string16());
+                                  : std::u16string());
   }
   return LoadStateWithParam(job_.get() ? job_->GetLoadState() : LOAD_STATE_IDLE,
-                            base::string16());
+                            std::u16string());
 }
 
 base::Value URLRequest::GetStateAsValue() const {
@@ -363,7 +374,7 @@ HttpResponseHeaders* URLRequest::response_headers() const {
   return response_info_.headers.get();
 }
 
-const base::Optional<AuthChallengeInfo>& URLRequest::auth_challenge_info()
+const absl::optional<AuthChallengeInfo>& URLRequest::auth_challenge_info()
     const {
   return response_info_.auth_challenge;
 }
@@ -423,8 +434,8 @@ void URLRequest::SetLoadFlags(int flags) {
     SetPriority(MAXIMUM_PRIORITY);
 }
 
-void URLRequest::SetDisableSecureDns(bool disable_secure_dns) {
-  disable_secure_dns_ = disable_secure_dns;
+void URLRequest::SetSecureDnsPolicy(SecureDnsPolicy secure_dns_policy) {
+  secure_dns_policy_ = secure_dns_policy;
 }
 
 // static
@@ -444,7 +455,7 @@ void URLRequest::set_first_party_url_policy(
   first_party_url_policy_ = first_party_url_policy;
 }
 
-void URLRequest::set_initiator(const base::Optional<url::Origin>& initiator) {
+void URLRequest::set_initiator(const absl::optional<url::Origin>& initiator) {
   DCHECK(!is_pending_);
   DCHECK(!initiator.has_value() || initiator.value().opaque() ||
          initiator.value().GetURL().is_valid());
@@ -493,6 +504,9 @@ void URLRequest::Start() {
   if (status_ != OK)
     return;
 
+  if (context_->require_network_isolation_key())
+    DCHECK(!isolation_info_.IsEmpty());
+
   // Some values can be NULL, but the job factory must not be.
   DCHECK(context_->job_factory());
 
@@ -535,7 +549,10 @@ URLRequest::URLRequest(const GURL& url,
       net_log_(NetLogWithSource::Make(context->net_log(),
                                       NetLogSourceType::URL_REQUEST)),
       url_chain_(1, url),
+      same_party_cookie_context_type_(
+          CookieOptions::SamePartyCookieContextType::kCrossParty),
       force_ignore_site_for_cookies_(false),
+      force_ignore_top_frame_party_for_cookies_(false),
       method_("GET"),
       referrer_policy_(
           ReferrerPolicy::CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE),
@@ -544,7 +561,7 @@ URLRequest::URLRequest(const GURL& url,
       load_flags_(LOAD_NORMAL),
       allow_credentials_(true),
       privacy_mode_(PRIVACY_MODE_DISABLED),
-      disable_secure_dns_(false),
+      secure_dns_policy_(SecureDnsPolicy::kAllow),
 #if BUILDFLAG(ENABLE_REPORTING)
       reporting_upload_depth_(0),
 #endif
@@ -560,7 +577,6 @@ URLRequest::URLRequest(const GURL& url,
       has_notified_completion_(false),
       received_response_content_length_(0),
       creation_time_(base::TimeTicks::Now()),
-      raw_header_size_(0),
       traffic_annotation_(traffic_annotation),
       upgrade_if_insecure_(false) {
   // Sanity check out environment.
@@ -603,12 +619,19 @@ void URLRequest::StartJob(std::unique_ptr<URLRequestJob> job) {
   DCHECK(!is_pending_);
   DCHECK(!job_);
 
+  set_same_party_cookie_context_type(
+      context()->cookie_store()
+          ? cookie_util::ComputeSamePartyContext(
+                SchemefulSite(url()), isolation_info(),
+                context()->cookie_store()->cookie_access_delegate(),
+                force_ignore_top_frame_party_for_cookies())
+          : CookieOptions::SamePartyCookieContextType::kCrossParty);
   privacy_mode_ = DeterminePrivacyMode();
 
   net_log_.BeginEvent(NetLogEventType::URL_REQUEST_START_JOB, [&] {
     return NetLogURLRequestStartParams(
-        url(), method_, load_flags_, privacy_mode_,
-        isolation_info_.network_isolation_key(), site_for_cookies_, initiator_,
+        url(), method_, load_flags_, privacy_mode_, isolation_info_,
+        site_for_cookies_, initiator_,
         upload_data_stream_ ? upload_data_stream_->identifier() : -1);
   });
 
@@ -616,6 +639,7 @@ void URLRequest::StartJob(std::unique_ptr<URLRequestJob> job) {
   job_->SetExtraRequestHeaders(extra_request_headers_);
   job_->SetPriority(priority_);
   job_->SetRequestHeadersCallback(request_headers_callback_);
+  job_->SetEarlyResponseHeadersCallback(early_response_headers_callback_);
   job_->SetResponseHeadersCallback(response_headers_callback_);
 
   if (upload_data_stream_.get())
@@ -768,8 +792,9 @@ bool URLRequest::failed() const {
   return (status_ != OK && status_ != ERR_IO_PENDING);
 }
 
-int URLRequest::NotifyConnected(const TransportInfo& info) {
-  return delegate_->OnConnected(this, info);
+int URLRequest::NotifyConnected(const TransportInfo& info,
+                                CompletionOnceCallback callback) {
+  return delegate_->OnConnected(this, info, std::move(callback));
 }
 
 void URLRequest::NotifyReceivedRedirect(const RedirectInfo& redirect_info,
@@ -812,8 +837,8 @@ void URLRequest::NotifyResponseStarted(int net_error) {
 }
 
 void URLRequest::FollowDeferredRedirect(
-    const base::Optional<std::vector<std::string>>& removed_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
+    const absl::optional<std::vector<std::string>>& removed_headers,
+    const absl::optional<net::HttpRequestHeaders>& modified_headers) {
   DCHECK(job_.get());
   DCHECK_EQ(OK, status_);
 
@@ -866,6 +891,14 @@ void URLRequest::ContinueDespiteLastError() {
   job_->ContinueDespiteLastError();
 }
 
+void URLRequest::AbortAndCloseConnection() {
+  DCHECK_EQ(OK, status_);
+  DCHECK(!has_notified_completion_);
+  DCHECK(job_);
+  job_->CloseConnectionOnDestruction();
+  job_.reset();
+}
+
 void URLRequest::PrepareToRestart() {
   DCHECK(job_.get());
 
@@ -889,8 +922,8 @@ void URLRequest::PrepareToRestart() {
 
 void URLRequest::Redirect(
     const RedirectInfo& redirect_info,
-    const base::Optional<std::vector<std::string>>& removed_headers,
-    const base::Optional<net::HttpRequestHeaders>& modified_headers) {
+    const absl::optional<std::vector<std::string>>& removed_headers,
+    const absl::optional<net::HttpRequestHeaders>& modified_headers) {
   // This method always succeeds. Whether |job_| is allowed to redirect to
   // |redirect_info| is checked in URLRequestJob::CanFollowRedirect, before
   // NotifyReceivedRedirect. This means the delegate can assume that, if it
@@ -1083,7 +1116,6 @@ void URLRequest::OnHeadersComplete() {
 
     load_timing_info_.request_start = request_start;
     load_timing_info_.request_start_time = request_start_time;
-    raw_header_size_ = GetTotalReceivedBytes();
 
     ConvertRealLoadTimesToBlockingTimes(&load_timing_info_);
   }
@@ -1162,6 +1194,13 @@ void URLRequest::SetResponseHeadersCallback(ResponseHeadersCallback callback) {
   DCHECK(!job_.get());
   DCHECK(response_headers_callback_.is_null());
   response_headers_callback_ = std::move(callback);
+}
+
+void URLRequest::SetEarlyResponseHeadersCallback(
+    ResponseHeadersCallback callback) {
+  DCHECK(!job_.get());
+  DCHECK(early_response_headers_callback_.is_null());
+  early_response_headers_callback_ = std::move(callback);
 }
 
 void URLRequest::set_socket_tag(const SocketTag& socket_tag) {

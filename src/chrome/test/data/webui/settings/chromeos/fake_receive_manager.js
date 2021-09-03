@@ -38,8 +38,18 @@ cr.define('nearby_share', function() {
       };
     }
 
-    simulateShareTargetArrival(name, connectionToken) {
-      const target = {id: {low: 1, high: 2}, name: name, type: 1};
+    simulateShareTargetArrival(
+        name, connectionToken, payloadDescription = '', payloadType = 0) {
+      const target = {
+        id: {low: 1, high: 2},
+        name: name,
+        type: 1,
+        payloadPreview: {
+          description: '',
+          fileCount: 0,
+          shareType: 0,
+        }
+      };
       const metadata = {
         'status': nearbyShare.mojom.TransferStatus.kAwaitingLocalConfirmation,
         progress: 0.0,
@@ -68,7 +78,8 @@ cr.define('nearby_share', function() {
     }
 
     /**
-     * @return {!Promise<{success: !boolean}>}
+     * @return {!Promise<{result:
+     *     !nearbyShare.mojom.RegisterReceiveSurfaceResult}>}
      */
     async registerForegroundReceiveSurface() {
       this.inHighVisibility_ = true;
@@ -76,7 +87,10 @@ cr.define('nearby_share', function() {
         this.observer_.onHighVisibilityChanged(this.inHighVisibility_);
       }
       this.methodCalled('registerForegroundReceiveSurface');
-      return {success: this.nextResult_};
+      const result = this.nextResult_ ?
+          nearbyShare.mojom.RegisterReceiveSurfaceResult.kSuccess :
+          nearbyShare.mojom.RegisterReceiveSurfaceResult.kFailure;
+      return {result: result};
     }
 
     /**
@@ -109,6 +123,23 @@ cr.define('nearby_share', function() {
       this.lastToken_ = shareTargetId;
       this.methodCalled('reject', shareTargetId);
       return {success: this.nextResult_};
+    }
+
+    /**
+     * @return {boolean}
+     */
+    getInHighVisibilityForTest() {
+      return this.inHighVisibility_;
+    }
+
+    /**
+     * @param {boolean} inHighVisibility
+     */
+    setInHighVisibilityForTest(inHighVisibility) {
+      this.inHighVisibility_ = inHighVisibility;
+      if (this.observer_) {
+        this.observer_.onHighVisibilityChanged(inHighVisibility);
+      }
     }
   }
 

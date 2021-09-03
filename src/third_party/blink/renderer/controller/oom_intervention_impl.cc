@@ -5,13 +5,13 @@
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
 #include "third_party/blink/renderer/controller/crash_memory_metrics_reporter_impl.h"
@@ -79,13 +79,20 @@ void NavigateLocalAdsFrames(LocalFrame* frame) {
   }
 }
 
+OomInterventionImpl& GetOomIntervention() {
+  DEFINE_STATIC_LOCAL(OomInterventionImpl, oom_intervention, ());
+  return oom_intervention;
+}
+
 }  // namespace
 
 // static
-void OomInterventionImpl::Create(
+void OomInterventionImpl::Bind(
     mojo::PendingReceiver<mojom::blink::OomIntervention> receiver) {
-  mojo::MakeSelfOwnedReceiver(std::make_unique<OomInterventionImpl>(),
-                              std::move(receiver));
+  // This interface can be bound multiple time, however, there should never be
+  // multiple callers bound at a time.
+  GetOomIntervention().Reset();
+  GetOomIntervention().receiver_.Bind(std::move(receiver));
 }
 
 OomInterventionImpl::OomInterventionImpl()
@@ -97,6 +104,12 @@ OomInterventionImpl::OomInterventionImpl()
 
 OomInterventionImpl::~OomInterventionImpl() {
   UpdateStateCrashKey(OomInterventionState::After);
+  MemoryUsageMonitorInstance().RemoveObserver(this);
+}
+
+void OomInterventionImpl::Reset() {
+  receiver_.reset();
+  host_.reset();
   MemoryUsageMonitorInstance().RemoveObserver(this);
 }
 
@@ -177,7 +190,7 @@ void OomInterventionImpl::Check(MemoryUsage usage) {
     if (renderer_pause_enabled_) {
       // The ScopedPagePauser is destroyed when the intervention is declined and
       // mojo strong binding is disconnected.
-      pauser_.reset(new ScopedPagePauser);
+      pauser_ = std::make_unique<ScopedPagePauser>();
     }
 
     host_->OnHighMemoryUsage();

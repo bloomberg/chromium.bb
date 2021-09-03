@@ -27,9 +27,26 @@ class TestLongTaskObserver :
     last_long_task_start = start_time;
     last_long_task_end = end_time;
   }
-};  // Anonymous namespace
+};
+
+class SelfUnregisteringObserver
+    : public GarbageCollected<SelfUnregisteringObserver>,
+      public LongTaskObserver {
+ public:
+  void OnLongTaskDetected(base::TimeTicks, base::TimeTicks) override {
+    called_ = true;
+    LongTaskDetector::Instance().UnregisterObserver(this);
+  }
+  bool IsCalled() const { return called_; }
+
+  void Reset() { called_ = false; }
+
+ private:
+  bool called_ = false;
+};
 
 }  // namespace
+
 class LongTaskDetectorTest : public testing::Test {
  public:
   // Public because it's executed on a task queue.
@@ -124,6 +141,20 @@ TEST_F(LongTaskDetectorTest, RegisterSameObserverTwice) {
   ASSERT_FALSE(long_task_end_when_registered == DummyTaskEndTime());
   EXPECT_EQ(long_task_observer->last_long_task_end,
             long_task_end_when_registered);
+}
+
+TEST_F(LongTaskDetectorTest, SelfUnregisteringObserver) {
+  auto* observer = MakeGarbageCollected<SelfUnregisteringObserver>();
+
+  LongTaskDetector::Instance().RegisterObserver(observer);
+  SimulateTask(LongTaskDetector::kLongTaskThreshold +
+               base::TimeDelta::FromMilliseconds(10));
+  EXPECT_TRUE(observer->IsCalled());
+  observer->Reset();
+
+  SimulateTask(LongTaskDetector::kLongTaskThreshold +
+               base::TimeDelta::FromMilliseconds(10));
+  EXPECT_FALSE(observer->IsCalled());
 }
 
 }  // namespace blink

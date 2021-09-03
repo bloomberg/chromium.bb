@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "cc/base/math_util.h"
@@ -480,11 +481,9 @@ class WebRtcVideoCaptureServiceBrowserTest : public ContentBrowserTest {
 
     std::string javascript_to_execute = base::StringPrintf(
         kStartVideoCaptureAndVerify, video_size_.width(), video_size_.height());
-    std::string result;
     // Start video capture and wait until it started rendering
-    ASSERT_TRUE(
-        ExecuteScriptAndExtractString(shell(), javascript_to_execute, &result));
-    ASSERT_EQ("OK", result);
+    ASSERT_EQ("OK", EvalJs(shell(), javascript_to_execute,
+                           EXECUTE_SCRIPT_USE_MANUAL_REPLY));
 
     std::move(finish_test_cb).Run();
   }

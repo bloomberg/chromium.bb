@@ -4,25 +4,27 @@
 
 #include "chrome/browser/chromeos/preferences.h"
 
+#include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/ash/login/session/user_session_manager.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager_impl.h"
-#include "chrome/browser/chromeos/login/session/user_session_manager.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_member.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_data.h"
@@ -38,7 +40,6 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/input_method_allowlist.h"
 #include "ui/base/ime/chromeos/mock_component_extension_ime_manager_delegate.h"
 #include "url/gurl.h"
 
@@ -66,7 +67,8 @@ CreatePrefSyncData(const std::string& name, const base::Value& value) {
           : specifics.mutable_preference();
   pref->set_name(name);
   pref->set_value(serialized);
-  return syncer::SyncData::CreateRemoteData(specifics);
+  return syncer::SyncData::CreateRemoteData(
+      specifics, syncer::ClientTagHash::FromHashed("unused"));
 }
 
 }  // anonymous namespace
@@ -80,7 +82,7 @@ class MyMockInputMethodManager : public MockInputMethodManagerImpl {
    public:
     explicit State(MyMockInputMethodManager* manager)
         : MockInputMethodManagerImpl::State(manager), manager_(manager) {
-      input_method_extensions_.reset(new InputMethodDescriptors);
+      input_method_extensions_ = std::make_unique<InputMethodDescriptors>();
     }
 
     void ChangeInputMethod(const std::string& input_method_id,
@@ -103,7 +105,7 @@ class MyMockInputMethodManager : public MockInputMethodManagerImpl {
         const InputMethodDescriptors& descriptors,
         ui::IMEEngineHandlerInterface* instance) override {
       InputMethodDescriptor descriptor(
-          id, std::string(), std::string(), std::vector<std::string>(),
+          id, std::string(), std::string(), std::string(),
           std::vector<std::string>(), false, GURL(), GURL());
       input_method_extensions_->push_back(descriptor);
     }
@@ -125,11 +127,6 @@ class MyMockInputMethodManager : public MockInputMethodManagerImpl {
 
   ~MyMockInputMethodManager() override {}
 
-  std::unique_ptr<InputMethodDescriptors> GetSupportedInputMethods()
-      const override {
-    return allowlist::GetSupportedInputMethods();
-  }
-
   std::string last_input_method_id_;
 
  private:
@@ -146,12 +143,11 @@ class PreferencesTest : public testing::Test {
   ~PreferencesTest() override {}
 
   void SetUp() override {
-    profile_manager_.reset(
-        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
     ASSERT_TRUE(profile_manager_->SetUp());
 
-    chromeos::FakeChromeUserManager* user_manager =
-        new chromeos::FakeChromeUserManager();
+    auto* user_manager = new FakeChromeUserManager();
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         base::WrapUnique(user_manager));
 
@@ -176,7 +172,7 @@ class PreferencesTest : public testing::Test {
         &previous_input_method_, &current_input_method_);
     input_method::InitializeForTesting(mock_manager_);
 
-    prefs_.reset(new Preferences(mock_manager_));
+    prefs_ = std::make_unique<Preferences>(mock_manager_);
   }
 
   void TearDown() override {
@@ -260,8 +256,8 @@ class InputMethodPreferencesTest : public PreferencesTest {
     std::unique_ptr<ComponentExtensionIMEManagerDelegate> delegate(
         mock_delegate);
     std::unique_ptr<ComponentExtensionIMEManager>
-        component_extension_ime_manager(new ComponentExtensionIMEManager);
-    component_extension_ime_manager->Initialize(std::move(delegate));
+        component_extension_ime_manager(
+            new ComponentExtensionIMEManager(std::move(delegate)));
 
     // Add the ComponentExtensionIMEManager to the mock InputMethodManager.
     mock_manager_->SetComponentExtensionIMEManager(
@@ -270,6 +266,34 @@ class InputMethodPreferencesTest : public PreferencesTest {
 
   std::vector<ComponentExtensionIME> CreateImeList() {
     std::vector<ComponentExtensionIME> ime_list;
+
+    ComponentExtensionIME ext_xkb;
+    ext_xkb.id = extension_ime_util::kXkbExtensionId;
+    ext_xkb.description = "ext_xkb_description";
+    ext_xkb.path = base::FilePath("ext_xkb_file_path");
+
+    ComponentExtensionEngine ext_xkb_engine_se;
+    ext_xkb_engine_se.engine_id = "xkb:se::swe";
+    ext_xkb_engine_se.display_name = "xkb:se::swe";
+    ext_xkb_engine_se.language_codes.push_back("sv");
+    ext_xkb_engine_se.layout = "se";
+    ext_xkb.engines.push_back(ext_xkb_engine_se);
+
+    ComponentExtensionEngine ext_xkb_engine_jp;
+    ext_xkb_engine_jp.engine_id = "xkb:jp::jpn";
+    ext_xkb_engine_jp.display_name = "xkb:jp::jpn";
+    ext_xkb_engine_jp.language_codes.push_back("ja");
+    ext_xkb_engine_jp.layout = "jp";
+    ext_xkb.engines.push_back(ext_xkb_engine_jp);
+
+    ComponentExtensionEngine ext_xkb_engine_ru;
+    ext_xkb_engine_ru.engine_id = "xkb:ru::rus";
+    ext_xkb_engine_ru.display_name = "xkb:ru::rus";
+    ext_xkb_engine_ru.language_codes.push_back("ru");
+    ext_xkb_engine_ru.layout = "ru";
+    ext_xkb.engines.push_back(ext_xkb_engine_ru);
+
+    ime_list.push_back(ext_xkb);
 
     ComponentExtensionIME ext;
     ext.id = extension_ime_util::kMozcExtensionId;
@@ -280,14 +304,14 @@ class InputMethodPreferencesTest : public PreferencesTest {
     ext_engine1.engine_id = "nacl_mozc_us";
     ext_engine1.display_name = "ext_engine_1_display_name";
     ext_engine1.language_codes.push_back("ja");
-    ext_engine1.layouts.push_back("us");
+    ext_engine1.layout = "us";
     ext.engines.push_back(ext_engine1);
 
     ComponentExtensionEngine ext_engine2;
     ext_engine2.engine_id = "nacl_mozc_jp";
     ext_engine2.display_name = "ext_engine_2_display_name";
     ext_engine2.language_codes.push_back("ja");
-    ext_engine2.layouts.push_back("jp");
+    ext_engine2.layout = "jp";
     ext.engines.push_back(ext_engine2);
 
     ime_list.push_back(ext);

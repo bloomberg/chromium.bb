@@ -10,6 +10,8 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
@@ -35,18 +37,21 @@ ToLoginManagerPackageCacheMode(UpgradeParams::PackageCacheMode mode) {
 }
 
 // Converts ArcSupervisionTransition into login_manager's.
-login_manager::UpgradeArcContainerRequest_SupervisionTransition
-ToLoginManagerSupervisionTransition(ArcSupervisionTransition transition) {
+login_manager::UpgradeArcContainerRequest_ManagementTransition
+ToLoginManagerManagementTransition(ArcSupervisionTransition transition) {
   switch (transition) {
     case ArcSupervisionTransition::NO_TRANSITION:
       return login_manager::
-          UpgradeArcContainerRequest_SupervisionTransition_NONE;
+          UpgradeArcContainerRequest_ManagementTransition_NONE;
     case ArcSupervisionTransition::CHILD_TO_REGULAR:
       return login_manager::
-          UpgradeArcContainerRequest_SupervisionTransition_CHILD_TO_REGULAR;
+          UpgradeArcContainerRequest_ManagementTransition_CHILD_TO_REGULAR;
     case ArcSupervisionTransition::REGULAR_TO_CHILD:
       return login_manager::
-          UpgradeArcContainerRequest_SupervisionTransition_REGULAR_TO_CHILD;
+          UpgradeArcContainerRequest_ManagementTransition_REGULAR_TO_CHILD;
+    case ArcSupervisionTransition::UNMANAGED_TO_MANAGED:
+      return login_manager::
+          UpgradeArcContainerRequest_ManagementTransition_UNMANAGED_TO_MANAGED;
   }
 }
 
@@ -63,6 +68,26 @@ ToLoginManagerPlayStoreAutoUpdate(StartParams::PlayStoreAutoUpdate update) {
     case StartParams::PlayStoreAutoUpdate::AUTO_UPDATE_OFF:
       return login_manager::
           StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_OFF;
+  }
+}
+
+// Converts DalvikMemoryProfile into login_manager's.
+login_manager::StartArcMiniContainerRequest_DalvikMemoryProfile
+ToLoginManagerDalvikMemoryProfile(
+    StartParams::DalvikMemoryProfile dalvik_memory_profile) {
+  switch (dalvik_memory_profile) {
+    case StartParams::DalvikMemoryProfile::DEFAULT:
+      return login_manager::
+          StartArcMiniContainerRequest_DalvikMemoryProfile_MEMORY_PROFILE_DEFAULT;
+    case StartParams::DalvikMemoryProfile::M4G:
+      return login_manager::
+          StartArcMiniContainerRequest_DalvikMemoryProfile_MEMORY_PROFILE_4G;
+    case StartParams::DalvikMemoryProfile::M8G:
+      return login_manager::
+          StartArcMiniContainerRequest_DalvikMemoryProfile_MEMORY_PROFILE_8G;
+    case StartParams::DalvikMemoryProfile::M16G:
+      return login_manager::
+          StartArcMiniContainerRequest_DalvikMemoryProfile_MEMORY_PROFILE_16G;
   }
 }
 
@@ -91,9 +116,25 @@ class ArcContainerClientAdapter
     request.set_arc_file_picker_experiment(params.arc_file_picker_experiment);
     request.set_play_store_auto_update(
         ToLoginManagerPlayStoreAutoUpdate(params.play_store_auto_update));
+    request.set_dalvik_memory_profile(
+        ToLoginManagerDalvikMemoryProfile(params.dalvik_memory_profile));
     request.set_arc_custom_tabs_experiment(params.arc_custom_tabs_experiment);
     request.set_disable_system_default_app(
         params.arc_disable_system_default_app);
+    request.set_disable_media_store_maintenance(
+        params.disable_media_store_maintenance);
+    request.set_disable_download_provider(params.disable_download_provider);
+    request.set_arc_generate_pai(params.arc_generate_play_auto_install);
+
+    switch (params.usap_profile) {
+      case StartParams::UsapProfile::DEFAULT:
+        break;
+      case StartParams::UsapProfile::M4G:
+      case StartParams::UsapProfile::M8G:
+      case StartParams::UsapProfile::M16G:
+        VLOG(1) << "USAP profile is not supported for container.";
+        break;
+    }
 
     chromeos::SessionManagerClient::Get()->StartArcMiniContainer(
         request, std::move(callback));
@@ -116,8 +157,8 @@ class ArcContainerClientAdapter
     request.set_locale(params.locale);
     for (const auto& language : params.preferred_languages)
       request.add_preferred_languages(language);
-    request.set_supervision_transition(
-        ToLoginManagerSupervisionTransition(params.supervision_transition));
+    request.set_management_transition(
+        ToLoginManagerManagementTransition(params.supervision_transition));
 
     chromeos::SessionManagerClient::Get()->UpgradeArcContainer(
         request, std::move(callback));
@@ -139,10 +180,27 @@ class ArcContainerClientAdapter
     cryptohome_id_ = cryptohome_id;
   }
 
+  // ArcContainerClientAdapter gets the demo session apps path from
+  // UpgradeParams, so it does not use the DemoModeDelegate.
+  void SetDemoModeDelegate(DemoModeDelegate* delegate) override {}
+
+  // The interface is only for ARCVM.
+  void TrimVmMemory(TrimVmMemoryCallback callback) override {
+    NOTREACHED();
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), /*success=*/true,
+                       /*failure_reason=*/"ARC container is not supported."));
+  }
+
   // chromeos::SessionManagerClient::Observer overrides:
-  void ArcInstanceStopped() override {
+  void ArcInstanceStopped(
+      login_manager::ArcContainerStopReason reason) override {
+    const bool is_system_shutdown =
+        reason ==
+        login_manager::ArcContainerStopReason::SESSION_MANAGER_SHUTDOWN;
     for (auto& observer : observer_list_)
-      observer.ArcInstanceStopped();
+      observer.ArcInstanceStopped(is_system_shutdown);
   }
 
  private:

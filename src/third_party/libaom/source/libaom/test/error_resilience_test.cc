@@ -58,10 +58,7 @@ class ErrorResilienceTestLarge
     init_flags_ = AOM_CODEC_USE_PSNR;
   }
 
-  virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
-  }
+  virtual void SetUp() { InitializeConfig(encoding_mode_); }
 
   virtual void BeginPassHook(unsigned int /*pass*/) {
     psnr_ = 0.0;
@@ -361,6 +358,10 @@ TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
 // if we lose (i.e., drop before decoding) a set of droppable
 // frames (i.e., frames that don't update any reference buffers).
 TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
+  if (GET_PARAM(1) == ::libaom_test::kOnePassGood && GET_PARAM(2) == 1) {
+    fprintf(stderr, "Skipping test case #1 because of bug aomedia:3002\n");
+    return;
+  }
   SetupEncoder(500, 10);
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      cfg_.g_timebase.den, cfg_.g_timebase.num,
@@ -478,8 +479,7 @@ class SFramePresenceTestLarge
   virtual ~SFramePresenceTestLarge() {}
 
   virtual void SetUp() {
-    InitializeConfig();
-    SetMode(encoding_mode_);
+    InitializeConfig(encoding_mode_);
     const aom_rational timebase = { 1, 30 };
     cfg_.g_timebase = timebase;
     cfg_.rc_end_usage = rc_end_usage_;

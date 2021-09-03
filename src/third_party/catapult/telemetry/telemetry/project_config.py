@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import absolute_import
 from telemetry import benchmark
 
 from py_utils import discover
@@ -73,11 +74,11 @@ class ProjectConfig(object):
     if self._benchmarks is None:
       benchmarks = []
       for search_dir in self.benchmark_dirs:
-        benchmarks.extend(discover.DiscoverClasses(
+        benchmarks.extend(list(discover.DiscoverClasses(
             search_dir,
             self.top_level_dir,
             benchmark.Benchmark,
-            index_by_class_name=True).values())
+            index_by_class_name=True).values()))
       self._benchmarks = benchmarks
     return list(self._benchmarks)
 

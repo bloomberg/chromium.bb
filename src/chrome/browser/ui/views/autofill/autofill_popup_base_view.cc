@@ -23,7 +23,9 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
@@ -35,40 +37,40 @@ namespace autofill {
 
 int AutofillPopupBaseView::GetCornerRadius() {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_MEDIUM);
+      views::Emphasis::kMedium);
 }
 
-SkColor AutofillPopupBaseView::GetBackgroundColor() {
+SkColor AutofillPopupBaseView::GetBackgroundColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DropdownBackgroundColor);
 }
 
-SkColor AutofillPopupBaseView::GetForegroundColor() {
+SkColor AutofillPopupBaseView::GetForegroundColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DropdownForegroundColor);
 }
 
-SkColor AutofillPopupBaseView::GetSelectedBackgroundColor() {
+SkColor AutofillPopupBaseView::GetSelectedBackgroundColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DropdownSelectedBackgroundColor);
 }
 
-SkColor AutofillPopupBaseView::GetSelectedForegroundColor() {
+SkColor AutofillPopupBaseView::GetSelectedForegroundColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_DropdownSelectedForegroundColor);
 }
 
-SkColor AutofillPopupBaseView::GetFooterBackgroundColor() {
+SkColor AutofillPopupBaseView::GetFooterBackgroundColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_BubbleFooterBackground);
 }
 
-SkColor AutofillPopupBaseView::GetSeparatorColor() {
+SkColor AutofillPopupBaseView::GetSeparatorColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_MenuSeparatorColor);
 }
 
-SkColor AutofillPopupBaseView::GetWarningColor() {
+SkColor AutofillPopupBaseView::GetWarningColor() const {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_AlertSeverityHigh);
 }
@@ -88,7 +90,7 @@ AutofillPopupBaseView::~AutofillPopupBaseView() {
   CHECK(!IsInObserverList());
 }
 
-void AutofillPopupBaseView::DoShow() {
+bool AutofillPopupBaseView::DoShow() {
   const bool initialize_widget = !GetWidget();
   if (initialize_widget) {
     // On Mac Cocoa browser, |parent_widget_| is null (the parent is not a
@@ -122,13 +124,15 @@ void AutofillPopupBaseView::DoShow() {
   // If there is insufficient height, DoUpdateBoundsAndRedrawPopup() hides and
   // thus deletes |this|. Hence, there is nothing else to do.
   if (!enough_height)
-    return;
+    return false;
   GetWidget()->Show();
 
   // Showing the widget can change native focus (which would result in an
   // immediate hiding of the popup). Only start observing after shown.
   if (initialize_widget)
     views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
+
+  return true;
 }
 
 void AutofillPopupBaseView::DoHide() {
@@ -259,8 +263,8 @@ bool AutofillPopupBaseView::DoUpdateBoundsAndRedrawPopup() {
   // area so that the user notices the presence of the popup.
   int item_height =
       children().size() > 0 ? children()[0]->GetPreferredSize().height() : 0;
-  if (!HasEnoughHeightForOneRow(item_height, GetContentAreaBounds(),
-                                element_bounds)) {
+  if (!CanShowDropdownHere(item_height, GetContentAreaBounds(),
+                           element_bounds)) {
     HideController(PopupHidingReason::kInsufficientSpace);
     return false;
   }
@@ -303,17 +307,29 @@ void AutofillPopupBaseView::HideController(PopupHidingReason reason) {
 
 std::unique_ptr<views::Border> AutofillPopupBaseView::CreateBorder() {
   auto border = std::make_unique<views::BubbleBorder>(
-      views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
+      views::BubbleBorder::NONE, views::BubbleBorder::STANDARD_SHADOW,
       SK_ColorWHITE);
   border->SetCornerRadius(GetCornerRadius());
   border->set_md_shadow_elevation(
       ChromeLayoutProvider::Get()->GetShadowElevationMetric(
-          views::EMPHASIS_MEDIUM));
+          views::Emphasis::kMedium));
   return border;
 }
 
 gfx::NativeView AutofillPopupBaseView::container_view() {
   return delegate_->container_view();
 }
+
+BEGIN_METADATA(AutofillPopupBaseView, views::WidgetDelegateView)
+ADD_READONLY_PROPERTY_METADATA(SkColor, BackgroundColor)
+ADD_READONLY_PROPERTY_METADATA(SkColor, ForegroundColor)
+ADD_READONLY_PROPERTY_METADATA(SkColor, SelectedBackgroundColor)
+ADD_READONLY_PROPERTY_METADATA(SkColor, SelectedForegroundColor)
+ADD_READONLY_PROPERTY_METADATA(SkColor, FooterBackgroundColor)
+ADD_READONLY_PROPERTY_METADATA(SkColor, SeparatorColor)
+ADD_READONLY_PROPERTY_METADATA(SkColor, WarningColor)
+ADD_READONLY_PROPERTY_METADATA(gfx::Rect, WindowBounds)
+ADD_READONLY_PROPERTY_METADATA(gfx::Rect, ContentAreaBounds)
+END_METADATA
 
 }  // namespace autofill

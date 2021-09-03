@@ -31,8 +31,18 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
     this.originalOutputContextValues_ = {};
     for (const role in Output.ROLE_INFO_) {
       this.originalOutputContextValues_[role] =
-          Output.ROLE_INFO_[role]['outputContextFirst'];
+          Output.ROLE_INFO_[role]['contextOrder'];
     }
+  }
+
+  /** @override */
+  setUp() {
+    window.EventType = chrome.automation.EventType;
+    window.RoleType = chrome.automation.RoleType;
+    window.TreeChangeType = chrome.automation.TreeChangeType;
+    window.doCmd = this.doCmd;
+    window.doGesture = this.doGesture;
+    window.Gesture = chrome.accessibilityPrivate.Gesture;
   }
 
   /** @return {!MockFeedback} */
@@ -80,6 +90,19 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
   }
 
   /**
+   * Create a function which performs the gesture |gesture|.
+   * @param {chrome.accessibilityPrivate.Gesture} gesture
+   * @param {number} opt_x
+   * @param {number} opt_y
+   * @return {function(): void}
+   */
+  doGesture(gesture, opt_x, opt_y) {
+    return () => {
+      GestureCommandHandler.onAccessibilityGesture_(gesture, opt_x, opt_y);
+    };
+  }
+
+  /**
    * Dependencies defined on a background window other than this one.
    * @type {!Array<string>}
    */
@@ -104,7 +127,7 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
    */
   forceContextualLastOutput() {
     for (const role in Output.ROLE_INFO_) {
-      Output.ROLE_INFO_[role]['outputContextFirst'] = undefined;
+      Output.ROLE_INFO_[role]['contextOrder'] = OutputContextOrder.LAST;
     }
   }
 
@@ -113,14 +136,14 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
    */
   forceContextualFirstOutput() {
     for (const role in Output.ROLE_INFO_) {
-      Output.ROLE_INFO_[role]['outputContextFirst'] = true;
+      Output.ROLE_INFO_[role]['contextOrder'] = OutputContextOrder.FIRST;
     }
   }
 
   /** Resets contextual output values to their defaults. */
   resetContextualOutput() {
     for (const role in Output.ROLE_INFO_) {
-      Output.ROLE_INFO_[role]['outputContextFirst'] =
+      Output.ROLE_INFO_[role]['contextOrder'] =
           this.originalOutputContextValues_[role];
     }
   }

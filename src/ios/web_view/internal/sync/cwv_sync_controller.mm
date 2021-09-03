@@ -154,8 +154,9 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
 #pragma mark - Public Methods
 
 - (CWVIdentity*)currentIdentity {
-  if (_identityManager->HasPrimaryAccount()) {
-    CoreAccountInfo accountInfo = _identityManager->GetPrimaryAccountInfo();
+  if (_identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+    CoreAccountInfo accountInfo =
+        _identityManager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
     return [[CWVIdentity alloc]
         initWithEmail:base::SysUTF8ToNSString(accountInfo.email)
              fullName:nil
@@ -174,16 +175,18 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
   DCHECK(!self.currentIdentity)
       << "Already syncing! Call -stopSyncAndClearIdentity first.";
 
+  _identityManager->GetDeviceAccountsSynchronizer()
+      ->ReloadAllAccountsFromSystemWithPrimaryAccount(CoreAccountId());
+
   const CoreAccountId accountId = _identityManager->PickAccountIdForAccount(
       base::SysNSStringToUTF8(identity.gaiaID),
       base::SysNSStringToUTF8(identity.email));
-
-  _identityManager->GetDeviceAccountsSynchronizer()
-      ->ReloadAllAccountsFromSystem();
   CHECK(_identityManager->HasAccountWithRefreshToken(accountId));
 
-  _identityManager->GetPrimaryAccountMutator()->SetPrimaryAccount(accountId);
-  CHECK_EQ(_identityManager->GetPrimaryAccountId(), accountId);
+  _identityManager->GetPrimaryAccountMutator()->SetPrimaryAccount(
+      accountId, signin::ConsentLevel::kSync);
+  CHECK_EQ(_identityManager->GetPrimaryAccountId(signin::ConsentLevel::kSync),
+           accountId);
 
   autofill::prefs::SetUserOptedInWalletSyncTransport(_prefService, accountId,
                                                      /*opted_in=*/true);
@@ -197,9 +200,8 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
 - (void)stopSyncAndClearIdentity {
   auto* primaryAccountMutator = _identityManager->GetPrimaryAccountMutator();
   primaryAccountMutator->ClearPrimaryAccount(
-      signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
       signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS,
-      signin_metrics::SignoutDelete::IGNORE_METRIC);
+      signin_metrics::SignoutDelete::kIgnoreMetric);
 }
 
 - (BOOL)unlockWithPassphrase:(NSString*)passphrase {
@@ -259,7 +261,9 @@ __weak id<CWVSyncControllerDataSource> gSyncDataSource;
 
 - (void)reloadAccounts {
   _identityManager->GetDeviceAccountsSynchronizer()
-      ->ReloadAllAccountsFromSystem();
+      ->ReloadAllAccountsFromSystemWithPrimaryAccount(
+          _identityManager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
+              .account_id);
 }
 
 @end

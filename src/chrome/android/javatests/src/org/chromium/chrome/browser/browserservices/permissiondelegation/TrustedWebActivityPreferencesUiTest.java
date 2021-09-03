@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.browserservices.permissiondelegation;
 
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.SmallTest;
@@ -16,8 +17,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeApplicationImpl;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.site_settings.SiteSettingsTestUtils;
@@ -53,7 +55,7 @@ public class TrustedWebActivityPreferencesUiTest {
         mActivityTestRule.startMainActivityOnBlankPage();
 
         mPackage = InstrumentationRegistry.getTargetContext().getPackageName();
-        mPermissionMananger = ChromeApplication.getComponent().resolveTwaPermissionManager();
+        mPermissionMananger = ChromeApplicationImpl.getComponent().resolveTwaPermissionManager();
     }
 
     /**
@@ -64,7 +66,10 @@ public class TrustedWebActivityPreferencesUiTest {
     @Test
     @SmallTest
     @Feature({"Preferences"})
-    public void testSingleCategoryManagedBy() throws Exception {
+    @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.P,
+            message = "This test is disabled on Android O because of https://crbug.com/1202711")
+    public void
+    testSingleCategoryManagedBy() throws Exception {
         final String site = "http://example.com";
         final Origin origin = Origin.create(site);
 

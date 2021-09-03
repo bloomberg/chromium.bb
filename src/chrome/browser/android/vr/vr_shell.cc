@@ -576,7 +576,7 @@ void VrShell::SetDialogFloating(JNIEnv* env,
 void VrShell::ShowToast(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
                         jstring jtext) {
-  base::string16 text;
+  std::u16string text;
   base::android::ConvertJavaStringToUTF16(env, jtext, &text);
   gl_thread_->ShowPlatformToast(text);
 }
@@ -818,7 +818,7 @@ void VrShell::SetVoiceSearchActive(bool active) {
     std::string profile_locale = g_browser_process->GetApplicationLocale();
     speech_recognizer_.reset(new SpeechRecognizer(
         this, ui_,
-        content::BrowserContext::GetDefaultStoragePartition(profile)
+        profile->GetDefaultStoragePartition()
             ->GetURLLoaderFactoryForBrowserProcessIOThread(),
         profile->GetPrefs()->GetString(language::prefs::kAcceptLanguages),
         profile_locale));
@@ -863,8 +863,8 @@ void VrShell::RequestRecordAudioPermissionResult(
 }
 
 void VrShell::PollCapturingState() {
-  poll_capturing_state_task_.Reset(base::BindRepeating(
-      &VrShell::PollCapturingState, base::Unretained(this)));
+  poll_capturing_state_task_.Reset(
+      base::BindOnce(&VrShell::PollCapturingState, base::Unretained(this)));
   main_thread_task_runner_->PostDelayedTask(
       FROM_HERE, poll_capturing_state_task_.callback(),
       kPollCapturingStateInterval);
@@ -993,7 +993,7 @@ bool VrShell::ShouldDisplayURL() const {
   return ChromeLocationBarModelDelegate::ShouldDisplayURL();
 }
 
-void VrShell::OnVoiceResults(const base::string16& result) {
+void VrShell::OnVoiceResults(const std::u16string& result) {
   JNIEnv* env = base::android::AttachCurrentThread();
   GURL url;
   bool input_was_url;

@@ -12,7 +12,6 @@
 #include "src/heap/heap-write-barrier-inl.h"
 #include "src/objects/js-objects-inl.h"
 #include "src/objects/objects-inl.h"
-#include "src/wasm/wasm-engine.h"
 
 // Has to be the last include (doesn't have include guards):
 #include "src/objects/object-macros.h"
@@ -27,6 +26,10 @@ TQ_OBJECT_CONSTRUCTORS_IMPL(JSArrayBufferView)
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSTypedArray)
 TQ_OBJECT_CONSTRUCTORS_IMPL(JSDataView)
 
+ACCESSORS(JSTypedArray, base_pointer, Object, kBasePointerOffset)
+RELEASE_ACQUIRE_ACCESSORS(JSTypedArray, base_pointer, Object,
+                          kBasePointerOffset)
+
 void JSArrayBuffer::AllocateExternalPointerEntries(Isolate* isolate) {
   InitExternalPointerField(kBackingStoreOffset, isolate);
 }
@@ -40,6 +43,7 @@ void JSArrayBuffer::set_byte_length(size_t value) {
 }
 
 DEF_GETTER(JSArrayBuffer, backing_store, void*) {
+  Isolate* isolate = GetIsolateForHeapSandbox(*this);
   Address value = ReadExternalPointerField(kBackingStoreOffset, isolate,
                                            kArrayBufferBackingStoreTag);
   return reinterpret_cast<void*>(value);
@@ -164,6 +168,8 @@ BIT_FIELD_ACCESSORS(JSArrayBuffer, bit_field, is_asmjs_memory,
                     JSArrayBuffer::IsAsmJsMemoryBit)
 BIT_FIELD_ACCESSORS(JSArrayBuffer, bit_field, is_shared,
                     JSArrayBuffer::IsSharedBit)
+BIT_FIELD_ACCESSORS(JSArrayBuffer, bit_field, is_resizable,
+                    JSArrayBuffer::IsResizableBit)
 
 size_t JSArrayBufferView::byte_offset() const {
   return ReadField<size_t>(kByteOffsetOffset);
@@ -185,17 +191,56 @@ bool JSArrayBufferView::WasDetached() const {
   return JSArrayBuffer::cast(buffer()).was_detached();
 }
 
+BIT_FIELD_ACCESSORS(JSTypedArray, bit_field, is_length_tracking,
+                    JSTypedArray::IsLengthTrackingBit)
+BIT_FIELD_ACCESSORS(JSTypedArray, bit_field, is_backed_by_rab,
+                    JSTypedArray::IsBackedByRabBit)
+
+bool JSTypedArray::IsVariableLength() const {
+  return is_length_tracking() || is_backed_by_rab();
+}
+
+size_t JSTypedArray::GetLength() const {
+  if (WasDetached()) return 0;
+  if (is_length_tracking()) {
+    if (is_backed_by_rab()) {
+      return buffer().byte_length() / element_size();
+    }
+    return buffer().GetBackingStore()->byte_length(std::memory_order_seq_cst) /
+           element_size();
+  }
+  size_t array_length = LengthUnchecked();
+  if (is_backed_by_rab()) {
+    // The sum can't overflow, since we have managed to allocate the
+    // JSTypedArray.
+    if (byte_offset() + array_length * element_size() >
+        buffer().byte_length()) {
+      return 0;
+    }
+  }
+  return array_length;
+}
+
 void JSTypedArray::AllocateExternalPointerEntries(Isolate* isolate) {
   InitExternalPointerField(kExternalPointerOffset, isolate);
 }
 
-size_t JSTypedArray::length() const { return ReadField<size_t>(kLengthOffset); }
+size_t JSTypedArray::length() const {
+  DCHECK(!is_length_tracking());
+  DCHECK(!is_backed_by_rab());
+  return ReadField<size_t>(kLengthOffset);
+}
+
+size_t JSTypedArray::LengthUnchecked() const {
+  return ReadField<size_t>(kLengthOffset);
+}
 
 void JSTypedArray::set_length(size_t value) {
   WriteField<size_t>(kLengthOffset, value);
 }
 
 DEF_GETTER(JSTypedArray, external_pointer, Address) {
+  Isolate* isolate = GetIsolateForHeapSandbox(*this);
   return ReadExternalPointerField(kExternalPointerOffset, isolate,
                                   kTypedArrayExternalPointerTag);
 }
@@ -210,9 +255,9 @@ void JSTypedArray::set_external_pointer(Isolate* isolate, Address value) {
 }
 
 Address JSTypedArray::ExternalPointerCompensationForOnHeapArray(
-    IsolateRoot isolate) {
+    PtrComprCageBase cage_base) {
 #ifdef V8_COMPRESS_POINTERS
-  return isolate.address();
+  return cage_base.address();
 #else
   return 0;
 #endif
@@ -253,15 +298,22 @@ void* JSTypedArray::DataPtr() {
   // so that the addition with |external_pointer| (which already contains
   // compensated offset value) will decompress the tagged value.
   // See JSTypedArray::ExternalPointerCompensationForOnHeapArray() for details.
+  STATIC_ASSERT(kOffHeapDataPtrEqualsExternalPointer);
   return reinterpret_cast<void*>(external_pointer() +
                                  static_cast<Tagged_t>(base_pointer().ptr()));
 }
 
 void JSTypedArray::SetOffHeapDataPtr(Isolate* isolate, void* base,
                                      Address offset) {
-  set_base_pointer(Smi::zero(), SKIP_WRITE_BARRIER);
   Address address = reinterpret_cast<Address>(base) + offset;
   set_external_pointer(isolate, address);
+  // This is the only spot in which the `base_pointer` field can be mutated
+  // after object initialization. Note this can happen at most once, when
+  // `JSTypedArray::GetBuffer` transitions from an on- to off-heap
+  // representation.
+  // To play well with Turbofan concurrency requirements, `base_pointer` is set
+  // with a release store, after external_pointer has been set.
+  set_base_pointer(Smi::zero(), kReleaseStore, SKIP_WRITE_BARRIER);
   DCHECK_EQ(address, reinterpret_cast<Address>(DataPtr()));
 }
 
@@ -274,10 +326,17 @@ void JSTypedArray::SetOnHeapDataPtr(Isolate* isolate, HeapObject base,
 }
 
 bool JSTypedArray::is_on_heap() const {
-  DisallowHeapAllocation no_gc;
-  // Checking that buffer()->backing_store() is not nullptr is not sufficient;
-  // it will be nullptr when byte_length is 0 as well.
-  return base_pointer() == elements();
+  // Keep synced with `is_on_heap(AcquireLoadTag)`.
+  DisallowGarbageCollection no_gc;
+  return base_pointer() != Smi::zero();
+}
+
+bool JSTypedArray::is_on_heap(AcquireLoadTag tag) const {
+  // Keep synced with `is_on_heap()`.
+  // Note: For Turbofan concurrency requirements, it's important that this
+  // function reads only `base_pointer`.
+  DisallowGarbageCollection no_gc;
+  return base_pointer(tag) != Smi::zero();
 }
 
 // static
@@ -303,6 +362,7 @@ MaybeHandle<JSTypedArray> JSTypedArray::Validate(Isolate* isolate,
 }
 
 DEF_GETTER(JSDataView, data_pointer, void*) {
+  Isolate* isolate = GetIsolateForHeapSandbox(*this);
   return reinterpret_cast<void*>(ReadExternalPointerField(
       kDataPointerOffset, isolate, kDataViewDataPointerTag));
 }

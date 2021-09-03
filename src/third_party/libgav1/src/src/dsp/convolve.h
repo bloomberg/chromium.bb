@@ -30,6 +30,7 @@
 // The order of includes is important as each tests for a superior version
 // before setting the base.
 // clang-format off
+#include "src/dsp/x86/convolve_avx2.h"
 #include "src/dsp/x86/convolve_sse4.h"
 // clang-format on
 

@@ -52,7 +52,6 @@ class InstanceIDHandler {
                         const std::string& authorized_entity,
                         const std::string& scope,
                         base::TimeDelta time_to_live,
-                        const std::map<std::string, std::string>& options,
                         GetTokenCallback callback) = 0;
   virtual void ValidateToken(const std::string& app_id,
                              const std::string& authorized_entity,
@@ -256,10 +255,6 @@ class GCMDriver {
   // Getter and setter of last token fetch time.
   virtual base::Time GetLastTokenFetchTime() = 0;
   virtual void SetLastTokenFetchTime(const base::Time& time) = 0;
-
-  // Sets whether or not GCM should try to wake the system from suspend in order
-  // to send a heartbeat message.
-  virtual void WakeFromSuspendForHeartbeat(bool wake) = 0;
 
   // These methods must only be used by the InstanceID system.
   // The InstanceIDHandler provides an implementation for the InstanceID system.

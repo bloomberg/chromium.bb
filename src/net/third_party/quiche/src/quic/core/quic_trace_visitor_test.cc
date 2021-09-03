@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/third_party/quiche/src/quic/core/quic_trace_visitor.h"
+#include "quic/core/quic_trace_visitor.h"
 
-#include "net/third_party/quiche/src/quic/core/quic_constants.h"
-#include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
-#include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/quic_endpoint.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/simulator.h"
-#include "net/third_party/quiche/src/quic/test_tools/simulator/switch.h"
+#include "quic/core/quic_constants.h"
+#include "quic/platform/api/quic_test.h"
+#include "quic/test_tools/quic_test_utils.h"
+#include "quic/test_tools/simulator/quic_endpoint.h"
+#include "quic/test_tools/simulator/simulator.h"
+#include "quic/test_tools/simulator/switch.h"
 
 namespace quic {
 namespace {
@@ -48,11 +48,11 @@ class QuicTraceVisitorTest : public QuicTest {
     client.AddBytesToTransfer(kTransferSize);
     bool simulator_result = simulator.RunUntilOrTimeout(
         [&]() { return server.bytes_received() >= kTransferSize; }, kDeadline);
-    CHECK(simulator_result);
+    QUICHE_CHECK(simulator_result);
 
     // Save the trace and ensure some loss was observed.
     trace_.Swap(visitor.trace());
-    CHECK_NE(0u, client.connection()->GetStats().packets_retransmitted);
+    QUICHE_CHECK_NE(0u, client.connection()->GetStats().packets_retransmitted);
     packets_sent_ = client.connection()->GetStats().packets_sent;
   }
 
@@ -81,7 +81,9 @@ TEST_F(QuicTraceVisitorTest, ConnectionId) {
 TEST_F(QuicTraceVisitorTest, Version) {
   std::string version = trace_.protocol_version();
   ASSERT_EQ(4u, version.size());
-  EXPECT_NE(0, version[0]);
+  // Ensure version isn't all-zeroes.
+  EXPECT_TRUE(version[0] != 0 || version[1] != 0 || version[2] != 0 ||
+              version[3] != 0);
 }
 
 // Check that basic metadata about sent packets is recorded.
